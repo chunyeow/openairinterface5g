@@ -85,8 +85,9 @@ int main(int argc,char **argv)
   DCI_ALLOC_t dci_alloc[8],dci_alloc_rx[8];
 
   //Init LOG
+  
   logInit();
-  //svcd_signal_dumper_init();//TVT:Navid
+  //vcd_signal_dumper_init();
   set_comp_log(PHY,LOG_DEBUG,LOG_LOW,1);
 
   //Parse options
@@ -453,7 +454,7 @@ void _allocDLSChannel(options_t opts) {
   for (i=0; i<2; i++)
     {   
       //eNB     
-      PHY_vars_eNB->dlsch_eNB[0][i] = new_eNB_dlsch(1,8,0);  
+      PHY_vars_eNB->dlsch_eNB[0][i] = new_eNB_dlsch(1,8,opts.N_RB_DL,0);  
       PHY_vars_eNB->dlsch_eNB[0][i]->dl_power_off =1;  
                
       if (!PHY_vars_eNB->dlsch_eNB[0][i]) {
@@ -469,7 +470,7 @@ void _allocDLSChannel(options_t opts) {
         
       for(j=0;j<opts.nInterf;j++)
         {
-	  interf_PHY_vars_eNB[j]->dlsch_eNB[0][i]=new_eNB_dlsch(1,8,0);
+	  interf_PHY_vars_eNB[j]->dlsch_eNB[0][i]=new_eNB_dlsch(1,8,opts.N_RB_DL,0);
 	  interf_PHY_vars_eNB[j]->dlsch_eNB[0][i]->dl_power_off =1;  
 	  if (!interf_PHY_vars_eNB[j]->dlsch_eNB[0][i]) {
 	    printf("Can't get interferer eNB dlsch structures\n");
@@ -483,7 +484,7 @@ void _allocDLSChannel(options_t opts) {
 	}
                 
       //UE
-      PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,0);
+      PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,opts.N_RB_DL,0);
      // PHY_vars_UE->dlsch_ue[0][i]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS,0);
       if (!PHY_vars_UE->dlsch_ue[0][i]) {
 	printf("Can't get ue dlsch structures\n");
@@ -712,13 +713,14 @@ void _printResults(u32 *errs,u32 *round_trials,u32 dci_errors,double rate)
 
 }
 
-void _printFileResults(double SNR, double rate,u32  *errs,u32  *round_trials,u32 dci_errors,options_t opts,double BER)
+void _printFileResults(double SNR,double rate1, double rate,u32  *errs,u32  *round_trials,u32 dci_errors,options_t opts,double BER)
 {
 
   fprintf(opts.outputFile,"%f %f;\n", SNR, (float)errs[0]/round_trials[0]);
 
-  fprintf(opts.outputBler,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
+  fprintf(opts.outputBler,"%f;%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
 	  SNR,
+	  rate1,
 	  opts.mcs,
 	  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->TBS,
 	  rate,
@@ -1029,7 +1031,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
   //Variables
   u32 tbs,coded_bits_per_codeword;
   int num_common_dci=0,num_ue_spec_dci=1;
-  double rate=0, sigma2, sigma2_dB=10,uncoded_ber,avg_ber;
+  double rate=0,rate1=0, sigma2, sigma2_dB=10,uncoded_ber,avg_ber;
   short *uncoded_ber_bit;
   unsigned int dci_cnt,dlsch_active=0;
   unsigned int tx_lev,tx_lev_dB=0,*itx_lev=null,*itxlev_dB=null; // Signal Power
@@ -1331,13 +1333,16 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	      tbs = (double)dlsch_tbs25[get_I_TBS(PHY_vars_eNB->dlsch_eNB[idUser][0]->harq_processes[0]->mcs)][PHY_vars_eNB->dlsch_eNB[idUser][0]->nb_rb-1];
 		//  printf("\nround: %d dlsch_enB=->nb_rb: %d mcs: %d\n",round,PHY_vars_eNB->dlsch_eNB[idUser][0]->nb_rb,opts.mcs);
 //printf("PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->MCS %d\n",PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs);
+	      
+	      //printf("tbs= %d, G=%d \n",tbs,coded_bits_per_codeword);
 	      rate = (double)tbs/(double)coded_bits_per_codeword;
 
 	      uncoded_ber_bit = (short*) malloc(2*coded_bits_per_codeword);
 
-	      if (cont_frames==0 && round==0)
+	      if (cont_frames==0 && round==0){
 		printf("\tRate = %f (%f bits/dim) (G %d, TBS %d, mod %d, pdcch_sym %d)\n",
 		       rate,rate*i_mod,coded_bits_per_codeword,tbs,i_mod,num_pdcch_symbols);
+		       rate1=rate*i_mod;}
 
 	      //TVT: no tpmi in DCI format 1 --------------
 	      // use the PMI from previous trial
@@ -1882,7 +1887,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
       fprintf(opts.outputTrougput,"%f %f;\n",SNR,  rate*((double)(round_trials[0]-dci_errors)/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3])));
 		
       _printResults(errs,round_trials,dci_errors,rate);
-      _printFileResults( SNR,  rate,errs,round_trials, dci_errors, opts,avg_ber/numresults);
+      _printFileResults( SNR, rate1,  rate,errs,round_trials, dci_errors, opts,avg_ber/numresults);
 
 
       if (((double)errs[0]/(round_trials[0]))<1e-2) break;//IF erros > 10% by standar
@@ -2174,9 +2179,20 @@ void _fillPerfectChannelDescription(options_t opts,u8 l)
 
 		if(opts.nInterf>0)//Max num interferer 
 		  {
-		    if(j==opts.Nid_cell) continue;					
+		    /*if(j==opts.Nid_cell) continue;					
 		    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[1][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)((AMP/2)*(pow(10.0,.05*opts.dbInterf[0])));
 		    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[1][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0;											
+		    */
+		    if(opts.awgn_flagi==0){
+				if(j==opts.Nid_cell) continue;						
+				((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[1][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(interf_eNB2UE[0]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP/2)*pow(10.0,.05*opts.dbInterf[0]);											
+				((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[1][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(interf_eNB2UE[0]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP/2)*pow(10.0,.05*opts.dbInterf[0]) ;
+				}
+				else{
+					if(j==opts.Nid_cell) continue;					
+					((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[1][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)((AMP/2)*(pow(10.0,.05*opts.dbInterf[0])));
+					((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[1][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0;													 
+				}
 		  }
 	      }				
 

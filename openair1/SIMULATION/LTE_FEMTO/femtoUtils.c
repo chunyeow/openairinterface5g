@@ -39,6 +39,7 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
       {"g",    required_argument, 0, 'g'},
       {"f",    no_argument, 0, 'f'},
       {"a",    no_argument, 	  0, 'a'},
+      {"i",    no_argument, 	  0, 'i'},
       {"b",    required_argument, 0, 'b'},
       {"w",    required_argument, 0, 'w'},
       {"k",    required_argument, 0, 'k'},
@@ -57,7 +58,7 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
 
   int option_index = 0;   
 		
-  while ((c = getopt_long (argc, argv, "hs:S:T:n:xdt:y:z:I:j:N:o:g:fab:r:R:w:c:em:A:Dp:B:k:Q:",long_options, &option_index)) != -1)
+  while ((c = getopt_long (argc, argv, "hs:S:T:n:xdt:y:z:I:j:N:o:g:faib:r:R:w:c:em:A:Dp:B:k:Q:",long_options, &option_index)) != -1)
     {
       //printf("%c %s\n",c,optarg);
       switch (c)
@@ -66,6 +67,11 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
 	  opts->awgn_flag=1;
 	  opts->channel_model=AWGN;
 	  sprintf(opts->parameters,"%s -a",opts->parameters);
+	  break;
+	  case 'i':
+	  opts->awgn_flagi=1;
+	  opts->channel_modeli=AWGN;
+	  sprintf(opts->parameters,"%s -i",opts->parameters);
 	  break;
 	  case 'B':
 		opts->N_RB_DL=atoi(optarg);
@@ -286,6 +292,7 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
 	  printf("-g    [A,B,C,D,E,F,G] Use 3GPP SCM (A,B,C,D) or 36-101 (E-EPA,F-EVA,G-ETU) models (ignores delay spread and Ricean factor), default value is AWGN\n");
 	  //    printf("-f    Output filename (.txt format) for Pe/SNR results\n");
 	  printf("-a    Use AWGN channel and not multipath\n");
+	  printf("-i    Use AWGN channel for the interference\n");
 	  printf("-b    Test Number\n");
 	  printf("-c    CellId Number for interferer\n");
 	  printf("-r    ressource block allocation (see  section 7.1.6.3 in 36.213\n");
@@ -498,7 +505,7 @@ void _makeOutputDir(options_t *opts)
   sprintf(auxFile,"OutputBlerRound_%d.m",opts->testNumber);
     
   opts->outputBler =fopen(auxFile,"w");
-  fprintf( opts->outputBler,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err\n");
+  fprintf( opts->outputBler,"SNR; rate1; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err\n");
     
   sprintf(auxFile,"OutputBER_%d.m",opts->testNumber);
   opts->outputBer =fopen(auxFile,"w");
