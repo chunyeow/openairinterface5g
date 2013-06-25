@@ -1,0 +1,5 @@
+#define MIH_C_INTERFACE
+#define MIH_C_F13_DATA_TYPES_FOR_INFORMATION_ELEMENTS_C
+#include "MIH_C_F13_data_types_for_information_elements_codec.h"
+
+

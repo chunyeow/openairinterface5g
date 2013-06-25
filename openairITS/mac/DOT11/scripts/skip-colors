@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+perl -pe 's|(\e)\[(\d+)(;*)(\d*)(\w)||g'

@@ -1,0 +1,2 @@
+ifconfig oai0 down
+rmmod -w nascellrg

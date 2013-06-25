@@ -1,0 +1,4 @@
+to compile run 
+./src/make_links
+./configure
+make

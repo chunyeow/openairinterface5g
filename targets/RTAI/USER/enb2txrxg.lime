@@ -1,0 +1,9 @@
+# this file contains the calibration values to compute the RSSI
+# we can use three different gain stages (high, low, med) as well as a gain factor for fine tuning
+# the three lines in this file gives the total rx gain in dB for the three gain stages if the rx gain is set to 30dB
+# high gain
+138 138 138 138
+# med gain
+129 129 129 129
+# low gain
+120 120 120 120

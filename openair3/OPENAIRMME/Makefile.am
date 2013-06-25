@@ -1,0 +1,12 @@
+SUBDIRS = 			\
+	GTPV1-U			\
+	INTERTASK_INTERFACE 	\
+	SCTP			\
+	S1AP			\
+	S6A			\
+	SGW-LITE		\
+	UTILS			\
+	UDP			\
+	TEST			\
+	OAISIM_MME		\
+	DOCS

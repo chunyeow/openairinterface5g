@@ -1,0 +1,5 @@
+MESSAGE_DEF(SGW_CREATE_SESSION_REQUEST,  TASK_PRIORITY_MED, SgwCreateSessionRequest  sgwCreateSessionRequest)
+MESSAGE_DEF(SGW_CREATE_SESSION_RESPONSE, TASK_PRIORITY_MED, SgwCreateSessionResponse sgwCreateSessionResponse)
+MESSAGE_DEF(SGW_MODIFY_BEARER_REQUEST,   TASK_PRIORITY_MED, SgwModifyBearerRequest   sgwModifyBearerRequest)
+MESSAGE_DEF(SGW_MODIFY_BEARER_RESPONSE,  TASK_PRIORITY_MED, SgwModifyBearerResponse  sgwModifyBearerResponse)
+MESSAGE_DEF(SGW_S1U_ENDPOINT_CREATED,    TASK_PRIORITY_MED, SgwS1UEndpointCreated    sgwS1UEndpointCreated)

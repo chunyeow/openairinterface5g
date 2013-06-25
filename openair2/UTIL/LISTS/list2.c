@@ -1,0 +1,290 @@
+/***************************************************************************
+                          list2.c  -  description
+                             -------------------
+                             -------------------
+  AUTHOR  : Lionel GAUTHIER
+  COMPANY : EURECOM
+  EMAIL   : Lionel.Gauthier@eurecom.fr
+ ***************************************************************************/
+#define LIST2_C
+#include "list.h"
+#ifdef USER_MODE
+#include <assert.h>
+#else
+#define NULL 0
+#endif
+
+
+//-----------------------------------------------------------------------------
+/*
+ * initialize list
+ */
+//-----------------------------------------------------------------------------
+void
+list2_init (list2_t * listP, char *nameP)
+{
+//-----------------------------------------------------------------------------
+  unsigned char              i = 0;
+
+  if (nameP) {
+    while ((listP->name[i] = nameP[i]) && (i++ < LIST_NAME_MAX_CHAR));
+  }
+  listP->tail = NULL;
+  listP->head = NULL;
+  listP->nb_elements = 0;
+}
+
+//-----------------------------------------------------------------------------
+void
+list2_free (list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  mem_block_t      *le;
+
+  while ((le = list2_remove_head (listP))) {
+    free_mem_block (le);
+  }
+}
+
+//-----------------------------------------------------------------------------
+/*
+ *  remove an element from list
+ *  @param  pointer on targeted list
+ *  @param  mem_block_t to remove
+ *  @return pointer on removed mem_block_t
+ */
+mem_block_t *
+list2_remove_element (mem_block_t * elementP, list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  if (elementP != NULL) {
+    // head of list
+    if (elementP == listP->head) {
+      listP->head = elementP->next;
+      if (listP->head == NULL) {
+        listP->tail = NULL;
+      } else {
+        elementP->next->previous = NULL;
+        elementP->next = NULL;
+      }
+      // tail of the list
+      // note : case of 1 remaining element in the list has been treated above
+    } else if (elementP == listP->tail) {
+      // so several elements in the list
+      listP->tail = elementP->previous;
+      listP->tail->next = NULL;
+      elementP->previous = NULL;
+      // in the middle of the list, after a head element and before the tail element
+    } else {
+      // link element n-1 with element n+1
+      elementP->previous->next = elementP->next;
+      elementP->next->previous = elementP->previous;
+      elementP->next = NULL;
+      elementP->previous = NULL;
+    }
+    listP->nb_elements = listP->nb_elements - 1;
+  }
+  return elementP;
+}
+//-----------------------------------------------------------------------------
+mem_block_t *
+list2_get_head (list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+  return listP->head;
+}
+
+//-----------------------------------------------------------------------------
+/*
+ *  remove an element from head of a list
+ *  @param  pointer on targeted list
+ *  @return pointer on removed mem_block_t
+ */
+mem_block_t *
+list2_remove_head (list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  // access optimisation
+  mem_block_t      *head;
+
+  head = listP->head;
+  // almost one element
+  if (head != NULL) {
+    listP->head = head->next;
+    listP->nb_elements = listP->nb_elements - 1;
+    // if only one element, update tail
+    if (listP->head == NULL) {
+      listP->tail = NULL;
+    } else {
+      listP->head->previous = NULL;
+      head->next = NULL;
+    }
+  } else {
+    //msg("[MEM_MGT][WARNING] remove_head_from_list(%s) no elements\n",listP->name);
+  }
+  return head;
+}
+
+//-----------------------------------------------------------------------------
+/*
+ *  remove an element from tail of a list
+ *  @param  pointer on targeted list
+ *  @return pointer on removed mem_block_t
+ */
+mem_block_t *
+list2_remove_tail (list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  // access optimisation;
+  mem_block_t      *tail;
+
+
+  tail = listP->tail;
+  // almost one element;
+  if (tail != NULL) {
+    listP->nb_elements = listP->nb_elements - 1;
+    // if only one element, update head, tail;
+    if (listP->head == tail) {
+      listP->head = NULL;
+      listP->tail = NULL;
+    } else {
+      listP->tail = tail->previous;
+      tail->previous->next = NULL;
+    }
+    tail->previous = NULL;
+  } else {
+    //msg("[MEM_MGT][WARNING] remove_head_from_list(%s) no elements\n",listP->name);
+  }
+  return tail;
+}
+
+//-----------------------------------------------------------------------------
+/*
+ *  add an element to the beginning of a list
+ *  @param  pointer on targeted list
+ *  @return pointer on removed mem_block_t
+ */
+void
+list2_add_head (mem_block_t * elementP, list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  // access optimisation;
+  mem_block_t      *head;
+
+  if (elementP != NULL) {
+    head = listP->head;
+    listP->nb_elements = listP->nb_elements + 1;
+    // almost one element
+    if (head == NULL) {
+      listP->head = elementP;
+      listP->tail = elementP;
+    } else {
+      elementP->next = head;
+      head->previous = elementP;
+      elementP->previous = NULL;
+      listP->head = elementP;
+    }
+  }
+}
+
+//-----------------------------------------------------------------------------
+/*
+ *  add an element to the end of a list
+ *  @param  pointer on targeted list
+ *  @return pointer on removed mem_block_t
+ */
+void
+list2_add_tail (mem_block_t * elementP, list2_t * listP)
+{
+  mem_block_t      *tail;
+//-----------------------------------------------------------------------------
+
+  if (elementP != NULL) {
+    // access optimisation
+    listP->nb_elements = listP->nb_elements + 1;
+    elementP->next = NULL;
+    tail = listP->tail;
+    // almost one element
+    if (tail == NULL) {
+      elementP->previous = NULL;
+      listP->head = elementP;
+    } else {
+      tail->next = elementP;
+      elementP->previous = tail;
+    }
+    listP->tail = elementP;
+  } else {
+    msg ("[CNT_DL_LK_LIST_UP][ERROR] add_cnt_dbl_lk_list_up_tail() element NULL\n");
+  }
+}
+
+//-----------------------------------------------------------------------------
+void
+list2_add_list (list2_t * sublistP, list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  if (sublistP) {
+    if (sublistP->head) {
+      // access optimisation
+      mem_block_t      *tail;
+
+      tail = listP->tail;
+      // almost one element
+      if (tail == NULL) {
+        listP->head = sublistP->head;
+      } else {
+        tail->next = sublistP->head;
+        sublistP->head->previous = tail;
+      }
+      listP->tail = sublistP->tail;
+      // clear sublist
+      sublistP->head = NULL;
+      sublistP->tail = NULL;
+    }
+
+    listP->nb_elements = listP->nb_elements + sublistP->nb_elements;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void
+list2_display (list2_t * listP)
+{
+//-----------------------------------------------------------------------------
+
+  mem_block_t      *cursor;
+  unsigned short             nb_elements = 0;
+  //u32_t nb_bytes;
+  // u32_t index;
+
+  // test lists
+  if (listP) {
+    cursor = listP->head;
+    if (cursor) {
+      // almost one element
+      msg ("Display list %s %p", listP->name, listP);
+      while (cursor != NULL) {
+        msg ("%d:", cursor->pool_id);
+        /*nb_bytes = (( sdu_management*)(cursor->misc))->size;
+           for (index=0; index < nb_bytes; index++) {
+           msg("%02X.",cursor->data[index]);
+           } */
+        msg ("\n");
+        cursor = cursor->next;
+        nb_elements++;
+      }
+      msg (" found nb_elements %d nb_elements %d\n", nb_elements, listP->nb_elements);
+#ifdef USER_MODE
+      assert(nb_elements == listP->nb_elements);
+#endif
+    }
+  } else {
+    msg ("[SDU_MNGT][WARNING] display_cnt_dbl_lk_list_up() : list is NULL\n");
+  }
+}

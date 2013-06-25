@@ -1,0 +1,6 @@
+v0.1:
+- Build system
+- SCTP layer v0.1
+- S1AP layer v0.1
+v0.2:
+- Updated S1AP messages to RELEASE9 v9.8

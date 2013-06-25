@@ -1,0 +1,50 @@
+/*******************************************************************************
+
+  OPENAIRINTERFACE 0/1/2/3
+  Copyright(c) 1999 - 2010 EURECOM
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information:
+  Openair Admin <openair_admin@eurecom.fr>
+  Mailing List <openair_tech@eurecom.fr>
+  Forums  http://forums.eurecom.fr/openairinterface
+  Eurecom, 2229, route des cretes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+/*________________________OPENAIR/OPENAIR3/________________________
+
+ File    : INSTALL.kernel
+ Authors : OpenAir3
+ Company : EURECOM
+ Emails  : openair3@eurecom.fr
+________________________________________________________________*/
+
+-------------------------
+        BUGS
+-------------------------
+
+PROBLEM : "config.h file not found"
+SOLUTION : A simple symbolic link is enough to avoid this error. Open a terminal and type :
+			$ ln -s /usr/src/linux-source-XX.XX.XX/include/linux/autoconf.h /usr/src/linux-sources-XX.XX.XX/include/linux/config.h
+			
+PROBLEM : "Error while loading shared libraries : libfreeradius-client.so.2 cannot open shared object file : no such file or directory"
+SOLUTION : Open a terminal and type :
+			$ export LD_LIBRARY_PATH=/usr/local/lin:$LD_LIBRARY_PATH
+			
+			To avoid this problem to occur once again, we add the previsou line to the Bashrc file. Open a terminal and type:
+			$ echo "export LD_LIBRARY_PATH=/usr/local/lin:$LD_LIBRARY_PATH" >> ~/.bashrc

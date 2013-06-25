@@ -1,0 +1,6 @@
+# For the TX, we need to set the tx gain values such that the transmitted power on all antennas is the same
+# don't put any blank lines in this file
+# tx gain (dB)
+25 25 25 25 
+# total tx power (dBm)
+4
