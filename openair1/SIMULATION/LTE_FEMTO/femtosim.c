@@ -948,40 +948,29 @@ u32 _allocRBs(options_t *opts,int ind)
 			else
 			allocRB=0x1e00;
 		break;
-		case 91: // 17/8
+		case 91: // 2/23 force the 2nd round with QPSK
 			if (ind==0)	{
-			allocRB=0x1fe1;
-			opts->mcs=3;}
-			else
-			allocRB=0x1e;
+			allocRB=0x1000;
+			opts->mcs=4;}
+			else{
+			allocRB=0xfff;
+			opts->mcs=2;}
 		break;
-		case 92: // 17/8
+		case 92: // 6/19 force the 2nd round with QPSK
 			if (ind==0)	{
-			allocRB=0xff1;
-			opts->mcs=3;}
-			else
-			allocRB=0x100e;
+			allocRB=0x1c00;
+			opts->mcs=11;}
+			else{
+			allocRB=0x3ff;
+			opts->mcs=2;}
 		break;
-		case 93: // 17/8
+		case 93: // 4/21 force the 2nd round with QPSK
 			if (ind==0)	{
-			allocRB=0x7f9;
-			opts->mcs=3;}
-			else
-			allocRB=0x1806;
-		break;
-		case 94: // 17/8
-			if (ind==0)	{
-			allocRB=0x199f;
-			opts->mcs=3;}
-			else
-			allocRB=0x660;
-		break;
-		case 95: // 17/8
-			if (ind==0)	{
-			allocRB=0x1e1f;
-			opts->mcs=3;}
-			else
-			allocRB=0x1e0;
+			allocRB=0x1800;
+			opts->mcs=14;}
+			else{
+			allocRB=0x7ff;
+			opts->mcs=2;}
 		break;
 		case 10: // 19/6
 			if (ind==0)	{
@@ -996,6 +985,10 @@ u32 _allocRBs(options_t *opts,int ind)
 			opts->mcs=2;}
 			else
 			allocRB=0x1800;
+		break;
+		default:
+			allocRB = 0x1fff;
+			opts->mcs=0;
 		break;}		
 		break;
     case 50:
