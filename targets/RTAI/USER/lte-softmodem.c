@@ -1352,10 +1352,6 @@ int main(int argc, char **argv) {
   }
 
 
-  openair0_dump_config(card);
-
-  for (ant=0;ant<4;ant++)
-    p_exmimo_config->rf.do_autocal[ant] = 0;
 
   dump_frame_parms(frame_parms);
   
@@ -1405,7 +1401,8 @@ int main(int argc, char **argv) {
       for (i=0; i<frame_parms->samples_per_tti*10; i++)
 	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
 	  PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
-      
+
+      p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;      
   }
   else {
     setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,0);
@@ -1441,8 +1438,32 @@ int main(int argc, char **argv) {
                 ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+4] = amp;
                 ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+6] = 0;
               }
-        }
-    }
+      }
+  }
+
+  openair0_dump_config(card);
+
+  printf("EXMIMO_CONFIG: rf_mode 0x %x %x %x %x, [0]: TXRXEn %d, TXLPFEn %d, TXLPF %d, RXLPFEn %d, RXLPF %d, RFBB %d, LNA %d, LNAGain %d, RXLPFMode %d, SWITCH %d, rf_rxdc %d, rf_local %d, rf_vcocal %d\n",  
+	 p_exmimo_config->rf.rf_mode[0],
+	 p_exmimo_config->rf.rf_mode[1],
+	 p_exmimo_config->rf.rf_mode[2],
+	 p_exmimo_config->rf.rf_mode[3],
+	 (p_exmimo_config->rf.rf_mode[0]&3),  // RXen+TXen
+	 (p_exmimo_config->rf.rf_mode[0]&4)>>2,         //TXLPFen
+	 (p_exmimo_config->rf.rf_mode[0]&TXLPFMASK)>>3, //TXLPF
+	 (p_exmimo_config->rf.rf_mode[0]&128)>>7,      //RXLPFen
+	 (p_exmimo_config->rf.rf_mode[0]&RXLPFMASK)>>8, //TXLPF
+	 (p_exmimo_config->rf.rf_mode[0]&RFBBMASK)>>16, // RFBB mode
+	 (p_exmimo_config->rf.rf_mode[0]&LNAMASK)>>12, // RFBB mode
+	 (p_exmimo_config->rf.rf_mode[0]&LNAGAINMASK)>>14, // RFBB mode
+	 (p_exmimo_config->rf.rf_mode[0]&RXLPFMODEMASK)>>19, // RXLPF mode
+	 (p_exmimo_config->framing.tdd_config&TXRXSWITCH_MASK)>>1, // Switch mode
+	 p_exmimo_config->rf.rf_rxdc[0],
+	 p_exmimo_config->rf.rf_local[0],
+	 p_exmimo_config->rf.rf_vcocal[0]);
+  
+  for (ant=0;ant<4;ant++)
+    p_exmimo_config->rf.do_autocal[ant] = 0;
 
 #ifdef EMOS
   error_code = rtf_create(CHANSOUNDER_FIFO_MINOR,CHANSOUNDER_FIFO_SIZE);
