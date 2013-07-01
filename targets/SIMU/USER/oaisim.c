@@ -116,7 +116,7 @@ extern double **s_re, **s_im, **r_re, **r_im, **r_re0, **r_im0;
 int map1,map2;
 extern double **ShaF;
 double snr_dB, sinr_dB,snr_direction;//,sinr_direction;
-extern snr_step;
+extern double snr_step;
 extern u8 set_sinr;//,set_snr=0;
 extern u8 ue_connection_test;
 extern u8 set_seed;

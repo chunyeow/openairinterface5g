@@ -1852,10 +1852,10 @@ void schedule_ulsch_cba_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 fram
 void schedule_ulsch_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 frame, unsigned char subframe, unsigned char sched_subframe, u8 granted_UEs, unsigned int *nCCE, unsigned int *nCCE_available, u16 *first_rb){ 
   unsigned char UE_id;
   unsigned char next_ue;
-   unsigned char aggregation=2;
+  unsigned char aggregation=2;
   u16 rnti;
-  unsigned char round;
-  unsigned char harq_pid;
+  u8 round = 0;
+  u8 harq_pid = 0;
   DCI0_5MHz_TDD_1_6_t *ULSCH_dci_tdd16;
   DCI0_5MHz_FDD_t *ULSCH_dci_fdd;
 
@@ -1887,11 +1887,13 @@ void schedule_ulsch_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 frame, u
     LOG_D(MAC,"[eNB %d] Scheduler Frame %d, subframe %d, nCCE %d: Checking ULSCH next UE_id %d mode id %d (rnti %x,mode %s), format 0\n",Mod_id,frame,subframe,*nCCE,next_ue,Mod_id, rnti,mode_string[eNB_UE_stats->mode]);
 
     if (eNB_UE_stats->mode == PUSCH) { // ue has a ulsch channel
+      s8 ret;
       // Get candidate harq_pid from PHY
-      mac_xface->get_ue_active_harq_pid(Mod_id,rnti,subframe,&harq_pid,&round,1); 
+      ret = mac_xface->get_ue_active_harq_pid(Mod_id,rnti,subframe,&harq_pid,&round,1); 
       //	printf("Got harq_pid %d, round %d, next_ue %d\n",harq_pid,round,next_ue);
 
-      if ((((UE_is_to_be_scheduled(Mod_id,UE_id)>0)) || (round>0) || (frame%10==0))) {
+      /* [SR] 01/07/13: Don't schedule UE if we cannot get harq pid */
+      if ((((UE_is_to_be_scheduled(Mod_id,UE_id)>0)) || (round>0) || ((frame%10)==0)) && (ret == 0)) {
 	// if there is information on bsr of DCCH, DTCH or if there is UL_SR, or if there is a packet to retransmit, or we want to schedule a periodic feedback every 10 frames 
 	
 	//if (((UE_id%2)==(sched_subframe%2)))
@@ -2585,12 +2587,17 @@ void schedule_ue_spec(unsigned char Mod_id,u32 frame, unsigned char subframe,u16
   /// Initialization for pre-processor
   for(i=0;i<256;i++){
     pre_nb_available_rbs[i] = 0;
-    PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[i].pre_nb_available_rbs=0;
     dl_pow_off[i] = 2;
     for(j=0;j<mac_xface->lte_frame_parms->N_RBGS;j++){
-      PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[i].rballoc_sub[j]=0;
-	rballoc_sub[j] = 0;
+      rballoc_sub[j] = 0;
       rballoc_sub_UE[i][j] = 0;
+    }
+  }
+
+  for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
+    PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[i].pre_nb_available_rbs = 0;
+    for (j = 0; j < mac_xface->lte_frame_parms->N_RBGS; j++) {
+      PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[i].rballoc_sub[j] = 0;
     }
   }
 

@@ -80,7 +80,7 @@ void oai_nw_drv_common_class_wireless2ip(u16 dlen,
     struct sk_buff      *skb;
     struct ipversion    *ipv;
     struct oai_nw_drv_priv     *gpriv=netdev_priv(oai_nw_drv_dev[inst]);
-    unsigned int         hard_header_len;
+    unsigned int         hard_header_len = 0;
     u16                 *p_ether_type;
     u16                  ether_type;
     #ifdef OAI_DRV_DEBUG_RECEIVE
