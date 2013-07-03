@@ -1,11 +1,11 @@
 /*! \file netlink_init.c
-* \brief initiate the netlink socket for communication with nas dirver 
+* \brief initiate the netlink socket for communication with nas dirver
 * \author Navid Nikaein and Raymomd Knopp
 * \date 2011
-* \version 1.0 
+* \version 1.0
 * \company Eurecom
 * \email: navid.nikaein@eurecom.fr
-*/ 
+*/
 
 #include <sys/socket.h>
 #include <linux/netlink.h>
@@ -25,62 +25,50 @@ struct msghdr nas_msg;
 
 #define GRAAL_NETLINK_ID 31
 
-int netlink_init(void) {
+int netlink_init(void)
+{
+    int ret;
 
+    nas_sock_fd = socket(PF_NETLINK, SOCK_RAW,GRAAL_NETLINK_ID);
+    if (nas_sock_fd == -1) {
+        printf("[NETLINK] Error opening socket %d\n",nas_sock_fd);
+        return(-1);
+    }
+    printf("[NETLINK]Opened socket with fd %d\n",nas_sock_fd);
 
-  int ret;
+    ret = fcntl(nas_sock_fd,F_SETFL,O_NONBLOCK);
+    printf("[NETLINK] fcntl returns %d\n",ret);
 
-  
-  nas_sock_fd = socket(PF_NETLINK, SOCK_RAW,GRAAL_NETLINK_ID);
-  if (nas_sock_fd==-1) {
-    printf("[NETLINK] Error opening socket %d\n",nas_sock_fd);
-    return(-1);
-  }  
-  printf("[NETLINK]Opened socket with fd %d\n",nas_sock_fd);
+    memset(&nas_src_addr, 0, sizeof(nas_src_addr));
+    nas_src_addr.nl_family = AF_NETLINK;
+    nas_src_addr.nl_pid = 1;//getpid();  /* self pid */
+    nas_src_addr.nl_groups = 0;  /* not in mcast groups */
+    ret = bind(nas_sock_fd, (struct sockaddr *)&nas_src_addr,
+               sizeof(nas_src_addr));
 
-  ret = fcntl(nas_sock_fd,F_SETFL,O_NONBLOCK);
-  printf("[NETLINK] fcntl returns %d\n",ret);
+    printf("[NETLINK] bind returns %d\n",ret);
 
-  memset(&nas_src_addr, 0, sizeof(nas_src_addr));
-  nas_src_addr.nl_family = AF_NETLINK;
-  nas_src_addr.nl_pid = 1;//getpid();  /* self pid */
-  nas_src_addr.nl_groups = 0;  /* not in mcast groups */
-  ret = bind(nas_sock_fd, (struct sockaddr*)&nas_src_addr,
-	     sizeof(nas_src_addr));
+    memset(&nas_dest_addr, 0, sizeof(nas_dest_addr));
+    nas_dest_addr.nl_family = AF_NETLINK;
+    nas_dest_addr.nl_pid = 0;   /* For Linux Kernel */
+    nas_dest_addr.nl_groups = 0; /* unicast */
 
-  printf("[NETLINK] bind returns %d\n",ret);
+    nas_nlh=(struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_PAYLOAD));
+    /* Fill the netlink message header */
+    nas_nlh->nlmsg_len = NLMSG_SPACE(MAX_PAYLOAD);
+    nas_nlh->nlmsg_pid = 1;//getpid();  /* self pid */
+    nas_nlh->nlmsg_flags = 0;
 
-  memset(&nas_dest_addr, 0, sizeof(nas_dest_addr));
-  nas_dest_addr.nl_family = AF_NETLINK;
-  nas_dest_addr.nl_pid = 0;   /* For Linux Kernel */
-  nas_dest_addr.nl_groups = 0; /* unicast */
-  
-  nas_nlh=(struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_PAYLOAD));
-  /* Fill the netlink message header */
-  nas_nlh->nlmsg_len = NLMSG_SPACE(MAX_PAYLOAD);
-  nas_nlh->nlmsg_pid = 1;//getpid();  /* self pid */
-  nas_nlh->nlmsg_flags = 0;
-  
-  nas_iov.iov_base = (void *)nas_nlh;
-  nas_iov.iov_len = nas_nlh->nlmsg_len;
-  memset(&nas_msg,0,sizeof(nas_msg));
-  nas_msg.msg_name = (void *)&nas_dest_addr;
-  nas_msg.msg_namelen = sizeof(nas_dest_addr);
-  nas_msg.msg_iov = &nas_iov;
-  nas_msg.msg_iovlen = 1;
-  
-  
-  /* Read message from kernel */
-  memset(nas_nlh, 0, NLMSG_SPACE(MAX_PAYLOAD));
-  
+    nas_iov.iov_base = (void *)nas_nlh;
+    nas_iov.iov_len = nas_nlh->nlmsg_len;
+    memset(&nas_msg,0,sizeof(nas_msg));
+    nas_msg.msg_name = (void *)&nas_dest_addr;
+    nas_msg.msg_namelen = sizeof(nas_dest_addr);
+    nas_msg.msg_iov = &nas_iov;
+    nas_msg.msg_iovlen = 1;
 
-  return(nas_sock_fd);
+    /* Read message from kernel */
+    memset(nas_nlh, 0, NLMSG_SPACE(MAX_PAYLOAD));
+
+    return(nas_sock_fd);
 }
-
-
-
-
-
-
-
-

@@ -24,15 +24,18 @@ unsigned char emu_rx_status;
 //unsigned short Master_id;
 //unsigned int Is_primary_master;
 
+#if !defined(ENABLE_NEW_MULTICAST)
 pthread_mutex_t emul_low_mutex;
 pthread_cond_t emul_low_cond;
 char emul_low_mutex_var;
 pthread_mutex_t Tx_mutex;
 pthread_cond_t Tx_cond;
 char Tx_mutex_var;
+#endif
 
-int (*rx_handler) (unsigned char,char*,int);
-int (*tx_handler) (unsigned char,char*, unsigned int*, unsigned int*);
+/* Handlers for RX and TX */
+rx_handler_t rx_handler;
+tx_handler_t tx_handler;
 
 eNB_transport_info_t eNB_transport_info[NUMBER_OF_eNB_MAX];
 u16 eNB_transport_info_TB_index[NUMBER_OF_eNB_MAX];

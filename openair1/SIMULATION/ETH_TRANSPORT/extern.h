@@ -1,11 +1,11 @@
 /*! \file extern.h
-* \brief specifies the extern variables for phy emulation
-* \author Navid Nikaein and Raymomd Knopp and Hicham Anouar
-* \date 2011
-* \version 1.0 
-* \company Eurecom
-* \email: navid.nikaein@eurecom.fr
-*/ 
+ *  \brief specifies the extern variables for phy emulation
+ *  \author Navid Nikaein and Raymomd Knopp and Hicham Anouar
+ *  \date 2011
+ *  \version 1.1
+ *  \company Eurecom
+ *  \email: navid.nikaein@eurecom.fr
+ */
 
 #ifndef __BYPASS_SESSION_LAYER_EXTERN_H__
 #    define __BYPASS_SESSION_LAYER_EXTERN_H__
@@ -23,16 +23,17 @@ extern unsigned char emu_rx_status;
 //extern unsigned short Master_id;
 //extern unsigned int Is_primary_master;
 
+#if !defined(ENABLE_NEW_MULTICAST)
 extern pthread_mutex_t emul_low_mutex;
 extern pthread_cond_t emul_low_cond;
 extern char emul_low_mutex_var;
 extern pthread_mutex_t Tx_mutex;
 extern pthread_cond_t Tx_cond;
 extern char Tx_mutex_var;
+#endif
 
-
-extern int (*rx_handler) (unsigned char,char*,int);
-extern int (*tx_handler) (unsigned char,char*, unsigned int*, unsigned int*);
+extern rx_handler_t rx_handler;
+extern tx_handler_t tx_handler;
 
 extern eNB_transport_info_t eNB_transport_info[NUMBER_OF_eNB_MAX];
 extern u16 eNB_transport_info_TB_index[NUMBER_OF_eNB_MAX];
