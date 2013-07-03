@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 /*! \file pdcp_fifo.c
-* \brief pdcp interface with linux IP interface
+* \brief pdcp interface with linux IP interface, have a look at http://man7.org/linux/man-pages/man7/netlink.7.html for netlink
 * \author  Lionel GAUTHIER and Navid Nikaein
 * \date 2009
 * \version 0.5
@@ -65,21 +65,27 @@ extern int otg_enabled;
 #include "UTIL/OCG/OCG_extern.h"
 #include "UTIL/LOG/log.h"
 #include "UTIL/FIFO/pad_list.h"
+#include "platform_constants.h"
+
 
 #ifdef NAS_NETLINK
 #include <sys/socket.h>
 #include <linux/netlink.h>
 
+extern char nl_rx_buf[NL_MAX_PAYLOAD];
 extern struct sockaddr_nl nas_src_addr, nas_dest_addr;
-extern struct nlmsghdr *nas_nlh;
-extern struct iovec nas_iov;
+extern struct nlmsghdr *nas_nlh_tx;
+extern struct nlmsghdr *nas_nlh_rx;
+extern struct iovec nas_iov_tx;
+extern struct iovec nas_iov_rx;
 extern int nas_sock_fd;
-extern struct msghdr nas_msg;
+extern struct msghdr nas_msg_tx;
+extern struct msghdr nas_msg_rx;
 
 #define MAX_PAYLOAD 1600
 
 unsigned char pdcp_read_state = 0;
-unsigned char pdcp_read_payload[MAX_PAYLOAD];
+//unsigned char pdcp_read_payload[MAX_PAYLOAD];
 #endif
 
 extern Packet_OTG_List *otg_pdcp_buffer;
@@ -98,11 +104,11 @@ int
   u8              cont = 1;
   int ret;
   int mcs_inst;
-  
+
   while (sdu && cont) {
 
 #if defined(OAI_EMU)
-    mcs_inst = ((pdcp_data_ind_header_t *)(sdu->data))->inst; 
+    mcs_inst = ((pdcp_data_ind_header_t *)(sdu->data))->inst;
     // asjust the instance id when passing sdu to IP
     ((pdcp_data_ind_header_t *)(sdu->data))->inst = (((pdcp_data_ind_header_t *)(sdu->data))->inst >= NB_eNB_INST) ?
                                                     ((pdcp_data_ind_header_t *)(sdu->data))->inst - NB_eNB_INST +oai_emulation.info.nb_enb_local - oai_emulation.info.first_ue_local :// UE
@@ -132,9 +138,9 @@ int
 #else
 #ifdef NAS_NETLINK
 #ifdef LINUX
-      memcpy(NLMSG_DATA(nas_nlh), &(((u8 *) sdu->data)[sizeof (pdcp_data_ind_header_t) - pdcp_output_header_bytes_to_write]),
+      memcpy(NLMSG_DATA(nas_nlh_tx), &(((u8 *) sdu->data)[sizeof (pdcp_data_ind_header_t) - pdcp_output_header_bytes_to_write]),
              pdcp_output_header_bytes_to_write);
-      nas_nlh->nlmsg_len = pdcp_output_header_bytes_to_write;
+      nas_nlh_tx->nlmsg_len = pdcp_output_header_bytes_to_write;
 #endif //LINUX
 #endif //NAS_NETLINK
 
@@ -159,9 +165,9 @@ int
 
 #ifdef NAS_NETLINK
 #ifdef LINUX
-          memcpy(NLMSG_DATA(nas_nlh)+sizeof(pdcp_data_ind_header_t), &(sdu->data[sizeof (pdcp_data_ind_header_t)]), pdcp_output_sdu_bytes_to_write);
-          nas_nlh->nlmsg_len += pdcp_output_sdu_bytes_to_write;
-          ret = sendmsg(nas_sock_fd,&nas_msg,0);
+          memcpy(NLMSG_DATA(nas_nlh_tx)+sizeof(pdcp_data_ind_header_t), &(sdu->data[sizeof (pdcp_data_ind_header_t)]), pdcp_output_sdu_bytes_to_write);
+          nas_nlh_tx->nlmsg_len += pdcp_output_sdu_bytes_to_write;
+          ret = sendmsg(nas_sock_fd,&nas_msg_tx,0);
           if (ret<0) {
             LOG_D(PDCP, "[PDCP_FIFOS] sendmsg returns %d (errno: %d)\n", ret, errno);
             mac_xface->macphy_exit("");
@@ -260,7 +266,8 @@ int
     pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame,u8_t eNB_flag)
 {
   //-----------------------------------------------------------------------------
-  sdu_size_t             bytes_read=0;
+  sdu_size_t             bytes_read = 0;
+  rb_id_t                rab_id  = 0;
 
   // if remaining bytes to read
   if (pdcp_input_sdu_remaining_size_to_read > 0) {
@@ -289,13 +296,42 @@ int
         pdcp_read_header.inst = 0;
 #endif
 
-        if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
+        if (pdcp_input_header.rb_id != 0) {
           LOG_D(PDCP, "[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
                 frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
 
-          pdcp_data_req (pdcp_input_header.inst,
+            if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
+                pdcp_data_req (pdcp_input_header.inst,
                          frame, eNB_flag,
                          pdcp_input_header.rb_id,
+                         RLC_MUI_UNDEFINED,
+                         RLC_SDU_CONFIRM_NO,
+                         pdcp_input_header.data_size,
+                         pdcp_input_sdu_buffer,
+                         PDCP_DATA_PDU);
+            }
+        } else if (eNB_flag) {
+            // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
+            LOG_D(PDCP, "Checking if could sent on default rabs\n");
+#warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
+            for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
+                LOG_D(PDCP, "Checking if could sent on default rab id %d\n", rab_id);
+                if (pdcp_array[pdcp_input_header.inst][rab_id].instanciated_instance == (pdcp_input_header.inst + 1)) {
+                    pdcp_data_req (pdcp_input_header.inst,
+                                frame, eNB_flag,
+                                rab_id,
+                                RLC_MUI_UNDEFINED,
+                                RLC_SDU_CONFIRM_NO,
+                                pdcp_input_header.data_size,
+                                pdcp_input_sdu_buffer,
+                                PDCP_DATA_PDU);
+                }
+            }
+        } else {
+            LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
+            pdcp_data_req (pdcp_input_header.inst,
+                         frame, eNB_flag,
+                         DEFAULT_RAB_ID,
                          RLC_MUI_UNDEFINED,
                          RLC_SDU_CONFIRM_NO,
                          pdcp_input_header.data_size,
@@ -318,154 +354,280 @@ int
     pdcp_fifo_read_input_sdus (u32_t frame, u8_t eNB_flag)
 {
   //-----------------------------------------------------------------------------
-#ifdef NAS_FIFO
-  int             cont;
-  int             bytes_read;
-
-  // if remaining bytes to read
-  if (pdcp_fifo_read_input_sdus_remaining_bytes (frame,eNB_flag) > 0) {
-
-    // all bytes that had to be read for a SDU were read
-    // if not overflow of list, try to get new sdus from rt fifo
-    cont = 1;
-
-    while (cont > 0) {
-      bytes_read = rtf_get (NAS2PDCP_FIFO,
-                            &(((u8 *) & pdcp_input_header)[pdcp_input_index_header]),
-                            sizeof (pdcp_data_req_header_t) - pdcp_input_index_header);
-
-      if (bytes_read > 0) {
-#ifdef PDCP_DEBUG
-        LOG_D(PDCP, "[PDCP_FIFOS] TTI %d Read %d Bytes of data (header %d) from Nas_mesh\n",
-              frame,
-              bytes_read,
-              sizeof(pdcp_data_req_header_t));
-#endif // PDCP_DEBUG
-        pdcp_input_index_header += bytes_read;
-
-        if (pdcp_input_index_header == sizeof (pdcp_data_req_header_t)) {
-#ifdef PDCP_DEBUG
-          LOG_D(PDCP, "TTI %d IP->RADIO READ HEADER sdu size %d\n",
-                frame,
-                pdcp_input_header.data_size);
-#endif //PDCP_DEBUG
-          pdcp_input_index_header = 0;
-          if (pdcp_input_header.data_size < 0) {
-            LOG_E(PDCP, "READ_FIFO: DATA_SIZE %d < 0\n",pdcp_input_header.data_size);
-
-            mac_xface->macphy_exit("");
-            return 0;
-          }
-          pdcp_input_sdu_remaining_size_to_read = pdcp_input_header.data_size;
-          pdcp_input_sdu_size_read     = 0;
-          // we know the size of the sdu, so read the sdu;
-          cont = pdcp_fifo_read_input_sdus_remaining_bytes (frame,eNB_flag);
-        } else {
-          cont = 0;
-        }
-        // error while reading rt fifo
-      } else {
-        cont = 0;
-      }
-    }
-  }
-  return bytes_read;
-
-#else //NAS_FIFO
+//#ifdef NAS_FIFO
+//  int             cont;
+//  int             bytes_read;
+//
+//  // if remaining bytes to read
+//  if (pdcp_fifo_read_input_sdus_remaining_bytes (frame,eNB_flag) > 0) {
+//
+//    // all bytes that had to be read for a SDU were read
+//    // if not overflow of list, try to get new sdus from rt fifo
+//    cont = 1;
+//
+//    while (cont > 0) {
+//      bytes_read = rtf_get (NAS2PDCP_FIFO,
+//                            &(((u8 *) & pdcp_input_header)[pdcp_input_index_header]),
+//                            sizeof (pdcp_data_req_header_t) - pdcp_input_index_header);
+//
+//      if (bytes_read > 0) {
+//#ifdef PDCP_DEBUG
+//        LOG_D(PDCP, "[PDCP_FIFOS] TTI %d Read %d Bytes of data (header %d) from Nas_mesh\n",
+//              frame,
+//              bytes_read,
+//              sizeof(pdcp_data_req_header_t));
+//#endif // PDCP_DEBUG
+//        pdcp_input_index_header += bytes_read;
+//
+//        if (pdcp_input_index_header == sizeof (pdcp_data_req_header_t)) {
+//#ifdef PDCP_DEBUG
+//          LOG_D(PDCP, "TTI %d IP->RADIO READ HEADER sdu size %d\n",
+//                frame,
+//                pdcp_input_header.data_size);
+//#endif //PDCP_DEBUG
+//          pdcp_input_index_header = 0;
+//          if (pdcp_input_header.data_size < 0) {
+//            LOG_E(PDCP, "READ_FIFO: DATA_SIZE %d < 0\n",pdcp_input_header.data_size);
+//
+//            mac_xface->macphy_exit("");
+//            return 0;
+//          }
+//          pdcp_input_sdu_remaining_size_to_read = pdcp_input_header.data_size;
+//          pdcp_input_sdu_size_read     = 0;
+//          // we know the size of the sdu, so read the sdu;
+//          cont = pdcp_fifo_read_input_sdus_remaining_bytes (frame,eNB_flag);
+//        } else {
+//          cont = 0;
+//        }
+//        // error while reading rt fifo
+//      } else {
+//        cont = 0;
+//      }
+//    }
+//  }
+//  return bytes_read;
+//
+//#else //NAS_FIFO
+//#ifdef NAS_NETLINK
+//  int len = 1;
+//  rb_id_t                rab_id  = 0;
+//
+//  while (len > 0) {
+//      if (pdcp_read_state == 0) {
+//#ifdef LINUX
+//          len = recvmsg(nas_sock_fd, &nas_msg, 0);
+//#else
+//          len = -1;
+//#endif
+//
+//          if (len < 0) {
+//              // nothing in pdcp NAS socket
+//              //LOG_I(PDCP, "[PDCP][NETLINK] Nothing in socket, length %d \n", len);
+//          } else {
+//#ifdef PDCP_DEBUG
+//#ifdef LINUX
+//              LOG_I(PDCP, "[PDCP][NETLINK] Received socket with length %d (nlmsg_len = %d)\n", \
+//                      len, nas_nlh->nlmsg_len-sizeof(struct nlmsghdr));
+//#else
+//              LOG_I(PDCP, "[PDCP][NETLINK] nlmsg_len = %d (%d,%d)\n", \
+//                       nas_nlh->nlmsg_len, sizeof(pdcp_data_req_header_t), \
+//                       sizeof(struct nlmsghdr));
+//#endif
+//#endif
+//          }
+//
+//#ifdef LINUX
+//          if (nas_nlh->nlmsg_len == sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)) {
+//              pdcp_read_state = 1;  //get
+//              memcpy((void *)&pdcp_read_header, (void *)NLMSG_DATA(nas_nlh), sizeof(pdcp_data_req_header_t));
+//          }
+//#else
+//          pdcp_read_state = 1;
+//#endif
+//      }
+//
+//      if (pdcp_read_state == 1) {
+//#ifdef LINUX
+//          len = recvmsg(nas_sock_fd, &nas_msg, 0);
+//#else
+//          len = -1;
+//#endif
+//
+//          if (len < 0) {
+//              // nothing in pdcp NAS socket
+//              //LOG_I(PDCP, "[PDCP][NETLINK] Nothing in socket, length %d \n", len);
+//          } else {
+//              pdcp_read_state = 0;
+//              // print_active_requests()
+//
+//#ifdef LINUX
+//              memcpy(pdcp_read_payload, (unsigned char *)NLMSG_DATA(nas_nlh), nas_nlh->nlmsg_len - sizeof(struct nlmsghdr));
+//#endif
+//
+//#ifdef OAI_EMU
+//              pdcp_read_header.inst = (pdcp_read_header.inst >= oai_emulation.info.nb_enb_local) ? \
+//                                pdcp_read_header.inst - oai_emulation.info.nb_enb_local+ NB_eNB_INST + oai_emulation.info.first_ue_local :
+//                                pdcp_read_header.inst +  oai_emulation.info.first_enb_local;
+//#else
+//              pdcp_read_header.inst = 0;
+//#endif
+//
+//              if (pdcp_read_header.rb_id != 0) {
+//                  if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
+//#ifdef PDCP_DEBUG
+//                      LOG_I(PDCP, "[PDCP][NETLINK][IP->PDCP] TTI %d, INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n", \
+//                        frame, pdcp_read_header.inst, len, nas_nlh->nlmsg_len-sizeof(struct nlmsghdr), pdcp_read_header.rb_id);
+//                      LOG_D(PDCP, "[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
+//                        frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
+//#endif
+//
+//                      pdcp_data_req(pdcp_read_header.inst,
+//                        frame,
+//                        eNB_flag,
+//                        pdcp_read_header.rb_id,
+//                        RLC_MUI_UNDEFINED,
+//                        RLC_SDU_CONFIRM_NO,
+//                        pdcp_read_header.data_size,
+//                        pdcp_read_payload,
+//                        PDCP_DATA_PDU);
+//                  } else {
+//                      LOG_E(PDCP, "Received packet for non-instanciated instance %u with rb_id %u\n",
+//                                pdcp_read_header.inst, pdcp_read_header.rb_id);
+//                  }
+//              } else  if (eNB_flag) {
+//                // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
+//                  LOG_D(PDCP, "Checking if could sent on default rabs\n");
+//#warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
+//                  for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
+//                      LOG_D(PDCP, "Checking if could sent on default rab id %d\n", rab_id);
+//                      if (pdcp_array[pdcp_input_header.inst][rab_id].instanciated_instance == (pdcp_input_header.inst + 1)) {
+//                          pdcp_data_req (pdcp_input_header.inst, frame, eNB_flag, rab_id, RLC_MUI_UNDEFINED,RLC_SDU_CONFIRM_NO,
+//                                pdcp_input_header.data_size,
+//                                pdcp_input_sdu_buffer,
+//                                PDCP_DATA_PDU);
+//                      }
+//                  }
+//              } else {
+//                  LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
+//                  pdcp_data_req (pdcp_input_header.inst,
+//                         frame, eNB_flag,
+//                         DEFAULT_RAB_ID,
+//                         RLC_MUI_UNDEFINED,
+//                         RLC_SDU_CONFIRM_NO,
+//                         pdcp_input_header.data_size,
+//                         pdcp_input_sdu_buffer,
+//                         PDCP_DATA_PDU);
+//              }
+//          }
+//      }
+//  } // end of while
+//
+//  return len;
+//
+//#else // neither NAS_NETLINK nor NAS_FIFO
+//  return 0;
+//#endif // NAS_NETLINK
+//#endif // NAS_FIFO
 #ifdef NAS_NETLINK
-  int len = 1;
+  int              len = 1;
+  rb_id_t          rab_id  = 0;
 
   while (len > 0) {
-    if (pdcp_read_state == 0) {
-#ifdef LINUX
-      len = recvmsg(nas_sock_fd, &nas_msg, 0);
-#else
-      len = -1;
-#endif
+          len = recvmsg(nas_sock_fd, &nas_msg_rx, 0);
 
-      if (len < 0) {
-        // nothing in pdcp NAS socket
-        //LOG_I(PDCP, "[PDCP][NETLINK] Nothing in socket, length %d \n", len);
-      } else {
+          if (len<=0) {
+              // nothing in pdcp NAS socket
+              //LOG_I(PDCP, "[PDCP][NETLINK] Nothing in socket, length %d \n", len);
+          } else {
+              for (nas_nlh_rx = (struct nlmsghdr *) nl_rx_buf;
+                   NLMSG_OK (nas_nlh_rx, len);
+                   nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
+
+                  if (nas_nlh_rx->nlmsg_type == NLMSG_DONE) {
+                      LOG_I(PDCP, "[PDCP][NETLINK] RX NLMSG_DONE\n");
+                      //return;
+                  };
+
+                  if (nas_nlh_rx->nlmsg_type == NLMSG_ERROR) {
+                      LOG_I(PDCP, "[PDCP][NETLINK] RX NLMSG_ERROR\n");
+                  }
+                  if (pdcp_read_state == 0) {
+                      if (nas_nlh_rx->nlmsg_len == sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)) {
+                          pdcp_read_state = 1;  //get
+                          memcpy((void *)&pdcp_read_header, (void *)NLMSG_DATA(nas_nlh_rx), sizeof(pdcp_data_req_header_t));
+                          LOG_I(PDCP, "[PDCP][NETLINK] RX pdcp_data_req_header_t inst %u, rb_id %u data_size %d\n", pdcp_read_header.inst, pdcp_read_header.rb_id, pdcp_read_header.data_size);
+                      } else {
+                          LOG_E(PDCP, "[PDCP][NETLINK] WRONG size %d should be sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)\n", nas_nlh_rx->nlmsg_len);
+                      }
+                  } else {
+                      pdcp_read_state = 0;
+                      // print_active_requests()
 #ifdef PDCP_DEBUG
-#ifdef LINUX
-        LOG_I(PDCP, "[PDCP][NETLINK] Received socket with length %d (nlmsg_len = %d)\n", \
-              len, nas_nlh->nlmsg_len-sizeof(struct nlmsghdr));
-#else
-        LOG_I(PDCP, "[PDCP][NETLINK] nlmsg_len = %d (%d,%d)\n", \
-              nas_nlh->nlmsg_len, sizeof(pdcp_data_req_header_t), \
-              sizeof(struct nlmsghdr));
-#endif // LINUX
-#endif // PDCP_DEBUG
-      }
-
-#ifdef LINUX
-      if (nas_nlh->nlmsg_len == sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)) {
-        pdcp_read_state = 1;  //get
-        memcpy((void *)&pdcp_read_header, (void *)NLMSG_DATA(nas_nlh), sizeof(pdcp_data_req_header_t));
-      }
-#else
-      pdcp_read_state = 1;
+                      LOG_I(PDCP, "[PDCP][NETLINK] Something in socket, length %d \n", nas_nlh_rx->nlmsg_len - sizeof(struct nlmsghdr));
 #endif
-    }
+                      //memcpy(pdcp_read_payload, (unsigned char *)NLMSG_DATA(nas_nlh_rx), nas_nlh_rx->nlmsg_len - sizeof(struct nlmsghdr));
 
-    if (pdcp_read_state == 1) {
-#ifdef LINUX
-      len = recvmsg(nas_sock_fd, &nas_msg, 0);
-#else
-      len = -1;
-#endif
+                      #ifdef OAI_EMU
+                      pdcp_read_header.inst = (pdcp_read_header.inst >= oai_emulation.info.nb_enb_local) ? \
+                          pdcp_read_header.inst - oai_emulation.info.nb_enb_local+ NB_eNB_INST + oai_emulation.info.first_ue_local :
+                          pdcp_read_header.inst +  oai_emulation.info.first_enb_local;
+                      #else
+                      pdcp_read_header.inst = 0;
+                      #endif
 
-      if (len < 0) {
-        // nothing in pdcp NAS socket
-        //LOG_I(PDCP, "[PDCP][NETLINK] Nothing in socket, length %d \n", len);
-      } else {
-        pdcp_read_state = 0;
-        // print_active_requests()
-
-#ifdef LINUX
-        memcpy(pdcp_read_payload, (unsigned char *)NLMSG_DATA(nas_nlh), nas_nlh->nlmsg_len - sizeof(struct nlmsghdr));
-#endif
-
-#ifdef OAI_EMU
-        pdcp_read_header.inst = (pdcp_read_header.inst >= oai_emulation.info.nb_enb_local) ? \
-                                pdcp_read_header.inst - oai_emulation.info.nb_enb_local+ NB_eNB_INST + oai_emulation.info.first_ue_local :
-                                pdcp_read_header.inst +  oai_emulation.info.first_enb_local;
-#else
-        pdcp_read_header.inst = 0;
-#endif
-
-        if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
+                      if (pdcp_read_header.rb_id != 0) {
+                          if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
 #ifdef PDCP_DEBUG
-          LOG_I(PDCP, "[PDCP][NETLINK][IP->PDCP] TTI %d, INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n", \
-                frame, pdcp_read_header.inst, len, nas_nlh->nlmsg_len-sizeof(struct nlmsghdr), pdcp_read_header.rb_id);
-          LOG_D(PDCP, "[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
-                frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
+                              LOG_I(PDCP, "[PDCP][NETLINK][IP->PDCP] TTI %d, INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
+                                  frame, pdcp_read_header.inst, len, nas_nlh_rx->nlmsg_len-sizeof(struct nlmsghdr), pdcp_read_header.rb_id);
+                              LOG_D(PDCP, "[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
+                                  frame, pdcp_read_header.inst, pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
 #endif
 
-          pdcp_data_req(pdcp_read_header.inst,
-                        frame,
-                        eNB_flag,
-                        pdcp_read_header.rb_id,
-                        RLC_MUI_UNDEFINED,
-                        RLC_SDU_CONFIRM_NO,
-                        pdcp_read_header.data_size,
-                        pdcp_read_payload,
-                        PDCP_DATA_PDU);
-        } else {
-            LOG_E(PDCP, "Received packet for non-instanciated instance %u with rb_id %u\n",
-                  pdcp_read_header.inst, pdcp_read_header.rb_id);
-        }
-      }
-    }
-  } // end of while
-
+                              pdcp_data_req(pdcp_read_header.inst,
+                                        frame,
+                                        eNB_flag,
+                                        pdcp_read_header.rb_id,
+                                        RLC_MUI_UNDEFINED,
+                                        RLC_SDU_CONFIRM_NO,
+                                        pdcp_read_header.data_size,
+                                        (unsigned char *)NLMSG_DATA(nas_nlh_rx),
+                                        PDCP_DATA_PDU);
+                          } else {
+                              LOG_E(PDCP, "Received packet for non-instanciated instance %u with rb_id %u\n",
+                                  pdcp_read_header.inst, pdcp_read_header.rb_id);
+                          }
+                      } else if (eNB_flag) {
+                          // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
+        #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
+                          for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
+                              if (pdcp_array[pdcp_input_header.inst][rab_id].instanciated_instance == (pdcp_input_header.inst + 1)) {
+                                  pdcp_data_req (pdcp_read_header.inst, frame, eNB_flag, rab_id, RLC_MUI_UNDEFINED,RLC_SDU_CONFIRM_NO,
+                                            pdcp_read_header.data_size,
+                                            (unsigned char *)NLMSG_DATA(nas_nlh_rx),
+                                            PDCP_DATA_PDU);
+                              }
+                          }
+                      } else {
+                          LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
+                          pdcp_data_req (pdcp_read_header.inst,
+                                  frame, eNB_flag,
+                                  DEFAULT_RAB_ID,
+                                  RLC_MUI_UNDEFINED,
+                                  RLC_SDU_CONFIRM_NO,
+                                  pdcp_read_header.data_size,
+                                  (unsigned char *)NLMSG_DATA(nas_nlh_rx),
+                                  PDCP_DATA_PDU);
+                      }
+                  }
+              }
+          }
+  }
   return len;
 
 #else // neither NAS_NETLINK nor NAS_FIFO
   return 0;
 #endif // NAS_NETLINK
-#endif // NAS_FIFO
 }
 
 

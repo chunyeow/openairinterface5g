@@ -119,7 +119,7 @@ remove_emul:
 
 
 clean_nasmesh:
-	(cd NAS/DRIVER/MESH && $(MAKE) V=1 -C /usr/src/linux M=`pwd` clean)	
+	(cd NAS/DRIVER/MESH && $(MAKE) V=1 -C /usr/src/linux M=`pwd` clean)
 
 nasmesh_address_fix.ko:
 	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) V=1 ADDRESS_FIX=1 -C /usr/src/linux M=`pwd`)

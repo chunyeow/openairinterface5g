@@ -268,7 +268,13 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
                 mbms_session = pmch_info_r9->mbms_SessionInfoList_r9.list.array[cnt2];
 
                 if (mbms_session->logicalChannelIdentity_r9 > 0) {
-                    lc_id = (NUMBER_OF_UE_MAX*NB_RB_MAX) + mbms_session->logicalChannelIdentity_r9;
+                    //lc_id = (NUMBER_OF_UE_MAX*NB_RB_MAX) + mbms_session->logicalChannelIdentity_r9;
+
+                    if (eNB_flagP) {
+                    	lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3) * MAX_MOBILES_PER_RG;
+                    } else {
+                    	lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3);
+                    }
 
                     if (mbms_session->sessionId_r9 != NULL) {
                     	mbms_session_id = mbms_session->sessionId_r9->buf[0];

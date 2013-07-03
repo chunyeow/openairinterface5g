@@ -40,40 +40,43 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame)
 //-----------------------------------------------------------------------------
 {
-    if (rlcP->t_status_prohibit.running) {
-        if (
-           // CASE 1:          start              time out
-           //        +-----------+------------------+----------+
-           //        |           |******************|          |
-           //        +-----------+------------------+----------+
-           //FRAME # 0                                     FRAME MAX
-           ((rlcP->t_status_prohibit.frame_start < rlcP->t_status_prohibit.frame_time_out) &&
-               ((frame >= rlcP->t_status_prohibit.frame_time_out) ||
-                (frame < rlcP->t_status_prohibit.frame_start)))                                   ||
-           // CASE 2:        time out            start
-           //        +-----------+------------------+----------+
-           //        |***********|                  |**********|
-           //        +-----------+------------------+----------+
-           //FRAME # 0                                     FRAME MAX VALUE
-           ((rlcP->t_status_prohibit.frame_start > rlcP->t_status_prohibit.frame_time_out) &&
-              (frame < rlcP->t_status_prohibit.frame_start) && (frame >= rlcP->t_status_prohibit.frame_time_out))
-           ) {
+    if (rlcP->t_status_prohibit.time_out > 0) {
+        if (rlcP->t_status_prohibit.running) {
+            if (
+               // CASE 1:          start              time out
+               //        +-----------+------------------+----------+
+               //        |           |******************|          |
+               //        +-----------+------------------+----------+
+               //FRAME # 0                                     FRAME MAX
+               ((rlcP->t_status_prohibit.frame_start < rlcP->t_status_prohibit.frame_time_out) &&
+                   ((frame >= rlcP->t_status_prohibit.frame_time_out) ||
+                    (frame < rlcP->t_status_prohibit.frame_start)))                                   ||
+               // CASE 2:        time out            start
+               //        +-----------+------------------+----------+
+               //        |***********|                  |**********|
+               //        +-----------+------------------+----------+
+               //FRAME # 0                                     FRAME MAX VALUE
+               ((rlcP->t_status_prohibit.frame_start > rlcP->t_status_prohibit.frame_time_out) &&
+                  (frame < rlcP->t_status_prohibit.frame_start) && (frame >= rlcP->t_status_prohibit.frame_time_out))
+               ) {
 
-        //if ((rlcP->t_status_prohibit.frame_time_out <= frame) && (rlcP->t_status_prohibit.frame_start)) {
-            rlcP->t_status_prohibit.running   = 0;
-            rlcP->t_status_prohibit.timed_out = 1;
-            rlcP->stat_timer_status_prohibit_timed_out += 1;
+            //if ((rlcP->t_status_prohibit.frame_time_out <= frame) && (rlcP->t_status_prohibit.frame_start)) {
+                rlcP->t_status_prohibit.running   = 0;
+                rlcP->t_status_prohibit.timed_out = 1;
+                rlcP->stat_timer_status_prohibit_timed_out += 1;
 
-            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][T-STATUS-PROHIBIT] TIME-OUT\n", frame,
-                        rlcP->module_id, rlcP->rb_id);
-            LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_AM][MOD %02d][RB %02d][--- t-StatusProhibit Timed-out --->][RLC_AM][MOD %02d][RB %02d]\n",
-                frame,
-                rlcP->module_id,
-                rlcP->rb_id,
-                rlcP->module_id,
-                rlcP->rb_id);
+                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][T-STATUS-PROHIBIT] TIME-OUT\n", frame,
+                            rlcP->module_id, rlcP->rb_id);
+                LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_AM][MOD %02d][RB %02d][--- t-StatusProhibit Timed-out --->][RLC_AM][MOD %02d][RB %02d]\n",
+                    frame,
+                    rlcP->module_id,
+                    rlcP->rb_id,
+                    rlcP->module_id,
+                    rlcP->rb_id);
 #warning         TO DO rlc_am_check_timer_status_prohibit
-            rlcP->t_status_prohibit.frame_time_out = frame + rlcP->t_status_prohibit.time_out;
+                rlc_am_stop_and_reset_timer_status_prohibit(rlcP, frame);
+                //rlcP->t_status_prohibit.frame_time_out = frame + rlcP->t_status_prohibit.time_out;
+            }
         }
     }
 }
@@ -81,23 +84,27 @@ void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame)
 void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame)
 //-----------------------------------------------------------------------------
 {
-    LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][T-STATUS-PROHIBIT] STOPPED AND RESET\n", frame,
+	if (rlcP->t_status_prohibit.time_out > 0) {
+        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][T-STATUS-PROHIBIT] STOPPED AND RESET\n", frame,
                         rlcP->module_id, rlcP->rb_id);
-    rlcP->t_status_prohibit.running        = 0;
-    rlcP->t_status_prohibit.frame_time_out = 0;
-    rlcP->t_status_prohibit.frame_start    = 0;
-    rlcP->t_status_prohibit.timed_out      = 0;
+        rlcP->t_status_prohibit.running        = 0;
+        rlcP->t_status_prohibit.frame_time_out = 0;
+        rlcP->t_status_prohibit.frame_start    = 0;
+        rlcP->t_status_prohibit.timed_out      = 0;
+	}
 }
 //-----------------------------------------------------------------------------
 void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame)
 //-----------------------------------------------------------------------------
 {
-    rlcP->t_status_prohibit.running        = 1;
-    rlcP->t_status_prohibit.frame_time_out = rlcP->t_status_prohibit.time_out + frame;
-    rlcP->t_status_prohibit.frame_start    = frame;
-    rlcP->t_status_prohibit.timed_out = 0;
-    LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][T-STATUS-PROHIBIT] STARTED (TIME-OUT = FRAME %05d)\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->t_status_prohibit.frame_time_out);
-    LOG_D(RLC, "TIME-OUT = FRAME %05d\n",  rlcP->t_status_prohibit.frame_time_out);
+	if (rlcP->t_status_prohibit.time_out > 0) {
+        rlcP->t_status_prohibit.running        = 1;
+        rlcP->t_status_prohibit.frame_time_out = rlcP->t_status_prohibit.time_out + frame;
+        rlcP->t_status_prohibit.frame_start    = frame;
+        rlcP->t_status_prohibit.timed_out = 0;
+        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][T-STATUS-PROHIBIT] STARTED (TIME-OUT = FRAME %05d)\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->t_status_prohibit.frame_time_out);
+        LOG_D(RLC, "TIME-OUT = FRAME %05d\n",  rlcP->t_status_prohibit.frame_time_out);
+	}
 }
 //-----------------------------------------------------------------------------
 void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlcP, u32_t time_outP)

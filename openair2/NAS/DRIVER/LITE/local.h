@@ -64,18 +64,6 @@
 
 #include "constant.h"
 #include "sap.h"
-//#include "rrc_nas_primitives.h"
-
-
-struct rb_entity {
-  OaiNwDrvRadioBearerId_t   rab_id;
-  OaiNwDrvSapId_t           sapi;
-  OaiNwDrvQoSTrafficClass_t qos;
-  u8                   state;
-  u8                   retry;
-  u32                  countimer;
-  struct rb_entity    *next;
-};
 
 struct cx_entity {
   int                        sap[OAI_NW_DRV_SAPI_CX_MAX];
@@ -84,14 +72,9 @@ struct cx_entity {
   OaiNwDrvCellID_t                cellid;                    // cell identification
   u32                        countimer;                 // timeout's counter
   u8                         retry;                     // number of retransmission
-  struct classifier_entity  *sclassifier[OAI_NW_DRV_DSCP_MAX]; // send classifier;
-  struct classifier_entity  *fclassifier[OAI_NW_DRV_DSCP_MAX]; // forward classifier;
-  u16                        nsclassifier;
-  u16                        nfclassifier;
+
   u32                        iid6[2];                   // IPv6  interface identification
   u8                         iid4;                      // IPv4 interface identification
-  struct rb_entity          *rb;
-  u16                        num_rb;                    // number of radio bearer in linked list
   int                        lastRRCprimitive;
   //measures
   int                        req_prov_id [OAI_NW_DRV_MAX_MEASURE_NB];
@@ -100,34 +83,6 @@ struct cx_entity {
   int                        meas_level  [OAI_NW_DRV_MAX_MEASURE_NB];
   int                        provider_id [OAI_NW_DRV_MAX_MEASURE_NB];
 };
-
-struct classifier_entity {
-  u32                        classref;  // classifier identity
-  struct classifier_entity  *next;      // linked list
-  u8                         ip_version;   // IP version 4 or 6
-  union{
-    struct in6_addr ipv6;
-    u32             ipv4;
-  }                          saddr;     // IP source address
-  u8                         splen;     // IP source prefix length
-  union{
-    struct in6_addr ipv6;
-    u32             ipv4;
-    unsigned int    mpls_label;
-  }                          daddr;     // IP destination address
-  u8                         dplen;     // IP destination prefix length
-  u8                         protocol;  // high layer protocol type (TCP, UDP,..)
-  unsigned char              protocol_message_type;
-  u16                        sport;     // source port
-  u16                        dport;     // destination port
-  struct rb_entity          *rb;        // pointer to rb_entity for sending function or receiving in case of forwarding rule
-  struct rb_entity          *rb_rx;     // pointer to rb_entity for receiving (in case of forwarding rule)
-  OaiNwDrvRadioBearerId_t         rab_id;    // RAB identification for sending
-  OaiNwDrvRadioBearerId_t         rab_id_rx; // RAB identification for receiving (in case of forwarding rule)
-  void (*fct)(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst);
-};
-
-//#define NAS_RETRY_LIMIT_DEFAULT 5
 
 struct oai_nw_drv_priv {
   int                        irq;
@@ -139,7 +94,7 @@ struct oai_nw_drv_priv {
   u32                        timer_establishment;
   u32                        timer_release;
   struct cx_entity           cx[OAI_NW_DRV_CX_MAX];
-  struct classifier_entity  *rclassifier[OAI_NW_DRV_DSCP_MAX]; // receive classifier
+  //struct classifier_entity  *rclassifier[OAI_NW_DRV_DSCP_MAX]; // receive classifier
   u16                        nrclassifier;
   int                        sap[OAI_NW_DRV_SAPI_MAX];
   struct sock               *nl_sk;
@@ -173,15 +128,9 @@ typedef struct pdcp_data_ind_header_t {
 
 
 extern struct net_device *oai_nw_drv_dev[OAI_NW_DRV_NB_INSTANCES_MAX];
-//extern int bytes_wrote;
-//extern int bytes_read;
 
 extern u8 OAI_NW_DRV_NULL_IMEI[14];
 
-//global variables shared with RRC
-#ifndef OAI_NW_DRIVER_USE_NETLINK
-extern int pdcp_2_oai_nw_drv_irq;
-#endif
-//extern u8 nas_IMEI[14];
+
 
 #endif

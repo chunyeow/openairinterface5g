@@ -72,6 +72,7 @@
 #endif //NON_ACCESS_STRATUM
 //-----------------------------------------------------------------------------
 #include "COMMON/platform_constants.h"
+#include "COMMON/platform_types.h"
 #include "DRB-ToAddMod.h"
 #include "DRB-ToAddModList.h"
 #include "SRB-ToAddMod.h"
@@ -97,15 +98,15 @@ public_pdcp(unsigned int Pdcp_stats_rx_rate[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MA
 typedef struct pdcp_t {
   BOOL instanciated_instance;
   u16  header_compression_profile;
-  
+
   u8 cipheringAlgorithm;
   u8 integrityProtAlgorithm;
-  
-  u8 rlc_mode; 
+
+  u8 rlc_mode;
   u8 status_report;
   u8 seq_num_size;
 
-  u8 lcid; 
+  u8 lcid;
   /*
    * Sequence number state variables
    *
@@ -138,12 +139,12 @@ typedef struct pdcp_t {
 
 typedef struct pdcp_mbms_t {
   BOOL instanciated_instance;
- 
-  uint16_t service_id; 
+
+  uint16_t service_id;
   uint32_t session_id; // lcid
 
-  uint16_t rb_id; 
-  
+  uint16_t rb_id;
+
 } pdcp_mbms_t;
 /*
  * Following symbolic constant alters the behaviour of PDCP
@@ -196,11 +197,11 @@ public_pdcp(BOOL pdcp_data_ind (module_id_t module_id, u32_t frame, u8_t eNB_fla
 * \param[in] frame Frame number
 * \param[in] Shows if relevant PDCP entity is part of an eNB or a UE
 * \param[in] rab_id Radio Bearer ID
-* \param[in] muiP 
+* \param[in] muiP
 * \param[in] confirmP
 * \param[in] sdu_buffer_size Size of incoming SDU in bytes
 * \param[in] sdu_buffer Buffer carrying SDU
-* \param[in] mode flag to indicate whether the userplane data belong to the control plane or data plane or transparent 
+* \param[in] mode flag to indicate whether the userplane data belong to the control plane or data plane or transparent
 * \return TRUE on success, FALSE otherwise
 * \note None
 * @ingroup _pdcp
@@ -228,14 +229,14 @@ public_pdcp(BOOL pdcp_data_ind (module_id_t module_id, u32_t frame, u8_t eNB_fla
 /*! \fn void rrc_pdcp_config_req(module_id_t, rb_id_t,u8)
 * \brief This functions initializes relevant PDCP entity
 * \param[in] module_id Module ID of relevant PDCP entity
-* \param[in] frame frame counter (TTI) 
+* \param[in] frame frame counter (TTI)
 * \param[in] eNB_flag flag indicating the node type
 * \param[in] action flag for action: add, remove , modify
 * \param[in] rab_id Radio Bearer ID of relevant PDCP entity
 * \return none
 * \note None
 * @ingroup _pdcp
-*/ 
+*/
 public_pdcp(void rrc_pdcp_config_req (module_id_t module_id, u32 frame, u8_t eNB_flag, u32  action, rb_id_t rab_id, u8 security_mode);)
 
 
@@ -322,7 +323,7 @@ typedef struct pdcp_data_ind_header_t {
 
 #if 0
 /*
- * Missing PDU information struct, a copy of this will be enqueued 
+ * Missing PDU information struct, a copy of this will be enqueued
  * into pdcp.missing_pdus for every missing PDU
  */
 typedef struct pdcp_missing_pdu_info_t {

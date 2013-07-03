@@ -10,62 +10,64 @@ export KERNEL_MAIN_TYPE
 KERNEL_MAIN_VERSION=$(shell echo `uname -r | cut -d. -f-1`)
 
 ifeq ($(IS_LINUX), 1)
-SUBVERSION=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
+PATCHLEVEL=$(shell echo `grep '^PATCHLEVEL =' /usr/src/linux/Makefile | sed -e 's, ,,g' | sed -e 's/PATCHLEVEL=//'`)
+SUBLEVEL=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
 else
 ifeq ($(IS_KERNEL_OPENAIRINTERFACE), 1)
-SUBVERSION=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux-$(KERNEL_NAME)/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
+PATCHLEVEL=$(shell echo `grep '^PATCHLEVEL =' /usr/src/linux-$(KERNEL_NAME)/Makefile | sed -e 's, ,,g' | sed -e 's/PATCHLEVEL=//'`)
+SUBLEVEL=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux-$(KERNEL_NAME)/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
 else
-SUBVERSION=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux-headers-$(KERNEL_NAME)/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
+PATCHLEVEL=$(shell echo `grep '^PATCHLEVEL =' /usr/src/linux-headers-$(KERNEL_NAME)/Makefile | sed -e 's, ,,g' | sed -e 's/PATCHLEVEL=//'`)
+SUBLEVEL=$(shell echo `grep '^SUBLEVEL =' /usr/src/linux-headers-$(KERNEL_NAME)/Makefile | sed -e 's, ,,g' | sed -e 's/SUBLEVEL=//'`)
 endif
 endif
 
+ifeq ($(KERNEL_MAIN_VERSION),2)
+	ifeq ($(PATCHLEVEL),6)
+		IS_KERNEL_GREATER_THAN_2620=$(shell if [ $(SUBLEVEL) -ge 20 ] ; then echo true ; fi)
+		IS_KERNEL_GREATER_THAN_2622=$(shell if [ $(SUBLEVEL) -ge 22 ] ; then echo true ; fi)
+		IS_KERNEL_GREATER_THAN_2629=$(shell if [ $(SUBLEVEL) -ge 29 ] ; then echo true ; fi)
+		IS_KERNEL_GREATER_THAN_2630=$(shell if [ $(SUBLEVEL) -ge 30 ] ; then echo true ; fi)
+		IS_KERNEL_GREATER_THAN_2632=$(shell if [ $(SUBLEVEL) -ge 32 ] ; then echo true ; fi)
+		IS_KERNEL_MAIN_VERSION_IS_3 = "false"
+		IS_KERNEL_GREATER_THAN_32 = "false"
+		IS_KERNEL_GREATER_THAN_35 = "false"
+	endif
+else
+	ifeq ($(KERNEL_MAIN_VERSION),3)
+		IS_KERNEL_GREATER_THAN_2622 = "true"
+		IS_KERNEL_GREATER_THAN_2629 = "true"
+		IS_KERNEL_GREATER_THAN_2630 = "true"
+		IS_KERNEL_GREATER_THAN_2632 = "true"
+		IS_KERNEL_MAIN_VERSION_IS_3 = "true"
+		IS_KERNEL_GREATER_THAN_32=$(shell if [ $(PATCHLEVEL) -ge 2 ] ; then echo true ; fi)
+		IS_KERNEL_GREATER_THAN_35=$(shell if [ $(PATCHLEVEL) -ge 5 ] ; then echo true ; fi)
+	endif
+endif
 
 
-IS_KERNEL_SUBVERSION_GREATER_THAN_20=$(shell if [ $(SUBVERSION) -ge 20 ] ; then echo true ; fi)
 KERNEL_ARCH=$(shell echo `uname -m`)
-#SET_REGPARM=$(shell if [ $(KERNEL_ARCH) = 'i686' -a $(SUBVERSION) -ge 20 ]; then echo true ; fi)
-SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' -a $(SUBVERSION) -ge 20 ]; then echo true ; fi)
+SET_X64=$(shell if [ $(KERNEL_ARCH) = 'x86_64' ]; then echo true ; fi)
 
-IS_KERNEL_SUBVERSION_GREATER_THAN_22=$(shell if [ $(SUBVERSION) -ge 22 ] ; then echo true ; fi)
-IS_KERNEL_SUBVERSION_GREATER_THAN_29=$(shell if [ $(SUBVERSION) -ge 29 ] ; then echo true ; fi)
-IS_KERNEL_SUBVERSION_GREATER_THAN_30=$(shell if [ $(SUBVERSION) -ge 30 ] ; then echo true ; fi)
-IS_KERNEL_SUBVERSION_GREATER_THAN_32=$(shell if [ $(SUBVERSION) -ge 32 ] ; then echo true ; fi)
-
-# Add global rule for V3 kernels
-ifeq ($(KERNEL_MAIN_VERSION),3)
-   IS_KERNEL_SUBVERSION_GREATER_THAN_22 = "true"
-   IS_KERNEL_SUBVERSION_GREATER_THAN_29 = "true"
-   IS_KERNEL_SUBVERSION_GREATER_THAN_30 = "true"
-   IS_KERNEL_SUBVERSION_GREATER_THAN_32 = "true"
-   IS_KERNEL_MAIN_VERSION_IS_3 = "true"
-endif
-
-GT2622= $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_22),-DKERNEL_VERSION_GREATER_THAN_2622=1)
-GT2629= $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_29),-DKERNEL_VERSION_GREATER_THAN_2629=1)
-GT32= $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_32),-DKERNEL_VERSION_GREATER_THAN_32=1)
+GT2622= $(if $(IS_KERNEL_GREATER_THAN_2622),-DKERNEL_VERSION_GREATER_THAN_2622=1)
+GT2629= $(if $(IS_KERNEL_GREATER_THAN_2629),-DKERNEL_VERSION_GREATER_THAN_2629=1)
+GT2632= $(if $(IS_KERNEL_GREATER_THAN_2632),-DKERNEL_VERSION_GREATER_THAN_2632=1)
+GT32= $(if $(IS_KERNEL_GREATER_THAN_32),-DKERNEL_VERSION_GREATER_THAN_32=1)
+GT35= $(if $(IS_KERNEL_GREATER_THAN_35),-DKERNEL_VERSION_GREATER_THAN_35=1)
 V3= $(if $(IS_KERNEL_MAIN_VERSION_IS_3),-DKERNEL_MAIN_VERSION_IS_3=1)
-####################################################
-#      NASMESH compilation flags
-####################################################
-#RTAI=1
-
-####################################################
-#  D E B U G   F L A G S
-####################################################
-
 
 
 ####################################################
 #      EXTRA COMPILER FLAGS
 ####################################################
-EXTRA_CFLAGS = -fno-common $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_20),-mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4)  $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) $(GT2622) $(GT2629) $(V3) $(GT32)
+EXTRA_CFLAGS = -fno-common $(if $(IS_KERNEL_GREATER_THAN_2620),-mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4)  $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) $(GT2622) $(GT2629) $(V3) $(GT32) $(GT35)
 
 ifdef ADDRCONF
 EXTRA_CFLAGS += -DADDRCONF
 endif
 
 ifdef OAI_NW_DRIVER_TYPE_ETHERNET
-EXTRA_CFLAGS += -DOAI_NW_DRIVER_TYPE_ETHERNET 
+EXTRA_CFLAGS += -DOAI_NW_DRIVER_TYPE_ETHERNET
 endif
 
 ifdef OAI_NW_DRIVER_USE_NETLINK
@@ -90,7 +92,7 @@ obj-m += oai_nw_drv.o
 oai_nw_drv-objs += device.o
 oai_nw_drv-objs += common.o
 oai_nw_drv-objs += ioctl.o
-oai_nw_drv-objs += classifier.o
+#oai_nw_drv-objs += classifier.o
 oai_nw_drv-objs += tool.o
 ifdef OAI_NW_DRIVER_USE_NETLINK
 oai_nw_drv-objs += netlink.o
@@ -113,6 +115,8 @@ print:
 	@echo  linux kernel ge 29: $(IS_KERNEL_SUBVERSION_GREATER_THAN_29)
 	@echo flag gt2629: $(GT2629)
 	@echo  linux kernel ge 30: $(IS_KERNEL_SUBVERSION_GREATER_THAN_30)
+	@echo  linux kernel ge 32: $(IS_KERNEL_SUBVERSION_GREATER_THAN_32)
+	@echo  linux kernel ge 35: $(IS_KERNEL_SUBVERSION_GREATER_THAN_35)
 	@echo flag KERNEL_MAIN_VERSION $(KERNEL_MAIN_VERSION)
 clean:
 	rm -f *.ko

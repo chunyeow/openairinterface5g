@@ -74,39 +74,33 @@ int oai_nw_drv_find_inst(struct net_device *dev);
 
 // common.c
 /**
-\fn void oai_nw_drv_common_class_wireless2ip(unsigned short dlen, void* pdcp_sdu,int inst,struct classifier_entity *rclass,OaiNwDrvRadioBearerId_t rb_id)
+\fn void oai_nw_drv_common_class_wireless2ip(unsigned short dlen, void* pdcp_sdu,int inst,OaiNwDrvRadioBearerId_t rb_id)
 \brief Receive classified LTE packet, build skbuff struct with it and deliver it to the OS network layer.
 @param dlen Length of SDU in bytes
 @param pdcp_sdu Pointer to received SDU
 @param inst Instance number
-@param rclass RX Classifier entity
 @param rb_id Radio Bearer Id
  */
 void oai_nw_drv_common_class_wireless2ip(unsigned short dlen,
             void *pdcp_sdu,
             int inst,
-            struct classifier_entity *rclass,
             OaiNwDrvRadioBearerId_t rb_id);
 
 /**
-\fn void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst)
+\fn void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst)
 \brief Request the transfer of data (QoS SAP)
 @param skb pointer to socket buffer
-@param cx pointer to connection entity for SDU
-@param gc pointer to classifier entity for SDU
 @param inst device instance
  */
-void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst);
+void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst);
 
 /**
-\fn void oai_nw_drv_common_ip2wireless_drop(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst)
+\fn void oai_nw_drv_common_ip2wireless_drop(struct sk_buff *skb, int inst)
 \brief  Drop the IP packet comming from the OS network layer.
 @param skb pointer to socket buffer
-@param cx pointer to connection entity for SDU
-@param gc pointer to classifier entity for SDU
 @param inst device instance
  */
-void oai_nw_drv_common_ip2wireless_drop(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst);
+void oai_nw_drv_common_ip2wireless_drop(struct sk_buff *skb, int inst);
 
 #ifndef OAI_NW_DRIVER_USE_NETLINK
 /**
@@ -122,49 +116,6 @@ void oai_nw_drv_common_wireless2ip(void);
 void oai_nw_drv_common_wireless2ip(struct nlmsghdr *nlh);
 #endif //OAI_NW_DRIVER_USE_NETLINK
 
-/**
-\fn struct rb_entity *oai_nw_drv_common_add_rb(struct cx_entity *cx, OaiNwDrvRadioBearerId_t rabi, OaiNwDrvQoSTrafficClass_t qos)
-\brief Add a radio-bearer descriptor
-@param gpriv pointer to driver instance private datas
-@param cx pointer to connection entity
-@param rabi radio-bearer index
-@param qos NAS QOS traffic class
- */
-struct rb_entity *oai_nw_drv_common_add_rb(struct oai_nw_drv_priv *gpriv, struct cx_entity *cx, OaiNwDrvRadioBearerId_t rab_id, OaiNwDrvQoSTrafficClass_t qos);
-
-/**
-\fn struct rb_entity *oai_nw_drv_common_search_rb(struct cx_entity *cx, OaiNwDrvRadioBearerId_t rabi)
-\brief Search for a radio-bearer entity for a particular connection and radio-bearer index
-@param cx pointer to connection entity
-@param rabi radio-bearer index
-@returns A pointer to the radio-bearer entity
- */
-struct rb_entity *oai_nw_drv_common_search_rb(struct cx_entity *cx, OaiNwDrvRadioBearerId_t rabi);
-
-/**
-\fn struct cx_entity *oai_nw_drv_common_search_cx(OaiNwDrvLocalConnectionRef_t lcr,struct oai_nw_drv_priv *gpriv)
-\brief  Search for a connection entity based on its index and pointer to oai_nw_drv_priv
-@param lcr index of local connection
-@param gpriv pointer to oai_nw_drv_priv for device
-@returns A pointer to the connection entity
- */
-struct cx_entity *oai_nw_drv_common_search_cx(OaiNwDrvLocalConnectionRef_t lcr,struct oai_nw_drv_priv *gpriv);
-
-/**
-\fn struct classifier_entity *oai_nw_drv_common_search_class_for_rb(OaiNwDrvRadioBearerId_t rab_id,struct oai_nw_drv_priv *priv)
-\brief  Search for an RX classifier entity based on a RB id and pointer to oai_nw_drv_priv
-@param rab_id Index of RAB for search
-@param priv pointer to oai_nw_drv_priv for device
-@returns A pointer to the corresponding RX classifier entity
- */
-struct classifier_entity *oai_nw_drv_common_search_class_for_rb(OaiNwDrvRadioBearerId_t rab_id,struct oai_nw_drv_priv *priv);
-
-/**
-\fn void oai_nw_drv_common_flush_rb(struct cx_entity *cx)
-\brief Clear all RB's for a particular connection
-@param cx pointer to connection entity
- */
-void oai_nw_drv_common_flush_rb(struct cx_entity *cx);
 
 #ifdef OAI_NW_DRIVER_USE_NETLINK
 /**
@@ -186,15 +137,9 @@ void oai_nw_drv_COMMON_QOS_receive(struct nlmsghdr *nlh);
 #endif //OAI_NW_DRIVER_USE_NETLINK
 
 
-// int  oai_nw_drv_mesh_DC_receive(struct cx_entity *cx,struct oai_nw_drv_priv *gpriv);
-// int  oai_nw_drv_mesh_GC_receive(struct oai_nw_drv_priv *gpriv);
-// int  oai_nw_drv_mesh_DC_send_cx_establish_request(struct cx_entity *cx,struct oai_nw_drv_priv *gpriv);
-// int  oai_nw_drv_mesh_DC_send_cx_release_request(struct cx_entity *cx,struct oai_nw_drv_priv *gpriv);
-// void oai_nw_drv_mesh_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,struct oai_nw_drv_priv *gpriv);
 
 // iocontrol.c
-void oai_nw_drv_CTL_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc, int inst);
-//int oai_nw_drv_CTL_receive_authentication(struct ipv6hdr *iph, struct cx-entity *cx, unsigned char sapi);
+void oai_nw_drv_CTL_send(struct sk_buff *skb, int inst);
 int oai_nw_drv_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
 
 // classifier.c
@@ -205,70 +150,9 @@ int oai_nw_drv_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
 void oai_nw_drv_class_send(struct sk_buff *skb,    //!< Pointer to socket buffer
                           int inst                //!< Instance ID
                           );
-/**
-  \brief
-*/
-struct classifier_entity *oai_nw_drv_class_add_send_classifier(struct cx_entity *cx, unsigned char dscp, unsigned short classref);
-
-/**
-  \brief Send a socket received from IP to classifier for a particular instance ID.
-*/
-struct classifier_entity *oai_nw_drv_class_add_fwd_classifier(struct cx_entity *cx,
-                            unsigned char dscp,
-                            unsigned short classref
-                            );
-
-/**
-  \brief Send a socket received from IP to classifier for a particular instance ID.
-*/
-struct classifier_entity *oai_nw_drv_class_add_recv_classifier(unsigned char dscp,
-                            unsigned short classref,
-                            struct oai_nw_drv_priv*
-                            );
-
-/**
-  \brief
-*/
-void oai_nw_drv_class_del_send_classifier(struct cx_entity *cx,
-                   unsigned char dscp,
-                   unsigned short classref
-                   );
-
-/**
-  \brief
-*/
-void oai_nw_drv_class_del_fwd_classifier(struct cx_entity *cx,
-                   unsigned char dscp,
-                   unsigned short classref
-                   );
-
-/**
-  \brief
-*/
-void oai_nw_drv_class_del_recv_classifier(unsigned char dscp,
-                   unsigned short classref,
-                   struct oai_nw_drv_priv*
-                   );
-
-/**
-  \brief
-*/
-void oai_nw_drv_class_flush_send_classifier(struct cx_entity *cx);
-
-/**
-  \brief
-*/
-void oai_nw_drv_class_flush_fwd_classifier(struct cx_entity *cx);
-
-/**
-  \brief
-*/
-void oai_nw_drv_class_flush_recv_classifier(struct oai_nw_drv_priv *gpriv);
 
 
 // tool.c
-unsigned char oai_nw_drv_TOOL_invfct(struct classifier_entity *gc);
-void oai_nw_drv_TOOL_fct(struct classifier_entity *gc, unsigned char fct);
 void oai_nw_drv_TOOL_imei2iid(unsigned char *imei, unsigned char *iid);
 void oai_nw_drv_TOOL_eNB_imei2iid(unsigned char *imei, unsigned char *iid, unsigned char len);
 unsigned char oai_nw_drv_TOOL_get_dscp6(struct ipv6hdr *iph);
@@ -285,9 +169,6 @@ void print_TOOL_pk_all(struct sk_buff *skb);
 void print_TOOL_pk_ipv6(struct ipv6hdr *iph);
 void print_TOOL_state(unsigned char state);
 void oai_nw_drv_tool_print_buffer(char * buffer,int length);
-void oai_nw_drv_print_rb_entity(struct rb_entity *rb);
-void oai_nw_drv_print_classifier(struct classifier_entity *gc);
-
 #ifdef OAI_NW_DRIVER_USE_NETLINK
 // netlink.c
 

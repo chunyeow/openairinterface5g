@@ -42,58 +42,7 @@
 
 //#define OAI_NW_DRV_DEBUG_TOOL 1
 
-//---------------------------------------------------------------------------
-//
-void oai_nw_drv_TOOL_fct(struct classifier_entity *classifier, u8 fct){
-//---------------------------------------------------------------------------
-// Start debug information
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-  printk("OAI_NW_DRV_TOOL_FCT - begin \n");
-#endif
-  if (classifier==NULL){
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-      printk("OAI_NW_DRV_TOOL_FCT - input parameter classifier is NULL \n");
-#endif
-      return;
-  }
-// End debug information
-  switch(fct){
-      case OAI_NW_DRV_FCT_QOS_SEND:
-          classifier->fct=oai_nw_drv_common_ip2wireless;
-          break;
-      case OAI_NW_DRV_FCT_CTL_SEND:
-          classifier->fct=oai_nw_drv_CTL_send;
-          break;
-      case OAI_NW_DRV_FCT_DEL_SEND:
-          classifier->fct=oai_nw_drv_common_ip2wireless_drop;
-          break;
-      default:
-          classifier->fct=oai_nw_drv_common_ip2wireless_drop;
-  }
-}
 
-//---------------------------------------------------------------------------
-u8 oai_nw_drv_TOOL_invfct(struct classifier_entity *classifier){
-//---------------------------------------------------------------------------
-// Start debug information
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-    printk("OAI_NW_DRV_TOOL_INVFCT - begin \n");
-#endif
-  if (classifier==NULL){
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-      printk("OAI_NW_DRV_TOOL_INVFCT - input parameter classifier is NULL \n");
-#endif
-    return 0;
-  }
-// End debug information
-    if (classifier->fct==oai_nw_drv_common_ip2wireless)
-        return OAI_NW_DRV_FCT_QOS_SEND;
-    if (classifier->fct==oai_nw_drv_CTL_send)
-        return OAI_NW_DRV_FCT_CTL_SEND;
-    if (classifier->fct==oai_nw_drv_common_ip2wireless_drop)
-        return OAI_NW_DRV_FCT_DEL_SEND;
-    return 0;
-}
 
 //---------------------------------------------------------------------------
 u8 oai_nw_drv_TOOL_get_dscp6(struct ipv6hdr *iph){
@@ -677,31 +626,7 @@ void print_TOOL_pk_all(struct sk_buff *skb){
     return (1);
 }*/
 
-//---------------------------------------------------------------------------
-void print_TOOL_state(u8 state){
-//---------------------------------------------------------------------------
-//  case OAI_NW_DRV_STATE_IDLE:printk(" State OAI_NW_DRV_STATE_IDLE\n");return;
-//  case OAI_NW_DRV_STATE_CONNECTED:printk(" State OAI_NW_DRV_STATE_CONNECTED\n");return;
-//  case OAI_NW_DRV_STATE_ESTABLISHMENT_REQUEST:printk(" State OAI_NW_DRV_STATE_ESTABLISHMENT_REQUEST\n");return;
-//  case OAI_NW_DRV_STATE_ESTABLISHMENT_FAILURE:printk(" State OAI_NW_DRV_STATE_ESTABLISHMENT_FAILURE\n");return;
-//  case OAI_NW_DRV_STATE_RELEASE_FAILURE:printk(" State OAI_NW_DRV_STATE_RELEASE_FAILURE\n");return;
 
-    switch(state){
-    case  OAI_NW_DRV_IDLE:printk("OAI_NW_DRV_IDLE\n");return;
-    case  OAI_NW_DRV_CX_FACH:printk("OAI_NW_DRV_CX_FACH\n");return;
-    case  OAI_NW_DRV_CX_DCH:printk("OAI_NW_DRV_CX_DCH\n");return;
-    case  OAI_NW_DRV_CX_RECEIVED:printk("OAI_NW_DRV_CX_RECEIVED\n");return;
-    case  OAI_NW_DRV_CX_CONNECTING:printk("OAI_NW_DRV_CX_CONNECTING\n");return;
-    case  OAI_NW_DRV_CX_RELEASING:printk("OAI_NW_DRV_CX_RELEASING\n");return;
-    case  OAI_NW_DRV_CX_CONNECTING_FAILURE:printk("OAI_NW_DRV_CX_CONNECTING_FAILURE\n");return;
-    case  OAI_NW_DRV_CX_RELEASING_FAILURE:printk("OAI_NW_DRV_CX_RELEASING_FAILURE\n");return;
-    case  OAI_NW_DRV_RB_ESTABLISHING:printk("OAI_NW_DRV_RB_ESTABLISHING\n");return;
-    case  OAI_NW_DRV_RB_RELEASING:printk("OAI_NW_DRV_RB_RELEASING\n");return;
-    case  OAI_NW_DRV_RB_DCH:printk("OAI_NW_DRV_RB_DCH\n");return;
-
-    default: printk(" Unknown state\n");
-    }
-}
 
 //-----------------------------------------------------------------------------
 // Print the content of a buffer in hexadecimal
@@ -725,42 +650,4 @@ void oai_nw_drv_tool_print_buffer(char * buffer,int length) {
          printk("-%hx-",buffer[i]);
      printk(",\t length %d\n", length);
 }
-//-----------------------------------------------------------------------------
-void oai_nw_drv_print_rb_entity(struct rb_entity *rb){
-//-----------------------------------------------------------------------------
-// Start debug information
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-    printk("OAI_NW_DRV_PRINT_RB_ENTITY - begin \n");
-#endif
-  if (rb==NULL){
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-      printk("OAI_NW_DRV_PRINT_RB_ENTITY - input parameter rb is NULL \n");
-#endif
-    return;
-  }
-// End debug information
-   printk("\nrb_entity content: rab_id %d, sapi %d, qos %d, \n", rb->rab_id, rb->sapi, rb->qos);
-   printk("state %d, retry %d, countimer %d\n",rb->state, rb->retry, rb->countimer);
-};
-
-//-----------------------------------------------------------------------------
-void oai_nw_drv_print_classifier(struct classifier_entity *classifier){
-//-----------------------------------------------------------------------------
-// Start debug information
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-    printk("OAI_NW_DRV_PRINT_GC_ENTITY - begin \n");
-#endif
-  if (classifier==NULL){
-#ifdef OAI_NW_DRV_DEBUG_TOOL
-      printk("OAI_NW_DRV_PRINT_GC_ENTITY - input parameter classifier is NULL \n");
-#endif
-    return;
-  }
-// End debug information
-   printk("\nClassifier content: classref %d, version %d, splen %d, dplen %d,\n", classifier->classref, classifier->ip_version, classifier->splen, classifier->dplen);
-   printk("protocol %d, sport %d, dport %d, rab_id %d\n", classifier->protocol, classifier->sport, classifier->dport, classifier->rab_id);
-   if (classifier->rb != NULL){
-    oai_nw_drv_print_rb_entity(classifier->rb);
-   }
-};
 

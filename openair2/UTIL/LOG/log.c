@@ -96,7 +96,7 @@ int logInit (void) {
   }
   
   g_log->log_component[PHY].name = "PHY";
-    g_log->log_component[PHY].level = LOG_INFO;
+    g_log->log_component[PHY].level = LOG_EMERG;
     g_log->log_component[PHY].flag =  LOG_MED;
     g_log->log_component[PHY].interval =  1;
     g_log->log_component[PHY].fd = 0;
@@ -104,7 +104,7 @@ int logInit (void) {
     g_log->log_component[PHY].filelog_name = "/tmp/phy.log";
     
     g_log->log_component[MAC].name = "MAC";
-    g_log->log_component[MAC].level = LOG_DEBUG;
+    g_log->log_component[MAC].level = LOG_EMERG;
     g_log->log_component[MAC].flag =  LOG_MED;
     g_log->log_component[MAC].interval =  1;
     g_log->log_component[MAC].fd = 0;
@@ -112,7 +112,7 @@ int logInit (void) {
     g_log->log_component[MAC].filelog_name = "/tmp/mac.log";
     
     g_log->log_component[OPT].name = "OPT";
-    g_log->log_component[OPT].level = LOG_INFO;
+    g_log->log_component[OPT].level = LOG_EMERG;
     g_log->log_component[OPT].flag = LOG_MED;
     g_log->log_component[OPT].interval =  1;
     g_log->log_component[OPT].fd = 0;
@@ -144,7 +144,7 @@ int logInit (void) {
     g_log->log_component[RRC].filelog_name = "/tmp/rrc.log";
 
     g_log->log_component[EMU].name = "EMU";
-    g_log->log_component[EMU].level = LOG_INFO;
+    g_log->log_component[EMU].level = LOG_EMERG;
     g_log->log_component[EMU].flag =  LOG_MED; 
     g_log->log_component[EMU].interval =  1;
     g_log->log_component[EMU].fd = 0;
@@ -152,7 +152,7 @@ int logInit (void) {
     g_log->log_component[EMU].filelog_name = "";
     
     g_log->log_component[OMG].name = "OMG";
-    g_log->log_component[OMG].level = LOG_INFO;
+    g_log->log_component[OMG].level = LOG_EMERG;
     g_log->log_component[OMG].flag =  LOG_MED;
     g_log->log_component[OMG].interval =  1;
     g_log->log_component[OMG].fd = 0;
@@ -160,7 +160,7 @@ int logInit (void) {
     g_log->log_component[OMG].filelog_name = "";
     
     g_log->log_component[OTG].name = "OTG";
-    g_log->log_component[OTG].level = LOG_FILE;
+    g_log->log_component[OTG].level = LOG_EMERG;
     g_log->log_component[OTG].flag =  LOG_MED;
     g_log->log_component[OTG].interval =  1;
     g_log->log_component[OTG].fd = 0;
@@ -168,7 +168,7 @@ int logInit (void) {
     g_log->log_component[OTG].filelog_name = "/tmp/otg.log";
 
     g_log->log_component[OTG_LATENCY].name = "OTG_LATENCY";
-    g_log->log_component[OTG_LATENCY].level = LOG_FILE;
+    g_log->log_component[OTG_LATENCY].level = LOG_EMERG;
     g_log->log_component[OTG_LATENCY].flag =  LOG_MED;
     g_log->log_component[OTG_LATENCY].interval =  1;
     g_log->log_component[OTG_LATENCY].fd = 0;
@@ -176,7 +176,7 @@ int logInit (void) {
     g_log->log_component[OTG_LATENCY].filelog_name = "/tmp/otg_latency.dat";
 
     g_log->log_component[OTG_LATENCY_BG].name = "OTG_LATENCY_BG";
-    g_log->log_component[OTG_LATENCY_BG].level = LOG_FILE;
+    g_log->log_component[OTG_LATENCY_BG].level = LOG_EMERG;
     g_log->log_component[OTG_LATENCY_BG].flag =  LOG_MED;
     g_log->log_component[OTG_LATENCY_BG].interval =  1;
     g_log->log_component[OTG_LATENCY_BG].fd = 0;
@@ -185,7 +185,7 @@ int logInit (void) {
 
 
     g_log->log_component[OTG_GP].name = "OTG_GP";
-    g_log->log_component[OTG_GP].level = LOG_FILE;
+    g_log->log_component[OTG_GP].level = LOG_EMERG;
     g_log->log_component[OTG_GP].flag =  LOG_MED;
     g_log->log_component[OTG_GP].interval =  1;
     g_log->log_component[OTG_GP].fd = 0;
@@ -193,7 +193,7 @@ int logInit (void) {
     g_log->log_component[OTG_GP].filelog_name = "/tmp/otg_GP.dat";
 
     g_log->log_component[OTG_GP_BG].name = "OTG_GP_BG";
-    g_log->log_component[OTG_GP_BG].level = LOG_FILE;
+    g_log->log_component[OTG_GP_BG].level = LOG_EMERG;
     g_log->log_component[OTG_GP_BG].flag =  LOG_MED;
     g_log->log_component[OTG_GP_BG].interval =  1;
     g_log->log_component[OTG_GP_BG].fd = 0;
@@ -201,7 +201,7 @@ int logInit (void) {
     g_log->log_component[OTG_GP_BG].filelog_name = "/tmp/otg_GP_bg.dat";
 
     g_log->log_component[OTG_JITTER].name = "OTG_JITTER";
-    g_log->log_component[OTG_JITTER].level = LOG_FILE;
+    g_log->log_component[OTG_JITTER].level = LOG_EMERG;
     g_log->log_component[OTG_JITTER].flag =  LOG_MED;
     g_log->log_component[OTG_JITTER].interval =  1;
     g_log->log_component[OTG_JITTER].fd = 0;
@@ -209,7 +209,7 @@ int logInit (void) {
     g_log->log_component[OTG_JITTER].filelog_name = "/tmp/otg_jitter.dat";
     
     g_log->log_component[OCG].name = "OCG";
-    g_log->log_component[OCG].level = LOG_INFO;
+    g_log->log_component[OCG].level = LOG_EMERG;
     g_log->log_component[OCG].flag =  LOG_MED;
     g_log->log_component[OCG].interval =  1;
     g_log->log_component[OCG].fd = 0;
@@ -217,7 +217,7 @@ int logInit (void) {
     g_log->log_component[OCG].filelog_name = "";
     
     g_log->log_component[PERF].name = "PERF";
-    g_log->log_component[PERF].level = LOG_INFO;
+    g_log->log_component[PERF].level = LOG_EMERG;
     g_log->log_component[PERF].flag =  LOG_MED;
     g_log->log_component[PERF].interval =  1;
     g_log->log_component[PERF].fd = 0;
@@ -225,7 +225,7 @@ int logInit (void) {
     g_log->log_component[PERF].filelog_name = "";
     
     g_log->log_component[OIP].name = "OIP";
-    g_log->log_component[OIP].level = LOG_INFO;
+    g_log->log_component[OIP].level = LOG_EMERG;
     g_log->log_component[OIP].flag =  LOG_MED;
     g_log->log_component[OIP].interval =  1;
     g_log->log_component[OIP].fd = 0;
@@ -233,7 +233,7 @@ int logInit (void) {
     g_log->log_component[OIP].filelog_name = "";
     
     g_log->log_component[CLI].name = "CLI";
-    g_log->log_component[CLI].level = LOG_INFO;
+    g_log->log_component[CLI].level = LOG_EMERG;
     g_log->log_component[CLI].flag =  LOG_MED;
     g_log->log_component[CLI].interval =  1;
     g_log->log_component[CLI].fd = 0;
@@ -241,7 +241,7 @@ int logInit (void) {
     g_log->log_component[CLI].filelog_name = "";
      
     g_log->log_component[MSC].name = "MSC";
-    g_log->log_component[MSC].level = LOG_TRACE;
+    g_log->log_component[MSC].level = LOG_EMERG;
     g_log->log_component[MSC].flag =  LOG_MED;
     g_log->log_component[MSC].interval =  1;
     g_log->log_component[MSC].fd = 0;
@@ -249,7 +249,7 @@ int logInit (void) {
     g_log->log_component[MSC].filelog_name = "/tmp/msc.log";
  
     g_log->log_component[OCM].name = "OCM";
-    g_log->log_component[OCM].level = LOG_TRACE;
+    g_log->log_component[OCM].level = LOG_EMERG;
     g_log->log_component[OCM].flag =  LOG_MED;
     g_log->log_component[OCM].interval =  1;
     g_log->log_component[OCM].fd = 0;
@@ -257,7 +257,7 @@ int logInit (void) {
     g_log->log_component[OCM].filelog_name = "/tmp/ocm.log";
 
     g_log->log_component[S1AP].name = "S1AP";
-    g_log->log_component[S1AP].level = LOG_TRACE;
+    g_log->log_component[S1AP].level = LOG_EMERG;
     g_log->log_component[S1AP].flag = LOG_MED;
     g_log->log_component[S1AP].interval = 1;
     g_log->log_component[S1AP].fd = 0;
@@ -265,7 +265,7 @@ int logInit (void) {
     g_log->log_component[S1AP].filelog_name = "/tmp/s1ap.log";
 
     g_log->log_component[SCTP].name = "SCTP";
-    g_log->log_component[SCTP].level = LOG_TRACE;
+    g_log->log_component[SCTP].level = LOG_EMERG;
     g_log->log_component[SCTP].flag = LOG_MED;
     g_log->log_component[SCTP].interval = 1;
     g_log->log_component[SCTP].fd = 0;
@@ -273,7 +273,7 @@ int logInit (void) {
     g_log->log_component[SCTP].filelog_name = "";
 
     g_log->log_component[HW].name = "HW";
-    g_log->log_component[HW].level = LOG_DEBUG;
+    g_log->log_component[HW].level = LOG_EMERG;
     g_log->log_component[HW].flag = LOG_MED;
     g_log->log_component[HW].interval = 1;
     g_log->log_component[HW].fd = 0;

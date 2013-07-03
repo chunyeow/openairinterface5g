@@ -12,14 +12,16 @@
 #ifndef __PLATFORM_CONSTANTS_H__
 #    define __PLATFORM_CONSTANTS_H__
 
+#define NL_MAX_PAYLOAD 4096  /* this should cover the max mtu size*/
+
 #ifdef USER_MODE
-#ifdef LARGE_SCALE 
+#ifdef LARGE_SCALE
 #    define NB_MODULES_MAX 128
 #    define NB_NODE_MAX    128
 #else
 #    define NB_MODULES_MAX 32
 #    define NB_NODE_MAX    32
-#endif 
+#endif
 #else
 #    define NB_MODULES_MAX 1
 #    define NB_NODE_MAX    1
@@ -31,22 +33,23 @@
 #else
 #    define MAX_IP_PACKET_SIZE         1500
 #endif
-// overwrite the previous deinitions 
+// overwrite the previous deinitions
 
 #    define MAX_MODULES                NB_MODULES_MAX
 
-#ifdef LARGE_SCALE 
+#ifdef LARGE_SCALE
 #    define MAX_MOBILES_PER_RG         128
 #    define MAX_RG                     2
-#else 
+#else
 #    define MAX_MOBILES_PER_RG         16
 #    define MAX_RG                     2
 #endif
 
 #    define MAX_MANAGED_RG_PER_MOBILE  2
 
+#    define DEFAULT_RAB_ID             3
 #    define NB_RB_MAX  11
-#    define NB_RAB_MAX 8 // 4 
+#    define NB_RAB_MAX 8 // 4
 #    define RAB_SHIFT1 9
 #    define RAB_SHIFT2 3
 #    define RAB_OFFSET  0x0007
@@ -54,8 +57,8 @@
 #    define RAB_OFFSET2 0x01F8
 #    define DIR_OFFSET  0x8000
 #    define DIR_SHIFT   15
-#    define CH_OFFSET   0x0004 
-#    define CH_SHIFT    2 
+#    define CH_OFFSET   0x0004
+#    define CH_SHIFT    2
 #ifdef MESH
 
 #    define MAX_RB_MOBILE              NB_RB_MAX  * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
@@ -111,7 +114,7 @@
 #        define DELIVERY_OF_ERRONEOUS_SDU_NO_DETECT    2
 
 
-// CBA constant 
+// CBA constant
 #define NUM_MAX_CBA_GROUP 4
 
 #    ifndef __cplusplus

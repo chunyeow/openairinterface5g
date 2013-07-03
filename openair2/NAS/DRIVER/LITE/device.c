@@ -180,7 +180,6 @@ int oai_nw_drv_stop(struct net_device *dev){
 //---------------------------------------------------------------------------
 void oai_nw_drv_teardown(struct net_device *dev){
   //---------------------------------------------------------------------------
-  int              cxi;
   struct oai_nw_drv_priv *priv;
   int              inst;
 
@@ -192,12 +191,12 @@ void oai_nw_drv_teardown(struct net_device *dev){
           printk("[OAI_IP_DRV][%s] ERROR, couldn't find instance\n", __FUNCTION__);
           return;
       }
-      oai_nw_drv_class_flush_recv_classifier(priv);
+      /*oai_nw_drv_class_flush_recv_classifier(priv);
 
       for (cxi=0;cxi<OAI_NW_DRV_CX_MAX;cxi++) {
           oai_nw_drv_common_flush_rb(priv->cx+cxi);
           oai_nw_drv_class_flush_send_classifier(priv->cx+cxi);
-      }
+      }*/
       printk("[OAI_IP_DRV][%s] End\n", __FUNCTION__);
   } // check dev
   else {
@@ -248,7 +247,7 @@ int oai_nw_drv_hard_start_xmit(struct sk_buff *skb, struct net_device *dev){
       #ifdef OAI_DRV_DEBUG_DEVICE
       printk("[OAI_IP_DRV][%s] step 1\n", __FUNCTION__);
       #endif
-      oai_nw_drv_class_send(skb,inst);
+      oai_nw_drv_common_ip2wireless(skb,inst);
       #ifdef OAI_DRV_DEBUG_DEVICE
       printk("[OAI_IP_DRV][%s] step 2\n", __FUNCTION__);
       #endif
@@ -335,7 +334,7 @@ static const struct net_device_ops nasmesh_netdev_ops = {
 // Initialisation of the network device
 void oai_nw_drv_init(struct net_device *dev){
   //---------------------------------------------------------------------------
-  u8               cxi, dscpi;
+  u8               cxi;
   struct oai_nw_drv_priv *priv;
   int              index;
 
@@ -385,7 +384,7 @@ void oai_nw_drv_init(struct net_device *dev){
     //341         dev->tx_queue_len       = 1000; /* Ethernet wants good queues */
     //342         dev->flags              = IFF_BROADCAST|IFF_MULTICAST;
     //343         dev->priv_flags         |= IFF_TX_SKB_SHARING;
-    //344 
+    //344
     //345         memset(dev->broadcast, 0xFF, ETH_ALEN);
     //346 }
     ether_setup(dev);
@@ -416,10 +415,10 @@ void oai_nw_drv_init(struct net_device *dev){
     //  priv->timer_establishment=TIMER_ESTABLISHMENT_DEFAULT;
     //  priv->timer_release=TIMER_RELEASE_DEFAULT;
 
-    for (dscpi=0; dscpi<OAI_NW_DRV_DSCP_MAX; ++dscpi) {
+    /*for (dscpi=0; dscpi<OAI_NW_DRV_DSCP_MAX; ++dscpi) {
         priv->rclassifier[dscpi]=NULL;
     }
-    priv->nrclassifier=0;
+    priv->nrclassifier=0;*/
     //
     for (cxi=0;cxi<OAI_NW_DRV_CX_MAX;cxi++) {
 #ifdef OAI_DRV_DEBUG_DEVICE
@@ -432,7 +431,7 @@ void oai_nw_drv_init(struct net_device *dev){
         priv->cx[cxi].countimer  = OAI_NW_DRV_TIMER_IDLE;
         priv->cx[cxi].retry      = 0;
         priv->cx[cxi].lcr        = cxi;
-        priv->cx[cxi].rb         = NULL;
+        /*priv->cx[cxi].rb         = NULL;
         priv->cx[cxi].num_rb     = 0;
         // initialisation of the classifier
         for (dscpi=0; dscpi<65; ++dscpi) {
@@ -442,6 +441,7 @@ void oai_nw_drv_init(struct net_device *dev){
 
         priv->cx[cxi].nsclassifier=0;
         priv->cx[cxi].nfclassifier=0;
+		*/
         // initialisation of the IP address
         oai_nw_drv_TOOL_eNB_imei2iid(oai_nw_drv_IMEI, (u8 *)priv->cx[cxi].iid6, dev->addr_len);
         priv->cx[cxi].iid4=0;
@@ -628,10 +628,3 @@ MODULE_PARM_DESC(oai_nw_drv_is_clusterhead,"The Clusterhead Indicator");
 //MODULE_VERSION(DRV_VERSION);
 /*#endif*/
 
-/*
-//---------------------------------------------------------------------------
-//module_init(init_nasmesh);
-//module_exit(exit_nasmesh);
-//---------------------------------------------------------------------------
-
-*/
