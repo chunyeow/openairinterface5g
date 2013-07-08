@@ -18,11 +18,12 @@
 #include "UTIL/LOG/log.h"
 
 #ifdef USER_MODE
-#include "multicast_link.h"
+# include "multicast_link.h"
+# include "pgm_link.h"
 #endif
 
 char rx_bufferP[BYPASS_RX_BUFFER_SIZE];
-static unsigned int num_bytesP = 0;
+unsigned int num_bytesP = 0;
 int      N_P = 0, N_R = 0;
 char         bypass_tx_buffer[BYPASS_TX_BUFFER_SIZE];
 static unsigned int byte_tx_count;
@@ -42,6 +43,7 @@ mapping transport_names[] = {
 void init_bypass (void)
 {
     LOG_I(EMU, "[PHYSIM] INIT BYPASS\n");
+
 #if !defined(ENABLE_NEW_MULTICAST)
     pthread_mutex_init (&Tx_mutex, NULL);
     pthread_cond_init (&Tx_cond, NULL);
@@ -49,6 +51,9 @@ void init_bypass (void)
     pthread_mutex_init (&emul_low_mutex, NULL);
     pthread_cond_init (&emul_low_cond, NULL);
     emul_low_mutex_var = 1;
+#endif
+#if defined(ENABLE_PGM_TRANSPORT)
+    pgm_oai_init(oai_emulation.info.multicast_ifname);
 #endif
     bypass_init (emul_tx_handler, emul_rx_handler);
 }
@@ -68,27 +73,205 @@ void bypass_init (tx_handler_t tx_handlerP, rx_handler_t rx_handlerP)
     emu_rx_status = WAIT_SYNC_TRANSPORT;
 }
 
+int emu_transport_handle_sync(bypass_msg_header_t *messg)
+{
+    int m_id;
+
+    // determite the total number of remote enb & ue
+    oai_emulation.info.nb_enb_remote += messg->nb_enb;
+    oai_emulation.info.nb_ue_remote += messg->nb_ue;
+    // determine the index of local enb and ue wrt the remote ones
+    if (messg->master_id < oai_emulation.info.master_id) {
+        oai_emulation.info.first_enb_local +=messg->nb_enb;
+        oai_emulation.info.first_ue_local +=messg->nb_ue;
+    }
+
+    // store param for enb per master
+    if ((oai_emulation.info.master[messg->master_id].nb_enb = messg->nb_enb) > 0) {
+        for (m_id=0; m_id < messg->master_id; m_id++ ) {
+            oai_emulation.info.master[messg->master_id].first_enb+=oai_emulation.info.master[m_id].nb_enb;
+        }
+        LOG_I(EMU,
+              "[ENB] WAIT_SYNC_TRANSPORT state:  for master %d (first enb %d, totan enb %d)\n",
+              messg->master_id,
+              oai_emulation.info.master[messg->master_id].first_enb,
+              oai_emulation.info.master[messg->master_id].nb_enb);
+    }
+    // store param for ue per master
+    if ((oai_emulation.info.master[messg->master_id].nb_ue  = messg->nb_ue) > 0) {
+        for (m_id=0; m_id < messg->master_id; m_id++ ) {
+            oai_emulation.info.master[messg->master_id].first_ue+=oai_emulation.info.master[m_id].nb_ue;
+        }
+        LOG_I(EMU,
+              "[UE] WAIT_SYNC_TRANSPORT state: for master %d (first ue %d, total ue%d)\n",
+              messg->master_id,
+              oai_emulation.info.master[messg->master_id].first_ue,
+              oai_emulation.info.master[messg->master_id].nb_ue );
+    }
+
+    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
+    if (Master_list_rx == oai_emulation.info.master_list) {
+        emu_rx_status = SYNCED_TRANSPORT;
+    }
+
+    LOG_I(EMU,
+          "WAIT_SYNC_TRANSPORT state: m_id %d total enb remote %d total ue remote %d \n",
+          messg->master_id,oai_emulation.info.nb_enb_remote,
+          oai_emulation.info.nb_ue_remote );
+    return 0;
+}
+
+int emu_transport_handle_wait_sm(bypass_msg_header_t *messg)
+{
+    Master_list_rx = ((Master_list_rx) | (1 << messg->master_id));
+
+    return 0;
+}
+
+int emu_transport_handle_wait_pm(bypass_msg_header_t *messg)
+{
+    if (messg->master_id == 0) {
+        Master_list_rx = ((Master_list_rx) | (1 << messg->master_id));
+    }
+
+    return 0;
+}
+
+static
+int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
+                                  unsigned int next_slot,
+                                  int bytes_read)
+{
+    eNB_transport_info_t *eNB_info;
+    int total_header = 0, total_tbs = 0;
+    int n_dci, n_enb;
+#ifdef DEBUG_EMU
+    LOG_D(EMU," RX ENB_TRANSPORT INFO from master %d \n",messg->master_id);
+#endif
+    clear_eNB_transport_info(oai_emulation.info.nb_enb_local+
+    oai_emulation.info.nb_enb_remote);
+
+    if (oai_emulation.info.master[messg->master_id].nb_enb > 0 ) {
+        total_header += sizeof(eNB_transport_info_t)-MAX_TRANSPORT_BLOCKS_BUFFER_SIZE;
+
+        eNB_info = (eNB_transport_info_t *) (&rx_bufferP[bytes_read]);
+        for (n_enb = oai_emulation.info.master[messg->master_id].first_enb;
+             n_enb < oai_emulation.info.master[messg->master_id].first_enb+
+             oai_emulation.info.master[messg->master_id].nb_enb;
+             n_enb ++)
+        {
+            for (n_dci = 0; n_dci < (eNB_info->num_ue_spec_dci + eNB_info->num_common_dci); n_dci ++) {
+                total_tbs += eNB_info->tbs[n_dci];
+            }
+
+            if ((total_tbs + total_header) > MAX_TRANSPORT_BLOCKS_BUFFER_SIZE ) {
+                LOG_W(EMU,"RX eNB Transport buffer total size %d (header%d,tbs %d) \n",
+                      total_header+total_tbs, total_header,total_tbs);
+            }
+
+            memcpy (&eNB_transport_info[n_enb],eNB_info, total_header + total_tbs);
+
+            /* Go to the next eNB info */
+            eNB_info += (total_header + total_tbs);
+            bytes_read += (total_header + total_tbs);
+        }
+
+        for (n_enb = oai_emulation.info.master[messg->master_id].first_enb;
+             n_enb < oai_emulation.info.master[messg->master_id].first_enb +
+             oai_emulation.info.master[messg->master_id].nb_enb; n_enb ++) {
+            fill_phy_enb_vars(n_enb, next_slot);
+        }
+    } else {
+        LOG_T(EMU,"WAIT_ENB_TRANSPORT state: no enb transport info from master %d \n",
+              messg->master_id);
+    }
+
+    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
+    if (Master_list_rx == oai_emulation.info.master_list) {
+        emu_rx_status = SYNCED_TRANSPORT;
+    }
+    return 0;
+}
+
+static
+int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
+                                 unsigned int last_slot,
+                                 int bytes_read)
+{
+    UE_transport_info_t *UE_info;
+    int n_ue, n_enb;
+    int total_tbs = 0, total_header = 0;
+
+#ifdef DEBUG_EMU
+    LOG_D(EMU," RX UE TRANSPORT INFO from master %d\n",messg->master_id);
+#endif
+    clear_UE_transport_info(oai_emulation.info.nb_ue_local+
+    oai_emulation.info.nb_ue_remote);
+
+    if (oai_emulation.info.master[messg->master_id].nb_ue > 0 ) {
+        total_header += sizeof(UE_transport_info_t)-MAX_TRANSPORT_BLOCKS_BUFFER_SIZE;
+
+        UE_info = (UE_transport_info_t *) (&rx_bufferP[bytes_read]);
+        // get the total size of the transport blocks
+        for (n_ue = oai_emulation.info.master[messg->master_id].first_ue;
+             n_ue < oai_emulation.info.master[messg->master_id].first_ue +
+             oai_emulation.info.master[messg->master_id].nb_ue; n_ue ++) {
+            total_tbs = 0;
+            for (n_enb = 0; n_enb < UE_info->num_eNB; n_enb ++) {
+                total_tbs += UE_info->tbs[n_enb];
+            }
+
+            if (total_tbs + total_header > MAX_TRANSPORT_BLOCKS_BUFFER_SIZE ) {
+                LOG_W(EMU,"RX [UE %d] Total size of buffer is %d (header%d,tbs %d) \n",
+                        n_ue, total_header+total_tbs,total_header,total_tbs);
+            }
+
+            memcpy (&UE_transport_info[n_ue], UE_info, total_header + total_tbs);
+
+            /* Go to the next UE info */
+            UE_info += (total_header + total_tbs);
+            bytes_read += (total_header + total_tbs);
+        }
+
+        for (n_ue = oai_emulation.info.master[messg->master_id].first_ue;
+                n_ue < oai_emulation.info.master[messg->master_id].first_ue +
+                oai_emulation.info.master[messg->master_id].nb_ue; n_ue ++) {
+            fill_phy_ue_vars(n_ue, last_slot);
+        }
+    } else {
+        LOG_T(EMU,"WAIT_UE_TRANSPORT state: no UE transport info from master %d\n",
+                messg->master_id);
+    }
+
+    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
+    if (Master_list_rx == oai_emulation.info.master_list) {
+        emu_rx_status = SYNCED_TRANSPORT;
+    }
+    return 0;
+}
 
 int bypass_rx_data(unsigned int frame, unsigned int last_slot,
                    unsigned int next_slot, uint8_t is_master)
 {
     bypass_msg_header_t *messg;
     bypass_proto2multicast_header_t *bypass_read_header;
-    eNB_transport_info_t *eNB_info;
-    UE_transport_info_t  *UE_info;
-    int ue_info_ix, enb_info_ix;
     int bytes_read = 0;
-    int bytes_data_to_read;
-    int m_id, n_enb, n_ue, n_dci, total_tbs = 0, total_header = 0;
 
     LOG_D(EMU, "Entering bypass_rx for frame %d next_slot %d is_master %u\n",
           frame, next_slot, is_master);
 
 #if defined(ENABLE_NEW_MULTICAST)
+# if defined(ENABLE_PGM_TRANSPORT)
+    num_bytesP = pgm_recv_msg(oai_emulation.info.multicast_group,
+                              (uint8_t *)&rx_bufferP[0], sizeof(rx_bufferP));
+
+    DevCheck(num_bytesP > 0, num_bytesP, 0, 0);
+# else
     if (multicast_link_read_data_from_sock(is_master) == 1) {
         /* We got a timeout */
         return -1;
     }
+# endif
 #else
     pthread_mutex_lock(&emul_low_mutex);
     if(emul_low_mutex_var) {
@@ -102,9 +285,11 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
         bypass_read_header = (bypass_proto2multicast_header_t *) (
                                  &rx_bufferP[bytes_read]);
         bytes_read += sizeof (bypass_proto2multicast_header_t);
-        bytes_data_to_read = bypass_read_header->size;
-        if(num_bytesP!=bytes_read+bytes_data_to_read) {
-            LOG_W(EMU, "WARNINIG BYTES2READ # DELIVERED BYTES!!!\n");
+
+        if (num_bytesP != bytes_read + bypass_read_header->size) {
+            LOG_W(EMU, "WARNINIG BYTES2READ # DELIVERED BYTES!!! (%d != %d)\n",
+                  num_bytesP, bytes_read + bypass_read_header->size);
+            exit(EXIT_FAILURE);
         } else {
             messg = (bypass_msg_header_t *) (&rx_bufferP[bytes_read]);
             bytes_read += sizeof (bypass_msg_header_t);
@@ -126,171 +311,21 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
                       frame, next_slot>>1);
 #endif
             //chek if MASTER in my List
-            // switch(Emulation_status){
             switch(messg->Message_type) {
-                    //case WAIT_SYNC_TRANSPORT:
-
                 case EMU_TRANSPORT_INFO_WAIT_PM:
-                    if (messg->master_id==0 ) {
-                        Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
-                    }
+                    emu_transport_handle_wait_pm(messg);
                     break;
                 case EMU_TRANSPORT_INFO_WAIT_SM:
-                    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
+                    emu_transport_handle_wait_sm(messg);
                     break;
                 case EMU_TRANSPORT_INFO_SYNC:
-
-                    // determite the total number of remote enb & ue
-                    oai_emulation.info.nb_enb_remote += messg->nb_enb;
-                    oai_emulation.info.nb_ue_remote += messg->nb_ue;
-                    // determine the index of local enb and ue wrt the remote ones
-                    if (  messg->master_id < oai_emulation.info.master_id ) {
-                        oai_emulation.info.first_enb_local +=messg->nb_enb;
-                        oai_emulation.info.first_ue_local +=messg->nb_ue;
-                    }
-
-                    // store param for enb per master
-                    if ((oai_emulation.info.master[messg->master_id].nb_enb = messg->nb_enb) > 0 ) {
-                        for (m_id=0; m_id < messg->master_id; m_id++ ) {
-                            oai_emulation.info.master[messg->master_id].first_enb+=oai_emulation.info.master[m_id].nb_enb;
-                        }
-                        LOG_I(EMU,
-                              "[ENB] WAIT_SYNC_TRANSPORT state:  for master %d (first enb %d, totan enb %d)\n",
-                              messg->master_id,
-                              oai_emulation.info.master[messg->master_id].first_enb,
-                              oai_emulation.info.master[messg->master_id].nb_enb);
-                    }
-                    // store param for ue per master
-                    if ((oai_emulation.info.master[messg->master_id].nb_ue  = messg->nb_ue) > 0) {
-                        for (m_id=0; m_id < messg->master_id; m_id++ ) {
-                            oai_emulation.info.master[messg->master_id].first_ue+=oai_emulation.info.master[m_id].nb_ue;
-                        }
-                        LOG_I(EMU,
-                              "[UE]WAIT_SYNC_TRANSPORT state: for master %d (first ue %d, total ue%d)\n",
-                              messg->master_id,
-                              oai_emulation.info.master[messg->master_id].first_ue,
-                              oai_emulation.info.master[messg->master_id].nb_ue );
-                    }
-
-                    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
-                    if (Master_list_rx == oai_emulation.info.master_list) {
-                        emu_rx_status = SYNCED_TRANSPORT;
-                    }
-                    LOG_I(EMU,
-                          "WAIT_SYNC_TRANSPORT state: m_id %d total enb remote %d total ue remote %d \n",
-                          messg->master_id,oai_emulation.info.nb_enb_remote,
-                          oai_emulation.info.nb_ue_remote );
+                    emu_transport_handle_sync(messg);
                     break;
-
-                    //case WAIT_ENB_TRANSPORT:
                 case EMU_TRANSPORT_INFO_ENB:
-#ifdef DEBUG_EMU
-                    LOG_D(EMU," RX ENB_TRANSPORT INFO from master %d \n",messg->master_id);
-#endif
-                    clear_eNB_transport_info(oai_emulation.info.nb_enb_local+
-                                             oai_emulation.info.nb_enb_remote);
-
-                    if (oai_emulation.info.master[messg->master_id].nb_enb > 0 ) {
-                        enb_info_ix =0;
-                        total_header=0;
-                        total_header += sizeof(eNB_transport_info_t)-MAX_TRANSPORT_BLOCKS_BUFFER_SIZE;
-
-                        eNB_info = (eNB_transport_info_t *) (&rx_bufferP[bytes_read]);
-                        for (n_enb = oai_emulation.info.master[messg->master_id].first_enb;
-                                n_enb < oai_emulation.info.master[messg->master_id].first_enb+
-                                oai_emulation.info.master[messg->master_id].nb_enb ;
-                                n_enb ++) {
-                            total_tbs=0;
-                            for (n_dci = 0 ;
-                                    n_dci < (eNB_info[enb_info_ix].num_ue_spec_dci+
-                                             eNB_info[enb_info_ix].num_common_dci);
-                                    n_dci ++) {
-                                total_tbs+=eNB_info[enb_info_ix].tbs[n_dci];
-                            }
-                            enb_info_ix++;
-                            if ( (total_tbs + total_header) > MAX_TRANSPORT_BLOCKS_BUFFER_SIZE ) {
-                                LOG_W(EMU,"RX eNB Transport buffer total size %d (header%d,tbs %d) \n",
-                                      total_header+total_tbs, total_header,total_tbs);
-                            }
-                            memcpy (&eNB_transport_info[n_enb],eNB_info, total_header+total_tbs);
-                            eNB_info = (eNB_transport_info_t *)((unsigned int)eNB_info + total_header+
-                                                                total_tbs);
-                            bytes_read+=total_header+total_tbs;
-                        }
-
-                        for (n_enb = oai_emulation.info.master[messg->master_id].first_enb;
-                                n_enb < oai_emulation.info.master[messg->master_id].first_enb+
-                                oai_emulation.info.master[messg->master_id].nb_enb ;
-                                n_enb ++) {
-                            fill_phy_enb_vars(n_enb, next_slot);
-                        }
-                    } else {
-                        LOG_T(EMU,"WAIT_ENB_TRANSPORT state: no enb transport info from master %d \n",
-                              messg->master_id);
-                    }
-
-                    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
-                    if (Master_list_rx == oai_emulation.info.master_list) {
-                        emu_rx_status = SYNCED_TRANSPORT;
-                    }
+                    emu_transport_handle_enb_info(messg, next_slot, bytes_read);
                     break;
                 case EMU_TRANSPORT_INFO_UE:
-#ifdef DEBUG_EMU
-                    LOG_D(EMU," RX UE TRANSPORT INFO from master %d\n",messg->master_id);
-#endif
-                    clear_UE_transport_info(oai_emulation.info.nb_ue_local+
-                                            oai_emulation.info.nb_ue_remote);
-
-
-                    if (oai_emulation.info.master[messg->master_id].nb_ue >
-                            0 ) { //&& oai_emulation.info.nb_enb_local >0 ){
-                        // get the header first
-                        ue_info_ix =0;
-                        total_header=0;
-                        total_header += sizeof(UE_transport_info_t)-MAX_TRANSPORT_BLOCKS_BUFFER_SIZE;
-                        UE_info = (UE_transport_info_t *) (&rx_bufferP[bytes_read]);
-                        // get the total size of the transport blocks
-                        for (n_ue = oai_emulation.info.master[messg->master_id].first_ue;
-                                n_ue < oai_emulation.info.master[messg->master_id].first_ue+
-                                oai_emulation.info.master[messg->master_id].nb_ue ;
-                                n_ue ++) {
-                            total_tbs=0;
-                            for (n_enb = 0; n_enb < UE_info[ue_info_ix].num_eNB; n_enb ++) {
-                                total_tbs+=UE_info[ue_info_ix].tbs[n_enb];
-                            }
-                            ue_info_ix++;
-                            if (total_tbs + total_header > MAX_TRANSPORT_BLOCKS_BUFFER_SIZE ) {
-                                LOG_W(EMU,"RX [UE %d] Total size of buffer is %d (header%d,tbs %d) \n",
-                                      n_ue, total_header+total_tbs,total_header,total_tbs);
-                            }
-                            memcpy (&UE_transport_info[n_ue], UE_info, total_header+total_tbs);
-                            UE_info = (UE_transport_info_t *)((unsigned int)UE_info + total_header+
-                                                              total_tbs);
-                            bytes_read+=total_header+total_tbs;
-                        }
-#ifdef DEBUG_EMU
-                        for (n_enb=0; n_enb < UE_info[0].num_eNB; n_enb ++ )
-                            LOG_T(EMU,"dump ue transport info rnti %x enb_id %d, harq_id %d tbs %d\n",
-                                  UE_transport_info[0].rnti[n_enb],
-                                  UE_transport_info[0].eNB_id[n_enb],
-                                  UE_transport_info[0].harq_pid[n_enb],
-                                  UE_transport_info[0].tbs[n_enb]);
-#endif
-                        for (n_ue = oai_emulation.info.master[messg->master_id].first_ue;
-                                n_ue < oai_emulation.info.master[messg->master_id].first_ue +
-                                oai_emulation.info.master[messg->master_id].nb_ue ;
-                                n_ue ++) {
-                            fill_phy_ue_vars(n_ue,last_slot);
-                        }
-                    } else {
-                        LOG_T(EMU,"WAIT_UE_TRANSPORT state: no UE transport info from master %d\n",
-                              messg->master_id);
-                    }
-
-                    Master_list_rx=((Master_list_rx) |(1<< messg->master_id));
-                    if (Master_list_rx == oai_emulation.info.master_list) {
-                        emu_rx_status = SYNCED_TRANSPORT;
-                    }
+                    emu_transport_handle_ue_info(messg, last_slot, bytes_read);
                     break;
                 case EMU_TRANSPORT_INFO_RELEASE :
                     Master_list_rx = oai_emulation.info.master_list;
@@ -311,7 +346,7 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
         pthread_cond_signal(&emul_low_cond);
         pthread_mutex_unlock(&emul_low_mutex);
 #endif
-        bypass_signal_mac_phy(frame,last_slot, next_slot, is_master);
+        bypass_signal_mac_phy(frame, last_slot, next_slot, is_master);
 #if !defined(ENABLE_NEW_MULTICAST)
     }
 #endif
@@ -376,14 +411,14 @@ void  bypass_signal_mac_phy(unsigned int frame, unsigned int last_slot,
                             unsigned int next_slot, uint8_t is_master)
 {
 /******************************************************************************************************/
-    if(Master_list_rx != oai_emulation.info.master_list) {
+    if (Master_list_rx != oai_emulation.info.master_list) {
 #ifndef USER_MODE
         rtf_put(fifo_mac_bypass, &tt, 1);
         /* the Rx window is still opened  (Re)signal bypass_phy (emulate MAC signal) */
 #endif
         bypass_rx_data(frame, last_slot, next_slot, is_master);
     } else {
-        Master_list_rx=0;
+        Master_list_rx = 0;
     }
 }
 
@@ -467,14 +502,13 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                 n_enb<(oai_emulation.info.first_enb_local+oai_emulation.info.nb_enb_local);
                 n_enb++) {
             total_tbs=0;
-            for (n_dci =0 ;
-                    n_dci < (eNB_transport_info[n_enb].num_ue_spec_dci+
-                             eNB_transport_info[n_enb].num_common_dci);
-                    n_dci++) {
+            for (n_dci = 0; n_dci < (eNB_transport_info[n_enb].num_ue_spec_dci +
+                                     eNB_transport_info[n_enb].num_common_dci);
+                 n_dci++) {
                 total_tbs +=eNB_transport_info[n_enb].tbs[n_dci];
             }
             if (total_tbs <= MAX_TRANSPORT_BLOCKS_BUFFER_SIZE) {
-                total_size = sizeof(eNB_transport_info_t)+total_tbs-
+                total_size = sizeof(eNB_transport_info_t) + total_tbs -
                              MAX_TRANSPORT_BLOCKS_BUFFER_SIZE;
             } else {
                 LOG_E(EMU,
@@ -483,7 +517,7 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
             }
             memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&eNB_transport_info[n_enb],
                    total_size);
-            byte_tx_count +=total_size;
+            byte_tx_count += total_size;
         }
     } else if (Type == UE_TRANSPORT) {
         LOG_D(EMU,"[TX_DATA] UE TRANSPORT\n");
@@ -506,7 +540,7 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
             }
             memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&UE_transport_info[n_ue],
                    total_size);
-            byte_tx_count +=total_size;
+            byte_tx_count += total_size;
         }
     } else if (Type == RELEASE_TRANSPORT) {
         messg->Message_type = EMU_TRANSPORT_INFO_RELEASE;
@@ -517,8 +551,13 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
     ((bypass_proto2multicast_header_t *) bypass_tx_buffer)->size = byte_tx_count -
             sizeof (bypass_proto2multicast_header_t);
 
-    multicast_link_write_sock (oai_emulation.info.multicast_group,
-                               bypass_tx_buffer, byte_tx_count);
+#if defined(ENABLE_PGM_TRANSPORT)
+    pgm_link_send_msg(oai_emulation.info.multicast_group,
+                      (uint8_t *)bypass_tx_buffer, byte_tx_count);
+#else
+    multicast_link_write_sock(oai_emulation.info.multicast_group,
+                                bypass_tx_buffer, byte_tx_count);
+#endif
 
     LOG_D(EMU, "Sent %d bytes [%s] with master_id %d and seq %"PRIuMAX"\n",
           byte_tx_count, map_int_to_str(transport_names, Type),

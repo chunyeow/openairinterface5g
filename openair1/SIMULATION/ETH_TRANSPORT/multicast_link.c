@@ -39,9 +39,7 @@
 
 extern unsigned short Master_id;
 
-#define MULTICAST_LINK_NUM_GROUPS 4
-
-char *multicast_group_list[MULTICAST_LINK_NUM_GROUPS] = {
+const char *multicast_group_list[MULTICAST_LINK_NUM_GROUPS] = {
     "239.0.0.161",
     "239.0.0.162",
     "239.0.0.163",
@@ -63,7 +61,7 @@ static char *multicast_if;
 
 //------------------------------------------------------------------------------
 void
-multicast_link_init ()
+multicast_link_init(void)
 {
 //------------------------------------------------------------------------------
     int             group;
@@ -103,7 +101,7 @@ multicast_link_init ()
             }
         }
 
-#if !defined(ENABLE_TCP_MULTICAST)
+#if !defined(ENABLE_NEW_MULTICAST)
         /* Make the socket blocking */
         socket_setnonblocking(group_list[group].socket);
 #endif
@@ -211,7 +209,7 @@ multicast_link_read ()
 
 //------------------------------------------------------------------------------
 int
-multicast_link_write_sock (int groupP, char *dataP, uint32_t sizeP)
+multicast_link_write_sock(int groupP, char *dataP, uint32_t sizeP)
 {
 //------------------------------------------------------------------------------
     int             num;
@@ -231,7 +229,7 @@ int multicast_link_read_data_from_sock(uint8_t is_master)
     int readsocks;    /* Number of sockets ready for reading */
 
     timeout.tv_sec = 0;
-    timeout.tv_usec = 3000;
+    timeout.tv_usec = 15000;
 
     if (is_master == 0) {
         /* UE will block indefinetely if no data is sent from eNB
@@ -285,8 +283,9 @@ void multicast_link_start(void (*rx_handlerP) (unsigned int, char *),
     LOG_I(EMU, "[MULTICAST] LINK START on interface=%s for group=%d: handler=%p\n",
           (multicast_if == NULL) ? "not specified" : multicast_if, multicast_group,
           rx_handler);
-
+#if !defined(ENABLE_PGM_TRANSPORT)
     multicast_link_init ();
+#endif
 #if ! defined(ENABLE_NEW_MULTICAST)
     LOG_D(EMU, "[MULTICAST] multicast link start thread\n");
     if (pthread_create (&main_loop_thread, NULL, multicast_link_main_loop,

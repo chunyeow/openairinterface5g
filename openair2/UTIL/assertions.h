@@ -46,7 +46,7 @@ do {                                                                    \
 #define DevCheck4(cOND, vALUE1, vALUE2, vALUE3, vALUE4)                 \
 do {                                                                    \
     if (!(cOND)) {                                                      \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed.\n",       \
+        fprintf(stderr, "%s:%d:%s\nAssertion `"#cOND"` failed.\n",      \
                 __FILE__, __LINE__, __FUNCTION__);                      \
         fprintf(stderr, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n"   \
         #vALUE4": %d\n",                                                \

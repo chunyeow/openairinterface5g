@@ -26,6 +26,10 @@ private_multicast_link (typedef struct multicast_group_t {
   char     rx_buffer[40000];
 } multicast_group_t;)
 
+#define MULTICAST_LINK_NUM_GROUPS 4
+
+extern const char *multicast_group_list[MULTICAST_LINK_NUM_GROUPS];
+
 private_multicast_link(void  multicast_link_init ());
 private_multicast_link(void  multicast_link_read_data (int groupP));
 private_multicast_link(void  multicast_link_read ());

@@ -14,7 +14,8 @@
 
 void init_bypass (void);
 void bypass_init ( unsigned int (*tx_handlerP) (unsigned char,char*, unsigned int*, unsigned int*),unsigned int (*rx_handlerP) (unsigned char,char*,unsigned int));
-int bypass_rx_data (unsigned int frame, unsigned int last_slot, unsigned int next_slot, uint8_t is_master);
+int bypass_rx_data(unsigned int frame, unsigned int last_slot,
+                   unsigned int next_slot, uint8_t is_master);
 void  bypass_signal_mac_phy(unsigned int frame, unsigned int last_slot,
                             unsigned int next_slot, uint8_t is_master);
 #ifndef USER_MODE

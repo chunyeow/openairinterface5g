@@ -18,6 +18,8 @@
 #include "UTIL/LOG/log.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
+#include "pgm_link.h"
+
 extern unsigned int Master_list_rx;
 
 extern unsigned char NB_INST;
@@ -29,6 +31,29 @@ void emu_transport_sync(void)
     LOG_D(EMU, "Entering EMU transport SYNC is primary master %d\n",
           oai_emulation.info.is_primary_master);
 
+#if defined(ENABLE_PGM_TRANSPORT)
+    if (oai_emulation.info.is_primary_master == 0) {
+        bypass_tx_data(WAIT_SM_TRANSPORT,0,0);
+        // just wait to recieve the  master 0 msg
+        Master_list_rx = oai_emulation.info.master_list - 1;
+        bypass_rx_data(0,0,0,1);
+    } else {
+        bypass_rx_data(0,0,0,0);
+        bypass_tx_data(WAIT_PM_TRANSPORT,0,0);
+    }
+
+    if (oai_emulation.info.master_list != 0) {
+        bypass_tx_data(SYNC_TRANSPORT,0,0);
+        bypass_rx_data(0,0,0,0);
+
+        // i received the sync from all secondary masters
+        if (emu_rx_status == SYNCED_TRANSPORT) {
+            emu_tx_status = SYNCED_TRANSPORT;
+        }
+
+        LOG_D(EMU,"TX secondary master SYNC_TRANSPORT state \n");
+    }
+#else
     if (oai_emulation.info.is_primary_master == 0) {
 retry:
         bypass_tx_data(WAIT_SM_TRANSPORT,0,0);
@@ -58,6 +83,7 @@ retry2:
 
         LOG_D(EMU,"TX secondary master SYNC_TRANSPORT state \n");
     }
+#endif
     LOG_D(EMU, "Leaving EMU transport SYNC is primary master %d\n",
           oai_emulation.info.is_primary_master);
 }
@@ -102,26 +128,15 @@ void emu_transport_DL(unsigned int frame, unsigned int last_slot,
 {
     LOG_D(EMU, "Entering EMU transport DL, is primary master %d\n",
           oai_emulation.info.is_primary_master);
-    if (oai_emulation.info.is_primary_master==0) {
-        //  bypass_rx_data(last_slot);
-        if (oai_emulation.info.nb_enb_local>0) { // send in DL if
-            bypass_tx_data(ENB_TRANSPORT,frame, next_slot);
-            bypass_rx_data(frame, last_slot, next_slot, 1);
-        } else {
-            bypass_tx_data(WAIT_SM_TRANSPORT,frame,next_slot);
-            bypass_rx_data(frame, last_slot, next_slot, 0);
-        }
-    } else { // I am the master
-        // bypass_tx_data(WAIT_TRANSPORT,last_slot);
 
-        if (oai_emulation.info.nb_enb_local>0) { // send in DL if
-            bypass_tx_data(ENB_TRANSPORT,frame, next_slot);
-            bypass_rx_data(frame,last_slot, next_slot, 1);
-        } else {
-            bypass_tx_data(WAIT_SM_TRANSPORT,frame, next_slot);
-            bypass_rx_data(frame,last_slot, next_slot, 0);
-        }
+    if (oai_emulation.info.nb_enb_local>0) { // send in DL if
+        bypass_tx_data(ENB_TRANSPORT, frame, next_slot);
+        bypass_rx_data(frame, last_slot, next_slot, 1);
+    } else {
+        bypass_tx_data(WAIT_SM_TRANSPORT,frame,next_slot);
+        bypass_rx_data(frame, last_slot, next_slot, 0);
     }
+
     LOG_D(EMU, "Leaving EMU transport DL, is primary master %d\n",
           oai_emulation.info.is_primary_master);
 }
@@ -131,25 +146,15 @@ void emu_transport_UL(unsigned int frame, unsigned int last_slot,
 {
     LOG_D(EMU, "Entering EMU transport UL, is primary master %d\n",
           oai_emulation.info.is_primary_master);
-    if (oai_emulation.info.is_primary_master==0) {
-        // bypass_rx_data(last_slot, next_slot);
-        if (oai_emulation.info.nb_ue_local>0) {
-            bypass_tx_data(UE_TRANSPORT, frame, next_slot);
-            bypass_rx_data(frame,last_slot, next_slot, 1);
-        } else {
-            bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
-            bypass_rx_data(frame,last_slot, next_slot, 0);
-        }
+
+    if (oai_emulation.info.nb_ue_local>0) {
+        bypass_tx_data(UE_TRANSPORT, frame, next_slot);
+        bypass_rx_data(frame, last_slot, next_slot, 1);
     } else {
-        // bypass_tx_data(WAIT_TRANSPORT,last_slot);
-        if (oai_emulation.info.nb_ue_local>0) {
-            bypass_tx_data(UE_TRANSPORT,frame, next_slot);
-            bypass_rx_data(frame,last_slot, next_slot, 1);
-        } else {
-            bypass_tx_data(WAIT_SM_TRANSPORT,frame, next_slot);
-            bypass_rx_data(frame,last_slot, next_slot, 0);
-        }
+        bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
+        bypass_rx_data(frame,last_slot, next_slot, 0);
     }
+
     LOG_D(EMU, "Leaving EMU transport UL, is primary master %d\n",
           oai_emulation.info.is_primary_master);
 }

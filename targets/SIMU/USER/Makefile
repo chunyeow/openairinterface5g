@@ -221,6 +221,14 @@ CFLAGS += -DENABLE_VCD_FIFO
 CFLAGS += -DENABLE_NEW_MULTICAST
 # CFLAGS += -DENABLE_LOG_FIFO
 
+# Check if libpgm is installed and use it if found instead of the unreliable
+# multicast
+ENABLE_PGM = $(shell if pkg-config --exists openpgm-5.1; then echo "1" ; else echo "0"; fi)
+ifeq ($(ENABLE_PGM), 1)
+CFLAGS += `pkg-config --cflags openpgm-5.1` -DENABLE_PGM_TRANSPORT
+PGM_LDFLAGS = `pkg-config --libs openpgm-5.1`
+endif
+
 OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(OAISIM_OBJS) $(NAS_OBJS) $(INT_OBJS) $(UTIL_OBJ)
 ifeq ($(OPENAIR2),1)
 OBJ += $(L2_OBJS)
@@ -243,7 +251,9 @@ printvars:
 	@echo L2 objs are $(L2_OBJS)
 	@echo eNB_flag is $(eNB_flag)
 	@echo UE_flag is $(UE_flag)
-	@echo $(S1AP_BUILT_OBJS)
+	@echo S1AP objs: $(S1AP_BUILT_OBJS)
+	@echo CFLAGS: $(CFLAGS)
+	@echo Enable PGM: $(ENABLE_PGM)
 
 ASN1RELDIR=R9.8
 ifeq ($(USE_MME), R8)
@@ -299,7 +309,7 @@ oaisim : $(ASN1_MSG_OBJS1) $(OBJ) oaisim.c $(LFDS_DIR)/bin/liblfds611.a
 endif
 	@echo "Compiling oaisim.c ..."
 	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $^ \
-	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt $(LFDS_DIR)/bin/liblfds611.a
+	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt $(LFDS_DIR)/bin/liblfds611.a $(PGM_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv oaisim oaisim_eNB
