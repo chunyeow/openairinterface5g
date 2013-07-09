@@ -41,6 +41,7 @@
 #define NB_OF_RESOURCES		4	// Should not exceed mih_user::_max_link_action_requests
 //#define SCENARIO_1	// Sequentially activate and deactivate each resource
 #define SCENARIO_2	// Activate all resources, then deactivate all resources
+#define NUM_PARM_REPORT 10
 
 ///////////////////////////////////////////////////////////////////////////////
 // The scenario coded in this MIH-USER is the following (with eRALlteDummy and NASRGDummy executables)
@@ -480,6 +481,10 @@ protected:
 
 	void send_MIH_Link_Actions_request(const odtone::mih::link_id& link, odtone::mih::link_ac_type type);
 	void receive_MIH_Link_Actions_confirm(odtone::mih::message& msg);
+        void receive_MIH_Link_Parameters_Report(odtone::mih::message& msg, const boost::system::error_code& ec);
+
+        void send_MIH_Link_Configure_Thresholds_request(odtone::mih::message& msg, const boost::system::error_code& ec);
+        void receive_MIH_Link_Configure_Thresholds_confirm(odtone::mih::message& msg, const boost::system::error_code& ec);
 
 private:
 	odtone::sap::user _mihf;	/**< User SAP helper.		*/
@@ -494,6 +499,9 @@ private:
 
 	odtone::mih::link_ac_type _last_link_action_type;
 	odtone::uint _current_link_action_request, _nb_of_link_action_requests;
+        odtone::uint link_threshold_request, link_measures_request, link_measures_counter;
+        odtone::mih::link_id rcv_link_id;
+
 	static const odtone::uint _max_link_action_requests = 4;
 
 	void receive_MIH_Link_Detected_indication(odtone::mih::message& msg);
@@ -513,6 +521,7 @@ mih_user::mih_user(const odtone::mih::config& cfg, boost::asio::io_service& io)
     _current_link_action_request(0), _nb_of_link_action_requests(NB_OF_RESOURCES)
 //-----------------------------------------------------------------------------
 {
+
 	odtone::mih::octet_string user_id = cfg.get<odtone::mih::octet_string>(odtone::sap::kConf_MIH_SAP_id);
 	_mihuserid.assign(user_id.c_str());
 
@@ -539,7 +548,9 @@ mih_user::mih_user(const odtone::mih::config& cfg, boost::asio::io_service& io)
 
 	_link_id_list.clear();
 	_subs_evt_list.clear();
-
+        link_threshold_request = 0;
+        link_measures_request =0;
+        link_measures_counter =0;
 	log_(0, "[MSC_NEW]["+getTimeStamp4Log()+"][MIH-USER="+_mihuserid.to_string()+"]\n");
 
 	// Send MEDIEVAL specific MIH_User_Register.indication message to the MIH-F
@@ -599,11 +610,26 @@ void mih_user::event_handler(odtone::mih::message& msg, const boost::system::err
 		break;
 
 	case odtone::mih::indication::link_parameters_report:
-		log_(0, "MIH-User has received a local event \"link_parameters_report\"");
+		//log_(0, "MIH-User has received a local event \"link_parameters_report\"");
+                mih_user::receive_MIH_Link_Parameters_Report(msg, ec);
+                if (link_threshold_request == 0){
+                  mih_user::send_MIH_Link_Configure_Thresholds_request(msg, ec);
+                  link_threshold_request =1;
+                } else if (link_threshold_request == 1){
+                  link_measures_counter ++;
+                  // Stop measures after 5 reports
+                  if (link_measures_counter == NUM_PARM_REPORT){
+                     mih_user::send_MIH_Link_Configure_Thresholds_request(msg, ec);
+                  }
+                }
 		break;
 
 	case odtone::mih::indication::link_pdu_transmit_status:
 		log_(0, "MIH-User has received a local event \"link_pdu_transmit_status\"");
+		break;
+
+        case odtone::mih::confirm::link_configure_thresholds:
+                mih_user::receive_MIH_Link_Configure_Thresholds_confirm(msg, ec);
 		break;
 
 	default:
@@ -637,8 +663,8 @@ void mih_user::receive_handler(odtone::mih::message& msg, const boost::system::e
 
 	case odtone::mih::confirm::link_actions:
 		mih_user::receive_MIH_Link_Actions_confirm(msg);
-		break;
 
+		break;
 	default:
 		log_(0, "MIH-User has received UNKNOWN message (", msg.mid(), ")\n");
 		break;
@@ -692,17 +718,19 @@ void mih_user::receive_MIH_Link_Down_indication(odtone::mih::message& msg)
 	log_(0, "MIH_Link_Down.indication - RECEIVED - Begin\n");
 
 	odtone::mih::link_tuple_id link;
+        boost::optional<odtone::mih::link_addr> addr;
 	odtone::mih::link_dn_reason ldr;
 
 	msg >> odtone::mih::indication()
 	  & odtone::mih::tlv_link_identifier(link)
+          & odtone::mih::tlv_old_access_router(addr)
 	  & odtone::mih::tlv_link_dn_reason(ldr);
 
-	log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Down.indication\\n"+link_down_reason2string(ldr).c_str()+" --->]["+msg.destination().to_string()+"]\n");
+//	log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Down.indication\\n"+link_down_reason2string(ldr).c_str()+" --->]["+msg.destination().to_string()+"]\n");
 
 	// Display message parameters
-	log_(0, "   - LINK_ID - Link identifier:  ", link_id2string(link).c_str());
-	log_(0, "   - LINK_DN_REASON - Link down reason:  ", link_down_reason2string(ldr).c_str(), "\n");
+//	log_(0, "   - LINK_ID - Link identifier:  ", link_id2string(link).c_str());
+//	log_(0, "   - LINK_DN_REASON - Link down reason:  ", link_down_reason2string(ldr).c_str(), "\n");
 
 	log_(0, "MIH_Link_Down.indication - End\n");
 }
@@ -731,6 +759,25 @@ void mih_user::receive_MIH_Link_Going_Down_indication(odtone::mih::message& msg)
 
 	log_(0, "MIH_Link_Going_Down.indication - End\n");
 }
+
+//-----------------------------------------------------------------------------
+void mih_user::receive_MIH_Link_Parameters_Report(odtone::mih::message& msg, const boost::system::error_code& ec)
+//-----------------------------------------------------------------------------
+{
+    odtone::mih::link_tuple_id link;
+    odtone::mih::link_param_rpt_list lprl;
+
+    msg >> odtone::mih::indication()
+           & odtone::mih::tlv_link_identifier(link)
+           & odtone::mih::tlv_link_param_rpt_list(lprl);
+
+    log_(0, "");
+    log_(0, "MIH_Link_Parameters_Report.indication - RECEIVED - Begin");
+    log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Parameters_Report.indication --->]["+msg.destination().to_string()+"]\n");
+    log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(link).c_str());
+    log_(0, "MIH_Link_Parameters_Report.indication - End");
+}
+
 
 //-----------------------------------------------------------------------------
 void mih_user::send_MIH_User_Register_indication(const odtone::mih::config& cfg)
@@ -800,6 +847,12 @@ void mih_user::receive_MIH_Capability_Discover_confirm(odtone::mih::message& msg
 	}
 	if (ntal) {
 	  log_(0, "  - LIST(NET_TYPE_ADDR) - Network Types and Link Address: ", net_type_addr_list2string(ntal).c_str());
+          //Store link address
+          for (odtone::mih::net_type_addr_list::iterator i = ntal->begin(); i != ntal->end(); i++)
+          {
+            rcv_link_id.addr = i->addr;
+            rcv_link_id.type = boost::get<odtone::mih::link_type>(i->nettype.link);
+          }
 	}
 	log_(0, "");
 
@@ -1125,6 +1178,129 @@ void mih_user::receive_MIH_Link_Actions_confirm(odtone::mih::message& msg)
 #endif // SCENARIO_2
 
 	log_(0, "MIH_Link_Actions.confirm - End\n");
+}
+
+//-----------------------------------------------------------------------------
+void mih_user::send_MIH_Link_Configure_Thresholds_request(odtone::mih::message& msg, const boost::system::error_code& ec)
+//-----------------------------------------------------------------------------
+{
+    odtone::mih::message m;
+
+    odtone::mih::threshold th;
+    std::vector<odtone::mih::threshold> thl;
+
+    odtone::mih::link_tuple_id lti;
+    odtone::mih::l2_3gpp_addr local_l2_3gpp_addr;
+
+    log_(0,"");
+    log_(0, "send_MIH_Link_Configure_Thresholds_request - Begin");
+
+    //link_tuple_id
+    lti.type = rcv_link_id.type;
+    lti.addr = rcv_link_id.addr;
+
+    //local_l2_3gpp_addr = boost::get<odtone::mih::l2_3gpp_addr>(lti.addr);
+
+    //List of the link threshold parameters
+    odtone::mih::link_cfg_param_list lcpl;
+    odtone::mih::link_cfg_param lcp;
+    odtone::mih::link_param_lte lp;
+
+    //link_param_gen_data_rate = 0,           /**< Data rate.         */
+    //link_param_gen_signal_strength = 1,     /**< Signal strength.   */
+    //link_param_gen_sinr = 2,                /**< SINR.              */
+    //link_param_gen_throughput = 3,          /**< Throughput.        */
+    //link_param_gen_packet_error_rate = 4,   /**< Packet error rate. */
+    lp = odtone::mih::link_param_lte_bandwidth;
+
+    lcp.type = lp;
+
+    if ( link_measures_request ==0){
+    // Set Timer Interval (in ms)
+    lcp.timer_interval = 3000;
+    //th_action_normal = 0,   /**< Set normal threshold.      */
+    //th_action_one_shot = 1, /**< Set one-shot threshold.    */
+    //th_action_cancel = 2    /**< Cancel threshold.          */
+    lcp.action = odtone::mih::th_action_normal;
+    link_measures_request = 1;
+    } else if ( link_measures_request==1){
+    // Set Timer Interval (in ms)
+    lcp.timer_interval = 0;
+    lcp.action = odtone::mih::th_action_cancel;
+    link_measures_request = 0;
+    }
+
+    //above_threshold = 0,    /**< Above threshold.   */
+    //below_threshold = 1,    /**< Below threshold.   */
+    th.threshold_val = 0;
+    th.threshold_x_dir = odtone::mih::threshold::above_threshold;
+
+    thl.push_back(th);
+    lcp.threshold_list = thl;
+    lcpl.push_back(lcp);
+
+    m <<  odtone::mih::request(odtone::mih::request::link_configure_thresholds)
+          & odtone::mih::tlv_link_identifier(lti)
+          & odtone::mih::tlv_link_cfg_param_list(lcpl);
+
+    m.destination(msg.source());
+
+    log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ _mihuserid.to_string() +"][--- MIH_Link_Configure_Thresholds.request\\nlink="+
+                // link_tupple_id2string(lti).c_str() +
+	        link_id2string(lti).c_str()+
+                 " --->]["+_mihfid.to_string()+"]\n");
+    _mihf.async_send(m, boost::bind(&mih_user::event_handler, this, _1, _2));
+
+
+    log_(0, "  - LINK_TUPLE_ID - Link identifier:  ", link_id2string(lti).c_str());
+
+    log_(0, "\t- LINK CFG PARAM LIST - Length: ", lcpl.size());
+
+    //if(lp == odtone::mih::link_param_gen_data_rate) {log_(0, "\t  Generic link parameter DATA RATE ");}
+    //if(lp == odtone::mih::link_param_gen_signal_strength) {log_(0, "\t  Generic link parameter SIGNAL STRENGTH");}
+    //if(lp == odtone::mih::link_param_gen_sinr) {log_(0, "\t   Generic link parameter SINR");}
+    //if(lp == odtone::mih::link_param_gen_throughput) {log_(0, "\t  Generic link parameter THROUGHPUT");}
+    if(lp == odtone::mih::link_param_lte_bandwidth) {log_(0, "\t  LTE link parameter BANDWIDTH");}
+
+    log_(0, "\t- TIMER INTERVAL - Value: ", lcp.timer_interval);
+
+    if(lcp.action == odtone::mih::th_action_normal) {log_(0, "\t  Normal Threshold");}
+    if(lcp.action == odtone::mih::th_action_one_shot) {log_(0, "\t  One Shot Threshold");}
+    if(lcp.action == odtone::mih::th_action_cancel) {log_(0, "\t  Threshold to be canceled");}
+
+    log_(0, "\t  Threshold value: ", th.threshold_val);
+
+    if(th.threshold_x_dir == odtone::mih::threshold::below_threshold) {log_(0, "\t  Threshold direction BELOW");}
+    if(th.threshold_x_dir == odtone::mih::threshold::above_threshold) {log_(0, "\t  Threshold direction ABOVE");}
+
+    log_(0, "send_MIH_Link_Configure_Thresholds_request - End");
+}
+
+//-----------------------------------------------------------------------------
+void mih_user::receive_MIH_Link_Configure_Thresholds_confirm(odtone::mih::message& msg, const boost::system::error_code& ec)
+//-----------------------------------------------------------------------------
+{
+    log_(0, "");
+    log_(0, "receive_MIH_Link_Configure_Thresholds_confirm - Begin");
+
+    // T odtone::uint iter;
+    // T odtone::mih::status st;
+
+    //boost::optional<odtone::mih::link_cfg_status_list> lcsl;
+    // Todtone::mih::link_cfg_status_list lcsl;
+    // Todtone::mih::link_cfg_status lcp;
+    //odtone::mih::link_param_gen lp;
+
+    // T odtone::mih::link_tuple_id lti;
+
+    //msg >> odtone::mih::confirm()
+    //    & odtone::mih::tlv_status(st)
+    //    & odtone::mih::tlv_link_identifier(lti)
+    //    & odtone::mih::tlv_link_cfg_status_list(lcsl);
+
+
+    log_(0, "receive_MIH_Link_Configure_Thresholds_confirm - End");
+    log_(0,"");
 }
 
 //-----------------------------------------------------------------------------

@@ -34,6 +34,9 @@
 
 #define THRESHOLD_HIGH_VAL 90
 #define THRESHOLD_LOW_VAL  15
+//#define TEST_DEACTIVATION
+#define NUM_ACT_DEACT 3
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // The scenario coded in this MIH-USER is the following (with mRALlteDummy and NASUEDummy executables)
@@ -452,6 +455,7 @@ private:
         odtone::mih::id   _mihfid;  /**< MIHF destination ID.   */
         odtone::mih::id   _mihuserid;  /**< MIH_USER ID.   */
     odtone::uint link_get_parameters_request, link_action_request, link_threshold_request;
+    odtone::uint link_last_action_sent, link_activate_counter;
     odtone::mih::net_type_addr rcv_net_type_addr;
     odtone::mih::link_id rcv_link_id;
 };
@@ -474,6 +478,8 @@ mih_user::mih_user(const odtone::mih::config& cfg, boost::asio::io_service& io)
     link_get_parameters_request = 0;
     link_action_request         = 0;
     link_threshold_request      = 0;
+    link_last_action_sent       = 0;
+    link_activate_counter       = 0;
 
     m << odtone::mih::indication(odtone::mih::indication::user_register)
         & odtone::mih::tlv_command_list(supp_cmd);
@@ -652,7 +658,14 @@ void mih_user::event_handler(odtone::mih::message& msg, const boost::system::err
             // monitor signal strength - increase signal strength report now
             //system ("sendip -d 0x01 -p ipv4 -is 127.0.0.1  -p udp -ud 22222 -us 65535 127.0.0.1");
         }
-
+        #ifdef TEST_DEACTIVATION
+        if ((link_activate_counter<NUM_ACT_DEACT)&&(link_activate_counter > 0)) {
+            sleep(20);
+            mih_user::send_MIH_Link_Actions_request(msg, ec);
+        }
+        if (link_activate_counter==NUM_ACT_DEACT)
+           log_(0, "TEST_DEACTIVATION completed \n");
+        #endif
         break;
 
     case odtone::mih::confirm::event_unsubscribe:
@@ -865,6 +878,13 @@ void mih_user::receive_MIH_Link_Actions_confirm(odtone::mih::message& msg, const
            & odtone::mih::tlv_status(st)
            & odtone::mih::tlv_link_action_rsp_list(larl);
 
+    #ifdef TEST_DEACTIVATION
+    if (mih_user::link_last_action_sent==1){
+       mih_user::link_activate_counter++;
+    }
+    #endif
+
+
     log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Actions.confirm\\n"+status2string(st.get())+" --->]["+msg.destination().to_string()+"]\n");
     log_(0, "\t- STATUS: ", status2string(st.get()), " " , st.get());
 
@@ -933,13 +953,33 @@ void mih_user::send_MIH_Link_Actions_request(odtone::mih::message& msg, const bo
     if(mih_user::link_action_request == 0){
             link_act_req.action.type = odtone::mih::link_ac_type_power_up;
             link_act_req.action.attr.set(odtone::mih::link_ac_attr_scan);
+            log_(0, "Initial Scan, link_action_request = 0");
             //link_act_req.action.param...;
-    } else if(mih_user::link_action_request == 1) {
+    } else if((mih_user::link_activate_counter == 0)&&(mih_user::link_action_request == 1)) {
             link_act_req.action.type = odtone::mih::link_ac_type_power_up;
+            mih_user::link_last_action_sent=1;
+            //mih_user::link_activate_counter++;
+            log_(0, "Initial Activation, link_action_request = 1");
+    #ifndef TEST_DEACTIVATION
     } else if(mih_user::link_action_request == 2) {
         link_act_req.action.type = odtone::mih::link_ac_type_power_down;
+        log_(0, "Link Going Down Deactivation, link_action_request = 2");
+    #endif
     }
-
+    #ifdef TEST_DEACTIVATION
+    else if ((mih_user::link_activate_counter>0)&&(mih_user::link_action_request >= 1)){
+       if (mih_user::link_last_action_sent==1){
+          link_act_req.action.type = odtone::mih::link_ac_type_power_down;
+          mih_user::link_last_action_sent=0;
+            log_(0, "New Deactivation, link_action_request >1");
+       } else {
+          link_act_req.action.type = odtone::mih::link_ac_type_power_up;
+          mih_user::link_last_action_sent=1;
+          //mih_user::link_activate_counter++;
+            log_(0, "New Activation, link_action_request >1");
+       }
+    }
+    #endif
     link_act_req.ex_time = 0;
 
     lal.push_back(link_act_req);
