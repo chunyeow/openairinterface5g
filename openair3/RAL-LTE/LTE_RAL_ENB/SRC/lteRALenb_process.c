@@ -547,6 +547,42 @@ void RAL_NAS_measures_polling(void){
 }
 
 //---------------------------------------------------------------------------
+// Common function to report congestion
+void RAL_NAS_report_congestion(int ix){
+//---------------------------------------------------------------------------
+  MIH_C_TRANSACTION_ID_T transaction_id;
+  MIH_C_LINK_TUPLE_ID_T  link_identifier;
+  LIST(MIH_C_LINK_PARAM_RPT, LinkParametersReportList);
+
+  DEBUG("Congestion detected for UE%d, sending congestion notification to MIH User \n", ix);
+  transaction_id = MIH_C_get_new_transaction_id();
+  link_identifier.link_id.link_type = MIH_C_WIRELESS_UMTS;
+  link_identifier.link_id.link_addr.choice = MIH_C_CHOICE_3GPP_3G_CELL_ID;
+  Bit_Buffer_t *plmn = new_BitBuffer_0();
+  BitBuffer_wrap(plmn, (unsigned char*) ralpriv->plmn, DEFAULT_PLMN_SIZE);
+  MIH_C_PLMN_ID_decode(plmn, &link_identifier.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id);
+  free_BitBuffer(plmn);
+  link_identifier.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = ralpriv->curr_cellId;
+  link_identifier.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
+  //
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type.choice = MIH_C_LINK_PARAM_TYPE_CHOICE_LTE;
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type._union.link_param_lte = MIH_C_LINK_PARAM_LTE_L2_BUFFER_STATUS;
+  // LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type.choice = MIH_C_LINK_PARAM_TYPE_CHOICE_GEN;
+  // LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type._union.link_param_gen = MIH_C_LINK_PARAM_LTE_L2_BUFFER_STATUS;
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.choice  = MIH_C_LINK_PARAM_CHOICE_LINK_PARAM_VAL;
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param._union.link_param_val = ralpriv->rlcBufferOccupancy[ix];
+
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length].choice = MIH_C_LINK_PARAM_RPT_CHOICE_THRESHOLD;
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length]._union.threshold.threshold_val  = ralpriv->congestion_threshold;
+  LinkParametersReportList_list.val[LinkParametersReportList_list.length]._union.threshold.threshold_xdir = MIH_C_ABOVE_THRESHOLD;
+  LinkParametersReportList_list.length = LinkParametersReportList_list.length + 1;
+
+  //
+  eRALlte_send_link_parameters_report_indication(&transaction_id,  &link_identifier, &LinkParametersReportList_list);
+  ralpriv->congestion_flag = RAL_TRUE;
+
+}
+//---------------------------------------------------------------------------
 // Temp - Enter hard-coded measures in IAL
 void RAL_NAS_measures_analyze(void){
 //---------------------------------------------------------------------------
@@ -562,36 +598,7 @@ void RAL_NAS_measures_analyze(void){
     for (ix=0; ix<ralpriv->num_UEs; ix++){
        if ((ralpriv->rlcBufferOccupancy[ix] > ralpriv->congestion_threshold)&&
            ((ralpriv->mih_subscribe_req_event_list && MIH_C_BIT_LINK_PARAMETERS_REPORT )>0)){
-           DEBUG("Congestion detected for UE%d, sending congestion notification to MIH User \n", ix);
-//            void eRALlte_send_link_parameters_report_indication(MIH_C_TRANSACTION_ID_T *tidP,
-//                                    MIH_C_LINK_TUPLE_ID_T       *lidP,
-//                                    MIH_C_LINK_PARAM_RPT_LIST_T *lparam_listP)
-           transaction_id = MIH_C_get_new_transaction_id();
-           link_identifier.link_id.link_type = MIH_C_WIRELESS_UMTS;
-           link_identifier.link_id.link_addr.choice = MIH_C_CHOICE_3GPP_3G_CELL_ID;
-           Bit_Buffer_t *plmn = new_BitBuffer_0();
-           BitBuffer_wrap(plmn, (unsigned char*) ralpriv->plmn, DEFAULT_PLMN_SIZE);
-           MIH_C_PLMN_ID_decode(plmn, &link_identifier.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id);
-           free_BitBuffer(plmn);
-           link_identifier.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = ralpriv->curr_cellId;
-           link_identifier.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
-//
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type.choice = MIH_C_LINK_PARAM_TYPE_CHOICE_LTE;
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type._union.link_param_lte = MIH_C_LINK_PARAM_LTE_L2_BUFFER_STATUS;
-//          LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type.choice = MIH_C_LINK_PARAM_TYPE_CHOICE_GEN;
-//          LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.link_param_type._union.link_param_gen = MIH_C_LINK_PARAM_LTE_L2_BUFFER_STATUS;
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param.choice  = MIH_C_LINK_PARAM_CHOICE_LINK_PARAM_VAL;
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length].link_param._union.link_param_val = ralpriv->rlcBufferOccupancy[ix];
-
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length].choice = MIH_C_LINK_PARAM_RPT_CHOICE_THRESHOLD;
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length]._union.threshold.threshold_val  = ralpriv->congestion_threshold;
-          LinkParametersReportList_list.val[LinkParametersReportList_list.length]._union.threshold.threshold_xdir = MIH_C_ABOVE_THRESHOLD;
-          LinkParametersReportList_list.length = LinkParametersReportList_list.length + 1;
-
-//
-           eRALlte_send_link_parameters_report_indication(&transaction_id,  &link_identifier, &LinkParametersReportList_list);
-
-           ralpriv->congestion_flag = RAL_TRUE;
+           RAL_NAS_report_congestion(ix);
            break;
        }
     }

@@ -26,6 +26,7 @@
 #define RAL_REALTIME
 
 //#define ENABLE_MEDIEVAL_DEMO3
+//#define MUSER_CONTROL // in demo3, for triggering the congestion report manually
 
 //flag to reduce the logs
 #define DEBUG_RAL_DETAILS

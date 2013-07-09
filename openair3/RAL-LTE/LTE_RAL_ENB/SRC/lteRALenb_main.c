@@ -38,6 +38,7 @@
 #include "nasrg_iocontrol.h"
 #endif
 
+
 /****************************************************************************/
 /*******************  G L O C A L    D E F I N I T I O N S  *****************/
 /****************************************************************************/
@@ -79,9 +80,152 @@ struct ral_lte_priv rl_priv;
 #ifdef RAL_DUMMY
 int netl_s; /* NAS net link socket */
 #endif
+
 /****************************************************************************/
-/*********************  L O C A L    F U N C T I O N S  *********************/
+// Next part is used to receive the triggers
 /****************************************************************************/
+#ifdef MUSER_CONTROL
+
+#define USER_IP_ADDRESS             "127.0.0.1"
+#define USER_REMOTE_PORT            "0"
+#define NAS_IP_ADDRESS              "127.0.0.1"
+#define NAS_LISTENING_PORT_FOR_USER "22222"
+
+char        *g_mih_user_ip_address             = USER_IP_ADDRESS;
+char        *g_mih_user_remote_port            = USER_REMOTE_PORT;
+char        *g_nas_ip_address                  = NAS_IP_ADDRESS;
+char        *g_nas_listening_port_for_mih_user = NAS_LISTENING_PORT_FOR_USER;
+int          g_sockd_user;
+signed int   g_user_congestion    = 0;
+unsigned int g_ratio_modif        = 0;
+//---------------------------------------------------------------------------
+int lteRALenb_trigger_connect(void){
+//---------------------------------------------------------------------------
+    struct addrinfo      hints;
+    struct addrinfo     *result, *rp;
+    int                  s, on;
+    struct sockaddr_in  *addr  = NULL;
+    struct sockaddr_in6 *addr6 = NULL;
+    unsigned char        buf[sizeof(struct sockaddr_in6)];
+
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family   = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_DGRAM;   /* Datagram socket */
+    hints.ai_flags    = 0;
+    hints.ai_protocol = 0;            /* Any protocol */
+
+    s = getaddrinfo(g_mih_user_ip_address, g_mih_user_remote_port, &hints, &result);
+    if (s != 0) {
+        printf("ERR getaddrinfo: %s\n", gai_strerror(s));
+        return -1;
+    }
+
+    for (rp = result; rp != NULL; rp = rp->ai_next) {
+        g_sockd_user = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (g_sockd_user == -1)
+            continue;
+
+        on = 1;
+        setsockopt( g_sockd_user, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+        if(rp->ai_family == AF_INET) {
+            printf("Destination address  %s is an ipv4 address\n",g_mih_user_ip_address);
+            addr             = (struct sockaddr_in *)(&buf[0]);
+            addr->sin_port   = htons(atoi(g_nas_listening_port_for_mih_user));
+            addr->sin_family = AF_INET;
+            s = inet_pton(AF_INET, g_nas_ip_address, &addr->sin_addr);
+            if (s <= 0) {
+                if (s == 0) {
+                    printf("ERR IP address should be a IPv4 ADDR - But found not in presentation format : %s\n", g_nas_ip_address);
+                } else {
+                    printf("ERR %s - inet_pton( IPv4 ADDR %s): %s\n", __FUNCTION__, g_nas_ip_address, strerror(s));
+                }
+                return -1;
+            }
+
+            s = bind(g_sockd_user, (const struct sockaddr *)addr, sizeof(struct sockaddr_in));
+            if (s == -1) {
+                printf("ERR IPv4 Address Bind: %s\n", strerror(errno));
+                return -1;
+            }
+            // sockd_mihf is of type SOCK_DGRAM, rp->ai_addr is the address to which datagrams are sent by default
+            if (connect(g_sockd_user, rp->ai_addr, rp->ai_addrlen) != -1) {
+                printf("  lteRALeNB is now ready to receive triggers\n");
+                return 0;
+            } else {
+                close(g_sockd_user);
+            }
+        } else if (rp->ai_family == AF_INET6) {
+            printf("Destination address  %s is an ipv6 address\n",g_mih_user_ip_address);
+            addr6              = (struct sockaddr_in6 *)(&buf[0]);
+            addr6->sin6_port   = htons(atoi(g_nas_listening_port_for_mih_user));
+            addr6->sin6_family = AF_INET6;
+            s = inet_pton(AF_INET, g_nas_ip_address, &addr6->sin6_addr);
+            if (s <= 0) {
+                if (s == 0) {
+                    printf("ERR IP  address should be a IPv6 ADDR, But found not in presentation format : %s\n", g_nas_ip_address);
+                } else {
+                    printf("ERR %s - inet_pton( IPv6 ADDR %s): %s\n", __FUNCTION__, g_nas_ip_address, strerror(s));
+                }
+                return -1;
+            }
+
+            s = bind(g_sockd_user, (const struct sockaddr *)addr6, sizeof(struct sockaddr_in));
+            if (s == -1) {
+                printf("ERR  IPv6 Address Bind: %s\n", strerror(errno));
+                return -1;
+            }
+            if (connect(g_sockd_user, rp->ai_addr, rp->ai_addrlen) != -1) {
+                printf("  lteRALeNB is now ready to receive triggers\n");
+                return 0;
+            } else {
+                close(g_sockd_user);
+            }
+        } else {
+            printf("ERR %s is an unknown address format %d\n",g_mih_user_ip_address,rp->ai_family);
+        }
+        close(g_sockd_user);
+    }
+
+    if (rp == NULL) {   /* No address succeeded */
+        printf("ERR Could not establish socket to MIH-User\n");
+        return -1;
+    }
+    return -1;
+}
+
+//---------------------------------------------------------------------------
+int lteRALenb_trigger_receive(int sock){
+//---------------------------------------------------------------------------
+  unsigned char str[50];
+  int  t, done;
+    t=recv(sock, str, 50, 0);
+    if (t <= 0) {
+        if (t < 0) perror("lteRALenb_trigger_receive : recv");
+        done = 1;
+    }
+    printf("\nmessage from USER, length:  %d\n", t);
+    switch (str[0]) {
+        case 0xff:
+            printf("USER ASK FOR STOPPING CONGESTION - not supported yet\n");
+            break;
+        case 0x01:
+            printf("USER ASK FOR TRIGGERING CONGESTION\n");
+            ralpriv->rlcBufferOccupancy[0] = 95;
+            RAL_NAS_report_congestion(0);
+            break;
+        default:
+            printf("received %hx\n", str[0]);
+            return -1;
+    }
+    return 0;
+}
+#endif
+
+/****************************************************************************/
+
+
 
 /****************************************************************************
  ** Name:  arg_usage()                                                     **
@@ -301,23 +445,12 @@ void get_IPv6_addr(const char* if_name){
 }
 
 /****************************************************************************
- ** Name:  RAL_initialize()                                          **
+ ** Name:  RAL_initialize()                                                **
  **                                                                        **
  ** Description: Performs overall RAL LTE initialisations:                 **
- **                  - Default value of global variables                   **
- **                  - Command line parsing                                **
- **                  - List of supported MIH actions                       **
- **                  - List of supported MIH link-events                   **
- **                  - Communication channel with the NAS driver           **
- **                  - MIH link registration                               **
  **                                                                        **
- ** Inputs:  argc:  Number of parameters in the command line   **
- **     argv:  Command line parameters                    **
- **     Others: g_mihf_ip_address, g_mihf_remote_port      **
- **    g_sockd_mihf, g_ral_ip_address,            **
- **    g_ral_listening_port_for_mihf              **
- **    g_link_id, g_mihf_id, g_log_output         **
- **    g_sockd_nas, ralpriv                       **
+ ** Inputs:  argc:  Number of parameters in the command line               **
+ **     argv:  Command line parameters                                     **
  ***************************************************************************/
 int RAL_initialize(int argc, const char *argv[]){
 //-----------------------------------------------------------------------------
@@ -326,7 +459,7 @@ int RAL_initialize(int argc, const char *argv[]){
     #ifdef RAL_DUMMY
     unsigned int t;
     struct sockaddr_un nas_socket;
-	#endif
+    #endif
 
     ralpriv = &rl_priv;
     memset(ralpriv, 0, sizeof(struct ral_lte_priv));
@@ -374,14 +507,6 @@ int RAL_initialize(int argc, const char *argv[]){
     // excluded MIH_C_BIT_LINK_HANDOVER_IMMINENT
     // excluded MIH_C_BIT_LINK_HANDOVER_COMPLETE
     // excluded MIH_C_BIT_LINK_PDU_TRANSMIT_STATUS
-    /*
-    ralpriv->mih_supported_link_event_list = MIH_C_BIT_LINK_UP | MIH_C_BIT_LINK_DOWN | MIH_C_BIT_LINK_PARAMETERS_REPORT;
-    // excluded MIH_C_BIT_LINK_GET_PARAMETERS
-    // excluded MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS
-
-    ralpriv->mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE | MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE | \
-                                              MIH_C_BIT_LINK_GET_PARAMETERS  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS | MIH_C_BIT_LINK_ACTION;
-    */
     ralpriv->mih_supported_link_event_list = MIH_C_BIT_LINK_UP | MIH_C_BIT_LINK_DOWN | MIH_C_BIT_LINK_PARAMETERS_REPORT;
     // excluded MIH_C_BIT_LINK_GET_PARAMETERS
     // excluded MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS
@@ -397,7 +522,7 @@ int RAL_initialize(int argc, const char *argv[]){
      */
     #ifdef RAL_REALTIME
     IAL_NAS_ioctl_init();
-	#endif
+    #endif
     #ifdef RAL_DUMMY
     NAS_Netlink_socket_init();
     DEBUG(" Waiting for a connection from the NAS Driver ...\n");
@@ -406,8 +531,14 @@ int RAL_initialize(int argc, const char *argv[]){
         perror("RAL_initialize : g_sockd_nas - accept() failed");
         exit(1);
     }
-	#endif
+  #endif
     DEBUG("NAS Driver Connected.\n\n");
+
+    /* Start listening to user commands for triggers*/
+    #ifdef MUSER_CONTROL
+    lteRALenb_trigger_connect();
+    #endif
+
 
     /*Get the interface IPv6 address
      */
@@ -421,14 +552,14 @@ int RAL_initialize(int argc, const char *argv[]){
 
 //  Get list of MTs
     DEBUG("Obtaining list of MTs\n\n");
-	#ifdef RAL_REALTIME
+    #ifdef RAL_REALTIME
     init_flag=1;
     RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_LIST,0,0);
     RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_LIST,0,0);
     init_flag=0;
     #endif
     #ifdef RAL_DUMMY
-	eRALlte_NAS_get_MTs_list();
+    eRALlte_NAS_get_MTs_list();
     #endif
     RAL_printInitStatus();
     ralpriv->pending_req_flag = 0;
@@ -471,9 +602,12 @@ int main(int argc, const char *argv[]){
  /* Initialize fd_set and wait for input */
         FD_ZERO(&readfds);
         FD_SET(g_sockd_mihf, &readfds);
-		#ifdef RAL_DUMMY
+        #ifdef RAL_DUMMY
         FD_SET(g_sockd_nas, &readfds);
-		#endif
+        #endif
+        #ifdef MUSER_CONTROL
+        FD_SET (g_sockd_user, &readfds);
+        #endif
         tv.tv_sec  = MIH_C_RADIO_POLLING_INTERVAL_SECONDS;
         tv.tv_usec = MIH_C_RADIO_POLLING_INTERVAL_MICRO_SECONDS;
 
@@ -488,14 +622,19 @@ int main(int argc, const char *argv[]){
           if (FD_ISSET(g_sockd_mihf, &readfds)) {
               done = eRALlte_mih_link_process_message();
           }
-
- 		#ifdef RAL_DUMMY
-         /* Read data coming from the NAS driver */
-          if (FD_ISSET(g_sockd_nas, &readfds)) {
-              //printf("Received something from NAS\n");
-              done = eRALlte_NAS_process_message();
+          #ifdef RAL_DUMMY
+          /* Read data coming from the NAS driver */
+            if (FD_ISSET(g_sockd_nas, &readfds)) {
+                //printf("Received something from NAS\n");
+                done = eRALlte_NAS_process_message();
+            }
+          #endif
+          #ifdef MUSER_CONTROL
+          /* Get triggers */
+          if (FD_ISSET(g_sockd_user,&readfds)){
+              done = lteRALenb_trigger_receive(g_sockd_user);
           }
-		#endif
+          #endif
 
           /* Wait until next pending MT's timer expiration */
           if (ralpriv->pending_mt_timer > 0) {
@@ -505,9 +644,9 @@ int main(int argc, const char *argv[]){
 
           if (time_counter ++ == 11){
              // check if a new MT appeared or disappeared
-	         #ifdef RAL_REALTIME
+           #ifdef RAL_REALTIME
              RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_LIST,0,0);
-			 #endif
+           #endif
              time_counter = 1;
           }
             //get measures from NAS - timer = 21x100ms  -- impair

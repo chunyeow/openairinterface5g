@@ -73,5 +73,6 @@ int eRALlte_process_map_qos(int mt_ix, int ch_ix);
 void RAL_printInitStatus(void);
 void RAL_NAS_measures_polling(void);
 void RAL_NAS_measures_analyze(void);
+void RAL_NAS_report_congestion(int ix);
 #endif
 
