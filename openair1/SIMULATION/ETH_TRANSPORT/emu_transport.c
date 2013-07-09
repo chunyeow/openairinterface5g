@@ -101,22 +101,22 @@ void emu_transport(unsigned int frame, unsigned int last_slot,
         VCD_SIGNAL_DUMPER_FUNCTIONS_EMU_TRANSPORT, VCD_FUNCTION_IN);
 
     if ((frame_type == 1) &&  (direction == SF_S)) {
-        if (next_slot%2==0) {
-            emu_transport_DL(frame, last_slot,next_slot);
+        if ((next_slot % 2) == 0) {
+            emu_transport_DL(frame, last_slot, next_slot);
         } else {
             emu_transport_UL(frame, last_slot , next_slot);
         }
         //DL
     } else {
-        if (next_slot%2 == 0 )
-            if ( ((frame_type == 1) &&  (direction == SF_DL )) || (frame_type == 0) ) {
-                emu_transport_DL(frame, last_slot,next_slot);
+        if ((next_slot % 2) == 0) {
+            if (((frame_type == 1) && (direction == SF_DL )) || (frame_type == 0) ) {
+                emu_transport_DL(frame, last_slot, next_slot);
             }
-        // UL
-        if ( ((frame_type == 1) &&  (direction == SF_UL)) || (frame_type == 0) ) {
-            emu_transport_UL(frame, last_slot , next_slot);
         }
-
+        // UL
+        if (((frame_type == 1) && (direction == SF_UL)) || (frame_type == 0) ) {
+            emu_transport_UL(frame, last_slot, next_slot);
+        }
     }
     vcd_signal_dumper_dump_function_by_name(
         VCD_SIGNAL_DUMPER_FUNCTIONS_EMU_TRANSPORT, VCD_FUNCTION_OUT);
@@ -129,12 +129,22 @@ void emu_transport_DL(unsigned int frame, unsigned int last_slot,
     LOG_D(EMU, "Entering EMU transport DL, is primary master %d\n",
           oai_emulation.info.is_primary_master);
 
-    if (oai_emulation.info.nb_enb_local>0) { // send in DL if
-        bypass_tx_data(ENB_TRANSPORT, frame, next_slot);
-        bypass_rx_data(frame, last_slot, next_slot, 1);
-    } else {
-        bypass_tx_data(WAIT_SM_TRANSPORT,frame,next_slot);
-        bypass_rx_data(frame, last_slot, next_slot, 0);
+    if (oai_emulation.info.is_primary_master == 0) {
+        if (oai_emulation.info.nb_enb_local > 0) { // send in DL if
+            bypass_tx_data(ENB_TRANSPORT, frame, next_slot);
+            bypass_rx_data(frame, last_slot, next_slot, 1);
+        } else {
+            bypass_tx_data(WAIT_SM_TRANSPORT,frame,next_slot);
+            bypass_rx_data(frame, last_slot, next_slot, 0);
+        }
+    } else { // PM
+        if (oai_emulation.info.nb_enb_local>0) { // send in DL if
+            bypass_rx_data(frame, last_slot, next_slot, 1);
+            bypass_tx_data(ENB_TRANSPORT, frame, next_slot);
+        } else {
+            bypass_rx_data(frame, last_slot, next_slot, 0);
+            bypass_tx_data(WAIT_SM_TRANSPORT,frame,next_slot);
+        }
     }
 
     LOG_D(EMU, "Leaving EMU transport DL, is primary master %d\n",
@@ -147,12 +157,22 @@ void emu_transport_UL(unsigned int frame, unsigned int last_slot,
     LOG_D(EMU, "Entering EMU transport UL, is primary master %d\n",
           oai_emulation.info.is_primary_master);
 
-    if (oai_emulation.info.nb_ue_local>0) {
-        bypass_tx_data(UE_TRANSPORT, frame, next_slot);
-        bypass_rx_data(frame, last_slot, next_slot, 1);
+    if (oai_emulation.info.is_primary_master == 0) {
+        if (oai_emulation.info.nb_ue_local > 0) {
+            bypass_tx_data(UE_TRANSPORT, frame, next_slot);
+            bypass_rx_data(frame, last_slot, next_slot, 1);
+        } else {
+            bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
+            bypass_rx_data(frame,last_slot, next_slot, 0);
+        }
     } else {
-        bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
-        bypass_rx_data(frame,last_slot, next_slot, 0);
+        if (oai_emulation.info.nb_ue_local > 0) {
+            bypass_rx_data(frame, last_slot, next_slot, 1);
+            bypass_tx_data(UE_TRANSPORT, frame, next_slot);
+        } else {
+            bypass_rx_data(frame,last_slot, next_slot, 0);
+            bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
+        }
     }
 
     LOG_D(EMU, "Leaving EMU transport UL, is primary master %d\n",
@@ -374,13 +394,13 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
 
     pucch_format=
         ue_cntl_delay[ue_id][last_slot%2].pucch_flag;// UE_transport_info[ue_id].cntl.pucch_flag;
-    if ((last_slot+1) % 2  == 0 ) {
+    if ((last_slot + 1) % 2 == 0) {
         if (pucch_format == pucch_format1) { // UE_transport_info[ue_id].cntl.sr;
             PHY_vars_UE_g[ue_id]->sr[subframe] = ue_cntl_delay[ue_id][last_slot%2].sr;
-        } else if ((pucch_format == pucch_format1a)
-                   || (pucch_format == pucch_format1b )) {
-            PHY_vars_UE_g[ue_id]->pucch_payload[0] =
-                ue_cntl_delay[ue_id][last_slot%2].pucch_payload;//UE_transport_info[ue_id].cntl.pucch_payload;
+        } else if ((pucch_format == pucch_format1a) ||
+                   (pucch_format == pucch_format1b)) {
+            PHY_vars_UE_g[ue_id]->pucch_payload[0] = ue_cntl_delay[ue_id][last_slot%2].pucch_payload;
+                //UE_transport_info[ue_id].cntl.pucch_payload;
         }
         PHY_vars_UE_g[ue_id]->pucch_sel[subframe] =
             ue_cntl_delay[ue_id][last_slot%2].pucch_sel;
@@ -389,7 +409,7 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
     LOG_D(EMU,"subframe %d trying to copy the payload from num eNB %d to UE %d \n",
           subframe, UE_transport_info[ue_id].num_eNB, ue_id);
 #endif
-    for (n_enb=0; n_enb < UE_transport_info[ue_id].num_eNB; n_enb++) {
+    for (n_enb = 0; n_enb < UE_transport_info[ue_id].num_eNB; n_enb++) {
 #ifdef DEBUG_EMU
         /*     LOG_D(EMU,"Setting ulsch vars for ue %d rnti %x harq pid is %d \n",
           ue_id, UE_transport_info[ue_id].rnti[n_enb],
@@ -416,10 +436,10 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
             (ue_cntl_delay[ue_id][last_slot%2].pusch_ack>>1) & 0x1;
         //*(u32 *)ulsch->o                        = ue_cntl_delay[ue_id][last_slot%2].pusch_uci;
 
-        if (last_slot%2 == 1 ) {
+        if ((last_slot % 2) == 1) {
             PHY_vars_UE_g[ue_id]->ulsch_ue[enb_id]->O =
                 ue_cntl_delay[ue_id][last_slot%2].length_uci;
-            PHY_vars_UE_g[ue_id]->ulsch_ue[enb_id]->uci_format      =
+            PHY_vars_UE_g[ue_id]->ulsch_ue[enb_id]->uci_format =
                 ue_cntl_delay[ue_id][last_slot%2].uci_format;
 
             memcpy(PHY_vars_UE_g[ue_id]->ulsch_ue[enb_id]->o,
