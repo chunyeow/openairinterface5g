@@ -15,6 +15,8 @@
 #include "PHY/vars.h"
 #include "MAC_INTERFACE/vars.h"
 
+#include "SIMULATION/ETH_TRANSPORT/proto.h"
+
 //#ifdef OPENAIR2
 #include "LAYER2/MAC/defs.h"
 #include "LAYER2/MAC/vars.h"
@@ -267,8 +269,9 @@ int log_thread_finalize() {
     pthread_mutex_destroy(&log_lock);
     pthread_cond_destroy(&log_notify);
   }
+#endif
+
   return err;
-#endif 
 }
 
 
