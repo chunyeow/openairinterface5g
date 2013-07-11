@@ -279,7 +279,7 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
     if (nb_total_dci >0) {
 
         memcpy(PHY_vars_eNB_g[enb_id]->dci_alloc[(next_slot>>1)&1],
-               &eNB_transport_info[enb_id].dci_alloc,
+	           eNB_transport_info[enb_id].dci_alloc,
                (nb_total_dci) * sizeof(DCI_ALLOC_t));
 
         n_dci_dl=0;
