@@ -19,6 +19,8 @@
 
 #include "UTIL/LOG/log.h"
 
+// #define ENABLE_PGM_DEBUG
+
 typedef struct {
     pgm_sock_t *sock;
     uint16_t port;
@@ -29,6 +31,8 @@ pgm_multicast_group_t pgm_multicast_group[MULTICAST_LINK_NUM_GROUPS];
 
 static
 int pgm_create_socket(int index, const char *if_addr);
+
+unsigned int pgm_would_block = 1;
 
 #if defined(ENABLE_PGM_DEBUG)
 static void
@@ -66,38 +70,66 @@ int pgm_oai_init(char *if_name)
     return pgm_create_socket(oai_emulation.info.multicast_group, if_name);
 }
 
-int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length)
+int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length,
+                 unsigned int frame, unsigned int next_slot)
 {
     size_t num_bytes = 0;
     int status = 0;
     pgm_error_t* pgm_err = NULL;
     struct pgm_sockaddr_t from;
     socklen_t fromlen = sizeof(from);
+    uint32_t timeout = 0;
+    int flags = 0;
+
+    if (pgm_would_block == 0) {
+        flags = MSG_DONTWAIT;
+    }
 
     DevCheck((group <= MULTICAST_LINK_NUM_GROUPS) && (group >= 0),
              group, MULTICAST_LINK_NUM_GROUPS, 0);
 
     LOG_I(EMU, "[PGM] Entering recv function for group %d\n", group);
 
-    status = pgm_recvfrom(pgm_multicast_group[group].sock,
-                          buffer,
-                          length,
-                          0,
-                          &num_bytes,
-                          &from,
-                          &fromlen,
-                          &pgm_err);
+    do {
+        status = pgm_recvfrom(pgm_multicast_group[group].sock,
+                            buffer,
+                            length,
+                            flags,
+                            &num_bytes,
+                            &from,
+                            &fromlen,
+                            &pgm_err);
 
-    if (PGM_IO_STATUS_NORMAL == status) {
-        LOG_D(EMU, "[PGM] Received %d bytes for group %d\n", num_bytes, group);
-        return num_bytes;
-    } else {
-        if (pgm_err) {
-            LOG_E(EMU, "[PGM] recvform failed: %s", pgm_err->message);
-            pgm_error_free (pgm_err);
-            pgm_err = NULL;
+        if (PGM_IO_STATUS_NORMAL == status) {
+            LOG_D(EMU, "[PGM] Received %d bytes for group %d\n", num_bytes, group);
+            return num_bytes;
+        } else if (PGM_IO_STATUS_TIMER_PENDING == status) {
+            if (pgm_would_block == 0) {
+                /* We sleep for 50 usec */
+                usleep(50);
+
+                timeout ++;
+
+                if (timeout == (1000000 / 50))
+                {
+                    LOG_W(EMU, "[PGM] A packet has been lost -> ask for retransmit\n");
+                    /* If we do not receive a packet after 10000usec
+                    * -> send a NACK */
+                    bypass_tx_nack(frame, next_slot);
+                    timeout = 0;
+                }
+            }
+        } else if (PGM_IO_STATUS_RESET == status) {
+            LOG_W(EMU, "[PGM] Got session reset\n");
+        } else {
+            LOG_D(EMU, "[PGM] Got status %d\n", status);
+            if (pgm_err) {
+                LOG_E(EMU, "[PGM] recvform failed: %s", pgm_err->message);
+                pgm_error_free (pgm_err);
+                pgm_err = NULL;
+            }
         }
-    }
+    } while(status != PGM_IO_STATUS_NORMAL);
     return -1;
 }
 
@@ -106,7 +138,9 @@ int pgm_link_send_msg(int group, uint8_t *data, uint32_t len)
     int status;
     size_t bytes_written = 0;
 
-    status = pgm_send(pgm_multicast_group[group].sock, data, len, &bytes_written);
+    do {
+        status = pgm_send(pgm_multicast_group[group].sock, data, len, &bytes_written);
+    } while(status == PGM_IO_STATUS_WOULD_BLOCK);
 
     if (status != PGM_IO_STATUS_NORMAL) {
         return -1;
@@ -125,12 +159,15 @@ int pgm_create_socket(int index, const char *if_addr)
     int sqns = 100;
     int port;
     struct pgm_sockaddr_t addr;
-    int blocking = 0;
+    int blocking = 1;
     int multicast_loop = 0;
     int multicast_hops = 0;
     int dscp, i;
 
     port = udp_encap_port;
+
+    /* Use PGM */
+    udp_encap_port = 0;
 
     LOG_D(EMU, "[PGM] Preparing socket for group %d and address %s\n",
           index, if_addr);
@@ -179,7 +216,7 @@ int pgm_create_socket(int index, const char *if_addr)
             passive = 0,
             peer_expiry = pgm_secs (300),
             spmr_expiry = pgm_msecs (250),
-            nak_bo_ivl = pgm_msecs (50),
+            nak_bo_ivl = pgm_msecs (10),
             nak_rpt_ivl = pgm_secs (2),
             nak_rdata_ivl = pgm_secs (2),
             nak_data_retries = 50,
@@ -287,6 +324,9 @@ int pgm_create_socket(int index, const char *if_addr)
                         sizeof(struct group_req));
     }
 
+    pgm_freeaddrinfo(res);
+    res = NULL;
+
     /* set IP parameters */
     multicast_hops = 64;
     dscp = 0x2e << 2;             /* Expedited Forwarding PHB for network elements, no ECN. */
@@ -314,11 +354,11 @@ err_abort:
         pgm_multicast_group[index].sock = NULL;
     }
     if (NULL != res) {
-        pgm_freeaddrinfo (res);
+        pgm_freeaddrinfo(res);
         res = NULL;
     }
     if (NULL != pgm_err) {
-        pgm_error_free (pgm_err);
+        pgm_error_free(pgm_err);
         pgm_err = NULL;
     }
 

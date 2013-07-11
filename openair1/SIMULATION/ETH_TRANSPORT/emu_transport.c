@@ -26,6 +26,10 @@ extern unsigned char NB_INST;
 //#define DEBUG_CONTROL 1
 //#define DEBUG_EMU   1
 
+#if defined(ENABLE_PGM_TRANSPORT)
+extern unsigned int pgm_would_block;
+#endif
+
 void emu_transport_sync(void)
 {
     LOG_D(EMU, "Entering EMU transport SYNC is primary master %d\n",
@@ -84,6 +88,7 @@ retry2:
         LOG_D(EMU,"TX secondary master SYNC_TRANSPORT state \n");
     }
 #endif
+
     LOG_D(EMU, "Leaving EMU transport SYNC is primary master %d\n",
           oai_emulation.info.is_primary_master);
 }
@@ -118,6 +123,9 @@ void emu_transport(unsigned int frame, unsigned int last_slot,
             emu_transport_UL(frame, last_slot, next_slot);
         }
     }
+#if defined(ENABLE_PGM_TRANSPORT)
+    pgm_would_block = 0;
+#endif
     vcd_signal_dumper_dump_function_by_name(
         VCD_SIGNAL_DUMPER_FUNCTIONS_EMU_TRANSPORT, VCD_FUNCTION_OUT);
 }
@@ -236,6 +244,7 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
     LTE_eNB_DLSCH_t *dlsch_eNB;
     unsigned short ue_id;
     u8 nb_total_dci;
+    int i;
 
 #ifdef DEBUG_EMU
     LOG_D(EMU, " pbch fill phy eNB %d vars for slot %d fault %d\n",
@@ -271,7 +280,7 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
 
         memcpy(PHY_vars_eNB_g[enb_id]->dci_alloc[(next_slot>>1)&1],
                &eNB_transport_info[enb_id].dci_alloc,
-               (nb_total_dci)* sizeof(DCI_ALLOC_t));
+               (nb_total_dci) * sizeof(DCI_ALLOC_t));
 
         n_dci_dl=0;
         // fill dlsch_eNB structure from DCI
@@ -297,7 +306,6 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
 #endif
                         break;
                     case 1: //RA:
-
                         memcpy(PHY_vars_eNB_g[enb_id]->dlsch_eNB_ra->harq_processes[0]->b,
                                &eNB_transport_info[enb_id].transport_blocks[payload_offset],
                                eNB_transport_info[enb_id].tbs[n_dci_dl]);
@@ -317,7 +325,6 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
                               " enb_id %d ue id is %d rnti is %x dci index %d, harq_pid %d tbs %d \n",
                               enb_id, ue_id, eNB_transport_info[enb_id].dci_alloc[n_dci_dl].rnti,
                               n_dci_dl, harq_pid, eNB_transport_info[enb_id].tbs[n_dci_dl]);
-                        int i;
                         for (i=0; i<eNB_transport_info[enb_id].tbs[n_dci_dl]; i++) {
                             LOG_T(EMU, "%x.",
                                   (unsigned char) eNB_transport_info[enb_id].transport_blocks[payload_offset+i]);
@@ -363,9 +370,8 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
     //  u8 ue_transport_info_index[NUMBER_OF_eNB_MAX];
     u8 subframe = (last_slot+1)>>1;
 
-    memcpy (&ue_cntl_delay[ue_id][(last_slot+1)%2],
-            &UE_transport_info[ue_id].cntl,
-            sizeof(UE_cntl));
+    memcpy(&ue_cntl_delay[ue_id][(last_slot+1)%2], &UE_transport_info[ue_id].cntl,
+           sizeof(UE_cntl));
 
 #ifdef DEBUG_EMU
     LOG_D(EMU,

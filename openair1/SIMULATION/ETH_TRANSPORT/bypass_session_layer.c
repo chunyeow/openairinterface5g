@@ -30,6 +30,10 @@ static unsigned int byte_tx_count;
 unsigned int Master_list_rx;
 static uint64_t seq_num_tx = 0;
 
+#if defined(ENABLE_PGM_TRANSPORT)
+extern unsigned int pgm_would_block;
+#endif
+
 mapping transport_names[] = {
     {"WAIT PM TRANSPORT INFO", EMU_TRANSPORT_INFO_WAIT_PM},
     {"WAIT SM TRANSPORT INFO", EMU_TRANSPORT_INFO_WAIT_SM},
@@ -37,6 +41,9 @@ mapping transport_names[] = {
     {"ENB_TRANSPORT INFO", EMU_TRANSPORT_INFO_ENB},
     {"UE TRANSPORT INFO", EMU_TRANSPORT_INFO_UE},
     {"RELEASE TRANSPORT INFO", EMU_TRANSPORT_INFO_RELEASE},
+#if defined(ENABLE_PGM_TRANSPORT)
+    {"NACK TRANSPORT INFO", EMU_TRANSPORT_NACK},
+#endif
     {NULL, -1}
 };
 
@@ -76,6 +83,8 @@ void bypass_init (tx_handler_t tx_handlerP, rx_handler_t rx_handlerP)
 int emu_transport_handle_sync(bypass_msg_header_t *messg)
 {
     int m_id;
+
+    DevAssert(messg != NULL);
 
     // determite the total number of remote enb & ue
     oai_emulation.info.nb_enb_remote += messg->nb_enb;
@@ -123,6 +132,7 @@ int emu_transport_handle_sync(bypass_msg_header_t *messg)
 
 int emu_transport_handle_wait_sm(bypass_msg_header_t *messg)
 {
+    DevAssert(messg != NULL);
     Master_list_rx = ((Master_list_rx) | (1 << messg->master_id));
 
     return 0;
@@ -130,6 +140,7 @@ int emu_transport_handle_wait_sm(bypass_msg_header_t *messg)
 
 int emu_transport_handle_wait_pm(bypass_msg_header_t *messg)
 {
+    DevAssert(messg != NULL);
     if (messg->master_id == 0) {
         Master_list_rx = ((Master_list_rx) | (1 << messg->master_id));
     }
@@ -145,6 +156,10 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
     eNB_transport_info_t *eNB_info;
     int total_header = 0, total_tbs = 0;
     int n_dci, n_enb;
+
+    DevAssert(bytes_read >= 0);
+    DevAssert(messg != NULL);
+
 #ifdef DEBUG_EMU
     LOG_D(EMU," RX ENB_TRANSPORT INFO from master %d \n",messg->master_id);
 #endif
@@ -169,7 +184,7 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
                       total_header+total_tbs, total_header,total_tbs);
             }
 
-            memcpy (&eNB_transport_info[n_enb],eNB_info, total_header + total_tbs);
+            memcpy(&eNB_transport_info[n_enb], eNB_info, total_header + total_tbs);
 
             /* Go to the next eNB info */
             eNB_info += (total_header + total_tbs);
@@ -202,6 +217,9 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
     int n_ue, n_enb;
     int total_tbs = 0, total_header = 0;
 
+    DevAssert(bytes_read >= 0);
+    DevAssert(messg != NULL);
+
 #ifdef DEBUG_EMU
     LOG_D(EMU," RX UE TRANSPORT INFO from master %d\n",messg->master_id);
 #endif
@@ -226,7 +244,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
                         n_ue, total_header+total_tbs,total_header,total_tbs);
             }
 
-            memcpy (&UE_transport_info[n_ue], UE_info, total_header + total_tbs);
+            memcpy(&UE_transport_info[n_ue], UE_info, total_header + total_tbs);
 
             /* Go to the next UE info */
             UE_info += (total_header + total_tbs);
@@ -263,7 +281,8 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
 #if defined(ENABLE_NEW_MULTICAST)
 # if defined(ENABLE_PGM_TRANSPORT)
     num_bytesP = pgm_recv_msg(oai_emulation.info.multicast_group,
-                              (uint8_t *)&rx_bufferP[0], sizeof(rx_bufferP));
+                              (uint8_t *)&rx_bufferP[0], sizeof(rx_bufferP),
+                              frame, next_slot);
 
     DevCheck(num_bytesP > 0, num_bytesP, 0, 0);
 # else
@@ -298,6 +317,9 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
                   num_bytesP, map_int_to_str(transport_names, messg->Message_type),
                   messg->master_id,
                   messg->seq_num);
+#if defined(ENABLE_PGM_TRANSPORT)
+            if (messg->Message_type != EMU_TRANSPORT_NACK)
+#endif
             DevCheck4((messg->frame == frame) && (messg->subframe == (next_slot>>1)),
                       messg->frame, frame, messg->subframe, next_slot>>1);
 #else
@@ -331,6 +353,18 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
                     Master_list_rx = oai_emulation.info.master_list;
                     LOG_E(EMU, "RX EMU_TRANSPORT_INFO_RELEASE\n");
                     break;
+#if defined(ENABLE_PGM_TRANSPORT)
+                case EMU_TRANSPORT_NACK:
+                    if (messg->failing_master_id == oai_emulation.info.master_id) {
+                        /* We simply re-send the last message */
+                        pgm_link_send_msg(oai_emulation.info.multicast_group,
+                                        (uint8_t *)bypass_tx_buffer, byte_tx_count);
+                    } else {
+                        /* Sleep awhile till other peers have recovered data */
+                        usleep(500);
+                    }
+                    break;
+#endif
                 default:
                     LOG_E(EMU, "[MAC][BYPASS] ERROR RX UNKNOWN MESSAGE\n");
                     //mac_xface->macphy_exit("");
@@ -452,6 +486,13 @@ int multicast_link_write_sock (int groupP, char *dataP, unsigned int sizeP)
 }
 #endif
 
+#if defined(ENABLE_PGM_TRANSPORT)
+void bypass_tx_nack(unsigned int frame, unsigned int next_slot)
+{
+    bypass_tx_data(NACK_TRANSPORT, frame, next_slot);
+}
+#endif
+
 /***************************************************************************/
 void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int next_slot)
 {
@@ -474,12 +515,29 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
     messg->frame           = frame;
     messg->subframe        = next_slot>>1;
     messg->seq_num         = seq_num_tx;
+    messg->failing_master_id = 0;
 
     seq_num_tx++;
 
     byte_tx_count = sizeof (bypass_msg_header_t) + sizeof (
                         bypass_proto2multicast_header_t);
 
+#if defined(ENABLE_PGM_TRANSPORT)
+    if (Type == NACK_TRANSPORT) {
+        int i;
+        messg->Message_type = EMU_TRANSPORT_NACK;
+        for (i = 0; i < oai_emulation.info.nb_master; i++) {
+            /* Skip our id */
+            if (i == oai_emulation.info.master_id)
+                continue;
+            if ((Master_list_rx & (1 << i)) == 0) {
+                messg->failing_master_id = i;
+                break;
+            }
+        }
+        LOG_T(EMU,"[TX_DATA] NACK TRANSPORT\n");
+    } else
+#endif
     if (Type == WAIT_PM_TRANSPORT) {
         messg->Message_type = EMU_TRANSPORT_INFO_WAIT_PM;
         LOG_T(EMU,"[TX_DATA] WAIT SYNC PM TRANSPORT\n");

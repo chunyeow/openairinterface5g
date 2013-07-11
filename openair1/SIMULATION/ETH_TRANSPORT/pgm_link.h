@@ -6,7 +6,8 @@
 
 int pgm_oai_init(char *if_name);
 
-int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length);
+int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length,
+                 unsigned int frame, unsigned int next_slot);
 
 int pgm_link_send_msg(int group, uint8_t *data, uint32_t len);
 
