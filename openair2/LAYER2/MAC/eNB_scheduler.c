@@ -1605,15 +1605,15 @@ void schedule_RA(unsigned char Mod_id,u32 frame, unsigned char subframe,unsigned
 		 &eNB_mac_inst[Mod_id].CCCH_pdu.payload[0],
 		 rrc_sdu_length);
 
-// #if defined(USER_MODE) && defined(OAI_EMU)
-// 	  if (oai_emulation.info.opt_enabled){
-// 	    trace_pdu(1, (char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)UE_id][0].payload[0],
-//                   rrc_sdu_length, UE_id, 3, find_UE_RNTI(Mod_id, UE_id),
-//                   eNB_mac_inst[Mod_id].subframe,0,0);
-// 	    LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n", 
-// 		  Mod_id, frame, find_UE_RNTI(Mod_id,UE_id), rrc_sdu_length);
-// 	  }
-// #endif
+#if defined(USER_MODE) && defined(OAI_EMU)
+	  if (oai_emulation.info.opt_enabled){
+	    trace_pdu(1, (char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)UE_id][0].payload[0],
+                  rrc_sdu_length, UE_id, 3, find_UE_RNTI(Mod_id, UE_id),
+                  eNB_mac_inst[Mod_id].subframe,0,0);
+	    LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
+		  Mod_id, frame, find_UE_RNTI(Mod_id,UE_id), rrc_sdu_length);
+	  }
+#endif
 	  *nprb= (*nprb) + 3;
 	  *nCCE = (*nCCE) + 4;
 	}
@@ -3167,10 +3167,10 @@ void schedule_ue_spec(unsigned char Mod_id,u32 frame, unsigned char subframe,u16
 
 #if defined(USER_MODE) && defined(OAI_EMU)
     /* Tracing of PDU is done on UE side */
-// 	if (oai_emulation.info.opt_enabled)
-// 	  trace_pdu(1, (char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)next_ue][0].payload[0],
-//                 TBS, Mod_id, 3, find_UE_RNTI(Mod_id,next_ue),
-//                 eNB_mac_inst[Mod_id].subframe,0,0);
+	if (oai_emulation.info.opt_enabled)
+	  trace_pdu(1, (char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)next_ue][0].payload[0],
+                TBS, Mod_id, 3, find_UE_RNTI(Mod_id,next_ue),
+                eNB_mac_inst[Mod_id].subframe,0,0);
 	LOG_D(OPT,"[eNB %d][DLSCH] Frame %d  rnti %x  with size %d\n", 
 	      Mod_id, frame, find_UE_RNTI(Mod_id,next_ue), TBS);
 #endif

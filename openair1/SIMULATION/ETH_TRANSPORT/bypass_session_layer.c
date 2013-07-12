@@ -155,7 +155,7 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
 {
     eNB_transport_info_t *eNB_info;
     int total_header = 0, total_tbs = 0;
-    int n_dci, n_enb;
+    int n_dci, n_enb, enb_info_ix = 0;
 
     DevAssert(bytes_read >= 0);
     DevAssert(messg != NULL);
@@ -175,9 +175,11 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
              oai_emulation.info.master[messg->master_id].nb_enb;
              n_enb ++)
         {
-            for (n_dci = 0; n_dci < (eNB_info->num_ue_spec_dci + eNB_info->num_common_dci); n_dci ++) {
-                total_tbs += eNB_info->tbs[n_dci];
+            for (n_dci = 0; n_dci < (eNB_info[enb_info_ix].num_ue_spec_dci + eNB_info[enb_info_ix].num_common_dci); n_dci ++) {
+                total_tbs += eNB_info[enb_info_ix].tbs[n_dci];
             }
+
+            enb_info_ix++;
 
             if ((total_tbs + total_header) > MAX_TRANSPORT_BLOCKS_BUFFER_SIZE ) {
                 LOG_W(EMU,"RX eNB Transport buffer total size %d (header%d,tbs %d) \n",
@@ -187,7 +189,8 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
             memcpy(&eNB_transport_info[n_enb], eNB_info, total_header + total_tbs);
 
             /* Go to the next eNB info */
-            eNB_info += (total_header + total_tbs);
+            eNB_info = (eNB_transport_info_t *)((unsigned int)eNB_info + total_header+
+            total_tbs);
             bytes_read += (total_header + total_tbs);
         }
 
@@ -215,7 +218,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
 {
     UE_transport_info_t *UE_info;
     int n_ue, n_enb;
-    int total_tbs = 0, total_header = 0;
+    int total_tbs = 0, total_header = 0, ue_info_ix =0;
 
     DevAssert(bytes_read >= 0);
     DevAssert(messg != NULL);
@@ -235,9 +238,11 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
              n_ue < oai_emulation.info.master[messg->master_id].first_ue +
              oai_emulation.info.master[messg->master_id].nb_ue; n_ue ++) {
             total_tbs = 0;
-            for (n_enb = 0; n_enb < UE_info->num_eNB; n_enb ++) {
-                total_tbs += UE_info->tbs[n_enb];
+            for (n_enb = 0; n_enb < UE_info[ue_info_ix].num_eNB; n_enb ++) {
+                total_tbs += UE_info[ue_info_ix].tbs[n_enb];
             }
+
+            ue_info_ix++;
 
             if (total_tbs + total_header > MAX_TRANSPORT_BLOCKS_BUFFER_SIZE ) {
                 LOG_W(EMU,"RX [UE %d] Total size of buffer is %d (header%d,tbs %d) \n",
@@ -247,7 +252,8 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
             memcpy(&UE_transport_info[n_ue], UE_info, total_header + total_tbs);
 
             /* Go to the next UE info */
-            UE_info += (total_header + total_tbs);
+            UE_info = (UE_transport_info_t *)((unsigned int)UE_info + total_header+
+                       total_tbs);
             bytes_read += (total_header + total_tbs);
         }
 
