@@ -11,7 +11,7 @@
 #include "ARCH/CBMIMO1/DEVICE_DRIVER/from_grlib_softregs.h"
 #endif 
 
-//#define DEBUG_PHY
+#define DEBUG_PHY
 
 // Adjust location synchronization point to account for drift
 // The adjustment is performed once per frame based on the
@@ -73,7 +73,7 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
 
 
 #ifdef DEBUG_PHY
-  LOG_D(PHY,"frame %d: rx_offset (after) = %d : max_pos = %d,max_pos_fil = %d\n",phy_vars_ue->frame,phy_vars_ue->rx_offset,max_pos,max_pos_fil);
+  LOG_D(PHY,"frame %d: rx_offset (after) = %d : max_pos = %d,max_pos_fil = %d (peak %d)\n",phy_vars_ue->frame,phy_vars_ue->rx_offset,max_pos,max_pos_fil,temp);
 #endif //DEBUG_PHY
 
 #ifdef CBMIMO1

@@ -2078,7 +2078,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
       if (dci_alloc[i].L == (u8)L) {
 	
 #ifdef DEBUG_DCI_ENCODING
-	msg("[PHY] Generating common DCI %d/%d (nCCE %d) of length %d, aggregation %d (%x)\n",i,num_common_dci,dci_alloc[i].nCCE,dci_alloc[i].dci_length,1<<dci_alloc[i].L,*(unsigned int*)dci_alloc[i].dci_pdu);
+	LOG_I(PHY,"Generating common DCI %d/%d (nCCE %d) of length %d, aggregation %d (%x)\n",i,num_common_dci,dci_alloc[i].nCCE,dci_alloc[i].dci_length,1<<dci_alloc[i].L,*(unsigned int*)dci_alloc[i].dci_pdu);
 	dump_dci(frame_parms,&dci_alloc[i]);
 #endif
 
@@ -2094,7 +2094,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
       if (dci_alloc[i].L == (u8)L) {
       
 #ifdef DEBUG_DCI_ENCODING
-	msg("[PHY] Generating UE (rnti %x) specific DCI %d of length %d, aggregation %d, format %d (%x)\n",dci_alloc[i].rnti,i,dci_alloc[i].dci_length,1<<dci_alloc[i].L,dci_alloc[i].format,dci_alloc[i].dci_pdu);
+	LOG_I(PHY," Generating UE (rnti %x) specific DCI %d of length %d, aggregation %d, format %d (%x)\n",dci_alloc[i].rnti,i,dci_alloc[i].dci_length,1<<dci_alloc[i].L,dci_alloc[i].format,dci_alloc[i].dci_pdu);
 	dump_dci(frame_parms,&dci_alloc[i]);
 #endif
 
@@ -2117,7 +2117,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
   
 
 #ifdef DEBUG_DCI_ENCODING
-  msg("[PHY] PDCCH Modulation, Msymb %d\n",Msymb);
+  LOG_I(PHY," PDCCH Modulation, Msymb %d\n",Msymb);
 #endif
   // Now do modulation
   if (frame_parms->mode1_flag==1) 
@@ -2165,7 +2165,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
       for (i=0;i<Msymb2;i+=2) {
 
 #ifdef DEBUG_DCI_ENCODING
-	msg("[PHY] PDCCH Modulation (TX diversity): REG %d\n",i>>2);
+	LOG_I(PHY," PDCCH Modulation (TX diversity): REG %d\n",i>>2);
 #endif
 	// first antenna position n -> x0
 	((s16*)&y[0][i])[0] = (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
@@ -2189,7 +2189,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 #else  
       for (i=0;i<Msymb2;i+=2) {
 #ifdef DEBUG_DCI_ENCODING
-  msg("[PHY] PDCCH Modulation: Symbol %d : REG %d/%d\n",i,i>>2,Msymb2>>2);
+  LOG_I(PHY," PDCCH Modulation: Symbol %d : REG %d/%d\n",i,i>>2,Msymb2>>2);
 #endif
 	qpsk_table_offset =  MOD_TABLE_QPSK_OFFSET;  //x0
 	qpsk_table_offset2 =  MOD_TABLE_QPSK_OFFSET;  //x0*
@@ -2233,7 +2233,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 
 
 #ifdef DEBUG_DCI_ENCODING
-  msg("[PHY] PDCCH Interleaving\n");
+  LOG_I(PHY," PDCCH Interleaving\n");
 #endif
 
   //  msg("y %p (%p,%p), wbar %p (%p,%p)\n",y,y[0],y[1],wbar,wbar[0],wbar[1]);
@@ -2290,7 +2290,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 		if (frame_parms->nb_antennas_tx_eNB > 1)
 		  txdataF[1][tti_offset+i] = wbar[1][mprime];
 #ifdef DEBUG_DCI_ENCODING
-		msg("[PHY] PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+i,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
+		LOG_I(PHY," PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+i,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
 #endif
 		mprime++;
 	      }
@@ -2307,7 +2307,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 		if (frame_parms->nb_antennas_tx_eNB > 1)
 		  txdataF[1][tti_offset+i] = wbar[1][mprime];
 #ifdef DEBUG_DCI_ENCODING
-		msg("[PHY] PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+i,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
+		LOG_I(PHY," PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+i,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
 #endif
 		mprime++;
 	      }
@@ -2317,28 +2317,28 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 		if (frame_parms->nb_antennas_tx_eNB > 1)
 		  txdataF[1][tti_offset+0] = wbar[1][mprime];
 #ifdef DEBUG_DCI_ENCODING
-		msg("[PHY] PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
+		LOG_I(PHY," PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
 #endif
 		mprime++;
 		txdataF[0][tti_offset+1] = wbar[0][mprime];
 		if (frame_parms->nb_antennas_tx_eNB > 1)
 		  txdataF[1][tti_offset+1] = wbar[1][mprime];
 #ifdef DEBUG_DCI_ENCODING
-		msg("[PHY] PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+1,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
+		LOG_I(PHY," PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset+1,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
 #endif
 		mprime++;
 		txdataF[0][tti_offset-frame_parms->ofdm_symbol_size+3] = wbar[0][mprime];
 		if (frame_parms->nb_antennas_tx_eNB > 1)
 		  txdataF[1][tti_offset-frame_parms->ofdm_symbol_size+3] = wbar[1][mprime];
 #ifdef DEBUG_DCI_ENCODING
-		msg("[PHY] PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset-frame_parms->ofdm_symbol_size+3,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
+		LOG_I(PHY," PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset-frame_parms->ofdm_symbol_size+3,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
 #endif
 		mprime++;
 		txdataF[0][tti_offset-frame_parms->ofdm_symbol_size+4] = wbar[0][mprime];
 		if (frame_parms->nb_antennas_tx_eNB > 1)
 		  txdataF[1][tti_offset-frame_parms->ofdm_symbol_size+4] = wbar[1][mprime];
 #ifdef DEBUG_DCI_ENCODING
-		msg("[PHY] PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset-frame_parms->ofdm_symbol_size+4,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
+		LOG_I(PHY," PDCCH mapping mprime %d => %d (symbol %d re %d) -> (%d,%d)\n",mprime,tti_offset,symbol_offset,re_offset-frame_parms->ofdm_symbol_size+4,*(short*)&wbar[0][mprime],*(1+(short*)&wbar[0][mprime]));
 #endif
 		mprime++;
 
@@ -2447,14 +2447,14 @@ void dci_decoding(u8 DCI_LENGTH,
   s32 i;
 #endif
   if (aggregation_level>3) {
-    msg("[PHY] dci.c: dci_decoding FATAL, illegal aggregation_level %d\n",aggregation_level);
+    LOG_I(PHY," dci.c: dci_decoding FATAL, illegal aggregation_level %d\n",aggregation_level);
     return;
   }
 
   coded_bits = 72 * (1<<aggregation_level);
 
 #ifdef DEBUG_DCI_DECODING
-  msg("[PHY] Doing DCI decoding for %d bits, DCI_LENGTH %d,coded_bits %d, e %p\n",3*(DCI_LENGTH+16),DCI_LENGTH,coded_bits,e);
+  LOG_I(PHY," Doing DCI decoding for %d bits, DCI_LENGTH %d,coded_bits %d, e %p\n",3*(DCI_LENGTH+16),DCI_LENGTH,coded_bits,e);
 #endif
   
   // now do decoding
@@ -2465,7 +2465,7 @@ void dci_decoding(u8 DCI_LENGTH,
 
    
 #ifdef DEBUG_DCI_DECODING
-  msg("[PHY] Doing DCI Rate Matching RCC %d, w %p\n",RCC,w);
+  LOG_I(PHY," Doing DCI Rate Matching RCC %d, w %p\n",RCC,w);
 #endif
 
   lte_rate_matching_cc_rx(RCC,coded_bits,w_rx,dummy_w_rx,e);
@@ -2476,7 +2476,7 @@ void dci_decoding(u8 DCI_LENGTH,
  
 #ifdef DEBUG_DCI_DECODING
   for (i=0;i<16+DCI_LENGTH;i++)
-    msg("[PHY] DCI %d : (%d,%d,%d)\n",i,*(d_rx+96+(3*i)),*(d_rx+97+(3*i)),*(d_rx+98+(3*i)));
+    LOG_I(PHY," DCI %d : (%d,%d,%d)\n",i,*(d_rx+96+(3*i)),*(d_rx+97+(3*i)),*(d_rx+98+(3*i)));
 #endif  
   memset(decoded_output,0,2+((16+DCI_LENGTH)>>3));
   
@@ -3257,7 +3257,7 @@ u16 dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
 
   // Now check UE_SPEC format 1E_2A_M10PRB search spaces aggregation 1
 #ifdef DEBUG_DCI_DECODING
-    msg("[PHY] MU-MIMO check UE_SPEC format 1E_2A_M10PRB\n");
+    LOG_I(PHY," MU-MIMO check UE_SPEC format 1E_2A_M10PRB\n");
 #endif 
     dci_decoding_procedure0(lte_ue_pdcch_vars,0,
 			    subframe,

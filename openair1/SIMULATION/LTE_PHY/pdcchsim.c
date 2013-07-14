@@ -437,7 +437,7 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,u8 log2L, u8 log2Lcommon, u
 
   // add ue specific dci
   DCI_pdu.dci_alloc[1].dci_length = dci_length;
-  DCI_pdu.dci_alloc[1].L          = 0;
+  DCI_pdu.dci_alloc[1].L          = 1;
   DCI_pdu.dci_alloc[1].rnti       = rnti;
   DCI_pdu.dci_alloc[1].format     = format1;
   DCI_pdu.dci_alloc[1].ra_flag    = 0;
@@ -798,8 +798,8 @@ int main(int argc, char **argv) {
   
 
 
-  PHY_vars_eNB->ulsch_eNB[0] = new_eNB_ulsch(8,MAX_TURBO_ITERATIONS,0);
-  PHY_vars_UE->ulsch_ue[0]   = new_ue_ulsch(8,0);
+  PHY_vars_eNB->ulsch_eNB[0] = new_eNB_ulsch(8,MAX_TURBO_ITERATIONS,N_RB_DL,0);
+  PHY_vars_UE->ulsch_ue[0]   = new_ue_ulsch(8,N_RB_DL,0);
 
 
   if (input_fd==NULL) {

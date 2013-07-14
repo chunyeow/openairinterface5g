@@ -2710,16 +2710,8 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round++;
 
 	LOG_D(PHY,"[UE][PUSCH %d] Increasing to round %d\n",harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round);
-
-	//	phy_vars_eNB->ulsch_eNB[i]->o_ACK[0] = 0;
-	//	phy_vars_eNB->ulsch_eNB[i]->o_ACK[1] = 0;
-
-	/*
-	  #ifdef OAI_EMU
-	  if (abstraction_flag == 0)
-	  dump_ulsch(phy_vars_eNB, last_slot>>1, i);
-	  #endif
-	*/
+	//	dump_ulsch(phy_vars_eNB, last_slot>>1, i);
+	//	exit(-1);
 
 	if (phy_vars_eNB->ulsch_eNB[i]->Msg3_flag == 1) {
 	  LOG_D(PHY,"[eNB %d][RAPROC] frame %d, slot %d, subframe %d, UE %d: Error receiving ULSCH (Msg3), round %d/%d\n",

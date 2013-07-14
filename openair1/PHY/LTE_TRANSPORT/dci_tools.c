@@ -215,6 +215,7 @@ void conv_rballoc(uint8_t ra_header,uint32_t rb_alloc,uint32_t N_RB_DL,uint32_t 
 	rb_alloc2[1] |= (3<<i);
       //    printf("rb_alloc2[%d] (type 0) %x ((%x>>%d)&1=%d)\n",(3*i)>>5,rb_alloc2[(3*i)>>5],rb_alloc,i,(rb_alloc>>i)&1);
       */
+      //      printf("rb_alloc[1]=%x,rb_alloc[0]=%x\n",rb_alloc2[1],rb_alloc2[0]);
     }
     else {
       LOG_E(PHY,"resource type 1 not supported for  N_RB_DL=100\n");
@@ -573,7 +574,7 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
 	TPC      = ((DCI1A_1_5MHz_TDD_1_6_t *)dci_pdu)->TPC; 
 	harq_pid = ((DCI1A_1_5MHz_TDD_1_6_t *)dci_pdu)->harq_pid;
 
-	//      printf("TDD 1A: mcs %d, rballoc %x,rv %d, NPRB %d\n",mcs,rballoc,rv,NPRB);
+	//	      printf("TDD 1A: mcs %d, rballoc %x,rv %d, NPRB %d\n",mcs,rballoc,rv,NPRB);
       }
       else {
 	vrb_type = ((DCI1A_1_5MHz_FDD_t *)dci_pdu)->vrb_type;
@@ -1160,7 +1161,7 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
     msg("dlsch0 eNB: harq_pid %d\n",harq_pid);
     msg("dlsch0 eNB: Ndi      %d\n",dlsch0->harq_processes[harq_pid]->Ndi);
     msg("dlsch0 eNB: rvidx    %d\n",dlsch0->harq_processes[harq_pid]->rvidx);
-    msg("dlsch0 eNB: TBS      %d\n",dlsch0->harq_processes[harq_pid]->TBS);
+    msg("dlsch0 eNB: TBS      %d (NPRB %d)\n",dlsch0->harq_processes[harq_pid]->TBS,NPRB);
     msg("dlsch0 eNB: mcs      %d\n",dlsch0->harq_processes[harq_pid]->mcs);
     msg("dlsch0 eNB: tpmi %d\n",tpmi);
     msg("dlsch0 eNB: mimo_mode %d\n",dlsch0->harq_processes[harq_pid]->mimo_mode);

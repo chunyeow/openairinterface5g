@@ -791,7 +791,7 @@ int main(int argc, char **argv) {
   for (k=0;k<n_users;k++) {
     // Create transport channel structures for 2 transport blocks (MIMO)
     for (i=0;i<2;i++) {
-      PHY_vars_eNB->dlsch_eNB[k][i] = new_eNB_dlsch(1,8,N_RB_DL, 0);
+      PHY_vars_eNB->dlsch_eNB[k][i] = new_eNB_dlsch(1,8,N_RB_DL,0);
       
       if (!PHY_vars_eNB->dlsch_eNB[k][i]) {
 	printf("Can't get eNB dlsch structures\n");
@@ -947,7 +947,7 @@ int main(int argc, char **argv) {
 	  }
 	  memcpy(&dci_alloc[num_dci].dci_pdu[0],&DLSCH_alloc_pdu_1[k],dci_length_bytes);
 	  dci_alloc[num_dci].dci_length = dci_length;
-	  dci_alloc[num_dci].L          = 2;
+	  dci_alloc[num_dci].L          = 1;
 	  dci_alloc[num_dci].rnti       = n_rnti+k;
 	  dci_alloc[num_dci].format     = format1;
 	  dump_dci(&PHY_vars_eNB->lte_frame_parms,&dci_alloc[num_dci]);	
@@ -1441,7 +1441,7 @@ int main(int argc, char **argv) {
 						   subframe);
 
 	    if (num_pdcch_symbols_2 > num_pdcch_symbols) {
-	      msg("Error: given num_pdcch_symbols not big enough\n");
+	      msg("Error: given num_pdcch_symbols not big enough (%d > %d)\n",num_pdcch_symbols_2,num_pdcch_symbols);
 	      exit(-1);
 	    }
 
@@ -1654,6 +1654,7 @@ int main(int argc, char **argv) {
 	  if (awgn_flag == 0) {	
 	    multipath_channel(eNB2UE[0],s_re,s_im,r_re,r_im,
 			      2*frame_parms->samples_per_tti,hold_channel);
+	    //	    printf("amc: ****************** eNB2UE[%d]->n_rx = %d,dd %d\n",round,eNB2UE[round]->nb_rx,eNB2UE[round]->channel_offset);
 	    if(abstx==1)
 	      if(round==0 && hold_channel==0){
 		random_channel(eNB2UE[1]);

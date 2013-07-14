@@ -723,7 +723,7 @@ int random_channel(channel_desc_t *desc) {
   struct complex phase, alpha, beta;
   
   if ((desc->nb_tx>NB_ANTENNAS_TX) || (desc->nb_rx > NB_ANTENNAS_RX)) {
-    msg("random_channel.c: Error: temporary buffer for channel not big enough\n");
+    msg("random_channel.c: Error: temporary buffer for channel not big enough (%d,%d)\n",desc->nb_tx,desc->nb_rx);
     return(-1);
   }
 

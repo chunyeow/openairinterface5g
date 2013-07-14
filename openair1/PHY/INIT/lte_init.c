@@ -1014,7 +1014,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_pdsch_vars_mch[eNB_id]->rxdataF_comp    = (int **)malloc16(8*sizeof(int*));
       for (i=0; i<frame_parms->nb_antennas_rx; i++)
 	for (j=0; j<4;j++)//frame_parms->nb_antennas_tx; j++)
-	  ue_pdsch_vars_mch[eNB_id]->rxdataF_comp[(j<<1)+i] = (int *)malloc16(sizeof(int)*(frame_parms->N_RB_DL*12*14));
+	  ue_pdsch_vars_mch[eNB_id]->rxdataF_comp[(j<<1)+i] = (int *)malloc16(sizeof(int)*(2+frame_parms->N_RB_DL*12*14));
       
       ue_pdsch_vars_mch[eNB_id]->rho = (int **)malloc16(frame_parms->nb_antennas_rx*sizeof(int*));
       

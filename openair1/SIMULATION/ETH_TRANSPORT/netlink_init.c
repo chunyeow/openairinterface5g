@@ -39,14 +39,14 @@ int netlink_init(void)
     nas_sock_fd = socket(PF_NETLINK, SOCK_RAW,GRAAL_NETLINK_ID);
     if (nas_sock_fd == -1) {
         printf("[NETLINK] Error opening socket %d (%d:%s)\n",nas_sock_fd,errno, strerror(errno));
-        exit(1);
+//        exit(1);
     }
     printf("[NETLINK]Opened socket with fd %d\n",nas_sock_fd);
 
     ret = fcntl(nas_sock_fd,F_SETFL,O_NONBLOCK);
     if (ret == -1) {
       printf("[NETLINK] Error fcntl (%d:%s)\n",errno, strerror(errno));
-      exit(1);
+//      exit(1);
     }
 
     memset(&nas_src_addr, 0, sizeof(nas_src_addr));

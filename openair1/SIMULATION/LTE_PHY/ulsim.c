@@ -213,6 +213,7 @@ int main(int argc, char **argv) {
 
   uint8_t max_turbo_iterations=4;
   uint8_t llr8_flag=0;
+  int nb_rb_set = 0;
 
   reset_meas(&ts);
   start_meas(&ts);
@@ -330,6 +331,7 @@ int main(int argc, char **argv) {
       break;
     case 'r':
       nb_rb = atoi(optarg);
+      nb_rb_set = 1;
       break;
     case 'f':
       first_rb = atoi(optarg);
@@ -400,6 +402,9 @@ int main(int argc, char **argv) {
   }
   
   lte_param_init(1,n_rx,1,extended_prefix_flag,N_RB_DL,frame_type,tdd_config,osf);  
+  if (nb_rb_set == 0)
+     nb_rb = PHY_vars_eNB->lte_frame_parms.N_RB_UL;
+
   printf("1 . rxdataF_comp[0] %p\n",PHY_vars_eNB->lte_eNB_pusch_vars[0]->rxdataF_comp[0][0]);
   printf("Setting mcs = %d\n",mcs);
   printf("n_frames = %d\n",	n_frames);
@@ -731,7 +736,7 @@ int main(int argc, char **argv) {
 
       PHY_vars_eNB->frame = PHY_vars_UE->frame;
       harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame,subframe);
-      printf("UL frame %d, harq_pid %d\n",PHY_vars_UE->frame,harq_pid);
+      printf("UL frame %d/subframe %d, harq_pid %d\n",PHY_vars_UE->frame,subframe,harq_pid);
       if (input_fdUL == NULL) {
 	input_buffer_length = PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->TBS/8;
 	input_buffer = (unsigned char *)malloc(input_buffer_length+4);

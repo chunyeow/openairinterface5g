@@ -83,7 +83,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
     if (l==0) {
       rx_offset = sample_offset + slot_offset + nb_prefix_samples0 + subframe_offset - SOFFSET;
       // Align with 128 bit
-      //     rx_offset = rx_offset - rx_offset % 4;
+      rx_offset = rx_offset - rx_offset % 4;
       if (rx_offset > (frame_length_samples - frame_parms->ofdm_symbol_size))
 	memcpy((short *)&ue_common_vars->rxdata[aa][frame_length_samples],
 	       (short *)&ue_common_vars->rxdata[aa][0],
@@ -113,7 +113,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
         (frame_parms->ofdm_symbol_size+nb_prefix_samples0+nb_prefix_samples) +
         (frame_parms->ofdm_symbol_size+nb_prefix_samples)*(l-1) + subframe_offset - SOFFSET;
       
-      //      rx_offset = rx_offset - (rx_offset % 4);
+      rx_offset = rx_offset - (rx_offset % 4);
 
       if (rx_offset > (frame_length_samples - frame_parms->ofdm_symbol_size))
 	memcpy((short *)&ue_common_vars->rxdata[aa][frame_length_samples],
