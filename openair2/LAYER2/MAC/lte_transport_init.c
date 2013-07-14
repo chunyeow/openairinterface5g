@@ -17,7 +17,7 @@ void init_transport_channels(unsigned char transmission_mode) {
   UL_alloc_pdu.TPC     = 0;
   UL_alloc_pdu.cqi_req = 1;
   
-
+  /*
   BCCH_alloc_pdu.type               = 1;
   BCCH_alloc_pdu.vrb_type           = 0;
   BCCH_alloc_pdu.rballoc            = BCCH_RB_ALLOC;
@@ -36,6 +36,7 @@ void init_transport_channels(unsigned char transmission_mode) {
   BCCH_alloc_pdu_fdd.mcs      = 1;
   BCCH_alloc_pdu_fdd.harq_pid = 0;
   BCCH_alloc_pdu_fdd.TPC      = 1;      // set to 3 PRB
+  */
 
   DLSCH_alloc_pdu1A.type               = 1;
   DLSCH_alloc_pdu1A.vrb_type           = 0;

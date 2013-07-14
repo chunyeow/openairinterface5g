@@ -28,7 +28,6 @@ IS_KERNEL_SUBVERSION_GREATER_THAN_22=$(shell if [ $(SUBVERSION) -ge 22 ] ; then 
 IS_KERNEL_SUBVERSION_GREATER_THAN_29=$(shell if [ $(SUBVERSION) -ge 29 ] ; then echo true ; fi)
 IS_KERNEL_SUBVERSION_GREATER_THAN_30=$(shell if [ $(SUBVERSION) -ge 30 ] ; then echo true ; fi)
 IS_KERNEL_SUBVERSION_GREATER_THAN_32=$(shell if [ $(SUBVERSION) -ge 32 ] ; then echo true ; fi)
-
 # Add global rule for V3 kernels
 IS_KERNEL_SUBVERSION_GREATER_THAN_301= "false"
 
@@ -38,6 +37,7 @@ ifeq ($(KERNEL_MAIN_VERSION),3)
    IS_KERNEL_SUBVERSION_GREATER_THAN_30 = "true"
    IS_KERNEL_SUBVERSION_GREATER_THAN_32 = "true"
    IS_KERNEL_SUBVERSION_GREATER_THAN_301=$(shell if [ $(SUBVERSION) -ge 1 ] ; then echo true ; fi)
+   IS_KERNEL_SUBVERSION_GREATER_THAN_307=$(shell if [ $(SUBVERSION) -ge 7 ] ; then echo true ; fi)
 endif
 
 GT2622 = $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_22),-DKERNEL_VERSION_GREATER_THAN_2622=1)

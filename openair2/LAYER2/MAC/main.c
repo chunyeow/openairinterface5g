@@ -139,6 +139,7 @@ int mac_top_init(int eMBMS_active, u8 cba_group_active){
   unsigned char  Mod_id,i,j;
   RA_TEMPLATE *RA_template;
   UE_TEMPLATE *UE_template;
+  int size_bytes1,size_bytes2,size_bits1,size_bits2;
 
   LOG_I(MAC,"[MAIN] Init function start:Nb_UE_INST=%d\n",NB_UE_INST);
   if (NB_UE_INST>0) {
@@ -209,21 +210,81 @@ int mac_top_init(int eMBMS_active, u8 cba_group_active){
     RA_template = (RA_TEMPLATE *)&eNB_mac_inst[i].RA_template[0];
     for (j=0;j<NB_RA_PROC_MAX;j++) {
       if (mac_xface->lte_frame_parms->frame_type == TDD) {
-	memcpy((void *)&RA_template[j].RA_alloc_pdu1[0],(void *)&RA_alloc_pdu,sizeof(DCI1A_5MHz_TDD_1_6_t));
-	memcpy((void *)&RA_template[j].RA_alloc_pdu2[0],(void *)&DLSCH_alloc_pdu1A,sizeof(DCI1A_5MHz_TDD_1_6_t));
-	RA_template[j].RA_dci_size_bytes1 = sizeof(DCI1A_5MHz_TDD_1_6_t);
-	RA_template[j].RA_dci_size_bytes2 = sizeof(DCI1A_5MHz_TDD_1_6_t);
-	RA_template[j].RA_dci_size_bits1  = sizeof_DCI1A_5MHz_TDD_1_6_t;
-	RA_template[j].RA_dci_size_bits2  = sizeof_DCI1A_5MHz_TDD_1_6_t;
+	switch (mac_xface->lte_frame_parms->N_RB_DL) {
+	case 6:
+	  size_bytes1 = sizeof(DCI1A_1_5MHz_TDD_1_6_t);
+	  size_bytes2 = sizeof(DCI1A_1_5MHz_TDD_1_6_t);
+	  size_bits1 = sizeof_DCI1A_1_5MHz_TDD_1_6_t;
+	  size_bits2 = sizeof_DCI1A_1_5MHz_TDD_1_6_t;
+	  break;
+	case 25:
+	  size_bytes1 = sizeof(DCI1A_5MHz_TDD_1_6_t);
+	  size_bytes2 = sizeof(DCI1A_5MHz_TDD_1_6_t);
+	  size_bits1 = sizeof_DCI1A_5MHz_TDD_1_6_t;
+	  size_bits2 = sizeof_DCI1A_5MHz_TDD_1_6_t;
+	  break;
+	case 50:
+	  size_bytes1 = sizeof(DCI1A_10MHz_TDD_1_6_t);
+	  size_bytes2 = sizeof(DCI1A_10MHz_TDD_1_6_t);
+	  size_bits1 = sizeof_DCI1A_10MHz_TDD_1_6_t;
+	  size_bits2 = sizeof_DCI1A_10MHz_TDD_1_6_t;
+	  break;
+	case 100:
+	  size_bytes1 = sizeof(DCI1A_20MHz_TDD_1_6_t);
+	  size_bytes2 = sizeof(DCI1A_20MHz_TDD_1_6_t);
+	  size_bits1 = sizeof_DCI1A_20MHz_TDD_1_6_t;
+	  size_bits2 = sizeof_DCI1A_20MHz_TDD_1_6_t;
+	  break;
+	default:
+	  size_bytes1 = sizeof(DCI1A_1_5MHz_TDD_1_6_t);
+	  size_bytes2 = sizeof(DCI1A_1_5MHz_TDD_1_6_t);
+	  size_bits1 = sizeof_DCI1A_1_5MHz_TDD_1_6_t;
+	  size_bits2 = sizeof_DCI1A_1_5MHz_TDD_1_6_t;
+	  break;
+	}
+
       }
       else {
-	memcpy((void *)&RA_template[j].RA_alloc_pdu1[0],(void *)&RA_alloc_pdu_fdd,sizeof(DCI1A_5MHz_FDD_t));
-	memcpy((void *)&RA_template[j].RA_alloc_pdu2[0],(void *)&DLSCH_alloc_pdu1A_fdd,sizeof(DCI1A_5MHz_FDD_t));
-	RA_template[j].RA_dci_size_bytes1 = sizeof(DCI1A_5MHz_FDD_t);
-	RA_template[j].RA_dci_size_bytes2 = sizeof(DCI1A_5MHz_FDD_t);
-	RA_template[j].RA_dci_size_bits1  = sizeof_DCI1A_5MHz_FDD_t;
-	RA_template[j].RA_dci_size_bits2  = sizeof_DCI1A_5MHz_FDD_t;
+	switch (mac_xface->lte_frame_parms->N_RB_DL) {
+	case 6:
+	  size_bytes1 = sizeof(DCI1A_1_5MHz_FDD_t);
+	  size_bytes2 = sizeof(DCI1A_1_5MHz_FDD_t);
+	  size_bits1 = sizeof_DCI1A_1_5MHz_FDD_t;
+	  size_bits2 = sizeof_DCI1A_1_5MHz_FDD_t;
+	  break;
+	case 25:
+	  size_bytes1 = sizeof(DCI1A_5MHz_FDD_t);
+	  size_bytes2 = sizeof(DCI1A_5MHz_FDD_t);
+	  size_bits1 = sizeof_DCI1A_5MHz_FDD_t;
+	  size_bits2 = sizeof_DCI1A_5MHz_FDD_t;
+	  break;
+	case 50:
+	  size_bytes1 = sizeof(DCI1A_10MHz_FDD_t);
+	  size_bytes2 = sizeof(DCI1A_10MHz_FDD_t);
+	  size_bits1 = sizeof_DCI1A_10MHz_FDD_t;
+	  size_bits2 = sizeof_DCI1A_10MHz_FDD_t;
+	  break;
+	case 100:
+	  size_bytes1 = sizeof(DCI1A_20MHz_FDD_t);
+	  size_bytes2 = sizeof(DCI1A_20MHz_FDD_t);
+	  size_bits1 = sizeof_DCI1A_20MHz_FDD_t;
+	  size_bits2 = sizeof_DCI1A_20MHz_FDD_t;
+	  break;
+	default:
+	  size_bytes1 = sizeof(DCI1A_1_5MHz_FDD_t);
+	  size_bytes2 = sizeof(DCI1A_1_5MHz_FDD_t);
+	  size_bits1 = sizeof_DCI1A_1_5MHz_FDD_t;
+	  size_bits2 = sizeof_DCI1A_1_5MHz_FDD_t;
+	  break;
+	}
       }
+      memcpy((void *)&RA_template[j].RA_alloc_pdu1[0],(void *)&RA_alloc_pdu,size_bytes1);
+      memcpy((void *)&RA_template[j].RA_alloc_pdu2[0],(void *)&DLSCH_alloc_pdu1A,size_bytes2);
+      RA_template[j].RA_dci_size_bytes1 = size_bytes1;
+      RA_template[j].RA_dci_size_bytes2 = size_bytes2;
+      RA_template[j].RA_dci_size_bits1  = size_bits1;
+      RA_template[j].RA_dci_size_bits2  = size_bits2;
+      
       RA_template[j].RA_dci_fmt1        = format1A;
       RA_template[j].RA_dci_fmt2        = format1A;
     }

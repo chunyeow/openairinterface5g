@@ -125,6 +125,8 @@
 // The power headroom reporting range is from -23 ...+40 dB and beyond, with step 1
 #define PHR_MAPPING_OFFSET 23  // if ( x>= -23 ) val = floor (x + 23) 
 
+#define N_RBGS_MAX 25
+
 #define LCGID0 0
 #define LCGID1 1
 #define LCGID2 2
@@ -579,6 +581,8 @@ typedef struct{
   DCI_PDU DCI_pdu;
   /// Outgoing BCCH pdu for PHY
   BCCH_PDU BCCH_pdu;
+  /// Outgoing BCCH DCI allocation
+  uint32_t BCCH_alloc_pdu;
   /// Outgoing CCCH pdu for PHY
   CCCH_PDU CCCH_pdu;
   /// Outgoing DLSCH pdu for PHY
@@ -962,6 +966,25 @@ void mac_UE_out_of_sync_ind(u8 Mod_id,u32 frame, u16 CH_index);
 
 
 // eNB functions
+/* \brief This function assigns pre-available RBS to each UE in specified sub-bands before scheduling is done
+@param Mod_id Instance ID of eNB
+@param frame Index of frame
+@param subframe Index of current subframe
+@param dl_pow_off Pointer to store resulting power offset for DCI
+@param pre_nb_available_rbs Pointer to store number of remaining rbs after scheduling
+@param N_RBS Number of resource block groups
+@param rb_alloc_sub Table of resource block groups allocated to each UE
+ */
+
+
+void dlsch_scheduler_pre_processor (unsigned char Mod_id,
+				    u32 frame,
+				    unsigned char subframe,
+				    u8 *dl_pow_off,
+				    u16 *pre_nb_available_rbs,
+				    int N_RBGS,
+				    unsigned char rballoc_sub_UE[NUMBER_OF_UE_MAX][N_RBGS_MAX]);
+
 /* \brief Function to trigger the eNB scheduling procedure.  It is called by PHY at the beginning of each subframe, \f$n$\f 
    and generates all DLSCH allocations for subframe \f$n\f$ and ULSCH allocations for subframe \f$n+k$\f. The resultant DCI_PDU is
    ready after returning from this call.
@@ -987,7 +1010,6 @@ DCI_PDU *get_dci_sdu(u8 Mod_id,u32 frame,u8 subframe);
 @param timing_offset Offset in samples of the received PRACH w.r.t. eNB timing. This is used to 
 */
 void initiate_ra_proc(u8 Mod_id,u32 frame, u16 preamble_index,s16 timing_offset,u8 sect_id,u8 subframe,u8 f_id);
-
 
 /* \brief Function in eNB to fill RAR pdu when requested by PHY.  This provides a single RAR SDU for the moment and returns the t-CRNTI.
 @param Mod_id Instance ID of eNB
