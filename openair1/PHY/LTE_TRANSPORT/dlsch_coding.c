@@ -131,7 +131,7 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
 
     for (i=0;i<Mdlharq;i++) {
       dlsch->harq_processes[i] = (LTE_DL_eNB_HARQ_t *)malloc16(sizeof(LTE_DL_eNB_HARQ_t));
-      printf("Required mem size %d (bw scaling %d), dlsch->harq_processes[%d] %p\n",
+      LOG_T(PHY, "Required mem size %d (bw scaling %d), dlsch->harq_processes[%d] %p\n",
 	     MAX_DLSCH_PAYLOAD_BYTES/bw_scaling,bw_scaling, i,dlsch->harq_processes[i]);
       if (dlsch->harq_processes[i]) {
           bzero(dlsch->harq_processes[i],sizeof(LTE_DL_eNB_HARQ_t));

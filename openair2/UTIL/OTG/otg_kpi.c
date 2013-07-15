@@ -686,8 +686,12 @@ void add_log_metric(int src, int dst, int ctime, double metric, unsigned int lab
  case OTG_GP_BG:
    add_log_label(label, &start_log_GP_bg);
    break;
+ case OTG_JITTER:
+   add_log_label(label, &start_log_GP_bg);
+   break;
+    
  default:
-   LOG_E(OTG, "File label unknown \n");
+   LOG_E(OTG, "File label unknown %d \n", label);
  }
 
  LOG_F(label,"%d  ", ctime);

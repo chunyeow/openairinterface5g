@@ -482,7 +482,7 @@ backgroundStream_t *backgroundStreamInit(backgroundStream_t *stream, double lamb
 	}
   }
 
-  printf("OTG BACKGROUND_USERS DEBUG: backgroundStreamInit(%d) called\n",(int)stream);
+  LOG_D(OTG,"BACKGROUND_USERS DEBUG: backgroundStreamInit(%d) called\n",(int)stream);
   backgroundPrintStream (stream);
   return stream;
 }
@@ -496,7 +496,7 @@ backgroundStream_t *backgroundStreamInit(backgroundStream_t *stream, double lamb
 void backgroundUpdateStream(backgroundStream_t *stream, int ctime){
   int numNewSessions, cnts, period;
 
-  printf("OTG BACKGROUND DEBUG: backgroundUpdateStream(stream*=%d,ctime=%d,period=%d) called\n",(int)stream, ctime);
+  LOG_D(OTG,"BACKGROUND DEBUG: backgroundUpdateStream(stream*=%d,ctime=%d,period=%d) called\n",(int)stream, ctime);
   if(stream){
 	period=ctime-stream->lastUpdateTime;
 	numNewSessions=poisson_dist(stream->meanNumSessions/5710*period);
@@ -532,7 +532,7 @@ double backgroundCalculateSize(backgroundStream_t *stream, int ctime, int idt){
   double mrate=0;
 
   backgroundUpdateStream(stream, ctime);
-  printf("OTG BACKGROUND DEBUG: backgroundCalculateSize(stream*=%d,idt=%d,ctime=%d) called\n",(int)stream, idt, ctime);
+  LOG_D(OTG,"BACKGROUND DEBUG: backgroundCalculateSize(stream*=%d,idt=%d,ctime=%d) called\n",(int)stream, idt, ctime);
   if(stream){
 	for(cnts=0; cnts<BACKGROUND_NUM_ACTIVE_MAX; cnts++){
 	  if(stream->activeSessions[cnts].endTime>ctime){
@@ -541,7 +541,7 @@ double backgroundCalculateSize(backgroundStream_t *stream, int ctime, int idt){
 	  }
 	}
 	size=mrate*idt/1000;
-	printf("OTG BACKGROUND DEBUG:     cntact=%02d, idt=%05d, agg_mrate=%05.1f, size=%04.1f\n", cntact, idt, mrate,size);
+	LOG_D(OTG,"BACKGROUND DEBUG:     cntact=%02d, idt=%05d, agg_mrate=%05.1f, size=%04.1f\n", cntact, idt, mrate,size);
   }
   return size;
 }
@@ -554,11 +554,11 @@ double backgroundCalculateSize(backgroundStream_t *stream, int ctime, int idt){
 void backgroundPrintStream(backgroundStream_t *stream){
   int cnts;
   
-  printf("OTG BACKGROUND DEBUG: backgroundPrintStream(%d)\n",(int)stream);
+  LOG_D(OTG,"BACKGROUND DEBUG: backgroundPrintStream(%d)\n",(int)stream);
   if(stream){
-	printf("OTG BACKGROUND DEBUG:     meanNumSessions(lambda_n)=%f\n",stream->meanNumSessions);
+    LOG_D(OTG,"BACKGROUND DEBUG:     meanNumSessions(lambda_n)=%f\n",stream->meanNumSessions);
 	for(cnts=0; cnts<BACKGROUND_NUM_ACTIVE_MAX; cnts++){
-	  printf("OTG BACKGROUND DEBUG:       session[%d] -> mrate=%06.3f, etime=%05d\n",
+	  LOG_D(OTG,"BACKGROUND DEBUG:       session[%d] -> mrate=%06.3f, etime=%05d\n",
 	        cnts, stream->activeSessions[cnts].meanSessionRate, stream->activeSessions[cnts].endTime);
 	}
   }

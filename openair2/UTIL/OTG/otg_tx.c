@@ -105,7 +105,8 @@ int time_dist(int src, int dst,int application, int state) {
 	  break;
 	default :
 	  idt =0;
-	  LOG_W(OTG, "IDT distribution unknown, set to 0 \n");
+	  LOG_W(OTG, "IDT distribution unknown, set to 0 for (src %d, dst %d, app %d, state %d)\n", 
+		  src, dst, application, state );
   }
 
   LOG_D(OTG,"IDT :: Inter Departure Time Distribution= %d , val= %d\n", g_otg->idt_dist[src][dst][application][state],idt);
@@ -170,7 +171,8 @@ int size_dist(int src, int dst, int application, int state) {
 		                                      otg_info->ctime, otg_info->idt[src][dst][application]));
 	  	break;
 	  default:
-		LOG_E(OTG, "PKT Size Distribution unknown \n");
+	    LOG_E(OTG, "PKT Size Distribution unknown (src %d, dst %d, app %d, state %d)\n", 
+		  src, dst, application, state );
 	}
 
   }
@@ -276,7 +278,13 @@ Send Packets when:
 		otg_info->tx_total_bytes_dl+=buffer_size;
 	else
 		otg_info->tx_total_bytes_ul+=buffer_size;
-
+	
+	if (otg_info->traffic_type[src][dst] > MAX_NUM_APPLICATION) {
+	  LOG_W(OTG,"application type out of range %d for the pair of (src %d, dst %d) \n", 
+		otg_info->traffic_type[src][dst], src, dst);
+	  otg_info->traffic_type[src][dst]=0;
+	} 
+  
  	return serialize_buffer(header, payload, buffer_size, otg_info->traffic_type[src][dst], flag, flow, ctime, seq_num, otg_info->header_type_app[src][dst][flow], state, otg_info->m2m_aggregation[src][dst]);
 	}
 
@@ -327,7 +335,7 @@ unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size)
       if (size!=strlen(payload))
 	LOG_E(OTG,"[src %d][dst %d] The expected packet size does not match the payload size : size %d, strlen %d \n", src, dst, size, strlen(payload));
       else 
-	LOG_D(OTG,"[src %d][dst %d]TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d: |%s|%s| \n", 
+	LOG_I(OTG,"[src %d][dst %d]TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d: |%s|%s| \n", 
 	      src, dst, ctime, size, strlen(header)+strlen(payload)+otg_hdr_size, seq_num, header, payload);
   
       buffer_size = otg_hdr_size + strlen(header) + strlen(payload);
@@ -359,10 +367,10 @@ void init_packet_gen(int src, int dst,int ctime){
 	otg_info->traffic_type[src][dst]=0;
 	otg_info->traffic_type_background[src][dst]=0;
 	/* init background traffic*/
-	if (otg_info->idt_background[src][dst]==0){ 
+	/*	if (otg_info->idt_background[src][dst]==0){ 
 		otg_info->idt_background[src][dst]= exponential_dist(0.025);
  		otg_info->background_stream[src][dst][0]=backgroundStreamInit(0,1);	
-	}
+		} */
 }
 
 void check_ctime(int ctime){
@@ -379,15 +387,15 @@ int check_data_transmit(int src,int dst, int ctime){
   for (application=0; application<g_otg->application_idx[src][dst]; application++){  
 	otg_info->gen_pkts=0;
 
-	//LOG_D(OTG,"FLOW_INFO [src %d][dst %d] [IDX %d] [APPLICATION TYPE %d] MAX %d [M2M %d ]\n", src, dst, application , g_otg->application_type[src][dst][application],g_otg->application_idx[src][dst], g_otg->m2m[src][dst][application]);
+	LOG_T(OTG,"FLOW_INFO [src %d][dst %d] [IDX %d] [APPLICATION TYPE %d] MAX %d [M2M %d ]\n", src, dst, application , g_otg->application_type[src][dst][application],g_otg->application_idx[src][dst], g_otg->m2m[src][dst][application]);
 	
 	// do not generate packet for this pair of src, dst : no app type and/or no idt are defined	
 	
 	if (g_otg->duration[src][dst][application] > ctime){
-	  //LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d \n", src, dst,g_otg->duration[src][dst][application], ctime); 
+	  LOG_T(OTG,"Do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d \n", src, dst,g_otg->duration[src][dst][application], ctime); 
 	  size+=0;	
 	}else if ((g_otg->application_type[src][dst][application]==0)&&(g_otg->idt_dist[src][dst][application][PE_STATE]==0)){  
-	  //LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d\n", src, dst); 
+	  LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app not specificed\n", src, dst); 
 	  size+=0;	 
 	}
 
@@ -681,6 +689,22 @@ int k;
      for (k=0; k<g_otg->application_idx[i][j]; k++){  
 
      switch  (g_otg->application_type[i][j][k]) {
+      case NO_PREDEFINED_TRAFFIC : 
+       LOG_I(OTG, "[SRC %d][DST %d] No predefined Traffic \n", i, j);
+       g_otg->trans_proto[i][j][k] = 0;
+       g_otg->ip_v[i][j][k] = 0;
+       g_otg->idt_dist[i][j][k][PE_STATE] = 0;
+       g_otg->idt_min[i][j][k][PE_STATE] =  0; 
+       g_otg->idt_max[i][j][k][PE_STATE] =  0;
+       g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->size_min[i][j][k][PE_STATE] =  0;
+       g_otg->size_max[i][j][k][PE_STATE] = 0;
+#ifdef STANDALONE
+       g_otg->dst_port[i][j] = 302;
+       g_otg->duration[i][j] = 1000;
+#endif 
+       break;
+
      case  SCBR : 
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
@@ -688,7 +712,7 @@ int k;
        g_otg->idt_min[i][j][k][PE_STATE] =   (int)round(uniform_dist((i+1)*30,(i+1)*100));// 500+(i+1)*10; //random idt among different UEs 
        g_otg->idt_max[i][j][k][PE_STATE] =  10;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->size_min[i][j][k][PE_STATE] =  128;
+       g_otg->size_min[i][j][k][PE_STATE] =  16;
        g_otg->size_max[i][j][k][PE_STATE] =  50;
        LOG_I(OTG,"OTG_CONFIG SCBR, src = %d, dst = %d, traffic id %d, idt %d dist type for size = %d\n", i, j, k, 
 	     g_otg->idt_min[i][j][k][PE_STATE], g_otg->size_min[i][j][k][PE_STATE]);
@@ -704,7 +728,7 @@ int k;
        g_otg->idt_min[i][j][k][PE_STATE] =   (int)round(uniform_dist((i+1)*30, (i+1)*100));// 250+(i+1)*10; 
        g_otg->idt_max[i][j][k][PE_STATE] =  10;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->size_min[i][j][k][PE_STATE] =  256;
+       g_otg->size_min[i][j][k][PE_STATE] =  32;
        g_otg->size_max[i][j][k][PE_STATE] =  512;
        LOG_I(OTG,"OTG_CONFIG MCBR, src = %d, dst = %d,  traffic id %d, dist type for size = %d\n", i, j,k , g_otg->size_dist[i][j][k][PE_STATE]);
 #ifdef STANDALONE
@@ -719,7 +743,7 @@ int k;
        g_otg->idt_min[i][j][k][PE_STATE] =  (int)round(uniform_dist((i+1)*30,(i+1)*100)); //125+(i+1)*10; 
        g_otg->idt_max[i][j][k][PE_STATE] =  10;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED; // main param in this mode
-       g_otg->size_min[i][j][k][PE_STATE] =  512;// main param in this mode
+       g_otg->size_min[i][j][k][PE_STATE] =  128;// main param in this mode
        g_otg->size_max[i][j][k][PE_STATE] =  1024;
        LOG_I(OTG,"OTG_CONFIG BCBR, src = %d, dst = %d, dist type for size = %d\n", i, j, g_otg->size_dist[i][j][k][PE_STATE]);
 #ifdef STANDALONE
@@ -806,21 +830,7 @@ int k;
        g_otg->duration[i][j] = 1000;
 #endif 
        break;
-     case NO_PREDEFINED_TRAFFIC : 
-       LOG_I(OTG, "[SRC %d][DST %d] No predefined Traffic \n", i, j);
-       g_otg->trans_proto[i][j][k] = 0;
-       g_otg->ip_v[i][j][k] = 0;
-       g_otg->idt_dist[i][j][k][PE_STATE] = 0;
-       g_otg->idt_min[i][j][k][PE_STATE] =  0; 
-       g_otg->idt_max[i][j][k][PE_STATE] =  0;
-       g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       g_otg->size_min[i][j][k][PE_STATE] =  0;
-       g_otg->size_max[i][j][k][PE_STATE] = 0;
-#ifdef STANDALONE
-       g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
-#endif 
-       break;
+    
    case M2M_TRAFFIC : /* example of M2M traffic  */
        LOG_I(OTG," M2M_TRAFFIC, src = %d, dst = %d \n", i, j, g_otg->application_type[i][j][k]);
        g_otg->trans_proto[i][j][k] = TCP;
@@ -853,23 +863,25 @@ case AUTO_PILOT_L :
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
-       LOG_I(OTG,"AUTO PILOT LOW SPEEDS, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+      
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
-			 g_otg->ed_size_pkts[i][j][k]=1000;
-       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->pu_size_pkts[i][j][k]=1000;
+       g_otg->ed_size_pkts[i][j][k]=1000;
+       g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM; 
        g_otg->idt_min[i][j][k][PE_STATE] =  100;
-       g_otg->idt_max[i][j][k][PE_STATE] =  100;
-			 if (i<nb_enb_local){ /*DL*/
-      	g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       	g_otg->size_min[i][j][k][PE_STATE] =  1000;
-       	g_otg->size_max[i][j][k][PE_STATE] =  1000;
-			 }else{ /*UL*/
-			 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
-       g_otg->size_min[j][i][k][PE_STATE] =  64;
-       g_otg->size_max[j][i][k][PE_STATE] =  1000;
-			 }
+       g_otg->idt_max[i][j][k][PE_STATE] =  500;
+       if (i<nb_enb_local){ /*DL*/
+	 g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
+	 g_otg->size_min[i][j][k][PE_STATE] =  1000;
+	 g_otg->size_max[i][j][k][PE_STATE] =  1000;
+	 LOG_I(OTG,"AUTO PILOT LOW SPEEDS DL , src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+ }else{ /*UL*/
+	 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
+	 g_otg->size_min[j][i][k][PE_STATE] =  64;
+	 g_otg->size_max[j][i][k][PE_STATE] =  1000;
+	 LOG_I(OTG,"AUTO PILOT LOW SPEEDS UL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+       }
        g_otg->prob_off_pu[i][j][k]=0.2;
        g_otg->prob_off_ed[i][j][k]=0.3;
        g_otg->prob_off_pe[i][j][k]=0;
@@ -880,7 +892,7 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        g_otg->holding_time_off_pu[i][j][k]=100;
        g_otg->holding_time_off_ed[i][j][k]=10; 
        g_otg->holding_time_pe_off[i][j][k]=1000;
-			 g_otg->m2m[i][j][k]=1;
+       g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j]= 303;
        g_otg->duration[i][j] = 1000;
@@ -890,7 +902,7 @@ case AUTO_PILOT_M :
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */ 
-       LOG_I(OTG,"AUTO PILOT MEDIUM SPEEDS, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+     
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
 			 g_otg->pu_size_pkts[i][j][k]=1000;
@@ -898,15 +910,17 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
        g_otg->idt_min[i][j][k][PE_STATE] =  100;
        g_otg->idt_max[i][j][k][PE_STATE] =  100;
-		 if (i<nb_enb_local){ /*DL*/
-      	g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       	g_otg->size_min[i][j][k][PE_STATE] =  1000;
-       	g_otg->size_max[i][j][k][PE_STATE] =  1000;
-			 }else{ /*UL*/
-			 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
-       g_otg->size_min[j][i][k][PE_STATE] =  64;
-       g_otg->size_max[j][i][k][PE_STATE] =  1000;
-			 }
+       if (i<nb_enb_local){ /*DL*/
+	 g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
+	 g_otg->size_min[i][j][k][PE_STATE] =  1000;
+	 g_otg->size_max[i][j][k][PE_STATE] =  1000;
+	 LOG_I(OTG,"AUTO PILOT MEDIUM SPEEDS DL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+       }else{ /*UL*/
+	 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
+	 g_otg->size_min[j][i][k][PE_STATE] =  64;
+	 g_otg->size_max[j][i][k][PE_STATE] =  1000;
+         LOG_I(OTG,"AUTO PILOT MEDIUM SPEEDS UL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+       }
        g_otg->prob_off_pu[i][j][k]=0.2;
        g_otg->prob_off_ed[i][j][k]=0.3;
        g_otg->prob_off_pe[i][j][k]=0;
@@ -927,7 +941,7 @@ case AUTO_PILOT_H :
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
-       LOG_I(OTG,"AUTO PILOT HIGH SPEEDS, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+      
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
 			 g_otg->pu_size_pkts[i][j][k]=1000;
@@ -939,11 +953,13 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
       	g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
        	g_otg->size_min[i][j][k][PE_STATE] =  1000;
        	g_otg->size_max[i][j][k][PE_STATE] =  1000;
-			 }else{ /*UL*/
+	 LOG_I(OTG,"AUTO PILOT HIGH SPEEDS DL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+		 }else{ /*UL*/
 			 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
        g_otg->size_min[j][i][k][PE_STATE] =  64;
        g_otg->size_max[j][i][k][PE_STATE] =  1000;
-			 }
+ LOG_I(OTG,"AUTO PILOT HIGH SPEEDS UL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+		 }
        g_otg->prob_off_pu[i][j][k]=0.2;
        g_otg->prob_off_ed[i][j][k]=0.3;
        g_otg->prob_off_pe[i][j][k]=0;
@@ -964,24 +980,26 @@ case AUTO_PILOT_E :
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
-       LOG_I(OTG,"AUTO PILOT EMERGENCY, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+      
 			 /* DL SCENARIO*/
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
-			 g_otg->ed_size_pkts[i][j][k]=1000;
+       g_otg->pu_size_pkts[i][j][k]=1000;
+       g_otg->ed_size_pkts[i][j][k]=1000;
        g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM;
        g_otg->idt_min[i][j][k][PE_STATE] =  20;
        g_otg->idt_max[i][j][k][PE_STATE] =  25;
- 		 if (i<nb_enb_local){ /*DL*/
-      	g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-       	g_otg->size_min[i][j][k][PE_STATE] =  1000;
-       	g_otg->size_max[i][j][k][PE_STATE] =  1000;
-			 }else{ /*UL*/
-			 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
-       g_otg->size_min[j][i][k][PE_STATE] =  64;
-       g_otg->size_max[j][i][k][PE_STATE] =  1000;
-			 }
+       if (i<nb_enb_local){ /*DL*/
+	 g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
+	 g_otg->size_min[i][j][k][PE_STATE] =  1000;
+	 g_otg->size_max[i][j][k][PE_STATE] =  1000;
+       LOG_I(OTG,"AUTO PILOT EMERGENCY DL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+       }else{ /*UL*/
+	 g_otg->size_dist[j][i][k][PE_STATE] = UNIFORM;
+	 g_otg->size_min[j][i][k][PE_STATE] =  64;
+	 g_otg->size_max[j][i][k][PE_STATE] =  1000;
+        LOG_I(OTG,"AUTO PILOT EMERGENCY UL, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
+       }
        g_otg->prob_off_pu[i][j][k]=0.2;
        g_otg->prob_off_ed[i][j][k]=0.3;
        g_otg->prob_off_pe[i][j][k]=0;
@@ -1102,14 +1120,14 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        LOG_I(OTG,"ALARM SMOKE, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
-			 g_otg->ed_size_pkts[i][j][k]=2000;
+       g_otg->pu_size_pkts[i][j][k]=1000;
+       g_otg->ed_size_pkts[i][j][k]=2000;
        g_otg->prob_off_pu[i][j][k]=0.5;
        g_otg->prob_off_ed[i][j][k]=0.5;
        g_otg->prob_pu_ed[i][j][k]=0.5;
        g_otg->holding_time_off_pu[i][j][k]=60000;		/* 1 minute*/
        g_otg->holding_time_off_ed[i][j][k]=43200000;  	/* 12 hours*/
-			 g_otg->m2m[i][j][k]=1;
+       g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 303;
        g_otg->duration[i][j] = 1000;
@@ -1135,19 +1153,20 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        g_otg->duration[i][j] = 1000;
 #endif 
 	   break;
-   case OPENARENA : 
+     case OPENARENA_DL : 
+     case OPENARENA_UL : 
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-			 g_otg->m2m[i][j][k]=1;
-			 if (i<nb_enb_local){/*DL*/
-       LOG_I(OTG,"OTG_CONFIG GAMING_OA_DL, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-       g_otg->idt_min[i][j][k][PE_STATE] =  40;
-       g_otg->idt_max[i][j][k][PE_STATE] =  40;
-       g_otg->size_min[i][j][k][PE_STATE] =  140;
-       g_otg->size_max[i][j][k][PE_STATE] =  140;
-			} else{/*UL*/
+       g_otg->m2m[i][j][k]=1;
+       if (i<nb_enb_local){/*DL*/
+	 LOG_I(OTG,"OTG_CONFIG GAMING_OA_DL, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+	 g_otg->idt_min[i][j][k][PE_STATE] =  40;
+	 g_otg->idt_max[i][j][k][PE_STATE] =  40;
+	 g_otg->size_min[i][j][k][PE_STATE] =  140;
+	 g_otg->size_max[i][j][k][PE_STATE] =  140;
+       } else{/*UL*/
        LOG_I(OTG,"OTG_CONFIG GAMING_OA_UL, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
        g_otg->idt_min[i][j][k][PE_STATE] =  11;
        g_otg->idt_max[i][j][k][PE_STATE] =  11;
@@ -1159,6 +1178,7 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        g_otg->duration[i][j] = 1000;
 #endif 
 break;
+
 	   case OPENARENA_DL_TARMA :
 		 g_otg->trans_proto[i][j][k] = TCP;
 		 g_otg->ip_v[i][j][k] = IPV4;
@@ -1261,7 +1281,7 @@ break;
     g_otg->idt_max[i][j][k][PE_STATE] =  80;
     g_otg->size_dist[i][j][k][PE_STATE] = BACKGROUND_DIST;
 		/*the background initialization*/
-	  otg_info->background_stream[i][j][k]=backgroundStreamInit(0,2);
+    //  otg_info->background_stream[i][j][k]=backgroundStreamInit(0,2);
 	  break;
 
 	case DUMMY : 
@@ -1503,7 +1523,7 @@ void state_management(int src, int dst, int application, int ctime) {
     if (otg_info->state_transition_prob[src][dst][application]==0){
       otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
       otg_info->state[src][dst][application]=OFF_STATE;
-      LOG_I(OTG,"[%d][%d][Appli id %d] STATE:: OFF INIT \n", src, dst, application);
+      LOG_D(OTG,"[%d][%d][Appli id %d] STATE:: OFF INIT \n", src, dst, application);
       otg_info->start_holding_time_off[src][dst][application]=0/*ctime*/;
     }
     //LOG_D(OTG,"[%d][[%d] HOLDING_TIMES OFF_PE: %d, OFF_PU: %d, OFF_ED %d, PE_OFF: %d \n", src, dst, g_otg->holding_time_off_pe[src][dst], g_otg->holding_time_off_pu[src][dst],g_otg->holding_time_off_ed[src][dst], g_otg->holding_time_pe_off[src][dst] );  
@@ -1514,7 +1534,7 @@ void state_management(int src, int dst, int application, int ctime) {
       
       if (ctime>otg_info->start_holding_time_off[src][dst][application]){
 	otg_info->c_holding_time_off[src][dst][application]= ctime - otg_info->start_holding_time_off[src][dst][application];
-	LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] STATE:: OFF Holding Time %d (%d, %d)\n", src, dst,application , g_otg->aggregation_level[src][dst][application], otg_info->c_holding_time_off[src][dst][application], ctime, otg_info->start_holding_time_off[src][dst][application]);
+	LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] STATE:: OFF Holding Time %d (%d, %d)\n", src, dst,application , g_otg->aggregation_level[src][dst][application], otg_info->c_holding_time_off[src][dst][application], ctime, otg_info->start_holding_time_off[src][dst][application]);
       }
       
       if ( ((otg_info->state_transition_prob[src][dst][application]>= 1-(g_otg->prob_off_pu[src][dst][application]+g_otg->prob_off_ed[src][dst][application]+g_otg->prob_off_pe[src][dst][application])) && (otg_info->state_transition_prob[src][dst][application]<1-(g_otg->prob_off_ed[src][dst][application]+g_otg->prob_off_pe[src][dst][application])))  && (otg_info->c_holding_time_off[src][dst][application]>=g_otg->holding_time_off_pu[src][dst][application])){  
@@ -1525,7 +1545,7 @@ void state_management(int src, int dst, int application, int ctime) {
       }
       else if ( ((otg_info->state_transition_prob[src][dst][application]>= 1-(g_otg->prob_off_ed[src][dst][application]+g_otg->prob_off_pe[src][dst][application])) && (otg_info->state_transition_prob[src][dst][application]< 1-g_otg->prob_off_pe[src][dst][application])) && (otg_info->c_holding_time_off[src][dst][application]>=g_otg->holding_time_off_ed[src][dst][application])){
      otg_info->state[src][dst][application]=ED_STATE;
-     LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: OFF-->ED \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+     LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: OFF-->ED \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
      otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
   }
 
@@ -1538,7 +1558,7 @@ void state_management(int src, int dst, int application, int ctime) {
   else{
      otg_info->c_holding_time_off[src][dst][application]= ctime - otg_info->start_holding_time_off[src][dst][application];
      otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
-     LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] STATE:: OFF\n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+     LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] STATE:: OFF\n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
   }
   break;
 
@@ -1548,7 +1568,7 @@ void state_management(int src, int dst, int application, int ctime) {
        otg_info->state[src][dst][application]=OFF_STATE;
        otg_info->start_holding_time_off[src][dst][application]=ctime; 
 			 otg_info->c_holding_time_off[src][dst][application]=0;
-       LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: PU-->OFF \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+       LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: PU-->OFF \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
        otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
      }	
      else if  ((otg_info->state_transition_prob[src][dst][application]<=1-g_otg->prob_pu_pe[src][dst][application]) && (otg_info->state_transition_prob[src][dst][application]>1-(g_otg->prob_pu_ed[src][dst][application]+g_otg->prob_pu_pe[src][dst][application]))){
@@ -1561,7 +1581,7 @@ void state_management(int src, int dst, int application, int ctime) {
        //otg_info->state[src][dst]=ON_STATE;
        otg_info->state[src][dst][application]=PE_STATE;
        otg_info->start_holding_time_pe_off[src][dst][application]=ctime;
-       LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: PU-->PE \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+       LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: PU-->PE \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
        otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
      }
   break;
@@ -1571,20 +1591,20 @@ void state_management(int src, int dst, int application, int ctime) {
        otg_info->state[src][dst][application]=OFF_STATE;
        otg_info->start_holding_time_off[src][dst][application]=ctime; 
 			 otg_info->c_holding_time_off[src][dst][application]=0;
-       LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: ED-->OFF \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+       LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: ED-->OFF \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
        otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
      }
      else if  ((otg_info->state_transition_prob[src][dst][application]>=1-(g_otg->prob_ed_pu[src][dst][application] + g_otg->prob_ed_pe[src][dst][application] )) && (otg_info->state_transition_prob[src][dst][application]<1-g_otg->prob_ed_pe[src][dst][application]))  {
        //otg_info->state[src][dst]=ON_STATE;
        otg_info->state[src][dst][application]=PE_STATE;
-       LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: ED-->PU \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+       LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: ED-->PU \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
        otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
      }
      else /*if ((otg_info->state_transition_prob[src][dst]>=1-g_otg->prob_ed_pe)&&(otg_info->state_transition_prob[src][dst]<=1)) */{
        //otg_info->state[src][dst]=ON_STATE;
        otg_info->state[src][dst][application]=PE_STATE;
        otg_info->start_holding_time_pe_off[src][dst][application]=ctime;
-       LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: ED-->PE \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
+       LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: ED-->PE \n", src, dst,application, g_otg->aggregation_level[src][dst][application]);
        otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
      }
   break;
@@ -1593,7 +1613,7 @@ void state_management(int src, int dst, int application, int ctime) {
      if (g_otg->holding_time_pe_off[src][dst][application]<=otg_info->c_holding_time_pe_off[src][dst][application]){
        //otg_info->state[src][dst]=OFF_STATE;
        otg_info->state[src][dst][application]=OFF_STATE;
-       LOG_I(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: PE->OFF\n", src, dst,application, g_otg->aggregation_level[src][dst][application]);  
+       LOG_D(OTG,"[%d][%d][Appli id %d][Agg Level=%d] NEW STATE:: PE->OFF\n", src, dst,application, g_otg->aggregation_level[src][dst][application]);  
        otg_info->c_holding_time_pe_off[src][dst][application]=0;
        otg_info->state_transition_prob[src][dst][application]=uniform_dist(0,1);
        otg_info->start_holding_time_off[src][dst][application]=ctime; 
@@ -1602,7 +1622,7 @@ void state_management(int src, int dst, int application, int ctime) {
      else /* if (g_otg->holding_time_pe_off>otg_info->c_holding_time_pe_off[src][dst])*/{
 		 	if (ctime>otg_info->start_holding_time_pe_off[src][dst][application])
           otg_info->c_holding_time_pe_off[src][dst][application]=ctime-otg_info->start_holding_time_pe_off[src][dst][application];
-      		LOG_I(OTG,"[%d][%d][Appli id %d] STATE:: PE \n", src, dst,application);
+      		LOG_D(OTG,"[%d][%d][Appli id %d] STATE:: PE \n", src, dst,application);
      	}
   break;
   default:

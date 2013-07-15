@@ -42,7 +42,11 @@
 #include "otg_vars.h"
 #include "../UTIL/MATH/oml.h"
 #include <math.h>
+#include <mysql.h>
+#include <m_ctype.h>
+#include <sql_common.h>
 #include "otg_form.h"
+
 
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
@@ -83,6 +87,12 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
       otg_hdr_rx = (otg_hdr_t *) (&buffer_tx[bytes_read]);
       LOG_I(OTG,"[SRC %d][DST %d] [FLOW_idx %d][APP TYPE %d] RX INFO pkt at time %d: flag 0x %x, seq number %d, tx time %d, size (hdr %d, pdcp %d) \n", src, dst,otg_hdr_rx->flow_id,  otg_hdr_rx->traffic_type, ctime, otg_hdr_info_rx->flag, otg_hdr_rx->seq_num, otg_hdr_rx->time, otg_hdr_info_rx->size, size);
       bytes_read += sizeof (otg_hdr_t);
+      
+      if(otg_hdr_rx->traffic_type > MAX_NUM_APPLICATION){
+	LOG_W(OTG,"RX packet: application type out of range %d for the pair of (src %d, dst %d) \n", 
+	      otg_hdr_rx->traffic_type, src, dst);
+	otg_hdr_rx->traffic_type=0;
+    }
       
       if (otg_hdr_info_rx->flag == 0xffff){
 	seq_num_rx=otg_info->seq_num_rx[src][dst][otg_hdr_rx->traffic_type];

@@ -65,6 +65,13 @@ ifdef XFORMS
 CFLAGS += -DXFORMS
 endif
 
+# Check if libmysqlclient is installed and use it if found to store simulation data for postprocessing
+ENABLE_DB = $(shell if [ `dpkg -l | grep libmysqlclient -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
+ifeq ($(ENABLE_DB), 1)
+CFLAGS +=-I/usr/include/mysql -L/usr/lib/mysql -DENABLE_DB_STATS
+DB_LDFLAGS = -lmysqlclient
+endif 
+
 ifdef PRINT_STATS
 CFLAGS += -DPRINT_STATS
 endif
@@ -309,7 +316,7 @@ oaisim : $(ASN1_MSG_OBJS1) $(OBJ) oaisim.c $(LFDS_DIR)/bin/liblfds611.a
 endif
 	@echo "Compiling oaisim.c ..."
 	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $^ \
-	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt $(LFDS_DIR)/bin/liblfds611.a $(PGM_LDFLAGS)
+	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt $(LFDS_DIR)/bin/liblfds611.a $(PGM_LDFLAGS) $(DB_LDFLAGS) 
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv oaisim oaisim_eNB
@@ -320,22 +327,22 @@ endif
 
 oaisimCROWN : $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
-	@$(CC) oaisimCROWN.c -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt
+	@$(CC) oaisimCROWN.c -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt 
 
 test_nasmesh_fix:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && make)
-	(cd $(OPENAIR2_DIR) && make nasmesh_netlink_address_fix.ko)
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
+	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink_address_fix.ko)
 	(cp $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko . )
 nasmesh_fix:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && make)
-	(cd $(OPENAIR2_DIR) && make nasmesh_netlink_address_fix.ko)
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
+	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink_address_fix.ko)
 	(sudo insmod $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko)
 nasmesh_nl:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && make)
-	(cd $(OPENAIR2_DIR) && make nasmesh_netlink.ko)
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
+	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink.ko)
 	(sudo insmod $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko)
 rb_tool:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && make)
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
 
 nasmesh_install:
 	(sudo rmmod nasmesh)
@@ -399,13 +406,15 @@ cleancell:
 	rm -f $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
 
 print:
-	@echo $(cygwin)
-	@echo $(OCG_FLAG)
-	@echo $(CFLAGS)
-	@echo $(EXTRA_CFLAGS)
+#	@echo $(cygwin)
 	@echo $(OBJ)
-	@echo $(IS_REL10)
-	@echo $(IS_REL8)
+	@echo $(OCG_FLAG)
+	@echo "CFLAGS are "      $(CFLAGS)
+	@echo "EXTRA_CFLAGS are" $(EXTRA_CFLAGS)
+
+	@echo "IS_REL8 is "      $(IS_REL10)
+	@echo "IS_REL8 is "      $(IS_REL8)
+	@echo "ENABLE_DB is "    $(ENABLE_DB)
 
 showcflags:
 	@echo $(CFLAGS)
@@ -428,6 +437,9 @@ otg_gp:
 otg_gp_bg:
 	export TITLE="Background Goodput(Kb/s)" 
 	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/otg_GP_bg.dat" "[$(COL1):$(COL2)]"
+otg_jitter:
+	export TITLE="Aplication Jitter(ms)" 
+	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/otg_jitter.dat" "[$(COL1):$(COL2)]"
 
 pexpect = $(shell if [ `dpkg -l | grep pexpect -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
 

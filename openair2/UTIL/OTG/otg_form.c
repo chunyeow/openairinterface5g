@@ -52,9 +52,9 @@ fl_initialize(&tArgc,tArgv,"OTG",0,0);
       fl_show_form (form_dl->otg, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
       fl_set_form_position(form_dl->otg, 200, 200);
         if (g_otg->owd_radio_access==1)
-          fl_set_xyplot_ybounds(form_dl->owd,0,100);
-        else
           fl_set_xyplot_ybounds(form_dl->owd,0,200);
+        else
+          fl_set_xyplot_ybounds(form_dl->owd,0,400);
 
  
       fl_set_xyplot_ybounds(form_dl->throughput,0,200); 
@@ -66,9 +66,9 @@ fl_initialize(&tArgc,tArgv,"OTG",0,0);
       fl_show_form (form_ul->otg, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
       fl_set_form_position(form_ul->otg, 850, 200);
       if (g_otg->owd_radio_access==1)
-          fl_set_xyplot_ybounds(form_ul->owd,0,100);
-        else
           fl_set_xyplot_ybounds(form_ul->owd,0,200);
+      else
+	fl_set_xyplot_ybounds(form_ul->owd,0,400);
 
 
 
