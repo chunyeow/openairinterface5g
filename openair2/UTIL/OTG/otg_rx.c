@@ -42,11 +42,13 @@
 #include "otg_vars.h"
 #include "../UTIL/MATH/oml.h"
 #include <math.h>
+#include "otg_form.h"
+
+#ifdef ENABLE_DB_STATS
 #include <mysql.h>
 #include <m_ctype.h>
 #include <sql_common.h>
-#include "otg_form.h"
-
+#endif 
 
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
