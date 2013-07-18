@@ -1,3 +1,7 @@
+# % Author: Mirsad Cirkic
+# % Organisation: Eurecom (and Linkoping University)
+# % E-mail: mirsad.cirkic@liu.se
+
 if(paramsinitialized)
 	N=76800;
 	M=4;
@@ -116,7 +120,7 @@ if(paramsinitialized)
 	oarf_stop(card);
 	
 	# # -- Do the channel estimation
-	chanests=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*120)),301,Nantb)	
+	chanests=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*120)),301,Nantb);
 	H=conj(repmat(Db2a_T,Niter,1)).*repmat(Db2a_R,1,Nantb);
 	phases=unwrap(angle(H));
 	# for i=0:(Nantb-1)

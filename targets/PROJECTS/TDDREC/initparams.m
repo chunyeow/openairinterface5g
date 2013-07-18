@@ -1,3 +1,7 @@
+# % Author: Mirsad Cirkic
+# % Organisation: Eurecom (and Linkoping University)
+# % E-mail: mirsad.cirkic@liu.se
+
 clear
 paramsinitialized=false;
 limeparms;
@@ -8,7 +12,7 @@ card = 0;
 Ntrx=4;
 dual_tx=0;
 active_rfA=[1 0 0 0];
-active_rfB=[0 1 1 0];
+active_rfB=[0 1 0 0];
 active_rf=active_rfA+active_rfB;
 
 %fc  = 2660000000;

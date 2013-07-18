@@ -1,3 +1,8 @@
+# % Author: Mirsad Cirkic
+# % Organisation: Eurecom (and Linkoping University)
+# % E-mail: mirsad.cirkic@liu.se
+
+
 function [carrierdata, s]=genrandpskseq(N,M,amp)
   
 if(mod(N,640)~=0)
