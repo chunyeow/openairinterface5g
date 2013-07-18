@@ -132,6 +132,9 @@ typedef volatile struct {
 typedef  struct {
     u32_t                        bytes_in_buffer; /*!< \brief Bytes buffered in RLC protocol instance. */
     u32_t                        pdus_in_buffer;  /*!< \brief Number of PDUs buffered in RLC protocol instance (OBSOLETE). */
+    u32_t                        head_sdu_creation_time;           /*!< \brief Head SDU creation time. */
+    u32_t                        head_sdu_remaining_size_to_send;  /*!< \brief remaining size of sdu: could be the total size or the remaining size of already segmented sdu */
+    u32_t  			  head_sdu_is_segmented;	    /*!< \brief 0 if head SDU has not been segmented, 1 if already segmeneted */	
 } mac_rlc_status_resp_t;
 
 

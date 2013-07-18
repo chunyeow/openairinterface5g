@@ -511,6 +511,17 @@ typedef struct{
   u32_t dl_buffer_info[MAX_NUM_LCID];
 
   u32_t dl_buffer_total;
+
+  u32_t dl_pdus_total;
+
+  u32_t dl_pdus_in_buffer[MAX_NUM_LCID];
+  
+  u32_t dl_buffer_head_sdu_creation_time[MAX_NUM_LCID];
+
+  u8    dl_buffer_head_sdu_is_segmented[MAX_NUM_LCID];
+
+  u32_t dl_buffer_head_sdu_remaining_size_to_send[MAX_NUM_LCID];
+
 } UE_TEMPLATE;
 
 typedef struct {
@@ -1079,6 +1090,9 @@ u8 is_UE_active(unsigned char Mod_id, unsigned char UE_id );
 u16 find_ulgranted_UEs(u8 Mod_id);
 u16 find_dlgranted_UEs(u8 Mod_id);
 u8 process_ue_cqi (u8 Mod_id, u8 UE_id);
+
+s8 find_active_UEs_with_traffic(unsigned char Mod_id);
+
 u8 find_num_active_UEs_in_cbagroup(unsigned char Mod_id, unsigned char group_id);
 u8 UE_is_to_be_scheduled(u8 Mod_id,u8 UE_id);
 /** \brief Round-robin scheduler for ULSCH traffic.

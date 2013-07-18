@@ -45,7 +45,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define TRACE_RLC_AM_DATA_REQUEST
 //#define TRACE_RLC_AM_TX_STATUS
 //#define TRACE_RLC_AM_TX
-#//define TRACE_RLC_AM_RX
+//#define TRACE_RLC_AM_RX
 //#define TRACE_RLC_AM_BO
 //-----------------------------------------------------------------------------
 u32_t
@@ -439,10 +439,16 @@ rlc_am_mac_status_indication (void *rlcP, u32 frame, u16 tb_sizeP, struct mac_st
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp  status_resp;
+  u16_t  sdu_size = 0;
+  u16_t  sdu_remaining_size = 0;
+  s32_t diff_time=0;
   rlc_am_entity_t *rlc = (rlc_am_entity_t *) rlcP;
 
-  status_resp.buffer_occupancy_in_bytes = 0;
-  status_resp.buffer_occupancy_in_pdus  = 0;
+  status_resp.buffer_occupancy_in_bytes        = 0;
+  status_resp.buffer_occupancy_in_pdus         = 0;
+  status_resp.head_sdu_remaining_size_to_send  = 0;
+  status_resp.head_sdu_creation_time           = 0;
+  status_resp.head_sdu_is_segmented            = 0;
   status_resp.rlc_info.rlc_protocol_state = rlc->protocol_state;
 
   if (rlc->last_frame_status_indication != frame) {
@@ -455,6 +461,30 @@ rlc_am_mac_status_indication (void *rlcP, u32 frame, u16 tb_sizeP, struct mac_st
   rlc->nb_bytes_requested_by_mac = tb_sizeP;
 
   status_resp.buffer_occupancy_in_bytes = rlc_am_get_buffer_occupancy_in_bytes(rlc,frame);
+  
+  if ((rlc->input_sdus[rlc->current_sdu_index].mem_block != NULL) && (status_resp.buffer_occupancy_in_bytes)) {
+          
+	  //status_resp.buffer_occupancy_in_bytes += ((rlc_am_entity_t *) rlc)->tx_header_min_length_in_bytes;
+	  status_resp.buffer_occupancy_in_pdus = rlc->nb_sdu;
+	  diff_time =   frame - ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_creation_time;
+	  
+	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (u32_t) diff_time :  (u32_t)(0xffffffff - diff_time + frame) ;
+	  
+	  sdu_size            = ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_size;
+	  sdu_remaining_size  = ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_remaining_size;
+	  
+	  status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;
+	  if (sdu_size == sdu_remaining_size)  {
+           status_resp.head_sdu_is_segmented = 0; 
+	  }
+	  else {
+	   status_resp.head_sdu_is_segmented = 1; 
+	  }
+	
+  } else {
+  }
+  
+  
 #ifdef TRACE_RLC_AM_TX_STATUS
   if (tb_sizeP > 0) {
       LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d] MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n", frame, rlc->module_id, rlc->rb_id, tb_sizeP, status_resp.buffer_occupancy_in_bytes);

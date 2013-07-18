@@ -65,11 +65,13 @@ ifdef XFORMS
 CFLAGS += -DXFORMS
 endif
 
+ifdef DB
 # Check if libmysqlclient is installed and use it if found to store simulation data for postprocessing
 ENABLE_DB = $(shell if [ `dpkg -l | grep libmysqlclient -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
 ifeq ($(ENABLE_DB), 1)
 CFLAGS +=-I/usr/include/mysql -L/usr/lib/mysql -DENABLE_DB_STATS
 DB_LDFLAGS = -lmysqlclient
+endif 
 endif 
 
 ifdef PRINT_STATS

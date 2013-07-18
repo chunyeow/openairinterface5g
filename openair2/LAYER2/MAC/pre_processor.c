@@ -88,9 +88,14 @@ void store_dlsch_buffer (unsigned char Mod_id,
   granted_UEs = find_dlgranted_UEs(Mod_id);
 
   for (UE_id=0;UE_id<granted_UEs;UE_id++){
-    eNB_mac_inst[Mod_id].UE_template[UE_id].dl_buffer_total = 0;
-    for(i=0;i< MAX_NUM_LCID; i++)
+    eNB_mac_inst[Mod_id].UE_template[UE_id].dl_buffer_total = 0; 
+    eNB_mac_inst[Mod_id].UE_template[UE_id].dl_pdus_total = 0;
+    for(i=0;i< MAX_NUM_LCID; i++) {
       eNB_mac_inst[Mod_id].UE_template[UE_id].dl_buffer_info[i]=0;
+      eNB_mac_inst[Mod_id].UE_template[UE_id].dl_pdus_in_buffer[i]=0;
+      eNB_mac_inst[Mod_id].UE_template[UE_id].dl_buffer_head_sdu_creation_time[i]=0;
+      eNB_mac_inst[Mod_id].UE_template[UE_id].dl_buffer_head_sdu_remaining_size_to_send[i]=0;
+    }
   }
 
 
@@ -106,11 +111,36 @@ void store_dlsch_buffer (unsigned char Mod_id,
       
       rlc_status = mac_rlc_status_ind(Mod_id,frame,1,RLC_MBMS_NO,i+(NB_RB_MAX*next_ue),0 );
       eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_info[i] = rlc_status.bytes_in_buffer; //storing the dlsch buffer for each logical channel
-      
+      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_in_buffer[i] = rlc_status.pdus_in_buffer; 
+      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_creation_time[i] = rlc_status.head_sdu_creation_time ;
+      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_remaining_size_to_send[i] = rlc_status.head_sdu_remaining_size_to_send;
+      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_is_segmented[i] = rlc_status.head_sdu_is_segmented;
       eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total = eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total + eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_info[i];//storing the total dlsch buffer
-      
+      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_total += eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_in_buffer[i];
+
+#ifdef DEBUG_eNB_SCHEDULER     
+      /* note for dl_buffer_head_sdu_remaining_size_to_send[i] :
+       * 0 if head SDU has not been segmented (yet), else remaining size not already segmented and sent
+       */
+      if (eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_info[i]>0)
+	LOG_D(MAC,"[eNB %d] Frame %d Subframe %d : RLC status for UE %d in LCID%d: total of %d pdus and %d size, head sdu queuing time %d, remaining size %d, is segmeneted %d \n",
+	    Mod_id, frame, subframe, next_ue, 
+	    i, eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_in_buffer[i],eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_info[i],
+	    eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_creation_time[i],
+	      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_remaining_size_to_send[i],
+	      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_is_segmented[i]
+	    );
+#endif   
       
     }
+#ifdef DEBUG_eNB_SCHEDULER        
+    if ( eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total>0)
+      LOG_D(MAC,"[eNB %d] Frame %d Subframe %d : RLC status for UE %d : total DL buffer size %d and total number of pdu %d \n",
+	    Mod_id, frame, subframe, next_ue, 
+	    eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total,
+	    eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_total
+	    );
+#endif   
   }
 }
 

@@ -334,19 +334,46 @@ rlc_um_mac_status_indication (void *rlcP, u32_t frame, u8_t eNB_flag, u16_t tbs_
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
-
-  status_resp.buffer_occupancy_in_pdus    = 0;
-  status_resp.buffer_occupancy_in_bytes   = 0;
-  status_resp.rlc_info.rlc_protocol_state = ((rlc_um_entity_t *) rlcP)->protocol_state;
+  u16_t  sdu_size = 0;
+  u16_t  sdu_remaining_size = 0;
+  s32_t diff_time=0;
+  rlc_um_entity_t   *rlc = NULL;
+  
+  status_resp.buffer_occupancy_in_pdus         = 0;
+  status_resp.buffer_occupancy_in_bytes        = 0;
+  status_resp.head_sdu_remaining_size_to_send  = 0;
+  status_resp.head_sdu_creation_time           = 0;
+  status_resp.head_sdu_is_segmented            = 0;
+  status_resp.rlc_info.rlc_protocol_state      = ((rlc_um_entity_t *) rlcP)->protocol_state;
 
   if (rlcP) {
-      rlc_um_check_timer_dar_time_out((rlc_um_entity_t *) rlcP,frame,eNB_flag);
+      rlc = (rlc_um_entity_t *) rlcP;
+      rlc_um_check_timer_dar_time_out(rlc,frame,eNB_flag);
 
-      ((rlc_um_entity_t *) rlcP)->nb_bytes_requested_by_mac = tbs_sizeP;
+      rlc->nb_bytes_requested_by_mac = tbs_sizeP;
 
-      status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy ((rlc_um_entity_t *) rlcP);
+      status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (rlc);
       if (status_resp.buffer_occupancy_in_bytes > 0) {
-          status_resp.buffer_occupancy_in_bytes += ((rlc_um_entity_t *) rlcP)->tx_header_min_length_in_bytes;
+          
+	  status_resp.buffer_occupancy_in_bytes += rlc->tx_header_min_length_in_bytes;
+	  status_resp.buffer_occupancy_in_pdus = rlc->nb_sdu;
+	 
+	  diff_time =   frame - ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index])->data)->sdu_creation_time;
+	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (u32_t) diff_time :  (u32_t)(0xffffffff - diff_time + frame) ;
+	  //msg("rlc status for frame %d diff time %d resp %d\n", frame, diff_time,status_resp.head_sdu_creation_time) ;
+	  
+	  sdu_size            = ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index])->data)->sdu_size;
+	  sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index])->data)->sdu_remaining_size;
+	  
+	  status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;	
+	  if (sdu_size == sdu_remaining_size)  {
+           status_resp.head_sdu_is_segmented = 0;
+	  }
+	  else {
+	   status_resp.head_sdu_is_segmented = 1;
+	  }
+	
+      } else {
       }
       //msg("[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_STATUS_INDICATION BO = %d\n", ((rlc_um_entity_t *) rlcP)->module_id, ((rlc_um_entity_t *) rlcP)->rb_id, status_resp.buffer_occupancy_in_bytes);
 
@@ -465,8 +492,7 @@ rlc_um_data_req (void *rlcP, u32_t frame, mem_block_t *sduP)
     ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
                                                                               (sduP->data))->sdu_size;
     ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_segmented_size = 0;
-    // LG ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_creation_time = *rlc->frame_tick_milliseconds;
-    // LG ??? WHO WROTE THAT LINE ?((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_creation_time = 0;
+    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_creation_time = frame;
     rlc->next_sdu_index = (rlc->next_sdu_index + 1) % rlc->size_input_sdus_buffer;
 
     rlc->stat_tx_pdcp_sdu   += 1;

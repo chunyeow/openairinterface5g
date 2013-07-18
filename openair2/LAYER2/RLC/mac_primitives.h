@@ -172,7 +172,7 @@ struct mac_data_ind {
 //---------------------
 struct mac_status_resp {
   u32_t             buffer_occupancy_in_bytes;
-  u16_t             buffer_occupancy_in_pdus;
+  u32_t             buffer_occupancy_in_pdus;
   struct rlc_entity_info rlc_info;
 };
 //---------------------

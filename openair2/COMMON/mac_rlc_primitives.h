@@ -165,6 +165,9 @@ in a suspended state or to indicate the current buffer occupancy to MAC.
 struct mac_status_resp {
   unsigned int             buffer_occupancy_in_bytes;   /*!< \brief the parameter Buffer Occupancy (BO) indicates for each logical channel the amount of data in number of bytes that is available for transmission and retransmission in RLC layer. */
   unsigned short             buffer_occupancy_in_pdus;    /*!< xxx*/
+  u32_t             head_sdu_creation_time;          
+  u32_t             head_sdu_remaining_size_to_send;
+  unsigned char     head_sdu_is_segmented;
   struct rlc_entity_info rlc_info;             /*!< xxx*/
 };
 

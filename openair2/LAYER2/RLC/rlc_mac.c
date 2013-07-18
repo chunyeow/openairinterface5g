@@ -215,7 +215,9 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t module_idP, u32_t fram
                     case RLC_AM:
                         status_resp = rlc_am_mac_status_indication(&rlc[module_idP].m_rlc_am_array[rlc[module_idP].m_rlc_pointer[channel_idP].rlc_index], frame, tb_sizeP, tx_status);
                         mac_rlc_status_resp.bytes_in_buffer = status_resp.buffer_occupancy_in_bytes;
-                        mac_rlc_status_resp.pdus_in_buffer = status_resp.buffer_occupancy_in_pdus;
+                        mac_rlc_status_resp.head_sdu_creation_time = status_resp.head_sdu_creation_time;
+			 mac_rlc_status_resp.head_sdu_remaining_size_to_send = status_resp.head_sdu_remaining_size_to_send;	
+			 mac_rlc_status_resp.head_sdu_is_segmented = status_resp.head_sdu_is_segmented;	
                         return mac_rlc_status_resp;
                         break;
 
@@ -223,7 +225,10 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t module_idP, u32_t fram
                         //msg("[RLC_UM][MOD %d] mac_rlc_status_ind  tb_size %d\n", module_idP,  tb_sizeP);
                         status_resp = rlc_um_mac_status_indication(&rlc[module_idP].m_rlc_um_array[rlc[module_idP].m_rlc_pointer[channel_idP].rlc_index], frame, eNB_flag, tb_sizeP, tx_status);
                         mac_rlc_status_resp.bytes_in_buffer = status_resp.buffer_occupancy_in_bytes;
-                        //mac_rlc_status_resp.pdus_in_buffer = status_resp.buffer_occupancy_in_pdus;
+                        mac_rlc_status_resp.pdus_in_buffer = status_resp.buffer_occupancy_in_pdus;
+			 mac_rlc_status_resp.head_sdu_creation_time = status_resp.head_sdu_creation_time;
+			 mac_rlc_status_resp.head_sdu_remaining_size_to_send = status_resp.head_sdu_remaining_size_to_send;
+			 mac_rlc_status_resp.head_sdu_is_segmented = status_resp.head_sdu_is_segmented;	
                         return mac_rlc_status_resp;
                         break;
 
