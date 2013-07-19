@@ -2,7 +2,7 @@
 # % Organisation: Eurecom (and Linkoping University)
 # % E-mail: mirsad.cirkic@liu.se
 
-if(paramsinitialized && ~LSBSWITCH_FLAG)
+if(paramsinitialized && LSBSWITCH_FLAG)
   disp(["\n\n------------\nThis code is, so far, only written for single runs. Multiple " ... 
 	"runs will overwrite the previous measurement data, i.e., the " ...
 	"data structures are not defined for multiple runs. You will need to " ...
@@ -16,46 +16,49 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   indB=find(active_rfB==1);
   Nanta=length(indA);
   Nantb=length(indB);
-  if(Nanta!=1) error("Node A can only have one antenna active\n"); endif
   Niter=1;
-  if(Niter!=1) error("We should only use one get_frame at each \
-	run.\n"); 
-  endif
+  Nofs=3840; % The offset in samples between the downlink and uplink sequences. It must be a multiple of 640,  3840 samples is 0.5 ms.
+  if(mod(Nofs,640)!=0) error("blabla") endif
+
+  if(Nanta!=1) error("Node A can only have one antenna active\n"); endif
+  if(Niter!=1) error("We should only use one get_frame at each run.\n"); endif
   
-# %% ------- Prepare the signals for both A2B and B2A ------- %%
+# %% ------- Prepare the signals for both A2B and B2A ------- %
+  maskA2B=kron(ones(1,N/(2*Nofs)),[ones(1,Nofs) zeros(1,Nofs)])';
+  maskB2A=ones(N,1)-maskA2B;
+  datamaskA2B=diag(kron(ones(1,N/(2*Nofs)),[ones(1,Nofs/640) zeros(1,Nofs/640)]));
+  datamaskB2A=eye(N/640)-datamaskA2B;
   signalA2B=zeros(N,4);
   signalB2A=zeros(N,4);
   ia=1; ib=1;
   Db2a_T=[];
   for i=1:4
     if(indA(ia)==i)
-      [Da2b_T, tmps]=genrandpskseq(N,M,amp);
-      signalA2B(:,i)=tmps;
+      [tmpd, tmps]=genrandpskseq(N,M,amp);
+      Da2b_T=datamaskA2B*tmpd;
+      signalA2B(:,i)=tmps*4.*maskA2B+maskB2A*sqrt(-1); %Added maskB2A to set the LSB correctly. The factor 4 there should make a 2 bit shift. Don't know if that is correct
       if(length(indA)> ia) ia=ia+1; endif
     endif
     if(indB(ib)==i)      
       % This part could be improved by creating fully orthogonal sequences
       [tmpd, tmps]=genrandpskseq(N,M,amp);
-      signalB2A(:,i)=tmps;
-      Db2a_T=[Db2a_T tmpd];
+      signalB2A(:,i)=tmps*4.*maskB2A+maskA2B*sqrt(-1); %Added maskA2B to set the LSB correctly. The factor 4 there should make a 2 bit shift. Don't know if that is correct.
+      Db2a_T=[Db2a_T datamaskB2A*tmpd];
       if(length(indB)> ib) ib=ib+1; endif
     endif
-  endfor
-    
-# %% ------- Node B to A transmission ------- %%	
-  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA;
-  oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
-  oarf_send_frame(card,signalB2A,n_bit);
-  receivedB2A=oarf_get_frame(card);
-  oarf_stop(card);
+  endfor   
 
-# %% ------- Node A to B transmission ------- %%	
-  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB;
-  oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);	
-  oarf_send_frame(card,signalA2B,n_bit);
-  receivedA2B=oarf_get_frame(card);
+  signal = signalA2B+signalB2A;
+
+# %% ------- Node B and A duplex transmission/reception ------- %%	
+  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN+DMAMODE_RX+RXEN)*active_rf;
+  oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
+  oarf_send_frame(card,signal,n_bit);
+  received=oarf_get_frame(card);
   oarf_stop(card);
-  
+  receivedA2B=received.*repmat(maskA2B,1,4);
+  receivedB2A=received.*repmat(maskB2A,1,4);
+
 # %% ------- Do the A to B channel estimation ------- %%	
   Da2b_R=zeros(Niter*120,Nantb*301);
   for i=0:119;
@@ -146,7 +149,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
 	
 		
 else
-  if(LSBSWITCH_FLAG) error("You have to unset the LSB switch flag (LSBSWITCH_FLAG) in initparams.m.\n")
+  if(!LSBSWITCH_FLAG) error("You have to set the LSB switch flag (LSBSWITCH_FLAG) in initparams.m.\n")
   else error("You have to run init.params.m first!")
   endif
 endif

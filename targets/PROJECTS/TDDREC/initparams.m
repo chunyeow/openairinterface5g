@@ -15,6 +15,8 @@ active_rfA=[1 0 0 0];
 active_rfB=[0 1 0 0];
 active_rf=active_rfA+active_rfB;
 
+if(active_rfA*active_rfB'!=0) error("The A and B transceive chains must be orthogonal./n") endif
+
 %fc  = 2660000000;
 fc  = 1912600000; %1907600000;
 %fc = 859.5e6;
@@ -23,8 +25,8 @@ fc  = 1912600000; %1907600000;
 %rf_mode=(RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1) * active_rf;
 autocal_mode=active_rf;
 rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
-tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTTX; 
-%tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_TESTTX; LSBSWITCH_FLAG=false; 
+%tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB; LSBSWITCH_FLAG=true;
 syncmode = SYNCMODE_FREE;
 rf_local = [8254744   8255063   8257340   8257340]; %eNB2tx 1.9GHz
 rf_vcocal=rf_vcocal_19G*active_rf;
