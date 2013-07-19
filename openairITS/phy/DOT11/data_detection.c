@@ -186,7 +186,7 @@ int data_detection(RX_VECTOR_t *rxv,uint8_t *data_ind,uint32_t* rx_data,int fram
 #endif
 #endif
 
-    //    log2_maxh=10;
+    //        log2_maxh=7;
     mult_cpx_vector_norep_unprepared_conjx2(rxDATA_F,(int16_t*)chest,(int16_t*)rxDATA_F_comp,64,log2_maxh);
 #ifdef EXECTIME
 #ifdef RTAI
@@ -225,7 +225,7 @@ int data_detection(RX_VECTOR_t *rxv,uint8_t *data_ind,uint32_t* rx_data,int fram
 	scale = FOUR_OVER_SQRT_42;
 
       for (i=0;i<48;i++) {
-	//	printf("mag[%d] = %d\n",i,rxDATA_F_mag[i]);
+	//		printf("mag[%d] = %d\n",i,rxDATA_F_mag[i]);
 	rxDATA_F_mag[i] = (int16_t)((rxDATA_F_mag[i]*scale)>>15);
       }
       if ((rxv->rate>>1) == 3)
@@ -301,6 +301,8 @@ int data_detection(RX_VECTOR_t *rxv,uint8_t *data_ind,uint32_t* rx_data,int fram
     rotate_cpx_vector_norep(rxDATA_F_comp2,&cfo_Q15,rxDATA_F_comp3,48,log2_maxh>>1);
 
 #ifdef DEBUG_DATA
+    if (s==0)
+      write_output("rxDATA_F_mag.m","rxDAT_mag",rxDATA_F_mag,48,1,0);
     sprintf(fname,"rxDATA_F%d.m",s);
     sprintf(vname,"rxDAT_F_%d",s);
     write_output(fname,vname, rxDATA_F,128,2,1);
@@ -376,14 +378,14 @@ int data_detection(RX_VECTOR_t *rxv,uint8_t *data_ind,uint32_t* rx_data,int fram
 	pos = interleaver_16qam[k];
 	//	printf("k %d, pos %d\n",k,pos);
 	if ((pos&1)==1) {
-	  tmp = ((int16_t*)rxDATA_F_comp3)[pos>>1]>>4;
-	  //printf("pos (msb) %d : %d\n",pos>>1,tmp);
+	  tmp = ((int16_t*)rxDATA_F_comp2)[pos>>1]>>4;
+	  //	  printf("pos (msb) %d : %d\n",pos>>1,tmp);
 	}
 	else {
-	  tmp = ((int16_t*)rxDATA_F_comp3)[pos>>1];
+	  tmp = ((int16_t*)rxDATA_F_comp2)[pos>>1];
 	  tmp = (tmp<0)? tmp : -tmp;
 	  tmp = (tmp + rxDATA_F_mag[pos>>2])>>4;
-	  //printf("pos (lsb) %d : rxDATA_F_mag[%d] %d : %d (%d)\n",pos>>1,pos>>2,rxDATA_F_mag[pos>>2],tmp,((int16_t*)rxDATA_F_comp2)[pos>>1]);
+	  //	  printf("pos (lsb) %d : rxDATA_F_mag[%d] %d : %d (%d)\n",pos>>1,pos>>2,rxDATA_F_mag[pos>>2],tmp,((int16_t*)rxDATA_F_comp2)[pos>>1]);
 	}
 	
 	if (tmp<-8)
@@ -401,10 +403,10 @@ int data_detection(RX_VECTOR_t *rxv,uint8_t *data_ind,uint32_t* rx_data,int fram
 	  rxDATA_llr[k] = (int8_t)tmp;
 	*/
       }
-      if (rxv->rate==3) { // rate 3/4, so add zeros for punctured bits
+      if (rxv->rate==5) { // rate 3/4, so add zeros for punctured bits
 	llr_ptr = rxDATA_llr2;
-	memset(rxDATA_llr2,0,144);
-	for (k=0,k2=0;k<96;k++,k2++) {
+	memset(rxDATA_llr2,0,288);
+	for (k=0,k2=0;k<192;k++,k2++) {
 	  rxDATA_llr2[k2] = rxDATA_llr[k];
 	  if ((k&3) == 2)
 	    k2+=2;

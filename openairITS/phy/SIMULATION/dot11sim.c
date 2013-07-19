@@ -55,6 +55,15 @@ int main(int argc, char **argv) {
   int off,off2;
   double txg,txg_dB;
   int log2_maxh;
+  double  snr_array[100];
+  int  errors_array[100];
+  int  trials_array[100];
+  int  misdetected_errors_array[100];
+  int  signal_errors_array[100];
+  int  missed_packets_array[100];
+  int  cnt=0;
+  char fname[100],vname[100];
+  int stop=0;
 
   data_ind    = (uint8_t*)malloc(4095+2+1);
   data_ind_rx = (uint8_t*)malloc(4095+2+1);
@@ -230,7 +239,7 @@ int main(int argc, char **argv) {
   }
 
 
-  phy_tx_start(&tx_vector,txdata,0,data_ind);
+  phy_tx_start(&tx_vector,txdata,0,FRAME_LENGTH_SAMPLES_MAX,data_ind);
 
   tx_lev = signal_energy((int32_t*)txdata,320);
   tx_lev_dB = (unsigned int) dB_fixed(tx_lev);
@@ -246,11 +255,12 @@ int main(int argc, char **argv) {
   
   for (SNR=snr0;SNR<snr1;SNR+=.2) {
 
-    printf("n_frames %d SNR %f\n",n_frames,SNR);
+    printf("n_frames %d SNR %f sdu_length %d rate %d\n",n_frames,SNR,tx_vector.sdu_length,tx_vector.rate);
     errors=0;
     misdetected_errors=0;
     signal_errors=0;
     missed_packets=0;
+    stop=0;
     for (trial=0; trial<n_frames; trial++) {
       //      printf("Trial %d (errors %d), sdu_length_samples %d\n",trial,errors,sdu_length_samples);
       sigma2_dB = 25; //10*log10((double)tx_lev) - SNR;
@@ -311,13 +321,19 @@ int main(int argc, char **argv) {
 	  else
 	    off2=off;
 	  if ((initial_sync(&rxv,&rx_offset,&log2_maxh,(uint32_t*)rxdata[0],FRAME_LENGTH_SAMPLES_MAX,off2,1) == BUSY)) {
-	    //	    printf("Channel is busy, rxv %p, offset %d\n",(void*)rxv,rx_offset);
+	    if (n_frames==1)
+	      printf("Channel is busy, rxv %p, offset %d\n",(void*)rxv,rx_offset);
 	    no_detection=0;
 	    if (rxv) {
-	      //	    printf("Rate %d, SDU_LENGTH %d\n",rxv->rate,rxv->sdu_length);
+	      if (n_frames==1)
+		printf("Rate %d, SDU_LENGTH %d\n",rxv->rate,rxv->sdu_length);
 	      if ( (rxv->rate != tx_vector.rate)||(rxv->sdu_length != tx_vector.sdu_length)) {
 		signal_errors++;
-		printf("SIGNAL error: rx_offset %d, tx_offset %d (off2 %d)\n",rx_offset,tx_offset,off2);
+		if ((signal_errors > (n_frames/10)) && (trial>=100)) {
+		  stop=1;
+		}
+		if (n_frames == 1)
+		  printf("SIGNAL error: rx_offset %d, tx_offset %d (off2 %d)\n",rx_offset,tx_offset,off2);
 		break;
 	      }
 	      else {
@@ -325,20 +341,32 @@ int main(int argc, char **argv) {
 		if (data_detection(rxv,data_ind_rx,(uint32_t*)rxdata[0],FRAME_LENGTH_SAMPLES_MAX,rx_offset,log2_maxh,NULL)) {
 		  for (i=0;i<rxv->sdu_length+6;i++) {
 		    if (data_ind[i]!=data_ind_rx[i]) {
-		      		  printf("error position %d : %x,%x\n",i,data_ind[i],data_ind_rx[i]);
+		      //printf("error position %d : %x,%x\n",i,data_ind[i],data_ind_rx[i]);
 		      misdetected_errors++;
 		      errors++;
 		    }
 		  }
+		  if ((errors > (n_frames/10)) && (trial>100)) {
+		    stop=1;
+		    break;
+		  }
 		} // initial_synch returns IDLE
 		else {
-		  /*		  printf("Running data_detection fails\n");
-		  for (i=0;i<rxv->sdu_length+6;i++) {
-		    if (data_ind[i]!=data_ind_rx[i]) {
-		      printf("error position %d : %x,%x\n",i,data_ind[i],data_ind_rx[i]);
+		  errors++;
+		  if (n_frames == 1) {
+		    printf("Running data_detection fails\n");
+		    
+		    for (i=0;i<rxv->sdu_length+6;i++) {
+		      if (data_ind[i]!=data_ind_rx[i]) {
+			printf("error position %d : %x,%x\n",i,data_ind[i],data_ind_rx[i]);
+		      }
 		    }
 		  }
-		  */
+		  if ((errors > (n_frames/10)) && (trial>=100)) {
+		    stop=1;
+		    break;
+		  }
+		  
 		}
 		break;
 	      }
@@ -350,15 +378,43 @@ int main(int argc, char **argv) {
       }
       if (no_detection==1)
 	missed_packets++;
+      if (stop==1)
+	break;
     }
     
-    printf("\nSNR %f dB: errors %d/%d, misdetected errors %d/%d,signal_errors %d/%d, missed_packets %d/%d\n",SNR,errors,n_frames-signal_errors,misdetected_errors,n_frames-signal_errors,signal_errors,n_frames,missed_packets,n_frames);
+    printf("\nSNR %f dB: errors %d/%d, misdetected errors %d/%d,signal_errors %d/%d, missed_packets %d/%d\n",SNR,errors,trial-signal_errors,misdetected_errors,trial-signal_errors,signal_errors,trial,missed_packets,trial);
+    snr_array[cnt] = SNR;
+    errors_array[cnt] = errors;
+    trials_array[cnt] = trial;
+    misdetected_errors_array[cnt] = misdetected_errors;
+    signal_errors_array[cnt] = signal_errors;
+    missed_packets_array[cnt] = missed_packets;
+    cnt++;
+    if (cnt>99) {
+      printf("too many SNR points, exiting ...\n");
+      break;
+    }
+    if (errors == 0)
+      break;
 #ifdef EXECTIME
     print_is_stats();
     print_dd_stats();
 #endif
   }
-  
+
+
+  sprintf(fname,"SNR_%d_%d.m",tx_vector.rate,tx_vector.sdu_length);
+  sprintf(vname,"SNR_%d_%d_v",tx_vector.rate,tx_vector.sdu_length);
+  write_output(fname,vname,snr_array,cnt,1,7);
+  sprintf(fname,"errors_%d_%d.m",tx_vector.rate,tx_vector.sdu_length);
+  sprintf(vname,"errors_%d_%d_v",tx_vector.rate,tx_vector.sdu_length);
+  write_output(fname,vname,errors_array,cnt,1,2);
+  sprintf(fname,"trials_%d_%d.m",tx_vector.rate,tx_vector.sdu_length);
+  sprintf(vname,"trials_%d_%d_v",tx_vector.rate,tx_vector.sdu_length);
+  write_output(fname,vname,trials_array,cnt,1,2);
+  sprintf(fname,"signal_errors_%d_%d.m",tx_vector.rate,tx_vector.sdu_length);
+  sprintf(vname,"signal_errors_%d_%d_v",tx_vector.rate,tx_vector.sdu_length);
+  write_output(fname,vname,signal_errors_array,cnt,1,2);
   free(data_ind);
   free(data_ind_rx);
   //  free_channel_desc_scm(ch);

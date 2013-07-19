@@ -403,8 +403,11 @@ int phy_tx_start_bot(TX_VECTOR_t *tx_vector,int16_t *output_ptr,uint32_t tx_offs
       }
       
     break;
-
+    default:
+      break;
     }
+
+
 #ifdef DEBUG_TX
     if (s<12) {
       for (i=0;i<64;i++)
