@@ -10,8 +10,6 @@ if(paramsinitialized && LSBSWITCH_FLAG)
 	"corresponding timestamps.\n------------"])
   N=76800;
   M=4;
-  signalA2B=zeros(N,4);
-  signalB2A=zeros(N,4);
   indA=find(active_rfA==1);
   indB=find(active_rfB==1);
   Nanta=length(indA);

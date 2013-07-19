@@ -10,8 +10,6 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
 	"corresponding timestamps.\n------------"])
   N=76800;
   M=4;
-  signalA2B=zeros(N,4);
-  signalB2A=zeros(N,4);
   indA=find(active_rfA==1);
   indB=find(active_rfB==1);
   Nanta=length(indA);
@@ -42,18 +40,19 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     endif
   endfor
     
+# %% ------- Node A to B transmission ------- %%	
+  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB;
+  oarf_config_exmimo(card,  		 freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);	
+  oarf_send_frame(card,signalA2B,n_bit);
+  receivedA2B=oarf_get_frame(card);
+  oarf_stop(card);
+
+
 # %% ------- Node B to A transmission ------- %%	
   rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA;
   oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
   oarf_send_frame(card,signalB2A,n_bit);
   receivedB2A=oarf_get_frame(card);
-  oarf_stop(card);
-
-# %% ------- Node A to B transmission ------- %%	
-  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB;
-  oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);	
-  oarf_send_frame(card,signalA2B,n_bit);
-  receivedA2B=oarf_get_frame(card);
   oarf_stop(card);
   
 # %% ------- Do the A to B channel estimation ------- %%	
