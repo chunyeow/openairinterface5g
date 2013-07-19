@@ -9,4 +9,4 @@ rb_tool: rb_tool.c
 all:    rb_tool
 
 clean:
-	rm rb_tool
+	rm -f rb_tool
