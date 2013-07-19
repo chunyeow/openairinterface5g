@@ -31,7 +31,9 @@
 * \author Raymond knopp, and Navid Nikaein, Lionel Gauthier
 * \company Eurecom
 * \email: knopp@eurecom.fr, and navid.nikaein@eurecom.fr, lionel.gauthier@eurecom.fr
-*/ 
+*/
+
+#include <linux/version.h>
 
 //#include <linux/config.h>
 #include <linux/socket.h>
@@ -52,6 +54,9 @@
 #define NAS_NETLINK_ID 31
 #define NL_DEST_PID 1
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+struct netlink_kernel_cfg oai_netlink_cfg;
+#endif
 
 static struct sock *nas_nl_sk = NULL;
 static int exit_netlink_thread=0;
@@ -146,20 +151,33 @@ int oai_nw_drv_netlink_init(void)
 {
 
   printk("[OAI_IP_DRV][NETLINK] Running init ...\n");
-  
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)
+  oai_netlink_cfg.groups   = 0;
+  oai_netlink_cfg.input    = nas_nl_data_ready;
+  oai_netlink_cfg.cb_mutex = &nasmesh_mutex;
+  oai_netlink_cfg.bind     = NULL;
 
   nas_nl_sk = netlink_kernel_create(
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
+      &init_net,
+      NAS_NETLINK_ID,
+# if LINUX_VERSION_CODE < KERNEL_VERSION(3,8,0)
+      THIS_MODULE,
+# endif
+      &oai_netlink_cfg);
+#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
+  nas_nl_sk = netlink_kernel_create(
+# ifdef KERNEL_VERSION_GREATER_THAN_2622
 				    &init_net,       
-#endif
+# endif
 				    NAS_NETLINK_ID, 
 				    0, 
 				    nas_nl_data_ready, 
-#ifdef KERNEL_VERSION_GREATER_THAN_2622
+# ifdef KERNEL_VERSION_GREATER_THAN_2622
 				    &nasmesh_mutex, // NULL
-#endif
+# endif
 				    THIS_MODULE);
-
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0) */
 
   if (nas_nl_sk == NULL) {
 
@@ -218,7 +236,11 @@ int oai_nw_drv_netlink_send(unsigned char *data,unsigned int len) {
 
   nlh->nlmsg_pid = 0;      /* from kernel */
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0)
+  NETLINK_CB(nl_skb).portid = 0;
+#else
   NETLINK_CB(nl_skb).pid = 0;
+#endif
 
 #ifdef NETLINK_DEBUG
   printk("[OAI_IP_DRV][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d\n",nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len);
