@@ -21,11 +21,11 @@ static bool any_bad_argument(const octave_value_list &args)
   octave_value v,w;
   int i;
 
-  if (args.length()!=15)
+  if (args.length()!=16)
     {
       error(FCNNAME);
       error("Wrong number of parameters! Did you add the card number as first parameter?");
-      error("syntax: oarf_config_exmimo(card,freqrx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rx_dc,rf_local,rf_vcolocal,rffe_rxg_low,rffe_rxg_final)");
+      error("syntax: oarf_config_exmimo(card,freqrx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rx_dc,rf_local,rf_vcolocal,rffe_rxg_low,rffe_rxg_final,autocal)");
       return true;
     }
 
@@ -229,6 +229,22 @@ static bool any_bad_argument(const octave_value_list &args)
     error("number of columns for rffe_band must be 4\n");
   }
 
+  v = args(15);
+  if (v.columns() == 4)
+    {
+      for (i=0;i<v.columns();i++)
+        {
+	  if ((v.row_vector_value()(i)<0.0) || (v.row_vector_value()(i)>1.0)) {
+	    error(FCNNAME);
+	    error("autocal %d must be 0 or 1 (got %f).",i,v.row_vector_value()(i));
+	    return true;
+	  }
+        }
+    }
+  else {
+    error(FCNNAME);
+    error("number of columns for autocal must be 4\n");
+  }
 
     
   if ( !args(0).is_real_scalar() )
@@ -267,6 +283,7 @@ DEFUN_DLD (oarf_config_exmimo, args, nargout,"configure the openair interface - 
   RowVector rffe_rxg_low   = args(12).row_vector_value();
   RowVector rffe_rxg_final = args(13).row_vector_value();
   RowVector rffe_band      = args(14).row_vector_value();
+  RowVector autocal        = args(15).row_vector_value();
   int rffe_band_int;
     
   exmimo_config_t *p_exmimo_config;
@@ -319,7 +336,7 @@ DEFUN_DLD (oarf_config_exmimo, args, nargout,"configure the openair interface - 
 
       for (ant=0; ant<4; ant++)
         {
-	  p_exmimo_config->rf.do_autocal[ant]  = 1;
+	  p_exmimo_config->rf.do_autocal[ant] = autocal(ant);
 	  p_exmimo_config->rf.rf_freq_rx[ant] = freqrx(ant);
 	  p_exmimo_config->rf.rf_freq_tx[ant] = freqtx(ant);
 	  p_exmimo_config->rf.rx_gain[ant][0] = (uint32_t) rxgain(ant);
