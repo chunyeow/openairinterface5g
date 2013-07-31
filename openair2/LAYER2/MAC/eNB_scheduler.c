@@ -2121,7 +2121,10 @@ void schedule_ulsch_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 frame, u
 	  mcs = openair_daq_vars.target_ue_ul_mcs;
 	}
 	else { // increment RV
-	  mcs = (round&3) + 28; 
+	  if ((round&3)==0)
+	    mcs = openair_daq_vars.target_ue_ul_mcs; // same as inital transmission
+	  else
+	    mcs = (round&3) + 28; //not correct for round==4! 
 	}
 
 	LOG_D(MAC,"[eNB %d] ULSCH scheduler: Ndi %d, mcs %d\n",Mod_id,ndi,mcs);
@@ -2170,10 +2173,11 @@ void schedule_ulsch_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 frame, u
 	  }
 	  //rb_table_index = 8;
 	  
-	  LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframe %d Scheduled UE (mcs %d, first rb %d, nb_rb %d, rb_table_index %d, TBS %d)\n",
+	  LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframe %d Scheduled UE (mcs %d, first rb %d, nb_rb %d, rb_table_index %d, TBS %d, harq_pid %d)\n",
 		Mod_id,UE_id,rnti,frame,subframe,mcs,
 		*first_rb,rb_table[rb_table_index],
-		rb_table_index,mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]));
+		rb_table_index,mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]), 
+		harq_pid);
 	  
 	  rballoc = mac_xface->computeRIV(mac_xface->lte_frame_parms->N_RB_UL,
 					  *first_rb,
@@ -2225,10 +2229,11 @@ void schedule_ulsch_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 frame, u
 
 	} // ndi==1 
 	else { //we schedule a retransmission
-	  LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframe %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d)\n",
+	  LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframe %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d, harq_pid %d)\n",
 		Mod_id,UE_id,rnti,frame,subframe,mcs,
 		*first_rb,eNB_mac_inst[Mod_id].UE_template[UE_id].nb_rb_ul[harq_pid],
-		mac_xface->get_TBS_UL(mcs,eNB_mac_inst[Mod_id].UE_template[UE_id].nb_rb_ul[harq_pid]));
+		mac_xface->get_TBS_UL(mcs,eNB_mac_inst[Mod_id].UE_template[UE_id].nb_rb_ul[harq_pid]),
+		harq_pid);
 	  
 	  rballoc = mac_xface->computeRIV(mac_xface->lte_frame_parms->N_RB_UL,
 					  *first_rb,
@@ -2487,7 +2492,7 @@ u32 allocate_prbs_sub(int nb_rb, u8 *rballoc) {
   LOG_D(MAC,"*****Check1RBALLOC****: %d%d%d%d (nb_rb %d,N_RBGS %d)\n",
 	rballoc[3],rballoc[2],rballoc[1],rballoc[0],nb_rb,mac_xface->lte_frame_parms->N_RBGS);
   while((nb_rb >0) && (check < mac_xface->lte_frame_parms->N_RBGS)){
-    printf("rballoc[%d] %d\n",check,rballoc[check]);
+    //printf("rballoc[%d] %d\n",check,rballoc[check]);
     if(rballoc[check] == 1){
       rballoc_dci |= (1<<((mac_xface->lte_frame_parms->N_RBGS-1)-check));
       switch (mac_xface->lte_frame_parms->N_RB_DL) {
@@ -2510,7 +2515,7 @@ u32 allocate_prbs_sub(int nb_rb, u8 *rballoc) {
 	break;
       }
     }
-    printf("rb_alloc %x\n",rballoc_dci);
+    //printf("rb_alloc %x\n",rballoc_dci);
     check = check+1;
     //    check1 = check1+2;
   }
@@ -3357,7 +3362,7 @@ void schedule_ue_spec(unsigned char Mod_id,
 				dl_pow_off,
 				pre_nb_available_rbs,
 				mac_xface->lte_frame_parms->N_RBGS,
-				&rballoc_sub_UE[0][0]);
+				rballoc_sub_UE);
 
 
   for (UE_id=0;UE_id<granted_UEs;UE_id++) {

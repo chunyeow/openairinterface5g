@@ -2597,7 +2597,7 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->first_rb,
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->nb_rb,
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->mcs,
-        phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS,
+	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS,
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->rvidx,
 	    phy_vars_eNB->ulsch_eNB[i]->cyclicShift,
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->n_DMRS2,
@@ -2755,7 +2755,7 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 		phy_vars_eNB->ulsch_eNB[i]->o_ACK[0],
 		phy_vars_eNB->ulsch_eNB[i]->o_ACK[1]);
 	  	  
-	  LOG_I(PHY,"[eNB] Frame %d, Subframe %d : ULSCH SDU (RX harq_pid %d) %d bytes:",phy_vars_eNB->frame,last_slot>>1,
+	  LOG_I(PHY,"[eNB] Frame %d, Subframe %d : ULSCH SDU (RX harq_pid %d) %d bytes:\n",phy_vars_eNB->frame,last_slot>>1,
 		harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
 	  for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3;j++)
 	    LOG_T(PHY,"%x.",phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0][j]);
@@ -2773,7 +2773,8 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->phich_active=0;
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[harq_pid]++;
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]++;
-	    mac_xface->macphy_exit("");
+	    //dump_ulsch(phy_vars_eNB, last_slot>>1, i);
+	    //mac_xface->macphy_exit("");
 	  }
 	
 	  // If we've dropped the UE, go back to PRACH mode for this UE

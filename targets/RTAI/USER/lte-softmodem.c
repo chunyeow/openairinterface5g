@@ -1128,6 +1128,8 @@ int main(int argc, char **argv) {
   N_ZC = (prach_fmt <4)?839:139;
 
   if (UE_flag==1) {
+    g_log->log_component[HW].level = LOG_DEBUG;
+    g_log->log_component[HW].flag  = LOG_HIGH;
 #ifdef OPENAIR2
     g_log->log_component[PHY].level = LOG_INFO;
 #else
@@ -1221,6 +1223,8 @@ int main(int argc, char **argv) {
     printf("tx_max_power = %d -> amp %d\n",tx_max_power,get_tx_amp(tx_max_power,tx_max_power));
   }
   else { //this is eNB
+    g_log->log_component[HW].level = LOG_DEBUG;
+    g_log->log_component[HW].flag  = LOG_HIGH;
 #ifdef OPENAIR2
     g_log->log_component[PHY].level = LOG_INFO;
 #else
@@ -1265,7 +1269,7 @@ int main(int argc, char **argv) {
     openair_daq_vars.ue_dl_rb_alloc=0x1fff;
     openair_daq_vars.target_ue_dl_mcs=20;
     openair_daq_vars.ue_ul_nb_rb=6;
-    openair_daq_vars.target_ue_ul_mcs=9;
+    openair_daq_vars.target_ue_ul_mcs=11;
 
     // if AGC is off, the following values will be used
     //    for (i=0;i<4;i++) 
