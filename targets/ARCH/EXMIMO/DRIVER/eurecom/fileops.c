@@ -381,7 +381,7 @@ int openair_device_ioctl(struct inode *inode,struct file *filp, unsigned int cmd
                 fw_block[1] = update_firmware_stack_pointer;
       
                 exmimo_send_pccmd(c, EXMIMO_FW_START_EXEC);
-                
+                msleep(10); 
                 exmimo_firmware_init(c);
             }
             break;

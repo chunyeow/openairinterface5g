@@ -189,7 +189,7 @@ static int __init openair_init_module( void )
             openair_cleanup();
             return -EIO;
         }
-        iowrite32((1<<8) | (1<<9) | (1<<10), bar[card] +PCIE_CONTROL0 ); // bit8=AHBPCIE_CTL0_SOFTRESET, but what is bit9 and bit10?
+        iowrite32((1<<8), bar[card] +PCIE_CONTROL0 ); // bit8=AHBPCIE_CTL0_SOFTRESET, but what is bit9 and bit10?
         udelay(1000);
         readback = ioread32( bar[card] +PCIE_CONTROL0);
         printk("CONTROL0 readback %x\n",readback);
