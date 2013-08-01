@@ -43,6 +43,7 @@
 #include "PHY/CODING/extern.h"
 #include "PHY/LTE_TRANSPORT/defs.h"
 #include "defs.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
 //#define OFDMA_ULSCH
 
@@ -293,6 +294,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
     msg("ulsch_modulation.c: Illegal first_rb %d\n",first_rb);
     return;
   }
+
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_MODULATION, VCD_FUNCTION_IN);
 
   Q_m = get_Qm_ul(ulsch->harq_processes[harq_pid]->mcs);
 
@@ -629,6 +632,7 @@ void ulsch_modulation(mod_sym_t **txdataF,
     }
   }
 #endif
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_ULSCH_MODULATION, VCD_FUNCTION_OUT);
 
 }
 

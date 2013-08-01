@@ -146,6 +146,8 @@ const char* eurecomFunctionsNames[] = {
     "phy_ue_config_sib2",
     "phy_ue_compute_prach",
     "phy_enb_ulsch_decoding",
+    "phy_ue_ulsch_modulation",
+    "phy_ue_ulsch_encoding",
     "test"
 };
 
