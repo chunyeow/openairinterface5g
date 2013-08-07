@@ -58,7 +58,7 @@ extern __m128i zero;
   
 //#define DEBUG_PBCH 1
 //#define DEBUG_PBCH_ENCODING
-#define INTERFERENCE_MITIGATION 1
+//#define INTERFERENCE_MITIGATION 1
 
 #ifdef OPENAIR2
 #include "PHY_INTERFACE/defs.h"
