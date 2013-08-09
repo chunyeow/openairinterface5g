@@ -76,6 +76,7 @@ MAC_OBJS += $(MAC_DIR)/ra_procedures.o
 MAC_OBJS += $(MAC_DIR)/l1_helpers.o
 MAC_OBJS += $(MAC_DIR)/rar_tools.o
 MAC_OBJS += $(MAC_DIR)/eNB_scheduler.o
+MAC_OBJS += $(MAC_DIR)/pre_processor.o
 MAC_OBJS += $(MAC_DIR)/config.o
 
 L2_INTERFACE_OBJS = $(L2_INTERFACE_DIR)/openair_rrc_L2_interface.o
