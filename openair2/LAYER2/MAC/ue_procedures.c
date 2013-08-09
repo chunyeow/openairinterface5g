@@ -35,6 +35,10 @@
 
 */
 
+#ifdef EXMIMO
+#include <pthread.h>
+#endif
+
 #include "extern.h"
 #include "defs.h"
 #ifdef PHY_EMUL
@@ -54,6 +58,7 @@
 #ifdef PHY_EMUL
 #include "SIMULATION/simulation_defs.h"
 #endif
+#include "pdcp.h"
 
 #define DEBUG_HEADER_PARSING 1
 #define ENABLE_MAC_PAYLOAD_DEBUG
@@ -1211,7 +1216,27 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   //Rrc_xface->Frame_index=Mac_rlc_xface->frame;
   //if (subframe%5 == 0)
 #ifdef EXMIMO
-  pdcp_run(frame, 0, Mod_id, eNB_index);
+  //pdcp_run(frame, 0, Mod_id, eNB_index);
+  
+  if (pthread_mutex_lock (&pdcp_mutex) != 0) {
+    LOG_E(PDCP,"Cannot lock mutex\n");
+    //return(-1);
+  }
+  else {
+    pdcp_instance_cnt++;
+    pthread_mutex_unlock(&pdcp_mutex);
+        
+    if (pdcp_instance_cnt == 0) {
+      if (pthread_cond_signal(&pdcp_cond) != 0) {
+	LOG_E(PDCP,"pthread_cond_signal unsuccessfull\n");
+	//return(-1);
+      }
+    }
+    else {
+      LOG_W(PDCP,"PDCP thread busy!!! inst_cnt=%d\n",pdcp_instance_cnt);
+    }
+  }
+  
 #endif 
   UE_mac_inst[Mod_id].frame = frame;
   UE_mac_inst[Mod_id].subframe = subframe;

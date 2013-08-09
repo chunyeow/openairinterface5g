@@ -364,14 +364,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
                             rlcP->reassembly_missing_sn_detected = 0;
                             break;
                         default:
+                            LOG_W(RLC, "[MSC_NBOX][FRAME %05d][RLC_UM][MOD %02d][RB %02d][Missing SN detected][RLC_UM][MOD %02d][RB %02d]\n",
+                                  frame, rlcP->module_id,rlcP->rb_id, rlcP->module_id,rlcP->rb_id);
 #ifdef USER_MODE
                             assert(1 != 1);
 #endif
                         	rlcP->stat_rx_data_pdu_dropped += 1;
                         	rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
 
-                            LOG_W(RLC, "[MSC_NBOX][FRAME %05d][RLC_UM][MOD %02d][RB %02d][Missing SN detected][RLC_UM][MOD %02d][RB %02d]\n",
-                                  frame, rlcP->module_id,rlcP->rb_id, rlcP->module_id,rlcP->rb_id);
                             rlcP->reassembly_missing_sn_detected = 1;
                     }
                 }
@@ -381,8 +381,8 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
             rlcP->dar_buffer[sn] = NULL;
         } else {
             rlcP->last_reassemblied_missing_sn = sn;
-            LOG_W(RLC, "[MSC_NBOX][FRAME %05d][RLC_UM][MOD %02d][RB %02d][Missing SN %04d detected, clearing RX SDU][RLC_UM][MOD %02d][RB %02d]\n",
-                                      frame, rlcP->module_id,rlcP->rb_id, sn, rlcP->module_id,rlcP->rb_id);
+            LOG_D(RLC, "[MSC_NBOX][FRAME %05d][RLC_UM][MOD %02d][RB %02d][Missing SN %04d detected, clearing RX SDU][RLC_UM][MOD %02d][RB %02d]\n",
+		  frame, rlcP->module_id,rlcP->rb_id, sn, rlcP->module_id,rlcP->rb_id);
             rlcP->reassembly_missing_sn_detected = 1;
             rlc_um_clear_rx_sdu(rlcP);
         }

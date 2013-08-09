@@ -1391,6 +1391,10 @@ int main(int argc, char **argv) {
     //  }
 #endif
 
+#ifdef OPENAIR2
+    init_pdcp_thread(!UE_flag);
+#endif
+
     number_of_cards = openair0_num_detected_cards;
     if (p_exmimo_id->board_exmimoversion==1) //ExpressMIMO1
       openair_daq_vars.timing_advance = 138;
@@ -1664,6 +1668,10 @@ int main(int argc, char **argv) {
     cleanup_ulsch_threads();
 #endif
   }
+
+#ifdef OPENAIR2
+  cleanup_pdcp_thread();
+#endif
 
 #ifdef RTAI
   stop_rt_timer();

@@ -55,8 +55,8 @@
 #include "RRC/LITE/extern.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 
-
 //#include "LAYER2/MAC/pre_processor.c"
+#include "pdcp.h"
 
 double snr_mcs[28]={-4.1130, -3.3830, -2.8420, -2.0480, -1.3230, -0.6120, 0.1080, 0.977, 1.7230, 2.7550, 3.1960, 3.8080, 4.6870, 5.6840, 6.6550, 7.7570, 8.3730, 9.3040, 9.5990, 10.9020, 11.7220, 12.5950, 13.4390, 14.8790, 15.8800, 16.4800, 17.8690, 18.7690};
 int cqi_mcs[3][16] = {{0, 0, 0, 2, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27, 27},{0, 0, 0, 2, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27, 27},{0, 0, 0, 2, 4, 6, 8, 11, 13, 15, 18, 19, 22, 24, 26, 27}};
@@ -4199,7 +4199,27 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 
   //if (subframe%5 == 0)
 #ifdef EXMIMO 
-  pdcp_run(frame, 1, 0, Mod_id);
+  //pdcp_run(frame, 1, 0, Mod_id);
+ 
+  if (pthread_mutex_lock (&pdcp_mutex) != 0) {
+    LOG_E(PDCP,"Cannot lock mutex\n");
+    //return(-1);
+  }
+  else {
+    pdcp_instance_cnt++;
+    pthread_mutex_unlock(&pdcp_mutex);
+        
+    if (pdcp_instance_cnt == 0) {
+      if (pthread_cond_signal(&pdcp_cond) != 0) {
+	LOG_E(PDCP,"pthread_cond_signal unsuccessfull\n");
+	//return(-1);
+      }
+    }
+    else {
+      LOG_W(PDCP,"PDCP thread busy!!! inst_cnt=%d\n",pdcp_instance_cnt);
+    }
+  }
+  
 #endif
 #ifdef CELLULAR
   rrc_rx_tx(Mod_id, frame, 0, 0);

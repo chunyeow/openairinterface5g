@@ -84,6 +84,17 @@
 
 #define FALSE (0x00)
 #define TRUE  !(FALSE)
+
+extern pthread_t pdcp_thread;
+extern pthread_attr_t pdcp_thread_attr;
+extern pthread_mutex_t pdcp_mutex;
+extern pthread_cond_t pdcp_cond;
+extern int pdcp_instance_cnt;
+
+static void *pdcp_thread_main(void* param);
+int init_pdcp_thread(u8 eNB_flag);
+void cleanup_pdcp_thread(void);
+
 typedef unsigned char BOOL;
 
 public_pdcp(unsigned int Pdcp_stats_tx[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
