@@ -28,30 +28,34 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   for i=1:4
     if(indA(ia)==i)
       [Da2b_T, tmps]=genrandpskseq(N,M,amp);
-      signalA2B(:,i)=tmps;
+      signalA2B(:,i)=tmps*2; %make sure LSB is 0 (switch=tx)
+      signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
       if(length(indA)> ia) ia=ia+1; endif
     endif
     if(indB(ib)==i)      
       % This part could be improved by creating fully orthogonal sequences
       [tmpd, tmps]=genrandpskseq(N,M,amp);
-      signalB2A(:,i)=tmps;
+      signalB2A(:,i)=tmps*2;
+      signalA2B(:,i)=repmat(1+1j,76800,1);
       Db2a_T=[Db2a_T tmpd];
       if(length(indB)> ib) ib=ib+1; endif
     endif
   endfor
     
 # %% ------- Node A to B transmission ------- %%	
-  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB;
-  oarf_config_exmimo(card,  		 freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);	
+  rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB; 
+  oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);	
   oarf_send_frame(card,signalA2B,n_bit);
+  %keyboard
   receivedA2B=oarf_get_frame(card);
   oarf_stop(card);
 
 
 # %% ------- Node B to A transmission ------- %%	
-  rf_mode_current = rf_mode + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA;
-  oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
+  rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA; 
+  oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
   oarf_send_frame(card,signalB2A,n_bit);
+  %keyboard
   receivedB2A=oarf_get_frame(card);
   oarf_stop(card);
   

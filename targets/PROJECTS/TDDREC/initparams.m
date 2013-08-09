@@ -5,14 +5,14 @@
 clear
 paramsinitialized=false;
 limeparms;
-rxgain=30;
-txgain=25;
+rxgain=0;
+txgain=5;
 eNB_flag = 0;
 card = 0;
 Ntrx=4;
 dual_tx=0;
 active_rfA=[1 0 0 0];
-active_rfB=[0 1 0 0];
+active_rfB=[0 1 1 0];
 active_rf=active_rfA+active_rfB;
 
 if(active_rfA*active_rfB'!=0) error("The A and B transceive chains must be orthogonal./n") endif
@@ -22,10 +22,12 @@ fc  = 1912600000; %1907600000;
 %fc = 859.5e6;
 
 
-%rf_mode=(RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1) * active_rf;
 autocal_mode=active_rf;
-rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
-tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_TESTTX; LSBSWITCH_FLAG=false; 
+%rf_mode=(RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1) * active_rf;
+%rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
+% we have to enable both DMA transfers so that the switching signal in the LSB of the TX buffer gets set
+rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM+DMAMODE_TX+TXEN+DMAMODE_RX+RXEN) * active_rf;
+tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB; LSBSWITCH_FLAG=false; %we also need the LSB switching for the woduplex script, otherwise we don't receive anything
 %tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB; LSBSWITCH_FLAG=true;
 syncmode = SYNCMODE_FREE;
 rf_local = [8254744   8255063   8257340   8257340]; %eNB2tx 1.9GHz
