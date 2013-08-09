@@ -245,6 +245,9 @@ int exmimo_firmware_init(int card)
     // put DMA pointer to exmimo_pci_interface_bot into LEON register
     iowrite32( pphys_exmimo_pci_phys[card], (bar[card]+PCIE_PCIBASEL) );  // lower 32bit of address
     iowrite32( 0, (bar[card]+PCIE_PCIBASEH) );                            // higher 32bit of address
+
+    if (exmimo_pci_kvirt[card].exmimo_id_ptr->board_swrev == BOARD_SWREV_CMDREGISTERS)
+      iowrite32( EXMIMO_CONTROL2_COOKIE, bar[card]+ PCIE_CONTROL2);
     
     //printk("exmimo_firmware_init(): initializing Leon (EXMIMO_PCIE_INIT)...\n");
     exmimo_send_pccmd(card, EXMIMO_PCIE_INIT);

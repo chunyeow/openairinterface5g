@@ -45,6 +45,11 @@ irqreturn_t openair_irq_handler(int irq, void *cookie)
         if ( pdev[card_id] == cookie )
             break;
 
+    if (exmimo_pci_kvirt[card_id].exmimo_id_ptr->board_swrev == BOARD_SWREV_LEGACY)
+      pcie_control = PCIE_CONTROL1;
+    else
+      pcie_control = PCIE_CONTROL2;
+
     //printk("irq hndl called: card_id=%i, irqval=%i\n", card_id, irqval);
 
     // get AHBPCIE interrupt line (bit 7) to determine if IRQ was for us from ExMIMO card, or from a different device
@@ -55,11 +60,31 @@ irqreturn_t openair_irq_handler(int irq, void *cookie)
     //printk("IRQ handler: ctrl0: %08x, ctrl1: %08x, ctrl2: %08x, status: %08x\n", irqval, ioread32(bar[card_id]+PCIE_CONTROL1), ioread32(bar[card_id]+PCIE_CONTROL2), ioread32(bar[card_id]+PCIE_STATUS));
     
     if ( (irqval & 0x80) == 0 )  {  // CTRL0.bit7 is no set -> IRQ is not from ExMIMO i.e. not for us 
+        if (exmimo_pci_kvirt[card_id].exmimo_id_ptr->board_swrev == BOARD_SWREV_CMDREGISTERS){
+          if (irqcmd != EXMIMO_NOP && irqcmd != EXMIMO_CONTROL2_COOKIE) {          
+            if (irqcmd == GET_FRAME_DONE)
+            {
+              get_frame_done = 1;
+            }
+            openair_tasklet.data = card_id; 
+            tasklet_schedule(&openair_tasklet);
+            openair_bh_cnt++;
+            return IRQ_HANDLED;
+          }
+          else
+          {
             return IRQ_NONE;
+          }
+        }
+        else
+          return IRQ_NONE;
     }
     else
     {
-
+    if (exmimo_pci_kvirt[card_id].exmimo_id_ptr->board_swrev == BOARD_SWREV_LEGACY){
+    // clear PCIE interrupt (bit 7 of register 0x0)
+    iowrite32(irqval&0xffffff7f,bar[card_id]+PCIE_CONTROL0);
+    }
     if (irqcmd == GET_FRAME_DONE)
     {
         get_frame_done = 1;
@@ -80,6 +105,11 @@ void openair_do_tasklet (unsigned long card_id)
     unsigned int pcie_control = PCIE_CONTROL2;
     openair_bh_cnt = 0;
     
+    if (exmimo_pci_kvirt[card_id].exmimo_id_ptr->board_swrev == BOARD_SWREV_LEGACY)
+      pcie_control = PCIE_CONTROL1;
+    else
+      pcie_control = PCIE_CONTROL2;
+
     irqcmd = ioread32(bar[card_id]+pcie_control);
     
     if (save_irq_cnt > 1)
