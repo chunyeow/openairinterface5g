@@ -3,7 +3,7 @@
 PCI=`lspci -m | grep Xilinx`
 if [ -z "$PCI" ]; then
  echo "No card found. Stopping!"
- retur
+ return
 fi
 
 sudo rmmod openair_rf
