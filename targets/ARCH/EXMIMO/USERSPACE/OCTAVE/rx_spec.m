@@ -1,10 +1,10 @@
 dual_tx=0;
 card=0;
 limeparms;
-active_rf = [0 1 0 0];
+active_rf = [1 1 1 1];
 %rf_mode = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM)*[1 1 1 1];
 rf_mode = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM)*active_rf;
-rf_mode = rf_mode+((DMAMODE_RX)*[0 1 0 0]);
+rf_mode = rf_mode+(DMAMODE_RX*active_rf);
 %freq_rx = 2540000000*[1 1 1 1];
 %freq_rx = 1907600000*[1 1 1 0];
 freq_rx = 1912600000*active_rf; %+ 2540000000*[0 1 0 0]; % + 859500000*[0 0 1 0];
@@ -23,11 +23,12 @@ eNBflag = 0;
 tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTRX; 
 %tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
 syncmode = SYNCMODE_FREE;
-rffe_rxg_low = 61*[1 1 1 1];
-rffe_rxg_final = 61*[1 1 1 1];
-rffe_band = B19G_TDD*[1 1 1 1];
+rffe_rxg_low = 61*active_rf;
+rffe_rxg_final = 61*active_rf;
+rffe_band = B19G_TDD*active_rf;
+autocal = [1 1 1 1];
 
-oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band)
+oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal)
 
 gpib_card=0;      % first GPIB PCI card in the computer
 gpib_device=28;   % this is configured in the signal generator Utilities->System

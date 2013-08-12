@@ -8,8 +8,8 @@ eNB_flag = 0;
 card = 0;
 
 limeparms;
-rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * [1 1 0 0 ];
-rf_mode = rf_mode + (DMAMODE_TX)*[1 0 0 0];
+rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * [1 1 1 1];
+rf_mode = rf_mode + (DMAMODE_TX)*[1 1 1 1];
 %rf_mode   = RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1;
 %rf_local= [8253704   8253704   8257340   8257340]; %eNB2tx %850MHz
 %rf_local= [8255004   8253440   8257340   8257340]; % ex2 700 MHz
@@ -31,20 +31,23 @@ syncmode = SYNCMODE_FREE;
 rffe_rxg_low = 61*[1 1 1 1];
 rffe_rxg_final = 61*[1 1 1 1];
 rffe_band = B19G_TDD*[1 1 1 1];
+autocal = [1 1 1 1];
 
-oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band);
+oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal);
 amp = pow2(14)-1;
 n_bit = 16;
 
-s = zeros(76800,2);
+s = zeros(76800,4);
 
 select = 1;
 
 switch(select)
 
 case 1
-  s(:,1) = floor(amp * real(exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
-  s(:,2) = floor(amp * imag(exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
+  s(:,1) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
+  s(:,2) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
+  s(:,3) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
+  s(:,4) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
 
 case 2
   s(38400+128,1)= 80-1j*40;

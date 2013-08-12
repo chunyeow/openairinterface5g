@@ -92,6 +92,10 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
         return octave_value_list();
     }
 
+    if ((openair0_exmimo_pci[card].exmimo_config_ptr->framing.tdd_config & TXRXSWITCH_MASK) != TXRXSWITCH_TESTTX)
+      printf("Warning: tdd_config is not set to TXRXSWITCH_TESTTX! You better know what you are doing! :)\n");
+
+
     nbits = args(2).scalar_value();
 
     for (aa=0;aa<numcols;aa++)
