@@ -897,8 +897,8 @@ int main(int argc, char **argv) {
   u32 rf_mode_byp[4]     = {22991,22991,22991,22991};
   */
   u32 my_rf_mode = RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX;
-  u32 my_rf_mode2 = RXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX;
-  u32 rf_mode[4]     = {my_rf_mode,my_rf_mode2,0,0};
+  u32 rf_mode_base = TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM;
+  u32 rf_mode[4]     = {my_rf_mode,0,0,0};
   u32 rf_local[4]    = {8255000,8255000,8255000,8255000}; // UE zepto
     //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
     //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
@@ -1096,9 +1096,28 @@ int main(int argc, char **argv) {
   frame_parms->Ncp_UL             = 0;
   frame_parms->Nid_cell           = Nid_cell;
   frame_parms->nushift            = 0;
-  frame_parms->nb_antennas_tx_eNB = 1; //initial value overwritten by initial sync later
-  frame_parms->nb_antennas_tx     = (UE_flag==0) ? 1 : 1;
-  frame_parms->nb_antennas_rx     = (UE_flag==0) ? 1 : 1;
+  if (UE_flag==0) {
+    switch (transmission_mode) {
+    case 1: 
+      frame_parms->nb_antennas_tx     = 1;
+      frame_parms->nb_antennas_rx     = 1;
+      break;
+    case 2:
+    case 5:
+    case 6:
+      frame_parms->nb_antennas_tx     = 2;
+      frame_parms->nb_antennas_rx     = 1;
+      break;
+    default:
+      printf("Unsupported transmission mode %d\n",transmission_mode);
+      exit(-1);
+    }
+  }
+  else { //UE_flag==1
+    frame_parms->nb_antennas_tx     = 1;
+    frame_parms->nb_antennas_rx     = 1;
+  }
+  frame_parms->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
   frame_parms->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
   frame_parms->frame_type         = 1;
   frame_parms->tdd_config         = 3;
@@ -1269,7 +1288,7 @@ int main(int argc, char **argv) {
     openair_daq_vars.ue_dl_rb_alloc=0x1fff;
     openair_daq_vars.target_ue_dl_mcs=20;
     openair_daq_vars.ue_ul_nb_rb=6;
-    openair_daq_vars.target_ue_ul_mcs=11;
+    openair_daq_vars.target_ue_ul_mcs=12;
 
     // if AGC is off, the following values will be used
     //    for (i=0;i<4;i++) 
@@ -1309,13 +1328,24 @@ int main(int argc, char **argv) {
   
   printf("Card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d\n", card, p_exmimo_id->board_exmimoversion, p_exmimo_id->board_hwrev, p_exmimo_id->board_swrev);
 
-  p_exmimo_config->framing.eNB_flag   = !UE_flag;
-  p_exmimo_config->framing.tdd_config = 0;
+  if (p_exmimo_id->board_swrev>=BOARD_SWREV_CNTL2)
+    p_exmimo_config->framing.eNB_flag   = 0; 
+  else 
+    p_exmimo_config->framing.eNB_flag   = !UE_flag;
+  p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
   p_exmimo_config->framing.resampling_factor = 2;
+ 
+  for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
+    p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
+  for (ant=0;ant<frame_parms->nb_antennas_tx;ant++)
+    p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+  for (ant=0;ant<frame_parms->nb_antennas_rx;ant++)
+    p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
+  for (ant=max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant<4;ant++) {
+    p_exmimo_config->rf.rf_mode[ant] = 0;
+    carrier_freq[ant] = 0; //this turns off all other LIMEs
+  }
 
-  carrier_freq[1] = 0; //don't use this LIME for card 1
-  carrier_freq[2] = 0; //don't use this LIME for card 1
-  carrier_freq[3] = 0; //don't use this LIME for card 1
   for (ant = 0; ant<4; ant++) { 
     p_exmimo_config->rf.do_autocal[ant] = 1;
     p_exmimo_config->rf.rf_freq_rx[ant] = carrier_freq[ant];
@@ -1340,21 +1370,6 @@ int main(int argc, char **argv) {
     p_exmimo_config->rf.rffe_gain_rxfinal[ant] = 63;
     p_exmimo_config->rf.rffe_gain_rxlow[ant] = 63;
   }
-  if (UE_flag) {
-    p_exmimo_config->rf.rf_mode[0]    = my_rf_mode;
-    p_exmimo_config->rf.rf_mode[1]    = 0;
-    //p_exmimo_config->rf.rf_mode[1]    = my_rf_mode;
-    p_exmimo_config->rf.rf_mode[2]    = 0;
-    p_exmimo_config->rf.rf_mode[3]    = 0;
-  }
-  else {
-    p_exmimo_config->rf.rf_mode[0]    = my_rf_mode;
-    p_exmimo_config->rf.rf_mode[1]    = 0;
-    //p_exmimo_config->rf.rf_mode[1]    = my_rf_mode;
-    p_exmimo_config->rf.rf_mode[2]    = 0;
-    p_exmimo_config->rf.rf_mode[3]    = 0;
-  }
-
 
 
   dump_frame_parms(frame_parms);
@@ -1410,7 +1425,7 @@ int main(int argc, char **argv) {
 	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
 	  PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
 
-      p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;      
+      //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;      
   }
   else {
     setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,0);
