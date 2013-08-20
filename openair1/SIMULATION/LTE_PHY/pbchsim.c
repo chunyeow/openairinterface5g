@@ -880,7 +880,7 @@ int main(int argc, char **argv) {
 	  }
       }
       
-      sigma2_dB = 10*log10((double)tx_lev) +10*log10(PHY_vars_eNb->lte_frame_parms.ofdm_symbol_size/(12*NB_RB)) - SNR;
+      sigma2_dB = 10*log10((double)tx_lev) +10*log10((double)PHY_vars_eNb->lte_frame_parms.ofdm_symbol_size/(double)(12*NB_RB)) - SNR;
       if (n_frames==1)
 	printf("sigma2_dB %f (SNR %f dB) tx_lev_dB %f,%f,%f\n",sigma2_dB,SNR,
 	       10*log10((double)tx_lev),

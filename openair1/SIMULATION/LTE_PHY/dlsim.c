@@ -1725,10 +1725,10 @@ int main(int argc, char **argv) {
 	  
 	  //AWGN
 	  // This is the SNR on the PDSCH for OFDM symbols without pilots -> rho_A
-	  sigma2_dB = 10*log10((double)tx_lev) +10*log10(PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(NB_RB*12)) - SNR - get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated);
+	sigma2_dB = 10*log10((double)tx_lev) +10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(double)(NB_RB*12)) - SNR - get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated);
 	  sigma2 = pow(10,sigma2_dB/10);
 	  if (n_frames==1)
-	    printf("Sigma2 %f (sigma2_dB %f)\n",sigma2,sigma2_dB);
+	    printf("Sigma2 %f (sigma2_dB %f,%f,%f )\n",sigma2,sigma2_dB,10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(double)(NB_RB*12)),get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated));
 
 	  for (i=0; i<2*frame_parms->samples_per_tti; i++) {
 	    for (aa=0;aa<PHY_vars_eNB->lte_frame_parms.nb_antennas_rx;aa++) {
