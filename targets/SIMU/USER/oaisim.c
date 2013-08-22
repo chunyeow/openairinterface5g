@@ -388,8 +388,9 @@ int
 
 #ifdef PRINT_STATS
   int len;
-  FILE *UE_stats[NUMBER_OF_UE_MAX], *UE_stats_th[NUMBER_OF_UE_MAX], *eNB_stats, *eNB_avg_thr, *eNB_l2_stats;
+  FILE *UE_stats[NUMBER_OF_UE_MAX], *UE_stats_th[NUMBER_OF_UE_MAX], *eNB_stats[NUMBER_OF_eNB_MAX], *eNB_avg_thr, *eNB_l2_stats;
   char UE_stats_filename[255];
+  char eNB_stats_filename[255];
   char UE_stats_th_filename[255];
   char eNB_stats_th_filename[255];
  #endif
@@ -456,11 +457,13 @@ int
 
 #ifdef PRINT_STATS
   for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-    sprintf(UE_stats_filename,"UE_stats%d_tx%d.txt",UE_id,oai_emulation.info.transmission_mode);
+    sprintf(UE_stats_filename,"UE_stats%d.txt",UE_id);
     UE_stats[UE_id] = fopen (UE_stats_filename, "w");
   }
-  eNB_stats = fopen ("eNB_stats.txt", "w");
-  printf ("UE_stats=%p, eNB_stats=%p\n", UE_stats, eNB_stats);
+  for (eNB_id=0;eNB_id<NB_eNB_INST;eNB_id++) {
+    sprintf(eNB_stats_filename,"eNB_stats%d.txt",eNB_id);
+    eNB_stats[eNB_id] = fopen (eNB_stats_filename, "w");
+  }
   
   if(abstraction_flag==0){
     for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
@@ -644,11 +647,11 @@ int
       	if(last_slot==9 && frame%10==0)
 	  if(eNB_avg_thr)
 	    fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_id]->frame,(PHY_vars_eNB_g[eNB_id]->total_system_throughput)/((PHY_vars_eNB_g[eNB_id]->frame+1)*10));
-	if (eNB_stats) {
+	if (eNB_stats[eNB_id]) {
 	  len = dump_eNB_stats(PHY_vars_eNB_g[eNB_id], stats_buffer, 0);
-	  rewind (eNB_stats);
-	  fwrite (stats_buffer, 1, len, eNB_stats);
-	  fflush(eNB_stats);
+	  rewind (eNB_stats[eNB_id]);
+	  fwrite (stats_buffer, 1, len, eNB_stats[eNB_id]);
+	  fflush(eNB_stats[eNB_id]);
 	}
 #ifdef OPENAIR2
 	if (eNB_l2_stats) {
@@ -947,14 +950,16 @@ int
 #endif 
   
 #ifdef PRINT_STATS
-  for(UE_id=0;UE_id<NB_UE_INST;UE_id++) {
+  for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
     if (UE_stats[UE_id]) 
       fclose (UE_stats[UE_id]);
     if(UE_stats_th[UE_id])
       fclose (UE_stats_th[UE_id]);
   }
-  if (eNB_stats)
-    fclose (eNB_stats);
+  for (eNB_id=0;eNB_id<NB_eNB_INST;eNB_id++) {
+    if (eNB_stats[eNB_id])
+      fclose (eNB_stats[eNB_id]);
+  }
   if (eNB_avg_thr)
     fclose (eNB_avg_thr);
   if (eNB_l2_stats)

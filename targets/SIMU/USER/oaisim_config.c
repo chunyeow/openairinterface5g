@@ -49,7 +49,7 @@ mapping omg_model_names[] =
 };
 mapping otg_multicast_app_type_names[] = {
   {"no_predefined_multicast_traffic", 0},
-  {"mscbr", 1.},
+  {"mscbr", 1},
   {NULL, -1}
 }  ;
 
@@ -952,7 +952,8 @@ g_otg->application_idx[source_id_index][destination_id_index]+=1;
     LOG_I(OTG,"configure OTG through options %s\n", oai_emulation.info.otg_traffic);
     for (i=0; i<g_otg->num_nodes; i++){
       for (j=0; j<g_otg->num_nodes; j++){ 
-	for (k=0; k<4; k++){ 
+	g_otg->application_idx[i][j]=1;
+	for (k=0; k<g_otg->application_idx[i][j]; k++){ 
 	  
 	  g_otg->application_type[i][j][k] = map_str_to_int(otg_app_type_names, oai_emulation.info.otg_traffic);
 	  g_otg->background[i][j][k]=oai_emulation.info.otg_bg_traffic_enabled;
