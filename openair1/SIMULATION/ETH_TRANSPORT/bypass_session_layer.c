@@ -189,7 +189,7 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
             memcpy(&eNB_transport_info[n_enb], eNB_info, total_header + total_tbs);
 
             /* Go to the next eNB info */
-            eNB_info = (eNB_transport_info_t *)((unsigned int)eNB_info + total_header+
+            eNB_info = (eNB_transport_info_t *)((uintptr_t)eNB_info + total_header+
             total_tbs);
             bytes_read += (total_header + total_tbs);
         }
@@ -252,7 +252,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
             memcpy(&UE_transport_info[n_ue], UE_info, total_header + total_tbs);
 
             /* Go to the next UE info */
-            UE_info = (UE_transport_info_t *)((unsigned int)UE_info + total_header+
+            UE_info = (UE_transport_info_t *)((uintptr_t)UE_info + total_header+
                        total_tbs);
             bytes_read += (total_header + total_tbs);
         }
