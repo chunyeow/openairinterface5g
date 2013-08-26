@@ -564,7 +564,7 @@ void print_TOOL_pk_ipv4(struct iphdr *iph){
 //---------------------------------------------------------------------------
 void print_TOOL_pk_all(struct sk_buff *skb){
 //---------------------------------------------------------------------------
-	printk("Skb:\t %u, len = %u\n", (unsigned int)skb, skb->len);
+	printk("Skb:\t %p, len = %u\n", skb, skb->len);
 #ifdef KERNEL_VERSION_GREATER_THAN_2629
 	//navid: need to calculate the current used space: fixme?
 	printk("Skb:\t available buf space = %u \n", skb->truesize);

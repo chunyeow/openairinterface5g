@@ -97,7 +97,7 @@ void nas_COMMON_receive(u16 dlen,
   skb->dev = nasdev[inst];
   
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-  skb->mac_header = skb->data;
+  skb_reset_mac_header(skb);
 #else
   skb->mac.raw = skb->data;
 #endif
@@ -119,7 +119,7 @@ void nas_COMMON_receive(u16 dlen,
 
 
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-	skb->network_header = skb->data;
+    skb_reset_network_header(skb);
 #else
 	skb->nh.ipv6h = (struct ipv6hdr *)skb->data;
 #endif
@@ -175,10 +175,9 @@ void nas_COMMON_receive(u16 dlen,
 #endif
 		  
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-	skb->network_header = skb->data;
-	network_header = (struct iphdr *)skb_network_header(skb);
-	protocol = network_header->protocol;
-
+    skb_reset_network_header(skb);
+    network_header = (struct iphdr *)skb_network_header(skb);
+    protocol = network_header->protocol;
 #else
 	skb->nh.iph = (struct iphdr *)skb->data;
 	protocol=skb->nh.iph->protocol;
@@ -435,7 +434,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
   if (bytes_wrote != NAS_PDCPH_SIZE)
     {
       printk("NAS_COMMON_QOS_SEND: problem while writing PDCP's header (bytes wrote = %d to fifo %d)\n",bytes_wrote,NAS2PDCP_FIFO);
-      printk("rb_id %d, Wrote %d, Header Size %d \n", pdcph.rb_id , bytes_wrote, NAS_PDCPH_SIZE);
+      printk("rb_id %d, Wrote %d, Header Size %lu\n", pdcph.rb_id , bytes_wrote, NAS_PDCPH_SIZE);
 #ifndef NAS_NETLINK
       rtf_reset(NAS2PDCP_FIFO);
 #endif //NAS_NETLINK
@@ -449,7 +448,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
 
   if (bytes_wrote != skb->len+NAS_PDCPH_SIZE)    
     {
-      printk("NAS_COMMON_QOS_SEND: Inst %d, RB_ID %d: problem while writing PDCP's data, bytes_wrote = %d, Data_len %d, PDCPH_SIZE %d\n",
+      printk("NAS_COMMON_QOS_SEND: Inst %d, RB_ID %d: problem while writing PDCP's data, bytes_wrote = %d, Data_len %d, PDCPH_SIZE %lu\n",
 	     inst,
 	     pdcph.rb_id,
 	     bytes_wrote,

@@ -556,7 +556,7 @@ int nas_ioCTL_class_add_request(struct nas_ioctl *gifr,
 
 
   printk("NAS_IOCTL_CLASS_ADD: Add classifier components requested\n");
-  printk("NAS_IOCTL_CLASS_ADD: size of gifr msg %d\n", sizeof(gifr->msg));
+  printk("NAS_IOCTL_CLASS_ADD: size of gifr msg %zd\n", sizeof(gifr->msg));
 
     
   if (copy_from_user(&msgreq, gifr->msg, sizeof(msgreq))){
