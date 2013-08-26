@@ -139,6 +139,10 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
                                   LOG_D(RLC, "[RLC_RRC][MOD_id %d] SRB %d UM ALREADY CONFIGURED, TO DO MODIFY \n",module_idP, rb_id);
                               }
                               break;
+                          default:
+                              LOG_E(RLC, "[RLC_RRC][MOD_id %d] UNKNOWN RLC CONFIG %d \n",
+                                    module_idP, srb_toaddmod->rlc_Config->choice.explicitValue.present);
+                              break;
                       }
                       break;
                   case SRB_ToAddMod__rlc_Config_PR_defaultValue:

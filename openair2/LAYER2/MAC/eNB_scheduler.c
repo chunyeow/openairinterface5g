@@ -1047,7 +1047,7 @@ void schedule_SI(unsigned char Mod_id,u32 frame, unsigned char *nprb,unsigned in
 
 #if defined(USER_MODE) && defined(OAI_EMU)
     if (oai_emulation.info.opt_enabled)
-      trace_pdu(1, (char *)&eNB_mac_inst[Mod_id].BCCH_pdu.payload[0], bcch_sdu_length,
+      trace_pdu(1, &eNB_mac_inst[Mod_id].BCCH_pdu.payload[0], bcch_sdu_length,
                 0xffff, 4, 0xffff, eNB_mac_inst[Mod_id].subframe, 0, 0);
     LOG_D(OPT,"[eNB %d][BCH] Frame %d trace pdu for rnti %x with size %d\n", 
           Mod_id, frame, 0xffff, bcch_sdu_length);
@@ -1800,7 +1800,7 @@ void schedule_RA(unsigned char Mod_id,u32 frame, unsigned char subframe,unsigned
 
 #if defined(USER_MODE) && defined(OAI_EMU)
 	  if (oai_emulation.info.opt_enabled){
-	    trace_pdu(1, (char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)UE_id][0].payload[0],
+	    trace_pdu(1, (uint8_t *)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)UE_id][0].payload[0],
                   rrc_sdu_length, UE_id, 3, find_UE_RNTI(Mod_id, UE_id),
                   eNB_mac_inst[Mod_id].subframe,0,0);
 	    LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
@@ -3287,7 +3287,7 @@ void schedule_ue_spec(unsigned char Mod_id,
   u16 i=0,ii=0,tpmi0=1;
   u8 dl_pow_off[NUMBER_OF_UE_MAX];
   unsigned char rballoc_sub_UE[NUMBER_OF_UE_MAX][N_RBGS_MAX];
-  unsigned char rballoc_sub[N_RBGS_MAX];
+//   unsigned char rballoc_sub[N_RBGS_MAX];
   u16 pre_nb_available_rbs[NUMBER_OF_UE_MAX];
   int mcs;
   //u8 number_of_subbands=13;
@@ -3328,7 +3328,7 @@ void schedule_ue_spec(unsigned char Mod_id,
     pre_nb_available_rbs[i] = 0;
     dl_pow_off[i] = 2;
     for(j=0;j<mac_xface->lte_frame_parms->N_RBGS;j++){
-      rballoc_sub[j] = 0;
+//       rballoc_sub[j] = 0;
       rballoc_sub_UE[i][j] = 0;
     }
   }
@@ -3951,9 +3951,9 @@ void schedule_ue_spec(unsigned char Mod_id,
 	//eNB_mac_inst[0].DLSCH_pdu[0][0].payload[0][offset+sdu_lengths[0]+j] = (char)(taus()&0xff);
 
 #if defined(USER_MODE) && defined(OAI_EMU)
-    /* Tracing of PDU is done on UE side */
+        /* Tracing of PDU is done on UE side */
 	if (oai_emulation.info.opt_enabled)
-	  trace_pdu(1, (char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)next_ue][0].payload[0],
+            trace_pdu(1, (uint8_t *)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)next_ue][0].payload[0],
                 TBS, Mod_id, 3, find_UE_RNTI(Mod_id,next_ue),
                 eNB_mac_inst[Mod_id].subframe,0,0);
 	LOG_D(OPT,"[eNB %d][DLSCH] Frame %d  rnti %x  with size %d\n", 

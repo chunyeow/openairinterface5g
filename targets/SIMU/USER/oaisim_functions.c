@@ -8,12 +8,16 @@
 #include "LAYER2/PDCP_v10.1.0/pdcp.h"
 #include "LAYER2/PDCP_v10.1.0/pdcp_primitives.h"
 #include "RRC/LITE/extern.h"
+#include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "PHY_INTERFACE/extern.h"
 #include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
 #include "SCHED/extern.h"
+#include "SIMULATION/ETH_TRANSPORT/proto.h"
 #include "UTIL/OCG/OCG_extern.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 #include "UTIL/OPT/opt.h"
+
+#include "cor_SF_sim.h"
 
 #ifdef SMBV
 extern u8 config_smbv;
@@ -356,14 +360,14 @@ void check_and_adjust_params() {
   s32 ret;
   int i,j;
 
-  if (oai_emulation.info.nb_ue_local > NUMBER_OF_UE_MAX ) {
+  if (oai_emulation.info.nb_ue_local > NUMBER_OF_UE_MAX) {
     LOG_E(EMU,"Enter fewer than %d UEs for the moment or change the NUMBER_OF_UE_MAX\n", NUMBER_OF_UE_MAX);
-    exit (-1);
+    exit(EXIT_FAILURE);
   }
 
   if (oai_emulation.info.nb_enb_local > NUMBER_OF_eNB_MAX) {
     LOG_E(EMU,"Enter fewer than %d eNBs for the moment or change the NUMBER_OF_UE_MAX\n", NUMBER_OF_eNB_MAX);
-    exit (-1);
+    exit(EXIT_FAILURE);
   }
 
   // fix ethernet and abstraction with RRC_CELLULAR Flag
@@ -377,7 +381,7 @@ void check_and_adjust_params() {
 
   // setup netdevice interface (netlink socket)
   LOG_I(EMU,"[INIT] Starting NAS netlink interface\n");
-  ret = netlink_init ();
+  ret = netlink_init();
   if (ret < 0)
     LOG_E(EMU,"[INIT] Netlink not available, careful ...\n");
 
@@ -820,7 +824,7 @@ void update_otg_eNB(int module_id, unsigned int ctime) {
 }
 
 void update_otg_UE(int module_id, unsigned int ctime) {
-  #if defined(USER_MODE) && defined(OAI_EMU)
+#if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ) {
     int dst_id, src_id;
     int eNB_index = 0; //See how phy_procedures_UE_lte is called: 3rd parameter from the right = 0

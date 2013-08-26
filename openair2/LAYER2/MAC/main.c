@@ -414,7 +414,7 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, u8 cba_group_activ
   mac_init_global_param();
 
 
-  mac_xface->macphy_init=(void (*)(void))mac_top_init;
+  mac_xface->macphy_init = mac_top_init;
 #ifndef USER_MODE
   mac_xface->macphy_exit = openair_sched_exit;
 #else

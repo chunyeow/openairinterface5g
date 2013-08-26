@@ -1129,6 +1129,8 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
       case DL_DCCH_MessageType__c1_PR_spare3:
       case DL_DCCH_MessageType__c1_PR_spare4:
 	break;
+      default:
+        break;
       }
     }
   }

@@ -277,7 +277,7 @@ u16 T310[8] = {0,50,100,200,500,1000,2000};
 u16 N310[8] = {1,2,3,4,6,8,10,20};
 u16 N311[8] = {1,2,3,4,6,8,10,20};
 
-rrc_t310_expiration(u32 frame,u8 Mod_id,u8 eNB_index) {
+void rrc_t310_expiration(u32 frame,u8 Mod_id,u8 eNB_index) {
 
   if (UE_rrc_inst[Mod_id].Info[eNB_index].State!=RRC_CONNECTED) {
     LOG_D(RRC,"Timer 310 expired, going to RRC_IDLE\n");
@@ -303,7 +303,7 @@ rrc_t310_expiration(u32 frame,u8 Mod_id,u8 eNB_index) {
     LOG_D(RRC,"Timer 310 expired, trying RRCRestablishment ...\n");    
   }
 }
-    
+
 RRC_status_t rrc_rx_tx(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index){
       
   if(eNB_flag == 0) {

@@ -153,7 +153,7 @@ char openair_rrc_ue_init(u8 Mod_id, unsigned char eNB_index){
 #ifdef CELLULAR
   return (rrc_L2_ue_init(Mod_id,eNB_index));
 #else 
-  openair_rrc_lite_ue_init(Mod_id, eNB_index);
+  return openair_rrc_lite_ue_init(Mod_id, eNB_index);
 #endif //CELLULAR
 }
 
@@ -163,6 +163,6 @@ char openair_rrc_eNB_init(u8 Mod_id){
 #ifdef CELLULAR
  return( rrc_L2_eNB_init(Mod_id));
 #else 
-  openair_rrc_lite_eNB_init(Mod_id);
+  return openair_rrc_lite_eNB_init(Mod_id);
 #endif //CELLULAR
 }

@@ -51,7 +51,8 @@
 //#include "UTIL/OCG/OCG.h"
 //#include "UTIL/OCG/OCG_extern.h"
 #ifdef USER_MODE
-#include <string.h>
+# include <pthread.h>
+# include <string.h>
 #endif
 #ifdef RTAI
 #include <rtai.h>
@@ -72,7 +73,7 @@ static char *log_level_highlight_start[] = {LOG_RED, LOG_RED, LOG_RED, LOG_RED, 
 static char *log_level_highlight_end[]   = {LOG_RESET, LOG_RESET, LOG_RESET, LOG_RESET, LOG_RESET,LOG_RESET,  "",""};	/*!< \brief Optional end-format strings for highlighting */
 
 
-static int bypass_log_hdr;
+// static int bypass_log_hdr;
 
 //extern MAC_xface *mac_xface;
 
@@ -81,21 +82,21 @@ int logInit (void) {
 #ifdef USER_MODE
   int i;
   g_log = calloc(1, sizeof(log_t));
-  memset(g_log, 0, sizeof(log_t));
+
 #else
   g_log = kmalloc(sizeof(log_t),GFP_KERNEL);
 #endif
   if (g_log == NULL) {
 #ifdef USER_MODE
-    perror ("cannot allocated memory for log generation modeul \n");
-    exit(-1);
+    perror ("cannot allocated memory for log generation module \n");
+    exit(EXIT_FAILURE);
 #else
-    printk("cannot allocated memory for log generation modeul \n");
+    printk("cannot allocated memory for log generation module \n");
     return(-1);
 #endif
   }
   
-  g_log->log_component[PHY].name = "PHY";
+    g_log->log_component[PHY].name = "PHY";
     g_log->log_component[PHY].level = LOG_EMERG;
     g_log->log_component[PHY].flag =  LOG_MED;
     g_log->log_component[PHY].interval =  1;
@@ -330,6 +331,7 @@ int logInit (void) {
   printk("log init done\n");
 #endif
 
+  return 0;
 }
 
 //log record: add to a list 
@@ -339,7 +341,7 @@ void logRecord( const char *file, const char *func,
 
   va_list args;
   LOG_params log_params;
-  int len, err;
+  int len;
   //LOG_elt *log = NULL;
 
   va_start(args, format);
@@ -491,6 +493,7 @@ else
 
 }
 
+#if !defined(LOG_NO_THREAD)
 void *log_thread_function(void * list) {
 
   LOG_params log_params;
@@ -537,14 +540,14 @@ void *log_thread_function(void * list) {
     //free(log_elt);
   }
 }
-
+#endif
 
 //log record, format, and print:  executed in the main thread (mt)
 void logRecord_mt( const char *file, const char *func,
 		int line,  int comp, int level, 
 		char *format, ...) {
-   
-  int len, i;
+
+  int len;
   va_list args;
   log_component_t *c;
 

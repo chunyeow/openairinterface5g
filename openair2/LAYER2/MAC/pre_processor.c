@@ -77,11 +77,9 @@ extern inline unsigned int taus(void);
 void store_dlsch_buffer (unsigned char Mod_id,
 			 u32 frame,
 			 unsigned char subframe){
-  
-  
+
   unsigned char next_ue;
   u16 rnti,i=0;
-  LTE_eNB_UE_stats* eNB_UE_stats;
   mac_rlc_status_resp_t rlc_status;
   unsigned char UE_id,granted_UEs;  
 
@@ -97,8 +95,6 @@ void store_dlsch_buffer (unsigned char Mod_id,
       eNB_mac_inst[Mod_id].UE_template[UE_id].dl_buffer_head_sdu_remaining_size_to_send[i]=0;
     }
   }
-
-
 
   for (UE_id=0;UE_id<granted_UEs;UE_id++) {
     
@@ -118,7 +114,7 @@ void store_dlsch_buffer (unsigned char Mod_id,
       eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total = eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total + eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_info[i];//storing the total dlsch buffer
       eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_total += eNB_mac_inst[Mod_id].UE_template[next_ue].dl_pdus_in_buffer[i];
 
-#ifdef DEBUG_eNB_SCHEDULER     
+#ifdef DEBUG_eNB_SCHEDULER
       /* note for dl_buffer_head_sdu_remaining_size_to_send[i] :
        * 0 if head SDU has not been segmented (yet), else remaining size not already segmented and sent
        */
@@ -130,10 +126,10 @@ void store_dlsch_buffer (unsigned char Mod_id,
 	      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_remaining_size_to_send[i],
 	      eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_head_sdu_is_segmented[i]
 	    );
-#endif   
-      
+#endif
+
     }
-#ifdef DEBUG_eNB_SCHEDULER        
+#ifdef DEBUG_eNB_SCHEDULER
     if ( eNB_mac_inst[Mod_id].UE_template[next_ue].dl_buffer_total>0)
       LOG_D(MAC,"[eNB %d] Frame %d Subframe %d : RLC status for UE %d : total DL buffer size %d and total number of pdu %d \n",
 	    Mod_id, frame, subframe, next_ue, 
@@ -152,12 +148,10 @@ void assign_rbs_required (unsigned char Mod_id,
 			  u16 *nb_rbs_required){
 
  
-  unsigned char next_ue,harq_pid=0,round=0;
+  unsigned char next_ue;
   u16 rnti,TBS = 0;
   LTE_eNB_UE_stats* eNB_UE_stats;
-  mac_rlc_status_resp_t rlc_status;
-  unsigned char UE_id,granted_UEs,i=0;  
-
+  unsigned char UE_id, granted_UEs;
 
   granted_UEs = find_dlgranted_UEs(Mod_id);
 

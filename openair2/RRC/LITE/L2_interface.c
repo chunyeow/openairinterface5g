@@ -326,4 +326,5 @@ int mac_get_rrc_lite_status(u8 Mod_id,u8 eNB_flag,u8 index){
 int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
   // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
   UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size=0;
+  return 0;
 }

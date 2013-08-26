@@ -57,11 +57,11 @@
 typedef struct
   {
     /// Pointer function that initializes L2
-    void (*macphy_init)(int eMBMS_active, u8 CBA_enabled);
+    int (*macphy_init)(int eMBMS_active, u8 CBA_enabled);
 
     /// Pointer function that stops the low-level scheduler due an exit condition        
-    void (*macphy_exit)(const char *);          
-    
+    void (*macphy_exit)(const char *);
+
     // eNB functions
     /// Invoke dlsch/ulsch scheduling procedure for new subframe
     void (*eNB_dlsch_ulsch_scheduler)(u8 Mod_id, u8 cooperation_flag, u32 frame, u8 subframe);//, int calibration_flag);
@@ -219,13 +219,13 @@ typedef struct
     u16 (*get_nCCE_max)(u8 Mod_id);
 
     /// Function to retrieve number of PRB in an rb_alloc
-    u16 (*get_nb_rb)(u8 ra_header,u32 rb_alloc);
+    u32 (*get_nb_rb)(u8 ra_header, u32 rb_alloc, int n_rb_dl);
 
     /// Function to retrieve transmission mode for UE
     u8 (*get_transmission_mode)(u16 Mod_id,u16 rnti);
 
     /// Function to retrieve rb_alloc bitmap from dci rballoc field and VRB type
-    u32 (*get_rballoc)(u8 vrb_type,u8 rb_alloc_dci);
+    u32 (*get_rballoc)(u8 vrb_type, u16 rb_alloc_dci);
 
     /// Function for UE MAC to retrieve current PHY connectivity mode (PRACH,RA_RESPONSE,PUSCH)
     UE_MODE_t (*get_ue_mode)(u8 Mod_id,u8 eNB_index);

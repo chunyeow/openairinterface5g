@@ -19,7 +19,7 @@
 //#define DEBUG_MEM_MNGT_ALLOC_SIZE
 //#define DEBUG_MEM_MNGT_ALLOC
 //-----------------------------------------------------------------------------
-#ifdef USER_MODE
+#if defined(USER_MODE) && defined(DEBUG_MEM_MNGT_ALLOC)
 u32_t             counters[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #endif
 //-----------------------------------------------------------------------------
@@ -359,11 +359,11 @@ void
 check_free_mem_block (mem_block_t * leP)
 {
 //-----------------------------------------------------------------------------
-  int             block_index;
+  ptrdiff_t             block_index;
   if ((leP >= &mem_block_var.mem_blocks[0]) && (leP <= &mem_block_var.mem_blocks[MEM_MNGT_NB_ELEMENTS])) {
-    block_index = ((u32_t) leP - (u32) (&mem_block_var.mem_blocks[0])) / sizeof (mem_block_t);
+    block_index = (leP - (&mem_block_var.mem_blocks[0])) / sizeof (mem_block_t);
     if (block_index < MEM_MNGT_MB0_NB_BLOCKS) {
-      if (((u32_t) (leP->data) != (u32) (&(mem_block_var.mem_pool0[block_index][0]))) && (leP->pool_id != MEM_MNGT_POOL_ID0)) {
+      if ((leP->data != (&(mem_block_var.mem_pool0[block_index][0]))) && (leP->pool_id != MEM_MNGT_POOL_ID0)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
     } else if (block_index < (MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS)) {
@@ -374,59 +374,79 @@ check_free_mem_block (mem_block_t * leP)
       if ((leP->data != &(mem_block_var.mem_pool2[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID2)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
-    } else if (block_index < MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS) {
+    } else if (block_index <
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool3[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID3)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
-    } else if (block_index < MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS) {
+    } else if (block_index <
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool4[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID4)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
-    } else if (block_index < MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS) {
+    } else if (block_index <
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool5[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID5)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
     } else if (block_index <
-               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS) {
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool6[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID6)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
     } else if (block_index <
-               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS +
-               MEM_MNGT_MB7_NB_BLOCKS) {
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool7[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID7)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
     } else if (block_index <
-               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS +
-               MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS) {
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool8[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID8)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
     } else if (block_index <
-               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS +
-               MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS + MEM_MNGT_MB9_NB_BLOCKS) {
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS
+             + MEM_MNGT_MB9_NB_BLOCKS) {
       if ((leP->data != &(mem_block_var.mem_pool9[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID9)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
-	} else if (block_index <
-		MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS +
-		MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS + MEM_MNGT_MB9_NB_BLOCKS + MEM_MNGT_MB10_NB_BLOCKS) {
-		if ((leP->data != &(mem_block_var.mem_pool10[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID10)) {
-			msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
-		}
-	} else if (block_index <
-		MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS +
-		MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS + MEM_MNGT_MB9_NB_BLOCKS + MEM_MNGT_MB10_NB_BLOCKS + MEM_MNGT_MB11_NB_BLOCKS) {
-		if ((leP->data != &(mem_block_var.mem_pool11[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID11)) {
-			msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
-		}
-	}  else if (block_index <
-		MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS + MEM_MNGT_MB9_NB_BLOCKS + MEM_MNGT_MB10_NB_BLOCKS+ MEM_MNGT_MB11_NB_BLOCKS+ MEM_MNGT_MB12_NB_BLOCKS) {
-		if ((leP->data != &(mem_block_var.mem_pool12[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID12)) {
-			msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
-		}
-	}
+    } else if (block_index <
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS
+             + MEM_MNGT_MB9_NB_BLOCKS + MEM_MNGT_MB10_NB_BLOCKS) {
+      if ((leP->data != &(mem_block_var.mem_pool10[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID10)) {
+        msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
+      }
+    } else if (block_index <
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS
+             + MEM_MNGT_MB9_NB_BLOCKS + MEM_MNGT_MB10_NB_BLOCKS+ MEM_MNGT_MB11_NB_BLOCKS) {
+      if ((leP->data != &(mem_block_var.mem_pool11[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID11)) {
+        msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
+      }
+    } else if (block_index <
+               MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS + MEM_MNGT_MB2_NB_BLOCKS
+             + MEM_MNGT_MB3_NB_BLOCKS + MEM_MNGT_MB4_NB_BLOCKS + MEM_MNGT_MB5_NB_BLOCKS
+             + MEM_MNGT_MB6_NB_BLOCKS + MEM_MNGT_MB7_NB_BLOCKS + MEM_MNGT_MB8_NB_BLOCKS
+             + MEM_MNGT_MB9_NB_BLOCKS + MEM_MNGT_MB10_NB_BLOCKS+ MEM_MNGT_MB11_NB_BLOCKS
+             + MEM_MNGT_MB12_NB_BLOCKS) {
+      if ((leP->data != &(mem_block_var.mem_pool12[block_index][0])) && (leP->pool_id != MEM_MNGT_POOL_ID12)) {
+        msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
+      }
+    }
   } else {
     msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
   }
