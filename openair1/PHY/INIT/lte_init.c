@@ -1305,7 +1305,7 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
 
     phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS = 0;
     phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS_last = 0;
-    phy_vars_eNB->eNB_UE_stats[UE_id].total_transmitted_bits = 0;
+    phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS_MAC = 0;
     phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_bitrate = 0;
 
     phy_vars_eNB->physicalConfigDedicated[UE_id] = NULL;

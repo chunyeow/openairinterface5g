@@ -833,24 +833,24 @@ void update_otg_eNB(int module_id, unsigned int ctime) {
 #endif
 }
 
-void update_otg_UE(int module_id, unsigned int ctime) {
+void update_otg_UE(int UE_id, unsigned int ctime) {
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ) {
-    int dst_id, src_id;
-    int eNB_index = 0; //See how phy_procedures_UE_lte is called: 3rd parameter from the right = 0
+    int dst_id, src_id; //dst_id = eNB_index
+    int module_id = UE_id+NB_eNB_INST;
 
     src_id = module_id;
-    dst_id = eNB_index;
 
-    if (mac_get_rrc_status(module_id, 0/*eNB_flag*/, eNB_index ) > 2 /*RRC_CONNECTED*/) {
+    for (dst_id=0;dst_id<NUMBER_OF_eNB_MAX;dst_id++) {
+    if (mac_get_rrc_status(UE_id, 0/*eNB_flag*/, dst_id ) > 2 /*RRC_CONNECTED*/) {
       Packet_otg_elt *otg_pkt = malloc (sizeof(Packet_otg_elt));
       // Manage to add this packet to the tail of your list
       (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(src_id, dst_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
 
       if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
-        (otg_pkt->otg_pkt).rb_id = eNB_index * NB_RB_MAX + DTCH;
+        (otg_pkt->otg_pkt).rb_id = dst_id * NB_RB_MAX + DTCH;
         (otg_pkt->otg_pkt).module_id = module_id;
-        //(otg_pkt->otg_pkt).dst_id = dst_id;
+        (otg_pkt->otg_pkt).dst_id = dst_id;
         //Adding the packet to the OTG-PDCP buffer
         (otg_pkt->otg_pkt).mode = PDCP_DATA_PDU;
         pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[module_id]));
@@ -858,6 +858,7 @@ void update_otg_UE(int module_id, unsigned int ctime) {
         free(otg_pkt);
         otg_pkt=NULL;
       }
+    }
     }
   }
 #endif
