@@ -5,6 +5,9 @@
 
 #include "UTIL/FIFO/pad_list.h"
 
+#ifndef OAISIM_FUNCTIONS_H_
+#define OAISIM_FUNCTIONS_H_
+
 void get_simulation_options(int argc, char *argv[]);
 
 void check_and_adjust_params();
@@ -35,3 +38,8 @@ void exit_fun(const char* s);
 
 void init_pad();
 
+int init_slot_isr(void);
+
+void wait_for_slot_isr(void);
+
+#endif /* OAISIM_FUNCTIONS_H_ */

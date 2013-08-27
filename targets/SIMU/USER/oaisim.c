@@ -552,6 +552,8 @@ int
     sinr_dB=-20;
   }
 
+  init_slot_isr();
+
   t = clock();
 
   for (frame=0; frame<oai_emulation.info.n_frames; frame++) {
@@ -605,6 +607,8 @@ int
     update_ocm();
 
     for (slot=0 ; slot<20 ; slot++) {
+
+      wait_for_slot_isr();
 
       last_slot = (slot - 1)%20;
       if (last_slot <0)

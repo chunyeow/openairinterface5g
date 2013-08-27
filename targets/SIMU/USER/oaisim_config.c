@@ -327,6 +327,9 @@ void init_oai_emulation() {
 
   oai_emulation.info.cli_num_enb= NUMBER_OF_eNB_MAX;
   oai_emulation.info.cli_num_ue= NUMBER_OF_UE_MAX;
+
+  oai_emulation.info.slot_isr = 0;
+  oai_emulation.info.slot_sfd = -1;
  
   //for (i=0; i < oai_emulation.info.cli_num_enb; i++)
   for (i=0; i < NUMBER_OF_eNB_MAX; i++)

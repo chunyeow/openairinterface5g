@@ -1,4 +1,11 @@
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <signal.h>
 #include <execinfo.h>
+#include <time.h>
+
+#include <sys/timerfd.h>
 
 #include "oaisim_functions.h"
 
@@ -102,7 +109,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:k:l:m:M:n:N:O:p:P:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:k:l:m:M:n:N:oO:p:P:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
 
     switch (c) {
     case 0:
@@ -346,6 +353,9 @@ void get_simulation_options(int argc, char *argv[]) {
 #else
       printf("You enabled MME mode without MME support...\n");
 #endif
+      break;
+    case 'o':
+      oai_emulation.info.slot_isr = 1;
       break;
     default:
       help ();
@@ -851,6 +861,49 @@ void update_otg_UE(int module_id, unsigned int ctime) {
     }
   }
 #endif
+}
+
+int init_slot_isr(void)
+{
+    if (oai_emulation.info.slot_isr) {
+        struct itimerspec its;
+
+        int sfd;
+
+        sfd = timerfd_create(CLOCK_REALTIME, 0);
+        if (sfd == -1) {
+            LOG_E(EMU, "Failed in timerfd_create (%d:%s)\n", errno, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
+        /* Start the timer */
+        its.it_value.tv_sec = 0;
+        its.it_value.tv_nsec = 500 * 1000;
+        its.it_interval.tv_sec = its.it_value.tv_sec;
+        its.it_interval.tv_nsec = its.it_value.tv_nsec;
+
+        if (timerfd_settime(sfd, TFD_TIMER_ABSTIME, &its, NULL) == -1) {
+            LOG_E(EMU, "Failed in timer_settime (%d:%s)\n", errno, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
+        oai_emulation.info.slot_sfd = sfd;
+    }
+}
+
+void wait_for_slot_isr(void)
+{
+    uint64_t exp;
+    ssize_t res;
+
+    if (oai_emulation.info.slot_sfd > 0) {
+        res = read(oai_emulation.info.slot_sfd, &exp, sizeof(exp));
+
+        if ((res < 0) || (res != sizeof(exp))) {
+            LOG_E(EMU, "Failed in read (%d:%s)\n", errno, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 void exit_fun(const char* s)
