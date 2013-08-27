@@ -692,6 +692,12 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char mme_enabled;          ///< MME enabled ?
     char          mme_ip_address[16];   ///< MME IP v4 address
 
+    /* Per-Slot ISR
+     * Interval between two ISR = 500usec
+     */
+    unsigned char slot_isr;
+    int           slot_sfd;
+
   } Info;
 /* @}*/
 
