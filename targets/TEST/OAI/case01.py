@@ -170,3 +170,67 @@ def execute(oai, user, pw, logfile):
     else:
         log.ok(case, test, name, conf, '', logfile)
 
+    try:
+        test = '07'
+        name = 'Compile oai.rel8.cellular.rg.make'
+        conf = 'make rrc_cellular=1 eNB_flag=1'
+        diag = 'check the compilation errors for RRC Cellular (node RG)'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oaisim.rel8.cellular.rg;')
+        oai.send_expect_false('make rrc_cellular=1 eNB_flag=1 -j4;', makerr1,  1500)
+        oai.send('cp ./oaisim /oaisim.rel8.cellular.rg;')
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+
+    try:
+        test = '08'
+        name = 'Compile oai.rel8.cellular.mt.make'
+        conf = 'make rrc_cellular=1 UE_flag=1'
+        diag = 'check the compilation errors for RRC Cellular (node MT)'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oaisim.rel8.cellular.mt;')
+        oai.send_expect_false('make rrc_cellular=1 UE_flag=1 -j4;', makerr1,  1500)
+        oai.send('cp ./oaisim /oaisim.rel8.cellular.mt;')
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+
+    #try:
+        #test = '09'
+        #name = 'Compile nas_sim_rg_cellular'
+        #conf = 'make nas_sim_rg_cellular'
+        #diag = 'check the compilation errors for NAS SIM RRC Cellular (node RG)'
+        #oai.send('make clean;')
+        #oai.send('make cleanall;')
+        #oai.send('make cleanasn1;')
+        #oai.send('make cleancell')
+        #oai.send('rm -f ./nas_sim_rg_cellular;')
+        #oai.send_expect_false('make nas_sim_rg_cellular -j4;', makerr1,  1500)
+    #except log.err, e:
+        #log.fail(case, test, name, conf, e.value, diag, logfile)
+    #else:
+        #log.ok(case, test, name, conf, '', logfile)
+
+    #try:
+        #test = '10'
+        #name = 'Compile nas_sim_mt_cellular'
+        #conf = 'make nas_sim_mt_cellular'
+        #diag = 'check the compilation errors for NAS SIM RRC Cellular (node MT)'
+        #oai.send('make clean;')
+        #oai.send('make cleanall;')
+        #oai.send('make cleanasn1;')
+        #oai.send('make cleancell')
+        #oai.send('rm -f ./nas_sim_mt_cellular;')
+        #oai.send_expect_false('make nas_sim_mt_cellular -j4;', makerr1,  1500)
+    #except log.err, e:
+        #log.fail(case, test, name, conf, e.value, diag, logfile)
+    #else:
+        #log.ok(case, test, name, conf, '', logfile)
+
