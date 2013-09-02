@@ -1072,7 +1072,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	
   //Index and counters
   int aa;				//Antennas index
-  int i,j,prb2,ind,mcsi[2]={3,4}; 			//General index for arrays
+  int i,j;//ind,mcsi[2]={3,4}; 			//General index for arrays
   u32 round;
   double SNR;
   u32 dci_errors=0;
@@ -1137,9 +1137,9 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 
   _initErrsRoundsTrials(&errs,&round_trials,1, opts);
   
-  for (ind=1; ind<3; ind++)	
-  {
-	  opts.mcs=mcsi[ind-1];
+  //for (ind=1; ind<3; ind++)	
+  //{
+	 // opts.mcs=mcsi[ind-1];
 	  _get_nprb1(&opts);
 	  opts.nprb2=PHY_vars_eNB->lte_frame_parms.N_RB_DL;
   for (SNR=opts.snr_init; SNR<=opts.snr_max; SNR+=opts.snr_step)
@@ -1965,7 +1965,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	 	if ((double)errs[0]/round_trials[0]<1e-2) //IF Pout1 > 1% 		 
 		break;
     }// SNR
-	}//mcs
+	//}//mcs
 
 
 }
