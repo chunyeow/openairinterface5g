@@ -220,7 +220,7 @@ void _initDefaults(options_t *opts) {
 
   opts->snr_init =0;
   opts->snr_max=20;
-  opts->snr_step=1;
+  opts->snr_step=0.1;
   opts->nframes=1;
 
   opts->nsymb=14;
@@ -1072,7 +1072,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	
   //Index and counters
   int aa;				//Antennas index
-  int i,j,prb2,ind,mcsi[1]={3}; 			//General index for arrays
+  int i,j,prb2,ind,mcsi[2]={3,4}; 			//General index for arrays
   u32 round;
   double SNR;
   u32 dci_errors=0;
@@ -1137,17 +1137,17 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 
   _initErrsRoundsTrials(&errs,&round_trials,1, opts);
   
-  for (ind=1; ind<2; ind++)	
+  for (ind=1; ind<3; ind++)	
   {
 	  opts.mcs=mcsi[ind-1];
 	  _get_nprb1(&opts);
-		
+	  opts.nprb2=PHY_vars_eNB->lte_frame_parms.N_RB_DL;
   for (SNR=opts.snr_init; SNR<=opts.snr_max; SNR+=opts.snr_step)
     {
-	  opts.nprb2=PHY_vars_eNB->lte_frame_parms.N_RB_DL;
+	  //opts.nprb2=PHY_vars_eNB->lte_frame_parms.N_RB_DL;
 	  
-	  printf("snr_init %f, snr_max %f, nprb1: %d, nprb2: %d, mcs: %d\n",opts.snr_init,opts.snr_max,opts.nprb1,opts.nprb2,opts.mcs);	
-	  for(prb2=1; prb2<=PHY_vars_eNB->lte_frame_parms.N_RB_DL; prb2++){  
+	  printf("\n\nsnr: %f, nprb1: %d, nprb2: %d, mcs: %d\n",SNR,opts.nprb1,opts.nprb2,opts.mcs);	
+	  for(prb2=1; prb2<PHY_vars_eNB->lte_frame_parms.N_RB_DL; prb2++){  
       _initErrsRoundsTrials(&errs,&round_trials,0,opts);
 
       dci_errors=0;
@@ -1941,7 +1941,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
         }   //cont_frames
 
 		
-	  printf("nprb1: %d, nprb2: %d, mcs: %d, mcs2: %d\n",opts.nprb1,opts.nprb2,opts.mcs, opts.mcs2);	    
+	  //printf("nprb1: %d, nprb2: %d, mcs: %d, mcs2: %d\n",opts.nprb1,opts.nprb2,opts.mcs, opts.mcs2);	    
       printf("\n---------------------------------------------------------------------\n");
       printf("SNR = %f dB (tx_lev %f, sigma2_dB %f)  BER (%f/%d=%f) BLER(%d/%d=%f)\n\t T (%d/%d = %f ) \n",
 	     SNR,(double)tx_lev_dB+10*log10(numOFDMSymbSubcarrier),
