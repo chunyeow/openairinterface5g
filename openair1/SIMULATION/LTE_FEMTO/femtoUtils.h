@@ -54,7 +54,7 @@ typedef struct {
     int num_layers;
     u16 n_rnti;
     ///Modulation and code scheme
-    u8 mcs;				    
+    u8 mcs,mcs2;				    
 
 
     u8 pilot1,pilot2,pilot3;
@@ -97,7 +97,9 @@ typedef struct {
 	u8 	 p_b;	
 	s8 d_offset;
 	int ratio;
+	u32 nprb1, nprb2;
 	int prob_flag;
+	int search_prb2;
 	
 	char power[50];
 

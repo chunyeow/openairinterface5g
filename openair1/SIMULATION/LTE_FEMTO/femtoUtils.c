@@ -52,13 +52,14 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
       {"r",    required_argument, 0, 'r'},
       {"p",    required_argument, 0, 'p'},
       {"Q",    required_argument, 0, 'Q'},
+      {"O",    required_argument, 0, 'O'},
       {0, 0, 0, 0}
     };
 
 
   int option_index = 0;   
 		
-  while ((c = getopt_long (argc, argv, "hs:S:T:n:xdt:y:z:I:j:N:o:g:faib:r:R:w:c:em:A:Dp:B:k:Q:",long_options, &option_index)) != -1)
+  while ((c = getopt_long (argc, argv, "hs:S:T:n:xdt:y:z:I:j:N:o:g:faib:r:R:w:c:em:A:Dp:B:k:Q:O:",long_options, &option_index)) != -1)
     {
       //printf("%c %s\n",c,optarg);
       switch (c)
@@ -89,7 +90,7 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
 	  opts->dual_stream_UE=1;             
 	  sprintf(opts->parameters,"%s -D",opts->parameters);
 	  break;
-	case 'e':
+	  case 'e':
 	  opts->dci_flag=1;               
 	  sprintf(opts->parameters,"%s -d",opts->parameters);
 	  break; 
@@ -109,6 +110,10 @@ void _parseOptions(options_t *opts, int argc, char ** argv) {
 	   case 'Q':
 	  opts->ratio=atoi(optarg);
 	  break;
+	   case 'O':	  
+	   opts->nprb1=atoi(optarg);
+	   opts->search_prb2=1;
+	   break;
         case 'T':
 	  opts->snr_step=atof(optarg);
 	  sprintf(opts->parameters,"%s  -T%f",opts->parameters,opts->snr_step);
