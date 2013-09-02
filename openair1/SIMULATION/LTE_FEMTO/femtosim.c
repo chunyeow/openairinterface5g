@@ -1145,9 +1145,9 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
   for (SNR=opts.snr_init; SNR<=opts.snr_max; SNR+=opts.snr_step)
     {
 	  //opts.nprb2=PHY_vars_eNB->lte_frame_parms.N_RB_DL;
-	  
-	  printf("\n\nsnr: %f, nprb1: %d, nprb2: %d, mcs: %d\n",SNR,opts.nprb1,opts.nprb2,opts.mcs);	
-	  for(prb2=1; prb2<PHY_vars_eNB->lte_frame_parms.N_RB_DL; prb2++){  
+	  	  	  	
+	  while(opts.nprb2>0){ 
+	  printf("\n\nsnr: %f, nprb1: %d, nprb2: %d, mcs: %d\n",SNR,opts.nprb1,opts.nprb2,opts.mcs);
       _initErrsRoundsTrials(&errs,&round_trials,0,opts);
 
       dci_errors=0;
