@@ -222,7 +222,7 @@ void _initDefaults(options_t *opts) {
   opts->snr_max=20;
   opts->snr_step=0.1;
   opts->nframes=1;
-
+  
   opts->nsymb=14;
   opts->frame_type=1;				//1 FDD
   opts->transmission_mode=1;		//
@@ -715,14 +715,17 @@ void _printResults(u32 *errs,u32 *round_trials,u32 dci_errors,double rate)
 
 }
 
-void _printFileResults(double SNR,double rate1, double rate,u32  *errs,u32  *round_trials,u32 dci_errors,options_t opts,double BER)
+void _printFileResults(double SNR,double rate1, double rate2, double rate,u32  *errs,u32  *round_trials,u32 dci_errors,options_t opts,double BER)
 {
-
+  double pout1=0.0,pout2=0.0,spec_eff;
   fprintf(opts.outputFile,"%f %f;\n", SNR, (float)errs[0]/round_trials[0]);
-
-  fprintf(opts.outputBler,"%f;%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
+  pout1=(double)errs[0]/(round_trials[0]);
+  pout2=(double)errs[1]/(round_trials[1]);
+  spec_eff=((1-pout1)*rate1)+(pout1*(1-pout2)*rate2);
+  fprintf(opts.outputBler,"%f;%f;%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%f\n",
 	  SNR,
 	  rate1,
+	  rate2,
 	  opts.mcs,
 	  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->TBS,
 	  rate,
@@ -736,7 +739,8 @@ void _printFileResults(double SNR,double rate1, double rate,u32  *errs,u32  *rou
 	  round_trials[3],
 	  dci_errors,
 	  opts.nprb1,
-	  opts.nprb2);
+	  opts.nprb2,
+	  spec_eff);
             
   fprintf(opts.outputBer,"%f %f;\n",SNR, BER);
 		
@@ -780,30 +784,41 @@ void _fillData(options_t opts,data_t data,int numSubFrames)
     }
 
 }
-void _applyInterference(options_t opts,data_t data,double sigma2,double iqim,int numSubFrames)
+void _applyInterference(options_t *opts,data_t data,double sigma2,double iqim,int numSubFrames,int round)
 {	
-  int i,aa,j;
-  if(opts.nInterf<=0)
+  int i,aa,j,Intf[opts->nInterf];
+  if(opts->nInterf<=0)
     return;
-		
+    for(j=0;j<opts->nInterf;j++)
+	    {	
+				if(opts->probabilityInterf[j]>((double)rand() / (double)RAND_MAX) ) {				
+				if(j==0){
+					opts->interf_count[round]++;
+					//printf("round: %d, counter:%d \n",round,opts->interf_count[round]);
+				}
+				Intf[j]=1;}
+				else
+					Intf[j]=0;
+		}
+				
   for (i=0; i<numSubFrames*frame_parms->samples_per_tti; i++)
     {
       for (aa=0; aa<PHY_vars_eNB->lte_frame_parms.nb_antennas_rx; aa++) 
         {
-	  for(j=0;j<opts.nInterf;j++)
+	  for(j=0;j<opts->nInterf;j++)
 	    {		
 	//prob_flag=1 means that interference is active with a probability of opts->probabilityInterf[i]
-		  if(opts.prob_flag){	
-			 // printf("\n interf probability: %f",opts.probabilityInterf[j]);
-		  		if(opts.probabilityInterf[j]>((double)rand() / (double)RAND_MAX) ){
-					//printf("aplica interf \n");
-					data.r_re[aa][i] += (pow(10.0,.05*opts.dbInterf[j])*data.ir_re[j][aa][i]);				
-					data.r_im[aa][i] += (pow(10.0,.05*opts.dbInterf[j])*data.ir_im[j][aa][i]);}
+		  if(opts->prob_flag){	
+			  //printf("\n interf probability: %f",opts.probabilityInterf[j]);
+		  		if(Intf[j]==1) {					
+
+					data.r_re[aa][i] += (pow(10.0,.05*opts->dbInterf[j])*data.ir_re[j][aa][i]);				
+					data.r_im[aa][i] += (pow(10.0,.05*opts->dbInterf[j])*data.ir_im[j][aa][i]);}
 		    }
 		  else{
 			  //printf("caso anterior \n");
-				data.r_re[aa][i] += (pow(10.0,.05*opts.dbInterf[j])*data.ir_re[j][aa][i]);				
-				data.r_im[aa][i] += (pow(10.0,.05*opts.dbInterf[j])*data.ir_im[j][aa][i]);
+				data.r_re[aa][i] += (pow(10.0,.05*opts->dbInterf[j])*data.ir_re[j][aa][i]);				
+				data.r_im[aa][i] += (pow(10.0,.05*opts->dbInterf[j])*data.ir_im[j][aa][i]);
 			  }  
 			  //printf("no aplica interf \n");	
 	    }
@@ -811,9 +826,9 @@ void _applyInterference(options_t opts,data_t data,double sigma2,double iqim,int
     }
 }
 
-void _applyNoise(options_t opts, data_t data,double sigma2,double iqim,int numSubFrames)
+void _applyNoise(options_t *opts, data_t data,double sigma2,double iqim,int numSubFrames)
 {
-  u32 aux=2*opts.subframe*PHY_vars_UE->lte_frame_parms.samples_per_tti;
+  u32 aux=2*opts->subframe*PHY_vars_UE->lte_frame_parms.samples_per_tti;
   // printf("\naux:%d\n",aux);
   int i,aa;
   for (i=0; i<numSubFrames*frame_parms->samples_per_tti; i++)
@@ -1081,9 +1096,9 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 
 
   //Variables
-  u32 tbs,coded_bits_per_codeword;
-  int num_common_dci=0,num_ue_spec_dci=1;
-  double rate=0,rate1=0, sigma2, sigma2_dB=10,uncoded_ber,avg_ber;
+  u32 tbs,tbs1,coded_bits_per_codeword,coded_bits_per_codeword1;
+  int num_common_dci=0,num_ue_spec_dci=1,aux;
+  double rate=0,rate1=0,rate2=0.0, sigma2, sigma2_dB=10,uncoded_ber,avg_ber;
   short *uncoded_ber_bit;
   unsigned int dci_cnt,dlsch_active=0;
   unsigned int tx_lev,tx_lev_dB=0,*itx_lev=null,*itxlev_dB=null; // Signal Power
@@ -1092,7 +1107,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 
   //Other defaults values
     
-  u8 i_mod = 2;
+  u8 i_mod = 2,i_mod1=2;
   //u8 num_pdcch_symbols=1,num_pdcch_symbols_2=0;
   u8 num_pdcch_symbols_2=0;
   int eNB_id_i = 1;//Id Interferer;
@@ -1145,7 +1160,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
   for (SNR=opts.snr_init; SNR<=opts.snr_max; SNR+=opts.snr_step)
     {
 	  //opts.nprb2=PHY_vars_eNB->lte_frame_parms.N_RB_DL;
-	  	  	  	
+	  	
 	  while(opts.nprb2>0){ 
 	  printf("\n\nsnr: %f, nprb1: %d, nprb2: %d, mcs: %d\n",SNR,opts.nprb1,opts.nprb2,opts.mcs);
       _initErrsRoundsTrials(&errs,&round_trials,0,opts);
@@ -1158,6 +1173,10 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
       totBits=0;
       totErrors=0;
       avg_ber = 0;
+      for(aux=0;aux<8;aux++){
+      opts.interf_count[aux]=0;
+		}
+      
       
        for (cont_frames = 0; cont_frames<opts.nframes; cont_frames++)
         {
@@ -1167,7 +1186,7 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	  while (round < opts.num_rounds)
             {			
 				
-		
+		//printf("interf_counter:%d\n",opts.interf_count[0]);
 	      round_trials[round]++;
 	      tx_lev = 0;
 	      for(i=0;i<opts.nInterf;i++)
@@ -1381,10 +1400,21 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	      _writeTxData("1","dci", 0, 2,opts,0,0);
                 
 	      /*****Sending******/ //TVT:force it to use QPSK in the 2nd round
-		 if (round==0)
-	      i_mod=get_Qm(opts.mcs); //Compute Q (modulation order) based on I_MCS.
-		 else
+		 if (round==0){
+	      i_mod=get_Qm(opts.mcs); 
+	      i_mod1=i_mod;
+	      coded_bits_per_codeword1 = get_G(&PHY_vars_eNB->lte_frame_parms,
+					      PHY_vars_eNB->dlsch_eNB[idUser][0]->nb_rb,
+					      PHY_vars_eNB->dlsch_eNB[idUser][0]->rb_alloc,
+					      i_mod1,
+					      num_pdcch_symbols,0,
+					      opts.subframe);
+					      tbs1 = (double)dlsch_tbs25[get_I_TBS(PHY_vars_eNB->dlsch_eNB[idUser][0]->harq_processes[0]->mcs)][PHY_vars_eNB->dlsch_eNB[idUser][0]->nb_rb-1];
+
+	      }//Compute Q (modulation order) based on I_MCS.
+		 else{
 		  i_mod=get_Qm(opts.mcs2); 
+		  }
 		  
 	      coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
 					      PHY_vars_eNB->dlsch_eNB[idUser][0]->nb_rb,
@@ -1399,15 +1429,22 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 //printf("PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->MCS %d\n",PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs);
 	      
 	      //printf("tbs= %d, G=%d \n",tbs,coded_bits_per_codeword);
-	      rate = (double)tbs/(double)coded_bits_per_codeword;
+	      rate = (double)tbs1/(double)coded_bits_per_codeword1;
 
 	      uncoded_ber_bit = (short*) malloc(2*coded_bits_per_codeword);
 
 	      if (cont_frames==0 && round==0){
 		printf("\tRate = %f (%f bits/dim) (G %d, TBS %d, mod %d, pdcch_sym %d)\n",
-		       rate,rate*i_mod,coded_bits_per_codeword,tbs,i_mod,num_pdcch_symbols);
-		       rate1=rate*i_mod;}
-
+		       rate,rate*i_mod1,coded_bits_per_codeword1,tbs1,i_mod1,num_pdcch_symbols);		      
+		       rate1=rate*i_mod;
+		       }
+		       else{
+				   if(round==1){				  
+					rate2= (double)tbs1*((double)i_mod/((double)coded_bits_per_codeword1+(double)coded_bits_per_codeword));		        
+					//printf("\t round= %d, Rate1=%f, rate2=%f\n",round,rate1,rate2);
+				}
+				}
+				
 	      //TVT: no tpmi in DCI format 1 --------------
 	      // use the PMI from previous trial
 	      //if (DLSCH_alloc_pdu2_1.tpmi == 5)
@@ -1574,8 +1611,9 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	      sigma2 = pow(10,sigma2_dB/10);
                 //printf("\nround: %d sigma2_dB: %f\n",round,sigma2_dB);
 	      //Noise and Interference
-				
-	      _apply_Multipath_Noise_Interference(opts,data,sigma2_dB,sigma2,2);
+			//printf("before multipath\n")	;
+	      _apply_Multipath_Noise_Interference(&opts,data,sigma2_dB,sigma2,2,round);
+	   
 				
 	      _writeTxData("7","noise_ch_int", 0, 3,opts,1,1);	
 				
@@ -1932,14 +1970,18 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
                 }
 	      free(uncoded_ber_bit);
 	      uncoded_ber_bit = NULL;
-
+	      //printf("\t count_interf[%d]=%d\n",round, opts.interf_count[round]);
+	      
+			
             }  //round
-
+            
+		
 	  if ((errs[0]>=opts.nframes/10) && (cont_frames>(opts.nframes/2)))
 		break;        	
 
         }   //cont_frames
-
+		
+		
 		
 	  //printf("nprb1: %d, nprb2: %d, mcs: %d, mcs2: %d\n",opts.nprb1,opts.nprb2,opts.mcs, opts.mcs2);	    
       printf("\n---------------------------------------------------------------------\n");
@@ -1950,14 +1992,15 @@ void _makeSimulation(data_t data,options_t opts,DCI_ALLOC_t *dci_alloc,DCI_ALLOC
 	     0,0,0.0);
               
       fprintf(opts.outputTrougput,"%f %f;\n",SNR,  rate*((double)(round_trials[0]-dci_errors)/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3])));
-		
+		printf("\t count_interf[0]=%d, count_interf[1]=%d\n",opts.interf_count[0], opts.interf_count[1]);
       _printResults(errs,round_trials,dci_errors,rate);
       //_printFileResults( SNR, rate1,  rate,errs,round_trials, dci_errors, opts,avg_ber/numresults);
 
 		//if (((double)errs[0]/(round_trials[0]))<1e-2) break;//IF errors > 1%
 		//TVT:if the outage is greater than some threshold stop, otherwise decrease the nprb2
-        if (((double)errs[1]/(round_trials[0]+round_trials[1]))>1e-2){ //IF Pout2 > 1% 		 		 
-         _printFileResults( SNR, rate1,  rate,errs,round_trials, dci_errors, opts,avg_ber/numresults);
+        if (((double)errs[1]/(round_trials[0]+round_trials[1]))>1e-2){ //IF Pout2 > 1% 		
+        printf("\t rate1:%f, rate2:%f \n",rate1,rate2);
+         _printFileResults( SNR, rate1,rate2,  rate,errs,round_trials, dci_errors, opts,avg_ber/numresults);
 		 break;
 	    }
 		opts.nprb2--; 
@@ -2000,7 +2043,7 @@ void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot, LTE_DL_FRAME_
 
 
 }
-void _apply_Multipath_Noise_Interference(options_t opts,data_t data,double sigma2_dB,double sigma2,int numSubFrames)
+void _apply_Multipath_Noise_Interference(options_t *opts,data_t data,double sigma2_dB,double sigma2,int numSubFrames,int round)
 {
   double iqim=0.0;
   int j;
@@ -2008,18 +2051,19 @@ void _apply_Multipath_Noise_Interference(options_t opts,data_t data,double sigma
   //Multipath channel
   //Generates and applys a random frequency selective random channel model.      
   multipath_channel(eNB2UE,data.s_re,data.s_im,data.r_re,data.r_im,numSubFrames*frame_parms->samples_per_tti,0);    
-  for(j=0;j<opts.nInterf;j++)
+  for(j=0;j<opts->nInterf;j++)
     {
       multipath_channel(interf_eNB2UE[j],data.is_re[j],data.is_im[j],data.ir_re[j],data.ir_im[j],numSubFrames*frame_parms->samples_per_tti,0);					 
     }
 
   //Interference
-  _applyInterference(opts,data,sigma2,iqim,numSubFrames);
+  //printf("antes de applyInterf\n");
+  _applyInterference(opts,data,sigma2,iqim,numSubFrames,round);
     
   //Noise
   _applyNoise(opts,data,sigma2,iqim,numSubFrames);
 
-  if (opts.nframes==1) {
+  if (opts->nframes==1) {
     printf("Sigma2 %f (sigma2_dB %f)\n",sigma2,sigma2_dB);
     printf("RX level in null symbol %d\n",dB_fixed(signal_energy(&PHY_vars_UE->lte_ue_common_vars.rxdata[0][160+OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES],OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2)));
     printf("RX level in data symbol %d\n",dB_fixed(signal_energy(&PHY_vars_UE->lte_ue_common_vars.rxdata[0][160+(2*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES)],OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2)));

@@ -510,7 +510,7 @@ void _makeOutputDir(options_t *opts)
   sprintf(auxFile,"OutputBlerRound_%d.m",opts->testNumber);
     
   opts->outputBler =fopen(auxFile,"w");
-  fprintf( opts->outputBler,"SNR; rate1; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err; nprb1; nprb2\n");
+  fprintf( opts->outputBler,"SNR; rate1;rate2; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err; nprb1; nprb2\n");
     
   sprintf(auxFile,"OutputBER_%d.m",opts->testNumber);
   opts->outputBer =fopen(auxFile,"w");
