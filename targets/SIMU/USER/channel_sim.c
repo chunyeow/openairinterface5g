@@ -152,10 +152,10 @@ void do_DL_sig(double **r_re0,double **r_im0,
 
       // find out which eNB the UE is attached to
       for (eNB_id=0;eNB_id<NB_eNB_INST;eNB_id++) {
-        if (find_ue(PHY_vars_UE_g[UE_id]->lte_ue_pdcch_vars[eNB_id]->crnti,PHY_vars_eNB_g[eNB_id])>=0) {
+        if (find_ue(PHY_vars_UE_g[UE_id]->lte_ue_pdcch_vars[0]->crnti,PHY_vars_eNB_g[eNB_id])>=0) {
           // UE with UE_id is connected to eNb with eNB_id
           att_eNB_id=eNB_id;
-          LOG_D(OCM,"UE attached to eNB (UE%d->eNB%d)\n",UE_id,eNB_id);
+          LOG_D(OCM,"A: UE attached to eNB (UE%d->eNB%d)\n",UE_id,eNB_id);
         }
       }
 
@@ -165,7 +165,7 @@ void do_DL_sig(double **r_re0,double **r_im0,
           if (min_path_loss<eNB2UE[eNB_id][UE_id]->path_loss_dB) {
             min_path_loss = eNB2UE[eNB_id][UE_id]->path_loss_dB;
             att_eNB_id=eNB_id;
-            LOG_D(OCM,"UE attached to eNB (UE%d->eNB%d)\n",UE_id,eNB_id);
+            LOG_D(OCM,"B: UE attached to eNB (UE%d->eNB%d)\n",UE_id,eNB_id);
           }
         }
       }
