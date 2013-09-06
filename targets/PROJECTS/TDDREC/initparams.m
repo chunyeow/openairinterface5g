@@ -2,6 +2,8 @@
 # % Organisation: Eurecom (and Linkoping University)
 # % E-mail: mirsad.cirkic@liu.se
 
+addpath('/homes/kaltenbe/Devel/openair/openair4G/trunk/targets/ARCH/EXMIMO/USERSPACE/OCTAVE');
+
 clear
 paramsinitialized=false;
 limeparms;
@@ -41,7 +43,7 @@ rf_rxdc = rf_rxdc*active_rf;
 
 freq_rx = fc*active_rf; 
 freq_tx = freq_rx; %+1.92e6;
-tx_gain = txgain*active_rf;
+tx_gain = txgain.*active_rf;
 rx_gain = rxgain*active_rf;
 oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
 autocal_mode=0*active_rf; % Autocalibration is only needed the first time we conf. exmimo

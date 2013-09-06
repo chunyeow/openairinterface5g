@@ -97,41 +97,41 @@ if(paramsinitialized && LSBSWITCH_FLAG)
   endif
   chanestsB2A=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*120)),301,Nantb);
 	   	
-# %% -- Some plotting code -- %%  (you can uncomment what you see fit)
-	# clf
-	# figure(1)
-	# for i=1:4 
-	#   subplot(220+i);plot(20*log10(abs(fftshift(fft(receivedA2B(:,i)))))); 
-	# endfor
+  %% -- Some plotting code -- %%  (you can uncomment what you see fit)
+  clf
+  figure(1)
+  for i=1:4 
+    subplot(220+i);plot(20*log10(abs(fftshift(fft(receivedA2B(:,i)))))); 
+  endfor
+  
+  figure(2)
+  t=[0:512-1]/512*1e-2;
+  plot(t,abs(tchanestsA2B))
+  xlabel('time')
+  ylabel('|h|')
 	
-	# figure(2)
-	# t=[0:512-1]/512*1e-2;
-	# plot(t,abs(tchanests))
-	# xlabel('time')
-	# ylabel('|h|')
-	
-	# figure(3)
-	# % wndw = 50;
-	# % for i=1:5:Nantb*301             %# sliding window size
-	# %   phamean = filter(ones(wndw,1)/wndw, 1, phases(:,i)); %# moving average
-	# %   plot(phamean(wndw:end),'LineWidth',2);
-	# %   title(['subcarrier ' num2str(i)]);	  
-	# %   xlabel('time')
-	# %   ylabel('phase')
-	# %   ylim([-pi pi])
-	# %   drawnow;
-	# %   pause(0.1)
-	# % endfor
-	# phavar=var(phases);
-	# plotphavar=[];
-	# for i=0:Nantb-1
-	#   plotphavar=[plotphavar; phavar([1:301]+i*301)];
-	# endfor
-	# plot([1:150 362:512],plotphavar,'o');
-	# %ylim([0 pi])
-	# xlabel('subcarrier')
-	# ylabel('phase variance')
-	
+  figure(3)
+  wndw = 50;
+  for i=1:5:Nantb*301             %# sliding window size
+    phamean = filter(ones(wndw,1)/wndw, 1, phasesA2B(:,i)); %# moving average
+    plot(phamean(wndw:end),'LineWidth',2);
+    title(['subcarrier ' num2str(i)]);	  
+    xlabel('time')
+    ylabel('phase')
+    ylim([-pi pi])
+    drawnow;
+    pause(0.1)
+  endfor
+  phavar=var(phasesA2B);
+  plotphavar=[];
+  for i=0:Nantb-1
+    plotphavar=[plotphavar; phavar([1:301]+i*301)];
+  endfor
+  plot([1:150 362:512],plotphavar,'o');
+  %ylim([0 pi])
+  xlabel('subcarrier')
+  ylabel('phase variance')
+  
 
 	# figure(4)
 	# plot(20*log10(abs(fchanests))), ylim([40 100])

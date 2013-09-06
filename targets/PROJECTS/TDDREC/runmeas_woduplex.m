@@ -1,4 +1,4 @@
-# % Author: Mirsad Cirkic
+# % Author: Mirsad Cirkic, Florian Kaltenberger
 # % Organisation: Eurecom (and Linkoping University)
 # % E-mail: mirsad.cirkic@liu.se
 
@@ -14,11 +14,14 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   indB=find(active_rfB==1);
   Nanta=length(indA);
   Nantb=length(indB);
-  if(Nanta!=1) error("Node A can only have one antenna active\n"); endif
-  Niter=1;
-  if(Niter!=1) error("We should only use one get_frame at each \
-	run.\n"); 
+  if(Nanta!=1) 
+    error("Node A can only have one antenna active\n"); 
   endif
+  Niter=1;
+  if(Niter!=1) 
+    error("We should only use one get_frame at each run.\n"); 
+  endif
+  Nmeas = 10;
   
 # %% ------- Prepare the signals for A2B ---------- %%
   signalA2B=zeros(N,4);
@@ -32,8 +35,8 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
       signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
       if(length(indA)> ia) ia=ia+1; endif
     endif
-  %  if(indB(ib)==i)      
-      % This part could be improved by creating fully orthogonal sequences
+   %  if(indB(ib)==i)      
+   %   % This part could be improved by creating fully orthogonal sequences
    %   [tmpd, tmps]=genrandpskseq(N,M,amp);
    %   signalB2A(:,i)=tmps*2;
    %   signalA2B(:,i)=repmat(1+1j,76800,1);
@@ -41,6 +44,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
    %   if(length(indB)> ib) ib=ib+1; endif
    %  endif
   endfor
+
 #%%------------Prepare the signals for B2A---------------%%
   for i=1:4
     if(indB(ib)==i)
@@ -51,29 +55,32 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
       if(length(indB)> ib) ib=ib+1; endif
     endif   
    endfor
-    
+
+   signalB2Asend=signalB2A;
+   signalB2Asend(1:38400,3)=0;
+   signalB2Asend(38401:end,2)=0;
+
+   receivedA2B = zeros(76800*Niter,4); 
+   receivedB2A = zeros(76800*Niter,4); 
+
+for meas=1:Nmeas
 # %% ------- Node A to B transmission ------- %%	
-  rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB; 
-  oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);	
   oarf_send_frame(card,signalA2B,n_bit);
   %keyboard
+  sleep(0.01);
+  %receivedA2B((meas-1)*76800+1:meas*76800,:)=oarf_get_frame(card);
   receivedA2B=oarf_get_frame(card);
-  oarf_stop(card);
-
+  %oarf_stop(card); %not good, since it does a reset
 
 #%%----------Node B to A transmission---------%%
-   rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA; 
-   oarf_config_exmimo     (card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
-
-     signalB2Asend=signalB2A;
-     signalB2Asend(1:38400,3)=0;
-     signalB2Asend(38401:end,2)=0;
-     oarf_send_frame(card,signalB2Asend,n_bit);
-     %oarf_send_frame(card,signalB2A,n_bit);
-   
+  oarf_send_frame(card,signalB2Asend,n_bit);
+  %oarf_send_frame(card,signalB2A,n_bit);
+  %keyboard
+  sleep(0.01);
+  %receivedB2A((meas-1)*76800+1:meas*76800,:)=oarf_get_frame(card);
   receivedB2A=oarf_get_frame(card);
-  oarf_stop(card);
-  
+  %oarf_stop(card); %not good, since it does a reset
+
 # %% ------- Do the A to B channel estimation ------- %%	
   Da2b_R=zeros(Niter*120,Nantb*301);
   for i=0:119;
@@ -84,23 +91,21 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     fblock(151:360,:)=[];
     Da2b_R((Niter-1)*120+i+1,:)=vec(fblock);	      
   endfor
-  HA2B=repmat(conj(Da2b_T),1,Nantb).*Da2b_R;
+  HA2B=repmat(conj(Da2b_T),Niter,Nantb).*Da2b_R;
   phasesA2B=unwrap(angle(HA2B));
-
   if(mean(var(phasesA2B))>0.5) 
     disp("The phases of your estimates from A to B are a bit high (larger than 0.5 rad.), something is wrong.");
   endif
- % keyboard
-  chanestsA2B=reshape(diag(repmat(Da2b_T,1,Nantb)'*Da2b_R)/size(Da2b_T,1),301,Nantb);
-  fchanestsA2B=zeros(512,Nantb);
-  for i=1:Nantb
-    fchanestsA2B(:,i)=[0; chanestsA2B([1:150],i); zeros(210,1); chanestsA2B(151:301,i)];
-  endfor
-  tchanestsA2B=ifft(fchanestsA2B);
+  chanestsA2B(:,:,meas)=reshape(diag(repmat(Da2b_T,Niter,Nantb)'*Da2b_R)/size(Da2b_T,1),301,Nantb);
+  #fchanestsA2B=zeros(512,Nantb);
+  #for i=1:Nantb
+  #  fchanestsA2B(:,i)=[0; chanestsA2B([1:150],i,meas); zeros(210,1); chanestsA2B(151:301,i,meas)];
+  #endfor
+  tchanestsA2B(:,:,meas)=ifft([zeros(1,Nantb); chanestsA2B([1:150],:,meas); zeros(210,Nantb); chanestsA2B(151:301,:,meas)]);
   
 %% ------- Do the B to A channel estimation ------- %%
-Db2a_T(1:60,302:end) = 0;
-Db2a_T(61:end,1:301) = 0;
+  Db2a_T(1:60,302:end) = 0;
+  Db2a_T(61:end,1:301) = 0;
   Db2a_R=zeros(Niter*120,Nanta*301);
   for i=0:119;
     ifblock=receivedB2A(i*640+[1:640],indA);
@@ -115,57 +120,59 @@ Db2a_T(61:end,1:301) = 0;
   if(mean(var(phasesB2A))>0.5) 
     disp("The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.");
   endif
-  chanestsB2A=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*60)),301,Nantb);
+  chanestsB2A(:,:,meas)=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*60)),301,Nantb);
+  #fchanestsB2A=zeros(512,Nantb);
+  #for i=1:Nantb
+  #  fchanestsB2A(:,i)=[0; chanestsB2A([1:150],i); zeros(210,1); chanestsB2A(151:301,i)];
+  #endfor
+  tchanestsB2A(:,:,meas)=ifft([zeros(1,Nantb); chanestsB2A([1:150],:,meas); zeros(210,Nantb); chanestsB2A(151:301,:,meas)]);
+end
 	   	
-# %% -- Some plotting code -- %%  (you can uncomment what you see fit)
-	# clf
-	# figure(1)
-	# for i=1:4 
-	#   subplot(220+i);plot(20*log10(abs(fftshift(fft(receivedA2B(:,i)))))); 
-	# endfor
-	
-	# figure(2)
-	# t=[0:512-1]/512*1e-2;
-	# plot(t,abs(tchanests))
-	# xlabel('time')
-	# ylabel('|h|')
-	
-	# figure(3)
-	# % wndw = 50;
-	# % for i=1:5:Nantb*301             %# sliding window size
-	# %   phamean = filter(ones(wndw,1)/wndw, 1, phases(:,i)); %# moving average
-	# %   plot(phamean(wndw:end),'LineWidth',2);
-	# %   title(['subcarrier ' num2str(i)]);	  
-	# %   xlabel('time')
-	# %   ylabel('phase')
-	# %   ylim([-pi pi])
-	# %   drawnow;
-	# %   pause(0.1)
-	# % endfor
-	# phavar=var(phases);
-	# plotphavar=[];
-	# for i=0:Nantb-1
-	#   plotphavar=[plotphavar; phavar([1:301]+i*301)];
-	# endfor
-	# plot([1:150 362:512],plotphavar,'o');
-	# %ylim([0 pi])
-	# xlabel('subcarrier')
-	# ylabel('phase variance')
-	
+  %% -- Some plotting code -- %%  (you can uncomment what you see fit)
+  received = receivedB2A;
+  phases = phasesB2A;
+  tchanests = tchanestsB2A(:,:,end);
+  fchanests = fchanestsB2A(:,:,end);
 
-	# figure(4)
-	# plot(20*log10(abs(fchanests))), ylim([40 100])
+  clf
+  figure(1)
+  for i=1:4 
+    subplot(220+i);plot(20*log10(abs(fftshift(fft(received(:,i)))))); 
+  endfor
 
-	# %end
-	# fprintf(' done\n')	
+  figure(2)
+  t=[0:512-1]/512*1e-2;
+  plot(t,abs(tchanests))
+  xlabel('time')
+  ylabel('|h|')
+  
+  figure(4)
+  plot(20*log10(abs(fchanests))), ylim([40 100])
 
+  if (0)
+  figure(3)
+  wndw = 50;
+  for i=1:5:Nantb*301             %# sliding window size
+    phamean = filter(ones(wndw,1)/wndw, 1, phases(:,i)); %# moving average
+    plot(phamean(wndw:end),'LineWidth',2);
+    title(['subcarrier ' num2str(i)]);	  
+    xlabel('time')
+    ylabel('phase')
+    ylim([-pi pi])
+    drawnow;
+    pause(0.1)
+  endfor
+  phavar=var(phases);
+  plotphavar=[];
+  for i=0:Nantb-1
+    plotphavar=[plotphavar; phavar([1:301]+i*301)];
+  endfor
+  plot([1:150 362:512],plotphavar,'o');
+  %ylim([0 pi])
+  xlabel('subcarrier')
+  ylabel('phase variance')
+  end
 
-	# for i=0:(Nantb-1)
-	#   fchanests(:,i+1)=[0; chanests(301*i+[1:150]); zeros(210,1); chanests(301*i+[151:301])];
-	# endfor
-	# tchanests=ifft(fchanests);
-	
-		
 else
   if(LSBSWITCH_FLAG) error("You have to unset the LSB switch flag (LSBSWITCH_FLAG) in initparams.m.\n")
   else error("You have to run init.params.m first!")
