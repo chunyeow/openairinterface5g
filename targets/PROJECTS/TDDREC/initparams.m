@@ -6,7 +6,7 @@ clear
 paramsinitialized=false;
 limeparms;
 rxgain=0;
-txgain=5;
+txgain=10;
 eNB_flag = 0;
 card = 0;
 Ntrx=4;

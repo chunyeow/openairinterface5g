@@ -20,7 +20,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
 	run.\n"); 
   endif
   
-# %% ------- Prepare the signals for both A2B and B2A ------- %%
+# %% ------- Prepare the signals for A2B ---------- %%
   signalA2B=zeros(N,4);
   signalB2A=zeros(N,4);
   ia=1; ib=1;
@@ -32,15 +32,25 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
       signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
       if(length(indA)> ia) ia=ia+1; endif
     endif
-    if(indB(ib)==i)      
+  %  if(indB(ib)==i)      
       % This part could be improved by creating fully orthogonal sequences
+   %   [tmpd, tmps]=genrandpskseq(N,M,amp);
+   %   signalB2A(:,i)=tmps*2;
+   %   signalA2B(:,i)=repmat(1+1j,76800,1);
+   %   Db2a_T=[Db2a_T tmpd];
+   %   if(length(indB)> ib) ib=ib+1; endif
+   %  endif
+  endfor
+#%%------------Prepare the signals for B2A---------------%%
+  for i=1:4
+    if(indB(ib)==i)
       [tmpd, tmps]=genrandpskseq(N,M,amp);
-      signalB2A(:,i)=tmps*2;
-      signalA2B(:,i)=repmat(1+1j,76800,1);
+      signalB2A(:,i)=tmps*2; %make sure LSB is 0 (switch=tx)
+      signalA2B(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
       Db2a_T=[Db2a_T tmpd];
       if(length(indB)> ib) ib=ib+1; endif
-    endif
-  endfor
+    endif   
+   endfor
     
 # %% ------- Node A to B transmission ------- %%	
   rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfA +(DMAMODE_RX+RXEN)*active_rfB; 
@@ -51,11 +61,16 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   oarf_stop(card);
 
 
-# %% ------- Node B to A transmission ------- %%	
-  rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA; 
-  oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
-  oarf_send_frame(card,signalB2A,n_bit);
-  %keyboard
+#%%----------Node B to A transmission---------%%
+   rf_mode_current = rf_mode; % + (DMAMODE_TX+TXEN)*active_rfB +(DMAMODE_RX+RXEN)*active_rfA; 
+   oarf_config_exmimo     (card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode_current,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
+
+     signalB2Asend=signalB2A;
+     signalB2Asend(1:38400,3)=0;
+     signalB2Asend(38401:end,2)=0;
+     oarf_send_frame(card,signalB2Asend,n_bit);
+     %oarf_send_frame(card,signalB2A,n_bit);
+   
   receivedB2A=oarf_get_frame(card);
   oarf_stop(card);
   
@@ -71,10 +86,11 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   endfor
   HA2B=repmat(conj(Da2b_T),1,Nantb).*Da2b_R;
   phasesA2B=unwrap(angle(HA2B));
+
   if(mean(var(phasesA2B))>0.5) 
-    disp("The phases of your estimates are a bit high (larger than 0.5 rad.), something is wrong.");
+    disp("The phases of your estimates from A to B are a bit high (larger than 0.5 rad.), something is wrong.");
   endif
-  
+ % keyboard
   chanestsA2B=reshape(diag(repmat(Da2b_T,1,Nantb)'*Da2b_R)/size(Da2b_T,1),301,Nantb);
   fchanestsA2B=zeros(512,Nantb);
   for i=1:Nantb
@@ -83,6 +99,8 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   tchanestsA2B=ifft(fchanestsA2B);
   
 %% ------- Do the B to A channel estimation ------- %%
+Db2a_T(1:60,302:end) = 0;
+Db2a_T(61:end,1:301) = 0;
   Db2a_R=zeros(Niter*120,Nanta*301);
   for i=0:119;
     ifblock=receivedB2A(i*640+[1:640],indA);
@@ -95,9 +113,9 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   HB2A=conj(repmat(Db2a_T,Niter,1)).*repmat(Db2a_R,1,Nantb);
   phasesB2A=unwrap(angle(HB2A));
   if(mean(var(phasesB2A))>0.5) 
-    disp("The phases of your estimates are a bit high (larger than 0.5 rad.), something is wrong.");
+    disp("The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.");
   endif
-  chanestsB2A=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*120)),301,Nantb);
+  chanestsB2A=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*60)),301,Nantb);
 	   	
 # %% -- Some plotting code -- %%  (you can uncomment what you see fit)
 	# clf
