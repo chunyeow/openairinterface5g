@@ -23,7 +23,6 @@ if(active_rfA*active_rfB'!=0) error("The A and B transceive chains must be ortho
 fc  = 1912600000; %1907600000;
 %fc = 859.5e6;
 
-
 autocal_mode=active_rf;
 %rf_mode=(RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1) * active_rf;
 %rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
@@ -49,4 +48,7 @@ oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB
 autocal_mode=0*active_rf; % Autocalibration is only needed the first time we conf. exmimo
 amp = pow2(14)-1;
 n_bit = 16;
+
+chanest_full = 1;
+
 paramsinitialized=true;

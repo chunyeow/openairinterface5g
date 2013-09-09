@@ -21,7 +21,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   if(Niter!=1) 
     error("We should only use one get_frame at each run.\n"); 
   endif
-  Nmeas = 10;
+  Nmeas = 100;
   
 # %% ------- Prepare the signals for A2B ---------- %%
   signalA2B=zeros(N,4);
@@ -56,83 +56,94 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     endif   
    endfor
 
-   signalB2Asend=signalB2A;
-   signalB2Asend(1:38400,3)=0;
-   signalB2Asend(38401:end,2)=0;
+   if (!chanest_full)
+     signalB2A(1:38400,3)=0;
+     signalB2A(38401:end,2)=0;
+     Db2a_T(1:60,302:end) = 0;
+     Db2a_T(61:end,1:301) = 0;
+   end
 
-   receivedA2B = zeros(76800*Niter,4); 
-   receivedB2A = zeros(76800*Niter,4); 
+   Da2b_R=zeros(Niter*120,Nantb*301,Nmeas);
+   Db2a_R=zeros(Niter*120,Nanta*301,Nmeas);
 
 for meas=1:Nmeas
 # %% ------- Node A to B transmission ------- %%	
   oarf_send_frame(card,signalA2B,n_bit);
   %keyboard
   sleep(0.01);
-  %receivedA2B((meas-1)*76800+1:meas*76800,:)=oarf_get_frame(card);
   receivedA2B=oarf_get_frame(card);
   %oarf_stop(card); %not good, since it does a reset
+  sleep(0.01);
 
 #%%----------Node B to A transmission---------%%
-  oarf_send_frame(card,signalB2Asend,n_bit);
-  %oarf_send_frame(card,signalB2A,n_bit);
+  oarf_send_frame(card,signalB2A,n_bit);
   %keyboard
   sleep(0.01);
-  %receivedB2A((meas-1)*76800+1:meas*76800,:)=oarf_get_frame(card);
   receivedB2A=oarf_get_frame(card);
   %oarf_stop(card); %not good, since it does a reset
 
 # %% ------- Do the A to B channel estimation ------- %%	
-  Da2b_R=zeros(Niter*120,Nantb*301);
   for i=0:119;
     ifblock=receivedA2B(i*640+[1:640],indB);
     ifblock(1:128,:)=[];
     fblock=fft(ifblock);
     fblock(1,:)=[];
     fblock(151:360,:)=[];
-    Da2b_R((Niter-1)*120+i+1,:)=vec(fblock);	      
+    Da2b_R((Niter-1)*120+i+1,:,meas)=vec(fblock);	      
   endfor
-  HA2B=repmat(conj(Da2b_T),Niter,Nantb).*Da2b_R;
+  HA2B=repmat(conj(Da2b_T),Niter,Nantb).*Da2b_R(:,:,meas);
   phasesA2B=unwrap(angle(HA2B));
   if(mean(var(phasesA2B))>0.5) 
     disp("The phases of your estimates from A to B are a bit high (larger than 0.5 rad.), something is wrong.");
   endif
-  chanestsA2B(:,:,meas)=reshape(diag(repmat(Da2b_T,Niter,Nantb)'*Da2b_R)/size(Da2b_T,1),301,Nantb);
+  chanestsA2B(:,:,meas)=reshape(diag(repmat(Da2b_T,Niter,Nantb)'*Da2b_R(:,:,meas))/size(Da2b_T,1),301,Nantb);
   #fchanestsA2B=zeros(512,Nantb);
   #for i=1:Nantb
   #  fchanestsA2B(:,i)=[0; chanestsA2B([1:150],i,meas); zeros(210,1); chanestsA2B(151:301,i,meas)];
   #endfor
-  tchanestsA2B(:,:,meas)=ifft([zeros(1,Nantb); chanestsA2B([1:150],:,meas); zeros(210,Nantb); chanestsA2B(151:301,:,meas)]);
+  fchanestsA2B(:,:,meas)=[zeros(1,Nantb); chanestsA2B([1:150],:,meas); zeros(210,Nantb); chanestsA2B(151:301,:,meas)];
+  tchanestsA2B(:,:,meas)=ifft(fchanestsA2B(:,:,meas));
   
 %% ------- Do the B to A channel estimation ------- %%
-  Db2a_T(1:60,302:end) = 0;
-  Db2a_T(61:end,1:301) = 0;
-  Db2a_R=zeros(Niter*120,Nanta*301);
   for i=0:119;
     ifblock=receivedB2A(i*640+[1:640],indA);
     ifblock(1:128,:)=[];
     fblock=fft(ifblock);
     fblock(1,:)=[];
     fblock(151:360,:)=[];
-    Db2a_R((Niter-1)*120+i+1,:)=fblock.';
+    Db2a_R((Niter-1)*120+i+1,:,meas)=fblock.';
   endfor  
-  HB2A=conj(repmat(Db2a_T,Niter,1)).*repmat(Db2a_R,1,Nantb);
+  HB2A=conj(repmat(Db2a_T,Niter,1)).*repmat(Db2a_R(:,:,meas),1,Nantb);
   phasesB2A=unwrap(angle(HB2A));
   if(mean(var(phasesB2A))>0.5) 
     disp("The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.");
   endif
-  chanestsB2A(:,:,meas)=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R,1,Nantb)/(Niter*60)),301,Nantb);
+
+  if (chanest_full)
+    chanestsB2A(:,:,meas)=zeros(301,Nantb);
+    inds=repmat([1:Nantb]',1,301);
+    for ci=1:301;
+      data=Db2a_T(:,ci+[0:Nantb-1]*301);
+      rec=Db2a_R(:,ci,meas);
+      chanestsB2A(ci,:,meas)=(inv(data'*data)*data'*rec).';   
+    endfor
+  else
+    chanestsB2A(:,:,meas)=reshape(diag(repmat(Db2a_T,Niter,1)'*repmat(Db2a_R(:,:,meas),1,Nantb)/(Niter*60)),301,Nantb);
+  end
+
   #fchanestsB2A=zeros(512,Nantb);
   #for i=1:Nantb
   #  fchanestsB2A(:,i)=[0; chanestsB2A([1:150],i); zeros(210,1); chanestsB2A(151:301,i)];
   #endfor
-  tchanestsB2A(:,:,meas)=ifft([zeros(1,Nantb); chanestsB2A([1:150],:,meas); zeros(210,Nantb); chanestsB2A(151:301,:,meas)]);
+  fchanestsB2A(:,:,meas) = [zeros(1,Nantb); chanestsB2A([1:150],:,meas); zeros(210,Nantb); chanestsB2A(151:301,:,meas)];
+  tchanestsB2A(:,:,meas)=ifft(fchanestsB2A(:,:,meas));
 end
 	   	
   %% -- Some plotting code -- %%  (you can uncomment what you see fit)
   received = receivedB2A;
   phases = phasesB2A;
-  tchanests = tchanestsB2A(:,:,end);
-  fchanests = fchanestsB2A(:,:,end);
+  tchanests = [tchanestsA2B(:,:,end), tchanestsB2A(:,:,end)];
+  fchanests = [fchanestsA2B(:,:,end), fchanestsB2A(:,:,end)];
 
   clf
   figure(1)
@@ -142,12 +153,17 @@ end
 
   figure(2)
   t=[0:512-1]/512*1e-2;
-  plot(t,abs(tchanests))
+  plot(t,20*log10(abs(tchanests)))
   xlabel('time')
   ylabel('|h|')
+  legend('A->B1','A->B2','B1->A','B2->A');
   
   figure(4)
-  plot(20*log10(abs(fchanests))), ylim([40 100])
+  plot(20*log10(abs(fchanests)));
+  ylim([40 100])
+  xlabel('freq')
+  ylabel('|h|')
+  legend('A->B1','A->B2','B1->A','B2->A');
 
   if (0)
   figure(3)
