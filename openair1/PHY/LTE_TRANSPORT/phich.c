@@ -58,7 +58,7 @@ u8 rv_table[4] = {0, 3, 1, 2};
 uint8_t get_mi(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe) {
 
   // for FDD
-  if (frame_parms->frame_type == 0)
+  if (frame_parms->frame_type == FDD)
     return 1;
 
   // for TDD
@@ -104,7 +104,7 @@ uint8_t get_mi(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe) {
 
 unsigned char subframe2_ul_harq(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe) {
 
-  if (frame_parms->frame_type == 0)
+  if (frame_parms->frame_type == FDD)
     return(subframe&7);
   
   switch (frame_parms->tdd_config) {
@@ -126,7 +126,7 @@ unsigned char subframe2_ul_harq(LTE_DL_FRAME_PARMS *frame_parms,unsigned char su
 }
 
 uint8_t phich_frame2_pusch_frame(LTE_DL_FRAME_PARMS *frame_parms,uint8_t frame,uint8_t subframe) {
-  if (frame_parms->frame_type == 0) {
+  if (frame_parms->frame_type == FDD) {
     return((subframe<4) ? (frame - 1) : frame);
   }
   else {
@@ -137,7 +137,7 @@ uint8_t phich_frame2_pusch_frame(LTE_DL_FRAME_PARMS *frame_parms,uint8_t frame,u
 
 uint8_t phich_subframe2_pusch_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe) {
 
-  if (frame_parms->frame_type == 0)
+  if (frame_parms->frame_type == FDD)
     return(subframe<4 ? ((subframe+8)%10) : subframe-4);
  
   switch (frame_parms->tdd_config) {
@@ -1013,7 +1013,7 @@ void rx_phich(PHY_VARS_UE *phy_vars_ue,
 
     ngroup_PHICH = (ulsch->harq_processes[harq_pid]->first_rb + 
 		    ulsch->harq_processes[harq_pid]->n_DMRS)%Ngroup_PHICH;
-    if ((frame_parms->tdd_config == 0) && (frame_parms->frame_type == 1) ) {
+    if ((frame_parms->tdd_config == 0) && (frame_parms->frame_type == TDD) ) {
       pusch_subframe = phich_subframe2_pusch_subframe(frame_parms,subframe);
       if ((pusch_subframe == 4) || (pusch_subframe == 9))
 	ngroup_PHICH += Ngroup_PHICH; 
@@ -1351,7 +1351,7 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
       
 	ngroup_PHICH = (ulsch_eNB[UE_id]->harq_processes[harq_pid]->first_rb + 
 			ulsch_eNB[UE_id]->harq_processes[harq_pid]->n_DMRS)%Ngroup_PHICH;
-	if ((frame_parms->tdd_config == 0) && (frame_parms->frame_type == 1) ) {
+	if ((frame_parms->tdd_config == 0) && (frame_parms->frame_type == TDD) ) {
 	  
 	  if ((pusch_subframe == 4) || (pusch_subframe == 9))
 	    ngroup_PHICH += Ngroup_PHICH; 

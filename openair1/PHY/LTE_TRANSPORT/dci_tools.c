@@ -1155,6 +1155,7 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
   }
 #ifdef DEBUG_DCI
   if (dlsch0) {
+    msg("dlsch0 eNB: dlsch0   %p\n",dlsch0);
     msg("dlsch0 eNB: rnti     %x\n",dlsch0->rnti);
     msg("dlsch0 eNB: NBRB     %d\n",dlsch0->nb_rb);
     msg("dlsch0 eNB: rballoc  %x\n",dlsch0->rb_alloc[0]);

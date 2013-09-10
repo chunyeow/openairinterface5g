@@ -11,6 +11,7 @@
 #ifndef NO_OPENAIR1
 #include "PHY/defs.h"
 #else
+#include "PHY/TOOLS/time_meas.h"
 #define u32 uint32_t
 #define s32 int32_t
 #define u16 uint16_t

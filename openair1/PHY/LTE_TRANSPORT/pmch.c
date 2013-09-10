@@ -16,13 +16,16 @@
 #define MBSFN_FDD_SF6 0x10
 #define MBSFN_FDD_SF7 0x08
 #define MBSFN_FDD_SF8 0x04
+
  
 #ifndef __SSE3__
+#warning SSE3 instruction set not preset
 __m128i zeroM;//,tmp_over_sqrt_10,tmp_sum_4_over_sqrt_10,tmp_sign,tmp_sign_3_over_sqrt_10;
 //#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmx)))
 #define _mm_abs_epi16(xmmx) _mm_add_epi16(_mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroM,(xmmx))),_mm_srli_epi16(_mm_cmpgt_epi16(zeroM,(xmmx)),15))
 #define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zeroM,(xmmy)))
 #endif
+
 
 void dump_mch(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u16 coded_bits_per_codeword,int subframe) {
 
@@ -62,10 +65,10 @@ void dump_mch(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u16 coded_bits_per_codeword,int
   write_output("rxsig_mch.m","rxs_mch",
 	       &phy_vars_ue->lte_ue_common_vars.rxdata[0][subframe*phy_vars_ue->lte_frame_parms.samples_per_tti],
 	       phy_vars_ue->lte_frame_parms.samples_per_tti,1,1);
-
-  write_output("txsig_mch.m","txs_mch",
-	       &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][0][subframe*phy_vars_ue->lte_frame_parms.samples_per_tti],
-	       phy_vars_ue->lte_frame_parms.samples_per_tti,1,1);
+  if (PHY_vars_eNB_g)
+    write_output("txsig_mch.m","txs_mch",
+   	         &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][0][subframe*phy_vars_ue->lte_frame_parms.samples_per_tti],
+	         phy_vars_ue->lte_frame_parms.samples_per_tti,1,1);
 }
 
 int is_pmch_subframe(uint32_t frame, int subframe, LTE_DL_FRAME_PARMS *frame_parms) {
@@ -619,58 +622,97 @@ void mch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                      unsigned char symbol,
                      short **llr_save) {
 
-    __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    __m128i *ch_mag,*ch_magb,xmm1,xmm2;
-    int j=0,i,len,len2;
-    unsigned char len_mod4;
-    short *llr;
-    s16 *llr2;
+  __m128i xmm1,xmm2,*ch_mag,*ch_magb;
+  __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+  
+  int j=0,i,len,len2;
+  unsigned char len_mod4;
+  short *llr;
+  s16 *llr2;
+  
+  if (symbol==2)
+    llr = dlsch_llr;
+  else
+    llr = *llr_save;
+  
+  ch_mag = (__m128i*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+  ch_magb = (__m128i*)&dl_ch_magb[0][(symbol*frame_parms->N_RB_DL*12)];
+  
+  if ((symbol==2) || (symbol==6) || (symbol==10)) {
+    len = frame_parms->N_RB_DL*6;
+  }
+  else {
+    len = frame_parms->N_RB_DL*12;
+  }
+  
+  
+  llr2 = llr;
+  llr += (len*6);
+  
+  len_mod4 =len&3;
+  len2=len>>2;  // length in quad words (4 REs)
+  len2+=(len_mod4?0:1);
+  
+  
+  for (i=0;i<len2;i++) {
     
-    if (symbol==2)
-        llr = dlsch_llr;
-    else
-        llr = *llr_save;
-    
-    ch_mag = (__m128i*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    ch_magb = (__m128i*)&dl_ch_magb[0][(symbol*frame_parms->N_RB_DL*12)];
-
-    if ((symbol==2) || (symbol==6) || (symbol==10)) {
-      len = frame_parms->N_RB_DL*6;
+    xmm1 = _mm_abs_epi16(rxF[i]);
+    xmm1  = _mm_subs_epi16(ch_mag[i],xmm1);
+    xmm2 = _mm_abs_epi16(xmm1);
+    xmm2 = _mm_subs_epi16(ch_magb[i],xmm2);
+    /*
+      printf("pmch i: %d => mag (%d,%d) (%d,%d)\n",i,((short *)&ch_mag[i])[0],((short *)&ch_magb[i])[0],
+      ((short *)&rxF[i])[0],((short *)&rxF[i])[1]);
+    */
+    // loop over all LLRs in quad word (24 coded bits)
+    /* 
+   for (j=0;j<8;j+=2) {
+      llr2[0] = ((short *)&rxF[i])[j];
+      llr2[1] = ((short *)&rxF[i])[j+1];
+      llr2[2] = _mm_extract_epi16(xmm1,j);
+      llr2[3] = _mm_extract_epi16(xmm1,j+1);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,j);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,j+1);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
     }
-    else {
-      len = frame_parms->N_RB_DL*12;
-    }
-   
-
-    llr2 = llr;
-    llr += (len*6);
-
-    len_mod4 =len&3;
-    len2=len>>2;  // length in quad words (4 REs)
-    len2+=(len_mod4?0:1);
-
-    for (i=0;i<len>>2;i++) {
-        
-        xmm1 = _mm_abs_epi16(rxF[i]);
-        xmm1  = _mm_subs_epi16(ch_mag[i],xmm1);
-        xmm2 = _mm_abs_epi16(xmm1);
-        xmm2 = _mm_subs_epi16(ch_magb[i],xmm2);
-        
-        // loop over all LLRs in quad word (24 coded bits)
-        for (j=0;j<8;j+=2) {
-            llr2[0] = ((short *)&rxF[i])[j];
-            llr2[1] = ((short *)&rxF[i])[j+1];
-            llr2[2] = ((short *)&xmm1)[j];
-            llr2[3] = ((short *)&xmm1)[j+1];
-            llr2[4] = ((short *)&xmm2)[j];
-            llr2[5] = ((short *)&xmm2)[j+1];
-            
-            llr2+=6;
-        }
-    }
-    *llr_save = llr;
-    _mm_empty();
-    _m_empty();
+    */
+      llr2[0] = ((short *)&rxF[i])[0];
+      llr2[1] = ((short *)&rxF[i])[1];
+      llr2[2] = _mm_extract_epi16(xmm1,0);
+      llr2[3] = _mm_extract_epi16(xmm1,1);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,0);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,1);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+      llr2[0] = ((short *)&rxF[i])[2];
+      llr2[1] = ((short *)&rxF[i])[3];
+      llr2[2] = _mm_extract_epi16(xmm1,2);
+      llr2[3] = _mm_extract_epi16(xmm1,3);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,2);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,3);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+      llr2[0] = ((short *)&rxF[i])[4];
+      llr2[1] = ((short *)&rxF[i])[5];
+      llr2[2] = _mm_extract_epi16(xmm1,4);
+      llr2[3] = _mm_extract_epi16(xmm1,5);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,4);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,5);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+      llr2[0] = ((short *)&rxF[i])[6];
+      llr2[1] = ((short *)&rxF[i])[7];
+      llr2[2] = _mm_extract_epi16(xmm1,6);
+      llr2[3] = _mm_extract_epi16(xmm1,7);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,6);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,7);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+  }
+  *llr_save = llr;
+  _mm_empty();
+  _m_empty();
 }
 
 int avg_pmch[4];
@@ -684,6 +726,8 @@ int rx_pmch(PHY_VARS_UE *phy_vars_ue,
   LTE_DL_FRAME_PARMS *frame_parms    = &phy_vars_ue->lte_frame_parms;
   LTE_UE_DLSCH_t   **dlsch_ue        = &phy_vars_ue->dlsch_ue_MCH[eNB_id];
   int avgs,aarx;
+
+  //printf("*********************mch: symbol %d\n",symbol);
 
   mch_extract_rbs(lte_ue_common_vars->rxdataF,
 		  lte_ue_common_vars->dl_ch_estimates[eNB_id],

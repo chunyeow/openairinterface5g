@@ -116,7 +116,7 @@ void get_Msg3_alloc_ret(LTE_DL_FRAME_PARMS *frame_parms,
 			unsigned int current_frame,
 			unsigned int *frame,
 			unsigned char *subframe) {
-  if (frame_parms->frame_type == 0) {
+  if (frame_parms->frame_type == FDD) {
     // always retransmit in n+8
     *subframe = current_subframe+8;
     if (*subframe>9) {
@@ -151,7 +151,7 @@ u8 get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
   u8 ul_subframe=0;
   u32 ul_frame;
 
-  if (frame_parms->frame_type ==0) {
+  if (frame_parms->frame_type ==FDD) {
     ul_subframe = (current_subframe>4) ? (current_subframe-4) : (current_subframe+6);
     ul_frame    = (current_subframe>3) ? (frame+1) : frame; 
   }
@@ -221,7 +221,7 @@ u8 get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
 
 unsigned char ul_ACK_subframe2_dl_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe,unsigned char ACK_index) {
 
-  if (frame_parms->frame_type == 0) {
+  if (frame_parms->frame_type == FDD) {
     return((subframe<4) ? subframe+6 : subframe-4);
   }
   else {
@@ -270,7 +270,7 @@ unsigned char ul_ACK_subframe2_dl_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsig
 
 unsigned char ul_ACK_subframe2_M(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe) {
 
-  if (frame_parms->frame_type == 0) {
+  if (frame_parms->frame_type == FDD) {
     return(1);
   }
   else {
@@ -455,7 +455,7 @@ u16 get_Np(u8 N_RB_DL,u8 nCCE,u8 plus1) {
 lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe) {
 
   // if FDD return dummy value
-  if (frame_parms->frame_type == 0)
+  if (frame_parms->frame_type == FDD)
     return(SF_DL);
 
   switch (frame_parms->tdd_config) {
@@ -514,7 +514,7 @@ u8 phich_subframe_to_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,u32 frame,u8 subfr
 
 unsigned int is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe) {
 
-  if (frame_parms->frame_type == 0) {
+  if (frame_parms->frame_type == FDD) {
     return(1);
   }
   else {

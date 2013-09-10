@@ -915,9 +915,7 @@ int main(int argc, char **argv) {
 	  }  // input_fd == NULL 
 
 
-	  tx_lev_dB = (unsigned int) dB_fixed(tx_lev);
-	  if (n_frames==1)
-	    printf("tx_lev = %d (%d dB)\n",tx_lev,tx_lev_dB);
+	  tx_lev_dB = (unsigned int) dB_fixed_times10(tx_lev);
 	
 	  if (n_frames==1) {	
 	    write_output("txsig0UL.m","txs0", &txdata[0][PHY_vars_eNB->lte_frame_parms.samples_per_tti*subframe],2*frame_parms->samples_per_tti,1,1);
@@ -931,6 +929,8 @@ int main(int argc, char **argv) {
 
 	  // compute tx_gain to achieve target SNR (per resource element!)
 	  tx_gain = sqrt(pow(10.0,.1*(N0+SNR))*(nb_rb*12/(double)PHY_vars_UE->lte_frame_parms.ofdm_symbol_size)/(double)tx_lev);
+	  if (n_frames==1)
+	    printf("tx_lev = %d (%d.%d dB,%f), gain %f\n",tx_lev,tx_lev_dB/10,tx_lev_dB,10*log10((double)tx_lev),10*log10(tx_gain));
   
 
 	  // fill measurement symbol (19) with noise      

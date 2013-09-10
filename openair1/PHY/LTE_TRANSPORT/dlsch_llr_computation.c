@@ -820,7 +820,7 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
     len2=len>>2;  // length in quad words (4 REs)
     len2+=(len_mod4?0:1);
 
-    for (i=0;i<len;i++) {
+    for (i=0;i<len2;i++) {
         
         xmm1 = _mm_abs_epi16(rxF[i]);
         xmm1  = _mm_subs_epi16(ch_mag[i],xmm1);
