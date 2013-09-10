@@ -353,14 +353,14 @@ int main(int argc, char **argv) {
 				0);
 				
     // Create transport channel structures for 2 transport blocks (MIMO)
-  PHY_vars_eNB->dlsch_eNB_MCH = new_eNB_dlsch(1,8,0);
+  PHY_vars_eNB->dlsch_eNB_MCH = new_eNB_dlsch(1,8,N_RB_DL,0);
   
   if (!PHY_vars_eNB->dlsch_eNB_MCH) {
     printf("Can't get eNB dlsch structures\n");
     exit(-1);
   }
   
-  PHY_vars_UE->dlsch_ue_MCH[0]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS_MBSFN,0);
+  PHY_vars_UE->dlsch_ue_MCH[0]  = new_ue_dlsch(1,8,MAX_TURBO_ITERATIONS_MBSFN,N_RB_DL,0);
 
   PHY_vars_eNB->lte_frame_parms.num_MBSFN_config = 1;
   PHY_vars_eNB->lte_frame_parms.MBSFN_config[0].radioframeAllocationPeriod = 0;
@@ -461,7 +461,7 @@ int main(int argc, char **argv) {
 			2*frame_parms->samples_per_tti,hold_channel);
       
       //AWGN
-      sigma2_dB = 10*log10((double)tx_lev) +10*log10(PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(NB_RB*12)) - SNR;
+      sigma2_dB = 10*log10((double)tx_lev) +10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(NB_RB*12)) - SNR;
       sigma2 = pow(10,sigma2_dB/10);
       if (n_frames==1)
 	printf("Sigma2 %f (sigma2_dB %f)\n",sigma2,sigma2_dB);
@@ -521,15 +521,15 @@ int main(int argc, char **argv) {
     printf("errors %d/%d (Pe %e)\n",errs[round],trials,(double)errs[round]/trials);
 
     if (awgn_flag==0)
-      fprintf(fd,"SNR_%d = [SNR_%d %f]; errs_mch_%d =[errs_mch_%d  %d]; mch_trials_%d =[mch_trials_%d  %d];\n",
-	      mcs,mcs,SNR,
-	      mcs,mcs,errs[0],
-	      mcs,mcs,trials);
+      fprintf(fd,"SNR_%d_%d = [SNR_%d_%d %f]; errs_mch_%d_%d =[errs_mch_%d_%d  %d]; mch_trials_%d_%d =[mch_trials_%d_%d  %d];\n",
+	      mcs,N_RB_DL,mcs,N_RB_DL,SNR,
+	      mcs,N_RB_DL,mcs,N_RB_DL,errs[0],
+	      mcs,N_RB_DL,mcs,N_RB_DL,trials);
     else
       fprintf(fd,"SNR_awgn_%d = [SNR_awgn_%d %f]; errs_mch_awgn_%d =[errs_mch_awgn_%d  %d]; mch_trials_awgn_%d =[mch_trials_awgn_%d %d];\n",
-	      mcs,mcs,SNR,
-	      mcs,mcs,errs[0],
-	      mcs,mcs,trials);
+	      mcs,N_RB_DL,mcs,N_RB_DL,SNR,
+	      mcs,N_RB_DL,mcs,N_RB_DL,errs[0],
+	      mcs,N_RB_DL,mcs,N_RB_DL,trials);
     fflush(fd);
     if (errs[0] == 0)
       break;
