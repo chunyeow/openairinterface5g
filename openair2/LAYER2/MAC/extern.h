@@ -48,6 +48,7 @@ extern unsigned char NB_INST;
 #endif
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
+extern unsigned char NB_RN_INST;
 extern unsigned short NODE_ID[1];
 extern void* bigphys_malloc(int); 
 #else

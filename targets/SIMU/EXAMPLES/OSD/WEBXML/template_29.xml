@@ -37,7 +37,7 @@
       <UE_MOBILITY>
 	<UE_INITIAL_DISTRIBUTION>random</UE_INITIAL_DISTRIBUTION>
 	<RANDOM_UE_DISTRIBUTION>
-	  <NUMBER_OF_NODES>1</NUMBER_OF_NODES> <!-- num UE -->
+	  <NUMBER_OF_NODES>2</NUMBER_OF_NODES> <!-- num UE -->
 	</RANDOM_UE_DISTRIBUTION>
 	<UE_MOBILITY_TYPE>STATIC</UE_MOBILITY_TYPE>
 <!--	<UE_MOVING_DYNAMICS>
@@ -52,7 +52,7 @@
       <eNB_MOBILITY>
 	<eNB_INITIAL_DISTRIBUTION>random</eNB_INITIAL_DISTRIBUTION>
 	<RANDOM_eNB_DISTRIBUTION>
-	  <NUMBER_OF_CELLS>1</NUMBER_OF_CELLS> <!-- num eNB -->
+	  <NUMBER_OF_CELLS>2</NUMBER_OF_CELLS> <!-- num eNB -->
 	</RANDOM_eNB_DISTRIBUTION>
 	
 	<eNB_MOBILITY_TYPE>STATIC</eNB_MOBILITY_TYPE>
@@ -64,7 +64,7 @@
     <!-- DL --> 
     <CUSTOMIZED_TRAFFIC>  	
       <SOURCE_ID>0</SOURCE_ID>		
-      <DESTINATION_ID>1</DESTINATION_ID>
+      <DESTINATION_ID>2</DESTINATION_ID>
       <IDT_DIST>fixed</IDT_DIST>  <!-- option: no_customized_traffic, uniform, gaussian, exponential, poisson, fixed, weibull, pareto, gamma, cauchy, log_normal -->
       <IDT_MIN_ms>10</IDT_MIN_ms>
       <SIZE_DIST>fixed</SIZE_DIST> <!-- option: no_customized_traffic, uniform, gaussian, exponential, poisson, fixed, weibull, pareto, gamma, cauchy, log_normal -->
@@ -72,7 +72,7 @@
     </CUSTOMIZED_TRAFFIC>
     <!-- UL --> 
     <CUSTOMIZED_TRAFFIC>  	
-      <SOURCE_ID>1</SOURCE_ID>		
+      <SOURCE_ID>2</SOURCE_ID>		
       <DESTINATION_ID>0</DESTINATION_ID>
       <IDT_DIST>fixed</IDT_DIST>  <!-- option: no_customized_traffic, uniform, gaussian, exponential, poisson, fixed, weibull, pareto, gamma, cauchy, log_normal -->
       <IDT_MIN_ms>10</IDT_MIN_ms>

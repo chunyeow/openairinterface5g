@@ -89,11 +89,13 @@ char * random_string(int size, ALPHABET_GEN mode, ALPHABET_TYPE data_type);
 * \brief return int= 1 if the packet is generated: OTG header + header + payload, else 0
 * \param[in] src source identity 
 * \param[in] dst destination id 
+* \param[in] application id that might generate the packet
+* \param[out] final packet size 
 * \param[out] packet_t: the generated packet: otg_header + header + payload
 * \note 
 * @ingroup  _otg
 */
-unsigned char *packet_gen(int src, int dst, int ctime, int *pkt_size);
+unsigned char *packet_gen(int src, int dst, int app, int ctime, int *pkt_size);
 
 
 /*! \fn char *header_gen(int  hdr_size);
@@ -185,7 +187,7 @@ int otg_hdr_size(int src, int dst);
 
 void init_packet_gen(int src, int dst, int ctime);
 
-int check_data_transmit(int src,int dst, int ctime); 
+int check_data_transmit(int src,int dst, int app, int ctime); 
 
 unsigned int get_application_state(int src, int dst, int application, int ctime);
 

@@ -111,14 +111,14 @@ char *str_sub (const char *s, unsigned int start, unsigned int end) {
 
 // set the simulation time
 void set_ctime(int ctime){
-	otg_info->ctime=ctime;
+  otg_info->ctime=ctime;
 }
 
 
 
 // get the simulation time 
 int get_ctime(void){
-	return otg_info->ctime;
+  return otg_info->ctime;
 }
 
 

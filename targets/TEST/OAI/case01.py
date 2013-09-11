@@ -28,7 +28,7 @@
 #*****************************************************************************
 
 # \file case01.py
-# \brief test case 01 for OAI
+# \brief test case 01 for OAI: compilations
 # \author Navid Nikaein
 # \date 2013
 # \version 0.1

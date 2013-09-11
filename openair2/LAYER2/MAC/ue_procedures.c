@@ -247,7 +247,7 @@ u32 ue_get_SR(u8 Mod_id,u32 frame,u8 eNB_id,u16 rnti, u8 subframe) {
 	(1<<(2+UE_mac_inst[Mod_id].physicalConfigDedicated->schedulingRequestConfig->choice.setup.dsr_TransMax)),
 	UE_mac_inst[Mod_id].scheduling_info.SR_pending);
       
-    UE_mac_inst[Mod_id].ul_active =1;
+    //UE_mac_inst[Mod_id].ul_active =1;
       
     return(1); //instruct phy to signal SR
   }
@@ -1393,31 +1393,35 @@ int use_cba_access(u8 Mod_id,u32 frame,u8 subframe, u8 eNB_index){
   if (( ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID1]>0)&&(UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID1]<64))   ||
         ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID2]>0)&&(UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID2]<64))   ||
         ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID3]>0)&&(UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID3]<64)) ) 
-      //	&& (UE_mac_inst[Mod_id].ul_active == 0) // check if the ul is acrtive
-	&& (UE_mac_inst[Mod_id].cba_last_access[0] <= 0) ) { // backoff
+      //  && (UE_mac_inst[Mod_id].ul_active == 0) // check if the ul is acrtive
+      && (UE_mac_inst[Mod_id].cba_last_access[0] <= 0) ) { // backoff
     //  LOG_D(MAC,"[UE %d] Frame %d Subframe %d: the current CBA backoff is %d \n", Mod_id, frame, subframe,
     //  UE_mac_inst[Mod_id].cba_last_access[0] ); 
    
-    UE_mac_inst[Mod_id].cba_last_access[0]= round(uniform_rngen(1,30));
+    UE_mac_inst[Mod_id].cba_last_access[0]= round(uniform_rngen(1,10));
     LOG_D(MAC,"[UE %d] Frame %d Subframe %d: start a new CBA backoff  %d UL active state %d \n", Mod_id, frame, subframe,
 	  UE_mac_inst[Mod_id].cba_last_access[0], UE_mac_inst[Mod_id].ul_active);   
         
     return 1;
-  } else {
-    
-    if (( ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID1]> 0 ))   ||
-	  ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID2]> 0 ))   ||
-	  ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID3]> 0 )) ) 
-	//	&& (UE_mac_inst[Mod_id].ul_active == 0) // check if the ul is acrtive
-	&& (UE_mac_inst[Mod_id].cba_last_access[0]> 0) ){
+  } else if (( ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID1]> 0 ))   ||
+	       ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID2]> 0 ))   ||
+	       ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID3]> 0 )) ) 
+	     // && (UE_mac_inst[Mod_id].ul_active == 0) // check if the ul is acrtive
+	     && (UE_mac_inst[Mod_id].cba_last_access[0]> 0) ){
     
     UE_mac_inst[Mod_id].cba_last_access[0]-=1;
     LOG_D(MAC,"[UE %d] Frame %d Subframe %d: CBA backoff is decreased by one to %d UL active state %d \n", 
 	  Mod_id, frame, subframe,
 	  UE_mac_inst[Mod_id].cba_last_access[0], UE_mac_inst[Mod_id].ul_active);  
-    }
-    return 0;
-  }
+    
+  } /*else if (( ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID1] == 0 ))   &&
+	       ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID2] == 0 ))   &&
+	       ((UE_mac_inst[Mod_id].scheduling_info.BSR[LCGID3] ==  0 )) )  
+	     && (UE_mac_inst[Mod_id].cba_last_access[0]> 0) ){
+    UE_mac_inst[Mod_id].cba_last_access[0]-=1;
+    }*/
+  
+  return 0;
       
 }
 #endif

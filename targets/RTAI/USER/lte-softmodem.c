@@ -559,7 +559,7 @@ static void *eNB_thread(void *arg)
 
           if (fs4_test==0)
             {
-              phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0);
+              phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0, 0);
 #ifndef IFFT_FPGA
               slot_offset_F = (next_slot)*
                               (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
@@ -781,7 +781,7 @@ static void *UE_thread(void *arg)
 	  */
 
           in = rt_get_time_ns();
-          phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode);
+          phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode,0);
           out = rt_get_time_ns();
           diff = out-in;
 

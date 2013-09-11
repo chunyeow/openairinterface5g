@@ -78,6 +78,7 @@ u8 Is_rrc_registered;
 #ifdef OPENAIR2
 unsigned char NB_eNB_INST=0;
 unsigned char NB_UE_INST=0;
+unsigned char NB_RN_INST=0;
 unsigned char NB_INST=0;
 #endif
 

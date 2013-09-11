@@ -410,7 +410,7 @@ void phy_procedures_emos_eNB_TX(unsigned char next_slot, PHY_VARS_eNB *phy_vars_
   }
 */ 
 
-void phy_procedures_eNB_S_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag) {
+void phy_procedures_eNB_S_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode) {
 
   unsigned char sect_id=0; 
 
@@ -885,7 +885,7 @@ void fill_dci_emos(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
 int QPSK[4]={AMP_OVER_SQRT2|(AMP_OVER_SQRT2<<16),AMP_OVER_SQRT2|((65536-AMP_OVER_SQRT2)<<16),((65536-AMP_OVER_SQRT2)<<16)|AMP_OVER_SQRT2,((65536-AMP_OVER_SQRT2)<<16)|(65536-AMP_OVER_SQRT2)};
 int QPSK2[4]={AMP_OVER_2|(AMP_OVER_2<<16),AMP_OVER_2|((65536-AMP_OVER_2)<<16),((65536-AMP_OVER_2)<<16)|AMP_OVER_2,((65536-AMP_OVER_2)<<16)|(65536-AMP_OVER_2)};
 
-void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag) {
+void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode) {
   u8 *pbch_pdu=&phy_vars_eNB->pbch_pdu[0];
   //  unsigned int nb_dci_ue_spec = 0, nb_dci_common = 0;
   u16 input_buffer_length, re_allocated=0;
@@ -2397,7 +2397,7 @@ void ulsch_decoding_procedures(unsigned char last_slot, unsigned int i, PHY_VARS
 }
 
 
-void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag) {
+void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode) {
   //RX processing
   u32 l, ret,i,j;
   u32 sect_id=0;
@@ -3357,7 +3357,7 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 
 #undef DEBUG_PHY_PROC
 
-void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag) {
+void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_mode_t r_mode) {
   /*
     if (phy_vars_eNB->frame >= 1000)
     mac_xface->macphy_exit("Exiting after 1000 Frames\n");
@@ -3372,28 +3372,29 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
 #ifdef DEBUG_PHY_PROC
     LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_TX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot);
 #endif
-    phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag);
+
+    phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_mode);
   }
   if (((phy_vars_eNB->lte_frame_parms.frame_type == 1 )&&(subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_UL))||
       (phy_vars_eNB->lte_frame_parms.frame_type == 0)){
 #ifdef DEBUG_PHY_PROC
     LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_RX(%d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, last_slot);
 #endif
-    phy_procedures_eNB_RX(last_slot,phy_vars_eNB,abstraction_flag);
+    phy_procedures_eNB_RX(last_slot,phy_vars_eNB,abstraction_flag,r_mode);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_S) &&
       ((next_slot&1)==0)) {
 #ifdef DEBUG_PHY_PROC
     LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_S_TX(%d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot);
 #endif
-    phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag);
+    phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_mode);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_S) &&
       ((last_slot&1)==0)){
 #ifdef DEBUG_PHY_PROC
     LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_S_RX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->frame, last_slot);
 #endif    
-    phy_procedures_eNB_S_RX(last_slot,phy_vars_eNB,abstraction_flag);
+    phy_procedures_eNB_S_RX(last_slot,phy_vars_eNB,abstraction_flag,r_mode);
   }
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,0);
 

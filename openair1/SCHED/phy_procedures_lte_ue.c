@@ -557,7 +557,7 @@ int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
   PRACH_RESOURCES_t prach_resources_local;
 #endif
 
-void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode) {
+void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_mode_t r_mode) {
   
   //  int i_d;
   u16 first_rb, nb_rb;
@@ -1292,7 +1292,7 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX, VCD_FUNCTION_OUT);
 }
 
-void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag) {
+void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,relaying_mode_t r_mode) {
   int aa;//i,aa;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
 
@@ -2163,7 +2163,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 }
 
  
-int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode) {
+int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_mode_t r_mode) {
 
   u16 l,m,n_symb;
   //  int eNB_id = 0, 
@@ -3015,7 +3015,7 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   return (0);
 }
   
-void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode) {
+ void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, relaying_mode_t r_mode) {
 
 #undef DEBUG_PHY_PROC
 
@@ -3039,22 +3039,22 @@ void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,
 
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,next_slot>>1)==SF_UL)||
       (phy_vars_ue->lte_frame_parms.frame_type == 0)){
-    phy_procedures_UE_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,mode);
+    phy_procedures_UE_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_mode);
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,last_slot>>1)==SF_DL) ||
       (phy_vars_ue->lte_frame_parms.frame_type == 0)){
-    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode);
+    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_mode);
 #ifdef EMOS
     phy_procedures_emos_UE_RX(phy_vars_ue,last_slot,eNB_id);
 #endif
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,next_slot>>1)==SF_S) &&
       ((next_slot&1)==1)) {
-     phy_procedures_UE_S_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag);
+    phy_procedures_UE_S_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,r_mode);
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,last_slot>>1)==SF_S) &&
       ((last_slot&1)==0)) {
-    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode);
+    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode, r_mode);
   }
 
 #ifdef OPENAIR2

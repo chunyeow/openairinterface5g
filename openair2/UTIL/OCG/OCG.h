@@ -636,7 +636,10 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char nb_ue_remote;
     unsigned char nb_enb_local;
     unsigned char nb_enb_remote;
+    unsigned char nb_rn_local;
+    unsigned char nb_rn_remote;
     unsigned char first_enb_local;
+    unsigned char first_rn_local;
     unsigned char first_ue_local;
     unsigned short master_id;
     unsigned char nb_master;
@@ -655,6 +658,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char otg_enabled; 
     unsigned char omv_enabled;
     unsigned char vcd_enabled;
+    unsigned char eMBMS_active_state;
     unsigned char cba_group_active;
     char * otg_traffic;
     unsigned char otg_bg_traffic_enabled;

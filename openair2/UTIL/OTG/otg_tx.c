@@ -200,7 +200,7 @@ int adjust_size(int size){
 
 
 
-unsigned char *packet_gen(int src, int dst, int ctime, int * pkt_size){ // when pdcp, ctime = frame cnt
+unsigned char *packet_gen(int src, int dst, int app, int ctime, int * pkt_size){ // when pdcp, ctime = frame cnt
 
   //unsigned char *packet=NULL;
   unsigned int size=0;
@@ -213,12 +213,16 @@ unsigned char *packet_gen(int src, int dst, int ctime, int * pkt_size){ // when 
   char *header=NULL;
   int header_size;
 
-  LOG_T(OTG,"[src %d] [dst %d ]MY_CTIME %d, MAX_FRAME %d\n",src,  dst, ctime, g_otg->max_nb_frames);
-
-  
+   
+  // check if the app is configured
+  if (app >= g_otg->application_idx[src][dst]){
+    return NULL;
+  }
+  LOG_T(OTG,"[src %d] [dst %d ][APP %d] current time  %d\n",src,  dst, app, ctime);
+ 
   *pkt_size=0;
   init_packet_gen(src, dst,ctime);
-  size=check_data_transmit(src,dst,ctime);
+  size=check_data_transmit(src,dst,app,ctime);
 
 /*
 Send Packets when:
@@ -303,7 +307,8 @@ unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size)
   unsigned int flag;
   int app,seq_num=0;
   int otg_hdr_size= + sizeof(otg_hdr_info_t) + sizeof(otg_hdr_t);
-  
+
+  set_ctime(ctime); // fixme: this should be done separetly from packet_gen and packet_gen_multicast
   //for (app=0; app<MAX_NUM_APPLICATION; app++){  
   for (app=0; app<1; app++){  
     if ( (g_otg_multicast->idt_dist[src][dst][app]> 0) &&  
@@ -374,56 +379,56 @@ void init_packet_gen(int src, int dst,int ctime){
 }
 
 void check_ctime(int ctime){
-	if (ptime>ctime) 
-		LOG_W(OTG, "ERROR ctime: current time [%d] less than previous time [%d] \n",ctime,ptime);
-		ptime=ctime;
+  if (ptime>ctime) 
+    LOG_W(OTG, "ERROR ctime: current time [%d] less than previous time [%d] \n",ctime,ptime);
+  ptime=ctime;
 }
 
-int check_data_transmit(int src,int dst, int ctime){
+int check_data_transmit(int src,int dst, int app, int ctime){
 
   unsigned int size=0;
 
 
-  for (application=0; application<g_otg->application_idx[src][dst]; application++){  
+  // for (application=0; application<g_otg->application_idx[src][dst]; application++){  
 	otg_info->gen_pkts=0;
 
-	LOG_T(OTG,"FLOW_INFO [src %d][dst %d] [IDX %d] [APPLICATION TYPE %d] MAX %d [M2M %d ]\n", src, dst, application , g_otg->application_type[src][dst][application],g_otg->application_idx[src][dst], g_otg->m2m[src][dst][application]);
+	LOG_T(OTG,"FLOW_INFO [src %d][dst %d] [IDX %d] [APPLICATION TYPE %d] MAX %d [M2M %d ]\n", src, dst, app, g_otg->application_type[src][dst][app],g_otg->application_idx[src][dst], g_otg->m2m[src][dst][app]);
 	
 	// do not generate packet for this pair of src, dst : no app type and/or no idt are defined	
 	
-	if (g_otg->duration[src][dst][application] > ctime){
-	  LOG_T(OTG,"Do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d \n", src, dst,g_otg->duration[src][dst][application], ctime); 
+	if (g_otg->duration[src][dst][app] > ctime){
+	  LOG_T(OTG,"Do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d \n", src, dst,g_otg->duration[src][dst][app], ctime); 
 	  size+=0;	
-	}else if ((g_otg->application_type[src][dst][application]==0)&&(g_otg->idt_dist[src][dst][application][PE_STATE]==0)){  
-	  LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app not specificed\n", src, dst); 
+	}else if ((g_otg->application_type[src][dst][app]==0)&&(g_otg->idt_dist[src][dst][app][PE_STATE]==0)){  
+	  LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app %d not specificed\n", src, dst, app); 
 	  size+=0;	 
 	}
 
-	else if ((g_otg->application_type[src][dst][application] >0) || (g_otg->idt_dist[src][dst][application][PE_STATE] > 0)) {
-	  state = get_application_state(src, dst, application, ctime);
+	else if ((g_otg->application_type[src][dst][app] >0) || (g_otg->idt_dist[src][dst][app][PE_STATE] > 0)) {
+	  state = get_application_state(src, dst, app, ctime);
 
 #ifdef STANDALONE
 	  //pre-config for the standalone
-	  if (ctime<otg_info->ptime[src][dst][application]) //it happends when the emulation was finished
-		otg_info->ptime[src][dst][application]=ctime;
+	  if (ctime<otg_info->ptime[src][dst][app]) //it happends when the emulation was finished
+		otg_info->ptime[src][dst][app]=ctime;
 	  if (ctime==0)
-		otg_info->idt[src][dst][application]=0; //for the standalone mode: the emulation is run several times, we need to initialise the idt to 0 when ctime=0
+		otg_info->idt[src][dst][app]=0; //for the standalone mode: the emulation is run several times, we need to initialise the idt to 0 when ctime=0
 	  //end pre-config
 #endif 
 	  //LOG_D(OTG,"MY_STATE %d \n", state);
 
 	  if (state!=OFF_STATE) {
 
-		if (((state==PU_STATE)||(state==ED_STATE))|| (otg_info->idt[src][dst][application]==0) || (( (ctime-otg_info->ptime[src][dst][application]) >= otg_info->idt[src][dst][application] ) )) {
+		if (((state==PU_STATE)||(state==ED_STATE))|| (otg_info->idt[src][dst][app]==0) || (( (ctime-otg_info->ptime[src][dst][app]) >= otg_info->idt[src][dst][app] ) )) {
 		  LOG_D(OTG,"[TX] OTG packet: Time To Transmit::OK (Source= %d, Destination= %d, Application %d, State= %d) , (IDT= %d ,ctime= %d, ptime= %d) \n", 
-		        src, dst ,application, state, otg_info->idt[src][dst][application], ctime, otg_info->ptime[src][dst][application]); 
-		  otg_info->ptime[src][dst][application]=ctime;	
+		        src, dst ,app, state, otg_info->idt[src][dst][app], ctime, otg_info->ptime[src][dst][app]); 
+		  otg_info->ptime[src][dst][app]=ctime;	
 
 		  if (state==PE_STATE)  //compute the IDT only for PE STATE
-			tarmaUpdateInputSample(otg_info->tarma_stream[src][dst][application]);
-		  otg_info->idt[src][dst][application]=time_dist(src, dst, application,state);
+			tarmaUpdateInputSample(otg_info->tarma_stream[src][dst][app]);
+		  otg_info->idt[src][dst][app]=time_dist(src, dst, app,state);
 		  otg_info->gen_pkts=1;
-		  header_size_gen(src,dst, application); 
+		  header_size_gen(src,dst, app); 
 		  //for(i=1;i<=g_otg->aggregation_level[src][dst][application];i++)
 	/*	  if   (g_otg->m2m[src][dst][application]==M2M){ //TO FIX FOR M2M
 			size+=size_dist(src, dst, application,state);
@@ -436,10 +441,10 @@ int check_data_transmit(int src,int dst, int ctime){
 		  else{ */
 			/* For the case of non M2M traffic: when more than one flows transmit data in the same time
 			 --> the second flow transmit  (because of non data aggragation)  */
-			size=size_dist(src, dst, application,state); 
-			otg_info->header_size[src][dst]=otg_info->header_size_app[src][dst][application]; 
-			otg_info->flow_id[src][dst]=application;
-			otg_info->traffic_type[src][dst]=g_otg->application_type[src][dst][application];
+			size=size_dist(src, dst, app,state); 
+			otg_info->header_size[src][dst]=otg_info->header_size_app[src][dst][app]; 
+			otg_info->flow_id[src][dst]=app;
+			otg_info->traffic_type[src][dst]=g_otg->application_type[src][dst][app];
 		  /*} */
 
 
@@ -450,18 +455,18 @@ int check_data_transmit(int src,int dst, int ctime){
 		  }
 
 		}  //check if there is background traffic to generate
-		else if ((otg_info->gen_pkts==0) && (g_otg->background[src][dst][application]==1)&&(background_gen(src, dst, ctime)!=0)){ // the gen_pkts condition could be relaxed here
+		else if ((otg_info->gen_pkts==0) && (g_otg->background[src][dst][app]==1)&&(background_gen(src, dst, ctime)!=0)){ // the gen_pkts condition could be relaxed here
 		  otg_info->traffic_type_background[src][dst]=1;
- 			if   (g_otg->m2m[src][dst][application]==M2M)
+ 			if   (g_otg->m2m[src][dst][app]==M2M)
 				otg_info->traffic_type[src][dst]=M2M;
 
-		  LOG_D(OTG,"[BACKGROUND=%d] Time To Transmit [SRC %d][DST %d][APPLI %d] \n", otg_info->traffic_type_background[src][dst], src, dst, application);
+		  LOG_D(OTG,"[BACKGROUND=%d] Time To Transmit [SRC %d][DST %d][APPLI %d] \n", otg_info->traffic_type_background[src][dst], src, dst, app);
 		}
 
 	  }	
 
 	}
-  }
+	// }
 
   return size;
 }
@@ -1275,7 +1280,7 @@ break;
 	case BACKGROUND_USERS:
 	  g_otg->trans_proto[i][j][k] = TCP;
     g_otg->ip_v[i][j][k] = IPV4;
-	  g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM;
+	  g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM; 
 	  g_otg->idt_lambda[i][j][k][PE_STATE] = 1/40;
     g_otg->idt_min[i][j][k][PE_STATE] =  40;
     g_otg->idt_max[i][j][k][PE_STATE] =  80;

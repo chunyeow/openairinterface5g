@@ -523,7 +523,7 @@ else
         $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u $1 > /tmp/lte_log.txt
         chmod 777 /tmp/lte_log.txt
     else
-        $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u $1 -F > /tmp/lte_log.txt
+        $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u $1 -F -P wireshark > /tmp/lte_log.txt
     fi
     echo "End of emulation"
 fi

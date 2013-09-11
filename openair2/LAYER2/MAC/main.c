@@ -330,7 +330,7 @@ int mac_top_init(int eMBMS_active, u8 cba_group_active){
 int mac_init_global_param(void){
   /***********************************************************************/
 
-  Is_rrc_registered=0;
+
   Mac_rlc_xface = NULL;
   LOG_I(MAC,"[MAIN] CALLING RLC_MODULE_INIT...\n");
 
@@ -376,7 +376,7 @@ int mac_init_global_param(void){
 
   LOG_I(MAC,"[MAIN] RLC interface setup and init\n");
   rrc_init_global_param();
-  Is_rrc_registered=1;
+
 #ifdef USER_MODE
   pdcp_layer_init ();
 #else
@@ -410,9 +410,9 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, u8 cba_group_activ
   //    NB_NODE=2;
   //    NB_INST=2;
 
-
+  Is_rrc_registered=0;
   mac_init_global_param();
-
+  Is_rrc_registered=1;
 
   mac_xface->macphy_init = mac_top_init;
 #ifndef USER_MODE

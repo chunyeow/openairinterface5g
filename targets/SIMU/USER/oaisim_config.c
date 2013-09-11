@@ -300,11 +300,14 @@ void init_oai_emulation() {
   oai_emulation.info.master_list=0;
   oai_emulation.info.nb_ue_remote=0;
   oai_emulation.info.nb_enb_remote=0;
+  oai_emulation.info.nb_rn_remote=0;
   oai_emulation.info.first_ue_local=0;
   oai_emulation.info.first_enb_local=0;
+  oai_emulation.info.first_rn_local=0;
   oai_emulation.info.master_id=0;
   oai_emulation.info.nb_ue_local= 1;//default 1 UE 
   oai_emulation.info.nb_enb_local= 1;//default 1 eNB
+  oai_emulation.info.nb_rn_local= 0;//default 0 RN : currently only applicable for eMBMS
   oai_emulation.info.ethernet_flag=0;
   oai_emulation.info.ocm_enabled=1;// flag ?
   oai_emulation.info.ocg_enabled=0;// flag c
@@ -315,6 +318,7 @@ void init_oai_emulation() {
   oai_emulation.info.omv_enabled =0; // v flag 
   oai_emulation.info.vcd_enabled=0;
   oai_emulation.info.cba_group_active=0;
+  oai_emulation.info.eMBMS_active_state=0;
   oai_emulation.info.omg_model_enb=STATIC; //default to static mobility model
   oai_emulation.info.omg_model_ue=STATIC; //default to static mobility model
   oai_emulation.info.omg_model_ue_current=STATIC; //default to static mobility model

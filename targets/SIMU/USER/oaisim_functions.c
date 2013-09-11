@@ -23,6 +23,7 @@
 #include "UTIL/OCG/OCG_extern.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 #include "UTIL/OPT/opt.h"
+#include "UTIL/OTG/otg_config.h"
 
 #include "cor_SF_sim.h"
 
@@ -96,7 +97,7 @@ extern channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
 
 extern mapping small_scale_names[];
 extern pdcp_mbms_t pdcp_mbms_array[MAX_MODULES][16*29];
-extern int eMBMS_active;
+//extern int eMBMS_active;
 
 extern void help (void);
 
@@ -109,7 +110,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:k:l:m:M:n:N:oO:p:P:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:j:IJ:k:l:m:M:n:N:oO:p:P:rR:s:S:Q:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
 
     switch (c) {
     case 0:
@@ -140,7 +141,9 @@ void get_simulation_options(int argc, char *argv[]) {
       }
       break;
     case 'Q':
-      eMBMS_active=1;
+      //eMBMS_active=1;
+      // 0 : not used (default), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 3: eMBMS relaying enabled, RRC disabled 
+      oai_emulation.info.eMBMS_active_state = atoi (optarg); 
       break;
     case 'R':
       oai_emulation.info.N_RB_DL = atoi (optarg);
@@ -193,6 +196,10 @@ void get_simulation_options(int argc, char *argv[]) {
       sinr_dB = atoi (optarg);
       set_sinr = 1;
       oai_emulation.info.ocm_enabled=0;
+      break;
+    case 'j' :
+      // number of relay nodes: currently only applicable to eMBMS
+      oai_emulation.info.nb_rn_local = atoi (optarg);
       break;
     case 'J':
       ue_connection_test=1;
@@ -379,7 +386,11 @@ void check_and_adjust_params() {
     LOG_E(EMU,"Enter fewer than %d eNBs for the moment or change the NUMBER_OF_UE_MAX\n", NUMBER_OF_eNB_MAX);
     exit(EXIT_FAILURE);
   }
-
+ 
+  if (oai_emulation.info.nb_rn_local > NUMBER_OF_RN_MAX) {
+    LOG_E(EMU,"Enter fewer than %d RNs for the moment or change the NUMBER_OF_RN_MAX\n", NUMBER_OF_RN_MAX);
+    exit(EXIT_FAILURE);
+  }
   // fix ethernet and abstraction with RRC_CELLULAR Flag
 #ifdef RRC_CELLULAR
   abstraction_flag = 1;
@@ -421,6 +432,8 @@ void check_and_adjust_params() {
 
   NB_UE_INST = oai_emulation.info.nb_ue_local + oai_emulation.info.nb_ue_remote;
   NB_eNB_INST = oai_emulation.info.nb_enb_local + oai_emulation.info.nb_enb_remote;
+  NB_RN_INST = oai_emulation.info.nb_rn_local + oai_emulation.info.nb_rn_remote;
+
 }
 
 void init_omv() {
@@ -533,7 +546,7 @@ void init_openair2() {
 #ifdef OPENAIR2
   s32 i;
   s32 UE_id;
-  l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,eMBMS_active, oai_emulation.info.cba_group_active);
+  l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,oai_emulation.info.eMBMS_active_state, oai_emulation.info.cba_group_active);
   printf ("after L2 init: Nid_cell %d\n", PHY_vars_eNB_g[0]->lte_frame_parms.Nid_cell);
   printf ("after L2 init: frame_type %d,tdd_config %d\n",
           PHY_vars_eNB_g[0]->lte_frame_parms.frame_type,
@@ -736,7 +749,7 @@ void update_otg_eNB(int module_id, unsigned int ctime) {
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ) {
 
-    int dst_id;
+    int dst_id, app_id;
     Packet_otg_elt *otg_pkt;
     
 
@@ -744,28 +757,33 @@ void update_otg_eNB(int module_id, unsigned int ctime) {
       for_times += 1;
       // generate traffic if the ue is rrc reconfigured state
       if (mac_get_rrc_status(module_id, 1/*eNB_flag*/, dst_id) > 2 /*RRC_CONNECTED*/ ) {
-        otg_pkt = malloc (sizeof(Packet_otg_elt));
-        if_times += 1;
-
-        (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(module_id, dst_id + NB_eNB_INST, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
-
-        if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
-          otg_times += 1;
-          (otg_pkt->otg_pkt).rb_id = dst_id * NB_RB_MAX + DTCH;
-          (otg_pkt->otg_pkt).module_id = module_id;
-          (otg_pkt->otg_pkt).dst_id = dst_id;
-          (otg_pkt->otg_pkt).mode = PDCP_DATA_PDU;
-          //Adding the packet to the OTG-PDCP buffer
-          pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[module_id]));
-          LOG_I(EMU, "[eNB %d] ADD pkt to OTG buffer for dst %d on rb_id %d\n", (otg_pkt->otg_pkt).module_id, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id);
-        } else {
-          //LOG_I(EMU, "OTG returns null \n");
-          free(otg_pkt);
-          otg_pkt=NULL;
-        }
+        
+	for (app_id=0; app_id<MAX_NUM_APPLICATION; app_id++){
+	  otg_pkt = malloc (sizeof(Packet_otg_elt));
+	  if_times += 1;
+	  
+	  (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(module_id, dst_id + NB_eNB_INST, app_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
+	  
+	  if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
+	    otg_times += 1;
+	    (otg_pkt->otg_pkt).rb_id = dst_id * NB_RB_MAX + DTCH; // app could be binded to a given DRB
+	    (otg_pkt->otg_pkt).module_id = module_id;
+	    (otg_pkt->otg_pkt).dst_id = dst_id;
+	    (otg_pkt->otg_pkt).mode = PDCP_DATA_PDU;
+	    //Adding the packet to the OTG-PDCP buffer
+	    pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[module_id]));
+	    LOG_I(EMU, "[eNB %d] ADD pkt to OTG buffer with size %d for dst %d on rb_id %d for app id %d \n", 
+		  (otg_pkt->otg_pkt).module_id, otg_pkt->otg_pkt.sdu_buffer_size, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id, app_id);
+	  } else {
+	    //LOG_I(EMU, "OTG returns null \n");
+	    free(otg_pkt);
+	    otg_pkt=NULL;
+	  }
+	}
+	//LOG_T(EMU,"[eNB %d] UE mod id %d is not connected\n", module_id, dst_id);
+	//LOG_I(EMU,"HEAD of otg_pdcp_buffer[%d] is %p\n", module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])));
+	
       }
-      LOG_T(EMU,"[eNB %d] UE mod id %d is not connected\n", module_id, dst_id);
-      //LOG_I(EMU,"HEAD of otg_pdcp_buffer[%d] is %p\n", module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])));
     }
 
 #ifdef Rel10

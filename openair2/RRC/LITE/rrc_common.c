@@ -232,6 +232,12 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active){
 			   dummy_buffer,
 			   0,
 			   0);*/
+#ifdef Rel10
+    LOG_I(RRC,"[UE] eMBMS active state is %d \n", eMBMS_active);
+    for (i=0;i<NB_eNB_INST;i++) {
+      UE_rrc_inst[i].MBMS_flag = (uint8_t)eMBMS_active;
+    }
+#endif 
   } else
     UE_rrc_inst=NULL;
 
@@ -240,10 +246,15 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active){
     eNB_rrc_inst = (eNB_RRC_INST*)malloc16(NB_eNB_INST*sizeof(eNB_RRC_INST));
     memset(eNB_rrc_inst,0,NB_eNB_INST*sizeof(eNB_RRC_INST));
 #ifdef Rel10
-    eNB_rrc_inst->MBMS_flag = (uint8_t)eMBMS_active;
+    LOG_I(RRC,"[eNB] eMBMS active state is %d \n", eMBMS_active);
+    for (i=0;i<NB_eNB_INST;i++) {
+    eNB_rrc_inst[i].MBMS_flag = (uint8_t)eMBMS_active;
+    }
 #endif 
 #ifdef CBA
-    eNB_rrc_inst->num_active_cba_groups  = cba_group_active;
+    for (i=0;i<NB_eNB_INST;i++) {
+      eNB_rrc_inst[i].num_active_cba_groups  = cba_group_active;
+    }
 #endif
     LOG_D(RRC,"ALLOCATE %d Bytes for eNB_RRC_INST @ %p\n",(unsigned int)(NB_eNB_INST*sizeof(eNB_RRC_INST)),eNB_rrc_inst);
   }else

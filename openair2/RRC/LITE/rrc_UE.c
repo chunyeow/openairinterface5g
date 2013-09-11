@@ -156,7 +156,7 @@ void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 eNB_index){
   /*------------------------------------------------------------------------------*/
 
   u8 i=0,rv[6];
-
+  
   if(UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size ==0){
 
     // Get RRCConnectionRequest, fill random for now
@@ -1468,7 +1468,10 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 			 );
       UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 1;
       // After SI is received, prepare RRCConnectionRequest
-      rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
+#ifdef Rel10
+      if (UE_rrc_inst[Mod_id].MBMS_flag < 3) // see -Q option
+#endif
+	rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
 
       if (UE_rrc_inst[Mod_id].Info[eNB_index].State == RRC_IDLE) {
 	LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);

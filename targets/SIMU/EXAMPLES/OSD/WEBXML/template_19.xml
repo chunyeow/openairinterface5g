@@ -38,19 +38,19 @@
       <SIZE_DIST>uniform</SIZE_DIST> <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
       <SIZE_MIN_byte>80</SIZE_MIN_byte>  <!--Minimum PAYLOAD size in bytes-->
       <SIZE_MAX_byte>150</SIZE_MAX_byte> <!--Maximum PAYLOAD size in bytes-->
-			<PU_SIZE_PKTS>60</PU_SIZE_PKTS> <!-- PU state packet size in bytes-->
-			<ED_SIZE_PKTS>70</ED_SIZE_PKTS> <!-- ED state packet size in bytes-->
-			<PROB_OFF_PU>0.2</PROB_OFF_PU>  <!-- Probability threshold to move from OFF to PU state.  -->
-			<PROB_OFF_ED>0.1</PROB_OFF_ED>  <!-- Probability threshold to move from OFF to ED state.  -->
-			<PROB_OFF_PE>0.2</PROB_OFF_PE>  <!-- Probability threshold to move from OFF to PE state.  -->
-			<PROB_PU_ED>0.1</PROB_PU_ED>		<!-- Probability threshold to move from PU to ED state.  -->
-			<PROB_PU_PE>0.3</PROB_PU_PE>		<!-- Probability threshold to move from PU to PE state.  -->
-			<PROB_ED_PE>0.1</PROB_ED_PE>		<!-- Probability threshold to move from ED to PE state.  -->
-			<PROB_ED_PU>0.2</PROB_ED_PU>		<!-- Probability threshold to move from ED to PU state.  -->
-			<HOLDING_TIME_OFF_ED>100</HOLDING_TIME_OFF_ED> <!--Holding time in OFF state before moving to ED  -->
-			<HOLDING_TIME_OFF_PU>120</HOLDING_TIME_OFF_PU> <!--Holding time in OFF state before moving to PU  -->
-			<HOLDING_TIME_OFF_PE>150</HOLDING_TIME_OFF_PE> <!--Holding time in OFF state before moving to PE  -->
-			<HOLDING_TIME_PE_OFF>500</HOLDING_TIME_PE_OFF> <!--Holding time in PE state before moving to OFF  -->
+      <PU_SIZE_PKTS>60</PU_SIZE_PKTS> <!-- PU state packet size in bytes-->
+      <ED_SIZE_PKTS>70</ED_SIZE_PKTS> <!-- ED state packet size in bytes-->
+      <PROB_OFF_PU>0.2</PROB_OFF_PU>  <!-- Probability threshold to move from OFF to PU state.  -->
+      <PROB_OFF_ED>0.1</PROB_OFF_ED>  <!-- Probability threshold to move from OFF to ED state.  -->
+      <PROB_OFF_PE>0.2</PROB_OFF_PE>  <!-- Probability threshold to move from OFF to PE state.  -->
+      <PROB_PU_ED>0.1</PROB_PU_ED>		<!-- Probability threshold to move from PU to ED state.  -->
+      <PROB_PU_PE>0.3</PROB_PU_PE>		<!-- Probability threshold to move from PU to PE state.  -->
+      <PROB_ED_PE>0.1</PROB_ED_PE>		<!-- Probability threshold to move from ED to PE state.  -->
+      <PROB_ED_PU>0.2</PROB_ED_PU>		<!-- Probability threshold to move from ED to PU state.  -->
+      <HOLDING_TIME_OFF_ED>100</HOLDING_TIME_OFF_ED> <!--Holding time in OFF state before moving to ED  -->
+      <HOLDING_TIME_OFF_PU>120</HOLDING_TIME_OFF_PU> <!--Holding time in OFF state before moving to PU  -->
+      <HOLDING_TIME_OFF_PE>150</HOLDING_TIME_OFF_PE> <!--Holding time in OFF state before moving to PE  -->
+      <HOLDING_TIME_PE_OFF>500</HOLDING_TIME_PE_OFF> <!--Holding time in PE state before moving to OFF  -->
 </CUSTOMIZED_TRAFFIC>
 
   </APPLICATION_CONFIG>

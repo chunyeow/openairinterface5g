@@ -274,7 +274,9 @@ typedef struct{
   SystemInformationBlockType9_t *sib9[NB_CNX_UE];
   SystemInformationBlockType10_t *sib10[NB_CNX_UE];
   SystemInformationBlockType11_t *sib11[NB_CNX_UE];
+
 #ifdef Rel10
+  uint8_t                           MBMS_flag;
   u8 *MCCH_MESSAGE[NB_CNX_UE];
   u8 sizeof_MCCH_MESSAGE[NB_CNX_UE];
   u8 MCCH_MESSAGEStatus[NB_CNX_UE];
