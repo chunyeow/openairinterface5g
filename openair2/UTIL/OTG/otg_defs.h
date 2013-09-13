@@ -477,6 +477,10 @@ typedef struct {
 
   float radio_access_delay[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX];
  
+  double tx_throughput[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX];
+  double rx_goodput[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX]; 	/*!< \brief  Rx goodput: (size of received data)/ctime*/
+  float rx_loss_rate[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX]; 	/*!< \brief  Rx Loss Rate: ratio, unit: bytes*/  
+
   unsigned int rx_total_bytes_dl;
  
 }otg_multicast_info_t;

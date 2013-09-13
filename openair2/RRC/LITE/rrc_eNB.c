@@ -181,10 +181,8 @@ init_SI (u8 Mod_id)
                                                     &eNB_rrc_inst[Mod_id].sib3
 #ifdef Rel10
                                                     ,
-                                                    &eNB_rrc_inst[Mod_id].
-                                                    sib13,
-                                                    eNB_rrc_inst[Mod_id].
-                                                    MBMS_flag
+                                                    &eNB_rrc_inst[Mod_id].sib13,
+                                                    eNB_rrc_inst[Mod_id].MBMS_flag
 #endif
         );
       /*
@@ -231,7 +229,7 @@ init_SI (u8 Mod_id)
 
 
 #ifdef Rel10
-      if (eNB_rrc_inst[Mod_id].MBMS_flag == 1)
+      if (eNB_rrc_inst[Mod_id].MBMS_flag > 0)
         {
 
           //   LOG_D(RRC, "[eNB %d] mbsfn_SubframeConfigList.list.count = %ld\n", Mod_id, eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count);
@@ -348,9 +346,8 @@ init_MCCH (u8 Mod_id)
   // ??Configure MCCH logical channel
   // call mac_config_req with appropriate structure from ASN.1 description
 
-  //LOG_I(RRC, "DUY: lcid before entering rrc_mac_config_req is %02d\n",eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9.list.array[0]->mbms_SessionInfoList_r9.list.array[0]->logicalChannelIdentity_r9);
   //  LOG_I(RRC, "DUY: serviceID is %d\n",eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9.list.array[0]->mbms_SessionInfoList_r9.list.array[0]->tmgi_r9.serviceId_r9.buf[2]);
-  //LOG_I(RRC, "DUY: session ID is %d\n",eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9.list.array[0]->mbms_SessionInfoList_r9.list.array[0]->sessionId_r9->buf[0]);
+  //  LOG_I(RRC, "DUY: session ID is %d\n",eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9.list.array[0]->mbms_SessionInfoList_r9.list.array[0]->sessionId_r9->buf[0]);
   rrc_mac_config_req (Mod_id, 1, 0, 0,
                       (RadioResourceConfigCommonSIB_t *) NULL,
                       (struct PhysicalConfigDedicated *) NULL,
@@ -383,14 +380,15 @@ init_MCCH (u8 Mod_id)
 void
 init_MBMS (u8 Mod_id, u32 frame)
 {                               // init the configuration for MTCH 
-  //  int j,i, num_mch;
-  if (eNB_rrc_inst[Mod_id].MBMS_flag == 1)
+
+  if (eNB_rrc_inst[Mod_id].MBMS_flag > 0)
     {
 
       //  LOG_I(RRC,"[eNB %d] Frame %d : Configuring Radio Bearer for MBMS service in MCH[%d]\n", Mod_id, frame,i); //check the lcid
       // Configuring PDCP and RLC for MBMS Radio Bearer
 
-      rrc_pdcp_config_asn1_req (Mod_id, frame, 1, 0, NULL,      // SRB_ToAddModList
+      rrc_pdcp_config_asn1_req (Mod_id, frame, 1, 0, 
+				NULL,      // SRB_ToAddModList
                                 NULL,   // DRB_ToAddModList
                                 (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
@@ -398,20 +396,18 @@ init_MBMS (u8 Mod_id, u32 frame)
                                 &(eNB_rrc_inst[Mod_id].mcch_message->
                                   pmch_InfoList_r9)
 #endif
-        );
-
-      rrc_rlc_config_asn1_req (Mod_id, frame, 1, 0, NULL,       // SRB_ToAddModList
-                               NULL,    // DRB_ToAddModList
-                               NULL,    // DRB_ToReleaseList
-                               &(eNB_rrc_inst[Mod_id].mcch_message->
-                                 pmch_InfoList_r9));
-
-
-      //rrc_mac_config_req();
-      // use the same as of DTCH for the moment,need to check the flag for mXch 
-
-    }
-
+			     );
+    
+    rrc_rlc_config_asn1_req(Mod_id, frame, 1, 0,
+			    NULL,// SRB_ToAddModList
+			    NULL,// DRB_ToAddModList
+			    NULL,// DRB_ToReleaseList
+			    &(eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9));
+    
+    //rrc_mac_config_req();
+    
+  }  
+  
 }
 
 #endif
@@ -483,7 +479,7 @@ openair_rrc_lite_eNB_init (u8 Mod_id)
   init_SI (Mod_id);
 
 #ifdef Rel10
-  if (eNB_rrc_inst[Mod_id].MBMS_flag == 1)
+  if (eNB_rrc_inst[Mod_id].MBMS_flag > 0)
     {
       /// MCCH INIT
       init_MCCH (Mod_id);

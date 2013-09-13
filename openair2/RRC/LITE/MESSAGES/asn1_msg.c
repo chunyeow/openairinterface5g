@@ -29,7 +29,7 @@
 #include "DRB-ToAddModList.h"
 #ifdef Rel10
 #include "MCCH-Message.h"
-#define MRB1 1
+//#define MRB1 1
 #endif
 
 #include "RRC/LITE/defs.h"
@@ -596,7 +596,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   *sib3 = &sib3_part->choice.sib3;
 
 #ifdef Rel10
-  if (MBMS_flag == 1) {
+  if (MBMS_flag > 0) {
     sib13_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
     memset(sib13_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
     sib13_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib13_v920;
@@ -722,7 +722,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   //  (*sib2)->mbsfn_SubframeConfigList = NULL;
 
 #ifdef Rel10
-  if (MBMS_flag == 1) {
+  if (MBMS_flag > 0) {
     LOG_I(RRC,"Adding MBSFN Configuration to SIB2\n");
     MBSFN_SubframeConfig_t *sib2_mbsfn_SubframeConfig1;
     (*sib2)->mbsfn_SubframeConfigList = CALLOC(1,sizeof(struct MBSFN_SubframeConfigList));
@@ -738,10 +738,10 @@ uint8_t do_SIB23(uint8_t Mod_id,
     sib2_mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.size= 1;
     sib2_mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.bits_unused= 2;
     if (frame_parms->frame_type == TDD) {// pattern 001110 for TDD
-      sib2_mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x0e<<2;// shift 2 cuz 2last bits are unused.
+      sib2_mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x08<<2;// shift 2 cuz 2last bits are unused.
     } 
     else {   // pattern 101010 for FDD)
-      sib2_mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x2a<<2;
+      sib2_mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x30<<2;
     }
     ASN_SEQUENCE_ADD(&MBSFNSubframeConfigList->list,sib2_mbsfn_SubframeConfig1);
   }
@@ -785,7 +785,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   // SIB13
   // fill in all elements of SIB13 if present
 #ifdef Rel10
-  if (MBMS_flag == 1) {
+  if (MBMS_flag > 0 ) {
     //  Notification for mcch change
     (*sib13)->notificationConfig_r9.notificationRepetitionCoeff_r9= MBMS_NotificationConfig_r9__notificationRepetitionCoeff_r9_n2;
     (*sib13)->notificationConfig_r9.notificationOffset_r9= 0;
@@ -813,7 +813,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
     }
     MBSFN_Area1->mcch_Config_r9.sf_AllocInfo_r9.bits_unused= 2;
 
-    MBSFN_Area1->mcch_Config_r9.signallingMCS_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__signallingMCS_r9_n7;
+    MBSFN_Area1->mcch_Config_r9.signallingMCS_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__signallingMCS_r9_n13;
 
     ASN_SEQUENCE_ADD(&MBSFNArea_list->list,MBSFN_Area1);
     
@@ -857,7 +857,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,
 		   sib3_part);
 #ifdef Rel10
-  if (MBMS_flag == 1) {
+  if (MBMS_flag > 0) {
     ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,sib13_part);
   }
 #endif
@@ -1475,7 +1475,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 
 }
 
-uint8_t TMGI[5] = {5,4,0,0,1};//TMGI is a string of octet, ref. TS 24.008 fig. 10.5.4a
+uint8_t TMGI[5] = {4,3,2,1,0};//TMGI is a string of octet, ref. TS 24.008 fig. 10.5.4a
 
 #ifdef Rel10
 uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
@@ -1505,10 +1505,10 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
     mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.size= 1;
     mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.bits_unused= 2;
     if (frame_parms->frame_type == TDD) {// pattern 001110 for TDD
-      mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x0e<<2;// shift 2bits cuz 2last bits are unused.
+      mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x08<<2;// shift 2bits cuz 2last bits are unused.
     } 
     else {   // pattern 101010 for FDD)
-      mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x2a<<2;
+      mbsfn_SubframeConfig1->subframeAllocation.choice.oneFrame.buf[0]=0x30<<2;
     }
     ASN_SEQUENCE_ADD(&(*mbsfnAreaConfiguration)->commonSF_Alloc_r9.list,mbsfn_SubframeConfig1);
 
@@ -1520,8 +1520,8 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
   pmch_Info_1 = CALLOC(1,sizeof(PMCH_Info_r9_t));
   memset((void*)pmch_Info_1,0,sizeof(PMCH_Info_r9_t));
   
-  pmch_Info_1->pmch_Config_r9.sf_AllocEnd_r9= 11;//take the value of last mbsfn subframe in this CSA period because there is only one PMCH in this mbsfn area
-  pmch_Info_1->pmch_Config_r9.dataMCS_r9= 15;
+  pmch_Info_1->pmch_Config_r9.sf_AllocEnd_r9= 3;//take the value of last mbsfn subframe in this CSA period because there is only one PMCH in this mbsfn area
+  pmch_Info_1->pmch_Config_r9.dataMCS_r9= 13;
   pmch_Info_1->pmch_Config_r9.mch_SchedulingPeriod_r9= PMCH_Config_r9__mch_SchedulingPeriod_r9_rf16;
 
   // MBMSs-SessionInfoList-r9
@@ -1539,7 +1539,7 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
   mbms_Session_1->sessionId_r9 = CALLOC(1,sizeof(OCTET_STRING_t));
   mbms_Session_1->sessionId_r9->buf= MALLOC(1);
   mbms_Session_1->sessionId_r9->size= 1;
-  mbms_Session_1->sessionId_r9->buf[0]= MRB1; 
+  mbms_Session_1->sessionId_r9->buf[0]= MTCH; 
   // Logical Channel ID
   mbms_Session_1->logicalChannelIdentity_r9= MTCH;
   ASN_SEQUENCE_ADD(&pmch_Info_1->mbms_SessionInfoList_r9.list,mbms_Session_1);

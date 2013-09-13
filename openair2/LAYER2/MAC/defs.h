@@ -86,8 +86,8 @@
 
 
 #define MCCH 4 // MCCH
+#define MTCH 1 // MTCH
 
-#define MTCH 5 // MTCH
 #ifdef Rel10
 
 // Mask for identifying subframe for MBMS 
@@ -107,7 +107,7 @@
 #define MAX_PMCH_perMBSFN 15
 
 #define MCCH_PAYLOAD_SIZE_MAX 128
-#define MCH_PAYLOAD_SIZE_MAX 1024
+//#define MCH_PAYLOAD_SIZE_MAX 16384// this value is using in case mcs and TBS index are high
 #endif
 
 #ifdef USER_MODE

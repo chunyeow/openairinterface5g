@@ -306,14 +306,20 @@ unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size)
   char *header=NULL; 
   unsigned int flag;
   int app,seq_num=0;
-  int otg_hdr_size= + sizeof(otg_hdr_info_t) + sizeof(otg_hdr_t);
+  int otg_hdr_size= sizeof(otg_hdr_info_t) + sizeof(otg_hdr_t);
 
   set_ctime(ctime); // fixme: this should be done separetly from packet_gen and packet_gen_multicast
   //for (app=0; app<MAX_NUM_APPLICATION; app++){  
   for (app=0; app<1; app++){  
+
     if ( (g_otg_multicast->idt_dist[src][dst][app]> 0) &&  
 	 ((ctime - otg_multicast_info->ptime[src][dst][app]) >= otg_multicast_info->idt[src][dst][app]) && 
 	 (g_otg_multicast->duration[src][dst][app] > ctime) ){
+
+      //Duy add
+      LOG_I(OTG,"multicast gen: entering generating\n");
+      //end Duy add
+
       //otg_info->idt[src][dst][app]= time_dist(src, dst, app, -1);
       otg_multicast_info->idt[src][dst][app]=ceil(uniform_dist(g_otg_multicast->idt_min[src][dst][app], 
 							       g_otg_multicast->idt_max[src][dst][app]));
@@ -328,7 +334,7 @@ unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size)
       if (otg_multicast_info->header_size_app[src][dst][app]==0){
 	otg_multicast_info->header_size_app[src][dst][app]=1;
 	LOG_W(OTG,"header type not defined, set to 1\n");
-      }
+	}
       header = random_string(otg_multicast_info->header_size_app[src][dst][app], 
 			     g_otg->packet_gen_type, 
 			     HEADER_ALPHABET);
@@ -336,12 +342,15 @@ unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size)
       flag = 0x1000;
       seq_num=otg_multicast_info->tx_sn[src][dst][app]++;
       otg_multicast_info->tx_num_pkt[src][dst][app]+=1;
-      otg_multicast_info->tx_num_bytes[src][dst][app]+= strlen(header) + strlen(payload)+otg_hdr_size;
+      otg_multicast_info->tx_num_bytes[src][dst][app]+= strlen(header) + strlen(payload) + otg_hdr_size;
+      LOG_D(OTG,"otg_multicast_info->tx_num_bytes[%d][%d][%d] = %d \n",src,dst,app, otg_multicast_info->tx_num_bytes[src][dst][app]);
       if (size!=strlen(payload))
 	LOG_E(OTG,"[src %d][dst %d] The expected packet size does not match the payload size : size %d, strlen %d \n", src, dst, size, strlen(payload));
-      else 
+      else {
 	LOG_I(OTG,"[src %d][dst %d]TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d: |%s|%s| \n", 
 	      src, dst, ctime, size, strlen(header)+strlen(payload)+otg_hdr_size, seq_num, header, payload);
+	LOG_D(OTG,"\n");
+      }
   
       buffer_size = otg_hdr_size + strlen(header) + strlen(payload);
       *pkt_size = buffer_size;
@@ -353,7 +362,8 @@ unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size)
   }
   
   if (buffer_size)
-    return serialize_buffer(header, payload, buffer_size,g_otg_multicast->application_type[src][dst][app], flag, 0, ctime, seq_num, 0, HDR_IP_v4_MIN+HDR_UDP, 1);
+    return serialize_buffer(header, payload, buffer_size,0/*g_otg_multicast->application_type[src][dst][app]*/, flag, 0, ctime, seq_num, 0, HDR_IP_v4_MIN+HDR_UDP, 1);
+                    // application_types is MSCBR = 1 is set in g_otg_multicast init, but 0 is need in otg_rx for coherence with index of otg_multicast_info
   else 
     return NULL;
 }
@@ -652,9 +662,9 @@ unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffe
 void init_predef_multicast_traffic() {
   int i, j, k;
 
-for (i=0; i<2; i++){ // src //maxServiceCount
-   for (j=0; j<2; j++){ // dst // maxSessionPerPMCH
-     for (k=0; k<MAX_NUM_APPLICATION; k++){  
+for (i=0; i<1; i++){ // src //maxServiceCount
+   for (j=1; j<2; j++){ // dst // maxSessionPerPMCH
+     for (k=0; k<1/*MAX_NUM_APPLICATION*/; k++){  
        switch(g_otg_multicast->application_type[i][j][k]){
 	  case  MSCBR : 
 	    //LOG_D(OTG, "configure MSCBR for MBMS (service %d, session %d, app %d)\n", i, j, k);
@@ -662,12 +672,13 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	    g_otg_multicast->ip_v[i][j][k]= IPV4;
 
 	    g_otg_multicast->idt_dist[i][j][k]= UNIFORM;
-	    g_otg_multicast->idt_min[i][j][k]= 20;
-	    g_otg_multicast->idt_max[i][j][k]= 100;
+	    g_otg_multicast->idt_min[i][j][k]= 20;// can modify here to increase the frequency of generate data
+	    g_otg_multicast->idt_max[i][j][k]= 50;
 
-	    g_otg_multicast->size_dist[i][j][k]= FIXED;
-	    g_otg_multicast->size_min[i][j][k]= 20;
-	    g_otg_multicast->size_max[i][j][k]= 100;
+	    g_otg_multicast->size_dist[i][j][k]= UNIFORM;
+	    g_otg_multicast->size_min[i][j][k]= 768;
+	    g_otg_multicast->size_max[i][j][k]= 1024 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	                                        
 
 	    g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
 	    header_size_gen_multicast(i,j,k);

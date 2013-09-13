@@ -638,12 +638,12 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
   int pkt_size=0, pkt_cnt=0;
   u8 pdcp_mode;
   Packet_otg_elt * otg_pkt_info;
+
   // we need to add conditions to avoid transmitting data when the UE is not RRC connected.
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ){
     module_id = (eNB_flag == 1) ?  eNB_index : NB_eNB_INST + UE_index ;
     //rb_id    = (eNB_flag == 1) ? eNB_index * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;
-
     if (eNB_flag == 1) { // search for DL traffic
       //for (dst_id = NB_eNB_INST; dst_id < NB_UE_INST + NB_eNB_INST; dst_id++) {
       while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
@@ -653,6 +653,8 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
         module_id = (otg_pkt_info->otg_pkt).module_id;
         rb_id = (otg_pkt_info->otg_pkt).rb_id;
         pdcp_mode = (otg_pkt_info->otg_pkt).mode;
+	//	LOG_I(PDCP,"pdcp_fifo, pdcp mode is= %d\n",pdcp_mode);
+	
         // generate traffic if the ue is rrc reconfigured state
 	// if (mac_get_rrc_status(module_id, eNB_flag, dst_id ) > 2 /*RRC_CONNECTED*/) { // not needed: this test is already done in update_otg_enb
 	otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
@@ -664,6 +666,7 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
 	  free(otg_pkt);
 	}
 	// } //else LOG_D(OTG,"frame %d enb %d-> ue %d link not yet established state %d  \n", frame, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, eNB_flag, dst_id - NB_eNB_INST));
+
       }
     }
     else {
@@ -678,7 +681,7 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
 	otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
 	pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
 	if (otg_pkt != NULL){
-	//rb_id= eNB_index * MAX_NUM_RB + DTCH;
+	  //rb_id= eNB_index * MAX_NUM_RB + DTCH;
 	  LOG_D(OTG,"[UE %d] sending packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", UE_index, src_id, rb_id, src_id, dst_id, pkt_size);
 	  pdcp_data_req(src_id, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO,pkt_size, otg_pkt, PDCP_DATA_PDU);
 	  free(otg_pkt);
@@ -692,9 +695,9 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
     unsigned int ctime=0;
     src_id = eNB_index;
     ctime = frame * 100;
-
+    
     /*if  ((mac_get_rrc_status(eNB_index, eNB_flag, 0 ) > 2) &&
-  (mac_get_rrc_status(eNB_index, eNB_flag, 1 ) > 2)) { */
+      (mac_get_rrc_status(eNB_index, eNB_flag, 1 ) > 2)) { */
     for (dst_id = 0; dst_id<NUMBER_OF_UE_MAX; dst_id++) {
       if (mac_get_rrc_status(eNB_index, eNB_flag, dst_id ) > 2) {
         otg_pkt=packet_gen(src_id, dst_id, ctime, &pkt_size);
@@ -705,12 +708,12 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
           free(otg_pkt);
         }
         /*else {
-            LOG_I(OTG,"nothing generated (src %d, dst %d)\n",src_id, dst_id);
-            }*/
+	  LOG_I(OTG,"nothing generated (src %d, dst %d)\n",src_id, dst_id);
+	  }*/
       }
       /*else {
-          LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, eNB_flag, dst_id ));
-          }*/
+	LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, eNB_flag, dst_id ));
+	}*/
     }
   }
 #endif

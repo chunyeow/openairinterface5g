@@ -37,7 +37,7 @@
  */
 #   define MAX_IP_PACKET_SIZE          1512
 # else
-#   define MAX_IP_PACKET_SIZE          1500
+#   define MAX_IP_PACKET_SIZE          1500 // 3000
 # endif
 #endif
 // overwrite the previous deinitions

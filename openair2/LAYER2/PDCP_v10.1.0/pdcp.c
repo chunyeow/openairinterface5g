@@ -94,7 +94,7 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
   mem_block_t* pdcp_pdu = NULL;
   rlc_op_status_t rlc_status;
 
-  if (pdcp->instanciated_instance == 0) {
+  if ((pdcp->instanciated_instance == 0) && (mode != PDCP_TM)) {
     LOG_W(PDCP, "Instance is not configured, Ignoring SDU...\n");
     return FALSE;
   }
@@ -119,7 +119,7 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
     LOG_D(PDCP, " [TM] Asking for a new mem_block of size %d\n",sdu_buffer_size);
     pdcp_pdu = get_free_mem_block(sdu_buffer_size);
     if (pdcp_pdu != NULL) {
-      memcpy(&pdcp_pdu->data, sdu_buffer, sdu_buffer_size); 
+      memcpy(&pdcp_pdu->data[0], sdu_buffer, sdu_buffer_size); 
       rlc_status = rlc_data_req(module_id, frame, eNB_flag, RLC_MBMS_YES, rb_id, muiP, confirmP, sdu_buffer_size, pdcp_pdu);
     } else
       rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;    

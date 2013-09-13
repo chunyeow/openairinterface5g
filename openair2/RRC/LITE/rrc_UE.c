@@ -1472,6 +1472,7 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
       if (UE_rrc_inst[Mod_id].MBMS_flag < 3) // see -Q option
 #endif
 	rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
+      LOG_I(RRC, "not sending connection request\n");
 
       if (UE_rrc_inst[Mod_id].Info[eNB_index].State == RRC_IDLE) {
 	LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);
@@ -1577,6 +1578,7 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len)
   asn_dec_rval_t dec_rval;
   
   if (UE_rrc_inst[Mod_id].Info[eNB_index].MCCH_MESSAGEStatus == 1) {
+    LOG_D(RRC,"MCCH MESSAGE has been already received!\n");
     return 0; // avoid decoding to prevent memory bloating
   }
   else {
@@ -1596,15 +1598,15 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len)
 #endif
 
     if (mcch->message.present == MCCH_MessageType_PR_c1) {
-      LOG_D(RRC,"[UE %d] Found First MCCH_MESSAGE\n",Mod_id);
+      LOG_D(RRC,"[UE %d] Found mcch message \n",Mod_id);
       if(mcch->message.choice.c1.present == MCCH_MessageType__c1_PR_mbsfnAreaConfiguration_r9) {
 	/*	
 	memcpy((void*)*mcch_message,
 	       (void*)&mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9,
 	       sizeof(MBSFNAreaConfiguration_r9_t)); */
 	*mcch_message = &mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9;
-	LOG_D(RRC,"[UE %d] Found MBSFNAreaConfiguration\n",Mod_id);
-	decode_MBSFNAreaConfiguration(Mod_id,eNB_index);
+	LOG_I(RRC,"[UE %d] Frame %d : Found MBSFNAreaConfiguration from eNB \n",Mod_id, frame, eNB_index);
+	decode_MBSFNAreaConfiguration(Mod_id,eNB_index,frame);
 
       }
     }
@@ -1612,7 +1614,7 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len)
   return 0;
 }
 
-void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index) {
+void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame) {
   LOG_D(RRC,"[UE %d] Number of MCH(s) in this MBSFN Area is %d\n", Mod_id, UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
   //  store to MAC/PHY necessary parameters for receiving MTCHs
   rrc_mac_config_req(Mod_id,0,0,eNB_index,
@@ -1645,7 +1647,28 @@ void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index) {
 
   UE_rrc_inst[Mod_id].Info[eNB_index].MCCH_MESSAGEStatus = 1;
 
-  // Config Radio Bearer for MBMS user data (similar way to configure for eNB side in init_MBMS function)							       
+  // Config Radio Bearer for MBMS user data (similar way to configure for eNB side in init_MBMS function)
+    rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frame,
+			   0,// eNB_flag
+			   eNB_index,// 0,// index
+			   NULL, // SRB_ToAddModList
+			   NULL, // DRB_ToAddModList
+			   (DRB_ToReleaseList_t*)NULL
+#ifdef Rel10
+			   ,
+			   &(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9)
+#endif
+			   );
+    
+  rrc_rlc_config_asn1_req(NB_eNB_INST+Mod_id, frame, 
+			  0,// eNB_flag
+			  0,
+			  NULL,// SRB_ToAddModList
+			  NULL,// DRB_ToAddModList
+			  NULL,// DRB_ToReleaseList
+			  &(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9));
+  // */
+  
 }
 
 #endif // rel10

@@ -438,20 +438,18 @@ rlc_op_status_t rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t eNB_
           } else {
               mbms_rb_id = rb_idP + (maxDRB + 3);
           }
+	  //  LOG_I(RLC,"DUY rlc_data_req: mbms_rb_id in RLC instant is: %d\n", mbms_rb_id);
           if (sduP != NULL) {
               if (sdu_sizeP > 0) {
                   LOG_I(RLC,"received a packet with size %d for MBMS \n", sdu_sizeP);
                   new_sdu = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_um_data_req_alloc));
-
                   if (new_sdu != NULL) {
                       // PROCESS OF COMPRESSION HERE:
                       memset (new_sdu->data, 0, sizeof (struct rlc_um_data_req_alloc));
                       memcpy (&new_sdu->data[sizeof (struct rlc_um_data_req_alloc)], &sduP->data[0], sdu_sizeP);
-
                       ((struct rlc_um_data_req *) (new_sdu->data))->data_size = sdu_sizeP;
                       ((struct rlc_um_data_req *) (new_sdu->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
                       free_mem_block(sduP);
-
                       LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                       if (rlc[module_idP].m_rlc_um_array[rlc[module_idP].m_rlc_pointer[mbms_rb_id].rlc_index].is_data_plane) {
                           LOG_D(RLC, "[MSC_MSG][FRAME %05d][PDCP][MOD %02d][RB %02d][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][MOD %02d][RB %02d]\n",
@@ -480,13 +478,13 @@ rlc_op_status_t rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t eNB_
               return RLC_OP_STATUS_BAD_PARAMETER;
           }
       } else {
-          return RLC_OP_STATUS_BAD_PARAMETER;
+	return RLC_OP_STATUS_BAD_PARAMETER;
       }
 #endif
   } else {
-      free_mem_block(sduP);
-      //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : parameter module_id out of bounds :%d\n", __FILE__, __LINE__, module_idP);
-      return RLC_OP_STATUS_BAD_PARAMETER;
+    free_mem_block(sduP);
+    //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : parameter module_id out of bounds :%d\n", __FILE__, __LINE__, module_idP);
+    return RLC_OP_STATUS_BAD_PARAMETER;
   }
 }
 

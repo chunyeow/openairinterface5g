@@ -40,7 +40,7 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
   rlc_mode_t      rlc_type;
 #ifdef Rel10
   long int               cnt2            = 0;
-  long int               mrb_id          = 0;
+  //  long int               mrb_id          = 0;
   long int               mbms_service_id = 0;
   long int               mbms_session_id = 0;
   PMCH_Info_r9_t*        pmch_info_r9    = NULL;
@@ -264,61 +264,66 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
 
 
 #ifdef Rel10
-    if (pmch_info_listP != NULL) {
-        for (cnt=0;cnt<pmch_info_listP->list.count;cnt++) {
-            pmch_info_r9 = pmch_info_listP->list.array[cnt];
+  if (pmch_info_listP != NULL) {
 
-            for (cnt2=0;cnt2<pmch_info_r9->mbms_SessionInfoList_r9.list.count;cnt2++) {
-                mbms_session = pmch_info_r9->mbms_SessionInfoList_r9.list.array[cnt2];
+    LOG_I(RRC,"[%s %d] Config RLC instant for MBMS\n", (eNB_flagP) ? "eNB" : "UE", module_idP);
 
-                if (mbms_session->logicalChannelIdentity_r9 > 0) {
-                    //lc_id = (NUMBER_OF_UE_MAX*NB_RB_MAX) + mbms_session->logicalChannelIdentity_r9;
+    for (cnt=0;cnt<pmch_info_listP->list.count;cnt++) {
+      pmch_info_r9 = pmch_info_listP->list.array[cnt];
+      
+      for (cnt2=0;cnt2<pmch_info_r9->mbms_SessionInfoList_r9.list.count;cnt2++) {
+	mbms_session = pmch_info_r9->mbms_SessionInfoList_r9.list.array[cnt2];
+	
+	if (mbms_session->logicalChannelIdentity_r9 > 0) {
 
-                    if (eNB_flagP) {
-                    	lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3) * MAX_MOBILES_PER_RG;
-                    } else {
-                    	lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3);
-                    }
+	  //	  lc_id = (NUMBER_OF_UE_MAX*NB_RB_MAX) + mbms_session->logicalChannelIdentity_r9;
+	  //   test this one and tell Lionel
+          if (eNB_flagP) {
+              lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3) * MAX_MOBILES_PER_RG;
+          } else {
+              lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3);
+          }
 
-                    if (mbms_session->sessionId_r9 != NULL) {
-                    	mbms_session_id = mbms_session->sessionId_r9->buf[0];
-                    } else {
-                    	mbms_session_id = mbms_session->logicalChannelIdentity_r9;
-                    }
-                    mbms_service_id = mbms_session->tmgi_r9.serviceId_r9.buf[0];
-                    rb_id = (mbms_service_id * maxSessionPerPMCH) + lc_id;
-
-                    if (rlc[module_idP].m_rlc_pointer[rb_id].rlc_type == RLC_NONE) {
-                        rlc_status = rrc_rlc_add_rlc (module_idP, frameP, rb_id, lc_id, RLC_UM);
-                        if (rlc_status != RLC_OP_STATUS_OK ) {
-                            LOG_D(RLC, "[RLC_RRC] COULD NOT ALLOCATE RLC UM INSTANCE\n");
-                            continue;//? return rlc_status;
-                        }
-                    } else if (rlc[module_idP].m_rlc_pointer[rb_id].rlc_type != RLC_UM) {
-                        LOG_E(RLC, "[RLC_RRC] MBMS ERROR IN CONFIG, RLC FOUND ALREADY CONFIGURED FOR MBMS BEARER IS NOT UM\n");
-                        continue;
-                    }
-                    dl_um_rlc.sn_FieldLength = SN_FieldLength_size10;
-                    dl_um_rlc.t_Reordering = T_Reordering_ms5;
-
-                    config_req_rlc_um_asn1 (&rlc[module_idP].m_rlc_um_array[rlc[module_idP].m_rlc_pointer[rb_id].rlc_index],
-                    		frameP,
-                    		eNB_flagP,
-                            RLC_MBMS_YES,
-                    		module_idP,
-                    		NULL,
-                    		&dl_um_rlc,
-                    		rb_id,
-                    		RADIO_ACCESS_BEARER);
-                } else {
-                    LOG_D(RLC, "[RLC_RRC] Invalid LogicalChannelIdentity for MTCH --- Value 0 is reserved for MCCH\n");
-                    lc_id = -1;
-                }
-            }
-        }
+	  
+	  if (mbms_session->sessionId_r9 != NULL) {
+	    mbms_session_id = mbms_session->sessionId_r9->buf[0];
+	  } else {
+	    mbms_session_id = mbms_session->logicalChannelIdentity_r9;
+	  }
+	  mbms_service_id = mbms_session->tmgi_r9.serviceId_r9.buf[2];// can use the pmch_index, here is the value 'cnt'
+	  rb_id = (mbms_service_id * maxSessionPerPMCH) + lc_id;
+	  
+	  if (rlc[module_idP].m_rlc_pointer[rb_id].rlc_type == RLC_NONE) {
+	    rlc_status = rrc_rlc_add_rlc (module_idP, frameP, rb_id, lc_id, RLC_UM);
+	    if (rlc_status != RLC_OP_STATUS_OK ) {
+	      LOG_D(RLC, "[RLC_RRC] COULD NOT ALLOCATE RLC UM INSTANCE\n");
+	      continue;//? return rlc_status;
+	    }
+	  } else if (rlc[module_idP].m_rlc_pointer[rb_id].rlc_type != RLC_UM) {
+	    LOG_E(RLC, "[RLC_RRC] MBMS ERROR IN CONFIG, RLC FOUND ALREADY CONFIGURED FOR MBMS BEARER IS NOT UM\n");
+	    continue;
+	  }
+	  dl_um_rlc.sn_FieldLength = SN_FieldLength_size5;
+	  dl_um_rlc.t_Reordering = T_Reordering_ms0;
+	  
+	  config_req_rlc_um_asn1 (&rlc[module_idP].m_rlc_um_array[rlc[module_idP].m_rlc_pointer[rb_id].rlc_index],
+				  frameP,
+				  eNB_flagP,
+				  RLC_MBMS_YES,
+				  module_idP,
+				  NULL,
+				  &dl_um_rlc,
+				  rb_id,
+				  RADIO_ACCESS_BEARER);
+	} else {
+	  LOG_D(RLC, "[RLC_RRC] Invalid LogicalChannelIdentity for MTCH --- Value 0 is reserved for MCCH\n");
+	  lc_id = -1;
+	}
+      }
     }
+  }
 #endif
-
+  
   LOG_D(RLC, "[RLC_RRC][MOD_id %d]CONFIG REQ ASN1 END \n",module_idP);
   return RLC_OP_STATUS_OK;
 }

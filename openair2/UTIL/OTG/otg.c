@@ -112,6 +112,8 @@ char *str_sub (const char *s, unsigned int start, unsigned int end) {
 // set the simulation time
 void set_ctime(int ctime){
   otg_info->ctime=ctime;
+	//	otg_muticast_info->ctime=ctime;
+	
 }
 
 

@@ -753,7 +753,7 @@ int
 	  UE_id= oai_emulation.info.first_ue_local+oai_emulation.info.nb_ue_local + RN_id; // NB_UE_INST + RN_id
 	  eNB_id= oai_emulation.info.first_enb_local+oai_emulation.info.nb_enb_local + RN_id; // NB_eNB_INST + RN_id
 	  // currently only works in FDD
-	  if (oai_emulation.info.eMBMS_active_state == 3){
+	  if (oai_emulation.info.eMBMS_active_state == 4){
 	    r_mode = multicast_relay;
 	    LOG_I(EMU,"Activating the multicast relaying\n");
 	  }else {

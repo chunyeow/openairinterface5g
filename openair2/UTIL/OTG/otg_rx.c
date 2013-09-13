@@ -105,13 +105,13 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
       }
       else if (otg_hdr_info_rx->flag == 0x1000){
 	seq_num_rx = otg_multicast_info->rx_sn[src][dst][otg_hdr_rx->traffic_type];
+	nb_loss_pkts = otg_multicast_info->loss_pkts_dl[src][dst][otg_hdr_rx->traffic_type];
 	//	otg_multicast_info->ran_owd[src][dst][otg_hdr_rx->traffic_type] = ctime- otg_hdr_rx->time;
-	nb_loss_pkts = otg_multicast_info->loss_rate[src][dst][otg_hdr_rx->traffic_type];
 	//	rx_check_loss(src, dst, otg_hdr_info_rx->flag, otg_hdr_rx->seq_num, &seq_num_rx, &nb_loss_pkts);
 	//	otg_multicast_info->loss_rate[src][dst][otg_hdr_rx->traffic_type]=nb_loss_pkts;
 	//otg_multicast_info->rx_sn[src][dst][otg_hdr_rx->traffic_type]=seq_num_rx;
-	LOG_I(OTG,"received a multicast packet with size %d sn %d ran owd %d loss rate %d\n",
-	      otg_hdr_info_rx->size, seq_num_rx, ctime- otg_hdr_rx->time, nb_loss_pkts);
+	//	LOG_I(OTG,"received a multicast packet with size %d sn %d ran owd %d loss rate %d\n",
+	//	      otg_hdr_info_rx->size, seq_num_rx, ctime- otg_hdr_rx->time, nb_loss_pkts);
 	//return 0;
 	
       }
@@ -133,8 +133,6 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
       
       if (otg_info->owd_const[src][dst][otg_hdr_rx->flow_id]==0)
 	owd_const_gen(src,dst,otg_hdr_rx->flow_id, otg_hdr_rx->traffic_type);
-      
-      
       
      
 	/******/
@@ -175,6 +173,8 @@ float owd_const_application_v=owd_const_application()/2;
       }
 
       if (otg_hdr_info_rx->flag == 0x1000){
+	LOG_I(OTG,"received a multicast packet at time %d with size %d, seq num %d, ran owd %d number loss packet %d\n",
+	      ctime,otg_hdr_info_rx->size, otg_hdr_rx->seq_num, ctime - otg_hdr_rx->time, nb_loss_pkts);
 	
 	LOG_I(OTG,"INFO LATENCY :: [SRC %d][DST %d] radio access %.2f (tx time %d, ctime %d), OWD:%.2f (ms):\n", 
 	      src, dst, otg_multicast_info->radio_access_delay[src][dst], otg_hdr_rx->time, ctime , otg_multicast_info->rx_pkt_owd[src][dst]);
@@ -187,13 +187,12 @@ float owd_const_application_v=owd_const_application()/2;
 	  otg_multicast_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]=MAX(otg_multicast_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type],otg_multicast_info->rx_pkt_owd[src][dst] );
 	  otg_multicast_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type]=MIN(otg_multicast_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type],otg_multicast_info->rx_pkt_owd[src][dst] );
 	}
-	
 	if (g_otg->curve==1){ 
 	  if (g_otg->owd_radio_access==0)
 	    add_tab_metric(src, dst, otg_multicast_info->rx_pkt_owd[src][dst],  ((otg_hdr_info_rx->size*1000*8)/(otg_multicast_info->rx_pkt_owd[src][dst]*1024 )),  otg_hdr_rx->time);
 	  else
 	    add_tab_metric(src, dst, otg_multicast_info->radio_access_delay[src][dst],  ((otg_hdr_info_rx->size*1000*8)/(otg_multicast_info->rx_pkt_owd[src][dst]*1024 )),  otg_hdr_rx->time);    
-	}
+	    }
 	otg_multicast_info->rx_total_bytes_dl+=otg_hdr_info_rx->size;
       }
       else {
@@ -277,6 +276,7 @@ float owd_const_application_v=owd_const_application()/2;
       else if (otg_hdr_info_rx->flag == 0x1000){
 	otg_multicast_info->rx_num_pkt[src][dst][otg_hdr_rx->traffic_type]+=1;
 	otg_multicast_info->rx_num_bytes[src][dst][otg_hdr_rx->traffic_type]+=otg_hdr_info_rx->size;
+	//	LOG_D(OTG,"DUY: otg_multicast_info->rx_num_bytes[%d][%d][%d] is %d \nn",src,dst,otg_hdr_rx->traffic_type,otg_multicast_info->rx_num_bytes[src][dst][otg_hdr_rx->traffic_type]);
 	otg_multicast_info->rx_sn[src][dst][otg_hdr_rx->traffic_type]=seq_num_rx;
 	otg_multicast_info->loss_pkts_dl[src][dst][otg_hdr_rx->traffic_type]=nb_loss_pkts;
 

@@ -1091,6 +1091,12 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
   int mcch_mcs;
   u16 TBS,j,padding=0,post_padding=0;
   mac_rlc_status_resp_t rlc_status;
+  int num_mtch;
+  int msi_length,i;
+  unsigned char sdu_lcids[11], num_sdus=0, offset=0;
+  u16 sdu_lengths[11], sdu_length_total=0;
+  unsigned char mch_buffer[MAX_DLSCH_PAYLOAD_BYTES]; // check the max value, this is for dlsch only
+
   switch (eNB_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.signallingMCS_r9) {
   case 0:
     mcch_mcs = 2;
@@ -1259,22 +1265,17 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     }
   }
   
-  // Calculate the mcs
+    // Calculate the mcs
   if ((msi_flag==1) || (mcch_flag==1)) {
     eNB_mac_inst[Mod_id].MCH_pdu.mcs = mcch_mcs;
   }
   else if (mtch_flag == 1) { // only MTCH in this subframe 
     eNB_mac_inst[Mod_id].MCH_pdu.mcs = eNB_mac_inst[Mod_id].pmch_Config[0]->dataMCS_r9;
   }
-
+  
   
   // 2nd: Create MSI, get MCCH from RRC and MTCHs from RLC
-  int num_mtch;
-  int msi_length,i;
-  unsigned char sdu_lcids[11], num_sdus=0, offset;
-  u16 sdu_lengths[11], sdu_length_total=0;
-  unsigned char mch_buffer[MAX_DLSCH_PAYLOAD_BYTES]; // check the max value, this is for dlsch only
-
+ 
   // there is MSI (MCH Scheduling Info) 
   if (msi_flag == 1) {
     // Create MSI here
@@ -1292,7 +1293,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     }
     msi_ptr+= sizeof(MSI_ELEMENT);
 
-    //MTCHs
+         //Header for MTCHs
     num_mtch = eNB_mac_inst[Mod_id].mbms_SessionList[0]->list.count;
     for (i=0;i<num_mtch;i++) { // loop for all session in this MCH (MCH[0]) at this moment
       ((MSI_ELEMENT *) msi_ptr)->lcid = eNB_mac_inst[Mod_id].mbms_SessionList[0]->list.array[i]->logicalChannelIdentity_r9;//mtch_lcid;
@@ -1306,7 +1307,9 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     else 
       header_len_msi = 3;
 
-    LOG_D(MAC,"Scheduler: MSI is transmitted in this subframe \n" );
+    LOG_D(MAC,"[eNB %d] Frame %d : MSI->MCH, length of MSI is %d bytes \n",Mod_id,frame,msi_length);
+    //LOG_D(MAC,"Scheduler: MSI is transmitted in this subframe \n" );
+
     //   LOG_D(MAC,"Scheduler: MSI length is %d bytes\n",msi_length);
     // Store MSI data to mch_buffer[0]
     memcpy((char *)&mch_buffer[sdu_length_total],
@@ -1363,48 +1366,61 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     }
     eNB_mac_inst[Mod_id].mcch_active=0;
   }
-
-  // there is MTCHs, loop if there are more than 1
+  
+     // there is MTCHs, loop if there are more than 1
   if (mtch_flag == 1) {
-
-    // Calculate TBS
-    TBS = mac_xface->get_TBS_DL(eNB_mac_inst[Mod_id].MCH_pdu.mcs, mac_xface->lte_frame_parms->N_RB_DL);
-
-    //    get MTCH data from RLC (like for DTCH)
-    LOG_D(MAC,"[eNB %d] Frame %d : MTCH data is transmitted on this subframe\n",Mod_id,frame);  
-
-    /*    header_len_mtch = 3;
-	  LOG_D(MAC,"[eNB %d], Frame %d, MTCH->MCH, Checking RLC status (rab %d, tbs %d, len %d)\n",
-	  Mod_id,frame,MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)),TBS,
-	  TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
-    
-	  rlc_status = mac_rlc_status_ind(Mod_id,frame,1,MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)),
-	  TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
-    
-	  if (rlc_status.bytes_in_buffer >0) {
-	  //      LOG_I(MAC,"[eNB %d][MBMS USER-PLANE], Frame %d, MTCH->MCH, Requesting %d bytes from RLC (header len mtch %d)\n",
-	  //    Mod_id,frame,TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch,header_len_mtch);
- 
-	  sdu_lengths[num_sdus] = mac_rlc_data_req(Mod_id,frame, RLC_MBMS_NO
-	  MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)),
-	  (char*)&mch_buffer[sdu_length_total]);
-	  LOG_I(MAC,"[eNB %d][MBMS USER-PLANE] Got %d bytes for MTCH %d\n",Mod_id,sdu_lengths[num_sdus],MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)));
-	  sdu_lcids[num_sdus] = MTCH;
-	  sdu_length_total += sdu_lengths[num_sdus];
-	  if (sdu_lengths[num_sdus] < 128)
-	  header_len_mtch = 2;
-	  num_sdus++;
-	  }
-	  else {
-	  header_len_mtch = 0;    
-	  }
+        // Calculate TBS
+    /*                                if ((msi_flag==1) || (mcch_flag==1)) {
+                                    TBS = mac_xface->get_TBS(mcch_mcs, mac_xface->lte_frame_parms->N_RB_DL);
+                                           }
+                                    else { // only MTCH in this subframe 
+                                    TBS = mac_xface->get_TBS(eNB_mac_inst[Mod_id].pmch_Config[0]->dataMCS_r9, mac_xface->lte_frame_parms->N_RB_DL);
+                                          }
     */
+    TBS = mac_xface->get_TBS_DL(eNB_mac_inst[Mod_id].MCH_pdu.mcs, mac_xface->lte_frame_parms->N_RB_DL);
+    
+        // get MTCH data from RLC (like for DTCH)
+    LOG_D(MAC,"[eNB %d] Frame %d : MTCH data is transmitted on subframe %d\n",Mod_id,frame,subframe);  
+    
+    header_len_mtch = 3;
+	  LOG_D(MAC,"[eNB %d], Frame %d, MTCH->MCH, Checking RLC status (rab %d, tbs %d, len %d)\n",
+	  Mod_id,frame,MTCH,TBS,
+	  TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
+    
+    rlc_status = mac_rlc_status_ind(Mod_id,frame,1,RLC_MBMS_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
+				    TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
+    printf("frame %d, subframe %d,  rlc_status.bytes_in_buffer is %d\n",frame,subframe, rlc_status.bytes_in_buffer);
+
+    if (rlc_status.bytes_in_buffer >0) {
+      LOG_I(MAC,"[eNB %d][MBMS USER-PLANE], Frame %d, MTCH->MCH, Requesting %d bytes from RLC (header len mtch %d)\n",
+	    Mod_id,frame,TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch,header_len_mtch);
+      
+      sdu_lengths[num_sdus] = mac_rlc_data_req(Mod_id,frame, RLC_MBMS_YES,
+					       MTCH + (maxDRB + 3) * MAX_MOBILES_PER_RG,
+					       (char*)&mch_buffer[sdu_length_total]);
+      //sdu_lengths[num_sdus] = mac_rlc_data_req(Mod_id,frame, RLC_MBMS_NO,  MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)), (char*)&mch_buffer[sdu_length_total]);
+      LOG_I(MAC,"[eNB %d][MBMS USER-PLANE] Got %d bytes for MTCH %d\n",Mod_id,sdu_lengths[num_sdus],MTCH);
+      sdu_lcids[num_sdus] = MTCH;
+      sdu_length_total += sdu_lengths[num_sdus];
+      if (sdu_lengths[num_sdus] < 128)
+	header_len_mtch = 2;
+      num_sdus++;
+    }
+    else {
+      header_len_mtch = 0;    
+    }
   }
   
   // FINAL STEP: Prepare and multiplexe MSI, MCCH and MTCHs
   if ((sdu_length_total + header_len_msi + header_len_mcch + header_len_mtch) >0) {
-
     // Adjust the last subheader
+    /*                                 if ((msi_flag==1) || (mcch_flag==1)) {
+                                         eNB_mac_inst[Mod_id].MCH_pdu.mcs = mcch_mcs;
+                                          }
+                                        else if (mtch_flag == 1) { // only MTCH in this subframe 
+                                       eNB_mac_inst[Mod_id].MCH_pdu.mcs = eNB_mac_inst[Mod_id].pmch_Config[0]->dataMCS_r9;
+                                          }
+    */
     header_len_mtch_temp = header_len_mtch;
     header_len_mcch_temp = header_len_mcch;
     header_len_msi_temp = header_len_msi;
@@ -1439,7 +1455,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 				   padding,                        
 				   post_padding);
 
-    LOG_D(MAC,"[DUY] MCS for this sf is %d\n", eNB_mac_inst[Mod_id].MCH_pdu.mcs);
+    LOG_D(MAC," MCS for this sf is %d\n", eNB_mac_inst[Mod_id].MCH_pdu.mcs);
 
     LOG_I(MAC,"[eNB %d][MBMS USER-PLANE ] Generate header : sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,padding %d,post_padding %d (mcs %d, TBS %d), header MTCH %d, header MCCH %d, header MSI %d\n",
 	  Mod_id,sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],offset,padding,post_padding,eNB_mac_inst[Mod_id].MCH_pdu.mcs,TBS,header_len_mtch, header_len_mcch, header_len_msi);
@@ -1448,14 +1464,21 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     // filling remainder of MCH with random data if necessery
     for (j=0;j<(TBS-sdu_length_total-offset);j++)
       eNB_mac_inst[Mod_id].MCH_pdu.payload[offset+sdu_length_total+j] = (char)(taus()&0xff);
-
+/*    
+   for (j=0;j<sdu_length_total;j++)
+      printf("%2x.",eNB_mac_inst[Mod_id].MCH_pdu.payload[j+offset]);
+      printf(" \n");*/
     return 1;
   } 
-  else 
+  else {
+    // for testing purpose, fill with random data 
+    //for (j=0;j<(TBS-sdu_length_total-offset);j++)
+    //  eNB_mac_inst[Mod_id].MCH_pdu.payload[offset+sdu_length_total+j] = (char)(taus()&0xff);
     return 0;
-  
+  }
   //this is for testing 
-  /*  if (mtch_flag == 1) {
+  /*  
+  if (mtch_flag == 1) {
   //  LOG_D(MAC,"DUY: mch_buffer length so far is : %ld\n", &mch_buffer[sdu_length_total]-&mch_buffer[0]);
   return 1;
   }
@@ -1466,12 +1489,12 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 
 MCH_PDU *get_mch_sdu(uint8_t Mod_id,uint32_t frame, uint32_t subframe) {
   //  eNB_mac_inst[Mod_id].MCH_pdu.mcs=0;
-  LOG_D(MAC,"[DUY] MCH_pdu.mcs is %d\n", eNB_mac_inst[Mod_id].MCH_pdu.mcs);
+  LOG_D(MAC," MCH_pdu.mcs is %d\n", eNB_mac_inst[Mod_id].MCH_pdu.mcs);
   return(&eNB_mac_inst[Mod_id].MCH_pdu);
 }
 
-
 #endif
+
 // First stage of Random-Access Scheduling
 void schedule_RA(unsigned char Mod_id,u32 frame, unsigned char subframe,unsigned char Msg3_subframe,unsigned char *nprb,unsigned int *nCCE) {
 
@@ -4226,7 +4249,7 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 #endif
 
 #ifdef Rel10
-  if (eNB_mac_inst[Mod_id].MBMS_flag ==1) {
+  if (eNB_mac_inst[Mod_id].MBMS_flag >0) {
 
     mbsfn_status = schedule_MBMS(Mod_id,frame,subframe);
   }

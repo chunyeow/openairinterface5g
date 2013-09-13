@@ -73,7 +73,7 @@
 
 extern inline unsigned int taus(void);
 extern int exit_openair;
-extern void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms);
+//extern void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms);
 
 
 unsigned char dlsch_input_buffer[2700] __attribute__ ((aligned(16)));

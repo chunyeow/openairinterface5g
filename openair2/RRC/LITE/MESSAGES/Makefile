@@ -30,3 +30,4 @@ regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
 	asn1c -gen-PER -fcompound-names -fnative-types -fskeletons-copy asn1c/ASN1_files/EUTRA-RRC-Definitions.asn
+

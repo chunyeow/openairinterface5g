@@ -423,6 +423,7 @@ rlc_um_segment_5 (struct rlc_um_entity *rlcP,u32_t frame)
                 test_remaining_size_to_substract = 0;
                 test_remaining_num_li_to_substract = 0;
                 pdu_remaining_size = pdu_remaining_size - (test_li_length_in_bytes ^ 3);
+		data_pdu_size -=  (test_li_length_in_bytes ^ 3);//modifier pour duy
             } else if ((sdu_mngt->sdu_remaining_size + (test_li_length_in_bytes ^ 3)) < test_pdu_remaining_size ) {
                 test_num_li += 1;
                 num_fill_sdu += 1;
@@ -439,6 +440,7 @@ rlc_um_segment_5 (struct rlc_um_entity *rlcP,u32_t frame)
                 test_remaining_size_to_substract = 0;
                 test_remaining_num_li_to_substract = 0;
                 pdu_remaining_size = pdu_remaining_size - 1;
+                data_pdu_size -= 1;//modifier pour duy
             }
             sdu_buffer_index = (sdu_buffer_index + 1) % rlcP->size_input_sdus_buffer;
         }

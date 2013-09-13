@@ -485,7 +485,7 @@ void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index) {
   for (i=0; i<num_sdu; i++) {
     if (rx_lcids[i] == MCH_SCHDL_INFO) {
       if (UE_mac_inst[Mod_id].mcch_status==1) {
-	LOG_D(MAC,"[UE %d] Frame %d : MCH -> MSI  (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
+	LOG_I(MAC,"[UE %d] Frame %d : MCH -> MSI  (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
 	// ??store necessary scheduling info to ue_mac_inst in order to 
 	// calculate exact position of interested service (for the complex case has >1 mtch)
 	// set msi_status to 1
@@ -501,8 +501,18 @@ void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index) {
     }
     else if (rx_lcids[i] == MTCH) {
       if (UE_mac_inst[Mod_id].msi_status==1) {  
-	//	LOG_I(MAC,"[UE %d] Frame %d : MCH -> MTCH (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
-	// mac_rlc_data_ind(); check for this function
+	LOG_I(MAC,"[UE %d] Frame %d : MCH -> MTCH (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
+
+	mac_rlc_data_ind(Mod_id+NB_eNB_INST, // because rlc[module_idP] (to differential between eNB and UE)
+			 frame,
+			 0,
+			 RLC_MBMS_YES,
+			 MTCH + (maxDRB + 3),
+			 (char *)payload_ptr,
+			 rx_lengths[i],
+			 1,
+			 NULL);
+
       }
     }
     payload_ptr += rx_lengths[i];
@@ -528,13 +538,13 @@ int ue_query_mch(uint8_t Mod_id, uint32_t frame, uint32_t subframe) {
     if (UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.present == MBSFN_SubframeConfig__subframeAllocation_PR_oneFrame){// one-frame format
       
       if (UE_mac_inst[Mod_id].pmch_Config[0]) {
-	  //  Find the first subframe in this MCH to transmit MSI
-	  if (frame % mch_scheduling_period == UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationOffset ) {
-	    while (ii == 0) {
-	      ii = UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & (0x80>>msi_pos);
-	      msi_pos++;
-	    }
+	//  Find the first subframe in this MCH to transmit MSI
+	if (frame % mch_scheduling_period == UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationOffset ) {
+	  while (ii == 0) {
+	    ii = UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & (0x80>>msi_pos);
+	    msi_pos++;
 	  }
+	}
       }
       
       // Check if the subframe is for MSI, MCCH or MTCHs and Set the correspoding flag to 1

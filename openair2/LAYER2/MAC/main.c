@@ -173,12 +173,12 @@ int mac_top_init(int eMBMS_active, u8 cba_group_active){
 #ifdef PHY_EMUL
     Mac_rlc_xface->Is_cluster_head[Mod_id]=2;//0: MR, 1: CH, 2: not CH neither MR
 #endif
-#ifdef Rel10
+    /*#ifdef Rel10
     int n;
     for (n=0;n<4096;n++)
       eNB_mac_inst[Mod_id].MCH_pdu.payload[n] = taus();
     //    Mac_rlc_xface->Node_id[Mod_id]=NODE_ID[Mod_id];
-#endif
+    #endif*/
   }
   //  Mac_rlc_xface->frame=Mac_rlc_xface->frame;
 
