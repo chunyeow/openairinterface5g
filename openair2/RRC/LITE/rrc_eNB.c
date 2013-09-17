@@ -454,7 +454,7 @@ openair_rrc_lite_eNB_init (u8 Mod_id)
   LOG_I (RRC, "Checking release \n");
 #ifdef Rel10
 
-  // This has to come from some top-level configuration
+  // Thishas to come from some top-level configuration
   printf ("Rel10 RRC detected, MBMS flag %d\n",
           eNB_rrc_inst[Mod_id].MBMS_flag);
 

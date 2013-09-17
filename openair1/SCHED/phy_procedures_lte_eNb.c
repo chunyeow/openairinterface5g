@@ -410,10 +410,13 @@ void phy_procedures_emos_eNB_TX(unsigned char next_slot, PHY_VARS_eNB *phy_vars_
   }
 */ 
 
-void phy_procedures_eNB_S_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode) {
+void phy_procedures_eNB_S_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type) {
 
   unsigned char sect_id=0; 
 
+#ifdef DEBUG_PHY_PROC
+  LOG_D(PHY,"[eNB %d] Frame %d: Doing phy_procedures_eNB_S_RX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->frame, last_slot);
+#endif    
 
   if (last_slot%2 == 0) {
     for (sect_id=0;sect_id<number_of_cards;sect_id++) {
@@ -885,7 +888,7 @@ void fill_dci_emos(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
 int QPSK[4]={AMP_OVER_SQRT2|(AMP_OVER_SQRT2<<16),AMP_OVER_SQRT2|((65536-AMP_OVER_SQRT2)<<16),((65536-AMP_OVER_SQRT2)<<16)|AMP_OVER_SQRT2,((65536-AMP_OVER_SQRT2)<<16)|(65536-AMP_OVER_SQRT2)};
 int QPSK2[4]={AMP_OVER_2|(AMP_OVER_2<<16),AMP_OVER_2|((65536-AMP_OVER_2)<<16),((65536-AMP_OVER_2)<<16)|AMP_OVER_2,((65536-AMP_OVER_2)<<16)|(65536-AMP_OVER_2)};
 
-void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode) {
+void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type) {
   u8 *pbch_pdu=&phy_vars_eNB->pbch_pdu[0];
   //  unsigned int nb_dci_ue_spec = 0, nb_dci_common = 0;
   u16 input_buffer_length, re_allocated=0;
@@ -918,6 +921,11 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_TX,1);
 
+#ifdef DEBUG_PHY_PROC
+  LOG_D(PHY,"[%s %d] Frame %d subframe %d : Doing phy_procedures_eNB_TX(%d)\n", 
+	(r_type == multicast_relay) ? "RN/eNB" : "eNB",
+	phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot>>1, next_slot);
+#endif
 #ifdef OPENAIR2
   // Get scheduling info for next subframe during odd slot of previous subframe (next_slot is even)
   if (next_slot%2 == 0) 
@@ -2397,7 +2405,7 @@ void ulsch_decoding_procedures(unsigned char last_slot, unsigned int i, PHY_VARS
 }
 
 
-void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode) {
+void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type) {
   //RX processing
   u32 l, ret,i,j;
   u32 sect_id=0;
@@ -2419,6 +2427,9 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
   int frame = ((last_slot>>1)>=8 ? -1 : 0 )+ phy_vars_eNB->frame;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_RX,1);
+#ifdef DEBUG_PHY_PROC
+  LOG_D(PHY,"[eNB %d] Frame %d: Doing phy_procedures_eNB_RX(%d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, last_slot);
+#endif
 
   if (abstraction_flag == 0) {
     remove_7_5_kHz(phy_vars_eNB,last_slot);
@@ -3357,44 +3368,58 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 
 #undef DEBUG_PHY_PROC
 
-void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_mode_t r_mode) {
+#ifdef Rel10  
+int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, relaying_type_t r_type){
+  
+  int do_proc=0;// do nothing
+  switch(r_type){
+  case no_relay:
+    do_proc= no_relay; // perform the normal eNB operation 
+    break;
+  case multicast_relay:
+    if ( ((next_slot >>1) < 6) || ((next_slot >>1) > 8))
+      do_proc = 0; // do nothing
+    else // SF#6, SF#7 and SF#8 
+      do_proc = multicast_relay; // do PHY procedures eNB TX 
+    break;
+  default: // should'not be here
+    LOG_W(PHY,"Not supported relay type %d, do nothing\n", r_type);
+    do_proc=0; 
+    break;
+  }
+  return do_proc;
+}
+#endif 
+void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_type_t r_type) {
   /*
     if (phy_vars_eNB->frame >= 1000)
     mac_xface->macphy_exit("Exiting after 1000 Frames\n");
   */
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER, (last_slot + 1) % 20);
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER, phy_vars_eNB->frame);
-
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,1);
   
   if (((phy_vars_eNB->lte_frame_parms.frame_type == 1)&&(subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_DL))||
       (phy_vars_eNB->lte_frame_parms.frame_type == 0)){
-#ifdef DEBUG_PHY_PROC
-    LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_TX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot);
-#endif
-
-    phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_mode);
+#ifdef Rel10 
+    if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 ) 
+#endif 
+      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type);
   }
   if (((phy_vars_eNB->lte_frame_parms.frame_type == 1 )&&(subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_UL))||
       (phy_vars_eNB->lte_frame_parms.frame_type == 0)){
-#ifdef DEBUG_PHY_PROC
-    LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_RX(%d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, last_slot);
-#endif
-    phy_procedures_eNB_RX(last_slot,phy_vars_eNB,abstraction_flag,r_mode);
+    phy_procedures_eNB_RX(last_slot,phy_vars_eNB,abstraction_flag,r_type);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_S) &&
       ((next_slot&1)==0)) {
-#ifdef DEBUG_PHY_PROC
-    LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_S_TX(%d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot);
-#endif
-    phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_mode);
+#ifdef Rel10 
+    if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 )
+#endif 
+      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_S) &&
       ((last_slot&1)==0)){
-#ifdef DEBUG_PHY_PROC
-    LOG_D(PHY,"[eNB %d] Frame %d: Calling phy_procedures_eNB_S_RX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->frame, last_slot);
-#endif    
-    phy_procedures_eNB_S_RX(last_slot,phy_vars_eNB,abstraction_flag,r_mode);
+    phy_procedures_eNB_S_RX(last_slot,phy_vars_eNB,abstraction_flag,r_type);
   }
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,0);
 

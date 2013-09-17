@@ -351,7 +351,7 @@ typedef struct pdcp_missing_pdu_info_t {
 #define PDCP_MAX_SN_12BIT 4095 // 2^12-1
 
 protected_pdcp(signed int             pdcp_2_nas_irq;)
-protected_pdcp(pdcp_t                 pdcp_array[MAX_MODULES][MAX_RB];)
+protected_pdcp(pdcp_t                 pdcp_array[MAX_MODULES][NB_RB_MAX];)
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array[MAX_MODULES][16*29];) // MAX_SERVICEx MAX_SESSION
 protected_pdcp(sdu_size_t             pdcp_output_sdu_bytes_to_write;)
 protected_pdcp(sdu_size_t             pdcp_output_header_bytes_to_write;)

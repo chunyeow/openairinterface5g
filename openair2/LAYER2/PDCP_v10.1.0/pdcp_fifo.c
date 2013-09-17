@@ -300,7 +300,7 @@ int
           LOG_D(PDCP, "[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
                 frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
 
-            if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
+            if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id%NB_RB_MAX].instanciated_instance) {
                 pdcp_data_req (pdcp_input_header.inst,
                          frame, eNB_flag,
                          pdcp_input_header.rb_id,
@@ -316,7 +316,7 @@ int
 #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
             for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
                 LOG_D(PDCP, "Checking if could sent on default rab id %d\n", rab_id);
-                if (pdcp_array[pdcp_input_header.inst][rab_id].instanciated_instance == (pdcp_input_header.inst + 1)) {
+                if (pdcp_array[pdcp_input_header.inst][rab_id%NB_RB_MAX].instanciated_instance == (pdcp_input_header.inst + 1)) {
                     pdcp_data_req (pdcp_input_header.inst,
                                 frame, eNB_flag,
                                 rab_id,
@@ -576,7 +576,7 @@ int
                       #endif
 
                       if (pdcp_read_header.rb_id != 0) {
-                          if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id].instanciated_instance) {
+                          if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id%NB_RB_MAX].instanciated_instance) {
 #ifdef PDCP_DEBUG
                               LOG_I(PDCP, "[PDCP][NETLINK][IP->PDCP] TTI %d, INST %d: Received socket with length %d (nlmsg_len = %d) on Rab %d \n",
                                   frame, pdcp_read_header.inst, len, nas_nlh_rx->nlmsg_len-sizeof(struct nlmsghdr), pdcp_read_header.rb_id);
@@ -601,7 +601,7 @@ int
                           // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
         #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
                           for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
-                              if (pdcp_array[pdcp_input_header.inst][rab_id].instanciated_instance == (pdcp_input_header.inst + 1)) {
+                              if (pdcp_array[pdcp_input_header.inst][rab_id%NB_RB_MAX].instanciated_instance == (pdcp_input_header.inst + 1)) {
                                   pdcp_data_req (pdcp_read_header.inst, frame, eNB_flag, rab_id, RLC_MUI_UNDEFINED,RLC_SDU_CONFIRM_NO,
                                             pdcp_read_header.data_size,
                                             (unsigned char *)NLMSG_DATA(nas_nlh_rx),

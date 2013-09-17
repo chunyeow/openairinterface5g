@@ -173,8 +173,8 @@ float owd_const_application_v=owd_const_application()/2;
       }
 
       if (otg_hdr_info_rx->flag == 0x1000){
-	LOG_I(OTG,"received a multicast packet at time %d with size %d, seq num %d, ran owd %d number loss packet %d\n",
-	      ctime,otg_hdr_info_rx->size, otg_hdr_rx->seq_num, ctime - otg_hdr_rx->time, nb_loss_pkts);
+	LOG_I(OTG,"[SRC%d -> DST %d] Received a multicast packet at time %d with size %d, seq num %d, ran owd %d number loss packet %d\n",
+	      dst, src, ctime,otg_hdr_info_rx->size, otg_hdr_rx->seq_num, ctime - otg_hdr_rx->time, nb_loss_pkts);
 	
 	LOG_I(OTG,"INFO LATENCY :: [SRC %d][DST %d] radio access %.2f (tx time %d, ctime %d), OWD:%.2f (ms):\n", 
 	      src, dst, otg_multicast_info->radio_access_delay[src][dst], otg_hdr_rx->time, ctime , otg_multicast_info->rx_pkt_owd[src][dst]);

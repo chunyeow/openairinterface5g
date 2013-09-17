@@ -557,7 +557,7 @@ int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
   PRACH_RESOURCES_t prach_resources_local;
 #endif
 
-void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_mode_t r_mode) {
+void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type) {
   
   //  int i_d;
   u16 first_rb, nb_rb;
@@ -1292,7 +1292,7 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_TX, VCD_FUNCTION_OUT);
 }
 
-void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,relaying_mode_t r_mode) {
+void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,relaying_type_t r_type) {
   int aa;//i,aa;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
 
@@ -2163,7 +2163,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 }
 
  
-int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_mode_t r_mode) {
+int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type) {
 
   u16 l,m,n_symb;
   //  int eNB_id = 0, 
@@ -2184,7 +2184,11 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_IN);
   //msg("UE_RX 1 last_slot %d \n",last_slot);
-
+#ifdef DEBUG_PHY_PROC
+  LOG_D(PHY,"[%s %d] Frame %d subframe %d: Doing phy_procedures_UE_RX(%d)\n", 
+	(r_type == multicast_relay) ? "RN/UE" : "UE",
+	phy_vars_ue->Mod_id,phy_vars_ue->frame, last_slot>>1, last_slot);
+#endif
   if (phy_vars_ue->lte_frame_parms.Ncp == 0) {  // normal prefix
     pilot1 = 4;
     pilot2 = 7;
@@ -3015,8 +3019,30 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
   return (0);
 }
-  
- void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, relaying_mode_t r_mode) {
+
+#ifdef Rel10
+int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) {
+
+  int do_proc =0; // do nothing by default 
+  switch(r_type){
+  case no_relay:
+    do_proc=no_relay; // perform the normal UE operation 
+    break;
+  case multicast_relay:
+    if (last_slot > 12)
+      do_proc = 0; // do nothing
+    else // SF#1, SF#2, SF3, SF#3, SF#4, SF#5, SF#6(do rx slot 12)
+      do_proc =multicast_relay ; // do PHY procedures UE RX 
+    break;
+  default: // should'not be here
+    LOG_W(PHY,"Not supported relay type %d, do nothing \n", r_type);
+    do_proc= 0;
+    break;
+  }
+  return do_proc;
+}
+#endif   
+ void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, relaying_type_t r_type) {
 
 #undef DEBUG_PHY_PROC
 
@@ -3040,22 +3066,28 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,next_slot>>1)==SF_UL)||
       (phy_vars_ue->lte_frame_parms.frame_type == 0)){
-    phy_procedures_UE_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_mode);
+    phy_procedures_UE_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_type);
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,last_slot>>1)==SF_DL) ||
       (phy_vars_ue->lte_frame_parms.frame_type == 0)){
-    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_mode);
+#ifdef Rel10 
+    if (phy_procedures_RN_UE_RX(last_slot, next_slot, r_type) != 0 )
+#endif 
+    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_type);
 #ifdef EMOS
     phy_procedures_emos_UE_RX(phy_vars_ue,last_slot,eNB_id);
 #endif
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,next_slot>>1)==SF_S) &&
       ((next_slot&1)==1)) {
-    phy_procedures_UE_S_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,r_mode);
+    phy_procedures_UE_S_TX(next_slot,phy_vars_ue,eNB_id,abstraction_flag,r_type);
   }
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,last_slot>>1)==SF_S) &&
       ((last_slot&1)==0)) {
-    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode, r_mode);
+ #ifdef Rel10 
+    if (phy_procedures_RN_UE_RX(last_slot, next_slot, r_type) != 0 )
+#endif 
+   phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode, r_type);
   }
 
 #ifdef OPENAIR2

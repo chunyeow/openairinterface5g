@@ -141,7 +141,7 @@ void get_simulation_options(int argc, char *argv[]) {
       break;
     case 'Q':
       //eMBMS_active=1;
-      // 0 : not used (default), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 3: eMBMS relaying enabled, RRC disabled 
+      // 0 : not used (default), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 4: eMBMS relaying enabled, RRC disabled 
       oai_emulation.info.eMBMS_active_state = atoi (optarg); 
       break;
     case 'R':

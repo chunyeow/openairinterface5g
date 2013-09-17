@@ -201,7 +201,7 @@ help (void) {
   printf ("    - wireshark: Enable tracing of layers above PHY using an UDP socket\n");
   printf ("    - pcap:      Enable tracing of layers above PHY to a pcap file\n");
   printf ("    - tshark:    Not implemented yet\n");
-  printf ("-Q Activate and set the MBMS service: 0 : not used (default eMBMS disabled), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 4: eMBMS relaying enabled, RRC disabled\n");
+  printf ("-Q Activate and set the MBMS service: 0 : not used (default eMBMS disabled), 1: eMBMS and RRC Connection enabled, 2: eMBMS relaying and RRC Connection enabled, 3: eMBMS enabled, RRC Connection disabled, 4: eMBMS relaying enabled, RRC Connection disabled\n");
   printf ("-R [6,15,25,50,75,100] Sets N_RB_DL\n");
   printf ("-r Activates rate adaptation (DL for now)\n");
   printf ("-s snr_dB set a fixed (average) SNR, this deactivates the openair channel model generator (OCM)\n");
@@ -368,7 +368,7 @@ int
 
   s32 UE_id=0, eNB_id=0, RN_id=0;
   
-  relaying_mode_t r_mode=no_relay; // no relaying 
+  relaying_type_t r_type=no_relay; // no relaying 
   // time calibration for soft realtime mode  
 
   lte_subframe_t direction;
@@ -631,7 +631,6 @@ int
       
       direction = subframe_select(frame_parms,next_slot>>1);
 
-      r_mode = no_relay;
 #ifdef PROC      
       if(Channel_Flag==1)
         Channel_Func(s_re2,s_im2,r_re2,r_im2,r_re02,r_im02,r_re0_d,r_im0_d,r_re0_u,r_im0_u,eNB2UE,UE2eNB,enb_data,ue_data,abstraction_flag,frame_parms,slot);
@@ -647,8 +646,8 @@ int
              eNB_id++) {
           //printf ("debug: Nid_cell %d\n", PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
           //printf ("debug: frame_type %d,tdd_config %d\n", PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type,PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config);
-          LOG_D(EMU,"PHY procedures eNB %d mode %s for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n",
-                eNB_id, (r_mode == 0)?"Normal":"Relaying", frame, slot, next_slot >> 1,last_slot>>1,
+          LOG_D(EMU,"PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n",
+                eNB_id, frame, slot, next_slot >> 1,last_slot>>1,
                 PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type,
                 PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config,PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
 
@@ -659,7 +658,7 @@ int
           pdcp_run(frame, 1, 0, eNB_id);//PHY_vars_eNB_g[eNB_id]->Mod_id
 	  
 	  // PHY_vars_eNB_g[eNB_id]->frame = frame;
-          phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, r_mode);
+          phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, no_relay);
 
 #ifdef PRINT_STATS
       	if(last_slot==9 && frame%10==0)
@@ -692,8 +691,8 @@ int
              UE_id++){
           if (frame >= (UE_id * 20)) {    // activate UE only after 20*UE_id frames so that different UEs turn on separately
 	    
-	    LOG_D(EMU,"PHY procedures UE %d mode %s for frame %d, slot %d (subframe TX %d, RX %d)\n",
-		  UE_id, (r_mode == 0)?"Normal":"Relaying", frame, slot, next_slot >> 1,last_slot>>1);
+	    LOG_D(EMU,"PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
+		  UE_id, frame, slot, next_slot >> 1,last_slot>>1);
 
 	    if (PHY_vars_UE_g[UE_id]->UE_mode[0] != NOT_SYNCHED) {
 	      if (frame>0) {
@@ -705,7 +704,7 @@ int
 		//Access layer
 		pdcp_run(frame, 0, UE_id, 0);
 		
-		phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag,normal_txrx, r_mode);
+		phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag,normal_txrx, no_relay);
 		ue_data[UE_id]->tx_power_dBm = PHY_vars_UE_g[UE_id]->tx_power_dBm;
 	      }
 	    }
@@ -754,34 +753,33 @@ int
 	  eNB_id= oai_emulation.info.first_enb_local+oai_emulation.info.nb_enb_local + RN_id; // NB_eNB_INST + RN_id
 	  // currently only works in FDD
 	  if (oai_emulation.info.eMBMS_active_state == 4){
-	    r_mode = multicast_relay;
-	    LOG_I(EMU,"Activating the multicast relaying\n");
+	    r_type = multicast_relay;
+	    //LOG_I(EMU,"Activating the multicast relaying\n");
 	  }else {
-	    LOG_E(EMU,"Not supported option when relaying is enabled %d\n", r_mode);
+	    LOG_E(EMU,"Not supported eMBMS option when relaying is enabled %d\n", r_type);
 	    exit(-1);
 	  }
 	  if ( oai_emulation.info.frame_type  == 0) {
-	    // RN == UE, do RX as in UE for SF0-SF5
-	    // we could add another arg, such as operation, to call the top func  phy_procedures_UE_lte
+	    // RN == UE
 	    if (frame>0) {
 	      if (PHY_vars_UE_g[UE_id]->UE_mode[0] != NOT_SYNCHED) {
-		LOG_D(EMU,"PHY procedures UE %d mode %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
-		      UE_id, (r_mode == 0)?"Normal":"Relaying", frame, slot, next_slot >> 1,last_slot>>1);
+		LOG_D(EMU,"[RN %d] PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
+		      RN_id, UE_id, frame, slot, next_slot >> 1,last_slot>>1);
 		PHY_vars_UE_g[UE_id]->frame = frame;
-		phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag,normal_txrx, r_mode);
+		phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag,normal_txrx, r_type);
 	      } else if (last_slot == (LTE_SLOTS_PER_FRAME-2)) {
 		initial_sync(PHY_vars_UE_g[UE_id],normal_txrx);
 	      }
 	    }
 	    
-	    // RN == eNB, do Tx as in eNB  for SF6-SF9
-	    LOG_D(EMU,"PHY procedures eNB %d mode %s for frame %d, slot %d (subframe TX %d, RX %d)\n",
-		  eNB_id, (r_mode == 0)?"Normal":"Relaying", frame, slot, next_slot >> 1,last_slot>>1);
-	    phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, r_mode);
+	    // RN == eNB
+	    LOG_D(EMU,"[RN %d] PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
+	    	  RN_id, eNB_id, frame, slot, next_slot >> 1,last_slot>>1);
+	    phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, r_type);
 
 	  }
 	  else{
-	    LOG_E(EMU,"TDD is not supported for multicast relaying %d\n", r_mode);
+	    LOG_E(EMU,"TDD is not supported for multicast relaying %d\n", r_type);
 	    exit(-1);
 	  }
 	}

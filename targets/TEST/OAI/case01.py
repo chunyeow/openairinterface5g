@@ -172,9 +172,9 @@ def execute(oai, user, pw, logfile):
 
     try:
         test = '07'
-        name = 'Compile oai.rel8.cellular.rg.make'
+        name = 'Compile oai.rel8.cellular.eNB.make'
         conf = 'make rrc_cellular=1 eNB_flag=1'
-        diag = 'check the compilation errors for RRC Cellular (node RG)'
+        diag = 'check the compilation errors for eNB/RG RRC Cellular'
         oai.send('make clean;')
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')
@@ -188,9 +188,9 @@ def execute(oai, user, pw, logfile):
 
     try:
         test = '08'
-        name = 'Compile oai.rel8.cellular.mt.make'
+        name = 'Compile oai.rel8.cellular.UE.make'
         conf = 'make rrc_cellular=1 UE_flag=1'
-        diag = 'check the compilation errors for RRC Cellular (node MT)'
+        diag = 'check the compilation errors for UE/MT RRC Cellular'
         oai.send('make clean;')
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')

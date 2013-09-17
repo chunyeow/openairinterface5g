@@ -144,7 +144,7 @@ def ok(case, testnum, testname, conf, message, output):
     report(case, testnum, testname, conf, 'passed', output)
     log_record('passed', case + testnum + ' : ' + testname + ' ('+ conf+')')
     if message :
-        log_record('passed', "Output follows:\n" + message )
+        print bcolors.okgreen + message + bcolors.normal 
     stats['passed'] += 1
     
         

@@ -130,26 +130,15 @@ def execute(oai, user, pw, logfile):
 
     try:
         test = '05'
-        name = 'Run oai.rel10.abs.rrc'
-        diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
+        name = 'Run oai.rel8.phy.rrc.fdd'
+        diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-a -A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
+                conf = '-A AWGN -F -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
+                oai.send_expect('./oaisim.rel8 ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
-        log.ok(case, test, name, conf, '', logfile)    
+        log.ok(case, test, name, conf, '', logfile)
 
-    try:
-        test = '06'
-        name = 'Run oai.rel10.phy.rrc'
-        diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-A AWGN -s 15 -x 1 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
-    else:
-        log.ok(case, test, name, conf, '', logfile)    
+

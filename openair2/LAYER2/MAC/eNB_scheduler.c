@@ -1325,7 +1325,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 
   // there is MCCH
   if (mcch_flag == 1) {
-    LOG_D(MAC,"Scheduler: MCCH MESSAGE is transmitted in this subframe \n" );
+    LOG_D(MAC,"Scheduler: MCCH MESSAGE is transmitted in this subframe %d \n",  subframe);
     
     mcch_sdu_length = mac_rrc_data_req(Mod_id,
 				       frame,
@@ -1334,20 +1334,20 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 				       1,// this is eNB
 				       Mod_id);
     if (mcch_sdu_length > 0) {
-      LOG_D(MAC,"[eNB %d] Frame %d : MCCH->MCH, Received %d bytes from RRC \n",Mod_id,frame,mcch_sdu_length);
+      LOG_D(MAC,"[eNB %d] Frame %d subframe %d : MCCH->MCH, Received %d bytes from RRC \n",Mod_id,frame,subframe,mcch_sdu_length);
       
       header_len_mcch = 2; 
       if (mac_xface->lte_frame_parms->frame_type == TDD) {
-	LOG_D(MAC,"[eNB %d] Frame %d : Scheduling MCCH->MCH (TDD) for MCCH message %d bytes (mcs %d )\n", 
+	LOG_D(MAC,"[eNB %d] Frame %d subframe %d: Scheduling MCCH->MCH (TDD) for MCCH message %d bytes (mcs %d )\n", 
 	      Mod_id,
-	      frame,
+	      frame,subframe, 
 	      mcch_sdu_length,
 	      mcch_mcs);
       }
       else {
-	LOG_I(MAC,"[eNB %d] Frame %d : Scheduling MCCH->MCH (FDD) for MCCH message %d bytes (mcs %d)\n",
+	LOG_I(MAC,"[eNB %d] Frame %d subframe %d: Scheduling MCCH->MCH (FDD) for MCCH message %d bytes (mcs %d)\n",
 	      Mod_id,
-	      frame,
+	      frame, subframe,
 	      mcch_sdu_length,
 	      mcch_mcs); 
       }

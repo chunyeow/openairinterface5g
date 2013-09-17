@@ -41,10 +41,13 @@ import os
 import time
 import datetime
 import getpass
+import math #from time import clock 
 
 import log
 import case01
 import case02
+import case03
+
 from  openair import *
 
 debug = 0
@@ -70,11 +73,11 @@ for arg in sys.argv:
 
 # get the oai object
 oai = openair('localdomain','localhost')
-
+#start_time = time.time()  # datetime.datetime.now()
 try: 
     user = getpass.getuser()
-    print '\n*******Note that the user <'+user+'> should be a sudoer *******\n'
-    print '*******Connecting to the localhost to perform the test *******\n'
+    print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
+    print '******* Connecting to the localhost to perform the test *******\n'
    
     if not pw :
         print "username: " + user 
@@ -95,14 +98,15 @@ test = 'test01'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
 logfile = user+'.'+test+'.'+ctime+'.txt'  
 #print '=================start the ' + test + ' at ' + ctime + '=================\n'
-print 'Results will be reported in log file : ' + logfile
+#print 'Results will be reported in log file : ' + logfile
 log.writefile(logfile,'====================start'+test+' at ' + ctime + '=======================\n')
 log.set_debug_level(debug)
 
 oai.kill(user, pw)   
 # start te test cases 
-case01.execute(oai, user, pw, logfile)
-case02.execute(oai, user, pw, logfile)
+#case01.execute(oai, user, pw, logfile)
+#case02.execute(oai, user, pw, logfile)
+#case03.execute(oai, user, pw, logfile)
 
 oai.kill(user, pw) 
 
@@ -115,4 +119,6 @@ oai.disconnect()
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d_%Hh%M")
 log.writefile(logfile,'====================end the '+ test + ' at ' + ctime +'====================')
 print 'Test results can be found in : ' + logfile 
+#print '\nThis test took %f minutes\n' % math.ceil((time.time() - start_time)/60) 
+
 #print '\n=====================end the '+ test + ' at ' + ctime + '====================='

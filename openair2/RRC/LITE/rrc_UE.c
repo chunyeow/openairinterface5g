@@ -1605,7 +1605,7 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len)
 	       (void*)&mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9,
 	       sizeof(MBSFNAreaConfiguration_r9_t)); */
 	*mcch_message = &mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9;
-	LOG_I(RRC,"[UE %d] Frame %d : Found MBSFNAreaConfiguration from eNB \n",Mod_id, frame, eNB_index);
+	LOG_I(RRC,"[UE %d] Frame %d : Found MBSFNAreaConfiguration from eNB %d \n",Mod_id, frame, eNB_index);
 	decode_MBSFNAreaConfiguration(Mod_id,eNB_index,frame);
 
       }

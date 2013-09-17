@@ -125,9 +125,9 @@ void cleanup_dlsch_threads(void);
   @param next_slot Index of next_slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
-  @param r_mode indicates the relaying operation: 0: no_relaying, 1: unicast relaying, 2: multicast relaying
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_lte(u8 last_slot, u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_mode_t r_mode);
+void phy_procedures_eNB_lte(u8 last_slot, u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_type_t r_type);
 /*!
   \brief Top-level entry routine for UE procedures.  Called every slot by process scheduler. In even slots, it performs RX functions from previous subframe (if required).  On odd slots, it generate TX waveform for the following subframe.
   @param last_slot Index of last slot (0-19)
@@ -136,9 +136,26 @@ void phy_procedures_eNB_lte(u8 last_slot, u8 next_slot,PHY_VARS_eNB *phy_vars_eN
   @param eNB_id ID of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
   @param mode calibration/debug mode
-  @param relaying_mode indicates the relaying operation: 0: no_relaying, 1: unicast relaying, 2: multicast relaying
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_lte(u8 last_slot, u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, relaying_mode_t r_mode);
+void phy_procedures_UE_lte(u8 last_slot, u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, relaying_type_t r_type);
+
+#ifdef Rel10  
+/*!
+  \brief Top-level entry routine for relay node procedures when acting as eNB. This proc will make us of the existing eNB procs. 
+  @param last_slot Index of last slot (0-19)
+  @param next_slot Index of next_slot (0-19)
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
+*/
+int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, relaying_type_t r_type);
+/*!
+  \brief Top-level entry routine for relay node procedures actinf as UE. This proc will make us of the existing UE procs. 
+  @param last_slot Index of last slot (0-19)
+  @param next_slot Index of next_slot (0-19)
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
+*/
+int phy_procedures_RN_UE_RX(unsigned char last_slot, unsigned char next_slot, relaying_type_t r_type);
+#endif
 
 /*!
   \brief Scheduling for UE TX procedures in normal subframes.  
@@ -147,8 +164,9 @@ void phy_procedures_UE_lte(u8 last_slot, u8 next_slot,PHY_VARS_UE *phy_vars_ue,u
   @param eNB_id Local id of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
   @param mode calib/normal mode
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_mode_t r_mode);
+void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type);
 /*!
   \brief Scheduling for UE RX procedures in normal subframes.  
   @param last_slot Index of last slot (0-19)
@@ -156,9 +174,9 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   @param eNB_id Local id of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
   @param mode calibration/debug mode
-  @param r_mode instruct PHY to operate as normal (0), unicast relay (1), or multicast relay (2)
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-int phy_procedures_UE_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_mode_t r_mode);
+int phy_procedures_UE_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for UE TX procedures in TDD S-subframes.  
@@ -166,8 +184,9 @@ int phy_procedures_UE_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abst
   @param phy_vars_ue Pointer to UE variables on which to act
   @param eNB_id Local id of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,relaying_mode_t r_mode);
+void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for UE RX procedures in TDD S-subframes.  
@@ -175,42 +194,45 @@ void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 a
   @param phy_vars_ue Pointer to UE variables on which to act
   @param eNB_id Local id of eNB on which to act
   @param abstraction_flag Indicator of PHY abstraction
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_S_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag, relaying_mode_t r_mode);
+void phy_procedures_UE_S_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag, relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB TX procedures in normal subframes.  
   @param next_slot Index of next slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
-  @param r_mode instruct PHY to operate as normal (0), unicast relay (1), or multicast relay (2), 
-  @note: r_mode could be extended to support other values to indicate the type of relaying AF,DF,QF, and QMF  
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode);
+void phy_procedures_eNB_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB RX procedures in normal subframes.  
   @param last_slot Index of last slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode);
+void phy_procedures_eNB_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB TX procedures in TDD S-subframes.  
   @param next_slot Index of next slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_S_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode);
+void phy_procedures_eNB_S_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB RX procedures in TDD S-subframes.  
   @param last_slot Index of next slot (0-19)
   @param phy_vars_eNB Pointer to eNB variables on which to act
   @param abstraction_flag Indicator of PHY abstraction
+  @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_S_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_mode_t r_mode);
+void phy_procedures_eNB_S_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Function to compute subframe type as a function of Frame type and TDD Configuration (implements Table 4.2.2 from 36.211, p.11 from version 8.6) and subframe index.
