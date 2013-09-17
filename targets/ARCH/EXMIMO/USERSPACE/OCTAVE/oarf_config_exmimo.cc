@@ -234,9 +234,9 @@ static bool any_bad_argument(const octave_value_list &args)
     {
       for (i=0;i<v.columns();i++)
         {
-	  if ((v.row_vector_value()(i)<0.0) || (v.row_vector_value()(i)>1.0)) {
+	  if ((v.row_vector_value()(i)<0.0) || (v.row_vector_value()(i)>2.0)) {
 	    error(FCNNAME);
-	    error("autocal %d must be 0 or 1 (got %f).",i,v.row_vector_value()(i));
+	    error("autocal %d must be 0 or 2 (got %f).",i,v.row_vector_value()(i));
 	    return true;
 	  }
         }
