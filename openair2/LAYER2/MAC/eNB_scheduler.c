@@ -58,12 +58,6 @@
 //#include "LAYER2/MAC/pre_processor.c"
 #include "pdcp.h"
 
-double snr_mcs[28]={-4.1130, -3.3830, -2.8420, -2.0480, -1.3230, -0.6120, 0.1080, 0.977, 1.7230, 2.7550, 3.1960, 3.8080, 4.6870, 5.6840, 6.6550, 7.7570, 8.3730, 9.3040, 9.5990, 10.9020, 11.7220, 12.5950, 13.4390, 14.8790, 15.8800, 16.4800, 17.8690, 18.7690};
-int cqi_mcs[3][16] = {{0, 0, 0, 2, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27, 27},{0, 0, 0, 2, 4, 6, 8, 11, 13, 15, 18, 20, 22, 25, 27, 27},{0, 0, 0, 2, 4, 6, 8, 11, 13, 15, 18, 19, 22, 24, 26, 27}};
-double cqi_snr[16] = {-8, -7, -6.08, -5.252, -3.956, -2.604, -1.107, 0.87, 2.599, 4.79, 6.716, 8, 10.593, 13.286, 15.745, 18.5};
-double snr_tm6=0;
-
-
 #define ENABLE_MAC_PAYLOAD_DEBUG
 #define DEBUG_eNB_SCHEDULER 1
 //#define DEBUG_HEADER_PARSING 1
@@ -3473,90 +3467,10 @@ void schedule_ue_spec(unsigned char Mod_id,
     //eNB_UE_stats->dlsch_mcs1 = openair_daq_vars.target_ue_dl_mcs;
     // int flag_LA=0;
     //printf("CQI %d\n",eNB_UE_stats->DL_cqi[0]);
-    if (flag_LA==0){
-     
-      switch(eNB_UE_stats->DL_cqi[0]) {
-      case 0:
-	eNB_UE_stats->dlsch_mcs1 = 0;
-	break;
-      case 1:
-	eNB_UE_stats->dlsch_mcs1 = 0;
-	break;
-      case 2:
-	eNB_UE_stats->dlsch_mcs1 = 0;
-	break;	
-      case 3:
-	eNB_UE_stats->dlsch_mcs1 = 2;
-	break;
-      case 4:
-	eNB_UE_stats->dlsch_mcs1 = 4;
-	break;
-      case 5:
-	eNB_UE_stats->dlsch_mcs1 = 6;
-	break;
-      case 6:
-	eNB_UE_stats->dlsch_mcs1 = 8;
-	break;
-      case 7:
-	eNB_UE_stats->dlsch_mcs1 = 11;
-	break;
-      case 8:
-	eNB_UE_stats->dlsch_mcs1 = 13;
-	break;
-      case 9:
-	eNB_UE_stats->dlsch_mcs1 = 16;
-	break;
-      case 10:
-	eNB_UE_stats->dlsch_mcs1 = 18;
-	break;
-      case 11:
-	eNB_UE_stats->dlsch_mcs1 = 20;
-	break;
-      case 12:
-	eNB_UE_stats->dlsch_mcs1 = 22;
-	break;
-      case 13:
-	eNB_UE_stats->dlsch_mcs1 = 22;//25
-	break;
-      case 14:
-	eNB_UE_stats->dlsch_mcs1 = 22;//27
-	break;
-      case 15:
-	eNB_UE_stats->dlsch_mcs1 = 22;//28
-	break;
-      default:
-	LOG_E(MAC,"Invalid CQI");
-	exit(-1);
-      }
-    }
-    else {
-	// begin CQI to MCS mapping
-      if(mac_xface->get_transmission_mode(Mod_id,rnti)==1)
-	eNB_UE_stats->dlsch_mcs1 = cqi_mcs[0][eNB_UE_stats->DL_cqi[0]];
-      else
-	if(mac_xface->get_transmission_mode(Mod_id,rnti)==2)
-	  eNB_UE_stats->dlsch_mcs1 = cqi_mcs[1][eNB_UE_stats->DL_cqi[0]];
-	else
-	  if(mac_xface->get_transmission_mode(Mod_id,rnti)==6 || mac_xface->get_transmission_mode(Mod_id,rnti)==5)
-	    eNB_UE_stats->dlsch_mcs1 = cqi_mcs[2][eNB_UE_stats->DL_cqi[0]];
-      // end CQI Mapping 
-      // if MUMIMO is enabled with two UEs then adjust the CQI and MCS mapping
-      if(mac_xface->get_transmission_mode(Mod_id,rnti)==5 && dl_pow_off[UE_id]==0){
-	snr_tm6 = cqi_snr[eNB_UE_stats->DL_cqi[0]];
-	if (snr_tm6<snr_mcs[0])
-	  eNB_UE_stats->dlsch_mcs1 = 0;
-	else 
-	  if(snr_tm6>snr_mcs[27])
-	    eNB_UE_stats->dlsch_mcs1 = 27;
-	  else
-	    for (i=0;i<27;i++){
-	      if(snr_tm6 > snr_mcs[i] && snr_tm6 < snr_mcs[i+1])
-		eNB_UE_stats->dlsch_mcs1 = i;
-	    }
-      }
-    }
     
-    if(eNB_UE_stats->dlsch_mcs1>22)
+    eNB_UE_stats->dlsch_mcs1 = cqi_to_mcs[eNB_UE_stats->DL_cqi[0]];
+    
+      if(eNB_UE_stats->dlsch_mcs1>22)
       eNB_UE_stats->dlsch_mcs1=22;
  
     

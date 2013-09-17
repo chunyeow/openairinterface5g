@@ -1,6 +1,6 @@
 function plot_results(tm)
-data_abs = dlmread(sprintf('eNB_stats_abs_th_tx%d.txt',tm));
-data = dlmread(sprintf('eNB_stats_th_tx%d.txt',tm));
+data_abs = dlmread(sprintf('UE_stats_abs_th0_tx%d.txt',tm));
+data = dlmread(sprintf('UE_stats_th0_tx%d.txt',tm));
 figure
 plot(data(:,1),data(:,2))
 hold on

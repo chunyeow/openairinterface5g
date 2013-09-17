@@ -110,7 +110,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:j:IJ:k:l:m:M:n:N:oO:p:P:rR:s:S:Q:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:k:L:l:m:M:n:N:oO:p:P:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
@@ -567,13 +567,12 @@ void init_ocm() {
   s32 UE_id, eNB_id;
   /* Added for PHY abstraction */
   if (abstraction_flag) {
-    if (0) { //the values of beta and awgn tables are hard coded in PHY/vars.h
+    
     get_beta_map();
 #ifdef PHY_ABSTRACTION_UL
     get_beta_map_up();
 #endif
     get_MIESM_param();
-  }
   }
 
   for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++) {

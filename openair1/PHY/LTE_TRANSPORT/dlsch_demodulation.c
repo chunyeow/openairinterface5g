@@ -356,7 +356,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 			  frame_parms,
 			  dlsch_ue,
 			  symbol,
-			  nb_rb);      
+			  nb_rb);     
 
       /* compute new log2_maxh for effective channel */
       if (first_symbol_flag==1) {

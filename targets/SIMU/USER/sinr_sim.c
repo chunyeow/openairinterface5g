@@ -495,16 +495,17 @@ void calculate_sinr(channel_desc_t* eNB2UE, node_desc_t *enb_data, node_desc_t *
 void get_beta_map() {
   char *file_path = NULL;
   //int table_len = 0;
-  int t;
+  int t,u;
   int mcs = 0;
   char *sinr_bler;
   char buffer[1000];
   FILE *fp;
+  double perf_array[13];
 
   file_path = (char*) malloc(512);
 
   for (mcs = 0; mcs < MCS_COUNT; mcs++) {
-    sprintf(file_path,"%s/SIMULATION/LTE_PHY/BLER_SIMULATIONS/AWGN/awgn_abst/awgn_snr_bler_mcs%d.csv",getenv("OPENAIR1_DIR"),mcs);
+    sprintf(file_path,"%s/SIMULATION/LTE_PHY/BLER_SIMULATIONS/AWGN/Perf_Curves_Abs/awgn_bler_tx1_mcs%d.csv",getenv("OPENAIR1_DIR"),mcs);
     fp = fopen(file_path,"r");
     if (fp == NULL) {
       LOG_W(OCM,"ERROR: Unable to open the file %s, try an alternative path\n", file_path);
@@ -519,20 +520,31 @@ void get_beta_map() {
     }
     // else {
       fgets(buffer, 1000, fp);
+      fgets(buffer, 1000, fp);
       table_length[mcs]=0;
       while (!feof(fp)) {
-        sinr_bler = strtok(buffer, ",");
-        sinr_bler_map[mcs][0][table_length[mcs]] = atof(sinr_bler);
-        sinr_bler = strtok(NULL,",");
-        sinr_bler_map[mcs][1][table_length[mcs]] = atof(sinr_bler);
-        table_length[mcs]++;
-        fgets(buffer, 1000, fp);
+	u=0;
+        sinr_bler = strtok(buffer, ";");
+	while(sinr_bler != NULL){
+	  perf_array[u]=atof(sinr_bler);
+	  u++;
+	  sinr_bler = strtok(NULL,";");
+	}
+	if((perf_array[4]/perf_array[5]) < 1){
+	  sinr_bler_map[mcs][0][table_length[mcs]] = perf_array[0];
+	  sinr_bler_map[mcs][1][table_length[mcs]] = (perf_array[4]/perf_array[5]);
+	  table_length[mcs]++;
+	}
+	fgets(buffer, 1000, fp);
+	
       }
       fclose(fp);
       //   }
-    LOG_D(OCM,"Print the table for mcs %d\n",mcs);
+      //    LOG_D(OCM,"Print the table for mcs %d\n",mcs);
+printf("Print the table for mcs %d\n",mcs);
     for (t = 0; t<table_length[mcs]; t++)
-      LOG_D(OCM,"%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
+      //      LOG_D(OCM,"%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
+printf("%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
   }
   free(file_path);
 }

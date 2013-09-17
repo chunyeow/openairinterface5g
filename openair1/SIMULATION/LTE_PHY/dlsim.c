@@ -773,7 +773,7 @@ int main(int argc, char **argv) {
 				   forgetting_factor,
 				   rx_sample_offset,
 				   0);
-  if(abstx==1){
+  if(abstx==1 && num_rounds>1){
     for(n=1;n<4;n++)
       eNB2UE[n] = new_channel_desc_scm(PHY_vars_eNB->lte_frame_parms.nb_antennas_tx,
 				       PHY_vars_UE->lte_frame_parms.nb_antennas_rx,
@@ -1655,7 +1655,7 @@ int main(int argc, char **argv) {
 	    multipath_channel(eNB2UE[0],s_re,s_im,r_re,r_im,
 			      2*frame_parms->samples_per_tti,hold_channel);
 	    //	    printf("amc: ****************** eNB2UE[%d]->n_rx = %d,dd %d\n",round,eNB2UE[round]->nb_rx,eNB2UE[round]->channel_offset);
-	    if(abstx==1)
+	    if(abstx==1 && num_rounds>1)
 	      if(round==0 && hold_channel==0){
 		random_channel(eNB2UE[1]);
 		random_channel(eNB2UE[2]);
@@ -1682,7 +1682,7 @@ int main(int argc, char **argv) {
 		  }
 		}
 	      
-		if(num_rounds>2){
+		if(num_rounds>1){
 		  freq_channel(eNB2UE[1], NB_RB,2*NB_RB + 1);
 		
 		  for (u=0;u<2*NB_RB;u++){
@@ -2422,7 +2422,7 @@ int main(int argc, char **argv) {
 	  }
 	
       } //ABStraction
-      if(num_rounds==1){
+       if(num_rounds==1){
       bler= (double)errs[0]/(round_trials[0]);
 	if (bler<1)
 	 {snr_step = input_snr_step;     saving_bler = 0;}

@@ -62,6 +62,8 @@ extern int flag_LA;
 extern double sinr_bler_map[MCS_COUNT][2][20];
 extern double sinr_bler_map_up[MCS_COUNT][2][16];
 extern int table_length[MCS_COUNT];
+extern double sinr_to_cqi[4][16];
+extern int cqi_to_mcs[16];
 
 //for MU-MIMO abstraction using MIESM
 //this 2D arrarays contains SINR, MI and RBIR in rows 1, 2, and 3 respectively
