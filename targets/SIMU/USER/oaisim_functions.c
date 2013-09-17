@@ -110,7 +110,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:k:L:l:m:M:n:N:oO:p:P:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:k:L:l:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
