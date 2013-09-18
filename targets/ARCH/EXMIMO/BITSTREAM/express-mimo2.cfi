@@ -1,0 +1,11 @@
+# PROMGEN: Xilinx Prom Generator P.68d
+# Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
+
+SOFTWARE_VERSION P.68d
+DATE            09/03/2013 - 17:43
+SOURCE          C:\Xilinx\14.6\LabTools\Untitled.mcs
+DEVICE          8192K
+DATA_WIDTH      4
+FILL_DATA       0xFF
+SIGNATURE       0x415C6A30
+START_ADDRESS   0x00000000 END_ADDRESS 0x00406577 DIRECTION_UP   "E:/Synchro/kaltenbe/My Documents/openair4G/openair0/express-mimo2.bit" 6slx150tfgg900
