@@ -141,6 +141,8 @@ uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
 			       uint8_t Transaction_id);
 
 uint8_t do_SecurityModeCommand(uint8_t Mod_id,
-			       uint8_t *buffer,
-			       uint8_t UE_id,
-			       uint8_t Transaction_id);
+                               uint8_t *buffer,
+                               uint8_t UE_id,
+                               uint8_t Transaction_id,
+                               uint8_t cipheringAlgorithm,
+                               uint8_t integrityProtAlgorithm);

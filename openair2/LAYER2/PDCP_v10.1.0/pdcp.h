@@ -110,8 +110,25 @@ typedef struct pdcp_t {
   BOOL instanciated_instance;
   u16  header_compression_profile;
 
+  /* SR: added this flag to distinguish UE/eNB instance as pdcp_run for virtual
+   * mode can receive data on NETLINK for eNB while eNB_flag = 0 and for UE when eNB_flag = 1
+   */
+  u8 is_ue;
+
+  /* Configured security algorithms */
   u8 cipheringAlgorithm;
   u8 integrityProtAlgorithm;
+
+  /* User-Plane encryption key
+   * Control-Plane RRC encryption key
+   * Control-Plane RRC integrity key
+   * These keys are configured by RRC layer
+   */
+  u8 *kUPenc;
+  u8 *kRRCint;
+  u8 *kRRCenc;
+
+  u8 security_activated;
 
   u8 rlc_mode;
   u8 status_report;
@@ -260,14 +277,25 @@ public_pdcp(void rrc_pdcp_config_req (module_id_t module_id, u32 frame, u8_t eNB
 * \param[in]  srb2add_list      SRB configuration list to be created.
 * \param[in]  drb2add_list      DRB configuration list to be created.
 * \param[in]  drb2release_list  DRB configuration list to be released.
+* \param[in]  security_mode     Security algorithm to apply for integrity/ciphering
+* \param[in]  kRRCenc           RRC encryption key
+* \param[in]  kRRCint           RRC integrity key
+* \param[in]  kUPenc            User-Plane encryption key
 * \return     A status about the processing, OK or error code.
 */
+public_pdcp(
+BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, u32_t index,
+                               SRB_ToAddModList_t* srb2add_list,
+                               DRB_ToAddModList_t* drb2add_list,
+                               DRB_ToReleaseList_t*  drb2release_list,
+                               u8 security_mode,
+                               u8 *kRRCenc,
+                               u8 *kRRCint,
+                               u8 *kUPenc
 #ifdef Rel10
-public_pdcp(BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, u32_t index, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list,PMCH_InfoList_r9_t*  pmch_InfoList_r9);)
-#else
-public_pdcp(BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, u32_t index, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list);)
+                              ,PMCH_InfoList_r9_t*  pmch_InfoList_r9
 #endif
-
+                               ));
 
 /*! \fn BOOL pdcp_config_req_asn1 (module_id_t module_id, u32 frame, u8_t eNB_flag, u32  action, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode)
 * \brief  Function for RRC to configure a Radio Bearer.
@@ -280,10 +308,18 @@ public_pdcp(BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u
 * \param[in]  drb_report         set a pdcp report for this drb
 * \param[in]  header_compression set the rohc profile
 * \param[in]  security_mode      set the integrity and ciphering algs
+* \param[in]  kRRCenc            RRC encryption key
+* \param[in]  kRRCint            RRC integrity key
+* \param[in]  kUPenc             User-Plane encryption key
 * \return     A status about the processing, OK or error code.
 */
-public_pdcp(BOOL pdcp_config_req_asn1 (module_id_t module_id, u32 frame, u8_t eNB_flag, u16 index, rlc_mode_t rlc_mode, u32  action, u16 lc_id, u16 mch_id, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode);)
-
+public_pdcp(BOOL pdcp_config_req_asn1 (module_id_t module_id, u32 frame, u8_t eNB_flag, u16 index,
+                                       rlc_mode_t rlc_mode, u32  action, u16 lc_id,u16 mch_id, rb_id_t rb_id,
+                                       u8 rb_sn, u8 rb_report, u16 header_compression_profile,
+                                       u8 security_mode,
+                                       u8 *kRRCenc,
+                                       u8 *kRRCint,
+                                       u8 *kUPenc));
 /*! \fn void rrc_pdcp_config_release(module_id_t, rb_id_t)
 * \brief This functions is unused
 * \param[in] module_id Module ID of relevant PDCP entity

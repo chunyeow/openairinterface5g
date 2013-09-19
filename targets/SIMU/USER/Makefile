@@ -72,7 +72,7 @@ ifeq ($(ENABLE_DB), 1)
 CFLAGS +=-I/usr/include/mysql -L/usr/lib/mysql -DENABLE_DB_STATS
 DB_LDFLAGS = -lmysqlclient
 endif 
-endif 
+endif
 
 ifdef PRINT_STATS
 CFLAGS += -DPRINT_STATS
@@ -160,6 +160,25 @@ CFLAGS += -DENABLE_FXP -DOAI_EMU -DENABLE_USE_CPU_EXECUTION_TIME -DXER_PRINT
 
 ifneq ($(USE_MME), R8)
 UPDATE_RELEASE_9=1
+endif
+
+ifdef SECU
+NETTLE_FOUND = $(shell if pkg-config --exists nettle; then echo "1" ; else echo "0"; fi)
+OPENSSL_FOUND = $(shell if pkg-config --exists openssl; then echo "1" ; else echo "0"; fi)
+
+ifeq ($(NETTLE_FOUND), 0)
+@echo "Nettle library >= 2.5 is not installed on your system, continuing with security disabled"
+SECU=0
+else
+ifeq ($(OPENSSL_FOUND), 0)
+@echo "openssl library is not installed on your system, continuing with security disabled"
+SECU=0
+else
+CFLAGS += -DENABLE_SECURITY
+OSA_LDFLAGS += `pkg-config --libs nettle`
+OSA_LDFLAGS += `pkg-config --libs openssl`
+endif
+endif
 endif
 
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
@@ -318,7 +337,8 @@ oaisim : $(ASN1_MSG_OBJS1) $(OBJ) oaisim.c $(LFDS_DIR)/bin/liblfds611.a
 endif
 	@echo "Compiling oaisim.c ..."
 	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $^ \
-	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt $(LFDS_DIR)/bin/liblfds611.a $(PGM_LDFLAGS) $(DB_LDFLAGS) 
+	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt \
+	$(LFDS_DIR)/bin/liblfds611.a $(PGM_LDFLAGS) $(DB_LDFLAGS) $(OSA_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv oaisim oaisim_eNB

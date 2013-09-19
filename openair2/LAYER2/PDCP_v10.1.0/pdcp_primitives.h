@@ -153,4 +153,17 @@ BOOL pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_b
 BOOL pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
      u8 bitmap[512], pdcp_control_pdu_for_pdcp_status_report* pdu);
 
+void pdcp_config_set_security(module_id_t module_id, u32 frame, u8 eNB_flag, rb_id_t rb_id,
+                              u16 lc_id, u8 security_mode, u8 *kRRCenc, u8 *kRRCint, u8 *kUPenc);
+
+#if defined(ENABLE_SECURITY)
+int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
+                        u8 pdcp_header_len, u16 current_sn, u8 *pdcp_pdu_buffer,
+                        u16 sdu_buffer_size);
+
+int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
+                           u8 pdcp_header_len, u16 current_sn, u8 *pdcp_pdu_buffer,
+                           u16 sdu_buffer_size);
+#endif /* defined(ENABLE_SECURITY) */
+
 #endif

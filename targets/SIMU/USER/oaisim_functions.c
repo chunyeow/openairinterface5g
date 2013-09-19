@@ -939,6 +939,7 @@ int init_slot_isr(void)
 
         oai_emulation.info.slot_sfd = sfd;
     }
+    return 0;
 }
 
 void wait_for_slot_isr(void)

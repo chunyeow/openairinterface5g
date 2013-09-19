@@ -64,6 +64,10 @@
 #include "OCG_extern.h"
 #endif
 
+#if defined(ENABLE_SECURITY)
+# include "UTIL/OSA/osa_defs.h"
+#endif
+
 #if defined(ENABLE_USE_MME)
 #include "../../S1AP/s1ap_eNB.h"
 #endif
@@ -412,6 +416,23 @@ init_MBMS (u8 Mod_id, u32 frame)
 
 #endif
 
+static
+void rrc_lite_eNB_init_security(u8 Mod_id, u8 UE_index)
+{
+#if defined(ENABLE_SECURITY)
+    char ascii_buffer[65];
+    uint8_t i;
+
+    memset(eNB_rrc_inst[Mod_id].kenb[UE_index], UE_index, 32);
+
+    for (i = 0; i < 32; i++) {
+        sprintf(&ascii_buffer[2 * i], "%02X", eNB_rrc_inst[Mod_id].kenb[UE_index][i]);
+    }
+
+    LOG_T(RRC, "[OSA][MOD %02d][UE %02d] kenb    = %s\n", Mod_id, UE_index, ascii_buffer);
+#endif
+}
+
 /*------------------------------------------------------------------------------*/
 char
 openair_rrc_lite_eNB_init (u8 Mod_id)
@@ -425,6 +446,13 @@ openair_rrc_lite_eNB_init (u8 Mod_id)
 
   for (j = 0; j < NUMBER_OF_UE_MAX; j++)
     eNB_rrc_inst[Mod_id].Info.Status[j] = RRC_IDLE;     //CH_READY;
+
+  /* Init security parameters */
+  for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
+    eNB_rrc_inst[Mod_id].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
+    eNB_rrc_inst[Mod_id].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
+    rrc_lite_eNB_init_security(Mod_id, j);
+  }
 
 #if defined(ENABLE_USE_MME)
   /* Connect eNB to MME */
@@ -931,7 +959,11 @@ rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
                                         eNB_rrc_inst[Mod_id].
                                         SRB_configList[UE_index],
                                         (DRB_ToAddModList_t *) NULL,
-                                        (DRB_ToReleaseList_t *) NULL
+                                        (DRB_ToReleaseList_t *) NULL,
+                                        0xff,
+                                        NULL,
+                                        NULL,
+                                        NULL
 #ifdef Rel10
                                         , (PMCH_InfoList_r9_t *) NULL
 #endif
@@ -1017,7 +1049,9 @@ rrc_eNB_generate_SecurityModeCommand (u8 Mod_id, u32 frame, u16 UE_index)
   uint8_t buffer[100];
   uint8_t size;
 
-  size = do_SecurityModeCommand (Mod_id, buffer, UE_index, 0);
+  size = do_SecurityModeCommand (Mod_id, buffer, UE_index, 0,
+                                 eNB_rrc_inst[Mod_id].ciphering_algorithm[UE_index],
+                                 eNB_rrc_inst[Mod_id].integrity_algorithm[UE_index]);
 
   LOG_I (RRC,
          "[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate SecurityModeCommand (bytes %d, UE id %d)\n",
@@ -1611,15 +1645,38 @@ rrc_eNB_process_RRCConnectionReconfigurationComplete (u8 Mod_id, u32 frame,
   int oip_ifup = 0;
   int dest_ip_offset = 0;
 #endif
+
+  uint8_t *kRRCenc = NULL;
+  uint8_t *kRRCint = NULL;
+  uint8_t *kUPenc  = NULL;
+
   DRB_ToAddModList_t *DRB_configList =
     eNB_rrc_inst[Mod_id].DRB_configList[UE_index];
   SRB_ToAddModList_t *SRB_configList =
     eNB_rrc_inst[Mod_id].SRB_configList[UE_index];
 
+#if defined(ENABLE_SECURITY)
+  /* Derive the keys from kenb */
+  if (DRB_configList != NULL) {
+    derive_key_up_enc(eNB_rrc_inst[Mod_id].ciphering_algorithm[UE_index],
+                      eNB_rrc_inst[Mod_id].kenb[UE_index], &kUPenc);
+  }
+
+  derive_key_rrc_enc(eNB_rrc_inst[Mod_id].ciphering_algorithm[UE_index],
+                     eNB_rrc_inst[Mod_id].kenb[UE_index], &kRRCenc);
+  derive_key_rrc_int(eNB_rrc_inst[Mod_id].integrity_algorithm[UE_index],
+                     eNB_rrc_inst[Mod_id].kenb[UE_index], &kRRCint);
+#endif
+
   // Refresh SRBs/DRBs
   rrc_pdcp_config_asn1_req (Mod_id, frame, 1, UE_index,
                             SRB_configList,
-                            DRB_configList, (DRB_ToReleaseList_t *) NULL
+                            DRB_configList, (DRB_ToReleaseList_t *) NULL,
+                            eNB_rrc_inst[Mod_id].ciphering_algorithm[UE_index] |
+                            (eNB_rrc_inst[Mod_id].integrity_algorithm[UE_index] << 4),
+                            kRRCenc,
+                            kRRCint,
+                            kUPenc
 #ifdef Rel10
                             , (PMCH_InfoList_r9_t *) NULL
 #endif

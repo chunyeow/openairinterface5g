@@ -772,7 +772,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   *(*sib3)->intraFreqCellReselectionInfo.s_IntraSearch = 31;
   (*sib3)->intraFreqCellReselectionInfo.allowedMeasBandwidth=CALLOC(1,sizeof(*(*sib3)->intraFreqCellReselectionInfo.allowedMeasBandwidth));
 
-  (*sib3)->intraFreqCellReselectionInfo.allowedMeasBandwidth=AllowedMeasBandwidth_mbw6;
+  *(*sib3)->intraFreqCellReselectionInfo.allowedMeasBandwidth = AllowedMeasBandwidth_mbw6;
 
   (*sib3)->intraFreqCellReselectionInfo.presenceAntennaPort1 = 0;
   (*sib3)->intraFreqCellReselectionInfo.neighCellConfig.buf = CALLOC(8,1);
@@ -1299,25 +1299,28 @@ uint8_t do_RRCConnectionSetup(uint8_t *buffer,
   return((enc_rval.encoded+7)/8);
 }
 uint8_t do_SecurityModeCommand(uint8_t Mod_id,
-				 uint8_t *buffer,
-				 uint8_t UE_id,
-				 uint8_t Transaction_id) {
+                               uint8_t *buffer,
+                               uint8_t UE_id,
+                               uint8_t Transaction_id,
+                               uint8_t cipheringAlgorithm,
+                               uint8_t integrityProtAlgorithm) {
  DL_DCCH_Message_t dl_dcch_msg;
  asn_enc_rval_t enc_rval;
 
  memset(&dl_dcch_msg,0,sizeof(DL_DCCH_Message_t));
 
- dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
- dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_securityModeCommand;
- 
- dl_dcch_msg.message.choice.c1.choice.securityModeCommand.rrc_TransactionIdentifier = Transaction_id;
- dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.present = SecurityModeCommand__criticalExtensions_PR_c1;
- 
- dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.choice.c1.present = SecurityModeCommand__criticalExtensions__c1_PR_securityModeCommand_r8;
- // the two following information could be based on the mod_id
- dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.choice.c1.choice.securityModeCommand_r8.securityConfigSMC.securityAlgorithmConfig.cipheringAlgorithm=SecurityAlgorithmConfig__cipheringAlgorithm_spare1;
-  dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.choice.c1.choice.securityModeCommand_r8.securityConfigSMC.securityAlgorithmConfig.integrityProtAlgorithm=SecurityAlgorithmConfig__integrityProtAlgorithm_spare1;
+  dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
+  dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_securityModeCommand;
 
+  dl_dcch_msg.message.choice.c1.choice.securityModeCommand.rrc_TransactionIdentifier = Transaction_id;
+  dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.present = SecurityModeCommand__criticalExtensions_PR_c1;
+
+  dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.choice.c1.present = SecurityModeCommand__criticalExtensions__c1_PR_securityModeCommand_r8;
+  // the two following information could be based on the mod_id
+  dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.choice.c1.choice.securityModeCommand_r8.securityConfigSMC.securityAlgorithmConfig.cipheringAlgorithm
+  = (e_SecurityAlgorithmConfig__cipheringAlgorithm)cipheringAlgorithm;
+  dl_dcch_msg.message.choice.c1.choice.securityModeCommand.criticalExtensions.choice.c1.choice.securityModeCommand_r8.securityConfigSMC.securityAlgorithmConfig.integrityProtAlgorithm
+  = (e_SecurityAlgorithmConfig__integrityProtAlgorithm)integrityProtAlgorithm;
 
 #ifdef XER_PRINT
   xer_fprint(stdout, &asn_DEF_DL_DCCH_Message, (void*)&dl_dcch_msg);
@@ -1680,7 +1683,7 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
 				   100);
 
 #ifdef USER_MODE
-  printf("Measurement Report Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
+  printf("Measurement Report Encoded %zu bits (%zu bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
 #endif
 
   return((enc_rval.encoded+7)/8);

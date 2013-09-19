@@ -281,6 +281,14 @@ int logInit (void) {
     g_log->log_component[HW].filelog = 0;
     g_log->log_component[HW].filelog_name = "";
 
+    g_log->log_component[OSA].name = "OSA";
+    g_log->log_component[OSA].level = LOG_EMERG;
+    g_log->log_component[OSA].flag = LOG_MED;
+    g_log->log_component[OSA].interval = 1;
+    g_log->log_component[OSA].fd = 0;
+    g_log->log_component[OSA].filelog = 0;
+    g_log->log_component[OSA].filelog_name = "";
+
     g_log->level2string[LOG_EMERG]         = "G"; //EMERG
     g_log->level2string[LOG_ALERT]         = "A"; // ALERT
     g_log->level2string[LOG_CRIT]          = "C"; // CRITIC

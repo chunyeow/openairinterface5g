@@ -68,6 +68,11 @@
 #include "RRC/NAS/nas_config.h"
 #include "RRC/NAS/rb_config.h"
 #endif
+
+#if defined(ENABLE_SECURITY)
+# include "UTIL/OSA/osa_defs.h"
+#endif
+
 #ifdef PHY_EMUL
 extern EMULATION_VARS *Emul_vars;
 #endif
@@ -110,9 +115,29 @@ void init_MCCH_UE(u8 Mod_id, u8 eNB_index) {
   UE_rrc_inst[Mod_id].MCCH_MESSAGE[eNB_index] = (u8 *)malloc16(32);
   UE_rrc_inst[Mod_id].mcch_message[eNB_index] = (MBSFNAreaConfiguration_r9_t *)malloc16(sizeof(MBSFNAreaConfiguration_r9_t));
   UE_rrc_inst[Mod_id].Info[eNB_index].MCCH_MESSAGEStatus = 0;
-  
-  }
+
+}
 #endif
+
+static
+void openair_rrc_lite_ue_init_security(u8 Mod_id)
+{
+#if defined(ENABLE_SECURITY)
+    uint8_t *kRRCenc;
+    uint8_t *kRRCint;
+    char ascii_buffer[65];
+    uint8_t i;
+
+    memset(UE_rrc_inst[Mod_id].kenb, Mod_id, 32);
+
+    for (i = 0; i < 32; i++) {
+        sprintf(&ascii_buffer[2 * i], "%02X", UE_rrc_inst[Mod_id].kenb[i]);
+    }
+
+    LOG_T(RRC, "[OSA][UE %02d] kenb    = %s\n",
+            Mod_id, ascii_buffer);
+#endif
+}
 
 /*------------------------------------------------------------------------------*/
 char openair_rrc_lite_ue_init(u8 Mod_id, unsigned char eNB_index){
@@ -129,6 +154,15 @@ char openair_rrc_lite_ue_init(u8 Mod_id, unsigned char eNB_index){
   UE_rrc_inst[Mod_id].Srb0[eNB_index].Active=0;
   UE_rrc_inst[Mod_id].Srb1[eNB_index].Active=0;
   UE_rrc_inst[Mod_id].Srb2[eNB_index].Active=0;
+
+  UE_rrc_inst[Mod_id].ciphering_algorithm = SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
+#ifdef Rel10
+  UE_rrc_inst[Mod_id].integrity_algorithm = SecurityAlgorithmConfig__integrityProtAlgorithm_eia0_v920;
+#else
+  UE_rrc_inst[Mod_id].integrity_algorithm = SecurityAlgorithmConfig__integrityProtAlgorithm_reserved;
+#endif
+
+  openair_rrc_lite_ue_init_security(Mod_id);
 
   init_SI_UE(Mod_id,eNB_index);
   LOG_D(RRC,"[UE %d] INIT: phy_sync_2_ch_ind\n", Mod_id);
@@ -652,12 +686,26 @@ void	rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_ind
   // Establish SRBs if present
   // loop through SRBToAddModList
   if (radioResourceConfigDedicated->srb_ToAddModList) {
+    uint8_t *kRRCenc = NULL;
+    uint8_t *kRRCint = NULL;
+
+#if defined(ENABLE_SECURITY)
+    derive_key_rrc_enc(UE_rrc_inst[Mod_id].ciphering_algorithm,
+                       UE_rrc_inst[Mod_id].kenb, &kRRCenc);
+    derive_key_rrc_int(UE_rrc_inst[Mod_id].integrity_algorithm,
+                       UE_rrc_inst[Mod_id].kenb, &kRRCint);
+#endif
 
 // Refresh SRBs
     rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frame,0,eNB_index,
-			    radioResourceConfigDedicated->srb_ToAddModList,
-			    (DRB_ToAddModList_t*)NULL,
-			    (DRB_ToReleaseList_t*)NULL
+                             radioResourceConfigDedicated->srb_ToAddModList,
+                             (DRB_ToAddModList_t*)NULL,
+                             (DRB_ToReleaseList_t*)NULL,
+                             UE_rrc_inst[Mod_id].ciphering_algorithm |
+                             (UE_rrc_inst[Mod_id].integrity_algorithm << 4),
+                             kRRCenc,
+                             kRRCint,
+                             NULL
 #ifdef Rel10
 			    ,(MBMS_SessionInfoList_r9_t *)NULL
 #endif
@@ -790,12 +838,23 @@ void	rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_ind
 
   // Establish DRBs if present
   if (radioResourceConfigDedicated->drb_ToAddModList) {
+    uint8_t *kUPenc;
+
+#if defined(ENABLE_SECURITY)
+    derive_key_up_enc(UE_rrc_inst[Mod_id].integrity_algorithm,
+                      UE_rrc_inst[Mod_id].kenb, &kUPenc);
+#endif
 
     // Refresh DRBs
     rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frame,0,eNB_index,
-			    (SRB_ToAddModList_t*)NULL,
-			    radioResourceConfigDedicated->drb_ToAddModList,
-			    (DRB_ToReleaseList_t*)NULL
+                             (SRB_ToAddModList_t*)NULL,
+                             radioResourceConfigDedicated->drb_ToAddModList,
+                             (DRB_ToReleaseList_t*)NULL,
+                             UE_rrc_inst[Mod_id].ciphering_algorithm |
+                             (UE_rrc_inst[Mod_id].integrity_algorithm << 4),
+                             NULL,
+                             NULL,
+                             kUPenc
 #ifdef Rel10
 			    ,(MBMS_SessionInfoList_r9_t *)NULL
 #endif
@@ -907,7 +966,11 @@ void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityMo
     break;
   }
   LOG_D(RRC,"[UE %d] security mode is %x \n",Mod_id, securityMode);
-  
+
+  /* Store the parameters received */
+  UE_rrc_inst[Mod_id].ciphering_algorithm = securityModeCommand->criticalExtensions.choice.c1.choice.securityModeCommand_r8.securityConfigSMC.securityAlgorithmConfig.cipheringAlgorithm;
+  UE_rrc_inst[Mod_id].integrity_algorithm = securityModeCommand->criticalExtensions.choice.c1.choice.securityModeCommand_r8.securityConfigSMC.securityAlgorithmConfig.integrityProtAlgorithm;
+
   memset((void *)&ul_dcch_msg,0,sizeof(UL_DCCH_Message_t));
   //memset((void *)&SecurityModeCommand,0,sizeof(SecurityModeCommand_t));
 
@@ -1035,8 +1098,7 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,
       if (rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated) {
 	LOG_I(RRC,"Radio Resource Configuration is present\n");
 	rrc_ue_process_radioResourceConfigDedicated(Mod_id,frame,eNB_index,
-						    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated);
-
+                                                    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated);
       }
     } // c1 present
   } // critical extensions present
@@ -1219,6 +1281,7 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 	}
 	break;
       case BCCH_DL_SCH_MessageType__c1_PR_NOTHING:
+      default:
 	break;
       }
     }
@@ -1227,6 +1290,8 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
       (UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus == 1) && (frame >= Mod_id * 20 + 10))
       SEQUENCE_free(&asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message, 0);*/
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_BCCH, VCD_FUNCTION_OUT);
+
+  return 0;
 }
 
 
@@ -1385,10 +1450,10 @@ void dump_sib2(SystemInformationBlockType2_t *sib2) {
   LOG_D(RRC,"ue_TimersAndConstants.n311 : %ld\n", sib2->ue_TimersAndConstants.n311);
 
   LOG_D(RRC,"freqInfo.additionalSpectrumEmission : %ld\n",sib2->freqInfo.additionalSpectrumEmission);
-  LOG_D(RRC,"freqInfo.ul_CarrierFreq : %d\n",(int)sib2->freqInfo.ul_CarrierFreq);
-  LOG_D(RRC,"freqInfo.ul_Bandwidth : %d\n",(int)sib2->freqInfo.ul_Bandwidth);
-  LOG_D(RRC,"mbsfn_SubframeConfigList : %d\n",(int)sib2->mbsfn_SubframeConfigList);
-  LOG_D(RRC,"timeAlignmentTimerCommon : %ld\n",sib2->timeAlignmentTimerCommon);
+  LOG_D(RRC,"freqInfo.ul_CarrierFreq : %ld\n", sib2->freqInfo.ul_CarrierFreq);
+  LOG_D(RRC,"freqInfo.ul_Bandwidth : %ld\n", sib2->freqInfo.ul_Bandwidth);
+  LOG_D(RRC,"mbsfn_SubframeConfigList : %ld\n", sib2->mbsfn_SubframeConfigList);
+  LOG_D(RRC,"timeAlignmentTimerCommon : %ld\n", sib2->timeAlignmentTimerCommon);
 
 
 

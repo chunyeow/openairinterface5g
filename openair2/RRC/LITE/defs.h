@@ -240,6 +240,15 @@ typedef struct{
   SRB_INFO                          Srb0;
   SRB_INFO_TABLE_ENTRY              Srb1[NUMBER_OF_UE_MAX+1];
   SRB_INFO_TABLE_ENTRY              Srb2[NUMBER_OF_UE_MAX+1];
+
+#if defined(ENABLE_SECURITY)
+  /* KeNB as derived from KASME received from EPC */
+  uint8_t kenb[NUMBER_OF_UE_MAX][32];
+#endif
+
+  /* Used integrity/ciphering algorithms */
+  e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm[NUMBER_OF_UE_MAX];
+  e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm[NUMBER_OF_UE_MAX];
 } eNB_RRC_INST;
 
 #define MAX_UE_CAPABILITY_SIZE 255
@@ -300,6 +309,15 @@ typedef struct{
   struct SPS_Config               *sps_Config[NB_CNX_UE];
   MAC_MainConfig_t                *mac_MainConfig[NB_CNX_UE];
   MeasGapConfig_t                 *measGapConfig[NB_CNX_UE];
+
+#if defined(ENABLE_SECURITY)
+  /* KeNB as computed from parameters within USIM card */
+  uint8_t kenb[32];
+#endif
+
+  /* Used integrity/ciphering algorithms */
+  e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm;
+  e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm;
 }UE_RRC_INST;
 
 //main.c
