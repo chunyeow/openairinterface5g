@@ -559,7 +559,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib13_part;
   MBSFN_SubframeConfigList_t *MBSFNSubframeConfigList;
   MBSFN_AreaInfoList_r9_t *MBSFNArea_list;
-  struct MBSFN_AreaInfo_r9 *MBSFN_Area1;
+  struct MBSFN_AreaInfo_r9 *MBSFN_Area1, *MBSFN_Area2;
 #endif
   asn_enc_rval_t enc_rval;
 
@@ -797,7 +797,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
     // MBSFN Area 1
     MBSFN_Area1= CALLOC(1, sizeof(*MBSFN_Area1));
     MBSFN_Area1->mbsfn_AreaId_r9= 1;
-    MBSFN_Area1->non_MBSFNregionLength= MBSFN_AreaInfo_r9__non_MBSFNregionLength_s1;
+    MBSFN_Area1->non_MBSFNregionLength= MBSFN_AreaInfo_r9__non_MBSFNregionLength_s2;
     MBSFN_Area1->notificationIndicator_r9= 0;
     MBSFN_Area1->mcch_Config_r9.mcch_RepetitionPeriod_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__mcch_RepetitionPeriod_r9_rf32;
     MBSFN_Area1->mcch_Config_r9.mcch_Offset_r9= 1; // in accordance with mbsfn subframe configuration in sib2
@@ -817,23 +817,29 @@ uint8_t do_SIB23(uint8_t Mod_id,
 
     ASN_SEQUENCE_ADD(&MBSFNArea_list->list,MBSFN_Area1);
     
-    /*    //MBSFN Area 2
-    MBSFN_Area2= CALLOC(1, sizeof(*MBSFN_Area2));
-    MBSFN_Area2->mbsfn_AreaId_r9= 2;
-    MBSFN_Area2->non_MBSFNregionLength= MBSFN_AreaInfo_r9__non_MBSFNregionLength_s1;
-    MBSFN_Area2->notificationIndicator_r9= 0;
-    MBSFN_Area2->mcch_Config_r9.mcch_RepetitionPeriod_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__mcch_RepetitionPeriod_r9_rf32;
-    MBSFN_Area2->mcch_Config_r9.mcch_Offset_r9= 0;
-    MBSFN_Area2->mcch_Config_r9.mcch_ModificationPeriod_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__mcch_ModificationPeriod_r9_rf512;
-    // Subframe Allocation Info
-    MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.buf= MALLOC(1);
-    MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.size= 1;
-    MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.buf[0]=0x8;
-    MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.bits_unused= 2;
-
-    MBSFN_Area2->mcch_Config_r9.signallingMCS_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__signallingMCS_r9_n2;
-
-    ASN_SEQUENCE_ADD(&MBSFNArea_list->list,MBSFN_Area2);*/
+    //MBSFN Area 2: currently only activated for eMBMS relaying
+    if (MBMS_flag == 4 ) {
+      MBSFN_Area2= CALLOC(1, sizeof(*MBSFN_Area2));
+      MBSFN_Area2->mbsfn_AreaId_r9= 2;
+      MBSFN_Area2->non_MBSFNregionLength= MBSFN_AreaInfo_r9__non_MBSFNregionLength_s2;
+      MBSFN_Area2->notificationIndicator_r9= 1;
+      MBSFN_Area2->mcch_Config_r9.mcch_RepetitionPeriod_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__mcch_RepetitionPeriod_r9_rf32;
+      MBSFN_Area2->mcch_Config_r9.mcch_Offset_r9= 1;
+      MBSFN_Area2->mcch_Config_r9.mcch_ModificationPeriod_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__mcch_ModificationPeriod_r9_rf512;
+      // Subframe Allocation Info
+      MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.buf= MALLOC(1);
+      MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.size= 1;
+      MBSFN_Area2->mcch_Config_r9.sf_AllocInfo_r9.bits_unused= 2;
+      if (frame_parms->frame_type == TDD) {//TDD: SF7
+	MBSFN_Area1->mcch_Config_r9.sf_AllocInfo_r9.buf[0]=0x08<<2; 
+      } 
+      else {
+	MBSFN_Area1->mcch_Config_r9.sf_AllocInfo_r9.buf[0]=0x04<<2;  // FDD: SF6
+      }
+      MBSFN_Area2->mcch_Config_r9.signallingMCS_r9= MBSFN_AreaInfo_r9__mcch_Config_r9__signallingMCS_r9_n2;
+      
+      ASN_SEQUENCE_ADD(&MBSFNArea_list->list,MBSFN_Area2);
+    }
     //  end of adding for MBMS SIB13
   }
 #endif

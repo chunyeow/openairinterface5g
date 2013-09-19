@@ -1812,8 +1812,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
 	  LOG_E(PHY,"Format 1A: NPRB=0\n");
             return(-1);
         }
-        
-        if (mcs > 7) {
+        // change the mcs limit from 7 to 8, supported by MAC
+        if (mcs > 8) {
 	  LOG_E(PHY,"Format 1A: unlikely mcs for format 1A (%d)\n",mcs);
             return(-1);
         } 

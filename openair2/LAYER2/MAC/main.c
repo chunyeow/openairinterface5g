@@ -31,6 +31,7 @@
 * \author Raymond Knopp and Navid Nikaein
 * \date 2011
 * \version 0.5
+* \email: navid.nikaein@eurecom.fr
 * @ingroup _mac
 
 */
@@ -78,40 +79,27 @@ void dl_phy_sync_success(unsigned char Mod_id,
 			 unsigned char eNB_index,
 			 u8 first_sync){  //init as MR
 /***********************************************************************/
-  // msg("[MAC]Node %d, PHY SYNC to eNB_index %d\n",NODE_ID[Mod_id],eNB_index);
+  LOG_D(MAC,"[UE %d] Frame %d: PHY Sync to eNB_index %d successful \n", Mod_id, frame, eNB_index);
   if (first_sync==1) {
-    if( (layer2_init_UE(Mod_id)==-1) ||
-	(openair_rrc_ue_init(Mod_id,eNB_index)==-1) ) {
-	//(openair_rrc_lite_ue_init(Mod_id,eNB_index)==-1) ) {
-      //    Mac_rlc_xface->Is_cluster_head[Mod_id]=2;
-    }
+    layer2_init_UE(Mod_id);
+    openair_rrc_ue_init(Mod_id,eNB_index);
   }
   else {
     mac_in_sync_ind(Mod_id,frame,eNB_index);
   }
-
+  
 }
 
 /***********************************************************************/
-void mrbch_phy_sync_failure(u8 Mod_id, u32 frame, u8 Free_ch_index){//init as CH
+void mrbch_phy_sync_failure(u8 Mod_id, u32 frame, u8 free_eNB_index){//init as CH
   /***********************************************************************/
-  LOG_I(MAC,"FRAME %d: Node %d, NO PHY SYNC to master\n",frame,Mod_id);
-  //if((layer2_init_eNB(Mod_id, Free_ch_index)==-1) || ( openair_rrc_lite_eNB_init(Mod_id)==-1)){
-  if((layer2_init_eNB(Mod_id, Free_ch_index)==-1) || ( openair_rrc_eNB_init(Mod_id)==-1)){
-    //    Mac_rlc_xface->Is_cluster_head[Mod_id]=2;
-    }
-
-
+  LOG_I(MAC,"[eNB %d] Frame %d: PHY Sync failure \n",Mod_id,frame);
+  layer2_init_eNB(Mod_id, free_eNB_index);
+  openair_rrc_eNB_init(Mod_id);
 
 }
 
-/***********************************************************************/
 char layer2_init_eNB(unsigned char Mod_id, unsigned char eNB_index){
-/***********************************************************************/
-
-  Mac_rlc_xface->Is_cluster_head[Mod_id]=1;
-
-  //  msg("\nMAC: INIT eNB %d Successful \n\n",Mod_id);
 
   return 0;
 
@@ -119,9 +107,7 @@ char layer2_init_eNB(unsigned char Mod_id, unsigned char eNB_index){
 
 /***********************************************************************/
 char layer2_init_UE(unsigned char Mod_id){
-  /***********************************************************************/
-  Mac_rlc_xface->Is_cluster_head[NB_eNB_INST + Mod_id]=0;
-
+ 
   return 0;
 }
 

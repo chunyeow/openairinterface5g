@@ -30,6 +30,7 @@
  * \brief procedures related to UE
  * \author Raymond Knopp, Navid Nikaein
  * \date 2011
+ * \email: navid.nikaein@eurecom.fr
  * \version 0.5
  * @ingroup _mac
 
@@ -1458,6 +1459,16 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     // filling remainder of MCH with random data if necessery
     for (j=0;j<(TBS-sdu_length_total-offset);j++)
       eNB_mac_inst[Mod_id].MCH_pdu.payload[offset+sdu_length_total+j] = (char)(taus()&0xff);
+
+#if defined(USER_MODE) && defined(OAI_EMU)
+        /* Tracing of PDU is done on UE side */
+	if (oai_emulation.info.opt_enabled)
+            trace_pdu(1, (uint8_t *)eNB_mac_inst[Mod_id].MCH_pdu.payload[0],
+		      TBS, Mod_id, 6, 0xffff,  // M_RNTI = 6 in wirehsark
+		      eNB_mac_inst[Mod_id].subframe,0,0);
+	LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n", 
+	      Mod_id, frame, TBS);
+#endif
 /*    
    for (j=0;j<sdu_length_total;j++)
       printf("%2x.",eNB_mac_inst[Mod_id].MCH_pdu.payload[j+offset]);

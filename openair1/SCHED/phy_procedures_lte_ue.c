@@ -1660,7 +1660,7 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 
     if (first_run) {
       first_run = 0;
-      LOG_I(PHY,"[UE  %d] frame %d, slot %d: Adjusting frame counter (PBCH ant_tx=%d, frame_tx=%d, phase %d).\n",
+      LOG_I(PHY,"[UE %d] frame %d, slot %d: Adjusting frame counter (PBCH ant_tx=%d, frame_tx=%d, phase %d).\n",
 	    phy_vars_ue->Mod_id, 
 	    phy_vars_ue->frame,
 	    last_slot,
@@ -1672,7 +1672,7 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
     else 
       if (((frame_tx & 0x03FF) != (phy_vars_ue->frame & 0x03FF))) { 
 	  //(pbch_tx_ant != phy_vars_ue->lte_frame_parms.nb_antennas_tx)) {
-	LOG_D(PHY,"[UE  %d] frame %d, slot %d: Re-adjusting frame counter (PBCH ant_tx=%d, frame_tx=%d, frame%1024=%d, phase %d).\n",
+	LOG_D(PHY,"[UE %d] frame %d, slot %d: Re-adjusting frame counter (PBCH ant_tx=%d, frame_tx=%d, frame%1024=%d, phase %d).\n",
 	      phy_vars_ue->Mod_id, 
 	      phy_vars_ue->frame,
 	      last_slot,
@@ -1704,7 +1704,7 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
       }
         
 #ifdef DEBUG_PHY_PROC
-    LOG_D(PHY,"[UE  %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6!\n",
+    LOG_D(PHY,"[UE %d] frame %d, slot %d, Received PBCH (MIB): mode1_flag %d, tx_ant %d, frame_tx %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6!\n",
 	      phy_vars_ue->Mod_id, 
 	      phy_vars_ue->frame,
 	      last_slot,
@@ -1715,7 +1715,7 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_duration,
 	      phy_vars_ue->lte_frame_parms.phich_config_common.phich_resource);
     if ((phy_vars_ue->frame%100==0)&&(phy_vars_ue!=NULL)) {
-      LOG_I(PHY,"[UE  %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d, phase %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6\n",
+      LOG_I(PHY,"[UE %d] frame %d, slot %d, PBCH: mode1_flag %d, tx_ant %d, frame_tx %d, phase %d. N_RB_DL %d, phich_duration %d, phich_resource %d/6\n",
 	      phy_vars_ue->Mod_id, 
 	      phy_vars_ue->frame,
 	      last_slot,
@@ -1732,7 +1732,7 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
         
   }  
   else {
-    LOG_E(PHY,"[UE  %d] frame %d, slot %d, Error decoding PBCH!\n",
+    LOG_E(PHY,"[UE %d] frame %d, slot %d, Error decoding PBCH!\n",
 	phy_vars_ue->Mod_id,phy_vars_ue->frame, last_slot);
     phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors_conseq++;
     phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors++;
@@ -1748,7 +1748,7 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
   }
   
 #ifdef DEBUG_PHY_PROC  
-  LOG_D(PHY,"[UE  %d] frame %d, slot %d, PBCH errors = %d, consecutive errors = %d!\n",
+  LOG_D(PHY,"[UE %d] frame %d, slot %d, PBCH errors = %d, consecutive errors = %d!\n",
 	    phy_vars_ue->Mod_id,phy_vars_ue->frame, last_slot, 
 	    phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors, 
 	    phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors_conseq);

@@ -31,6 +31,7 @@
 * \author Raymond Knopp, Navid Nikaein
 * \date 2011
 * \version 0.5
+* \email navid.nikaein@eurecom.fr
 * @ingroup _mac
 
 */
@@ -959,7 +960,7 @@ s8 get_deltaP_rampup(u8 Mod_id);
 
 void chbch_phy_sync_success(u8 Mod_id,u32 frame,u8 CH_index);
 
-void mrbch_phy_sync_failure(u8 Mod_id, u32 frame,u8 Free_ch_index);
+void mrbch_phy_sync_failure(u8 Mod_id, u32 frame,u8 free_eNB_index);
 
 int mac_top_init(int eMBMS_active, u8 cba_group_active);
 
@@ -1136,7 +1137,7 @@ u32 ue_get_SR(u8 Mod_id, u32 frame, u8 eNB_id,u16 rnti,u8 subframe);
 u8 get_ue_weight(u8 Mod_id, u8 UE_id);
 
 // UE functions
-void out_of_sync_ind(u8 Mod_id, u32 frame, u16);
+void mac_out_of_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index);
 
 void ue_decode_si(u8 Mod_id, u32 frame, u8 CH_index, void *pdu, u16 len);
 

@@ -31,6 +31,7 @@
 * \author Raymond Knopp, Navid Nikaein
 * \date 2011
 * \version 0.5
+* \email: navid.nikaein@eurecom.fr
 * @ingroup _mac
 
 */
