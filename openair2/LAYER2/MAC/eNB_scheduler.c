@@ -1107,7 +1107,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     break;
   }
 
-  // 1st: Check the MBSFN subframes
+  // 1st: Check the MBSFN subframes from SIB2 info (SF allocation pattern 0, max 8 patterns exist)
   if (frame %  mbsfn_period == eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationOffset){ // MBSFN frame
     if (eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.present == MBSFN_SubframeConfig__subframeAllocation_PR_oneFrame){// one-frame format
 
