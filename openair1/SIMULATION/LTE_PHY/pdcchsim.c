@@ -426,9 +426,10 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,u8 log2L, u8 log2Lcommon, u
       break;
     }	  
   }
+  /*
   // add common dci
   DCI_pdu.dci_alloc[0].dci_length = BCCH_pdu_size_bits;
-  DCI_pdu.dci_alloc[0].L          = 2;
+  DCI_pdu.dci_alloc[0].L          = log2Lcommon;
   DCI_pdu.dci_alloc[0].rnti       = SI_RNTI;
   DCI_pdu.dci_alloc[0].format     = format1A;
   DCI_pdu.dci_alloc[0].ra_flag    = 0;
@@ -437,19 +438,20 @@ DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,u8 log2L, u8 log2Lcommon, u
 
   // add ue specific dci
   DCI_pdu.dci_alloc[1].dci_length = dci_length;
-  DCI_pdu.dci_alloc[1].L          = 1;
+  DCI_pdu.dci_alloc[1].L          = log2L;
   DCI_pdu.dci_alloc[1].rnti       = rnti;
   DCI_pdu.dci_alloc[1].format     = format1;
   DCI_pdu.dci_alloc[1].ra_flag    = 0;
   memcpy((void*)&DCI_pdu.dci_alloc[1].dci_pdu[0], &DLSCH_alloc_pdu[0], dci_length_bytes);
   DCI_pdu.Num_ue_spec_dci++;                
+  */
 
-  DCI_pdu.dci_alloc[2].dci_length = UL_pdu_size_bits;
-  DCI_pdu.dci_alloc[2].L          = 1;
-  DCI_pdu.dci_alloc[2].rnti       = rnti;
-  DCI_pdu.dci_alloc[2].format     = format0;
-  DCI_pdu.dci_alloc[2].ra_flag    = 0;
-  memcpy((void*)&DCI_pdu.dci_alloc[2].dci_pdu[0], &UL_alloc_pdu[0], UL_pdu_size_bytes);
+  DCI_pdu.dci_alloc[0].dci_length = UL_pdu_size_bits;
+  DCI_pdu.dci_alloc[0].L          = log2L;
+  DCI_pdu.dci_alloc[0].rnti       = rnti;
+  DCI_pdu.dci_alloc[0].format     = format0;
+  DCI_pdu.dci_alloc[0].ra_flag    = 0;
+  memcpy((void*)&DCI_pdu.dci_alloc[0].dci_pdu[0], &UL_alloc_pdu[0], UL_pdu_size_bytes);
   DCI_pdu.Num_ue_spec_dci++;
 
   DCI_pdu.nCCE = 0;
@@ -517,6 +519,10 @@ int main(int argc, char **argv) {
 
   u8 num_phich_interf = 0;
   lte_frame_type_t frame_type=TDD;
+
+#ifdef PERFECT_CE
+  int k, aarx;
+#endif
 
   number_of_cards = 1;
   openair_daq_vars.rx_rf_mode = 1;
@@ -739,7 +745,7 @@ int main(int argc, char **argv) {
   if (n_frames==1)
     snr1 = snr0+.1;
   else
-    snr1 = snr0+5.0;
+    snr1 = snr0+8.0;
 
   printf("SNR0 %f, SNR1 %f\n",snr0,snr1);
 
@@ -775,7 +781,6 @@ int main(int argc, char **argv) {
 	 subframe,NUMBER_OF_OFDM_CARRIERS,
 	 PHY_vars_eNB->lte_frame_parms.Ncp,PHY_vars_eNB->lte_frame_parms.samples_per_tti,nsymb);
 
-  msg("[SIM] Using SCM/101\n");
   eNB2UE = new_channel_desc_scm(PHY_vars_eNB->lte_frame_parms.nb_antennas_tx_eNB,
 				PHY_vars_UE->lte_frame_parms.nb_antennas_rx,
 				channel_model,
@@ -836,7 +841,7 @@ int main(int argc, char **argv) {
   //printf("nCCE_max %d\n",nCCE_max);
   
   //printf("num_phich interferers %d\n",num_phich_interf);
-  for (SNR=snr0;SNR<snr1;SNR+=1) {
+  for (SNR=snr0;SNR<snr1;SNR+=0.2) {
       
       
   n_errors_common = 0;
@@ -929,7 +934,14 @@ int main(int argc, char **argv) {
           				  &PHY_vars_eNB->lte_frame_parms,
           				  PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id],
           				  subframe);
+
+        if (n_frames==1) 
+	  printf("num_pdcch_symbols at TX %d\n",num_pdcch_symbols);
+
       if (is_phich_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)) {
+        if (n_frames==1) 
+	  printf("generating PHICH\n");
+
         harq_pid = phich_subframe_to_harq_pid(&PHY_vars_eNB->lte_frame_parms, PHY_vars_eNB->frame, subframe);
             
         phich_ACK = taus()&1;
@@ -1114,6 +1126,42 @@ int main(int argc, char **argv) {
       	 0,
       	 0);
         
+#ifdef PERFECT_CE
+	      if (awgn_flag==0) {
+		// fill in perfect channel estimates
+		freq_channel(eNB2UE,PHY_vars_UE->lte_frame_parms.N_RB_DL,12*PHY_vars_UE->lte_frame_parms.N_RB_DL + 1);
+		//write_output("channel.m","ch",desc1->ch[0],desc1->channel_length,1,8);
+		//write_output("channelF.m","chF",desc1->chF[0],nb_samples,1,8);
+		for(k=0;k<NUMBER_OF_eNB_MAX;k++) {
+		  for(aa=0;aa<frame_parms->nb_antennas_tx;aa++) 
+		    { 
+		      for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++)
+			{
+			  for (i=0;i<frame_parms->N_RB_DL*12;i++)
+			    { 
+			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP);
+			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP);
+			    }
+			}
+		    }
+		}
+	      }
+	      else {
+		for(aa=0;aa<frame_parms->nb_antennas_tx;aa++) 
+		  { 
+		    for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++)
+		      {
+			for (i=0;i<frame_parms->N_RB_DL*12;i++)
+			  { 
+			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)(AMP);
+			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
+			  }
+		      }
+		  }
+	      }
+#endif
+
+
       if (l==((PHY_vars_eNB->lte_frame_parms.Ncp==0)?4:3)) {
           
         //	    write_output("H00.m","h00",&(PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][0][0]),((frame_parms->Ncp==0)?7:6)*(PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size),1,1);
