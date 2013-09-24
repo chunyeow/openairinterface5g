@@ -148,6 +148,8 @@ const char* eurecomFunctionsNames[] = {
     "phy_enb_ulsch_decoding",
     "phy_ue_ulsch_modulation",
     "phy_ue_ulsch_encoding",
+    "pdcp_apply_security",
+    "pdcp_validate_security",
     "test"
 };
 

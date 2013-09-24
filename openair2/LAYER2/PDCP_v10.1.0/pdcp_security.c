@@ -38,6 +38,8 @@
 #include "UTIL/LOG/log.h"
 #include "UTIL/OSA/osa_defs.h"
 
+#include "UTIL/LOG/vcd_signal_dumper.h"
+
 #include "LAYER2/MAC/extern.h"
 
 #include "pdcp.h"
@@ -95,6 +97,8 @@ int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
     DevAssert(pdcp_pdu_buffer != NULL);
     DevCheck(rb_id < NB_RB_MAX && rb_id >= 0, rb_id, NB_RB_MAX, 0);
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_APPLY_SECURITY, VCD_FUNCTION_IN);
+
     encrypt_params.direction  = (pdcp_entity->is_ue == 1) ? SECU_DIRECTION_UPLINK : SECU_DIRECTION_DOWNLINK;
     encrypt_params.bearer     = rb_id;
     encrypt_params.count      = pdcp_get_next_count_tx(pdcp_entity, pdcp_header_len, current_sn);
@@ -135,6 +139,8 @@ int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
     stream_encrypt(pdcp_entity->cipheringAlgorithm, &encrypt_params,
                    &buffer_encrypted);
 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_APPLY_SECURITY, VCD_FUNCTION_OUT);
+
     return 0;
 }
 
@@ -149,6 +155,8 @@ int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
 
     DevAssert(pdcp_pdu_buffer != NULL);
     DevCheck(rb_id < NB_RB_MAX && rb_id >= 0, rb_id, NB_RB_MAX, 0);
+
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_VALIDATE_SECURITY, VCD_FUNCTION_IN);
 
     buffer_decrypted = (u8*)&pdcp_pdu_buffer[pdcp_header_len];
 
@@ -179,11 +187,16 @@ int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
         decrypt_params.key        = pdcp_entity->kRRCint;
 
         if (stream_check_integrity(pdcp_entity->integrityProtAlgorithm,
-            &decrypt_params, &pdcp_pdu_buffer[sdu_buffer_size]) != 0) {
+            &decrypt_params, &pdcp_pdu_buffer[sdu_buffer_size]) != 0)
+        {
             LOG_E(PDCP, "[OSA] failed to validate MAC-I of incoming PDU\n");
+            vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_VALIDATE_SECURITY, VCD_FUNCTION_OUT);
             return -1;
         }
     }
+
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_VALIDATE_SECURITY, VCD_FUNCTION_OUT);
+
     return 0;
 }
 

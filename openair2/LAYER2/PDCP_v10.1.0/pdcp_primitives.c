@@ -37,6 +37,7 @@
 #include "UTIL/LOG/log.h"
 #include "platform_types.h"
 #include "platform_constants.h"
+#include "pdcp.h"
 #include "pdcp_primitives.h"
 
 extern BOOL util_mark_nth_bit_of_octet(u8_t* octet, u8_t index);
