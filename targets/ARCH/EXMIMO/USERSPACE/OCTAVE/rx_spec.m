@@ -1,7 +1,7 @@
 dual_tx=0;
 card=0;
 limeparms;
-active_rf = [1 0 0 0];
+active_rf = [1 1 0 0];
 %rf_mode = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM)*[1 1 1 1];
 rf_mode = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM)*active_rf;
 rf_mode = rf_mode+(DMAMODE_RX*active_rf);
@@ -45,7 +45,7 @@ spec0 = 20*log10(abs(fftshift(fft(s(:,1)))));
 spec1 = 20*log10(abs(fftshift(fft(s(:,2)))));
 
 clf
-plot(f',spec0,'r',f',spec1,'b')
+plot(f',spec0,'r')%,f',spec1,'b')
 axis([-3.84,3.84,40,160]);
 %gpib_send(gpib_card,gpib_device,'OUTP:STAT OFF'); %  activate output 
 legend('Antenna Port 0','Antenna Port 1');
