@@ -728,8 +728,8 @@ void mih_user::receive_MIH_Link_Down_indication(odtone::mih::message& msg)
 
 //	log_(0, "[MSC_MSG]["+getTimeStamp4Log()+"]["+ msg.source().to_string() +"][--- MIH_Link_Down.indication\\n"+link_down_reason2string(ldr).c_str()+" --->]["+msg.destination().to_string()+"]\n");
 
-	// Display message parameters
-//	log_(0, "   - LINK_ID - Link identifier:  ", link_id2string(link).c_str());
+	//Display message parameters
+	log_(0, "   - LINK_ID - Link identifier:  ", link_id2string(link).c_str(), "\n");
 //	log_(0, "   - LINK_DN_REASON - Link down reason:  ", link_down_reason2string(ldr).c_str(), "\n");
 
 	log_(0, "MIH_Link_Down.indication - End\n");
