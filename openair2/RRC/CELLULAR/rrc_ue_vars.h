@@ -31,5 +31,6 @@ RRM_VARS *rrm_config;
 
 int rrc_release_all_ressources;
 int rrc_ue_mobileId;
+int rrc_ethernet_id;
 
 #endif

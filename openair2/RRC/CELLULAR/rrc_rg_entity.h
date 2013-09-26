@@ -29,8 +29,9 @@
 ******************************************************************************/
 struct rrc_rg_entity {
 //-----------------------------------------------------------------------------
-  u8  protocol_state[maxUsers];
+  int current_SFN;
 
+  u8  protocol_state[maxUsers];
   // Table to be changed into a list??
   struct Mobile_Node Mobile_List[maxUsers];
   u8  establishment_cause;  // For NAS - A Revoir
@@ -67,6 +68,7 @@ struct rrc_rg_entity {
   // Control block for srb-drb asn1-compliant
   struct rrc_srb_drb_asn1 rg_rb_asn1;
   int mod_id;
+  int ccch_current_UE_Id; //incremented each time a new UE sends ConnReq through CCH
   /* ** OAI compatible part - end **/
 
   // Control block for Broadcast
@@ -85,7 +87,6 @@ struct rrc_rg_entity {
 
   // RG measures
   struct rrc_rg_meas_blocks rg_meas_blocks;
-  int current_SFN;
 
   // Control block for MBMS
   struct rrc_rg_mbms_variables mbms;

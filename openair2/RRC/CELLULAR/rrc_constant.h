@@ -13,7 +13,7 @@
 
 /* ***Debug flags*** */
 #define DEBUG_RRC_STATE
-#define DEBUG_RRC_DETAILS
+//#define DEBUG_RRC_DETAILS
 //#define DEBUG_RRC_DETAILS_2
 #define RRC_DEBUG_DUMMIES
 
@@ -38,6 +38,10 @@
 // #define DEBUG_RRC_FORWARD_MT_MEASURE_REPORT
 // #endif
 
+/* **** */
+/* ** FLAG DEFINED FOR HANDLING of 2UEs in EMULATION MODE ** */
+/* **** */
+#define RRC_OAI_EMU
 /* **** */
 /* ** FLAG DEFINED FOR HANDLING of ENb Measures ** */
 /* **** */
@@ -196,6 +200,9 @@
 #ifdef NODE_MT
 #define RRC_SRB_OFFSET 0
 #endif
+
+//MW 19/9/2013 - Hard coded value of DRB_ID for rrc_ue_outputs.c
+#define RRC_OAI_DRB0_ID 3
 
 #define RRC_LTE_DCCH_ID  2+RRC_SRB_OFFSET  // for openair scheduling
 #define RRC_LCHAN_SRB0_ID  4+RRC_SRB_OFFSET  // traffic on CCCH
