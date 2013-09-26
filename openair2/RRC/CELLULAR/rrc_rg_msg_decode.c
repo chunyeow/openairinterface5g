@@ -241,7 +241,7 @@ int rrc_rg_read_DCin_FIFO (int UE_Id, u8 *buffer, int count){
 
   if (count > 0) {
     #ifdef DEBUG_RRC_STATE
-     msg ("[RRC_RG] Message Received from NAS: -%hx- \n", buffer[0]);
+     msg ("[RRC_RG] Message Received from NAS: -%hx- for UE %d\n", buffer[0], UE_Id);
     #endif
     p = (struct nas_rg_dc_element *) buffer;
     prim_length = (int) (p->length);

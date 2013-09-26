@@ -345,10 +345,10 @@ void rrc_rg_read_FIFO (void){
         rrc_rg_read_DCin_FIFO (0, rcve_buffer, count);
         break;
       case RRC_NAS_DC1_IN:
-        rrc_rg_read_DCin_FIFO (0, rcve_buffer, count);
+        rrc_rg_read_DCin_FIFO (1, rcve_buffer, count);
         break;
       case RRC_NAS_DC2_IN:
-        rrc_rg_read_DCin_FIFO (0, rcve_buffer, count);
+        rrc_rg_read_DCin_FIFO (2, rcve_buffer, count);
         break;
         break;
       default:

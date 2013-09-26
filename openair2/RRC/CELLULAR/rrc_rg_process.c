@@ -29,7 +29,7 @@
 void encode_message (int *Message_Id, int UE_Id, int Message_Type){
 //-----------------------------------------------------------------------------
   #ifdef DEBUG_RRC_STATE
-   msg ("[RRC][FSM-PROC]encode message %d \n", Message_Type);
+   msg ("[RRC][FSM-PROC]encode message %d for UE %d\n", Message_Type, UE_Id);
   #endif
   if (protocol_bs->rrc.Mobile_List[UE_Id].rg_msg_infos.msg_length) {
     #ifdef DEBUG_RRC_STATE

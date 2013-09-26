@@ -108,6 +108,10 @@ void rrc_ue_netlink_init (void){
   int ret;
 
   rrcnl_sock_fd = socket(PF_NETLINK, SOCK_RAW, NAS_RRCNL_ID);
+  if (rrcnl_sock_fd == -1) {
+    fprintf(stderr, "socket failed (%d:%s)\n", errno, strerror(errno));
+    exit(EXIT_FAILURE);
+  }
   printf("rrc_ue_netlink_init - Opened socket with fd %d\n", rrcnl_sock_fd);
 
   ret = fcntl(rrcnl_sock_fd,F_SETFL,O_NONBLOCK);

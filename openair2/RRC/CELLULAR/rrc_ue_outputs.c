@@ -318,12 +318,14 @@ void RRC_RB_UE_O_O_NAS_RB_ESTABLISH_Ind (int rb_id){
   msgToBuild->nasUePrimitive.dc_sap_prim.type = RB_ESTABLISH_IND;
   msgToBuild->nasUePrimitive.dc_sap_prim.length = msgToBuild->prim_length;
   msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.localConnectionRef = protocol_ms->rrc.local_connection_ref;
+  // Temp MW 19/9/13 - Next parameter to be hard coded and should be revised for support of multiple DRBs (transferred at arrival in NAS)
   msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.rbId = protocol_ms->rrc.requested_rbId;
+  //msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.rbId = RRC_OAI_DRB0_ID;
   msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.QoSclass = protocol_ms->rrc.requested_QoSclass;
   msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.dscp = protocol_ms->rrc.requested_dscp;
   msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.sapId = protocol_ms->rrc.requested_sapid;
   #ifdef DEBUG_RRC_STATE
-  msg ("[RRC_RB][FSM-OUT] RB_ESTABLISH_Ind primitive ready to send to NAS, length %d.\n", msgToBuild->prim_length);
+  msg ("[RRC_RB][FSM-OUT] RB_ESTABLISH_Ind primitive ready to send to NAS, length %d.\n", msgToBuild->prim_length, msgToBuild->nasUePrimitive.dc_sap_prim.nasUEDCPrimitive.rb_establish_ind.rbId);
   #endif
   //Temp - to be put back in clear_transaction
   protocol_ms->rrc.requested_rbId = 0;

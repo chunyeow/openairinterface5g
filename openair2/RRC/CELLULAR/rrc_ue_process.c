@@ -45,15 +45,15 @@ void  encode_message (int *Message_Id, int Message_Type){
         rrc_ue_msg_connrelUL (Message_Id);
         break;
       case RB_SETUP_COMPLETE:
-        rrc_ue_config_LTE_default_drb(0);  //TEMP OpenAir
-        rrc_ue_config_LTE_srb2(0);
+        rrc_ue_config_LTE_default_drb(protocol_ms->rrc.mod_id);  //TEMP OpenAir
+        rrc_ue_config_LTE_srb2(protocol_ms->rrc.mod_id);
         rrc_ue_msg_rbsetupcompl (Message_Id);
         break;
       case RB_SETUP_FAILURE:
         rrc_ue_msg_rbsetupfail (Message_Id);
         break;
       case RB_RELEASE_COMPLETE:
-        rrc_ue_config_LTE_default_drb(0);   //TEMP OpenAir
+        rrc_ue_config_LTE_default_drb(protocol_ms->rrc.mod_id);   //TEMP OpenAir
         rrc_ue_msg_rbreleasecompl (Message_Id);
         break;
       case RB_RELEASE_FAILURE:

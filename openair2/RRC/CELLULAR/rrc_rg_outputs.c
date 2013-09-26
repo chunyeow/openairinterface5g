@@ -239,7 +239,7 @@ void RRC_RG_O_O_NAS_RB_ESTAB_CNF (int UE_Id){
   msgToBuild->nasRgPrimitive.dc_sap_prim.nasRGDCPrimitive.rb_establish_conf.sapId = protocol_bs->rrc.Mobile_List[UE_Id].requested_sapid;
   msgToBuild->nasRgPrimitive.dc_sap_prim.nasRGDCPrimitive.rb_establish_conf.status = ACCEPTED;
   #ifdef DEBUG_RRC_STATE
-    msg ("[RRC_RG][FSM-OUT] RB_ESTABLISH_Cnf primitive sent to NAS, for mobile %d.\n", UE_Id);
+    msg ("[RRC_RG][FSM-OUT] RB_ESTABLISH_Cnf primitive sent to NAS, for mobile %d, RB %u.\n", UE_Id, protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId);
   #endif
 }
 
@@ -263,7 +263,7 @@ void RRC_RG_O_O_NAS_RB_Failure (int UE_Id){
   msgToBuild->nasRgPrimitive.dc_sap_prim.nasRGDCPrimitive.rb_establish_conf.status = FAILURE;
   msgToBuild->nasRgPrimitive.dc_sap_prim.nasRGDCPrimitive.rb_establish_conf.fail_code = protocol_bs->rrc.curr_rb_failure_code;
   #ifdef DEBUG_RRC_STATE
-    msg ("[RRC_RG][FSM-OUT] RB_Establish_Failure primitive sent to NAS, for mobile %d.\n", UE_Id);
+    msg ("[RRC_RG][FSM-OUT] RB_Establish_Failure primitive sent to NAS, for mobile %d, RB %u.\n", UE_Id, protocol_bs->rrc.Mobile_List[UE_Id].requested_rbId);
   #endif
 }
 

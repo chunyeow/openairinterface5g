@@ -357,7 +357,7 @@ int rrc_init_global_param(void){
   */
 
   //register with rlc -1st function= data_ind/srb_rx, 2nd function = srb_confirm
-  printk("[RRC]INIT_GLOBAL_PARAM: rrc_rlc_register_rrc %p,rlcrrc_data_ind %p, rrc_L2_rlc_confirm_ind_rx %p\n", rrc_rlc_register_rrc, rlcrrc_data_ind, rrc_L2_rlc_confirm_ind_rx );
+  printk("[RRC CELL]INIT_GLOBAL_PARAM: rrc_rlc_register_rrc %p,rlcrrc_data_ind %p, rrc_L2_rlc_confirm_ind_rx %p\n", rrc_rlc_register_rrc, rlcrrc_data_ind, rrc_L2_rlc_confirm_ind_rx );
   if( rrc_rlc_register_rrc==NULL||rlcrrc_data_ind==NULL|| rrc_L2_rlc_confirm_ind_rx==NULL)
     return -1;
   rrc_rlc_register_rrc(rlcrrc_data_ind , rrc_L2_rlc_confirm_ind_rx);

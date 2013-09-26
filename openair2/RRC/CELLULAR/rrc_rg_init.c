@@ -72,6 +72,7 @@ void rrc_rg_init (u8 Mod_id){
   protocol_bs->rrc.rg_cell_id = 5;      // Temp
 #endif
   protocol_bs->rrc.mod_id =0;
+  protocol_bs->rrc.ccch_current_UE_Id = -1;
 
   // initialise NAS global variables
   pt_nas_rg_irq = &(protocol_bs->rrc.ip_rx_irq);

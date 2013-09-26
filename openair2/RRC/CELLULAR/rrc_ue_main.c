@@ -46,14 +46,6 @@ int rrc_ue_main_scheduler(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index){
 
 //  protocol_ms->rrc.current_SFN = Mac_rlc_xface->frame;
  // protocol_ms->rrc.current_SFN = frame;
-  /*************/
-  // TODO TO BE REMOVED TEMP -- stop the loop 
-  /*  if (protocol_ms->rrc.current_SFN > 50000)
-   exit(1);*/
-  //if (Mac_rlc_xface->frame < 100)
-  //s return;
-  //if (protocol_ms->rrc.current_SFN == 100)
-   //msg("\n\n[RRC] [TEMP-OPENAIR-DEBUG] RRC-UE resuming its operation at frame %d\n\n ", protocol_ms->rrc.current_SFN);
 
   /*************/
   // TODO TO BE REMOVED TEMP -- stop RRC process action (for early traces) 

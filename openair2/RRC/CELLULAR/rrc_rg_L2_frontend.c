@@ -301,6 +301,7 @@ void rrc_rg_init_mac (unsigned char Mod_id){
   else{
     #ifdef DEBUG_RRC_STATE
     msg ("[RRC-RG-FRONTEND] MAC_CONFIG_REQ  (SIB1-SIB2)--->][MAC_eNB]\n");
+    msg ("[RRC-RG-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, eNB_index %d \n",Mod_id, eNB_flag, UE_index, eNB_index);
     //msg ("[RRC-RG-FRONTEND] Frame TDD config %d, protocol_bs value %d\n", mac_xface->lte_frame_parms->tdd_config, protocol_bs->rrc.rg_bch_asn1.tdd_Config.subframeAssignment);
     #endif
 
@@ -361,12 +362,13 @@ void rrc_rg_init_mac (unsigned char Mod_id){
 //-----------------------------------------------------------------------------
 void rrc_rg_config_LTE_srb1 (unsigned char Mod_id){
 //-----------------------------------------------------------------------------
-  int UE_index =0;
+  int UE_index = protocol_bs->rrc.ccch_current_UE_Id;
   int eNB_index = 0;
   int eNB_flag = 1; //1=eNB, 0=UE
   int srb1 = 1;
   #ifdef DEBUG_RRC_STATE
   msg ("\n[RRC-RG-FRONTEND] rrc_rg_config_LTE_srb1\n");
+  msg ("[RRC-RG-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, eNB_index %d \n",Mod_id, eNB_flag, UE_index, eNB_index);
   #endif
 
   // get the parameters values SRB1_config, SRB2_config, physicalConfigDedicated
@@ -386,7 +388,8 @@ void rrc_rg_config_LTE_srb1 (unsigned char Mod_id){
 
 
   protocol_bs->rrc.ccch_buffer_size = do_RRCConnectionSetup((u8 *)protocol_bs->rrc.ccch_buffer,
-			  mac_xface->get_transmission_mode(Mod_id,find_UE_RNTI(Mod_id,UE_index)),
+			  //mac_xface->get_transmission_mode(Mod_id,find_UE_RNTI(Mod_id,UE_index)),
+                          1,  // TEMP - hardcoded in RG as well
 			  UE_index,0,
 			  mac_xface->lte_frame_parms,
 /*			  //&eNB_rrc_inst[Mod_id].SRB1_config[UE_index],
@@ -405,7 +408,8 @@ void rrc_rg_config_LTE_srb1 (unsigned char Mod_id){
   protocol_bs->rrc.rg_rb_asn1.SRB1_logicalChannelConfig = &SRB1_logicalChannelConfig_defaultValue;
 
   #ifdef DEBUG_RRC_STATE
-  msg ("[RRC-RG-FRONTEND] MAC_CONFIG_REQ  (SRB1 UE 0)--->][MAC_eNB]\n");
+  msg ("[RRC-RG-FRONTEND] MAC_CONFIG_REQ  (SRB1 UE %d)--->][MAC_eNB]\n", UE_index);
+  msg ("[RRC-RG-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, eNB_index %d \n",Mod_id, eNB_flag, UE_index, eNB_index);
   #endif
   //Apply configurations to MAC and RLC for SRB1 and SRB2
   /*
@@ -481,15 +485,16 @@ void rrc_rg_config_LTE_srb1 (unsigned char Mod_id){
 void rrc_rg_rcve_ccch(u8 Mod_id, char *Sdu, u16 Sdu_len){
 //-----------------------------------------------------------------------------
   #ifdef DEBUG_RRC_STATE
-  msg ("\n[RRC-RG-FRONTEND] rrc_rg_rcve_ccch , ConnReq, length %d\n", Sdu_len);
+  msg ("\n[RRC-RG-FRONTEND] rrc_rg_rcve_ccch , ConnReq, length %d, Mod_id %d\n", Sdu_len, Mod_id);
   #endif
+  protocol_bs->rrc.ccch_current_UE_Id ++;
   rrc_rg_config_LTE_srb1((unsigned char)Mod_id);
 }
 
 //-----------------------------------------------------------------------------
 void rrc_rg_config_LTE_srb2 (unsigned char Mod_id){
 //-----------------------------------------------------------------------------
-  int UE_index =0;
+  int UE_index = protocol_bs->rrc.ccch_current_UE_Id;
   int eNB_index = 0;
   int eNB_flag = 1; //1=eNB, 0=UE
   int srb2 = 2;
@@ -503,6 +508,7 @@ void rrc_rg_config_LTE_srb2 (unsigned char Mod_id){
 
   #ifdef DEBUG_RRC_STATE
   msg ("[RRC-RG-FRONTEND] MAC_CONFIG_REQ  (SRB2 UE 0)--->][MAC_eNB]\n");
+  msg ("[RRC-RG-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, eNB_index %d \n",Mod_id, eNB_flag, UE_index, eNB_index);
   #endif
   rrc_mac_config_req(Mod_id,eNB_flag,UE_index,eNB_index,  //OK
        (RadioResourceConfigCommonSIB_t *)NULL,  //OK
@@ -549,7 +555,7 @@ void rrc_rg_config_LTE_srb2 (unsigned char Mod_id){
       ,(MBMS_SessionInfoList_r9_t *)NULL
       #endif
       );
- protocol_bs->rrc.rg_rb_asn1.SRB2_active = 1;
+ protocol_bs->rrc.rg_rb_asn1.SRB2_active[UE_index] = 1;
   // TEMP Next lines have been transferred from rrc_rg_rrm_connected_init  
   // because MCCH is using srb2
   //Initialise MBMS
@@ -560,7 +566,7 @@ void rrc_rg_config_LTE_srb2 (unsigned char Mod_id){
 //-----------------------------------------------------------------------------
 void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
 //-----------------------------------------------------------------------------
-  int UE_index =0;
+  int UE_index = protocol_bs->rrc.ccch_current_UE_Id;
   int eNB_index = 0;
   int eNB_flag = 1; //1=eNB, 0=UE
   int drb_ix=0;  // default DRB
@@ -569,7 +575,7 @@ void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
   u8 DRB2LCHAN[8];
 
   #ifdef DEBUG_RRC_STATE
-  msg ("\n[RRC-RG-FRONTEND] rrc_rg_config_LTE_default_drb: begin\n");
+  msg ("\n[RRC-RG-FRONTEND] rrc_rg_config_LTE_default_drb: begin for UE %d eNB mod id %d\n", UE_index, Mod_id);
   #endif
   /*
   uint8_t do_RRCConnectionReconfiguration(uint8_t  Mod_id,
@@ -612,7 +618,7 @@ void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
 
     DRB2LCHAN[drb_ix] = (u8)*protocol_bs->rrc.rg_rb_asn1.DRB_configList[UE_index]->list.array[0]->logicalChannelIdentity;
 
-    if (protocol_bs->rrc.rg_rb_asn1.DRB1_active == 0) {
+    if (protocol_bs->rrc.rg_rb_asn1.DRB1_active[UE_index] == 0) {
       msg("[RRC-RG-FRONTEND] rrc_rg_config_LTE_default_drb: Frame %d: Establish PDCP + RLC UM Bidirectional, DRB %d Active\n",
             protocol_bs->rrc.current_SFN, (int)protocol_bs->rrc.rg_rb_asn1.DRB_configList[UE_index]->list.array[0]->drb_Identity);
 
@@ -638,9 +644,12 @@ void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
           ,(MBMS_SessionInfoList_r9_t *)NULL
           #endif
       );
-      protocol_bs->rrc.rg_rb_asn1.DRB1_active = 1;
+      protocol_bs->rrc.rg_rb_asn1.DRB1_active[UE_index] = 1;
 
+      #ifdef DEBUG_RRC_STATE
       msg("[RRC-RG-FRONTEND] rrc_rg_config_LTE_default_drb:[--- MAC_CONFIG_REQ  (DRB UE %d) --->][MAC_eNB]\n", UE_index);
+      msg ("[RRC-RG-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, eNB_index %d\n",Mod_id, eNB_flag, UE_index, eNB_index);
+      #endif
 
 
   /*  RRC Lite l 1357
@@ -693,7 +702,7 @@ void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
     }else{ // remove LCHAN from MAC/PHY
       // Initialized here because it is a local variable (global in RRC Lite)
       //DRB2LCHAN[drb_ix] = (u8)*protocol_bs->rrc.rg_rb_asn1.DRB1_config->logicalChannelIdentity;
-      if (protocol_bs->rrc.rg_rb_asn1.DRB1_active ==1) {
+      if (protocol_bs->rrc.rg_rb_asn1.DRB1_active[UE_index] ==1) {
         // DRB has just been removed so remove RLC + PDCP for DRB
         msg("[RRC-RG-FRONTEND] rrc_rg_config_LTE_default_drb: Frame %d: Remove PDCP + RLC UM Bidirectional, DRB 0 \n",
 //            protocol_bs->rrc.current_SFN, (int)protocol_bs->rrc.rg_rb_asn1.DRB_configList[UE_index]->list.array[0]->drb_Identity);
@@ -706,8 +715,11 @@ void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
                           RADIO_ACCESS_BEARER,Rlc_info_um);
 
       }
-      protocol_bs->rrc.rg_rb_asn1.DRB1_active = 0;
+      protocol_bs->rrc.rg_rb_asn1.DRB1_active[UE_index] = 0;
+      #ifdef DEBUG_RRC_STATE
       msg("[RRC-RG-FRONTEND] rrc_rg_config_LTE_default_drb:[--- MAC_CONFIG_REQ  (DRB UE %d) --->][MAC_eNB]\n", UE_index);
+      msg ("[RRC-RG-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, eNB_index %d \n",Mod_id, eNB_flag, UE_index, eNB_index);
+      #endif
       rrc_mac_config_req(Mod_id,eNB_flag,UE_index,eNB_index,
           (RadioResourceConfigCommonSIB_t *)NULL,
           protocol_bs->rrc.rg_rb_asn1.physicalConfigDedicated,
