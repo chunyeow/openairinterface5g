@@ -888,7 +888,8 @@ void fill_dci_emos(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
 int QPSK[4]={AMP_OVER_SQRT2|(AMP_OVER_SQRT2<<16),AMP_OVER_SQRT2|((65536-AMP_OVER_SQRT2)<<16),((65536-AMP_OVER_SQRT2)<<16)|AMP_OVER_SQRT2,((65536-AMP_OVER_SQRT2)<<16)|(65536-AMP_OVER_SQRT2)};
 int QPSK2[4]={AMP_OVER_2|(AMP_OVER_2<<16),AMP_OVER_2|((65536-AMP_OVER_2)<<16),((65536-AMP_OVER_2)<<16)|AMP_OVER_2,((65536-AMP_OVER_2)<<16)|(65536-AMP_OVER_2)};
 
-void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type) {
+void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,
+			   relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn) {
   u8 *pbch_pdu=&phy_vars_eNB->pbch_pdu[0];
   //  unsigned int nb_dci_ue_spec = 0, nb_dci_common = 0;
   u16 input_buffer_length, re_allocated=0;
@@ -911,7 +912,9 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
   int re_offset;
   uint32_t *txptr;
 #ifdef Rel10
-  MCH_PDU *mch_pdu;
+  MCH_PDU *mch_pduP;
+  MCH_PDU  mch_pdu;
+  u8 sync_area=255;
 #endif
 #if defined(SMBV) && !defined(EXMIMO)
   // counts number of allocations in subframe
@@ -970,17 +973,66 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 			       next_slot,1);
 
 #ifdef Rel10
-	  // get MCH from MAC
-	  mch_pdu = mac_xface->get_mch_sdu(phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1);
-
-	  fill_eNB_dlsch_MCH(phy_vars_eNB,mch_pdu->mcs,1,0);
-	  
-	  LOG_D(PHY,"[eNB%d][MCH] Frame %d: Got MCH pdu for MBSFN Subframe %d : MCS %d, TBS %d\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,mch_pdu->mcs,phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3);
-	  // Generate PMCH
-	  generate_mch(phy_vars_eNB,next_slot>>1,(uint8_t*)mch_pdu->payload);
-	  /*for (i=0;i<phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3;i++)
-	    printf("%2x.",(uint8_t)mch_pdu->payload[i]);
-	    printf("\n");*/
+	  // if mcch is active, send regardless of the node type: eNB or RN
+	  // when mcch is active, MAC sched does not allow MCCH and MTCH multiplexing 
+	  mch_pduP = mac_xface->get_mch_sdu(phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1);
+	  switch (r_type){
+	  case no_relay:
+	    if ((mch_pduP->Pdu_size > 0) && (mch_pduP->sync_area == 0)) // TEST: only transmit mcch for sync area 0 
+	      //if ((mch_pduP->sync_area == 0)) // TEST: only transmit mcch for sync area 0 
+	      LOG_I(PHY,"[eNB%d] Frame %d subframe %d : Got MCH pdu for MBSFN (MCS %d, TBS %d) \n",
+		    phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,mch_pduP->mcs,
+		    phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3);
+	    else {
+	      LOG_D(PHY,"[DeNB %d] Frame %d subframe %d : Do not transmit MCH pdu for MBSFN sync area %d (%s)\n",
+		    phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,mch_pduP->sync_area,
+		    (mch_pduP->Pdu_size == 0)? "Empty MCH PDU":"Let RN transmit for the moment");
+	      mch_pduP = NULL;
+	    }
+	    break;
+	  case multicast_relay:
+	    if ((mch_pduP->Pdu_size > 0) && ((mch_pduP->mcch_active == 1) || mch_pduP->msi_active==1)){
+	      //if (((mch_pduP->mcch_active == 1) || mch_pduP->msi_active==1)){
+	      LOG_I(PHY,"[RN %d] Frame %d subframe %d: Got the MCH PDU for MBSFN  sync area %d (MCS %d, TBS %d)\n",
+		    phy_vars_rn->Mod_id,phy_vars_rn->frame, next_slot>>1,
+		    mch_pduP->sync_area,mch_pduP->mcs,mch_pduP->Pdu_size);
+	    } else if (phy_vars_rn->mch_avtive[(next_slot>>1)%5] == 1){ // SF2 -> SF7, SF3 -> SF8
+	      mch_pduP= &mch_pdu;
+	      memcpy(&mch_pduP->payload, // could be a simple copy
+		     phy_vars_rn->dlsch_rn_MCH[(next_slot>>1)%5]->harq_processes[0]->b,
+		     phy_vars_rn->dlsch_rn_MCH[(next_slot>>1)%5]->harq_processes[0]->TBS>>3);
+	      mch_pduP->Pdu_size = (uint16_t) (phy_vars_rn->dlsch_rn_MCH[(next_slot>>1)%5]->harq_processes[0]->TBS>>3);
+	      mch_pduP->mcs = phy_vars_rn->dlsch_rn_MCH[(next_slot>>1)%5]->harq_processes[0]->mcs;
+	      LOG_I(PHY,"[RN %d] Frame %d subframe %d: Forward the MCH PDU for MBSFN received on SF %d sync area %d (MCS %d, TBS %d)\n",
+		    phy_vars_rn->Mod_id,phy_vars_rn->frame, next_slot>>1,(next_slot>>1)%5,
+		    phy_vars_rn->sync_area[(next_slot>>1)%5],mch_pduP->mcs,mch_pduP->Pdu_size);
+	    } else {
+	      /* LOG_I(PHY,"[RN %d] Frame %d subframe %d: do not forward MCH pdu for MBSFN  sync area %d (MCS %d, TBS %d)\n",
+		    phy_vars_rn->Mod_id,phy_vars_rn->frame, next_slot>>1,
+		    mch_pduP->sync_area,mch_pduP->mcs,mch_pduP->Pdu_size);*/
+	      mch_pduP=NULL;
+	    }
+	    phy_vars_rn->mch_avtive[next_slot>>1]=0;
+	    break;
+	  default:
+	    LOG_W(PHY,"[eNB %d] Frame %d subframe %d: unknown relaying type %d \n",
+		  phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,r_type);
+	    mch_pduP=NULL;
+	    break;
+	    }// switch 
+	
+	  if (mch_pduP){
+	    fill_eNB_dlsch_MCH(phy_vars_eNB,mch_pduP->mcs,1,0);
+	    // Generate PMCH
+	    generate_mch(phy_vars_eNB,next_slot>>1,(uint8_t*)mch_pduP->payload);
+#ifdef DEBUG_PHY
+	    for (i=0;i<mch_pduP->Pdu_size;i++)
+	      msg("%2x.",(uint8_t)mch_pduP->payload[i]);
+	    msg("\n");
+#endif 
+	  } else {
+	    LOG_D(PHY,"[eNB/RN] Frame %d subframe %d: MCH not generated \n",phy_vars_eNB->frame,next_slot>>1);
+	  }
 #endif
 	}
       }
@@ -3377,7 +3429,7 @@ int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, r
     do_proc= no_relay; // perform the normal eNB operation 
     break;
   case multicast_relay:
-    if ( ((next_slot >>1) < 6) || ((next_slot >>1) > 8))
+    if (((next_slot >>1) < 6) || ((next_slot >>1) > 8))
       do_proc = 0; // do nothing
     else // SF#6, SF#7 and SF#8 
       do_proc = multicast_relay; // do PHY procedures eNB TX 
@@ -3390,7 +3442,8 @@ int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, r
   return do_proc;
 }
 #endif 
-void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_type_t r_type) {
+void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, 
+			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
   /*
     if (phy_vars_eNB->frame >= 1000)
     mac_xface->macphy_exit("Exiting after 1000 Frames\n");
@@ -3404,7 +3457,7 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
 #ifdef Rel10 
     if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 ) 
 #endif 
-      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type);
+      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
   }
   if (((phy_vars_eNB->lte_frame_parms.frame_type == 1 )&&(subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_UL))||
       (phy_vars_eNB->lte_frame_parms.frame_type == 0)){
@@ -3415,7 +3468,7 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
 #ifdef Rel10 
     if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 )
 #endif 
-      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type);
+      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_S) &&
       ((last_slot&1)==0)){

@@ -52,7 +52,7 @@ MAX_NUM_MOB_TYPES /*!< The maximum number of mobility models. Used to adjust the
 typedef enum {
 eNB=0, /*!< enhanced Node B  */
 UE, /*!< User Equipement  */
-ALL, /*!< All the types. Used to perform the same operations to all the types of nodes */
+ALL /*!< All the types. Used to perform the same operations to all the types of nodes */
 }node_types;
 
 

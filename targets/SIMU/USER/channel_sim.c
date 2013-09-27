@@ -59,7 +59,7 @@ void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame,u16 next_slot
   for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
    if (is_pmch_subframe(frame,next_slot>>1,frame_parms)) {
       if ((next_slot%2)==0) {
-	printf("MBSFN eNB sim: Frame %d, subframe %d: Doing MBSFN modulation (slot_offset %d)\n",frame,next_slot>>1,slot_offset); 
+	LOG_D(OCM,"Frame %d, subframe %d: Doing MBSFN modulation (slot_offset %d)\n",frame,next_slot>>1,slot_offset); 
 	PHY_ofdm_mod(&txdataF[aa][slot_offset_F],        // input
 		     &txdata[aa][slot_offset],         // output
 		     frame_parms->log2_symbol_size,                // log2_fft_size
@@ -79,7 +79,7 @@ void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame,u16 next_slot
 		       frame_parms->rev,           // bit-reversal permutation
 		       CYCLIC_PREFIX);
 	else {
-	  printf("MBSFN eNB sim: Frame %d, subframe %d: Doing PDCCH modulation\n",frame,next_slot>>1); 
+	  LOG_D(OCM,"Frame %d, subframe %d: Doing PDCCH modulation\n",frame,next_slot>>1); 
 	  normal_prefix_mod(&txdataF[aa][slot_offset_F],
 			    &txdata[aa][slot_offset],
 			    2,

@@ -315,6 +315,7 @@ void phy_config_sib13_ue(u8 Mod_id,u8 CH_index,int mbsfn_Area_idx,
 
   if (mbsfn_Area_idx == 0) {
     lte_frame_parms->Nid_cell_mbsfn = (uint16_t)mbsfn_AreaId_r9;
+    LOG_N(PHY,"Fix me: only called when mbsfn_Area_idx == 0)\n");
   }
 
   lte_gold_mbsfn(lte_frame_parms,PHY_vars_UE_g[Mod_id]->lte_gold_mbsfn_table,lte_frame_parms->Nid_cell_mbsfn);   
@@ -332,6 +333,7 @@ void phy_config_sib13_eNB(u8 Mod_id,int mbsfn_Area_idx,
 
   if (mbsfn_Area_idx == 0) {
     lte_frame_parms->Nid_cell_mbsfn = (uint16_t)mbsfn_AreaId_r9;
+    LOG_N(PHY,"Fix me: only called when mbsfn_Area_idx == 0)\n");
   }
 
   lte_gold_mbsfn(lte_frame_parms,PHY_vars_eNB_g[Mod_id]->lte_gold_mbsfn_table,lte_frame_parms->Nid_cell_mbsfn);   

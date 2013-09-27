@@ -201,9 +201,11 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 
   if (mbsfn_SubframeConfigList != NULL) {
     if (eNB_flag == 1) {
+      LOG_I(MAC,"[eNB %d][CONFIG] Received %d subframe allocation pattern for MBSFN\n", Mod_id, mbsfn_SubframeConfigList->list.count);
+      eNB_mac_inst[Mod_id].num_sf_allocation_pattern= mbsfn_SubframeConfigList->list.count; 
       for (i=0; i<mbsfn_SubframeConfigList->list.count; i++) {
 	eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[i] = mbsfn_SubframeConfigList->list.array[i];
-	LOG_I(MAC, "[CONFIG] MBSFN_SubframeConfig[%d] pattern is  %ld\n", i, 
+	LOG_I(MAC, "[eNB %d][CONFIG] MBSFN_SubframeConfig[%d] pattern is  %x\n", Mod_id, i, 
 	      eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[i]->subframeAllocation.choice.oneFrame.buf[0]); 
       }
 #ifdef Rel10
@@ -211,8 +213,10 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 #endif
     }
     else { // UE
+      LOG_I(MAC,"[UE %d][CONFIG] Received %d subframe allocation pattern for MBSFN\n", Mod_id, mbsfn_SubframeConfigList->list.count);
+      UE_mac_inst[Mod_id].num_sf_allocation_pattern= mbsfn_SubframeConfigList->list.count; 
       for (i=0; i<mbsfn_SubframeConfigList->list.count; i++) {
-	LOG_I(MAC, "[UE %d] Configuring MBSFN_SubframeConfig from received SIB2 \n", Mod_id); 
+	LOG_I(MAC, "[UE %d] Configuring MBSFN_SubframeConfig %d from received SIB2 \n", Mod_id, i); 
 	UE_mac_inst[Mod_id].mbsfn_SubframeConfig[i] = mbsfn_SubframeConfigList->list.array[i];
 	//	LOG_I("[UE %d] MBSFN_SubframeConfig[%d] pattern is  %ld\n", Mod_id, 
 	//    UE_mac_inst[Mod_id].mbsfn_SubframeConfig[i]->subframeAllocation.choice.oneFrame.buf[0]); 
@@ -223,19 +227,22 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 #ifdef Rel10
   if (mbsfn_AreaInfoList != NULL) {
     if (eNB_flag == 1) {
-     LOG_I(MAC, "[CONFIG] Number of MBSFN Area Info in the list %d\n", mbsfn_AreaInfoList->list.count);
+      // One eNB could be part of multiple mbsfn syc area, this could change over time so reset each time
+      LOG_I(MAC,"[eNB %d][CONFIG] Received %d MBSFN Area Info\n", Mod_id, mbsfn_AreaInfoList->list.count);
+      eNB_mac_inst[Mod_id].num_active_mbsfn_area = mbsfn_AreaInfoList->list.count; 
       for (i =0; i< mbsfn_AreaInfoList->list.count; i++) {
 	eNB_mac_inst[Mod_id].mbsfn_AreaInfo[i] = mbsfn_AreaInfoList->list.array[i];
-	LOG_I(MAC, "[CONFIG] MBSFN_AreaInfo[%d]: MCCH Repetition Period = %ld\n", i, 
+	LOG_I(MAC,"[eNB %d][CONFIG] MBSFN_AreaInfo[%d]: MCCH Repetition Period = %ld\n", Mod_id,i,  
 	      eNB_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9); 
 	mac_xface->phy_config_sib13_eNB(Mod_id,i,eNB_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mbsfn_AreaId_r9);
       }
     }
     else {  // UE
-      LOG_I(MAC, "[UE %d] Configuring mbsfn_AreaInfo from received SIB13 \n", Mod_id);
+      LOG_I(MAC,"[UE %d][CONFIG] Received %d MBSFN Area Info\n", Mod_id, mbsfn_AreaInfoList->list.count);
+      UE_mac_inst[Mod_id].num_active_mbsfn_area = mbsfn_AreaInfoList->list.count; 
       for (i =0; i< mbsfn_AreaInfoList->list.count; i++) {
 	UE_mac_inst[Mod_id].mbsfn_AreaInfo[i] = mbsfn_AreaInfoList->list.array[i];
-	LOG_I(MAC, "[UE %d] MBSFN_AreaInfo[%d]: MCCH Repetition Period = %ld\n",Mod_id, i, 
+	LOG_I(MAC,"[UE %d] MBSFN_AreaInfo[%d]: MCCH Repetition Period = %ld\n",Mod_id, i, 
 	      UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9); 
 	mac_xface->phy_config_sib13_ue(Mod_id,eNB_index,i,UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mbsfn_AreaId_r9);
       }

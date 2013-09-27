@@ -354,7 +354,7 @@ void ue_send_sdu(u8 Mod_id,u32 frame,u8 *sdu,u16 sdu_len,u8 eNB_index) {
       mac_rrc_data_ind(Mod_id,
 		       frame,
 		       CCCH,
-		       (char *)payload_ptr,rx_lengths[i],0,eNB_index);
+		       (char *)payload_ptr,rx_lengths[i],0,eNB_index,0);
 
     }
     else if (rx_lcids[i] == DCCH) {
@@ -418,7 +418,8 @@ void ue_decode_si(u8 Mod_id,u32 frame, u8 eNB_index, void *pdu,u16 len) {
 		   (char *)pdu,
 		   len,
 		   0,
-		   eNB_index);
+		   eNB_index,
+		   0);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_SI, VCD_FUNCTION_OUT);
 }
 
@@ -469,24 +470,24 @@ unsigned char *parse_mch_header(unsigned char *mac_header,
 }
 
 // this function is for sending mch_sdu from phy to mac
-void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index) {
+void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index, u8 sync_area) {
 
   unsigned char num_sdu, i, *payload_ptr;
   unsigned char rx_lcids[NB_RB_MAX]; 
   unsigned short rx_lengths[NB_RB_MAX];
 
   //  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SEND_MCH_SDU, VCD_FUNCTION_IN);
-  LOG_I(MAC,"[UE %d] Frame %d : entering ue_send_mch_sdu\n",Mod_id,frame);
-  LOG_I(MAC,"[UE %d] sdu: %x.%x\n", Mod_id,sdu[0], sdu[1]);
-  LOG_I(MAC,"[UE %d] parse_mch_header, demultiplex\n",Mod_id);
+  LOG_D(MAC,"[UE %d] Frame %d : process the mch PDU for sync area %d \n",Mod_id,frame, sync_area);
+  LOG_D(MAC,"[UE %d] sdu: %x.%x\n", Mod_id,sdu[0], sdu[1]);
+  LOG_D(MAC,"[UE %d] parse_mch_header, demultiplex\n",Mod_id);
 
   payload_ptr = parse_mch_header(sdu, &num_sdu, rx_lcids, rx_lengths, sdu_len);
-  LOG_I(MAC,"[UE %d] parse_mch_header, found %d sdus\n",Mod_id,num_sdu);
+  LOG_D(MAC,"[UE %d] parse_mch_header, found %d sdus\n",Mod_id,num_sdu);
 
   for (i=0; i<num_sdu; i++) {
     if (rx_lcids[i] == MCH_SCHDL_INFO) {
       if (UE_mac_inst[Mod_id].mcch_status==1) {
-	LOG_I(MAC,"[UE %d] Frame %d : MCH -> MSI  (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
+	LOG_I(MAC,"[UE %d] Frame %d : MCH->MSI for sync area %d (eNB %d, %d bytes)\n",Mod_id,frame, sync_area, eNB_index, rx_lengths[i]);
 	// ??store necessary scheduling info to ue_mac_inst in order to 
 	// calculate exact position of interested service (for the complex case has >1 mtch)
 	// set msi_status to 1
@@ -494,15 +495,15 @@ void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index) {
       }
     }
     else if (rx_lcids[i] == MCCH_LCHANID) {
-      LOG_I(MAC,"[UE %d] Frame %d : MCH -> MCCH, RRC message (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
+      LOG_I(MAC,"[UE %d] Frame %d : SDU %d MCH->MCCH for sync area %d (eNB %d, %d bytes)\n",Mod_id,frame, i, sync_area, eNB_index, rx_lengths[i]);
       mac_rrc_data_ind(Mod_id, 
 		       frame, 
 		       MCCH, 
-		       (char *)payload_ptr, rx_lengths[i], 0, eNB_index);
+		       (char *)payload_ptr, rx_lengths[i], 0, eNB_index, sync_area);
     }
     else if (rx_lcids[i] == MTCH) {
       if (UE_mac_inst[Mod_id].msi_status==1) {  
-	LOG_I(MAC,"[UE %d] Frame %d : MCH -> MTCH (eNB %d, %d bytes)\n",Mod_id,frame, eNB_index, rx_lengths[i]);
+	LOG_I(MAC,"[UE %d] Frame %d : MCH->MTCH for sync area %d (eNB %d, %d bytes)\n",Mod_id,frame, sync_area, eNB_index, rx_lengths[i]);
 
 	mac_rlc_data_ind(Mod_id+NB_eNB_INST, // because rlc[module_idP] (to differential between eNB and UE)
 			 frame,
@@ -515,204 +516,245 @@ void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index) {
 			 NULL);
 
       }
+    } else {
+      LOG_W(MAC,"[UE %d] Frame %d : unknown sdu %d mcch status %d eNB %d \n",Mod_id,frame,rx_lengths[i],
+	    UE_mac_inst[Mod_id].mcch_status, eNB_index);
     }
+      
     payload_ptr += rx_lengths[i];
   }
 
   //  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SEND_MCH_SDU, VCD_FUNCTION_OUT);
 }
 
-int ue_query_mch(uint8_t Mod_id, uint32_t frame, uint32_t subframe) {
+s8 ue_get_mbsfn_sf_alloction (unsigned char Mod_id, u8 mbsfn_sync_area, unsigned char eNB_index){
+ // currently there is one-to-one mapping between sf allocation pattern and sync area
+  if (mbsfn_sync_area > MAX_MBSFN_AREA){
+    LOG_W(MAC,"[UE %d] MBSFN synchronization area %d out of range for eNB %d\n ", Mod_id, mbsfn_sync_area, eNB_index); 
+    return -1;
+  }
+  else if (UE_mac_inst[Mod_id].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL)
+    return mbsfn_sync_area; 
+  else {
+    LOG_W(MAC,"[UE %d] MBSFN Subframe Config pattern %d not found \n ", Mod_id, mbsfn_sync_area); 
+    return -1;
+  }
+}
 
-  int ii=0, msi_pos=0, mcch_mcs;
+int ue_query_mch(uint8_t Mod_id, uint32_t frame, uint32_t subframe, uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active) {
+
+  int i=0, j=0, ii=0, msi_pos=0, mcch_mcs;
   int mcch_flag=0, mtch_flag=0, msi_flag=0;
-  int mbsfn_period = 1<<(UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationPeriod);
-  int mcch_period = 32<<(UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
+  int mbsfn_period = 0;// 1<<(UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationPeriod);
+  int mcch_period = 0;// 32<<(UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
   int mch_scheduling_period; 
-
-  LOG_I(MAC,"[UE %d] Frame %d, subframe %d: query mch\n",Mod_id,frame,subframe);
 
   if (UE_mac_inst[Mod_id].pmch_Config[0])
     mch_scheduling_period = 8<<(UE_mac_inst[Mod_id].pmch_Config[0]->mch_SchedulingPeriod_r9);
 
-  if (frame % mbsfn_period == UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationOffset){ // MBSFN frame
-    if (UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.present == MBSFN_SubframeConfig__subframeAllocation_PR_oneFrame){// one-frame format
+  for (i=0; 
+       i< eNB_mac_inst[Mod_id].num_active_mbsfn_area;
+       i++ ){ 
+    // assume, that there is always a mapping
+    if ((j=ue_get_mbsfn_sf_alloction(Mod_id,i,eNB_index)) == -1)
+      return -1; // continue;
+    ii=0;
+    msi_pos=0;
+    mbsfn_period = 1<<(UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationPeriod);
+    mcch_period = 32<<(UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
+    
+    LOG_D(MAC,"[UE %d] Frame %d subframe %d: Checking MBSFN Sync Area %d/%d with SF allocation %d/%d for MCCH and MTCH (mbsfn period %d, mcch period %d)\n", 
+	  Mod_id,frame, subframe,i,UE_mac_inst[Mod_id].num_active_mbsfn_area,
+	  j,UE_mac_inst[Mod_id].num_sf_allocation_pattern,mbsfn_period,mcch_period);
+    
+    // get the real MCS value 
+    switch (UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.signallingMCS_r9) {
+    case 0:
+      mcch_mcs = 2;
+      break;
+    case 1:
+      mcch_mcs = 7;
+      break;
+    case 2:
+      mcch_mcs = 13;
+      break;
+    case 3:
+      mcch_mcs = 19;
+      break;
+    }
+    
+    if (frame % mbsfn_period == UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->radioframeAllocationOffset){ // MBSFN frame
+      if (UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.present == MBSFN_SubframeConfig__subframeAllocation_PR_oneFrame){// one-frame format
       
-      if (UE_mac_inst[Mod_id].pmch_Config[0]) {
-	//  Find the first subframe in this MCH to transmit MSI
-	if (frame % mch_scheduling_period == UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationOffset ) {
-	  while (ii == 0) {
-	    ii = UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & (0x80>>msi_pos);
-	    msi_pos++;
+	if (UE_mac_inst[Mod_id].pmch_Config[0]) {
+	  //  Find the first subframe in this MCH to transmit MSI
+	  if (frame % mch_scheduling_period == UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->radioframeAllocationOffset ) {
+	    while (ii == 0) {
+	      ii = UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & (0x80>>msi_pos);
+	      msi_pos++;
+	    }
 	  }
 	}
-      }
       
       // Check if the subframe is for MSI, MCCH or MTCHs and Set the correspoding flag to 1
-      switch (subframe) {     
-      case 1:
-	if (mac_xface->lte_frame_parms->frame_type == FDD) {      
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) {
+	switch (subframe) {     
+	case 1:
+	  if (mac_xface->lte_frame_parms->frame_type == FDD) {      
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) {
 	    if (msi_pos == 1) 
 	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) )
+	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF1) == MBSFN_FDD_SF1) )
 	      mcch_flag = 1;
 	    mtch_flag = 1;
+	    }
 	  }
-	}
+	  break;
+	
+	case 2:
+	  if (mac_xface->lte_frame_parms->frame_type == FDD){
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) {
+	      if (msi_pos == 2) 
+		msi_flag = 1;
+	      if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		   ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  break;
+	  
+	case 3:
+	  if (mac_xface->lte_frame_parms->frame_type == TDD){// TDD
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) {
+	      if (msi_pos == 1) 
+		msi_flag = 1;
+	      if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		   ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  else {// FDD
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) {
+	      if (msi_pos == 3) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		  ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  break;
+	
+	case 4:
+	  if (mac_xface->lte_frame_parms->frame_type == TDD){
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) {
+	      if (msi_pos == 2) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		   ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  break;
+	
+	case 6:
+	  if (mac_xface->lte_frame_parms->frame_type == FDD){
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) {
+	      if (msi_pos == 4) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		  ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  break;
+	
+	case 7:
+	  if (mac_xface->lte_frame_parms->frame_type == TDD){ // TDD
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) {
+	      if (msi_pos == 3) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		  ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  else {// FDD
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) {
+	      if (msi_pos == 5) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		  ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
 	break;
 	
-      case 2:
-	if (mac_xface->lte_frame_parms->frame_type == FDD){
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) {
-	    if (msi_pos == 2) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF2) == MBSFN_FDD_SF2) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
+	case 8:
+	  if (mac_xface->lte_frame_parms->frame_type == TDD){ //TDD
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) {
+	      if (msi_pos == 4) 
+		msi_flag = 1;
+	      if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		   ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
 	  }
-	}
-	break;
+	  else{ // FDD
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) {
+	      if (msi_pos == 6) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		  ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
+	  }
+	  break;
 	
-      case 3:
-	if (mac_xface->lte_frame_parms->frame_type == TDD){// TDD
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) {
-	    if (msi_pos == 1) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF3) == MBSFN_TDD_SF3) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
+	case 9:
+	  if (mac_xface->lte_frame_parms->frame_type == TDD){
+	    if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) {
+	      if (msi_pos == 5) 
+		msi_flag = 1;
+	      if ((frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_Offset_r9) && 
+		  ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) )
+		mcch_flag = 1;
+	      mtch_flag = 1;
+	    }
 	  }
+	  break;
+	}// end switch
+	// sf allocation is non-overlapping
+        if ((msi_flag==1) || (mcch_flag==1) || (mtch_flag==1)){
+	  LOG_D(MAC,"[UE %d] Frame %d Subframe %d: sync area %d SF alloc %d: msi flag %d, mcch flag %d, mtch flag %d\n",
+		Mod_id, frame, subframe,i,j,msi_flag,mcch_flag,mtch_flag);
+	 
+	  *sync_area=i;  
+	  break;
 	}
-	else {// FDD
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) {
-	    if (msi_pos == 3) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF3) == MBSFN_FDD_SF3) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	break;
-	
-      case 4:
-	if (mac_xface->lte_frame_parms->frame_type == TDD){
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) {
-	    if (msi_pos == 2) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF4) == MBSFN_TDD_SF4) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	break;
-	
-      case 6:
-	if (mac_xface->lte_frame_parms->frame_type == FDD){
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) {
-	    if (msi_pos == 4) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF6) == MBSFN_FDD_SF6) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	break;
-	
-      case 7:
-	if (mac_xface->lte_frame_parms->frame_type == TDD){ // TDD
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) {
-	    if (msi_pos == 3) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF7) == MBSFN_TDD_SF7) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	else {// FDD
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) {
-	    if (msi_pos == 5) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF7) == MBSFN_FDD_SF7) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	break;
-	
-      case 8:
-	if (mac_xface->lte_frame_parms->frame_type == TDD){ //TDD
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) {
-	    if (msi_pos == 4) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF8) == MBSFN_TDD_SF8) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	else{ // FDD
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) {
-	    if (msi_pos == 6) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_FDD_SF8) == MBSFN_FDD_SF8) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	break;
-	
-      case 9:
-	if (mac_xface->lte_frame_parms->frame_type == TDD){
-	  if ((UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->subframeAllocation.choice.oneFrame.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) {
-	    if (msi_pos == 5) 
-	      msi_flag = 1;
-	    if ( (frame % mcch_period == UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_Offset_r9) && 
-		 ((UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.sf_AllocInfo_r9.buf[0] & MBSFN_TDD_SF9) == MBSFN_TDD_SF9) )
-	      mcch_flag = 1;
-	    mtch_flag = 1;
-	  }
-	}
-	break;
-      }// end switch
+      }
+      else {// four-frame format
+      }
     }
-    else {// four-frame format
-    }
-  }
-
-  // get the real MCS value 
-  switch (UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.signallingMCS_r9) {
-  case 0:
-    mcch_mcs = 2;
-    break;
-  case 1:
-    mcch_mcs = 7;
-    break;
-  case 2:
-    mcch_mcs = 13;
-    break;
-  case 3:
-    mcch_mcs = 19;
-    break;
-  }
+  } // end of for
   
-  if ( (mcch_flag==1) || 
-       ((msi_flag==1) && (UE_mac_inst[Mod_id].mcch_status==1)) ) 
+  if ( (mcch_flag==1))// || (msi_flag==1))
+    *mcch_active=1;
+
+  if ( (mcch_flag==1) || ((msi_flag==1) && (UE_mac_inst[Mod_id].mcch_status==1)) ){ 
     return mcch_mcs;
-  else if ((mtch_flag==1) && (UE_mac_inst[Mod_id].msi_status==1))
+  } else if ((mtch_flag==1) && (UE_mac_inst[Mod_id].msi_status==1))
     return UE_mac_inst[Mod_id].pmch_Config[0]->dataMCS_r9;
   else 
     return -1;
-  
 }
 
 #endif

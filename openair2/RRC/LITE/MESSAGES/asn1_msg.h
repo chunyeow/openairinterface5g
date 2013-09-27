@@ -127,11 +127,25 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 					uint8_t                           *nas_pdu,
                                         uint32_t                           nas_length);
 
-/**
-\brief Generate an MCCH-Message (eNB). This routine configures MBSFNAreaConfiguration (PMCH-InfoList and Subframe Allocation for MBMS data)
-@param buffer Pointer to PER-encoded ASN.1 description of MCCH-Message PDU
-@returns Size of encoded bit stream in bytes*/
+/***
+ * \brief Generate an MCCH-Message (eNB). This routine configures MBSFNAreaConfiguration (PMCH-InfoList and Subframe Allocation for MBMS data)
+ * @param buffer Pointer to PER-encoded ASN.1 description of MCCH-Message PDU
+ * @returns Size of encoded bit stream in bytes
+*/
 uint8_t do_MCCHMessage(uint8_t *buffer);
+#ifdef Rel10
+/***
+ * \brief Generate an MCCH-Message (eNB). This routine configures MBSFNAreaConfiguration (PMCH-InfoList and Subframe Allocation for MBMS data)
+ * @param buffer Pointer to PER-encoded ASN.1 description of MCCH-Message PDU
+ * @returns Size of encoded bit stream in bytes
+*/
+uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
+			   uint8_t sync_area,
+			   uint8_t *buffer,
+			   MCCH_Message_t *mcch_message,
+			   MBSFNAreaConfiguration_r9_t **mbsfnAreaConfiguration);
+#endif 
+
 
 OAI_UECapability_t *fill_ue_capability();
 

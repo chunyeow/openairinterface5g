@@ -32,12 +32,13 @@ typedef struct Signal_buffers { // (s = transmit, r,r0 = receive)
 /*!\brief  sybframe type : DL, UL, SF, */
 
 typedef struct Packet_otg {
-    unsigned int sdu_buffer_size;
-    unsigned char *sdu_buffer;
-    int module_id;
-    int rb_id;
-    int dst_id;
-    u8 mode;
+  unsigned int sdu_buffer_size;
+  unsigned char *sdu_buffer;
+  int module_id;
+  int rb_id;
+  int dst_id;
+  u8 is_ue;
+  u8 mode;
 } Packet_otg;
 
 typedef struct Event {

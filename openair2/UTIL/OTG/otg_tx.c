@@ -435,7 +435,7 @@ int check_data_transmit(int src,int dst, int app, int ctime){
 		  otg_info->ptime[src][dst][app]=ctime;	
 
 		  if (state==PE_STATE)  //compute the IDT only for PE STATE
-			tarmaUpdateInputSample(otg_info->tarma_stream[src][dst][app]);
+		    tarmaUpdateInputSample(otg_info->tarma_stream[src][dst][app]);
 		  otg_info->idt[src][dst][app]=time_dist(src, dst, app,state);
 		  otg_info->gen_pkts=1;
 		  header_size_gen(src,dst, app); 
@@ -662,27 +662,134 @@ unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffe
 void init_predef_multicast_traffic() {
   int i, j, k;
 
-for (i=0; i<1; i++){ // src //maxServiceCount
-   for (j=1; j<2; j++){ // dst // maxSessionPerPMCH
+for (i=0; i<2; i++){ // src //maxServiceCount
+   for (j=1; j<3; j++){ // dst // maxSessionPerPMCH
      for (k=0; k<1/*MAX_NUM_APPLICATION*/; k++){  
        switch(g_otg_multicast->application_type[i][j][k]){
-	  case  MSCBR : 
-	    //LOG_D(OTG, "configure MSCBR for MBMS (service %d, session %d, app %d)\n", i, j, k);
-	    g_otg_multicast->trans_proto[i][j][k]= UDP;
-	    g_otg_multicast->ip_v[i][j][k]= IPV4;
+       case  MSCBR : 
+	  LOG_D(OTG, "configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]= FIXED;
+	 g_otg_multicast->idt_min[i][j][k]= 40;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 40;
+	 
+	 g_otg_multicast->size_dist[i][j][k]= FIXED;
+	 g_otg_multicast->size_min[i][j][k]= 256;
+	 g_otg_multicast->size_max[i][j][k]=  256;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	 
+	 
+	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
+       case  MMCBR :
+	  LOG_D(OTG, "configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]= FIXED;
+	   g_otg_multicast->idt_min[i][j][k]= 30;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 40;
+	 
+	 g_otg_multicast->size_dist[i][j][k]= FIXED;
+	 g_otg_multicast->size_min[i][j][k]= 768;
+	 g_otg_multicast->size_max[i][j][k]= 768 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	 
+	 
+	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
+       case  MBCBR : 
+	 LOG_D(OTG, "configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]=FIXED;
+	 g_otg_multicast->idt_min[i][j][k]= 20;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 20;
+	 
+	 g_otg_multicast->size_dist[i][j][k]= FIXED;
+	 g_otg_multicast->size_min[i][j][k]= 1400;
+	 g_otg_multicast->size_max[i][j][k]= 1400 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	 
+	 
+	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
+	 
+       case  MSVBR: 
+	 LOG_D(OTG, "configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]=UNIFORM;
+	 g_otg_multicast->idt_min[i][j][k]= 20;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 40;
+	 
+	 g_otg_multicast->size_dist[i][j][k]= UNIFORM;
+	 g_otg_multicast->size_min[i][j][k]= 64;
+	 g_otg_multicast->size_max[i][j][k]= 512 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	 
+	 
+	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
 
-	    g_otg_multicast->idt_dist[i][j][k]= UNIFORM;
-	    g_otg_multicast->idt_min[i][j][k]= 20;// can modify here to increase the frequency of generate data
-	    g_otg_multicast->idt_max[i][j][k]= 50;
+       case  MMVBR: 
+	 LOG_D(OTG, "configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]=UNIFORM;
+	 g_otg_multicast->idt_min[i][j][k]= 15;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 30;
+	 
+	 g_otg_multicast->size_dist[i][j][k]= UNIFORM;
+	 g_otg_multicast->size_min[i][j][k]= 512;
+	 g_otg_multicast->size_max[i][j][k]= 1024 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	 
+	 
+	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
 
-	    g_otg_multicast->size_dist[i][j][k]= UNIFORM;
-	    g_otg_multicast->size_min[i][j][k]= 768;
-	    g_otg_multicast->size_max[i][j][k]= 1024 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
-	                                        
+       case  MBVBR: 
+	 LOG_D(OTG, "configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]=UNIFORM;
+	 g_otg_multicast->idt_min[i][j][k]= 5;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 15;
+	 
+	 g_otg_multicast->size_dist[i][j][k]= UNIFORM;
+	 g_otg_multicast->size_min[i][j][k]= 1024;
+	 g_otg_multicast->size_max[i][j][k]= 1400 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
+	 
+	 
+	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
 
-	    g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
-	    header_size_gen_multicast(i,j,k);
-	    break;
+       case MVIDEO_VBR_4MBPS : 	
+	 
+	 LOG_D(OTG,"Configure MSCBR for eMBMS (service %d, session %d, app %d)\n", i, j, k);
+	 g_otg_multicast->trans_proto[i][j][k]= UDP;
+	 g_otg_multicast->ip_v[i][j][k]= IPV4;
+	 
+	 g_otg_multicast->idt_dist[i][j][k]= FIXED;
+	 g_otg_multicast->idt_min[i][j][k]= 40;// can modify here to increase the frequency of generate data
+	 g_otg_multicast->idt_max[i][j][k]= 40;
+	 
+	 /*the tarma initialization*/
+	 otg_multicast_info->mtarma_video[i][j][k]=tarmaInitVideo(0);
+	 tarmaSetupVideoGop12(otg_multicast_info->mtarma_video[i][j][k],2.5);
+	 LOG_I(OTG,"[CONFIG] Multicast Video VBR 4MBPS, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg_multicast->idt_dist[i][j][k]);
+	 
+	 //g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 header_size_gen_multicast(i,j,k);
+	 break;
        default :
 	 LOG_W(OTG, "not supported model for multicast traffic\n");
 	 

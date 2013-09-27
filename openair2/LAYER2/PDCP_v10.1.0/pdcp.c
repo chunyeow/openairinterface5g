@@ -859,10 +859,10 @@ BOOL pdcp_config_req_asn1 (module_id_t module_id, u32 frame, u8_t eNB_flag, u16 
     break;
     case ACTION_MBMS_ADD:
     case ACTION_MBMS_MODIFY:
-    pdcp_mbms_array[module_id][lc_id].instanciated_instance = module_id + 1 ;
-    pdcp_mbms_array[module_id][lc_id].service_id = mch_id;
-    pdcp_mbms_array[module_id][lc_id].session_id = lc_id;
-    pdcp_mbms_array[module_id][lc_id].rb_id = rb_id;
+    pdcp_mbms_array[module_id][rb_id].instanciated_instance = module_id + 1 ;
+    pdcp_mbms_array[module_id][rb_id].service_id = mch_id;
+    pdcp_mbms_array[module_id][rb_id].session_id = lc_id;
+    pdcp_mbms_array[module_id][rb_id].rb_id = rb_id;
     LOG_I(PDCP,"[%s %d] Config request : ACTION_MBMS_ADD: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
           (eNB_flag == 1) ? "eNB" : "UE", module_id, frame, mch_id, lc_id, rb_id);
     break;

@@ -29,7 +29,7 @@
 
 /*! \file l2_interface.c
 * \brief layer 2 interface 
-* \author Raymond Knopp 
+* \author Raymond Knopp and Navid Nikaein 
 * \date 2011
 * \version 1.0 
 * \company Eurecom
@@ -53,10 +53,9 @@ extern UE_MAC_INST *UE_mac_inst;
 #endif
 
 //#define RRC_DATA_REQ_DEBUG
-//#define DEBUG_RRC
+#define DEBUG_RRC
 
 u32 mui=0;
-//---------------------------------------------------------------------------------------------//
 
 s8 mac_rrc_lite_data_req( u8 Mod_id,
 			  u32 frame,
@@ -64,16 +63,15 @@ s8 mac_rrc_lite_data_req( u8 Mod_id,
 			  u8 Nb_tb,
 			  char *Buffer,
 			  u8 eNB_flag,
-			  u8 eNB_index){
-  //------------------------------------------------------------------------------------------------------------------//
-
+			  u8 eNB_index,
+			  u8 mbsfn_sync_area){
 
   SRB_INFO *Srb_info;
   u8 Sdu_size=0;
 
 #ifdef DEBUG_RRC
   int i;
-  LOG_T(RRC,"[eNB %d] mac_rrc_data_req to SRB ID=%d\n",Mod_id,Srb_id);
+  LOG_D(RRC,"[eNB %d] mac_rrc_data_req to SRB ID=%d\n",Mod_id,Srb_id);
 #endif
 
   if( eNB_flag == 1){
@@ -134,21 +132,24 @@ s8 mac_rrc_lite_data_req( u8 Mod_id,
 
 #ifdef Rel10
     if((Srb_id & RAB_OFFSET) == MCCH){
-      if(eNB_rrc_inst[Mod_id].MCCH_MESS.Active==0) return 0; // this parameter is set in function init_mcch in rrc_eNB.c                                                                              
-      if (eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE == 255) {
+      if(eNB_rrc_inst[Mod_id].MCCH_MESS[mbsfn_sync_area].Active==0) return 0; // this parameter is set in function init_mcch in rrc_eNB.c                                                                              
+      // this part not needed as it is done in init_mcch 
+      /*     if (eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area] == 255) {
 	LOG_E(RRC,"[eNB %d] MAC Request for MCCH MESSAGE and MCCH MESSAGE is not initialized\n",Mod_id);
 	mac_xface->macphy_exit("");
-      }
-      memcpy(&Buffer[0],eNB_rrc_inst[Mod_id].MCCH_MESSAGE,eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE);
+	}*/
+      memcpy(&Buffer[0],
+	     eNB_rrc_inst[Mod_id].MCCH_MESSAGE[mbsfn_sync_area],
+	     eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
       
 #ifdef DEBUG_RRC
       LOG_D(RRC,"[eNB %d] Frame %d : MCCH request => MCCH_MESSAGE \n",Mod_id,frame);
-      for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE;i++)
+      for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area];i++)
 	LOG_T(RRC,"%x.",Buffer[i]);
       LOG_T(RRC,"\n");
 #endif
       
-      return (eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE);
+      return (eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
       //      }
       //else
       //return(0);
@@ -177,9 +178,7 @@ s8 mac_rrc_lite_data_req( u8 Mod_id,
   return(0);
 }
 
-//--------------------------------------------------------------------------------------------//
-s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, char *Sdu, u16 Sdu_len,u8 eNB_flag,u8 eNB_index ){
-  //------------------------------------------------------------------------------------------//
+s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, char *Sdu, u16 Sdu_len,u8 eNB_flag,u8 eNB_index,u8 mbsfn_sync_area){
 
   SRB_INFO *Srb_info;
   int si_window;
@@ -246,8 +245,9 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, char *Sdu, u16 Sdu_le
       
 #ifdef Rel10
     if ((Srb_id & RAB_OFFSET) == MCCH) {
-      LOG_T(RRC,"[UE %d] Received SDU for MCCH on SRB %d from eNB %d\n",Mod_id,Srb_id & RAB_OFFSET,eNB_index);
-       decode_MCCH_Message(Mod_id, frame, eNB_index, Sdu, Sdu_len);
+      LOG_T(RRC,"[UE %d] Frame %d: Received SDU on MBSFN sync area %d for MCCH on SRB %d from eNB %d\n",
+	    Mod_id,frame, mbsfn_sync_area, Srb_id & RAB_OFFSET,eNB_index);
+      decode_MCCH_Message(Mod_id, frame, eNB_index, Sdu, Sdu_len,mbsfn_sync_area);
     }
 #endif // Rel10
 

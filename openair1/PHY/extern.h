@@ -27,6 +27,7 @@ extern unsigned int DAQ_MBOX;
 
 extern PHY_VARS_UE **PHY_vars_UE_g;
 extern PHY_VARS_eNB **PHY_vars_eNB_g;
+extern PHY_VARS_RN **PHY_vars_RN_g;
 extern LTE_DL_FRAME_PARMS *lte_frame_parms_g;
 
 

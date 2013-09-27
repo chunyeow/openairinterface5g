@@ -597,7 +597,7 @@ int
                               LOG_E(PDCP, "Received packet for non-instanciated instance %u with rb_id %u\n",
                                   pdcp_read_header.inst, pdcp_read_header.rb_id);
                           }
-                      } else if (eNB_flag) {
+                      } else if (eNB_flag) { // rb_id =0, thus interpreated as broadcast and transported as multiple unicast 
                           // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
         #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
                           for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
@@ -636,7 +636,7 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
   int src_id, module_id; // src for otg
   int dst_id, rb_id; // dst for otg
   int pkt_size=0, pkt_cnt=0;
-  u8 pdcp_mode;
+  u8 pdcp_mode, is_ue=0;
   Packet_otg_elt * otg_pkt_info;
 
   // we need to add conditions to avoid transmitting data when the UE is not RRC connected.
@@ -644,50 +644,39 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
   if (oai_emulation.info.otg_enabled ==1 ){
     module_id = (eNB_flag == 1) ?  eNB_index : NB_eNB_INST + UE_index ;
     //rb_id    = (eNB_flag == 1) ? eNB_index * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;
-    if (eNB_flag == 1) { // search for DL traffic
-      //for (dst_id = NB_eNB_INST; dst_id < NB_UE_INST + NB_eNB_INST; dst_id++) {
-      while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
-        LOG_I(EMU,"HEAD of otg_pdcp_buffer[%d] is %p but Nb elts = %d\n", module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
-        //otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]));
-        dst_id = (otg_pkt_info->otg_pkt).dst_id;
-        module_id = (otg_pkt_info->otg_pkt).module_id;
-        rb_id = (otg_pkt_info->otg_pkt).rb_id;
-        pdcp_mode = (otg_pkt_info->otg_pkt).mode;
-	//	LOG_I(PDCP,"pdcp_fifo, pdcp mode is= %d\n",pdcp_mode);
+    
+    while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
+      LOG_I(OTG,"Mod_id %d Frame %d Got a packet (%p), HEAD of otg_pdcp_buffer[%d] is %p and Nb elements is %d\n", 
+	    module_id,frame, otg_pkt_info, module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
+      //otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]));
+      dst_id = (otg_pkt_info->otg_pkt).dst_id;
+      module_id = (otg_pkt_info->otg_pkt).module_id;
+      rb_id = (otg_pkt_info->otg_pkt).rb_id;
+      is_ue = (otg_pkt_info->otg_pkt).is_ue;
+      pdcp_mode = (otg_pkt_info->otg_pkt).mode;
+      //	LOG_I(PDCP,"pdcp_fifo, pdcp mode is= %d\n",pdcp_mode);
 	
-        // generate traffic if the ue is rrc reconfigured state
-	// if (mac_get_rrc_status(module_id, eNB_flag, dst_id ) > 2 /*RRC_CONNECTED*/) { // not needed: this test is already done in update_otg_enb
-	otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
-	pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
-	if (otg_pkt != NULL) {
+      // generate traffic if the ue is rrc reconfigured state
+      // if (mac_get_rrc_status(module_id, eNB_flag, dst_id ) > 2 /*RRC_CONNECTED*/) { // not needed: this test is already done in update_otg_enb
+      otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
+      pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
+      if (otg_pkt != NULL) {
+	if (is_ue == 0 ) {
 	  //rb_id = (/*NB_eNB_INST +*/ dst_id -1 ) * MAX_NUM_RB + DTCH;
-	  LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n", eNB_index, frame, pkt_cnt++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
+	  LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n", 
+		eNB_index, frame, pkt_cnt++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
 	  pdcp_data_req(module_id, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt,pdcp_mode);
-	  free(otg_pkt);
 	}
-	// } //else LOG_D(OTG,"frame %d enb %d-> ue %d link not yet established state %d  \n", frame, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, eNB_flag, dst_id - NB_eNB_INST));
-
-      }
-    }
-    else {
-      while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
-	//otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]));
-	dst_id = (otg_pkt_info->otg_pkt).dst_id;
-	module_id = (otg_pkt_info->otg_pkt).module_id;
-	rb_id = (otg_pkt_info->otg_pkt).rb_id;
-	src_id = module_id;
-	
-	// if (mac_get_rrc_status(module_id, eNB_flag, eNB_index ) > 2 /*RRC_CONNECTED*/) {  // not needed: this test is already done in update_otg_ue
-	otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
-	pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
-	if (otg_pkt != NULL){
+	else {
 	  //rb_id= eNB_index * MAX_NUM_RB + DTCH;
-	  LOG_D(OTG,"[UE %d] sending packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", UE_index, src_id, rb_id, src_id, dst_id, pkt_size);
+	  LOG_D(OTG,"[UE %d] sending packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", 
+		UE_index, src_id, rb_id, src_id, dst_id, pkt_size);
 	  pdcp_data_req(src_id, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO,pkt_size, otg_pkt, PDCP_DATA_PDU);
-	  free(otg_pkt);
 	}
-	//} //else LOG_D(OTG,"frame %d ue %d-> enb %d link not yet established state %d  \n", frame, UE_index, eNB_index, mac_get_rrc_status(module_id, eNB_flag, eNB_index ));
+	free(otg_pkt);
       }
+	  // } //else LOG_D(OTG,"frame %d enb %d-> ue %d link not yet established state %d  \n", frame, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, eNB_flag, dst_id - NB_eNB_INST));
+      
     }
   }
 #else

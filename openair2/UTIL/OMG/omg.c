@@ -147,13 +147,13 @@ void update_nodes(double cur_time){
 //LOG_D(OMG, "UPDATE NODES" );
 int i = 0;
 for (i=(STATIC+1); i<MAX_NUM_MOB_TYPES; i++){ 
-      if (Node_Vector[i] != NULL){
-	//printf(" Mob model to update is: %d \n ", i);
-        LOG_I(OMG, " Mob model to update is: %d \n ", i); 
-        update_node_vector(i, cur_time);
-      }
-    }
-  
+  if (Node_Vector[i] != NULL){
+    //printf(" Mob model to update is: %d \n ", i);
+    LOG_I(OMG, " Mob model to update is: %d \n ", i); 
+    update_node_vector(i, cur_time);
+  }
+ }
+ 
 }
 
 
@@ -186,7 +186,7 @@ Node_list get_current_positions(int mobility_type, int node_type, double cur_tim
     switch (mobility_type) {
    case STATIC:
      Vector = (Node_list)Node_Vector[STATIC];
-     LOG_I(OMG,"static vector %p is \n",Vector);
+     LOG_T(OMG,"static vector %p is \n",Vector);
      break; 
    case RWP:
       get_rwp_positions_updated(cur_time);

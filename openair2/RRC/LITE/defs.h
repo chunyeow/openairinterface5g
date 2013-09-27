@@ -123,7 +123,7 @@ typedef struct{
   u8 SIB1Status;
   u8 SIStatus;
 #ifdef Rel10
-  u8 MCCH_MESSAGEStatus;
+  u8 MCCHStatus[8]; // MAX_MBSFN_AREA
 #endif
   u8 SIwindowsize;
   u16 SIperiod;
@@ -214,11 +214,12 @@ typedef struct{
 #ifdef Rel10
   SystemInformationBlockType13_r9_t *sib13;
   uint8_t                           MBMS_flag;
-  uint8_t                           *MCCH_MESSAGE;
-  uint8_t                           sizeof_MCCH_MESSAGE;
+  uint8_t                           num_mbsfn_sync_area;
+  uint8_t                           **MCCH_MESSAGE; //  MAX_MBSFN_AREA
+  uint8_t                           sizeof_MCCH_MESSAGE[8];// MAX_MBSFN_AREA
   MCCH_Message_t            mcch;
   MBSFNAreaConfiguration_r9_t       *mcch_message;  
-  SRB_INFO                       MCCH_MESS;
+  SRB_INFO                          MCCH_MESS[8];// MAX_MBSFN_AREA
 #endif 
 #ifdef CBA
   uint8_t                        num_active_cba_groups;
@@ -460,11 +461,14 @@ void rrc_eNB_generate_defaultRRCConnectionReconfiguration(u8 Mod_id, u32 frame, 
 
 
 //L2_interface.c
-s8 mac_rrc_lite_data_req( u8 Mod_id, u32 frame, unsigned short Srb_id, u8 Nb_tb,char *Buffer,u8 eNB_flag,u8 eNB_index);
-s8 mac_rrc_lite_data_ind( u8 Mod_id,  u32 frame, unsigned short Srb_id, char *Sdu, unsigned short Sdu_len,u8 eNB_flag,u8 Mui);
+s8 mac_rrc_lite_data_req( u8 Mod_id, u32 frame, unsigned short Srb_id, u8 Nb_tb,char *Buffer,u8 eNB_flag, u8 eNB_index, u8 mbsfn_sync_area);
+s8 mac_rrc_lite_data_ind( u8 Mod_id,  u32 frame, unsigned short Srb_id, char *Sdu, unsigned short Sdu_len,u8 eNB_flag,u8 eNB_index, u8 mbsfn_sync_area);
 void mac_sync_ind( u8 Mod_id, u8 status);
 void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
 void rrc_lite_out_of_sync_ind(u8 Mod_id, u32 frame, unsigned short eNB_index);
+
+int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area);
+void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_sync_area);
 
 int decode_SIB1(u8 Mod_id,u8 CH_index);
 

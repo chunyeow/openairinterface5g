@@ -210,6 +210,16 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
     len += sprintf(&buffer[len], "[UE PROC] DLSCH Total %d, Error %d, FER %d\n",phy_vars_ue->dlsch_received[0],phy_vars_ue->dlsch_errors[0],phy_vars_ue->dlsch_fer[0]);
     len += sprintf(&buffer[len], "[UE PROC] DLSCH (SI) Total %d, Error %d\n",phy_vars_ue->dlsch_SI_received[0],phy_vars_ue->dlsch_SI_errors[0]);
     len += sprintf(&buffer[len], "[UE PROC] DLSCH (RA) Total %d, Error %d\n",phy_vars_ue->dlsch_ra_received[0],phy_vars_ue->dlsch_ra_errors[0]);
+#ifdef Rel10
+    int i=0;
+    //len += sprintf(&buffer[len], "[UE PROC] MCH  Total %d\n", phy_vars_ue->dlsch_mch_received[0]);
+     for(i=0; i <phy_vars_ue->lte_frame_parms.num_MBSFN_config; i++ ){
+      len += sprintf(&buffer[len], "[UE PROC] MCH (MCCH MBSFN %d) Total %d, Error %d, Trials %d\n",
+		     i, phy_vars_ue->dlsch_mcch_received[i][0],phy_vars_ue->dlsch_mcch_errors[i][0],phy_vars_ue->dlsch_mcch_trials[i][0]);   
+      len += sprintf(&buffer[len], "[UE PROC] MCH (MTCH MBSFN %d) Total %d, Error %d, Trials %d\n",
+		     i, phy_vars_ue->dlsch_mtch_received[i][0],phy_vars_ue->dlsch_mtch_errors[i][0],phy_vars_ue->dlsch_mtch_trials[i][0]);  
+    }
+#endif 
     len += sprintf(&buffer[len], "[UE PROC] DLSCH Bitrate %dkbps\n",(phy_vars_ue->bitrate[0]/1000));
     len += sprintf(&buffer[len], "[UE PROC] Total Received Bits %dkbits\n",(phy_vars_ue->total_received_bits[0]/1000));
 

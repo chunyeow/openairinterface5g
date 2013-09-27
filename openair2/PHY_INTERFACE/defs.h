@@ -137,11 +137,11 @@ typedef struct
 
 #ifdef Rel10
     /// Send a received MCH sdu to MAC
-    void (*ue_send_mch_sdu)(u8 Mod_id,u32 frame,u8 *sdu,u16 sdu_len,u8 CH_index);
+    void (*ue_send_mch_sdu)(u8 Mod_id,u32 frame,u8 *sdu,u16 sdu_len,u8 eNB_index,u8 sync_area);
 
     /// Function to check if UE PHY needs to decode MCH for MAC
-    /// Return MCS value if need to decode, otherwise -1
-    int (*ue_query_mch)(uint8_t Mod_id,uint32_t frame,uint32_t subframe);
+    /// get the sync area id, and teturn MCS value if need to decode, otherwise -1
+    int (*ue_query_mch)(uint8_t Mod_id,uint32_t frame,uint32_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
 #endif
 
   /// Retrieve ULSCH sdu from MAC

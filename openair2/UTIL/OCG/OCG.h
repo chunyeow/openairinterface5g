@@ -662,6 +662,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char cba_group_active;
     char * otg_traffic;
     unsigned char otg_bg_traffic_enabled;
+    unsigned char omg_model_rn;
     unsigned char omg_model_enb;
     unsigned char omg_model_ue;
     unsigned char omg_model_ue_current;	// when mixed mbility is used 

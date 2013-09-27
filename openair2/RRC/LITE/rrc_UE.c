@@ -110,11 +110,12 @@ void init_SI_UE(u8 Mod_id,u8 eNB_index) {
 
 #ifdef Rel10
 void init_MCCH_UE(u8 Mod_id, u8 eNB_index) {
-
+  int i;
   UE_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[eNB_index] = 0;
   UE_rrc_inst[Mod_id].MCCH_MESSAGE[eNB_index] = (u8 *)malloc16(32);
   UE_rrc_inst[Mod_id].mcch_message[eNB_index] = (MBSFNAreaConfiguration_r9_t *)malloc16(sizeof(MBSFNAreaConfiguration_r9_t));
-  UE_rrc_inst[Mod_id].Info[eNB_index].MCCH_MESSAGEStatus = 0;
+  for (i=0; i<8;i++) // MAX MBSFN Area
+    UE_rrc_inst[Mod_id].Info[eNB_index].MCCHStatus[i] = 0;
 
 }
 #endif
@@ -1450,9 +1451,9 @@ void dump_sib2(SystemInformationBlockType2_t *sib2) {
   LOG_D(RRC,"ue_TimersAndConstants.n311 : %ld\n", sib2->ue_TimersAndConstants.n311);
 
   LOG_D(RRC,"freqInfo.additionalSpectrumEmission : %ld\n",sib2->freqInfo.additionalSpectrumEmission);
-  LOG_D(RRC,"freqInfo.ul_CarrierFreq : %ld\n", sib2->freqInfo.ul_CarrierFreq);
-  LOG_D(RRC,"freqInfo.ul_Bandwidth : %ld\n", sib2->freqInfo.ul_Bandwidth);
-  LOG_D(RRC,"mbsfn_SubframeConfigList : %ld\n", sib2->mbsfn_SubframeConfigList);
+  LOG_D(RRC,"freqInfo.ul_CarrierFreq : %p\n", sib2->freqInfo.ul_CarrierFreq);
+  LOG_D(RRC,"freqInfo.ul_Bandwidth : %p\n", sib2->freqInfo.ul_Bandwidth);
+  LOG_D(RRC,"mbsfn_SubframeConfigList : %p\n", sib2->mbsfn_SubframeConfigList);
   LOG_D(RRC,"timeAlignmentTimerCommon : %ld\n", sib2->timeAlignmentTimerCommon);
 
 
@@ -1636,14 +1637,15 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 }
 
 #ifdef Rel10
-int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len) {
+int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area) {
   
   MCCH_Message_t *mcch=NULL;
   MBSFNAreaConfiguration_r9_t **mcch_message=&UE_rrc_inst[Mod_id].mcch_message[eNB_index];
   asn_dec_rval_t dec_rval;
   
-  if (UE_rrc_inst[Mod_id].Info[eNB_index].MCCH_MESSAGEStatus == 1) {
-    LOG_D(RRC,"MCCH MESSAGE has been already received!\n");
+  if (UE_rrc_inst[Mod_id].Info[eNB_index].MCCHStatus[mbsfn_sync_area] == 1) {
+    LOG_D(RRC,"[UE %d] Frame %d: MCCH MESSAGE for MBSFN sync area %d has been already received!\n",
+	  Mod_id, frame, mbsfn_sync_area);
     return 0; // avoid decoding to prevent memory bloating
   }
   else {
@@ -1671,7 +1673,7 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len)
 	       sizeof(MBSFNAreaConfiguration_r9_t)); */
 	*mcch_message = &mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9;
 	LOG_I(RRC,"[UE %d] Frame %d : Found MBSFNAreaConfiguration from eNB %d \n",Mod_id, frame, eNB_index);
-	decode_MBSFNAreaConfiguration(Mod_id,eNB_index,frame);
+	decode_MBSFNAreaConfiguration(Mod_id,eNB_index,frame, mbsfn_sync_area);
 
       }
     }
@@ -1679,8 +1681,9 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len)
   return 0;
 }
 
-void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame) {
-  LOG_D(RRC,"[UE %d] Number of MCH(s) in this MBSFN Area is %d\n", Mod_id, UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
+void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_sync_area) {
+  LOG_D(RRC,"[UE %d] Frame %d : Number of MCH(s) in the MBSFN Sync Area %d  is %d\n", 
+	Mod_id, frame, mbsfn_sync_area, UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
   //  store to MAC/PHY necessary parameters for receiving MTCHs
   rrc_mac_config_req(Mod_id,0,0,eNB_index,
 		     (RadioResourceConfigCommonSIB_t *)NULL,
@@ -1710,15 +1713,19 @@ void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame) {
 #endif
 		     );
 
-  UE_rrc_inst[Mod_id].Info[eNB_index].MCCH_MESSAGEStatus = 1;
-
+  UE_rrc_inst[Mod_id].Info[eNB_index].MCCHStatus[mbsfn_sync_area] = 1;
+  
   // Config Radio Bearer for MBMS user data (similar way to configure for eNB side in init_MBMS function)
-    rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frame,
+  rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frame,
 			   0,// eNB_flag
 			   eNB_index,// 0,// index
 			   NULL, // SRB_ToAddModList
 			   NULL, // DRB_ToAddModList
-			   (DRB_ToReleaseList_t*)NULL
+			   (DRB_ToReleaseList_t*)NULL,
+			   0, // security mode
+			   NULL, // key rrc encryption
+			   NULL, // key rrc integrity
+			   NULL // key encryption
 #ifdef Rel10
 			   ,
 			   &(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9)

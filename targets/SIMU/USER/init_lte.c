@@ -59,9 +59,7 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
       exit(-1);
     }
 
-    PHY_vars_eNB->dlsch_eNB_MCH = new_eNB_dlsch(1,NUMBER_OF_HARQ_PID_MAX,frame_parms->N_RB_DL, 0);
-    
-    // this is the transmission mode for the signalling channels
+        // this is the transmission mode for the signalling channels
     // this will be overwritten with the real transmission mode by the RRC once the UE is connected
     PHY_vars_eNB->transmission_mode[i] = transmission_mode;
     
@@ -78,7 +76,10 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
   LOG_D(PHY,"eNB %d : SI %p\n",eNB_id,PHY_vars_eNB->dlsch_eNB_SI);
   PHY_vars_eNB->dlsch_eNB_ra  = new_eNB_dlsch(1,1,frame_parms->N_RB_DL, abstraction_flag);
   LOG_D(PHY,"eNB %d : RA %p\n",eNB_id,PHY_vars_eNB->dlsch_eNB_ra);
-  
+  PHY_vars_eNB->dlsch_eNB_MCH = new_eNB_dlsch(1,NUMBER_OF_HARQ_PID_MAX,frame_parms->N_RB_DL, 0);
+  LOG_D(PHY,"eNB %d : MCH %p\n",eNB_id,PHY_vars_eNB->dlsch_eNB_MCH);
+    
+
   PHY_vars_eNB->rx_total_gain_eNB_dB=140;
   
   for(i=0;i<NUMBER_OF_UE_MAX;i++)
@@ -138,7 +139,26 @@ PHY_VARS_UE* init_lte_UE(LTE_DL_FRAME_PARMS *frame_parms,
 
   return (PHY_vars_UE);
 }
+PHY_VARS_RN* init_lte_RN(LTE_DL_FRAME_PARMS *frame_parms, 
+			 u8 RN_id,
+			 u8 eMBMS_active_state) {
 
+  int i;
+  PHY_VARS_RN* PHY_vars_RN = malloc(sizeof(PHY_VARS_RN));
+  memset(PHY_vars_RN,0,sizeof(PHY_VARS_RN));
+  PHY_vars_RN->Mod_id=RN_id;
+  
+  if (eMBMS_active_state == multicast_relay) {
+    for (i=0; i < 10 ; i++){ // num SF in a frame 
+      PHY_vars_RN->dlsch_rn_MCH[i] = new_ue_dlsch(1,1,MAX_TURBO_ITERATIONS_MBSFN,frame_parms->N_RB_DL, 0);
+      LOG_D(PHY,"eNB %d : MCH[%d] %p\n",RN_id,i,PHY_vars_RN->dlsch_rn_MCH[i]);
+    }
+  } else {
+    PHY_vars_RN->dlsch_rn_MCH[0] = new_ue_dlsch(1,1,MAX_TURBO_ITERATIONS,frame_parms->N_RB_DL, 0);
+    LOG_D(PHY,"eNB %d : MCH[0] %p\n",RN_id,PHY_vars_RN->dlsch_rn_MCH[0]);
+  }
+  return (PHY_vars_RN);
+}
 void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
 		   u8 frame_type,
 		   u8 tdd_config,
@@ -147,9 +167,9 @@ void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
 		   u8 N_RB_DL,
 		   u16 Nid_cell,
 		   u8 cooperation_flag,u8 transmission_mode,u8 abstraction_flag,
-		   int nb_antennas_rx) {
+		   int nb_antennas_rx, u8 eMBMS_active_state) {
 
-  u8 eNB_id,UE_id;
+  u8 eNB_id,UE_id,RN_id;
 
   mac_xface = malloc(sizeof(MAC_xface));
 
@@ -192,9 +212,15 @@ void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
   (*frame_parms)->nb_antennas_rx     = nb_antennas_rx;
 
   PHY_vars_UE_g = malloc(NB_UE_INST*sizeof(PHY_VARS_UE*));
-  for (UE_id=0; UE_id<NB_UE_INST;UE_id++){ // begin navid
+  for (UE_id=0; UE_id<NB_UE_INST;UE_id++){
     PHY_vars_UE_g[UE_id] = init_lte_UE(*frame_parms, UE_id,abstraction_flag,transmission_mode);
-
   }
 
+  if (NB_RN_INST > 0) {
+    PHY_vars_RN_g = malloc(NB_RN_INST*sizeof(PHY_VARS_RN*));
+    for (RN_id=0; RN_id<NB_RN_INST;RN_id++){
+      PHY_vars_RN_g[RN_id] = init_lte_RN(*frame_parms,RN_id,eMBMS_active_state);
+    }
+  }
+  
 }

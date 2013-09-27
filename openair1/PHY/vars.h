@@ -36,6 +36,7 @@ s16 *primary_synch2_time;
 //PHY_VARS *PHY_vars;
 PHY_VARS_UE **PHY_vars_UE_g;
 PHY_VARS_eNB **PHY_vars_eNB_g;
+PHY_VARS_RN **PHY_vars_RN_g;
 LTE_DL_FRAME_PARMS *lte_frame_parms_g;
 
 short *twiddle_ifft,*twiddle_fft,*twiddle_fft_times4,*twiddle_ifft_times4,*twiddle_fft_half,*twiddle_ifft_half;

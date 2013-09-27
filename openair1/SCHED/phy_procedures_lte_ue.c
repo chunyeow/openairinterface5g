@@ -1279,7 +1279,8 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 
 	}
       }
-      LOG_D(PHY,"[UE %p] frame %d subframe %d : generate_prach %d, prach_cnt %d\n",phy_vars_ue,phy_vars_ue->frame,next_slot>>1,phy_vars_ue->generate_prach,phy_vars_ue->prach_cnt);
+      LOG_D(PHY,"[UE %d] frame %d subframe %d : generate_prach %d, prach_cnt %d\n",
+	    phy_vars_ue->Mod_id,phy_vars_ue->frame,next_slot>>1,phy_vars_ue->generate_prach,phy_vars_ue->prach_cnt);
 
       phy_vars_ue->prach_cnt++;
       if (phy_vars_ue->prach_cnt==3)
@@ -1542,7 +1543,7 @@ void phy_procedures_emos_UE_RX(PHY_VARS_UE *phy_vars_ue,u8 last_slot,u8 eNB_id) 
 void restart_phy(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag) {
 
   //  u8 last_slot;
-
+  u8 i;
   LOG_D(PHY,"[UE  %d] frame %d, slot %d, restarting PHY!\n",phy_vars_ue->Mod_id,phy_vars_ue->frame);
   mac_xface->macphy_exit("");
   //   first_run = 1;
@@ -1580,7 +1581,17 @@ void restart_phy(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag) {
   phy_vars_ue->dlsch_ra_received[eNB_id] = 0;
   phy_vars_ue->dlsch_SI_errors[eNB_id] = 0;
   phy_vars_ue->dlsch_ra_errors[eNB_id] = 0;
-  phy_vars_ue->dlsch_mch_errors[eNB_id] = 0;
+
+  phy_vars_ue->dlsch_mch_received[eNB_id] = 0;  
+  for (i=0; i < MAX_MBSFN_AREA ; i ++){
+    phy_vars_ue->dlsch_mch_received_sf[i][eNB_id] = 0;
+    phy_vars_ue->dlsch_mcch_received[i][eNB_id] = 0;
+    phy_vars_ue->dlsch_mtch_received[i][eNB_id] = 0;
+    phy_vars_ue->dlsch_mcch_errors[i][eNB_id] = 0;
+    phy_vars_ue->dlsch_mtch_errors[i][eNB_id] = 0;
+    phy_vars_ue->dlsch_mcch_trials[i][eNB_id] = 0;
+    phy_vars_ue->dlsch_mtch_trials[i][eNB_id] = 0;
+}  
   //phy_vars_ue->total_TBS[eNB_id] = 0;
   //phy_vars_ue->total_TBS_last[eNB_id] = 0;
   //phy_vars_ue->bitrate[eNB_id] = 0;
@@ -2163,7 +2174,8 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 }
 
  
-int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type) {
+ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,
+			  relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn) {
 
   u16 l,m,n_symb;
   //  int eNB_id = 0, 
@@ -2179,16 +2191,16 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   u8 *rar;
 #endif
   int pmch_flag=0;
-
+  u8 sync_area=255;
   int pmch_mcs=-1;
-
+  u8 mcch_active=0;
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_IN);
-  //msg("UE_RX 1 last_slot %d \n",last_slot);
 #ifdef DEBUG_PHY_PROC
   LOG_D(PHY,"[%s %d] Frame %d subframe %d: Doing phy_procedures_UE_RX(%d)\n", 
 	(r_type == multicast_relay) ? "RN/UE" : "UE",
 	phy_vars_ue->Mod_id,phy_vars_ue->frame, last_slot>>1, last_slot);
 #endif
+
   if (phy_vars_ue->lte_frame_parms.Ncp == 0) {  // normal prefix
     pilot1 = 4;
     pilot2 = 7;
@@ -2937,11 +2949,14 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   }// l loop
 
   if (is_pmch_subframe(((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,&phy_vars_ue->lte_frame_parms)) {
+ 
     if ((last_slot%2)==1) {
-      LOG_D(PHY,"[UE %d] Frame %d, subframe %d: Querying for PMCH demodulation\n",
-	    phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1);
+      LOG_D(PHY,"[UE %d] Frame %d, subframe %d: Querying for PMCH demodulation(%d)\n",
+	    phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,last_slot);
 #ifdef Rel10
-      pmch_mcs = mac_xface->ue_query_mch(phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1);
+      pmch_mcs = mac_xface->ue_query_mch(phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,eNB_id,&sync_area,&mcch_active);
+      if (phy_vars_rn)
+	phy_vars_rn->mch_avtive[last_slot>>1]=0;
 #else
       pmch_mcs=-1;
 #endif
@@ -2990,11 +3005,24 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 			     last_slot>>1,
 			     0,
 			     0,0);    
+	if (mcch_active == 1)
+	  phy_vars_ue->dlsch_mcch_trials[sync_area][0]++;
+	else 
+	  phy_vars_ue->dlsch_mtch_trials[sync_area][0]++;
 	
 	if (ret == (1+phy_vars_ue->dlsch_ue_MCH[0]->max_turbo_iterations)) {
-	  phy_vars_ue->dlsch_mch_errors[0]++;
-	  LOG_D(PHY,"number of errors: %d\n",phy_vars_ue->dlsch_mch_errors[0]);
-	  LOG_D(PHY,"[UE %d] Frame %d, subframe %d: PMCH in error, not passing to L2 (TBS %d, iter %d,G %d)\n",phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3,phy_vars_ue->dlsch_ue_MCH[0]->max_turbo_iterations,phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G);
+	  if (mcch_active == 1)
+	    phy_vars_ue->dlsch_mcch_errors[sync_area][0]++;
+	  else 
+	    phy_vars_ue->dlsch_mtch_errors[sync_area][0]++;
+	  LOG_D(PHY,"[%s %d] Frame %d, subframe %d: PMCH in error (%d,%d), not passing to L2 (TBS %d, iter %d,G %d)\n",
+		(r_type == no_relay)? "UE": "RN/UE", phy_vars_ue->Mod_id,
+		((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,
+		phy_vars_ue->dlsch_mcch_errors[sync_area][0],
+		phy_vars_ue->dlsch_mtch_errors[sync_area][0],
+		phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3,
+		phy_vars_ue->dlsch_ue_MCH[0]->max_turbo_iterations,
+		phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G);
 	  dump_mch(phy_vars_ue,0,phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G,(last_slot>>1));
 #ifdef DEBUG_DLSCH	  
 	  for (i=0;i<phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3;i++){
@@ -3006,11 +3034,53 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 	}
 	else {
 #ifdef Rel10
-	  mac_xface->ue_send_mch_sdu(phy_vars_ue->Mod_id,
-				     ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,
-				     phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->b,
-				     phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3,
-				     0);
+	  if ((r_type == no_relay) || (mcch_active == 1)) {
+	    mac_xface->ue_send_mch_sdu(phy_vars_ue->Mod_id,
+				       ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,
+				       phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->b,
+				       phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3,
+				       eNB_id,// not relevant in eMBMS context
+				       sync_area);
+	    /*   for (i=0;i<phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3;i++)
+	      msg("%2x.",phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->b[i]); 
+	    msg("\n");
+	    */
+	    
+	    if (mcch_active == 1)
+	      phy_vars_ue->dlsch_mcch_received[sync_area][0]++;
+	    else 
+	      phy_vars_ue->dlsch_mtch_received[sync_area][0]++;
+
+	   
+	    if (phy_vars_ue->dlsch_mch_received_sf[(last_slot>>1)%5][0] == 1 ){
+	      phy_vars_ue->dlsch_mch_received_sf[(last_slot>>1)%5][0]=0;
+	    } else {
+	      phy_vars_ue->dlsch_mch_received[0]+=1;  
+	      phy_vars_ue->dlsch_mch_received_sf[last_slot>>1][0]=1;
+	    }
+
+	  } else if (r_type == multicast_relay) { // mcch is not active here 
+	    // only 1 harq process exists
+	    // Fix me: this could be a pointer copy
+	    memcpy (phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->b,
+		    phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->b,
+		    phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3);
+	    // keep the tbs
+	    phy_vars_rn->mch_avtive[last_slot>>1] = 1;
+	    phy_vars_rn->sync_area[last_slot>>1] = sync_area; // this could also go the harq data struct
+	    phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->TBS = phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS;
+	    phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->mcs = phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->mcs;
+	    LOG_I(PHY,"[RN/UE %d] Frame %d subframe %d: store the MCH PDU for MBSFN sync area %d (MCS %d, TBS %d)\n",
+		  phy_vars_ue->Mod_id,frame,last_slot>>1,sync_area,
+		  phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->mcs,
+		  phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->TBS>>3);
+#ifdef DEBUG_PHY
+	    for (i=0;i<phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->TBS>>3;i++)
+	      msg("%2x.",phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->b[i]); 
+	    msg("\n");
+#endif 	 
+	  } else 
+	    LOG_W(PHY,"[UE %d] Frame %d: not supported option\n",phy_vars_ue->Mod_id,frame);
 #endif
 	}
       }
@@ -3018,7 +3088,7 @@ int phy_procedures_UE_RX(u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   }
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_RX, VCD_FUNCTION_OUT);
   return (0);
-}
+ }
 
 #ifdef Rel10
 int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) {
@@ -3032,7 +3102,7 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
     if (last_slot > 12)
       do_proc = 0; // do nothing
     else // SF#1, SF#2, SF3, SF#3, SF#4, SF#5, SF#6(do rx slot 12)
-      do_proc =multicast_relay ; // do PHY procedures UE RX 
+      do_proc = multicast_relay ; // do PHY procedures UE RX 
     break;
   default: // should'not be here
     LOG_W(PHY,"Not supported relay type %d, do nothing \n", r_type);
@@ -3042,7 +3112,8 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
   return do_proc;
 }
 #endif   
- void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, relaying_type_t r_type) {
+ void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, 
+			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
 
 #undef DEBUG_PHY_PROC
 
@@ -3073,7 +3144,7 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 #ifdef Rel10 
     if (phy_procedures_RN_UE_RX(last_slot, next_slot, r_type) != 0 )
 #endif 
-    phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_type);
+      phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_type,phy_vars_rn);
 #ifdef EMOS
     phy_procedures_emos_UE_RX(phy_vars_ue,last_slot,eNB_id);
 #endif
@@ -3087,7 +3158,7 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
  #ifdef Rel10 
     if (phy_procedures_RN_UE_RX(last_slot, next_slot, r_type) != 0 )
 #endif 
-   phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode, r_type);
+      phy_procedures_UE_RX(last_slot,phy_vars_ue,eNB_id,abstraction_flag,mode,r_type,phy_vars_rn);
   }
 
 #ifdef OPENAIR2

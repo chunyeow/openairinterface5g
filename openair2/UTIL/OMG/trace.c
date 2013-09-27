@@ -166,7 +166,7 @@ void place_trace_node(NodePtr node) {
         
 
 	LOG_D(OMG,"--------INITIALIZE TRACE NODE-------- \n ");
-  	LOG_I(OMG,"Initial position of node ID: %d type: %d (X = %.2f, Y = %.2f) speed = 0.0\n ", node->ID, node->type, node->X_pos, node->Y_pos);
+  	LOG_I(OMG,"Initial position of node ID: %d type: %d (X = %.2f, Y = %.2f) speed = %d\n ", node->ID, node->type, node->X_pos, node->Y_pos, node->mob->speed);
 	Node_Vector[TRACE] = (Node_list) add_entry(node, Node_Vector[TRACE]);
     	Node_Vector_len[TRACE]++;
 	
