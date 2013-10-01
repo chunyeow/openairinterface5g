@@ -254,9 +254,9 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, char *Sdu, u16 Sdu_le
   }
 
   else{  // This is an eNB
+    Srb_info = &eNB_rrc_inst[Mod_id].Srb0;
     LOG_T(RRC,"[eNB %d] Received SDU for CCCH on SRB %d\n",Mod_id,Srb_info->Srb_id);
     
-    Srb_info = &eNB_rrc_inst[Mod_id].Srb0;
     //    msg("\n******INST %d Srb_info %p, Srb_id=%d****\n\n",Mod_id,Srb_info,Srb_info->Srb_id);
     memcpy(Srb_info->Rx_buffer.Payload,Sdu,6);
     rrc_eNB_decode_ccch(Mod_id,frame,Srb_info);
