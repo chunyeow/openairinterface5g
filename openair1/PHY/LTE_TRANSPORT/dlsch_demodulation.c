@@ -152,7 +152,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 
   if (frame_parms->nb_antennas_tx_eNB>1) {
 #ifdef DEBUG_DLSCH_MOD     
-    msg("dlsch: using pmi %x (%p), rb_alloc %x\n",pmi2hex_2Ar1(dlsch_ue[0]->harq_processes[harq_pid]->pmi_alloc),dlsch_ue[0],dlsch_ue[0]->harq_processes[harq_pid]->rb_alloc[0]);
+    LOG_I(PHY,"dlsch: using pmi %x (%p), rb_alloc %x\n",pmi2hex_2Ar1(dlsch_ue[0]->harq_processes[harq_pid]->pmi_alloc),dlsch_ue[0],dlsch_ue[0]->harq_processes[harq_pid]->rb_alloc[0]);
 #endif
     nb_rb = dlsch_extract_rbs_dual(lte_ue_common_vars->rxdataF,
 				   lte_ue_common_vars->dl_ch_estimates[eNB_id],
@@ -261,7 +261,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     //	avgs = cmax(avgs,avg[(aarx<<1)+aatx]);
         
     
-    lte_ue_pdsch_vars[eNB_id]->log2_maxh = (log2_approx(avgs)/2);// + 2
+    lte_ue_pdsch_vars[eNB_id]->log2_maxh = (log2_approx(avgs)/2);
         // + log2_approx(frame_parms->nb_antennas_tx_eNB-1) //-1 because log2_approx counts the number of bits
         //      + log2_approx(frame_parms->nb_antennas_rx-1);
 

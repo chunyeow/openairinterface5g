@@ -44,6 +44,7 @@
 #include "PHY/CODING/lte_interleaver_inline.h"
 #include "PHY/LTE_TRANSPORT/defs.h"
 #include "defs.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
 //#define DEBUG_DLSCH_MODULATION 
 
@@ -768,6 +769,8 @@ int dlsch_modulation(mod_sym_t **txdataF,
   int16_t qam16_table_a[4],qam64_table_a[8],qam16_table_b[4],qam64_table_b[8];
   int16_t *qam_table_s;
 
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_MODULATION, VCD_FUNCTION_IN);
+
   nsymb = (frame_parms->Ncp==0) ? 14:12;
   
   amp_rho_a = (int16_t)(((int32_t)amp*dlsch->sqrt_rho_a)>>13);
@@ -995,6 +998,8 @@ int dlsch_modulation(mod_sym_t **txdataF,
   msg("generate_dlsch : jj = %d,re_allocated = %d (G %d)\n",jj,re_allocated,get_G(frame_parms,dlsch->nb_rb,dlsch->rb_alloc,mod_order,2,0,subframe_offset));
 #endif
   
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_MODULATION, VCD_FUNCTION_OUT);
+
   return (re_allocated);
 }
 

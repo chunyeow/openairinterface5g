@@ -45,6 +45,7 @@
 #include "PHY/CODING/lte_interleaver_inline.h"
 #include "PHY/LTE_TRANSPORT/defs.h"
 #include "defs.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
 //#define DEBUG_DLSCH_CODING 
 //#define DEBUG_DLSCH_FREE 1
@@ -223,6 +224,8 @@ int dlsch_encoding(unsigned char *a,
   unsigned int Kr=0,Kr_bytes,r,r_offset=0;
   unsigned short m=dlsch->harq_processes[harq_pid]->mcs;
 
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ENCODING, VCD_FUNCTION_IN);
+
   A = dlsch->harq_processes[harq_pid]->TBS; //6228
   // printf("Encoder: A: %d\n",A);
   mod_order = get_Qm(dlsch->harq_processes[harq_pid]->mcs);
@@ -353,6 +356,8 @@ int dlsch_encoding(unsigned char *a,
       write_output("enc_output.m","enc",dlsch->e,r_offset,1,4);
 #endif
   }
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ENCODING, VCD_FUNCTION_OUT);
+
   return(0);
 }
 

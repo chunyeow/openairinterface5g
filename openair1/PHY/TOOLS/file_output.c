@@ -10,8 +10,8 @@ int write_output(const char *fname,const char *vname,void *data,int length,int d
   int i;
  
  
- // printf("Writing %d elements of type %d to %s\n",length,format,fname);
- // printf("Writing %d elements of type %d to %s\n",length,format,fname);
+ printf("Writing %d elements of type %d to %s\n",length,format,fname);
+ printf("Writing %d elements of type %d to %s\n",length,format,fname);
   
 
    if (format == 10 || format ==11 || format == 12 )

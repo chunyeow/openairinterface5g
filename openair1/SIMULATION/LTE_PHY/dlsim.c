@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
   u16 Nid_cell=0;
 
   int eNB_id = 0, eNB_id_i = 1;
-  unsigned char mcs=0,mcs_i=mcs,dual_stream_UE = 0,awgn_flag=0,round,dci_flag=0;
+  unsigned char mcs=0,mcs_i=0,dual_stream_UE = 0,awgn_flag=0,round,dci_flag=0;
   unsigned char i_mod = 2;
   unsigned short NB_RB;
   unsigned char Ns,l,m;
@@ -288,6 +288,7 @@ int main(int argc, char **argv) {
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
 
   signal(SIGSEGV, handler); 
+  signal(SIGABRT, handler); 
 
   logInit();
 
@@ -301,6 +302,7 @@ int main(int argc, char **argv) {
       {
       case 'a':
 	awgn_flag = 1;
+	channel_model = AWGN;
 	break;
       case 'b':
 	tdd_config=atoi(optarg);
@@ -467,7 +469,7 @@ int main(int argc, char **argv) {
 	  openair_daq_vars.use_ia_receiver = 0;
 	}
 	if ((n_tx!=2) || (transmission_mode!=5)) {
-	  msg("Unsupported nb of decoded users: %d user(s), %d user(s) to decode\n", n_tx, dual_stream_UE);
+	  msg("IA receiver only supported for TM5!");
 	  exit(-1);
 	}
 	break;
@@ -597,13 +599,10 @@ int main(int argc, char **argv) {
   printf("SCM-A=%d, SCM-B=%d, SCM-C=%d, SCM-D=%d, EPA=%d, EVA=%d, ETU=%d, Rayleigh8=%d, Rayleigh1=%d, Rayleigh1_corr=%d, Rayleigh1_anticorr=%d, Rice1=%d, Rice8=%d\n",
 	 SCM_A, SCM_B, SCM_C, SCM_D, EPA, EVA, ETU, Rayleigh8, Rayleigh1, Rayleigh1_corr, Rayleigh1_anticorr, Rice1, Rice8);
   
-  if(awgn_flag==0)
-    sprintf(bler_fname,"second_bler_tx%d_mcs%d_chan%d.csv",transmission_mode,mcs,channel_model);
-  else 
-    if(transmission_mode==5)
-      sprintf(bler_fname,"awgn_bler_tx%d_mcs%d_u%d.csv",transmission_mode,mcs,dual_stream_UE);
-    else
-      sprintf(bler_fname,"awgn_bler_tx%d_mcs%d.csv",transmission_mode,mcs);
+  if(transmission_mode==5)
+    sprintf(bler_fname,"bler_tx%d_chan%d_nrx%d_mcs%d_mcsi%d_u%d_imod%d.csv",transmission_mode,channel_model,n_rx,mcs,mcs_i,dual_stream_UE,i_mod);
+  else
+    sprintf(bler_fname,"bler_tx%d_chan%d_nrx%d_mcs%d.csv",transmission_mode,channel_model,n_rx,mcs);
   
   bler_fd = fopen(bler_fname,"w");
   fprintf(bler_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err\n");
@@ -616,6 +615,7 @@ int main(int argc, char **argv) {
     fprintf(csv_fd,"data_all%d=[",mcs);
   }
 
+  /*
   //sprintf(tikz_fname, "second_bler_tx%d_u2=%d_mcs%d_chan%d_nsimus%d.tex",transmission_mode,dual_stream_UE,mcs,channel_model,n_frames);
   sprintf(tikz_fname, "second_bler_tx%d_u2%d_mcs%d_chan%d_nsimus%d",transmission_mode,dual_stream_UE,mcs,channel_model,n_frames);
   tikz_fd = fopen(tikz_fname,"w");
@@ -710,6 +710,8 @@ int main(int argc, char **argv) {
       fprintf(tikz_fd,"\\addplot[color=yellow, mark=+] plot coordinates {");
       break;
     }
+  */
+
   for (i=0;i<2;i++) {
     s_re[i] = malloc(FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(double));
     s_im[i] = malloc(FRAME_LENGTH_COMPLEX_SAMPLES*sizeof(double));
@@ -951,7 +953,7 @@ int main(int argc, char **argv) {
 	  dci_alloc[num_dci].rnti       = n_rnti+k;
 	  dci_alloc[num_dci].format     = format1;
 	  dump_dci(&PHY_vars_eNB->lte_frame_parms,&dci_alloc[num_dci]);	
-	  for(k=0;k<n_users;k++) {
+
 	    printf("Generating dlsch params for user %d\n",k);
 	    generate_eNB_dlsch_params_from_dci(0,
 					       &DLSCH_alloc_pdu_1[0],
@@ -964,7 +966,6 @@ int main(int argc, char **argv) {
 					       0,
 					       P_RNTI,
 					       PHY_vars_eNB->eNB_UE_stats[0].DL_pmi_single);
-	  }
 	  
 	  num_dci++;
 	  num_ue_spec_dci++;
@@ -1086,7 +1087,7 @@ int main(int argc, char **argv) {
 	  dci_alloc[num_dci].format     = format1A;
 	  dci_alloc[num_dci].nCCE       = 0;
 	  dump_dci(&PHY_vars_eNB->lte_frame_parms,&dci_alloc[num_dci]);	
-	  for(k=0;k<n_users;k++) {
+
 	    printf("Generating dlsch params for user %d\n",k);
 	    generate_eNB_dlsch_params_from_dci(0,
 					       &DLSCH_alloc_pdu_1[0],
@@ -1099,7 +1100,6 @@ int main(int argc, char **argv) {
 					       0,
 					       P_RNTI,
 					       PHY_vars_eNB->eNB_UE_stats[0].DL_pmi_single);
-	  }
 	  
 	  num_common_dci++;
 	  num_dci++;
@@ -1114,7 +1114,6 @@ int main(int argc, char **argv) {
 	dci_alloc[num_dci].rnti       = n_rnti+k;
 	dci_alloc[num_dci].format     = format1E_2A_M10PRB;
 	dci_alloc[num_dci].nCCE       = 4*k;
-	for(k=0;k<n_users;k++) {
 	  printf("Generating dlsch params for user %d\n",k);
 	  generate_eNB_dlsch_params_from_dci(0,
 					     &DLSCH_alloc_pdu2_1E[k],
@@ -1127,7 +1126,6 @@ int main(int argc, char **argv) {
 					     0,
 					     P_RNTI,
 					     PHY_vars_eNB->eNB_UE_stats[k].DL_pmi_single);
-	}
 	
 	dump_dci(&PHY_vars_eNB->lte_frame_parms,&dci_alloc[num_dci]);
 	num_ue_spec_dci++;
@@ -1173,7 +1171,7 @@ int main(int argc, char **argv) {
       input_buffer_length = PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->TBS/8;
       input_buffer[k] = (unsigned char *)malloc(input_buffer_length+4);
       memset(input_buffer[k],0,input_buffer_length+4);
-    
+
       if (input_trch_file==0) {
 	for (i=0;i<input_buffer_length;i++) {
 	  input_buffer[k][i]= (unsigned char)(taus()&0xff);
@@ -1196,12 +1194,23 @@ int main(int argc, char **argv) {
       }
     }
   }
+
+  // this is for user 0 only
+  coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
+				  PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
+				  PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
+				  get_Qm(PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs),
+				  num_pdcch_symbols,
+				  0,subframe);
+  
+  uncoded_ber_bit = (short*) malloc(sizeof(short)*coded_bits_per_codeword);
+
+
   snr_step = input_snr_step;
   for (ch_realization=0;ch_realization<n_ch_rlz;ch_realization++){
     if(abstx){
       printf("**********************Channel Realization Index = %d **************************\n", ch_realization);
        saving_bler=1;
-      
     }
 
     for (SNR=snr0;SNR<snr1;SNR+=snr_step) {
@@ -1446,46 +1455,34 @@ int main(int argc, char **argv) {
 	    }
 
 	    for (k=0;k<n_users;k++) {
+
 	      coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
 					      PHY_vars_eNB->dlsch_eNB[k][0]->nb_rb,
 					      PHY_vars_eNB->dlsch_eNB[k][0]->rb_alloc,
 					      get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
 					      num_pdcch_symbols,
 					      0,subframe);
-	      
+
 #ifdef TBS_FIX   // This is for MESH operation!!!
 	      tbs = (double)3*TBStable[get_I_TBS(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs)][PHY_vars_eNB->dlsch_eNB[k][0]->nb_rb-1]/4;
 #else
 	      tbs = PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->TBS;
 #endif
-	      
 	      rate = (double)tbs/(double)coded_bits_per_codeword;
 	      
-	      uncoded_ber_bit = (short*) malloc(2*coded_bits_per_codeword);
-
-	      if ((trials==0) && (round==0)) 
-		printf("Rate = %f (%f bits/dim) (G %d, TBS %d, mod %d, pdcch_sym %d, ndi %d)\n",
-		       rate,rate*get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
+	      if ((SNR==snr0) && (trials==0) && (round==0))
+		printf("User %d: Rate = %f (%f bits/dim) (G %d, TBS %d, mod %d, pdcch_sym %d, ndi %d)\n",
+		       k,rate,rate*get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
 		       coded_bits_per_codeword,
 		       tbs,
 		       get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
 		       num_pdcch_symbols,
 		       PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Ndi);
 
-	     
-	      /*
-	      // generate channel here
-	      random_channel(eNB2UE);
-	      // generate frequency response
-	      freq_channel(eNB2UE,NB_RB);
-	      // generate PMI from channel
-	      */
-	      
-		
 	      // use the PMI from previous trial
 	      if (DLSCH_alloc_pdu2_1E[0].tpmi == 5) {
 		PHY_vars_eNB->dlsch_eNB[0][0]->pmi_alloc = quantize_subband_pmi(&PHY_vars_UE->PHY_measurements,0);
-		PHY_vars_UE->dlsch_ue[0][0]->harq_processes[0]->pmi_alloc = quantize_subband_pmi(&PHY_vars_UE->PHY_measurements,0);
+		PHY_vars_UE->dlsch_ue[0][0]->pmi_alloc = quantize_subband_pmi(&PHY_vars_UE->PHY_measurements,0);
 		if (n_users>1) 
                   PHY_vars_eNB->dlsch_eNB[1][0]->pmi_alloc = (PHY_vars_eNB->dlsch_eNB[0][0]->pmi_alloc ^ 0x1555); 
 		/*
@@ -1496,6 +1493,8 @@ int main(int argc, char **argv) {
 		  }
 		*/		
 	      }
+
+
 	      start_meas(&PHY_vars_eNB->dlsch_encoding_stats);	      
 	      if (dlsch_encoding(input_buffer[k],
 				 &PHY_vars_eNB->lte_frame_parms,
@@ -1508,7 +1507,7 @@ int main(int argc, char **argv) {
 				 )<0)
 		exit(-1);
 	      stop_meas(&PHY_vars_eNB->dlsch_encoding_stats);  
-	      // printf("Did not Crash here 1\n");
+
 	      PHY_vars_eNB->dlsch_eNB[k][0]->rnti = (common_flag==0) ? n_rnti+k : SI_RNTI;	  
 	      start_meas(&sts);	      
 	      dlsch_scrambling(&PHY_vars_eNB->lte_frame_parms,
@@ -1531,10 +1530,7 @@ int main(int argc, char **argv) {
 		    printf("%d : (%x)\n",i,PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->c[s][i]);
 		}
 	      }
-	      // printf("Did not Crash here 2\n");
 	  
-	      //	      if (k==1)
-	      // printf("AMP: %d\n",AMP);
 	      start_meas(&PHY_vars_eNB->dlsch_modulation_stats);	      
 	      re_allocated = dlsch_modulation(PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNB_id],
 					      AMP,
@@ -1543,10 +1539,10 @@ int main(int argc, char **argv) {
 					      num_pdcch_symbols,
 					      PHY_vars_eNB->dlsch_eNB[k][0]);
 	      stop_meas(&PHY_vars_eNB->dlsch_modulation_stats);	      
-	      // printf("Did not Crash here 3\n");
+	      /*
 	      if (trials==0 && round==0)
 		printf("RE count %d\n",re_allocated);
-	  
+	      */
 	      if (num_layers>1)
 		re_allocated = dlsch_modulation(PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNB_id],
 						1024,
@@ -2129,7 +2125,7 @@ int main(int argc, char **argv) {
 	    }
 	  }
 
-	  //saving PMI incase of Transmission Mode > 5
+	  //saving PMI in case of Transmission Mode > 5
 
 	  if(abstx){
 	    if(saving_bler==0)
@@ -2155,7 +2151,8 @@ int main(int argc, char **argv) {
 	  uncoded_ber/=coded_bits_per_codeword;
 	  avg_ber += uncoded_ber;
 	  
-	  write_output("uncoded_ber_bit.m","uncoded_ber_bit",uncoded_ber_bit,coded_bits_per_codeword,1,0);
+	  if (n_frames==1)
+	    write_output("uncoded_ber_bit.m","uncoded_ber_bit",uncoded_ber_bit,coded_bits_per_codeword,1,0);
 	  
 	  /*
 	    printf("precoded CQI %d dB, opposite precoded CQI %d dB\n",
@@ -2281,8 +2278,6 @@ int main(int argc, char **argv) {
 	      printf("DLSCH in error in round %d\n",round);
 		
 	  }
-	  //free(uncoded_ber_bit);
-	  //uncoded_ber_bit = NULL;
 #ifdef XFORMS
 	  phy_scope_UE(form_ue, 
 		       PHY_vars_UE,
@@ -2438,8 +2433,8 @@ int main(int argc, char **argv) {
   
   
   fclose(bler_fd);
-  fprintf(tikz_fd,"};\n");
-  fclose(tikz_fd);
+  //fprintf(tikz_fd,"};\n");
+  //fclose(tikz_fd);
 
   if (input_trch_file==1)
     fclose(input_trch_fd);
@@ -2449,8 +2444,13 @@ int main(int argc, char **argv) {
     fprintf(csv_fd,"];");
     fclose(csv_fd);
   }
-  
-  
+
+  free(uncoded_ber_bit);
+  uncoded_ber_bit = NULL;  
+  for (k=0;k<n_users;k++) {
+    free(input_buffer[k]);
+    input_buffer[k]=NULL;
+  }
   printf("Freeing dlsch structures\n");
   for (i=0;i<2;i++) {
     printf("eNB %d\n",i);

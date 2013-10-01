@@ -488,7 +488,7 @@ void phy_procedures_emos_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_e
     }
     else {
       if (phy_vars_eNB->frame%100==0) {
-        LOG_D(PHY,"[eNB %d] Frame %d (%d), slot %d, Writing %d bytes EMOS data to FIFO\n",
+        LOG_I(PHY,"[eNB %d] Frame %d (%d), slot %d, Writing %d bytes EMOS data to FIFO\n",
               phy_vars_eNB->Mod_id,phy_vars_eNB->frame, ((fifo_dump_emos_eNB*)&emos_dump_eNB)->frame_tx, last_slot, bytes);
       }
     }
@@ -517,7 +517,6 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
   DCI_pdu->Num_ue_spec_dci=0;
 
   switch (subframe) {
-	/*
       case 5:
       DCI_pdu->Num_common_dci = 1;
       DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1A_5MHz_TDD_1_6_t;
@@ -536,7 +535,6 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
       BCCH_alloc_pdu.TPC               = 1;      // set to 3 PRB
       memcpy((void*)&DCI_pdu->dci_alloc[0].dci_pdu[0],&BCCH_alloc_pdu,sizeof(DCI1A_5MHz_TDD_1_6_t));
       break;
-	*/
   case 6:
     /*
       DCI_pdu->Num_ue_spec_dci = 1;
@@ -558,8 +556,8 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
       memcpy((void*)&DCI_pdu->dci_alloc[0].dci_pdu[0],(void *)&DLSCH_alloc_pdu1,sizeof(DCI2_5MHz_2A_M10PRB_TDD_t));
     */
     break;
-  case 5:
-      DCI_pdu->Num_ue_spec_dci = 1;
+  case 7:
+    DCI_pdu->Num_ue_spec_dci = 1;
     
     if (transmission_mode<3) {
       //user 1
@@ -606,7 +604,7 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
       DLSCH_alloc_pdu1E.tpmi             = 5; //5=use feedback
       DLSCH_alloc_pdu1E.rv               = 0;
       DLSCH_alloc_pdu1E.ndi              = 1;
-      DLSCH_alloc_pdu1E.mcs              = openair_daq_vars.target_ue_dl_mcs;
+      DLSCH_alloc_pdu1E.mcs              = cqi_to_mcs[phy_vars_eNB->eNB_UE_stats->DL_cqi[0]];//openair_daq_vars.target_ue_dl_mcs;
       DLSCH_alloc_pdu1E.harq_pid         = 0;
       DLSCH_alloc_pdu1E.dai              = 0;
       DLSCH_alloc_pdu1E.TPC              = 0;
@@ -621,6 +619,7 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
       DCI_pdu->dci_alloc[1].rnti       = 0x1236;
       DCI_pdu->dci_alloc[1].format     = format1E_2A_M10PRB;
       DCI_pdu->dci_alloc[1].ra_flag    = 0;
+      //DLSCH_alloc_pdu1E.mcs            = openair_daq_vars.target_ue_dl_mcs; 
       DLSCH_alloc_pdu1E.mcs            = (unsigned char) (taus()%28);
       
       memcpy((void*)&DCI_pdu->dci_alloc[1].dci_pdu[0],(void *)&DLSCH_alloc_pdu1E,sizeof(DCI1E_5MHz_2A_M10PRB_TDD_t));
@@ -651,7 +650,7 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
     break;
     */
   case 9:
-    DCI_pdu->Num_ue_spec_dci = 1;
+    DCI_pdu->Num_ue_spec_dci = 2;
 
     //user 1
     DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI0_5MHz_TDD_1_6_t ; 
@@ -668,10 +667,9 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
     UL_alloc_pdu.TPC     = 0;
     UL_alloc_pdu.cshift  = 0;
     UL_alloc_pdu.dai     = 0;
-    UL_alloc_pdu.cqi_req = 0;
+    UL_alloc_pdu.cqi_req = 1;
     memcpy((void*)&DCI_pdu->dci_alloc[0].dci_pdu[0],(void *)&UL_alloc_pdu,sizeof(DCI0_5MHz_TDD_1_6_t));
        
-    //user 2
     DCI_pdu->dci_alloc[1].dci_length = sizeof_DCI0_5MHz_TDD_1_6_t ; 
     DCI_pdu->dci_alloc[1].L          = 2;
     DCI_pdu->dci_alloc[1].rnti       = 0x1236;
@@ -692,7 +690,7 @@ void fill_dci(DCI_PDU *DCI_pdu, u8 subframe, PHY_VARS_eNB *phy_vars_eNB) {
     else
       UL_alloc_pdu.cshift  = 1;
     UL_alloc_pdu.dai     = 0;
-    UL_alloc_pdu.cqi_req = 0;
+    UL_alloc_pdu.cqi_req = 1;
     memcpy((void*)&DCI_pdu->dci_alloc[1].dci_pdu[0],(void *)&UL_alloc_pdu,sizeof(DCI0_5MHz_TDD_1_6_t));
 
     break;
@@ -1253,12 +1251,16 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 				       next_slot>>1);
 #else
     DCI_pdu = &DCI_pdu_tmp;
-    /*
-    if ((phy_vars_eNB->frame%1000 == 0) && (phy_vars_eNB->frame>=500) && (next_slot == 0) && (openair_daq_vars.target_ue_dl_mcs<28)) {
+#ifdef EMOS
+    if ((phy_vars_eNB->frame%1000 == 0) && (phy_vars_eNB->frame>1000) && (next_slot == 0) && (openair_daq_vars.target_ue_dl_mcs<28)) {
       openair_daq_vars.target_ue_dl_mcs++;
       msg("[MYEMOS] frame %d, increasing MCS to %d\n",phy_vars_eNB->frame,openair_daq_vars.target_ue_dl_mcs);
     }
-    */
+    if (phy_vars_eNB->frame > 28000) {
+      LOG_E(PHY,"More that 28000 frames reached! Exiting!\n");
+      mac_xface->macphy_exit("");
+    }      
+#endif
 #ifdef EMOS_CHANNEL
     fill_dci_emos(DCI_pdu,next_slot>>1,phy_vars_eNB);
 #else

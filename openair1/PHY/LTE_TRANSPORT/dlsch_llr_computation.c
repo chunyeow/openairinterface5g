@@ -46,6 +46,9 @@
 #include <pmmintrin.h>
 #include <tmmintrin.h>
 #endif
+#ifdef __SSE4_1__
+#include <smmintrin.h>
+#endif
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 #include "defs.h"
@@ -757,14 +760,14 @@ void dlsch_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
         // lambda_1=y_R, lambda_2=|y_R|-|h|^2, lamda_3=y_I, lambda_4=|y_I|-|h|^2
         llr128[0] = _mm_unpacklo_epi32(rxF[i],xmm0); 
         llr128[1] = _mm_unpackhi_epi32(rxF[i],xmm0);
-        llr32[0] = ((u32 *)&llr128[0])[0];
-        llr32[1] = ((u32 *)&llr128[0])[1];
-        llr32[2] = ((u32 *)&llr128[0])[2];
-        llr32[3] = ((u32 *)&llr128[0])[3];
-        llr32[4] = ((u32 *)&llr128[1])[0];
-        llr32[5] = ((u32 *)&llr128[1])[1];
-        llr32[6] = ((u32 *)&llr128[1])[2];
-        llr32[7] = ((u32 *)&llr128[1])[3];
+        llr32[0] = _mm_extract_epi32(llr128[0],0); //((u32 *)&llr128[0])[0];
+        llr32[1] = _mm_extract_epi32(llr128[0],1); //((u32 *)&llr128[0])[1];
+        llr32[2] = _mm_extract_epi32(llr128[0],2); //((u32 *)&llr128[0])[2];
+        llr32[3] = _mm_extract_epi32(llr128[0],3); //((u32 *)&llr128[0])[3];
+        llr32[4] = _mm_extract_epi32(llr128[1],0); //((u32 *)&llr128[1])[0];
+        llr32[5] = _mm_extract_epi32(llr128[1],1); //((u32 *)&llr128[1])[1];
+        llr32[6] = _mm_extract_epi32(llr128[1],2); //((u32 *)&llr128[1])[2];
+        llr32[7] = _mm_extract_epi32(llr128[1],3); //((u32 *)&llr128[1])[3];
         llr32+=8;
   }
   _mm_empty();
@@ -788,7 +791,7 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
 
     __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
     __m128i *ch_mag,*ch_magb;
-    int j=0,i,len,len2;
+    int i,len,len2;
     unsigned char symbol_mod,len_mod4;
     short *llr;
     s16 *llr2;
@@ -828,6 +831,7 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
         xmm2 = _mm_subs_epi16(ch_magb[i],xmm2);
         
         // loop over all LLRs in quad word (24 coded bits)
+	/*
         for (j=0;j<8;j+=2) {
             llr2[0] = ((short *)&rxF[i])[j];
             llr2[1] = ((short *)&rxF[i])[j+1];
@@ -838,6 +842,40 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
             
             llr2+=6;
         }
+	*/
+      llr2[0] = ((short *)&rxF[i])[0];
+      llr2[1] = ((short *)&rxF[i])[1];
+      llr2[2] = _mm_extract_epi16(xmm1,0);
+      llr2[3] = _mm_extract_epi16(xmm1,1);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,0);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,1);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+      llr2[0] = ((short *)&rxF[i])[2];
+      llr2[1] = ((short *)&rxF[i])[3];
+      llr2[2] = _mm_extract_epi16(xmm1,2);
+      llr2[3] = _mm_extract_epi16(xmm1,3);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,2);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,3);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+      llr2[0] = ((short *)&rxF[i])[4];
+      llr2[1] = ((short *)&rxF[i])[5];
+      llr2[2] = _mm_extract_epi16(xmm1,4);
+      llr2[3] = _mm_extract_epi16(xmm1,5);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,4);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,5);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+      llr2[0] = ((short *)&rxF[i])[6];
+      llr2[1] = ((short *)&rxF[i])[7];
+      llr2[2] = _mm_extract_epi16(xmm1,6);
+      llr2[3] = _mm_extract_epi16(xmm1,7);//((short *)&xmm1)[j+1];
+      llr2[4] = _mm_extract_epi16(xmm2,6);//((short *)&xmm2)[j];
+      llr2[5] = _mm_extract_epi16(xmm2,7);//((short *)&xmm2)[j+1];
+      
+      llr2+=6;
+
     }
     *llr_save = llr;
     _mm_empty();

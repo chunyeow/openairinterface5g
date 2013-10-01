@@ -168,18 +168,6 @@ static void * rx_pdsch_thread(void *param) {
                                                                             phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                                                                             phy_vars_ue->frame,subframe);
 
-      /*
-    //    msg("[MYEMOS] frame %d, las_slot %d, IA %d\n",phy_vars_ue->frame,last_slot,openair_daq_vars.use_ia_receiver);
-    if ((phy_vars_ue->frame%500 == 0) && (phy_vars_ue->frame>=500) && (last_slot%2 == 0) && (openair_daq_vars.use_ia_receiver == 0)) {
-      msg("[MYEMOS] frame %d, IA receiver ON, MCS %d, bitrate %d\n",phy_vars_ue->frame,phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,phy_vars_ue->bitrate[eNB_id]);
-      openair_daq_vars.use_ia_receiver = 1;
-    } 
-    if ((phy_vars_ue->frame%1000 == 0) && (phy_vars_ue->frame>=500) && (last_slot%2 == 0) && (openair_daq_vars.use_ia_receiver == 1)) {
-      msg("[MYEMOS] frame %d, IA receiver OFF, MCS %d, bitrate %d\n",phy_vars_ue->frame,phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,phy_vars_ue->bitrate[eNB_id]);
-       openair_daq_vars.use_ia_receiver = 0;
-    }
-      */
-
       if ((phy_vars_ue->transmission_mode[eNB_id] == 5) && 
           (phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->dl_power_off==0) &&
           (openair_daq_vars.use_ia_receiver ==1)) {

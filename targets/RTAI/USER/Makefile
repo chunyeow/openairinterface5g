@@ -9,7 +9,7 @@ ifeq "$(GCCVERSION)" "4.6.1"
     CFLAGS += -Wno-packed-bitfield-compat
 endif
 
-CFLAGS += -O
+CFLAGS += -O2
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 
 SRC = synctest.c condtest.c lte-softmodem.c
@@ -101,7 +101,7 @@ endif
 #CPUFLAGS = -mmmx -msse -msse2 -m32 -mssse3 -msse4.1
 CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4.1
 #CFLAGS += -fno-common -mpreferred-stack-boundary=4  
-CFLAGS += -Wall -fno-strict-aliasing -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -g -ggdb -rdynamic $(CPUFLAGS) # -Wno-packed-bitfield-compat
+CFLAGS += -Wall -fno-strict-aliasing -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -rdynamic $(CPUFLAGS) # -Wno-packed-bitfield-compat
 CFLAGS += -DOPENAIR_LTE -DENABLE_FXP -DOPENAIR1 -DDLSCH_THREAD #-DULSCH_THREAD
 
 #only for CBMIMO1
@@ -119,7 +119,7 @@ CFLAGS += -DHARD_RT
 endif
 
 ifeq ($(EMOS),1)
-CFLAGS += -DEMOS -DEMOS_CHANNEL
+CFLAGS += -DEMOS #-DEMOS_CHANNEL
 LDFLAGS += -lgps
 endif
 
@@ -247,7 +247,8 @@ run_eNB2:
 	rtai-load eNB2 --verbose
 
 clean:
-	rm -rf $(OBJ) $(RTAI_OBJ)
+	rm -rf $(OBJ) $(RTAI_OBJ) 
+	rm -f $(ASN1_MSG_INC)/asn1_msg.o
 
 cleanasn1:
 	rm -f $(ASN1_MSG_OBJS1)
@@ -264,6 +265,11 @@ cleancell:
 	rm -f $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.d
 	rm -f $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.o
 	rm -f $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
+
+cleanalmostall: clean 
+	rm -f $(ASN1_MSG_OBJS1)
+	rm -rf condtest synctest lte-softmodem
+	rm -rf synctest_eNB synctest_UE
 
 cleanall: clean cleanasn1
 	rm -rf condtest synctest lte-softmodem

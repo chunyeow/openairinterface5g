@@ -248,9 +248,10 @@ u32 ulsch_encoding(u8 *a,
     print_CQI(ulsch->o,ulsch->uci_format,0);
 
     // save PUSCH pmi for later (transmission modes 4,5,6)
-    //    msg("ulsch: saving pmi for DL %x\n",pmi2hex_2Ar1(((wideband_cqi_rank1_2A_5MHz *)ulsch->o)->pmi));
-    if (dlsch[0])
-      dlsch[0]->harq_processes[harq_pid]->pmi_alloc = ((wideband_cqi_rank1_2A_5MHz *)ulsch->o)->pmi;
+    if (dlsch[0]) {
+      //LOG_I(PHY,"XXX saving pmi for DL %x\n",pmi2hex_2Ar1(((wideband_cqi_rank1_2A_5MHz *)ulsch->o)->pmi));
+      dlsch[0]->pmi_alloc = ((wideband_cqi_rank1_2A_5MHz *)ulsch->o)->pmi;
+    }
   }
 
   if (ulsch->O<=32) {

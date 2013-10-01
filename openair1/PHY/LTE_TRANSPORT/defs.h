@@ -614,6 +614,8 @@ typedef struct {
   uint32_t cqi_alloc1;
   /// Current subband CQI2 allocation
   uint32_t cqi_alloc2;
+  /// saved subband PMI allocation from last PUSCH/PUCCH report
+  uint16_t pmi_alloc;
   /// HARQ-ACKs
   harq_status_t harq_ack[10];
   /// Pointers to up to 8 HARQ processes

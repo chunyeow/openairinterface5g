@@ -374,7 +374,7 @@ FD_lte_phy_scope_ue *create_lte_phy_scope_ue( void ) {
     // Generic UE Button
     fdui->button_0 = fl_add_button( FL_PUSH_BUTTON, 540, 720, 240, 40, "" );
     fl_set_object_lalign(fdui->button_0, FL_ALIGN_CENTER );
-    openair_daq_vars.use_ia_receiver = 0;
+    //openair_daq_vars.use_ia_receiver = 0;
     fl_set_button(fdui->button_0,0);
     fl_set_object_label(fdui->button_0, "IA Receiver OFF");
     fl_set_object_color(fdui->button_0, FL_RED, FL_RED);  

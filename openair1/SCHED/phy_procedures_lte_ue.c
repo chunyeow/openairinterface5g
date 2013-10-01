@@ -1521,8 +1521,8 @@ void phy_procedures_emos_UE_RX(PHY_VARS_UE *phy_vars_ue,u8 last_slot,u8 eNB_id) 
     emos_dump_UE.total_TBS_last = phy_vars_ue->total_TBS_last[eNB_id];
     emos_dump_UE.bitrate = phy_vars_ue->bitrate[eNB_id];
     emos_dump_UE.total_received_bits = phy_vars_ue->total_received_bits[eNB_id];
-    emos_dump_UE.pmi_saved = phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[1]->pmi_alloc;
-    emos_dump_UE.mcs = phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[1]->mcs;
+    emos_dump_UE.pmi_saved = phy_vars_ue->dlsch_ue[eNB_id][0]->pmi_alloc;
+    emos_dump_UE.mcs = phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid]->mcs;
     emos_dump_UE.use_ia_receiver = openair_daq_vars.use_ia_receiver;
 
     bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &emos_dump_UE, sizeof(fifo_dump_emos_UE));
@@ -1749,8 +1749,12 @@ void lte_ue_pbch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
     phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors++;
 #ifdef OPENAIR2
     mac_xface->out_of_sync_ind(phy_vars_ue->Mod_id,phy_vars_ue->frame,eNB_id);
+#else
+    if (phy_vars_ue->lte_ue_pbch_vars[eNB_id]->pdu_errors_conseq>=100) {
+      LOG_E(PHY,"More that 100 consecutive PBCH errors! Exiting!\n");
+      mac_xface->macphy_exit("");
+    }
 #endif
-    //mac_xface->macphy_exit("");
   }
 
   if (phy_vars_ue->frame % 100 == 0) {
@@ -2199,6 +2203,12 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
   LOG_D(PHY,"[%s %d] Frame %d subframe %d: Doing phy_procedures_UE_RX(%d)\n", 
 	(r_type == multicast_relay) ? "RN/UE" : "UE",
 	phy_vars_ue->Mod_id,phy_vars_ue->frame, last_slot>>1, last_slot);
+#endif
+#ifdef EMOS
+  if ((phy_vars_ue->frame%500 == 0) && (phy_vars_ue->frame>=500) && (last_slot == 0)) {
+    openair_daq_vars.use_ia_receiver = !openair_daq_vars.use_ia_receiver;
+    LOG_I(PHY,"[MYEMOS] frame %d, IA receiver %d, MCS %d, bitrate %d\n",phy_vars_ue->frame,openair_daq_vars.use_ia_receiver, phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,phy_vars_ue->bitrate[eNB_id]);
+  } 
 #endif
 
   if (phy_vars_ue->lte_frame_parms.Ncp == 0) {  // normal prefix

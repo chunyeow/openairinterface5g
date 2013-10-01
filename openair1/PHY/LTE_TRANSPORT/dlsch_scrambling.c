@@ -46,6 +46,8 @@
 #include "defs.h"
 #include "extern.h"
 #include "PHY/extern.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
+
 void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
 		      int mbsfn_flag,
 		      LTE_eNB_DLSCH_t *dlsch,
@@ -57,6 +59,8 @@ void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
   //  u8 reset;
   u32 x1, x2, s=0;
   u8 *e=dlsch->e;
+
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_IN);
 
   //  reset = 1;
   // x1 is set in lte_gold_generic
@@ -83,6 +87,8 @@ void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
     }
    s = lte_gold_generic(&x1, &x2, 0);
   }
+
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_OUT);
 
 }
 

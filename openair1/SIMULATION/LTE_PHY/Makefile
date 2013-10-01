@@ -9,7 +9,7 @@ OPENAIR1_TOP = $(OPENAIR1_DIR)
 OPENAIR2_TOP = $(OPENAIR2_DIR)
 OPENAIR3 = $(OPENAIR3_DIR)
 
-CFLAGS = -g -O -Wno-strict-aliasing -rdynamic -Wall -DPHYSIM -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 $(CPUFLAGS) -DMALLOC_CHECK_=1 # -Wno-packed-bitfield-compat
+CFLAGS = -g -O2 -Wno-strict-aliasing -rdynamic -Wall -DPHYSIM -DNODE_RG -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 $(CPUFLAGS) -DMALLOC_CHECK_=1 # -Wno-packed-bitfield-compat
 
 
 # DCI Debug
@@ -189,7 +189,7 @@ clean :
 	rm -f *.o
 
 cleanall : clean
-	rm -f dlsim pbchsim pdcchsim ulsim pucchsim 
+	rm -f dlsim pbchsim pdcchsim ulsim pucchsim mbmssim prachsim 
 	rm -f *.exe*
 
 showflags :

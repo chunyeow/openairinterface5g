@@ -2058,7 +2058,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     case 5:
       dlsch0->harq_processes[harq_pid]->mimo_mode   = PUSCH_PRECODING0;
       // pmi stored from ulsch allocation routine
-      //msg("using PMI %x\n",pmi2hex_2Ar1(dlsch0->harq_processes[harq_pid]->pmi_alloc));
+      dlsch0->harq_processes[harq_pid]->pmi_alloc                             = dlsch0->pmi_alloc;
+      //LOG_I(PHY,"XXX using PMI %x\n",pmi2hex_2Ar1(dlsch0->harq_processes[harq_pid]->pmi_alloc));
       break;
     case 6:
       dlsch0->harq_processes[harq_pid]->mimo_mode   = PUSCH_PRECODING1;
@@ -2214,7 +2215,9 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     case 5:
       dlsch0->harq_processes[harq_pid]->mimo_mode   = PUSCH_PRECODING0;
       // pmi stored from ulsch allocation routine
-      break;
+      dlsch0->harq_processes[harq_pid]->pmi_alloc                             = dlsch0->pmi_alloc;
+      //LOG_I(PHY,"XXX using PMI %x\n",pmi2hex_2Ar1(dlsch0->harq_processes[harq_pid]->pmi_alloc));
+     break;
     case 6:
       dlsch0->harq_processes[harq_pid]->mimo_mode   = PUSCH_PRECODING1;
       LOG_E(PHY,"Unsupported TPMI\n");
