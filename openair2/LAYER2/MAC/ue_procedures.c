@@ -1272,7 +1272,8 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   // mac_rlc_status_resp_t rlc_status[MAX_NUM_LCGID]; // 4
   // s8 lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
-  
+  int ret;  
+
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_IN);
 
   //Mac_rlc_xface->frame=frame;
@@ -1281,8 +1282,12 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
 #ifdef EXMIMO
   //pdcp_run(frame, 0, Mod_id, eNB_index);
   
-  if (pthread_mutex_lock (&pdcp_mutex) != 0) {
-    LOG_E(PDCP,"Cannot lock mutex\n");
+  ret = pthread_mutex_trylock (&pdcp_mutex);
+  if (ret != 0) {
+    if (ret==EBUSY)
+      LOG_E(PDCP,"Mutex busy\n");
+    else
+      LOG_E(PDCP,"Cannot lock mutex\n");
     //return(-1);
   }
   else {
@@ -1299,7 +1304,6 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
       LOG_W(PDCP,"PDCP thread busy!!! inst_cnt=%d\n",pdcp_instance_cnt);
     }
   }
-  
 #endif 
   UE_mac_inst[Mod_id].frame = frame;
   UE_mac_inst[Mod_id].subframe = subframe;

@@ -4191,6 +4191,7 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
   unsigned int nCCE=0;
   int mbsfn_status=0;
   u32 RBalloc=0;
+  int ret;
 
   DCI_PDU *DCI_pdu= &eNB_mac_inst[Mod_id].DCI_pdu;
   //  LOG_D(MAC,"[eNB %d] Frame %d, Subframe %d, entering MAC scheduler\n",Mod_id, frame, subframe);
@@ -4213,8 +4214,12 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 #ifdef EXMIMO 
   //pdcp_run(frame, 1, 0, Mod_id);
  
-  if (pthread_mutex_lock (&pdcp_mutex) != 0) {
-    LOG_E(PDCP,"Cannot lock mutex\n");
+  ret = pthread_mutex_trylock (&pdcp_mutex);
+  if (ret != 0) {
+    if (ret==EBUSY)
+      LOG_E(PDCP,"Mutex busy\n");
+    else
+      LOG_E(PDCP,"Cannot lock mutex\n");
     //return(-1);
   }
   else {
@@ -4231,7 +4236,6 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
       LOG_W(PDCP,"PDCP thread busy!!! inst_cnt=%d\n",pdcp_instance_cnt);
     }
   }
-  
 #endif
 #ifdef CELLULAR
   rrc_rx_tx(Mod_id, frame, 0, 0);

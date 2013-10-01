@@ -92,7 +92,7 @@ extern pthread_cond_t pdcp_cond;
 extern int pdcp_instance_cnt;
 
 static void *pdcp_thread_main(void* param);
-int init_pdcp_thread(u8 eNB_flag);
+int init_pdcp_thread(void);
 void cleanup_pdcp_thread(void);
 
 typedef unsigned char BOOL;
