@@ -329,6 +329,7 @@ void init_oai_emulation() {
   oai_emulation.info.omg_model_rn=STATIC; //default to static mobility model
   oai_emulation.info.omg_model_ue=STATIC; //default to static mobility model
   oai_emulation.info.omg_model_ue_current=STATIC; //default to static mobility model
+  oai_emulation.info.otg_traffic="no_predefined_traffic";
   oai_emulation.info.otg_bg_traffic_enabled = 0; // G flag 
   oai_emulation.info.frame = 0; // frame counter of emulation 
   oai_emulation.info.time_s = 0; // time of emulation  
