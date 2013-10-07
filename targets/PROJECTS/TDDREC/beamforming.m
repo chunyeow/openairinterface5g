@@ -2,6 +2,7 @@
 signalA2B=zeros(N,4);
 signalB2A=zeros(N,4);
 signalB2A_prec=zeros(N,4);
+signalB2A_diag=zeros(N,4);
 
 %%----------Node A to B transmission---------%%
 for i=1:4
@@ -37,7 +38,9 @@ chanestsA2B=reshape(diag(repmat(Da2b_T,1,Nantb)'*Da2b_R)/size(Da2b_T,1),301,Nant
 for i=1:301
     YA=chanestsA2B(i,:).';
     F=Fs(:,:,i);
-    Bd(:,i) = conj(F*YA)./norm(F*YA);
+    Fd=Fds(:,:,i);
+    BFs(:,i) = conj(F*YA)./norm(F*YA);
+    BDs(:,i) = conj(Fd*YA)./norm(Fd*YA);
 end
 
 %% generate normal and beamformed signals
@@ -45,24 +48,24 @@ end
 for i=1:size(seqf,1)
     % precoding
     for j=1:size(seqf,2)
-        symbol_prec(:,j)=Bd(:,j)*seqf(i,j);
+        seqf_prec_full(:,i,j)=BFs(:,j)*seqf(i,j);
+        seqf_prec_diag(:,i,j)=BDs(:,j)*seqf(i,j);
     end
-    % insert zero subcarriers
-    symbol_prec=cat(2,zeros(3,1),symbol_prec(:,1:150),zeros(3,210),symbol_prec(:,151:301));
-    % ofdm modulation
-    symbol_prec_t=ifft(symbol_prec,512,2);
-    % Adding cycl. prefix making the block of 640 elements
-    symbol_prec_cp = cat(2,symbol_prec_t(:,end-127:end), symbol_prec_t);
-    tmps_prec(:,[1:640]+(i-1)*640)=floor(amp*symbol_prec_cp);
 end
 
+tmps_prec_diag = ofdm_mod(seqf_prec_full,amp);
+tmps_prec_full = ofdm_mod(seqf_prec_diag,amp);
+
+%%
 for i=1:4
     if(active_rfB(i))
       signalB2A(:,i)=floor(tmps/sqrt(3))*2; %make sure LSB is 0 (switch=tx)
-        signalB2A_prec(:,i)=tmps_prec(i-1,:)*2; %make sure LSB is 0 (switch=tx)
+      signalB2A_prec_full(:,i)=tmps_prec_full(i-1,:)*2; %make sure LSB is 0 (switch=tx)
+      signalB2A_prec_diag(:,i)=tmps_prec_diag(i-1,:)*2; %make sure LSB is 0 (switch=tx)
     else
-        signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
-        signalB2A_prec(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
+      signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
+      signalB2A_prec_full(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
+      signalB2A_prec_diag(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
     end
 end
 
@@ -77,17 +80,27 @@ sleep(0.01);
 P_rx = 10*log10(mean(abs(receivedB2A(:,1)).^2))
 
 %% send beamformed DL signal
-P_tx_prec = 10*log10(sum(mean(abs(signalB2A_prec(:,2:4)).^2)))
-oarf_send_frame(card,signalB2A_prec,n_bit);
+P_tx_prec_diag = 10*log10(sum(mean(abs(signalB2A_prec_diag(:,2:4)).^2)))
+oarf_send_frame(card,signalB2A_prec_diag,n_bit);
 %keyboard
 sleep(0.01);
-receivedB2A_prec=oarf_get_frame(card);
+receivedB2A_prec_diag=oarf_get_frame(card);
 sleep(0.01);
 % measure SNR
-P_rx_prec = 10*log10(mean(abs(receivedB2A_prec(:,1)).^2))
+P_rx_prec_diag = 10*log10(mean(abs(receivedB2A_prec_diag(:,1)).^2))
+
+%% send beamformed DL signal
+P_tx_prec_full = 10*log10(sum(mean(abs(signalB2A_prec_full(:,2:4)).^2)))
+oarf_send_frame(card,signalB2A_prec_full,n_bit);
+%keyboard
+sleep(0.01);
+receivedB2A_prec_full=oarf_get_frame(card);
+sleep(0.01);
+% measure SNR
+P_rx_prec_full = 10*log10(mean(abs(receivedB2A_prec_full(:,1)).^2))
 
 figure(10)
-bar([P_tx P_tx_prec; P_rx P_rx_prec]);
-legend('normal','beamformed')
+bar([P_tx P_tx_prec_diag P_tx_prec_full; P_rx P_rx_prec_diag P_rx_prec_full]);
+legend('normal','beamformed F diag', 'beamformed F full')
 ylim([0 60])
 drawnow
