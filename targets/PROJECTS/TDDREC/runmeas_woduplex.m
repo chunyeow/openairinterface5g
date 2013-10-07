@@ -21,7 +21,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
   if(Niter!=1) 
     error("We should only use one get_frame at each run.\n"); 
   endif
-  Nmeas = 100;
+  Nmeas = 10;
   
 # %% ------- Prepare the signals for A2B ---------- %%
   signalA2B=zeros(N,4);
@@ -54,17 +54,17 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
       Db2a_T=[Db2a_T tmpd];
       if(length(indB)> ib) ib=ib+1; endif
     endif   
-   endfor
+  endfor
 
-   if (!chanest_full)
+  if (!chanest_full)
      signalB2A(1:38400,3)=0;
      signalB2A(38401:end,2)=0;
      Db2a_T(1:60,302:end) = 0;
      Db2a_T(61:end,1:301) = 0;
-   end
+  end
 
-   Da2b_R=zeros(Niter*120,Nantb*301,Nmeas);
-   Db2a_R=zeros(Niter*120,Nanta*301,Nmeas);
+  Da2b_R=zeros(Niter*120,Nantb*301,Nmeas);
+  Db2a_R=zeros(Niter*120,Nanta*301,Nmeas);
 
 for meas=1:Nmeas
 # %% ------- Node A to B transmission ------- %%	
@@ -156,14 +156,16 @@ end
   plot(t,20*log10(abs(tchanests)))
   xlabel('time')
   ylabel('|h|')
-  legend('A->B1','A->B2','B1->A','B2->A');
+  legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
+  %legend('A->B1','A->B2','B1->A','B2->A');
   
   figure(4)
   plot(20*log10(abs(fchanests)));
   ylim([40 100])
   xlabel('freq')
   ylabel('|h|')
-  legend('A->B1','A->B2','B1->A','B2->A');
+  legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
+  %legend('A->B1','A->B2','B1->A','B2->A');
 
   if (0)
   figure(3)
