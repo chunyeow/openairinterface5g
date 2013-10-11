@@ -43,11 +43,13 @@ int netlink_init(void)
     }
     printf("[NETLINK]Opened socket with fd %d\n",nas_sock_fd);
 
+#if !defined(ENABLE_PDCP_NETLINK_FIFO)
     ret = fcntl(nas_sock_fd,F_SETFL,O_NONBLOCK);
     if (ret == -1) {
       printf("[NETLINK] Error fcntl (%d:%s)\n",errno, strerror(errno));
 //      exit(1);
     }
+#endif
 
     memset(&nas_src_addr, 0, sizeof(nas_src_addr));
     nas_src_addr.nl_family = AF_NETLINK;

@@ -82,8 +82,8 @@ extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned in
 BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, sdu_size_t sdu_buffer_size, \
                    unsigned char* sdu_buffer, pdcp_t* test_pdcp_entity, list_t* test_list)
 #else
-    BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP, \
-                       sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode)
+BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP, \
+                   sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode)
 #endif
 {
   //-----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
       memcpy(&pdcp_pdu->data[0], sdu_buffer, sdu_buffer_size); 
       rlc_status = rlc_data_req(module_id, frame, eNB_flag, RLC_MBMS_YES, rb_id, muiP, confirmP, sdu_buffer_size, pdcp_pdu);
     } else
-      rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;    
+      rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
   } else {
     // calculate the pdcp header and trailer size
     if ((rb_id % NB_RB_MAX) < DTCH) {
@@ -137,15 +137,15 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
       pdcp_tailer_len = 0;
     }
     pdcp_pdu_size= sdu_buffer_size + pdcp_header_len + pdcp_tailer_len;
-    
+
     LOG_I(PDCP, "Data request notification for PDCP entity with module ID %d and radio bearer ID %d pdu size %d (header%d, trailer%d)\n", module_id, rb_id,pdcp_pdu_size, pdcp_header_len,pdcp_tailer_len);
-    
+
     /*
      * Allocate a new block for the new PDU (i.e. PDU header and SDU payload)
      */
     LOG_D(PDCP, "Asking for a new mem_block of size %d\n", pdcp_pdu_size);
     pdcp_pdu = get_free_mem_block(pdcp_pdu_size);
-    
+
     if (pdcp_pdu != NULL) {
       /*
        * Create a Data PDU with header and append data
@@ -295,7 +295,7 @@ BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
   "ID %d and radio bearer ID %d rlc sdu size %d eNB_flag %d\n", module_id, rb_id, sdu_buffer_size, eNB_flag);
 
   if (sdu_buffer_size == 0) {
-    LOG_W(PDCP, "SDU buffer size is zero! Ignoring this chunk!");
+    LOG_W(PDCP, "SDU buffer size is zero! Ignoring this chunk!\n");
     return FALSE;
   }
 
@@ -469,14 +469,13 @@ BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
 }
 
 //-----------------------------------------------------------------------------
-void
-    pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
+void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
   //-----------------------------------------------------------------------------
 
 #ifndef NAS_NETLINK
 #ifdef USER_MODE
 #define PDCP_DUMMY_BUFFER_SIZE 38
-    unsigned char pdcp_dummy_buffer[PDCP_DUMMY_BUFFER_SIZE];
+  unsigned char pdcp_dummy_buffer[PDCP_DUMMY_BUFFER_SIZE];
 #endif
 #endif
 //     unsigned int diff, i, k, j;
@@ -487,7 +486,7 @@ void
 //     int pkt_size=0;
 //     unsigned int ctime=0;
 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
 
     /*
       if ((frame % 128) == 0) {
@@ -510,10 +509,10 @@ void
   pdcp_fifo_read_input_sdus_from_otg(frame, eNB_flag, UE_index, eNB_index);
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
-  pdcp_fifo_read_input_sdus(frame,eNB_flag);
+  pdcp_fifo_read_input_sdus(frame, eNB_flag, UE_index, eNB_index);
 
   // PDCP -> NAS/IP traffic: RX
-  pdcp_fifo_flush_sdus(frame,eNB_flag);
+  pdcp_fifo_flush_sdus(frame, eNB_flag);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
 }
@@ -531,21 +530,21 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
 #endif
                                ){
 
-  long int        rb_id        = 0;
-  long int        lc_id        = 0;
-  long int        srb_id        = 0;
+  long int        rb_id          = 0;
+  long int        lc_id          = 0;
+  long int        srb_id         = 0;
   long int        mch_id         = 0;
-  rlc_mode_t      rlc_type    = RLC_NONE;
-  DRB_Identity_t  drb_id       = 0;
-  DRB_Identity_t* pdrb_id      = NULL;
-  u8              drb_sn       = 0;
-  u8              srb_sn       = 5; // fixed sn for SRBs
-  u8              drb_report   = 0;
-  long int        cnt          = 0;
+  rlc_mode_t      rlc_type       = RLC_NONE;
+  DRB_Identity_t  drb_id         = 0;
+  DRB_Identity_t* pdrb_id        = NULL;
+  u8              drb_sn         = 0;
+  u8              srb_sn         = 5; // fixed sn for SRBs
+  u8              drb_report     = 0;
+  long int        cnt            = 0;
   u16 header_compression_profile = 0;
-  u32 action                   = ACTION_ADD;
-  SRB_ToAddMod_t* srb_toaddmod = NULL;
-  DRB_ToAddMod_t* drb_toaddmod = NULL;
+  u32 action                     = ACTION_ADD;
+  SRB_ToAddMod_t* srb_toaddmod   = NULL;
+  DRB_ToAddMod_t* drb_toaddmod   = NULL;
 
 #ifdef Rel10
   int i,j;
@@ -692,7 +691,7 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
   if (drb2release_list != NULL) {
     for (cnt=0;cnt<drb2add_list->list.count;cnt++) {
       pdrb_id = drb2release_list->list.array[cnt];
-      rb_id =  (index * NB_RB_MAX) + pdrb_id;
+      rb_id =  (index * NB_RB_MAX) + *pdrb_id;
       action = ACTION_REMOVE;
       pdcp_config_req_asn1 (module_id,
                             frame,

@@ -57,6 +57,8 @@ pthread_mutex_t pdcp_mutex;
 pthread_cond_t pdcp_cond;
 int pdcp_instance_cnt;
 
+static void *pdcp_thread_main(void* param);
+
 static void *pdcp_thread_main(void* param) {
 
   //u8 eNB_flag = *((u8*)param);

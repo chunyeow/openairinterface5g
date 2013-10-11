@@ -120,7 +120,7 @@ LTE_UE_DLSCH_t *new_ue_dlsch(uint8_t Kmimo,uint8_t Mdlharq,uint8_t max_turbo_ite
     if (exit_flag==0)
       return(dlsch);
   }
-  msg("new_ue_dlsch with size %d: exit_flag = %d\n",sizeof(LTE_DL_UE_HARQ_t), exit_flag);
+  msg("new_ue_dlsch with size %zu: exit_flag = %u\n",sizeof(LTE_DL_UE_HARQ_t), exit_flag);
   free_ue_dlsch(dlsch);
 
   return(NULL);

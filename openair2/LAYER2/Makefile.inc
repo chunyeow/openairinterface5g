@@ -27,6 +27,7 @@ SOURCES_L2 +=  $(PDCP_DIR)/pdcp_sequence_manager.c
 SOURCES_L2 +=  $(PDCP_DIR)/pdcp_primitives.c
 SOURCES_L2 +=  $(PDCP_DIR)/pdcp_util.c
 SOURCES_L2 +=  $(PDCP_DIR)/pdcp_security.c
+SOURCES_L2 +=  $(PDCP_DIR)/pdcp_netlink.c
 
 SOURCES_L2 +=  $(RLC_AM_DIR)/rlc_am.c
 SOURCES_L2 +=  $(RLC_AM_DIR)/rlc_am_init.c

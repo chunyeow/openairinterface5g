@@ -247,6 +247,7 @@ endif
 
 CFLAGS += -DENABLE_VCD_FIFO
 CFLAGS += -DENABLE_NEW_MULTICAST
+CFLAGS += -DENABLE_PDCP_NETLINK_FIFO
 # CFLAGS += -DENABLE_LOG_FIFO
 
 # Check if libpgm is installed and use it if found instead of the unreliable

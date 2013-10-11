@@ -24,7 +24,7 @@ void kdf(const uint8_t *s, const uint32_t s_length, const uint8_t *key,
 }
 
 /*!
- * @brief Derive the keys from kasme and perform truncate on the generated key to
+ * @brief Derive the keys from key and perform truncate on the generated key to
  * reduce his size to 128 bits. Definition of the derivation function can
  * be found in 3GPP TS.33401 #A.7
  * @param[in] alg_type Algorithm distinguisher
@@ -41,9 +41,6 @@ int derive_key(algorithm_type_dist_t alg_type, uint8_t alg_id,
                const uint8_t key[32], uint8_t **out)
 {
     uint8_t string[7];
-#if defined(SECU_DEBUG)
-    int i;
-#endif
 
     /* FC */
     string[0] = FC_ALG_KEY_DER;
@@ -79,7 +76,7 @@ int derive_key(algorithm_type_dist_t alg_type, uint8_t alg_id,
     return 0;
 }
 
-int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t **keNB)
+int derive_keNB(const uint8_t key[32], const uint32_t nas_count, uint8_t **keNB)
 {
     uint8_t string[7];
 
@@ -107,7 +104,7 @@ int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t **keN
     }
 #endif
 
-    kdf(string, 7, kasme, 32, keNB, 32);
+    kdf(string, 7, key, 32, keNB, 32);
 
     return 0;
 }

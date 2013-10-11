@@ -169,7 +169,8 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
       return(dlsch);
     }
   }
-  msg("new_eNB_dlsch exit flag %d, size of  %d\n",exit_flag, sizeof(LTE_eNB_DLSCH_t));
+  LOG_D(PHY, "new_eNB_dlsch exit flag %d, size of  %ld\n",
+        exit_flag, sizeof(LTE_eNB_DLSCH_t));
   free_eNB_dlsch(dlsch);
   return(NULL);
   

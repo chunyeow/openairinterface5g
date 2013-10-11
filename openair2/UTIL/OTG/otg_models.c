@@ -111,7 +111,7 @@ double tarmaCalculateSample( double inputSamples[], tarmaProcess_t *proc){
  */
 void tarmaUpdateInputSample (tarmaStream_t *stream){
   int cnt;
-  LOG_T(OTG,"TARMA_DEBUG: tarmaUpdateInputSample(%d)\n",(int)stream);
+  LOG_T(OTG,"TARMA_DEBUG: tarmaUpdateInputSample(%p)\n", stream);
   if(stream){
 	for(cnt=0; cnt<TARMA_NUM_PROCESSES; cnt++){
 	  stream->tarma_input_samples[cnt]=gaussian_dist(10000,1)-10000;
@@ -153,7 +153,7 @@ tarmaStream_t *tarmaInitStream(tarmaStream_t *stream){
 	  proc->polyWeight[cntpy]=0;
 	}
   }
-  LOG_D(OTG,"TARMA_DEBUG: tarmaInitStream(%d) called\n",(int)stream);
+  LOG_D(OTG,"TARMA_DEBUG: tarmaInitStream(%p) called\n", stream);
   return stream;
 }
 
@@ -188,7 +188,7 @@ void tarmaPrintProc(tarmaProcess_t *proc){
   char prefix[]="OTG TARMA DEBUG: ";
   int cntma, cntar;
 
-  printf("%s tarmaPrintProc(%d) called\n",prefix,(int)proc);
+  printf("%s tarmaPrintProc(%p) called\n", prefix, proc);
   printf("%s     ma history:\n",prefix);
   for(cntma=0; cntma<TARMA_NUM_MA_MAX; cntma++){
 	printf("%s       ma[%d]: %f\n",prefix,cntma,proc->maHist[cntma]);
@@ -209,7 +209,7 @@ void tarmaPrintStreamInit(tarmaStream_t *stream){
   tarmaProcess_t *proc;
   int cntvar, cntp, cntma, cntar, cntpy;
 
-  printf("%s tarmaPrintStreamInit(%d) called\n",prefix,(int)stream);
+  printf("%s tarmaPrintStreamInit(%p) called\n", prefix, stream);
   for(cntvar=0; cntvar<2; cntvar++){
 	if(cntvar==0){
 	  proc=&(stream->tarma_idt);
@@ -258,7 +258,7 @@ double tarmaCalculateVideoSample(tarmaVideo_t *video){
   if(video){
 	proc=&(video->tarma_size);
 	frameidx=video->tarmaVideoGopStructure[video->tarmaVideoFrameNumber];
-  LOG_D(OTG,"TARMA_DEBUG: tarmaCalculateVideoSample(%d) called\n",(int)video);
+  LOG_D(OTG,"TARMA_DEBUG: tarmaCalculateVideoSample(%p) called\n", video);
   LOG_D(OTG,"TARMA_DEBUG:     frameidx=%d\n",frameidx);
 	if(frameidx>=0 && frameidx<=TARMA_NUM_FRAME_TYPES){
 	  for(cntpy=0; cntpy<TARMA_NUM_POLY_MAX; cntpy++){
@@ -291,7 +291,7 @@ tarmaVideo_t *tarmaInitVideo(tarmaVideo_t *video){
   tarmaProcess_t *proc;
   int cntp, cntma, cntar, cntpy, cntgop, cnttype;
 
-  LOG_D(OTG,"TARMA_DEBUG: tarmaInitVideo(%d) called\n",(int)video);
+  LOG_D(OTG,"TARMA_DEBUG: tarmaInitVideo(%p) called\n", video);
   if(video==0){
 	video=(tarmaVideo_t*) malloc(sizeof(tarmaVideo_t));
   }
@@ -382,7 +382,7 @@ void tarmaPrintVideoInit(tarmaVideo_t *video){
   tarmaProcess_t *proc;
   int cntp, cntma, cntar, cntpy, cntgop, cnttype;
 
-  printf("%s tarmaPrintVideoInit(%d) called\n",prefix,(int)video);
+  printf("%s tarmaPrintVideoInit(%p) called\n", prefix, video);
   proc=&(video->tarma_size);
   printf("%s      input process weights\n",prefix);
   for(cntp=0; cntp<TARMA_NUM_PROCESSES; cntp++){
@@ -482,7 +482,7 @@ backgroundStream_t *backgroundStreamInit(backgroundStream_t *stream, double lamb
 	}
   }
 
-  LOG_D(OTG,"BACKGROUND_USERS DEBUG: backgroundStreamInit(%d) called\n",(int)stream);
+  LOG_D(OTG,"BACKGROUND_USERS DEBUG: backgroundStreamInit(%p) called\n", stream);
   backgroundPrintStream (stream);
   return stream;
 }
@@ -496,7 +496,7 @@ backgroundStream_t *backgroundStreamInit(backgroundStream_t *stream, double lamb
 void backgroundUpdateStream(backgroundStream_t *stream, int ctime){
   int numNewSessions, cnts, period;
 
-  LOG_D(OTG,"BACKGROUND DEBUG: backgroundUpdateStream(stream*=%d,ctime=%d,period=%d) called\n",(int)stream, ctime);
+  LOG_D(OTG,"BACKGROUND DEBUG: backgroundUpdateStream(stream*=%p,ctime=%d) called\n", stream, ctime);
   if(stream){
 	period=ctime-stream->lastUpdateTime;
 	numNewSessions=poisson_dist(stream->meanNumSessions/5710*period);
@@ -532,7 +532,7 @@ double backgroundCalculateSize(backgroundStream_t *stream, int ctime, int idt){
   double mrate=0;
 
   backgroundUpdateStream(stream, ctime);
-  LOG_D(OTG,"BACKGROUND DEBUG: backgroundCalculateSize(stream*=%d,idt=%d,ctime=%d) called\n",(int)stream, idt, ctime);
+  LOG_D(OTG,"BACKGROUND DEBUG: backgroundCalculateSize(stream*=%p,idt=%d,ctime=%d) called\n", stream, idt, ctime);
   if(stream){
 	for(cnts=0; cnts<BACKGROUND_NUM_ACTIVE_MAX; cnts++){
 	  if(stream->activeSessions[cnts].endTime>ctime){
@@ -554,7 +554,7 @@ double backgroundCalculateSize(backgroundStream_t *stream, int ctime, int idt){
 void backgroundPrintStream(backgroundStream_t *stream){
   int cnts;
   
-  LOG_D(OTG,"BACKGROUND DEBUG: backgroundPrintStream(%d)\n",(int)stream);
+  LOG_D(OTG,"BACKGROUND DEBUG: backgroundPrintStream(%p)\n", stream);
   if(stream){
     LOG_D(OTG,"BACKGROUND DEBUG:     meanNumSessions(lambda_n)=%f\n",stream->meanNumSessions);
 	for(cnts=0; cnts<BACKGROUND_NUM_ACTIVE_MAX; cnts++){

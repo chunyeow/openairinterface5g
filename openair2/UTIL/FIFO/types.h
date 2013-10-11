@@ -69,12 +69,12 @@ typedef struct Packet_otg_elt {
 } Packet_otg_elt;
 
 typedef struct Job_element {
-  struct Job_elt *next;
+  struct Job_element *next;
   Job job;
 } Job_elt;
 
 typedef struct Event_element {
-  struct Event_elt *next;
-  struct Event_elt *previous;
+  struct Event_element *next;
+  struct Event_element *previous;
   Event event;
 } Event_elt;

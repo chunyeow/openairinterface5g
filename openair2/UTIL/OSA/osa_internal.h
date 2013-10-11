@@ -21,6 +21,6 @@
 ((x & 0x00FF0000) >> 8) | ((x & 0xFF000000) >> 24))
 #endif
 
-#define SECU_DEBUG
+// #define SECU_DEBUG
 
 #endif /* OSA_INTERNAL_H_ */
