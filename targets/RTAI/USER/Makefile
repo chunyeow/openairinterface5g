@@ -12,7 +12,7 @@ endif
 CFLAGS += -O2
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 
-SRC = synctest.c condtest.c lte-softmodem.c
+SRC = synctest.c condtest.c #lte-softmodem.c
 
 ifndef RTAI
 RTAI=1
@@ -20,13 +20,32 @@ endif
 
 ifeq ($(RTAI),1)
 CFLAGS += -DENABLE_RTAI_CLOCK
-RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o 
+CFLAGS += -DCONFIG_RTAI_LXRT_INLINE  #remend the RTAI warning
+#RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o 
+RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o 
 else
-OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o
+#OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o
+OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o
 CFLAGS += -DENABLE_USE_CPU_EXECUTION_TIME
 endif
 
-OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
+OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o #$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
+
+ifndef USRP
+USRP=1
+endif
+
+ifeq ($(USRP),1)
+include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
+RTAI_OBJ += lte-softmodem-usrp.o
+OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
+CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+else
+RTAI_OBJ += lte-softmodem.o
+OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
+#CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS
+CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+endif
 
 TOP_DIR = $(OPENAIR1_DIR)
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
@@ -129,12 +148,17 @@ OBJ += $(NAS_OBJS)
 endif
 
 RTAI_CFLAGS += $(shell rtai-config --lxrt-cflags) -DRTAI
-LDFLAGS += -lpthread -lm -lforms
+LDFLAGS += -lpthread -lm -lforms -llxrt
 ifeq ($(RTAI),1)
 LDFLAGS += $(shell rtai-config --lxrt-ldflags) 
 else
 LDFLAGS += -lrt
 endif
+
+ifeq ($(USRP),1)
+CFLAGS += -I/opt/uhd/include -L/opt/uhd/lib -luhd -lpthread -lstdc++
+endif
+CFLAGS += -I/usr/include/c++/4.6 -I/usr/include/c++/4.6/x86_64-linux-gnu -I/usr/include/rtai/
 
 all: lte-softmodem
 
@@ -150,6 +174,10 @@ $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $<
 
+$(USRP_OBJ):$(USRP_FILE_OBJ)
+	@echo Compiling openair_usrp.cpp
+	@$(CXX) -c $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
+
 condtest: condtest.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) condtest.c -o condtest
 
@@ -160,6 +188,8 @@ synctest: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ)
 lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(LFDS_DIR)/bin/liblfds611.a
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem $(LDFLAGS) $(LFDS_DIR)/bin/liblfds611.a
 
+lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(LFDS_DIR)/bin/liblfds611.a
+	$(CC) $(USRP_OBJ) $(CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem-usrp $(LDFLAGS) $(LFDS_DIR)/bin/liblfds611.a
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv lte-softmodem lte-softmodem_eNB

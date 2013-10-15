@@ -3142,7 +3142,9 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_UE_LTE,1);
 #ifdef EXMIMO
+#ifndef USRP
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
+#endif
 #endif
 
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,next_slot>>1)==SF_UL)||
