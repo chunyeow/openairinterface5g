@@ -287,8 +287,8 @@ int main(int argc, char **argv) {
 
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
 
-  signal(SIGSEGV, handler); 
-  signal(SIGABRT, handler); 
+  //signal(SIGSEGV, handler); 
+  //signal(SIGABRT, handler); 
 
   logInit();
 
@@ -1110,7 +1110,7 @@ int main(int argc, char **argv) {
       case 6:
 	memcpy(&dci_alloc[num_dci].dci_pdu[0],&DLSCH_alloc_pdu2_1E[k],sizeof(DCI1E_5MHz_2A_M10PRB_TDD_t));
 	dci_alloc[num_dci].dci_length = sizeof_DCI1E_5MHz_2A_M10PRB_TDD_t;
-	dci_alloc[num_dci].L          = 2;
+	dci_alloc[num_dci].L          = 1;
 	dci_alloc[num_dci].rnti       = n_rnti+k;
 	dci_alloc[num_dci].format     = format1E_2A_M10PRB;
 	dci_alloc[num_dci].nCCE       = 4*k;
@@ -1204,7 +1204,7 @@ int main(int argc, char **argv) {
 				  0,subframe);
   
   uncoded_ber_bit = (short*) malloc(sizeof(short)*coded_bits_per_codeword);
-
+  printf("uncoded_ber_bit=%p\n",uncoded_ber_bit);
 
   snr_step = input_snr_step;
   for (ch_realization=0;ch_realization<n_ch_rlz;ch_realization++){
@@ -2138,6 +2138,16 @@ int main(int argc, char **argv) {
 	      }
 	  }
 	  
+	  PHY_vars_UE->dlsch_ue[0][0]->rnti = (common_flag==0) ? n_rnti: SI_RNTI;
+	  coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
+					  PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
+					  PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
+					  get_Qm(PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs),
+					  num_pdcch_symbols,
+					  0,subframe);
+
+	  PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->G = coded_bits_per_codeword;
+
 	  // calculate uncoded BLER
 	  uncoded_ber=0;
 	  for (i=0;i<coded_bits_per_codeword;i++) 
@@ -2154,29 +2164,7 @@ int main(int argc, char **argv) {
 	  if (n_frames==1)
 	    write_output("uncoded_ber_bit.m","uncoded_ber_bit",uncoded_ber_bit,coded_bits_per_codeword,1,0);
 	  
-	  /*
-	    printf("precoded CQI %d dB, opposite precoded CQI %d dB\n",
-	    PHY_vars_UE->PHY_measurements.precoded_cqi_dB[eNB_id][0],
-	    PHY_vars_UE->PHY_measurements.precoded_cqi_dB[eNB_id_i][0]);
-	  */
 
-	  // clip the llrs
-	  /*	   for (i=0; i<coded_bits_per_codeword; i++) {
-		   if (PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0][i]>127)
-		   PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0][i] = 127;
-		   else if (PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0][i]<-128)
-		   PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0][i] = -128;
-		   }
-	  */
-	  PHY_vars_UE->dlsch_ue[0][0]->rnti = (common_flag==0) ? n_rnti: SI_RNTI;
-	  coded_bits_per_codeword = get_G(&PHY_vars_eNB->lte_frame_parms,
-					  PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
-					  PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
-					  get_Qm(PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs),
-					  num_pdcch_symbols,
-					  0,subframe);
-
-	  PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->G = coded_bits_per_codeword;
 	  start_meas(&usts);	      
 	  dlsch_unscrambling(&PHY_vars_UE->lte_frame_parms,
 			     0,
@@ -2187,10 +2175,6 @@ int main(int argc, char **argv) {
 			     subframe<<1);
 	  stop_meas(&usts);	      
 
-	  /*
-	    for (i=0;i<coded_bits_per_codeword;i++) 
-	    PHY_vars_UE->lte_ue_pdsch_vars[0]->llr[0][i] = (short)quantize(100,PHY_vars_UE->lte_ue_pdsch_vars[0]->llr[0][i],4);
-	  */
 	  start_meas(&PHY_vars_UE->dlsch_decoding_stats);
 	  ret = dlsch_decoding(PHY_vars_UE,
 			       PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->llr[0],		 
@@ -2445,7 +2429,8 @@ int main(int argc, char **argv) {
     fclose(csv_fd);
   }
 
-  free(uncoded_ber_bit);
+  if (uncoded_ber_bit)
+    free(uncoded_ber_bit);
   uncoded_ber_bit = NULL;  
   for (k=0;k<n_users;k++) {
     free(input_buffer[k]);
