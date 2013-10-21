@@ -35,10 +35,11 @@ endif
 libtest_util_la_SOURCES = \
 	test_util.c	test_util.h
 
-noinst_LTLIBRARIES = libtest_util.la
+noinst_LTLIBRARIES = libtest_util.la 
 
 common_ldadd = 	$(top_builddir)/SECU/libsecu.la	\
 	libtest_util.la	\
+	$(top_builddir)/UTILS/libutils.la	\
 	@CHECK_LIBS@
 
 check_PROGRAMS =	\

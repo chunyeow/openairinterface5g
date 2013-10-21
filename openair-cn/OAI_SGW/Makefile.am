@@ -10,8 +10,7 @@ AM_CFLAGS = @ADD_CFLAGS@ \
 	-I$(top_srcdir)/SGW-LITE			\
 	-I$(top_srcdir)/UDP				\
 	-I$(top_srcdir)/UTILS				\
-	-I$(top_srcdir)/UTILS/HASHTABLE			\
-	-I$(top_srcdir)/UTILS/TIMER
+	-I$(top_srcdir)/UTILS/HASHTABLE
 
 oai_sgw_LDADD = \
 	$(top_builddir)/GTPV1-U/libgtpv1u.la	\
@@ -20,7 +19,6 @@ oai_sgw_LDADD = \
 	$(top_builddir)/GTPV2-C/nwgtpv2c-0.11/src/libNwGtpv2c.a	\
 	$(top_builddir)/SGI/libsgi.la	\
 	$(top_builddir)/SGW-LITE/libsgw_lite.la	\
-	$(top_builddir)/UTILS/TIMER/libtimer.la \
 	$(top_builddir)/UTILS/HASHTABLE/libhashtable.la \
 	$(top_builddir)/UDP/libudpserver.la	\
 	$(top_builddir)/SECU/libsecu.la	\

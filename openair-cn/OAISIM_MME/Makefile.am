@@ -17,8 +17,7 @@ AM_CFLAGS = @ADD_CFLAGS@ \
 	-I$(top_srcdir)/SGW-LITE			\
 	-I$(top_srcdir)/UDP				\
 	-I$(top_srcdir)/UTILS				\
-	-I$(top_srcdir)/UTILS/HASHTABLE			\
-	-I$(top_srcdir)/UTILS/TIMER
+	-I$(top_srcdir)/UTILS/HASHTABLE
 
 oaisim_mme_LDADD = \
 	$(top_builddir)/INTERTASK_INTERFACE/libitti.la	\
@@ -27,7 +26,6 @@ oaisim_mme_LDADD = \
 	$(top_builddir)/S1AP/libs1ap.la	\
 	$(top_builddir)/S6A/libs6a.la	\
 	$(top_builddir)/SCTP/libsctpserver.la	\
-	$(top_builddir)/UTILS/TIMER/libtimer.la \
 	$(top_builddir)/UTILS/HASHTABLE/libhashtable.la \
 	$(top_builddir)/UDP/libudpserver.la	\
 	$(top_builddir)/MME_APP/libmmeapp.la	\
