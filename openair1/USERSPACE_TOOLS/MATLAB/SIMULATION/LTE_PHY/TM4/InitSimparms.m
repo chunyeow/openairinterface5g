@@ -47,8 +47,13 @@ simparms.tseeds = set_taus_seed(1); % taus seeds
 simparms.ptr_td = dlsch_decoding_init();
 
 % Init codewords
+% simparms.codeword(1) = InitCodeword(simparms,mcs(1));
+% simparms.codeword(2) = InitCodeword(simparms,mcs(2));
+
 simparms.codeword(1) = InitCodeword(simparms,mcs(1));
 simparms.codeword(2) = InitCodeword(simparms,mcs(2));
+% simparms.codeword(3) = InitCodeword(simparms,mcs(1));
+% simparms.codeword(4) = InitCodeword(simparms,mcs(1));
 
 end
 

@@ -1,13 +1,13 @@
 include $(OPENAIR1_DIR)/SIMULATION/LTE_PHY/Makefile
 
 CFLAGS += -DMEX
-CFLAGS += -I/packages/matlab_r2012a/extern/include/
+CFLAGS += -I/opt/MATLAB/extern/include/
 
 # Set mex extension, can be determined with mexext function in Matlab
 MEXEXT = mexglx
 
 # Just compile all the PHY objects
-OBJ = $(PHY_OBJS) $(TOP_DIR)/SIMULATION/TOOLS/taus.o
+OBJ = $(PHY_OBJS) $(TOP_DIR)/SIMULATION/TOOLS/taus.o $(LOG_DIR)/log.o $(LOG_DIR)/vcd_signal_dumper.o
 
 # List of all mex-files to compile
 MEX_FILES += ./PHY/LTE_TRANSPORT/mexfiles/get_tbs.$(MEXEXT)
@@ -43,7 +43,7 @@ libs : $(OBJ)
 $(MEX_FILES) : %.$(MEXEXT) : %.c
 	@echo 
 	@echo Compiling $< ...
-	@mex CFLAGS="$(CFLAGS)" -f /homes/wagner/.matlab/R2012a/mexopts.sh -l$(LIBNAME) -L$(LIBDIR) -output $@ $<
+	@mex CFLAGS="$(CFLAGS)" -l$(LIBNAME) -L$(LIBDIR) -output $@ $<
 
 mex : $(MEX_FILES)
 

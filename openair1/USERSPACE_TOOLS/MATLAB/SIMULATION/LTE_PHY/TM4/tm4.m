@@ -29,13 +29,12 @@ addpath('../../../PHY/TOOLS/mexfiles');
 addpath('../../../SIMULATION/TOOLS/mexfiles');
 
 % profile on;
-
 %% System parameters
 nt = 2; % number of transmit antennas
 nr = 2; % number of receive antennas
 N = 100; % number of frames (or subframes, codewords)
 nSNR = 1; % number of SNR points
-SNRdB = 20; % SNR per receive antenna in dB
+SNRdB = 5; % SNR per receive antenna in dB
 % nSNR = 13;
 % SNRdB = linspace(8,20,nSNR);
 MCS = [16 16]; % MCS for the 2 users
@@ -84,7 +83,7 @@ noise = zeros(simparms.NB_ANTENNAS_RX,simparms.nb_re);
 
 %% XFORMS
 if (XFORMS)
-	scrsz = get(0,'ScreenSize');
+	scrsz = get(0,'ScreenSize');mu_mimo
 	figure('Position',[1 scrsz(4)/2 scrsz(3)/2 scrsz(4)/2])
 	subplot(1,2,1);
 	xlim([1 simparms.codeword(1).G]);
@@ -199,7 +198,7 @@ for iSNR=1:length(simparms.snr)
                 Hmagb0(idxs:idxe,:)]...
                 = dlsch_channel_compensation_prec(y_fxp_t,H_fxp_t,pmi_ext,simparms,simparms.codeword(1),symbol-1);
             
-            % Interfering user
+            % Interfering stream
             [ymf1(idxs:idxe,:)...
                 Heff1(idxs:idxe,:)...
                 Hmag1(idxs:idxe,:)...

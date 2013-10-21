@@ -18,15 +18,16 @@ addpath('../../../PHY/TOOLS/mexfiles');
 addpath('../../../SIMULATION/TOOLS/mexfiles');
 
 % profile on;
-
+tic
 %% System parameters
 nt = 2;
-nr = 1;
+nr = 2;
 N = 1000; % number of frames (codewords)
 nSNR = 1;
-SNRdB = 30;
+%SNRdB = [1:20];
+SNRdB = 10;
 % nSNR = 13;
-% SNRdB = linspace(8,20,nSNR);
+%SNRdB = linspace(1,20,nSNR);
 MCS = [9 9]; % MCS for the 2 users, currently it is assumed that mcs(2)=mcs(1)
 j = sqrt(-1);
 amp = 1/32;
@@ -237,12 +238,12 @@ for iSNR=1:length(simparms.snr)
 end
 
 %% Post Processing
-% total_frame_erros = sum(frame_errors,2);
-% fer = total_frame_erros/N;
-% figure; semilogy(SNRdB,fer); grid;
+%  total_frame_erros = sum(simparms.frame_errors,2);
+%  fer = total_frame_erros/N;
+%  figure; semilogy(SNRdB,fer); grid;
+%  
+%  disp(fer);
 % 
-% disp(fer);
-
 % profile viewer 
-
+toc
 

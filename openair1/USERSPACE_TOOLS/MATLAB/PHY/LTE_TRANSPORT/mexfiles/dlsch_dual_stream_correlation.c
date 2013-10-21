@@ -1,4 +1,4 @@
-#include "defs.h"		
+#include "../../../defs.h"
 
 /*==============================================================================
 * dlsch_dual_stream_correlation.c

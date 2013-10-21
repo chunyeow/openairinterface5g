@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "../../../defs.h"
 
 /*==============================================================================
 * dlsch_encoding.c
@@ -71,7 +71,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		abstraction_flag = (unsigned char) mxGetScalar(tmp);
 	}
 	
-	dlsch = new_eNB_dlsch(Kmimo,Mdlharq,abstraction_flag);
+	dlsch = new_eNB_dlsch(Kmimo,Mdlharq,25,abstraction_flag);
 			
 	/* Allocate input */
 	input_buffer = (unsigned char*) mxGetData(prhs[0]);				

@@ -1,11 +1,11 @@
-#include "defs.h"
+#include "../../../defs.h"
 
 /*==============================================================================
 * dlsch_encoding_init.c
 *
 * Returns the decoded bit sequence.
 *
-* example: dlsch_encoding_init(struct1)
+* example: dlsch_decoding_init(struct1)
 * 
 * Author: Sebastian Wagner
 * Date: 23-07-2012
@@ -18,7 +18,7 @@ void mexFunction( int mlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[]
                 )
 {
-    extern int *pi2tab[188],*pi5tab[188],*pi4tab[188],*pi6tab[188];
+    extern int *pi2tab16[188],*pi5tab16[188],*pi4tab16[188],*pi6tab16[188];
     int i;        
     unsigned int *ptr;
     int **tmp[1];
@@ -31,20 +31,20 @@ void mexFunction( int mlhs, mxArray *plhs[],
     plhs[0] = mxCreateNumericMatrix(4,1, mxUINT32_CLASS, mxREAL);
     ptr = (unsigned int*) mxGetData(plhs[0]);
         
-    tmp[0] = &pi2tab[0];
+    tmp[0] = &pi2tab16[0];
     memcpy(&ptr[0], tmp, sizeof(tmp[0]));  
-    tmp[0] = &pi4tab[0];   
+    tmp[0] = &pi4tab16[0];   
     memcpy(&ptr[1], tmp, sizeof(tmp[0]));
-    tmp[0] = &pi5tab[0];
+    tmp[0] = &pi5tab16[0];
     memcpy(&ptr[2], tmp, sizeof(tmp[0]));
-    tmp[0] = &pi6tab[0];
+    tmp[0] = &pi6tab16[0];
     memcpy(&ptr[3], tmp, sizeof(tmp[0]));
         
     #ifdef DEBUG_DLSCH_DECODING_INIT
-    mexPrintf("pi2tab %p\n",&pi2tab[0]);
-    mexPrintf("pi4tab %p\n",&pi4tab[0]);
-    mexPrintf("pi5tab %p\n",&pi5tab[0]);
-    mexPrintf("pi6tab %p\n",&pi6tab[0]);
+    mexPrintf("pi2tab %p\n",&pi2tab16[0]);
+    mexPrintf("pi4tab %p\n",&pi4tab16[0]);
+    mexPrintf("pi5tab %p\n",&pi5tab16[0]);
+    mexPrintf("pi6tab %p\n",&pi6tab16[0]);
     
     mexPrintf("ptr0 %p\n",ptr[0]);
     mexPrintf("ptr1 %p\n",ptr[1]);
@@ -55,9 +55,9 @@ void mexFunction( int mlhs, mxArray *plhs[],
     // The memory here is never explictly freed via mxFree. It is implicitly taken
     // care of by clear functions at the beginning of the simulation.
     for (i=0;i<188;i++) {
-        mexMakeMemoryPersistent((void *) pi2tab[i]);
-        mexMakeMemoryPersistent((void *) pi5tab[i]);
-        mexMakeMemoryPersistent((void *) pi4tab[i]);
-        mexMakeMemoryPersistent((void *) pi6tab[i]);
+        mexMakeMemoryPersistent((void *) pi2tab16[i]);
+        mexMakeMemoryPersistent((void *) pi5tab16[i]);
+        mexMakeMemoryPersistent((void *) pi4tab16[i]);
+        mexMakeMemoryPersistent((void *) pi6tab16[i]);
     }    
 }

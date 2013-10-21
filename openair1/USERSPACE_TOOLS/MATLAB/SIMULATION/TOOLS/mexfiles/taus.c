@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "../../../defs.h"
 	
 /*==============================================================================
 * taus.c
@@ -61,7 +61,6 @@ void mexFunction( int nlhs, mxArray *plhs[],
     /* Algo */	
 	for(i=0;i<len;i++)
 		out[i] = (unsigned char)(mtaus()&0xff);
-	
 	
 	tseeds_out[0] = s0;
 	tseeds_out[1] = s1;

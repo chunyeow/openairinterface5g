@@ -1,5 +1,5 @@
-#include "defs.h"
-	
+#include "../../../defs.h"
+
 /*==============================================================================
 * dlsch_channel_compensation_prec.c
 *
