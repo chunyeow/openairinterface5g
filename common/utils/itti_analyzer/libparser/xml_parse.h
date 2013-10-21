@@ -1,4 +1,4 @@
-#include "../rc.h"
+#include "rc.h"
 #include "types.h"
 
 #ifndef XML_PARSE_H_

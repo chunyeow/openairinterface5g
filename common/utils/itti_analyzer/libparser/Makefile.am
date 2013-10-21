@@ -1,6 +1,6 @@
 AM_CFLAGS =	\
 	@ADD_CFLAGS@	\
-	-I$(top_srcdir)	\
+	-I$(top_srcdir)/common	\
 	-I$(top_srcdir)/libbuffers	\
 	-I$(top_srcdir)/libui
 

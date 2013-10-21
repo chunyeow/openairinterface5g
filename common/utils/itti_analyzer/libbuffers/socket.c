@@ -8,7 +8,7 @@
 
 #include <gtk/gtk.h>
 
-#include "../rc.h"
+#include "rc.h"
 
 #include "ui_interface.h"
 #include "ui_notifications.h"

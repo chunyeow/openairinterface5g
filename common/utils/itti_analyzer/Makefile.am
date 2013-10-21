@@ -1,5 +1,6 @@
 AM_CFLAGS =	\
 	@ADD_CFLAGS@	\
+	-I$(top_srcdir)/common	\
 	-I$(top_srcdir)/libparser	\
 	-I$(top_srcdir)/libresolver	\
 	-I$(top_srcdir)/libbuffers	\

@@ -5,7 +5,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "../rc.h"
+#include <glib.h>
+
+#include "rc.h"
 #include "buffers.h"
 #include "file.h"
 
@@ -22,7 +24,7 @@ int file_read_dump(buffer_t **buffer, const char *filename)
         return RC_BAD_PARAM;
 
     if ((fd = open(filename, O_RDONLY)) == -1) {
-        fprintf(stderr, "Cannot open %s for reading, returned %d:%s\n",
+        g_debug("Cannot open %s for reading, returned %d:%s\n",
                 filename, errno, strerror(errno));
         return RC_FAIL;
     }
@@ -33,7 +35,7 @@ int file_read_dump(buffer_t **buffer, const char *filename)
         current_read = read(fd, data, READ_BUFFER_SIZE);
         if (current_read == -1)
         {
-            fprintf(stderr, "Failed to read data from file, returned %d:%s\n",
+            g_debug("Failed to read data from file, returned %d:%s\n",
                     errno, strerror(errno));
             return RC_FAIL;
         }

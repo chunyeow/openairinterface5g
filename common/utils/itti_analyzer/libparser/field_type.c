@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../rc.h"
+#include "rc.h"
 
 #include "field_type.h"
 #include "buffers.h"

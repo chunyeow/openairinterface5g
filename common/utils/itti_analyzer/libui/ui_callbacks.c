@@ -3,7 +3,7 @@
 
 #include <gtk/gtk.h>
 
-#include "../rc.h"
+#include "rc.h"
 
 #include "ui_main_screen.h"
 #include "ui_callbacks.h"
@@ -16,7 +16,7 @@ gboolean ui_callback_on_open(GtkWidget *widget,
                              GdkEvent  *event,
                              gpointer   data)
 {
-    g_print ("Open event occurred\n");
+    g_debug("Open event occurred");
     CHECK_FCT(ui_file_chooser());
     return TRUE;
 }
@@ -61,7 +61,7 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
         }
         else
         {
-            g_print ("%s is going to be unselected.\n", name);
+            g_debug("%s is going to be unselected", name);
         }
 
         g_free(name);
@@ -77,7 +77,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget,
     uint16_t port;
     const char *ip;
 
-    g_print ("Connect event occurred\n");
+    g_debug("Connect event occurred");
 
     port = atoi(gtk_entry_get_text(GTK_ENTRY(ui_main_data.portentry)));
     ip = gtk_entry_get_text(GTK_ENTRY(ui_main_data.ipentry));
@@ -94,7 +94,7 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget,
 {
     /* We have to retrieve the ip address and port of remote host */
 
-    g_print ("Disconnect event occurred\n");
+    g_debug("Disconnect event occurred");
     ui_interface.socket_disconnect();
     return TRUE;
 }
@@ -104,8 +104,7 @@ gboolean ui_callback_on_tree_view_select(GtkWidget *widget,
                                          gpointer   data)
 {
     /* We have to retrieve the ip address and port of remote host */
-
-    g_print ("List selection event occurred\n");
+    g_debug("List selection event occurred");
     return TRUE;
 }
 

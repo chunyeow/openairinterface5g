@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <gtk/gtk.h>
 
-#include "../rc.h"
+#include "rc.h"
 
 #include "ui_notebook.h"
 #include "ui_tree_view.h"

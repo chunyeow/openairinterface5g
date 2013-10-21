@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <glib.h>
+
 #include "types.h"
 #include "resolvers.h"
 
@@ -17,7 +19,7 @@ int search_id(types_t *head, types_t **found, int id)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -37,7 +39,7 @@ int search_file(types_t *head, types_t **found, int file_id)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -59,7 +61,7 @@ int resolve_typedefs(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -86,7 +88,7 @@ int resolve_struct(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -144,7 +146,7 @@ int resolve_union(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -194,7 +196,7 @@ int resolve_pointer_type(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -221,7 +223,7 @@ int resolve_reference(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -248,7 +250,7 @@ int resolve_field(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -275,7 +277,7 @@ int resolve_array(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 
@@ -302,7 +304,7 @@ int resolve_file(types_t **head)
     types_t *next_type;
 
     if (!head) {
-        printf("Empty list detected\n");
+        g_warning("Empty list detected");
         return RESOLV_LIST_EMPTY;
     }
 

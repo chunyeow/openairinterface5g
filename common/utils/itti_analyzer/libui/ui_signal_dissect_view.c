@@ -2,7 +2,7 @@
 
 #include <gtk/gtk.h>
 
-#include "../rc.h"
+#include "rc.h"
 
 #include "ui_main_screen.h"
 #include "ui_menu_bar.h"

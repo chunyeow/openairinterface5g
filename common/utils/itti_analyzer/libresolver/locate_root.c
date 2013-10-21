@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../rc.h"
+#include <glib.h>
+
+#include "rc.h"
 
 #include "types.h"
 #include "locate_root.h"
@@ -13,15 +15,15 @@ int locate_root(const char *root_name, types_t *head, types_t **root) {
      * This element is the entry for other sub-types.
      */
     if (!root_name || (strlen (root_name) == 0)) {
-        printf ("FATAL: no root element name provided\n");
+        g_warning("FATAL: no root element name provided");
         return -1;
     }
     if (!head) {
-        printf ("Empty list detected\n");
+        g_warning("Empty list detected");
         return -1;
     }
     if (!root) {
-        printf ("NULL root reference\n");
+        g_warning("NULL root reference");
         return -1;
     }
 
@@ -44,11 +46,11 @@ int locate_type(const char *type_name, types_t *head, types_t **type) {
      * This element is the entry for other sub-types.
      */
     if (!type_name) {
-        printf ("FATAL: no root element name provided\n");
+        g_warning("FATAL: no root element name provided");
         return RC_BAD_PARAM;
     }
     if (!head) {
-        printf ("Empty list detected\n");
+        g_warning("Empty list detected");
         return RC_BAD_PARAM;
     }
 

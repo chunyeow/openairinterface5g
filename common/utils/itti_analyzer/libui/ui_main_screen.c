@@ -9,7 +9,7 @@
 
 #include <gtk/gtk.h>
 
-#include "../rc.h"
+#include "rc.h"
 
 #include "ui_interface.h"
 #include "ui_main_screen.h"
@@ -26,20 +26,8 @@ int ui_gtk_initialize(int argc, char *argv[])
 
     memset(&ui_main_data, 0, sizeof(ui_main_data_t));
 
-    if (!g_thread_supported())
-        g_thread_init(NULL);
-
-    /* Secure gtk */
-    gdk_threads_init();
-
-    /* Obtain gtk's global lock */
-    gdk_threads_enter();
-
-    /* Initialize the widget set */
-    gtk_init(&argc, &argv);
-
     /* Create the main window */
-    ui_main_data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    ui_main_data.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     gtk_window_set_position(GTK_WINDOW(ui_main_data.window), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size(GTK_WINDOW(ui_main_data.window), 1024, 800);

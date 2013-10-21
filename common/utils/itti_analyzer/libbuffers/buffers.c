@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../rc.h"
+#include <glib.h>
+
+#include "rc.h"
 #include "buffers.h"
 
 extern int debug_buffers;
@@ -57,7 +59,7 @@ int buffer_fetch(buffer_t *buffer, uint32_t offset, int size, void *value)
         return -1;
 
     if (buffer->size_bytes < ((offset >> 3) + size)) {
-        printf("Not enough data to fetch\n");
+        g_debug("Not enough data to fetch");
         return -1;
     }
 
@@ -190,8 +192,8 @@ int buffer_has_enouch_data(buffer_t *buffer, uint32_t offset, uint32_t to_get)
         return -1;
     underflow = (buffer->size_bytes >= ((offset + to_get) / 8)) ? 0 : -1;
     if (underflow && debug_buffers)
-        printf("Detected Underflow offset %u, to_get %u, buffer size %u\n",
-               offset, to_get, buffer->size_bytes);
+        g_debug("Detected Underflow offset %u, to_get %u, buffer size %u\n",
+                offset, to_get, buffer->size_bytes);
     return underflow;
 }
 
