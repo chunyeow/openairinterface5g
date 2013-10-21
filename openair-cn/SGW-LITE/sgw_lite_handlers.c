@@ -36,6 +36,7 @@
 #include "assertions.h"
 #include "common_types.h"
 #include "intertask_interface.h"
+#include "mme_config.h"
 
 #include "sgw_lite_defs.h"
 #include "sgw_lite_handlers.h"

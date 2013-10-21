@@ -35,10 +35,10 @@
 #include <assert.h>
 
 #include "intertask_interface.h"
+#include "mme_config.h"
 #include "sgw_lite_defs.h"
 #include "sgw_lite_handlers.h"
 #include "sgw_lite.h"
-#include "mme_config.h"
 #include "hashtable.h"
 
 sgw_app_t    sgw_app;

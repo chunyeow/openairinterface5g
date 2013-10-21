@@ -37,6 +37,7 @@
 #include "hashtable.h"
 
 #include "intertask_interface.h"
+#include "mme_config.h"
 #include "sgw_lite_defs.h"
 #include "sgw_lite_context_manager.h"
 #include "sgw_lite.h"

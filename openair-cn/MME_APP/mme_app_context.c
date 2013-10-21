@@ -38,6 +38,7 @@
 #include <arpa/inet.h>
 
 #include "intertask_interface.h"
+#include "mme_config.h"
 
 #include "assertions.h"
 #include "conversions.h"
