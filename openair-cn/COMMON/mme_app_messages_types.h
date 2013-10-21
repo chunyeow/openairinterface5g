@@ -1,0 +1,6 @@
+#ifndef MME_APP_MESSAGES_TYPES_H_
+#define MME_APP_MESSAGES_TYPES_H_
+
+
+
+#endif /* MME_APP_MESSAGES_TYPES_H_ */

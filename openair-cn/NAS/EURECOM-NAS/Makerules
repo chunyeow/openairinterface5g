@@ -1,0 +1,26 @@
+CC		= gcc
+RM		= rm -f
+CP		= cp -p
+LD		= /usr/bin/ld
+AR		= /usr/bin/ar
+CD		= cd
+MAKE		= make
+
+CFLAGS		= $(INCLUDES) $(DEFINES) -g -pthread
+DEFINES		= -DLINUX -D_REENTRANT -Wall -O -std=gnu99
+
+SVN_REV = $(shell svnversion -n .)
+DATE_REV = $(shell date '+%F %T')
+
+# Default builds UEprocess
+ifeq ($(PROCESS), MME)
+  DEFINES	+= -DNAS_MME
+else
+  DEFINES	+= -DNAS_UE
+endif
+
+LDFLAGS		= -pthread -L$(LIBDIR) -L$(LIBPROCESS) -lrt
+
+SRCS = $(wildcard *.c)
+OBJS = $(SRCS:.c=.o)
+

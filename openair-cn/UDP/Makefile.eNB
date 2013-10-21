@@ -1,0 +1,43 @@
+libudp_OBJECTS = \
+	udp_primitives_client.o
+
+-include .deps/*.d
+
+.PHONY = depdir
+
+CFLAGS = \
+	-I../UTILS		\
+	-I$(OPENAIR2_DIR)	\
+	-I$(OPENAIR2_DIR)/COMMON	\
+	-I$(OPENAIR2_DIR)/GTPV1U	\
+	-I$(OPENAIR2_DIR)/GTPV1U/nw-gtpv1u/include	\
+	-I$(OPENAIR2_DIR)/GTPV1U/nw-gtpv1u/shared	\
+	-I$(OPENAIR2_DIR)/UTIL	\
+	-DUPDATE_RELEASE_9	\
+	-DENB_MODE		\
+	-DENABLE_USE_MME	\
+	-DUSER_MODE		\
+	-O2			\
+	-g			\
+	-Wall			\
+	-Werror=implicit-function-declaration
+
+$(libudp_OBJECTS): %.o : %.c
+	@echo "Compiling $<"
+	@$(CC) -c $(CFLAGS) -o $@ $<
+	@if ! test -d ".deps/" ; then mkdir -p .deps; fi
+	@$(CC) -MM $(CFLAGS) $*.c > .deps/$*.d
+	@mv -f .deps/$*.d .deps/$*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < .deps/$*.d.tmp > .deps/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < .deps/$*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> .deps/$*.d
+	@rm -f .deps/$*.d.tmp
+
+libudp.a: $(libudp_OBJECTS)
+	@echo Creating UDP archive
+	@$(AR) rcvs $@ $(libudp_OBJECTS)
+
+clean:
+	rm -f $(libudp_OBJECTS)
+	rm -rf .deps/
+	rm -f libudp.a

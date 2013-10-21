@@ -1,0 +1,21 @@
+ifndef PROJDIR
+PROJDIR  = $(PWD)/../../..
+INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR)
+endif
+
+include $(PROJDIR)/Makerules
+include $(PROJDIR)/Makefile.inc
+
+all: $(OBJS)
+
+%.o: %.c Makefile
+	@echo Compiling $<
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	$(RM) $(OBJS) *.bak *~
+
+depend:
+	makedepend -- ${CFLAGS} -- ${SRCS}
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.

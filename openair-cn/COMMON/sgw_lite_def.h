@@ -1,0 +1,6 @@
+MESSAGE_DEF(SGW_CREATE_SESSION_REQUEST,  MESSAGE_PRIORITY_MED, SgwCreateSessionRequest,  sgwCreateSessionRequest)
+MESSAGE_DEF(SGW_CREATE_SESSION_RESPONSE, MESSAGE_PRIORITY_MED, SgwCreateSessionResponse, sgwCreateSessionResponse)
+MESSAGE_DEF(SGW_MODIFY_BEARER_REQUEST,   MESSAGE_PRIORITY_MED, SgwModifyBearerRequest,   sgwModifyBearerRequest)
+MESSAGE_DEF(SGW_MODIFY_BEARER_RESPONSE,  MESSAGE_PRIORITY_MED, SgwModifyBearerResponse,  sgwModifyBearerResponse)
+MESSAGE_DEF(SGW_DELETE_SESSION_REQUEST,  MESSAGE_PRIORITY_MED, SgwDeleteSessionRequest,  sgwDeleteSessionRequest)
+MESSAGE_DEF(SGW_DELETE_SESSION_RESPONSE, MESSAGE_PRIORITY_MED, SgwDeleteSessionResponse, sgwDeleteSessionResponse)

@@ -1,0 +1,38 @@
+libsecu_OBJECTS = \
+	kdf.o	\
+	key_nas_deriver.o	\
+	nas_stream_eea2.o	\
+	nas_stream_eia2.o
+
+-include .deps/*.d
+
+.PHONY = depdir
+
+CFLAGS = \
+	-I../COMMON	\
+	-I../UTILS	\
+	-DENB_MODE		\
+	-DENABLE_USE_MME	\
+	-DUSER_MODE		\
+	-O2			\
+	-g			\
+	-Wall			\
+	-Werror=implicit-function-declaration
+
+$(libsecu_OBJECTS): %.o : %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+	@if ! test -d ".deps/" ; then mkdir -p .deps; fi
+	@$(CC) -MM $(CFLAGS) $*.c > .deps/$*.d
+	@mv -f .deps/$*.d .deps/$*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < .deps/$*.d.tmp > .deps/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < .deps/$*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> .deps/$*.d
+	@rm -f .deps/$*.d.tmp
+
+libsecu.a: $(libsecu_OBJECTS)
+	$(AR) rcvs $@ $(libsecu_OBJECTS)
+
+clean:
+	rm -f $(libsecu_OBJECTS)
+	rm -rf .deps/
+	rm -f libsecu.a

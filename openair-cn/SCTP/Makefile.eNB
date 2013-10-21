@@ -1,0 +1,47 @@
+libsctp_OBJECTS = \
+	sctp_primitives_client.o	\
+	sctp_common.o
+
+-include .deps/*.d
+
+.PHONY = depdir
+
+CFLAGS = \
+	-I../SCTP		\
+	-I../UTILS		\
+	-I$(OPENAIR2_DIR)	\
+	-I$(OPENAIR2_DIR)/COMMON	\
+	-I$(OPENAIR2_DIR)/S1AP	\
+	-I$(OPENAIR2_DIR)/GTPV1U	\
+	-I$(OPENAIR2_DIR)/GTPV1U/nw-gtpv1u/include	\
+	-I$(OPENAIR2_DIR)/GTPV1U/nw-gtpv1u/shared	\
+	-I$(OPENAIR2_DIR)/UTIL	\
+	-I$(OPENAIR2_DIR)/UTIL/UDP	\
+	-DUPDATE_RELEASE_9	\
+	-DENB_MODE		\
+	-DENABLE_USE_MME	\
+	-DUSER_MODE		\
+	-O2			\
+	-g			\
+	-Wall			\
+	-Werror=implicit-function-declaration
+
+$(libsctp_OBJECTS): %.o : %.c
+	@echo "Compiling $<"
+	@$(CC) -c $(CFLAGS) -o $@ $<
+	@if ! test -d ".deps/" ; then mkdir -p .deps; fi
+	@$(CC) -MM $(CFLAGS) $*.c > .deps/$*.d
+	@mv -f .deps/$*.d .deps/$*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < .deps/$*.d.tmp > .deps/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < .deps/$*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> .deps/$*.d
+	@rm -f .deps/$*.d.tmp
+
+libsctp.a: $(libsctp_OBJECTS)
+	@echo Creating SCTP archive
+	@$(AR) rcvs $@ $(libsctp_OBJECTS)
+
+clean:
+	rm -f $(libsctp_OBJECTS)
+	rm -rf .deps/
+	rm -f libsctp.a

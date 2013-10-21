@@ -1,0 +1,49 @@
+all: libgtpv1u.a
+
+libgtpv1u_OBJECTS = \
+	nw-gtpv1u/src/NwGtpv1uTunnelEndPoint.o	\
+	nw-gtpv1u/src/NwGtpv1uTrxn.o 	\
+	nw-gtpv1u/src/NwGtpv1uMsg.o 	\
+	nw-gtpv1u/src/NwGtpv1u.o 	\
+	gtpv1u_eNB.o	\
+	gtpv1u_teid_pool.o	\
+	
+
+CFLAGS = \
+	-I./nw-gtpv1u/shared	\
+	-I./nw-gtpv1u/include	\
+    -I../UTILS      \
+    -I../UTILS/HASHTABLE  \
+    -I../UDP      \
+    -I$(OPENAIR2_DIR)   \
+	-DUSER_MODE		\
+	-DENABLE_USE_MME	\
+	-DUSER_MODE		\
+	-DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 \
+	-g			\
+	-O2			\
+	-Wall			\
+	-Werror=implicit-function-declaration
+
+-include .deps/*.d
+-include .deps/nw-gtpv1u/src/*.d
+
+$(libgtpv1u_OBJECTS): %.o : %.c
+	@echo "Compiling $<"
+	@$(CC) -c $(CFLAGS) -o $@ $<
+	@if ! test -d ".deps/nw-gtpv1u/src/" ; then mkdir -p .deps/nw-gtpv1u/src/; fi
+	@$(CC) -MM $(CFLAGS) $*.c > .deps/$*.d
+	@mv -f .deps/$*.d .deps/$*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < .deps/$*.d.tmp > .deps/$*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < .deps/$*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> .deps/$*.d
+	@rm -f .deps/$*.d.tmp
+
+libgtpv1u.a: $(libgtpv1u_OBJECTS)
+	@echo Creating GTP-U archive
+	@$(AR) rcvs $@ $(libgtpv1u_OBJECTS)
+
+clean:
+	rm -f libgtpv1u.a
+	rm -rf .deps/
+	rm -f $(libgtpv1u_OBJECTS)

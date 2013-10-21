@@ -1,0 +1,348 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2013 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fr/openairinterface
+  Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
+                 06410 Biot FRANCE
+
+*******************************************************************************/
+
+#include <pthread.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <stdint.h>
+#include <inttypes.h>
+
+#include <arpa/inet.h>
+
+#include "intertask_interface.h"
+
+#include "assertions.h"
+#include "conversions.h"
+#include "tree.h"
+#include "enum_string.h"
+#include "common_types.h"
+
+#include "mme_app_extern.h"
+#include "mme_app_ue_context.h"
+#include "mme_app_defs.h"
+
+static inline int ue_context_compare_identifiers(struct ue_context_s *p1,
+                                          struct ue_context_s *p2);
+
+RB_PROTOTYPE(ue_context_map, ue_context_s, rb_entry,
+             ue_context_compare_identifiers);
+
+RB_GENERATE(ue_context_map, ue_context_s, rb_entry,
+            ue_context_compare_identifiers);
+
+static inline int ue_context_compare_identifiers(
+    struct ue_context_s *p1, struct ue_context_s *p2)
+{
+    if (p1->imsi > 0) {
+        /* if IMSI provided */
+        if (p1->imsi > p2->imsi) {
+            return 1;
+        }
+        if (p1->imsi < p2->imsi) {
+            return -1;
+        }
+    } else if (p1->mme_s11_teid > 0) {
+        /* if s11 teid provided */
+        if (p1->mme_s11_teid > p2->mme_s11_teid) {
+            return 1;
+        }
+        if (p1->mme_s11_teid < p2->mme_s11_teid) {
+            return -1;
+        }
+    } else {
+        uint16_t mcc1;
+        uint16_t mnc1;
+        uint16_t mcc2;
+        uint16_t mnc2;
+
+        PLMN_T_TO_MCC_MNC(p1->guti.gummei.plmn, mcc1, mnc1);
+        PLMN_T_TO_MCC_MNC(p1->guti.gummei.plmn, mcc2, mnc2);
+
+        /* else compare by GUTI */
+        if ((p1->guti.m_tmsi < p2->guti.m_tmsi) &&
+            (p1->guti.gummei.MMEcode < p2->guti.gummei.MMEcode) &&
+            (p1->guti.gummei.MMEgid < p2->guti.gummei.MMEgid) &&
+            (mcc1 < mcc2) &&
+            (mnc1 < mnc2))
+            return 1;
+        if ((p1->guti.m_tmsi > p2->guti.m_tmsi) &&
+            (p1->guti.gummei.MMEcode > p2->guti.gummei.MMEcode) &&
+            (p1->guti.gummei.MMEgid > p2->guti.gummei.MMEgid) &&
+            (mcc1 > mcc2) &&
+            (mnc1 > mnc2))
+            return -1;
+    }
+    /* Match -> return 0 */
+    return 0;
+}
+
+ue_context_t *mme_create_new_ue_context(void)
+{
+    ue_context_t *new_p;
+
+    new_p = malloc(sizeof(ue_context_t));
+    if (new_p == NULL) {
+        return NULL;
+    }
+    memset(new_p, 0, sizeof(ue_context_t));
+    return new_p;
+}
+
+inline
+struct ue_context_s *mme_ue_context_exists_imsi(mme_ue_context_t *mme_ue_context,
+                                                mme_app_imsi_t imsi)
+{
+    struct ue_context_s  reference;
+
+    DevAssert(mme_ue_context != NULL);
+
+    memset(&reference, 0, sizeof(struct ue_context_s));
+    reference.imsi = imsi;
+    return RB_FIND(ue_context_map, &mme_ue_context->ue_context_tree,
+                   &reference);
+}
+
+inline
+struct ue_context_s *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_context,
+                                                    uint32_t teid)
+{
+    struct ue_context_s  reference;
+
+    DevAssert(mme_ue_context != NULL);
+
+    memset(&reference, 0, sizeof(struct ue_context_s));
+    reference.imsi = 0;
+    reference.mme_s11_teid = teid;
+    return RB_FIND(ue_context_map, &mme_ue_context->ue_context_tree,
+                   &reference);
+}
+
+inline
+struct ue_context_s *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
+                                                GUTI_t guti)
+{
+    struct ue_context_s  reference;
+
+    DevAssert(mme_ue_context != NULL);
+
+    memset(&reference, 0, sizeof(struct ue_context_s));
+
+    memcpy(&reference.guti, &guti, sizeof(GUTI_t));
+
+    return RB_FIND(ue_context_map, &mme_ue_context->ue_context_tree,
+                   &reference);
+}
+
+int mme_insert_ue_context(mme_ue_context_t *mme_ue_context, struct ue_context_s *ue_context_p)
+{
+    struct ue_context_s *collision_p = NULL;
+
+    DevAssert(mme_ue_context != NULL);
+    DevAssert(ue_context_p != NULL);
+
+    /* Updating statistics */
+    mme_ue_context->nb_ue_managed++;
+    mme_ue_context->nb_ue_since_last_stat++;
+
+    collision_p = RB_INSERT(ue_context_map, &mme_ue_context->ue_context_tree,
+        ue_context_p);
+    if (collision_p != NULL) {
+        fprintf(stderr, "This ue context already exists...\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
+{
+    struct ue_context_s *context_p;
+
+    MME_APP_DEBUG("-----------------------UE contexts-----------------------\n");
+    RB_FOREACH(context_p, ue_context_map, &mme_ue_context->ue_context_tree)
+    {
+        struct eutran_vector_s *vector_p;
+        uint8_t j;
+
+        MME_APP_DEBUG("    - IMSI ...........: %"SCNu64"\n", context_p->imsi);
+        MME_APP_DEBUG("                        |  m_tmsi  | mmec | mmegid | mcc | mnc |\n");
+        MME_APP_DEBUG("    - GUTI............: | %08x |  %02x  |  %04x  | %03u | %03u |\n",
+                      context_p->guti.m_tmsi, context_p->guti.gummei.MMEcode,
+                      context_p->guti.gummei.MMEgid,
+                      /* TODO check if two or three digits MNC... */
+                      context_p->guti.gummei.plmn.MCCdigit3 * 100 +
+                      context_p->guti.gummei.plmn.MCCdigit2 * 10 +
+                      context_p->guti.gummei.plmn.MCCdigit1,
+                      context_p->guti.gummei.plmn.MNCdigit3 * 100 +
+                      context_p->guti.gummei.plmn.MNCdigit2 * 10 +
+                      context_p->guti.gummei.plmn.MNCdigit1);
+        MME_APP_DEBUG("    - Authenticated ..: %s\n",
+                      (context_p->imsi_auth == IMSI_UNAUTHENTICATED) ? "FALSE": "TRUE");
+        MME_APP_DEBUG("    - eNB UE s1ap ID .: %08x\n", context_p->eNB_ue_s1ap_id);
+        MME_APP_DEBUG("    - MME UE s1ap ID .: %08x\n", context_p->mme_ue_s1ap_id);
+        MME_APP_DEBUG("    - MME S11 TEID ...: %08x\n", context_p->mme_s11_teid);
+        MME_APP_DEBUG("    - SGW S11 TEID ...: %08x\n", context_p->sgw_s11_teid);
+        MME_APP_DEBUG("                        | mcc | mnc | cell id  |\n");
+        MME_APP_DEBUG("    - E-UTRAN CGI ....: | %03u | %03u | %08x |\n",
+                      context_p->e_utran_cgi.plmn.MCCdigit3 * 100 +
+                      context_p->e_utran_cgi.plmn.MCCdigit2 * 10 +
+                      context_p->e_utran_cgi.plmn.MCCdigit1,
+                      context_p->e_utran_cgi.plmn.MNCdigit3 * 100 +
+                      context_p->e_utran_cgi.plmn.MNCdigit2 * 10 +
+                      context_p->e_utran_cgi.plmn.MNCdigit1,
+                      context_p->e_utran_cgi.cell_identity);
+        /* Ctime return a \n in the string */
+        MME_APP_DEBUG("    - Last acquired ..: %s", ctime(&context_p->cell_age));
+
+        /* Display UE info only if we know them */
+        if (context_p->subscription_known == SUBSCRIPTION_KNOWN)
+        {
+            MME_APP_DEBUG("    - Status .........: %s\n",
+                          (context_p->sub_status == SS_SERVICE_GRANTED) ? "Granted" : "Barred");
+#define DISPLAY_BIT_MASK_PRESENT(mASK)   \
+            ((context_p->access_restriction_data & mASK) ? 'X' : 'O')
+            MME_APP_DEBUG("    (O = allowed, X = !O) |UTRAN|GERAN|GAN|HSDPA EVO|E_UTRAN|HO TO NO 3GPP|\n");
+            MME_APP_DEBUG("    - Access restriction  |  %c  |  %c  | %c |    %c    |   %c   |      %c      |\n",
+                          DISPLAY_BIT_MASK_PRESENT(ARD_UTRAN_NOT_ALLOWED),
+                          DISPLAY_BIT_MASK_PRESENT(ARD_GERAN_NOT_ALLOWED),
+                          DISPLAY_BIT_MASK_PRESENT(ARD_GAN_NOT_ALLOWED),
+                          DISPLAY_BIT_MASK_PRESENT(ARD_I_HSDPA_EVO_NOT_ALLOWED),
+                          DISPLAY_BIT_MASK_PRESENT(ARD_E_UTRAN_NOT_ALLOWED),
+                          DISPLAY_BIT_MASK_PRESENT(ARD_HO_TO_NON_3GPP_NOT_ALLOWED));
+            MME_APP_DEBUG("    - Access Mode ....: %s\n",
+                          ACCESS_MODE_TO_STRING(context_p->access_mode));
+            MME_APP_DEBUG("    - MSISDN .........: %-*s\n",
+                          MSISDN_LENGTH, context_p->msisdn);
+            MME_APP_DEBUG("    - RAU/TAU timer ..: %u\n", context_p->rau_tau_timer);
+            MME_APP_DEBUG("    - IMEISV .........: %*s\n", 15,
+                          context_p->me_identity.imeisv);
+            MME_APP_DEBUG("    - AMBR (bits/s)     ( Downlink |  Uplink  )\n");
+            MME_APP_DEBUG("        Subscribed ...: (%010u|%010u)\n",
+                          context_p->subscribed_ambr.br_dl,
+                          context_p->subscribed_ambr.br_ul);
+            MME_APP_DEBUG("        Allocated ....: (%010u|%010u)\n",
+                          context_p->used_ambr.br_dl, context_p->used_ambr.br_ul);
+            MME_APP_DEBUG("    - Known vectors ..: %u\n", context_p->nb_of_vectors);
+            STAILQ_FOREACH(vector_p, &context_p->vector_list, entries)
+            {
+                int k;
+                char xres_string[3 * XRES_LENGTH_MAX + 1];
+
+                MME_APP_DEBUG("        - RAND ..: "RAND_FORMAT"\n",
+                            RAND_DISPLAY(vector_p->rand));
+                MME_APP_DEBUG("        - AUTN ..: "AUTN_FORMAT"\n",
+                            AUTN_DISPLAY(vector_p->autn));
+                MME_APP_DEBUG("        - KASME .: "KASME_FORMAT"\n",
+                            KASME_DISPLAY_1(vector_p->kasme));
+                MME_APP_DEBUG("                   "KASME_FORMAT"\n",
+                            KASME_DISPLAY_2(vector_p->kasme));
+
+                for (k = 0; k < vector_p->xres.size; k++)
+                {
+                    sprintf(&xres_string[k * 3], "%02x,", vector_p->xres.data[k]);
+                }
+                xres_string[k * 3 - 1] = '\0';
+                MME_APP_DEBUG("        - XRES ..: %s\n", xres_string);
+            }
+            MME_APP_DEBUG("    - PDN List:\n");
+            for (j = 0; j < context_p->apn_profile.nb_apns; j++)
+            {
+                struct apn_configuration_s *apn_config_p;
+
+                apn_config_p = &context_p->apn_profile.apn_configuration[j];
+
+                /* Default APN ? */
+                MME_APP_DEBUG("        - Default APN ...: %s\n",
+                            (apn_config_p->context_identifier == context_p->apn_profile.context_identifier)
+                            ? "TRUE" : "FALSE");
+                MME_APP_DEBUG("        - APN ...........: %s\n", apn_config_p->service_selection);
+                MME_APP_DEBUG("        - AMBR (bits/s) ( Downlink |  Uplink  )\n");
+                MME_APP_DEBUG("                        (%010u|%010u)\n",
+                            apn_config_p->ambr.br_dl, apn_config_p->ambr.br_ul);
+                MME_APP_DEBUG("        - PDN type ......: %s\n",
+                            PDN_TYPE_TO_STRING(apn_config_p->pdn_type));
+                MME_APP_DEBUG("        - QOS\n");
+                MME_APP_DEBUG("            QCI .........: %u\n",
+                            apn_config_p->subscribed_qos.qci);
+                MME_APP_DEBUG("            Prio level ..: %u\n",
+                            apn_config_p->subscribed_qos.allocation_retention_priority.priority_level);
+                MME_APP_DEBUG("            Pre-emp vul .: %s\n",
+                            (apn_config_p->subscribed_qos.allocation_retention_priority.pre_emp_vulnerability
+                            == PRE_EMPTION_VULNERABILITY_ENABLED) ? "ENABLED" : "DISABLED");
+                MME_APP_DEBUG("            Pre-emp cap .: %s\n",
+                            (apn_config_p->subscribed_qos.allocation_retention_priority.pre_emp_capability
+                            == PRE_EMPTION_CAPABILITY_ENABLED) ? "ENABLED" : "DISABLED");
+                if (apn_config_p->nb_ip_address == 0) {
+                    MME_APP_DEBUG("            IP addr .....: Dynamic allocation\n");
+                } else {
+                    int i;
+                    MME_APP_DEBUG("            IP addresses :\n");
+                    for (i = 0; i < apn_config_p->nb_ip_address; i++)
+                    {
+                        if (apn_config_p->ip_address[i].pdn_type == IPv4) {
+                            MME_APP_DEBUG("                           ["IPV4_ADDR"]\n",
+                                        IPV4_ADDR_DISPLAY_8(apn_config_p->ip_address[i].address.ipv4_address));
+                        } else {
+                            char ipv6[40];
+                            inet_ntop(AF_INET6, apn_config_p->ip_address[i].address.ipv6_address,ipv6, 40);
+                            MME_APP_DEBUG("                           [%s]\n",  ipv6);
+                        }
+                    }
+                }
+                MME_APP_DEBUG("\n");
+            }
+            MME_APP_DEBUG("    - Bearer List:\n");
+            for (j = 0; j < BEARERS_PER_UE; j++)
+            {
+                bearer_context_t *bearer_context_p;
+
+                bearer_context_p = &context_p->eps_bearers[j];
+
+                if (bearer_context_p->s_gw_teid != 0) {
+                    MME_APP_DEBUG("        Bearer id .......: %02u\n", j);
+                    MME_APP_DEBUG("        S-GW TEID (UP)...: %08x\n", bearer_context_p->s_gw_teid);
+                    MME_APP_DEBUG("        P-GW TEID (UP)...: %08x\n", bearer_context_p->p_gw_teid);
+                    MME_APP_DEBUG("        QCI .............: %u\n",
+                                bearer_context_p->qci);
+                    MME_APP_DEBUG("        Priority level ..: %u\n",
+                                bearer_context_p->prio_level);
+                    MME_APP_DEBUG("        Pre-emp vul .....: %s\n",
+                                (bearer_context_p->pre_emp_vulnerability
+                                == PRE_EMPTION_VULNERABILITY_ENABLED) ? "ENABLED" : "DISABLED");
+                    MME_APP_DEBUG("        Pre-emp cap .....: %s\n",
+                                (bearer_context_p->pre_emp_capability
+                                == PRE_EMPTION_CAPABILITY_ENABLED) ? "ENABLED" : "DISABLED");
+                }
+            }
+        }
+    }
+    MME_APP_DEBUG("---------------------------------------------------------\n");
+}

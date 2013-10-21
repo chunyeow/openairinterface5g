@@ -1,0 +1,4 @@
+#ifndef S11_MESSAGES_TYPES_H_
+#define S11_MESSAGES_TYPES_H_
+
+#endif /* S11_MESSAGES_TYPES_H_ */
