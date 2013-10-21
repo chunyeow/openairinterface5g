@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "intertask_interface.h"
+#include "mme_config.h"
 #include "timer.h"
 
 #include "mme_app_extern.h"
