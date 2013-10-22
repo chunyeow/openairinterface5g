@@ -108,7 +108,7 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
     data_length = message_header->message_size - sizeof(itti_socket_header_t) - sizeof(itti_signal_header_t);
     data = malloc(sizeof(uint8_t) * data_length);
 
-    while (total_data_read != data_length) {
+    while (total_data_read < data_length) {
         data_read = socket_read_data(socket_data, &data[total_data_read],
                                      data_length - total_data_read, 0);
         /* We are waiting for data */
@@ -136,9 +136,6 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
     if (socket_data->nb_signals_since_last_update >= SOCKET_NB_SIGNALS_BEFORE_SIGNALLING) {
         socket_notify_gui_update(socket_data);
     }
-
-//     CHECK_FCT_DO(buffer_add_to_list(buffer), pthread_exit(NULL));
-
 
     g_debug("Successfully read new signal %u from socket", itti_signal_header.message_number);
 
@@ -195,7 +192,7 @@ static int socket_read(socket_data_t *socket_data)
         ret = socket_read_data(socket_data, &message_header, sizeof(message_header), 0);
 
         if (ret == -1) {
-            break;
+            return 0;
         }
 
         switch(message_header.message_type) {
@@ -351,9 +348,12 @@ void *socket_thread_fct(void *arg)
             /* Quit the thread */
             pthread_exit(NULL);
         } else if (ret == 0) {
-            /* Timeout for select: check if there is new incoming messages since last update of GUI
+            /* Timeout for select: check if there is new incoming messages
+             * since last GUI update
              */
             if (socket_data->nb_signals_since_last_update > 0) {
+                g_debug("Timout on select and data new signal in list");
+                g_debug("-> notify GUI");
                 socket_notify_gui_update(socket_data);
             }
 
@@ -363,14 +363,14 @@ void *socket_thread_fct(void *arg)
 
         /* Checking if there is data to read from the pipe */
         if (FD_ISSET(socket_data->pipe_fd, &read_fds)) {
+            FD_CLR(socket_data->pipe_fd, &read_fds);
             pipe_read_message(socket_data);
-            FD_CLR(socket_data->pipe_fd, &master_fds);
         }
 
         /* Checking if there is data to read from the socket */
         if (FD_ISSET(socket_data->sd, &read_fds)) {
+            FD_CLR(socket_data->sd, &read_fds);
             socket_read(socket_data);
-            FD_CLR(socket_data->sd, &master_fds);
 
             /* Update the timeout of select if there is data not notify to GUI */
             if (socket_data->nb_signals_since_last_update > 0) {
@@ -383,7 +383,7 @@ void *socket_thread_fct(void *arg)
                     tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
                 } else {
                     /* Update tv */
-                    tv.tv_usec = SOCKET_MS_BEFORE_SIGNALLING - (current_time - socket_data->last_data_notification);
+                    tv.tv_usec = (1000 * SOCKET_MS_BEFORE_SIGNALLING) - (current_time - socket_data->last_data_notification);
                 }
             }
         }
