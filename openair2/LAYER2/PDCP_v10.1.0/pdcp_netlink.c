@@ -48,6 +48,11 @@
 #include <error.h>
 #include <unistd.h>
 
+/* Bugfix for version of GCC = 4.4.3 (Ubuntu 10.04) */
+#if GCC_VERSION <= 40403
+# include <sys/socket.h>
+#endif
+
 #include <linux/netlink.h>
 
 #include "assertions.h"
