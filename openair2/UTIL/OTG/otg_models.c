@@ -38,6 +38,7 @@
 * \warning
 */
 
+#include "UTIL/MATH/oml.h"
 #include "otg_models.h"
 #include "UTIL/LOG/log.h"
 

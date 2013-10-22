@@ -20,11 +20,13 @@
 //#ifdef OPENAIR2
 #include "LAYER2/MAC/defs.h"
 #include "LAYER2/MAC/vars.h"
+#include "pdcp.h"
 #ifndef CELLULAR
 #include "RRC/LITE/vars.h"
 #endif
 #include "PHY_INTERFACE/vars.h"
 //#endif
+#include "RRC/NAS/nas_config.h"
 
 #include "ARCH/CBMIMO1/DEVICE_DRIVER/vars.h"
 
@@ -68,6 +70,11 @@ char smbv_ip[16];
 //#endif
 
 #include "UTIL/LOG/vcd_signal_dumper.h"
+#include "UTIL/OTG/otg_kpi.h"
+
+#if defined(ENABLE_ITTI)
+# include "intertask_interface_init.h"
+#endif
 
 #define RF
 
@@ -172,8 +179,7 @@ void terminate(void);
 
 void 
 help (void) {
-  printf
-      ("Usage: oaisim -h -a -F -C tdd_config -V -R N_RB_DL -e -x transmission_mode -m target_dl_mcs -r(ate_adaptation) -n n_frames -s snr_dB -k ricean_factor -t max_delay -f forgetting factor -A channel_model -z cooperation_flag -u nb_local_ue -U UE mobility -b nb_local_enb -B eNB_mobility -M ethernet_flag -p nb_master -g multicast_group -l log_level -c ocg_enable -T traffic model -D multicast network device\n");
+  printf ("Usage: oaisim -h -a -F -C tdd_config -V -R N_RB_DL -e -x transmission_mode -m target_dl_mcs -r(ate_adaptation) -n n_frames -s snr_dB -k ricean_factor -t max_delay -f forgetting factor -A channel_model -z cooperation_flag -u nb_local_ue -U UE mobility -b nb_local_enb -B eNB_mobility -M ethernet_flag -p nb_master -g multicast_group -l log_level -c ocg_enable -T traffic model -D multicast network device\n");
 
   printf ("-h provides this help message!\n");
   printf ("-a Activates PHY abstraction mode\n");
@@ -366,9 +372,14 @@ int main (int argc, char **argv) {
   strcpy(smbv_ip,DEFAULT_SMBV_IP);
 #endif
 
-  s32 UE_id=0, eNB_id=0, RN_id=0;
+  s32 UE_id=0, eNB_id=0;
+#ifdef Rel10
+  s32 RN_id=0;
+#endif
   
+#ifdef Rel10
   relaying_type_t r_type=no_relay; // no relaying 
+#endif
   // time calibration for soft realtime mode  
 
   lte_subframe_t direction;
@@ -451,6 +462,10 @@ int main (int argc, char **argv) {
     snr_dB=20;
     sinr_dB=-20;
  }
+
+#if defined(ENABLE_ITTI)
+  intertask_interface_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml);
+#endif
 
 #ifdef OPENAIR2
   init_omv();

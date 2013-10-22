@@ -369,7 +369,7 @@ $(LFDS_DIR)/bin/liblfds611.a:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux
 
 oaisim_pad : $(ITTI_MESSAGES_H) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
-	@echo "Linkin oaisim_pad ..."
+	@echo "Linking oaisim_pad ..."
 	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
 	 -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt
 
