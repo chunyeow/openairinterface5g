@@ -52,8 +52,6 @@
 #include "assertions.h"
 #include "queue.h"
 
-#include "mme_default_values.h"
-
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
 
@@ -420,7 +418,7 @@ static void *itti_dump_socket(void *arg_p)
                             /* No more new connection max_sd = itti_listen_socket */
                             max_sd = itti_listen_socket;
                         } else {
-                            while (FD_ISSET(max_sd, &master_set) == FALSE) {
+                            while (FD_ISSET(max_sd, &master_set) == 0) {
                                 max_sd -= 1;
                             }
                         }

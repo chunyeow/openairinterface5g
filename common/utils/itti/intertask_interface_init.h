@@ -51,7 +51,7 @@
 #ifndef CHECK_PROTOTYPE_ONLY
 
 const char * const messages_definition_xml = {
-#include "../messages_xml.h"
+#include "messages_xml.h"
 };
 
 /* Map thread id to printable name. */

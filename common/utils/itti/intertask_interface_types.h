@@ -37,6 +37,8 @@
 #ifndef INTERTASK_INTERFACE_TYPES_H_
 #define INTERTASK_INTERFACE_TYPES_H_
 
+#include <stdint.h>
+
 /* Defines to handle bit fields on unsigned long values */
 #define UL_BIT_MASK(lENGTH)             ((1UL << (lENGTH)) - 1UL)
 #define UL_BIT_SHIFT(vALUE, oFFSET)     ((vALUE) << (oFFSET))

@@ -41,9 +41,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "mme_config.h"
-#include "common_types.h"
-
+#include "intertask_interface_conf.h"
 #include "intertask_interface_types.h"
 
 /* Make the message number platform specific */
