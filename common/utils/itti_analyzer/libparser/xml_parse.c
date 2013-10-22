@@ -700,7 +700,7 @@ static int xml_parse_doc(xmlDocPtr doc) {
     int ret = 0;
     FILE *dissect_file;
 
-    dissect_file = fopen ("./dissect_xml.txt", "w");
+    dissect_file = fopen ("./dissect.xml", "w");
 
     /* Get the root element node */
     root_element = xmlDocGetRootElement (doc);
