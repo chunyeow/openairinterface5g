@@ -9,13 +9,18 @@ linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 
-TOP_DIR      = $(OPENAIR1_DIR)
-OPENAIR1_TOP = $(OPENAIR1_DIR)
-OPENAIR2_TOP = $(OPENAIR2_DIR)
-OPENAIR3_TOP = $(OPENAIR3_DIR)
-OPENAIR3     = $(OPENAIR3_DIR)
+COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
+TOP_DIR             = $(OPENAIR1_DIR)
+OPENAIR1_TOP        = $(OPENAIR1_DIR)
+OPENAIR2_TOP        = $(OPENAIR2_DIR)
+OPENAIR3_TOP        = $(OPENAIR3_DIR)
+OPENAIR3            = $(OPENAIR3_DIR)
 
 CFLAGS = -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
+
+ifdef ENABLE_ITTI
+CFLAGS += -DENABLE_ITTI
+endif
 
 # Check if GCC version is greater or equal to 4.4
 GCCVERSIONGTEQ44 := $(shell expr `gcc -dumpversion | cut -f1,2 -d. --output-delimiter=""` \>= 44)
@@ -181,6 +186,7 @@ endif
 endif
 endif
 
+include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
 include $(OPENAIR1_DIR)/SCHED/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
@@ -203,6 +209,21 @@ CFLAGS_S1AP += -DENB_MODE -DENABLE_USE_MME -DEMIT_ASN_DEBUG=1 -DUSER_MODE
 S1AP_BUILT_OBJS += $(S1AP_OBJS) $(addprefix $(OPENAIR2_DIR)/S1AP/MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
 endif
 
+ifdef ENABLE_ITTI
+ITTI_MESSAGES_H = messages_xml.h
+
+ITTI_MESSAGES_XML = messages.xml
+
+ITTI_MESSAGES_FILE =  $(ITTI_DIR)/intertask_interface_types.h
+
+ITTI_MESSAGES_FILES =  $(ITTI_DIR)/intertask_messages_def.h
+ITTI_MESSAGES_FILES += $(ITTI_DIR)/timer_messages_def.h
+ITTI_MESSAGES_FILES += $(ITTI_DIR)/timer_messages_types.h
+ITTI_MESSAGES_FILES += $(OPENAIR2_DIR)/COMMON/tasks_def.h
+ITTI_MESSAGES_FILES += $(OPENAIR2_DIR)/COMMON/messages_def.h
+ITTI_MESSAGES_FILES += $(OPENAIR2_DIR)/COMMON/messages_types.h
+endif
+
 SIMULATION_OBJS  = $(TOP_DIR)/SIMULATION/TOOLS/gauss.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/TOOLS/random_channel.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/TOOLS/rangen_double.o
@@ -217,13 +238,16 @@ ASN1_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
 #L2_OBJS =
 #EXTRA_CFLAGS =
 
-OAISIM_OBJS = channel_sim.o
-OAISIM_OBJS += init_lte.o
-OAISIM_OBJS += oaisim_config.o
-OAISIM_OBJS += sinr_sim.o
-OAISIM_OBJS += cor_SF_sim.o
-#OAISIM_OBJS += phy_procedures_sim_form.o
-OAISIM_OBJS += oaisim_functions.o
+OAISIM_OBJS_COMMON = channel_sim.o
+OAISIM_OBJS_COMMON += init_lte.o
+OAISIM_OBJS_COMMON += oaisim_config.o
+OAISIM_OBJS_COMMON += sinr_sim.o
+OAISIM_OBJS_COMMON += cor_SF_sim.o
+#OAISIM_OBJS_COMMON += phy_procedures_sim_form.o
+OAISIM_OBJS_COMMON += oaisim_functions.o
+
+OAISIM_OBJS = oaisim.o
+
 ifdef XFORMS
 TOOLS_OBJS += $(OPENAIR1_DIR)/PHY/TOOLS/lte_phy_scope.o
 endif
@@ -232,8 +256,9 @@ ifdef PAD
 CFLAGS += -DPAD
 endif
 
-OAISIM_PAD_OBJS = discrete_event_generator.o
+OAISIM_PAD_OBJS =  discrete_event_generator.o
 OAISIM_PAD_OBJS += threadpool.o
+OAISIM_PAD_OBJS += oaisim_pad.o
 #deactivate the log offloading 
 ifndef LOG_THREAD
 CFLAGS +=-DLOG_NO_THREAD
@@ -260,12 +285,19 @@ CFLAGS += `pkg-config --cflags openpgm-5.1` -DENABLE_PGM_TRANSPORT
 PGM_LDFLAGS = `pkg-config --libs openpgm-5.1`
 endif
 
-OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(OAISIM_OBJS) $(NAS_OBJS) $(INT_OBJS) $(UTIL_OBJ)
+OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS) $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) 
 ifeq ($(OPENAIR2),1)
 OBJ += $(L2_OBJS)
 endif
 
-all: oaisim
+LIB =  $(LFDS_DIR)/bin/liblfds611.a
+ifdef USE_MME
+LIB += $(S1AP_DIR)/libs1ap.a
+endif
+
+default: oaisim
+
+all: oaisim pad
 
 pad: oaisim_pad
 
@@ -286,6 +318,14 @@ printvars:
 	@echo CFLAGS: $(CFLAGS)
 	@echo Enable PGM: $(ENABLE_PGM)
 
+$(ITTI_MESSAGES_H) : $(ITTI_MESSAGES_XML)
+	@echo "Generating messages_xml.h ..."
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
+
+$(ITTI_MESSAGES_XML) : $(ITTI_MESSAGES_FILE) $(ITTI_MESSAGES_FILES)
+	@echo "Generating messages.xml ..."
+	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
+
 ASN1RELDIR=R9.8
 ifeq ($(USE_MME), R8)
 	ASN1RELDIR=R8.10
@@ -299,10 +339,10 @@ ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
 -include $(OBJ:.o=.d)
 -include $(ASN1_MSG_OBJS1:.o=.d)
 
-$(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) : %.o : %.c
+$(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) : %.o : %.c
 	@echo Compiling $<
-	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) -o $@ $<
-	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $*.c > $*.d
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) -o $@ $<
+	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $*.c > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
 	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
@@ -311,7 +351,7 @@ $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) : %.o : %.c
 
 $(S1AP_BUILT_OBJS): %.o : %.c
 	@echo Compiling $<
-	@$(CC) -Wall -c $(CFLAGS_S1AP) $(S1AP_Incl) $(UTIL_incl) -o $@ $<
+	@$(CC) -Wall -c $(CFLAGS_S1AP) $(S1AP_Incl) $(UTIL_incl) $(UTILS_incl) -o $@ $<
 
 $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-PDU-Contents.asn $(ASN1DIR)/asn1tostruct.py
 	echo Timestamp > $@
@@ -328,20 +368,16 @@ $(S1AP_DIR)/libs1ap.a: $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp $(ASN1MESSAGESDIR)/
 $(LFDS_DIR)/bin/liblfds611.a:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux
 
-oaisim_pad : $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) oaisim_pad.c
-	@echo "Compiling oaisim_pad.c ..."
-	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $^ \
+oaisim_pad : $(ITTI_MESSAGES_H) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
+	@echo "Linkin oaisim_pad ..."
+	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
 	 -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt
 
-ifdef USE_MME
-oaisim : $(ASN1_MSG_OBJS1) $(OBJ) $(S1AP_DIR)/libs1ap.a oaisim.c $(LFDS_DIR)/bin/liblfds611.a
-else
-oaisim : $(ASN1_MSG_OBJS1) $(OBJ) oaisim.c $(LFDS_DIR)/bin/liblfds611.a
-endif
-	@echo "Compiling oaisim.c ..."
-	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $^ \
+oaisim : $(ITTI_MESSAGES_H) $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) $(LIB)
+	@echo "Linking oaisim ..."
+	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) \
 	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt \
-	$(LFDS_DIR)/bin/liblfds611.a $(PGM_LDFLAGS) $(DB_LDFLAGS) $(OSA_LDFLAGS)
+	$(LIB) $(PGM_LDFLAGS) $(DB_LDFLAGS) $(OSA_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv oaisim oaisim_eNB
@@ -352,7 +388,7 @@ endif
 
 oaisimCROWN : $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
-	@$(CC) oaisimCROWN.c -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt 
+	@$(CC) oaisimCROWN.c -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt 
 
 test_nasmesh_fix:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
@@ -389,6 +425,7 @@ clean:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
 	rm -f oaisim
 	rm -f oaisim_pad
+	rm -f $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML)
 	rm -f $(OBJ)
 	rm -f $(S1AP_BUILT_OBJS)
 	rm -f $(ASN1MESSAGESDIR)/libs1ap.a
@@ -432,18 +469,23 @@ cleancell:
 
 print:
 #	@echo $(cygwin)
-	@echo $(OBJ)
-	@echo $(OCG_FLAG)
-	@echo "CFLAGS are "      $(CFLAGS)
-	@echo "EXTRA_CFLAGS are" $(EXTRA_CFLAGS)
-
-	@echo "IS_REL8 is "      $(IS_REL10)
-	@echo "IS_REL8 is "      $(IS_REL8)
-	@echo "ENABLE_DB is "    $(ENABLE_DB)
+	@echo "OBJ " 				$(OBJ)
+	@echo "OAISIM_OBJS " 		$(OAISIM_OBJS)
+	@echo "OAISIM_PAD_OBJS " 	$(OAISIM_PAD_OBJS)
+	@echo "OCG_FLAG are "		$(OCG_FLAG)
+	@echo "CFLAGS are "      	$(CFLAGS)
+	@echo "EXTRA_CFLAGS are" 	$(EXTRA_CFLAGS)
+	@echo "L2 includes are"	    $(L2_incl)
+	@echo "S1AP Includes are"   $(S1AP_Incl)
+	@echo "TOP_DIR Include is"  I$(TOP_DIR)
+	@echo "UTIL includes are"	$(UTIL_incl)
+	@echo "UTILS includes are"	$(UTILS_incl)
+	@echo "IS_REL8 is "      	$(IS_REL8)
+	@echo "IS_REL10 is "     	$(IS_REL10)
+	@echo "ENABLE_DB is "    	$(ENABLE_DB)
 
 showcflags:
 	@echo $(CFLAGS)
-
 
 otg_all : otg_latency otg_gp
 
