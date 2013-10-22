@@ -136,11 +136,12 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
 static
 int itti_dump_send_message(int sd, itti_queue_item_t *message)
 {
-    int result = 0;
     itti_dump_message_t *new_message;
+    ssize_t bytes_sent = 0, total_sent = 0;
+    uint8_t *data_ptr;
 
     /* Allocate memory for message header and payload */
-    uint32_t size = sizeof(itti_dump_message_t) + message->data_size;
+    size_t size = sizeof(itti_dump_message_t) + message->data_size;
 
     DevCheck(sd > 0, sd, 0, 0);
     DevAssert(message != NULL);
@@ -158,41 +159,63 @@ int itti_dump_send_message(int sd, itti_queue_item_t *message)
     /* Appends message payload */
     memcpy(&new_message[1], message->data, message->data_size);
 
-    if (write(sd, new_message, size) == -1) {
-        ITTI_ERROR("[%d] Failed to write message of size %u to socket (%d:%s)\n",
-                   sd, size, errno, strerror(errno));
-        result = -1;
-    }
+    data_ptr = (uint8_t *)&new_message[0];
+
+    do {
+        bytes_sent = send(sd, &data_ptr[total_sent], size - total_sent, 0);
+        if (bytes_sent < 0) {
+            ITTI_ERROR("[%d] Failed to send %zu bytes to socket (%d:%s)\n",
+                       sd, size, errno, strerror(errno));
+            free(new_message);
+            return -1;
+        }
+        total_sent += bytes_sent;
+    } while (total_sent != size);
 
     free(new_message);
-    return result;
+    return total_sent;
 }
 
 static int itti_dump_send_xml_definition(const int sd, const char *message_definition_xml,
                                          const uint32_t message_definition_xml_length)
 {
-    itti_socket_header_t xml_definition_header;
+    itti_socket_header_t *itti_dump_message;
+    /* Allocate memory for message header and payload */
+    size_t itti_dump_message_size;
+    ssize_t bytes_sent = 0, total_sent = 0;
+    uint8_t *data_ptr;
 
     DevCheck(sd > 0, sd, 0, 0);
     DevAssert(message_definition_xml != NULL);
 
-    ITTI_DEBUG("[%d] Sending XML definition of size %u to observer peer\n",
-               sd, message_definition_xml_length);
+    itti_dump_message_size = sizeof(itti_socket_header_t) + message_definition_xml_length;
 
-    xml_definition_header.message_size = sizeof(xml_definition_header)
-    + message_definition_xml_length;
-    xml_definition_header.message_type = ITTI_DUMP_XML_DEFINITION;
+    itti_dump_message = calloc(1, itti_dump_message_size);
 
-    if (write(sd, &xml_definition_header, sizeof(xml_definition_header)) < 0) {
-        ITTI_ERROR("[%d] Failed to write header of size %zu to socket (%d:%s)\n",
-                   sd, sizeof(xml_definition_header), errno, strerror(errno));
-        return -1;
-    }
-    if (write(sd, message_definition_xml, message_definition_xml_length) < 0) {
-        ITTI_ERROR("[%d] Failed to write XML definition of size %u to socket (%d:%s)\n",
-                   sd, message_definition_xml_length, errno, strerror(errno));
-        return -1;
-    }
+    ITTI_DEBUG("[%d] Sending XML definition message of size %zu to observer peer\n",
+               sd, itti_dump_message_size);
+
+    itti_dump_message->message_size = itti_dump_message_size;
+    itti_dump_message->message_type = ITTI_DUMP_XML_DEFINITION;
+
+    /* Copying message definition */
+    memcpy(&itti_dump_message[1], message_definition_xml, message_definition_xml_length);
+
+    data_ptr = (uint8_t *)&itti_dump_message[0];
+
+    do {
+        bytes_sent = send(sd, &data_ptr[total_sent], itti_dump_message_size - total_sent, 0);
+        if (bytes_sent < 0) {
+            ITTI_ERROR("[%d] Failed to send %zu bytes to socket (%d:%s)\n",
+                       sd, itti_dump_message_size, errno, strerror(errno));
+            free(itti_dump_message);
+            return -1;
+        }
+        total_sent += bytes_sent;
+    } while (total_sent != itti_dump_message_size);
+
+    free(itti_dump_message);
+
     return 0;
 }
 
