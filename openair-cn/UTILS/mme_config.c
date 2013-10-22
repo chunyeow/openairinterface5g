@@ -42,6 +42,7 @@
 #include <arpa/inet.h> /* To provide inet_addr */
 
 #include "mme_config.h"
+#include "intertask_interface_conf.h"
 
 mme_config_t mme_config;
 

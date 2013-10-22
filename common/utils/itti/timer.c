@@ -243,9 +243,6 @@ int timer_init(void)
     STAILQ_INIT(&timer_desc.timer_queue);
     pthread_mutex_init(&timer_desc.timer_list_mutex, NULL);
 
-    timer_desc.timeout.tv_sec = MME_TIMER_TIMEOUT_S;
-    timer_desc.timeout.tv_nsec = MME_TIMER_TIMEOUT_NS;
-
     TMR_DEBUG("Initializing TIMER task interface: DONE\n");
     return 0;
 }

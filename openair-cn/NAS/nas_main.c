@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "intertask_interface.h"
+#include "mme_config.h"
 
 #include "nas_defs.h"
 
