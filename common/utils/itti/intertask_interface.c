@@ -137,23 +137,23 @@ int send_broadcast_message(MessageDef *message_p)
         MessageDef *new_message_p;
 
         /* Skip tasks which are not running */
-        if (itti_desc.tasks[i].task_state != TASK_STATE_READY)
-            continue;
+        if (itti_desc.tasks[i].task_state == TASK_STATE_READY)
+        {
+            new_message_p = malloc(sizeof(MessageDef));
 
-        new_message_p = malloc(sizeof(MessageDef));
-
-        if (new_message_p == NULL) {
-            ITTI_ERROR("Failed to allocate memory (%s:%d)\n",
-                       __FILE__, __LINE__);
-            return -1;
-        }
-        memcpy(new_message_p, message_p, sizeof(MessageDef));
-        temp = send_msg_to_task(i, INSTANCE_DEFAULT, new_message_p);
-        if (temp < 0) {
-            ITTI_ERROR("Failed to send broadcast message (%s) to queue (%u:%s)\n",
-                       itti_desc.messages_info[message_p->header.messageId].name, i, itti_desc.threads_name[i]);
-            ret = temp;
-            free(new_message_p);
+            if (new_message_p == NULL) {
+                ITTI_ERROR("Failed to allocate memory (%s:%d)\n",
+                           __FILE__, __LINE__);
+                return -1;
+            }
+            memcpy(new_message_p, message_p, sizeof(MessageDef));
+            temp = send_msg_to_task(TASK_SHIFT_THREAD_ID(i), INSTANCE_DEFAULT, new_message_p);
+            if (temp < 0) {
+                ITTI_ERROR("Failed to send broadcast message (%s) to queue (%u:%s)\n",
+                           itti_desc.messages_info[message_p->header.messageId].name, i, itti_desc.threads_name[i]);
+                ret = temp;
+                free(new_message_p);
+            }
         }
     }
 
@@ -444,16 +444,9 @@ int intertask_interface_init(thread_id_t thread_max, MessagesIds messages_id_max
 
 void intertask_interface_send_quit_signal(void)
 {
-    int i;
     MessageDef *terminate_message_p;
 
     terminate_message_p = alloc_new_message(TASK_UNKNOWN, TERMINATE_MESSAGE);
 
     send_broadcast_message(terminate_message_p);
-
-    for (i = THREAD_FIRST; i < itti_desc.thread_max; i++) {
-        /* Skip tasks which are not running */
-        if (itti_desc.tasks[i].task_state != TASK_STATE_READY)
-            continue;
-    }
 }
