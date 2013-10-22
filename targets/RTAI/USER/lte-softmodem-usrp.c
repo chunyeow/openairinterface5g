@@ -41,6 +41,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -96,14 +97,14 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
-#ifdef XFORMS
-#include "PHY/TOOLS/lte_phy_scope.h"
-#include "stats.h"
 
+#include "stats.h"
 #include "../../ARCH/USRP/USERSPACE/LIB/def.h"
 #include "TOOLS/thread_ipc.c"
 
-#include <time.h>
+
+#ifdef XFORMS
+#include "PHY/TOOLS/lte_phy_scope.h"
 
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
 // at eNB 0, an UL scope for every UE
@@ -418,7 +419,7 @@ static void *eNB_thread(void *arg)
 				// -- PHY procedure --
 			{
 				//phy_procedures_eNB_lte(last_slot, next_slot, PHY_vars_eNB_g[0], 0);//for OAI version berfore 4160
-				phy_procedures_eNB_lte(last_slot, next_slot, PHY_vars_eNB_g[0], 0,0);
+			  phy_procedures_eNB_lte(last_slot, next_slot, PHY_vars_eNB_g[0], 0,0,NULL);
 #ifndef IFFT_FPGA
 				slot_offset_F = (next_slot)*
 					(PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
@@ -613,7 +614,7 @@ static void *UE_thread(void *arg)
 			PHY_vars_UE_g[0]->frame = frame;
 
 			//phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode);//for OAI version after 4160
-			phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode,0);
+			phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode,0,NULL);
 
 			// update slot index
 			t_slot_idx = next_slot; // this slot is ready to send
