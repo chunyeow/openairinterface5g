@@ -4,7 +4,7 @@ define([svnversion], esyscmd([sh -c "svnversion ..|tr -d '\n'"]))
 
 AC_DEFINE(SVN_REVISION, "svnversion", [SVN Revision])
 
-AC_INIT([itti_debugger], [0.1.svnversion], [openair_admin@eurecom.fr])
+AC_INIT([itti_debugger], [0.2.svnversion], [openair_admin@eurecom.fr])
 AC_CANONICAL_BUILD
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([1.11 silent-rules])

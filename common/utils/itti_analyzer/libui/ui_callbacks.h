@@ -28,4 +28,6 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
                              gboolean          path_currently_selected,
                              gpointer          userdata);
 
+gboolean ui_pipe_callback(gint source, gpointer user_data);
+
 #endif /* UI_CALLBACKS_H_ */

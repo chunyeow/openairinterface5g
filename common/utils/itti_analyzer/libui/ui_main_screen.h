@@ -13,6 +13,8 @@ typedef struct {
     /* Buttons */
     GtkToolItem *connect;
     GtkToolItem *disconnect;
+
+    int pipe_fd[2];
 } ui_main_data_t;
 
 extern ui_main_data_t ui_main_data;

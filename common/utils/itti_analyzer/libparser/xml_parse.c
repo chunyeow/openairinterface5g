@@ -9,6 +9,7 @@
 #include "union_type.h"
 
 #include "ui_interface.h"
+#include "ui_notif_dlg.h"
 
 #include "../libresolver/locate_root.h"
 #include "../libresolver/resolvers.h"
@@ -21,15 +22,15 @@ extern int debug_parser;
 # define INDENT_START 0
 #endif
 
-#define PARSER_DEBUG(fmt, args...)      \
-do {                                    \
-    if (debug_parser)                   \
-        fprintf(stdout, "WARNING: "fmt, ##args);    \
+#define PARSER_DEBUG(fmt, args...)       \
+do {                                     \
+    if (debug_parser)                    \
+        g_debug("WARNING: "fmt, ##args); \
 } while(0)
 
 #define PARSER_ERROR(fmt, args...)      \
 do {                                    \
-    fprintf(stderr, "FATAL: "fmt, ##args);    \
+    g_error("FATAL: "fmt, ##args);      \
 } while(0)
 
 types_t *root = NULL;
@@ -582,66 +583,54 @@ static int parse_pointer_type(xmlNode *node, types_t **head) {
 static int parse_elements(xmlNode * a_node, types_t **head) {
     xmlNode *cur_node = NULL;
     xmlNode *child_node = NULL;
-    unsigned long nb_nodes;
-    unsigned long node_count = 0;
-
-    nb_nodes = xmlChildElementCount (a_node);
 
     for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-        node_count++;
-        sleep (1);
-        ui_interface.ui_progress_bar_set_fraction ((double) node_count / nb_nodes);
         for (child_node = cur_node->children; child_node; child_node = child_node->next) {
             if (child_node->type == XML_ELEMENT_NODE) {
                 if (strcmp ((char *) child_node->name, "Enumeration") == 0) {
-                    CHECK_FCT_DO(parse_enumeration(child_node, head), goto fail);
+                    CHECK_FCT_DO(parse_enumeration(child_node, head), return RC_FAIL);
                 }
                 else
                     if (strcmp ((char *) child_node->name, "FundamentalType") == 0) {
-                        CHECK_FCT_DO(parse_fundamental(child_node, head), goto fail);
+                        CHECK_FCT_DO(parse_fundamental(child_node, head), return RC_FAIL);
                     }
                     else
                         if (strcmp ((char *) child_node->name, "Struct") == 0) {
-                            CHECK_FCT_DO(parse_struct(child_node, head), goto fail);
+                            CHECK_FCT_DO(parse_struct(child_node, head), return RC_FAIL);
                         }
                         else
                             if (strcmp ((char *) child_node->name, "Union") == 0) {
-                                CHECK_FCT_DO(parse_union(child_node, head), goto fail);
+                                CHECK_FCT_DO(parse_union(child_node, head), return RC_FAIL);
                             }
                             else
                                 if (strcmp ((char *) child_node->name, "Typedef") == 0) {
-                                    CHECK_FCT_DO(parse_typedef(child_node, head), goto fail);
+                                    CHECK_FCT_DO(parse_typedef(child_node, head), return RC_FAIL);
                                 }
                                 else
                                     if (strcmp ((char *) child_node->name, "File") == 0) {
-                                        CHECK_FCT_DO(parse_file(child_node, head), goto fail);
+                                        CHECK_FCT_DO(parse_file(child_node, head), return RC_FAIL);
                                     }
                                     else
                                         if (strcmp ((char *) child_node->name, "Field") == 0) {
-                                            CHECK_FCT_DO(parse_field(child_node, head), goto fail);
+                                            CHECK_FCT_DO(parse_field(child_node, head), return RC_FAIL);
                                         }
                                         else
                                             if (strcmp ((char *) child_node->name, "ReferenceType") == 0) {
-                                                CHECK_FCT_DO(parse_reference_type(child_node, head), goto fail);
+                                                CHECK_FCT_DO(parse_reference_type(child_node, head), return RC_FAIL);
                                             }
                                             else
                                                 if (strcmp ((char *) child_node->name, "ArrayType") == 0) {
-                                                    CHECK_FCT_DO(parse_array_type(child_node, head), goto fail);
+                                                    CHECK_FCT_DO(parse_array_type(child_node, head),  return RC_FAIL);
                                                 }
                                                 else
                                                     if (strcmp ((char *) child_node->name, "PointerType") == 0) {
-                                                        CHECK_FCT_DO(parse_pointer_type(child_node, head), goto fail);
+                                                        CHECK_FCT_DO(parse_pointer_type(child_node, head),  return RC_FAIL);
                                                     }
             }
         }
     }
 
-    ui_interface.ui_progress_bar_terminate ();
-
     return RC_OK;
-
-    fail: ui_interface.ui_progress_bar_terminate ();
-    return RC_FAIL;
 }
 
 int xml_parse_buffer(const char *xml_buffer, const int size) {
@@ -651,7 +640,7 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
         return -1;
     }
 
-    fprintf(stdout, "Parsing XML definition from buffer\n");
+    g_debug("Parsing XML definition from buffer");
 
     /* This initialize the library and check potential ABI mismatches
      * between the version it was compiled for and the actual shared
@@ -662,8 +651,8 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
     doc = xmlReadMemory(xml_buffer, size, NULL, NULL, 0);
 
     if (doc == NULL) {
-        fprintf (stderr, "Failed to parse buffer: %s\n", xml_buffer);
-        ui_interface.ui_notification_dialog (DIALOG_WARNING, "Fail to parse XML buffer");
+        g_warning("Failed to parse buffer: %s", xml_buffer);
+//         ui_notification_dialog(DIALOG_WARNING, "Fail to parse XML buffer");
         return RC_FAIL;
     }
 
@@ -686,8 +675,8 @@ int xml_parse_file(const char *filename) {
     doc = xmlReadFile (filename, NULL, 0);
 
     if (doc == NULL) {
-        fprintf (stderr, "Failed to parse %s\n", filename);
-        ui_interface.ui_notification_dialog (DIALOG_WARNING, "Failed to parse file %s", filename);
+        g_warning("Failed to parse %s\n", filename);
+//         ui_notification_dialog(DIALOG_WARNING, "Failed to parse file %s", filename);
         return RC_FAIL;
     }
 
@@ -703,17 +692,17 @@ static int xml_parse_doc(xmlDocPtr doc) {
     dissect_file = fopen ("./dissect.xml", "w");
 
     /* Get the root element node */
-    root_element = xmlDocGetRootElement (doc);
+    root_element = xmlDocGetRootElement(doc);
 
-    ret = parse_elements (root_element, &head);
+    ret = parse_elements(root_element, &head);
 
     /* Free the document */
-    xmlFreeDoc (doc);
+    xmlFreeDoc(doc);
 
     /* Free the global variables that may
      * have been allocated by the parser.
      */
-    xmlCleanupParser ();
+    xmlCleanupParser();
 
     if (ret == RC_OK) {
         resolve_typedefs (&head);
@@ -724,34 +713,38 @@ static int xml_parse_doc(xmlDocPtr doc) {
         resolve_struct (&head);
         resolve_file (&head);
         resolve_union (&head);
+        /* Locate the root element which corresponds to the MessageDef struct */
         CHECK_FCT(locate_root("MessageDef", head, &root));
+        /* Locate the message id enumeration */
+        CHECK_FCT(locate_type("MessagesIds", head, &messages_id_enum));
+        CHECK_FCT(locate_type("originTaskId", head, &origin_task_id_type));
+        CHECK_FCT(locate_type("destinationTaskId", head, &destination_task_id_type));
         // root->type_hr_display(root, 0);
         if (dissect_file != NULL) {
             root->type_file_print (root, 0, dissect_file);
         }
-        ui_interface.dissector_ready = 1;
     }
 
     fclose (dissect_file);
     return ret;
 }
 
-int dissect_signal(const uint32_t message_number) {
-    buffer_t *buffer;
+int dissect_signal(buffer_t *buffer) {
+//     buffer_t *buffer;
 
     if (root == NULL) {
-        ui_interface.ui_notification_dialog (DIALOG_ERROR, "No message XML file provided");
+//         ui_notification_dialog(DIALOG_ERROR, "No message XML file provided");
         return RC_FAIL;
     }
 
-    CHECK_FCT(buffer_get_from_mn(message_number, &buffer));
+//     CHECK_FCT(buffer_get_from_mn(message_number, &buffer));
 
     if (buffer == NULL) {
-        fprintf (stderr, "Failed buffer %u in list\n", message_number);
+        g_error("Failed buffer is NULL\n");
         return RC_FAIL;
     }
 
-    root->type_dissect_from_buffer (root, buffer, 0, 0, INDENT_START);
+    root->type_dissect_from_buffer(root, buffer, 0, 0, INDENT_START);
 
     return RC_OK;
 }

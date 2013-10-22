@@ -75,12 +75,6 @@ int main(int argc, char *argv[])
         G_LOG_FLAG_FATAL        |
         G_LOG_FLAG_RECURSION);
 
-    if (!g_thread_supported())
-        g_thread_init(NULL);
-
-    /* Secure gtk */
-    gdk_threads_init();
-
     /* Initialize the widget set */
     gtk_init(&argc, &argv);
 

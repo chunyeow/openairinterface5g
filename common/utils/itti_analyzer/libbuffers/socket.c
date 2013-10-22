@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include <gtk/gtk.h>
 
@@ -12,21 +13,15 @@
 
 #include "ui_interface.h"
 #include "ui_notifications.h"
+#include "ui_notif_dlg.h"
 
 #include "socket.h"
 #include "buffers.h"
 
 #include "xml_parse.h"
 
-#define BUFFER_SIZE 3000
-#define MAX_ATTEMPTS    10
-
-socket_data_t socket_data;
-
-typedef struct {
-    char     ip_address[16];
-    uint16_t port;
-} socket_arg_t;
+#define SOCKET_NB_SIGNALS_BEFORE_SIGNALLING 10
+#define SOCKET_MS_BEFORE_SIGNALLING         100
 
 /* Message header is the common part that should never change between
  * remote process and this one.
@@ -40,241 +35,380 @@ typedef struct {
 typedef struct {
     uint32_t message_number;
     char     signal_name[50];
-} itti_dump_message_t;
+} itti_signal_header_t;
 
-void *socket_read_data(void *arg);
+void *socket_thread_fct(void *arg);
 
-void *socket_read_data(void *arg)
+static ssize_t socket_read_data(socket_data_t *socket_data, void *buffer, size_t size, int flags)
 {
-    int ret;
-    int attempts = MAX_ATTEMPTS;
-    int *sd = &socket_data.sd;
-    struct sockaddr_in *si_me = &socket_data.si_me;
-    socket_arg_t *socket_arg;
+    ssize_t recv_ret;
 
-    socket_arg = (socket_arg_t *)arg;
-
-    memset(&socket_data, 0, sizeof(socket_data_t));
-
-    /* Enable the cancel attribute for the thread.
-     * Set the cancel type to asynchronous. The thread termination is requested
-     * to happen now.
-     */
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-
-    *sd = -1;
-
-    if ((*sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
-        fprintf(stderr, "socket failed\n");
-        goto fail;
+    recv_ret = recv(socket_data->sd, buffer, size, flags);
+    if (recv_ret == -1) {
+        /* Failure case */
+        switch (errno) {
+//             case EWOULDBLOCK:
+            case EAGAIN:
+                return -1;
+            default:
+                g_debug("recv failed: %s", g_strerror(errno));
+                pthread_exit(NULL);
+                break;
+        }
+    } else if (recv_ret == 0) {
+        /* We lost the connection with other peer or shutdown asked */
+        ui_pipe_write_message(socket_data->pipe_fd,
+                              UI_PIPE_CONNECTION_LOST, NULL, 0);
+        free(socket_data->ip_address);
+        free(socket_data);
+        pthread_exit(NULL);
     }
-    memset((void *)si_me, 0, sizeof(si_me));
 
-    si_me->sin_family = AF_INET;
-    si_me->sin_port = htons(socket_arg->port);
-    if (inet_aton(socket_arg->ip_address, &si_me->sin_addr) == 0) {
-        fprintf(stderr, "inet_aton() failed\n");
-        goto fail;
+    return recv_ret;
+}
+
+static void socket_notify_gui_update(socket_data_t *socket_data)
+{
+    pipe_new_signals_list_message_t pipe_signal_list_message;
+
+    pipe_signal_list_message.signal_list = socket_data->signal_list;
+
+    socket_data->signal_list                  = NULL;
+    socket_data->nb_signals_since_last_update = 0;
+
+    /* Send an update notification */
+    ui_pipe_write_message(socket_data->pipe_fd,
+                          UI_PIPE_UPDATE_SIGNAL_LIST, &pipe_signal_list_message,
+                          sizeof(pipe_signal_list_message));
+
+    /* Acquire the last data notification */
+    socket_data->last_data_notification = g_get_monotonic_time();
+}
+
+static int socket_read_itti_message(socket_data_t        *socket_data,
+                                    itti_socket_header_t *message_header)
+{
+    itti_signal_header_t  itti_signal_header;
+    buffer_t             *buffer;
+    uint8_t              *data;
+    size_t                data_length;
+    ssize_t               data_read = 0;
+    ssize_t               total_data_read = 0;
+
+    g_assert(message_header != NULL);
+
+    g_debug("Attempting to read signal header from socket");
+
+    /* Read the sub-header of signal */
+    while (data_read != sizeof(itti_signal_header_t)) {
+        data_read = socket_read_data(socket_data, &itti_signal_header,
+                                       sizeof(itti_signal_header_t), 0);
     }
+
+    data_length = message_header->message_size - sizeof(itti_socket_header_t) - sizeof(itti_signal_header_t);
+    data = malloc(sizeof(uint8_t) * data_length);
+
+    while (total_data_read != data_length) {
+        data_read = socket_read_data(socket_data, &data[total_data_read],
+                                     data_length - total_data_read, 0);
+        /* We are waiting for data */
+        if (data_read < 0) {
+            usleep(10);
+        } else {
+            total_data_read += data_read;
+        }
+    }
+
+    /* Create the new buffer */
+    if (buffer_new_from_data(&buffer, data, data_length, 1) != RC_OK) {
+        g_error("Failed to create new buffer");
+        g_assert_not_reached();
+    }
+
+    buffer->message_number = itti_signal_header.message_number;
+    buffer_dump(buffer, stdout);
+
+    /* Update the number of signals received since last GUI update */
+    socket_data->nb_signals_since_last_update++;
+
+    socket_data->signal_list = g_list_append(socket_data->signal_list, (gpointer)buffer);
+
+    if (socket_data->nb_signals_since_last_update >= SOCKET_NB_SIGNALS_BEFORE_SIGNALLING) {
+        socket_notify_gui_update(socket_data);
+    }
+
+//     CHECK_FCT_DO(buffer_add_to_list(buffer), pthread_exit(NULL));
+
+
+    g_debug("Successfully read new signal %u from socket", itti_signal_header.message_number);
+
+    return total_data_read + sizeof(itti_signal_header);
+}
+
+static int socket_read_xml_definition(socket_data_t *socket_data,
+                                      itti_socket_header_t *message_header)
+{
+    ssize_t                        data_read;
+    ssize_t                        total_data_read = 0;
+    char                          *xml_definition;
+    size_t                         xml_definition_length;
+    pipe_xml_definition_message_t  pipe_xml_definition_message;
+
+    xml_definition_length = message_header->message_size - sizeof(*message_header);
+    xml_definition        = malloc(xml_definition_length * sizeof(char));
+
+    g_debug("Attempting to read XML definition of size %zu from socket",
+            xml_definition_length);
+
+    /* XML definition is a long message... so function may take some time */
 
     do {
-        ret = connect(*sd, (struct sockaddr *)si_me, sizeof(struct sockaddr_in));
-        if (ret == 0) {
+        data_read = socket_read_data(socket_data, &xml_definition[total_data_read],
+                                     xml_definition_length - total_data_read, 0);
+
+        /* We are waiting for data */
+        if (data_read < 0) {
+            usleep(10);
+        } else {
+            total_data_read += data_read;
+        }
+    } while (total_data_read != xml_definition_length);
+
+    pipe_xml_definition_message.xml_definition        = xml_definition;
+    pipe_xml_definition_message.xml_definition_length = xml_definition_length;
+
+    g_debug("Received XML definition of size %zu, effectively read %zu bytes",
+            xml_definition_length, total_data_read);
+
+    ui_pipe_write_message(socket_data->pipe_fd, UI_PIPE_XML_DEFINITION,
+                          &pipe_xml_definition_message, sizeof(pipe_xml_definition_message));
+
+    return total_data_read;
+}
+
+static int socket_read(socket_data_t *socket_data)
+{
+    int ret = 0;
+    itti_socket_header_t message_header;
+
+    while (ret >= 0) {
+        ret = socket_read_data(socket_data, &message_header, sizeof(message_header), 0);
+
+        if (ret == -1) {
             break;
-        }
-        attempts --;
-        sleep(1);
-        if (attempts == 0) {
-            printf("Cannot connect to %s with port %u:\n"
-            "Reached maximum retry count\nEnsure host is alive",
-            socket_arg->ip_address, socket_arg->port);
-            /* ????? */
-            ui_interface.ui_notification_dialog(
-                DIALOG_ERROR, "Cannot connect to %s with port %u:\n"
-                "Reached maximum retry count\nEnsure host is alive",
-                socket_arg->ip_address, socket_arg->port);
-            ui_interface.ui_enable_connect_button();
-
-            pthread_exit(NULL);
-        }
-    } while(ret != 0);
-
-    while(1) {
-        uint8_t *data;
-        size_t data_length;
-        itti_socket_header_t message_header;
-        int recv_ret;
-        buffer_t *buffer;
-
-        memset(&message_header, 0, sizeof(itti_socket_header_t));
-
-        /* First run acquire message header
-         * TODO: check for remote endianness when retrieving the structure...
-         */
-        recv_ret = recvfrom(socket_data.sd, &message_header, sizeof(itti_socket_header_t), MSG_WAITALL, NULL, 0);
-        if (recv_ret == -1) {
-            /* Failure case */
-            fprintf(stderr, "recvfrom failed\n");
-            ui_interface.ui_notification_dialog(
-                DIALOG_ERROR, "Unexpected error while reading from socket\n%d:%s",
-                errno, strerror(errno));
-            ui_interface.ui_enable_connect_button();
-            pthread_exit(NULL);
-        } else if (recv_ret == 0) {
-            /* We lost the connection with other peer or shutdown asked */
-            ui_interface.ui_notification_dialog(
-                DIALOG_ERROR, "Connection with remote host has been lost");
-            ui_interface.ui_enable_connect_button();
-            pthread_exit(NULL);
         }
 
         switch(message_header.message_type) {
-            case 1: {
-                itti_dump_message_t itti_dump_header;
-
-                memset(&itti_dump_header, 0, sizeof(itti_dump_message_t));
-
-                /* second run: acquire the sub-header for itti dump message type */
-                recv_ret = recvfrom(socket_data.sd, &itti_dump_header, sizeof(itti_dump_message_t), MSG_WAITALL, NULL, 0);
-                if (recv_ret == -1) {
-                    /* Failure case */
-                    fprintf(stderr, "recvfrom failed\n");
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Unexpected error while reading from socket\n%d:%s",
-                        errno, strerror(errno));
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                } else if (recv_ret == 0) {
-                    /* We lost the connection with other peer or shutdown asked */
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Connection with remote host has been lost");
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                }
-
-                data_length = message_header.message_size - sizeof(itti_socket_header_t) - sizeof(itti_dump_message_t);
-                data = malloc(sizeof(uint8_t) * data_length);
-
-                /* third run: acquire the MessageDef part */
-                recv_ret = recvfrom(socket_data.sd, data, data_length, MSG_WAITALL, NULL, 0);
-                if (recv_ret == -1) {
-                    /* Failure case */
-                    fprintf(stderr, "recvfrom failed\n");
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Unexpected error while reading from socket\n%d:%s",
-                        errno, strerror(errno));
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                } else if (recv_ret == 0) {
-                    /* We lost the connection with other peer or shutdown asked */
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Connection with remote host has been lost");
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                }
-
-                /* Create the new buffer */
-                if (buffer_new_from_data(&buffer, data, data_length, 1) != RC_OK) {
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Cannot connect to %s with port %u",
-                        socket_arg->ip_address, socket_arg->port);
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                }
-
-                buffer->message_number = itti_dump_header.message_number;
-                buffer_dump(buffer, stdout);
-
-                CHECK_FCT_DO(buffer_add_to_list(buffer), pthread_exit(NULL));
-
-                ui_interface.ui_tree_view_new_signal_ind(itti_dump_header.message_number,
-                                                         itti_dump_header.signal_name);
-            } break;
+            case 1:
+                socket_read_itti_message(socket_data, &message_header);
+                break;
+            case 3:
+                socket_read_xml_definition(socket_data, &message_header);
+                break;
             case 2:
-                /* The received message is a statistic signal */
-                break;
-            case 3: {
-                char *xml_definition;
-                uint32_t xml_definition_length;
-
-                xml_definition_length = message_header.message_size - sizeof(message_header);
-
-                xml_definition = malloc(xml_definition_length);
-
-                recv_ret = recvfrom(socket_data.sd, xml_definition, xml_definition_length, MSG_WAITALL, NULL, 0);
-                if (recv_ret == -1) {
-                    /* Failure case */
-                    fprintf(stderr, "recvfrom failed\n");
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Unexpected error while reading from socket\n%d:%s",
-                        errno, strerror(errno));
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                } else if (recv_ret == 0) {
-                    /* We lost the connection with other peer or shutdown asked */
-                    ui_interface.ui_notification_dialog(
-                        DIALOG_ERROR, "Connection with remote host has been lost");
-                    ui_interface.ui_enable_connect_button();
-                    pthread_exit(NULL);
-                }
-
-                fprintf(stdout, "Received XML definition of length %u\n",
-                        xml_definition_length);
-
-                xml_parse_buffer(xml_definition, xml_definition_length);
-            } break;
             default:
-                ui_interface.ui_notification_dialog(
-                    DIALOG_ERROR, "Received unknown message type\n");
+                g_debug("Received unknow (or not implemented) message from socket type: %d",
+                        message_header.message_type);
                 break;
+        }
+    }
+
+    return 0;
+}
+
+static int socket_handle_disconnect_evt(socket_data_t *socket_data)
+{
+    /* Send shutdown to remote host */
+    CHECK_FCT_POSIX(shutdown(socket_data->sd, SHUT_RDWR));
+    /* Close file descriptor */
+    CHECK_FCT_POSIX(close(socket_data->sd));
+
+    socket_data->sd = -1;
+
+    /* Close pipe */
+    close(socket_data->pipe_fd);
+
+    /* Leaving the thread */
+    pthread_exit(NULL);
+
+    return 0;
+}
+
+static int pipe_read_message(socket_data_t *socket_data)
+{
+    pipe_input_header_t  input_header;
+    uint8_t             *input_data = NULL;
+    size_t               input_data_length = 0;
+
+    /* Read the header */
+    if (read(socket_data->pipe_fd, &input_header, sizeof(input_header)) < 0) {
+        g_warning("Failed to read from pipe %d: %s", socket_data->pipe_fd,
+                  g_strerror(errno));
+        return -1;
+    }
+
+    input_data_length = input_header.message_size - sizeof(input_header);
+
+    /* Checking for non-header part */
+    if (input_data_length > 0) {
+        input_data = malloc(sizeof(uint8_t) * input_data_length);
+
+        if (read(socket_data->pipe_fd, input_data, input_data_length) < 0) {
+            g_warning("Failed to read from pipe %d: %s", socket_data->pipe_fd,
+                      g_strerror(errno));
+            return -1;
+        }
+    }
+
+    switch (input_header.message_type) {
+        case UI_PIPE_DISCONNECT_EVT:
+            return socket_handle_disconnect_evt(socket_data);
+        default:
+            g_debug("[socket] Unhandled message type %u", input_header.message_type);
+            g_assert_not_reached();
+    }
+    return 0;
+}
+
+void *socket_thread_fct(void *arg)
+{
+    int                 ret;
+    struct sockaddr_in  si_me;
+    socket_data_t      *socket_data;
+
+    /* master file descriptor list */
+    fd_set              master_fds;
+    /* temp file descriptor list for select() */
+    fd_set              read_fds;
+    int                 fd_max = 0;
+    struct timeval      tv;
+
+    socket_data = (socket_data_t *)arg;
+
+    g_assert(socket_data != NULL);
+
+    /* Preparing the socket */
+    if ((socket_data->sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
+        g_debug("socket failed: %s", g_strerror(errno));
+        free(socket_data->ip_address);
+        free(socket_data);
+        pthread_exit(NULL);
+    }
+    memset((void *)&si_me, 0, sizeof(si_me));
+
+    si_me.sin_family = AF_INET;
+    si_me.sin_port = htons(socket_data->port);
+    if (inet_aton(socket_data->ip_address, &si_me.sin_addr) == 0) {
+        g_debug("inet_aton() failed\n");
+        free(socket_data->ip_address);
+        free(socket_data);
+        pthread_exit(NULL);
+    }
+
+    /* clear the master and temp sets */
+    FD_ZERO(&master_fds);
+    FD_ZERO(&read_fds);
+
+    /* Add the GUI pipe to the list of sockets to monitor */
+    FD_SET(socket_data->pipe_fd, &master_fds);
+
+    /* Add the client socket to the list of sockets to monitor */
+    FD_SET(socket_data->sd, &master_fds);
+
+    /* Update the fd_max with the MAX of socket/pipe */
+    fd_max = MAX(socket_data->pipe_fd, socket_data->sd);
+
+    /* Setup the timeout for select.
+     * When a timeout is caught, check for new notifications to send to GUI.
+     */
+    tv.tv_sec = 0;
+    tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
+
+    /* Connecting to remote peer */
+    ret = connect(socket_data->sd, (struct sockaddr *)&si_me, sizeof(struct sockaddr_in));
+    if (ret < 0) {
+        g_debug("Failed to connect to peer %s:%d",
+                socket_data->ip_address, socket_data->port);
+        ui_pipe_write_message(socket_data->pipe_fd,
+                              UI_PIPE_CONNECTION_FAILED, NULL, 0);
+        free(socket_data->ip_address);
+        free(socket_data);
+        /* Quit the thread */
+        pthread_exit(NULL);
+    }
+
+    /* Set the socket as non-blocking */
+    fcntl(socket_data->sd, F_SETFL, O_NONBLOCK);
+
+    while (1) {
+        memcpy(&read_fds, &master_fds, sizeof(master_fds));
+
+        ret = select(fd_max + 1, &read_fds, NULL, NULL, &tv);
+        if (ret < 0) {
+            g_debug("Error in select: %s", g_strerror(errno));
+            free(socket_data->ip_address);
+            free(socket_data);
+            /* Quit the thread */
+            pthread_exit(NULL);
+        } else if (ret == 0) {
+            /* Timeout for select: check if there is new incoming messages since last update of GUI
+             */
+            if (socket_data->nb_signals_since_last_update > 0) {
+                socket_notify_gui_update(socket_data);
+            }
+
+            /* Reset the timeval to the max value */
+            tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
+        }
+
+        /* Checking if there is data to read from the pipe */
+        if (FD_ISSET(socket_data->pipe_fd, &read_fds)) {
+            pipe_read_message(socket_data);
+            FD_CLR(socket_data->pipe_fd, &master_fds);
+        }
+
+        /* Checking if there is data to read from the socket */
+        if (FD_ISSET(socket_data->sd, &read_fds)) {
+            socket_read(socket_data);
+            FD_CLR(socket_data->sd, &master_fds);
+
+            /* Update the timeout of select if there is data not notify to GUI */
+            if (socket_data->nb_signals_since_last_update > 0) {
+                gint64 current_time;
+
+                current_time = g_get_monotonic_time();
+
+                if ((current_time - socket_data->last_data_notification) > SOCKET_MS_BEFORE_SIGNALLING) {
+                    socket_notify_gui_update(socket_data);
+                    tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
+                } else {
+                    /* Update tv */
+                    tv.tv_usec = SOCKET_MS_BEFORE_SIGNALLING - (current_time - socket_data->last_data_notification);
+                }
+            }
         }
     }
 
     return NULL;
-
-fail:
-    ui_interface.ui_notification_dialog(
-        DIALOG_ERROR, "Cannot connect to %s with port %u",
-        socket_arg->ip_address, socket_arg->port);
-    ui_interface.ui_enable_connect_button();
-    pthread_exit(NULL);
 }
 
-int socket_disconnect_from_remote_host(void)
+int socket_connect_to_remote_host(const char *remote_ip, const uint16_t port,
+                                  int pipe_fd)
 {
-    void *ret_val;
+    socket_data_t *socket_data;
 
-    printf("Closing socket %d\n", socket_data.sd);
+    socket_data = calloc(1, sizeof(*socket_data));
 
-    /* Cancel the thread */
-    pthread_cancel(socket_data.thread);
-    pthread_join(socket_data.thread, &ret_val);
+    socket_data->ip_address = strdup(remote_ip);
 
-    /* Send shutdown to remote host */
-    CHECK_FCT_POSIX(shutdown(socket_data.sd, SHUT_RDWR));
-    CHECK_FCT_POSIX(close(socket_data.sd));
+    socket_data->pipe_fd = pipe_fd;
+    socket_data->port    = port;
+    socket_data->sd      = -1;
 
-    socket_data.sd = -1;
-    ui_interface.ui_enable_connect_button();
-
-    return RC_OK;
-}
-
-int socket_connect_to_remote_host(const char *remote_ip, const uint16_t port)
-{
-    socket_arg_t *socket_arg;
-
-    socket_arg = malloc(sizeof(socket_arg_t));
-
-    ui_interface.ui_disable_connect_button();
-
-    memcpy(socket_arg->ip_address, remote_ip, strlen(remote_ip) + 1);
-    socket_arg->port = port;
-
-    if (pthread_create(&socket_data.thread, NULL, socket_read_data, socket_arg) != 0) {
-        fprintf(stderr, "pthread_create failed\n");
-        ui_interface.ui_enable_connect_button();
+    if (pthread_create(&socket_data->thread, NULL, socket_thread_fct, socket_data) != 0) {
+        g_warning("Failed to create thread %d:%s", errno, strerror(errno));
+        free(socket_data->ip_address);
+        free(socket_data);
         return RC_FAIL;
     }
 

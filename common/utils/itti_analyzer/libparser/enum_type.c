@@ -6,6 +6,21 @@
 #include "enum_type.h"
 #include "ui_interface.h"
 
+char *enum_type_get_name_from_value(struct types_s *type, uint32_t value)
+{
+    char    *enum_name = "UNKNOWN";
+    types_t *enum_value;
+
+    /* Loop on eache enumeration values */
+    for (enum_value = type->child; enum_value; enum_value = enum_value->next) {
+        if (value == enum_value->init_value) {
+            enum_name = enum_value->name;
+            break;
+        }
+    }
+    return enum_name;
+}
+
 int enum_type_dissect_from_buffer(
     struct types_s *type, buffer_t *buffer, uint32_t offset,
     uint32_t parent_offset, int indent)

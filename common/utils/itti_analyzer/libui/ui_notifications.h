@@ -1,8 +1,6 @@
 #ifndef UI_NOTIFICATIONS_H_
 #define UI_NOTIFICATIONS_H_
 
-int ui_notification_dialog(dialog_type_t type, const char *fmt, ...);
-
 int ui_disable_connect_button(void);
 
 int ui_enable_connect_button(void);

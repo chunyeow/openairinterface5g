@@ -10,33 +10,7 @@
 #include "ui_main_screen.h"
 #include "ui_notifications.h"
 
-int ui_notification_dialog(dialog_type_t type, const char *fmt, ...)
-{
-    va_list ap;
-    GtkWidget *dialogbox;
-
-    va_start(ap, fmt);
-
-    /* In multi-threaded environnements gtk calls should be protected by
-     * gdk_threads_enter before calling the GTK function
-     * gdk_threads_leave when GTK function has exited
-     */
-    gdk_threads_enter();
-
-    dialogbox = gtk_message_dialog_new(
-        GTK_WINDOW(ui_main_data.window), GTK_DIALOG_MODAL, type,
-        GTK_BUTTONS_OK, fmt, ap);
-
-    gtk_dialog_run(GTK_DIALOG (dialogbox));
-
-    gtk_widget_destroy (dialogbox);
-
-    gdk_threads_leave();
-
-    va_end(ap);
-
-    return RC_OK;
-}
+#include "xml_parse.h"
 
 int ui_disable_connect_button(void)
 {
@@ -71,8 +45,8 @@ int ui_file_chooser(void)
         char *filename;
 
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-        ui_interface.parse_signal_file(filename);
-        g_free (filename);
+        xml_parse_file(filename);
+        g_free(filename);
     }
 
     gtk_widget_destroy (filechooser);
