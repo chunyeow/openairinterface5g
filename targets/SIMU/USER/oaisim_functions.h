@@ -36,6 +36,8 @@ void update_otg_UE(int module_id, unsigned int ctime);
 
 void exit_fun(const char* s);
 
+void init_time();
+
 void init_pad();
 
 int init_slot_isr(void);
