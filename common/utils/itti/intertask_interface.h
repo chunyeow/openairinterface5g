@@ -120,6 +120,10 @@ int itti_create_task(task_id_t task_id,
  **/
 void itti_mark_task_ready(task_id_t task_id);
 
+/** \brief Exit the current task.
+ **/
+void itti_exit_task(void);
+
 /** \brief Indicate that the task is completed and initiate termination of all tasks.
  * \param task_id task that is completed
  **/

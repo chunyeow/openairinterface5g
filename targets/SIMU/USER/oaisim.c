@@ -376,14 +376,13 @@ void *l2l1_task(void *args_p) {
   char fname[64], vname[64];
 
 #if defined(ENABLE_ITTI)
+  MessageDef *message_p;
   long timer_id;
 
   itti_mark_task_ready(TASK_L2L1);
 
   /* Test code */
   {
-    MessageDef *message_p;
-
     message_p = itti_alloc_new_message(TASK_L2L1, MESSAGE_TEST);
 
     itti_send_msg_to_task(TASK_L2L1, INSTANCE_DEFAULT, message_p);
@@ -400,6 +399,31 @@ void *l2l1_task(void *args_p) {
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
+#if defined(ENABLE_ITTI)
+    // Checks if a message has been sent to L2L1 task
+    itti_poll_msg(TASK_L2L1, INSTANCE_ALL, &message_p);
+
+    if(message_p != NULL)
+    {
+      switch(message_p->header.messageId)
+      {
+        case TERMINATE_MESSAGE:
+          itti_exit_task();
+          break;
+
+        case MESSAGE_TEST:
+          LOG_D(EMU, "Received %s\n", itti_get_message_name(message_p->header.messageId));
+          break;
+
+        default:
+          LOG_E(EMU, "Received unexpected message %s\n", itti_get_message_name(message_p->header.messageId));
+          break;
+      }
+
+      free(message_p);
+    }
+#endif
+
     /*
      // Handling the cooperation Flag
      if (cooperation_flag == 2)

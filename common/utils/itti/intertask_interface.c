@@ -28,6 +28,7 @@
 
  *******************************************************************************/
 
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -394,6 +395,10 @@ void itti_mark_task_ready(task_id_t task_id) {
     pthread_mutex_unlock (&itti_desc.tasks[thread_id].message_queue_mutex);
 }
 
+void itti_exit_task(void) {
+    pthread_exit (NULL);
+}
+
 void itti_terminate_tasks(task_id_t task_id) {
     // Sends Terminate signals to all tasks.
     itti_send_terminate_message (task_id);
@@ -442,6 +447,9 @@ int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * 
 void itti_wait_tasks_end(void) {
     int end = 0;
     int i;
+    int ready_tasks;
+    int result;
+    int retries = 10;
 
     itti_desc.thread_handling_signals = pthread_self ();
 
@@ -450,14 +458,35 @@ void itti_wait_tasks_end(void) {
         signal_handle (&end);
     }
 
-    for (i = THREAD_FIRST; i < itti_desc.thread_max; i++) {
-        /* Skip tasks which are not running */
-        if (itti_desc.tasks[i].task_state == TASK_STATE_READY) {
-            ITTI_DEBUG("Waiting end of thread %s\n", itti_desc.threads_name[i]);
+    do {
+        ready_tasks = 0;
 
-            pthread_join (itti_desc.tasks[i].task_thread, NULL);
-            itti_desc.tasks[i].task_state = TASK_STATE_ENDED;
+        for (i = THREAD_FIRST; i < itti_desc.thread_max; i++) {
+            /* Skip tasks which are not running */
+            if (itti_desc.tasks[i].task_state == TASK_STATE_READY) {
+
+                result = pthread_tryjoin_np (itti_desc.tasks[i].task_thread, NULL);
+
+                ITTI_DEBUG("Thread %s join status %d\n", itti_desc.threads_name[i], result);
+
+                if (result == 0) {
+                    /* Thread has terminated */
+                    itti_desc.tasks[i].task_state = TASK_STATE_ENDED;
+                }
+                else {
+                    /* Thread is still running, count it */
+                    ready_tasks++;
+                }
+            }
         }
+        if (ready_tasks > 0) {
+            usleep (100 * 1000);
+        }
+    } while ((ready_tasks > 0) && (retries--));
+
+    if (ready_tasks > 0) {
+        ITTI_DEBUG("Some threads are still running, force exit\n");
+        exit (0);
     }
 }
 

@@ -60,6 +60,7 @@ int signal_init(void)
     sigemptyset(&set);
 
     sigaddset (&set, SIGTIMER);
+    sigaddset (&set, SIGUSR1);
     sigaddset (&set, SIGABRT);
     sigaddset (&set, SIGSEGV);
     sigaddset (&set, SIGINT);
@@ -115,18 +116,19 @@ int signal_handle(int *end)
                 printf("Received SIGUSR1\n");
                 *end = 1;
                 break;
+
             case SIGSEGV:   /* Fall through */
             case SIGABRT:
                 printf("Received SIGABORT\n");
                 backtrace_handle_signal(&info);
                 break;
-            case SIGQUIT:
+
             case SIGINT:
                 printf("Received SIGINT\n");
                 itti_send_terminate_message(TASK_UNKNOWN);
-                printf("All tasks terminated -> exiting '"PACKAGE_NAME"'\n");
-                exit(0);
+                *end = 1;
                 break;
+
             default:
                 printf("Received unknown signal %d\n", info.si_signo);
                 break;
