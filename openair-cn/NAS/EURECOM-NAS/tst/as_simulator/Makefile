@@ -7,7 +7,7 @@ PROJDIR	= $(PWD)/../..
 
 export LD_RUN_PATH = $(LIBDIR):$(LIBPROCESS)
 
-LIBS	 = -lutil -lapi -lEMMmsg -lESMmsg -lies
+LIBS	 = -lutil -lapi -lEMMmsg -lESMmsg -lies -lrt
 INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(NETAPIDIR) \
 	-I$(EMMMSGDIR) -I$(ESMMSGDIR) -I$(IESDIR)
 

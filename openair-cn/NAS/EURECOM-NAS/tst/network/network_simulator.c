@@ -23,13 +23,13 @@ Description	Implements the network simulator running at the network
 
 #include "include/commonDef.h"
 #include "util/socket.h"
-#include "util/timer.h"
+#include "util/nas_timer.h"
 #include "api/network/as_message.h"
 #include "api/network/nas_message.h"
 #include "emm/msg/emm_cause.h"
 #include "esm/msg/esm_cause.h"
 
-#include "util/log.h"
+#include "util/nas_log.h"
 
 #include <stdio.h>	// printf, perror
 #include <errno.h>	// errno
@@ -226,7 +226,7 @@ int main (int argc, const char* argv[])
     const char* host = network_parser_get_host();
     const char* port = network_parser_get_port();
 
-    log_init(0x2f);
+    nas_log_init(0x2f);
 
     /*
      * Initialize the communication channel to the NAS sublayer

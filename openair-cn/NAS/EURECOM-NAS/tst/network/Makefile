@@ -7,7 +7,7 @@ PROJDIR	= $(PWD)/../..
 
 export LD_RUN_PATH = $(LIBDIR):$(LIBPROCESS)
 
-LIBS	 = -lutil -lapi -lEMMmsg -lESMmsg -lies
+LIBS	 = -lutil -lapi -lEMMmsg -lESMmsg -lies -lrt
 INCLUDES = -I. -I$(SRCDIR) -I$(INCDIR) -I$(UTILDIR) \
 	-I$(EMMMSGDIR) -I$(ESMMSGDIR) -I$(IESDIR)
 
@@ -19,7 +19,7 @@ all: $(TARGET)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 clean:
 	$(RM) $(OBJS) *.bak *~

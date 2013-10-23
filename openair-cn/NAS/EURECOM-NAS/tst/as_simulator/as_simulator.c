@@ -139,7 +139,7 @@ int main (int argc, const char* argv[])
     const char* mhost = as_simulator_parser_get_mhost();
     const char* mport = as_simulator_parser_get_mport();
 
-    log_init(0x2f);
+    nas_log_init(0x2f);
 
     /*
      * Initialize the communication channel to the UE NAS process
