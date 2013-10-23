@@ -97,7 +97,7 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
 
     g_assert(message_header != NULL);
 
-    g_debug("Attempting to read signal header from socket");
+//     g_debug("Attempting to read signal header from socket");
 
     /* Read the sub-header of signal */
     while (data_read != sizeof(itti_signal_header_t)) {
@@ -126,7 +126,7 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
     }
 
     buffer->message_number = itti_signal_header.message_number;
-    buffer_dump(buffer, stdout);
+//     buffer_dump(buffer, stdout);
 
     /* Update the number of signals received since last GUI update */
     socket_data->nb_signals_since_last_update++;

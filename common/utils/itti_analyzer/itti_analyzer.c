@@ -82,5 +82,8 @@ int main(int argc, char *argv[])
 
     CHECK_FCT(ui_gtk_initialize(argc, argv));
 
+    /* Enter the main event loop, and wait for user interaction */
+    gtk_main ();
+
     return ret;
 }

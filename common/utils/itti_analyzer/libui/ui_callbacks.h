@@ -28,6 +28,22 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
                              gboolean          path_currently_selected,
                              gpointer          userdata);
 
+gboolean ui_callback_signal_go_to(GtkWidget *widget,
+                                  GdkEvent  *event,
+                                  gpointer   data);
+
+gboolean ui_callback_signal_go_to_first(GtkWidget *widget,
+                                        GdkEvent  *event,
+                                        gpointer   data);
+
+gboolean ui_callback_signal_go_to_last(GtkWidget *widget,
+                                       GdkEvent  *event,
+                                       gpointer   data);
+
+gboolean ui_callback_signal_clear_list(GtkWidget *widget,
+                                       GdkEvent  *event,
+                                       gpointer   data);
+
 gboolean ui_pipe_callback(gint source, gpointer user_data);
 
 #endif /* UI_CALLBACKS_H_ */

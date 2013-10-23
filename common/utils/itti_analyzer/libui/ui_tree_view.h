@@ -18,4 +18,6 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signa
 
 void ui_tree_view_destroy_list(GtkWidget *list);
 
+void ui_tree_view_select_row(gint row);
+
 #endif /* UI_TREE_VIEW_H_ */

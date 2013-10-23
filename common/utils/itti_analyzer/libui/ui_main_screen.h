@@ -13,8 +13,21 @@ typedef struct {
     ui_text_view_t *text_view;
 
     /* Buttons */
+    GtkToolItem *open_replay_file;
     GtkToolItem *connect;
     GtkToolItem *disconnect;
+
+    /* Signal list buttons */
+    /* Clear signals button */
+    GtkToolItem *signals_clear_button;
+    GtkToolItem *signals_go_to_button;
+    GtkToolItem *signals_go_to_last_button;
+    GtkToolItem *signals_go_to_first_button;
+
+    GtkTreeSelection *selection;
+
+    /* Nb of messages received */
+    guint nb_message_received;
 
     int pipe_fd[2];
 } ui_main_data_t;

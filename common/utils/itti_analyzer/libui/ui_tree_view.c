@@ -93,14 +93,11 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     GtkWidget *hbox;
     GtkTreeSelection *selection;
     GtkWidget *scrolled_window;
-//     gint width;
 
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
-
-    //gtk_box_pack_start(GTK_BOX(vbox), scrolled_window, TRUE, TRUE, 5);
 
     ui_main_data.signalslist = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
@@ -116,19 +113,17 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 
     ui_tree_view_init_list(ui_main_data.signalslist);
 
-//     gtk_widget_get_size_request(GTK_WIDGET(ui_main_data.signalslist), &width, NULL);
     gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 350, -1);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 5);
 
-//     g_signal_connect(G_OBJECT(ui_main_data.signalslist), "cursor-changed",
-//                      G_CALLBACK(ui_callback_on_select_signal), NULL);
-
     /* Connect callback on row selection */
     gtk_tree_selection_set_select_function(selection, ui_callback_on_select_signal,
                                            ui_main_data.text_view, NULL);
+
+    ui_main_data.selection = selection;
 
     return 0;
 }
@@ -144,4 +139,16 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signa
                              origin_task, to_task, (buffer_t *)buffer);
 
     return RC_OK;
+}
+
+void ui_tree_view_select_row(gint row)
+{
+    GtkTreePath *path;
+    gchar        indice[10];
+
+    sprintf(indice, "%d", row);
+
+    path = gtk_tree_path_new_from_string(indice);
+    gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path, NULL,
+                             FALSE);
 }

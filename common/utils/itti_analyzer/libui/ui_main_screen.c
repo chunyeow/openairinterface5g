@@ -52,11 +52,5 @@ int ui_gtk_initialize(int argc, char *argv[])
     /* Show the application window */
     gtk_widget_show_all (ui_main_data.window);
 
-    /* Enter the main event loop, and wait for user interaction */
-    gtk_main ();
-
-    /* Release gtk's global lock */
-    gdk_threads_leave();
-
     return RC_OK;
 }

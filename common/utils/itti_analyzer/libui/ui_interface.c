@@ -22,7 +22,7 @@ gboolean ui_callback_on_pipe_notification(
     /* avoid reentrancy problems and stack overflow */
     g_source_remove(pipe_input->pipe_input_id);
 
-    g_debug("Received new data on pipe %d", pipe_input->pipe_input_id);
+//     g_debug("Received new data on pipe %d", pipe_input->pipe_input_id);
 
     if (pipe_input->input_cb(pipe_input->source_fd, pipe_input->user_data)) {
         /* restore pipe handler */

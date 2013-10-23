@@ -54,13 +54,8 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
 
     if (gtk_tree_model_get_iter(model, &iter, path))
     {
-//         gchar *name;
         GValue buffer_store = G_VALUE_INIT;
         gpointer buffer;
-
-//         g_value_init (&buffer_store, G_TYPE_POINTER);
-
-//         gtk_tree_model_get(model, &iter, 0, &name, -1);
 
         gtk_tree_model_get_value(model, &iter, COL_BUFFER, &buffer_store);
 
@@ -74,16 +69,11 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
             /* Dissect the signal */
             CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
         }
-//         else
-//         {
-//             g_debug("%s is going to be unselected", name);
-//         }
-// 
-//         g_free(name);
     }
     return TRUE;
 }
 
+static
 void ui_signal_add_to_list(gpointer data, gpointer user_data)
 {
     buffer_t *signal_buffer;
@@ -97,12 +87,21 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
                                 get_origin_task_id(signal_buffer),
                                 get_destination_task_id(signal_buffer),
                                 data);
+
+    /* Increment number of messages */
+    ui_main_data.nb_message_received++;
 }
 
 static gboolean ui_handle_update_signal_list(gint fd, void *data,
                                              size_t data_length)
 {
     pipe_new_signals_list_message_t *signal_list_message;
+
+    /* Enable buttons to move in the list of signals */
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), TRUE);
 
     signal_list_message = (pipe_new_signals_list_message_t *)data;
 
@@ -111,7 +110,10 @@ static gboolean ui_handle_update_signal_list(gint fd, void *data,
 
     g_list_foreach(signal_list_message->signal_list, ui_signal_add_to_list, NULL);
 
-    free(data);
+    /* Free the list but not user data associated with each element */
+    g_list_free(signal_list_message->signal_list);
+    /* Free the message */
+    free(signal_list_message);
 
     return TRUE;
 }
@@ -256,6 +258,43 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget,
                           NULL, 0);
 
     ui_enable_connect_button();
+    return TRUE;
+}
+
+gboolean ui_callback_signal_go_to(GtkWidget *widget,
+                                  GdkEvent  *event,
+                                  gpointer   data)
+{
+    return TRUE;
+}
+
+gboolean ui_callback_signal_go_to_first(GtkWidget *widget,
+                                        GdkEvent  *event,
+                                        gpointer   data)
+{
+    ui_tree_view_select_row(0);
+    return TRUE;
+}
+
+gboolean ui_callback_signal_go_to_last(GtkWidget *widget,
+                                       GdkEvent  *event,
+                                       gpointer   data)
+{
+    ui_tree_view_select_row(ui_main_data.nb_message_received - 1);
+    return TRUE;
+}
+
+gboolean ui_callback_signal_clear_list(GtkWidget *widget,
+                                       GdkEvent  *event,
+                                       gpointer   data)
+{
+    /* Disable buttons to move in the list of signals */
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), FALSE);
+
+    ui_tree_view_destroy_list(ui_main_data.signalslist);
     return TRUE;
 }
 
