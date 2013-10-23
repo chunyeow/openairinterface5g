@@ -43,13 +43,13 @@
 #include <errno.h>
 
 #include "intertask_interface.h"
-#include "assertions.h"
 #include "timer.h"
 #include "backtrace.h"
+#include "assertions.h"
 
 #include "signals.h"
 
-sigset_t set;
+static sigset_t set;
 
 int signal_init(void)
 {
@@ -74,7 +74,7 @@ int signal_init(void)
 
 extern int timer_handle_signal(siginfo_t *info);
 
-int signal_handle(void)
+int signal_handle(int *end)
 {
     int ret;
     siginfo_t info;
@@ -82,6 +82,7 @@ int signal_handle(void)
     sigemptyset(&set);
 
     sigaddset (&set, SIGTIMER);
+    sigaddset (&set, SIGUSR1);
     sigaddset (&set, SIGABRT);
     sigaddset (&set, SIGSEGV);
     sigaddset (&set, SIGINT);
@@ -110,6 +111,10 @@ int signal_handle(void)
     } else {
         /* Dispatch the signal to sub-handlers */
         switch(info.si_signo) {
+            case SIGUSR1:
+                printf("Received SIGUSR1\n");
+                *end = 1;
+                break;
             case SIGSEGV:   /* Fall through */
             case SIGABRT:
                 printf("Received SIGABORT\n");
@@ -118,7 +123,7 @@ int signal_handle(void)
             case SIGQUIT:
             case SIGINT:
                 printf("Received SIGINT\n");
-                intertask_interface_send_quit_signal();
+                itti_send_terminate_message(TASK_UNKNOWN);
                 printf("All tasks terminated -> exiting '"PACKAGE_NAME"'\n");
                 exit(0);
                 break;

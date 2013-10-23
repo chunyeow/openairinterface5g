@@ -96,7 +96,7 @@ int s11_mme_handle_create_session_response(NwGtpv2cStackHandleT *stack_p,
 
     DevAssert(stack_p != NULL);
 
-    message_p = alloc_new_message(TASK_S11, SGW_CREATE_SESSION_RESPONSE);
+    message_p = itti_alloc_new_message(TASK_S11, SGW_CREATE_SESSION_RESPONSE);
 
     create_session_resp_p = &message_p->msg.sgwCreateSessionResponse;
 
@@ -173,5 +173,5 @@ int s11_mme_handle_create_session_response(NwGtpv2cStackHandleT *stack_p,
     rc = nwGtpv2cMsgDelete(*stack_p, (pUlpApi->hMsg));
     DevAssert(NW_OK == rc);
 
-    return send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }

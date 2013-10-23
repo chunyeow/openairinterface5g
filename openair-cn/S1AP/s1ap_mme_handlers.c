@@ -445,7 +445,7 @@ int s1ap_mme_handle_ue_cap_indication(uint32_t assoc_id, uint32_t stream,
         MessageDef        *message_p;
         s1ap_ue_cap_ind_t *ue_cap_ind_p;
 
-        message_p = alloc_new_message(TASK_S1AP, S1AP_UE_CAPABILITIES_IND);
+        message_p = itti_alloc_new_message(TASK_S1AP, S1AP_UE_CAPABILITIES_IND);
 
         DevAssert(message_p != NULL);
 
@@ -461,7 +461,7 @@ int s1ap_mme_handle_ue_cap_indication(uint32_t assoc_id, uint32_t stream,
 
         ue_cap_ind_p->radio_capabilities_length = ue_cap_p->ueRadioCapability.size;
 
-        return send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
     }
     return 0;
 }
@@ -506,7 +506,7 @@ int s1ap_mme_handle_initial_context_setup_response(
 
     ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
 
-    message_p = alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_REQUEST);
+    message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_REQUEST);
 
     if (message_p == NULL) {
         return -1;
@@ -525,7 +525,7 @@ int s1ap_mme_handle_initial_context_setup_response(
     memcpy(&modify_request_p->bearer_context_to_modify.s1_eNB_fteid.ipv4_address,
            eRABSetupItemCtxtSURes_p->transportLayerAddress.buf, 4);
 
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,

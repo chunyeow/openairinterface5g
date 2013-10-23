@@ -72,7 +72,7 @@ int s1ap_mme_encode_s1setupresponse(S1SetupResponseIEs_t *s1SetupResponseIEs, ui
         return -1;
     }
 
-    return send_msg_to_task(TASK_SCTP, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, message_p);
 }
 
 int s1ap_mme_encode_s1setupfailure(S1SetupFailureIEs_t *s1SetupFailureIEs, uint32_t assocId) {
@@ -105,7 +105,7 @@ int s1ap_mme_encode_s1setupfailure(S1SetupFailureIEs_t *s1SetupFailureIEs, uint3
         return -1;
     }
 
-    return send_msg_to_task(TASK_SCTP, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, message_p);
 }
 
 int s1ap_mme_encode_initial_context_setup_request(InitialContextSetupRequestIEs_t *initialContextSetupRequestIEs,
@@ -139,7 +139,7 @@ int s1ap_mme_encode_initial_context_setup_request(InitialContextSetupRequestIEs_
         return -1;
     }
 
-    return send_msg_to_task(TASK_SCTP, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, message_p);
 }
 
 int s1ap_mme_encode_downlink_nas_transport(DownlinkNASTransportIEs_t *downlinkNasTransportIEs,
@@ -174,7 +174,7 @@ int s1ap_mme_encode_downlink_nas_transport(DownlinkNASTransportIEs_t *downlinkNa
         return -1;
     }
 
-    return send_msg_to_task(TASK_SCTP, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, message_p);
 }
 
 int s1ap_mme_encode_ue_context_release_command(UEContextReleaseCommandIEs_t *ueContextReleaseCommandIEs,
@@ -206,7 +206,7 @@ int s1ap_mme_encode_ue_context_release_command(UEContextReleaseCommandIEs_t *ueC
         ueContextReleaseCommand_p) < 0)
         goto error;
 
-    return send_msg_to_task(TASK_SCTP, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, message_p);
 error:
     free(message_p);
     return -1;

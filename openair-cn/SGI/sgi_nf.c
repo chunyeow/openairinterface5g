@@ -211,7 +211,7 @@ static int sgi_nfqueue_callback(struct nfq_q_handle *myQueue, struct nfgenmsg *m
 
   //sgi_print_hex_octets((unsigned char *)pktData, len);
 
-  message_p = alloc_new_message(TASK_FW_IP, GTPV1U_TUNNEL_DATA_REQ);
+  message_p = itti_alloc_new_message(TASK_FW_IP, GTPV1U_TUNNEL_DATA_REQ);
   if (message_p == NULL) {
       return -1;
   }
@@ -233,7 +233,7 @@ static int sgi_nfqueue_callback(struct nfq_q_handle *myQueue, struct nfgenmsg *m
     	  memcpy(data_req_p->buffer, pktData, len);
     	  data_req_p->length = len;
 
-    	  if (send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p) < 0) {
+    	  if (itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p) < 0) {
     		  SGI_IF_ERROR("Failed to send message to task\n");
     		  free(message_p);
     	  }

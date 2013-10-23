@@ -49,7 +49,7 @@ void *mme_app_thread(void *args);
 
 void *mme_app_thread(void *args)
 {
-    intertask_interface_mark_task_ready(TASK_MME_APP);
+    itti_mark_task_ready(TASK_MME_APP);
 
     while(1) {
         MessageDef *received_message_p = NULL;
@@ -57,7 +57,7 @@ void *mme_app_thread(void *args)
          * If the queue is empty, this function will block till a
          * message is sent to the task.
          */
-        receive_msg(TASK_MME_APP, &received_message_p);
+        itti_receive_msg(TASK_MME_APP, &received_message_p);
         DevAssert(received_message_p != NULL);
         switch(received_message_p->header.messageId) {
             case S6A_AUTH_INFO_ANS: {
@@ -92,7 +92,7 @@ void *mme_app_thread(void *args)
             } break;
             default: {
                 MME_APP_DEBUG("Unkwnon message ID %s:%d\n",
-                              get_message_name(received_message_p->header.messageId),
+                              itti_get_message_name(received_message_p->header.messageId),
                               received_message_p->header.messageId);
             } break;
         }
@@ -109,7 +109,7 @@ int mme_app_init(const mme_config_t *mme_config_p)
     memset(&mme_app_desc, 0, sizeof(mme_app_desc));
 
     /* Create the thread associated with MME applicative layer */
-    if (intertask_interface_create_task(TASK_MME_APP, &mme_app_thread, NULL) < 0) {
+    if (itti_create_task(TASK_MME_APP, &mme_app_thread, NULL) < 0) {
         MME_APP_ERROR("MME APP create task failed\n");
         return -1;
     }

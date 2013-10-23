@@ -81,7 +81,7 @@ enum task_priorities {
  \param message_p Pointer to the message to send
  @returns < 0 on failure, 0 otherwise
  **/
-int send_broadcast_message(MessageDef *message_p);
+int itti_send_broadcast_message(MessageDef *message_p);
 
 /** \brief Send a message to a task (could be itself)
  \param task_id Task ID
@@ -89,21 +89,21 @@ int send_broadcast_message(MessageDef *message_p);
  \param message Pointer to the message to send
  @returns -1 on failure, 0 otherwise
  **/
-int send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message);
+int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message);
 
 /** \brief Retrieves a message in the queue associated to task_id.
  * If the queue is empty, the thread is blocked till a new message arrives.
  \param task_id Task ID of the receiving task
  \param received_msg Pointer to the allocated message
  **/
-void receive_msg(task_id_t task_id, MessageDef **received_msg);
+void itti_receive_msg(task_id_t task_id, MessageDef **received_msg);
 
 /** \brief Try to retrieves a message in the queue associated to task_id and matching requested instance.
  \param task_id Task ID of the receiving task
  \param instance Instance of the task used for virtualization
  \param received_msg Pointer to the allocated message
  **/
-void poll_msg(task_id_t task_id, instance_t instance, MessageDef **received_msg);
+void itti_poll_msg(task_id_t task_id, instance_t instance, MessageDef **received_msg);
 
 /** \brief Start thread associated to the task
  * \param task_id task to start
@@ -111,30 +111,43 @@ void poll_msg(task_id_t task_id, instance_t instance, MessageDef **received_msg)
  * \param args_p Optional argument to pass to the start routine
  * @returns -1 on failure, 0 otherwise
  **/
-int intertask_interface_create_task(task_id_t task_id,
+int itti_create_task(task_id_t task_id,
                                     void *(*start_routine) (void *),
                                     void *args_p);
 
 /** \brief Mark the task as in ready state
  * \param task_id task to mark as ready
  **/
-void intertask_interface_mark_task_ready(task_id_t task_id);
+void itti_mark_task_ready(task_id_t task_id);
+
+/** \brief Indicate that the task is completed and initiate termination of all tasks.
+ * \param task_id task that is completed
+ **/
+void itti_terminate_tasks(task_id_t task_id);
 
 /** \brief Return the printable string associated with the message
  * \param message_id Id of the message
  **/
-char *get_message_name(MessagesIds message_id);
+char *itti_get_message_name(MessagesIds message_id);
 
 /** \brief Alloc and memset(0) a new itti message.
- \param origin_task_id Task ID of the sending task
- \param message_id Message ID
- @returns NULL in case of failure or newly allocated mesage ref
+ * \param origin_task_id Task ID of the sending task
+ * \param message_id Message ID
+ * @returns NULL in case of failure or newly allocated mesage ref
  **/
-inline MessageDef *alloc_new_message(
+inline MessageDef *itti_alloc_new_message(
     task_id_t      origin_task_id,
     MessagesIds message_id);
 
-void intertask_interface_send_quit_signal(void);
+/** \brief handle signals and wait for all threads to join when the process complete.
+ * This function should be called from the main thread after having created all ITTI tasks.
+ **/
+void itti_wait_tasks_end(void);
+
+/** \brief Send a termination message to all tasks.
+ * \param task_id task that is broadcasting the message.
+ **/
+void itti_send_terminate_message(task_id_t task_id);
 
 #endif /* INTERTASK_INTERFACE_H_ */
 /* @} */

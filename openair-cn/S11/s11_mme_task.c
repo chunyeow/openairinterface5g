@@ -110,7 +110,7 @@ NwRcT s11_mme_send_udp_msg(
     udp_data_req_t *udp_data_req_p;
     int ret = 0;
 
-    message_p = alloc_new_message(TASK_S11, UDP_DATA_REQ);
+    message_p = itti_alloc_new_message(TASK_S11, UDP_DATA_REQ);
 
     udp_data_req_p = &message_p->msg.udp_data_req;
 
@@ -119,7 +119,7 @@ NwRcT s11_mme_send_udp_msg(
     udp_data_req_p->buffer        = buffer;
     udp_data_req_p->buffer_length = buffer_len;
 
-    ret = send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+    ret = itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 
     return ((ret == 0) ? NW_OK : NW_FAILURE);
 }
@@ -173,10 +173,10 @@ NwRcT s11_mme_stop_timer_wrapper(
 
 static void *s11_mme_thread(void *args)
 {
-    intertask_interface_mark_task_ready(TASK_S11);
+    itti_mark_task_ready(TASK_S11);
     while(1) {
         MessageDef *received_message_p = NULL;
-        receive_msg(TASK_S11, &received_message_p);
+        itti_receive_msg(TASK_S11, &received_message_p);
         assert(received_message_p != NULL);
 
         switch(received_message_p->header.messageId) {
@@ -209,7 +209,7 @@ static void *s11_mme_thread(void *args)
             } break;
             default: {
                 S11_ERROR("Unkwnon message ID %s:%d\n",
-                          get_message_name(received_message_p->header.messageId),
+                          itti_get_message_name(received_message_p->header.messageId),
                           received_message_p->header.messageId);
             }
             break;
@@ -224,7 +224,7 @@ static int s11_send_init_udp(char *address, uint16_t port_number)
 {
     MessageDef *message_p;
 
-    message_p = alloc_new_message(TASK_S11, UDP_INIT);
+    message_p = itti_alloc_new_message(TASK_S11, UDP_INIT);
     if (message_p == NULL) {
         return -1;
     }
@@ -235,7 +235,7 @@ static int s11_send_init_udp(char *address, uint16_t port_number)
 
     S11_DEBUG("Tx UDP_INIT IP addr %s\n", message_p->msg.udp_init.address);
 
-    return send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 
 int s11_mme_init(const mme_config_t *mme_config_p)
@@ -276,7 +276,7 @@ int s11_mme_init(const mme_config_t *mme_config_p)
     logMgr.logReqCallback  = s11_mme_log_wrapper;
     DevAssert(NW_OK == nwGtpv2cSetLogMgrEntity(s11_mme_stack_handle, &logMgr));
 
-    if (intertask_interface_create_task(TASK_S11, &s11_mme_thread, NULL) < 0) {
+    if (itti_create_task(TASK_S11, &s11_mme_thread, NULL) < 0) {
         S11_ERROR("gtpv1u phtread_create: %s\n", strerror(errno));
         goto fail;
     }

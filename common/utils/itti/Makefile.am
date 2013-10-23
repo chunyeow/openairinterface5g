@@ -17,4 +17,7 @@ libitti_la_SOURCES = 										\
 	udp_message_def.h	udp_messages_types.h				\
 	intertask_interface.c 	intertask_interface.h			\
 	intertask_interface_dump.c intertask_interface_dump.h	\
+	assertions.h											\
+	backtrace.c backtrace.h									\
+	signals.c signals.h										\
 	timer.c	timer.h

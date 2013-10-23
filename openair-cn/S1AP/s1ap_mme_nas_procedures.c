@@ -127,7 +127,7 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
 
             s1ap_initial_ue_message_t *s1ap_p;
 
-            message_p = alloc_new_message(TASK_S1AP, NAS_CONNECTION_ESTABLISHMENT_IND);
+            message_p = itti_alloc_new_message(TASK_S1AP, NAS_CONNECTION_ESTABLISHMENT_IND);
             /* We failed to allocate a new message... */
             if (message_p == NULL) {
                 return -1;
@@ -164,7 +164,7 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
             memcpy(con_ind_p->initialNasMsg.data, initialUEMessage_p->nas_pdu.buf,
                    initialUEMessage_p->nas_pdu.size);
 
-            return send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+            return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
         }
     }
     return 0;

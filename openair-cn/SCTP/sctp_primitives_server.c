@@ -583,11 +583,11 @@ void *sctp_receiver_thread(void *args_p)
 
 static void *sctp_intertask_interface(void *args_p)
 {
-    intertask_interface_mark_task_ready(TASK_SCTP);
+    itti_mark_task_ready(TASK_SCTP);
 
     while(1) {
         MessageDef *received_message_p;
-        receive_msg(TASK_SCTP, &received_message_p);
+        itti_receive_msg(TASK_SCTP, &received_message_p);
         switch(received_message_p->header.messageId) {
             case SCTP_INIT_MSG: {
                 SCTP_DEBUG("Received SCTP_INIT_MSG\n");
@@ -616,7 +616,7 @@ static void *sctp_intertask_interface(void *args_p)
             } break;
             default: {
                 SCTP_DEBUG("Unkwnon message ID %s:%d\n",
-                           get_message_name(received_message_p->header.messageId),
+                           itti_get_message_name(received_message_p->header.messageId),
                            received_message_p->header.messageId);
             } break;
         }
@@ -636,7 +636,7 @@ int sctp_init(const mme_config_t *mme_config_p)
     sctp_desc.nb_instreams  = mme_config_p->sctp_config.in_streams;
     sctp_desc.nb_outstreams = mme_config_p->sctp_config.out_streams;
 
-    if (intertask_interface_create_task(TASK_SCTP, &sctp_intertask_interface,
+    if (itti_create_task(TASK_SCTP, &sctp_intertask_interface,
                                         NULL) < 0) {
         SCTP_ERROR("create task failed");
         SCTP_DEBUG("Initializing SCTP task interface: FAILED\n");

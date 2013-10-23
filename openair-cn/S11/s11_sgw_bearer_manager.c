@@ -32,7 +32,7 @@ int s11_sgw_handle_modify_bearer_request(NwGtpv2cStackHandleT *stack_p,
 
     DevAssert(stack_p != NULL);
 
-    message_p = alloc_new_message(TASK_S11, SGW_MODIFY_BEARER_REQUEST);
+    message_p = itti_alloc_new_message(TASK_S11, SGW_MODIFY_BEARER_REQUEST);
 
     modify_bearer_request_p = &message_p->msg.sgwModifyBearerRequest;
 
@@ -159,7 +159,7 @@ int s11_sgw_handle_modify_bearer_request(NwGtpv2cStackHandleT *stack_p,
     rc = nwGtpv2cMsgDelete(*stack_p, (pUlpApi->hMsg));
     DevAssert(NW_OK == rc);
 
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 int s11_sgw_handle_modify_bearer_response(

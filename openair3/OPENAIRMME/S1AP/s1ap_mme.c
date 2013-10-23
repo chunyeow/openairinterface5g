@@ -73,7 +73,7 @@ static int s1ap_send_init_sctp(void) {
     message_p->msg.sctpS1APInit.ppid = S1AP_SCTP_PPID;
     message_p->msg.sctpS1APInit.address = "0.0.0.0"; //ANY address
 
-    return send_msg_to_task(TASK_SCTP, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, message_p);
 }
 
 void* s1ap_mme_thread(void *args) {
@@ -82,7 +82,7 @@ void* s1ap_mme_thread(void *args) {
          * If the queue is empty, this function will block till a
          * message is sent to the task.
          */
-        receive_msg(TASK_S1AP, &receivedMessage);
+        itti_receive_msg(TASK_S1AP, &receivedMessage);
         assert(receivedMessage != NULL);
         switch(receivedMessage->messageId) {
             case S1AP_SCTP_NEW_MESSAGE_IND:

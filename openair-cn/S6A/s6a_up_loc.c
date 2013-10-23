@@ -60,7 +60,7 @@ int s6a_ula_cb(struct msg **msg, struct avp *paramavp,
 
     DevAssert(qry != NULL);
 
-    message_p = alloc_new_message(TASK_S6A, S6A_UPDATE_LOCATION_ANS);
+    message_p = itti_alloc_new_message(TASK_S6A, S6A_UPDATE_LOCATION_ANS);
 
     s6a_update_location_ans_p = &message_p->msg.s6a_update_location_ans;
 
@@ -152,7 +152,7 @@ err:
 
     ans = NULL;
 
-    send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 
     S6A_DEBUG("Sending S6A_UPDATE_LOCATION_ANS to task MME_APP\n");
 

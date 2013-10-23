@@ -164,7 +164,7 @@ int sgw_lite_handle_create_session_request(SgwCreateSessionRequest *session_req_
         * tunnel for S1 user plane interface. If status in response is successfull (0),
         * the tunnel endpoint is locally ready.
         */
-        message_p = alloc_new_message(TASK_SPGW_APP, GTPV1U_CREATE_TUNNEL_REQ);
+        message_p = itti_alloc_new_message(TASK_SPGW_APP, GTPV1U_CREATE_TUNNEL_REQ);
         if (message_p == NULL) {
         	sgw_lite_cm_remove_s11_tunnel(new_endpoint->remote_teid);
             return -1;
@@ -175,7 +175,7 @@ int sgw_lite_handle_create_session_request(SgwCreateSessionRequest *session_req_
         SPGW_APP_DEBUG("Tx GTPV1U_CREATE_TUNNEL_REQ -> TASK_GTPV1_U, Context: S-GW S11 teid %u eps bearer id %d (from session req)\n",
         		message_p->msg.gtpv1uCreateTunnelReq.context_teid,
         		message_p->msg.gtpv1uCreateTunnelReq.eps_bearer_id);
-        return send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
     } else {
         SPGW_APP_WARNING("Could not create new transaction for SESSION_CREATE message\n");
         free(new_endpoint);
@@ -202,7 +202,7 @@ int sgw_lite_handle_sgi_endpoint_created(SGICreateEndpointResp *resp_p)
     to_task = TASK_S11;
 #endif
 
-    message_p = alloc_new_message(TASK_SPGW_APP, SGW_CREATE_SESSION_RESPONSE);
+    message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_CREATE_SESSION_RESPONSE);
 
     if (message_p == NULL) {
         return -1;
@@ -249,7 +249,7 @@ int sgw_lite_handle_sgi_endpoint_created(SGICreateEndpointResp *resp_p)
                    create_session_response_p->bearer_context_created.s1u_sgw_fteid.teid,
                    create_session_response_p->bearer_context_created.eps_bearer_id,
                    create_session_response_p->bearer_context_created.cause);
-    return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
 }
 
 int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp *endpoint_created_p)
@@ -287,7 +287,7 @@ int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp *endpoint_crea
         sgw_lite_display_s11_bearer_context_information_mapping();
 
         /* SEND IP_FW_CREATE_IP_ENDPOINT_REQUEST to FW_IP task */
-        message_p = alloc_new_message(TASK_SPGW_APP, SGI_CREATE_ENDPOINT_REQUEST);
+        message_p = itti_alloc_new_message(TASK_SPGW_APP, SGI_CREATE_ENDPOINT_REQUEST);
         if (message_p == NULL) {
             return -1;
         }
@@ -299,10 +299,10 @@ int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp *endpoint_crea
 
         //create_sgi_endpoint_req_p->pdn_type = new_bearer_context_information_p->
         // TO DO TFT, QOS
-        return send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p);
     } else {
         SPGW_APP_DEBUG("Rx SGW_S1U_ENDPOINT_CREATED, Context: teid %u NOT FOUND\n", endpoint_created_p->context_teid);
-        message_p = alloc_new_message(TASK_SPGW_APP, SGW_CREATE_SESSION_RESPONSE);
+        message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_CREATE_SESSION_RESPONSE);
         if (message_p == NULL) {
             return -1;
         }
@@ -310,7 +310,7 @@ int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp *endpoint_crea
         memset(create_session_response_p, 0, sizeof(SgwCreateSessionResponse));
         create_session_response_p->cause                        = CONTEXT_NOT_FOUND;
         create_session_response_p->bearer_context_created.cause = CONTEXT_NOT_FOUND;
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     }
 }
 
@@ -348,7 +348,7 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
                     new_bearer_context_information_p->sgw_eps_bearer_context_information.trxn,
                     endpoint_updated_p->eps_bearer_id);
 
-            message_p = alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
+            message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
             if (message_p == NULL) {
                 return -1;
             }
@@ -360,10 +360,10 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
             modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
             modify_response_p->trxn                                         = new_bearer_context_information_p->sgw_eps_bearer_context_information.trxn;
 
-            return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+            return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
         } else if (hash_rc == HASH_TABLE_OK) {
 
-            message_p = alloc_new_message(TASK_SPGW_APP, SGI_UPDATE_ENDPOINT_REQUEST);
+            message_p = itti_alloc_new_message(TASK_SPGW_APP, SGI_UPDATE_ENDPOINT_REQUEST);
             if (message_p == NULL) {
                 return -1;
             }
@@ -374,14 +374,14 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
             update_request_p->enb_S1u_teid = endpoint_updated_p->enb_S1u_teid;
             update_request_p->eps_bearer_id = endpoint_updated_p->eps_bearer_id;
 
-            return send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p);
+            return itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p);
         }
     } else {
         SPGW_APP_DEBUG("Sending SGW_MODIFY_BEARER_RESPONSE trxn %p bearer %u CONTEXT_NOT_FOUND (s11_bearer_context_information_hashtable)\n",
                 new_bearer_context_information_p->sgw_eps_bearer_context_information.trxn,
                 endpoint_updated_p->eps_bearer_id);
 
-        message_p = alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
+        message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
         if (message_p == NULL) {
             return -1;
         }
@@ -393,7 +393,7 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
         modify_response_p->choice.bearer_for_removal.cause              = CONTEXT_NOT_FOUND;
         modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
         modify_response_p->trxn                                         = new_bearer_context_information_p->sgw_eps_bearer_context_information.trxn;
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     }
     return -1;
 }
@@ -420,7 +420,7 @@ int sgw_lite_handle_sgi_endpoint_updated(SGIUpdateEndpointResp *resp_p)
                    resp_p->eps_bearer_id,
                    resp_p->status);
 
-    message_p = alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
+    message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
     if (message_p == NULL) {
         return -1;
     }
@@ -444,7 +444,7 @@ int sgw_lite_handle_sgi_endpoint_updated(SGIUpdateEndpointResp *resp_p)
             modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
             modify_response_p->trxn                                         = 0;
 
-            return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+            return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
         } else if (hash_rc == HASH_TABLE_OK) {
             SPGW_APP_DEBUG("Rx SGI_UPDATE_ENDPOINT_RESPONSE: REQUEST_ACCEPTED\n");
 
@@ -456,7 +456,7 @@ int sgw_lite_handle_sgi_endpoint_updated(SGIUpdateEndpointResp *resp_p)
             modify_response_p->cause                                = REQUEST_ACCEPTED;
             modify_response_p->trxn                                 = new_bearer_context_information_p->sgw_eps_bearer_context_information.trxn;
         }
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     } else {
         SPGW_APP_DEBUG("Rx SGI_UPDATE_ENDPOINT_RESPONSE: CONTEXT_NOT_FOUND (S11 context)\n");
 
@@ -467,7 +467,7 @@ int sgw_lite_handle_sgi_endpoint_updated(SGIUpdateEndpointResp *resp_p)
         modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
         modify_response_p->trxn                                         = 0;
 
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     }
 }
 
@@ -504,7 +504,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
         hash_rc = hashtbl_is_key_exists (new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers, modify_bearer_p->bearer_context_to_modify.eps_bearer_id);
 
         if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
-            message_p = alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
+            message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
             if (message_p == NULL) {
                 return -1;
             }
@@ -515,7 +515,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
             modify_response_p->choice.bearer_for_removal.cause              = CONTEXT_NOT_FOUND;
             modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
             modify_response_p->trxn                                         = modify_bearer_p->trxn;
-            return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+            return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
         } else if (hash_rc == HASH_TABLE_OK) {
             // TO DO
             hash_rc = hashtbl_get (new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers, modify_bearer_p->bearer_context_to_modify.eps_bearer_id, (void**)&eps_bearer_entry_p);
@@ -523,7 +523,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
             eps_bearer_entry_p->enb_teid_for_S1u = modify_bearer_p->bearer_context_to_modify.s1_eNB_fteid.teid;
 
             // UPDATE GTPV1U mapping tables with eNB references (teid, addresses)
-            message_p = alloc_new_message(TASK_SPGW_APP, GTPV1U_UPDATE_TUNNEL_REQ);
+            message_p = itti_alloc_new_message(TASK_SPGW_APP, GTPV1U_UPDATE_TUNNEL_REQ);
             if (message_p == NULL) {
                 return -1;
             }
@@ -540,10 +540,10 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
             //SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->enb_ip_address_for_S1u = %u\n",modify_bearer_p->enb_ip_address_for_S1u);
             SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, gtpv1u_update_tunnel_req_p->eps_bearer_id          = %u\n",gtpv1u_update_tunnel_req_p->eps_bearer_id);
 
-            return send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
+            return itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
         }
     } else {
-        message_p = alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
+        message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
         if (message_p == NULL) {
             return -1;
         }
@@ -554,7 +554,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
         modify_response_p->choice.bearer_for_removal.cause              = CONTEXT_NOT_FOUND;
         modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
         modify_response_p->trxn                                         = modify_bearer_p->trxn;
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     }
     return -1;
 }
@@ -574,7 +574,7 @@ int sgw_lite_handle_delete_session_request(SgwDeleteSessionRequest *delete_sessi
     to_task = TASK_S11;
 #endif
 
-    message_p = alloc_new_message(TASK_SPGW_APP, SGW_DELETE_SESSION_RESPONSE);
+    message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_DELETE_SESSION_RESPONSE);
     if (message_p == NULL) {
         return -1;
     }
@@ -609,12 +609,12 @@ int sgw_lite_handle_delete_session_request(SgwDeleteSessionRequest *delete_sessi
         delete_session_resp_p->trxn    = delete_session_req_p->trxn;
         delete_session_resp_p->peer_ip = delete_session_req_p->peer_ip;
 
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     } else {
         /* Context not found... set the cause to CONTEXT_NOT_FOUND
          * 3GPP TS 29.274 #7.2.10.1
          */
-        message_p = alloc_new_message(TASK_SPGW_APP, SGW_DELETE_SESSION_RESPONSE);
+        message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_DELETE_SESSION_RESPONSE);
         if (message_p == NULL) {
             return -1;
         }
@@ -630,7 +630,7 @@ int sgw_lite_handle_delete_session_request(SgwDeleteSessionRequest *delete_sessi
         delete_session_resp_p->trxn    = delete_session_req_p->trxn;
         delete_session_resp_p->peer_ip = delete_session_req_p->peer_ip;
 
-        return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     }
 
     return -1;

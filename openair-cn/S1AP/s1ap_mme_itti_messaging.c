@@ -36,7 +36,7 @@ int s1ap_mme_itti_send_sctp_request(uint8_t *buffer, uint32_t length,
     MessageDef     *message_p;
     SctpNewDataReq *sctpNewDataReq_p;
 
-    message_p = alloc_new_message(TASK_SCTP, SCTP_NEW_DATA_REQ);
+    message_p = itti_alloc_new_message(TASK_SCTP, SCTP_NEW_DATA_REQ);
 
     sctpNewDataReq_p = &message_p->msg.sctpNewDataReq;
 
@@ -45,7 +45,7 @@ int s1ap_mme_itti_send_sctp_request(uint8_t *buffer, uint32_t length,
     sctpNewDataReq_p->assocId = assoc_id;
     sctpNewDataReq_p->stream  = stream;
 
-    return send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
 }
 
 int s1ap_mme_itti_forward_nas_uplink(uint8_t *buffer, uint32_t length)

@@ -1,5 +1,6 @@
 AM_CFLAGS = @ADD_CFLAGS@ 	\
 	-I$(top_srcdir)/UTILS	\
+	-I$(top_srcdir)/INTERTASK_INTERFACE	\
 	-I$(top_srcdir)/COMMON
 
 noinst_LTLIBRARIES = libsecu.la

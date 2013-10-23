@@ -45,10 +45,10 @@ sgw_app_t    sgw_app;
 
 static void *sgw_lite_intertask_interface(void *args_p)
 {
-    intertask_interface_mark_task_ready(TASK_SPGW_APP);
+    itti_mark_task_ready(TASK_SPGW_APP);
     while(1) {
         MessageDef *received_message_p;
-        receive_msg(TASK_SPGW_APP, &received_message_p);
+        itti_receive_msg(TASK_SPGW_APP, &received_message_p);
         switch(received_message_p->header.messageId) {
             case SGW_CREATE_SESSION_REQUEST: {
                 /* We received a create session request from MME (with GTP abstraction here)
@@ -89,7 +89,7 @@ static void *sgw_lite_intertask_interface(void *args_p)
 
             default: {
                 SPGW_APP_DEBUG("Unkwnon message ID %s:%d\n",
-                               get_message_name(received_message_p->header.messageId),
+                               itti_get_message_name(received_message_p->header.messageId),
                                received_message_p->header.messageId);
             } break;
         }
@@ -102,7 +102,7 @@ static void *sgw_lite_intertask_interface(void *args_p)
 int sgw_lite_init(const mme_config_t *mme_config_p)
 {
     SPGW_APP_DEBUG("Initializing SPGW-APP  task interface\n");
-    if (intertask_interface_create_task(TASK_SPGW_APP,
+    if (itti_create_task(TASK_SPGW_APP,
                                         &sgw_lite_intertask_interface, NULL) < 0) {
         perror("pthread_create");
     	SPGW_APP_DEBUG("Initializing SPGW-APP task interface: ERROR\n");

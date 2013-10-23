@@ -3,6 +3,6 @@
 
 int signal_init(void);
 
-int signal_handle(void);
+int signal_handle(int *end);
 
 #endif /* SIGNALS_H_ */

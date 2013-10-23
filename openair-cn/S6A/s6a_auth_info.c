@@ -200,7 +200,7 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
 
     DevAssert(qry != NULL);
 
-    message_p = alloc_new_message(TASK_S6A, S6A_AUTH_INFO_ANS);
+    message_p = itti_alloc_new_message(TASK_S6A, S6A_AUTH_INFO_ANS);
     s6a_auth_info_ans_p = &message_p->msg.s6a_auth_info_ans;
 
     S6A_DEBUG("Received S6A Authentication Information Answer (AIA)\n");
@@ -257,7 +257,7 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
         DevMessage("We requested E-UTRAN vectors with an immediate response...\n");
     }
 
-    send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 err:
     return 0;
 }

@@ -115,7 +115,7 @@ int mme_app_create_bearer(s6a_update_location_ans_t *ula_p)
         DevMessage("Not implemented: ACCESS NOT GRANTED, send ESM Failure to NAS\n");
     }
 
-    message_p = alloc_new_message(TASK_MME_APP, SGW_CREATE_SESSION_REQUEST);
+    message_p = itti_alloc_new_message(TASK_MME_APP, SGW_CREATE_SESSION_REQUEST);
 
     /* WARNING:
      * Some parameters should be provided by NAS Layer:
@@ -237,7 +237,7 @@ int mme_app_create_bearer(s6a_update_location_ans_t *ula_p)
     session_request_p->serving_network.mnc[2] = ue_context->e_utran_cgi.plmn.MNCdigit3;
 
     session_request_p->selection_mode = MS_O_N_P_APN_S_V;
-    return send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
 }
 
 int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p)
@@ -318,7 +318,7 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
         MessageDef *message_p;
         nas_attach_accept_t *attach_accept_p;
 
-        message_p = alloc_new_message(TASK_MME_APP, NAS_ATTACH_ACCEPT);
+        message_p = itti_alloc_new_message(TASK_MME_APP, NAS_ATTACH_ACCEPT);
 
         attach_accept_p = &message_p->msg.nas_attach_accept;
 
@@ -344,7 +344,7 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
         memcpy(&attach_accept_p->transparent.ambr, &ue_context_p->subscribed_ambr,
                sizeof(ambr_t));
 
-        return send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
     }
 
     return 0;

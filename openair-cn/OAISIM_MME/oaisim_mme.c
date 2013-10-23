@@ -41,8 +41,6 @@
 #include "mme_config.h"
 #include "gtpv1u_sgw_defs.h"
 
-#include "signals.h"
-
 #include "intertask_interface_init.h"
 
 #include "sctp_primitives_server.h"
@@ -65,18 +63,12 @@
 
 int main(int argc, char *argv[])
 {
-    /* Initialize signals */
-    CHECK_INIT_RETURN(signal_init());
-
     /* Parse the command line for options and set the mme_config accordingly. */
     CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config));
 
     /* Calling each layer init function */
     CHECK_INIT_RETURN(log_init(&mme_config, oai_mme_log_specific));
-    CHECK_INIT_RETURN(intertask_interface_init(THREAD_MAX,
-                                               MESSAGES_ID_MAX, threads_name,
-                                               messages_info,
-                                               messages_definition_xml));
+    CHECK_INIT_RETURN(itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml));
 
     CHECK_INIT_RETURN(nas_init(&mme_config));
     CHECK_INIT_RETURN(sctp_init(&mme_config));
@@ -91,9 +83,7 @@ int main(int argc, char *argv[])
 //     if (sgw_lite_init(&mme_config) < 0) return -1;
 
     /* Handle signals here */
-    while(1) {
-        signal_handle();
-    }
+    itti_wait_tasks_end();
 
     return 0;
 }

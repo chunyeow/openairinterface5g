@@ -54,7 +54,7 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
 
     DevAssert(plmn != NULL);
 
-    message_p = alloc_new_message(TASK_MME_APP, S6A_AUTH_INFO_REQ);
+    message_p = itti_alloc_new_message(TASK_MME_APP, S6A_AUTH_INFO_REQ);
 
     if (message_p == NULL) return -1;
 
@@ -63,7 +63,7 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
     memcpy(&auth_info_req->visited_plmn, plmn, sizeof(plmn_t));
     auth_info_req->nb_of_vectors = nb_of_vectors;
 
-    return send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
 }
 
 int mme_app_handle_nas_auth_resp(nas_auth_resp_t *nas_auth_resp_p)
@@ -92,7 +92,7 @@ int mme_app_handle_nas_auth_resp(nas_auth_resp_t *nas_auth_resp_p)
         MessageDef                *message_p;
         s6a_update_location_req_t *s6a_ulr;
 
-        message_p = alloc_new_message(TASK_MME_APP, S6A_UPDATE_LOCATION_REQ);
+        message_p = itti_alloc_new_message(TASK_MME_APP, S6A_UPDATE_LOCATION_REQ);
 
         if (message_p == NULL) {
             return -1;
@@ -106,7 +106,7 @@ int mme_app_handle_nas_auth_resp(nas_auth_resp_t *nas_auth_resp_p)
         /* Check if we already have UE data */
         s6a_ulr->skip_subsriber_data = 0;
 
-        return send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
     }
     return -1;
 }
@@ -121,7 +121,7 @@ int mme_app_handle_authentication_info_answer(s6a_auth_info_ans_t *s6a_auth_info
 
     DevAssert(s6a_auth_info_ans_p != NULL);
 
-    message_p = alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_REQ);
+    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_REQ);
 
     if (message_p == NULL) {
         return -1;
@@ -172,7 +172,7 @@ int mme_app_handle_authentication_info_answer(s6a_auth_info_ans_t *s6a_auth_info
                    "!= S6A_RESULT_BASE");
     }
 
-    return send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
 }
 
 int mme_app_handle_attach_req(nas_attach_req_t *attach_req_p)
@@ -270,14 +270,14 @@ request_auth:
                 /* We have a vector... USE it */
                 MME_APP_DEBUG("but we have an auth. vector for it, request"
                 " authentication from NAS\n");
-                message_p = alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_REQ);
+                message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_REQ);
 
                 nas_auth_req_p = &message_p->msg.nas_auth_req;
 
                 MME_APP_IMSI_TO_STRING(imsi, nas_auth_req_p->imsi);
                 nas_auth_req_p->failure = NAS_FAILURE_OK;
 
-                return send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+                return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
             }
         }
     }

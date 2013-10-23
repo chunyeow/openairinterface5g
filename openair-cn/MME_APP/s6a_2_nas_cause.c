@@ -36,10 +36,10 @@
 // {
 //     MessageDef *message_p;
 // 
-//     message_p = alloc_new_message(TASK_MME_APP, TASK_NAS,
+//     message_p = itti_alloc_new_message(TASK_MME_APP, TASK_NAS,
 //                                   SGW_CREATE_SESSION_REQUEST);
 // 
-//     return send_msg_to_task(TASK_NAS, message_p);
+//     return itti_send_msg_to_task(TASK_NAS, message_p);
 // }
 
 int s6a_error_2_nas_cause(uint32_t s6a_error, int experimental)

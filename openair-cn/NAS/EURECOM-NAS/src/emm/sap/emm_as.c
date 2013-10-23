@@ -1090,13 +1090,13 @@ static int _emm_as_send(const emm_as_t* msg)
             case AS_DL_INFO_TRANSFER_REQ: {
                 int ret;
 
-                message_p = alloc_new_message(TASK_NAS, NAS_DOWNLINK_DATA_IND);
+                message_p = itti_alloc_new_message(TASK_NAS, NAS_DOWNLINK_DATA_IND);
 
                 memcpy(&message_p->msg.nas_dl_data_ind,
                        &as_msg.msg.dl_info_transfer_req,
                        sizeof(nas_dl_data_ind_t));
 
-                ret = send_msg_to_task(TASK_S1AP, 0, message_p);
+                ret = itti_send_msg_to_task(TASK_S1AP, 0, message_p);
 
                 if (ret != -1) {
                     LOG_FUNC_RETURN (RETURNok);

@@ -77,7 +77,7 @@ static int gtpv1u_send_init_udp(uint16_t port_number)
     MessageDef *message_p;
     struct in_addr addr;
 
-    message_p = alloc_new_message(TASK_GTPV1_U, UDP_INIT);
+    message_p = itti_alloc_new_message(TASK_GTPV1_U, UDP_INIT);
     if (message_p == NULL) {
         return -1;
     }
@@ -89,7 +89,7 @@ static int gtpv1u_send_init_udp(uint16_t port_number)
     message_p->msg.udp_init.address = inet_ntoa(addr);
     GTPU_DEBUG("Tx UDP_INIT IP addr %s\n", message_p->msg.udp_init.address);
 
-    return send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 
 NwGtpv1uRcT gtpv1u_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
@@ -113,7 +113,7 @@ NwGtpv1uRcT gtpv1u_send_udp_msg(
     MessageDef     *message_p;
     udp_data_req_t *udp_data_req_p;
 
-    message_p = alloc_new_message(TASK_GTPV1_U, UDP_DATA_REQ);
+    message_p = itti_alloc_new_message(TASK_GTPV1_U, UDP_DATA_REQ);
 
     udp_data_req_p = &message_p->msg.udp_data_req;
 
@@ -122,7 +122,7 @@ NwGtpv1uRcT gtpv1u_send_udp_msg(
     udp_data_req_p->buffer        = buffer;
     udp_data_req_p->buffer_length = buffer_len;
 
-    return send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }
 
 /* Callback called when a gtpv1u message arrived on UDP interface */
@@ -150,7 +150,7 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
             }
             GTPU_DEBUG("Received TPDU from gtpv1u stack %u with size %d", pUlpApi->apiInfo.recvMsgInfo.teid, buffer_len);
 
-            message_p = alloc_new_message(TASK_GTPV1_U, GTPV1U_TUNNEL_DATA_IND);
+            message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_TUNNEL_DATA_IND);
             if (message_p == NULL) {
                 return -1;
             }
@@ -163,7 +163,7 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
             } else {
                 memcpy(data_ind_p->buffer, buffer, buffer_len);
                 data_ind_p->length = buffer_len;
-                if (send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p) < 0) {
+                if (itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p) < 0) {
                     GTPU_ERROR("Failed to send message to task\n");
                     free(message_p);
                 }
@@ -223,7 +223,7 @@ static int gtpv1u_create_s1u_tunnel(Gtpv1uCreateTunnelReq *create_tunnel_reqP)
     gtpv1u_teid2enb_info->state       = BEARER_IN_CONFIG;
 
 
-    message_p = alloc_new_message(TASK_GTPV1_U, GTPV1U_CREATE_TUNNEL_RESP);
+    message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_CREATE_TUNNEL_RESP);
     message_p->msg.gtpv1uCreateTunnelResp.S1u_teid      = s1u_teid;
     message_p->msg.gtpv1uCreateTunnelResp.context_teid  = create_tunnel_reqP->context_teid;
     message_p->msg.gtpv1uCreateTunnelResp.eps_bearer_id = create_tunnel_reqP->eps_bearer_id;
@@ -242,7 +242,7 @@ static int gtpv1u_create_s1u_tunnel(Gtpv1uCreateTunnelReq *create_tunnel_reqP)
     		message_p->msg.gtpv1uCreateTunnelResp.S1u_teid,
     		message_p->msg.gtpv1uCreateTunnelResp.eps_bearer_id,
     		message_p->msg.gtpv1uCreateTunnelResp.status);
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 
@@ -253,7 +253,7 @@ static int gtpv1u_delete_s1u_tunnel(Teid_t context_teidP, Teid_t S1U_teidP)
     MessageDef              *message_p;
 
     GTPU_DEBUG("Rx GTPV1U_DELETE_TUNNEL Context %u S1U teid %u\n", context_teidP, S1U_teidP);
-    message_p = alloc_new_message(TASK_GTPV1_U, GTPV1U_DELETE_TUNNEL_RESP);
+    message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_DELETE_TUNNEL_RESP);
 
     message_p->msg.gtpv1uDeleteTunnelResp.S1u_teid     = S1U_teidP;
     message_p->msg.gtpv1uDeleteTunnelResp.context_teid = context_teidP;
@@ -264,7 +264,7 @@ static int gtpv1u_delete_s1u_tunnel(Teid_t context_teidP, Teid_t S1U_teidP)
         message_p->msg.gtpv1uDeleteTunnelResp.status       = -1;
     }
     GTPU_DEBUG("Tx SGW_S1U_ENDPOINT_CREATED Context %u teid %u status %d\n", context_teidP, S1U_teidP, message_p->msg.gtpv1uDeleteTunnelResp.status);
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 
@@ -278,7 +278,7 @@ static int gtpv1u_update_s1u_tunnel(Gtpv1uUpdateTunnelReq *reqP)
     		reqP->context_teid,
     		reqP->sgw_S1u_teid,
     		reqP->enb_S1u_teid);
-    message_p = alloc_new_message(TASK_GTPV1_U, GTPV1U_UPDATE_TUNNEL_RESP);
+    message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_UPDATE_TUNNEL_RESP);
 
     hash_rc = hashtbl_get(gtpv1u_sgw_data.S1U_mapping, reqP->sgw_S1u_teid, (void**)&gtpv1u_teid2enb_info);
 
@@ -296,7 +296,7 @@ static int gtpv1u_update_s1u_tunnel(Gtpv1uUpdateTunnelReq *reqP)
     message_p->msg.gtpv1uUpdateTunnelResp.sgw_S1u_teid  = reqP->sgw_S1u_teid;
     message_p->msg.gtpv1uUpdateTunnelResp.enb_S1u_teid  = reqP->enb_S1u_teid;
     message_p->msg.gtpv1uUpdateTunnelResp.eps_bearer_id = reqP->eps_bearer_id;
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 
@@ -345,14 +345,14 @@ static NwGtpv1uRcT gtpv1u_stop_timer_wrapper(
 
 static void *gtpv1u_thread(void *args)
 {
-    intertask_interface_mark_task_ready(TASK_GTPV1_U);
+    itti_mark_task_ready(TASK_GTPV1_U);
     while(1) {
         /* Trying to fetch a message from the message queue.
          * If the queue is empty, this function will block till a
          * message is sent to the task.
          */
         MessageDef *received_message_p = NULL;
-        receive_msg(TASK_GTPV1_U, &received_message_p);
+        itti_receive_msg(TASK_GTPV1_U, &received_message_p);
         DevAssert(received_message_p != NULL);
 
         switch(received_message_p->header.messageId) {
@@ -453,7 +453,7 @@ static void *gtpv1u_thread(void *args)
                 break;
             default: {
                 GTPU_ERROR("Unkwnon message ID %s:%d\n",
-                           get_message_name(received_message_p->header.messageId),
+                           itti_get_message_name(received_message_p->header.messageId),
                            received_message_p->header.messageId);
             }
             break;
@@ -537,7 +537,7 @@ int gtpv1u_init(const mme_config_t *mme_config_p)
         return -1;
     }
 
-    if (intertask_interface_create_task(TASK_GTPV1_U, &gtpv1u_thread, NULL) < 0) {
+    if (itti_create_task(TASK_GTPV1_U, &gtpv1u_thread, NULL) < 0) {
         GTPU_ERROR("gtpv1u phtread_create: %s", strerror(errno));
         return -1;
     }

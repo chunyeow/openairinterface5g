@@ -164,7 +164,7 @@ void *udp_receiver_thread(void *arg_p)
 
             memcpy(forwarded_buffer, buffer, n);
 
-            message_p = alloc_new_message(TASK_UDP, UDP_DATA_IND);
+            message_p = itti_alloc_new_message(TASK_UDP, UDP_DATA_IND);
 
             DevAssert(message_p != NULL);
 
@@ -177,7 +177,7 @@ void *udp_receiver_thread(void *arg_p)
 
             UDP_DEBUG("Msg of length %d received from %s:%u\n",
                       n, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
-            if (send_msg_to_task(udp_sock_p->task_id, INSTANCE_DEFAULT, message_p) < 0) {
+            if (itti_send_msg_to_task(udp_sock_p->task_id, INSTANCE_DEFAULT, message_p) < 0) {
                 UDP_DEBUG("Failed to send message %d to task %d\n",
                           UDP_DATA_IND, udp_sock_p->task_id);
                 break;
@@ -196,10 +196,10 @@ void *udp_receiver_thread(void *arg_p)
 
 static void *udp_intertask_interface(void *args_p)
 {
-    intertask_interface_mark_task_ready(TASK_UDP);
+    itti_mark_task_ready(TASK_UDP);
     while(1) {
         MessageDef *received_message_p = NULL;
-        receive_msg(TASK_UDP, &received_message_p);
+        itti_receive_msg(TASK_UDP, &received_message_p);
         DevAssert(received_message_p != NULL);
 
         switch (received_message_p->header.messageId) {
@@ -259,7 +259,7 @@ static void *udp_intertask_interface(void *args_p)
             } break;
             default: {
                 UDP_DEBUG("Unkwnon message ID %s:%d\n",
-                          get_message_name(received_message_p->header.messageId),
+                          itti_get_message_name(received_message_p->header.messageId),
                           received_message_p->header.messageId);
             } break;
         }
@@ -276,7 +276,7 @@ int udp_init(const mme_config_t *mme_config_p)
 
     STAILQ_INIT(&udp_socket_list);
 
-    if (intertask_interface_create_task(TASK_UDP, &udp_intertask_interface,
+    if (itti_create_task(TASK_UDP, &udp_intertask_interface,
                                         NULL) < 0) {
         UDP_ERROR("udp pthread_create (%s)\n", strerror(errno));
         return -1;

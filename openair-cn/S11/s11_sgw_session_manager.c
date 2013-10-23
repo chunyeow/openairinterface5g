@@ -32,7 +32,7 @@ int s11_sgw_handle_create_session_request(NwGtpv2cStackHandleT *stack_p,
 
     DevAssert(stack_p != NULL);
 
-    message_p = alloc_new_message(TASK_S11, SGW_CREATE_SESSION_REQUEST);
+    message_p = itti_alloc_new_message(TASK_S11, SGW_CREATE_SESSION_REQUEST);
 
     create_session_request_p = &message_p->msg.sgwCreateSessionRequest;
 
@@ -244,7 +244,7 @@ int s11_sgw_handle_create_session_request(NwGtpv2cStackHandleT *stack_p,
     rc = nwGtpv2cMsgDelete(*stack_p, (pUlpApi->hMsg));
     DevAssert(NW_OK == rc);
 
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 int s11_sgw_handle_create_session_response(
@@ -333,7 +333,7 @@ int s11_sgw_handle_delete_session_request(NwGtpv2cStackHandleT *stack_p,
 
     DevAssert(stack_p != NULL);
 
-    message_p = alloc_new_message(TASK_S11, SGW_DELETE_SESSION_REQUEST);
+    message_p = itti_alloc_new_message(TASK_S11, SGW_DELETE_SESSION_REQUEST);
 
     delete_session_request_p = &message_p->msg.sgwDeleteSessionRequest;
 
@@ -444,7 +444,7 @@ int s11_sgw_handle_delete_session_request(NwGtpv2cStackHandleT *stack_p,
     rc = nwGtpv2cMsgDelete(*stack_p, (pUlpApi->hMsg));
     DevAssert(NW_OK == rc);
 
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 int s11_sgw_handle_delete_session_response(

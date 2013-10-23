@@ -350,7 +350,7 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assocId, uint32_t stream, struct
             MessageDef              *message_p;
             SgwCreateSessionRequest *session_request_p;
 
-            message_p = alloc_new_message(TASK_S1AP, TASK_SGW_LITE, SGW_CREATE_SESSION_REQUEST);
+            message_p = itti_alloc_new_message(TASK_S1AP, TASK_SGW_LITE, SGW_CREATE_SESSION_REQUEST);
             if (message_p == NULL) return -1;
 
             /* WARNING:
@@ -400,7 +400,7 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assocId, uint32_t stream, struct
             session_request_p->paa.ipv4_address = 0x00000000;
 
             session_request_p->selection_mode = MS_O_N_P_APN_S_V;
-            return send_msg_to_task(TASK_SGW_LITE, message_p);
+            return itti_send_msg_to_task(TASK_SGW_LITE, message_p);
         }
     }
     return 0;
@@ -485,7 +485,7 @@ int s1ap_mme_handle_initial_context_setup_response(
 
     ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
 
-    message_p = alloc_new_message(TASK_SGW_LITE, TASK_S1AP, SGW_MODIFY_BEARER_REQUEST);
+    message_p = itti_alloc_new_message(TASK_SGW_LITE, TASK_S1AP, SGW_MODIFY_BEARER_REQUEST);
 
     if (message_p == NULL) {
         return -1;
@@ -500,7 +500,7 @@ int s1ap_mme_handle_initial_context_setup_response(
     modify_request_p->bearer_context_to_modify.s1_eNB_fteid.ipv4 = 1;
     memcpy(&modify_request_p->bearer_context_to_modify.s1_eNB_fteid.ipv4_address, eRABSetupItemCtxtSURes_p->transportLayerAddress.buf, 4);
 
-    return send_msg_to_task(TASK_SGW_LITE, message_p);
+    return itti_send_msg_to_task(TASK_SGW_LITE, message_p);
 }
 
 int s1ap_mme_handle_ue_context_release_request(uint32_t assocId, uint32_t stream, struct s1ap_message_s *message) {

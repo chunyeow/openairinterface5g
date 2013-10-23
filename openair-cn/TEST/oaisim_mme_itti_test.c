@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
     /* Calling each layer init function */
     log_init(&mme_config);
-    intertask_interface_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml);
+    itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml);
     sctp_init(&mme_config);
     udp_init(&mme_config);
     s1ap_mme_init(&mme_config);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     sgw_lite_init(&mme_config);
 
-    message_p = alloc_new_message(TASK_S1AP, MESSAGE_TEST);
+    message_p = itti_alloc_new_message(TASK_S1AP, MESSAGE_TEST);
 
     while(i < (1 << 15)) {
         if (send_broadcast_message(message_p) < 0) {

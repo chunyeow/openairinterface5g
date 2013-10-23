@@ -61,7 +61,7 @@ static void* sgi_task_thread(void *args_p)
         return NULL;
     }
 
-    intertask_interface_mark_task_ready(TASK_FW_IP);
+    itti_mark_task_ready(TASK_FW_IP);
 
     sgi_data_p = (sgi_data_t *)args_p;
 
@@ -72,7 +72,7 @@ static void* sgi_task_thread(void *args_p)
          * message is sent to the task.
          */
         MessageDef *received_message_p;
-        receive_msg(TASK_FW_IP, &received_message_p);
+        itti_receive_msg(TASK_FW_IP, &received_message_p);
         assert(received_message_p != NULL);
         switch(received_message_p->header.messageId) {
             case GTPV1U_TUNNEL_DATA_IND: {
@@ -126,7 +126,7 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
     SGI_IF_DEBUG("Rx IP_FW_CREATE_SGI_ENDPOINT_REQUEST, Context: S-GW S11 teid %u, S-GW S1U teid %u EPS bearer id %u\n",
     		req_p->context_teid, req_p->sgw_S1u_teid, req_p->eps_bearer_id);
 
-  	message_p               = alloc_new_message(TASK_FW_IP, SGI_CREATE_ENDPOINT_RESPONSE);
+  	message_p               = itti_alloc_new_message(TASK_FW_IP, SGI_CREATE_ENDPOINT_RESPONSE);
     if (message_p == NULL) {
         return -1;
     }
@@ -161,7 +161,7 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
             }
     	}
     }
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 //------------------------------------------------------
@@ -175,7 +175,7 @@ static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointR
     SGI_IF_DEBUG("Rx IP_FW_UPDATE_SGI_ENDPOINT_REQUEST, Context: S-GW S11 teid %u, S-GW S1U teid %u EPS bearer id %u\n",
     		req_p->context_teid, req_p->sgw_S1u_teid, req_p->eps_bearer_id);
 
-  	message_p               = alloc_new_message(TASK_FW_IP, SGI_UPDATE_ENDPOINT_RESPONSE);
+  	message_p               = itti_alloc_new_message(TASK_FW_IP, SGI_UPDATE_ENDPOINT_RESPONSE);
     if (message_p == NULL) {
         return -1;
     }
@@ -193,7 +193,7 @@ static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointR
         SGI_IF_ERROR("SGI_STATUS_ERROR_CONTEXT_NOT_FOUND Context: S11 teid %u\n", req_p->context_teid);
         sgi_update_endpoint_resp_p->status       = SGI_STATUS_ERROR_CONTEXT_NOT_FOUND;
     }
-    return send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
 }
 
 //-----------------------------------------------------------------------------

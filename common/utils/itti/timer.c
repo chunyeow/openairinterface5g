@@ -93,7 +93,7 @@ int timer_handle_signal(siginfo_t *info)
 
     task_id = timer_p->task_id;
     instance = timer_p->instance;
-    message_p = alloc_new_message(TASK_TIMER, TIMER_HAS_EXPIRED);
+    message_p = itti_alloc_new_message(TASK_TIMER, TIMER_HAS_EXPIRED);
 
     timer_expired_p = &message_p->msg.timer_has_expired;
 
@@ -116,7 +116,7 @@ int timer_handle_signal(siginfo_t *info)
         }
     }
     /* Notify task of timer expiry */
-    if (send_msg_to_task(task_id, instance, message_p) < 0) {
+    if (itti_send_msg_to_task(task_id, instance, message_p) < 0) {
         TMR_DEBUG("Failed to send msg TIMER_HAS_EXPIRED to task %u\n", task_id);
         free(message_p);
         return -1;

@@ -67,7 +67,7 @@ static void fd_gnutls_debug(int level, const char *str)
 
 void *s6a_thread(void *args)
 {
-    intertask_interface_mark_task_ready(TASK_S6A);
+    itti_mark_task_ready(TASK_S6A);
 
     while(1) {
         MessageDef *received_message_p = NULL;
@@ -75,7 +75,7 @@ void *s6a_thread(void *args)
          * If the queue is empty, this function will block till a
          * message is sent to the task.
          */
-        receive_msg(TASK_S6A, &received_message_p);
+        itti_receive_msg(TASK_S6A, &received_message_p);
         DevAssert(received_message_p != NULL);
         switch(received_message_p->header.messageId) {
             case S6A_UPDATE_LOCATION_REQ: {
@@ -86,7 +86,7 @@ void *s6a_thread(void *args)
             } break;
             default: {
                 S6A_DEBUG("Unkwnon message ID %s:%d\n",
-                          get_message_name(received_message_p->header.messageId),
+                          itti_get_message_name(received_message_p->header.messageId),
                           received_message_p->header.messageId);
             } break;
         }
@@ -156,7 +156,7 @@ int s6a_init(const mme_config_t *mme_config_p)
     /* Trying to connect to peers */
     CHECK_FCT(s6a_fd_new_peer());
 
-    if (intertask_interface_create_task(TASK_S6A, &s6a_thread, NULL) < 0) {
+    if (itti_create_task(TASK_S6A, &s6a_thread, NULL) < 0) {
         S6A_ERROR("s6a create task\n");
         return -1;
     }

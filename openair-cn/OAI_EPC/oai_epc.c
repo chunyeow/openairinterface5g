@@ -47,7 +47,6 @@
 #include "gtpv1u_sgw_defs.h"
 
 #include "assertions.h"
-#include "signals.h"
 
 #include "intertask_interface_init.h"
 
@@ -70,19 +69,12 @@
 
 int main(int argc, char *argv[])
 {
-    /* Initialize signals. Note that signals should be initialized before
-     * other threads are created as it will block signals for child threads.
-     */
-    CHECK_INIT_RETURN(signal_init());
-
     /* Parse the command line for options and set the mme_config accordingly. */
     CHECK_INIT_RETURN(config_parse_opt_line(argc, argv, &mme_config) < 0);
 
     /* Calling each layer init function */
     CHECK_INIT_RETURN(log_init(&mme_config, oai_epc_log_specific));
-    CHECK_INIT_RETURN(intertask_interface_init(THREAD_MAX, MESSAGES_ID_MAX,
-                                               threads_name, messages_info,
-                                               messages_definition_xml));
+    CHECK_INIT_RETURN(itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml));
 
     CHECK_INIT_RETURN(nas_init(&mme_config));
     CHECK_INIT_RETURN(sctp_init(&mme_config));
@@ -97,9 +89,7 @@ int main(int argc, char *argv[])
     CHECK_INIT_RETURN(sgw_lite_init(&mme_config));
 
     /* Handle signals here */
-    while(1) {
-        signal_handle();
-    }
+    itti_wait_tasks_end();
 
     return 0;
 }

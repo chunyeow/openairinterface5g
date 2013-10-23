@@ -68,7 +68,7 @@ void *s1ap_mme_thread(void *args);
 static int s1ap_send_init_sctp(void) {
     // Create and alloc new message
     MessageDef *message_p;
-    message_p = alloc_new_message(TASK_S1AP, SCTP_INIT_MSG);
+    message_p = itti_alloc_new_message(TASK_S1AP, SCTP_INIT_MSG);
     message_p->msg.sctpInit.port = S1AP_PORT_NUMBER;
     message_p->msg.sctpInit.ppid = S1AP_SCTP_PPID;
     message_p->msg.sctpInit.ipv4 = 1;
@@ -81,20 +81,20 @@ static int s1ap_send_init_sctp(void) {
     message_p->msg.sctpInit.nb_ipv6_addr = 0;
     message_p->msg.sctpInit.ipv6_address[0] = "0:0:0:0:0:0:0:1";
 
-    return send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
 }
 
 void *s1ap_mme_thread(void *args)
 {
     MessageDef *received_message_p;
 
-    intertask_interface_mark_task_ready(TASK_S1AP);
+    itti_mark_task_ready(TASK_S1AP);
     while(1) {
         /* Trying to fetch a message from the message queue.
          * If the queue is empty, this function will block till a
          * message is sent to the task.
          */
-        receive_msg(TASK_S1AP, &received_message_p);
+        itti_receive_msg(TASK_S1AP, &received_message_p);
         assert(received_message_p != NULL);
         switch(received_message_p->header.messageId) {
             case S1AP_SCTP_NEW_MESSAGE_IND: {
@@ -140,7 +140,7 @@ void *s1ap_mme_thread(void *args)
             } break;
             default: {
                 S1AP_DEBUG("Unkwnon message ID %s:%d\n",
-                           get_message_name(received_message_p->header.messageId),
+                           itti_get_message_name(received_message_p->header.messageId),
                            received_message_p->header.messageId);
             } break;
         }
@@ -170,7 +170,7 @@ int s1ap_mme_init(const mme_config_t *mme_config_p) {
 # endif
 #endif
 
-    if (intertask_interface_create_task(TASK_S1AP, &s1ap_mme_thread, NULL) < 0) {
+    if (itti_create_task(TASK_S1AP, &s1ap_mme_thread, NULL) < 0) {
         S1AP_ERROR("Error while creating S1AP task\n");
         return -1;
     }
