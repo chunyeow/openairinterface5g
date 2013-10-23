@@ -6,15 +6,16 @@
 #include "typedef_type.h"
 #include "ui_interface.h"
 
-int typedef_dissect_from_buffer(struct types_s *type, buffer_t *buffer,
-                                uint32_t offset, uint32_t parent_offset, int indent)
+int typedef_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
 {
     DISPLAY_PARSE_INFO("typedef", type->name, offset, parent_offset);
 
     /* Simply call next_type */
     if (type->child != NULL) {
         type->child->type_dissect_from_buffer(
-            type->child, buffer, offset, parent_offset, indent);
+            type->child, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset, indent);
     }
 
     return 0;

@@ -7,8 +7,8 @@
 #include "ui_interface.h"
 
 int enum_value_dissect_from_buffer(
-    struct types_s *type, buffer_t *buffer, uint32_t offset,
-    uint32_t parent_offset, int indent)
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
 {
     uint32_t value = 0;
 
@@ -18,15 +18,11 @@ int enum_value_dissect_from_buffer(
     if (type->name) {
         int length = 0;
         char cbuf[50 + strlen(type->name)];
-        char *cpy = NULL;
 
         sprintf(cbuf, "(0x%08x)  %s;\n", value, type->name);
         length = strlen(cbuf);
-        cpy = malloc(sizeof(char) * length);
-        memcpy(cpy, cbuf, length);
-        ui_interface.ui_signal_set_text(cpy, length);
-        if (cpy)
-            free(cpy);
+
+        ui_set_signal_text_cb(user_data, cbuf, length);
     }
 
     return 0;

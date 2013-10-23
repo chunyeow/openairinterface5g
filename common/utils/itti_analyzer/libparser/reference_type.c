@@ -6,8 +6,9 @@
 #include "reference_type.h"
 #include "ui_interface.h"
 
-int reference_dissect_from_buffer(struct types_s *type, buffer_t *buffer,
-                                  uint32_t offset, uint32_t parent_offset, int indent)
+int reference_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
 {
     DISPLAY_PARSE_INFO("reference", type->name, offset, parent_offset);
 
@@ -15,7 +16,8 @@ int reference_dissect_from_buffer(struct types_s *type, buffer_t *buffer,
         INDENTED(stdout, indent,   fprintf(stdout, "<%s>\n", type->name));
     }
     if (type->child != NULL)
-        type->child->type_dissect_from_buffer(type->child, buffer, offset, parent_offset,
+        type->child->type_dissect_from_buffer(type->child, ui_set_signal_text_cb,
+                                              user_data, buffer, offset, parent_offset,
                                               type->name == NULL ? indent: indent+4);
     if (type->name) {
         INDENTED(stdout, indent,   fprintf(stdout, "</%s>\n", type->name));

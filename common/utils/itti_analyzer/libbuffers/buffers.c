@@ -10,13 +10,6 @@
 
 extern int debug_buffers;
 
-buffer_list_t list = {
-    .head = NULL,
-    .tail = NULL,
-    .count = 0,
-};
-pthread_mutex_t buffer_list_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 static
 int buffer_fetch(buffer_t *buffer, uint32_t offset, int size, void *value);
 
@@ -121,8 +114,6 @@ int buffer_new_from_data(buffer_t **buffer, uint8_t *data, const uint32_t length
         new->buffer_current = NULL;
     }
 
-    new->next = NULL;
-
     *buffer = new;
 
     return 0;
@@ -195,50 +186,4 @@ int buffer_has_enouch_data(buffer_t *buffer, uint32_t offset, uint32_t to_get)
         g_debug("Detected Underflow offset %u, to_get %u, buffer size %u\n",
                 offset, to_get, buffer->size_bytes);
     return underflow;
-}
-
-int buffer_get_from_mn(const uint32_t message_number, buffer_t **buffer)
-{
-    buffer_t *temp_buf;
-
-    if (!buffer)
-        return RC_BAD_PARAM;
-
-    for (temp_buf = list.head; temp_buf; temp_buf = temp_buf->next) {
-        if (temp_buf->message_number == message_number) {
-            break;
-        }
-    }
-
-    *buffer = temp_buf;
-
-    return RC_OK;
-}
-
-int buffer_add_to_list(buffer_t *new_buf)
-{
-    if (!new_buf)
-        return RC_BAD_PARAM;
-
-    pthread_mutex_lock(&buffer_list_mutex);
-
-    /* No element at tail */
-    if (list.tail == NULL) {
-        if (list.head == NULL) {
-            list.head = new_buf;
-            list.tail = list.head;
-        } else {
-            return RC_FAIL;
-        }
-    } else {
-        list.tail->next = new_buf;
-        new_buf->previous = list.tail;
-        list.tail = new_buf;
-    }
-
-    list.count++;
-
-    pthread_mutex_unlock(&buffer_list_mutex);
-
-    return RC_OK;
 }

@@ -2,6 +2,7 @@ AM_CFLAGS =	\
 	@ADD_CFLAGS@	\
 	-I$(top_srcdir)/common	\
 	-I$(top_srcdir)/libparser	\
+	-I$(top_srcdir)/libui	\
 	-I$(top_srcdir)/libbuffers
 
 noinst_LTLIBRARIES = libresolver.la

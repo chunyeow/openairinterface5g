@@ -3,15 +3,11 @@
 #ifndef UI_INTERFACE_H_
 #define UI_INTERFACE_H_
 
-typedef int (*ui_signal_set_text_t)(char *text, int length);
+/*******************************************************************************
+ * Functions used between dissectors and GUI to update signal dissection
+ ******************************************************************************/
 
-typedef struct {
-
-    /** core program -> UI */
-    ui_signal_set_text_t           ui_signal_set_text;
-} ui_interface_t;
-
-extern ui_interface_t ui_interface;
+typedef gboolean (*ui_set_signal_text_cb_t) (gpointer user_data, gchar *text, gint length);
 
 /*******************************************************************************
  * Pipe interface between GUI thread and other thread

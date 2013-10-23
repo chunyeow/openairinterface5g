@@ -13,11 +13,6 @@
 #include "socket.h"
 #include "xml_parse.h"
 
-ui_interface_t ui_interface = {
-
-    .ui_signal_set_text           = ui_signal_set_text,
-};
-
 static
 gboolean ui_callback_on_pipe_notification(
     GIOChannel *source, GIOCondition condition, gpointer user_data)

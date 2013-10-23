@@ -6,19 +6,17 @@
 #include "pointer_type.h"
 #include "ui_interface.h"
 
-int pointer_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset,
-                                int indent) {
-    int length = 0;
-    char cbuf[200];
-    char *cpy = NULL;
+int pointer_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+{
+    int          length = 0;
+    char         cbuf[200];
+    uint32_t     value;
 
     DISPLAY_PARSE_INFO("pointer", type->name, offset, parent_offset);
 
     memset (cbuf, 0, 200);
-
-//     int i;
-//     CHECK_FCT(buffer_has_enouch_data(buffer, offset, type->size / 8));
-    uint32_t value;
 
     value = buffer_get_uint32_t (buffer, parent_offset + offset);
 
@@ -39,12 +37,8 @@ int pointer_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t
     }
 
     length = strlen (cbuf);
-    cpy = malloc (length * sizeof(char));
-    memcpy (cpy, cbuf, length);
-    ui_interface.ui_signal_set_text (cpy, length);
 
-    if (cpy)
-        free (cpy);
+    ui_set_signal_text_cb(user_data, cbuf, length);
 
     return 0;
 }

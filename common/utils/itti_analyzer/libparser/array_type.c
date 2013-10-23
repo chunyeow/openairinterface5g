@@ -7,8 +7,10 @@
 #include "fundamental_type.h"
 #include "ui_interface.h"
 
-int array_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset,
-                              int indent) {
+int array_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+{
     struct types_s *type_child;
 
     DISPLAY_PARSE_INFO("array", type->name, offset, parent_offset);
@@ -47,24 +49,23 @@ int array_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t o
             }
         }
         for (i = 0; i < (items - zero_counter); i++)
-            type->child->type_dissect_from_buffer (type->child, buffer, parent_offset, offset + i * type_child->size,
-                                                   type->name == NULL ? indent : indent + 4);
+            type->child->type_dissect_from_buffer (
+                type->child, ui_set_signal_text_cb, user_data, buffer, parent_offset,
+                offset + i * type_child->size, type->name == NULL ? indent : indent + 4);
         if (zero_counter > 0)
         {
-            int length = 0;
-             char cbuf[50];
-             char *cpy = NULL;
+            int  length = 0;
+            char cbuf[50];
 
-             INDENTED_STRING(cbuf, type->name == NULL ? indent : indent + 4,);
+            INDENTED_STRING(cbuf, type->name == NULL ? indent : indent + 4,);
 
-             length = sprintf(cbuf, "[%d .. %d]  ", i, items -1);
-             cpy = malloc(sizeof(char) * length);
-             memcpy(cpy, cbuf, length);
-             ui_interface.ui_signal_set_text(cpy, length);
-             if (cpy)
-                 free(cpy);
+            length = sprintf(cbuf, "[%d .. %d]  ", i, items -1);
 
-             type->child->type_dissect_from_buffer (type->child, buffer, parent_offset, offset + i * type_child->size, 0);
+//              ui_interface.ui_signal_set_text(cpy, length);
+            ui_set_signal_text_cb(user_data, cbuf, length);
+            type->child->type_dissect_from_buffer (
+                type->child, ui_set_signal_text_cb, user_data,
+                buffer, parent_offset, offset + i * type_child->size, 0);
         }
     }
     if (type->name) {

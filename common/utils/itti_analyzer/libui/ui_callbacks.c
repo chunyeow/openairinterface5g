@@ -43,13 +43,18 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
                              GtkTreeModel     *model,
                              GtkTreePath      *path,
                              gboolean          path_currently_selected,
-                             gpointer          userdata)
+                             gpointer          user_data)
 {
+    ui_text_view_t *text_view;
     GtkTreeIter iter;
+
+    text_view = (ui_text_view_t *)user_data;
+
+    g_assert(text_view != NULL);
 
     if (gtk_tree_model_get_iter(model, &iter, path))
     {
-        gchar *name;
+//         gchar *name;
         GValue buffer_store = G_VALUE_INIT;
         gpointer buffer;
 
@@ -64,15 +69,17 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
         if (!path_currently_selected)
         {
             /* Clear the view */
-            CHECK_FCT_DO(ui_signal_dissect_clear_view(), return FALSE);
-            CHECK_FCT_DO(dissect_signal((buffer_t*)buffer), return FALSE);
-        }
-        else
-        {
-            g_debug("%s is going to be unselected", name);
-        }
+            CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
 
-        g_free(name);
+            /* Dissect the signal */
+            CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+        }
+//         else
+//         {
+//             g_debug("%s is going to be unselected", name);
+//         }
+// 
+//         g_free(name);
     }
     return TRUE;
 }
@@ -92,7 +99,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
                                 data);
 }
 
-static gboolean ui_handle_update_signal_list(gint fd, const void *data,
+static gboolean ui_handle_update_signal_list(gint fd, void *data,
                                              size_t data_length)
 {
     pipe_new_signals_list_message_t *signal_list_message;
@@ -145,7 +152,7 @@ static gboolean ui_handle_socket_connection_lost(gint fd)
     return TRUE;
 }
 
-static gboolean ui_handle_socket_xml_definition(gint fd, const void *data,
+static gboolean ui_handle_socket_xml_definition(gint fd, void *data,
                                                 size_t data_length)
 {
     pipe_xml_definition_message_t *xml_definition_message;

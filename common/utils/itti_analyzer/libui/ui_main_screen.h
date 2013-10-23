@@ -1,3 +1,5 @@
+#include "ui_signal_dissect_view.h"
+
 #ifndef UI_MAIN_SCREEN_H_
 #define UI_MAIN_SCREEN_H_
 
@@ -6,9 +8,9 @@ typedef struct {
     GtkWidget *ipentry;
     GtkWidget *portentry;
 
-    GtkWidget *progressbar;
-    GtkWidget *signalslist;
-    GtkWidget *textview;
+    GtkWidget      *progressbar;
+    GtkWidget      *signalslist;
+    ui_text_view_t *text_view;
 
     /* Buttons */
     GtkToolItem *connect;

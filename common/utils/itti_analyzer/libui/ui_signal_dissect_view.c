@@ -8,67 +8,74 @@
 #include "ui_menu_bar.h"
 #include "ui_signal_dissect_view.h"
 
-int ui_signal_dissect_new(GtkWidget *hbox)
+ui_text_view_t *ui_signal_dissect_new(GtkWidget *hbox)
 {
     GtkWidget *scrolled_window;
+    ui_text_view_t *new_text_view;
 
-    ui_main_data.textview = gtk_text_view_new();
+    new_text_view = malloc(sizeof(ui_text_view_t));
+
+    new_text_view->text_view = gtk_text_view_new();
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 
-    CHECK_BUFFER(ui_main_data.textview);
-
     /* Disable editable attribute */
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(ui_main_data.textview), FALSE);
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(new_text_view->text_view), FALSE);
 
     gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
-                                          ui_main_data.textview);
+                                          new_text_view->text_view);
 
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, TRUE, TRUE, 5);
 
-    return 0;
+    return new_text_view;
 }
 
-int ui_signal_dissect_clear_view(void)
+int ui_signal_dissect_clear_view(ui_text_view_t *text_view)
 {
-    GtkTextBuffer *textbuffer;
+    GtkTextBuffer *text_buffer;
 
-    textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui_main_data.textview));
+    g_assert(text_view != NULL);
 
-    CHECK_BUFFER(textbuffer);
+    text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view->text_view));
 
     /* If a text buffer is present for the textview remove it */
-    if (textbuffer) {
-        gtk_text_view_set_buffer(GTK_TEXT_VIEW(ui_main_data.textview), NULL);
-//         g_object_unref(textbuffer);
+    if (text_buffer != NULL) {
+        gtk_text_view_set_buffer(GTK_TEXT_VIEW(text_view->text_view), NULL);
     }
+
     return RC_OK;
 }
 
-int ui_signal_set_text(char *text, int length)
+gboolean ui_signal_set_text(gpointer user_data, gchar *text, gint length)
 {
-    GtkTextBuffer *textbuffer;
+    GtkTextBuffer  *text_buffer;
+    ui_text_view_t *text_view;
 
     if (length < 0)
-        return RC_BAD_PARAM;
+        return FALSE;
 
-    CHECK_BUFFER(text);
+    text_view = (ui_text_view_t *)user_data;
 
-    // fprintf (stdout, "%*s", length, text);
+    g_assert(text != NULL);
+    g_assert(text_view != NULL);
+    g_assert(text_view->text_view != NULL);
 
-    textbuffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(ui_main_data.textview));
+    g_assert(GTK_IS_TEXT_VIEW(GTK_TEXT_VIEW(text_view->text_view)));
 
-    if (textbuffer) {
+    text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view->text_view));
+
+    if (text_buffer) {
         /* We already have a text buffer, use it */
-        gtk_text_buffer_insert_at_cursor(textbuffer, text, length);
+        gtk_text_buffer_insert_at_cursor(text_buffer, text, length);
     } else {
         /* No buffer currently in use, create a new one */
-        textbuffer = gtk_text_buffer_new(NULL);
-        gtk_text_buffer_set_text(textbuffer, text, length);
-        gtk_text_view_set_buffer(GTK_TEXT_VIEW(ui_main_data.textview), textbuffer);
+        text_buffer = gtk_text_buffer_new(NULL);
+        gtk_text_buffer_set_text(text_buffer, text, length);
+        gtk_text_view_set_buffer(GTK_TEXT_VIEW(text_view->text_view),
+                                 text_buffer);
     }
 
-    return RC_OK;
+    return TRUE;
 }

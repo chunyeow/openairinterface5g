@@ -10,8 +10,10 @@
 #include "ui_interface.h"
 
 /* There is only one special case of union which is associated to an index: the message id */
-int union_msg_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset,
-                                  int indent) {
+int union_msg_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+{
     uint32_t message_id;
 
     DISPLAY_PARSE_INFO("union_msg", type->name, offset, parent_offset);
@@ -19,17 +21,19 @@ int union_msg_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32
     CHECK_FCT(get_message_id(type->head, buffer, &message_id));
 
     if (type->members_child[message_id] != NULL)
-        type->members_child[message_id]->type_dissect_from_buffer (type->members_child[message_id], buffer, offset,
-                                                                   parent_offset, indent);
+        type->members_child[message_id]->type_dissect_from_buffer(
+            type->members_child[message_id], ui_set_signal_text_cb, user_data,
+            buffer, offset, parent_offset, indent);
 
     return RC_OK;
 }
 
-int union_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset,
-                              int indent) {
+int union_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+{
     int length = 0;
     char cbuf[200];
-    char *cpy = NULL;
 
     DISPLAY_PARSE_INFO("union", type->name, offset, parent_offset);
 
@@ -44,31 +48,23 @@ int union_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t o
     }
 
     length = strlen (cbuf);
-    cpy = malloc (length * sizeof(char));
-    memcpy (cpy, cbuf, length);
-    ui_interface.ui_signal_set_text (cpy, length);
 
-    if (cpy)
-        free (cpy);
+    ui_set_signal_text_cb(user_data, cbuf, length);
 
     /* Only dissect the first field present in unions */
     if (type->members_child[0] != NULL)
-        type->members_child[0]->type_dissect_from_buffer (type->members_child[0], buffer, offset, parent_offset,
-                                                          type->name == NULL ? indent : indent + 4);
+        type->members_child[0]->type_dissect_from_buffer(
+            type->members_child[0], ui_set_signal_text_cb, user_data, buffer,
+            offset, parent_offset, type->name == NULL ? indent : indent + 4);
 
     if (type->name) {
-//         INDENTED(stdout, indent,   fprintf(stdout, "</%s>\n", type->name));
         DISPLAY_TYPE("Uni");
         INDENTED_STRING(cbuf, indent, sprintf(cbuf, "};\n"));
     }
 
     length = strlen (cbuf);
-    cpy = malloc (length * sizeof(char));
-    memcpy (cpy, cbuf, length);
-    ui_interface.ui_signal_set_text (cpy, length);
 
-    if (cpy)
-        free (cpy);
+    ui_set_signal_text_cb(user_data, cbuf, length);
 
     return 0;
 }

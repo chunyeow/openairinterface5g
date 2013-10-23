@@ -50,6 +50,8 @@ ui_tree_view_init_list(GtkWidget *list)
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
 
+    gtk_tree_view_columns_autosize(GTK_TREE_VIEW(list));
+
     g_object_unref(store);
 }
 
@@ -117,7 +119,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 //     gtk_widget_get_size_request(GTK_WIDGET(ui_main_data.signalslist), &width, NULL);
     gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 350, -1);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
-    CHECK_FCT(ui_signal_dissect_new(hbox));
+    ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 5);
 
@@ -125,7 +127,8 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 //                      G_CALLBACK(ui_callback_on_select_signal), NULL);
 
     /* Connect callback on row selection */
-    gtk_tree_selection_set_select_function(selection, ui_callback_on_select_signal, NULL, NULL);
+    gtk_tree_selection_set_select_function(selection, ui_callback_on_select_signal,
+                                           ui_main_data.text_view, NULL);
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "buffers.h"
+#include "ui_interface.h"
 
 #ifndef TYPES_H_
 #define TYPES_H_
@@ -15,17 +16,17 @@
 #define ENABLE_DISPLAY_BRACE        0
 
 #if (ENABLE_DISPLAY_TYPE != 0)
-# define DISPLAY_TYPE(tYPE) ui_interface.ui_signal_set_text(tYPE, strlen(tYPE));
+# define DISPLAY_TYPE(tYPE) ui_set_signal_text_cb(user_data, tYPE, strlen(tYPE));
 #else
 # define DISPLAY_TYPE(tYPE)
 #endif
 
 #if (ENABLE_DISPLAY_PARSE_INFO != 0)
-# define DISPLAY_PARSE_INFO(tYPE, nAME, oFFSET, pARENToFFSET)   \
-    {                                                           \
-        char buf[200];                                          \
+# define DISPLAY_PARSE_INFO(tYPE, nAME, oFFSET, pARENToFFSET)                       \
+    {                                                                               \
+        char buf[200];                                                              \
         sprintf(buf, "/* %s \"%s\" %d %d */\n", tYPE, nAME, oFFSET, pARENToFFSET);  \
-        ui_interface.ui_signal_set_text(buf, strlen(buf));      \
+        ui_set_signal_text_cb(user_data, buf, strlen(buf));                         \
     }
 #else
 # define DISPLAY_PARSE_INFO(tYPE, nAME, oFFSET, pARENToFFSET)
@@ -63,12 +64,15 @@ typedef int (*type_file_print_t)(struct types_s *type, int indent, FILE *file);
 /**
  * type_dissect_from_buffer_t
  * @param type The current type
+ * @param ui_set_signal_text_cb GUI display function
+ * @param user_data Transparent data to pass to the GUI display function
  * @param buffer The buffer containing data to dissect
  * @param offset offset of field from the beginning of the parent
  * @param parent_offset offset of the parent from begining
  **/
-typedef int (*type_dissect_from_buffer_t)(struct types_s *type, buffer_t *buffer,
-                                          uint32_t offset, uint32_t parent_offset, int indent);
+typedef int (*type_dissect_from_buffer_t)(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent);
 
 typedef struct types_s {
     /* The type of the current description */
@@ -152,7 +156,7 @@ do {                                    \
 #define INDENTED_STRING(sTR, x, y)              \
 do {                                            \
     int indentation = x;                        \
-    while(indentation--) ui_interface.ui_signal_set_text(" ", 1);     \
+    while(indentation--) ui_set_signal_text_cb(user_data, " ", 1);     \
     y;                                          \
 } while(0)
 

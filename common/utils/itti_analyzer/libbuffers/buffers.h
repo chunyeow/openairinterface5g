@@ -17,17 +17,7 @@ typedef struct buffer_s {
     uint32_t message_number;
 
     uint32_t message_id;
-
-    struct buffer_s *previous;
-    struct buffer_s *next;
 } buffer_t;
-
-typedef struct {
-    buffer_t *head;
-    buffer_t *tail;
-
-    uint32_t count;
-} buffer_list_t;
 
 uint8_t buffer_get_uint8_t(buffer_t *buffer, uint32_t offset);
 
@@ -45,9 +35,5 @@ int buffer_new_from_data(buffer_t **buffer, uint8_t *data, const uint32_t length
                          int data_static);
 
 int buffer_has_enouch_data(buffer_t *buffer, uint32_t offset, uint32_t to_get);
-
-int buffer_add_to_list(buffer_t *new_buf);
-
-int buffer_get_from_mn(const uint32_t message_number, buffer_t **buffer);
 
 #endif /* BUFFERS_H_ */

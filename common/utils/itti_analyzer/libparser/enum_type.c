@@ -22,8 +22,8 @@ char *enum_type_get_name_from_value(struct types_s *type, uint32_t value)
 }
 
 int enum_type_dissect_from_buffer(
-    struct types_s *type, buffer_t *buffer, uint32_t offset,
-    uint32_t parent_offset, int indent)
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
 {
     uint32_t value = 0;
     types_t *values;
@@ -32,33 +32,22 @@ int enum_type_dissect_from_buffer(
 
     value = buffer_get_uint32_t(buffer, parent_offset + offset);
 
-//     if (type->name) {
-//         INDENTED(stdout, indent,   fprintf(stdout, "<%s>\n", type->name));
-//     }
     for (values = type->child; values; values = values->next) {
         if (value == values->init_value) {
             values->type_dissect_from_buffer(
-                values, buffer, offset, parent_offset,
+                values, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset,
                 type->name == NULL ? indent: indent+4);
             break;
         }
     }
     if (values == NULL) {
-//         INDENTED(stdout, indent+4, fprintf(stdout, "<UNKNOWN/>\n"));
         int length = 0;
         char cbuf[50];
-        char *cpy = NULL;
 
         length = sprintf(cbuf, "(0x%08x) UNKNOWN;\n", value);
-        cpy = malloc(sizeof(char) * length);
-        memcpy(cpy, cbuf, length);
-        ui_interface.ui_signal_set_text(cpy, length);
-        if (cpy)
-            free(cpy);
+
+        ui_set_signal_text_cb(user_data, cbuf, length);
     }
-//     if (type->name) {
-//         INDENTED(stdout, indent,   fprintf(stdout, "</%s>\n", type->name));
-//     }
 
     return 0;
 }

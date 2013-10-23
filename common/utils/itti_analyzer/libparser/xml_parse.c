@@ -729,22 +729,21 @@ static int xml_parse_doc(xmlDocPtr doc) {
     return ret;
 }
 
-int dissect_signal(buffer_t *buffer) {
-//     buffer_t *buffer;
-
+int dissect_signal(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_cb,
+                   gpointer user_data)
+{
     if (root == NULL) {
 //         ui_notification_dialog(DIALOG_ERROR, "No message XML file provided");
         return RC_FAIL;
     }
-
-//     CHECK_FCT(buffer_get_from_mn(message_number, &buffer));
 
     if (buffer == NULL) {
         g_error("Failed buffer is NULL\n");
         return RC_FAIL;
     }
 
-    root->type_dissect_from_buffer(root, buffer, 0, 0, INDENT_START);
+    root->type_dissect_from_buffer(root, ui_set_signal_text_cb, user_data,
+                                   buffer, 0, 0, INDENT_START);
 
     return RC_OK;
 }

@@ -30,13 +30,14 @@ uint32_t fundamental_read_from_buffer(struct types_s *type, buffer_t *buffer, ui
     return value;
 }
 
-int fundamental_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset,
-                                    int indent) {
-    int length = 0;
-    char cbuf[200];
-    char *cpy = NULL;
-    int type_unsigned;
-    uint32_t value;
+int fundamental_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+{
+    int         length = 0;
+    char        cbuf[200];
+    int         type_unsigned;
+    uint32_t    value;
 
     DISPLAY_PARSE_INFO("fundamental", type->name, offset, parent_offset);
 
@@ -72,12 +73,8 @@ int fundamental_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint
     }
 
     length = strlen (cbuf);
-    cpy = malloc (length * sizeof(char));
-    memcpy (cpy, cbuf, length);
-    ui_interface.ui_signal_set_text (cpy, length);
 
-    if (cpy)
-        free (cpy);
+    ui_set_signal_text_cb(user_data, cbuf, length);
 
     return 0;
 }

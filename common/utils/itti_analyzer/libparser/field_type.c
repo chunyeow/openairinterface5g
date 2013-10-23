@@ -9,11 +9,12 @@
 #include "buffers.h"
 #include "ui_interface.h"
 
-int field_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset,
-                              int indent) {
+int field_dissect_from_buffer(
+    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+{
     int length = 0;
     char cbuf[50];
-    char *cpy = NULL;
     struct types_s *type_child;
     char array_info[50];
     int indent_child;
@@ -47,34 +48,30 @@ int field_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t o
             DISPLAY_TYPE("Fld");
             INDENTED_STRING(cbuf, indent, sprintf(cbuf, ".%s%s = ", type->name ? type->name : "Field", array_info));
             length = strlen (cbuf);
-            cpy = malloc (sizeof(char) * length);
-            memcpy (cpy, cbuf, length);
-            ui_interface.ui_signal_set_text (cpy, length);
-            if (cpy)
-                free (cpy);
+
+            ui_set_signal_text_cb(user_data, cbuf, length);
 
             indent_child = indent;
             if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
-                DISPLAY_BRACE(ui_interface.ui_signal_set_text ("{", 1);)
-                ui_interface.ui_signal_set_text ("\n", 1);
+                DISPLAY_BRACE(ui_set_signal_text_cb(user_data, "{", 1);)
+                ui_set_signal_text_cb(user_data, "\n", 1);
                 indent_child += 4;
             }
             if (type_child->type == TYPE_FUNDAMENTAL || type_child->type == TYPE_POINTER) {
                 indent_child = 0;
             }
 
-            CHECK_FCT(
-                    type->child->type_dissect_from_buffer( type->child, buffer, parent_offset, offset + type->offset, indent_child));
+            CHECK_FCT(type->child->type_dissect_from_buffer(
+                    type->child, ui_set_signal_text_cb, user_data, buffer,
+                    parent_offset, offset + type->offset, indent_child));
 
             DISPLAY_BRACE(
                     if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
                         DISPLAY_TYPE("Fld");
                         INDENTED_STRING(cbuf, indent, sprintf(cbuf, "};\n"));
                         length = strlen (cbuf);
-                        cpy = malloc (sizeof(char) * length); memcpy (cpy, cbuf, length);
-                        ui_interface.ui_signal_set_text (cpy, length);
-                        if (cpy)
-                        free (cpy);
+
+                        ui_set_signal_text_cb(user_data, cbuf, length);
                     });
         }
     }
@@ -90,11 +87,8 @@ int field_dissect_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t o
                 indent,
                 sprintf(cbuf, ".%s:%d = (0x%0*x)  %d;\n", type->name ? type->name : "Field", type->bits, (type->bits + 3) / 4, value, value));
         length = strlen (cbuf);
-        cpy = malloc (sizeof(char) * length);
-        memcpy (cpy, cbuf, length);
-        ui_interface.ui_signal_set_text (cpy, length);
-        if (cpy)
-            free (cpy);
+
+        ui_set_signal_text_cb(user_data, cbuf, length);
     }
 
     return 0;
