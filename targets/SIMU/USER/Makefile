@@ -325,11 +325,7 @@ ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
 -include $(OAISIM_PAD_OBJS:.o=.d)
 -include $(ASN1_MSG_OBJS1:.o=.d)
 
-$(ITTI_MESSAGES_H) : $(ITTI_MESSAGES_XML)
-	@echo "Generating messages_xml.h ..."
-	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
-
-$(ITTI_MESSAGES_XML) : $(ITTI_MESSAGES_FILE)
+$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
 	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
 	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
@@ -339,7 +335,15 @@ $(ITTI_MESSAGES_XML) : $(ITTI_MESSAGES_FILE)
 	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
 	@rm -f $(basename $@).d.tmp
 
-$(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) : %.o : %.c
+$(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
+	@echo "Generating messages_xml.h ..."
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
+
+$(OAISIM_OBJS): $(ITTI_MESSAGES_H)
+
+oaisim_pad.o: $(ITTI_MESSAGES_H)
+
+$(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1): %.o : %.c
 	@echo Compiling $<
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $*.c > $*.d
@@ -368,12 +372,12 @@ $(S1AP_DIR)/libs1ap.a: $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp $(ASN1MESSAGESDIR)/
 $(LFDS_DIR)/bin/liblfds611.a:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux
 
-oaisim_pad : $(ITTI_MESSAGES_H) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
+oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
 	@echo "Linking oaisim_pad ..."
 	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
 	 -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt
 
-oaisim : $(ITTI_MESSAGES_H) $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) $(LIB)
+oaisim: $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) $(LIB)
 	@echo "Linking oaisim ..."
 	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) \
 	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt \
@@ -386,7 +390,7 @@ ifeq ($(rrc_cellular_UE),1)
 	mv oaisim oaisim_UE
 endif
 
-oaisimCROWN : $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
+oaisimCROWN: $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
 	@$(CC) oaisimCROWN.c -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt 
 
@@ -488,7 +492,7 @@ print:
 showcflags:
 	@echo $(CFLAGS)
 
-otg_all : otg_latency otg_gp
+otg_all: otg_latency otg_gp
 
 # need to check if the file exists before calling otgplot
 otg_latency:
