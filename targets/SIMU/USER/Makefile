@@ -209,13 +209,11 @@ CFLAGS_S1AP += -DENB_MODE -DENABLE_USE_MME -DEMIT_ASN_DEBUG=1 -DUSER_MODE
 S1AP_BUILT_OBJS += $(S1AP_OBJS) $(addprefix $(OPENAIR2_DIR)/S1AP/MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
 endif
 
-ifdef ENABLE_ITTI
 ITTI_MESSAGES_H = messages_xml.h
 
 ITTI_MESSAGES_XML = messages.xml
 
 ITTI_MESSAGES_FILE =  $(ITTI_DIR)/intertask_interface_types.h
-endif
 
 SIMULATION_OBJS  = $(TOP_DIR)/SIMULATION/TOOLS/gauss.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/TOOLS/random_channel.o
@@ -425,49 +423,50 @@ cleanall: clean cleanasn1 cleanmmeasn1
 
 clean:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
-	rm -f oaisim
-	rm -f oaisim_pad
-	rm -f $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML)
-	rm -f $(OBJ)
-	rm -f $(S1AP_BUILT_OBJS)
-	rm -f $(ASN1MESSAGESDIR)/libs1ap.a
-	rm -f *.o
-	rm -f *.exe*
-	rm -f $(ASN1_MSG_INC)/asn1_msg.o
-	rm -f  $(OBJ:.o=.d) $(ASN1_MSG_OBJS1:.o=.d)
+	@rm -f -v oaisim
+	@rm -f -v oaisim_pad
+	@rm -f -v $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
+	@rm -f -v $(OBJ) $(OBJ:.o=.d)
+	@rm -f -v $(OAISIM_OBJS) $(OAISIM_OBJS:.o=.d)
+	@rm -f -v $(OAISIM_PAD_OBJS) $(OAISIM_PAD_OBJS:.o=.d)
+	@rm -f -v $(ASN1_MSG_OBJS1) $(ASN1_MSG_OBJS1:.o=.d)
+	@rm -f -v $(S1AP_BUILT_OBJS)
+	@rm -f -v $(ASN1MESSAGESDIR)/libs1ap.a
+	@rm -f -v *.exe*
+	@rm -f -v $(ASN1_MSG_INC)/asn1_msg.o
 
 cleanl1:
-	rm -f oaisim
-	rm -f $(PHY_OBJS) $(SCHED_OBJS)
-	rm -f *.o
-	rm -f *.exe
+	@rm -f -v LOG_THREAD oaisim
+	@rm -f -v $(PHY_OBJS) $(SCHED_OBJS)
+	@rm -f -v *.o
+	@rm -f -v *.exe
 
 cleanl2:
-	rm -f $(L2_OBJS)
-	rm $(ASN1_MSG_INC)/asn1_msg.o
+	@rm -f -v $(L2_OBJS)
+	@rm -f -v $(ASN1_MSG_INC)/asn1_msg.o
 
 cleanasn1:
-	rm -f $(ASN1_MSG_OBJS1)
-	$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ; rm -f $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS) *.o *.d )
-	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.am.sample
-	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
-	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
-	rm -f $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
+	@rm -f -v $(ASN1_MSG_OBJS1)
+	@$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ; rm -f -v $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS) *.o *.d )
+	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.am.sample
+	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
+	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
+	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
 
 cleanmmeasn1:
-	rm -f $(S1AP_BUILT_OBJS)
-	rm -f $(S1AP_BUILT_OBJS:.o:.c)
-	rm -f $(ASN1MESSAGESDIR)/libs1ap.a
-	rm -f $(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp
-	rm -f $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp
+	@rm -f -v $(S1AP_BUILT_OBJS)
+	@rm -f -v $(S1AP_BUILT_OBJS:.o:.c)
+	@rm -f -v $(ASN1MESSAGESDIR)/libs1ap.a
+	@rm -f -v $(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp
+	@rm -f -v $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp
 
 cleancell:
-	rm -f $(OPENAIR2_DIR)/RRC/CELLULAR/*.o
-	rm -f $(OPENAIR2_DIR)/RRC/CELLULAR/*.d
-	rm -f $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.o
-	rm -f $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.d
-	rm -f $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.o
-	rm -f $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
+	@rm -f -v $(OPENAIR2_DIR)/RRC/CELLULAR/*.o
+	@rm -f -v $(OPENAIR2_DIR)/RRC/CELLULAR/*.d
+	@rm -f -v $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.o
+	@rm -f -v $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.d
+	@rm -f -v $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.o
+	@rm -f -v $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
 
 print:
 #	@echo $(cygwin)
