@@ -67,6 +67,7 @@
 #define EXMIMO_GET_FRAME            0x0006
 #define EXMIMO_START_RT_ACQUISITION 0x0007
 #define EXMIMO_STOP                 0x0008
+#define EXMIMO_STOP_WITHOUT_RESET   0x0009
 
 #define IS_EXMIMOCMD_FROM_PC(x)  ( (x)<0x1000 ? 1 : 0)
 
