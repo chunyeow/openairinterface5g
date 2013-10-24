@@ -215,13 +215,6 @@ ITTI_MESSAGES_H = messages_xml.h
 ITTI_MESSAGES_XML = messages.xml
 
 ITTI_MESSAGES_FILE =  $(ITTI_DIR)/intertask_interface_types.h
-
-ITTI_MESSAGES_FILES =  $(ITTI_DIR)/intertask_messages_def.h
-ITTI_MESSAGES_FILES += $(ITTI_DIR)/timer_messages_def.h
-ITTI_MESSAGES_FILES += $(ITTI_DIR)/timer_messages_types.h
-ITTI_MESSAGES_FILES += $(OPENAIR2_DIR)/COMMON/tasks_def.h
-ITTI_MESSAGES_FILES += $(OPENAIR2_DIR)/COMMON/messages_def.h
-ITTI_MESSAGES_FILES += $(OPENAIR2_DIR)/COMMON/messages_types.h
 endif
 
 SIMULATION_OBJS  = $(TOP_DIR)/SIMULATION/TOOLS/gauss.o
@@ -318,14 +311,6 @@ printvars:
 	@echo CFLAGS: $(CFLAGS)
 	@echo Enable PGM: $(ENABLE_PGM)
 
-$(ITTI_MESSAGES_H) : $(ITTI_MESSAGES_XML)
-	@echo "Generating messages_xml.h ..."
-	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
-
-$(ITTI_MESSAGES_XML) : $(ITTI_MESSAGES_FILE) $(ITTI_MESSAGES_FILES)
-	@echo "Generating messages.xml ..."
-	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
-
 ASN1RELDIR=R9.8
 ifeq ($(USE_MME), R8)
 	ASN1RELDIR=R8.10
@@ -336,8 +321,25 @@ S1AP_DIR=$(OPENAIR2_DIR)/S1AP
 ASN1MESSAGESDIR=$(S1AP_DIR)/MESSAGES
 ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
 
+-include $(ITTI_MESSAGES_XML:.xml:.d)
 -include $(OBJ:.o=.d)
+-include $(OAISIM_OBJS:.o=.d)
+-include $(OAISIM_PAD_OBJS:.o=.d)
 -include $(ASN1_MSG_OBJS1:.o=.d)
+
+$(ITTI_MESSAGES_H) : $(ITTI_MESSAGES_XML)
+	@echo "Generating messages_xml.h ..."
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
+
+$(ITTI_MESSAGES_XML) : $(ITTI_MESSAGES_FILE)
+	@echo "Generating messages.xml ..."
+	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
+	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $<).d
+	@mv -f $(basename $<).d $(basename $<).d.tmp
+	@sed -e 's|.*:|$@:|' < $(basename $<).d.tmp > $(basename $<).d
+	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $<).d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $<).d
+	@rm -f $(basename $<).d.tmp
 
 $(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) : %.o : %.c
 	@echo Compiling $<
