@@ -573,6 +573,21 @@ static int parse_pointer_type(xmlNode *node, types_t **head) {
     return 0;
 }
 
+static int parse_function_type(xmlNode *node, types_t **head) {
+    types_t *new;
+
+    if (node == NULL)
+        return -1;
+
+    new = type_new (TYPE_FUNCTION);
+
+    CHECK_FCT(parse_attribute_id(node, new));
+
+    CHECK_FCT(types_insert_tail(head, new));
+
+    return 0;
+}
+
 /**
  * print_element_names:
  * @a_node: the initial xml node to consider.
@@ -620,12 +635,16 @@ static int parse_elements(xmlNode * a_node, types_t **head) {
                                             }
                                             else
                                                 if (strcmp ((char *) child_node->name, "ArrayType") == 0) {
-                                                    CHECK_FCT_DO(parse_array_type(child_node, head),  return RC_FAIL);
+                                                    CHECK_FCT_DO(parse_array_type(child_node, head), return RC_FAIL);
                                                 }
                                                 else
                                                     if (strcmp ((char *) child_node->name, "PointerType") == 0) {
-                                                        CHECK_FCT_DO(parse_pointer_type(child_node, head),  return RC_FAIL);
+                                                        CHECK_FCT_DO(parse_pointer_type(child_node, head), return RC_FAIL);
                                                     }
+                                                    else
+                                                        if (strcmp ((char *) child_node->name, "FunctionType") == 0) {
+                                                            CHECK_FCT_DO(parse_function_type(child_node, head), return RC_FAIL);
+                                                        }
             }
         }
     }
@@ -713,6 +732,7 @@ static int xml_parse_doc(xmlDocPtr doc) {
         resolve_struct (&head);
         resolve_file (&head);
         resolve_union (&head);
+        resolve_function (&head);
         /* Locate the root element which corresponds to the MessageDef struct */
         CHECK_FCT(locate_root("MessageDef", head, &root));
         /* Locate the message id enumeration */

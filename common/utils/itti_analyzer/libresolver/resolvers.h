@@ -17,6 +17,8 @@ int resolve_union(types_t **head);
 
 int resolve_file(types_t **head);
 
+int resolve_function(types_t **head);
+
 int search_file(types_t *head, types_t **found, int id);
 
 #endif /* RESOLVERS_H_ */

@@ -206,7 +206,7 @@ int resolve_pointer_type(types_t **head)
         if (next_type->type != TYPE_POINTER)
             continue;
 
-//         printf("Trying to resolve pointer id %d with type %d\n",
+//        g_debug("Trying to resolve pointer id %d with type %d\n",
 //                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
@@ -288,6 +288,33 @@ int resolve_array(types_t **head)
             continue;
 
 //         printf("Trying to resolve array id %d with type %d\n",
+//                next_type->id, next_type->type_xml);
+
+        if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
+            /* We have to remove this reference */
+        }
+//         next_type->type_hr_display(next_type, 0);
+    }
+
+    return 0;
+}
+
+int resolve_function(types_t **head)
+{
+    types_t *next_type;
+
+    if (!head) {
+        g_warning("Empty list detected");
+        return RESOLV_LIST_EMPTY;
+    }
+
+    for (next_type = *head; next_type; next_type = next_type->next)
+    {
+        /* Only resolve typedef */
+        if (next_type->type != TYPE_FUNCTION)
+            continue;
+
+//        g_debug("Trying to resolve function id %d with type %d\n",
 //                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {

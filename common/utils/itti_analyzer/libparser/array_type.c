@@ -61,7 +61,6 @@ int array_dissect_from_buffer(
 
             length = sprintf(cbuf, "[%d .. %d]  ", i, items -1);
 
-//              ui_interface.ui_signal_set_text(cpy, length);
             ui_set_signal_text_cb(user_data, cbuf, length);
             type->child->type_dissect_from_buffer (
                 type->child, ui_set_signal_text_cb, user_data,

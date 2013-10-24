@@ -238,6 +238,13 @@ gboolean ui_callback_on_connect(GtkWidget *widget,
     /* Disable the connect button */
     ui_disable_connect_button();
 
+    /* Disable buttons to move in the list of signals */
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), FALSE);
+    ui_tree_view_destroy_list(ui_main_data.signalslist);
+
     if (socket_connect_to_remote_host(ip, port, pipe_fd[1]) != 0) {
         ui_enable_connect_button();
         return FALSE;

@@ -26,6 +26,9 @@ types_t *type_new(enum type_e type)
     new_p->type = type;
 
     switch(type) {
+        case TYPE_FUNCTION:
+            /* Nothing to do for now. Display is done by pointer type */
+            break;
         case TYPE_ENUMERATION:
             new_p->type_hr_display = enum_type_hr_display;
             new_p->type_file_print = enum_type_file_print;

@@ -27,6 +27,8 @@ uint32_t buffer_get_uint32_t(buffer_t *buffer, uint32_t offset);
 
 int buffer_fetch_bits(buffer_t *buffer, uint32_t offset, int nbits, uint32_t *value);
 
+int buffer_fetch_nbytes(buffer_t *buffer, uint32_t offset, int n_bytes, uint8_t *value);
+
 void buffer_dump(buffer_t *buffer, FILE *to);
 
 int buffer_append_data(buffer_t *buffer, const uint8_t *data, const uint32_t length);

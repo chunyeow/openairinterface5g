@@ -52,12 +52,23 @@ int buffer_fetch(buffer_t *buffer, uint32_t offset, int size, void *value)
         return -1;
 
     if (buffer->size_bytes < ((offset >> 3) + size)) {
-        g_debug("Not enough data to fetch");
+        g_warning("Not enough data to fetch");
         return -1;
     }
 
     memcpy(value, &buffer->data[offset >> 3], size);
     buffer->buffer_current = &buffer->data[(offset >> 3) + size];
+
+    return 0;
+}
+
+int buffer_fetch_nbytes(buffer_t *buffer, uint32_t offset, int n_bytes, uint8_t *value)
+{
+    if (buffer->size_bytes < ((offset >> 3) + n_bytes)) {
+        g_warning("Not enough data to fetch");
+        return -1;
+    }
+    memcpy(&value[0], &buffer->data[offset >> 3], n_bytes);
 
     return 0;
 }
