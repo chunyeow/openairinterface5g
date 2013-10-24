@@ -321,7 +321,7 @@ S1AP_DIR=$(OPENAIR2_DIR)/S1AP
 ASN1MESSAGESDIR=$(S1AP_DIR)/MESSAGES
 ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
 
--include $(ITTI_MESSAGES_XML:.xml:.d)
+-include $(ITTI_MESSAGES_XML:.xml=.d)
 -include $(OBJ:.o=.d)
 -include $(OAISIM_OBJS:.o=.d)
 -include $(OAISIM_PAD_OBJS:.o=.d)
@@ -334,12 +334,12 @@ $(ITTI_MESSAGES_H) : $(ITTI_MESSAGES_XML)
 $(ITTI_MESSAGES_XML) : $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
 	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
-	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $<).d
-	@mv -f $(basename $<).d $(basename $<).d.tmp
-	@sed -e 's|.*:|$@:|' < $(basename $<).d.tmp > $(basename $<).d
-	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $<).d.tmp | fmt -1 | \
-	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $<).d
-	@rm -f $(basename $<).d.tmp
+	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
+	@mv -f $(basename $@).d $(basename $@).d.tmp
+	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
+	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
+	@rm -f $(basename $@).d.tmp
 
 $(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) : %.o : %.c
 	@echo Compiling $<
