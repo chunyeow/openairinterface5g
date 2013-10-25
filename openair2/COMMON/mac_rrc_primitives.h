@@ -331,8 +331,8 @@ typedef struct{   //RRC_INTERFACE_FUNCTIONS
   char (*openair_rrc_eNB_init)(u8 ); 
   char (*openair_rrc_UE_init)(u8, u8); 
   RRC_status_t (*rrc_rx_tx)(u8,u32,u8,u8); 
-  u8 (*mac_rrc_data_ind)(u8,u32,unsigned short,char *,unsigned short,u8 eNB_flag, u8 eNB_index);
-  u8 (*mac_rrc_data_req)(u8,u32,unsigned short,u8,char *,u8 eNB_flag, u8 eNB_index);
+  u8 (*mac_rrc_data_ind)(u8,u32,u16,u8 *,u16,u8 eNB_flag, u8 eNB_index);
+  u8 (*mac_rrc_data_req)(u8,u32,u16,u8,u8 *,u8 eNB_flag, u8 eNB_index);
   void (*mac_rrc_meas_ind)(u8,MAC_MEAS_REQ_ENTRY*);
   void  (*def_meas_ind)(u8, u8);
   void (*rrc_data_indP)  (module_id_t , rb_id_t , sdu_size_t , char*);

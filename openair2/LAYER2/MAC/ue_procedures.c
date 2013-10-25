@@ -348,13 +348,13 @@ void ue_send_sdu(u8 Mod_id,u32 frame,u8 *sdu,u16 sdu_len,u8 eNB_index) {
 #if defined(ENABLE_MAC_PAYLOAD_DEBUG)
       int j;
       for (j=0;j<rx_lengths[i];j++)
-        LOG_T(MAC,"%x.",(unsigned char)payload_ptr[j]);
+        LOG_T(MAC,"%x.",(u8)payload_ptr[j]);
       LOG_T(MAC,"\n");
 #endif      
       mac_rrc_data_ind(Mod_id,
 		       frame,
 		       CCCH,
-		       (char *)payload_ptr,rx_lengths[i],0,eNB_index,0);
+		       (u8 *)payload_ptr,rx_lengths[i],0,eNB_index,0);
 
     }
     else if (rx_lcids[i] == DCCH) {
@@ -415,7 +415,7 @@ void ue_decode_si(u8 Mod_id,u32 frame, u8 eNB_index, void *pdu,u16 len) {
   mac_rrc_data_ind(Mod_id,
 		   frame,
 		   BCCH,
-		   (char *)pdu,
+		   (u8 *)pdu,
 		   len,
 		   0,
 		   eNB_index,

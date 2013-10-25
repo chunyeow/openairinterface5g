@@ -265,7 +265,7 @@ void terminate_ra_proc(u8 Mod_id,u32 frame,u16 rnti,unsigned char *msg3, u16 msg
 	}
 
 	if (Is_rrc_registered == 1)
-	  mac_rrc_data_ind(Mod_id,frame,CCCH,(char *)payload_ptr,rx_lengths[0],1,Mod_id,0);
+	  mac_rrc_data_ind(Mod_id,frame,CCCH,(u8 *)payload_ptr,rx_lengths[0],1,Mod_id,0);
 	// add_user.  This is needed to have the rnti for configuring UE (PHY). The UE is removed if RRC
 	// doesn't provide a CCCH SDU
 
@@ -979,7 +979,7 @@ void schedule_SI(unsigned char Mod_id,u32 frame, unsigned char *nprb,unsigned in
   bcch_sdu_length = mac_rrc_data_req(Mod_id,
 				     frame,
 				     BCCH,1,
-				     (char*)&eNB_mac_inst[Mod_id].BCCH_pdu.payload[0],
+				     &eNB_mac_inst[Mod_id].BCCH_pdu.payload[0],
 				     1,
 				     Mod_id,
 				     0); // not used in this case 
@@ -1595,7 +1595,7 @@ void schedule_RA(unsigned char Mod_id,u32 frame, unsigned char subframe,unsigned
 	  rrc_sdu_length = mac_rrc_data_req(Mod_id,
 					    frame,
 					    CCCH,1,
-					    (char*)&eNB_mac_inst[Mod_id].CCCH_pdu.payload[0],
+					    &eNB_mac_inst[Mod_id].CCCH_pdu.payload[0],
 					    1,
 					    Mod_id,
 					    0); // not used in this case 
@@ -3376,7 +3376,7 @@ void schedule_ue_spec(unsigned char Mod_id,
   u16 sdu_length_total=0;
   //  unsigned char loop_count;
   unsigned char DAI;
-  u16 i=0,ii=0,tpmi0=1;
+  u16 i=0;
   u8 dl_pow_off[NUMBER_OF_UE_MAX];
   unsigned char rballoc_sub_UE[NUMBER_OF_UE_MAX][N_RBGS_MAX];
 //   unsigned char rballoc_sub[N_RBGS_MAX];
@@ -4191,7 +4191,9 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
   unsigned int nCCE=0;
   int mbsfn_status=0;
   u32 RBalloc=0;
+#ifdef EXMIMO
   int ret;
+#endif
 
   DCI_PDU *DCI_pdu= &eNB_mac_inst[Mod_id].DCI_pdu;
   //  LOG_D(MAC,"[eNB %d] Frame %d, Subframe %d, entering MAC scheduler\n",Mod_id, frame, subframe);

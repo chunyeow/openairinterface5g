@@ -51,6 +51,10 @@
 #include "ReportConfigToAddModList.h"
 #include "MeasIdToAddModList.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 //#include "PHY/defs.h"
 #ifndef USER_MODE
 #define msg printk
@@ -1627,7 +1631,7 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
 }
 #endif
 
-uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,int rsrp_t,int rsrq_t) {
+uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,long rsrp_t,long rsrq_t) {
 
 
   asn_enc_rval_t enc_rval;
@@ -1725,7 +1729,7 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   return((enc_rval.encoded+7)/8);
 }
 
-OAI_UECapability_t UECapability;
+static OAI_UECapability_t UECapability; /* TODO declared static to allow returning this has an address should be allocated in a cleaner way. */
 SupportedBandEUTRA_t Bandlist[4];
 BandInfoEUTRA_t BandInfo_meas[4];
 InterFreqBandInfo_t InterFreqBandInfo[4][4];
@@ -1778,7 +1782,7 @@ OAI_UECapability_t *fill_ue_capability() {
   UE_EUTRA_Capability = CALLOC(1,sizeof(*UE_EUTRA_Capability));
   memset(UE_EUTRA_Capability,0,sizeof(*UE_EUTRA_Capability));
 
-  //  UE_EUTRA_Capability->accessStratumRelease = 0;//AccessStratumRelease_rel8;
+  UE_EUTRA_Capability->accessStratumRelease = 0;//AccessStratumRelease_rel8;
   UE_EUTRA_Capability->ue_Category          = 4;
   UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0001=0;
   UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0002=0;
@@ -1837,11 +1841,31 @@ OAI_UECapability_t *fill_ue_capability() {
 				   (void*)UE_EUTRA_Capability,
 				   &UECapability.sdu[0],
   				   MAX_UE_CAPABILITY_SIZE);
-  UECapability.sdu_size = (enc_rval.encoded+7)/8;
-  LOG_I(PHY,"[RRC]UE Capability encoded, %d bytes (%d bits)\n",UECapability.sdu_size,enc_rval.encoded+7);
-  for (i=0;i<UECapability.sdu_size;i++)
-    printf("%02x.",UECapability.sdu[i]);
-  printf("\n");
+
+#if defined(ENABLE_ITTI)
+  /* Test code */
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY);
+    memcpy (&message_p->msg, UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
+
+    itti_send_msg_to_task (TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+  }
+#endif
+
+  UECapability.sdu_size = (enc_rval.encoded + 7) / 8;
+  LOG_I(PHY, "[RRC]UE Capability encoded, %d bytes (%d bits)\n", UECapability.sdu_size, enc_rval.encoded+7);
+  {
+    char *sdu;
+    sdu = malloc (3 * UECapability.sdu_size);
+
+    for (i = 0; i < UECapability.sdu_size; i++)
+      sprintf (&sdu[3 * i], "%02x.", UECapability.sdu[i]);
+
+    LOG_D(PHY, "[RRC]UE Capability encoded, %s\n", sdu);
+  }
+
   return(&UECapability);
 }
 

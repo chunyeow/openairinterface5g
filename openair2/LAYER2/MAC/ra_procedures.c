@@ -240,7 +240,7 @@ PRACH_RESOURCES_t *ue_get_rach(u8 Mod_id,u32 frame, u8 eNB_index,u8 subframe){
 	Size = mac_rrc_data_req(Mod_id,
 				frame,
 				CCCH,1,
-				(char*)&UE_mac_inst[Mod_id].CCCH_pdu.payload[sizeof(SCH_SUBHEADER_SHORT)+1],0,
+				&UE_mac_inst[Mod_id].CCCH_pdu.payload[sizeof(SCH_SUBHEADER_SHORT)+1],0,
 				eNB_index);
 	Size16 = (u16)Size;
 	

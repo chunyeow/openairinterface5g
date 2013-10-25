@@ -27,6 +27,10 @@
 
 #include "cor_SF_sim.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 #ifdef SMBV
 extern u8 config_smbv;
 extern char smbv_ip[16];
@@ -110,7 +114,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:j:k:L:l:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVx:y:w:W:X:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:j:k:L:l:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
@@ -568,6 +572,15 @@ void init_openair2() {
 #ifdef OPENAIR2
   s32 i;
   s32 UE_id;
+
+#if defined(ENABLE_ITTI)
+  if (itti_create_task(TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
+    exit (-1);;
+  }
+#endif
+
   l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,oai_emulation.info.eMBMS_active_state, oai_emulation.info.cba_group_active);
   printf ("after L2 init: Nid_cell %d\n", PHY_vars_eNB_g[0]->lte_frame_parms.Nid_cell);
   printf ("after L2 init: frame_type %d,tdd_config %d\n",

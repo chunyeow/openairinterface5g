@@ -376,29 +376,13 @@ void *l2l1_task(void *args_p) {
   char fname[64], vname[64];
 
 #if defined(ENABLE_ITTI)
-  MessageDef *message_p;
-  long timer_id;
+    MessageDef *message_p;
 
-  itti_mark_task_ready(TASK_L2L1);
-
-  /* Test code */
-  {
-    message_p = itti_alloc_new_message(TASK_L2L1, MESSAGE_TEST);
-
-    itti_send_msg_to_task(TASK_L2L1, INSTANCE_DEFAULT, message_p);
-
-    /* Request for periodic timer */
-    if (timer_setup(1, 0, TASK_L2L1, INSTANCE_DEFAULT,
-            TIMER_PERIODIC, NULL, &timer_id) < 0)
-    {
-      LOG_E(EMU, "Failed to request new timer with %ds "
-          "of periocidity\n", 1);
-      timer_id = 0;
-    }
-  }
+    itti_mark_task_ready (TASK_L2L1);
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
+
 #if defined(ENABLE_ITTI)
     // Checks if a message has been sent to L2L1 task
     itti_poll_msg(TASK_L2L1, INSTANCE_ALL, &message_p);
@@ -811,9 +795,6 @@ void *l2l1_task(void *args_p) {
   } //end of frame
 
 #if defined(ENABLE_ITTI)
-  /* Stops test timer */
-  timer_remove(timer_id);
-
   itti_terminate_tasks(TASK_L2L1);
 #endif
 
@@ -1004,7 +985,7 @@ int main(int argc, char **argv) {
   LOG_N(EMU, "\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU initialization done <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
 #if defined(ENABLE_ITTI)
-  if (itti_create_task(TASK_L2L1, &l2l1_task, NULL) < 0) {
+  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
     LOG_E(EMU, "Create task failed");
     LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
     return -1;
