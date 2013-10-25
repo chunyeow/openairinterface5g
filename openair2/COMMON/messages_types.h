@@ -10,5 +10,6 @@
 
 #include "timer_messages_types.h"
 
+#include "rrc_messages_types.h"
 
 #endif /* MESSAGES_TYPES_H_ */
