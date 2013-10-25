@@ -233,7 +233,7 @@ extern "C" {
 
 typedef enum {
     MIN_LOG_COMPONENTS = 0,
-    PHY,
+    PHY = MIN_LOG_COMPONENTS,
     MAC,
     EMU,
     OCG,
@@ -270,12 +270,15 @@ typedef struct {
 
 typedef struct  {
     const char *name;
-    int level;
-    int flag;
-    int interval;
-    int   fd;
-    int   filelog;
-    char* filelog_name;
+    int         level;
+    int         flag;
+    int         interval;
+    int         fd;
+    int         filelog;
+    char       *filelog_name;
+
+    /* SR: make the log buffer component relative */
+    char        log_buffer[MAX_LOG_TOTAL];
 }log_component_t;
 
 typedef struct  {
@@ -285,7 +288,7 @@ typedef struct  {
     int  facility;
     int  audit_facility;
     int  format;
-}log_config_t;
+} log_config_t;
 
 
 typedef struct {
@@ -311,6 +314,14 @@ typedef struct LOG_params {
   int len;
 } LOG_params;
 
+extern log_t *g_log;
+
+#if !defined(LOG_NO_THREAD)
+extern LOG_params log_list[2000];
+extern pthread_mutex_t log_lock;
+extern pthread_cond_t log_notify;
+extern int log_shutdown;
+#endif
 
 /*--- INCLUDES ---------------------------------------------------------------*/
 #    include "log_if.h"
