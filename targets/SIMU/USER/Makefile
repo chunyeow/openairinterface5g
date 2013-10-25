@@ -1,5 +1,6 @@
 CC = gcc
 MPICC = gcc #mpicc
+RM_F_V = rm -f -v
 
 CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
 # FORCE ssse3 for compilation of openair on User Mode Linux
@@ -431,51 +432,51 @@ rrm_std_cellular:
 cleanall: clean cleanasn1 cleanmmeasn1
 
 clean:
-	$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
-	@rm -f -v oaisim
-	@rm -f -v oaisim_pad
-	@rm -f -v $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
-	@rm -f -v $(OBJ) $(OBJ:.o=.d)
-	@rm -f -v $(OAISIM_OBJS) $(OAISIM_OBJS:.o=.d)
-	@rm -f -v $(OAISIM_PAD_OBJS) $(OAISIM_PAD_OBJS:.o=.d)
-	@rm -f -v $(ASN1_MSG_OBJS1) $(ASN1_MSG_OBJS1:.o=.d)
-	@rm -f -v $(S1AP_BUILT_OBJS)
-	@rm -f -v $(ASN1MESSAGESDIR)/libs1ap.a
-	@rm -f -v *.exe*
-	@rm -f -v $(ASN1_MSG_INC)/asn1_msg.o
+	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
+	@$(RM_F_V) oaisim
+	@$(RM_F_V) oaisim_pad
+	@$(RM_F_V) $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
+	@$(RM_F_V) $(OBJ) $(OBJ:.o=.d)
+	@$(RM_F_V) $(OAISIM_OBJS) $(OAISIM_OBJS:.o=.d)
+	@$(RM_F_V) $(OAISIM_PAD_OBJS) $(OAISIM_PAD_OBJS:.o=.d)
+	@$(RM_F_V) $(ASN1_MSG_OBJS1) $(ASN1_MSG_OBJS1:.o=.d)
+	@$(RM_F_V) $(S1AP_BUILT_OBJS)
+	@$(RM_F_V) $(ASN1MESSAGESDIR)/libs1ap.a
+	@$(RM_F_V) *.exe*
+	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
 
 cleanl1:
-	@rm -f -v LOG_THREAD oaisim
-	@rm -f -v $(PHY_OBJS) $(SCHED_OBJS)
-	@rm -f -v *.o
-	@rm -f -v *.exe
+	@$(RM_F_V) LOG_THREAD oaisim
+	@$(RM_F_V) $(PHY_OBJS) $(SCHED_OBJS)
+	@$(RM_F_V) *.o
+	@$(RM_F_V) *.exe
 
 cleanl2:
-	@rm -f -v $(L2_OBJS)
-	@rm -f -v $(ASN1_MSG_INC)/asn1_msg.o
+	@$(RM_F_V) $(L2_OBJS)
+	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
 
 cleanasn1:
-	@rm -f -v $(ASN1_MSG_OBJS1)
-	@$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ; rm -f -v $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS) *.o *.d )
-	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.am.sample
-	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
-	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
-	@rm -f -v $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
+	@$(RM_F_V) $(ASN1_MSG_OBJS1)
+	$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ; rm -f $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS) *.o *.d)
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.am.sample
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
 
 cleanmmeasn1:
-	@rm -f -v $(S1AP_BUILT_OBJS)
-	@rm -f -v $(S1AP_BUILT_OBJS:.o:.c)
-	@rm -f -v $(ASN1MESSAGESDIR)/libs1ap.a
-	@rm -f -v $(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp
-	@rm -f -v $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp
+	@$(RM_F_V) $(S1AP_BUILT_OBJS)
+	@$(RM_F_V) $(S1AP_BUILT_OBJS:.o:.c)
+	@$(RM_F_V) $(ASN1MESSAGESDIR)/libs1ap.a
+	@$(RM_F_V) $(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp
+	@$(RM_F_V) $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp
 
 cleancell:
-	@rm -f -v $(OPENAIR2_DIR)/RRC/CELLULAR/*.o
-	@rm -f -v $(OPENAIR2_DIR)/RRC/CELLULAR/*.d
-	@rm -f -v $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.o
-	@rm -f -v $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.d
-	@rm -f -v $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.o
-	@rm -f -v $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/CELLULAR/*.o
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/CELLULAR/*.d
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.o
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.d
+	@$(RM_F_V) $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.o
+	@$(RM_F_V) $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
 
 print:
 #	@echo $(cygwin)
