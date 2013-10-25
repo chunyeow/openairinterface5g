@@ -40,7 +40,7 @@ int pointer_dissect_from_buffer(
     length = strlen (cbuf);
 
     /* Append the value */
-    for (i = type->size / 8 - 1; i != 0; i--) {
+    for (i = type->size / 8 - 1; i >= 0; i--) {
         length += sprintf(&cbuf[length], "%02x", value[i]);
     }
 
