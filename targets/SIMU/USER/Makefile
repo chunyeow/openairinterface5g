@@ -161,7 +161,10 @@ endif
 
 CFLAGS += $(shell if [ `uname -o` = "Cygwin" ] ; then echo "-DCYGWIN" ;fi)
 
-CFLAGS += -DENABLE_FXP -DOAI_EMU -DENABLE_USE_CPU_EXECUTION_TIME -DXER_PRINT
+CFLAGS += -DENABLE_FXP -DOAI_EMU -DENABLE_USE_CPU_EXECUTION_TIME
+ifndef DISABLE_XER_PRINT
+CFLAGS += -DXER_PRINT
+endif
 
 ifneq ($(USE_MME), R8)
 UPDATE_RELEASE_9=1
@@ -339,9 +342,11 @@ $(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
 	@echo "Generating messages_xml.h ..."
 	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
 
+ifdef ENABLE_ITTI
 $(OAISIM_OBJS): $(ITTI_MESSAGES_H)
 
 oaisim_pad.o: $(ITTI_MESSAGES_H)
+endif
 
 $(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1): %.o : %.c
 	@echo Compiling $<
