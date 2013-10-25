@@ -60,7 +60,7 @@
 /* Declared in intertask_interface.c */
 extern int itti_debug;
 
-#define ITTI_DEBUG(x, args...) do { fprintf(stdout, "[ITTI][D]"x, ##args); } \
+#define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); } \
     while(0)
 #define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); } \
     while(0)
