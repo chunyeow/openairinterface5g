@@ -115,8 +115,8 @@ void itti_poll_msg(task_id_t task_id, instance_t instance, MessageDef **received
  * @returns -1 on failure, 0 otherwise
  **/
 int itti_create_task(task_id_t task_id,
-                                    void *(*start_routine) (void *),
-                                    void *args_p);
+                     void *(*start_routine) (void *),
+                     void *args_p);
 
 /** \brief Mark the task as in ready state
  * \param task_id task to mark as ready
@@ -137,13 +137,18 @@ void itti_terminate_tasks(task_id_t task_id);
  **/
 char *itti_get_message_name(MessagesIds message_id);
 
+/** \brief Return the printable string associated with a task id
+ * \param thread_id Id of the task
+ **/
+char *itti_get_task_name(task_id_t task_id);
+
 /** \brief Alloc and memset(0) a new itti message.
  * \param origin_task_id Task ID of the sending task
  * \param message_id Message ID
  * @returns NULL in case of failure or newly allocated mesage ref
  **/
 inline MessageDef *itti_alloc_new_message(
-    task_id_t      origin_task_id,
+    task_id_t   origin_task_id,
     MessagesIds message_id);
 
 /** \brief handle signals and wait for all threads to join when the process complete.

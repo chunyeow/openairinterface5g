@@ -76,8 +76,7 @@ struct message_list_s {
 
 typedef struct task_desc_s {
     /* Queue of messages belonging to the task */
-    STAILQ_HEAD(message_queue_head, message_list_s)
-    message_queue;
+    STAILQ_HEAD(message_queue_head, message_list_s) message_queue;
 
     /* Number of messages in the queue */
     volatile uint32_t message_in_queue;
@@ -85,7 +84,7 @@ typedef struct task_desc_s {
     pthread_mutex_t message_queue_mutex;
     /* Conditional var for message queue and task synchro */
     pthread_cond_t message_queue_cond_var;
-    pthread_t task_thread;
+    pthread_t      task_thread;
     volatile task_state_t task_state;
 } task_desc_t;
 
@@ -123,6 +122,15 @@ char *itti_get_message_name(MessagesIds message_id) {
     DevCheck(message_id < itti_desc.messages_id_max, message_id, itti_desc.messages_id_max, 0);
 
     return (itti_desc.messages_info[message_id].name);
+}
+
+char *itti_get_task_name(task_id_t task_id)
+{
+    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
+
+    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+
+    return (itti_desc.threads_name[thread_id]);
 }
 
 int itti_send_broadcast_message(MessageDef *message_p) {
@@ -371,7 +379,7 @@ void itti_exit_task(void) {
 }
 
 void itti_terminate_tasks(task_id_t task_id) {
-// Sends Terminate signals to all tasks.
+    // Sends Terminate signals to all tasks.
     itti_send_terminate_message (task_id);
 
     if (itti_desc.thread_handling_signals >= 0) {

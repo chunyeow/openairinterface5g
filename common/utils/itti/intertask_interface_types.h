@@ -131,9 +131,9 @@ typedef struct MessageHeader_s
 {
         MessagesIds messageId; /**< Unique message id as referenced in enum MessagesIds */
 
-        task_id_t originTaskId; /**< ID of the sender task */
-        task_id_t destinationTaskId; /**< ID of the destination task */
-        instance_t instance; /* Task instance for virtualization */
+        task_id_t  originTaskId;        /**< ID of the sender task */
+        task_id_t  destinationTaskId;   /**< ID of the destination task */
+        instance_t instance;            /**< Task instance for virtualization */
 
         MessageHeaderSize size; /**< Message size (not including header size) */
 } MessageHeader;
