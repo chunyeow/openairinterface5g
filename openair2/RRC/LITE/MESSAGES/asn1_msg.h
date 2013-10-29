@@ -15,6 +15,8 @@
 
 #include "RRC/LITE/defs.h"
 
+uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index);
+
 /** 
 \brief Generate a default configuration for SIB1 (eNB).
 @param frame_parms Used to store some basic parameters from PHY configuration

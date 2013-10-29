@@ -45,10 +45,7 @@
 #include "COMMON/mac_rrc_primitives.h"
 #include "UTIL/LOG/log.h"
 #include "asn1_msg.h"
-
-#if defined(ENABLE_ITTI)
-# include "intertask_interface.h"
-#endif
+#include "pdcp.h"
 
 #define DEBUG_RRC 1
 extern eNB_MAC_INST *eNB_mac_inst;
@@ -309,7 +306,7 @@ void rrc_t310_expiration(u32 frame, u8 Mod_id, u8 eNB_index) {
       msg ("[RRC Inst %d] eNB_index %d, Remove RB %d\n ", Mod_id, eNB_index,
            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
       rrc_pdcp_config_req (Mod_id + NB_eNB_INST, frame, 0, ACTION_REMOVE,
-                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
+                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, 0);
       rrc_rlc_config_req (Mod_id + NB_eNB_INST, frame, 0, ACTION_REMOVE,
                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, SIGNALLING_RADIO_BEARER, Rlc_info_um);
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Active = 0;
@@ -374,116 +371,3 @@ RRC_status_t rrc_rx_tx(u8 Mod_id, u32 frame, u8 eNB_flag, u8 index) {
 
   return (RRC_OK);
 }
-
-#if defined(ENABLE_ITTI)
-void *rrc_ue_task(void *args_p) {
-  MessageDef *msg_p;
-  char *msg_name;
-  instance_t instance;
-  SRB_INFO *srb_info_p;
-
-  itti_mark_task_ready (TASK_RRC_UE);
-
-  while(1) {
-    // Wait for a message
-    itti_receive_msg (TASK_RRC_UE, &msg_p);
-
-    msg_name = ITTI_MSG_NAME (msg_p);
-    instance = ITTI_MSG_INSTANCE (msg_p);
-
-    switch (msg_p->header.messageId) {
-      case TERMINATE_MESSAGE:
-        itti_exit_task ();
-        break;
-
-      case MESSAGE_TEST:
-        LOG_D(RRC, "Received %s\n", msg_name);
-        break;
-
-      case RRC_MAC_IN_SYNC_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
-              RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
-
-        UE_rrc_inst[instance].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N310_cnt = 0;
-        if (UE_rrc_inst[instance].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].T310_active == 1)
-          UE_rrc_inst[instance].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N311_cnt++;
-        break;
-
-      case RRC_MAC_OUT_OF_SYNC_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
-              RRC_MAC_OUT_OF_SYNC_IND (msg_p).frame, RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index);
-
-        UE_rrc_inst[instance].Info[RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index].N310_cnt ++;
-        break;
-
-      case RRC_MAC_BCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
-              RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
-
-        decode_BCCH_DLSCH_Message (instance, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
-                                   RRC_MAC_BCCH_DATA_IND (msg_p).enb_index, RRC_MAC_BCCH_DATA_IND (msg_p).sdu_p,
-                                   RRC_MAC_BCCH_DATA_IND (msg_p).sdu_size);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_BCCH_DATA_IND (msg_p).sdu_p);
-        break;
-
-      case RRC_MAC_CCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
-              RRC_MAC_CCCH_DATA_IND (msg_p).frame, RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
-
-        srb_info_p = &UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_DATA_IND (msg_p).enb_index];
-
-        memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p,
-                RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
-        srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
-        rrc_ue_decode_ccch (instance, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p,
-                            RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p);
-        break;
-
-      case RRC_MAC_CCCH_SUCCESS_IND:
-        LOG_D(RRC, "Received %s: instance %d, eNB %d\n", msg_name, instance,
-              RRC_MAC_CCCH_SUCCESS_IND (msg_p).enb_index);
-
-        // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
-        UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_SUCCESS_IND (msg_p).enb_index].Tx_buffer.payload_size = 0;
-        break;
-
-#ifdef Rel10
-      case RRC_MAC_MCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d, mbsfn SA %d\n", msg_name, instance,
-              RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).eNB_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
-
-        decode_MCCH_Message (instance, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).eNB_index,
-                             RRC_MAC_MCCH_DATA_IND (msg_p).sdu_p, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
-                             RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_MCCH_DATA_IND (msg_p).sdu_p);
-        break;
-#endif
-
-      case RRC_DCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
-              RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
-
-        rrc_ue_decode_dcch (instance, RRC_DCCH_DATA_IND (msg_p).frame,
-                            RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).sdu_p,
-                            RRC_DCCH_DATA_IND (msg_p).ue_index);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_DCCH_DATA_IND (msg_p).sdu_p);
-        break;
-
-      default:
-        LOG_E(RRC, "Received unexpected message %s\n", msg_name);
-        break;
-    }
-
-    free (msg_p);
-  }
-}
-#endif

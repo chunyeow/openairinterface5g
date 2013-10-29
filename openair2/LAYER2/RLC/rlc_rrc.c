@@ -571,8 +571,8 @@ rlc_op_status_t rrc_rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t 
 }
 
 //-----------------------------------------------------------------------------
-void   rrc_rlc_register_rrc ( void            (*rrc_data_indP)  (module_id_t module_idP, u32_t frame, u8_t eNB_id, rb_id_t rb_idP, sdu_size_t sdu_sizeP, char* sduP),
-							  void            (*rrc_data_confP) (module_id_t module_idP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP) ) {
+void   rrc_rlc_register_rrc ( void            (*rrc_data_indP)  (module_id_t module_idP, u32_t frame, u8_t eNB_id, rb_id_t rb_idP, sdu_size_t sdu_sizeP, u8_t* sduP),
+                              void            (*rrc_data_confP) (module_id_t module_idP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP) ) {
 //-----------------------------------------------------------------------------
    rlc_rrc_data_ind  = rrc_data_indP;
    rlc_rrc_data_conf = rrc_data_confP;

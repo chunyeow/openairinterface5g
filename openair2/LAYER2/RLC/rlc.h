@@ -309,8 +309,8 @@ public_rlc_rrc( rlc_op_status_t rrc_rlc_data_req     (module_id_t, u32_t, u8_t, 
 * \param[in]  rrc_data_indP       Pointer on RRC data indicate function.
 * \param[in]  rrc_data_confP      Pointer on RRC data confirm callback function.
 */
-public_rlc_rrc( void   rrc_rlc_register_rrc ( void (*rrc_data_indP)  (module_id_t , u32_t, u8_t, rb_id_t , sdu_size_t , char*),
-                void (*rrc_data_conf) (module_id_t , rb_id_t , mui_t, rlc_tx_status_t) );)
+public_rlc_rrc( void   rrc_rlc_register_rrc ( void (*rrc_data_indP)  (module_id_t , u32_t, u8_t, rb_id_t , sdu_size_t , u8_t*),
+                                              void (*rrc_data_conf) (module_id_t , rb_id_t , mui_t, rlc_tx_status_t) );)
 
 //-----------------------------------------------------------------------------
 //   PUBLIC INTERFACE WITH MAC

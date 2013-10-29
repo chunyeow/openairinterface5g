@@ -72,6 +72,12 @@
 #include "../../S1AP/s1ap_eNB.h"
 #endif
 
+#include "pdcp.h"
+
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 //#define XER_PRINT
 
 #ifdef PHY_EMUL
@@ -89,7 +95,9 @@ init_SI (u8 Mod_id) {
 
   u8 SIwindowsize = 1;
   u16 SIperiod = 8;
+#ifdef Rel10
   int i;
+#endif
   /*
      uint32_t mib=0;
      int i;
@@ -1085,8 +1093,8 @@ rrc_eNB_generate_SecurityModeCommand (u8 Mod_id, u32 frame, u16 UE_index)
          frame, Mod_id, size, UE_index, rrc_eNB_mui, Mod_id,
          (UE_index * NB_RB_MAX) + DCCH);
   //rrc_rlc_data_req(Mod_id,frame, 1,(UE_index*NB_RB_MAX)+DCCH,rrc_eNB_mui++,0,size,(char*)buffer);
-  pdcp_data_req (Mod_id, frame, 1, (UE_index * NB_RB_MAX) + DCCH,
-                 rrc_eNB_mui++, 0, size, (char *) buffer, 1);
+  pdcp_rrc_data_req (Mod_id, frame, 1, (UE_index * NB_RB_MAX) + DCCH,
+                     rrc_eNB_mui++, 0, size, buffer, 1);
 
 }
 
@@ -1110,8 +1118,8 @@ rrc_eNB_generate_UECapabilityEnquiry (u8 Mod_id, u32 frame, u16 UE_index)
          frame, Mod_id, size, UE_index, rrc_eNB_mui, Mod_id,
          (UE_index * NB_RB_MAX) + DCCH);
   //rrc_rlc_data_req(Mod_id,frame, 1,(UE_index*NB_RB_MAX)+DCCH,rrc_eNB_mui++,0,size,(char*)buffer);
-  pdcp_data_req (Mod_id, frame, 1, (UE_index * NB_RB_MAX) + DCCH,
-                 rrc_eNB_mui++, 0, size, (char *) buffer, 1);
+  pdcp_rrc_data_req (Mod_id, frame, 1, (UE_index * NB_RB_MAX) + DCCH,
+                     rrc_eNB_mui++, 0, size, buffer, 1);
 
 }
 
@@ -1167,8 +1175,8 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
   long *logicalchannelgroup, *logicalchannelgroup_drb;
   long *maxHARQ_Tx, *periodicBSR_Timer;
 
-  RSRP_Range_t *rsrp;
-  struct MeasConfig__speedStatePars *Sparams;
+  // RSRP_Range_t *rsrp;
+  // struct MeasConfig__speedStatePars *Sparams;
   CellsToAddMod_t *CellToAdd;
   CellsToAddModList_t *CellsToAddModList;
 
@@ -1600,8 +1608,8 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
          frame, Mod_id, size, UE_index, rrc_eNB_mui, Mod_id,
          (UE_index * NB_RB_MAX) + DCCH);
   //rrc_rlc_data_req(Mod_id,frame, 1,(UE_index*NB_RB_MAX)+DCCH,rrc_eNB_mui++,0,size,(char*)buffer);
-  pdcp_data_req (Mod_id, frame, 1, (UE_index * NB_RB_MAX) + DCCH,
-                 rrc_eNB_mui++, 0, size, (char *) buffer, 1);
+  pdcp_rrc_data_req (Mod_id, frame, 1, (UE_index * NB_RB_MAX) + DCCH,
+                     rrc_eNB_mui++, 0, size, buffer, 1);
 
 }
 
@@ -1979,4 +1987,66 @@ rrc_eNB_generate_RRCConnectionSetup (u8 Mod_id, u32 frame, u16 UE_index)
 */
 #ifndef USER_MODE
 EXPORT_SYMBOL (Rlc_info_am_config);
+#endif
+
+#if defined(ENABLE_ITTI)
+void *rrc_enb_task(void *args_p) {
+  MessageDef *msg_p;
+  char *msg_name;
+  instance_t instance;
+  SRB_INFO *srb_info_p;
+
+  itti_mark_task_ready (TASK_RRC_ENB);
+
+  while(1) {
+    // Wait for a message
+    itti_receive_msg (TASK_RRC_ENB, &msg_p);
+
+    msg_name = ITTI_MSG_NAME (msg_p);
+    instance = ITTI_MSG_INSTANCE (msg_p);
+
+    switch (msg_p->header.messageId) {
+      case TERMINATE_MESSAGE:
+        itti_exit_task ();
+        break;
+
+      case MESSAGE_TEST:
+        LOG_D(RRC, "Received %s\n", msg_name);
+        break;
+
+      case RRC_MAC_CCCH_DATA_IND:
+        LOG_D(RRC, "Received %s: instance %d, frame %d,\n", msg_name, instance,
+              RRC_MAC_CCCH_DATA_IND (msg_p).frame);
+
+        srb_info_p = &eNB_rrc_inst[instance].Srb0;
+
+        memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p,
+                RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
+        srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
+        rrc_eNB_decode_ccch (instance, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p);
+
+        // Message buffer has been processed, free it now.
+        free (RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p);
+        break;
+
+      case RRC_DCCH_DATA_IND:
+        LOG_D(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
+              RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
+
+        rrc_eNB_decode_dcch (instance, RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index,
+                             RRC_DCCH_DATA_IND (msg_p).ue_index, RRC_DCCH_DATA_IND (msg_p).sdu_p,
+                             RRC_DCCH_DATA_IND (msg_p).sdu_size);
+
+        // Message buffer has been processed, free it now.
+        free (RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        break;
+
+      default:
+        LOG_E(RRC, "Received unexpected message %s\n", msg_name);
+        break;
+    }
+
+    free (msg_p);
+  }
+}
 #endif
