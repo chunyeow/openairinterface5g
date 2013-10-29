@@ -44,6 +44,7 @@
 //#include "openair_rrc_utils.h"
 //#include "openair_rrc_main.h"
 #include "UTIL/LOG/log.h"
+#include "pdcp.h"
 
 #ifdef PHY_EMUL
 #include "SIMULATION/simulation_defs.h"
@@ -61,15 +62,10 @@ extern UE_MAC_INST *UE_mac_inst;
 
 u32 mui=0;
 
-s8 mac_rrc_lite_data_req( u8 Mod_id,
-			  u32 frame,
-			  u16 Srb_id,
-			  u8 Nb_tb,
-			  char *Buffer,
-			  u8 eNB_flag,
-			  u8 eNB_index,
-			  u8 mbsfn_sync_area){
-
+//-------------------------------------------------------------------------------------------//
+s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, char *Buffer, u8 eNB_flag, u8 eNB_index,
+                         u8 mbsfn_sync_area) {
+//-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
   u8 Sdu_size=0;
 
@@ -182,8 +178,9 @@ s8 mac_rrc_lite_data_req( u8 Mod_id,
   return(0);
 }
 
+//-------------------------------------------------------------------------------------------//
 s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size,u8 eNB_flag,u8 eNB_index,u8 mbsfn_sync_area){
-
+//-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
   /*
   int si_window;
@@ -333,27 +330,51 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 }
 
 //-------------------------------------------------------------------------------------------//
+// this function is Not USED anymore
 void mac_lite_sync_ind(u8 Mod_id,u8 Status){
+//-------------------------------------------------------------------------------------------//
+}
+
+//-------------------------------------------------------------------------------------------//
+u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+                     unsigned int sdu_size, u8* Buffer, u8 mode) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;
+    // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
+    u8 *message_buffer;
 
-    message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_SYNC_IND);
-    RRC_MAC_SYNC_IND(message_p).status = Status;
+    message_buffer = malloc (sdu_size);
+    memcpy (message_buffer, Buffer, sdu_size);
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
+    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DCCH_DATA_REQ);
+    RRC_DCCH_DATA_REQ (message_p).frame = frame;
+    RRC_DCCH_DATA_REQ (message_p).enb_flag = eNB_flag;
+    RRC_DCCH_DATA_REQ (message_p).rb_id = rb_id;
+    RRC_DCCH_DATA_REQ (message_p).muip = muiP;
+    RRC_DCCH_DATA_REQ (message_p).confirmp = confirmP;
+    RRC_DCCH_DATA_REQ (message_p).sdu_size = sdu_size;
+    RRC_DCCH_DATA_REQ (message_p).sdu_p = message_buffer;
+    RRC_DCCH_DATA_REQ (message_p).mode = mode;
+
+
+    itti_send_msg_to_task (TASK_PDCP, Mod_id, message_p);
+    return TRUE; // TODO should be changed to a CNF message later, currently RRC lite does not used the returned value anyway.
+
   }
+#else
+  return pdcp_data_req (Mod_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_size, Buffer, mode);
 #endif
 }
 
-// this function is Not USED anymore
+//-------------------------------------------------------------------------------------------//
 void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
-
+//-------------------------------------------------------------------------------------------//
   u8 UE_index=(Srb_id-1)/NB_RB_MAX;
   u8 DCCH_index = Srb_id % NB_RB_MAX;
 
-  LOG_N(RRC,"[%s %d] Frame %d: received a DCCH %d message on SRB %d with Size %d (Deprecated function)\n",
+  LOG_N(RRC,"[%s %d] Frame %d: received a DCCH %d message on SRB %d with Size %d\n",
 	(eNB_flag == 1)? "eNB": "UE", 
 	(eNB_flag == 1)? Mod_id : UE_index, 
 	frame, DCCH_index,Srb_id-1,sdu_size);
@@ -387,7 +408,9 @@ void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_si
 
 }
 
+//-------------------------------------------------------------------------------------------//
 void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index) {
+//-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;
@@ -404,8 +427,10 @@ void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index) {
     UE_rrc_inst[Mod_id].Info[eNB_index].N311_cnt++;
 #endif
 }
-void rrc_lite_out_of_sync_ind(u8  Mod_id, u32 frame, u16 eNB_index){
 
+//-------------------------------------------------------------------------------------------//
+void rrc_lite_out_of_sync_ind(u8  Mod_id, u32 frame, u16 eNB_index){
+//-------------------------------------------------------------------------------------------//
 //  rlc_info_t rlc_infoP;
 //  rlc_infoP.rlc_mode=RLC_UM;
 
@@ -431,16 +456,30 @@ void rrc_lite_out_of_sync_ind(u8  Mod_id, u32 frame, u16 eNB_index){
 
 }
 
+//-------------------------------------------------------------------------------------------//
 int mac_get_rrc_lite_status(u8 Mod_id,u8 eNB_flag,u8 index){
+//-------------------------------------------------------------------------------------------//
   if(eNB_flag == 1)
     return(eNB_rrc_inst[Mod_id].Info.Status[index]);
   else
     return(UE_rrc_inst[Mod_id].Info[index].State);
 }
 
-
+//-------------------------------------------------------------------------------------------//
 int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
+//-------------------------------------------------------------------------------------------//
+#if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_CCCH_SUCCESS_IND);
+    RRC_MAC_CCCH_SUCCESS_IND (message_p).enb_index = eNB_index;
+
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_id - NB_eNB_INST, message_p);
+  }
+#else
   // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
   UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size=0;
+#endif
   return 0;
 }

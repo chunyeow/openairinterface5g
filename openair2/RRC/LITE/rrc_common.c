@@ -384,8 +384,7 @@ void *rrc_ue_task(void *args_p) {
 
   itti_mark_task_ready (TASK_RRC_UE);
 
-  while(1)
-  {
+  while(1) {
     // Wait for a message
     itti_receive_msg (TASK_RRC_UE, &msg_p);
 
@@ -445,6 +444,14 @@ void *rrc_ue_task(void *args_p) {
         free (RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p);
         break;
 
+      case RRC_MAC_CCCH_SUCCESS_IND:
+        LOG_D(RRC, "Received %s: instance %d, eNB %d\n", msg_name, instance,
+              RRC_MAC_CCCH_SUCCESS_IND (msg_p).enb_index);
+
+        // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
+        UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_SUCCESS_IND (msg_p).enb_index].Tx_buffer.payload_size = 0;
+        break;
+
 #ifdef Rel10
       case RRC_MAC_MCCH_DATA_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d, mbsfn SA %d\n", msg_name, instance,
@@ -477,6 +484,6 @@ void *rrc_ue_task(void *args_p) {
     }
 
     free (msg_p);
-}
+  }
 }
 #endif

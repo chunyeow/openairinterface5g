@@ -469,6 +469,8 @@ void *rrc_ue_task(void *args_p);
 s8 mac_rrc_lite_data_req( u8 Mod_id, u32 frame, unsigned short Srb_id, u8 Nb_tb,char *Buffer,u8 eNB_flag, u8 eNB_index, u8 mbsfn_sync_area);
 s8 mac_rrc_lite_data_ind( u8 Mod_id,  u32 frame, unsigned short Srb_id, u8 *Sdu, unsigned short Sdu_len,u8 eNB_flag,u8 eNB_index, u8 mbsfn_sync_area);
 void mac_sync_ind( u8 Mod_id, u8 status);
+u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+                     unsigned int sdu_size, u8* Buffer, u8 mode);
 void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
 void rrc_lite_out_of_sync_ind(u8 Mod_id, u32 frame, unsigned short eNB_index);
 

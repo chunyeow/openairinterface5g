@@ -146,6 +146,7 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
 			   MBSFNAreaConfiguration_r9_t **mbsfnAreaConfiguration);
 #endif 
 
+uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,long rsrp_t,long rsrq_t);
 
 OAI_UECapability_t *fill_ue_capability();
 

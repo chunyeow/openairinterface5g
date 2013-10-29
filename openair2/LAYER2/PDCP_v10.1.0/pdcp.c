@@ -56,6 +56,10 @@
 # include "UTIL/OSA/osa_defs.h"
 #endif
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 #define PDCP_DATA_REQ_DEBUG 0
 #define PDCP_DATA_IND_DEBUG 0
 
@@ -471,11 +475,16 @@ BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
 //-----------------------------------------------------------------------------
 void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
   //-----------------------------------------------------------------------------
+#if defined(ENABLE_ITTI)
+  MessageDef *msg_p;
+  char *msg_name;
+  instance_t instance;
+#endif
 
 #ifndef NAS_NETLINK
 #ifdef USER_MODE
 #define PDCP_DUMMY_BUFFER_SIZE 38
-  unsigned char pdcp_dummy_buffer[PDCP_DUMMY_BUFFER_SIZE];
+//  unsigned char pdcp_dummy_buffer[PDCP_DUMMY_BUFFER_SIZE];
 #endif
 #endif
 //     unsigned int diff, i, k, j;
@@ -487,6 +496,40 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
 //     unsigned int ctime=0;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
+
+#if defined(ENABLE_ITTI)
+  do {
+    // Checks if a message has been sent to PDCP sub-task
+    itti_poll_msg (TASK_PDCP, INSTANCE_ALL, &msg_p);
+
+    if (msg_p != NULL) {
+      msg_name = ITTI_MSG_NAME (msg_p);
+      instance = ITTI_MSG_INSTANCE (msg_p);
+
+      switch (msg_p->header.messageId) {
+        case RRC_DCCH_DATA_REQ:
+          LOG_D(PDCP, "Received %s: instance %d, frame %d, eNB_flag %d, rb_id %d, muiP %d, confirmP %d, mode %d\n", msg_name, instance,
+                RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag, RRC_DCCH_DATA_REQ (msg_p).rb_id,
+                RRC_DCCH_DATA_REQ (msg_p).muip, RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).mode);
+
+          pdcp_data_req (instance, RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag,
+                         RRC_DCCH_DATA_REQ (msg_p).rb_id, RRC_DCCH_DATA_REQ (msg_p).muip,
+                         RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).sdu_size,
+                         RRC_DCCH_DATA_REQ (msg_p).sdu_p, RRC_DCCH_DATA_REQ (msg_p).mode);
+
+          // Message buffer has been processed, free it now.
+          free (RRC_DCCH_DATA_REQ (msg_p).sdu_p);
+          break;
+
+        default:
+          LOG_E(PDCP, "Received unexpected message %s\n", itti_get_message_name(msg_p->header.messageId));
+          break;
+      }
+
+      free (msg_p);
+    }
+  } while(msg_p != NULL);
+#endif
 
     /*
       if ((frame % 128) == 0) {

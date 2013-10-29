@@ -116,6 +116,17 @@ void rlcrrc_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, un
 }
 
 /********************************************************************************************************************/
+u8 pdcp_rrc_data_req(u8 module_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+                     unsigned int sdu_buffer_size, u8* sdu_buffer, u8 mode) {
+  /********************************************************************************************************************/
+#ifdef CELLULAR
+  return pdcp_data_req( module_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_buffer_size, sdu_buffer, mode);
+#else
+  return rrc_lite_data_req (module_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_buffer_size, sdu_buffer, mode);
+#endif
+}
+
+/********************************************************************************************************************/
 void pdcp_rrc_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
 /********************************************************************************************************************/
 #ifdef CELLULAR

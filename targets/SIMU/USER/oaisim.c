@@ -376,36 +376,36 @@ void *l2l1_task(void *args_p) {
   char fname[64], vname[64];
 
 #if defined(ENABLE_ITTI)
-    MessageDef *message_p;
+  MessageDef *message_p;
 
-    itti_mark_task_ready (TASK_L2L1);
+  itti_mark_task_ready (TASK_L2L1);
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
 
 #if defined(ENABLE_ITTI)
-    // Checks if a message has been sent to L2L1 task
-    itti_poll_msg(TASK_L2L1, INSTANCE_ALL, &message_p);
+    do {
+      // Checks if a message has been sent to L2L1 task
+      itti_poll_msg (TASK_L2L1, INSTANCE_ALL, &message_p);
 
-    if(message_p != NULL)
-    {
-      switch(message_p->header.messageId)
-      {
-        case TERMINATE_MESSAGE:
-          itti_exit_task();
-          break;
+      if (message_p != NULL) {
+        switch (message_p->header.messageId) {
+          case TERMINATE_MESSAGE:
+            itti_exit_task ();
+            break;
 
-        case MESSAGE_TEST:
-          LOG_D(EMU, "Received %s\n", itti_get_message_name(message_p->header.messageId));
-          break;
+          case MESSAGE_TEST:
+            LOG_D(EMU, "Received %s\n", itti_get_message_name(message_p->header.messageId));
+            break;
 
-        default:
-          LOG_E(EMU, "Received unexpected message %s\n", itti_get_message_name(message_p->header.messageId));
-          break;
+          default:
+            LOG_E(EMU, "Received unexpected message %s\n", itti_get_message_name(message_p->header.messageId));
+            break;
+        }
+
+        free (message_p);
       }
-
-      free(message_p);
-    }
+    } while(message_p != NULL);
 #endif
 
     /*
