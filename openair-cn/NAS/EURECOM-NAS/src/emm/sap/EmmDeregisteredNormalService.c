@@ -125,6 +125,15 @@ int EmmDeregisteredNormalService(const emm_reg_t* evt)
 	    rc = emm_proc_lowerlayer_release();
 	    break;
 
+        case _EMMREG_ATTACH_CNF:
+            /*
+             * Attach procedure successful and default EPS bearer
+             * context activated;
+             * enter state EMM-REGISTERED.
+             */
+            rc = emm_fsm_set_status(EMM_REGISTERED);
+            break;
+
 	default:
 	    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
 		      evt->primitive);
