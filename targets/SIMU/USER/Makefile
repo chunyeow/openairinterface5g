@@ -329,6 +329,13 @@ ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
 -include $(OAISIM_PAD_OBJS:.o=.d)
 -include $(ASN1_MSG_OBJS1:.o=.d)
 
+ifdef ENABLE_ITTI
+gccxml_available = $(shell if [ `gccxml --version | grep GCC-XML -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
+ifeq 	($(gccxml_available), 0) 
+$(error gccxml is missing, please install)
+endif 
+endif
+
 $(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
 	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
