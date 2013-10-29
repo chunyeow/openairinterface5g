@@ -44,8 +44,10 @@
 #include "intertask_interface_conf.h"
 #include "intertask_interface_types.h"
 
-#define ITTI_MSG_NAME(mSGpTR)       itti_get_message_name((mSGpTR)->header.messageId)
-#define ITTI_MSG_INSTANCE(mSGpTR)   (mSGpTR)->header.instance
+#define ITTI_MSG_NAME(mSGpTR)               itti_get_message_name((mSGpTR)->header.messageId)
+#define ITTI_MSG_ORIGIN_NAME(mSGpTR)        itti_get_task_name((mSGpTR)->header.originTaskId)
+#define ITTI_MSG_DESTINATION_NAME(mSGpTR)   itti_get_task_name((mSGpTR)->header.destinationTaskId)
+#define ITTI_MSG_INSTANCE(mSGpTR)           (mSGpTR)->header.instance
 
 /* Make the message number platform specific */
 typedef unsigned long message_number_t;
