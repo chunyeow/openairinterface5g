@@ -113,7 +113,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 
     ui_tree_view_init_list(ui_main_data.signalslist);
 
-    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 350, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 500, -1);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
