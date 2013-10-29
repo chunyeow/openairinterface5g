@@ -133,7 +133,8 @@ void* socket_udp_open(int type, const char* host, const char* port)
     else
     {
         /* Setup socket address options at the client side */
-        socket_info.ai_family = AF_UNSPEC; /* Any address family	 */
+        socket_info.ai_family = AF_INET; /* Any address family	 */
+//         socket_info.ai_flags |= AI_V4MAPPED; /* IPv4-mapped IPv6 address */
     }
 
     /*
@@ -180,7 +181,7 @@ void* socket_udp_open(int type, const char* host, const char* port)
         /*
          * Initiate a communication channel at the SERVER side
          */
-        else
+        else {
             if (type == SOCKET_SERVER)
             {
                 /* Set socket options */
@@ -194,6 +195,7 @@ void* socket_udp_open(int type, const char* host, const char* port)
                     break; /* Bind succeed */
                 }
             }
+        }
 
         close (sfd);
     }

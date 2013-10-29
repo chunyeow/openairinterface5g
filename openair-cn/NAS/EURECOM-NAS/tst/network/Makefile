@@ -20,6 +20,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LIBS)
+	@$(CP) $@ $(BINDIR)
 
 clean:
 	$(RM) $(OBJS) *.bak *~
