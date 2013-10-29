@@ -1780,6 +1780,10 @@ void *rrc_ue_task(void *args_p) {
         LOG_D(RRC, "Received %s\n", msg_name);
         break;
 
+      case RRC_UE_EUTRA_CAPABILITY: // TODO debug code, should be removed later.
+        LOG_D(RRC, "Received %s\n", msg_name);
+        break;
+
       case RRC_MAC_IN_SYNC_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
@@ -1835,9 +1839,9 @@ void *rrc_ue_task(void *args_p) {
 #ifdef Rel10
       case RRC_MAC_MCCH_DATA_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d, mbsfn SA %d\n", msg_name, instance,
-              RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).eNB_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
+              RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
-        decode_MCCH_Message (instance, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).eNB_index,
+        decode_MCCH_Message (instance, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
                              RRC_MAC_MCCH_DATA_IND (msg_p).sdu_p, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
                              RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
