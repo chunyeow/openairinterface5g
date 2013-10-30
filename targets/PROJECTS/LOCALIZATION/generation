@@ -1,0 +1,32 @@
+
+cd openair1
+   cd PHY
+   cd LTE_ESTIMATION/
+   ls
+   pwd
+   cd ..
+   cd LTE_REFSIG/
+   ls
+   primary_synch
+   
+   primary_synch0_time 
+   pss0_up = upsample(primary_synch0_time,4);
+   size(pss_up)
+   size(pss0_up)
+   pss0_up_cp = [pss0_up(512-128:end) pss0_up];
+   size(pss0_up_cp)
+   pss0_up_cp = [pss0_up(512-127:end) pss0_up];
+   size(pss0_up_cp)
+   plot(real(pss0_up_cp))
+
+
+   pss0_up = interp(primary_synch0_time,4);
+   pss0_up_cp = [pss0_up(512-127:end) pss0_up];
+   plot(real(pss0_up_cp))
+   pss0_up_cp = [pss0_up(512-127:end) pss0_up]*1024;
+   plot(real(pss0_up_cp))
+   s2 = s;
+   s2(1:640,1) = pss0_up_cp;
+   plot(real(s))
+   plot(real(s2))
+
