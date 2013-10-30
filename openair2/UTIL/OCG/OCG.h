@@ -657,6 +657,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char opt_mode; 
     unsigned char otg_enabled; 
     unsigned char omv_enabled;
+    char *itti_dump_file;
     unsigned char vcd_enabled;
     unsigned char eMBMS_active_state;
     unsigned char cba_group_active;
