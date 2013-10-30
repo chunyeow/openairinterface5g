@@ -1276,7 +1276,9 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   // mac_rlc_status_resp_t rlc_status[MAX_NUM_LCGID]; // 4
   // s8 lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
+#ifdef EXMIMO
   int ret;  
+#endif
 #if defined(ENABLE_ITTI)
   MessageDef *msg_p;
   const char *msg_name;
@@ -1295,6 +1297,14 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
       instance = ITTI_MSG_INSTANCE (msg_p);
 
       switch (msg_p->header.messageId) {
+        case RRC_MAC_CCCH_DATA_REQ:
+          LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
+                msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+                RRC_MAC_CCCH_DATA_REQ (msg_p).frame, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
+
+          // TODO process CCCH data req.
+          break;
+
 
         default:
           LOG_E(MAC, "Received unexpected message %s\n", msg_name);

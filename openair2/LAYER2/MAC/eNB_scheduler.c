@@ -4224,12 +4224,29 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
                 RRC_MAC_BCCH_DATA_REQ (msg_p).frame, RRC_MAC_BCCH_DATA_REQ (msg_p).enb_index);
 
-          // Message buffer has been processed, free it now.
-          free (RRC_MAC_BCCH_DATA_REQ (msg_p).sdu_p);
+          // TODO process BCCH data req.
           break;
 
+        case RRC_MAC_CCCH_DATA_REQ:
+          LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
+                msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+                RRC_MAC_CCCH_DATA_REQ (msg_p).frame, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
+
+          // TODO process CCCH data req.
+          break;
+
+#ifdef Rel10
+        case RRC_MAC_MCCH_DATA_REQ:
+          LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d, mbsfn_sync_area %d\n",
+                msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+                RRC_MAC_MCCH_DATA_REQ (msg_p).frame, RRC_MAC_MCCH_DATA_REQ (msg_p).enb_index, RRC_MAC_MCCH_DATA_REQ (msg_p).mbsfn_sync_area);
+
+          // TODO process MCCH data req.
+          break;
+#endif
+
         default:
-          LOG_E(MAC, "Received unexpected message %s\n", msg_name));
+          LOG_E(MAC, "Received unexpected message %s\n", msg_name);
           break;
       }
 

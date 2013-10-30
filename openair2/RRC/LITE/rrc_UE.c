@@ -1805,11 +1805,16 @@ void *rrc_ue_task(void *args_p) {
               RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
 
         decode_BCCH_DLSCH_Message (instance, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
-                                   RRC_MAC_BCCH_DATA_IND (msg_p).enb_index, RRC_MAC_BCCH_DATA_IND (msg_p).sdu_p,
+                                   RRC_MAC_BCCH_DATA_IND (msg_p).enb_index, RRC_MAC_BCCH_DATA_IND (msg_p).sdu,
                                    RRC_MAC_BCCH_DATA_IND (msg_p).sdu_size);
+        break;
 
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_BCCH_DATA_IND (msg_p).sdu_p);
+      case RRC_MAC_CCCH_DATA_CNF:
+        LOG_D(RRC, "Received %s: instance %d, eNB %d\n", msg_name, instance,
+              RRC_MAC_CCCH_DATA_CNF (msg_p).enb_index);
+
+        // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
+        UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_DATA_CNF (msg_p).enb_index].Tx_buffer.payload_size = 0;
         break;
 
       case RRC_MAC_CCCH_DATA_IND:
@@ -1818,22 +1823,11 @@ void *rrc_ue_task(void *args_p) {
 
         srb_info_p = &UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_DATA_IND (msg_p).enb_index];
 
-        memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p,
+        memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu,
                 RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
         srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
         rrc_ue_decode_ccch (instance, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p,
                             RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p);
-        break;
-
-      case RRC_MAC_CCCH_SUCCESS_IND:
-        LOG_D(RRC, "Received %s: instance %d, eNB %d\n", msg_name, instance,
-              RRC_MAC_CCCH_SUCCESS_IND (msg_p).enb_index);
-
-        // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
-        UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_SUCCESS_IND (msg_p).enb_index].Tx_buffer.payload_size = 0;
         break;
 
 #ifdef Rel10
@@ -1842,11 +1836,8 @@ void *rrc_ue_task(void *args_p) {
               RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
         decode_MCCH_Message (instance, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
-                             RRC_MAC_MCCH_DATA_IND (msg_p).sdu_p, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
+                             RRC_MAC_MCCH_DATA_IND (msg_p).sdu, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
                              RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_MCCH_DATA_IND (msg_p).sdu_p);
         break;
 #endif
 

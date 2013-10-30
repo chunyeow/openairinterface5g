@@ -2020,13 +2020,10 @@ void *rrc_enb_task(void *args_p) {
 
         srb_info_p = &eNB_rrc_inst[instance].Srb0;
 
-        memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p,
+        memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu,
                 RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
         srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
         rrc_eNB_decode_ccch (instance, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p);
-
-        // Message buffer has been processed, free it now.
-        free (RRC_MAC_CCCH_DATA_IND (msg_p).sdu_p);
         break;
 
       case RRC_DCCH_DATA_IND:

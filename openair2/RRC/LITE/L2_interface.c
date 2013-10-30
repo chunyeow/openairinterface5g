@@ -90,17 +90,20 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 #if defined(ENABLE_ITTI)
       {
         MessageDef *message_p;
-        // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
-        u8 *message_buffer;
+        int sib1_size = eNB_rrc_inst[Mod_id].sizeof_SIB1;
+        int sdu_size = sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu);
 
-        message_buffer = malloc (eNB_rrc_inst[Mod_id].sizeof_SIB1);
-        memcpy (message_buffer, eNB_rrc_inst[Mod_id].SIB1, eNB_rrc_inst[Mod_id].sizeof_SIB1);
+        if (sib1_size > sdu_size)
+        {
+          LOG_E(RRC, "SIB1 SDU larger than BCCH SDU buffer size (%d, %d)", sib1_size, sdu_size);
+          sib1_size = sdu_size;
+        }
 
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
-        RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
-        RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = eNB_rrc_inst[Mod_id].sizeof_SIB1;
-        RRC_MAC_BCCH_DATA_IND (message_p).sdu_p = message_buffer;
-        RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
+        RRC_MAC_BCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib1_size;
+        memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].SIB1, sib1_size);
+        RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
         itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
       }
@@ -121,17 +124,20 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 #if defined(ENABLE_ITTI)
       {
         MessageDef *message_p;
-        // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
-        u8 *message_buffer;
+        int sib23_size = eNB_rrc_inst[Mod_id].sizeof_SIB23;
+        int sdu_size = sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu);
 
-        message_buffer = malloc (eNB_rrc_inst[Mod_id].sizeof_SIB23);
-        memcpy (message_buffer, eNB_rrc_inst[Mod_id].SIB23, eNB_rrc_inst[Mod_id].sizeof_SIB23);
+        if (sib23_size > sdu_size)
+        {
+          LOG_E(RRC, "SIB23 SDU larger than BCCH SDU buffer size (%d, %d)", sib23_size, sdu_size);
+          sib23_size = sdu_size;
+        }
 
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
-        RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
-        RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = eNB_rrc_inst[Mod_id].sizeof_SIB23;
-        RRC_MAC_BCCH_DATA_IND (message_p).sdu_p = message_buffer;
-        RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
+        RRC_MAC_BCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib23_size;
+        memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].SIB23, sib23_size);
+        RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
         itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
       }
@@ -162,7 +168,29 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
       // check if data is there for MAC
       if(Srb_info->Tx_buffer.payload_size>0){//Fill buffer
 	LOG_D(RRC,"[eNB %d] CCCH (%p) has %d bytes (dest: %p, src %p)\n",Mod_id,Srb_info,Srb_info->Tx_buffer.payload_size,Buffer,Srb_info->Tx_buffer.Payload);
-	memcpy(Buffer,Srb_info->Tx_buffer.Payload,Srb_info->Tx_buffer.payload_size);
+
+#if defined(ENABLE_ITTI)
+        {
+          MessageDef *message_p;
+          int ccch_size = Srb_info->Tx_buffer.payload_size;
+          int sdu_size = sizeof(RRC_MAC_CCCH_DATA_REQ (message_p).sdu);
+
+          if (ccch_size > sdu_size) {
+            LOG_E(RRC, "SDU larger than CCCH SDU buffer size (%d, %d)", ccch_size, sdu_size);
+            ccch_size = sdu_size;
+          }
+
+          message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_CCCH_DATA_REQ);
+          RRC_MAC_CCCH_DATA_REQ (message_p).frame = frame;
+          RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
+          memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, Srb_info->Tx_buffer.Payload, ccch_size);
+          RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
+
+          itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+        }
+#endif
+
+        memcpy(Buffer,Srb_info->Tx_buffer.Payload,Srb_info->Tx_buffer.payload_size);
 	Sdu_size = Srb_info->Tx_buffer.payload_size;
 	Srb_info->Tx_buffer.payload_size=0;
       }
@@ -178,6 +206,30 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 	LOG_E(RRC,"[eNB %d] MAC Request for MCCH MESSAGE and MCCH MESSAGE is not initialized\n",Mod_id);
 	mac_xface->macphy_exit("");
 	}*/
+
+
+#if defined(ENABLE_ITTI)
+      {
+        MessageDef *message_p;
+        int mcch_size = eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area];
+        int sdu_size = sizeof(RRC_MAC_MCCH_DATA_REQ (message_p).sdu);
+
+        if (mcch_size > sdu_size) {
+          LOG_E(RRC, "SDU larger than MCCH SDU buffer size (%d, %d)", mcch_size, sdu_size);
+          mcch_size = sdu_size;
+        }
+
+        message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_MCCH_DATA_REQ);
+        RRC_MAC_MCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_MCCH_DATA_REQ (message_p).sdu_size = mcch_size;
+        memcpy (RRC_MAC_MCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].MCCH_MESSAGE[mbsfn_sync_area], mcch_size);
+        RRC_MAC_MCCH_DATA_REQ (message_p).enb_index = eNB_index;
+        RRC_MAC_MCCH_DATA_REQ (message_p).mbsfn_sync_area = mbsfn_sync_area;
+
+        itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+      }
+#endif
+
       memcpy(&Buffer[0],
 	     eNB_rrc_inst[Mod_id].MCCH_MESSAGE[mbsfn_sync_area],
 	     eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
@@ -203,6 +255,28 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
     LOG_D(RRC,"[UE %d] Frame %d Buffer status %d,\n",Mod_id,frame, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size);
 #endif
     if( (UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size > 0) ) {
+
+#if defined(ENABLE_ITTI)
+      {
+        MessageDef *message_p;
+        int ccch_size = UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size;
+        int sdu_size = sizeof(RRC_MAC_CCCH_DATA_REQ (message_p).sdu);
+
+        if (ccch_size > sdu_size) {
+          LOG_E(RRC, "SDU larger than CCCH SDU buffer size (%d, %d)", ccch_size, sdu_size);
+          ccch_size = sdu_size;
+        }
+
+        message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_MAC_CCCH_DATA_REQ);
+        RRC_MAC_CCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
+        memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload, ccch_size);
+        RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
+
+        itti_send_msg_to_task (TASK_MAC_UE, Mod_id, message_p);
+      }
+#endif
+
       memcpy(&Buffer[0],&UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload[0],UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size);
       u8 Ret_size=UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size;
       //   UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size=0;
@@ -235,16 +309,18 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 #if defined(ENABLE_ITTI)
       {
         MessageDef *message_p;
-        // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
-        u8 *message_buffer;
+        int msg_sdu_size = sizeof(RRC_MAC_BCCH_DATA_IND (message_p).sdu);
 
-        message_buffer = malloc (sdu_size);
-        memcpy (message_buffer, Sdu, sdu_size);
+        if (sdu_size > msg_sdu_size)
+        {
+          LOG_E(RRC, "SDU larger than BCCH SDU buffer size (%d, %d)", sdu_size, msg_sdu_size);
+          sdu_size = msg_sdu_size;
+        }
 
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_BCCH_DATA_IND);
         RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = sdu_size;
-        RRC_MAC_BCCH_DATA_IND (message_p).sdu_p = message_buffer;
+        memcpy (RRC_MAC_BCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
 
         itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
@@ -301,16 +377,18 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 #if defined(ENABLE_ITTI)
         {
           MessageDef *message_p;
-          // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
-          u8 *message_buffer;
+          int msg_sdu_size = sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu);
 
-          message_buffer = malloc (sdu_size);
-          memcpy (message_buffer, Sdu, sdu_size);
+          if (sdu_size > msg_sdu_size)
+          {
+            LOG_E(RRC, "SDU larger than CCCH SDU buffer size (%d, %d)", sdu_size, msg_sdu_size);
+            sdu_size = msg_sdu_size;
+          }
 
           message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_IND);
           RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
-          RRC_MAC_CCCH_DATA_IND (message_p).sdu_p = message_buffer;
+          memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
           RRC_MAC_CCCH_DATA_IND (message_p).enb_index = eNB_index;
 
           itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
@@ -333,16 +411,18 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 #if defined(ENABLE_ITTI)
       {
         MessageDef *message_p;
-        // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
-        u8 *message_buffer;
+        int msg_sdu_size = sizeof(RRC_MAC_MCCH_DATA_IND (message_p).sdu);
 
-        message_buffer = malloc (sdu_size);
-        memcpy (message_buffer, Sdu, sdu_size);
+        if (sdu_size > msg_sdu_size)
+        {
+          LOG_E(RRC, "SDU larger than MCCH SDU buffer size (%d, %d)", sdu_size, msg_sdu_size);
+          sdu_size = msg_sdu_size;
+        }
 
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_MCCH_DATA_IND);
         RRC_MAC_MCCH_DATA_IND (message_p).frame = frame;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_size = sdu_size;
-        RRC_MAC_MCCH_DATA_IND (message_p).sdu_p = message_buffer;
+        memcpy (RRC_MAC_MCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_MCCH_DATA_IND (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_IND (message_p).mbsfn_sync_area = mbsfn_sync_area;
 
@@ -363,16 +443,18 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 #if defined(ENABLE_ITTI)
         {
           MessageDef *message_p;
-          // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
-          u8 *message_buffer;
+          int msg_sdu_size = sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu);
 
-          message_buffer = malloc (sdu_size);
-          memcpy (message_buffer, Sdu, sdu_size);
+          if (sdu_size > msg_sdu_size)
+          {
+            LOG_E(RRC, "SDU larger than CCCH SDU buffer size (%d, %d)", sdu_size, msg_sdu_size);
+            sdu_size = msg_sdu_size;
+          }
 
           message_p = itti_alloc_new_message (TASK_MAC_ENB, RRC_MAC_CCCH_DATA_IND);
           RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
-          RRC_MAC_CCCH_DATA_IND (message_p).sdu_p = message_buffer;
+          memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
 
           itti_send_msg_to_task (TASK_RRC_ENB, Mod_id, message_p);
       }
@@ -532,8 +614,8 @@ int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
   {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_SUCCESS_IND);
-    RRC_MAC_CCCH_SUCCESS_IND (message_p).enb_index = eNB_index;
+    message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_CNF);
+    RRC_MAC_CCCH_DATA_CNF (message_p).enb_index = eNB_index;
 
     itti_send_msg_to_task (TASK_RRC_UE, Mod_id - NB_eNB_INST, message_p);
   }
