@@ -623,7 +623,7 @@ void run(int argc, char *argv[]) {
 #ifdef PAD_FINE
       pad_inject_job(1, eNB_id, frame, next_slot, last_slot, JT_PHY_MAC, oai_emulation.info.time_ms);
 #else
-      phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag);
+      phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, no_relay, NULL);
 #endif
 
 
@@ -692,7 +692,7 @@ void run(int argc, char *argv[]) {
 #ifdef PAD_FINE
           pad_inject_job(0, UE_id, frame, next_slot, last_slot, JT_PHY_MAC, oai_emulation.info.time_ms);
 #else
-          phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag,normal_txrx);
+          phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag, normal_txrx, no_relay, NULL);
           ue_data[UE_id]->tx_power_dBm = PHY_vars_UE_g[UE_id]->tx_power_dBm;
 #endif
         }
