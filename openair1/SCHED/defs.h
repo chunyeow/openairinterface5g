@@ -401,6 +401,9 @@ s32 remove_ue(u16 rnti, PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag);
 void process_timing_advance(u8 Mod_id,s16 timing_advance);
 void process_timing_advance_rar(PHY_VARS_UE *phy_vars_ue,u16 timing_advance);
 
+unsigned int get_tx_amp(int gain_dBm, int gain_max_dBm);
+
+void phy_reset_ue(u8 Mod_id,u8 eNB_index);
 
 /** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in 
 subframe n-4 which is acknowledged in subframe n (for FDD) according to n1_pucch = Ncce + N1_pucch.  For

@@ -661,6 +661,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char vcd_enabled;
     unsigned char eMBMS_active_state;
     unsigned char cba_group_active;
+    unsigned char handover_active;
     char * otg_traffic;
     unsigned char otg_bg_traffic_enabled;
     unsigned char omg_model_rn;

@@ -1,9 +1,40 @@
-/*________________________openair_rrc_extern.h________________________
+/*******************************************************************************
 
- Authors : Hicham Anouar
- Company : EURECOM
- Emails  : anouar@eurecom.fr
-________________________________________________________________*/
+  Eurecom OpenAirInterface 2
+  Copyright(c) 1999 - 2010 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file vars.hles
+* \brief rrc variab
+* \author Raymond Knopp and Navid Nikaein
+* \date 2011
+* \version 1.0 
+* \company Eurecom
+* \email: navid.nikaein@eurecom.fr
+*/ 
 
 #ifndef __OPENAIR_RRC_EXTERN_H__
 #define __OPENAIR_RRC_EXTERN_H__
@@ -63,6 +94,16 @@ extern u16 RACH_FREQ_ALLOC;
 extern LCHAN_DESC BCCH_LCHAN_DESC,CCCH_LCHAN_DESC,DCCH_LCHAN_DESC,DTCH_DL_LCHAN_DESC,DTCH_UL_LCHAN_DESC;
 extern MAC_MEAS_T BCCH_MEAS_TRIGGER,CCCH_MEAS_TRIGGER,DCCH_MEAS_TRIGGER,DTCH_MEAS_TRIGGER;
 extern MAC_AVG_T BCCH_MEAS_AVG,CCCH_MEAS_AVG,DCCH_MEAS_AVG, DTCH_MEAS_AVG;
+
+extern u16 T300[8];
+extern u16 T310[8];
+extern u16 N310[8];
+extern u16 N311[8];
+extern u32 T304[8];
+extern u32 timeToTrigger_ms[16]; 
+extern float RSRP_meas_mapping[100];
+extern float RSRQ_meas_mapping[33];
+
 #endif
 
 

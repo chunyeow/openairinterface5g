@@ -68,6 +68,70 @@ s16 get_PL(u8 Mod_id,u8 eNB_index) {
   	       phy_vars_ue->lte_frame_parms.pdsch_config_common.referenceSignalPower));
 }
 
+
+u8 get_n_adj_cells (u8 Mod_id){
+
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue)  
+    return phy_vars_ue->PHY_measurements.n_adj_cells;
+  else 
+    return 0;
+}
+
+s8 get_rx_total_gain_dB (u8 Mod_id){
+
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue)  
+    return phy_vars_ue->rx_total_gain_dB;
+  else 
+    return -1;
+}
+s8 get_RSSI (u8 Mod_id){
+
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue)  
+    return phy_vars_ue->PHY_measurements.rssi;
+  else 
+    return -1;
+}
+u8 get_RSRP(u8 Mod_id,u8 eNB_index) {
+  
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue)
+    return phy_vars_ue->PHY_measurements.rsrp[eNB_index];
+  return 0;
+}
+
+u8 get_RSRQ(u8 Mod_id,u8 eNB_index) {
+
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue)
+    return phy_vars_ue->PHY_measurements.rsrq[eNB_index];
+  return 0;
+}
+
+s8 set_RSRP_filtered(u8 Mod_id,u8 eNB_index,float rsrp) {
+  
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue){
+    phy_vars_ue->PHY_measurements.rsrp_filtered[eNB_index]=rsrp;
+    return 0;
+  }
+  LOG_W(PHY,"[UE%d] could not set the rsrp\n",Mod_id);
+  return -1;
+}
+
+s8 set_RSRQ_filtered(u8 Mod_id,u8 eNB_index,float rsrq) {
+
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  if (phy_vars_ue){
+    phy_vars_ue->PHY_measurements.rsrq_filtered[eNB_index]=rsrq;
+    return 0;
+  }
+  LOG_W(PHY,"[UE%d] could not set the rsrq\n",Mod_id);
+  return -1;
+  
+}
  
 void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 			 u8 slot,
@@ -202,21 +266,24 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
     }
     else {   // Do abstraction of RSRP and RSRQ
       phy_vars_ue->PHY_measurements.rssi = phy_vars_ue->PHY_measurements.rx_power_avg[0];
+      // dummay value for the moment
+      phy_vars_ue->PHY_measurements.rsrp[eNB_offset] = -93 ;     
+      phy_vars_ue->PHY_measurements.rsrq[eNB_offset] = 3;
 
     }
     if (((phy_vars_ue->frame %10) == 0) && (slot == 1)) {
 #ifdef DEBUG_MEAS
-      if (eNB_offset == 0)
+    if (eNB_offset == 0)
 	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB)\n",phy_vars_ue->Mod_id,
 	      phy_vars_ue->frame,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
 	      10*log10(phy_vars_ue->PHY_measurements.rssi));
-      LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements (idx %d, Cell id %d) => rsrp: %3.1f (%3.1f) dBm, rsrq: %3.1f dB\n",
-	    phy_vars_ue->Mod_id,
-	    phy_vars_ue->frame,slot,eNB_offset,
-	    (eNB_offset>0) ? phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1] : phy_vars_ue->lte_frame_parms.Nid_cell,
-	    (dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
-	    (10*log10(phy_vars_ue->PHY_measurements.rx_power_avg[0])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
-	    (10*log10(phy_vars_ue->PHY_measurements.rsrq[eNB_offset]))-20);
+	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements (idx %d, Cell id %d) => rsrp: %3.1f (%3.1f) dBm, rsrq: %3.1f dB\n",
+	      phy_vars_ue->Mod_id,
+	      phy_vars_ue->frame,slot,eNB_offset,
+	      (eNB_offset>0) ? phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1] : phy_vars_ue->lte_frame_parms.Nid_cell,
+	      (dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
+	      (10*log10(phy_vars_ue->PHY_measurements.rx_power_avg[0])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
+	      (10*log10(phy_vars_ue->PHY_measurements.rsrq[eNB_offset]))-20);
 #endif
 
     

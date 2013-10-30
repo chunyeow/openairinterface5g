@@ -1109,7 +1109,8 @@ int main(int argc, char **argv)
 	//print [MAC][I]... messages
 	//l2_init(frame_parms,eMBMS_active);
 	l2_init(frame_parms,eMBMS_active,
-			0); // cba_group_active
+		0,// cba_group_active
+		0); // HO flag
 	if (UE_flag == 1)
 		mac_xface->dl_phy_sync_success (0, 0, 0, 1);
 	else

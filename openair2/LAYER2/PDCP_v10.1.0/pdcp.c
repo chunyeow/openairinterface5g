@@ -733,7 +733,7 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
   }
 
   if (drb2release_list != NULL) {
-    for (cnt=0;cnt<drb2add_list->list.count;cnt++) {
+    for (cnt=0;cnt<drb2release_list->list.count;cnt++) {
       pdrb_id = drb2release_list->list.array[cnt];
       rb_id =  (index * NB_RB_MAX) + *pdrb_id;
       action = ACTION_REMOVE;

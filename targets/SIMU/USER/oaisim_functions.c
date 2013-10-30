@@ -114,7 +114,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:j:k:K:L:l:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
@@ -139,7 +139,7 @@ void get_simulation_options(int argc, char *argv[]) {
     case 'C':
       oai_emulation.info.tdd_config = atoi (optarg);
       if (oai_emulation.info.tdd_config > 6) {
-        LOG_E(EMU,"Illegal tdd_config %d (should be 0-6)\n", oai_emulation.info.tdd_config);
+        printf("Illegal tdd_config %d (should be 0-6)\n", oai_emulation.info.tdd_config);
         exit (-1);
       }
       break;
@@ -152,23 +152,28 @@ void get_simulation_options(int argc, char *argv[]) {
       oai_emulation.info.N_RB_DL = atoi (optarg);
       if ((oai_emulation.info.N_RB_DL != 6) && (oai_emulation.info.N_RB_DL != 15) && (oai_emulation.info.N_RB_DL != 25)
         && (oai_emulation.info.N_RB_DL != 50) && (oai_emulation.info.N_RB_DL != 75) && (oai_emulation.info.N_RB_DL != 100)) {
-        LOG_E(EMU,"Illegal N_RB_DL %d (should be one of 6,15,25,50,75,100)\n", oai_emulation.info.N_RB_DL);
+        printf("Illegal N_RB_DL %d (should be one of 6,15,25,50,75,100)\n", oai_emulation.info.N_RB_DL);
         exit (-1);
       }
     case 'N':
       Nid_cell = atoi (optarg);
       if (Nid_cell > 503) {
-        LOG_E(EMU,"Illegal Nid_cell %d (should be 0 ... 503)\n", Nid_cell);
+        printf("Illegal Nid_cell %d (should be 0 ... 503)\n", Nid_cell);
         exit(-1);
       }
       break;
     case 'h':
       help ();
       exit (1);
+      break;
+    case 'H':
+      oai_emulation.info.handover_active=1;
+      printf("Activate the handover procedure at RRC\n");
+      break;
     case 'x':
       oai_emulation.info.transmission_mode = atoi (optarg);
       if ((oai_emulation.info.transmission_mode != 1) &&  (oai_emulation.info.transmission_mode != 2) && (oai_emulation.info.transmission_mode != 5) && (oai_emulation.info.transmission_mode != 6)) {
-        LOG_E(EMU, "Unsupported transmission mode %d\n",oai_emulation.info.transmission_mode);
+        printf("Unsupported transmission mode %d\n",oai_emulation.info.transmission_mode);
         exit(-1);
       }
       break;
@@ -211,7 +216,7 @@ void get_simulation_options(int argc, char *argv[]) {
       break;
     case 'k':
       //ricean_factor = atof (optarg);
-      LOG_E(EMU,"[SIM] Option k is no longer supported on the command line. Please specify your channel model in the xml template\n");
+      printf("[SIM] Option k is no longer supported on the command line. Please specify your channel model in the xml template\n");
       exit(-1);
       break;
     case 'K':
@@ -219,7 +224,7 @@ void get_simulation_options(int argc, char *argv[]) {
       break;
     case 't':
       //Td = atof (optarg);
-      LOG_E(EMU,"[SIM] Option t is no longer supported on the command line. Please specify your channel model in the xml template\n");
+      printf("[SIM] Option t is no longer supported on the command line. Please specify your channel model in the xml template\n");
       exit(-1);
       break;
     case 'f':
@@ -575,7 +580,7 @@ void init_openair2() {
 #ifdef OPENAIR2
   s32 i;
   s32 UE_id;
-
+ 
 #if defined(ENABLE_ITTI)
   if (NB_eNB_INST > 0) {
     if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
@@ -594,13 +599,12 @@ void init_openair2() {
   }
 #endif
 
-  l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,oai_emulation.info.eMBMS_active_state, oai_emulation.info.cba_group_active);
-  printf ("after L2 init: Nid_cell %d\n", PHY_vars_eNB_g[0]->lte_frame_parms.Nid_cell);
-  printf ("after L2 init: frame_type %d,tdd_config %d\n",
-          PHY_vars_eNB_g[0]->lte_frame_parms.frame_type,
-          PHY_vars_eNB_g[0]->lte_frame_parms.tdd_config);
+  l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,
+	   oai_emulation.info.eMBMS_active_state, 
+	   oai_emulation.info.cba_group_active, 
+	   oai_emulation.info.handover_active);
 
-  for (i = 0; i < NB_eNB_INST; i++)
+   for (i = 0; i < NB_eNB_INST; i++)
     mac_xface->mrbch_phy_sync_failure (i, 0, i);
 
   if (abstraction_flag == 1) {

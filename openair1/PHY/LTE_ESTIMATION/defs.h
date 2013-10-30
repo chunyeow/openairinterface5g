@@ -151,6 +151,13 @@ void lte_ue_measurements_emul(PHY_VARS_UE *phy_vars_ue,u8 last_slot,u8 eNB_id);
 @returns Path loss in dB
 */
 s16 get_PL(u8 Mod_id,u8 eNB_index);
+u8 get_RSRP(u8 Mod_id,u8 eNB_index);
+u8 get_RSRQ(u8 Mod_id,u8 eNB_index);
+u8 get_n_adj_cells(u8 Mod_id);
+s8 get_rx_total_gain_dB(u8 Mod_id);
+s8 get_RSSI(u8 Mod_id);
+s8 set_RSRP_filtered(u8 Mod_id,u8 eNB_index,float rsrp);
+s8 set_RSRQ_filtered(u8 Mod_id,u8 eNB_index,float rstq);
 
 //! Automatic gain control
 void phy_adjust_gain (PHY_VARS_UE *phy_vars_ue,

@@ -89,43 +89,42 @@ mapping BSR_names[] = {
 extern inline unsigned int taus(void);
 
 
-void ue_init_mac(){
-  int i,j;
-  for (i=0 ; i < NB_UE_INST; i++){
-    // default values as deined in 36.331 sec 9.2.2
-    LOG_I(MAC,"[UE%d] Applying default macMainConfig\n",i);
-    LOG_D(MAC, "[MSC_NEW][FRAME 00000][MAC_UE][MOD %02d][]\n", i+NB_eNB_INST);
+void ue_init_mac(u8 Mod_id){
+  int i;
+  
+  // default values as deined in 36.331 sec 9.2.2
+  LOG_I(MAC,"[UE%d] Applying default macMainConfig\n",Mod_id);
+  LOG_D(MAC, "[MSC_NEW][FRAME 00000][MAC_UE][MOD %02d][]\n", Mod_id+NB_eNB_INST);
 
-    //UE_mac_inst[Mod_id].scheduling_info.macConfig=NULL;
-    UE_mac_inst[i].scheduling_info.retxBSR_Timer= MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf2560;
-    UE_mac_inst[i].scheduling_info.periodicBSR_Timer=MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_infinity;
-    UE_mac_inst[i].scheduling_info.periodicPHR_Timer = MAC_MainConfig__phr_Config__setup__periodicPHR_Timer_sf20;
-    UE_mac_inst[i].scheduling_info.prohibitPHR_Timer = MAC_MainConfig__phr_Config__setup__prohibitPHR_Timer_sf20;
-    UE_mac_inst[i].scheduling_info.PathlossChange_db = MAC_MainConfig__phr_Config__setup__dl_PathlossChange_dB1;
-    UE_mac_inst[i].PHR_state = MAC_MainConfig__phr_Config_PR_setup;
-    UE_mac_inst[i].scheduling_info.SR_COUNTER=0;
-    UE_mac_inst[i].scheduling_info.sr_ProhibitTimer=0;
-    UE_mac_inst[i].scheduling_info.sr_ProhibitTimer_Running=0;
-    UE_mac_inst[i].scheduling_info.maxHARQ_Tx=MAC_MainConfig__ul_SCH_Config__maxHARQ_Tx_n5;
-    UE_mac_inst[i].scheduling_info.ttiBundling=0;
-    UE_mac_inst[i].scheduling_info.drx_config=NULL;
-    UE_mac_inst[i].scheduling_info.phr_config=NULL;
-    UE_mac_inst[i].scheduling_info.periodicBSR_SF  =  get_sf_periodicBSRTimer(UE_mac_inst[i].scheduling_info.periodicBSR_Timer);
-    UE_mac_inst[i].scheduling_info.retxBSR_SF     =  get_sf_retxBSRTimer(UE_mac_inst[i].scheduling_info.retxBSR_Timer);
-    UE_mac_inst[i].scheduling_info.periodicPHR_SF =  get_sf_perioidicPHR_Timer(UE_mac_inst[i].scheduling_info.periodicPHR_Timer);
-    UE_mac_inst[i].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[i].scheduling_info.prohibitPHR_Timer);
-    UE_mac_inst[i].scheduling_info.PathlossChange_db =  get_db_dl_PathlossChange(UE_mac_inst[i].scheduling_info.PathlossChange);
-
-    for (j=0; j < MAX_NUM_LCID; j++){
-      LOG_D(MAC,"[UE%d] Applying default logical channel config for LCGID %d\n",i,j);
-      UE_mac_inst[i].scheduling_info.Bj[j]=-1;
-      UE_mac_inst[i].scheduling_info.bucket_size[j]=-1;
-      if (j < DTCH) // initilize all control channels lcgid to 0
-	UE_mac_inst[i].scheduling_info.LCGID[j]=0;
-      else // initialize all the data channels lcgid to 1 
-	UE_mac_inst[i].scheduling_info.LCGID[j]=1;
-      UE_mac_inst[i].scheduling_info.LCID_status[j]=0;
-    }
+  //UE_mac_inst[Mod_id].scheduling_info.macConfig=NULL;
+  UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer= MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf2560;
+  UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer=MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_infinity;
+  UE_mac_inst[Mod_id].scheduling_info.periodicPHR_Timer = MAC_MainConfig__phr_Config__setup__periodicPHR_Timer_sf20;
+  UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_Timer = MAC_MainConfig__phr_Config__setup__prohibitPHR_Timer_sf20;
+  UE_mac_inst[Mod_id].scheduling_info.PathlossChange_db = MAC_MainConfig__phr_Config__setup__dl_PathlossChange_dB1;
+  UE_mac_inst[Mod_id].PHR_state = MAC_MainConfig__phr_Config_PR_setup;
+  UE_mac_inst[Mod_id].scheduling_info.SR_COUNTER=0;
+  UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer=0;
+  UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer_Running=0;
+  UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx=MAC_MainConfig__ul_SCH_Config__maxHARQ_Tx_n5;
+  UE_mac_inst[Mod_id].scheduling_info.ttiBundling=0;
+  UE_mac_inst[Mod_id].scheduling_info.drx_config=NULL;
+  UE_mac_inst[Mod_id].scheduling_info.phr_config=NULL;
+  UE_mac_inst[Mod_id].scheduling_info.periodicBSR_SF  =  get_sf_periodicBSRTimer(UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer);
+  UE_mac_inst[Mod_id].scheduling_info.retxBSR_SF     =  get_sf_retxBSRTimer(UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer);
+  UE_mac_inst[Mod_id].scheduling_info.periodicPHR_SF =  get_sf_perioidicPHR_Timer(UE_mac_inst[Mod_id].scheduling_info.periodicPHR_Timer);
+  UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_Timer);
+  UE_mac_inst[Mod_id].scheduling_info.PathlossChange_db =  get_db_dl_PathlossChange(UE_mac_inst[Mod_id].scheduling_info.PathlossChange);
+  
+  for (i=0; i < MAX_NUM_LCID; i++){
+    LOG_D(MAC,"[UE%d] Applying default logical channel config for LCGID %d\n",Mod_id,i);
+    UE_mac_inst[Mod_id].scheduling_info.Bj[i]=-1;
+    UE_mac_inst[Mod_id].scheduling_info.bucket_size[i]=-1;
+    if (i < DTCH) // initilize all control channels lcgid to 0
+      UE_mac_inst[Mod_id].scheduling_info.LCGID[i]=0;
+    else // initialize all the data channels lcgid to 1 
+      UE_mac_inst[Mod_id].scheduling_info.LCGID[i]=1;
+    UE_mac_inst[Mod_id].scheduling_info.LCID_status[i]=0;
   }
 }
 
@@ -1366,6 +1365,15 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   case RRC_PHY_RESYNCH:
     LOG_E(MAC,"RRC Loss of synch, returning PHY_RESYNCH\n");
     return(PHY_RESYNCH);
+  case RRC_Handover_failed:
+    LOG_D(MAC,"Handover failure for UE %d eNB_index %d\n",Mod_id,eNB_index);
+    //Invalid...need to add another MAC UE state for re-connection procedure
+    mac_xface->phy_config_afterHO_ue(Mod_id,eNB_index,(MobilityControlInfo_t *)NULL,1);
+    //return(3);
+    break;
+  case RRC_HO_STARTED:
+    LOG_I(MAC,"RRC handover, Instruct PHY to start the contention-free PRACH and synchronization\n");
+    return(PHY_HO_PRACH);
   default:
     break;
   }
@@ -1402,7 +1410,7 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   // Put this in another function
 
     // Get RLC status info and update Bj for all lcids that are active
-  for (lcid=CCCH; lcid <= DTCH; lcid++ ) {
+  for (lcid=DCCH; lcid <= DTCH; lcid++ ) {
     if ((lcid == 0) ||(UE_mac_inst[Mod_id].logicalChannelConfig[lcid])) {
       // meausre the Bj
       if ((direction == SF_UL)&& (UE_mac_inst[Mod_id].scheduling_info.Bj[lcid] >= 0)){
@@ -1573,9 +1581,11 @@ int  update_bsr(u8 Mod_id, u32 frame, u8 lcid, u8 lcg_id){
   u8 sr_pending = 0;
   if ((lcg_id < 0) || (lcg_id > MAX_NUM_LCGID) )
     return sr_pending;
-  
-  UE_mac_inst[Mod_id].scheduling_info.BSR[lcg_id]=0;
-  UE_mac_inst[Mod_id].scheduling_info.BSR_bytes[lcg_id]=0;
+  // fixme: need a better way to reset 
+  if ((lcid == DCCH) || (lcid == DTCH)){
+    UE_mac_inst[Mod_id].scheduling_info.BSR[lcg_id]=0;
+    UE_mac_inst[Mod_id].scheduling_info.BSR_bytes[lcg_id]=0;
+  }
   //  for (lcid =0 ; lcid < MAX_NUM_LCID; lcid++) {
   if (UE_mac_inst[Mod_id].scheduling_info.LCGID[lcid] == lcg_id) {
     rlc_status = mac_rlc_status_ind(Mod_id+NB_eNB_INST,frame,0,RLC_MBMS_NO,
@@ -1587,13 +1597,13 @@ int  update_bsr(u8 Mod_id, u32 frame, u8 lcid, u8 lcg_id){
       UE_mac_inst[Mod_id].scheduling_info.BSR[lcg_id] += locate (BSR_TABLE,BSR_TABLE_SIZE, rlc_status.bytes_in_buffer);
       UE_mac_inst[Mod_id].scheduling_info.BSR_bytes[lcg_id] += rlc_status.bytes_in_buffer;
       // UE_mac_inst[Mod_id].scheduling_info.BSR_short_lcid = lcid; // only applicable to short bsr
+      LOG_D(MAC,"[UE %d] BSR level %d (LCGID %d, rlc buffer %d byte)\n",
+	Mod_id, UE_mac_inst[Mod_id].scheduling_info.BSR[lcg_id],lcg_id,  UE_mac_inst[Mod_id].scheduling_info.BSR_bytes[lcg_id]);
     }
     else 
       UE_mac_inst[Mod_id].scheduling_info.LCID_status[lcid]=LCID_EMPTY; 
   }
   //}
-  //LOG_D(MAC,"[UE %d] BSR level %d (LCGID %d, rlc buffer %d byte)\n",
-  //	 Mod_id, UE_mac_inst[Mod_id].scheduling_info.BSR[lcg_id],lcg_id,  UE_mac_inst[Mod_id].scheduling_info.BSR_bytes[lcg_id]);
   return sr_pending;
 }
 

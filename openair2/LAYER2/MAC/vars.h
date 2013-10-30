@@ -31,6 +31,7 @@
 * \author Raymond Knopp, Navid Nikaein
 * \date 2012
 * \version 1.0
+* \email navid.nikaein@eurecom.fr
 * @ingroup _mac
 
 */
@@ -91,6 +92,7 @@ DCI1A_5MHz_TDD_1_6_t      BCCH_alloc_pdu;
 
 DCI1A_5MHz_TDD_1_6_t      CCCH_alloc_pdu;
 DCI1_5MHz_TDD_t           DLSCH_alloc_pdu;
+
 #ifdef Rel10
 DCI1C_5MHz_t                 MCCH_alloc_pdu;
 #endif

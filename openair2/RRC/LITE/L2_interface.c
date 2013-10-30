@@ -514,9 +514,9 @@ void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_si
   u8 DCCH_index = Srb_id % NB_RB_MAX;
 
   LOG_N(RRC,"[%s %d] Frame %d: received a DCCH %d message on SRB %d with Size %d\n",
-        (eNB_flag == 1)? "eNB": "UE",
-        (eNB_flag == 1)? Mod_id : UE_index,
-        frame, DCCH_index,Srb_id-1,sdu_size);
+	(eNB_flag == 1)? "eNB": "UE", 
+	(eNB_flag == 1)? Mod_id : UE_index, 
+	frame, DCCH_index,Srb_id-1,sdu_size);
 
 #if defined(ENABLE_ITTI)
   {

@@ -1,3 +1,41 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface 2
+  Copyright(c) 1999 - 2010 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file asn1_msg.h
+* \brief primitives to build the asn1 messages 
+* \author Raymond Knopp and Navid Nikaein
+* \date 2011
+* \version 1.0 
+* \company Eurecom
+* \email: raymond.knopp@eurecom.fr and  navid.nikaein@eurecom.fr
+*/ 
+
 #ifdef USER_MODE
 #include <stdio.h>
 #include <sys/types.h>
@@ -105,6 +143,8 @@ uint8_t do_RRCConnectionSetup(uint8_t *buffer,
 @param ReportConfig_list Pointer to ReportConfig List (NULL if no additions/modifications)
 @param QuantityConfig Pointer to QuantityConfig to be modified (NULL if no modifications)
 @param MeasId_list Pointer to MeasID List (NULL if no additions/modifications)
+@param mobilityInfo mobility control information for handover
+@param speedStatePars speed state parameteres for handover
 @param mac_MainConfig Pointer to Mac_MainConfig(NULL if no modifications)
 @param measGapConfig Pointer to MeasGapConfig (NULL if no modifications)
 @param cba_rnti RNTI for the cba transmission 
@@ -121,11 +161,14 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
                                         struct PhysicalConfigDedicated    *physicalConfigDedicated,
                                         MeasObjectToAddModList_t          *MeasObj_list,
                                         ReportConfigToAddModList_t        *ReportConfig_list,
-                                        QuantityConfig_t                  *QuantityConfig,
+                                        QuantityConfig_t                  *quantityConfig,
                                         MeasIdToAddModList_t              *MeasId_list,
                                         MAC_MainConfig_t                  *mac_MainConfig,
                                         MeasGapConfig_t                   *measGapConfig,
-                                        C_RNTI_t                          *cba_rnti, 
+                                       	MobilityControlInfo_t 		  *mobilityInfo,
+					struct MeasConfig__speedStatePars *speedStatePars,
+					RSRP_Range_t                      *rsrp,
+					C_RNTI_t                          *cba_rnti, 
 					uint8_t                           *nas_pdu,
                                         uint32_t                           nas_length);
 

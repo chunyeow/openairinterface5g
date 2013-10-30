@@ -2829,9 +2829,11 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	  	  
 	  LOG_I(PHY,"[eNB] Frame %d, Subframe %d : ULSCH SDU (RX harq_pid %d) %d bytes:\n",phy_vars_eNB->frame,last_slot>>1,
 		harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
-	  for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3;j++)
-	    LOG_T(PHY,"%x.",phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0][j]);
-	  LOG_T(PHY,"\n");	  
+	  if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0]!=NULL){
+	    for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3;j++)
+	      LOG_T(PHY,"%x.",phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0][j]);
+	    LOG_T(PHY,"\n");	  
+	  }
 	  
 	  //dump_ulsch(phy_vars_eNB, last_slot>>1, i);
 	  	  

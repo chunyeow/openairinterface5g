@@ -31,6 +31,7 @@
 * \author Raymond Knopp and Navid Nikaein
 * \date 2011
 * \version 0.5
+* \mail navid.nikaein@eurecom.fr or openair_tech@eurecom.fr
 * @ingroup _mac
 
 */
@@ -57,7 +58,7 @@
 typedef struct
   {
     /// Pointer function that initializes L2
-    int (*macphy_init)(int eMBMS_active, u8 CBA_enabled);
+    int (*macphy_init)(int eMBMS_active, u8 CBA_active,u8 HO_active);
 
     /// Pointer function that stops the low-level scheduler due an exit condition        
     void (*macphy_exit)(const char *);
@@ -112,7 +113,7 @@ typedef struct
     void (*phy_config_sib13_eNB)(u8 Mod_id,int mbsfn_Area_idx,
 				long mbsfn_AreaId_r9);
 #endif
-
+    
     /// PHY-Config-Dedicated eNB
     void (*phy_config_dedicated_eNB)(u8 Mod_id,u16 rnti,
 				     struct PhysicalConfigDedicated *physicalConfigDedicated);
@@ -124,8 +125,11 @@ typedef struct
     // configure the cba rnti at the physical layer 
     void (*phy_config_cba_rnti)(u8 Mod_id,u8 eNB_flag, u8 index, u16 cba_rnti, u8 cba_group_id, u8 num_active_cba_groups);
 
-    // UE functions
-
+    /// UE functions
+    
+    /// reset the ue phy  
+    void (*phy_reset_ue)(u8 Mod_id,u8 eNB_index);
+    
     /// Indicate loss of synchronization of PBCH for this eNB to MAC layer
     void (*out_of_sync_ind)(u8 Mod_id,u32 frame,u16 eNB_index);
 
@@ -185,6 +189,10 @@ typedef struct
     void (*phy_config_sib13_ue)(u8 Mod_id,u8 CH_index,int mbsfn_Area_idx,
 				long mbsfn_AreaId_r9);
 #endif
+    /// Configure Common PHY parameters from mobilityControlInfo
+    void (*phy_config_afterHO_ue)(u8 Mod_id,u8 CH_index,
+				  MobilityControlInfo_t *mobilityControlInfo, 
+				  u8 ho_failed);
 
     /// Function to indicate failure of contention resolution or RA procedure
     void (*ra_failed)(u8 Mod_id,u8 eNB_index);
@@ -233,11 +241,26 @@ typedef struct
     /// Function for UE MAC to retrieve measured Path Loss
     s16 (*get_PL)(u8 Mod_id,u8 eNB_index);
 
-    /// Function for UE MAC to retrieve RSRP/RSRQ measurements
-    u8* (*get_RSRP)(u8 Mod_id,u8 eNB_index);
+    /// Function for UE MAC to retrieve the rssi
+    u8 (*get_RSSI)(u8 Mod_id);
+
+    /// Function for UE MAC to retrieve the total gain 
+    u8 (*get_rx_total_gain_dB)(u8 Mod_id);
+
+    /// Function for UE MAC to retrieve the number of adjustent cells
+    u8 (*get_n_adj_cells)(u8 Mod_id);
 
     /// Function for UE MAC to retrieve RSRP/RSRQ measurements
-    u8* (*get_RSRQ)(u8 Mod_id,u8 eNB_index);
+    u8 (*get_RSRP)(u8 Mod_id,u8 eNB_index);
+
+    /// Function for UE MAC to retrieve RSRP/RSRQ measurements
+    u8 (*get_RSRQ)(u8 Mod_id,u8 eNB_index);
+
+    /// Function for UE MAC to set the layer3 filtered RSRP/RSRQ measurements
+    u8 (*set_RSRP_filtered)(u8 Mod_id,u8 eNB_index,float rsrp);
+
+    /// Function for UE MAC to set the layer3 filtered RSRP/RSRQ measurements
+    u8 (*set_RSRQ_filtered)(u8 Mod_id,u8 eNB_index,float rsrq);
 
     /// Function for UE/eNB MAC to retrieve number of PRACH in TDD
     u8 (*get_num_prach_tdd)(LTE_DL_FRAME_PARMS *frame_parms);

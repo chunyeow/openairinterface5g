@@ -63,6 +63,7 @@
 
 #include "PHY/vars.h"
 #include "MAC_INTERFACE/vars.h"
+//#include "SCHED/defs.h"
 #include "SCHED/vars.h"
 #include "LAYER2/MAC/vars.h"
 
@@ -1253,8 +1254,8 @@ int main(int argc, char **argv) {
     }
     
     PHY_vars_UE_g[0]->tx_power_max_dBm = tx_max_power;
-   
-    printf("tx_max_power = %d -> amp %d\n",tx_max_power,get_tx_amp(tx_max_power,tx_max_power));
+    
+    //  printf("tx_max_power = %d -> amp %d\n",tx_max_power,get_tx_amp(tx_max_power,tx_max_power));
   }
   else { //this is eNB
     g_log->log_component[HW].level = LOG_DEBUG;
@@ -1394,7 +1395,8 @@ int main(int argc, char **argv) {
 #ifdef OPENAIR2
   int eMBMS_active=0;
   l2_init(frame_parms,eMBMS_active,
-	  0); // cba_group_active
+	  0,// cba_group_active
+	  0); // HO flag
   if (UE_flag == 1)
     mac_xface->dl_phy_sync_success (0, 0, 0, 1);
   else

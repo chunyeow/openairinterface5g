@@ -350,6 +350,8 @@ typedef struct
   unsigned int adj_cell_id[6];
   int rsrq[7];
   int rsrp[7];
+  float rsrp_filtered[7]; // after layer 3 filtering
+  float rsrq_filtered[7];
   // common measurements
   //! estimated noise power (linear)
   unsigned int   n0_power[NB_ANTENNAS_RX];                        

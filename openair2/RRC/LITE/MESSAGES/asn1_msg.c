@@ -1,3 +1,41 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface 2
+  Copyright(c) 1999 - 2010 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file asn1_msg.c
+* \brief primitives to build the asn1 messages 
+* \author Raymond Knopp and Navid Nikaein
+* \date 2011
+* \version 1.0 
+* \company Eurecom
+* \email: raymond.knopp@eurecom.fr and  navid.nikaein@eurecom.fr
+*/ 
+
 #ifdef USER_MODE
 #include <stdio.h>
 #include <sys/types.h>
@@ -78,7 +116,16 @@ uint16_t two_tier_hexagonal_adjacent_cellIds[7][6] = {{1,2,4,5,7,8},    // CellI
 uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index) {
   return(two_tier_hexagonal_adjacent_cellIds[Mod_id][index]);
 }
-
+/* This only works for the hexagonal topology...need a more general function for other topologies */
+u8 get_adjacent_cell_mod_id(uint16_t phyCellId) {
+  u8 i;
+  for(i=0;i<7;i++) {
+    if(two_tier_hexagonal_cellIds[i] == phyCellId)
+      return i;
+  }
+  LOG_E(RRC,"\nCannot get adjacent cell mod id! Fatal error!\n");
+  return 0xFF; //error!
+}
 /*
 uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 		SystemInformationBlockType1_t *sib1) {
@@ -1422,10 +1469,13 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
                                         struct PhysicalConfigDedicated    *physicalConfigDedicated,
                                         MeasObjectToAddModList_t          *MeasObj_list,
                                         ReportConfigToAddModList_t        *ReportConfig_list,
-                                        QuantityConfig_t                  *QuantityConfig,
+                                        QuantityConfig_t                  *quantityConfig,
                                         MeasIdToAddModList_t              *MeasId_list,
                                         MAC_MainConfig_t                  *mac_MainConfig,
                                         MeasGapConfig_t                   *measGapConfig,
+					MobilityControlInfo_t 		  *mobilityInfo,
+					struct MeasConfig__speedStatePars *speedStatePars,
+					RSRP_Range_t                      *rsrp,
                                         C_RNTI_t                          *cba_rnti, 
 					uint8_t                           *nas_pdu,
                                         uint32_t                           nas_length
@@ -1436,8 +1486,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
   DL_DCCH_Message_t dl_dcch_msg;
   RRCConnectionReconfiguration_t *rrcConnectionReconfiguration;
 
-  //  int i;
-
+  
   memset(&dl_dcch_msg,0,sizeof(DL_DCCH_Message_t));
 
   dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
@@ -1458,7 +1507,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 #ifdef CBA
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->cba_RNTI_vlola= cba_rnti;
 #endif 
-  if (mac_MainConfig) {
+  if (mac_MainConfig!=NULL) {
     rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->mac_MainConfig = CALLOC(1,sizeof(*rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->mac_MainConfig));
     rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->mac_MainConfig->present =RadioResourceConfigDedicated__mac_MainConfig_PR_explicitValue;
     memcpy(&rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->mac_MainConfig->choice.explicitValue,
@@ -1476,10 +1525,31 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->reportConfigToAddModList = ReportConfig_list;  
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->measIdToAddModList       = MeasId_list;  
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->measObjectToAddModList   = MeasObj_list;  
+  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->quantityConfig           = quantityConfig;
+  /* if (quantityConfig!=NULL) {
+     rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->quantityConfig = CALLOC(1,sizeof(*rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->quantityConfig));
+     memcpy((void *)rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->quantityConfig, 
+     (void *)quantityConfig, 
+     sizeof(*rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->quantityConfig));
+  }
+  else
+    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->quantityConfig = NULL;
+  */
+  if(speedStatePars != NULL) {
+    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->speedStatePars = CALLOC(1,sizeof(*rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->speedStatePars));
+    memcpy((void *)rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->speedStatePars,
+	   (void *)speedStatePars,sizeof(*speedStatePars));
+  }
+  else
+    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->speedStatePars = NULL;
 
-
-  // Note: RK, I'm not sure this is ok, we have to use ASN_SEQ_ADD
-  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.mobilityControlInfo  = NULL;
+  if (mobilityInfo !=NULL) {
+    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.mobilityControlInfo = CALLOC(1,sizeof(*rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.mobilityControlInfo));
+    memcpy((void *)rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.mobilityControlInfo, (void *)mobilityInfo,sizeof(MobilityControlInfo_t));
+  }
+  else
+    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.mobilityControlInfo  = NULL;
+  
   if ((nas_pdu == NULL) || (nas_length == 0)) {
     rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.dedicatedInfoNASList = (DedicatedInfoNAS_t*)NULL;
   } else {
@@ -1489,13 +1559,14 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
       dedicatedInfoNAS->size = nas_length;
   }
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.securityConfigHO     = NULL;
+  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->s_Measure= rsrp;
 
   enc_rval = uper_encode_to_buffer(&asn_DEF_DL_DCCH_Message,
                                    (void*)&dl_dcch_msg,
                                    buffer,
-                                   100);
+                                   RRC_BUF_SIZE); 
 #ifdef XER_PRINT
-  xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)&dl_dcch_msg);
+   xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)&dl_dcch_msg);
 #endif
   //#ifdef USER_MODE
   LOG_I(RRC,"RRCConnectionReconfiguration Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
@@ -1677,44 +1748,44 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
 
   asn_set_empty(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list);//.size=0;
 
-    MCC_MNC_Digit_t dummy;
-    dummy=2;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list,&dummy);
-    dummy=6;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list,&dummy);
-    dummy=2;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list,&dummy);
-
-    measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list.size=0;
-    measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list.count=0;
-    dummy=8;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list,&dummy);
-    dummy=0;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list,&dummy);
-
-
-    measresult_cgi2->cellGlobalId.cellIdentity.buf=MALLOC(8);
-    measresult_cgi2->cellGlobalId.cellIdentity.buf[0]=0x01;
-    measresult_cgi2->cellGlobalId.cellIdentity.buf[1]=0x48;
-    measresult_cgi2->cellGlobalId.cellIdentity.buf[2]=0x0f;
-    measresult_cgi2->cellGlobalId.cellIdentity.buf[3]=0x03;
-    measresult_cgi2->cellGlobalId.cellIdentity.size=4;
-    measresult_cgi2->cellGlobalId.cellIdentity.bits_unused=4;
-
-    measresult_cgi2->trackingAreaCode.buf = MALLOC(2);
-    measresult_cgi2->trackingAreaCode.buf[0]=0x00;
-    measresult_cgi2->trackingAreaCode.buf[1]=0x10;
-    measresult_cgi2->trackingAreaCode.size=2;
-    measresult_cgi2->trackingAreaCode.bits_unused=0;
+  MCC_MNC_Digit_t dummy;
+  dummy=2;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list,&dummy);
+  dummy=6;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list,&dummy);
+  dummy=2;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mcc->list,&dummy);
+  
+  measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list.size=0;
+  measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list.count=0;
+  dummy=8;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list,&dummy);
+  dummy=0;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list,&dummy);
 
 
-    measresulteutra2->cgi_Info=measresult_cgi2;
-    struct MeasResultEUTRA__measResult meas2;
-    //    int rsrp_va=10;
-    meas2.rsrpResult=&rsrp_t;
-    		//&rsrp_va;
-    meas2.rsrqResult=&rsrq_t;
+  measresult_cgi2->cellGlobalId.cellIdentity.buf=MALLOC(8);
+  measresult_cgi2->cellGlobalId.cellIdentity.buf[0]=0x01;
+  measresult_cgi2->cellGlobalId.cellIdentity.buf[1]=0x48;
+  measresult_cgi2->cellGlobalId.cellIdentity.buf[2]=0x0f;
+  measresult_cgi2->cellGlobalId.cellIdentity.buf[3]=0x03;
+  measresult_cgi2->cellGlobalId.cellIdentity.size=4;
+  measresult_cgi2->cellGlobalId.cellIdentity.bits_unused=4;
 
-    measresulteutra2->measResult=meas2;
+  measresult_cgi2->trackingAreaCode.buf = MALLOC(2);
+  measresult_cgi2->trackingAreaCode.buf[0]=0x00;
+  measresult_cgi2->trackingAreaCode.buf[1]=0x10;
+  measresult_cgi2->trackingAreaCode.size=2;
+  measresult_cgi2->trackingAreaCode.bits_unused=0;
+  
 
-    ASN_SEQUENCE_ADD(&measResultListEUTRA2->list,measresulteutra2);
+  measresulteutra2->cgi_Info=measresult_cgi2;
+  struct MeasResultEUTRA__measResult meas2;
+  //    int rsrp_va=10;
+  meas2.rsrpResult=&rsrp_t;
+  //&rsrp_va;
+  meas2.rsrqResult=&rsrq_t;
 
-    measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultNeighCells->choice.measResultListEUTRA=*(measResultListEUTRA2);
+  measresulteutra2->measResult=meas2;
+
+  ASN_SEQUENCE_ADD(&measResultListEUTRA2->list,measresulteutra2);
+  
+  measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultNeighCells->choice.measResultListEUTRA=*(measResultListEUTRA2);
 
 
   enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message,

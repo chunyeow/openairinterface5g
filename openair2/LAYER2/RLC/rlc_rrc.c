@@ -256,10 +256,10 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
       }
   }
   if (drb2release_listP != NULL) {
-      for (cnt=0;cnt<drb2add_listP->list.count;cnt++) {
-          pdrb_id = drb2release_listP->list.array[cnt];
-          rrc_rlc_remove_rlc(module_idP, (UE_index * NB_RB_MAX) + *pdrb_id, frameP);
-      }
+    for (cnt=0;cnt<drb2release_listP->list.count;cnt++) {
+      pdrb_id = drb2release_listP->list.array[cnt];
+      rrc_rlc_remove_rlc(module_idP, (UE_index * NB_RB_MAX) + *pdrb_id, frameP);
+    }
   }
 
 

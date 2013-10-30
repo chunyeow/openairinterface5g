@@ -248,6 +248,39 @@ void dump_dlsch_ra(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 subframe) {
 }
 #endif
 
+void phy_reset_ue(u8 Mod_id,u8 eNB_index) {
+
+  // This flushes ALL DLSCH and ULSCH harq buffers of ALL connected eNBs...add the eNB_index later
+  // for more flexibility
+  
+  u8 i,j,k;
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  //[NUMBER_OF_CONNECTED_eNB_MAX][2];
+  for(i=0;i<NUMBER_OF_CONNECTED_eNB_MAX;i++) {
+    for(j=0;j<2;j++) {
+      //DL HARQ
+      if(phy_vars_ue->dlsch_ue[i][j]) {
+	for(k=0;k<NUMBER_OF_HARQ_PID_MAX && phy_vars_ue->dlsch_ue[i][j]->harq_processes[k];k++) {
+	  phy_vars_ue->dlsch_ue[i][j]->harq_processes[k]->status = SCH_IDLE;
+	}
+      }
+    }
+    //UL HARQ
+    if(phy_vars_ue->ulsch_ue[i]) {
+      for(k=0;k<NUMBER_OF_HARQ_PID_MAX && phy_vars_ue->ulsch_ue[i]->harq_processes[k];k++) {
+	phy_vars_ue->ulsch_ue[i]->harq_processes[k]->status = SCH_IDLE;
+	//Set NDIs for all UL HARQs to 0
+	phy_vars_ue->ulsch_ue[i]->harq_processes[k]->Ndi = 0;
+	
+      }
+    }
+    
+    // flush Msg3 buffer
+    phy_vars_ue->ulsch_ue_Msg3_active[i] = 0;
+    
+  }
+}
+
 void ra_failed(u8 Mod_id,u8 eNB_index) {
 
   // if contention resolution fails, go back to PRACH
@@ -3194,6 +3227,10 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
       phy_vars_ue->UE_mode[eNB_id] = RESYNCH;
       mac_xface->macphy_exit("Connection lost");
       //exit(-1);
+    } else if (ret == PHY_HO_PRACH) {
+      LOG_I(PHY,"[UE %d] Frame %d, subframe %d, return to PRACH and perform a contention-free access\n",
+	    phy_vars_ue->Mod_id,phy_vars_ue->frame,next_slot>>1);
+      phy_vars_ue->UE_mode[eNB_id] = PRACH;
     }
   }
 #endif

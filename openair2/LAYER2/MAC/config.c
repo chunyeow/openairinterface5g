@@ -1,3 +1,41 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2013 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+/*! \file config.c
+* \brief UE and eNB configuration
+* \author Raymond Knopp, Navid Nikaein
+* \date 2013
+* \version 0.1
+* \email: navid.nikaein@eurecom.fr
+* @ingroup _mac
+
+*/
+
 #include "COMMON/platform_types.h"
 #include "COMMON/platform_constants.h"
 #include "SystemInformationBlockType2.h"
@@ -16,6 +54,36 @@
 #include "MBSFN-SubframeConfigList.h"
 #include "PMCH-InfoList-r9.h"
 #endif
+
+/* sec 5.9, 36.321: MAC Reset Procedure */
+void ue_mac_reset(u8 Mod_id,u8 eNB_index) {
+  
+  //Resetting Bj
+  UE_mac_inst[Mod_id].scheduling_info.Bj[0] = 0;
+  UE_mac_inst[Mod_id].scheduling_info.Bj[1] = 0;
+  UE_mac_inst[Mod_id].scheduling_info.Bj[2] = 0;
+  //Stopping all timers
+  
+  //timeAlignmentTimer expires
+  
+  // PHY changes for UE MAC reset
+  mac_xface->phy_reset_ue(Mod_id,eNB_index);
+  
+  // notify RRC to relase PUCCH/SRS
+  // cancel all pending SRs
+  UE_mac_inst[Mod_id].scheduling_info.SR_pending=0;
+  UE_mac_inst[Mod_id].scheduling_info.SR_COUNTER=0;
+  
+  // stop ongoing RACH procedure
+  
+  // discard explicitly signaled ra_PreambleIndex and ra_RACH_MaskIndex, if any
+  UE_mac_inst[Mod_id].RA_prach_resources.ra_PreambleIndex  = 0; // check!
+  UE_mac_inst[Mod_id].RA_prach_resources.ra_RACH_MaskIndex = 0;
+  
+  ue_init_mac(Mod_id); //This will hopefully do the rest of the MAC reset procedure
+  
+}
+
 int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index, 
 		       RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 		       struct PhysicalConfigDedicated *physicalConfigDedicated,
@@ -25,6 +93,7 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 		       LogicalChannelConfig_t *logicalChannelConfig,
 		       MeasGapConfig_t *measGapConfig,
 		       TDD_Config_t *tdd_Config,
+		       MobilityControlInfo_t *mobilityControlInfo,
 		       u8 *SIwindowsize,
 		       u16 *SIperiod,
 		       ARFCN_ValueEUTRA_t *ul_CarrierFreq,
@@ -32,14 +101,12 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 		       AdditionalSpectrumEmission_t *additionalSpectrumEmission,
 		       struct MBSFN_SubframeConfigList *mbsfn_SubframeConfigList
 #ifdef Rel10
-		       ,
-		       u8 MBMS_Flag,
+		       ,u8 MBMS_Flag,
 		       MBSFN_AreaInfoList_r9_t *mbsfn_AreaInfoList,
 		       PMCH_InfoList_r9_t *pmch_InfoList
 #endif 
 #ifdef CBA
-		       ,
-		       u8 num_active_cba_groups,
+		       ,u8 num_active_cba_groups,
 		       u16 cba_rnti
 #endif
 		       ) {
@@ -60,10 +127,7 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
     }
   }
   
-  if ((tdd_Config!=NULL)||
-      (SIwindowsize!=NULL)||
-      (SIperiod!=NULL)){
-
+  if ((tdd_Config!=NULL)||(SIwindowsize!=NULL)||(SIperiod!=NULL)){
     if (eNB_flag==1)
       mac_xface->phy_config_sib1_eNB(Mod_id,tdd_Config,*SIwindowsize,*SIperiod);
     else
@@ -73,27 +137,14 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
   if (radioResourceConfigCommon!=NULL) {
     if (eNB_flag==1) {
       LOG_I(MAC,"[CONFIG]SIB2/3 Contents (partial)\n");
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.n_SB = %ld\n",radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.n_SB);
-      
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.hoppingMode = %ld\n",radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode);
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.pusch_HoppingOffset = %ld\n",  radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset);
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.enable64QAM = %d\n",radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM);
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.groupHoppingEnabled = %d\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled);
-      
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.groupAssignmentPUSCH = %ld\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH);
-      
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.sequenceHoppingEnabled = %d\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled);
-      
-      
       LOG_I(MAC,"[CONFIG]pusch_config_common.cyclicShift  = %ld\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift); 
-      
       mac_xface->phy_config_sib2_eNB(Mod_id,radioResourceConfigCommon,ul_CarrierFreq,ul_Bandwidth,additionalSpectrumEmission,mbsfn_SubframeConfigList);
     }
     else {
@@ -167,8 +218,8 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
       UE_mac_inst[Mod_id].scheduling_info.periodicPHR_SF =  get_sf_perioidicPHR_Timer(UE_mac_inst[Mod_id].scheduling_info.periodicPHR_Timer);
       UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_Timer);
       UE_mac_inst[Mod_id].scheduling_info.PathlossChange_db =  get_db_dl_PathlossChange(UE_mac_inst[Mod_id].scheduling_info.PathlossChange);
-      LOG_D(MAC,"[UE %d] config PHR : periodic %d (SF) prohibit %d (SF)  pathlosschange %d (db) \n",
-	    Mod_id, 
+      LOG_D(MAC,"[UE %d] config PHR (%d): periodic %d (SF) prohibit %d (SF)  pathlosschange %d (db) \n",
+	    Mod_id,mac_MainConfig->phr_Config->present, 
 	    UE_mac_inst[Mod_id].scheduling_info.periodicPHR_SF,
 	    UE_mac_inst[Mod_id].scheduling_info.prohibitPHR_SF,
 	    UE_mac_inst[Mod_id].scheduling_info.PathlossChange_db);
@@ -195,10 +246,89 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 	}
 	mac_xface->phy_config_meas_ue(Mod_id,eNB_index,UE_mac_inst[Mod_id].n_adj_cells,UE_mac_inst[Mod_id].adj_cell_id);
       }
+    /*
+    if (quantityConfig != NULL) {
+    	if (quantityConfig[0] != NULL) {
+    		UE_mac_inst[Mod_id].quantityConfig = quantityConfig[0];
+    		LOG_I(MAC,"UE %d configured filterCoeff.",UE_mac_inst[Mod_id].crnti);
+    		mac_xface->phy_config_meas_ue
+    	}
+    }
+    */
     }
   }
-
-
+  if (eNB_flag==0) {
+    if(mobilityControlInfo != NULL) {
+      
+      LOG_D(MAC,"[UE%d] MAC Reset procedure triggered by RRC eNB %d \n",Mod_id,eNB_index);
+      ue_mac_reset(Mod_id,eNB_index);
+      
+      if(mobilityControlInfo->radioResourceConfigCommon.rach_ConfigCommon) {
+	memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->rach_ConfigCommon, 
+	       (void *)mobilityControlInfo->radioResourceConfigCommon.rach_ConfigCommon,
+	       sizeof(RACH_ConfigCommon_t));
+      }
+      
+      memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->prach_Config.prach_ConfigInfo, 
+	     (void *)mobilityControlInfo->radioResourceConfigCommon.prach_Config.prach_ConfigInfo,
+	     sizeof(PRACH_ConfigInfo_t));
+      UE_mac_inst[Mod_id].radioResourceConfigCommon->prach_Config.rootSequenceIndex = mobilityControlInfo->radioResourceConfigCommon.prach_Config.rootSequenceIndex;
+      
+      if(mobilityControlInfo->radioResourceConfigCommon.pdsch_ConfigCommon) {
+	memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->pdsch_ConfigCommon, 
+	       (void *)mobilityControlInfo->radioResourceConfigCommon.pdsch_ConfigCommon,
+	       sizeof(PDSCH_ConfigCommon_t));
+      }
+      // not a pointer: mobilityControlInfo->radioResourceConfigCommon.pusch_ConfigCommon
+      memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->pusch_ConfigCommon, 
+	     (void *)&mobilityControlInfo->radioResourceConfigCommon.pusch_ConfigCommon,
+	     sizeof(PUSCH_ConfigCommon_t));
+      
+      if(mobilityControlInfo->radioResourceConfigCommon.phich_Config) {
+	/* memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->phich_Config, 
+	   (void *)mobilityControlInfo->radioResourceConfigCommon.phich_Config,
+	   sizeof(PHICH_Config_t)); */
+      }
+      if(mobilityControlInfo->radioResourceConfigCommon.pucch_ConfigCommon) {
+	memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->pucch_ConfigCommon, 
+	       (void *)mobilityControlInfo->radioResourceConfigCommon.pucch_ConfigCommon,
+	       sizeof(PUCCH_ConfigCommon_t));
+      }
+      if(mobilityControlInfo->radioResourceConfigCommon.soundingRS_UL_ConfigCommon) {
+	memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->soundingRS_UL_ConfigCommon, 
+	       (void *)mobilityControlInfo->radioResourceConfigCommon.soundingRS_UL_ConfigCommon,
+	       sizeof(SoundingRS_UL_ConfigCommon_t));
+	}
+      if(mobilityControlInfo->radioResourceConfigCommon.uplinkPowerControlCommon) {
+	memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->uplinkPowerControlCommon, 
+	       (void *)mobilityControlInfo->radioResourceConfigCommon.uplinkPowerControlCommon,
+	       sizeof(UplinkPowerControlCommon_t));
+      }
+      //configure antennaInfoCommon somewhere here..
+      if(mobilityControlInfo->radioResourceConfigCommon.p_Max) {
+	  //to be configured
+      }
+      if(mobilityControlInfo->radioResourceConfigCommon.tdd_Config) {
+	UE_mac_inst[Mod_id].tdd_Config = mobilityControlInfo->radioResourceConfigCommon.tdd_Config;
+      }
+      if(mobilityControlInfo->radioResourceConfigCommon.ul_CyclicPrefixLength) {
+	memcpy((void *)&UE_mac_inst[Mod_id].radioResourceConfigCommon->ul_CyclicPrefixLength, 
+	       (void *)mobilityControlInfo->radioResourceConfigCommon.ul_CyclicPrefixLength,
+	       sizeof(UL_CyclicPrefixLength_t));
+      }
+      
+      UE_mac_inst[Mod_id].crnti = ((mobilityControlInfo->newUE_Identity.buf[0])|(mobilityControlInfo->newUE_Identity.buf[1]<<8));
+      LOG_I(MAC,"[UE %d] Received new identity %x from %d\n", Mod_id, UE_mac_inst[Mod_id].crnti, eNB_index);
+      UE_mac_inst[Mod_id].rach_ConfigDedicated = malloc(sizeof(*mobilityControlInfo->rach_ConfigDedicated));
+      if (mobilityControlInfo->rach_ConfigDedicated){
+	memcpy((void*)UE_mac_inst[Mod_id].rach_ConfigDedicated,
+	       (void*)mobilityControlInfo->rach_ConfigDedicated,
+	       sizeof(*mobilityControlInfo->rach_ConfigDedicated));
+      }
+      mac_xface->phy_config_afterHO_ue(Mod_id,eNB_index,mobilityControlInfo,0);
+    }
+  }
+  
   if (mbsfn_SubframeConfigList != NULL) {
     if (eNB_flag == 1) {
       LOG_I(MAC,"[eNB %d][CONFIG] Received %d subframe allocation pattern for MBSFN\n", Mod_id, mbsfn_SubframeConfigList->list.count);

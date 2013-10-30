@@ -4296,6 +4296,12 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 #endif
 #ifdef CELLULAR
   rrc_rx_tx(Mod_id, frame, 0, 0);
+#else
+  // check HO
+  rrc_rx_tx(Mod_id,
+	    frame,
+	    1,
+	    Mod_id);
 #endif
 
 #ifdef Rel10

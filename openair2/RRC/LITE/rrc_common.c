@@ -51,6 +51,8 @@
 extern eNB_MAC_INST *eNB_mac_inst;
 extern UE_MAC_INST *UE_mac_inst;
 
+extern mui_t rrc_eNB_mui;
+
 //configure  BCCH & CCCH Logical Channels and associated rrc_buffers, configure associated SRBs
 void openair_rrc_on(u8 Mod_id, u8 eNB_flag) {
   unsigned short i;
@@ -203,7 +205,7 @@ void rrc_config_buffer(SRB_INFO *Srb_info, u8 Lchan_type, u8 Role) {
 }
 
 /*------------------------------------------------------------------------------*/
-void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active) {
+void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
   /*-----------------------------------------------------------------------------*/
 
   int i;
@@ -241,6 +243,10 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active) {
   if (NB_eNB_INST > 0) {
     eNB_rrc_inst = (eNB_RRC_INST*) malloc16(NB_eNB_INST*sizeof(eNB_RRC_INST));
     memset (eNB_rrc_inst, 0, NB_eNB_INST * sizeof(eNB_RRC_INST));
+    LOG_I(RRC,"[eNB] handover active state is %d \n", HO_active);
+    for (i=0;i<NB_eNB_INST;i++) {
+      eNB_rrc_inst[i].HO_flag   = (uint8_t)HO_active;
+    }
 #ifdef Rel10
     LOG_I(RRC,"[eNB] eMBMS active state is %d \n", eMBMS_active);
     for (i=0;i<NB_eNB_INST;i++) {
@@ -280,14 +286,6 @@ void rrc_top_cleanup(void) {
 
 }
 
-u16 T300[8] =
-  {100, 200, 300, 400, 600, 1000, 1500, 2000};
-u16 T310[8] =
-  {0, 50, 100, 200, 500, 1000, 2000};
-u16 N310[8] =
-  {1, 2, 3, 4, 6, 8, 10, 20};
-u16 N311[8] =
-  {1, 2, 3, 4, 6, 8, 10, 20};
 
 void rrc_t310_expiration(u32 frame, u8 Mod_id, u8 eNB_index) {
 
@@ -319,9 +317,9 @@ void rrc_t310_expiration(u32 frame, u8 Mod_id, u8 eNB_index) {
   }
 }
 
-RRC_status_t rrc_rx_tx(u8 Mod_id, u32 frame, u8 eNB_flag, u8 index) {
-
-  if (eNB_flag == 0) {
+RRC_status_t rrc_rx_tx(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index){
+  
+  if(eNB_flag == 0) {
     // check timers
 
     if (UE_rrc_inst[Mod_id].Info[index].T300_active == 1) {
@@ -350,7 +348,6 @@ RRC_status_t rrc_rx_tx(u8 Mod_id, u32 frame, u8 eNB_flag, u8 index) {
         return RRC_PHY_RESYNCH;
       }
     }
-
     if (UE_rrc_inst[Mod_id].Info[index].T310_active == 1) {
       if (UE_rrc_inst[Mod_id].Info[index].N311_cnt
           == N311[UE_rrc_inst[Mod_id].sib2[index]->ue_TimersAndConstants.n311]) {
@@ -367,7 +364,93 @@ RRC_status_t rrc_rx_tx(u8 Mod_id, u32 frame, u8 eNB_flag, u8 index) {
       }
       UE_rrc_inst[Mod_id].Info[index].T310_cnt++;
     }
-  }
+    
+    
+    if (UE_rrc_inst[Mod_id].Info[index].T304_active==1) {
+      if ((UE_rrc_inst[Mod_id].Info[index].T304_cnt % 10) == 0)
+	LOG_D(RRC,"[UE %d][RAPROC] Frame %d T304 Count %d ms\n",Mod_id,frame,
+	      UE_rrc_inst[Mod_id].Info[index].T304_cnt);
+      if (UE_rrc_inst[Mod_id].Info[index].T304_cnt == 0) {
+	UE_rrc_inst[Mod_id].Info[index].T304_active = 0;
+	UE_rrc_inst[Mod_id].HandoverInfoUe.measFlag = 1;
+	LOG_E(RRC,"[UE %d] Handover failure..initiating connection re-establishment procedure... \n");
+	//Implement 36.331, section 5.3.5.6 here
+	return(RRC_Handover_failed);
+      }
+      UE_rrc_inst[Mod_id].Info[index].T304_cnt--;
+    }
+    // Layer 3 filtering of RRC measurements
+    if (UE_rrc_inst[Mod_id].QuantityConfig[0] != NULL) {
+      ue_meas_filtering(Mod_id,frame,index);
+    }
+    ue_measurement_report_triggering(Mod_id,frame,index);
+    if (UE_rrc_inst[Mod_id].Info[0].handoverTarget > 0)       
+      LOG_I(RRC,"[UE %d] Frame %d : RRC handover initiated\n", Mod_id, frame);
+    if((UE_rrc_inst[Mod_id].Info[index].State == RRC_HO_EXECUTION)   && 
+       (UE_rrc_inst[Mod_id].HandoverInfoUe.targetCellId != 0xFF)) {
+      UE_rrc_inst[Mod_id].Info[index].State= RRC_IDLE;
+      return(RRC_HO_STARTED);
+    }
 
+  }
+  else {
+    check_handovers(Mod_id,frame);
+  }
+  
   return (RRC_OK);
 }
+
+long binary_search_int(int elements[], long numElem, int value) {
+  long first, last, middle, search;
+  first = 0;
+  last = numElem-1;
+  middle = (first+last)/2;
+  if(value < elements[0])
+    return first;
+  if(value > elements[last])
+    return last;
+  
+  while (first <= last) {
+    if (elements[middle] < value)
+      first = middle+1;
+    else if (elements[middle] == value) {
+      search = middle+1;
+      break;
+    }
+    else
+      last = middle -1;
+    
+    middle = (first+last)/2;
+  }
+  if (first > last)
+    LOG_E(RRC,"Error in binary search!");
+  return search;
+}
+
+/* This is a binary search routine which operates on an array of floating
+   point numbers and returns the index of the range the value lies in
+   Used for RSRP and RSRQ measurement mapping. Can potentially be used for other things
+*/
+long binary_search_float(float elements[], long numElem, float value) {
+  long first, last, middle, search;
+  first = 0;
+  last = numElem-1;
+  middle = (first+last)/2;
+  if(value <= elements[0])
+    return first;
+  if(value >= elements[last])
+    return last;
+  
+  while (last - first > 1) {
+    if (elements[middle] > value)
+      last = middle;
+    else
+      first = middle;
+    
+    middle = (first+last)/2;
+  }
+  if (first < 0 || first >= numElem)
+    LOG_E(RRC,"\n Error in binary search float!");
+  return first;
+}
+

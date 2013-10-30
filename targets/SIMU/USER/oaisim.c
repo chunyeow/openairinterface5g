@@ -150,27 +150,28 @@ int otg_enabled;
 #endif
 
 // this should reflect the channel models in openair1/SIMULATION/TOOLS/defs.h
-mapping small_scale_names[] =
-  {
-    {"custom", custom},
-     {"SCM_A", SCM_A},
-     {"SCM_B", SCM_B},
-     {"SCM_C", SCM_C},
-     {"SCM_D", SCM_D},
-     {"EPA", EPA},
-     {"EVA", EVA},
-     {"ETU", ETU},
-     {"Rayleigh8", Rayleigh8},
-     {"Rayleigh1", Rayleigh1},
-     {"Rayleigh1_800", Rayleigh1_800},
-     {"Rayleigh1_corr", Rayleigh1_corr},
-     {"Rayleigh1_anticorr", Rayleigh1_anticorr},
-     {"Rice8", Rice8},
-     {"Rice1", Rice1},
-     {"Rice1_corr", Rice1_corr},
-     {"Rice1_anticorr", Rice1_anticorr},
-     {"AWGN", AWGN},
-     {NULL, -1}};
+mapping small_scale_names[] = {
+  {"custom", custom},
+  {"SCM_A", SCM_A},
+  {"SCM_B", SCM_B},
+  {"SCM_C", SCM_C},
+  {"SCM_D", SCM_D},
+  {"EPA", EPA},
+  {"EVA", EVA},
+  {"ETU", ETU},
+  {"MBSFN", MBSFN},
+  {"Rayleigh8", Rayleigh8},
+  {"Rayleigh1", Rayleigh1},
+  {"Rayleigh1_800", Rayleigh1_800},
+  {"Rayleigh1_corr", Rayleigh1_corr},
+  {"Rayleigh1_anticorr", Rayleigh1_anticorr},
+  {"Rice8", Rice8},
+  {"Rice1", Rice1},
+  {"Rice1_corr", Rice1_corr},
+  {"Rice1_anticorr", Rice1_anticorr},
+  {"AWGN", AWGN},
+  {NULL, -1}
+};
 
 //static void *sigh(void *arg);
 void terminate(void);
@@ -194,6 +195,7 @@ void help(void) {
   printf ("-F Activates FDD transmission (TDD is default)\n");
   printf ("-g Set multicast group ID (0,1,2,3) - valid if M is set\n");
   printf ("-G Enable background traffic \n");
+  printf ("-H Enable handover operation (default disabled) \n");
   printf ("-I Enable CLI interface (to connect use telnet localhost 1352)\n");
   printf ("-k Set the Ricean factor (linear)\n");
   printf ("-l Set the global log level (8:trace, 7:debug, 6:info, 4:warn, 3:error) \n");

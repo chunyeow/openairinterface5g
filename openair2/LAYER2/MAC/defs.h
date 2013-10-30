@@ -59,6 +59,7 @@
 #include "TDD-Config.h"
 #include "RACH-ConfigCommon.h"
 #include "MeasObjectToAddModList.h"
+#include "MobilityControlInfo.h"
 #ifdef Rel10
 #include "MBSFN-AreaInfoList-r9.h"
 #include "MBSFN-SubframeConfigList.h"
@@ -139,7 +140,8 @@
 typedef enum {
   CONNECTION_OK=0,
   CONNECTION_LOST,
-  PHY_RESYNCH
+  PHY_RESYNCH,
+  PHY_HO_PRACH
 } UE_L2_STATE_t;
 
 typedef struct {
@@ -713,6 +715,8 @@ typedef struct{
   uint8_t ul_active;
   /// pointer to RRC PHY configuration 
   RadioResourceConfigCommonSIB_t *radioResourceConfigCommon;
+  /// pointer to RACH_ConfigDedicated (NULL when not active, i.e. upon HO completion or T304 expiry)
+  struct RACH_ConfigDedicated	*rach_ConfigDedicated;
   /// pointer to RRC PHY configuration 
   struct PhysicalConfigDedicated *physicalConfigDedicated;
   /// pointer to TDD Configuration (NULL for FDD)
@@ -839,6 +843,7 @@ unsigned char generate_dlsch_header(unsigned char *mac_header,
 @param logicalChannelConfig Pointer to logical channel configuration
 @param measGapConfig Measurement Gap configuration for MAC (if NULL keep existing configuration)
 @param tdd_Config TDD Configuration from SIB1 (if NULL keep existing configuration)
+@param mobilityControlInfo mobility control info received for Handover
 @param SIwindowsize SI Windowsize from SIB1 (if NULL keep existing configuration)
 @param SIperiod SI Period from SIB1 (if NULL keep existing configuration)
 @param MBMS_Flag indicates MBMS transmission
@@ -855,6 +860,7 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 		       LogicalChannelConfig_t *logicalChannelConfig,
 		       MeasGapConfig_t *measGapConfig,
 		       TDD_Config_t *tdd_Config,
+		       MobilityControlInfo_t *mobilityControlInfo,
 		       u8 *SIwindowsize,
 		       u16 *SIperiod,
 		       ARFCN_ValueEUTRA_t *ul_CarrierFreq,
@@ -985,11 +991,11 @@ s8 get_deltaP_rampup(u8 Mod_id);
 
 //main.c
 
-void chbch_phy_sync_success(u8 Mod_id,u32 frame,u8 CH_index);
+void chbch_phy_sync_success(u8 Mod_id,u32 frame,u8 eNB_index);
 
 void mrbch_phy_sync_failure(u8 Mod_id, u32 frame,u8 free_eNB_index);
 
-int mac_top_init(int eMBMS_active, u8 cba_group_active);
+int mac_top_init(int eMBMS_active, u8 cba_group_active, u8 HO_active);
 
 char layer2_init_UE(u8 Mod_id);
 
@@ -1001,7 +1007,7 @@ int mac_init_global_param(void);
 
 void mac_top_cleanup(void);
 
-void mac_UE_out_of_sync_ind(u8 Mod_id,u32 frame, u16 CH_index);
+void mac_UE_out_of_sync_ind(u8 Mod_id,u32 frame, u16 eNB_index);
 
 
 // eNB functions
@@ -1106,8 +1112,8 @@ void UpdateSBnumber(unsigned char Mod_id);
 //end ALU's algo
 
 
-
-
+void ue_mac_reset(u8 Mod_id,u8 eNB_index);
+void ue_init_mac(u8 Mod_id);
 void init_ue_sched_info(void);
 void add_ue_ulsch_info(u8 Mod_id, u8 UE_id, u8 subframe,UE_ULSCH_STATUS status);
 void add_ue_dlsch_info(u8 Mod_id, u8 UE_id, u8 subframe,UE_DLSCH_STATUS status);
@@ -1270,9 +1276,8 @@ u8 *parse_ulsch_header(u8 *mac_header,
 		       u16 tx_lenght);
 
 
-int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, u8 cba_group_active);
+int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, u8 cba_group_active, u8 HO_active);
 int mac_init(void);
-void ue_init_mac(void);
 s8 add_new_ue(u8 Mod_id, u16 rnti);
 s8 mac_remove_ue(u8 Mod_id, u8 UE_id);
 

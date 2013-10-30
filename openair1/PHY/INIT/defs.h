@@ -9,6 +9,7 @@
 #include "RadioResourceConfigDedicated.h"
 #include "TDD-Config.h"
 #include "MBSFN-SubframeConfigList.h"
+#include "MobilityControlInfo.h"
 #else
 
 /**
@@ -121,6 +122,17 @@ void phy_config_sib2_ue(u8 Mod_id,u8 CH_index,
 			AdditionalSpectrumEmission_t *additionalSpectrumEmission,
 			struct MBSFN_SubframeConfigList	*mbsfn_SubframeConfigList);
 
+
+/*! 
+  \fn phy_config_afterHO_ue
+  \brief Configure Common PHY parameters from mobilityControlInfo
+  @param Mod_id 
+  @param eNB_index
+  @param mobilityControlInfo pointer to the mobility control information for handover
+  @param ho_failed flag to indicated whether the ho was successful or not
+ */
+void phy_config_afterHO_ue(u8 Mod_id,u8 eNB_index,
+			   MobilityControlInfo_t *mobilityControlInfo,u8 ho_failed);
 /*!
   \fn void phy_config_sib2_eNB(u8 Mod_id,
                                RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,

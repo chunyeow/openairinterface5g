@@ -1,9 +1,40 @@
-/*________________________openair_rrc_vars.h________________________
+/*******************************************************************************
 
- Authors : Hicham Anouar
- Company : EURECOM
- Emails  : anouar@eurecom.fr
-________________________________________________________________*/
+  Eurecom OpenAirInterface 2
+  Copyright(c) 1999 - 2010 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file vars.hles
+* \brief rrc variables 
+* \author Raymond Knopp and Navid Nikaein
+* \date 2013
+* \version 1.0 
+* \company Eurecom
+* \email: navid.nikaein@eurecom.fr
+*/ 
 
 
 #ifndef __OPENAIR_RRC_VARS_H__
@@ -38,6 +69,8 @@ unsigned short Header_read_idx,Data_read_idx,Header_size;
 unsigned short Data_to_read;
 #endif //NO_RRM
 
+#define MAX_U32 0xFFFFFFFF
+
 u8 DRB2LCHAN[8];
 
 long logicalChannelGroup0 = 0;
@@ -66,7 +99,7 @@ LogicalChannelConfig_t SRB2_logicalChannelConfig_defaultValue = {&LCSRB2
 								 ,
 								 &logicalChannelSR_Mask_r9
 #endif
-                                                                 };
+                                                                };
 
 //CONSTANTS
 rlc_info_t Rlc_info_um,Rlc_info_am_config;
@@ -75,4 +108,152 @@ u16 RACH_FREQ_ALLOC;
 LCHAN_DESC BCCH_LCHAN_DESC,CCCH_LCHAN_DESC,DCCH_LCHAN_DESC,DTCH_DL_LCHAN_DESC,DTCH_UL_LCHAN_DESC;
 MAC_MEAS_T BCCH_MEAS_TRIGGER,CCCH_MEAS_TRIGGER,DCCH_MEAS_TRIGGER,DTCH_MEAS_TRIGGER;
 MAC_AVG_T BCCH_MEAS_AVG, CCCH_MEAS_AVG,DCCH_MEAS_AVG, DTCH_MEAS_AVG;
+
+// timers 
+u16 T300[8] = {100,200,300,400,600,1000,1500,2000};
+u16 T310[8] = {0,50,100,200,500,1000,2000};
+u16 N310[8] = {1,2,3,4,6,8,10,20};
+u16 N311[8] = {1,2,3,4,6,8,10,20};
+u32 T304[8] = {50,100,150,200,500,1000,2000,MAX_U32};
+
+// TimeToTrigger enum mapping table (36.331 TimeToTrigger IE)
+u32 timeToTrigger_ms[16] = {0,40,64,80,100,128,160,256,320,480,512,640,1024,1280,2560,5120};
+
+/* 36.133 Section 9.1.4 RSRP Measurement Report Mapping, Table: 9.1.4-1 */
+float RSRP_meas_mapping[100] = {
+		-140,
+		-139,
+		-138,
+		-137,
+		-136,
+		-135,
+		-134,
+		-133,
+		-132,
+		-131,
+		-130,
+		-129,
+		-128,
+		-127,
+		-126,
+		-125,
+		-124,
+		-123,
+		-122,
+		-121,
+		-120,
+		-119,
+		-118,
+		-117,
+		-116,
+		-115,
+		-114,
+		-113,
+		-112,
+		-111,
+		-110,
+		-109,
+		-108,
+		-107,
+		-106,
+		-105,
+		-104,
+		-103,
+		-102,
+		-101,
+		-100,
+		-99,
+		-98,
+		-97,
+		-96,
+		-95,
+		-94,
+		-93,
+		-92,
+		-91,
+		-90,
+		-89,
+		-88,
+		-87,
+		-86,
+		-85,
+		-84,
+		-83,
+		-82,
+		-81,
+		-80,
+		-79,
+		-78,
+		-77,
+		-76,
+		-75,
+		-74,
+		-73,
+		-72,
+		-71,
+		-70,
+		-69,
+		-68,
+		-67,
+		-66,
+		-65,
+		-64,
+		-63,
+		-62,
+		-61,
+		-60,
+		-59,
+		-58,
+		-57,
+		-56,
+		-55,
+		-54,
+		-53,
+		-52,
+		-51,
+		-50,
+		-49,
+		-48,
+		-47,
+		-46,
+		-45,
+		-44
+};
+
+float RSRQ_meas_mapping[33] = {
+	-19,
+	-18.5,
+	-18,
+	-17.5,
+	-17,
+	-16.5,
+	-16,
+	-15.5,
+	-15,
+	-14.5,
+	-14,
+	-13.5,
+	-13,
+	-12.5,
+	-12,
+	-11.5,
+	-11,
+	-10.5,
+	-10,
+	-9.5,
+	-9,
+	-8.5,
+	-8,
+	-7.5,
+	-7,
+	-6.5,
+	-6,
+	-5.5,
+	-5,
+	-4.5,
+	-4,
+	-3.5,
+	-3
+};
+
 #endif

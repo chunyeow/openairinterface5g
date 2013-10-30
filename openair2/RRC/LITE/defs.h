@@ -71,6 +71,8 @@
 #include "MCCH-Message.h"
 #include "MBSFNAreaConfiguration-r9.h"
 #endif
+#include "AS-Config.h"
+#include "AS-Context.h"
 #include "UE-EUTRA-Capability.h"
 #include "MeasResults.h"
 
@@ -88,15 +90,22 @@
 
 //#define NUM_PRECONFIGURED_LCHAN (NB_CH_CX*2)  //BCCH, CCCH
 
-#define CH_READY 0
-
 typedef enum  {
   RRC_IDLE=0,
   RRC_SI_RECEIVED,
   RRC_CONNECTED,
-  RRC_RECONFIGURED
+  RRC_RECONFIGURED,
+  RRC_HO_EXECUTION
 } UE_STATE_t;
 
+
+typedef enum  {
+  HO_IDLE=0,
+  HO_MEASURMENT,
+  HO_PREPARE,
+  HO_CMD, // initiated by the src eNB
+  HO_COMPLETE // initiated by the target eNB
+} HO_STATE_t;
 
 
 //#define NUMBER_OF_UE_MAX MAX_MOBILES_PER_RG
@@ -105,12 +114,12 @@ typedef enum  {
 #define RRM_CALLOC(t,n)   (t *) malloc16( sizeof(t) * n) 
 #define RRM_CALLOC2(t,s)  (t *) malloc16( s ) 
 
-#define MAX_MEAS_OBJ 3
-#define MAX_MEAS_CONFIG 3
-#define MAX_MEAS_ID 3
+#define MAX_MEAS_OBJ 6
+#define MAX_MEAS_CONFIG 6
+#define MAX_MEAS_ID 6
 
 #define PAYLOAD_SIZE_MAX 1024
-
+#define RRC_BUF_SIZE 140
 #define UNDEF_SECURITY_MODE 0xff
 #define NO_SECURITY_MODE 0x33
 
@@ -126,6 +135,8 @@ typedef struct{
   u8 MCCHStatus[8]; // MAX_MBSFN_AREA
 #endif
   u8 SIwindowsize;
+  u8 handoverTarget;
+  HO_STATE_t ho_state; 
   u16 SIperiod;
   unsigned short UE_index;
   u32 T300_active;
@@ -154,8 +165,19 @@ union{
  }Info;
 }RRC_INFO;
 
-
-
+/* Intermediate structure for Hanodver management. Associated per-UE in eNB_RRC_INST */
+typedef struct{
+  u8 ho_prepare;
+  u8 ho_complete;
+  u8 modid_s; //Mod_id of serving cell
+  u8 modid_t; //Mod_id of target cell
+  u8 ueid_s; //UE index in serving cell
+  u8 ueid_t; //UE index in target cell
+  AS_Config_t as_config; /* these two parameters are taken from 36.331 section 10.2.2: HandoverPreparationInformation-r8-IEs */
+  AS_Context_t as_context; /* They are mandatory for HO */
+  uint8_t buf[RRC_BUF_SIZE];	/* ASN.1 encoded handoverCommandMessage */
+  int size;		/* size of above message in bytes */
+}HANDOVER_INFO;
 
 #define RRC_HEADER_SIZE_MAX 64
 #define RRC_BUFFER_SIZE_MAX 1024
@@ -192,10 +214,19 @@ typedef struct{
   SRB_INFO Srb_info;
   u8 Active;
   u8 Status;
-u32 Next_check_frame;
+  u32 Next_check_frame;
 }SRB_INFO_TABLE_ENTRY;
 
+typedef struct {
+  MeasId_t measId;
+  //CellsTriggeredList	cellsTriggeredList;//OPTIONAL
+  u32 numberOfReportsSent;
+} MEAS_REPORT_LIST;
 
+typedef struct {
+  PhysCellId_t targetCellId;
+  u8 measFlag;
+}HANDOVER_INFO_UE;
 
 
 typedef struct{
@@ -241,12 +272,13 @@ typedef struct{
   SRB_INFO                          Srb0;
   SRB_INFO_TABLE_ENTRY              Srb1[NUMBER_OF_UE_MAX+1];
   SRB_INFO_TABLE_ENTRY              Srb2[NUMBER_OF_UE_MAX+1];
-
+  MeasConfig_t			    *measConfig[NUMBER_OF_UE_MAX];
+  HANDOVER_INFO			    *handover_info[NUMBER_OF_UE_MAX];
+  uint8_t                           HO_flag;
 #if defined(ENABLE_SECURITY)
   /* KeNB as derived from KASME received from EPC */
   uint8_t kenb[NUMBER_OF_UE_MAX][32];
 #endif
-
   /* Used integrity/ciphering algorithms */
   e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm[NUMBER_OF_UE_MAX];
   e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm[NUMBER_OF_UE_MAX];
@@ -266,6 +298,7 @@ typedef struct{
   SRB_INFO Srb0[NB_SIG_CNX_UE];
   SRB_INFO_TABLE_ENTRY Srb1[NB_CNX_UE];
   SRB_INFO_TABLE_ENTRY Srb2[NB_CNX_UE];
+  HANDOVER_INFO_UE HandoverInfoUe;
   u8 *SIB1[NB_CNX_UE];
   u8 sizeof_SIB1[NB_CNX_UE];
   u8 *SI[NB_CNX_UE];
@@ -305,12 +338,20 @@ typedef struct{
   struct ReportConfigToAddMod     *ReportConfig[NB_CNX_UE][MAX_MEAS_CONFIG];
   struct QuantityConfig           *QuantityConfig[NB_CNX_UE];
   struct MeasIdToAddMod           *MeasId[NB_CNX_UE][MAX_MEAS_ID];
+  MEAS_REPORT_LIST		  *measReportList[NB_CNX_UE][MAX_MEAS_ID];
+  u32				   measTimer[NB_CNX_UE][MAX_MEAS_ID][6]; // 6 neighboring cells
   RSRP_Range_t                    s_measure;
+  struct MeasConfig__speedStatePars *speedStatePars;
   struct PhysicalConfigDedicated  *physicalConfigDedicated[NB_CNX_UE];
   struct SPS_Config               *sps_Config[NB_CNX_UE];
   MAC_MainConfig_t                *mac_MainConfig[NB_CNX_UE];
   MeasGapConfig_t                 *measGapConfig[NB_CNX_UE];
-
+  double                          filter_coeff_rsrp; // [7] ???
+  double                          filter_coeff_rsrq; // [7] ??? 
+  float                           rsrp_db[7];
+  float                           rsrq_db[7];
+  float                           rsrp_db_filtered[7];
+  float                           rsrq_db_filtered[7];
 #if defined(ENABLE_SECURITY)
   /* KeNB as computed from parameters within USIM card */
   uint8_t kenb[32];
@@ -324,7 +365,7 @@ typedef struct{
 //main.c
 int rrc_init_global_param(void);
 int L3_xface_init(void);
-void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active);
+void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_enabled);
 char openair_rrc_lite_eNB_init(u8 Mod_id);
 char openair_rrc_lite_ue_init(u8 Mod_id,u8 CH_IDX);
 void rrc_config_buffer(SRB_INFO *srb_info, u8 Lchan_type, u8 Role);
@@ -344,41 +385,41 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index);
 /** \brief Decodes DL-CCCH message and invokes appropriate routine to handle the message
     \param Mod_id Instance ID of UE
     \param Srb_info Pointer to SRB_INFO structure (SRB0)
-    \param CH_index Index of corresponding eNB/CH*/
-int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info,u8 CH_index);
+    \param eNB_index Index of corresponding eNB/CH*/
+int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info,u8 eNB_index);
 
 /** \brief Decodes a DL-DCCH message and invokes appropriate routine to handle the message
     \param Mod_id Instance ID of UE
     \param frame Frame index
     \param Srb_id Index of Srb (1,2)
     \param Buffer Pointer to received SDU
-    \param CH_index Index of corresponding CH/eNB*/
-void rrc_ue_decode_dcch(u8 Mod_id, u32 frame, u8 Srb_id, u8* Buffer,u8 CH_index);
+    \param eNB_index Index of corresponding CH/eNB*/
+void rrc_ue_decode_dcch(u8 Mod_id, u32 frame, u8 Srb_id, u8* Buffer,u8 eNB_index);
 
 /** \brief Generate/Encodes RRCConnnectionRequest message at UE 
     \param Mod_id Instance ID of UE
     \param frame Frame index
     \param Srb_id Index of Srb (1,2)
-    \param CH_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 CH_index);
+    \param eNB_index Index of corresponding eNB/CH*/
+void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 eNB_index);
 
 /** \brief Generates/Encodes RRCConnnectionSetupComplete message at UE 
     \param Mod_id Instance ID of UE
     \param frame Frame index
-    \param CH_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id,u32 frame,u8 CH_index);\
+    \param eNB_index Index of corresponding eNB/CH*/
+void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id,u32 frame,u8 eNB_index);
 
 /** \brief process the received rrcConnectionReconfiguration message at UE 
     \param Mod_id Instance ID of UE
     \param frame Frame index
     \param *rrcConnectionReconfiguration pointer to the sturcture
-    \param CH_index Index of corresponding eNB/CH*/
+    \param eNB_index Index of corresponding eNB/CH*/
 void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,RRCConnectionReconfiguration_t *rrcConnectionReconfiguration,u8 eNB_index);
 
 /** \brief Generates/Encodes RRCConnectionReconfigurationComplete  message at UE 
     \param Mod_id Instance ID of UE
     \param frame Frame index
-    \param CH_index Index of corresponding eNB/CH*/
+    \param eNB_index Index of corresponding eNB/CH*/
 void rrc_ue_generate_RRCConnectionReconfigurationComplete(u8 Mod_id, u32 frame, u8 eNB_index);
 
 /** \brief Establish SRB1 based on configuration in SRB_ToAddMod structure.  Configures RLC/PDCP accordingly
@@ -399,22 +440,33 @@ s32  rrc_ue_establish_srb2(u8 Mod_id,u32 frame, u8 eNB_index,struct SRB_ToAddMod
 
 /** \brief Establish a DRB according to DRB_ToAddMod structure
     \param Mod_id Instance ID of UE
-    \param CH_index Index of corresponding CH/eNB
+    \param eNB_index Index of corresponding CH/eNB
     \param DRB_config Pointer to DRB_ToAddMod IE from configuration
     @returns 0 on success */
-s32  rrc_ue_establish_drb(u8 Mod_id,u32 frame,u8 CH_index,struct DRB_ToAddMod *DRB_config);
+s32  rrc_ue_establish_drb(u8 Mod_id,u32 frame,u8 eNB_index,struct DRB_ToAddMod *DRB_config);
+
+
+/** \brief Process MobilityControlInfo Message to proceed with handover and configure PHY/MAC
+    \param Mod_id Instance of UE on which to act
+    \param frame frame time interval
+    \param eNB_index Index of corresponding CH/eNB
+    \param mobilityControlInfo Pointer to mobilityControlInfo
+*/
+
+void   rrc_ue_process_mobilityControlInfo(u8 Mod_id,u32 frame, u8 eNB_index,struct MobilityControlInfo *mobilityControlInfo);
 
 /** \brief Process a measConfig Message and configure PHY/MAC
     \param Mod_id Instance of UE on which to act
-    \param CH_index Index of corresponding CH/eNB
+    \param frame frame time interval
+    \param eNB_index Index of corresponding CH/eNB
     \param  measConfig Pointer to MeasConfig  IE from configuration*/
-void	rrc_ue_process_measConfig(u8 Mod_id,u8 eNB_index,MeasConfig_t *measConfig);
+void	rrc_ue_process_measConfig(u8 Mod_id,u32 frame, u8 eNB_index,MeasConfig_t *measConfig);
 
 /** \brief Process a RadioResourceConfigDedicated Message and configure PHY/MAC
     \param Mod_id Instance of UE on which to act
-    \param CH_index Index of corresponding CH/eNB
+    \param eNB_index Index of corresponding CH/eNB
     \param radioResourceConfigDedicated Pointer to RadioResourceConfigDedicated IE from configuration*/
-void rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 CH_index,
+void rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_index,
 						 RadioResourceConfigDedicated_t *radioResourceConfigDedicated);
 
 // eNB/CH RRC Procedures
@@ -457,7 +509,7 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(u8 Mod_id,u32 frame,u8
    \param Mod_id Instance ID for eNB/CH
    \param frame Frame index
    \param UE_index Index of UE transmitting the messages*/
-void rrc_eNB_generate_defaultRRCConnectionReconfiguration(u8 Mod_id, u32 frame, u16 UE_index, u8 *nas_pdu, u32 nas_length);
+void rrc_eNB_generate_defaultRRCConnectionReconfiguration(u8 Mod_id, u32 frame, u16 UE_index, u8 *nas_pdu, u32 nas_length, u8 ho_state);
 
 #if defined(ENABLE_ITTI)
 /**\brief RRC eNB task.
@@ -468,6 +520,13 @@ void *rrc_enb_task(void *args_p);
    \param void *args_p Pointer on arguments to start the task. */
 void *rrc_ue_task(void *args_p);
 #endif
+
+/**\brief Generate/decode the handover RRCConnectionReconfiguration at eNB
+   \param Mod_id Instance ID for eNB/CH
+   \param frame Frame index
+   \param UE_index Index of UE transmitting the messages*/
+void rrc_eNB_generate_RRCConnectionReconfiguration_handover(u8 Mod_id, u32 frame, u16 UE_index, u8 *nas_pdu, u32 nas_length);
+
 
 //L2_interface.c
 s8 mac_rrc_lite_data_req( u8 Mod_id, u32 frame, unsigned short Srb_id, u8 Nb_tb, u8 *Buffer,u8 eNB_flag, u8 eNB_index, u8 mbsfn_sync_area);
@@ -484,23 +543,28 @@ void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_s
 
 int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len);
 
-  int decode_SIB1(u8 Mod_id,u8 CH_index);
+  int decode_SIB1(u8 Mod_id,u8 eNB_index);
 
-int decode_SI(u8 Mod_id,u32 frame,u8 CH_index,u8 si_window);
+int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window);
 
 int mac_get_rrc_lite_status(u8 Mod_id,u8 eNB_flag,u8 index);
 
 void rrc_eNB_generate_UECapabilityEnquiry(u8 Mod_id, u32 frame, u16 UE_index);
 void rrc_eNB_generate_SecurityModeCommand(u8 Mod_id, u32 frame, u16 UE_index);
 
-void rrc_eNB_process_MeasurementReport(u8 Mod_id,u16 UE_index,MeasResults_t	 *measResults2) ;
-
+void rrc_eNB_process_MeasurementReport(u8 Mod_id,u32 frame, u16 UE_index,MeasResults_t *measResults2) ;
+void rrc_eNB_generate_HandoverPreparationInformation (u8 Mod_id, u32 frame, u8 UE_index, PhysCellId_t targetPhyId) ;
+u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, u8 meas_index, 
+			    Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys, 
+			    Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
 
 //void rrc_ue_process_ueCapabilityEnquiry(uint8_t Mod_id,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
 //void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityModeCommand_t *securityModeCommand,uint8_t eNB_index);
 
 void rrc_remove_UE (u8 Mod_id, u8 UE_id);
 
+long binary_search_int(int elements[], long numElem, int value);
+long binary_search_float(float elements[], long numElem, float value);
 #endif
 
 

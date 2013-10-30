@@ -428,6 +428,118 @@ void phy_config_dedicated_eNB_step2(PHY_VARS_eNB *phy_vars_eNB) {
   }
 }
 
+/*
+ * Configures UE MAC and PHY with radioResourceCommon received in mobilityControlInfo IE during Handover
+ */
+void phy_config_afterHO_ue(u8 Mod_id,u8 eNB_id, MobilityControlInfo_t *mobilityControlInfo, u8 ho_failed) {
+
+  if(mobilityControlInfo!=NULL) {
+    RadioResourceConfigCommon_t *radioResourceConfigCommon = &mobilityControlInfo->radioResourceConfigCommon;
+    LOG_I(PHY,"radioResourceConfigCommon %p\n", radioResourceConfigCommon);
+    memcpy((void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms_before_ho, 
+	   (void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms, 
+	   sizeof(LTE_DL_FRAME_PARMS));
+    PHY_vars_UE_g[Mod_id]->ho_triggered = 1;
+    //PHY_vars_UE_g[UE_id]->UE_mode[0] = PRACH;
+
+    LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
+    int N_ZC;
+    u8 prach_fmt;
+    int u;
+
+    LOG_I(PHY,"[UE%d] Frame %d: Handover triggered: Applying radioResourceConfigCommon from eNB %d\n",
+	  Mod_id,PHY_vars_UE_g[Mod_id]->frame,eNB_id);
+
+    lte_frame_parms->prach_config_common.rootSequenceIndex                           =radioResourceConfigCommon->prach_Config.rootSequenceIndex;
+    lte_frame_parms->prach_config_common.prach_Config_enabled=1;
+    lte_frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex          =radioResourceConfigCommon->prach_Config.prach_ConfigInfo->prach_ConfigIndex;
+    lte_frame_parms->prach_config_common.prach_ConfigInfo.highSpeedFlag              =radioResourceConfigCommon->prach_Config.prach_ConfigInfo->highSpeedFlag;
+    lte_frame_parms->prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig  =radioResourceConfigCommon->prach_Config.prach_ConfigInfo->zeroCorrelationZoneConfig;
+    lte_frame_parms->prach_config_common.prach_ConfigInfo.prach_FreqOffset           =radioResourceConfigCommon->prach_Config.prach_ConfigInfo->prach_FreqOffset;
+    
+    prach_fmt = get_prach_fmt(radioResourceConfigCommon->prach_Config.prach_ConfigInfo->prach_ConfigIndex,lte_frame_parms->frame_type);
+    N_ZC = (prach_fmt <4)?839:139;
+    u = (prach_fmt < 4) ? prach_root_sequence_map0_3[lte_frame_parms->prach_config_common.rootSequenceIndex] :
+      prach_root_sequence_map4[lte_frame_parms->prach_config_common.rootSequenceIndex];
+    
+    //compute_prach_seq(u,N_ZC, PHY_vars_UE_g[Mod_id]->X_u);
+    compute_prach_seq(&PHY_vars_UE_g[Mod_id]->lte_frame_parms.prach_config_common,
+		      lte_frame_parms->frame_type, 
+		      PHY_vars_UE_g[Mod_id]->X_u);
+    
+
+    lte_frame_parms->pucch_config_common.deltaPUCCH_Shift = 1+radioResourceConfigCommon->pucch_ConfigCommon->deltaPUCCH_Shift;
+    lte_frame_parms->pucch_config_common.nRB_CQI          = radioResourceConfigCommon->pucch_ConfigCommon->nRB_CQI;
+    lte_frame_parms->pucch_config_common.nCS_AN           = radioResourceConfigCommon->pucch_ConfigCommon->nCS_AN;
+    lte_frame_parms->pucch_config_common.n1PUCCH_AN       = radioResourceConfigCommon->pucch_ConfigCommon->n1PUCCH_AN;
+    lte_frame_parms->pdsch_config_common.referenceSignalPower = radioResourceConfigCommon->pdsch_ConfigCommon->referenceSignalPower;
+    lte_frame_parms->pdsch_config_common.p_b                  = radioResourceConfigCommon->pdsch_ConfigCommon->p_b;
+    
+    
+    lte_frame_parms->pusch_config_common.n_SB                                         = radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.n_SB;
+    lte_frame_parms->pusch_config_common.hoppingMode                                  = radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode;
+    lte_frame_parms->pusch_config_common.pusch_HoppingOffset                          = radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset;
+    lte_frame_parms->pusch_config_common.enable64QAM                                  = radioResourceConfigCommon->pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM;
+    lte_frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupHoppingEnabled    = radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled;
+    lte_frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH   = radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
+    lte_frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled;
+    lte_frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift            = radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift;
+    
+    init_ul_hopping(lte_frame_parms);
+    lte_frame_parms->soundingrs_ul_config_common.enabled_flag                        = 0;
+    if (radioResourceConfigCommon->soundingRS_UL_ConfigCommon->present==SoundingRS_UL_ConfigCommon_PR_setup) {
+      lte_frame_parms->soundingrs_ul_config_common.enabled_flag                        = 1;
+      lte_frame_parms->soundingrs_ul_config_common.srs_BandwidthConfig                 = radioResourceConfigCommon->soundingRS_UL_ConfigCommon->choice.setup.srs_BandwidthConfig;
+      lte_frame_parms->soundingrs_ul_config_common.srs_SubframeConfig                  = radioResourceConfigCommon->soundingRS_UL_ConfigCommon->choice.setup.srs_SubframeConfig;
+      lte_frame_parms->soundingrs_ul_config_common.ackNackSRS_SimultaneousTransmission = radioResourceConfigCommon->soundingRS_UL_ConfigCommon->choice.setup.ackNackSRS_SimultaneousTransmission;
+      if (radioResourceConfigCommon->soundingRS_UL_ConfigCommon->choice.setup.srs_MaxUpPts)
+	lte_frame_parms->soundingrs_ul_config_common.srs_MaxUpPts                      = 1;
+      else
+	lte_frame_parms->soundingrs_ul_config_common.srs_MaxUpPts                      = 0;
+    }
+    
+    lte_frame_parms->ul_power_control_config_common.p0_NominalPUSCH   = radioResourceConfigCommon->uplinkPowerControlCommon->p0_NominalPUSCH;
+    lte_frame_parms->ul_power_control_config_common.alpha             = radioResourceConfigCommon->uplinkPowerControlCommon->alpha;
+    lte_frame_parms->ul_power_control_config_common.p0_NominalPUCCH   = radioResourceConfigCommon->uplinkPowerControlCommon->p0_NominalPUCCH;
+    lte_frame_parms->ul_power_control_config_common.deltaPreambleMsg3 = radioResourceConfigCommon->uplinkPowerControlCommon->deltaPreambleMsg3;
+    lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format1  = radioResourceConfigCommon->uplinkPowerControlCommon->deltaFList_PUCCH.deltaF_PUCCH_Format1;
+    lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format1b  = radioResourceConfigCommon->uplinkPowerControlCommon->deltaFList_PUCCH.deltaF_PUCCH_Format1b;
+    lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format2  = radioResourceConfigCommon->uplinkPowerControlCommon->deltaFList_PUCCH.deltaF_PUCCH_Format2;
+    lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format2a  = radioResourceConfigCommon->uplinkPowerControlCommon->deltaFList_PUCCH.deltaF_PUCCH_Format2a;
+    lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format2b  = radioResourceConfigCommon->uplinkPowerControlCommon->deltaFList_PUCCH.deltaF_PUCCH_Format2b;
+    
+    lte_frame_parms->maxHARQ_Msg3Tx = radioResourceConfigCommon->rach_ConfigCommon->maxHARQ_Msg3Tx;
+    
+    // Now configure some of the Physical Channels
+    if (radioResourceConfigCommon->antennaInfoCommon)
+      lte_frame_parms->nb_antennas_tx                     = (1<<radioResourceConfigCommon->antennaInfoCommon->antennaPortsCount);
+    else
+      lte_frame_parms->nb_antennas_tx                     = 1;
+    //PHICH
+    if (radioResourceConfigCommon->antennaInfoCommon) {
+      lte_frame_parms->phich_config_common.phich_resource = radioResourceConfigCommon->phich_Config->phich_Resource;
+      lte_frame_parms->phich_config_common.phich_duration = radioResourceConfigCommon->phich_Config->phich_Duration;
+    }
+    //Target CellId
+    lte_frame_parms->Nid_cell = mobilityControlInfo->targetPhysCellId;
+    lte_frame_parms->nushift  = lte_frame_parms->Nid_cell%6;
+    
+    // PUCCH
+    init_ncs_cell(lte_frame_parms,PHY_vars_UE_g[Mod_id]->ncs_cell);
+    
+    init_ul_hopping(lte_frame_parms);
+
+    // RNTI
+    
+    PHY_vars_UE_g[Mod_id]->lte_ue_pdcch_vars[eNB_id]->crnti = mobilityControlInfo->newUE_Identity.buf[0]|(mobilityControlInfo->newUE_Identity.buf[1]<<8);
+    
+  }
+  if(ho_failed) {
+    LOG_D(PHY,"[UE%d] Handover failed, triggering RACH procedure\n",Mod_id);
+    memcpy((void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms,(void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms_before_ho, sizeof(LTE_DL_FRAME_PARMS));
+    PHY_vars_UE_g[Mod_id]->UE_mode[eNB_id] = PRACH;
+  }
+}
 
 void phy_config_meas_ue(u8 Mod_id,u8 eNB_index,u8 n_adj_cells,unsigned int *adj_cell_id) {
   
