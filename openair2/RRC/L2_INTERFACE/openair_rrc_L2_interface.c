@@ -95,8 +95,10 @@ s8 mac_rrc_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb,u8 *Buffer,u8 eNB
   return(mac_rrc_lite_data_req(Mod_id,frame,Srb_id,Nb_tb,Buffer,eNB_flag,eNB_index,mbsfn_sync_area));
 #endif //CELLULAR
 }   
-   
+
+/********************************************************************************************************************/
 s8 mac_rrc_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu,u16 Sdu_len,u8 eNB_flag, u8 eNB_index,u8 mbsfn_sync_area){
+/********************************************************************************************************************/
 #ifdef CELLULAR
   return(rrc_L2_mac_data_ind_rx(Mod_id, Srb_id, Sdu, Sdu_len, eNB_index));
 #else 

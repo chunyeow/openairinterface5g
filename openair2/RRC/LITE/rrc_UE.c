@@ -1758,7 +1758,7 @@ EXPORT_SYMBOL(Rlc_info_am_config);
 #if defined(ENABLE_ITTI)
 void *rrc_ue_task(void *args_p) {
   MessageDef *msg_p;
-  char *msg_name;
+  const char *msg_name;
   instance_t instance;
   SRB_INFO *srb_info_p;
 

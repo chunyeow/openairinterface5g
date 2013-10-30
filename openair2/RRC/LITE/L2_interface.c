@@ -85,7 +85,27 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 	mac_xface->macphy_exit("");
       }
       if ((frame%2) == 0) {
-	memcpy(&Buffer[0],eNB_rrc_inst[Mod_id].SIB1,eNB_rrc_inst[Mod_id].sizeof_SIB1);
+        memcpy(&Buffer[0],eNB_rrc_inst[Mod_id].SIB1,eNB_rrc_inst[Mod_id].sizeof_SIB1);
+
+#if defined(ENABLE_ITTI)
+      {
+        MessageDef *message_p;
+        // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
+        u8 *message_buffer;
+
+        message_buffer = malloc (eNB_rrc_inst[Mod_id].sizeof_SIB1);
+        memcpy (message_buffer, eNB_rrc_inst[Mod_id].SIB1, eNB_rrc_inst[Mod_id].sizeof_SIB1);
+
+        message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
+        RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = eNB_rrc_inst[Mod_id].sizeof_SIB1;
+        RRC_MAC_BCCH_DATA_IND (message_p).sdu_p = message_buffer;
+        RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
+
+        itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+      }
+#endif
+
 #ifdef DEBUG_RRC
 	LOG_D(RRC,"[eNB %d] Frame %d : BCCH request => SIB 1\n",Mod_id,frame);
 	for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_SIB1;i++)
@@ -97,6 +117,26 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
       } // All RFN mod 8 transmit SIB2-3 in SF 5
       else if ((frame%8) == 1){
 	memcpy(&Buffer[0],eNB_rrc_inst[Mod_id].SIB23,eNB_rrc_inst[Mod_id].sizeof_SIB23);
+
+#if defined(ENABLE_ITTI)
+      {
+        MessageDef *message_p;
+        // Uses a new buffer to avoid issue with MAC buffer content that could be changed by MAC (asynchronous message handling).
+        u8 *message_buffer;
+
+        message_buffer = malloc (eNB_rrc_inst[Mod_id].sizeof_SIB23);
+        memcpy (message_buffer, eNB_rrc_inst[Mod_id].SIB23, eNB_rrc_inst[Mod_id].sizeof_SIB23);
+
+        message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
+        RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = eNB_rrc_inst[Mod_id].sizeof_SIB23;
+        RRC_MAC_BCCH_DATA_IND (message_p).sdu_p = message_buffer;
+        RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
+
+        itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+      }
+#endif
+
 #ifdef DEBUG_RRC
 	LOG_D(RRC,"[eNB %d] Frame %d BCCH request => SIB 2-3\n",Mod_id,frame);
 	for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_SIB23;i++)
@@ -201,7 +241,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         message_buffer = malloc (sdu_size);
         memcpy (message_buffer, Sdu, sdu_size);
 
-        message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_BCCH_DATA_IND);
+        message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_BCCH_DATA_IND);
         RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = sdu_size;
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_p = message_buffer;
@@ -267,7 +307,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           message_buffer = malloc (sdu_size);
           memcpy (message_buffer, Sdu, sdu_size);
 
-          message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_CCCH_DATA_IND);
+          message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_IND);
           RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_p = message_buffer;
@@ -299,7 +339,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         message_buffer = malloc (sdu_size);
         memcpy (message_buffer, Sdu, sdu_size);
 
-        message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_MCCH_DATA_IND);
+        message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_MCCH_DATA_IND);
         RRC_MAC_MCCH_DATA_IND (message_p).frame = frame;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_size = sdu_size;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_p = message_buffer;
@@ -329,7 +369,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           message_buffer = malloc (sdu_size);
           memcpy (message_buffer, Sdu, sdu_size);
 
-          message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_CCCH_DATA_IND);
+          message_p = itti_alloc_new_message (TASK_MAC_ENB, RRC_MAC_CCCH_DATA_IND);
           RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_p = message_buffer;
@@ -376,7 +416,7 @@ u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 
     RRC_DCCH_DATA_REQ (message_p).sdu_p = message_buffer;
     RRC_DCCH_DATA_REQ (message_p).mode = mode;
 
-    itti_send_msg_to_task (TASK_PDCP, Mod_id, message_p);
+    itti_send_msg_to_task (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, Mod_id, message_p);
     return TRUE; // TODO should be changed to a CNF message later, currently RRC lite does not used the returned value anyway.
 
   }
@@ -405,7 +445,7 @@ void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_si
     message_buffer = malloc (sdu_size);
     memcpy (message_buffer, Buffer, sdu_size);
 
-    message_p = itti_alloc_new_message (TASK_PDCP, RRC_DCCH_DATA_IND);
+    message_p = itti_alloc_new_message (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, RRC_DCCH_DATA_IND);
     RRC_DCCH_DATA_IND (message_p).frame = frame;
     RRC_DCCH_DATA_IND (message_p).dcch_index = DCCH_index;
     RRC_DCCH_DATA_IND (message_p).sdu_size = sdu_size;
@@ -436,7 +476,7 @@ void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index) {
   {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_IN_SYNC_IND);
+    message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_IN_SYNC_IND);
     RRC_MAC_IN_SYNC_IND (message_p).frame = frame;
     RRC_MAC_IN_SYNC_IND (message_p).enb_index = eNB_index;
 
@@ -465,7 +505,7 @@ void rrc_lite_out_of_sync_ind(u8  Mod_id, u32 frame, u16 eNB_index){
   {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_OUT_OF_SYNC_IND);
+    message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_OUT_OF_SYNC_IND);
     RRC_MAC_OUT_OF_SYNC_IND (message_p).frame = frame;
     RRC_MAC_OUT_OF_SYNC_IND (message_p).enb_index = eNB_index;
 
@@ -492,7 +532,7 @@ int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
   {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message (TASK_MAC, RRC_MAC_CCCH_SUCCESS_IND);
+    message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_SUCCESS_IND);
     RRC_MAC_CCCH_SUCCESS_IND (message_p).enb_index = eNB_index;
 
     itti_send_msg_to_task (TASK_RRC_UE, Mod_id - NB_eNB_INST, message_p);

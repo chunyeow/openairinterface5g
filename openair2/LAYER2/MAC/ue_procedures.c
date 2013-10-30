@@ -65,6 +65,10 @@
 #endif
 #include "pdcp.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 #define DEBUG_HEADER_PARSING 1
 #define ENABLE_MAC_PAYLOAD_DEBUG
 
@@ -1273,8 +1277,34 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   // s8 lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
   int ret;  
+#if defined(ENABLE_ITTI)
+  MessageDef *msg_p;
+  const char *msg_name;
+  instance_t instance;
+#endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_IN);
+
+#if defined(ENABLE_ITTI)
+  do {
+    // Checks if a message has been sent to MAC sub-task
+    itti_poll_msg (TASK_MAC_UE, INSTANCE_ALL, &msg_p);
+
+    if (msg_p != NULL) {
+      msg_name = ITTI_MSG_NAME (msg_p);
+      instance = ITTI_MSG_INSTANCE (msg_p);
+
+      switch (msg_p->header.messageId) {
+
+        default:
+          LOG_E(MAC, "Received unexpected message %s\n", msg_name);
+          break;
+      }
+
+      free (msg_p);
+    }
+  } while(msg_p != NULL);
+#endif
 
   //Mac_rlc_xface->frame=frame;
   //Rrc_xface->Frame_index=Mac_rlc_xface->frame;

@@ -15,6 +15,8 @@
 
 #define RRC_MAC_IN_SYNC_IND(mSGpTR)             (mSGpTR)->msg.rrc_mac_in_sync_ind
 #define RRC_MAC_OUT_OF_SYNC_IND(mSGpTR)         (mSGpTR)->msg.rrc_mac_out_of_sync_ind
+
+#define RRC_MAC_BCCH_DATA_REQ(mSGpTR)           (mSGpTR)->msg.rrc_mac_bcch_data_req
 #define RRC_MAC_BCCH_DATA_IND(mSGpTR)           (mSGpTR)->msg.rrc_mac_bcch_data_ind
 #define RRC_MAC_CCCH_DATA_IND(mSGpTR)           (mSGpTR)->msg.rrc_mac_ccch_data_ind
 #define RRC_MAC_CCCH_SUCCESS_IND(mSGpTR)        (mSGpTR)->msg.rrc_mac_ccch_success_ind
@@ -34,6 +36,13 @@ typedef struct {
 } RrcMacInSyncInd;
 
 typedef RrcMacInSyncInd RrcMacOutOfSyncInd;
+
+typedef struct {
+  uint32_t frame;
+  uint32_t sdu_size;
+  uint8_t *sdu_p;
+  uint8_t enb_index;
+} RrcMacBcchDataReq;
 
 typedef struct {
   uint32_t frame;

@@ -59,6 +59,10 @@
 //#include "LAYER2/MAC/pre_processor.c"
 #include "pdcp.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 #define ENABLE_MAC_PAYLOAD_DEBUG
 #define DEBUG_eNB_SCHEDULER 1
 //#define DEBUG_HEADER_PARSING 1
@@ -4194,13 +4198,47 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 #ifdef EXMIMO
   int ret;
 #endif
+#if defined(ENABLE_ITTI)
+  MessageDef *msg_p;
+  const char *msg_name;
+  instance_t instance;
+#endif
 
   DCI_PDU *DCI_pdu= &eNB_mac_inst[Mod_id].DCI_pdu;
   //  LOG_D(MAC,"[eNB %d] Frame %d, Subframe %d, entering MAC scheduler\n",Mod_id, frame, subframe);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,1);
 
-  // clear DCI and BCCH contents before scheduling
+#if defined(ENABLE_ITTI)
+  do {
+    // Checks if a message has been sent to MAC sub-task
+    itti_poll_msg (TASK_MAC_ENB, INSTANCE_ALL, &msg_p);
+
+    if (msg_p != NULL) {
+      msg_name = ITTI_MSG_NAME (msg_p);
+      instance = ITTI_MSG_INSTANCE (msg_p);
+
+      switch (msg_p->header.messageId) {
+        case RRC_MAC_BCCH_DATA_REQ:
+          LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
+                msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
+                RRC_MAC_BCCH_DATA_REQ (msg_p).frame, RRC_MAC_BCCH_DATA_REQ (msg_p).enb_index);
+
+          // Message buffer has been processed, free it now.
+          free (RRC_MAC_BCCH_DATA_REQ (msg_p).sdu_p);
+          break;
+
+        default:
+          LOG_E(MAC, "Received unexpected message %s\n", msg_name));
+          break;
+      }
+
+      free (msg_p);
+    }
+  } while(msg_p != NULL);
+#endif
+
+// clear DCI and BCCH contents before scheduling
   DCI_pdu->Num_common_dci  = 0;
   DCI_pdu->Num_ue_spec_dci = 0;
   eNB_mac_inst[Mod_id].bcch_active = 0;

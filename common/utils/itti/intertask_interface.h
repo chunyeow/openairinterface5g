@@ -69,7 +69,7 @@ typedef struct message_info_s {
     /* Message payload size */
     MessageHeaderSize size;
     /* Printable name */
-    char    *name;
+    const char * const name;
 } message_info_t;
 
 enum task_priorities {
@@ -137,12 +137,12 @@ void itti_terminate_tasks(task_id_t task_id);
 /** \brief Return the printable string associated with the message
  * \param message_id Id of the message
  **/
-char *itti_get_message_name(MessagesIds message_id);
+const char *itti_get_message_name(MessagesIds message_id);
 
 /** \brief Return the printable string associated with a task id
  * \param thread_id Id of the task
  **/
-char *itti_get_task_name(task_id_t task_id);
+const char *itti_get_task_name(task_id_t task_id);
 
 /** \brief Alloc and memset(0) a new itti message.
  * \param origin_task_id Task ID of the sending task

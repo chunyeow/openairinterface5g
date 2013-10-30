@@ -118,13 +118,13 @@ static inline uint32_t itti_get_message_priority(MessagesIds message_id) {
     return (itti_desc.messages_info[message_id].priority);
 }
 
-char *itti_get_message_name(MessagesIds message_id) {
+const char *itti_get_message_name(MessagesIds message_id) {
     DevCheck(message_id < itti_desc.messages_id_max, message_id, itti_desc.messages_id_max, 0);
 
     return (itti_desc.messages_info[message_id].name);
 }
 
-char *itti_get_task_name(task_id_t task_id)
+const char *itti_get_task_name(task_id_t task_id)
 {
     thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
 
@@ -390,7 +390,7 @@ void itti_terminate_tasks(task_id_t task_id) {
 }
 
 int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * const *threads_name,
-              const message_info_t *messages_info, const char * const messages_definition_xml) {
+              const message_info_t *messages_info, const char * const messages_definition_xml, const char * const dump_file_name) {
     int i;
     itti_desc.message_number = 0;
 
@@ -420,7 +420,7 @@ int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * 
         pthread_cond_init (&itti_desc.tasks[i].message_queue_cond_var, NULL);
         itti_desc.tasks[i].task_state = TASK_STATE_NOT_CONFIGURED;
     }
-    itti_dump_init (messages_definition_xml);
+    itti_dump_init (messages_definition_xml, dump_file_name);
 
     CHECK_INIT_RETURN(timer_init ());
 

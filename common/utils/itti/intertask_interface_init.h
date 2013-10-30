@@ -79,9 +79,9 @@ const message_info_t messages_info[] = {
  * \param threads_name Pointer on the threads name information as created by this include file
  * \param messages_info Pointer on messages information as created by this include file
  **/
-int itti_init(thread_id_t thread_max, MessagesIds messages_id_max,
-                             const char * const *threads_name, const message_info_t *messages_info,
-                             const char * const messages_definition_xml);
+int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * const *threads_name,
+              const message_info_t *messages_info, const char * const messages_definition_xml,
+              const char * const dump_file_name);
 
 #endif /* INTERTASK_INTERFACE_INIT_H_ */
 /* @} */

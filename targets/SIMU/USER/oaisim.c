@@ -892,7 +892,7 @@ int main(int argc, char **argv) {
   }
 
 #if defined(ENABLE_ITTI)
-  itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml);
+  itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
 #endif
 
 #ifdef OPENAIR2

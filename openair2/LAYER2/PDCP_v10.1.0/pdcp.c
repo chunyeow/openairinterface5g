@@ -477,7 +477,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
   //-----------------------------------------------------------------------------
 #if defined(ENABLE_ITTI)
   MessageDef *msg_p;
-  char *msg_name;
+  const char *msg_name;
   instance_t instance;
 #endif
 
@@ -500,7 +500,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
 #if defined(ENABLE_ITTI)
   do {
     // Checks if a message has been sent to PDCP sub-task
-    itti_poll_msg (TASK_PDCP, INSTANCE_ALL, &msg_p);
+    itti_poll_msg (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, INSTANCE_ALL, &msg_p);
 
     if (msg_p != NULL) {
       msg_name = ITTI_MSG_NAME (msg_p);
@@ -523,7 +523,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
           break;
 
         default:
-          LOG_E(PDCP, "Received unexpected message %s\n", itti_get_message_name(msg_p->header.messageId));
+          LOG_E(PDCP, "Received unexpected message %s\n", msg_name);
           break;
       }
 

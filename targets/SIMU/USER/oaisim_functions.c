@@ -114,7 +114,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:j:k:L:l:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hi:IJ:j:k:K:L:l:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
@@ -213,6 +213,9 @@ void get_simulation_options(int argc, char *argv[]) {
       //ricean_factor = atof (optarg);
       LOG_E(EMU,"[SIM] Option k is no longer supported on the command line. Please specify your channel model in the xml template\n");
       exit(-1);
+      break;
+    case 'K':
+      oai_emulation.info.itti_dump_file = optarg;
       break;
     case 't':
       //Td = atof (optarg);

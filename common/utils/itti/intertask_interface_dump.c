@@ -100,8 +100,6 @@ typedef struct itti_desc_s {
     itti_client_desc_t itti_clients[ITTI_DUMP_MAX_CON];
 } itti_desc_t;
 
-static itti_desc_t itti_queue;
-
 /* Message sent is an intertask dump type */
 #define ITTI_DUMP_MESSAGE_TYPE      0x1
 #define ITTI_STATISTIC_MESSAGE_TYPE 0x2
@@ -126,6 +124,9 @@ typedef struct {
     itti_socket_header_t header;
     
 } itti_statistic_message_t;
+
+static itti_desc_t itti_queue;
+static FILE *dump_file;
 
 static int itti_dump_send_message(int sd, itti_queue_item_t *message);
 static int itti_dump_handle_new_connection(int sd, const char *xml_definition,
@@ -270,6 +271,20 @@ int itti_dump_queue_message(message_number_t message_number,
     /* Insert the packet at tail */
     STAILQ_INSERT_TAIL(&itti_queue.itti_message_queue, new, entry);
     itti_queue.itti_queue_last = new;
+
+    if (dump_file != NULL)
+    {
+        itti_socket_header_t header;
+
+        header.message_size = sizeof(itti_dump_message_t) + message_size;
+        header.message_type = ITTI_DUMP_MESSAGE_TYPE;
+
+        fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
+        fwrite (&new->message_number, sizeof(new->message_number), 1, dump_file);
+        fwrite (new->message_name, sizeof(new->message_name), 1, dump_file);
+        fwrite (&new->data_size, sizeof(new->data_size), 1, dump_file);
+        fwrite (new->data, new->data_size, 1, dump_file);
+    }
 
     /* Release the mutex */
     pthread_mutex_unlock(&itti_queue.queue_mutex);
@@ -500,9 +515,30 @@ int itti_dump_handle_new_connection(int sd, const char *xml_definition, uint32_t
     return 0;
 }
 
-int itti_dump_init(const char * const messages_definition_xml)
+int itti_dump_init(const char * const messages_definition_xml, const char * const dump_file_name)
 {
     int i;
+
+    if (dump_file_name != NULL)
+    {
+        dump_file = fopen(dump_file_name, "w");
+
+        if (dump_file == NULL)
+        {
+            ITTI_ERROR("can not open dump file \"%s\" (%d:%s)\n", dump_file_name, errno, strerror(errno));
+        }
+        else
+        {
+            uint32_t message_size = strlen(messages_definition_xml);
+            itti_socket_header_t header;
+
+            header.message_size = sizeof(itti_dump_message_t) + message_size;
+            header.message_type = ITTI_DUMP_XML_DEFINITION;
+
+            fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
+            fwrite (messages_definition_xml, message_size, 1, dump_file);
+        }
+    }
 
     memset(&itti_queue, 0, sizeof(itti_desc_t));
 
