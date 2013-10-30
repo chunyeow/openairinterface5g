@@ -44,7 +44,9 @@
 #include "PHY_INTERFACE/extern.h"
 #include "COMMON/mac_rrc_primitives.h"
 #include "RRC/LITE/extern.h"
+#include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "UTIL/LOG/log.h"
+#include "UTIL/OPT/opt.h"
 #include "OCG.h"
 #include "OCG_extern.h"
 #ifdef PHY_EMUL
@@ -241,7 +243,8 @@ PRACH_RESOURCES_t *ue_get_rach(u8 Mod_id,u32 frame, u8 eNB_index,u8 subframe){
 				frame,
 				CCCH,1,
 				&UE_mac_inst[Mod_id].CCCH_pdu.payload[sizeof(SCH_SUBHEADER_SHORT)+1],0,
-				eNB_index);
+				eNB_index,
+				0);
 	Size16 = (u16)Size;
 	
 	//	LOG_D(MAC,"[UE %d] Frame %d: Requested RRCConnectionRequest, got %d bytes\n",Mod_id,frame,Size);
