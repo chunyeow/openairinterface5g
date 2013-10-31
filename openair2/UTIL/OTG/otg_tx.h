@@ -94,7 +94,7 @@ char * random_string(int size, ALPHABET_GEN mode, ALPHABET_TYPE data_type);
 * \note 
 * @ingroup  _otg
 */
-unsigned char *packet_gen(int src, int dst, int app, int ctime, int *pkt_size);
+unsigned char *packet_gen(int src, int dst, int app, int ctime, unsigned int *pkt_size);
 
 
 /*! \fn char *header_gen(int  hdr_size);

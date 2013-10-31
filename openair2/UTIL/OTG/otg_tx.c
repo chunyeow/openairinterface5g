@@ -201,7 +201,7 @@ int adjust_size(int size){
 
 
 
-unsigned char *packet_gen(int src, int dst, int app, int ctime, int * pkt_size){ // when pdcp, ctime = frame cnt
+unsigned char *packet_gen(int src, int dst, int app, int ctime, unsigned int * pkt_size){ // when pdcp, ctime = frame cnt
 
   //unsigned char *packet=NULL;
   unsigned int size=0;
@@ -212,7 +212,7 @@ unsigned char *packet_gen(int src, int dst, int app, int ctime, int * pkt_size){
   unsigned int flag;
   char *payload=NULL;
   char *header=NULL;
-  int header_size;
+  int header_size = 0;
 
    
   // check if the app is configured
@@ -242,7 +242,7 @@ Send Packets when:
       header = random_string(otg_info->header_size[src][dst], g_otg->packet_gen_type, HEADER_ALPHABET);
       header_size = (header != NULL)? strlen(header) : 0;
       payload = random_string(size, RANDOM_STRING, PAYLOAD_ALPHABET);
-      if (payload == NULL) return;
+      if (payload == NULL) return NULL;
       flag=0xffff;
   	flow=otg_info->flow_id[src][dst];
   	seq_num=otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]];
@@ -501,8 +501,6 @@ unsigned int get_application_state(int src, int dst, int application, int ctime)
 void header_size_gen(int src, int dst, int application){
 
 unsigned int size_header=0;
-unsigned int type_header=0;
- 
 
  if (otg_info->header_size_app[src][dst][application]==0)
    {
@@ -632,7 +630,7 @@ unsigned char * serialize_buffer(char* header, char* payload, unsigned int buffe
   if (header == NULL || payload == NULL)
     return NULL;
   // allocate memory for the tx_buffer
-  tx_buffer= (char*)malloc(buffer_size);
+  tx_buffer= (unsigned char*)malloc(buffer_size);
   // add otg control information first for decoding and computing the statistics 
   otg_hdr_info_p = (otg_hdr_info_t *) (&tx_buffer[byte_tx_count]);
   otg_hdr_info_p->size = buffer_size;

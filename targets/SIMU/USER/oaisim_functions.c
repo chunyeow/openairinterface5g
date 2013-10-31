@@ -24,6 +24,7 @@
 #include "UTIL/LOG/vcd_signal_dumper.h"
 #include "UTIL/OPT/opt.h"
 #include "UTIL/OTG/otg_config.h"
+#include "UTIL/OTG/otg_tx.h"
 
 #include "cor_SF_sim.h"
 
@@ -114,7 +115,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
@@ -958,7 +959,7 @@ void update_otg_UE(int UE_id, unsigned int ctime) {
       if (mac_get_rrc_status(UE_id, 0/*eNB_flag*/, dst_id ) > 2 /*RRC_CONNECTED*/) {
 	Packet_otg_elt *otg_pkt = malloc (sizeof(Packet_otg_elt));
 	// Manage to add this packet to the tail of your list
-	(otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(src_id, dst_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
+	(otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(src_id, dst_id, 0, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
 
 	if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
 	  (otg_pkt->otg_pkt).rb_id = dst_id * NB_RB_MAX + DTCH;
