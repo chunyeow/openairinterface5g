@@ -55,7 +55,7 @@
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
 
-#define SIGNAL_NAME_LENGTH  50
+#define SIGNAL_NAME_LENGTH  48
 
 /* Declared in intertask_interface.c */
 extern int itti_debug;
@@ -282,7 +282,6 @@ int itti_dump_queue_message(message_number_t message_number,
         fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
         fwrite (&new->message_number, sizeof(new->message_number), 1, dump_file);
         fwrite (new->message_name, sizeof(new->message_name), 1, dump_file);
-        fwrite (&new->data_size, sizeof(new->data_size), 1, dump_file);
         fwrite (new->data, new->data_size, 1, dump_file);
     }
 

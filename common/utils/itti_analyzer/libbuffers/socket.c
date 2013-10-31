@@ -9,6 +9,7 @@
 
 #include <gtk/gtk.h>
 
+#include "itti_types.h"
 #include "rc.h"
 
 #include "ui_interface.h"
@@ -22,20 +23,6 @@
 
 #define SOCKET_NB_SIGNALS_BEFORE_SIGNALLING 10
 #define SOCKET_MS_BEFORE_SIGNALLING         100
-
-/* Message header is the common part that should never change between
- * remote process and this one.
- */
-typedef struct {
-    /* The size of this structure */
-    uint32_t message_size;
-    uint32_t message_type;
-} itti_socket_header_t;
-
-typedef struct {
-    uint32_t message_number;
-    char     signal_name[50];
-} itti_signal_header_t;
 
 void *socket_thread_fct(void *arg);
 
@@ -196,13 +183,13 @@ static int socket_read(socket_data_t *socket_data)
         }
 
         switch(message_header.message_type) {
-            case 1:
+            case ITTI_DUMP_MESSAGE_TYPE:
                 socket_read_itti_message(socket_data, &message_header);
                 break;
-            case 3:
+            case ITTI_DUMP_XML_DEFINITION:
                 socket_read_xml_definition(socket_data, &message_header);
                 break;
-            case 2:
+            case ITTI_STATISTIC_MESSAGE_TYPE:
             default:
                 g_debug("Received unknow (or not implemented) message from socket type: %d",
                         message_header.message_type);

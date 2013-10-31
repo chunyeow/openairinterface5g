@@ -9,6 +9,9 @@ gboolean ui_callback_on_about(GtkWidget *widget,
                               GdkEvent  *event,
                               gpointer   data);
 
+void ui_signal_add_to_list(gpointer data,
+                           gpointer user_data);
+
 gboolean ui_callback_on_connect(GtkWidget *widget,
                                 GdkEvent  *event,
                                 gpointer   data);

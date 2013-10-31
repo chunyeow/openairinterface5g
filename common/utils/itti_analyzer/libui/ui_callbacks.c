@@ -73,7 +73,6 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
     return TRUE;
 }
 
-static
 void ui_signal_add_to_list(gpointer data, gpointer user_data)
 {
     buffer_t *signal_buffer;

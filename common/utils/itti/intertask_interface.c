@@ -392,7 +392,7 @@ void itti_terminate_tasks(task_id_t task_id) {
 int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * const *threads_name,
               const message_info_t *messages_info, const char * const messages_definition_xml, const char * const dump_file_name) {
     int i;
-    itti_desc.message_number = 0;
+    itti_desc.message_number = 1;
 
     ITTI_DEBUG( "Init: %d threads, %d messages\n", thread_max, messages_id_max);
 
