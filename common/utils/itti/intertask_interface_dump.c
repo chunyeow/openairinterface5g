@@ -521,7 +521,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 
     if (dump_file_name != NULL)
     {
-        dump_file = fopen(dump_file_name, "w");
+        dump_file = fopen(dump_file_name, "wb");
 
         if (dump_file == NULL)
         {
@@ -529,10 +529,10 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
         }
         else
         {
-            uint32_t message_size = strlen(messages_definition_xml);
+            uint32_t message_size = strlen(messages_definition_xml) + 1;
             itti_socket_header_t header;
 
-            header.message_size = sizeof(itti_dump_message_t) + message_size;
+            header.message_size = sizeof(itti_socket_header_t) + message_size;
             header.message_type = ITTI_DUMP_XML_DEFINITION;
 
             fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
