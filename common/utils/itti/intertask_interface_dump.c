@@ -557,3 +557,12 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     }
     return 0;
 }
+
+void itti_dump_exit(void)
+{
+    if (dump_file != NULL)
+    {
+        fclose(dump_file);
+    }
+}
+

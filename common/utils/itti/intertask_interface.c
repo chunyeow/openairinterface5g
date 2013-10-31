@@ -471,6 +471,8 @@ void itti_wait_tasks_end(void) {
         ITTI_DEBUG("Some threads are still running, force exit\n");
         exit (0);
     }
+
+    itti_dump_exit();
 }
 
 void itti_send_terminate_message(task_id_t task_id) {

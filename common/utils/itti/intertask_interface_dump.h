@@ -36,4 +36,6 @@ int itti_dump_queue_message(message_number_t message_number, MessageDef *message
 
 int itti_dump_init(const char * const messages_definition_xml, const char * const dump_file_name);
 
+void itti_dump_exit(void);
+
 #endif /* INTERTASK_INTERFACE_DUMP_H_ */
