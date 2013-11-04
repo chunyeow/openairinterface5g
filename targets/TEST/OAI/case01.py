@@ -170,37 +170,37 @@ def execute(oai, user, pw, logfile):
     else:
         log.ok(case, test, name, conf, '', logfile)
 
-    try:
-        test = '07'
-        name = 'Compile oai.rel8.cellular.eNB.make'
-        conf = 'make rrc_cellular=1 eNB_flag=1'
-        diag = 'check the compilation errors for eNB/RG RRC Cellular'
-        oai.send('make clean;')
-        oai.send('make cleanall;')
-        oai.send('make cleanasn1;')
-        oai.send('rm -f ./oaisim.rel8.cellular.rg;')
-        oai.send_expect_false('make rrc_cellular=1 eNB_flag=1 -j4;', makerr1,  1500)
-        oai.send('cp ./oaisim /oaisim.rel8.cellular.rg;')
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
+    #try:
+        #test = '07'
+        #name = 'Compile oai.rel8.cellular.eNB.make'
+        #conf = 'make rrc_cellular=1 eNB_flag=1'
+        #diag = 'check the compilation errors for eNB/RG RRC Cellular'
+        #oai.send('make clean;')
+        #oai.send('make cleanall;')
+        #oai.send('make cleanasn1;')
+        #oai.send('rm -f ./oaisim.rel8.cellular.rg;')
+        #oai.send_expect_false('make rrc_cellular=1 eNB_flag=1 -j4;', makerr1,  1500)
+        #oai.send('cp ./oaisim ./oaisim.rel8.cellular.rg;')
+    #except log.err, e:
+        #log.fail(case, test, name, conf, e.value, diag, logfile)
+    #else:
+        #log.ok(case, test, name, conf, '', logfile)
 
-    try:
-        test = '08'
-        name = 'Compile oai.rel8.cellular.UE.make'
-        conf = 'make rrc_cellular=1 UE_flag=1'
-        diag = 'check the compilation errors for UE/MT RRC Cellular'
-        oai.send('make clean;')
-        oai.send('make cleanall;')
-        oai.send('make cleanasn1;')
-        oai.send('rm -f ./oaisim.rel8.cellular.mt;')
-        oai.send_expect_false('make rrc_cellular=1 UE_flag=1 -j4;', makerr1,  1500)
-        oai.send('cp ./oaisim /oaisim.rel8.cellular.mt;')
-    except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
-    else:
-        log.ok(case, test, name, conf, '', logfile)
+    #try:
+        #test = '08'
+        #name = 'Compile oai.rel8.cellular.UE.make'
+        #conf = 'make rrc_cellular=1 UE_flag=1'
+        #diag = 'check the compilation errors for UE/MT RRC Cellular'
+        #oai.send('make clean;')
+        #oai.send('make cleanall;')
+        #oai.send('make cleanasn1;')
+        #oai.send('rm -f ./oaisim.rel8.cellular.mt;')
+        #oai.send_expect_false('make rrc_cellular=1 UE_flag=1 -j4;', makerr1,  1500)
+        #oai.send('cp ./oaisim ./oaisim.rel8.cellular.mt;')
+    #except log.err, e:
+        #log.fail(case, test, name, conf, e.value, diag, logfile)
+    #else:
+        #log.ok(case, test, name, conf, '', logfile)
 
     #try:
         #test = '09'
@@ -233,4 +233,35 @@ def execute(oai, user, pw, logfile):
         #log.fail(case, test, name, conf, e.value, diag, logfile)
     #else:
         #log.ok(case, test, name, conf, '', logfile)
+
+    try:
+        test = '11'
+        name = 'Compile oai.rel8.itti.make' 
+        conf = 'make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel8=1'
+        diag = 'check the compilation errors for ITTI Rel8'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oaisim.rel8.itti;')
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel8=1 -j4;', makerr1,  1500)
+        oai.send('cp ./oaisim ./oaisim.rel8.itti;')
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+    try:
+        test = '12'
+        name = 'Compile oai.rel10.itti.make' 
+        conf = 'make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel10=1'
+        diag = 'check the compilation errors for ITTI Rel10'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oaisim.rel10.itti;')
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel10=1 -j4;', makerr1,  1500)
+        oai.send('cp ./oaisim ./oaisim.rel10.itti;')
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
 

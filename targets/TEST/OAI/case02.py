@@ -143,4 +143,17 @@ def execute(oai, user, pw, logfile):
     else:
         log.ok(case, test, name, conf, '', logfile)
 
+    try:
+        test = '06'
+        name = 'Run oai.rel8.itti.abs.rrc'
+        diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
+        for i in range(NUM_UE) :
+            for j in range(NUM_eNB) :
+                conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                oai.send_expect('./oaisim.rel8.itti ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 50)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+        
 
