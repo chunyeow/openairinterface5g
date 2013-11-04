@@ -1,7 +1,7 @@
 #ifndef UI_TREE_VIEW_H_
 #define UI_TREE_VIEW_H_
 
-enum
+typedef enum
 {
     COL_MSG_NUM = 0,
     COL_SIGNAL,
@@ -9,7 +9,7 @@ enum
     COL_TO_TASK,
     COL_BUFFER,
     NUM_COLS
-};
+} col_type_e;
 
 int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox);
 
@@ -18,6 +18,6 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signa
 
 void ui_tree_view_destroy_list(GtkWidget *list);
 
-void ui_tree_view_select_row(gint row);
+void ui_tree_view_select_row(gint row, GtkTreePath **path);
 
 #endif /* UI_TREE_VIEW_H_ */

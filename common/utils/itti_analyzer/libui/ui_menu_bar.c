@@ -5,12 +5,24 @@
 #include "ui_menu_bar.h"
 #include "ui_callbacks.h"
 
+void ui_set_sensitive_move_buttons(gboolean enable)
+{
+    // gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), enable);
+    // gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), enable);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), enable);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), enable);
+}
+
 int ui_menu_bar_create(GtkWidget *vbox)
 {
     GtkWidget *menubar;
     GtkWidget *filemenu, *helpmenu;
     GtkWidget *file;
     GtkWidget *help;
+    GtkWidget *open_messages;
+    GtkWidget *save_messages;
+    GtkWidget *open_filters;
+    GtkWidget *save_filters;
     GtkWidget *quit;
     GtkWidget *about;
 
@@ -23,11 +35,19 @@ int ui_menu_bar_create(GtkWidget *vbox)
     filemenu = gtk_menu_new();
 
     file = gtk_menu_item_new_with_label("File");
+    open_messages  = gtk_menu_item_new_with_label("Open messages file");
+    save_messages  = gtk_menu_item_new_with_label("Save messages file");
+    open_filters  = gtk_menu_item_new_with_label("Open filters file");
+    save_filters  = gtk_menu_item_new_with_label("Save filters file");
     quit  = gtk_menu_item_new_with_label("Quit");
 
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), open_messages);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), save_messages);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), open_filters);
+    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), save_filters);
     gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quit);
 
     /* Create the Help submenu */
@@ -43,6 +63,18 @@ int ui_menu_bar_create(GtkWidget *vbox)
 
     /* Add the menubar to the vbox */
     gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 3);
+
+    g_signal_connect(G_OBJECT(open_messages), "activate",
+                     G_CALLBACK(ui_callback_on_open_messages), NULL);
+
+    g_signal_connect(G_OBJECT(save_messages), "activate",
+                     G_CALLBACK(ui_callback_on_save_messages), NULL);
+
+    g_signal_connect(G_OBJECT(open_filters), "activate",
+                     G_CALLBACK(ui_callback_on_open_filters), NULL);
+
+    g_signal_connect(G_OBJECT(save_filters), "activate",
+                     G_CALLBACK(ui_callback_on_save_filters), NULL);
 
     g_signal_connect(G_OBJECT(quit), "activate",
                      G_CALLBACK(gtk_main_quit), NULL);
@@ -70,6 +102,7 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     gtk_container_set_border_width(GTK_CONTAINER(toolbar), 2);
 
+#if 0 /* Not useful anymore, signals list is cleared before every new replay file opening or remote connection */
     /* Button to clear signal list and clear signal dissect view */
     {
         ui_main_data.signals_clear_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
@@ -83,18 +116,55 @@ int ui_toolbar_create(GtkWidget *vbox)
         g_signal_connect(G_OBJECT(ui_main_data.signals_clear_button), "clicked",
                         G_CALLBACK(ui_callback_signal_clear_list), NULL);
     }
+#endif
 
     /* Button to open replay file */
     {
         ui_main_data.open_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_replay_file),
-                                    "Open new replay file");
+                                    "Open messages file");
         gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.open_replay_file, -1);
 
         g_signal_connect(G_OBJECT(ui_main_data.open_replay_file), "clicked",
-                        G_CALLBACK(ui_callback_on_open), NULL);
+                        G_CALLBACK(ui_callback_on_open_messages), NULL);
     }
 
+    /* Button to save replay file */
+    {
+        ui_main_data.save_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file),
+                                    "Save messages file");
+        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.save_replay_file, -1);
+
+        g_signal_connect(G_OBJECT(ui_main_data.save_replay_file), "clicked",
+                        G_CALLBACK(ui_callback_on_save_messages), NULL);
+    }
+
+#if 0 /* Too much button in the bar, it is confusing ! */
+    /* Button to open filters file */
+    {
+        ui_main_data.open_filters_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_filters_file),
+                                    "Open filters file");
+        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.open_filters_file, -1);
+
+        g_signal_connect(G_OBJECT(ui_main_data.open_filters_file), "clicked",
+                        G_CALLBACK(ui_callback_on_open_filters), NULL);
+    }
+
+    /* Button to save filters file */
+    {
+        ui_main_data.save_filters_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_filters_file),
+                                    "Save filters file");
+        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.save_filters_file, -1);
+
+        g_signal_connect(G_OBJECT(ui_main_data.save_filters_file), "clicked",
+                        G_CALLBACK(ui_callback_on_save_filters), NULL);
+    }
+#endif
+
+#if 0 /* This function is already handled by GTK */
     /* Button to go given signal number */
     {
         ui_main_data.signals_go_to_button = gtk_tool_button_new_from_stock(GTK_STOCK_INDEX);
@@ -108,6 +178,7 @@ int ui_toolbar_create(GtkWidget *vbox)
         g_signal_connect(G_OBJECT(ui_main_data.signals_go_to_button), "clicked",
                         G_CALLBACK(ui_callback_signal_go_to), NULL);
     }
+#endif
 
     /* Button to go to first signal in list */
     {

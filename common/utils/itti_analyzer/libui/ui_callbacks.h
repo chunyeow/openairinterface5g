@@ -1,9 +1,21 @@
 #ifndef UI_CALLBACKS_H_
 #define UI_CALLBACKS_H_
 
-gboolean ui_callback_on_open(GtkWidget *widget,
-                             GdkEvent  *event,
-                             gpointer   data);
+gboolean ui_callback_on_open_messages(GtkWidget *widget,
+                                      GdkEvent  *event,
+                                      gpointer   data);
+
+gboolean ui_callback_on_save_messages(GtkWidget *widget,
+                                      GdkEvent  *event,
+                                      gpointer   data);
+
+gboolean ui_callback_on_open_filters(GtkWidget *widget,
+                                     GdkEvent *event,
+                                     gpointer data);
+
+gboolean ui_callback_on_save_filters(GtkWidget *widget,
+                                     GdkEvent *event,
+                                     gpointer data);
 
 gboolean ui_callback_on_about(GtkWidget *widget,
                               GdkEvent  *event,
@@ -48,5 +60,17 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget,
                                        gpointer   data);
 
 gboolean ui_pipe_callback(gint source, gpointer user_data);
+
+gboolean ui_callback_on_tree_column_header_click_signal(GtkWidget *widget,
+                                                        GdkEvent  *event,
+                                                        gpointer   data);
+
+gboolean ui_callback_on_tree_column_header_click_from(GtkWidget *widget,
+                                                      GdkEvent  *event,
+                                                      gpointer   data);
+
+gboolean ui_callback_on_tree_column_header_click_to(GtkWidget *widget,
+                                                    GdkEvent  *event,
+                                                    gpointer   data);
 
 #endif /* UI_CALLBACKS_H_ */

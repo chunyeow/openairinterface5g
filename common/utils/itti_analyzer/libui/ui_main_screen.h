@@ -14,6 +14,9 @@ typedef struct {
 
     /* Buttons */
     GtkToolItem *open_replay_file;
+    GtkToolItem *save_replay_file;
+    GtkToolItem *open_filters_file;
+    GtkToolItem *save_filters_file;
     GtkToolItem *connect;
     GtkToolItem *disconnect;
 
@@ -25,6 +28,7 @@ typedef struct {
     GtkToolItem *signals_go_to_first_button;
 
     GtkTreeSelection *selection;
+    GtkTreePath *path_last;
 
     /* Nb of messages received */
     guint nb_message_received;

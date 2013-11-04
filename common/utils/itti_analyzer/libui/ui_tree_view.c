@@ -28,14 +28,20 @@ ui_tree_view_init_list(GtkWidget *list)
     column = gtk_tree_view_column_new_with_attributes(
         "Signal", renderer, "text", COL_SIGNAL, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    g_signal_connect(G_OBJECT(column), "clicked",
+                     G_CALLBACK(ui_callback_on_tree_column_header_click_signal), NULL);
 
     column = gtk_tree_view_column_new_with_attributes(
         "From", renderer, "text", COL_FROM_TASK, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    g_signal_connect(G_OBJECT(column), "clicked",
+                     G_CALLBACK(ui_callback_on_tree_column_header_click_from), NULL);
 
     column = gtk_tree_view_column_new_with_attributes(
         "To", renderer, "text", COL_TO_TASK, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    g_signal_connect(G_OBJECT(column), "clicked",
+                     G_CALLBACK(ui_callback_on_tree_column_header_click_to), NULL);
 
     store = gtk_list_store_new(NUM_COLS,
                                G_TYPE_STRING,
@@ -86,6 +92,9 @@ void ui_tree_view_destroy_list(GtkWidget *list)
     store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
 
     gtk_list_store_clear(store);
+
+    /* Reset number of messages */
+    ui_main_data.nb_message_received = 0;
 }
 
 int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
@@ -112,6 +121,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
                       ui_main_data.signalslist);
 
     ui_tree_view_init_list(ui_main_data.signalslist);
+    gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
 
     gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 500, -1);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
@@ -141,13 +151,21 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signa
     return RC_OK;
 }
 
-void ui_tree_view_select_row(gint row)
+void ui_tree_view_select_row(gint row, GtkTreePath **path)
 {
-    GtkTreePath *path;
+    GtkTreePath *path_row;
     gchar        indice[10];
 
     sprintf(indice, "%d", row);
 
-    path = gtk_tree_path_new_from_string(indice);
-    gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path, NULL, FALSE);
+    path_row = gtk_tree_path_new_from_string(indice);
+    /* Select the message in requested row */
+    gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, FALSE);
+    /* Center the message in the middle of the list if possible */
+    gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, TRUE, 0.5, 0.0);
+
+    if (path != NULL)
+    {
+        *path = path_row;
+    }
 }
