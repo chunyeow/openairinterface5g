@@ -108,8 +108,8 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
-                                          ui_main_data.signalslist);
+    gtk_container_add(GTK_CONTAINER(scrolled_window),
+                      ui_main_data.signalslist);
 
     ui_tree_view_init_list(ui_main_data.signalslist);
 
@@ -149,6 +149,5 @@ void ui_tree_view_select_row(gint row)
     sprintf(indice, "%d", row);
 
     path = gtk_tree_path_new_from_string(indice);
-    gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path, NULL,
-                             FALSE);
+    gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path, NULL, FALSE);
 }
