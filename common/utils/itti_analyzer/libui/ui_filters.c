@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <glib.h>
 
+#include "ui_callbacks.h"
 #include "ui_filters.h"
 #include "rc.h"
 
@@ -44,6 +45,8 @@ int ui_init_filters(int reset, int clear_ids)
     ui_init_filter (&ui_filters.messages, reset, clear_ids);
     ui_init_filter (&ui_filters.origin_tasks, reset, clear_ids);
     ui_init_filter (&ui_filters.destination_tasks, reset, clear_ids);
+
+    ui_destroy_filter_menus();
 
     return (RC_OK);
 }
@@ -107,10 +110,6 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, char *name)
             g_error("unknown filter type %d", filter);
             break;
     }
-}
-
-static void parse_filters(void)
-{
 }
 
 static int write_filters_file(void)

@@ -1,6 +1,8 @@
 #ifndef UI_CALLBACKS_H_
 #define UI_CALLBACKS_H_
 
+#include <gtk/gtk.h>
+
 gboolean ui_callback_on_open_messages(GtkWidget *widget,
                                       GdkEvent  *event,
                                       gpointer   data);
@@ -60,6 +62,8 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget,
                                        gpointer   data);
 
 gboolean ui_pipe_callback(gint source, gpointer user_data);
+
+void ui_destroy_filter_menus(void);
 
 gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget,
                                                  gpointer   data);
