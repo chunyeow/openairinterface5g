@@ -19,6 +19,7 @@ typedef struct
 
 typedef struct
 {
+    char *name;
     uint32_t allocated;
     uint32_t used;
     ui_filter_item_t *items;
@@ -36,5 +37,7 @@ extern ui_filters_t ui_filters;
 int ui_init_filters(int reset, int clear_ids);
 
 void ui_filters_add(ui_filter_e filter, uint32_t value, char *name);
+
+int ui_write_filters_file(char *file_name);
 
 #endif /* UI_FILTERS_H_ */

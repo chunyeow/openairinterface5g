@@ -10,10 +10,12 @@ const uint32_t FILTER_ALLOC_NUMBER = 100;
 
 ui_filters_t ui_filters;
 
-static int ui_init_filter(ui_filter_t *filter, int reset, int clear_ids)
+static int ui_init_filter(ui_filter_t *filter, int reset, int clear_ids, char *name)
 {
     if (filter->items == NULL)
     {
+        filter->name = name;
+
         /* Allocate some filter entries */
         filter->items = malloc (FILTER_ALLOC_NUMBER * sizeof(ui_filter_item_t));
         filter->allocated = FILTER_ALLOC_NUMBER;
@@ -42,9 +44,9 @@ static int ui_init_filter(ui_filter_t *filter, int reset, int clear_ids)
 
 int ui_init_filters(int reset, int clear_ids)
 {
-    ui_init_filter (&ui_filters.messages, reset, clear_ids);
-    ui_init_filter (&ui_filters.origin_tasks, reset, clear_ids);
-    ui_init_filter (&ui_filters.destination_tasks, reset, clear_ids);
+    ui_init_filter (&ui_filters.messages, reset, clear_ids, "messages");
+    ui_init_filter (&ui_filters.origin_tasks, reset, clear_ids, "origin_tasks");
+    ui_init_filter (&ui_filters.destination_tasks, reset, clear_ids, "destination_tasks");
 
     ui_destroy_filter_menus();
 
@@ -112,58 +114,37 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, char *name)
     }
 }
 
-static int write_filters_file(void)
+static void write_filter(FILE *filter_file, ui_filter_t *filter)
 {
-    char *filter_file_name = "./filters.xml";
+    int item;
+
+    fprintf (filter_file, "  <%s>\n", filter->name);
+    for (item = 0; item < filter->used; item++)
+    {
+        fprintf (filter_file, "    %s=\"%d\"\n", filter->items[item].name, filter->items[item].enabled ? 1 :0);
+    }
+    fprintf (filter_file, "  </%s>\n", filter->name);
+}
+
+int ui_write_filters_file(char *file_name)
+{
     FILE *filter_file;
 
     // types_t *types;
 
-    filter_file = fopen (filter_file_name, "w");
+    filter_file = fopen (file_name, "w");
     if (filter_file == NULL)
     {
-        g_warning("Failed to open file \"%s\": %s", filter_file_name, g_strerror (errno));
+        g_warning("Failed to open file \"%s\": %s", file_name, g_strerror (errno));
         return RC_FAIL;
     }
 
     fprintf (filter_file, "<filters>\n");
 
-    /*    types = messages_id_enum;
-     if (types != NULL)
-     {
-     types = types->child;
-     }
-     fprintf (filter_file, "  <messages>\n");
-     while (types != NULL) {
-     fprintf (filter_file, "    %s=\"1\"\n", types->name);
-     types = types->next;
-     }
-     fprintf (filter_file, "  </messages>\n");
+    write_filter (filter_file, &ui_filters.messages);
+    write_filter (filter_file, &ui_filters.origin_tasks);
+    write_filter (filter_file, &ui_filters.destination_tasks);
 
-     types = origin_task_id_type;
-     if (types != NULL)
-     {
-     types = types->child->child;
-     }
-     fprintf (filter_file, "  <origin_tasks>\n");
-     while (types != NULL) {
-     fprintf (filter_file, "    %s=\"1\"\n", types->name);
-     types = types->next;
-     }
-     fprintf (filter_file, "  </origin_tasks>\n");
-
-     types = destination_task_id_type;
-     if (types != NULL)
-     {
-     types = types->child->child;
-     }
-     fprintf (filter_file, "  <destination_tasks>\n");
-     while (types != NULL) {
-     fprintf (filter_file, "    %s=\"1\"\n", types->name);
-     types = types->next;
-     }
-     fprintf (filter_file, "  </destination_tasks>\n");
-     */
     fprintf (filter_file, "</filters>\n");
 
     fclose (filter_file);

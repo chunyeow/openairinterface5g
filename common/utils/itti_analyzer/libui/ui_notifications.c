@@ -13,6 +13,7 @@
 #include "ui_menu_bar.h"
 #include "ui_notifications.h"
 #include "ui_callbacks.h"
+#include "ui_filters.h"
 
 #include "xml_parse.h"
 
@@ -34,6 +35,33 @@ int ui_enable_connect_button(void)
     return RC_OK;
 }
 
+void ui_change_cursor(gboolean busy)
+{
+    static GdkWindow *window;
+
+    if (busy)
+    {
+        GdkDisplay *display;
+        GdkCursor *cursor;
+        // gint x, y;
+
+        cursor = gdk_cursor_new (GDK_WATCH);
+        display = gdk_display_get_default();
+        window = gtk_widget_get_window(GTK_WIDGET(ui_main_data.window));
+        // window = gdk_display_get_window_at_pointer(display, &x, &y);
+
+        gdk_window_set_cursor (window, cursor);
+        gdk_display_sync(display);
+        gdk_cursor_unref (cursor);
+        gtk_widget_set_sensitive (ui_main_data.window, FALSE);
+    }
+    else
+    {
+        gdk_window_set_cursor (window, NULL);
+        gtk_widget_set_sensitive (ui_main_data.window, TRUE);
+    }
+}
+
 int ui_messages_read(char *filename)
 {
     int result = RC_OK;
@@ -42,6 +70,8 @@ int ui_messages_read(char *filename)
     void *input_data = NULL;
     size_t input_data_length = 0;
     int read_messages = 0;
+
+    ui_change_cursor(TRUE);
 
     source = open (filename, O_RDONLY);
     if (source < 0)
@@ -132,60 +162,64 @@ int ui_messages_read(char *filename)
         close (source);
     }
 
+    ui_change_cursor(FALSE);
+
     return result;
 }
 
 int ui_messages_open_file_chooser(void)
 {
-    GtkWidget *filechooser;
     int result = RC_OK;
+    GtkWidget *filechooser;
+    gboolean accept;
+    char *filename;
 
     filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
-                                               GTK_FILE_CHOOSER_ACTION_OPEN,
-                                               GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                                               NULL);
+                                               GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
 
     /* Process the response */
-    if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+    accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+
+    if (accept)
     {
-        char *filename;
-
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-        result = ui_messages_read(filename);
-
+    }
+    gtk_widget_destroy (filechooser);
+    if (accept)
+    {
+        result = ui_messages_read (filename);
         g_free (filename);
     }
-
-    gtk_widget_destroy (filechooser);
 
     return result;
 }
 
 int ui_filters_open_file_chooser(void)
 {
-    GtkWidget *filechooser;
     int result = RC_OK;
+    GtkWidget *filechooser;
+    gboolean accept;
+    char *filename;
 
     filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
-                                               GTK_FILE_CHOOSER_ACTION_OPEN,
-                                               GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                                               NULL);
+                                               GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
 
     /* Process the response */
-    if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+    accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+
+    if (accept)
     {
-        char *filename;
-
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-
+    }
+    gtk_widget_destroy (filechooser);
+    if (accept)
+    {
         g_free (filename);
     }
 
-    gtk_widget_destroy (filechooser);
-
-    return RC_OK;
+    return result;
 }
 
 int ui_filters_save_file_chooser(void)
@@ -211,12 +245,14 @@ int ui_filters_save_file_chooser(void)
 
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
 
+        result = ui_write_filters_file(filename);
+
         g_free (filename);
     }
 
     gtk_widget_destroy (filechooser);
 
-    return RC_OK;
+    return result;
 }
 
 int ui_progress_bar_set_fraction(double fraction)
