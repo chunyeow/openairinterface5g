@@ -3,6 +3,7 @@
 #include <glib.h>
 
 #include "ui_callbacks.h"
+#include "ui_main_screen.h"
 #include "ui_filters.h"
 #include "rc.h"
 
@@ -149,4 +150,60 @@ int ui_write_filters_file(char *file_name)
 
     fclose (filter_file);
     return RC_OK;
+}
+
+static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+{
+    GtkWidget *menu_items;
+    int item;
+    gpointer data;
+
+    *menu = gtk_menu_new ();
+
+    for (item = 0; item < filter->used; item++)
+    {
+        /* Create a new menu-item with a name */
+        menu_items = gtk_check_menu_item_new_with_label (filter->items[item].name);
+
+        /* Add it to the menu. */
+        gtk_menu_shell_append (GTK_MENU_SHELL (*menu), menu_items);
+
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_items), filter->items[item].enabled);
+
+        /* Connect function to be called when the menu item is selected */
+        data = &filter->items[item];
+        // g_debug("ui_create_filter_menu %x %x", (int) menu_items, (int) data);
+        g_signal_connect(G_OBJECT (menu_items), "activate", G_CALLBACK(ui_callback_on_menu_item_selected), data);
+
+        /* Show the widget */
+        gtk_widget_show (menu_items);
+    }
+}
+
+static void ui_destroy_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+{
+    /* TODO destroy menu items ? */
+
+    if (*menu != NULL)
+    {
+        gtk_widget_destroy (*menu);
+        *menu = NULL;
+    }
+}
+
+void ui_destroy_filter_menus(void)
+{
+    ui_destroy_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
+    ui_destroy_filter_menu (&ui_main_data.menu_filter_origin_tasks, &ui_filters.origin_tasks);
+    ui_destroy_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
+}
+
+void ui_show_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+{
+    if (*menu == NULL)
+    {
+        ui_create_filter_menu (menu, filter);
+    }
+
+    gtk_menu_popup (GTK_MENU (*menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time ());
 }

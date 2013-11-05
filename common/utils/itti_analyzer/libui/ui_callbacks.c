@@ -21,8 +21,6 @@
 #include "locate_root.h"
 #include "xml_parse.h"
 
-static gboolean ui_handle_socket_connection_failed(gint fd);
-
 gboolean ui_callback_on_open_messages(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
     g_debug("Open messages event occurred");
@@ -309,7 +307,7 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, GdkEvent *event, gpoin
     return TRUE;
 }
 
-static gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
+gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
 {
     ui_filter_item_t *filter_entry = data;
     gboolean enabled;
@@ -321,67 +319,11 @@ static gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer da
     return TRUE;
 }
 
-static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
-{
-    GtkWidget *menu_items;
-    int item;
-    gpointer data;
-
-    *menu = gtk_menu_new ();
-
-    for (item = 0; item < filter->used; item++)
-    {
-        /* Create a new menu-item with a name */
-        menu_items = gtk_check_menu_item_new_with_label (filter->items[item].name);
-
-        /* Add it to the menu. */
-        gtk_menu_shell_append (GTK_MENU_SHELL (*menu), menu_items);
-
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_items), filter->items[item].enabled);
-
-        /* Connect function to be called when the menu item is selected */
-        data = &filter->items[item];
-        // g_debug("ui_create_filter_menu %x %x", (int) menu_items, (int) data);
-        g_signal_connect(G_OBJECT (menu_items), "activate", G_CALLBACK(ui_callback_on_menu_item_selected), data);
-
-        /* Show the widget */
-        gtk_widget_show (menu_items);
-    }
-}
-
-static void ui_destroy_filter_menu(GtkWidget **menu, ui_filter_t *filter)
-{
-    /* TODO destroy menu items ? */
-
-    if (*menu != NULL)
-    {
-        gtk_widget_destroy (*menu);
-        *menu = NULL;
-    }
-}
-
-void ui_destroy_filter_menus(void)
-{
-    ui_destroy_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
-    ui_destroy_filter_menu (&ui_main_data.menu_filter_origin_tasks, &ui_filters.origin_tasks);
-    ui_destroy_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
-}
-
-static void ui_show_filter_menu(GtkWidget **menu, ui_filter_t *filter)
-{
-    if (*menu == NULL)
-    {
-        ui_create_filter_menu (menu, filter);
-    }
-
-    gtk_menu_popup (GTK_MENU (*menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time ());
-}
-
 gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer data)
 {
     col_type_e col = (col_type_e) data;
 
-    g_debug("ui_callback_on_tree_column_header_click %x", col);
+    // g_debug("ui_callback_on_tree_column_header_click %x", col);
     switch (col)
     {
         case COL_SIGNAL:

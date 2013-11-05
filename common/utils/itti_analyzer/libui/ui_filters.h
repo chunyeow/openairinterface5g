@@ -40,4 +40,8 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, char *name);
 
 int ui_write_filters_file(char *file_name);
 
+void ui_destroy_filter_menus(void);
+
+void ui_show_filter_menu(GtkWidget **menu, ui_filter_t *filter);
+
 #endif /* UI_FILTERS_H_ */
