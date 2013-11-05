@@ -5,8 +5,10 @@
 
 typedef struct {
     GtkWidget *window;
-    GtkWidget *ipentry;
-    GtkWidget *portentry;
+    GtkWidget *ip_entry;
+    char *ip_entry_init;
+    GtkWidget *port_entry;
+    char *port_entry_init;
 
     GtkWidget      *progressbar;
     GtkWidget      *signalslist;
@@ -32,6 +34,13 @@ typedef struct {
 
     /* Nb of messages received */
     guint nb_message_received;
+
+    char *filters_file_name;
+    char *messages_file_name;
+
+    GtkWidget *menu_filter_messages;
+    GtkWidget *menu_filter_origin_tasks;
+    GtkWidget *menu_filter_destination_tasks;
 
     int pipe_fd[2];
 } ui_main_data_t;

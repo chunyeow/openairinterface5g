@@ -5,6 +5,8 @@ int ui_disable_connect_button(void);
 
 int ui_enable_connect_button(void);
 
+int ui_messages_read(char *filename);
+
 int ui_messages_open_file_chooser(void);
 
 int ui_filters_open_file_chooser(void);

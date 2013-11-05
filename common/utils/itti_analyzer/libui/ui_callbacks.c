@@ -15,6 +15,7 @@
 #include "ui_notifications.h"
 #include "ui_tree_view.h"
 #include "ui_signal_dissect_view.h"
+#include "ui_filters.h"
 
 #include "types.h"
 #include "locate_root.h"
@@ -236,8 +237,8 @@ gboolean ui_callback_on_connect(GtkWidget *widget, GdkEvent *event, gpointer dat
 
     g_debug("Connect event occurred");
 
-    port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.portentry)));
-    ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ipentry));
+    port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
+    ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
 
     if ((ip == NULL) || (port == 0))
     {
@@ -315,20 +316,92 @@ gboolean ui_callback_on_tree_view_select(GtkWidget *widget, GdkEvent *event, gpo
     return TRUE;
 }
 
-gboolean ui_callback_on_tree_column_header_click_signal(GtkWidget *widget, GdkEvent *event, gpointer data)
+static gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
 {
-    g_debug("ui_callback_on_tree_column_header_click_signal\n");
+    ui_filter_item_t *filter_entry = data;
+
+    // g_debug("ui_callback_on_menu_item_selected occurred %x %x %s", widget, data, filter_entry->name);
+    filter_entry->enabled = ~filter_entry->enabled;
+
     return TRUE;
 }
 
-gboolean ui_callback_on_tree_column_header_click_from(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 {
-    g_debug("ui_callback_on_tree_column_header_click_from\n");
-    return TRUE;
+    GtkWidget *menu_items;
+    int item;
+    gpointer data;
+
+    *menu = gtk_menu_new ();
+
+    for (item = 0; item < filter->used; item++)
+    {
+        /* Create a new menu-item with a name */
+        menu_items = gtk_check_menu_item_new_with_label (filter->items[item].name);
+
+        /* Add it to the menu. */
+        gtk_menu_shell_append (GTK_MENU_SHELL (*menu), menu_items);
+
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_items), filter->items[item].enabled);
+
+        /* Connect function to be called when the menu item is selected */
+        data = &filter->items[item];
+        //g_debug("ui_create_filter_menu %x %x", menu_items, data);
+        g_signal_connect(G_OBJECT (menu_items), "activate", G_CALLBACK(ui_callback_on_menu_item_selected), data);
+
+        /* Show the widget */
+        gtk_widget_show (menu_items);
+    }
 }
 
-gboolean ui_callback_on_tree_column_header_click_to(GtkWidget *widget, GdkEvent *event, gpointer data)
+static void ui_destroy_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 {
-    g_debug("ui_callback_on_tree_column_header_click_to\n");
+    /* TODO destroy menu items ? */
+
+    gtk_widget_destroy (*menu);
+    *menu = NULL;
+}
+
+void ui_destroy_filter_menus()
+{
+    ui_destroy_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
+    ui_destroy_filter_menu (&ui_main_data.menu_filter_origin_tasks, &ui_filters.origin_tasks);
+    ui_destroy_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
+}
+
+static void ui_show_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+{
+    if (*menu == NULL)
+    {
+        ui_create_filter_menu (menu, filter);
+    }
+
+    gtk_menu_popup (GTK_MENU (*menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time ());
+}
+
+gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer data)
+{
+    col_type_e col = (col_type_e) data;
+
+    g_debug("ui_callback_on_tree_column_header_click %x", col);
+    switch (col)
+    {
+        case COL_SIGNAL:
+            ui_show_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
+            break;
+
+        case COL_FROM_TASK:
+            ui_show_filter_menu (&ui_main_data.menu_filter_origin_tasks, &ui_filters.origin_tasks);
+            break;
+
+        case COL_TO_TASK:
+            ui_show_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
+            break;
+
+        default:
+            g_warning("Unknown column filter %d in call to ui_callback_on_tree_column_header_click", col);
+            return FALSE;
+    }
+
     return TRUE;
 }

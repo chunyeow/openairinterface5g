@@ -61,16 +61,6 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget,
 
 gboolean ui_pipe_callback(gint source, gpointer user_data);
 
-gboolean ui_callback_on_tree_column_header_click_signal(GtkWidget *widget,
-                                                        GdkEvent  *event,
-                                                        gpointer   data);
-
-gboolean ui_callback_on_tree_column_header_click_from(GtkWidget *widget,
-                                                      GdkEvent  *event,
-                                                      gpointer   data);
-
-gboolean ui_callback_on_tree_column_header_click_to(GtkWidget *widget,
-                                                    GdkEvent  *event,
-                                                    gpointer   data);
-
+gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget,
+                                                 gpointer   data);
 #endif /* UI_CALLBACKS_H_ */

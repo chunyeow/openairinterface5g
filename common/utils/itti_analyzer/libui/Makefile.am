@@ -17,4 +17,5 @@ libui_la_SOURCES = \
 	ui_notifications.c		ui_notifications.h	\
 	ui_notif_dlg.c			ui_notif_dlg.h	\
 	ui_interface.c			ui_interface.h	\
-	ui_notebook.c			ui_notebook.h
+	ui_notebook.c			ui_notebook.h	\
+	ui_filters.c			ui_filters.h

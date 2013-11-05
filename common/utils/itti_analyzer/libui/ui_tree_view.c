@@ -29,19 +29,19 @@ ui_tree_view_init_list(GtkWidget *list)
         "Signal", renderer, "text", COL_SIGNAL, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
-                     G_CALLBACK(ui_callback_on_tree_column_header_click_signal), NULL);
+                     G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_SIGNAL);
 
     column = gtk_tree_view_column_new_with_attributes(
         "From", renderer, "text", COL_FROM_TASK, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
-                     G_CALLBACK(ui_callback_on_tree_column_header_click_from), NULL);
+                     G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_FROM_TASK);
 
     column = gtk_tree_view_column_new_with_attributes(
         "To", renderer, "text", COL_TO_TASK, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
-                     G_CALLBACK(ui_callback_on_tree_column_header_click_to), NULL);
+                     G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_TO_TASK);
 
     store = gtk_list_store_new(NUM_COLS,
                                G_TYPE_STRING,
@@ -95,6 +95,7 @@ void ui_tree_view_destroy_list(GtkWidget *list)
 
     /* Reset number of messages */
     ui_main_data.nb_message_received = 0;
+    ui_main_data.path_last = NULL;
 }
 
 int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)

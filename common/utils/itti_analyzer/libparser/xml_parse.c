@@ -10,6 +10,7 @@
 
 #include "ui_interface.h"
 #include "ui_notif_dlg.h"
+#include "ui_filters.h"
 
 #include "../libresolver/locate_root.h"
 #include "../libresolver/resolvers.h"
@@ -702,6 +703,47 @@ int xml_parse_file(const char *filename) {
     return xml_parse_doc(doc);
 }
 
+static int update_filters() {
+    types_t *types;
+
+    ui_init_filters(FALSE, TRUE);
+
+    types = messages_id_enum;
+    if (types != NULL)
+    {
+        types = types->child;
+
+        while (types != NULL) {
+            ui_filters_add(FILTER_MESSAGES, types->init_value, types->name);
+            types = types->next;
+        }
+    }
+
+    types = origin_task_id_type;
+    if (types != NULL)
+    {
+        types = types->child->child;
+
+        while (types != NULL) {
+            ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name);
+            types = types->next;
+        }
+    }
+
+    types = destination_task_id_type;
+    if (types != NULL)
+    {
+        types = types->child->child;
+
+        while (types != NULL) {
+            ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name);
+            types = types->next;
+        }
+    }
+
+    return RC_OK;
+}
+
 static int xml_parse_doc(xmlDocPtr doc) {
     xmlNode *root_element = NULL;
     types_t *head = NULL;
@@ -740,6 +782,7 @@ static int xml_parse_doc(xmlDocPtr doc) {
         CHECK_FCT(locate_type("originTaskId", head, &origin_task_id_type));
         CHECK_FCT(locate_type("destinationTaskId", head, &destination_task_id_type));
         // root->type_hr_display(root, 0);
+        update_filters();
         if (dissect_file != NULL) {
             root->type_file_print (root, 0, dissect_file);
         }
