@@ -49,7 +49,7 @@ int ui_init_filters(int reset, int clear_ids)
     ui_init_filter (&ui_filters.origin_tasks, reset, clear_ids, "origin_tasks");
     ui_init_filter (&ui_filters.destination_tasks, reset, clear_ids, "destination_tasks");
 
-    ui_destroy_filter_menus();
+    ui_destroy_filter_menus ();
 
     return (RC_OK);
 }
@@ -61,6 +61,21 @@ static int ui_search_name(ui_filter_t *filter, char *name)
     for (item = 0; item < filter->used; item++)
     {
         if (strncmp (name, filter->items[item].name, SIGNAL_NAME_LENGTH) == 0)
+        {
+            return (item);
+        }
+    }
+
+    return (item);
+}
+
+static int ui_search_id(ui_filter_t *filter, uint32_t value)
+{
+    int item;
+
+    for (item = 0; item < filter->used; item++)
+    {
+        if (filter->items[item].id == value)
         {
             return (item);
         }
@@ -84,7 +99,7 @@ static int ui_filter_add(ui_filter_t *filter, uint32_t value, char *name)
     if (item >= filter->used)
     {
         /* New entry */
-        strncpy(filter->items[item].name, name, SIGNAL_NAME_LENGTH);
+        strncpy (filter->items[item].name, name, SIGNAL_NAME_LENGTH);
         filter->items[item].enabled = TRUE;
 
         filter->used++;
@@ -115,6 +130,28 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, char *name)
     }
 }
 
+static gboolean ui_item_enabled(ui_filter_t *filter, uint32_t value)
+{
+    int item = ui_search_id (filter, value);
+
+    if (item < filter->used)
+    {
+        return (filter->items[item].enabled ? TRUE : FALSE);
+    }
+
+    return (FALSE);
+}
+
+gboolean ui_filters_message_enabled(uint32_t message, uint32_t origin_task, uint32_t destination_task)
+{
+    gboolean result;
+
+    result = ui_item_enabled (&ui_filters.messages, message) && ui_item_enabled (&ui_filters.origin_tasks, origin_task)
+            && ui_item_enabled (&ui_filters.destination_tasks, destination_task);
+
+    return result;
+}
+
 static void write_filter(FILE *filter_file, ui_filter_t *filter)
 {
     int item;
@@ -122,7 +159,7 @@ static void write_filter(FILE *filter_file, ui_filter_t *filter)
     fprintf (filter_file, "  <%s>\n", filter->name);
     for (item = 0; item < filter->used; item++)
     {
-        fprintf (filter_file, "    %s=\"%d\"\n", filter->items[item].name, filter->items[item].enabled ? 1 :0);
+        fprintf (filter_file, "    %s=\"%d\"\n", filter->items[item].name, filter->items[item].enabled ? 1 : 0);
     }
     fprintf (filter_file, "  </%s>\n", filter->name);
 }

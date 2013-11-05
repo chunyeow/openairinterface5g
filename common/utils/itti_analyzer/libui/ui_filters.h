@@ -38,6 +38,8 @@ int ui_init_filters(int reset, int clear_ids);
 
 void ui_filters_add(ui_filter_e filter, uint32_t value, char *name);
 
+gboolean ui_filters_message_enabled(uint32_t message, uint32_t origin_task, uint32_t destination_task);
+
 int ui_write_filters_file(char *file_name);
 
 void ui_destroy_filter_menus(void);
