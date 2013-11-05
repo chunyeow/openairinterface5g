@@ -316,7 +316,7 @@ static gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer da
 
     enabled = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget));
     filter_entry->enabled = enabled;
-    g_debug("ui_callback_on_menu_item_selected occurred %x %x %s %d", (int) widget, (int) data, filter_entry->name, enabled);
+    // g_debug("ui_callback_on_menu_item_selected occurred %x %x %s %d", (int) widget, (int) data, filter_entry->name, enabled);
 
     return TRUE;
 }
@@ -341,7 +341,7 @@ static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 
         /* Connect function to be called when the menu item is selected */
         data = &filter->items[item];
-        g_debug("ui_create_filter_menu %x %x", (int) menu_items, (int) data);
+        // g_debug("ui_create_filter_menu %x %x", (int) menu_items, (int) data);
         g_signal_connect(G_OBJECT (menu_items), "activate", G_CALLBACK(ui_callback_on_menu_item_selected), data);
 
         /* Show the widget */
