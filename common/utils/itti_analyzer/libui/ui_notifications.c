@@ -35,7 +35,7 @@ int ui_enable_connect_button(void)
     return RC_OK;
 }
 
-void ui_change_cursor(gboolean busy)
+static void ui_change_cursor(gboolean busy)
 {
     static GdkWindow *window;
 
