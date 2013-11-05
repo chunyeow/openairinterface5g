@@ -206,8 +206,8 @@ int resolve_pointer_type(types_t **head)
         if (next_type->type != TYPE_POINTER)
             continue;
 
-//        g_debug("Trying to resolve pointer id %d with type %d\n",
-//                next_type->id, next_type->type_xml);
+        // g_debug("Trying to resolve pointer id %d with type %d",
+        //        next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */
@@ -314,8 +314,8 @@ int resolve_function(types_t **head)
         if (next_type->type != TYPE_FUNCTION)
             continue;
 
-//        g_debug("Trying to resolve function id %d with type %d\n",
-//                next_type->id, next_type->type_xml);
+        // g_debug("Trying to resolve function id %d with type %d",
+        //        next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */

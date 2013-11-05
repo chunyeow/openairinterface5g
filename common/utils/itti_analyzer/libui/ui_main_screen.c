@@ -1,4 +1,3 @@
-
 #if HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -47,8 +46,8 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
                 break;
 
             case 'h':
-                ui_help();
-                exit(0);
+                ui_help ();
+                exit (0);
                 break;
 
             case 'i':
@@ -60,10 +59,10 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
                 break;
 
             case 'p':
-                 ui_main_data.port_entry_init = optarg;
-                 break;
+                ui_main_data.port_entry_init = optarg;
+                break;
 
-             default:
+            default:
                 ui_help ();
                 exit (-1);
                 break;
@@ -71,44 +70,9 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
     }
 }
 
-int ui_gtk_initialize(int argc, char *argv[])
+static int ui_idle_callback(gpointer data)
 {
-    GtkWidget *vbox;
-
-    memset(&ui_main_data, 0, sizeof(ui_main_data_t));
-
-    /* Set some default initialization value */
-    ui_main_data.ip_entry_init = "127.0.0.1";
-    ui_main_data.port_entry_init = "10007";
-
-    ui_gtk_parse_arg(argc, argv);
-
-    /* Create the main window */
-    ui_main_data.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    ui_init_filters(TRUE, FALSE);
-
-    gtk_window_set_position(GTK_WINDOW(ui_main_data.window), GTK_WIN_POS_CENTER);
-    gtk_window_set_default_size(GTK_WINDOW(ui_main_data.window), 1024, 800);
-#if defined(PACKAGE_STRING)
-    gtk_window_set_title(GTK_WINDOW(ui_main_data.window), PACKAGE_STRING);
-#else
-    gtk_window_set_title(GTK_WINDOW(ui_main_data.window), "itti debugger");
-#endif
-    gtk_window_set_resizable(GTK_WINDOW(ui_main_data.window), TRUE);
-
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-    CHECK_FCT(ui_menu_bar_create(vbox));
-    CHECK_FCT(ui_toolbar_create(vbox));
-//     CHECK_FCT(ui_tree_view_create(ui_main_data.window, vbox));
-    CHECK_FCT(ui_notebook_create(vbox));
-
-    gtk_container_add(GTK_CONTAINER(ui_main_data.window), vbox);
-    /* Assign the destroy event */
-    g_signal_connect(ui_main_data.window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
-
-    /* Show the application window */
-    gtk_widget_show_all (ui_main_data.window);
+    g_debug("Entering idle state");
 
     /* Read filters file */
     if (ui_main_data.filters_file_name != NULL)
@@ -119,8 +83,54 @@ int ui_gtk_initialize(int argc, char *argv[])
     /* Read messages file */
     if (ui_main_data.messages_file_name != NULL)
     {
-        ui_messages_read(ui_main_data.messages_file_name);
+        ui_messages_read (ui_main_data.messages_file_name);
     }
+
+    /* One shot execution */
+    return FALSE;
+}
+
+int ui_gtk_initialize(int argc, char *argv[])
+{
+    GtkWidget *vbox;
+
+    memset (&ui_main_data, 0, sizeof(ui_main_data_t));
+
+    /* Set some default initialization value */
+    ui_main_data.ip_entry_init = "127.0.0.1";
+    ui_main_data.port_entry_init = "10007";
+
+    ui_gtk_parse_arg (argc, argv);
+
+    /* Create the main window */
+    ui_main_data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    ui_init_filters (TRUE, FALSE);
+
+    gtk_window_set_position (GTK_WINDOW(ui_main_data.window), GTK_WIN_POS_CENTER);
+    gtk_window_set_default_size (GTK_WINDOW(ui_main_data.window), 1024, 800);
+#if defined(PACKAGE_STRING)
+    gtk_window_set_title(GTK_WINDOW(ui_main_data.window), PACKAGE_STRING);
+#else
+    gtk_window_set_title (GTK_WINDOW(ui_main_data.window), "itti debugger");
+#endif
+    gtk_window_set_resizable (GTK_WINDOW(ui_main_data.window), TRUE);
+
+    vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+
+    CHECK_FCT(ui_menu_bar_create(vbox));
+    CHECK_FCT(ui_toolbar_create(vbox));
+//     CHECK_FCT(ui_tree_view_create(ui_main_data.window, vbox));
+    CHECK_FCT(ui_notebook_create(vbox));
+
+    gtk_container_add (GTK_CONTAINER(ui_main_data.window), vbox);
+
+    /* Assign the destroy event */
+    g_signal_connect(ui_main_data.window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+
+    /* Show the application window */
+    gtk_widget_show_all (ui_main_data.window);
+
+    g_idle_add (ui_idle_callback, NULL);
 
     return RC_OK;
 }

@@ -107,7 +107,7 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, char *name)
             break;
 
         default:
-            g_error("unknown filter type %d", filter);
+            g_warning("unknown filter type %d", filter);
             break;
     }
 }

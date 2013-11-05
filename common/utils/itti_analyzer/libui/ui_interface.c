@@ -22,7 +22,7 @@ gboolean ui_callback_on_pipe_notification(
     /* avoid reentrancy problems and stack overflow */
     g_source_remove(pipe_input->pipe_input_id);
 
-//     g_debug("Received new data on pipe %d", pipe_input->pipe_input_id);
+    g_debug("Received new data on pipe %d", pipe_input->pipe_input_id);
 
     if (pipe_input->input_cb(pipe_input->source_fd, pipe_input->user_data)) {
         /* restore pipe handler */
@@ -82,7 +82,7 @@ int ui_pipe_write_message(int pipe_fd, const uint16_t message_type,
 
     ret = write(pipe_fd, &pipe_input_header, sizeof(pipe_input_header));
     if (ret < 0) {
-        g_debug("Failed to write header to pipe: %s", g_strerror(errno));
+        g_warning("Failed to write header to pipe: %s", g_strerror(errno));
         return ret;
     }
 
@@ -90,7 +90,7 @@ int ui_pipe_write_message(int pipe_fd, const uint16_t message_type,
     if (message_size > 0) {
         ret = write(pipe_fd, message, message_size);
         if (ret < 0) {
-            g_debug("Failed to write message of size %u at 0x%p to pipe: %s",
+            g_warning("Failed to write message of size %u at 0x%p to pipe: %s",
                     message_size, message, g_strerror(errno));
             return ret;
         }

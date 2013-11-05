@@ -194,7 +194,7 @@ int buffer_has_enouch_data(buffer_t *buffer, uint32_t offset, uint32_t to_get)
         return -1;
     underflow = (buffer->size_bytes >= ((offset + to_get) / 8)) ? 0 : -1;
     if (underflow && debug_buffers)
-        g_debug("Detected Underflow offset %u, to_get %u, buffer size %u\n",
-                offset, to_get, buffer->size_bytes);
+        g_warning("Detected Underflow offset %u, to_get %u, buffer size %u\n",
+                  offset, to_get, buffer->size_bytes);
     return underflow;
 }
