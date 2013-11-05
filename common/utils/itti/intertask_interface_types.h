@@ -72,7 +72,7 @@ typedef enum
 #include <messages_def.h>
 #undef MESSAGE_DEF
 
-    MESSAGES_ID_MAX, MESSAGES_ID_END = MESSAGES_ID_MAX
+    MESSAGES_ID_MAX,
 } MessagesIds;
 
 //! Thread id of each task
