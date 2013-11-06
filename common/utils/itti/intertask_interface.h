@@ -34,6 +34,10 @@
  * @{
  */
 
+#if defined(ENABLE_EVENT_FD)
+# include <sys/epoll.h>
+#endif
+
 #ifndef INTERTASK_INTERFACE_H_
 #define INTERTASK_INTERFACE_H_
 
@@ -95,6 +99,28 @@ int itti_send_broadcast_message(MessageDef *message_p);
  @returns -1 on failure, 0 otherwise
  **/
 int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message);
+
+#if defined(ENABLE_EVENT_FD)
+/** \brief Add a new fd to monitor.
+ * NOTE: it is up to the user to read data associated with the fd
+ *  \param task_id Task ID of the receiving task
+ *  \param fd The file descriptor to monitor
+ **/
+void itti_subscribe_event_fd(task_id_t task_id, int fd);
+
+/** \brief Remove a fd from the list of fd to monitor
+ *  \param task_id Task ID of the task
+ *  \param fd The file descriptor to remove
+ **/
+void itti_unsubscribe_event_fd(task_id_t task_id, int fd);
+
+/** \brief Return the list of events excluding the fd associated with itti
+ *  \param task_id Task ID of the task
+ *  \param events events list
+ *  @returns number of events to handle
+ **/
+int itti_get_events(task_id_t task_id, struct epoll_event **events);
+#endif
 
 /** \brief Retrieves a message in the queue associated to task_id.
  * If the queue is empty, the thread is blocked till a new message arrives.
