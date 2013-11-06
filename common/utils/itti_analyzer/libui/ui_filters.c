@@ -130,19 +130,23 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, char *name)
     }
 }
 
-static gboolean ui_item_enabled(ui_filter_t *filter, uint32_t value)
+static gboolean ui_item_enabled(ui_filter_t *filter, char *name)
 {
-    int item = ui_search_id (filter, value);
+    int item;
 
-    if (item < filter->used)
+    if (name != NULL)
     {
-        return (filter->items[item].enabled ? TRUE : FALSE);
-    }
+        item = ui_search_name (filter, name);
 
+        if (item < filter->used)
+        {
+            return (filter->items[item].enabled ? TRUE : FALSE);
+        }
+    }
     return (FALSE);
 }
 
-gboolean ui_filters_message_enabled(uint32_t message, uint32_t origin_task, uint32_t destination_task)
+gboolean ui_filters_message_enabled(char *message, char *origin_task, char *destination_task)
 {
     gboolean result;
 
@@ -159,7 +163,7 @@ static void write_filter(FILE *filter_file, ui_filter_t *filter)
     fprintf (filter_file, "  <%s>\n", filter->name);
     for (item = 0; item < filter->used; item++)
     {
-        fprintf (filter_file, "    %s=\"%d\"\n", filter->items[item].name, filter->items[item].enabled ? 1 : 0);
+        fprintf (filter_file, "    <%s enabled=\"%d\"/>\n", filter->items[item].name, filter->items[item].enabled ? 1 : 0);
     }
     fprintf (filter_file, "  </%s>\n", filter->name);
 }

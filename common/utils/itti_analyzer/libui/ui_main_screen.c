@@ -134,3 +134,11 @@ int ui_gtk_initialize(int argc, char *argv[])
 
     return RC_OK;
 }
+
+void ui_gtk_flush_events(void)
+{
+    while (gtk_events_pending ())
+    {
+        gtk_main_iteration();
+    }
+}

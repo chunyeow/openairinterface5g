@@ -49,4 +49,6 @@ extern ui_main_data_t ui_main_data;
 
 int ui_gtk_initialize(int argc, char *argv[]);
 
+void ui_gtk_flush_events(void);
+
 #endif /* UI_MAIN_SCREEN_H_ */

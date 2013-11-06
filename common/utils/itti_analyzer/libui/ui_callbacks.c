@@ -106,7 +106,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     ui_main_data.nb_message_received++;
 
     /* Check if no signal was selected in the list or if it was the last signal */
-    if ((ui_main_data.path_last == NULL) || (gtk_tree_path_compare(ui_main_data.path_last, path) == 0))
+    if ((ui_main_data.path_last == NULL) || (path == NULL) || (gtk_tree_path_compare(ui_main_data.path_last, path) == 0))
     {
         /* Advance to the new last signal */
         ui_callback_signal_go_to_last (NULL, NULL, NULL);
@@ -131,6 +131,8 @@ static gboolean ui_handle_update_signal_list(gint fd, void *data, size_t data_le
     g_list_free (signal_list_message->signal_list);
     /* Free the message */
     free (signal_list_message);
+
+    ui_gtk_flush_events();
 
     return TRUE;
 }
@@ -313,7 +315,11 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
     gboolean enabled;
 
     enabled = gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(widget));
-    filter_entry->enabled = enabled;
+    if (filter_entry->enabled != enabled)
+    {
+        filter_entry->enabled = enabled;
+        ui_tree_view_refilter();
+    }
     // g_debug("ui_callback_on_menu_item_selected occurred %x %x %s %d", (int) widget, (int) data, filter_entry->name, enabled);
 
     return TRUE;

@@ -53,12 +53,14 @@ static void ui_change_cursor(gboolean busy)
         gdk_window_set_cursor (window, cursor);
         gdk_display_sync(display);
         gdk_cursor_unref (cursor);
-        gtk_widget_set_sensitive (ui_main_data.window, FALSE);
+        // gtk_widget_set_sensitive (ui_main_data.window, FALSE);
+        ui_gtk_flush_events();
     }
     else
     {
         gdk_window_set_cursor (window, NULL);
-        gtk_widget_set_sensitive (ui_main_data.window, TRUE);
+        // gtk_widget_set_sensitive (ui_main_data.window, TRUE);
+        ui_gtk_flush_events();
     }
 }
 

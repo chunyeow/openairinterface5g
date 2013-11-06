@@ -20,4 +20,6 @@ void ui_tree_view_destroy_list(GtkWidget *list);
 
 void ui_tree_view_select_row(gint row, GtkTreePath **path);
 
+void ui_tree_view_refilter(void);
+
 #endif /* UI_TREE_VIEW_H_ */

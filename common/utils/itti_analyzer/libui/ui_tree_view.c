@@ -10,15 +10,43 @@
 #include "ui_main_screen.h"
 #include "ui_tree_view.h"
 #include "ui_callbacks.h"
+#include "ui_filters.h"
 
 #include "ui_signal_dissect_view.h"
+
+typedef struct
+{
+    GtkListStore *store;
+    GtkTreeModelFilter *filtered;
+} ui_store_t;
+
+static ui_store_t ui_store;
+
+static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, ui_store_t *store)
+{
+    char *message;
+    char *origin_task;
+    char *destination_task;
+    gboolean enabled;
+
+    gtk_tree_model_get (model, iter, COL_SIGNAL, &message, COL_FROM_TASK, &origin_task, COL_TO_TASK, &destination_task,
+                        -1);
+    enabled = ui_filters_message_enabled (message, origin_task, destination_task);
+
+    // g_debug("%x %x %s %s %s %d", model, iter, message, origin_task, destination_task, enabled);
+
+    g_free(message);
+    g_free(origin_task);
+    g_free(destination_task);
+
+    return enabled;
+}
 
 static void
 ui_tree_view_init_list(GtkWidget *list)
 {
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
-    GtkListStore *store;
 
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes(
@@ -43,36 +71,35 @@ ui_tree_view_init_list(GtkWidget *list)
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_TO_TASK);
 
-    store = gtk_list_store_new(NUM_COLS,
-                               G_TYPE_STRING,
-                               G_TYPE_STRING,
-                               G_TYPE_STRING,
-                               G_TYPE_STRING,
-                               /* HACK: add a reference to the buffer here
-                                * to avoid maintining multiple lists.
-                                * The reference is not displayed
-                                */
-                               G_TYPE_POINTER);
+    ui_store.store = gtk_list_store_new(NUM_COLS,
+                                       G_TYPE_STRING,
+                                       G_TYPE_STRING,
+                                       G_TYPE_STRING,
+                                       G_TYPE_STRING,
+                                       /* HACK: add a reference to the buffer here
+                                        * to avoid maintining multiple lists.
+                                        * The reference is not displayed
+                                        */
+                                       G_TYPE_POINTER);
 
-    gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(store));
+    ui_store.filtered = GTK_TREE_MODEL_FILTER (gtk_tree_model_filter_new (GTK_TREE_MODEL (ui_store.store), NULL));
+    gtk_tree_model_filter_set_visible_func (ui_store.filtered,
+                                            (GtkTreeModelFilterVisibleFunc) ui_tree_filter_messages,
+                                            &ui_store, NULL);
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(list), GTK_TREE_MODEL(ui_store.filtered));
 
     gtk_tree_view_columns_autosize(GTK_TREE_VIEW(list));
-
-    g_object_unref(store);
 }
 
 static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *message_number,
                         const gchar *signal_name, const char *origin_task,
                         const char *to_task, gpointer buffer)
 {
-    GtkListStore *store;
     GtkTreeIter iter;
 
-    store = GTK_LIST_STORE(gtk_tree_view_get_model
-        (GTK_TREE_VIEW(list)));
-
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter,
+    gtk_list_store_append(ui_store.store, &iter);
+    gtk_list_store_set(ui_store.store, &iter,
                        /* Columns */
                        COL_MSG_NUM    , message_number,
                        COL_SIGNAL     , signal_name,
@@ -85,13 +112,9 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *message_numbe
 
 void ui_tree_view_destroy_list(GtkWidget *list)
 {
-    GtkListStore *store;
-
     g_assert(list != NULL);
 
-    store = GTK_LIST_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(list)));
-
-    gtk_list_store_clear(store);
+    gtk_list_store_clear(ui_store.store);
 
     /* Reset number of messages */
     ui_main_data.nb_message_received = 0;
@@ -169,4 +192,9 @@ void ui_tree_view_select_row(gint row, GtkTreePath **path)
     {
         *path = path_row;
     }
+}
+
+void ui_tree_view_refilter(void)
+{
+    gtk_tree_model_filter_refilter (ui_store.filtered);;
 }
