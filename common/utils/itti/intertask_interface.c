@@ -262,10 +262,10 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 
 #if defined(ENABLE_EVENT_FD)
     {
-        uint64_t message_ptr = 0;
+        uint64_t sem_counter = 1;
 
         /* Call to write for an event fd must be of 8 bytes */
-        write(itti_desc.tasks[thread_id].task_event_fd, &message_ptr, sizeof(message_ptr));
+        write(itti_desc.tasks[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
 
         lfds611_queue_enqueue(itti_desc.tasks[thread_id].message_queue, new);
     }
