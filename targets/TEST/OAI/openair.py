@@ -121,4 +121,27 @@ class openair(core):
         except Error, val:
             print "Error:", val
             
-    
+    def rm_driver(self,oai,user, pw):
+        try:
+            if user == 'root' : 
+                #oai.send_nowait('rmmod nasmesh;')
+                os.system('rmmod nasmesh;')
+            else :
+                #oai.send_nowait('echo '+pw+ ' | sudo -S rmmod nasmesh;')
+                os.system('echo '+pw+ ' | sudo -S rmmod nasmesh;')
+        except Error, val:
+            print "Error removing oai network driver module:", val
+   
+    def driver(self,oai,user,pw):
+        pwd = oai.send_recv('pwd') 
+        oai.send('cd $OPENAIR_TARGETS;')   
+        oai.send('cd SIMU/USER;')   
+        try:
+            if user == 'root' : 
+                oai.send_nowait('insmod ./nasmesh.ko;')
+            else :
+                oai.send_nowait('echo '+pw+ ' | sudo -S insmod ./nasmesh.ko;')
+                
+            oai.send_nowait('cd '+ pwd)  
+        except Error, val:
+            print "Error inserting oai network driver module:", val

@@ -38,14 +38,14 @@ import log
 import openair
 import core
 
-makerr1 = 'make: ***'
+makerr1 = '***'
 makerr2 = 'Error 1'
 
 def execute(oai, user, pw, logfile):
     
     case = '01'
     oai.send('cd $OPENAIR_TARGETS;')   
-  
+    
     try:
         test = '00'
         name = 'Check oai.svn.add'
@@ -64,7 +64,7 @@ def execute(oai, user, pw, logfile):
         log.ok(case, test, name, conf, '', logfile)
     
     oai.send('cd SIMU/USER;')   
-  
+    
     try:
         test = '01'
         name = 'Compile oai.rel8.make'
@@ -88,15 +88,10 @@ def execute(oai, user, pw, logfile):
         oai.send('make cleanall;')
         oai.send('rm -f ./oaisim.rel8.nas;')
         oai.send('rm -f ./nasmesh;')
+        oai.send('make nasmesh_clean;')
+        oai.send_expect_false('make nasmesh_fix;', makerr1,  60)
         oai.send_expect_false('make NAS=1 -j4;', makerr1,  1500)
         oai.send('cp ./oaisim ./oaisim.rel8.nas;')
-        if user == 'root' : 
-            oai.send_nowait('rmmod nasmesh;')
-            oai.send_expect_false('make nasmesh_fix;', makerr1,  60)
-        else :
-            oai.send_nowait('echo '+pw+ ' | sudo -S rmmod nasmesh;')
-            oai.send_expect_false('make test_nasmesh_fix;', makerr1,  60)
-            oai.send_nowait('echo '+pw+ ' | sudo -S insmod ./nasmesh.ko;')
         
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
@@ -183,8 +178,10 @@ def execute(oai, user, pw, logfile):
         #oai.send('cp ./oaisim ./oaisim.rel8.cellular.rg;')
     #except log.err, e:
         #log.fail(case, test, name, conf, e.value, diag, logfile)
+        #log.skip(case, test, name, conf, '', '', logfile)
     #else:
         #log.ok(case, test, name, conf, '', logfile)
+        #log.skip(case, test, name, conf, '', '', logfile)
 
     #try:
         #test = '08'
@@ -199,12 +196,14 @@ def execute(oai, user, pw, logfile):
         #oai.send('cp ./oaisim ./oaisim.rel8.cellular.mt;')
     #except log.err, e:
         #log.fail(case, test, name, conf, e.value, diag, logfile)
+        #log.skip(case, test, name, conf, '', '', logfile)
     #else:
         #log.ok(case, test, name, conf, '', logfile)
+        #log.skip(case, test, name, conf, '', '', logfile)
 
     #try:
         #test = '09'
-        #name = 'Compile nas_sim_rg_cellular'
+        #name = 'Compile oai.rel8.cellular.nas.eNB'
         #conf = 'make nas_sim_rg_cellular'
         #diag = 'check the compilation errors for NAS SIM RRC Cellular (node RG)'
         #oai.send('make clean;')
@@ -215,12 +214,14 @@ def execute(oai, user, pw, logfile):
         #oai.send_expect_false('make nas_sim_rg_cellular -j4;', makerr1,  1500)
     #except log.err, e:
         #log.fail(case, test, name, conf, e.value, diag, logfile)
+        #log.skip(case, test, name, conf, '', '', logfile)
     #else:
         #log.ok(case, test, name, conf, '', logfile)
-
+        #log.skip(case, test, name, conf, '', '', logfile)
+    
     #try:
         #test = '10'
-        #name = 'Compile nas_sim_mt_cellular'
+        #name = 'Compile oai.rel8.cellular.nas.UE'
         #conf = 'make nas_sim_mt_cellular'
         #diag = 'check the compilation errors for NAS SIM RRC Cellular (node MT)'
         #oai.send('make clean;')
@@ -231,9 +232,11 @@ def execute(oai, user, pw, logfile):
         #oai.send_expect_false('make nas_sim_mt_cellular -j4;', makerr1,  1500)
     #except log.err, e:
         #log.fail(case, test, name, conf, e.value, diag, logfile)
+        #log.skip(case, test, name, conf, '', '', logfile)
     #else:
         #log.ok(case, test, name, conf, '', logfile)
-
+        #log.skip(case, test, name, conf, '', '', logfile)
+        
     try:
         test = '11'
         name = 'Compile oai.rel8.itti.make' 

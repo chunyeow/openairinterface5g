@@ -1366,7 +1366,7 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
     LOG_E(MAC,"RRC Loss of synch, returning PHY_RESYNCH\n");
     return(PHY_RESYNCH);
   case RRC_Handover_failed:
-    LOG_D(MAC,"Handover failure for UE %d eNB_index %d\n",Mod_id,eNB_index);
+    LOG_N(MAC,"Handover failure for UE %d eNB_index %d\n",Mod_id,eNB_index);
     //Invalid...need to add another MAC UE state for re-connection procedure
     mac_xface->phy_config_afterHO_ue(Mod_id,eNB_index,(MobilityControlInfo_t *)NULL,1);
     //return(3);
@@ -1388,7 +1388,7 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
       LOG_E(MAC,"FATAL: radioResourceConfigCommon is NULL!!!\n");
       mac_xface->macphy_exit("");
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-      return(RRC_OK); // RRC_OK ???
+      return(RRC_OK); 
     }
 
     LOG_I(MAC,"Frame %d: Contention resolution timer %d/%d\n",frame,UE_mac_inst[Mod_id].RA_contention_resolution_cnt,

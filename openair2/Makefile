@@ -205,6 +205,9 @@ emul_rt:
 
 clean:
 	(cd NAS/DRIVER/MESH && $(MAKE) clean)
+	(cd NAS/DRIVER/LITE && $(MAKE) clean)
+	rm -rf NAS/DRIVER/MESH/RB_TOOL/rb_tool
+	rm -rf NAS/DRIVER/LITE/RB_TOOL/rb_tool
 
 cleanall:
 	find -name *.o -delete -print

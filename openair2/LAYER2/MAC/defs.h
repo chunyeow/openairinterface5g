@@ -711,6 +711,8 @@ typedef struct{
   u32 subframe;
   /// C-RNTI of UE
   u16 crnti;
+  /// C-RNTI of UE before HO
+  uint16_t crnti_before_ho; ///user id (rnti) of connected UEs
   /// uplink active flag
   uint8_t ul_active;
   /// pointer to RRC PHY configuration 

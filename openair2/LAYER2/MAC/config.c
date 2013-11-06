@@ -316,7 +316,8 @@ int rrc_mac_config_req(u8 Mod_id,u8 eNB_flag,u8 UE_id,u8 eNB_index,
 	       (void *)mobilityControlInfo->radioResourceConfigCommon.ul_CyclicPrefixLength,
 	       sizeof(UL_CyclicPrefixLength_t));
       }
-      
+      // store the previous rnti in case of failure, and set thenew rnti
+      UE_mac_inst[Mod_id].crnti_before_ho = UE_mac_inst[Mod_id].crnti;
       UE_mac_inst[Mod_id].crnti = ((mobilityControlInfo->newUE_Identity.buf[0])|(mobilityControlInfo->newUE_Identity.buf[1]<<8));
       LOG_I(MAC,"[UE %d] Received new identity %x from %d\n", Mod_id, UE_mac_inst[Mod_id].crnti, eNB_index);
       UE_mac_inst[Mod_id].rach_ConfigDedicated = malloc(sizeof(*mobilityControlInfo->rach_ConfigDedicated));

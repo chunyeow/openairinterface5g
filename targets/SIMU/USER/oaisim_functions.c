@@ -416,7 +416,7 @@ void check_and_adjust_params() {
   LOG_I(EMU,"[INIT] Starting NAS netlink interface\n");
   ret = netlink_init();
   if (ret < 0)
-    LOG_E(EMU,"[INIT] Netlink not available, careful ...\n");
+    LOG_W(EMU,"[INIT] Netlink not available, careful ...\n");
 
   if (ethernet_flag == 1) {
     oai_emulation.info.master[oai_emulation.info.master_id].nb_ue = oai_emulation.info.nb_ue_local + oai_emulation.info.nb_rn_local;

@@ -93,6 +93,7 @@ def execute(oai, user, pw, logfile):
         test = '03'
         name = 'Run oai.rel8.abs.ping'
         diag = 'Data-plane is not working normally, check the OAI protocol stack, OAI driver, and normal operation of the OS'
+        oai.driver(oai,user,pw)
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -u' + str(i+1) +' -b'+ str(j+1)
@@ -111,6 +112,8 @@ def execute(oai, user, pw, logfile):
                     oai.send_nowait('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas;')
                     time.sleep(1)
                     oai.send_nowait('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas;')
+        
+        oai.rm_driver(oai,user,pw)
 
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
