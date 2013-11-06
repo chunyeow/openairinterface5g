@@ -76,6 +76,8 @@ typedef struct itti_queue_item_s {
 typedef struct {
     int      sd;
     uint32_t last_message_number;
+
+    pthread_mutex_t client_lock;
 } itti_client_desc_t;
 
 typedef struct itti_desc_s {
@@ -289,6 +291,11 @@ int itti_dump_queue_message(message_number_t message_number,
     pthread_mutex_unlock(&itti_queue.queue_mutex);
 
     for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
+        if (pthread_mutex_trylock(&itti_queue.itti_clients[i].client_lock) == 0) {
+            pthread_mutex_unlock(&itti_queue.itti_clients[i].client_lock);
+        } else {
+            continue;
+        }
         if (itti_queue.itti_clients[i].sd == -1)
             continue;
         itti_dump_send_message(itti_queue.itti_clients[i].sd, new);
@@ -353,11 +360,11 @@ static void *itti_dump_socket(void *arg_p)
     servaddr.sin_port        = htons(ITTI_PORT);
 
     if (bind(itti_listen_socket, (struct sockaddr *) &servaddr,
-             sizeof(servaddr)) < 0 ) {
+             sizeof(servaddr)) < 0) {
         ITTI_ERROR("Bind failed (%d:%s)\n", errno, strerror(errno));
         pthread_exit(NULL);
     }
-    if (listen(itti_listen_socket, 5) < 0 ) {
+    if (listen(itti_listen_socket, 5) < 0) {
         ITTI_ERROR("Listen failed (%d:%s)\n", errno, strerror(errno));
         pthread_exit(NULL);
     }
@@ -376,7 +383,7 @@ static void *itti_dump_socket(void *arg_p)
 
         memcpy(&working_set, &master_set, sizeof(master_set));
 
-        ITTI_DEBUG("Stuck on select\n");
+//         ITTI_DEBUG("Stuck on select\n");
 
         /* No timeout: select blocks till a new event has to be handled
          * on sd's.
@@ -484,6 +491,9 @@ int itti_dump_handle_new_connection(int sd, const char *xml_definition, uint32_t
         ITTI_DEBUG("Found place to store new connection: %d\n", i);
 
         DevCheck(i < ITTI_DUMP_MAX_CON, i, ITTI_DUMP_MAX_CON, sd);
+
+        pthread_mutex_lock(&itti_queue.itti_clients[i].client_lock);
+
         itti_queue.itti_clients[i].sd = sd;
         itti_queue.nb_connected++;
 
@@ -502,6 +512,7 @@ int itti_dump_handle_new_connection(int sd, const char *xml_definition, uint32_t
             itti_dump_send_message(sd, item);
         }
         pthread_mutex_unlock(&itti_queue.queue_mutex);
+        pthread_mutex_unlock(&itti_queue.itti_clients[i].client_lock);
     } else {
         ITTI_DEBUG("Socket %d rejected\n", sd);
         /* We have reached max number of users connected...
@@ -549,6 +560,9 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     for(i = 0; i < ITTI_DUMP_MAX_CON; i++) {
         itti_queue.itti_clients[i].sd = -1;
         itti_queue.itti_clients[i].last_message_number = 0;
+
+        /* Init per user lock */
+        pthread_mutex_init(&itti_queue.itti_clients[i].client_lock, NULL);
     }
     if (pthread_create(&itti_queue.itti_acceptor_thread, NULL, &itti_dump_socket,
         (void *)messages_definition_xml) < 0) {
