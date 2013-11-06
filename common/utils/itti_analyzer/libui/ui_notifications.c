@@ -52,7 +52,7 @@ static void ui_change_cursor(gboolean busy)
 
         gdk_window_set_cursor (window, cursor);
         gdk_display_sync(display);
-        gdk_cursor_unref (cursor);
+        g_object_unref (cursor);
         // gtk_widget_set_sensitive (ui_main_data.window, FALSE);
         ui_gtk_flush_events();
     }
@@ -218,6 +218,7 @@ int ui_filters_open_file_chooser(void)
     gtk_widget_destroy (filechooser);
     if (accept)
     {
+        result = ui_filters_read(filename);
         g_free (filename);
     }
 
@@ -246,12 +247,9 @@ int ui_filters_save_file_chooser(void)
         char *filename;
 
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-
-        result = ui_write_filters_file(filename);
-
+        result = ui_filters_file_write(filename);
         g_free (filename);
     }
-
     gtk_widget_destroy (filechooser);
 
     return result;

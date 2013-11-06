@@ -662,12 +662,6 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
 
     g_message("Parsing XML definition from buffer ...");
 
-    /* This initialize the library and check potential ABI mismatches
-     * between the version it was compiled for and the actual shared
-     * library used.
-     */
-    LIBXML_TEST_VERSION
-
     doc = xmlReadMemory(xml_buffer, size, NULL, NULL, 0);
 
     if (doc == NULL) {
@@ -682,12 +676,6 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
 int xml_parse_file(const char *filename) {
     xmlDocPtr doc; /* the resulting document tree */
 
-    /* This initialize the library and check potential ABI mismatches
-     * between the version it was compiled for and the actual shared
-     * library used.
-     */
-    LIBXML_TEST_VERSION
-
     if (filename == NULL) {
         return -1;
     }
@@ -696,7 +684,7 @@ int xml_parse_file(const char *filename) {
 
     if (doc == NULL) {
         g_warning("Failed to parse %s", filename);
-//         ui_notification_dialog(DIALOG_WARNING, "Failed to parse file %s", filename);
+//         ui_notification_dialog(DIALOG_WARNING, "Failed to parse file \"%s\"", filename);
         return RC_FAIL;
     }
 
@@ -717,7 +705,7 @@ static int update_filters() {
         {
             if (strcmp (types->name, "MESSAGES_ID_MAX") != 0)
             {
-                ui_filters_add (FILTER_MESSAGES, types->init_value, types->name);
+                ui_filters_add (FILTER_MESSAGES, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
             }
             types = types->next;
         }
@@ -729,7 +717,7 @@ static int update_filters() {
         types = types->child->child;
 
         while (types != NULL) {
-            ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name);
+            ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
             types = types->next;
         }
     }
@@ -740,7 +728,7 @@ static int update_filters() {
         types = types->child->child;
 
         while (types != NULL) {
-            ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name);
+            ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
             types = types->next;
         }
     }

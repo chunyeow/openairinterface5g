@@ -5,6 +5,8 @@
 
 #include <gtk/gtk.h>
 
+#include <libxml/parser.h>
+
 #include "xml_parse.h"
 #include "resolvers.h"
 #include "locate_root.h"
@@ -75,6 +77,12 @@ int main(int argc, char *argv[])
         G_LOG_LEVEL_DEBUG       |
         G_LOG_FLAG_FATAL        |
         G_LOG_FLAG_RECURSION);
+
+    /* This initialize the library and check potential ABI mismatches
+     * between the version it was compiled for and the actual shared
+     * library used.
+     */
+    LIBXML_TEST_VERSION
 
     /* Initialize the widget set */
     gtk_init(&argc, &argv);

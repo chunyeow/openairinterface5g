@@ -7,8 +7,13 @@
 
 typedef enum
 {
-    FILTER_MESSAGES, FILTER_ORIGIN_TASKS, FILTER_DESTINATION_TASKS,
+    FILTER_UNKNOWN, FILTER_MESSAGES, FILTER_ORIGIN_TASKS, FILTER_DESTINATION_TASKS,
 } ui_filter_e;
+
+typedef enum
+{
+    ENTRY_ENABLED_FALSE, ENTRY_ENABLED_TRUE, ENTRY_ENABLED_UNDEFINED,
+} ui_entry_enabled_e;
 
 typedef struct
 {
@@ -36,11 +41,13 @@ extern ui_filters_t ui_filters;
 
 int ui_init_filters(int reset, int clear_ids);
 
-void ui_filters_add(ui_filter_e filter, uint32_t value, char *name);
+void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled);
 
-gboolean ui_filters_message_enabled(char *message, char *origin_task, char *destination_task);
+gboolean ui_filters_message_enabled(const char *message, const char *origin_task, const char *destination_task);
 
-int ui_write_filters_file(char *file_name);
+int ui_filters_read(const char *file_name);
+
+int ui_filters_file_write(const char *file_name);
 
 void ui_destroy_filter_menus(void);
 
