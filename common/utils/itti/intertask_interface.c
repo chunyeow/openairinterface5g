@@ -402,14 +402,16 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
         epoll_timeout = -1;
     }
 
-    epoll_ret = epoll_wait(itti_desc.tasks[thread_id].epoll_fd,
-                           itti_desc.tasks[thread_id].events,
-                           itti_desc.tasks[thread_id].nb_events,
-                           epoll_timeout);
+    do {
+        epoll_ret = epoll_wait(itti_desc.tasks[thread_id].epoll_fd,
+                               itti_desc.tasks[thread_id].events,
+                               itti_desc.tasks[thread_id].nb_events,
+                               epoll_timeout);
+    } while (epoll_ret < 0 && errno == EINTR);
 
     if (epoll_ret < 0) {
         ITTI_ERROR("epoll_wait failed for task %s: %s\n",
-        itti_get_task_name(task_id), strerror(errno));
+                   itti_get_task_name(task_id), strerror(errno));
         DevAssert(0 == 1);
     }
     if (epoll_ret == 0 && polling) {

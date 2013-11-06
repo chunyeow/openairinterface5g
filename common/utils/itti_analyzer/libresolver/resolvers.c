@@ -101,7 +101,7 @@ int resolve_struct(types_t **head)
         if (next_type->type != TYPE_STRUCT)
             continue;
 
-//         printf("Trying to resolve struct members %s with type %d\n", next_type->name, next_type->id);
+//         g_debug("Trying to resolve struct members %s with type %d", next_type->name, next_type->id);
 
         /* Struct may have no member */
         if (next_type->members == NULL)
@@ -135,7 +135,8 @@ int resolve_struct(types_t **head)
             /* Pick up the next string available */
             member = strtok(NULL, " _");
         }
-//         next_type->type_hr_display(next_type, 0);
+
+        free(members);
     }
 
     return 0;
@@ -185,7 +186,8 @@ int resolve_union(types_t **head)
             /* Pick up the next string available */
             member = strtok(NULL, " _");
         }
-//         next_type->type_hr_display(next_type, 0);
+
+        free(members);
     }
 
     return 0;
