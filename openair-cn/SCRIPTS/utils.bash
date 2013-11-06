@@ -98,35 +98,25 @@ set_openair() {
     declare -i index
     length_path=${#path}
 
-    index=`echo $path | grep -b -o 'targets' | cut -d: -f1`
-    #echo ${path%$token*}
-    if [[ $index -lt $length_path  && index -gt 0 ]]
-       then
-           declare -x OPENAIR_DIR
-           index=`expr $index - 1`
-           openair_path=`echo $path | cut -c1-$index`
-           #openair_path=`echo ${path:0:$index}`
-           export OPENAIR_DIR=$openair_path
-           export OPENAIR1_DIR=$openair_path/openair1
-           export OPENAIR2_DIR=$openair_path/openair2
-           export OPENAIR3_DIR=$openair_path/openair3
-           export OPENAIR_TARGETS=$openair_path/targets
-           return 0
-    fi
-    index=`echo $path | grep -b -o 'openair3' | cut -d: -f1`
-    if [[ $index -lt $length_path  && index -gt 0 ]]
-       then
-           declare -x OPENAIR_DIR
-           index=`expr $index - 1`
-           openair_path=`echo $path | cut -c1-$index`
-           #openair_path=`echo ${path:0:$index}`
-           export OPENAIR_DIR=$openair_path
-           export OPENAIR1_DIR=$openair_path/openair1
-           export OPENAIR2_DIR=$openair_path/openair2
-           export OPENAIR3_DIR=$openair_path/openair3
-           export OPENAIR_TARGETS=$openair_path/targets
-           return 0
-    fi
+    for i in 'openair1' 'openair2' 'openair3' 'openair-cn' 'targets'
+    do
+        index=`echo $path | grep -b -o $i | cut -d: -f1`
+        #echo ${path%$token*}
+        if [[ $index -lt $length_path  && index -gt 0 ]]
+           then
+               declare -x OPENAIR_DIR
+               index=`expr $index - 1`
+               openair_path=`echo $path | cut -c1-$index`
+               #openair_path=`echo ${path:0:$index}`
+               export OPENAIR_DIR=$openair_path
+               export OPENAIR_HOME=$openair_path
+               export OPENAIR1_DIR=$openair_path/openair1
+               export OPENAIR2_DIR=$openair_path/openair2
+               export OPENAIR3_DIR=$openair_path/openair3
+               export OPENAIR_TARGETS=$openair_path/targets
+               return 0
+           fi
+    done
     return -1
 }
 
@@ -180,6 +170,12 @@ assert() {
         echo "File \"$0\", line $lineno"
         exit $E_ASSERT_FAILED
     fi
+}
+
+test_command_install() {
+  # usage: test_command_install searched_binary package_to_be_installed_if_binary_not_found
+  command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it." >&2; apt-get install $2 -y; command -v $1 >/dev/null 2>&1 || { echo_error "Program $1 is not installed. Aborting." >&2; exit 1; };}
+  echo_success "$1 available"
 }
 
 start_openswitch_daemon() {
