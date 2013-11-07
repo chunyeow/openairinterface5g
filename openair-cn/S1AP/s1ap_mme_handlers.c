@@ -253,7 +253,7 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
         }
         eNB_id = (eNB_id_buf[0] << 20) + (eNB_id_buf[1] << 12) +
                  (eNB_id_buf[2] << 4) + ((eNB_id_buf[3] & 0xf0) >> 4);
-        S1AP_DEBUG("home eNB id: %u\n", eNB_id);
+        S1AP_DEBUG("home eNB id: %07x\n", eNB_id);
     } else {
         // Macro eNB = 20 bits
         uint8_t *eNB_id_buf =
@@ -263,7 +263,7 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
         }
         eNB_id = (eNB_id_buf[0] << 12) + (eNB_id_buf[1] << 4) + ((
                      eNB_id_buf[2] & 0xf0) >> 4);
-        S1AP_DEBUG("macro eNB id: %u\n", eNB_id);
+        S1AP_DEBUG("macro eNB id: %05x\n", eNB_id);
     }
 
     config_read_lock(&mme_config);

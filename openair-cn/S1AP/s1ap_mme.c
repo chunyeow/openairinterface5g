@@ -198,12 +198,12 @@ void s1ap_dump_eNB(eNB_description_t *eNB_ref) {
     indent = 0;
     if (eNB_ref == NULL) return;
     eNB_LIST_OUT("");
-    eNB_LIST_OUT("eNB name:          %s", eNB_ref->eNB_name == NULL ? "not present" : eNB_ref->eNB_name);
-    eNB_LIST_OUT("eNB ID:            %d", eNB_ref->eNB_id);
-    eNB_LIST_OUT("SCTP assoc id:     %d", eNB_ref->sctp_assoc_id);
-    eNB_LIST_OUT("SCTP instreams:    %d", eNB_ref->instreams);
-    eNB_LIST_OUT("SCTP outstreams:   %d", eNB_ref->outstreams);
-    eNB_LIST_OUT("UE attache to eNB: %d", eNB_ref->nb_ue_associated);
+    eNB_LIST_OUT("eNB name:          %s",   eNB_ref->eNB_name == NULL ? "not present" : eNB_ref->eNB_name);
+    eNB_LIST_OUT("eNB ID:            %07x", eNB_ref->eNB_id);
+    eNB_LIST_OUT("SCTP assoc id:     %d",   eNB_ref->sctp_assoc_id);
+    eNB_LIST_OUT("SCTP instreams:    %d",   eNB_ref->instreams);
+    eNB_LIST_OUT("SCTP outstreams:   %d",   eNB_ref->outstreams);
+    eNB_LIST_OUT("UE attache to eNB: %d",   eNB_ref->nb_ue_associated);
 
     indent++;
     for (ue_ref = eNB_ref->ue_list_head; ue_ref; ue_ref = ue_ref->next_ue) {

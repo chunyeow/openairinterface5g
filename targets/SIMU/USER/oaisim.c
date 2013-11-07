@@ -395,14 +395,18 @@ void *l2l1_task(void *args_p) {
         char *mme_address_v4 = "192.168.12.87";
         char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
         s1ap_register_eNB_t *s1ap_register_eNB;
+        uint32_t hash;
+
         message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
 
         s1ap_register_eNB = &message_p->msg.s1ap_register_eNB;
 
+        hash = s1ap_generate_eNB_id();
+
         /* Some default/random parameters */
         s1ap_register_eNB->mod_id      = eNB_id;
         /* FIXME: generate unique eNB id */
-        s1ap_register_eNB->eNB_id      = 1 + eNB_id;
+        s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
         s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
         s1ap_register_eNB->tac         = 8;
         s1ap_register_eNB->mcc         = 208;

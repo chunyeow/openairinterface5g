@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <crypt.h>
 
 #include "tree.h"
 #include "queue.h"
@@ -115,6 +116,25 @@ inline struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
     }
 
     return NULL;
+}
+
+uint32_t s1ap_generate_eNB_id(void)
+{
+    char *out;
+    char  hostname[50];
+    int   ret;
+    uint32_t eNB_id;
+
+    /* Retrieve the host name */
+    ret = gethostname(hostname, sizeof(hostname));
+    DevAssert(ret == 0);
+
+    out = crypt(hostname, "eurecom");
+    DevAssert(out != NULL);
+
+    eNB_id = ((out[0] << 24) | (out[1] << 16) | (out[2] << 8) | out[3]);
+
+    return eNB_id;
 }
 
 // int s1ap_run(eNB_mme_desc_t *eNB_desc_p)
@@ -350,7 +370,7 @@ static int s1ap_eNB_generate_s1_setup_request(
     SupportedTAs_Item_t  ta;
     uint8_t             *buffer;
     uint32_t             len;
-    int                  ret;
+    int                  ret = 0;
 
     DevAssert(instance_p != NULL);
     DevAssert(s1ap_mme_data_p != NULL);

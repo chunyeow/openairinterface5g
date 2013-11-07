@@ -41,6 +41,8 @@
 
 void *s1ap_eNB_task(void *arg);
 
+uint32_t s1ap_generate_eNB_id(void);
+
 #endif /* S1AP_ENB_H_ */
 
 /**
