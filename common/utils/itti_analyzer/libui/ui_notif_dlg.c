@@ -16,6 +16,8 @@ int ui_notification_dialog(GtkMessageType type, const char *title, const char *f
 
     vsnprintf (buffer, sizeof(buffer), fmt, args);
 
+    g_warning("%s", buffer);
+
     dialogbox = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_MODAL, type, GTK_BUTTONS_OK, "%s",
                                         buffer);
 

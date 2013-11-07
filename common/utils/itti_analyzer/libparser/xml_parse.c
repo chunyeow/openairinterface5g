@@ -665,8 +665,8 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
     doc = xmlReadMemory(xml_buffer, size, NULL, NULL, 0);
 
     if (doc == NULL) {
-        g_warning("Failed to parse buffer: %s", xml_buffer);
-//         ui_notification_dialog(DIALOG_WARNING, "Fail to parse XML buffer");
+        g_warning("Failed to parse XML buffer: %s", xml_buffer);
+        ui_notification_dialog(GTK_MESSAGE_ERROR, "parse messages format definition", "Fail to parse XML buffer");
         return RC_FAIL;
     }
 
@@ -683,8 +683,7 @@ int xml_parse_file(const char *filename) {
     doc = xmlReadFile (filename, NULL, 0);
 
     if (doc == NULL) {
-        g_warning("Failed to parse %s", filename);
-//         ui_notification_dialog(DIALOG_WARNING, "Failed to parse file \"%s\"", filename);
+        ui_notification_dialog(GTK_MESSAGE_ERROR, "parse messages format definition", "Failed to parse file \"%s\"", filename);
         return RC_FAIL;
     }
 
@@ -786,7 +785,7 @@ int dissect_signal(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_
                    gpointer user_data)
 {
     if (root == NULL) {
-//         ui_notification_dialog(DIALOG_ERROR, "No message XML file provided");
+        g_error("No messages format definition provided");
         return RC_FAIL;
     }
 

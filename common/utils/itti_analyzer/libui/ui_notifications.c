@@ -12,6 +12,7 @@
 #include "ui_main_screen.h"
 #include "ui_menu_bar.h"
 #include "ui_notifications.h"
+#include "ui_notif_dlg.h"
 #include "ui_callbacks.h"
 #include "ui_filters.h"
 
@@ -78,7 +79,7 @@ int ui_messages_read(char *filename)
     source = open (filename, O_RDONLY);
     if (source < 0)
     {
-        g_warning( "Failed to open file \"%s\": %s", filename, g_strerror (errno));
+        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to open file \"%s\": %s", filename, g_strerror (errno));
         result = RC_FAIL;
     }
     else
@@ -93,7 +94,7 @@ int ui_messages_read(char *filename)
 
             if (read_data == -1)
             {
-                g_warning("Failed to read from file \"%s\": %s", filename, g_strerror (errno));
+                ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to read from file \"%s\": %s", filename, g_strerror (errno));
                 result = RC_FAIL;
                 break;
             }
@@ -112,6 +113,7 @@ int ui_messages_read(char *filename)
                     if (read (source, input_data, input_data_length) < 0)
                     {
                         g_warning("Failed to read from file \"%s\": %s", filename, g_strerror (errno));
+                        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to read from file \"%s\": %s", filename, g_strerror (errno));
                         result = RC_FAIL;
                         break;
                     }
@@ -145,7 +147,9 @@ int ui_messages_read(char *filename)
 
                     case ITTI_STATISTIC_MESSAGE_TYPE:
                     default:
-                        g_warning("Received unknow (or not implemented) message from socket type: %d", message_header.message_type);
+                        ui_notification_dialog (GTK_MESSAGE_WARNING, "open messages",
+                                                "Unknown (or not implemented) record type %d in file \"%s\"",
+                                                message_header.message_type, filename);
                         break;
                 }
 
