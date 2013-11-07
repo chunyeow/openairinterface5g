@@ -35,6 +35,8 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
                                  uint32_t               stream,
                                  struct s1ap_message_s *message_p);
 
+int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p);
+
 // int s1ap_eNB_initial_ctxt_resp(eNB_mme_desc_t                 *eNB_desc_p,
 //                                s1ap_initial_ctxt_setup_resp_t *initial_ctxt_resp_p);
 

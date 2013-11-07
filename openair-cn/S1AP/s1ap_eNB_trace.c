@@ -30,6 +30,8 @@
 
 #include <stdint.h>
 
+#include "assertions.h"
+
 #include "intertask_interface.h"
 
 #include "s1ap_eNB_default_values.h"
@@ -42,95 +44,81 @@
 #include "s1ap_eNB_ue_context.h"
 #include "s1ap_eNB_encoder.h"
 #include "s1ap_eNB_trace.h"
+#include "s1ap_eNB_itti_messaging.h"
 
-#include "sctp_primitives_client.h"
+static
+void s1ap_eNB_generate_trace_failure(struct s1ap_eNB_ue_context_s *ue_desc_p,
+                                     E_UTRAN_Trace_ID_t           *trace_id,
+                                     Cause_t                      *cause_p)
+{
+    s1ap_message message;
+    TraceFailureIndicationIEs_t *trace_failure_p;
+    uint8_t  *buffer;
+    uint32_t  length;
 
-#include "assertions.h"
+    DevAssert(ue_desc_p != NULL);
+    DevAssert(trace_id  != NULL);
+    DevAssert(cause_p   != NULL);
 
-// int s1ap_eNB_generate_trace_failure(sctp_data_t        *sctp_data_p,
-//                                     int32_t             stream,
-//                                     uint32_t            eNB_ue_s1ap_id,
-//                                     uint32_t            mme_ue_s1ap_id,
-//                                     E_UTRAN_Trace_ID_t *trace_id,
-//                                     Cause_t            *cause_p)
-// {
-//     s1ap_message message;
-//     TraceFailureIndicationIEs_t *trace_failure_p;
-//     uint8_t  *buffer;
-//     uint32_t  length;
-//     int       ret;
-// 
-//     DevAssert(sctp_data_p != NULL);
-// 
-//     memset(&message, 0, sizeof(s1ap_message));
-// 
-//     trace_failure_p = &message.msg.traceFailureIndicationIEs;
-// 
-//     trace_failure_p->mme_ue_s1ap_id = mme_ue_s1ap_id;
-//     trace_failure_p->eNB_UE_S1AP_ID = eNB_ue_s1ap_id;
-// 
-//     memcpy(&trace_failure_p->e_UTRAN_Trace_ID, trace_id, sizeof(E_UTRAN_Trace_ID_t));
-//     memcpy(&trace_failure_p->cause, cause_p, sizeof(Cause_t));
-// 
-//     if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
-//         return -1;
-//     }
-//     if ((ret = sctp_send_msg(sctp_data_p, S1AP_SCTP_PPID,
-//                              stream, buffer, length)) < 0) {
-//         S1AP_ERROR("Failed to send Trace failure\n");
-//     }
-//     free(buffer);
-//     return ret;
-// }
+    memset(&message, 0, sizeof(s1ap_message));
+
+    trace_failure_p = &message.msg.traceFailureIndicationIEs;
+
+    trace_failure_p->mme_ue_s1ap_id = ue_desc_p->mme_ue_s1ap_id;
+    trace_failure_p->eNB_UE_S1AP_ID = ue_desc_p->eNB_ue_s1ap_id;
+
+    memcpy(&trace_failure_p->e_UTRAN_Trace_ID, trace_id, sizeof(E_UTRAN_Trace_ID_t));
+    memcpy(&trace_failure_p->cause, cause_p, sizeof(Cause_t));
+
+    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+        return;
+    }
+
+    s1ap_eNB_itti_send_sctp_data_req(ue_desc_p->mme_ref->assoc_id, buffer,
+                                     length, ue_desc_p->stream);
+}
 
 int s1ap_eNB_handle_trace_start(uint32_t               assoc_id,
                                 uint32_t               stream,
                                 struct s1ap_message_s *message_p)
-// int s1ap_eNB_handle_trace_start(eNB_mme_desc_t *eNB_desc_p,
-//                                 sctp_queue_item_t *packet_p,
-//                                 struct s1ap_message_s *message_p)
 {
     TraceStartIEs_t              *trace_start_p;
     struct s1ap_eNB_ue_context_s *ue_desc_p;
+    struct s1ap_eNB_mme_data_s   *mme_ref_p;
 
     DevAssert(message_p != NULL);
 
     trace_start_p = &message_p->msg.traceStartIEs;
 
-//     if ((ue_desc_p = s1ap_eNB_get_ue_context(eNB_desc_p,
-//                      trace_start_p->eNB_UE_S1AP_ID)) == NULL) {
-//         /* Could not find context associated with this eNB_ue_s1ap_id -> generate
-//          * trace failure indication.
-//          */
-//         struct s1ap_eNB_mme_data_s *mme_ref_p;
-//         E_UTRAN_Trace_ID_t trace_id;
-//         Cause_t cause;
-// 
-//         memset(&trace_id, 0, sizeof(E_UTRAN_Trace_ID_t));
-//         memset(&cause, 0, sizeof(Cause_t));
-//         mme_ref_p = s1ap_eNB_get_MME(eNB_desc_p, packet_p->assoc_id);
-// 
-//         cause.present = Cause_PR_radioNetwork;
-//         cause.choice.radioNetwork = CauseRadioNetwork_unknown_pair_ue_s1ap_id;
-// 
-//         return s1ap_eNB_generate_trace_failure(&mme_ref_p->sctp_data,
-//                                                packet_p->local_stream,
-//                                                trace_start_p->eNB_UE_S1AP_ID,
-//                                                trace_start_p->mme_ue_s1ap_id, &trace_id, &cause);
-//     }
+    mme_ref_p = s1ap_eNB_get_MME(NULL, assoc_id, 0);
+    DevAssert(mme_ref_p != NULL);
+
+    if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_ref_p->s1ap_eNB_instance,
+                     trace_start_p->eNB_UE_S1AP_ID)) == NULL) {
+        /* Could not find context associated with this eNB_ue_s1ap_id -> generate
+         * trace failure indication.
+         */
+        E_UTRAN_Trace_ID_t trace_id;
+        Cause_t cause;
+
+        memset(&trace_id, 0, sizeof(E_UTRAN_Trace_ID_t));
+        memset(&cause, 0, sizeof(Cause_t));
+
+        cause.present = Cause_PR_radioNetwork;
+        cause.choice.radioNetwork = CauseRadioNetwork_unknown_pair_ue_s1ap_id;
+
+        s1ap_eNB_generate_trace_failure(ue_desc_p, &trace_id, &cause);
+    }
     return 0;
 }
 
 int s1ap_eNB_handle_deactivate_trace(uint32_t               assoc_id,
                                      uint32_t               stream,
                                      struct s1ap_message_s *message_p)
-// int s1ap_eNB_handle_deactivate_trace(eNB_mme_desc_t *eNB_desc_p,
-//                                      sctp_queue_item_t *packet_p,
-//                                      struct s1ap_message_s *message_p)
 {
-    DeactivateTraceIEs_t *deactivate_trace_p;
-
-    deactivate_trace_p = &message_p->msg.deactivateTraceIEs;
+//     DeactivateTraceIEs_t *deactivate_trace_p;
+// 
+//     deactivate_trace_p = &message_p->msg.deactivateTraceIEs;
 
     return 0;
 }

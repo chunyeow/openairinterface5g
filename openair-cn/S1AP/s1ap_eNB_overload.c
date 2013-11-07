@@ -54,9 +54,6 @@
 
 #include "assertions.h"
 
-// int s1ap_eNB_handle_overload_start(eNB_mme_desc_t *eNB_desc_p,
-//                                    sctp_queue_item_t *packet_p,
-//                                    struct s1ap_message_s *message_p)
 int s1ap_eNB_handle_overload_start(uint32_t               assoc_id,
                                    uint32_t               stream,
                                    struct s1ap_message_s *message_p)
@@ -68,25 +65,24 @@ int s1ap_eNB_handle_overload_start(uint32_t               assoc_id,
 
     overload_start_p = &message_p->msg.overloadStartIEs;
 
-//     DevCheck(overload_start_p->overloadResponse.present ==
-//              OverloadResponse_PR_overloadAction,
-//              OverloadResponse_PR_overloadAction, 0, 0);
-// 
-//     /* Non UE-associated signalling -> stream 0 */
-//     DevCheck(packet_p->local_stream == 0, packet_p->local_stream,
-//              packet_p->remote_port, packet_p->assoc_id);
-// 
-//     if ((mme_desc_p = s1ap_eNB_get_MME(eNB_desc_p, packet_p->assoc_id)) == NULL) {
-//         /* No MME context associated */
-//         return -1;
-//     }
-// 
-//     /* Mark the MME as overloaded and set the overload state according to
-//      * the value received.
-//      */
-//     mme_desc_p->state = S1AP_ENB_OVERLOAD;
-//     mme_desc_p->overload_state =
-//         overload_start_p->overloadResponse.choice.overloadAction;
+    DevCheck(overload_start_p->overloadResponse.present ==
+             OverloadResponse_PR_overloadAction,
+             OverloadResponse_PR_overloadAction, 0, 0);
+
+    /* Non UE-associated signalling -> stream 0 */
+    DevCheck(stream == 0, stream, 0, 0);
+
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+        /* No MME context associated */
+        return -1;
+    }
+
+    /* Mark the MME as overloaded and set the overload state according to
+     * the value received.
+     */
+    mme_desc_p->state = S1AP_ENB_OVERLOAD;
+    mme_desc_p->overload_state =
+        overload_start_p->overloadResponse.choice.overloadAction;
 
     return 0;
 }
@@ -94,9 +90,6 @@ int s1ap_eNB_handle_overload_start(uint32_t               assoc_id,
 int s1ap_eNB_handle_overload_stop(uint32_t               assoc_id,
                                   uint32_t               stream,
                                   struct s1ap_message_s *message_p)
-// int s1ap_eNB_handle_overload_stop(eNB_mme_desc_t *eNB_desc_p,
-//                                   sctp_queue_item_t *packet_p,
-//                                   struct s1ap_message_s *message_p)
 {
     /* We received Overload stop message, meaning that the MME is no more
      * overloaded. This is an empty message, with only message header and no
@@ -105,18 +98,17 @@ int s1ap_eNB_handle_overload_stop(uint32_t               assoc_id,
 
     DevAssert(message_p != NULL);
 
-//     s1ap_eNB_mme_data_t *mme_desc_p;
-// 
-//     /* Non UE-associated signalling -> stream 0 */
-//     DevCheck(packet_p->local_stream == 0, packet_p->local_stream,
-//              packet_p->remote_port, packet_p->assoc_id);
-// 
-//     if ((mme_desc_p = s1ap_eNB_get_MME(eNB_desc_p, packet_p->assoc_id)) == NULL) {
-//         /* No MME context associated */
-//         return -1;
-//     }
-// 
-//     mme_desc_p->state = S1AP_ENB_STATE_CONNECTED;
-//     mme_desc_p->overload_state = S1AP_NO_OVERLOAD;
+    s1ap_eNB_mme_data_t *mme_desc_p;
+
+    /* Non UE-associated signalling -> stream 0 */
+    DevCheck(stream == 0, stream, 0, 0);
+
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+        /* No MME context associated */
+        return -1;
+    }
+
+    mme_desc_p->state = S1AP_ENB_STATE_CONNECTED;
+    mme_desc_p->overload_state = S1AP_NO_OVERLOAD;
     return 0;
 }

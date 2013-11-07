@@ -28,11 +28,6 @@
 
 *******************************************************************************/
 
-/** @defgroup _s1ap_impl_ S1AP Layer Reference Implementation
- * @ingroup _ref_implementation_
- * @{
- */
-
 #ifndef S1AP_ENB_NNSF_H_
 #define S1AP_ENB_NNSF_H_
 

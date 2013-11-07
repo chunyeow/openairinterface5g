@@ -58,6 +58,7 @@ static
 int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
                                       uint32_t               stream,
                                       struct s1ap_message_s *message_p);
+static
 int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
                                      uint32_t               stream,
                                      struct s1ap_message_s *message_p);
@@ -164,6 +165,7 @@ int s1ap_eNB_handle_message(uint32_t assoc_id, int32_t stream,
         (assoc_id, stream, &message);
 }
 
+static
 int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
                                      uint32_t               stream,
                                      struct s1ap_message_s *message_p)
@@ -173,14 +175,11 @@ int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
         S1AP_WARN("[SCTP %d] Received s1 setup failure on stream != 0 (%d)\n",
                   assoc_id, stream);
     }
-    S1AP_DEBUG("Received s1 setup failure for MME... please check your parameters\n");
+    S1AP_ERROR("Received s1 setup failure for MME... please check your parameters\n");
 
     return 0;
 }
 
-// int s1ap_eNB_handle_s1_setup_response(eNB_mme_desc_t *eNB_desc_p,
-//                                       sctp_queue_item_t *packet_p,
-//                                       struct s1ap_message_s *message_p)
 static
 int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
                                       uint32_t               stream,
@@ -277,71 +276,62 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
      */
     mme_desc_p->state = S1AP_ENB_STATE_CONNECTED;
 
-//     /* We call back our self
-//      * -> generate a dummy initial UE message
-//      */
-//     {
-//         extern int s1ap_eNB_handle_api_req(eNB_mme_desc_t     *eNB_desc_p,
-//                                            s1ap_rrc_api_req_t *api_req_p);
-//         s1ap_rrc_api_req_t api_req;
-//         s1ap_nas_first_req_t *nas_req_p;
-// 
-//         memset(&api_req, 0, sizeof(s1ap_rrc_api_req_t));
-// 
-//         nas_req_p = &api_req.msg.first_nas_req;
-//         api_req.api_req = S1AP_API_NAS_FIRST_REQ;
-// 
-//         nas_req_p->rnti = 0xC03A;
-//         nas_req_p->establishment_cause = RRC_CAUSE_MO_DATA;
-//         nas_req_p->ue_identity.present = GUMMEI_PROVIDED;
-// 
-//         nas_req_p->ue_identity.identity.gummei.mcc = 208;
-//         nas_req_p->ue_identity.identity.gummei.mnc = 34;
-//         nas_req_p->ue_identity.identity.gummei.mme_code = 0;
-//         nas_req_p->ue_identity.identity.gummei.mme_group_id = 0;
-// 
-//         /* NAS Attach request with IMSI */
-//         uint8_t nas_attach_req_imsi[] =
-//         {
-//             0x07, 0x41,
-//             /* EPS Mobile identity = IMSI */
-//             0x71, 0x08, 0x29, 0x80, 0x43, 0x21, 0x43, 0x65, 0x87,
-//             0xF9,
-//             /* End of EPS Mobile Identity */
-//             0x02, 0xE0, 0xE0, 0x00, 0x20, 0x02, 0x03,
-//             0xD0, 0x11, 0x27, 0x1A, 0x80, 0x80, 0x21, 0x10, 0x01, 0x00, 0x00,
-//             0x10, 0x81, 0x06, 0x00, 0x00, 0x00, 0x00, 0x83, 0x06, 0x00, 0x00,
-//             0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
-//             0x01, 0x27, 0x11,
-//         };
-// 
-//         /* NAS Attach request with GUTI */
-//         uint8_t nas_attach_req_guti[] =
-//         {
-//             0x07, 0x41,
-//             /* EPS Mobile identity = IMSI */
-//             0x71, 0x0B, 0xF6, 0x12, 0xF2, 0x01, 0x80, 0x00, 0x01, 0xE0, 0x00,
-//             0xDA, 0x1F,
-//             /* End of EPS Mobile Identity */
-//             0x02, 0xE0, 0xE0, 0x00, 0x20, 0x02, 0x03,
-//             0xD0, 0x11, 0x27, 0x1A, 0x80, 0x80, 0x21, 0x10, 0x01, 0x00, 0x00,
-//             0x10, 0x81, 0x06, 0x00, 0x00, 0x00, 0x00, 0x83, 0x06, 0x00, 0x00,
-//             0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
-//             0x01, 0x27, 0x11,
-//         };
-// 
-//         nas_req_p->nas_pdu.buffer = nas_attach_req_guti;
-//         nas_req_p->nas_pdu.length = sizeof(nas_attach_req_guti);
-// 
-//         s1ap_eNB_handle_api_req(eNB_desc_p, &api_req);
-//     }
+    /* We call back our self
+     * -> generate a dummy initial UE message
+     */
+    {
+        s1ap_nas_first_req_t s1ap_nas_first_req;
+
+        memset(&s1ap_nas_first_req, 0, sizeof(s1ap_nas_first_req_t));
+
+        s1ap_nas_first_req.rnti = 0xC03A;
+        s1ap_nas_first_req.establishment_cause = RRC_CAUSE_MO_DATA;
+        s1ap_nas_first_req.ue_identity.present = GUMMEI_PROVIDED;
+
+        s1ap_nas_first_req.ue_identity.identity.gummei.mcc = 208;
+        s1ap_nas_first_req.ue_identity.identity.gummei.mnc = 34;
+        s1ap_nas_first_req.ue_identity.identity.gummei.mme_code = 0;
+        s1ap_nas_first_req.ue_identity.identity.gummei.mme_group_id = 0;
+
+        /* NAS Attach request with IMSI */
+        uint8_t nas_attach_req_imsi[] =
+        {
+            0x07, 0x41,
+            /* EPS Mobile identity = IMSI */
+            0x71, 0x08, 0x29, 0x80, 0x43, 0x21, 0x43, 0x65, 0x87,
+            0xF9,
+            /* End of EPS Mobile Identity */
+            0x02, 0xE0, 0xE0, 0x00, 0x20, 0x02, 0x03,
+            0xD0, 0x11, 0x27, 0x1A, 0x80, 0x80, 0x21, 0x10, 0x01, 0x00, 0x00,
+            0x10, 0x81, 0x06, 0x00, 0x00, 0x00, 0x00, 0x83, 0x06, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
+            0x01, 0x27, 0x11,
+        };
+
+        /* NAS Attach request with GUTI */
+        uint8_t nas_attach_req_guti[] =
+        {
+            0x07, 0x41,
+            /* EPS Mobile identity = IMSI */
+            0x71, 0x0B, 0xF6, 0x12, 0xF2, 0x01, 0x80, 0x00, 0x01, 0xE0, 0x00,
+            0xDA, 0x1F,
+            /* End of EPS Mobile Identity */
+            0x02, 0xE0, 0xE0, 0x00, 0x20, 0x02, 0x03,
+            0xD0, 0x11, 0x27, 0x1A, 0x80, 0x80, 0x21, 0x10, 0x01, 0x00, 0x00,
+            0x10, 0x81, 0x06, 0x00, 0x00, 0x00, 0x00, 0x83, 0x06, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
+            0x01, 0x27, 0x11,
+        };
+
+        s1ap_nas_first_req.nas_pdu.buffer = nas_attach_req_guti;
+        s1ap_nas_first_req.nas_pdu.length = sizeof(nas_attach_req_guti);
+
+        s1ap_eNB_handle_nas_first_req(&s1ap_nas_first_req);
+    }
 
     return 0;
 }
 
-// int s1ap_eNB_handle_initial_context_request(eNB_mme_desc_t *eNB_desc_p,
-//         sctp_queue_item_t *packet_p,
-//         struct s1ap_message_s *message_p)
 static
 int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
                                             uint32_t               stream,
@@ -351,30 +341,28 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
     s1ap_eNB_ue_context_t *ue_desc_p;
 
     InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
-
-//     DevAssert(eNB_desc_p != NULL);
     DevAssert(message_p != NULL);
 
     initialContextSetupRequest_p = &message_p->msg.initialContextSetupRequestIEs;
 
-    /* Initial context request = UE-related procedure -> stream != 0 */
-    if (stream == 0) {
-        S1AP_ERROR("[SCTP %d] Received UE-related procedure on stream = 0 (%d)\n",
-                   assoc_id, stream);
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+        S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
+                   "existing MME context\n", assoc_id);
+        return -1;
+    }
+    if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
+                     initialContextSetupRequest_p->eNB_UE_S1AP_ID)) == NULL) {
+        S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
+                   "existing UE context\n", assoc_id);
         return -1;
     }
 
-//     if ((mme_desc_p = s1ap_eNB_get_MME(eNB_desc_p, assoc_id)) == NULL) {
-//         S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
-//                    "existing MME context\n", packet_p->assoc_id);
-//         return -1;
-//     }
-//     if ((ue_desc_p = s1ap_eNB_get_ue_context(eNB_desc_p,
-//                      initialContextSetupRequest_p->eNB_UE_S1AP_ID)) == NULL) {
-//         S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
-//                    "existing UE context\n", packet_p->assoc_id);
-//         return -1;
-//     }
+    /* Initial context request = UE-related procedure -> stream != 0 */
+    if (stream != ue_desc_p->stream) {
+        S1AP_ERROR("[SCTP %d] Received UE-related procedure on stream (%d) whereas expecting (%d)\n",
+                   assoc_id, stream, ue_desc_p->stream);
+        return -1;
+    }
 
     ue_desc_p->mme_ue_s1ap_id = initialContextSetupRequest_p->mme_ue_s1ap_id;
 

@@ -421,12 +421,6 @@ struct s1ap_message_s;
 
 /** \brief Function callback prototype.
  **/
-// typedef int (*s1ap_message_decoded_callback)(
-//     eNB_mme_desc_t *eNB_desc_p,
-//     sctp_queue_item_t *packet_p,
-//     struct s1ap_message_s *message_p
-// );
-
 typedef int (*s1ap_message_decoded_callback)(
     uint32_t               assoc_id,
     uint32_t               stream,

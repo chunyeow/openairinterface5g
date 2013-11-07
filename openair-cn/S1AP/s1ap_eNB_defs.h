@@ -82,46 +82,6 @@ typedef enum {
     S1AP_OVERLOAD_MAX,
 } s1ap_overload_state_t;
 
-// typedef enum {
-//     PAGING_DRX_32  = 0x0,
-//     PAGING_DRX_64  = 0x1,
-//     PAGING_DRX_128 = 0x2,
-//     PAGING_DRX_256 = 0x3,
-// } paging_drx_t;
-
-typedef struct {
-    /* Octet string data */
-    uint8_t  *buffer;
-    /* Length of the octet string */
-    uint32_t  length;
-} nas_pdu_t, ue_radio_cap_t;
-
-typedef struct {
-    uint16_t mcc;
-    uint16_t mnc;
-    uint8_t  mme_code;
-    uint16_t mme_group_id;
-} gummei_t;
-
-typedef struct {
-    uint8_t  mme_code;
-    uint32_t m_tmsi;
-} s_tmsi_t;
-
-/* Provides the establishment cause for the RRC connection request as provided
- * by the upper layers. W.r.t. the cause value names: highPriorityAccess
- * concerns AC11..AC15, ‘mt’ stands for ‘Mobile Terminating’ and ‘mo’ for
- * 'Mobile Originating'. Defined in TS 36.331.
- */
-typedef enum {
-    RRC_CAUSE_EMERGENCY        = 0x0,
-    RRC_CAUSE_HIGH_PRIO_ACCESS = 0x1,
-    RRC_CAUSE_MT_ACCESS        = 0x2,
-    RRC_CAUSE_MO_SIGNALLING    = 0x3,
-    RRC_CAUSE_MO_DATA          = 0x4,
-    RRC_CAUSE_MAX              = RRC_CAUSE_MO_DATA,
-} rrc_establishment_cause_t;
-
 typedef struct {
     uint8_t qci;
 
@@ -165,16 +125,6 @@ typedef struct {
     /* Cause of the failure */
 //     cause_t cause;
 } e_rab_failed_t;
-
-typedef struct {
-#define S_TMSI_PROVIDED 0x0
-#define GUMMEI_PROVIDED 0x1
-    unsigned     present:1;
-    union {
-        gummei_t gummei;
-        s_tmsi_t s_tmsi;
-    } identity;
-} ue_identity_t;
 
 /* Served PLMN identity element */
 struct plmn_identity_s {
