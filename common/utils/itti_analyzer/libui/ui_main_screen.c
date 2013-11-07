@@ -77,7 +77,7 @@ static int ui_idle_callback(gpointer data)
     /* Read filters file */
     if (ui_main_data.filters_file_name != NULL)
     {
-        // ui_filters_read(ui_main_data.filters_file_name);
+        ui_filters_read(ui_main_data.filters_file_name);
     }
 
     /* Read messages file */
