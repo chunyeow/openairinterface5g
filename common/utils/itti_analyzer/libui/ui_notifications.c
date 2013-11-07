@@ -48,21 +48,21 @@ static void ui_change_cursor(gboolean busy)
         // gint x, y;
 
         cursor = gdk_cursor_new (GDK_WATCH);
-        display = gdk_display_get_default();
-        window = gtk_widget_get_window(GTK_WIDGET(ui_main_data.window));
+        display = gdk_display_get_default ();
+        window = gtk_widget_get_window (GTK_WIDGET(ui_main_data.window));
         // window = gdk_display_get_window_at_pointer(display, &x, &y);
 
         gdk_window_set_cursor (window, cursor);
-        gdk_display_sync(display);
+        gdk_display_sync (display);
         g_object_unref (cursor);
         // gtk_widget_set_sensitive (ui_main_data.window, FALSE);
-        ui_gtk_flush_events();
+        ui_gtk_flush_events ();
     }
     else
     {
         gdk_window_set_cursor (window, NULL);
         // gtk_widget_set_sensitive (ui_main_data.window, TRUE);
-        ui_gtk_flush_events();
+        ui_gtk_flush_events ();
     }
 }
 
@@ -75,12 +75,13 @@ int ui_messages_read(char *filename)
     size_t input_data_length = 0;
     int read_messages = 0;
 
-    ui_change_cursor(TRUE);
+    ui_change_cursor (TRUE);
 
     source = open (filename, O_RDONLY);
     if (source < 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to open file \"%s\": %s", filename, g_strerror (errno));
+        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to open file \"%s\": %s", filename,
+                                g_strerror (errno));
         result = RC_FAIL;
     }
     else
@@ -95,7 +96,8 @@ int ui_messages_read(char *filename)
 
             if (read_data == -1)
             {
-                ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to read from file \"%s\": %s", filename, g_strerror (errno));
+                ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to read from file \"%s\": %s",
+                                        filename, g_strerror (errno));
                 result = RC_FAIL;
                 break;
             }
@@ -114,7 +116,8 @@ int ui_messages_read(char *filename)
                     if (read (source, input_data, input_data_length) < 0)
                     {
                         g_warning("Failed to read from file \"%s\": %s", filename, g_strerror (errno));
-                        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to read from file \"%s\": %s", filename, g_strerror (errno));
+                        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages",
+                                                "Failed to read from file \"%s\": %s", filename, g_strerror (errno));
                         result = RC_FAIL;
                         break;
                     }
@@ -139,11 +142,17 @@ int ui_messages_read(char *filename)
 
                         ui_signal_add_to_list (buffer, NULL);
                         read_messages++;
+
+                        if (read_messages % 100 == 0)
+                        {
+                            ui_gtk_flush_events ();
+                        }
                         break;
                     }
 
                     case ITTI_DUMP_XML_DEFINITION:
                         xml_parse_buffer (input_data, input_data_length);
+                        ui_gtk_flush_events ();
                         break;
 
                     case ITTI_STATISTIC_MESSAGE_TYPE:
@@ -169,7 +178,7 @@ int ui_messages_read(char *filename)
         close (source);
     }
 
-    ui_change_cursor(FALSE);
+    ui_change_cursor (FALSE);
 
     return result;
 }
@@ -235,7 +244,7 @@ int ui_filters_open_file_chooser(void)
     gtk_widget_destroy (filechooser);
     if (accept)
     {
-        result = ui_filters_read(filename);
+        result = ui_filters_read (filename);
         if (result == RC_OK)
         {
             /* Update filters file name for future use */
