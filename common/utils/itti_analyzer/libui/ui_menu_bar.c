@@ -5,6 +5,10 @@
 #include "ui_menu_bar.h"
 #include "ui_callbacks.h"
 
+static const guint BUTTON_SPACE = 0;
+static const guint LABEL_SPACE = 5;
+static const guint SEPARATOR_SPACE = 5;
+
 void ui_set_sensitive_move_buttons(gboolean enable)
 {
     // gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), enable);
@@ -93,66 +97,25 @@ int ui_menu_bar_create(GtkWidget *vbox)
 
 int ui_toolbar_create(GtkWidget *vbox)
 {
-    GtkWidget *toolbar;
     GtkWidget *hbox;
-    GtkWidget *iplabel;
-    GtkWidget *portlabel;
+    GtkWidget *filters_label;
+    GtkWidget *messages_label;
+    GtkWidget *ip_label;
+    GtkWidget *port_label;
 
     if (!vbox)
         return RC_BAD_PARAM;
 
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    toolbar = gtk_toolbar_new();
-    gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
+    filters_label = gtk_label_new("Filters");
+    messages_label = gtk_label_new("Messages");
 
-    gtk_container_set_border_width(GTK_CONTAINER(toolbar), 2);
-
-#if 0 /* Not useful anymore, signals list is cleared before every new replay file opening or remote connection */
-    /* Button to clear signal list and clear signal dissect view */
-    {
-        ui_main_data.signals_clear_button = gtk_tool_button_new_from_stock(GTK_STOCK_NEW);
-        /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_clear_button),
-                                       "Start a new acquisition or replay");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.signals_clear_button, -1);
-
-        gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), FALSE);
-
-        g_signal_connect(G_OBJECT(ui_main_data.signals_clear_button), "clicked",
-                        G_CALLBACK(ui_callback_signal_clear_list), NULL);
-    }
-#endif
-
-    /* Button to open replay file */
-    {
-        ui_main_data.open_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_replay_file),
-                                    "Open messages file");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.open_replay_file, -1);
-
-        g_signal_connect(G_OBJECT(ui_main_data.open_replay_file), "clicked",
-                        G_CALLBACK(ui_callback_on_open_messages), NULL);
-    }
-
-    /* Button to save replay file */
-    {
-        ui_main_data.save_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file),
-                                    "Save messages file");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.save_replay_file, -1);
-
-        g_signal_connect(G_OBJECT(ui_main_data.save_replay_file), "clicked",
-                        G_CALLBACK(ui_callback_on_save_messages), NULL);
-    }
-
-#if 0 /* Too much button in the bar, it is confusing ! */
     /* Button to open filters file */
     {
         ui_main_data.open_filters_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_filters_file),
                                     "Open filters file");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.open_filters_file, -1);
 
         g_signal_connect(G_OBJECT(ui_main_data.open_filters_file), "clicked",
                         G_CALLBACK(ui_callback_on_open_filters), NULL);
@@ -163,12 +126,30 @@ int ui_toolbar_create(GtkWidget *vbox)
         ui_main_data.save_filters_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_filters_file),
                                     "Save filters file");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.save_filters_file, -1);
 
         g_signal_connect(G_OBJECT(ui_main_data.save_filters_file), "clicked",
                         G_CALLBACK(ui_callback_on_save_filters), NULL);
     }
-#endif
+
+    /* Button to open replay file */
+    {
+        ui_main_data.open_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_replay_file),
+                                    "Open messages file");
+
+        g_signal_connect(G_OBJECT(ui_main_data.open_replay_file), "clicked",
+                        G_CALLBACK(ui_callback_on_open_messages), NULL);
+    }
+
+    /* Button to save replay file */
+    {
+        ui_main_data.save_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file),
+                                    "Save messages file");
+
+        g_signal_connect(G_OBJECT(ui_main_data.save_replay_file), "clicked",
+                        G_CALLBACK(ui_callback_on_save_messages), NULL);
+    }
 
 #if 0 /* This function is already handled by GTK */
     /* Button to go given signal number */
@@ -177,7 +158,6 @@ int ui_toolbar_create(GtkWidget *vbox)
         /* Set the tooltip text */
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_button),
                                     "Goto signal");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.signals_go_to_button, -1);
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), FALSE);
 
@@ -192,7 +172,6 @@ int ui_toolbar_create(GtkWidget *vbox)
         /* Set the tooltip text */
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_first_button),
                                     "Goto first signal");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.signals_go_to_first_button, -1);
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), FALSE);
 
@@ -206,7 +185,6 @@ int ui_toolbar_create(GtkWidget *vbox)
         /* Set the tooltip text */
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_last_button),
                                     "Goto last signal");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.signals_go_to_last_button, -1);
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE);
 
@@ -220,7 +198,6 @@ int ui_toolbar_create(GtkWidget *vbox)
         /* Set the tooltip text */
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.connect),
                                     "Connect to remote host");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.connect, -1);
 
         g_signal_connect(G_OBJECT(ui_main_data.connect), "clicked",
                         G_CALLBACK(ui_callback_on_connect), NULL);
@@ -232,7 +209,6 @@ int ui_toolbar_create(GtkWidget *vbox)
         /* Set the tooltip text */
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.disconnect),
                                     "Disconnect from remote host");
-        gtk_toolbar_insert(GTK_TOOLBAR(toolbar), ui_main_data.disconnect, -1);
 
         /* Disabled at startup. Will be activated when a connection is established */
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.disconnect), FALSE);
@@ -241,11 +217,8 @@ int ui_toolbar_create(GtkWidget *vbox)
                         G_CALLBACK(ui_callback_on_disconnect), NULL);
     }
 
-    /* No overflow menu */
-    gtk_toolbar_set_show_arrow(GTK_TOOLBAR(toolbar), FALSE);
-
-    iplabel = gtk_label_new("ip:");
-    portlabel = gtk_label_new("port:");
+    ip_label = gtk_label_new("ip:");
+    port_label = gtk_label_new("port:");
 
     ui_main_data.ip_entry = gtk_entry_new();
     /* Width of 15 characters for port number (ipv4 address) */
@@ -257,11 +230,30 @@ int ui_toolbar_create(GtkWidget *vbox)
     gtk_entry_set_width_chars(GTK_ENTRY(ui_main_data.port_entry), 5);
     gtk_entry_set_text(GTK_ENTRY(ui_main_data.port_entry), ui_main_data.port_entry_init);
 
-    gtk_box_pack_start(GTK_BOX(hbox), toolbar, FALSE, FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(hbox), iplabel, FALSE, FALSE, 2);
-    gtk_box_pack_start(GTK_BOX(hbox), ui_main_data.ip_entry, FALSE, FALSE, 5);
-    gtk_box_pack_start(GTK_BOX(hbox), portlabel, FALSE, FALSE, 2);
-    gtk_box_pack_start(GTK_BOX(hbox), ui_main_data.port_entry, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(hbox), filters_label, FALSE, FALSE, LABEL_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_filters_file), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_filters_file), FALSE, FALSE, BUTTON_SPACE);
+
+    gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
+
+    gtk_box_pack_start(GTK_BOX(hbox), messages_label, FALSE, FALSE, LABEL_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_replay_file), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file), FALSE, FALSE, BUTTON_SPACE);
+
+    gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
+
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.signals_go_to_first_button), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE, FALSE, BUTTON_SPACE);
+
+    gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
+
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.connect), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.disconnect), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), ip_label, FALSE, FALSE, LABEL_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), ui_main_data.ip_entry, FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), port_label, FALSE, FALSE, LABEL_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), ui_main_data.port_entry, FALSE, FALSE, BUTTON_SPACE);
+
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 5);
 
     return RC_OK;
