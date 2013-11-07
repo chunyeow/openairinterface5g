@@ -61,9 +61,9 @@
 
 int itti_debug = 0;
 
-#define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); } \
+#define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
     while(0)
-#define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); } \
+#define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); fflush (stdout); } \
     while(0)
 
 /* Global message size */
@@ -264,10 +264,10 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     {
         uint64_t sem_counter = 1;
 
+        lfds611_queue_enqueue(itti_desc.tasks[thread_id].message_queue, new);
+
         /* Call to write for an event fd must be of 8 bytes */
         write(itti_desc.tasks[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
-
-        lfds611_queue_enqueue(itti_desc.tasks[thread_id].message_queue, new);
     }
 #else
     if (STAILQ_EMPTY (&itti_desc.tasks[thread_id].message_queue)) {
@@ -422,7 +422,7 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
     itti_desc.tasks[thread_id].epoll_nb_events = epoll_ret;
 
     for (i = 0; i < epoll_ret; i++) {
-        /* Check if there is an event for the ITTI for the event fd */
+        /* Check if there is an event for ITTI for the event fd */
         if ((itti_desc.tasks[thread_id].events[i].events & EPOLLIN) &&
             (itti_desc.tasks[thread_id].events[i].data.fd == itti_desc.tasks[thread_id].task_event_fd))
         {
@@ -430,16 +430,14 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             uint64_t sem_counter;
 
             /* Read will always return 1 */
-            read(itti_desc.tasks[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+            read (itti_desc.tasks[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
 
-            if (lfds611_queue_dequeue(itti_desc.tasks[thread_id].message_queue,
-                (void **)&message) == 0)
-            {
+            if (lfds611_queue_dequeue (itti_desc.tasks[thread_id].message_queue, (void **) &message) == 0) {
                 /* No element in list -> this should not happen */
-                DevMessage("No element in message queue...");
+                DevParam(thread_id, task_id, epoll_ret);
             }
             *received_msg = message->msg;
-            free(message);
+            free (message);
             return;
         }
     }
