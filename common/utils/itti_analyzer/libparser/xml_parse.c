@@ -752,11 +752,6 @@ static int xml_parse_doc(xmlDocPtr doc) {
     /* Free the document */
     xmlFreeDoc(doc);
 
-    /* Free the global variables that may
-     * have been allocated by the parser.
-     */
-    xmlCleanupParser();
-
     if (ret == RC_OK) {
         resolve_typedefs (&head);
         resolve_pointer_type (&head);

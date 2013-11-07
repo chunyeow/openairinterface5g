@@ -82,7 +82,8 @@ int main(int argc, char *argv[])
      * between the version it was compiled for and the actual shared
      * library used.
      */
-    LIBXML_TEST_VERSION
+    LIBXML_TEST_VERSION;
+    xmlInitParser();
 
     /* Initialize the widget set */
     gtk_init(&argc, &argv);
@@ -93,6 +94,11 @@ int main(int argc, char *argv[])
 
     /* Enter the main event loop, and wait for user interaction */
     gtk_main ();
+
+    /* Free the global variables that may
+     * have been allocated by the parser.
+     */
+    xmlCleanupParser ();
 
     return ret;
 }

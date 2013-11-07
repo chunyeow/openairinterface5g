@@ -42,7 +42,11 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
         switch (c)
         {
             case 'f':
-                ui_main_data.filters_file_name = optarg;
+                ui_main_data.filters_file_name = malloc (strlen (optarg) + 1);
+                if (ui_main_data.filters_file_name != NULL)
+                {
+                    strcpy (ui_main_data.filters_file_name, optarg);
+                }
                 break;
 
             case 'h':
@@ -55,7 +59,11 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
                 break;
 
             case 'm':
-                ui_main_data.messages_file_name = optarg;
+                ui_main_data.messages_file_name = malloc (strlen (optarg) + 1);
+                if (ui_main_data.messages_file_name != NULL)
+                {
+                    strcpy (ui_main_data.messages_file_name, optarg);
+                }
                 break;
 
             case 'p':

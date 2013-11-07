@@ -214,7 +214,7 @@ static int xml_parse_filters(xmlDocPtr doc)
     xmlNode *filter_node = NULL;
     xmlNode *cur_node = NULL;
     ui_filter_e filter;
-    int ret = RC_OK;
+    int ret = RC_FAIL;
 
     /* Get the root element node */
     root_element = xmlDocGetRootElement (doc);
@@ -222,7 +222,7 @@ static int xml_parse_filters(xmlDocPtr doc)
     if (root_element != NULL)
     {
         /* Search for the start of filters definition */
-        for (cur_node = root_element; (strcmp ((char *) cur_node->name, "filters") != 0) && (cur_node != NULL);
+        for (cur_node = root_element; (cur_node != NULL) && (strcmp ((char *) cur_node->name, "filters") != 0);
                 cur_node = cur_node->next)
             ;
 
@@ -265,6 +265,7 @@ static int xml_parse_filters(xmlDocPtr doc)
                                         cur_node->properties->children->content[0] == '0' ?
                                                 ENTRY_ENABLED_FALSE : ENTRY_ENABLED_TRUE);
 
+                                ret = RC_OK;
                                 cur_node = cur_node->next;
                             }
                         }
@@ -281,12 +282,7 @@ static int xml_parse_filters(xmlDocPtr doc)
     /* Free the document */
     xmlFreeDoc (doc);
 
-    /* Free the global variables that may
-     * have been allocated by the parser.
-     */
-    xmlCleanupParser ();
-
-    g_message("Parsed filters definition");
+    g_message("Parsed XML filters definition");
 
     return ret;
 }
@@ -294,6 +290,7 @@ static int xml_parse_filters(xmlDocPtr doc)
 int ui_filters_read(const char *file_name)
 {
     xmlDocPtr doc; /* the resulting document tree */
+    int ret;
 
     if (file_name == NULL)
     {
@@ -310,7 +307,16 @@ int ui_filters_read(const char *file_name)
         return RC_FAIL;
     }
 
-    return xml_parse_filters (doc);
+    ret = xml_parse_filters (doc);
+
+    if (ret != RC_OK)
+    {
+        g_warning("Found no filter definition in \"%s\"", file_name);
+        ui_notification_dialog (DIALOG_WARNING, "Found no filter definition in \"%s\"", file_name);
+        return RC_FAIL;
+    }
+
+    return ret;
 }
 
 static void write_filter(FILE *filter_file, ui_filter_t *filter)
@@ -343,7 +349,8 @@ int ui_filters_file_write(const char *file_name)
         return RC_FAIL;
     }
 
-    fprintf (filter_file, "<filters>\n");
+    fprintf (filter_file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+             "<filters>\n");
 
     write_filter (filter_file, &ui_filters.messages);
     write_filter (filter_file, &ui_filters.origin_tasks);

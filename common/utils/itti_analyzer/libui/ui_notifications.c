@@ -191,7 +191,19 @@ int ui_messages_open_file_chooser(void)
     if (accept)
     {
         result = ui_messages_read (filename);
-        g_free (filename);
+        if (result == RC_OK)
+        {
+            /* Update messages file name for future use */
+            if (ui_main_data.messages_file_name != NULL)
+            {
+                g_free (ui_main_data.messages_file_name);
+            }
+            ui_main_data.messages_file_name = filename;
+        }
+        else
+        {
+            g_free (filename);
+        }
     }
 
     return result;
@@ -219,7 +231,19 @@ int ui_filters_open_file_chooser(void)
     if (accept)
     {
         result = ui_filters_read(filename);
-        g_free (filename);
+        if (result == RC_OK)
+        {
+            /* Update filters file name for future use */
+            if (ui_main_data.filters_file_name != NULL)
+            {
+                g_free (ui_main_data.filters_file_name);
+            }
+            ui_main_data.filters_file_name = filename;
+        }
+        else
+        {
+            g_free (filename);
+        }
     }
 
     return result;
@@ -231,15 +255,19 @@ int ui_filters_save_file_chooser(void)
     int result = RC_OK;
 
     filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
-                                               GTK_FILE_CHOOSER_ACTION_SAVE,
-                                               GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                                               NULL);
+                                               GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
 
     gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filechooser), TRUE);
 
-    //gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filechooser), "filters.xml");
-    gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (filechooser), "./filters.xml");
+    if (ui_main_data.filters_file_name != NULL)
+    {
+        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (filechooser), ui_main_data.filters_file_name);
+    }
+    else
+    {
+        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filechooser), "filters.xml");
+    }
 
     /* Process the response */
     if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -247,8 +275,20 @@ int ui_filters_save_file_chooser(void)
         char *filename;
 
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-        result = ui_filters_file_write(filename);
-        g_free (filename);
+        result = ui_filters_file_write (filename);
+        if (result == RC_OK)
+        {
+            /* Update filters file name for future use */
+            if (ui_main_data.filters_file_name != NULL)
+            {
+                g_free (ui_main_data.filters_file_name);
+            }
+            ui_main_data.filters_file_name = filename;
+        }
+        else
+        {
+            g_free (filename);
+        }
     }
     gtk_widget_destroy (filechooser);
 
