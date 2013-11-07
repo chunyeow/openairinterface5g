@@ -22,4 +22,6 @@ void ui_tree_view_select_row(gint row, GtkTreePath **path);
 
 void ui_tree_view_refilter(void);
 
+guint ui_tree_view_get_filtered_number(void);
+
 #endif /* UI_TREE_VIEW_H_ */

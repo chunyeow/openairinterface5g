@@ -293,7 +293,7 @@ gboolean ui_callback_signal_go_to_last(GtkWidget *widget, GdkEvent *event, gpoin
 {
     GtkTreePath *path;
 
-    ui_tree_view_select_row (ui_main_data.nb_message_received - 1, &path);
+    ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1, &path);
     ui_main_data.path_last = path;
 
     return TRUE;
@@ -318,9 +318,9 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
     if (filter_entry->enabled != enabled)
     {
         filter_entry->enabled = enabled;
-        ui_tree_view_refilter();
+        ui_tree_view_refilter ();
     }
-    // g_debug("ui_callback_on_menu_item_selected occurred %x %x %s %d", (int) widget, (int) data, filter_entry->name, enabled);
+    // g_debug("ui_callback_on_menu_item_selected occurred %x %x %s %d (%d messages to display)", (int) widget, (int) data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
 
     return TRUE;
 }

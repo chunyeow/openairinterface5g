@@ -214,6 +214,7 @@ static int xml_parse_filters(xmlDocPtr doc)
     xmlNode *filter_node = NULL;
     xmlNode *cur_node = NULL;
     ui_filter_e filter;
+    guint filters_entries = 0;
     int ret = RC_FAIL;
 
     /* Get the root element node */
@@ -265,7 +266,7 @@ static int xml_parse_filters(xmlDocPtr doc)
                                         cur_node->properties->children->content[0] == '0' ?
                                                 ENTRY_ENABLED_FALSE : ENTRY_ENABLED_TRUE);
 
-                                ret = RC_OK;
+                                filters_entries++;
                                 cur_node = cur_node->next;
                             }
                         }
@@ -278,11 +279,15 @@ static int xml_parse_filters(xmlDocPtr doc)
             ui_tree_view_refilter ();
         }
     }
-
     /* Free the document */
     xmlFreeDoc (doc);
 
-    g_message("Parsed XML filters definition");
+    if (filters_entries > 0)
+    {
+        ret = RC_OK;
+    }
+
+    g_message("Parsed XML filters definition found %d entries (%d messages to display)", filters_entries, ui_tree_view_get_filtered_number());
 
     return ret;
 }
@@ -299,7 +304,6 @@ int ui_filters_read(const char *file_name)
     }
 
     doc = xmlReadFile (file_name, NULL, 0);
-
     if (doc == NULL)
     {
         ui_notification_dialog (GTK_MESSAGE_ERROR, "open filters", "Failed to parse file \"%s\"", file_name);
@@ -307,10 +311,10 @@ int ui_filters_read(const char *file_name)
     }
 
     ret = xml_parse_filters (doc);
-
     if (ret != RC_OK)
     {
-        ui_notification_dialog (GTK_MESSAGE_WARNING, "open filters", "Found no filter definitions in \"%s\"", file_name);
+        ui_notification_dialog (GTK_MESSAGE_WARNING, "open filters", "Found no filter definitions in \"%s\"",
+                                file_name);
         return RC_FAIL;
     }
 

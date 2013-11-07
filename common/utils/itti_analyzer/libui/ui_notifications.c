@@ -15,6 +15,7 @@
 #include "ui_notif_dlg.h"
 #include "ui_callbacks.h"
 #include "ui_filters.h"
+#include "ui_tree_view.h"
 
 #include "xml_parse.h"
 
@@ -163,7 +164,7 @@ int ui_messages_read(char *filename)
             ui_set_sensitive_move_buttons (TRUE);
         }
 
-        g_message("Read %d messages from file \"%s\"\n", read_messages, filename);
+        g_message("Read %d messages (%d to display) from file \"%s\"\n", read_messages, ui_tree_view_get_filtered_number(), filename);
 
         close (source);
     }

@@ -18,26 +18,39 @@ typedef struct
 {
     GtkListStore *store;
     GtkTreeModelFilter *filtered;
+    guint filtered_last_msg;
+    guint filtered_msg_number;
 } ui_store_t;
 
 static ui_store_t ui_store;
 
 static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, ui_store_t *store)
 {
+    char *msg_number;
+    guint number = 0;
     char *message;
     char *origin_task;
     char *destination_task;
-    gboolean enabled;
+    gboolean enabled = FALSE;
 
-    gtk_tree_model_get (model, iter, COL_SIGNAL, &message, COL_FROM_TASK, &origin_task, COL_TO_TASK, &destination_task,
-                        -1);
-    enabled = ui_filters_message_enabled (message, origin_task, destination_task);
+    gtk_tree_model_get (model, iter, COL_MSG_NUM, &msg_number, COL_SIGNAL, &message, COL_FROM_TASK, &origin_task,
+                        COL_TO_TASK, &destination_task, -1);
+    if (msg_number != NULL)
+    {
+        number = atoi (msg_number);
+        enabled = ui_filters_message_enabled (message, origin_task, destination_task);
 
-    // g_debug("%x %x %s %s %s %d", model, iter, message, origin_task, destination_task, enabled);
+        if ((enabled) && (ui_store.filtered_last_msg < number))
+        {
+            ui_store.filtered_last_msg = number;
+            ui_store.filtered_msg_number++;
+        }
+        // g_debug("%x %x %d %s %s %s %d %d", (int) model, (int) iter, number, message, origin_task, destination_task, enabled, ui_store.filtered_msg_number);
+    }
 
-    g_free(message);
-    g_free(origin_task);
-    g_free(destination_task);
+    g_free (message);
+    g_free (origin_task);
+    g_free (destination_task);
 
     return enabled;
 }
@@ -115,6 +128,8 @@ void ui_tree_view_destroy_list(GtkWidget *list)
     g_assert(list != NULL);
 
     gtk_list_store_clear(ui_store.store);
+    ui_store.filtered_last_msg = 0;
+    ui_store.filtered_msg_number = 0;
 
     /* Reset number of messages */
     ui_main_data.nb_message_received = 0;
@@ -178,11 +193,8 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signa
 void ui_tree_view_select_row(gint row, GtkTreePath **path)
 {
     GtkTreePath *path_row;
-    gchar        indice[10];
 
-    sprintf(indice, "%d", row);
-
-    path_row = gtk_tree_path_new_from_string(indice);
+    path_row = gtk_tree_path_new_from_indices(row, -1);
     /* Select the message in requested row */
     gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, FALSE);
     /* Center the message in the middle of the list if possible */
@@ -196,5 +208,12 @@ void ui_tree_view_select_row(gint row, GtkTreePath **path)
 
 void ui_tree_view_refilter(void)
 {
-    gtk_tree_model_filter_refilter (ui_store.filtered);;
+    ui_store.filtered_last_msg = 0;
+    ui_store.filtered_msg_number = 0;
+    gtk_tree_model_filter_refilter (ui_store.filtered);
+}
+
+guint ui_tree_view_get_filtered_number(void)
+{
+    return ui_store.filtered_msg_number;
 }
