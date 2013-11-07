@@ -303,7 +303,7 @@ int ui_filters_read(const char *file_name)
     if (doc == NULL)
     {
         g_warning("Failed to parse \"%s\"", file_name);
-        ui_notification_dialog (DIALOG_WARNING, "Failed to parse file \"%s\"", file_name);
+        ui_notification_dialog (GTK_MESSAGE_ERROR, "open filters", "Failed to parse file \"%s\"", file_name);
         return RC_FAIL;
     }
 
@@ -312,7 +312,7 @@ int ui_filters_read(const char *file_name)
     if (ret != RC_OK)
     {
         g_warning("Found no filter definition in \"%s\"", file_name);
-        ui_notification_dialog (DIALOG_WARNING, "Found no filter definition in \"%s\"", file_name);
+        ui_notification_dialog (GTK_MESSAGE_ERROR, "open filters", "Found no filter definitions in \"%s\"", file_name);
         return RC_FAIL;
     }
 
