@@ -73,6 +73,10 @@ char smbv_ip[16];
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
 # include "timer.h"
+# if defined(ENABLE_USE_MME)
+#   include "s1ap_eNB.h"
+#   include "sctp_eNB_task.h"
+# endif
 #endif
 
 #define RF
@@ -381,6 +385,40 @@ void *l2l1_task(void *args_p) {
   MessageDef *message_p;
 
   itti_mark_task_ready (TASK_L2L1);
+# if defined(ENABLE_USE_MME)
+    /* Trying to register each eNB */
+    for (eNB_id = oai_emulation.info.first_enb_local;
+         (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.cli_start_enb[eNB_id] == 1);
+         eNB_id++)
+    {
+        /* FIXME: acquire MMEs IP address by XML file or command line */
+        char *mme_address_v4 = "192.168.12.87";
+        char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
+        s1ap_register_eNB_t *s1ap_register_eNB;
+        message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
+
+        s1ap_register_eNB = &message_p->msg.s1ap_register_eNB;
+
+        /* Some default/random parameters */
+        s1ap_register_eNB->mod_id      = eNB_id;
+        /* FIXME: generate unique eNB id */
+        s1ap_register_eNB->eNB_id      = 1 + eNB_id;
+        s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
+        s1ap_register_eNB->tac         = 8;
+        s1ap_register_eNB->mcc         = 208;
+        s1ap_register_eNB->mnc         = 35;
+        s1ap_register_eNB->default_drx = PAGING_DRX_256;
+        s1ap_register_eNB->nb_mme      = 1;
+        s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
+        s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
+        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
+               strlen(mme_address_v4));
+        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
+               strlen(mme_address_v6));
+
+        itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
+    }
+# endif
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
@@ -987,6 +1025,19 @@ int main(int argc, char **argv) {
   LOG_N(EMU, "\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU initialization done <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
 #if defined(ENABLE_ITTI)
+# if defined(ENABLE_USE_MME)
+  if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
+      return -1;
+  }
+  if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
+      return -1;
+  }
+# endif
+
   if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
     LOG_E(EMU, "Create task failed");
     LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");

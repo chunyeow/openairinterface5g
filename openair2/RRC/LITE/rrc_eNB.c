@@ -476,11 +476,13 @@ openair_rrc_lite_eNB_init (u8 Mod_id)
   /* Connect eNB to MME */
   if (oai_emulation.info.mme_enabled > 0)
     {
+# if !defined(ENABLE_ITTI)
       if (s1ap_eNB_init (oai_emulation.info.mme_ip_address, Mod_id) < 0)
         {
           mac_xface->macphy_exit ("");
           return -1;
         }
+# endif
     }
 #endif
 
@@ -796,7 +798,7 @@ rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
         case UL_DCCH_MessageType__c1_PR_ulHandoverPreparationTransfer:
           break;
         case UL_DCCH_MessageType__c1_PR_ulInformationTransfer:
-#if defined(ENABLE_USE_MME)
+#if defined(ENABLE_USE_MME) && !defined(ENABLE_ITTI)
           {
             if (oai_emulation.info.mme_enabled == 1)
               {
@@ -1053,7 +1055,7 @@ rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
          Mod_id, frame, UE_index);
 
   // Forward message to S1AP layer
-#if defined(ENABLE_USE_MME)
+#if defined(ENABLE_USE_MME) && !defined(ENABLE_ITTI)
   if (oai_emulation.info.mme_enabled == 1)
     s1ap_eNB_new_data_request (Mod_id, UE_index,
                                rrcConnectionSetupComplete->dedicatedInfoNAS.

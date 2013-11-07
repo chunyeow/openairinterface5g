@@ -38,13 +38,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "mme_sim.h"
+#include "intertask_interface.h"
 
-#include "s1ap_eNB.h"
+#include "s1ap_common.h"
+
+#include "s1ap_eNB_defs.h"
 #include "s1ap_eNB_nnsf.h"
 
 struct s1ap_eNB_mme_data_s *
-s1ap_eNB_nnsf_select_mme_by_mme_code(eNB_mme_desc_t            *eNB_desc_p,
+s1ap_eNB_nnsf_select_mme_by_mme_code(s1ap_eNB_instance_t       *instance_p,
                                      rrc_establishment_cause_t  cause,
                                      uint8_t                    mme_code)
 {
@@ -52,7 +54,7 @@ s1ap_eNB_nnsf_select_mme_by_mme_code(eNB_mme_desc_t            *eNB_desc_p,
     struct s1ap_eNB_mme_data_s *mme_highest_capacity_p = NULL;
     uint8_t current_capacity = 0;
 
-    RB_FOREACH(mme_data_p, s1ap_mme_map, &eNB_desc_p->s1ap_mme_head) {
+    RB_FOREACH(mme_data_p, s1ap_mme_map, &instance_p->s1ap_mme_head) {
         struct served_gummei_s *gummei_p = NULL;
 
         if (mme_data_p->state != S1AP_ENB_STATE_CONNECTED) {
@@ -112,7 +114,7 @@ s1ap_eNB_nnsf_select_mme_by_mme_code(eNB_mme_desc_t            *eNB_desc_p,
 }
 
 struct s1ap_eNB_mme_data_s *
-s1ap_eNB_nnsf_select_mme_by_gummei(eNB_mme_desc_t            *eNB_desc_p,
+s1ap_eNB_nnsf_select_mme_by_gummei(s1ap_eNB_instance_t       *instance_p,
                                    rrc_establishment_cause_t  cause,
                                    gummei_t                   gummei)
 {
@@ -120,7 +122,7 @@ s1ap_eNB_nnsf_select_mme_by_gummei(eNB_mme_desc_t            *eNB_desc_p,
     struct s1ap_eNB_mme_data_s *mme_highest_capacity_p = NULL;
     uint8_t current_capacity = 0;
 
-    RB_FOREACH(mme_data_p, s1ap_mme_map, &eNB_desc_p->s1ap_mme_head) {
+    RB_FOREACH(mme_data_p, s1ap_mme_map, &instance_p->s1ap_mme_head) {
         struct served_gummei_s *gummei_p = NULL;
 
         if (mme_data_p->state != S1AP_ENB_STATE_CONNECTED) {

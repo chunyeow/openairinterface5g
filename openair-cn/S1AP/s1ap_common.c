@@ -41,8 +41,9 @@
 #include "S1AP-PDU.h"
 
 int asn_debug = 0;
-int asn1_xer_print = 0;
+int asn1_xer_print = 1;
 
+#if defined(EMIT_ASN_DEBUG_EXTERN)
 inline void ASN_DEBUG(const char *fmt, ...)
 {
     if (asn_debug) {
@@ -56,6 +57,7 @@ inline void ASN_DEBUG(const char *fmt, ...)
         va_end(ap);
     }
 }
+#endif
 
 ssize_t s1ap_generate_initiating_message(
     uint8_t               **buffer,

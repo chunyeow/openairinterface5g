@@ -1,6 +1,5 @@
-CC = gcc
-MPICC = gcc #mpicc
-RM_F_V = rm -f -v
+# Include some standard directives
+include Makerules
 
 CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
 # FORCE ssse3 for compilation of openair on User Mode Linux
@@ -8,14 +7,18 @@ CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ;
 CPUFLAGS += $(shell if grep --silent sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
 linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
-NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
-
 COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
 TOP_DIR             = $(OPENAIR1_DIR)
 OPENAIR1_TOP        = $(OPENAIR1_DIR)
 OPENAIR2_TOP        = $(OPENAIR2_DIR)
 OPENAIR3_TOP        = $(OPENAIR3_DIR)
 OPENAIR3            = $(OPENAIR3_DIR)
+
+S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
+SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
+
+export S1AP_DIR
+export COMMON_UTILS_DIR
 
 CFLAGS = -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
 
@@ -172,9 +175,6 @@ UPDATE_RELEASE_9=1
 endif
 
 ifdef SECU
-NETTLE_FOUND = $(shell if pkg-config --exists nettle; then echo "1" ; else echo "0"; fi)
-OPENSSL_FOUND = $(shell if pkg-config --exists openssl; then echo "1" ; else echo "0"; fi)
-
 ifeq ($(NETTLE_FOUND), 0)
 @echo "Nettle library >= 2.5 is not installed on your system, continuing with security disabled"
 SECU=0
@@ -203,15 +203,6 @@ include $(OPENAIR2_DIR)/S1AP/MESSAGES/Makefile.inc
 
 #LOG_OBJS +=  $(LOG_DIR)/vcd_signal_dumper.o
 #LOG_OBJS +=  $(LOG_DIR)/log.o
-
-CFLAGS += -DENB_MODE
-S1AP_BUILT_OBJS=
-
-ifdef USE_MME
-CFLAGS += -DENABLE_USE_MME
-CFLAGS_S1AP += -DENB_MODE -DENABLE_USE_MME -DEMIT_ASN_DEBUG=1 -DUSER_MODE
-S1AP_BUILT_OBJS += $(S1AP_OBJS) $(addprefix $(OPENAIR2_DIR)/S1AP/MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
-endif
 
 ITTI_MESSAGES_H = messages_xml.h
 
@@ -274,8 +265,7 @@ endif
 
 # Check if libpgm is installed and use it if found instead of the unreliable
 # multicast
-ENABLE_PGM = $(shell if pkg-config --exists openpgm-5.1; then echo "1" ; else echo "0"; fi)
-ifeq ($(ENABLE_PGM), 1)
+ifeq ($(PGM_FOUND), 1)
 CFLAGS += `pkg-config --cflags openpgm-5.1` -DENABLE_PGM_TRANSPORT
 PGM_LDFLAGS = `pkg-config --libs openpgm-5.1`
 endif
@@ -285,9 +275,19 @@ ifeq ($(OPENAIR2),1)
 OBJ += $(L2_OBJS)
 endif
 
-LIB =  $(LFDS_DIR)/bin/liblfds611.a
+LIBS = $(LFDS_DIR)/bin/liblfds611.a
+
 ifdef USE_MME
-LIB += $(S1AP_DIR)/libs1ap.a
+CFLAGS += -DENB_MODE -DENABLE_USE_MME -DENABLE_EVENT_FD -I$(S1AP_DIR) -I$(SCTP_DIR)
+
+S1AP_CFLAGS = $(CFLAGS) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl)
+LIBS += $(S1AP_DIR)/libs1ap.a $(SCTP_DIR)/libsctp.a -lsctp
+export S1AP_CFLAGS
+
+$(S1AP_DIR)/libs1ap.a: force_look
+	$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB libs1ap.a
+$(SCTP_DIR)/libsctp.a: force_look
+	$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB libsctp.a
 endif
 
 default: oaisim
@@ -313,16 +313,6 @@ printvars:
 	@echo CFLAGS: $(CFLAGS)
 	@echo Enable PGM: $(ENABLE_PGM)
 
-ASN1RELDIR=R9.8
-ifeq ($(USE_MME), R8)
-	ASN1RELDIR=R8.10
-else
-	CFLAGS_S1AP += -DUPDATE_RELEASE_9
-endif
-S1AP_DIR=$(OPENAIR2_DIR)/S1AP
-ASN1MESSAGESDIR=$(S1AP_DIR)/MESSAGES
-ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
-
 -include $(ITTI_MESSAGES_XML:.xml=.d)
 -include $(OBJ:.o=.d)
 -include $(OAISIM_OBJS:.o=.d)
@@ -333,7 +323,7 @@ ifdef ENABLE_ITTI
 gccxml_available = $(shell if [ `gccxml --version | grep GCC-XML -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
 ifeq 	($(gccxml_available), 0) 
 $(error gccxml is missing, please install)
-endif 
+endif
 endif
 
 $(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
@@ -366,22 +356,6 @@ $(OBJ) $(OAISIM_OBJS) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1): %.o : %.c
 	sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
 
-$(S1AP_BUILT_OBJS): %.o : %.c
-	@echo Compiling $<
-	@$(CC) -Wall -c $(CFLAGS_S1AP) $(S1AP_Incl) $(UTIL_incl) $(UTILS_incl) -o $@ $<
-
-$(ASN1MESSAGESDIR)/s1ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-PDU-Contents.asn $(ASN1DIR)/asn1tostruct.py
-	echo Timestamp > $@
-	(cd $(ASN1DIR) && python $(ASN1DIR)/asn1tostruct.py -f$<)
-
-$(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-CommonDataTypes.asn $(ASN1DIR)/$(ASN1RELDIR)/S1AP-Constants.asn $(ASN1DIR)/$(ASN1RELDIR)/S1AP-IEs.asn $(ASN1DIR)/$(ASN1RELDIR)/S1AP-PDU.asn
-	echo Timestamp > $@
-	(cd $(ASN1MESSAGESDIR) && asn1c -gen-PER -fnative-types -fskeletons-copy $^)
-
-$(S1AP_DIR)/libs1ap.a: $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp $(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp $(S1AP_BUILT_OBJS)
-	@echo Creating $@
-	$(AR) rcs $@ $^
-
 $(LFDS_DIR)/bin/liblfds611.a:
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux
 
@@ -390,11 +364,11 @@ oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
 	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
 	 -lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt
 
-oaisim: $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) $(LIB)
+oaisim: $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) $(LIBS)
 	@echo "Linking oaisim ..."
 	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1) \
 	-lm -lblas -lpthread -llapack_atlas -lforms -lxml2 -lX11 -lXpm -lrt \
-	$(LIB) $(PGM_LDFLAGS) $(DB_LDFLAGS) $(OSA_LDFLAGS)
+	$(LIBS) $(PGM_LDFLAGS) $(DB_LDFLAGS) $(OSA_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv oaisim oaisim_eNB
@@ -438,7 +412,7 @@ rrm_std_cellular:
 	( cd $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR && make cell_rrm CELL_RRM=1 CELLULAR=1 NO_RRM=1)
 
 
-cleanall: clean cleanasn1 cleanmmeasn1
+cleanall: clean cleanasn1
 
 clean:
 	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
@@ -449,10 +423,10 @@ clean:
 	@$(RM_F_V) $(OAISIM_OBJS) $(OAISIM_OBJS:.o=.d)
 	@$(RM_F_V) $(OAISIM_PAD_OBJS) $(OAISIM_PAD_OBJS:.o=.d)
 	@$(RM_F_V) $(ASN1_MSG_OBJS1) $(ASN1_MSG_OBJS1:.o=.d)
-	@$(RM_F_V) $(S1AP_BUILT_OBJS)
-	@$(RM_F_V) $(ASN1MESSAGESDIR)/libs1ap.a
 	@$(RM_F_V) *.exe*
 	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
+	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean
+	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean
 
 cleanl1:
 	@$(RM_F_V) LOG_THREAD oaisim
@@ -471,13 +445,7 @@ cleanasn1:
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
-
-cleanmmeasn1:
-	@$(RM_F_V) $(S1AP_BUILT_OBJS)
-	@$(RM_F_V) $(S1AP_BUILT_OBJS:.o:.c)
-	@$(RM_F_V) $(ASN1MESSAGESDIR)/libs1ap.a
-	@$(RM_F_V) $(ASN1MESSAGESDIR)/s1ap_asn1regen.stamp
-	@$(RM_F_V) $(ASN1MESSAGESDIR)/s1ap_ieregen.stamp
+	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall
 
 cleancell:
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/CELLULAR/*.o
@@ -489,15 +457,15 @@ cleancell:
 
 print:
 #	@echo $(cygwin)
-	@echo "OBJ " 				$(OBJ)
+	@echo "OBJ " 			$(OBJ)
 	@echo "OAISIM_OBJS " 		$(OAISIM_OBJS)
 	@echo "OAISIM_PAD_OBJS " 	$(OAISIM_PAD_OBJS)
 	@echo "OCG_FLAG are "		$(OCG_FLAG)
 	@echo "CFLAGS are "      	$(CFLAGS)
 	@echo "EXTRA_CFLAGS are" 	$(EXTRA_CFLAGS)
-	@echo "L2 includes are"	    $(L2_incl)
-	@echo "S1AP Includes are"   $(S1AP_Incl)
-	@echo "TOP_DIR Include is"  I$(TOP_DIR)
+	@echo "L2 includes are"	    	$(L2_incl)
+	@echo "S1AP Includes are"   	$(S1AP_Incl)
+	@echo "TOP_DIR Include is"  	I$(TOP_DIR)
 	@echo "UTIL includes are"	$(UTIL_incl)
 	@echo "UTILS includes are"	$(UTILS_incl)
 	@echo "IS_REL8 is "      	$(IS_REL8)
@@ -505,7 +473,11 @@ print:
 	@echo "ENABLE_DB is "    	$(ENABLE_DB)
 
 showcflags:
-	@echo $(CFLAGS)
+	@echo oaisim cflags: $(CFLAGS)
+	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags
+
+force_look:
+	true
 
 otg_all: otg_latency otg_gp
 
@@ -537,10 +509,10 @@ ifeq 	($(pexpect), 1)
 ifndef	PW
 	@echo "Usage: make pre-ci PW=mypassword"
 	@echo "Password is used to access the local host through ssh."
-	python $(OPENAIR_TARGETS)/TEST/OAI/test01.py 
+	python $(OPENAIR_TARGETS)/TEST/OAI/test01.py
 else
 	python $(OPENAIR_TARGETS)/TEST/OAI/test01.py -w $(PW)
 endif
 else
 	@echo "Python pexpect package is missing, please install"
-endif 
+endif

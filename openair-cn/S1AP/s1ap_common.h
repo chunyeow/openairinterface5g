@@ -44,7 +44,9 @@
 // extern int asn_debug_indent;
 extern int asn_debug;
 
+#if defined(EMIT_ASN_DEBUG_EXTERN)
 inline void ASN_DEBUG(const char *fmt, ...);
+#endif
 
 #include "Criticality.h"
 #include "Presence.h"
@@ -400,9 +402,8 @@ extern int asn_debug;
 extern int asn1_xer_print;
 
 #if defined(ENB_MODE)
-# include "mme_sim.h"
 # include "UTIL/LOG/log.h"
-# include "eNB_default_values.h"
+# include "s1ap_eNB_default_values.h"
 # define S1AP_ERROR(x, args...) LOG_E(S1AP, x, ##args)
 # define S1AP_WARN(x, args...)  LOG_W(S1AP, x, ##args)
 # define S1AP_TRAF(x, args...)  LOG_T(S1AP, x, ##args)
@@ -420,19 +421,18 @@ struct s1ap_message_s;
 
 /** \brief Function callback prototype.
  **/
-#if defined(ENB_MODE)
+// typedef int (*s1ap_message_decoded_callback)(
+//     eNB_mme_desc_t *eNB_desc_p,
+//     sctp_queue_item_t *packet_p,
+//     struct s1ap_message_s *message_p
+// );
+
 typedef int (*s1ap_message_decoded_callback)(
-    eNB_mme_desc_t *eNB_desc_p,
-    sctp_queue_item_t *packet_p,
+    uint32_t               assoc_id,
+    uint32_t               stream,
     struct s1ap_message_s *message_p
 );
-#else
-typedef int (*s1ap_message_decoded_callback)(
-    uint32_t assocId,
-    uint32_t stream,
-    struct s1ap_message_s *message_p
-);
-#endif
+
 /** \brief Encode a successfull outcome message
  \param buffer pointer to buffer in which data will be encoded
  \param length pointer to the length of buffer

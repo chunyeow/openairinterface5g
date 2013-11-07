@@ -1,0 +1,5 @@
+MESSAGE_DEF(SCTP_NEW_ASSOCIATION_REQ , MESSAGE_PRIORITY_MED, sctp_new_association_req_t          , sctp_new_association_req)
+MESSAGE_DEF(SCTP_NEW_ASSOCIATION_RESP, MESSAGE_PRIORITY_MED, sctp_new_association_resp_t         , sctp_new_association_resp)
+MESSAGE_DEF(SCTP_REGISTER_UPPER_LAYER, MESSAGE_PRIORITY_MED, sctp_listener_register_upper_layer_t, sctp_listener_register_upper_layer)
+MESSAGE_DEF(SCTP_DATA_REQ,             MESSAGE_PRIORITY_MED, sctp_data_req_t                     , sctp_data_req)
+MESSAGE_DEF(SCTP_DATA_IND,             MESSAGE_PRIORITY_MED, sctp_data_ind_t                     , sctp_data_ind)

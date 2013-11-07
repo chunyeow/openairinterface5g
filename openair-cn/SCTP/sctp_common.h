@@ -47,6 +47,11 @@
 # define SCTP_ERROR(x, args...) LOG_E(SCTP, x, ##args)
 # define SCTP_WARN(x, args...)  LOG_W(SCTP, x, ##args)
 # define SCTP_DEBUG(x, args...) LOG_D(SCTP, x, ##args)
+
+# define SCTP_OUT_STREAMS        (64)
+# define SCTP_IN_STREAMS         (64)
+# define SCTP_MAX_ATTEMPTS       (5)
+# define SCTP_RECV_BUFFER_SIZE   (1024)
 #else
 # define SCTP_ERROR(x, args...) do { fprintf(stderr, "[SCTP][E]"x, ##args); } while(0)
 # define SCTP_DEBUG(x, args...) do { fprintf(stdout, "[SCTP][D]"x, ##args); } while(0)
@@ -57,7 +62,7 @@ int sctp_set_init_opt(int sd, uint16_t instreams, uint16_t outstreams,
                       uint16_t max_attempts, uint16_t init_timeout);
 
 int sctp_get_sockinfo(int sock, uint16_t *instream, uint16_t *outstream,
-                      uint32_t *assoc_id);
+                      int32_t *assoc_id);
 
 int sctp_get_peeraddresses(int sock, struct sockaddr **remote_addr,
                            int *nb_remote_addresses);

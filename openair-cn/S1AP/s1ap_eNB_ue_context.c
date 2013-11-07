@@ -42,8 +42,10 @@
 
 #include "tree.h"
 
+#include "intertask_interface.h"
+
 #include "s1ap_common.h"
-#include "s1ap_eNB.h"
+#include "s1ap_eNB_defs.h"
 #include "s1ap_eNB_ue_context.h"
 
 inline int s1ap_eNB_compare_eNB_ue_s1ap_id(
@@ -79,7 +81,7 @@ struct s1ap_eNB_ue_context_s *s1ap_eNB_allocate_new_UE_context(void)
 }
 
 struct s1ap_eNB_ue_context_s *s1ap_eNB_get_ue_context(
-    struct eNB_mme_desc_s *eNB_desc_p,
+    s1ap_eNB_instance_t *instance_p,
     uint32_t eNB_ue_s1ap_id)
 {
     s1ap_eNB_ue_context_t temp;
@@ -89,7 +91,7 @@ struct s1ap_eNB_ue_context_s *s1ap_eNB_get_ue_context(
     /* eNB ue s1ap id = 24 bits wide */
     temp.eNB_ue_s1ap_id = eNB_ue_s1ap_id & 0x00FFFFFF;
 
-    return RB_FIND(s1ap_ue_map, &eNB_desc_p->s1ap_ue_head, &temp);
+    return RB_FIND(s1ap_ue_map, &instance_p->s1ap_ue_head, &temp);
 }
 
 void s1ap_eNB_free_ue_context(struct s1ap_eNB_ue_context_s *ue_context_p)

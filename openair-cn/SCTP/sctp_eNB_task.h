@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Eurecom OpenAirInterface
-  Copyright(c) 1999 - 2012 Eurecom
+  Copyright(c) 1999 - 2013 Eurecom
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -28,10 +28,9 @@
 
 *******************************************************************************/
 
-#ifndef S1AP_ENB_HANDLERS_H_
-#define S1AP_ENB_HANDLERS_H_
+#ifndef SCTP_ENB_TASK_H_
+#define SCTP_ENB_TASK_H_
 
-int s1ap_eNB_handle_message(uint32_t assoc_id, int32_t stream,
-                            const uint8_t * const data, const uint32_t data_length);
+void *sctp_eNB_task(void *arg);
 
-#endif /* S1AP_ENB_HANDLERS_H_ */
+#endif /* SCTP_ENB_TASK_H_ */

@@ -82,12 +82,12 @@ typedef enum {
     S1AP_OVERLOAD_MAX,
 } s1ap_overload_state_t;
 
-typedef enum {
-    PAGING_DRX_32  = 0x0,
-    PAGING_DRX_64  = 0x1,
-    PAGING_DRX_128 = 0x2,
-    PAGING_DRX_256 = 0x3,
-} paging_drx_t;
+// typedef enum {
+//     PAGING_DRX_32  = 0x0,
+//     PAGING_DRX_64  = 0x1,
+//     PAGING_DRX_128 = 0x2,
+//     PAGING_DRX_256 = 0x3,
+// } paging_drx_t;
 
 typedef struct {
     /* Octet string data */
@@ -176,161 +176,156 @@ typedef struct {
     } identity;
 } ue_identity_t;
 
-typedef struct {
-    /* The NAS First Req is the first message exchanged between RRC and S1AP
-     * for an UE.
-     * The rnti uniquely identifies an UE within a cell. Later the enb_ue_s1ap_id
-     * will be the unique identifier used between RRC and S1AP.
-     */
-    uint16_t                  rnti;
+/* Served PLMN identity element */
+struct plmn_identity_s {
+    uint16_t mcc;
+    uint16_t mnc;
+    STAILQ_ENTRY(plmn_identity_s) next;
+};
 
-    rrc_establishment_cause_t establishment_cause;
-    nas_pdu_t                 nas_pdu;
-    /* If this flag is set S1AP layer is expecting the GUMMEI. If = 0,
-     * the temporary s-tmsi is used.
-     */
-    ue_identity_t ue_identity;
-} s1ap_nas_first_req_t;
+/* Served group id element */
+struct served_group_id_s {
+    uint16_t mme_group_id;
+    STAILQ_ENTRY(served_group_id_s) next;
+};
 
-typedef struct {
-    unsigned  eNB_ue_s1ap_id:24;
-    nas_pdu_t nas_pdu;
-} s1ap_nas_uplink_t;
+/* Served mme code for a particular MME */
+struct mme_code_s {
+    uint8_t mme_code;
+    STAILQ_ENTRY(mme_code_s) next;
+};
 
-typedef struct {
-    nas_pdu_t nas_pdu;
-//     cause_t   cause;
-} s1ap_nas_non_delivery_t;
+/* Served gummei element */
+struct served_gummei_s {
+    /* Number of MME served PLMNs */
+    uint8_t nb_served_plmns;
+    /* List of served PLMNs by MME */
+    STAILQ_HEAD(served_plmns_s, plmn_identity_s) served_plmns;
 
-typedef struct {
-    uint16_t  rnti;
-    unsigned  eNB_ue_s1ap_id:24;
+    /* Number of group id in list */
+    uint8_t nb_group_id;
+    /* Served group id list */
+    STAILQ_HEAD(served_group_ids_s, served_group_id_s) served_group_ids;
 
-    /* Number of e_rab to be setup in the list */
-    uint8_t   nb_of_e_rabs;
-    /* list of e_rab to be setup by RRC layers */
-    e_rab_t **e_rab_param;
-} s1ap_e_rab_setup_req_t,
-s1ap_initial_ctxt_setup_req_t;
+    /* Number of MME code */
+    uint8_t nb_mme_code;
+    /* MME Code to uniquely identify an MME within an MME pool area */
+    STAILQ_HEAD(mme_codes_s, mme_code_s) mme_codes;
 
-typedef struct {
-    unsigned  eNB_ue_s1ap_id:24;
-    ue_radio_cap_t ue_radio_cap;
-} s1ap_ue_cap_info_ind_t;
+    /* Next GUMMEI element */
+    STAILQ_ENTRY(served_gummei_s) next;
+};
 
-typedef struct {
-    unsigned  eNB_ue_s1ap_id:24;
+struct s1ap_eNB_instance_s;
 
-    /* Number of e_rab setup-ed in the list */
-    uint8_t   nb_of_e_rabs;
-    /* list of e_rab setup-ed by RRC layers */
-    e_rab_setup_t *e_rabs;
-    /* Number of e_rab failed to be setup in list */
-    uint8_t   nb_of_e_rabs_failed;
-    /* list of e_rabs that failed to be setup */
-    e_rab_failed_t *e_rabs_failed;
-} s1ap_initial_ctxt_setup_resp_t;
+/* This structure describes association of a eNB to a MME */
+typedef struct s1ap_eNB_mme_data_s {
+    /* MME descriptors tree, ordered by sctp assoc id */
+    RB_ENTRY(s1ap_eNB_mme_data_s) entry;
 
-typedef enum {
-    /** RRC -> S1AP API **/
-#define S1AP_API_REQ_IS_INPUT(x) (x & 0x10)
-    /* RRC should use this api request for the first NAS message */
-    S1AP_API_NAS_FIRST_REQ              = 0x10,
-    /* NAS messages with no context activation */
-    S1AP_API_NAS_UPLINK                 = 0x11,
-    /* When the eNB decides to not start the delivery of a NAS message that has
-     * been received over a UE-associated logical S1-connection or the eNB is
-     * unable to ensure that the message has been received by the UE, it shall
-     * report the non-delivery of this NAS message.
-     */
-    S1AP_API_NAS_NON_DELIVERY_IND       = 0x12,
-    /* This message is sent by the eNB to request the MME to switch DL GTP
-     * tunnel termination point(s) from one end-point to another.
-     */
-    S1AP_API_PATH_SWITCH_REQ            = 0x13,
-    /* This message is used to report the outcome of the request from the
-     * S1AP_API_NAS_INITIAL_CONTEXT_SETUP_REQ API request.
-     */
-    S1AP_API_INITIAL_CONTEXT_SETUP_RESP = 0x14,
-    /* This message is used to report the unsuccessfull outcome of the request
-     * from the S1AP_API_NAS_INITIAL_CONTEXT_SETUP_REQ API request.
-     */
-    S1AP_API_INITIAL_CONTEXT_SETUP_FAIL = 0x15,
-    /* This message is used to report the outcome of the request from the
-     * S1AP_API_INITIAL_CONTEXT_SETUP_REQ API request.
-     */
-    S1AP_API_E_RAB_SETUP_RESP           = 0x16,
-    /* This message is used to report the outcome of the request from the
-     * S1AP_API_E_RAB_SETUP_REQ API request.
-     */
-    S1AP_API_E_RAB_MODIFY_RESP          = 0x17,
-    /* This message is used to report the outcome of the request from the
-     * S1AP_API_E_RAB_MODIFY_REQ API request.
-     */
-    S1AP_API_E_RAB_RELEASE_RESP         = 0x18,
-    /* The purpose of the UE Capability Info Indication procedure is to enable
-     * the eNB to provide to the MME UE capability-related information.
-     */
-    S1AP_API_UE_CAP_INFO_IND            = 0x19,
+    /* This is the optional name provided by the MME */
+    char *mme_name;
 
-    /** S1AP -> RRC API **/
-#define S1AP_API_REQ_IS_OUTPUT(x) (x & 0x20)
-    /* S1AP layer received a valid downlink info transfer message */
-    S1AP_API_NAS_DOWNLINK                   = 0x20,
-    /* The purpose of the Initial Context Setup procedure is to establish the
-     * necessary overall initial UE Context including ERAB context, the Security
-     * Key, Handover Restriction List, UE Radio capability and UE Security
-     * Capabilities etc.
+    /* List of served GUMMEI per MME. There is one GUMMEI per RAT with a max
+     * number of 8 RATs but in our case only one is used. The LTE related pool
+     * configuration is included on the first place in the list.
      */
-    S1AP_API_NAS_INITIAL_CONTEXT_SETUP_REQ  = 0x21,
-    /* The purpose of the E-RAB Setup procedure is to assign resources on Uu and
-     * S1 for one or several E-RABs and to setup corresponding Data Radio
-     * Bearers for a given UE.
-     */
-    S1AP_API_E_RAB_SETUP_REQ                = 0x22,
-    /* This message is sent by the MME and is used to request the eNB to modify
-     * the Data Radio Bearers and the allocated resources on Uu and S1 for one
-     * or several E-RABs.
-     */
-    S1AP_API_E_RAB_MODIFY_REQ               = 0x23,
-    /* This message is sent by the MME and is used to request the eNB to release
-     * allocated resources on Uu and S1 for one or several E-RABs.
-     */
-    S1AP_API_E_RAB_RELEASE_REQ              = 0x24,
+    STAILQ_HEAD(served_gummeis_s, served_gummei_s) served_gummei;
 
-    /** S1AP <-> RRC API **/
-    /** Messages below are bi-directionnal and can be triggered by both RRC and
-     * S1AP.
-     **/
-#define S1AP_API_REQ_IS_BIDIR(x) (x & 0x40)
-    /* At reception of RESET message, the eNB (or MME) shall release all
-     * allocated resources on S1 and Uu related to the UE association(s)
-     * indicated explicitly or implicitly in the RESET message and remove the
-     * indicated UE contexts including S1AP ID.
+    /* Relative processing capacity of an MME with respect to the other MMEs
+     * in the pool in order to load-balance MMEs within a pool as defined
+     * in TS 23.401.
      */
-    S1AP_API_RESET                          = 0x40,
-    S1AP_API_RESET_ACK                      = 0x41,
-} s1ap_rrc_api_req_type_t;
+    uint8_t relative_mme_capacity;
+
+    /* Current MME overload information (if any). */
+    s1ap_overload_state_t overload_state;
+    /* Current eNB->MME S1AP association state */
+    s1ap_eNB_state_t state;
+
+    /* Next usable stream for UE signalling */
+    int32_t nextstream;
+
+    /* Number of input/ouput streams */
+    uint16_t in_streams;
+    uint16_t out_streams;
+
+    /* Connexion id used when SCTP association is not established yet */
+    uint16_t cnx_id;
+
+    /* SCTP association id */
+    int32_t  assoc_id;
+
+    /* Only meaningfull in virtual mode */
+    struct s1ap_eNB_instance_s *s1ap_eNB_instance;
+} s1ap_eNB_mme_data_t;
+
+typedef struct s1ap_eNB_instance_s {
+    /* Next s1ap eNB association.
+     * Only used for virtual mode.
+     */
+    STAILQ_ENTRY(s1ap_eNB_instance_s) s1ap_eNB_entries;
+
+    /* Tree of S1AP MME associations ordered by association ID */
+    RB_HEAD(s1ap_mme_map, s1ap_eNB_mme_data_s) s1ap_mme_head;
+
+    /* TODO: add a map ordered by relative MME capacity */
+
+    /* Tree of UE ordered by eNB_ue_s1ap_id's */
+    RB_HEAD(s1ap_ue_map, s1ap_eNB_ue_context_s) s1ap_ue_head;
+
+    /* For virtual mode, mod_id as defined in the rest of the L1/L2 stack */
+    uint8_t mod_id;
+
+    /* Displayable name of eNB */
+    char *eNB_name;
+
+    /* Unique eNB_id to identify the eNB within EPC.
+     * In our case the eNB is a macro eNB so the id will be 20 bits long.
+     * For Home eNB id, this field should be 28 bits long.
+     */
+    uint32_t eNB_id;
+    /* The type of the cell */
+    enum cell_type_e cell_type;
+
+    /* Tracking area code */
+    uint16_t tac;
+
+    /* Mobile Country Code
+     * Mobile Network Code
+     */
+    uint16_t  mcc;
+    uint16_t  mnc;
+
+    /* Default Paging DRX of the eNB as defined in TS 36.304 */
+    paging_drx_t default_drx;
+} s1ap_eNB_instance_t;
 
 typedef struct {
-    /* The API request type */
-    s1ap_rrc_api_req_type_t api_req;
-    union {
-        /** RRC -> S1AP requests **/
-        s1ap_nas_first_req_t            first_nas_req;
-        s1ap_nas_uplink_t               nas_uplink;
-        s1ap_initial_ctxt_setup_resp_t  initial_ctxt_resp;
-        s1ap_nas_non_delivery_t         nas_non_delivery;
-        s1ap_ue_cap_info_ind_t          ue_cap_info_ind;
-        /** S1AP -> RRC requests **/
-        s1ap_e_rab_setup_req_t        e_rab_setup_req;
-        s1ap_initial_ctxt_setup_req_t initial_ctxt_setup_req;
-    } msg;
-} s1ap_rrc_api_req_t;
+    /* List of served eNBs
+     * Only used for virtual mode
+     */
+    STAILQ_HEAD(s1ap_eNB_instances_head_s, s1ap_eNB_instance_s) s1ap_eNB_instances_head;
+    /* Nb of registered eNBs */
+    uint8_t nb_registered_eNBs;
 
-/* Callback notifier.
- * Called when a new event has to be notified between S1AP -> RRC
- */
-typedef int (*rrc_event_notify_t)(s1ap_rrc_api_req_t *api_req);
+    /* Generate a unique connexion id used between S1AP and SCTP */
+    uint16_t global_cnx_id;
+} s1ap_eNB_internal_data_t;
+
+inline int s1ap_eNB_compare_assoc_id(
+    struct s1ap_eNB_mme_data_s *p1, struct s1ap_eNB_mme_data_s *p2);
+
+/* Generate the tree management functions */
+RB_PROTOTYPE(s1ap_mme_map, s1ap_eNB_mme_data_s, entry,
+             s1ap_eNB_compare_assoc_id);
+
+inline struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
+    s1ap_eNB_instance_t *instance_p,
+    int32_t assoc_id, uint16_t cnx_id);
+
+int s1ap_eNB_init(s1ap_eNB_instance_t *eNB_desc_p,
+                  char *local_ip_addr[],  int nb_local_ip,
+                  char *remote_ip_addr[], int nb_remote_ip);
 
 #endif /* S1AP_ENB_DEFS_H_ */

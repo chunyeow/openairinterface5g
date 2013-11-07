@@ -1,0 +1,1 @@
+MESSAGE_DEF(S1AP_REGISTER_ENB, MESSAGE_PRIORITY_MED, s1ap_register_eNB_t, s1ap_register_eNB)

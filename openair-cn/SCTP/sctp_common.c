@@ -83,7 +83,7 @@ int sctp_set_init_opt(int sd, uint16_t instreams, uint16_t outstreams,
 }
 
 int sctp_get_sockinfo(int sock, uint16_t *instream, uint16_t *outstream,
-                      uint32_t *assoc_id)
+                      int32_t *assoc_id)
 {
     socklen_t i;
     struct sctp_status status;
@@ -95,7 +95,7 @@ int sctp_get_sockinfo(int sock, uint16_t *instream, uint16_t *outstream,
     memset(&status, 0, sizeof(struct sctp_status));
     i = sizeof(struct sctp_status);
 
-    if(getsockopt(sock, IPPROTO_SCTP, SCTP_STATUS, &status, &i) < 0) {
+    if (getsockopt(sock, IPPROTO_SCTP, SCTP_STATUS, &status, &i) < 0) {
         SCTP_ERROR("Getsockopt SCTP_STATUS failed: %s\n", strerror(errno));
         return -1;
     }

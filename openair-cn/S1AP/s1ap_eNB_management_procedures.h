@@ -31,7 +31,7 @@
 #ifndef S1AP_ENB_MANAGEMENT_PROCEDURES_H_
 #define S1AP_ENB_MANAGEMENT_PROCEDURES_H_
 
-int s1ap_eNB_ue_capabilities(eNB_mme_desc_t         *eNB_desc_p,
-                             s1ap_ue_cap_info_ind_t *ue_cap_info_ind_p);
+// int s1ap_eNB_ue_capabilities(eNB_mme_desc_t         *eNB_desc_p,
+//                              s1ap_ue_cap_info_ind_t *ue_cap_info_ind_p);
 
 #endif /* S1AP_ENB_MANAGEMENT_PROCEDURES_H_ */

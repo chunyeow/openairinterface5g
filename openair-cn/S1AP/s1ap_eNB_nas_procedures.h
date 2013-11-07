@@ -31,14 +31,11 @@
 #ifndef S1AP_ENB_NAS_PROCEDURES_H_
 #define S1AP_ENB_NAS_PROCEDURES_H_
 
-int s1ap_eNB_nas_uplink(eNB_mme_desc_t *eNB_desc_p,
-                        s1ap_nas_uplink_t *nas_uplink_p);
-
-int s1ap_eNB_handle_nas_downlink(eNB_mme_desc_t *eNB_desc_p,
-                                 sctp_queue_item_t *packet_p,
+int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
+                                 uint32_t               stream,
                                  struct s1ap_message_s *message_p);
 
-int s1ap_eNB_initial_ctxt_resp(eNB_mme_desc_t                 *eNB_desc_p,
-                               s1ap_initial_ctxt_setup_resp_t *initial_ctxt_resp_p);
+// int s1ap_eNB_initial_ctxt_resp(eNB_mme_desc_t                 *eNB_desc_p,
+//                                s1ap_initial_ctxt_setup_resp_t *initial_ctxt_resp_p);
 
 #endif /* S1AP_ENB_NAS_PROCEDURES_H_ */

@@ -106,7 +106,8 @@ static int s1ap_eNB_decode_unsuccessful_outcome(s1ap_message *message,
     return -1;
 }
 
-int s1ap_eNB_decode_pdu(s1ap_message *message, uint8_t *buffer, uint32_t length)
+int s1ap_eNB_decode_pdu(s1ap_message *message, const uint8_t * const buffer,
+                        const uint32_t length)
 {
     S1AP_PDU_t  pdu;
     S1AP_PDU_t *pdu_p = &pdu;

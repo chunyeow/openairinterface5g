@@ -50,6 +50,9 @@ typedef enum {
 } s1ap_ue_state;
 
 typedef struct s1ap_eNB_ue_context_s {
+    /* Tree related data */
+    RB_ENTRY(s1ap_eNB_ue_context_s) entries;
+
     /* Uniquely identifies the UE between MME and eNB within the eNB.
      * This id is encoded on 24bits.
      */
@@ -69,9 +72,6 @@ typedef struct s1ap_eNB_ue_context_s {
 
     /* Reference to MME data this UE is attached to */
     struct s1ap_eNB_mme_data_s *mme_ref;
-
-    /* Tree related data */
-    RB_ENTRY(s1ap_eNB_ue_context_s) entries;
 } s1ap_eNB_ue_context_t;
 
 inline int s1ap_eNB_compare_eNB_ue_s1ap_id(
@@ -83,8 +83,8 @@ RB_PROTOTYPE(s1ap_ue_map, s1ap_eNB_ue_context_s, entries,
 
 struct s1ap_eNB_ue_context_s *s1ap_eNB_allocate_new_UE_context(void);
 
-struct s1ap_eNB_ue_context_s *s1ap_eNB_get_ue_context(struct eNB_mme_desc_s
-        *eNB_desc_p,
-        uint32_t eNB_ue_s1ap_id);
+struct s1ap_eNB_ue_context_s *s1ap_eNB_get_ue_context(
+    s1ap_eNB_instance_t *instance_p,
+    uint32_t eNB_ue_s1ap_id);
 
 #endif /* S1AP_ENB_UE_CONTEXT_H_ */

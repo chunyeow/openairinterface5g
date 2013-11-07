@@ -1,5 +1,6 @@
-S1AP_DIR = $(OPENAIR3_DIR)/OPENAIRMME/S1AP
-S1AP_OBJDIR = $(OPENAIR3_DIR)/OPENAIRMME/S1AP/enb_objs
+include $(OPENAIR_TARGETS)/SIMU/USER/Makerules
+
+S1AP_OBJDIR = $(S1AP_DIR)/enb_objs
 
 ASN1MESSAGESDIR=$(S1AP_DIR)/MESSAGES
 ASN1DIR=$(ASN1MESSAGESDIR)/ASN1
@@ -26,7 +27,9 @@ libs1ap_OBJECTS = \
 	$(S1AP_OBJDIR)/s1ap_encoder.o		\
 	$(S1AP_OBJDIR)/s1ap_decoder.o		\
 	$(S1AP_OBJDIR)/s1ap_xer_print.o		\
-	s1ap_eNB_decoder.o s1ap_eNB_encoder.o	\
+	s1ap_eNB_itti_messaging.o		\
+	s1ap_eNB_decoder.o			\
+	s1ap_eNB_encoder.o			\
 	s1ap_eNB_handlers.o			\
 	s1ap_eNB_nnsf.o	s1ap_eNB_ue_context.o	\
 	s1ap_eNB_trace.o s1ap_eNB_overload.o	\
@@ -35,42 +38,30 @@ libs1ap_OBJECTS = \
 	$(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
 
 # pull in dependency info for *existing* .o files
--include .*.d
-# -include .*.d
+-include *.d
 
-CFLAGS = \
-	-I./MESSAGES		\
-	-I$(S1AP_OBJDIR)	\
-	-I../GTPV1-U		\
-	-I../GTPV1-U/nw-gtpv1u/shared	\
-	-I../GTPV1-U/nw-gtpv1u/include	\
-	-I../SCTP		\
-	-I../UDP		\
-	-I../UTILS      	\
-	-I../UTILS/HASHTABLE     \
-	-I$(OPENAIR2_DIR)/COMMON	\
-	-I$(S1AP_DIR)		\
-	-I$(OPENAIR2_DIR)	\
-	-I$(OPENAIR2_DIR)/UTIL	\
-	$(ADD_CFLAGS)		\
+CFLAGS = 			\
 	-DENB_MODE		\
 	-DENABLE_USE_MME	\
-	-DEMIT_ASN_DEBUG_EXTERN	\
+	-DEMIT_ASN_DEBUG=1	\
 	-DUSER_MODE		\
-	-g			\
-	-O2			\
-	-Wall			\
+	-I./MESSAGES		\
+	-I$(S1AP_OBJDIR)	\
+	-I../UTILS		\
+	$(ADD_CFLAGS)		\
+	-DENB_MODE		\
+	$(S1AP_CFLAGS)		\
 	-Werror=implicit-function-declaration
 
 $(libs1ap_OBJECTS): %.o : %.c
 	@echo "Compiling $<"
 	@$(CC) -c $(CFLAGS) -o $@ $<
-	@$(CC) -MM $(CFLAGS) $*.c > .$(notdir $*).d
-	@mv -f .$(notdir $*).d .$(notdir $*).d.tmp
-	@sed -e 's|.*:|$*.o:|' < .$(notdir $*).d.tmp > .$(notdir $*).d
-	@sed -e 's/.*://' -e 's/\\$$//' < .$(notdir $*).d.tmp | fmt -1 | \
-	sed -e 's/^ *//' -e 's/$$/:/' >> .$(notdir $*).d
-	@rm -f .$(notdir $*).tmp
+	@$(CC) -MM $(CFLAGS) $*.c > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
 $(S1AP_OBJDIR)/s1ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-PDU-Contents.asn $(ASN1DIR)/asn1tostruct.py
 	mkdir -p $(S1AP_OBJDIR)
@@ -87,10 +78,19 @@ libs1ap.a: $(S1AP_OBJDIR)/s1ap_ieregen.stamp $(S1AP_OBJDIR)/s1ap_asn1regen.stamp
 	@$(AR) rcs $@ $(libs1ap_OBJECTS)
 
 clean:
-	rm -f $(libs1ap_OBJECTS)
-	rm -f $(libs1ap_OBJECTS:.o=.d)
-	rm -f libs1ap.a
-	rm -f $(S1AP_OBJDIR)/s1ap_asn1regen.stamp
-	rm -f $(S1AP_OBJDIR)/s1ap_ieregen.stamp
-	rm -f $(S1AP_OBJDIR)/s1ap_decoder.c $(S1AP_OBJDIR)/s1ap_encoder.c
-	rm -f $(S1AP_OBJDIR)/s1ap_xer_print.c $(S1AP_OBJDIR)/s1ap_ies_defs.h
+	@$(RM_F_V) $(libs1ap_OBJECTS)
+	@$(RM_F_V) .*.d
+	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
+	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES:.o=.d))
+	@$(RM_F_V) libs1ap.a
+	@$(RM_F_V) $(S1AP_OBJDIR)/s1ap_asn1regen.stamp
+	@$(RM_F_V) $(S1AP_OBJDIR)/s1ap_ieregen.stamp
+	@$(RM_F_V) $(S1AP_OBJDIR)/s1ap_decoder.c $(S1AP_OBJDIR)/s1ap_encoder.c
+	@$(RM_F_V) $(S1AP_OBJDIR)/s1ap_xer_print.c $(S1AP_OBJDIR)/s1ap_ies_defs.h
+
+cleanall: clean
+	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES:.o=.c))
+	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES:.o=.h))
+
+showcflags:
+	@echo s1ap cflags: $(CFLAGS)

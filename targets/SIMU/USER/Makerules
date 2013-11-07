@@ -1,0 +1,9 @@
+CC = gcc
+MPICC = gcc #mpicc
+RM_F_V = rm -f -v
+
+NUM_CORES=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+
+NETTLE_FOUND    = $(shell if pkg-config --exists nettle; then echo "1" ; else echo "0"; fi)
+OPENSSL_FOUND   = $(shell if pkg-config --exists openssl; then echo "1" ; else echo "0"; fi)
+PGM_FOUND       = $(shell if pkg-config --exists openpgm-5.1; then echo "1" ; else echo "0"; fi)

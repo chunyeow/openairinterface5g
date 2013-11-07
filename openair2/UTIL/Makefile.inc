@@ -10,7 +10,6 @@ OMG_DIR=$(OPENAIR2_TOP)/UTIL/OMG
 OTG_DIR=$(OPENAIR2_TOP)/UTIL/OTG
 CLI_DIR=$(OPENAIR2_TOP)/UTIL/CLI
 OMV_DIR=$(OPENAIR2_TOP)/UTIL/OMV
-SCTP_DIR=$(OPENAIR2_TOP)/UTIL/SCTP
 LFDS_DIR=$(OPENAIR2_TOP)/UTIL/LFDS/liblfds6.1.1/liblfds611
 OSA_DIR=$(OPENAIR2_TOP)/UTIL/OSA
 
@@ -71,12 +70,19 @@ CLI_OBJ  =  $(CLI_DIR)/cli_server.o
 CLI_OBJ  +=  $(CLI_DIR)/cli.o
 CLI_OBJ  +=  $(CLI_DIR)/cli_cmd.o
 
-ifdef $(USE_MME)
-SCTP_OBJS = $(SCTP_DIR)/sctp_primitives_client.o
-else
-SCTP_OBJS = 
-endif
-UTIL_OBJ = $(OSA_OBJS) $(FIFO_OBJ) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(LOG_OBJS) $(OCG_OBJS) $(MATH_OBJS) $(OTG_OBJS) $(CLI_OBJ) $(OMG_OBJS) $(OPT_OBJS) $(SCTP_OBJS)
+UTIL_OBJ =              \
+    $(OSA_OBJS)         \
+    $(FIFO_OBJ)         \
+    $(LIST_OBJ)         \
+    $(TIMER_OBJ)        \
+    $(MEM_OBJ)          \
+    $(LOG_OBJS)         \
+    $(OCG_OBJS)         \
+    $(MATH_OBJS)        \
+    $(OTG_OBJS)         \
+    $(CLI_OBJ)          \
+    $(OMG_OBJS)         \
+    $(OPT_OBJS)
 
 UTIL_incl = \
     -I$(OPENAIR2_TOP)/UTIL      \
@@ -93,5 +99,4 @@ UTIL_incl = \
     -I$(OTG_DIR)                \
     -I$(CLI_DIR)                \
     -I$(OPT_DIR)                \
-    -I$(OMV_DIR)                \
-    -I$(SCTP_DIR)
+    -I$(OMV_DIR)

@@ -11,5 +11,7 @@
 #include "timer_messages_types.h"
 
 #include "rrc_messages_types.h"
+#include "s1ap_messages_types.h"
+#include "sctp_messages_types.h"
 
 #endif /* MESSAGES_TYPES_H_ */
