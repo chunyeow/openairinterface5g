@@ -397,6 +397,7 @@ void *l2l1_task(void *args_p) {
         s1ap_register_eNB_t *s1ap_register_eNB;
         uint32_t hash;
 
+        /* FIXME: following parameters should be setup by eNB applicative layer ? */
         message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
 
         s1ap_register_eNB = &message_p->msg.s1ap_register_eNB;
@@ -405,12 +406,11 @@ void *l2l1_task(void *args_p) {
 
         /* Some default/random parameters */
         s1ap_register_eNB->mod_id      = eNB_id;
-        /* FIXME: generate unique eNB id */
         s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
         s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
-        s1ap_register_eNB->tac         = 8;
+        s1ap_register_eNB->tac         = 0;
         s1ap_register_eNB->mcc         = 208;
-        s1ap_register_eNB->mnc         = 35;
+        s1ap_register_eNB->mnc         = 34;
         s1ap_register_eNB->default_drx = PAGING_DRX_256;
         s1ap_register_eNB->nb_mme      = 1;
         s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;

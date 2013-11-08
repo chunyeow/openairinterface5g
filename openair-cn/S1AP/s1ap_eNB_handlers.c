@@ -353,7 +353,8 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
     if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
                      initialContextSetupRequest_p->eNB_UE_S1AP_ID)) == NULL) {
         S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
-                   "existing UE context\n", assoc_id);
+        "existing UE context %06x\n", assoc_id,
+        initialContextSetupRequest_p->eNB_UE_S1AP_ID);
         return -1;
     }
 

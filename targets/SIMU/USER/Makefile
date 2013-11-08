@@ -281,7 +281,7 @@ ifdef USE_MME
 CFLAGS += -DENB_MODE -DENABLE_USE_MME -DENABLE_EVENT_FD -I$(S1AP_DIR) -I$(SCTP_DIR)
 
 S1AP_CFLAGS = $(CFLAGS) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl)
-LIBS += $(S1AP_DIR)/libs1ap.a $(SCTP_DIR)/libsctp.a -lsctp
+LIBS += $(S1AP_DIR)/libs1ap.a $(SCTP_DIR)/libsctp.a -lsctp -lcrypt
 export S1AP_CFLAGS
 
 $(S1AP_DIR)/libs1ap.a: force_look

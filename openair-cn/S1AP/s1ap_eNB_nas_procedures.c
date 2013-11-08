@@ -113,7 +113,9 @@ int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
         /* Peek a random value for the eNB_ue_s1ap_id */
         ue_desc_p->eNB_ue_s1ap_id = (random() + random()) & 0x00ffffff;
         if ((collision_p = RB_INSERT(s1ap_ue_map, &instance_p->s1ap_ue_head, ue_desc_p))
-                == NULL) {
+                == NULL)
+        {
+            S1AP_DEBUG("Found usable eNB_ue_s1ap_id: 0x%06x\n", ue_desc_p->eNB_ue_s1ap_id);
             /* Break the loop as the id is not already used by another UE */
             break;
         }
@@ -164,11 +166,15 @@ int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
 
     if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
         /* Failed to encode message */
-        return -1;
+        DevMessage("Failed to encode initial UE message\n");
     }
 
     /* Update the current S1AP UE state */
     ue_desc_p->ue_state = S1AP_UE_WAITING_CSR;
+
+    /* Assign a stream for this UE */
+    mme_desc_p->nextstream %= mme_desc_p->out_streams;
+    ue_desc_p->stream = ++mme_desc_p->nextstream;
 
     /* Send encoded message over sctp */
     s1ap_eNB_itti_send_sctp_data_req(mme_desc_p->assoc_id, buffer, length, ue_desc_p->stream);
