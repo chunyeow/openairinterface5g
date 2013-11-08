@@ -75,8 +75,8 @@ typedef enum
 {
     THREAD_FIRST = 1, THREAD_NULL = 0,
 
-#define TASK_DEF(tHREADiD, pRIO) THREAD_##tHREADiD,
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)
+#define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             THREAD_##tHREADiD,
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF
@@ -87,8 +87,8 @@ typedef enum
 //! Sub-tasks id, to defined offset form thread id
 typedef enum
 {
-#define TASK_DEF(tHREADiD, pRIO)            tHREADiD##_THREAD = THREAD_##tHREADiD,
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   sUBtASKiD##_THREAD = THREAD_##tHREADiD,
+#define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             tHREADiD##_THREAD = THREAD_##tHREADiD,
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)    sUBtASKiD##_THREAD = THREAD_##tHREADiD,
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF
@@ -99,8 +99,8 @@ typedef enum
 {
     TASK_FIRST = 1, TASK_UNKNOWN = 0,
 
-#define TASK_DEF(tHREADiD, pRIO)            tHREADiD,
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   sUBtASKiD,
+#define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             tHREADiD,
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)    sUBtASKiD,
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF

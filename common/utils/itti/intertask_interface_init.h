@@ -56,9 +56,9 @@ const char * const messages_definition_xml = {
 
 /* Map task id to printable name. */
 const task_info_t tasks_info[] = {
-    {0, "TASK_UNKNOWN"},
-#define TASK_DEF(tHREADiD, pRIO)            {tHREADiD##_THREAD, #tHREADiD},
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   {sUBtASKiD##_THREAD, #sUBtASKiD},
+    {0, 0, 0, "TASK_UNKNOWN"},
+#define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             { tHREADiD##_THREAD, pRIO, qUEUEsIZE, #tHREADiD },
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)    { sUBtASKiD##_THREAD, 0, qUEUEsIZE, #sUBtASKiD },
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF

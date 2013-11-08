@@ -250,9 +250,8 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 
     /* Check the number of messages in the queue */
-    DevCheck((itti_desc.tasks[task_id].message_in_queue * sizeof(MessageDef)) < ITTI_QUEUE_SIZE_PER_TASK,
-             (itti_desc.tasks[task_id].message_in_queue * sizeof(MessageDef)), ITTI_QUEUE_SIZE_PER_TASK,
-              itti_desc.tasks[task_id].message_in_queue);
+    DevCheck(itti_desc.tasks[task_id].message_in_queue < itti_desc.tasks_info[task_id].queue_size,
+             task_id, itti_desc.tasks[task_id].message_in_queue, itti_desc.tasks_info[task_id].queue_size);
 #endif
 
     /* Allocate new list element */
@@ -604,10 +603,8 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     for (i = TASK_FIRST; i < itti_desc.task_max; i++)
     {
 #if defined(ENABLE_EVENT_FD)
-        ITTI_DEBUG("Creating queue of message of size %u\n",
-           ITTI_QUEUE_SIZE_PER_TASK / (sizeof(MessageDef) + sizeof(struct message_list_s)));
-        if (lfds611_queue_new(&itti_desc.tasks[i].message_queue,
-            ITTI_QUEUE_SIZE_PER_TASK / (sizeof(MessageDef) + sizeof(struct message_list_s))) < 0)
+        ITTI_DEBUG("Creating queue of message of size %u\n", itti_desc.tasks_info[i].queue_size);
+        if (lfds611_queue_new(&itti_desc.tasks[i].message_queue, itti_desc.tasks_info[i].queue_size) < 0)
         {
             ITTI_ERROR("lfds611_queue_new failed for task %u\n", i);
             DevAssert(0 == 1);

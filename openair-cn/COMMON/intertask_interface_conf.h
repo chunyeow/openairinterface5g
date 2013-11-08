@@ -42,8 +42,8 @@
  * Intertask Interface Constants
  ******************************************************************************/
 
-#define ITTI_QUEUE_SIZE_PER_TASK (5 * 1024 * 1024) /* Limit the queue size to 5M */
 #define ITTI_PORT                (10007)
+
 /* This is the queue size for signal dumper */
 #define ITTI_QUEUE_SIZE_MAX      (1 * 1024 * 1024) /* 1 MBytes */
 #define ITTI_DUMP_MAX_CON        (5)    /* Max connections in parallel */
