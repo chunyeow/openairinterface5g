@@ -38,6 +38,10 @@
 #if !defined(MME_CLIENT_TEST)
 # include "intertask_interface.h"
 #endif
+
+#include "assertions.h"
+#include "queue.h"
+
 #include "s1ap_mme.h"
 #include "s1ap_mme_decoder.h"
 #include "s1ap_mme_handlers.h"
@@ -59,8 +63,7 @@
 // static pthread_t s1ap_task_thread;
 
 uint32_t nb_eNB_associated = 0;
-eNB_description_t *eNB_list_head = NULL;
-eNB_description_t *eNB_list_tail = NULL;
+STAILQ_HEAD(eNB_list_s, eNB_description_s) eNB_list_head;
 static int indent = 0;
 
 void *s1ap_mme_thread(void *args);
@@ -89,6 +92,7 @@ void *s1ap_mme_thread(void *args)
     MessageDef *received_message_p;
 
     itti_mark_task_ready(TASK_S1AP);
+
     while(1) {
         /* Trying to fetch a message from the message queue.
          * If the queue is empty, this function will block till a
@@ -170,6 +174,8 @@ int s1ap_mme_init(const mme_config_t *mme_config_p) {
 # endif
 #endif
 
+    STAILQ_INIT(&eNB_list_head);
+
     if (itti_create_task(TASK_S1AP, &s1ap_mme_thread, NULL) < 0) {
         S1AP_ERROR("Error while creating S1AP task\n");
         return -1;
@@ -183,11 +189,11 @@ int s1ap_mme_init(const mme_config_t *mme_config_p) {
 }
 
 void s1ap_dump_eNB_list(void) {
-    eNB_description_t *eNB_ref = eNB_list_head;
+    eNB_description_t *eNB_ref;
 
-    while (eNB_ref != NULL) {
+    STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries)
+    {
         s1ap_dump_eNB(eNB_ref);
-        eNB_ref = eNB_ref->next_eNB;
     }
 }
 
@@ -196,7 +202,11 @@ void s1ap_dump_eNB(eNB_description_t *eNB_ref) {
     ue_description_t *ue_ref;
     //Reset indentation
     indent = 0;
-    if (eNB_ref == NULL) return;
+
+    if (eNB_ref == NULL) {
+        return;
+    }
+
     eNB_LIST_OUT("");
     eNB_LIST_OUT("eNB name:          %s",   eNB_ref->eNB_name == NULL ? "not present" : eNB_ref->eNB_name);
     eNB_LIST_OUT("eNB ID:            %07x", eNB_ref->eNB_id);
@@ -206,13 +216,14 @@ void s1ap_dump_eNB(eNB_description_t *eNB_ref) {
     eNB_LIST_OUT("UE attache to eNB: %d",   eNB_ref->nb_ue_associated);
 
     indent++;
-    for (ue_ref = eNB_ref->ue_list_head; ue_ref; ue_ref = ue_ref->next_ue) {
+
+    STAILQ_FOREACH(ue_ref, &eNB_ref->ue_list_head, ue_entries)
+    {
         s1ap_dump_ue(ue_ref);
     }
     indent--;
     eNB_LIST_OUT("");
 #else
-    eNB_ref = eNB_ref;
     s1ap_dump_ue(NULL);
 #endif
 }
@@ -233,12 +244,14 @@ eNB_description_t* s1ap_is_eNB_id_in_list(uint32_t eNB_id) {
 
     eNB_description_t *eNB_ref;
 
-    for (eNB_ref = eNB_list_head; eNB_ref; eNB_ref = eNB_ref->next_eNB) {
-        if (eNB_ref->eNB_id == eNB_id)
-            // We fount a matching reference, return it
-            break;
+    STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries)
+    {
+        if (eNB_ref->eNB_id == eNB_id) {
+            /* We fount a matching reference, return it */
+            return eNB_ref;
+        }
     }
-    // No matching eNB, return NULL
+    /* No matching eNB, return NULL */
     return eNB_ref;
 }
 
@@ -246,43 +259,49 @@ eNB_description_t* s1ap_is_eNB_assoc_id_in_list(uint32_t sctp_assoc_id) {
 
     eNB_description_t *eNB_ref;
 
-    for (eNB_ref = eNB_list_head; eNB_ref; eNB_ref = eNB_ref->next_eNB) {
-        if (eNB_ref->sctp_assoc_id == sctp_assoc_id)
-            // We fount a matching reference, return it
-            break;
+    STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries)
+    {
+        if (eNB_ref->sctp_assoc_id == sctp_assoc_id) {
+            /* We fount a matching reference, return it */
+            return eNB_ref;
+        }
     }
-    // No matching eNB or no eNB in list, return NULL
-    return eNB_ref;
+    /* No matching eNB or no eNB in list, return NULL */
+    return NULL;
 }
 
 ue_description_t *s1ap_is_ue_eNB_id_in_list(eNB_description_t *eNB_ref,
                                             uint32_t eNB_ue_s1ap_id) {
     ue_description_t *ue_ref;
-    // No eNB_list_head in list, simply returning NULL
-    if (eNB_ref == NULL) return NULL;
 
-    for (ue_ref = eNB_ref->ue_list_head; ue_ref; ue_ref = ue_ref->next_ue) {
-        if (ue_ref->eNB_ue_s1ap_id == eNB_ue_s1ap_id)
-            break;
+    DevAssert(eNB_ref != NULL);
+
+    STAILQ_FOREACH(ue_ref, &eNB_ref->ue_list_head, ue_entries)
+    {
+        if (ue_ref->eNB_ue_s1ap_id == eNB_ue_s1ap_id) {
+            return ue_ref;
+        }
     }
-    // No matching UE, return NULL
-    return ue_ref;
+
+    return NULL;
 }
 
 ue_description_t* s1ap_is_ue_mme_id_in_list(uint32_t mme_ue_s1ap_id) {
 
     ue_description_t *ue_ref;
     eNB_description_t *eNB_ref;
-    // No eNB_list_head in list, simply returning NULL
-    if (eNB_list_head == NULL) return NULL;
-    for (eNB_ref = eNB_list_head; eNB_ref; eNB_ref = eNB_ref->next_eNB) {
-        for (ue_ref = eNB_ref->ue_list_head; ue_ref; ue_ref = ue_ref->next_ue) {
+
+    STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries)
+    {
+        STAILQ_FOREACH(ue_ref, &eNB_ref->ue_list_head, ue_entries)
+        {
             // We fount a matching reference, return it
-            if (ue_ref->mme_ue_s1ap_id == mme_ue_s1ap_id)
+            if (ue_ref->mme_ue_s1ap_id == mme_ue_s1ap_id) {
                 return ue_ref;
+            }
         }
     }
-    // No matching UE, return NULL
+
     return NULL;
 }
 
@@ -290,16 +309,18 @@ ue_description_t* s1ap_is_teid_in_list(uint32_t teid) {
 
     ue_description_t *ue_ref;
     eNB_description_t *eNB_ref;
-    // No eNB_list_head in list, simply returning NULL
-    if (eNB_list_head == NULL) return NULL;
-    for (eNB_ref = eNB_list_head; eNB_ref; eNB_ref = eNB_ref->next_eNB) {
-        for (ue_ref = eNB_ref->ue_list_head; ue_ref; ue_ref = ue_ref->next_ue) {
+
+    STAILQ_FOREACH(eNB_ref, &eNB_list_head, eNB_entries)
+    {
+        STAILQ_FOREACH(ue_ref, &eNB_ref->ue_list_head, ue_entries)
+        {
             // We fount a matching reference, return it
-            if (ue_ref->teid == teid)
+            if (ue_ref->teid == teid) {
                 return ue_ref;
+            }
         }
     }
-    // No matching UE, return NULL
+
     return NULL;
 }
 
@@ -307,35 +328,22 @@ eNB_description_t* s1ap_new_eNB(void) {
 
     eNB_description_t *eNB_ref = NULL;
 
-    eNB_ref = malloc(sizeof(eNB_description_t));
-
+    eNB_ref = calloc(1, sizeof(eNB_description_t));
     /* Something bad happened during malloc...
      * May be we are running out of memory.
      * TODO: Notify eNB with a cause like Hardware Failure.
      */
-    if (eNB_ref == NULL) return NULL;
-
-    memset(eNB_ref, 0, sizeof(eNB_description_t));
-
-    eNB_ref->next_eNB = NULL;
-    eNB_ref->previous_eNB = NULL;
-    // No eNB present
-    if (eNB_list_head == NULL) {
-        eNB_list_head = eNB_ref;
-        // Point tail to head (single element in list)
-        eNB_list_tail = eNB_list_head;
-    } else {
-        eNB_ref->previous_eNB = eNB_list_tail;
-        eNB_list_tail->next_eNB = eNB_ref;
-        // Update list tail with the new eNB added
-        eNB_list_tail = eNB_ref;
-    }
+    DevAssert(eNB_ref != NULL);
 
     // Update number of eNB associated
     nb_eNB_associated++;
-    eNB_ref->ue_list_head = NULL;
-    eNB_ref->ue_list_tail = NULL;
+
+    STAILQ_INIT(&eNB_ref->ue_list_head);
+
     eNB_ref->nb_ue_associated = 0;
+
+    STAILQ_INSERT_TAIL(&eNB_list_head, eNB_ref, eNB_entries);
+
     return eNB_ref;
 }
 
@@ -344,104 +352,59 @@ ue_description_t* s1ap_new_ue(uint32_t sctp_assoc_id) {
     eNB_description_t *eNB_ref = NULL;
     ue_description_t  *ue_ref  = NULL;
 
-    if ((eNB_ref = s1ap_is_eNB_assoc_id_in_list(sctp_assoc_id)) == NULL) {
-        /* No eNB attached to this SCTP assoc ID...
-         * return NULL.
-         */
-        return NULL;
-    }
-    ue_ref = malloc(sizeof(ue_description_t));
+    eNB_ref = s1ap_is_eNB_assoc_id_in_list(sctp_assoc_id);
+    DevAssert(eNB_ref != NULL);
+
+    ue_ref = calloc(1, sizeof(ue_description_t));
     /* Something bad happened during malloc...
      * May be we are running out of memory.
      * TODO: Notify eNB with a cause like Hardware Failure.
      */
-    if (ue_ref == NULL) return NULL;
-
-    memset(ue_ref, 0, sizeof(ue_description_t));
+    DevAssert(ue_ref != NULL);
 
     ue_ref->eNB = eNB_ref;
-    ue_ref->next_ue = NULL;
-    ue_ref->previous_ue = NULL;
 
     // Increment number of UE
     eNB_ref->nb_ue_associated++;
-    if (eNB_ref->ue_list_head == NULL) {
-        // Currently no UE in active list
-        eNB_ref->ue_list_head = ue_ref;
-        ue_ref->previous_ue = NULL;
-        eNB_ref->ue_list_tail = eNB_ref->ue_list_head;
-    } else {
-        eNB_ref->ue_list_tail->next_ue = ue_ref;
-        ue_ref->previous_ue = eNB_ref->ue_list_tail;
-        eNB_ref->ue_list_tail = ue_ref;
-    }
+    STAILQ_INSERT_TAIL(&eNB_ref->ue_list_head, ue_ref, ue_entries);
 
     return ue_ref;
 }
 
-void s1ap_remove_ue(ue_description_t *ue_ref) {
+void s1ap_remove_ue(ue_description_t *ue_ref)
+{
+    eNB_description_t *eNB_ref;
+
     /* NULL reference... */
     if (ue_ref == NULL) return;
 
-    /* Remove any attached timer */
-    s1ap_timer_remove_ue(ue_ref->mme_ue_s1ap_id);
+    eNB_ref = ue_ref->eNB;
 
-    if (ue_ref->next_ue != NULL) {
-        if (ue_ref->previous_ue != NULL) {
-            /* Not head and not tail */
-            ue_ref->previous_ue->next_ue = ue_ref->next_ue;
-            ue_ref->next_ue->previous_ue = ue_ref->previous_ue;
-        } else {
-            /* Head but not tail */
-            ue_ref->eNB->ue_list_head = ue_ref->next_ue;
-            ue_ref->next_ue->previous_ue = NULL;
-        }
-    } else {
-        if (ue_ref->previous_ue != NULL) {
-            /* Not head but tail */
-            ue_ref->eNB->ue_list_tail = ue_ref->previous_ue;
-            ue_ref->previous_ue->next_ue = NULL;
-        } else {
-            /* Head and tail */
-            ue_ref->eNB->ue_list_tail = ue_ref->eNB->ue_list_head = NULL;
-        }
-    }
     /* Updating number of UE */
-    ue_ref->eNB->nb_ue_associated--;
+    eNB_ref->nb_ue_associated--;
+    /* Remove any attached timer */
+//     s1ap_timer_remove_ue(ue_ref->mme_ue_s1ap_id);
+
     /* Freeing memory */
     free(ue_ref);
 }
 
-void s1ap_remove_eNB(eNB_description_t *eNB_ref) {
+void s1ap_remove_eNB(eNB_description_t *eNB_ref)
+{
     ue_description_t *ue_ref;
 
     if (eNB_ref == NULL) return;
 
-    /* Removing any ue context */
-    for (ue_ref = eNB_ref->ue_list_head; ue_ref; ue_ref = ue_ref->next_ue) {
-        s1ap_remove_ue(ue_ref);
+    while (!STAILQ_EMPTY(&eNB_ref->ue_list_head))
+    {
+        ue_ref = STAILQ_FIRST(&eNB_ref->ue_list_head);
+        eNB_ref->nb_ue_associated--;
+        STAILQ_REMOVE_HEAD(&eNB_ref->ue_list_head, ue_entries);
+        free(ue_ref);
     }
 
-    if (eNB_ref->next_eNB != NULL) {
-        if (eNB_ref->previous_eNB != NULL) {
-            /* Not tail and not head */
-            eNB_ref->previous_eNB->next_eNB = eNB_ref->next_eNB;
-            eNB_ref->next_eNB->previous_eNB = eNB_ref->previous_eNB;
-        } else {
-            /* Head but not tail */
-            eNB_list_head = eNB_ref->next_eNB;
-            eNB_ref->next_eNB->previous_eNB = NULL;
-        }
-    } else {
-        if (eNB_ref->previous_eNB != NULL) {
-            /* Not head but tail */
-            eNB_list_tail = eNB_ref->previous_eNB;
-            eNB_ref->previous_eNB->next_eNB = NULL;
-        } else {
-            /* Head and tail */
-            eNB_list_tail = eNB_list_head = NULL;
-        }
-    }
+    STAILQ_REMOVE(&eNB_list_head, eNB_ref, eNB_description_s, eNB_entries);
+
     free(eNB_ref);
     nb_eNB_associated--;
 }

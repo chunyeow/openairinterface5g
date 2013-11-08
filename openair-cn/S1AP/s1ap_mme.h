@@ -55,8 +55,7 @@ enum s1_ue_state_s {
  *  Generated every time a new InitialUEMessage is received
  **/
 typedef struct ue_description_s {
-    struct ue_description_s  *next_ue;       ///< Next UE in the list
-    struct ue_description_s  *previous_ue;   ///< Previous UE in the list
+    STAILQ_ENTRY(ue_description_s) ue_entries;
 
     struct eNB_description_s *eNB;           ///< Which eNB this UE is attached to
 
@@ -86,8 +85,7 @@ typedef struct ue_description_s {
  * Generated (or updated) every time a new S1SetupRequest is received.
  */
 typedef struct eNB_description_s {
-    struct eNB_description_s *next_eNB;         ///< Next eNB in the list of eNB
-    struct eNB_description_s *previous_eNB;     ///< Previous eNB in the list of eNB
+    STAILQ_ENTRY(eNB_description_s) eNB_entries;
 
     enum s1_eNB_state_s s1_state;         ///< State of the eNB S1AP association over MME
 
@@ -101,8 +99,7 @@ typedef struct eNB_description_s {
     /** UE list for this eNB **/
     /*@{*/
     uint32_t nb_ue_associated; ///< Number of NAS associated UE on this eNB
-    ue_description_t *ue_list_head;     ///< List head of NAS associated UE on this eNB
-    ue_description_t *ue_list_tail;     ///< List tail of NAS associated UE on this eNB
+    STAILQ_HEAD(ue_list_s, ue_description_s) ue_list_head;
     /*@}*/
 
     /** SCTP stuff **/

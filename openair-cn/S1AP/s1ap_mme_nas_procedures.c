@@ -282,12 +282,12 @@ int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p)
     /* Start the outcome response timer.
      * When time is reached, MME consider that procedure outcome has failed.
      */
-    timer_setup(mme_config.s1ap_config.outcome_drop_timer_sec, 0, TASK_S1AP, INSTANCE_DEFAULT,
-                TIMER_ONE_SHOT,
-                NULL,
-                &ue_ref->outcome_response_timer_id);
+//     timer_setup(mme_config.s1ap_config.outcome_drop_timer_sec, 0, TASK_S1AP, INSTANCE_DEFAULT,
+//                 TIMER_ONE_SHOT,
+//                 NULL,
+//                 &ue_ref->outcome_response_timer_id);
     /* Insert the timer in the MAP of mme_ue_s1ap_id <-> timer_id */
-    s1ap_timer_insert(ue_ref->mme_ue_s1ap_id, ue_ref->outcome_response_timer_id);
+//     s1ap_timer_insert(ue_ref->mme_ue_s1ap_id, ue_ref->outcome_response_timer_id);
 
     memset(&message, 0, sizeof(s1ap_message));
     memset(&e_RABToBeSetup, 0, sizeof(E_RABToBeSetupItemCtxtSUReq_t));
