@@ -4212,7 +4212,7 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 #if defined(ENABLE_ITTI)
   do {
     // Checks if a message has been sent to MAC sub-task
-    itti_poll_msg (TASK_MAC_ENB, INSTANCE_ALL, &msg_p);
+    itti_poll_msg (TASK_MAC_ENB, &msg_p);
 
     if (msg_p != NULL) {
       msg_name = ITTI_MSG_NAME (msg_p);

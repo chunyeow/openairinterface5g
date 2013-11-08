@@ -56,12 +56,7 @@
 #define TASK_SUB_TASK_ID_LENGTH 8
 
 /* Defines to extract task ID fields */
-#define TASK_GET_THREAD_ID(tASKiD)          UL_FIELD_EXTRACT(tASKiD, TASK_THREAD_ID_OFFSET, TASK_THREAD_ID_LENGTH)
-#define TASK_GET_SUB_TASK_ID(tASKiD)        UL_FIELD_EXTRACT(tASKiD, TASK_SUB_TASK_ID_OFFSET, TASK_SUB_TASK_ID_LENGTH)
-
-/* Defines to shift task ID fields */
-#define TASK_SHIFT_THREAD_ID(tHREADiD)      UL_BIT_SHIFT(tHREADiD, TASK_THREAD_ID_OFFSET)
-#define TASK_SHIFT_SUB_TASK_ID(sUBtASKiD)   UL_BIT_SHIFT(sUBtASKiD, TASK_SUB_TASK_ID_OFFSET)
+#define TASK_GET_THREAD_ID(tASKiD)          (itti_desc.tasks_info[tASKiD].thread)
 
 #include <messages_types.h>
 
@@ -86,29 +81,31 @@ typedef enum
 #undef SUB_TASK_DEF
 #undef TASK_DEF
 
-    THREAD_MAX, THREAD_END = THREAD_MAX,
+    THREAD_MAX,
 } thread_id_t;
 
 //! Sub-tasks id, to defined offset form thread id
 typedef enum
 {
-#define TASK_DEF(tHREADiD, pRIO)            SUB_TASK_INIT_##tHREADiD = 0,
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   SUB_TASK_OFFSET_##sUBtASKiD,
+#define TASK_DEF(tHREADiD, pRIO)            tHREADiD##_THREAD = THREAD_##tHREADiD,
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   sUBtASKiD##_THREAD = THREAD_##tHREADiD,
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF
-} sub_task_id_t;
+} task_thread_id_t;
 
 //! Tasks id of each task
 typedef enum
 {
-#define TASK_DEF(tHREADiD, pRIO)            tHREADiD = TASK_SHIFT_THREAD_ID(THREAD_##tHREADiD),
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   sUBtASKiD = (TASK_SHIFT_THREAD_ID(THREAD_##tHREADiD) | TASK_SHIFT_SUB_TASK_ID(SUB_TASK_OFFSET_##sUBtASKiD)),
+    TASK_FIRST = 1, TASK_UNKNOWN = 0,
+
+#define TASK_DEF(tHREADiD, pRIO)            tHREADiD,
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   sUBtASKiD,
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF
 
-    TASK_UNKNOWN = 0xFFFF,
+    TASK_MAX,
 } task_id_t;
 
 typedef union msg_s

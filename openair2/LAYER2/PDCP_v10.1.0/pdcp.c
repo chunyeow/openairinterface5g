@@ -500,7 +500,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
 #if defined(ENABLE_ITTI)
   do {
     // Checks if a message has been sent to PDCP sub-task
-    itti_poll_msg (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, INSTANCE_ALL, &msg_p);
+    itti_poll_msg (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, &msg_p);
 
     if (msg_p != NULL) {
       msg_name = ITTI_MSG_NAME (msg_p);

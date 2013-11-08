@@ -29,7 +29,7 @@
 *******************************************************************************/
 
 /** @brief Intertask Interface Signal Dumper
- * Allows users to connect their itti_debugger to this process and dump
+ * Allows users to connect their itti_analyzer to this process and dump
  * signals exchanged between tasks.
  * @author Sebastien Roux <sebastien.roux@eurecom.fr>
  */

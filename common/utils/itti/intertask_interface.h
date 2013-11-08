@@ -86,6 +86,12 @@ enum task_priorities {
     TASK_PRIORITY_MIN       = 10,
 };
 
+typedef struct task_info_s {
+    thread_id_t thread;
+    /* Printable name */
+    const char * const name;
+} task_info_t;
+
 /** \brief Send a broadcast message to every task
  \param message_p Pointer to the message to send
  @returns < 0 on failure, 0 otherwise
@@ -129,12 +135,11 @@ int itti_get_events(task_id_t task_id, struct epoll_event **events);
  **/
 void itti_receive_msg(task_id_t task_id, MessageDef **received_msg);
 
-/** \brief Try to retrieves a message in the queue associated to task_id and matching requested instance.
+/** \brief Try to retrieves a message in the queue associated to task_id.
  \param task_id Task ID of the receiving task
- \param instance Instance of the task used for virtualization
  \param received_msg Pointer to the allocated message
  **/
-void itti_poll_msg(task_id_t task_id, instance_t instance, MessageDef **received_msg);
+void itti_poll_msg(task_id_t task_id, MessageDef **received_msg);
 
 /** \brief Start thread associated to the task
  * \param task_id task to start

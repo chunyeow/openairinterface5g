@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
     /* Calling each layer init function */
     CHECK_INIT_RETURN(log_init(&mme_config, oai_mme_log_specific));
-    CHECK_INIT_RETURN(itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml, NULL));
+    CHECK_INIT_RETURN(itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, NULL));
 
     CHECK_INIT_RETURN(nas_init(&mme_config));
     CHECK_INIT_RETURN(sctp_init(&mme_config));

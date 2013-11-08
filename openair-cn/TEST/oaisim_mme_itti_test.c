@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
     /* Calling each layer init function */
     log_init(&mme_config);
-    itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml, NULL);
+    itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, NULL);
     sctp_init(&mme_config);
     udp_init(&mme_config);
     s1ap_mme_init(&mme_config);

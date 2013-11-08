@@ -430,7 +430,7 @@ void *l2l1_task(void *args_p) {
 #if defined(ENABLE_ITTI)
     do {
       // Checks if a message has been sent to L2L1 task
-      itti_poll_msg (TASK_L2L1, INSTANCE_ALL, &message_p);
+      itti_poll_msg (TASK_L2L1, &message_p);
 
       if (message_p != NULL) {
         switch (message_p->header.messageId) {
@@ -936,7 +936,7 @@ int main(int argc, char **argv) {
   }
 
 #if defined(ENABLE_ITTI)
-  itti_init(THREAD_MAX, MESSAGES_ID_MAX, threads_name, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
+  itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
 #endif
 
 #ifdef OPENAIR2

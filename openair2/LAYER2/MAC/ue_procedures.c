@@ -1289,7 +1289,7 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
 #if defined(ENABLE_ITTI)
   do {
     // Checks if a message has been sent to MAC sub-task
-    itti_poll_msg (TASK_MAC_UE, INSTANCE_ALL, &msg_p);
+    itti_poll_msg (TASK_MAC_UE, &msg_p);
 
     if (msg_p != NULL) {
       msg_name = ITTI_MSG_NAME (msg_p);

@@ -54,11 +54,11 @@ const char * const messages_definition_xml = {
 #include "messages_xml.h"
 };
 
-/* Map thread id to printable name. */
-const char * const threads_name[] = {
-    "unused",
-#define TASK_DEF(tHREADiD, pRIO)            #tHREADiD,
-#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)
+/* Map task id to printable name. */
+const task_info_t tasks_info[] = {
+    {0, "TASK_UNKNOWN"},
+#define TASK_DEF(tHREADiD, pRIO)            {tHREADiD##_THREAD, #tHREADiD},
+#define SUB_TASK_DEF(tHREADiD, sUBtASKiD)   {sUBtASKiD##_THREAD, #sUBtASKiD},
 #include <tasks_def.h>
 #undef SUB_TASK_DEF
 #undef TASK_DEF
@@ -79,7 +79,7 @@ const message_info_t messages_info[] = {
  * \param threads_name Pointer on the threads name information as created by this include file
  * \param messages_info Pointer on messages information as created by this include file
  **/
-int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * const *threads_name,
+int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_id_max, const task_info_t *tasks_info,
               const message_info_t *messages_info, const char * const messages_definition_xml,
               const char * const dump_file_name);
 

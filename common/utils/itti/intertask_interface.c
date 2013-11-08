@@ -85,6 +85,13 @@ struct message_list_s {
     uint32_t message_priority; ///< Message priority
 };
 
+typedef struct thread_desc_s {
+    /* pthread associated with the thread */
+    pthread_t task_thread;
+    /* State of the thread */
+    volatile task_state_t task_state;
+} thread_desc_t;
+
 typedef struct task_desc_s {
     /* Queue of messages belonging to the task */
 #if !defined(ENABLE_EVENT_FD)
@@ -117,23 +124,22 @@ typedef struct task_desc_s {
 
     int epoll_nb_events;
 #endif
-    /* pthread associated with the task */
-    pthread_t task_thread;
-    /* State of the task */
-    volatile task_state_t task_state;
 } task_desc_t;
 
 struct itti_desc_s {
+    thread_desc_t *threads;
     task_desc_t *tasks;
+
     /* Current message number. Incremented every call to send_msg_to_task */
     message_number_t message_number __attribute__((aligned(8)));
 
     thread_id_t thread_max;
+    task_id_t task_max;
     MessagesIds messages_id_max;
 
     pthread_t thread_handling_signals;
 
-    const char * const *threads_name;
+    const task_info_t *tasks_info;
     const message_info_t *messages_info;
 };
 
@@ -161,16 +167,15 @@ const char *itti_get_message_name(MessagesIds message_id) {
 
 const char *itti_get_task_name(task_id_t task_id)
 {
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
 
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
-
-    return (itti_desc.threads_name[thread_id]);
+    return (itti_desc.tasks_info[task_id].name);
 }
 
 int itti_send_broadcast_message(MessageDef *message_p) {
+    task_id_t destination_task_id;
     thread_id_t origin_thread_id;
-    uint32_t i;
+    uint32_t thread_id;
     int ret = 0;
     int result;
 
@@ -178,19 +183,24 @@ int itti_send_broadcast_message(MessageDef *message_p) {
 
     origin_thread_id = TASK_GET_THREAD_ID(message_p->header.originTaskId);
 
-    for (i = THREAD_FIRST; i < itti_desc.thread_max; i++) {
+    destination_task_id = TASK_FIRST;
+    for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++) {
         MessageDef *new_message_p;
 
+        while (thread_id != TASK_GET_THREAD_ID(destination_task_id))
+        {
+            destination_task_id++;
+        }
         /* Skip task that broadcast the message */
-        if (i != origin_thread_id) {
+        if (thread_id != origin_thread_id) {
             /* Skip tasks which are not running */
-            if (itti_desc.tasks[i].task_state == TASK_STATE_READY) {
+            if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
                 new_message_p = malloc (sizeof(MessageDef));
                 DevAssert(message_p != NULL);
 
                 memcpy (new_message_p, message_p, sizeof(MessageDef));
-                result = itti_send_msg_to_task (TASK_SHIFT_THREAD_ID(i), INSTANCE_DEFAULT, new_message_p);
-                DevCheck(result >= 0, message_p->header.messageId, i, 0);
+                result = itti_send_msg_to_task (destination_task_id, INSTANCE_DEFAULT, new_message_p);
+                DevCheck(result >= 0, message_p->header.messageId, thread_id, destination_task_id);
             }
         }
     }
@@ -222,7 +232,7 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     uint32_t message_id;
 
     DevAssert(message != NULL);
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
 
     message->header.destinationTaskId = task_id;
     message->header.instance = instance;
@@ -232,17 +242,17 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     priority = itti_get_message_priority (message_id);
 
     /* We cannot send a message if the task is not running */
-    DevCheck(itti_desc.tasks[thread_id].task_state == TASK_STATE_READY, itti_desc.tasks[thread_id].task_state,
+    DevCheck(itti_desc.threads[thread_id].task_state == TASK_STATE_READY, itti_desc.threads[thread_id].task_state,
              TASK_STATE_READY, thread_id);
 
 #if !defined(ENABLE_EVENT_FD)
     /* Lock the mutex to get exclusive access to the list */
-    pthread_mutex_lock (&itti_desc.tasks[thread_id].message_queue_mutex);
+    pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 
     /* Check the number of messages in the queue */
-    DevCheck((itti_desc.tasks[thread_id].message_in_queue * sizeof(MessageDef)) < ITTI_QUEUE_SIZE_PER_TASK,
-             (itti_desc.tasks[thread_id].message_in_queue * sizeof(MessageDef)), ITTI_QUEUE_SIZE_PER_TASK,
-              itti_desc.tasks[thread_id].message_in_queue);
+    DevCheck((itti_desc.tasks[task_id].message_in_queue * sizeof(MessageDef)) < ITTI_QUEUE_SIZE_PER_TASK,
+             (itti_desc.tasks[task_id].message_in_queue * sizeof(MessageDef)), ITTI_QUEUE_SIZE_PER_TASK,
+              itti_desc.tasks[task_id].message_in_queue);
 #endif
 
     /* Allocate new list element */
@@ -264,21 +274,21 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     {
         uint64_t sem_counter = 1;
 
-        lfds611_queue_enqueue(itti_desc.tasks[thread_id].message_queue, new);
+        lfds611_queue_enqueue(itti_desc.tasks[task_id].message_queue, new);
 
         /* Call to write for an event fd must be of 8 bytes */
-        write(itti_desc.tasks[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+        write(itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
     }
 #else
-    if (STAILQ_EMPTY (&itti_desc.tasks[thread_id].message_queue)) {
-        STAILQ_INSERT_HEAD (&itti_desc.tasks[thread_id].message_queue, new, next_element);
+    if (STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
+        STAILQ_INSERT_HEAD (&itti_desc.tasks[task_id].message_queue, new, next_element);
     }
     else {
 //         struct message_list_s *insert_after = NULL;
 //         struct message_list_s *temp;
 // 
 //         /* This method is inefficient... */
-//         STAILQ_FOREACH(temp, &itti_desc.tasks[thread_id].message_queue, next_element) {
+//         STAILQ_FOREACH(temp, &itti_desc.tasks[task_id].message_queue, next_element) {
 //             struct message_list_s *next;
 //             next = STAILQ_NEXT(temp, next_element);
 //             /* Increment message priority to create a sort of
@@ -292,26 +302,26 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 //             }
 //         }
 //         if (insert_after == NULL) {
-        STAILQ_INSERT_TAIL (&itti_desc.tasks[thread_id].message_queue, new, next_element);
+        STAILQ_INSERT_TAIL (&itti_desc.tasks[task_id].message_queue, new, next_element);
 //         } else {
-//             STAILQ_INSERT_AFTER(&itti_desc.tasks[thread_id].message_queue, insert_after, new,
+//             STAILQ_INSERT_AFTER(&itti_desc.tasks[task_id].message_queue, insert_after, new,
 //                                 next_element);
 //         }
     }
 
     /* Update the number of messages in the queue */
-    itti_desc.tasks[thread_id].message_in_queue++;
-    if (itti_desc.tasks[thread_id].message_in_queue == 1) {
+    itti_desc.tasks[task_id].message_in_queue++;
+    if (itti_desc.tasks[task_id].message_in_queue == 1) {
         /* Emit a signal to wake up target task thread */
-        pthread_cond_signal (&itti_desc.tasks[thread_id].message_queue_cond_var);
+        pthread_cond_signal (&itti_desc.tasks[task_id].message_queue_cond_var);
     }
     /* Release the mutex */
-    pthread_mutex_unlock (&itti_desc.tasks[thread_id].message_queue_mutex);
+    pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
 
     ITTI_DEBUG(
             "Message %s, number %lu with priority %d successfully sent to queue (%u:%s)\n",
-            itti_desc.messages_info[message_id].name, message_number, priority, thread_id, itti_desc.threads_name[thread_id]);
+            itti_desc.messages_info[message_id].name, message_number, priority, task_id, itti_get_task_name(task_id));
     return 0;
 }
 
@@ -319,23 +329,22 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 void itti_subscribe_event_fd(task_id_t task_id, int fd)
 {
     struct epoll_event event;
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
 
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
     DevCheck(fd >= 0, fd, 0, 0);
 
-    itti_desc.tasks[thread_id].nb_events++;
+    itti_desc.tasks[task_id].nb_events++;
 
     /* Reallocate the events */
-    itti_desc.tasks[thread_id].events = realloc(
-        itti_desc.tasks[thread_id].events,
-        itti_desc.tasks[thread_id].nb_events * sizeof(struct epoll_event));
+    itti_desc.tasks[task_id].events = realloc(
+        itti_desc.tasks[task_id].events,
+        itti_desc.tasks[task_id].nb_events * sizeof(struct epoll_event));
 
     event.events  = EPOLLIN;
     event.data.fd = fd;
 
     /* Add the event fd to the list of monitored events */
-    if (epoll_ctl(itti_desc.tasks[thread_id].epoll_fd, EPOLL_CTL_ADD, fd,
+    if (epoll_ctl(itti_desc.tasks[task_id].epoll_fd, EPOLL_CTL_ADD, fd,
         &event) != 0)
     {
         ITTI_ERROR("epoll_ctl (EPOLL_CTL_ADD) failed for task %s, fd %d: %s\n",
@@ -347,13 +356,11 @@ void itti_subscribe_event_fd(task_id_t task_id, int fd)
 
 void itti_unsubscribe_event_fd(task_id_t task_id, int fd)
 {
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
-
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
     DevCheck(fd >= 0, fd, 0, 0);
 
     /* Add the event fd to the list of monitored events */
-    if (epoll_ctl(itti_desc.tasks[thread_id].epoll_fd, EPOLL_CTL_DEL, fd, NULL) != 0)
+    if (epoll_ctl(itti_desc.tasks[task_id].epoll_fd, EPOLL_CTL_DEL, fd, NULL) != 0)
     {
         ITTI_ERROR("epoll_ctl (EPOLL_CTL_DEL) failed for task %s and fd %d: %s\n",
                    itti_get_task_name(task_id), fd, strerror(errno));
@@ -361,21 +368,19 @@ void itti_unsubscribe_event_fd(task_id_t task_id, int fd)
         DevAssert(0 == 1);
     }
 
-    itti_desc.tasks[thread_id].nb_events--;
-    itti_desc.tasks[thread_id].events = realloc(
-        itti_desc.tasks[thread_id].events,
-        itti_desc.tasks[thread_id].nb_events * sizeof(struct epoll_event));
+    itti_desc.tasks[task_id].nb_events--;
+    itti_desc.tasks[task_id].events = realloc(
+        itti_desc.tasks[task_id].events,
+        itti_desc.tasks[task_id].nb_events * sizeof(struct epoll_event));
 }
 
 int itti_get_events(task_id_t task_id, struct epoll_event **events)
 {
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
 
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+    *events = itti_desc.tasks[task_id].events;
 
-    *events = itti_desc.tasks[thread_id].events;
-
-    return itti_desc.tasks[thread_id].epoll_nb_events;
+    return itti_desc.tasks[task_id].epoll_nb_events;
 }
 
 static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t polling, MessageDef **received_msg)
@@ -384,9 +389,7 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
     int epoll_timeout = 0;
     int i;
 
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
-
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
     DevAssert(received_msg != NULL);
 
     *received_msg = NULL;
@@ -403,9 +406,9 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
     }
 
     do {
-        epoll_ret = epoll_wait(itti_desc.tasks[thread_id].epoll_fd,
-                               itti_desc.tasks[thread_id].events,
-                               itti_desc.tasks[thread_id].nb_events,
+        epoll_ret = epoll_wait(itti_desc.tasks[task_id].epoll_fd,
+                               itti_desc.tasks[task_id].events,
+                               itti_desc.tasks[task_id].nb_events,
                                epoll_timeout);
     } while (epoll_ret < 0 && errno == EINTR);
 
@@ -419,22 +422,22 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
         return;
     }
 
-    itti_desc.tasks[thread_id].epoll_nb_events = epoll_ret;
+    itti_desc.tasks[task_id].epoll_nb_events = epoll_ret;
 
     for (i = 0; i < epoll_ret; i++) {
         /* Check if there is an event for ITTI for the event fd */
-        if ((itti_desc.tasks[thread_id].events[i].events & EPOLLIN) &&
-            (itti_desc.tasks[thread_id].events[i].data.fd == itti_desc.tasks[thread_id].task_event_fd))
+        if ((itti_desc.tasks[task_id].events[i].events & EPOLLIN) &&
+            (itti_desc.tasks[task_id].events[i].data.fd == itti_desc.tasks[task_id].task_event_fd))
         {
             struct message_list_s *message;
             uint64_t sem_counter;
 
             /* Read will always return 1 */
-            read (itti_desc.tasks[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+            read (itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
 
-            if (lfds611_queue_dequeue (itti_desc.tasks[thread_id].message_queue, (void **) &message) == 0) {
+            if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 0) {
                 /* No element in list -> this should not happen */
-                DevParam(thread_id, task_id, epoll_ret);
+                DevParam(task_id, epoll_ret, 0);
             }
             *received_msg = message->msg;
             free (message);
@@ -449,43 +452,39 @@ void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
 #if defined(ENABLE_EVENT_FD)
     itti_receive_msg_internal_event_fd(task_id, 0, received_msg);
 #else
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
-
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
     DevAssert(received_msg != NULL);
 
     // Lock the mutex to get exclusive access to the list
-    pthread_mutex_lock (&itti_desc.tasks[thread_id].message_queue_mutex);
+    pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 
-    if (itti_desc.tasks[thread_id].message_in_queue == 0) {
-        ITTI_DEBUG("Message in queue[(%u:%s)] == 0, waiting\n", thread_id, itti_desc.threads_name[thread_id]);
+    if (itti_desc.tasks[task_id].message_in_queue == 0) {
+        ITTI_DEBUG("Message in queue[(%u:%s)] == 0, waiting\n", task_id, itti_get_task_name(task_id));
         // Wait while list == 0
-        pthread_cond_wait (&itti_desc.tasks[thread_id].message_queue_cond_var,
-                           &itti_desc.tasks[thread_id].message_queue_mutex);
-        ITTI_DEBUG("Receiver queue[(%u:%s)] got new message notification for task %x\n",
-                   thread_id, itti_desc.threads_name[thread_id], task_id);
+        pthread_cond_wait (&itti_desc.tasks[task_id].message_queue_cond_var,
+                           &itti_desc.tasks[task_id].message_queue_mutex);
+        ITTI_DEBUG("Receiver queue[(%u:%s)] got new message notification\n",
+                   task_id, itti_get_task_name(task_id));
     }
 
-    if (!STAILQ_EMPTY (&itti_desc.tasks[thread_id].message_queue)) {
-        struct message_list_s *temp = STAILQ_FIRST (&itti_desc.tasks[thread_id].message_queue);
+    if (!STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
+        struct message_list_s *temp = STAILQ_FIRST (&itti_desc.tasks[task_id].message_queue);
 
         /* Update received_msg reference */
         *received_msg = temp->msg;
 
         /* Remove message from queue */
-        STAILQ_REMOVE_HEAD (&itti_desc.tasks[thread_id].message_queue, next_element);
+        STAILQ_REMOVE_HEAD (&itti_desc.tasks[task_id].message_queue, next_element);
         free (temp);
-        itti_desc.tasks[thread_id].message_in_queue--;
+        itti_desc.tasks[task_id].message_in_queue--;
     }
     // Release the mutex
-    pthread_mutex_unlock (&itti_desc.tasks[thread_id].message_queue_mutex);
+    pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
 }
 
-void itti_poll_msg(task_id_t task_id, instance_t instance, MessageDef **received_msg) {
-    thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
-
-    DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
+void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
+    DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
     DevAssert(received_msg != NULL);
 
     *received_msg = NULL;
@@ -493,38 +492,35 @@ void itti_poll_msg(task_id_t task_id, instance_t instance, MessageDef **received
 #if defined(ENABLE_EVENT_FD)
     itti_receive_msg_internal_event_fd(task_id, 1, received_msg);
 #else
-    if (itti_desc.tasks[thread_id].message_in_queue != 0) {
+    if (itti_desc.tasks[task_id].message_in_queue != 0) {
         struct message_list_s *temp;
 
         // Lock the mutex to get exclusive access to the list
-        pthread_mutex_lock (&itti_desc.tasks[thread_id].message_queue_mutex);
+        pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 
-        STAILQ_FOREACH (temp, &itti_desc.tasks[thread_id].message_queue, next_element)
+        STAILQ_FOREACH (temp, &itti_desc.tasks[task_id].message_queue, next_element)
         {
-            if ((temp->msg->header.destinationTaskId == task_id)
-                    && ((instance == INSTANCE_ALL) || (temp->msg->header.instance == instance))) {
-                /* Update received_msg reference */
-                *received_msg = temp->msg;
+            /* Update received_msg reference */
+            *received_msg = temp->msg;
 
-                /* Remove message from queue */
-                STAILQ_REMOVE (&itti_desc.tasks[thread_id].message_queue, temp, message_list_s, next_element);
-                free (temp);
-                itti_desc.tasks[thread_id].message_in_queue--;
+            /* Remove message from queue */
+            STAILQ_REMOVE (&itti_desc.tasks[task_id].message_queue, temp, message_list_s, next_element);
+            free (temp);
+            itti_desc.tasks[task_id].message_in_queue--;
 
-                ITTI_DEBUG(
-                        "Receiver queue[(%u:%s)] got new message %s, number %lu for task %x\n",
-                        thread_id, itti_desc.threads_name[thread_id], itti_desc.messages_info[temp->msg->header.messageId].name, temp->message_number, task_id);
-                break;
-            }
+            ITTI_DEBUG(
+                    "Receiver queue[(%u:%s)] got new message %s, number %lu\n",
+                    task_id, itti_get_task_name(task_id), itti_desc.messages_info[temp->msg->header.messageId].name, temp->message_number);
+            break;
         }
 
         // Release the mutex
-        pthread_mutex_unlock (&itti_desc.tasks[thread_id].message_queue_mutex);
+        pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
     }
 #endif
 
     if (*received_msg == NULL) {
-        ITTI_DEBUG("No message in queue[(%u:%s)] for task %x\n", thread_id, itti_desc.threads_name[thread_id], task_id);
+        ITTI_DEBUG("No message in queue[(%u:%s)]\n", task_id, itti_get_task_name(task_id));
     }
 }
 
@@ -534,16 +530,16 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
 
     DevAssert(start_routine != NULL);
     DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
-    DevCheck(itti_desc.tasks[thread_id].task_state == TASK_STATE_NOT_CONFIGURED, task_id, thread_id,
-             itti_desc.tasks[thread_id].task_state);
+    DevCheck(itti_desc.threads[thread_id].task_state == TASK_STATE_NOT_CONFIGURED, task_id, thread_id,
+             itti_desc.threads[thread_id].task_state);
 
-    itti_desc.tasks[thread_id].task_state = TASK_STATE_STARTING;
+    itti_desc.threads[thread_id].task_state = TASK_STATE_STARTING;
 
-    result = pthread_create (&itti_desc.tasks[thread_id].task_thread, NULL, start_routine, args_p);
+    result = pthread_create (&itti_desc.threads[thread_id].task_thread, NULL, start_routine, args_p);
     DevCheck(result>= 0, task_id, thread_id, result);
 
     /* Wait till the thread is completely ready */
-    while (itti_desc.tasks[thread_id].task_state != TASK_STATE_READY)
+    while (itti_desc.threads[thread_id].task_state != TASK_STATE_READY)
         ;
     return 0;
 }
@@ -555,14 +551,14 @@ void itti_mark_task_ready(task_id_t task_id) {
 
 #if !defined(ENABLE_EVENT_FD)
     // Lock the mutex to get exclusive access to the list
-    pthread_mutex_lock (&itti_desc.tasks[thread_id].message_queue_mutex);
+    pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
 
-    itti_desc.tasks[thread_id].task_state = TASK_STATE_READY;
+    itti_desc.threads[thread_id].task_state = TASK_STATE_READY;
 
 #if !defined(ENABLE_EVENT_FD)
     // Release the mutex
-    pthread_mutex_unlock (&itti_desc.tasks[thread_id].message_queue_mutex);
+    pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
 }
 
@@ -581,27 +577,31 @@ void itti_terminate_tasks(task_id_t task_id) {
     pthread_exit (NULL);
 }
 
-int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * const *threads_name,
+int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_id_max, const task_info_t *tasks_info,
               const message_info_t *messages_info, const char * const messages_definition_xml, const char * const dump_file_name) {
     int i;
     itti_desc.message_number = 1;
 
-    ITTI_DEBUG("Init: %d threads, %d messages\n", thread_max, messages_id_max);
+    ITTI_DEBUG("Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
 
     CHECK_INIT_RETURN(signal_init());
 
     /* Saves threads and messages max values */
+    itti_desc.task_max = task_max;
     itti_desc.thread_max = thread_max;
     itti_desc.messages_id_max = messages_id_max;
     itti_desc.thread_handling_signals = -1;
-    itti_desc.threads_name = threads_name;
+    itti_desc.tasks_info = tasks_info;
     itti_desc.messages_info = messages_info;
 
     /* Allocates memory for tasks info */
-    itti_desc.tasks = calloc (itti_desc.thread_max, sizeof(task_desc_t));
+    itti_desc.tasks = calloc (itti_desc.task_max, sizeof(task_desc_t));
+
+    /* Allocates memory for threads info */
+    itti_desc.threads = calloc (itti_desc.thread_max, sizeof(thread_desc_t));
 
     /* Initializing each queue and related stuff */
-    for (i = THREAD_FIRST; i < itti_desc.thread_max; i++)
+    for (i = TASK_FIRST; i < itti_desc.task_max; i++)
     {
 #if defined(ENABLE_EVENT_FD)
         ITTI_DEBUG("Creating queue of message of size %u\n",
@@ -652,9 +652,14 @@ int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * 
         // Initialize Cond vars
         pthread_cond_init (&itti_desc.tasks[i].message_queue_cond_var, NULL);
 #endif
-
-        itti_desc.tasks[i].task_state = TASK_STATE_NOT_CONFIGURED;
     }
+
+    /* Initializing each thread */
+    for (i = THREAD_FIRST; i < itti_desc.thread_max; i++)
+    {
+        itti_desc.threads[i].task_state = TASK_STATE_NOT_CONFIGURED;
+    }
+
     itti_dump_init (messages_definition_xml, dump_file_name);
 
     CHECK_INIT_RETURN(timer_init ());
@@ -664,7 +669,8 @@ int itti_init(thread_id_t thread_max, MessagesIds messages_id_max, const char * 
 
 void itti_wait_tasks_end(void) {
     int end = 0;
-    int i;
+    int thread_id;
+    task_id_t task_id;
     int ready_tasks;
     int result;
     int retries = 10;
@@ -679,17 +685,22 @@ void itti_wait_tasks_end(void) {
     do {
         ready_tasks = 0;
 
-        for (i = THREAD_FIRST; i < itti_desc.thread_max; i++) {
+        task_id = TASK_FIRST;
+        for (thread_id = THREAD_FIRST; thread_id < itti_desc.task_max; thread_id++) {
             /* Skip tasks which are not running */
-            if (itti_desc.tasks[i].task_state == TASK_STATE_READY) {
+            if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
+                while (thread_id != TASK_GET_THREAD_ID(task_id))
+                {
+                    task_id++;
+                }
 
-                result = pthread_tryjoin_np (itti_desc.tasks[i].task_thread, NULL);
+                result = pthread_tryjoin_np (itti_desc.threads[thread_id].task_thread, NULL);
 
-                ITTI_DEBUG("Thread %s join status %d\n", itti_desc.threads_name[i], result);
+                ITTI_DEBUG("Thread %s join status %d\n", itti_get_task_name(task_id), result);
 
                 if (result == 0) {
                     /* Thread has terminated */
-                    itti_desc.tasks[i].task_state = TASK_STATE_ENDED;
+                    itti_desc.threads[thread_id].task_state = TASK_STATE_ENDED;
                 }
                 else {
                     /* Thread is still running, count it */
