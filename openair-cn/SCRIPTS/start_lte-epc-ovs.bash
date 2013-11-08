@@ -1,7 +1,8 @@
 #!/bin/bash
 # start MME+S/P-GW with openvswitch setting
 
-                                                                              hss.eur
+#                                                                           hss.eur
+#                                                                             |
 #        +-----------+          +------+              +-----------+           v   +----------+
 #        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    +----+      +---+   HSS    |
 #        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
@@ -17,28 +18,89 @@
 #                                                     |           |      11 VLANS    |              |
 #                                                     +-----------+   ids=[5..15]    +--------------+
 #
-
-
 BRIDGE="vswitch"
 
 ###########################################################
-IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
-declare -x OPENAIR_DIR=""
-declare -x OPENAIR1_DIR=""
-declare -x OPENAIR2_DIR=""
-declare -x OPENAIR3_DIR=""
-declare -x OPENAIR_TARGETS=""
+source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
-set_openair
-cecho "OPENAIR_DIR     = $OPENAIR_DIR" $green
-cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
-cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
-cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
-cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
+test_command_install_package "gccxml" "gccxml" "--force-yes"
+test_command_install_package "vconfig" "vlan"
+test_command_install_package "iptables" "iptables"
+test_command_install_package "ip" "iproute"
+test_command_install_script   "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
+test_command_install_script   "tunctl" "uml-utilities"
+if [ ! -d /usr/local/etc/freeDiameter ]
+    then
+        cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
+    else
+        echo_success "freediameter is installed"
+fi
 
-cat $OPENAIR3_DIR/OPENAIRMME/objs/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_NETFILTER_FOR_SGI
+test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
+
+# One mor check about version of asn1c
+ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
+ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
+##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
+if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]
+then
+    diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
+    echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
+    echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
+    while read -r -n 1 -s answer; do
+        if [[ $answer = [YyNn] ]]; then
+            [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash
+            [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
+            break
+        fi
+    done
+fi
+
+
+IPTABLES=`which iptables`
+
+cd $OPENAIRCN_DIR
+##################################
+# Get or set OBJ DIR and compile #
+##################################
+# TEST IF EXIST
+OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
+if [ -n "$OBJ_DIR" ]
+then
+    OBJ_DIR=`basename $OBJ_DIR`
+    if [ ! -f $OBJ_DIR/Makefile ]
+    then
+        cd ./$OBJ_DIR
+        echo_success "Invoking configure"
+        rm -f Makefile
+        ../configure --enable-standalone-epc --disable-nas LDFLAGS=-L/usr/local/lib
+    else
+        cd ./$OBJ_DIR
+    fi
+else
+    OBJ_DIR="OBJS"
+    bash_exec "mkdir -m 777 ./$OBJ_DIR"
+    echo_success "Created $OBJ_DIR directory"
+    echo_success "Invoking autogen"
+    bash_exec "./autogen.sh"
+    cd ./$OBJ_DIR
+    echo_success "Invoking configure"
+    ../configure --enable-standalone-epc --disable-nas LDFLAGS=-L/usr/local/lib
+fi
+if [ -f Makefile ]
+then
+    echo_success "Compiling..."
+    bash_exec "make"
+else
+    echo_error "Configure failed, exiting"
+    exit 1
+fi
+cd $OPENAIRCN_DIR
+
+
+cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_NETFILTER_FOR_SGI
 if [ $? -ne 0 ]
 then
     export ENABLE_USE_NETFILTER_FOR_SGI=0
@@ -46,7 +108,7 @@ else
     export ENABLE_USE_NETFILTER_FOR_SGI=1
 fi
 
-cat $OPENAIR3_DIR/OPENAIRMME/objs/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_RAW_FOR_SGI
+cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_RAW_FOR_SGI
 if [ $? -ne 0 ]
 then
     export ENABLE_USE_RAW_FOR_SGI=0
@@ -54,16 +116,34 @@ else
     export ENABLE_USE_RAW_FOR_SGI=1
 fi
 
-pkill oaisim_mme
+pkill oai_epc
 
-
+#######################################################
+# SOURCE $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf
+#######################################################
 rm -f /tmp/source.txt
-cat $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/epc_$HOSTNAME.conf | tr -d " " > /tmp/source.txt
-source /tmp/source.txt
+if [ -f $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf ]
+then
+    cat $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf | tr -d " " > /tmp/source.txt
+    source /tmp/source.txt
+else
+    echo_error "Missing config file $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf (Please write your own config file), exiting"
+    exit 1
+fi
 
+#######################################################
+# SOURCE $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf
+#######################################################
 rm -f /tmp/source.txt
-cat $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/enb_$HOSTNAME.conf | tr -d " " > /tmp/source.txt
-source /tmp/source.txt
+if [ -f $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf ]
+then
+    cat $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf | tr -d " " > /tmp/source.txt
+    source /tmp/source.txt
+else
+    echo_error "Missing config file $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf (Please write your own config file), exiting"
+    exit 1
+fi
+
 
 ping -c 1 hss.eur || { echo "hss.eur does not respond to ping" >&2 ; exit ; }
 ping -c 1 router.eur || { echo "router.eur does not respond to ping" >&2 ; exit ; }
@@ -105,6 +185,8 @@ echo "   Disabling reverse path filtering"
 bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
 assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 
+echo_warning "LG FORCED EXIT"
+exit
 
 start_openswitch_daemon
 # REMINDER:

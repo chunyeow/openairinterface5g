@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tested on ubuntu 12.04 with updates on 05 april 2013
+# Tested on ubuntu 12.04 with updates on 05 april 2013, 07 november 2013
 
 # Make sure only root can run our script
 if [[ $EUID -ne 0 ]]; then

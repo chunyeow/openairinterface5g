@@ -38,6 +38,13 @@ trim ()
     echo "$1" | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}'
 }
 
+trim2() 
+{
+    local var=$@
+    var="${var#"${var%%[![:space:]]*}"}"   # remove leading whitespace characters
+    var="${var%"${var##*[![:space:]]}"}"   # remove trailing whitespace characters
+    echo -n "$var"
+}
 
 cecho()   # Color-echo
 # arg1 = message
@@ -92,6 +99,30 @@ bash_exec() {
     fi
 }
 
+extract() {
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)    tar xvjf $1        ;;
+            *.tar.gz)     tar xvzf $1        ;;
+            *.bz2)        bunzip2  $1        ;;
+            *.rar)        unrar    $1        ;;
+            *.gz)         gunzip   $1        ;;
+            *.tar)        tar xvf  $1        ;;
+            *.tbz2)       tar xvjf $1        ;;
+            *.tgz)        tar xvzf $1        ;;
+            *.zip)        unzip    $1        ;;
+            *.Z)          uncompress $1      ;;
+            *.7z)         7z x     $1        ;;
+            *)            echo_error "'$1' cannot be extracted via >extract<" ; return 1;;
+        esac
+    else
+        echo_error "'$1' is not a valid file"
+        return 1
+    fi
+    return 0
+}
+
+
 set_openair() {
     path=`pwd`
     declare -i length_path
@@ -113,6 +144,7 @@ set_openair() {
                export OPENAIR1_DIR=$openair_path/openair1
                export OPENAIR2_DIR=$openair_path/openair2
                export OPENAIR3_DIR=$openair_path/openair3
+               export OPENAIRCN_DIR=$openair_path/openair-cn
                export OPENAIR_TARGETS=$openair_path/targets
                return 0
            fi
@@ -172,9 +204,24 @@ assert() {
     fi
 }
 
-test_command_install() {
-  # usage: test_command_install searched_binary package_to_be_installed_if_binary_not_found
-  command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it." >&2; apt-get install $2 -y; command -v $1 >/dev/null 2>&1 || { echo_error "Program $1 is not installed. Aborting." >&2; exit 1; };}
+test_command_install_package() {
+  # usage: test_command_install_package searched_binary package_to_be_installed_if_binary_not_found optional_option_to_apt_get_install
+  if [ $# -eq 2 ]; then
+      command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it." >&2; apt-get install $2 -y; command -v $1 >/dev/null 2>&1 || { echo_error "Program $1 is not installed. Aborting." >&2; exit 1; };}
+  else
+      if [ $# -eq 3 ]; then
+          command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it (apt-get install $3 $2)." >&2; apt-get install $3 $2 -y; command -v $1 >/dev/null 2>&1 || { echo_error "Program $1 is not installed. Aborting." >&2; exit 1; };}
+      else
+          echo_success "test_command_install_package: BAD PARAMETER"
+          exit 1
+      fi
+  fi
+  echo_success "$1 available"
+}
+
+test_command_install_script() {
+  # usage: test_command_install_script searched_binary script_to_be_invoked_if_binary_not_found
+  command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it." >&2; bash $2; command -v $1 >/dev/null 2>&1 || { echo_error "Program $1 is not installed. Aborting." >&2; exit 1; };}
   echo_success "$1 available"
 }
 
@@ -261,6 +308,7 @@ declare -x OPENAIR_DIR=""
 declare -x OPENAIR1_DIR=""
 declare -x OPENAIR2_DIR=""
 declare -x OPENAIR3_DIR=""
+declare -x OPENAIRCN_DIR=""
 declare -x OPENAIR_TARGETS=""
 ###########################################################
 
@@ -269,4 +317,5 @@ cecho "OPENAIR_DIR     = $OPENAIR_DIR" $green
 cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
 cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
 cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
+cecho "OPENAIRCN_DIR   = $OPENAIRCN_DIR" $green
 cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
