@@ -98,6 +98,27 @@ static int ui_idle_callback(gpointer data)
     return FALSE;
 }
 
+void ui_set_title(const char *fmt, ...)
+{
+    va_list args;
+    char *name;
+    char buffer[200];
+    char title[220];
+
+#if defined(PACKAGE_STRING)
+    name = PACKAGE_NAME;
+#else
+    name = "itti_analyzer";
+#endif
+
+    va_start(args, fmt);
+
+    vsnprintf (buffer, sizeof(buffer), fmt, args);
+    snprintf (title, sizeof(title), "%s  %s", name, buffer);
+
+    gtk_window_set_title (GTK_WINDOW(ui_main_data.window), title);
+}
+
 int ui_gtk_initialize(int argc, char *argv[])
 {
     GtkWidget *vbox;
@@ -116,11 +137,7 @@ int ui_gtk_initialize(int argc, char *argv[])
 
     gtk_window_set_position (GTK_WINDOW(ui_main_data.window), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size (GTK_WINDOW(ui_main_data.window), 1024, 800);
-#if defined(PACKAGE_STRING)
-    gtk_window_set_title(GTK_WINDOW(ui_main_data.window), PACKAGE_STRING);
-#else
-    gtk_window_set_title (GTK_WINDOW(ui_main_data.window), "itti debugger");
-#endif
+    ui_set_title("");
     gtk_window_set_resizable (GTK_WINDOW(ui_main_data.window), TRUE);
 
     vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);

@@ -1,3 +1,7 @@
+#if HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -52,6 +56,11 @@ gboolean ui_callback_on_save_filters(GtkWidget *widget, GdkEvent *event, gpointe
 
 gboolean ui_callback_on_about(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+#if defined(PACKAGE_STRING)
+    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "%s", PACKAGE_STRING);
+#else
+    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "itti_analyzer");
+#endif
 
     return TRUE;
 }
@@ -261,6 +270,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, GdkEvent *event, gpointer dat
         ui_enable_connect_button ();
         return FALSE;
     }
+    ui_set_title ("%s:%d", ip, port);
 
     return TRUE;
 }
@@ -303,6 +313,7 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, GdkEvent *event, gpoin
 {
     /* Disable buttons to move in the list of signals */
     ui_set_sensitive_move_buttons (FALSE);
+    ui_set_title ("");
 
     /* Clear list of signals */
     ui_tree_view_destroy_list (ui_main_data.signalslist);

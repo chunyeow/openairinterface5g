@@ -33,6 +33,7 @@ int ui_enable_connect_button(void)
     /* Disable Disconnect button and enable connect button */
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.connect), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.disconnect), FALSE);
+    ui_set_title ("");
 
     return RC_OK;
 }
@@ -169,8 +170,13 @@ int ui_messages_read(char *filename)
 
         if (read_messages > 0)
         {
+            char *basename;
+
             /* Enable buttons to move in the list of signals */
             ui_set_sensitive_move_buttons (TRUE);
+
+            basename = g_path_get_basename(filename);
+            ui_set_title ("\"%s\"", basename);
         }
 
         g_message("Read %d messages (%d to display) from file \"%s\"\n", read_messages, ui_tree_view_get_filtered_number(), filename);
