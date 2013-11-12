@@ -11,7 +11,7 @@ char *enum_type_get_name_from_value(struct types_s *type, uint32_t value)
     char    *enum_name = "UNKNOWN";
     types_t *enum_value;
 
-    /* Loop on eache enumeration values */
+    /* Loop on each enumeration values */
     for (enum_value = type->child; enum_value; enum_value = enum_value->next) {
         if (value == enum_value->init_value) {
             enum_name = enum_value->name;
@@ -34,6 +34,7 @@ int enum_type_dissect_from_buffer(
 
     for (values = type->child; values; values = values->next) {
         if (value == values->init_value) {
+            values->parent = type;
             values->type_dissect_from_buffer(
                 values, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset,
                 type->name == NULL ? indent: indent+4);

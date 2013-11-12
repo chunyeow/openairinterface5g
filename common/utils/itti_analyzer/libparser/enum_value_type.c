@@ -6,10 +6,13 @@
 #include "enum_value_type.h"
 #include "ui_interface.h"
 
+uint32_t last_enum_value;
+
 int enum_value_dissect_from_buffer(
     struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
     buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
 {
+    struct types_s *type_parent = NULL;
     uint32_t value = 0;
 
     DISPLAY_PARSE_INFO("enum_value", type->name, offset, parent_offset);
@@ -19,6 +22,24 @@ int enum_value_dissect_from_buffer(
         int length = 0;
         char cbuf[50 + strlen(type->name)];
 
+        /* Search for enum variable name and check if it is used in association with a union type */
+        {
+            if (type->parent != NULL) {
+                /* Ignore ENUMERATION and TYPEDEF parents */
+                for (type_parent = type->parent; (type_parent != NULL) && ((type_parent->type == TYPE_ENUMERATION) || (type_parent->type == TYPE_TYPEDEF));
+                        type_parent = type_parent->parent) {
+                }
+            }
+            if ((type_parent != NULL) && (type_parent->name != NULL) && (strcmp(type_parent->name, "present") == 0))
+            {
+                /* ASN1 union, keep the "present" member */
+                last_enum_value = value;
+            }
+            else
+            {
+                last_enum_value = 0;
+            }
+        }
         sprintf(cbuf, "(0x%08x)  %s;\n", value, type->name);
         length = strlen(cbuf);
 

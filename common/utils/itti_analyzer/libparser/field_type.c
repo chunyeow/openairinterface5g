@@ -24,55 +24,67 @@ int field_dissect_from_buffer(
     CHECK_FCT(buffer_has_enouch_data(buffer, parent_offset + offset, type->size / 8));
 
     if (type->bits == -1) {
-        if (type->child != NULL) {
-            /* Ignore TYPEDEF children */
-            for (type_child = type->child; type_child != NULL && type_child->type == TYPE_TYPEDEF; type_child =
-                    type_child->child) {
-            }
+        if ((type->name != NULL) && (strcmp(type->name, "_asn_ctx") == 0)) {
+           /* Hide ASN1 asn_struct_ctx_t struct that hold context for parsing across buffer boundaries */
+           /*
+           INDENTED_STRING(cbuf, indent, sprintf(cbuf, ".asn_ctx ...\n"));
+           length = strlen (cbuf);
 
-            if (type_child->type == TYPE_ARRAY) {
-                struct types_s *type_array_child;
-
+           ui_set_signal_text_cb(user_data, cbuf, length);
+           */
+        }
+        else {
+            if (type->child != NULL) {
                 /* Ignore TYPEDEF children */
-                for (type_array_child = type_child->child;
-                        type_array_child != NULL && type_array_child->type == TYPE_TYPEDEF; type_array_child =
-                                type_array_child->child) {
+                for (type_child = type->child; type_child != NULL && type_child->type == TYPE_TYPEDEF; type_child =
+                        type_child->child) {
                 }
 
-                sprintf (array_info, "[%d]", type_child->size / type_array_child->size);
+                if (type_child->type == TYPE_ARRAY) {
+                    struct types_s *type_array_child;
+
+                    /* Ignore TYPEDEF children */
+                    for (type_array_child = type_child->child;
+                            type_array_child != NULL && type_array_child->type == TYPE_TYPEDEF; type_array_child =
+                                    type_array_child->child) {
+                    }
+
+                    sprintf (array_info, "[%d]", type_child->size / type_array_child->size);
+                }
+                else {
+                    array_info[0] = '\0';
+                }
+
+                DISPLAY_TYPE("Fld");
+                INDENTED_STRING(cbuf, indent, sprintf(cbuf, ".%s%s = ", type->name ? type->name : "Field", array_info));
+                length = strlen (cbuf);
+
+                ui_set_signal_text_cb(user_data, cbuf, length);
+
+                indent_child = indent;
+                if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
+                    DISPLAY_BRACE(ui_set_signal_text_cb(user_data, "{", 1);)
+                    ui_set_signal_text_cb(user_data, "\n", 1);
+                    indent_child += 4;
+                }
+                if (type_child->type == TYPE_FUNDAMENTAL || type_child->type == TYPE_POINTER) {
+                    indent_child = 0;
+                }
+
+                type->child->parent = type;
+                CHECK_FCT(type->child->type_dissect_from_buffer(
+                        type->child, ui_set_signal_text_cb, user_data, buffer,
+                        parent_offset, offset + type->offset, indent_child));
+
+                DISPLAY_BRACE(
+                        if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
+                            DISPLAY_TYPE("Fld");
+                            INDENTED_STRING(cbuf, indent, sprintf(cbuf, "};\n"));
+                            length = strlen (cbuf);
+
+                            ui_set_signal_text_cb(user_data, cbuf, length);
+                        });
             }
-            else {
-                array_info[0] = '\0';
-            }
-
-            DISPLAY_TYPE("Fld");
-            INDENTED_STRING(cbuf, indent, sprintf(cbuf, ".%s%s = ", type->name ? type->name : "Field", array_info));
-            length = strlen (cbuf);
-
-            ui_set_signal_text_cb(user_data, cbuf, length);
-
-            indent_child = indent;
-            if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
-                DISPLAY_BRACE(ui_set_signal_text_cb(user_data, "{", 1);)
-                ui_set_signal_text_cb(user_data, "\n", 1);
-                indent_child += 4;
-            }
-            if (type_child->type == TYPE_FUNDAMENTAL || type_child->type == TYPE_POINTER) {
-                indent_child = 0;
-            }
-
-            CHECK_FCT(type->child->type_dissect_from_buffer(
-                    type->child, ui_set_signal_text_cb, user_data, buffer,
-                    parent_offset, offset + type->offset, indent_child));
-
-            DISPLAY_BRACE(
-                    if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
-                        DISPLAY_TYPE("Fld");
-                        INDENTED_STRING(cbuf, indent, sprintf(cbuf, "};\n"));
-                        length = strlen (cbuf);
-
-                        ui_set_signal_text_cb(user_data, cbuf, length);
-                    });
         }
     }
     else {

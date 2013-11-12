@@ -14,6 +14,7 @@ int typedef_dissect_from_buffer(
 
     /* Simply call next_type */
     if (type->child != NULL) {
+        type->child->parent = type;
         type->child->type_dissect_from_buffer(
             type->child, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset, indent);
     }

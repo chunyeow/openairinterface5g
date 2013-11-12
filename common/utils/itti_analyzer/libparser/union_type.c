@@ -5,6 +5,7 @@
 
 #include "rc.h"
 
+#include "enum_value_type.h"
 #include "union_type.h"
 #include "../libresolver/locate_root.h"
 #include "ui_interface.h"
@@ -34,6 +35,7 @@ int union_dissect_from_buffer(
 {
     int length = 0;
     char cbuf[200];
+    int union_child = 0;
 
     DISPLAY_PARSE_INFO("union", type->name, offset, parent_offset);
 
@@ -45,6 +47,21 @@ int union_dissect_from_buffer(
 //         INDENTED(stdout, indent,   fprintf(stdout, "<%s>\n", type->name));
         DISPLAY_TYPE("Uni");
         INDENTED_STRING(cbuf, indent, sprintf(cbuf, "%s {\n", type->name));
+
+        if (type->parent != NULL)
+        {
+            if ((type->parent->name != NULL) && (strcmp(type->parent->name, "choice") == 0))
+            {
+                /* ASN1 union */
+
+                if ((last_enum_value > 0) && (last_enum_value <= type->nb_members))
+                {
+                    union_child = last_enum_value - 1;
+
+                    g_debug("ASN1 union \"%s\' detected, use member %d", type->name, union_child);
+                }
+            }
+        }
     }
 
     length = strlen (cbuf);
@@ -52,9 +69,9 @@ int union_dissect_from_buffer(
     ui_set_signal_text_cb(user_data, cbuf, length);
 
     /* Only dissect the first field present in unions */
-    if (type->members_child[0] != NULL)
-        type->members_child[0]->type_dissect_from_buffer(
-            type->members_child[0], ui_set_signal_text_cb, user_data, buffer,
+    if (type->members_child[union_child] != NULL)
+        type->members_child[union_child]->type_dissect_from_buffer(
+            type->members_child[union_child], ui_set_signal_text_cb, user_data, buffer,
             offset, parent_offset, type->name == NULL ? indent : indent + 4);
 
     if (type->name) {
