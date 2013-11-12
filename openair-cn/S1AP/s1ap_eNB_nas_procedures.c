@@ -55,8 +55,9 @@ int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
     struct s1ap_eNB_mme_data_s   *mme_desc_p;
     struct s1ap_eNB_ue_context_s *ue_desc_p;
 
-    s1ap_message           message;
-    InitialUEMessageIEs_t *initial_ue_message_p;
+    s1ap_message message;
+
+    S1ap_InitialUEMessageIEs_t *initial_ue_message_p;
 
     uint8_t  *buffer;
     uint32_t  length;
@@ -69,10 +70,10 @@ int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
 
     memset(&message, 0, sizeof(s1ap_message));
 
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-    message.procedureCode = ProcedureCode_id_initialUEMessage;
+    message.direction     = S1AP_PDU_PR_initiatingMessage;
+    message.procedureCode = S1ap_ProcedureCode_id_initialUEMessage;
 
-    initial_ue_message_p = &message.msg.initialUEMessageIEs;
+    initial_ue_message_p = &message.msg.s1ap_InitialUEMessageIEs;
 
     /* Select the MME corresponding to the provided GUMMEI.
      * If no MME corresponds to the GUMMEI, the function selects the MME with the
@@ -132,14 +133,14 @@ int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
     initial_ue_message_p->rrC_Establishment_Cause = s1ap_nas_first_req_p->establishment_cause;
 
     if (s1ap_nas_first_req_p->ue_identity.present == S_TMSI_PROVIDED) {
-        initial_ue_message_p->presenceMask |= INITIALUEMESSAGEIES_S_TMSI_PRESENT;
+        initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_S_TMSI_PRESENT;
 
         MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.identity.s_tmsi.mme_code,
                                  &initial_ue_message_p->s_tmsi.mMEC);
         M_TMSI_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.identity.s_tmsi.m_tmsi,
                                &initial_ue_message_p->s_tmsi.m_TMSI);
     } else {
-        initial_ue_message_p->presenceMask |= INITIALUEMESSAGEIES_GUMMEI_ID_PRESENT;
+        initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_GUMMEI_ID_PRESENT;
 
         MCC_MNC_TO_PLMNID(s1ap_nas_first_req_p->ue_identity.identity.gummei.mcc,
                           s1ap_nas_first_req_p->ue_identity.identity.gummei.mnc,
@@ -186,14 +187,15 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
                                  uint32_t               stream,
                                  struct s1ap_message_s *message_p)
 {
-    DownlinkNASTransportIEs_t *downlink_NAS_transport_p;
-    s1ap_eNB_mme_data_t       *mme_desc_p;
-    s1ap_eNB_ue_context_t     *ue_desc_p;
-    s1ap_eNB_instance_t       *s1ap_eNB_instance;
+    S1ap_DownlinkNASTransportIEs_t *downlink_NAS_transport_p;
+
+    s1ap_eNB_mme_data_t   *mme_desc_p;
+    s1ap_eNB_ue_context_t *ue_desc_p;
+    s1ap_eNB_instance_t   *s1ap_eNB_instance;
 
     DevAssert(message_p != NULL);
 
-    downlink_NAS_transport_p = &message_p->msg.downlinkNASTransportIEs;
+    downlink_NAS_transport_p = &message_p->msg.s1ap_DownlinkNASTransportIEs;
 
     /* UE-related procedure -> stream != 0 */
     if (stream == 0) {
@@ -244,8 +246,8 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
 int s1ap_eNB_nas_uplink(s1ap_uplink_nas_t *s1ap_uplink_nas_p)
 {
     struct s1ap_eNB_ue_context_s *ue_context_p;
-    UplinkNASTransportIEs_t      *uplink_NAS_transport_p;
     s1ap_eNB_instance_t          *s1ap_eNB_instance_p;
+    S1ap_UplinkNASTransportIEs_t *uplink_NAS_transport_p;
 
     s1ap_message  message;
 
@@ -281,10 +283,10 @@ int s1ap_eNB_nas_uplink(s1ap_uplink_nas_t *s1ap_uplink_nas_p)
     /* Prepare the S1AP message to encode */
     memset(&message, 0, sizeof(s1ap_message));
 
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-    message.procedureCode = ProcedureCode_id_uplinkNASTransport;
+    message.direction     = S1AP_PDU_PR_initiatingMessage;
+    message.procedureCode = S1ap_ProcedureCode_id_uplinkNASTransport;
 
-    uplink_NAS_transport_p = &message.msg.uplinkNASTransportIEs;
+    uplink_NAS_transport_p = &message.msg.s1ap_UplinkNASTransportIEs;
 
     uplink_NAS_transport_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
     uplink_NAS_transport_p->eNB_UE_S1AP_ID = ue_context_p->eNB_ue_s1ap_id;

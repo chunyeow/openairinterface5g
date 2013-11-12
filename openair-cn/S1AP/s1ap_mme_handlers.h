@@ -82,10 +82,10 @@ int s1ap_handle_new_association(sctp_new_peer_t *sctp_new_peer_p);
 int s1ap_handle_create_session_response(SgwCreateSessionResponse
                                         *session_response_p);
 
-int s1ap_mme_set_cause(Cause_t *cause_p, Cause_PR cause_type, long cause_value);
+int s1ap_mme_set_cause(S1ap_Cause_t *cause_p, S1ap_Cause_PR cause_type, long cause_value);
 
 int s1ap_mme_generate_s1_setup_failure(
-    uint32_t assoc_id, Cause_PR cause_type, long cause_value,
+    uint32_t assoc_id, S1ap_Cause_PR cause_type, long cause_value,
     long time_to_wait);
 
 #endif /* S1AP_MME_HANDLERS_H_ */

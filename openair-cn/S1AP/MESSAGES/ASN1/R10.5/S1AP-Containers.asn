@@ -19,16 +19,16 @@ BEGIN
 -- **************************************************************
 
 IMPORTS
-	Criticality,
-	Presence,
-	PrivateIE-ID,
-	ProtocolExtensionID,
-	ProtocolIE-ID
+    S1ap-Criticality,
+    S1ap-Presence,
+    S1ap-PrivateIE-ID,
+    S1ap-ProtocolExtensionID,
+    S1ap-ProtocolIE-ID
 FROM S1AP-CommonDataTypes
 
-	maxPrivateIEs,
-	maxProtocolExtensions,
-	maxProtocolIEs
+    s1ap-maxPrivateIEs,
+    s1ap-maxProtocolExtensions,
+    s1ap-maxProtocolIEs
 FROM S1AP-Constants;
 
 -- **************************************************************
@@ -38,10 +38,10 @@ FROM S1AP-Constants;
 -- **************************************************************
 
 S1AP-PROTOCOL-IES ::= CLASS {
-	&id				ProtocolIE-ID 					UNIQUE,
-	&criticality			Criticality,
-	&Value,
-	&presence			Presence
+    &id				S1ap-ProtocolIE-ID 					UNIQUE,
+    &criticality			S1ap-Criticality,
+    &Value,
+    &presence			S1ap-Presence
 }
 WITH SYNTAX {
 	ID				&id
@@ -57,20 +57,20 @@ WITH SYNTAX {
 -- **************************************************************
 
 S1AP-PROTOCOL-IES-PAIR ::= CLASS {
-	&id				ProtocolIE-ID 					UNIQUE,
-	&firstCriticality		Criticality,
-	&FirstValue,
-	&secondCriticality		Criticality,
-	&SecondValue,
-	&presence			Presence
+    &id				S1ap-ProtocolIE-ID 					UNIQUE,
+    &firstCriticality		S1ap-Criticality,
+    &FirstValue,
+    &secondCriticality		S1ap-Criticality,
+    &SecondValue,
+    &presence			S1ap-Presence
 }
 WITH SYNTAX {
-	ID				&id
-	FIRST CRITICALITY 		&firstCriticality
-	FIRST TYPE			&FirstValue
-	SECOND CRITICALITY 		&secondCriticality
-	SECOND TYPE			&SecondValue
-	PRESENCE			&presence
+    ID				&id
+    FIRST CRITICALITY 		&firstCriticality
+    FIRST TYPE			&FirstValue
+    SECOND CRITICALITY 		&secondCriticality
+    SECOND TYPE			&SecondValue
+    PRESENCE			&presence
 }
 
 -- **************************************************************
@@ -80,16 +80,16 @@ WITH SYNTAX {
 -- **************************************************************
 
 S1AP-PROTOCOL-EXTENSION ::= CLASS {
-	&id				ProtocolExtensionID 				UNIQUE,
-	&criticality			Criticality,
-	&Extension,
-	&presence		Presence
+    &id			S1ap-ProtocolExtensionID 				UNIQUE,
+    &criticality	S1ap-Criticality,
+    &Extension,
+    &presence		S1ap-Presence
 }
 WITH SYNTAX {
-	ID				&id
-	CRITICALITY			&criticality
-	EXTENSION			&Extension
-	PRESENCE		&presence
+    ID			&id
+    CRITICALITY		&criticality
+    EXTENSION		&Extension
+    PRESENCE		&presence
 }
 
 -- **************************************************************
@@ -99,16 +99,16 @@ WITH SYNTAX {
 -- **************************************************************
 
 S1AP-PRIVATE-IES ::= CLASS {
-	&id				PrivateIE-ID,
-	&criticality			Criticality,
-	&Value,
-	&presence		Presence
+    &id			S1ap-PrivateIE-ID,
+    &criticality	S1ap-Criticality,
+    &Value,
+    &presence		S1ap-Presence
 }
 WITH SYNTAX {
-	ID				&id
-	CRITICALITY			&criticality
-	TYPE			&Value
-	PRESENCE		&presence
+    ID			&id
+    CRITICALITY		&criticality
+    TYPE		&Value
+    PRESENCE		&presence
 }
 
 -- **************************************************************

@@ -149,7 +149,7 @@ int s1ap_mme_handle_message(uint32_t assoc_id, uint32_t stream,
                assoc_id, stream, message);
 }
 
-int s1ap_mme_set_cause(Cause_t *cause_p, Cause_PR cause_type, long cause_value)
+int s1ap_mme_set_cause(S1ap_Cause_t *cause_p, S1ap_Cause_PR cause_type, long cause_value)
 {
     DevAssert(cause_p != NULL);
 
@@ -157,19 +157,19 @@ int s1ap_mme_set_cause(Cause_t *cause_p, Cause_PR cause_type, long cause_value)
 
     switch(cause_type)
     {
-        case Cause_PR_radioNetwork:
+        case S1ap_Cause_PR_radioNetwork:
             cause_p->choice.misc = cause_value;
             break;
-        case Cause_PR_transport:
+        case S1ap_Cause_PR_transport:
             cause_p->choice.transport = cause_value;
             break;
-        case Cause_PR_nas:
+        case S1ap_Cause_PR_nas:
             cause_p->choice.nas = cause_value;
             break;
-        case Cause_PR_protocol:
+        case S1ap_Cause_PR_protocol:
             cause_p->choice.protocol = cause_value;
             break;
-        case Cause_PR_misc:
+        case S1ap_Cause_PR_misc:
             cause_p->choice.misc = cause_value;
             break;
         default:
@@ -179,26 +179,26 @@ int s1ap_mme_set_cause(Cause_t *cause_p, Cause_PR cause_type, long cause_value)
 }
 
 int s1ap_mme_generate_s1_setup_failure(
-    uint32_t assoc_id, Cause_PR cause_type, long cause_value,
+    uint32_t assoc_id, S1ap_Cause_PR cause_type, long cause_value,
     long time_to_wait)
 {
     uint8_t *buffer_p;
     uint32_t length;
     s1ap_message message;
-    S1SetupFailureIEs_t *s1_setup_failure_p;
+    S1ap_S1SetupFailureIEs_t *s1_setup_failure_p;
 
     memset(&message, 0, sizeof(s1ap_message));
 
-    s1_setup_failure_p = &message.msg.s1SetupFailureIEs;
+    s1_setup_failure_p = &message.msg.s1ap_S1SetupFailureIEs;
 
-    message.procedureCode = ProcedureCode_id_S1Setup;
+    message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
     message.direction     = S1AP_PDU_PR_unsuccessfulOutcome;
 
     s1ap_mme_set_cause(&s1_setup_failure_p->cause, cause_type, cause_value);
 
     /* Include the optional field time to wait only if the value is > -1 */
     if (time_to_wait > -1) {
-        s1_setup_failure_p->presenceMask |= S1SETUPFAILUREIES_TIMETOWAIT_PRESENT;
+        s1_setup_failure_p->presenceMask |= S1AP_S1SETUPFAILUREIES_TIMETOWAIT_PRESENT;
         s1_setup_failure_p->timeToWait = time_to_wait;
     }
 
@@ -217,7 +217,7 @@ int s1ap_mme_generate_s1_setup_failure(
 int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
                                      struct s1ap_message_s *message)
 {
-    S1SetupRequestIEs_t *s1SetupRequest_p;
+    S1ap_S1SetupRequestIEs_t *s1SetupRequest_p;
     eNB_description_t *eNB_association;
     uint32_t eNB_id = 0;
     char *eNB_name = NULL;
@@ -226,7 +226,7 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
 
     DevAssert(message != NULL);
 
-    s1SetupRequest_p = &message->msg.s1SetupRequestIEs;
+    s1SetupRequest_p = &message->msg.s1ap_S1SetupRequestIEs;
 
     /* We received a new valid S1 Setup Request on a stream != 0.
      * This should not happen -> reject eNB s1 setup request.
@@ -234,17 +234,17 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
     if (stream != 0) {
         S1AP_DEBUG("Received new s1 setup request on stream != 0\n");
         /* Send a s1 setup failure with protocol cause unspecified */
-        return s1ap_mme_generate_s1_setup_failure(assoc_id, Cause_PR_protocol,
-                                                  CauseProtocol_unspecified, -1);
+        return s1ap_mme_generate_s1_setup_failure(assoc_id, S1ap_Cause_PR_protocol,
+                                                  S1ap_CauseProtocol_unspecified, -1);
     }
 
     S1AP_DEBUG("New s1 setup request incoming from ");
-    if ((s1SetupRequest_p->presenceMask & S1SETUPREQUESTIES_ENBNAME_PRESENT) ==
-            S1SETUPREQUESTIES_ENBNAME_PRESENT) {
+    if (s1SetupRequest_p->presenceMask & S1AP_S1SETUPREQUESTIES_ENBNAME_PRESENT)
+    {
         S1AP_DEBUG("%*s ", s1SetupRequest_p->eNBname.size, s1SetupRequest_p->eNBname.buf);
         eNB_name = (char *)s1SetupRequest_p->eNBname.buf;
     }
-    if (s1SetupRequest_p->global_ENB_ID.eNB_ID.present == ENB_ID_PR_homeENB_ID) {
+    if (s1SetupRequest_p->global_ENB_ID.eNB_ID.present == S1ap_ENB_ID_PR_homeENB_ID) {
         // Home eNB ID = 28 bits
         uint8_t *eNB_id_buf =
             s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.homeENB_ID.buf;
@@ -276,9 +276,9 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
                    max_enb_connected);
 
         /* Send an overload cause... */
-        return s1ap_mme_generate_s1_setup_failure(assoc_id, Cause_PR_misc,
-                                                  CauseMisc_control_processing_overload,
-                                                  TimeToWait_v20s);
+        return s1ap_mme_generate_s1_setup_failure(assoc_id, S1ap_Cause_PR_misc,
+                                                  S1ap_CauseMisc_control_processing_overload,
+                                                  S1ap_TimeToWait_v20s);
     }
 
     /* If none of the provided PLMNs/TAC match the one configured in MME,
@@ -288,9 +288,9 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
 
     /* eNB and MME have no common PLMN */
     if (ta_ret != TA_LIST_RET_OK) {
-        return s1ap_mme_generate_s1_setup_failure(assoc_id, Cause_PR_misc,
-                                                  CauseMisc_unknown_PLMN,
-                                                  TimeToWait_v20s);
+        return s1ap_mme_generate_s1_setup_failure(assoc_id, S1ap_Cause_PR_misc,
+                                                  S1ap_CauseMisc_unknown_PLMN,
+                                                  S1ap_TimeToWait_v20s);
     }
 
     S1AP_DEBUG("Adding eNB to the list of served eNBs\n");
@@ -317,12 +317,13 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
         /* eNB has been fount in list, consider the s1 setup request as a reset connection,
          * reseting any previous UE state if sctp association is != than the previous one */
         if (eNB_association->sctp_assoc_id != assoc_id) {
-            S1SetupFailureIEs_t s1SetupFailure;
-            memset(&s1SetupFailure, 0, sizeof(S1SetupFailureIEs_t));
+            S1ap_S1SetupFailureIEs_t s1SetupFailure;
+
+            memset(&s1SetupFailure, 0, sizeof(s1SetupFailure));
 
             /* Send an overload cause... */
-            s1SetupFailure.cause.present = Cause_PR_misc; //TODO: send the right cause
-            s1SetupFailure.cause.choice.misc = CauseMisc_control_processing_overload;
+            s1SetupFailure.cause.present = S1ap_Cause_PR_misc; //TODO: send the right cause
+            s1SetupFailure.cause.choice.misc = S1ap_CauseMisc_control_processing_overload;
             S1AP_DEBUG("Rejeting s1 setup request as eNB id %d is already associated to an active sctp association"
                        "Previous known: %d, new one: %d\n",
                        eNB_id, eNB_association->sctp_assoc_id, assoc_id);
@@ -341,8 +342,8 @@ int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association)
 {
     int i;
     int enc_rval = 0;
-    S1SetupResponseIEs_t *s1_setup_response_p;
-    ServedGUMMEIsItem_t   servedGUMMEI;
+    S1ap_S1SetupResponseIEs_t *s1_setup_response_p;
+    S1ap_ServedGUMMEIsItem_t   servedGUMMEI;
     s1ap_message message;
     uint8_t *buffer;
     uint32_t length;
@@ -351,9 +352,9 @@ int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association)
 
     // Generating response
     memset(&message, 0, sizeof(s1ap_message));
-    memset(&servedGUMMEI, 0, sizeof(ServedGUMMEIsItem_t));
+    memset(&servedGUMMEI, 0, sizeof(servedGUMMEI));
 
-    s1_setup_response_p = &message.msg.s1SetupResponseIEs;
+    s1_setup_response_p = &message.msg.s1ap_S1SetupResponseIEs;
 
     config_read_lock(&mme_config);
 
@@ -361,28 +362,28 @@ int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association)
 
     /* Use the gummei parameters provided by configuration */
     for (i = 0; i < mme_config.gummei.nb_plmns; i++) {
-        PLMNidentity_t *plmn;
+        S1ap_PLMNidentity_t *plmn;
 
         /* FIXME: free object from list once encoded */
-        plmn = calloc(1, sizeof(PLMNidentity_t));
+        plmn = calloc(1, sizeof(*plmn));
         MCC_MNC_TO_PLMNID(mme_config.gummei.plmn_mcc[i],
                           mme_config.gummei.plmn_mnc[i],
                           plmn);
         ASN_SEQUENCE_ADD(&servedGUMMEI.servedPLMNs.list, plmn);
     }
     for (i = 0; i < mme_config.gummei.nb_mme_gid; i++) {
-        MME_Group_ID_t *mme_gid;
+        S1ap_MME_Group_ID_t *mme_gid;
 
         /* FIXME: free object from list once encoded */
-        mme_gid = calloc(1, sizeof(MME_Group_ID_t));
+        mme_gid = calloc(1, sizeof(*mme_gid));
         INT16_TO_OCTET_STRING(mme_config.gummei.mme_gid[i], mme_gid);
         ASN_SEQUENCE_ADD(&servedGUMMEI.servedGroupIDs.list, mme_gid);
     }
     for (i = 0; i < mme_config.gummei.nb_mmec; i++) {
-        MME_Code_t *mmec;
+        S1ap_MME_Code_t *mmec;
 
         /* FIXME: free object from list once encoded */
-        mmec = calloc(1, sizeof(MME_Code_t));
+        mmec = calloc(1, sizeof(*mmec));
         INT8_TO_OCTET_STRING(mme_config.gummei.mmec[i], mmec);
         ASN_SEQUENCE_ADD(&servedGUMMEI.servedMMECs.list, mmec);
     }
@@ -392,7 +393,7 @@ int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association)
     /* The MME is only serving E-UTRAN RAT, so the list contains only one element */
     ASN_SEQUENCE_ADD(&s1_setup_response_p->servedGUMMEIs, &servedGUMMEI);
 
-    message.procedureCode = ProcedureCode_id_S1Setup;
+    message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
     message.direction     = S1AP_PDU_PR_successfulOutcome;
 
     enc_rval = s1ap_mme_encode_pdu(&message, &buffer, &length);
@@ -414,11 +415,11 @@ int s1ap_mme_handle_ue_cap_indication(uint32_t assoc_id, uint32_t stream,
                                       struct s1ap_message_s *message)
 {
     ue_description_t *ue_ref;
-    UECapabilityInfoIndicationIEs_t *ue_cap_p;
+    S1ap_UECapabilityInfoIndicationIEs_t *ue_cap_p;
 
     DevAssert(message != NULL);
 
-    ue_cap_p = &message->msg.ueCapabilityInfoIndicationIEs;
+    ue_cap_p = &message->msg.s1ap_UECapabilityInfoIndicationIEs;
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(ue_cap_p->mme_ue_s1ap_id)) == NULL) {
         S1AP_DEBUG("No UE is attached to this mme UE s1ap id: 0x%08x\n",
@@ -476,13 +477,14 @@ int s1ap_mme_handle_initial_context_setup_response(
     struct s1ap_message_s *message)
 {
 
-    InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs_p;
-    ue_description_t                 *ue_ref;
-    SgwModifyBearerRequest           *modify_request_p;
-    MessageDef                       *message_p;
-    E_RABSetupItemCtxtSURes_t        *eRABSetupItemCtxtSURes_p;
+    S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs_p;
+    S1ap_E_RABSetupItemCtxtSURes_t        *eRABSetupItemCtxtSURes_p;
 
-    initialContextSetupResponseIEs_p = &message->msg.initialContextSetupResponseIEs;
+    ue_description_t       *ue_ref;
+    SgwModifyBearerRequest *modify_request_p;
+    MessageDef             *message_p;
+
+    initialContextSetupResponseIEs_p = &message->msg.s1ap_InitialContextSetupResponseIEs;
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(
         (uint32_t)initialContextSetupResponseIEs_p->mme_ue_s1ap_id)) == NULL) {
@@ -498,7 +500,7 @@ int s1ap_mme_handle_initial_context_setup_response(
         return -1;
     }
 
-    if (initialContextSetupResponseIEs_p->e_RABSetupListCtxtSURes.e_RABSetupItemCtxtSURes.count
+    if (initialContextSetupResponseIEs_p->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.count
             != 1) {
         S1AP_DEBUG("E-RAB creation has failed\n");
         return -1;
@@ -512,12 +514,13 @@ int s1ap_mme_handle_initial_context_setup_response(
         return -1;
     }
 
-    eRABSetupItemCtxtSURes_p = (E_RABSetupItemCtxtSURes_t *)
-                               initialContextSetupResponseIEs_p->e_RABSetupListCtxtSURes.e_RABSetupItemCtxtSURes.array[0];
+    /* Bad, very bad cast... */
+    eRABSetupItemCtxtSURes_p = (S1ap_E_RABSetupItemCtxtSURes_t *)
+    initialContextSetupResponseIEs_p->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[0];
 
     modify_request_p = &message_p->msg.sgwModifyBearerRequest;
 //     modify_request_p->teid = ue_ref->teid;
-    modify_request_p->bearer_context_to_modify.eps_bearer_id     =
+    modify_request_p->bearer_context_to_modify.eps_bearer_id =
         eRABSetupItemCtxtSURes_p->e_RAB_ID;
     modify_request_p->bearer_context_to_modify.s1_eNB_fteid.teid = *((
                 uint32_t *)eRABSetupItemCtxtSURes_p->gTP_TEID.buf);
@@ -531,17 +534,17 @@ int s1ap_mme_handle_initial_context_setup_response(
 int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
         uint32_t stream, struct s1ap_message_s *message)
 {
-    UEContextReleaseRequestIEs_t *ueContextReleaseRequest_p;
+    S1ap_UEContextReleaseRequestIEs_t *ueContextReleaseRequest_p;
     ue_description_t *ue_ref = NULL;
 
-    ueContextReleaseRequest_p = &message->msg.ueContextReleaseRequestIEs;
+    ueContextReleaseRequest_p = &message->msg.s1ap_UEContextReleaseRequestIEs;
 
     /* The UE context release procedure is initiated if the cause is != than user inactivity.
      * TS36.413 #8.3.2.2.
      */
-    if (ueContextReleaseRequest_p->cause.present == Cause_PR_radioNetwork) {
+    if (ueContextReleaseRequest_p->cause.present == S1ap_Cause_PR_radioNetwork) {
         if (ueContextReleaseRequest_p->cause.choice.radioNetwork ==
-                CauseRadioNetwork_user_inactivity) {
+            S1ap_CauseRadioNetwork_user_inactivity) {
             return -1;
         }
     }
@@ -573,20 +576,20 @@ static int s1ap_mme_generate_ue_context_release_command(
     uint32_t length;
 
     s1ap_message message;
-    UEContextReleaseCommandIEs_t *ueContextReleaseCommandIEs_p;
+    S1ap_UEContextReleaseCommandIEs_t *ueContextReleaseCommandIEs_p;
 
     if (ue_ref == NULL) {
         return -1;
     }
     memset(&message, 0, sizeof(s1ap_message));
 
-    message.procedureCode = ProcedureCode_id_UEContextRelease;
+    message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
     message.direction     = S1AP_PDU_PR_successfulOutcome;
 
-    ueContextReleaseCommandIEs_p = &message.msg.ueContextReleaseCommandIEs;
+    ueContextReleaseCommandIEs_p = &message.msg.s1ap_UEContextReleaseCommandIEs;
 
     /* Fill in ID pair */
-    ueContextReleaseCommandIEs_p->uE_S1AP_IDs.present = UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
+    ueContextReleaseCommandIEs_p->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
     ueContextReleaseCommandIEs_p->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID =
         ue_ref->mme_ue_s1ap_id;
     ueContextReleaseCommandIEs_p->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID =
@@ -594,9 +597,9 @@ static int s1ap_mme_generate_ue_context_release_command(
     ueContextReleaseCommandIEs_p->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.iE_Extensions =
         NULL;
 
-    ueContextReleaseCommandIEs_p->cause.present = Cause_PR_radioNetwork;
+    ueContextReleaseCommandIEs_p->cause.present = S1ap_Cause_PR_radioNetwork;
     ueContextReleaseCommandIEs_p->cause.choice.radioNetwork =
-        CauseRadioNetwork_release_due_to_eutran_generated_reason;
+    S1ap_CauseRadioNetwork_release_due_to_eutran_generated_reason;
 
     if (s1ap_mme_encode_pdu(&message, &buffer, &length) < 0) {
         return -1;
@@ -608,10 +611,10 @@ static int s1ap_mme_generate_ue_context_release_command(
 int s1ap_mme_handle_ue_context_release_complete(uint32_t assoc_id,
         uint32_t stream, struct s1ap_message_s *message)
 {
-    UEContextReleaseCompleteIEs_t *ueContextReleaseComplete_p;
+    S1ap_UEContextReleaseCompleteIEs_t *ueContextReleaseComplete_p;
     ue_description_t *ue_ref = NULL;
 
-    ueContextReleaseComplete_p = &message->msg.ueContextReleaseCompleteIEs;
+    ueContextReleaseComplete_p = &message->msg.s1ap_UEContextReleaseCompleteIEs;
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(
                       ueContextReleaseComplete_p->mme_ue_s1ap_id)) == NULL) {
@@ -632,13 +635,15 @@ int s1ap_mme_handle_ue_context_release_complete(uint32_t assoc_id,
 int s1ap_mme_handle_initial_context_setup_failure(uint32_t assoc_id,
         uint32_t stream, struct s1ap_message_s *message)
 {
-    InitialContextSetupFailureIEs_t *initialContextSetupFailureIEs_p;
-    ue_description_t              *ue_ref = NULL;
+    S1ap_InitialContextSetupFailureIEs_t *initialContextSetupFailureIEs_p;
 
-    initialContextSetupFailureIEs_p = &message->msg.initialContextSetupFailureIEs;
+    ue_description_t *ue_ref = NULL;
+
+    initialContextSetupFailureIEs_p = &message->msg.s1ap_InitialContextSetupFailureIEs;
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(
-                      initialContextSetupFailureIEs_p->mme_ue_s1ap_id)) == NULL) {
+        initialContextSetupFailureIEs_p->mme_ue_s1ap_id)) == NULL)
+    {
         /* MME doesn't know the MME UE S1AP ID provided. */
         return -1;
     }
@@ -659,11 +664,11 @@ int s1ap_mme_handle_initial_context_setup_failure(uint32_t assoc_id,
 int s1ap_mme_handle_path_switch_request(uint32_t assoc_id, uint32_t stream,
                                         struct s1ap_message_s *message)
 {
-    PathSwitchRequestIEs_t *pathSwitchRequest_p;
-    ue_description_t     *ue_ref;
-    uint32_t              eNB_ue_s1ap_id;
+    S1ap_PathSwitchRequestIEs_t *pathSwitchRequest_p;
+    ue_description_t *ue_ref;
+    uint32_t          eNB_ue_s1ap_id;
 
-    pathSwitchRequest_p = &message->msg.pathSwitchRequestIEs;
+    pathSwitchRequest_p = &message->msg.s1ap_PathSwitchRequestIEs;
 
     // eNB UE S1AP ID is limited to 24 bits
     eNB_ue_s1ap_id = (uint32_t)(pathSwitchRequest_p->eNB_UE_S1AP_ID & 0x00ffffff);
@@ -672,7 +677,8 @@ int s1ap_mme_handle_path_switch_request(uint32_t assoc_id, uint32_t stream,
                (int)eNB_ue_s1ap_id);
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(
-                      pathSwitchRequest_p->sourceMME_UE_S1AP_ID)) == NULL) {
+        pathSwitchRequest_p->sourceMME_UE_S1AP_ID)) == NULL)
+    {
         /* The MME UE S1AP ID provided by eNB doesn't point to any valid UE.
          * MME replies with a PATH SWITCH REQUEST FAILURE message and start operation
          * as described in TS 36.413 [11].
@@ -766,10 +772,11 @@ int s1ap_handle_create_session_response(SgwCreateSessionResponse
 
     ue_description_t *ue_ref = NULL;
     s1ap_message message;
-    InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
-    E_RABToBeSetupItemCtxtSUReq_t    e_RABToBeSetup;
     uint8_t *buffer_p;
     uint32_t length;
+
+    S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
+    S1ap_E_RABToBeSetupItemCtxtSUReq_t    e_RABToBeSetup;
 
     DevAssert(session_response_p != NULL);
 
@@ -792,12 +799,12 @@ int s1ap_handle_create_session_response(SgwCreateSessionResponse
     }
 
     memset(&message, 0, sizeof(s1ap_message));
-    memset(&e_RABToBeSetup, 0, sizeof(E_RABToBeSetupItemCtxtSUReq_t));
+    memset(&e_RABToBeSetup, 0, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
 
-    message.procedureCode = ProcedureCode_id_InitialContextSetup;
+    message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
     message.direction     = S1AP_PDU_PR_initiatingMessage;
 
-    initialContextSetupRequest_p = &message.msg.initialContextSetupRequestIEs;
+    initialContextSetupRequest_p = &message.msg.s1ap_InitialContextSetupRequestIEs;
 
     initialContextSetupRequest_p->mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;
     initialContextSetupRequest_p->eNB_UE_S1AP_ID = ue_ref->eNB_ue_s1ap_id;
@@ -819,9 +826,9 @@ int s1ap_handle_create_session_response(SgwCreateSessionResponse
     e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel
         = 15; //No priority
     e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability
-        = Pre_emptionCapability_shall_not_trigger_pre_emption;
+    = S1ap_Pre_emptionCapability_shall_not_trigger_pre_emption;
     e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability
-        = Pre_emptionVulnerability_not_pre_emptable;
+    = S1ap_Pre_emptionVulnerability_not_pre_emptable;
 
 //     e_RABToBeSetup.gTP_TEID.buf  = calloc(4, sizeof(uint8_t));
 //     INT32_TO_BUFFER(session_response_p->bearer_context_created.s1u_sgw_fteid.teid,

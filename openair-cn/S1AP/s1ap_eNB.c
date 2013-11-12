@@ -259,13 +259,15 @@ void *s1ap_eNB_task(void *arg)
 static int s1ap_eNB_generate_s1_setup_request(
     s1ap_eNB_instance_t *instance_p, s1ap_eNB_mme_data_t *s1ap_mme_data_p)
 {
-    s1ap_message         message;
-    S1SetupRequestIEs_t *s1SetupRequest_p;
-    PLMNidentity_t       plmnIdentity;
-    SupportedTAs_Item_t  ta;
-    uint8_t             *buffer;
-    uint32_t             len;
-    int                  ret = 0;
+    s1ap_message message;
+
+    S1ap_S1SetupRequestIEs_t *s1SetupRequest_p;
+    S1ap_PLMNidentity_t       plmnIdentity;
+    S1ap_SupportedTAs_Item_t  ta;
+
+    uint8_t  *buffer;
+    uint32_t len;
+    int      ret = 0;
 
     DevAssert(instance_p != NULL);
     DevAssert(s1ap_mme_data_p != NULL);
@@ -273,17 +275,17 @@ static int s1ap_eNB_generate_s1_setup_request(
     memset(&message, 0, sizeof(s1ap_message));
 
     message.direction     = S1AP_PDU_PR_initiatingMessage;
-    message.procedureCode = ProcedureCode_id_S1Setup;
-    message.criticality   = Criticality_reject;
+    message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
+    message.criticality   = S1ap_Criticality_reject;
 
-    s1SetupRequest_p = &message.msg.s1SetupRequestIEs;
-    memset((void *)&plmnIdentity, 0, sizeof(PLMNidentity_t));
+    s1SetupRequest_p = &message.msg.s1ap_S1SetupRequestIEs;
+    memset((void *)&plmnIdentity, 0, sizeof(S1ap_PLMNidentity_t));
 
-    memset((void *)&ta, 0, sizeof(SupportedTAs_Item_t));
+    memset((void *)&ta, 0, sizeof(S1ap_SupportedTAs_Item_t));
 
     s1ap_mme_data_p->state = S1AP_ENB_STATE_WAITING;
 
-    s1SetupRequest_p->global_ENB_ID.eNB_ID.present = ENB_ID_PR_macroENB_ID;
+    s1SetupRequest_p->global_ENB_ID.eNB_ID.present = S1ap_ENB_ID_PR_macroENB_ID;
     MACRO_ENB_ID_TO_BIT_STRING(instance_p->eNB_id,
                                &s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID);
     MCC_MNC_TO_PLMNID(instance_p->mcc, instance_p->mnc,
@@ -298,7 +300,7 @@ static int s1ap_eNB_generate_s1_setup_request(
     s1SetupRequest_p->defaultPagingDRX = instance_p->default_drx;
 
     if (instance_p->eNB_name != NULL) {
-        s1SetupRequest_p->presenceMask |= S1SETUPREQUESTIES_ENBNAME_PRESENT;
+        s1SetupRequest_p->presenceMask |= S1AP_S1SETUPREQUESTIES_ENBNAME_PRESENT;
         OCTET_STRING_fromBuf(&s1SetupRequest_p->eNBname, instance_p->eNB_name,
                              strlen(instance_p->eNB_name));
     }

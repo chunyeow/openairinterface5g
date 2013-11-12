@@ -42,7 +42,7 @@
 #include "s1ap_mme_ta.h"
 
 static
-int s1ap_mme_compare_plmn(PLMNidentity_t *plmn)
+int s1ap_mme_compare_plmn(S1ap_PLMNidentity_t *plmn)
 {
     int i;
     uint16_t mcc;
@@ -69,7 +69,7 @@ int s1ap_mme_compare_plmn(PLMNidentity_t *plmn)
 /* @brief compare a list of broadcasted plmns against the MME configured.
  */
 static
-int s1ap_mme_compare_plmns(BPLMNs_t *b_plmns)
+int s1ap_mme_compare_plmns(S1ap_BPLMNs_t *b_plmns)
 {
     int i;
     int matching_occurence = 0;
@@ -93,7 +93,7 @@ int s1ap_mme_compare_plmns(BPLMNs_t *b_plmns)
 /* @brief compare a TAC
  */
 static
-int s1ap_mme_compare_tac(TAC_t *tac)
+int s1ap_mme_compare_tac(S1ap_TAC_t *tac)
 {
     int i;
     uint16_t tac_value;
@@ -120,7 +120,7 @@ int s1ap_mme_compare_tac(TAC_t *tac)
  *         - TA_LIST_UNKNOWN_TAC if at least one PLMN match and no TAC match
  *         - TA_LIST_RET_OK if both tac and plmn match at least one element
  */
-int s1ap_mme_compare_ta_lists(SupportedTAs_t *ta_list)
+int s1ap_mme_compare_ta_lists(S1ap_SupportedTAs_t *ta_list)
 {
     int i;
     int tac_ret, bplmn_ret;
@@ -129,7 +129,7 @@ int s1ap_mme_compare_ta_lists(SupportedTAs_t *ta_list)
 
     /* Parse every item in the list and try to find matching parameters */
     for (i = 0; i < ta_list->list.count; i++) {
-        SupportedTAs_Item_t *ta;
+        S1ap_SupportedTAs_Item_t *ta;
 
         ta = ta_list->list.array[i];
         DevAssert(ta != NULL);

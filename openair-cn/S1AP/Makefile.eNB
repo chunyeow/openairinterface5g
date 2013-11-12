@@ -73,6 +73,8 @@ $(S1AP_OBJDIR)/s1ap_asn1regen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-CommonDataTyp
 	(cd $(ASN1MESSAGESDIR) && asn1c -fhave_native64 -gen-PER $^)
 	echo Timestamp > $@
 
+.INTERMEDIATE = $(S1AP_OBJDIR)/s1ap_ieregen.stamp $(S1AP_OBJDIR)/s1ap_asn1regen.stamp
+
 libs1ap.a: $(S1AP_OBJDIR)/s1ap_ieregen.stamp $(S1AP_OBJDIR)/s1ap_asn1regen.stamp $(libs1ap_OBJECTS)
 	@echo Creating S1AP archive
 	@$(AR) rcs $@ $(libs1ap_OBJECTS)

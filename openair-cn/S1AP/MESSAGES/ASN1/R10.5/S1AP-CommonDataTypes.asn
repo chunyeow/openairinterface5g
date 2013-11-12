@@ -12,16 +12,16 @@ DEFINITIONS AUTOMATIC TAGS ::=
 
 BEGIN
 
-Criticality		::= ENUMERATED { reject, ignore, notify }
+S1ap-Criticality		::= ENUMERATED { reject, ignore, notify }
 
-Presence		::= ENUMERATED { optional, conditional, mandatory }
+S1ap-Presence		::= ENUMERATED { optional, conditional, mandatory }
 
-PrivateIE-ID	::= CHOICE {
+S1ap-PrivateIE-ID	::= CHOICE {
 	local				INTEGER (0..65535),
 	global				OBJECT IDENTIFIER
 }
 
-ProcedureCode       ::= INTEGER {
+S1ap-ProcedureCode       ::= INTEGER {
     id-HandoverPreparation(0),
     id-HandoverResourceAllocation(1),
     id-HandoverNotification(2),
@@ -72,9 +72,9 @@ ProcedureCode       ::= INTEGER {
     id-uplinkNonUEAssociatedLPPaTransport(47)
 } (0..255)
 
-ProtocolExtensionID	::= INTEGER (0..65535)
+S1ap-ProtocolExtensionID	::= INTEGER (0..65535)
 
-ProtocolIE-ID		::= INTEGER {
+S1ap-ProtocolIE-ID		::= INTEGER {
     id-MME-UE-S1AP-ID                           (0),
     id-HandoverType                             (1),
     id-Cause                                    (2),
@@ -227,6 +227,6 @@ ProtocolIE-ID		::= INTEGER {
     id-PrivacyIndicator                             (166)
 } (0..65535)
 
-TriggeringMessage	::= ENUMERATED { initiating-message, successful-outcome, unsuccessfull-outcome }
+S1ap-TriggeringMessage	::= ENUMERATED { initiating-message, successful-outcome, unsuccessfull-outcome }
 
 END

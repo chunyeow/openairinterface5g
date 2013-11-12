@@ -75,22 +75,22 @@ static inline
 int s1ap_mme_encode_initial_context_setup_request(s1ap_message *message_p,
     uint8_t **buffer, uint32_t *length)
 {
-    InitialContextSetupRequest_t  initialContextSetupRequest;
-    InitialContextSetupRequest_t *initialContextSetupRequest_p =
+    S1ap_InitialContextSetupRequest_t  initialContextSetupRequest;
+    S1ap_InitialContextSetupRequest_t *initialContextSetupRequest_p =
         &initialContextSetupRequest;
 
-    memset(initialContextSetupRequest_p, 0, sizeof(InitialContextSetupRequest_t));
+    memset(initialContextSetupRequest_p, 0, sizeof(S1ap_InitialContextSetupRequest_t));
 
-    if (s1ap_encode_initialcontextsetuprequesties(initialContextSetupRequest_p,
-        &message_p->msg.initialContextSetupRequestIEs) < 0) {
+    if (s1ap_encode_s1ap_initialcontextsetuprequesties(initialContextSetupRequest_p,
+        &message_p->msg.s1ap_InitialContextSetupRequestIEs) < 0) {
         return -1;
     }
 
     return s1ap_generate_initiating_message(buffer,
                                             length,
-                                            ProcedureCode_id_InitialContextSetup,
-                                            Criticality_reject,
-                                            &asn_DEF_InitialContextSetupRequest,
+                                            S1ap_ProcedureCode_id_InitialContextSetup,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_InitialContextSetupRequest,
                                             initialContextSetupRequest_p);
 }
 
@@ -121,11 +121,11 @@ int s1ap_mme_encode_initiating(s1ap_message *message_p,
                                uint32_t *length)
 {
     switch(message_p->procedureCode) {
-        case ProcedureCode_id_downlinkNASTransport:
+        case S1ap_ProcedureCode_id_downlinkNASTransport:
             return s1ap_mme_encode_downlink_nas_transport(message_p, buffer, length);
-        case ProcedureCode_id_InitialContextSetup:
+        case S1ap_ProcedureCode_id_InitialContextSetup:
             return s1ap_mme_encode_initial_context_setup_request(message_p, buffer, length);
-        case ProcedureCode_id_UEContextRelease:
+        case S1ap_ProcedureCode_id_UEContextRelease:
             return s1ap_mme_encode_ue_context_release_command(message_p, buffer, length);
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for initiating message_p\n",
@@ -140,7 +140,7 @@ int s1ap_mme_encode_successfull_outcome(s1ap_message *message_p,
                                         uint8_t **buffer, uint32_t *length)
 {
     switch(message_p->procedureCode) {
-        case ProcedureCode_id_S1Setup:
+        case S1ap_ProcedureCode_id_S1Setup:
             return s1ap_mme_encode_s1setupresponse(message_p, buffer, length);
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for successfull outcome message_p\n",
@@ -155,7 +155,7 @@ int s1ap_mme_encode_unsuccessfull_outcome(s1ap_message *message_p,
                                           uint8_t **buffer, uint32_t *length)
 {
     switch(message_p->procedureCode) {
-        case ProcedureCode_id_S1Setup:
+        case S1ap_ProcedureCode_id_S1Setup:
             return s1ap_mme_encode_s1setupfailure(message_p, buffer, length);
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message_p\n",
@@ -169,20 +169,21 @@ static inline
 int s1ap_mme_encode_s1setupresponse(s1ap_message *message_p,
                                     uint8_t **buffer, uint32_t *length)
 {
-    S1SetupResponse_t  s1SetupResponse;
-    S1SetupResponse_t *s1SetupResponse_p = &s1SetupResponse;
+    S1ap_S1SetupResponse_t  s1SetupResponse;
+    S1ap_S1SetupResponse_t *s1SetupResponse_p = &s1SetupResponse;
 
-    memset(s1SetupResponse_p, 0, sizeof(S1SetupResponse_t));
+    memset(s1SetupResponse_p, 0, sizeof(S1ap_S1SetupResponse_t));
 
-    if (s1ap_encode_s1setupresponseies(s1SetupResponse_p, &message_p->msg.s1SetupResponseIEs) < 0) {
+    if (s1ap_encode_s1ap_s1setupresponseies(s1SetupResponse_p, &message_p->msg.s1ap_S1SetupResponseIEs) < 0)
+    {
         return -1;
     }
 
     return s1ap_generate_successfull_outcome(buffer,
                                              length,
-                                             ProcedureCode_id_S1Setup,
+                                             S1ap_ProcedureCode_id_S1Setup,
                                              message_p->criticality,
-                                             &asn_DEF_S1SetupResponse,
+                                             &asn_DEF_S1ap_S1SetupResponse,
                                              s1SetupResponse_p);
 }
 
@@ -190,20 +191,20 @@ static inline
 int s1ap_mme_encode_s1setupfailure(s1ap_message *message_p,
                                    uint8_t **buffer, uint32_t *length)
 {
-    S1SetupFailure_t  s1SetupFailure;
-    S1SetupFailure_t *s1SetupFailure_p = &s1SetupFailure;
+    S1ap_S1SetupFailure_t  s1SetupFailure;
+    S1ap_S1SetupFailure_t *s1SetupFailure_p = &s1SetupFailure;
 
-    memset(s1SetupFailure_p, 0, sizeof(S1SetupFailure_t));
+    memset(s1SetupFailure_p, 0, sizeof(S1ap_S1SetupFailure_t));
 
-    if (s1ap_encode_s1setupfailureies(s1SetupFailure_p, &message_p->msg.s1SetupFailureIEs) < 0) {
+    if (s1ap_encode_s1ap_s1setupfailureies(s1SetupFailure_p, &message_p->msg.s1ap_S1SetupFailureIEs) < 0) {
         return -1;
     }
 
     return s1ap_generate_unsuccessfull_outcome(buffer,
                                                length,
-                                               ProcedureCode_id_S1Setup,
+                                               S1ap_ProcedureCode_id_S1Setup,
                                                message_p->criticality,
-                                               &asn_DEF_S1SetupFailure,
+                                               &asn_DEF_S1ap_S1SetupFailure,
                                                s1SetupFailure_p);
 }
 
@@ -211,23 +212,23 @@ static inline
 int s1ap_mme_encode_downlink_nas_transport(
     s1ap_message *message_p, uint8_t **buffer, uint32_t *length)
 {
-    DownlinkNASTransport_t  downlinkNasTransport;
-    DownlinkNASTransport_t *downlinkNasTransport_p = &downlinkNasTransport;
+    S1ap_DownlinkNASTransport_t  downlinkNasTransport;
+    S1ap_DownlinkNASTransport_t *downlinkNasTransport_p = &downlinkNasTransport;
 
-    memset(downlinkNasTransport_p, 0, sizeof(DownlinkNASTransport_t));
+    memset(downlinkNasTransport_p, 0, sizeof(S1ap_DownlinkNASTransport_t));
 
     /* Convert IE structure into asn1 message_p */
-    if (s1ap_encode_downlinknastransporties(downlinkNasTransport_p,
-        &message_p->msg.downlinkNASTransportIEs) < 0) {
+    if (s1ap_encode_s1ap_downlinknastransporties(downlinkNasTransport_p,
+        &message_p->msg.s1ap_DownlinkNASTransportIEs) < 0) {
         return -1;
     }
 
     /* Generate Initiating message_p for the list of IEs */
     return s1ap_generate_initiating_message(buffer,
                                             length,
-                                            ProcedureCode_id_downlinkNASTransport,
+                                            S1ap_ProcedureCode_id_downlinkNASTransport,
                                             message_p->criticality,
-                                            &asn_DEF_DownlinkNASTransport,
+                                            &asn_DEF_S1ap_DownlinkNASTransport,
                                             downlinkNasTransport_p);
 }
 
@@ -235,21 +236,21 @@ static inline
 int s1ap_mme_encode_ue_context_release_command(s1ap_message *message_p,
                                                uint8_t **buffer, uint32_t *length)
 {
-    UEContextReleaseCommand_t  ueContextReleaseCommand;
-    UEContextReleaseCommand_t *ueContextReleaseCommand_p = &ueContextReleaseCommand;
+    S1ap_UEContextReleaseCommand_t  ueContextReleaseCommand;
+    S1ap_UEContextReleaseCommand_t *ueContextReleaseCommand_p = &ueContextReleaseCommand;
 
-    memset(ueContextReleaseCommand_p, 0, sizeof(UEContextReleaseCommand_t));
+    memset(ueContextReleaseCommand_p, 0, sizeof(S1ap_UEContextReleaseCommand_t));
 
     /* Convert IE structure into asn1 message_p */
-    if (s1ap_encode_uecontextreleasecommandies(ueContextReleaseCommand_p,
-        &message_p->msg.ueContextReleaseCommandIEs) < 0) {
+    if (s1ap_encode_s1ap_uecontextreleasecommandies(ueContextReleaseCommand_p,
+        &message_p->msg.s1ap_UEContextReleaseCommandIEs) < 0) {
         return -1;
     }
 
     return s1ap_generate_initiating_message(buffer,
                                             length,
-                                            ProcedureCode_id_UEContextRelease,
+                                            S1ap_ProcedureCode_id_UEContextRelease,
                                             message_p->criticality,
-                                            &asn_DEF_UEContextReleaseCommand,
+                                            &asn_DEF_S1ap_UEContextReleaseCommand,
                                             ueContextReleaseCommand_p);
 }

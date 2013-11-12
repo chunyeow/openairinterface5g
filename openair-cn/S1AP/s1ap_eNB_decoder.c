@@ -44,7 +44,7 @@
 #include "s1ap_eNB_decoder.h"
 
 static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
-        InitiatingMessage_t *initiating_p)
+    S1ap_InitiatingMessage_t *initiating_p)
 {
     DevAssert(initiating_p != NULL);
 
@@ -52,12 +52,14 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
     message->criticality   = initiating_p->criticality;
 
     switch(initiating_p->procedureCode) {
-        case ProcedureCode_id_downlinkNASTransport:
-            return s1ap_decode_downlinknastransporties(&message->msg.downlinkNASTransportIEs,
-                    &initiating_p->value);
-        case ProcedureCode_id_InitialContextSetup:
-            return s1ap_decode_initialcontextsetuprequesties(
-                       &message->msg.initialContextSetupRequestIEs, &initiating_p->value);
+        case S1ap_ProcedureCode_id_downlinkNASTransport:
+            return s1ap_decode_s1ap_downlinknastransporties(
+                &message->msg.s1ap_DownlinkNASTransportIEs, &initiating_p->value);
+
+        case S1ap_ProcedureCode_id_InitialContextSetup:
+            return s1ap_decode_s1ap_initialcontextsetuprequesties(
+                &message->msg.s1ap_InitialContextSetupRequestIEs, &initiating_p->value);
+
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for initiating message\n",
                        (int)initiating_p->procedureCode);
@@ -67,7 +69,7 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
 }
 
 static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
-        SuccessfulOutcome_t *successfullOutcome_p)
+    S1ap_SuccessfulOutcome_t *successfullOutcome_p)
 {
     DevAssert(successfullOutcome_p != NULL);
 
@@ -75,9 +77,10 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
     message->criticality   = successfullOutcome_p->criticality;
 
     switch(successfullOutcome_p->procedureCode) {
-        case ProcedureCode_id_S1Setup:
-            return s1ap_decode_s1setupresponseies(&message->msg.s1SetupResponseIEs,
-                                                  &successfullOutcome_p->value);
+        case S1ap_ProcedureCode_id_S1Setup:
+            return s1ap_decode_s1ap_s1setupresponseies(
+                &message->msg.s1ap_S1SetupResponseIEs, &successfullOutcome_p->value);
+
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for successfull outcome message\n",
                        (int)successfullOutcome_p->procedureCode);
@@ -87,7 +90,7 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
 }
 
 static int s1ap_eNB_decode_unsuccessful_outcome(s1ap_message *message,
-        UnsuccessfulOutcome_t *unSuccessfullOutcome_p)
+    S1ap_UnsuccessfulOutcome_t *unSuccessfullOutcome_p)
 {
     DevAssert(unSuccessfullOutcome_p != NULL);
 
@@ -95,9 +98,10 @@ static int s1ap_eNB_decode_unsuccessful_outcome(s1ap_message *message,
     message->criticality   = unSuccessfullOutcome_p->criticality;
 
     switch(unSuccessfullOutcome_p->procedureCode) {
-        case ProcedureCode_id_S1Setup:
-            return s1ap_decode_s1setupfailureies(&message->msg.s1SetupFailureIEs,
-                                                 &unSuccessfullOutcome_p->value);
+        case S1ap_ProcedureCode_id_S1Setup:
+            return s1ap_decode_s1ap_s1setupfailureies(
+                &message->msg.s1ap_S1SetupFailureIEs, &unSuccessfullOutcome_p->value);
+
         default:
             S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message\n",
                        (int)unSuccessfullOutcome_p->procedureCode);

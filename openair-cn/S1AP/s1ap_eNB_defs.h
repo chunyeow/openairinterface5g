@@ -200,7 +200,7 @@ typedef struct s1ap_eNB_mme_data_s {
     uint16_t in_streams;
     uint16_t out_streams;
 
-    /* Connexion id used when SCTP association is not established yet */
+    /* Connexion id used between SCTP/S1AP */
     uint16_t cnx_id;
 
     /* SCTP association id */
@@ -269,10 +269,6 @@ inline int s1ap_eNB_compare_assoc_id(
 /* Generate the tree management functions */
 RB_PROTOTYPE(s1ap_mme_map, s1ap_eNB_mme_data_s, entry,
              s1ap_eNB_compare_assoc_id);
-
-inline struct s1ap_eNB_mme_data_s *s1ap_eNB_get_MME(
-    s1ap_eNB_instance_t *instance_p,
-    int32_t assoc_id, uint16_t cnx_id);
 
 int s1ap_eNB_init(s1ap_eNB_instance_t *eNB_desc_p,
                   char *local_ip_addr[],  int nb_local_ip,

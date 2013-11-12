@@ -57,12 +57,12 @@ static uint8_t  mme_ue_s1ap_id_has_wrapped = 0;
 int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
                                        struct s1ap_message_s *message)
 {
-    InitialUEMessageIEs_t *initialUEMessage_p;
+    S1ap_InitialUEMessageIEs_t *initialUEMessage_p;
     ue_description_t      *ue_ref;
     eNB_description_t     *eNB_ref;
     uint32_t               eNB_ue_s1ap_id;
 
-    initialUEMessage_p = &message->msg.initialUEMessageIEs;
+    initialUEMessage_p = &message->msg.s1ap_InitialUEMessageIEs;
 
     if ((eNB_ref = s1ap_is_eNB_assoc_id_in_list(assoc_id)) == NULL) {
         S1AP_DEBUG("Unkwnon eNB on assoc_id %d\n", assoc_id);
@@ -173,10 +173,10 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
 int s1ap_mme_handle_uplink_nas_transport(uint32_t assoc_id, uint32_t stream,
         struct s1ap_message_s *message)
 {
-    UplinkNASTransportIEs_t *uplinkNASTransport_p;
+    S1ap_UplinkNASTransportIEs_t *uplinkNASTransport_p;
     ue_description_t *ue_ref;
 
-    uplinkNASTransport_p = &message->msg.uplinkNASTransportIEs;
+    uplinkNASTransport_p = &message->msg.s1ap_UplinkNASTransportIEs;
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(uplinkNASTransport_p->mme_ue_s1ap_id))
             == NULL) {
@@ -224,15 +224,16 @@ int s1ap_generate_downlink_nas_transport(nas_dl_data_ind_t *nas_dl_data_ind)
         /* We have fount the UE in the list.
          * Create new IE list message and encode it.
          */
-        DownlinkNASTransportIEs_t *downlinkNasTransport;
-        s1ap_message               message;
+        S1ap_DownlinkNASTransportIEs_t *downlinkNasTransport;
+
+        s1ap_message message;
 
         memset(&message, 0, sizeof(s1ap_message));
 
-        message.procedureCode = ProcedureCode_id_downlinkNASTransport;
+        message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
         message.direction     = S1AP_PDU_PR_initiatingMessage;
 
-        downlinkNasTransport = &message.msg.downlinkNASTransportIEs;
+        downlinkNasTransport = &message.msg.s1ap_DownlinkNASTransportIEs;
 
         /* Setting UE informations with the ones fount in ue_ref */
         downlinkNasTransport->mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;
@@ -264,10 +265,11 @@ int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p)
     uint32_t length;
 
     ue_description_t *ue_ref = NULL;
-    InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
     s1ap_message message;
-    E_RABToBeSetupItemCtxtSUReq_t   e_RABToBeSetup;
     s1ap_initial_ctxt_setup_req_t *initial_p;
+
+    S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
+    S1ap_E_RABToBeSetupItemCtxtSUReq_t    e_RABToBeSetup;
 
     DevAssert(attach_accept_p != NULL);
 
@@ -290,12 +292,12 @@ int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p)
 //     s1ap_timer_insert(ue_ref->mme_ue_s1ap_id, ue_ref->outcome_response_timer_id);
 
     memset(&message, 0, sizeof(s1ap_message));
-    memset(&e_RABToBeSetup, 0, sizeof(E_RABToBeSetupItemCtxtSUReq_t));
+    memset(&e_RABToBeSetup, 0, sizeof(S1ap_E_RABToBeSetupItemCtxtSUReq_t));
 
-    message.procedureCode = ProcedureCode_id_InitialContextSetup;
+    message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
     message.direction     = S1AP_PDU_PR_initiatingMessage;
 
-    initialContextSetupRequest_p = &message.msg.initialContextSetupRequestIEs;
+    initialContextSetupRequest_p = &message.msg.s1ap_InitialContextSetupRequestIEs;
 
     initialContextSetupRequest_p->mme_ue_s1ap_id = (unsigned long)ue_ref->mme_ue_s1ap_id;
     initialContextSetupRequest_p->eNB_UE_S1AP_ID = (unsigned long)ue_ref->eNB_ue_s1ap_id;

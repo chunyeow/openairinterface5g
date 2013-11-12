@@ -49,8 +49,7 @@
 #include "s1ap_eNB_ue_context.h"
 #include "s1ap_eNB_encoder.h"
 #include "s1ap_eNB_overload.h"
-
-#include "sctp_primitives_client.h"
+#include "s1ap_eNB_management_procedures.h"
 
 #include "assertions.h"
 
@@ -58,16 +57,16 @@ int s1ap_eNB_handle_overload_start(uint32_t               assoc_id,
                                    uint32_t               stream,
                                    struct s1ap_message_s *message_p)
 {
-    OverloadStartIEs_t  *overload_start_p;
-    s1ap_eNB_mme_data_t *mme_desc_p;
+    S1ap_OverloadStartIEs_t *overload_start_p;
+    s1ap_eNB_mme_data_t     *mme_desc_p;
 
     DevAssert(message_p != NULL);
 
-    overload_start_p = &message_p->msg.overloadStartIEs;
+    overload_start_p = &message_p->msg.s1ap_OverloadStartIEs;
 
     DevCheck(overload_start_p->overloadResponse.present ==
-             OverloadResponse_PR_overloadAction,
-             OverloadResponse_PR_overloadAction, 0, 0);
+        S1ap_OverloadResponse_PR_overloadAction,
+        S1ap_OverloadResponse_PR_overloadAction, 0, 0);
 
     /* Non UE-associated signalling -> stream 0 */
     DevCheck(stream == 0, stream, 0, 0);

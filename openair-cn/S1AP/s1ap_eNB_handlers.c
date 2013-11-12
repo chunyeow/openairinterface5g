@@ -49,6 +49,7 @@
 #include "s1ap_eNB_ue_context.h"
 #include "s1ap_eNB_trace.h"
 #include "s1ap_eNB_nas_procedures.h"
+#include "s1ap_eNB_management_procedures.h"
 
 #include "s1ap_eNB_default_values.h"
 
@@ -185,13 +186,13 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
                                       uint32_t               stream,
                                       struct s1ap_message_s *message_p)
 {
-    S1SetupResponseIEs_t *s1SetupResponse_p;
-    s1ap_eNB_mme_data_t  *mme_desc_p;
+    S1ap_S1SetupResponseIEs_t *s1SetupResponse_p;
+    s1ap_eNB_mme_data_t       *mme_desc_p;
     int i;
 
     DevAssert(message_p != NULL);
 
-    s1SetupResponse_p = &message_p->msg.s1SetupResponseIEs;
+    s1SetupResponse_p = &message_p->msg.s1ap_S1SetupResponseIEs;
 
     /* S1 Setup Response == Non UE-related procedure -> stream 0 */
     if (stream != 0) {
@@ -212,11 +213,11 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
     DevAssert(s1SetupResponse_p->servedGUMMEIs.list.count == 1);
 
     for (i = 0; i < s1SetupResponse_p->servedGUMMEIs.list.count; i++) {
-        struct ServedGUMMEIsItem *gummei_item_p;
-        struct served_gummei_s   *new_gummei_p;
+        struct S1ap_ServedGUMMEIsItem *gummei_item_p;
+        struct served_gummei_s        *new_gummei_p;
         int j;
 
-        gummei_item_p = (struct ServedGUMMEIsItem *)
+        gummei_item_p = (struct S1ap_ServedGUMMEIsItem *)
                         s1SetupResponse_p->servedGUMMEIs.list.array[i];
         new_gummei_p = calloc(1, sizeof(struct served_gummei_s));
 
@@ -225,7 +226,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
         STAILQ_INIT(&new_gummei_p->mme_codes);
 
         for (j = 0; j < gummei_item_p->servedPLMNs.list.count; j++) {
-            PLMNidentity_t *plmn_identity_p;
+            S1ap_PLMNidentity_t *plmn_identity_p;
             struct plmn_identity_s *new_plmn_identity_p;
 
             plmn_identity_p = gummei_item_p->servedPLMNs.list.array[i];
@@ -236,7 +237,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
             new_gummei_p->nb_served_plmns++;
         }
         for (j = 0; j < gummei_item_p->servedGroupIDs.list.count; j++) {
-            MME_Group_ID_t           *mme_group_id_p;
+            S1ap_MME_Group_ID_t           *mme_group_id_p;
             struct served_group_id_s *new_group_id_p;
 
             mme_group_id_p = gummei_item_p->servedGroupIDs.list.array[i];
@@ -246,7 +247,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
             new_gummei_p->nb_group_id++;
         }
         for (j = 0; j < gummei_item_p->servedMMECs.list.count; j++) {
-            MME_Code_t        *mme_code_p;
+            S1ap_MME_Code_t        *mme_code_p;
             struct mme_code_s *new_mme_code_p;
 
             mme_code_p = gummei_item_p->servedMMECs.list.array[i];
@@ -259,12 +260,12 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
         STAILQ_INSERT_TAIL(&mme_desc_p->served_gummei, new_gummei_p, next);
     }
     /* Free contents of the list */
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_ServedGUMMEIs,
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ServedGUMMEIs,
                                   (void *)&s1SetupResponse_p->servedGUMMEIs);
     /* Set the capacity of this MME */
     mme_desc_p->relative_mme_capacity = s1SetupResponse_p->relativeMMECapacity;
     /* Optionaly set the mme name */
-    if (s1SetupResponse_p->presenceMask & S1SETUPRESPONSEIES_MMENAME_PRESENT) {
+    if (s1SetupResponse_p->presenceMask & S1AP_S1SETUPRESPONSEIES_MMENAME_PRESENT) {
         mme_desc_p->mme_name = calloc(s1SetupResponse_p->mmEname.size + 1, sizeof(char));
         memcpy(mme_desc_p->mme_name, s1SetupResponse_p->mmEname.buf,
                s1SetupResponse_p->mmEname.size);
@@ -340,10 +341,10 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
     s1ap_eNB_mme_data_t   *mme_desc_p;
     s1ap_eNB_ue_context_t *ue_desc_p;
 
-    InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
+    S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
     DevAssert(message_p != NULL);
 
-    initialContextSetupRequest_p = &message_p->msg.initialContextSetupRequestIEs;
+    initialContextSetupRequest_p = &message_p->msg.s1ap_InitialContextSetupRequestIEs;
 
     if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
         S1AP_ERROR("[SCTP %d] Received initial context setup request for non "

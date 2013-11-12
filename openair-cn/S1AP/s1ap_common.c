@@ -62,8 +62,8 @@ inline void ASN_DEBUG(const char *fmt, ...)
 ssize_t s1ap_generate_initiating_message(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_ProcedureCode         procedureCode,
-    Criticality_t           criticality,
+    e_S1ap_ProcedureCode    procedureCode,
+    S1ap_Criticality_t      criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr)
 {
@@ -96,8 +96,8 @@ ssize_t s1ap_generate_initiating_message(
 ssize_t s1ap_generate_successfull_outcome(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_ProcedureCode         procedureCode,
-    Criticality_t           criticality,
+    e_S1ap_ProcedureCode         procedureCode,
+    S1ap_Criticality_t           criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr)
 {
@@ -131,8 +131,8 @@ ssize_t s1ap_generate_successfull_outcome(
 ssize_t s1ap_generate_unsuccessfull_outcome(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_ProcedureCode         procedureCode,
-    Criticality_t           criticality,
+    e_S1ap_ProcedureCode         procedureCode,
+    S1ap_Criticality_t           criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr)
 {
@@ -163,19 +163,19 @@ ssize_t s1ap_generate_unsuccessfull_outcome(
     return encoded;
 }
 
-IE_t *s1ap_new_ie(
-    ProtocolIE_ID_t        id,
-    Criticality_t          criticality,
+S1ap_IE_t *s1ap_new_ie(
+    S1ap_ProtocolIE_ID_t   id,
+    S1ap_Criticality_t     criticality,
     asn_TYPE_descriptor_t *type,
     void                  *sptr)
 {
-    IE_t *buff;
+    S1ap_IE_t *buff;
 
-    if ((buff = malloc(sizeof(IE_t))) == NULL) {
+    if ((buff = malloc(sizeof(S1ap_IE_t))) == NULL) {
         // Possible error on malloc
         return NULL;
     }
-    memset((void *)buff, 0, sizeof(IE_t));
+    memset((void *)buff, 0, sizeof(S1ap_IE_t));
 
     buff->id = id;
     buff->criticality = criticality;
@@ -187,7 +187,7 @@ IE_t *s1ap_new_ie(
     }
 
     if (asn1_xer_print)
-        if (xer_fprint(stdout, &asn_DEF_IE, buff) < 0) {
+        if (xer_fprint(stdout, &asn_DEF_S1ap_IE, buff) < 0) {
             free(buff);
             return NULL;
         }
@@ -195,7 +195,7 @@ IE_t *s1ap_new_ie(
     return buff;
 }
 
-void s1ap_handle_criticality(e_Criticality criticality)
+void s1ap_handle_criticality(S1ap_Criticality_t criticality)
 {
 
 }
