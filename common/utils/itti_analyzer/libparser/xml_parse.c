@@ -1,6 +1,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <gtk/gtk.h>
+
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
@@ -9,6 +11,7 @@
 #include "union_type.h"
 
 #include "ui_interface.h"
+#include "ui_main_screen.h"
 #include "ui_notif_dlg.h"
 #include "ui_filters.h"
 
@@ -716,7 +719,10 @@ static int update_filters() {
         types = types->child->child;
 
         while (types != NULL) {
-            ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
+            if ((strcmp (types->name, "TASK_FIRST") != 0) && (strcmp (types->name, "TASK_MAX") != 0))
+            {
+            	ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
+            }
             types = types->next;
         }
     }
@@ -727,7 +733,10 @@ static int update_filters() {
         types = types->child->child;
 
         while (types != NULL) {
-            ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
+            if ((strcmp (types->name, "TASK_FIRST") != 0) && (strcmp (types->name, "TASK_MAX") != 0))
+            {
+            	ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED);
+            }
             types = types->next;
         }
     }
@@ -739,9 +748,11 @@ static int xml_parse_doc(xmlDocPtr doc) {
     xmlNode *root_element = NULL;
     types_t *head = NULL;
     int ret = 0;
-    FILE *dissect_file;
+    FILE *dissect_file = NULL;
 
-    dissect_file = fopen ("./dissect.xml", "w");
+    if (ui_main_data.dissect_file_name != NULL) {
+        dissect_file = fopen (ui_main_data.dissect_file_name, "w");
+    }
 
     /* Get the root element node */
     root_element = xmlDocGetRootElement(doc);
@@ -770,11 +781,14 @@ static int xml_parse_doc(xmlDocPtr doc) {
         // root->type_hr_display(root, 0);
         update_filters();
         if (dissect_file != NULL) {
+            g_debug("generating dissected types file \"%s\" ...", ui_main_data.dissect_file_name);
             root->type_file_print (root, 0, dissect_file);
         }
     }
 
-    fclose (dissect_file);
+    if (dissect_file != NULL) {
+        fclose (dissect_file);
+    }
 
     g_message("Parsed XML definition");
 
