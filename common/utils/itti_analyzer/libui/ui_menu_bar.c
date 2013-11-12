@@ -138,7 +138,17 @@ int ui_toolbar_create(GtkWidget *vbox)
                                     "Open messages file");
 
         g_signal_connect(G_OBJECT(ui_main_data.open_replay_file), "clicked",
-                        G_CALLBACK(ui_callback_on_open_messages), NULL);
+                        G_CALLBACK(ui_callback_on_open_messages), (gpointer) FALSE);
+    }
+
+    /* Button to refresh replay file */
+    {
+        ui_main_data.refresh_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.refresh_replay_file),
+                                    "Reload messages file");
+
+        g_signal_connect(G_OBJECT(ui_main_data.refresh_replay_file), "clicked",
+                        G_CALLBACK(ui_callback_on_open_messages), (gpointer) TRUE);
     }
 
     /* Button to save replay file */
@@ -238,6 +248,7 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     gtk_box_pack_start(GTK_BOX(hbox), messages_label, FALSE, FALSE, LABEL_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_replay_file), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.refresh_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file), FALSE, FALSE, BUTTON_SPACE);
 
     gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);

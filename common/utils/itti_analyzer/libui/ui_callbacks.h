@@ -4,34 +4,27 @@
 #include <gtk/gtk.h>
 
 gboolean ui_callback_on_open_messages(GtkWidget *widget,
-                                      GdkEvent  *event,
                                       gpointer   data);
 
 gboolean ui_callback_on_save_messages(GtkWidget *widget,
-                                      GdkEvent  *event,
                                       gpointer   data);
 
 gboolean ui_callback_on_open_filters(GtkWidget *widget,
-                                     GdkEvent *event,
                                      gpointer data);
 
 gboolean ui_callback_on_save_filters(GtkWidget *widget,
-                                     GdkEvent *event,
                                      gpointer data);
 
 gboolean ui_callback_on_about(GtkWidget *widget,
-                              GdkEvent  *event,
                               gpointer   data);
 
 void ui_signal_add_to_list(gpointer data,
                            gpointer user_data);
 
 gboolean ui_callback_on_connect(GtkWidget *widget,
-                                GdkEvent  *event,
                                 gpointer   data);
 
 gboolean ui_callback_on_disconnect(GtkWidget *widget,
-                                   GdkEvent  *event,
                                    gpointer   data);
 
 gboolean ui_callback_on_tree_view_select(GtkWidget *widget,
@@ -46,22 +39,24 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
                              gpointer          userdata);
 
 gboolean ui_callback_signal_go_to(GtkWidget *widget,
-                                  GdkEvent  *event,
                                   gpointer   data);
 
 gboolean ui_callback_signal_go_to_first(GtkWidget *widget,
-                                        GdkEvent  *event,
                                         gpointer   data);
 
 gboolean ui_callback_signal_go_to_last(GtkWidget *widget,
-                                       GdkEvent  *event,
                                        gpointer   data);
 
 gboolean ui_callback_signal_clear_list(GtkWidget *widget,
-                                       GdkEvent  *event,
                                        gpointer   data);
 
 gboolean ui_pipe_callback(gint source, gpointer user_data);
+
+gboolean ui_callback_on_menu_none(GtkWidget *widget,
+                                  gpointer data);
+
+gboolean ui_callback_on_menu_all(GtkWidget *widget,
+                                 gpointer data);
 
 gboolean ui_callback_on_menu_item_selected(GtkWidget *widget,
                                            gpointer data);

@@ -25,36 +25,46 @@
 #include "locate_root.h"
 #include "xml_parse.h"
 
-gboolean ui_callback_on_open_messages(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 {
-    g_debug("Open messages event occurred");
-    CHECK_FCT(ui_messages_open_file_chooser());
+    gboolean refresh = (data != NULL) ? TRUE : FALSE;
+
+    g_debug("Open messages event occurred %d", refresh);
+
+    if (refresh && (ui_main_data.messages_file_name != NULL))
+    {
+        CHECK_FCT(ui_messages_read (ui_main_data.messages_file_name));
+    }
+    else
+    {
+        CHECK_FCT(ui_messages_open_file_chooser());
+    }
 
     return TRUE;
 }
 
-gboolean ui_callback_on_save_messages(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
 {
     g_debug("Save messages event occurred");
     // CHECK_FCT(ui_file_chooser());
     return TRUE;
 }
 
-gboolean ui_callback_on_open_filters(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_open_filters(GtkWidget *widget, gpointer data)
 {
     g_debug("Open filters event occurred");
     CHECK_FCT(ui_filters_open_file_chooser());
     return TRUE;
 }
 
-gboolean ui_callback_on_save_filters(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_save_filters(GtkWidget *widget, gpointer data)
 {
     g_debug("Save filters event occurred");
     CHECK_FCT(ui_filters_save_file_chooser());
     return TRUE;
 }
 
-gboolean ui_callback_on_about(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_about(GtkWidget *widget, gpointer data)
 {
 #if defined(PACKAGE_STRING)
     ui_notification_dialog (GTK_MESSAGE_INFO, "about", "%s", PACKAGE_STRING);
@@ -118,7 +128,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     if ((ui_main_data.path_last == NULL) || (path == NULL) || (gtk_tree_path_compare(ui_main_data.path_last, path) == 0))
     {
         /* Advance to the new last signal */
-        ui_callback_signal_go_to_last (NULL, NULL, NULL);
+        ui_callback_signal_go_to_last (NULL, NULL);
     }
 }
 
@@ -237,7 +247,7 @@ gboolean ui_pipe_callback(gint source, gpointer user_data)
     return FALSE;
 }
 
-gboolean ui_callback_on_connect(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 {
     /* We have to retrieve the ip address and port of remote host */
     const char *ip;
@@ -263,7 +273,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, GdkEvent *event, gpointer dat
     /* Disable the connect button */
     ui_disable_connect_button ();
 
-    ui_callback_signal_clear_list (widget, event, data);
+    ui_callback_signal_clear_list (widget, data);
 
     if (socket_connect_to_remote_host (ip, port, pipe_fd[1]) != 0)
     {
@@ -275,7 +285,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, GdkEvent *event, gpointer dat
     return TRUE;
 }
 
-gboolean ui_callback_on_disconnect(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
 {
     /* We have to retrieve the ip address and port of remote host */
 
@@ -287,19 +297,19 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget, GdkEvent *event, gpointer 
     return TRUE;
 }
 
-gboolean ui_callback_signal_go_to(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_signal_go_to(GtkWidget *widget, gpointer data)
 {
     ui_tree_view_select_row (ui_main_data.nb_message_received / 2, NULL);
     return TRUE;
 }
 
-gboolean ui_callback_signal_go_to_first(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_signal_go_to_first(GtkWidget *widget, gpointer data)
 {
     ui_tree_view_select_row (0, NULL);
     return TRUE;
 }
 
-gboolean ui_callback_signal_go_to_last(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_signal_go_to_last(GtkWidget *widget, gpointer data)
 {
     GtkTreePath *path;
 
@@ -309,7 +319,7 @@ gboolean ui_callback_signal_go_to_last(GtkWidget *widget, GdkEvent *event, gpoin
     return TRUE;
 }
 
-gboolean ui_callback_signal_clear_list(GtkWidget *widget, GdkEvent *event, gpointer data)
+gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
 {
     /* Disable buttons to move in the list of signals */
     ui_set_sensitive_move_buttons (FALSE);
@@ -317,6 +327,46 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, GdkEvent *event, gpoin
 
     /* Clear list of signals */
     ui_tree_view_destroy_list (ui_main_data.signalslist);
+
+    /*
+    if (ui_main_data.text_view != NULL)
+    {
+        ui_signal_dissect_clear_view(ui_main_data.text_view);
+    }
+    */
+
+    return TRUE;
+}
+
+static void ui_callback_on_menu_items_selected(GtkWidget *widget, gpointer data)
+{
+    gboolean active = data !=  NULL;
+
+    if (GTK_IS_CHECK_MENU_ITEM(widget))
+    {
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(widget), active);
+    }
+}
+
+gboolean ui_callback_on_menu_none(GtkWidget *widget, gpointer data)
+{
+    GtkWidget *menu = (GtkWidget *) data;
+
+    g_debug("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
+
+    gtk_container_foreach(GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
+
+    return TRUE;
+}
+
+gboolean ui_callback_on_menu_all(GtkWidget *widget, gpointer data)
+{
+    GtkWidget *menu = (GtkWidget *) data;
+
+    g_debug("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
+
+    gtk_container_foreach(GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
+
     return TRUE;
 }
 
@@ -331,7 +381,7 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
         filter_entry->enabled = enabled;
         ui_tree_view_refilter ();
     }
-    // g_debug("ui_callback_on_menu_item_selected occurred %x %x %s %d (%d messages to display)", (int) widget, (int) data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
+    g_debug("ui_callback_on_menu_item_selected occurred %lx %lx %s %d (%d messages to display)", (long) widget, (long) data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
 
     return TRUE;
 }
@@ -340,7 +390,7 @@ gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer dat
 {
     col_type_e col = (col_type_e) data;
 
-    // g_debug("ui_callback_on_tree_column_header_click %x", col);
+    g_debug("ui_callback_on_tree_column_header_click %x", col);
     switch (col)
     {
         case COL_SIGNAL:

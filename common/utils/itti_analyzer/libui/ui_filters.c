@@ -75,6 +75,7 @@ static int ui_search_name(ui_filter_t *filter, const char *name)
     return (item);
 }
 
+/*
 static int ui_search_id(ui_filter_t *filter, uint32_t value)
 {
     int item;
@@ -89,6 +90,7 @@ static int ui_search_id(ui_filter_t *filter, uint32_t value)
 
     return (item);
 }
+*/
 
 static void ui_filter_set_enabled(uint8_t *enabled, ui_entry_enabled_e entry_enabled, gboolean new)
 {
@@ -240,7 +242,7 @@ static int xml_parse_filters(xmlDocPtr doc)
                 if (filter_node != NULL)
                 {
                     filter = ui_filter_from_name ((const char*) filter_node->name);
-                    // g_debug ("Found filter %s %d", filter_node->name, filter);
+                    g_debug ("Found filter %s %d", filter_node->name, filter);
 
                     if (filter == FILTER_UNKNOWN)
                     {
@@ -258,7 +260,7 @@ static int xml_parse_filters(xmlDocPtr doc)
 
                             if (cur_node != NULL)
                             {
-                                // g_debug("  Found entry %s %s", cur_node->name, cur_node->properties->children->content);
+                                g_debug("  Found entry %s %s", cur_node->name, cur_node->properties->children->content);
                                 ui_filters_add (
                                         filter,
                                         FILTER_ID_UNDEFINED,
@@ -370,35 +372,90 @@ static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
     int item;
     gpointer data;
 
-    *menu = gtk_menu_new ();
+    *menu = gtk_menu_new();
 
+    /* Create the "NONE" menu-item */
+    {
+        /* Create a new menu-item with a name */
+        menu_items = gtk_menu_item_new_with_label("NONE");
+
+        /* Add it to the menu. */
+        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
+
+        g_debug("ui_create_filter_menu %lx", (long) menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate",
+                G_CALLBACK(ui_callback_on_menu_none), *menu);
+
+        /* Show the widget */
+        gtk_widget_show(menu_items);
+    }
+
+    /* Create the "ALL" menu-item */
+    {
+        /* Create a new menu-item with a name */
+        menu_items = gtk_menu_item_new_with_label("ALL");
+
+        /* Add it to the menu. */
+        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
+
+        g_debug("ui_create_filter_menu %lx", (long) menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate",
+                G_CALLBACK(ui_callback_on_menu_all), *menu);
+
+        /* Show the widget */
+        gtk_widget_show(menu_items);
+    }
+
+    /* Create separator */
+    {
+        menu_items = gtk_menu_item_new();
+
+        /* Add it to the menu. */
+        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
+
+        /* Show the widget */
+        gtk_widget_show(menu_items);
+    }
+
+    /* Creates menu-items */
     for (item = 0; item < filter->used; item++)
     {
         /* Create a new menu-item with a name */
-        menu_items = gtk_check_menu_item_new_with_label (filter->items[item].name);
+        menu_items = gtk_check_menu_item_new_with_label(
+                filter->items[item].name);
 
         /* Add it to the menu. */
-        gtk_menu_shell_append (GTK_MENU_SHELL (*menu), menu_items);
+        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
 
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_items), filter->items[item].enabled);
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items),
+                filter->items[item].enabled);
 
         /* Connect function to be called when the menu item is selected */
         data = &filter->items[item];
-        // g_debug("ui_create_filter_menu %x %x", (int) menu_items, (int) data);
-        g_signal_connect(G_OBJECT (menu_items), "activate", G_CALLBACK(ui_callback_on_menu_item_selected), data);
+        g_debug("ui_create_filter_menu %lx %lx", (long) menu_items, (long) data);
+        g_signal_connect(G_OBJECT(menu_items), "activate",
+                G_CALLBACK(ui_callback_on_menu_item_selected), data);
 
         /* Show the widget */
-        gtk_widget_show (menu_items);
+        gtk_widget_show(menu_items);
+    }
+}
+
+static void ui_destroy_filter_menu_item(GtkWidget *widget, gpointer data)
+{
+    if (GTK_IS_MENU_ITEM(widget))
+    {
+        gtk_widget_destroy(widget);
     }
 }
 
 static void ui_destroy_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 {
-    /* TODO destroy menu items ? */
-
     if (*menu != NULL)
     {
-        gtk_widget_destroy (*menu);
+        gtk_container_foreach(GTK_CONTAINER(*menu), ui_destroy_filter_menu_item, NULL);
+
+        gtk_widget_destroy(*menu);
         *menu = NULL;
     }
 }
