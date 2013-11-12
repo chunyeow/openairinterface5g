@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#include <sys/stat.h>
+
 #include <gtk/gtk.h>
 
 #include "itti_types.h"
@@ -88,8 +90,23 @@ int ui_messages_read(char *filename)
     else
     {
         itti_socket_header_t message_header;
+        struct stat st;
+        int size;
+        double read_fraction = 0.f;
+
+        if (stat(filename, &st) < 0) {
+            ui_notification_dialog (GTK_MESSAGE_ERROR, "get file length",
+                                    "Failed to retrieve length for file \"%s\": %s",
+                                    filename,
+                                    g_strerror (errno));
+            result = RC_FAIL;
+        }
+        size = st.st_size;
 
         ui_callback_signal_clear_list (NULL, NULL);
+
+        /* Initialize the progress bar */
+        ui_progress_bar_set_fraction(0);
 
         do
         {
@@ -105,6 +122,8 @@ int ui_messages_read(char *filename)
 
             if (read_data > 0)
             {
+                read_fraction += (double)read_data / size;
+
                 input_data_length = message_header.message_size - sizeof(itti_socket_header_t);
 
                 g_debug ("%x, %x ,%x", message_header.message_type, message_header.message_size, input_data_length);
@@ -122,6 +141,8 @@ int ui_messages_read(char *filename)
                         result = RC_FAIL;
                         break;
                     }
+
+                    read_fraction += (double)input_data_length / size;
                 }
 
                 switch (message_header.message_type)
@@ -146,6 +167,7 @@ int ui_messages_read(char *filename)
 
                         if (read_messages % 100 == 0)
                         {
+                            ui_progress_bar_set_fraction(read_fraction);
                             ui_gtk_flush_events ();
                         }
                         break;
@@ -178,6 +200,8 @@ int ui_messages_read(char *filename)
             basename = g_path_get_basename(filename);
             ui_set_title ("\"%s\"", basename);
         }
+
+        ui_progress_bar_terminate();
 
         g_message("Read %d messages (%d to display) from file \"%s\"\n", read_messages, ui_tree_view_get_filtered_number(), filename);
 
@@ -317,27 +341,41 @@ int ui_filters_save_file_chooser(void)
 
 int ui_progress_bar_set_fraction(double fraction)
 {
-//     /* If not exist instantiate */
-//     if (!ui_main_data.progressbar) {
-//         ui_main_data.progressbar = gtk_progress_bar_new();
-//     }
-// 
-//     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ui_main_data.progressbar), fraction);
-// 
-//     gtk_widget_show(ui_main_data.progressbar);
-// 
-//     gtk_main_iteration();
+    /* If not exist instantiate */
+    if (!ui_main_data.progressbar && !ui_main_data.progressbar_window) {
+        ui_main_data.progressbar_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+
+        /* Set the window at center of window */
+        gtk_window_set_position(GTK_WINDOW(ui_main_data.progressbar_window), GTK_WIN_POS_CENTER);
+        gtk_window_set_title(GTK_WINDOW(ui_main_data.progressbar_window), "Processing");
+
+        gtk_container_set_border_width(GTK_CONTAINER (ui_main_data.progressbar_window), 10);
+
+        ui_main_data.progressbar = gtk_progress_bar_new();
+
+        gtk_container_add (GTK_CONTAINER (ui_main_data.progressbar_window),
+                           ui_main_data.progressbar);
+        gtk_widget_show_all (ui_main_data.progressbar_window);
+    }
+
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ui_main_data.progressbar), fraction);
+
+//     ui_gtk_flush_events();
 
     return RC_OK;
 }
 
 int ui_progress_bar_terminate(void)
 {
-//     if (!ui_main_data.progressbar)
-//         return RC_FAIL;
-// 
-//     gtk_widget_destroy(ui_main_data.progressbar);
-//     ui_main_data.progressbar = NULL;
+    if (ui_main_data.progressbar) {
+        gtk_widget_destroy(ui_main_data.progressbar);
+    }
+    if (ui_main_data.progressbar_window) {
+        gtk_widget_destroy(ui_main_data.progressbar_window);
+    }
+
+    ui_main_data.progressbar        = NULL;
+    ui_main_data.progressbar_window = NULL;
 
     return RC_OK;
 }

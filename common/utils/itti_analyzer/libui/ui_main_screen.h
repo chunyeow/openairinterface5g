@@ -10,6 +10,7 @@ typedef struct {
     GtkWidget *port_entry;
     char *port_entry_init;
 
+    GtkWidget      *progressbar_window;
     GtkWidget      *progressbar;
     GtkWidget      *signalslist;
     ui_text_view_t *text_view;

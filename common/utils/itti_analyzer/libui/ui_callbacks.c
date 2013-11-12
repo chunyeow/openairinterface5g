@@ -67,9 +67,9 @@ gboolean ui_callback_on_save_filters(GtkWidget *widget, gpointer data)
 gboolean ui_callback_on_about(GtkWidget *widget, gpointer data)
 {
 #if defined(PACKAGE_STRING)
-    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "%s", PACKAGE_STRING);
+    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "Eurecom %s", PACKAGE_STRING);
 #else
-    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "itti_analyzer");
+    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "Eurecom itti_analyzer");
 #endif
 
     return TRUE;
