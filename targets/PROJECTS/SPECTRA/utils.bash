@@ -156,6 +156,30 @@ set_openair() {
     return -1
 }
 
+test_install_asn1c_4_rrc_cellular() {
+    if [ -d $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c ]; then
+        if [ -x $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c/asn1c/asn1c ]; then
+            if [ -x /usr/local/bin/asn1c ]; then
+                diff /usr/local/bin/asn1c $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c/asn1c/asn1c || return 0
+            fi
+            echo_warning "Installing asn1c for RRC cellular..."
+            cd $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c
+            make install
+            return 0
+        fi
+    else
+        echo_warning "asn1c for RRC cellular is not installed in $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/. Installing it"
+        cd $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c
+        svn co https://asn1c.svn.sourceforge.net/svnroot/asn1c/trunk asn1c
+        
+    fi
+    echo_warning "Configuring and building and installing asn1c for RRC cellular..."
+    cd $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c
+    ./configure
+    make
+    make install
+}
+
 wait_process_started () {
     if  [ -z "$1" ]
     then
@@ -272,15 +296,6 @@ start_openswitch_daemon() {
   fi
 }
 
-check_epc_config() {
-    if [ ! -f $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/epc_$HOSTNAME.conf ]
-    then
-    echo "Cannot find file $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/epc_$HOSTNAME.conf"
-        echo "Please make sure to create one that fits your use (you can use mme_default.conf file as template)"
-        exit -1
-    fi
-}
-
 check_enb_config() {
     if [ ! -f $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/enb_$HOSTNAME.conf ]
         then
@@ -290,32 +305,6 @@ check_enb_config() {
         fi
 }
 
-check_for_epc_executable() {
-    if [ ! -f $OPENAIR3_DIR/OPENAIRMME/objs/OAI_EPC/oai_epc ]
-        then
-        echo "Cannot find oai_epc executable object in directory $OPENAIR3_DIR/OPENAIRMME/objs/OAI_EPC/"
-        echo "Please make sure you have compiled OAI EPC with --enable-standalone-epc option"
-        exit -1
-        fi
-}
-
-check_for_sgw_executable() {
-    if [ ! -f $OPENAIR3_DIR/OPENAIRMME/objs/OAI_SGW/oai_sgw ]
-    then
-        echo "Cannot find oai_sgw executable object in directory $OPENAIR3_DIR/OPENAIRMME/objs/OAI_SGW/"
-        echo "Please make sure you have compiled OAI EPC without --enable-standalone-epc option"
-        exit -1
-    fi
-}
-
-check_for_mme_executable() {
-    if [ ! -f $OPENAIR3_DIR/OPENAIRMME/objs/OAISIM_MME/oaisim_mme ]
-    then
-        echo "Cannot find oai_sgw executable object in directory $OPENAIR3_DIR/OPENAIRMME/objs/OAISIM_MME/"
-        echo "Please make sure you have compiled OAI EPC without --enable-standalone-epc option"
-        exit -1
-    fi
-}
 
 check_for_root_rights() {
     if [[ $EUID -ne 0 ]]; then

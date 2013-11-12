@@ -27,12 +27,14 @@ test_install_package "libpgm-5.1-0" "--force-yes"
 test_install_package "libpgm-dev"   "--force-yes"
 test_install_package linux-headers-`uname -r`
     
+test_install_asn1c_4_rrc_cellular
     
 #make clean > /dev/null 
 #make cleancell >/dev/null
 
-echo_success "Executing: make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 -j`grep -c ^processor /proc/cpuinfo `"
-make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 -j`grep -c ^processor /proc/cpuinfo `
+echo_success "Executing: make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `"
+cd $OPENAIR_TARGETS/SIMU/USER
+make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `
 if [[ $? -eq 2 ]] ; then
     exit 1
 fi
