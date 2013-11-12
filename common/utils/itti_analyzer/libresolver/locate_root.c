@@ -13,6 +13,7 @@
 types_t *messages_id_enum = NULL;
 types_t *origin_task_id_type = NULL;
 types_t *destination_task_id_type = NULL;
+types_t *instance_type = NULL;
 
 int locate_root(const char *root_name, types_t *head, types_t **root_elm) {
     types_t *next_type;
@@ -112,6 +113,15 @@ char *get_destination_task_id(buffer_t *buffer) {
     }
 
     return destination_task_id;
+}
+
+uint32_t get_instance(buffer_t *buffer) {
+    uint32_t  instance_value;
+
+    /* Fetch instance value */
+    buffer_fetch_bits (buffer, instance_type->offset, instance_type->child->child->child->size, &instance_value);
+
+    return instance_value;
 }
 
 char *message_id_to_string(uint32_t message_id)

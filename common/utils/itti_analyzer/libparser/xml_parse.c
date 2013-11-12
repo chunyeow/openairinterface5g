@@ -778,6 +778,7 @@ static int xml_parse_doc(xmlDocPtr doc) {
         CHECK_FCT(locate_type("MessagesIds", head, &messages_id_enum));
         CHECK_FCT(locate_type("originTaskId", head, &origin_task_id_type));
         CHECK_FCT(locate_type("destinationTaskId", head, &destination_task_id_type));
+        CHECK_FCT(locate_type("instance", head, &instance_type));
         // root->type_hr_display(root, 0);
         update_filters();
         if (dissect_file != NULL) {

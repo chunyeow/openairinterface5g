@@ -119,7 +119,8 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     get_message_id (root, signal_buffer, &signal_buffer->message_id);
 
     ui_tree_view_new_signal_ind (signal_buffer->message_number, message_id_to_string (signal_buffer->message_id),
-                                 get_origin_task_id (signal_buffer), get_destination_task_id (signal_buffer), data);
+                                 get_origin_task_id (signal_buffer), get_destination_task_id (signal_buffer),
+                                 get_instance (signal_buffer), data);
 
     /* Increment number of messages */
     ui_main_data.nb_message_received++;

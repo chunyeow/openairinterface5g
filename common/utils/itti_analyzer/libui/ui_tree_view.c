@@ -18,16 +18,15 @@ typedef struct
 {
     GtkListStore *store;
     GtkTreeModelFilter *filtered;
-    guint filtered_last_msg;
-    guint filtered_msg_number;
+    uint32_t filtered_last_msg;
+    uint32_t filtered_msg_number;
 } ui_store_t;
 
 static ui_store_t ui_store;
 
 static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, ui_store_t *store)
 {
-    char *msg_number;
-    guint number = 0;
+    uint32_t msg_number;
     char *message;
     char *origin_task;
     char *destination_task;
@@ -35,17 +34,16 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
 
     gtk_tree_model_get (model, iter, COL_MSG_NUM, &msg_number, COL_SIGNAL, &message, COL_FROM_TASK, &origin_task,
                         COL_TO_TASK, &destination_task, -1);
-    if (msg_number != NULL)
+    if (msg_number != 0)
     {
-        number = atoi (msg_number);
         enabled = ui_filters_message_enabled (message, origin_task, destination_task);
 
-        if ((enabled) && (ui_store.filtered_last_msg < number))
+        if ((enabled) && (ui_store.filtered_last_msg < msg_number))
         {
-            ui_store.filtered_last_msg = number;
+            ui_store.filtered_last_msg = msg_number;
             ui_store.filtered_msg_number++;
         }
-        // g_debug("%x %x %d %s %s %s %d %d", (int) model, (int) iter, number, message, origin_task, destination_task, enabled, ui_store.filtered_msg_number);
+        g_debug("%x %x %d %s %s %s %d %d", (int) model, (int) iter, msg_number, message, origin_task, destination_task, enabled, ui_store.filtered_msg_number);
     }
 
     g_free (message);
@@ -84,16 +82,31 @@ ui_tree_view_init_list(GtkWidget *list)
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_TO_TASK);
 
+    column = gtk_tree_view_column_new_with_attributes(
+        "Ins", renderer, "text", COL_INSTANCE, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
     ui_store.store = gtk_list_store_new(NUM_COLS,
-                                       G_TYPE_STRING,
-                                       G_TYPE_STRING,
-                                       G_TYPE_STRING,
-                                       G_TYPE_STRING,
+                                       G_TYPE_UINT,   // COL_MSG_NUM
+                                       G_TYPE_STRING, // COL_SIGNAL
+                                       G_TYPE_STRING, // COL_FROM_TASK
+                                       G_TYPE_STRING, // COL_TO_TASK
+                                       G_TYPE_UINT,   // COL_INSTANCE
+                                       /* HACK: add id of message fields to speed-up filtering
+                                        */
+                                       G_TYPE_UINT, // COL_SIGNAL_ID
+                                       G_TYPE_UINT, // COL_FROM_TASK_ID
+                                       G_TYPE_UINT, // COL_TO_TASK_ID
                                        /* HACK: add a reference to the buffer here
                                         * to avoid maintining multiple lists.
                                         * The reference is not displayed
                                         */
                                        G_TYPE_POINTER);
+
+    if(ui_store.store == NULL)
+    {
+        g_error("gtk_list_store_new failed");
+    }
 
     ui_store.filtered = GTK_TREE_MODEL_FILTER (gtk_tree_model_filter_new (GTK_TREE_MODEL (ui_store.store), NULL));
     gtk_tree_model_filter_set_visible_func (ui_store.filtered,
@@ -105,20 +118,24 @@ ui_tree_view_init_list(GtkWidget *list)
     gtk_tree_view_columns_autosize(GTK_TREE_VIEW(list));
 }
 
-static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *message_number,
+static void ui_tree_view_add_to_list(GtkWidget *list, const uint32_t message_number,
                         const gchar *signal_name, const char *origin_task,
-                        const char *to_task, gpointer buffer)
+                        const char *to_task, uint32_t instance, gpointer buffer)
 {
     GtkTreeIter iter;
 
     gtk_list_store_append(ui_store.store, &iter);
     gtk_list_store_set(ui_store.store, &iter,
                        /* Columns */
-                       COL_MSG_NUM    , message_number,
-                       COL_SIGNAL     , signal_name,
-                       COL_FROM_TASK  , origin_task,
-                       COL_TO_TASK    , to_task,
-                       COL_BUFFER     , buffer,
+                       COL_MSG_NUM      , message_number,
+                       COL_SIGNAL       , signal_name,
+                       COL_FROM_TASK    , origin_task,
+                       COL_TO_TASK      , to_task,
+                       COL_INSTANCE     , instance,
+                       COL_SIGNAL_ID    , 0,
+                       COL_FROM_TASK_ID , 0,
+                       COL_TO_TASK_ID   , 0,
+                       COL_BUFFER       , buffer,
                        /* End of columns */
                        -1);
 }
@@ -162,7 +179,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     ui_tree_view_init_list(ui_main_data.signalslist);
     gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
 
-    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 500, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 530, -1);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
@@ -178,14 +195,14 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 }
 
 int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signal_name,
-                                const char *origin_task, const char *to_task, gpointer buffer)
+                                const char *origin_task, const char *to_task, uint32_t instance, gpointer buffer)
 {
     gchar message_number_str[11];
 
     sprintf(message_number_str, "%u", message_number);
 
-    ui_tree_view_add_to_list(ui_main_data.signalslist, message_number_str, signal_name,
-                             origin_task, to_task, (buffer_t *)buffer);
+    ui_tree_view_add_to_list(ui_main_data.signalslist, message_number, signal_name,
+                             origin_task, to_task, instance, (buffer_t *)buffer);
 
     return RC_OK;
 }
