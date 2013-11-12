@@ -126,7 +126,7 @@ int ui_messages_read(char *filename)
 
                 input_data_length = message_header.message_size - sizeof(itti_socket_header_t);
 
-                g_debug ("%x, %x ,%x", message_header.message_type, message_header.message_size, input_data_length);
+                g_debug ("%x, %x, %zd", message_header.message_type, message_header.message_size, input_data_length);
 
                 /* Checking for non-header part */
                 if (input_data_length > 0)

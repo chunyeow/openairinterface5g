@@ -43,7 +43,7 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
             ui_store.filtered_last_msg = msg_number;
             ui_store.filtered_msg_number++;
         }
-        g_debug("%x %x %d %s %s %s %d %d", (int) model, (int) iter, msg_number, message, origin_task, destination_task, enabled, ui_store.filtered_msg_number);
+        g_debug("%p %p %d %s %s %s %d %d", model, iter, msg_number, message, origin_task, destination_task, enabled, ui_store.filtered_msg_number);
     }
 
     g_free (message);
