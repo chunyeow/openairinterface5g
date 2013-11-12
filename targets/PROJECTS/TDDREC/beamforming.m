@@ -1,8 +1,8 @@
 % do some beamforming
 signalA2B=zeros(N,4);
 signalB2A=zeros(N,4);
-signalB2A_prec=zeros(N,4);
-signalB2A_diag=zeros(N,4);
+signalB2A_prec_full=zeros(N,4);
+signalB2A_prec_diag=zeros(N,4);
 
 %%----------Node A to B transmission---------%%
 for i=1:4
