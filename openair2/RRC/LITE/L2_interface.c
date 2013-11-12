@@ -273,7 +273,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload, ccch_size);
         RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
-        itti_send_msg_to_task (TASK_MAC_UE, Mod_id, message_p);
+        itti_send_msg_to_task (TASK_MAC_UE, Mod_id + NB_eNB_INST, message_p);
       }
 #endif
 
@@ -323,7 +323,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         memcpy (RRC_MAC_BCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
 
-        itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
+        itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
       }
 #else
       decode_BCCH_DLSCH_Message(Mod_id,frame,eNB_index,Sdu,sdu_size);
@@ -391,7 +391,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
           RRC_MAC_CCCH_DATA_IND (message_p).enb_index = eNB_index;
 
-          itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
+          itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
       }
 #else
         Srb_info = &UE_rrc_inst[Mod_id].Srb0[eNB_index];
@@ -426,7 +426,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         RRC_MAC_MCCH_DATA_IND (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_IND (message_p).mbsfn_sync_area = mbsfn_sync_area;
 
-        itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
+        itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
       }
 #else
       decode_MCCH_Message(Mod_id, frame, eNB_index, Sdu, sdu_size, mbsfn_sync_area);
@@ -534,12 +534,7 @@ void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_si
     RRC_DCCH_DATA_IND (message_p).sdu_p = message_buffer;
     RRC_DCCH_DATA_IND (message_p).ue_index = UE_index;
 
-    if (eNB_flag == 1) {
-      itti_send_msg_to_task (TASK_RRC_ENB, Mod_id, message_p);
-    }
-    else {
-      itti_send_msg_to_task (TASK_RRC_UE, Mod_id - NB_eNB_INST, message_p);
-    }
+    itti_send_msg_to_task ((eNB_flag == 1) ? TASK_RRC_ENB : TASK_RRC_UE, Mod_id, message_p);
   }
 #else
   if (eNB_flag ==1) {
@@ -562,7 +557,7 @@ void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index) {
     RRC_MAC_IN_SYNC_IND (message_p).frame = frame;
     RRC_MAC_IN_SYNC_IND (message_p).enb_index = eNB_index;
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
   }
 #else
   UE_rrc_inst[Mod_id].Info[eNB_index].N310_cnt=0;
@@ -591,7 +586,7 @@ void rrc_lite_out_of_sync_ind(u8  Mod_id, u32 frame, u16 eNB_index){
     RRC_MAC_OUT_OF_SYNC_IND (message_p).frame = frame;
     RRC_MAC_OUT_OF_SYNC_IND (message_p).enb_index = eNB_index;
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
   }
 #else
   UE_rrc_inst[Mod_id].Info[eNB_index].N310_cnt++;
@@ -617,7 +612,7 @@ int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
     message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_CNF);
     RRC_MAC_CCCH_DATA_CNF (message_p).enb_index = eNB_index;
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id - NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
   }
 #else
   // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)

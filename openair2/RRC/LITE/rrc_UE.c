@@ -37,6 +37,7 @@
 
 
 #include "defs.h"
+#include "PHY/TOOLS/dB_routines.h"
 #include "extern.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "LAYER2/RLC/rlc.h"
@@ -307,7 +308,7 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_CCCH_MESSAGE);
     memcpy (&message_p->msg, (void *) dl_ccch_msg, sizeof(RrcDlCcchMessage));
 
-    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
 #endif
 
@@ -1308,7 +1309,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_DCCH_MESSAGE);
     memcpy (&message_p->msg, (void *) dl_dcch_msg, sizeof(RrcDlDcchMessage));
 
-    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
 #endif
 
@@ -1449,7 +1450,7 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
     memcpy (&message_p->msg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
 
-    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
 #endif
 
@@ -2194,6 +2195,7 @@ void *rrc_ue_task(void *args_p) {
   MessageDef *msg_p;
   const char *msg_name;
   instance_t instance;
+  unsigned int Mod_id;
   SRB_INFO *srb_info_p;
 
   itti_mark_task_ready (TASK_RRC_UE);
@@ -2204,6 +2206,7 @@ void *rrc_ue_task(void *args_p) {
 
     msg_name = ITTI_MSG_NAME (msg_p);
     instance = ITTI_MSG_INSTANCE (msg_p);
+    Mod_id = instance - NB_eNB_INST;
 
     switch (msg_p->header.messageId) {
       case TERMINATE_MESSAGE:
@@ -2218,23 +2221,23 @@ void *rrc_ue_task(void *args_p) {
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
 
-        UE_rrc_inst[instance].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N310_cnt = 0;
-        if (UE_rrc_inst[instance].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].T310_active == 1)
-          UE_rrc_inst[instance].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N311_cnt++;
+        UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N310_cnt = 0;
+        if (UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].T310_active == 1)
+          UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N311_cnt++;
         break;
 
       case RRC_MAC_OUT_OF_SYNC_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_OUT_OF_SYNC_IND (msg_p).frame, RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index);
 
-        UE_rrc_inst[instance].Info[RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index].N310_cnt ++;
+        UE_rrc_inst[Mod_id].Info[RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index].N310_cnt ++;
         break;
 
       case RRC_MAC_BCCH_DATA_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
 
-        decode_BCCH_DLSCH_Message (instance, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
+        decode_BCCH_DLSCH_Message (Mod_id, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
                                    RRC_MAC_BCCH_DATA_IND (msg_p).enb_index, RRC_MAC_BCCH_DATA_IND (msg_p).sdu,
                                    RRC_MAC_BCCH_DATA_IND (msg_p).sdu_size);
         break;
@@ -2244,19 +2247,19 @@ void *rrc_ue_task(void *args_p) {
               RRC_MAC_CCCH_DATA_CNF (msg_p).enb_index);
 
         // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
-        UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_DATA_CNF (msg_p).enb_index].Tx_buffer.payload_size = 0;
+        UE_rrc_inst[Mod_id].Srb0[RRC_MAC_CCCH_DATA_CNF (msg_p).enb_index].Tx_buffer.payload_size = 0;
         break;
 
       case RRC_MAC_CCCH_DATA_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_CCCH_DATA_IND (msg_p).frame, RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
 
-        srb_info_p = &UE_rrc_inst[instance].Srb0[RRC_MAC_CCCH_DATA_IND (msg_p).enb_index];
+        srb_info_p = &UE_rrc_inst[Mod_id].Srb0[RRC_MAC_CCCH_DATA_IND (msg_p).enb_index];
 
         memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu,
                 RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
         srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
-        rrc_ue_decode_ccch (instance, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p,
+        rrc_ue_decode_ccch (Mod_id, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p,
                             RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
         break;
 
@@ -2265,7 +2268,7 @@ void *rrc_ue_task(void *args_p) {
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d, mbsfn SA %d\n", msg_name, instance,
               RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
-        decode_MCCH_Message (instance, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
+        decode_MCCH_Message (Mod_id, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
                              RRC_MAC_MCCH_DATA_IND (msg_p).sdu, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
                              RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
         break;
@@ -2275,7 +2278,7 @@ void *rrc_ue_task(void *args_p) {
         LOG_D(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
               RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
 
-        rrc_ue_decode_dcch (instance, RRC_DCCH_DATA_IND (msg_p).frame,
+        rrc_ue_decode_dcch (Mod_id, RRC_DCCH_DATA_IND (msg_p).frame,
                             RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).sdu_p,
                             RRC_DCCH_DATA_IND (msg_p).ue_index);
 

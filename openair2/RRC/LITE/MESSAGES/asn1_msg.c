@@ -103,6 +103,8 @@ int errno;
 #define msg printf
 #endif
 
+extern unsigned char NB_eNB_INST;
+
 uint16_t two_tier_hexagonal_cellIds[7] = {0,1,2,4,5,7,8};
 uint16_t two_tier_hexagonal_adjacent_cellIds[7][6] = {{1,2,4,5,7,8},    // CellId 0
 				                      {11,18,2,0,8,15}, // CellId 1
@@ -1921,7 +1923,7 @@ OAI_UECapability_t *fill_ue_capability() {
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY);
     memcpy (&message_p->msg, (void *) UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
 
-    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, NB_eNB_INST, message_p);
   }
 #endif
 
