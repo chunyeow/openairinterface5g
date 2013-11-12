@@ -241,48 +241,50 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 
     priority = itti_get_message_priority (message_id);
 
-    /* We cannot send a message if the task is not running */
-    DevCheck(itti_desc.threads[thread_id].task_state == TASK_STATE_READY, itti_desc.threads[thread_id].task_state,
-             TASK_STATE_READY, thread_id);
-
-#if !defined(ENABLE_EVENT_FD)
-    /* Lock the mutex to get exclusive access to the list */
-    pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
-
-    /* Check the number of messages in the queue */
-    DevCheck(itti_desc.tasks[task_id].message_in_queue < itti_desc.tasks_info[task_id].queue_size,
-             task_id, itti_desc.tasks[task_id].message_in_queue, itti_desc.tasks_info[task_id].queue_size);
-#endif
-
-    /* Allocate new list element */
-    new = (struct message_list_s *) malloc (sizeof(struct message_list_s));
-    DevAssert(new != NULL);
-
     /* Increment the global message number */
     message_number = itti_increment_message_number ();
-
-    /* Fill in members */
-    new->msg = message;
-    new->message_number = message_number;
-    new->message_priority = priority;
 
     itti_dump_queue_message (message_number, message, itti_desc.messages_info[message_id].name,
                              MESSAGE_SIZE(message_id));
 
-#if defined(ENABLE_EVENT_FD)
+    if (task_id != TASK_UNKNOWN)
     {
-        uint64_t sem_counter = 1;
+        /* We cannot send a message if the task is not running */
+        DevCheck(itti_desc.threads[thread_id].task_state == TASK_STATE_READY, itti_desc.threads[thread_id].task_state,
+                 TASK_STATE_READY, thread_id);
 
-        lfds611_queue_enqueue(itti_desc.tasks[task_id].message_queue, new);
+#if !defined(ENABLE_EVENT_FD)
+        /* Lock the mutex to get exclusive access to the list */
+        pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 
-        /* Call to write for an event fd must be of 8 bytes */
-        write(itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
-    }
+        /* Check the number of messages in the queue */
+        DevCheck(itti_desc.tasks[task_id].message_in_queue < itti_desc.tasks_info[task_id].queue_size,
+                 task_id, itti_desc.tasks[task_id].message_in_queue, itti_desc.tasks_info[task_id].queue_size);
+#endif
+
+        /* Allocate new list element */
+        new = (struct message_list_s *) malloc (sizeof(struct message_list_s));
+        DevAssert(new != NULL);
+
+        /* Fill in members */
+        new->msg = message;
+        new->message_number = message_number;
+        new->message_priority = priority;
+
+#if defined(ENABLE_EVENT_FD)
+        {
+            uint64_t sem_counter = 1;
+
+            lfds611_queue_enqueue(itti_desc.tasks[task_id].message_queue, new);
+
+            /* Call to write for an event fd must be of 8 bytes */
+            write(itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+        }
 #else
-    if (STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
-        STAILQ_INSERT_HEAD (&itti_desc.tasks[task_id].message_queue, new, next_element);
-    }
-    else {
+        if (STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
+            STAILQ_INSERT_HEAD (&itti_desc.tasks[task_id].message_queue, new, next_element);
+        }
+        else {
 //         struct message_list_s *insert_after = NULL;
 //         struct message_list_s *temp;
 // 
@@ -306,17 +308,18 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 //             STAILQ_INSERT_AFTER(&itti_desc.tasks[task_id].message_queue, insert_after, new,
 //                                 next_element);
 //         }
-    }
+        }
 
-    /* Update the number of messages in the queue */
-    itti_desc.tasks[task_id].message_in_queue++;
-    if (itti_desc.tasks[task_id].message_in_queue == 1) {
-        /* Emit a signal to wake up target task thread */
-        pthread_cond_signal (&itti_desc.tasks[task_id].message_queue_cond_var);
-    }
-    /* Release the mutex */
-    pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
+        /* Update the number of messages in the queue */
+        itti_desc.tasks[task_id].message_in_queue++;
+        if (itti_desc.tasks[task_id].message_in_queue == 1) {
+            /* Emit a signal to wake up target task thread */
+            pthread_cond_signal (&itti_desc.tasks[task_id].message_queue_cond_var);
+        }
+        /* Release the mutex */
+        pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
+    }
 
     ITTI_DEBUG(
             "Message %s, number %lu with priority %d successfully sent to queue (%u:%s)\n",
