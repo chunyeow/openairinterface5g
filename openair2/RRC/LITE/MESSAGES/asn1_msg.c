@@ -425,7 +425,7 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
 		    BCCH_DL_SCH_Message_t *bcch_message,
 		    SystemInformationBlockType2_t **sib2) {
 
-  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib2_part;
+  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part;
 
   asn_enc_rval_t enc_rval;
 
@@ -438,13 +438,13 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
 
   bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count=0;
 
-  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
 
   ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,
 		   sib2_part);
 
-  sib2_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2;
+  sib2_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib2;
 
   *sib2 = &sib2_part->choice.sib2;
 
@@ -605,9 +605,9 @@ uint8_t do_SIB23(uint8_t Mod_id,
 		 ) {
 
 
-  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib2_part,*sib3_part;
+  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part,*sib3_part;
 #ifdef Rel10
-  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib13_part;
+  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib13_part;
   MBSFN_SubframeConfigList_t *MBSFNSubframeConfigList;
   MBSFN_AreaInfoList_r9_t *MBSFNArea_list;
   struct MBSFN_AreaInfo_r9 *MBSFN_Area1, *MBSFN_Area2;
@@ -635,22 +635,22 @@ uint8_t do_SIB23(uint8_t Mod_id,
 #else
   LOG_I(RRC,"Configuration SIB2/3\n");
 #endif
-  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-  sib3_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-  memset(sib3_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
+  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  sib3_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  memset(sib3_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
 
-  sib2_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2;
-  sib3_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib3;
+  sib2_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib2;
+  sib3_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib3;
 
   *sib2 = &sib2_part->choice.sib2;
   *sib3 = &sib3_part->choice.sib3;
 
 #ifdef Rel10
   if (MBMS_flag > 0) {
-    sib13_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-    memset(sib13_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-    sib13_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib13_v920;
+    sib13_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+    memset(sib13_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+    sib13_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib13_v920;
     *sib13 = &sib13_part->choice.sib13_v920;
   }
 #endif
@@ -1919,9 +1919,9 @@ OAI_UECapability_t *fill_ue_capability() {
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY);
-    memcpy (&message_p->msg, UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
+    memcpy (&message_p->msg, (void *) UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
 
-    itti_send_msg_to_task (TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
   }
 #endif
 
@@ -1957,7 +1957,7 @@ return 0;
 uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
                   BCCH_DL_SCH_Message_t *bcch_message, SystemInformationBlockType2_t **sib2) {
 //-----------------------------------------------------------------------------
-  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *sib2_part;
+  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part;
   asn_enc_rval_t enc_rval;
 
   if (bcch_message) 
@@ -1973,9 +1973,9 @@ uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *b
   }
   LOG_I(RRC,"Configuration SIB2 CELLULAR\n");
 
-  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member));
-  sib2_part->present = SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2;
+  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
+  sib2_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib2;
   *sib2 = &sib2_part->choice.sib2;
 
   // sib2

@@ -8,7 +8,12 @@
 #ifndef RRC_MESSAGES_TYPES_H_
 #define RRC_MESSAGES_TYPES_H_
 
+#include "BCCH-DL-SCH-Message.h"
+#include "DL-CCCH-Message.h"
+#include "DL-DCCH-Message.h"
 #include "UE-EUTRA-Capability.h"
+#include "UL-CCCH-Message.h"
+#include "UL-DCCH-Message.h"
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
@@ -34,7 +39,12 @@
 #define CCCH_SDU_SIZE                           (128)
 #define MCCH_SDU_SIZE                           (128)
 
-typedef UE_EUTRA_Capability_t RrcUeEutraCapability;
+typedef BCCH_DL_SCH_Message_t   RrcDlBcchMessage;
+typedef DL_CCCH_Message_t       RrcDlCcchMessage;
+typedef DL_DCCH_Message_t       RrcDlDcchMessage;
+typedef UE_EUTRA_Capability_t   RrcUeEutraCapability;
+typedef UL_CCCH_Message_t       RrcUlCcchMessage;
+typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 
 //-------------------------------------------------------------------------------------------//
 // Messages from MAC layer

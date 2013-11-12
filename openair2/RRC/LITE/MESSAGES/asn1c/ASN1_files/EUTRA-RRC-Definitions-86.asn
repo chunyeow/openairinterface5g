@@ -680,20 +680,21 @@ SystemInformation ::=				SEQUENCE {
 	}
 }
 SystemInformation-r8-IEs ::=		SEQUENCE {
-	sib-TypeAndInfo						SEQUENCE (SIZE (1..maxSIB)) OF CHOICE {
-		sib2								SystemInformationBlockType2,
-		sib3								SystemInformationBlockType3,
-		sib4								SystemInformationBlockType4,
-		sib5								SystemInformationBlockType5,
-		sib6								SystemInformationBlockType6,
-		sib7								SystemInformationBlockType7,
-		sib8								SystemInformationBlockType8,
-		sib9								SystemInformationBlockType9,
-		sib10								SystemInformationBlockType10,
-		sib11								SystemInformationBlockType11,
-		...
-	},
+	sib-TypeAndInfo						SEQUENCE (SIZE (1..maxSIB)) OF SystemInformation-r8-IEs-sib-TypeAndInfo-Member,
 	nonCriticalExtension				SEQUENCE {}							OPTIONAL	-- Need OP
+}
+SystemInformation-r8-IEs-sib-TypeAndInfo-Member ::=	CHOICE {
+	sib2								SystemInformationBlockType2,
+	sib3								SystemInformationBlockType3,
+	sib4								SystemInformationBlockType4,
+	sib5								SystemInformationBlockType5,
+	sib6								SystemInformationBlockType6,
+	sib7								SystemInformationBlockType7,
+	sib8								SystemInformationBlockType8,
+	sib9								SystemInformationBlockType9,
+	sib10								SystemInformationBlockType10,
+	sib11								SystemInformationBlockType11,
+	...
 }
 
 

@@ -300,6 +300,17 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
   xer_fprint(stdout,&asn_DEF_DL_CCCH_Message,(void*)dl_ccch_msg);
 #endif
 
+#if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_CCCH_MESSAGE);
+    memcpy (&message_p->msg, (void *) dl_ccch_msg, sizeof(RrcDlCcchMessage));
+
+    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+  }
+#endif
+
   if ((dec_rval.code != RC_OK) && (dec_rval.consumed==0)) {
     LOG_E(RRC,"[UE %d] Frame %d : Failed to decode DL-CCCH-Message (%d bytes)\n",Mod_id,dec_rval.consumed);
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_CCCH, VCD_FUNCTION_OUT);
@@ -1290,6 +1301,17 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
   xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)dl_dcch_msg);
 #endif
 
+#if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_DCCH_MESSAGE);
+    memcpy (&message_p->msg, (void *) dl_dcch_msg, sizeof(RrcDlDcchMessage));
+
+    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+  }
+#endif
+
   if (dl_dcch_msg->message.present == DL_DCCH_MessageType_PR_c1) {
 
     if (UE_rrc_inst[Mod_id].Info[eNB_index].State >= RRC_CONNECTED) {
@@ -1419,7 +1441,18 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
       return -1;
     }
     //  xer_fprint(stdout,  &asn_DEF_BCCH_DL_SCH_Message, (void*)&bcch_message);
-    
+
+#if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
+    memcpy (&message_p->msg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
+
+    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+  }
+#endif
+
     if (bcch_message->message.present == BCCH_DL_SCH_MessageType_PR_c1) {
       switch (bcch_message->message.choice.c1.present) {
       case BCCH_DL_SCH_MessageType__c1_PR_systemInformationBlockType1:
@@ -1648,7 +1681,7 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 
   SystemInformation_t **si=&UE_rrc_inst[Mod_id].si[eNB_index][si_window];
   int i;
-  struct SystemInformation_r8_IEs__sib_TypeAndInfo__Member *typeandinfo;
+  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *typeandinfo;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SI  , VCD_FUNCTION_IN);
 
@@ -1667,7 +1700,7 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
     typeandinfo=(*si)->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.array[i];
 
     switch(typeandinfo->present) {
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib2:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib2:
       UE_rrc_inst[Mod_id].sib2[eNB_index] = &typeandinfo->choice.sib2;
       LOG_D(RRC,"[UE %d] Frame %d Found SIB2 from eNB %d\n",Mod_id,frame,eNB_index);
       dump_sib2(UE_rrc_inst[Mod_id].sib2[eNB_index]);
@@ -1712,51 +1745,51 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 	UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_SI_RECEIVED;
       }
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib3:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib3:
       UE_rrc_inst[Mod_id].sib3[eNB_index] = &typeandinfo->choice.sib3;
       LOG_I(RRC,"[UE %d] Frame %d Found SIB3 from eNB %d\n",Mod_id,frame,eNB_index);
       dump_sib3(UE_rrc_inst[Mod_id].sib3[eNB_index]);
       UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 1;
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib4:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib4:
       UE_rrc_inst[Mod_id].sib4[eNB_index] = &typeandinfo->choice.sib4;
       LOG_I(RRC,"[UE %d] Frame %d Found SIB4 from eNB %d\n",Mod_id,frame,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib5:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib5:
       UE_rrc_inst[Mod_id].sib5[eNB_index] = &typeandinfo->choice.sib5;
       LOG_I(RRC,"[UE %d] Found SIB5 from eNB %d\n",Mod_id,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib6:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib6:
       UE_rrc_inst[Mod_id].sib6[eNB_index] = &typeandinfo->choice.sib6;
       LOG_I(RRC,"[UE %d] Found SIB6 from eNB %d\n",Mod_id,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib7:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib7:
       UE_rrc_inst[Mod_id].sib7[eNB_index] = &typeandinfo->choice.sib7;
       LOG_I(RRC,"[UE %d] Found SIB7 from eNB %d\n",Mod_id,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib8:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib8:
       UE_rrc_inst[Mod_id].sib8[eNB_index] = &typeandinfo->choice.sib8;
       LOG_I(RRC,"[UE %d] Found SIB8 from eNB %d\n",Mod_id,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib9:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib9:
       UE_rrc_inst[Mod_id].sib9[eNB_index] = &typeandinfo->choice.sib9;
       LOG_I(RRC,"[UE %d] Found SIB9 from eNB %d\n",Mod_id,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib10:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib10:
       UE_rrc_inst[Mod_id].sib10[eNB_index] = &typeandinfo->choice.sib10;
       LOG_I(RRC,"[UE %d] Found SIB10 from eNB %d\n",Mod_id,eNB_index);
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib11:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib11:
       UE_rrc_inst[Mod_id].sib11[eNB_index] = &typeandinfo->choice.sib11;
       LOG_I(RRC,"[UE %d] Found SIB11 from eNB %d\n",Mod_id,eNB_index);
       break;
 #ifdef Rel10
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib12_v920:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib12_v920:
       UE_rrc_inst[Mod_id].sib12[eNB_index] = &typeandinfo->choice.sib12_v920;
       LOG_I(RRC,"[RRC][UE %d] Found SIB12 from eNB %d\n",Mod_id,eNB_index);
 
       break;
-    case SystemInformation_r8_IEs__sib_TypeAndInfo__Member_PR_sib13_v920:
+    case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib13_v920:
       UE_rrc_inst[Mod_id].sib13[eNB_index] = &typeandinfo->choice.sib13_v920;
       LOG_I(RRC,"[RRC][UE %d] Found SIB13 from eNB %d\n",Mod_id,eNB_index);
       dump_sib13(UE_rrc_inst[Mod_id].sib13[eNB_index]);
@@ -2178,10 +2211,6 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       case MESSAGE_TEST:
-        LOG_D(RRC, "Received %s\n", msg_name);
-        break;
-
-      case RRC_UE_EUTRA_CAPABILITY: // TODO debug code, should be removed later.
         LOG_D(RRC, "Received %s\n", msg_name);
         break;
 

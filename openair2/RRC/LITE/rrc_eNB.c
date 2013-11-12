@@ -633,6 +633,18 @@ rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
   dec_rval = uper_decode (NULL,
                           &asn_DEF_UL_DCCH_Message,
                           (void **) &ul_dcch_msg, Rx_sdu, sdu_size, 0, 0);
+
+#if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_UL_DCCH_MESSAGE);
+    memcpy (&message_p->msg, (void *) ul_dcch_msg, sizeof(RrcUlDcchMessage));
+
+    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+  }
+#endif
+
   for (i = 0; i < sdu_size; i++)
     LOG_T (RRC, "%x.", Rx_sdu[i]);
   LOG_T (RRC, "\n");
@@ -893,7 +905,19 @@ rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
   dec_rval =
     uper_decode (NULL, &asn_DEF_UL_CCCH_Message, (void **) &ul_ccch_msg,
                  (uint8_t *) Srb_info->Rx_buffer.Payload, 100, 0, 0);
-  for (i = 0; i < 8; i++)
+
+#if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_UL_CCCH_MESSAGE);
+    memcpy (&message_p->msg, (void *) ul_ccch_msg, sizeof(RrcUlCcchMessage));
+
+    itti_send_msg_to_task (TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+  }
+#endif
+
+for (i = 0; i < 8; i++)
     LOG_T (RRC, "%x.", ((u8 *) & ul_ccch_msg)[i]);
   if (dec_rval.consumed == 0)
     {
