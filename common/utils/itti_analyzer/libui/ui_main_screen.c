@@ -26,9 +26,11 @@ static void ui_help(void)
 {
     printf ("Usage: itti_analyser [options]\n\n"
             "Options:\n"
+            "  -d DISSECT   write DISSECT file with message types parse details\n"
             "  -f FILTERS   read filters from FILTERS file\n"
             "  -h           display this help and exit\n"
             "  -i IP        set ip address to IP\n"
+            "  -l LEVEL     set log level to LEVEL in the range of 2 to 7\n"
             "  -m MESSAGES  read messages from MESSAGES file\n"
             "  -p PORT      set port to PORT\n");
 }
@@ -37,10 +39,18 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
 {
     char c;
 
-    while ((c = getopt (argc, argv, "f:hi:m:p:")) != -1)
+    while ((c = getopt (argc, argv, "d:f:hi:l:m:p:")) != -1)
     {
         switch (c)
         {
+            case 'd':
+                ui_main_data.dissect_file_name = malloc (strlen (optarg) + 1);
+                if (ui_main_data.dissect_file_name != NULL)
+                {
+                    strcpy (ui_main_data.dissect_file_name, optarg);
+                }
+                break;
+
             case 'f':
                 ui_main_data.filters_file_name = malloc (strlen (optarg) + 1);
                 if (ui_main_data.filters_file_name != NULL)
@@ -57,6 +67,26 @@ static void ui_gtk_parse_arg(int argc, char *argv[])
             case 'i':
                 ui_main_data.ip_entry_init = optarg;
                 break;
+
+            case 'l':
+            {
+                GLogLevelFlags log_flag;
+
+                log_flag = 1 << atoi(optarg);
+                if (log_flag < G_LOG_LEVEL_ERROR)
+                {
+                    log_flag = G_LOG_LEVEL_ERROR;
+                }
+                else
+                {
+                    if (log_flag > G_LOG_LEVEL_DEBUG)
+                    {
+                        log_flag = G_LOG_LEVEL_DEBUG;
+                    }
+                }
+                ui_main_data.log_flags = ((log_flag << 1) - 1) & G_LOG_LEVEL_MASK;
+                break;
+            }
 
             case 'm':
                 ui_main_data.messages_file_name = malloc (strlen (optarg) + 1);
@@ -125,15 +155,20 @@ int ui_gtk_initialize(int argc, char *argv[])
 
     memset (&ui_main_data, 0, sizeof(ui_main_data_t));
 
-    /* Set some default initialization value */
+    /* Set some default initialization value for the IP address */
     ui_main_data.ip_entry_init = "127.0.0.1";
     ui_main_data.port_entry_init = "10007";
+
+    /* Set default log level to all but debug message */
+    ui_main_data.log_flags = (G_LOG_LEVEL_MASK & (~G_LOG_LEVEL_DEBUG));
 
     ui_gtk_parse_arg (argc, argv);
 
     /* Create the main window */
     ui_main_data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     ui_init_filters (TRUE, FALSE);
+
+    gtk_window_set_default_icon_name (GTK_STOCK_FIND);
 
     gtk_window_set_position (GTK_WINDOW(ui_main_data.window), GTK_WIN_POS_CENTER);
     gtk_window_set_default_size (GTK_WINDOW(ui_main_data.window), 1024, 800);

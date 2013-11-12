@@ -16,6 +16,7 @@ typedef struct {
 
     /* Buttons */
     GtkToolItem *open_replay_file;
+    GtkToolItem *refresh_replay_file;
     GtkToolItem *save_replay_file;
     GtkToolItem *open_filters_file;
     GtkToolItem *save_filters_file;
@@ -35,6 +36,8 @@ typedef struct {
     /* Nb of messages received */
     guint nb_message_received;
 
+    GLogLevelFlags log_flags;
+    char *dissect_file_name;
     char *filters_file_name;
     char *messages_file_name;
 

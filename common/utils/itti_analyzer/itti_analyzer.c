@@ -26,7 +26,10 @@ console_log_handler(const char *log_domain, GLogLevelFlags log_level,
     struct tm *today;
     const char *level;
 
-    switch(log_level & G_LOG_LEVEL_MASK) {
+    if (ui_main_data.log_flags & log_level)
+    {
+        switch (log_level & G_LOG_LEVEL_MASK)
+        {
         case G_LOG_LEVEL_ERROR:
             level = "Err ";
             break;
@@ -50,16 +53,15 @@ console_log_handler(const char *log_domain, GLogLevelFlags log_level,
             level = NULL;
             g_assert_not_reached();
             break;
+        }
+
+        /* create a "timestamp" */
+        time(&curr);
+        today = localtime(&curr);
+
+        fprintf(stderr, "%02u:%02u:%02u %8s %s %s\n", today->tm_hour, today->tm_min, today->tm_sec,
+                log_domain != NULL ? log_domain : "", level, message);
     }
-
-    /* create a "timestamp" */
-    time(&curr);
-    today = localtime(&curr);
-
-    fprintf(stderr, "%02u:%02u:%02u %8s %s %s\n",
-            today->tm_hour, today->tm_min, today->tm_sec,
-            log_domain != NULL ? log_domain : "",
-            level, message);
 }
 
 int main(int argc, char *argv[])
