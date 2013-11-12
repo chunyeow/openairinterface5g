@@ -18,16 +18,16 @@ end
 %% calculate full F matrix
 Fs = zeros(Nantb,Nantb,301);
 for s=1:301
-	[F, HA]=alterproj(CHB2A,CHA2B, s, Nantb, N_loc, Nmeas); 
-    Fs(:,:,s)=F;
-	%HAs{s}=HA;
+  [F, HA]=alterproj(CHB2A,CHA2B, s, Nantb, N_loc, Nmeas); 
+  Fs(:,:,s)=F;
+  %HAs{s}=HA;
 end
 
 %% calculate the diag F matrix based on last position
 Fds = zeros(Nantb,Nantb,301);
 for s=1:301
     CHA = squeeze(chanestsA2B(s,:,:));
-    CHB = aqueeze(chanestsB2A(s,:,:));
+    CHB = squeeze(chanestsB2A(s,:,:));
     Fds(:,:,s)=diag(diag(CHB*CHA')./diag(CHA*CHA'));
 end
 
