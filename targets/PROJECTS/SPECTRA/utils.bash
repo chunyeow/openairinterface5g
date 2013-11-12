@@ -160,7 +160,11 @@ test_install_asn1c_4_rrc_cellular() {
     if [ -d $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c ]; then
         if [ -x $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c/asn1c/asn1c ]; then
             if [ -x /usr/local/bin/asn1c ]; then
-                diff /usr/local/bin/asn1c $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c/asn1c/asn1c || return 0
+                diff /usr/local/bin/asn1c $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c/asn1c/asn1c >/dev/null 2>&1;
+                if [ $? -eq 0 ]; then
+                    echo_success "asn1c for RRC cellular installed"
+                    return 0
+                fi
             fi
             echo_warning "Installing asn1c for RRC cellular..."
             cd $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c
@@ -171,7 +175,6 @@ test_install_asn1c_4_rrc_cellular() {
         echo_warning "asn1c for RRC cellular is not installed in $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/. Installing it"
         cd $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c
         svn co https://asn1c.svn.sourceforge.net/svnroot/asn1c/trunk asn1c
-        
     fi
     echo_warning "Configuring and building and installing asn1c for RRC cellular..."
     cd $OPENAIR2_DIR/RRC/LITE/MESSAGES/asn1c/asn1c
@@ -315,6 +318,7 @@ check_for_root_rights() {
 
 ###########################################################
 declare -x OPENAIR_DIR=""
+declare -x OPENAIR_HOME=""
 declare -x OPENAIR1_DIR=""
 declare -x OPENAIR2_DIR=""
 declare -x OPENAIR3_DIR=""
@@ -324,6 +328,7 @@ declare -x OPENAIR_TARGETS=""
 
 set_openair
 cecho "OPENAIR_DIR     = $OPENAIR_DIR" $green
+cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
 cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
 cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
 cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green

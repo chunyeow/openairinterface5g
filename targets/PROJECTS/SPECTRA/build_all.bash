@@ -43,6 +43,7 @@ fi
 ###############################
 # COMPILE LTE_RAL_UE
 ###############################
+echo_success "Compiling Radio Access Layer UE (RAL)"
 cd $OPENAIR3_DIR/RAL-LTE/LTE_RAL_UE
 make all
 
@@ -50,6 +51,7 @@ make all
 ###############################
 # COMPILE LTE_RAL_ENB
 ###############################
+echo_success "Compiling Radio Access Layer eNB (RAL)"
 cd $OPENAIR3_DIR/RAL-LTE/LTE_RAL_ENB
 make all
 
@@ -57,6 +59,7 @@ make all
 ###############################
 # COMPILE rrm_std_cellular
 ###############################
+echo_success "Compiling RRM"
 cd $OPENAIR_TARGETS/SIMU/USER
 make rrm_std_cellular
 if [[ $? -eq 2 ]] ; then
@@ -67,6 +70,7 @@ fi
 ###############################
 # COMPILE IP kernel drivers
 ###############################
+echo_success "Compiling IP Drivers"
 cd $OPENAIR2_DIR
 make naslite_netlink_ether.ko
 cd $OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/
