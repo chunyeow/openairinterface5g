@@ -25,6 +25,8 @@ uint16_t buffer_get_uint16_t(buffer_t *buffer, uint32_t offset);
 
 uint32_t buffer_get_uint32_t(buffer_t *buffer, uint32_t offset);
 
+uint64_t buffer_get_uint64_t(buffer_t *buffer, uint32_t offset);
+
 int buffer_fetch_bits(buffer_t *buffer, uint32_t offset, int nbits, uint32_t *value);
 
 int buffer_fetch_nbytes(buffer_t *buffer, uint32_t offset, int n_bytes, uint8_t *value);

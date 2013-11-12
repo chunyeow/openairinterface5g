@@ -2,26 +2,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <inttypes.h>
 
 #include "fundamental_type.h"
 #include "ui_interface.h"
 
-uint32_t fundamental_read_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset) {
-    uint32_t value;
+uint64_t fundamental_read_from_buffer(struct types_s *type, buffer_t *buffer, uint32_t offset, uint32_t parent_offset) {
+    uint64_t value;
 
     switch (type->size) {
-        case 8: {
+        case 8:
             value = buffer_get_uint8_t (buffer, offset + parent_offset);
-        }
             break;
-        case 16: {
+
+        case 16:
             value = buffer_get_uint16_t (buffer, offset + parent_offset);
-        }
             break;
-        case 32: {
+
+        case 32:
             value = buffer_get_uint32_t (buffer, offset + parent_offset);
-        }
             break;
+
+        case 64:
+            value = buffer_get_uint64_t (buffer, offset + parent_offset);
+            break;
+
         default:
             /* ??? */
             value = 0;
@@ -37,7 +42,10 @@ int fundamental_dissect_from_buffer(
     int         length = 0;
     char        cbuf[200];
     int         type_unsigned;
-    uint32_t    value;
+    uint8_t     value8;
+    uint16_t    value16;
+    uint32_t    value32;
+    uint64_t    value64;
 
     DISPLAY_PARSE_INFO("fundamental", type->name, offset, parent_offset);
 
@@ -45,28 +53,36 @@ int fundamental_dissect_from_buffer(
 
     type_unsigned = strstr (type->name, "unsigned") == NULL ? 0 : 1;
 
-    value = fundamental_read_from_buffer(type, buffer, offset, parent_offset);
+    value64 = fundamental_read_from_buffer(type, buffer, offset, parent_offset);
 
     if (indent > 0)
     {
         DISPLAY_TYPE("Fun");
     }
     switch (type->size) {
-        case 8: {
+        case 8:
+            value8 = (uint8_t) value64;
             INDENTED_STRING(cbuf, indent,
-                            sprintf(cbuf, type_unsigned ? "(0x%02x)  %3u  '%c';\n" : "(0x%02x) %4d  '%c';\n", value, value, isprint(value) ? value : '.'));
-        }
+                            sprintf(cbuf, type_unsigned ? "(0x%02" PRIx8 ")  %3" PRIu8 "  '%c';\n" : "(0x%02" PRIx8 ") %4" PRId8 "  '%c';\n", value8, value8, isprint(value8) ? value8 : '.'));
             break;
-        case 16: {
+
+        case 16:
+            value16 = (uint16_t) value64;
             INDENTED_STRING(cbuf, indent,
-                            sprintf(cbuf, type_unsigned ? "(0x%04x)  %5u;\n" : "(0x%04x)  %6d;\n", value, value));
-        }
+                            sprintf(cbuf, type_unsigned ? "(0x%04" PRIx16 ")  %5" PRIu16 ";\n" : "(0x%04" PRIx16 ")  %6" PRId16 ";\n", value16, value16));
             break;
-        case 32: {
+
+        case 32:
+            value32 = (uint32_t) value64;
             INDENTED_STRING(cbuf, indent,
-                            sprintf(cbuf, type_unsigned ? "(0x%08x)  %9u;\n" : "(0x%08x)  %10d;\n", value, value));
-        }
+                            sprintf(cbuf, type_unsigned ? "(0x%08" PRIx32 ")  %9" PRIu32 ";\n" : "(0x%08" PRIx32 ")  %10" PRId32 ";\n", value32, value32));
             break;
+
+        case 64:
+            INDENTED_STRING(cbuf, indent,
+                            sprintf(cbuf, type_unsigned ? "(0x%016" PRIx64 ")  %20" PRIu64 ";\n" : "(0x%016" PRIx64 ")  %20" PRId64 ";\n", value64, value64));
+            break;
+
         default:
             /* ??? */
             break;

@@ -43,6 +43,16 @@ uint32_t buffer_get_uint32_t(buffer_t *buffer, uint32_t offset)
     return value;
 }
 
+/* Try to fetch 64 bits unsigned from the buffer */
+uint64_t buffer_get_uint64_t(buffer_t *buffer, uint32_t offset)
+{
+    uint64_t value;
+
+    buffer_fetch(buffer, offset, 8, &value);
+
+    return value;
+}
+
 static
 int buffer_fetch(buffer_t *buffer, uint32_t offset, int size, void *value)
 {
