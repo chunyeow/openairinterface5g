@@ -405,7 +405,6 @@ void *l2l1_task(void *args_p) {
         hash = s1ap_generate_eNB_id();
 
         /* Some default/random parameters */
-        s1ap_register_eNB->mod_id      = eNB_id;
         s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
         s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
         s1ap_register_eNB->tac         = 0;
@@ -420,7 +419,7 @@ void *l2l1_task(void *args_p) {
         memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
                strlen(mme_address_v6));
 
-        itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
+        itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
     }
 # endif
 #endif

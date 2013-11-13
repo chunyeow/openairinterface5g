@@ -179,7 +179,8 @@ int s1ap_eNB_handle_nas_first_req(
     ue_desc_p->stream = ++mme_desc_p->nextstream;
 
     /* Send encoded message over sctp */
-    s1ap_eNB_itti_send_sctp_data_req(mme_desc_p->assoc_id, buffer, length, ue_desc_p->stream);
+    s1ap_eNB_itti_send_sctp_data_req(instance_p->instance, mme_desc_p->assoc_id,
+                                     buffer, length, ue_desc_p->stream);
 
     return 0;
 }
@@ -312,7 +313,8 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     }
 
     /* UE associated signalling -> use the allocated stream */
-    s1ap_eNB_itti_send_sctp_data_req(ue_context_p->mme_ref->assoc_id, buffer,
+    s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
+                                     ue_context_p->mme_ref->assoc_id, buffer,
                                      length, ue_context_p->stream);
 
     return 0;
@@ -391,7 +393,8 @@ int s1ap_eNB_initial_ctxt_resp(
     }
 
     /* UE associated signalling -> use the allocated stream */
-    s1ap_eNB_itti_send_sctp_data_req(ue_context_p->mme_ref->assoc_id, buffer,
+    s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
+                                     ue_context_p->mme_ref->assoc_id, buffer,
                                      length, ue_context_p->stream);
 
     return ret;
@@ -456,7 +459,8 @@ int s1ap_eNB_ue_capabilities(instance_t instance,
     }
 
     /* UE associated signalling -> use the allocated stream */
-    s1ap_eNB_itti_send_sctp_data_req(ue_context_p->mme_ref->assoc_id, buffer,
+    s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
+                                     ue_context_p->mme_ref->assoc_id, buffer,
                                      length, ue_context_p->stream);
 
     return ret;

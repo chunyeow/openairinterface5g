@@ -71,6 +71,9 @@ struct sctp_cnx_list_elm_s {
     /* Task id of the task who asked for this connection */
     task_id_t task_id;
 
+    /* Instance */
+    instance_t instance;
+
     /* Upper layer identifier */
     uint16_t cnx_id;
 };
@@ -99,6 +102,7 @@ struct sctp_cnx_list_elm_s *sctp_get_cnx(int32_t assoc_id, int sd)
 }
 
 void sctp_handle_new_association_req(
+    const instance_t instance,
     const task_id_t requestor,
     const sctp_new_association_req_t * const sctp_new_association_req_p)
 {
@@ -216,10 +220,11 @@ void sctp_handle_new_association_req(
 
         sctp_cnx = calloc(1, sizeof(*sctp_cnx));
 
-        sctp_cnx->sd      = sd;
-        sctp_cnx->task_id = requestor;
-        sctp_cnx->cnx_id  = sctp_new_association_req_p->ulp_cnx_id;
-        sctp_cnx->ppid    = sctp_new_association_req_p->ppid;
+        sctp_cnx->sd       = sd;
+        sctp_cnx->task_id  = requestor;
+        sctp_cnx->cnx_id   = sctp_new_association_req_p->ulp_cnx_id;
+        sctp_cnx->ppid     = sctp_new_association_req_p->ppid;
+        sctp_cnx->instance = instance;
 
         /* Get socket info */
         sctp_get_sockinfo(sd,
@@ -247,11 +252,11 @@ void sctp_handle_new_association_req(
         SCTP_DEBUG("Sending SCTP new association resp message to %s\n",
                    itti_get_task_name(requestor));
 
-        itti_send_msg_to_task(requestor, INSTANCE_DEFAULT, new_message_p);
+        itti_send_msg_to_task(requestor, sctp_cnx->instance, new_message_p);
     }
 }
 
-void sctp_send_data(task_id_t task_id, sctp_data_req_t *sctp_data_req_p)
+void sctp_send_data(instance_t instance, task_id_t task_id, sctp_data_req_t *sctp_data_req_p)
 {
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
 
@@ -427,12 +432,14 @@ void *sctp_eNB_task(void *arg)
                     itti_exit_task();
                     break;
                 case SCTP_NEW_ASSOCIATION_REQ: {
-                    sctp_handle_new_association_req(received_msg->header.originTaskId,
+                    sctp_handle_new_association_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                                    received_msg->header.originTaskId,
                                                     &received_msg->msg.sctp_new_association_req);
                 } break;
                 case SCTP_DATA_REQ: {
-                    sctp_send_data(received_msg->header.originTaskId,
-                                &received_msg->msg.sctp_data_req);
+                    sctp_send_data(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                   received_msg->header.originTaskId,
+                                   &received_msg->msg.sctp_data_req);
                 } break;
                 default:
                     SCTP_ERROR("Received unhandled message with id %d\n",

@@ -8,8 +8,6 @@ enum sctp_state_e {
 };
 
 typedef struct {
-    /* Module id: used in virtual mode */
-    uint8_t          mod_id;
     /* Upper layer connexion identifier */
     uint16_t         ulp_cnx_id;
 
@@ -25,8 +23,6 @@ typedef struct {
 } sctp_new_association_req_t;
 
 typedef struct {
-    /* Module id: used in virtual mode */
-    uint8_t  mod_id;
     /* Upper layer connexion identifier */
     uint16_t ulp_cnx_id;
 
@@ -42,7 +38,10 @@ typedef struct {
 } sctp_new_association_resp_t;
 
 typedef struct {
+    /* SCTP Association ID */
     int32_t   assoc_id;
+
+    /* Buffer to send over SCTP */
     uint32_t  buffer_length;
     uint8_t  *buffer;
 

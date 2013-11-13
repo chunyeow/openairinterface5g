@@ -63,6 +63,8 @@ static int s1ap_eNB_generate_s1_setup_request(
 
 static
 void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap_register_eNB);
+static
+void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_association_resp_t *sctp_new_association_resp);
 
 uint32_t s1ap_generate_eNB_id(void)
 {
@@ -121,7 +123,7 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
      */
     RB_INSERT(s1ap_mme_map, &instance_p->s1ap_mme_head, s1ap_mme_data_p);
 
-    itti_send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task(TASK_SCTP, instance_p->instance, message_p);
 }
 
 static
@@ -132,7 +134,7 @@ void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap
 
     DevAssert(s1ap_register_eNB != NULL);
 
-    /* Look if the provided mod id already exists
+    /* Look if the provided instance already exists
      * If so notify user...
      */
     new_instance = s1ap_eNB_get_instance(instance);
@@ -172,14 +174,15 @@ void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap
     }
 }
 
-void s1ap_eNB_handle_sctp_association_resp(sctp_new_association_resp_t *sctp_new_association_resp)
+static
+void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_association_resp_t *sctp_new_association_resp)
 {
     s1ap_eNB_instance_t *instance_p;
     s1ap_eNB_mme_data_t *s1ap_mme_data_p;
 
     DevAssert(sctp_new_association_resp != NULL);
 
-    instance_p = s1ap_eNB_get_instance(sctp_new_association_resp->mod_id);
+    instance_p = s1ap_eNB_get_instance(instance);
     DevAssert(instance_p != NULL);
 
     s1ap_mme_data_p = s1ap_eNB_get_MME(instance_p, -1,
@@ -187,9 +190,9 @@ void s1ap_eNB_handle_sctp_association_resp(sctp_new_association_resp_t *sctp_new
     DevAssert(s1ap_mme_data_p != NULL);
 
     if (sctp_new_association_resp->sctp_state != SCTP_STATE_ESTABLISHED) {
-        S1AP_WARN("Received unsuccessful result for SCTP association (%u), mod_id %u, cnx_id %u\n",
+        S1AP_WARN("Received unsuccessful result for SCTP association (%u), instance %d, cnx_id %u\n",
                   sctp_new_association_resp->sctp_state,
-                  sctp_new_association_resp->mod_id,
+                  instance,
                   sctp_new_association_resp->ulp_cnx_id);
     }
 
@@ -240,7 +243,8 @@ void *s1ap_eNB_task(void *arg)
                                              &received_msg->msg.s1ap_register_eNB);
             } break;
             case SCTP_NEW_ASSOCIATION_RESP: {
-                s1ap_eNB_handle_sctp_association_resp(&received_msg->msg.sctp_new_association_resp);
+                s1ap_eNB_handle_sctp_association_resp(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                                      &received_msg->msg.sctp_new_association_resp);
             } break;
             case SCTP_DATA_IND: {
                 s1ap_eNB_handle_sctp_data_ind(&received_msg->msg.sctp_data_ind);
@@ -326,7 +330,7 @@ static int s1ap_eNB_generate_s1_setup_request(
     }
 
     /* Non UE-Associated signalling -> stream = 0 */
-    s1ap_eNB_itti_send_sctp_data_req(s1ap_mme_data_p->assoc_id, buffer, len, 0);
+    s1ap_eNB_itti_send_sctp_data_req(instance_p->instance, s1ap_mme_data_p->assoc_id, buffer, len, 0);
 
     return ret;
 }

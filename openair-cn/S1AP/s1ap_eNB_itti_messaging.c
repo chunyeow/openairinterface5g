@@ -2,7 +2,7 @@
 
 #include "s1ap_eNB_itti_messaging.h"
 
-void s1ap_eNB_itti_send_sctp_data_req(int32_t assoc_id, uint8_t *buffer,
+void s1ap_eNB_itti_send_sctp_data_req(instance_t instance, int32_t assoc_id, uint8_t *buffer,
                                       uint32_t buffer_length, uint16_t stream)
 {
     MessageDef      *message_p;
@@ -17,7 +17,7 @@ void s1ap_eNB_itti_send_sctp_data_req(int32_t assoc_id, uint8_t *buffer,
     sctp_data_req->buffer_length = buffer_length;
     sctp_data_req->stream        = stream;
 
-    itti_send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task(TASK_SCTP, instance, message_p);
 }
 
 void s1ap_eNB_itti_send_nas_downlink_ind(instance_t instance, uint8_t *nas_pdu,
