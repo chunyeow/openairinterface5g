@@ -20,6 +20,16 @@ typedef struct {
     char ipv6_address[40];
 } net_ip_address_t;
 
+/* Maximum number of e-rabs to be setup/deleted in a single message.
+ * Even if only one bearer will be modified by message.
+ */
+#define S1AP_MAX_E_RAB  11
+
+/* Length of the transport layer address string
+ * 160 bits / 8 bits by char.
+ */
+#define S1AP_TRANSPORT_LAYER_ADDRESS_SIZE (160 / 8)
+
 #define S1AP_MAX_NB_MME_IP_ADDRESS 10
 
 /* Provides the establishment cause for the RRC connection request as provided
@@ -66,9 +76,52 @@ typedef struct {
 } nas_pdu_t, ue_radio_cap_t;
 
 typedef struct {
-    /* For virtual mode, mod_id of the eNB as defined in the rest of the L1/L2 stack */
-    uint8_t mod_id;
+    /* Length of the transport layer address buffer. S1AP layer received a
+     * bit string<1..160> containing one of the following addresses: ipv4,
+     * ipv6, or ipv4 and ipv6. The layer doesn't interpret the buffer but
+     * silently forward it to S1-U.
+     */
+    uint8_t length;
+    uint8_t buffer[20];
+} transport_layer_addr_t;
 
+typedef struct {
+    uint8_t qci;
+    
+} e_rab_level_qos_parameter_t;
+
+typedef struct {
+    /* Unique e_rab_id for the UE. */
+    uint8_t                     e_rab_id;
+    /* Quality of service for this e_rab */
+    e_rab_level_qos_parameter_t qos;
+    /* The NAS PDU should be forwarded by the RRC layer to the NAS layer */
+    nas_pdu_t                   nas_pdu;
+    /* The transport layer address for the IP packets */
+    transport_layer_addr_t      sgw_addr;
+    /* S-GW Tunnel endpoint identifier */
+    uint32_t                    gtp_teid;
+} e_rab_t;
+
+typedef struct {
+    /* Unique e_rab_id for the UE. */
+    uint8_t e_rab_id;
+
+    /* The transport layer address for the IP packets */
+    transport_layer_addr_t eNB_addr;
+
+    /* S-GW Tunnel endpoint identifier */
+    uint32_t gtp_teid;
+} e_rab_setup_t;
+
+typedef struct {
+    /* Unique e_rab_id for the UE. */
+    uint8_t e_rab_id;
+    /* Cause of the failure */
+    //     cause_t cause;
+} e_rab_failed_t;
+
+typedef struct {
     /* Unique eNB_id to identify the eNB within EPC.
      * For macro eNB ids this field should be 20 bits long.
      * For home eNB ids this field should be 28 bits long.
@@ -110,9 +163,6 @@ typedef struct {
  * will be the unique identifier used between RRC and S1AP.
  */
 typedef struct {
-    /* For virtual mode, mod_id of the eNB as defined in the rest of the L1/L2 stack */
-    uint8_t mod_id;
-
     /* RNTI of the mobile */
     uint16_t rnti;
 
@@ -129,9 +179,6 @@ typedef struct {
 } s1ap_nas_first_req_t;
 
 typedef struct {
-    /* For virtual mode, mod_id of the eNB as defined in the rest of the L1/L2 stack */
-    uint8_t mod_id;
-
     /* Unique UE identifier within an eNB */
     unsigned eNB_ue_s1ap_id:24;
 
@@ -140,5 +187,33 @@ typedef struct {
 } s1ap_uplink_nas_t;
 
 typedef s1ap_uplink_nas_t s1ap_downlink_nas_t;
+
+typedef struct {
+    unsigned eNB_ue_s1ap_id:24;
+
+    /* Number of e_rab to be setup in the list */
+    uint8_t  nb_of_e_rabs;
+    /* list of e_rab to be setup by RRC layers */
+    e_rab_t  e_rab_param[S1AP_MAX_E_RAB];
+} s1ap_initial_context_setup_req_t;
+
+typedef struct {
+    unsigned  eNB_ue_s1ap_id:24;
+
+    /* Number of e_rab setup-ed in the list */
+    uint8_t       nb_of_e_rabs;
+    /* list of e_rab setup-ed by RRC layers */
+    e_rab_setup_t e_rabs[S1AP_MAX_E_RAB];
+
+    /* Number of e_rab failed to be setup in list */
+    uint8_t        nb_of_e_rabs_failed;
+    /* list of e_rabs that failed to be setup */
+    e_rab_failed_t e_rabs_failed[S1AP_MAX_E_RAB];
+} s1ap_initial_context_setup_resp_t;
+
+typedef struct {
+    unsigned  eNB_ue_s1ap_id:24;
+    ue_radio_cap_t ue_radio_cap;
+} s1ap_ue_cap_info_ind_t;
 
 #endif /* S1AP_MESSAGES_TYPES_H_ */
