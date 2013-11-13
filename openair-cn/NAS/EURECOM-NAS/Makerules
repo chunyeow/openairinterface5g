@@ -16,6 +16,7 @@ DATE_REV = $(shell date '+%F %T')
 ifeq ($(PROCESS), MME)
   DEFINES	+= -DNAS_MME
 else
+  PROCESS   = UE
   DEFINES	+= -DNAS_UE
 endif
 
