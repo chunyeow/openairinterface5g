@@ -327,7 +327,8 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
         s1ap_nas_first_req.nas_pdu.buffer = nas_attach_req_guti;
         s1ap_nas_first_req.nas_pdu.length = sizeof(nas_attach_req_guti);
 
-        s1ap_eNB_handle_nas_first_req(&s1ap_nas_first_req);
+        s1ap_eNB_handle_nas_first_req(mme_desc_p->s1ap_eNB_instance->instance,
+                                      &s1ap_nas_first_req);
     }
 
     return 0;

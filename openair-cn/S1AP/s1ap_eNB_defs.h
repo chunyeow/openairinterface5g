@@ -82,50 +82,6 @@ typedef enum {
     S1AP_OVERLOAD_MAX,
 } s1ap_overload_state_t;
 
-typedef struct {
-    uint8_t qci;
-
-} e_rab_level_qos_parameter_t;
-
-typedef struct {
-    /* Length of the transport layer address buffer. S1AP layer received a
-     * bit string<1..160> containing one of the following addresses: ipv4,
-     * ipv6, or ipv4 and ipv6. The layer doesn't interpret the buffer but
-     * silently forward it to S1-U.
-     */
-    uint8_t length;
-    uint8_t buffer[20];
-} transport_layer_addr_t;
-
-typedef struct {
-    /* Unique e_rab_id for the UE. */
-    uint8_t                     e_rab_id;
-    /* Quality of service for this e_rab */
-    e_rab_level_qos_parameter_t qos;
-    /* The NAS PDU should be forwarded by the RRC layer to the NAS layer */
-    nas_pdu_t                   nas_pdu;
-    /* The transport layer address for the IP packets */
-    transport_layer_addr_t      sgw_addr;
-    /* S-GW Tunnel endpoint identifier */
-    uint32_t                    gtp_teid;
-} e_rab_t;
-
-typedef struct {
-    /* Unique e_rab_id for the UE. */
-    uint8_t e_rab_id;
-    /* The transport layer address for the IP packets */
-    transport_layer_addr_t eNB_addr;
-    /* S-GW Tunnel endpoint identifier */
-    uint32_t               gtp_teid;
-} e_rab_setup_t;
-
-typedef struct {
-    /* Unique e_rab_id for the UE. */
-    uint8_t e_rab_id;
-    /* Cause of the failure */
-//     cause_t cause;
-} e_rab_failed_t;
-
 /* Served PLMN identity element */
 struct plmn_identity_s {
     uint16_t mcc;
@@ -225,7 +181,7 @@ typedef struct s1ap_eNB_instance_s {
     RB_HEAD(s1ap_ue_map, s1ap_eNB_ue_context_s) s1ap_ue_head;
 
     /* For virtual mode, mod_id as defined in the rest of the L1/L2 stack */
-    uint8_t mod_id;
+    instance_t instance;
 
     /* Displayable name of eNB */
     char *eNB_name;

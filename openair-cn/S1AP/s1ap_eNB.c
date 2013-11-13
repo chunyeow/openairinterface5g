@@ -61,6 +61,9 @@
 static int s1ap_eNB_generate_s1_setup_request(
     s1ap_eNB_instance_t *instance_p, s1ap_eNB_mme_data_t *s1ap_mme_data_p);
 
+static
+void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap_register_eNB);
+
 uint32_t s1ap_generate_eNB_id(void)
 {
     char *out;
@@ -121,7 +124,8 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
     itti_send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
 }
 
-void s1ap_eNB_handle_register_eNB(s1ap_register_eNB_t *s1ap_register_eNB)
+static
+void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap_register_eNB)
 {
     s1ap_eNB_instance_t *new_instance;
     uint8_t index;
@@ -131,7 +135,7 @@ void s1ap_eNB_handle_register_eNB(s1ap_register_eNB_t *s1ap_register_eNB)
     /* Look if the provided mod id already exists
      * If so notify user...
      */
-    new_instance = s1ap_eNB_get_instance(s1ap_register_eNB->mod_id);
+    new_instance = s1ap_eNB_get_instance(instance);
     DevAssert(new_instance == NULL);
 
     new_instance = calloc(1, sizeof(s1ap_eNB_instance_t));
@@ -141,7 +145,7 @@ void s1ap_eNB_handle_register_eNB(s1ap_register_eNB_t *s1ap_register_eNB)
     RB_INIT(&new_instance->s1ap_mme_head);
 
     /* Copy usefull parameters */
-    new_instance->mod_id      = s1ap_register_eNB->mod_id;
+    new_instance->instance    = instance;
     new_instance->eNB_name    = s1ap_register_eNB->eNB_name;
     new_instance->eNB_id      = s1ap_register_eNB->eNB_id;
     new_instance->cell_type   = s1ap_register_eNB->cell_type;
@@ -153,8 +157,8 @@ void s1ap_eNB_handle_register_eNB(s1ap_register_eNB_t *s1ap_register_eNB)
     /* Add the new instance to the list of eNB (meaningfull in virtual mode) */
     s1ap_eNB_insert_new_instance(new_instance);
 
-    S1AP_DEBUG("Registered new eNB with mod_id %u and %s eNB id %u\n",
-               s1ap_register_eNB->mod_id,
+    S1AP_DEBUG("Registered new eNB[%d] %u and %s eNB id %u\n",
+               instance,
                s1ap_register_eNB->cell_type == CELL_MACRO_ENB ? "macro" : "home",
                s1ap_register_eNB->eNB_id);
 
@@ -232,7 +236,8 @@ void *s1ap_eNB_task(void *arg)
                  * Each eNB has to send an S1AP_REGISTER_ENB message with its
                  * own parameters.
                  */
-                s1ap_eNB_handle_register_eNB(&received_msg->msg.s1ap_register_eNB);
+                s1ap_eNB_handle_register_eNB(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                             &received_msg->msg.s1ap_register_eNB);
             } break;
             case SCTP_NEW_ASSOCIATION_RESP: {
                 s1ap_eNB_handle_sctp_association_resp(&received_msg->msg.sctp_new_association_resp);
@@ -241,7 +246,17 @@ void *s1ap_eNB_task(void *arg)
                 s1ap_eNB_handle_sctp_data_ind(&received_msg->msg.sctp_data_ind);
             } break;
             case S1AP_NAS_FIRST_REQ: {
-                s1ap_eNB_handle_nas_first_req(&received_msg->msg.s1ap_nas_first_req);
+                s1ap_eNB_handle_nas_first_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                              &received_msg->msg.s1ap_nas_first_req);
+            } break;
+            case S1AP_UPLINK_NAS: {
+                s1ap_eNB_nas_uplink(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                    &received_msg->msg.s1ap_uplink_nas);
+            } break;
+            case S1AP_INITIAL_CONTEXT_SETUP_RESP: {
+                s1ap_eNB_initial_ctxt_resp(
+                    ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                    &received_msg->msg.s1ap_initial_context_setup_resp);
             } break;
             default:
                 S1AP_ERROR("Received unhandled message with id %d\n",

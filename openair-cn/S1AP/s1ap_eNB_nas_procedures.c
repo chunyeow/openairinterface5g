@@ -49,7 +49,8 @@
 #include "s1ap_eNB_nas_procedures.h"
 #include "s1ap_eNB_management_procedures.h"
 
-int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
+int s1ap_eNB_handle_nas_first_req(
+    instance_t instance, s1ap_nas_first_req_t *s1ap_nas_first_req_p)
 {
     s1ap_eNB_instance_t          *instance_p;
     struct s1ap_eNB_mme_data_s   *mme_desc_p;
@@ -65,7 +66,7 @@ int s1ap_eNB_handle_nas_first_req(s1ap_nas_first_req_t *s1ap_nas_first_req_p)
     DevAssert(s1ap_nas_first_req_p != NULL);
 
     /* Retrieve the S1AP eNB instance associated with Mod_id */
-    instance_p = s1ap_eNB_get_instance(s1ap_nas_first_req_p->mod_id);
+    instance_p = s1ap_eNB_get_instance(instance);
     DevAssert(instance_p != NULL);
 
     memset(&message, 0, sizeof(s1ap_message));
@@ -236,14 +237,14 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
     }
 
     /* Forward the NAS PDU to RRC */
-    s1ap_eNB_itti_send_nas_downlink_ind(s1ap_eNB_instance->mod_id,
+    s1ap_eNB_itti_send_nas_downlink_ind(s1ap_eNB_instance->instance,
                                         downlink_NAS_transport_p->nas_pdu.buf,
                                         downlink_NAS_transport_p->nas_pdu.size);
 
     return 0;
 }
 
-int s1ap_eNB_nas_uplink(s1ap_uplink_nas_t *s1ap_uplink_nas_p)
+int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_p)
 {
     struct s1ap_eNB_ue_context_s *ue_context_p;
     s1ap_eNB_instance_t          *s1ap_eNB_instance_p;
@@ -257,7 +258,7 @@ int s1ap_eNB_nas_uplink(s1ap_uplink_nas_t *s1ap_uplink_nas_p)
     DevAssert(s1ap_uplink_nas_p != NULL);
 
     /* Retrieve the S1AP eNB instance associated with Mod_id */
-    s1ap_eNB_instance_p = s1ap_eNB_get_instance(s1ap_uplink_nas_p->mod_id);
+    s1ap_eNB_instance_p = s1ap_eNB_get_instance(instance);
     DevAssert(s1ap_eNB_instance_p != NULL);
 
     if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p, s1ap_uplink_nas_p->eNB_ue_s1ap_id)) == NULL)
@@ -317,83 +318,146 @@ int s1ap_eNB_nas_uplink(s1ap_uplink_nas_t *s1ap_uplink_nas_p)
     return 0;
 }
 
-// int s1ap_eNB_initial_ctxt_resp(eNB_mme_desc_t                 *s1ap_eNB_instance_p,
-//                                s1ap_initial_ctxt_setup_resp_t *initial_ctxt_resp_p)
-// {
-//     struct s1ap_eNB_ue_context_s *ue_context_p;
-//     InitialContextSetupResponseIEs_t *initial_ies_p;
-// 
-//     s1ap_message  message;
-// 
-//     uint8_t  *buffer;
-//     uint32_t length;
-//     int      ret = -1;
-//     int      i;
-// 
-//     DevAssert(initial_ctxt_resp_p != NULL);
-//     DevAssert(s1ap_eNB_instance_p != NULL);
-// 
-//     if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p,
-//         initial_ctxt_resp_p->eNB_ue_s1ap_id)) == NULL)
-//     {
-//         /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
-//         S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %u\n",
-//                   initial_ctxt_resp_p->eNB_ue_s1ap_id);
-//         return -1;
-//     }
-// 
-//     /* Uplink NAS transport can occur either during an s1ap connected state
-//      * or during initial attach (for example: NAS authentication).
-//      */
-//     if (!(ue_context_p->ue_state == S1AP_UE_CONNECTED ||
-//         ue_context_p->ue_state == S1AP_UE_WAITING_CSR))
-//     {
-//         S1AP_WARN("You are attempting to send NAS data over non-connected "
-//                   "eNB ue s1ap id: %u, current state: %d\n",
-//                   initial_ctxt_resp_p->eNB_ue_s1ap_id, ue_context_p->ue_state);
-//         return -1;
-//     }
-// 
-//     /* Prepare the S1AP message to encode */
-//     memset(&message, 0, sizeof(s1ap_message));
-// 
-//     message.direction = S1AP_PDU_PR_successfulOutcome;
-//     message.procedureCode = ProcedureCode_id_InitialContextSetup;
-// 
-//     initial_ies_p = &message.msg.initialContextSetupResponseIEs;
-// 
-//     initial_ies_p->eNB_UE_S1AP_ID = initial_ctxt_resp_p->eNB_ue_s1ap_id;
-//     initial_ies_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
-// 
-//     for (i = 0; i < initial_ctxt_resp_p->nb_of_e_rabs; i++)
-//     {
-//         E_RABSetupItemCtxtSURes_t *new_item;
-// 
-//         new_item = calloc(1, sizeof(E_RABSetupItemCtxtSURes_t));
-// 
-//         new_item->e_RAB_ID = initial_ctxt_resp_p->e_rabs[i].e_rab_id;
-//         GTP_TEID_TO_ASN1(initial_ctxt_resp_p->e_rabs[i].gtp_teid, &new_item->gTP_TEID);
-//         new_item->transportLayerAddress.buf = initial_ctxt_resp_p->e_rabs[i].eNB_addr.buffer;
-//         new_item->transportLayerAddress.size = initial_ctxt_resp_p->e_rabs[i].eNB_addr.length;
-//         new_item->transportLayerAddress.bits_unused = 0;
-// 
-//         ASN_SEQUENCE_ADD(&initial_ies_p->e_RABSetupListCtxtSURes.e_RABSetupItemCtxtSURes, new_item);
-//     }
-// 
-//     if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
-//         S1AP_ERROR("Failed to encode uplink NAS transport\n");
-//         /* Encode procedure has failed... */
-//         return -1;
-//     }
-// 
-//     /* UE associated signalling -> use the allocated stream */
-//     if ((ret = sctp_send_msg(&ue_context_p->mme_ref->sctp_data, S1AP_SCTP_PPID,
-//         ue_context_p->stream, buffer, length)) < 0)
-//     {
-//         S1AP_ERROR("[SCTP %d] Failed to send message over SCTP: %d\n",
-//                    ue_context_p->mme_ref->sctp_data.assoc_id, ret);
-//     }
-// 
-//     free(buffer);
-//     return ret;
-// }
+int s1ap_eNB_initial_ctxt_resp(
+    instance_t instance, s1ap_initial_context_setup_resp_t *initial_ctxt_resp_p)
+{
+    s1ap_eNB_instance_t          *s1ap_eNB_instance_p;
+    struct s1ap_eNB_ue_context_s *ue_context_p;
+
+    S1ap_InitialContextSetupResponseIEs_t *initial_ies_p;
+
+    s1ap_message  message;
+
+    uint8_t  *buffer;
+    uint32_t length;
+    int      ret = -1;
+    int      i;
+
+    DevAssert(initial_ctxt_resp_p != NULL);
+    DevAssert(s1ap_eNB_instance_p != NULL);
+
+    if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p,
+        initial_ctxt_resp_p->eNB_ue_s1ap_id)) == NULL)
+    {
+        /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
+        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %u\n",
+                  initial_ctxt_resp_p->eNB_ue_s1ap_id);
+        return -1;
+    }
+
+    /* Uplink NAS transport can occur either during an s1ap connected state
+     * or during initial attach (for example: NAS authentication).
+     */
+    if (!(ue_context_p->ue_state == S1AP_UE_CONNECTED ||
+        ue_context_p->ue_state == S1AP_UE_WAITING_CSR))
+    {
+        S1AP_WARN("You are attempting to send NAS data over non-connected "
+                  "eNB ue s1ap id: %u, current state: %d\n",
+                  initial_ctxt_resp_p->eNB_ue_s1ap_id, ue_context_p->ue_state);
+        return -1;
+    }
+
+    /* Prepare the S1AP message to encode */
+    memset(&message, 0, sizeof(s1ap_message));
+
+    message.direction     = S1AP_PDU_PR_successfulOutcome;
+    message.procedureCode = S1ap_ProcedureCode_id_InitialContextSetup;
+
+    initial_ies_p = &message.msg.s1ap_InitialContextSetupResponseIEs;
+
+    initial_ies_p->eNB_UE_S1AP_ID = initial_ctxt_resp_p->eNB_ue_s1ap_id;
+    initial_ies_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+
+    for (i = 0; i < initial_ctxt_resp_p->nb_of_e_rabs; i++)
+    {
+        S1ap_E_RABSetupItemCtxtSURes_t *new_item;
+
+        new_item = calloc(1, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
+
+        new_item->e_RAB_ID = initial_ctxt_resp_p->e_rabs[i].e_rab_id;
+        GTP_TEID_TO_ASN1(initial_ctxt_resp_p->e_rabs[i].gtp_teid, &new_item->gTP_TEID);
+        new_item->transportLayerAddress.buf = initial_ctxt_resp_p->e_rabs[i].eNB_addr.buffer;
+        new_item->transportLayerAddress.size = initial_ctxt_resp_p->e_rabs[i].eNB_addr.length;
+        new_item->transportLayerAddress.bits_unused = 0;
+
+        ASN_SEQUENCE_ADD(&initial_ies_p->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes,
+                         new_item);
+    }
+
+    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+        S1AP_ERROR("Failed to encode uplink NAS transport\n");
+        /* Encode procedure has failed... */
+        return -1;
+    }
+
+    /* UE associated signalling -> use the allocated stream */
+    s1ap_eNB_itti_send_sctp_data_req(ue_context_p->mme_ref->assoc_id, buffer,
+                                     length, ue_context_p->stream);
+
+    return ret;
+}
+
+int s1ap_eNB_ue_capabilities(instance_t instance,
+                             s1ap_ue_cap_info_ind_t *ue_cap_info_ind_p)
+{
+    s1ap_eNB_instance_t          *s1ap_eNB_instance_p;
+    struct s1ap_eNB_ue_context_s *ue_context_p;
+
+    S1ap_UECapabilityInfoIndicationIEs_t *ue_cap_info_ind_ies_p;
+
+    s1ap_message  message;
+
+    uint8_t  *buffer;
+    uint32_t length;
+    int      ret = -1;
+
+    DevAssert(ue_cap_info_ind_p != NULL);
+    DevAssert(s1ap_eNB_instance_p != NULL);
+
+    if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p,
+        ue_cap_info_ind_p->eNB_ue_s1ap_id)) == NULL)
+    {
+        /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
+        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %u\n",
+                  ue_cap_info_ind_p->eNB_ue_s1ap_id);
+        return -1;
+    }
+
+    /* UE capabilities message can occur either during an s1ap connected state
+     * or during initial attach (for example: NAS authentication).
+     */
+    if (!(ue_context_p->ue_state == S1AP_UE_CONNECTED ||
+        ue_context_p->ue_state == S1AP_UE_WAITING_CSR))
+    {
+        S1AP_WARN("You are attempting to send NAS data over non-connected "
+        "eNB ue s1ap id: %u, current state: %d\n",
+        ue_cap_info_ind_p->eNB_ue_s1ap_id, ue_context_p->ue_state);
+        return -1;
+    }
+
+    /* Prepare the S1AP message to encode */
+    memset(&message, 0, sizeof(s1ap_message));
+
+    message.direction     = S1AP_PDU_PR_initiatingMessage;
+    message.procedureCode = S1ap_ProcedureCode_id_UECapabilityInfoIndication;
+
+    ue_cap_info_ind_ies_p = &message.msg.s1ap_UECapabilityInfoIndicationIEs;
+
+    ue_cap_info_ind_ies_p->ueRadioCapability.buf = ue_cap_info_ind_p->ue_radio_cap.buffer;
+    ue_cap_info_ind_ies_p->ueRadioCapability.size = ue_cap_info_ind_p->ue_radio_cap.length;
+
+    ue_cap_info_ind_ies_p->eNB_UE_S1AP_ID = ue_cap_info_ind_p->eNB_ue_s1ap_id;
+    ue_cap_info_ind_ies_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+
+    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+        /* Encode procedure has failed... */
+        S1AP_ERROR("Failed to encode UE capabilities indication\n");
+        return -1;
+    }
+
+    /* UE associated signalling -> use the allocated stream */
+    s1ap_eNB_itti_send_sctp_data_req(ue_context_p->mme_ref->assoc_id, buffer,
+                                     length, ue_context_p->stream);
+
+    return ret;
+}
