@@ -2,6 +2,8 @@ SUBDIRS = . HASHTABLE
 
 AM_CFLAGS = @ADD_CFLAGS@	\
 	-I$(top_srcdir)/COMMON	\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network	\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include \
 	-I$(top_srcdir)/INTERTASK_INTERFACE
 
 AM_YFLAGS = -d
