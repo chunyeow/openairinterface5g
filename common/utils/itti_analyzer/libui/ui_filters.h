@@ -43,7 +43,7 @@ int ui_init_filters(int reset, int clear_ids);
 
 void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled);
 
-gboolean ui_filters_message_enabled(const char *message, const char *origin_task, const char *destination_task);
+gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task);
 
 int ui_filters_read(const char *file_name);
 

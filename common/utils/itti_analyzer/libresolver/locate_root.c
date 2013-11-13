@@ -74,7 +74,7 @@ int locate_type(const char *type_name, types_t *head, types_t **type) {
     return (next_type == NULL) ? RC_FAIL : RC_OK;
 }
 
-int get_message_id(types_t *head, buffer_t *buffer, uint32_t *message_id) {
+uint32_t get_message_id(types_t *head, buffer_t *buffer, uint32_t *message_id) {
     uint32_t value;
 
     g_assert(message_id != NULL);
@@ -87,32 +87,28 @@ int get_message_id(types_t *head, buffer_t *buffer, uint32_t *message_id) {
     return RC_OK;
 }
 
-char *get_origin_task_id(buffer_t *buffer) {
-    char     *origin_task_id = "UNKNOWN";
-    uint32_t  origin_task_id_value;
+uint32_t get_task_id(buffer_t *buffer, types_t *task_id_type) {
+    uint32_t task_id_value;
 
     /* Fetch task id value */
-    if (buffer_fetch_bits(buffer, origin_task_id_type->offset,
-        origin_task_id_type->child->size, &origin_task_id_value) == RC_OK) {
-        origin_task_id = enum_type_get_name_from_value(origin_task_id_type->child,
-                                                       origin_task_id_value);
+    if (buffer_fetch_bits (buffer, task_id_type->offset, task_id_type->child->size, &task_id_value) != RC_OK)
+    {
+        return ~0;
     }
 
-    return origin_task_id;
+    return task_id_value;
 }
 
-char *get_destination_task_id(buffer_t *buffer) {
-    char     *destination_task_id = "UNKNOWN";
-    uint32_t  destination_task_id_value;
+char *task_id_to_string(uint32_t task_id_value, types_t *task_id_type) {
+    char *task_id = "UNKNOWN";
 
-    /* Fetch task id value */
-    if (buffer_fetch_bits(buffer, destination_task_id_type->offset,
-        destination_task_id_type->child->size, &destination_task_id_value) == RC_OK) {
-        destination_task_id = enum_type_get_name_from_value(destination_task_id_type->child,
-                                                            destination_task_id_value);
+    if (task_id_value < ((uint32_t) ~0))
+    {
+    /* Search task id name */
+        task_id = enum_type_get_name_from_value (task_id_type->child, task_id_value);
     }
 
-    return destination_task_id;
+    return task_id;
 }
 
 uint32_t get_instance(buffer_t *buffer) {

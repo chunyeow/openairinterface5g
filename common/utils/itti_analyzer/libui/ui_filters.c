@@ -75,7 +75,6 @@ static int ui_search_name(ui_filter_t *filter, const char *name)
     return (item);
 }
 
-/*
 static int ui_search_id(ui_filter_t *filter, uint32_t value)
 {
     int item;
@@ -90,7 +89,6 @@ static int ui_search_id(ui_filter_t *filter, uint32_t value)
 
     return (item);
 }
-*/
 
 static void ui_filter_set_enabled(uint8_t *enabled, ui_entry_enabled_e entry_enabled, gboolean new)
 {
@@ -167,13 +165,13 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_ent
     }
 }
 
-static gboolean ui_item_enabled(ui_filter_t *filter, const char *name)
+static gboolean ui_item_enabled(ui_filter_t *filter, const uint32_t value)
 {
     int item;
 
-    if (name != NULL)
+    if (value != (uint32_t) ~0)
     {
-        item = ui_search_name (filter, name);
+        item = ui_search_id (filter, value);
 
         if (item < filter->used)
         {
@@ -183,7 +181,7 @@ static gboolean ui_item_enabled(ui_filter_t *filter, const char *name)
     return (FALSE);
 }
 
-gboolean ui_filters_message_enabled(const char *message, const char *origin_task, const char *destination_task)
+gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task)
 {
     gboolean result;
 

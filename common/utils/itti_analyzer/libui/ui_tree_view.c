@@ -27,28 +27,24 @@ static ui_store_t ui_store;
 static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, ui_store_t *store)
 {
     uint32_t msg_number;
-    char *message;
-    char *origin_task;
-    char *destination_task;
+    uint32_t message_id;
+    uint32_t origin_task_id;
+    uint32_t destination_task_id;
     gboolean enabled = FALSE;
 
-    gtk_tree_model_get (model, iter, COL_MSG_NUM, &msg_number, COL_SIGNAL, &message, COL_FROM_TASK, &origin_task,
-                        COL_TO_TASK, &destination_task, -1);
+    gtk_tree_model_get (model, iter, COL_MSG_NUM, &msg_number, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID, &origin_task_id,
+                        COL_TO_TASK_ID, &destination_task_id, -1);
     if (msg_number != 0)
     {
-        enabled = ui_filters_message_enabled (message, origin_task, destination_task);
+        enabled = ui_filters_message_enabled (message_id, origin_task_id, destination_task_id);
 
         if ((enabled) && (ui_store.filtered_last_msg < msg_number))
         {
             ui_store.filtered_last_msg = msg_number;
             ui_store.filtered_msg_number++;
         }
-        g_debug("%p %p %d %s %s %s %d %d", model, iter, msg_number, message, origin_task, destination_task, enabled, ui_store.filtered_msg_number);
+        g_debug("%p %p %d %d %d %d %d %d", model, iter, msg_number, message_id, origin_task_id, destination_task_id, enabled, ui_store.filtered_msg_number);
     }
-
-    g_free (message);
-    g_free (origin_task);
-    g_free (destination_task);
 
     return enabled;
 }
@@ -65,10 +61,10 @@ ui_tree_view_init_list(GtkWidget *list)
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     column = gtk_tree_view_column_new_with_attributes(
-        "Signal", renderer, "text", COL_SIGNAL, NULL);
+        "Signal", renderer, "text", COL_MESSAGE, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
-                     G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_SIGNAL);
+                     G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_MESSAGE);
 
     column = gtk_tree_view_column_new_with_attributes(
         "From", renderer, "text", COL_FROM_TASK, NULL);
@@ -118,9 +114,9 @@ ui_tree_view_init_list(GtkWidget *list)
     gtk_tree_view_columns_autosize(GTK_TREE_VIEW(list));
 }
 
-static void ui_tree_view_add_to_list(GtkWidget *list, const uint32_t message_number,
-                        const gchar *signal_name, const char *origin_task,
-                        const char *to_task, uint32_t instance, gpointer buffer)
+static void ui_tree_view_add_to_list(GtkWidget *list, const uint32_t message_number, const uint32_t message_id, const gchar *signal_name,
+                                     const uint32_t origin_task_id, const char *origin_task,
+                                     const uint32_t destination_task_id, const char *destination_task, uint32_t instance, gpointer buffer)
 {
     GtkTreeIter iter;
 
@@ -128,13 +124,13 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const uint32_t message_num
     gtk_list_store_set(ui_store.store, &iter,
                        /* Columns */
                        COL_MSG_NUM      , message_number,
-                       COL_SIGNAL       , signal_name,
+                       COL_MESSAGE      , signal_name,
                        COL_FROM_TASK    , origin_task,
-                       COL_TO_TASK      , to_task,
+                       COL_TO_TASK      , destination_task,
                        COL_INSTANCE     , instance,
-                       COL_SIGNAL_ID    , 0,
-                       COL_FROM_TASK_ID , 0,
-                       COL_TO_TASK_ID   , 0,
+                       COL_MESSAGE_ID   , message_id,
+                       COL_FROM_TASK_ID , origin_task_id,
+                       COL_TO_TASK_ID   , destination_task_id,
                        COL_BUFFER       , buffer,
                        /* End of columns */
                        -1);
@@ -194,15 +190,14 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     return 0;
 }
 
-int ui_tree_view_new_signal_ind(const uint32_t message_number, const char *signal_name,
-                                const char *origin_task, const char *to_task, uint32_t instance, gpointer buffer)
+int ui_tree_view_new_signal_ind(const uint32_t message_number,
+                                const uint32_t message_id, const char *message_name,
+                                const uint32_t origin_task_id, const char *origin_task,
+                                const uint32_t destination_task_id, const char *destination_task,
+                                uint32_t instance, gpointer buffer)
 {
-    gchar message_number_str[11];
-
-    sprintf(message_number_str, "%u", message_number);
-
-    ui_tree_view_add_to_list(ui_main_data.signalslist, message_number, signal_name,
-                             origin_task, to_task, instance, (buffer_t *)buffer);
+    ui_tree_view_add_to_list(ui_main_data.signalslist, message_number, message_id, message_name,
+                             origin_task_id, origin_task, destination_task_id, destination_task, instance, (buffer_t *)buffer);
 
     return RC_OK;
 }
