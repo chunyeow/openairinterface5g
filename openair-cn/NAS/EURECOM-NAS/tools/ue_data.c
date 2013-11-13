@@ -266,13 +266,13 @@ static void _gen_emm_data(emm_nvdata_t* data)
      * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
      */
     data->imsi.length = 8;
-    data->imsi.u.num.parity = 0b0000;	// Type of identity = IMSI, even
+    data->imsi.u.num.parity = 0x0;	// Type of identity = IMSI, even
     data->imsi.u.num.digit1 = 2;	// MCC digit 1
     data->imsi.u.num.digit2 = 0;	// MCC digit 2
     data->imsi.u.num.digit3 = 8;	// MCC digit 3
     data->imsi.u.num.digit4 = 1;	// MNC digit 1
     data->imsi.u.num.digit5 = 0;	// MNC digit 2
-    data->imsi.u.num.digit6 = 0b1111;	// MNC digit 3
+    data->imsi.u.num.digit6 = 0xF;	// MNC digit 3
     data->imsi.u.num.digit7 = 0;
     data->imsi.u.num.digit8 = 0;
     data->imsi.u.num.digit9 = 0;
@@ -281,7 +281,7 @@ static void _gen_emm_data(emm_nvdata_t* data)
     data->imsi.u.num.digit12 = 2;
     data->imsi.u.num.digit13 = 3;
     data->imsi.u.num.digit14 = 4;
-    data->imsi.u.num.digit15 = 0b1111;
+    data->imsi.u.num.digit15 = 0xF;
     /*
      * Last registered home PLMN
      */
