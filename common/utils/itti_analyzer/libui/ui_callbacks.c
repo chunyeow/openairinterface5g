@@ -113,6 +113,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     GtkTreeViewColumn *focus_column;
     uint32_t origin_task_id;
     uint32_t destination_task_id;
+    uint32_t instance;
 
     gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.signalslist), &path, &focus_column);
 
@@ -121,11 +122,12 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     get_message_id (root, signal_buffer, &signal_buffer->message_id);
     origin_task_id = get_task_id (signal_buffer, origin_task_id_type);
     destination_task_id = get_task_id (signal_buffer, destination_task_id_type);
+    instance = get_instance (signal_buffer);
 
     ui_tree_view_new_signal_ind (signal_buffer->message_number, signal_buffer->message_id, message_id_to_string (signal_buffer->message_id),
                                  origin_task_id, task_id_to_string (origin_task_id, origin_task_id_type),
                                  destination_task_id, task_id_to_string (destination_task_id, destination_task_id_type),
-                                 get_instance (signal_buffer), data);
+                                 instance, data);
 
     /* Increment number of messages */
     ui_main_data.nb_message_received++;
@@ -409,6 +411,10 @@ gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer dat
 
         case COL_TO_TASK:
             ui_show_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
+            break;
+
+        case COL_INSTANCE:
+            ui_show_filter_menu (&ui_main_data.menu_filter_instances, &ui_filters.instances);
             break;
 
         default:

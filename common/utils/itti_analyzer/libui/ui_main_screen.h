@@ -45,6 +45,7 @@ typedef struct {
     GtkWidget *menu_filter_messages;
     GtkWidget *menu_filter_origin_tasks;
     GtkWidget *menu_filter_destination_tasks;
+    GtkWidget *menu_filter_instances;
 
     int pipe_fd[2];
 } ui_main_data_t;

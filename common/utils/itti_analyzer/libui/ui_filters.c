@@ -54,6 +54,7 @@ int ui_init_filters(int reset, int clear_ids)
     ui_init_filter (&ui_filters.messages, reset, clear_ids, "messages");
     ui_init_filter (&ui_filters.origin_tasks, reset, clear_ids, "origin_tasks");
     ui_init_filter (&ui_filters.destination_tasks, reset, clear_ids, "destination_tasks");
+    ui_init_filter (&ui_filters.instances, reset, clear_ids, "instances");
 
     ui_destroy_filter_menus ();
 
@@ -140,6 +141,8 @@ static int ui_filter_add(ui_filter_t *filter, uint32_t value, const char *name, 
         ui_filter_set_enabled (&filter->items[item].enabled, entry_enabled, FALSE);
     }
 
+    g_debug("filter \"%s\" add %d \"%s\" %d", filter->name, value, name, entry_enabled);
+
     return (item);
 }
 
@@ -157,6 +160,10 @@ void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_ent
 
         case FILTER_DESTINATION_TASKS:
             ui_filter_add (&ui_filters.destination_tasks, value, name, entry_enabled);
+            break;
+
+        case FILTER_INSTANCES:
+            ui_filter_add (&ui_filters.instances, value, name, entry_enabled);
             break;
 
         default:
@@ -181,12 +188,12 @@ static gboolean ui_item_enabled(ui_filter_t *filter, const uint32_t value)
     return (FALSE);
 }
 
-gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task)
+gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task, const uint32_t instance)
 {
     gboolean result;
 
     result = ui_item_enabled (&ui_filters.messages, message) && ui_item_enabled (&ui_filters.origin_tasks, origin_task)
-            && ui_item_enabled (&ui_filters.destination_tasks, destination_task);
+            && ui_item_enabled (&ui_filters.destination_tasks, destination_task) && ui_item_enabled (&ui_filters.instances, instance);
 
     return result;
 }
@@ -204,6 +211,10 @@ static ui_filter_e ui_filter_from_name(const char *name)
     if (strcmp (name, ui_filters.destination_tasks.name) == 0)
     {
         return FILTER_DESTINATION_TASKS;
+    }
+    if (strcmp (name, ui_filters.instances.name) == 0)
+    {
+        return FILTER_INSTANCES;
     }
     return FILTER_UNKNOWN;
 }
@@ -447,7 +458,7 @@ static void ui_destroy_filter_menu_item(GtkWidget *widget, gpointer data)
     }
 }
 
-static void ui_destroy_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+static void ui_destroy_filter_menu_widget(GtkWidget **menu)
 {
     if (*menu != NULL)
     {
@@ -460,9 +471,36 @@ static void ui_destroy_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 
 void ui_destroy_filter_menus(void)
 {
-    ui_destroy_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
-    ui_destroy_filter_menu (&ui_main_data.menu_filter_origin_tasks, &ui_filters.origin_tasks);
-    ui_destroy_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
+    ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_messages);
+    ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_origin_tasks);
+    ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_destination_tasks);
+    ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_instances);
+}
+
+void ui_destroy_filter_menu(ui_filter_e filter)
+{
+    switch (filter)
+    {
+        case FILTER_MESSAGES:
+            ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_messages);
+            break;
+
+        case FILTER_ORIGIN_TASKS:
+            ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_origin_tasks);
+            break;
+
+        case FILTER_DESTINATION_TASKS:
+            ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_destination_tasks);
+            break;
+
+        case FILTER_INSTANCES:
+            ui_destroy_filter_menu_widget (&ui_main_data.menu_filter_instances);
+            break;
+
+        default:
+            g_warning("unknown filter type %d", filter);
+            break;
+    }
 }
 
 void ui_show_filter_menu(GtkWidget **menu, ui_filter_t *filter)

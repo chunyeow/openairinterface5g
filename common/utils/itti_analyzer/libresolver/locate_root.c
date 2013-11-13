@@ -104,7 +104,7 @@ char *task_id_to_string(uint32_t task_id_value, types_t *task_id_type) {
 
     if (task_id_value < ((uint32_t) ~0))
     {
-    /* Search task id name */
+        /* Search task id name */
         task_id = enum_type_get_name_from_value (task_id_type->child, task_id_value);
     }
 
