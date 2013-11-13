@@ -607,8 +607,7 @@ S1AP_ASN_MODULE_HEADERS= \
     S1ap-PrivateMessage.h    \
     S1ap-IE.h
 
-ifdef UPDATE_RELEASE_9
-S1AP_ASN_MODULE_SOURCES += \
+S1AP_ASN_MODULE_SOURCES_R9 = \
     S1ap-KillResponse.o  \
     S1ap-KillRequest.o   \
     S1ap-Data-Forwarding-Not-Possible.o  \
@@ -639,7 +638,7 @@ S1AP_ASN_MODULE_SOURCES += \
     S1ap-CancelledCellinTAI-Item.o   \
     S1ap-BroadcastCancelledAreaList.o
 
-S1AP_ASN_MODULE_HEADERS += \
+S1AP_ASN_MODULE_HEADERS_R9 = \
     S1ap-BroadcastCancelledAreaList.h    \
     S1ap-CancelledCellinEAI.h    \
     S1ap-CancelledCellinEAI-Item.h   \
@@ -670,10 +669,8 @@ S1AP_ASN_MODULE_HEADERS += \
     S1ap-UplinkUEAssociatedLPPaTransport.h   \
     S1ap-DownlinkNonUEAssociatedLPPaTransport.h  \
     S1ap-UplinkNonUEAssociatedLPPaTransport.h
-endif
 
-ifdef UPDATE_RELEASE_10
-S1AP_ASN_MODULE_SOURCES += \
+S1AP_ASN_MODULE_SOURCES_R10 = \
     S1ap-PagingPriority.o    \
     S1ap-RelayNode-Indicator.o   \
     S1ap-GWContextReleaseIndication.o    \
@@ -683,7 +680,7 @@ S1AP_ASN_MODULE_SOURCES += \
     S1ap-TrafficLoadReductionIndication.o    \
     S1ap-GUMMEIList.o
 
-S1AP_ASN_MODULE_HEADERS += \
+S1AP_ASN_MODULE_HEADERS_R10 = \
     S1ap-PagingPriority.h    \
     S1ap-RelayNode-Indicator.h   \
     S1ap-GWContextReleaseIndication.h    \
@@ -692,7 +689,6 @@ S1AP_ASN_MODULE_HEADERS += \
     S1ap-PrivacyIndicator.h  \
     S1ap-TrafficLoadReductionIndication.h    \
     S1ap-GUMMEIList.h
-endif
 
 S1AP_ASN_MODULE_HEADERS+=ANY.h
 S1AP_ASN_MODULE_SOURCES+=ANY.o
