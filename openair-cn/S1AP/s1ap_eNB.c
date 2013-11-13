@@ -157,7 +157,7 @@ void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap
     /* Add the new instance to the list of eNB (meaningfull in virtual mode) */
     s1ap_eNB_insert_new_instance(new_instance);
 
-    S1AP_DEBUG("Registered new eNB[%d] %u and %s eNB id %u\n",
+    S1AP_DEBUG("Registered new eNB[%d] and %s eNB id %u\n",
                instance,
                s1ap_register_eNB->cell_type == CELL_MACRO_ENB ? "macro" : "home",
                s1ap_register_eNB->eNB_id);
