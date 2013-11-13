@@ -96,6 +96,17 @@ Description	Defines the messages supported by the Access Stratum sublayer
 #define AS_RAB_RELEASE_REQ		(AS_RAB_RELEASE | AS_REQUEST)
 #define AS_RAB_RELEASE_IND		(AS_RAB_RELEASE | AS_INDICATION)
 
+/* NAS Cause */
+#define EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED (8)
+#define EPS_SERVICES_NOT_ALLOWED                      (7)
+#define PLMN_NOT_ALLOWED                              (11)
+#define TRACKING_AREA_NOT_ALLOWED                     (12)
+#define ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA     (13)
+#define EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN         (14)
+#define NO_SUITABLE_CELLS_IN_TRACKING_AREA            (15)
+#define NETWORK_FAILURE                               (17)
+#define ESM_FAILURE                                   (19)
+
 /*
  * --------------------------------------------------------------------------
  * 		    Access Stratum message global parameters

@@ -3,6 +3,8 @@ AM_CFLAGS = @ADD_CFLAGS@ 	\
     -I$(top_srcdir)/SGW-LITE  \
     -I$(top_srcdir)/UTILS   \
     -I$(top_srcdir)/UTILS/HASHTABLE   \
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network	\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include	\
     -I$(top_srcdir)/INTERTASK_INTERFACE 
     
 noinst_LTLIBRARIES = libsgi.la

@@ -5,6 +5,8 @@ AM_CFLAGS =				\
 	-I$(top_srcdir)/COMMON	\
 	-I$(top_builddir)/S1AP		\
 	-I$(top_builddir)/S1AP/MESSAGES	\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network	\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include	\
 	-I$(top_srcdir)/INTERTASK_INTERFACE	\
 	-I$(top_srcdir)/SCTP	\
 	-I$(top_srcdir)/UTILS	\
