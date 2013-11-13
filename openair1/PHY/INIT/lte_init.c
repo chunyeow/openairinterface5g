@@ -676,7 +676,7 @@ void phy_config_dedicated_ue(u8 Mod_id,u8 CH_index,
 }
 
 void  phy_config_cba_rnti (u8 Mod_id,u8 eNB_flag, u8 index, u16 cba_rnti, u8 cba_group_id, u8 num_active_cba_groups){
-  u8 i;
+//   u8 i;
   
   if (eNB_flag == 0 ) {
     //LOG_D(PHY,"[UE %d] configure cba group %d with rnti %x, num active cba grp %d\n", index, index, cba_rnti, num_active_cba_groups);
@@ -1233,7 +1233,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_pdcch_vars[eNB_id]->llr16 = (unsigned short *)malloc16(2*4*frame_parms->N_RB_DL*12*sizeof(unsigned short));
       ue_pdcch_vars[eNB_id]->wbar = (unsigned short *)malloc16(4*frame_parms->N_RB_DL*12*sizeof(unsigned short));
       
-      ue_pdcch_vars[eNB_id]->e_rx = (char *)malloc16(4*2*frame_parms->N_RB_DL*12*sizeof(unsigned char));
+      ue_pdcch_vars[eNB_id]->e_rx = (s8 *)malloc16(4*2*frame_parms->N_RB_DL*12*sizeof(unsigned char));
       
       // PBCH
       ue_pbch_vars[eNB_id] = (LTE_UE_PBCH *)malloc16(sizeof(LTE_UE_PBCH));
@@ -1249,7 +1249,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
 	  ue_pbch_vars[eNB_id]->rxdataF_comp[(j<<1)+i]        = (int *)malloc16(sizeof(int)*(6*12*4));
 	  ue_pbch_vars[eNB_id]->dl_ch_estimates_ext[(j<<1)+i] = (int *)malloc16(sizeof(int)*6*12*4);
 	}    
-      ue_pbch_vars[eNB_id]->llr = (char *)malloc16(1920*sizeof(char));
+      ue_pbch_vars[eNB_id]->llr = (s8 *)malloc16(1920*sizeof(char));
       
       //    ue_pbch_vars[eNB_id]->channel_output = (short *)malloc16(*sizeof(short));
       
@@ -1371,7 +1371,10 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
     phy_vars_ue->sinr_dB = (double*) malloc16(frame_parms->N_RB_DL*12*sizeof(double));
   }
 
-   phy_vars_ue->sinr_CQI_dB = (double*) malloc16(frame_parms->N_RB_DL*12*sizeof(double));
+  phy_vars_ue->sinr_CQI_dB = (double*) malloc16(frame_parms->N_RB_DL*12*sizeof(double));
+#if defined(OAI_EMU)
+  memset(phy_vars_ue->sinr_CQI_dB, 0, frame_parms->N_RB_DL*12*sizeof(double));
+#endif
   phy_vars_ue->init_averaging = 1;
 
   phy_vars_ue->pdsch_config_dedicated->p_a = PDSCH_ConfigDedicated__p_a_dB0; //defaul value until overwritten by RRCConnectionReconfiguration

@@ -132,6 +132,7 @@ LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, u8 abs
     ulsch->Mdlharq = Mdlharq;
     for (i=0;i<Mdlharq;i++) {
       ulsch->harq_processes[i] = (LTE_UL_UE_HARQ_t *)malloc16(sizeof(LTE_UL_UE_HARQ_t));
+      memset(ulsch->harq_processes[i], 0, sizeof(LTE_UL_UE_HARQ_t));
       //      printf("ulsch->harq_processes[%d] %p\n",i,ulsch->harq_processes[i]);
       if (ulsch->harq_processes[i]) {
 	ulsch->harq_processes[i]->b          = (unsigned char*)malloc16(MAX_ULSCH_PAYLOAD_BYTES/bw_scaling);

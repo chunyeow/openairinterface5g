@@ -187,7 +187,7 @@ double compute_sinr(channel_desc_t *desc,
   return(10*log10(avg_sinr/(nb_rb*2)));
 }
 
-u8 pbch_polynomial_degree;
+int pbch_polynomial_degree;
 double a[7];
 
 void load_pbch_desc(FILE *pbch_file_fd) {

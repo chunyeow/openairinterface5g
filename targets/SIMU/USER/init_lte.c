@@ -173,9 +173,11 @@ void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
 
   mac_xface = malloc(sizeof(MAC_xface));
 
+  memset(mac_xface, 0, sizeof(MAC_xface));
+
   LOG_I(PHY,"init lte parms: Nid_cell %d, Frame type %d, N_RB_DL %d\n",Nid_cell,frame_type,N_RB_DL);
 
-  *frame_parms = malloc(sizeof(LTE_DL_FRAME_PARMS));
+  *frame_parms = calloc(1, sizeof(LTE_DL_FRAME_PARMS));
   (*frame_parms)->frame_type         = frame_type;
   (*frame_parms)->tdd_config         = tdd_config;
   (*frame_parms)->tdd_config_S       = tdd_config_S;
