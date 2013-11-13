@@ -1020,7 +1020,7 @@ int mult_cpx_vector_norep_conj2(s16 *x1,
 
       
 
-  s16 *temps;
+//   s16 *temps;
   int *tempw;
 
   

@@ -138,7 +138,7 @@ char interleave_compact_byte(short * base_interleaver,unsigned char * input, uns
   __m128i tmp;
   int input_length_words=n>>1;
   unsigned short * systematic2_ptr=(unsigned short *) output;
-  int j;
+//   int j;
   for ( i=0; i<  input_length_words ; i ++ ) {
 
     //    for (j=0;j<16;j++) printf("%d(%d).",ptr_intl[j],expandInput[ptr_intl[j]]);

@@ -69,8 +69,6 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
   unsigned int seq_num_rx;
   unsigned int nb_loss_pkts;
   unsigned int lost_packet=0;
-  unsigned int i;
-  char * hdr_payload=NULL;
   //int header_size;
 
   if (buffer_tx!=NULL) { 

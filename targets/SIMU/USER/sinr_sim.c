@@ -205,7 +205,6 @@ void calc_path_loss(node_desc_t* enb_data, node_desc_t* ue_data, channel_desc_t 
 
 void init_snr(channel_desc_t* eNB2UE, node_desc_t *enb_data, node_desc_t *ue_data, double* sinr_dB, double* N0, u8 transmission_mode, u16 q, u8 dl_power_off) {
 
-  int return_value;
   u16 nb_rb = 25; //No. of resource blocks
   double thermal_noise,abs_channel,channelx, channely,channelx_i, channely_i ;
   int count;

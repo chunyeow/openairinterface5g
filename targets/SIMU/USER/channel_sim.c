@@ -388,8 +388,12 @@ void do_DL_sig(double **r_re0,double **r_im0,
 	  12);
       
       rx_pwr2 = signal_energy(rxdata[0]+slot_offset,512);
-#ifdef DEBUG_SIM    
+#ifdef DEBUG_SIM
       LOG_D(OCM,"[SIM][DL] UE %d : rx_pwr (ADC out) %f dB (%d) for slot %d (subframe %d), writing to %p\n",UE_id, 10*log10((double)rx_pwr2),rx_pwr2,next_slot,next_slot>>1,rxdata);  
+#else
+      UNUSED_VARIABLE(rx_pwr2);
+      UNUSED_VARIABLE(tx_pwr);
+      UNUSED_VARIABLE(rx_pwr);
 #endif
     //}// UE_index loop
   }
@@ -400,8 +404,9 @@ void do_DL_sig(double **r_re0,double **r_im0,
 void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX],node_desc_t *enb_data[NUMBER_OF_eNB_MAX],node_desc_t *ue_data[NUMBER_OF_UE_MAX],u16 next_slot,u8 abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms, u32 frame) {
 
   s32 **txdata,**rxdata;
-
+#ifdef PHY_ABSTRACTION_UL
   s32 att_eNB_id=-1;
+#endif
   u8 eNB_id=0,UE_id=0;
 
   u8 nb_antennas_rx = UE2eNB[0][0]->nb_rx; // number of rx antennas at eNB
@@ -411,18 +416,18 @@ void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
   s32 rx_pwr2;
   u32 i,aa;
   u32 slot_offset,slot_offset_meas;
-  
-  double min_path_loss=-200;
-  u16 ul_nb_rb=0 ;
-  u16 ul_fr_rb=0;
-  int ulnbrb2 ;
-  int ulfrrb2 ;
-  u8 harq_pid;
-  u8 hold_channel=0;
-  int subframe = (next_slot>>1);
-  
-  //  u8 aatx,aarx;
 
+  u8 hold_channel=0;
+
+#ifdef PHY_ABSTRACTION_UL
+  double min_path_loss=-200;
+
+  int subframe = (next_slot>>1);
+
+  u8 harq_pid;
+  u16 ul_nb_rb=0;
+  u16 ul_fr_rb=0;
+#endif
 
   if (next_slot==4) 
   {
@@ -624,8 +629,13 @@ void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
       
       rx_pwr2 = signal_energy(rxdata[0]+slot_offset,frame_parms->samples_per_tti>>1);
 #ifdef DEBUG_SIM    
-      printf("[SIM][UL] eNB %d rx_pwr (ADC out) %f dB (%d) for slot %d (subframe %d)\n",eNB_id,10*log10((double)rx_pwr2),rx_pwr2,next_slot,next_slot>>1);  
-#endif    
+      printf("[SIM][UL] eNB %d rx_pwr (ADC out) %f dB (%d) for slot %d (subframe %d)\n",
+             eNB_id,10*log10((double)rx_pwr2),rx_pwr2,next_slot,next_slot>>1);  
+#else
+      UNUSED_VARIABLE(tx_pwr);
+      UNUSED_VARIABLE(rx_pwr);
+      UNUSED_VARIABLE(rx_pwr2);
+#endif
       
     } // eNB_id
   } // abstraction_flag==0

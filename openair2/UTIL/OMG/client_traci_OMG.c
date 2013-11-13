@@ -47,6 +47,8 @@
 #include "client_traci_OMG.h"
 #include "TraCIConstants.h"
 
+#define UNUSED_VARIABLE(vARIABLE)   (void)(vARIABLE)
+
 int handshake(char *hoststr,int portno){
     
    check_endianness(); // check endianness
@@ -140,13 +142,17 @@ void processSubscriptions() {
       }
       char *objID = readString();
       int varNo = readUnsignedByte();
-     
+
+      UNUSED_VARIABLE(objID);
+      UNUSED_VARIABLE(respStart);
+
       int i;
       for (i=0; i<varNo; ++i) {
           int varID = readUnsignedByte();
           
           bool ok = readUnsignedByte()==RTYPE_OK;
           int valueDataType = readUnsignedByte();
+          UNUSED_VARIABLE(valueDataType);
           if (ok&&cmdId==CMD_SUBSCRIBE_SIM_VARIABLE+0x10&&varID==VAR_DEPARTED_VEHICLES_IDS) {
                tmp_departed = readStringList(tmp_departed);
                //printf(" OMG Got departed cars\n");
@@ -176,7 +182,7 @@ int extractCommandStatus(storage *s, unsigned char commandId, char * description
 
 	// tracker currently points to the begining of the recieved data in the linked list        
         tracker = s;
-        storage *freeTracker = tracker;   // save it for calling free
+//         storage *freeTracker = tracker;   // save it for calling free
 
 	int commandLength = readUnsignedByte();
         
@@ -210,8 +216,11 @@ int extractCommandStatus(storage *s, unsigned char commandId, char * description
         //free actual message content
 	//depends on the message which is handled
 
-     /*   if (commandId != CMD_GET_VEHICLE_VARIABLE)
-			freeStorage(freeTracker);*/
+        /*   if (commandId != CMD_GET_VEHICLE_VARIABLE)
+        freeStorage(freeTracker);*/
+
+        UNUSED_VARIABLE(commandLength);
+        UNUSED_VARIABLE(storageLength_);
 
 	return success;
 }
@@ -312,6 +321,10 @@ void commandGetVehicleVariable(char *vehID, int varID)// malloc for vehID and va
 	char* rs = readString();
 
         int valueDataType = readUnsignedByte();
+        UNUSED_VARIABLE(VariableID);
+        UNUSED_VARIABLE(rs);
+        UNUSED_VARIABLE(valueDataType);
+        UNUSED_VARIABLE(domID);
     }
 }
 
@@ -375,6 +388,12 @@ int commandGetMaxSUMONodesVariable()
       	  else {
                //LOG_W(OMG, " No Matching Data Type Value \n"); 
 	  }
+      UNUSED_VARIABLE(res);
+      UNUSED_VARIABLE(Length);
+      UNUSED_VARIABLE(flag);
+      UNUSED_VARIABLE(dom);
+      UNUSED_VARIABLE(domID);
+      UNUSED_VARIABLE(VariableID);
 	}   
 
     return max_car;

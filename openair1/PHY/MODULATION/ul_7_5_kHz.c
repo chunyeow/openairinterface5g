@@ -32,7 +32,7 @@ void apply_7_5_kHz(PHY_VARS_UE *phy_vars_ue,s32*txdata,u8 slot) {
   u32 *kHz7_5ptr;
   __m128i *txptr128,*kHz7_5ptr128,mmtmp_re,mmtmp_im,mmtmp_re2,mmtmp_im2;
   u32 slot_offset;
-  u8 aa;
+//   u8 aa;
   u32 i;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
 

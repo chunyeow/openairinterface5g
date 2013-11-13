@@ -121,13 +121,11 @@ Job_list quick_sort (Job_list list)
 
 
 Job_list remove_job(Job_list list, int nID, int node_type){
-  
-  int found;
+
   Job_list  current, previous;
   //int cond=0;
   int i=0;
-  if (list == NULL){  
-    found = 1; //false
+  if (list == NULL){
     return NULL;
   }
   else{                             //start search
@@ -153,12 +151,10 @@ Job_list remove_job(Job_list list, int nID, int node_type){
     //if (current->pair->b->type == node_type){LOG_D(OMG, "current->pair->b->type == node_type");}
     
     if (current ==NULL) { 
-      found= 1  ;
       LOG_D(OMG," Job to remove is not found\n "); //LOG_N 
       return NULL;
     }              //value not found
     else{
-      found = 0; // true                value found
       if (current == list) {
 	list = current->next  ;
 	LOG_D(OMG,"Job to remove is found at the beginning\n");

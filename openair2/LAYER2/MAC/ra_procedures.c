@@ -229,11 +229,9 @@ PRACH_RESOURCES_t *ue_get_rach(u8 Mod_id,u32 frame, u8 eNB_index,u8 subframe){
   s32 frame_diff=0;
   mac_rlc_status_resp_t rlc_status;
   u8 dcch_header_len=0;
-  u8 dcch_header_len_tmp=0;
   u16 sdu_lengths[8];
-  u8 sdu_lcids[8],payload_offset=0,num_sdus=0;
+  u8 sdu_lcids[8];
   u8 ulsch_buff[MAX_ULSCH_PAYLOAD_BYTES];
-  u16 sdu_length_total=0;
 
   if (UE_mode == PRACH) {
     if (UE_mac_inst[Mod_id].radioResourceConfigCommon)
@@ -313,11 +311,9 @@ PRACH_RESOURCES_t *ue_get_rach(u8 Mod_id,u32 frame, u8 eNB_index,u8 subframe){
 					    DCCH,
 					    (char *)&ulsch_buff[0]);
 	
-	  sdu_length_total = sdu_lengths[0];
 	  sdu_lcids[0] = DCCH;
 	  
 	  LOG_D(MAC,"[UE %d] TX Got %d bytes for DCCH\n",Mod_id,sdu_lengths[0]);
-	  num_sdus = 1;
 	  update_bsr(Mod_id, frame, DCCH,UE_mac_inst[Mod_id].scheduling_info.LCGID[DCCH]);
 	  //header_len +=2;
 	  UE_mac_inst[Mod_id].RA_active                        = 1;

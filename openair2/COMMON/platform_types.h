@@ -9,9 +9,8 @@
 #ifndef __PLATFORM_TYPES_H__
 #    define __PLATFORM_TYPES_H__
 
-#ifndef USER_MODE
-#else
-#include "openair_types.h"
+#ifdef USER_MODE
+# include "openair_types.h"
 #endif
 
 typedef unsigned char      u8_t;

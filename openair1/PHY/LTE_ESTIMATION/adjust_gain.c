@@ -18,11 +18,14 @@ extern int card;
 void
 phy_adjust_gain (PHY_VARS_UE *phy_vars_ue, u8 eNB_id) {
 
-    u16 rx_power_fil_dB,i;
+    u16 rx_power_fil_dB;
 #ifdef EXMIMO
 #ifdef DRIVER2013
   exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
 #endif
+#endif
+#if defined(EXMIMO) || defined(CBMIMO1)
+  u16 i;
 #endif
 
   //rx_power_fil_dB = dB_fixed(phy_vars_ue->PHY_measurements.rssi);

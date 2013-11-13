@@ -413,9 +413,9 @@ uint32_t lte_rate_matching_turbo(uint32_t RTC,
   
   uint32_t Nir,Ncb,Gp,GpmodC,E,Ncbmod,ind,k;
   //  int cnt=0;
-  int code_block,round;
   uint8_t *e2;
 #ifdef RM_DEBUG_TX
+  int code_block,round;
   int cnt;
   int zeroed=0;
   int oned=0;
@@ -626,7 +626,7 @@ int lte_rate_matching_turbo_rx(uint32_t RTC,
   
   uint32_t Nir,Ncb,Gp,GpmodC,E,Ncbmod,ind,k;
   int16_t *soft_input2;
-  s32 w_tmp;
+//   s32 w_tmp;
 #ifdef RM_DEBUG
   int nulled=0;
 #endif
