@@ -73,7 +73,7 @@ mapping mob_type[] =
 //#endif
 NodePtr create_node(void) {
 	NodePtr ptr;
-	ptr = malloc(sizeof(node_struct));
+	ptr = calloc(1, sizeof(node_struct));
 	return ptr;
 }
 
@@ -91,7 +91,7 @@ double randomGen(double a, double b){
 
 MobilityPtr create_mobility(void) {
 	MobilityPtr ptr;
-	ptr = malloc(sizeof(mobility_struct));
+	ptr = calloc(1, sizeof(mobility_struct));
 	return ptr;
 }
 

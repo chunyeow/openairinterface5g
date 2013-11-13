@@ -181,7 +181,7 @@ char * readString(){
                 char *tmp = (char *)malloc(sizeof(char) * (len));
                 char *ret = tmp; // JHNOTE: added a pointer pointing at the head of the String
 		//printf("OMG ready to readString of length %d \n",len);
-                for (i; i < len; i++) {    
+                for (; i < len; i++) {
                        *tmp++ = (char) readChar();
 		}
 		*tmp++ = '\0'; // makes sure it's NUL terminated
@@ -211,7 +211,7 @@ String_list readStringList(String_list vector){
    descLen = len;
    String_list entry = NULL;
    
-   for (i; i < len; i++) {
+   for (; i < len; i++) {
       if (vector->string == NULL) {
          char *tmp = readString();
          //printf("OMG - 1 SUMO ID: %s \n",tmp);
@@ -370,15 +370,15 @@ double readDouble(){
                 if (bigEndian)
                 {
                         // network is big endian
-                        int i=0;
-                        for (i; i<8; ++i)
+                        int i = 0;
+                        for (; i<8; ++i)
 		        {
                                 p_value[i] = readChar();
                         }
                 } else {
                         int i=7;
                         // network is big endian
-                        for (i; i>=0; --i) {
+                        for (; i>=0; --i) {
                                 p_value[i] = readChar();
                         }
                 }
@@ -391,13 +391,13 @@ void writeDouble(double value){
                 if (bigEndian)
                 {       int i=0;
                         // network is big endian
-                        for (i; i<8; ++i)
+                        for (; i<8; ++i)
 			{
                                 writeChar(p_value[i]);
                         }
                 } else {int i=7;
                         // network is big endian
-                        for (i; i>=0; --i)
+                        for (; i>=0; --i)
 	                {
                                 writeChar(p_value[i]);
                         }
@@ -420,7 +420,7 @@ storage* writePacket (unsigned char* packet, int length){
 
         int i = 0;
         
-        for(i; i < length; i++) {
+        for(; i < length; i++) {
 
         printf("in %d round \n",i);
         //storage *temp_ = (storage *)malloc(sizeof(storage));
