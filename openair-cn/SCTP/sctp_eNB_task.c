@@ -112,6 +112,8 @@ void sctp_handle_new_association_req(
     struct sctp_initmsg         init;
     struct sctp_event_subscribe events;
 
+    struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
+
     /* Prepare a new SCTP association as requested by upper layer and try to connect
      * to remote host.
      */
@@ -138,6 +140,7 @@ void sctp_handle_new_association_req(
                    &init, (socklen_t)sizeof(struct sctp_initmsg)) < 0) {
         SCTP_ERROR("Setsockopt IPPROTO_SCTP_INITMSG failed: %s\n",
                    strerror(errno));
+        close(sd);
         return;
     }
 
@@ -147,6 +150,15 @@ void sctp_handle_new_association_req(
                    sizeof(struct sctp_event_subscribe)) < 0) {
         SCTP_ERROR("Setsockopt IPPROTO_SCTP_EVENTS failed: %s\n",
                    strerror(errno));
+        close(sd);
+        return;
+    }
+
+    /* Mark the socket as non-blocking */
+    if (fcntl(sd, F_SETFL, O_NONBLOCK) < 0) {
+        SCTP_ERROR("fcntl F_SETFL O_NONBLOCK failed: %s\n",
+                   strerror(errno));
+        close(sd);
         return;
     }
 
@@ -169,6 +181,7 @@ void sctp_handle_new_association_req(
                 SCTP_ERROR("Failed to convert ipv6 address %*s to network type\n",
                            strlen(sctp_new_association_req_p->remote_address.ipv6_address),
                            sctp_new_association_req_p->remote_address.ipv6_address);
+                close(sd);
                 return;
             }
 
@@ -187,6 +200,7 @@ void sctp_handle_new_association_req(
                 SCTP_ERROR("Failed to convert ipv4 address %*s to network type\n",
                            strlen(sctp_new_association_req_p->remote_address.ipv4_address),
                            sctp_new_association_req_p->remote_address.ipv4_address);
+                close(sd);
                 return;
             }
 
@@ -202,58 +216,34 @@ void sctp_handle_new_association_req(
         SCTP_DEBUG("Connecting...\n");
 
         /* Connect to remote host and port */
-        if (sctp_connectx(sd, (struct sockaddr *)addr, used_address, &assoc_id) < 0) {
-            SCTP_ERROR("Connect failed: %s\n", strerror(errno));
-            return;
+        if (sctp_connectx(sd, (struct sockaddr *)addr, used_address, &assoc_id) < 0)
+        {
+            /* sctp_connectx on non-blocking socket return EINPROGRESS */
+            if (errno != EINPROGRESS) {
+                SCTP_ERROR("Connect failed: %s\n", strerror(errno));
+                sctp_itti_send_association_resp(
+                    requestor, instance, -1, sctp_new_association_req_p->ulp_cnx_id,
+                    SCTP_STATE_UNREACHABLE, 0, 0);
+                close(sd);
+                return;
+            }
         }
-
-        SCTP_DEBUG("Connected... assoc_id %u\n", assoc_id);
     }
 
-    if (sctp_get_peeraddresses(sd, NULL, NULL) != 0) {
-        /* TODO Failure -> notify upper layer */
-        
-    } else {
-        MessageDef                  *new_message_p;
-        sctp_new_association_resp_t *sctp_new_association_resp;
-        struct sctp_cnx_list_elm_s  *sctp_cnx = NULL;
+    sctp_cnx = calloc(1, sizeof(*sctp_cnx));
 
-        sctp_cnx = calloc(1, sizeof(*sctp_cnx));
+    sctp_cnx->sd       = sd;
+    sctp_cnx->task_id  = requestor;
+    sctp_cnx->cnx_id   = sctp_new_association_req_p->ulp_cnx_id;
+    sctp_cnx->ppid     = sctp_new_association_req_p->ppid;
+    sctp_cnx->instance = instance;
 
-        sctp_cnx->sd       = sd;
-        sctp_cnx->task_id  = requestor;
-        sctp_cnx->cnx_id   = sctp_new_association_req_p->ulp_cnx_id;
-        sctp_cnx->ppid     = sctp_new_association_req_p->ppid;
-        sctp_cnx->instance = instance;
+    /* Insert new element at end of list */
+    STAILQ_INSERT_TAIL(&sctp_cnx_list, sctp_cnx, entries);
+    sctp_nb_cnx++;
 
-        /* Get socket info */
-        sctp_get_sockinfo(sd,
-                          &sctp_cnx->in_streams,
-                          &sctp_cnx->out_streams,
-                          &sctp_cnx->assoc_id);
-
-        /* Insert new element at end of list */
-        STAILQ_INSERT_TAIL(&sctp_cnx_list, sctp_cnx, entries);
-        sctp_nb_cnx++;
-
-        SCTP_DEBUG("Inserted new descriptor for sd %d in list, nb elements %u, assoc_id %d\n",
-                   sd, sctp_nb_cnx, assoc_id);
-
-        new_message_p = itti_alloc_new_message(TASK_SCTP, SCTP_NEW_ASSOCIATION_RESP);
-
-        sctp_new_association_resp = &new_message_p->msg.sctp_new_association_resp;
-
-        sctp_new_association_resp->in_streams  = sctp_cnx->in_streams;
-        sctp_new_association_resp->out_streams = sctp_cnx->out_streams;
-        sctp_new_association_resp->sctp_state  = SCTP_STATE_ESTABLISHED;
-        sctp_new_association_resp->ulp_cnx_id  = sctp_new_association_req_p->ulp_cnx_id;
-        sctp_new_association_resp->assoc_id    = sctp_cnx->assoc_id;
-
-        SCTP_DEBUG("Sending SCTP new association resp message to %s\n",
-                   itti_get_task_name(requestor));
-
-        itti_send_msg_to_task(requestor, sctp_cnx->instance, new_message_p);
-    }
+    SCTP_DEBUG("Inserted new descriptor for sd %d in list, nb elements %u, assoc_id %d\n",
+                sd, sctp_nb_cnx, assoc_id);
 }
 
 void sctp_send_data(instance_t instance, task_id_t task_id, sctp_data_req_t *sctp_data_req_p)
@@ -321,6 +311,9 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
         union sctp_notification *snp;
         snp = (union sctp_notification *)buffer;
 
+        SCTP_DEBUG("Received notification for sd %d, type %u\n",
+                   sctp_cnx->sd, snp->sn_header.sn_type);
+
         /* Client deconnection */
         if (SCTP_SHUTDOWN_EVENT == snp->sn_header.sn_type) {
             DevMessage("Other peer has requested a com down -> not handled\n");
@@ -337,34 +330,22 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
             /* New physical association requested by a peer */
             switch (sctp_assoc_changed->sac_state) {
                 case SCTP_COMM_UP: {
-//                     struct sctp_association_s *new_association;
-// 
-//                     sctp_get_sockinfo(sd, NULL, NULL, NULL);
-// 
-//                     SCTP_DEBUG("New connection\n");
-//                     if ((new_association = sctp_add_new_peer()) == NULL) {
-//                         // TODO: handle this case
-//                         DevMessage("Unexpected error...\n");
-//                         return SCTP_RC_ERROR;
-//                     } else {
-//                         new_association->sd         = sd;
-//                         new_association->ppid       = ppid;
-//                         new_association->instreams  = sctp_assoc_changed->sac_inbound_streams;
-//                         new_association->outstreams = sctp_assoc_changed->sac_outbound_streams;
-//                         new_association->assoc_id   = sctp_assoc_changed->sac_assoc_id;
-// 
-//                         sctp_get_localaddresses(sd, NULL, NULL);
-//                         sctp_get_peeraddresses(sd, &new_association->peer_addresses,
-//                                                &new_association->nb_peer_addresses);
-// 
-//                         if (sctp_itti_send_new_association(
-//                             new_association->assoc_id, new_association->instreams,
-//                             new_association->outstreams) < 0)
-//                         {
-//                             SCTP_ERROR("Failed to send message to S1AP\n");
-//                             return SCTP_RC_ERROR;
-//                         }
-//                     }
+                    if (sctp_get_peeraddresses(sctp_cnx->sd, NULL, NULL) != 0)
+                    {
+                        /* TODO Failure -> notify upper layer */
+                    } else {
+                        sctp_get_sockinfo(sctp_cnx->sd, &sctp_cnx->in_streams,
+                                          &sctp_cnx->out_streams, &sctp_cnx->assoc_id);
+                    }
+
+                    SCTP_DEBUG("Comm up notified for sd %d, assigned assoc_id %d\n",
+                               sctp_cnx->sd, sctp_cnx->assoc_id);
+
+                    sctp_itti_send_association_resp(
+                        sctp_cnx->task_id, sctp_cnx->instance, sctp_cnx->assoc_id,
+                        sctp_cnx->cnx_id, SCTP_STATE_ESTABLISHED,
+                        sctp_cnx->out_streams, sctp_cnx->in_streams);
+
                 } break;
                 default:
                     break;

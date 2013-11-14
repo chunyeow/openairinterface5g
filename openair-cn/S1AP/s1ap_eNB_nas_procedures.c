@@ -207,7 +207,7 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
     }
 
     if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
-        S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
+        S1AP_ERROR("[SCTP %d] Received NAS downlink message for non "
                    "existing MME context\n", assoc_id);
         return -1;
     }
@@ -217,8 +217,9 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
     if ((ue_desc_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance,
          downlink_NAS_transport_p->eNB_UE_S1AP_ID)) == NULL)
     {
-        S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
-                   "existing UE context\n", assoc_id);
+        S1AP_ERROR("[SCTP %d] Received NAS downlink message for non "
+        "existing UE context: %06x\n", assoc_id,
+        downlink_NAS_transport_p->eNB_UE_S1AP_ID);
         return -1;
     }
 
@@ -230,7 +231,7 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
     } else {
         /* We already have a mme ue s1ap id check the received is the same */
         if (ue_desc_p->mme_ue_s1ap_id != downlink_NAS_transport_p->mme_ue_s1ap_id) {
-            S1AP_ERROR("[SCTP %d] Mismatch is MME UE S1AP ID (0x%08x != 0x%08x)\n",
+            S1AP_ERROR("[SCTP %d] Mismatch in MME UE S1AP ID (0x%08x != 0x%08x)\n",
                        downlink_NAS_transport_p->mme_ue_s1ap_id,
                        ue_desc_p->mme_ue_s1ap_id,
                        assoc_id);
@@ -265,7 +266,7 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p, s1ap_uplink_nas_p->eNB_ue_s1ap_id)) == NULL)
     {
         /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
-        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %u\n",
+        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %06x\n",
                   s1ap_uplink_nas_p->eNB_ue_s1ap_id);
         return -1;
     }
@@ -342,7 +343,7 @@ int s1ap_eNB_initial_ctxt_resp(
         initial_ctxt_resp_p->eNB_ue_s1ap_id)) == NULL)
     {
         /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
-        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %u\n",
+        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: 0x%06x\n",
                   initial_ctxt_resp_p->eNB_ue_s1ap_id);
         return -1;
     }
@@ -354,7 +355,7 @@ int s1ap_eNB_initial_ctxt_resp(
         ue_context_p->ue_state == S1AP_UE_WAITING_CSR))
     {
         S1AP_WARN("You are attempting to send NAS data over non-connected "
-                  "eNB ue s1ap id: %u, current state: %d\n",
+                  "eNB ue s1ap id: %06x, current state: %d\n",
                   initial_ctxt_resp_p->eNB_ue_s1ap_id, ue_context_p->ue_state);
         return -1;
     }
