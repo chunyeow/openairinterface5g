@@ -280,6 +280,14 @@ endif
 
 LIBS = $(LFDS_DIR)/bin/liblfds611.a
 
+default: oaisim
+
+all: oaisim pad
+
+pad: oaisim_pad
+
+userclean: cleanall oaisim
+
 ifdef USE_MME
 CFLAGS += -DENB_MODE -DENABLE_USE_MME -DENABLE_EVENT_FD -I$(S1AP_DIR) -I$(SCTP_DIR)
 
@@ -292,14 +300,6 @@ $(S1AP_DIR)/libs1ap.a: force_look
 $(SCTP_DIR)/libsctp.a: force_look
 	$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB libsctp.a
 endif
-
-default: oaisim
-
-all: oaisim pad
-
-pad: oaisim_pad
-
-userclean: cleanall oaisim
 
 printvars:
 	@echo LINUX variable is $(linux)
