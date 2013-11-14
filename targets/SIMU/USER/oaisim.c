@@ -505,7 +505,9 @@ void *l2l1_task(void *args_p) {
 
       wait_for_slot_isr ();
 
+#if defined(ENABLE_ITTI)
       itti_update_lte_time(frame, slot);
+#endif
 
       last_slot = (slot - 1) % 20;
       if (last_slot < 0)
