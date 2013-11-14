@@ -49,11 +49,14 @@ int ui_signal_dissect_clear_view(ui_text_view_t *text_view)
 
     g_assert(text_view != NULL);
 
-    text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view->text_view));
+    if (text_view->text_view != NULL)
+    {
+        text_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view->text_view));
 
-    /* If a text buffer is present for the textview remove it */
-    if (text_buffer != NULL) {
-        gtk_text_view_set_buffer(GTK_TEXT_VIEW(text_view->text_view), NULL);
+        /* If a text buffer is present for the textview remove it */
+        if (text_buffer != NULL) {
+            gtk_text_view_set_buffer(GTK_TEXT_VIEW(text_view->text_view), NULL);
+        }
     }
 
     return RC_OK;

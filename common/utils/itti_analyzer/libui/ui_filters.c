@@ -61,6 +61,18 @@ int ui_init_filters(int reset, int clear_ids)
     return (RC_OK);
 }
 
+gboolean ui_filters_enable(gboolean enabled)
+{
+    gboolean changed = ui_filters.filters_enabled != enabled;
+
+    if (changed)
+    {
+        ui_filters.filters_enabled = enabled;
+    }
+
+    return changed;
+}
+
 static int ui_search_name(ui_filter_t *filter, const char *name)
 {
     int item;
@@ -192,8 +204,11 @@ gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origi
 {
     gboolean result;
 
-    result = ui_item_enabled (&ui_filters.messages, message) && ui_item_enabled (&ui_filters.origin_tasks, origin_task)
-            && ui_item_enabled (&ui_filters.destination_tasks, destination_task) && ui_item_enabled (&ui_filters.instances, instance);
+    result = (!ui_filters.filters_enabled)
+            || (ui_item_enabled(&ui_filters.messages, message)
+                    && ui_item_enabled(&ui_filters.origin_tasks, origin_task)
+                    && ui_item_enabled(&ui_filters.destination_tasks, destination_task)
+                    && ui_item_enabled(&ui_filters.instances, instance));
 
     return result;
 }
@@ -285,8 +300,12 @@ static int xml_parse_filters(xmlDocPtr doc)
                     filter_node = filter_node->next;
                 }
             }
+
             /* Filters have changed destroy filter menus and update tree view */
             ui_destroy_filter_menus ();
+
+            /* Reactivate filtering */
+            gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.filters_enabled), TRUE);
             ui_tree_view_refilter ();
         }
     }

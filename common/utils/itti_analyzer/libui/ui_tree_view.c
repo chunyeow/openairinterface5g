@@ -269,7 +269,10 @@ void ui_tree_view_refilter(void)
 {
     ui_store.filtered_last_msg = 0;
     ui_store.filtered_msg_number = 0;
-    gtk_tree_model_filter_refilter (ui_store.filtered);
+    if (ui_store.filtered != NULL)
+    {
+        gtk_tree_model_filter_refilter (ui_store.filtered);
+    }
 }
 
 guint ui_tree_view_get_filtered_number(void)

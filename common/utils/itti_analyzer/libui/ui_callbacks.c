@@ -29,7 +29,7 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 {
     gboolean refresh = (data != NULL) ? TRUE : FALSE;
 
-    g_debug("Open messages event occurred %d", refresh);
+    g_message("Open messages event occurred %d", refresh);
 
     if (refresh && (ui_main_data.messages_file_name != NULL))
     {
@@ -45,21 +45,50 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
 {
-    g_debug("Save messages event occurred");
+    g_message("Save messages event occurred");
     // CHECK_FCT(ui_file_chooser());
+    return TRUE;
+}
+
+gboolean ui_callback_on_filters_enabled(GtkWidget *widget, gpointer data)
+{
+    gboolean enabled;
+    gboolean changed;
+
+    enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(widget));
+
+    g_message("Filters enabled event occurred %d", enabled);
+
+    changed = ui_filters_enable(enabled);
+
+    if (changed)
+    {
+        /* Set the tooltip text */
+        if (enabled)
+        {
+            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(widget), "Disable messages filtering");
+        }
+        else
+        {
+            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(widget), "Enable messages filtering");
+        }
+        ui_tree_view_refilter();
+    }
+
+    // CHECK_FCT(ui_filters_open_file_chooser());
     return TRUE;
 }
 
 gboolean ui_callback_on_open_filters(GtkWidget *widget, gpointer data)
 {
-    g_debug("Open filters event occurred");
+    g_message("Open filters event occurred");
     CHECK_FCT(ui_filters_open_file_chooser());
     return TRUE;
 }
 
 gboolean ui_callback_on_save_filters(GtkWidget *widget, gpointer data)
 {
-    g_debug("Save filters event occurred");
+    g_message("Save filters event occurred");
     CHECK_FCT(ui_filters_save_file_chooser());
     return TRUE;
 }
@@ -271,7 +300,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
     uint16_t port;
     int pipe_fd[2];
 
-    g_debug("Connect event occurred");
+    g_message("Connect event occurred");
 
     port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
     ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
@@ -306,7 +335,7 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
 {
     /* We have to retrieve the ip address and port of remote host */
 
-    g_debug("Disconnect event occurred");
+    g_message("Disconnect event occurred");
 
     ui_pipe_write_message (ui_main_data.pipe_fd[0], UI_PIPE_DISCONNECT_EVT, NULL, 0);
 
@@ -345,12 +374,10 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
     /* Clear list of signals */
     ui_tree_view_destroy_list (ui_main_data.signalslist);
 
-    /*
     if (ui_main_data.text_view != NULL)
     {
-        ui_signal_dissect_clear_view(ui_main_data.text_view);
+        // ui_signal_dissect_clear_view(ui_main_data.text_view);
     }
-    */
 
     return TRUE;
 }
@@ -369,7 +396,7 @@ gboolean ui_callback_on_menu_none(GtkWidget *widget, gpointer data)
 {
     GtkWidget *menu = (GtkWidget *) data;
 
-    g_debug("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
+    g_message("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
 
     gtk_container_foreach(GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
 
@@ -380,7 +407,7 @@ gboolean ui_callback_on_menu_all(GtkWidget *widget, gpointer data)
 {
     GtkWidget *menu = (GtkWidget *) data;
 
-    g_debug("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
+    g_message("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
 
     gtk_container_foreach(GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
 
@@ -398,7 +425,7 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
         filter_entry->enabled = enabled;
         ui_tree_view_refilter ();
     }
-    g_debug("ui_callback_on_menu_item_selected occurred %lx %lx %s %d (%d messages to display)", (long) widget, (long) data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
+    g_message("ui_callback_on_menu_item_selected occurred %p %p %s %d (%d messages to display)", widget, data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
 
     return TRUE;
 }
@@ -407,7 +434,7 @@ gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer dat
 {
     col_type_e col = (col_type_e) data;
 
-    g_debug("ui_callback_on_tree_column_header_click %x", col);
+    g_message("ui_callback_on_tree_column_header_click %d", col);
     switch (col)
     {
         case COL_MESSAGE:

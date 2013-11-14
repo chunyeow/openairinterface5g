@@ -98,7 +98,6 @@ int ui_menu_bar_create(GtkWidget *vbox)
 int ui_toolbar_create(GtkWidget *vbox)
 {
     GtkWidget *hbox;
-    GtkWidget *filters_label;
     GtkWidget *messages_label;
     GtkWidget *ip_label;
     GtkWidget *port_label;
@@ -108,14 +107,21 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    filters_label = gtk_label_new("Filters");
     messages_label = gtk_label_new("Messages");
+
+    /* Button to deactivate filtering */
+    {
+        ui_main_data.filters_enabled = gtk_toggle_tool_button_new();
+        gtk_tool_button_set_label (GTK_TOOL_BUTTON(ui_main_data.filters_enabled), "Filters");
+        g_signal_connect(G_OBJECT(ui_main_data.filters_enabled), "clicked",
+                         G_CALLBACK(ui_callback_on_filters_enabled), NULL);
+        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.filters_enabled), TRUE);
+    }
 
     /* Button to open filters file */
     {
         ui_main_data.open_filters_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_filters_file),
-                                    "Open filters file");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_filters_file), "Open filters file");
 
         g_signal_connect(G_OBJECT(ui_main_data.open_filters_file), "clicked",
                         G_CALLBACK(ui_callback_on_open_filters), NULL);
@@ -124,8 +130,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     /* Button to save filters file */
     {
         ui_main_data.save_filters_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_filters_file),
-                                    "Save filters file");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_filters_file), "Save filters file");
 
         g_signal_connect(G_OBJECT(ui_main_data.save_filters_file), "clicked",
                         G_CALLBACK(ui_callback_on_save_filters), NULL);
@@ -134,8 +139,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     /* Button to open replay file */
     {
         ui_main_data.open_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_OPEN);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_replay_file),
-                                    "Open messages file");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.open_replay_file), "Open messages file");
 
         g_signal_connect(G_OBJECT(ui_main_data.open_replay_file), "clicked",
                         G_CALLBACK(ui_callback_on_open_messages), (gpointer) FALSE);
@@ -144,8 +148,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     /* Button to refresh replay file */
     {
         ui_main_data.refresh_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.refresh_replay_file),
-                                    "Reload messages file");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.refresh_replay_file), "Reload messages file");
 
         g_signal_connect(G_OBJECT(ui_main_data.refresh_replay_file), "clicked",
                         G_CALLBACK(ui_callback_on_open_messages), (gpointer) TRUE);
@@ -154,8 +157,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     /* Button to save replay file */
     {
         ui_main_data.save_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file),
-                                    "Save messages file");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file), "Save messages file");
 
         g_signal_connect(G_OBJECT(ui_main_data.save_replay_file), "clicked",
                         G_CALLBACK(ui_callback_on_save_messages), NULL);
@@ -166,8 +168,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     {
         ui_main_data.signals_go_to_button = gtk_tool_button_new_from_stock(GTK_STOCK_INDEX);
         /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_button),
-                                    "Goto signal");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_button), "Goto signal");
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), FALSE);
 
@@ -180,8 +181,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     {
         ui_main_data.signals_go_to_first_button = gtk_tool_button_new_from_stock(GTK_STOCK_GOTO_FIRST);
         /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_first_button),
-                                    "Goto first signal");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_first_button), "Goto first signal");
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), FALSE);
 
@@ -193,8 +193,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     {
         ui_main_data.signals_go_to_last_button = gtk_tool_button_new_from_stock(GTK_STOCK_GOTO_LAST);
         /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_last_button),
-                                    "Goto last signal");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_last_button), "Goto last signal");
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE);
 
@@ -206,8 +205,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     {
         ui_main_data.connect = gtk_tool_button_new_from_stock(GTK_STOCK_CONNECT);
         /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.connect),
-                                    "Connect to remote host");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.connect), "Connect to remote host");
 
         g_signal_connect(G_OBJECT(ui_main_data.connect), "clicked",
                         G_CALLBACK(ui_callback_on_connect), NULL);
@@ -217,8 +215,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     {
         ui_main_data.disconnect = gtk_tool_button_new_from_stock(GTK_STOCK_DISCONNECT);
         /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.disconnect),
-                                    "Disconnect from remote host");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.disconnect), "Disconnect from remote host");
 
         /* Disabled at startup. Will be activated when a connection is established */
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.disconnect), FALSE);
@@ -240,7 +237,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     gtk_entry_set_width_chars(GTK_ENTRY(ui_main_data.port_entry), 5);
     gtk_entry_set_text(GTK_ENTRY(ui_main_data.port_entry), ui_main_data.port_entry_init);
 
-    gtk_box_pack_start(GTK_BOX(hbox), filters_label, FALSE, FALSE, LABEL_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.filters_enabled), FALSE, FALSE, LABEL_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_filters_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_filters_file), FALSE, FALSE, BUTTON_SPACE);
 

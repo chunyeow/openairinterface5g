@@ -32,6 +32,7 @@ typedef struct
 
 typedef struct
 {
+    gboolean filters_enabled;
     ui_filter_t messages;
     ui_filter_t origin_tasks;
     ui_filter_t destination_tasks;
@@ -41,6 +42,8 @@ typedef struct
 extern ui_filters_t ui_filters;
 
 int ui_init_filters(int reset, int clear_ids);
+
+gboolean ui_filters_enable(gboolean enabled);
 
 void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled);
 

@@ -16,17 +16,19 @@ typedef struct {
     ui_text_view_t *text_view;
 
     /* Buttons */
+    GtkToolItem *filters_enabled;
+    GtkToolItem *open_filters_file;
+    GtkToolItem *save_filters_file;
+
     GtkToolItem *open_replay_file;
     GtkToolItem *refresh_replay_file;
     GtkToolItem *save_replay_file;
-    GtkToolItem *open_filters_file;
-    GtkToolItem *save_filters_file;
+
     GtkToolItem *connect;
     GtkToolItem *disconnect;
 
     /* Signal list buttons */
     /* Clear signals button */
-    GtkToolItem *signals_clear_button;
     GtkToolItem *signals_go_to_button;
     GtkToolItem *signals_go_to_last_button;
     GtkToolItem *signals_go_to_first_button;
