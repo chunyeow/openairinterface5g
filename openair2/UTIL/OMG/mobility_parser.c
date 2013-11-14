@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include "mobility_parser.h"
 #include "hashtable.h"
-#include "log.h"
+#include "omg.h"
 
 
 node_info* head_node_info =NULL;

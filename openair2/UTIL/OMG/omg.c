@@ -411,6 +411,7 @@ void usage(void){
 		"\n\t-Y: assign maximum height of the simulation area (Y_max)"\
 		"\n\t-y: assign minimum height of the simulation area (Y_min)"\
 		"\n\t-N: assign number of nodes"\
+		"\n\t-n: assign number of frames"			\
 		"\n\t-B: assign maximum duration of sleep/pause time (max_break)"
 		"\n\t-b: assign minimum duration of sleep/pause time (min_break)"\
 		"\n\t-J: assign maximum duration of journey (max_journey_time)"\
@@ -422,9 +423,10 @@ void usage(void){
 	);	
 	exit(0);
 }
+float  n_frames=200.0;
 int get_options(int argc, char *argv[]){
 	char tag;
-	while ((tag = getopt(argc, argv, "vj:J:g:B:b:S:s:Y:y:X:x:N:h:e:t:")) != EOF) {
+	while ((tag = getopt(argc, argv, "vj:J:g:B:b:S:s:Y:y:X:x:n:N:he:t:")) != EOF) {
 
 
 		switch (tag) {
@@ -433,7 +435,10 @@ int get_options(int argc, char *argv[]){
 			omg_param_list.nodes = atoi(optarg);
 			LOG_D(OMG, "Number of nodes : %d \n",omg_param_list.nodes);
 			break;
-
+		case 'n':
+			n_frames = atof(optarg);
+			LOG_D(OMG, "Number of frames : %f \n",n_frames );
+			break;
 		case 't':
 			omg_param_list.nodes_type = atoi(optarg);
 			LOG_D(OMG, "Type of nodes : %d \n",omg_param_list.nodes_type);
@@ -534,7 +539,7 @@ int main(int argc, char *argv[]) {
   char z_area[20];
   char fname[64],vname[64];
   Data_Flow_Unit omv_data ;
-  float  n_frames=200.0;
+  //float  n_frames=200.0;
 	omg_param_list.nodes = 200;
 	omg_param_list.min_X = 0;
 	omg_param_list.max_X = 1000;
@@ -557,15 +562,18 @@ int main(int argc, char *argv[]) {
         omg_param_list.sumo_step = 1; 
         omg_param_list.sumo_host = "localhost"; 
         omg_param_list.sumo_port = 8890; 
+	omg_param_list.mobility_type = STATIC;
+	omg_param_list.nodes_type = UE;
+        // overwrite the default params if defined
+	get_options(argc, argv);
 	
-        get_options(argc, argv);
-
+	// check if we are out of range
         if(omg_param_list.max_X == 0.0 || omg_param_list.max_Y == 0.0  ) {
 		usage();
 		exit(1);
 	}
 
-        init_omg_global_params(); //initialization de Node_Vector et Job_Vector
+      
 
 //char sumo_line[300];
 
@@ -612,9 +620,8 @@ int main(int argc, char *argv[]) {
 
 //system(kill_line); 
 
+	init_omg_global_params(); //initialization de Node_Vector et Job_Vector
 
-        omg_param_list.mobility_type = SUMO;
-	omg_param_list.nodes_type = UE;
 	init_mobility_generator(omg_param_list); // initial positions + sleep  /// need to indicate time of initialization
 		//LOG_I(OMG, "*****DISPLAY NODE LIST********\n"); 
 		//display_node_list(Node_Vector[0]);
@@ -689,9 +696,10 @@ int main(int argc, char *argv[]) {
 	    perror("close on read\n" );
 	}
 	
- for (emu_info_time = 1.0 ; emu_info_time <= n_frames; emu_info_time+=1.0){
+ for (emu_info_time = 0.0 ; emu_info_time <= n_frames; emu_info_time+=0.1){
 	//printf("updating node positions\n");
-        update_nodes(emu_info_time*1000);  
+   //        update_nodes(emu_info_time*1000);  
+        update_nodes(emu_info_time);  
   	//double emu_info.time += 1.0/100; // emu time in ms
 	/*   for (i=(STATIC+1); i<MAX_NUM_MOB_TYPES; i++){ //
 	       if (Node_Vector[i] != NULL){
@@ -700,8 +708,10 @@ int main(int argc, char *argv[]) {
 	       }
 	      else {LOG_D( "nodes are STATIC\n"); }
 	    }*/
-          printf(" **********asking for positions in SUMO **********\n ");
-          Current_positions = get_current_positions(SUMO, UE, emu_info_time*1000); // type: enb, ue, all
+	printf(" **********asking for positions in %d **********\n ", omg_param_list.mobility_type);
+          Current_positions = get_current_positions(omg_param_list.mobility_type, 
+						    omg_param_list.nodes_type, 
+						    emu_info_time); // type: enb, ue, all
 	 
          if(Current_positions !=NULL) {
            printf(" **********Current_positions at time %f**********\n ",emu_info_time);
