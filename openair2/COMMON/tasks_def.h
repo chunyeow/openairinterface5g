@@ -34,3 +34,6 @@ TASK_DEF(TASK_S1AP, TASK_PRIORITY_MED, 200)
 
 /// Sctp task for eNodeB (Used by both S1AP and X2AP)
 TASK_DEF(TASK_SCTP, TASK_PRIORITY_MED, 200)
+
+/// X2ap task for eNodeB, acts as both source and target
+TASK_DEF(TASK_X2AP, TASK_PRIORITY_MED, 200)

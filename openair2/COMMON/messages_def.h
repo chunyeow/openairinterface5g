@@ -6,3 +6,4 @@
 #include "rrc_messages_def.h"
 #include "s1ap_messages_def.h"
 #include "sctp_messages_def.h"
+#include "x2ap_messages_def.h"
