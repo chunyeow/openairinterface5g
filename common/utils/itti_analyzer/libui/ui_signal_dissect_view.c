@@ -21,6 +21,18 @@ ui_text_view_t *ui_signal_dissect_new(GtkWidget *hbox)
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 
+    /* Change the font of the widget */
+    new_text_view->text_view_font = pango_font_description_new();
+
+    g_debug("Default family is: %s\n", pango_font_description_get_family(new_text_view->text_view_font));
+
+    pango_font_description_set_family(new_text_view->text_view_font, "Monospace");
+    pango_font_description_set_absolute_size(new_text_view->text_view_font, 10 * PANGO_SCALE);
+
+    g_debug("Font family has been set to: %s\n", pango_font_description_get_family(new_text_view->text_view_font));
+
+    gtk_widget_override_font(new_text_view->text_view, new_text_view->text_view_font);
+
     /* Disable editable attribute */
     gtk_text_view_set_editable(GTK_TEXT_VIEW(new_text_view->text_view), FALSE);
 

@@ -2,7 +2,8 @@
 #define UI_SIGNAL_DISSECT_VIEW_H_
 
 typedef struct {
-    GtkWidget     *text_view;
+    GtkWidget            *text_view;
+    PangoFontDescription *text_view_font;
 } ui_text_view_t;
 
 ui_text_view_t *ui_signal_dissect_new(GtkWidget *hbox);
