@@ -197,16 +197,15 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_main_data.signalslist));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    hbox = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
 
-    gtk_container_add(GTK_CONTAINER(scrolled_window),
-                      ui_main_data.signalslist);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), ui_main_data.signalslist);
 
     ui_tree_view_init_list(ui_main_data.signalslist);
     gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
 
-    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrolled_window), 620);
-    gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrolled_window), 600);
+    gtk_paned_pack1 (GTK_PANED (hbox), scrolled_window, FALSE, TRUE);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 5);

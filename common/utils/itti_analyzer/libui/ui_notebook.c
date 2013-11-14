@@ -25,6 +25,7 @@ int ui_notebook_create(GtkWidget *vbox)
     ui_tree_view_create(NULL, vbox_notebook);
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox_notebook, NULL);
+    gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(notebook), vbox_notebook, "Messages list");
 
     /* Add the notebook to the vbox of the main window */
     gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);

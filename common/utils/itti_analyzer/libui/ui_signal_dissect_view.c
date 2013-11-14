@@ -36,10 +36,9 @@ ui_text_view_t *ui_signal_dissect_new(GtkWidget *hbox)
     /* Disable editable attribute */
     gtk_text_view_set_editable(GTK_TEXT_VIEW(new_text_view->text_view), FALSE);
 
-    gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scrolled_window),
-                                          new_text_view->text_view);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), new_text_view->text_view);
 
-    gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, TRUE, TRUE, 5);
+    gtk_paned_pack2 (GTK_PANED (hbox), scrolled_window, TRUE, FALSE);
 
     return new_text_view;
 }
