@@ -21,6 +21,8 @@
 # define DISPLAY_TYPE(tYPE)
 #endif
 
+#define DISPLAY_TAB_SIZE        (2)
+
 #if (ENABLE_DISPLAY_PARSE_INFO != 0)
 # define DISPLAY_PARSE_INFO(tYPE, nAME, oFFSET, pARENToFFSET)                       \
     {                                                                               \

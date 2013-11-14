@@ -72,7 +72,7 @@ int union_dissect_from_buffer(
     if (type->members_child[union_child] != NULL)
         type->members_child[union_child]->type_dissect_from_buffer(
             type->members_child[union_child], ui_set_signal_text_cb, user_data, buffer,
-            offset, parent_offset, type->name == NULL ? indent : indent + 4);
+            offset, parent_offset, type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE);
 
     if (type->name) {
         DISPLAY_TYPE("Uni");

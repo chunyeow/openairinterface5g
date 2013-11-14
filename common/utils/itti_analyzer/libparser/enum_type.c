@@ -37,7 +37,7 @@ int enum_type_dissect_from_buffer(
             values->parent = type;
             values->type_dissect_from_buffer(
                 values, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset,
-                type->name == NULL ? indent: indent+4);
+                type->name == NULL ? indent: indent + DISPLAY_TAB_SIZE);
             break;
         }
     }

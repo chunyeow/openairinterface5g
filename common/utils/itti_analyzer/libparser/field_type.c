@@ -65,7 +65,7 @@ int field_dissect_from_buffer(
                 if (type_child->type == TYPE_ARRAY || type_child->type == TYPE_STRUCT || type_child->type == TYPE_UNION) {
                     DISPLAY_BRACE(ui_set_signal_text_cb(user_data, "{", 1);)
                     ui_set_signal_text_cb(user_data, "\n", 1);
-                    indent_child += 4;
+                    indent_child += DISPLAY_TAB_SIZE;
                 }
                 if (type_child->type == TYPE_FUNDAMENTAL || type_child->type == TYPE_POINTER) {
                     indent_child = 0;

@@ -18,7 +18,7 @@ int reference_dissect_from_buffer(
     if (type->child != NULL)
         type->child->type_dissect_from_buffer(type->child, ui_set_signal_text_cb,
                                               user_data, buffer, offset, parent_offset,
-                                              type->name == NULL ? indent: indent+4);
+                                              type->name == NULL ? indent: indent + DISPLAY_TAB_SIZE);
     if (type->name) {
         INDENTED(stdout, indent,   fprintf(stdout, "</%s>\n", type->name));
     }

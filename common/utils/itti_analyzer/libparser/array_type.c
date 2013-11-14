@@ -51,13 +51,13 @@ int array_dissect_from_buffer(
         for (i = 0; i < (items - zero_counter); i++)
             type->child->type_dissect_from_buffer (
                 type->child, ui_set_signal_text_cb, user_data, buffer, parent_offset,
-                offset + i * type_child->size, type->name == NULL ? indent : indent + 4);
+                offset + i * type_child->size, type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE);
         if (zero_counter > 0)
         {
             int  length = 0;
             char cbuf[50];
 
-            INDENTED_STRING(cbuf, type->name == NULL ? indent : indent + 4,);
+            INDENTED_STRING(cbuf, type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE,);
 
             length = sprintf(cbuf, "[%d .. %d]  ", i, items -1);
 

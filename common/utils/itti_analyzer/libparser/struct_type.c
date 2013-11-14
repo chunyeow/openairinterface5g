@@ -35,7 +35,7 @@ int struct_dissect_from_buffer(
             type->members_child[i]->type_dissect_from_buffer (
                 type->members_child[i], ui_set_signal_text_cb, user_data,
                 buffer, offset, parent_offset,
-                type->name == NULL ? indent : indent + 4);
+                type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE);
     }
 
     DISPLAY_BRACE(
