@@ -60,22 +60,27 @@ ui_tree_view_init_list(GtkWidget *list)
     GtkTreeViewColumn *column;
 
     renderer_left = gtk_cell_renderer_text_new();
+    gtk_cell_renderer_set_padding (renderer_left, 5, 0);
 
     renderer_right = gtk_cell_renderer_text_new();
-    // g_object_set(GTK_CELL_RENDERER_TEXT(renderer_right), "xalign", 0.5);
+    gtk_cell_renderer_set_alignment (renderer_right, 1, 0.5);
+    gtk_cell_renderer_set_padding (renderer_right, 5, 0);
 
     column = gtk_tree_view_column_new_with_attributes(
         "MN", renderer_right, "text", COL_MSG_NUM, NULL);
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     column = gtk_tree_view_column_new_with_attributes(
         "LTE Time", renderer_right, "text", COL_LTE_TIME, NULL);
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     column = gtk_tree_view_column_new_with_attributes(
         "Signal", renderer_left, "text", COL_MESSAGE, NULL);
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
@@ -84,6 +89,7 @@ ui_tree_view_init_list(GtkWidget *list)
     column = gtk_tree_view_column_new_with_attributes(
         "From", renderer_left, "text", COL_FROM_TASK, NULL);
     gtk_tree_view_column_set_alignment (column, 0.5);
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_FROM_TASK);
@@ -91,6 +97,7 @@ ui_tree_view_init_list(GtkWidget *list)
     column = gtk_tree_view_column_new_with_attributes(
         "To", renderer_left, "text", COL_TO_TASK, NULL);
     gtk_tree_view_column_set_alignment (column, 0.5);
+    gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_TO_TASK);
@@ -198,7 +205,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     ui_tree_view_init_list(ui_main_data.signalslist);
     gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
 
-    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 580, -1);
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrolled_window), 620);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
