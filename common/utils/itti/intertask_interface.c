@@ -74,7 +74,7 @@ typedef enum task_state_s {
 } task_state_t;
 
 /* This list acts as a FIFO of messages received by tasks (RRC, NAS, ...) */
-struct message_list_s {
+typedef struct message_list_s {
 #if !defined(ENABLE_EVENT_FD)
     STAILQ_ENTRY(message_list_s) next_element;
 #endif
@@ -83,7 +83,7 @@ struct message_list_s {
 
     message_number_t message_number; ///< Unique message number
     uint32_t message_priority; ///< Message priority
-};
+} message_list_t;
 
 typedef struct thread_desc_s {
     /* pthread associated with the thread */
@@ -126,7 +126,7 @@ typedef struct task_desc_s {
 #endif
 } task_desc_t;
 
-struct itti_desc_s {
+typedef struct itti_desc_s {
     thread_desc_t *threads;
     task_desc_t *tasks;
 
@@ -141,9 +141,11 @@ struct itti_desc_s {
 
     const task_info_t *tasks_info;
     const message_info_t *messages_info;
-};
 
-static struct itti_desc_s itti_desc;
+    itti_lte_time_t lte_time;
+} itti_desc_t;
+
+static itti_desc_t itti_desc;
 
 static inline message_number_t itti_increment_message_number(void) {
     /* Atomic operation supported by GCC: returns the current message number
@@ -170,6 +172,12 @@ const char *itti_get_task_name(task_id_t task_id)
     DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
 
     return (itti_desc.tasks_info[task_id].name);
+}
+
+void itti_update_lte_time(uint32_t frame, uint8_t slot)
+{
+    itti_desc.lte_time.frame = frame;
+    itti_desc.lte_time.slot = slot;
 }
 
 int itti_send_broadcast_message(MessageDef *message_p) {
@@ -226,7 +234,7 @@ inline MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds 
 
 int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message) {
     thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
-    struct message_list_s *new;
+    message_list_t *new;
     uint32_t priority;
     message_number_t message_number;
     uint32_t message_id;
@@ -236,6 +244,8 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 
     message->header.destinationTaskId = task_id;
     message->header.instance = instance;
+    message->header.lte_time.frame = itti_desc.lte_time.frame;
+    message->header.lte_time.slot = itti_desc.lte_time.slot;
     message_id = message->header.messageId;
     DevCheck(message_id < itti_desc.messages_id_max, itti_desc.messages_id_max, message_id, 0);
 
@@ -263,7 +273,7 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 #endif
 
         /* Allocate new list element */
-        new = (struct message_list_s *) malloc (sizeof(struct message_list_s));
+        new = (message_list_t *) malloc (sizeof(struct message_list_s));
         DevAssert(new != NULL);
 
         /* Fill in members */
@@ -470,7 +480,7 @@ void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
     }
 
     if (!STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
-        struct message_list_s *temp = STAILQ_FIRST (&itti_desc.tasks[task_id].message_queue);
+        message_list_t *temp = STAILQ_FIRST (&itti_desc.tasks[task_id].message_queue);
 
         /* Update received_msg reference */
         *received_msg = temp->msg;
@@ -495,7 +505,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
     itti_receive_msg_internal_event_fd(task_id, 1, received_msg);
 #else
     if (itti_desc.tasks[task_id].message_in_queue != 0) {
-        struct message_list_s *temp;
+        message_list_t *temp;
 
         // Lock the mutex to get exclusive access to the list
         pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);

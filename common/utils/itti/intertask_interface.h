@@ -94,6 +94,13 @@ typedef struct task_info_s {
     const char * const name;
 } task_info_t;
 
+/** \brief Update the itti LTE time reference for messages
+ \param current reference frame
+ \param current reference slot
+ @returns < 0 on failure, 0 otherwise
+ **/
+void itti_update_lte_time(uint32_t frame, uint8_t slot);
+
 /** \brief Send a broadcast message to every task
  \param message_p Pointer to the message to send
  @returns < 0 on failure, 0 otherwise

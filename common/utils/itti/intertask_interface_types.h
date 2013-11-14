@@ -123,18 +123,26 @@ typedef union msg_s
 typedef int16_t instance_t;
 typedef uint16_t MessageHeaderSize;
 
+typedef struct itti_lte_time_s
+{
+    uint32_t frame;
+    uint8_t slot;
+} itti_lte_time_t;
+
 /** @struct MessageHeader
  *  @brief Message Header structure for inter-task communication.
  */
 typedef struct MessageHeader_s
 {
-        MessagesIds messageId; /**< Unique message id as referenced in enum MessagesIds */
+        MessagesIds messageId;          /**< Unique message id as referenced in enum MessagesIds */
 
         task_id_t  originTaskId;        /**< ID of the sender task */
         task_id_t  destinationTaskId;   /**< ID of the destination task */
         instance_t instance;            /**< Task instance for virtualization */
 
-        MessageHeaderSize size; /**< Message size (not including header size) */
+        MessageHeaderSize size;         /**< Message size (not including header size) */
+
+        itti_lte_time_t lte_time;       /**< Reference LTE time */
 } MessageHeader;
 
 /** @struct MessageDef

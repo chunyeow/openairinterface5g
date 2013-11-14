@@ -45,10 +45,10 @@
 #include "queue.h"
 
 #ifndef TMR_DEBUG
-# define TMR_DEBUG(x, args...) do { fprintf(stdout, "[TMR] [D]"x, ##args); } while(0)
+# define TMR_DEBUG(x, args...) do { fprintf(stdout, "[TMR][D]"x, ##args); } while(0)
 #endif
 #ifndef TMR_ERROR
-# define TMR_ERROR(x, args...) do { fprintf(stdout, "[TMR] [E]"x, ##args); } while(0)
+# define TMR_ERROR(x, args...) do { fprintf(stdout, "[TMR][E]"x, ##args); } while(0)
 #endif
 
 int timer_handle_signal(siginfo_t *info);
