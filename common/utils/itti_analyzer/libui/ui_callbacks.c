@@ -50,12 +50,12 @@ gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
     return TRUE;
 }
 
-gboolean ui_callback_on_filters_enabled(GtkWidget *widget, gpointer data)
+gboolean ui_callback_on_filters_enabled(GtkToolButton *button, gpointer data)
 {
     gboolean enabled;
     gboolean changed;
 
-    enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(widget));
+    enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(button));
 
     g_message("Filters enabled event occurred %d", enabled);
 
@@ -63,19 +63,27 @@ gboolean ui_callback_on_filters_enabled(GtkWidget *widget, gpointer data)
 
     if (changed)
     {
-        /* Set the tooltip text */
+        /* Set the tool tip text */
         if (enabled)
         {
-            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(widget), "Disable messages filtering");
-        }
-        else
+            gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(button), "Disable messages filtering");
+        } else
         {
-            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(widget), "Enable messages filtering");
+            gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(button), "Enable messages filtering");
         }
         ui_tree_view_refilter();
+
+        if (ui_main_data.signalslist != NULL)
+        {
+            GtkTreePath *path_row;
+
+            /* Select the message in requested row */
+            gtk_tree_view_get_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), &path_row, NULL);
+            /* Center the message in the middle of the list if possible */
+            gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, TRUE, 0.5, 0.0);
+        }
     }
 
-    // CHECK_FCT(ui_filters_open_file_chooser());
     return TRUE;
 }
 

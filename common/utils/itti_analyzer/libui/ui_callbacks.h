@@ -9,7 +9,7 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget,
 gboolean ui_callback_on_save_messages(GtkWidget *widget,
                                       gpointer   data);
 
-gboolean ui_callback_on_filters_enabled(GtkWidget *widget,
+gboolean ui_callback_on_filters_enabled(GtkToolButton *button,
                                         gpointer data);
 
 gboolean ui_callback_on_open_filters(GtkWidget *widget,
