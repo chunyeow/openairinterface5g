@@ -86,6 +86,11 @@ int lte_dl_msbfn_channel_estimation(PHY_VARS_UE *phy_vars_ue,
 				    unsigned char l,
 				    unsigned char symbol);
 
+int lte_dl_mbsfn_channel_estimation(PHY_VARS_UE *phy_vars_ue,
+                                    u8 eNB_id,
+                                    u8 eNB_offset,
+                                    int subframe,
+                                    unsigned char l);
 
 /*
 #ifdef EMOS

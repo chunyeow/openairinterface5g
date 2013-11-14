@@ -78,7 +78,7 @@ sprintf(sumo_line, "%s -c %s ",omg_param_list.sumo_command, omg_param_list.sumo_
   arrived = NULL;
 
 // switch on error to return to OAI
-  int error = handshake(omg_param_list.sumo_host,omg_param_list.sumo_port);
+  handshake(omg_param_list.sumo_host,omg_param_list.sumo_port);
   
   init(omg_param_list.sumo_end - omg_param_list.sumo_start);
   

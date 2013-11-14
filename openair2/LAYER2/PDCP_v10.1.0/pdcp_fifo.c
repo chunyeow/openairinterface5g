@@ -101,8 +101,11 @@ int pdcp_fifo_flush_sdus (u32_t frame,u8 eNB_flag)
   int             bytes_wrote = 0;
   int             pdcp_nb_sdu_sent = 0;
   u8              cont = 1;
-  int ret;
   int mcs_inst;
+
+#if defined(NAS_NETLINK) && defined(LINUX)
+  int ret = 0;
+#endif
 
   while (sdu && cont) {
 
@@ -701,6 +704,8 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
   u8 pdcp_mode, is_ue=0;
   Packet_otg_elt * otg_pkt_info;
 
+  src_id = eNB_index;
+
   // we need to add conditions to avoid transmitting data when the UE is not RRC connected.
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ){
@@ -744,7 +749,6 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
 #else
   if ((otg_enabled==1) && (eNB_flag == 1)) { // generate DL traffic
     unsigned int ctime=0;
-    src_id = eNB_index;
     ctime = frame * 100;
     
     /*if  ((mac_get_rrc_status(eNB_index, eNB_flag, 0 ) > 2) &&

@@ -81,7 +81,10 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
   u8 RCC;
 
   u32 nsymb = (frame_parms->Ncp==NORMAL) ? 14:12;
-  u32 pilots,pilots_2;
+  u32 pilots;
+#ifdef INTERFERENCE_MITIGATION
+  u32 pilots_2;
+#endif
   u32 second_pilot = (frame_parms->Ncp==NORMAL) ? 4 : 3;
   u32 jj=0;
   u32 re_allocated=0;
@@ -230,10 +233,14 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
   for (l=(nsymb>>1);l<(nsymb>>1)+4;l++) {
     
     pilots=0;
+#ifdef INTERFERENCE_MITIGATION
     pilots_2 = 0;
+#endif
     if ((l==0) || (l==(nsymb>>1))){
       pilots=1;
+#ifdef INTERFERENCE_MITIGATION
       pilots_2=1;
+#endif
     }
 
     if ((l==1) || (l==(nsymb>>1)+1)){

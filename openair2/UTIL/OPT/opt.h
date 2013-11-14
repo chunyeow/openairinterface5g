@@ -56,7 +56,7 @@ This header file must be included */
 #ifndef project_include
 #define project_include
 #include "UTIL/LOG/log_if.h"
-#include "UTIL/LOG/log_extern.h"
+// #include "UTIL/LOG/log_extern.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 #include "PHY/impl_defs_lte.h"

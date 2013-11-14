@@ -105,6 +105,6 @@ void add_log_metric(int src, int dst, int ctime, double metric, unsigned int lab
 
 void  add_log_label(unsigned int label, unsigned int * start_log_metric);
 
-void nb_loss_pkts();
+void otg_kpi_nb_loss_pkts(void);
 
 #endif

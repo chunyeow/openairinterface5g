@@ -148,7 +148,7 @@ storage * receiveExact(){
         tracker = writePacket(bufLength, 4);
         
         // store pointer to free the space later
-        storage *freeTracker = tracker;   
+//         storage *freeTracker = tracker;   
         int s= readInt();
 	int NN = s - 4;
         printf("debug \n");

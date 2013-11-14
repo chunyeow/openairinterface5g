@@ -179,11 +179,11 @@ int get_oai_entry(char *sumo_id, Map_list Map_Vector) {
 
 Map_list remove_oai_entry(char *sumo_id, Map_list Map_Vector) {
     Map_list tmp = Map_Vector;
-    Map_list entry;
+//     Map_list entry;
     //printf("removing entry %s \n",sumo_id);	
     if (strcmp(tmp->map->sumo_id, sumo_id) == 0) {
        //printf("1: found it %s \n",tmp->map->sumo_id);
-       int id = tmp->map->oai_id;
+//        int id = tmp->map->oai_id;
     //   free(tmp);
        if(tmp->next == NULL)
          return NULL;
@@ -202,8 +202,8 @@ Map_list remove_oai_entry(char *sumo_id, Map_list Map_Vector) {
       while (tmp->next != NULL){
              if (strcmp(tmp->next->map->sumo_id, sumo_id) == 0) {
                 //printf("2: found it %s \n",tmp->next->map->sumo_id);
-                int id = tmp->next->map->oai_id;
-                entry =  tmp->next;   // save the entry to remove 
+//                 int id = tmp->next->map->oai_id;
+//                 entry =  tmp->next;   // save the entry to remove 
                 tmp->next = tmp->next->next; // jump over the entry to be removed
               //  free(entry); // freeing the entry
                //if(strcmp(tmp->next->map->sumo_id, "0") == 0)

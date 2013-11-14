@@ -625,7 +625,8 @@ void mch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
   __m128i xmm1,xmm2,*ch_mag,*ch_magb;
   __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
   
-  int j=0,i,len,len2;
+  int i,len,len2;
+//   int j=0;
   unsigned char len_mod4;
   short *llr;
   s16 *llr2;

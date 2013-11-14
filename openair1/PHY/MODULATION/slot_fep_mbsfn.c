@@ -21,7 +21,7 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
   unsigned int nb_prefix_samples0 = frame_parms->ofdm_symbol_size>>2;//(no_prefix ? 0 : frame_parms->nb_prefix_samples0);
   unsigned int subframe_offset;
  
-  int i;
+//   int i;
   unsigned int frame_length_samples = frame_parms->samples_per_tti * 10;
   void (*dft)(int16_t *,int16_t *, int);
 
@@ -161,7 +161,7 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
 					i+1,
 				    subframe,
 				    l);		
-   /* lte_dl_channel_estimation(phy_vars_ue,eNB_id,0,
+        lte_dl_channel_estimation(phy_vars_ue,eNB_id,0,
 				Ns,
 				aa,
 				l,

@@ -50,7 +50,6 @@ extern hash_table_t* table;
 
 int start_trace_generator(omg_global_param omg_param_list) {
 
-  NodePtr node = NULL;
   // MobilityPtr mobility = NULL;
   
   //read the mobility file here
@@ -85,7 +84,7 @@ int deploy_nodes() {
     
     NodePtr node = NULL;
 
-    int count = 0;
+//     int count = 0;
     node_info * head_node = head_node_info;
     while (head_node!=NULL){
     
@@ -235,7 +234,7 @@ Pair move_trace_node(NodePtr node, double cur_time) {
     return keep_awake_trace_node(node,cur_time,9999,1);                
   }
   else{ // location discription available
-    Job_list tmp1 = Job_Vector;
+//     Job_list tmp1 = Job_Vector;
     LOG_D(OMG, "Location fetch : (%.2f, %.2f)\n", next_loc->x, next_loc->y);
     
     double X_next;

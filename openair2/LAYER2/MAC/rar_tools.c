@@ -43,6 +43,9 @@
 #include "UTIL/LOG/log.h"
 #include "OCG.h"
 #include "OCG_extern.h"
+#if defined(USER_MODE) && defined(OAI_EMU)
+# include "UTIL/OPT/opt.h"
+#endif
 
 #define DEBUG_RAR
 

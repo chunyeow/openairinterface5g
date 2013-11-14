@@ -122,7 +122,7 @@ void rx_loss_rate_bytes(int src, int dst, int application){
 
 }
 
-void nb_loss_pkts(){
+void otg_kpi_nb_loss_pkts(void){
 unsigned int i,j,k;
 
 otg_info->total_loss_dl=0;

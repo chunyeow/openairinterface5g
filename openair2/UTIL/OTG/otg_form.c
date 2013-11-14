@@ -1,7 +1,7 @@
 
 #include "otg_form.h"
 #include "otg_vars.h"
-
+#include "otg_kpi.h"
 
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
@@ -150,7 +150,7 @@ if (otg_forms_info->idx_ul[src][dst]==MAX_SAMPLES-1){
 		 
 
  
-		nb_loss_pkts();
+		otg_kpi_nb_loss_pkts();
 		sprintf(loss_rate, "%s%d","NB Loss pkts UL=", otg_info->total_loss_ul);
 		fl_set_object_label(form_ul->loss_ratio, loss_rate);
 		sprintf(simu_time, "%s%d","Simulation Time(ms)=", ctime);
@@ -170,7 +170,7 @@ if (otg_forms_info->idx_ul[src][dst]==MAX_SAMPLES-1){
     fl_set_xyplot_key(form_ul->throughput, 0, curve_label);
 		fl_set_xyplot_key_position(form_ul->throughput, x_key_position,y_key_position , FL_ALIGN_BOTTOM_LEFT);
 		  
-		nb_loss_pkts();
+                otg_kpi_nb_loss_pkts();
 		sprintf(loss_rate, "%s%d","NB Loss pkts UL=",otg_info->total_loss_ul);
 		fl_set_object_label(form_ul->loss_ratio, loss_rate);
 		sprintf(simu_time, "%s%d","Simulation Time(ms)=", ctime);
@@ -245,7 +245,7 @@ if (otg_forms_info->idx_dl[src][dst]==MAX_SAMPLES-1){
 		sprintf(curve_label, "%d%s%d", src,"-->", dst);
     fl_set_xyplot_key(form_dl->throughput, 0, curve_label);
 		fl_set_xyplot_key_position(form_dl->throughput, x_key_position,y_key_position,   FL_ALIGN_BOTTOM_LEFT);   
-		nb_loss_pkts();
+                otg_kpi_nb_loss_pkts();
 		sprintf(loss_rate, "%s%d","NB Loss pkts DL=",otg_info->total_loss_dl);
 		fl_set_object_label(form_dl->loss_ratio, loss_rate);
 
@@ -265,7 +265,7 @@ if (otg_forms_info->idx_dl[src][dst]==MAX_SAMPLES-1){
     fl_set_xyplot_key(form_dl->throughput, 0, curve_label);
 		fl_set_xyplot_key_position(form_dl->throughput,x_key_position,y_key_position,   FL_ALIGN_BOTTOM_LEFT);  
   
-		nb_loss_pkts();
+                otg_kpi_nb_loss_pkts();
 		sprintf(loss_rate, "%s%d","NB Loss pkts DL=",otg_info->total_loss_dl);
 		fl_set_object_label(form_dl->loss_ratio, loss_rate);
 		sprintf(simu_time, "%s%d","Simulation Time(ms)=", ctime);

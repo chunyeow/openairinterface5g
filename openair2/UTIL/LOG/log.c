@@ -356,8 +356,8 @@ void logRecord(const char *file, const char *func, int line,  int comp,
     va_end(args);
 
     //2 first parameters must be passed as 'const' to the thread function
-    log_params.file = file;
-    log_params.func = func;
+    log_params.file = strdup(file);
+    log_params.func = strdup(func);
     log_params.line = line;
     log_params.comp = comp;
     log_params.level = level;
