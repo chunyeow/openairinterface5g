@@ -49,11 +49,24 @@
 #include "sctp_common.h"
 #include "sctp_eNB_itti_messaging.h"
 
+enum sctp_connection_type_e {
+    SCTP_TYPE_CLIENT,
+    SCTP_TYPE_SERVER,
+    SCTP_TYPE_MAX
+};
+
 struct sctp_cnx_list_elm_s {
     STAILQ_ENTRY(sctp_cnx_list_elm_s) entries;
 
+    /* Type of this association
+     */
+    enum sctp_connection_type_e connection_type;
+
     /* Socket descriptor of connection */
     int sd;
+
+    /* local port used */
+    uint16_t local_port;
 
     /* IN/OUT streams */
     uint16_t in_streams;
@@ -113,6 +126,7 @@ void sctp_handle_new_association_req(
     struct sctp_event_subscribe events;
 
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
+    enum sctp_connection_type_e connection_type = SCTP_TYPE_CLIENT;
 
     /* Prepare a new SCTP association as requested by upper layer and try to connect
      * to remote host.
@@ -166,6 +180,8 @@ void sctp_handle_new_association_req(
      * address and port.
      * Only use IPv4 for the first connection attempt
      */
+    if ((sctp_new_association_req_p->remote_address.ipv6 != 0) ||
+        (sctp_new_association_req_p->remote_address.ipv4 != 0))
     {
         uint8_t address_index = 0;
         uint8_t used_address  = sctp_new_association_req_p->remote_address.ipv6 +
@@ -228,9 +244,30 @@ void sctp_handle_new_association_req(
                 return;
             }
         }
+    } else {
+        /* No remote address provided -> only bind the socket for now.
+         * Connection will be accepted in the main event loop
+         */
+        struct sockaddr_in6 addr6;
+
+        connection_type = SCTP_TYPE_SERVER;
+
+        /* For now bind to any interface */
+        addr6.sin6_family = AF_INET6;
+        addr6.sin6_addr = in6addr_any;
+        addr6.sin6_port = htons(sctp_new_association_req_p->port);
+
+        if (bind(sd, (struct sockaddr*)&addr6, sizeof(addr6)) < 0) {
+            SCTP_ERROR("Failed to bind the socket %d to address any (v4/v6): %s\n",
+                       strerror(errno));
+            close(sd);
+            return;
+        }
     }
 
     sctp_cnx = calloc(1, sizeof(*sctp_cnx));
+
+    sctp_cnx->connection_type = connection_type;
 
     sctp_cnx->sd       = sd;
     sctp_cnx->task_id  = requestor;
@@ -281,6 +318,72 @@ void sctp_send_data(instance_t instance, task_id_t task_id, sctp_data_req_t *sct
     SCTP_DEBUG("Successfully sent %u bytes on stream %d for assoc_id %u\n",
                sctp_data_req_p->buffer_length, sctp_data_req_p->stream,
                sctp_cnx->assoc_id);
+}
+
+static
+inline void sctp_eNB_accept_associations(struct sctp_cnx_list_elm_s *sctp_cnx)
+{
+    int client_sd;
+
+    struct sockaddr saddr;
+    socklen_t       saddr_size;
+
+    DevAssert(sctp_cnx != NULL);
+
+    saddr_size = sizeof(saddr);
+
+    /* There is a new client connecting. Accept it...
+     */
+    if ((client_sd = accept(sctp_cnx->sd, &saddr, &saddr_size)) < 0) {
+        SCTP_ERROR("[%d] accept failed: %s:%d\n", sctp_cnx->sd, strerror(errno), errno);
+    } else {
+        struct sctp_cnx_list_elm_s *new_cnx;
+        uint16_t port;
+
+        /* This is an ipv6 socket */
+        port = ((struct sockaddr_in6*)&saddr)->sin6_port;
+
+        /* Contrary to BSD, client socket does not inherit O_NONBLOCK option */
+        if (fcntl(client_sd, F_SETFL, O_NONBLOCK) < 0) {
+            SCTP_ERROR("fcntl F_SETFL O_NONBLOCK failed: %s\n",
+                       strerror(errno));
+            close(client_sd);
+            return;
+        }
+
+        new_cnx = calloc(1, sizeof(*sctp_cnx));
+
+        DevAssert(new_cnx != NULL);
+
+        new_cnx->connection_type = SCTP_TYPE_CLIENT;
+
+        new_cnx->sd         = client_sd;
+        new_cnx->task_id    = sctp_cnx->task_id;
+        new_cnx->cnx_id     = 0;
+        new_cnx->ppid       = sctp_cnx->ppid;
+        new_cnx->instance   = sctp_cnx->instance;
+        new_cnx->local_port = sctp_cnx->local_port;
+
+        if (sctp_get_sockinfo(client_sd, &new_cnx->in_streams, &new_cnx->out_streams,
+            &new_cnx->assoc_id) != 0)
+        {
+            SCTP_ERROR("sctp_get_sockinfo failed\n");
+            close(client_sd);
+            free(new_cnx);
+            return;
+        }
+
+        /* Insert new element at end of list */
+        STAILQ_INSERT_TAIL(&sctp_cnx_list, new_cnx, entries);
+        sctp_nb_cnx++;
+
+        /* Add the socket to list of fd monitored by ITTI */
+        itti_subscribe_event_fd(TASK_SCTP, client_sd);
+
+        sctp_itti_send_association_ind(new_cnx->task_id, new_cnx->instance,
+                                       new_cnx->assoc_id, port,
+                                       new_cnx->out_streams, new_cnx->in_streams);
+    }
 }
 
 static
@@ -387,7 +490,11 @@ void sctp_eNB_flush_sockets(struct epoll_event *events, int nb_events)
             continue;
         }
         SCTP_DEBUG("Found data for descriptor %d\n", events[i].data.fd);
-        sctp_eNB_read_from_socket(sctp_cnx);
+        if (sctp_cnx->connection_type == SCTP_TYPE_CLIENT) {
+            sctp_eNB_read_from_socket(sctp_cnx);
+        } else {
+            sctp_eNB_accept_associations(sctp_cnx);
+        }
     }
 }
 

@@ -24,6 +24,18 @@ typedef struct {
 } sctp_new_association_req_t;
 
 typedef struct {
+    /* Assoc id of the new association */
+    int32_t  assoc_id;
+
+    /* The port used by remote host */
+    uint16_t port;
+
+    /* Number of streams used for this association */
+    uint16_t in_streams;
+    uint16_t out_streams;
+} sctp_new_association_ind_t;
+
+typedef struct {
     /* Upper layer connexion identifier */
     uint16_t ulp_cnx_id;
 
