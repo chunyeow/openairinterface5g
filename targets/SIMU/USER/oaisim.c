@@ -505,6 +505,8 @@ void *l2l1_task(void *args_p) {
 
       wait_for_slot_isr ();
 
+      itti_update_lte_time(frame, slot);
+
       last_slot = (slot - 1) % 20;
       if (last_slot < 0)
         last_slot += 20;
