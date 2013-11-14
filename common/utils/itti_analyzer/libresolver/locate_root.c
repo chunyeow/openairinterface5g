@@ -11,6 +11,9 @@
 #include "xml_parse.h"
 
 types_t *messages_id_enum = NULL;
+types_t *lte_time_type = NULL;
+types_t *lte_time_frame_type = NULL;
+types_t *lte_time_slot_type = NULL;
 types_t *origin_task_id_type = NULL;
 types_t *destination_task_id_type = NULL;
 types_t *instance_type = NULL;
@@ -72,6 +75,30 @@ int locate_type(const char *type_name, types_t *head, types_t **type) {
     if (type)
         *type = next_type;
     return (next_type == NULL) ? RC_FAIL : RC_OK;
+}
+
+uint32_t get_lte_frame(buffer_t *buffer) {
+    uint32_t  value = 0;
+
+    if (lte_time_type !=NULL)
+    {
+        /* Fetch instance value */
+        buffer_fetch_bits (buffer, lte_time_type->offset + lte_time_frame_type->offset, lte_time_frame_type->child->child->size, &value);
+    }
+
+    return value;
+}
+
+uint32_t get_lte_slot(buffer_t *buffer) {
+    uint32_t  value = 0;
+
+    if (lte_time_type !=NULL)
+    {
+        /* Fetch instance value */
+        buffer_fetch_bits (buffer, lte_time_type->offset + lte_time_slot_type->offset, lte_time_slot_type->child->child->size, &value);
+    }
+
+    return value;
 }
 
 uint32_t get_message_id(types_t *head, buffer_t *buffer, uint32_t *message_id) {

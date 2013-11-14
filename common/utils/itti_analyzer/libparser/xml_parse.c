@@ -772,14 +772,28 @@ static int xml_parse_doc(xmlDocPtr doc) {
         resolve_file (&head);
         resolve_union (&head);
         resolve_function (&head);
+
         /* Locate the root element which corresponds to the MessageDef struct */
         CHECK_FCT(locate_root("MessageDef", head, &root));
-        /* Locate the message id enumeration */
+
+        /* Locate the LTE time fields */
+        if (locate_type("lte_time", head, &lte_time_type) == RC_OK)
+        {
+            CHECK_FCT(locate_type("frame", lte_time_type->child->child, &lte_time_frame_type));
+            CHECK_FCT(locate_type("slot", lte_time_type->child->child, &lte_time_slot_type));
+        }
+
+        /* Locate the message id field */
         CHECK_FCT(locate_type("MessagesIds", head, &messages_id_enum));
+        /* Locate the origin task id field */
         CHECK_FCT(locate_type("originTaskId", head, &origin_task_id_type));
+        /* Locate the destination task id field */
         CHECK_FCT(locate_type("destinationTaskId", head, &destination_task_id_type));
+        /* Locate the instance field */
         CHECK_FCT(locate_type("instance", head, &instance_type));
+
         // root->type_hr_display(root, 0);
+
         update_filters();
         if (dissect_file != NULL) {
             g_debug("generating dissected types file \"%s\" ...", ui_main_data.dissect_file_name);

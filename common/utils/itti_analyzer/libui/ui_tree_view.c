@@ -55,40 +55,56 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
 static void
 ui_tree_view_init_list(GtkWidget *list)
 {
-    GtkCellRenderer *renderer;
+    GtkCellRenderer *renderer_left;
+    GtkCellRenderer *renderer_right;
     GtkTreeViewColumn *column;
 
-    renderer = gtk_cell_renderer_text_new();
+    renderer_left = gtk_cell_renderer_text_new();
+
+    renderer_right = gtk_cell_renderer_text_new();
+    // g_object_set(GTK_CELL_RENDERER_TEXT(renderer_right), "xalign", 0.5);
+
     column = gtk_tree_view_column_new_with_attributes(
-        "MN", renderer, "text", COL_MSG_NUM, NULL);
+        "MN", renderer_right, "text", COL_MSG_NUM, NULL);
+    gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
 
     column = gtk_tree_view_column_new_with_attributes(
-        "Signal", renderer, "text", COL_MESSAGE, NULL);
+        "LTE Time", renderer_right, "text", COL_LTE_TIME, NULL);
+    gtk_tree_view_column_set_alignment (column, 0.5);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+    column = gtk_tree_view_column_new_with_attributes(
+        "Signal", renderer_left, "text", COL_MESSAGE, NULL);
+    gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_MESSAGE);
 
     column = gtk_tree_view_column_new_with_attributes(
-        "From", renderer, "text", COL_FROM_TASK, NULL);
+        "From", renderer_left, "text", COL_FROM_TASK, NULL);
+    gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_FROM_TASK);
 
     column = gtk_tree_view_column_new_with_attributes(
-        "To", renderer, "text", COL_TO_TASK, NULL);
+        "To", renderer_left, "text", COL_TO_TASK, NULL);
+    gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_TO_TASK);
 
     column = gtk_tree_view_column_new_with_attributes(
-        "Ins", renderer, "text", COL_INSTANCE, NULL);
+        "Ins", renderer_right, "text", COL_INSTANCE, NULL);
+    gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
     g_signal_connect(G_OBJECT(column), "clicked",
                      G_CALLBACK(ui_callback_on_tree_column_header_click), (gpointer) COL_INSTANCE);
 
     ui_store.store = gtk_list_store_new(NUM_COLS,
                                        G_TYPE_UINT,   // COL_MSG_NUM
+                                       G_TYPE_STRING, // COL_LTE_TIME
                                        G_TYPE_STRING, // COL_SIGNAL
                                        G_TYPE_STRING, // COL_FROM_TASK
                                        G_TYPE_STRING, // COL_TO_TASK
@@ -119,7 +135,7 @@ ui_tree_view_init_list(GtkWidget *list)
     gtk_tree_view_columns_autosize(GTK_TREE_VIEW(list));
 }
 
-static void ui_tree_view_add_to_list(GtkWidget *list, const uint32_t message_number, const uint32_t message_id, const gchar *signal_name,
+static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *lte_time, const uint32_t message_number, const uint32_t message_id, const gchar *signal_name,
                                      const uint32_t origin_task_id, const char *origin_task,
                                      const uint32_t destination_task_id, const char *destination_task, uint32_t instance, gpointer buffer)
 {
@@ -129,6 +145,7 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const uint32_t message_num
     gtk_list_store_set(ui_store.store, &iter,
                        /* Columns */
                        COL_MSG_NUM      , message_number,
+                       COL_LTE_TIME     , lte_time,
                        COL_MESSAGE      , signal_name,
                        COL_FROM_TASK    , origin_task,
                        COL_TO_TASK      , destination_task,
@@ -181,7 +198,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     ui_tree_view_init_list(ui_main_data.signalslist);
     gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
 
-    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 530, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(scrolled_window), 580, -1);
     gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, FALSE, FALSE, 0);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
@@ -200,7 +217,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     return 0;
 }
 
-int ui_tree_view_new_signal_ind(const uint32_t message_number,
+int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_time,
                                 const uint32_t message_id, const char *message_name,
                                 const uint32_t origin_task_id, const char *origin_task,
                                 const uint32_t destination_task_id, const char *destination_task,
@@ -220,7 +237,7 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number,
         ui_destroy_filter_menu(FILTER_INSTANCES);
     }
 
-    ui_tree_view_add_to_list(ui_main_data.signalslist, message_number, message_id, message_name,
+    ui_tree_view_add_to_list(ui_main_data.signalslist, lte_time, message_number, message_id, message_name,
                              origin_task_id, origin_task, destination_task_id, destination_task, instance, (buffer_t *)buffer);
 
     return RC_OK;

@@ -111,20 +111,29 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     buffer_t *signal_buffer;
     GtkTreePath *path;
     GtkTreeViewColumn *focus_column;
+    uint32_t lte_frame;
+    uint32_t lte_slot;
     uint32_t origin_task_id;
     uint32_t destination_task_id;
     uint32_t instance;
 
+    char lte_time[15];
+
     gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.signalslist), &path, &focus_column);
 
     signal_buffer = (buffer_t *) data;
+
+    lte_frame = get_lte_frame(signal_buffer);
+    lte_slot = get_lte_slot(signal_buffer);
+    sprintf(lte_time, "%d.%02d", lte_frame, lte_slot);
 
     get_message_id (root, signal_buffer, &signal_buffer->message_id);
     origin_task_id = get_task_id (signal_buffer, origin_task_id_type);
     destination_task_id = get_task_id (signal_buffer, destination_task_id_type);
     instance = get_instance (signal_buffer);
 
-    ui_tree_view_new_signal_ind (signal_buffer->message_number, signal_buffer->message_id, message_id_to_string (signal_buffer->message_id),
+    ui_tree_view_new_signal_ind (signal_buffer->message_number, lte_time,
+                                 signal_buffer->message_id, message_id_to_string (signal_buffer->message_id),
                                  origin_task_id, task_id_to_string (origin_task_id, origin_task_id_type),
                                  destination_task_id, task_id_to_string (destination_task_id, destination_task_id_type),
                                  instance, data);

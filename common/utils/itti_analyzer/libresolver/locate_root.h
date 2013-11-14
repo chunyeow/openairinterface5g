@@ -2,6 +2,9 @@
 #define LOCATE_ROOT_H_
 
 extern types_t *messages_id_enum;
+extern types_t *lte_time_type;
+extern types_t *lte_time_frame_type;
+extern types_t *lte_time_slot_type;
 extern types_t *origin_task_id_type;
 extern types_t *destination_task_id_type;
 extern types_t *instance_type;
@@ -9,6 +12,10 @@ extern types_t *instance_type;
 int locate_root(const char *root_name, types_t *head, types_t **root);
 
 int locate_type(const char *type_name, types_t *head, types_t **type);
+
+uint32_t get_lte_frame(buffer_t *buffer);
+
+uint32_t get_lte_slot(buffer_t *buffer);
 
 uint32_t get_message_id(types_t *head, buffer_t *buffer, uint32_t *message_id);
 
