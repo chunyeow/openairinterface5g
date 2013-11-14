@@ -24,6 +24,9 @@ CFLAGS = -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS
 
 ifdef ENABLE_ITTI
 CFLAGS += -DENABLE_ITTI
+ifndef DISABLE_ITTI_EVENT_FD
+CFLAGS += -DENABLE_EVENT_FD
+endif
 endif
 
 # Check if GCC version is greater or equal to 4.4
