@@ -204,7 +204,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     ui_tree_view_init_list(ui_main_data.signalslist);
     gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
 
-    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrolled_window), 600);
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrolled_window), 620);
     gtk_paned_pack1 (GTK_PANED (hbox), scrolled_window, FALSE, TRUE);
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 

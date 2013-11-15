@@ -155,7 +155,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                 data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
                 data_size = get_message_size ((buffer_t*) buffer);
 
-                g_debug("message header type size: %u, data size: %u\n", message_header_type_size, data_size);
+                g_debug("message header type size: %u, data size: %u", message_header_type_size, data_size);
 
                 ui_signal_set_text (text_view, "\n", 1);
                 ui_signal_set_text (text_view, data, data_size);
