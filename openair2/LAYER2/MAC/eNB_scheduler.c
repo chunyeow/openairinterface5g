@@ -4218,7 +4218,7 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
       msg_name = ITTI_MSG_NAME (msg_p);
       instance = ITTI_MSG_INSTANCE (msg_p);
 
-      switch (msg_p->header.messageId) {
+      switch (ITTI_MSG_ID(msg_p)) {
         case RRC_MAC_BCCH_DATA_REQ:
           LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,

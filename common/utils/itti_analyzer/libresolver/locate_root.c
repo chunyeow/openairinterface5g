@@ -17,6 +17,8 @@ types_t *lte_time_slot_type = NULL;
 types_t *origin_task_id_type = NULL;
 types_t *destination_task_id_type = NULL;
 types_t *instance_type = NULL;
+types_t *message_header_type = NULL;
+types_t *message_size_type = NULL;
 
 int locate_root(const char *root_name, types_t *head, types_t **root_elm) {
     types_t *next_type;
@@ -75,6 +77,37 @@ int locate_type(const char *type_name, types_t *head, types_t **type) {
     if (type)
         *type = next_type;
     return (next_type == NULL) ? RC_FAIL : RC_OK;
+}
+
+uint32_t get_message_header_type_size(void)
+{
+    /* Typedef */
+    if (message_header_type->child != NULL) {
+        /* Struct */
+        if (message_header_type->child->child != NULL) {
+            return message_header_type->child->child->size;
+        }
+    }
+    return 0;
+}
+
+uint32_t get_message_size(buffer_t *buffer)
+{
+    uint32_t value = 0;
+
+    if (message_size_type != NULL)
+    {
+        types_t *temp = message_size_type;
+
+        while (temp->size == -1) {
+            temp = temp->child;
+        }
+
+        /* Fetch instance value */
+        buffer_fetch_bits (buffer, message_size_type->offset, temp->size, &value);
+    }
+
+    return value;
 }
 
 uint32_t get_lte_frame(buffer_t *buffer) {

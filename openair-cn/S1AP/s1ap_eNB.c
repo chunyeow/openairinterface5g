@@ -229,7 +229,7 @@ void *s1ap_eNB_task(void *arg)
     while (1) {
         itti_receive_msg(TASK_S1AP, &received_msg);
 
-        switch (received_msg->header.messageId) {
+        switch (ITTI_MSG_ID(received_msg)) {
             case TERMINATE_MESSAGE:
                 itti_exit_task();
                 break;
@@ -263,8 +263,8 @@ void *s1ap_eNB_task(void *arg)
                     &received_msg->msg.s1ap_initial_context_setup_resp);
             } break;
             default:
-                S1AP_ERROR("Received unhandled message with id %d\n",
-                           received_msg->header.messageId);
+                S1AP_ERROR("Received unhandled message: %d:%s\n",
+                           ITTI_MSG_ID(received_msg), ITTI_MSG_NAME(received_msg));
                 break;
         }
 

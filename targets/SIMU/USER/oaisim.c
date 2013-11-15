@@ -432,17 +432,17 @@ void *l2l1_task(void *args_p) {
       itti_poll_msg (TASK_L2L1, &message_p);
 
       if (message_p != NULL) {
-        switch (message_p->header.messageId) {
+        switch (ITTI_MSG_ID(message_p)) {
           case TERMINATE_MESSAGE:
             itti_exit_task ();
             break;
 
           case MESSAGE_TEST:
-            LOG_D(EMU, "Received %s\n", itti_get_message_name(message_p->header.messageId));
+            LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
             break;
 
           default:
-            LOG_E(EMU, "Received unexpected message %s\n", itti_get_message_name(message_p->header.messageId));
+            LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
             break;
         }
 

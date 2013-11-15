@@ -58,7 +58,7 @@
 /* Defines to extract task ID fields */
 #define TASK_GET_THREAD_ID(tASKiD)          (itti_desc.tasks_info[tASKiD].thread)
 /* Extract the instance from a message */
-#define ITTI_MESSAGE_GET_INSTANCE(mESSAGE)  ((mESSAGE)->header.instance)
+#define ITTI_MESSAGE_GET_INSTANCE(mESSAGE)  ((mESSAGE)->ittiMsgHeader.instance)
 
 #include <messages_types.h>
 
@@ -140,7 +140,7 @@ typedef struct MessageHeader_s
         task_id_t  destinationTaskId;   /**< ID of the destination task */
         instance_t instance;            /**< Task instance for virtualization */
 
-        MessageHeaderSize size;         /**< Message size (not including header size) */
+        MessageHeaderSize ittiMsgSize;         /**< Message size (not including header size) */
 
         itti_lte_time_t lte_time;       /**< Reference LTE time */
 } MessageHeader;
@@ -150,7 +150,7 @@ typedef struct MessageHeader_s
  */
 typedef struct MessageDef_s
 {
-        MessageHeader header; /**< Message header */
+        MessageHeader ittiMsgHeader; /**< Message header */
         msg_t msg; /**< Union of payloads as defined in x_messages_def.h headers */
 } MessageDef;
 

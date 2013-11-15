@@ -2235,7 +2235,7 @@ void *rrc_ue_task(void *args_p) {
     instance = ITTI_MSG_INSTANCE (msg_p);
     Mod_id = instance - NB_eNB_INST;
 
-    switch (msg_p->header.messageId) {
+    switch (ITTI_MSG_ID(msg_p)) {
       case TERMINATE_MESSAGE:
         itti_exit_task ();
         break;

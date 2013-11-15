@@ -19,9 +19,7 @@ types_t *type_new(enum type_e type)
 {
     types_t *new_p;
 
-    new_p = malloc(sizeof(types_t));
-
-    memset(new_p, 0, sizeof(types_t));
+    new_p = calloc(1, sizeof(types_t));
 
     new_p->type = type;
 

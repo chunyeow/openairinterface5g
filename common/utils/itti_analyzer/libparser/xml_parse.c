@@ -785,12 +785,17 @@ static int xml_parse_doc(xmlDocPtr doc) {
 
         /* Locate the message id field */
         CHECK_FCT(locate_type("MessagesIds", head, &messages_id_enum));
+
+        /* Locate the header part of a message */
+        CHECK_FCT(locate_type("ittiMsgHeader", head, &message_header_type));
         /* Locate the origin task id field */
-        CHECK_FCT(locate_type("originTaskId", head, &origin_task_id_type));
+        CHECK_FCT(locate_type("originTaskId", message_header_type, &origin_task_id_type));
         /* Locate the destination task id field */
-        CHECK_FCT(locate_type("destinationTaskId", head, &destination_task_id_type));
+        CHECK_FCT(locate_type("destinationTaskId", message_header_type, &destination_task_id_type));
         /* Locate the instance field */
-        CHECK_FCT(locate_type("instance", head, &instance_type));
+        CHECK_FCT(locate_type("instance", message_header_type, &instance_type));
+        /* Locate the message size field */
+        CHECK_FCT(locate_type("ittiMsgSize", message_header_type, &message_size_type));
 
         // root->type_hr_display(root, 0);
 
@@ -810,8 +815,28 @@ static int xml_parse_doc(xmlDocPtr doc) {
     return ret;
 }
 
+int dissect_signal_header(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_cb,
+                          gpointer cb_user_data)
+{
+    if (message_header_type == NULL) {
+        g_error("No messages format definition provided");
+        return RC_FAIL;
+    }
+
+    if (buffer == NULL) {
+        g_error("Failed buffer is NULL");
+        return RC_FAIL;
+    }
+
+    message_header_type->type_dissect_from_buffer(
+        message_header_type, ui_set_signal_text_cb, cb_user_data,
+        buffer, 0, 0, INDENT_START);
+
+    return RC_OK;
+}
+
 int dissect_signal(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_cb,
-                   gpointer user_data)
+                   gpointer cb_user_data)
 {
     if (root == NULL) {
         g_error("No messages format definition provided");
@@ -823,7 +848,7 @@ int dissect_signal(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_
         return RC_FAIL;
     }
 
-    root->type_dissect_from_buffer(root, ui_set_signal_text_cb, user_data,
+    root->type_dissect_from_buffer(root, ui_set_signal_text_cb, cb_user_data,
                                    buffer, 0, 0, INDENT_START);
 
     return RC_OK;

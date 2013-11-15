@@ -515,23 +515,23 @@ void *sctp_eNB_task(void *arg)
 
         /* Check if there is a packet to handle */
         if (received_msg != NULL) {
-            switch (received_msg->header.messageId) {
+            switch (ITTI_MSG_ID(received_msg)) {
                 case TERMINATE_MESSAGE:
                     itti_exit_task();
                     break;
                 case SCTP_NEW_ASSOCIATION_REQ: {
                     sctp_handle_new_association_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                                    received_msg->header.originTaskId,
+                                                    ITTI_MSG_ORIGIN_ID(received_msg),
                                                     &received_msg->msg.sctp_new_association_req);
                 } break;
                 case SCTP_DATA_REQ: {
                     sctp_send_data(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                   received_msg->header.originTaskId,
+                                   ITTI_MSG_ORIGIN_ID(received_msg),
                                    &received_msg->msg.sctp_data_req);
                 } break;
                 default:
                     SCTP_ERROR("Received unhandled message with id %d\n",
-                            received_msg->header.messageId);
+                               ITTI_MSG_ID(received_msg));
                     break;
             }
         }

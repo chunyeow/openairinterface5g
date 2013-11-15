@@ -208,3 +208,11 @@ int buffer_has_enouch_data(buffer_t *buffer, uint32_t offset, uint32_t to_get)
                   offset, to_get, buffer->size_bytes);
     return underflow;
 }
+
+void *buffer_at_offset(buffer_t *buffer, uint32_t offset)
+{
+//     if (buffer_has_enouch_data(buffer, 0, offset) != 0) {
+//         return NULL;
+//     }
+    return &buffer->data[offset / 8];
+}

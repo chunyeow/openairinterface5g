@@ -8,10 +8,16 @@ extern types_t *lte_time_slot_type;
 extern types_t *origin_task_id_type;
 extern types_t *destination_task_id_type;
 extern types_t *instance_type;
+extern types_t *message_header_type;
+extern types_t *message_size_type;
 
 int locate_root(const char *root_name, types_t *head, types_t **root);
 
 int locate_type(const char *type_name, types_t *head, types_t **type);
+
+uint32_t get_message_header_type_size(void);
+
+uint32_t get_message_size(buffer_t *buffer);
 
 uint32_t get_lte_frame(buffer_t *buffer);
 

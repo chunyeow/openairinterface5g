@@ -40,4 +40,6 @@ int buffer_new_from_data(buffer_t **buffer, uint8_t *data, const uint32_t length
 
 int buffer_has_enouch_data(buffer_t *buffer, uint32_t offset, uint32_t to_get);
 
+void *buffer_at_offset(buffer_t *buffer, uint32_t offset);
+
 #endif /* BUFFERS_H_ */

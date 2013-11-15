@@ -48,10 +48,13 @@
 #include "intertask_interface_conf.h"
 #include "intertask_interface_types.h"
 
-#define ITTI_MSG_NAME(mSGpTR)               itti_get_message_name((mSGpTR)->header.messageId)
-#define ITTI_MSG_ORIGIN_NAME(mSGpTR)        itti_get_task_name((mSGpTR)->header.originTaskId)
-#define ITTI_MSG_DESTINATION_NAME(mSGpTR)   itti_get_task_name((mSGpTR)->header.destinationTaskId)
-#define ITTI_MSG_INSTANCE(mSGpTR)           (mSGpTR)->header.instance
+#define ITTI_MSG_ID(mSGpTR)                 ((mSGpTR)->ittiMsgHeader.messageId)
+#define ITTI_MSG_ORIGIN_ID(mSGpTR)          ((mSGpTR)->ittiMsgHeader.originTaskId)
+#define ITTI_MSG_DESTINATION_ID(mSGpTR)     ((mSGpTR)->ittiMsgHeader.destinationTaskId)
+#define ITTI_MSG_INSTANCE(mSGpTR)           ((mSGpTR)->ittiMsgHeader.instance)
+#define ITTI_MSG_NAME(mSGpTR)               itti_get_message_name(ITTI_MSG_ID(mSGpTR))
+#define ITTI_MSG_ORIGIN_NAME(mSGpTR)        itti_get_task_name(ITTI_MSG_ORIGIN_ID(mSGpTR))
+#define ITTI_MSG_DESTINATION_NAME(mSGpTR)   itti_get_task_name(ITTI_MSG_DESTINATION_ID(mSGpTR))
 
 /* Make the message number platform specific */
 typedef unsigned long message_number_t;
@@ -190,8 +193,19 @@ const char *itti_get_task_name(task_id_t task_id);
  * @returns NULL in case of failure or newly allocated mesage ref
  **/
 inline MessageDef *itti_alloc_new_message(
-    task_id_t   origin_task_id,
-    MessagesIds message_id);
+    task_id_t         origin_task_id,
+    MessagesIds       message_id);
+
+/** \brief Alloc and memset(0) a new itti message.
+ * \param origin_task_id Task ID of the sending task
+ * \param message_id Message ID
+ * \param size size of the payload to send
+ * @returns NULL in case of failure or newly allocated mesage ref
+ **/
+inline MessageDef *itti_alloc_new_message_sized(
+    task_id_t         origin_task_id,
+    MessagesIds       message_id,
+    MessageHeaderSize size);
 
 /** \brief handle signals and wait for all threads to join when the process complete.
  * This function should be called from the main thread after having created all ITTI tasks.

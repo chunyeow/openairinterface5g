@@ -65,6 +65,11 @@ extern int itti_debug;
 #define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); } \
     while(0)
 
+/* Message sent is an intertask dump type */
+#define ITTI_DUMP_MESSAGE_TYPE      0x1
+#define ITTI_STATISTIC_MESSAGE_TYPE 0x2
+#define ITTI_DUMP_XML_DEFINITION    0x3
+
 typedef struct itti_queue_item_s {
     STAILQ_ENTRY(itti_queue_item_s) entry;
     void    *data;
@@ -101,11 +106,6 @@ typedef struct itti_desc_s {
 
     itti_client_desc_t itti_clients[ITTI_DUMP_MAX_CON];
 } itti_desc_t;
-
-/* Message sent is an intertask dump type */
-#define ITTI_DUMP_MESSAGE_TYPE      0x1
-#define ITTI_STATISTIC_MESSAGE_TYPE 0x2
-#define ITTI_DUMP_XML_DEFINITION    0x3
 
 typedef struct {
     /* The size of this structure */
@@ -222,13 +222,62 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
     return 0;
 }
 
+static int itti_enqueue_message(itti_queue_item_t *new, uint32_t message_size,
+                                uint32_t message_type)
+{
+    itti_queue_item_t *head = NULL;
+
+    DevAssert(new != NULL);
+
+    /* Lock the queue mutex for writing to insert the new element */
+    pthread_mutex_lock(&itti_queue.queue_mutex);
+
+    /* We reached the maximum size for the queue of messages -> remove the head */
+    if (itti_queue.queue_size + message_size > ITTI_QUEUE_SIZE_MAX) {
+        head = STAILQ_FIRST(&itti_queue.itti_message_queue);
+        /* Remove the head */
+        STAILQ_REMOVE_HEAD(&itti_queue.itti_message_queue, entry);
+    } else {
+        itti_queue.queue_size += message_size;
+    }
+    /* Insert the packet at tail */
+    STAILQ_INSERT_TAIL(&itti_queue.itti_message_queue, new, entry);
+    itti_queue.itti_queue_last = new;
+
+    if (dump_file != NULL)
+    {
+        itti_socket_header_t header;
+
+        header.message_size = message_size + sizeof(itti_dump_message_t);
+        header.message_type = message_type;
+
+        fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
+        fwrite (&new->message_number, sizeof(new->message_number), 1, dump_file);
+        fwrite (new->message_name, sizeof(new->message_name), 1, dump_file);
+        fwrite (new->data, new->data_size, 1, dump_file);
+    }
+
+    /* Release the mutex */
+    pthread_mutex_unlock(&itti_queue.queue_mutex);
+
+    /* No need to have the mutex locked to free data as at this point the message
+     * is no more in the list.
+     */
+    if (head) {
+        free(head->data);
+        free(head);
+        head = NULL;
+    }
+
+    return 0;
+}
+
 int itti_dump_queue_message(message_number_t message_number,
                             MessageDef *message_p,
                             const char *message_name,
                             const uint32_t message_size)
 {
     itti_queue_item_t *new;
-    itti_queue_item_t *head = NULL;
     size_t message_name_length;
     int i;
 
@@ -251,7 +300,7 @@ int itti_dump_queue_message(message_number_t message_number,
         return -1;
     }
     memcpy(new->data, message_p, message_size);
-    new->data_size = message_size;
+    new->data_size      = message_size;
     new->message_number = message_number;
 
     message_name_length = strlen(message_name) + 1;
@@ -259,36 +308,7 @@ int itti_dump_queue_message(message_number_t message_number,
              SIGNAL_NAME_LENGTH, 0);
     memcpy(new->message_name, message_name, message_name_length);
 
-    /* Lock the queue mutex for writing to insert the new element */
-    pthread_mutex_lock(&itti_queue.queue_mutex);
-
-    /* We reached the maximum size for the queue of messages -> remove the head */
-    if (itti_queue.queue_size + message_size > ITTI_QUEUE_SIZE_MAX) {
-        head = STAILQ_FIRST(&itti_queue.itti_message_queue);
-        /* Remove the head */
-        STAILQ_REMOVE_HEAD(&itti_queue.itti_message_queue, entry);
-    } else {
-        itti_queue.queue_size += message_size;
-    }
-    /* Insert the packet at tail */
-    STAILQ_INSERT_TAIL(&itti_queue.itti_message_queue, new, entry);
-    itti_queue.itti_queue_last = new;
-
-    if (dump_file != NULL)
-    {
-        itti_socket_header_t header;
-
-        header.message_size = sizeof(itti_dump_message_t) + message_size;
-        header.message_type = ITTI_DUMP_MESSAGE_TYPE;
-
-        fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
-        fwrite (&new->message_number, sizeof(new->message_number), 1, dump_file);
-        fwrite (new->message_name, sizeof(new->message_name), 1, dump_file);
-        fwrite (new->data, new->data_size, 1, dump_file);
-    }
-
-    /* Release the mutex */
-    pthread_mutex_unlock(&itti_queue.queue_mutex);
+    itti_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
 
     for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
         if (pthread_mutex_trylock(&itti_queue.itti_clients[i].client_lock) == 0) {
@@ -299,15 +319,6 @@ int itti_dump_queue_message(message_number_t message_number,
         if (itti_queue.itti_clients[i].sd == -1)
             continue;
         itti_dump_send_message(itti_queue.itti_clients[i].sd, new);
-    }
-
-    /* No need to have the mutex locked to free data as at this point the message
-     * is no more in the list.
-     */
-    if (head) {
-        free(head->data);
-        free(head);
-        head = NULL;
     }
 
     return 0;

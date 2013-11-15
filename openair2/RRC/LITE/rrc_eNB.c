@@ -2984,7 +2984,7 @@ void *rrc_enb_task(void *args_p) {
     msg_name = ITTI_MSG_NAME (msg_p);
     instance = ITTI_MSG_INSTANCE (msg_p);
 
-    switch (msg_p->header.messageId) {
+    switch (ITTI_MSG_ID(msg_p)) {
       case TERMINATE_MESSAGE:
         itti_exit_task ();
         break;

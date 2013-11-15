@@ -127,17 +127,40 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
         GValue buffer_store = G_VALUE_INIT;
         gpointer buffer;
 
-        gtk_tree_model_get_value (model, &iter, COL_BUFFER, &buffer_store);
+        GValue message_id_store = G_VALUE_INIT;
+        guint message_id;
 
+        gtk_tree_model_get_value (model, &iter, COL_BUFFER, &buffer_store);
         buffer = g_value_get_pointer (&buffer_store);
+
+        gtk_tree_model_get_value (model, &iter, COL_MESSAGE_ID, &message_id_store);
+        message_id = g_value_get_uint(&message_id_store);
 
         if (!path_currently_selected)
         {
             /* Clear the view */
             CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
 
-            /* Dissect the signal */
-            CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+            if (strcmp(message_id_to_string(message_id), "GENERIC_LOG") == 0) {
+                gchar *data;
+                gint   data_size;
+                uint32_t message_header_type_size;
+
+                CHECK_FCT_DO(dissect_signal_header((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+
+                message_header_type_size = get_message_header_type_size();
+                data = (gchar *)buffer_at_offset((buffer_t*)buffer, message_header_type_size);
+                data_size = get_message_size((buffer_t*)buffer);
+
+                g_debug("message header type size: %u, data size: %u\n",
+                        message_header_type_size, data_size);
+
+                ui_signal_set_text(text_view, "\n", 1);
+                ui_signal_set_text(text_view, data, data_size);
+            } else {
+                /* Dissect the signal */
+                CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+            }
         }
     }
     return TRUE;

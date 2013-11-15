@@ -506,7 +506,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
       msg_name = ITTI_MSG_NAME (msg_p);
       instance = ITTI_MSG_INSTANCE (msg_p);
 
-      switch (msg_p->header.messageId) {
+      switch (ITTI_MSG_ID(msg_p)) {
         case RRC_DCCH_DATA_REQ:
           LOG_D(PDCP, "Received %s from %s: instance %d, frame %d, eNB_flag %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,

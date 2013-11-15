@@ -41,7 +41,7 @@
 #include "S1AP-PDU.h"
 
 int asn_debug = 0;
-int asn1_xer_print = 1;
+int asn1_xer_print = 0;
 
 #if defined(EMIT_ASN_DEBUG_EXTERN)
 inline void ASN_DEBUG(const char *fmt, ...)

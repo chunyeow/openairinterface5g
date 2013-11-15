@@ -34,6 +34,10 @@
 int itti_dump_queue_message(message_number_t message_number, MessageDef *message_p, const char *message_name,
                             const uint32_t message_size);
 
+int itti_dump_queue_generic_string_message(message_number_t message_number,
+                                           char *string_message,
+                                           const uint32_t string_message_length);
+
 int itti_dump_init(const char * const messages_definition_xml, const char * const dump_file_name);
 
 void itti_dump_exit(void);

@@ -189,7 +189,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
 
     DevAssert(message_p != NULL);
 
-    origin_thread_id = TASK_GET_THREAD_ID(message_p->header.originTaskId);
+    origin_thread_id = TASK_GET_THREAD_ID(message_p->ittiMsgHeader.originTaskId);
 
     destination_task_id = TASK_FIRST;
     for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++) {
@@ -208,7 +208,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
 
                 memcpy (new_message_p, message_p, sizeof(MessageDef));
                 result = itti_send_msg_to_task (destination_task_id, INSTANCE_DEFAULT, new_message_p);
-                DevCheck(result >= 0, message_p->header.messageId, thread_id, destination_task_id);
+                DevCheck(result >= 0, message_p->ittiMsgHeader.messageId, thread_id, destination_task_id);
             }
         }
     }
@@ -217,22 +217,29 @@ int itti_send_broadcast_message(MessageDef *message_p) {
     return ret;
 }
 
-inline MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds message_id) {
+inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, MessagesIds message_id, MessageHeaderSize size)
+{
     MessageDef *temp = NULL;
 
     DevCheck(message_id < itti_desc.messages_id_max, message_id, itti_desc.messages_id_max, 0);
 
-    temp = calloc (1, MESSAGE_SIZE(message_id));
+    temp = calloc (1, sizeof(MessageHeader) + size);
     DevAssert(temp != NULL);
 
-    temp->header.messageId = message_id;
-    temp->header.originTaskId = origin_task_id;
-    temp->header.size = itti_desc.messages_info[message_id].size;
+    temp->ittiMsgHeader.messageId = message_id;
+    temp->ittiMsgHeader.originTaskId = origin_task_id;
+    temp->ittiMsgHeader.ittiMsgSize = size;
 
     return temp;
 }
 
-int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message) {
+inline MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds message_id)
+{
+    return itti_alloc_new_message_sized(origin_task_id, message_id, itti_desc.messages_info[message_id].size);
+}
+
+int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message)
+{
     thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
     message_list_t *new;
     uint32_t priority;
@@ -242,11 +249,11 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     DevAssert(message != NULL);
     DevCheck(task_id < itti_desc.task_max, task_id, itti_desc.task_max, 0);
 
-    message->header.destinationTaskId = task_id;
-    message->header.instance = instance;
-    message->header.lte_time.frame = itti_desc.lte_time.frame;
-    message->header.lte_time.slot = itti_desc.lte_time.slot;
-    message_id = message->header.messageId;
+    message->ittiMsgHeader.destinationTaskId = task_id;
+    message->ittiMsgHeader.instance = instance;
+    message->ittiMsgHeader.lte_time.frame = itti_desc.lte_time.frame;
+    message->ittiMsgHeader.lte_time.slot = itti_desc.lte_time.slot;
+    message_id = message->ittiMsgHeader.messageId;
     DevCheck(message_id < itti_desc.messages_id_max, itti_desc.messages_id_max, message_id, 0);
 
     priority = itti_get_message_priority (message_id);
@@ -255,7 +262,7 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     message_number = itti_increment_message_number ();
 
     itti_dump_queue_message (message_number, message, itti_desc.messages_info[message_id].name,
-                             MESSAGE_SIZE(message_id));
+                             sizeof(MessageHeader) + message->ittiMsgHeader.ittiMsgSize);
 
     if (task_id != TASK_UNKNOWN)
     {
@@ -521,8 +528,8 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
             itti_desc.tasks[task_id].message_in_queue--;
 
             ITTI_DEBUG(
-                    "Receiver queue[(%u:%s)] got new message %s, number %lu\n",
-                    task_id, itti_get_task_name(task_id), itti_desc.messages_info[temp->msg->header.messageId].name, temp->message_number);
+                       "Receiver queue[(%u:%s)] got new message %s, number %lu\n",
+                       task_id, itti_get_task_name(task_id), itti_desc.messages_info[temp->msg->ittiMsgHeader.messageId].name, temp->message_number);
             break;
         }
 
