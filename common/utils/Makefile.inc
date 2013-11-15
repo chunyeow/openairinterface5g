@@ -8,5 +8,6 @@ ITTI_OBJS += $(ITTI_DIR)/timer.o
 
 UTILS_OBJS = $(ITTI_OBJS)
 
-UTILS_incl = \
+UTILS_incl = 				\
+	-I$(COMMON_UTILS_DIR) 	\
     -I$(ITTI_DIR)
