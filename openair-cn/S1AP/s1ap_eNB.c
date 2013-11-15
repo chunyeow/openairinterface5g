@@ -194,6 +194,7 @@ void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_associa
                   sctp_new_association_resp->sctp_state,
                   instance,
                   sctp_new_association_resp->ulp_cnx_id);
+        return;
     }
 
     /* Update parameters */

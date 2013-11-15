@@ -89,8 +89,8 @@ void *mme_app_thread(void *args)
                 }
             } break;
             case TERMINATE_MESSAGE: {
-                /* Termination message received -> release any data allocated */
-                
+                /* Termination message received TODO -> release any data allocated */
+                itti_exit_task();
             } break;
             default: {
                 MME_APP_DEBUG("Unkwnon message ID %d:%s\n",

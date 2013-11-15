@@ -240,8 +240,12 @@ void sctp_handle_new_association_req(
                 sctp_itti_send_association_resp(
                     requestor, instance, -1, sctp_new_association_req_p->ulp_cnx_id,
                     SCTP_STATE_UNREACHABLE, 0, 0);
+                /* Add the socket to list of fd monitored by ITTI */
+                itti_unsubscribe_event_fd(TASK_SCTP, sd);
                 close(sd);
                 return;
+            } else {
+                SCTP_DEBUG("connectx in progress...\n");
             }
         }
     } else {
@@ -406,8 +410,23 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
                      (struct sockaddr *)&addr, &from_len,
                      &sinfo, &flags);
     if (n < 0) {
-        SCTP_DEBUG("An error occured during read\n");
-        SCTP_ERROR("sctp_recvmsg: %s:%d\n", strerror(errno), errno);
+        if (errno == ENOTCONN) {
+            itti_unsubscribe_event_fd(TASK_SCTP, sctp_cnx->sd);
+
+            sctp_itti_send_association_resp(
+                sctp_cnx->task_id, sctp_cnx->instance, -1,
+                sctp_cnx->cnx_id, SCTP_STATE_UNREACHABLE, 0, 0);
+
+            close(sctp_cnx->sd);
+            sctp_nb_cnx--;
+            free(sctp_cnx);
+        } else {
+            SCTP_DEBUG("An error occured during read\n");
+            SCTP_ERROR("sctp_recvmsg: %s:%d\n", strerror(errno), errno);
+        }
+        return;
+    } else if (n == 0) {
+        SCTP_DEBUG("return of sctp_recvmsg is 0...\n");
         return;
     }
     if (flags & MSG_NOTIFICATION) {
@@ -419,9 +438,19 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
 
         /* Client deconnection */
         if (SCTP_SHUTDOWN_EVENT == snp->sn_header.sn_type) {
-            DevMessage("Other peer has requested a com down -> not handled\n");
-//             return sctp_handle_com_down(snp->sn_shutdown_event.sse_assoc_id);
             itti_unsubscribe_event_fd(TASK_SCTP, sctp_cnx->sd);
+
+            close(sctp_cnx->sd);
+
+            sctp_itti_send_association_resp(
+                sctp_cnx->task_id, sctp_cnx->instance, sctp_cnx->assoc_id,
+                sctp_cnx->cnx_id, SCTP_STATE_SHUTDOWN,
+                0, 0);
+
+            STAILQ_REMOVE(&sctp_cnx_list, sctp_cnx, sctp_cnx_list_elm_s, entries);
+            sctp_nb_cnx--;
+
+            free(sctp_cnx);
         }
         /* Association has changed. */
         else if (SCTP_ASSOC_CHANGE == snp->sn_header.sn_type) {
@@ -515,7 +544,8 @@ void *sctp_eNB_task(void *arg)
 
         /* Check if there is a packet to handle */
         if (received_msg != NULL) {
-            switch (ITTI_MSG_ID(received_msg)) {
+            switch (ITTI_MSG_ID(received_msg))
+            {
                 case TERMINATE_MESSAGE:
                     itti_exit_task();
                     break;
@@ -530,8 +560,8 @@ void *sctp_eNB_task(void *arg)
                                    &received_msg->msg.sctp_data_req);
                 } break;
                 default:
-                    SCTP_ERROR("Received unhandled message with id %d\n",
-                               ITTI_MSG_ID(received_msg));
+                    SCTP_ERROR("Received unhandled message %d:%s\n",
+                               ITTI_MSG_ID(received_msg), ITTI_MSG_NAME(received_msg));
                     break;
             }
         }
