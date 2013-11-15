@@ -141,23 +141,27 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
             /* Clear the view */
             CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
 
-            if (strcmp(message_id_to_string(message_id), "GENERIC_LOG") == 0) {
+            if ((strcmp (message_id_to_string (message_id), "ERROR") == 0)
+                    || (strcmp (message_id_to_string (message_id), "WARNING") == 0)
+                    || (strcmp (message_id_to_string (message_id), "GENERIC_LOG") == 0))
+            {
                 gchar *data;
-                gint   data_size;
+                gint data_size;
                 uint32_t message_header_type_size;
 
                 CHECK_FCT_DO(dissect_signal_header((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
 
-                message_header_type_size = get_message_header_type_size();
-                data = (gchar *)buffer_at_offset((buffer_t*)buffer, message_header_type_size);
-                data_size = get_message_size((buffer_t*)buffer);
+                message_header_type_size = get_message_header_type_size ();
+                data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
+                data_size = get_message_size ((buffer_t*) buffer);
 
-                g_debug("message header type size: %u, data size: %u\n",
-                        message_header_type_size, data_size);
+                g_debug("message header type size: %u, data size: %u\n", message_header_type_size, data_size);
 
-                ui_signal_set_text(text_view, "\n", 1);
-                ui_signal_set_text(text_view, data, data_size);
-            } else {
+                ui_signal_set_text (text_view, "\n", 1);
+                ui_signal_set_text (text_view, data, data_size);
+            }
+            else
+            {
                 /* Dissect the signal */
                 CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
             }
