@@ -75,7 +75,7 @@ extern "C" {
  *  @ingroup _macro
  *  @brief the macros that describe the maximum length of LOG
  * @{*/
-#define MAX_LOG_ITEM 70 /*!< \brief the maximum length of a LOG item, what is LOG_ITEM ??? */
+#define MAX_LOG_ITEM 100 /*!< \brief the maximum length of a LOG item, what is LOG_ITEM ??? */
 #define MAX_LOG_INFO 1000 /*!< \brief the maximum length of a log */
 #define MAX_LOG_TOTAL 1500 /*!< \brief the maximum length of a log */
 /* @}*/
@@ -304,8 +304,8 @@ typedef struct {
 } log_t;
 
 typedef struct LOG_params {
-  char *file;
-  char *func;
+  const char *file;
+  const char *func;
   int line;
   int comp;
   int level;
