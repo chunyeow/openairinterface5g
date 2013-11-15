@@ -1,6 +1,13 @@
 #ifndef S1AP_MESSAGES_TYPES_H_
 #define S1AP_MESSAGES_TYPES_H_
 
+//-------------------------------------------------------------------------------------------//
+// Defines to access message fields.
+
+#define S1AP_NAS_FIRST_REQ(mSGpTR)              (mSGpTR)->msg.s1ap_nas_first_req
+
+//-------------------------------------------------------------------------------------------//
+
 enum cell_type_e {
     CELL_MACRO_ENB,
     CELL_HOME_ENB
@@ -58,14 +65,18 @@ typedef struct {
     uint32_t m_tmsi;
 } s_tmsi_t;
 
+typedef enum {
+  IDENTITY_PR_NOTHING,
+  IDENTITY_PR_s_tmsi,
+  IDENTITY_PR_gummei,
+} identity_t;
+
 typedef struct {
-#define S_TMSI_PROVIDED 0x0
-#define GUMMEI_PROVIDED 0x1
-    unsigned     present:1;
+    identity_t present;
     union {
-        gummei_t gummei;
         s_tmsi_t s_tmsi;
-    } identity;
+        gummei_t gummei;
+    } choice;
 } ue_identity_t;
 
 typedef struct {

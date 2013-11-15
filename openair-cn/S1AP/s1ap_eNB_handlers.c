@@ -287,12 +287,12 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
 
         s1ap_nas_first_req.rnti = 0xC03A;
         s1ap_nas_first_req.establishment_cause = RRC_CAUSE_MO_DATA;
-        s1ap_nas_first_req.ue_identity.present = GUMMEI_PROVIDED;
+        s1ap_nas_first_req.ue_identity.present = IDENTITY_PR_gummei;
 
-        s1ap_nas_first_req.ue_identity.identity.gummei.mcc = 208;
-        s1ap_nas_first_req.ue_identity.identity.gummei.mnc = 34;
-        s1ap_nas_first_req.ue_identity.identity.gummei.mme_code = 0;
-        s1ap_nas_first_req.ue_identity.identity.gummei.mme_group_id = 0;
+        s1ap_nas_first_req.ue_identity.choice.gummei.mcc = 208;
+        s1ap_nas_first_req.ue_identity.choice.gummei.mnc = 34;
+        s1ap_nas_first_req.ue_identity.choice.gummei.mme_code = 0;
+        s1ap_nas_first_req.ue_identity.choice.gummei.mme_group_id = 0;
 
         /* NAS Attach request with IMSI */
         uint8_t nas_attach_req_imsi[] =

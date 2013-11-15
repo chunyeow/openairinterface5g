@@ -155,6 +155,8 @@ typedef struct{
   //unsigned short UE_index_list[NUMBER_OF_UE_MAX];
   //L2_ID UE_list[NUMBER_OF_UE_MAX];
   u8 UE_list[NUMBER_OF_UE_MAX][5];
+  InitialUE_Identity_t UE_Initialue_identity[NUMBER_OF_UE_MAX];
+  EstablishmentCause_t UE_establishment_cause[NUMBER_OF_UE_MAX];
 }__attribute__ ((__packed__)) eNB_RRC_INFO;
 
 typedef struct{

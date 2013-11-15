@@ -1009,7 +1009,7 @@ uint8_t do_RRCConnectionRequest(uint8_t *buffer,uint8_t *rv) {
 
 }
 
-uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer) {
+uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS) {
 
 
   asn_enc_rval_t enc_rval;
@@ -1042,7 +1042,8 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer) {
   rrcConnectionSetupComplete->criticalExtensions.choice.c1.choice.rrcConnectionSetupComplete_r8.registeredMME->mmegi.bits_unused=0;
 */
   memset(&rrcConnectionSetupComplete->criticalExtensions.choice.c1.choice.rrcConnectionSetupComplete_r8.dedicatedInfoNAS,0,sizeof(OCTET_STRING_t));
-  OCTET_STRING_fromBuf(&rrcConnectionSetupComplete->criticalExtensions.choice.c1.choice.rrcConnectionSetupComplete_r8.dedicatedInfoNAS,"NAS Info",8);
+  OCTET_STRING_fromBuf(&rrcConnectionSetupComplete->criticalExtensions.choice.c1.choice.rrcConnectionSetupComplete_r8.dedicatedInfoNAS,
+                       dedicatedInfoNAS, dedicatedInfoNASLength);
 
 /*
   rrcConnectionSetupComplete->criticalExtensions.choice.c1.choice.rrcConnectionSetupComplete_r8.registeredMME->mmec.buf = calloc(1,1);

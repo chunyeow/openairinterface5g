@@ -238,14 +238,44 @@ void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 eNB_index){
 
 mui_t rrc_mui=0;
 
+/* NAS Attach request with IMSI */
+static const char nas_attach_req_imsi[] =
+{
+    0x07, 0x41,
+    /* EPS Mobile identity = IMSI */
+    0x71, 0x08, 0x29, 0x80, 0x43, 0x21, 0x43, 0x65, 0x87,
+    0xF9,
+    /* End of EPS Mobile Identity */
+    0x02, 0xE0, 0xE0, 0x00, 0x20, 0x02, 0x03,
+    0xD0, 0x11, 0x27, 0x1A, 0x80, 0x80, 0x21, 0x10, 0x01, 0x00, 0x00,
+    0x10, 0x81, 0x06, 0x00, 0x00, 0x00, 0x00, 0x83, 0x06, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
+    0x01, 0x27, 0x11,
+};
+
+/* NAS Attach request with GUTI */
+static const char nas_attach_req_guti[] =
+{
+    0x07, 0x41,
+    /* EPS Mobile identity = IMSI */
+    0x71, 0x0B, 0xF6, 0x12, 0xF2, 0x01, 0x80, 0x00, 0x01, 0xE0, 0x00,
+    0xDA, 0x1F,
+    /* End of EPS Mobile Identity */
+    0x02, 0xE0, 0xE0, 0x00, 0x20, 0x02, 0x03,
+    0xD0, 0x11, 0x27, 0x1A, 0x80, 0x80, 0x21, 0x10, 0x01, 0x00, 0x00,
+    0x10, 0x81, 0x06, 0x00, 0x00, 0x00, 0x00, 0x83, 0x06, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
+    0x01, 0x27, 0x11,
+};
+
 /*------------------------------------------------------------------------------*/
 void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id, u32 frame, u8 eNB_index){
   /*------------------------------------------------------------------------------*/
 
-  u8 buffer[32];
+  u8 buffer[100];
   u8 size;
 
-  size = do_RRCConnectionSetupComplete(buffer);
+  size = do_RRCConnectionSetupComplete(buffer, sizeof(nas_attach_req_guti), nas_attach_req_guti);
 
   LOG_I(RRC,"[UE %d][RAPROC] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionSetupComplete (bytes%d, eNB %d)\n",
 	Mod_id,frame, size, eNB_index);
@@ -750,7 +780,7 @@ rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_index,
                              kRRCint,
                              NULL
 #ifdef Rel10
-			    ,(MBMS_SessionInfoList_r9_t *)NULL
+			    ,(PMCH_InfoList_r9_t *)NULL
 #endif
 			    );
 
@@ -760,7 +790,7 @@ rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_index,
 			    (DRB_ToAddModList_t*)NULL,
 			    (DRB_ToReleaseList_t*)NULL
 #ifdef Rel10
-			    ,(MBMS_SessionInfoList_r9_t *)NULL
+			    ,(PMCH_InfoList_r9_t *)NULL
 #endif
 			    );
 
@@ -901,7 +931,7 @@ rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_index,
                              NULL,
                              kUPenc
 #ifdef Rel10
-			    ,(MBMS_SessionInfoList_r9_t *)NULL
+			    ,(PMCH_InfoList_r9_t *)NULL
 #endif
 			    );
   
@@ -911,7 +941,7 @@ rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_index,
 			    radioResourceConfigDedicated->drb_ToAddModList,
 			    (DRB_ToReleaseList_t*)NULL
 #ifdef Rel10
-			    ,(MBMS_SessionInfoList_r9_t *)NULL
+			    ,(PMCH_InfoList_r9_t *)NULL
 #endif
 			    );
     for (i=0;i<radioResourceConfigDedicated->drb_ToAddModList->list.count;i++) {
@@ -1155,7 +1185,6 @@ void   rrc_ue_process_mobilityControlInfo(u8 Mod_id,u32 frame, u8 eNB_index,stru
 
   DRB_ToReleaseList_t*  drb2release_list;
   DRB_Identity_t *lcid;
-  u8 i;
   LOG_N(RRC,"Note: This function needs some updates\n");
   if(UE_rrc_inst[Mod_id].Info[eNB_index].T310_active == 1)
     UE_rrc_inst[Mod_id].Info[eNB_index].T310_active = 0;
@@ -1897,6 +1926,60 @@ void ue_meas_filtering(u8 Mod_id,u32 frame,u8 eNB_index){
   }
 }
 
+//Below routine implements Measurement Reporting procedure from 36.331 Section 5.5.5
+void rrc_ue_generate_MeasurementReport(u8 Mod_id, u32 frame,u8 eNB_index) {
+
+  u8 buffer[32], size;
+  u8 i;
+  u8 target_eNB_offset;
+  MeasId_t measId;
+  PhysCellId_t cellId, targetCellId;
+  long rsrq_s,rsrp_t,rsrq_t;
+  long rsrp_s, nElem, nElem1;
+  float rsrp_filtered, rsrq_filtered;
+  nElem = 100;
+  nElem1 = 33;
+  static u32 pframe=0;
+  target_eNB_offset = UE_rrc_inst[Mod_id].Info[0].handoverTarget; // eNB_offset of target eNB: used to obtain the mod_id of target eNB
+
+  for (i=0;i<MAX_MEAS_ID;i++) {
+    if (UE_rrc_inst[Mod_id].measReportList[0][i] != NULL) {
+      measId = UE_rrc_inst[Mod_id].measReportList[0][i]->measId;
+
+      // Note: Values in the meas report have to be the mapped values...to implement binary search for LUT
+      rsrp_filtered = UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_index];//nid_cell];
+      rsrp_s = binary_search_float(RSRP_meas_mapping,nElem, rsrp_filtered); //mapped RSRP of serving cell
+
+      rsrq_filtered = UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_index];//nid_cell]; //RSRQ of serving cell
+      rsrq_s = binary_search_float(RSRQ_meas_mapping,nElem1,rsrp_filtered);//mapped RSRQ of serving cell
+
+      LOG_D(RRC,"[UE %d] Frame %d: source eNB %d :rsrp_s: %d rsrq_s: %d tmp: %f tmp1: %f \n",
+            Mod_id,frame,eNB_index, rsrp_s,rsrq_s,rsrp_filtered,rsrq_filtered);
+
+      rsrp_t = binary_search_float(RSRP_meas_mapping,nElem,UE_rrc_inst[Mod_id].rsrp_db_filtered[target_eNB_offset]); //RSRP of target cell
+      rsrq_t = binary_search_float(RSRQ_meas_mapping,nElem1,UE_rrc_inst[Mod_id].rsrq_db_filtered[target_eNB_offset]); //RSRQ of target cell
+
+      //  if (measFlag == 1) {
+      cellId = get_adjacent_cell_id(Mod_id,eNB_index); //PhycellId of serving cell
+      targetCellId = UE_rrc_inst[Mod_id].HandoverInfoUe.targetCellId ;//get_adjacent_cell_id(Mod_id,target_eNB_offset); //PhycellId of target cell
+
+      if (pframe!=frame){
+        pframe=frame;
+        size = do_MeasurementReport(buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
+        LOG_D(RRC,"[UE %d] Frame %d: Sending MeasReport: servingCell(%d) targetCell(%d) rsrp_s(%d) rsrq_s(%d) rsrp_t(%d) rsrq_t(%d) \n",
+              Mod_id, frame, cellId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
+        LOG_I(RRC,"[UE %d] Frame %d : Generating Measurement Report for eNB %d\n",Mod_id,frame,eNB_index);
+        LOG_D(RLC,"[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- PDCP_DATA_REQ/%d Bytes (MeasurementReport to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
+              frame, Mod_id+NB_eNB_INST, size, eNB_index, rrc_mui, Mod_id+NB_eNB_INST, DCCH);
+        pdcp_data_req(Mod_id+NB_eNB_INST,frame,0,DCCH,rrc_mui++,0,size,buffer,1);
+        //LOG_D(RRC, "[UE %d] Frame %d Sending MeasReport (%d bytes) through DCCH%d to PDCP \n",Mod_id,frame, size, DCCH);
+      }
+      //          measFlag = 0; //re-setting measFlag so that no more MeasReports are sent in this frame
+      //          }
+    }
+  }
+}
+
 // Measurement report triggering, described in 36.331 Section 5.5.4.1: called periodically 
 void ue_measurement_report_triggering(u8 Mod_id, u32 frame,u8 eNB_index) {
   u8 i,j;
@@ -2021,62 +2104,6 @@ u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, 
   }
   return 0;
 }
-
-//Below routine implements Measurement Reporting procedure from 36.331 Section 5.5.5
-void rrc_ue_generate_MeasurementReport(u8 Mod_id, u32 frame,u8 eNB_index) {
-  
-  u8 buffer[32], size;
-  u8 i,j;
-  u8 target_eNB_offset;
-  MeasId_t measId;
-  PhysCellId_t cellId, targetCellId;
-  long rsrq_s,rsrp_t,rsrq_t;
-  long rsrp_s, nElem, nElem1;
-  float rsrp_filtered, rsrq_filtered;
-  nElem = 100;
-  nElem1 = 33;
-  static u32 pframe=0;
-  int nid_cell = mac_xface->lte_frame_parms->Nid_cell;
-  target_eNB_offset = UE_rrc_inst[Mod_id].Info[0].handoverTarget; // eNB_offset of target eNB: used to obtain the mod_id of target eNB
-
-  for (i=0;i<MAX_MEAS_ID;i++) {
-    if (UE_rrc_inst[Mod_id].measReportList[0][i] != NULL) {
-      measId = UE_rrc_inst[Mod_id].measReportList[0][i]->measId;
-      
-      // Note: Values in the meas report have to be the mapped values...to implement binary search for LUT
-      rsrp_filtered = UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_index];//nid_cell];
-      rsrp_s = binary_search_float(RSRP_meas_mapping,nElem, rsrp_filtered); //mapped RSRP of serving cell
-      
-      rsrq_filtered = UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_index];//nid_cell]; //RSRQ of serving cell
-      rsrq_s = binary_search_float(RSRQ_meas_mapping,nElem1,rsrp_filtered);//mapped RSRQ of serving cell
-
-      LOG_D(RRC,"[UE %d] Frame %d: source eNB %d :rsrp_s: %d rsrq_s: %d tmp: %f tmp1: %f \n",
-	    Mod_id,frame,eNB_index, rsrp_s,rsrq_s,rsrp_filtered,rsrq_filtered);
-
-      rsrp_t = binary_search_float(RSRP_meas_mapping,nElem,UE_rrc_inst[Mod_id].rsrp_db_filtered[target_eNB_offset]); //RSRP of target cell
-      rsrq_t = binary_search_float(RSRQ_meas_mapping,nElem1,UE_rrc_inst[Mod_id].rsrq_db_filtered[target_eNB_offset]); //RSRQ of target cell
-
-      //  if (measFlag == 1) {
-      cellId = get_adjacent_cell_id(Mod_id,eNB_index); //PhycellId of serving cell
-      targetCellId = UE_rrc_inst[Mod_id].HandoverInfoUe.targetCellId ;//get_adjacent_cell_id(Mod_id,target_eNB_offset); //PhycellId of target cell
-
-      if (pframe!=frame){
-	pframe=frame;
-	size = do_MeasurementReport(buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
-	LOG_D(RRC,"[UE %d] Frame %d: Sending MeasReport: servingCell(%d) targetCell(%d) rsrp_s(%d) rsrq_s(%d) rsrp_t(%d) rsrq_t(%d) \n", 
-	      Mod_id, frame, cellId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
-	LOG_I(RRC,"[UE %d] Frame %d : Generating Measurement Report for eNB %d\n",Mod_id,frame,eNB_index);
-	LOG_D(RLC,"[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- PDCP_DATA_REQ/%d Bytes (MeasurementReport to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
-	      frame, Mod_id+NB_eNB_INST, size, eNB_index, rrc_mui, Mod_id+NB_eNB_INST, DCCH);
-	pdcp_data_req(Mod_id+NB_eNB_INST,frame,0,DCCH,rrc_mui++,0,size,(char*)buffer,1);
-	//LOG_D(RRC, "[UE %d] Frame %d Sending MeasReport (%d bytes) through DCCH%d to PDCP \n",Mod_id,frame, size, DCCH);
-      } 
-      //	  measFlag = 0; //re-setting measFlag so that no more MeasReports are sent in this frame
-      //	  }
-    }
-  }
-}
-
 
 #ifdef Rel10
 int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area) {
@@ -2292,6 +2319,7 @@ void *rrc_ue_task(void *args_p) {
     }
 
     free (msg_p);
+    msg_p = NULL;
   }
 }
 #endif

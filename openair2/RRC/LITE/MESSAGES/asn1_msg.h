@@ -55,6 +55,8 @@
 
 uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index);
 
+u8 get_adjacent_cell_mod_id(uint16_t phyCellId);
+
 /** 
 \brief Generate a default configuration for SIB1 (eNB).
 @param frame_parms Used to store some basic parameters from PHY configuration
@@ -102,7 +104,7 @@ uint8_t do_RRCConnectionRequest(uint8_t *buffer,u8 *rv);
 /** \brief Generate an RRCConnectionSetupComplete UL-DCCH-Message (UE)
 @param buffer Pointer to PER-encoded ASN.1 description of UL-DCCH-Message PDU
 @returns Size of encoded bit stream in bytes*/
-uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer);
+uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS);
 
 /** \brief Generate an RRCConnectionReconfigurationComplete UL-DCCH-Message (UE)
 @param buffer Pointer to PER-encoded ASN.1 description of UL-DCCH-Message PDU

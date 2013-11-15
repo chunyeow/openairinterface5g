@@ -39,6 +39,7 @@
 
 #include "defs.h"
 #include "extern.h"
+#include "UTIL/assertions.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "LAYER2/RLC/rlc.h"
 #include "UTIL/LOG/log.h"
@@ -567,42 +568,45 @@ openair_rrc_lite_eNB_init (u8 Mod_id)
 
 
 u8
-get_next_UE_index (u8 Mod_id, u8 * UE_identity)
+get_next_UE_index (u8 Mod_id, u8 *UE_identity)
 {
-
   u8 i, first_index = 255, reg = 0;
+  static const u8 null_identity[5] =
+    {0, 0, 0, 0, 0};
 
-  for (i = 0; i < NUMBER_OF_UE_MAX; i++)
-    {
+  DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
 
-
-      if ((first_index == 255) && (*(unsigned int *) eNB_rrc_inst[Mod_id].Info.UE_list[i] == 0x00000000))
-        first_index = i;        // save first free position
-
-      if ((eNB_rrc_inst[Mod_id].Info.UE_list[i][0] == UE_identity[0]) && 
-	  (eNB_rrc_inst[Mod_id].Info.UE_list[i][1] == UE_identity[1]) && 
-	  (eNB_rrc_inst[Mod_id].Info.UE_list[i][2] == UE_identity[2]) && 
-	  (eNB_rrc_inst[Mod_id].Info.UE_list[i][3] == UE_identity[3]) && 
-	  (eNB_rrc_inst[Mod_id].Info.UE_list[i][4] == UE_identity[4]))      // UE_identity already registered
-        reg = 1;
-
+  for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
+    if ((first_index == 255)
+        && (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], null_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[0])))
+            == 0) {
+      first_index = i; // save first free position
     }
 
-  if (reg == 0)   {
-      LOG_I (RRC, "Adding UE %d\n", first_index);
-      return (first_index);
+    if (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], UE_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[0])) == 0) {
+      // UE_identity already registered
+      reg = 1;
     }
-  else
+  }
+
+  if (reg == 0) {
+    LOG_I(RRC, "Adding UE %d\n", first_index);
+    return (first_index);
+  }
+  else {
     return (255);
+  }
 }
 
 void
 rrc_remove_UE (u8 Mod_id, u8 UE_id)
 {
+  DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
+  DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
 
   LOG_I (RRC, "Removing UE %d\n", UE_id);
   eNB_rrc_inst[Mod_id].Info.Status[UE_id] = RRC_IDLE;
-  *(unsigned int *) eNB_rrc_inst[Mod_id].Info.UE_list[UE_id] = 0x00000000;
+  memset(eNB_rrc_inst[Mod_id].Info.UE_list[UE_id], 0, sizeof(eNB_rrc_inst[0].Info.UE_list[0]));
 }
 
 
@@ -957,6 +961,8 @@ for (i = 0; i < 8; i++)
 
           if (UE_index != 255)
             {
+              eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index] = rrcConnectionRequest->ue_Identity;
+              eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index] = rrcConnectionRequest->establishmentCause;
 
               //      memcpy(&Rrc_xface->UE_id[Mod_id][UE_index],(u8 *)rrcConnectionRequest->ue_Identity.choice.randomValue.buf,5);
               memcpy (&eNB_rrc_inst[Mod_id].Info.UE_list[UE_index],
@@ -1029,7 +1035,7 @@ for (i = 0; i < 8; i++)
                                        (DRB_ToAddModList_t *) NULL,
                                        (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
-                                       , (MBMS_SessionInfoList_r9_t *) NULL
+                                       , (PMCH_InfoList_r9_t *) NULL
 #endif
                 );
               //LOG_D(RRC,"[eNB %d] RLC AM allocation index@0 is %d\n",Mod_id,rlc[Mod_id].m_rlc_am_array[0].allocation);
@@ -1074,23 +1080,64 @@ rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
                                             RRCConnectionSetupComplete_r8_IEs_t
                                             * rrcConnectionSetupComplete)
 {
-
   LOG_I (RRC, "[eNB %d][RAPROC] Frame %d : Logical Channel UL-DCCH, ""processing RRCConnectionSetupComplete from UE %d\n",
          Mod_id, frame, UE_index);
 
   // Forward message to S1AP layer
-#if defined(ENABLE_USE_MME) && !defined(ENABLE_ITTI)
+#if defined(ENABLE_USE_MME)
   if (oai_emulation.info.mme_enabled == 1)
+# if defined(ENABLE_ITTI)
+  {
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_NAS_FIRST_REQ);
+    S1AP_NAS_FIRST_REQ (message_p).rnti = eNB_mac_inst[Mod_id].UE_template[UE_index].rnti; // TODO check if this is the correct id to use
+
+    DevCheck(eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index] < RRC_CAUSE_LAST, eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index], RRC_CAUSE_LAST, Mod_id);
+    S1AP_NAS_FIRST_REQ (message_p).establishment_cause = eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index];
+
+    S1AP_NAS_FIRST_REQ (message_p).nas_pdu.buffer = rrcConnectionSetupComplete->dedicatedInfoNAS.buf;
+    S1AP_NAS_FIRST_REQ (message_p).nas_pdu.length = rrcConnectionSetupComplete->dedicatedInfoNAS.size;
+    if (rrcConnectionSetupComplete->registeredMME != NULL)
+    {
+       S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_gummei;
+       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mcc = 0; // TODO decode BIT STREAM
+       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mnc = 0; // TODO decode BIT STREAM
+       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mme_code = 0; // TODO decode BIT STREAM
+       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mme_group_id = 0; // TODO decode BIT STREAM
+    }
+    else
+    {
+      if (eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index].present == InitialUE_Identity_PR_s_TMSI)
+      {
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_s_tmsi;
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.s_tmsi.mme_code = 0; // TODO decode BIT STREAM
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.s_tmsi.m_tmsi = 0; // TODO decode BIT STREAM
+      }
+      else
+      {
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_NOTHING;
+      }
+    }
+
+    itti_send_msg_to_task (TASK_S1AP, Mod_id, message_p);
+  }
+# else
+  {
     s1ap_eNB_new_data_request (Mod_id, UE_index,
                                rrcConnectionSetupComplete->dedicatedInfoNAS.
                                buf,
                                rrcConnectionSetupComplete->dedicatedInfoNAS.
                                size);
+  }
   else
+# endif
 #endif
 
+  {
     rrc_eNB_generate_SecurityModeCommand (Mod_id, frame, UE_index);
-  //rrc_eNB_generate_UECapabilityEnquiry(Mod_id,frame,UE_index);
+    // rrc_eNB_generate_UECapabilityEnquiry(Mod_id,frame,UE_index);
+  }
 }
 
 mui_t rrc_eNB_mui = 0;
@@ -1578,7 +1625,7 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
     //memcpy((void *)rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.srb_ToAddModList,(void *)SRB_list,sizeof(SRB_ToAddModList_t));
     rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.srb_ToAddModList = SRB_configList2;
     //memcpy((void *)rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.drb_ToAddModList,(void *)DRB_list,sizeof(DRB_ToAddModList_t));
-    rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.drb_ToAddModList = DRB_configList;
+    rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.drb_ToAddModList = *DRB_configList;
     rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.drb_ToReleaseList = NULL;
     rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.mac_MainConfig = CALLOC(1, sizeof(*rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.mac_MainConfig));
     memcpy((void *)rrc_inst->handover_info[UE_index]->as_config.sourceRadioResourceConfig.mac_MainConfig,
@@ -1666,14 +1713,15 @@ rrc_eNB_process_MeasurementReport (u8 Mod_id, u32 frame, u16 UE_index,
 }
 void 
 rrc_eNB_generate_HandoverPreparationInformation (u8 Mod_id, u32 frame, u8 UE_index, PhysCellId_t targetPhyId) {
-
-  u8 buffer[100];
-  u8 size,UE_id_target;
+  u8 UE_id_target;
   u8 mod_id_target = get_adjacent_cell_mod_id(targetPhyId);
   HANDOVER_INFO *handoverInfo = CALLOC(1,sizeof(*handoverInfo));
+  /*
+  u8 buffer[100];
+  u8 size;
   struct PhysicalConfigDedicated  **physicalConfigDedicated = &eNB_rrc_inst[Mod_id].physicalConfigDedicated[UE_index];
   RadioResourceConfigDedicated_t *radioResourceConfigDedicated = CALLOC(1,sizeof(RadioResourceConfigDedicated_t));
-
+  */
 
   handoverInfo->as_config.antennaInfoCommon.antennaPortsCount =  0; //Not used 0- but check value
   handoverInfo->as_config.sourceDl_CarrierFreq = 36090; //Verify!
@@ -1736,6 +1784,16 @@ rrc_eNB_generate_HandoverPreparationInformation (u8 Mod_id, u32 frame, u8 UE_ind
     LOG_E(RRC,"\nError in obtaining Module ID of target eNB for handover \n");
 }
 
+void rrc_eNB_process_handoverPreparationInformation(u8 Mod_id,u32 frame, u16 UE_index) {
+
+  LOG_I(RRC,"[eNB %d] Frame %d : Logical Channel UL-DCCH, processing RRCHandoverPreparationInformation, sending RRCConnectionReconfiguration to UE %d \n",Mod_id,frame,UE_index);
+
+
+  //eNB_rrc_inst[Mod_id].Info.UE_list[UE_index]
+  rrc_eNB_generate_RRCConnectionReconfiguration_handover(Mod_id,frame,UE_index,NULL,0);
+
+}
+
 void check_handovers(u8 Mod_id, u32 frame) {
   u8 i;
   for (i=0;i<NUMBER_OF_UE_MAX;i++) {
@@ -1756,22 +1814,13 @@ void check_handovers(u8 Mod_id, u32 frame) {
 		      (i* NB_RB_MAX)+DCCH,
 		      rrc_eNB_mui++,0,
 		      eNB_rrc_inst[Mod_id].handover_info[i]->size,
-		      (char*)eNB_rrc_inst[Mod_id].handover_info[i]->buf,1);
+		      eNB_rrc_inst[Mod_id].handover_info[i]->buf,1);
 	eNB_rrc_inst[Mod_id].handover_info[i]->ho_complete = 0xF2;
       }
     }
   }
 }
 
-void rrc_eNB_process_handoverPreparationInformation(u8 Mod_id,u32 frame, u16 UE_index) {
-
-  LOG_I(RRC,"[eNB %d] Frame %d : Logical Channel UL-DCCH, processing RRCHandoverPreparationInformation, sending RRCConnectionReconfiguration to UE %d \n",Mod_id,frame,UE_index);
-  
-
-  //eNB_rrc_inst[Mod_id].Info.UE_list[UE_index]
-  rrc_eNB_generate_RRCConnectionReconfiguration_handover(Mod_id,frame,UE_index,NULL,0);
-
-}
 // 5.3.5.4 RRCConnectionReconfiguration including the mobilityControlInfo to prepare the UE handover
 void
 rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16 UE_index,u8 *nas_pdu,u32 nas_length)  {
@@ -1790,7 +1839,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
   struct SRB_ToAddMod__rlc_Config *SRB2_rlc_config;
   struct SRB_ToAddMod__logicalChannelConfig *SRB2_lchan_config;
   struct LogicalChannelConfig__ul_SpecificParameters  *SRB2_ul_SpecificParameters; 
-  LogicalChannelConfig_t *SRB1_logicalChannelConfig;
+  LogicalChannelConfig_t *SRB1_logicalChannelConfig = NULL;
   SRB_ToAddModList_t *SRB_configList = rrc_inst->SRB_configList[UE_index]; // not used in this context: may be removed
   SRB_ToAddModList_t *SRB_configList2;
 
@@ -1800,7 +1849,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
   struct PDCP_Config__rlc_UM *PDCP_rlc_UM;
   struct LogicalChannelConfig *DRB_lchan_config;
   struct LogicalChannelConfig__ul_SpecificParameters   *DRB_ul_SpecificParameters;
-  DRB_ToAddModList_t **DRB_configList = &rrc_inst->DRB_configList[UE_index];
+  // DRB_ToAddModList_t **DRB_configList = &rrc_inst->DRB_configList[UE_index];
   DRB_ToAddModList_t *DRB_configList2;
 
   MAC_MainConfig_t *mac_MainConfig;
@@ -1813,7 +1862,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
   MeasIdToAddMod_t *MeasId0, *MeasId1, *MeasId2, *MeasId3, *MeasId4, *MeasId5;
   QuantityConfig_t *quantityConfig;
   MobilityControlInfo_t *mobilityInfo;
-  HandoverCommand_t handoverCommand;
+  // HandoverCommand_t handoverCommand;
   u8 sourceModId = get_adjacent_cell_mod_id(rrc_inst->handover_info[UE_index]->as_context.reestablishmentInfo->sourcePhysCellId);
 #if Rel10
   long *sr_ProhibitTimer_r9;
@@ -1822,7 +1871,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
   long *logicalchannelgroup, *logicalchannelgroup_drb;
   long *maxHARQ_Tx, *periodicBSR_Timer;
 
-  RSRP_Range_t *rsrp;
+  // RSRP_Range_t *rsrp;
   struct MeasConfig__speedStatePars *Sparams;
   CellsToAddMod_t *CellToAdd;
   CellsToAddModList_t *CellsToAddModList;
@@ -2388,7 +2437,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
 
   mobilityInfo = CALLOC(1,sizeof(*mobilityInfo));
   memset((void *)mobilityInfo,0,sizeof(*mobilityInfo));
-  mobilityInfo->targetPhysCellId = (PhysCellId_t) two_tier_hexagonal_cellIds[Mod_id, rrc_inst->handover_info[UE_index]->modid_t];
+  mobilityInfo->targetPhysCellId = (PhysCellId_t) two_tier_hexagonal_cellIds[rrc_inst->handover_info[UE_index]->modid_t];
   LOG_D(RRC,"[eNB %d] Frame %d: handover preparation: targetPhysCellId: %d mod_id: %d UE_index: %d \n",
 	Mod_id,frame, mobilityInfo->targetPhysCellId,Mod_id,UE_index);
 
@@ -2516,7 +2565,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
 			     (DRB_ToAddModList_t *) NULL,
 			     (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
-			     , (MBMS_SessionInfoList_r9_t *) NULL
+			     , (PMCH_InfoList_r9_t *) NULL
 #endif
 			     );
     
@@ -2580,10 +2629,12 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16
 		      );
  
 
+  /*
   handoverCommand.criticalExtensions.present = HandoverCommand__criticalExtensions_PR_c1;
   handoverCommand.criticalExtensions.choice.c1.present = HandoverCommand__criticalExtensions__c1_PR_handoverCommand_r8;
   handoverCommand.criticalExtensions.choice.c1.choice.handoverCommand_r8.handoverCommandMessage.buf = buffer;
   handoverCommand.criticalExtensions.choice.c1.choice.handoverCommand_r8.handoverCommandMessage.size = size;
+  */
 
   if (sourceModId != 0xFF) {
     memcpy(eNB_rrc_inst[sourceModId].handover_info[eNB_rrc_inst[Mod_id].handover_info[UE_index]->ueid_s]->buf,
@@ -2653,7 +2704,7 @@ rrc_eNB_process_RRCConnectionReconfigurationComplete (u8 Mod_id, u32 frame,
                            SRB_configList,
                            DRB_configList, (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
-                           , (MBMS_SessionInfoList_r9_t *) NULL
+                           , (PMCH_InfoList_r9_t *) NULL
 #endif
     );
 
@@ -2972,6 +3023,7 @@ void *rrc_enb_task(void *args_p) {
     }
 
     free (msg_p);
+    msg_p = NULL;
   }
 }
 #endif
