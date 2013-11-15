@@ -44,6 +44,10 @@
 #include "vcd_signal_dumper.h"
 #include "assertions.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 #ifdef USER_MODE
 # include <pthread.h>
 # include <string.h>
@@ -548,6 +552,8 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
     int len = 0;
     va_list args;
     log_component_t *c;
+    char *log_start;
+    char *log_end;
 
     c = &g_log->log_component[comp];
 
@@ -572,12 +578,15 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 
     // make sure that for log trace the extra info is only printed once, reset when the level changes
     if ((level == LOG_FILE) || (c->flag == LOG_NONE) || (level == LOG_TRACE)) {
+        log_start = c->log_buffer;
         len = vsnprintf(c->log_buffer, MAX_LOG_TOTAL-1, format, args);
-    } else {
+        log_end = c->log_buffer + len;
+   } else {
         if ( (g_log->flag & FLAG_COLOR) || (c->flag & FLAG_COLOR) ) {
             len += snprintf(&c->log_buffer[len], MAX_LOG_TOTAL - len, "%s",
                             log_level_highlight_start[level]);
         }
+        log_start = c->log_buffer + len;
 
         if ( (g_log->flag & FLAG_COMP) || (c->flag & FLAG_COMP) ) {
             len += snprintf(&c->log_buffer[len], MAX_LOG_TOTAL - len, "[%s]",
@@ -600,6 +609,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
         }
 
         len += vsnprintf(&c->log_buffer[len], MAX_LOG_TOTAL - len, format, args);
+        log_end = c->log_buffer + len;
 
         if ( (g_log->flag & FLAG_COLOR) || (c->flag & FLAG_COLOR) ) {
             len += snprintf(&c->log_buffer[len], MAX_LOG_TOTAL - len, "%s",
@@ -631,6 +641,39 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
     }
     if ((g_log->log_component[comp].filelog) && (level == LOG_FILE)) {
         write(g_log->log_component[comp].fd, c->log_buffer, len);
+    }
+#endif
+
+#if defined(ENABLE_ITTI)
+    if (level <= LOG_WARNING)
+    {
+        MessagesIds messages_id;
+        MessageDef *message_p;
+        size_t      message_string_size;
+        char       *message_msg_p;
+
+        message_string_size = log_end - log_start;
+
+        if (level <= LOG_ERR)
+        {
+            messages_id = ERROR;
+        }
+        else
+        {
+            messages_id = WARNING;
+        }
+        message_p = itti_alloc_new_message_sized(TASK_UNKNOWN, messages_id, message_string_size);
+        if (level <= LOG_ERR)
+        {
+            message_msg_p = (char *) &message_p->msg.error;
+        }
+        else
+        {
+            message_msg_p = (char *) &message_p->msg.warning;
+        }
+        memcpy(message_msg_p, log_start, message_string_size);
+
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
     }
 #endif
 
