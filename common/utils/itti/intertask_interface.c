@@ -174,6 +174,24 @@ const char *itti_get_task_name(task_id_t task_id)
     return (itti_desc.tasks_info[task_id].name);
 }
 
+static task_id_t itti_get_current_task_id()
+{
+    task_id_t task_id;
+    thread_id_t thread_id;
+    pthread_t thread = pthread_self ();
+
+    for (task_id = TASK_FIRST; task_id < itti_desc.task_max; task_id++)
+    {
+        thread_id = TASK_GET_THREAD_ID(task_id);
+        if (itti_desc.threads[thread_id].task_thread == thread)
+        {
+            return task_id;
+        }
+    }
+
+    return TASK_UNKNOWN;
+}
+
 void itti_update_lte_time(uint32_t frame, uint8_t slot)
 {
     itti_desc.lte_time.frame = frame;
@@ -222,6 +240,12 @@ inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, Messag
     MessageDef *temp = NULL;
 
     DevCheck(message_id < itti_desc.messages_id_max, message_id, itti_desc.messages_id_max, 0);
+
+    if (origin_task_id == TASK_UNKNOWN)
+    {
+        /* Try to identify real origin task ID */
+        origin_task_id = itti_get_current_task_id();
+    }
 
     temp = calloc (1, sizeof(MessageHeader) + size);
     DevAssert(temp != NULL);
@@ -598,7 +622,8 @@ void itti_terminate_tasks(task_id_t task_id) {
 
 int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_id_max, const task_info_t *tasks_info,
               const message_info_t *messages_info, const char * const messages_definition_xml, const char * const dump_file_name) {
-    int i;
+    task_id_t task_id;
+    thread_id_t thread_id;
     itti_desc.message_number = 1;
 
     ITTI_DEBUG("Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
@@ -620,61 +645,61 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     itti_desc.threads = calloc (itti_desc.thread_max, sizeof(thread_desc_t));
 
     /* Initializing each queue and related stuff */
-    for (i = TASK_FIRST; i < itti_desc.task_max; i++)
+    for (task_id = TASK_FIRST; task_id < itti_desc.task_max; task_id++)
     {
 #if defined(ENABLE_EVENT_FD)
-        ITTI_DEBUG("Creating queue of message of size %u\n", itti_desc.tasks_info[i].queue_size);
-        if (lfds611_queue_new(&itti_desc.tasks[i].message_queue, itti_desc.tasks_info[i].queue_size) < 0)
+        ITTI_DEBUG("Creating queue of message of size %u\n", itti_desc.tasks_info[task_id].queue_size);
+        if (lfds611_queue_new(&itti_desc.tasks[task_id].message_queue, itti_desc.tasks_info[task_id].queue_size) < 0)
         {
-            ITTI_ERROR("lfds611_queue_new failed for task %u\n", i);
+            ITTI_ERROR("lfds611_queue_new failed for task %u\n", task_id);
             DevAssert(0 == 1);
         }
 
-        itti_desc.tasks[i].epoll_fd = epoll_create1(0);
-        if (itti_desc.tasks[i].epoll_fd == -1) {
+        itti_desc.tasks[task_id].epoll_fd = epoll_create1(0);
+        if (itti_desc.tasks[task_id].epoll_fd == -1) {
             ITTI_ERROR("Failed to create new epoll fd: %s\n", strerror(errno));
             /* Always assert on this condition */
             DevAssert(0 == 1);
         }
 
-        itti_desc.tasks[i].task_event_fd = eventfd(0, EFD_SEMAPHORE);
-        if (itti_desc.tasks[i].task_event_fd == -1) {
+        itti_desc.tasks[task_id].task_event_fd = eventfd(0, EFD_SEMAPHORE);
+        if (itti_desc.tasks[task_id].task_event_fd == -1) {
             ITTI_ERROR("eventfd failed: %s\n", strerror(errno));
             /* Always assert on this condition */
             DevAssert(0 == 1);
         }
 
-        itti_desc.tasks[i].nb_events = 1;
+        itti_desc.tasks[task_id].nb_events = 1;
 
-        itti_desc.tasks[i].events = malloc(sizeof(struct epoll_event));
+        itti_desc.tasks[task_id].events = malloc(sizeof(struct epoll_event));
 
-        itti_desc.tasks[i].events->events  = EPOLLIN;
-        itti_desc.tasks[i].events->data.fd = itti_desc.tasks[i].task_event_fd;
+        itti_desc.tasks[task_id].events->events  = EPOLLIN;
+        itti_desc.tasks[task_id].events->data.fd = itti_desc.tasks[task_id].task_event_fd;
 
         /* Add the event fd to the list of monitored events */
-        if (epoll_ctl(itti_desc.tasks[i].epoll_fd, EPOLL_CTL_ADD,
-            itti_desc.tasks[i].task_event_fd, itti_desc.tasks[i].events) != 0)
+        if (epoll_ctl(itti_desc.tasks[task_id].epoll_fd, EPOLL_CTL_ADD,
+            itti_desc.tasks[task_id].task_event_fd, itti_desc.tasks[task_id].events) != 0)
         {
             ITTI_ERROR("epoll_ctl failed: %s\n", strerror(errno));
             /* Always assert on this condition */
             DevAssert(0 == 1);
         }
 #else
-        STAILQ_INIT (&itti_desc.tasks[i].message_queue);
-        itti_desc.tasks[i].message_in_queue = 0;
+        STAILQ_INIT (&itti_desc.tasks[task_id].message_queue);
+        itti_desc.tasks[task_id].message_in_queue = 0;
 
         // Initialize mutexes
-        pthread_mutex_init (&itti_desc.tasks[i].message_queue_mutex, NULL);
+        pthread_mutex_init (&itti_desc.tasks[task_id].message_queue_mutex, NULL);
 
         // Initialize Cond vars
-        pthread_cond_init (&itti_desc.tasks[i].message_queue_cond_var, NULL);
+        pthread_cond_init (&itti_desc.tasks[task_id].message_queue_cond_var, NULL);
 #endif
     }
 
     /* Initializing each thread */
-    for (i = THREAD_FIRST; i < itti_desc.thread_max; i++)
+    for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++)
     {
-        itti_desc.threads[i].task_state = TASK_STATE_NOT_CONFIGURED;
+        itti_desc.threads[thread_id].task_state = TASK_STATE_NOT_CONFIGURED;
     }
 
     itti_dump_init (messages_definition_xml, dump_file_name);
