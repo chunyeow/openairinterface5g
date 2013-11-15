@@ -41,6 +41,7 @@
 #include <net/if.h>
 
 //-----------------------------------------------------------------------------
+#include "assertions.h"
 #include "mme_config.h"
 #include "intertask_interface.h"
 #include "sgi.h"
@@ -73,8 +74,11 @@ static void* sgi_task_thread(void *args_p)
          */
         MessageDef *received_message_p;
         itti_receive_msg(TASK_FW_IP, &received_message_p);
-        assert(received_message_p != NULL);
-        switch(received_message_p->header.messageId) {
+
+        DevAssert(received_message_p != NULL);
+
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case GTPV1U_TUNNEL_DATA_IND: {
                 /* We received data from GTPV1_U incoming from an UE.
                  * Forward it host adapter.
@@ -104,7 +108,8 @@ static void* sgi_task_thread(void *args_p)
             }
             break;
             default: {
-                SGI_IF_ERROR("Unkwnon message ID %d\n", received_message_p->header.messageId);
+                SGI_IF_ERROR("Unkwnon message ID %d:%s\n",
+                             ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
             }
             break;
         }

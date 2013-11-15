@@ -20,6 +20,9 @@
 #include "sgw_lite_ie_defs.h"
 #include "ip_forward_messages_types.h"
 
+# define SGI_IF_DEBUG(x, args...)
+# define SGI_IF_ERROR(x, args...)
+# define SGI_IF_WARNING(x, args...)
 //-----------------------------------------------------------------------------
 #ifndef SGI_IF_DEBUG
 # define SGI_IF_DEBUG(x, args...) do { fprintf(stdout, "[SGI_IF][D]"x, ##args); } \
@@ -30,8 +33,8 @@
     while(0)
 #endif
 #ifndef SGI_IF_WARNING
-# define SGI_IF_WARNING(x, args...) do { fprintf(stderr, "[SGI_IF][W]"x, ##args); } \
-    while(0)
+ # define SGI_IF_WARNING(x, args...) do { fprintf(stderr, "[SGI_IF][W]"x, ##args); } \
+     while(0)
 #endif
 
 // refer to 3GPP TS 23.203 V10.6.0 (2012-03) page 33

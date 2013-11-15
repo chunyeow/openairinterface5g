@@ -46,10 +46,13 @@ sgw_app_t    sgw_app;
 static void *sgw_lite_intertask_interface(void *args_p)
 {
     itti_mark_task_ready(TASK_SPGW_APP);
+
     while(1) {
         MessageDef *received_message_p;
         itti_receive_msg(TASK_SPGW_APP, &received_message_p);
-        switch(received_message_p->header.messageId) {
+
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case SGW_CREATE_SESSION_REQUEST: {
                 /* We received a create session request from MME (with GTP abstraction here)
                  * procedures might be:
@@ -88,9 +91,8 @@ static void *sgw_lite_intertask_interface(void *args_p)
             } break;
 
             default: {
-                SPGW_APP_DEBUG("Unkwnon message ID %s:%d\n",
-                               itti_get_message_name(received_message_p->header.messageId),
-                               received_message_p->header.messageId);
+                SPGW_APP_DEBUG("Unkwnon message ID %d:%s\n",
+                               ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
             } break;
         }
         free(received_message_p);

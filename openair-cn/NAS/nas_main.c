@@ -28,7 +28,8 @@ static void *nas_intertask_interface(void *args_p)
 
 next_message:
         itti_receive_msg(TASK_NAS, &received_message_p);
-        switch(received_message_p->header.messageId) {
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case NAS_CONNECTION_ESTABLISHMENT_IND: {
 #if defined(DISABLE_USE_NAS)
                 MessageDef       *message_p;
@@ -79,9 +80,9 @@ next_message:
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
             } break;
             default: {
-                NAS_DEBUG("Unkwnon message ID %s:%d\n",
-                          itti_get_message_name(received_message_p->header.messageId),
-                          received_message_p->header.messageId);
+                NAS_DEBUG("Unkwnon message ID %d:%s\n",
+                          ITTI_MSG_ID(received_message_p),
+                          ITTI_MSG_NAME(received_message_p));
             } break;
         }
         free(received_message_p);

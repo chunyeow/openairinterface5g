@@ -69,7 +69,7 @@ static
 NwRcT s11_mme_ulp_process_stack_req_cb(
     NwGtpv2cUlpHandleT hUlp, NwGtpv2cUlpApiT *pUlpApi)
 {
-    NwRcT rc = NW_OK;
+//     NwRcT rc = NW_OK;
     int ret = 0;
 
     DevAssert(pUlpApi != NULL);
@@ -179,7 +179,8 @@ static void *s11_mme_thread(void *args)
         itti_receive_msg(TASK_S11, &received_message_p);
         assert(received_message_p != NULL);
 
-        switch(received_message_p->header.messageId) {
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case SGW_CREATE_SESSION_REQUEST: {
                 s11_mme_create_session_request(
                     &s11_mme_stack_handle,
@@ -208,9 +209,9 @@ static void *s11_mme_thread(void *args)
                     received_message_p->msg.timer_has_expired.arg) == NW_OK);
             } break;
             default: {
-                S11_ERROR("Unkwnon message ID %s:%d\n",
-                          itti_get_message_name(received_message_p->header.messageId),
-                          received_message_p->header.messageId);
+                S11_ERROR("Unkwnon message ID %d:%s\n",
+                          ITTI_MSG_ID(received_message_p),
+                          ITTI_MSG_NAME(received_message_p));
             }
             break;
         }

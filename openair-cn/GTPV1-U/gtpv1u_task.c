@@ -355,7 +355,8 @@ static void *gtpv1u_thread(void *args)
         itti_receive_msg(TASK_GTPV1_U, &received_message_p);
         DevAssert(received_message_p != NULL);
 
-        switch(received_message_p->header.messageId) {
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case GTPV1U_CREATE_TUNNEL_REQ: {
                 gtpv1u_create_s1u_tunnel(&received_message_p->msg.gtpv1uCreateTunnelReq);
             }
@@ -452,9 +453,9 @@ static void *gtpv1u_thread(void *args)
                 nwGtpv1uProcessTimeout(&received_message_p->msg.timer_has_expired.arg);
                 break;
             default: {
-                GTPU_ERROR("Unkwnon message ID %s:%d\n",
-                           itti_get_message_name(received_message_p->header.messageId),
-                           received_message_p->header.messageId);
+                GTPU_ERROR("Unkwnon message ID %d:%s\n",
+                           ITTI_MSG_ID(received_message_p),
+                           ITTI_MSG_NAME(received_message_p));
             }
             break;
         }

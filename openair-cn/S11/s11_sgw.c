@@ -191,7 +191,8 @@ static void *s11_sgw_thread(void *args)
         itti_receive_msg(TASK_S11, &received_message_p);
         assert(received_message_p != NULL);
 
-        switch(received_message_p->header.messageId) {
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case UDP_DATA_IND: {
                 /* We received new data to handle from the UDP layer */
                 NwRcT rc;
@@ -234,9 +235,8 @@ static void *s11_sgw_thread(void *args)
                 DevAssert(nwGtpv2cProcessTimeout(received_message_p->msg.timer_has_expired.arg) == NW_OK);
             } break;
             default: {
-                S11_ERROR("Unkwnon message ID %s:%d\n",
-                          itti_get_message_name(received_message_p->header.messageId),
-                          received_message_p->header.messageId);
+                S11_ERROR("Unkwnon message ID %d:%s\n",
+                          ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
             }
             break;
         }

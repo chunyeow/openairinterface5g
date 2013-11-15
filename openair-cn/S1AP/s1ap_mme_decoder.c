@@ -70,22 +70,22 @@ static int s1ap_mme_decode_initiating(
         case S1ap_ProcedureCode_id_S1Setup: {
             ret = s1ap_decode_s1ap_s1setuprequesties(&message->msg.s1ap_S1SetupRequestIEs,
                                                 &initiating_p->value);
-            s1ap_xer_print_s1ap_s1setuprequest(stdout, message);
+//             s1ap_xer_print_s1ap_s1setuprequest(stdout, message);
         } break;
         case S1ap_ProcedureCode_id_initialUEMessage: {
             ret = s1ap_decode_s1ap_initialuemessageies(&message->msg.s1ap_InitialUEMessageIEs,
                                                   &initiating_p->value);
-            s1ap_xer_print_s1ap_initialuemessage(stdout, message);
+//             s1ap_xer_print_s1ap_initialuemessage(stdout, message);
         } break;
         case S1ap_ProcedureCode_id_UEContextReleaseRequest: {
             ret = s1ap_decode_s1ap_uecontextreleaserequesties(
                 &message->msg.s1ap_UEContextReleaseRequestIEs, &initiating_p->value);
-            s1ap_xer_print_s1ap_uecontextreleaserequest(stdout, message);
+//             s1ap_xer_print_s1ap_uecontextreleaserequest(stdout, message);
         } break;
         case S1ap_ProcedureCode_id_UECapabilityInfoIndication: {
             ret = s1ap_decode_s1ap_uecapabilityinfoindicationies(
                 &message->msg.s1ap_UECapabilityInfoIndicationIEs, &initiating_p->value);
-            s1ap_xer_print_s1ap_uecapabilityinfoindication(stdout, message);
+//             s1ap_xer_print_s1ap_uecapabilityinfoindication(stdout, message);
         } break;
 //         case S1ap_ProcedureCode_id_InitialContextSetup:
 //             return s1ap_decode_initialcontextsetuprequesties(&message->msg.initialContextSetupRequestIEs, &initiating_p->value);

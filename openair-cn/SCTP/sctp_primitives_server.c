@@ -588,7 +588,8 @@ static void *sctp_intertask_interface(void *args_p)
     while(1) {
         MessageDef *received_message_p;
         itti_receive_msg(TASK_SCTP, &received_message_p);
-        switch(received_message_p->header.messageId) {
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case SCTP_INIT_MSG: {
                 SCTP_DEBUG("Received SCTP_INIT_MSG\n");
                 /* We received a new connection request */
@@ -615,9 +616,9 @@ static void *sctp_intertask_interface(void *args_p)
                 while(i--);
             } break;
             default: {
-                SCTP_DEBUG("Unkwnon message ID %s:%d\n",
-                           itti_get_message_name(received_message_p->header.messageId),
-                           received_message_p->header.messageId);
+                SCTP_DEBUG("Unkwnon message ID %d:%s\n",
+                           ITTI_MSG_ID(received_message_p),
+                           ITTI_MSG_NAME(received_message_p));
             } break;
         }
         free(received_message_p);

@@ -99,8 +99,10 @@ void *s1ap_mme_thread(void *args)
          * message is sent to the task.
          */
         itti_receive_msg(TASK_S1AP, &received_message_p);
-        assert(received_message_p != NULL);
-        switch(received_message_p->header.messageId) {
+        DevAssert(received_message_p != NULL);
+
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case S1AP_SCTP_NEW_MESSAGE_IND: {
                 /* New message received from SCTP layer.
                  * Decode and handle it.
@@ -143,9 +145,8 @@ void *s1ap_mme_thread(void *args)
                 s1ap_handle_timer_expiry(&received_message_p->msg.timer_has_expired);
             } break;
             default: {
-                S1AP_DEBUG("Unkwnon message ID %s:%d\n",
-                           itti_get_message_name(received_message_p->header.messageId),
-                           received_message_p->header.messageId);
+                S1AP_DEBUG("Unkwnon message ID %d:%s\n",
+                           ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
             } break;
         }
         free(received_message_p);

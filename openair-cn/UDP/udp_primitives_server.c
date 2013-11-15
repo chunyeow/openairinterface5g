@@ -202,12 +202,13 @@ static void *udp_intertask_interface(void *args_p)
         itti_receive_msg(TASK_UDP, &received_message_p);
         DevAssert(received_message_p != NULL);
 
-        switch (received_message_p->header.messageId) {
+        switch (ITTI_MSG_ID(received_message_p))
+        {
             case UDP_INIT: {
                 udp_init_t *udp_init_p;
                 udp_init_p = &received_message_p->msg.udp_init;
                 udp_create_socket(udp_init_p->port, udp_init_p->address,
-                                  received_message_p->header.originTaskId);
+                                  ITTI_MSG_ORIGIN_ID(received_message_p));
             } break;
             case UDP_DATA_REQ: {
                 int     udp_sd = -1;
@@ -226,11 +227,11 @@ static void *udp_intertask_interface(void *args_p)
                 peer_addr.sin_addr.s_addr  = udp_data_req_p->peer_address;
 
                 pthread_mutex_lock(&udp_socket_list_mutex);
-                udp_sock_p = udp_get_socket_desc(received_message_p->header.originTaskId);
+                udp_sock_p = udp_get_socket_desc(ITTI_MSG_ORIGIN_ID(received_message_p));
 
                 if (udp_sock_p == NULL) {
                     UDP_ERROR("Failed to retrieve the udp socket descriptor "
-                    "associated with task %d\n", received_message_p->header.originTaskId);
+                    "associated with task %d\n", ITTI_MSG_ORIGIN_ID(received_message_p));
                     pthread_mutex_unlock(&udp_socket_list_mutex);
                     if (udp_data_req_p->buffer) {
                         free(udp_data_req_p->buffer);
@@ -258,9 +259,8 @@ static void *udp_intertask_interface(void *args_p)
             case MESSAGE_TEST: {
             } break;
             default: {
-                UDP_DEBUG("Unkwnon message ID %s:%d\n",
-                          itti_get_message_name(received_message_p->header.messageId),
-                          received_message_p->header.messageId);
+                UDP_DEBUG("Unkwnon message ID %d:%s\n",
+                          ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
             } break;
         }
 on_error:
