@@ -383,7 +383,7 @@ void itti_subscribe_event_fd(task_id_t task_id, int fd)
         itti_desc.tasks[task_id].events,
         itti_desc.tasks[task_id].nb_events * sizeof(struct epoll_event));
 
-    event.events  = EPOLLIN;
+    event.events  = EPOLLIN | EPOLLERR;
     event.data.fd = fd;
 
     /* Add the event fd to the list of monitored events */
@@ -395,6 +395,8 @@ void itti_subscribe_event_fd(task_id_t task_id, int fd)
         /* Always assert on this condition */
         DevAssert(0 == 1);
     }
+
+    ITTI_DEBUG("Successfully subscribed fd %d for task %s\n", fd, itti_get_task_name(task_id));
 }
 
 void itti_unsubscribe_event_fd(task_id_t task_id, int fd)
@@ -579,7 +581,7 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
     itti_desc.threads[thread_id].task_state = TASK_STATE_STARTING;
 
     result = pthread_create (&itti_desc.threads[thread_id].task_thread, NULL, start_routine, args_p);
-    DevCheck(result>= 0, task_id, thread_id, result);
+    DevCheck(result >= 0, task_id, thread_id, result);
 
     /* Wait till the thread is completely ready */
     while (itti_desc.threads[thread_id].task_state != TASK_STATE_READY)
@@ -663,7 +665,8 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
         }
 
         itti_desc.tasks[task_id].task_event_fd = eventfd(0, EFD_SEMAPHORE);
-        if (itti_desc.tasks[task_id].task_event_fd == -1) {
+        if (itti_desc.tasks[task_id].task_event_fd == -1)
+        {
             ITTI_ERROR("eventfd failed: %s\n", strerror(errno));
             /* Always assert on this condition */
             DevAssert(0 == 1);
@@ -673,17 +676,20 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
         itti_desc.tasks[task_id].events = malloc(sizeof(struct epoll_event));
 
-        itti_desc.tasks[task_id].events->events  = EPOLLIN;
+        itti_desc.tasks[task_id].events->events  = EPOLLIN | EPOLLERR;
         itti_desc.tasks[task_id].events->data.fd = itti_desc.tasks[task_id].task_event_fd;
 
         /* Add the event fd to the list of monitored events */
         if (epoll_ctl(itti_desc.tasks[task_id].epoll_fd, EPOLL_CTL_ADD,
             itti_desc.tasks[task_id].task_event_fd, itti_desc.tasks[task_id].events) != 0)
         {
-            ITTI_ERROR("epoll_ctl failed: %s\n", strerror(errno));
+            ITTI_ERROR("epoll_ctl (EPOLL_CTL_ADD) failed: %s\n", strerror(errno));
             /* Always assert on this condition */
             DevAssert(0 == 1);
         }
+
+        ITTI_DEBUG("Successfully subscribed fd %d for task %s\n",
+                   itti_desc.tasks[task_id].task_event_fd, itti_get_task_name(task_id));
 #else
         STAILQ_INIT (&itti_desc.tasks[task_id].message_queue);
         itti_desc.tasks[task_id].message_in_queue = 0;

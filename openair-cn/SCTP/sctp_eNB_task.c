@@ -46,6 +46,7 @@
 
 #include "intertask_interface.h"
 
+#include "sctp_default_values.h"
 #include "sctp_common.h"
 #include "sctp_eNB_itti_messaging.h"
 
@@ -122,7 +123,6 @@ void sctp_handle_new_association_req(
     int     sd;
     int32_t assoc_id;
 
-    struct sctp_initmsg         init;
     struct sctp_event_subscribe events;
 
     struct sctp_cnx_list_elm_s *sctp_cnx = NULL;
@@ -142,18 +142,12 @@ void sctp_handle_new_association_req(
     /* Add the socket to list of fd monitored by ITTI */
     itti_subscribe_event_fd(TASK_SCTP, sd);
 
-    /* Request a number of in/out streams */
-    init.sinit_num_ostreams  = SCTP_OUT_STREAMS;
-    init.sinit_max_instreams = SCTP_IN_STREAMS;
-    init.sinit_max_attempts  = SCTP_MAX_ATTEMPTS;
-
-    SCTP_DEBUG("Requesting (%d %d) (in out) streams\n", init.sinit_num_ostreams,
-               init.sinit_max_instreams);
-
-    if (setsockopt(sd, IPPROTO_SCTP, SCTP_INITMSG,
-                   &init, (socklen_t)sizeof(struct sctp_initmsg)) < 0) {
+    if (sctp_set_init_opt(sd, SCTP_IN_STREAMS, SCTP_OUT_STREAMS,
+        SCTP_MAX_ATTEMPTS, SCTP_TIMEOUT) != 0)
+    {
         SCTP_ERROR("Setsockopt IPPROTO_SCTP_INITMSG failed: %s\n",
                    strerror(errno));
+        itti_unsubscribe_event_fd(TASK_SCTP, sd);
         close(sd);
         return;
     }
@@ -228,8 +222,6 @@ void sctp_handle_new_association_req(
             addr[address_index].sin_port   = htons(sctp_new_association_req_p->port);
             address_index++;
         }
-
-        SCTP_DEBUG("Connecting...\n");
 
         /* Connect to remote host and port */
         if (sctp_connectx(sd, (struct sockaddr *)addr, used_address, &assoc_id) < 0)
@@ -412,6 +404,8 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
     if (n < 0) {
         if (errno == ENOTCONN) {
             itti_unsubscribe_event_fd(TASK_SCTP, sctp_cnx->sd);
+
+            SCTP_DEBUG("Received not connected for sd %d\n", sctp_cnx->sd);
 
             sctp_itti_send_association_resp(
                 sctp_cnx->task_id, sctp_cnx->instance, -1,

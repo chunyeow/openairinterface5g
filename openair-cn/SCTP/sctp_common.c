@@ -61,9 +61,10 @@ int sctp_set_init_opt(int sd, uint16_t instreams, uint16_t outstreams,
     memset((void *)&init, 0, sizeof(struct sctp_initmsg));
 
     /* Request a number of streams */
-    init.sinit_num_ostreams  = outstreams;
-    init.sinit_max_instreams = instreams;
-    init.sinit_max_attempts  = max_attempts;
+    init.sinit_num_ostreams   = outstreams;
+    init.sinit_max_instreams  = instreams;
+    init.sinit_max_attempts   = max_attempts;
+    init.sinit_max_init_timeo = init_timeout;
 
     if (setsockopt(sd, IPPROTO_SCTP, SCTP_INITMSG, &init, sizeof(struct sctp_initmsg)) < 0)
     {

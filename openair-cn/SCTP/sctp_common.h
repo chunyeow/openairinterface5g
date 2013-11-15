@@ -47,11 +47,6 @@
 # define SCTP_ERROR(x, args...) LOG_E(SCTP, x, ##args)
 # define SCTP_WARN(x, args...)  LOG_W(SCTP, x, ##args)
 # define SCTP_DEBUG(x, args...) LOG_D(SCTP, x, ##args)
-
-# define SCTP_OUT_STREAMS        (64)
-# define SCTP_IN_STREAMS         (64)
-# define SCTP_MAX_ATTEMPTS       (5)
-# define SCTP_RECV_BUFFER_SIZE   (1024)
 #else
 # define SCTP_ERROR(x, args...) do { fprintf(stderr, "[SCTP][E]"x, ##args); } while(0)
 # define SCTP_DEBUG(x, args...) do { fprintf(stdout, "[SCTP][D]"x, ##args); } while(0)

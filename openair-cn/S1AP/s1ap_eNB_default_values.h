@@ -14,9 +14,4 @@
 #define X2AP_PORT_NUMBER        (36422)
 #define X2AP_SCTP_PPID          (27)
 
-#define SCTP_OUT_STREAMS        (64)
-#define SCTP_IN_STREAMS         (64)
-#define SCTP_MAX_ATTEMPTS       (2)
-#define SCTP_RECV_BUFFER_SIZE   (1024)
-
 #endif /* S1AP_ENB_DEFAULT_VALUES_H_ */
