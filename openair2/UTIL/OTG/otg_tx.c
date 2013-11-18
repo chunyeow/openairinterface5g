@@ -298,7 +298,7 @@ Send Packets when:
 
 
 }
-unsigned char *packet_gen_multicast(int src, int dst, int ctime, int * pkt_size){ 
+unsigned char *packet_gen_multicast(int src, int dst, int ctime, unsigned int * pkt_size){
 
   *pkt_size =0; 
   unsigned int size=0;

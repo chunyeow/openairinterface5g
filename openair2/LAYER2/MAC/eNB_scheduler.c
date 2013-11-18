@@ -1374,7 +1374,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
     mcch_sdu_length = mac_rrc_data_req(Mod_id,
 				       frame,
 				       MCCH,1,
-				       (char*)&eNB_mac_inst[Mod_id].MCCH_pdu.payload[0],
+				       &eNB_mac_inst[Mod_id].MCCH_pdu.payload[0],
 				       1,// this is eNB
 				       Mod_id, // index 
 				       i); // this is the mbsfn sync area index 
@@ -1502,7 +1502,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 				   sdu_lengths, 
 				   sdu_lcids,
 				   255,    // no drx
-				   NULL,  // no timing advance
+				   0,  // no timing advance
 				   NULL,  // no contention res id
 				   padding,                        
 				   post_padding);
@@ -1525,7 +1525,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 #if defined(USER_MODE) && defined(OAI_EMU)
         /* Tracing of PDU is done on UE side */
 	if (oai_emulation.info.opt_enabled)
-            trace_pdu(1, (uint8_t *)eNB_mac_inst[Mod_id].MCH_pdu.payload[0],
+            trace_pdu(1, (uint8_t *)eNB_mac_inst[Mod_id].MCH_pdu.payload,
 		      TBS, Mod_id, 6, 0xffff,  // M_RNTI = 6 in wirehsark
 		      eNB_mac_inst[Mod_id].subframe,0,0);
 	LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n", 

@@ -96,6 +96,17 @@ char * random_string(int size, ALPHABET_GEN mode, ALPHABET_TYPE data_type);
 */
 unsigned char *packet_gen(int src, int dst, int app, int ctime, unsigned int *pkt_size);
 
+/*! \fn int packet_gen(int src, int dst, int state, int ctime)
+* \brief return int= 1 if the packet is generated: OTG header + header + payload, else 0
+* \param[in] src source identity
+* \param[in] dst destination id
+* \param[in] application id that might generate the packet
+* \param[out] final packet size
+* \param[out] packet_t: the generated packet: otg_header + header + payload
+* \note
+* @ingroup  _otg
+*/
+unsigned char *packet_gen_multicast(int src, int dst, int ctime, unsigned int * pkt_size);
 
 /*! \fn char *header_gen(int  hdr_size);
 * \brief generate IP (v4/v6) + transport header(TCP/UDP) 
@@ -155,6 +166,7 @@ int adjust_size(int size);
 */
 void header_size_gen(int src, int dst, int application);
 
+void init_predef_multicast_traffic();
 
 /*! \fn void init_predef_traffic();
 * \brief initialise OTG with predifined value for pre-configured traffic: cbr, openarena,etc. 

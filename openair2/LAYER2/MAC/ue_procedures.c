@@ -502,7 +502,7 @@ void ue_send_mch_sdu(u8 Mod_id, u32 frame, u8 *sdu, u16 sdu_len, u8 eNB_index, u
       mac_rrc_data_ind(Mod_id, 
 		       frame, 
 		       MCCH, 
-		       (char *)payload_ptr, rx_lengths[i], 0, eNB_index, sync_area);
+		       payload_ptr, rx_lengths[i], 0, eNB_index, sync_area);
     }
     else if (rx_lcids[i] == MTCH) {
       if (UE_mac_inst[Mod_id].msi_status==1) {  

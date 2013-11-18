@@ -12,7 +12,7 @@
 #include "UTIL/OTG/otg_tx.h"
 #include "UTIL/OTG/otg.h"
 #include "UTIL/OTG/otg_vars.h"
-
+#include "oml.h"
 
 mapping log_level_names[] =
 {
@@ -600,7 +600,6 @@ int ocg_config_app(){
   char *check_format1;
   char *check_format2;
   char *check_format1_dst;
-  char *check_format2_dst;
   char *source_id_start;
   char *source_id_end;
   char *destination_id_start;
