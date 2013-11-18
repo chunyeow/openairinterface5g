@@ -8,10 +8,12 @@
 #include "ui_interface.h"
 
 int array_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
-    struct types_s *type_child;
+    types_t *type_child;
+    int  length = 0;
+    char cbuf[50];
 
     DISPLAY_PARSE_INFO("array", type->name, offset, parent_offset);
 
@@ -49,22 +51,23 @@ int array_dissect_from_buffer(
             }
         }
         for (i = 0; i < (items - zero_counter); i++)
+        {
+            INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d] ", i));
+            ui_set_signal_text_cb(user_data, cbuf, length);
+
             type->child->type_dissect_from_buffer (
                 type->child, ui_set_signal_text_cb, user_data, buffer, parent_offset,
-                offset + i * type_child->size, type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE);
+                offset + i * type_child->size, indent,
+                FALSE);
+        }
         if (zero_counter > 0)
         {
-            int  length = 0;
-            char cbuf[50];
-
-            INDENTED_STRING(cbuf, type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE,);
-
-            length = sprintf(cbuf, "[%d .. %d]  ", i, items -1);
-
+            INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d .. %d] ", i, items -1));
             ui_set_signal_text_cb(user_data, cbuf, length);
+
             type->child->type_dissect_from_buffer (
                 type->child, ui_set_signal_text_cb, user_data,
-                buffer, parent_offset, offset + i * type_child->size, 0);
+                buffer, parent_offset, offset + i * type_child->size, indent, FALSE);
         }
     }
     if (type->name) {
@@ -74,7 +77,7 @@ int array_dissect_from_buffer(
     return 0;
 }
 
-int array_type_file_print(struct types_s *type, int indent, FILE *file) {
+int array_type_file_print(types_t *type, int indent, FILE *file) {
     if (type == NULL)
         return -1;
     INDENTED(file, indent, fprintf(file, "<Array>\n"));
@@ -93,7 +96,7 @@ int array_type_file_print(struct types_s *type, int indent, FILE *file) {
     return 0;
 }
 
-int array_type_hr_display(struct types_s *type, int indent) {
+int array_type_hr_display(types_t *type, int indent) {
     if (type == NULL)
         return -1;
     INDENTED(stdout, indent, printf("<Array>\n"));

@@ -6,7 +6,7 @@
 #include "enum_type.h"
 #include "ui_interface.h"
 
-char *enum_type_get_name_from_value(struct types_s *type, uint32_t value)
+char *enum_type_get_name_from_value(types_t *type, uint32_t value)
 {
     char    *enum_name = "UNKNOWN";
     types_t *enum_value;
@@ -22,8 +22,8 @@ char *enum_type_get_name_from_value(struct types_s *type, uint32_t value)
 }
 
 int enum_type_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     uint32_t value = 0;
     types_t *values;
@@ -37,7 +37,7 @@ int enum_type_dissect_from_buffer(
             values->parent = type;
             values->type_dissect_from_buffer(
                 values, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset,
-                type->name == NULL ? indent: indent + DISPLAY_TAB_SIZE);
+                type->name == NULL ? indent: indent + DISPLAY_TAB_SIZE, FALSE);
             break;
         }
     }
@@ -46,14 +46,13 @@ int enum_type_dissect_from_buffer(
         char cbuf[50];
 
         length = sprintf(cbuf, "(0x%08x) UNKNOWN;\n", value);
-
         ui_set_signal_text_cb(user_data, cbuf, length);
     }
 
     return 0;
 }
 
-int enum_type_file_print(struct types_s *type, int indent, FILE *file)
+int enum_type_file_print(types_t *type, int indent, FILE *file)
 {
     types_t *values;
 
@@ -77,7 +76,7 @@ int enum_type_file_print(struct types_s *type, int indent, FILE *file)
     return 0;
 }
 
-int enum_type_hr_display(struct types_s *type, int indent)
+int enum_type_hr_display(types_t *type, int indent)
 {
     types_t *values;
 

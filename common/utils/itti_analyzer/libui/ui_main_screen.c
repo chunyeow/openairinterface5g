@@ -22,6 +22,11 @@
 
 ui_main_data_t ui_main_data;
 
+gchar *LOG_DOMAIN_PARSE =    "Parse";
+gchar *LOG_DOMAIN_PIPE =     "Pipe";
+gchar *LOG_DOMAIN_SOCKET =   "Socket";
+gchar *LOG_DOMAIN_UI =       "UI";
+
 static void ui_help(void)
 {
     printf ("Usage: itti_analyser [options]\n\n"
@@ -112,6 +117,8 @@ static int ui_idle_callback(gpointer data)
 {
     g_debug("Entering idle state");
 
+    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.signalslist);
+
     /* Read filters file */
     if (ui_main_data.filters_file_name != NULL)
     {
@@ -168,6 +175,7 @@ int ui_gtk_initialize(int argc, char *argv[])
     ui_main_data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     ui_init_filters (TRUE, FALSE);
 
+    // gtk_window_set_default_icon_from_file ("../analyzer.png", NULL);
     gtk_window_set_default_icon_name (GTK_STOCK_FIND);
 
     gtk_window_set_position (GTK_WINDOW(ui_main_data.window), GTK_WIN_POS_CENTER);

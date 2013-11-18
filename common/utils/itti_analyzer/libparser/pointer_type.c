@@ -7,8 +7,8 @@
 #include "ui_interface.h"
 
 int pointer_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     int          length = 0, i;
     char         cbuf[200];
@@ -21,37 +21,37 @@ int pointer_dissect_from_buffer(
 
     buffer_fetch_nbytes(buffer, parent_offset + offset, type->size / 8, value);
 
-    DISPLAY_TYPE("Ptr");
+    indent = new_line ? indent : 0;
+    if (indent > 0)
+    {
+        DISPLAY_TYPE("Ptr");
+    }
     if (type->child->name && type->child) {
         /*
          INDENTED(stdout, indent, fprintf(stdout, "<%s>0x%08x</%s>\n",
          type->child->name, value, type->child->name));
          */
-         INDENTED_STRING(cbuf, indent, sprintf(cbuf, "(%s *) 0x", type->child->name));
+         INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "(%s *) 0x", type->child->name));
     }
     else {
         /*
          INDENTED(stdout, indent, fprintf(stdout, "<Pointer>0x%08x</Pointer>\n",
          value));
          */
-        INDENTED_STRING(cbuf, indent, sprintf(cbuf, "(void *) 0x"));
+        INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "(void *) 0x"));
     }
-
-    length = strlen (cbuf);
 
     /* Append the value */
     for (i = type->size / 8 - 1; i >= 0; i--) {
         length += sprintf(&cbuf[length], "%02x", value[i]);
     }
-
     length += sprintf(&cbuf[length], ";\n");
-
     ui_set_signal_text_cb(user_data, cbuf, length);
 
     return 0;
 }
 
-int pointer_type_file_print(struct types_s *type, int indent, FILE *file) {
+int pointer_type_file_print(types_t *type, int indent, FILE *file) {
     if (type == NULL)
         return -1;
     INDENTED(file, indent, fprintf(file, "<Pointer>\n"));
@@ -75,6 +75,6 @@ int pointer_type_file_print(struct types_s *type, int indent, FILE *file) {
     return 0;
 }
 
-int pointer_type_hr_display(struct types_s *type, int indent) {
+int pointer_type_hr_display(types_t *type, int indent) {
     return pointer_type_file_print(type, indent, stdout);
 }

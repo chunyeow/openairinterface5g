@@ -5,7 +5,7 @@
 
 #include "file_type.h"
 
-int file_type_file_print(struct types_s *type, int indent, FILE *file)
+int file_type_file_print(types_t *type, int indent, FILE *file)
 {
     if (type == NULL)
         return -1;
@@ -17,7 +17,7 @@ int file_type_file_print(struct types_s *type, int indent, FILE *file)
     return 0;
 }
 
-int file_type_hr_display(struct types_s *type, int indent)
+int file_type_hr_display(types_t *type, int indent)
 {
     if (type == NULL)
         return -1;

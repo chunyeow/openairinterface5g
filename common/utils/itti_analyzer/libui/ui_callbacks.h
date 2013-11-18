@@ -18,6 +18,9 @@ gboolean ui_callback_on_open_filters(GtkWidget *widget,
 gboolean ui_callback_on_save_filters(GtkWidget *widget,
                                      gpointer data);
 
+gboolean ui_callback_on_enable_filters(GtkWidget *widget,
+                                       gpointer data);
+
 gboolean ui_callback_on_about(GtkWidget *widget,
                               gpointer   data);
 
@@ -41,14 +44,23 @@ ui_callback_on_select_signal(GtkTreeSelection *selection,
                              gboolean          path_currently_selected,
                              gpointer          userdata);
 
-gboolean ui_callback_signal_go_to(GtkWidget *widget,
-                                  gpointer   data);
-
 gboolean ui_callback_signal_go_to_first(GtkWidget *widget,
+                                        gpointer   data);
+
+gboolean ui_callback_signal_go_to(GtkWidget *widget,
+                                  gpointer data);
+
+gboolean ui_callback_signal_go_to_entry(GtkWidget *widget,
                                         gpointer   data);
 
 gboolean ui_callback_signal_go_to_last(GtkWidget *widget,
                                        gpointer   data);
+
+gboolean ui_callback_display_message_header(GtkWidget *widget,
+                                            gpointer data);
+
+gboolean ui_callback_display_brace(GtkWidget *widget,
+                                   gpointer data);
 
 gboolean ui_callback_signal_clear_list(GtkWidget *widget,
                                        gpointer   data);

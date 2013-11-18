@@ -9,6 +9,7 @@ extern types_t *origin_task_id_type;
 extern types_t *destination_task_id_type;
 extern types_t *instance_type;
 extern types_t *message_header_type;
+extern types_t *message_type;
 extern types_t *message_size_type;
 
 int locate_root(const char *root_name, types_t *head, types_t **root);

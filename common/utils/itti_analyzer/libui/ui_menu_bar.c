@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 
 #include "rc.h"
 #include "ui_main_screen.h"
@@ -19,78 +20,162 @@ void ui_set_sensitive_move_buttons(gboolean enable)
 
 int ui_menu_bar_create(GtkWidget *vbox)
 {
-    GtkWidget *menubar;
-    GtkWidget *filemenu, *helpmenu;
-    GtkWidget *file;
+    GtkAccelGroup *accel_group;
+    GtkWidget *menu_bar;
+    GtkWidget *filters_menu;
+    GtkWidget *messages_menu;
+    GtkWidget *help_menu;
+    GtkWidget *filters;
+    GtkWidget *messages;
     GtkWidget *help;
-    GtkWidget *open_messages;
-    GtkWidget *save_messages;
     GtkWidget *open_filters;
     GtkWidget *save_filters;
+    GtkWidget *enable_filters;
+    GtkWidget *open_messages;
+    GtkWidget *reload_messages;
+    GtkWidget *save_messages;
+    GtkWidget *goto_first_messages;
+    GtkWidget *goto_messages;
+    GtkWidget *goto_last_messages;
+    GtkWidget *display_message_header;
+    GtkWidget *display_brace;
     GtkWidget *quit;
     GtkWidget *about;
-    GtkWidget *separator1;
-    GtkWidget *separator2;
 
     if (!vbox)
         return RC_BAD_PARAM;
 
-    menubar = gtk_menu_bar_new();
+    accel_group = gtk_accel_group_new();
+    gtk_window_add_accel_group(GTK_WINDOW(ui_main_data.window), accel_group);
 
-    /* Create the File submenu */
-    filemenu = gtk_menu_new();
+    menu_bar = gtk_menu_bar_new();
 
-    file = gtk_menu_item_new_with_label("File");
-    open_messages  = gtk_menu_item_new_with_label("Open messages file");
-    save_messages  = gtk_menu_item_new_with_label("Save messages file");
-    open_filters  = gtk_menu_item_new_with_label("Open filters file");
-    save_filters  = gtk_menu_item_new_with_label("Save filters file");
-    quit  = gtk_menu_item_new_with_label("Quit");
-    separator1 = gtk_menu_item_new();
-    separator2 = gtk_menu_item_new();
+    /* Create the Filters sub-menu */
+    {
+        filters = gtk_menu_item_new_with_mnemonic ("_Filters");
+        gtk_menu_shell_append (GTK_MENU_SHELL(menu_bar), filters);
 
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file), filemenu);
+        filters_menu = gtk_menu_new ();
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM(filters), filters_menu);
 
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), open_messages);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), save_messages);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), separator1);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), open_filters);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), save_filters);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), separator2);
-    gtk_menu_shell_append(GTK_MENU_SHELL(filemenu), quit);
+        /* Create the Filters menu items */
+        {
+            open_filters = gtk_menu_item_new_with_mnemonic ("_Open filters file");
+            gtk_widget_add_accelerator (open_filters, "activate", accel_group, GDK_KEY_p, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), open_filters);
+            g_signal_connect(G_OBJECT(open_filters), "activate", G_CALLBACK(ui_callback_on_open_filters), NULL);
 
-    /* Create the Help submenu */
-    helpmenu = gtk_menu_new();
+            save_filters = gtk_menu_item_new_with_mnemonic ("_Save filters file");
+            gtk_widget_add_accelerator (save_filters, "activate", accel_group, GDK_KEY_a, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), save_filters);
+            g_signal_connect(G_OBJECT(save_filters), "activate", G_CALLBACK(ui_callback_on_save_filters), NULL);
 
-    help = gtk_menu_item_new_with_label("Help");
-    about = gtk_menu_item_new_with_label("About");
+            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), gtk_menu_item_new ()); // Separator
 
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help), helpmenu);
+            enable_filters = gtk_menu_item_new_with_mnemonic ("_Enable filtering");
+            gtk_widget_add_accelerator (enable_filters, "activate", accel_group, GDK_KEY_e, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), enable_filters);
+            g_signal_connect(G_OBJECT(enable_filters), "activate", G_CALLBACK(ui_callback_on_enable_filters), NULL);
 
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help);
-    gtk_menu_shell_append(GTK_MENU_SHELL(helpmenu), about);
+            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), gtk_menu_item_new ()); // Separator
+
+            quit = gtk_menu_item_new_with_mnemonic ("_Quit");
+            gtk_widget_add_accelerator (quit, "activate", accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), quit);
+            g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
+        }
+    }
+
+    /* Create the Messages sub-menu */
+    {
+        messages = gtk_menu_item_new_with_mnemonic ("_Messages");
+        gtk_menu_shell_append (GTK_MENU_SHELL(menu_bar), messages);
+
+        messages_menu = gtk_menu_new ();
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM(messages), messages_menu);
+
+        /* Crate the Messages menu items */
+        {
+            open_messages = gtk_menu_item_new_with_mnemonic ("_Open messages file");
+            gtk_widget_add_accelerator (open_messages, "activate", accel_group, GDK_KEY_o, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), open_messages);
+            g_signal_connect(G_OBJECT(open_messages), "activate", G_CALLBACK(ui_callback_on_open_messages),
+                             (gpointer) FALSE);
+
+            reload_messages = gtk_menu_item_new_with_mnemonic ("_Reload messages file");
+            gtk_widget_add_accelerator (reload_messages, "activate", accel_group, GDK_KEY_r, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_widget_add_accelerator (reload_messages, "activate", accel_group, GDK_KEY_F5, 0, GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), reload_messages);
+            g_signal_connect(G_OBJECT(reload_messages), "activate", G_CALLBACK(ui_callback_on_open_messages),
+                             (gpointer) TRUE);
+
+            save_messages = gtk_menu_item_new_with_mnemonic ("_Save messages file");
+            gtk_widget_add_accelerator (save_messages, "activate", accel_group, GDK_KEY_s, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), save_messages);
+            g_signal_connect(G_OBJECT(save_messages), "activate", G_CALLBACK(ui_callback_on_save_messages), NULL);
+
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), gtk_menu_item_new ()); // Separator
+
+            goto_first_messages = gtk_menu_item_new_with_mnemonic ("Go to _first message");
+            gtk_widget_add_accelerator (goto_first_messages, "activate", accel_group, GDK_KEY_f, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), goto_first_messages);
+            g_signal_connect(G_OBJECT(goto_first_messages), "activate", G_CALLBACK(ui_callback_signal_go_to_first),
+                             NULL);
+
+            goto_messages = gtk_menu_item_new_with_mnemonic ("_Go to message ...");
+            gtk_widget_add_accelerator (goto_messages, "activate", accel_group, GDK_KEY_g, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), goto_messages);
+            g_signal_connect(G_OBJECT(goto_messages), "activate", G_CALLBACK(ui_callback_signal_go_to), NULL);
+
+            goto_last_messages = gtk_menu_item_new_with_mnemonic ("Go to _last message");
+            gtk_widget_add_accelerator (goto_last_messages, "activate", accel_group, GDK_KEY_l, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), goto_last_messages);
+            g_signal_connect(G_OBJECT(goto_last_messages), "activate", G_CALLBACK(ui_callback_signal_go_to_last), NULL);
+
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), gtk_menu_item_new ()); // Separator
+
+            display_message_header = gtk_menu_item_new_with_mnemonic ("Display message _header");
+            gtk_widget_add_accelerator (display_message_header, "activate", accel_group, GDK_KEY_h, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), display_message_header);
+            g_signal_connect(G_OBJECT(display_message_header), "activate",
+                             G_CALLBACK(ui_callback_display_message_header), NULL);
+
+            display_brace = gtk_menu_item_new_with_mnemonic ("Display _brace");
+            gtk_widget_add_accelerator (display_brace, "activate", accel_group, GDK_KEY_b, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), display_brace);
+            g_signal_connect(G_OBJECT(display_brace), "activate", G_CALLBACK(ui_callback_display_brace), NULL);
+        }
+    }
+
+    /* Create the Help sub-menu */
+    {
+        help = gtk_menu_item_new_with_mnemonic ("_Help");
+        gtk_menu_shell_append (GTK_MENU_SHELL(menu_bar), help);
+
+        help_menu = gtk_menu_new ();
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM(help), help_menu);
+
+        /* Create the Help menu item */
+        {
+            about = gtk_menu_item_new_with_mnemonic ("_About");
+            gtk_menu_shell_append (GTK_MENU_SHELL(help_menu), about);
+            g_signal_connect(G_OBJECT(about), "activate", G_CALLBACK(ui_callback_on_about), NULL);
+        }
+    }
 
     /* Add the menubar to the vbox */
-    gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 3);
-
-    g_signal_connect(G_OBJECT(open_messages), "activate",
-                     G_CALLBACK(ui_callback_on_open_messages), NULL);
-
-    g_signal_connect(G_OBJECT(save_messages), "activate",
-                     G_CALLBACK(ui_callback_on_save_messages), NULL);
-
-    g_signal_connect(G_OBJECT(open_filters), "activate",
-                     G_CALLBACK(ui_callback_on_open_filters), NULL);
-
-    g_signal_connect(G_OBJECT(save_filters), "activate",
-                     G_CALLBACK(ui_callback_on_save_filters), NULL);
-
-    g_signal_connect(G_OBJECT(quit), "activate",
-                     G_CALLBACK(gtk_main_quit), NULL);
-
-    g_signal_connect(G_OBJECT(about), "activate",
-                     G_CALLBACK(ui_callback_on_about), NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), menu_bar, FALSE, FALSE, 3);
 
     return RC_OK;
 }
@@ -163,20 +248,6 @@ int ui_toolbar_create(GtkWidget *vbox)
                         G_CALLBACK(ui_callback_on_save_messages), NULL);
     }
 
-#if 0 /* This function is already handled by GTK */
-    /* Button to go given signal number */
-    {
-        ui_main_data.signals_go_to_button = gtk_tool_button_new_from_stock(GTK_STOCK_INDEX);
-        /* Set the tooltip text */
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_button), "Goto signal");
-
-        gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), FALSE);
-
-        g_signal_connect(G_OBJECT(ui_main_data.signals_go_to_button), "clicked",
-                        G_CALLBACK(ui_callback_signal_go_to), NULL);
-    }
-#endif
-
     /* Button to go to first signal in list */
     {
         ui_main_data.signals_go_to_first_button = gtk_tool_button_new_from_stock(GTK_STOCK_GOTO_FIRST);
@@ -187,6 +258,16 @@ int ui_toolbar_create(GtkWidget *vbox)
 
         g_signal_connect(G_OBJECT(ui_main_data.signals_go_to_first_button), "clicked",
                         G_CALLBACK(ui_callback_signal_go_to_first), NULL);
+    }
+
+    /* Entry to go to given signal number */
+    {
+        ui_main_data.signals_go_to_entry = gtk_entry_new ();
+        gtk_entry_set_width_chars (GTK_ENTRY(ui_main_data.signals_go_to_entry), 10);
+        // gtk_entry_set_input_purpose (GTK_ENTRY(ui_main_data.signals_go_to_entry), GTK_INPUT_PURPOSE_DIGITS);
+
+        g_signal_connect(G_OBJECT(ui_main_data.signals_go_to_entry), "activate",
+                        G_CALLBACK(ui_callback_signal_go_to_entry), NULL);
     }
 
     /* Button to go to last signal in list */
@@ -251,6 +332,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
 
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.signals_go_to_first_button), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.signals_go_to_entry), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE, FALSE, BUTTON_SPACE);
 
     gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);

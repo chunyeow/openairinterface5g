@@ -101,6 +101,16 @@ gboolean ui_callback_on_save_filters(GtkWidget *widget, gpointer data)
     return TRUE;
 }
 
+gboolean ui_callback_on_enable_filters(GtkWidget *widget, gpointer data)
+{
+    gboolean enabled;
+
+    enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.filters_enabled));
+    gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.filters_enabled), !enabled);
+
+    return TRUE;
+}
+
 gboolean ui_callback_on_about(GtkWidget *widget, gpointer data)
 {
 #if defined(PACKAGE_STRING)
@@ -115,55 +125,92 @@ gboolean ui_callback_on_about(GtkWidget *widget, gpointer data)
 gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel *model, GtkTreePath *path,
                                       gboolean path_currently_selected, gpointer user_data)
 {
+    static gpointer buffer_current;
     ui_text_view_t *text_view;
     GtkTreeIter iter;
 
-    text_view = (ui_text_view_t *) user_data;
-
-    g_assert(text_view != NULL);
-
-    if (gtk_tree_model_get_iter (model, &iter, path))
+    if (ui_tree_view_last_event)
     {
-        GValue buffer_store = G_VALUE_INIT;
-        gpointer buffer;
+        g_debug("last_event %p %d %d", ui_tree_view_last_event, ui_tree_view_last_event->type, ui_tree_view_last_event->button);
 
-        GValue message_id_store = G_VALUE_INIT;
-        guint message_id;
-
-        gtk_tree_model_get_value (model, &iter, COL_BUFFER, &buffer_store);
-        buffer = g_value_get_pointer (&buffer_store);
-
-        gtk_tree_model_get_value (model, &iter, COL_MESSAGE_ID, &message_id_store);
-        message_id = g_value_get_uint(&message_id_store);
-
-        if (!path_currently_selected)
+        if (ui_tree_view_last_event->type == GDK_BUTTON_PRESS)
         {
-            /* Clear the view */
-            CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
+            /* Callback is due to a button click */
+            ui_main_data.follow_last = FALSE;
 
-            if ((strcmp (message_id_to_string (message_id), "ERROR") == 0)
-                    || (strcmp (message_id_to_string (message_id), "WARNING") == 0)
-                    || (strcmp (message_id_to_string (message_id), "GENERIC_LOG") == 0))
+            if (ui_tree_view_last_event->button == 3)
             {
-                gchar *data;
-                gint data_size;
-                uint32_t message_header_type_size;
-
-                CHECK_FCT_DO(dissect_signal_header((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
-
-                message_header_type_size = get_message_header_type_size ();
-                data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
-                data_size = get_message_size ((buffer_t*) buffer);
-
-                g_debug("message header type size: %u, data size: %u", message_header_type_size, data_size);
-
-                ui_signal_set_text (text_view, "\n", 1);
-                ui_signal_set_text (text_view, data, data_size);
+                /* It was a right mouse click */
             }
-            else
+        }
+
+        ui_tree_view_last_event = NULL;
+    }
+
+    g_debug("Message selected %d %p %p %s", path_currently_selected, buffer_current, path, gtk_tree_path_to_string(path));
+
+    if (!path_currently_selected)
+    {
+        text_view = (ui_text_view_t *) user_data;
+
+        g_assert(text_view != NULL);
+
+        if (gtk_tree_model_get_iter(model, &iter, path))
+        {
+            GValue buffer_store = G_VALUE_INIT;
+            gpointer buffer;
+
+            GValue message_id_store = G_VALUE_INIT;
+            guint message_id;
+
+            gtk_tree_model_get_value(model, &iter, COL_BUFFER, &buffer_store);
+            buffer = g_value_get_pointer(&buffer_store);
+
+            g_debug("  Get iter %p %p", buffer_current, buffer);
+
+            if (buffer_current != buffer)
             {
-                /* Dissect the signal */
-                CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+                buffer_current = buffer;
+
+                gtk_tree_model_get_value(model, &iter, COL_MESSAGE_ID, &message_id_store);
+                message_id = g_value_get_uint(&message_id_store);
+
+                /* Clear the view */
+                CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
+
+                if (ui_main_data.display_message_header)
+                {
+                    CHECK_FCT_DO(dissect_signal_header((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+                }
+
+                if ((strcmp(message_id_to_string(message_id), "ERROR_LOG") == 0)
+                        || (strcmp(message_id_to_string(message_id), "WARNING_LOG") == 0)
+                        || (strcmp(message_id_to_string(message_id), "GENERIC_LOG") == 0))
+                {
+                    gchar *data;
+                    gint data_size;
+                    uint32_t message_header_type_size;
+
+                    if (ui_main_data.display_message_header)
+                    {
+                        ui_signal_set_text(text_view, "\n", 1);
+                    }
+
+                    message_header_type_size = get_message_header_type_size();
+                    data = (gchar *) buffer_at_offset((buffer_t*) buffer, message_header_type_size);
+                    data_size = get_message_size((buffer_t*) buffer);
+
+                    g_debug("    message header type size: %u, data size: %u %p %d", message_header_type_size, data_size,
+                            buffer, ui_main_data.follow_last);
+
+                    ui_signal_set_text(text_view, data, data_size);
+                } else
+                {
+                    g_debug("    dissect message %d %p %d", message_id, buffer, ui_main_data.follow_last);
+
+                    /* Dissect the signal */
+                    CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
+                }
             }
         }
     }
@@ -172,6 +219,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
 
 void ui_signal_add_to_list(gpointer data, gpointer user_data)
 {
+    gboolean goto_last = user_data ? TRUE : FALSE;
     buffer_t *signal_buffer;
     GtkTreePath *path;
     GtkTreeViewColumn *focus_column;
@@ -205,11 +253,10 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     /* Increment number of messages */
     ui_main_data.nb_message_received++;
 
-    /* Check if no signal was selected in the list or if it was the last signal */
-    if ((ui_main_data.path_last == NULL) || (path == NULL) || (gtk_tree_path_compare(ui_main_data.path_last, path) == 0))
+    if ((ui_main_data.follow_last) && (goto_last))
     {
         /* Advance to the new last signal */
-        ui_callback_signal_go_to_last (NULL, NULL);
+        ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1);
     }
 }
 
@@ -225,7 +272,7 @@ static gboolean ui_handle_update_signal_list(gint fd, void *data, size_t data_le
     g_assert(signal_list_message != NULL);
     g_assert(signal_list_message->signal_list != NULL);
 
-    g_list_foreach (signal_list_message->signal_list, ui_signal_add_to_list, NULL);
+    g_list_foreach (signal_list_message->signal_list, ui_signal_add_to_list, (gpointer) TRUE);
 
     /* Free the list but not user data associated with each element */
     g_list_free (signal_list_message->signal_list);
@@ -378,25 +425,46 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
     return TRUE;
 }
 
-gboolean ui_callback_signal_go_to(GtkWidget *widget, gpointer data)
+gboolean ui_callback_signal_go_to_first(GtkWidget *widget, gpointer data)
 {
-    ui_tree_view_select_row (ui_main_data.nb_message_received / 2, NULL);
+    ui_tree_view_select_row (0);
+    ui_main_data.follow_last = FALSE;
+
     return TRUE;
 }
 
-gboolean ui_callback_signal_go_to_first(GtkWidget *widget, gpointer data)
+gboolean ui_callback_signal_go_to(GtkWidget *widget, gpointer data)
 {
-    ui_tree_view_select_row (0, NULL);
+    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.signals_go_to_entry);
+    return TRUE;
+}
+
+gboolean ui_callback_signal_go_to_entry(GtkWidget *widget, gpointer data)
+{
+    // gtk_entry_buffer_set_text(GTK_ENTRY(ui_main_data.signals_go_to_entry), "");
+    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.signalslist);
     return TRUE;
 }
 
 gboolean ui_callback_signal_go_to_last(GtkWidget *widget, gpointer data)
 {
-    GtkTreePath *path;
+    ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1);
+    ui_main_data.follow_last = TRUE;
 
-    ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1, &path);
-    ui_main_data.path_last = path;
+    return TRUE;
+}
 
+gboolean ui_callback_display_message_header(GtkWidget *widget, gpointer data)
+{
+    ui_main_data.display_message_header = !ui_main_data.display_message_header;
+    // TODO refresh textview.
+    return TRUE;
+}
+
+gboolean ui_callback_display_brace(GtkWidget *widget, gpointer data)
+{
+    ui_main_data.display_brace = !ui_main_data.display_brace;
+    // TODO refresh textview.
     return TRUE;
 }
 
@@ -411,7 +479,7 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
 
     if (ui_main_data.text_view != NULL)
     {
-        // ui_signal_dissect_clear_view(ui_main_data.text_view);
+        ui_signal_dissect_clear_view(ui_main_data.text_view);
     }
 
     return TRUE;

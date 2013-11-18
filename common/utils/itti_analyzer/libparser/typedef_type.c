@@ -7,22 +7,41 @@
 #include "ui_interface.h"
 
 int typedef_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
+    int length = 0;
+    char cbuf[200];
+    types_t *type_child = NULL;
+
     DISPLAY_PARSE_INFO("typedef", type->name, offset, parent_offset);
+
+    if (type->child != NULL) {
+        /* Ignore TYPEDEF children */
+        for (type_child = type->child; type_child != NULL && type_child->type == TYPE_TYPEDEF; type_child =
+                type_child->child) {
+        }
+    }
+
+    if ((type_child == NULL) || (type_child->type != TYPE_FUNDAMENTAL))
+    {
+        INDENTED_STRING(cbuf, new_line ? indent : 0, length = sprintf (cbuf, "%s, ", type->name));
+        ui_set_signal_text_cb(user_data, cbuf, length);
+
+        new_line = FALSE;
+    }
 
     /* Simply call next_type */
     if (type->child != NULL) {
         type->child->parent = type;
         type->child->type_dissect_from_buffer(
-            type->child, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset, indent);
+            type->child, ui_set_signal_text_cb, user_data, buffer, offset, parent_offset, indent, new_line);
     }
 
     return 0;
 }
 
-int typedef_type_file_print(struct types_s *type, int indent, FILE *file)
+int typedef_type_file_print(types_t *type, int indent, FILE *file)
 {
     if (type == NULL)
         return -1;
@@ -46,7 +65,7 @@ int typedef_type_file_print(struct types_s *type, int indent, FILE *file)
     return 0;
 }
 
-int typedef_type_hr_display(struct types_s *type, int indent)
+int typedef_type_hr_display(types_t *type, int indent)
 {
     if (type == NULL)
         return -1;

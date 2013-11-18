@@ -7,8 +7,8 @@
 #include "ui_interface.h"
 
 int reference_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     DISPLAY_PARSE_INFO("reference", type->name, offset, parent_offset);
 
@@ -18,7 +18,7 @@ int reference_dissect_from_buffer(
     if (type->child != NULL)
         type->child->type_dissect_from_buffer(type->child, ui_set_signal_text_cb,
                                               user_data, buffer, offset, parent_offset,
-                                              type->name == NULL ? indent: indent + DISPLAY_TAB_SIZE);
+                                              type->name == NULL ? indent: indent + DISPLAY_TAB_SIZE, TRUE);
     if (type->name) {
         INDENTED(stdout, indent,   fprintf(stdout, "</%s>\n", type->name));
     }
@@ -26,7 +26,7 @@ int reference_dissect_from_buffer(
     return 0;
 }
 
-int reference_type_file_print(struct types_s *type, int indent, FILE *file)
+int reference_type_file_print(types_t *type, int indent, FILE *file)
 {
     if (type == NULL)
         return -1;
@@ -49,7 +49,7 @@ int reference_type_file_print(struct types_s *type, int indent, FILE *file)
     return 0;
 }
 
-int reference_type_hr_display(struct types_s *type, int indent)
+int reference_type_hr_display(types_t *type, int indent)
 {
     if (type == NULL)
         return -1;

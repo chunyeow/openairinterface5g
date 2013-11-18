@@ -1,7 +1,9 @@
-#include "ui_signal_dissect_view.h"
-
 #ifndef UI_MAIN_SCREEN_H_
 #define UI_MAIN_SCREEN_H_
+
+#include <gtk/gtk.h>
+
+#include "ui_signal_dissect_view.h"
 
 typedef struct {
     GtkWidget *window;
@@ -29,12 +31,14 @@ typedef struct {
 
     /* Signal list buttons */
     /* Clear signals button */
-    GtkToolItem *signals_go_to_button;
+    GtkWidget *signals_go_to_entry;
     GtkToolItem *signals_go_to_last_button;
     GtkToolItem *signals_go_to_first_button;
+    gboolean display_message_header;
+    gboolean display_brace;
 
     GtkTreeSelection *selection;
-    GtkTreePath *path_last;
+    gboolean follow_last;
 
     /* Nb of messages received */
     guint nb_message_received;

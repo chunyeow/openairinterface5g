@@ -788,6 +788,9 @@ static int xml_parse_doc(xmlDocPtr doc) {
 
         /* Locate the header part of a message */
         CHECK_FCT(locate_type("ittiMsgHeader", head, &message_header_type));
+        /* Locate the main message part */
+        CHECK_FCT(locate_type("msg", head, &message_type));
+
         /* Locate the origin task id field */
         CHECK_FCT(locate_type("originTaskId", message_header_type, &origin_task_id_type));
         /* Locate the destination task id field */
@@ -830,7 +833,7 @@ int dissect_signal_header(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signa
 
     message_header_type->type_dissect_from_buffer(
         message_header_type, ui_set_signal_text_cb, cb_user_data,
-        buffer, 0, 0, INDENT_START);
+        buffer, 0, 0, INDENT_START, TRUE);
 
     return RC_OK;
 }
@@ -838,7 +841,7 @@ int dissect_signal_header(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signa
 int dissect_signal(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_cb,
                    gpointer cb_user_data)
 {
-    if (root == NULL) {
+    if (message_type == NULL) {
         g_error("No messages format definition provided");
         return RC_FAIL;
     }
@@ -848,8 +851,8 @@ int dissect_signal(buffer_t *buffer, ui_set_signal_text_cb_t ui_set_signal_text_
         return RC_FAIL;
     }
 
-    root->type_dissect_from_buffer(root, ui_set_signal_text_cb, cb_user_data,
-                                   buffer, 0, 0, INDENT_START);
+    message_type->type_dissect_from_buffer(message_type, ui_set_signal_text_cb, cb_user_data,
+                                           buffer, 0, 0, INDENT_START, TRUE);
 
     return RC_OK;
 }

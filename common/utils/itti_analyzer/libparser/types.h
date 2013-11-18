@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "buffers.h"
+#include "ui_main_screen.h"
 #include "ui_interface.h"
 
 #ifndef TYPES_H_
@@ -13,10 +14,10 @@
 #define ENABLE_DISPLAY_PARSE_INFO   0
 
 /* Activate to show braces, in increase the number of displayed lines (formating option)*/
-#define ENABLE_DISPLAY_BRACE        0
+#define ENABLE_DISPLAY_BRACE        1
 
 #if (ENABLE_DISPLAY_TYPE != 0)
-# define DISPLAY_TYPE(tYPE) ui_set_signal_text_cb(user_data, tYPE, strlen(tYPE));
+# define DISPLAY_TYPE(tYPE) ui_set_signal_text_cb(user_data, tYPE" ", strlen(tYPE) + 1);
 #else
 # define DISPLAY_TYPE(tYPE)
 #endif
@@ -35,7 +36,7 @@
 #endif
 
 #if (ENABLE_DISPLAY_BRACE != 0)
-# define DISPLAY_BRACE(cODE) cODE
+# define DISPLAY_BRACE(cODE) if (ui_main_data.display_brace) {cODE}
 #else
 # define DISPLAY_BRACE(cODE)
 #endif
@@ -74,7 +75,7 @@ typedef int (*type_file_print_t)(struct types_s *type, int indent, FILE *file);
  **/
 typedef int (*type_dissect_from_buffer_t)(
     struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent);
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line);
 
 typedef struct types_s {
     /* The type of the current description */

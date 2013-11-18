@@ -18,6 +18,7 @@ types_t *origin_task_id_type = NULL;
 types_t *destination_task_id_type = NULL;
 types_t *instance_type = NULL;
 types_t *message_header_type = NULL;
+types_t *message_type = NULL;
 types_t *message_size_type = NULL;
 
 int locate_root(const char *root_name, types_t *head, types_t **root_elm) {

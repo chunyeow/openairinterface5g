@@ -18,6 +18,8 @@ typedef enum
     NUM_COLS
 } col_type_e;
 
+extern GdkEventButton *ui_tree_view_last_event;
+
 int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox);
 
 int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_time,
@@ -28,7 +30,7 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_
 
 void ui_tree_view_destroy_list(GtkWidget *list);
 
-void ui_tree_view_select_row(gint row, GtkTreePath **path);
+void ui_tree_view_select_row(gint row);
 
 void ui_tree_view_refilter(void);
 

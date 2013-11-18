@@ -14,7 +14,7 @@ typedef enum {
     RESOLV_NOT_FOUND = -3,
 } resolv_rc_e;
 
-int search_id(types_t *head, types_t **found, int id)
+static int search_id(types_t *head, types_t **found, int id)
 {
     types_t *next_type;
 
@@ -101,7 +101,7 @@ int resolve_struct(types_t **head)
         if (next_type->type != TYPE_STRUCT)
             continue;
 
-//         g_debug("Trying to resolve struct members %s with type %d", next_type->name, next_type->id);
+        g_debug("Trying to resolve struct members %s with type %d", next_type->name, next_type->id);
 
         /* Struct may have no member */
         if (next_type->members == NULL)
@@ -115,10 +115,10 @@ int resolve_struct(types_t **head)
         while(member != NULL)
         {
             if (next_type->nb_members == 0) {
-                next_type->members_child = malloc(sizeof(struct types_s *));
+                next_type->members_child = malloc(sizeof(types_t *));
             } else {
                 next_type->members_child = realloc(next_type->members_child,
-                                                (next_type->nb_members + 1) * sizeof(struct types_s *));
+                                                (next_type->nb_members + 1) * sizeof(types_t *));
             }
             if (search_id(*head, &next_type->members_child[next_type->nb_members], atoi(member)) != RESOLV_OK) {
                 /* We have to remove this reference */
@@ -160,7 +160,7 @@ int resolve_union(types_t **head)
         if (next_type->type != TYPE_UNION)
             continue;
 
-//         printf("Trying to resolve struct members %s with type %d\n", next_type->name, next_type->id);
+        g_debug("Trying to resolve union members %s with type %d\n", next_type->name, next_type->id);
 
         /* Struct may have no member */
         if (next_type->members == NULL)
@@ -174,10 +174,10 @@ int resolve_union(types_t **head)
         while(member != NULL)
         {
             if (next_type->nb_members == 0) {
-                next_type->members_child = malloc(sizeof(struct types_s *));
+                next_type->members_child = malloc(sizeof(types_t *));
             } else {
                 next_type->members_child = realloc(next_type->members_child,
-                                                (next_type->nb_members + 1) * sizeof(struct types_s *));
+                                                (next_type->nb_members + 1) * sizeof(types_t *));
             }
             if (search_id(*head, &next_type->members_child[next_type->nb_members], atoi(member)) != RESOLV_OK) {
                 /* We have to remove this reference */
@@ -208,8 +208,8 @@ int resolve_pointer_type(types_t **head)
         if (next_type->type != TYPE_POINTER)
             continue;
 
-        // g_debug("Trying to resolve pointer id %d with type %d",
-        //        next_type->id, next_type->type_xml);
+        g_debug("Trying to resolve pointer id %d with type %d",
+                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */
@@ -235,8 +235,8 @@ int resolve_reference(types_t **head)
         if (next_type->type != TYPE_REFERENCE)
             continue;
 
-//         printf("Trying to resolve reference id %d with type %d\n",
-//                next_type->id, next_type->type_xml);
+        g_debug("Trying to resolve reference id %d with type %d\n",
+                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */
@@ -262,8 +262,8 @@ int resolve_field(types_t **head)
         if (next_type->type != TYPE_FIELD)
             continue;
 
-//         printf("Trying to resolve pointer id %d with type %d\n",
-//                next_type->id, next_type->type_xml);
+        g_debug("Trying to resolve pointer id %d with type %d\n",
+                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */
@@ -289,8 +289,8 @@ int resolve_array(types_t **head)
         if (next_type->type != TYPE_ARRAY)
             continue;
 
-//         printf("Trying to resolve array id %d with type %d\n",
-//                next_type->id, next_type->type_xml);
+        g_debug("Trying to resolve array id %d with type %d\n",
+                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */
@@ -316,8 +316,8 @@ int resolve_function(types_t **head)
         if (next_type->type != TYPE_FUNCTION)
             continue;
 
-        // g_debug("Trying to resolve function id %d with type %d",
-        //        next_type->id, next_type->type_xml);
+        g_debug("Trying to resolve function id %d with type %d",
+                next_type->id, next_type->type_xml);
 
         if (search_id(*head, &next_type->child, next_type->type_xml) != RESOLV_OK) {
             /* We have to remove this reference */
@@ -348,7 +348,7 @@ int resolve_file(types_t **head)
             continue;
         }
 
-//         printf("Trying to resolve file %s\n", next_type->file);
+        g_debug("Trying to resolve file %s\n", next_type->file);
 
         if (search_file(*head, &next_type->file_ref, atoi(&next_type->file[1])) != RESOLV_OK) {
             /* We have to remove this reference */

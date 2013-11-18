@@ -10,47 +10,50 @@
 #include "ui_interface.h"
 
 int struct_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     int i;
     int length = 0;
     char cbuf[200];
+    char *name;
 
     DISPLAY_PARSE_INFO("structure", type->name, offset, parent_offset);
 
     memset (cbuf, 0, 200);
 
-    if (type->name) {
+    if (new_line) {
         DISPLAY_TYPE("Str");
-        INDENTED_STRING(cbuf, indent, sprintf (cbuf, "%s =%s\n", type->name, "" DISPLAY_BRACE(" {")));
     }
 
-    length = strlen (cbuf);
-
+    if (type->name) {
+        name = type->name;
+    }
+    else {
+        name = "_anonymous_";
+    }
+    INDENTED_STRING(cbuf, new_line ? indent : 0, length = sprintf (cbuf, "%s :", name));
+    DISPLAY_BRACE(length += sprintf(&cbuf[length], " {"););
+    length += sprintf(&cbuf[length], "\n");
     ui_set_signal_text_cb(user_data, cbuf, length);
 
     for (i = 0; i < type->nb_members; i++) {
         if (type->members_child[i] != NULL)
             type->members_child[i]->type_dissect_from_buffer (
                 type->members_child[i], ui_set_signal_text_cb, user_data,
-                buffer, offset, parent_offset,
-                type->name == NULL ? indent : indent + DISPLAY_TAB_SIZE);
+                buffer, offset, parent_offset, indent + DISPLAY_TAB_SIZE, TRUE);
     }
 
     DISPLAY_BRACE(
-            if (type->name) {
-                DISPLAY_TYPE("Str");
-                INDENTED_STRING(cbuf, indent, sprintf(cbuf, "};\n"));
-            }
-            length = strlen (cbuf);
+            DISPLAY_TYPE("Str");
 
+            INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "};\n"));
             ui_set_signal_text_cb(user_data, cbuf, length);)
 
     return 0;
 }
 
-int struct_type_file_print(struct types_s *type, int indent, FILE *file) {
+int struct_type_file_print(types_t *type, int indent, FILE *file) {
     int i;
     if (type == NULL)
         return -1;
@@ -78,7 +81,7 @@ int struct_type_file_print(struct types_s *type, int indent, FILE *file) {
     return 0;
 }
 
-int struct_type_hr_display(struct types_s *type, int indent) {
+int struct_type_hr_display(types_t *type, int indent) {
     int i;
     if (type == NULL)
         return -1;

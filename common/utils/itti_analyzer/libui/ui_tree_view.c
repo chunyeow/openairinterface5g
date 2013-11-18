@@ -25,6 +25,8 @@ typedef struct
 
 static ui_store_t ui_store;
 
+GdkEventButton *ui_tree_view_last_event;
+
 static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, ui_store_t *store)
 {
     uint32_t msg_number;
@@ -51,6 +53,24 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
 
     return enabled;
 }
+
+static gboolean onButtonPressed(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+{
+    g_debug("onButtonPressed %p %p %p %d %d", treeview, event, userdata, event->type, event->button);
+    ui_tree_view_last_event = event;
+
+    return FALSE;
+}
+
+/*
+static gboolean onButtonRelease(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
+{
+    g_debug("onButtonRelease %p %p %p %d %d", treeview, event, userdata, event->type, event->button);
+    // last_event = event;
+
+    return FALSE;
+}
+*/
 
 static void
 ui_tree_view_init_list(GtkWidget *list)
@@ -176,7 +196,45 @@ void ui_tree_view_destroy_list(GtkWidget *list)
 
     /* Reset number of messages */
     ui_main_data.nb_message_received = 0;
-    ui_main_data.path_last = NULL;
+}
+
+/* Search for the message with its message number equal to the given value or the previous one */
+static gboolean ui_tree_view_search (GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter,
+        gpointer search_data)
+{
+    uint32_t msg_number;
+    uint32_t key_value = atoi(key);
+
+    gtk_tree_model_get (model, iter, column, &msg_number, -1);
+
+    g_debug ("ui_tree_view_search %d %d", key_value, msg_number);
+
+    if (key_value == msg_number)
+    {
+        /* Value found, use this message */
+        return 0;
+    }
+
+    {
+        GtkTreeIter iter_next = *iter;
+
+        if (gtk_tree_model_iter_next(model, &iter_next))
+        {
+            gtk_tree_model_get (model, &iter_next, column, &msg_number, -1);
+
+            if (key_value < msg_number)
+            {
+                /* Next value will be greater, use this message */
+                return 0;
+            }
+        }
+        else
+        {
+            /* Last value, use this message */
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
@@ -192,6 +250,8 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 
     ui_main_data.signalslist = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
+    gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW(ui_main_data.signalslist), ui_tree_view_search, NULL, NULL);
+    gtk_tree_view_set_search_entry (GTK_TREE_VIEW(ui_main_data.signalslist), GTK_ENTRY(ui_main_data.signals_go_to_entry));
 
     /* Disable multiple selection */
     selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_main_data.signalslist));
@@ -209,6 +269,9 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     ui_main_data.text_view = ui_signal_dissect_new(hbox);
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 5);
+
+    g_signal_connect(G_OBJECT(ui_main_data.signalslist), "button-press-event", G_CALLBACK (onButtonPressed), NULL);
+    // g_signal_connect(G_OBJECT(ui_main_data.signalslist), "button-release-event", G_CALLBACK (onButtonRelease), NULL);
 
     /* Connect callback on row selection */
     gtk_tree_selection_set_select_function(selection, ui_callback_on_select_signal,
@@ -249,20 +312,16 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_
     return RC_OK;
 }
 
-void ui_tree_view_select_row(gint row, GtkTreePath **path)
+void ui_tree_view_select_row(gint row)
 {
     GtkTreePath *path_row;
 
     path_row = gtk_tree_path_new_from_indices(row, -1);
+
     /* Select the message in requested row */
     gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, FALSE);
     /* Center the message in the middle of the list if possible */
     gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, TRUE, 0.5, 0.0);
-
-    if (path != NULL)
-    {
-        *path = path_row;
-    }
 }
 
 void ui_tree_view_refilter(void)

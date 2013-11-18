@@ -104,6 +104,7 @@ int ui_messages_read(char *filename)
         size = st.st_size;
 
         ui_callback_signal_clear_list (NULL, NULL);
+        ui_main_data.follow_last = TRUE;
 
         /* Initialize the progress bar */
         ui_progress_bar_set_fraction(0);
@@ -162,18 +163,20 @@ int ui_messages_read(char *filename)
 
                         buffer->message_number = itti_signal_header->message_number;
 
-                        ui_signal_add_to_list (buffer, NULL);
-                        read_messages++;
+                        ui_signal_add_to_list (buffer, ((read_messages % 100) == 0) ? (gpointer) 1: NULL);
 
-                        if (read_messages % 100 == 0)
+                        if ((read_messages % 100) == 0)
                         {
                             ui_progress_bar_set_fraction(read_fraction);
                             ui_gtk_flush_events ();
                         }
+
+                        read_messages++;
                         break;
                     }
 
                     case ITTI_DUMP_XML_DEFINITION:
+                        ui_gtk_flush_events ();
                         xml_parse_buffer (input_data, input_data_length);
                         ui_gtk_flush_events ();
                         break;
@@ -196,6 +199,12 @@ int ui_messages_read(char *filename)
 
             /* Enable buttons to move in the list of signals */
             ui_set_sensitive_move_buttons (TRUE);
+
+            if (ui_main_data.follow_last)
+            {
+                /* Advance to the last signal */
+                ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1);
+            }
 
             basename = g_path_get_basename(filename);
             ui_set_title ("\"%s\"", basename);

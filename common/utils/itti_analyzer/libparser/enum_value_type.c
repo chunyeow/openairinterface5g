@@ -9,10 +9,10 @@
 uint32_t last_enum_value;
 
 int enum_value_dissect_from_buffer(
-    struct types_s *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
-    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent)
+    types_t *type, ui_set_signal_text_cb_t ui_set_signal_text_cb, gpointer user_data,
+    buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
-    struct types_s *type_parent = NULL;
+    types_t *type_parent = NULL;
     uint32_t value = 0;
 
     DISPLAY_PARSE_INFO("enum_value", type->name, offset, parent_offset);
@@ -40,16 +40,14 @@ int enum_value_dissect_from_buffer(
                 last_enum_value = 0;
             }
         }
-        sprintf(cbuf, "(0x%08x)  %s;\n", value, type->name);
-        length = strlen(cbuf);
-
+        length = sprintf(cbuf, "(0x%08x) %s;\n", value, type->name);
         ui_set_signal_text_cb(user_data, cbuf, length);
     }
 
     return 0;
 }
 
-int enum_value_file_print(struct types_s *type, int indent, FILE *file)
+int enum_value_file_print(types_t *type, int indent, FILE *file)
 {
     if (type == NULL)
         return -1;
@@ -63,7 +61,7 @@ int enum_value_file_print(struct types_s *type, int indent, FILE *file)
     return 0;
 }
 
-int enum_value_type_hr_display(struct types_s *type, int indent)
+int enum_value_type_hr_display(types_t *type, int indent)
 {
     if (type == NULL)
         return -1;
