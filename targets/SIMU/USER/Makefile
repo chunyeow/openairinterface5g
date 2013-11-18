@@ -480,7 +480,7 @@ showcflags:
 	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags
 
 force_look:
-	true
+	@true
 
 otg_all: otg_latency otg_gp
 

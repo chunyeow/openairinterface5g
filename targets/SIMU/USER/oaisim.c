@@ -913,6 +913,10 @@ int main(int argc, char **argv) {
   // get command-line options
   get_simulation_options (argc, argv); //Command-line options
 
+#if defined(ENABLE_ITTI)
+  itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
+#endif
+
   // Initialize VCD LOG module
   vcd_signal_dumper_init ("openair_dump.vcd");
 
@@ -937,10 +941,6 @@ int main(int argc, char **argv) {
     snr_dB = 20;
     sinr_dB = -20;
   }
-
-#if defined(ENABLE_ITTI)
-  itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
-#endif
 
 #ifdef OPENAIR2
   init_omv ();
