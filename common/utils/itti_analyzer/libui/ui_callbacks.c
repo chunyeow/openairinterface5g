@@ -382,15 +382,20 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
     uint16_t port;
     int pipe_fd[2];
 
-    g_message("Connect event occurred");
-
     port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
     ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
 
-    if ((ip == NULL) || (port == 0))
+    g_message("Connect event occurred to %s:%d", ip, port);
+
+    if (strlen(ip) == 0)
     {
-        g_warning("NULL parameter given for ip address or port = 0");
-        /* TODO: add dialog box here */
+        ui_notification_dialog (GTK_MESSAGE_WARNING, "Connect", "Empty host ip address");
+        return FALSE;
+    }
+
+    if (port == 0)
+    {
+        ui_notification_dialog (GTK_MESSAGE_WARNING, "Connect", "Invalid host port value");
         return FALSE;
     }
 
