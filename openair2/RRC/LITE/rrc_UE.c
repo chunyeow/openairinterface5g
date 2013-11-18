@@ -257,7 +257,7 @@ static const char nas_attach_req_imsi[] =
 static const char nas_attach_req_guti[] =
 {
     0x07, 0x41,
-    /* EPS Mobile identity = IMSI */
+    /* EPS Mobile identity = GUTI */
     0x71, 0x0B, 0xF6, 0x12, 0xF2, 0x01, 0x80, 0x00, 0x01, 0xE0, 0x00,
     0xDA, 0x1F,
     /* End of EPS Mobile Identity */
@@ -1182,19 +1182,24 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,
 
 /* 36.331, 5.3.5.4	Reception of an RRCConnectionReconfiguration including the mobilityControlInfo by the UE (handover) */
 void   rrc_ue_process_mobilityControlInfo(u8 Mod_id,u32 frame, u8 eNB_index,struct MobilityControlInfo *mobilityControlInfo) {
-
+  /*
   DRB_ToReleaseList_t*  drb2release_list;
   DRB_Identity_t *lcid;
+  */
   LOG_N(RRC,"Note: This function needs some updates\n");
   if(UE_rrc_inst[Mod_id].Info[eNB_index].T310_active == 1)
     UE_rrc_inst[Mod_id].Info[eNB_index].T310_active = 0;
   UE_rrc_inst[Mod_id].Info[eNB_index].T304_active = 1;
   UE_rrc_inst[Mod_id].Info[eNB_index].T304_cnt = T304[mobilityControlInfo->t304];
 
+  /*
   drb2release_list = CALLOC (1, sizeof (*drb2release_list));
   lcid= CALLOC (1, sizeof (DRB_Identity_t)); // long
   for (*lcid=0;*lcid<NB_RB_MAX;*lcid++)
+  {
     ASN_SEQUENCE_ADD (&(drb2release_list)->list,lcid);
+  }
+  */
 
   //Removing SRB1 and SRB2 and DRB0
   LOG_N(RRC,"[UE %d] : Update needed for rrc_pdcp_config_req (deprecated) and rrc_rlc_config_req commands(deprecated)\n",Mod_id);
@@ -1987,11 +1992,9 @@ void ue_measurement_report_triggering(u8 Mod_id, u32 frame,u8 eNB_index) {
   TimeToTrigger_t	 ttt_ms;
   Q_OffsetRange_t ofn;
   Q_OffsetRange_t ocn;
-  Q_OffsetRange_t ofs;
-  Q_OffsetRange_t ocs;
+  Q_OffsetRange_t ofs = 0;
+  Q_OffsetRange_t ocs = 0;
   long			a3_offset;
-  MeasObjectToAddMod_t measObj;
-  //MeasId_t	 measId;
   MeasObjectId_t	 measObjId;
   ReportConfigId_t	 reportConfigId;
   

@@ -40,6 +40,7 @@
 #include "defs.h"
 #include "extern.h"
 #include "UTIL/assertions.h"
+#include "asn1_conversions.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "LAYER2/RLC/rlc.h"
 #include "UTIL/LOG/log.h"
@@ -1098,21 +1099,24 @@ rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
 
     S1AP_NAS_FIRST_REQ (message_p).nas_pdu.buffer = rrcConnectionSetupComplete->dedicatedInfoNAS.buf;
     S1AP_NAS_FIRST_REQ (message_p).nas_pdu.length = rrcConnectionSetupComplete->dedicatedInfoNAS.size;
-    if (rrcConnectionSetupComplete->registeredMME != NULL)
+
+    if (eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index].present == InitialUE_Identity_PR_s_TMSI)
     {
-       S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_gummei;
-       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mcc = 0; // TODO decode BIT STREAM
-       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mnc = 0; // TODO decode BIT STREAM
-       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mme_code = 0; // TODO decode BIT STREAM
-       S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mme_group_id = 0; // TODO decode BIT STREAM
+      S_TMSI_t s_TMSI = eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index].choice.s_TMSI;
+
+      S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_s_tmsi;
+      S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.s_tmsi.mme_code = BIT_STRING_to_uint8(&s_TMSI.mmec);
+      S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.s_tmsi.m_tmsi = BIT_STRING_to_uint32(&s_TMSI.m_TMSI);
     }
     else
     {
-      if (eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index].present == InitialUE_Identity_PR_s_TMSI)
+      if (rrcConnectionSetupComplete->registeredMME != NULL)
       {
-        S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_s_tmsi;
-        S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.s_tmsi.mme_code = 0; // TODO decode BIT STREAM
-        S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.s_tmsi.m_tmsi = 0; // TODO decode BIT STREAM
+         S1AP_NAS_FIRST_REQ (message_p).ue_identity.present = IDENTITY_PR_gummei;
+         S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mcc = 0; // TODO decode BIT STREAM
+         S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mnc = 0; // TODO decode BIT STREAM
+         S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mme_code = 0; // TODO decode BIT STREAM
+         S1AP_NAS_FIRST_REQ (message_p).ue_identity.choice.gummei.mme_group_id = 0; // TODO decode BIT STREAM
       }
       else
       {
