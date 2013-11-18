@@ -5,9 +5,9 @@ MESSAGE_DEF(TERMINATE_MESSAGE,  MESSAGE_PRIORITY_MAX, struct {}, terminate_messa
 MESSAGE_DEF(MESSAGE_TEST,       MESSAGE_PRIORITY_MED, struct {}, message_test)
 
 /* Error message  */
-MESSAGE_DEF(ERROR,              MESSAGE_PRIORITY_MAX, struct {}, error)
+MESSAGE_DEF(ERROR_LOG,          MESSAGE_PRIORITY_MAX, struct {}, error_log)
 /* Warning message  */
-MESSAGE_DEF(WARNING,            MESSAGE_PRIORITY_MAX, struct {}, warning)
+MESSAGE_DEF(WARNING_LOG,        MESSAGE_PRIORITY_MAX, struct {}, warning_log)
 
 /* Generic log message for text */
 MESSAGE_DEF(GENERIC_LOG,        MESSAGE_PRIORITY_MED, struct {}, generic_log)

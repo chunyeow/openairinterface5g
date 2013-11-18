@@ -656,20 +656,20 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 
         if (level <= LOG_ERR)
         {
-            messages_id = ERROR;
+            messages_id = ERROR_LOG;
         }
         else
         {
-            messages_id = WARNING;
+            messages_id = WARNING_LOG;
         }
         message_p = itti_alloc_new_message_sized(TASK_UNKNOWN, messages_id, message_string_size);
         if (level <= LOG_ERR)
         {
-            message_msg_p = (char *) &message_p->msg.error;
+            message_msg_p = (char *) &message_p->msg.error_log;
         }
         else
         {
-            message_msg_p = (char *) &message_p->msg.warning;
+            message_msg_p = (char *) &message_p->msg.warning_log;
         }
         memcpy(message_msg_p, log_start, message_string_size);
 
