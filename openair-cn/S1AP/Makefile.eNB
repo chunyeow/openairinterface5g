@@ -66,7 +66,7 @@ CFLAGS = 			\
 
 $(libs1ap_OBJECTS): %.o : %.c
 	@echo "Compiling $<"
-	$(CC) -c $(CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $*.c > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
