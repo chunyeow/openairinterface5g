@@ -59,7 +59,8 @@
 #include "signals.h"
 #include "timer.h"
 
-int itti_debug = 0;
+const int itti_debug = 0;
+const int itti_debug_poll = 0;
 
 #define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
     while(0)
@@ -564,7 +565,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
     }
 #endif
 
-    if (*received_msg == NULL) {
+    if ((itti_debug_poll) && (*received_msg == NULL)) {
         ITTI_DEBUG("No message in queue[(%u:%s)]\n", task_id, itti_get_task_name(task_id));
     }
 }
