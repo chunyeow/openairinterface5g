@@ -287,15 +287,16 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
 
         s1ap_nas_first_req.rnti = 0xC03A;
         s1ap_nas_first_req.establishment_cause = RRC_CAUSE_MO_DATA;
-        s1ap_nas_first_req.ue_identity.present = IDENTITY_PR_gummei;
+        s1ap_nas_first_req.ue_identity.presenceMask = UE_IDENTITIES_gummei;
 
-        s1ap_nas_first_req.ue_identity.choice.gummei.mcc = 208;
-        s1ap_nas_first_req.ue_identity.choice.gummei.mnc = 34;
-        s1ap_nas_first_req.ue_identity.choice.gummei.mme_code = 0;
-        s1ap_nas_first_req.ue_identity.choice.gummei.mme_group_id = 0;
+        s1ap_nas_first_req.ue_identity.gummei.mcc = 208;
+        s1ap_nas_first_req.ue_identity.gummei.mnc = 34;
+        s1ap_nas_first_req.ue_identity.gummei.mme_code = 0;
+        s1ap_nas_first_req.ue_identity.gummei.mme_group_id = 0;
 
+#if 0
         /* NAS Attach request with IMSI */
-        uint8_t nas_attach_req_imsi[] =
+        static uint8_t nas_attach_req_imsi[] =
         {
             0x07, 0x41,
             /* EPS Mobile identity = IMSI */
@@ -308,9 +309,10 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
             0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
             0x01, 0x27, 0x11,
         };
+#endif
 
         /* NAS Attach request with GUTI */
-        uint8_t nas_attach_req_guti[] =
+        static uint8_t nas_attach_req_guti[] =
         {
             0x07, 0x41,
             /* EPS Mobile identity = IMSI */
