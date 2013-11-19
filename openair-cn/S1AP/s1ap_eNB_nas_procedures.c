@@ -53,7 +53,7 @@ int s1ap_eNB_handle_nas_first_req(
     instance_t instance, s1ap_nas_first_req_t *s1ap_nas_first_req_p)
 {
     s1ap_eNB_instance_t          *instance_p;
-    struct s1ap_eNB_mme_data_s   *mme_desc_p;
+    struct s1ap_eNB_mme_data_s   *mme_desc_p = NULL;
     struct s1ap_eNB_ue_context_s *ue_desc_p;
 
     s1ap_message message;
