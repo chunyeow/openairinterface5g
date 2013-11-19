@@ -9,9 +9,11 @@ libsctp_OBJECTS = \
 -include .*.d
 
 CFLAGS = \
+	-Wall			\
 	$(S1AP_CFLAGS)		\
 	-I../SCTP		\
 	-DENB_MODE		\
+	-Werror=uninitialized	\
 	-Werror=implicit-function-declaration
 
 $(libsctp_OBJECTS): %.o : %.c

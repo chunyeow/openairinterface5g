@@ -50,6 +50,7 @@ endif
 -include *.d
 
 CFLAGS = 			\
+	-Wall			\
 	-DENB_MODE		\
 	-DENABLE_USE_MME	\
 	-DEMIT_ASN_DEBUG=1	\
@@ -60,11 +61,12 @@ CFLAGS = 			\
 	$(ADD_CFLAGS)		\
 	-DENB_MODE		\
 	$(S1AP_CFLAGS)		\
+	-Wuninitialized		\
 	-Werror=implicit-function-declaration
 
 $(libs1ap_OBJECTS): %.o : %.c
 	@echo "Compiling $<"
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $*.c > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
