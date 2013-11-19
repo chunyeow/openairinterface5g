@@ -65,6 +65,12 @@ if(paramsinitialized)
     
     Da2b_R=zeros(Niter*120,Nantb*301,Nmeas);
     Db2a_R=zeros(Niter*120,Nanta*301,Nmeas);
+    chanestsA2B=zeros(301,Nantb,Nmeas);
+    tchanestsA2B=zeros(512,Nantb,Nmeas);
+    fchanestsA2B=zeros(512,Nantb,Nmeas);
+    chanestsB2A=zeros(301,Nantb,Nmeas);
+    tchanestsB2A=zeros(512,Nantb,Nmeas);
+    fchanestsB2A=zeros(512,Nantb,Nmeas);
     
     for meas=1:Nmeas
         %% ------- Node A to B transmission ------- %%
@@ -115,9 +121,9 @@ if(paramsinitialized)
         end
         HB2A=conj(repmat(Db2a_T,Niter,1)).*repmat(Db2a_R(:,:,meas),1,Nantb);
         phasesB2A=unwrap(angle(HB2A));
-        #if(mean(var(phasesB2A))>0.5)
-        #    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
-        #end
+        %if(mean(var(phasesB2A))>0.5)
+        %    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
+        %end
         
         if (chanest_full)
             chanestsB2A(:,:,meas)=zeros(301,Nantb);

@@ -120,9 +120,9 @@ if(paramsinitialized)
     %% ------- Do the B to A channel estimation ------- %%
     HB2A=conj(Db2a_T.*repmat(Db2a_R,1,Nantb));
     phasesB2A=unwrap(angle(HB2A));
-    #if(mean(var(phasesB2A))>0.5)
-    #    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
-    #end
+    %if(mean(var(phasesB2A))>0.5)
+    %    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
+    %end
     
     if (chanest_full)
         chanestsB2A=zeros(301,Nantb);
