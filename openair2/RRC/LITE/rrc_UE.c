@@ -1356,11 +1356,39 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
       case DL_DCCH_MessageType__c1_PR_NOTHING :
 	LOG_I(RRC,"[UE %d] Frame %d : Received PR_NOTHING on DL-DCCH-Message\n",Mod_id,frame);
 	return;
-	break;
+
       case DL_DCCH_MessageType__c1_PR_csfbParametersResponseCDMA2000:
 	break;
       case DL_DCCH_MessageType__c1_PR_dlInformationTransfer:
-	break;
+      {
+#if defined(ENABLE_ITTI)
+        DLInformationTransfer_t *dlInformationTransfer = &dl_dcch_msg->message.choice.c1.choice.dlInformationTransfer;
+
+        if ((dlInformationTransfer->criticalExtensions.present == DLInformationTransfer__criticalExtensions_PR_c1)
+                && (dlInformationTransfer->criticalExtensions.choice.c1.present == DLInformationTransfer__criticalExtensions__c1_PR_dlInformationTransfer_r8)
+                && (dlInformationTransfer->criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.present == DLInformationTransfer_r8_IEs__dedicatedInfoType_PR_dedicatedInfoNAS))
+        {
+          /* This message hold a dedicated info NAS payload, forward it to NAS */
+          struct DLInformationTransfer_r8_IEs__dedicatedInfoType *dedicatedInfoType =
+              &dlInformationTransfer->criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType;
+          uint32_t pdu_length;
+          uint8_t *pdu_buffer;
+          MessageDef *msg_p;
+
+          pdu_length = dedicatedInfoType->choice.dedicatedInfoNAS.size;
+          pdu_buffer = dedicatedInfoType->choice.dedicatedInfoNAS.buf;
+
+          msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_DOWNLINK_DATA_IND);
+          NAS_DOWNLINK_DATA_IND (msg_p).UEid = Mod_id; // TODO set the UEid to something else ?
+          NAS_DOWNLINK_DATA_IND (msg_p).nasMsg.length = pdu_length;
+          NAS_DOWNLINK_DATA_IND (msg_p).nasMsg.data = pdu_buffer;
+
+          itti_send_msg_to_task(TASK_NAS_UE, Mod_id + NB_eNB_INST, msg_p);
+        }
+#endif
+        break;
+      }
+
       case DL_DCCH_MessageType__c1_PR_handoverFromEUTRAPreparationRequest:
 	break;
       case DL_DCCH_MessageType__c1_PR_mobilityFromEUTRACommand:
@@ -2247,6 +2275,7 @@ void *rrc_ue_task(void *args_p) {
         LOG_D(RRC, "Received %s\n", msg_name);
         break;
 
+      /* MAC messages */
       case RRC_MAC_IN_SYNC_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
@@ -2304,6 +2333,7 @@ void *rrc_ue_task(void *args_p) {
         break;
 #endif
 
+        /* PDCP messages */
       case RRC_DCCH_DATA_IND:
         LOG_D(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
               RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
@@ -2315,6 +2345,27 @@ void *rrc_ue_task(void *args_p) {
         // Message buffer has been processed, free it now.
         free (RRC_DCCH_DATA_IND (msg_p).sdu_p);
         break;
+
+      /* NAS messages */
+      case NAS_UPLINK_DATA_REQ:
+      {
+        uint32_t length;
+        uint8_t *buffer;
+
+        LOG_D(RRC, "Received %s: instance %d, UEid %d\n", msg_name, instance, NAS_UPLINK_DATA_REQ (msg_p).UEid);
+
+        /* Allocate a buffer for the NAS PDU payload plus some space for the encapsulation */
+        length = NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length + 20;
+        buffer = malloc (length);
+
+        /* Create message for PDCP (ULInformationTransfer_t) */
+        length = do_ULInformationTransfer(length, buffer,
+                NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
+
+        /* Transfer data to PDCP */
+        pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
+        break;
+      }
 
       default:
         LOG_E(RRC, "Received unexpected message %s\n", msg_name);

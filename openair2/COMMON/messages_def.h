@@ -3,6 +3,8 @@
 #include "timer_messages_def.h"
 
 // Messages files used between tasks
+#include "mac_messages_def.h"
+#include "pdcp_messages_def.h"
 #include "rrc_messages_def.h"
 #include "s1ap_messages_def.h"
 #include "sctp_messages_def.h"

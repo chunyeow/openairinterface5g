@@ -5,22 +5,28 @@
 // Defines to access message fields.
 
 #define S1AP_NAS_FIRST_REQ(mSGpTR)              (mSGpTR)->msg.s1ap_nas_first_req
+#define S1AP_UPLINK_NAS(mSGpTR)                 (mSGpTR)->msg.s1ap_uplink_nas
+#define S1AP_UE_CAPABILITIES_IND(mSGpTR)        (mSGpTR)->msg.s1ap_ue_cap_info_ind
+#define S1AP_INITIAL_CONTEXT_SETUP_RESP(mSGpTR) (mSGpTR)->msg.s1ap_initial_context_setup_resp
+
+#define S1AP_DOWNLINK_NAS(mSGpTR)               (mSGpTR)->msg.s1ap_downlink_nas
+#define S1AP_INITIAL_CONTEXT_SETUP_REQ(mSGpTR)  (mSGpTR)->msg.s1ap_initial_context_setup_req
 
 //-------------------------------------------------------------------------------------------//
 
-enum cell_type_e {
+typedef enum cell_type_e {
     CELL_MACRO_ENB,
     CELL_HOME_ENB
-};
+} cell_type_t;
 
-typedef enum {
+typedef enum paging_drx_e {
     PAGING_DRX_32  = 0x0,
     PAGING_DRX_64  = 0x1,
     PAGING_DRX_128 = 0x2,
     PAGING_DRX_256 = 0x3,
 } paging_drx_t;
 
-typedef struct {
+typedef struct net_ip_address_s {
     unsigned ipv4:1;
     unsigned ipv6:1;
     char ipv4_address[16];
@@ -44,7 +50,7 @@ typedef struct {
  * concerns AC11..AC15, ‘mt’ stands for ‘Mobile Terminating’ and ‘mo’ for
  * 'Mobile Originating'. Defined in TS 36.331.
  */
-typedef enum {
+typedef enum rrc_establishment_cause_e {
     RRC_CAUSE_EMERGENCY        = 0x0,
     RRC_CAUSE_HIGH_PRIO_ACCESS = 0x1,
     RRC_CAUSE_MT_ACCESS        = 0x2,
@@ -53,40 +59,38 @@ typedef enum {
     RRC_CAUSE_LAST
 } rrc_establishment_cause_t;
 
-typedef struct {
+typedef struct s1ap_gummei_s {
     uint16_t mcc;
     uint16_t mnc;
     uint8_t  mme_code;
     uint16_t mme_group_id;
-} gummei_t;
+} s1ap_gummei_t;
 
-typedef struct {
+typedef struct s_tmsi_s {
     uint8_t  mme_code;
     uint32_t m_tmsi;
 } s_tmsi_t;
 
-typedef enum {
-  IDENTITY_PR_NOTHING,
-  IDENTITY_PR_s_tmsi,
-  IDENTITY_PR_gummei,
-} identity_t;
+typedef enum ue_identities_presenceMask_e {
+  UE_IDENTITIES_NONE = 0,
+  UE_IDENTITIES_s_tmsi = 1 << 1,
+  UE_IDENTITIES_gummei = 1 << 2,
+} ue_identities_presenceMask_t;
 
-typedef struct {
-    identity_t present;
-    union {
-        s_tmsi_t s_tmsi;
-        gummei_t gummei;
-    } choice;
+typedef struct ue_identity_s {
+    ue_identities_presenceMask_t presenceMask;
+    s_tmsi_t s_tmsi;
+    s1ap_gummei_t gummei;
 } ue_identity_t;
 
-typedef struct {
+typedef struct nas_pdu_s {
     /* Octet string data */
     uint8_t  *buffer;
     /* Length of the octet string */
     uint32_t  length;
 } nas_pdu_t, ue_radio_cap_t;
 
-typedef struct {
+typedef struct transport_layer_addr_s {
     /* Length of the transport layer address buffer. S1AP layer received a
      * bit string<1..160> containing one of the following addresses: ipv4,
      * ipv6, or ipv4 and ipv6. The layer doesn't interpret the buffer but
@@ -96,12 +100,12 @@ typedef struct {
     uint8_t buffer[20];
 } transport_layer_addr_t;
 
-typedef struct {
+typedef struct e_rab_level_qos_parameter_s {
     uint8_t qci;
     
 } e_rab_level_qos_parameter_t;
 
-typedef struct {
+typedef struct e_rab_s {
     /* Unique e_rab_id for the UE. */
     uint8_t                     e_rab_id;
     /* Quality of service for this e_rab */
@@ -114,7 +118,7 @@ typedef struct {
     uint32_t                    gtp_teid;
 } e_rab_t;
 
-typedef struct {
+typedef struct e_rab_setup_s {
     /* Unique e_rab_id for the UE. */
     uint8_t e_rab_id;
 
@@ -125,14 +129,14 @@ typedef struct {
     uint32_t gtp_teid;
 } e_rab_setup_t;
 
-typedef struct {
+typedef struct e_rab_failed_s {
     /* Unique e_rab_id for the UE. */
     uint8_t e_rab_id;
     /* Cause of the failure */
     //     cause_t cause;
 } e_rab_failed_t;
 
-typedef struct {
+typedef struct s1ap_register_eNB_s {
     /* Unique eNB_id to identify the eNB within EPC.
      * For macro eNB ids this field should be 20 bits long.
      * For home eNB ids this field should be 28 bits long.
@@ -173,7 +177,7 @@ typedef struct {
  * The rnti uniquely identifies an UE within a cell. Later the enb_ue_s1ap_id
  * will be the unique identifier used between RRC and S1AP.
  */
-typedef struct {
+typedef struct s1ap_nas_first_req_s {
     /* RNTI of the mobile */
     uint16_t rnti;
 
@@ -189,7 +193,7 @@ typedef struct {
     ue_identity_t ue_identity;
 } s1ap_nas_first_req_t;
 
-typedef struct {
+typedef struct s1ap_uplink_nas_s {
     /* Unique UE identifier within an eNB */
     unsigned eNB_ue_s1ap_id:24;
 
@@ -199,7 +203,7 @@ typedef struct {
 
 typedef s1ap_uplink_nas_t s1ap_downlink_nas_t;
 
-typedef struct {
+typedef struct s1ap_initial_context_setup_req_s {
     unsigned eNB_ue_s1ap_id:24;
 
     /* Number of e_rab to be setup in the list */
@@ -208,7 +212,7 @@ typedef struct {
     e_rab_t  e_rab_param[S1AP_MAX_E_RAB];
 } s1ap_initial_context_setup_req_t;
 
-typedef struct {
+typedef struct s1ap_initial_context_setup_resp_s {
     unsigned  eNB_ue_s1ap_id:24;
 
     /* Number of e_rab setup-ed in the list */
@@ -222,7 +226,7 @@ typedef struct {
     e_rab_failed_t e_rabs_failed[S1AP_MAX_E_RAB];
 } s1ap_initial_context_setup_resp_t;
 
-typedef struct {
+typedef struct s1ap_ue_cap_info_ind_s {
     unsigned  eNB_ue_s1ap_id:24;
     ue_radio_cap_t ue_radio_cap;
 } s1ap_ue_cap_info_ind_t;

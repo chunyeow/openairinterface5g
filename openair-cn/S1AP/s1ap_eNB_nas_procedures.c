@@ -76,24 +76,40 @@ int s1ap_eNB_handle_nas_first_req(
 
     initial_ue_message_p = &message.msg.s1ap_InitialUEMessageIEs;
 
-    /* Select the MME corresponding to the provided GUMMEI.
-     * If no MME corresponds to the GUMMEI, the function selects the MME with the
-     * highest capacity.
-     * In case eNB has no MME associated, the eNB should inform RRC and discard
-     * this request.
-     */
-    if (s1ap_nas_first_req_p->ue_identity.present == IDENTITY_PR_gummei) {
+    /* Select the MME corresponding to the provided GUMMEI. */
+    if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_gummei) {
         mme_desc_p = s1ap_eNB_nnsf_select_mme_by_gummei(
             instance_p,
             s1ap_nas_first_req_p->establishment_cause,
-            s1ap_nas_first_req_p->ue_identity.choice.gummei);
-    } else {
-        mme_desc_p = s1ap_eNB_nnsf_select_mme_by_mme_code(
-            instance_p,
-            s1ap_nas_first_req_p->establishment_cause,
-            s1ap_nas_first_req_p->ue_identity.choice.s_tmsi.mme_code);
+            s1ap_nas_first_req_p->ue_identity.gummei);
     }
+
     if (mme_desc_p == NULL) {
+        /* Select the MME corresponding to the provided s-TMSI. */
+        if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_s_tmsi) {
+            mme_desc_p = s1ap_eNB_nnsf_select_mme_by_mme_code(
+                instance_p,
+                s1ap_nas_first_req_p->establishment_cause,
+                s1ap_nas_first_req_p->ue_identity.s_tmsi.mme_code);
+        }
+    }
+
+    if (mme_desc_p == NULL) {
+        /*
+         * If no MME corresponds to the GUMMEI or the s-TMSI, selects the MME with the
+         * highest capacity.
+         */
+        mme_desc_p = s1ap_eNB_nnsf_select_mme(
+                        instance_p,
+                        s1ap_nas_first_req_p->establishment_cause);
+    }
+
+    if (mme_desc_p == NULL) {
+        /*
+         * In case eNB has no MME associated, the eNB should inform RRC and discard
+         * this request.
+         */
+
         S1AP_WARN("No MME is associated to the eNB\n");
         // TODO: Inform RRC
         return -1;
@@ -133,22 +149,23 @@ int s1ap_eNB_handle_nas_first_req(
              s1ap_nas_first_req_p->establishment_cause, RRC_CAUSE_LAST, 0);
     initial_ue_message_p->rrC_Establishment_Cause = s1ap_nas_first_req_p->establishment_cause;
 
-    if (s1ap_nas_first_req_p->ue_identity.present == IDENTITY_PR_gummei) {
+    if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_s_tmsi) {
         initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_S_TMSI_PRESENT;
 
-        MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.choice.s_tmsi.mme_code,
+        MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.s_tmsi.mme_code,
                                  &initial_ue_message_p->s_tmsi.mMEC);
-        M_TMSI_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.choice.s_tmsi.m_tmsi,
+        M_TMSI_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.s_tmsi.m_tmsi,
                                &initial_ue_message_p->s_tmsi.m_TMSI);
-    } else {
+    }
+    if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_gummei) {
         initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_GUMMEI_ID_PRESENT;
 
-        MCC_MNC_TO_PLMNID(s1ap_nas_first_req_p->ue_identity.choice.gummei.mcc,
-                          s1ap_nas_first_req_p->ue_identity.choice.gummei.mnc,
+        MCC_MNC_TO_PLMNID(s1ap_nas_first_req_p->ue_identity.gummei.mcc,
+                          s1ap_nas_first_req_p->ue_identity.gummei.mnc,
                           &initial_ue_message_p->gummei_id.pLMN_Identity);
-        MME_GID_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.choice.gummei.mme_group_id,
+        MME_GID_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.gummei.mme_group_id,
                                 &initial_ue_message_p->gummei_id.mME_Group_ID);
-        MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.choice.gummei.mme_code,
+        MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.gummei.mme_code,
                                  &initial_ue_message_p->gummei_id.mME_Code);
     }
 
@@ -336,6 +353,9 @@ int s1ap_eNB_initial_ctxt_resp(
     int      ret = -1;
     int      i;
 
+    /* Retrieve the S1AP eNB instance associated with Mod_id */
+    s1ap_eNB_instance_p = s1ap_eNB_get_instance(instance);
+
     DevAssert(initial_ctxt_resp_p != NULL);
     DevAssert(s1ap_eNB_instance_p != NULL);
 
@@ -414,6 +434,9 @@ int s1ap_eNB_ue_capabilities(instance_t instance,
     uint8_t  *buffer;
     uint32_t length;
     int      ret = -1;
+
+    /* Retrieve the S1AP eNB instance associated with Mod_id */
+    s1ap_eNB_instance_p = s1ap_eNB_get_instance(instance);
 
     DevAssert(ue_cap_info_ind_p != NULL);
     DevAssert(s1ap_eNB_instance_p != NULL);

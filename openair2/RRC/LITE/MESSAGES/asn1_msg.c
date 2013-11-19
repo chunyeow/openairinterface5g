@@ -119,8 +119,9 @@ uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index) {
   return(two_tier_hexagonal_adjacent_cellIds[Mod_id][index]);
 }
 /* This only works for the hexagonal topology...need a more general function for other topologies */
-u8 get_adjacent_cell_mod_id(uint16_t phyCellId) {
-  u8 i;
+
+uint8_t get_adjacent_cell_mod_id(uint16_t phyCellId) {
+  uint8_t i;
   for(i=0;i<7;i++) {
     if(two_tier_hexagonal_cellIds[i] == phyCellId)
       return i;
@@ -128,6 +129,7 @@ u8 get_adjacent_cell_mod_id(uint16_t phyCellId) {
   LOG_E(RRC,"\nCannot get adjacent cell mod id! Fatal error!\n");
   return 0xFF; //error!
 }
+
 /*
 uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 		SystemInformationBlockType1_t *sib1) {
@@ -306,6 +308,7 @@ uint8_t do_MIB(LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, uint8_t *buffer)
 	 );
   */
 }
+
 uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 		BCCH_DL_SCH_Message_t *bcch_message,
 		SystemInformationBlockType1_t **sib1) {
@@ -1390,6 +1393,7 @@ uint8_t do_RRCConnectionSetup(uint8_t *buffer,
 
   return((enc_rval.encoded+7)/8);
 }
+
 uint8_t do_SecurityModeCommand(uint8_t Mod_id,
                                uint8_t *buffer,
                                uint8_t UE_id,
@@ -1434,6 +1438,7 @@ uint8_t do_SecurityModeCommand(uint8_t Mod_id,
   //  exit(-1);
   return((enc_rval.encoded+7)/8);
 }
+
 uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
 			       uint8_t *buffer,
 			       uint8_t UE_id,
@@ -1821,13 +1826,55 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   return((enc_rval.encoded+7)/8);
 }
 
-static OAI_UECapability_t UECapability; /* TODO declared static to allow returning this has an address should be allocated in a cleaner way. */
-SupportedBandEUTRA_t Bandlist[4];
-BandInfoEUTRA_t BandInfo_meas[4];
-InterFreqBandInfo_t InterFreqBandInfo[4][4];
-BandInfoEUTRA_t BandInfoEUTRA[4];
+uint8_t do_DLInformationTransfer(uint32_t length, uint8_t *buffer, uint8_t transaction_id, uint32_t pdu_length, uint8_t *pdu_buffer)
+{
+  asn_enc_rval_t enc_rval;
+
+  DL_DCCH_Message_t dl_dcch_msg;
+
+  memset(&dl_dcch_msg,0,sizeof(DL_DCCH_Message_t));
+
+  dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
+  dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_dlInformationTransfer;
+  dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.rrc_TransactionIdentifier = transaction_id;
+  dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.present = DLInformationTransfer__criticalExtensions_PR_c1;
+  dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.present = DLInformationTransfer__criticalExtensions__c1_PR_dlInformationTransfer_r8;
+  dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.present = DLInformationTransfer_r8_IEs__dedicatedInfoType_PR_dedicatedInfoNAS;
+  dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
+  dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
+
+  enc_rval = uper_encode_to_buffer (&asn_DEF_UL_CCCH_Message, (void*) &dl_dcch_msg, buffer, length);
+
+  return((enc_rval.encoded+7)/8);
+}
+
+uint8_t do_ULInformationTransfer(uint32_t length, uint8_t *buffer, uint32_t pdu_length, uint8_t *pdu_buffer)
+{
+  asn_enc_rval_t enc_rval;
+
+  UL_DCCH_Message_t ul_dcch_msg;
+
+  memset(&ul_dcch_msg,0,sizeof(UL_DCCH_Message_t));
+
+  ul_dcch_msg.message.present           = UL_DCCH_MessageType_PR_c1;
+  ul_dcch_msg.message.choice.c1.present = UL_DCCH_MessageType__c1_PR_ulInformationTransfer;
+  ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.present = ULInformationTransfer__criticalExtensions_PR_c1;
+  ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.present = DLInformationTransfer__criticalExtensions__c1_PR_dlInformationTransfer_r8;
+  ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.present = ULInformationTransfer_r8_IEs__dedicatedInfoType_PR_dedicatedInfoNAS;
+  ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
+  ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
+
+  enc_rval = uper_encode_to_buffer (&asn_DEF_UL_CCCH_Message, (void*) &ul_dcch_msg, buffer, length);
+
+  return((enc_rval.encoded+7)/8);
+}
 
 OAI_UECapability_t *fill_ue_capability() {
+  static OAI_UECapability_t UECapability; /* TODO declared static to allow returning this has an address should be allocated in a cleaner way. */
+  SupportedBandEUTRA_t Bandlist[4];
+  // BandInfoEUTRA_t BandInfo_meas[4];
+  InterFreqBandInfo_t InterFreqBandInfo[4][4];
+  BandInfoEUTRA_t BandInfoEUTRA[4];
 
   UE_EUTRA_Capability_t *UE_EUTRA_Capability;
   asn_enc_rval_t enc_rval;
