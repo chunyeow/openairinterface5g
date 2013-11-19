@@ -248,21 +248,21 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
                                    GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
 
-    ui_main_data.signalslist = gtk_tree_view_new();
-    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
-    gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW(ui_main_data.signalslist), ui_tree_view_search, NULL, NULL);
-    gtk_tree_view_set_search_entry (GTK_TREE_VIEW(ui_main_data.signalslist), GTK_ENTRY(ui_main_data.signals_go_to_entry));
+    ui_main_data.messages_list = gtk_tree_view_new();
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(ui_main_data.messages_list), TRUE);
+    gtk_tree_view_set_search_equal_func (GTK_TREE_VIEW(ui_main_data.messages_list), ui_tree_view_search, NULL, NULL);
+    gtk_tree_view_set_search_entry (GTK_TREE_VIEW(ui_main_data.messages_list), GTK_ENTRY(ui_main_data.signals_go_to_entry));
 
     /* Disable multiple selection */
-    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_main_data.signalslist));
+    selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(ui_main_data.messages_list));
     gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
 
     hbox = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
 
-    gtk_container_add(GTK_CONTAINER(scrolled_window), ui_main_data.signalslist);
+    gtk_container_add(GTK_CONTAINER(scrolled_window), ui_main_data.messages_list);
 
-    ui_tree_view_init_list(ui_main_data.signalslist);
-    gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.signalslist), TRUE);
+    ui_tree_view_init_list(ui_main_data.messages_list);
+    gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(ui_main_data.messages_list), TRUE);
 
     gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrolled_window), 620);
     gtk_paned_pack1 (GTK_PANED (hbox), scrolled_window, FALSE, TRUE);
@@ -270,7 +270,7 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 5);
 
-    g_signal_connect(G_OBJECT(ui_main_data.signalslist), "button-press-event", G_CALLBACK (onButtonPressed), NULL);
+    g_signal_connect(G_OBJECT(ui_main_data.messages_list), "button-press-event", G_CALLBACK (onButtonPressed), NULL);
     // g_signal_connect(G_OBJECT(ui_main_data.signalslist), "button-release-event", G_CALLBACK (onButtonRelease), NULL);
 
     /* Connect callback on row selection */
@@ -306,7 +306,7 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_
         ui_destroy_filter_menu(FILTER_INSTANCES);
     }
 
-    ui_tree_view_add_to_list(ui_main_data.signalslist, lte_time, message_number, message_id, message_name,
+    ui_tree_view_add_to_list(ui_main_data.messages_list, lte_time, message_number, message_id, message_name,
                              origin_task_id, origin_task, destination_task_id, destination_task, instance, (buffer_t *)buffer);
 
     return RC_OK;
@@ -318,10 +318,13 @@ void ui_tree_view_select_row(gint row)
 
     path_row = gtk_tree_path_new_from_indices(row, -1);
 
-    /* Select the message in requested row */
-    gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, FALSE);
-    /* Center the message in the middle of the list if possible */
-    gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, TRUE, 0.5, 0.0);
+    if (path_row != NULL)
+    {
+        /* Select the message in requested row */
+        gtk_tree_view_set_cursor(GTK_TREE_VIEW(ui_main_data.messages_list), path_row, NULL, FALSE);
+        /* Center the message in the middle of the list if possible */
+        gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.messages_list), path_row, NULL, TRUE, 0.5, 0.0);
+    }
 }
 
 void ui_tree_view_refilter(void)

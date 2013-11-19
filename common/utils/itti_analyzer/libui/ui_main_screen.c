@@ -117,7 +117,7 @@ static int ui_idle_callback(gpointer data)
 {
     g_debug("Entering idle state");
 
-    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.signalslist);
+    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.messages_list);
 
     /* Read filters file */
     if (ui_main_data.filters_file_name != NULL)

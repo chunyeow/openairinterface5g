@@ -73,14 +73,17 @@ gboolean ui_callback_on_filters_enabled(GtkToolButton *button, gpointer data)
         }
         ui_tree_view_refilter();
 
-        if (ui_main_data.signalslist != NULL)
+        if (ui_main_data.messages_list != NULL)
         {
             GtkTreePath *path_row;
 
-            /* Select the message in requested row */
-            gtk_tree_view_get_cursor(GTK_TREE_VIEW(ui_main_data.signalslist), &path_row, NULL);
-            /* Center the message in the middle of the list if possible */
-            gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.signalslist), path_row, NULL, TRUE, 0.5, 0.0);
+            /* Get the currently selected message */
+            gtk_tree_view_get_cursor(GTK_TREE_VIEW(ui_main_data.messages_list), &path_row, NULL);
+            if (path_row != NULL)
+            {
+                /* Center the message in the middle of the list if possible */
+                gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.messages_list), path_row, NULL, TRUE, 0.5, 0.0);
+            }
         }
     }
 
@@ -185,6 +188,9 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
 
                 if ((strcmp(message_id_to_string(message_id), "ERROR_LOG") == 0)
                         || (strcmp(message_id_to_string(message_id), "WARNING_LOG") == 0)
+                        || (strcmp(message_id_to_string(message_id), "NOTICE_LOG") == 0)
+                        || (strcmp(message_id_to_string(message_id), "INFO_LOG") == 0)
+                        || (strcmp(message_id_to_string(message_id), "DEBUG_LOG") == 0)
                         || (strcmp(message_id_to_string(message_id), "GENERIC_LOG") == 0))
                 {
                     gchar *data;
@@ -231,7 +237,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
 
     char lte_time[15];
 
-    gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.signalslist), &path, &focus_column);
+    gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.messages_list), &path, &focus_column);
 
     signal_buffer = (buffer_t *) data;
 
@@ -447,7 +453,7 @@ gboolean ui_callback_signal_go_to(GtkWidget *widget, gpointer data)
 gboolean ui_callback_signal_go_to_entry(GtkWidget *widget, gpointer data)
 {
     // gtk_entry_buffer_set_text(GTK_ENTRY(ui_main_data.signals_go_to_entry), "");
-    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.signalslist);
+    gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.messages_list);
     return TRUE;
 }
 
@@ -480,7 +486,7 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
     ui_set_title ("");
 
     /* Clear list of signals */
-    ui_tree_view_destroy_list (ui_main_data.signalslist);
+    ui_tree_view_destroy_list (ui_main_data.messages_list);
 
     if (ui_main_data.text_view != NULL)
     {

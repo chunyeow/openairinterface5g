@@ -14,7 +14,7 @@ typedef struct {
 
     GtkWidget      *progressbar_window;
     GtkWidget      *progressbar;
-    GtkWidget      *signalslist;
+    GtkWidget      *messages_list;
     ui_text_view_t *text_view;
 
     /* Buttons */
