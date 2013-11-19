@@ -588,6 +588,7 @@ void itti_dump_exit(void)
     if (dump_file != NULL)
     {
         fclose(dump_file);
+        dump_file = NULL;
     }
 }
 

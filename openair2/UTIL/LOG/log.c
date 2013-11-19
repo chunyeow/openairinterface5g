@@ -645,7 +645,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 #endif
 
 #if defined(ENABLE_ITTI)
-    if (level <= LOG_WARNING)
+    if (level <= LOG_DEBUG)
     {
         MessagesIds messages_id;
         MessageDef *message_p;
@@ -654,22 +654,56 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 
         message_string_size = log_end - log_start;
 
-        if (level <= LOG_ERR)
+        switch (level)
         {
+          case LOG_EMERG:
+          case LOG_ALERT:
+          case LOG_CRIT:
+          case LOG_ERR:
             messages_id = ERROR_LOG;
-        }
-        else
-        {
+            break;
+
+          case LOG_WARNING:
             messages_id = WARNING_LOG;
+            break;
+
+          case LOG_NOTICE:
+            messages_id = NOTICE_LOG;
+            break;
+
+          case LOG_INFO:
+            messages_id = INFO_LOG;
+            break;
+
+          default:
+            messages_id = DEBUG_LOG;
+            break;
         }
         message_p = itti_alloc_new_message_sized(TASK_UNKNOWN, messages_id, message_string_size);
-        if (level <= LOG_ERR)
+        switch (level)
         {
+          case LOG_EMERG:
+          case LOG_ALERT:
+          case LOG_CRIT:
+          case LOG_ERR:
             message_msg_p = (char *) &message_p->msg.error_log;
-        }
-        else
-        {
+            break;
+
+          case LOG_WARNING:
             message_msg_p = (char *) &message_p->msg.warning_log;
+            break;
+
+          case LOG_NOTICE:
+            message_msg_p = (char *) &message_p->msg.notice_log;
+            break;
+
+          case LOG_INFO:
+            message_msg_p = (char *) &message_p->msg.info_log;
+            break;
+
+          default:
+            message_msg_p = (char *) &message_p->msg.debug_log;
+            break;
         }
         memcpy(message_msg_p, log_start, message_string_size);
 
