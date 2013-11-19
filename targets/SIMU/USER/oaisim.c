@@ -391,8 +391,17 @@ void *l2l1_task(void *args_p) {
          (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.cli_start_enb[eNB_id] == 1);
          eNB_id++)
     {
-        /* FIXME: acquire MMEs IP address by XML file or command line */
-        char *mme_address_v4 = "192.168.12.87";
+        char *mme_address_v4;
+
+        if (oai_emulation.info.mme_enabled)
+        {
+            mme_address_v4 = oai_emulation.info.mme_ip_address;
+        }
+        else
+        {
+            /* FIXME: acquire MMEs IP address by XML file or command line */
+            mme_address_v4 = "192.168.12.87";
+        }
         char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
         s1ap_register_eNB_t *s1ap_register_eNB;
         uint32_t hash;
