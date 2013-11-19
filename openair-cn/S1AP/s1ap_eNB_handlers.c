@@ -277,6 +277,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
      */
     mme_desc_p->state = S1AP_ENB_STATE_CONNECTED;
 
+#if 0
     /* We call back our self
      * -> generate a dummy initial UE message
      */
@@ -294,7 +295,6 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
         s1ap_nas_first_req.ue_identity.gummei.mme_code = 0;
         s1ap_nas_first_req.ue_identity.gummei.mme_group_id = 0;
 
-#if 0
         /* NAS Attach request with IMSI */
         static uint8_t nas_attach_req_imsi[] =
         {
@@ -309,7 +309,6 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
             0x00, 0x00, 0x00, 0x0D, 0x00, 0x00, 0x0A, 0x00, 0x52, 0x12, 0xF2,
             0x01, 0x27, 0x11,
         };
-#endif
 
         /* NAS Attach request with GUTI */
         static uint8_t nas_attach_req_guti[] =
@@ -332,6 +331,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
         s1ap_eNB_handle_nas_first_req(mme_desc_p->s1ap_eNB_instance->instance,
                                       &s1ap_nas_first_req);
     }
+#endif
 
     return 0;
 }
