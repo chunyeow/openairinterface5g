@@ -2,7 +2,7 @@
 % Organisation: Eurecom (and Linkoping University)
 % E-mail: mirsad.cirkic@liu.se
 
-if(paramsinitialized && ~LSBSWITCH_FLAG)
+if(paramsinitialized)
     disp(['\n\n------------\nThis code is, so far, only written for single runs. Multiple ' ...
         'runs will overwrite the previous measurement data, i.e., the ' ...
         'data structures are not defined for multiple runs. You will need to ' ...
@@ -115,9 +115,9 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
         end
         HB2A=conj(repmat(Db2a_T,Niter,1)).*repmat(Db2a_R(:,:,meas),1,Nantb);
         phasesB2A=unwrap(angle(HB2A));
-        if(mean(var(phasesB2A))>0.5)
-            disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
-        end
+        #if(mean(var(phasesB2A))>0.5)
+        #    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
+        #end
         
         if (chanest_full)
             chanestsB2A(:,:,meas)=zeros(301,Nantb);
@@ -140,15 +140,17 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     end
     
     %% -- Some plotting code -- %%  (you can uncomment what you see fit)
-    received = receivedB2A;
+    received = [receivedB2A(:,indA) receivedA2B(:,indB)];
     phases = phasesB2A;
     tchanests = [tchanestsA2B(:,:,end), tchanestsB2A(:,:,end)];
     fchanests = [fchanestsA2B(:,:,end), fchanestsB2A(:,:,end)];
     
     clf
     figure(1)
-    for i=1:4
-        subplot(220+i);plot(20*log10(abs(fftshift(fft(received(:,i))))));
+    for i=1:size(received,2);
+        subplot(220+i);
+	plot(20*log10(abs(fftshift(fft(received(:,i))))));
+	ylim([20 140])
     end
     
     figure(2)
@@ -159,7 +161,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
     %legend('A->B1','A->B2','B1->A','B2->A');
     
-    figure(4)
+    figure(3)
     plot(20*log10(abs(fchanests)));
     ylim([40 100])
     xlabel('freq')
@@ -168,7 +170,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     %legend('A->B1','A->B2','B1->A','B2->A');
     
     if (0)
-        figure(3)
+        figure(4)
         wndw = 50;
         for i=1:5:Nantb*301             %# sliding window size
             phamean = filter(ones(wndw,1)/wndw, 1, phases(:,i)); %# moving average
@@ -203,15 +205,16 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     end
     
     figure(5)
-    plot_style={'rx','bo','gs'};
+    plot_style={'rx','go','bs'};
     hold off
     for n=1:Nantb
         plot((squeeze(Fhatloc(:,:,n))),plot_style{n})
         hold on
     end
+    axis([-2 2 -2 2])
+
+    disp(squeeze(mean(Fhatloc,2)));
     
 else
-    if(LSBSWITCH_FLAG) error('You have to unset the LSB switch flag (LSBSWITCH_FLAG) in initparams.m.\n')
-    else error('You have to run init.params.m first!')
-    end
+  error('You have to run init.params.m first!')
 end

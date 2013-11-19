@@ -2,7 +2,7 @@
 % Organisation: Eurecom (and Linkoping University)
 % E-mail: mirsad.cirkic@liu.se
 
-if(paramsinitialized && ~LSBSWITCH_FLAG)
+if(paramsinitialized)
     disp(['\n\n------------\nThis code is, so far, only written for single runs. Multiple ' ...
         'runs will overwrite the previous measurement data, i.e., the ' ...
         'data structures are not defined for multiple runs. You will need to ' ...
@@ -27,6 +27,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     %% ------- Prepare the signals for A2B ---------- %%
     signalA2B=zeros(N,4,Nmeas);
     signalB2A=zeros(N,4,Nmeas);
+    Da2b_T=[];
     Db2a_T=[];
     for meas=1:Nmeas
         ia=1; ib=1;
@@ -34,7 +35,8 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
         for i=1:4
             if(indA(ia)==i)
                 [tmpd, tmps]=genrandpskseq(N,M,amp);
-                signalA2B(:,i,meas)=tmps; %make sure LSB is 0 (switch=tx)
+                signalA2B(:,i,meas)=tmps*2; %make sure LSB is 0 (switch=tx)
+                signalB2A(:,i,meas)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
                 Dtmp=[Dtmp tmpd];
                 if(length(indA)> ia) ia=ia+1; end
             end
@@ -118,9 +120,9 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     %% ------- Do the B to A channel estimation ------- %%
     HB2A=conj(Db2a_T.*repmat(Db2a_R,1,Nantb));
     phasesB2A=unwrap(angle(HB2A));
-    if(mean(var(phasesB2A))>0.5)
-        disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
-    end
+    #if(mean(var(phasesB2A))>0.5)
+    #    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
+    #end
     
     if (chanest_full)
         chanestsB2A=zeros(301,Nantb);
@@ -141,20 +143,18 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     fchanestsB2A = [zeros(1,Nantb); chanestsB2A([1:150],:); zeros(210,Nantb); chanestsB2A(151:301,:)];
     tchanestsB2A=ifft(fchanestsB2A);
     
-    % save *chanests* 
-    % save DA2B_T DA2B_R DB2A_T DB2A_R in seperate file
-    
-    
     %% -- Some plotting code -- %%  (you can uncomment what you see fit)
-    received = receivedB2A;
+    received = [receivedB2A(:,indA) receivedA2B(:,indB)];
     phases = phasesB2A;
     tchanests = [tchanestsA2B(:,:,end), tchanestsB2A(:,:,end)];
     fchanests = [fchanestsA2B(:,:,end), fchanestsB2A(:,:,end)];
     
     clf
     figure(1)
-    for i=1:4
-        subplot(220+i);plot(20*log10(abs(fftshift(fft(received(:,i))))));
+    for i=1:size(received,2)
+        subplot(220+i);
+	plot(20*log10(abs(fftshift(fft(received(:,i))))));
+	ylim([20 140])
     end
     
     figure(2)
@@ -165,7 +165,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
     %legend('A->B1','A->B2','B1->A','B2->A');
     
-    figure(4)
+    figure(3)
     plot(20*log10(abs(fchanests)));
     ylim([40 100])
     xlabel('freq')
@@ -174,7 +174,7 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
     %legend('A->B1','A->B2','B1->A','B2->A');
     
     if (0)
-        figure(3)
+        figure(4)
         wndw = 50;
         for i=1:5:Nantb*301             %# sliding window size
             phamean = filter(ones(wndw,1)/wndw, 1, phases(:,i)); %# moving average
@@ -196,9 +196,26 @@ if(paramsinitialized && ~LSBSWITCH_FLAG)
         xlabel('subcarrier')
         ylabel('phase variance')
     end
+
+    %% estimate F matrix assuming it is diagonal for sanity checking
+    Fhatloc = zeros(301,Nantb);
+        for s=1:301
+            ya=chanestsB2A(s,:);
+            yb=chanestsA2B(s,:);
+            Fhatloc(s,:)=(yb.*conj(ya))./(ya.*conj(ya));
+        end
+    
+    figure(5)
+    plot_style={'rx','go','bs'};
+    hold off
+    for n=1:Nantb
+        plot((squeeze(Fhatloc(:,n))),plot_style{n})
+        hold on
+    end
+    axis([-2 2 -2 2])
+
+    disp(squeeze(mean(Fhatloc,1)));
     
 else
-    if(LSBSWITCH_FLAG) error('You have to unset the LSB switch flag (LSBSWITCH_FLAG) in initparams.m.\n')
-    else error('You have to run init.params.m first!')
-    end
+    error('You have to run init.params.m first!')
 end

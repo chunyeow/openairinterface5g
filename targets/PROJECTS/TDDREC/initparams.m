@@ -30,14 +30,14 @@ autocal_mode=active_rf;
 %rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
 % we have to enable both DMA transfers so that the switching signal in the LSB of the TX buffer gets set
 rf_mode=(TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM+DMAMODE_TX+TXEN+DMAMODE_RX+RXEN) * active_rf;
-tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB; LSBSWITCH_FLAG=false; %we also need the LSB switching for the woduplex script, otherwise we don't receive anything
-%tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB; LSBSWITCH_FLAG=true;
+tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB;  %we also need the LSB switching for the woduplex script, otherwise we don't receive anything
+%tdd_config = DUPLEXMODE_FDD+TXRXSWITCH_LSB;
 syncmode = SYNCMODE_FREE;
 rf_local = [8254744   8255063   8257340   8257340]; %eNB2tx 1.9GHz
 rf_vcocal=rf_vcocal_19G*active_rf;
 
 rffe_rxg_low = 63*active_rf;
-rffe_rxg_final = [30 40 30 20];
+rffe_rxg_final = [30 30 30 30];
 rffe_band = B19G_TDD*active_rf;
 
 rf_rxdc = rf_rxdc*active_rf;
