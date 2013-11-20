@@ -378,6 +378,7 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
 
     message_p = itti_alloc_new_message(TASK_S1AP, S1AP_INITIAL_CONTEXT_SETUP_REQ);
 
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_initial_id  = ue_desc_p->ue_initial_id;
     S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).eNB_ue_s1ap_id = ue_desc_p->eNB_ue_s1ap_id;
     S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nb_of_e_rabs =
     initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.s1ap_E_RABToBeSetupItemCtxtSUReq.count;

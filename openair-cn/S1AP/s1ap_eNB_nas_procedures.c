@@ -408,7 +408,8 @@ int s1ap_eNB_initial_ctxt_resp(
                          new_item);
     }
 
-    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0)
+    {
         S1AP_ERROR("Failed to encode uplink NAS transport\n");
         /* Encode procedure has failed... */
         return -1;

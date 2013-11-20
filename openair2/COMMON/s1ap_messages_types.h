@@ -248,6 +248,10 @@ typedef struct s1ap_uplink_nas_s {
 typedef s1ap_uplink_nas_t s1ap_downlink_nas_t;
 
 typedef struct s1ap_initial_context_setup_req_s {
+    /* UE id for initial connection to S1AP */
+    uint16_t ue_initial_id;
+
+    /* eNB ue s1ap id as initialized by S1AP layer */
     unsigned eNB_ue_s1ap_id:24;
 
     /* UE aggregate maximum bitrate */
@@ -278,6 +282,12 @@ typedef struct s1ap_initial_context_setup_resp_s {
     /* list of e_rabs that failed to be setup */
     e_rab_failed_t e_rabs_failed[S1AP_MAX_E_RAB];
 } s1ap_initial_context_setup_resp_t;
+
+typedef struct s1ap_initial_context_setup_fail_s {
+    unsigned  eNB_ue_s1ap_id:24;
+
+    /* TODO add cause */
+} s1ap_initial_context_setup_fail_t;
 
 typedef struct s1ap_ue_cap_info_ind_s {
     unsigned  eNB_ue_s1ap_id:24;
