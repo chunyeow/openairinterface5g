@@ -25,6 +25,9 @@
 #include "locate_root.h"
 #include "xml_parse.h"
 
+static gboolean refresh_message_list = TRUE;
+static gboolean filters_changed = FALSE;
+
 gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 {
     gboolean refresh = (data != NULL) ? TRUE : FALSE;
@@ -57,7 +60,7 @@ gboolean ui_callback_on_filters_enabled(GtkToolButton *button, gpointer data)
 
     enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(button));
 
-    g_message("Filters enabled event occurred %d", enabled);
+    g_debug("Filters enabled event occurred %d", enabled);
 
     changed = ui_filters_enable (enabled);
 
@@ -533,9 +536,17 @@ gboolean ui_callback_on_menu_none(GtkWidget *widget, gpointer data)
 {
     GtkWidget *menu = (GtkWidget *) data;
 
-    g_message("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
+    g_debug("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
 
+    refresh_message_list = FALSE;
     gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
+    refresh_message_list = TRUE;
+
+    if (filters_changed);
+    {
+        ui_tree_view_refilter();
+        filters_changed = FALSE;
+    }
 
     return TRUE;
 }
@@ -544,9 +555,17 @@ gboolean ui_callback_on_menu_all(GtkWidget *widget, gpointer data)
 {
     GtkWidget *menu = (GtkWidget *) data;
 
-    g_message("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
+    g_debug("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
 
+    refresh_message_list = FALSE;
     gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
+    refresh_message_list = TRUE;
+
+    if (filters_changed);
+    {
+        ui_tree_view_refilter();
+        filters_changed = FALSE;
+    }
 
     return TRUE;
 }
@@ -560,7 +579,14 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
     if (filter_entry->enabled != enabled)
     {
         filter_entry->enabled = enabled;
-        ui_tree_view_refilter ();
+        if (refresh_message_list)
+        {
+            ui_tree_view_refilter();
+        }
+        else
+        {
+            filters_changed = TRUE;
+        }
     }
     g_debug("ui_callback_on_menu_item_selected occurred %p %p %s %d (%d messages to display)", widget, data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
 
@@ -571,7 +597,7 @@ gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer dat
 {
     col_type_e col = (col_type_e) data;
 
-    g_message("ui_callback_on_tree_column_header_click %d", col);
+    g_debug("ui_callback_on_tree_column_header_click %d", col);
     switch (col)
     {
         case COL_MESSAGE:

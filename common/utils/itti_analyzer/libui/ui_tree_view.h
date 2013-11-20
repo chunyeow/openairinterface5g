@@ -13,6 +13,7 @@ typedef enum
     COL_MESSAGE_ID,
     COL_FROM_TASK_ID,
     COL_TO_TASK_ID,
+    COL_FOREGROUND,
 
     COL_BUFFER,
     NUM_COLS

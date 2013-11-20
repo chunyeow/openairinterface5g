@@ -204,11 +204,9 @@ gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origi
 {
     gboolean result;
 
-    result = (!ui_filters.filters_enabled)
-            || (ui_item_enabled(&ui_filters.messages, message)
-                    && ui_item_enabled(&ui_filters.origin_tasks, origin_task)
-                    && ui_item_enabled(&ui_filters.destination_tasks, destination_task)
-                    && ui_item_enabled(&ui_filters.instances, instance));
+    result = (ui_item_enabled(&ui_filters.messages, message) && ui_item_enabled(&ui_filters.origin_tasks, origin_task)
+            && ui_item_enabled(&ui_filters.destination_tasks, destination_task)
+            && ui_item_enabled(&ui_filters.instances, instance));
 
     return result;
 }

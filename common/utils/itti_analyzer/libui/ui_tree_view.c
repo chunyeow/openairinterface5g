@@ -25,6 +25,9 @@ typedef struct
 
 static ui_store_t ui_store;
 
+static GValue colors[] =
+    { G_VALUE_INIT, G_VALUE_INIT };
+
 GdkEventButton *ui_tree_view_last_event;
 
 static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, ui_store_t *store)
@@ -41,14 +44,35 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
                         &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance, -1);
     if (msg_number != 0)
     {
-        enabled = ui_filters_message_enabled (message_id, origin_task_id, destination_task_id, instance);
+        enabled = ui_filters_message_enabled(message_id, origin_task_id, destination_task_id, instance);
 
-        if ((enabled) && (ui_store.filtered_last_msg < msg_number))
+#if  0
+        if (store->filtered_last_msg < msg_number)
         {
-            ui_store.filtered_last_msg = msg_number;
-            ui_store.filtered_msg_number++;
+            GtkTreePath *path = gtk_tree_model_get_path (model, iter);
+            GtkTreePath *true_path = gtk_tree_model_filter_convert_path_to_child_path (GTK_TREE_MODEL_FILTER (store->filtered), path);
+            g_message ("gtk_tree_model_get: %p %p", path, true_path);
+            GtkTreeIter iter_;
+            gtk_tree_model_get_iter (GTK_TREE_MODEL(store->store), &iter_, true_path);
+
+            GValue colors = G_VALUE_INIT;
+            g_value_init (&colors, G_TYPE_STRING);
+            g_value_set_string (&colors, (enabled ? "Black" : "Grey"));
+
+            // gtk_list_store_set_value (ui_store.store, &iter_, COL_FOREGROUND, &gvalue);
+            // gtk_list_store_set (ui_store.store, &iter_, COL_FOREGROUND, (enabled ? "Black" : "Grey"), -1);
+            // gtk_list_store_set_value (GTK_LIST_STORE(model), iter, COL_FOREGROUND, &colors);
         }
-        g_debug("%p %p %d m:%d o:%d d:%d i:%d %d %d", model, iter, msg_number, message_id, origin_task_id, destination_task_id, instance, enabled, ui_store.filtered_msg_number);
+#endif
+
+        enabled |= (!ui_filters.filters_enabled);
+
+        if ((enabled) && (store->filtered_last_msg < msg_number))
+        {
+            store->filtered_last_msg = msg_number;
+            store->filtered_msg_number++;
+        }
+        g_debug("ui_tree_filter_messages: %p %p %d m:%d o:%d d:%d i:%d %d %d", model, iter, msg_number, message_id, origin_task_id, destination_task_id, instance, enabled, store->filtered_msg_number);
     }
 
     return enabled;
@@ -85,7 +109,7 @@ static void ui_tree_view_init_list(GtkWidget *list)
     gtk_cell_renderer_set_alignment (renderer_right, 1, 0.5);
     gtk_cell_renderer_set_padding (renderer_right, 5, 0);
 
-    column = gtk_tree_view_column_new_with_attributes ("MN", renderer_right, "text", COL_MSG_NUM, NULL);
+    column = gtk_tree_view_column_new_with_attributes ("MN", renderer_right, "text", COL_MSG_NUM, "foreground", COL_FOREGROUND, NULL);
     gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
@@ -95,7 +119,7 @@ static void ui_tree_view_init_list(GtkWidget *list)
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
 
-    column = gtk_tree_view_column_new_with_attributes ("Signal", renderer_left, "text", COL_MESSAGE, NULL);
+    column = gtk_tree_view_column_new_with_attributes ("Signal", renderer_left, "text", COL_MESSAGE, "foreground", COL_FOREGROUND, NULL);
     gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
@@ -135,6 +159,7 @@ static void ui_tree_view_init_list(GtkWidget *list)
             G_TYPE_UINT, // COL_MESSAGE_ID
             G_TYPE_UINT, // COL_FROM_TASK_ID
             G_TYPE_UINT, // COL_TO_TASK_ID
+            G_TYPE_STRING, // COL_FOREGROUND
             // Reference to the buffer here to avoid maintaining multiple lists.
             G_TYPE_POINTER);
 
@@ -158,6 +183,9 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *lte_time, con
                                      const char *destination_task, uint32_t instance, gpointer buffer)
 {
     GtkTreeIter iter;
+    gboolean enabled;
+
+    enabled = ui_filters_message_enabled(message_id, origin_task_id, destination_task_id, instance);
 
     gtk_list_store_append (ui_store.store, &iter);
     gtk_list_store_set (ui_store.store, &iter,
@@ -174,6 +202,7 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *lte_time, con
                        COL_BUFFER       , buffer,
                        /* End of columns */
                        -1);
+    gtk_list_store_set_value (ui_store.store, &iter, COL_FOREGROUND, &colors[enabled ? 1 : 0]);
 }
 
 void ui_tree_view_destroy_list(GtkWidget *list)
@@ -233,6 +262,11 @@ int ui_tree_view_create(GtkWidget *window, GtkWidget *vbox)
     GtkWidget *hbox;
     GtkTreeSelection *selection;
     GtkWidget *scrolled_window;
+
+    g_value_init (&colors[0], G_TYPE_STRING);
+    g_value_init (&colors[1], G_TYPE_STRING);
+    g_value_set_string (&colors[0], "Grey");
+    g_value_set_string (&colors[1], "Black");
 
     scrolled_window = gtk_scrolled_window_new (NULL, NULL);
 
@@ -322,14 +356,36 @@ void ui_tree_view_select_row(gint row)
     }
 }
 
+static gboolean updateForegroundColor (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+    uint32_t message_id;
+    uint32_t origin_task_id;
+    uint32_t destination_task_id;
+    uint32_t instance;
+
+    gboolean enabled = FALSE;
+
+    gtk_tree_model_get (model, iter, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID,
+                        &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance, -1);
+    enabled = ui_filters_message_enabled(message_id, origin_task_id, destination_task_id, instance);
+
+    gtk_list_store_set_value (GTK_LIST_STORE(model), iter, COL_FOREGROUND, &colors[enabled ? 1 : 0]);
+
+    return FALSE;
+}
+
 void ui_tree_view_refilter(void)
 {
     ui_store.filtered_last_msg = 0;
     ui_store.filtered_msg_number = 0;
-    if (ui_store.filtered != NULL)
+
+    /* Update foreground color of messages, this will also update filtered model */
+    if (ui_store.store != NULL)
     {
-        gtk_tree_model_filter_refilter (ui_store.filtered);
+        gtk_tree_model_foreach(GTK_TREE_MODEL(ui_store.store), updateForegroundColor, NULL);
     }
+
+    g_debug("ui_tree_view_refilter: last message %d, %d messages displayed", ui_store.filtered_last_msg, ui_store.filtered_msg_number);
 }
 
 guint ui_tree_view_get_filtered_number(void)
