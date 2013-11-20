@@ -60,8 +60,8 @@ typedef struct s1ap_eNB_ue_context_s {
      */
     unsigned eNB_ue_s1ap_id:24;
 
-    /* RNTI of the UE as used on LTE-Uu interface */
-    uint16_t rnti;
+    /* UE id for initial connection to S1AP */
+    uint16_t ue_initial_id;
 
     /* Uniquely identifies the UE within MME. Encoded on 32 bits. */
     uint32_t mme_ue_s1ap_id;

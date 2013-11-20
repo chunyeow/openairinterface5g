@@ -222,8 +222,8 @@ typedef struct s1ap_register_eNB_s {
  * will be the unique identifier used between RRC and S1AP.
  */
 typedef struct s1ap_nas_first_req_s {
-    /* RNTI of the mobile */
-    uint16_t rnti;
+    /* UE id for initial connection to S1AP */
+    uint16_t ue_initial_id;
 
     /* Establishment cause as sent by UE */
     rrc_establishment_cause_t establishment_cause;

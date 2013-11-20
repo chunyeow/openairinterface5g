@@ -450,6 +450,16 @@ static uint8_t get_next_rrc_transaction_identifier(u8 Mod_id)
     return rrc_transaction_identifier[Mod_id];
 }
 
+static uint16_t get_next_ue_initial_id(u8 Mod_id)
+{
+  static uint16_t ue_initial_id[NUMBER_OF_eNB_MAX];
+
+  ue_initial_id[Mod_id] = ue_initial_id[Mod_id] + 1;
+
+  return ue_initial_id[Mod_id];
+}
+
+
 static u8 get_next_UE_index (u8 Mod_id, u8 *UE_identity)
 {
   u8 i, first_index = 255, reg = 0;
@@ -1218,7 +1228,8 @@ void rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_NAS_FIRST_REQ);
-    S1AP_NAS_FIRST_REQ (message_p).rnti = eNB_mac_inst[Mod_id].UE_template[UE_index].rnti; // TODO check if this is the correct id to use
+    eNB_rrc_inst[Mod_id].Info.UE[UE_index].ue_initial_id = get_next_ue_initial_id(Mod_id);
+    S1AP_NAS_FIRST_REQ (message_p).ue_initial_id = eNB_rrc_inst[Mod_id].Info.UE[UE_index].ue_initial_id;
 
     /* Assume that cause is coded in the same way in RRC and S1ap, just check that the value is in S1ap range */
     DevCheck(eNB_rrc_inst[Mod_id].Info.UE[UE_index].establishment_cause < RRC_CAUSE_LAST, eNB_rrc_inst[Mod_id].Info.UE[UE_index].establishment_cause, RRC_CAUSE_LAST, Mod_id);

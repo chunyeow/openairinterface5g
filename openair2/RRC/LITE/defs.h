@@ -167,6 +167,9 @@ typedef struct{
     UE_S_TMSI Initialue_identity_s_TMSI;
     EstablishmentCause_t establishment_cause;
 
+    /* UE id for initial connection to S1AP */
+    uint16_t ue_initial_id;
+
     /* Information from S1AP initial_context_setup_req */
     unsigned eNB_ue_s1ap_id :24;
     /* Number of e_rab to be setup in the list */
