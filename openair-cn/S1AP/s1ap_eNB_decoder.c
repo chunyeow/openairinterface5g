@@ -48,14 +48,22 @@
 static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
     S1ap_InitiatingMessage_t *initiating_p)
 {
-    char message_string[10000];
     int ret = -1;
+    MessageDef *message_p;
+    char       *message_string = NULL;
+    size_t      message_string_size;
+
     DevAssert(initiating_p != NULL);
+
+    message_string = calloc(10000, sizeof(char));
+
+    s1ap_string_total_size = 0;
 
     message->procedureCode = initiating_p->procedureCode;
     message->criticality   = initiating_p->criticality;
 
-    switch(initiating_p->procedureCode) {
+    switch(initiating_p->procedureCode)
+    {
         case S1ap_ProcedureCode_id_downlinkNASTransport:
             ret = s1ap_decode_s1ap_downlinknastransporties(
                 &message->msg.s1ap_DownlinkNASTransportIEs, &initiating_p->value);
@@ -63,14 +71,26 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
             break;
 
         case S1ap_ProcedureCode_id_InitialContextSetup:
-            return s1ap_decode_s1ap_initialcontextsetuprequesties(
+            ret = s1ap_decode_s1ap_initialcontextsetuprequesties(
                 &message->msg.s1ap_InitialContextSetupRequestIEs, &initiating_p->value);
+            s1ap_xer_print_s1ap_initialcontextsetuprequest(s1ap_xer__print2sp, message_string, message);
+            break;
 
         default:
-            S1AP_DEBUG("Unknown procedure ID (%d) for initiating message\n",
+            S1AP_ERROR("Unknown procedure ID (%d) for initiating message\n",
                        (int)initiating_p->procedureCode);
-            break;
+            return -1;
     }
+
+    message_string_size = strlen(message_string);
+
+    message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
+    memcpy(&message_p->msg.generic_log, message_string, message_string_size);
+
+    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+    free(message_string);
+
     return ret;
 }
 
@@ -84,18 +104,23 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
 
     DevAssert(successfullOutcome_p != NULL);
 
+    message_string = malloc(sizeof(char) * 10000);
+
+    s1ap_string_total_size = 0;
+
     message->procedureCode = successfullOutcome_p->procedureCode;
     message->criticality   = successfullOutcome_p->criticality;
 
-    switch(successfullOutcome_p->procedureCode) {
+    switch(successfullOutcome_p->procedureCode)
+    {
         case S1ap_ProcedureCode_id_S1Setup:
-            message_string = malloc(sizeof(char) * 10000);
             ret = s1ap_decode_s1ap_s1setupresponseies(
                 &message->msg.s1ap_S1SetupResponseIEs, &successfullOutcome_p->value);
             s1ap_xer_print_s1ap_s1setupresponse(s1ap_xer__print2sp, message_string, message);
             break;
+
         default:
-            S1AP_DEBUG("Unknown procedure ID (%d) for successfull outcome message\n",
+            S1AP_ERROR("Unknown procedure ID (%d) for successfull outcome message\n",
                        (int)successfullOutcome_p->procedureCode);
             return -1;
     }
@@ -127,7 +152,7 @@ static int s1ap_eNB_decode_unsuccessful_outcome(s1ap_message *message,
                 &message->msg.s1ap_S1SetupFailureIEs, &unSuccessfullOutcome_p->value);
 
         default:
-            S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message\n",
+            S1AP_ERROR("Unknown procedure ID (%d) for unsuccessfull outcome message\n",
                        (int)unSuccessfullOutcome_p->procedureCode);
             break;
     }

@@ -84,15 +84,13 @@ $(S1AP_OBJDIR)/s1ap_asn1regen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-CommonDataTyp
 	(cd $(ASN1MESSAGESDIR) && asn1c -fhave_native64 -gen-PER $^)
 	echo Timestamp > $@
 
-.INTERMEDIATE = $(S1AP_OBJDIR)/s1ap_ieregen.stamp $(S1AP_OBJDIR)/s1ap_asn1regen.stamp
-
 libs1ap.a: $(S1AP_OBJDIR)/s1ap_ieregen.stamp $(S1AP_OBJDIR)/s1ap_asn1regen.stamp $(libs1ap_OBJECTS)
 	@echo Creating S1AP archive
 	@$(AR) rcs $@ $(libs1ap_OBJECTS)
 
 clean:
 	@$(RM_F_V) $(libs1ap_OBJECTS)
-	@$(RM_F_V) .*.d
+	@$(RM_F_V) *.d
 	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES))
 	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES_R9))
 	@$(RM_F_V) $(addprefix MESSAGES/, $(S1AP_ASN_MODULE_SOURCES_R10))
