@@ -14,20 +14,20 @@ sudo sysctl -w net.core.rmem_max=50000000
 
 ############## rtai modules ###################
 if test \! -c /dev/rtai_shm; then
-        mknod -m 666 /dev/rtai_shm c 10 254
+        sudo mknod -m 666 /dev/rtai_shm c 10 254
 fi
 for n in `seq 0 9`; do
         f=/dev/rtf$n
         if test \! -c $f; then
-                mknod -m 666 $f c 150 $n
+                sudo mknod -m 666 $f c 150 $n
         fi
 done
-modprobe rtai_hal
-modprobe rtai_sched
-modprobe rtai_fifos
-modprobe rtai_sem
-modprobe rtai_mbx
-modprobe rtai_msg
+sudo modprobe rtai_hal
+sudo modprobe rtai_sched
+sudo modprobe rtai_fifos
+sudo modprobe rtai_sem
+sudo modprobe rtai_mbx
+sudo modprobe rtai_msg
 
 ############## make  ###################
 make lte-softmodem-usrp NAS=1 USRP=1 XFORMS=1 RTAI=1 HARD_RT=1 #DRIVER2013=1
