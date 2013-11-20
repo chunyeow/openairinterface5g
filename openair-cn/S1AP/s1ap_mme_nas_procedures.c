@@ -259,7 +259,7 @@ int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p)
      * At least one bearer has been established. We can now send s1ap initial context setup request
      * message to eNB.
      */
-    char supportedAlgorithms[] = { 0x02, 0xa0 };
+    uint8_t supportedAlgorithms[] = { 0x00, 0x02 };
     uint8_t offset = 0;
     uint8_t *buffer_p;
     uint32_t length;
@@ -303,13 +303,6 @@ int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p)
     initialContextSetupRequest_p->eNB_UE_S1AP_ID = (unsigned long)ue_ref->eNB_ue_s1ap_id;
 
     /* uEaggregateMaximumBitrateDL and uEaggregateMaximumBitrateUL expressed in term of bits/sec */
-//     asn_int642INTEGER(
-//         &initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL,
-//         initial_p->ambr.br_dl);
-//     asn_int642INTEGER(
-//         &initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL,
-//         initial_p->ambr.br_ul);
-
     initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = initial_p->ambr.br_dl;
     initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL = initial_p->ambr.br_ul;
 
