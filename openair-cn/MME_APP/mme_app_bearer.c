@@ -323,7 +323,7 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
         attach_accept_p = &message_p->msg.nas_attach_accept;
 
         derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
-        memcpy(attach_accept_p->transparent.keNB, keNB, 16);
+        memcpy(attach_accept_p->transparent.keNB, keNB, 32);
 
         free(keNB);
 
