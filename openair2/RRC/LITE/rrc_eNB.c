@@ -61,10 +61,10 @@
 //#endif
 
 #ifdef USER_MODE
-#include "RRC/NAS/nas_config.h"
-#include "RRC/NAS/rb_config.h"
-#include "OCG.h"
-#include "OCG_extern.h"
+# include "RRC/NAS/nas_config.h"
+# include "RRC/NAS/rb_config.h"
+# include "OCG.h"
+# include "OCG_extern.h"
 #endif
 
 #if defined(ENABLE_SECURITY)
@@ -72,7 +72,9 @@
 #endif
 
 #if defined(ENABLE_USE_MME)
-#include "../../S1AP/s1ap_eNB.h"
+# if !defined(ENABLE_ITTI)
+#   include "../../S1AP/s1ap_eNB.h"
+# endif
 #endif
 
 #include "pdcp.h"
@@ -448,7 +450,47 @@ static uint8_t get_next_rrc_transaction_identifier(u8 Mod_id)
     return rrc_transaction_identifier[Mod_id];
 }
 
-static
+static u8 get_next_UE_index (u8 Mod_id, u8 *UE_identity)
+{
+  u8 i, first_index = 255, reg = 0;
+  static const u8 null_identity[5] =
+    {0, 0, 0, 0, 0};
+
+  DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
+
+  for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
+    if ((first_index == 255)
+        && (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], null_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[i])))
+            == 0) {
+      first_index = i; // save first free position
+    }
+
+    if (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], UE_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[i])) == 0) {
+      // UE_identity already registered
+      reg = 1;
+    }
+  }
+
+  if (reg == 0) {
+    LOG_I(RRC, "Adding UE %d\n", first_index);
+    return (first_index);
+  }
+  else {
+    return (255);
+  }
+}
+
+void rrc_remove_UE (u8 Mod_id, u8 UE_id)
+{
+  DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
+  DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
+
+  LOG_I (RRC, "Removing UE %d\n", UE_id);
+  eNB_rrc_inst[Mod_id].Info.UE[UE_id].Status = RRC_IDLE;
+  memset(eNB_rrc_inst[Mod_id].Info.UE_list[UE_id], 0, sizeof(eNB_rrc_inst[0].Info.UE_list[0]));
+}
+
+/*------------------------------------------------------------------------------*/
 void rrc_lite_eNB_init_security(u8 Mod_id, u8 UE_index)
 {
 #if defined(ENABLE_SECURITY)
@@ -476,7 +518,7 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
   LOG_D (RRC, "[MSC_NEW][FRAME 00000][IP][MOD %02d][]\n", Mod_id);
 
   for (j = 0; j < NUMBER_OF_UE_MAX; j++)
-    eNB_rrc_inst[Mod_id].Info.Status[j] = RRC_IDLE;     //CH_READY;
+    eNB_rrc_inst[Mod_id].Info.UE[j].Status = RRC_IDLE;     //CH_READY;
 
   /* Init security parameters */
   for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
@@ -578,46 +620,6 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
 
 }
 
-u8 get_next_UE_index (u8 Mod_id, u8 *UE_identity)
-{
-  u8 i, first_index = 255, reg = 0;
-  static const u8 null_identity[5] =
-    {0, 0, 0, 0, 0};
-
-  DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
-
-  for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
-    if ((first_index == 255)
-        && (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], null_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[0])))
-            == 0) {
-      first_index = i; // save first free position
-    }
-
-    if (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], UE_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[0])) == 0) {
-      // UE_identity already registered
-      reg = 1;
-    }
-  }
-
-  if (reg == 0) {
-    LOG_I(RRC, "Adding UE %d\n", first_index);
-    return (first_index);
-  }
-  else {
-    return (255);
-  }
-}
-
-void rrc_remove_UE (u8 Mod_id, u8 UE_id)
-{
-  DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
-  DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
-
-  LOG_I (RRC, "Removing UE %d\n", UE_id);
-  eNB_rrc_inst[Mod_id].Info.Status[UE_id] = RRC_IDLE;
-  memset(eNB_rrc_inst[Mod_id].Info.UE_list[UE_id], 0, sizeof(eNB_rrc_inst[0].Info.UE_list[0]));
-}
-
 /*------------------------------------------------------------------------------*/
 int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                      u8 * Rx_sdu, u8 sdu_size)
@@ -712,10 +714,45 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                                                                     criticalExtensions.
                                                                     choice.
                                                                     rrcConnectionReconfigurationComplete_r8);
-              eNB_rrc_inst[Mod_id].Info.Status[UE_index] = RRC_RECONFIGURED;
+              eNB_rrc_inst[Mod_id].Info.UE[UE_index].Status = RRC_RECONFIGURED;
               LOG_I (RRC, "[eNB %d] UE %d State = RRC_RECONFIGURED \n",
                      Mod_id, UE_index);
             }
+
+#if defined(ENABLE_USE_MME)
+          if (oai_emulation.info.mme_enabled == 1)
+          {
+              eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
+
+# if defined(ENABLE_ITTI)
+            /* Process e RAB parameters received from S1AP one by one (the previous one is completed, eventually process the next one) */
+            if  (UE_info->nb_of_e_rabs > 0)
+            {
+                int i;
+
+                /* Search for the first e RAB to use */
+                for (i = 0; i < S1AP_MAX_E_RAB; i++)
+                {
+                    if (UE_info->e_rab_param[i].nas_pdu.buffer != NULL)
+                        break;
+                }
+
+                DevCheck(i < S1AP_MAX_E_RAB, Mod_id, UE_index, UE_info->nb_of_e_rabs);
+
+                /* Process e RAB configuration from S1AP initial_context_setup_req */
+                rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
+                                                                      UE_index,
+                                                                      UE_info->e_rab_param[i].nas_pdu.buffer,
+                                                                      UE_info->e_rab_param[i].nas_pdu.length,
+                                                                      eNB_rrc_inst[Mod_id].HO_flag);
+                /* Free the NAS PDU buffer and invalidate it */
+                free (UE_info->e_rab_param[i].nas_pdu.buffer);
+                UE_info->e_rab_param[i].nas_pdu.buffer = NULL;
+                UE_info->nb_of_e_rabs --;
+            }
+# endif
+          }
+#endif
           break;
 
         case UL_DCCH_MessageType__c1_PR_rrcConnectionReestablishmentComplete:
@@ -750,7 +787,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                                                               choice.c1.
                                                               choice.
                                                               rrcConnectionSetupComplete_r8);
-                  eNB_rrc_inst[Mod_id].Info.Status[UE_index] = RRC_CONNECTED;
+                  eNB_rrc_inst[Mod_id].Info.UE[UE_index].Status = RRC_CONNECTED;
                   LOG_I (RRC, "[eNB %d] UE %d State = RRC_CONNECTED \n",
                          Mod_id, UE_index);
                   LOG_D (RRC,
@@ -777,6 +814,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
           // continue the procedure
           rrc_eNB_generate_UECapabilityEnquiry (Mod_id, frame, UE_index);
           break;
+
         case UL_DCCH_MessageType__c1_PR_securityModeFailure:
           LOG_D (RRC,
                  "[MSC_MSG][FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
@@ -820,9 +858,39 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
           xer_fprint (stdout, &asn_DEF_UE_EUTRA_Capability,
                       (void *) UE_EUTRA_Capability);
 #endif
-          rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
-                                                                UE_index,
-                                                                NULL, 0, eNB_rrc_inst[Mod_id].HO_flag);
+
+#if defined(ENABLE_USE_MME)
+          if (oai_emulation.info.mme_enabled == 1)
+          {
+              eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
+
+# if defined(ENABLE_ITTI)
+            /* Process e RAB parameters received from S1AP one by one (assuming that only one will be received from real network this should be OK) */
+            if  (UE_info->nb_of_e_rabs > 0)
+            {
+                /* The first e RAB should be set */
+                DevCheck(UE_info->e_rab_param[0].nas_pdu.buffer != NULL, Mod_id, UE_index, UE_info->nb_of_e_rabs);
+
+                /* Process e RAB configuration from S1AP initial_context_setup_req */
+                rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
+                                                                      UE_index,
+                                                                      UE_info->e_rab_param[0].nas_pdu.buffer,
+                                                                      UE_info->e_rab_param[0].nas_pdu.length,
+                                                                      eNB_rrc_inst[Mod_id].HO_flag);
+                /* Free the NAS PDU buffer and invalidate it */
+                free (UE_info->e_rab_param[0].nas_pdu.buffer);
+                UE_info->e_rab_param[0].nas_pdu.buffer = NULL;
+                UE_info->nb_of_e_rabs --;
+            }
+# endif
+          }
+          else
+#endif
+          {
+            rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
+                                                                  UE_index,
+                                                                  NULL, 0, eNB_rrc_inst[Mod_id].HO_flag);
+          }
           break;
 
         case UL_DCCH_MessageType__c1_PR_ulHandoverPreparationTransfer:
@@ -1012,8 +1080,19 @@ for (i = 0; i < 8; i++)
 
           if (UE_index != 255)
             {
-              eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index] = rrcConnectionRequest->ue_Identity;
-              eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index] = rrcConnectionRequest->establishmentCause;
+#if defined(ENABLE_ITTI)
+              /* Check s-TMSI presence in message */
+              eNB_rrc_inst[Mod_id].Info.UE[UE_index].Initialue_identity_s_TMSI.presence =
+                      (rrcConnectionRequest->ue_Identity.present == InitialUE_Identity_PR_s_TMSI);
+              if (eNB_rrc_inst[Mod_id].Info.UE[UE_index].Initialue_identity_s_TMSI.presence) {
+                /* Save s-TMSI */
+                S_TMSI_t s_TMSI = rrcConnectionRequest->ue_Identity.choice.s_TMSI;
+
+                eNB_rrc_inst[Mod_id].Info.UE[UE_index].Initialue_identity_s_TMSI.mme_code = BIT_STRING_to_uint8 (&s_TMSI.mmec);
+                eNB_rrc_inst[Mod_id].Info.UE[UE_index].Initialue_identity_s_TMSI.m_tmsi = BIT_STRING_to_uint32 (&s_TMSI.m_TMSI);
+              }
+              eNB_rrc_inst[Mod_id].Info.UE[UE_index].establishment_cause = rrcConnectionRequest->establishmentCause;
+#endif
 
               //      memcpy(&Rrc_xface->UE_id[Mod_id][UE_index],(u8 *)rrcConnectionRequest->ue_Identity.choice.randomValue.buf,5);
               memcpy (&eNB_rrc_inst[Mod_id].Info.UE_list[UE_index],
@@ -1111,6 +1190,7 @@ for (i = 0; i < 8; i++)
         default:
           LOG_E (RRC, "[eNB %d] Frame %d : Unknown message\n", Mod_id, frame);
           rval = -1;
+          break;
         }
       rval = 0;
     }
@@ -1141,8 +1221,8 @@ void rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
     S1AP_NAS_FIRST_REQ (message_p).rnti = eNB_mac_inst[Mod_id].UE_template[UE_index].rnti; // TODO check if this is the correct id to use
 
     /* Assume that cause is coded in the same way in RRC and S1ap, just check that the value is in S1ap range */
-    DevCheck(eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index] < RRC_CAUSE_LAST, eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index], RRC_CAUSE_LAST, Mod_id);
-    S1AP_NAS_FIRST_REQ (message_p).establishment_cause = eNB_rrc_inst[Mod_id].Info.UE_establishment_cause[UE_index];
+    DevCheck(eNB_rrc_inst[Mod_id].Info.UE[UE_index].establishment_cause < RRC_CAUSE_LAST, eNB_rrc_inst[Mod_id].Info.UE[UE_index].establishment_cause, RRC_CAUSE_LAST, Mod_id);
+    S1AP_NAS_FIRST_REQ (message_p).establishment_cause = eNB_rrc_inst[Mod_id].Info.UE[UE_index].establishment_cause;
 
     /* Forward NAS message */
     S1AP_NAS_FIRST_REQ (message_p).nas_pdu.buffer = rrcConnectionSetupComplete->dedicatedInfoNAS.buf;
@@ -1152,13 +1232,13 @@ void rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
     {
       S1AP_NAS_FIRST_REQ (message_p).ue_identity.presenceMask = UE_IDENTITIES_NONE;
 
-      if (eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index].present == InitialUE_Identity_PR_s_TMSI) {
+      if (eNB_rrc_inst[Mod_id].Info.UE[UE_index].Initialue_identity_s_TMSI.presence) {
         /* Fill s-TMSI */
-        S_TMSI_t s_TMSI = eNB_rrc_inst[Mod_id].Info.UE_Initialue_identity[UE_index].choice.s_TMSI;
+        UE_S_TMSI *s_TMSI = &eNB_rrc_inst[Mod_id].Info.UE[UE_index].Initialue_identity_s_TMSI;
 
         S1AP_NAS_FIRST_REQ (message_p).ue_identity.presenceMask |= UE_IDENTITIES_s_tmsi;
-        S1AP_NAS_FIRST_REQ (message_p).ue_identity.s_tmsi.mme_code = BIT_STRING_to_uint8 (&s_TMSI.mmec);
-        S1AP_NAS_FIRST_REQ (message_p).ue_identity.s_tmsi.m_tmsi = BIT_STRING_to_uint32 (&s_TMSI.m_TMSI);
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.s_tmsi.mme_code = s_TMSI->mme_code;
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.s_tmsi.m_tmsi = s_TMSI->m_tmsi;
       }
 
       if (rrcConnectionSetupComplete->registeredMME != NULL) {
@@ -3096,13 +3176,37 @@ void *rrc_enb_task(void *args_p) {
         break;
 
       case S1AP_INITIAL_CONTEXT_SETUP_REQ:
-        ue_index = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id; // TOTO convert eNB_ue_s1ap_id into ue_index
+        eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+        ue_index = eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id; // TOTO convert eNB_ue_s1ap_id into ue_index
+
+        /* Save e RAB information for later */
+        {
+            int i;
+
+            eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs;
+            for (i=0; i< eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs; i++)
+            {
+                eNB_rrc_inst[instance].Info.UE[ue_index].e_rab_param[i] = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i];
+            }
+        }
 
         LOG_D(RRC, "Received %s: instance %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d\n", msg_name, instance,
               S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs);
 
-        rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
-        // TODO process this message
+        {
+            uint8_t skip_security_mode_command = FALSE;
+
+            // TODO evaluate if security mode command should be skipped
+
+            if(skip_security_mode_command)
+            {
+                rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
+            }
+            else
+            {
+                rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
+            }
+        }
         break;
 
       default:

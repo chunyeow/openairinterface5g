@@ -83,6 +83,10 @@
 #include "rrc_rrm_interface.h"
 #endif
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 /** @defgroup _rrc_impl_ RRC Layer Reference Implementation
  * @ingroup _ref_implementation_
  * @{
@@ -149,14 +153,38 @@ typedef struct{
   u32 N311_cnt;
 }UE_RRC_INFO;
 
+typedef struct UE_S_TMSI_s {
+    uint8_t  presence;
+    uint8_t  mme_code;
+    uint32_t m_tmsi;
+}__attribute__ ((__packed__)) UE_S_TMSI;
+
 typedef struct{
-  u8 Status[NUMBER_OF_UE_MAX];
-  u8 Nb_ue;
-  //unsigned short UE_index_list[NUMBER_OF_UE_MAX];
-  //L2_ID UE_list[NUMBER_OF_UE_MAX];
-  u8 UE_list[NUMBER_OF_UE_MAX][5];
-  InitialUE_Identity_t UE_Initialue_identity[NUMBER_OF_UE_MAX];
-  EstablishmentCause_t UE_establishment_cause[NUMBER_OF_UE_MAX];
+    u8 Status;
+
+#if defined(ENABLE_ITTI)
+    /* Information from UE RRC ConnectionRequest */
+    UE_S_TMSI Initialue_identity_s_TMSI;
+    EstablishmentCause_t establishment_cause;
+
+    /* Information from S1AP initial_context_setup_req */
+    unsigned eNB_ue_s1ap_id :24;
+    /* Number of e_rab to be setup in the list */
+    uint8_t nb_of_e_rabs;
+    /* list of e_rab to be setup by RRC layers */
+    e_rab_t e_rab_param[S1AP_MAX_E_RAB];
+#endif
+}__attribute__ ((__packed__)) eNB_RRC_UE_INFO;
+
+typedef struct{
+  /* Number of UE handle by the eNB */
+  uint8_t Nb_ue;
+
+  /* UE list for UE index allocation */
+  uint8_t UE_list[NUMBER_OF_UE_MAX][5];
+
+  /* Information on UE */
+  eNB_RRC_UE_INFO UE[NUMBER_OF_UE_MAX];
 }__attribute__ ((__packed__)) eNB_RRC_INFO;
 
 typedef struct{
@@ -274,8 +302,8 @@ typedef struct{
   SRB_INFO                          Srb0;
   SRB_INFO_TABLE_ENTRY              Srb1[NUMBER_OF_UE_MAX+1];
   SRB_INFO_TABLE_ENTRY              Srb2[NUMBER_OF_UE_MAX+1];
-  MeasConfig_t			    *measConfig[NUMBER_OF_UE_MAX];
-  HANDOVER_INFO			    *handover_info[NUMBER_OF_UE_MAX];
+  MeasConfig_t                      *measConfig[NUMBER_OF_UE_MAX];
+  HANDOVER_INFO                     *handover_info[NUMBER_OF_UE_MAX];
   uint8_t                           HO_flag;
 #if defined(ENABLE_SECURITY)
   /* KeNB as derived from KASME received from EPC */

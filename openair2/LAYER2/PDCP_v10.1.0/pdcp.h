@@ -82,8 +82,12 @@
 #include "PMCH-InfoList-r9.h"
 #endif
 
+#ifndef FALSE
 #define FALSE (0x00)
+#endif
+#ifndef TRUE
 #define TRUE  !(FALSE)
+#endif
 
 extern pthread_t pdcp_thread;
 extern pthread_attr_t pdcp_thread_attr;
