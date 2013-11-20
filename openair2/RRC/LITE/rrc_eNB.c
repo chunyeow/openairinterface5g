@@ -97,11 +97,14 @@ extern void *bigphys_malloc (int);
 extern uint16_t two_tier_hexagonal_cellIds[7];
 extern inline unsigned int taus (void);
 
+/* TS 36.331: RRC-TransactionIdentifier ::= INTEGER (0..3) */
+static const uint8_t RRC_TRANSACTION_IDENTIFIER_NUMBER = 4;
+
 /* Value to indicate an invalid UE index */
 static const uint8_t UE_INDEX_INVALID = ~0;
 
-/* TS 36.331: RRC-TransactionIdentifier ::= INTEGER (0..3) */
-static const uint8_t RRC_TRANSACTION_IDENTIFIER_NUMBER = 4;
+/* Value to indicate an invalid UE initial id */
+static const uint16_t UE_INITIAL_ID_INVALID = 0;
 
 void
 init_SI (u8 Mod_id) {
@@ -504,8 +507,8 @@ static uint16_t get_next_ue_initial_id(uint8_t Mod_id)
 
   ue_initial_id[Mod_id] ++;
 
-  /* Never use 0 this is the not use value! */
-  if(ue_initial_id[Mod_id] == 0)
+  /* Never use UE_INITIAL_ID_INVALID this is the invalid id! */
+  if(ue_initial_id[Mod_id] == UE_INITIAL_ID_INVALID)
   {
     ue_initial_id[Mod_id] ++;
   }
@@ -552,6 +555,25 @@ static uint8_t get_UE_index_from_eNB_ue_s1ap_id (uint8_t Mod_id, uint16_t eNB_ue
     }
   }
   return UE_INDEX_INVALID;
+}
+
+/*------------------------------------------------------------------------------*/
+static uint8_t get_UE_index_from_s1ap_ids (uint8_t Mod_id, uint16_t ue_initial_id, uint16_t eNB_ue_s1ap_id)
+{
+    uint8_t ue_index;
+
+    if (ue_initial_id == UE_INITIAL_ID_INVALID)
+    {
+        /* If "ue_initial_id" is not set search if "eNB_ue_s1ap_id" is know by RRC */
+        ue_index = get_UE_index_from_eNB_ue_s1ap_id (Mod_id, eNB_ue_s1ap_id);
+    }
+    else
+    {
+        /* If "ue_initial_id" is set there is probably not yet an associated "eNB_ue_s1ap_id" with S1AP */
+        ue_index = get_UE_index_from_initial_id(Mod_id, ue_initial_id);
+    }
+
+    return ue_index;
 }
 
 /*------------------------------------------------------------------------------*/
@@ -3255,17 +3277,18 @@ void *rrc_enb_task(void *args_p) {
 
       /* S1AP Messages */
       case S1AP_DOWNLINK_NAS:
-        ue_index = get_UE_index_from_eNB_ue_s1ap_id (instance, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id);
+        ue_index = get_UE_index_from_s1ap_ids(instance, S1AP_DOWNLINK_NAS (msg_p).ue_initial_id, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id);
 
-        LOG_D(RRC, "Received %s: instance %d, eNB_ue_s1ap_id %d, ue_index %d\n",
-              msg_name, instance, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, ue_index);
+        LOG_D(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, ue_index %d\n", msg_name, instance,
+                S1AP_DOWNLINK_NAS (msg_p).ue_initial_id, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, ue_index);
 
         if (ue_index == UE_INDEX_INVALID)
         {
           /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
           MessageDef *msg_fail_p;
 
-          LOG_W(RRC, "In S1AP_DOWNLINK_NAS: unknown UE initial id %d for eNB %d\n");
+          LOG_W(RRC, "In S1AP_DOWNLINK_NAS: unknown UE from S1AP ids (%d, %d) for eNB %d\n",
+                  S1AP_DOWNLINK_NAS (msg_p).ue_initial_id, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, instance);
 
           msg_fail_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL); // TODO change message!
           S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
@@ -3288,20 +3311,23 @@ void *rrc_enb_task(void *args_p) {
         break;
 
       case S1AP_INITIAL_CONTEXT_SETUP_REQ:
-        ue_index = get_UE_index_from_initial_id(instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id);
+        ue_index = get_UE_index_from_s1ap_ids(instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id);
 
-        LOG_D(RRC, "Received %s: instance %d, ue_index %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d\n", msg_name, instance, ue_index,
-              S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs);
+        LOG_D(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d, ue_index %d\n", msg_name, instance,
+                S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id,
+                S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs, ue_index);
 
         if (ue_index == UE_INDEX_INVALID)
         {
           /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
           MessageDef *msg_fail_p;
 
-          LOG_W(RRC, "In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE initial id %d for eNB %d\n");
+          LOG_W(RRC, "In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE from S1AP ids (%d, %d) for eNB %d\n",
+                  S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, instance);
 
           msg_fail_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL);
           S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+          // TODO add failure cause when defined!
 
           itti_send_msg_to_task(TASK_S1AP, instance, msg_fail_p);
         }
