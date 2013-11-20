@@ -444,6 +444,7 @@ init_MBMS (u8 Mod_id, u32 frame) {
 }
 #endif
 
+/*------------------------------------------------------------------------------*/
 static uint8_t get_next_rrc_transaction_identifier(uint8_t Mod_id)
 {
     static uint8_t rrc_transaction_identifier[NUMBER_OF_eNB_MAX];
@@ -501,7 +502,13 @@ static uint16_t get_next_ue_initial_id(uint8_t Mod_id)
 {
   static uint16_t ue_initial_id[NUMBER_OF_eNB_MAX];
 
-  ue_initial_id[Mod_id] = ue_initial_id[Mod_id] + 1;
+  ue_initial_id[Mod_id] ++;
+
+  /* Never use 0 this is the not use value! */
+  if(ue_initial_id[Mod_id] == 0)
+  {
+    ue_initial_id[Mod_id] ++;
+  }
 
   return ue_initial_id[Mod_id];
 }
@@ -753,7 +760,16 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
               eNB_rrc_inst[Mod_id].Info.UE[UE_index].Status = RRC_RECONFIGURED;
               LOG_I (RRC, "[eNB %d] UE %d State = RRC_RECONFIGURED \n",
                      Mod_id, UE_index);
+
+#if defined(ENABLE_USE_MME)
+            if (oai_emulation.info.mme_enabled == 1)
+            {
+# if defined(ENABLE_ITTI)
+              eNB_rrc_inst[Mod_id].Info.UE[UE_index].e_rab[eNB_rrc_inst[Mod_id].Info.UE[UE_index].index_of_e_rabs - 1].status = TRUE;
             }
+# endif
+#endif
+          }
 
 #if defined(ENABLE_USE_MME)
           if (oai_emulation.info.mme_enabled == 1)
@@ -767,17 +783,46 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                 /* Process e RAB configuration from S1AP initial_context_setup_req */
                 rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
                                                                       UE_index,
-                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer,
-                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.length,
+                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer,
+                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.length,
                                                                       eNB_rrc_inst[Mod_id].HO_flag);
                 /* Free the NAS PDU buffer and invalidate it */
-                if (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer != NULL)
+                if (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer != NULL)
                 {
-                  free (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer);
+                  free (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer);
                 }
-                UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer = NULL;
+                UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer = NULL;
                 UE_info->nb_of_e_rabs --;
                 UE_info->index_of_e_rabs ++;
+            }
+            else
+            {
+              MessageDef *msg_p;
+              int e_rab;
+              int e_rabs_done = 0;
+              int e_rabs_failed = 0;
+
+              msg_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_RESP);
+              S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).eNB_ue_s1ap_id = UE_info->eNB_ue_s1ap_id;
+              for (e_rab = 0; e_rab < UE_info->index_of_e_rabs; e_rab++)
+              {
+                if (UE_info->e_rab[e_rab].status == TRUE)
+                {
+                  e_rabs_done ++;
+                  S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs[e_rab].e_rab_id = UE_info->e_rab[e_rab].param.e_rab_id;
+                  // TODO add other information from S1-U when it will be integrated
+                }
+                else
+                {
+                  e_rabs_failed ++;
+                  S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs_failed[e_rab].e_rab_id = UE_info->e_rab[e_rab].param.e_rab_id;
+                  // TODO add cause when it will be integrated
+                }
+              }
+              S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).nb_of_e_rabs = e_rabs_done;
+              S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).nb_of_e_rabs_failed = e_rabs_failed;
+
+              itti_send_msg_to_task(TASK_S1AP, Mod_id, msg_p);
             }
 # endif
           }
@@ -900,15 +945,15 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                 /* Process the first e RAB configuration from S1AP initial_context_setup_req */
                 rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
                                                                       UE_index,
-                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer,
-                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.length,
+                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer,
+                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.length,
                                                                       eNB_rrc_inst[Mod_id].HO_flag);
                 /* Free the NAS PDU buffer and invalidate it */
-                if (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer != NULL)
+                if (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer != NULL)
                 {
-                  free (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer);
+                  free (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer);
                 }
-                UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer = NULL;
+                UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer = NULL;
                 UE_info->nb_of_e_rabs --;
                 UE_info->index_of_e_rabs ++;
             }
@@ -956,7 +1001,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                 S1AP_UPLINK_NAS (msg_p).nas_pdu.length = pdu_length;
                 S1AP_UPLINK_NAS (msg_p).nas_pdu.buffer = pdu_buffer;
 
-                itti_send_msg_to_task(TASK_S1AP, 0, msg_p);
+                itti_send_msg_to_task(TASK_S1AP, Mod_id, msg_p);
               }
             }
 # else
@@ -3215,9 +3260,14 @@ void *rrc_enb_task(void *args_p) {
         if (ue_index == UE_INDEX_INVALID)
         {
           /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
+          MessageDef *msg_fail_p;
+
           LOG_W(RRC, "In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE initial id %d for eNB %d\n");
 
-          // TODO
+          msg_fail_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL);
+          S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+
+          itti_send_msg_to_task(TASK_S1AP, instance, msg_fail_p);
         }
         else
         {
@@ -3231,7 +3281,7 @@ void *rrc_enb_task(void *args_p) {
             eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs;
             eNB_rrc_inst[instance].Info.UE[ue_index].index_of_e_rabs = 0;
             for (i = 0; i < eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs; i++) {
-              eNB_rrc_inst[instance].Info.UE[ue_index].e_rab_param[i] =
+              eNB_rrc_inst[instance].Info.UE[ue_index].e_rab[i].param =
                   S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i];
             }
           }

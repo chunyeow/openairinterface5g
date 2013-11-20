@@ -8,6 +8,7 @@
 #define S1AP_UPLINK_NAS(mSGpTR)                 (mSGpTR)->msg.s1ap_uplink_nas
 #define S1AP_UE_CAPABILITIES_IND(mSGpTR)        (mSGpTR)->msg.s1ap_ue_cap_info_ind
 #define S1AP_INITIAL_CONTEXT_SETUP_RESP(mSGpTR) (mSGpTR)->msg.s1ap_initial_context_setup_resp
+#define S1AP_INITIAL_CONTEXT_SETUP_FAIL(mSGpTR) (mSGpTR)->msg.s1ap_initial_context_setup_fail
 
 #define S1AP_DOWNLINK_NAS(mSGpTR)               (mSGpTR)->msg.s1ap_downlink_nas
 #define S1AP_INITIAL_CONTEXT_SETUP_REQ(mSGpTR)  (mSGpTR)->msg.s1ap_initial_context_setup_req

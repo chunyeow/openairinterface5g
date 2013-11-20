@@ -159,7 +159,14 @@ typedef struct UE_S_TMSI_s {
     uint32_t m_tmsi;
 }__attribute__ ((__packed__)) UE_S_TMSI;
 
-typedef struct{
+#if defined(ENABLE_ITTI)
+typedef struct e_rab_param_s {
+    e_rab_t param;
+    uint8_t status;
+} e_rab_param_t;
+#endif
+
+typedef struct eNB_RRC_UE_INFO_s{
     u8 Status;
 
 #if defined(ENABLE_ITTI)
@@ -177,11 +184,11 @@ typedef struct{
     /* Index of e_rab to be setup in the list */
     uint8_t index_of_e_rabs;
     /* list of e_rab to be setup by RRC layers */
-    e_rab_t e_rab_param[S1AP_MAX_E_RAB];
+    e_rab_param_t e_rab[S1AP_MAX_E_RAB];
 #endif
 }__attribute__ ((__packed__)) eNB_RRC_UE_INFO;
 
-typedef struct{
+typedef struct eNB_RRC_INFO_s{
   /* Number of UE handle by the eNB */
   uint8_t Nb_ue;
 
