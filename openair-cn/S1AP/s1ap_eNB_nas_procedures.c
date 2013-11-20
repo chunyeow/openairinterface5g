@@ -258,6 +258,8 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
 
     /* Forward the NAS PDU to RRC */
     s1ap_eNB_itti_send_nas_downlink_ind(s1ap_eNB_instance->instance,
+                                        ue_desc_p->ue_initial_id,
+                                        ue_desc_p->eNB_ue_s1ap_id,
                                         downlink_NAS_transport_p->nas_pdu.buf,
                                         downlink_NAS_transport_p->nas_pdu.size);
 

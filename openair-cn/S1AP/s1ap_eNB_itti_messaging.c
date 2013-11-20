@@ -20,7 +20,10 @@ void s1ap_eNB_itti_send_sctp_data_req(instance_t instance, int32_t assoc_id, uin
     itti_send_msg_to_task(TASK_SCTP, instance, message_p);
 }
 
-void s1ap_eNB_itti_send_nas_downlink_ind(instance_t instance, uint8_t *nas_pdu,
+void s1ap_eNB_itti_send_nas_downlink_ind(instance_t instance,
+                                         uint16_t ue_initial_id,
+                                         uint32_t eNB_ue_s1ap_id,
+                                         uint8_t *nas_pdu,
                                          uint32_t nas_pdu_length)
 {
     MessageDef          *message_p;
@@ -30,6 +33,8 @@ void s1ap_eNB_itti_send_nas_downlink_ind(instance_t instance, uint8_t *nas_pdu,
 
     s1ap_downlink_nas = &message_p->msg.s1ap_downlink_nas;
 
+    s1ap_downlink_nas->ue_initial_id  = ue_initial_id;
+    s1ap_downlink_nas->eNB_ue_s1ap_id = eNB_ue_s1ap_id;
     s1ap_downlink_nas->nas_pdu.buffer = nas_pdu;
     s1ap_downlink_nas->nas_pdu.length = nas_pdu_length;
 

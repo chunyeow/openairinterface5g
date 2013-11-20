@@ -86,7 +86,9 @@ void config_init(mme_config_t *mme_config_p)
     mme_config_p->ipv4.sgw_ip_netmask_for_S11               = DEFAULT_SGW_IP_NETMASK_FOR_S11;
 
     mme_config_p->s6a_config.conf_file    = S6A_CONF_FILE;
+
     mme_config_p->itti_config.queue_size  = ITTI_QUEUE_SIZE_MAX;
+    mme_config_p->itti_config.log_file    = NULL;
 
     mme_config_p->sctp_config.in_streams  = SCTP_IN_STREAMS;
     mme_config_p->sctp_config.out_streams = SCTP_OUT_STREAMS;
@@ -199,6 +201,7 @@ static void config_display(mme_config_t *mme_config_p)
             mme_config_p->ipv4.mme_ip_netmask_for_S11);
     fprintf(stdout, "- ITTI:\n");
     fprintf(stdout, "    queue size .....: %u (bytes)\n", mme_config_p->itti_config.queue_size);
+    fprintf(stdout, "    log file .......: %s\n", mme_config_p->itti_config.log_file);
     fprintf(stdout, "- SCTP:\n");
     fprintf(stdout, "    in streams .....: %u\n", mme_config_p->sctp_config.in_streams);
     fprintf(stdout, "    out streams ....: %u\n", mme_config_p->sctp_config.out_streams);
@@ -227,6 +230,8 @@ static void usage(void)
     fprintf(stdout, "-c<path>\n");
     fprintf(stdout, "        Set the configuration file for mme\n");
     fprintf(stdout, "        See template in UTILS/CONF\n");
+    fprintf(stdout, "-K<file>\n");
+    fprintf(stdout, "        Output intertask messages to provided file\n");
     fprintf(stdout, "-V      Print %s version and return\n", PACKAGE_NAME);
     fprintf(stdout, "-v[1-2] Debug level:\n");
     fprintf(stdout, "            1 -> ASN1 XER printf on and ASN1 debug off\n");
@@ -241,7 +246,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
     int c;
     config_init(mme_config_p);
     /* Parsing command line */
-    while ((c = getopt (argc, argv, "c:hi:v:V")) != -1) {
+    while ((c = getopt (argc, argv, "c:hi:K:v:V")) != -1) {
         switch (c) {
             case 'c': {
                 /* Store the given configuration file. If no file is given,
@@ -272,6 +277,9 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
                 exit(0);
                 nwGtpv1uDisplayBanner();
             } break;
+            case 'K':
+                mme_config_p->itti_config.log_file = strdup(optarg);
+                break;
             case 'h': /* Fall through */
             default:
                 usage();

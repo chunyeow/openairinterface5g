@@ -111,6 +111,7 @@ typedef struct mme_config_s {
     } s6a_config;
     struct {
         uint32_t  queue_size;
+        char     *log_file;
     } itti_config;
 } mme_config_t;
 

@@ -245,7 +245,16 @@ typedef struct s1ap_uplink_nas_s {
     nas_pdu_t nas_pdu;
 } s1ap_uplink_nas_t;
 
-typedef s1ap_uplink_nas_t s1ap_downlink_nas_t;
+typedef struct s1ap_downlink_nas_s {
+    /* UE id for initial connection to S1AP */
+    uint16_t ue_initial_id;
+
+    /* Unique UE identifier within an eNB */
+    unsigned eNB_ue_s1ap_id:24;
+
+    /* NAS pdu */
+    nas_pdu_t nas_pdu;
+} s1ap_downlink_nas_t;
 
 typedef struct s1ap_initial_context_setup_req_s {
     /* UE id for initial connection to S1AP */
