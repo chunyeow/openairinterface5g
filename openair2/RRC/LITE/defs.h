@@ -160,6 +160,13 @@ typedef struct UE_S_TMSI_s {
 }__attribute__ ((__packed__)) UE_S_TMSI;
 
 #if defined(ENABLE_ITTI)
+typedef enum e_rab_satus_e
+{
+    E_RAB_STATUS_NEW,
+    E_RAB_STATUS_DONE,
+    E_RAB_STATUS_FAILED,
+} e_rab_status_t;
+
 typedef struct e_rab_param_s {
     e_rab_t param;
     uint8_t status;
