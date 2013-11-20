@@ -558,6 +558,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 
             fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
             fwrite (messages_definition_xml, message_size, 1, dump_file);
+            fflush (dump_file);
         }
     }
 
