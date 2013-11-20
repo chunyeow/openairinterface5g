@@ -33,6 +33,43 @@ typedef struct net_ip_address_s {
     char ipv6_address[40];
 } net_ip_address_t;
 
+typedef uint64_t bitrate_t;
+
+typedef struct {
+    bitrate_t br_ul;
+    bitrate_t br_dl;
+} ambr_t;
+
+typedef enum priority_level_s {
+    PRIORITY_LEVEL_SPARE       = 0,
+    PRIORITY_LEVEL_HIGHEST     = 1,
+    PRIORITY_LEVEL_LOWEST      = 14,
+    PRIORITY_LEVEL_NO_PRIORITY = 15,
+} priority_level_t;
+
+typedef enum {
+    PRE_EMPTION_CAPABILITY_ENABLED  = 0,
+    PRE_EMPTION_CAPABILITY_DISABLED = 1,
+    PRE_EMPTION_CAPABILITY_MAX,
+} pre_emp_capability_t;
+
+typedef enum {
+    PRE_EMPTION_VULNERABILITY_ENABLED  = 0,
+    PRE_EMPTION_VULNERABILITY_DISABLED = 1,
+    PRE_EMPTION_VULNERABILITY_MAX,
+} pre_emp_vulnerability_t;
+
+typedef struct {
+    priority_level_t        priority_level;
+    pre_emp_capability_t    pre_emp_capability;
+    pre_emp_vulnerability_t pre_emp_vulnerability;
+} allocation_retention_priority_t;
+
+typedef struct security_capabilities_s {
+    uint16_t encryption_algorithms;
+    uint16_t integrity_algorithms;
+} security_capabilities_t;
+
 /* Maximum number of e-rabs to be setup/deleted in a single message.
  * Even if only one bearer will be modified by message.
  */
@@ -44,6 +81,12 @@ typedef struct net_ip_address_s {
 #define S1AP_TRANSPORT_LAYER_ADDRESS_SIZE (160 / 8)
 
 #define S1AP_MAX_NB_MME_IP_ADDRESS 10
+
+/* Security key length used within eNB
+ * Even if only 16 bytes will be effectively used,
+ * the key length is 32 bytes (256 bits)
+ */
+#define SECURITY_KEY_LENGTH 32
 
 /* Provides the establishment cause for the RRC connection request as provided
  * by the upper layers. W.r.t. the cause value names: highPriorityAccess
@@ -102,7 +145,8 @@ typedef struct transport_layer_addr_s {
 
 typedef struct e_rab_level_qos_parameter_s {
     uint8_t qci;
-    
+
+    allocation_retention_priority_t allocation_retention_priority;
 } e_rab_level_qos_parameter_t;
 
 typedef struct e_rab_s {
@@ -205,6 +249,15 @@ typedef s1ap_uplink_nas_t s1ap_downlink_nas_t;
 
 typedef struct s1ap_initial_context_setup_req_s {
     unsigned eNB_ue_s1ap_id:24;
+
+    /* UE aggregate maximum bitrate */
+    ambr_t ue_ambr;
+
+    /* Security algorithms */
+    security_capabilities_t security_capabilities;
+
+    /* Security key */
+    uint8_t security_key[SECURITY_KEY_LENGTH];
 
     /* Number of e_rab to be setup in the list */
     uint8_t  nb_of_e_rabs;

@@ -74,7 +74,7 @@ typedef enum {
     NAM_MAX,
 } network_access_mode_t;
 
-typedef uint32_t bitrate_t;
+typedef uint64_t bitrate_t;
 
 typedef uint8_t  ebi_t;
 typedef char*    APN_t;

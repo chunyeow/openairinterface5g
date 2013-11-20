@@ -31,6 +31,8 @@
 #include "tree.h"
 #include "queue.h"
 
+#include "s1ap_eNB_defs.h"
+
 #ifndef S1AP_ENB_UE_CONTEXT_H_
 #define S1AP_ENB_UE_CONTEXT_H_
 
@@ -72,6 +74,9 @@ typedef struct s1ap_eNB_ue_context_s {
 
     /* Reference to MME data this UE is attached to */
     struct s1ap_eNB_mme_data_s *mme_ref;
+
+    /* Reference to eNB data this UE is attached to */
+    s1ap_eNB_instance_t *eNB_instance;
 } s1ap_eNB_ue_context_t;
 
 inline int s1ap_eNB_compare_eNB_ue_s1ap_id(

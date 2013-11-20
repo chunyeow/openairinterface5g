@@ -39,6 +39,8 @@
 
 #include "intertask_interface.h"
 
+#include "asn1_conversions.h"
+
 #include "s1ap_common.h"
 #include "s1ap_ies_defs.h"
 // #include "s1ap_eNB.h"
@@ -339,15 +341,18 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
 static
 int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
                                             uint32_t               stream,
-                                            struct s1ap_message_s *message_p)
+                                            struct s1ap_message_s *s1ap_message_p)
 {
+    int i;
+
     s1ap_eNB_mme_data_t   *mme_desc_p;
     s1ap_eNB_ue_context_t *ue_desc_p;
+    MessageDef            *message_p;
 
     S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
-    DevAssert(message_p != NULL);
+    DevAssert(s1ap_message_p != NULL);
 
-    initialContextSetupRequest_p = &message_p->msg.s1ap_InitialContextSetupRequestIEs;
+    initialContextSetupRequest_p = &s1ap_message_p->msg.s1ap_InitialContextSetupRequestIEs;
 
     if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
         S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
@@ -371,35 +376,57 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
 
     ue_desc_p->mme_ue_s1ap_id = initialContextSetupRequest_p->mme_ue_s1ap_id;
 
-//     {
-//         int i;
-// 
-//         extern int s1ap_eNB_handle_api_req(eNB_mme_desc_t     *eNB_desc_p,
-//                                            s1ap_rrc_api_req_t *api_req_p);
-// 
-//         s1ap_rrc_api_req_t api_req;
-//         s1ap_initial_ctxt_setup_resp_t *initial_ctxt_resp_p;
-// 
-//         memset(&api_req, 0, sizeof(s1ap_rrc_api_req_t));
-// 
-//         initial_ctxt_resp_p = &api_req.msg.initial_ctxt_resp;
-//         api_req.api_req = S1AP_API_INITIAL_CONTEXT_SETUP_RESP;
-// 
-//         initial_ctxt_resp_p->eNB_ue_s1ap_id = ue_desc_p->eNB_ue_s1ap_id;
-//         initial_ctxt_resp_p->e_rabs_failed = 0;
-//         initial_ctxt_resp_p->nb_of_e_rabs
-//         = initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.e_RABToBeSetupItemCtxtSUReq.count;
-//         for (i = 0; i < initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.e_RABToBeSetupItemCtxtSUReq.count; i++)
-//         {
-//             struct E_RABToBeSetupItemCtxtSUReq_s *item;
-//             item = (struct E_RABToBeSetupItemCtxtSUReq_s *)initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.e_RABToBeSetupItemCtxtSUReq.array[i];
-//             initial_ctxt_resp_p->e_rabs = realloc(initial_ctxt_resp_p->e_rabs, i * sizeof(e_rab_setup_t));
-//             initial_ctxt_resp_p->e_rabs[i].e_rab_id = 5;
-// 
-//         }
-// 
-//         s1ap_eNB_handle_api_req(eNB_desc_p, &api_req);
-//     }
+    message_p = itti_alloc_new_message(TASK_S1AP, S1AP_INITIAL_CONTEXT_SETUP_REQ);
+
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).eNB_ue_s1ap_id = ue_desc_p->eNB_ue_s1ap_id;
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nb_of_e_rabs =
+    initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.s1ap_E_RABToBeSetupItemCtxtSUReq.count;
+
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_ambr.br_ul = initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL;
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_ambr.br_dl = initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL;
+
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).security_capabilities.encryption_algorithms =
+    BIT_STRING_to_uint16(&initialContextSetupRequest_p->ueSecurityCapabilities.encryptionAlgorithms);
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).security_capabilities.integrity_algorithms =
+    BIT_STRING_to_uint16(&initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms);
+
+    /* Copy the security key */
+    memcpy(&S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).security_key,
+           initialContextSetupRequest_p->securityKey.buf, initialContextSetupRequest_p->securityKey.size);
+
+    for (i = 0; i < initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++)
+    {
+        S1ap_E_RABToBeSetupItemCtxtSUReq_t *item_p;
+
+        item_p = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.s1ap_E_RABToBeSetupItemCtxtSUReq.array[i];
+
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].e_rab_id = item_p->e_RAB_ID;
+        if (item_p->nAS_PDU != NULL) {
+            /* Only copy NAS pdu if present */
+            S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.length = item_p->nAS_PDU->size;
+
+            S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer =
+            malloc(sizeof(uint8_t) * item_p->nAS_PDU->size);
+
+            memcpy(&S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer,
+                   item_p->nAS_PDU->buf, item_p->nAS_PDU->size);
+        } else {
+            S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.length = 0;
+            S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer = NULL;
+        }
+
+        /* Set the QOS informations */
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].qos.qci = item_p->e_RABlevelQoSParameters.qCI;
+
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].qos.allocation_retention_priority.priority_level =
+        item_p->e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel;
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].qos.allocation_retention_priority.pre_emp_capability =
+        item_p->e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability;
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].qos.allocation_retention_priority.pre_emp_vulnerability =
+        item_p->e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability;
+    }
+
+    itti_send_msg_to_task(TASK_RRC_ENB, ue_desc_p->eNB_instance->instance, message_p);
 
     return 0;
 }

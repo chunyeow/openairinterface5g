@@ -122,8 +122,9 @@ int s1ap_eNB_handle_nas_first_req(
     DevAssert(ue_desc_p != NULL);
 
     /* Keep a reference to the selected MME */
-    ue_desc_p->mme_ref = mme_desc_p;
-    ue_desc_p->rnti    = s1ap_nas_first_req_p->rnti;
+    ue_desc_p->mme_ref      = mme_desc_p;
+    ue_desc_p->rnti         = s1ap_nas_first_req_p->rnti;
+    ue_desc_p->eNB_instance = instance_p;
 
     do {
         struct s1ap_eNB_ue_context_s *collision_p;
