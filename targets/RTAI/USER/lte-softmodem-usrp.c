@@ -301,6 +301,7 @@ void *tx_error_handler(void *ptr)
 	{
 		tx_errorcode_handler();
 	}
+	printf("[USRP monitoring thread] Received oai_exit signal. Ends.\n");
 	pthread_exit(NULL);
 }
 
