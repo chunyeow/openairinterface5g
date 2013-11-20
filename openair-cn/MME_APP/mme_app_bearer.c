@@ -330,7 +330,7 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
         attach_accept_p->transparent.eNB_ue_s1ap_id = ue_context_p->eNB_ue_s1ap_id;
         attach_accept_p->transparent.mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
 
-        attach_accept_p->transparent.ebi = bearer_id - 5;
+        attach_accept_p->transparent.ebi = bearer_id;
 
         attach_accept_p->transparent.qci = current_bearer_p->qci;
         attach_accept_p->transparent.prio_level = current_bearer_p->prio_level;

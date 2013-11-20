@@ -415,6 +415,15 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
             S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer = NULL;
         }
 
+        /* Set the transport layer address */
+        memcpy(S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].sgw_addr.buffer,
+               item_p->transportLayerAddress.buf, item_p->transportLayerAddress.size);
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].sgw_addr.length =
+        item_p->transportLayerAddress.size * 8 - item_p->transportLayerAddress.bits_unused;
+
+        /* GTP tunnel endpoint ID */
+        OCTET_STRING_TO_INT32(&item_p->gTP_TEID, S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].gtp_teid);
+
         /* Set the QOS informations */
         S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].qos.qci = item_p->e_RABlevelQoSParameters.qCI;
 
