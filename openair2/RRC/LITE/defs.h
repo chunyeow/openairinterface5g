@@ -174,6 +174,8 @@ typedef struct{
     unsigned eNB_ue_s1ap_id :24;
     /* Number of e_rab to be setup in the list */
     uint8_t nb_of_e_rabs;
+    /* Index of e_rab to be setup in the list */
+    uint8_t index_of_e_rabs;
     /* list of e_rab to be setup by RRC layers */
     e_rab_t e_rab_param[S1AP_MAX_E_RAB];
 #endif

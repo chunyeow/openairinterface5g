@@ -97,8 +97,11 @@ extern void *bigphys_malloc (int);
 extern uint16_t two_tier_hexagonal_cellIds[7];
 extern inline unsigned int taus (void);
 
+/* Value to indicate an invalid UE index */
+static const uint8_t UE_INDEX_INVALID = ~0;
+
 /* TS 36.331: RRC-TransactionIdentifier ::= INTEGER (0..3) */
-static const uint8_t rrc_transaction_identifier_number = 4;
+static const uint8_t RRC_TRANSACTION_IDENTIFIER_NUMBER = 4;
 
 void
 init_SI (u8 Mod_id) {
@@ -441,35 +444,27 @@ init_MBMS (u8 Mod_id, u32 frame) {
 }
 #endif
 
-static uint8_t get_next_rrc_transaction_identifier(u8 Mod_id)
+static uint8_t get_next_rrc_transaction_identifier(uint8_t Mod_id)
 {
     static uint8_t rrc_transaction_identifier[NUMBER_OF_eNB_MAX];
 
-    rrc_transaction_identifier[Mod_id] = (rrc_transaction_identifier[Mod_id] + 1) % rrc_transaction_identifier_number;
+    rrc_transaction_identifier[Mod_id] = (rrc_transaction_identifier[Mod_id] + 1) % RRC_TRANSACTION_IDENTIFIER_NUMBER;
 
     return rrc_transaction_identifier[Mod_id];
 }
 
-static uint16_t get_next_ue_initial_id(u8 Mod_id)
+/*------------------------------------------------------------------------------*/
+/* Functions to handle UE index in eNB UE list */
+static uint8_t get_next_UE_index (uint8_t Mod_id, uint8_t *UE_identity)
 {
-  static uint16_t ue_initial_id[NUMBER_OF_eNB_MAX];
-
-  ue_initial_id[Mod_id] = ue_initial_id[Mod_id] + 1;
-
-  return ue_initial_id[Mod_id];
-}
-
-
-static u8 get_next_UE_index (u8 Mod_id, u8 *UE_identity)
-{
-  u8 i, first_index = 255, reg = 0;
-  static const u8 null_identity[5] =
+  uint8_t i, first_index = UE_INDEX_INVALID, reg = 0;
+  static const uint8_t null_identity[5] =
     {0, 0, 0, 0, 0};
 
   DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
 
   for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
-    if ((first_index == 255)
+    if ((first_index == UE_INDEX_INVALID)
         && (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], null_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[i])))
             == 0) {
       first_index = i; // save first free position
@@ -486,11 +481,11 @@ static u8 get_next_UE_index (u8 Mod_id, u8 *UE_identity)
     return (first_index);
   }
   else {
-    return (255);
+    return (UE_INDEX_INVALID);
   }
 }
 
-void rrc_remove_UE (u8 Mod_id, u8 UE_id)
+void rrc_remove_UE (uint8_t Mod_id, uint8_t UE_id)
 {
   DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
   DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
@@ -498,6 +493,37 @@ void rrc_remove_UE (u8 Mod_id, u8 UE_id)
   LOG_I (RRC, "Removing UE %d\n", UE_id);
   eNB_rrc_inst[Mod_id].Info.UE[UE_id].Status = RRC_IDLE;
   memset(eNB_rrc_inst[Mod_id].Info.UE_list[UE_id], 0, sizeof(eNB_rrc_inst[0].Info.UE_list[0]));
+}
+
+/*------------------------------------------------------------------------------*/
+/* Function to handle UE initial ID for S1AP initial communication */
+static uint16_t get_next_ue_initial_id(uint8_t Mod_id)
+{
+  static uint16_t ue_initial_id[NUMBER_OF_eNB_MAX];
+
+  ue_initial_id[Mod_id] = ue_initial_id[Mod_id] + 1;
+
+  return ue_initial_id[Mod_id];
+}
+
+static uint8_t get_UE_index_from_initial_id (uint8_t Mod_id, uint16_t ue_initial_id)
+{
+  uint8_t ue_index;
+  static const uint8_t null_identity[5] =
+    {0, 0, 0, 0, 0};
+
+  DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
+
+  for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
+    /* Check if this UE is in use */
+    if (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[ue_index], null_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[ue_index])) != 0) {
+      /* Check if the initial id match */
+      if (eNB_rrc_inst[Mod_id].Info.UE[ue_index].ue_initial_id == ue_initial_id) {
+        return ue_index;
+      }
+    }
+  }
+  return UE_INDEX_INVALID;
 }
 
 /*------------------------------------------------------------------------------*/
@@ -738,27 +764,20 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
             /* Process e RAB parameters received from S1AP one by one (the previous one is completed, eventually process the next one) */
             if  (UE_info->nb_of_e_rabs > 0)
             {
-                int i;
-
-                /* Search for the first e RAB to use */
-                for (i = 0; i < S1AP_MAX_E_RAB; i++)
-                {
-                    if (UE_info->e_rab_param[i].nas_pdu.buffer != NULL)
-                        break;
-                }
-
-                DevCheck(i < S1AP_MAX_E_RAB, Mod_id, UE_index, UE_info->nb_of_e_rabs);
-
                 /* Process e RAB configuration from S1AP initial_context_setup_req */
                 rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
                                                                       UE_index,
-                                                                      UE_info->e_rab_param[i].nas_pdu.buffer,
-                                                                      UE_info->e_rab_param[i].nas_pdu.length,
+                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer,
+                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.length,
                                                                       eNB_rrc_inst[Mod_id].HO_flag);
                 /* Free the NAS PDU buffer and invalidate it */
-                free (UE_info->e_rab_param[i].nas_pdu.buffer);
-                UE_info->e_rab_param[i].nas_pdu.buffer = NULL;
+                if (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer != NULL)
+                {
+                  free (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer);
+                }
+                UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer = NULL;
                 UE_info->nb_of_e_rabs --;
+                UE_info->index_of_e_rabs ++;
             }
 # endif
           }
@@ -878,19 +897,20 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
             /* Process e RAB parameters received from S1AP one by one (assuming that only one will be received from real network this should be OK) */
             if  (UE_info->nb_of_e_rabs > 0)
             {
-                /* The first e RAB should be set */
-                DevCheck(UE_info->e_rab_param[0].nas_pdu.buffer != NULL, Mod_id, UE_index, UE_info->nb_of_e_rabs);
-
-                /* Process e RAB configuration from S1AP initial_context_setup_req */
+                /* Process the first e RAB configuration from S1AP initial_context_setup_req */
                 rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
                                                                       UE_index,
-                                                                      UE_info->e_rab_param[0].nas_pdu.buffer,
-                                                                      UE_info->e_rab_param[0].nas_pdu.length,
+                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer,
+                                                                      UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.length,
                                                                       eNB_rrc_inst[Mod_id].HO_flag);
                 /* Free the NAS PDU buffer and invalidate it */
-                free (UE_info->e_rab_param[0].nas_pdu.buffer);
-                UE_info->e_rab_param[0].nas_pdu.buffer = NULL;
+                if (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer != NULL)
+                {
+                  free (UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer);
+                }
+                UE_info->e_rab_param[UE_info->index_of_e_rabs].nas_pdu.buffer = NULL;
                 UE_info->nb_of_e_rabs --;
+                UE_info->index_of_e_rabs ++;
             }
 # endif
           }
@@ -1088,7 +1108,7 @@ for (i = 0; i < 8; i++)
 					(u8 *) rrcConnectionRequest->ue_Identity.
 					choice.randomValue.buf);
 
-          if (UE_index != 255)
+          if (UE_index != UE_INDEX_INVALID)
             {
 #if defined(ENABLE_ITTI)
               /* Check s-TMSI presence in message */
@@ -3187,36 +3207,47 @@ void *rrc_enb_task(void *args_p) {
         break;
 
       case S1AP_INITIAL_CONTEXT_SETUP_REQ:
-        eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
-        ue_index = eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id; // TOTO convert eNB_ue_s1ap_id into ue_index
+        ue_index = get_UE_index_from_initial_id(instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id);
 
-        /* Save e RAB information for later */
+        LOG_D(RRC, "Received %s: instance %d, ue_index %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d\n", msg_name, instance, ue_index,
+              S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs);
+
+        if (ue_index == UE_INDEX_INVALID)
         {
+          /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
+          LOG_W(RRC, "In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE initial id %d for eNB %d\n");
+
+          // TODO
+        }
+        else
+        {
+          eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id =
+              S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+
+          /* Save e RAB information for later */
+          {
             int i;
 
             eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs;
-            for (i=0; i< eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs; i++)
-            {
-                eNB_rrc_inst[instance].Info.UE[ue_index].e_rab_param[i] = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i];
+            eNB_rrc_inst[instance].Info.UE[ue_index].index_of_e_rabs = 0;
+            for (i = 0; i < eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs; i++) {
+              eNB_rrc_inst[instance].Info.UE[ue_index].e_rab_param[i] =
+                  S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i];
             }
-        }
+          }
 
-        LOG_D(RRC, "Received %s: instance %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d\n", msg_name, instance,
-              S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs);
-
-        {
-            uint8_t skip_security_mode_command = FALSE;
+          {
+            uint8_t send_security_mode_command = TRUE;
 
             // TODO evaluate if security mode command should be skipped
 
-            if(skip_security_mode_command)
-            {
-                rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
+            if (send_security_mode_command) {
+              rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
             }
-            else
-            {
-                rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
+            else {
+              rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
             }
+          }
         }
         break;
 
