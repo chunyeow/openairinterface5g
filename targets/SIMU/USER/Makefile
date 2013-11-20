@@ -341,7 +341,7 @@ $(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 
 $(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
 	@echo "Generating messages_xml.h ..."
-	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' $< > $@
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
 
 ifdef ENABLE_ITTI
 $(OAISIM_OBJS): $(ITTI_MESSAGES_H)
@@ -416,6 +416,7 @@ rrm_std_cellular:
 
 
 cleanall: clean cleanasn1
+	@if [ -d $(S1AP_DIR) ];then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall; fi
 
 clean:
 	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
@@ -428,8 +429,8 @@ clean:
 	@$(RM_F_V) $(ASN1_MSG_OBJS1) $(ASN1_MSG_OBJS1:.o=.d)
 	@$(RM_F_V) *.exe*
 	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
-	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean
-	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean
+	@if [ -d $(S1AP_DIR) ];then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean; fi
+	@if [ -d $(S1AP_DIR) ];then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean; fi
 
 cleanl1:
 	@$(RM_F_V) LOG_THREAD oaisim
@@ -448,7 +449,6 @@ cleanasn1:
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel10
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1c/ASN1_files/.lock-rel8
-	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall
 
 cleancell:
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/CELLULAR/*.o
