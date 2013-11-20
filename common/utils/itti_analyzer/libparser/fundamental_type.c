@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <inttypes.h>
 
 #include "fundamental_type.h"
@@ -64,7 +63,7 @@ int fundamental_dissect_from_buffer(
         case 8:
             value8 = (uint8_t) value64;
             INDENTED_STRING(cbuf, indent,
-                            length = sprintf(cbuf, type_unsigned ? "(0x%02" PRIx8 ") %3" PRIu8 " '%c';\n" : "(0x%02" PRIx8 ") %4" PRId8 " '%c';\n", value8, value8, isprint(value8) ? value8 : '.'));
+                            length = sprintf(cbuf, type_unsigned ? "(0x%02" PRIx8 ") %3" PRIu8 ";\n" : "(0x%02" PRIx8 ") %4" PRId8 ";\n", value8, value8));
             break;
 
         case 16:

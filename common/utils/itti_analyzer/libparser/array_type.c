@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "array_type.h"
 #include "fundamental_type.h"
@@ -29,6 +30,8 @@ int array_dissect_from_buffer(
         int items = type->size / type_child->size;
         int i;
         int zero_counter = 0;
+        gboolean is_string = FALSE;
+        char *string;
 
         /* Factorizes trailing 0 */
         if ((items > 1) && (type_child->type == TYPE_FUNDAMENTAL))
@@ -44,30 +47,60 @@ int array_dissect_from_buffer(
                     break;
                 }
             }
-            /* Do not factorize if there is only one item */
+
+            /* Check if this is an array of 8 bits items and if at least the firsts ones are not null */
+            if ((type_child->size == 8) && ((items - zero_counter) >= 2))
+            {
+                /* check if this is a printable string */
+                is_string = TRUE;
+                string = calloc(items + 1, 1);
+
+                for (i = 0; i < (items - zero_counter); i++)
+                {
+                    string[i] = fundamental_read_from_buffer(type_child, buffer, parent_offset, offset + i * type_child->size);
+                    if (isprint(string[i]) == 0)
+                    {
+                        /* This is not a printable string */
+                        is_string = FALSE;
+                        break;
+                    }
+                }
+
+                if (is_string)
+                {
+                    INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d .. %d] \"%s\"\n", 0, (items - zero_counter - 1), string));
+                    ui_set_signal_text_cb(user_data, cbuf, length);
+                }
+            }
+
+            /* Do not factorize if there is only one null item */
             if (zero_counter <= 1)
             {
                 zero_counter = 0;
             }
         }
-        for (i = 0; i < (items - zero_counter); i++)
-        {
-            INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d] ", i));
-            ui_set_signal_text_cb(user_data, cbuf, length);
 
-            type->child->type_dissect_from_buffer (
-                type->child, ui_set_signal_text_cb, user_data, buffer, parent_offset,
-                offset + i * type_child->size, indent,
-                FALSE);
-        }
-        if (zero_counter > 0)
+        if (is_string == FALSE)
         {
-            INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d .. %d] ", i, items -1));
-            ui_set_signal_text_cb(user_data, cbuf, length);
+            for (i = 0; i < (items - zero_counter); i++)
+            {
+                INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d] ", i));
+                ui_set_signal_text_cb(user_data, cbuf, length);
 
-            type->child->type_dissect_from_buffer (
-                type->child, ui_set_signal_text_cb, user_data,
-                buffer, parent_offset, offset + i * type_child->size, indent, FALSE);
+                type->child->type_dissect_from_buffer (
+                    type->child, ui_set_signal_text_cb, user_data, buffer, parent_offset,
+                    offset + i * type_child->size, indent,
+                    FALSE);
+            }
+            if (zero_counter > 0)
+            {
+                INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d .. %d] ", i, items -1));
+                ui_set_signal_text_cb(user_data, cbuf, length);
+
+                type->child->type_dissect_from_buffer (
+                    type->child, ui_set_signal_text_cb, user_data,
+                    buffer, parent_offset, offset + i * type_child->size, indent, FALSE);
+            }
         }
     }
     if (type->name) {
