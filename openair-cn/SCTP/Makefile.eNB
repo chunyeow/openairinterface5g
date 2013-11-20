@@ -6,7 +6,7 @@ libsctp_OBJECTS = \
 	sctp_eNB_itti_messaging.o
 
 # pull in dependency info for *existing* .o files
--include .*.d
+-include *.d
 
 CFLAGS = \
 	-Wall			\
