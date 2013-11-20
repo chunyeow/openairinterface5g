@@ -296,9 +296,9 @@ LIBS += $(S1AP_DIR)/libs1ap.a $(SCTP_DIR)/libsctp.a -lsctp -lcrypt
 export S1AP_CFLAGS
 
 $(S1AP_DIR)/libs1ap.a: force_look
-	$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB libs1ap.a
+	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB libs1ap.a
 $(SCTP_DIR)/libsctp.a: force_look
-	$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB libsctp.a
+	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB libsctp.a
 endif
 
 printvars:
@@ -430,7 +430,7 @@ clean:
 	@$(RM_F_V) *.exe*
 	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
 	@if [ -d $(S1AP_DIR) ];then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean; fi
-	@if [ -d $(S1AP_DIR) ];then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean; fi
+	@if [ -d $(SCTP_DIR) ];then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean; fi
 
 cleanl1:
 	@$(RM_F_V) LOG_THREAD oaisim
@@ -477,7 +477,7 @@ print:
 
 showcflags:
 	@echo oaisim cflags: $(CFLAGS)
-	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags
+	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags; fi
 
 force_look:
 	@true
