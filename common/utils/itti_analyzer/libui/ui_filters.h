@@ -20,6 +20,7 @@ typedef struct
     uint32_t id;
     char name[SIGNAL_NAME_LENGTH];
     uint8_t enabled;
+    GtkWidget *menu_item;
 } ui_filter_item_t;
 
 typedef struct
@@ -45,6 +46,8 @@ int ui_init_filters(int reset, int clear_ids);
 
 gboolean ui_filters_enable(gboolean enabled);
 
+int ui_filters_search_id(ui_filter_t *filter, uint32_t value);
+
 void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled);
 
 gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task, const uint32_t instance);
@@ -52,6 +55,8 @@ gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origi
 int ui_filters_read(const char *file_name);
 
 int ui_filters_file_write(const char *file_name);
+
+void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter);
 
 void ui_destroy_filter_menus(void);
 

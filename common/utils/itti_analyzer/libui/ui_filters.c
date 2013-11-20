@@ -73,7 +73,7 @@ gboolean ui_filters_enable(gboolean enabled)
     return changed;
 }
 
-static int ui_search_name(ui_filter_t *filter, const char *name)
+static int ui_filters_search_name(ui_filter_t *filter, const char *name)
 {
     int item;
 
@@ -88,7 +88,7 @@ static int ui_search_name(ui_filter_t *filter, const char *name)
     return (item);
 }
 
-static int ui_search_id(ui_filter_t *filter, uint32_t value)
+int ui_filters_search_id(ui_filter_t *filter, uint32_t value)
 {
     int item;
 
@@ -127,7 +127,7 @@ static void ui_filter_set_enabled(uint8_t *enabled, ui_entry_enabled_e entry_ena
 
 static int ui_filter_add(ui_filter_t *filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled)
 {
-    int item = ui_search_name (filter, name);
+    int item = ui_filters_search_name (filter, name);
 
     if (item >= filter->allocated)
     {
@@ -190,7 +190,7 @@ static gboolean ui_item_enabled(ui_filter_t *filter, const uint32_t value)
 
     if (value != (uint32_t) ~0)
     {
-        item = ui_search_id (filter, value);
+        item = ui_filters_search_id (filter, value);
 
         if (item < filter->used)
         {
@@ -394,7 +394,7 @@ int ui_filters_file_write(const char *file_name)
     return RC_OK;
 }
 
-static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 {
     GtkWidget *menu_items;
     int item;
@@ -463,6 +463,8 @@ static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
         g_debug("ui_create_filter_menu %lx %lx", (long) menu_items, (long) data);
         g_signal_connect(G_OBJECT(menu_items), "activate",
                 G_CALLBACK(ui_callback_on_menu_item_selected), data);
+        /* Save the menu_item reference */
+        filter->items[item].menu_item = menu_items;
 
         /* Show the widget */
         gtk_widget_show(menu_items);

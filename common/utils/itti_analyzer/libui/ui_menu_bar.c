@@ -194,7 +194,7 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     messages_label = gtk_label_new("Messages");
 
-    /* Button to deactivate filtering */
+    /* Button to Enable filtering */
     {
         ui_main_data.filters_enabled = gtk_toggle_tool_button_new();
         gtk_tool_button_set_label (GTK_TOOL_BUTTON(ui_main_data.filters_enabled), "Filters");

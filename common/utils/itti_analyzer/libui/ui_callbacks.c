@@ -59,30 +59,32 @@ gboolean ui_callback_on_filters_enabled(GtkToolButton *button, gpointer data)
 
     g_message("Filters enabled event occurred %d", enabled);
 
-    changed = ui_filters_enable(enabled);
+    changed = ui_filters_enable (enabled);
 
     if (changed)
     {
         /* Set the tool tip text */
         if (enabled)
         {
-            gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(button), "Disable messages filtering");
-        } else
-        {
-            gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(button), "Enable messages filtering");
+            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(button), "Disable messages filtering");
         }
-        ui_tree_view_refilter();
+        else
+        {
+            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(button), "Enable messages filtering");
+        }
+        ui_tree_view_refilter ();
 
         if (ui_main_data.messages_list != NULL)
         {
             GtkTreePath *path_row;
 
             /* Get the currently selected message */
-            gtk_tree_view_get_cursor(GTK_TREE_VIEW(ui_main_data.messages_list), &path_row, NULL);
+            gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.messages_list), &path_row, NULL);
             if (path_row != NULL)
             {
                 /* Center the message in the middle of the list if possible */
-                gtk_tree_view_scroll_to_cell(GTK_TREE_VIEW(ui_main_data.messages_list), path_row, NULL, TRUE, 0.5, 0.0);
+                gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(ui_main_data.messages_list), path_row, NULL, TRUE, 0.5,
+                                              0.0);
             }
         }
     }
@@ -132,24 +134,6 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
     ui_text_view_t *text_view;
     GtkTreeIter iter;
 
-    if (ui_tree_view_last_event)
-    {
-        g_debug("last_event %p %d %d", ui_tree_view_last_event, ui_tree_view_last_event->type, ui_tree_view_last_event->button);
-
-        if (ui_tree_view_last_event->type == GDK_BUTTON_PRESS)
-        {
-            /* Callback is due to a button click */
-            ui_main_data.follow_last = FALSE;
-
-            if (ui_tree_view_last_event->button == 3)
-            {
-                /* It was a right mouse click */
-            }
-        }
-
-        ui_tree_view_last_event = NULL;
-    }
-
     g_debug("Message selected %d %p %p %s", path_currently_selected, buffer_current, path, gtk_tree_path_to_string(path));
 
     if (!path_currently_selected)
@@ -158,7 +142,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
 
         g_assert(text_view != NULL);
 
-        if (gtk_tree_model_get_iter(model, &iter, path))
+        if (gtk_tree_model_get_iter (model, &iter, path))
         {
             GValue buffer_store = G_VALUE_INIT;
             gpointer buffer;
@@ -166,17 +150,57 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
             GValue message_id_store = G_VALUE_INIT;
             guint message_id;
 
-            gtk_tree_model_get_value(model, &iter, COL_BUFFER, &buffer_store);
-            buffer = g_value_get_pointer(&buffer_store);
+            gtk_tree_model_get_value (model, &iter, COL_BUFFER, &buffer_store);
+            buffer = g_value_get_pointer (&buffer_store);
 
             g_debug("  Get iter %p %p", buffer_current, buffer);
+
+            if (ui_tree_view_last_event)
+            {
+                g_debug("last_event %p %d %d", ui_tree_view_last_event, ui_tree_view_last_event->type, ui_tree_view_last_event->button);
+
+                if (ui_tree_view_last_event->type == GDK_BUTTON_PRESS)
+                {
+                    /* Callback is due to a button click */
+                    ui_main_data.follow_last = FALSE;
+
+                    if (ui_tree_view_last_event->button == 3)
+                    {
+                        /* It was a right mouse click */
+                        int item;
+
+                        /* Clear event */
+                        ui_tree_view_last_event = NULL;
+
+                        gtk_tree_model_get (model, &iter, COL_MESSAGE_ID, &message_id, -1);
+                        item = ui_filters_search_id (&ui_filters.messages, message_id);
+
+                        if (ui_main_data.menu_filter_messages == NULL)
+                        {
+                            ui_create_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
+                        }
+
+                        g_debug("Message selected right click %d %d %s", message_id, item, ui_filters.messages.items[item].name);
+                        gtk_check_menu_item_set_active (
+                                GTK_CHECK_MENU_ITEM(ui_filters.messages.items[item].menu_item),
+                                !gtk_check_menu_item_get_active (
+                                        GTK_CHECK_MENU_ITEM(ui_filters.messages.items[item].menu_item)));
+                        g_debug("Message selected right click new state %d", gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(ui_filters.messages.items[item].menu_item)));
+
+                        return FALSE;
+                    }
+                }
+
+                /* Clear event */
+                ui_tree_view_last_event = NULL;
+            }
 
             if (buffer_current != buffer)
             {
                 buffer_current = buffer;
 
-                gtk_tree_model_get_value(model, &iter, COL_MESSAGE_ID, &message_id_store);
-                message_id = g_value_get_uint(&message_id_store);
+                gtk_tree_model_get_value (model, &iter, COL_MESSAGE_ID, &message_id_store);
+                message_id = g_value_get_uint (&message_id_store);
 
                 /* Clear the view */
                 CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
@@ -186,12 +210,12 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                     CHECK_FCT_DO(dissect_signal_header((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
                 }
 
-                if ((strcmp(message_id_to_string(message_id), "ERROR_LOG") == 0)
-                        || (strcmp(message_id_to_string(message_id), "WARNING_LOG") == 0)
-                        || (strcmp(message_id_to_string(message_id), "NOTICE_LOG") == 0)
-                        || (strcmp(message_id_to_string(message_id), "INFO_LOG") == 0)
-                        || (strcmp(message_id_to_string(message_id), "DEBUG_LOG") == 0)
-                        || (strcmp(message_id_to_string(message_id), "GENERIC_LOG") == 0))
+                if ((strcmp (message_id_to_string (message_id), "ERROR_LOG") == 0)
+                        || (strcmp (message_id_to_string (message_id), "WARNING_LOG") == 0)
+                        || (strcmp (message_id_to_string (message_id), "NOTICE_LOG") == 0)
+                        || (strcmp (message_id_to_string (message_id), "INFO_LOG") == 0)
+                        || (strcmp (message_id_to_string (message_id), "DEBUG_LOG") == 0)
+                        || (strcmp (message_id_to_string (message_id), "GENERIC_LOG") == 0))
                 {
                     gchar *data;
                     gint data_size;
@@ -199,18 +223,18 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
 
                     if (ui_main_data.display_message_header)
                     {
-                        ui_signal_set_text(text_view, "\n", 1);
+                        ui_signal_set_text (text_view, "\n", 1);
                     }
 
-                    message_header_type_size = get_message_header_type_size();
-                    data = (gchar *) buffer_at_offset((buffer_t*) buffer, message_header_type_size);
-                    data_size = get_message_size((buffer_t*) buffer);
+                    message_header_type_size = get_message_header_type_size ();
+                    data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
+                    data_size = get_message_size ((buffer_t*) buffer);
 
-                    g_debug("    message header type size: %u, data size: %u %p %d", message_header_type_size, data_size,
-                            buffer, ui_main_data.follow_last);
+                    g_debug("    message header type size: %u, data size: %u %p %d", message_header_type_size, data_size, buffer, ui_main_data.follow_last);
 
-                    ui_signal_set_text(text_view, data, data_size);
-                } else
+                    ui_signal_set_text (text_view, data, data_size);
+                }
+                else
                 {
                     g_debug("    dissect message %d %p %d", message_id, buffer, ui_main_data.follow_last);
 
@@ -241,20 +265,19 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
 
     signal_buffer = (buffer_t *) data;
 
-    lte_frame = get_lte_frame(signal_buffer);
-    lte_slot = get_lte_slot(signal_buffer);
-    sprintf(lte_time, "%d.%02d", lte_frame, lte_slot);
+    lte_frame = get_lte_frame (signal_buffer);
+    lte_slot = get_lte_slot (signal_buffer);
+    sprintf (lte_time, "%d.%02d", lte_frame, lte_slot);
 
     get_message_id (root, signal_buffer, &signal_buffer->message_id);
     origin_task_id = get_task_id (signal_buffer, origin_task_id_type);
     destination_task_id = get_task_id (signal_buffer, destination_task_id_type);
     instance = get_instance (signal_buffer);
 
-    ui_tree_view_new_signal_ind (signal_buffer->message_number, lte_time,
-                                 signal_buffer->message_id, message_id_to_string (signal_buffer->message_id),
-                                 origin_task_id, task_id_to_string (origin_task_id, origin_task_id_type),
-                                 destination_task_id, task_id_to_string (destination_task_id, destination_task_id_type),
-                                 instance, data);
+    ui_tree_view_new_signal_ind (signal_buffer->message_number, lte_time, signal_buffer->message_id,
+                                 message_id_to_string (signal_buffer->message_id), origin_task_id,
+                                 task_id_to_string (origin_task_id, origin_task_id_type), destination_task_id,
+                                 task_id_to_string (destination_task_id, destination_task_id_type), instance, data);
 
     /* Increment number of messages */
     ui_main_data.nb_message_received++;
@@ -262,7 +285,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     if ((ui_main_data.follow_last) && (goto_last))
     {
         /* Advance to the new last signal */
-        ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1);
+        ui_tree_view_select_row (ui_tree_view_get_filtered_number () - 1);
     }
 }
 
@@ -285,7 +308,7 @@ static gboolean ui_handle_update_signal_list(gint fd, void *data, size_t data_le
     /* Free the message */
     free (signal_list_message);
 
-    ui_gtk_flush_events();
+    ui_gtk_flush_events ();
 
     return TRUE;
 }
@@ -393,7 +416,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
     g_message("Connect event occurred to %s:%d", ip, port);
 
-    if (strlen(ip) == 0)
+    if (strlen (ip) == 0)
     {
         ui_notification_dialog (GTK_MESSAGE_WARNING, "Connect", "Empty host ip address");
         return FALSE;
@@ -459,7 +482,7 @@ gboolean ui_callback_signal_go_to_entry(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_signal_go_to_last(GtkWidget *widget, gpointer data)
 {
-    ui_tree_view_select_row (ui_tree_view_get_filtered_number() - 1);
+    ui_tree_view_select_row (ui_tree_view_get_filtered_number () - 1);
     ui_main_data.follow_last = TRUE;
 
     return TRUE;
@@ -490,7 +513,7 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
 
     if (ui_main_data.text_view != NULL)
     {
-        ui_signal_dissect_clear_view(ui_main_data.text_view);
+        ui_signal_dissect_clear_view (ui_main_data.text_view);
     }
 
     return TRUE;
@@ -498,7 +521,7 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
 
 static void ui_callback_on_menu_items_selected(GtkWidget *widget, gpointer data)
 {
-    gboolean active = data !=  NULL;
+    gboolean active = data != NULL;
 
     if (GTK_IS_CHECK_MENU_ITEM(widget))
     {
@@ -512,7 +535,7 @@ gboolean ui_callback_on_menu_none(GtkWidget *widget, gpointer data)
 
     g_message("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
 
-    gtk_container_foreach(GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
+    gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
 
     return TRUE;
 }
@@ -523,7 +546,7 @@ gboolean ui_callback_on_menu_all(GtkWidget *widget, gpointer data)
 
     g_message("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
 
-    gtk_container_foreach(GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
+    gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
 
     return TRUE;
 }
@@ -539,7 +562,7 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
         filter_entry->enabled = enabled;
         ui_tree_view_refilter ();
     }
-    g_message("ui_callback_on_menu_item_selected occurred %p %p %s %d (%d messages to display)", widget, data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
+    g_debug("ui_callback_on_menu_item_selected occurred %p %p %s %d (%d messages to display)", widget, data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
 
     return TRUE;
 }
