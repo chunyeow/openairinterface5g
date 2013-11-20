@@ -325,8 +325,7 @@ void *usrp_thread(void *ptr)
 	}
 
 	send_end();
-	printf("[rcv thread] Received oai_exit signal. Ends. send slot missed: %d\n",send_slot_missed);
-	printf("hw_frm_head_pos = %d\n",hw_frm_head_pos);//test hw_frm_head_pos value
+	printf("[USRP thread] Received oai_exit signal. Ends. send slot missed: %d\n",send_slot_missed);
 	pthread_exit(NULL);
 }
 
@@ -504,7 +503,6 @@ static void *eNB_thread(void *arg)
 #ifdef RTAI
 	rt_task_delete(task);
 #endif
-	rt_printk("Task deleted. returning\n");
 	return 0;
 }
 
@@ -1232,8 +1230,8 @@ int main(int argc, char **argv)
 	printf("TYPE <CTRL-C> TO TERMINATE\n");
 	signal(SIGINT, &sig_int_handler);
 
-	getchar();
-	oai_exit=1;
+	while (oai_exit==0)
+	    sleep(1);
 
 	// cleanup
 	pthread_join(thread_tx_error,&status);
@@ -1254,6 +1252,7 @@ int main(int argc, char **argv)
 	}
 	else {
 #ifdef RTAI
+		printf("Cleanup eNB thread and usrp thread\n");
 		rt_thread_join(thread0);
 		rt_thread_join(thread_recv);
 #else
