@@ -46,7 +46,6 @@ def execute(oai, user, pw, logfile):
     case = '01'
     logs_dir = 'pre-ci-logs';
     oai.send('cd $OPENAIR_TARGETS;')   
-    oai.send('mkdir ' + logs_dir + ';')
  
     try:
         test = '00'
@@ -66,6 +65,7 @@ def execute(oai, user, pw, logfile):
         log.ok(case, test, name, conf, '', logfile)
     
     oai.send('cd SIMU/USER;')   
+    oai.send('mkdir ' + logs_dir + ';')
     
     try:
         test = '01'
