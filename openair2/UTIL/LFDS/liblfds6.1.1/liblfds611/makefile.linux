@@ -1,7 +1,8 @@
 ##### paths #####
-BINDIR  = bin
+OUTDIR  := .
+BINDIR  = $(OUTDIR)/bin
+OBJDIR  = $(OUTDIR)/obj
 INCDIR  = inc
-OBJDIR  = obj
 SRCDIR  = src
 
 ##### misc #####
@@ -10,6 +11,7 @@ QUIETLY = 1>/dev/null 2>/dev/null
 ##### sources, objects and libraries #####
 BINNAME = liblfds611
 AR_BINARY = $(BINDIR)/$(BINNAME).a
+$(info $(AR_BINARY))
 SO_BINARY = $(BINDIR)/$(BINNAME).so
 SRCDIRS = lfds611_abstraction lfds611_freelist lfds611_liblfds lfds611_queue lfds611_ringbuffer lfds611_slist lfds611_stack
 # TRD : be aware - in the linux makefile, with the one-pass linking behaviour of the GNU linker, the order
@@ -76,14 +78,17 @@ vpath %.c $(patsubst %,$(SRCDIR)/%:,$(SRCDIRS))
 
 ##### implicit rules #####
 $(OBJDIR)/%.o : %.c
-	$(DG) $(DGFLAGS) $< >$(OBJDIR)/$*.d
-	$(CC) $(CFLAGS) -o $@ $<
+	@echo "Compiling $<"
+	@$(DG) $(DGFLAGS) $< >$(OBJDIR)/$*.d
+	@$(CC) $(CFLAGS) -o $@ $<
 
 ##### explicit rules #####
 $(AR_BINARY) : $(OBJECTS)
-	$(AR) $(AFLAGS) $(AR_BINARY) $(OBJECTS)
+	@echo "Creating $(AR_BINARY)"
+	@$(AR) $(AFLAGS) $(AR_BINARY) $(OBJECTS)
 
 $(SO_BINARY) : $(OBJECTS)
+	@echo "Creating $(SO_BINARY)"
 	$(LD) $(LFLAGS) $(SYSLIBS) $(OBJECTS) -o $(SO_BINARY)
 
 ##### phony #####

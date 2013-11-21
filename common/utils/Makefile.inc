@@ -10,4 +10,4 @@ UTILS_OBJS = $(ITTI_OBJS)
 
 UTILS_incl = 				\
 	-I$(COMMON_UTILS_DIR) 	\
-    -I$(ITTI_DIR)
+	-I$(ITTI_DIR)
