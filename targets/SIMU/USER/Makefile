@@ -316,11 +316,11 @@ printvars:
 	@echo CFLAGS: $(CFLAGS)
 	@echo Enable PGM: $(ENABLE_PGM)
 
+OAISIM_COMPILED_OBJECTS = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))
+
 -include $(ITTI_MESSAGES_XML:.xml=.d)
--include $(OBJ:.o=.d)
--include $(OAISIM_OBJS:.o=.d)
 -include $(OAISIM_PAD_OBJS:.o=.d)
--include $(ASN1_MSG_OBJS1:.o=.d)
+-include $(OAISIM_COMPILED_OBJECTS:.o=.d)
 
 ifdef ENABLE_ITTI
 gccxml_available = $(shell if [ `gccxml --version | grep GCC-XML -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
@@ -348,8 +348,6 @@ $(OAISIM_OBJS): $(ITTI_MESSAGES_H)
 
 oaisim_pad.o: $(ITTI_MESSAGES_H)
 endif
-
-OAISIM_COMPILED_OBJECTS = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))
 
 $(OAISIM_COMPILED_OBJECTS): | objsdir
 
