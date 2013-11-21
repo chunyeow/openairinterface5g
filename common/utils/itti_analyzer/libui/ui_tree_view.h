@@ -1,6 +1,8 @@
 #ifndef UI_TREE_VIEW_H_
 #define UI_TREE_VIEW_H_
 
+#include "ui_filters.h"
+
 typedef enum col_type_e
 {
     COL_MSG_NUM = 0,
@@ -14,6 +16,7 @@ typedef enum col_type_e
     COL_FROM_TASK_ID,
     COL_TO_TASK_ID,
     COL_FOREGROUND,
+    COL_BACKGROUND,
 
     COL_BUFFER,
     NUM_COLS
@@ -31,7 +34,7 @@ typedef enum ui_tree_view_menu_type_e
 typedef struct ui_tree_view_menu_enable_s
 {
     GtkWidget *menu_enable;
-    GtkWidget *menu_item;
+    ui_filter_item_t *filter_item;
 } ui_tree_view_menu_enable_t;
 
 extern GtkWidget *ui_tree_view_menu;

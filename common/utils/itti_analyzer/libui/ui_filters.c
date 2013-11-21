@@ -14,6 +14,7 @@
 
 const uint32_t FILTER_ALLOC_NUMBER = 100;
 const uint32_t FILTER_ID_UNDEFINED = ~0;
+const char * const COLOR_WHITE = "#ffffff";
 
 ui_filters_t ui_filters;
 
@@ -125,7 +126,8 @@ static void ui_filter_set_enabled(uint8_t *enabled, ui_entry_enabled_e entry_ena
     }
 }
 
-static int ui_filter_add(ui_filter_t *filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled)
+static int ui_filter_add(ui_filter_t *filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled,
+                         const char *background)
 {
     int item = ui_filters_search_name (filter, name);
 
@@ -145,12 +147,17 @@ static int ui_filter_add(ui_filter_t *filter, uint32_t value, const char *name, 
         /* New entry */
         strncpy (filter->items[item].name, name, SIGNAL_NAME_LENGTH);
         ui_filter_set_enabled (&filter->items[item].enabled, entry_enabled, TRUE);
+        strncpy (filter->items[item].background, background != NULL ? background : COLOR_WHITE, BACKGROUND_SIZE);
 
         filter->used++;
     }
     else
     {
         ui_filter_set_enabled (&filter->items[item].enabled, entry_enabled, FALSE);
+        if (background != NULL)
+        {
+            strncpy (filter->items[item].background, background, BACKGROUND_SIZE);
+        }
     }
 
     g_debug("filter \"%s\" add %d \"%s\" %d", filter->name, value, name, entry_enabled);
@@ -158,24 +165,25 @@ static int ui_filter_add(ui_filter_t *filter, uint32_t value, const char *name, 
     return (item);
 }
 
-void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled)
+void ui_filters_add(ui_filter_e filter, uint32_t value, const char *name, ui_entry_enabled_e entry_enabled,
+                    const char *background)
 {
     switch (filter)
     {
         case FILTER_MESSAGES:
-            ui_filter_add (&ui_filters.messages, value, name, entry_enabled);
+            ui_filter_add (&ui_filters.messages, value, name, entry_enabled, background);
             break;
 
         case FILTER_ORIGIN_TASKS:
-            ui_filter_add (&ui_filters.origin_tasks, value, name, entry_enabled);
+            ui_filter_add (&ui_filters.origin_tasks, value, name, entry_enabled, background);
             break;
 
         case FILTER_DESTINATION_TASKS:
-            ui_filter_add (&ui_filters.destination_tasks, value, name, entry_enabled);
+            ui_filter_add (&ui_filters.destination_tasks, value, name, entry_enabled, background);
             break;
 
         case FILTER_INSTANCES:
-            ui_filter_add (&ui_filters.instances, value, name, entry_enabled);
+            ui_filter_add (&ui_filters.instances, value, name, entry_enabled, background);
             break;
 
         default:
@@ -200,13 +208,14 @@ static gboolean ui_item_enabled(ui_filter_t *filter, const uint32_t value)
     return (FALSE);
 }
 
-gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task, const uint32_t instance)
+gboolean ui_filters_message_enabled(const uint32_t message, const uint32_t origin_task, const uint32_t destination_task,
+                                    const uint32_t instance)
 {
     gboolean result;
 
-    result = (ui_item_enabled(&ui_filters.messages, message) && ui_item_enabled(&ui_filters.origin_tasks, origin_task)
-            && ui_item_enabled(&ui_filters.destination_tasks, destination_task)
-            && ui_item_enabled(&ui_filters.instances, instance));
+    result = (ui_item_enabled (&ui_filters.messages, message) && ui_item_enabled (&ui_filters.origin_tasks, origin_task)
+            && ui_item_enabled (&ui_filters.destination_tasks, destination_task)
+            && ui_item_enabled (&ui_filters.instances, instance));
 
     return result;
 }
@@ -264,7 +273,7 @@ static int xml_parse_filters(xmlDocPtr doc)
                 if (filter_node != NULL)
                 {
                     filter = ui_filter_from_name ((const char*) filter_node->name);
-                    g_debug ("Found filter %s %d", filter_node->name, filter);
+                    g_debug("Found filter %s %d", filter_node->name, filter);
 
                     if (filter == FILTER_UNKNOWN)
                     {
@@ -282,13 +291,21 @@ static int xml_parse_filters(xmlDocPtr doc)
 
                             if (cur_node != NULL)
                             {
+                                char *background = NULL;
+
+                                if (cur_node->properties->next != NULL)
+                                {
+                                    background = (char *) cur_node->properties->next->children->content;
+                                }
+
                                 g_debug("  Found entry %s %s", cur_node->name, cur_node->properties->children->content);
                                 ui_filters_add (
                                         filter,
                                         FILTER_ID_UNDEFINED,
                                         (const char*) cur_node->name,
                                         cur_node->properties->children->content[0] == '0' ?
-                                                ENTRY_ENABLED_FALSE : ENTRY_ENABLED_TRUE);
+                                                ENTRY_ENABLED_FALSE : ENTRY_ENABLED_TRUE,
+                                        background);
 
                                 filters_entries++;
                                 cur_node = cur_node->next;
@@ -315,7 +332,8 @@ static int xml_parse_filters(xmlDocPtr doc)
         ret = RC_OK;
     }
 
-    g_message("Parsed XML filters definition found %d entries (%d messages to display)", filters_entries, ui_tree_view_get_filtered_number());
+    g_message(
+            "Parsed XML filters definition found %d entries (%d messages to display)", filters_entries, ui_tree_view_get_filtered_number());
 
     return ret;
 }
@@ -356,8 +374,8 @@ static void write_filter(FILE *filter_file, ui_filter_t *filter)
     fprintf (filter_file, "  <%s>\n", filter->name);
     for (item = 0; item < filter->used; item++)
     {
-        fprintf (filter_file, "    <%s enabled=\"%d\"/>\n", filter->items[item].name,
-                 filter->items[item].enabled ? 1 : 0);
+        fprintf (filter_file, "    <%s enabled=\"%d\" background_color=\"%s\"/>\n", filter->items[item].name,
+                 filter->items[item].enabled ? 1 : 0, filter->items[item].background);
     }
     fprintf (filter_file, "  </%s>\n", filter->name);
 }
@@ -479,7 +497,7 @@ static void ui_destroy_filter_menu_item(GtkWidget *widget, gpointer data)
 {
     if (GTK_IS_MENU_ITEM(widget))
     {
-        gtk_widget_destroy(widget);
+        gtk_widget_destroy (widget);
     }
 }
 
@@ -487,9 +505,9 @@ static void ui_destroy_filter_menu_widget(GtkWidget **menu)
 {
     if (*menu != NULL)
     {
-        gtk_container_foreach(GTK_CONTAINER(*menu), ui_destroy_filter_menu_item, NULL);
+        gtk_container_foreach (GTK_CONTAINER(*menu), ui_destroy_filter_menu_item, NULL);
 
-        gtk_widget_destroy(*menu);
+        gtk_widget_destroy (*menu);
         *menu = NULL;
     }
 }

@@ -187,7 +187,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                         /* Message Id menu */
                         {
                             /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
-                            ui_tree_view_menu_enable[MENU_MESSAGE].menu_item = NULL;
+                            ui_tree_view_menu_enable[MENU_MESSAGE].filter_item = NULL;
                             item = ui_filters_search_id (&ui_filters.messages, message_id);
                             /* Update the menu item check state based on message ID state */
                             gtk_check_menu_item_set_active (
@@ -198,14 +198,13 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                             gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_MESSAGE].menu_enable),
                                                      label);
                             /* Save menu item associated to this row */
-                            ui_tree_view_menu_enable[MENU_MESSAGE].menu_item =
-                                    ui_filters.messages.items[item].menu_item;
+                            ui_tree_view_menu_enable[MENU_MESSAGE].filter_item = &ui_filters.messages.items[item];
                         }
 
                         /* Origin task id */
                         {
                             /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
-                            ui_tree_view_menu_enable[MENU_FROM_TASK].menu_item = NULL;
+                            ui_tree_view_menu_enable[MENU_FROM_TASK].filter_item = NULL;
                             item = ui_filters_search_id (&ui_filters.origin_tasks, origin_task_id);
                             /* Update the menu item check state based on message ID state */
                             gtk_check_menu_item_set_active (
@@ -216,14 +215,13 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                             gtk_menu_item_set_label (
                                     GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_FROM_TASK].menu_enable), label);
                             /* Save menu item associated to this row */
-                            ui_tree_view_menu_enable[MENU_FROM_TASK].menu_item =
-                                    ui_filters.origin_tasks.items[item].menu_item;
+                            ui_tree_view_menu_enable[MENU_FROM_TASK].filter_item = &ui_filters.origin_tasks.items[item];
                         }
 
                         /* Destination task id */
                         {
                             /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
-                            ui_tree_view_menu_enable[MENU_TO_TASK].menu_item = NULL;
+                            ui_tree_view_menu_enable[MENU_TO_TASK].filter_item = NULL;
                             item = ui_filters_search_id (&ui_filters.destination_tasks, destination_task_id);
                             /* Update the menu item check state based on message ID state */
                             gtk_check_menu_item_set_active (
@@ -235,14 +233,14 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                             gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_TO_TASK].menu_enable),
                                                      label);
                             /* Save menu item associated to this row */
-                            ui_tree_view_menu_enable[MENU_TO_TASK].menu_item =
-                                    ui_filters.destination_tasks.items[item].menu_item;
+                            ui_tree_view_menu_enable[MENU_TO_TASK].filter_item =
+                                    &ui_filters.destination_tasks.items[item];
                         }
 
                         /* Instance */
                         {
                             /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
-                            ui_tree_view_menu_enable[MENU_INSTANCE].menu_item = NULL;
+                            ui_tree_view_menu_enable[MENU_INSTANCE].filter_item = NULL;
                             item = ui_filters_search_id (&ui_filters.instances, instance);
                             /* Update the menu item check state based on message ID state */
                             gtk_check_menu_item_set_active (
@@ -253,8 +251,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                             gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_INSTANCE].menu_enable),
                                                      label);
                             /* Save menu item associated to this row */
-                            ui_tree_view_menu_enable[MENU_INSTANCE].menu_item =
-                                    ui_filters.instances.items[item].menu_item;
+                            ui_tree_view_menu_enable[MENU_INSTANCE].filter_item = &ui_filters.instances.items[item];
                         }
 
                         gtk_menu_popup (GTK_MENU (ui_tree_view_menu), NULL, NULL, NULL, NULL, 0,
@@ -319,11 +316,11 @@ gboolean ui_callback_on_menu_enable(GtkWidget *widget, gpointer data)
 {
     ui_tree_view_menu_enable_t *menu_enable = data;
 
-    if (menu_enable->menu_item != NULL)
+    if (menu_enable->filter_item != NULL)
     {
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_enable->menu_item),
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_enable->filter_item->menu_item),
                                         gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(menu_enable->menu_enable)));
-        menu_enable->menu_item = NULL;
+        menu_enable->filter_item = NULL;
     }
 
     return TRUE;
@@ -331,19 +328,29 @@ gboolean ui_callback_on_menu_enable(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_on_menu_color(GtkWidget *widget, gpointer data)
 {
+    ui_tree_view_menu_enable_t *menu_enable = data;
+
     GdkRGBA color;
     GtkWidget *color_chooser;
     gint response;
 
-    color_chooser = gtk_color_chooser_dialog_new ("Select color", GTK_WINDOW(ui_main_data.window));
+    color_chooser = gtk_color_chooser_dialog_new ("Select message background color", GTK_WINDOW(ui_main_data.window));
     gtk_color_chooser_set_use_alpha (GTK_COLOR_CHOOSER(color_chooser), FALSE);
     response = gtk_dialog_run (GTK_DIALOG (color_chooser));
 
     if (response == GTK_RESPONSE_OK)
     {
+        int red, green, blue;
+
         gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER(color_chooser), &color);
 
-        g_message("Selected color %f %f %f", color.red, color.green, color.blue);
+        red = (int) (color.red * 255);
+        green = (int) (color.green * 255);
+        blue = (int) (color.blue * 255);
+        g_debug("Selected color for %s %f->%02x %f->%02x %f->%02x", menu_enable->filter_item->name, color.red, red, color.green, green, color.blue, blue);
+
+        snprintf (menu_enable->filter_item->background, BACKGROUND_SIZE, "#%02x%02x%02x", red, green, blue);
+        ui_tree_view_refilter ();
     }
     gtk_widget_destroy (color_chooser);
 

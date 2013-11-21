@@ -26,7 +26,7 @@ typedef struct
 static ui_store_t ui_store;
 
 static GValue colors[] =
-    { G_VALUE_INIT, G_VALUE_INIT };
+    {G_VALUE_INIT, G_VALUE_INIT};
 
 GtkWidget *ui_tree_view_menu;
 ui_tree_view_menu_enable_t ui_tree_view_menu_enable[NUM_MENU_TYPE];
@@ -49,7 +49,7 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
                             &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance, -1);
         if (msg_number != 0)
         {
-            enabled = ui_filters_message_enabled(message_id, origin_task_id, destination_task_id, instance);
+            enabled = ui_filters_message_enabled (message_id, origin_task_id, destination_task_id, instance);
 
             if ((enabled) && (store->filtered_last_msg < msg_number))
             {
@@ -94,7 +94,8 @@ static void ui_tree_view_init_list(GtkWidget *list)
     gtk_cell_renderer_set_alignment (renderer_right, 1, 0.5);
     gtk_cell_renderer_set_padding (renderer_right, 5, 0);
 
-    column = gtk_tree_view_column_new_with_attributes ("MN", renderer_right, "text", COL_MSG_NUM, "foreground", COL_FOREGROUND, NULL);
+    column = gtk_tree_view_column_new_with_attributes ("MN", renderer_right, "text", COL_MSG_NUM, "foreground",
+                                                       COL_FOREGROUND, "background", COL_BACKGROUND, NULL);
     gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
@@ -104,7 +105,8 @@ static void ui_tree_view_init_list(GtkWidget *list)
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
 
-    column = gtk_tree_view_column_new_with_attributes ("Message", renderer_left, "text", COL_MESSAGE, "foreground", COL_FOREGROUND, NULL);
+    column = gtk_tree_view_column_new_with_attributes ("Message", renderer_left, "text", COL_MESSAGE, "foreground",
+                                                       COL_FOREGROUND, "background", COL_BACKGROUND, NULL);
     gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
@@ -145,6 +147,7 @@ static void ui_tree_view_init_list(GtkWidget *list)
             G_TYPE_UINT, // COL_FROM_TASK_ID
             G_TYPE_UINT, // COL_TO_TASK_ID
             G_TYPE_STRING, // COL_FOREGROUND
+            G_TYPE_STRING, // COL_BACKGROUND
             // Reference to the buffer here to avoid maintaining multiple lists.
             G_TYPE_POINTER);
 
@@ -170,23 +173,19 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *lte_time, con
     GtkTreeIter iter;
     gboolean enabled;
 
-    enabled = ui_filters_message_enabled(message_id, origin_task_id, destination_task_id, instance);
+    enabled = ui_filters_message_enabled (message_id, origin_task_id, destination_task_id, instance);
 
     gtk_list_store_append (ui_store.store, &iter);
     gtk_list_store_set (ui_store.store, &iter,
-                       /* Columns */
-                       COL_MSG_NUM      , message_number,
-                       COL_LTE_TIME     , lte_time,
-                       COL_MESSAGE      , signal_name,
-                       COL_FROM_TASK    , origin_task,
-                       COL_TO_TASK      , destination_task,
-                       COL_INSTANCE     , instance,
-                       COL_MESSAGE_ID   , message_id,
-                       COL_FROM_TASK_ID , origin_task_id,
-                       COL_TO_TASK_ID   , destination_task_id,
-                       COL_BUFFER       , buffer,
-                       /* End of columns */
-                       -1);
+    /* Columns */
+    COL_MSG_NUM,
+                        message_number, COL_LTE_TIME, lte_time, COL_MESSAGE, signal_name, COL_FROM_TASK, origin_task,
+                        COL_TO_TASK, destination_task, COL_INSTANCE, instance, COL_MESSAGE_ID, message_id,
+                        COL_FROM_TASK_ID, origin_task_id, COL_TO_TASK_ID, destination_task_id, COL_BUFFER, buffer,
+                        COL_BACKGROUND,
+                        ui_filters.messages.items[ui_filters_search_id (&ui_filters.messages, message_id)].background,
+                        /* End of columns */
+                        -1);
     gtk_list_store_set_value (ui_store.store, &iter, COL_FOREGROUND, &colors[enabled ? 1 : 0]);
 }
 
@@ -246,81 +245,80 @@ static void ui_tree_view_create_menu(GtkWidget **menu)
 {
     GtkWidget *menu_items;
 
-    *menu = gtk_menu_new();
+    *menu = gtk_menu_new ();
 
     /* Create the "Message enable" menu-item */
     {
         /* Create a new menu-item */
-        menu_items = gtk_check_menu_item_new();
+        menu_items = gtk_check_menu_item_new ();
         ui_tree_view_menu_enable[MENU_MESSAGE].menu_enable = menu_items;
 
         /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_enable), &ui_tree_view_menu_enable[MENU_MESSAGE]);
+        gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_enable),
+                         &ui_tree_view_menu_enable[MENU_MESSAGE]);
 
         /* Show the widget */
-        gtk_widget_show(menu_items);
+        gtk_widget_show (menu_items);
     }
 
     /* Create the "Destination task enable" menu-item */
     {
         /* Create a new menu-item */
-        menu_items = gtk_check_menu_item_new();
+        menu_items = gtk_check_menu_item_new ();
         ui_tree_view_menu_enable[MENU_FROM_TASK].menu_enable = menu_items;
 
         /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_enable), &ui_tree_view_menu_enable[MENU_FROM_TASK]);
+        gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_enable),
+                         &ui_tree_view_menu_enable[MENU_FROM_TASK]);
 
         /* Show the widget */
-        gtk_widget_show(menu_items);
+        gtk_widget_show (menu_items);
     }
 
     /* Create the "Origin task enable" menu-item */
     {
         /* Create a new menu-item */
-        menu_items = gtk_check_menu_item_new();
+        menu_items = gtk_check_menu_item_new ();
         ui_tree_view_menu_enable[MENU_TO_TASK].menu_enable = menu_items;
 
         /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_enable), &ui_tree_view_menu_enable[MENU_TO_TASK]);
+        gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_enable),
+                         &ui_tree_view_menu_enable[MENU_TO_TASK]);
 
         /* Show the widget */
-        gtk_widget_show(menu_items);
+        gtk_widget_show (menu_items);
     }
 
     /* Create the "Instance enable" menu-item */
     {
         /* Create a new menu-item */
-        menu_items = gtk_check_menu_item_new();
+        menu_items = gtk_check_menu_item_new ();
         ui_tree_view_menu_enable[MENU_INSTANCE].menu_enable = menu_items;
 
         /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_enable), &ui_tree_view_menu_enable[MENU_INSTANCE]);
+        gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_enable),
+                         &ui_tree_view_menu_enable[MENU_INSTANCE]);
 
         /* Show the widget */
-        gtk_widget_show(menu_items);
+        gtk_widget_show (menu_items);
     }
 
     /* Create the "Color" menu-item */
-    if (0)
     {
         /* Create a new menu-item with a name */
-        menu_items = gtk_menu_item_new_with_label("Select color");
+        menu_items = gtk_menu_item_new_with_label ("Select message background color");
 
         /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_color), *menu);
+        gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+        g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_color),
+                         &ui_tree_view_menu_enable[MENU_MESSAGE]);
 
         /* Show the widget */
-        gtk_widget_show(menu_items);
+        gtk_widget_show (menu_items);
     }
 }
 
@@ -392,7 +390,7 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_
         for (i = ui_store.instance_number; i <= instance; i++)
         {
             sprintf (name, "%d", i);
-            ui_filters_add (FILTER_INSTANCES, i, name, ENTRY_ENABLED_TRUE);
+            ui_filters_add (FILTER_INSTANCES, i, name, ENTRY_ENABLED_TRUE, NULL);
         }
         ui_store.instance_number = (instance + 1);
         ui_destroy_filter_menu (FILTER_INSTANCES);
@@ -425,7 +423,7 @@ void ui_tree_view_select_row(gint row)
     }
 }
 
-static gboolean updateForegroundColor (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+static gboolean updateColors(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
 {
     uint32_t message_id;
     uint32_t origin_task_id;
@@ -434,11 +432,14 @@ static gboolean updateForegroundColor (GtkTreeModel *model, GtkTreePath *path, G
 
     gboolean enabled = FALSE;
 
-    gtk_tree_model_get (model, iter, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID,
-                        &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance, -1);
-    enabled = ui_filters_message_enabled(message_id, origin_task_id, destination_task_id, instance);
+    gtk_tree_model_get (model, iter, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID,
+                        &destination_task_id, COL_INSTANCE, &instance, -1);
+    enabled = ui_filters_message_enabled (message_id, origin_task_id, destination_task_id, instance);
 
-    gtk_list_store_set_value (GTK_LIST_STORE(model), iter, COL_FOREGROUND, &colors[enabled ? 1 : 0]);
+    gtk_list_store_set (GTK_LIST_STORE(model), iter, COL_FOREGROUND, g_value_get_string (&colors[enabled ? 1 : 0]),
+                        COL_BACKGROUND,
+                        ui_filters.messages.items[ui_filters_search_id (&ui_filters.messages, message_id)].background,
+                        -1);
 
     return FALSE;
 }
@@ -451,7 +452,7 @@ void ui_tree_view_refilter()
     /* Update foreground color of messages, this will also update filtered model */
     if (ui_store.store != NULL)
     {
-        gtk_tree_model_foreach (GTK_TREE_MODEL(ui_store.store), updateForegroundColor, NULL);
+        gtk_tree_model_foreach (GTK_TREE_MODEL(ui_store.store), updateColors, NULL);
     }
 
     g_debug("ui_tree_view_refilter: last message %d, %d messages displayed", ui_store.filtered_last_msg, ui_store.filtered_msg_number);
