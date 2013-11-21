@@ -1,7 +1,7 @@
 #ifndef UI_TREE_VIEW_H_
 #define UI_TREE_VIEW_H_
 
-typedef enum
+typedef enum col_type_e
 {
     COL_MSG_NUM = 0,
     COL_LTE_TIME,
@@ -17,7 +17,25 @@ typedef enum
 
     COL_BUFFER,
     NUM_COLS
-} col_type_e;
+} col_type_t;
+
+typedef enum ui_tree_view_menu_type_e
+{
+    MENU_MESSAGE = 0,
+    MENU_FROM_TASK,
+    MENU_TO_TASK,
+    MENU_INSTANCE,
+    NUM_MENU_TYPE,
+} ui_tree_view_menu_type_t;
+
+typedef struct ui_tree_view_menu_enable_s
+{
+    GtkWidget *menu_enable;
+    GtkWidget *menu_item;
+} ui_tree_view_menu_enable_t;
+
+extern GtkWidget *ui_tree_view_menu;
+extern ui_tree_view_menu_enable_t ui_tree_view_menu_enable[NUM_MENU_TYPE];
 
 extern GdkEventButton *ui_tree_view_last_event;
 

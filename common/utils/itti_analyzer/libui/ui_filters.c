@@ -392,81 +392,87 @@ int ui_filters_file_write(const char *file_name)
     return RC_OK;
 }
 
-void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
+static void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 {
-    GtkWidget *menu_items;
-    int item;
-    gpointer data;
-
-    *menu = gtk_menu_new();
-
-    /* Create the "NONE" menu-item */
+    if (*menu == NULL)
     {
-        /* Create a new menu-item with a name */
-        menu_items = gtk_menu_item_new_with_label("NONE");
+        GtkWidget *menu_items;
+        int item;
+        gpointer data;
 
-        /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
+        *menu = gtk_menu_new ();
 
-        g_debug("ui_create_filter_menu %lx", (long) menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_none), *menu);
+        /* Create the "NONE" menu-item */
+        {
+            /* Create a new menu-item with a name */
+            menu_items = gtk_menu_item_new_with_label ("NONE");
 
-        /* Show the widget */
-        gtk_widget_show(menu_items);
+            /* Add it to the menu. */
+            gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+
+            g_debug("ui_create_filter_menu %lx", (long) menu_items);
+            g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_none), *menu);
+
+            /* Show the widget */
+            gtk_widget_show (menu_items);
+        }
+
+        /* Create the "ALL" menu-item */
+        {
+            /* Create a new menu-item with a name */
+            menu_items = gtk_menu_item_new_with_label ("ALL");
+
+            /* Add it to the menu. */
+            gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+
+            g_debug("ui_create_filter_menu %lx", (long) menu_items);
+            g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_all), *menu);
+
+            /* Show the widget */
+            gtk_widget_show (menu_items);
+        }
+
+        /* Create separator */
+        {
+            menu_items = gtk_menu_item_new ();
+
+            /* Add it to the menu. */
+            gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+
+            /* Show the widget */
+            gtk_widget_show (menu_items);
+        }
+
+        /* Creates menu-items */
+        for (item = 0; item < filter->used; item++)
+        {
+            /* Create a new menu-item with a name */
+            menu_items = gtk_check_menu_item_new_with_label (filter->items[item].name);
+
+            /* Add it to the menu. */
+            gtk_menu_shell_append (GTK_MENU_SHELL(*menu), menu_items);
+
+            gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_items), filter->items[item].enabled);
+
+            /* Connect function to be called when the menu item is selected */
+            data = &filter->items[item];
+            g_debug("ui_create_filter_menu %lx %lx", (long) menu_items, (long) data);
+            g_signal_connect(G_OBJECT(menu_items), "activate", G_CALLBACK(ui_callback_on_menu_item_selected), data);
+            /* Save the menu_item reference */
+            filter->items[item].menu_item = menu_items;
+
+            /* Show the widget */
+            gtk_widget_show (menu_items);
+        }
     }
+}
 
-    /* Create the "ALL" menu-item */
-    {
-        /* Create a new menu-item with a name */
-        menu_items = gtk_menu_item_new_with_label("ALL");
-
-        /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-
-        g_debug("ui_create_filter_menu %lx", (long) menu_items);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_all), *menu);
-
-        /* Show the widget */
-        gtk_widget_show(menu_items);
-    }
-
-    /* Create separator */
-    {
-        menu_items = gtk_menu_item_new();
-
-        /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-
-        /* Show the widget */
-        gtk_widget_show(menu_items);
-    }
-
-    /* Creates menu-items */
-    for (item = 0; item < filter->used; item++)
-    {
-        /* Create a new menu-item with a name */
-        menu_items = gtk_check_menu_item_new_with_label(
-                filter->items[item].name);
-
-        /* Add it to the menu. */
-        gtk_menu_shell_append(GTK_MENU_SHELL(*menu), menu_items);
-
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_items),
-                filter->items[item].enabled);
-
-        /* Connect function to be called when the menu item is selected */
-        data = &filter->items[item];
-        g_debug("ui_create_filter_menu %lx %lx", (long) menu_items, (long) data);
-        g_signal_connect(G_OBJECT(menu_items), "activate",
-                G_CALLBACK(ui_callback_on_menu_item_selected), data);
-        /* Save the menu_item reference */
-        filter->items[item].menu_item = menu_items;
-
-        /* Show the widget */
-        gtk_widget_show(menu_items);
-    }
+void ui_create_filter_menus(void)
+{
+    ui_create_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
+    ui_create_filter_menu (&ui_main_data.menu_filter_origin_tasks, &ui_filters.origin_tasks);
+    ui_create_filter_menu (&ui_main_data.menu_filter_destination_tasks, &ui_filters.destination_tasks);
+    ui_create_filter_menu (&ui_main_data.menu_filter_instances, &ui_filters.instances);
 }
 
 static void ui_destroy_filter_menu_item(GtkWidget *widget, gpointer data)
@@ -524,10 +530,7 @@ void ui_destroy_filter_menu(ui_filter_e filter)
 
 void ui_show_filter_menu(GtkWidget **menu, ui_filter_t *filter)
 {
-    if (*menu == NULL)
-    {
-        ui_create_filter_menu (menu, filter);
-    }
+    ui_create_filter_menu (menu, filter);
 
     gtk_menu_popup (GTK_MENU (*menu), NULL, NULL, NULL, NULL, 0, gtk_get_current_event_time ());
 }

@@ -37,12 +37,15 @@ gboolean ui_callback_on_tree_view_select(GtkWidget *widget,
                                          GdkEvent  *event,
                                          gpointer   data);
 
-gboolean
-ui_callback_on_select_signal(GtkTreeSelection *selection,
-                             GtkTreeModel     *model,
-                             GtkTreePath      *path,
-                             gboolean          path_currently_selected,
-                             gpointer          userdata);
+gboolean ui_callback_on_select_signal(GtkTreeSelection *selection,
+                                      GtkTreeModel     *model,
+                                      GtkTreePath      *path,
+                                      gboolean          path_currently_selected,
+                                      gpointer          userdata);
+
+gboolean ui_callback_on_menu_enable (GtkWidget *widget, gpointer data);
+
+gboolean ui_callback_on_menu_color (GtkWidget *widget, gpointer data);
 
 gboolean ui_callback_signal_go_to_first(GtkWidget *widget,
                                         gpointer   data);

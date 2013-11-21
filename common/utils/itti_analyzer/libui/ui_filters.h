@@ -56,7 +56,7 @@ int ui_filters_read(const char *file_name);
 
 int ui_filters_file_write(const char *file_name);
 
-void ui_create_filter_menu(GtkWidget **menu, ui_filter_t *filter);
+void ui_create_filter_menus(void);
 
 void ui_destroy_filter_menus(void);
 

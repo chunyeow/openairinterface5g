@@ -147,14 +147,16 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
 
         if (gtk_tree_model_get_iter (model, &iter, path))
         {
-            GValue buffer_store = G_VALUE_INIT;
             gpointer buffer;
 
-            GValue message_id_store = G_VALUE_INIT;
-            guint message_id;
+            uint32_t message_id;
+            uint32_t origin_task_id;
+            uint32_t destination_task_id;
+            uint32_t instance;
+            char label[100];
 
-            gtk_tree_model_get_value (model, &iter, COL_BUFFER, &buffer_store);
-            buffer = g_value_get_pointer (&buffer_store);
+            gtk_tree_model_get (model, &iter, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID, &origin_task_id,
+                                COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance, COL_BUFFER, &buffer, -1);
 
             g_debug("  Get iter %p %p", buffer_current, buffer);
 
@@ -175,22 +177,88 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                         /* Clear event */
                         ui_tree_view_last_event = NULL;
 
-                        gtk_tree_model_get (model, &iter, COL_MESSAGE_ID, &message_id, -1);
-                        item = ui_filters_search_id (&ui_filters.messages, message_id);
-
                         if (ui_main_data.menu_filter_messages == NULL)
                         {
-                            ui_create_filter_menu (&ui_main_data.menu_filter_messages, &ui_filters.messages);
+                            ui_create_filter_menus ();
                         }
 
-                        g_debug("Message selected right click %d %d %s", message_id, item, ui_filters.messages.items[item].name);
-                        gtk_check_menu_item_set_active (
-                                GTK_CHECK_MENU_ITEM(ui_filters.messages.items[item].menu_item),
-                                !gtk_check_menu_item_get_active (
-                                        GTK_CHECK_MENU_ITEM(ui_filters.messages.items[item].menu_item)));
-                        g_debug("Message selected right click new state %d", gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(ui_filters.messages.items[item].menu_item)));
+                        g_debug("Message selected right click %d %d %d %d", message_id, origin_task_id, destination_task_id, instance);
 
-                        return FALSE;
+                        /* Message Id menu */
+                        {
+                            /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
+                            ui_tree_view_menu_enable[MENU_MESSAGE].menu_item = NULL;
+                            item = ui_filters_search_id (&ui_filters.messages, message_id);
+                            /* Update the menu item check state based on message ID state */
+                            gtk_check_menu_item_set_active (
+                                    GTK_CHECK_MENU_ITEM(ui_tree_view_menu_enable[MENU_MESSAGE].menu_enable),
+                                    ui_filters.messages.items[item].enabled);
+                            /* Set menu item label */
+                            sprintf (label, "Message:  %s", message_id_to_string (message_id));
+                            gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_MESSAGE].menu_enable),
+                                                     label);
+                            /* Save menu item associated to this row */
+                            ui_tree_view_menu_enable[MENU_MESSAGE].menu_item =
+                                    ui_filters.messages.items[item].menu_item;
+                        }
+
+                        /* Origin task id */
+                        {
+                            /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
+                            ui_tree_view_menu_enable[MENU_FROM_TASK].menu_item = NULL;
+                            item = ui_filters_search_id (&ui_filters.origin_tasks, origin_task_id);
+                            /* Update the menu item check state based on message ID state */
+                            gtk_check_menu_item_set_active (
+                                    GTK_CHECK_MENU_ITEM(ui_tree_view_menu_enable[MENU_FROM_TASK].menu_enable),
+                                    ui_filters.origin_tasks.items[item].enabled);
+                            /* Set menu item label */
+                            sprintf (label, "From:  %s", task_id_to_string (origin_task_id, origin_task_id_type));
+                            gtk_menu_item_set_label (
+                                    GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_FROM_TASK].menu_enable), label);
+                            /* Save menu item associated to this row */
+                            ui_tree_view_menu_enable[MENU_FROM_TASK].menu_item =
+                                    ui_filters.origin_tasks.items[item].menu_item;
+                        }
+
+                        /* Destination task id */
+                        {
+                            /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
+                            ui_tree_view_menu_enable[MENU_TO_TASK].menu_item = NULL;
+                            item = ui_filters_search_id (&ui_filters.destination_tasks, destination_task_id);
+                            /* Update the menu item check state based on message ID state */
+                            gtk_check_menu_item_set_active (
+                                    GTK_CHECK_MENU_ITEM(ui_tree_view_menu_enable[MENU_TO_TASK].menu_enable),
+                                    ui_filters.destination_tasks.items[item].enabled);
+                            /* Set menu item label */
+                            sprintf (label, "To:  %s",
+                                     task_id_to_string (destination_task_id, destination_task_id_type));
+                            gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_TO_TASK].menu_enable),
+                                                     label);
+                            /* Save menu item associated to this row */
+                            ui_tree_view_menu_enable[MENU_TO_TASK].menu_item =
+                                    ui_filters.destination_tasks.items[item].menu_item;
+                        }
+
+                        /* Instance */
+                        {
+                            /* Invalidate associated menu item to avoid issue with call back when updating the menu item check state */
+                            ui_tree_view_menu_enable[MENU_INSTANCE].menu_item = NULL;
+                            item = ui_filters_search_id (&ui_filters.instances, instance);
+                            /* Update the menu item check state based on message ID state */
+                            gtk_check_menu_item_set_active (
+                                    GTK_CHECK_MENU_ITEM(ui_tree_view_menu_enable[MENU_INSTANCE].menu_enable),
+                                    ui_filters.instances.items[item].enabled);
+                            /* Set menu item label */
+                            sprintf (label, "Instance:  %d", instance);
+                            gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_INSTANCE].menu_enable),
+                                                     label);
+                            /* Save menu item associated to this row */
+                            ui_tree_view_menu_enable[MENU_INSTANCE].menu_item =
+                                    ui_filters.instances.items[item].menu_item;
+                        }
+
+                        gtk_menu_popup (GTK_MENU (ui_tree_view_menu), NULL, NULL, NULL, NULL, 0,
+                                        gtk_get_current_event_time ());
                     }
                 }
 
@@ -201,9 +269,6 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
             if (buffer_current != buffer)
             {
                 buffer_current = buffer;
-
-                gtk_tree_model_get_value (model, &iter, COL_MESSAGE_ID, &message_id_store);
-                message_id = g_value_get_uint (&message_id_store);
 
                 /* Clear the view */
                 CHECK_FCT_DO(ui_signal_dissect_clear_view(text_view), return FALSE);
@@ -247,6 +312,41 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
             }
         }
     }
+    return TRUE;
+}
+
+gboolean ui_callback_on_menu_enable(GtkWidget *widget, gpointer data)
+{
+    ui_tree_view_menu_enable_t *menu_enable = data;
+
+    if (menu_enable->menu_item != NULL)
+    {
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(menu_enable->menu_item),
+                                        gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM(menu_enable->menu_enable)));
+        menu_enable->menu_item = NULL;
+    }
+
+    return TRUE;
+}
+
+gboolean ui_callback_on_menu_color(GtkWidget *widget, gpointer data)
+{
+    GdkRGBA color;
+    GtkWidget *color_chooser;
+    gint response;
+
+    color_chooser = gtk_color_chooser_dialog_new ("Select color", GTK_WINDOW(ui_main_data.window));
+    gtk_color_chooser_set_use_alpha (GTK_COLOR_CHOOSER(color_chooser), FALSE);
+    response = gtk_dialog_run (GTK_DIALOG (color_chooser));
+
+    if (response == GTK_RESPONSE_OK)
+    {
+        gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER(color_chooser), &color);
+
+        g_message("Selected color %f %f %f", color.red, color.green, color.blue);
+    }
+    gtk_widget_destroy (color_chooser);
+
     return TRUE;
 }
 
@@ -542,9 +642,9 @@ gboolean ui_callback_on_menu_none(GtkWidget *widget, gpointer data)
     gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
     refresh_message_list = TRUE;
 
-    if (filters_changed);
+    if (filters_changed)
     {
-        ui_tree_view_refilter();
+        ui_tree_view_refilter ();
         filters_changed = FALSE;
     }
 
@@ -561,9 +661,9 @@ gboolean ui_callback_on_menu_all(GtkWidget *widget, gpointer data)
     gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
     refresh_message_list = TRUE;
 
-    if (filters_changed);
+    if (filters_changed)
     {
-        ui_tree_view_refilter();
+        ui_tree_view_refilter ();
         filters_changed = FALSE;
     }
 
@@ -581,7 +681,7 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
         filter_entry->enabled = enabled;
         if (refresh_message_list)
         {
-            ui_tree_view_refilter();
+            ui_tree_view_refilter ();
         }
         else
         {
@@ -595,7 +695,7 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer data)
 {
-    col_type_e col = (col_type_e) data;
+    col_type_t col = (col_type_t) data;
 
     g_debug("ui_callback_on_tree_column_header_click %d", col);
     switch (col)
