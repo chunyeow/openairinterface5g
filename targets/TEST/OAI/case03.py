@@ -47,20 +47,25 @@ NUM_TRIALS=3
 def execute(oai, user, pw, logfile):
     
     case = '03'
+    logs_dir = 'pre-ci-logs';
     oai.send('cd $OPENAIR_TARGETS;')
     oai.send('cd SIMU/USER;')
+    oai.send('mkdir ' + logs_dir + ';')
     
     try:
         test = '00'
         name = 'Run oai.rel10.sf'
         conf = '-a -A AWGN -n 100'
         diag = 'OAI is not running normally (Segmentation fault / Exiting / FATAL), debugging might be needed'
-        oai.send_expect_false('./oaisim.rel10 ' + conf, 'Segmentation fault', 30)
-        oai.send_expect_false('./oaisim.rel10 ' + conf, 'Exiting', 30)
-        oai.send_expect_false('./oaisim.rel10 ' + conf, 'FATAL', 30)
+        tee = ' | tee ' + logs_dir + '/log_' + case + test + '_1.txt'
+        oai.send_expect_false('./oaisim.rel10 ' + conf + tee, 'Segmentation fault', 30)
+        tee = ' | tee ' + logs_dir + '/log_' + case + test + '_2.txt'
+        oai.send_expect_false('./oaisim.rel10 ' + conf + tee, 'Exiting', 30)
+        tee = ' | tee ' + logs_dir + '/log_' + case + test + '_3.txt'
+        oai.send_expect_false('./oaisim.rel10 ' + conf + tee, 'FATAL', 30)
 
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, di69ag, logfile)
     else:
         log.ok(case, test, name, conf, '', logfile)
 
@@ -68,8 +73,9 @@ def execute(oai, user, pw, logfile):
         test = '01'
         name = 'Run oai.rel10.err'
         conf = '-a -A AWGN -n 100'
+        tee = ' | tee ' + logs_dir + '/log_' + case + test + '.txt'
         diag = 'Error(s) found in the execution, check the execution logs'
-        oai.send_expect_false('./oaisim.rel10 ' + conf, '[E]', 30)
+        oai.send_expect_false('./oaisim.rel10 ' + conf + tee, '[E]', 30)
         
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
@@ -83,7 +89,8 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
@@ -95,8 +102,9 @@ def execute(oai, user, pw, logfile):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s 15 -x 1 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
+                conf = '-A AWGN -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
@@ -108,8 +116,9 @@ def execute(oai, user, pw, logfile):
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -F -s 15 -x 1 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
+                conf = '-A AWGN -F -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
@@ -122,7 +131,8 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
@@ -135,7 +145,8 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received a multicast packet',  (i+1) * 100)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
@@ -148,7 +159,8 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -F -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10 ' + conf, ' Received a multicast packet',  (i+1) * 100)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
@@ -159,7 +171,8 @@ def execute(oai, user, pw, logfile):
    #     name = 'Run oai.rel10.phy.eMBMS.Relay.OTG.fdd'
    #     diag = 'eMBMS multicast/broadcast DF relaying is not working properly in fdd mode, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
    #     conf = '-c43 -F -T mbvbr -Q4 -j1 -n120' 
-   #     oai.send_expect('./oaisim.rel10 ' + conf, ' MTCH for sync area 1', 100)
+   #     tee = ' | tee ' + logs_dir + '/log_' + case + test + '.txt'
+   #     oai.send_expect('./oaisim.rel10 ' + conf + tee, ' MTCH for sync area 1', 100)
    # except log.err, e:
    #     log.fail(case, test, name, conf, e.value, diag, logfile)
    # else:
@@ -172,7 +185,8 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                oai.send_expect('./oaisim.rel10.itti ' + conf, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
+                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                oai.send_expect('./oaisim.rel10.itti ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile)
     else:
