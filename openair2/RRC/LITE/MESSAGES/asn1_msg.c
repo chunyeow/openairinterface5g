@@ -1843,7 +1843,7 @@ uint8_t do_DLInformationTransfer(uint32_t length, uint8_t *buffer, uint8_t trans
   dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
   dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
 
-  enc_rval = uper_encode_to_buffer (&asn_DEF_UL_CCCH_Message, (void*) &dl_dcch_msg, buffer, length);
+  enc_rval = uper_encode_to_buffer (&asn_DEF_DL_DCCH_Message, (void*) &dl_dcch_msg, buffer, length);
 
   return((enc_rval.encoded+7)/8);
 }
@@ -1864,7 +1864,7 @@ uint8_t do_ULInformationTransfer(uint32_t length, uint8_t *buffer, uint32_t pdu_
   ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
   ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
 
-  enc_rval = uper_encode_to_buffer (&asn_DEF_UL_CCCH_Message, (void*) &ul_dcch_msg, buffer, length);
+  enc_rval = uper_encode_to_buffer (&asn_DEF_UL_DCCH_Message, (void*) &ul_dcch_msg, buffer, length);
 
   return((enc_rval.encoded+7)/8);
 }

@@ -236,7 +236,7 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
          downlink_NAS_transport_p->eNB_UE_S1AP_ID)) == NULL)
     {
         S1AP_ERROR("[SCTP %d] Received NAS downlink message for non "
-        "existing UE context: %06x\n", assoc_id,
+        "existing UE context: 0x%06x\n", assoc_id,
         downlink_NAS_transport_p->eNB_UE_S1AP_ID);
         return -1;
     }
@@ -262,6 +262,8 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
                                         ue_desc_p->eNB_ue_s1ap_id,
                                         downlink_NAS_transport_p->nas_pdu.buf,
                                         downlink_NAS_transport_p->nas_pdu.size);
+
+    ue_desc_p->ue_initial_id = 0;
 
     return 0;
 }
