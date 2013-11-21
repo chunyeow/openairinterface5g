@@ -4255,8 +4255,8 @@ Index: skeletons/NativeInteger.c
 +				td->name, *native);
 +	}
 +	ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
-+	if (dynamic)
-+		free(native);
++	//if (dynamic)
++	//	free(native);
 +
 +	return rval;
 +}
