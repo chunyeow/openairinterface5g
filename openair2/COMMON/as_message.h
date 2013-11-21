@@ -521,6 +521,6 @@ int as_message_decode(const char* buffer, as_message_t* msg, int length);
 int as_message_encode(char* buffer, as_message_t* msg, int length);
 
 /* Implemented in the network_api.c body file */
-int as_message_send(const nas_type_t nas_type, as_message_t* as_msg);
+int as_message_send(as_message_t* as_msg);
 
 #endif /* __AS_MESSAGE_H__*/
