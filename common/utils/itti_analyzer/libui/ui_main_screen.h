@@ -20,6 +20,7 @@ typedef struct {
     /* Buttons */
     GtkToolItem *filters_enabled;
     GtkToolItem *open_filters_file;
+    GtkToolItem *refresh_filters_file;
     GtkToolItem *save_filters_file;
 
     GtkToolItem *open_replay_file;
