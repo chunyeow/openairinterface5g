@@ -1843,9 +1843,9 @@ uint8_t do_DLInformationTransfer(uint8_t **buffer, uint8_t transaction_id, uint3
   dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
   dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
 
-  encoded = uper_encode_to_new_buffer (&asn_DEF_DL_DCCH_Message, (void*) &dl_dcch_msg, NULL, (void **) buffer);
+  encoded = uper_encode_to_new_buffer (&asn_DEF_DL_DCCH_Message, NULL, (void*) &dl_dcch_msg, (void **) buffer);
 
-  return((encoded + 7) / 8);
+  return encoded;
 }
 
 uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t *pdu_buffer)
@@ -1864,9 +1864,9 @@ uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t 
   ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
   ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
 
-  encoded = uper_encode_to_new_buffer (&asn_DEF_UL_DCCH_Message, (void*) &ul_dcch_msg, NULL, (void **) buffer);
+  encoded = uper_encode_to_new_buffer (&asn_DEF_UL_DCCH_Message, NULL, (void*) &ul_dcch_msg, (void **) buffer);
 
-  return((encoded + 7) / 8);
+  return encoded;
 }
 
 OAI_UECapability_t *fill_ue_capability() {
