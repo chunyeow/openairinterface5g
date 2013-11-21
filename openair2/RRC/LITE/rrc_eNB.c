@@ -3299,12 +3299,8 @@ void *rrc_enb_task(void *args_p) {
         }
         else
         {
-          /* Allocate a buffer for the NAS PDU payload plus some space for the encapsulation */
-          length = S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length + 20;
-          buffer = malloc (length);
-
           /* Create message for PDCP (DLInformationTransfer_t) */
-          length = do_DLInformationTransfer(length, buffer, get_next_rrc_transaction_identifier(instance),
+          length = do_DLInformationTransfer(&buffer, get_next_rrc_transaction_identifier(instance),
                   S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length, S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer);
 
           /* Transfer data to PDCP */

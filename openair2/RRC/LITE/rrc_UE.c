@@ -2354,13 +2354,8 @@ void *rrc_ue_task(void *args_p) {
 
         LOG_D(RRC, "Received %s: instance %d, UEid %d\n", msg_name, instance, NAS_UPLINK_DATA_REQ (msg_p).UEid);
 
-        /* Allocate a buffer for the NAS PDU payload plus some space for the encapsulation */
-        length = NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length + 20;
-        buffer = malloc (length);
-
         /* Create message for PDCP (ULInformationTransfer_t) */
-        length = do_ULInformationTransfer(length, buffer,
-                NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
+        length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
 
         /* Transfer data to PDCP */
         pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);

@@ -1826,13 +1826,13 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   return((enc_rval.encoded+7)/8);
 }
 
-uint8_t do_DLInformationTransfer(uint32_t length, uint8_t *buffer, uint8_t transaction_id, uint32_t pdu_length, uint8_t *pdu_buffer)
+uint8_t do_DLInformationTransfer(uint8_t **buffer, uint8_t transaction_id, uint32_t pdu_length, uint8_t *pdu_buffer)
 {
-  asn_enc_rval_t enc_rval;
+  ssize_t encoded;
 
   DL_DCCH_Message_t dl_dcch_msg;
 
-  memset(&dl_dcch_msg,0,sizeof(DL_DCCH_Message_t));
+  memset(&dl_dcch_msg, 0, sizeof(DL_DCCH_Message_t));
 
   dl_dcch_msg.message.present           = DL_DCCH_MessageType_PR_c1;
   dl_dcch_msg.message.choice.c1.present = DL_DCCH_MessageType__c1_PR_dlInformationTransfer;
@@ -1843,18 +1843,18 @@ uint8_t do_DLInformationTransfer(uint32_t length, uint8_t *buffer, uint8_t trans
   dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
   dl_dcch_msg.message.choice.c1.choice.dlInformationTransfer.criticalExtensions.choice.c1.choice.dlInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
 
-  enc_rval = uper_encode_to_buffer (&asn_DEF_DL_DCCH_Message, (void*) &dl_dcch_msg, buffer, length);
+  encoded = uper_encode_to_new_buffer (&asn_DEF_DL_DCCH_Message, (void*) &dl_dcch_msg, NULL, (void **) buffer);
 
-  return((enc_rval.encoded+7)/8);
+  return((encoded + 7) / 8);
 }
 
-uint8_t do_ULInformationTransfer(uint32_t length, uint8_t *buffer, uint32_t pdu_length, uint8_t *pdu_buffer)
+uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t *pdu_buffer)
 {
-  asn_enc_rval_t enc_rval;
+  ssize_t encoded;
 
   UL_DCCH_Message_t ul_dcch_msg;
 
-  memset(&ul_dcch_msg,0,sizeof(UL_DCCH_Message_t));
+  memset(&ul_dcch_msg, 0, sizeof(UL_DCCH_Message_t));
 
   ul_dcch_msg.message.present           = UL_DCCH_MessageType_PR_c1;
   ul_dcch_msg.message.choice.c1.present = UL_DCCH_MessageType__c1_PR_ulInformationTransfer;
@@ -1864,9 +1864,9 @@ uint8_t do_ULInformationTransfer(uint32_t length, uint8_t *buffer, uint32_t pdu_
   ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.size = pdu_length;
   ul_dcch_msg.message.choice.c1.choice.ulInformationTransfer.criticalExtensions.choice.c1.choice.ulInformationTransfer_r8.dedicatedInfoType.choice.dedicatedInfoNAS.buf = pdu_buffer;
 
-  enc_rval = uper_encode_to_buffer (&asn_DEF_UL_DCCH_Message, (void*) &ul_dcch_msg, buffer, length);
+  encoded = uper_encode_to_new_buffer (&asn_DEF_UL_DCCH_Message, (void*) &ul_dcch_msg, NULL, (void **) buffer);
 
-  return((enc_rval.encoded+7)/8);
+  return((encoded + 7) / 8);
 }
 
 OAI_UECapability_t *fill_ue_capability() {

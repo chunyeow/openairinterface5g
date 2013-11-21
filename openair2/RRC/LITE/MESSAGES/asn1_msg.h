@@ -195,9 +195,9 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
 
 uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,long rsrp_t,long rsrq_t);
 
-uint8_t do_DLInformationTransfer(uint32_t length, uint8_t *buffer, uint8_t transaction_id, uint32_t pdu_length, uint8_t *pdu_buffer);
+uint8_t do_DLInformationTransfer(uint8_t **buffer, uint8_t transaction_id, uint32_t pdu_length, uint8_t *pdu_buffer);
 
-uint8_t do_ULInformationTransfer(uint32_t length, uint8_t *buffer, uint32_t pdu_length, uint8_t *pdu_buffer);
+uint8_t do_ULInformationTransfer(uint8_t **buffer, uint32_t pdu_length, uint8_t *pdu_buffer);
 
 OAI_UECapability_t *fill_ue_capability();
 
