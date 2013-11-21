@@ -57,6 +57,7 @@ extern char mode_string[4][20];
 #ifndef OPENAIR2
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
+extern unsigned char NB_RN_INST;
 #endif
 
 extern int flag_LA;

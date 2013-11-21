@@ -4,7 +4,7 @@ include Makerules
 CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
 # FORCE ssse3 for compilation of openair on User Mode Linux
 CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
-CPUFLAGS += $(shell if grep --silent sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
+CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
 linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
@@ -20,7 +20,7 @@ SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
 export S1AP_DIR
 export COMMON_UTILS_DIR
 
-CFLAGS = -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
+CFLAGS = -O2 -Wall -fno-strict-aliasing -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -g -ggdb $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
 
 ifdef ENABLE_ITTI
 CFLAGS += -DENABLE_ITTI
@@ -418,6 +418,9 @@ rrm_std_cellular:
 cleanall: clean cleanasn1
 	@if [ -d $(S1AP_DIR) ];then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall; fi
 
+cleanalmostall: clean 
+	rm -f $(ASN1_MSG_OBJS1)
+
 clean:
 	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
 	@$(RM_F_V) oaisim
@@ -457,6 +460,9 @@ cleancell:
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/L2_INTERFACE/*.d
 	@$(RM_F_V) $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.o
 	@$(RM_F_V) $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR/*.d
+
+cleanlfds:
+	$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean
 
 print:
 #	@echo $(cygwin)

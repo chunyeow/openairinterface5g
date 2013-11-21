@@ -546,11 +546,13 @@ void *l2l1_task(void *args_p) {
               EMU,
               "PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n", eNB_id, frame, slot, next_slot >> 1, last_slot>>1, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
 
+#ifdef OPENAIR2
           //Appliation: traffic gen
           update_otg_eNB (eNB_id, oai_emulation.info.time_ms);
 
           //IP/OTG to PDCP and PDCP to IP operation
           pdcp_run (frame, 1, 0, eNB_id); //PHY_vars_eNB_g[eNB_id]->Mod_id
+#endif
 
           // PHY_vars_eNB_g[eNB_id]->frame = frame;
           phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, no_relay, NULL);
@@ -594,11 +596,13 @@ void *l2l1_task(void *args_p) {
               if (frame > 0) {
                 PHY_vars_UE_g[UE_id]->frame = frame;
 
+#ifdef OPENAIR2
                 //Application
                 update_otg_UE (UE_id, oai_emulation.info.time_ms);
 
                 //Access layer
                 pdcp_run (frame, 0, UE_id, 0);
+#endif
 
                 phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag, normal_txrx,
                                        no_relay, NULL);
