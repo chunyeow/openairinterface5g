@@ -75,11 +75,12 @@ void free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch) {
 	msg("Freeing dlsch process %d (%p)\n",i,dlsch->harq_processes[i]);
 #endif
 	if (dlsch->harq_processes[i]->b) {
-        free16(dlsch->harq_processes[i]->b,MAX_DLSCH_PAYLOAD_BYTES);
+	  free16(dlsch->harq_processes[i]->b,MAX_DLSCH_PAYLOAD_BYTES);
+	  dlsch->harq_processes[i]->b = NULL;
 #ifdef DEBUG_DLSCH_FREE
 	  msg("Freeing dlsch process %d b (%p)\n",i,dlsch->harq_processes[i]->b);
 #endif
-    }
+	}
 	if (dlsch->harq_processes[i]->c) {
 #ifdef DEBUG_DLSCH_FREE
 	  msg("Freeing dlsch process %d c (%p)\n",i,dlsch->harq_processes[i]->c);
@@ -89,14 +90,18 @@ void free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch) {
 #ifdef DEBUG_DLSCH_FREE
 	    msg("Freeing dlsch process %d c[%d] (%p)\n",i,r,dlsch->harq_processes[i]->c[r]);
 #endif
-	    if (dlsch->harq_processes[i]->c[r]) 
+	    if (dlsch->harq_processes[i]->c[r]) {
 	      free16(dlsch->harq_processes[i]->c[r],((r==0)?8:0) + 3+768);
+	      dlsch->harq_processes[i]->c[r] = NULL;
+	    }
 	  }
 	}
 	free16(dlsch->harq_processes[i],sizeof(LTE_DL_eNB_HARQ_t));
+	dlsch->harq_processes[i] = NULL;
       }
     }
     free16(dlsch,sizeof(LTE_eNB_DLSCH_t));
+    dlsch = NULL;
   }
   
 }
@@ -137,7 +142,10 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
       if (dlsch->harq_processes[i]) {
           bzero(dlsch->harq_processes[i],sizeof(LTE_DL_eNB_HARQ_t));
           dlsch->harq_processes[i]->b = (unsigned char*)malloc16(MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
-          if (!dlsch->harq_processes[i]->b) {
+          if (dlsch->harq_processes[i]->b) {
+	    bzero(dlsch->harq_processes[i]->b,MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
+	  }
+	  else {
               msg("Can't get b\n");
               exit_flag=1;
           }
@@ -145,7 +153,10 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
 	  for (r=0;r<MAX_NUM_DLSCH_SEGMENTS/bw_scaling;r++) {
 	    // account for filler in first segment and CRCs for multiple segment case
 	    dlsch->harq_processes[i]->c[r] = (unsigned char*)malloc16(((r==0)?8:0) + 3+ 768);  
-	    if (!dlsch->harq_processes[i]->c[r]) {
+	    if (dlsch->harq_processes[i]->c[r]) {
+	      bzero(dlsch->harq_processes[i]->c[r],((r==0)?8:0) + 3+ 768);
+	    } 
+	    else {
 	      msg("Can't get c\n");
 	      exit_flag=2;
 	    }

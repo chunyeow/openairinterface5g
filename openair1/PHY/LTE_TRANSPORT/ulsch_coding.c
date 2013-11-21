@@ -81,6 +81,7 @@ void free_ue_ulsch(LTE_UE_ULSCH_t *ulsch) {
 #endif
 	if (ulsch->harq_processes[i]->b) {
 	  free16(ulsch->harq_processes[i]->b,MAX_ULSCH_PAYLOAD_BYTES);
+	  ulsch->harq_processes[i]->b = NULL;
 #ifdef DEBUG_ULSCH_FREE
 	  msg("Freeing ulsch process %d b (%p)\n",i,ulsch->harq_processes[i]->b);
 #endif
@@ -94,14 +95,18 @@ void free_ue_ulsch(LTE_UE_ULSCH_t *ulsch) {
 #ifdef DEBUG_ULSCH_FREE
 	    msg("Freeing ulsch process %d c[%d] (%p)\n",i,r,ulsch->harq_processes[i]->c[r]);
 #endif
-	    if (ulsch->harq_processes[i]->c[r]) 
+	    if (ulsch->harq_processes[i]->c[r]) {
 	      free16(ulsch->harq_processes[i]->c[r],((r==0)?8:0) + 3+768);
+	      ulsch->harq_processes[i]->c[r] = NULL;
+	    }
 	  }
 	}
 	free16(ulsch->harq_processes[i],sizeof(LTE_UL_UE_HARQ_t));
+	ulsch->harq_processes[i] = NULL;
       }
     }
     free16(ulsch,sizeof(LTE_UE_ULSCH_t));
+    ulsch = NULL;
   }
   
 }
@@ -128,22 +133,26 @@ LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, u8 abs
   }
   ulsch = (LTE_UE_ULSCH_t *)malloc16(sizeof(LTE_UE_ULSCH_t));
   if (ulsch) {
-
+    memset(ulsch,0,sizeof(LTE_UE_ULSCH_t));
     ulsch->Mdlharq = Mdlharq;
     for (i=0;i<Mdlharq;i++) {
       ulsch->harq_processes[i] = (LTE_UL_UE_HARQ_t *)malloc16(sizeof(LTE_UL_UE_HARQ_t));
-      memset(ulsch->harq_processes[i], 0, sizeof(LTE_UL_UE_HARQ_t));
       //      printf("ulsch->harq_processes[%d] %p\n",i,ulsch->harq_processes[i]);
       if (ulsch->harq_processes[i]) {
-	ulsch->harq_processes[i]->b          = (unsigned char*)malloc16(MAX_ULSCH_PAYLOAD_BYTES/bw_scaling);
-	if (!ulsch->harq_processes[i]->b) {
+	memset(ulsch->harq_processes[i], 0, sizeof(LTE_UL_UE_HARQ_t));
+	ulsch->harq_processes[i]->b = (unsigned char*)malloc16(MAX_ULSCH_PAYLOAD_BYTES/bw_scaling);
+	if (ulsch->harq_processes[i]->b) 
+	  memset(ulsch->harq_processes[i]->b,0,MAX_ULSCH_PAYLOAD_BYTES/bw_scaling);
+	else {
 	  LOG_E(PHY,"Can't get b\n");
 	  exit_flag=1;
 	}
 	if (abstraction_flag==0) {
 	  for (r=0;r<MAX_NUM_ULSCH_SEGMENTS;r++) {
 	    ulsch->harq_processes[i]->c[r] = (unsigned char*)malloc16(((r==0)?8:0) + 3+768);  // account for filler in first segment and CRCs for multiple segment case
-	    if (!ulsch->harq_processes[i]->c[r]) {
+	    if (ulsch->harq_processes[i]->c[r]) 
+	      memset(ulsch->harq_processes[i]->c[r],0,((r==0)?8:0) + 3+768);
+	    else {
 	      LOG_E(PHY,"Can't get c\n");
 	      exit_flag=2;
 	    }

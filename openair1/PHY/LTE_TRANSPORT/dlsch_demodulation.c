@@ -70,9 +70,23 @@ __m128i mmtmpD0,mmtmpD1,mmtmpD2,mmtmpD3,QAM_amp128,QAM_amp128b,avg128D;
 int avg[4];
 
 // [MCS][i_mod (0,1,2) = (2,4,6)]
-unsigned char offset_mumimo_llr_drange[29][3]={{8,8,8},{7,7,7},{7,7,7},{7,7,7},{6,6,6},{6,6,6},{6,6,6},{5,5,5},{4,4,0},{3,3,0}, // QPSK
-                                               {6,6,0},{5,5,0},{5,5,0},{3,3,0},{2,2,0},{2,2,0},{2,2,2}, // 16-QAM
-                                               {3,3,3},{3,3,3},{3,3,3},{3,0,0},{2,2,0},{2,2,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}}; //64-QAM
+unsigned char offset_mumimo_llr_drange_fix=0;
+/*
+//original values from sebastion + same hand tuning
+unsigned char offset_mumimo_llr_drange[29][3]={{8,8,8},{7,7,7},{7,7,7},{7,7,7},{6,6,6},{6,6,6},{6,6,6},{5,5,5},{4,4,4},{1,2,4}, // QPSK
+                                               {5,5,4},{5,5,5},{5,5,5},{3,3,3},{2,2,2},{2,2,2},{2,2,2}, // 16-QAM
+                                               {2,2,1},{3,3,3},{3,3,3},{3,3,1},{2,2,2},{2,2,2},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}}; //64-QAM
+*/
+/*
+//first optimization try
+unsigned char offset_mumimo_llr_drange[29][3]={{7, 8, 7},{6, 6, 7},{6, 6, 7},{6, 6, 6},{5, 6, 6},{5, 5, 6},{5, 5, 6},{4, 5, 4},{4, 3, 4},{3, 2, 2},{6, 5, 5},{5, 4, 4},{5, 5, 4},{3, 3, 2},{2, 2, 1},{2, 1, 1},{2, 2, 2},{3, 3, 3},{3, 3, 2},{3, 3, 2},{3, 2, 1},{2, 2, 2},{2, 2, 2},{0, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0}};
+*/
+//second optimization try
+/*
+unsigned char offset_mumimo_llr_drange[29][3]={{5, 8, 7},{4, 6, 8},{3, 6, 7},{7, 7, 6},{4, 7, 8},{4, 7, 4},{6, 6, 6},{3, 6, 6},{3, 6, 6},{1, 3, 4},{1, 1, 0},{3, 3, 2},{3, 4, 1},{4, 0, 1},{4, 2, 2},{3, 1, 2},{2, 1, 0},{2, 1, 1},{1, 0, 1},{1, 0, 1},{0, 0, 0},{1, 0, 0},{0, 0, 0},{0, 1, 0},{1, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0}};  w
+*/
+unsigned char offset_mumimo_llr_drange[29][3]={{0, 6, 5},{0, 4, 5},{0, 4, 5},{0, 5, 4},{0, 5, 6},{0, 5, 3},{0, 4, 4},{0, 4, 4},{0, 3, 3},{0, 1, 2},{1, 1, 0},{1, 3, 2},{3, 4, 1},{2, 0, 0},{2, 2, 2},{1, 1, 1},{2, 1, 0},{2, 1, 1},{1, 0, 1},{1, 0, 1},{0, 0, 0},{1, 0, 0},{0, 0, 0},{0, 1, 0},{1, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0}};
+
 
 int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
              PDSCH_t type,
@@ -363,8 +377,8 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
 	// effective channel of desired user is always stronger than interfering eff. channel
 	dlsch_channel_level_prec(lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext, frame_parms, lte_ue_pdsch_vars[eNB_id]->pmi_ext,	avg, symbol, nb_rb);
 	
-    //    msg("llr_offset = %d\n",offset_mumimo_llr_drange[dlsch_ue[0]->harq_processes[harq_pid]->mcs][(i_mod>>1)-1]);
-    avg[0] = log2_approx(avg[0]) - 13;// + offset_mumimo_llr_drange[dlsch_ue[0]->harq_processes[harq_pid]->mcs][(i_mod>>1)-1];
+	//    msg("llr_offset = %d\n",offset_mumimo_llr_drange[dlsch_ue[0]->harq_processes[harq_pid]->mcs][(i_mod>>1)-1]);
+	avg[0] = log2_approx(avg[0]) - 13 + offset_mumimo_llr_drange[dlsch_ue[0]->harq_processes[harq_pid]->mcs][(i_mod>>1)-1];
 
 	lte_ue_pdsch_vars[eNB_id]->log2_maxh = cmax(avg[0],0);
 	//printf("log1_maxh =%d\n",lte_ue_pdsch_vars[eNB_id]->log2_maxh);

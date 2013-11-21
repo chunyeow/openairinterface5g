@@ -2,36 +2,39 @@
 fc  = 1907600000;
 %fc = 859.5e6;
 
-rxgain=30;
+rxgain=0;
 txgain=25;
 eNB_flag = 0;
 card = 0;
+%chan_sel = zeros(1,4);
+%chan_sel(ch) = 1;
+chan_sel = [1 0 0 0];
 
 limeparms;
-rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * [1 1 1 1];
-rf_mode = rf_mode + (DMAMODE_TX)*[1 1 1 1];
+rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * chan_sel;
+rf_mode = rf_mode + (DMAMODE_TX)*chan_sel;
 %rf_mode   = RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1;
 %rf_local= [8253704   8253704   8257340   8257340]; %eNB2tx %850MHz
 %rf_local= [8255004   8253440   8257340   8257340]; % ex2 700 MHz
 rf_local = [8254744   8255063   8257340   8257340]; %eNB2tx 1.9GHz
 %rf_local = [8257292   8257300   8257340   8257340]; %ex2 850 MHz
-%rf_local  = rf_local * ones(1,4);
-rf_rxdc = rf_rxdc * ones(1,4);
-%rf_vcocal = rf_vcocal_859 * ones(1,4);
-rf_vcocal = rf_vcocal_19G * ones(1,4);
-%rf_vcocal = rf_vcocal_26G_eNB * ones(1,4);
-rxgain = rxgain*ones(1,4);
-txgain = txgain*ones(1,4);
-freq_tx = fc*[1 1 1 1];
+%rf_local  = rf_local * chan_sel;
+rf_rxdc = rf_rxdc * chan_sel;
+%rf_vcocal = rf_vcocal_859 * chan_sel;
+rf_vcocal = rf_vcocal_19G * chan_sel;
+%rf_vcocal = rf_vcocal_26G_eNB * chan_sel;
+rxgain = rxgain*chan_sel;
+txgain = txgain*chan_sel;
+freq_tx = fc*chan_sel;
 freq_rx = freq_tx;
-%freq_rx = freq_tx-120000000*[1 1 1 1];
+%freq_rx = freq_tx-120000000*chan_sel;
 %freq_tx = freq_rx+1920000;
 tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTTX;
 syncmode = SYNCMODE_FREE;
-rffe_rxg_low = 61*[1 1 1 1];
-rffe_rxg_final = 61*[1 1 1 1];
-rffe_band = B19G_TDD*[1 1 1 1];
-autocal = [1 1 1 1];
+rffe_rxg_low = 61*chan_sel;
+rffe_rxg_final = 61*chan_sel;
+rffe_band = B19G_TDD*chan_sel;
+autocal = chan_sel;
 
 oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal);
 amp = pow2(14)-1;
@@ -56,7 +59,7 @@ case 2
 case 3
   for i=0:(12*5-1)
     s((38401+640*i):(38400+640*(i+1)),1)=floor(linspace(-127,128,640)); %+1j*floor(linspace(128,-127,640));
-    end
+  end
 
 case 4
   pss0_f0=[0,0,0,0,0,0,0,0,0,0,32767,0,-26120,-19785,11971,-30502,-24020,-22288,32117,6492,31311,9658,-16384,-28378,25100,-21063,-7292,-31946,20429,25618,14948,29158,11971,-30502,31311,9658,25100,-21063,-16384,28377,-24020,22287,32117,6492,-7292,31945,20429,25618,-26120,-19785,-16384,-28378,-16384,28377,-26120,-19785,-32402,4883,31311,-9659,32117,6492,-7292,-31946,32767,-1,25100,-21063,-24020,22287,-32402,4883,-32402,4883,-24020,22287,25100,-21063,32767,-1,-7292,-31946,32117,6492,31311,-9659,-32402,4883,-26120,-19785,-16384,28377,-16384,-28378,-26120,-19785,20429,25618,-7292,31945,32117,6492,-24020,22287,-16384,28377,25100,-21063,31311,9658,11971,-30502,14948,29158,20429,25618,-7292,-31946,25100,-21063,-16384,-28378,31311,9658,32117,6492,-24020,-22288,11971,-30502,-26120,-19785,32767,0,0,0,0,0,0,0,0,0,0,0];
@@ -86,9 +89,10 @@ sleep (1)
 %keyboard
 
 oarf_send_frame(card,s,n_bit);
-
+%r = oarf_get_frame(card);
 figure(1)
 hold off
 plot(real(s(:,1)),'r')
 hold on
 plot(imag(s(:,2)),'b')
+hold off

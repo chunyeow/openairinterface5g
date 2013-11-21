@@ -15,8 +15,8 @@ eNB_flag = 0;
 card = 0;
 Ntrx=4;
 dual_tx=0;
-active_rfA=[1 0 0 0];
-active_rfB=[0 1 1 1];
+active_rfA=[1 1 0 0];
+active_rfB=[0 0 1 1];
 active_rf=active_rfA+active_rfB;
 
 if(active_rfA*active_rfB'!=0) error("The A and B transceive chains must be orthogonal./n") endif

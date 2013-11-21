@@ -54,19 +54,27 @@ void free_ue_dlsch(LTE_UE_DLSCH_t *dlsch) {
   if (dlsch) {
     for (i=0;i<dlsch->Mdlharq;i++) {
       if (dlsch->harq_processes[i]) {
-	if (dlsch->harq_processes[i]->b)
+	if (dlsch->harq_processes[i]->b) {
 	  free16(dlsch->harq_processes[i]->b,MAX_DLSCH_PAYLOAD_BYTES);
+	  dlsch->harq_processes[i]->b = NULL;
+	}
 	if (dlsch->harq_processes[i]->c) {
-	  for (r=0;r<MAX_NUM_DLSCH_SEGMENTS;r++)
+	  for (r=0;r<MAX_NUM_DLSCH_SEGMENTS;r++) {
 	    free16(dlsch->harq_processes[i]->c[r],((r==0)?8:0) + 3+768);
+	    dlsch->harq_processes[i]->c[r] = NULL;
+	  }
 	}
 	for (r=0;r<MAX_NUM_DLSCH_SEGMENTS;r++)
-	  if (dlsch->harq_processes[i]->d[r])
+	  if (dlsch->harq_processes[i]->d[r]) {
 	    free16(dlsch->harq_processes[i]->d[r],((3*8*6144)+12+96)*sizeof(short));
+	    dlsch->harq_processes[i]->d[r] = NULL;
+	  }
 	free16(dlsch->harq_processes[i],sizeof(LTE_DL_UE_HARQ_t));
+	dlsch->harq_processes[i] = NULL;
       }
     }
   free16(dlsch,sizeof(LTE_UE_DLSCH_t));
+  dlsch = NULL;
   }
 }
 
@@ -93,6 +101,7 @@ LTE_UE_DLSCH_t *new_ue_dlsch(uint8_t Kmimo,uint8_t Mdlharq,uint8_t max_turbo_ite
   }
   dlsch = (LTE_UE_DLSCH_t *)malloc16(sizeof(LTE_UE_DLSCH_t));
   if (dlsch) {
+    memset(dlsch,0,sizeof(LTE_UE_DLSCH_t));
     dlsch->Kmimo = Kmimo;
     dlsch->Mdlharq = Mdlharq;
     dlsch->max_turbo_iterations = max_turbo_iterations;
@@ -101,15 +110,24 @@ LTE_UE_DLSCH_t *new_ue_dlsch(uint8_t Kmimo,uint8_t Mdlharq,uint8_t max_turbo_ite
       //      msg("new_ue_dlsch: Harq process %d\n",i);
       dlsch->harq_processes[i] = (LTE_DL_UE_HARQ_t *)malloc16(sizeof(LTE_DL_UE_HARQ_t));
       if (dlsch->harq_processes[i]) {
+	memset(dlsch->harq_processes[i],0,sizeof(LTE_DL_UE_HARQ_t));
 	dlsch->harq_processes[i]->b = (uint8_t*)malloc16(MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
+	if (dlsch->harq_processes[i]->b) 
+	  memset(dlsch->harq_processes[i]->b,0,MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
+	else
+	  exit_flag=3;
 	if (abstraction_flag == 0) {
-	  if (!dlsch->harq_processes[i]->b)
-	    exit_flag=3;
 	  for (r=0;r<MAX_NUM_DLSCH_SEGMENTS/bw_scaling;r++) {
-	    dlsch->harq_processes[i]->c[r] = (uint8_t*)malloc16(((r==0)?8:0) + 3+ 768);	
-	    if (!dlsch->harq_processes[i]->c[r])
+	    dlsch->harq_processes[i]->c[r] = (uint8_t*)malloc16(((r==0)?8:0) + 3+ 768);
+	    if (dlsch->harq_processes[i]->c[r])
+	      memset(dlsch->harq_processes[i]->c[r],0,((r==0)?8:0) + 3+ 768);
+	    else
 	      exit_flag=2;
 	    dlsch->harq_processes[i]->d[r] = (short*)malloc16(((3*8*6144)+12+96)*sizeof(short));
+	    if (dlsch->harq_processes[i]->d[r])
+	      memset(dlsch->harq_processes[i]->d[r],0,((3*8*6144)+12+96)*sizeof(short));
+	    else
+	      exit_flag=2;
 	  }
 	}
       }	else {

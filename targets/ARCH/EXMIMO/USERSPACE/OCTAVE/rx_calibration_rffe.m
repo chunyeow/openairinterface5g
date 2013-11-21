@@ -33,22 +33,23 @@ rf_rxdc = [37059   35459   36300   36999]; %exmimo2_2
 rf_rxdc = [34689   34756   36300   36999]; %exmimo2_2 with external RF
 rf_vcocal=rf_vcocal_19G*[1 1 1 1];
 eNBflag = 0;
-tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTRX;
 syncmode = SYNCMODE_FREE;
 rffe_rxg_low = 31*[1 1 1 1];
 rffe_rxg_final = 31*[1 1 1 1];
 rffe_band = B19G_TDD*[1 1 1 1];
-
+autocal = [1 1 1 1];
 
 gpib_send(gpib_card,gpib_device,'*RST;*CLS');   % reset and configure the signal generator
 %gpib_send(gpib_card,gpib_device,sprintf("POW %ddBm",power_dBm+cables_loss_dB));
-gpib_send(gpib_card,gpib_device,sprintf("POW %ddBm",-14));
+gpib_send(gpib_card,gpib_device,sprintf("POW %ddBm",0));
 %gpib_send(gpib_card,gpib_device,'FREQ 1.91860GHz');
 %gpib_send(gpib_card,gpib_device,'FREQ 1.919225GHz');
 %gpib_send(gpib_card,gpib_device,'FREQ 1.909225GHz');
 gpib_send(gpib_card,gpib_device,sprintf("FREQ %dHz",fref));
 
-oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band);
+oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal);
+autocal = [0 0 0 0];
 
 %ALL_rxrfmode = [LNAByp LNAMed LNAMax];
 %ALL_gain     = 0:10:30;
@@ -87,7 +88,7 @@ for LNA=ALL_rxrfmode
       for rffe_rxg_final=ALL_rffe_rxg_final
 	rffe_rxg_final = rffe_rxg_final*[1 1 1 1];
   
-	oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band);
+	oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal);
 	sleep(1);
 	
 				% signal measurement

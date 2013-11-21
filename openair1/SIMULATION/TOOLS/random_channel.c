@@ -237,9 +237,56 @@ channel_desc_t *new_channel_desc_scm(u8 nb_tx,
     }
     break;
   case SCM_D:
-    LOG_W(OCM,"channel model not yet supported\n");
-    free(chan_desc);
-    return(NULL);
+    LOG_W(OCM,"This is not the real SCM-D model! It is just SCM-C with an additional Rice factor!\n");
+    chan_desc->nb_taps        = 18;
+    chan_desc->Td             = 4.625;
+    chan_desc->channel_length = (int) (2*chan_desc->BW*chan_desc->Td + 1 + 2/(M_PI*M_PI)*log(4*M_PI*chan_desc->BW*chan_desc->Td));
+    sum_amps = 0;
+    chan_desc->amps           = (double*) malloc(chan_desc->nb_taps*sizeof(double));
+    for (i = 0; i<chan_desc->nb_taps; i++) {
+      chan_desc->amps[i]      = pow(10,.1*scm_c_amps_dB[i]); 
+      sum_amps += chan_desc->amps[i];
+    }
+    for (i = 0; i<chan_desc->nb_taps; i++)
+      chan_desc->amps[i] /= sum_amps;
+    chan_desc->delays         = scm_c_delays;
+    chan_desc->ricean_factor  = 0.1;
+    chan_desc->aoa            = 0;
+    chan_desc->random_aoa     = 0;
+    chan_desc->ch             = (struct complex**) malloc(nb_tx*nb_rx*sizeof(struct complex*));
+    chan_desc->chF            = (struct complex**) malloc(nb_tx*nb_rx*sizeof(struct complex*));
+    chan_desc->a              = (struct complex**) malloc(chan_desc->nb_taps*sizeof(struct complex*));
+    for (i = 0; i<nb_tx*nb_rx; i++) 
+      chan_desc->ch[i] = (struct complex*) malloc(chan_desc->channel_length * sizeof(struct complex)); 
+    for (i = 0; i<nb_tx*nb_rx; i++) 
+      chan_desc->chF[i] = (struct complex*) malloc(1200 * sizeof(struct complex)); 
+    for (i = 0; i<chan_desc->nb_taps; i++) 
+      chan_desc->a[i]         = (struct complex*) malloc(nb_tx*nb_rx * sizeof(struct complex));
+
+    chan_desc->R_sqrt  = (struct complex**) malloc(6*sizeof(struct complex**));
+    if (nb_tx==2 && nb_rx==2) {
+      for (i = 0; i<6; i++) 
+	chan_desc->R_sqrt[i] = (struct complex*) &R22_sqrt[i][0];
+    }
+    else if (nb_tx==2 && nb_rx==1) {
+      for (i = 0; i<6; i++) 
+	chan_desc->R_sqrt[i] = (struct complex*) &R21_sqrt[i][0];
+    }
+    else if (nb_tx==1 && nb_rx==2) {
+      for (i = 0; i<6; i++) 
+	chan_desc->R_sqrt[i] = (struct complex*) &R12_sqrt[i][0];
+    }
+    else {
+      for (i = 0; i<6; i++) {
+	chan_desc->R_sqrt[i]    = (struct complex*) malloc(nb_tx*nb_rx*nb_tx*nb_rx * sizeof(struct complex));
+	for (j = 0; j<nb_tx*nb_rx*nb_tx*nb_rx; j+=(nb_tx*nb_rx+1)) {
+	  chan_desc->R_sqrt[i][j].x = 1.0;
+	  chan_desc->R_sqrt[i][j].y = 0.0;
+	}
+	LOG_W(OCM,"correlation matrix not implemented for nb_tx==%d and nb_rx==%d, using identity\n", nb_tx, nb_rx);
+      }
+    }
+    break;
   case EPA:
     chan_desc->nb_taps        = 7;
     chan_desc->Td             = .410;

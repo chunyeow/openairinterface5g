@@ -99,7 +99,7 @@ unsigned short fill_rar(u8 Mod_id,
   rballoc = mac_xface->computeRIV(N_RB_UL,1,1); // first PRB only for UL Grant
   rar[1] |= (rballoc>>7)&7; // Hopping = 0 (bit 3), 3 MSBs of rballoc
   rar[2] = ((uint8_t)(rballoc&0xff))<<1; // 7 LSBs of rballoc
-  mcs = 10;
+  mcs = 9;
   TPC = 4;
   ULdelay = 0;
   cqireq = 0;

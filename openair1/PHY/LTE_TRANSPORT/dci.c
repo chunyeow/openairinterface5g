@@ -1750,7 +1750,7 @@ s32 rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
     for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++)
       avgs = cmax(avgs,avgP[(aarx<<1)+aatx]);
   
-  log2_maxh = (log2_approx(avgs)/2);
+  log2_maxh = (log2_approx(avgs)/2) + 2 + frame_parms->nb_antennas_rx - 1;
 #ifdef DEBUG_PHY
   msg("[PDCCH] log2_maxh = %d (%d,%d)\n",log2_maxh,avgP[0],avgs);
 #endif

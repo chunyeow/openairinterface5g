@@ -4269,8 +4269,8 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
 
   //if (subframe%5 == 0)
 #ifdef EXMIMO 
-  //pdcp_run(frame, 1, 0, Mod_id);
- 
+  pdcp_run(frame, 1, 0, Mod_id);
+  /*
   ret = pthread_mutex_trylock (&pdcp_mutex);
   if (ret != 0) {
     if (ret==EBUSY)
@@ -4293,6 +4293,7 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
       LOG_W(PDCP,"PDCP thread busy!!! inst_cnt=%d\n",pdcp_instance_cnt);
     }
   }
+  */
 #endif
 #ifdef CELLULAR
   rrc_rx_tx(Mod_id, frame, 0, 0);

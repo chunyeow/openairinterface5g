@@ -19,6 +19,7 @@
 #include "UTIL/LOG/log.h"
 
 extern unsigned int dlsch_tbs25[27][25],TBStable[27][110];
+extern unsigned char offset_mumimo_llr_drange_fix;
 
 #ifdef XFORMS
 #include "PHY/TOOLS/lte_phy_scope.h"
@@ -297,7 +298,7 @@ int main(int argc, char **argv) {
   snr0 = 0;
   num_layers = 1;
 
-  while ((c = getopt (argc, argv, "hadpDe:m:n:o:s:f:t:c:g:r:F:x:y:z:M:N:I:i:R:S:C:T:b:u:v:w:B:PL")) != -1) {
+  while ((c = getopt (argc, argv, "hadpDe:m:n:o:s:f:t:c:g:r:F:x:y:z:M:N:I:i:R:S:C:T:b:u:v:w:B:PLl:")) != -1) {
     switch (c)
       {
       case 'a':
@@ -485,6 +486,9 @@ int main(int argc, char **argv) {
 	break;
       case 'L':
 	llr8_flag=1;
+	break;
+      case 'l':
+	offset_mumimo_llr_drange_fix=atoi(optarg);
 	break;
       case 'h':
       default:
@@ -1082,7 +1086,7 @@ int main(int argc, char **argv) {
 	  }
 	  memcpy(&dci_alloc[num_dci].dci_pdu[0],&DLSCH_alloc_pdu_1[k],dci_length_bytes);
 	  dci_alloc[num_dci].dci_length = dci_length;
-	  dci_alloc[num_dci].L          = 2;
+	  dci_alloc[num_dci].L          = 1;
 	  dci_alloc[num_dci].rnti       = SI_RNTI;
 	  dci_alloc[num_dci].format     = format1A;
 	  dci_alloc[num_dci].nCCE       = 0;
@@ -2401,12 +2405,12 @@ int main(int argc, char **argv) {
 	  }
 	
       } //ABStraction
-       if(num_rounds==1){
-      bler= (double)errs[0]/(round_trials[0]);
+      if(num_rounds==1){
+	bler= (double)errs[0]/(round_trials[0]);
 	if (bler<1)
-	 {snr_step = input_snr_step;     saving_bler = 0;}
+	  {snr_step = input_snr_step;     saving_bler = 0;}
 	else
-	 {snr_step = 1; saving_bler = 1;} 
+	  {snr_step = 1; saving_bler = 1;} 
       }
       if (((double)errs[0]/(round_trials[0]))<1e-2) 
 	break;
@@ -2459,6 +2463,8 @@ int main(int argc, char **argv) {
   
   //  lte_sync_time_free();
   
+  printf("[MUMIMO] mcs %d, mcsi %d, offset %d, bler %f\n",mcs,mcs_i,offset_mumimo_llr_drange_fix,((double)errs[0])/((double)round_trials[0]));
+
   return(0);
 }
   

@@ -170,10 +170,14 @@ static void * rx_pdsch_thread(void *param) {
 
       if ((phy_vars_ue->transmission_mode[eNB_id] == 5) && 
           (phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->dl_power_off==0) &&
-          (openair_daq_vars.use_ia_receiver ==1)) {
-      dual_stream_UE = 1;
-      eNB_id_i = phy_vars_ue->n_connected_eNB;
-      i_mod =  get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
+          (openair_daq_vars.use_ia_receiver > 0)) {
+	dual_stream_UE = 1;
+	eNB_id_i = phy_vars_ue->n_connected_eNB;
+	if (openair_daq_vars.use_ia_receiver == 2) {
+	  i_mod =  get_Qm(((phy_vars_ue->frame%1024)/3)%28);
+	} else {
+	  i_mod =  get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
+	}
       }
       else {
           dual_stream_UE = 0;

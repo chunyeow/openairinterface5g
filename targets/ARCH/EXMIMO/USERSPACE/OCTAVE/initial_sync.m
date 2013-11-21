@@ -7,6 +7,7 @@ primary_synch; %loads the primary sync signal
 sss_gen; %loads the secondary sync signal
 
 % grab a frame
+ch=1;
 rx_spec;
 
 % load frame
@@ -18,7 +19,7 @@ figure(1)
 plot(real(s))
 
 pss_t = upsample(primary_synch0_time,4);
-[corr,lag] = xcorr(s(:,1),pss_t);
+[corr,lag] = xcorr(s(:,ch).',pss_t);
 figure(2);
 plot(lag,abs(corr));
 
@@ -31,9 +32,9 @@ pss_pos = lag(pss_pos0);
 sss_pos = pss_pos - 1648; %TDD normal CP
 %sss_pos = pss_pos - 1920; %TDD extended CP
 
-psst = s([pss_pos:(pss_pos+511)],1);
+psst = s([pss_pos:(pss_pos+511)],ch);
 pssf = fft(psst);
-ssst = s([sss_pos:(sss_pos+511)],1);
+ssst = s([sss_pos:(sss_pos+511)],ch);
 sssf = fft(ssst);
 
 pssf_ext = pssf([(512-30):512 2:32]); % extract innter 62 subcarriers

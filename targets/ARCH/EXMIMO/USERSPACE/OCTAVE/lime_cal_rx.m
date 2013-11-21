@@ -3,23 +3,23 @@ close all
 card=0;
 
 limeparms;
-%freq_rx = 1907588000*[1 1 1 1];
+freq_rx = 1907600000*[1 1 1 1];
 %freq_rx = 700600000*[1 1 1 1];
-freq_rx = 748000000*[1 1 1 1];
-freq_tx = freq_rx; %+1920000;
-rxgain = 0*[1 1 1 1];
+%freq_rx = 748000000*[1 1 1 1];
+freq_tx = freq_rx+1920000;
+rxgain = 30*[1 1 1 1];
 txgain = 0*[1 1 1 1];
 tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
 syncmode = SYNCMODE_FREE;
 
-%rf_local = [8254813 8255016 8254813 8254813]; % from the tx calibration
+rf_local = [8254813 8255016 8254813 8254813]; % from the tx calibration
 %rf_local = [8255842   8255064   8257340   8257340]; % 700MHz
-rf_local = [8256776   8255788   8257340   8257340]; % 850MHz
+%rf_local = [8256776   8255788   8257340   8257340]; % 850MHz
 rf_rxdc  = rf_rxdc*[1 1 1 1]; % initial value
-rf_vcocal= rf_vcocal_850*[1 1 1 1];
+rf_vcocal= rf_vcocal_19G*[1 1 1 1];
 rffe_rxg_low = 31*[1 1 1 1];
 rffe_rxg_final = 31*[1 1 1 1];
-rffe_band = TVWS_TDD*[1 1 1 1];
+rffe_band = B19G_TDD*[1 1 1 1];
 
 
 sleepafterconfig=0.2

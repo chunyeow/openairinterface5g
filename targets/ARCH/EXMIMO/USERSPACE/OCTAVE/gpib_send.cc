@@ -5,7 +5,7 @@
 // compile with: mkoctfile -I/usr/local/include/gpib -lgpib gpib_send.cc
 
 #include <octave/oct.h>
-#include "ib.h"
+#include <gpib/ib.h>
 
 
 

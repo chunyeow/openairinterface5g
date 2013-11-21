@@ -171,7 +171,8 @@ int otg_enabled;
 #endif
 int number_of_cards = 1;
 
-int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+//int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+int mbox_bounds[20] = {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 
 int init_dlsch_threads(void);
 void cleanup_dlsch_threads(void);
@@ -956,6 +957,7 @@ int main(int argc, char **argv) {
   char line[1000];
   int l;
   int ret, ant;
+  int ant_offset=0;
 
   int error_code;
 
@@ -1135,7 +1137,7 @@ int main(int argc, char **argv) {
   }
   else { //UE_flag==1
     frame_parms->nb_antennas_tx     = 1;
-    frame_parms->nb_antennas_rx     = 1;
+    frame_parms->nb_antennas_rx     = 2;
   }
   frame_parms->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
   frame_parms->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
@@ -1347,6 +1349,7 @@ int main(int argc, char **argv) {
   p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
   p_exmimo_config->framing.resampling_factor = 2;
  
+
   for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
     p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
   for (ant=0;ant<frame_parms->nb_antennas_tx;ant++)
@@ -1357,6 +1360,21 @@ int main(int argc, char **argv) {
     p_exmimo_config->rf.rf_mode[ant] = 0;
     carrier_freq[ant] = 0; //this turns off all other LIMEs
   }
+
+  /*
+  ant_offset = 3;
+  for (ant=0; ant<4; ant++) {
+    if (ant==ant_offset) {
+      p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
+      p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+      p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
+    }
+    else {
+      p_exmimo_config->rf.rf_mode[ant] = 0;
+      carrier_freq[ant] = 0; //this turns off all other LIMEs
+    }
+  }
+  */
 
   for (ant = 0; ant<4; ant++) { 
     p_exmimo_config->rf.do_autocal[ant] = 1;
@@ -1383,8 +1401,8 @@ int main(int argc, char **argv) {
 
     p_exmimo_config->rf.rffe_gain_txlow[ant] = 31;
     p_exmimo_config->rf.rffe_gain_txhigh[ant] = 31;
-    p_exmimo_config->rf.rffe_gain_rxfinal[ant] = 31;
-    p_exmimo_config->rf.rffe_gain_rxlow[ant] = 63;
+    p_exmimo_config->rf.rffe_gain_rxfinal[ant] = 52;
+    p_exmimo_config->rf.rffe_gain_rxlow[ant] = 31;
   }
 
 
@@ -1424,7 +1442,7 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef OPENAIR2
-    init_pdcp_thread();
+    //init_pdcp_thread();
 #endif
 
     number_of_cards = openair0_num_detected_cards;
@@ -1435,7 +1453,7 @@ int main(int argc, char **argv) {
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
-      setup_ue_buffers(PHY_vars_UE_g[0],frame_parms,0);
+      setup_ue_buffers(PHY_vars_UE_g[0],frame_parms,ant_offset);
       printf("Setting UE buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms->samples_per_tti*10; i++)
@@ -1445,7 +1463,7 @@ int main(int argc, char **argv) {
       //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;      
   }
   else {
-    setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,0);
+    setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,ant_offset);
       if (fs4_test==0)
         {
           printf("Setting eNB buffer to all-RX\n");
@@ -1702,7 +1720,7 @@ int main(int argc, char **argv) {
   }
 
 #ifdef OPENAIR2
-  cleanup_pdcp_thread();
+  //cleanup_pdcp_thread();
 #endif
 
 #ifdef RTAI
