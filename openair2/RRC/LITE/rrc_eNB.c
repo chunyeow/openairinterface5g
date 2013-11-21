@@ -499,6 +499,7 @@ void rrc_remove_UE (uint8_t Mod_id, uint8_t UE_id)
   memset(eNB_rrc_inst[Mod_id].Info.UE_list[UE_id], 0, sizeof(eNB_rrc_inst[0].Info.UE_list[0]));
 }
 
+#if defined(ENABLE_ITTI)
 /*------------------------------------------------------------------------------*/
 /* Function to handle UE initial ID for S1AP initial communication */
 static uint16_t get_next_ue_initial_id(uint8_t Mod_id)
@@ -575,6 +576,7 @@ static uint8_t get_UE_index_from_s1ap_ids (uint8_t Mod_id, uint16_t ue_initial_i
 
     return ue_index;
 }
+#endif
 
 /*------------------------------------------------------------------------------*/
 void rrc_lite_eNB_init_security(u8 Mod_id, u8 UE_index)
