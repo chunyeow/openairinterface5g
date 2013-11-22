@@ -92,6 +92,10 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
+#if defined(ENABLE_USE_MME)
+# include "s1ap_eNB.h"
+#endif
+
 #ifdef XFORMS
 #include "PHY/TOOLS/lte_phy_scope.h"
 #include "stats.h"
@@ -972,7 +976,7 @@ int main(int argc, char **argv) {
   mode = normal_txrx;
 
 
-  while ((c = getopt_long (argc, argv, "C:ST:UdF:V",long_options,NULL)) != -1)
+  while ((c = getopt_long (argc, argv, "C:O:ST:UdF:V",long_options,NULL)) != -1)
     {
       switch (c)
         {
@@ -996,6 +1000,21 @@ int main(int argc, char **argv) {
           break;
         case 'T':
           tcxo=atoi(optarg);
+          break;
+        case 'O':
+#if defined(ENABLE_USE_MME)
+          EPC_MODE_ENABLED = 1;
+          if (optarg == NULL) /* No IP address provided: use localhost */
+          {
+            memcpy(&EPC_MODE_MME_ADDRESS[0], "127.0.0.1", 10);
+          } else {
+            u8 ip_length = strlen(optarg) + 1;
+            memcpy(&EPC_MODE_MME_ADDRESS[0], optarg,
+            ip_length > 16 ? 16 : ip_length);
+          }
+#else
+          printf("You enabled mme mode without s1ap compiled...\n");
+#endif
           break;
 	case 'F':
 	  sprintf(rxg_fname,"%srxg.lime",optarg);

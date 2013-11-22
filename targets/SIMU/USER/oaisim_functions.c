@@ -32,6 +32,10 @@
 # include "intertask_interface.h"
 #endif
 
+#if defined(ENABLE_USE_MME)
+# include "s1ap_eNB.h"
+#endif
+
 #ifdef SMBV
 extern u8 config_smbv;
 extern char smbv_ip[16];
@@ -361,13 +365,14 @@ void get_simulation_options(int argc, char *argv[]) {
       break;
     case 'O':
 #if defined(ENABLE_USE_MME)
-      oai_emulation.info.mme_enabled = 1;
+      EPC_MODE_ENABLED = 1;
       if (optarg == NULL) /* No IP address provided: use localhost */
       {
-        memcpy(&oai_emulation.info.mme_ip_address[0], "127.0.0.1", 10);
+          memcpy(&EPC_MODE_MME_ADDRESS[0], "127.0.0.1", 10);
       } else {
         u8 ip_length = strlen(optarg) + 1;
-        memcpy(&oai_emulation.info.mme_ip_address[0], optarg, ip_length > 16 ? 16 : ip_length);
+        memcpy(&EPC_MODE_MME_ADDRESS[0], optarg,
+               ip_length > 16 ? 16 : ip_length);
       }
 #else
       printf("You enabled MME mode without MME support...\n");

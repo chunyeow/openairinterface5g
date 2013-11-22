@@ -72,7 +72,9 @@
 #endif
 
 #if defined(ENABLE_USE_MME)
-# if !defined(ENABLE_ITTI)
+# if defined(ENABLE_ITTI)
+#   include "s1ap_eNB.h"
+# else
 #   include "../../S1AP/s1ap_eNB.h"
 # endif
 #endif
@@ -617,10 +619,10 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
 
 #if defined(ENABLE_USE_MME)
   /* Connect eNB to MME */
-  if (oai_emulation.info.mme_enabled > 0)
+  if (EPC_MODE_ENABLED > 0)
     {
 # if !defined(ENABLE_ITTI)
-      if (s1ap_eNB_init (oai_emulation.info.mme_ip_address, Mod_id) < 0)
+      if (s1ap_eNB_init (EPC_MODE_MME_ADDRESS, Mod_id) < 0)
         {
           mac_xface->macphy_exit ("");
           return -1;
@@ -807,7 +809,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                      Mod_id, UE_index);
 
 #if defined(ENABLE_USE_MME)
-            if (oai_emulation.info.mme_enabled == 1)
+            if (EPC_MODE_ENABLED == 1)
             {
 # if defined(ENABLE_ITTI)
               eNB_rrc_inst[Mod_id].Info.UE[UE_index].e_rab[eNB_rrc_inst[Mod_id].Info.UE[UE_index].index_of_e_rabs - 1].status = E_RAB_STATUS_DONE;
@@ -817,7 +819,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
           }
 
 #if defined(ENABLE_USE_MME)
-          if (oai_emulation.info.mme_enabled == 1)
+          if (EPC_MODE_ENABLED == 1)
           {
               eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
 
@@ -979,7 +981,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
 #endif
 
 #if defined(ENABLE_USE_MME)
-          if (oai_emulation.info.mme_enabled == 1)
+          if (EPC_MODE_ENABLED == 1)
           {
               eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
 
@@ -1019,7 +1021,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
         case UL_DCCH_MessageType__c1_PR_ulInformationTransfer:
 #if defined(ENABLE_USE_MME)
           {
-            if (oai_emulation.info.mme_enabled == 1)
+            if (EPC_MODE_ENABLED == 1)
 # if defined(ENABLE_ITTI)
             {
               ULInformationTransfer_t *ulInformationTransfer = &ul_dcch_msg->message.choice.c1.choice.ulInformationTransfer;
@@ -1332,7 +1334,7 @@ void rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
 
   // Forward message to S1AP layer
 #if defined(ENABLE_USE_MME)
-  if (oai_emulation.info.mme_enabled == 1)
+  if (EPC_MODE_ENABLED == 1)
 # if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;

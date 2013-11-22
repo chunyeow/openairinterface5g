@@ -393,9 +393,9 @@ void *l2l1_task(void *args_p) {
     {
         char *mme_address_v4;
 
-        if (oai_emulation.info.mme_enabled)
+        if (EPC_MODE_ENABLED)
         {
-            mme_address_v4 = oai_emulation.info.mme_ip_address;
+            mme_address_v4 = EPC_MODE_MME_ADDRESS;
         }
         else
         {
