@@ -45,6 +45,11 @@
 #define __OCG_H__
 
 #include "PHY/impl_defs_top.h"
+
+#if defined(ENABLE_USE_MME)
+# include "s1ap_eNB.h"
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -695,9 +700,9 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     int max_predefined_traffic_config_index;
     int max_customized_traffic_config_index;
 
-    // MME related params
-    unsigned char mme_enabled;          ///< MME enabled ?
-    char          mme_ip_address[16];   ///< MME IP v4 address
+#if defined(ENABLE_USE_MME)
+    s1ap_eNB_config_t s1ap_config;
+#endif
 
     /* Per-Slot ISR
      * Interval between two ISR = 500usec
