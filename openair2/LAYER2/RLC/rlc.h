@@ -174,7 +174,7 @@ typedef struct {
 #define  RLC_MAX_LC  ((max_val_DRB_Identity+1)* MAX_MOBILES_PER_RG)
 #endif
 
-protected_rlc(void            (*rlc_rrc_data_ind)  (module_id_t , u32_t, u8_t, rb_id_t , sdu_size_t , char* );)
+protected_rlc(void            (*rlc_rrc_data_ind)  (module_id_t , u32_t, u8_t, rb_id_t , sdu_size_t , u8_t* );)
 protected_rlc(void            (*rlc_rrc_data_conf) (module_id_t , rb_id_t , mui_t, rlc_tx_status_t );)
 
 /*! \struct  rlc_pointer_t

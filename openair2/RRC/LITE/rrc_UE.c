@@ -1739,6 +1739,7 @@ void dump_sib13(SystemInformationBlockType13_r9_t *sib13) {
 
 }
 #endif
+
 //const char SIBPeriod[7][7]= {"80ms\0","160ms\0","320ms\0","640ms\0","1280ms\0","2560ms\0","5120ms\0"};
 int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 
@@ -1897,7 +1898,6 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SI  , VCD_FUNCTION_OUT);
   return 0;
 }
-
 
 // layer 3 filtering of RSRP (EUTRA) measurements: 36.331, Sec. 5.5.3.2
 void ue_meas_filtering(u8 Mod_id,u32 frame,u8 eNB_index){

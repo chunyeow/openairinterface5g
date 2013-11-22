@@ -42,20 +42,29 @@
 
 s8 mac_rrc_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer, u8 eNB_flag, u8 eNB_index,
                     u8 mbsfn_sync_area);
+
 s8 mac_rrc_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 Sdu_len, u8 eNB_flag, u8 eNB_index,
                     u8 mbsfn_sync_area);
+
 void mac_lite_sync_ind(u8 Mod_id, u8 status);
+
 void mac_rrc_meas_ind(u8, MAC_MEAS_REQ_ENTRY*);
-void rlcrrc_data_ind(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Rb_id, u32 sdu_size, u8 *Buffer);
+
+void rlcrrc_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag, unsigned int Rb_id, u32 sdu_size, u8 *Buffer);
 
 u8 pdcp_rrc_data_req(u8 module_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
                      unsigned int sdu_buffer_size, u8* sdu_buffer, u8 mode);
+
 void pdcp_rrc_data_ind(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size, u8 *Buffer);
 
 void mac_out_of_sync_ind(u8 Mod_id, u32 frame, u16 CH_index);
+
 char openair_rrc_eNB_init(u8 Mod_id);
+
 char openair_rrc_ue_init(u8 Mod_id, unsigned char eNB_index);
+
 int mac_get_rrc_status(u8 Mod_id, u8 eNB_flag, u8 index);
+
 void mac_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index);
 
 #endif

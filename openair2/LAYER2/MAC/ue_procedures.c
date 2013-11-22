@@ -546,11 +546,11 @@ s8 ue_get_mbsfn_sf_alloction (unsigned char Mod_id, u8 mbsfn_sync_area, unsigned
 
 int ue_query_mch(uint8_t Mod_id, uint32_t frame, uint32_t subframe, uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active) {
 
-  int i=0, j=0, ii=0, msi_pos=0, mcch_mcs;
+  int i=0, j=0, ii=0, msi_pos=0, mcch_mcs = - 1;
   int mcch_flag=0, mtch_flag=0, msi_flag=0;
   int mbsfn_period = 0;// 1<<(UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationPeriod);
   int mcch_period = 0;// 32<<(UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
-  int mch_scheduling_period; 
+  int mch_scheduling_period = -1;
 
   if (UE_mac_inst[Mod_id].pmch_Config[0])
     mch_scheduling_period = 8<<(UE_mac_inst[Mod_id].pmch_Config[0]->mch_SchedulingPeriod_r9);
@@ -1270,8 +1270,8 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
 
   int lcid; // lcid index
   int TTI= 1;
-  int bucketsizeduration;
-  int bucketsizeduration_max;
+  int bucketsizeduration = -1;
+  int bucketsizeduration_max = -1;
   // mac_rlc_status_resp_t rlc_status[MAX_NUM_LCGID]; // 4
   // s8 lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;

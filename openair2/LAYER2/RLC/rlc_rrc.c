@@ -42,10 +42,9 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
   long int               cnt2            = 0;
   //  long int               mrb_id          = 0;
   long int               mbms_service_id = 0;
-  long int               mbms_session_id = 0;
+  // long int               mbms_session_id = 0;
   PMCH_Info_r9_t*        pmch_info_r9    = NULL;
   MBMS_SessionInfo_r9_t* mbms_session    = NULL;
-  DL_UM_RLC_t*           mbms_dl_UM_RLC  = NULL;
   rlc_op_status_t        rlc_status      = RLC_OP_STATUS_OK;
   DL_UM_RLC_t            dl_um_rlc;
 #endif
@@ -283,13 +282,14 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
           } else {
               lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3);
           }
-
 	  
+	  /*
 	  if (mbms_session->sessionId_r9 != NULL) {
 	    mbms_session_id = mbms_session->sessionId_r9->buf[0];
 	  } else {
 	    mbms_session_id = mbms_session->logicalChannelIdentity_r9;
 	  }
+	  */
 	  mbms_service_id = mbms_session->tmgi_r9.serviceId_r9.buf[2];// can use the pmch_index, here is the value 'cnt'
 	  rb_id = (mbms_service_id * maxSessionPerPMCH) + lc_id;
 	  
@@ -424,20 +424,20 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t module_idP, u32_t frameP, rb_id_t
 
     if ((chan_idP >= RLC_MAX_LC ) || (chan_idP < 1)) {
       LOG_E(RLC,"Got wrong channel id %d\n",chan_idP);
-      exit -1;
+      exit (-1);
       return RLC_OP_STATUS_BAD_PARAMETER;
     }
 
     if (rb_idP >= RLC_MAX_RB ) {
         LOG_E(RLC,"Got wrong radio bearer id %d\n",rb_idP);
-        exit -1;
+        exit (-1);
         return RLC_OP_STATUS_BAD_PARAMETER;
     }
 
     if (rlc[module_idP].m_lcid2rbid[chan_idP] != -1) { 
       LOG_E(RLC,"Error in RLC config channel ID already configured %d(module_id %d, state %d)\n",
 	    chan_idP, module_idP, rlc[module_idP].m_lcid2rbid[chan_idP]);
-      exit -1;
+      exit (-1);
       return RLC_OP_STATUS_BAD_PARAMETER;
     }
     for (index = 0; index < index_max; index++) {

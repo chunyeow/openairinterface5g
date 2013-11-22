@@ -642,7 +642,7 @@ rlc_um_receive_process_dar (rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, m
     // -else:
     //      -place the received UMD PDU in the reception buffer.
 
-    signed int sn;
+    signed int sn = -1;
     signed int in_window;
 
     if (rlcP->rx_sn_length == 10) {

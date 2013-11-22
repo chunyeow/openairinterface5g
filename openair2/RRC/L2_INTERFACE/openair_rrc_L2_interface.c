@@ -107,7 +107,7 @@ s8 mac_rrc_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu,u16 Sdu_len,u8 eNB
 }
 
 /********************************************************************************************************************/
-void rlcrrc_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
+void rlcrrc_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
 /********************************************************************************************************************/
 #ifdef CELLULAR
   rrc_L2_rlc_data_ind_rx(Mod_id,Srb_id, Sdu_size, Buffer);

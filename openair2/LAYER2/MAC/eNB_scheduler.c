@@ -977,7 +977,7 @@ void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,u16 rnti,unsigned char dci_size_
 void schedule_SI(unsigned char Mod_id,u32 frame, unsigned char *nprb,unsigned int *nCCE) {
 
   unsigned char bcch_sdu_length;
-  int mcs;
+  int mcs = -1;
   void *BCCH_alloc_pdu=(void*)&eNB_mac_inst[Mod_id].BCCH_alloc_pdu;
 
   bcch_sdu_length = mac_rrc_data_req(Mod_id,
@@ -1103,7 +1103,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
   unsigned char mcch_sdu_length;
   unsigned char header_len_mcch=0,header_len_msi=0,header_len_mtch=0, header_len_mtch_temp=0, header_len_mcch_temp=0, header_len_msi_temp=0; 
   int ii=0, msi_pos=0;
-  int mcch_mcs;
+  int mcch_mcs = -1;
   u16 TBS,j,padding=0,post_padding=0;
   mac_rlc_status_resp_t rlc_status;
   int num_mtch;
@@ -1575,7 +1575,8 @@ void schedule_RA(unsigned char Mod_id,u32 frame, unsigned char subframe,unsigned
   u16 rrc_sdu_length;
   unsigned char lcid,offset;
   s8 UE_id;
-  unsigned short TBsize,msg4_padding,msg4_post_padding,msg4_header;
+  unsigned short TBsize = -1;
+  unsigned short msg4_padding,msg4_post_padding,msg4_header;
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
 

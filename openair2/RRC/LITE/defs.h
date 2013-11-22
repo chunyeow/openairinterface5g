@@ -37,7 +37,6 @@
 * \email: raymond.knopp@eurecom.fr and navid.nikaein@eurecom.fr
 */
 
-
 #ifndef __OPENAIR_RRC_DEFS_H__
 #define __OPENAIR_RRC_DEFS_H__
 
@@ -94,7 +93,7 @@
 
 //#define NUM_PRECONFIGURED_LCHAN (NB_CH_CX*2)  //BCCH, CCCH
 
-typedef enum  {
+typedef enum UE_STATE_e {
   RRC_IDLE=0,
   RRC_SI_RECEIVED,
   RRC_CONNECTED,
@@ -102,15 +101,13 @@ typedef enum  {
   RRC_HO_EXECUTION
 } UE_STATE_t;
 
-
-typedef enum  {
+typedef enum HO_STATE_e {
   HO_IDLE=0,
   HO_MEASURMENT,
   HO_PREPARE,
   HO_CMD, // initiated by the src eNB
   HO_COMPLETE // initiated by the target eNB
 } HO_STATE_t;
-
 
 //#define NUMBER_OF_UE_MAX MAX_MOBILES_PER_RG
 #define RRM_FREE(p)       if ( (p) != NULL) { free(p) ; p=NULL ; }
@@ -127,11 +124,10 @@ typedef enum  {
 #define UNDEF_SECURITY_MODE 0xff
 #define NO_SECURITY_MODE 0x33
 
-
 #define CBA_OFFSET        0xfff4
 // #define NUM_MAX_CBA_GROUP 4 // in the platform_constants
 
-typedef struct{
+typedef struct UE_RRC_INFO_s {
   UE_STATE_t State;
   u8 SIB1Status;
   u8 SIStatus;
@@ -151,17 +147,16 @@ typedef struct{
   u32 T310_cnt;
   u32 N310_cnt;
   u32 N311_cnt;
-}UE_RRC_INFO;
+} __attribute__ ((__packed__)) UE_RRC_INFO;
 
 typedef struct UE_S_TMSI_s {
     uint8_t  presence;
     uint8_t  mme_code;
     uint32_t m_tmsi;
-}__attribute__ ((__packed__)) UE_S_TMSI;
+} __attribute__ ((__packed__)) UE_S_TMSI;
 
 #if defined(ENABLE_ITTI)
-typedef enum e_rab_satus_e
-{
+typedef enum e_rab_satus_e {
     E_RAB_STATUS_NEW,
     E_RAB_STATUS_DONE,
     E_RAB_STATUS_FAILED,
@@ -170,10 +165,10 @@ typedef enum e_rab_satus_e
 typedef struct e_rab_param_s {
     e_rab_t param;
     uint8_t status;
-} e_rab_param_t;
+} __attribute__ ((__packed__)) e_rab_param_t;
 #endif
 
-typedef struct eNB_RRC_UE_INFO_s{
+typedef struct eNB_RRC_UE_INFO_s {
     u8 Status;
 
 #if defined(ENABLE_ITTI)
@@ -193,9 +188,9 @@ typedef struct eNB_RRC_UE_INFO_s{
     /* list of e_rab to be setup by RRC layers */
     e_rab_param_t e_rab[S1AP_MAX_E_RAB];
 #endif
-}__attribute__ ((__packed__)) eNB_RRC_UE_INFO;
+} __attribute__ ((__packed__)) eNB_RRC_UE_INFO;
 
-typedef struct eNB_RRC_INFO_s{
+typedef struct eNB_RRC_INFO_s {
   /* Number of UE handle by the eNB */
   uint8_t Nb_ue;
 
@@ -204,18 +199,18 @@ typedef struct eNB_RRC_INFO_s{
 
   /* Information on UE */
   eNB_RRC_UE_INFO UE[NUMBER_OF_UE_MAX];
-}__attribute__ ((__packed__)) eNB_RRC_INFO;
+} __attribute__ ((__packed__)) eNB_RRC_INFO;
 
-typedef struct{
+typedef struct RRC_INFO_s {
   int Status;
 union{
 	UE_RRC_INFO UE_info;
 	eNB_RRC_INFO CH_info;
  }Info;
-}RRC_INFO;
+} RRC_INFO;
 
 /* Intermediate structure for Hanodver management. Associated per-UE in eNB_RRC_INST */
-typedef struct{
+typedef struct HANDOVER_INFO_s {
   u8 ho_prepare;
   u8 ho_complete;
   u8 modid_s; //Mod_id of serving cell
@@ -226,7 +221,7 @@ typedef struct{
   AS_Context_t as_context; /* They are mandatory for HO */
   uint8_t buf[RRC_BUF_SIZE];	/* ASN.1 encoded handoverCommandMessage */
   int size;		/* size of above message in bytes */
-}HANDOVER_INFO;
+} HANDOVER_INFO;
 
 #define RRC_HEADER_SIZE_MAX 64
 #define RRC_BUFFER_SIZE_MAX 1024
@@ -237,27 +232,27 @@ typedef struct{
 }RRC_BUFFER; 
 #define RRC_BUFFER_SIZE sizeof(RRC_BUFFER)
 
-typedef struct{
+typedef struct RB_INFO_s {
   u16 Rb_id;  //=Lchan_id
   LCHAN_DESC Lchan_desc[2];
   MAC_MEAS_REQ_ENTRY *Meas_entry;
-}RB_INFO;
+} RB_INFO;
 
-typedef struct SRB_INFO{
+typedef struct SRB_INFO_s {
   u16 Srb_id;  //=Lchan_id
   RRC_BUFFER Rx_buffer; 
   RRC_BUFFER Tx_buffer; 
   LCHAN_DESC Lchan_desc[2];
   unsigned int Trans_id;
   u8 Active;
-}SRB_INFO;
+} SRB_INFO;
 
-typedef struct{
+typedef struct RB_INFO_TABLE_ENTRY_s {
   RB_INFO Rb_info;
   u8 Active;
   u32 Next_check_frame;
   u8 Status;
-}RB_INFO_TABLE_ENTRY;
+} RB_INFO_TABLE_ENTRY;
 
 typedef struct{
   SRB_INFO Srb_info;
@@ -266,19 +261,18 @@ typedef struct{
   u32 Next_check_frame;
 }SRB_INFO_TABLE_ENTRY;
 
-typedef struct {
+typedef struct MEAS_REPORT_LIST_s {
   MeasId_t measId;
   //CellsTriggeredList	cellsTriggeredList;//OPTIONAL
   u32 numberOfReportsSent;
 } MEAS_REPORT_LIST;
 
-typedef struct {
+typedef struct HANDOVER_INFO_UE_s {
   PhysCellId_t targetCellId;
   u8 measFlag;
-}HANDOVER_INFO_UE;
+} HANDOVER_INFO_UE;
 
-
-typedef struct{
+typedef struct eNB_RRC_INST_s {
   uint8_t                           *SIB1;
   uint8_t                           sizeof_SIB1;
   uint8_t                           *SIB23;
@@ -334,13 +328,13 @@ typedef struct{
 } eNB_RRC_INST;
 
 #define MAX_UE_CAPABILITY_SIZE 255
-typedef struct{
+typedef struct OAI_UECapability_s {
   uint8_t sdu[MAX_UE_CAPABILITY_SIZE];
   uint8_t sdu_size;
   UE_EUTRA_Capability_t *UE_EUTRA_Capability;
 } OAI_UECapability_t;
 
-typedef struct{
+typedef struct UE_RRC_INST_s {
   uint8_t *UECapability;
   uint8_t UECapability_size;
   UE_RRC_INFO Info[NB_SIG_CNX_UE];
@@ -409,7 +403,7 @@ typedef struct{
   /* Used integrity/ciphering algorithms */
   e_SecurityAlgorithmConfig__cipheringAlgorithm     ciphering_algorithm;
   e_SecurityAlgorithmConfig__integrityProtAlgorithm integrity_algorithm;
-}UE_RRC_INST;
+} UE_RRC_INST;
 
 //main.c
 int rrc_init_global_param(void);
@@ -494,22 +488,20 @@ s32  rrc_ue_establish_srb2(u8 Mod_id,u32 frame, u8 eNB_index,struct SRB_ToAddMod
     @returns 0 on success */
 s32  rrc_ue_establish_drb(u8 Mod_id,u32 frame,u8 eNB_index,struct DRB_ToAddMod *DRB_config);
 
-
 /** \brief Process MobilityControlInfo Message to proceed with handover and configure PHY/MAC
     \param Mod_id Instance of UE on which to act
     \param frame frame time interval
     \param eNB_index Index of corresponding CH/eNB
     \param mobilityControlInfo Pointer to mobilityControlInfo
 */
-
-void   rrc_ue_process_mobilityControlInfo(u8 Mod_id,u32 frame, u8 eNB_index,struct MobilityControlInfo *mobilityControlInfo);
+void rrc_ue_process_mobilityControlInfo(u8 Mod_id,u32 frame, u8 eNB_index,struct MobilityControlInfo *mobilityControlInfo);
 
 /** \brief Process a measConfig Message and configure PHY/MAC
     \param Mod_id Instance of UE on which to act
     \param frame frame time interval
     \param eNB_index Index of corresponding CH/eNB
     \param  measConfig Pointer to MeasConfig  IE from configuration*/
-void	rrc_ue_process_measConfig(u8 Mod_id,u32 frame, u8 eNB_index,MeasConfig_t *measConfig);
+void rrc_ue_process_measConfig(u8 Mod_id,u32 frame, u8 eNB_index,MeasConfig_t *measConfig);
 
 /** \brief Process a RadioResourceConfigDedicated Message and configure PHY/MAC
     \param Mod_id Instance of UE on which to act
@@ -576,33 +568,48 @@ void *rrc_ue_task(void *args_p);
    \param UE_index Index of UE transmitting the messages*/
 void rrc_eNB_generate_RRCConnectionReconfiguration_handover(u8 Mod_id, u32 frame, u16 UE_index, u8 *nas_pdu, u32 nas_length);
 
-
 //L2_interface.c
 s8 mac_rrc_lite_data_req( u8 Mod_id, u32 frame, unsigned short Srb_id, u8 Nb_tb, u8 *Buffer,u8 eNB_flag, u8 eNB_index, u8 mbsfn_sync_area);
+
 s8 mac_rrc_lite_data_ind( u8 Mod_id,  u32 frame, unsigned short Srb_id, u8 *Sdu, unsigned short Sdu_len,u8 eNB_flag,u8 eNB_index, u8 mbsfn_sync_area);
+
 void mac_sync_ind( u8 Mod_id, u8 status);
+
 u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
                      unsigned int sdu_size, u8* Buffer, u8 mode);
-void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
+
+void rrc_lite_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
+
 void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index);
+
 void rrc_lite_out_of_sync_ind(u8 Mod_id, u32 frame, unsigned short eNB_index);
 
 int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area);
+
 void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_sync_area);
 
 int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len);
 
-  int decode_SIB1(u8 Mod_id,u8 eNB_index);
+int decode_SIB1(u8 Mod_id,u8 eNB_index);
 
 int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window);
+
+void ue_meas_filtering(u8 Mod_id,u32 frame,u8 eNB_index);
+
+void ue_measurement_report_triggering(u8 Mod_id, u32 frame,u8 eNB_index);
 
 int mac_get_rrc_lite_status(u8 Mod_id,u8 eNB_flag,u8 index);
 
 void rrc_eNB_generate_UECapabilityEnquiry(u8 Mod_id, u32 frame, u16 UE_index);
+
 void rrc_eNB_generate_SecurityModeCommand(u8 Mod_id, u32 frame, u16 UE_index);
 
 void rrc_eNB_process_MeasurementReport(u8 Mod_id,u32 frame, u16 UE_index,MeasResults_t *measResults2) ;
+
 void rrc_eNB_generate_HandoverPreparationInformation (u8 Mod_id, u32 frame, u8 UE_index, PhysCellId_t targetPhyId) ;
+
+void check_handovers(u8 Mod_id, u32 frame);
+
 u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, u8 meas_index, 
 			    Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys, 
 			    Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
@@ -613,8 +620,7 @@ u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, 
 void rrc_remove_UE (u8 Mod_id, u8 UE_id);
 
 long binary_search_int(int elements[], long numElem, int value);
+
 long binary_search_float(float elements[], long numElem, float value);
 #endif
-
-
 /** @ */

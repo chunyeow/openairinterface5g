@@ -508,7 +508,7 @@ u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
+void rrc_lite_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
 //-------------------------------------------------------------------------------------------//
   u8 UE_index=(Srb_id-1)/NB_RB_MAX;
   u8 DCCH_index = Srb_id % NB_RB_MAX;

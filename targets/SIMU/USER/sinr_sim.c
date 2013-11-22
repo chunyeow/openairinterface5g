@@ -557,11 +557,11 @@ void get_beta_map() {
       }
       fclose(fp);
       //   }
-      //    LOG_D(OCM,"Print the table for mcs %d\n",mcs);
-printf("Print the table for mcs %d\n",mcs);
+    LOG_D(OCM,"Print the table for mcs %d\n",mcs);
+    // printf("Print the table for mcs %d\n",mcs);
     for (t = 0; t<table_length[mcs]; t++)
-      //      LOG_D(OCM,"%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
-printf("%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
+      LOG_D(OCM,"%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
+      // printf("%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
   }
   free(file_path);
 }
@@ -603,7 +603,8 @@ void get_MIESM_param() {
        fclose(fp);
        for (t = 0; t < 162; t++){
 	 // MI_map_4Qam[0][t] = pow(10,0.1*(MI_map_4Qam[0][t]));
-	 printf("MIESM 4QAM Table: %lf  %lf  %1f\n ",MI_map_4qam[0][t],MI_map_4qam[1][t], MI_map_4qam[2][t]);
+         LOG_D(OCM, "MIESM 4QAM Table: %lf  %lf  %1f\n ",MI_map_4qam[0][t],MI_map_4qam[1][t], MI_map_4qam[2][t]);
+	 // printf("MIESM 4QAM Table: %lf  %lf  %1f\n ",MI_map_4qam[0][t],MI_map_4qam[1][t], MI_map_4qam[2][t]);
        }
        break;
 	case 16:
@@ -621,7 +622,8 @@ void get_MIESM_param() {
        fclose(fp);
        for (t = 0; t < 197; t++){
 	 // MI_map_16Qam[0][t] = pow(10,0.1*(MI_map_16Qam[0][t]));
-	 printf("MIESM 16 QAM Table: %lf  %lf  %1f\n ",MI_map_16qam[0][t],MI_map_16qam[1][t], MI_map_16qam[2][t]);
+         LOG_D(OCM, "MIESM 16 QAM Table: %lf  %lf  %1f\n ",MI_map_16qam[0][t],MI_map_16qam[1][t], MI_map_16qam[2][t]);
+	 // printf("MIESM 16 QAM Table: %lf  %lf  %1f\n ",MI_map_16qam[0][t],MI_map_16qam[1][t], MI_map_16qam[2][t]);
 	}
        break;
 	case 64:
@@ -641,7 +643,8 @@ void get_MIESM_param() {
        fclose(fp);
        for (t = 0; t < 227; t++){
 	 //MI_map_64Qam[0][t] = pow(10,0.1*(MI_map_64Qam[0][t]));
-	 printf("MIESM 64QAM Table: %lf  %lf  %1f\n ",MI_map_64qam[0][t],MI_map_64qam[1][t], MI_map_64qam[2][t]);
+         LOG_D(OCM, "MIESM 64QAM Table: %lf  %lf  %1f\n ",MI_map_64qam[0][t],MI_map_64qam[1][t], MI_map_64qam[2][t]);
+         // printf("MIESM 64QAM Table: %lf  %lf  %1f\n ",MI_map_64qam[0][t],MI_map_64qam[1][t], MI_map_64qam[2][t]);
        }
        break;
        

@@ -242,10 +242,10 @@ typedef struct
     s16 (*get_PL)(u8 Mod_id,u8 eNB_index);
 
     /// Function for UE MAC to retrieve the rssi
-    u8 (*get_RSSI)(u8 Mod_id);
+    s8 (*get_RSSI)(u8 Mod_id);
 
     /// Function for UE MAC to retrieve the total gain 
-    u8 (*get_rx_total_gain_dB)(u8 Mod_id);
+    s8 (*get_rx_total_gain_dB)(u8 Mod_id);
 
     /// Function for UE MAC to retrieve the number of adjustent cells
     u8 (*get_n_adj_cells)(u8 Mod_id);

@@ -401,7 +401,7 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index){
 }
 
 long binary_search_int(int elements[], long numElem, int value) {
-  long first, last, middle, search;
+  long first, last, middle, search = -1;
   first = 0;
   last = numElem-1;
   middle = (first+last)/2;
@@ -432,7 +432,7 @@ long binary_search_int(int elements[], long numElem, int value) {
    Used for RSRP and RSRQ measurement mapping. Can potentially be used for other things
 */
 long binary_search_float(float elements[], long numElem, float value) {
-  long first, last, middle, search;
+  long first, last, middle;
   first = 0;
   last = numElem-1;
   middle = (first+last)/2;
