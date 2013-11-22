@@ -93,6 +93,8 @@
 
 //#define NUM_PRECONFIGURED_LCHAN (NB_CH_CX*2)  //BCCH, CCCH
 
+#define UE_INDEX_INVALID ((uint8_t) ~0)
+
 typedef enum UE_STATE_e {
   RRC_IDLE=0,
   RRC_SI_RECEIVED,
@@ -254,7 +256,7 @@ typedef struct RB_INFO_TABLE_ENTRY_s {
   u8 Status;
 } RB_INFO_TABLE_ENTRY;
 
-typedef struct{
+typedef struct SRB_INFO_TABLE_ENTRY_s {
   SRB_INFO Srb_info;
   u8 Active;
   u8 Status;
@@ -512,6 +514,11 @@ void rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_ind
 
 // eNB/CH RRC Procedures
 
+/**\brief Function to get the next transaction identifier.
+   \param Mod_id Instance ID for CH/eNB
+   \return a transaction identifier*/
+uint8_t rrc_eNB_get_next_transaction_identifier(uint8_t Mod_id);
+
 /**\brief Entry routine to decode a UL-CCCH-Message.  Invokes PER decoder and parses message.
    \param Mod_id Instance ID for CH/eNB
    \param frame  Frame index
@@ -617,7 +624,7 @@ u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, 
 //void rrc_ue_process_ueCapabilityEnquiry(uint8_t Mod_id,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
 //void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityModeCommand_t *securityModeCommand,uint8_t eNB_index);
 
-void rrc_remove_UE (u8 Mod_id, u8 UE_id);
+void rrc_eNB_free_UE_index (u8 Mod_id, u8 UE_id);
 
 long binary_search_int(int elements[], long numElem, int value);
 

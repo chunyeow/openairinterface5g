@@ -417,7 +417,7 @@ s8 mac_remove_ue(unsigned char Mod_id, unsigned char UE_id) {
   eNB_dlsch_info[Mod_id][UE_id].rnti          = 0;
   eNB_dlsch_info[Mod_id][UE_id].status        = S_DL_NONE;
 
-  rrc_remove_UE(Mod_id,UE_id);
+  rrc_eNB_free_UE_index(Mod_id,UE_id);
 
   return(1);
 }

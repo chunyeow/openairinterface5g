@@ -19,7 +19,7 @@ L2_INTERFACE_DIR = $(OPENAIR2_TOP)/RRC/L2_INTERFACE
 MAC_DIR = $(OPENAIR2_TOP)/LAYER2/MAC
 RRC_CELL_DIR = $(OPENAIR2_TOP)/RRC/CELLULAR
 
-SOURCES_L2 +=$(OPENAIR2_TOP)/LAYER2/openair2_proc.c 
+SOURCES_L2 +=  $(OPENAIR2_TOP)/LAYER2/openair2_proc.c 
 
 SOURCES_L2 +=  $(PDCP_DIR)/pdcp.c
 SOURCES_L2 +=  $(PDCP_DIR)/pdcp_fifo.c
@@ -69,7 +69,11 @@ SOURCES_L2 +=  $(RLC_DIR)/rlc.c
 SOURCES_L2 +=  $(RLC_DIR)/rlc_rrc.c
 SOURCES_L2 +=  $(RLC_DIR)/rlc_mpls.c
 
-RRC_OBJS =  $(RRC_DIR)/rrc_UE.o $(RRC_DIR)/rrc_eNB.o $(RRC_DIR)/rrc_common.o $(RRC_DIR)/L2_interface.o
+RRC_OBJS =  $(RRC_DIR)/rrc_UE.o
+RRC_OBJS += $(RRC_DIR)/rrc_eNB.o
+RRC_OBJS += $(RRC_DIR)/rrc_eNB_S1AP.o
+RRC_OBJS += $(RRC_DIR)/rrc_common.o
+RRC_OBJS += $(RRC_DIR)/L2_interface.o
 
 MAC_OBJS =  $(MAC_DIR)/lte_transport_init.o
 MAC_OBJS += $(MAC_DIR)/main.o
@@ -86,8 +90,16 @@ L2_INTERFACE_OBJS = $(L2_INTERFACE_DIR)/openair_rrc_L2_interface.o
 L2_OBJS=$(addsuffix .o,$(basename $(SOURCES_L2))) $(PHY_INTERFACE_OBJS) $(MAC_OBJS) $(L2_INTERFACE_OBJS)
 #$(OPT_OBJS)
 
-L2_incl = -I$(OPENAIR2_TOP)  -I$(COMMON_DIR) -I$(RLC_DIR) -I$(RLC_AM_DIR) -I$(RLC_UM_DIR)  -I$(RLC_TM_DIR) -I$(PDCP_DIR) -I$(OPENAIR3)/MESH  -I$(OPENAIR2_TOP)/RRC/LITE/MESSAGES -I$(OPENAIR3)/MESH/RRM
-
+L2_incl =  -I$(OPENAIR2_TOP)
+L2_incl += -I$(COMMON_DIR)
+L2_incl += -I$(RLC_DIR)
+L2_incl += -I$(RLC_AM_DIR)
+L2_incl += -I$(RLC_UM_DIR)
+L2_incl += -I$(RLC_TM_DIR)
+L2_incl += -I$(PDCP_DIR)
+L2_incl += -I$(OPENAIR3)/MESH
+L2_incl += -I$(OPENAIR2_TOP)/RRC/LITE/MESSAGES
+L2_incl += -I$(OPENAIR3)/MESH/RRM
 
 ifeq ($(rrc_cellular),1)
   include $(RRC_CELL_DIR)/Makefile.inc
