@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#define G_LOG_DOMAIN ("PARSER")
+
 #include "array_type.h"
 #include "fundamental_type.h"
 #include "ui_interface.h"

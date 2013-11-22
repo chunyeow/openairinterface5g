@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define G_LOG_DOMAIN ("BUFFERS")
+
 #include <glib.h>
 
 #include "rc.h"

@@ -8,6 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define G_LOG_DOMAIN ("UI")
+
 #include <gtk/gtk.h>
 
 #include "rc.h"
@@ -22,11 +24,6 @@
 
 ui_main_data_t ui_main_data;
 
-gchar *LOG_DOMAIN_PARSE =    "Parse";
-gchar *LOG_DOMAIN_PIPE =     "Pipe";
-gchar *LOG_DOMAIN_SOCKET =   "Socket";
-gchar *LOG_DOMAIN_UI =       "UI";
-
 static void ui_help(void)
 {
     printf ("Usage: itti_analyser [options]\n\n"
@@ -40,9 +37,19 @@ static void ui_help(void)
             "  -p PORT      set port to PORT\n");
 }
 
-static void ui_gtk_parse_arg(int argc, char *argv[])
+void ui_gtk_parse_arg(int argc, char *argv[])
 {
     char c;
+
+    /* Clear of ui_main_data not needed */
+    // memset (&ui_main_data, 0, sizeof(ui_main_data_t));
+
+    /* Set some default initialization value for the IP address */
+    ui_main_data.ip_entry_init = "127.0.0.1";
+    ui_main_data.port_entry_init = "10006";
+
+    /* Set default log level to at least warning level messages */
+    ui_main_data.log_flags = (G_LOG_LEVEL_MASK & (~(G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG)));
 
     while ((c = getopt (argc, argv, "d:f:hi:l:m:p:")) != -1)
     {
@@ -159,17 +166,6 @@ void ui_set_title(const char *fmt, ...)
 int ui_gtk_initialize(int argc, char *argv[])
 {
     GtkWidget *vbox;
-
-    memset (&ui_main_data, 0, sizeof(ui_main_data_t));
-
-    /* Set some default initialization value for the IP address */
-    ui_main_data.ip_entry_init = "127.0.0.1";
-    ui_main_data.port_entry_init = "10007";
-
-    /* Set default log level to all but debug message */
-    ui_main_data.log_flags = (G_LOG_LEVEL_MASK & (~G_LOG_LEVEL_DEBUG));
-
-    ui_gtk_parse_arg (argc, argv);
 
     /* Create the main window */
     ui_main_data.window = gtk_window_new (GTK_WINDOW_TOPLEVEL);

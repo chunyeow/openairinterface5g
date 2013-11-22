@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+#define G_LOG_DOMAIN ("UI_FILTER")
+
 #include <glib.h>
 
 #include <libxml/parser.h>
@@ -252,7 +255,7 @@ static ui_filter_e ui_filter_from_name(const char *name)
     return FILTER_UNKNOWN;
 }
 
-static int xml_parse_filters(xmlDocPtr doc)
+static int xml_parse_filters(xmlDocPtr doc, const char *file_name)
 {
     xmlNode *root_element = NULL;
     xmlNode *filter_node = NULL;
@@ -354,8 +357,7 @@ static int xml_parse_filters(xmlDocPtr doc)
         ret = RC_OK;
     }
 
-    g_message(
-            "Parsed XML filters definition found %d entries (%d messages to display)", filters_entries, ui_tree_view_get_filtered_number());
+    g_message("Parsed XML filters file \"%s\", found %d entries (%d messages to display)", file_name, filters_entries, ui_tree_view_get_filtered_number());
 
     return ret;
 }
@@ -378,7 +380,7 @@ int ui_filters_read(const char *file_name)
         return RC_FAIL;
     }
 
-    ret = xml_parse_filters (doc);
+    ret = xml_parse_filters (doc, file_name);
     if (ret != RC_OK)
     {
         ui_notification_dialog (GTK_MESSAGE_WARNING, "open filters", "Found no filter definitions in \"%s\"",

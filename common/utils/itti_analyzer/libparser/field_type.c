@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <string.h>
 
+#define G_LOG_DOMAIN ("PARSER")
+
 #include "rc.h"
 
 #include "field_type.h"

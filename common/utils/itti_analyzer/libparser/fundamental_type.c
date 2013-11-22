@@ -3,6 +3,8 @@
 #include <string.h>
 #include <inttypes.h>
 
+#define G_LOG_DOMAIN ("PARSER")
+
 #include "fundamental_type.h"
 #include "ui_interface.h"
 

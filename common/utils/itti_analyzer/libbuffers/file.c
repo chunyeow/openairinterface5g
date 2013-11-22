@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#define G_LOG_DOMAIN ("BUFFERS")
+
 #include <glib.h>
 
 #include "rc.h"

@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define G_LOG_DOMAIN ("UI_CB")
+
 #include <gtk/gtk.h>
 
 #include "rc.h"
@@ -368,7 +370,7 @@ gboolean ui_callback_on_menu_color(GtkWidget *widget, gpointer data)
         snprintf (color_string, COLOR_SIZE, "#%02x%02x%02x", red, green, blue);
         ui_tree_view_refilter ();
 
-        g_message("Selected color for %s %f->%02x %f->%02x %f->%02x %s",
+        g_debug("Selected color for %s %f->%02x %f->%02x %f->%02x %s",
                   menu_color->menu_enable->filter_item->name, color.red, red, color.green, green, color.blue, blue, color_string);
     }
     gtk_widget_destroy (color_chooser);

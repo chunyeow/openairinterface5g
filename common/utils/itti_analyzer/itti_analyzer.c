@@ -15,18 +15,25 @@
 
 #include "rc.h"
 
+#define G_LOG_LEVELS (G_LOG_LEVEL_ERROR     | \
+                      G_LOG_LEVEL_CRITICAL  | \
+                      G_LOG_LEVEL_WARNING   | \
+                      G_LOG_LEVEL_MESSAGE   | \
+                      G_LOG_LEVEL_INFO      | \
+                      G_LOG_LEVEL_DEBUG)
+
 int debug_buffers = 1;
 int debug_parser = 0;
 
-static void
-console_log_handler(const char *log_domain, GLogLevelFlags log_level,
-                    const char *message, gpointer user_data)
+static void console_log_handler(const char *log_domain, GLogLevelFlags log_level,
+                                const char *message, gpointer user_data)
 {
+    GLogLevelFlags domain_log_level = (GLogLevelFlags) user_data;
     time_t curr;
     struct tm *today;
     const char *level;
 
-    if (ui_main_data.log_flags & log_level)
+    if (ui_main_data.log_flags & domain_log_level & log_level)
     {
         switch (log_level & G_LOG_LEVEL_MASK)
         {
@@ -59,7 +66,7 @@ console_log_handler(const char *log_domain, GLogLevelFlags log_level,
         time(&curr);
         today = localtime(&curr);
 
-        fprintf(stderr, "%02u:%02u:%02u %8s %s %s\n", today->tm_hour, today->tm_min, today->tm_sec,
+        fprintf(stderr, "%02u:%02u:%02u %-9s %s %s\n", today->tm_hour, today->tm_min, today->tm_sec,
                 log_domain != NULL ? log_domain : "", level, message);
     }
 }
@@ -76,9 +83,7 @@ int main(int argc, char *argv[])
         G_LOG_LEVEL_WARNING     |
         G_LOG_LEVEL_MESSAGE     |
         G_LOG_LEVEL_INFO        |
-        G_LOG_LEVEL_DEBUG       |
-        G_LOG_FLAG_FATAL        |
-        G_LOG_FLAG_RECURSION);
+        G_LOG_LEVEL_DEBUG);
 
     /* This initialize the library and check potential ABI mismatches
      * between the version it was compiled for and the actual shared
@@ -90,7 +95,20 @@ int main(int argc, char *argv[])
     /* Initialize the widget set */
     gtk_init(&argc, &argv);
 
-    g_log_set_handler(NULL, log_flags, console_log_handler, NULL);
+    /* Parse command line options */
+    ui_gtk_parse_arg (argc, argv);
+
+    /* Set log handlers:
+     *                 Domain,      Levels,    Handler,             Domain enabled levels */
+    g_log_set_handler( NULL,        log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));
+    g_log_set_handler("BUFFERS",    log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
+    g_log_set_handler("PARSER",     log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));
+    g_log_set_handler("RESOLVER",   log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
+    g_log_set_handler("UI",         log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
+    g_log_set_handler("UI_CB",      log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));
+    g_log_set_handler("UI_FILTER",  log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
+    g_log_set_handler("UI_INTER",   log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));
+    g_log_set_handler("UI_TREE",    log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
 
     CHECK_FCT(ui_gtk_initialize(argc, argv));
 

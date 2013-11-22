@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 
+#define G_LOG_DOMAIN ("UI")
+
 #include <sys/stat.h>
 
 #include <gtk/gtk.h>

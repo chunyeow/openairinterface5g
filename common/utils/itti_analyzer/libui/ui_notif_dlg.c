@@ -1,3 +1,5 @@
+#define G_LOG_DOMAIN ("UI")
+
 #include "rc.h"
 
 #include "ui_notif_dlg.h"

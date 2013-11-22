@@ -59,6 +59,8 @@ typedef struct {
 
 extern ui_main_data_t ui_main_data;
 
+void ui_gtk_parse_arg(int argc, char *argv[]);
+
 void ui_set_title(const char *fmt, ...);
 
 int ui_gtk_initialize(int argc, char *argv[]);

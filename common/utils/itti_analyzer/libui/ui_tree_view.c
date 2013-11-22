@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define G_LOG_DOMAIN ("UI_TREE")
+
 #include <gtk/gtk.h>
 
 #include "rc.h"

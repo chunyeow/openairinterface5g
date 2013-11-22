@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <gtk/gtk.h>
 
+#define G_LOG_DOMAIN ("UI")
+
 #include "rc.h"
 
 #include "ui_notebook.h"

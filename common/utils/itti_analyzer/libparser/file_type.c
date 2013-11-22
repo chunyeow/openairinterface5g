@@ -3,6 +3,8 @@
 #include <assert.h>
 #include <string.h>
 
+#define G_LOG_DOMAIN ("PARSER")
+
 #include "file_type.h"
 
 int file_type_file_print(types_t *type, int indent, FILE *file)

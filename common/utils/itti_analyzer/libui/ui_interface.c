@@ -2,6 +2,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#define G_LOG_DOMAIN ("UI_INTER")
+
 #include <gtk/gtk.h>
 
 #include "ui_interface.h"

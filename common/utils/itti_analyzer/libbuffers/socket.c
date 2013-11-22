@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#define G_LOG_DOMAIN ("BUFFERS")
+
 #include <gtk/gtk.h>
 
 #include "itti_types.h"

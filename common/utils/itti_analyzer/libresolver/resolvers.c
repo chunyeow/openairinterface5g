@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define G_LOG_DOMAIN ("RESOLVER")
+
 #include <glib.h>
 
 #include "types.h"

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define G_LOG_DOMAIN ("PARSER")
+
 #include "types.h"
 #include "array_type.h"
 #include "enum_type.h"
