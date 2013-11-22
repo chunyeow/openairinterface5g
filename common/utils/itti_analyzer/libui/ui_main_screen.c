@@ -12,6 +12,7 @@
 
 #include <gtk/gtk.h>
 
+#include "logs.h"
 #include "rc.h"
 
 #include "ui_interface.h"
@@ -122,7 +123,7 @@ void ui_gtk_parse_arg(int argc, char *argv[])
 
 static int ui_idle_callback(gpointer data)
 {
-    g_debug("Entering idle state");
+    g_info("Entering idle state");
 
     gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.messages_list);
 

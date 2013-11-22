@@ -5,6 +5,7 @@
 
 #include <gtk/gtk.h>
 
+#include "logs.h"
 #include "rc.h"
 
 #include "buffers.h"
@@ -64,7 +65,7 @@ static gboolean ui_tree_filter_messages(GtkTreeModel *model, GtkTreeIter *iter, 
 
 static gboolean onButtonPressed(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
 {
-    g_debug("onButtonPressed %p %p %p %d %d", treeview, event, userdata, event->type, event->button);
+    g_info("onButtonPressed %p %p %p %d %d", treeview, event, userdata, event->type, event->button);
     ui_tree_view_last_event = event;
 
     return FALSE;
@@ -73,7 +74,7 @@ static gboolean onButtonPressed(GtkWidget *treeview, GdkEventButton *event, gpoi
 /*
  static gboolean onButtonRelease(GtkWidget *treeview, GdkEventButton *event, gpointer userdata)
  {
- g_debug("onButtonRelease %p %p %p %d %d", treeview, event, userdata, event->type, event->button);
+ g_info("onButtonRelease %p %p %p %d %d", treeview, event, userdata, event->type, event->button);
  // last_event = event;
 
  return FALSE;
@@ -472,7 +473,7 @@ void ui_tree_view_refilter()
         gtk_tree_model_foreach (GTK_TREE_MODEL(ui_store.store), updateColors, NULL);
     }
 
-    g_debug("ui_tree_view_refilter: last message %d, %d messages displayed", ui_store.filtered_last_msg, ui_store.filtered_msg_number);
+    g_info("ui_tree_view_refilter: last message %d, %d messages displayed", ui_store.filtered_last_msg, ui_store.filtered_msg_number);
 }
 
 guint ui_tree_view_get_filtered_number(void)

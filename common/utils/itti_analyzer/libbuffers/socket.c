@@ -11,6 +11,7 @@
 
 #include <gtk/gtk.h>
 
+#include "logs.h"
 #include "itti_types.h"
 #include "rc.h"
 
@@ -40,7 +41,7 @@ static ssize_t socket_read_data(socket_data_t *socket_data, void *buffer, size_t
             case EAGAIN:
                 return -1;
             default:
-                g_debug("recv failed: %s", g_strerror(errno));
+                g_info("recv failed: %s", g_strerror(errno));
                 pthread_exit(NULL);
                 break;
         }
@@ -193,8 +194,8 @@ static int socket_read(socket_data_t *socket_data)
                 break;
             case ITTI_STATISTIC_MESSAGE_TYPE:
             default:
-                g_debug("Received unknow (or not implemented) message from socket type: %d",
-                        message_header.message_type);
+                g_warning("Received unknow (or not implemented) message from socket type: %d",
+                          message_header.message_type);
                 break;
         }
     }
@@ -250,7 +251,7 @@ static int pipe_read_message(socket_data_t *socket_data)
         case UI_PIPE_DISCONNECT_EVT:
             return socket_handle_disconnect_evt(socket_data);
         default:
-            g_debug("[socket] Unhandled message type %u", input_header.message_type);
+            g_warning("[socket] Unhandled message type %u", input_header.message_type);
             g_assert_not_reached();
     }
     return 0;
@@ -275,7 +276,7 @@ void *socket_thread_fct(void *arg)
 
     /* Preparing the socket */
     if ((socket_data->sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1) {
-        g_debug("socket failed: %s", g_strerror(errno));
+        g_warning("socket failed: %s", g_strerror(errno));
         free(socket_data->ip_address);
         free(socket_data);
         pthread_exit(NULL);
@@ -285,7 +286,7 @@ void *socket_thread_fct(void *arg)
     si_me.sin_family = AF_INET;
     si_me.sin_port = htons(socket_data->port);
     if (inet_aton(socket_data->ip_address, &si_me.sin_addr) == 0) {
-        g_debug("inet_aton() failed\n");
+        g_warning("inet_aton() failed\n");
         free(socket_data->ip_address);
         free(socket_data);
         pthread_exit(NULL);
@@ -313,7 +314,7 @@ void *socket_thread_fct(void *arg)
     /* Connecting to remote peer */
     ret = connect(socket_data->sd, (struct sockaddr *)&si_me, sizeof(struct sockaddr_in));
     if (ret < 0) {
-        g_debug("Failed to connect to peer %s:%d",
+        g_warning("Failed to connect to peer %s:%d",
                 socket_data->ip_address, socket_data->port);
         ui_pipe_write_message(socket_data->pipe_fd,
                               UI_PIPE_CONNECTION_FAILED, NULL, 0);
@@ -331,7 +332,7 @@ void *socket_thread_fct(void *arg)
 
         ret = select(fd_max + 1, &read_fds, NULL, NULL, &tv);
         if (ret < 0) {
-            g_debug("Error in select: %s", g_strerror(errno));
+            g_warning("Error in select: %s", g_strerror(errno));
             free(socket_data->ip_address);
             free(socket_data);
             /* Quit the thread */

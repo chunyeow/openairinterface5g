@@ -659,7 +659,7 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
     doc = xmlReadMemory(xml_buffer, size, NULL, NULL, 0);
 
     if (doc == NULL) {
-        g_debug("Failed to parse XML buffer: %s", xml_buffer);
+        g_warning("Failed to parse XML buffer: %s", xml_buffer);
         ui_notification_dialog(GTK_MESSAGE_ERROR, "parse messages format definition", "Fail to parse XML buffer");
         return RC_FAIL;
     }

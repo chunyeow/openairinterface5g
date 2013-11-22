@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
      *                 Domain,      Levels,    Handler,             Domain enabled levels */
     g_log_set_handler( NULL,        log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));
     g_log_set_handler("BUFFERS",    log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
-    g_log_set_handler("PARSER",     log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));
+    g_log_set_handler("PARSER",     log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
     g_log_set_handler("RESOLVER",   log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
     g_log_set_handler("UI",         log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS & (~(G_LOG_LEVEL_DEBUG))));
     g_log_set_handler("UI_CB",      log_flags, console_log_handler, (gpointer) (G_LOG_LEVELS));

@@ -9,6 +9,7 @@
 
 #include <gtk/gtk.h>
 
+#include "logs.h"
 #include "rc.h"
 
 #include "socket.h"
@@ -62,7 +63,7 @@ gboolean ui_callback_on_filters_enabled(GtkToolButton *button, gpointer data)
 
     enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(button));
 
-    g_debug("Filters enabled event occurred %d", enabled);
+    g_info("Filters enabled event occurred %d", enabled);
 
     changed = ui_filters_enable (enabled);
 
@@ -195,7 +196,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                             ui_create_filter_menus ();
                         }
 
-                        g_debug("Message selected right click %d %d %d %d", message_id, origin_task_id, destination_task_id, instance);
+                        g_info("Message selected right click %d %d %d %d", message_id, origin_task_id, destination_task_id, instance);
 
                         /* Message Id menu */
                         {
@@ -308,13 +309,13 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                     data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
                     data_size = get_message_size ((buffer_t*) buffer);
 
-                    g_debug("    message header type size: %u, data size: %u %p %d", message_header_type_size, data_size, buffer, ui_main_data.follow_last);
+                    g_info("    message header type size: %u, data size: %u %p %d", message_header_type_size, data_size, buffer, ui_main_data.follow_last);
 
                     ui_signal_set_text (text_view, data, data_size);
                 }
                 else
                 {
-                    g_debug("    dissect message %d %p %d", message_id, buffer, ui_main_data.follow_last);
+                    g_info("    dissect message %d %p %d", message_id, buffer, ui_main_data.follow_last);
 
                     /* Dissect the signal */
                     CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
@@ -370,7 +371,7 @@ gboolean ui_callback_on_menu_color(GtkWidget *widget, gpointer data)
         snprintf (color_string, COLOR_SIZE, "#%02x%02x%02x", red, green, blue);
         ui_tree_view_refilter ();
 
-        g_debug("Selected color for %s %f->%02x %f->%02x %f->%02x %s",
+        g_info("Selected color for %s %f->%02x %f->%02x %f->%02x %s",
                   menu_color->menu_enable->filter_item->name, color.red, red, color.green, green, color.blue, blue, color_string);
     }
     gtk_widget_destroy (color_chooser);
@@ -664,7 +665,7 @@ gboolean ui_callback_on_menu_none(GtkWidget *widget, gpointer data)
 {
     GtkWidget *menu = (GtkWidget *) data;
 
-    g_debug("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
+    g_info("ui_callback_on_menu_none occurred %lx %lx)", (long) widget, (long) data);
 
     refresh_message_list = FALSE;
     gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) FALSE);
@@ -683,7 +684,7 @@ gboolean ui_callback_on_menu_all(GtkWidget *widget, gpointer data)
 {
     GtkWidget *menu = (GtkWidget *) data;
 
-    g_debug("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
+    g_info("ui_callback_on_menu_all occurred %lx %lx)", (long) widget, (long) data);
 
     refresh_message_list = FALSE;
     gtk_container_foreach (GTK_CONTAINER(menu), ui_callback_on_menu_items_selected, (gpointer) TRUE);
@@ -716,7 +717,7 @@ gboolean ui_callback_on_menu_item_selected(GtkWidget *widget, gpointer data)
             filters_changed = TRUE;
         }
     }
-    g_debug("ui_callback_on_menu_item_selected occurred %p %p %s %d (%d messages to display)", widget, data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
+    g_info("ui_callback_on_menu_item_selected occurred %p %p %s %d (%d messages to display)", widget, data, filter_entry->name, enabled, ui_tree_view_get_filtered_number());
 
     return TRUE;
 }
@@ -725,7 +726,7 @@ gboolean ui_callback_on_tree_column_header_click(GtkWidget *widget, gpointer dat
 {
     col_type_t col = (col_type_t) data;
 
-    g_debug("ui_callback_on_tree_column_header_click %d", col);
+    g_info("ui_callback_on_tree_column_header_click %d", col);
     switch (col)
     {
         case COL_MESSAGE:
