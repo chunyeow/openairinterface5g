@@ -17,6 +17,7 @@ typedef enum col_type_e
     COL_TO_TASK_ID,
     COL_FOREGROUND,
     COL_BACKGROUND,
+    COL_STRIKETHROUGH,
 
     COL_BUFFER,
     NUM_COLS
@@ -36,6 +37,12 @@ typedef struct ui_tree_view_menu_enable_s
     GtkWidget *menu_enable;
     ui_filter_item_t *filter_item;
 } ui_tree_view_menu_enable_t;
+
+typedef struct ui_tree_view_menu_color_s
+{
+    gboolean foreground;
+    ui_tree_view_menu_enable_t *menu_enable;
+} ui_tree_view_menu_color_t;
 
 extern GtkWidget *ui_tree_view_menu;
 extern ui_tree_view_menu_enable_t ui_tree_view_menu_enable[NUM_MENU_TYPE];

@@ -707,7 +707,7 @@ static int update_filters() {
         {
             if (strcmp (types->name, "MESSAGES_ID_MAX") != 0)
             {
-                ui_filters_add (FILTER_MESSAGES, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED, NULL);
+                ui_filters_add (FILTER_MESSAGES, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED, NULL, NULL);
             }
             types = types->next;
         }
@@ -721,7 +721,7 @@ static int update_filters() {
         while (types != NULL) {
             if ((strcmp (types->name, "TASK_FIRST") != 0) && (strcmp (types->name, "TASK_MAX") != 0))
             {
-            	ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED, NULL);
+            	ui_filters_add(FILTER_ORIGIN_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED, NULL, NULL);
             }
             types = types->next;
         }
@@ -735,7 +735,7 @@ static int update_filters() {
         while (types != NULL) {
             if ((strcmp (types->name, "TASK_FIRST") != 0) && (strcmp (types->name, "TASK_MAX") != 0))
             {
-            	ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED, NULL);
+            	ui_filters_add(FILTER_DESTINATION_TASKS, types->init_value, types->name, ENTRY_ENABLED_UNDEFINED, NULL, NULL);
             }
             types = types->next;
         }
