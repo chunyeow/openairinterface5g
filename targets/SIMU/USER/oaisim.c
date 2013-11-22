@@ -329,7 +329,10 @@ int omv_write(int pfd, Node_list enb_node_list, Node_list ue_node_list, Data_Flo
       omv_data.geo[i].Pathloss = 44;
       omv_data.geo[i].RSSI[0] = 33;
       omv_data.geo[i].RSSI[1] = 22;
-      omv_data.geo[i].RSSI[2] = 11;
+      if ((sizeof(omv_data.geo[0].RSSI) / sizeof(omv_data.geo[0].RSSI[0])) > 2)
+      {
+        omv_data.geo[i].RSSI[2] = 11;
+      }
 
       ue_node_list = ue_node_list->next;
       omv_data.geo[i].Neighbors = 0;
