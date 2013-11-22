@@ -19,7 +19,7 @@ of the RRC spec is used to synthesize the data structures and encoding/decoding 
    1. use Microsoft WORD to generate a text version of the 3GPP 36.331 document
    2. run the script on the text file to generate the three files.
 
-Now download the asn1c utility (version 0.9.21) from 
+Now download the asn1c utility (version 0.9.22) from 
 
 http://lionet.info/asn1c/blog/
 
