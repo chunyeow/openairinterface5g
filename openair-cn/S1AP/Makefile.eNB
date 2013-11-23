@@ -98,7 +98,7 @@ $(OUTDIR)/s1ap_asn1regen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/S1AP-CommonDataTypes.as
 	(cd $(ASN1MESSAGESDIR) && asn1c -fhave_native64 -gen-PER $^)
 	@echo Timestamp > $@
 
-$(OUTDIR)/libs1ap.a: | $(OUTDIR)/s1ap_ieregen.stamp $(OUTDIR)/s1ap_asn1regen.stamp $(S1AP_GENERATED) $(addprefix $(OUTDIR)/,$(libs1ap_OBJECTS))
+$(OUTDIR)/libs1ap.a: $(OUTDIR)/s1ap_ieregen.stamp $(OUTDIR)/s1ap_asn1regen.stamp $(S1AP_GENERATED) $(addprefix $(OUTDIR)/,$(libs1ap_OBJECTS))
 	@echo Creating S1AP archive
 	@$(AR) rcs $@ $(S1AP_GENERATED) $(addprefix $(OUTDIR)/,$(libs1ap_OBJECTS))
 
