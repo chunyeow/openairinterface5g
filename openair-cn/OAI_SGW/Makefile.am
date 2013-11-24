@@ -24,7 +24,8 @@ oai_sgw_LDADD = \
 	$(top_builddir)/UTILS/HASHTABLE/libhashtable.la \
 	$(top_builddir)/UDP/libudpserver.la	\
 	$(top_builddir)/SECU/libsecu.la	\
-	$(top_builddir)/UTILS/libutils.la
+	$(top_builddir)/UTILS/libutils.la	\
+	$(top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a
 
 oai_sgw_SOURCES = \
 	oai_sgw_log.c	\

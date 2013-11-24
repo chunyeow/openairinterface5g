@@ -158,7 +158,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     }
     memcpy(message_payload_p, data_pP, packet_sizeP);
 
-    gtpv1u_tunnel_data_req_p = &message_p->msg.gtpv1uTunnelDataReq;
+    gtpv1u_tunnel_data_req_p = &message_p->ittiMsg.gtpv1uTunnelDataReq;
     //LG HACK gtpv1u_tunnel_data_req_p->S1u_enb_teid   = addr_mapping_p->enb_S1U_teid;
 #warning forced S1u_enb_teid to 1 for testing, waiting for MODIFY_BEARER REQUEST
     gtpv1u_tunnel_data_req_p->S1u_enb_teid   = 1;
@@ -291,7 +291,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     }
     memcpy(message_payload_p, data_pP+sizeof(sgi_data_pP->eh), packet_sizeP - sizeof(sgi_data_pP->eh));
 
-    gtpv1u_tunnel_data_req_p = &message_p->msg.gtpv1uTunnelDataReq;
+    gtpv1u_tunnel_data_req_p = &message_p->ittiMsg.gtpv1uTunnelDataReq;
     gtpv1u_tunnel_data_req_p->S1u_enb_teid   = addr_mapping_p->enb_S1U_teid;
 //#warning forced S1u_enb_teid to 1 for testing, waiting for MODIFY_BEARER REQUEST
 //    gtpv1u_tunnel_data_req_p->S1u_enb_teid   = 1;

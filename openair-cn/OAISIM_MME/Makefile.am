@@ -33,7 +33,8 @@ oaisim_mme_LDADD = \
 	$(top_builddir)/MME_APP/libmmeapp.la	\
 	$(top_builddir)/SECU/libsecu.la	\
 	$(top_builddir)/UTILS/libutils.la	\
-	$(top_builddir)/GTPV2-C/nwgtpv2c-0.11/src/libNwGtpv2c.a
+	$(top_builddir)/GTPV2-C/nwgtpv2c-0.11/src/libNwGtpv2c.a	\
+	$(top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a
 
 oaisim_mme_SOURCES = \
 	oai_mme_log.c	\

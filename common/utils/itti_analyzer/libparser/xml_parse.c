@@ -780,7 +780,7 @@ static int xml_parse_doc(xmlDocPtr doc) {
         /* Locate the header part of a message */
         CHECK_FCT(locate_type("ittiMsgHeader", head, &message_header_type));
         /* Locate the main message part */
-        CHECK_FCT(locate_type("msg", head, &message_type));
+        CHECK_FCT(locate_type("ittiMsg", head, &message_type));
 
         /* Locate the origin task id field */
         CHECK_FCT(locate_type("originTaskId", message_header_type, &origin_task_id_type));

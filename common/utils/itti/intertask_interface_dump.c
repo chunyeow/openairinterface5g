@@ -255,6 +255,7 @@ static int itti_enqueue_message(itti_queue_item_t *new, uint32_t message_size,
         fwrite (&new->message_number, sizeof(new->message_number), 1, dump_file);
         fwrite (new->message_name, sizeof(new->message_name), 1, dump_file);
         fwrite (new->data, new->data_size, 1, dump_file);
+        fflush (dump_file);
     }
 
     /* Release the mutex */

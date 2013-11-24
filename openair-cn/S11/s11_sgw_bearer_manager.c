@@ -34,7 +34,7 @@ int s11_sgw_handle_modify_bearer_request(NwGtpv2cStackHandleT *stack_p,
 
     message_p = itti_alloc_new_message(TASK_S11, SGW_MODIFY_BEARER_REQUEST);
 
-    modify_bearer_request_p = &message_p->msg.sgwModifyBearerRequest;
+    modify_bearer_request_p = &message_p->ittiMsg.sgwModifyBearerRequest;
 
     modify_bearer_request_p->trxn = (void *)pUlpApi->apiInfo.initialReqIndInfo.hTrxn;
     modify_bearer_request_p->teid = nwGtpv2cMsgGetTeid(pUlpApi->hMsg);

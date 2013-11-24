@@ -343,6 +343,60 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     return 0;
 }
 
+void s1ap_eNB_nas_non_delivery_ind(instance_t instance, 
+                                   s1ap_nas_non_delivery_ind_t *s1ap_nas_non_delivery_ind)
+{
+    struct s1ap_eNB_ue_context_s *ue_context_p;
+    s1ap_eNB_instance_t          *s1ap_eNB_instance_p;
+
+    S1ap_NASNonDeliveryIndication_IEs_t *nas_non_delivery_p;
+
+    s1ap_message  message;
+
+    uint8_t  *buffer;
+    uint32_t length;
+
+    DevAssert(s1ap_nas_non_delivery_ind != NULL);
+
+    /* Retrieve the S1AP eNB instance associated with Mod_id */
+    s1ap_eNB_instance_p = s1ap_eNB_get_instance(instance);
+    DevAssert(s1ap_eNB_instance_p != NULL);
+
+    if ((ue_context_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance_p, s1ap_nas_non_delivery_ind->eNB_ue_s1ap_id)) == NULL)
+    {
+        /* The context for this eNB ue s1ap id doesn't exist in the map of eNB UEs */
+        S1AP_WARN("Failed to find ue context associated with eNB ue s1ap id: %06x\n",
+                  s1ap_nas_non_delivery_ind->eNB_ue_s1ap_id);
+        return;
+    }
+
+    DevAssert(ue_context_p->ue_state == S1AP_UE_CONNECTED);
+
+    /* Prepare the S1AP message to encode */
+    memset(&message, 0, sizeof(s1ap_message));
+
+    message.direction     = S1AP_PDU_PR_initiatingMessage;
+    message.procedureCode = S1ap_ProcedureCode_id_NASNonDeliveryIndication;
+
+    nas_non_delivery_p = &message.msg.s1ap_NASNonDeliveryIndication_IEs;
+
+    if (s1ap_eNB_encode_pdu(&message, &buffer, &length) < 0) {
+        S1AP_ERROR("Failed to encode NAS NON delivery indication\n");
+        /* Encode procedure has failed... */
+        return;
+    }
+
+    nas_non_delivery_p->eNB_UE_S1AP_ID = ue_context_p->eNB_ue_s1ap_id;
+    nas_non_delivery_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+    nas_non_delivery_p->nas_pdu.buf    = s1ap_nas_non_delivery_ind->nas_pdu.buffer;
+    nas_non_delivery_p->nas_pdu.size   = s1ap_nas_non_delivery_ind->nas_pdu.length;
+
+    /* UE associated signalling -> use the allocated stream */
+    s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
+                                     ue_context_p->mme_ref->assoc_id, buffer,
+                                     length, ue_context_p->stream);
+}
+
 int s1ap_eNB_initial_ctxt_resp(
     instance_t instance, s1ap_initial_context_setup_resp_t *initial_ctxt_resp_p)
 {

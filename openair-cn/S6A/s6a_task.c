@@ -81,10 +81,10 @@ void *s6a_thread(void *args)
         switch (ITTI_MSG_ID(received_message_p))
         {
             case S6A_UPDATE_LOCATION_REQ: {
-                s6a_generate_update_location(&received_message_p->msg.s6a_update_location_req);
+                s6a_generate_update_location(&received_message_p->ittiMsg.s6a_update_location_req);
             } break;
             case S6A_AUTH_INFO_REQ: {
-                s6a_generate_authentication_info_req(&received_message_p->msg.s6a_auth_info_req);
+                s6a_generate_authentication_info_req(&received_message_p->ittiMsg.s6a_auth_info_req);
             } break;
             default: {
                 S6A_DEBUG("Unkwnon message ID %d:%s\n",

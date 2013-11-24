@@ -1092,7 +1092,7 @@ static int _emm_as_send(const emm_as_t* msg)
 
                 message_p = itti_alloc_new_message(TASK_NAS, NAS_DOWNLINK_DATA_IND);
 
-                memcpy(&message_p->msg.nas_dl_data_ind,
+                memcpy(&message_p->ittiMsg.nas_dl_data_ind,
                        &as_msg.msg.dl_info_transfer_req,
                        sizeof(nas_dl_data_ind_t));
 

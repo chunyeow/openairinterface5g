@@ -132,9 +132,9 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
             if (message_p == NULL) {
                 return -1;
             }
-            con_ind_p = &message_p->msg.nas_conn_est_ind.nas;
+            con_ind_p = &message_p->ittiMsg.nas_conn_est_ind.nas;
 
-            s1ap_p = &message_p->msg.nas_conn_est_ind.transparent;
+            s1ap_p = &message_p->ittiMsg.nas_conn_est_ind.transparent;
 
             s1ap_p->eNB_ue_s1ap_id = eNB_ue_s1ap_id;
             s1ap_p->mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;

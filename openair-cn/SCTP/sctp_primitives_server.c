@@ -593,7 +593,7 @@ static void *sctp_intertask_interface(void *args_p)
             case SCTP_INIT_MSG: {
                 SCTP_DEBUG("Received SCTP_INIT_MSG\n");
                 /* We received a new connection request */
-                if (sctp_create_new_listener(&received_message_p->msg.sctpInit) < 0) {
+                if (sctp_create_new_listener(&received_message_p->ittiMsg.sctpInit) < 0) {
                     /* SCTP socket creation or bind failed... */
                     SCTP_ERROR("Failed to create new SCTP listener\n");
                 }
@@ -603,7 +603,7 @@ static void *sctp_intertask_interface(void *args_p)
             } break;
             case SCTP_NEW_DATA_REQ: {
                 SctpNewDataReq *sctpNewS1APDataReq;
-                sctpNewS1APDataReq = &received_message_p->msg.sctpNewDataReq;
+                sctpNewS1APDataReq = &received_message_p->ittiMsg.sctpNewDataReq;
                 if (sctp_send_msg(sctpNewS1APDataReq->assocId,
                                   sctpNewS1APDataReq->stream,
                                   sctpNewS1APDataReq->buffer,

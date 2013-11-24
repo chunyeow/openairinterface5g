@@ -35,7 +35,8 @@ oai_epc_LDADD = \
 	$(top_builddir)/MME_APP/libmmeapp.la	\
 	$(top_builddir)/SECU/libsecu.la	\
 	$(top_builddir)/UTILS/libutils.la	\
-	$(top_builddir)/S1AP/libs1ap.la
+	$(top_builddir)/S1AP/libs1ap.la	\
+	$(top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a
 
 oai_epc_SOURCES = \
 	oai_epc_log.c	\

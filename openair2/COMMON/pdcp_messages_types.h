@@ -10,8 +10,8 @@
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
-#define RRC_DCCH_DATA_REQ(mSGpTR)               (mSGpTR)->msg.rrc_dcch_data_req
-#define RRC_DCCH_DATA_IND(mSGpTR)               (mSGpTR)->msg.rrc_dcch_data_ind
+#define RRC_DCCH_DATA_REQ(mSGpTR)               (mSGpTR)->ittiMsg.rrc_dcch_data_req
+#define RRC_DCCH_DATA_IND(mSGpTR)               (mSGpTR)->ittiMsg.rrc_dcch_data_ind
 
 //-------------------------------------------------------------------------------------------//
 // Messages between RRC and PDCP layers

@@ -168,7 +168,7 @@ void *udp_receiver_thread(void *arg_p)
 
             DevAssert(message_p != NULL);
 
-            udp_data_ind_p = &message_p->msg.udp_data_ind;
+            udp_data_ind_p = &message_p->ittiMsg.udp_data_ind;
 
             udp_data_ind_p->buffer        = forwarded_buffer;
             udp_data_ind_p->buffer_length = n;
@@ -206,7 +206,7 @@ static void *udp_intertask_interface(void *args_p)
         {
             case UDP_INIT: {
                 udp_init_t *udp_init_p;
-                udp_init_p = &received_message_p->msg.udp_init;
+                udp_init_p = &received_message_p->ittiMsg.udp_init;
                 udp_create_socket(udp_init_p->port, udp_init_p->address,
                                   ITTI_MSG_ORIGIN_ID(received_message_p));
             } break;
@@ -218,7 +218,7 @@ static void *udp_intertask_interface(void *args_p)
                 udp_data_req_t           *udp_data_req_p;
                 struct sockaddr_in        peer_addr;
 
-                udp_data_req_p = &received_message_p->msg.udp_data_req;
+                udp_data_req_p = &received_message_p->ittiMsg.udp_data_req;
 
                 memset(&peer_addr, 0, sizeof(struct sockaddr_in));
 

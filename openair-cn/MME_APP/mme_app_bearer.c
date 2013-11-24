@@ -132,7 +132,7 @@ int mme_app_create_bearer(s6a_update_location_ans_t *ula_p)
      * Set these parameters with random values for now.
      */
 
-    session_request_p = &message_p->msg.sgwCreateSessionRequest;
+    session_request_p = &message_p->ittiMsg.sgwCreateSessionRequest;
     memset(session_request_p, 0, sizeof(SgwCreateSessionRequest));
 
     /* As the create session request is the first exchanged message and as
@@ -320,7 +320,7 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
 
         message_p = itti_alloc_new_message(TASK_MME_APP, NAS_ATTACH_ACCEPT);
 
-        attach_accept_p = &message_p->msg.nas_attach_accept;
+        attach_accept_p = &message_p->ittiMsg.nas_attach_accept;
 
         derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
         memcpy(attach_accept_p->transparent.keNB, keNB, 32);

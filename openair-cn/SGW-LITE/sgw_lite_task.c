@@ -59,35 +59,35 @@ static void *sgw_lite_intertask_interface(void *args_p)
                  *      E-UTRAN Initial Attach
                  *      UE requests PDN connectivity
                  */
-                sgw_lite_handle_create_session_request(&received_message_p->msg.sgwCreateSessionRequest);
+                sgw_lite_handle_create_session_request(&received_message_p->ittiMsg.sgwCreateSessionRequest);
             } break;
 
             case SGW_MODIFY_BEARER_REQUEST: {
-                sgw_lite_handle_modify_bearer_request(&received_message_p->msg.sgwModifyBearerRequest);
+                sgw_lite_handle_modify_bearer_request(&received_message_p->ittiMsg.sgwModifyBearerRequest);
             } break;
 
             case SGW_DELETE_SESSION_REQUEST: {
-                sgw_lite_handle_delete_session_request(&received_message_p->msg.sgwDeleteSessionRequest);
+                sgw_lite_handle_delete_session_request(&received_message_p->ittiMsg.sgwDeleteSessionRequest);
             } break;
 
             case GTPV1U_CREATE_TUNNEL_RESP: {
                 SPGW_APP_DEBUG("Received teid for S1-U: %u and status: %s\n",
-                          received_message_p->msg.gtpv1uCreateTunnelResp.S1u_teid ,
-                          received_message_p->msg.gtpv1uCreateTunnelResp.status == 0 ? "Success" :
+                          received_message_p->ittiMsg.gtpv1uCreateTunnelResp.S1u_teid ,
+                          received_message_p->ittiMsg.gtpv1uCreateTunnelResp.status == 0 ? "Success" :
                           "Failure");
-                sgw_lite_handle_gtpv1uCreateTunnelResp(&received_message_p->msg.gtpv1uCreateTunnelResp);
+                sgw_lite_handle_gtpv1uCreateTunnelResp(&received_message_p->ittiMsg.gtpv1uCreateTunnelResp);
             } break;
 
             case GTPV1U_UPDATE_TUNNEL_RESP: {
-                sgw_lite_handle_gtpv1uUpdateTunnelResp(&received_message_p->msg.gtpv1uUpdateTunnelResp);
+                sgw_lite_handle_gtpv1uUpdateTunnelResp(&received_message_p->ittiMsg.gtpv1uUpdateTunnelResp);
             } break;
 
             case SGI_CREATE_ENDPOINT_RESPONSE: {
-            	sgw_lite_handle_sgi_endpoint_created(&received_message_p->msg.sgiCreateEndpointResp);
+            	sgw_lite_handle_sgi_endpoint_created(&received_message_p->ittiMsg.sgiCreateEndpointResp);
             } break;
 
             case SGI_UPDATE_ENDPOINT_RESPONSE: {
-            	sgw_lite_handle_sgi_endpoint_updated(&received_message_p->msg.sgiUpdateEndpointResp);
+            	sgw_lite_handle_sgi_endpoint_updated(&received_message_p->ittiMsg.sgiUpdateEndpointResp);
             } break;
 
             default: {

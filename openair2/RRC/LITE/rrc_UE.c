@@ -336,7 +336,7 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_CCCH_MESSAGE);
-    memcpy (&message_p->msg, (void *) dl_ccch_msg, sizeof(RrcDlCcchMessage));
+    memcpy (&message_p->ittiMsg, (void *) dl_ccch_msg, sizeof(RrcDlCcchMessage));
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
@@ -1341,7 +1341,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_DCCH_MESSAGE);
-    memcpy (&message_p->msg, (void *) dl_dcch_msg, sizeof(RrcDlDcchMessage));
+    memcpy (&message_p->ittiMsg, (void *) dl_dcch_msg, sizeof(RrcDlDcchMessage));
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
@@ -1510,7 +1510,7 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
-    memcpy (&message_p->msg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
+    memcpy (&message_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }

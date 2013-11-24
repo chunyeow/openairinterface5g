@@ -40,20 +40,20 @@ next_message:
 
                 message_p = itti_alloc_new_message(TASK_NAS, NAS_ATTACH_REQ);
 
-                nas_req_p = &message_p->msg.nas_attach_req;
-                transparent = &message_p->msg.nas_attach_req.transparent;
+                nas_req_p = &message_p->ittiMsg.nas_attach_req;
+                transparent = &message_p->ittiMsg.nas_attach_req.transparent;
 
                 nas_req_p->initial = INITIAL_REQUEST;
                 sprintf(nas_req_p->imsi, "%14llu", 20834123456789ULL);
 
-                memcpy(transparent, &received_message_p->msg.nas_conn_est_ind.transparent,
+                memcpy(transparent, &received_message_p->ittiMsg.nas_conn_est_ind.transparent,
                        sizeof(s1ap_initial_ue_message_t));
 
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 #else
                 nas_establish_ind_t *nas_est_ind_p;
 
-                nas_est_ind_p = &received_message_p->msg.nas_conn_est_ind.nas;
+                nas_est_ind_p = &received_message_p->ittiMsg.nas_conn_est_ind.nas;
 
                 nas_proc_establish_ind(nas_est_ind_p->UEid,
                                        nas_est_ind_p->tac,
@@ -73,9 +73,9 @@ next_message:
 
                 message_p = itti_alloc_new_message(TASK_NAS, NAS_AUTHENTICATION_RESP);
 
-                nas_resp_p = &message_p->msg.nas_auth_resp;
+                nas_resp_p = &message_p->ittiMsg.nas_auth_resp;
 
-                memcpy(nas_resp_p->imsi, received_message_p->msg.nas_auth_req.imsi, 16);
+                memcpy(nas_resp_p->imsi, received_message_p->ittiMsg.nas_auth_req.imsi, 16);
 
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
             } break;

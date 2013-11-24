@@ -98,7 +98,7 @@ int s11_mme_handle_create_session_response(NwGtpv2cStackHandleT *stack_p,
 
     message_p = itti_alloc_new_message(TASK_S11, SGW_CREATE_SESSION_RESPONSE);
 
-    create_session_resp_p = &message_p->msg.sgwCreateSessionResponse;
+    create_session_resp_p = &message_p->ittiMsg.sgwCreateSessionResponse;
 
     /* Create a new message parser */
     rc = nwGtpv2cMsgParserNew(*stack_p, NW_GTP_CREATE_SESSION_RSP,

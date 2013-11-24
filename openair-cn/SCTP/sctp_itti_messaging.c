@@ -12,7 +12,7 @@ int sctp_itti_send_new_association(uint32_t assoc_id, uint16_t instreams,
 
     message_p = itti_alloc_new_message(TASK_SCTP, SCTP_NEW_ASSOCIATION);
 
-    sctp_new_peer_p = &message_p->msg.sctp_new_peer;
+    sctp_new_peer_p = &message_p->ittiMsg.sctp_new_peer;
 
     sctp_new_peer_p->assoc_id   = assoc_id;
     sctp_new_peer_p->instreams  = instreams;
@@ -30,7 +30,7 @@ int sctp_itti_send_new_message_ind(int n, uint8_t *buffer, uint32_t assoc_id,
 
     message_p = itti_alloc_new_message(TASK_SCTP, S1AP_SCTP_NEW_MESSAGE_IND);
 
-    sctp_new_msg_ind_p = &message_p->msg.s1ap_sctp_new_msg_ind;
+    sctp_new_msg_ind_p = &message_p->ittiMsg.s1ap_sctp_new_msg_ind;
 
     sctp_new_msg_ind_p->buffer = malloc(sizeof(uint8_t) * n);
 
@@ -52,7 +52,7 @@ int sctp_itti_send_com_down_ind(uint32_t assoc_id)
 
     message_p = itti_alloc_new_message(TASK_SCTP, SCTP_CLOSE_ASSOCIATION);
 
-    sctp_close_association_p = &message_p->msg.sctp_close_association;
+    sctp_close_association_p = &message_p->ittiMsg.sctp_close_association;
 
     sctp_close_association_p->assoc_id = assoc_id;
 

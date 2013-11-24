@@ -62,7 +62,7 @@ int s6a_ula_cb(struct msg **msg, struct avp *paramavp,
 
     message_p = itti_alloc_new_message(TASK_S6A, S6A_UPDATE_LOCATION_ANS);
 
-    s6a_update_location_ans_p = &message_p->msg.s6a_update_location_ans;
+    s6a_update_location_ans_p = &message_p->ittiMsg.s6a_update_location_ans;
 
     CHECK_FCT(fd_msg_search_avp(qry, s6a_fd_cnf.dataobj_s6a_user_name, &avp));
     if (avp) {

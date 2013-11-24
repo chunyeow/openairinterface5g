@@ -412,7 +412,7 @@ void *l2l1_task(void *args_p) {
         /* FIXME: following parameters should be setup by eNB applicative layer ? */
         message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
 
-        s1ap_register_eNB = &message_p->msg.s1ap_register_eNB;
+        s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
 
         hash = s1ap_generate_eNB_id();
 

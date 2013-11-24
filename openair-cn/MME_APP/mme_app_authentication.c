@@ -58,7 +58,7 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
 
     if (message_p == NULL) return -1;
 
-    auth_info_req = &message_p->msg.s6a_auth_info_req;
+    auth_info_req = &message_p->ittiMsg.s6a_auth_info_req;
     MME_APP_IMSI_TO_STRING(imsi, auth_info_req->imsi);
     memcpy(&auth_info_req->visited_plmn, plmn, sizeof(plmn_t));
     auth_info_req->nb_of_vectors = nb_of_vectors;
@@ -98,7 +98,7 @@ int mme_app_handle_nas_auth_resp(nas_auth_resp_t *nas_auth_resp_p)
             return -1;
         }
 
-        s6a_ulr = &message_p->msg.s6a_update_location_req;
+        s6a_ulr = &message_p->ittiMsg.s6a_update_location_req;
 
         memcpy(s6a_ulr->imsi, nas_auth_resp_p->imsi, 16);
         s6a_ulr->initial_attach = INITIAL_ATTACH;
@@ -127,7 +127,7 @@ int mme_app_handle_authentication_info_answer(s6a_auth_info_ans_t *s6a_auth_info
         return -1;
     }
 
-    nas_auth_req_p = &message_p->msg.nas_auth_req;
+    nas_auth_req_p = &message_p->ittiMsg.nas_auth_req;
 
     MME_APP_STRING_TO_IMSI((char *)s6a_auth_info_ans_p->imsi, &imsi);
 
@@ -272,7 +272,7 @@ request_auth:
                 " authentication from NAS\n");
                 message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_REQ);
 
-                nas_auth_req_p = &message_p->msg.nas_auth_req;
+                nas_auth_req_p = &message_p->ittiMsg.nas_auth_req;
 
                 MME_APP_IMSI_TO_STRING(imsi, nas_auth_req_p->imsi);
                 nas_auth_req_p->failure = NAS_FAILURE_OK;

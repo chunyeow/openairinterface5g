@@ -95,7 +95,7 @@ int timer_handle_signal(siginfo_t *info)
     instance = timer_p->instance;
     message_p = itti_alloc_new_message(TASK_TIMER, TIMER_HAS_EXPIRED);
 
-    timer_expired_p = &message_p->msg.timer_has_expired;
+    timer_expired_p = &message_p->ittiMsg.timer_has_expired;
 
     timer_expired_p->timer_id = (long)timer_p->timer;
     timer_expired_p->arg      = timer_p->timer_arg;

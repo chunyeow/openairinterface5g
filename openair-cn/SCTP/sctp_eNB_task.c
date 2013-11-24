@@ -546,12 +546,12 @@ void *sctp_eNB_task(void *arg)
                 case SCTP_NEW_ASSOCIATION_REQ: {
                     sctp_handle_new_association_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                                     ITTI_MSG_ORIGIN_ID(received_msg),
-                                                    &received_msg->msg.sctp_new_association_req);
+                                                    &received_msg->ittiMsg.sctp_new_association_req);
                 } break;
                 case SCTP_DATA_REQ: {
                     sctp_send_data(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                    ITTI_MSG_ORIGIN_ID(received_msg),
-                                   &received_msg->msg.sctp_data_req);
+                                   &received_msg->ittiMsg.sctp_data_req);
                 } break;
                 default:
                     SCTP_ERROR("Received unhandled message %d:%s\n",

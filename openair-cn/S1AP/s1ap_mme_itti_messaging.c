@@ -38,7 +38,7 @@ int s1ap_mme_itti_send_sctp_request(uint8_t *buffer, uint32_t length,
 
     message_p = itti_alloc_new_message(TASK_SCTP, SCTP_NEW_DATA_REQ);
 
-    sctpNewDataReq_p = &message_p->msg.sctpNewDataReq;
+    sctpNewDataReq_p = &message_p->ittiMsg.sctpNewDataReq;
 
     sctpNewDataReq_p->buffer  = buffer;
     sctpNewDataReq_p->bufLen  = length;

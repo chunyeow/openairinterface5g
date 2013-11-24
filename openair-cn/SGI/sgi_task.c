@@ -84,7 +84,7 @@ static void* sgi_task_thread(void *args_p)
                  * Forward it host adapter.
                  */
                 Gtpv1uTunnelDataInd *data_ind_p;
-                data_ind_p = &received_message_p->msg.gtpv1uTunnelDataInd;
+                data_ind_p = &received_message_p->ittiMsg.gtpv1uTunnelDataInd;
                 sgi_send_data(data_ind_p->buffer, data_ind_p->length, sgi_data_p, data_ind_p->local_S1u_teid);
                 /* Buffer is no longer needed, free it */
                 free(data_ind_p->buffer);
@@ -92,7 +92,7 @@ static void* sgi_task_thread(void *args_p)
             break;
             case SGI_CREATE_ENDPOINT_REQUEST: {
                 SGICreateEndpointReq *req_p;
-                req_p = &received_message_p->msg.sgiCreateEndpointReq;
+                req_p = &received_message_p->ittiMsg.sgiCreateEndpointReq;
                 sgi_create_endpoint_request(sgi_data_p, req_p);
 
                 
@@ -101,7 +101,7 @@ static void* sgi_task_thread(void *args_p)
 
             case SGI_UPDATE_ENDPOINT_REQUEST: {
                 SGIUpdateEndpointReq *req_p;
-                req_p = &received_message_p->msg.sgiUpdateEndpointReq;
+                req_p = &received_message_p->ittiMsg.sgiUpdateEndpointReq;
                 sgi_update_endpoint_request(sgi_data_p, req_p);
 
 
@@ -135,7 +135,7 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
     if (message_p == NULL) {
         return -1;
     }
-    sgi_create_endpoint_resp_p = &message_p->msg.sgiCreateEndpointResp;
+    sgi_create_endpoint_resp_p = &message_p->ittiMsg.sgiCreateEndpointResp;
     sgi_create_endpoint_resp_p->context_teid   = req_p->context_teid;
     sgi_create_endpoint_resp_p->sgw_S1u_teid   = req_p->sgw_S1u_teid;
     sgi_create_endpoint_resp_p->eps_bearer_id  = req_p->eps_bearer_id;
@@ -184,7 +184,7 @@ static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointR
     if (message_p == NULL) {
         return -1;
     }
-    sgi_update_endpoint_resp_p = &message_p->msg.sgiUpdateEndpointResp;
+    sgi_update_endpoint_resp_p = &message_p->ittiMsg.sgiUpdateEndpointResp;
     sgi_update_endpoint_resp_p->context_teid   = req_p->context_teid;
     sgi_update_endpoint_resp_p->sgw_S1u_teid   = req_p->sgw_S1u_teid;
     sgi_update_endpoint_resp_p->eps_bearer_id  = req_p->eps_bearer_id;

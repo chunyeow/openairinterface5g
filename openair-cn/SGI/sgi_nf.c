@@ -215,7 +215,7 @@ static int sgi_nfqueue_callback(struct nfq_q_handle *myQueue, struct nfgenmsg *m
   if (message_p == NULL) {
       return -1;
   }
-  data_req_p = &message_p->msg.gtpv1uTunnelDataReq;
+  data_req_p = &message_p->ittiMsg.gtpv1uTunnelDataReq;
   data_req_p->buffer = malloc(sizeof(uint8_t) * len);
   if (data_req_p->buffer == NULL) {
       SGI_IF_ERROR("Failed to allocate new buffer\n");

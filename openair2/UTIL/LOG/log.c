@@ -686,23 +686,23 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
           case LOG_ALERT:
           case LOG_CRIT:
           case LOG_ERR:
-            message_msg_p = (char *) &message_p->msg.error_log;
+            message_msg_p = (char *) &message_p->ittiMsg.error_log;
             break;
 
           case LOG_WARNING:
-            message_msg_p = (char *) &message_p->msg.warning_log;
+            message_msg_p = (char *) &message_p->ittiMsg.warning_log;
             break;
 
           case LOG_NOTICE:
-            message_msg_p = (char *) &message_p->msg.notice_log;
+            message_msg_p = (char *) &message_p->ittiMsg.notice_log;
             break;
 
           case LOG_INFO:
-            message_msg_p = (char *) &message_p->msg.info_log;
+            message_msg_p = (char *) &message_p->ittiMsg.info_log;
             break;
 
           default:
-            message_msg_p = (char *) &message_p->msg.debug_log;
+            message_msg_p = (char *) &message_p->ittiMsg.debug_log;
             break;
         }
         memcpy(message_msg_p, log_start, message_string_size);

@@ -170,11 +170,11 @@ int sgw_lite_handle_create_session_request(SgwCreateSessionRequest *session_req_
             return -1;
         }
 
-        message_p->msg.gtpv1uCreateTunnelReq.context_teid  = new_endpoint->local_teid;
-        message_p->msg.gtpv1uCreateTunnelReq.eps_bearer_id = session_req_p->bearer_to_create.eps_bearer_id;
+        message_p->ittiMsg.gtpv1uCreateTunnelReq.context_teid  = new_endpoint->local_teid;
+        message_p->ittiMsg.gtpv1uCreateTunnelReq.eps_bearer_id = session_req_p->bearer_to_create.eps_bearer_id;
         SPGW_APP_DEBUG("Tx GTPV1U_CREATE_TUNNEL_REQ -> TASK_GTPV1_U, Context: S-GW S11 teid %u eps bearer id %d (from session req)\n",
-        		message_p->msg.gtpv1uCreateTunnelReq.context_teid,
-        		message_p->msg.gtpv1uCreateTunnelReq.eps_bearer_id);
+        		message_p->ittiMsg.gtpv1uCreateTunnelReq.context_teid,
+        		message_p->ittiMsg.gtpv1uCreateTunnelReq.eps_bearer_id);
         return itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p);
     } else {
         SPGW_APP_WARNING("Could not create new transaction for SESSION_CREATE message\n");
@@ -208,7 +208,7 @@ int sgw_lite_handle_sgi_endpoint_created(SGICreateEndpointResp *resp_p)
         return -1;
     }
 
-    create_session_response_p = &message_p->msg.sgwCreateSessionResponse;
+    create_session_response_p = &message_p->ittiMsg.sgwCreateSessionResponse;
 
     if (hash_rc == HASH_TABLE_OK) {
         create_session_response_p->teid = new_bearer_context_information_p->sgw_eps_bearer_context_information.mme_teid_for_S11;
@@ -291,7 +291,7 @@ int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp *endpoint_crea
         if (message_p == NULL) {
             return -1;
         }
-        sgi_create_endpoint_req_p = &message_p->msg.sgiCreateEndpointReq;
+        sgi_create_endpoint_req_p = &message_p->ittiMsg.sgiCreateEndpointReq;
         // IP forward will forward packets to this teid
         sgi_create_endpoint_req_p->context_teid  = endpoint_created_p->context_teid;
         sgi_create_endpoint_req_p->sgw_S1u_teid  = endpoint_created_p->S1u_teid;
@@ -306,7 +306,7 @@ int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp *endpoint_crea
         if (message_p == NULL) {
             return -1;
         }
-        create_session_response_p = &message_p->msg.sgwCreateSessionResponse;
+        create_session_response_p = &message_p->ittiMsg.sgwCreateSessionResponse;
         memset(create_session_response_p, 0, sizeof(SgwCreateSessionResponse));
         create_session_response_p->cause                        = CONTEXT_NOT_FOUND;
         create_session_response_p->bearer_context_created.cause = CONTEXT_NOT_FOUND;
@@ -352,7 +352,7 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
             if (message_p == NULL) {
                 return -1;
             }
-            modify_response_p = &message_p->msg.sgwModifyBearerResponse;
+            modify_response_p = &message_p->ittiMsg.sgwModifyBearerResponse;
             memset(modify_response_p, 0, sizeof(SgwModifyBearerResponse));
             modify_response_p->present                                      = MODIFY_BEARER_RESPONSE_REM;
             modify_response_p->choice.bearer_for_removal.eps_bearer_id      = endpoint_updated_p->eps_bearer_id;
@@ -367,7 +367,7 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
             if (message_p == NULL) {
                 return -1;
             }
-            update_request_p = &message_p->msg.sgiUpdateEndpointReq;
+            update_request_p = &message_p->ittiMsg.sgiUpdateEndpointReq;
             memset(update_request_p, 0, sizeof(SGIUpdateEndpointReq));
             update_request_p->context_teid = endpoint_updated_p->context_teid;
             update_request_p->sgw_S1u_teid = endpoint_updated_p->sgw_S1u_teid;
@@ -385,7 +385,7 @@ int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp *endpoint_upda
         if (message_p == NULL) {
             return -1;
         }
-        modify_response_p = &message_p->msg.sgwModifyBearerResponse;
+        modify_response_p = &message_p->ittiMsg.sgwModifyBearerResponse;
         memset(modify_response_p, 0, sizeof(SgwModifyBearerResponse));
 
         modify_response_p->present                                      = MODIFY_BEARER_RESPONSE_REM;
@@ -424,7 +424,7 @@ int sgw_lite_handle_sgi_endpoint_updated(SGIUpdateEndpointResp *resp_p)
     if (message_p == NULL) {
         return -1;
     }
-    modify_response_p = &message_p->msg.sgwModifyBearerResponse;
+    modify_response_p = &message_p->ittiMsg.sgwModifyBearerResponse;
     memset(modify_response_p, 0, sizeof(SgwModifyBearerResponse));
 
     hash_rc = hashtbl_get(sgw_app.s11_bearer_context_information_hashtable, resp_p->context_teid, (void**)&new_bearer_context_information_p);
@@ -508,7 +508,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
             if (message_p == NULL) {
                 return -1;
             }
-            modify_response_p = &message_p->msg.sgwModifyBearerResponse;
+            modify_response_p = &message_p->ittiMsg.sgwModifyBearerResponse;
             memset(modify_response_p, 0, sizeof(SgwModifyBearerResponse));
             modify_response_p->present                                      = MODIFY_BEARER_RESPONSE_REM;
             modify_response_p->choice.bearer_for_removal.eps_bearer_id      = modify_bearer_p->bearer_context_to_modify.eps_bearer_id;
@@ -527,7 +527,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
             if (message_p == NULL) {
                 return -1;
             }
-            gtpv1u_update_tunnel_req_p = &message_p->msg.gtpv1uUpdateTunnelReq;
+            gtpv1u_update_tunnel_req_p = &message_p->ittiMsg.gtpv1uUpdateTunnelReq;
             memset(gtpv1u_update_tunnel_req_p, 0, sizeof(Gtpv1uUpdateTunnelReq));
             gtpv1u_update_tunnel_req_p->context_teid           = modify_bearer_p->teid;
             gtpv1u_update_tunnel_req_p->sgw_S1u_teid           = eps_bearer_entry_p->s_gw_teid_for_S1u_S12_S4_up;     ///< SGW S1U local Tunnel Endpoint Identifier
@@ -547,7 +547,7 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
         if (message_p == NULL) {
             return -1;
         }
-        modify_response_p = &message_p->msg.sgwModifyBearerResponse;
+        modify_response_p = &message_p->ittiMsg.sgwModifyBearerResponse;
 
         modify_response_p->present                                      = MODIFY_BEARER_RESPONSE_REM;
         modify_response_p->choice.bearer_for_removal.eps_bearer_id      = modify_bearer_p->bearer_context_to_modify.eps_bearer_id;
@@ -578,7 +578,7 @@ int sgw_lite_handle_delete_session_request(SgwDeleteSessionRequest *delete_sessi
     if (message_p == NULL) {
         return -1;
     }
-    delete_session_resp_p = &message_p->msg.sgwDeleteSessionResponse;
+    delete_session_resp_p = &message_p->ittiMsg.sgwDeleteSessionResponse;
 
     SPGW_APP_WARNING("Delete session handler needs to be completed...\n");
 
@@ -618,7 +618,7 @@ int sgw_lite_handle_delete_session_request(SgwDeleteSessionRequest *delete_sessi
         if (message_p == NULL) {
             return -1;
         }
-        delete_session_resp_p = &message_p->msg.sgwDeleteSessionResponse;
+        delete_session_resp_p = &message_p->ittiMsg.sgwDeleteSessionResponse;
 
         if ((delete_session_req_p->sender_fteid_for_cp.ipv4 == 0) &&
             (delete_session_req_p->sender_fteid_for_cp.ipv6 == 0)) {

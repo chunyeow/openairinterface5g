@@ -112,7 +112,7 @@ NwRcT s11_mme_send_udp_msg(
 
     message_p = itti_alloc_new_message(TASK_S11, UDP_DATA_REQ);
 
-    udp_data_req_p = &message_p->msg.udp_data_req;
+    udp_data_req_p = &message_p->ittiMsg.udp_data_req;
 
     udp_data_req_p->peer_address  = peerIpAddr;
     udp_data_req_p->peer_port     = peerPort;
@@ -184,14 +184,14 @@ static void *s11_mme_thread(void *args)
             case SGW_CREATE_SESSION_REQUEST: {
                 s11_mme_create_session_request(
                     &s11_mme_stack_handle,
-                    &received_message_p->msg.sgwCreateSessionRequest);
+                    &received_message_p->ittiMsg.sgwCreateSessionRequest);
             } break;
             case UDP_DATA_IND: {
                 /* We received new data to handle from the UDP layer */
                 NwRcT rc;
                 udp_data_ind_t *udp_data_ind;
 
-                udp_data_ind = &received_message_p->msg.udp_data_ind;
+                udp_data_ind = &received_message_p->ittiMsg.udp_data_ind;
 
                 rc = nwGtpv2cProcessUdpReq(s11_mme_stack_handle,
                                            udp_data_ind->buffer,
@@ -203,10 +203,10 @@ static void *s11_mme_thread(void *args)
             } break;
             case TIMER_HAS_EXPIRED: {
                 S11_DEBUG("Processing timeout for timer_id 0x%lx and arg %p\n",
-                          received_message_p->msg.timer_has_expired.timer_id,
-                          received_message_p->msg.timer_has_expired.arg);
+                          received_message_p->ittiMsg.timer_has_expired.timer_id,
+                          received_message_p->ittiMsg.timer_has_expired.arg);
                 DevAssert(nwGtpv2cProcessTimeout(
-                    received_message_p->msg.timer_has_expired.arg) == NW_OK);
+                    received_message_p->ittiMsg.timer_has_expired.arg) == NW_OK);
             } break;
             default: {
                 S11_ERROR("Unkwnon message ID %d:%s\n",
@@ -230,11 +230,11 @@ static int s11_send_init_udp(char *address, uint16_t port_number)
         return -1;
     }
 
-    message_p->msg.udp_init.port = port_number;
-    //LG message_p->msg.udpInit.address = "0.0.0.0"; //ANY address
-    message_p->msg.udp_init.address = address;
+    message_p->ittiMsg.udp_init.port = port_number;
+    //LG message_p->ittiMsg.udpInit.address = "0.0.0.0"; //ANY address
+    message_p->ittiMsg.udp_init.address = address;
 
-    S11_DEBUG("Tx UDP_INIT IP addr %s\n", message_p->msg.udp_init.address);
+    S11_DEBUG("Tx UDP_INIT IP addr %s\n", message_p->ittiMsg.udp_init.address);
 
     return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }

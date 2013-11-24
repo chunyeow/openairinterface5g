@@ -34,7 +34,7 @@ int s11_sgw_handle_create_session_request(NwGtpv2cStackHandleT *stack_p,
 
     message_p = itti_alloc_new_message(TASK_S11, SGW_CREATE_SESSION_REQUEST);
 
-    create_session_request_p = &message_p->msg.sgwCreateSessionRequest;
+    create_session_request_p = &message_p->ittiMsg.sgwCreateSessionRequest;
 
     /* Create a new message parser */
     rc = nwGtpv2cMsgParserNew(*stack_p, NW_GTP_CREATE_SESSION_REQ,
@@ -335,7 +335,7 @@ int s11_sgw_handle_delete_session_request(NwGtpv2cStackHandleT *stack_p,
 
     message_p = itti_alloc_new_message(TASK_S11, SGW_DELETE_SESSION_REQUEST);
 
-    delete_session_request_p = &message_p->msg.sgwDeleteSessionRequest;
+    delete_session_request_p = &message_p->ittiMsg.sgwDeleteSessionRequest;
 
     /* Create a new message parser */
     rc = nwGtpv2cMsgParserNew(*stack_p, NW_GTP_DELETE_SESSION_REQ,

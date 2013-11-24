@@ -37,6 +37,9 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
 
 int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_p);
 
+void s1ap_eNB_nas_non_delivery_ind(instance_t instance, 
+                                   s1ap_nas_non_delivery_ind_t *s1ap_nas_non_delivery_ind);
+
 int s1ap_eNB_handle_nas_first_req(
     instance_t instance, s1ap_nas_first_req_t *s1ap_nas_first_req_p);
 

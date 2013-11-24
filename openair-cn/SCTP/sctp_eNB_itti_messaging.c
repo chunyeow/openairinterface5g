@@ -11,7 +11,7 @@ int sctp_itti_send_new_message_ind(task_id_t task_id, uint32_t assoc_id, uint8_t
 
     message_p = itti_alloc_new_message(TASK_SCTP, SCTP_DATA_IND);
 
-    sctp_data_ind_p = &message_p->msg.sctp_data_ind;
+    sctp_data_ind_p = &message_p->ittiMsg.sctp_data_ind;
 
     sctp_data_ind_p->buffer = malloc(sizeof(uint8_t) * buffer_length);
 
@@ -35,7 +35,7 @@ int sctp_itti_send_association_resp(task_id_t task_id, instance_t instance,
 
     message_p = itti_alloc_new_message(TASK_SCTP, SCTP_NEW_ASSOCIATION_RESP);
 
-    sctp_new_association_resp_p = &message_p->msg.sctp_new_association_resp;
+    sctp_new_association_resp_p = &message_p->ittiMsg.sctp_new_association_resp;
 
     sctp_new_association_resp_p->in_streams  = in_streams;
     sctp_new_association_resp_p->out_streams = out_streams;
@@ -55,7 +55,7 @@ int sctp_itti_send_association_ind(task_id_t task_id, instance_t instance,
 
     message_p = itti_alloc_new_message(TASK_SCTP, SCTP_NEW_ASSOCIATION_IND);
 
-    sctp_new_association_ind_p = &message_p->msg.sctp_new_association_ind;
+    sctp_new_association_ind_p = &message_p->ittiMsg.sctp_new_association_ind;
 
     sctp_new_association_ind_p->assoc_id    = assoc_id;
     sctp_new_association_ind_p->port        = port;

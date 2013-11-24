@@ -72,17 +72,17 @@ static int s1ap_send_init_sctp(void) {
     // Create and alloc new message
     MessageDef *message_p;
     message_p = itti_alloc_new_message(TASK_S1AP, SCTP_INIT_MSG);
-    message_p->msg.sctpInit.port = S1AP_PORT_NUMBER;
-    message_p->msg.sctpInit.ppid = S1AP_SCTP_PPID;
-    message_p->msg.sctpInit.ipv4 = 1;
-    message_p->msg.sctpInit.ipv6 = 0;
-    message_p->msg.sctpInit.nb_ipv4_addr = 1;
-    message_p->msg.sctpInit.ipv4_address[0]
+    message_p->ittiMsg.sctpInit.port = S1AP_PORT_NUMBER;
+    message_p->ittiMsg.sctpInit.ppid = S1AP_SCTP_PPID;
+    message_p->ittiMsg.sctpInit.ipv4 = 1;
+    message_p->ittiMsg.sctpInit.ipv6 = 0;
+    message_p->ittiMsg.sctpInit.nb_ipv4_addr = 1;
+    message_p->ittiMsg.sctpInit.ipv4_address[0]
     = mme_config.ipv4.mme_ip_address_for_S1_MME;
     /* SR WARNING: ipv6 multi-homing fails sometimes for localhost.
      * Disable it for now.*/
-    message_p->msg.sctpInit.nb_ipv6_addr = 0;
-    message_p->msg.sctpInit.ipv6_address[0] = "0:0:0:0:0:0:0:1";
+    message_p->ittiMsg.sctpInit.nb_ipv6_addr = 0;
+    message_p->ittiMsg.sctpInit.ipv6_address[0] = "0:0:0:0:0:0:0:1";
 
     return itti_send_msg_to_task(TASK_SCTP, INSTANCE_DEFAULT, message_p);
 }
@@ -109,7 +109,7 @@ void *s1ap_mme_thread(void *args)
                  */
                 s1ap_message message;
                 s1ap_sctp_new_msg_ind_t *s1ap_sctp_new_msg_ind_p;
-                s1ap_sctp_new_msg_ind_p = &received_message_p->msg.s1ap_sctp_new_msg_ind;
+                s1ap_sctp_new_msg_ind_p = &received_message_p->ittiMsg.s1ap_sctp_new_msg_ind;
 
                 memset((void *)&message, 0, sizeof(s1ap_message));
                 /* Invoke S1AP message decoder */
@@ -125,24 +125,24 @@ void *s1ap_mme_thread(void *args)
             /* SCTP layer notifies S1AP of disconnection of a peer. */
             case SCTP_CLOSE_ASSOCIATION: {
                 sctp_close_association_t *sctp_close_association_p;
-                sctp_close_association_p = &received_message_p->msg.sctp_close_association;
+                sctp_close_association_p = &received_message_p->ittiMsg.sctp_close_association;
 
                 s1ap_handle_sctp_deconnection(sctp_close_association_p->assoc_id);
             } break;
             case SCTP_NEW_ASSOCIATION: {
-                s1ap_handle_new_association(&received_message_p->msg.sctp_new_peer);
+                s1ap_handle_new_association(&received_message_p->ittiMsg.sctp_new_peer);
             } break;
             case NAS_DOWNLINK_DATA_IND: {
                 /* New message received from NAS task.
                  * This corresponds to a S1AP downlink nas transport message.
                  */
-                s1ap_generate_downlink_nas_transport(&received_message_p->msg.nas_dl_data_ind);
+                s1ap_generate_downlink_nas_transport(&received_message_p->ittiMsg.nas_dl_data_ind);
             } break;
             case NAS_ATTACH_ACCEPT: {
-                s1ap_handle_attach_accepted(&received_message_p->msg.nas_attach_accept);
+                s1ap_handle_attach_accepted(&received_message_p->ittiMsg.nas_attach_accept);
             } break;
             case TIMER_HAS_EXPIRED: {
-                s1ap_handle_timer_expiry(&received_message_p->msg.timer_has_expired);
+                s1ap_handle_timer_expiry(&received_message_p->ittiMsg.timer_has_expired);
             } break;
             default: {
                 S1AP_DEBUG("Unkwnon message ID %d:%s\n",

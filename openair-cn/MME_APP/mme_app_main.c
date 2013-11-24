@@ -66,24 +66,24 @@ void *mme_app_thread(void *args)
                 /* We received the authentication vectors from HSS, trigger a ULR
                  * for now. Normaly should trigger an authentication procedure with UE.
                  */
-                mme_app_handle_authentication_info_answer(&received_message_p->msg.s6a_auth_info_ans);
+                mme_app_handle_authentication_info_answer(&received_message_p->ittiMsg.s6a_auth_info_ans);
             } break;
             case S6A_UPDATE_LOCATION_ANS: {
                 /* We received the update location answer message from HSS -> Handle it */
-                mme_app_create_bearer(&received_message_p->msg.s6a_update_location_ans);
+                mme_app_create_bearer(&received_message_p->ittiMsg.s6a_update_location_ans);
             } break;
             case SGW_CREATE_SESSION_RESPONSE: {
-                mme_app_handle_create_sess_resp(&received_message_p->msg.sgwCreateSessionResponse);
+                mme_app_handle_create_sess_resp(&received_message_p->ittiMsg.sgwCreateSessionResponse);
             } break;
             case NAS_AUTHENTICATION_RESP: {
-                mme_app_handle_nas_auth_resp(&received_message_p->msg.nas_auth_resp);
+                mme_app_handle_nas_auth_resp(&received_message_p->ittiMsg.nas_auth_resp);
             } break;
             case NAS_ATTACH_REQ: {
-                mme_app_handle_attach_req(&received_message_p->msg.nas_attach_req);
+                mme_app_handle_attach_req(&received_message_p->ittiMsg.nas_attach_req);
             } break;
             case TIMER_HAS_EXPIRED: {
                 /* Check if it is the statistic timer */
-                if (received_message_p->msg.timer_has_expired.timer_id ==
+                if (received_message_p->ittiMsg.timer_has_expired.timer_id ==
                     mme_app_desc.statistic_timer_id) {
                     mme_app_statistics_display();
                 }

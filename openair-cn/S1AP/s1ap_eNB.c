@@ -102,7 +102,7 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
 
     message_p = itti_alloc_new_message(TASK_S1AP, SCTP_NEW_ASSOCIATION_REQ);
 
-    sctp_new_association_req_p = &message_p->msg.sctp_new_association_req;
+    sctp_new_association_req_p = &message_p->ittiMsg.sctp_new_association_req;
 
     sctp_new_association_req_p->port = S1AP_PORT_NUMBER;
     sctp_new_association_req_p->ppid = S1AP_SCTP_PPID;
@@ -245,27 +245,30 @@ void *s1ap_eNB_task(void *arg)
                  * own parameters.
                  */
                 s1ap_eNB_handle_register_eNB(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                             &received_msg->msg.s1ap_register_eNB);
+                                             &received_msg->ittiMsg.s1ap_register_eNB);
             } break;
             case SCTP_NEW_ASSOCIATION_RESP: {
                 s1ap_eNB_handle_sctp_association_resp(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                                      &received_msg->msg.sctp_new_association_resp);
+                                                      &received_msg->ittiMsg.sctp_new_association_resp);
             } break;
             case SCTP_DATA_IND: {
-                s1ap_eNB_handle_sctp_data_ind(&received_msg->msg.sctp_data_ind);
+                s1ap_eNB_handle_sctp_data_ind(&received_msg->ittiMsg.sctp_data_ind);
             } break;
             case S1AP_NAS_FIRST_REQ: {
                 s1ap_eNB_handle_nas_first_req(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                              &received_msg->msg.s1ap_nas_first_req);
+                                              &S1AP_NAS_FIRST_REQ(received_msg));
             } break;
             case S1AP_UPLINK_NAS: {
                 s1ap_eNB_nas_uplink(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                    &received_msg->msg.s1ap_uplink_nas);
+                                    &S1AP_UPLINK_NAS(received_msg));
             } break;
             case S1AP_INITIAL_CONTEXT_SETUP_RESP: {
-                s1ap_eNB_initial_ctxt_resp(
-                    ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                    &received_msg->msg.s1ap_initial_context_setup_resp);
+                s1ap_eNB_initial_ctxt_resp(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                           &S1AP_INITIAL_CONTEXT_SETUP_RESP(received_msg));
+            } break;
+            case S1AP_NAS_NON_DELIVERY_IND: {
+                s1ap_eNB_nas_non_delivery_ind(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                              &S1AP_NAS_NON_DELIVERY_IND(received_msg));
             } break;
             default:
                 S1AP_ERROR("Received unhandled message: %d:%s\n",

@@ -112,7 +112,7 @@ NwRcT s11_sgw_send_udp_msg(
 
     message_p = itti_alloc_new_message(TASK_S11, UDP_DATA_REQ);
 
-    udp_data_req_p = &message_p->msg.udp_data_req;
+    udp_data_req_p = &message_p->ittiMsg.udp_data_req;
 
     udp_data_req_p->peer_address  = peerIpAddr;
     udp_data_req_p->peer_port     = peerPort;
@@ -198,7 +198,7 @@ static void *s11_sgw_thread(void *args)
                 NwRcT rc;
                 udp_data_ind_t *udp_data_ind;
 
-                udp_data_ind = &received_message_p->msg.udp_data_ind;
+                udp_data_ind = &received_message_p->ittiMsg.udp_data_ind;
 
                 S11_DEBUG("Processing new data indication from UDP\n");
 
@@ -214,25 +214,25 @@ static void *s11_sgw_thread(void *args)
                 S11_DEBUG("Received create session response from S-PGW APP\n");
                 s11_sgw_handle_create_session_response(
                     &s11_sgw_stack_handle,
-                    &received_message_p->msg.sgwCreateSessionResponse);
+                    &received_message_p->ittiMsg.sgwCreateSessionResponse);
             } break;
             case SGW_MODIFY_BEARER_RESPONSE: {
                 S11_DEBUG("Received modify bearer response from S-PGW APP\n");
                 s11_sgw_handle_modify_bearer_response(
                     &s11_sgw_stack_handle,
-                    &received_message_p->msg.sgwModifyBearerResponse);
+                    &received_message_p->ittiMsg.sgwModifyBearerResponse);
             } break;
             case SGW_DELETE_SESSION_RESPONSE: {
                 S11_DEBUG("Received delete session response from S-PGW APP\n");
                 s11_sgw_handle_delete_session_response(
                     &s11_sgw_stack_handle,
-                    &received_message_p->msg.sgwDeleteSessionResponse);
+                    &received_message_p->ittiMsg.sgwDeleteSessionResponse);
             } break;
             case TIMER_HAS_EXPIRED: {
                 S11_DEBUG("Processing timeout for timer_id 0x%lx and arg %p\n",
-                          received_message_p->msg.timer_has_expired.timer_id,
-                          received_message_p->msg.timer_has_expired.arg);
-                DevAssert(nwGtpv2cProcessTimeout(received_message_p->msg.timer_has_expired.arg) == NW_OK);
+                          received_message_p->ittiMsg.timer_has_expired.timer_id,
+                          received_message_p->ittiMsg.timer_has_expired.arg);
+                DevAssert(nwGtpv2cProcessTimeout(received_message_p->ittiMsg.timer_has_expired.arg) == NW_OK);
             } break;
             default: {
                 S11_ERROR("Unkwnon message ID %d:%s\n",
@@ -255,11 +255,11 @@ static int s11_send_init_udp(char *address, uint16_t port_number)
         return -1;
     }
 
-    message_p->msg.udp_init.port = port_number;
-    //LG message_p->msg.udpInit.address = "0.0.0.0"; //ANY address
-    message_p->msg.udp_init.address = address;
+    message_p->ittiMsg.udp_init.port = port_number;
+    //LG message_p->ittiMsg.udpInit.address = "0.0.0.0"; //ANY address
+    message_p->ittiMsg.udp_init.address = address;
 
-    S11_DEBUG("Tx UDP_INIT IP addr %s\n", message_p->msg.udp_init.address);
+    S11_DEBUG("Tx UDP_INIT IP addr %s\n", message_p->ittiMsg.udp_init.address);
 
     return itti_send_msg_to_task(TASK_UDP, INSTANCE_DEFAULT, message_p);
 }

@@ -1987,7 +1987,7 @@ OAI_UECapability_t *fill_ue_capability() {
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_UE_EUTRA_CAPABILITY);
-    memcpy (&message_p->msg, (void *) UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
+    memcpy (&message_p->ittiMsg, (void *) UE_EUTRA_Capability, sizeof(RrcUeEutraCapability));
 
     itti_send_msg_to_task (TASK_UNKNOWN, NB_eNB_INST, message_p);
   }

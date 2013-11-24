@@ -154,7 +154,7 @@ int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
     message_string_size = strlen(message_string);
 
     message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->msg.generic_log, message_string, message_string_size);
+    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 
@@ -193,7 +193,7 @@ int s1ap_eNB_encode_successfull_outcome(s1ap_message *s1ap_message_p,
     message_string_size = strlen(message_string);
 
     message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->msg.generic_log, message_string, message_string_size);
+    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 
@@ -220,7 +220,7 @@ int s1ap_eNB_encode_unsuccessfull_outcome(s1ap_message *s1ap_message_p,
     switch(s1ap_message_p->procedureCode) {
         case S1ap_ProcedureCode_id_InitialContextSetup:
 //             ret = s1ap_encode_s1ap_initialcontextsetupfailureies(
-//                 &s1ap_message_p->msg.s1ap_InitialContextSetupFailureIEs, buffer, len);
+//                 &s1ap_message_p->ittiMsg.s1ap_InitialContextSetupFailureIEs, buffer, len);
             s1ap_xer_print_s1ap_initialcontextsetupfailure(s1ap_xer__print2sp, message_string, s1ap_message_p);
             break;
         default:
@@ -231,7 +231,7 @@ int s1ap_eNB_encode_unsuccessfull_outcome(s1ap_message *s1ap_message_p,
     message_string_size = strlen(message_string);
 
     message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->msg.generic_log, message_string, message_string_size);
+    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 

@@ -151,7 +151,7 @@ typedef struct MessageHeader_s
 typedef struct MessageDef_s
 {
         MessageHeader ittiMsgHeader; /**< Message header */
-        msg_t msg; /**< Union of payloads as defined in x_messages_def.h headers */
+        msg_t         ittiMsg; /**< Union of payloads as defined in x_messages_def.h headers */
 } MessageDef;
 
 #endif /* INTERTASK_INTERFACE_TYPES_H_ */

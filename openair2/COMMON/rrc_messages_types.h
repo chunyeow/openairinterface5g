@@ -28,11 +28,11 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
-#define NAS_DOWNLINK_DATA_IND(mSGpTR)               (mSGpTR)->msg.nas_dl_data_ind
+#define NAS_DOWNLINK_DATA_IND(mSGpTR)               (mSGpTR)->ittiMsg.nas_dl_data_ind
 
-#define NAS_UPLINK_DATA_REQ(mSGpTR)                 (mSGpTR)->msg.nas_ul_data_req
-#define NAS_UPLINK_DATA_CNF(mSGpTR)                 (mSGpTR)->msg.nas_ul_data_cnf
-#define NAS_UPLINK_DATA_IND(mSGpTR)                 (mSGpTR)->msg.nas_ul_data_ind
+#define NAS_UPLINK_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_req
+#define NAS_UPLINK_DATA_CNF(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_cnf
+#define NAS_UPLINK_DATA_IND(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_ind
 
 //-------------------------------------------------------------------------------------------//
 // Messages between NAS and RRC layers

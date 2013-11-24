@@ -4,14 +4,20 @@
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
 
-#define S1AP_NAS_FIRST_REQ(mSGpTR)              (mSGpTR)->msg.s1ap_nas_first_req
-#define S1AP_UPLINK_NAS(mSGpTR)                 (mSGpTR)->msg.s1ap_uplink_nas
-#define S1AP_UE_CAPABILITIES_IND(mSGpTR)        (mSGpTR)->msg.s1ap_ue_cap_info_ind
-#define S1AP_INITIAL_CONTEXT_SETUP_RESP(mSGpTR) (mSGpTR)->msg.s1ap_initial_context_setup_resp
-#define S1AP_INITIAL_CONTEXT_SETUP_FAIL(mSGpTR) (mSGpTR)->msg.s1ap_initial_context_setup_fail
+#define S1AP_NAS_FIRST_REQ(mSGpTR)              (mSGpTR)->ittiMsg.s1ap_nas_first_req
+#define S1AP_UPLINK_NAS(mSGpTR)                 (mSGpTR)->ittiMsg.s1ap_uplink_nas
+#define S1AP_UE_CAPABILITIES_IND(mSGpTR)        (mSGpTR)->ittiMsg.s1ap_ue_cap_info_ind
+#define S1AP_INITIAL_CONTEXT_SETUP_RESP(mSGpTR) (mSGpTR)->ittiMsg.s1ap_initial_context_setup_resp
+#define S1AP_INITIAL_CONTEXT_SETUP_FAIL(mSGpTR) (mSGpTR)->ittiMsg.s1ap_initial_context_setup_fail
+#define S1AP_UE_CONTEXT_RELEASE_RESP(mSGpTR)    (mSGpTR)->ittiMsg.s1ap_ue_release_resp
+#define S1AP_NAS_NON_DELIVERY_IND(mSGpTR)       (mSGpTR)->ittiMsg.s1ap_nas_non_delivery_ind
+#define S1AP_UE_CTXT_MODIFICATION_RESP(mSGpTR)  (mSGpTR)->ittiMsg.s1ap_ue_ctxt_modification_resp
+#define S1AP_UE_CTXT_MODIFICATION_FAIL(mSGpTR)  (mSGpTR)->ittiMsg.s1ap_ue_ctxt_modification_fail
 
-#define S1AP_DOWNLINK_NAS(mSGpTR)               (mSGpTR)->msg.s1ap_downlink_nas
-#define S1AP_INITIAL_CONTEXT_SETUP_REQ(mSGpTR)  (mSGpTR)->msg.s1ap_initial_context_setup_req
+#define S1AP_DOWNLINK_NAS(mSGpTR)               (mSGpTR)->ittiMsg.s1ap_downlink_nas
+#define S1AP_INITIAL_CONTEXT_SETUP_REQ(mSGpTR)  (mSGpTR)->ittiMsg.s1ap_initial_context_setup_req
+#define S1AP_UE_CTXT_MODIFICATION_REQ(mSGpTR)   (mSGpTR)->ittiMsg.s1ap_ue_ctxt_modification_req
+#define S1AP_PAGIND_IND(mSGpTR)                 (mSGpTR)->ittiMsg.s1ap_paging_ind
 
 //-------------------------------------------------------------------------------------------//
 
@@ -24,8 +30,27 @@ typedef enum paging_drx_e {
     PAGING_DRX_32  = 0x0,
     PAGING_DRX_64  = 0x1,
     PAGING_DRX_128 = 0x2,
-    PAGING_DRX_256 = 0x3,
+    PAGING_DRX_256 = 0x3
 } paging_drx_t;
+
+/* Lower value codepoint
+ * indicates higher priority.
+ */
+typedef enum paging_priority_s {
+    PAGING_PRIO_LEVEL1  = 0,
+    PAGING_PRIO_LEVEL2  = 1,
+    PAGING_PRIO_LEVEL3  = 2,
+    PAGING_PRIO_LEVEL4  = 3,
+    PAGING_PRIO_LEVEL5  = 4,
+    PAGING_PRIO_LEVEL6  = 5,
+    PAGING_PRIO_LEVEL7  = 6,
+    PAGING_PRIO_LEVEL8  = 7
+} paging_priority_t;
+
+typedef enum cn_domain_s {
+    CN_DOMAIN_PS = 1,
+    CN_DOMAIN_CS = 2
+} cn_domain_t;
 
 typedef struct net_ip_address_s {
     unsigned ipv4:1;
@@ -45,7 +70,7 @@ typedef enum priority_level_s {
     PRIORITY_LEVEL_SPARE       = 0,
     PRIORITY_LEVEL_HIGHEST     = 1,
     PRIORITY_LEVEL_LOWEST      = 14,
-    PRIORITY_LEVEL_NO_PRIORITY = 15,
+    PRIORITY_LEVEL_NO_PRIORITY = 15
 } priority_level_t;
 
 typedef enum {
@@ -82,6 +107,7 @@ typedef struct security_capabilities_s {
 #define S1AP_TRANSPORT_LAYER_ADDRESS_SIZE (160 / 8)
 
 #define S1AP_MAX_NB_MME_IP_ADDRESS 10
+#define S1AP_IMSI_LENGTH           16
 
 /* Security key length used within eNB
  * Even if only 16 bytes will be effectively used,
@@ -95,11 +121,14 @@ typedef struct security_capabilities_s {
  * 'Mobile Originating'. Defined in TS 36.331.
  */
 typedef enum rrc_establishment_cause_e {
-    RRC_CAUSE_EMERGENCY        = 0x0,
-    RRC_CAUSE_HIGH_PRIO_ACCESS = 0x1,
-    RRC_CAUSE_MT_ACCESS        = 0x2,
-    RRC_CAUSE_MO_SIGNALLING    = 0x3,
-    RRC_CAUSE_MO_DATA          = 0x4,
+    RRC_CAUSE_EMERGENCY             = 0x0,
+    RRC_CAUSE_HIGH_PRIO_ACCESS      = 0x1,
+    RRC_CAUSE_MT_ACCESS             = 0x2,
+    RRC_CAUSE_MO_SIGNALLING         = 0x3,
+    RRC_CAUSE_MO_DATA               = 0x4,
+#if defined(UPDATE_RELEASE_10)
+    RRC_CAUSE_DELAY_TOLERANT_ACCESS = 0x5,
+#endif
     RRC_CAUSE_LAST
 } rrc_establishment_cause_t;
 
@@ -115,8 +144,22 @@ typedef struct s_tmsi_s {
     uint32_t m_tmsi;
 } s_tmsi_t;
 
+typedef enum ue_paging_identity_presenceMask_e {
+    UE_PAGING_IDENTITY_NONE   = 0,
+    UE_PAGING_IDENTITY_imsi   = (1 << 1),
+    UE_PAGING_IDENTITY_s_tmsi = (1 << 2),
+} ue_paging_identity_presenceMask_t;
+
+typedef struct ue_paging_identity_s {
+    ue_paging_identity_presenceMask_t presenceMask;
+    union {
+        char     imsi[S1AP_IMSI_LENGTH];
+        s_tmsi_t s_tmsi;
+    } choice;
+} ue_paging_identity_t;
+
 typedef enum ue_identities_presenceMask_e {
-  UE_IDENTITIES_NONE = 0,
+  UE_IDENTITIES_NONE   = 0,
   UE_IDENTITIES_s_tmsi = 1 << 1,
   UE_IDENTITIES_gummei = 1 << 2,
 } ue_identities_presenceMask_t;
@@ -297,11 +340,73 @@ typedef struct s1ap_initial_context_setup_fail_s {
     unsigned  eNB_ue_s1ap_id:24;
 
     /* TODO add cause */
-} s1ap_initial_context_setup_fail_t;
+} s1ap_initial_context_setup_fail_t, s1ap_ue_ctxt_modification_fail_t;
 
 typedef struct s1ap_ue_cap_info_ind_s {
     unsigned  eNB_ue_s1ap_id:24;
     ue_radio_cap_t ue_radio_cap;
 } s1ap_ue_cap_info_ind_t;
+
+typedef struct s1ap_ue_release_req_s {
+    unsigned  eNB_ue_s1ap_id:24;
+    /* TODO: add cause */
+} s1ap_ue_release_req_t, s1ap_ue_release_resp_t;
+
+typedef enum s1ap_ue_ctxt_modification_present_s {
+    S1AP_UE_CONTEXT_MODIFICATION_SECURITY_KEY = (1 << 0),
+    S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR      = (1 << 1),
+    S1AP_UE_CONTEXT_MODIFICATION_UE_SECU_CAP  = (1 << 2),
+} s1ap_ue_ctxt_modification_present_t;
+
+typedef struct s1ap_ue_ctxt_modification_req_s {
+    unsigned  eNB_ue_s1ap_id:24;
+
+    /* Bit-mask of possible present parameters */
+    s1ap_ue_ctxt_modification_present_t present;
+
+    /* Following fields are optionnaly present */
+
+    /* Security key */
+    uint8_t security_key[SECURITY_KEY_LENGTH];
+
+    /* UE aggregate maximum bitrate */
+    ambr_t ue_ambr;
+
+    /* Security capabilities */
+    security_capabilities_t security_capabilities;
+} s1ap_ue_ctxt_modification_req_t;
+
+typedef struct s1ap_ue_ctxt_modification_resp_s {
+    unsigned  eNB_ue_s1ap_id:24;
+} s1ap_ue_ctxt_modification_resp_t;
+
+typedef enum s1ap_paging_ind_present_s {
+    S1AP_PAGING_IND_PAGING_DRX      = (1 << 0),
+    S1AP_PAGING_IND_PAGING_PRIORITY = (1 << 1),
+} s1ap_paging_ind_present_t;
+
+typedef struct s1ap_paging_ind_s {
+    /* UE identity index value.
+     * Specified in 3GPP TS 36.304
+     */
+    unsigned ue_index_value:10;
+
+    /* UE paging identity */
+    ue_paging_identity_t ue_paging_identity;
+
+    /* Indicates origin of paging */
+    cn_domain_t cn_domain;
+
+    /* Optional fields */
+    paging_drx_t paging_drx;
+
+    paging_priority_t paging_priority;
+} s1ap_paging_ind_t;
+
+typedef struct s1ap_nas_non_delivery_ind_s {
+    unsigned  eNB_ue_s1ap_id:24;
+    nas_pdu_t nas_pdu;
+    /* TODO: add cause */
+} s1ap_nas_non_delivery_ind_t;
 
 #endif /* S1AP_MESSAGES_TYPES_H_ */

@@ -450,7 +450,7 @@ int s1ap_mme_handle_ue_cap_indication(uint32_t assoc_id, uint32_t stream,
 
         DevAssert(message_p != NULL);
 
-        ue_cap_ind_p = &message_p->msg.s1ap_ue_cap_ind;
+        ue_cap_ind_p = &message_p->ittiMsg.s1ap_ue_cap_ind;
         ue_cap_ind_p->eNB_ue_s1ap_id = ue_ref->eNB_ue_s1ap_id;
         ue_cap_ind_p->mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;
 
@@ -518,7 +518,7 @@ int s1ap_mme_handle_initial_context_setup_response(
     eRABSetupItemCtxtSURes_p = (S1ap_E_RABSetupItemCtxtSURes_t *)
     initialContextSetupResponseIEs_p->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[0];
 
-    modify_request_p = &message_p->msg.sgwModifyBearerRequest;
+    modify_request_p = &message_p->ittiMsg.sgwModifyBearerRequest;
 //     modify_request_p->teid = ue_ref->teid;
     modify_request_p->bearer_context_to_modify.eps_bearer_id =
         eRABSetupItemCtxtSURes_p->e_RAB_ID;

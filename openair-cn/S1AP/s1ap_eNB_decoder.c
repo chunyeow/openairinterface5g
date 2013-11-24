@@ -85,7 +85,7 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
     message_string_size = strlen(message_string);
 
     message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->msg.generic_log, message_string, message_string_size);
+    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 
@@ -128,7 +128,7 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
     message_string_size = strlen(message_string);
 
     message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->msg.generic_log, message_string, message_string_size);
+    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 
