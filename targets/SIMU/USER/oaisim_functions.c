@@ -745,7 +745,7 @@ void update_omg () {
     if (oai_emulation.info.omg_model_enb >= MAX_NUM_MOB_TYPES) {      // mix mobility model
       for (eNB_id = oai_emulation.info.first_enb_local; eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local); eNB_id++) {
         new_omg_model = randomGen (STATIC, RWALK);
-        LOG_D (OMG,"[eNB] Node of ID %d is changing mobility generator ->%d \n", UE_id, new_omg_model);
+        LOG_D (OMG,"[eNB] Node of ID %d is changing mobility generator ->%d \n", eNB_id, new_omg_model);
         // reset the mobility model for a specific node
         set_new_mob_type (eNB_id, eNB, new_omg_model, oai_emulation.info.time_s);
       }

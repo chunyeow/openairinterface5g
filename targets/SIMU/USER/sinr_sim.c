@@ -536,25 +536,27 @@ void get_beta_map() {
       }
     }
     // else {
-      fgets(buffer, 1000, fp);
-      fgets(buffer, 1000, fp);
-      table_length[mcs]=0;
-      while (!feof(fp)) {
-	u=0;
-        sinr_bler = strtok(buffer, ";");
-	while(sinr_bler != NULL){
-	  perf_array[u]=atof(sinr_bler);
-	  u++;
-	  sinr_bler = strtok(NULL,";");
-	}
-	if((perf_array[4]/perf_array[5]) < 1){
-	  sinr_bler_map[mcs][0][table_length[mcs]] = perf_array[0];
-	  sinr_bler_map[mcs][1][table_length[mcs]] = (perf_array[4]/perf_array[5]);
-	  table_length[mcs]++;
-	}
-	fgets(buffer, 1000, fp);
-	
+    if (fgets (buffer, 1000, fp) != NULL) {
+      if (fgets (buffer, 1000, fp) != NULL) {
+        table_length[mcs] = 0;
+        while (!feof (fp)) {
+          u = 0;
+          sinr_bler = strtok (buffer, ";");
+          while (sinr_bler != NULL) {
+            perf_array[u] = atof (sinr_bler);
+            u++;
+            sinr_bler = strtok (NULL, ";");
+          }
+          if ((perf_array[4] / perf_array[5]) < 1) {
+            sinr_bler_map[mcs][0][table_length[mcs]] = perf_array[0];
+            sinr_bler_map[mcs][1][table_length[mcs]] = (perf_array[4] / perf_array[5]);
+            table_length[mcs]++;
+          }
+          if (fgets (buffer, 1000, fp) != NULL) {
+          }
+        }
       }
+    }
       fclose(fp);
       //   }
     LOG_D(OCM,"Print the table for mcs %d\n",mcs);
@@ -592,13 +594,14 @@ void get_MIESM_param() {
 	  while (!feof(fp)) {
 	    table_len =0;
 	    cnt++;
-	    fgets(buffer, 10000, fp);
-	    result = strtok(buffer, ",");
-	    while (result != NULL) {
-	      MI_map_4qam[cnt][table_len]= atof(result);
-	      result = strtok(NULL, ",");
-	      table_len++;
-	    }
+	    if (fgets(buffer, 10000, fp) != NULL) {
+              result = strtok (buffer, ",");
+              while (result != NULL) {
+                MI_map_4qam[cnt][table_len] = atof (result);
+                result = strtok (NULL, ",");
+                table_len++;
+              }
+            }
 	  }
        fclose(fp);
        for (t = 0; t < 162; t++){
@@ -611,13 +614,14 @@ void get_MIESM_param() {
 	   while (!feof(fp)) {
 	    table_len =0;
 	    cnt++;
-	    fgets(buffer, 10000, fp);
-	    result = strtok(buffer, ",");
-	    while (result != NULL) {
-	      MI_map_16qam[cnt][table_len]= atof(result);
-	      result = strtok(NULL, ",");
-	      table_len++;
-	    }
+            if (fgets (buffer, 10000, fp) != NULL) {
+              result = strtok (buffer, ",");
+              while (result != NULL) {
+                MI_map_16qam[cnt][table_len] = atof (result);
+                result = strtok (NULL, ",");
+                table_len++;
+              }
+            }
 	  }
        fclose(fp);
        for (t = 0; t < 197; t++){
@@ -632,13 +636,14 @@ void get_MIESM_param() {
 	    cnt++;
 	    if(cnt==3)
 	      break;
-	    fgets(buffer, 10000, fp);
-	    result = strtok(buffer, ",");
-	    while (result != NULL) {
-	      MI_map_64qam[cnt][table_len]= atof(result);
-	      result = strtok(NULL, ",");
-	      table_len++;
-	    }
+            if (fgets (buffer, 10000, fp) != NULL) {
+              result = strtok(buffer, ",");
+              while (result != NULL) {
+                MI_map_64qam[cnt][table_len]= atof(result);
+                result = strtok(NULL, ",");
+                table_len++;
+              }
+            }
 	  }
        fclose(fp);
        for (t = 0; t < 227; t++){
