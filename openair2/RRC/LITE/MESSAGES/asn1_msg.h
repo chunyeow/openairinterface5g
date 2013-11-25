@@ -53,6 +53,16 @@
 
 #include "RRC/LITE/defs.h"
 
+/*
+ * The variant of the above function which dumps the BASIC-XER (XER_F_BASIC)
+ * output into the chosen string buffer.
+ * RETURN VALUES:
+ *       0: The structure is printed.
+ *      -1: Problem printing the structure.
+ * WARNING: No sensible errno value is returned.
+ */
+int xer_sprint(char *string, struct asn_TYPE_descriptor_s *td, void *sptr);
+
 uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index);
 
 u8 get_adjacent_cell_mod_id(uint16_t phyCellId);

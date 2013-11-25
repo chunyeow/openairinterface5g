@@ -114,6 +114,29 @@ uint16_t two_tier_hexagonal_adjacent_cellIds[7][6] = {{1,2,4,5,7,8},    // CellI
 				                      {8,0,5,9,17,12},  // CellId 7
 				                      {15,1,0,7,12,10}};// CellId 8
 
+/*
+ * This is a helper function for xer_sprint, which directs all incoming data
+ * into the provided string.
+ */
+static int xer__print2s (const void *buffer, size_t size, void *app_key)
+{
+    char *string = (char *) app_key;
+
+    strncat(string, buffer, size);
+
+    return 0;
+}
+
+int xer_sprint (char *string, asn_TYPE_descriptor_t *td, void *sptr)
+{
+    asn_enc_rval_t er;
+
+    er = xer_encode(td, sptr, XER_F_BASIC, xer__print2s, string);
+    if (er.encoded == -1)
+        return -1;
+
+    return 0;
+}
 
 uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index) {
   return(two_tier_hexagonal_adjacent_cellIds[Mod_id][index]);
@@ -1982,7 +2005,7 @@ OAI_UECapability_t *fill_ue_capability() {
   				   MAX_UE_CAPABILITY_SIZE);
 
 #if defined(ENABLE_ITTI)
-  /* Test code */
+# if defined(DISABLE_XER_SPRINT)
   {
     MessageDef *message_p;
 
@@ -1991,6 +2014,27 @@ OAI_UECapability_t *fill_ue_capability() {
 
     itti_send_msg_to_task (TASK_UNKNOWN, NB_eNB_INST, message_p);
   }
+# else
+  {
+    char       *message_string = NULL;
+
+    message_string = calloc(10000, sizeof(char));
+
+    if (xer_sprint(message_string, &asn_DEF_UE_EUTRA_Capability, (void *)UE_EUTRA_Capability) >= 0)
+    {
+      MessageDef *message_p;
+      size_t      message_string_size;
+
+      message_string_size = strlen(message_string);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+      free(message_string);
+    }
+  }
+# endif
 #endif
 
   UECapability.sdu_size = (enc_rval.encoded + 7) / 8;

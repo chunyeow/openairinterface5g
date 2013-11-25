@@ -332,6 +332,7 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
 #endif
 
 #if defined(ENABLE_ITTI)
+# if defined(DISABLE_ITTI_XER_PRINT)
   {
     MessageDef *message_p;
 
@@ -340,6 +341,27 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
+# else
+  {
+    char       *message_string = NULL;
+
+    message_string = calloc(10000, sizeof(char));
+
+    if (xer_sprint(message_string, &asn_DEF_DL_CCCH_Message, (void *)dl_ccch_msg) >= 0)
+    {
+      MessageDef *message_p;
+      size_t      message_string_size;
+
+      message_string_size = strlen(message_string);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+      free(message_string);
+    }
+  }
+# endif
 #endif
 
   if ((dec_rval.code != RC_OK) && (dec_rval.consumed==0)) {
@@ -1337,6 +1359,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
 #endif
 
 #if defined(ENABLE_ITTI)
+# if defined(DISABLE_ITTI_XER_PRINT)
   {
     MessageDef *message_p;
 
@@ -1345,6 +1368,27 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
+# else
+  {
+    char       *message_string = NULL;
+
+    message_string = calloc(20000, sizeof(char));
+
+    if (xer_sprint(message_string, &asn_DEF_DL_DCCH_Message, (void *)dl_dcch_msg) >= 0)
+    {
+      MessageDef *message_p;
+      size_t      message_string_size;
+
+      message_string_size = strlen(message_string);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+      free(message_string);
+    }
+  }
+# endif
 #endif
 
   if (dl_dcch_msg->message.present == DL_DCCH_MessageType_PR_c1) {
@@ -1506,6 +1550,7 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
     //  xer_fprint(stdout,  &asn_DEF_BCCH_DL_SCH_Message, (void*)&bcch_message);
 
 #if defined(ENABLE_ITTI)
+# if defined(DISABLE_ITTI_XER_PRINT)
   {
     MessageDef *message_p;
 
@@ -1514,6 +1559,27 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
   }
+# else
+  {
+    char       *message_string = NULL;
+
+    message_string = calloc(10000, sizeof(char));
+
+    if (xer_sprint(message_string, &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message) >= 0)
+    {
+      MessageDef *message_p;
+      size_t      message_string_size;
+
+      message_string_size = strlen(message_string);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+      free(message_string);
+    }
+  }
+# endif
 #endif
 
     if (bcch_message->message.present == BCCH_DL_SCH_MessageType_PR_c1) {

@@ -403,6 +403,7 @@ int itti_create_task_successful(void){
 #endif  
   return 1;
 }
+
 /*
  * later, the enb task will be moved from here
  */
@@ -430,7 +431,7 @@ void *eNB_app_task(void *args_p) {
       //note:  there is an implicit relationship between the data struct and the message name
       message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB);
       
-      s1ap_register_eNB = &message_p->msg.s1ap_register_eNB;
+      s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
       
       hash = s1ap_generate_eNB_id();
 
@@ -489,6 +490,7 @@ void *eNB_app_task(void *args_p) {
 #endif
 return NULL;
 }
+
 void *l2l1_task(void *args_p) {
   // Framing variables
   s32 slot, last_slot, next_slot;

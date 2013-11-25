@@ -2504,6 +2504,7 @@ int rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
                  (uint8_t *) Srb_info->Rx_buffer.Payload, 100, 0, 0);
 
 #if defined(ENABLE_ITTI)
+# if defined(DISABLE_ITTI_XER_PRINT)
   {
     MessageDef *message_p;
 
@@ -2512,6 +2513,27 @@ int rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id, message_p);
   }
+# else
+  {
+    char       *message_string = NULL;
+
+    message_string = calloc(10000, sizeof(char));
+
+    if (xer_sprint(message_string, &asn_DEF_UL_CCCH_Message, (void *)ul_ccch_msg) >= 0)
+    {
+      MessageDef *message_p;
+      size_t      message_string_size;
+
+      message_string_size = strlen(message_string);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+      free(message_string);
+    }
+  }
+# endif
 #endif
 
 for (i = 0; i < 8; i++)
@@ -2699,6 +2721,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                           (void **) &ul_dcch_msg, Rx_sdu, sdu_size, 0, 0);
 
 #if defined(ENABLE_ITTI)
+# if defined(DISABLE_ITTI_XER_PRINT)
   {
     MessageDef *message_p;
 
@@ -2707,6 +2730,27 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
 
     itti_send_msg_to_task (TASK_UNKNOWN, Mod_id, message_p);
   }
+# else
+  {
+    char       *message_string = NULL;
+
+    message_string = calloc(10000, sizeof(char));
+
+    if (xer_sprint(message_string, &asn_DEF_UL_DCCH_Message, (void *)ul_dcch_msg) >= 0)
+    {
+      MessageDef *message_p;
+      size_t      message_string_size;
+
+      message_string_size = strlen(message_string);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+      free(message_string);
+    }
+  }
+# endif
 #endif
 
   for (i = 0; i < sdu_size; i++)

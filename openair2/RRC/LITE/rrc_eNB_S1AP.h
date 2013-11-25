@@ -12,6 +12,8 @@
 
 # if defined(ENABLE_USE_MME)
 
+#include "UL-DCCH-Message.h"
+
 /* Up link procedures */
 
 #   if defined(ENABLE_ITTI)

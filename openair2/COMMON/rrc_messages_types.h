@@ -12,6 +12,7 @@
 
 //-------------------------------------------------------------------------------------------//
 // Messages for RRC logging
+#if defined(DISABLE_ITTI_XER_PRINT)
 #include "BCCH-DL-SCH-Message.h"
 #include "DL-CCCH-Message.h"
 #include "DL-DCCH-Message.h"
@@ -25,6 +26,7 @@ typedef DL_DCCH_Message_t       RrcDlDcchMessage;
 typedef UE_EUTRA_Capability_t   RrcUeEutraCapability;
 typedef UL_CCCH_Message_t       RrcUlCcchMessage;
 typedef UL_DCCH_Message_t       RrcUlDcchMessage;
+#endif
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
