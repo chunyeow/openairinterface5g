@@ -163,14 +163,16 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
         {
             gpointer buffer;
 
+            uint32_t message_number;
             uint32_t message_id;
             uint32_t origin_task_id;
             uint32_t destination_task_id;
             uint32_t instance;
             char label[100];
 
-            gtk_tree_model_get (model, &iter, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID, &origin_task_id,
-                                COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance, COL_BUFFER, &buffer, -1);
+            gtk_tree_model_get (model, &iter, COL_MSG_NUM, &message_number, COL_MESSAGE_ID, &message_id,
+                                COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE,
+                                &instance, COL_BUFFER, &buffer, -1);
 
             g_debug("  Get iter %p %p", buffer_current, buffer);
 
@@ -309,13 +311,14 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                     data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
                     data_size = get_message_size ((buffer_t*) buffer);
 
-                    g_info("    message header type size: %u, data size: %u %p %d", message_header_type_size, data_size, buffer, ui_main_data.follow_last);
+                    g_info("    dump message %d: header type size: %u, data size: %u, buffer %p, follow last %d",
+                           message_number, message_header_type_size, data_size, buffer, ui_main_data.follow_last);
 
                     ui_signal_set_text (text_view, data, data_size);
                 }
                 else
                 {
-                    g_info("    dissect message %d %p %d", message_id, buffer, ui_main_data.follow_last);
+                    g_info("    dissect message %d: id %d, buffer %p, follow last %d", message_number, message_id, buffer, ui_main_data.follow_last);
 
                     /* Dissect the signal */
                     CHECK_FCT_DO(dissect_signal((buffer_t*)buffer, ui_signal_set_text, text_view), return FALSE);
