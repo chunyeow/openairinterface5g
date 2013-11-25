@@ -72,15 +72,14 @@
 #endif
 
 #if defined(ENABLE_USE_MME)
+# include "rrc_eNB_S1AP.h"
 # if defined(ENABLE_ITTI)
-#   include "s1ap_eNB.h"
 # else
 #   include "../../S1AP/s1ap_eNB.h"
 # endif
 #endif
 
 #include "pdcp.h"
-#include "rrc_eNB_S1AP.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
@@ -3101,6 +3100,18 @@ void *rrc_enb_task(void *args_p) {
 
       case S1AP_INITIAL_CONTEXT_SETUP_REQ:
         rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p, msg_name, instance);
+        break;
+
+      case S1AP_UE_CTXT_MODIFICATION_REQ:
+        rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(msg_p, msg_name, instance);
+        break;
+
+      case S1AP_PAGING_IND:
+        LOG_E(RRC, "Received not yet implemented message %s\n", msg_name);
+        break;
+
+      case S1AP_UE_CONTEXT_RELEASE_REQ:
+        rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ(msg_p, msg_name, instance);
         break;
 #endif
 

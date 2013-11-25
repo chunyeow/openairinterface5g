@@ -19,6 +19,8 @@
 #define S1AP_UE_CTXT_MODIFICATION_REQ(mSGpTR)   (mSGpTR)->ittiMsg.s1ap_ue_ctxt_modification_req
 #define S1AP_PAGIND_IND(mSGpTR)                 (mSGpTR)->ittiMsg.s1ap_paging_ind
 
+#define S1AP_UE_CONTEXT_RELEASE_REQ(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_ue_release_req
+
 //-------------------------------------------------------------------------------------------//
 
 typedef enum cell_type_e {

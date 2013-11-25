@@ -311,25 +311,26 @@ void rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t mod_id, uint8_t ue_index,
 # if defined(ENABLE_ITTI)
 /*------------------------------------------------------------------------------*/
 int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, instance_t instance, mui_t *rrc_eNB_mui) {
+  uint16_t ue_initial_id;
+  uint32_t eNB_ue_s1ap_id;
   uint8_t ue_index;
   uint32_t length;
   uint8_t *buffer;
 
-  ue_index = get_UE_index_from_s1ap_ids (instance, S1AP_DOWNLINK_NAS (msg_p).ue_initial_id,
-                                         S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id);
+  ue_initial_id = S1AP_DOWNLINK_NAS (msg_p).ue_initial_id;
+  eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
+  ue_index = get_UE_index_from_s1ap_ids (instance, ue_initial_id, eNB_ue_s1ap_id);
 
-  LOG_I(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, ue_index %d\n", msg_name, instance,
-        S1AP_DOWNLINK_NAS (msg_p).ue_initial_id, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, ue_index);
+  LOG_I(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, ue_index %d\n", msg_name, instance, ue_initial_id, eNB_ue_s1ap_id, ue_index);
 
   if (ue_index == UE_INDEX_INVALID) {
     /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
     MessageDef *msg_fail_p;
 
-    LOG_W(RRC, "In S1AP_DOWNLINK_NAS: unknown UE from S1AP ids (%d, %d) for eNB %d\n", S1AP_DOWNLINK_NAS (msg_p).ue_initial_id,
-          S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, instance);
+    LOG_W(RRC, "In S1AP_DOWNLINK_NAS: unknown UE from S1AP ids (%d, %d) for eNB %d\n", ue_initial_id, eNB_ue_s1ap_id, instance);
 
     msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_NAS_NON_DELIVERY_IND);
-    S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
+    S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
     S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).nas_pdu.length = S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length;
     S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).nas_pdu.buffer = S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer;
 
@@ -355,24 +356,25 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
 
 /*------------------------------------------------------------------------------*/
 int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char *msg_name, instance_t instance) {
+  uint16_t ue_initial_id;
+  uint32_t eNB_ue_s1ap_id;
   uint8_t ue_index;
 
-  ue_index = get_UE_index_from_s1ap_ids (instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id,
-                                         S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id);
+  ue_initial_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id;
+  eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+  ue_index = get_UE_index_from_s1ap_ids (instance, ue_initial_id, eNB_ue_s1ap_id);
 
   LOG_I(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d, ue_index %d\n",
-        msg_name, instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id,
-        S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs, ue_index);
+        msg_name, instance, ue_initial_id, eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs, ue_index);
 
   if (ue_index == UE_INDEX_INVALID) {
     /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
     MessageDef *msg_fail_p;
 
-    LOG_W(RRC, "In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE from S1AP ids (%d, %d) for eNB %d\n",
-          S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, instance);
+    LOG_W(RRC, "In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE from S1AP ids (%d, %d) for eNB %d\n", ue_initial_id, eNB_ue_s1ap_id, instance);
 
     msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL);
-    S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+    S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
 
     // TODO add failure cause when defined!
 
@@ -395,6 +397,14 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
       }
     }
 
+    /* TODO parameters yet to process ... */
+    {
+      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
+      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities.encryption_algorithms;
+      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities.integrity_algorithms;
+      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_key;
+    }
+
     {
       uint8_t send_security_mode_command = TRUE;
 
@@ -407,6 +417,100 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
         rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
       }
     }
+    return (0);
+  }
+}
+
+/*------------------------------------------------------------------------------*/
+int rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(MessageDef *msg_p, const char *msg_name, instance_t instance) {
+  uint32_t eNB_ue_s1ap_id;
+  uint8_t ue_index;
+
+  eNB_ue_s1ap_id = S1AP_UE_CTXT_MODIFICATION_REQ (msg_p).eNB_ue_s1ap_id;
+  ue_index = get_UE_index_from_eNB_ue_s1ap_id (instance, eNB_ue_s1ap_id);
+
+  if (ue_index == UE_INDEX_INVALID) {
+    /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
+    MessageDef *msg_fail_p;
+
+    LOG_W(RRC, "In S1AP_UE_CTXT_MODIFICATION_REQ: unknown UE from eNB_ue_s1ap_id (%d) for eNB %d\n", eNB_ue_s1ap_id, instance);
+
+    msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_UE_CTXT_MODIFICATION_FAIL);
+    S1AP_UE_CTXT_MODIFICATION_FAIL (msg_fail_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+
+    // TODO add failure cause when defined!
+
+    itti_send_msg_to_task (TASK_S1AP, instance, msg_fail_p);
+
+    return (-1);
+  }
+  else {
+
+    /* TODO parameters yet to process ... */
+    {
+      if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_SECURITY_KEY) {
+        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_key;
+      }
+      if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR) {
+        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).ue_ambr;
+      }
+      if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_SECU_CAP) {
+        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_capabilities.encryption_algorithms;
+        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_capabilities.integrity_algorithms;
+      }
+    }
+
+    /* Send the response */
+    {
+      MessageDef *msg_resp_p;
+
+      msg_resp_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CTXT_MODIFICATION_RESP);
+      S1AP_UE_CTXT_MODIFICATION_RESP(msg_resp_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+
+      itti_send_msg_to_task(TASK_S1AP, instance, msg_resp_p);
+    }
+
+    return (0);
+  }
+}
+
+/*------------------------------------------------------------------------------*/
+int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ (MessageDef *msg_p, const char *msg_name, instance_t instance) {
+  uint32_t eNB_ue_s1ap_id;
+  uint8_t ue_index;
+
+  eNB_ue_s1ap_id = S1AP_UE_CONTEXT_RELEASE_REQ(msg_p).eNB_ue_s1ap_id;
+  ue_index = get_UE_index_from_eNB_ue_s1ap_id(instance, eNB_ue_s1ap_id);
+
+  if (ue_index == UE_INDEX_INVALID) {
+    /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
+    MessageDef *msg_fail_p;
+
+    LOG_W(RRC,
+        "In S1AP_UE_CONTEXT_RELEASE_REQ: unknown UE from eNB_ue_s1ap_id (%d) for eNB %d\n", eNB_ue_s1ap_id, instance);
+
+    msg_fail_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_RESP); /* TODO change message ID. */
+    S1AP_UE_CONTEXT_RELEASE_RESP(msg_fail_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+
+    // TODO add failure cause when defined!
+
+    itti_send_msg_to_task(TASK_S1AP, instance, msg_fail_p);
+
+    return (-1);
+  }
+  else {
+    /* TODO release context. */
+
+    /* Send the response */
+    {
+      MessageDef *msg_resp_p;
+
+      msg_resp_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_UE_CONTEXT_RELEASE_RESP);
+      S1AP_UE_CONTEXT_RELEASE_RESP(msg_resp_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+
+      itti_send_msg_to_task(TASK_S1AP, instance, msg_resp_p);
+    }
+
     return (0);
   }
 }
