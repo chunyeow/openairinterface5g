@@ -8,6 +8,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include "logs.h"
 #include "types.h"
 #include "xml_parse.h"
 #include "union_type.h"
@@ -28,7 +29,8 @@ extern int debug_parser;
 # define INDENT_START 0
 #endif
 
-types_t *root = NULL;
+types_t *xml_head;
+types_t *root;
 
 static int xml_parse_doc(xmlDocPtr doc);
 
@@ -647,14 +649,53 @@ static int parse_elements(xmlNode * a_node, types_t **head) {
     return RC_OK;
 }
 
+static int free_elements(types_t *parent, int indent) {
+    types_t *cur_node = parent;
+    types_t *child_node;
+
+    g_debug("%*s%p %s", indent, "", cur_node, cur_node->name != NULL ? cur_node->name : "");
+
+    for (; cur_node != NULL; cur_node = cur_node->next) {
+        if (cur_node->child != NULL) {
+            child_node = cur_node->child;
+            cur_node->child = NULL; /* Clear the child pointer to avoid re-processing it, we are handling a graph with loops */
+            CHECK_FCT_DO(free_elements((child_node), indent + 2), return RC_FAIL);
+        }
+    }
+    free (cur_node);
+
+    return RC_OK;
+}
+
 int xml_parse_buffer(const char *xml_buffer, const int size) {
     xmlDocPtr doc; /* the resulting document tree */
 
     if (xml_buffer == NULL) {
-        return -1;
+        return RC_NULL_POINTER;
     }
 
-    g_debug("Parsing XML definition from buffer ...");
+    if (xml_head != NULL)
+    {
+        /* Free previous definitions */
+        free_elements(xml_head, 0);
+
+        g_info("xml_parse_buffer freed previous definitions");
+    }
+
+    xml_head = NULL;
+    root = NULL;
+    messages_id_enum = NULL;
+    lte_time_type = NULL;
+    lte_time_frame_type = NULL;
+    lte_time_slot_type = NULL;
+    origin_task_id_type = NULL;
+    destination_task_id_type = NULL;
+    instance_type = NULL;
+    message_header_type = NULL;
+    message_type = NULL;
+    message_size_type = NULL;
+
+    g_info("Parsing XML definition from buffer ...");
 
     doc = xmlReadMemory(xml_buffer, size, NULL, NULL, 0);
 
@@ -667,11 +708,12 @@ int xml_parse_buffer(const char *xml_buffer, const int size) {
     return xml_parse_doc(doc);
 }
 
+#if 0 /* Not used anymore */
 int xml_parse_file(const char *filename) {
     xmlDocPtr doc; /* the resulting document tree */
 
     if (filename == NULL) {
-        return -1;
+        return RC_NULL_POINTER;
     }
 
     doc = xmlReadFile (filename, NULL, 0);
@@ -683,6 +725,7 @@ int xml_parse_file(const char *filename) {
 
     return xml_parse_doc(doc);
 }
+#endif
 
 static int update_filters() {
     types_t *types;
@@ -737,7 +780,6 @@ static int update_filters() {
 
 static int xml_parse_doc(xmlDocPtr doc) {
     xmlNode *root_element = NULL;
-    types_t *head = NULL;
     int ret = 0;
     FILE *dissect_file = NULL;
 
@@ -748,39 +790,39 @@ static int xml_parse_doc(xmlDocPtr doc) {
     /* Get the root element node */
     root_element = xmlDocGetRootElement(doc);
 
-    ret = parse_elements(root_element, &head);
+    ret = parse_elements(root_element, &xml_head);
 
     /* Free the document */
     xmlFreeDoc(doc);
 
     if (ret == RC_OK) {
-        resolve_typedefs (&head);
-        resolve_pointer_type (&head);
-        resolve_field (&head);
-        resolve_array (&head);
-        resolve_reference (&head);
-        resolve_struct (&head);
-        resolve_file (&head);
-        resolve_union (&head);
-        resolve_function (&head);
+        resolve_typedefs (&xml_head);
+        resolve_pointer_type (&xml_head);
+        resolve_field (&xml_head);
+        resolve_array (&xml_head);
+        resolve_reference (&xml_head);
+        resolve_struct (&xml_head);
+        resolve_file (&xml_head);
+        resolve_union (&xml_head);
+        resolve_function (&xml_head);
 
         /* Locate the root element which corresponds to the MessageDef struct */
-        CHECK_FCT(locate_root("MessageDef", head, &root));
+        CHECK_FCT(locate_root("MessageDef", xml_head, &root));
 
         /* Locate the LTE time fields */
-        if (locate_type("lte_time", head, &lte_time_type) == RC_OK)
+        if (locate_type("lte_time", xml_head, &lte_time_type) == RC_OK)
         {
             CHECK_FCT(locate_type("frame", lte_time_type->child->child, &lte_time_frame_type));
             CHECK_FCT(locate_type("slot", lte_time_type->child->child, &lte_time_slot_type));
         }
 
         /* Locate the message id field */
-        CHECK_FCT(locate_type("MessagesIds", head, &messages_id_enum));
+        CHECK_FCT(locate_type("MessagesIds", xml_head, &messages_id_enum));
 
         /* Locate the header part of a message */
-        CHECK_FCT(locate_type("ittiMsgHeader", head, &message_header_type));
+        CHECK_FCT(locate_type("ittiMsgHeader", xml_head, &message_header_type));
         /* Locate the main message part */
-        CHECK_FCT(locate_type("ittiMsg", head, &message_type));
+        CHECK_FCT(locate_type("ittiMsg", xml_head, &message_type));
 
         /* Locate the origin task id field */
         CHECK_FCT(locate_type("originTaskId", message_header_type, &origin_task_id_type));

@@ -390,8 +390,11 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
     uint32_t origin_task_id;
     uint32_t destination_task_id;
     uint32_t instance;
-
     char lte_time[15];
+
+    g_assert(data != NULL);
+    g_assert(origin_task_id_type != NULL);
+    g_assert(destination_task_id_type != NULL);
 
     gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.messages_list), &path, &focus_column);
 
