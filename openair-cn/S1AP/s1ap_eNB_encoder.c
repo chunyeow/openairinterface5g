@@ -84,6 +84,12 @@ static inline int s1ap_eNB_encode_initial_context_setup_response(
     uint8_t **buffer,
     uint32_t *length);
 
+static inline
+int s1ap_eNB_encode_nas_non_delivery(
+    S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndicationIEs,
+    uint8_t                            **buffer,
+    uint32_t                            *length);
+
 int s1ap_eNB_encode_pdu(s1ap_message *message, uint8_t **buffer, uint32_t *len)
 {
     DevAssert(message != NULL);
@@ -143,6 +149,13 @@ int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
             ret = s1ap_eNB_encode_initial_ue_message(
                 &s1ap_message_p->msg.s1ap_InitialUEMessageIEs, buffer, len);
             s1ap_xer_print_s1ap_initialuemessage(s1ap_xer__print2sp, message_string, s1ap_message_p);
+            break;
+
+        case S1ap_ProcedureCode_id_NASNonDeliveryIndication:
+            ret = s1ap_eNB_encode_nas_non_delivery(
+                &s1ap_message_p->msg.s1ap_NASNonDeliveryIndication_IEs, buffer, len);
+            s1ap_xer_print_s1ap_nasnondeliveryindication_(s1ap_xer__print2sp,
+                                                          message_string, s1ap_message_p);
             break;
 
         default:
@@ -289,6 +302,31 @@ int s1ap_eNB_encode_uplink_nas_transport(
                                             S1ap_Criticality_ignore,
                                             &asn_DEF_S1ap_UplinkNASTransport,
                                             uplinkNASTransport_p);
+}
+
+static inline
+int s1ap_eNB_encode_nas_non_delivery(
+    S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndicationIEs,
+    uint8_t                            **buffer,
+    uint32_t                            *length)
+{
+    S1ap_NASNonDeliveryIndication_t  nasNonDeliveryIndication;
+    S1ap_NASNonDeliveryIndication_t *nasNonDeliveryIndication_p = &nasNonDeliveryIndication;
+
+    memset((void *)nasNonDeliveryIndication_p, 0, sizeof(nasNonDeliveryIndication));
+
+    if (s1ap_encode_s1ap_nasnondeliveryindication_ies(
+        nasNonDeliveryIndication_p, nasNonDeliveryIndicationIEs) < 0)
+    {
+        return -1;
+    }
+
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_NASNonDeliveryIndication,
+                                            S1ap_Criticality_ignore,
+                                            &asn_DEF_S1ap_NASNonDeliveryIndication,
+                                            nasNonDeliveryIndication_p);
 }
 
 static inline
