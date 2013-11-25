@@ -1052,7 +1052,7 @@ uint8_t do_RRCConnectionRequest(uint8_t *buffer,uint8_t *rv) {
 
 }
 
-uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS) {
+uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const uint8_t Transaction_id, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS) {
 
 
   asn_enc_rval_t enc_rval;
@@ -1067,7 +1067,7 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const int dedicatedInfoNA
   ul_dcch_msg.message.choice.c1.present = UL_DCCH_MessageType__c1_PR_rrcConnectionSetupComplete;
   rrcConnectionSetupComplete            = &ul_dcch_msg.message.choice.c1.choice.rrcConnectionSetupComplete;
 
-  rrcConnectionSetupComplete->rrc_TransactionIdentifier = 0x2;
+  rrcConnectionSetupComplete->rrc_TransactionIdentifier = Transaction_id;
   rrcConnectionSetupComplete->criticalExtensions.present = RRCConnectionSetupComplete__criticalExtensions_PR_c1;
   rrcConnectionSetupComplete->criticalExtensions.choice.c1.present = RRCConnectionSetupComplete__criticalExtensions__c1_PR_rrcConnectionSetupComplete_r8;
 
@@ -1112,7 +1112,7 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const int dedicatedInfoNA
 
 }
 
-uint8_t do_RRCConnectionReconfigurationComplete(uint8_t *buffer) {
+uint8_t do_RRCConnectionReconfigurationComplete(uint8_t *buffer, const uint8_t Transaction_id) {
 
 
   asn_enc_rval_t enc_rval;
@@ -1127,7 +1127,7 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t *buffer) {
   ul_dcch_msg.message.choice.c1.present           = UL_DCCH_MessageType__c1_PR_rrcConnectionReconfigurationComplete;
   rrcConnectionReconfigurationComplete            = &ul_dcch_msg.message.choice.c1.choice.rrcConnectionReconfigurationComplete;
 
-  rrcConnectionReconfigurationComplete->rrc_TransactionIdentifier = 0x2;
+  rrcConnectionReconfigurationComplete->rrc_TransactionIdentifier = Transaction_id;
   rrcConnectionReconfigurationComplete->criticalExtensions.present = RRCConnectionReconfigurationComplete__criticalExtensions_PR_rrcConnectionReconfigurationComplete_r8;
   rrcConnectionReconfigurationComplete->criticalExtensions.choice.rrcConnectionReconfigurationComplete_r8.nonCriticalExtension=NULL;
 

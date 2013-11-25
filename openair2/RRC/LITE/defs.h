@@ -452,7 +452,7 @@ void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 eNB_index);
     \param Mod_id Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id,u32 frame,u8 eNB_index);
+void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id,u32 frame,u8 eNB_index, uint8_t Transaction_id);
 
 /** \brief process the received rrcConnectionReconfiguration message at UE 
     \param Mod_id Instance ID of UE
@@ -465,7 +465,7 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,RRCConnect
     \param Mod_id Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionReconfigurationComplete(u8 Mod_id, u32 frame, u8 eNB_index);
+void rrc_ue_generate_RRCConnectionReconfigurationComplete(u8 Mod_id, u32 frame, u8 eNB_index, uint8_t Transaction_id);
 
 /** \brief Establish SRB1 based on configuration in SRB_ToAddMod structure.  Configures RLC/PDCP accordingly
     \param Mod_id Instance ID of UE

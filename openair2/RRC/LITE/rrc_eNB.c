@@ -539,13 +539,11 @@ void rrc_eNB_process_RRCConnectionSetupComplete (u8 Mod_id,
 /*------------------------------------------------------------------------------*/
 void rrc_eNB_generate_SecurityModeCommand (u8 Mod_id, u32 frame, u16 UE_index)
 {
-
   uint8_t buffer[100];
   uint8_t size;
 
-  size = do_SecurityModeCommand (Mod_id, buffer, UE_index, 0,
-                                 eNB_rrc_inst[Mod_id].ciphering_algorithm[UE_index],
-                                 eNB_rrc_inst[Mod_id].integrity_algorithm[UE_index]);
+  size = do_SecurityModeCommand(Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),
+      eNB_rrc_inst[Mod_id].ciphering_algorithm[UE_index], eNB_rrc_inst[Mod_id].integrity_algorithm[UE_index]);
 
   LOG_I (RRC,
          "[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate SecurityModeCommand (bytes %d, UE id %d)\n",
@@ -2295,7 +2293,9 @@ void rrc_eNB_generate_RRCConnectionSetup (u8 Mod_id, u32 frame, u16 UE_index) {
                                                              find_UE_RNTI
                                                              (Mod_id,
                                                               UE_index)),
-                           UE_index, 0, mac_xface->lte_frame_parms,
+                           UE_index,
+                           rrc_eNB_get_next_transaction_identifier(Mod_id),
+                           mac_xface->lte_frame_parms,
                            SRB_configList,
                            &eNB_rrc_inst[Mod_id].
                            physicalConfigDedicated[UE_index]);
@@ -2528,7 +2528,7 @@ int rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
       message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
 
       free(message_string);
     }
@@ -2745,7 +2745,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
       message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
 
       free(message_string);
     }
