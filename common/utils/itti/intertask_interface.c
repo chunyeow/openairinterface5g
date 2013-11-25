@@ -315,12 +315,14 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 
 #if defined(ENABLE_EVENT_FD)
         {
+            ssize_t  write_ret;
             uint64_t sem_counter = 1;
 
             lfds611_queue_enqueue(itti_desc.tasks[task_id].message_queue, new);
 
             /* Call to write for an event fd must be of 8 bytes */
-            write(itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+            write_ret = write(itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+            DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
         }
 #else
         if (STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
@@ -477,9 +479,11 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
         {
             struct message_list_s *message;
             uint64_t sem_counter;
+            ssize_t  read_ret;
 
             /* Read will always return 1 */
-            read (itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+            read_ret = read (itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+            DevCheck(read_ret == sizeof(sem_counter), read_ret, sizeof(sem_counter), 0);
 
             if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 0) {
                 /* No element in list -> this should not happen */
@@ -581,6 +585,8 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
 
     itti_desc.threads[thread_id].task_state = TASK_STATE_STARTING;
 
+    ITTI_DEBUG("Create thread for task %s\n", itti_get_task_name(task_id));
+
     result = pthread_create (&itti_desc.threads[thread_id].task_thread, NULL, start_routine, args_p);
     DevCheck(result >= 0, task_id, thread_id, result);
 
@@ -631,7 +637,9 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
     ITTI_DEBUG("Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
 
+#if !defined(RTAI)
     CHECK_INIT_RETURN(signal_init());
+#endif
 
     /* Saves threads and messages max values */
     itti_desc.task_max = task_max;
