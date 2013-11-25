@@ -1,4 +1,4 @@
-include $(OPENAIR_TARGETS)/SIMU/USER/Makerules
+# include $(OPENAIR_TARGETS)/SIMU/USER/Makerules
 
 OUTDIR = $(S1AP_DIR)/enb_objs
 

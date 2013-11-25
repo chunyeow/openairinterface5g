@@ -92,8 +92,13 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
-#if defined(ENABLE_USE_MME)
-# include "s1ap_eNB.h"
+#if defined(ENABLE_ITTI)
+# include "intertask_interface_init.h"
+# include "timer.h"
+# if defined(ENABLE_USE_MME)
+#   include "s1ap_eNB.h"
+#   include "sctp_eNB_task.h"
+# endif
 #endif
 
 #ifdef XFORMS
@@ -657,6 +662,9 @@ static void *eNB_thread(void *arg)
         slot=0;
         frame++;
       }
+#if defined(ENABLE_ITTI)
+      itti_update_lte_time(frame, slot);
+#endif
     }
 
   LOG_D(HW,"eNB_thread: finished, ran %d times.\n",frame);
@@ -889,6 +897,9 @@ static void *UE_thread(void *arg)
           slot=0;
           frame++;
       }
+#if defined(ENABLE_ITTI)
+      itti_update_lte_time(frame, slot);
+#endif
     }
   LOG_D(HW,"UE_thread: finished, ran %d times.\n",frame);
 
@@ -904,9 +915,85 @@ static void *UE_thread(void *arg)
   return 0;
 }
 
+/* DUmmy l2l1 task */
+void *l2l1_task(void *args_p) {
 
+#if defined(ENABLE_ITTI)
+  MessageDef *message_p;
 
+  itti_mark_task_ready (TASK_L2L1);
+# if defined(ENABLE_USE_MME)
+    /* Trying to register each eNB */
 
+    {
+        char *mme_address_v4;
+        char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
+        s1ap_register_eNB_t *s1ap_register_eNB;
+        uint32_t hash;
+
+        if (EPC_MODE_ENABLED)
+        {
+            mme_address_v4 = EPC_MODE_MME_ADDRESS;
+        }
+        else
+        {
+            mme_address_v4 = "192.168.12.87";
+        }
+
+        /* FIXME: following parameters should be setup by eNB applicative layer ? */
+        message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
+
+        s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
+
+        hash = s1ap_generate_eNB_id();
+
+        /* Some default/random parameters */
+        s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
+        s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
+        s1ap_register_eNB->tac         = 0;
+        s1ap_register_eNB->mcc         = 208;
+        s1ap_register_eNB->mnc         = 34;
+        s1ap_register_eNB->default_drx = PAGING_DRX_256;
+        s1ap_register_eNB->nb_mme      = 1;
+        s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
+        s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
+        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
+               strlen(mme_address_v4));
+        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
+               strlen(mme_address_v6));
+
+        itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
+    }
+# endif
+#endif
+
+#if defined(ENABLE_ITTI)
+    while (1) {
+      // Checks if a message has been sent to L2L1 task
+      itti_receive_msg (TASK_L2L1, &message_p);
+
+      if (message_p != NULL) {
+        switch (ITTI_MSG_ID(message_p)) {
+          case TERMINATE_MESSAGE:
+            itti_exit_task ();
+            break;
+
+          case MESSAGE_TEST:
+            LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
+            break;
+
+          default:
+            LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
+            break;
+        }
+
+        free (message_p);
+      }
+    }
+#endif
+
+  return NULL;
+}
 
 int main(int argc, char **argv) {
 
@@ -964,6 +1051,7 @@ int main(int argc, char **argv) {
   int ant_offset=0;
 
   int error_code;
+  char *itti_dump_file = NULL;
 
   const struct option long_options[] = {
     {"calib-ue-rx", required_argument, NULL, 256},
@@ -976,7 +1064,7 @@ int main(int argc, char **argv) {
   mode = normal_txrx;
 
 
-  while ((c = getopt_long (argc, argv, "C:O:ST:UdF:V",long_options,NULL)) != -1)
+  while ((c = getopt_long (argc, argv, "C:K:O:ST:UdF:V",long_options,NULL)) != -1)
     {
       switch (c)
         {
@@ -1000,6 +1088,13 @@ int main(int argc, char **argv) {
           break;
         case 'T':
           tcxo=atoi(optarg);
+          break;
+        case 'K':
+#if defined(ENABLE_ITTI)
+          itti_dump_file = strdup(optarg);
+#else
+          printf("-K option is disabled when ENABLE_ITTI is not defined\n");
+#endif
           break;
         case 'O':
 #if defined(ENABLE_USE_MME)
@@ -1109,6 +1204,32 @@ int main(int argc, char **argv) {
 
   // initialize the log (see log.h for details)
   logInit();
+
+#if defined(ENABLE_ITTI)
+  itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
+
+# if defined(ENABLE_USE_MME)
+  if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
+    return -1;
+  }
+  if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
+    return -1;
+  }
+# endif
+
+  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
+      return -1;
+  }
+
+  // Handle signals until all tasks are terminated
+//   itti_wait_tasks_end();
+#endif
 
   if (ouput_vcd) {
     if (UE_flag==1)
@@ -1431,6 +1552,23 @@ int main(int argc, char **argv) {
   
 #ifdef OPENAIR2
   int eMBMS_active=0;
+
+#if defined(ENABLE_ITTI)
+  if (UE_flag == 1) {
+    if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
+      exit (EXIT_FAILURE);
+    }
+  } else {
+    if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
+      exit (EXIT_FAILURE);
+    }
+  }
+#endif
+
   l2_init(frame_parms,eMBMS_active,
 	  0,// cba_group_active
 	  0); // HO flag

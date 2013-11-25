@@ -1,5 +1,9 @@
-# Include some standard directives
-include Makerules
+# Include some shared directives
+include $(OPENAIR_TARGETS)/Makerules
+
+default: oaisim
+
+include $(OPENAIR_TARGETS)/Makefile.common
 
 CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
 # FORCE ssse3 for compilation of openair on User Mode Linux
@@ -7,29 +11,13 @@ CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ;
 CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
 linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
-COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
 TOP_DIR             = $(OPENAIR1_DIR)
 OPENAIR1_TOP        = $(OPENAIR1_DIR)
 OPENAIR2_TOP        = $(OPENAIR2_DIR)
 OPENAIR3_TOP        = $(OPENAIR3_DIR)
 OPENAIR3            = $(OPENAIR3_DIR)
 
-S1AP_DIR		= $(OPENAIR_HOME)/openair-cn/S1AP
-SCTP_DIR		= $(OPENAIR_HOME)/openair-cn/SCTP
-S1AP_OBJ_DIR		= $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
-SCTP_OBJ_DIR		= $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
-
-export S1AP_DIR
-export COMMON_UTILS_DIR
-
-CFLAGS = $(COMMON_CFLAGS) -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
-
-ifdef ENABLE_ITTI
-CFLAGS += -DENABLE_ITTI
-ifndef DISABLE_ITTI_EVENT_FD
-CFLAGS += -DENABLE_EVENT_FD
-endif
-endif
+CFLAGS += $(COMMON_CFLAGS) -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
 
 # Check if GCC version is greater or equal to 4.4
 GCCVERSIONGTEQ44 := $(shell expr `gcc -dumpversion | cut -f1,2 -d. --output-delimiter=""` \>= 44)
@@ -175,10 +163,6 @@ ifndef DISABLE_XER_PRINT
 CFLAGS += -DXER_PRINT
 endif
 
-ifneq ($(USE_MME), R8)
-UPDATE_RELEASE_9=1
-endif
-
 ifdef SECU
 ifeq ($(NETTLE_FOUND), 0)
 @echo "Nettle library >= 2.5 is not installed on your system, continuing with security disabled"
@@ -194,7 +178,6 @@ endif
 endif
 endif
 
-include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
 include $(OPENAIR1_DIR)/SCHED/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
@@ -202,14 +185,6 @@ include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 include $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
-#include $(OPENAIR2_DIR)/S1AP/Makefile.inc
-#include $(OPENAIR2_DIR)/S1AP/MESSAGES/Makefile.inc
-
-ITTI_MESSAGES_H = messages_xml.h
-
-ITTI_MESSAGES_XML = messages.xml
-
-ITTI_MESSAGES_FILE =  $(ITTI_DIR)/intertask_interface_types.h
 
 SIMULATION_OBJS  = $(TOP_DIR)/SIMULATION/TOOLS/gauss.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/TOOLS/random_channel.o
@@ -230,7 +205,7 @@ OAISIM_OBJS_COMMON += $(OPENAIR_TARGETS)/SIMU/USER/sinr_sim.o
 OAISIM_OBJS_COMMON += $(OPENAIR_TARGETS)/SIMU/USER/cor_SF_sim.o
 OAISIM_OBJS_COMMON += $(OPENAIR_TARGETS)/SIMU/USER/oaisim_functions.o
 
-OAISIM_OBJS = oaisim.o
+OAISIM_OBJS = $(OPENAIR_TARGETS)/SIMU/USER/oaisim.o
 
 ifdef XFORMS
 TOOLS_OBJS += $(OPENAIR1_DIR)/PHY/TOOLS/lte_phy_scope.o
@@ -264,8 +239,8 @@ endif
 # Check if libpgm is installed and use it if found instead of the unreliable
 # multicast
 ifeq ($(PGM_FOUND), 1)
-CFLAGS += $(PGM_CFLAGS) -DENABLE_PGM_TRANSPORT
-LIBS += $(PGM_LIBS)
+CFLAGS		+= $(PGM_CFLAGS) -DENABLE_PGM_TRANSPORT
+LIBS		+= $(PGM_LIBS)
 endif
 
 OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS) $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) 
@@ -276,9 +251,7 @@ endif
 LFDS_OBJ_DIR		 = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(LFDS_DIR))
 LFDS_LIB		 = $(LFDS_OBJ_DIR)/bin/liblfds611.a
 LIBS 			+= $(LFDS_LIB)
-OAISIM_DEPENDENCIES 	 = $(LFDS_LIB)
-
-default: oaisim
+SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 
 all: oaisim pad
 
@@ -288,20 +261,6 @@ userclean: cleanall oaisim
 
 objsdir:
 	@if [ ! -d $(OBJS_DIR) ]; then mkdir -p $(OBJS_DIR); fi
-
-ifdef USE_MME
-CFLAGS			+= -DENB_MODE -DENABLE_USE_MME -DENABLE_EVENT_FD -I$(S1AP_DIR) -I$(SCTP_DIR)
-S1AP_CFLAGS	 	 = $(CFLAGS) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl)
-
-LIBS			+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
-OAISIM_DEPENDENCIES	+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a
-export S1AP_CFLAGS
-
-$(S1AP_OBJ_DIR)/libs1ap.a: force_look
-	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB $(S1AP_OBJ_DIR)/libs1ap.a OUTDIR=$(S1AP_OBJ_DIR)
-$(SCTP_OBJ_DIR)/libsctp.a: force_look
-	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB $(SCTP_OBJ_DIR)/libsctp.a OUTDIR=$(SCTP_OBJ_DIR)
-endif
 
 printvars:
 	@echo rrc_cellular variable is $(rrc_cellular)
@@ -323,28 +282,7 @@ OAISIM_COMPILED_OBJECTS = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_
 -include $(OAISIM_COMPILED_OBJECTS:.o=.d)
 
 ifdef ENABLE_ITTI
-gccxml_available = $(shell if [ `gccxml --version | grep GCC-XML -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
-ifeq 	($(gccxml_available), 0) 
-$(error gccxml is missing, please install)
-endif
-endif
-
-$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
-	@echo "Generating messages.xml ..."
-	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
-	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
-	@mv -f $(basename $@).d $(basename $@).d.tmp
-	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
-	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
-	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
-	@rm -f $(basename $@).d.tmp
-
-$(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
-	@echo "Generating messages_xml.h ..."
-	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
-
-ifdef ENABLE_ITTI
-$(OAISIM_OBJS): $(ITTI_MESSAGES_H)
+$(OAISIM_COMPILED_OBJECTS): $(ITTI_MESSAGES_H)
 
 oaisim_pad.o: $(ITTI_MESSAGES_H)
 endif
@@ -373,7 +311,7 @@ oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
 	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
 	-lpthread -llapack_atlas -lforms -lrt $(LIBS) $(DB_LDFLAGS)
 
-oaisim: $(OAISIM_COMPILED_OBJECTS) $(OAISIM_DEPENDENCIES)
+oaisim: $(OAISIM_COMPILED_OBJECTS) $(SHARED_DEPENDENCIES)
 	@echo "Linking oaisim ..."
 	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OAISIM_COMPILED_OBJECTS) \
 	-lpthread -llapack_atlas -lforms -lrt $(LIBS) $(DB_LDFLAGS)
@@ -425,19 +363,16 @@ cleanall: clean cleanasn1
 cleanalmostall: clean 
 	rm -f $(ASN1_MSG_OBJS1)
 
-clean:
-	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean OUTDIR=$(LFDS_OBJ_DIR)
+clean: common-clean
 	@$(RM_F_V) oaisim
 	@$(RM_F_V) oaisim_pad
-	@$(RM_F_V) $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
+# 	@$(RM_F_V) $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
 	@$(RM_F_V) $(OAISIM_PAD_OBJS)
 	@$(RM_F_V) $(OAISIM_PAD_OBJS:.o=.d)
 	@$(RM_F_V) $(OAISIM_COMPILED_OBJECTS)
 	@$(RM_F_V) $(OAISIM_COMPILED_OBJECTS:.o=.d)
 	@$(RM_F_V) *.exe*
 	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
-	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean OUTDIR=$(S1AP_OBJ_DIR); fi
-	@if [ -d $(SCTP_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean OUTDIR=$(SCTP_OBJ_DIR); fi
 
 cleanl1:
 	@$(RM_F_V) LOG_THREAD oaisim
@@ -488,9 +423,6 @@ print:
 showcflags:
 	@echo oaisim cflags: $(CFLAGS)
 	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags; fi
-
-force_look:
-	@true
 
 otg_all: otg_latency otg_gp
 

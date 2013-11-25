@@ -58,3 +58,12 @@ COMMON_CFLAGS =                 \
     -g                          \
     -ggdb                       \
     -O2
+
+COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
+S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
+SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
+S1AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
+SCTP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
+
+export S1AP_DIR
+export COMMON_UTILS_DIR

@@ -1,4 +1,4 @@
-include $(OPENAIR_TARGETS)/SIMU/USER/Makerules
+# include $(OPENAIR_TARGETS)/SIMU/USER/Makerules
 
 OUTDIR = .
 

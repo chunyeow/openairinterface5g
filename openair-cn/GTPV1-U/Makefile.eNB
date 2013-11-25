@@ -6,16 +6,15 @@ libgtpv1u_OBJECTS = \
 	nw-gtpv1u/src/NwGtpv1uMsg.o 	\
 	nw-gtpv1u/src/NwGtpv1u.o 	\
 	gtpv1u_eNB.o	\
-	gtpv1u_teid_pool.o	\
-	
+	gtpv1u_teid_pool.o
 
 CFLAGS = \
 	-I./nw-gtpv1u/shared	\
 	-I./nw-gtpv1u/include	\
-    -I../UTILS      \
-    -I../UTILS/HASHTABLE  \
-    -I../UDP      \
-    -I$(OPENAIR2_DIR)   \
+	-I../UTILS      \
+	-I../UTILS/HASHTABLE  \
+	-I../UDP      \
+	-I$(OPENAIR2_DIR)   \
 	-DUSER_MODE		\
 	-DENABLE_USE_MME	\
 	-DUSER_MODE		\

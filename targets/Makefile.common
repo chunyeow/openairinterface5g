@@ -1,0 +1,61 @@
+# This file gathers compilation directive shared between lte-softmodem and oaisim
+
+ITTI_MESSAGES_H		= messages_xml.h
+ITTI_MESSAGES_XML	= messages.xml
+ITTI_MESSAGES_FILE	= $(ITTI_DIR)/intertask_interface_types.h
+
+include $(COMMON_UTILS_DIR)/Makefile.inc
+
+$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
+	@echo "Generating messages.xml ..."
+	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
+	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
+	@mv -f $(basename $@).d $(basename $@).d.tmp
+	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
+	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
+	@rm -f $(basename $@).d.tmp
+
+$(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
+	@echo "Generating messages_xml.h ..."
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
+
+ifdef ENABLE_ITTI
+SHARED_DEPENDENCIES = $(ITTI_MESSAGES_H)
+endif
+
+ifdef USE_MME
+CFLAGS			+= -DENB_MODE -DENABLE_USE_MME -DENABLE_EVENT_FD -I$(S1AP_DIR) -I$(SCTP_DIR)
+S1AP_CFLAGS	 	 = $(CFLAGS) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl)
+
+LIBS			+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
+SHARED_DEPENDENCIES	+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a
+export S1AP_CFLAGS
+
+ENABLE_ITTI = 1
+
+$(S1AP_OBJ_DIR)/libs1ap.a: force_look
+	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB $(S1AP_OBJ_DIR)/libs1ap.a OUTDIR=$(S1AP_OBJ_DIR)
+$(SCTP_OBJ_DIR)/libsctp.a: force_look
+	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB $(SCTP_OBJ_DIR)/libsctp.a OUTDIR=$(SCTP_OBJ_DIR)
+endif
+
+ifdef ENABLE_ITTI
+gccxml_available = $(shell if [ `gccxml --version | grep GCC-XML -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
+ifeq 	($(gccxml_available), 0)
+$(error gccxml is missing, please install)
+endif
+CFLAGS += -I$(OPENAIR2_DIR)/COMMON -DENABLE_ITTI $(UTILS_incl)
+ifndef DISABLE_ITTI_EVENT_FD
+CFLAGS += -DENABLE_EVENT_FD
+endif
+endif
+
+force_look:
+	@true
+
+common-clean:
+	@$(RM_F_V) $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
+	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean OUTDIR=$(LFDS_OBJ_DIR)
+# 	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean OUTDIR=$(S1AP_OBJ_DIR); fi
+# 	@if [ -d $(SCTP_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean OUTDIR=$(SCTP_OBJ_DIR); fi

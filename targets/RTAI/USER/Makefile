@@ -1,3 +1,11 @@
+# Include some shared directives
+include $(OPENAIR_TARGETS)/Makerules
+
+default: lte-softmodem
+all: lte-softmodem
+
+include $(OPENAIR_TARGETS)/Makefile.common
+
 GCCVERSION = $(shell gcc --version | grep ^gcc | sed 's/^.* //g')
 ifeq "$(GCCVERSION)"  "4.4.3"
     CFLAGS += -Wno-packed-bitfield-compat
@@ -52,9 +60,6 @@ endif
 OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 
-COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
-include $(COMMON_UTILS_DIR)/Makefile.inc
-
 TOP_DIR = $(OPENAIR1_DIR)
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
 include $(OPENAIR1_DIR)/SCHED/Makefile.inc
@@ -65,22 +70,6 @@ RTAI_OBJ += $(SCHED_OBJS)
 else
 OBJ += $(SCHED_OBJS)
 endif
-
-#ifndef rrc_cellular
-ifeq ($(rrc_cellular),0)
-rrc_cellular = 0
-rrc_cellular_eNB = 0
-rrc_cellular_UE = 0
-else
-  ifeq ($(eNB_flag),1)
-    rrc_cellular_eNB=1
-  endif
-  ifeq ($(UE_flag),1)
-    rrc_cellular_UE=1
-  endif
-endif
-
-export rrc_cellular
 
 OPENAIR2_TOP = $(OPENAIR2_DIR)
 include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
@@ -102,10 +91,14 @@ OPENAIR2=1
 endif
 ifeq ($(OPENAIR2),1)
 ASN1_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
-OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS) 
+OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS)
 OBJ += $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/netlink_init.o
 #OBJ += $(PDCP_DIR)/pdcp_thread.o
 CFLAGS += -DOPENAIR2 -DNO_RRM -DPUCCH -DMAC_CONTEXT=1
+endif
+
+ifdef ENABLE_ITTI
+OBJ += $(UTILS_OBJS)
 endif
 
 CFLAGS += $(L2_incl) $(UTIL_incl) $(UTILS_incl)
@@ -158,7 +151,7 @@ endif
 RTAI_CFLAGS += $(shell rtai-config --lxrt-cflags) -DRTAI
 LDFLAGS += -lpthread -lm -lforms
 ifeq ($(RTAI),1)
-LDFLAGS += $(shell rtai-config --lxrt-ldflags) 
+LDFLAGS += $(shell rtai-config --lxrt-ldflags) -lrt
 else
 LDFLAGS += -lrt
 endif
@@ -168,19 +161,33 @@ CFLAGS += -I/opt/uhd/include -L/opt/uhd/lib -luhd -lpthread -lstdc++
 endif
 #CFLAGS += -I/usr/include/c++/4.6 -I/usr/include/c++/4.6/x86_64-linux-gnu -I/usr/include/rtai/
 
-all: lte-softmodem
+LFDS_OBJ_DIR		 = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(LFDS_DIR))
+LFDS_LIB		 = $(LFDS_OBJ_DIR)/bin/liblfds611.a
+LIBS 			+= $(LFDS_LIB)
+SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 
-$(LFDS_DIR)/bin/liblfds611.a:
-	$(MAKE) -C $(LFDS_DIR) -f makefile.linux
-
+$(LFDS_LIB):
+	@if [ ! -d $(LFDS_OBJ_DIR)/bin ]; then mkdir -p $(LFDS_OBJ_DIR)/bin; fi;
+	@if [ ! -d $(LFDS_OBJ_DIR)/obj ]; then mkdir -p $(LFDS_OBJ_DIR)/obj; fi;
+	$(MAKE) -C $(LFDS_DIR) -f makefile.linux OUTDIR=$(LFDS_OBJ_DIR)
 
 $(RTAI_OBJ): %.o : %.c
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) -o $@ $<
 
+ifdef ENABLE_ITTI
+$(OBJ) $(RTAI_OBJ): $(ITTI_MESSAGES_H)
+endif
+
 $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $<
+	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) $< > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
 $(USRP_OBJ):$(USRP_FILE_OBJ)
 	@echo Compiling openair_usrp.cpp
@@ -192,19 +199,13 @@ condtest: condtest.c
 synctest: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o synctest
 
+lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(SHARED_DEPENDENCIES)
+	@echo Linking $@
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem $(LDFLAGS) $(LIBS)
 
-lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(LFDS_DIR)/bin/liblfds611.a
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem $(LDFLAGS) $(LFDS_DIR)/bin/liblfds611.a
-
-lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(LFDS_DIR)/bin/liblfds611.a
-	$(CC) $(USRP_OBJ) $(CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem-usrp $(LDFLAGS) $(LFDS_DIR)/bin/liblfds611.a
-
-ifeq ($(rrc_cellular_eNB),1)
-	mv lte-softmodem lte-softmodem_eNB
-endif
-ifeq ($(rrc_cellular_UE),1)
-	mv lte-softmodem lte-softmodem_UE
-endif
+lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(SHARED_DEPENDENCIES)
+	@echo Linking $@
+	@$(CC) $(USRP_OBJ) $(CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem-usrp $(LDFLAGS) $(LIBS)
 
 synctest_eNB: synctest
 	cp synctest synctest_eNB
@@ -284,9 +285,10 @@ run_eNB1:
 run_eNB2:
 	rtai-load eNB2 --verbose
 
-clean:
-	rm -rf $(OBJ) $(RTAI_OBJ) 
-	rm -f $(ASN1_MSG_INC)/asn1_msg.o
+clean: common-clean
+	@$(RM_F_V) $(OBJ) $(RTAI_OBJ)
+	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d)
+	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o $(ASN1_MSG_INC)/asn1_msg.d
 
 cleanasn1:
 	rm -f $(ASN1_MSG_OBJS1)
@@ -318,9 +320,6 @@ show:
 	@echo $(EXTRA_CFLAGS)
 	@echo $(OBJ) $(RTAI_OBJ) 
 	@echo $(USRP_OBJ)
-	@echo rrc_cellular variable is $(rrc_cellular)
-	@echo eNB_flag is $(eNB_flag)
-	@echo UE_flag is $(UE_flag)
 	@echo IS_REL8 is $(IS_REL8)
 	@echo IS_REL10 is $(IS_REL10)
 
