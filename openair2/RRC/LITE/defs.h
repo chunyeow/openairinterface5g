@@ -182,7 +182,7 @@ typedef struct eNB_RRC_UE_INFO_s {
     uint16_t ue_initial_id;
 
     /* Information from S1AP initial_context_setup_req */
-    unsigned eNB_ue_s1ap_id :24;
+    uint32_t eNB_ue_s1ap_id :24;
     /* Number of e_rab to be setup in the list */
     uint8_t nb_of_e_rabs;
     /* Index of e_rab to be setup in the list */
@@ -197,7 +197,7 @@ typedef struct eNB_RRC_INFO_s {
   uint8_t Nb_ue;
 
   /* UE list for UE index allocation */
-  uint8_t UE_list[NUMBER_OF_UE_MAX][5];
+  uint64_t UE_list[NUMBER_OF_UE_MAX];
 
   /* Information on UE */
   eNB_RRC_UE_INFO UE[NUMBER_OF_UE_MAX];

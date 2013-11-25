@@ -2272,12 +2272,12 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       case MESSAGE_TEST:
-        LOG_D(RRC, "Received %s\n", msg_name);
+        LOG_I(RRC, "Received %s\n", msg_name);
         break;
 
       /* MAC messages */
       case RRC_MAC_IN_SYNC_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
 
         UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N310_cnt = 0;
@@ -2286,14 +2286,14 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       case RRC_MAC_OUT_OF_SYNC_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_OUT_OF_SYNC_IND (msg_p).frame, RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index);
 
         UE_rrc_inst[Mod_id].Info[RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index].N310_cnt ++;
         break;
 
       case RRC_MAC_BCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
 
         decode_BCCH_DLSCH_Message (Mod_id, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
@@ -2302,7 +2302,7 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       case RRC_MAC_CCCH_DATA_CNF:
-        LOG_D(RRC, "Received %s: instance %d, eNB %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, eNB %d\n", msg_name, instance,
               RRC_MAC_CCCH_DATA_CNF (msg_p).enb_index);
 
         // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
@@ -2310,7 +2310,7 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       case RRC_MAC_CCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, eNB %d\n", msg_name, instance,
               RRC_MAC_CCCH_DATA_IND (msg_p).frame, RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
 
         srb_info_p = &UE_rrc_inst[Mod_id].Srb0[RRC_MAC_CCCH_DATA_IND (msg_p).enb_index];
@@ -2324,7 +2324,7 @@ void *rrc_ue_task(void *args_p) {
 
 #ifdef Rel10
       case RRC_MAC_MCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, eNB %d, mbsfn SA %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, eNB %d, mbsfn SA %d\n", msg_name, instance,
               RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
         decode_MCCH_Message (Mod_id, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
@@ -2335,7 +2335,7 @@ void *rrc_ue_task(void *args_p) {
 
         /* PDCP messages */
       case RRC_DCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
               RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
 
         rrc_ue_decode_dcch (Mod_id, RRC_DCCH_DATA_IND (msg_p).frame,
@@ -2352,7 +2352,7 @@ void *rrc_ue_task(void *args_p) {
         uint32_t length;
         uint8_t *buffer;
 
-        LOG_D(RRC, "Received %s: instance %d, UEid %d\n", msg_name, instance, NAS_UPLINK_DATA_REQ (msg_p).UEid);
+        LOG_I(RRC, "Received %s: instance %d, UEid %d\n", msg_name, instance, NAS_UPLINK_DATA_REQ (msg_p).UEid);
 
         /* Create message for PDCP (ULInformationTransfer_t) */
         length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);

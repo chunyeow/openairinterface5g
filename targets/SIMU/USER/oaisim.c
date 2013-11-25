@@ -450,7 +450,7 @@ void *l2l1_task(void *args_p) {
             break;
 
           case MESSAGE_TEST:
-            LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
+            LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
             break;
 
           default:

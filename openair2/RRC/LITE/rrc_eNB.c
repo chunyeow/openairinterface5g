@@ -479,19 +479,15 @@ uint8_t rrc_eNB_get_next_transaction_identifier(uint8_t Mod_id)
 static uint8_t rrc_eNB_get_next_free_UE_index (uint8_t Mod_id, uint8_t *UE_identity)
 {
   uint8_t i, first_index = UE_INDEX_INVALID, reg = 0;
-  static const uint8_t null_identity[5] =
-    {0, 0, 0, 0, 0};
 
   DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
 
   for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
-    if ((first_index == UE_INDEX_INVALID)
-        && (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], null_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[i])))
-            == 0) {
+    if ((first_index == UE_INDEX_INVALID) && (eNB_rrc_inst[Mod_id].Info.UE_list[i] == 0)) {
       first_index = i; // save first free position
     }
 
-    if (memcmp (eNB_rrc_inst[Mod_id].Info.UE_list[i], UE_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[i])) == 0) {
+    if (memcmp (&eNB_rrc_inst[Mod_id].Info.UE_list[i], UE_identity, sizeof(eNB_rrc_inst[0].Info.UE_list[i])) == 0) {
       // UE_identity already registered
       reg = 1;
     }
@@ -511,9 +507,9 @@ void rrc_eNB_free_UE_index (uint8_t Mod_id, uint8_t UE_id)
   DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
   DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
 
-  LOG_I (RRC, "Removing UE %d\n", UE_id);
+  LOG_I (RRC, "Removing UE %d 0x%" PRIx64 "\n", UE_id, eNB_rrc_inst[Mod_id].Info.UE_list[UE_id]);
   eNB_rrc_inst[Mod_id].Info.UE[UE_id].Status = RRC_IDLE;
-  memset(eNB_rrc_inst[Mod_id].Info.UE_list[UE_id], 0, sizeof(eNB_rrc_inst[0].Info.UE_list[0]));
+  eNB_rrc_inst[Mod_id].Info.UE_list[UE_id] = 0;
 }
 
 /*------------------------------------------------------------------------------*/
@@ -1155,7 +1151,7 @@ void rrc_eNB_generate_HandoverPreparationInformation (u8 Mod_id, u32 frame, u8 U
 
   if (mod_id_target != 0xFF) {
     //UE_id_target = rrc_find_free_ue_index(modid_target);
-    UE_id_target = rrc_eNB_get_next_free_UE_index(mod_id_target,(u8 *)eNB_rrc_inst[Mod_id].Info.UE_list[UE_index]); //this should return a new index
+    UE_id_target = rrc_eNB_get_next_free_UE_index(mod_id_target,(u8 *) &eNB_rrc_inst[Mod_id].Info.UE_list[UE_index]); //this should return a new index
 
     if (UE_id_target!=0xFF) {
       LOG_N(RRC,"[eNB %d] Frame %d : Emulate sending HandoverPreparationInformation msg from eNB source %d to eNB target %d: source UE_id %d target UE_id %d source_modId: %d target_modId: %d\n",Mod_id,frame,eNB_rrc_inst[Mod_id].physCellId,targetPhyId,UE_index,UE_id_target,Mod_id,mod_id_target);
@@ -2576,14 +2572,9 @@ for (i = 0; i < 8; i++)
               memcpy (&eNB_rrc_inst[Mod_id].Info.UE_list[UE_index],
                       (u8 *) rrcConnectionRequest->ue_Identity.choice.randomValue.buf, 5);
 
-              LOG_I (RRC,
-                     "[eNB %d] Frame %d : Accept new connection from UE %d (%x%x%x%x%x)\n",
+              LOG_I (RRC, "[eNB %d] Frame %d : Accept new connection from UE %d (0x%" PRIx64 ")\n",
                      Mod_id, frame, UE_index,
-                     eNB_rrc_inst[Mod_id].Info.UE_list[UE_index][0],
-                     eNB_rrc_inst[Mod_id].Info.UE_list[UE_index][1],
-                     eNB_rrc_inst[Mod_id].Info.UE_list[UE_index][2],
-                     eNB_rrc_inst[Mod_id].Info.UE_list[UE_index][3],
-                     eNB_rrc_inst[Mod_id].Info.UE_list[UE_index][4]);
+                     eNB_rrc_inst[Mod_id].Info.UE_list[UE_index]);
 
               //CONFIG SRB2  (DCCHs, ONE per User)  //meas && lchan Cfg
               //eNB_rrc_inst[Mod_id].Info.Dtch_bd_config[UE_index].Status=NEED_RADIO_CONFIG;
@@ -3029,12 +3020,12 @@ void *rrc_enb_task(void *args_p) {
         break;
 
       case MESSAGE_TEST:
-        LOG_D(RRC, "Received %s\n", msg_name);
+        LOG_I(RRC, "Received %s\n", msg_name);
         break;
 
       /* Messages from MAC */
       case RRC_MAC_CCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d,\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d,\n", msg_name, instance,
               RRC_MAC_CCCH_DATA_IND (msg_p).frame);
 
         srb_info_p = &eNB_rrc_inst[instance].Srb0;
@@ -3047,7 +3038,7 @@ void *rrc_enb_task(void *args_p) {
 
       /* Messages from PDCP */
       case RRC_DCCH_DATA_IND:
-        LOG_D(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
+        LOG_I(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
               RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
 
         rrc_eNB_decode_dcch (instance, RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index,

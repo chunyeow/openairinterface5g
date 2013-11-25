@@ -1297,7 +1297,7 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
 
       switch (ITTI_MSG_ID(msg_p)) {
         case RRC_MAC_CCCH_DATA_REQ:
-          LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
+          LOG_I(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
                 RRC_MAC_CCCH_DATA_REQ (msg_p).frame, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
 

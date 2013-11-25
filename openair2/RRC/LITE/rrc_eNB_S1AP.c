@@ -82,15 +82,15 @@ static uint16_t get_next_ue_initial_id(uint8_t mod_id) {
  */
 static uint8_t get_UE_index_from_initial_id(uint8_t mod_id, uint16_t ue_initial_id) {
   uint8_t ue_index;
-  static const uint8_t null_identity[5] =
-    {0, 0, 0, 0, 0};
 
   DevCheck(mod_id < NB_eNB_INST, mod_id, NB_eNB_INST, 0);
+  LOG_I(RRC, "get_UE_index_from_initial_id eNB %d, ue_initial_id %d\n", mod_id, ue_initial_id);
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
     /* Check if this UE is in use */
-    if (memcmp (eNB_rrc_inst[mod_id].Info.UE_list[ue_index], null_identity,
-                sizeof(eNB_rrc_inst[0].Info.UE_list[ue_index])) != 0) {
+    LOG_I(RRC, "  UE %d: 0x%" PRIx64 " %d\n", ue_index, eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id);
+
+    if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
       /* Check if the initial id match */
       if (eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id == ue_initial_id) {
         return ue_index;
@@ -100,23 +100,23 @@ static uint8_t get_UE_index_from_initial_id(uint8_t mod_id, uint16_t ue_initial_
   return UE_INDEX_INVALID;
 }
 
-/*! \fn uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint16_t eNB_ue_s1ap_id)
+/*! \fn uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint32_t eNB_ue_s1ap_id)
  *\brief retrieve UE index in the eNB from the eNB_ue_s1ap_id previously transmitted by S1AP.
  *\param mod_id Instance ID of eNB.
  *\param eNB_ue_s1ap_id The value sent by S1AP.
  *\return the UE index or UE_INDEX_INVALID if not found.
  */
-static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint16_t eNB_ue_s1ap_id) {
+static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint32_t eNB_ue_s1ap_id) {
   uint8_t ue_index;
-  static const uint8_t null_identity[5] =
-    {0, 0, 0, 0, 0};
 
   DevCheck(mod_id < NB_eNB_INST, mod_id, NB_eNB_INST, 0);
+  LOG_I(RRC, "get_UE_index_from_eNB_ue_s1ap_id eNB %d, eNB_ue_s1ap_id %d\n", mod_id, eNB_ue_s1ap_id);
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
     /* Check if this UE is in use */
-    if (memcmp (eNB_rrc_inst[mod_id].Info.UE_list[ue_index], null_identity,
-                sizeof(eNB_rrc_inst[0].Info.UE_list[ue_index])) != 0) {
+    LOG_I(RRC, "  UE %d: 0x%" PRIx64 " %d\n", ue_index, eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id);
+
+    if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
       /* Check if the initial id match */
       if (eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id == eNB_ue_s1ap_id) {
         return ue_index;
@@ -126,7 +126,7 @@ static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint16_t eNB_ue_
   return UE_INDEX_INVALID;
 }
 
-/*! \fn uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id, uint16_t eNB_ue_s1ap_id)
+/*! \fn uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id, uint32_t eNB_ue_s1ap_id)
  *\brief retrieve UE index in the eNB from the UE initial ID if not equal to UE_INDEX_INVALID or
  *\brief from the eNB_ue_s1ap_id previously transmitted by S1AP.
  *\param mod_id Instance ID of eNB.
@@ -134,7 +134,7 @@ static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint16_t eNB_ue_
  *\param eNB_ue_s1ap_id The value sent by S1AP.
  *\return the UE index or UE_INDEX_INVALID if not found.
  */
-static uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id, uint16_t eNB_ue_s1ap_id) {
+static uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id, uint32_t eNB_ue_s1ap_id) {
   uint8_t ue_index;
 
   if (ue_initial_id == UE_INITIAL_ID_INVALID) {
@@ -318,7 +318,7 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
   ue_index = get_UE_index_from_s1ap_ids (instance, S1AP_DOWNLINK_NAS (msg_p).ue_initial_id,
                                          S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id);
 
-  LOG_D(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, ue_index %d\n", msg_name, instance,
+  LOG_I(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, ue_index %d\n", msg_name, instance,
         S1AP_DOWNLINK_NAS (msg_p).ue_initial_id, S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, ue_index);
 
   if (ue_index == UE_INDEX_INVALID) {
@@ -328,8 +328,12 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
     LOG_W(RRC, "In S1AP_DOWNLINK_NAS: unknown UE from S1AP ids (%d, %d) for eNB %d\n", S1AP_DOWNLINK_NAS (msg_p).ue_initial_id,
           S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id, instance);
 
-    msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL); // TODO change message!
-    S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+    msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_NAS_NON_DELIVERY_IND);
+    S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
+    S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).nas_pdu.length = S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length;
+    S1AP_NAS_NON_DELIVERY_IND (msg_fail_p).nas_pdu.buffer = S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer;
+
+    // TODO add failure cause when defined!
 
     itti_send_msg_to_task (TASK_S1AP, instance, msg_fail_p);
 
@@ -356,7 +360,7 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
   ue_index = get_UE_index_from_s1ap_ids (instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id,
                                          S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id);
 
-  LOG_D(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d, ue_index %d\n",
+  LOG_I(RRC, "Received %s: instance %d, ue_initial_id %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d, ue_index %d\n",
         msg_name, instance, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id,
         S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs, ue_index);
 
