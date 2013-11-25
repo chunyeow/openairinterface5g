@@ -487,7 +487,7 @@ void *eNB_app_task(void *args_p) {
 
   return NULL;
 #endif
-
+return NULL;
 }
 void *l2l1_task(void *args_p) {
   // Framing variables
@@ -506,43 +506,6 @@ void *l2l1_task(void *args_p) {
 
   itti_mark_task_ready (TASK_L2L1);
 
-        if (EPC_MODE_ENABLED)
-        {
-            mme_address_v4 = EPC_MODE_MME_ADDRESS;
-        }
-        else
-        {
-            /* FIXME: acquire MMEs IP address by XML file or command line */
-            mme_address_v4 = "192.168.12.87";
-        }
-        char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
-        s1ap_register_eNB_t *s1ap_register_eNB;
-        uint32_t hash;
-
-        /* FIXME: following parameters should be setup by eNB applicative layer ? */
-        message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
-
-        s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
-
-        hash = s1ap_generate_eNB_id();
-
-        /* Some default/random parameters */
-        s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
-        s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
-        s1ap_register_eNB->tac         = 0;
-        s1ap_register_eNB->mcc         = 208;
-        s1ap_register_eNB->mnc         = 34;
-        s1ap_register_eNB->default_drx = PAGING_DRX_256;
-        s1ap_register_eNB->nb_mme      = 1;
-        s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
-        s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
-        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
-               strlen(mme_address_v4));
-        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
-               strlen(mme_address_v6));
-
-        itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
-    }
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
@@ -1161,7 +1124,7 @@ int main(int argc, char **argv) {
   if (itti_create_task_successful())
     itti_wait_tasks_end();
   else 
-    exit(-1);
+    exit(-1); // need a softer mode 
 #else
   eNB_app_task(NULL); // do nothing for the moment
   l2l1_task (NULL);
