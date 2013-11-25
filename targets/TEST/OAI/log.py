@@ -128,12 +128,14 @@ def log_record(level, message):
     else : 
         print message
 
-def fail(case, testnum, testname, conf,  message, diag, output):
+def fail(case, testnum, testname, conf,  message, diag, output,trace):
 #    report(case, testnum, testname, conf, 'failed', output, diag, message)
     report(case, testnum, testname, conf, 'failed', output, diag)
     log_record('failed', case + testnum + ' : ' + testname  + ' ('+ conf+')')
     if message :
         log_record('failed', "Output follows:\n" + message )  
+    if trace :
+        log_record('failed', "trace file can be found in " + trace + "\n" )  
     stats['failed'] += 1
 
 def failquiet(case, testnum, testname, conf):

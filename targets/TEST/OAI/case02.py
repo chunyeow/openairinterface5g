@@ -44,28 +44,29 @@ NUM_UE=2
 NUM_eNB=1
 NUM_TRIALS=3
 
-def execute(oai, user, pw, logfile):
+def execute(oai, user, pw, logfile,logdir):
     
     case = '02'
-    logs_dir = 'pre-ci-logs';
     oai.send('cd $OPENAIR_TARGETS;')
     oai.send('cd SIMU/USER;')
-    oai.send('mkdir ' + logs_dir + ';')
     
     try:
         test = '00'
         name = 'Run oai.rel8.sf'
         conf = '-a -A AWGN -n 100'
         diag = 'OAI is not running normally (Segmentation fault / Exiting / FATAL), debugging might be needed'
-        tee = ' | tee ' + logs_dir + '/log_' + case + test + '_1.txt'
+        trace = logdir + '/log_' + case + test + '_1.txt;'
+        tee = ' 2>&1 | tee ' + trace
         oai.send_expect_false('./oaisim.rel8 ' + conf + tee, 'Segmentation fault', 30)
-        tee = ' | tee ' + logs_dir + '/log_' + case + test + '_2.txt'
+        trace = logdir + '/log_' + case + test + '_2.txt;'
+        tee = ' 2>&1 | tee ' + trace
         oai.send_expect_false('./oaisim.rel8 ' + conf + tee, 'Exiting', 30)
-        tee = ' | tee ' + logs_dir + '/log_' + case + test + '_3.txt'
+        trace = logdir + '/log_' + case + test + '_3.txt;'
+        tee = ' 2>&1 | tee ' + trace
         oai.send_expect_false('./oaisim.rel8 ' + conf + tee, 'FATAL', 30)
 
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
 
@@ -73,7 +74,8 @@ def execute(oai, user, pw, logfile):
         test = '01'
         name = 'Run oai.rel8.err'
         conf = '-a -A AWGN -n 100'
-        tee = ' | tee ' + logs_dir + '/log_' + case + test + '.txt'
+        trace = logdir + '/log_' + case + test + '_3.txt;'
+        tee = ' 2>&1 | tee ' + trace
         diag = 'Error(s) found in the execution, check the execution logs'
         oai.send_expect_false('./oaisim.rel8 ' + conf, '[E]', 30)
         
@@ -89,10 +91,11 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 50)
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
         
@@ -104,7 +107,8 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -u' + str(i+1) +' -b'+ str(j+1)
-                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                tee = ' 2>&1 | tee ' + trace
                 if user == 'root' :
                     oai.send_nowait('./oaisim.rel8.nas ' + conf + ' > /dev/null &')
                 else :    
@@ -124,7 +128,7 @@ def execute(oai, user, pw, logfile):
         oai.rm_driver(oai,user,pw)
 
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
         
@@ -135,10 +139,11 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
-                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
 
@@ -149,10 +154,11 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-A AWGN -F -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
-                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
 
@@ -163,10 +169,11 @@ def execute(oai, user, pw, logfile):
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                tee = ' | tee ' + logs_dir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8.itti ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 50)
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile)
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
         

@@ -375,7 +375,7 @@ void get_simulation_options(int argc, char *argv[]) {
                ip_length > 16 ? 16 : ip_length);
       }
 #else
-      printf("You enabled MME mode without MME support...\n");
+      printf("You enabled MME mode without compiling using ENABLE_USE_MME=1 ...\n");
 #endif
       break;
     case 'o':

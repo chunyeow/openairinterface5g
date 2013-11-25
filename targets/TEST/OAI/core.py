@@ -79,17 +79,18 @@ class core:
                "---> " + self.clean(got) + "\n" +\
                "=============================================================================\n"
 
-    def failed(self, command, expect):
+    def failed(self, command, expect,debug):
         time.sleep(2)
         ret = "================================= Failure =================================\n"
         ret +="_________________________________ Sent ____________________________________\n"
         ret +="---> " + command + "\n"
         ret +="______________________________Searching for _______________________________\n"
         ret +="---> " + self.clean(expect) + "\n" 
-        ret +="________________________________ Received _________________________________\n"
-        ret +="---> " + self.clean(self.oai.before) + "\n" 
-        ret +="_______________________________ Remaining _________________________________\n"
-        ret +="---> " + self.clean(self.oai.after) + "\n" 
+        if debug >= 1 : 
+            ret +="________________________________ Received _________________________________\n"
+            ret +="---> " + self.clean(self.oai.before) + "\n" 
+            ret +="_______________________________ Remaining _________________________________\n"
+            ret +="---> " + self.clean(self.oai.after) + "\n" 
         ret +="===========================================================================\n"
         return ret
 
@@ -129,7 +130,7 @@ class core:
     # 2) wait for a return prompt. Don't capture the response.
     # 3) Check for error or timeout.
     # ************************************************************
-    def send(self, command, timeout = 50, rsp1=None, rsp2=None):
+    def send(self, command, timeout = 50, rsp1=None, rsp2=None,debug=0):
         if not rsp1:
             rsp1 = self.prompt1
         if not rsp2:
@@ -144,7 +145,7 @@ class core:
         if self.expect_echo:
             cmd = self.oai.expect([re.escape(command), pexpect.TIMEOUT], timeout=timeout);
             if cmd != 0:
-                raise log.err(self.failed(command, command))
+                raise log.err(self.failed(command, command,debug))
 
         if self.expect_response:
             index = self.oai.expect([re.escape(rsp1), re.escape(rsp2),'%', pexpect.TIMEOUT], timeout=timeout)
@@ -158,14 +159,14 @@ class core:
                 else:
                     return 'OK'
             else:
-                raise log.err(self.failed(command, rsp1 + ' or ' + rsp2))
+                raise log.err(self.failed(command, rsp1 + ' or ' + rsp2,debug))
 
     # **************************send_recv*************************    
     # 1) send a command
     # 2) wait for either rsp1 or rsp2 is found (normally prompts)
     # 3) return everything seen before that
     # ************************************************************
-    def send_recv(self, command, timeout=50, rsp1=None, rsp2=None):
+    def send_recv(self, command, timeout=50, rsp1=None, rsp2=None,debug=0):
         if not rsp1:
             rsp1 = self.prompt1
         if not rsp2:
@@ -180,7 +181,7 @@ class core:
         if index == 0 or index == 1:
             return self.oai.before
         else:
-            raise log.err(self.failed(command, rsp1 + ' or ' + rsp2))
+            raise log.err(self.failed(command, rsp1 + ' or ' + rsp2,debug))
 
            
     # **************************send_expect*************************    
@@ -188,13 +189,13 @@ class core:
     # 2) search for an expected pattern in the response
     # 3) return a error if not found
     # **************************************************************
-    def send_expect(self, command, expect, delay = 50, rsp1=None, rsp2=None):
+    def send_expect(self, command, expect, delay = 50, rsp1=None, rsp2=None,debug=0):
         rsp = self.send_recv(command, delay, rsp1, rsp2)
     #   print rsp
         if  (rsp.find(expect) != -1):
             return 'Ok'
 
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
 
            
     # **************************send_expect_re*************************    
@@ -202,27 +203,27 @@ class core:
     # 2) search for an expected pattern defined by a regular expression in the response
     # 3) return a error if not found
     # *****************************************************************
-    def send_expect_re(self, command, expect, delay = 5, rsp1=None, rsp2=None):
+    def send_expect_re(self, command, expect, delay = 5, rsp1=None, rsp2=None,debug=0):
         rsp = self.send_recv(command, delay, rsp1, rsp2)
 #        print rsp
         match = re.compile(expect).search(rsp)
         if match:
             return match
 
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
 
     # **************************send_expect*************************    
     # 1) send a command, and optionally specify a the time to wait
     # 2) search for an expected pattern defined by a re in the response
     # 3) return ok if not found
     # **************************************************************
-    def send_expect_false(self, command, expect, delay = 5, rsp1=None, rsp2=None):
+    def send_expect_false(self, command, expect, delay = 5, rsp1=None, rsp2=None,debug=0):
         rsp = self.send_recv(command, delay, rsp1, rsp2)
     #    print rsp
         if  (rsp.find(expect) == -1):
             return 'OK'
 
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
 
     
     # **************************send_wait*************************    
@@ -232,7 +233,7 @@ class core:
     # 4) return an error if not found after the numtries
     # 3) return the response if found
     # **************************************************************
-    def send_wait(self, command, expect, numretries=3, rsp1=None, rsp2=None):
+    def send_wait(self, command, expect, numretries=3, rsp1=None, rsp2=None,debug=0):
         timer = 0
         for i in range(numretries):
             rsp = self.send_recv(command, 10, rsp1, rsp2)
@@ -240,7 +241,7 @@ class core:
                 return rsp;
             time.sleep(2)
             timer = timer+2
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
     
     # **************************send_wait_re*************************    
     # 1) send a command, and optionally specify a the time to wait
@@ -249,7 +250,7 @@ class core:
     # 4) return an error if not found after the numtries
     # 3) return the response if found
     # **************************************************************
-    def send_wait_re(self, command, expect, numretries=3, rsp1=None, rsp2=None):
+    def send_wait_re(self, command, expect, numretries=3, rsp1=None, rsp2=None,debug=0):
         timer = 0
         for i in range(numretries):
             rsp = self.send_recv(command)
@@ -258,7 +259,7 @@ class core:
                 return rsp;
             time.sleep(2)
             timer = timer+2
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
     
     # **************************send_wait_false*************************    
     # 1) send a command, and optionally specify a the time to wait
@@ -266,7 +267,7 @@ class core:
     # 3) return the response if not found 
     # 4) return an error if the pattern found after the numtries
     # **************************************************************
-    def send_wait_false(self, command, expect, numretries=3, rsp1=None, rsp2=None):
+    def send_wait_false(self, command, expect, numretries=3, rsp1=None, rsp2=None,debug=0):
         timer = 1
         for i in range(numretries):
             rsp = self.send_recv(command)
@@ -274,7 +275,7 @@ class core:
                 return rsp;
             time.sleep(2)
             timer = timer+2
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
     
     # **************************send_wait_false*************************    
     # 1) send a command, and optionally specify a the time to wait
@@ -282,7 +283,7 @@ class core:
     # 3) return the response if not found 
     # 4) return an error if the pattern found after the numtries
     # **************************************************************
-    def send_wait_false_re(self, command, expect, numretries=3, rsp1=None, rsp2=None):
+    def send_wait_false_re(self, command, expect, numretries=3, rsp1=None, rsp2=None,debug=0):
         timer = 0
         for i in range(numretries):
             rsp = self.send_recv(command)
@@ -290,7 +291,7 @@ class core:
                 return rsp;
             time.sleep(2)
             timer = timer+2
-        raise log.err(self.failed(command, expect))
+        raise log.err(self.failed(command, expect,debug))
     
     # **************************find*************************    
     # 1) find an exact pattern in a given string 

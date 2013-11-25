@@ -418,6 +418,7 @@ int olg_config() {
   int ocg_log_level = map_str_to_int(log_level_names, oai_emulation.emulation_config.log_emu.level);
   int ocg_log_verbosity= map_str_to_int(log_verbosity_names, oai_emulation.emulation_config.log_emu.verbosity);
   LOG_I(EMU, "ocg log level %d, oai log level%d \n ",ocg_log_level, oai_emulation.info.g_log_level);
+  // fix me: 
   oai_emulation.info.g_log_level = ((oai_emulation.info.ocg_enabled == 1) && (ocg_log_level != -1)) ? ocg_log_level : oai_emulation.info.g_log_level;
   oai_emulation.info.g_log_verbosity = (((oai_emulation.info.ocg_enabled == 1) && (ocg_log_verbosity != -1)) ? ocg_log_verbosity : 
 					map_str_to_int(log_verbosity_names, oai_emulation.info.g_log_verbosity));

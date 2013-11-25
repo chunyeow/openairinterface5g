@@ -52,7 +52,7 @@ The 3 folders have the following structures
      follow the README.txt in OPENAIR2_DIR/RRC/LITE/MESSAGES to checkou the ASN.1 RRC messages
      follow the OPENAIR2_DIR/RRC/LITE/MESSAGE/asn1c/asn1c/INSTALL to install the asn1c
      go back to $OPENAIR_TARGET and "make install" if you have not used the shell script to install asn1c 
-   - cd $OPENAIR_TARGET, and make a sanity check by doing make check   
+   - cd $OPENAIR_TARGET/SIMU/USER, and make a sanity check by doing make pre-ci (require 15 minutes)
    - Check out simple examples in $OPENAIR_TARGET/SIMU/EXAMPLES 
 
 4. to automatically bring up the oai interfaces and configure the default radio beares (usefull when sending data traffic):

@@ -25,7 +25,10 @@ http://lionet.info/asn1c/blog/
 
 or via svn from sourceforge (version 0.9.22)
 
+For version 0.9.2:
 svn co https://asn1c.svn.sourceforge.net/svnroot/asn1c/trunk asn1c
+For the latest version:
+svn co https://github.com/vlm/asn1c/trunk asn1c
 
 and put it in the asn1c directory (you should have a second asn1c directory now). Compile it and install it locally 
 (or make sure your $PATH can find the asn1c executable) according to the instructions given (see INSTALL file)

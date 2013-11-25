@@ -202,8 +202,8 @@ include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 include $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
-include $(OPENAIR2_DIR)/S1AP/Makefile.inc
-include $(OPENAIR2_DIR)/S1AP/MESSAGES/Makefile.inc
+#include $(OPENAIR2_DIR)/S1AP/Makefile.inc
+#include $(OPENAIR2_DIR)/S1AP/MESSAGES/Makefile.inc
 
 ITTI_MESSAGES_H = messages_xml.h
 

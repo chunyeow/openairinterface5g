@@ -2,7 +2,8 @@ ASN1 message from S1AP TS 36.413-8a0
 
 To successfully parse messages, the asn1c util should be patched with the patch provided (asn1cpatch.p0).
 To do so: 
-1) Get the last revision of asn1c: svn co https://github.com/vlm/asn1c/trunk -r 1516
+0) create asn1c directory
+1) Get the last revision of asn1c: svn co https://github.com/vlm/asn1c/trunk  asn1c -r 1516
 
 2) Go to asn1c directory
 3) patch -p0 < ../asn1cpatch.p0

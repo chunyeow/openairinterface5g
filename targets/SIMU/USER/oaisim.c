@@ -372,6 +372,123 @@ static s32 UE_id = 0, eNB_id = 0;
 static s32 RN_id=0;
 #endif
 
+int itti_create_task_successful(void){
+
+#if defined(ENABLE_ITTI)
+# if defined(ENABLE_USE_MME)
+  if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
+      return -1;
+  }
+  if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
+      return -1;
+  }
+# endif
+
+  if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
+    return -1;
+  }
+
+  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
+    return -1;
+  }
+
+#endif  
+  return 1;
+}
+/*
+ * later, the enb task will be moved from here
+ */
+void *eNB_app_task(void *args_p) {
+#if defined(ENABLE_ITTI)
+  MessageDef *message_p;
+
+# if defined(ENABLE_USE_MME)
+    /* Trying to register each eNB */
+
+  for (eNB_id = oai_emulation.info.first_enb_local;
+       (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.cli_start_enb[eNB_id] == 1);
+       eNB_id++) {
+      char *mme_address_v4;
+      
+      if (EPC_MODE_ENABLED){
+	  mme_address_v4 = EPC_MODE_MME_ADDRESS;
+      }else {
+	mme_address_v4 = "192.168.12.87";
+      }
+      char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
+      s1ap_register_eNB_t *s1ap_register_eNB;
+      uint32_t hash;
+      
+      //note:  there is an implicit relationship between the data struct and the message name
+      message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB);
+      
+      s1ap_register_eNB = &message_p->msg.s1ap_register_eNB;
+      
+      hash = s1ap_generate_eNB_id();
+
+      /* Some default/random parameters */
+      s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
+      s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
+      s1ap_register_eNB->tac         = 0;
+      s1ap_register_eNB->mcc         = 208;
+      s1ap_register_eNB->mnc         = 34;
+      s1ap_register_eNB->default_drx = PAGING_DRX_256;
+      s1ap_register_eNB->nb_mme      = 1;
+      s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
+      s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
+      memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
+	     strlen(mme_address_v4));
+      memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
+	     strlen(mme_address_v6));
+      
+      itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
+    }
+# endif
+
+    itti_mark_task_ready (TASK_ENB_APP); // at the end of init for the current task 
+
+  do {
+    // Checks if a message has been sent to L2L1 task
+    itti_receive_msg (TASK_ENB_APP, &message_p);
+    
+    if (message_p != NULL) {
+      switch (ITTI_MSG_ID(message_p)) {
+      case TERMINATE_MESSAGE:
+	itti_exit_task ();
+	break;
+	
+      case MESSAGE_TEST:
+	LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
+	break;
+
+	/*      case MME_REGISTERED:
+	LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
+	itti_mark_task_ready (TASK_L2L1);
+	break;
+	*/
+      default:
+	LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
+	break;
+      }
+      
+      free (message_p);
+    }
+  } while(1);
+
+  itti_terminate_tasks(TASK_ENB_APP);
+
+  return NULL;
+#endif
+
+}
 void *l2l1_task(void *args_p) {
   // Framing variables
   s32 slot, last_slot, next_slot;
@@ -388,13 +505,6 @@ void *l2l1_task(void *args_p) {
   MessageDef *message_p;
 
   itti_mark_task_ready (TASK_L2L1);
-# if defined(ENABLE_USE_MME)
-    /* Trying to register each eNB */
-    for (eNB_id = oai_emulation.info.first_enb_local;
-         (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.cli_start_enb[eNB_id] == 1);
-         eNB_id++)
-    {
-        char *mme_address_v4;
 
         if (EPC_MODE_ENABLED)
         {
@@ -433,7 +543,6 @@ void *l2l1_task(void *args_p) {
 
         itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
     }
-# endif
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
@@ -928,7 +1037,7 @@ int main(int argc, char **argv) {
 
   // get command-line options
   get_simulation_options (argc, argv); //Command-line options
-
+  
 #if defined(ENABLE_ITTI)
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
 #endif
@@ -1044,40 +1153,25 @@ int main(int argc, char **argv) {
   init_slot_isr ();
 
   t = clock ();
-
-  LOG_N(EMU, "\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU initialization done <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+  
+  LOG_N(EMU, ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU initialization done <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
 #if defined(ENABLE_ITTI)
-# if defined(ENABLE_USE_MME)
-  if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
-      return -1;
-  }
-  if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
-      return -1;
-  }
-# endif
-
-  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
-    return -1;
-  }
-
   // Handle signals until all tasks are terminated
-  itti_wait_tasks_end();
+  if (itti_create_task_successful())
+    itti_wait_tasks_end();
+  else 
+    exit(-1);
 #else
+  eNB_app_task(NULL); // do nothing for the moment
   l2l1_task (NULL);
 #endif
 
   t = clock () - t;
-  printf ("rrc Duration of the simulation: %f seconds\n", ((float) t) / CLOCKS_PER_SEC);
+  LOG_I (EMU,"Duration of the simulation: %f seconds\n", ((float) t) / CLOCKS_PER_SEC);
 
   //  fclose(SINRpost);
-  LOG_I(EMU, ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU Ending <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
+  LOG_N(EMU, ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU Ending <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
   free (otg_pdcp_buffer);
 

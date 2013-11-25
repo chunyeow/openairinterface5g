@@ -97,6 +97,9 @@ except :
 test = 'test01'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
 logfile = user+'.'+test+'.'+ctime+'.txt'  
+logdir = 'pre-ci-logs';
+oai.send_nowait('mkdir -p -m 755' + logdir + ';')
+  
 #print '=================start the ' + test + ' at ' + ctime + '=================\n'
 #print 'Results will be reported in log file : ' + logfile
 log.writefile(logfile,'====================start'+test+' at ' + ctime + '=======================\n')
@@ -106,9 +109,9 @@ oai.kill(user, pw)
 oai.rm_driver(oai,user,pw)
 
 # start te test cases 
-case01.execute(oai, user, pw, logfile)
-case02.execute(oai, user, pw, logfile)
-case03.execute(oai, user, pw, logfile)
+case01.execute(oai, user, pw, logfile,logdir)
+case02.execute(oai, user, pw, logfile,logdir)
+case03.execute(oai, user, pw, logfile,logdir)
 
 oai.kill(user, pw) 
 oai.rm_driver(oai,user,pw)
