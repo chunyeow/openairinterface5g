@@ -1038,6 +1038,13 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
       ASN_SEQUENCE_ADD (&dedicatedInfoNASList->list, dedicatedInfoNas);
     }
 
+    /* TODO parameters yet to process ... */
+    {
+      UE_info->e_rab[i].param.qos;
+      UE_info->e_rab[i].param.sgw_addr;
+      UE_info->e_rab[i].param.gtp_teid;
+    }
+
     /* TODO should test if e RAB are Ok before! */
     eNB_rrc_inst[Mod_id].Info.UE[UE_index].e_rab[i].status = E_RAB_STATUS_DONE;
   }
