@@ -482,10 +482,14 @@ void logRecord_thread_safe(const char *file, const char *func,
         syslog(g_log->level, "%s", log_buffer);
     }
     if (g_log->filelog) {
-        write(gfd, log_buffer, total_len);
+      if (write(gfd, log_buffer, total_len) < total_len) {
+        // TODO assert ?
+      }
     }
     if ((g_log->log_component[comp].filelog) && (level == LOG_FILE)) {
-        write(g_log->log_component[comp].fd, log_buffer, total_len);
+      if (write(g_log->log_component[comp].fd, log_buffer, total_len) < total_len) {
+        // TODO assert ?
+      }
     }
 #endif
 
@@ -637,10 +641,14 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
         syslog(g_log->level, "%s", c->log_buffer);
     }
     if (g_log->filelog) {
-        write(gfd, c->log_buffer, len);
+      if (write(gfd, c->log_buffer, len) < len){
+        // TODO assert ?
+      }
     }
     if ((g_log->log_component[comp].filelog) && (level == LOG_FILE)) {
-        write(g_log->log_component[comp].fd, c->log_buffer, len);
+      if (write(g_log->log_component[comp].fd, c->log_buffer, len) < len) {
+        // TODO assert ?
+      }
     }
 #endif
 
