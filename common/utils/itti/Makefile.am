@@ -6,10 +6,12 @@ AM_CFLAGS = @ADD_CFLAGS@ 	\
 
 noinst_LTLIBRARIES = libitti.la
 
-$(abs_builddir)/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a:
-	@if [ ! -d $(abs_builddir)/UTIL/LFDS/liblfds6.1.1/liblfds611/bin ]; then mkdir -p $(abs_builddir)/UTIL/LFDS/liblfds6.1.1/liblfds611/bin; fi;
-	@if [ ! -d $(abs_builddir)/UTIL/LFDS/liblfds6.1.1/liblfds611/obj ]; then mkdir -p $(abs_builddir)/UTIL/LFDS/liblfds6.1.1/liblfds611/obj; fi;
-	@$(MAKE) -C $(OPENAIR2_DIR)/UTIL/LFDS/liblfds6.1.1/liblfds611/ -f makefile.linux OUTDIR=$(abs_builddir)/UTIL/LFDS/liblfds6.1.1/liblfds611
+BUILT_SOURCES = $(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a
+
+$(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a:
+	@if [ ! -d $(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin ]; then mkdir -p $(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin; fi;
+	@if [ ! -d $(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/obj ]; then mkdir -p $(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/obj; fi;
+	@$(MAKE) -C $(OPENAIR2_DIR)/UTIL/LFDS/liblfds6.1.1/liblfds611/ -f makefile.linux OUTDIR=$(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611
 
 libitti_la_LDFLAGS = -all-static
 libitti_la_SOURCES =							\

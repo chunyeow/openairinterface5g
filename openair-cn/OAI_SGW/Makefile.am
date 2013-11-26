@@ -3,7 +3,7 @@ AM_CFLAGS = @ADD_CFLAGS@ \
 	-I$(top_srcdir)/COMMON				\
 	-I$(top_srcdir)/GTPV1-U				\
 	-I$(top_srcdir)/GTPV1-U/nw-gtpv1u/include	\
-	-I$(top_srcdir)/GTPV1-U/nw-gtpv1u/shared		\
+	-I$(top_srcdir)/GTPV1-U/nw-gtpv1u/shared	\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network	\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include	\
 	-I$(top_srcdir)/INTERTASK_INTERFACE		\
@@ -25,7 +25,7 @@ oai_sgw_LDADD = \
 	$(top_builddir)/UDP/libudpserver.la	\
 	$(top_builddir)/SECU/libsecu.la	\
 	$(top_builddir)/UTILS/libutils.la	\
-	$(top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a
+	$(abs_top_builddir)/INTERTASK_INTERFACE/UTIL/LFDS/liblfds6.1.1/liblfds611/bin/liblfds611.a
 
 oai_sgw_SOURCES = \
 	oai_sgw_log.c	\
