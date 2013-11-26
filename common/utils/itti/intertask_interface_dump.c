@@ -684,7 +684,10 @@ void itti_dump_user_data_delete_function(void *user_data, void *user_state)
         itti_dump_queue_item_t *item;
 
         item = (itti_dump_queue_item_t *)user_data;
-        free(item->data);
+        if (item->data != NULL)
+        {
+            free(item->data);
+        }
         free(item);
     }
 }
@@ -692,10 +695,12 @@ void itti_dump_user_data_delete_function(void *user_data, void *user_state)
 void itti_dump_exit(void)
 {
     void *arg;
-    itti_dump_queue_item_t new;
+    itti_dump_queue_item_t *new;
+
+    new = calloc(1, sizeof(itti_dump_queue_item_t));
 
     /* Send the exit signal to other thread */
-    itti_dump_enqueue_message(&new, 0, ITTI_DUMP_EXIT_SIGNAL);
+    itti_dump_enqueue_message(new, 0, ITTI_DUMP_EXIT_SIGNAL);
 
     ITTI_DUMP_DEBUG("waiting for dumper thread to finish\n");
 
