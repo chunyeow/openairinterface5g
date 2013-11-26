@@ -588,7 +588,9 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
                                                                   u16 UE_index,
                                                                   u8 ho_state)
 {
+#if defined(ENABLE_ITTI)
   eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
+#endif
   u8 buffer[RRC_BUF_SIZE];
   u8 size;
   int i;
@@ -636,7 +638,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   QuantityConfig_t *quantityConfig=NULL;
   CellsToAddMod_t *CellToAdd;
   CellsToAddModList_t *CellsToAddModList;
-  struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList;
+  struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList = NULL;
   DedicatedInfoNAS_t *dedicatedInfoNas;
 
   C_RNTI_t *cba_RNTI = NULL;
@@ -1022,6 +1024,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   }
    
+#if defined(ENABLE_ITTI)
   /* Initialize NAS list */
   dedicatedInfoNASList = CALLOC (1, sizeof (struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList));
   /* Add all NAS PDUs to the list */
@@ -1044,6 +1047,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
     free (dedicatedInfoNASList);
     dedicatedInfoNASList = NULL;
   }
+#endif
+
   memset (buffer, 0, RRC_BUF_SIZE);
 
   size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
@@ -1054,6 +1059,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
                                           MeasId_list, mac_MainConfig, NULL,NULL,Sparams,rsrp,
                                           cba_RNTI, dedicatedInfoNASList);
 
+#if defined(ENABLE_ITTI)
   /* Free all NAS PDUs */
   for (i = 0; i < UE_info->nb_of_e_rabs; i++)
   {
@@ -1064,6 +1070,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
       UE_info->e_rab[i].param.nas_pdu.buffer = NULL;
     }
   }
+#endif
 
   LOG_I (RRC,"[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration (bytes %d, UE id %d)\n",
          Mod_id, frame, size, UE_index);
