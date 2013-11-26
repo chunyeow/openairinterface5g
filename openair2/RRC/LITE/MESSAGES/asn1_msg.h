@@ -181,8 +181,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 					struct MeasConfig__speedStatePars *speedStatePars,
 					RSRP_Range_t                      *rsrp,
 					C_RNTI_t                          *cba_rnti, 
-					uint8_t                           *nas_pdu,
-                                        uint32_t                           nas_length);
+					struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList);
 
 /***
  * \brief Generate an MCCH-Message (eNB). This routine configures MBSFNAreaConfiguration (PMCH-InfoList and Subframe Allocation for MBMS data)

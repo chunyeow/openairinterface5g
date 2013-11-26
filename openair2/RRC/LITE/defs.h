@@ -185,8 +185,6 @@ typedef struct eNB_RRC_UE_INFO_s {
     uint32_t eNB_ue_s1ap_id :24;
     /* Number of e_rab to be setup in the list */
     uint8_t nb_of_e_rabs;
-    /* Index of e_rab to be setup in the list */
-    uint8_t index_of_e_rabs;
     /* list of e_rab to be setup by RRC layers */
     e_rab_param_t e_rab[S1AP_MAX_E_RAB];
 #endif
@@ -552,12 +550,6 @@ void rrc_eNB_process_RRCConnectionSetupComplete(u8 Mod_id, u32 frame, u8 UE_inde
    \param UE_index Index of UE transmitting the messages
    \param rrcConnectionReconfigurationComplete Pointer to RRCConnectionReconfigurationComplete message*/
 void rrc_eNB_process_RRCConnectionReconfigurationComplete(u8 Mod_id,u32 frame,u8 UE_index,RRCConnectionReconfigurationComplete_r8_IEs_t *rrcConnectionReconfigurationComplete);
-
-/**\brief Generate/decode the Default (first) RRCConnectionReconfiguration at eNB
-   \param Mod_id Instance ID for eNB/CH
-   \param frame Frame index
-   \param UE_index Index of UE transmitting the messages*/
-void rrc_eNB_generate_defaultRRCConnectionReconfiguration(u8 Mod_id, u32 frame, u16 UE_index, u8 *nas_pdu, u32 nas_length, u8 ho_state);
 
 #if defined(ENABLE_ITTI)
 /**\brief RRC eNB task.

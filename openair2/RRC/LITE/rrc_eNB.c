@@ -584,20 +584,17 @@ void rrc_eNB_generate_UECapabilityEnquiry (u8 Mod_id, u32 frame, u16 UE_index)
 }
 
 /*------------------------------------------------------------------------------*/
-void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
-                                                           u16 UE_index,
-                                                           u8 * nas_pdu,
-                                                           u32 nas_length,
-                                                           u8 ho_state)
+static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
+                                                                  u16 UE_index,
+                                                                  u8 ho_state)
 {
-
+  eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
   u8 buffer[RRC_BUF_SIZE];
   u8 size;
   int i;
 
   // configure SRB1/SRB2, PhysicalConfigDedicated, MAC_MainConfig for UE
   eNB_RRC_INST *rrc_inst = &eNB_rrc_inst[Mod_id];
-
 
   struct PhysicalConfigDedicated **physicalConfigDedicated = &rrc_inst->physicalConfigDedicated[UE_index];
 
@@ -639,6 +636,8 @@ void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
   QuantityConfig_t *quantityConfig=NULL;
   CellsToAddMod_t *CellToAdd;
   CellsToAddModList_t *CellsToAddModList;
+  struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList;
+  DedicatedInfoNAS_t *dedicatedInfoNas;
 
   C_RNTI_t *cba_RNTI = NULL;
 #ifdef CBA
@@ -694,7 +693,6 @@ void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
   SRB2_config->logicalChannelConfig = SRB2_lchan_config;
 
   SRB2_lchan_config->present =  SRB_ToAddMod__logicalChannelConfig_PR_explicitValue;
-
 
   SRB2_ul_SpecificParameters = CALLOC (1, sizeof (*SRB2_ul_SpecificParameters));
 
@@ -869,25 +867,18 @@ void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
 
   // Report Configurations for periodical, A1-A5 events
   ReportConfig_list = CALLOC (1, sizeof (*ReportConfig_list));
-  memset ((void *) ReportConfig_list, 0, sizeof (*ReportConfig_list));
 
   ReportConfig_per = CALLOC (1, sizeof (*ReportConfig_per));
-  memset ((void *) ReportConfig_per, 0, sizeof (*ReportConfig_per));
 
   ReportConfig_A1 = CALLOC (1, sizeof (*ReportConfig_A1));
-  memset ((void *) ReportConfig_A1, 0, sizeof (*ReportConfig_A1));
 
   ReportConfig_A2 = CALLOC (1, sizeof (*ReportConfig_A2));
-  memset ((void *) ReportConfig_A2, 0, sizeof (*ReportConfig_A2));
 
   ReportConfig_A3 = CALLOC (1, sizeof (*ReportConfig_A3));
-  memset ((void *) ReportConfig_A3, 0, sizeof (*ReportConfig_A3));
 
   ReportConfig_A4 = CALLOC (1, sizeof (*ReportConfig_A4));
-  memset ((void *) ReportConfig_A4, 0, sizeof (*ReportConfig_A4));
 
   ReportConfig_A5 = CALLOC (1, sizeof (*ReportConfig_A5));
-  memset ((void *) ReportConfig_A5, 0, sizeof (*ReportConfig_A5));
 
   ReportConfig_per->reportConfigId = 1;
   ReportConfig_per->reportConfig.present = ReportConfigToAddMod__reportConfig_PR_reportConfigEUTRA;
@@ -1031,6 +1022,28 @@ void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
 
   }
    
+  /* Initialize NAS list */
+  dedicatedInfoNASList = CALLOC (1, sizeof (struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList));
+  /* Add all NAS PDUs to the list */
+  for (i = 0; i < UE_info->nb_of_e_rabs; i++)
+  {
+    if (UE_info->e_rab[i].param.nas_pdu.buffer != NULL)
+    {
+      dedicatedInfoNas = malloc (sizeof(DedicatedInfoNAS_t));
+
+      OCTET_STRING_fromBuf (dedicatedInfoNas, (char *) UE_info->e_rab[i].param.nas_pdu.buffer, UE_info->e_rab[i].param.nas_pdu.length);
+      ASN_SEQUENCE_ADD (&dedicatedInfoNASList->list, dedicatedInfoNas);
+    }
+
+    /* TODO should test if e RAB are Ok before! */
+    eNB_rrc_inst[Mod_id].Info.UE[UE_index].e_rab[i].status = E_RAB_STATUS_DONE;
+  }
+  /* If list is empty free the list and reset the address */
+  if(dedicatedInfoNASList->list.count == 0)
+  {
+    free (dedicatedInfoNASList);
+    dedicatedInfoNASList = NULL;
+  }
   memset (buffer, 0, RRC_BUF_SIZE);
 
   size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
@@ -1039,7 +1052,18 @@ void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32 frame,
                                           physicalConfigDedicated[UE_index], MeasObj_list, ReportConfig_list, 
                                           quantityConfig,
                                           MeasId_list, mac_MainConfig, NULL,NULL,Sparams,rsrp,
-                                          cba_RNTI, nas_pdu, nas_length);
+                                          cba_RNTI, dedicatedInfoNASList);
+
+  /* Free all NAS PDUs */
+  for (i = 0; i < UE_info->nb_of_e_rabs; i++)
+  {
+    if (UE_info->e_rab[i].param.nas_pdu.buffer != NULL)
+    {
+      /* Free the NAS PDU buffer and invalidate it */
+      free (UE_info->e_rab[i].param.nas_pdu.buffer);
+      UE_info->e_rab[i].param.nas_pdu.buffer = NULL;
+    }
+  }
 
   LOG_I (RRC,"[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration (bytes %d, UE id %d)\n",
          Mod_id, frame, size, UE_index);
@@ -1277,7 +1301,8 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 fram
   struct LogicalChannelConfig__ul_SpecificParameters *SRB1_ul_SpecificParameters;
   // phy config dedicated
   PhysicalConfigDedicated_t *physicalConfigDedicated2;
-  
+  struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList;
+
 
   LOG_D(RRC,"[eNB %d] Frame %d: handover preparation: get the newSourceUEIdentity (C-RNTI): ", Mod_id, frame);
   for (i=0;i<2;i++) {
@@ -1697,25 +1722,18 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 fram
 
   // Report Configurations for periodical, A1-A5 events
   ReportConfig_list = CALLOC (1, sizeof (*ReportConfig_list));
-  memset ((void *) ReportConfig_list, 0, sizeof (*ReportConfig_list));
 
   ReportConfig_per = CALLOC (1, sizeof (*ReportConfig_per));
-  memset ((void *) ReportConfig_per, 0, sizeof (*ReportConfig_per));
 
   ReportConfig_A1 = CALLOC (1, sizeof (*ReportConfig_A1));
-  memset ((void *) ReportConfig_A1, 0, sizeof (*ReportConfig_A1));
 
   ReportConfig_A2 = CALLOC (1, sizeof (*ReportConfig_A2));
-  memset ((void *) ReportConfig_A2, 0, sizeof (*ReportConfig_A2));
 
   ReportConfig_A3 = CALLOC (1, sizeof (*ReportConfig_A3));
-  memset ((void *) ReportConfig_A3, 0, sizeof (*ReportConfig_A3));
 
   ReportConfig_A4 = CALLOC (1, sizeof (*ReportConfig_A4));
-  memset ((void *) ReportConfig_A4, 0, sizeof (*ReportConfig_A4));
 
   ReportConfig_A5 = CALLOC (1, sizeof (*ReportConfig_A5));
-  memset ((void *) ReportConfig_A5, 0, sizeof (*ReportConfig_A5));
 
   ReportConfig_per->reportConfigId = 1;
   ReportConfig_per->reportConfig.present = ReportConfigToAddMod__reportConfig_PR_reportConfigEUTRA;
@@ -1964,7 +1982,9 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 fram
 #endif
                              );
     
-    
+    /* Initialize NAS list */
+    dedicatedInfoNASList = NULL;
+
   //  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->reportConfigToAddModList = ReportConfig_list;
     memset (buffer, 0, RRC_BUF_SIZE);
 
@@ -1974,7 +1994,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 fram
                                           physicalConfigDedicated[UE_index], MeasObj_list, ReportConfig_list,
                                           NULL, //quantityConfig,
                                           MeasId_list, mac_MainConfig, NULL, mobilityInfo,Sparams,
-                                          NULL, NULL, nas_pdu, nas_length);
+                                          NULL, NULL, dedicatedInfoNASList);
 
     LOG_I (RRC,"[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration for handover (bytes %d, UE id %d)\n",
          Mod_id, frame, size, UE_index);
@@ -2698,8 +2718,6 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
   UL_DCCH_Message_t *ul_dcch_msg = NULL;        //&uldcchmsg;
   UE_EUTRA_Capability_t *UE_EUTRA_Capability = NULL;
 
-  int i;
-
   if (Srb_id != 1)
     {
       LOG_E (RRC,
@@ -2742,9 +2760,13 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
 # endif
 #endif
 
-  for (i = 0; i < sdu_size; i++)
-    LOG_T (RRC, "%x.", Rx_sdu[i]);
-  LOG_T (RRC, "\n");
+  {
+    int i;
+
+    for (i = 0; i < sdu_size; i++)
+      LOG_T (RRC, "%x.", Rx_sdu[i]);
+    LOG_T (RRC, "\n");
+  }
 
   if ((dec_rval.code != RC_OK) && (dec_rval.consumed == 0))
     {
@@ -2804,14 +2826,12 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
           }
 
 #if defined(ENABLE_USE_MME)
+# if defined(ENABLE_ITTI)
           if (EPC_MODE_ENABLED == 1)
           {
-# if defined(ENABLE_ITTI)
-            eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
-
             rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP (Mod_id, UE_index);
-# endif
           }
+# endif
 #endif
           break;
 
@@ -2919,39 +2939,9 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                       (void *) UE_EUTRA_Capability);
 #endif
 
-#if defined(ENABLE_USE_MME)
-          if (EPC_MODE_ENABLED == 1)
-          {
-              eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
-
-# if defined(ENABLE_ITTI)
-            /* Process e RAB parameters received from S1AP one by one (assuming that only one will be received from real network this should be OK) */
-            if  (UE_info->nb_of_e_rabs > 0)
-            {
-                /* Process the first e RAB configuration from S1AP initial_context_setup_req */
-                rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
-                                                                      UE_index,
-                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer,
-                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.length,
-                                                                      eNB_rrc_inst[Mod_id].HO_flag);
-                /* Free the NAS PDU buffer and invalidate it */
-                if (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer != NULL)
-                {
-                  free (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer);
-                }
-                UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer = NULL;
-                UE_info->nb_of_e_rabs --;
-                UE_info->index_of_e_rabs ++;
-            }
-# endif
-          }
-          else
-#endif
-          {
-            rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
-                                                                  UE_index,
-                                                                  NULL, 0, eNB_rrc_inst[Mod_id].HO_flag);
-          }
+          rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
+                                                                UE_index,
+                                                                eNB_rrc_inst[Mod_id].HO_flag);
           break;
 
         case UL_DCCH_MessageType__c1_PR_ulHandoverPreparationTransfer:

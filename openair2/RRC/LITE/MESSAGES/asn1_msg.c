@@ -1549,8 +1549,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 					struct MeasConfig__speedStatePars *speedStatePars,
 					RSRP_Range_t                      *rsrp,
                                         C_RNTI_t                          *cba_rnti, 
-					uint8_t                           *nas_pdu,
-                                        uint32_t                           nas_length
+                                        struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList
                                        ) {
 
   asn_enc_rval_t enc_rval;
@@ -1622,14 +1621,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
   else
     rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.mobilityControlInfo  = NULL;
   
-  if ((nas_pdu == NULL) || (nas_length == 0)) {
-    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.dedicatedInfoNASList = (struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *) NULL;
-  } else {
-      DedicatedInfoNAS_t *dedicatedInfoNAS;
-      dedicatedInfoNAS = (DedicatedInfoNAS_t *) &rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.dedicatedInfoNASList;
-      dedicatedInfoNAS->buf = nas_pdu;
-      dedicatedInfoNAS->size = nas_length;
-  }
+  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.dedicatedInfoNASList = dedicatedInfoNASList;
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.securityConfigHO     = NULL;
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->s_Measure= rsrp;
 
@@ -1640,6 +1632,7 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 #ifdef XER_PRINT
    xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)&dl_dcch_msg);
 #endif
+
   //#ifdef USER_MODE
   LOG_I(RRC,"RRCConnectionReconfiguration Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
   // for (i=0;i<30;i++)
