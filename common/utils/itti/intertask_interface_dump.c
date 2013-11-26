@@ -591,6 +591,9 @@ void itti_dump_thread_use_ring_buffer(void)
 int itti_dump_init(const char * const messages_definition_xml, const char * const dump_file_name)
 {
     int i, ret;
+    struct sched_param scheduler_param;
+
+    scheduler_param.sched_priority = 10;
 
     if (dump_file_name != NULL)
     {
@@ -650,20 +653,25 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     ret = pthread_attr_init(&itti_dump_queue.attr);
     if (ret < 0) {
         ITTI_DUMP_ERROR("pthread_attr_init failed (%d:%s)\n", errno, strerror(errno));
-        return -1;
+        DevAssert(0 == 1);
     }
 
     ret = pthread_attr_setschedpolicy(&itti_dump_queue.attr, SCHED_RR);
     if (ret < 0) {
         ITTI_DUMP_ERROR("pthread_attr_setschedpolicy (SCHED_IDLE) failed (%d:%s)\n", errno, strerror(errno));
-        return -1;
+        DevAssert(0 == 1);
+    }
+    ret = pthread_attr_setschedparam(&itti_dump_queue.attr, &scheduler_param);
+    if (ret < 0) {
+        ITTI_DUMP_ERROR("pthread_attr_setschedparam failed (%d:%s)\n", errno, strerror(errno));
+        DevAssert(0 == 1);
     }
 
     ret = pthread_create(&itti_dump_queue.itti_acceptor_thread, &itti_dump_queue.attr,
                          &itti_dump_socket, (void *)messages_definition_xml);
     if (ret < 0) {
         ITTI_DUMP_ERROR("pthread_create failed (%d:%s)\n", errno, strerror(errno));
-        return -1;
+        DevAssert(0 == 1);
     }
 
     return 0;
