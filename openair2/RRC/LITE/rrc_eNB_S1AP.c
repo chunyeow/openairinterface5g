@@ -400,10 +400,13 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
     /* TODO parameters yet to process ... */
     {
       S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
-      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities.encryption_algorithms;
-      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities.integrity_algorithms;
       S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_key;
     }
+    /* Save security parameters, assuming S1AP and RRC are using the same coding for all configuration */
+    eNB_rrc_inst[instance].ciphering_algorithm[ue_index] =
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities.encryption_algorithms;
+    eNB_rrc_inst[instance].ciphering_algorithm[ue_index] =
+        S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities.integrity_algorithms;
 
     {
       uint8_t send_security_mode_command = TRUE;
@@ -451,13 +454,21 @@ int rrc_eNB_process_S1AP_UE_CTXT_MODIFICATION_REQ(MessageDef *msg_p, const char 
       if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_SECURITY_KEY) {
         S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_key;
       }
+
       if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR) {
         S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).ue_ambr;
       }
-      if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_SECU_CAP) {
-        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_capabilities.encryption_algorithms;
-        S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_capabilities.integrity_algorithms;
-      }
+    }
+
+    if (S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).present & S1AP_UE_CONTEXT_MODIFICATION_UE_SECU_CAP) {
+      /* Save security parameters, assuming S1AP and RRC are using the same coding for all configuration */
+      eNB_rrc_inst[instance].ciphering_algorithm[ue_index] =
+          S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_capabilities.encryption_algorithms;
+      eNB_rrc_inst[instance].ciphering_algorithm[ue_index] =
+          S1AP_UE_CTXT_MODIFICATION_REQ(msg_p).security_capabilities.integrity_algorithms;
+
+      /* transmit the new security parameters to UE */
+      rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
     }
 
     /* Send the response */

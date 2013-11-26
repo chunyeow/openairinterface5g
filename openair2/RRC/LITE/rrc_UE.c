@@ -343,22 +343,17 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
   }
 # else
   {
-    char       *message_string = NULL;
+    char        message_string[10000];
+    size_t      message_string_size;
 
-    message_string = calloc(10000, sizeof(char));
-
-    if (xer_sprint(message_string, &asn_DEF_DL_CCCH_Message, (void *)dl_ccch_msg) >= 0)
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_CCCH_Message, (void *)dl_ccch_msg)) > 0)
     {
       MessageDef *message_p;
-      size_t      message_string_size;
 
-      message_string_size = strlen(message_string);
       message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
-
-      free(message_string);
     }
   }
 # endif
@@ -1378,22 +1373,17 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
   }
 # else
   {
-    char       *message_string = NULL;
+    char        message_string[20000];
+    size_t      message_string_size;
 
-    message_string = calloc(20000, sizeof(char));
-
-    if (xer_sprint(message_string, &asn_DEF_DL_DCCH_Message, (void *)dl_dcch_msg) >= 0)
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *)dl_dcch_msg)) > 0)
     {
       MessageDef *message_p;
-      size_t      message_string_size;
 
-      message_string_size = strlen(message_string);
       message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
-
-      free(message_string);
     }
   }
 # endif
@@ -1593,22 +1583,17 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
   }
 # else
   {
-    char       *message_string = NULL;
+    char        message_string[15000];
+    size_t      message_string_size;
 
-    message_string = calloc(10000, sizeof(char));
-
-    if (xer_sprint(message_string, &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message) >= 0)
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
     {
       MessageDef *message_p;
-      size_t      message_string_size;
 
-      message_string_size = strlen(message_string);
       message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
-
-      free(message_string);
     }
   }
 # endif

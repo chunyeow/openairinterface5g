@@ -2514,22 +2514,17 @@ int rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
   }
 # else
   {
-    char       *message_string = NULL;
+    char        message_string[10000];
+    size_t      message_string_size;
 
-    message_string = calloc(10000, sizeof(char));
-
-    if (xer_sprint(message_string, &asn_DEF_UL_CCCH_Message, (void *)ul_ccch_msg) >= 0)
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_CCCH_Message, (void *)ul_ccch_msg)) > 0)
     {
       MessageDef *message_p;
-      size_t      message_string_size;
 
-      message_string_size = strlen(message_string);
       message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
-
-      free(message_string);
     }
   }
 # endif
@@ -2731,22 +2726,17 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
   }
 # else
   {
-    char       *message_string = NULL;
+    char        message_string[10000];
+    size_t      message_string_size;
 
-    message_string = calloc(10000, sizeof(char));
-
-    if (xer_sprint(message_string, &asn_DEF_UL_DCCH_Message, (void *)ul_dcch_msg) >= 0)
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *)ul_dcch_msg)) >= 0)
     {
       MessageDef *message_p;
-      size_t      message_string_size;
 
-      message_string_size = strlen(message_string);
       message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
-
-      free(message_string);
     }
   }
 # endif
@@ -2796,30 +2786,21 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
               rrcConnectionReconfigurationComplete.criticalExtensions.
               present ==
               RRCConnectionReconfigurationComplete__criticalExtensions_PR_rrcConnectionReconfigurationComplete_r8)
-            {
-              rrc_eNB_process_RRCConnectionReconfigurationComplete (Mod_id,
-                                                                    frame,
-                                                                    UE_index,
-                                                                    &ul_dcch_msg->
-                                                                    message.
-                                                                    choice.c1.
-                                                                    choice.
-                                                                    rrcConnectionReconfigurationComplete.
-                                                                    criticalExtensions.
-                                                                    choice.
-                                                                    rrcConnectionReconfigurationComplete_r8);
-              eNB_rrc_inst[Mod_id].Info.UE[UE_index].Status = RRC_RECONFIGURED;
-              LOG_I (RRC, "[eNB %d] UE %d State = RRC_RECONFIGURED \n",
-                     Mod_id, UE_index);
-
-#if defined(ENABLE_USE_MME)
-            if (EPC_MODE_ENABLED == 1)
-            {
-# if defined(ENABLE_ITTI)
-              eNB_rrc_inst[Mod_id].Info.UE[UE_index].e_rab[eNB_rrc_inst[Mod_id].Info.UE[UE_index].index_of_e_rabs - 1].status = E_RAB_STATUS_DONE;
-            }
-# endif
-#endif
+          {
+            rrc_eNB_process_RRCConnectionReconfigurationComplete (Mod_id,
+                                                                  frame,
+                                                                  UE_index,
+                                                                  &ul_dcch_msg->
+                                                                  message.
+                                                                  choice.c1.
+                                                                  choice.
+                                                                  rrcConnectionReconfigurationComplete.
+                                                                  criticalExtensions.
+                                                                  choice.
+                                                                  rrcConnectionReconfigurationComplete_r8);
+            eNB_rrc_inst[Mod_id].Info.UE[UE_index].Status = RRC_RECONFIGURED;
+            LOG_I (RRC, "[eNB %d] UE %d State = RRC_RECONFIGURED \n",
+                   Mod_id, UE_index);
           }
 
 #if defined(ENABLE_USE_MME)
@@ -2828,28 +2809,7 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
 # if defined(ENABLE_ITTI)
             eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
 
-            /* Process e RAB parameters received from S1AP one by one (the previous one is completed, eventually process the next one) */
-            if  (UE_info->nb_of_e_rabs > 0)
-            {
-                /* Process e RAB configuration from S1AP initial_context_setup_req */
-                rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
-                                                                      UE_index,
-                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer,
-                                                                      UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.length,
-                                                                      eNB_rrc_inst[Mod_id].HO_flag);
-                /* Free the NAS PDU buffer and invalidate it */
-                if (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer != NULL)
-                {
-                  free (UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer);
-                }
-                UE_info->e_rab[UE_info->index_of_e_rabs].param.nas_pdu.buffer = NULL;
-                UE_info->nb_of_e_rabs --;
-                UE_info->index_of_e_rabs ++;
-            }
-            else
-            {
-              rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP (Mod_id, UE_index);
-            }
+            rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP (Mod_id, UE_index);
 # endif
           }
 #endif

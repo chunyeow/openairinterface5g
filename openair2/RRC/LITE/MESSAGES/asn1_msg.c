@@ -103,6 +103,13 @@ int errno;
 #define msg printf
 #endif
 
+typedef struct xer_sprint_string_s
+{
+    char *string;
+    size_t string_size;
+    size_t string_index;
+} xer_sprint_string_t;
+
 extern unsigned char NB_eNB_INST;
 
 uint16_t two_tier_hexagonal_cellIds[7] = {0,1,2,4,5,7,8};
@@ -120,22 +127,39 @@ uint16_t two_tier_hexagonal_adjacent_cellIds[7][6] = {{1,2,4,5,7,8},    // CellI
  */
 static int xer__print2s (const void *buffer, size_t size, void *app_key)
 {
-    char *string = (char *) app_key;
+    xer_sprint_string_t *string_buffer = (xer_sprint_string_t *) app_key;
+    size_t string_remaining = string_buffer->string_size - string_buffer->string_index;
 
-    strncat(string, buffer, size);
+    if (string_remaining > 0)
+    {
+        if (size > string_remaining)
+        {
+          size = string_remaining;
+        }
+        memcpy(&string_buffer->string[string_buffer->string_index], buffer, size);
+        string_buffer->string_index += size;
+    }
 
     return 0;
 }
 
-int xer_sprint (char *string, asn_TYPE_descriptor_t *td, void *sptr)
+int xer_sprint (char *string, size_t string_size, asn_TYPE_descriptor_t *td, void *sptr)
 {
     asn_enc_rval_t er;
+    xer_sprint_string_t string_buffer;
 
-    er = xer_encode(td, sptr, XER_F_BASIC, xer__print2s, string);
-    if (er.encoded == -1)
-        return -1;
+    string_buffer.string = string;
+    string_buffer.string_size = string_size;
+    string_buffer.string_index = 0;
 
-    return 0;
+    er = xer_encode(td, sptr, XER_F_BASIC, xer__print2s, &string_buffer);
+    if (er.encoded > string_buffer.string_size)
+    {
+        LOG_E(RRC, "xer_sprint string buffer too small, got %d need %d!", string_buffer.string_size, er.encoded);
+        er.encoded = string_buffer.string_size;
+    }
+
+    return er.encoded;
 }
 
 uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index) {
@@ -2016,22 +2040,17 @@ OAI_UECapability_t *fill_ue_capability() {
   }
 # else
   {
-    char       *message_string = NULL;
+    char        message_string[10000];
+    size_t      message_string_size;
 
-    message_string = calloc(10000, sizeof(char));
-
-    if (xer_sprint(message_string, &asn_DEF_UE_EUTRA_Capability, (void *)UE_EUTRA_Capability) >= 0)
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UE_EUTRA_Capability, (void *)UE_EUTRA_Capability)) > 0)
     {
       MessageDef *message_p;
-      size_t      message_string_size;
 
-      message_string_size = strlen(message_string);
       message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-
-      free(message_string);
     }
   }
 # endif
