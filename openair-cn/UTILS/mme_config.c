@@ -87,7 +87,7 @@ void config_init(mme_config_t *mme_config_p)
 
     mme_config_p->s6a_config.conf_file    = S6A_CONF_FILE;
 
-    mme_config_p->itti_config.queue_size  = ITTI_QUEUE_SIZE_MAX;
+    mme_config_p->itti_config.queue_size  = ITTI_QUEUE_MAX_ELEMENTS;
     mme_config_p->itti_config.log_file    = NULL;
 
     mme_config_p->sctp_config.in_streams  = SCTP_IN_STREAMS;
