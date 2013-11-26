@@ -1032,7 +1032,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   {
     if (UE_info->e_rab[i].param.nas_pdu.buffer != NULL)
     {
-      dedicatedInfoNas = malloc (sizeof(DedicatedInfoNAS_t));
+      dedicatedInfoNas = CALLOC (1, sizeof(DedicatedInfoNAS_t));
 
       OCTET_STRING_fromBuf (dedicatedInfoNas, (char *) UE_info->e_rab[i].param.nas_pdu.buffer, UE_info->e_rab[i].param.nas_pdu.length);
       ASN_SEQUENCE_ADD (&dedicatedInfoNASList->list, dedicatedInfoNas);
