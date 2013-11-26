@@ -134,6 +134,7 @@ typedef struct {
 
 static itti_desc_t itti_dump_queue;
 static FILE *dump_file;
+static int itti_dump_running = 1;
 
 static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message);
 static int itti_dump_handle_new_connection(int sd, const char *xml_definition,
@@ -276,43 +277,46 @@ int itti_dump_queue_message(message_number_t message_number,
                             const char *message_name,
                             const uint32_t message_size)
 {
-    itti_dump_queue_item_t *new;
-    size_t message_name_length;
-    int i;
+    if (itti_dump_running)
+    {
+        itti_dump_queue_item_t *new;
+        size_t message_name_length;
+        int i;
 
-    DevAssert(message_name != NULL);
-    DevAssert(message_p != NULL);
+        DevAssert(message_name != NULL);
+        DevAssert(message_p != NULL);
 
-    new = calloc(1, sizeof(itti_dump_queue_item_t));
+        new = calloc(1, sizeof(itti_dump_queue_item_t));
 
-    if (new == NULL) {
-        ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
-                   __FILE__, __LINE__);
-        return -1;
-    }
+        if (new == NULL) {
+            ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
+                       __FILE__, __LINE__);
+            return -1;
+        }
 
-    new->data = malloc(message_size);
+        new->data = malloc(message_size);
 
-    if (new->data == NULL) {
-        ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
-                   __FILE__, __LINE__);
-        return -1;
-    }
-    memcpy(new->data, message_p, message_size);
-    new->data_size      = message_size;
-    new->message_number = message_number;
+        if (new->data == NULL) {
+            ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
+                       __FILE__, __LINE__);
+            return -1;
+        }
+        memcpy(new->data, message_p, message_size);
+        new->data_size      = message_size;
+        new->message_number = message_number;
 
-    message_name_length = strlen(message_name) + 1;
-    DevCheck(message_name_length <= SIGNAL_NAME_LENGTH, message_name_length,
-             SIGNAL_NAME_LENGTH, 0);
-    memcpy(new->message_name, message_name, message_name_length);
+        message_name_length = strlen(message_name) + 1;
+        DevCheck(message_name_length <= SIGNAL_NAME_LENGTH, message_name_length,
+                 SIGNAL_NAME_LENGTH, 0);
+        memcpy(new->message_name, message_name, message_name_length);
 
-    itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
+        itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
 
-    for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
-        if (itti_dump_queue.itti_clients[i].sd == -1)
-            continue;
-        itti_dump_send_message(itti_dump_queue.itti_clients[i].sd, new);
+        for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
+            if (itti_dump_queue.itti_clients[i].sd == -1)
+                continue;
+            itti_dump_send_message(itti_dump_queue.itti_clients[i].sd, new);
+        }
     }
 
     return 0;
@@ -698,6 +702,9 @@ void itti_dump_exit(void)
     itti_dump_queue_item_t *new;
 
     new = calloc(1, sizeof(itti_dump_queue_item_t));
+
+    /* Set a flag to stop recording message */
+    itti_dump_running = 0;
 
     /* Send the exit signal to other thread */
     itti_dump_enqueue_message(new, 0, ITTI_DUMP_EXIT_SIGNAL);
