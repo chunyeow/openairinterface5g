@@ -71,6 +71,15 @@ static void ui_change_cursor(gboolean busy)
     }
 }
 
+static void gtk_filter_add(GtkWidget *file_chooser, const gchar *title, const gchar *pattern)
+{
+    GtkFileFilter *file_filter = gtk_file_filter_new();
+
+    gtk_file_filter_set_name(file_filter, title);
+    gtk_file_filter_add_pattern(file_filter, pattern);
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(file_chooser), file_filter);
+}
+
 int ui_messages_read(char *filename)
 {
     int result = RC_OK;
@@ -235,22 +244,14 @@ int ui_messages_open_file_chooser(void)
 {
     int result = RC_OK;
     GtkWidget *filechooser;
-    GtkFileFilter *file_filter;
     gboolean accept;
     char *filename;
 
     filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
                                                GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
                                                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
-    file_filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (file_filter, "Log files");
-    gtk_file_filter_add_pattern (file_filter, "*.log");
-    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (filechooser), file_filter);
-
-    file_filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (file_filter, "All files");
-    gtk_file_filter_add_pattern (file_filter, "*");
-    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (filechooser), file_filter);
+    gtk_filter_add (filechooser, "Log files", "*.log");
+    gtk_filter_add (filechooser, "All files", "*");
 
     /* Process the response */
     accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
@@ -285,23 +286,14 @@ int ui_filters_open_file_chooser(void)
 {
     int result = RC_OK;
     GtkWidget *filechooser;
-    GtkFileFilter *file_filter;
     gboolean accept;
     char *filename;
 
     filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
                                                GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
                                                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
-    file_filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (file_filter, "Filters files");
-    gtk_file_filter_add_pattern (file_filter, "*.xml");
-    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (filechooser), file_filter);
-
-    file_filter = gtk_file_filter_new();
-    gtk_file_filter_set_name (file_filter, "All files");
-    gtk_file_filter_add_pattern (file_filter, "*");
-    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (filechooser), file_filter);
-
+    gtk_filter_add (filechooser, "Filters files", "*.xml");
+    gtk_filter_add (filechooser, "All files", "*");
 
     /* Process the response */
     accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
@@ -340,6 +332,8 @@ int ui_filters_save_file_chooser(void)
     filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
                                                GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                                GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+    gtk_filter_add (filechooser, "Filters files", "*.xml");
+    gtk_filter_add (filechooser, "All files", "*");
 
     gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filechooser), TRUE);
 
