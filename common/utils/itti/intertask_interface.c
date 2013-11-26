@@ -601,6 +601,9 @@ void itti_mark_task_ready(task_id_t task_id) {
 
     DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
 
+    /* Register the thread in itti dump */
+    itti_dump_thread_use_ring_buffer();
+
 #if !defined(ENABLE_EVENT_FD)
     // Lock the mutex to get exclusive access to the list
     pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
@@ -638,6 +641,9 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     ITTI_DEBUG("Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
 
 #if !defined(RTAI)
+    /* SR: disable signals module for RTAI (need to harmonize management
+     * between softmodem and oaisim).
+     */
     CHECK_INIT_RETURN(signal_init());
 #endif
 

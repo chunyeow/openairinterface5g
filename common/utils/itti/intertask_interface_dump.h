@@ -42,4 +42,6 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 
 void itti_dump_exit(void);
 
+void itti_dump_thread_use_ring_buffer(void);
+
 #endif /* INTERTASK_INTERFACE_DUMP_H_ */
