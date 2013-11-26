@@ -192,12 +192,16 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS procedure is not finished completely, make sure that the SIB13/MCCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10.itti ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
+                log_name = logdir + '/log_' + case + test + '_' + str(i) + str(j)
+                itti_name = log_name + '.log'
+                trace_name = log_name + '.txt'
+                conf = '-A AWGN -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                tee = ' 2>&1 | tee -a ' + trace_name
+                command = './oaisim.rel10.itti ' + conf
+                oai.send('echo ' + command + ' > ' + trace_name + ';')
+                oai.send_expect(command + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+        log.fail(case, test, name, conf, e.value, diag, logfile, trace_name)
     else:
         log.ok(case, test, name, conf, '', logfile)  
         

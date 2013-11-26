@@ -168,12 +168,16 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1)
-                trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
-                tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel8.itti ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 50)
+                log_name = logdir + '/log_' + case + test + '_' + str(i) + str(j)
+                itti_name = log_name + '.log'
+                trace_name = log_name + '.txt'
+                conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                tee = ' 2>&1 | tee -a ' + trace_name
+                command = './oaisim.rel8.itti ' + conf
+                oai.send('echo ' + command + ' > ' + trace_name + ';')
+                oai.send_expect(command + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 50)
     except log.err, e:
-        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+        log.fail(case, test, name, conf, e.value, diag, logfile, trace_name)
     else:
         log.ok(case, test, name, conf, '', logfile)
         
