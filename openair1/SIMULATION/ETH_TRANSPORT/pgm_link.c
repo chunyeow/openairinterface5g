@@ -10,7 +10,7 @@
 
 #include <pgm/pgm.h>
 
-#include "UTIL/assertions.h"
+#include "assertions.h"
 
 #include "multicast_link.h"
 

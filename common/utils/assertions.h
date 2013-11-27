@@ -27,10 +27,10 @@
                  06410 Biot FRANCE
 
 *******************************************************************************/
-#include <stdio.h>
-
 #ifndef ASSERTIONS_H_
 #define ASSERTIONS_H_
+
+#include <stdio.h>
 
 #define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                          \
 do {                                                                    \

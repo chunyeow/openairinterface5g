@@ -39,7 +39,7 @@
 
 #include "defs.h"
 #include "extern.h"
-#include "UTIL/assertions.h"
+#include "assertions.h"
 #include "asn1_conversions.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "LAYER2/RLC/rlc.h"

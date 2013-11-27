@@ -12,7 +12,7 @@
 #include "proto.h"
 #include "extern.h"
 
-#include "UTIL/assertions.h"
+#include "assertions.h"
 #include "UTIL/OCG/OCG.h"
 #include "UTIL/OCG/OCG_extern.h"
 #include "UTIL/LOG/log.h"

@@ -31,7 +31,7 @@
 #define ASN1_CONVERSIONS_H_
 
 #include "BIT_STRING.h"
-#include "UTIL/assertions.h"
+#include "assertions.h"
 
 //-----------------------begin func -------------------
 
