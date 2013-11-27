@@ -97,7 +97,7 @@ except :
 test = 'test01'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
 logfile = user+'.'+test+'.'+ctime+'.txt'  
-logdir = 'pre-ci-logs';
+logdir = os.getcwd() + '/pre-ci-logs';
 oai.send_nowait('mkdir -p -m 755' + logdir + ';')
   
 #print '=================start the ' + test + ' at ' + ctime + '=================\n'
