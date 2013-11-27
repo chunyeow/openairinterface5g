@@ -183,6 +183,9 @@ typedef struct eNB_RRC_UE_INFO_s {
 
     /* Information from S1AP initial_context_setup_req */
     uint32_t eNB_ue_s1ap_id :24;
+
+    security_capabilities_t security_capabilities;
+
     /* Number of e_rab to be setup in the list */
     uint8_t nb_of_e_rabs;
     /* list of e_rab to be setup by RRC layers */

@@ -457,6 +457,7 @@ static void rrc_lite_eNB_init_security(u8 Mod_id, u8 UE_index)
     for (i = 0; i < 32; i++) {
         sprintf(&ascii_buffer[2 * i], "%02X", eNB_rrc_inst[Mod_id].kenb[UE_index][i]);
     }
+    ascii_buffer[2 * i] = '\0';
 
     LOG_T(RRC, "[OSA][MOD %02d][UE %02d] kenb    = %s\n", Mod_id, UE_index, ascii_buffer);
 #endif
@@ -2408,13 +2409,6 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
   for (j = 0; j < NUMBER_OF_UE_MAX; j++)
     eNB_rrc_inst[Mod_id].Info.UE[j].Status = RRC_IDLE;     //CH_READY;
 
-  /* Init security parameters */
-  for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
-    eNB_rrc_inst[Mod_id].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
-    eNB_rrc_inst[Mod_id].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
-    rrc_lite_eNB_init_security(Mod_id, j);
-  }
-
 #if defined(ENABLE_USE_MME)
   /* Connect eNB to MME */
   if (EPC_MODE_ENABLED > 0)
@@ -2427,7 +2421,16 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
         }
 # endif
     }
+  else
 #endif
+  {
+    /* Init security parameters */
+    for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
+      eNB_rrc_inst[Mod_id].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
+      eNB_rrc_inst[Mod_id].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
+      rrc_lite_eNB_init_security(Mod_id, j);
+    }
+  }
 
   eNB_rrc_inst[Mod_id].Info.Nb_ue = 0;
 
