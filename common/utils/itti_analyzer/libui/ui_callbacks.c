@@ -153,12 +153,13 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
             uint32_t message_id;
             uint32_t origin_task_id;
             uint32_t destination_task_id;
+            char *instance_name;
             uint32_t instance;
             char label[100];
 
             gtk_tree_model_get (model, &iter, COL_MSG_NUM, &message_number, COL_MESSAGE_ID, &message_id,
-                                COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE_ID,
-                                &instance, COL_BUFFER, &buffer, -1);
+                                COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE, &instance_name,
+                                COL_INSTANCE_ID, &instance, COL_BUFFER, &buffer, -1);
 
             g_debug("  Get iter %p %p", buffer_current, buffer);
 
@@ -247,7 +248,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                                     GTK_CHECK_MENU_ITEM(ui_tree_view_menu_enable[MENU_INSTANCE].menu_enable),
                                     ui_filters.instances.items[item].enabled);
                             /* Set menu item label */
-                            sprintf (label, "Instance:  %d", instance);
+                            sprintf (label, "Instance:  %s", instance_name);
                             gtk_menu_item_set_label (GTK_MENU_ITEM(ui_tree_view_menu_enable[MENU_INSTANCE].menu_enable),
                                                      label);
                             /* Save menu item associated to this row */
