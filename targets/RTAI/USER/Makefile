@@ -98,7 +98,7 @@ CFLAGS += -DOPENAIR2 -DNO_RRM -DPUCCH -DMAC_CONTEXT=1
 endif
 
 ifdef ENABLE_ITTI
-OBJ += $(UTILS_OBJS)
+RTAI_OBJ += $(UTILS_OBJS)
 endif
 
 CFLAGS += $(L2_incl) $(UTIL_incl) $(UTILS_incl)
@@ -174,6 +174,12 @@ $(LFDS_LIB):
 $(RTAI_OBJ): %.o : %.c
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) -o $@ $<
+	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $< > $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
 
 ifdef ENABLE_ITTI
 $(OBJ) $(RTAI_OBJ): $(ITTI_MESSAGES_H)
@@ -201,7 +207,7 @@ synctest: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ)
 
 lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(SHARED_DEPENDENCIES)
 	@echo Linking $@
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem $(LDFLAGS) $(LIBS)
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem $(LDFLAGS) $(LIBS)
 
 lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(SHARED_DEPENDENCIES)
 	@echo Linking $@

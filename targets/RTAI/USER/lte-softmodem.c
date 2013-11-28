@@ -52,6 +52,7 @@
 #include <getopt.h>
 
 #include "rt_wrapper.h"
+#include "assertions.h"
 
 #ifdef EMOS
 #include <gps.h>
@@ -148,7 +149,7 @@ exmimo_config_t *p_exmimo_config;
 exmimo_id_t     *p_exmimo_id;
 volatile unsigned int *DAQ_MBOX;
 
-int oai_exit = 0;
+volatile int oai_exit = 0;
 
 //int time_offset[4] = {-138,-138,-138,-138};
 //int time_offset[4] = {-145,-145,-145,-145};
@@ -456,6 +457,32 @@ void *emos_thread (void *arg)
 }
 #endif
 
+#if defined(ENABLE_ITTI)
+void *dummy_l2l1_task(void *arg)
+{
+    ssize_t ret = 0;
+    MessageDef *received_msg;
+
+    itti_mark_task_ready(TASK_L2L1);
+
+    while (!oai_exit)
+    {
+        usleep(100);
+
+        do {
+            itti_poll_msg(TASK_L2L1, &received_msg);
+
+            if (received_msg != NULL) {
+                itti_send_msg_to_task(ITTI_MSG_DESTINATION_ID(received_msg),
+                                      ITTI_MSG_INSTANCE(received_msg),
+                                      received_msg);
+            }
+        } while(received_msg != NULL);
+    }
+    return NULL;
+}
+#endif
+
 /* This is the main eNB thread. It gets woken up by the kernel driver using the RTAI message mechanism (rt_send and rt_receive). */
 static void *eNB_thread(void *arg)
 {
@@ -510,8 +537,12 @@ static void *eNB_thread(void *arg)
 	// at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
 	LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
 	slot++;
-	if (frame>0)	  
+	if (frame>0) {
 	  oai_exit=1;
+#if defined(ENABLE_ITTI)
+      itti_send_terminate_message(TASK_L2L1);
+#endif
+    }
 	if (slot==20){
 	  slot=0;
 	  frame++;
@@ -915,84 +946,75 @@ static void *UE_thread(void *arg)
   return 0;
 }
 
-/* DUmmy l2l1 task */
-void *l2l1_task(void *args_p) {
+void *eNB_app_task(void *args_p)
+{
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+    MessageDef *message_p;
+    char *mme_address_v4;
+    char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
+    s1ap_register_eNB_t *s1ap_register_eNB;
+    uint32_t hash;
 
-#if defined(ENABLE_ITTI)
-  MessageDef *message_p;
-
-  itti_mark_task_ready (TASK_L2L1);
-# if defined(ENABLE_USE_MME)
-    /* Trying to register each eNB */
-
+    if (EPC_MODE_ENABLED)
     {
-        char *mme_address_v4;
-        char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
-        s1ap_register_eNB_t *s1ap_register_eNB;
-        uint32_t hash;
-
-        if (EPC_MODE_ENABLED)
-        {
-            mme_address_v4 = EPC_MODE_MME_ADDRESS;
-        }
-        else
-        {
-            mme_address_v4 = "192.168.12.87";
-        }
-
-        /* FIXME: following parameters should be setup by eNB applicative layer ? */
-        message_p = itti_alloc_new_message(TASK_L2L1, S1AP_REGISTER_ENB);
-
-        s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
-
-        hash = s1ap_generate_eNB_id();
-
-        /* Some default/random parameters */
-        s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
-        s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
-        s1ap_register_eNB->tac         = 0;
-        s1ap_register_eNB->mcc         = 208;
-        s1ap_register_eNB->mnc         = 34;
-        s1ap_register_eNB->default_drx = PAGING_DRX_256;
-        s1ap_register_eNB->nb_mme      = 1;
-        s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
-        s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
-        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
-               strlen(mme_address_v4));
-        memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
-               strlen(mme_address_v6));
-
-        itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
+        mme_address_v4 = EPC_MODE_MME_ADDRESS;
     }
-# endif
+    else
+    {
+        mme_address_v4 = "192.168.12.87";
+    }
+
+    /* FIXME: following parameters should be setup by eNB applicative layer ? */
+    message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB);
+
+    s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
+
+    hash = s1ap_generate_eNB_id();
+
+    /* Some default/random parameters */
+    s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
+    s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
+    s1ap_register_eNB->tac         = 0;
+    s1ap_register_eNB->mcc         = 208;
+    s1ap_register_eNB->mnc         = 34;
+    s1ap_register_eNB->default_drx = PAGING_DRX_256;
+    s1ap_register_eNB->nb_mme      = 1;
+    s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
+    s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
+    memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
+            strlen(mme_address_v4));
+    memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
+            strlen(mme_address_v6));
+
+    itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
+
+    itti_mark_task_ready (TASK_ENB_APP); // at the end of init for the current task
+
+    do {
+        // Checks if a message has been sent to L2L1 task
+        itti_receive_msg (TASK_ENB_APP, &message_p);
+
+        if (message_p != NULL) {
+            switch (ITTI_MSG_ID(message_p)) {
+                case TERMINATE_MESSAGE:
+                    itti_exit_task ();
+                    break;
+
+                case MESSAGE_TEST:
+                    LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
+                    break;
+
+                default:
+                    LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
+                    break;
+            }
+
+            free (message_p);
+        }
+    } while(1);
 #endif
 
-#if defined(ENABLE_ITTI)
-    while (1) {
-      // Checks if a message has been sent to L2L1 task
-      itti_receive_msg (TASK_L2L1, &message_p);
-
-      if (message_p != NULL) {
-        switch (ITTI_MSG_ID(message_p)) {
-          case TERMINATE_MESSAGE:
-            itti_exit_task ();
-            break;
-
-          case MESSAGE_TEST:
-            LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
-            break;
-
-          default:
-            LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
-            break;
-        }
-
-        free (message_p);
-      }
-    }
-#endif
-
-  return NULL;
+    return NULL;
 }
 
 int main(int argc, char **argv) {
@@ -1205,6 +1227,13 @@ int main(int argc, char **argv) {
   // initialize the log (see log.h for details)
   logInit();
 
+  if (ouput_vcd) {
+    if (UE_flag==1)
+      vcd_signal_dumper_init("/tmp/openair_dump_UE.vcd");
+    else
+      vcd_signal_dumper_init("/tmp/openair_dump_eNB.vcd");
+  }
+
 #if defined(ENABLE_ITTI)
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
 
@@ -1219,24 +1248,22 @@ int main(int argc, char **argv) {
     LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
     return -1;
   }
+  if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
+      return -1;
+  }
 # endif
 
-  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
-      return -1;
+  if (itti_create_task(TASK_L2L1, dummy_l2l1_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
+    return -1;
   }
 
   // Handle signals until all tasks are terminated
 //   itti_wait_tasks_end();
 #endif
-
-  if (ouput_vcd) {
-    if (UE_flag==1)
-      vcd_signal_dumper_init("/tmp/openair_dump_UE.vcd");
-    else
-      vcd_signal_dumper_init("/tmp/openair_dump_eNB.vcd");
-  }
 
 #ifdef NAS_NETLINK
   netlink_init();
@@ -1419,7 +1446,12 @@ int main(int argc, char **argv) {
     g_log->log_component[OTG].flag  = LOG_HIGH;
     g_log->log_component[RRC].level = LOG_INFO;
     g_log->log_component[RRC].flag  = LOG_HIGH;
-
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+    g_log->log_component[S1AP].level  = LOG_INFO;
+    g_log->log_component[S1AP].flag   = LOG_HIGH;
+    g_log->log_component[SCTP].level  = LOG_INFO;
+    g_log->log_component[SCTP].flag   = LOG_HIGH;
+#endif
 
     PHY_vars_eNB_g = malloc(sizeof(PHY_VARS_eNB*));
     PHY_vars_eNB_g[0] = init_lte_eNB(frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);

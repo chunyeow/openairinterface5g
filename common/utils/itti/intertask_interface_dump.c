@@ -58,14 +58,25 @@
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
 
+#if defined(RTAI)
+#include "vcd_signal_dumper.h"
+#endif
+
 #define SIGNAL_NAME_LENGTH  48
 
 static const int itti_dump_debug = 0;
 
-#define ITTI_DUMP_DEBUG(x, args...) do { if (itti_dump_debug) fprintf(stdout, "[ITTI][D]"x, ##args); } \
+#ifdef RTAI
+# define ITTI_DUMP_DEBUG(x, args...) do { if (itti_dump_debug) rt_printk("[ITTI][D]"x, ##args); } \
     while(0)
-#define ITTI_DUMP_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); } \
+# define ITTI_DUMP_ERROR(x, args...) do { rt_printk("[ITTI][E]"x, ##args); } \
     while(0)
+#else
+# define ITTI_DUMP_DEBUG(x, args...) do { if (itti_dump_debug) fprintf(stdout, "[ITTI][D]"x, ##args); } \
+    while(0)
+# define ITTI_DUMP_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); } \
+    while(0)
+#endif
 
 /* Message sent is an intertask dump type */
 #define ITTI_DUMP_MESSAGE_TYPE      0x1
@@ -100,12 +111,14 @@ typedef struct itti_desc_s {
      */
     struct lfds611_ringbuffer_state *itti_message_queue;
 
-    uint32_t queue_size;
-
     int nb_connected;
 
+#ifndef RTAI
     /* Event fd used to notify new messages (semaphore) */
     int event_fd;
+#else
+    unsigned long messages_in_queue __attribute__((aligned(8)));
+#endif
 
     int itti_listen_socket;
 
@@ -245,14 +258,15 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
 }
 
 static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t message_size,
-                                uint32_t message_type)
+                                     uint32_t message_type)
 {
-    ssize_t  write_ret;
-    uint64_t sem_counter = 1;
-
     struct lfds611_freelist_element *new_queue_element = NULL;
 
     DevAssert(new != NULL);
+
+#if defined(RTAI)
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
+#endif
 
     new->message_type = message_type;
     new->message_size = message_size;
@@ -265,9 +279,22 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     lfds611_ringbuffer_put_write_element(itti_dump_queue.itti_message_queue,
                                          new_queue_element);
 
-    /* Call to write for an event fd must be of 8 bytes */
-    write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
-    DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+#ifdef RTAI
+    __sync_fetch_and_add (&itti_dump_queue.messages_in_queue, 1);
+#else
+    {
+        ssize_t  write_ret;
+        uint64_t sem_counter = 1;
+
+        /* Call to write for an event fd must be of 8 bytes */
+        write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
+        DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+    }
+#endif
+
+#if defined(RTAI)
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
+#endif
 
     return 0;
 }
@@ -281,7 +308,6 @@ int itti_dump_queue_message(message_number_t message_number,
     {
         itti_dump_queue_item_t *new;
         size_t message_name_length;
-        int i;
 
         DevAssert(message_name != NULL);
         DevAssert(message_p != NULL);
@@ -311,15 +337,71 @@ int itti_dump_queue_message(message_number_t message_number,
         memcpy(new->message_name, message_name, message_name_length);
 
         itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
-
-        for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
-            if (itti_dump_queue.itti_clients[i].sd == -1)
-                continue;
-            itti_dump_send_message(itti_dump_queue.itti_clients[i].sd, new);
-        }
     }
 
     return 0;
+}
+
+static void itti_dump_flush_ring_buffer(int flush_all)
+{
+    struct lfds611_freelist_element *element = NULL;
+    void *user_data;
+    int   j;
+
+#ifdef RTAI
+    unsigned long number_of_messages;
+
+    number_of_messages = itti_dump_queue.messages_in_queue;
+
+    ITTI_DUMP_DEBUG("%lu elements in queue\n", number_of_messages);
+
+    if (number_of_messages == 0) {
+        return;
+    }
+
+    __sync_sub_and_fetch(&itti_dump_queue.messages_in_queue, number_of_messages);
+#endif
+
+    do {
+        /* Acquire the ring element */
+        lfds611_ringbuffer_get_read_element(itti_dump_queue.itti_message_queue, &element);
+
+        DevAssert(element != NULL);
+
+        /* Retrieve user part of the message */
+        lfds611_freelist_get_user_data_from_element(element, &user_data);
+
+        if (((itti_dump_queue_item_t *)user_data)->message_type == ITTI_DUMP_EXIT_SIGNAL)
+        {
+#ifndef RTAI
+            close(itti_dump_queue.event_fd);
+#endif
+            close(itti_dump_queue.itti_listen_socket);
+
+            lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
+
+            /* Leave the thread as we detected end signal */
+            pthread_exit(NULL);
+        }
+
+        /* Write message to file */
+        itti_dump_fwrite_message((itti_dump_queue_item_t *)user_data);
+
+        /* Send message to remote analyzer */
+        for (j = 0; j < ITTI_DUMP_MAX_CON; j++) {
+            if (itti_dump_queue.itti_clients[j].sd > 0) {
+                itti_dump_send_message(itti_dump_queue.itti_clients[j].sd,
+                                        (itti_dump_queue_item_t *)user_data);
+            }
+        }
+
+        /* We have finished with this element, reinsert it in the ring buffer */
+        lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
+    } while(flush_all
+#ifdef RTAI
+            && --number_of_messages
+#endif
+            );
 }
 
 static void *itti_dump_socket(void *arg_p)
@@ -331,6 +413,11 @@ static void *itti_dump_socket(void *arg_p)
     int on = 1;
     fd_set read_set, working_set;
     struct sockaddr_in servaddr; /* socket address structure */
+
+    struct timeval *timeout_p = NULL;
+#ifdef RTAI
+    struct timeval  timeout;
+#endif
 
     ITTI_DUMP_DEBUG("Creating TCP dump socket on port %u\n", ITTI_PORT);
 
@@ -383,11 +470,15 @@ static void *itti_dump_socket(void *arg_p)
     /* Add the listener */
     FD_SET(itti_listen_socket, &read_set);
 
+#ifndef RTAI
     /* Add the event fd */
     FD_SET(itti_dump_queue.event_fd, &read_set);
 
     /* Max of both sd */
     max_sd = itti_listen_socket > itti_dump_queue.event_fd ? itti_listen_socket : itti_dump_queue.event_fd;
+#else
+    max_sd = itti_listen_socket;
+#endif
 
     itti_dump_queue.itti_listen_socket = itti_listen_socket;
 
@@ -400,15 +491,26 @@ static void *itti_dump_socket(void *arg_p)
         int i;
 
         memcpy(&working_set, &read_set, sizeof(read_set));
+#ifdef RTAI
+        timeout.tv_sec  = 0;
+        timeout.tv_usec = 100000;
+
+        timeout_p = &timeout;
+#else
+        timeout_p = NULL;
+#endif
 
         /* No timeout: select blocks till a new event has to be handled
          * on sd's.
          */
-        rc = select(max_sd + 1, &working_set, NULL, NULL, NULL);
+        rc = select(max_sd + 1, &working_set, NULL, NULL, timeout_p);
 
         if (rc < 0) {
             ITTI_DUMP_ERROR("select failed (%d:%s)\n", errno, strerror(errno));
             pthread_exit(NULL);
+        } else if (rc == 0) {
+            /* Timeout */
+            itti_dump_flush_ring_buffer(1);
         }
 
         desc_ready = rc;
@@ -418,14 +520,11 @@ static void *itti_dump_socket(void *arg_p)
             {
                 desc_ready -= 1;
 
+#ifndef RTAI
                 if (i == itti_dump_queue.event_fd) {
                     /* Notification of new element to dump from other tasks */
                     uint64_t sem_counter;
                     ssize_t  read_ret;
-                    void    *user_data;
-                    int j;
-
-                    struct lfds611_freelist_element *element;
 
                     /* Read will always return 1 */
                     read_ret = read (itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
@@ -435,41 +534,12 @@ static void *itti_dump_socket(void *arg_p)
                     }
                     DevCheck(read_ret == sizeof(sem_counter), read_ret, sizeof(sem_counter), 0);
 
-                    /* Acquire the ring element */
-                    lfds611_ringbuffer_get_read_element(itti_dump_queue.itti_message_queue, &element);
-
-                    DevAssert(element != NULL);
-
-                    /* Retrieve user part of the message */
-                    lfds611_freelist_get_user_data_from_element(element, &user_data);
-
-                    if (((itti_dump_queue_item_t *)user_data)->message_type == ITTI_DUMP_EXIT_SIGNAL)
-                    {
-                        close(itti_dump_queue.event_fd);
-                        close(itti_dump_queue.itti_listen_socket);
-
-                        lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
-
-                        /* Leave the thread as we detected end signal */
-                        pthread_exit(NULL);
-                    }
-
-                    /* Write message to file */
-                    itti_dump_fwrite_message((itti_dump_queue_item_t *)user_data);
-
-                    /* Send message to remote analyzer */
-                    for (j = 0; j < ITTI_DUMP_MAX_CON; j++) {
-                        if (itti_dump_queue.itti_clients[i].sd > 0) {
-                            itti_dump_send_message(itti_dump_queue.itti_clients[i].sd,
-                                                   (itti_dump_queue_item_t *)user_data);
-                        }
-                    }
-
-                    /* We have finished with this element, reinsert it in the ring buffer */
-                    lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
+                    itti_dump_flush_ring_buffer(0);
 
                     ITTI_DUMP_DEBUG("Write element to file\n");
-                } else if (i == itti_listen_socket) {
+                } else
+#endif
+                if (i == itti_listen_socket) {
                     do {
                         client_socket = accept(itti_listen_socket, NULL, NULL);
                         if (client_socket < 0) {
@@ -581,11 +651,6 @@ int itti_dump_handle_new_connection(int sd, const char *xml_definition, uint32_t
     return 0;
 }
 
-int itti_dump_user_data_init_function(void **user_data, void *user_state)
-{
-    return 0;
-}
-
 /* This function should be called by each thread that will use the ring buffer */
 void itti_dump_thread_use_ring_buffer(void)
 {
@@ -597,7 +662,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     int i, ret;
     struct sched_param scheduler_param;
 
-    scheduler_param.sched_priority = 10;
+    scheduler_param.sched_priority = sched_get_priority_min(SCHED_FIFO) + 1;
 
     if (dump_file_name != NULL)
     {
@@ -637,6 +702,9 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
         DevAssert(0 == 1);
     }
 
+#ifdef RTAI
+    itti_dump_queue.messages_in_queue = 0;
+#else
     itti_dump_queue.event_fd = eventfd(0, EFD_SEMAPHORE);
     if (itti_dump_queue.event_fd == -1)
     {
@@ -644,8 +712,8 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
         /* Always assert on this condition */
         DevAssert(0 == 1);
     }
+#endif
 
-    itti_dump_queue.queue_size = 0;
     itti_dump_queue.nb_connected = 0;
 
     for(i = 0; i < ITTI_DUMP_MAX_CON; i++) {
@@ -660,7 +728,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
         DevAssert(0 == 1);
     }
 
-    ret = pthread_attr_setschedpolicy(&itti_dump_queue.attr, SCHED_RR);
+    ret = pthread_attr_setschedpolicy(&itti_dump_queue.attr, SCHED_FIFO);
     if (ret < 0) {
         ITTI_DUMP_ERROR("pthread_attr_setschedpolicy (SCHED_IDLE) failed (%d:%s)\n", errno, strerror(errno));
         DevAssert(0 == 1);
@@ -681,7 +749,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     return 0;
 }
 
-void itti_dump_user_data_delete_function(void *user_data, void *user_state)
+static void itti_dump_user_data_delete_function(void *user_data, void *user_state)
 {
     if (user_data != NULL)
     {

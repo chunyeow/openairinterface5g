@@ -79,7 +79,13 @@ const char* eurecomVariablesNames[] = {
     "frame_number",
     "slot_number",
     "daq_mbox",
-    "diff2"
+    "diff2",
+    "itti_send_msg",
+    "itti_send_msg_end",
+    "itti_poll_msg",
+    "itti_poll_msg_end",
+    "itti_recv_msg",
+    "itti_recv_msg_end"
 };
  
 const char* eurecomFunctionsNames[] = {
@@ -154,6 +160,7 @@ const char* eurecomFunctionsNames[] = {
     "phy_eNB_dlsch_scramblig",
     "pdcp_apply_security",
     "pdcp_validate_security",
+    "itti_dump_enqueue_message",
     "test"
 };
 

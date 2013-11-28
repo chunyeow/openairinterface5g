@@ -38,6 +38,10 @@
 # include <sys/epoll.h>
 #endif
 
+#ifdef RTAI
+# include <rtai_sem.h>
+#endif
+
 #ifndef INTERTASK_INTERFACE_H_
 #define INTERTASK_INTERFACE_H_
 
@@ -91,6 +95,7 @@ typedef enum task_priorities_e {
 
 typedef struct task_info_s {
     thread_id_t thread;
+    task_id_t   parent_task;
     task_priorities_t priority;
     unsigned int queue_size;
     /* Printable name */

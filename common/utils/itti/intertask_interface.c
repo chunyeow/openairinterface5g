@@ -37,6 +37,10 @@
 #include <errno.h>
 #include <signal.h>
 
+#ifdef RTAI
+# include <rtai_fifos.h>
+#endif
+
 #include "queue.h"
 #include "assertions.h"
 
@@ -48,6 +52,10 @@
 
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
+
+#if defined(OAI_EMU) || defined(RTAI)
+# include "vcd_signal_dumper.h"
+#endif
 
 /* Includes "intertask_interface_init.h" to check prototype coherence, but
  * disable threads and messages information generation.
@@ -62,10 +70,18 @@
 const int itti_debug = 0;
 const int itti_debug_poll = 0;
 
-#define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
+/* Don't flush if using RTAI */
+#ifdef RTAI
+# define ITTI_DEBUG(x, args...) do { if (itti_debug) rt_printk("[ITTI][D]"x, ##args); } \
     while(0)
-#define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); fflush (stdout); } \
+# define ITTI_ERROR(x, args...) do { rt_printk("[ITTI][E]"x, ##args); } \
     while(0)
+#else
+# define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
+    while(0)
+# define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); fflush (stdout); } \
+    while(0)
+#endif
 
 /* Global message size */
 #define MESSAGE_SIZE(mESSAGEiD) (sizeof(MessageHeader) + itti_desc.messages_info[mESSAGEiD].size)
@@ -89,6 +105,7 @@ typedef struct message_list_s {
 typedef struct thread_desc_s {
     /* pthread associated with the thread */
     pthread_t task_thread;
+
     /* State of the thread */
     volatile task_state_t task_state;
 } thread_desc_t;
@@ -266,6 +283,7 @@ inline MessageDef *itti_alloc_new_message(task_id_t origin_task_id, MessagesIds 
 int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *message)
 {
     thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
+    thread_id_t origin_task_id;
     message_list_t *new;
     uint32_t priority;
     message_number_t message_number;
@@ -281,13 +299,31 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     message_id = message->ittiMsgHeader.messageId;
     DevCheck(message_id < itti_desc.messages_id_max, itti_desc.messages_id_max, message_id, 0);
 
+    origin_task_id = ITTI_MSG_ORIGIN_ID(message);
+
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG,
+                                            task_id);
+#endif
+
     priority = itti_get_message_priority (message_id);
 
     /* Increment the global message number */
     message_number = itti_increment_message_number ();
 
-    itti_dump_queue_message (message_number, message, itti_desc.messages_info[message_id].name,
-                             sizeof(MessageHeader) + message->ittiMsgHeader.ittiMsgSize);
+#ifdef RTAI
+    if (pthread_self() != itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].task_thread)
+#endif
+        itti_dump_queue_message (message_number, message, itti_desc.messages_info[message_id].name,
+                                 sizeof(MessageHeader) + message->ittiMsgHeader.ittiMsgSize);
+
+    ITTI_DEBUG("Message %s, number %lu with priority %d successfully sent from %s to queue (%u:%s)\n",
+               itti_desc.messages_info[message_id].name,
+               message_number,
+               priority,
+               itti_get_task_name(origin_task_id),
+               task_id,
+               itti_get_task_name(task_id));
 
     if (task_id != TASK_UNKNOWN)
     {
@@ -314,6 +350,19 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
         new->message_priority = priority;
 
 #if defined(ENABLE_EVENT_FD)
+# ifdef RTAI
+        if ((pthread_self() != itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].task_thread) &&
+            (TASK_GET_PARENT_TASK_ID(origin_task_id) != TASK_UNKNOWN))
+        {
+            /* This is the RT task, -> enqueue in the parent thread */
+            lfds611_queue_enqueue(itti_desc.tasks[TASK_GET_PARENT_TASK_ID(origin_task_id)].message_queue, new);
+
+            /* Signal from RT thread */
+//             rtf_sem_post(56);
+        } else
+# endif
+        /* No need to use a event fd for subtasks */
+        if (TASK_GET_PARENT_TASK_ID(task_id) == TASK_UNKNOWN)
         {
             ssize_t  write_ret;
             uint64_t sem_counter = 1;
@@ -322,7 +371,9 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 
             /* Call to write for an event fd must be of 8 bytes */
             write_ret = write(itti_desc.tasks[task_id].task_event_fd, &sem_counter, sizeof(sem_counter));
-            DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+            DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, task_id);
+        } else {
+            lfds611_queue_enqueue(itti_desc.tasks[task_id].message_queue, new);
         }
 #else
         if (STAILQ_EMPTY (&itti_desc.tasks[task_id].message_queue)) {
@@ -365,9 +416,11 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
 #endif
     }
 
-    ITTI_DEBUG(
-            "Message %s, number %lu with priority %d successfully sent to queue (%u:%s)\n",
-            itti_desc.messages_info[message_id].name, message_number, priority, task_id, itti_get_task_name(task_id));
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG_END,
+                                            task_id);
+#endif
+
     return 0;
 }
 
@@ -499,6 +552,10 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
 
 void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
 {
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
+                                            task_id);
+#endif
 #if defined(ENABLE_EVENT_FD)
     itti_receive_msg_internal_event_fd(task_id, 0, received_msg);
 #else
@@ -531,6 +588,10 @@ void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
     // Release the mutex
     pthread_mutex_unlock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG_END,
+                                            task_id);
+#endif
 }
 
 void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
@@ -539,8 +600,21 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
 
     *received_msg = NULL;
 
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG,
+                                            task_id);
+#endif
+
 #if defined(ENABLE_EVENT_FD)
-    itti_receive_msg_internal_event_fd(task_id, 1, received_msg);
+    {
+        struct message_list_s *message;
+
+        if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 1)
+        {
+            *received_msg = message->msg;
+            free (message);
+        }
+    }
 #else
     if (itti_desc.tasks[task_id].message_in_queue != 0) {
         message_list_t *temp;
@@ -572,6 +646,11 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
     if ((itti_debug_poll) && (*received_msg == NULL)) {
         ITTI_DEBUG("No message in queue[(%u:%s)]\n", task_id, itti_get_task_name(task_id));
     }
+
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG_END,
+                                            task_id);
+#endif
 }
 
 int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *args_p) {
@@ -596,15 +675,28 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
     return 0;
 }
 
-void itti_mark_task_ready(task_id_t task_id) {
+void itti_mark_task_ready(task_id_t task_id)
+{
     thread_id_t thread_id = TASK_GET_THREAD_ID(task_id);
 
     DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
 
+#ifdef RTAI
+    /* Assign low priority to created threads */
+    {
+        struct sched_param sched_param;
+        sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO) + 1;
+        sched_setscheduler(0, SCHED_FIFO, &sched_param);
+    }
+#endif
+
     /* Register the thread in itti dump */
     itti_dump_thread_use_ring_buffer();
 
-#if !defined(ENABLE_EVENT_FD)
+#if defined(ENABLE_EVENT_FD)
+    /* Mark the thread as using LFDS queue */
+    lfds611_queue_use(itti_desc.tasks[task_id].message_queue);
+#else
     // Lock the mutex to get exclusive access to the list
     pthread_mutex_lock (&itti_desc.tasks[task_id].message_queue_mutex);
 #endif
@@ -636,6 +728,8 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
               const message_info_t *messages_info, const char * const messages_definition_xml, const char * const dump_file_name) {
     task_id_t task_id;
     thread_id_t thread_id;
+    int ret;
+
     itti_desc.message_number = 1;
 
     ITTI_DEBUG("Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
@@ -664,13 +758,29 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     /* Initializing each queue and related stuff */
     for (task_id = TASK_FIRST; task_id < itti_desc.task_max; task_id++)
     {
+        ITTI_DEBUG("Initializing %stask %s%s%s\n",
+                   itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ? "sub-" : "",
+                   itti_desc.tasks_info[task_id].name,
+                   itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ? " with parent " : "",
+                   itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ?
+                   itti_get_task_name(itti_desc.tasks_info[task_id].parent_task) : "");
+
 #if defined(ENABLE_EVENT_FD)
         ITTI_DEBUG("Creating queue of message of size %u\n", itti_desc.tasks_info[task_id].queue_size);
-        if (lfds611_queue_new(&itti_desc.tasks[task_id].message_queue, itti_desc.tasks_info[task_id].queue_size) < 0)
+
+        ret = lfds611_queue_new(&itti_desc.tasks[task_id].message_queue, itti_desc.tasks_info[task_id].queue_size);
+        if (ret < 0)
         {
             ITTI_ERROR("lfds611_queue_new failed for task %u\n", task_id);
             DevAssert(0 == 1);
         }
+
+# ifdef RTAI
+        if (task_id == TASK_L2L1)
+        {
+            ret = rtf_sem_init(56, 0);
+        }
+# endif
 
         itti_desc.tasks[task_id].epoll_fd = epoll_create1(0);
         if (itti_desc.tasks[task_id].epoll_fd == -1) {
@@ -689,7 +799,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
         itti_desc.tasks[task_id].nb_events = 1;
 
-        itti_desc.tasks[task_id].events = malloc(sizeof(struct epoll_event));
+        itti_desc.tasks[task_id].events = calloc(1, sizeof(struct epoll_event));
 
         itti_desc.tasks[task_id].events->events  = EPOLLIN | EPOLLERR;
         itti_desc.tasks[task_id].events->data.fd = itti_desc.tasks[task_id].task_event_fd;
@@ -725,7 +835,9 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
     itti_dump_init (messages_definition_xml, dump_file_name);
 
-    CHECK_INIT_RETURN(timer_init ());
+#ifndef RTAI
+     CHECK_INIT_RETURN(timer_init ());
+#endif
 
     return 0;
 }

@@ -485,10 +485,9 @@ void *eNB_app_task(void *args_p) {
   } while(1);
 
   itti_terminate_tasks(TASK_ENB_APP);
+#endif
 
   return NULL;
-#endif
-return NULL;
 }
 
 void *l2l1_task(void *args_p) {

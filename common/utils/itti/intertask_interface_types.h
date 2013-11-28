@@ -57,6 +57,7 @@
 
 /* Defines to extract task ID fields */
 #define TASK_GET_THREAD_ID(tASKiD)          (itti_desc.tasks_info[tASKiD].thread)
+#define TASK_GET_PARENT_TASK_ID(tASKiD)     (itti_desc.tasks_info[tASKiD].parent_task)
 /* Extract the instance from a message */
 #define ITTI_MESSAGE_GET_INSTANCE(mESSAGE)  ((mESSAGE)->ittiMsgHeader.instance)
 
