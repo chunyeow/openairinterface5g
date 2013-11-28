@@ -82,15 +82,13 @@ int stream_compute_integrity_eia2(stream_cipher_t *stream_cipher, uint8_t out[4]
 
 int stream_compute_integrity(uint8_t algorithm, stream_cipher_t *stream_cipher, uint8_t out[4])
 {
-    if (algorithm == EIA0_ALG_ID) {
-        //         return stream_encrypt_eea0(stream_cipher, out);
-    } else if (algorithm == EIA1_128_ALG_ID) {
-        LOG_E(OSA, "SNOW-3G algorithms are currently not implemented\n");
+    if (algorithm == EIA1_128_ALG_ID) {
+        LOG_E(OSA, "SNOW-3G algorithms are currently not implemented for integrity\n");
         return -1;
     } else if (algorithm == EIA2_128_ALG_ID) {
         return stream_compute_integrity_eia2(stream_cipher, out);
     }
-    LOG_E(OSA, "Provided algorithm is currently not supported = %u\n", algorithm);
+    LOG_E(OSA, "Provided integrity algorithm is currently not supported = %u\n", algorithm);
     return -1;
 }
 
@@ -98,16 +96,18 @@ int stream_check_integrity(uint8_t algorithm, stream_cipher_t *stream_cipher, ui
 {
     uint8_t result[4];
 
-    if (stream_compute_integrity(algorithm, stream_cipher, result) != 0) {
-        return -1;
-    }
+    if (algorithm != EIA0_ALG_ID) {
+        if (stream_compute_integrity(algorithm, stream_cipher, result) != 0) {
+            return -1;
+        }
 
-    if (memcmp(result, expected, 4) != 0) {
-        LOG_E(OSA, "Mismatch found in integrity for algorithm %u,\n"
-            "\tgot %02x.%02x.%02x.%02x, expecting %02x.%02x.%02x.%02x\n",
-            algorithm, result[0], result[1], result[2], result[3], expected[0],
-            expected[1], expected[2], expected[3]);
-        return -1;
+        if (memcmp(result, expected, 4) != 0) {
+            LOG_E(OSA, "Mismatch found in integrity for algorithm %u,\n"
+                "\tgot %02x.%02x.%02x.%02x, expecting %02x.%02x.%02x.%02x\n",
+                algorithm, result[0], result[1], result[2], result[3], expected[0],
+                expected[1], expected[2], expected[3]);
+            return -1;
+        }
     }
 
     /* Integrity verification succeeded */

@@ -13,6 +13,35 @@
 #include "osa_defs.h"
 #include "osa_internal.h"
 
+int stream_encrypt_eea0(stream_cipher_t *stream_cipher, uint8_t **out)
+{
+    uint8_t *data = NULL;
+
+    uint32_t byte_length;
+
+    DevAssert(stream_cipher != NULL);
+    DevAssert(out != NULL);
+
+    LOG_D(OSA, "Entering stream_encrypt_eea0, bits length %u, bearer %u, "
+          "count %u, direction %s\n", stream_cipher->blength,
+          stream_cipher->bearer, stream_cipher->count, stream_cipher->direction == SECU_DIRECTION_DOWNLINK ?
+          "Downlink" : "Uplink");
+
+    byte_length = (stream_cipher->blength + 7) >> 3;
+
+    if (*out == NULL) {
+        /* User provided output buffer */
+        data = malloc(byte_length);
+        *out = data;
+    } else {
+        data = *out;
+    }
+
+    memcpy (data, stream_cipher->message, byte_length);
+
+    return 0;
+}
+
 int stream_encrypt_eea2(stream_cipher_t *stream_cipher, uint8_t **out)
 {
     uint8_t m[16];
@@ -98,13 +127,13 @@ int stream_encrypt_eea2(stream_cipher_t *stream_cipher, uint8_t **out)
 int stream_encrypt(uint8_t algorithm, stream_cipher_t *stream_cipher, uint8_t **out)
 {
     if (algorithm == EEA0_ALG_ID) {
-//         return stream_encrypt_eea0(stream_cipher, out);
+        return stream_encrypt_eea0(stream_cipher, out);
     } else if (algorithm == EEA1_128_ALG_ID) {
-        LOG_E(OSA, "SNOW-3G algorithms are currently not implemented\n");
+        LOG_E(OSA, "SNOW-3G algorithms are currently not implemented for encryption\n");
         return -1;
     } else if (algorithm == EEA2_128_ALG_ID) {
         return stream_encrypt_eea2(stream_cipher, out);
     }
-    LOG_E(OSA, "Provided algorithm is currently not supported = %u\n", algorithm);
+    LOG_E(OSA, "Provided encryption algorithm is currently not supported = %u\n", algorithm);
     return -1;
 }
