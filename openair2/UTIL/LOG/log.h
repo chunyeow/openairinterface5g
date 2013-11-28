@@ -323,6 +323,16 @@ extern pthread_cond_t log_notify;
 extern int log_shutdown;
 #endif
 
+#if defined(ENABLE_ITTI)
+typedef enum log_instance_type_e {
+  LOG_INSTANCE_UNKNOWN,
+  LOG_INSTANCE_ENB,
+  LOG_INSTANCE_UE,
+} log_instance_type_t;
+
+void log_set_instance_type (log_instance_type_t instance);
+#endif
+
 /*--- INCLUDES ---------------------------------------------------------------*/
 #    include "log_if.h"
 /*----------------------------------------------------------------------------*/

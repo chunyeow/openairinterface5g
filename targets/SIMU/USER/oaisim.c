@@ -611,6 +611,10 @@ void *l2l1_task(void *args_p) {
       if(Channel_Flag==0)
 #endif
       {
+#if defined(ENABLE_ITTI)
+        log_set_instance_type (LOG_INSTANCE_ENB);
+#endif
+
         if ((next_slot % 2) == 0)
           clear_eNB_transport_info (oai_emulation.info.nb_enb_local);
 
@@ -656,6 +660,10 @@ void *l2l1_task(void *args_p) {
         }
         // Call ETHERNET emulation here
         //emu_transport (frame, last_slot, next_slot, direction, oai_emulation.info.frame_type, ethernet_flag);
+
+#if defined(ENABLE_ITTI)
+        log_set_instance_type (LOG_INSTANCE_UE);
+#endif
 
         if ((next_slot % 2) == 0)
           clear_UE_transport_info (oai_emulation.info.nb_ue_local);

@@ -81,6 +81,10 @@ static int gfd;
 static char *log_level_highlight_start[] = {LOG_RED, LOG_RED, LOG_RED, LOG_RED, LOG_ORANGE, LOG_BLUE, "", ""};  /*!< \brief Optional start-format strings for highlighting */
 static char *log_level_highlight_end[]   = {LOG_RESET, LOG_RESET, LOG_RESET, LOG_RESET, LOG_RESET,LOG_RESET,  "",""};   /*!< \brief Optional end-format strings for highlighting */
 
+#if defined(ENABLE_ITTI)
+static log_instance_type_t log_instance_type;
+#endif
+
 int logInit (void)
 {
 #ifdef USER_MODE
@@ -655,12 +659,83 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 #if defined(ENABLE_ITTI)
     if (level <= LOG_DEBUG)
     {
+        task_id_t origin_task_id = TASK_UNKNOWN;
         MessagesIds messages_id;
         MessageDef *message_p;
         size_t      message_string_size;
         char       *message_msg_p;
 
         message_string_size = log_end - log_start;
+
+#if !defined(DISABLE_ITTI_DETECT_SUB_TASK_ID)
+        /* Try to identify sub task ID from log information (comp, log_instance_type) */
+        switch (comp)
+        {
+          case PHY:
+            switch (log_instance_type)
+            {
+              case LOG_INSTANCE_ENB:
+                origin_task_id = TASK_PHY_ENB;
+                break;
+
+              case LOG_INSTANCE_UE:
+                origin_task_id = TASK_PHY_UE;
+                break;
+
+              default:
+                break;
+            }
+            break;
+
+          case MAC:
+            switch (log_instance_type)
+            {
+              case LOG_INSTANCE_ENB:
+                origin_task_id = TASK_MAC_ENB;
+                break;
+
+              case LOG_INSTANCE_UE:
+                origin_task_id = TASK_MAC_UE;
+
+              default:
+                break;
+            }
+           break;
+
+          case RLC:
+            switch (log_instance_type)
+            {
+              case LOG_INSTANCE_ENB:
+                origin_task_id = TASK_RLC_ENB;
+                break;
+
+              case LOG_INSTANCE_UE:
+                origin_task_id = TASK_RLC_UE;
+
+              default:
+                break;
+            }
+            break;
+
+          case PDCP:
+            switch (log_instance_type)
+            {
+              case LOG_INSTANCE_ENB:
+                origin_task_id = TASK_PDCP_ENB;
+                break;
+
+              case LOG_INSTANCE_UE:
+                origin_task_id = TASK_PDCP_UE;
+
+              default:
+                break;
+            }
+            break;
+
+          default:
+            break;
+        }
+#endif
 
         switch (level)
         {
@@ -687,7 +762,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
             messages_id = DEBUG_LOG;
             break;
         }
-        message_p = itti_alloc_new_message_sized(TASK_UNKNOWN, messages_id, message_string_size);
+        message_p = itti_alloc_new_message_sized(origin_task_id, messages_id, message_string_size);
         switch (level)
         {
           case LOG_EMERG:
@@ -869,6 +944,13 @@ void logClean (void)
 #endif
 
 }
+
+#if defined(ENABLE_ITTI)
+void log_set_instance_type (log_instance_type_t instance)
+{
+    log_instance_type = instance;
+}
+#endif
 
 #ifdef LOG_TEST
 

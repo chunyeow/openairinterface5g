@@ -110,7 +110,7 @@ int ui_filters_search_id(ui_filter_t *filter, uint32_t value)
         }
     }
 
-    return (item);
+    return (-1);
 }
 
 static void ui_filter_set_enabled(uint8_t *enabled, ui_entry_enabled_e entry_enabled, gboolean new)
@@ -214,7 +214,7 @@ static gboolean ui_item_enabled(ui_filter_t *filter, const uint32_t value)
     {
         item = ui_filters_search_id (filter, value);
 
-        if (item < filter->used)
+        if (item >= 0)
         {
             return (filter->items[item].enabled ? TRUE : FALSE);
         }

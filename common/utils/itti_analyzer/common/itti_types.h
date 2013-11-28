@@ -53,4 +53,10 @@ typedef struct {
     char     signal_name[SIGNAL_NAME_LENGTH];
 } itti_signal_header_t;
 
+
+#define INSTANCE_DEFAULT    (UINT16_MAX - 1)
+#define INSTANCE_ALL        (UINT16_MAX)
+
+typedef uint16_t instance_t;
+
 #endif

@@ -9,6 +9,7 @@
 
 #include <gtk/gtk.h>
 
+#include "logs.h"
 #include "itti_types.h"
 #include "rc.h"
 
@@ -196,6 +197,7 @@ int ui_messages_read(char *filename)
                             read_data = 0;
                         }
                         ui_gtk_flush_events ();
+                        g_message("Parsed XML definition from file \"%s\"", filename);
                         break;
 
                     case ITTI_STATISTIC_MESSAGE_TYPE:

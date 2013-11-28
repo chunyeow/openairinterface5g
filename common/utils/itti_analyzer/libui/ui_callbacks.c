@@ -79,20 +79,6 @@ gboolean ui_callback_on_filters_enabled(GtkToolButton *button, gpointer data)
             gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(button), "Enable messages filtering");
         }
         ui_tree_view_refilter ();
-
-        if (ui_main_data.messages_list != NULL)
-        {
-            GtkTreePath *path_row;
-
-            /* Get the currently selected message */
-            gtk_tree_view_get_cursor (GTK_TREE_VIEW(ui_main_data.messages_list), &path_row, NULL);
-            if (path_row != NULL)
-            {
-                /* Center the message in the middle of the list if possible */
-                gtk_tree_view_scroll_to_cell (GTK_TREE_VIEW(ui_main_data.messages_list), path_row, NULL, TRUE, 0.5,
-                                              0.0);
-            }
-        }
     }
 
     return TRUE;
@@ -171,7 +157,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
             char label[100];
 
             gtk_tree_model_get (model, &iter, COL_MSG_NUM, &message_number, COL_MESSAGE_ID, &message_id,
-                                COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE,
+                                COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID, &destination_task_id, COL_INSTANCE_ID,
                                 &instance, COL_BUFFER, &buffer, -1);
 
             g_debug("  Get iter %p %p", buffer_current, buffer);

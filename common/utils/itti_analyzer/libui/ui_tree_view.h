@@ -15,6 +15,7 @@ typedef enum col_type_e
     COL_MESSAGE_ID,
     COL_FROM_TASK_ID,
     COL_TO_TASK_ID,
+    COL_INSTANCE_ID,
     COL_FOREGROUND,
     COL_BACKGROUND,
     COL_STRIKETHROUGH,

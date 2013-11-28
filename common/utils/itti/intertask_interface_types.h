@@ -117,10 +117,10 @@ typedef union msg_s
 #undef MESSAGE_DEF
 } msg_t;
 
-#define INSTANCE_DEFAULT    0
-#define INSTANCE_ALL        -1
+#define INSTANCE_DEFAULT    (UINT16_MAX - 1)
+#define INSTANCE_ALL        (UINT16_MAX)
 
-typedef int16_t instance_t;
+typedef uint16_t instance_t;
 typedef uint16_t MessageHeaderSize;
 
 typedef struct itti_lte_time_s
