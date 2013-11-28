@@ -312,7 +312,10 @@ int itti_send_msg_to_task(task_id_t task_id, instance_t instance, MessageDef *me
     message_number = itti_increment_message_number ();
 
 #ifdef RTAI
-    if (pthread_self() != itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].task_thread)
+    if ((pthread_self() == itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].task_thread) ||
+        (task_id == TASK_UNKNOWN) ||
+        ((TASK_GET_PARENT_TASK_ID(origin_task_id) != TASK_UNKNOWN) &&
+        (pthread_self() == itti_desc.threads[TASK_GET_PARENT_TASK_ID(origin_task_id)].task_thread)))
 #endif
         itti_dump_queue_message (message_number, message, itti_desc.messages_info[message_id].name,
                                  sizeof(MessageHeader) + message->ittiMsgHeader.ittiMsgSize);
