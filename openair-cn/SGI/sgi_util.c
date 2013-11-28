@@ -16,6 +16,7 @@ static char fw_2_print_buffer[FW_2_PRINT_BUFFER_LEN];
 void sgi_print_hex_octets(unsigned char* dataP, unsigned long sizeP)
 //-----------------------------------------------------------------------------
 {
+  return;
   unsigned long octet_index = 0;
   unsigned long buffer_marker = 0;
   unsigned char aindex;

@@ -79,6 +79,9 @@ next_message:
 
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
             } break;
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
+            } break;
             default: {
                 NAS_DEBUG("Unkwnon message ID %d:%s\n",
                           ITTI_MSG_ID(received_message_p),

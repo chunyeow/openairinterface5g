@@ -449,6 +449,9 @@ static void *gtpv1u_thread(void *args)
                 free(data_req_p->buffer);
             }
             break;
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
+            } break;
             case TIMER_HAS_EXPIRED:
                 nwGtpv1uProcessTimeout(&received_message_p->ittiMsg.timer_has_expired.arg);
                 break;

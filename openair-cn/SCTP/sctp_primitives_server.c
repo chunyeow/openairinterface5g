@@ -612,8 +612,11 @@ static void *sctp_intertask_interface(void *args_p)
                 }
             } break;
             case MESSAGE_TEST: {
-                int i = 10000;
-                while(i--);
+//                 int i = 10000;
+//                 while(i--);
+            } break;
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
             } break;
             default: {
                 SCTP_DEBUG("Unkwnon message ID %d:%s\n",

@@ -144,6 +144,9 @@ void *s1ap_mme_thread(void *args)
             case TIMER_HAS_EXPIRED: {
                 s1ap_handle_timer_expiry(&received_message_p->ittiMsg.timer_has_expired);
             } break;
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
+            } break;
             default: {
                 S1AP_DEBUG("Unkwnon message ID %d:%s\n",
                            ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));

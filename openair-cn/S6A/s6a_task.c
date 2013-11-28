@@ -86,6 +86,9 @@ void *s6a_thread(void *args)
             case S6A_AUTH_INFO_REQ: {
                 s6a_generate_authentication_info_req(&received_message_p->ittiMsg.s6a_auth_info_req);
             } break;
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
+            } break;
             default: {
                 S6A_DEBUG("Unkwnon message ID %d:%s\n",
                           ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));

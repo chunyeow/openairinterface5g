@@ -90,6 +90,10 @@ static void *sgw_lite_intertask_interface(void *args_p)
             	sgw_lite_handle_sgi_endpoint_updated(&received_message_p->ittiMsg.sgiUpdateEndpointResp);
             } break;
 
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
+            } break;
+
             default: {
                 SPGW_APP_DEBUG("Unkwnon message ID %d:%s\n",
                                ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));

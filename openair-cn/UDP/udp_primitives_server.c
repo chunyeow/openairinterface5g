@@ -256,6 +256,9 @@ static void *udp_intertask_interface(void *args_p)
                     "(%d:%s)\n", errno, strerror(errno));
                 }
             } break;
+            case TERMINATE_MESSAGE: {
+                itti_exit_task();
+            } break;
             case MESSAGE_TEST: {
             } break;
             default: {
