@@ -48,14 +48,20 @@ int s6a_parse_subscriber_status(struct avp_hdr *hdr_sub_status,
 }
 
 static inline
-int s6a_parse_msisdn(struct avp_hdr *hdr_msisdn, char *msisdn, int *length)
+int s6a_parse_msisdn(struct avp_hdr *hdr_msisdn, char *msisdn, uint8_t *length)
 {
+    int ret;
+
     DevCheck(hdr_msisdn->avp_value->os.len <= MSISDN_LENGTH,
              hdr_msisdn->avp_value->os.len, MSISDN_LENGTH, 0);
+
     if (hdr_msisdn->avp_value->os.len == 0)
         return 0;
-    *length = sprintf(msisdn, "%*s", (int)hdr_msisdn->avp_value->os.len,
-                      hdr_msisdn->avp_value->os.data);
+    ret = sprintf(msisdn, "%*s", (int)hdr_msisdn->avp_value->os.len,
+                  hdr_msisdn->avp_value->os.data);
+
+    *length = ret;
+
     return 0;
 }
 

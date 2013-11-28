@@ -246,10 +246,10 @@ void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
             MME_APP_DEBUG("    - IMEISV .........: %*s\n", 15,
                           context_p->me_identity.imeisv);
             MME_APP_DEBUG("    - AMBR (bits/s)     ( Downlink |  Uplink  )\n");
-            MME_APP_DEBUG("        Subscribed ...: (%010u|%010u)\n",
+            MME_APP_DEBUG("        Subscribed ...: (%010"PRIu64"|%010"PRIu64")\n",
                           context_p->subscribed_ambr.br_dl,
                           context_p->subscribed_ambr.br_ul);
-            MME_APP_DEBUG("        Allocated ....: (%010u|%010u)\n",
+            MME_APP_DEBUG("        Allocated ....: (%010"PRIu64"|%010"PRIu64")\n",
                           context_p->used_ambr.br_dl, context_p->used_ambr.br_ul);
             MME_APP_DEBUG("    - Known vectors ..: %u\n", context_p->nb_of_vectors);
             STAILQ_FOREACH(vector_p, &context_p->vector_list, entries)
@@ -286,7 +286,7 @@ void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
                             ? "TRUE" : "FALSE");
                 MME_APP_DEBUG("        - APN ...........: %s\n", apn_config_p->service_selection);
                 MME_APP_DEBUG("        - AMBR (bits/s) ( Downlink |  Uplink  )\n");
-                MME_APP_DEBUG("                        (%010u|%010u)\n",
+                MME_APP_DEBUG("                        (%010"PRIu64"|%010"PRIu64")\n",
                             apn_config_p->ambr.br_dl, apn_config_p->ambr.br_ul);
                 MME_APP_DEBUG("        - PDN type ......: %s\n",
                             PDN_TYPE_TO_STRING(apn_config_p->pdn_type));

@@ -31,7 +31,7 @@ typedef struct {
     /* Unique SCTP association ID (Local to host), used to distinguish
      * associations between MME and eNB.
      */
-    uint32_t assoc_id;
+    int32_t assoc_id;
 
     /* Current remote port used for transmission */
     uint16_t  remote_port;
