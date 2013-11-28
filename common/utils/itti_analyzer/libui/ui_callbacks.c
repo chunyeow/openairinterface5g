@@ -193,10 +193,8 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                         /* Clear event */
                         ui_tree_view_last_event = NULL;
 
-                        if (ui_main_data.menu_filter_messages == NULL)
-                        {
-                            ui_create_filter_menus ();
-                        }
+                        /* Create filter menus to refers its items in the pop-up menu */
+                        ui_create_filter_menus ();
 
                         g_info("Message selected right click %d %d %d %d", message_id, origin_task_id, destination_task_id, instance);
 
