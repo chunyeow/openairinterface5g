@@ -46,6 +46,7 @@
 #ifdef DEBUG_DCI_TOOLS
 #include "PHY/vars.h"
 #endif
+#include "assertions.h"
 
 //#define DEBUG_DCI
 
@@ -268,6 +269,8 @@ void conv_rballoc(uint8_t ra_header,uint32_t rb_alloc,uint32_t N_RB_DL,uint32_t 
     break;
 
   default:
+    LOG_E(PHY,"Invalid N_RB_DL %d\n", N_RB_DL);
+    DevParam (N_RB_DL, 0, 0);
     break;
   }
 
@@ -335,6 +338,11 @@ uint32_t conv_nprb(uint8_t ra_header,uint32_t rb_alloc,int N_RB_DL) {
 	  nprb += 1;
       }
     }
+    break;
+
+  default:
+    LOG_E(PHY,"Invalide N_RB_DL %d\n", N_RB_DL);
+    DevParam (N_RB_DL, 0, 0);
     break;
   }
 
@@ -538,8 +546,9 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
 				       uint16_t p_rnti,
 				       uint16_t DL_pmi_single) {
 
-  uint8_t harq_pid;
-  uint32_t rballoc,RIV_max;
+  uint8_t harq_pid = UINT8_MAX;
+  uint32_t rballoc = UINT32_MAX;
+  uint32_t RIV_max = 0;
   uint8_t NPRB,tbswap,tpmi=0;
   LTE_eNB_DLSCH_t *dlsch0=NULL,*dlsch1;
   uint8_t frame_type=frame_parms->frame_type;
@@ -701,6 +710,11 @@ int generate_eNB_dlsch_params_from_dci(uint8_t subframe,
       dlsch[0]->nb_rb                               = RIV2nb_rb_LUT100[rballoc];//NPRB;
       RIV_max = RIV_max100;
       break;
+
+      default:
+        LOG_E(PHY,"Invalid N_RB_D %dL\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
+        break;
     }
 
     // harq_pid field is reserved
@@ -1239,6 +1253,8 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
 	    ((DCI0_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->cqi_req);
 	break;
       default:
+        LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
 	break;
       }
     else if (frame_parms->frame_type == FDD)
@@ -1292,6 +1308,8 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
 	    ((DCI0_20MHz_FDD_t *)&dci->dci_pdu[0])->cqi_req);
 	break;
       default:
+        LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
 	break;
       }
     else
@@ -1356,6 +1374,8 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
 	    ((DCI1_20MHz_TDD_t *)&dci->dci_pdu[0])->dai);
 	break;
       default:
+        LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
 	break;
       }
     else if (frame_parms->frame_type == FDD) {
@@ -1409,6 +1429,8 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
 	    ((DCI1_20MHz_FDD_t *)&dci->dci_pdu[0])->TPC);
 	break;
       default:
+        LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
 	break;
       }
     }
@@ -1465,6 +1487,8 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
 	msg("DAI %d\n",((DCI1A_20MHz_TDD_1_6_t *)&dci->dci_pdu[0])->dai);
 	break;
       default:
+        LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
 	break;
       }
 	
@@ -1512,6 +1536,8 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
 	msg("TPC %d\n",((DCI1A_20MHz_FDD_t *)&dci->dci_pdu[0])->TPC);
 	break;
       default:
+        LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+        DevParam (frame_parms->N_RB_DL, 0, 0);
 	break;
       }
     }
@@ -2912,6 +2938,8 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       break;
 
     default:
+      LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+      DevParam (frame_parms->N_RB_DL, 0, 0);
       break;
     }
 
@@ -3240,13 +3268,14 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   LTE_eNB_ULSCH_t *ulsch=phy_vars_eNB->ulsch_eNB[UE_id];
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;
 
-  uint32_t cqi_req;
-  uint32_t dai=0;
-  uint32_t cshift;
-  uint32_t TPC;
-  uint32_t ndi;
-  uint32_t mcs;
-  uint32_t rballoc,RIV_max;
+  uint32_t cqi_req = 0;
+  uint32_t dai = 0;
+  uint32_t cshift = 0;
+  uint32_t TPC = 0;
+  uint32_t ndi = 0;
+  uint32_t mcs = 0;
+  uint32_t rballoc = UINT32_MAX;
+  uint32_t RIV_max = 0;
   //  uint32_t hopping;
   //  uint32_t type;
 
@@ -3373,7 +3402,12 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
       ulsch->harq_processes[harq_pid]->first_rb                              = RIV2first_rb_LUT100[rballoc];
       ulsch->harq_processes[harq_pid]->nb_rb                                 = RIV2nb_rb_LUT100[rballoc];
 
-     printf("eNB: rb_alloc (20 MHz dci) %d\n",rballoc);
+      printf("eNB: rb_alloc (20 MHz dci) %d\n",rballoc);
+      break;
+
+    default:
+      LOG_E(PHY,"Invalid N_RB_DL %d\n", frame_parms->N_RB_DL);
+      DevParam (frame_parms->N_RB_DL, 0, 0);
       break;
     }
       

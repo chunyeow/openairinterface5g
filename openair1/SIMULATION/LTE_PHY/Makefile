@@ -4,6 +4,7 @@ CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4.1
 #CPUFLAGS += $(shell if [ -z $(SSE3PROC) ]; then echo "" ; else echo "-mssse3"; fi)
 #CPUFLAGS += $(shell if [ -z $(SSE4PROC) ]; then echo "" ; else echo "-msse4"; fi)
 
+COMMON_UTILS_DIR = $(OPENAIR_HOME)/common/utils
 TOP_DIR = $(OPENAIR1_DIR)
 OPENAIR1_TOP = $(OPENAIR1_DIR)
 OPENAIR2_TOP = $(OPENAIR2_DIR)
@@ -99,6 +100,7 @@ CFLAGS += -DRTAI_ENABLED  -D__IN_RTAI__ $(shell rtai-config --lxrt-cflags)
 LFLAGS += $(shell rtai-config --lxrt-ldflags) -llxrt
 endif
 
+include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(TOP_DIR)/PHY/Makefile.inc
 SCHED_OBJS = $(TOP_DIR)/SCHED/phy_procedures_lte_common.o #$(TOP_DIR)/SCHED/phy_procedures_lte_eNb.o $(TOP_DIR)/SCHED/phy_procedures_lte_ue.o
 include $(TOP_DIR)/SCHED/Makefile.inc
@@ -109,7 +111,7 @@ include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc
 
 #LOG_OBJS +=  $(LOG_DIR)/vcd_signal_dumper.o
 
-CFLAGS += $(L2_incl) -I$(ASN1_MSG_INC) -I$(TOP_DIR) -I$(OPENAIR2_DIR) -I$(OPENAIR3) $(UTIL_incl)
+CFLAGS += $(L2_incl) -I$(ASN1_MSG_INC) -I$(TOP_DIR) -I$(OPENAIR2_DIR) -I$(OPENAIR3) $(UTIL_incl) $(UTILS_incl)
 # EXTRA_CFLAGS = 
 
 #STATS_OBJS += $(TOP_DIR)/ARCH/CBMIMO1/DEVICE_DRIVER/cbmimo1_proc.o
