@@ -166,6 +166,10 @@ LFDS_LIB		 = $(LFDS_OBJ_DIR)/bin/liblfds611.a
 LIBS 			+= $(LFDS_LIB)
 SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 
+-include $(OBJ:.o=.d)
+-include $(ASN1_MSG_OBJS1:.o=.d)
+-include $(RTAI_OBJ:.o=.d)
+
 $(LFDS_LIB):
 	@if [ ! -d $(LFDS_OBJ_DIR)/bin ]; then mkdir -p $(LFDS_OBJ_DIR)/bin; fi;
 	@if [ ! -d $(LFDS_OBJ_DIR)/obj ]; then mkdir -p $(LFDS_OBJ_DIR)/obj; fi;
