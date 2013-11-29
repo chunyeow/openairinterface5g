@@ -460,24 +460,12 @@ void *emos_thread (void *arg)
 #if defined(ENABLE_ITTI)
 void *dummy_l2l1_task(void *arg)
 {
-    ssize_t ret = 0;
-    MessageDef *received_msg;
-
+    itti_set_task_real_time(TASK_L2L1);
     itti_mark_task_ready(TASK_L2L1);
 
     while (!oai_exit)
     {
-        usleep(100);
-
-        do {
-            itti_poll_msg(TASK_L2L1, &received_msg);
-
-            if (received_msg != NULL) {
-                itti_send_msg_to_task(ITTI_MSG_DESTINATION_ID(received_msg),
-                                      ITTI_MSG_INSTANCE(received_msg),
-                                      received_msg);
-            }
-        } while(received_msg != NULL);
+        usleep(500000);
     }
     return NULL;
 }
@@ -534,20 +522,20 @@ static void *eNB_thread(void *arg)
           diff = mbox_target - mbox_current;
       
       if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
-	// at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
-	LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
-	slot++;
-	if (frame>0) {
-	  oai_exit=1;
+        // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
+        LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
+        slot++;
+        if (frame > 0) {
+          oai_exit = 1;
 #if defined(ENABLE_ITTI)
-      itti_send_terminate_message(TASK_L2L1);
+          itti_send_terminate_message (TASK_L2L1);
 #endif
-    }
-	if (slot==20){
-	  slot=0;
-	  frame++;
-	}
-	continue;
+        }
+        if (slot==20){
+          slot=0;
+          frame++;
+        }
+        continue;
       }
       if (diff>8) 
           LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
@@ -555,9 +543,9 @@ static void *eNB_thread(void *arg)
       delay_cnt = 0;
       while ((diff>0) && (!oai_exit))
         {
-	  time_in = rt_get_time_ns();
-	  //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
-	  //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
+          time_in = rt_get_time_ns();
+          //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
+          //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
           ret = rt_sleep_ns(diff*DAQ_PERIOD);
 	  if (ret)
 	    LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
@@ -618,7 +606,7 @@ static void *eNB_thread(void *arg)
 
           if (fs4_test==0)
             {
-              phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0, 0,NULL);
+              phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0, no_relay,NULL);
 #ifndef IFFT_FPGA
               slot_offset_F = (next_slot)*
                               (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
@@ -1233,6 +1221,15 @@ int main(int argc, char **argv) {
     else
       vcd_signal_dumper_init("/tmp/openair_dump_eNB.vcd");
   }
+
+#if defined(ENABLE_ITTI)
+  if (UE_flag == 1) {
+    log_set_instance_type (LOG_INSTANCE_UE);
+  }
+  else {
+    log_set_instance_type (LOG_INSTANCE_ENB);
+  }
+#endif
 
 #if defined(ENABLE_ITTI)
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);

@@ -69,6 +69,6 @@ int timer_remove(long timer_id);
  *  \param mme_config MME common configuration
  *  @returns -1 on failure, 0 otherwise
  **/
-int timer_init();
+int timer_init(void);
 
 #endif

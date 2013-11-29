@@ -102,7 +102,7 @@ static uint8_t get_UE_index_from_initial_id(uint8_t mod_id, uint16_t ue_initial_
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
     /* Check if this UE is in use */
-    LOG_D(RRC, "[eNB %d][UE %d] 0x%" PRIx64 " %d\n", mod_id, ue_index,
+    LOG_D(RRC, "[eNB %d][UE %d] UE rv 0x%" PRIx64 " %d\n", mod_id, ue_index,
           eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id);
 
     if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {
@@ -129,7 +129,7 @@ static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint32_t eNB_ue_
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
     /* Check if this UE is in use */
-    LOG_D(RRC, "[eNB %d][UE %d] 0x%" PRIx64 " %d\n", mod_id, ue_index,
+    LOG_D(RRC, "[eNB %d][UE %d] UE rv 0x%" PRIx64 " %d\n", mod_id, ue_index,
           eNB_rrc_inst[mod_id].Info.UE_list[ue_index], eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id);
 
     if (eNB_rrc_inst[mod_id].Info.UE_list[ue_index] != 0) {

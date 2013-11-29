@@ -459,7 +459,7 @@ static void rrc_lite_eNB_init_security(u8 Mod_id, u8 UE_index)
     }
     ascii_buffer[2 * i] = '\0';
 
-    LOG_T(RRC, "[OSA][MOD %02d][UE %02d] kenb    = %s\n", Mod_id, UE_index, ascii_buffer);
+    LOG_T(RRC, "[OSA][eNB %d][UE %d] kenb    = %s\n", Mod_id, UE_index, ascii_buffer);
 #endif
 }
 
@@ -494,7 +494,7 @@ static uint8_t rrc_eNB_get_next_free_UE_index (uint8_t Mod_id, uint8_t *UE_ident
   }
 
   if (reg == 0) {
-    LOG_I(RRC, "Adding UE %d\n", first_index);
+    LOG_I(RRC, "[eNB %d] Adding UE %d\n", Mod_id, first_index);
     return (first_index);
   }
   else {
@@ -507,7 +507,7 @@ void rrc_eNB_free_UE_index (uint8_t Mod_id, uint8_t UE_id)
   DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
   DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
 
-  LOG_I (RRC, "Removing UE %d 0x%" PRIx64 "\n", UE_id, eNB_rrc_inst[Mod_id].Info.UE_list[UE_id]);
+  LOG_I (RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", Mod_id, UE_id, eNB_rrc_inst[Mod_id].Info.UE_list[UE_id]);
   eNB_rrc_inst[Mod_id].Info.UE[UE_id].Status = RRC_IDLE;
   eNB_rrc_inst[Mod_id].Info.UE_list[UE_id] = 0;
 }
@@ -3030,12 +3030,12 @@ void *rrc_enb_task(void *args_p) {
         break;
 
       case MESSAGE_TEST:
-        LOG_I(RRC, "Received %s\n", msg_name);
+        LOG_I(RRC, "[eNB %d] Received %s\n", instance, msg_name);
         break;
 
       /* Messages from MAC */
       case RRC_MAC_CCCH_DATA_IND:
-        LOG_I(RRC, "Received %s: instance %d, frame %d,\n", msg_name, instance,
+        LOG_I(RRC, "[eNB %d] Received %s: instance %d, frame %d,\n", instance, msg_name,
               RRC_MAC_CCCH_DATA_IND (msg_p).frame);
 
         srb_info_p = &eNB_rrc_inst[instance].Srb0;
@@ -3048,8 +3048,8 @@ void *rrc_enb_task(void *args_p) {
 
       /* Messages from PDCP */
       case RRC_DCCH_DATA_IND:
-        LOG_I(RRC, "Received %s: instance %d, frame %d, DCCH %d, UE %d\n", msg_name, instance,
-              RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).ue_index);
+        LOG_I(RRC, "[eNB %d][UE %d] Received %s: instance %d, frame %d, DCCH %d\n", instance, RRC_DCCH_DATA_IND (msg_p).ue_index, msg_name,
+              RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index);
 
         rrc_eNB_decode_dcch (instance, RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index,
                              RRC_DCCH_DATA_IND (msg_p).ue_index, RRC_DCCH_DATA_IND (msg_p).sdu_p,
@@ -3074,7 +3074,7 @@ void *rrc_enb_task(void *args_p) {
         break;
 
       case S1AP_PAGING_IND:
-        LOG_E(RRC, "Received not yet implemented message %s\n", msg_name);
+        LOG_E(RRC, "[eNB %d] Received not yet implemented message %s\n", instance, msg_name);
         break;
 
       case S1AP_UE_CONTEXT_RELEASE_REQ:
@@ -3083,7 +3083,7 @@ void *rrc_enb_task(void *args_p) {
 #endif
 
       default:
-        LOG_E(RRC, "Received unexpected message %s\n", msg_name);
+        LOG_E(RRC, "[eNB %d] Received unexpected message %s\n", instance, msg_name);
         break;
     }
 
