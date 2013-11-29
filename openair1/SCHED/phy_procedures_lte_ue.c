@@ -3119,7 +3119,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	    phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->TBS = phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS;
 	    phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->mcs = phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->mcs;
 	    LOG_I(PHY,"[RN/UE %d] Frame %d subframe %d: store the MCH PDU for MBSFN sync area %d (MCS %d, TBS %d)\n",
-		  phy_vars_ue->Mod_id,frame,last_slot>>1,sync_area,
+		  phy_vars_ue->Mod_id, phy_vars_ue->frame,last_slot>>1,sync_area,
 		  phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->mcs,
 		  phy_vars_rn->dlsch_rn_MCH[last_slot>>1]->harq_processes[0]->TBS>>3);
 #ifdef DEBUG_PHY
@@ -3128,7 +3128,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	    msg("\n");
 #endif 	 
 	  } else 
-	    LOG_W(PHY,"[UE %d] Frame %d: not supported option\n",phy_vars_ue->Mod_id,frame);
+	    LOG_W(PHY,"[UE %d] Frame %d: not supported option\n",phy_vars_ue->Mod_id, phy_vars_ue->frame);
 #endif
 	}
       }
