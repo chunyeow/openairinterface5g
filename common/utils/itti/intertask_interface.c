@@ -292,6 +292,10 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
     message_number_t message_number;
     uint32_t message_id;
 
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG, 1L << destination_task_id);
+#endif
+
     DevAssert(message != NULL);
     DevCheck(destination_task_id < itti_desc.task_max, destination_task_id, itti_desc.task_max, 0);
 
@@ -304,11 +308,6 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
     DevCheck(message_id < itti_desc.messages_id_max, itti_desc.messages_id_max, message_id, 0);
 
     origin_task_id = ITTI_MSG_ORIGIN_ID(message);
-
-#if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG,
-                                            destination_task_id);
-#endif
 
     priority = itti_get_message_priority (message_id);
 
@@ -329,6 +328,10 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
 
     if (destination_task_id != TASK_UNKNOWN)
     {
+#if defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
+#endif
+
         /* We cannot send a message if the task is not running */
         DevCheck(itti_desc.threads[destination_thread_id].task_state == TASK_STATE_READY, itti_desc.threads[destination_thread_id].task_state,
                  TASK_STATE_READY, destination_thread_id);
@@ -344,6 +347,10 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
 
         /* Enqueue message in destination task queue */
         lfds611_queue_enqueue(itti_desc.tasks[destination_task_id].message_queue, new);
+
+#if defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
+#endif
 
 #ifdef RTAI
         if (itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].real_time)
@@ -376,8 +383,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG_END,
-                                            destination_task_id);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_SEND_MSG, 0);
 #endif
 
     return 0;
@@ -520,14 +526,12 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
 void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
 {
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
-                                            task_id);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG, 0);
 #endif
     itti_receive_msg_internal_event_fd(task_id, 0, received_msg);
 
-    #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG_END,
-                                            task_id);
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG, 1L << task_id);
 #endif
 }
 
@@ -538,8 +542,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
     *received_msg = NULL;
 
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG,
-                                            task_id);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG, 1L << task_id);
 #endif
 
     {
@@ -557,8 +560,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
-    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG_END,
-                                            task_id);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_POLL_MSG, 0);
 #endif
 }
 

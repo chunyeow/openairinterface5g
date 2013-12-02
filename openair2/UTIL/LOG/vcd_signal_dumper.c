@@ -81,11 +81,8 @@ const char* eurecomVariablesNames[] = {
     "daq_mbox",
     "diff2",
     "itti_send_msg",
-    "itti_send_msg_end",
     "itti_poll_msg",
-    "itti_poll_msg_end",
     "itti_recv_msg",
-    "itti_recv_msg_end",
     "itti_alloc_msg"
 };
  
@@ -161,12 +158,13 @@ const char* eurecomFunctionsNames[] = {
     "phy_eNB_dlsch_scramblig",
     "pdcp_apply_security",
     "pdcp_validate_security",
+    "itti_enqueue_message",
     "itti_dump_enqueue_message",
     "test"
 };
 
 struct vcd_module_s vcd_modules[VCD_SIGNAL_DUMPER_MODULE_END] = {
-    { "variables", VCD_SIGNAL_DUMPER_VARIABLES_END, eurecomVariablesNames, VCD_REAL, 64 },
+    { "variables", VCD_SIGNAL_DUMPER_VARIABLES_END, eurecomVariablesNames, VCD_WIRE, 64 },
     { "functions", VCD_SIGNAL_DUMPER_FUNCTIONS_END, eurecomFunctionsNames, VCD_WIRE, 1 },
 //    { "ue_procedures_functions", VCD_SIGNAL_DUMPER_UE_PROCEDURES_FUNCTIONS_END, eurecomUEFunctionsNames, VCD_WIRE, 1 },
 };
@@ -205,9 +203,65 @@ typedef struct {
 struct lfds611_queue_state *vcd_queue = NULL;
 pthread_t vcd_dumper_thread;
 
+#define BYTE_SIZE   8
+#define NIBBLE_SIZE 4
+static void uint64_to_binary(uint64_t value, char *binary)
+{
+    static const char * const nibbles_start[] =
+            {
+                 "",    "1",   "10",   "11",
+              "100",  "101",  "110",  "111",
+             "1000", "1001", "1010", "1011",
+             "1100", "1101", "1110", "1111",
+            };
+    static const char * const nibbles[] =
+            {
+             "0000", "0001", "0010", "0011",
+             "0100", "0101", "0110", "0111",
+             "1000", "1001", "1010", "1011",
+             "1100", "1101", "1110", "1111",
+            };
+    int nibble;
+    int nibble_value;
+    int nibble_size;
+    int zero = 1;
+
+    for (nibble = 0; nibble < (sizeof (uint64_t) * (BYTE_SIZE / NIBBLE_SIZE)); nibble++)
+    {
+        nibble_value = value >> ((sizeof (uint64_t) * BYTE_SIZE) - NIBBLE_SIZE);
+
+        if (zero)
+        {
+            if (nibble_value > 0)
+            {
+                zero = 0;
+                nibble_size = strlen(nibbles_start[nibble_value]);
+                memcpy (binary, nibbles_start[nibble_value], nibble_size);
+                binary += nibble_size;
+            }
+        }
+        else
+        {
+            memcpy (binary, nibbles[nibble_value], NIBBLE_SIZE);
+            binary += NIBBLE_SIZE;
+        }
+        value <<= NIBBLE_SIZE;
+    }
+    /* Add a '0' if the value was null */
+    if (zero)
+    {
+        binary[0] = '0';
+        binary ++;
+    }
+    /* Add a null value at the end of the string */
+    binary[0] = '\0';
+}
+
 void *vcd_dumper_thread_rt(void *args)
 {
     vcd_queue_user_data_t *data;
+    char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
+
     while(1) {
         if (lfds611_queue_dequeue(vcd_queue, (void **) &data) == 0) {
             /* No element -> sleep a while */
@@ -221,7 +275,8 @@ void *vcd_dumper_thread_rt(void *args)
                         variable_name = (int)data->data.variable.variable_name;
                         fprintf(vcd_fd, "#%llu\n", data->time);
                         /* Set variable to value */
-                        fprintf(vcd_fd, "r%lu %s_r\n", data->data.variable.value,
+                        uint64_to_binary(data->data.variable.value, binary_string);
+                        fprintf(vcd_fd, "b%s %s_w\n", binary_string,
                                 eurecomVariablesNames[variable_name]);
                     }
                     break;
@@ -393,7 +448,12 @@ void vcd_signal_dumper_create_header(void)
                     const char *signal_name;
                     signal_name = module->signals_names[j];
                     if (VCD_WIRE == module->signal_type) {
-                        fprintf(vcd_fd, "0%s_w $end\n", signal_name);
+                        if (module->signal_size > 1) {
+                            fprintf(vcd_fd, "b0 %s_w $end\n", signal_name);
+                        }
+                        else {
+                            fprintf(vcd_fd, "0%s_w $end\n", signal_name);
+                        }
                     } else  if (VCD_REAL == module->signal_type) {
                         fprintf(vcd_fd, "r0 %s_r $end\n", signal_name);
                     } else {
@@ -426,6 +486,8 @@ void vcd_signal_dumper_dump_variable_by_name(vcd_signal_dump_variables variable_
         new_data->data.variable.value = value;
         lfds611_queue_enqueue(vcd_queue, new_data);
 #else
+        char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
+
         assert(variable_name < VCD_SIGNAL_DUMPER_VARIABLES_END);
         assert(variable_name >= 0);
 
@@ -434,7 +496,8 @@ void vcd_signal_dumper_dump_variable_by_name(vcd_signal_dump_variables variable_
             vcd_signal_dumper_print_time_since_start();
 
             /* Set variable to value */
-            fprintf(vcd_fd, "r%lu %s_r\n", value, eurecomVariablesNames[variable_name]);
+            uint64_to_binary(value, binary_string);
+            fprintf(vcd_fd, "b%s %s_w\n", binary_string, eurecomVariablesNames[variable_name]);
             //fflush(vcd_fd);
         }
 #endif
