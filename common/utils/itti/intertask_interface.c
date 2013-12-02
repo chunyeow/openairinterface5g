@@ -254,18 +254,26 @@ inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, Messag
 
     DevCheck(message_id < itti_desc.messages_id_max, message_id, itti_desc.messages_id_max, 0);
 
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, size);
+#endif
+
     if (origin_task_id == TASK_UNKNOWN)
     {
         /* Try to identify real origin task ID */
         origin_task_id = itti_get_current_task_id();
     }
 
-    temp = calloc (1, sizeof(MessageHeader) + size);
+    temp = malloc (sizeof(MessageHeader) + size);
     DevAssert(temp != NULL);
 
     temp->ittiMsgHeader.messageId = message_id;
     temp->ittiMsgHeader.originTaskId = origin_task_id;
     temp->ittiMsgHeader.ittiMsgSize = size;
+
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_ALLOC_MSG, 0);
+#endif
 
     return temp;
 }

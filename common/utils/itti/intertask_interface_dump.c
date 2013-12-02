@@ -312,7 +312,7 @@ int itti_dump_queue_message(message_number_t message_number,
         DevAssert(message_name != NULL);
         DevAssert(message_p != NULL);
 
-        new = calloc(1, sizeof(itti_dump_queue_item_t));
+        new = malloc(sizeof(itti_dump_queue_item_t));
 
         if (new == NULL) {
             ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
@@ -328,8 +328,8 @@ int itti_dump_queue_message(message_number_t message_number,
             return -1;
         }
         memcpy(new->data, message_p, message_size);
-        new->data_size      = message_size;
-        new->message_number = message_number;
+        new->data_size       = message_size;
+        new->message_number  = message_number;
 
         message_name_length = strlen(message_name) + 1;
         DevCheck(message_name_length <= SIGNAL_NAME_LENGTH, message_name_length,
