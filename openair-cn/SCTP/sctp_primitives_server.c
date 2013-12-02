@@ -598,26 +598,29 @@ static void *sctp_intertask_interface(void *args_p)
                     SCTP_ERROR("Failed to create new SCTP listener\n");
                 }
             } break;
+
             case SCTP_CLOSE_ASSOCIATION: {
 
             } break;
-            case SCTP_NEW_DATA_REQ: {
-                SctpNewDataReq *sctpNewS1APDataReq;
-                sctpNewS1APDataReq = &received_message_p->ittiMsg.sctpNewDataReq;
-                if (sctp_send_msg(sctpNewS1APDataReq->assocId,
-                                  sctpNewS1APDataReq->stream,
-                                  sctpNewS1APDataReq->buffer,
-                                  sctpNewS1APDataReq->bufLen) < 0) {
+
+            case SCTP_DATA_REQ: {
+                if (sctp_send_msg(SCTP_DATA_REQ(received_message_p).assocId,
+                                  SCTP_DATA_REQ(received_message_p).stream,
+                                  SCTP_DATA_REQ(received_message_p).buffer,
+                                  SCTP_DATA_REQ(received_message_p).bufLen) < 0) {
                     SCTP_ERROR("Failed to send message over SCTP\n");
                 }
             } break;
+
             case MESSAGE_TEST: {
 //                 int i = 10000;
 //                 while(i--);
             } break;
+
             case TERMINATE_MESSAGE: {
                 itti_exit_task();
             } break;
+
             default: {
                 SCTP_DEBUG("Unkwnon message ID %d:%s\n",
                            ITTI_MSG_ID(received_message_p),

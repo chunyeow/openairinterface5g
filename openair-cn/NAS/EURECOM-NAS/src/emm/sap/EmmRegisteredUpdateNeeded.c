@@ -1,30 +1,30 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		EmmRegisteredUpdateNeeded.c
+Source      EmmRegisteredUpdateNeeded.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/03
+Date        2012/10/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Implements the EPS Mobility Management procedures executed
-		when the EMM-SAP is in EMM-REGISTERED.UPDATE-NEEDED state.
+Description Implements the EPS Mobility Management procedures executed
+        when the EMM-SAP is in EMM-REGISTERED.UPDATE-NEEDED state.
 
-		In EMM-REGISTERED.UPDATE-NEEDED state, the UE has to perform
-		a tracking area updating or combined tracking area updating
-		procedure, but access to the current cell is barred. The access
-		class may be blocked due to access class control, or the
-		network rejected the NAS signalling connection establishment.
-		No EMM procedure except tracking area updating or combined
-		tracking area updating or service request as a response to
-		paging shall be initiated by the UE in this substate.
+        In EMM-REGISTERED.UPDATE-NEEDED state, the UE has to perform
+        a tracking area updating or combined tracking area updating
+        procedure, but access to the current cell is barred. The access
+        class may be blocked due to access class control, or the
+        network rejected the NAS signalling connection establishment.
+        No EMM procedure except tracking area updating or combined
+        tracking area updating or service request as a response to
+        paging shall be initiated by the UE in this substate.
 
 *****************************************************************************/
 
@@ -50,20 +50,20 @@ Description	Implements the EPS Mobility Management procedures executed
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 EmmRegisteredUpdateNeeded()                               **
+ ** Name:    EmmRegisteredUpdateNeeded()                               **
  **                                                                        **
  ** Description: Handles the behaviour of the UE while the EMM-SAP is in   **
- **		 EMM-REGISTERED.UPDATE-NEEDED state.                       **
+ **      EMM-REGISTERED.UPDATE-NEEDED state.                       **
  **                                                                        **
- ** Inputs:	 evt:		The received EMM-SAP event                 **
- **		 Others:	emm_fsm_status                             **
+ ** Inputs:  evt:       The received EMM-SAP event                 **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	emm_fsm_status                             **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
  ***************************************************************************/
-int EmmRegisteredUpdateNeeded(const emm_reg_t* evt)
+int EmmRegisteredUpdateNeeded(const emm_reg_t *evt)
 {
     LOG_FUNC_IN;
 

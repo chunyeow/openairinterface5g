@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_main.h
+Source      esm_main.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/12/04
+Date        2012/12/04
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EPS Session Management procedure call manager,
-		the main entry point for elementary ESM processing.
+Description Defines the EPS Session Management procedure call manager,
+        the main entry point for elementary ESM processing.
 
 *****************************************************************************/
 
@@ -54,9 +54,10 @@ void esm_main_cleanup(void);
 int esm_main_get_nb_pdns_max(void);
 int esm_main_get_nb_pdns(void);
 int esm_main_has_emergency(void);
-int esm_main_get_pdn_status(int cid, int* state);
-int esm_main_get_pdn(int cid, int* type, const char** apn, int* is_emergency, int* is_active);
-int esm_main_get_pdn_addr(int cid, const char** ipv4addr, const char** ipv6addr);
+int esm_main_get_pdn_status(int cid, int *state);
+int esm_main_get_pdn(int cid, int *type, const char **apn, int *is_emergency,
+                     int *is_active);
+int esm_main_get_pdn_addr(int cid, const char **ipv4addr, const char **ipv6addr);
 
 #endif // NAS_UE
 

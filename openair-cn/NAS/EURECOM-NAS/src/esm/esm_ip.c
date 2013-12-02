@@ -3,7 +3,7 @@
 
 char ip_addr_str[100];
 
-inline char* esm_data_get_ipv4_addr(const OctetString* ip_addr)
+inline char *esm_data_get_ipv4_addr(const OctetString *ip_addr)
 {
     if (ip_addr->length > 0) {
         sprintf(ip_addr_str, "%u.%u.%u.%u",
@@ -14,7 +14,7 @@ inline char* esm_data_get_ipv4_addr(const OctetString* ip_addr)
     return (NULL);
 }
 
-inline char* esm_data_get_ipv6_addr(const OctetString* ip_addr)
+inline char *esm_data_get_ipv6_addr(const OctetString *ip_addr)
 {
     if (ip_addr->length > 0) {
         sprintf(ip_addr_str, "%x%.2x:%x%.2x:%x%.2x:%x%.2x",
@@ -27,7 +27,7 @@ inline char* esm_data_get_ipv6_addr(const OctetString* ip_addr)
     return (NULL);
 }
 
-inline char* esm_data_get_ipv4v6_addr(const OctetString* ip_addr)
+inline char *esm_data_get_ipv4v6_addr(const OctetString *ip_addr)
 {
     if (ip_addr->length > 0) {
         sprintf(ip_addr_str, "%u.%u.%u.%u / %x%.2x:%x%.2x:%x%.2x:%x%.2x",

@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_fsm.h
+Source      emm_fsm.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/03
+Date        2012/10/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EPS Mobility Management procedures executed at
-		the EMMREG Service Access Point.
+Description Defines the EPS Mobility Management procedures executed at
+        the EMMREG Service Access Point.
 
 *****************************************************************************/
 #ifndef __EMM_FSM_H__
@@ -90,6 +90,6 @@ int emm_fsm_set_status(unsigned int ueid, void *ctx, emm_fsm_state_t status);
 emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx);
 #endif
 
-int emm_fsm_process(const emm_reg_t* evt);
+int emm_fsm_process(const emm_reg_t *evt);
 
 #endif /* __EMM_FSM_H__*/

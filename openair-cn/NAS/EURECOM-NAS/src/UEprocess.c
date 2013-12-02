@@ -2,19 +2,19 @@
  Eurecom OpenAirInterface 3
  Copyright(c) 2012 Eurecom
 
- Source		UEprocess.c
+ Source     UEprocess.c
 
- Version		0.1
+ Version        0.1
 
- Date		2012/02/27
+ Date       2012/02/27
 
- Product		NAS stack
+ Product        NAS stack
 
- Subsystem	UE NAS main process
+ Subsystem  UE NAS main process
 
- Author		Frederic Maurel
+ Author     Frederic Maurel
 
- Description	Implements the Non-Access Stratum protocol for Evolved Packet
+ Description    Implements the Non-Access Stratum protocol for Evolved Packet
  system (EPS) running at the User Equipment side.
 
  *****************************************************************************/
@@ -29,10 +29,10 @@
 #include "nas_network.h"
 #include "nas_parser.h"
 
-#include <stdlib.h>	// exit
-#include <poll.h>	// poll
-#include <string.h>	// memset
-#include <signal.h>	// sigaction
+#include <stdlib.h> // exit
+#include <poll.h>   // poll
+#include <string.h> // memset
+#include <signal.h> // sigaction
 #include <pthread.h>
 
 /****************************************************************************/
@@ -43,10 +43,10 @@
 /*******************  L O C A L    D E F I N I T I O N S  *******************/
 /****************************************************************************/
 
-#define NAS_SLEEP_TIMEOUT 1000	/* 1 second */
+#define NAS_SLEEP_TIMEOUT 1000  /* 1 second */
 
-static void* _nas_user_mngr(void*);
-static void* _nas_network_mngr(void*);
+static void *_nas_user_mngr(void *);
+static void *_nas_network_mngr(void *);
 
 static int _nas_set_signal_handler(int signal, void (handler)(int));
 static void _nas_signal_handler(int signal);
@@ -58,13 +58,12 @@ static void _nas_clean(int usr_fd, int net_fd);
 /****************************************************************************/
 
 /****************************************************************************/
-int main(int argc, const char* argv[])
+int main(int argc, const char *argv[])
 {
     /*
      * Get the command line options
      */
-    if (nas_parser_get_options (argc, argv) != RETURNok)
-    {
+    if (nas_parser_get_options (argc, argv) != RETURNok) {
         nas_parser_print_usage (FIRMWARE_VERSION);
         exit (EXIT_FAILURE);
     }
@@ -74,22 +73,22 @@ int main(int argc, const char* argv[])
      */
     nas_log_init (nas_parser_get_trace_level ());
 
-    const char* uhost = nas_parser_get_user_host ();
-    const char* uport = nas_parser_get_user_port ();
-    const char* devpath = nas_parser_get_device_path ();
-    const char* devparams = nas_parser_get_device_params ();
-    const char* nhost = nas_parser_get_network_host ();
-    const char* nport = nas_parser_get_network_port ();
+    const char *uhost = nas_parser_get_user_host ();
+    const char *uport = nas_parser_get_user_port ();
+    const char *devpath = nas_parser_get_device_path ();
+    const char *devparams = nas_parser_get_device_params ();
+    const char *nhost = nas_parser_get_network_host ();
+    const char *nport = nas_parser_get_network_port ();
 
-    LOG_TRACE (INFO, "UE-MAIN   - %s -ueid %d -uhost %s -uport %s -nhost %s -nport %s -dev %s -params %s -trace 0x%x",
+    LOG_TRACE (INFO,
+               "UE-MAIN   - %s -ueid %d -uhost %s -uport %s -nhost %s -nport %s -dev %s -params %s -trace 0x%x",
                argv[0], nas_parser_get_ueid (), uhost, uport, nhost, nport, devpath, devparams,
                nas_parser_get_trace_level ());
 
     /*
      * Initialize the User interface
      */
-    if (user_api_initialize (uhost, uport, devpath, devparams) != RETURNok)
-    {
+    if (user_api_initialize (uhost, uport, devpath, devparams) != RETURNok) {
         LOG_TRACE (ERROR, "UE-MAIN   - user_api_initialize() failed");
         exit (EXIT_FAILURE);
     }
@@ -98,8 +97,7 @@ int main(int argc, const char* argv[])
     /*
      * Initialize the Network interface
      */
-    if (network_api_initialize (nhost, nport) != RETURNok)
-    {
+    if (network_api_initialize (nhost, nport) != RETURNok) {
         LOG_TRACE (ERROR, "UE-MAIN   - network_api_initialize() failed");
         user_api_close (user_fd);
         exit (EXIT_FAILURE);
@@ -109,7 +107,8 @@ int main(int argc, const char* argv[])
     /*
      * Initialize the NAS contexts
      */
-    nas_user_initialize (&user_api_emm_callback, &user_api_esm_callback, FIRMWARE_VERSION);
+    nas_user_initialize (&user_api_emm_callback, &user_api_esm_callback,
+                         FIRMWARE_VERSION);
     nas_network_initialize ();
 
     /*
@@ -132,8 +131,7 @@ int main(int argc, const char* argv[])
      * Start thread use to manage the user connection endpoint
      */
     pthread_t user_mngr;
-    if (pthread_create (&user_mngr, &attr, _nas_user_mngr, &user_fd) != 0)
-    {
+    if (pthread_create (&user_mngr, &attr, _nas_user_mngr, &user_fd) != 0) {
         LOG_TRACE (ERROR, "UE-MAIN   - "
                    "Failed to create the user management thread");
         user_api_close (user_fd);
@@ -145,8 +143,8 @@ int main(int argc, const char* argv[])
      * Start thread use to manage the network connection endpoint
      */
     pthread_t network_mngr;
-    if (pthread_create (&network_mngr, &attr, _nas_network_mngr, &network_fd) != 0)
-    {
+    if (pthread_create (&network_mngr, &attr, _nas_network_mngr,
+                        &network_fd) != 0) {
         LOG_TRACE (ERROR, "UE-MAIN   - "
                    "Failed to create the network management thread");
         user_api_close (user_fd);
@@ -159,8 +157,7 @@ int main(int argc, const char* argv[])
      * Suspend execution of the main process until all connection
      * endpoints are still active
      */
-    while ((user_fd != -1) && (network_fd != -1))
-    {
+    while ((user_fd != -1) && (network_fd != -1)) {
         poll (NULL, 0, NAS_SLEEP_TIMEOUT);
         user_fd = user_api_get_fd ();
         network_fd = network_api_get_fd ();
@@ -179,20 +176,20 @@ int main(int argc, const char* argv[])
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_user_mngr()                                          **
+ ** Name:    _nas_user_mngr()                                          **
  **                                                                        **
  ** Description: Manages the connection endpoint use to communicate with   **
- **		 the user application layer                                **
+ **      the user application layer                                **
  **                                                                        **
- ** Inputs:	 fd:		The descriptor of the user connection end- **
- **				point                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  fd:        The descriptor of the user connection end- **
+ **             point                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	None                                       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    None                                       **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-static void* _nas_user_mngr(void* args)
+static void *_nas_user_mngr(void *args)
 {
     LOG_FUNC_IN;
 
@@ -202,17 +199,15 @@ static void* _nas_user_mngr(void* args)
     int bytes;
     int i;
 
-    int *fd = (int*) args;
+    int *fd = (int *) args;
 
     LOG_TRACE (INFO, "UE-MAIN   - User connection manager started (%d)", *fd);
 
     /* User receiving loop */
-    while (!exit_loop)
-    {
+    while (!exit_loop) {
         /* Read the user data message */
         bytes = user_api_read_data (*fd);
-        if (bytes == RETURNerror)
-        {
+        if (bytes == RETURNerror) {
             /* Failed to read data from the user application layer;
              * exit from the receiving loop */
             LOG_TRACE (ERROR, "UE-MAIN   - "
@@ -220,20 +215,17 @@ static void* _nas_user_mngr(void* args)
             break;
         }
 
-        if (bytes == 0)
-        {
+        if (bytes == 0) {
             /* A signal was caught before any data were available */
             continue;
         }
 
         /* Decode the user data message */
         nb_command = user_api_decode_data (bytes);
-        for (i = 0; i < nb_command; i++)
-        {
+        for (i = 0; i < nb_command; i++) {
             /* Get the user data to be processed */
-            const void* data = user_api_get_data (i);
-            if (data == NULL)
-            {
+            const void *data = user_api_get_data (i);
+            if (data == NULL) {
                 /* Failed to get user data at the given index;
                  * go ahead and process the next user data */
                 LOG_TRACE (ERROR, "UE-MAIN   - "
@@ -244,8 +236,7 @@ static void* _nas_user_mngr(void* args)
 
             /* Process the user data message */
             ret_code = nas_user_process_data (data);
-            if (ret_code != RETURNok)
-            {
+            if (ret_code != RETURNok) {
                 /* The user data message has not been successfully
                  * processed; cause code will be encoded and sent back
                  * to the user */
@@ -256,8 +247,7 @@ static void* _nas_user_mngr(void* args)
 
             /* Encode the user data message */
             bytes = user_api_encode_data (nas_user_get_data (), i == nb_command - 1);
-            if (bytes == RETURNerror)
-            {
+            if (bytes == RETURNerror) {
                 /* Failed to encode the user data message;
                  * go ahead and process the next user data */
                 continue;
@@ -265,8 +255,7 @@ static void* _nas_user_mngr(void* args)
 
             /* Send the data message to the user */
             bytes = user_api_send_data (*fd, bytes);
-            if (bytes == RETURNerror)
-            {
+            if (bytes == RETURNerror) {
                 /* Failed to send data to the user application layer;
                  * exit from the receiving loop */
                 LOG_TRACE (ERROR, "UE-MAIN   - "
@@ -287,20 +276,20 @@ static void* _nas_user_mngr(void* args)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_network_mngr()                                       **
+ ** Name:    _nas_network_mngr()                                       **
  **                                                                        **
  ** Description: Manages the connection endpoint use to communicate with   **
- **		 the network sublayer                                      **
+ **      the network sublayer                                      **
  **                                                                        **
- ** Inputs:	 fd:		The descriptor of the network connection   **
- **				endpoint                                   **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  fd:        The descriptor of the network connection   **
+ **             endpoint                                   **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	None                                       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    None                                       **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-static void* _nas_network_mngr(void* args)
+static void *_nas_network_mngr(void *args)
 {
     LOG_FUNC_IN;
 
@@ -308,17 +297,15 @@ static void* _nas_network_mngr(void* args)
     int network_message_id;
     int bytes;
 
-    int *fd = (int*) args;
+    int *fd = (int *) args;
 
     LOG_TRACE (INFO, "UE-MAIN   - Network connection manager started (%d)", *fd);
 
     /* Network receiving loop */
-    while (TRUE)
-    {
+    while (TRUE) {
         /* Read the network data message */
         bytes = network_api_read_data (*fd);
-        if (bytes == RETURNerror)
-        {
+        if (bytes == RETURNerror) {
             /* Failed to read data from the network sublayer;
              * exit from the receiving loop */
             LOG_TRACE (ERROR, "UE-MAIN   - "
@@ -326,24 +313,22 @@ static void* _nas_network_mngr(void* args)
             break;
         }
 
-        if (bytes == 0)
-        {
+        if (bytes == 0) {
             /* A signal was caught before any data were available */
             continue;
         }
 
         /* Decode the network data message */
         network_message_id = network_api_decode_data (bytes);
-        if (network_message_id == RETURNerror)
-        {
+        if (network_message_id == RETURNerror) {
             /* Failed to decode data read from the network sublayer */
             continue;
         }
 
         /* Process the network data message */
-        ret_code = nas_network_process_data (network_message_id, network_api_get_data ());
-        if (ret_code != RETURNok)
-        {
+        ret_code = nas_network_process_data (network_message_id,
+                                             network_api_get_data ());
+        if (ret_code != RETURNok) {
             /* The network data message has not been successfully
              * processed */
             LOG_TRACE
@@ -363,16 +348,16 @@ static void* _nas_network_mngr(void* args)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_set_signal_handler()                                 **
+ ** Name:    _nas_set_signal_handler()                                 **
  **                                                                        **
  ** Description: Set up a signal handler                                   **
  **                                                                        **
- ** Inputs:	 signal:	Signal number                              **
- ** 	 	 handler:	Signal handler                             **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  signal:    Signal number                              **
+ **          handler:   Signal handler                             **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	RETURNerror, RETURNok                      **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    RETURNerror, RETURNok                      **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 static int _nas_set_signal_handler(int signal, void (handler)(int))
@@ -400,8 +385,7 @@ static int _nas_set_signal_handler(int signal, void (handler)(int))
 
     /* Initialize signal handler */
     act.sa_handler = handler;
-    if (sigaction (signal, &act, 0) < 0)
-    {
+    if (sigaction (signal, &act, 0) < 0) {
         return RETURNerror;
     }
 
@@ -412,15 +396,15 @@ static int _nas_set_signal_handler(int signal, void (handler)(int))
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_signal_handler()                                     **
+ ** Name:    _nas_signal_handler()                                     **
  **                                                                        **
  ** Description: Signal handler                                            **
  **                                                                        **
- ** Inputs:	 signal:	Signal number                              **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  signal:    Signal number                              **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	None                                       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    None                                       **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 static void _nas_signal_handler(int signal)
@@ -437,16 +421,16 @@ static void _nas_signal_handler(int signal)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_clean()                                              **
+ ** Name:    _nas_clean()                                              **
  **                                                                        **
  ** Description: Performs termination cleanup                              **
  **                                                                        **
- ** Inputs:	 usr_fd:	User's connection file descriptor          **
- **		 net_fd:	Network's connection file descriptor       **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  usr_fd:    User's connection file descriptor          **
+ **      net_fd:    Network's connection file descriptor       **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	None                                       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    None                                       **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 static void _nas_clean(int usr_fd, int net_fd)

@@ -1,23 +1,23 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_esmDef.h
+Source      emm_esmDef.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMMESM Service Access Point that provides
-		interlayer services to the EPS Session Management sublayer
-		for service registration and activate/deactivate PDN
-		connections.
+Description Defines the EMMESM Service Access Point that provides
+        interlayer services to the EPS Session Management sublayer
+        for service registration and activate/deactivate PDN
+        connections.
 
 *****************************************************************************/
 #ifndef __EMM_ESMDEF_H__
@@ -54,10 +54,10 @@ typedef enum {
  * ---------------------------------------------
  */
 typedef struct {
-    int is_emergency;	/* Indicates whether the PDN connection is established
-			 * for emergency bearer services only		*/
-    int is_attached;	/* Indicates whether the UE remains attached to the
-			 * network					*/
+    int is_emergency;   /* Indicates whether the PDN connection is established
+             * for emergency bearer services only       */
+    int is_attached;    /* Indicates whether the UE remains attached to the
+             * network                  */
 } emm_esm_establish_t;
 
 /*
@@ -65,7 +65,7 @@ typedef struct {
  * ----------------------------------
  */
 typedef struct {
-    OctetString msg;		/* ESM message to be transfered		*/
+    OctetString msg;        /* ESM message to be transfered     */
 } emm_esm_data_t;
 
 /*
@@ -77,8 +77,8 @@ typedef struct {
     emm_esm_primitive_t primitive;
     unsigned int ueid;
     union {
-	emm_esm_establish_t establish;
-	emm_esm_data_t data;
+        emm_esm_establish_t establish;
+        emm_esm_data_t data;
     } u;
     /* TODO: complete emm_esm_t structure definition */
 } emm_esm_t;

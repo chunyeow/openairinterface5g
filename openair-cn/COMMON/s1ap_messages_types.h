@@ -1,15 +1,6 @@
 #ifndef S1AP_MESSAGES_TYPES_H_
 #define S1AP_MESSAGES_TYPES_H_
 
-typedef struct {
-    uint8_t  *buffer;           ///< SCTP buffer
-    uint32_t  buf_length;       ///< SCTP buffer length
-    int32_t   assoc_id;         ///< SCTP physical association ID
-    uint8_t   stream;           ///< Stream number on which data had been received
-    uint16_t  instreams;        ///< Number of input streams for the SCTP connection between peers
-    uint16_t  outstreams;       ///< Number of output streams for the SCTP connection between peers
-} s1ap_sctp_new_msg_ind_t;
-
 typedef struct s1ap_initial_ue_message_s {
     unsigned eNB_ue_s1ap_id:24;
     uint32_t mme_ue_s1ap_id;

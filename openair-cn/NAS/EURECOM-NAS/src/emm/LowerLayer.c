@@ -413,7 +413,7 @@ int emm_proc_lowerlayer_release(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:    emm_as_set_security_data()                                **
+ ** Name:    emm_as_set_security_data()                                    **
  **                                                                        **
  ** Description: Setup security data according to the given EPS security   **
  **      context when data transfer to lower layers is requested   **

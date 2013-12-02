@@ -1,29 +1,29 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		EsmStatus.c
+Source      EsmStatus.c
 
-Version		0.1
+Version     0.1
 
-Date		2013/06/17
+Date        2013/06/17
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the ESM status procedure executed by the Non-Access
-		Stratum.
+Description Defines the ESM status procedure executed by the Non-Access
+        Stratum.
 
-		ESM status procedure can be related to an EPS bearer context
-		or to a procedure transaction.
+        ESM status procedure can be related to an EPS bearer context
+        or to a procedure transaction.
 
-		The purpose of the sending of the ESM STATUS message is to
-		report at any time certain error conditions detected upon
-		receipt of ESM protocol data. The ESM STATUS message can be
-		sent by both the MME and the UE.
+        The purpose of the sending of the ESM STATUS message is to
+        report at any time certain error conditions detected upon
+        receipt of ESM protocol data. The ESM STATUS message can be
+        sent by both the MME and the UE.
 
 *****************************************************************************/
 
@@ -49,81 +49,80 @@ Description	Defines the ESM status procedure executed by the Non-Access
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 esm_proc_status_ind()                                     **
+ ** Name:    esm_proc_status_ind()                                     **
  **                                                                        **
  ** Description: Processes received ESM status message.                    **
  **                                                                        **
- **		 3GPP TS 24.301, section 6.7                               **
- **		 Upon receiving ESM Status message the UE/MME shall take   **
- **		 different actions depending on the received ESM cause     **
- **		 value.                                                    **
+ **      3GPP TS 24.301, section 6.7                               **
+ **      Upon receiving ESM Status message the UE/MME shall take   **
+ **      different actions depending on the received ESM cause     **
+ **      value.                                                    **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 pti:		Procedure transaction identity             **
- **		 ebi:		EPS bearer identity                        **
- **		 esm_cause:	Received ESM cause code                    **
- **				failure                                    **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      pti:       Procedure transaction identity             **
+ **      ebi:       EPS bearer identity                        **
+ **      esm_cause: Received ESM cause code                    **
+ **             failure                                    **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 esm_cause:	Cause code returned upon ESM procedure     **
- **				failure                                    **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     esm_cause: Cause code returned upon ESM procedure     **
+ **             failure                                    **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int esm_proc_status_ind(
 #ifdef NAS_MME
-		    unsigned int ueid,
+    unsigned int ueid,
 #endif
-		    int pti, int ebi, int* esm_cause)
+    int pti, int ebi, int *esm_cause)
 {
     LOG_FUNC_IN;
 
     int rc;
 
     LOG_TRACE(INFO,"ESM-PROC  - ESM status procedure requested (cause=%d)",
-	      *esm_cause);
+              *esm_cause);
 
     LOG_TRACE(DEBUG, "ESM-PROC  - To be implemented");
 
-    switch (*esm_cause)
-    {
-	case ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY:
-	    /*
-	     * Abort any ongoing ESM procedure related to the received EPS
-	     * bearer identity, stop any related timer, and deactivate the
-	     * corresponding EPS bearer context locally
-	     */
-	    /* TODO */
-	    rc = RETURNok;
-	    break;
+    switch (*esm_cause) {
+        case ESM_CAUSE_INVALID_EPS_BEARER_IDENTITY:
+            /*
+             * Abort any ongoing ESM procedure related to the received EPS
+             * bearer identity, stop any related timer, and deactivate the
+             * corresponding EPS bearer context locally
+             */
+            /* TODO */
+            rc = RETURNok;
+            break;
 
-	case ESM_CAUSE_INVALID_PTI_VALUE:
-	    /*
-	     * Abort any ongoing ESM procedure related to the received PTI
-	     * value and stop any related timer
-	     */
-	    /* TODO */
-	    rc = RETURNok;
-	    break;
+        case ESM_CAUSE_INVALID_PTI_VALUE:
+            /*
+             * Abort any ongoing ESM procedure related to the received PTI
+             * value and stop any related timer
+             */
+            /* TODO */
+            rc = RETURNok;
+            break;
 
-	case ESM_CAUSE_MESSAGE_TYPE_NOT_IMPLEMENTED:
-	    /*
-	     * Abort any ongoing ESM procedure related to the PTI or
-	     * EPS bearer identity and stop any related timer
-	     */
-	    /* TODO */
-	    rc = RETURNok;
-	    break;
+        case ESM_CAUSE_MESSAGE_TYPE_NOT_IMPLEMENTED:
+            /*
+             * Abort any ongoing ESM procedure related to the PTI or
+             * EPS bearer identity and stop any related timer
+             */
+            /* TODO */
+            rc = RETURNok;
+            break;
 
-	default:
-	    /*
-	     * No state transition and no specific action shall be taken;
-	     * local actions are possible
-	     */
-	    /* TODO */
-	    rc = RETURNok;
-	    break;
+        default:
+            /*
+             * No state transition and no specific action shall be taken;
+             * local actions are possible
+             */
+            /* TODO */
+            rc = RETURNok;
+            break;
     }
 
     LOG_FUNC_RETURN (rc);
@@ -131,28 +130,28 @@ int esm_proc_status_ind(
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 esm_proc_status()                                         **
+ ** Name:    esm_proc_status()                                         **
  **                                                                        **
  ** Description: Initiates ESM status procedure.                           **
  **                                                                        **
- ** Inputs:	 is_standalone:	Not used - Always TRUE                     **
- **		 ueid:		UE lower layer identifier                  **
- **		 ebi:		Not used                                   **
- **		 msg:		Encoded ESM status message to be sent      **
- **		 ue_triggered:	Not used                                   **
- **		 Others:	None                                       **
+ ** Inputs:  is_standalone: Not used - Always TRUE                     **
+ **      ueid:      UE lower layer identifier                  **
+ **      ebi:       Not used                                   **
+ **      msg:       Encoded ESM status message to be sent      **
+ **      ue_triggered:  Not used                                   **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int esm_proc_status(int is_standalone,
 #ifdef NAS_MME
-		    unsigned int ueid,
+                    unsigned int ueid,
 #endif
-		    int ebi, OctetString* msg,
-		    int ue_triggered)
+                    int ebi, OctetString *msg,
+                    int ue_triggered)
 {
     LOG_FUNC_IN;
 

@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_ebr_context.h
+Source      esm_ebr_context.h
 
-Version		0.1
+Version     0.1
 
-Date		2013/05/28
+Date        2013/05/28
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines functions used to handle EPS bearer contexts.
+Description Defines functions used to handle EPS bearer contexts.
 
 *****************************************************************************/
 #ifndef __ESM_EBR_CONTEXT_H__
@@ -50,19 +50,22 @@ typedef enum {
 /****************************************************************************/
 
 #ifdef NAS_UE
-int esm_ebr_context_create(int pid, int ebi, int is_default, const network_qos_t* qos, const network_tft_t* tft);
+int esm_ebr_context_create(int pid, int ebi, int is_default,
+                           const network_qos_t *qos, const network_tft_t *tft);
 
-int esm_ebr_context_release(int ebi, int* pid, int* bid);
+int esm_ebr_context_release(int ebi, int *pid, int *bid);
 
 int esm_ebr_context_get_pid(int ebi);
 
-int esm_ebr_context_check_tft(int pid, int ebi, const network_tft_t* tft, esm_ebr_context_tft_t operation);
+int esm_ebr_context_check_tft(int pid, int ebi, const network_tft_t *tft,
+                              esm_ebr_context_tft_t operation);
 #endif
 
 #ifdef NAS_MME
-int esm_ebr_context_create(unsigned int ueid, int pid, int ebi, int is_default, const network_qos_t* qos, const network_tft_t* tft);
+int esm_ebr_context_create(unsigned int ueid, int pid, int ebi, int is_default,
+                           const network_qos_t *qos, const network_tft_t *tft);
 
-int esm_ebr_context_release(unsigned int ueid, int ebi, int* pid, int* bid);
+int esm_ebr_context_release(unsigned int ueid, int ebi, int *pid, int *bid);
 #endif
 
 #endif /* __ESM_EBR_CONTEXT_H__ */

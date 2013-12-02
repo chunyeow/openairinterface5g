@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_sap.h
+Source      esm_sap.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/11/22
+Date        2012/11/22
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the ESM Service Access Points at which the EPS
-		Session Management sublayer provides procedures for the
-		EPS bearer context handling and resources allocation.
+Description Defines the ESM Service Access Points at which the EPS
+        Session Management sublayer provides procedures for the
+        EPS bearer context handling and resources allocation.
 
 *****************************************************************************/
 #ifndef __ESM_SAP_H__
@@ -42,6 +42,6 @@ Description	Defines the ESM Service Access Points at which the EPS
 
 void esm_sap_initialize(void);
 
-int esm_sap_send(esm_sap_t* msg);
+int esm_sap_send(esm_sap_t *msg);
 
 #endif /* __ESM_SAP_H__*/

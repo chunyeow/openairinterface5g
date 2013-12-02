@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		userDef.h
+Source      userDef.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/09/21
+Date        2012/09/21
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	include
+Subsystem   include
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Contains user's global definitions
+Description Contains user's global definitions
 
 *****************************************************************************/
 #ifndef __USERDEF_H__
@@ -30,13 +30,13 @@ Description	Contains user's global definitions
  * The name of the file used as non-volatile memory device to store
  * UE data parameters
  */
-#define USER_NVRAM_FILENAME	".ue.nvram"
+#define USER_NVRAM_FILENAME ".ue.nvram"
 
 /*
  * The name of the environment variable which defines the directory
  * where the UE data file is located
  */
-#define USER_NVRAM_DIRNAME	"NVRAM_DIR"
+#define USER_NVRAM_DIRNAME  "NVRAM_DIR"
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -48,17 +48,17 @@ Description	Contains user's global definitions
  * ------------------------------
  */
 typedef struct {
-    /* International Mobile Equipment Identity	*/
-#define USER_IMEI_SIZE			15
+    /* International Mobile Equipment Identity  */
+#define USER_IMEI_SIZE          15
     char IMEI[USER_IMEI_SIZE+1];
-    /* Manufacturer identifier			*/
-#define USER_MANUFACTURER_SIZE		16
+    /* Manufacturer identifier          */
+#define USER_MANUFACTURER_SIZE      16
     char manufacturer[USER_MANUFACTURER_SIZE+1];
-    /* Model identifier				*/
-#define USER_MODEL_SIZE			16
+    /* Model identifier             */
+#define USER_MODEL_SIZE         16
     char model[USER_MODEL_SIZE+1];
-    /* SIM Personal Identification Number	*/
-#define USER_PIN_SIZE			4
+    /* SIM Personal Identification Number   */
+#define USER_PIN_SIZE           4
     char PIN[USER_PIN_SIZE+1];
 } user_nvdata_t;
 

@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_sapDef.h
+Source      esm_sapDef.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/11/21
+Date        2012/11/21
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the ESM Service Access Point that provides EPS
-		bearer context handling and resources allocation procedures.
+Description Defines the ESM Service Access Point that provides EPS
+        bearer context handling and resources allocation procedures.
 
 *****************************************************************************/
 #ifndef __ESM_SAPDEF_H__
@@ -67,12 +67,12 @@ typedef enum {
  * Error code returned upon processing ESM-SAP primitive
  */
 typedef enum {
-    ESM_SAP_SUCCESS = 1, /* ESM-SAP primitive succeed			*/
-    ESM_SAP_DISCARDED,	 /* ESM-SAP primitive failed, the caller should
-			  * ignore the error 				*/
-    ESM_SAP_FAILED	 /* ESM-SAP primitive failed, the caller should
-			  * take specific action and state transition may
-			  * occurs					*/
+    ESM_SAP_SUCCESS = 1, /* ESM-SAP primitive succeed           */
+    ESM_SAP_DISCARDED,   /* ESM-SAP primitive failed, the caller should
+              * ignore the error                */
+    ESM_SAP_FAILED   /* ESM-SAP primitive failed, the caller should
+              * take specific action and state transition may
+              * occurs                  */
 } esm_sap_error_t;
 
 /*
@@ -87,14 +87,14 @@ typedef struct {
  * --------------------------------------------
  */
 typedef struct {
-    int cid;		/* PDN connection local identifier		*/
-    int is_defined;	/* Indicates whether a PDN context has been defined
-			 * for the specified APN			*/
-    int pdn_type;	/* PDN address type (IPv4, IPv6, IPv4v6)	*/
-    const char* apn;	/* PDN's Access Point Name			*/
-    int is_emergency;	/* Indicates whether the PDN context has been
-			 * defined to establish connection for emergency
-			 * bearer services				*/
+    int cid;        /* PDN connection local identifier      */
+    int is_defined; /* Indicates whether a PDN context has been defined
+             * for the specified APN            */
+    int pdn_type;   /* PDN address type (IPv4, IPv6, IPv4v6)    */
+    const char *apn;    /* PDN's Access Point Name          */
+    int is_emergency;   /* Indicates whether the PDN context has been
+             * defined to establish connection for emergency
+             * bearer services              */
 } esm_pdn_connectivity_t;
 
 /*
@@ -102,7 +102,7 @@ typedef struct {
  * ------------------------------------------
  */
 typedef struct {
-    int cid;		/* PDN connection local identifier		*/
+    int cid;        /* PDN connection local identifier      */
 } esm_pdn_disconnect_t;
 
 /*
@@ -110,9 +110,9 @@ typedef struct {
  * ---------------------------------------------------------
  */
 typedef struct {
-#define ESM_SAP_ALL_EBI		0xff
-    unsigned int ebi;	/* EPS bearer identity of the EPS bearer context
-			 * to be deactivated				*/
+#define ESM_SAP_ALL_EBI     0xff
+    unsigned int ebi;   /* EPS bearer identity of the EPS bearer context
+             * to be deactivated                */
 } esm_eps_bearer_context_deactivate_t;
 
 /*
@@ -127,16 +127,16 @@ typedef union {
 } esm_sap_data_t;
 
 typedef struct {
-    esm_primitive_t primitive;	/* ESM-SAP primitive to process		*/
-    int is_standalone;		/* Indicates whether the ESM message handled
-				 * within this primitive has to be sent/received
-				 * standalone or together within an EMM related
-				 * message 				*/
-    unsigned int ueid;		/* Local UE identifier			*/
-    esm_sap_error_t err;	/* ESM-SAP error code			*/
-    const OctetString* recv;	/* Encoded ESM message received		*/
-    OctetString send;		/* Encoded ESM message to be sent	*/
-    esm_sap_data_t data;	/* ESM message data parameters		*/
+    esm_primitive_t primitive;  /* ESM-SAP primitive to process     */
+    int is_standalone;      /* Indicates whether the ESM message handled
+                 * within this primitive has to be sent/received
+                 * standalone or together within an EMM related
+                 * message              */
+    unsigned int ueid;      /* Local UE identifier          */
+    esm_sap_error_t err;    /* ESM-SAP error code           */
+    const OctetString *recv;    /* Encoded ESM message received     */
+    OctetString send;       /* Encoded ESM message to be sent   */
+    esm_sap_data_t data;    /* ESM message data parameters      */
 } esm_sap_t;
 
 /****************************************************************************/

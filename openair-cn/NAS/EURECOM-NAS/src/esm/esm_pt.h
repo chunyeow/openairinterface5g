@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_pt.h
+Source      esm_pt.h
 
-Version		0.1
+Version     0.1
 
-Date		2013/01/03
+Date        2013/01/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines functions used to handle ESM procedure transactions.
+Description Defines functions used to handle ESM procedure transactions.
 
 *****************************************************************************/
 #ifndef __ESM_PT_H__
@@ -32,7 +32,7 @@ Description	Defines functions used to handle ESM procedure transactions.
 /****************************************************************************/
 
 /* Unassigned procedure transaction identity value */
-#define ESM_PT_UNASSIGNED	(PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
+#define ESM_PT_UNASSIGNED   (PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED)
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -41,17 +41,17 @@ Description	Defines functions used to handle ESM procedure transactions.
 #ifdef NAS_UE
 /* Procedure transaction states */
 typedef enum {
-    ESM_PT_INACTIVE,	/* No procedure transaction exists		*/
-    ESM_PT_PENDING,	/* The UE has initiated a procedure transaction
-			 * towards the network				*/
+    ESM_PT_INACTIVE,    /* No procedure transaction exists      */
+    ESM_PT_PENDING, /* The UE has initiated a procedure transaction
+             * towards the network              */
     ESM_PT_STATE_MAX
 } esm_pt_state;
 
 /* ESM message timer retransmission data */
 typedef struct {
-    unsigned char pti;		/* Procedure transaction identity	*/
-    unsigned int count;		/* Retransmission counter		*/
-    OctetString msg;		/* Encoded ESM message to re-transmit	*/
+    unsigned char pti;      /* Procedure transaction identity   */
+    unsigned int count;     /* Retransmission counter       */
+    OctetString msg;        /* Encoded ESM message to re-transmit   */
 } esm_pt_timer_data_t;
 #endif // NAS_UE
 
@@ -71,7 +71,8 @@ void esm_pt_initialize(void);
 int esm_pt_assign(void);
 int esm_pt_release(int pti);
 
-int esm_pt_start_timer(int pti, const OctetString* msg, long sec, nas_timer_callback_t cb);
+int esm_pt_start_timer(int pti, const OctetString *msg, long sec,
+                       nas_timer_callback_t cb);
 int esm_pt_stop_timer(int pti);
 
 int esm_pt_set_status(int pti, esm_pt_state status);

@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_recv.h
+Source      emm_recv.h
 
-Version		0.1
+Version     0.1
 
-Date		2013/01/30
+Date        2013/01/30
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines functions executed at the EMMAS Service Access
-		Point upon receiving EPS Mobility Management messages
-		from the Access Stratum sublayer.
+Description Defines functions executed at the EMMAS Service Access
+        Point upon receiving EPS Mobility Management messages
+        from the Access Stratum sublayer.
 
 *****************************************************************************/
 #ifndef __EMM_RECV_H__
@@ -80,7 +80,7 @@ Description	Defines functions executed at the EMMAS Service Access
  * Functions executed by both the UE and the MME upon receiving EMM messages
  * --------------------------------------------------------------------------
  */
-int emm_recv_status(unsigned int ueid, emm_status_msg* msg, int* emm_cause);
+int emm_recv_status(unsigned int ueid, emm_status_msg *msg, int *emm_cause);
 
 /*
  * --------------------------------------------------------------------------
@@ -88,15 +88,18 @@ int emm_recv_status(unsigned int ueid, emm_status_msg* msg, int* emm_cause);
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
-int emm_recv_attach_accept(attach_accept_msg* msg, int* emm_cause);
-int emm_recv_attach_reject(attach_reject_msg* msg, int* emm_cause);
+int emm_recv_attach_accept(attach_accept_msg *msg, int *emm_cause);
+int emm_recv_attach_reject(attach_reject_msg *msg, int *emm_cause);
 
-int emm_recv_detach_accept(detach_accept_msg* msg, int* emm_cause);
+int emm_recv_detach_accept(detach_accept_msg *msg, int *emm_cause);
 
-int emm_recv_identity_request(identity_request_msg* msg, int* emm_cause);
-int emm_recv_authentication_request(authentication_request_msg* msg, int* emm_cause);
-int emm_recv_authentication_reject(authentication_reject_msg* msg, int* emm_cause);
-int emm_recv_security_mode_command(security_mode_command_msg* msg, int* emm_cause);
+int emm_recv_identity_request(identity_request_msg *msg, int *emm_cause);
+int emm_recv_authentication_request(authentication_request_msg *msg,
+                                    int *emm_cause);
+int emm_recv_authentication_reject(authentication_reject_msg *msg,
+                                   int *emm_cause);
+int emm_recv_security_mode_command(security_mode_command_msg *msg,
+                                   int *emm_cause);
 #endif
 
 /*
@@ -105,16 +108,24 @@ int emm_recv_security_mode_command(security_mode_command_msg* msg, int* emm_caus
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_MME
-int emm_recv_attach_request(unsigned int ueid, const attach_request_msg* msg, int* emm_cause);
-int emm_recv_attach_complete(unsigned int ueid, const attach_complete_msg* msg, int* emm_cause);
+int emm_recv_attach_request(unsigned int ueid, const attach_request_msg *msg,
+                            int *emm_cause);
+int emm_recv_attach_complete(unsigned int ueid, const attach_complete_msg *msg,
+                             int *emm_cause);
 
-int emm_recv_detach_request(unsigned int ueid, const detach_request_msg* msg, int* emm_cause);
+int emm_recv_detach_request(unsigned int ueid, const detach_request_msg *msg,
+                            int *emm_cause);
 
-int emm_recv_identity_response(unsigned int ueid, identity_response_msg* msg, int* emm_cause);
-int emm_recv_authentication_response(unsigned int ueid, authentication_response_msg* msg, int* emm_cause);
-int emm_recv_authentication_failure(unsigned int ueid, authentication_failure_msg* msg, int* emm_cause);
-int emm_recv_security_mode_complete(unsigned int ueid, security_mode_complete_msg* msg, int* emm_cause);
-int emm_recv_security_mode_reject(unsigned int ueid, security_mode_reject_msg* msg, int* emm_cause);
+int emm_recv_identity_response(unsigned int ueid, identity_response_msg *msg,
+                               int *emm_cause);
+int emm_recv_authentication_response(unsigned int ueid,
+                                     authentication_response_msg *msg, int *emm_cause);
+int emm_recv_authentication_failure(unsigned int ueid,
+                                    authentication_failure_msg *msg, int *emm_cause);
+int emm_recv_security_mode_complete(unsigned int ueid,
+                                    security_mode_complete_msg *msg, int *emm_cause);
+int emm_recv_security_mode_reject(unsigned int ueid,
+                                  security_mode_reject_msg *msg, int *emm_cause);
 #endif
 
 #endif /* __EMM_RECV_H__*/

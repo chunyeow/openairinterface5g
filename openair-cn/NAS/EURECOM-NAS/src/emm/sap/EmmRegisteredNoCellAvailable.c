@@ -1,25 +1,25 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		EmmRegisteredNoCellAvailable.c
+Source      EmmRegisteredNoCellAvailable.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/03
+Date        2012/10/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Implements the EPS Mobility Management procedures executed
-		when the EMM-SAP is in EMM-REGISTERED.NO-CELL-AVAILABLE state.
+Description Implements the EPS Mobility Management procedures executed
+        when the EMM-SAP is in EMM-REGISTERED.NO-CELL-AVAILABLE state.
 
-		In EMM-REGISTERED.NO-CELL-AVAILABLE state, E-UTRAN coverage
-		has been lost. The UE shall not initiate any EMM procedures
-		except for cell and PLMN reselection.
+        In EMM-REGISTERED.NO-CELL-AVAILABLE state, E-UTRAN coverage
+        has been lost. The UE shall not initiate any EMM procedures
+        except for cell and PLMN reselection.
 
 *****************************************************************************/
 
@@ -45,20 +45,20 @@ Description	Implements the EPS Mobility Management procedures executed
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 EmmRegisteredNoCellAvailable()                            **
+ ** Name:    EmmRegisteredNoCellAvailable()                            **
  **                                                                        **
  ** Description: Handles the behaviour of the UE while the EMM-SAP is in   **
- **		 EMM-REGISTERED.NO-CELL-AVAILABLE state.                   **
+ **      EMM-REGISTERED.NO-CELL-AVAILABLE state.                   **
  **                                                                        **
- ** Inputs:	 evt:		The received EMM-SAP event                 **
- **		 Others:	emm_fsm_status                             **
+ ** Inputs:  evt:       The received EMM-SAP event                 **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	emm_fsm_status                             **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
  ***************************************************************************/
-int EmmRegisteredNoCellAvailable(const emm_reg_t* evt)
+int EmmRegisteredNoCellAvailable(const emm_reg_t *evt)
 {
     LOG_FUNC_IN;
 

@@ -31,5 +31,6 @@ else
 include Makefile.inc
 libnas_la_SOURCES = \
 	nas_main.c	\
+	nas_itti_messaging.c	nas_itti_messaging.h	\
 	$(libnas_SRCS)
 endif

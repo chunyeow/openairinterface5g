@@ -103,50 +103,58 @@ void *s1ap_mme_thread(void *args)
 
         switch (ITTI_MSG_ID(received_message_p))
         {
-            case S1AP_SCTP_NEW_MESSAGE_IND: {
+            case SCTP_DATA_IND: {
                 /* New message received from SCTP layer.
                  * Decode and handle it.
                  */
                 s1ap_message message;
-                s1ap_sctp_new_msg_ind_t *s1ap_sctp_new_msg_ind_p;
-                s1ap_sctp_new_msg_ind_p = &received_message_p->ittiMsg.s1ap_sctp_new_msg_ind;
 
                 memset((void *)&message, 0, sizeof(s1ap_message));
+
                 /* Invoke S1AP message decoder */
-                if (s1ap_mme_decode_pdu(&message, s1ap_sctp_new_msg_ind_p->buffer, s1ap_sctp_new_msg_ind_p->buf_length) < 0) {
+                if (s1ap_mme_decode_pdu(&message,
+                                        SCTP_DATA_IND(received_message_p).buffer,
+                                        SCTP_DATA_IND(received_message_p).buf_length) < 0)
+                {
                     // TODO: Notify eNB of failure with right cause
                     S1AP_ERROR("Failed to decode new buffer\n");
                 } else {
-                    s1ap_mme_handle_message(s1ap_sctp_new_msg_ind_p->assoc_id, s1ap_sctp_new_msg_ind_p->stream, &message);
+                    s1ap_mme_handle_message(SCTP_DATA_IND(received_message_p).assoc_id,
+                                            SCTP_DATA_IND(received_message_p).stream,
+                                            &message);
                 }
-                // Free received PDU array
-                free(s1ap_sctp_new_msg_ind_p->buffer);
+                /* Free received PDU array */
+                free(SCTP_DATA_IND(received_message_p).buffer);
             } break;
+
             /* SCTP layer notifies S1AP of disconnection of a peer. */
             case SCTP_CLOSE_ASSOCIATION: {
-                sctp_close_association_t *sctp_close_association_p;
-                sctp_close_association_p = &received_message_p->ittiMsg.sctp_close_association;
-
-                s1ap_handle_sctp_deconnection(sctp_close_association_p->assoc_id);
+                s1ap_handle_sctp_deconnection(SCTP_CLOSE_ASSOCIATION(received_message_p).assoc_id);
             } break;
+
             case SCTP_NEW_ASSOCIATION: {
                 s1ap_handle_new_association(&received_message_p->ittiMsg.sctp_new_peer);
             } break;
-            case NAS_DOWNLINK_DATA_IND: {
+
+            case NAS_DOWNLINK_DATA_REQ: {
                 /* New message received from NAS task.
                  * This corresponds to a S1AP downlink nas transport message.
                  */
-                s1ap_generate_downlink_nas_transport(&received_message_p->ittiMsg.nas_dl_data_ind);
+                s1ap_generate_downlink_nas_transport(&NAS_DL_DATA_REQ(received_message_p));
             } break;
+
             case NAS_ATTACH_ACCEPT: {
                 s1ap_handle_attach_accepted(&received_message_p->ittiMsg.nas_attach_accept);
             } break;
+
             case TIMER_HAS_EXPIRED: {
                 s1ap_handle_timer_expiry(&received_message_p->ittiMsg.timer_has_expired);
             } break;
+
             case TERMINATE_MESSAGE: {
                 itti_exit_task();
             } break;
+
             default: {
                 S1AP_DEBUG("Unkwnon message ID %d:%s\n",
                            ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));

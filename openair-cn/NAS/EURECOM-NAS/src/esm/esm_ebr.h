@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_ebr.h
+Source      esm_ebr.h
 
-Version		0.1
+Version     0.1
 
-Date		2013/01/29
+Date        2013/01/29
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines functions used to handle state of EPS bearer contexts
-		and manage ESM messages re-transmission.
+Description Defines functions used to handle state of EPS bearer contexts
+        and manage ESM messages re-transmission.
 
 *****************************************************************************/
 #ifndef __ESM_EBR_H__
@@ -35,7 +35,7 @@ Description	Defines functions used to handle state of EPS bearer contexts
 /****************************************************************************/
 
 /* Unassigned EPS bearer identity value */
-#define ESM_EBI_UNASSIGNED	(EPS_BEARER_IDENTITY_UNASSIGNED)
+#define ESM_EBI_UNASSIGNED  (EPS_BEARER_IDENTITY_UNASSIGNED)
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -43,16 +43,16 @@ Description	Defines functions used to handle state of EPS bearer contexts
 
 /* EPS bearer context states */
 typedef enum {
-    ESM_EBR_INACTIVE,		/* No EPS bearer context exists		*/
-    ESM_EBR_ACTIVE,		/* The EPS bearer context is active,
-				 * in the UE, in the network		*/
+    ESM_EBR_INACTIVE,       /* No EPS bearer context exists     */
+    ESM_EBR_ACTIVE,     /* The EPS bearer context is active,
+                 * in the UE, in the network        */
 #ifdef NAS_MME
-    ESM_EBR_INACTIVE_PENDING,	/* The network has initiated an EPS bearer
-				 * context deactivation towards the UE	*/
-    ESM_EBR_MODIFY_PENDING,	/* The network has initiated an EPS bearer
-				 * context modification towards the UE	*/
-    ESM_EBR_ACTIVE_PENDING,	/* The network has initiated an EPS bearer
-				 * context activation towards the UE	*/
+    ESM_EBR_INACTIVE_PENDING,   /* The network has initiated an EPS bearer
+                 * context deactivation towards the UE  */
+    ESM_EBR_MODIFY_PENDING, /* The network has initiated an EPS bearer
+                 * context modification towards the UE  */
+    ESM_EBR_ACTIVE_PENDING, /* The network has initiated an EPS bearer
+                 * context activation towards the UE    */
 #endif
     ESM_EBR_STATE_MAX
 } esm_ebr_state;
@@ -60,10 +60,10 @@ typedef enum {
 #ifdef NAS_MME
 /* ESM message timer retransmission data */
 typedef struct {
-    unsigned int ueid;		/* Lower layers UE identifier		*/
-    unsigned int ebi;		/* EPS bearer identity			*/
-    unsigned int count;		/* Retransmission counter		*/
-    OctetString msg;		/* Encoded ESM message to re-transmit	*/
+    unsigned int ueid;      /* Lower layers UE identifier       */
+    unsigned int ebi;       /* EPS bearer identity          */
+    unsigned int count;     /* Retransmission counter       */
+    OctetString msg;        /* Encoded ESM message to re-transmit   */
 } esm_ebr_timer_data_t;
 #endif
 
@@ -93,12 +93,14 @@ void esm_ebr_initialize(void);
 int esm_ebr_assign(unsigned int ueid, int ebi);
 int esm_ebr_release(unsigned int ueid, int ebi);
 
-int esm_ebr_start_timer(unsigned int ueid, int ebi, const OctetString* msg, long sec, nas_timer_callback_t cb);
+int esm_ebr_start_timer(unsigned int ueid, int ebi, const OctetString *msg,
+                        long sec, nas_timer_callback_t cb);
 int esm_ebr_stop_timer(unsigned int ueid, int ebi);
 
 int esm_ebr_get_pending_ebi(unsigned int ueid, esm_ebr_state status);
 
-int esm_ebr_set_status(unsigned int ueid, int ebi, esm_ebr_state status, int ue_requested);
+int esm_ebr_set_status(unsigned int ueid, int ebi, esm_ebr_state status,
+                       int ue_requested);
 esm_ebr_state esm_ebr_get_status(unsigned int ueid, int ebi);
 
 int esm_ebr_is_not_in_use(unsigned int ueid, int ebi);

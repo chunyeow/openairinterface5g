@@ -1,18 +1,18 @@
 /*****************************************************************************
 
-Source		nas_user.h
+Source      nas_user.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/03/09
+Date        2012/03/09
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	NAS main process
+Subsystem   NAS main process
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	NAS procedure functions triggered by the user
+Description NAS procedure functions triggered by the user
 
 *****************************************************************************/
 #ifndef __NAS_USER_H__
@@ -37,10 +37,11 @@ Description	NAS procedure functions triggered by the user
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-void nas_user_initialize(emm_indication_callback_t emm_cb, esm_indication_callback_t esm_cb, const char* version);
+void nas_user_initialize(emm_indication_callback_t emm_cb,
+                         esm_indication_callback_t esm_cb, const char *version);
 
-int nas_user_process_data(const void* data);
+int nas_user_process_data(const void *data);
 
-const void* nas_user_get_data(void);
+const void *nas_user_get_data(void);
 
 #endif /* __NAS_USER_H__*/

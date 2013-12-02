@@ -28,19 +28,10 @@
 
 *******************************************************************************/
 
-#include <stdint.h>
+#ifndef NAS_ITTI_MESSAGING_H_
+#define NAS_ITTI_MESSAGING_H_
 
-#include "intertask_interface.h"
+int nas_itti_dl_data_req(const uint32_t ue_id, void * const data,
+                         const uint32_t length);
 
-#ifndef S1AP_MME_ITTI_MESSAGING_H_
-#define S1AP_MME_ITTI_MESSAGING_H_
-
-int s1ap_mme_itti_send_sctp_request(uint8_t *buffer, uint32_t length,
-                                    uint32_t assoc_id, uint16_t stream);
-
-int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t * const buffer,
-                                 const uint32_t length);
-
-int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id);
-
-#endif /* S1AP_MME_ITTI_MESSAGING_H_ */
+#endif /* NAS_ITTI_MESSAGING_H_ */

@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_fsm.c
+Source      emm_fsm.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/03
+Date        2012/10/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EPS Mobility Management procedures executed at
-		the EMMREG Service Access Point.
+Description Defines the EPS Mobility Management procedures executed at
+        the EMMREG Service Access Point.
 
 *****************************************************************************/
 
@@ -35,10 +35,10 @@ Description	Defines the EPS Mobility Management procedures executed at
 /****************************************************************************/
 
 #ifdef NAS_UE
-#define EMM_FSM_NB_UE_MAX	1
+#define EMM_FSM_NB_UE_MAX   1
 #endif
 #ifdef NAS_MME
-#define EMM_FSM_NB_UE_MAX	(MME_API_NB_UE_MAX + 1)
+#define EMM_FSM_NB_UE_MAX   (MME_API_NB_UE_MAX + 1)
 #endif
 
 /****************************************************************************/
@@ -47,12 +47,12 @@ Description	Defines the EPS Mobility Management procedures executed at
 
 /*
  * -----------------------------------------------------------------------------
- *			Data used for trace logging
+ *          Data used for trace logging
  * -----------------------------------------------------------------------------
  */
 
 /* String representation of EMM events */
-static const char* _emm_fsm_event_str[] = {
+static const char *_emm_fsm_event_str[] = {
 #ifdef NAS_UE
     "S1_ENABLED",
     "S1_DISABLED",
@@ -91,8 +91,7 @@ static const char* _emm_fsm_event_str[] = {
 };
 
 /* String representation of EMM status */
-static const char* _emm_fsm_status_str[EMM_STATE_MAX] =
-{
+static const char *_emm_fsm_status_str[EMM_STATE_MAX] = {
 #ifdef NAS_UE
     "NULL",
 #endif
@@ -126,46 +125,45 @@ static const char* _emm_fsm_status_str[EMM_STATE_MAX] =
 
 /*
  * -----------------------------------------------------------------------------
- *		EPS Mobility Management state machine handlers
+ *      EPS Mobility Management state machine handlers
  * -----------------------------------------------------------------------------
  */
 
 /* Type of the EPS Mobility Management state machine handler */
-typedef int(*emm_fsm_handler_t)(const emm_reg_t*);
+typedef int(*emm_fsm_handler_t)(const emm_reg_t *);
 
 #ifdef NAS_UE
-int EmmNull(const emm_reg_t*);
+int EmmNull(const emm_reg_t *);
 #endif
-int EmmDeregistered(const emm_reg_t*);
-int EmmRegistered(const emm_reg_t*);
-int EmmDeregisteredInitiated(const emm_reg_t*);
+int EmmDeregistered(const emm_reg_t *);
+int EmmRegistered(const emm_reg_t *);
+int EmmDeregisteredInitiated(const emm_reg_t *);
 #ifdef NAS_UE
-int EmmDeregisteredNormalService(const emm_reg_t*);
-int EmmDeregisteredLimitedService(const emm_reg_t*);
-int EmmDeregisteredAttemptingToAttach(const emm_reg_t*);
-int EmmDeregisteredPlmnSearch(const emm_reg_t*);
-int EmmDeregisteredNoImsi(const emm_reg_t*);
-int EmmDeregisteredAttachNeeded(const emm_reg_t*);
-int EmmDeregisteredNoCellAvailable(const emm_reg_t*);
-int EmmRegisteredInitiated(const emm_reg_t*);
-int EmmRegisteredNormalService(const emm_reg_t*);
-int EmmRegisteredAttemptingToUpdate(const emm_reg_t*);
-int EmmRegisteredLimitedService(const emm_reg_t*);
-int EmmRegisteredPlmnSearch(const emm_reg_t*);
-int EmmRegisteredUpdateNeeded(const emm_reg_t*);
-int EmmRegisteredNoCellAvailable(const emm_reg_t*);
-int EmmRegisteredAttemptingToUpdate(const emm_reg_t*);
-int EmmRegisteredImsiDetachInitiated(const emm_reg_t*);
-int EmmTrackingAreaUpdatingInitiated(const emm_reg_t*);
-int EmmServiceRequestInitiated(const emm_reg_t*);
+int EmmDeregisteredNormalService(const emm_reg_t *);
+int EmmDeregisteredLimitedService(const emm_reg_t *);
+int EmmDeregisteredAttemptingToAttach(const emm_reg_t *);
+int EmmDeregisteredPlmnSearch(const emm_reg_t *);
+int EmmDeregisteredNoImsi(const emm_reg_t *);
+int EmmDeregisteredAttachNeeded(const emm_reg_t *);
+int EmmDeregisteredNoCellAvailable(const emm_reg_t *);
+int EmmRegisteredInitiated(const emm_reg_t *);
+int EmmRegisteredNormalService(const emm_reg_t *);
+int EmmRegisteredAttemptingToUpdate(const emm_reg_t *);
+int EmmRegisteredLimitedService(const emm_reg_t *);
+int EmmRegisteredPlmnSearch(const emm_reg_t *);
+int EmmRegisteredUpdateNeeded(const emm_reg_t *);
+int EmmRegisteredNoCellAvailable(const emm_reg_t *);
+int EmmRegisteredAttemptingToUpdate(const emm_reg_t *);
+int EmmRegisteredImsiDetachInitiated(const emm_reg_t *);
+int EmmTrackingAreaUpdatingInitiated(const emm_reg_t *);
+int EmmServiceRequestInitiated(const emm_reg_t *);
 #endif
 #ifdef NAS_MME
-int EmmCommonProcedureInitiated(const emm_reg_t*);
+int EmmCommonProcedureInitiated(const emm_reg_t *);
 #endif
 
 /* EMM state machine handlers */
-static const emm_fsm_handler_t _emm_fsm_handlers[EMM_STATE_MAX] =
-{
+static const emm_fsm_handler_t _emm_fsm_handlers[EMM_STATE_MAX] = {
 #ifdef NAS_UE
     EmmNull,
 #endif
@@ -199,7 +197,7 @@ static const emm_fsm_handler_t _emm_fsm_handlers[EMM_STATE_MAX] =
 
 /*
  * -----------------------------------------------------------------------------
- *			Current EPS Mobility Management status
+ *          Current EPS Mobility Management status
  * -----------------------------------------------------------------------------
  */
 
@@ -213,16 +211,16 @@ emm_fsm_state_t _emm_fsm_status[EMM_FSM_NB_UE_MAX];
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_fsm_initialize()                                      **
+ ** Name:    emm_fsm_initialize()                                      **
  **                                                                        **
  ** Description: Initializes the EMM state machine                         **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	None                                       **
- **		 Others:	_emm_fsm_status                            **
+ ** Outputs:     None                                                      **
+ **      Return:    None                                       **
+ **      Others:    _emm_fsm_status                            **
  **                                                                        **
  ***************************************************************************/
 void emm_fsm_initialize(void)
@@ -236,7 +234,7 @@ void emm_fsm_initialize(void)
 
 #if defined(NAS_MME) && !defined(EPC_BUILD)
     for (ueid = 0; ueid < EMM_FSM_NB_UE_MAX; ueid++) {
-	_emm_fsm_status[ueid] = EMM_DEREGISTERED;
+        _emm_fsm_status[ueid] = EMM_DEREGISTERED;
     }
 #endif
 
@@ -245,25 +243,25 @@ void emm_fsm_initialize(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_fsm_set_status()                                      **
+ ** Name:    emm_fsm_set_status()                                      **
  **                                                                        **
  ** Description: Set the EPS Mobility Management status to the given state **
  **                                                                        **
- ** Inputs:	 ueid:		Lower layers UE identifier                 **
- **		 status:	The new EMM status                         **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      Lower layers UE identifier                 **
+ **      status:    The new EMM status                         **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	_emm_fsm_status                            **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    _emm_fsm_status                            **
  **                                                                        **
  ***************************************************************************/
 int emm_fsm_set_status(
 #ifdef NAS_MME
-		       unsigned int     ueid,
-                       void            *ctx,
+    unsigned int     ueid,
+    void            *ctx,
 #endif
-		       emm_fsm_state_t  status)
+    emm_fsm_state_t  status)
 {
     LOG_FUNC_IN;
 
@@ -272,7 +270,7 @@ int emm_fsm_set_status(
 #endif
 
 #if defined(EPC_BUILD)
-    emm_data_context_t *emm_ctx = (emm_data_context_t*)ctx;
+    emm_data_context_t *emm_ctx = (emm_data_context_t *)ctx;
 
     DevAssert(emm_ctx != NULL);
 
@@ -287,13 +285,13 @@ int emm_fsm_set_status(
     }
 #else
     if ( (status < EMM_STATE_MAX) && (ueid < EMM_FSM_NB_UE_MAX) ) {
-	LOG_TRACE(INFO, "EMM-FSM   - Status changed: %s ===> %s",
-		  _emm_fsm_status_str[_emm_fsm_status[ueid]],
-		  _emm_fsm_status_str[status]);
-	if (status != _emm_fsm_status[ueid]) {
-	    _emm_fsm_status[ueid] = status;
-	}
-	LOG_FUNC_RETURN (RETURNok);
+        LOG_TRACE(INFO, "EMM-FSM   - Status changed: %s ===> %s",
+                  _emm_fsm_status_str[_emm_fsm_status[ueid]],
+                  _emm_fsm_status_str[status]);
+        if (status != _emm_fsm_status[ueid]) {
+            _emm_fsm_status[ueid] = status;
+        }
+        LOG_FUNC_RETURN (RETURNok);
     }
 #endif
 
@@ -302,17 +300,17 @@ int emm_fsm_set_status(
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_fsm_get_status()                                      **
+ ** Name:    emm_fsm_get_status()                                      **
  **                                                                        **
  ** Description: Get the current value of the EPS Mobility Management      **
- **		 status                                                    **
+ **      status                                                    **
  **                                                                        **
- ** Inputs:	 ueid:		Lower layers UE identifier                 **
- **		 Others:	_emm_fsm_status                            **
+ ** Inputs:  ueid:      Lower layers UE identifier                 **
+ **      Others:    _emm_fsm_status                            **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	The current value of the EMM status        **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    The current value of the EMM status        **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 #ifdef NAS_UE
@@ -326,14 +324,14 @@ emm_fsm_state_t emm_fsm_get_status(void)
 emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx)
 {
 # if defined(EPC_BUILD)
-    emm_data_context_t *emm_ctx = (emm_data_context_t*)ctx;
+    emm_data_context_t *emm_ctx = (emm_data_context_t *)ctx;
 
     if (emm_ctx != NULL) {
         return emm_ctx->_emm_fsm_status;
     }
 # else
     if (ueid < EMM_FSM_NB_UE_MAX) {
-	return (_emm_fsm_status[ueid]);
+        return (_emm_fsm_status[ueid]);
     }
 #endif
     return EMM_STATE_MAX;
@@ -342,19 +340,19 @@ emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_fsm_process()                                         **
+ ** Name:    emm_fsm_process()                                         **
  **                                                                        **
  ** Description: Executes the EMM state machine                            **
  **                                                                        **
- ** Inputs:	 evt:		The EMMREG-SAP event to process            **
- **		 Others:	_emm_fsm_status                            **
+ ** Inputs:  evt:       The EMMREG-SAP event to process            **
+ **      Others:    _emm_fsm_status                            **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int emm_fsm_process(const emm_reg_t* evt)
+int emm_fsm_process(const emm_reg_t *evt)
 {
     emm_fsm_state_t status;
 
@@ -368,22 +366,22 @@ int emm_fsm_process(const emm_reg_t* evt)
 #endif
 #ifdef NAS_MME
 # if defined(EPC_BUILD)
-    emm_data_context_t *emm_ctx = (emm_data_context_t*)evt->ctx;
+    emm_data_context_t *emm_ctx = (emm_data_context_t *)evt->ctx;
 
     DevAssert(emm_ctx != NULL);
 
     status = emm_ctx->_emm_fsm_status;
 # else
     if (evt->ueid >= EMM_FSM_NB_UE_MAX) {
-	LOG_FUNC_RETURN (RETURNerror);
+        LOG_FUNC_RETURN (RETURNerror);
     }
     status = _emm_fsm_status[evt->ueid];
 # endif
 #endif
 
     LOG_TRACE(INFO, "EMM-FSM   - Received event %s (%d) in state %s",
-	      _emm_fsm_event_str[primitive - _EMMREG_START - 1], primitive,
-	      _emm_fsm_status_str[status]);
+              _emm_fsm_event_str[primitive - _EMMREG_START - 1], primitive,
+              _emm_fsm_status_str[status]);
 
     /* Execute the EMM state machine */
     rc = (_emm_fsm_handlers[status])(evt);

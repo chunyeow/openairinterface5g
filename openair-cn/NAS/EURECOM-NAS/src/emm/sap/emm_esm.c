@@ -1,23 +1,23 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_esm.c
+Source      emm_esm.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMMESM Service Access Point that provides
-		interlayer services to the EPS Session Management sublayer
-		for service registration and activate/deactivate PDN
-		connections.
+Description Defines the EMMESM Service Access Point that provides
+        interlayer services to the EPS Session Management sublayer
+        for service registration and activate/deactivate PDN
+        connections.
 
 *****************************************************************************/
 
@@ -42,7 +42,7 @@ Description	Defines the EMMESM Service Access Point that provides
 /*
  * String representation of EMMESM-SAP primitives
  */
-static const char* _emm_esm_primitive_str[] = {
+static const char *_emm_esm_primitive_str[] = {
 #ifdef NAS_UE
     "EMMESM_ESTABLISH_REQ",
     "EMMESM_ESTABLISH_CNF",
@@ -59,16 +59,16 @@ static const char* _emm_esm_primitive_str[] = {
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_esm_initialize()                                      **
+ ** Name:    emm_esm_initialize()                                      **
  **                                                                        **
  ** Description: Initializes the EMMESM Service Access Point               **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	None                                       **
- **		 Others:	NONE                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    None                                       **
+ **      Others:    NONE                                       **
  **                                                                        **
  ***************************************************************************/
 void emm_esm_initialize(void)
@@ -82,19 +82,19 @@ void emm_esm_initialize(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_esm_send()                                            **
+ ** Name:    emm_esm_send()                                            **
  **                                                                        **
  ** Description: Processes the EMMESM Service Access Point primitive       **
  **                                                                        **
- ** Inputs:	 msg:		The EMMESM-SAP primitive to process        **
- **		 Others:	None                                       **
+ ** Inputs:  msg:       The EMMESM-SAP primitive to process        **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int emm_esm_send(const emm_esm_t* msg)
+int emm_esm_send(const emm_esm_t *msg)
 {
     LOG_FUNC_IN;
 
@@ -102,51 +102,49 @@ int emm_esm_send(const emm_esm_t* msg)
     emm_esm_primitive_t primitive = msg->primitive;
 
     LOG_TRACE(INFO, "EMMESM-SAP - Received primitive %s (%d)",
-	      _emm_esm_primitive_str[primitive - _EMMESM_START - 1], primitive);
+              _emm_esm_primitive_str[primitive - _EMMESM_START - 1], primitive);
 
-    switch (primitive)
-    {
+    switch (primitive) {
 #ifdef NAS_UE
-	case _EMMESM_ESTABLISH_REQ:
-	    /* ESM requests EMM to initiate an attach procedure before
-	     * requesting subsequent connectivity to additional PDNs */
-	    rc = emm_proc_attach_restart();
-	    break;
+        case _EMMESM_ESTABLISH_REQ:
+            /* ESM requests EMM to initiate an attach procedure before
+             * requesting subsequent connectivity to additional PDNs */
+            rc = emm_proc_attach_restart();
+            break;
 
-	case _EMMESM_ESTABLISH_CNF:
-	    /* ESM notifies EMM that PDN connectivity procedure successfully
-	     * processed */
-	    if (msg->u.establish.is_attached) {
-		if (msg->u.establish.is_emergency) {
-		    /* Consider the UE attached for emergency bearer services
-		     * only */
-		    rc = emm_proc_attach_set_emergency();
-		}
-	    }
-	    else {
-		/* Consider the UE locally detached from the network */
-		rc = emm_proc_attach_set_detach();
-	    }
-	    break;
+        case _EMMESM_ESTABLISH_CNF:
+            /* ESM notifies EMM that PDN connectivity procedure successfully
+             * processed */
+            if (msg->u.establish.is_attached) {
+                if (msg->u.establish.is_emergency) {
+                    /* Consider the UE attached for emergency bearer services
+                     * only */
+                    rc = emm_proc_attach_set_emergency();
+                }
+            } else {
+                /* Consider the UE locally detached from the network */
+                rc = emm_proc_attach_set_detach();
+            }
+            break;
 
-	case _EMMESM_ESTABLISH_REJ:
-	    /* ESM notifies EMM that PDN connectivity procedure failed */
-	    break;
+        case _EMMESM_ESTABLISH_REJ:
+            /* ESM notifies EMM that PDN connectivity procedure failed */
+            break;
 #endif
-	case _EMMESM_UNITDATA_REQ:
-	    /* ESM requests EMM to transfer ESM data unit to lower layer */
-	    rc = lowerlayer_data_req(msg->ueid, &msg->u.data.msg);
-	    break;
+        case _EMMESM_UNITDATA_REQ:
+            /* ESM requests EMM to transfer ESM data unit to lower layer */
+            rc = lowerlayer_data_req(msg->ueid, &msg->u.data.msg);
+            break;
 
-	default:
-	    break;
+        default:
+            break;
 
     }
 
     if (rc != RETURNok) {
-	LOG_TRACE(WARNING, "EMMESM-SAP - Failed to process primitive %s (%d)",
-		  _emm_esm_primitive_str[primitive - _EMMESM_START - 1],
-		  primitive);
+        LOG_TRACE(WARNING, "EMMESM-SAP - Failed to process primitive %s (%d)",
+                  _emm_esm_primitive_str[primitive - _EMMESM_START - 1],
+                  primitive);
     }
 
     LOG_FUNC_RETURN (rc);

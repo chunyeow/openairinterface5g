@@ -1,26 +1,26 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		EmmTrackingAreaUpdatingInitiated.c
+Source      EmmTrackingAreaUpdatingInitiated.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/03
+Date        2012/10/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Implements the EPS Mobility Management procedures executed
-		when the EMM-SAP is in EMM-TRACKING-AREA-UPDATING-INITIATED
-		state.
+Description Implements the EPS Mobility Management procedures executed
+        when the EMM-SAP is in EMM-TRACKING-AREA-UPDATING-INITIATED
+        state.
 
-		In EMM-TRACKING-AREA-UPDATING-INITIATED state, the UE has
-		started the tracking area updating or combined tracking area
-		updating procedure and is waiting for a response from the MME.
+        In EMM-TRACKING-AREA-UPDATING-INITIATED state, the UE has
+        started the tracking area updating or combined tracking area
+        updating procedure and is waiting for a response from the MME.
 
 *****************************************************************************/
 
@@ -46,20 +46,20 @@ Description	Implements the EPS Mobility Management procedures executed
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 EmmTrackingAreaUpdatingInitiated()                        **
+ ** Name:    EmmTrackingAreaUpdatingInitiated()                        **
  **                                                                        **
  ** Description: Handles the behaviour of the UE while the EMM-SAP is in   **
- **		 EMM-TRACKING-AREA-UPDATING-INITIATED state.               **
+ **      EMM-TRACKING-AREA-UPDATING-INITIATED state.               **
  **                                                                        **
- ** Inputs:	 evt:		The received EMM-SAP event                 **
- **		 Others:	emm_fsm_status                             **
+ ** Inputs:  evt:       The received EMM-SAP event                 **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	emm_fsm_status                             **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
  ***************************************************************************/
-int EmmTrackingAreaUpdatingInitiated(const emm_reg_t* evt)
+int EmmTrackingAreaUpdatingInitiated(const emm_reg_t *evt)
 {
     LOG_FUNC_IN;
 

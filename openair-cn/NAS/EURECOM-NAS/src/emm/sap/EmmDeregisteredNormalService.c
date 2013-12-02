@@ -1,26 +1,26 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		EmmDeregisteredNormalService.c
+Source      EmmDeregisteredNormalService.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/03
+Date        2012/10/03
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Implements the EPS Mobility Management procedures executed
-		when the EMM-SAP is in EMM-DEREGISTERED.NORMAL-SERVICE state.
+Description Implements the EPS Mobility Management procedures executed
+        when the EMM-SAP is in EMM-DEREGISTERED.NORMAL-SERVICE state.
 
-		In EMM-DEREGISTERED.NORMAL-SERVICE state, the EPS update
-		status is EU1 or EU2, in the meantime a suitable cell has
-		been found and the PLMN or tracking area is not in the
-		forbidden list.
+        In EMM-DEREGISTERED.NORMAL-SERVICE state, the EPS update
+        status is EU1 or EU2, in the meantime a suitable cell has
+        been found and the PLMN or tracking area is not in the
+        forbidden list.
 
 *****************************************************************************/
 
@@ -49,24 +49,24 @@ Description	Implements the EPS Mobility Management procedures executed
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 EmmDeregisteredNormalService()                            **
+ ** Name:    EmmDeregisteredNormalService()                            **
  **                                                                        **
  ** Description: Handles the behaviour of the UE while the EMM-SAP is in   **
- **		 EMM-DEREGISTERED.NORMAL-SERVICE state.                    **
+ **      EMM-DEREGISTERED.NORMAL-SERVICE state.                    **
  **                                                                        **
  **              3GPP TS 24.301, section 5.2.2.3.1                         **
- **		 The UE shall initiate an attach or combined attach proce- **
- **		 dure.                                                     **
+ **      The UE shall initiate an attach or combined attach proce- **
+ **      dure.                                                     **
  **                                                                        **
- ** Inputs:	 evt:		The received EMM-SAP event                 **
- **		 Others:	emm_fsm_status                             **
+ ** Inputs:  evt:       The received EMM-SAP event                 **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	emm_fsm_status                             **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    emm_fsm_status                             **
  **                                                                        **
  ***************************************************************************/
-int EmmDeregisteredNormalService(const emm_reg_t* evt)
+int EmmDeregisteredNormalService(const emm_reg_t *evt)
 {
     LOG_FUNC_IN;
 
@@ -74,56 +74,55 @@ int EmmDeregisteredNormalService(const emm_reg_t* evt)
 
     assert(emm_fsm_get_status() == EMM_DEREGISTERED_NORMAL_SERVICE);
 
-    switch (evt->primitive)
-    {
-	case _EMMREG_REGISTER_REQ:
-	    /*
-	     * The user manually re-selected a PLMN to register to
-	     */
-	    rc = emm_fsm_set_status(EMM_DEREGISTERED_PLMN_SEARCH);
-	    if (rc != RETURNerror) {
-		/* Process the network registration request */
-		rc = emm_fsm_process(evt);
-	    }
-	    break;
+    switch (evt->primitive) {
+        case _EMMREG_REGISTER_REQ:
+            /*
+             * The user manually re-selected a PLMN to register to
+             */
+            rc = emm_fsm_set_status(EMM_DEREGISTERED_PLMN_SEARCH);
+            if (rc != RETURNerror) {
+                /* Process the network registration request */
+                rc = emm_fsm_process(evt);
+            }
+            break;
 
-	case _EMMREG_ATTACH_INIT:
-	    /*
-	     * Initiate the attach procedure for EPS services
-	     */
-	    rc = emm_proc_attach(EMM_ATTACH_TYPE_EPS);
-	    break;
+        case _EMMREG_ATTACH_INIT:
+            /*
+             * Initiate the attach procedure for EPS services
+             */
+            rc = emm_proc_attach(EMM_ATTACH_TYPE_EPS);
+            break;
 
-	case _EMMREG_ATTACH_REQ:
-	    /*
-	     * An EPS network attach has been requested (Attach Request
-	     * message successfully delivered to the network);
-	     * enter state EMM-REGISTERED-INITIATED
-	     */
-	    rc = emm_fsm_set_status(EMM_REGISTERED_INITIATED);
-	    break;
+        case _EMMREG_ATTACH_REQ:
+            /*
+             * An EPS network attach has been requested (Attach Request
+             * message successfully delivered to the network);
+             * enter state EMM-REGISTERED-INITIATED
+             */
+            rc = emm_fsm_set_status(EMM_REGISTERED_INITIATED);
+            break;
 
-	case _EMMREG_LOWERLAYER_SUCCESS:
-	    /*
-	     * Initial NAS message has been successfully delivered
-	     * to the network
-	     */
-	    rc = emm_proc_lowerlayer_success();
-	    break;
+        case _EMMREG_LOWERLAYER_SUCCESS:
+            /*
+             * Initial NAS message has been successfully delivered
+             * to the network
+             */
+            rc = emm_proc_lowerlayer_success();
+            break;
 
-	case _EMMREG_LOWERLAYER_FAILURE:
-	    /*
-	     * Initial NAS message failed to be delivered to the network
-	     */
-	    rc = emm_proc_lowerlayer_failure(TRUE);
-	    break;
+        case _EMMREG_LOWERLAYER_FAILURE:
+            /*
+             * Initial NAS message failed to be delivered to the network
+             */
+            rc = emm_proc_lowerlayer_failure(TRUE);
+            break;
 
-	case _EMMREG_LOWERLAYER_RELEASE:
-	    /*
-	     * NAS signalling connection has been released
-	     */
-	    rc = emm_proc_lowerlayer_release();
-	    break;
+        case _EMMREG_LOWERLAYER_RELEASE:
+            /*
+             * NAS signalling connection has been released
+             */
+            rc = emm_proc_lowerlayer_release();
+            break;
 
         case _EMMREG_ATTACH_CNF:
             /*
@@ -134,10 +133,10 @@ int EmmDeregisteredNormalService(const emm_reg_t* evt)
             rc = emm_fsm_set_status(EMM_REGISTERED);
             break;
 
-	default:
-	    LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
-		      evt->primitive);
-	    break;
+        default:
+            LOG_TRACE(ERROR, "EMM-FSM   - Primitive is not valid (%d)",
+                      evt->primitive);
+            break;
     }
 
     LOG_FUNC_RETURN (rc);

@@ -1,18 +1,18 @@
 /*****************************************************************************
 
-Source		nas_parser.h
+Source      nas_parser.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/02/27
+Date        2012/02/27
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	NAS main process
+Subsystem   NAS main process
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	NAS command line parser
+Description NAS command line parser
 
 *****************************************************************************/
 #ifndef __NAS_PARSER_H__
@@ -23,23 +23,23 @@ Description	NAS command line parser
 /****************************************************************************/
 
 /* Logging trace level default value */
-#define NAS_PARSER_DEFAULT_TRACE_LEVEL		"0"	/* No trace	*/
+#define NAS_PARSER_DEFAULT_TRACE_LEVEL      "0" /* No trace */
 
 /* Network layer default hostname */
-#define NAS_PARSER_DEFAULT_NETWORK_HOSTNAME	"localhost"
+#define NAS_PARSER_DEFAULT_NETWORK_HOSTNAME "localhost"
 
 /* Network layer default port number */
-#define NAS_PARSER_DEFAULT_NETWORK_PORT_NUMBER	"12000"
+#define NAS_PARSER_DEFAULT_NETWORK_PORT_NUMBER  "12000"
 
 #ifdef NAS_UE
 /* User Identifier default value */
-#define NAS_PARSER_DEFAULT_UE_ID		"1"
+#define NAS_PARSER_DEFAULT_UE_ID        "1"
 
 /* User application layer default hostname */
-#define NAS_PARSER_DEFAULT_USER_HOSTNAME	"localhost"
+#define NAS_PARSER_DEFAULT_USER_HOSTNAME    "localhost"
 
 /* User application layer default port number */
-#define NAS_PARSER_DEFAULT_USER_PORT_NUMBER	"10000"
+#define NAS_PARSER_DEFAULT_USER_PORT_NUMBER "10000"
 #endif // NAS_UE
 
 /****************************************************************************/
@@ -54,20 +54,20 @@ Description	NAS command line parser
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-void nas_parser_print_usage(const char* version);
-int  nas_parser_get_options(int argc, const char** argv);
+void nas_parser_print_usage(const char *version);
+int  nas_parser_get_options(int argc, const char **argv);
 
 int  nas_parser_get_nb_options(void);
 int  nas_parser_get_trace_level(void);
-const char* nas_parser_get_network_host(void);
-const char* nas_parser_get_network_port(void);
+const char *nas_parser_get_network_host(void);
+const char *nas_parser_get_network_port(void);
 
 #ifdef NAS_UE
 int  nas_parser_get_ueid(void);
-const char* nas_parser_get_user_host(void);
-const char* nas_parser_get_user_port(void);
-const char* nas_parser_get_device_path(void);
-const char* nas_parser_get_device_params(void);
+const char *nas_parser_get_user_host(void);
+const char *nas_parser_get_user_port(void);
+const char *nas_parser_get_device_path(void);
+const char *nas_parser_get_device_params(void);
 #endif // NAS_UE
 
 #endif /* __NAS_PARSER_H__*/

@@ -66,6 +66,6 @@ int s1ap_mme_handle_nas_non_delivery(uint32_t assocId, uint32_t stream,
 
 int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p);
 
-int s1ap_generate_downlink_nas_transport(nas_dl_data_ind_t *message);
+int s1ap_generate_downlink_nas_transport(nas_dl_data_req_t *nas_dl_data_req);
 
 #endif /* S1AP_MME_NAS_PROCEDURES_H_ */

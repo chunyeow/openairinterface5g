@@ -3,6 +3,10 @@
 #ifndef NAS_MESSAGES_TYPES_H_
 #define NAS_MESSAGES_TYPES_H_
 
+#define NAS_UL_DATA_IND(mSGpTR) (mSGpTR)->ittiMsg.nas_ul_data_ind
+#define NAS_DL_DATA_REQ(mSGpTR) (mSGpTR)->ittiMsg.nas_dl_data_req
+#define NAS_DL_DATA_CNF(mSGpTR) (mSGpTR)->ittiMsg.nas_dl_data_cnf
+
 typedef struct {
     
 } nas_paging_ind_t;
@@ -24,11 +28,10 @@ typedef struct {
     
 } nas_conn_rel_ind_t;
 
-typedef struct {
-    
-} nas_ul_data_ind_t;
+typedef ul_info_transfer_ind_t nas_ul_data_ind_t;
 
-typedef dl_info_transfer_req_t nas_dl_data_ind_t;
+typedef dl_info_transfer_req_t nas_dl_data_req_t;
+typedef dl_info_transfer_cnf_t nas_dl_data_cnf_t;
 
 typedef struct {
     

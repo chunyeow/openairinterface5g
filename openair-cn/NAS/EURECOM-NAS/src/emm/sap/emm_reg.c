@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_reg.c
+Source      emm_reg.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMMREG Service Access Point that provides
-		registration services for location updating and attach/detach
-		procedures.
+Description Defines the EMMREG Service Access Point that provides
+        registration services for location updating and attach/detach
+        procedures.
 
 *****************************************************************************/
 
@@ -42,16 +42,16 @@ Description	Defines the EMMREG Service Access Point that provides
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_reg_initialize()                                      **
+ ** Name:    emm_reg_initialize()                                      **
  **                                                                        **
  ** Description: Initializes the EMMREG Service Access Point               **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	None                                       **
- **		 Others:	NONE                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    None                                       **
+ **      Others:    NONE                                       **
  **                                                                        **
  ***************************************************************************/
 void emm_reg_initialize(void)
@@ -66,19 +66,19 @@ void emm_reg_initialize(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_reg_send()                                            **
+ ** Name:    emm_reg_send()                                            **
  **                                                                        **
  ** Description: Processes the EMMREG Service Access Point primitive       **
  **                                                                        **
- ** Inputs:	 msg:		The EMMREG-SAP primitive to process        **
- **		 Others:	None                                       **
+ ** Inputs:  msg:       The EMMREG-SAP primitive to process        **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int emm_reg_send(const emm_reg_t* msg)
+int emm_reg_send(const emm_reg_t *msg)
 {
     LOG_FUNC_IN;
 

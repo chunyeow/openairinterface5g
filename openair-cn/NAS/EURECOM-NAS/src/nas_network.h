@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		nas_network.h
+Source      nas_network.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/09/20
+Date        2012/09/20
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	NAS main process
+Subsystem   NAS main process
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	NAS procedure functions triggered by the network
+Description NAS procedure functions triggered by the network
 
 *****************************************************************************/
 #ifndef __NAS_NETWORK_H__
@@ -40,8 +40,8 @@ void nas_network_initialize(void);
 
 void nas_network_cleanup(void);
 
-int nas_network_process_data(int command_id, const void* data);
+int nas_network_process_data(int command_id, const void *data);
 
-const void* nas_network_get_data(void);
+const void *nas_network_get_data(void);
 
 #endif /* __NAS_NETWORK_H__*/

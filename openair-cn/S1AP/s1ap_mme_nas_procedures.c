@@ -190,7 +190,12 @@ int s1ap_mme_handle_uplink_nas_transport(uint32_t assoc_id, uint32_t stream,
     }
 
     //TODO: forward NAS PDU to NAS
+#if defined(DISABLE_USE_NAS)
     DevMessage("TODO: forward NAS PDU to NAS\n");
+#else
+    s1ap_mme_itti_nas_uplink_ind(uplinkNASTransport_p->mme_ue_s1ap_id, uplinkNASTransport_p->nas_pdu.buf,
+                                 uplinkNASTransport_p->nas_pdu.size);
+#endif
     return 0;
 }
 
@@ -207,19 +212,21 @@ int s1ap_mme_handle_nas_non_delivery(uint32_t assoc_id, uint32_t stream,
     return 0;
 }
 
-int s1ap_generate_downlink_nas_transport(nas_dl_data_ind_t *nas_dl_data_ind)
+int s1ap_generate_downlink_nas_transport(nas_dl_data_req_t *nas_dl_data_req_p)
 {
     ue_description_t *ue_ref;
     uint8_t          *buffer_p;
     uint32_t          length;
 
-    DevAssert(nas_dl_data_ind != NULL);
+    DevAssert(nas_dl_data_req_p != NULL);
 
-    if ((ue_ref = s1ap_is_ue_mme_id_in_list(nas_dl_data_ind->UEid)) == NULL) {
+    if ((ue_ref = s1ap_is_ue_mme_id_in_list(nas_dl_data_req_p->UEid)) == NULL) {
         /* If the UE-associated logical S1-connection is not established,
          * the MME shall allocate a unique MME UE S1AP ID to be used for the UE.
          */
         DevMessage("This case is not handled right now\n");
+
+        return -1;
     } else {
         /* We have fount the UE in the list.
          * Create new IE list message and encode it.
@@ -239,16 +246,17 @@ int s1ap_generate_downlink_nas_transport(nas_dl_data_ind_t *nas_dl_data_ind)
         downlinkNasTransport->mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;
         downlinkNasTransport->eNB_UE_S1AP_ID = ue_ref->eNB_ue_s1ap_id;
         OCTET_STRING_fromBuf(&downlinkNasTransport->nas_pdu,
-                             (char*)nas_dl_data_ind->nasMsg.data,
-                             nas_dl_data_ind->nasMsg.length);
+                             (char*)nas_dl_data_req_p->nasMsg.data,
+                             nas_dl_data_req_p->nasMsg.length);
         if (s1ap_mme_encode_pdu(&message, &buffer_p, &length) < 0) {
             // TODO: handle something
             return -1;
         }
 
-        return s1ap_mme_itti_send_sctp_request(buffer_p, length,
-                                               ue_ref->eNB->sctp_assoc_id,
-                                               ue_ref->sctp_stream_send);
+        s1ap_mme_itti_send_sctp_request(buffer_p, length,
+                                        ue_ref->eNB->sctp_assoc_id,
+                                        ue_ref->sctp_stream_send);
+        s1ap_mme_itti_nas_downlink_cnf(ue_ref->mme_ue_s1ap_id);
     }
     return 0;
 }

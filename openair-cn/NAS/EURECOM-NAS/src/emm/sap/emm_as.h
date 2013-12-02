@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_as.h
+Source      emm_as.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMMAS Service Access Point that provides
-		services to the EPS Mobility Management for NAS message
-		transfer to/from the Access Stratum sublayer.
+Description Defines the EMMAS Service Access Point that provides
+        services to the EPS Mobility Management for NAS message
+        transfer to/from the Access Stratum sublayer.
 
 *****************************************************************************/
 #ifndef __EMM_AS_H__
@@ -42,6 +42,6 @@ Description	Defines the EMMAS Service Access Point that provides
 
 void emm_as_initialize(void);
 
-int emm_as_send(const emm_as_t* msg);
+int emm_as_send(const emm_as_t *msg);
 
 #endif /* __EMM_AS_H__*/

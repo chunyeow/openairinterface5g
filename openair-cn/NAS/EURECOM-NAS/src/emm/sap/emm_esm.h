@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_esm.h
+Source      emm_esm.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMMESM Service Access Point that provides
-		interlayer services to the EPS Session Management sublayer
-		for service registration and activate/deactivate PDP context.
+Description Defines the EMMESM Service Access Point that provides
+        interlayer services to the EPS Session Management sublayer
+        for service registration and activate/deactivate PDP context.
 
 *****************************************************************************/
 #ifndef __EMM_ESM_H__
@@ -42,6 +42,6 @@ Description	Defines the EMMESM Service Access Point that provides
 
 void emm_esm_initialize(void);
 
-int emm_esm_send(const emm_esm_t* msg);
+int emm_esm_send(const emm_esm_t *msg);
 
 #endif /* __EMM_ESM_H__*/

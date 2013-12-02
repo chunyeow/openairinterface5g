@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		esm_send.h
+Source      esm_send.h
 
-Version		0.1
+Version     0.1
 
-Date		2013/02/11
+Date        2013/02/11
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Session Management
+Subsystem   EPS Session Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines functions executed at the ESM Service Access
-		Point to send EPS Session Management messages to the
-		EPS Mobility Management sublayer.
+Description Defines functions executed at the ESM Service Access
+        Point to send EPS Session Management messages to the
+        EPS Mobility Management sublayer.
 
 *****************************************************************************/
 #ifndef __ESM_SEND_H__
@@ -76,7 +76,7 @@ Description	Defines functions executed at the ESM Service Access
  * Functions executed by both the UE and the MME to send ESM messages
  * --------------------------------------------------------------------------
  */
-int esm_send_status(int pti, int ebi, esm_status_msg* msg, int esm_cause);
+int esm_send_status(int pti, int ebi, esm_status_msg *msg, int esm_cause);
 
 /*
  * --------------------------------------------------------------------------
@@ -88,20 +88,27 @@ int esm_send_status(int pti, int ebi, esm_status_msg* msg, int esm_cause);
  * Transaction related messages
  * ----------------------------
  */
-int esm_send_pdn_connectivity_request(int pti, int is_emergency, int pdn_type, const char* apn, pdn_connectivity_request_msg* msg);
-int esm_send_pdn_disconnect_request(int pti, int ebi, pdn_disconnect_request_msg* msg);
+int esm_send_pdn_connectivity_request(int pti, int is_emergency, int pdn_type,
+                                      const char *apn, pdn_connectivity_request_msg *msg);
+int esm_send_pdn_disconnect_request(int pti, int ebi,
+                                    pdn_disconnect_request_msg *msg);
 
 /*
  * Messages related to EPS bearer contexts
  * ---------------------------------------
  */
-int esm_send_activate_default_eps_bearer_context_accept(int ebi, activate_default_eps_bearer_context_accept_msg* msg);
-int esm_send_activate_default_eps_bearer_context_reject(int ebi, activate_default_eps_bearer_context_reject_msg* msg, int esm_cause);
+int esm_send_activate_default_eps_bearer_context_accept(int ebi,
+        activate_default_eps_bearer_context_accept_msg *msg);
+int esm_send_activate_default_eps_bearer_context_reject(int ebi,
+        activate_default_eps_bearer_context_reject_msg *msg, int esm_cause);
 
-int esm_send_activate_dedicated_eps_bearer_context_accept(int ebi, activate_dedicated_eps_bearer_context_accept_msg* msg);
-int esm_send_activate_dedicated_eps_bearer_context_reject(int ebi, activate_dedicated_eps_bearer_context_reject_msg* msg, int esm_cause);
+int esm_send_activate_dedicated_eps_bearer_context_accept(int ebi,
+        activate_dedicated_eps_bearer_context_accept_msg *msg);
+int esm_send_activate_dedicated_eps_bearer_context_reject(int ebi,
+        activate_dedicated_eps_bearer_context_reject_msg *msg, int esm_cause);
 
-int esm_send_deactivate_eps_bearer_context_accept(int ebi, deactivate_eps_bearer_context_accept_msg* msg);
+int esm_send_deactivate_eps_bearer_context_accept(int ebi,
+        deactivate_eps_bearer_context_accept_msg *msg);
 
 #endif
 
@@ -115,19 +122,27 @@ int esm_send_deactivate_eps_bearer_context_accept(int ebi, deactivate_eps_bearer
  * Transaction related messages
  * ----------------------------
  */
-int esm_send_pdn_connectivity_reject(int pti, pdn_connectivity_reject_msg* msg, int esm_cause);
+int esm_send_pdn_connectivity_reject(int pti, pdn_connectivity_reject_msg *msg,
+                                     int esm_cause);
 
-int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg* msg, int esm_cause);
+int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg *msg,
+                                   int esm_cause);
 
 /*
  * Messages related to EPS bearer contexts
  * ---------------------------------------
  */
-int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi, activate_default_eps_bearer_context_request_msg* msg, const OctetString* apn, int pdn_type, const OctetString* pdn_addr, const EpsQualityOfService* qos, int esm_cause);
+int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
+        activate_default_eps_bearer_context_request_msg *msg, const OctetString *apn,
+        int pdn_type, const OctetString *pdn_addr, const EpsQualityOfService *qos,
+        int esm_cause);
 
-int esm_send_activate_dedicated_eps_bearer_context_request(int pti, int ebi, activate_dedicated_eps_bearer_context_request_msg* msg, int linked_ebi, const EpsQualityOfService* qos, PacketFilters* pkfs, int n_pkfs);
+int esm_send_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
+        activate_dedicated_eps_bearer_context_request_msg *msg, int linked_ebi,
+        const EpsQualityOfService *qos, PacketFilters *pkfs, int n_pkfs);
 
-int esm_send_deactivate_eps_bearer_context_request(int pti, int ebi, deactivate_eps_bearer_context_request_msg* msg, int esm_cause);
+int esm_send_deactivate_eps_bearer_context_request(int pti, int ebi,
+        deactivate_eps_bearer_context_request_msg *msg, int esm_cause);
 
 #endif
 

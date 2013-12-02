@@ -1,26 +1,26 @@
 /*****************************************************************************
 
-Source		nas_parser.c
+Source      nas_parser.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/02/27
+Date        2012/02/27
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	NAS main process
+Subsystem   NAS main process
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	NAS command line parser
+Description NAS command line parser
 
 *****************************************************************************/
 
 #include "nas_parser.h"
 #include "parser.h"
 
-#include <stdio.h>	// fprintf
-#include <stdlib.h>	// atoi
+#include <stdio.h>  // fprintf
+#include <stdlib.h> // atoi
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -33,23 +33,22 @@ Description	NAS command line parser
 /*
  * Identifiers of the NAS command line options
  */
-enum
-{
+enum {
 #ifdef NAS_UE
-    NAS_PARSER_UE_ID,			/* User Equipement Identifier	*/
+    NAS_PARSER_UE_ID,           /* User Equipement Identifier   */
 #endif // NAS_UE
-    NAS_PARSER_TRACE_LEVEL,		/* Logging trace level		*/
+    NAS_PARSER_TRACE_LEVEL,     /* Logging trace level      */
 #ifdef NAS_UE
-    NAS_PARSER_USER_HOST,		/* User app layer's hostname	*/
+    NAS_PARSER_USER_HOST,       /* User app layer's hostname    */
 #endif // NAS_UE
-    NAS_PARSER_NETWORK_HOST,		/* Network layer's hostname	*/
+    NAS_PARSER_NETWORK_HOST,        /* Network layer's hostname */
 #ifdef NAS_UE
-    NAS_PARSER_USER_PORT,		/* User app layer's port number	*/
+    NAS_PARSER_USER_PORT,       /* User app layer's port number */
 #endif // NAS_UE
-    NAS_PARSER_NETWORK_PORT,		/* Network layer's port number	*/
+    NAS_PARSER_NETWORK_PORT,        /* Network layer's port number  */
 #ifdef NAS_UE
-    NAS_PARSER_DEVICE_PATH,		/* Device pathname		*/
-    NAS_PARSER_DEVICE_ATTR,		/* Device attribute parameters	*/
+    NAS_PARSER_DEVICE_PATH,     /* Device pathname      */
+    NAS_PARSER_DEVICE_ATTR,     /* Device attribute parameters  */
 #endif // NAS_UE
     NAS_PARSER_NB_OPTIONS
 };
@@ -57,37 +56,49 @@ enum
 /* -----------------------------------------------------
  * Definition of the internal NAS command line structure
  * -----------------------------------------------------
- *	The command line is defined with a name (default is "NASprocess"
- *	but it will be replaced by the command name actually used at
- *	runtime), a number of options and the list of options.
- *	An option is defined with a name, an argument following the name,
- *	the usage displayed by the usage function and a default value.
+ *  The command line is defined with a name (default is "NASprocess"
+ *  but it will be replaced by the command name actually used at
+ *  runtime), a number of options and the list of options.
+ *  An option is defined with a name, an argument following the name,
+ *  the usage displayed by the usage function and a default value.
  */
 static parser_command_line_t nasParserCommandLine = {
-    "NASprocess",			/* Command name			*/
-    NAS_PARSER_NB_OPTIONS,		/* Number of options		*/
-    {					/* Command line options		*/
+    "NASprocess",           /* Command name         */
+    NAS_PARSER_NB_OPTIONS,      /* Number of options        */
+    {                 /* Command line options     */
 #ifdef NAS_UE
-	{"-ueid", "<ueid>", "UE identifier\t\t\t",
-	 NAS_PARSER_DEFAULT_UE_ID},
+        {
+            "-ueid", "<ueid>", "UE identifier\t\t\t",
+            NAS_PARSER_DEFAULT_UE_ID
+        },
 #endif // NAS_UE
-	{"-trace", "<mask>", "Logging trace level\t\t",
-	 NAS_PARSER_DEFAULT_TRACE_LEVEL},
+        {
+            "-trace", "<mask>", "Logging trace level\t\t",
+            NAS_PARSER_DEFAULT_TRACE_LEVEL
+        },
 #ifdef NAS_UE
-	{"-uhost", "<uhost>", "User app layer's hostname\t",
-	 NAS_PARSER_DEFAULT_USER_HOSTNAME},
+        {
+            "-uhost", "<uhost>", "User app layer's hostname\t",
+            NAS_PARSER_DEFAULT_USER_HOSTNAME
+        },
 #endif // NAS_UE
-	{"-nhost", "<nhost>", "Network layer's hostname\t",
-	 NAS_PARSER_DEFAULT_NETWORK_HOSTNAME},
+        {
+            "-nhost", "<nhost>", "Network layer's hostname\t",
+            NAS_PARSER_DEFAULT_NETWORK_HOSTNAME
+        },
 #ifdef NAS_UE
-	{"-uport", "<uport>", "User app layer's port number\t",
-	 NAS_PARSER_DEFAULT_USER_PORT_NUMBER},
+        {
+            "-uport", "<uport>", "User app layer's port number\t",
+            NAS_PARSER_DEFAULT_USER_PORT_NUMBER
+        },
 #endif // NAS_UE
-	{"-nport", "<nport>", "Network layer's port number\t",
-	 NAS_PARSER_DEFAULT_NETWORK_PORT_NUMBER},
+        {
+            "-nport", "<nport>", "Network layer's port number\t",
+            NAS_PARSER_DEFAULT_NETWORK_PORT_NUMBER
+        },
 #ifdef NAS_UE
-	{"-dev", "<devpath>", "Device pathname\t\t", "NULL"},
-	{"-params", "<params>", "Device attribute parameters", "NULL"},
+        {"-dev", "<devpath>", "Device pathname\t\t", "NULL"},
+        {"-params", "<params>", "Device attribute parameters", "NULL"},
 #endif // NAS_UE
     }
 };
@@ -95,7 +106,7 @@ static parser_command_line_t nasParserCommandLine = {
 /*
  * Converts a string, containing hexadecimal formatted integer, to an integer
  */
-static int atohex(const char* a_char);
+static int atohex(const char *a_char);
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
@@ -103,20 +114,20 @@ static int atohex(const char* a_char);
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_print_usage()                                  **
+ ** Name:    nas_parser_print_usage()                                  **
  **                                                                        **
  ** Description: Displays the command line options used to run the NAS     **
- **		 process and the firmware version defined at compilation   **
- **		 time                                                      **
+ **      process and the firmware version defined at compilation   **
+ **      time                                                      **
  **                                                                        **
- ** Inputs:	 version:	Firmware version                           **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  version:   Firmware version                           **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	None                                       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    None                                       **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-void nas_parser_print_usage(const char* version)
+void nas_parser_print_usage(const char *version)
 {
     parser_print_usage(&nasParserCommandLine);
     fprintf(stderr, "Version: %s\n", version);
@@ -124,35 +135,35 @@ void nas_parser_print_usage(const char* version)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_options()                                  **
+ ** Name:    nas_parser_get_options()                                  **
  **                                                                        **
  ** Description: Gets the command line options used to run the NAS process **
  **                                                                        **
- ** Inputs:	 argc:		Number of options                          **
- ** 	 	 argv:		Pointer to the list of options             **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  argc:      Number of options                          **
+ **          argv:      Pointer to the list of options             **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	RETURNerror, RETURNok                      **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    RETURNerror, RETURNok                      **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_parser_get_options(int argc, const char** argv)
+int nas_parser_get_options(int argc, const char **argv)
 {
     return parser_get_options(argc, argv, &nasParserCommandLine);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_nb_options()                               **
+ ** Name:    nas_parser_get_nb_options()                               **
  **                                                                        **
  ** Description: Returns the number of the command line options used to    **
- **		 run the NAS process                                       **
+ **      run the NAS process                                       **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Number of command line options             **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Number of command line options             **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int nas_parser_get_nb_options(void)
@@ -162,15 +173,15 @@ int nas_parser_get_nb_options(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_trace_level()                              **
+ ** Name:    nas_parser_get_trace_level()                              **
  **                                                                        **
  ** Description: Returns the value of the logging trace level              **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the logging trace level           **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the logging trace level           **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int nas_parser_get_trace_level(void)
@@ -180,36 +191,36 @@ int nas_parser_get_trace_level(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_network_host()                             **
+ ** Name:    nas_parser_get_network_host()                             **
  **                                                                        **
  ** Description: Returns the value of the network layer hostname           **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the network layer hostname        **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the network layer hostname        **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-const char* nas_parser_get_network_host(void)
+const char *nas_parser_get_network_host(void)
 {
     return nasParserCommandLine.options[NAS_PARSER_NETWORK_HOST].pvalue;
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_network_port()                             **
+ ** Name:    nas_parser_get_network_port()                             **
  **                                                                        **
  ** Description: Returns the value of the network layer port number        **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the network layer port number     **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the network layer port number     **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-const char* nas_parser_get_network_port(void)
+const char *nas_parser_get_network_port(void)
 {
     return nasParserCommandLine.options[NAS_PARSER_NETWORK_PORT].pvalue;
 }
@@ -217,15 +228,15 @@ const char* nas_parser_get_network_port(void)
 #ifdef NAS_UE
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_ueid()                                     **
+ ** Name:    nas_parser_get_ueid()                                     **
  **                                                                        **
  ** Description: Returns the value of the UE identifier option             **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the UE identifier option          **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the UE identifier option          **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int nas_parser_get_ueid(void)
@@ -235,73 +246,73 @@ int nas_parser_get_ueid(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_user_host()                                **
+ ** Name:    nas_parser_get_user_host()                                **
  **                                                                        **
  ** Description: Returns the value of the user application layer hostname  **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the user app layer hostname       **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the user app layer hostname       **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-const char* nas_parser_get_user_host(void)
+const char *nas_parser_get_user_host(void)
 {
     return nasParserCommandLine.options[NAS_PARSER_USER_HOST].pvalue;
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_user_port()                                **
+ ** Name:    nas_parser_get_user_port()                                **
  **                                                                        **
  ** Description: Returns the value of the user application layer port      **
- **		 number                                                    **
+ **      number                                                    **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the user app layer port number    **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the user app layer port number    **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-const char* nas_parser_get_user_port(void)
+const char *nas_parser_get_user_port(void)
 {
     return nasParserCommandLine.options[NAS_PARSER_USER_PORT].pvalue;
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_device_path()                              **
+ ** Name:    nas_parser_get_device_path()                              **
  **                                                                        **
  ** Description: Returns the value of the device pathname                  **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the device pathname               **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the device pathname               **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-const char* nas_parser_get_device_path(void)
+const char *nas_parser_get_device_path(void)
 {
     return nasParserCommandLine.options[NAS_PARSER_DEVICE_PATH].pvalue;
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 nas_parser_get_device_params()                            **
+ ** Name:    nas_parser_get_device_params()                            **
  **                                                                        **
  ** Description: Returns the value of the device attribute parameters      **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **          Others:    None                                       **
  **                                                                        **
- ** Outputs:	 Return:	Value of the device attribute parameters   **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:    Value of the device attribute parameters   **
+ **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-const char* nas_parser_get_device_params(void)
+const char *nas_parser_get_device_params(void)
 {
     return nasParserCommandLine.options[NAS_PARSER_DEVICE_ATTR].pvalue;
 }
@@ -311,28 +322,20 @@ const char* nas_parser_get_device_params(void)
 /*********************  L O C A L    F U N C T I O N S  *********************/
 /****************************************************************************/
 
-static int atohex(const char* a_char)
+static int atohex(const char *a_char)
 {
     int result;
 
-    for (result=0; a_char; a_char++)
-    {
-	if (*a_char >= '0' && *a_char <= '9')
-	{
-	    result = (result << 4) + (*a_char - '0');
-	}
-	else if (*a_char >= 'A' && *a_char <= 'F')
-	{
-	    result = (result << 4) + (*a_char - 'A' + 10);
-	}
-	else if (*a_char >= 'a' && *a_char <= 'f')
-	{
-	    result = (result << 4) + (*a_char - 'a' + 10);
-	}
-	else
-	{
-	    break;
-	}
+    for (result=0; a_char; a_char++) {
+        if (*a_char >= '0' && *a_char <= '9') {
+            result = (result << 4) + (*a_char - '0');
+        } else if (*a_char >= 'A' && *a_char <= 'F') {
+            result = (result << 4) + (*a_char - 'A' + 10);
+        } else if (*a_char >= 'a' && *a_char <= 'f') {
+            result = (result << 4) + (*a_char - 'a' + 10);
+        } else {
+            break;
+        }
     }
     return result;
 }

@@ -61,10 +61,12 @@ next_message:
                                        nas_est_ind_p->initialNasMsg.length);
 #endif
             } break;
+
             case NAS_ATTACH_ACCEPT: {
                 itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, received_message_p);
                 goto next_message;
             } break;
+
             case NAS_AUTHENTICATION_REQ: {
                 MessageDef      *message_p;
                 nas_auth_resp_t *nas_resp_p;
@@ -79,9 +81,21 @@ next_message:
 
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
             } break;
+
+            case NAS_UPLINK_DATA_IND: {
+                nas_proc_ul_transfer_ind(NAS_UL_DATA_IND(received_message_p).UEid,
+                                         NAS_UL_DATA_IND(received_message_p).nasMsg.data,
+                                         NAS_UL_DATA_IND(received_message_p).nasMsg.length);
+            } break;
+
+            case NAS_DOWNLINK_DATA_CNF: {
+                nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
+            } break;
+
             case TERMINATE_MESSAGE: {
                 itti_exit_task();
             } break;
+
             default: {
                 NAS_DEBUG("Unkwnon message ID %d:%s\n",
                           ITTI_MSG_ID(received_message_p),

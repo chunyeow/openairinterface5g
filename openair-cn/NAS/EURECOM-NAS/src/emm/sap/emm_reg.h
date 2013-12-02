@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_reg.h
+Source      emm_reg.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMMREG Service Access Point that provides
-		registration services for location updating and attach/detach
-		procedures.
+Description Defines the EMMREG Service Access Point that provides
+        registration services for location updating and attach/detach
+        procedures.
 
 *****************************************************************************/
 #ifndef __EMM_REG_H__
@@ -42,6 +42,6 @@ Description	Defines the EMMREG Service Access Point that provides
 
 void emm_reg_initialize(void);
 
-int emm_reg_send(const emm_reg_t* msg);
+int emm_reg_send(const emm_reg_t *msg);
 
 #endif /* __EMM_REG_H__*/
