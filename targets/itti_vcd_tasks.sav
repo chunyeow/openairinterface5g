@@ -1,0 +1,153 @@
+[*]
+[*] GTKWave Analyzer v3.3.34 (w)1999-2012 BSI
+[*] Mon Dec  2 14:16:26 2013
+[*]
+[dumpfile] "/homes/winckel/openair/trunk/targets/SIMU/USER/openair_dump.vcd"
+[dumpfile_mtime] "Mon Dec  2 14:03:30 2013"
+[dumpfile_size] 9142217
+[savefile] "/homes/winckel/openair/vcd6.sav"
+[timestart] 0
+[size] 1871 1056
+[pos] -1 -1
+*-30.922449 3089237868 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 223
+[signals_width] 260
+[sst_expanded] 1
+[sst_vpaned_height] 301
+@8024
+variables.frame_number_eNB[63:0]
+@20000
+-
+@8024
+variables.slot_number_eNB[63:0]
+@20000
+-
+@8024
+variables.frame_number_UE[63:0]
+@28004
+-
+@8024
+variables.slot_number_UE[63:0]
+@20000
+-
+@c08025
+[color] 1
+variables.itti_alloc_msg[63:0]
+@1401201
+-group_end
+@c08022
+[color] 1
+variables.itti_send_msg[63:0]
+@28
+[color] 2
++{eNB app} (45)variables.itti_send_msg[63:0]
+[color] 2
++{eNB X2AP} (46)variables.itti_send_msg[63:0]
+[color] 2
++{eNB SCTP} (47)variables.itti_send_msg[63:0]
+[color] 2
++{eNB S1AP} (48)variables.itti_send_msg[63:0]
+[color] 2
++{UE NAS} (49)variables.itti_send_msg[63:0]
+[color] 2
++{BM} (50)variables.itti_send_msg[63:0]
+[color] 2
++{eNB RRC} (51)variables.itti_send_msg[63:0]
+[color] 2
++{UE RRC} (52)variables.itti_send_msg[63:0]
+[color] 2
++{eNB PHY} (53)variables.itti_send_msg[63:0]
+[color] 2
++{UE PHY} (54)variables.itti_send_msg[63:0]
+[color] 2
++{eNB MAC} (55)variables.itti_send_msg[63:0]
+[color] 2
++{UE MAC} (56)variables.itti_send_msg[63:0]
+[color] 2
++{eNB RLC} (57)variables.itti_send_msg[63:0]
+[color] 2
++{UE RLC} (58)variables.itti_send_msg[63:0]
+[color] 2
++{eNB PDCP} (59)variables.itti_send_msg[63:0]
+[color] 2
++{UE PDCP} (60)variables.itti_send_msg[63:0]
+[color] 2
++{L2L1} (61)variables.itti_send_msg[63:0]
+[color] 2
++{Timer} (62)variables.itti_send_msg[63:0]
+[color] 2
++{Unknown} (63)variables.itti_send_msg[63:0]
+@1401200
+-group_end
+@28
+[color] 1
+functions.log_record
+[color] 1
+functions.itti_dump_enqueue_message
+[color] 1
+functions.itti_enqueue_message
+@200
+-
+@c08022
+[color] 5
+variables.itti_poll_msg[63:0]
+@28
+[color] 6
++{eNB PHY} (53)variables.itti_poll_msg[63:0]
+[color] 6
++{UE PHY} (54)variables.itti_poll_msg[63:0]
+[color] 6
++{eNB MAC} (55)variables.itti_poll_msg[63:0]
+[color] 6
++{UE MAC} (56)variables.itti_poll_msg[63:0]
+[color] 6
++{eNB RLC} (57)variables.itti_poll_msg[63:0]
+[color] 6
++{UE RLC} (58)variables.itti_poll_msg[63:0]
+[color] 6
++{eNB PDCP} (59)variables.itti_poll_msg[63:0]
+[color] 6
++{UE PDCP} (60)variables.itti_poll_msg[63:0]
+[color] 6
++{L2L1} (61)variables.itti_poll_msg[63:0]
+@1401200
+-group_end
+@c08022
+[color] 5
+variables.itti_recv_msg[63:0]
+@28
+[color] 6
++{eNB app} (45)variables.itti_recv_msg[63:0]
+[color] 6
++{eNB X2AP} (46)variables.itti_recv_msg[63:0]
+[color] 6
++{eNB SCTP} (47)variables.itti_recv_msg[63:0]
+[color] 6
++{eNB S1AP} (48)variables.itti_recv_msg[63:0]
+[color] 6
++{UE NAS} (49)variables.itti_recv_msg[63:0]
+[color] 6
++{BM} (50)variables.itti_recv_msg[63:0]
+[color] 6
++{eNB RRC} (51)variables.itti_recv_msg[63:0]
+[color] 6
++{UE RRC} (52)variables.itti_recv_msg[63:0]
+@1401200
+-group_end
+@200
+-
+@28
+[color] 3
+functions.rrc_mac_config_req
+@200
+-
+@28
+functions.pdcp_run
+@200
+-
+@28
+functions.phy_procedures_eNB_lte
+functions.phy_procedures_eNb_rx
+functions.phy_procedures_eNb_tx
+[pattern_trace] 1
+[pattern_trace] 0
