@@ -200,6 +200,7 @@ static void* _nas_user_mngr(void* args)
     int exit_loop = FALSE;
     int nb_command;
     int bytes;
+    int i;
 
     int *fd = (int*) args;
 
@@ -227,7 +228,7 @@ static void* _nas_user_mngr(void* args)
 
         /* Decode the user data message */
         nb_command = user_api_decode_data (bytes);
-        for (int i = 0; i < nb_command; i++)
+        for (i = 0; i < nb_command; i++)
         {
             /* Get the user data to be processed */
             const void* data = user_api_get_data (i);

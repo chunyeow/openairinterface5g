@@ -1,26 +1,26 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		Emmstatus.c
+Source      Emmstatus.c
 
-Version		0.1
+Version     0.1
 
-Date		2013/06/26
+Date        2013/06/26
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EMM status procedure executed by the Non-Access
-		Stratum.
+Description Defines the EMM status procedure executed by the Non-Access
+        Stratum.
 
-		The purpose of the sending of the EMM STATUS message is to
-		report at any time certain error conditions detected upon
-		receipt of EMM protocol data. The EMM STATUS message can be
-		sent by both the MME and the UE.
+        The purpose of the sending of the EMM STATUS message is to
+        report at any time certain error conditions detected upon
+        receipt of EMM protocol data. The EMM STATUS message can be
+        sent by both the MME and the UE.
 
 *****************************************************************************/
 
@@ -47,22 +47,22 @@ Description	Defines the EMM status procedure executed by the Non-Access
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_status_ind()                                     **
+ ** Name:    emm_proc_status_ind()                                     **
  **                                                                        **
  ** Description: Processes received EMM status message.                    **
  **                                                                        **
- **		 3GPP TS 24.301, section 5.7                               **
- **		 On receipt of an EMM STATUS message no state transition   **
- **		 and no specific action shall be taken. Local actions are  **
- **		 possible and are implementation dependent.                **
+ **      3GPP TS 24.301, section 5.7                               **
+ **      On receipt of an EMM STATUS message no state transition   **
+ **      and no specific action shall be taken. Local actions are  **
+ **      possible and are implementation dependent.                **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- ** 		 emm_cause:	Received EMM cause code                    **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **          emm_cause: Received EMM cause code                    **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_status_ind(unsigned int ueid, int emm_cause)
@@ -72,7 +72,7 @@ int emm_proc_status_ind(unsigned int ueid, int emm_cause)
     int rc;
 
     LOG_TRACE(INFO,"EMM-PROC  - EMM status procedure requested (cause=%d)",
-	      emm_cause);
+              emm_cause);
 
     LOG_TRACE(DEBUG, "EMM-PROC  - To be implemented");
 
@@ -84,17 +84,17 @@ int emm_proc_status_ind(unsigned int ueid, int emm_cause)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_status()                                         **
+ ** Name:    emm_proc_status()                                         **
  **                                                                        **
  ** Description: Initiates EMM status procedure.                           **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 emm_cause:	EMM cause code to be reported              **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      emm_cause: EMM cause code to be reported              **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_status(unsigned int ueid, int emm_cause)
@@ -133,7 +133,7 @@ int emm_proc_status(unsigned int ueid, int emm_cause)
 #endif
     /* Setup EPS NAS security data */
     emm_as_set_security_data(&emm_sap.u.emm_as.u.status.sctx, sctx,
-			     FALSE, TRUE);
+                             FALSE, TRUE);
 
     rc = emm_sap_send(&emm_sap);
 

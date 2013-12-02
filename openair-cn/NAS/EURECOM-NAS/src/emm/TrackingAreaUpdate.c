@@ -1,27 +1,27 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		TrackingAreaUpdate.c
+Source      TrackingAreaUpdate.c
 
-Version		0.1
+Version     0.1
 
-Date		2013/05/07
+Date        2013/05/07
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the tracking area update EMM procedure executed by the
-		Non-Access Stratum.
+Description Defines the tracking area update EMM procedure executed by the
+        Non-Access Stratum.
 
-		The tracking area updating procedure is always initiated by the
-		UE and is used to update the registration of the actual tracking
-		area of a UE in the network, to periodically notify the availa-
-		bility of the UE to the network, for MME load balancing, to up-
-		date certain UE specific parameters in the network.
+        The tracking area updating procedure is always initiated by the
+        UE and is used to update the registration of the actual tracking
+        area of a UE in the network, to periodically notify the availa-
+        bility of the UE to the network, for MME load balancing, to up-
+        date certain UE specific parameters in the network.
 
 *****************************************************************************/
 
@@ -50,7 +50,7 @@ Description	Defines the tracking area update EMM procedure executed by the
 /*
  * Timer handlers
  */
-void* _emm_tau_t3430_handler(void*);
+void *_emm_tau_t3430_handler(void *);
 #endif // NAS_UE
 
 /*
@@ -72,27 +72,27 @@ void* _emm_tau_t3430_handler(void*);
 #ifdef NAS_UE
 /*
  * --------------------------------------------------------------------------
- *				Timer handlers
+ *              Timer handlers
  * --------------------------------------------------------------------------
  */
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _emm_tau_t3430_handler()                                  **
+ ** Name:    _emm_tau_t3430_handler()                                  **
  **                                                                        **
  ** Description: T3430 timeout handler                                     **
  **                                                                        **
  **              3GPP TS 24.301, section 5.5.3.2.6 case c                  **
  **                                                                        **
- ** Inputs:	 args:		handler parameters                         **
- **		 Others:	None                                       **
+ ** Inputs:  args:      handler parameters                         **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	None                                       **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    None                                       **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-void* _emm_tau_t3430_handler(void* args)
+void *_emm_tau_t3430_handler(void *args)
 {
     LOG_FUNC_IN;
 

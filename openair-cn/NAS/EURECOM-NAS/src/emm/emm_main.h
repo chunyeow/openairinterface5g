@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_main.h
+Source      emm_main.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/10
+Date        2012/10/10
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EPS Mobility Management procedure call manager,
-		the main entry point for elementary EMM processing.
+Description Defines the EPS Mobility Management procedure call manager,
+        the main entry point for elementary EMM processing.
 
 *****************************************************************************/
 #ifndef __EMM_MAIN_H__
@@ -41,7 +41,7 @@ Description	Defines the EPS Mobility Management procedure call manager,
 /****************************************************************************/
 
 #ifdef NAS_UE
-void emm_main_initialize(emm_indication_callback_t cb, const char* imei);
+void emm_main_initialize(emm_indication_callback_t cb, const char *imei);
 #endif
 #ifdef NAS_MME
 void emm_main_initialize(void);
@@ -51,24 +51,24 @@ void emm_main_cleanup(void);
 #ifdef NAS_UE
 
 /* User's getter of UE's identity */
-const imsi_t* emm_main_get_imsi(void);
+const imsi_t *emm_main_get_imsi(void);
 
 /* User's getter of the subscriber dialing number */
-const msisdn_t* emm_main_get_msisdn(void);
+const msisdn_t *emm_main_get_msisdn(void);
 
 /* User's getter/setter for network selection */
 int emm_main_set_plmn_selection_mode(int mode, int format,
-				     const network_plmn_t* plmn, int rat);
+                                     const network_plmn_t *plmn, int rat);
 int emm_main_get_plmn_selection_mode(void);
-int emm_main_get_plmn_list(const char** plist);
-const char* emm_main_get_selected_plmn(network_plmn_t* plmn, int format);
+int emm_main_get_plmn_list(const char **plist);
+const char *emm_main_get_selected_plmn(network_plmn_t *plmn, int format);
 
 /* User's getter for network registration */
 Stat_t emm_main_get_plmn_status(void);
 tac_t emm_main_get_plmn_tac(void);
 ci_t emm_main_get_plmn_ci(void);
 AcT_t emm_main_get_plmn_rat(void);
-const char* emm_main_get_registered_plmn(network_plmn_t* plmn, int format);
+const char *emm_main_get_registered_plmn(network_plmn_t *plmn, int format);
 
 /* User's getter for network attachment */
 int emm_main_is_attached(void);

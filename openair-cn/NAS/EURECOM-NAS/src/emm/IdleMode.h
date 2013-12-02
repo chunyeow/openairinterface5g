@@ -1,22 +1,22 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		IdleMode.h
+Source      IdleMode.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/23
+Date        2012/10/23
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the functions used to get information from the list
-		of available PLMNs locally maintained when the UE is in
-		idle mode.
+Description Defines the functions used to get information from the list
+        of available PLMNs locally maintained when the UE is in
+        idle mode.
 
 *****************************************************************************/
 #ifndef __IDLEMODE_H__
@@ -51,12 +51,14 @@ int IdleMode_get_splmn_index(void);
 
 int IdleMode_update_plmn_list(int index);
 
-const char* IdleMode_get_plmn_fullname(const plmn_t* plmn, int index, size_t* len);
-const char* IdleMode_get_plmn_shortname(const plmn_t* plmn, int index, size_t* len);
-const char* IdleMode_get_plmn_id(const plmn_t* plmn, int index, size_t* len);
+const char *IdleMode_get_plmn_fullname(const plmn_t *plmn, int index,
+                                       size_t *len);
+const char *IdleMode_get_plmn_shortname(const plmn_t *plmn, int index,
+                                        size_t *len);
+const char *IdleMode_get_plmn_id(const plmn_t *plmn, int index, size_t *len);
 
-int IdleMode_get_plmn_fullname_index(const char* plmn);
-int IdleMode_get_plmn_shortname_index(const char* plmn);
-int IdleMode_get_plmn_id_index(const char* plmn);
+int IdleMode_get_plmn_fullname_index(const char *plmn);
+int IdleMode_get_plmn_shortname_index(const char *plmn);
+int IdleMode_get_plmn_id_index(const char *plmn);
 
 #endif /* __IDLEMODE_H__*/

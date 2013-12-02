@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		emm_proc.h
+Source      emm_proc.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/10/16
+Date        2012/10/16
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the EPS Mobility Management procedures executed at
-		the EMM Service Access Points.
+Description Defines the EPS Mobility Management procedures executed at
+        the EMM Service Access Points.
 
 *****************************************************************************/
 #ifndef __EMM_PROC_H__
@@ -78,7 +78,7 @@ typedef enum {
 
 /*
  *---------------------------------------------------------------------------
- *				EMM status procedure
+ *              EMM status procedure
  *---------------------------------------------------------------------------
  */
 int emm_proc_status_ind(unsigned int ueid, int emm_cause);
@@ -86,14 +86,14 @@ int emm_proc_status(unsigned int ueid, int emm_cause);
 
 /*
  *---------------------------------------------------------------------------
- *				Lower layer procedure
+ *              Lower layer procedure
  *---------------------------------------------------------------------------
  */
 #ifdef NAS_UE
 int emm_proc_lowerlayer_initialize(lowerlayer_success_callback_t success,
-				   lowerlayer_failure_callback_t failure,
-				   lowerlayer_release_callback_t release,
-				   void* args);
+                                   lowerlayer_failure_callback_t failure,
+                                   lowerlayer_release_callback_t release,
+                                   void *args);
 int emm_proc_lowerlayer_success(void);
 int emm_proc_lowerlayer_failure(int is_initial);
 int emm_proc_lowerlayer_release(void);
@@ -101,7 +101,7 @@ int emm_proc_lowerlayer_release(void);
 
 /*
  *---------------------------------------------------------------------------
- *			    UE's Idle mode procedure
+ *              UE's Idle mode procedure
  *---------------------------------------------------------------------------
  */
 #ifdef NAS_UE
@@ -112,17 +112,19 @@ int emm_proc_plmn_selection_end(int found, tac_t tac, ci_t ci, AcT_t rat);
 
 /*
  * --------------------------------------------------------------------------
- * 				Attach procedure
+ *              Attach procedure
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
 int emm_proc_attach(emm_proc_attach_type_t type);
-int emm_proc_attach_request(void* args);
-int emm_proc_attach_accept(long T3412, long T3402, long T3423, int n_tais, tai_t* tai, GUTI_t* guti, int n_eplmns, plmn_t* eplmn, const OctetString* esm_msg);
-int emm_proc_attach_reject(int emm_cause, const OctetString* esm_msg);
-int emm_proc_attach_complete(void* args);
-int emm_proc_attach_failure(int is_initial, void* args);
-int emm_proc_attach_release(void* args);
+int emm_proc_attach_request(void *args);
+int emm_proc_attach_accept(long T3412, long T3402, long T3423, int n_tais,
+                           tai_t *tai, GUTI_t *guti, int n_eplmns, plmn_t *eplmn,
+                           const OctetString *esm_msg);
+int emm_proc_attach_reject(int emm_cause, const OctetString *esm_msg);
+int emm_proc_attach_complete(void *args);
+int emm_proc_attach_failure(int is_initial, void *args);
+int emm_proc_attach_release(void *args);
 int emm_proc_attach_restart(void);
 
 int emm_proc_attach_set_emergency(void);
@@ -130,32 +132,36 @@ int emm_proc_attach_set_detach(void);
 #endif
 
 #ifdef NAS_MME
-int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type, int native_ksi, int ksi, int native_guti, GUTI_t* guti, imsi_t* imsi, imei_t* imei, tai_t* tai, int eea, int eia, const OctetString* esm_msg);
+int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
+                            int native_ksi, int ksi, int native_guti, GUTI_t *guti, imsi_t *imsi,
+                            imei_t *imei, tai_t *tai, int eea, int eia, const OctetString *esm_msg);
 int emm_proc_attach_reject(unsigned int ueid, int emm_cause);
-int emm_proc_attach_complete(unsigned int ueid, const OctetString* esm_msg);
+int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg);
 #endif
 
 /*
  * --------------------------------------------------------------------------
- * 				Detach procedure
+ *              Detach procedure
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
 int emm_proc_detach(emm_proc_detach_type_t type, int switch_off);
-int emm_proc_detach_request(void* args);
+int emm_proc_detach_request(void *args);
 int emm_proc_detach_accept(void);
-int emm_proc_detach_failure(int is_initial, void* args);
-int emm_proc_detach_release(void* args);
+int emm_proc_detach_failure(int is_initial, void *args);
+int emm_proc_detach_release(void *args);
 #endif
 
 #ifdef NAS_MME
 int emm_proc_detach(unsigned int ueid, emm_proc_detach_type_t type);
-int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type, int switch_off, int native_ksi, int ksi, GUTI_t* guti, imsi_t* imsi, imei_t* imei);
+int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
+                            int switch_off, int native_ksi, int ksi, GUTI_t *guti, imsi_t *imsi,
+                            imei_t *imei);
 #endif
 
 /*
  * --------------------------------------------------------------------------
- * 			    Identification procedure
+ *              Identification procedure
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
@@ -169,50 +175,54 @@ int emm_proc_identification(unsigned int                   ueid,
                             emm_common_success_callback_t  success,
                             emm_common_reject_callback_t   reject,
                             emm_common_failure_callback_t  failure);
-int emm_proc_identification_complete(unsigned int ueid, const imsi_t* imsi, const imei_t* imei, UInt32_t* tmsi);
+int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
+                                     const imei_t *imei, UInt32_t *tmsi);
 #endif
 
 /*
  * --------------------------------------------------------------------------
- * 			    Authentication procedure
+ *              Authentication procedure
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
-int emm_proc_authentication_request(int native_ksi, int ksi, const OctetString* rand, const OctetString* autn);
+int emm_proc_authentication_request(int native_ksi, int ksi,
+                                    const OctetString *rand, const OctetString *autn);
 int emm_proc_authentication_reject(void);
 int emm_proc_authentication_delete(void);
 #endif
 
 #ifdef NAS_MME
 int emm_proc_authentication(unsigned int ueid, int ksi,
-			    const OctetString* rand, const OctetString*  autn,
-			    emm_common_success_callback_t success,
-			    emm_common_reject_callback_t reject,
-			    emm_common_failure_callback_t failure);
-int emm_proc_authentication_complete(unsigned int ueid, int emm_cause, const OctetString* res);
+                            const OctetString *rand, const OctetString  *autn,
+                            emm_common_success_callback_t success,
+                            emm_common_reject_callback_t reject,
+                            emm_common_failure_callback_t failure);
+int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
+                                     const OctetString *res);
 #endif
 
 /*
  * --------------------------------------------------------------------------
- * 			Security mode control procedure
+ *          Security mode control procedure
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
-int emm_proc_security_mode_command(int native_ksi, int ksi, int seea, int seia, int reea, int reia);
+int emm_proc_security_mode_command(int native_ksi, int ksi, int seea, int seia,
+                                   int reea, int reia);
 #endif
 
 #ifdef NAS_MME
 int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
-			    emm_common_success_callback_t success,
-			    emm_common_reject_callback_t reject,
-			    emm_common_failure_callback_t failure);
+                                   emm_common_success_callback_t success,
+                                   emm_common_reject_callback_t reject,
+                                   emm_common_failure_callback_t failure);
 int emm_proc_security_mode_complete(unsigned int ueid);
 int emm_proc_security_mode_reject(unsigned int ueid);
 #endif
 
 /*
  *---------------------------------------------------------------------------
- *			   Network indication handlers
+ *             Network indication handlers
  *---------------------------------------------------------------------------
  */
 #ifdef NAS_UE

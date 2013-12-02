@@ -1,30 +1,30 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		EmmCommon.h
+Source      EmmCommon.h
 
-Version		0.1
+Version     0.1
 
-Date		2013/04/19
+Date        2013/04/19
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines callback functions executed within EMM common procedures
-		by the Non-Access Stratum running at the network side.
+Description Defines callback functions executed within EMM common procedures
+        by the Non-Access Stratum running at the network side.
 
-		Following EMM common procedures can always be initiated by the
-		network whilst a NAS signalling connection exists:
+        Following EMM common procedures can always be initiated by the
+        network whilst a NAS signalling connection exists:
 
-		GUTI reallocation
-		authentication
-		security mode control
-		identification
-		EMM information
+        GUTI reallocation
+        authentication
+        security mode control
+        identification
+        EMM information
 
 *****************************************************************************/
 
@@ -36,7 +36,7 @@ Description	Defines callback functions executed within EMM common procedures
 #include "nas_log.h"
 #include "emmData.h"
 
-#include <stdlib.h>	// malloc, free
+#include <stdlib.h> // malloc, free
 #include <string.h>
 #include <assert.h>
 
@@ -52,10 +52,10 @@ Description	Defines callback functions executed within EMM common procedures
 /*******************  L O C A L    D E F I N I T I O N S  *******************/
 /****************************************************************************/
 
-/* EMM procedure callback cleanup function	*/
+/* EMM procedure callback cleanup function  */
 static void _emm_common_cleanup(unsigned int ueid);
 
-/* Ongoing EMM procedure callback functions	*/
+/* Ongoing EMM procedure callback functions */
 typedef struct emm_common_data_s {
     unsigned int ueid;
     int ref_count;
@@ -63,7 +63,7 @@ typedef struct emm_common_data_s {
     emm_common_reject_callback_t  reject;
     emm_common_failure_callback_t failure;
     emm_common_abort_callback_t   abort;
-    void* args;
+    void *args;
 
 #if defined(EPC_BUILD)
     RB_ENTRY(emm_common_data_s) entries;
@@ -117,7 +117,7 @@ struct emm_common_data_s *emm_common_data_context_get(
     return RB_FIND(emm_common_data_map, &root->emm_common_data_root, &reference);
 }
 #else
-static emm_common_data_t* _emm_common_data[EMM_DATA_NB_UE_MAX];
+static emm_common_data_t *_emm_common_data[EMM_DATA_NB_UE_MAX];
 #endif
 
 /****************************************************************************/
@@ -126,34 +126,34 @@ static emm_common_data_t* _emm_common_data[EMM_DATA_NB_UE_MAX];
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_initialize()                              **
+ ** Name:    emm_proc_common_initialize()                              **
  **                                                                        **
  ** Description: Initialize EMM procedure callback functions executed for  **
- **		 the UE with the given identifier                          **
+ **      the UE with the given identifier                          **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 success:	EMM procedure executed upon successful EMM **
- **				common procedure completion                **
- **		 reject:	EMM procedure executed if the EMM common   **
- **				procedure failed or is rejected            **
- **		 failure:	EMM procedure executed upon transmission   **
- **				failure reported by lower layer            **
- **		 abort:		EMM common procedure executed when the on- **
- **				going EMM procedure is aborted             **
- **		 args:		EMM common procedure argument parameters   **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      success:   EMM procedure executed upon successful EMM **
+ **             common procedure completion                **
+ **      reject:    EMM procedure executed if the EMM common   **
+ **             procedure failed or is rejected            **
+ **      failure:   EMM procedure executed upon transmission   **
+ **             failure reported by lower layer            **
+ **      abort:     EMM common procedure executed when the on- **
+ **             going EMM procedure is aborted             **
+ **      args:      EMM common procedure argument parameters   **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	_emm_common_data                           **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    _emm_common_data                           **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_common_initialize(unsigned int ueid,
-			       emm_common_success_callback_t _success,
-			       emm_common_reject_callback_t  _reject,
-			       emm_common_failure_callback_t _failure,
-			       emm_common_abort_callback_t   _abort,
-			       void* args)
+                               emm_common_success_callback_t _success,
+                               emm_common_reject_callback_t  _reject,
+                               emm_common_failure_callback_t _failure,
+                               emm_common_abort_callback_t   _abort,
+                               void *args)
 {
     struct emm_common_data_s *emm_common_data_ctx = NULL;
     LOG_FUNC_IN;
@@ -166,7 +166,7 @@ int emm_proc_common_initialize(unsigned int ueid,
 #endif
 
     if (emm_common_data_ctx == NULL) {
-        emm_common_data_ctx = (emm_common_data_t*)malloc(sizeof(emm_common_data_t));
+        emm_common_data_ctx = (emm_common_data_t *)malloc(sizeof(emm_common_data_t));
         emm_common_data_ctx->ueid = ueid;
 #if defined(EPC_BUILD)
         RB_INSERT(emm_common_data_map, &emm_common_data_head.emm_common_data_root,
@@ -191,19 +191,19 @@ int emm_proc_common_initialize(unsigned int ueid,
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_success()                                 **
+ ** Name:    emm_proc_common_success()                                 **
  **                                                                        **
  ** Description: The EMM common procedure initiated between the UE with    **
- **		 the specified identifier and the MME completed success-   **
- **		 fully. The network performs required actions related to   **
- **		 the ongoing EMM procedure.                                **
+ **      the specified identifier and the MME completed success-   **
+ **      fully. The network performs required actions related to   **
+ **      the ongoing EMM procedure.                                **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	_emm_common_data, _emm_data                **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    _emm_common_data, _emm_data                **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_common_success(unsigned int ueid)
@@ -244,19 +244,19 @@ int emm_proc_common_success(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_reject()                                  **
+ ** Name:    emm_proc_common_reject()                                  **
  **                                                                        **
  ** Description: The EMM common procedure initiated between the UE with    **
- **		 the specified identifier and the MME failed or has been   **
- **		 rejected. The network performs required actions related   **
- **		 to the ongoing EMM procedure.                             **
+ **      the specified identifier and the MME failed or has been   **
+ **      rejected. The network performs required actions related   **
+ **      to the ongoing EMM procedure.                             **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	_emm_common_data, _emm_data                **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    _emm_common_data, _emm_data                **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_common_reject(unsigned int ueid)
@@ -297,20 +297,20 @@ int emm_proc_common_reject(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_failure()                                 **
+ ** Name:    emm_proc_common_failure()                                 **
  **                                                                        **
  ** Description: The EMM common procedure has been initiated between the   **
- **		 UE with the specified identifier and the MME, and a lower **
- **		 layer failure occurred before the EMM common procedure    **
- **		 being completed. The network performs required actions    **
- **		 related to the ongoing EMM procedure.                     **
+ **      UE with the specified identifier and the MME, and a lower **
+ **      layer failure occurred before the EMM common procedure    **
+ **      being completed. The network performs required actions    **
+ **      related to the ongoing EMM procedure.                     **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	_emm_common_data, _emm_data                **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    _emm_common_data, _emm_data                **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_common_failure(unsigned int ueid)
@@ -350,19 +350,19 @@ int emm_proc_common_failure(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_abort()                                   **
+ ** Name:    emm_proc_common_abort()                                   **
  **                                                                        **
  ** Description: The ongoing EMM procedure has been aborted. The network   **
- **		 performs required actions related to the EMM common pro-  **
- **		 cedure previously initiated between the UE with the spe-  **
- **		 cified identifier and the MME.                            **
+ **      performs required actions related to the EMM common pro-  **
+ **      cedure previously initiated between the UE with the spe-  **
+ **      cified identifier and the MME.                            **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	_emm_common_data                           **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    _emm_common_data                           **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_common_abort(unsigned int ueid)
@@ -402,21 +402,21 @@ int emm_proc_common_abort(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_get_args()                                **
+ ** Name:    emm_proc_common_get_args()                                **
  **                                                                        **
  ** Description: Returns pointer to the EMM common procedure argument pa-  **
- **		 rameters allocated for the UE with the given identifier.  **
+ **      rameters allocated for the UE with the given identifier.  **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	_emm_common_data                           **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    _emm_common_data                           **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	pointer to the EMM common procedure argu-  **
- **				ment parameters                            **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    pointer to the EMM common procedure argu-  **
+ **             ment parameters                            **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-void* emm_proc_common_get_args(unsigned int ueid)
+void *emm_proc_common_get_args(unsigned int ueid)
 {
     emm_common_data_t *emm_common_data_ctx = NULL;
     LOG_FUNC_IN;
@@ -439,19 +439,19 @@ void* emm_proc_common_get_args(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_common_cleanup()                                 **
+ ** Name:    emm_proc_common_cleanup()                                 **
  **                                                                        **
  ** Description: Cleans EMM procedure callback functions upon completion   **
- **		 of an EMM common procedure previously initiated within an **
- **		 EMM procedure currently in progress between the network   **
- **		 and the UE with the specified identifier.                 **
+ **      of an EMM common procedure previously initiated within an **
+ **      EMM procedure currently in progress between the network   **
+ **      and the UE with the specified identifier.                 **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	None                                       **
- **		 Others:	_emm_common_data                           **
+ ** Outputs:     None                                                      **
+ **      Return:    None                                       **
+ **      Others:    _emm_common_data                           **
  **                                                                        **
  ***************************************************************************/
 static void _emm_common_cleanup(unsigned int ueid)
@@ -469,7 +469,7 @@ static void _emm_common_cleanup(unsigned int ueid)
     if (emm_common_data_ctx) {
         emm_common_data_ctx->ref_count -= 1;
         if (emm_common_data_ctx->ref_count == 0) {
-	    /* Release the callback functions */
+            /* Release the callback functions */
 #if defined(EPC_BUILD)
             RB_REMOVE(emm_common_data_map,
                       &emm_common_data_head.emm_common_data_root,
@@ -477,7 +477,7 @@ static void _emm_common_cleanup(unsigned int ueid)
 #endif
             free(emm_common_data_ctx);
             emm_common_data_ctx = NULL;
-	}
+        }
     }
 }
 #endif // NAS_MME

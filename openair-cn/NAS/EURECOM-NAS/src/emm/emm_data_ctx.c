@@ -45,7 +45,7 @@ struct emm_data_context_s *emm_data_context_get(
     return RB_FIND(emm_data_context_map, &emm_data->ctx_map, &reference);
 }
 
-struct emm_data_context_s * emm_data_context_remove(
+struct emm_data_context_s *emm_data_context_remove(
     emm_data_t *emm_data, struct emm_data_context_s *elm)
 {
     return RB_REMOVE(emm_data_context_map, &emm_data->ctx_map, elm);

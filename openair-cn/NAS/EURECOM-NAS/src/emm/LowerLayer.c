@@ -1,24 +1,24 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		LowerLayer.c
+Source      LowerLayer.c
 
-Version		0.1
+Version     0.1
 
-Date		2012/03/14
+Date        2012/03/14
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	EPS Mobility Management
+Subsystem   EPS Mobility Management
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines EMM procedures executed by the Non-Access Stratum
-		upon receiving notifications from lower layers so that data
-		transfer succeed or failed, or NAS signalling connection is
-		released, or ESM unit data has been received from under layer,
-		and to request ESM unit data transfer to under layer.
+Description Defines EMM procedures executed by the Non-Access Stratum
+        upon receiving notifications from lower layers so that data
+        transfer succeed or failed, or NAS signalling connection is
+        released, or ESM unit data has been received from under layer,
+        and to request ESM unit data transfer to under layer.
 
 *****************************************************************************/
 
@@ -31,7 +31,7 @@ Description	Defines EMM procedures executed by the Non-Access Stratum
 #include "emm_sap.h"
 #include "esm_sap.h"
 
-#include <string.h>	// memset
+#include <string.h> // memset
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -47,10 +47,10 @@ Description	Defines EMM procedures executed by the Non-Access Stratum
  * receiving lower layer notifications
  */
 static struct {
-    lowerlayer_success_callback_t success; /* Successful data delivery	*/
-    lowerlayer_failure_callback_t failure; /* Lower layer failure	*/
-    lowerlayer_release_callback_t release; /* NAS signalling release	*/
-    void* args;			/* EMM procedure argument parameters	*/
+    lowerlayer_success_callback_t success; /* Successful data delivery  */
+    lowerlayer_failure_callback_t failure; /* Lower layer failure   */
+    lowerlayer_release_callback_t release; /* NAS signalling release    */
+    void *args;         /* EMM procedure argument parameters    */
 } _lowerlayer_data;
 #endif
 
@@ -60,23 +60,23 @@ static struct {
 
 /*
  * --------------------------------------------------------------------------
- * 			Lower layer notification handlers
+ *          Lower layer notification handlers
  * --------------------------------------------------------------------------
  */
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 lowerlayer_success()                                      **
+ ** Name:    lowerlayer_success()                                      **
  **                                                                        **
  ** Description: Notify the EPS Mobility Management entity that data have  **
- **		 been successfully delivered to the network                **
+ **      been successfully delivered to the network                **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int lowerlayer_success(unsigned int ueid)
@@ -95,17 +95,17 @@ int lowerlayer_success(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 lowerlayer_failure()                                      **
+ ** Name:    lowerlayer_failure()                                      **
  **                                                                        **
  ** Description: Notify the EPS Mobility Management entity that lower la-  **
- **		 yers failed to deliver data to the network                **
+ **      yers failed to deliver data to the network                **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int lowerlayer_failure(unsigned int ueid)
@@ -124,18 +124,18 @@ int lowerlayer_failure(unsigned int ueid)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 lowerlayer_establish()                                    **
+ ** Name:    lowerlayer_establish()                                    **
  **                                                                        **
  ** Description: Update the EPS connection management status upon recei-   **
- **		 ving indication so that the NAS signalling connection is  **
- **		 established                                               **
+ **      ving indication so that the NAS signalling connection is  **
+ **      established                                               **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int lowerlayer_establish(void)
@@ -152,17 +152,17 @@ int lowerlayer_establish(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 lowerlayer_release()                                      **
+ ** Name:    lowerlayer_release()                                      **
  **                                                                        **
  ** Description: Notify the EPS Mobility Management entity that NAS signal-**
- **		 ling connection has been released                         **
+ **      ling connection has been released                         **
  **                                                                        **
- ** Inputs:	 cause:		Release cause                              **
- **		 Others:	None                                       **
+ ** Inputs:  cause:     Release cause                              **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int lowerlayer_release(int cause)
@@ -186,21 +186,21 @@ int lowerlayer_release(int cause)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 lowerlayer_data_ind()                                     **
+ ** Name:    lowerlayer_data_ind()                                     **
  **                                                                        **
  ** Description: Notify the EPS Session Management entity that data have   **
- **		 been received from lower layers                           **
+ **      been received from lower layers                           **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- **		 data:		Data transfered from lower layers          **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **      data:      Data transfered from lower layers          **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int lowerlayer_data_ind(unsigned int ueid, const OctetString* data)
+int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
 {
     LOG_FUNC_IN;
 
@@ -218,21 +218,21 @@ int lowerlayer_data_ind(unsigned int ueid, const OctetString* data)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 lowerlayer_data_req()                                     **
+ ** Name:    lowerlayer_data_req()                                     **
  **                                                                        **
  ** Description: Notify the EPS Mobility Management entity that data have  **
- **		 to be transfered to lower layers                          **
+ **      to be transfered to lower layers                          **
  **                                                                        **
- ** Inputs:	 ueid:		UE lower layer identifier                  **
- ** 		 data:		Data to be transfered to lower layers      **
- **		 Others:	None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                  **
+ **          data:      Data to be transfered to lower layers      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int lowerlayer_data_req(unsigned int ueid, const OctetString* data)
+int lowerlayer_data_req(unsigned int ueid, const OctetString *data)
 {
     LOG_FUNC_IN;
 
@@ -275,35 +275,35 @@ int lowerlayer_data_req(unsigned int ueid, const OctetString* data)
 
 /*
  * --------------------------------------------------------------------------
- *			    EMM procedure handlers
+ *              EMM procedure handlers
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_UE
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_lowerlayer_initialize()                          **
+ ** Name:    emm_proc_lowerlayer_initialize()                          **
  **                                                                        **
  ** Description: Initialize EMM procedure handler                          **
  **                                                                        **
- ** Inputs:	 success:	EMM procedure executed when data have been **
- **				successfully delivered by lower layers     **
- **		 failure:	EMM procedure executed upon transmission   **
- **				failure reported by lower layers           **
- **		 release:	EMM procedure executed when lower layers   **
- **				report that NAS signalling connection has  **
- **				been released                              **
- **		 args:		EMM procedure argument parameters          **
- **		 Others:	None                                       **
+ ** Inputs:  success:   EMM procedure executed when data have been **
+ **             successfully delivered by lower layers     **
+ **      failure:   EMM procedure executed upon transmission   **
+ **             failure reported by lower layers           **
+ **      release:   EMM procedure executed when lower layers   **
+ **             report that NAS signalling connection has  **
+ **             been released                              **
+ **      args:      EMM procedure argument parameters          **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	_lowerlayer_data                           **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    _lowerlayer_data                           **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_lowerlayer_initialize(lowerlayer_success_callback_t success,
-				   lowerlayer_failure_callback_t failure,
-				   lowerlayer_release_callback_t release,
-				   void* args)
+                                   lowerlayer_failure_callback_t failure,
+                                   lowerlayer_release_callback_t release,
+                                   void *args)
 {
     LOG_FUNC_IN;
 
@@ -317,18 +317,18 @@ int emm_proc_lowerlayer_initialize(lowerlayer_success_callback_t success,
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_lowerlayer_success()                             **
+ ** Name:    emm_proc_lowerlayer_success()                             **
  **                                                                        **
  ** Description: Handles EMM procedure to be executed upon receiving noti- **
- **		 fication that data have been successfully delivered to    **
- **		 the network.                                              **
+ **      fication that data have been successfully delivered to    **
+ **      the network.                                              **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_lowerlayer_success(void)
@@ -340,8 +340,8 @@ int emm_proc_lowerlayer_success(void)
     lowerlayer_success_callback_t emm_callback = _lowerlayer_data.success;
 
     if (emm_callback) {
-	rc = (*emm_callback)(_lowerlayer_data.args);
-	_lowerlayer_data.success = NULL;
+        rc = (*emm_callback)(_lowerlayer_data.args);
+        _lowerlayer_data.success = NULL;
     }
 
     LOG_FUNC_RETURN (rc);
@@ -349,18 +349,18 @@ int emm_proc_lowerlayer_success(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_lowerlayer_failure()                             **
+ ** Name:    emm_proc_lowerlayer_failure()                             **
  **                                                                        **
  ** Description: Handles EMM procedure to be executed upon receiving noti- **
- **		 fication that data failed to be delivered to the network. **
+ **      fication that data failed to be delivered to the network. **
  **                                                                        **
- ** Inputs:	 is_initial:	TRUE if the NAS message that failed to be  **
- **				transfered is an initial NAS message       **
- **		 Others:	None                                       **
+ ** Inputs:  is_initial:    TRUE if the NAS message that failed to be  **
+ **             transfered is an initial NAS message       **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_lowerlayer_failure(int is_initial)
@@ -372,8 +372,8 @@ int emm_proc_lowerlayer_failure(int is_initial)
     lowerlayer_failure_callback_t emm_callback = _lowerlayer_data.failure;
 
     if (emm_callback) {
-	rc = (*emm_callback)(is_initial, _lowerlayer_data.args);
-	_lowerlayer_data.failure = NULL;
+        rc = (*emm_callback)(is_initial, _lowerlayer_data.args);
+        _lowerlayer_data.failure = NULL;
     }
 
     LOG_FUNC_RETURN (rc);
@@ -381,17 +381,17 @@ int emm_proc_lowerlayer_failure(int is_initial)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_proc_lowerlayer_release()                             **
+ ** Name:    emm_proc_lowerlayer_release()                             **
  **                                                                        **
  ** Description: Handles EMM procedure to be executed upon receiving noti- **
- **		 fication that NAS signalling connection has been released **
+ **      fication that NAS signalling connection has been released **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	None                                       **
+ ** Inputs:  None                                                      **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNok, RETURNerror                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **      Return:    RETURNok, RETURNerror                      **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_lowerlayer_release(void)
@@ -403,8 +403,8 @@ int emm_proc_lowerlayer_release(void)
     lowerlayer_release_callback_t emm_callback = _lowerlayer_data.release;
 
     if (emm_callback) {
-	rc = (*emm_callback)(_lowerlayer_data.args);
-	_lowerlayer_data.release = NULL;
+        rc = (*emm_callback)(_lowerlayer_data.args);
+        _lowerlayer_data.release = NULL;
     }
 
     LOG_FUNC_RETURN (rc);
@@ -413,60 +413,59 @@ int emm_proc_lowerlayer_release(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 emm_as_set_security_data()                                **
+ ** Name:    emm_as_set_security_data()                                **
  **                                                                        **
  ** Description: Setup security data according to the given EPS security   **
- **		 context when data transfer to lower layers is requested   **
+ **      context when data transfer to lower layers is requested   **
  **                                                                        **
- ** Inputs:	 args:		EPS security context currently in use      **
- **		 is_new:	Indicates whether a new security context   **
- **				has just been taken into use               **
- **		 is_ciphered:	Indicates whether the NAS message has to   **
- **				be sent ciphered                           **
- **		 Others:	None                                       **
+ ** Inputs:  args:      EPS security context currently in use      **
+ **      is_new:    Indicates whether a new security context   **
+ **             has just been taken into use               **
+ **      is_ciphered:   Indicates whether the NAS message has to   **
+ **             be sent ciphered                           **
+ **      Others:    None                                       **
  **                                                                        **
- ** Outputs:	 data:		EPS NAS security data to be setup          **
- **		 Return:	None                                       **
- **		 Others:	None                                       **
+ ** Outputs:     data:      EPS NAS security data to be setup          **
+ **      Return:    None                                       **
+ **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-void emm_as_set_security_data(emm_as_security_data_t* data, const void* args,
-			      int is_new, int is_ciphered)
+void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
+                              int is_new, int is_ciphered)
 {
     LOG_FUNC_IN;
 
-    const emm_security_context_t* context = (emm_security_context_t*)(args);
+    const emm_security_context_t *context = (emm_security_context_t *)(args);
 
     memset(data, 0, sizeof(emm_as_security_data_t));
 
     if ( context && (context->type != EMM_KSI_NOT_AVAILABLE) ) {
-	/* 3GPP TS 24.301, sections 5.4.3.3 and 5.4.3.4
-	 * Once a valid EPS security context exists and has been taken
-	 * into use, UE and MME shall cipher and integrity protect all
-	 * NAS signalling messages with the selected NAS ciphering and
-	 * NAS integrity algorithms */
-	data->is_new = is_new;
-	data->ksi = context->eksi;
-	data->sqn = context->ul_count.seq_num;
-	data->count = *(UInt32_t*)(&context->ul_count);
-	/* NAS integrity and cyphering keys may not be available if the
-	 * current security context is a partial EPS security context
-	 * and not a full native EPS security context */
-	data->k_int = &context->knas_int;
-	if (is_ciphered) {
-	    /* 3GPP TS 24.301, sections 4.4.5
-	     * When the UE establishes a new NAS signalling connection,
-	     * it shall send initial NAS messages integrity protected
-	     * and unciphered */
-	    /* 3GPP TS 24.301, section 5.4.3.2
-	     * The MME shall send the SECURITY MODE COMMAND message integrity
-	     * protected and unciphered */
-	    data->k_enc = &context->knas_enc;
-	}
-    }
-    else {
-	/* No valid EPS security context exists */
-	data->ksi = EMM_AS_NO_KEY_AVAILABLE;
+        /* 3GPP TS 24.301, sections 5.4.3.3 and 5.4.3.4
+         * Once a valid EPS security context exists and has been taken
+         * into use, UE and MME shall cipher and integrity protect all
+         * NAS signalling messages with the selected NAS ciphering and
+         * NAS integrity algorithms */
+        data->is_new = is_new;
+        data->ksi = context->eksi;
+        data->sqn = context->ul_count.seq_num;
+        data->count = *(UInt32_t *)(&context->ul_count);
+        /* NAS integrity and cyphering keys may not be available if the
+         * current security context is a partial EPS security context
+         * and not a full native EPS security context */
+        data->k_int = &context->knas_int;
+        if (is_ciphered) {
+            /* 3GPP TS 24.301, sections 4.4.5
+             * When the UE establishes a new NAS signalling connection,
+             * it shall send initial NAS messages integrity protected
+             * and unciphered */
+            /* 3GPP TS 24.301, section 5.4.3.2
+             * The MME shall send the SECURITY MODE COMMAND message integrity
+             * protected and unciphered */
+            data->k_enc = &context->knas_enc;
+        }
+    } else {
+        /* No valid EPS security context exists */
+        data->ksi = EMM_AS_NO_KEY_AVAILABLE;
     }
 
     LOG_FUNC_OUT;
