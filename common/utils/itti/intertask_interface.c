@@ -771,7 +771,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 #endif
     }
 
-    itti_desc.running = TRUE;
+    itti_desc.running = 1;
 #ifdef RTAI
     /* Start RT relay thread */
     DevAssert(pthread_create (&itti_desc.rt_relay_thread, NULL, itti_rt_relay_thread, NULL) >= 0);
@@ -832,7 +832,7 @@ void itti_wait_tasks_end(void) {
         }
     } while ((ready_tasks > 0) && (retries--));
 
-    itti_desc.running = FALSE;
+    itti_desc.running = 0;
 
     if (ready_tasks > 0) {
         ITTI_DEBUG("Some threads are still running, force exit\n");
