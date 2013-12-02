@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<filters>
+  <messages>
+    <TERMINATE_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <MESSAGE_TEST enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <ERROR_LOG enabled="1" foreground_color="#585858" background_color="#ff8080"/>
+    <WARNING_LOG enabled="1" foreground_color="#585858" background_color="#fff050"/>
+    <NOTICE_LOG enabled="0" foreground_color="#585858" background_color="#ffffa0"/>
+    <INFO_LOG enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <DEBUG_LOG enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <GENERIC_LOG enabled="1" foreground_color="#246b24" background_color="#ffffff"/>
+    <TIMER_HAS_EXPIRED enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_IN_SYNC_IND enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_OUT_OF_SYNC_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_BCCH_DATA_REQ enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_BCCH_DATA_IND enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_CCCH_DATA_REQ enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_CCCH_DATA_CNF enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_CCCH_DATA_IND enabled="1" foreground_color="#585858" background_color="#dfb9fc"/>
+    <RRC_MAC_MCCH_DATA_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_MAC_MCCH_DATA_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_DCCH_DATA_REQ enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_DCCH_DATA_IND enabled="1" foreground_color="#585858" background_color="#a7b1de"/>
+    <RRC_DL_BCCH_MESSAGE enabled="0" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_DL_CCCH_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_DL_DCCH_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_UE_EUTRA_CAPABILITY enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_UL_CCCH_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <RRC_UL_DCCH_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <NAS_DOWNLINK_DATA_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <NAS_UPLINK_DATA_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <NAS_UPLINK_DATA_CNF enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <NAS_UPLINK_DATA_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_REGISTER_ENB enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_NAS_FIRST_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
+    <S1AP_UPLINK_NAS enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_UE_CAPABILITIES_IND enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_INITIAL_CONTEXT_SETUP_RESP enabled="1" foreground_color="#19431e" background_color="#cbffb1"/>
+    <S1AP_INITIAL_CONTEXT_SETUP_FAIL enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_DOWNLINK_NAS enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_INITIAL_CONTEXT_SETUP_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
+    <SCTP_NEW_ASSOCIATION_REQ enabled="1" foreground_color="#000000" background_color="#aefeff"/>
+    <SCTP_NEW_ASSOCIATION_RESP enabled="1" foreground_color="#585858" background_color="#aefeff"/>
+    <SCTP_NEW_ASSOCIATION_IND enabled="1" foreground_color="#585858" background_color="#aefeff"/>
+    <SCTP_REGISTER_UPPER_LAYER enabled="1" foreground_color="#585858" background_color="#aefeff"/>
+    <SCTP_DATA_REQ enabled="1" foreground_color="#000000" background_color="#aefeff"/>
+    <SCTP_DATA_IND enabled="1" foreground_color="#585858" background_color="#aefeff"/>
+    <S1AP_NAS_NON_DELIVERY_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_UE_CONTEXT_RELEASE_RESP enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_UE_CTXT_MODIFICATION_RESP enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_UE_CTXT_MODIFICATION_FAIL enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_UE_CTXT_MODIFICATION_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_PAGING_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_UE_CONTEXT_RELEASE_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+  </messages>
+  <origin_tasks>
+    <TASK_UNKNOWN enabled="1"/>
+    <TASK_TIMER enabled="1"/>
+    <TASK_L2L1 enabled="1"/>
+    <TASK_PDCP_UE enabled="1"/>
+    <TASK_PDCP_ENB enabled="1"/>
+    <TASK_RLC_UE enabled="1"/>
+    <TASK_RLC_ENB enabled="1"/>
+    <TASK_MAC_UE enabled="1"/>
+    <TASK_MAC_ENB enabled="1"/>
+    <TASK_PHY_UE enabled="1"/>
+    <TASK_PHY_ENB enabled="1"/>
+    <TASK_RRC_UE enabled="1"/>
+    <TASK_RRC_ENB enabled="1"/>
+    <TASK_BM enabled="1"/>
+    <TASK_NAS_UE enabled="1"/>
+    <TASK_S1AP enabled="1"/>
+    <TASK_SCTP enabled="1"/>
+    <TASK_X2AP enabled="1"/>
+    <TASK_ENB_APP enabled="1"/>
+  </origin_tasks>
+  <destination_tasks>
+    <TASK_UNKNOWN enabled="1"/>
+    <TASK_TIMER enabled="1"/>
+    <TASK_L2L1 enabled="1"/>
+    <TASK_PDCP_UE enabled="1"/>
+    <TASK_PDCP_ENB enabled="1"/>
+    <TASK_RLC_UE enabled="1"/>
+    <TASK_RLC_ENB enabled="1"/>
+    <TASK_MAC_UE enabled="1"/>
+    <TASK_MAC_ENB enabled="1"/>
+    <TASK_PHY_UE enabled="1"/>
+    <TASK_PHY_ENB enabled="1"/>
+    <TASK_RRC_UE enabled="1"/>
+    <TASK_RRC_ENB enabled="1"/>
+    <TASK_BM enabled="1"/>
+    <TASK_NAS_UE enabled="1"/>
+    <TASK_S1AP enabled="1"/>
+    <TASK_SCTP enabled="1"/>
+    <TASK_X2AP enabled="1"/>
+    <TASK_ENB_APP enabled="1"/>
+  </destination_tasks>
+</filters>
