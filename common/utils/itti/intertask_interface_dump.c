@@ -58,7 +58,7 @@
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
 
-#if defined(RTAI)
+#if defined(OAI_EMU) || defined(RTAI)
 #include "vcd_signal_dumper.h"
 #endif
 
@@ -264,7 +264,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
 
     DevAssert(new != NULL);
 
-#if defined(RTAI)
+#if defined(OAI_EMU) || defined(RTAI)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
 #endif
 
@@ -292,7 +292,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     }
 #endif
 
-#if defined(RTAI)
+#if defined(OAI_EMU) || defined(RTAI)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
 #endif
 

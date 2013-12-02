@@ -76,8 +76,10 @@ struct vcd_module_s {
 } vcd_module_s;
  
 const char* eurecomVariablesNames[] = {
-    "frame_number",
-    "slot_number",
+    "frame_number_eNB",
+    "slot_number_eNB",
+    "frame_number_UE",
+    "slot_number_UE",
     "daq_mbox",
     "diff2",
     "itti_send_msg",
