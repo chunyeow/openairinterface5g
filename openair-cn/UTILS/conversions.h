@@ -231,18 +231,18 @@ do {                                                    \
     (bITsTRING)->buf = calloc(3, sizeof(uint8_t));      \
     (bITsTRING)->buf[0] = ((mACRO) >> 12);              \
     (bITsTRING)->buf[1] = (mACRO) >> 4;                 \
-    (bITsTRING)->buf[2] = (mACRO) & 0x0f;               \
+    (bITsTRING)->buf[2] = ((mACRO) & 0x0f) << 4;        \
     (bITsTRING)->size = 3;                              \
     (bITsTRING)->bits_unused = 4;                       \
 } while(0)
 
-#define MACRO_ENB_ID_TO_CELL_IDENTITY(mACRO, bITsTRING)    \
+#define MACRO_ENB_ID_TO_CELL_IDENTITY(mACRO, bITsTRING) \
 do {                                                    \
     (bITsTRING)->buf = calloc(4, sizeof(uint8_t));      \
     (bITsTRING)->buf[0] = 0;                            \
     (bITsTRING)->buf[1] = ((mACRO) >> 12);              \
     (bITsTRING)->buf[2] = (mACRO) >> 4;                 \
-    (bITsTRING)->buf[3] = (mACRO) & 0x0f;               \
+    (bITsTRING)->buf[3] = ((mACRO) & 0x0f) << 4;        \
     (bITsTRING)->size = 4;                              \
     (bITsTRING)->bits_unused = 4;                       \
 } while(0)
