@@ -1,6 +1,37 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2013 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fr/openairinterface
+  Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
+                 06410 Biot FRANCE
+
+*******************************************************************************/
 
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
+
 #include "assertions.h"
 #include "conversions.h"
 
@@ -777,8 +808,8 @@ NwRcT s11_ambr_ie_get(
     ambr->br_ul = ntoh_int32_buf(&ieValue[0]);
     ambr->br_dl = ntoh_int32_buf(&ieValue[4]);
 
-    S11_DEBUG("\t- AMBR UL %u\n", ambr->br_ul);
-    S11_DEBUG("\t- AMBR DL %u\n", ambr->br_dl);
+    S11_DEBUG("\t- AMBR UL %"PRIu64"\n", ambr->br_ul);
+    S11_DEBUG("\t- AMBR DL %"PRIu64"\n", ambr->br_dl);
 
     return NW_OK;
 }
