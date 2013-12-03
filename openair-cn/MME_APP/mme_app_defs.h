@@ -57,7 +57,9 @@ extern mme_app_desc_t mme_app_desc;
 
 int mme_app_create_bearer(s6a_update_location_ans_t *ula_p);
 
+#if defined(DISABLE_USE_NAS)
 int mme_app_handle_attach_req(nas_attach_req_t *attach_req_p);
+#endif
 
 int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p);
 

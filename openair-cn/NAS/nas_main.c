@@ -62,6 +62,7 @@ next_message:
 #endif
             } break;
 
+#if defined(DISABLE_USE_NAS)
             case NAS_ATTACH_ACCEPT: {
                 itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, received_message_p);
                 goto next_message;
@@ -81,6 +82,7 @@ next_message:
 
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
             } break;
+#endif
 
             case NAS_UPLINK_DATA_IND: {
                 nas_proc_ul_transfer_ind(NAS_UL_DATA_IND(received_message_p).UEid,

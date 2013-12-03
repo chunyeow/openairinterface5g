@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		nas_message.h
+Source      nas_message.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/26/09
+Date        2012/26/09
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	Application Programming Interface
+Subsystem   Application Programming Interface
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Defines the layer 3 messages supported by the NAS sublayer
-		protocol and functions used to encode and decode
+Description Defines the layer 3 messages supported by the NAS sublayer
+        protocol and functions used to encode and decode
 
 *****************************************************************************/
 #ifndef __NAS_MESSAGE_H__
@@ -29,7 +29,7 @@ Description	Defines the layer 3 messages supported by the NAS sublayer
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
 
-#define NAS_MESSAGE_SECURITY_HEADER_SIZE	6
+#define NAS_MESSAGE_SECURITY_HEADER_SIZE    6
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -51,8 +51,8 @@ typedef struct {
 
 /* Structure of plain NAS message */
 typedef union {
-    EMM_msg emm;	/* EPS Mobility Management messages	*/    
-    ESM_msg esm;	/* EPS Session Management messages	*/
+    EMM_msg emm;    /* EPS Mobility Management messages */
+    ESM_msg esm;    /* EPS Session Management messages  */
 } nas_message_plain_t;
 
 /* Structure of security protected NAS message */
@@ -78,12 +78,14 @@ typedef union {
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-int nas_message_encrypt(const char* inbuf, char* outbuf, const nas_message_security_header_t* header, int length);
+int nas_message_encrypt(const char *inbuf, char *outbuf,
+                        const nas_message_security_header_t *header, int length);
 
-int nas_message_decrypt(const char* inbuf, char* outbuf, nas_message_security_header_t* header, int length);
+int nas_message_decrypt(const char *inbuf, char *outbuf,
+                        nas_message_security_header_t *header, int length);
 
-int nas_message_decode(const char* buffer, nas_message_t* msg, int length);
+int nas_message_decode(const char *buffer, nas_message_t *msg, int length);
 
-int nas_message_encode(char* buffer, const nas_message_t* msg, int length);
+int nas_message_encode(char *buffer, const nas_message_t *msg, int length);
 
 #endif /* __NAS_MESSAGE_H__*/

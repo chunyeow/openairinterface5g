@@ -1080,17 +1080,22 @@ static int _emm_as_send(const emm_as_t *msg)
 #if defined(EPC_BUILD) && defined(NAS_MME)
         switch (as_msg.msgID) {
             case AS_DL_INFO_TRANSFER_REQ: {
-                int ret;
+                nas_itti_dl_data_req(as_msg.msg.dl_info_transfer_req.UEid,
+                                     as_msg.msg.dl_info_transfer_req.nasMsg.data,
+                                     as_msg.msg.dl_info_transfer_req.nasMsg.length);
+            } break;
 
-                ret = nas_itti_dl_data_req(as_msg.msg.dl_info_transfer_req.UEid,
-                                           as_msg.msg.dl_info_transfer_req.nasMsg.data,
-                                           as_msg.msg.dl_info_transfer_req.nasMsg.length);
+            case AS_NAS_ESTABLISH_RSP: {
+                /* The attach procedure succeeded wihtin MME.
+                 * This message should trigger an S1AP initial context setup
+                 * request.
+                 * NOTE: we support only one bearer per message...
+                 */
+//                 nas_itti_establish_cnf(as_msg.msg.nas_establish_cnf.errCode,
+//                                        as_msg.msg.nas_establish_cnf.nasMsg.data,
+//                                        as_msg.msg.nas_establish_cnf.nasMsg.length);
+            } break;
 
-                if (ret != -1) {
-                    LOG_FUNC_RETURN (RETURNok);
-                }
-            }
-            break;
             default:
                 break;
         }
@@ -1610,9 +1615,10 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
 static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
                                  nas_establish_rsp_t *as_msg)
 {
-    LOG_FUNC_IN;
-
+    EMM_msg *emm_msg;
     int size = 0;
+
+    LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "EMMAS-SAP - Send AS connection establish response");
 
@@ -1628,7 +1634,7 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
     as_msg->s_tmsi.m_tmsi = msg->UEid.guti->m_tmsi;
 
     /* Setup the NAS security header */
-    EMM_msg *emm_msg = _emm_as_set_header(&nas_msg, &msg->sctx);
+    emm_msg = _emm_as_set_header(&nas_msg, &msg->sctx);
 
     /* Setup the initial NAS information message */
     if (emm_msg != NULL) switch (msg->NASinfo) {

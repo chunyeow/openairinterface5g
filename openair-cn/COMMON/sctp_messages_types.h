@@ -3,7 +3,7 @@
 
 #define SCTP_DATA_IND(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_ind
 #define SCTP_DATA_REQ(mSGpTR)           (mSGpTR)->ittiMsg.sctp_data_req
-#define SCTP_INIT(mSGpTR)               (mSGpTR)->ittiMsg.sctpInit
+#define SCTP_INIT_MSG(mSGpTR)           (mSGpTR)->ittiMsg.sctpInit
 #define SCTP_CLOSE_ASSOCIATION(mSGpTR)  (mSGpTR)->ittiMsg.sctp_close_association
 
 typedef struct sctp_data_req_s {

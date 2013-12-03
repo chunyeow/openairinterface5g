@@ -68,19 +68,26 @@ void *mme_app_thread(void *args)
                  */
                 mme_app_handle_authentication_info_answer(&received_message_p->ittiMsg.s6a_auth_info_ans);
             } break;
+
             case S6A_UPDATE_LOCATION_ANS: {
                 /* We received the update location answer message from HSS -> Handle it */
                 mme_app_create_bearer(&received_message_p->ittiMsg.s6a_update_location_ans);
             } break;
+
             case SGW_CREATE_SESSION_RESPONSE: {
                 mme_app_handle_create_sess_resp(&received_message_p->ittiMsg.sgwCreateSessionResponse);
             } break;
+
             case NAS_AUTHENTICATION_RESP: {
                 mme_app_handle_nas_auth_resp(&received_message_p->ittiMsg.nas_auth_resp);
             } break;
+
+#if defined(DISABLE_USE_NAS)
             case NAS_ATTACH_REQ: {
                 mme_app_handle_attach_req(&received_message_p->ittiMsg.nas_attach_req);
             } break;
+#endif
+
             case TIMER_HAS_EXPIRED: {
                 /* Check if it is the statistic timer */
                 if (received_message_p->ittiMsg.timer_has_expired.timer_id ==

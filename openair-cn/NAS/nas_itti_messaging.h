@@ -34,4 +34,7 @@
 int nas_itti_dl_data_req(const uint32_t ue_id, void * const data,
                          const uint32_t length);
 
+void nas_itti_establish_cnf(const nas_error_code_t error_code, void * const data,
+                            const uint32_t length);
+
 #endif /* NAS_ITTI_MESSAGING_H_ */

@@ -64,8 +64,12 @@ int s1ap_mme_handle_uplink_nas_transport(uint32_t assocId, uint32_t stream,
 int s1ap_mme_handle_nas_non_delivery(uint32_t assocId, uint32_t stream,
                                      struct s1ap_message_s *message);
 
+#if defined(DISABLE_USE_NAS)
 int s1ap_handle_attach_accepted(nas_attach_accept_t *attach_accept_p);
+#else
+void s1ap_handle_conn_est_cnf(nas_conn_est_cnf_t *nas_conn_est_cnf_p);
+#endif
 
-int s1ap_generate_downlink_nas_transport(nas_dl_data_req_t *nas_dl_data_req);
-
+int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data,
+                                         const uint32_t size);
 #endif /* S1AP_MME_NAS_PROCEDURES_H_ */

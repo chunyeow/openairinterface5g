@@ -175,6 +175,7 @@ int mme_app_handle_authentication_info_answer(s6a_auth_info_ans_t *s6a_auth_info
     return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
 }
 
+#if defined(DISABLE_USE_NAS)
 int mme_app_handle_attach_req(nas_attach_req_t *attach_req_p)
 {
     /* An attach request has been received from NAS layer.
@@ -283,3 +284,4 @@ request_auth:
     }
     return 0;
 }
+#endif

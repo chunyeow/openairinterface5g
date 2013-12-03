@@ -354,12 +354,13 @@ emm_fsm_state_t emm_fsm_get_status(unsigned int ueid, void *ctx)
  ***************************************************************************/
 int emm_fsm_process(const emm_reg_t *evt)
 {
+    int rc;
     emm_fsm_state_t status;
+    emm_reg_primitive_t primitive;
 
     LOG_FUNC_IN;
 
-    int rc;
-    emm_reg_primitive_t primitive = evt->primitive;
+    primitive = evt->primitive;
 
 #ifdef NAS_UE
     status = _emm_fsm_status[0];

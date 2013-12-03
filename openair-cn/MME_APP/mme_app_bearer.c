@@ -316,32 +316,29 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
     {
         uint8_t *keNB;
         MessageDef *message_p;
-        nas_attach_accept_t *attach_accept_p;
 
-        message_p = itti_alloc_new_message(TASK_MME_APP, NAS_ATTACH_ACCEPT);
-
-        attach_accept_p = &message_p->ittiMsg.nas_attach_accept;
+        message_p = itti_alloc_new_message(TASK_MME_APP, NAS_BEARER_PARAM);
 
         derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
-        memcpy(attach_accept_p->transparent.keNB, keNB, 32);
+        memcpy(NAS_BEARER_PARAM(message_p).keNB, keNB, 32);
 
         free(keNB);
 
-        attach_accept_p->transparent.eNB_ue_s1ap_id = ue_context_p->eNB_ue_s1ap_id;
-        attach_accept_p->transparent.mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
+        NAS_BEARER_PARAM(message_p).eNB_ue_s1ap_id = ue_context_p->eNB_ue_s1ap_id;
+        NAS_BEARER_PARAM(message_p).mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
 
-        attach_accept_p->transparent.ebi = bearer_id;
+        NAS_BEARER_PARAM(message_p).ebi = bearer_id;
 
-        attach_accept_p->transparent.qci = current_bearer_p->qci;
-        attach_accept_p->transparent.prio_level = current_bearer_p->prio_level;
-        attach_accept_p->transparent.pre_emp_vulnerability = current_bearer_p->pre_emp_vulnerability;
-        attach_accept_p->transparent.pre_emp_capability = current_bearer_p->pre_emp_capability;
+        NAS_BEARER_PARAM(message_p).qci = current_bearer_p->qci;
+        NAS_BEARER_PARAM(message_p).prio_level = current_bearer_p->prio_level;
+        NAS_BEARER_PARAM(message_p).pre_emp_vulnerability = current_bearer_p->pre_emp_vulnerability;
+        NAS_BEARER_PARAM(message_p).pre_emp_capability = current_bearer_p->pre_emp_capability;
 
-        attach_accept_p->transparent.teid = current_bearer_p->s_gw_teid;
-        memcpy(&attach_accept_p->transparent.s_gw_address,
+        NAS_BEARER_PARAM(message_p).teid = current_bearer_p->s_gw_teid;
+        memcpy(&NAS_BEARER_PARAM(message_p).s_gw_address,
                &current_bearer_p->s_gw_address, sizeof(ip_address_t));
 
-        memcpy(&attach_accept_p->transparent.ambr, &ue_context_p->subscribed_ambr,
+        memcpy(&NAS_BEARER_PARAM(message_p).ambr, &ue_context_p->subscribed_ambr,
                sizeof(ambr_t));
 
         return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
