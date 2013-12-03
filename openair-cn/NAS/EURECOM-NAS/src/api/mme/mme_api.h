@@ -22,6 +22,9 @@ Description	Implements the API used by the NAS layer running in the MME
 #define __MME_API_H__
 
 #ifdef NAS_MME
+# if defined(EPC_BUILD)
+#   include "mme_config.h"
+# endif
 #include "commonDef.h"
 #include "securityDef.h"
 #include "OctetString.h"
@@ -89,7 +92,11 @@ typedef struct {
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
+#if defined(EPC_BUILD)
+int mme_api_get_emm_config(mme_api_emm_config_t* config, mme_config_t *mme_config_p);
+#else
 int mme_api_get_emm_config(mme_api_emm_config_t* config);
+#endif
 int mme_api_get_esm_config(mme_api_esm_config_t* config);
 
 int mme_api_identify_guti(const GUTI_t* guti, auth_vector_t* vector);

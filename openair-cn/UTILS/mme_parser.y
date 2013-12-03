@@ -41,6 +41,8 @@ int fddlex(YYSTYPE *lvalp, YYLTYPE *llocp);
 %token <string> QSTRING
 %token <integer> INTEGER
 
+%token EMERGENCY_ATTACH_SUPPORTED
+%token UNAUTHENTICATED_IMSI_SUPPORTED
 %token S6A_CONF
 %token MAX_UE
 %token MAX_ENB
@@ -79,6 +81,8 @@ int fddlex(YYSTYPE *lvalp, YYLTYPE *llocp);
 %%
 conffile:       /* If options not provided, we will default values */
     | conffile s6aconf
+    | conffile emergency_attach_supported
+    | conffile unauthenticated_imsi_supported
     | conffile maxenb
     | conffile maxue
     | conffile mmec
@@ -118,6 +122,24 @@ conffile:       /* If options not provided, we will default values */
         return EINVAL;
     }
     ;
+
+emergency_attach_supported: EMERGENCY_ATTACH_SUPPORTED '=' INTEGER ';'
+    {
+        if ($3 != 0 && $3 != 1) {
+            yyerror(&yylloc, mme_config_p, "Invalid value (possible values are 0 or 1");
+            return EINVAL;
+        }
+        mme_config_p->emergency_attach_supported = $3;
+    };
+
+unauthenticated_imsi_supported: UNAUTHENTICATED_IMSI_SUPPORTED '=' INTEGER ';'
+    {
+        if ($3 != 0 && $3 != 1) {
+            yyerror(&yylloc, mme_config_p, "Invalid value (possible values are 0 or 1");
+            return EINVAL;
+        }
+        mme_config_p->unauthenticated_imsi_supported = $3;
+    };
 
 mme_statistic_timer: MME_STATISTIC_TIMER '=' INTEGER ';'
     {

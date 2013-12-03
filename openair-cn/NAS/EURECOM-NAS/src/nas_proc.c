@@ -115,6 +115,20 @@ void nas_proc_initialize(emm_indication_callback_t emm_cb,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
+# if defined(EPC_BUILD)
+void nas_proc_initialize(mme_config_t *mme_config_p)
+{
+    LOG_FUNC_IN;
+
+    /* Initialize the EMM procedure manager */
+    emm_main_initialize(mme_config_p);
+
+    /* Initialize the ESM procedure manager */
+    esm_main_initialize();
+
+    LOG_FUNC_OUT;
+}
+# else
 void nas_proc_initialize(void)
 {
     LOG_FUNC_IN;
@@ -127,6 +141,7 @@ void nas_proc_initialize(void)
 
     LOG_FUNC_OUT;
 }
+# endif
 #endif
 
 /****************************************************************************

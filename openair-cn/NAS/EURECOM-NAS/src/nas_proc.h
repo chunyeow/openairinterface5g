@@ -20,6 +20,10 @@ Description NAS procedure call manager
 #ifndef __NAS_PROC_H__
 #define __NAS_PROC_H__
 
+#if defined(EPC_BUILD)
+# include "mme_config.h"
+#endif
+
 #include "commonDef.h"
 #include "networkDef.h"
 
@@ -44,7 +48,11 @@ void nas_proc_initialize(emm_indication_callback_t emm_cb,
                          esm_indication_callback_t esm_cb, const char *imei);
 #endif
 #ifdef NAS_MME
+# if defined(EPC_BUILD)
+void nas_proc_initialize(mme_config_t *mme_config_p);
+# else
 void nas_proc_initialize(void);
+# endif
 #endif
 
 void nas_proc_cleanup(void);

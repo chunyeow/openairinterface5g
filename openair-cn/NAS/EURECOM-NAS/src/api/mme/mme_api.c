@@ -222,7 +222,11 @@ static int _mme_api_pdn_id = 0;
  **		 Others:	None                                       **
  **                                                                        **
  ***************************************************************************/
+#if defined(EPC_BUILD)
+int mme_api_get_emm_config(mme_api_emm_config_t* config, mme_config_t *mme_config_p)
+#else
 int mme_api_get_emm_config(mme_api_emm_config_t* config)
+#endif
 {
     LOG_FUNC_IN;
 
@@ -234,7 +238,17 @@ int mme_api_get_emm_config(mme_api_emm_config_t* config)
     config->gummei.plmn.MNCdigit3 = 0xf;
     config->gummei.MMEgid = MME_API_MME_GID;
     config->gummei.MMEcode = MME_API_MME_CODE;
+#if defined(EPC_BUILD)
+    /* SR: this config param comes from MME global config */
+    if (mme_config_p->emergency_attach_supported != 0) {
+        config->features |= MME_API_EMERGENCY_ATTACH;
+    }
+    if (mme_config_p->unauthenticated_imsi_supported != 0) {
+        config->features |= MME_API_UNAUTHENTICATED_IMSI;
+    }
+#else
     config->features = MME_API_EMERGENCY_ATTACH | MME_API_UNAUTHENTICATED_IMSI;
+#endif
 
     LOG_FUNC_RETURN (RETURNok);
 }

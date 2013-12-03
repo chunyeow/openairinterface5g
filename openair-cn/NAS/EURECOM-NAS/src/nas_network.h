@@ -17,6 +17,11 @@ Author      Frederic Maurel
 Description NAS procedure functions triggered by the network
 
 *****************************************************************************/
+
+#if defined(EPC_BUILD) && defined(NAS_MME)
+# include "mme_config.h"
+#endif
+
 #ifndef __NAS_NETWORK_H__
 #define __NAS_NETWORK_H__
 
@@ -36,7 +41,11 @@ Description NAS procedure functions triggered by the network
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
+#if defined(EPC_BUILD) && defined(NAS_MME)
+void nas_network_initialize(mme_config_t *mme_config_p);
+#else
 void nas_network_initialize(void);
+#endif
 
 void nas_network_cleanup(void);
 

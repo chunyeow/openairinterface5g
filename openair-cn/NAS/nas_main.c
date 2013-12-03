@@ -10,6 +10,7 @@
 #include "nas_defs.h"
 
 #if !defined(DISABLE_USE_NAS)
+# include "nas_network.h"
 # include "nas_proc.h"
 # include "emm_main.h"
 # include "nas_log.h"
@@ -92,7 +93,7 @@ next_message:
             } break;
 
             case NAS_DOWNLINK_DATA_CNF: {
-                nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
+//                 nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
             } break;
 #endif
 
@@ -112,12 +113,13 @@ next_message:
     return NULL;
 }
 
-int nas_init(const mme_config_t *mme_config_p)
+int nas_init(mme_config_t *mme_config_p)
 {
     NAS_DEBUG("Initializing NAS task interface\n");
+
 #if !defined(DISABLE_USE_NAS)
     nas_log_init(LOG_DEBUG);
-    emm_main_initialize();
+    nas_network_initialize(mme_config_p);
 #endif
 
     if (itti_create_task(TASK_NAS, &nas_intertask_interface,

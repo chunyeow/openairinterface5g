@@ -53,6 +53,9 @@ typedef struct mme_config_s {
 
     uint32_t mme_statistic_timer;
 
+    uint8_t emergency_attach_supported;
+    uint8_t unauthenticated_imsi_supported;
+
     struct {
         uint16_t  nb_mme_gid;
         uint16_t *mme_gid;

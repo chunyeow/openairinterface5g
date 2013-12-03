@@ -51,13 +51,21 @@ Description NAS procedure functions triggered by the network
  **          Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
+#if defined(EPC_BUILD) && defined(NAS_MME)
+void nas_network_initialize(mme_config_t *mme_config_p)
+#else
 void nas_network_initialize(void)
+#endif
 {
     LOG_FUNC_IN;
 
 #ifdef NAS_MME
     /* Initialize the internal NAS processing data */
+# if defined(EPC_BUILD)
+    nas_proc_initialize(mme_config_p);
+# else
     nas_proc_initialize();
+# endif
 #endif
 
     LOG_FUNC_OUT;

@@ -79,6 +79,8 @@ qstring     \"[^\"\n]*\"
 }
 
     /* Full words tokens (keywords) */
+(?i:"EMERGENCY_ATTACH_SUPPORTED")     { return EMERGENCY_ATTACH_SUPPORTED; }
+(?i:"UNAUTHENTICATED_IMSI_SUPPORTED") { return UNAUTHENTICATED_IMSI_SUPPORTED; }
 (?i:"MAXENB")                   { return MAX_ENB; }
 (?i:"MAXUE")                    { return MAX_UE; }
 (?i:"S6A_CONF")                 { return S6A_CONF; }

@@ -33,6 +33,10 @@ Description Defines the EPS Mobility Management procedure call manager,
 #include <stdlib.h> // malloc, free
 #endif
 
+#if defined(EPC_BUILD) && defined(NAS_MME)
+# include "mme_config.h"
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -382,12 +386,21 @@ void emm_main_initialize(emm_indication_callback_t cb, const char *imei)
  **      Others:    _emm_data                                  **
  **                                                                        **
  ***************************************************************************/
+#if defined(EPC_BUILD)
+void emm_main_initialize(mme_config_t *mme_config_p)
+#else
 void emm_main_initialize(void)
+#endif
 {
     LOG_FUNC_IN;
 
     /* Retreive MME supported configuration data */
-    if (mme_api_get_emm_config(&_emm_data.conf) != RETURNok) {
+#if defined(EPC_BUILD)
+    if (mme_api_get_emm_config(&_emm_data.conf, mme_config_p) != RETURNok)
+#else
+    if (mme_api_get_emm_config(&_emm_data.conf) != RETURNok)
+#endif
+    {
         LOG_TRACE(ERROR, "EMM-MAIN  - Failed to get MME configuration data");
     }
 

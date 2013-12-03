@@ -53,10 +53,14 @@ void config_init(mme_config_t *mme_config_p)
 
     pthread_rwlock_init(&mme_config_p->rw_lock, NULL);
 
-    mme_config_p->verbosity_level = 0;
-    mme_config_p->config_file     = NULL;
-    mme_config_p->max_eNBs        = MAX_NUMBER_OF_ENB;
-    mme_config_p->max_ues         = MAX_NUMBER_OF_UE;
+    mme_config_p->verbosity_level            = 0;
+    mme_config_p->config_file                = NULL;
+    mme_config_p->max_eNBs                   = MAX_NUMBER_OF_ENB;
+    mme_config_p->max_ues                    = MAX_NUMBER_OF_UE;
+
+    mme_config_p->emergency_attach_supported     = 0;
+    mme_config_p->unauthenticated_imsi_supported = 0;
+
     /* Timer configuration */
     mme_config_p->gtpv1u_config.port_number = GTPV1_U_PORT_NUMBER;
     mme_config_p->s1ap_config.port_number   = S1AP_PORT_NUMBER;
@@ -167,55 +171,58 @@ static void config_display(mme_config_t *mme_config_p)
 {
     fprintf(stdout, "==== EURECOM %s v%s ====\n", PACKAGE_NAME, PACKAGE_VERSION);
     fprintf(stdout, "Configuration:\n");
-    fprintf(stdout, "- File .............: %s\n", mme_config_p->config_file);
-    fprintf(stdout, "- Verbosity level ..: %d\n", mme_config_p->verbosity_level);
-    fprintf(stdout, "- Realm ............: %s\n", mme_config_p->realm);
-    fprintf(stdout, "- Max eNBs .........: %u\n", mme_config_p->max_eNBs);
-    fprintf(stdout, "- Max UEs ..........: %u\n", mme_config_p->max_ues);
-    fprintf(stdout, "- Relative capa ....: %u\n\n", mme_config_p->relative_capacity);
-    fprintf(stdout, "- Statistics timer .: %u (seconds)\n\n", mme_config_p->mme_statistic_timer);
+    fprintf(stdout, "- File ...............: %s\n", mme_config_p->config_file);
+    fprintf(stdout, "- Verbosity level ....: %d\n", mme_config_p->verbosity_level);
+    fprintf(stdout, "- Realm ..............: %s\n", mme_config_p->realm);
+    fprintf(stdout, "- Max eNBs ...........: %u\n", mme_config_p->max_eNBs);
+    fprintf(stdout, "- Max UEs ............: %u\n", mme_config_p->max_ues);
+    fprintf(stdout, "- Emergency support ..: %s\n", mme_config_p->emergency_attach_supported == 0 ? "FALSE" : "TRUE");
+    fprintf(stdout, "- Unauth IMSI support : %s\n", mme_config_p->unauthenticated_imsi_supported == 0 ? "FALSE" : "TRUE");
+    fprintf(stdout, "- Max UEs ............: %u\n", mme_config_p->max_ues);
+    fprintf(stdout, "- Relative capa ......: %u\n\n", mme_config_p->relative_capacity);
+    fprintf(stdout, "- Statistics timer ...: %u (seconds)\n\n", mme_config_p->mme_statistic_timer);
     fprintf(stdout, "- S1-U:\n");
-    fprintf(stdout, "    port number ....: %d\n", mme_config_p->gtpv1u_config.port_number);
+    fprintf(stdout, "    port number ......: %d\n", mme_config_p->gtpv1u_config.port_number);
     fprintf(stdout, "- S1-MME:\n");
-    fprintf(stdout, "    port number ....: %d\n", mme_config_p->s1ap_config.port_number);
+    fprintf(stdout, "    port number ......: %d\n", mme_config_p->s1ap_config.port_number);
     fprintf(stdout, "- IP:\n");
-    fprintf(stdout, "    s1-u iface .....: %s\n", mme_config_p->ipv4.sgw_interface_name_for_S1u_S12_S4_up);
-    fprintf(stdout, "    s1-u ip ........: %s/%d\n",
+    fprintf(stdout, "    s1-u iface .......: %s\n", mme_config_p->ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+    fprintf(stdout, "    s1-u ip ..........: %s/%d\n",
             inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.sgw_ip_address_for_S1u_S12_S4_up)),
             mme_config_p->ipv4.sgw_ip_netmask_for_S1u_S12_S4_up);
-    fprintf(stdout, "    sgi iface ......: %s\n", mme_config_p->ipv4.pgw_interface_name_for_SGI);
-    fprintf(stdout, "    sgi ip .........: %s/%d\n",
+    fprintf(stdout, "    sgi iface ........: %s\n", mme_config_p->ipv4.pgw_interface_name_for_SGI);
+    fprintf(stdout, "    sgi ip ...........: %s/%d\n",
             inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.pgw_ip_addr_for_SGI)),
             mme_config_p->ipv4.pgw_ip_netmask_for_SGI);
-    fprintf(stdout, "    s1-MME iface ...: %s\n", mme_config_p->ipv4.mme_interface_name_for_S1_MME);
-    fprintf(stdout, "    s1-MME ip ......: %s/%d\n",
+    fprintf(stdout, "    s1-MME iface .....: %s\n", mme_config_p->ipv4.mme_interface_name_for_S1_MME);
+    fprintf(stdout, "    s1-MME ip ........: %s/%d\n",
             inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.mme_ip_address_for_S1_MME)),
             mme_config_p->ipv4.mme_ip_netmask_for_S1_MME);
-    fprintf(stdout, "    s11 S-GW iface .: %s\n", mme_config_p->ipv4.sgw_interface_name_for_S11);
-    fprintf(stdout, "    s11 S-GW ip ....: %s/%d\n",
+    fprintf(stdout, "    s11 S-GW iface ...: %s\n", mme_config_p->ipv4.sgw_interface_name_for_S11);
+    fprintf(stdout, "    s11 S-GW ip ......: %s/%d\n",
             inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.sgw_ip_address_for_S11)),
             mme_config_p->ipv4.sgw_ip_netmask_for_S11);
-    fprintf(stdout, "    s11 MME iface ..: %s\n", mme_config_p->ipv4.mme_interface_name_for_S11);
-    fprintf(stdout, "    s11 S-GW ip ....: %s/%d\n",
+    fprintf(stdout, "    s11 MME iface ....: %s\n", mme_config_p->ipv4.mme_interface_name_for_S11);
+    fprintf(stdout, "    s11 S-GW ip ......: %s/%d\n",
             inet_ntoa(*((struct in_addr *)&mme_config_p->ipv4.mme_ip_address_for_S11)),
             mme_config_p->ipv4.mme_ip_netmask_for_S11);
     fprintf(stdout, "- ITTI:\n");
-    fprintf(stdout, "    queue size .....: %u (bytes)\n", mme_config_p->itti_config.queue_size);
-    fprintf(stdout, "    log file .......: %s\n", mme_config_p->itti_config.log_file);
+    fprintf(stdout, "    queue size .......: %u (bytes)\n", mme_config_p->itti_config.queue_size);
+    fprintf(stdout, "    log file .........: %s\n", mme_config_p->itti_config.log_file);
     fprintf(stdout, "- SCTP:\n");
-    fprintf(stdout, "    in streams .....: %u\n", mme_config_p->sctp_config.in_streams);
-    fprintf(stdout, "    out streams ....: %u\n", mme_config_p->sctp_config.out_streams);
+    fprintf(stdout, "    in streams .......: %u\n", mme_config_p->sctp_config.in_streams);
+    fprintf(stdout, "    out streams ......: %u\n", mme_config_p->sctp_config.out_streams);
     fprintf(stdout, "- GUMMEI:\n");
-    fprintf(stdout, "    mme group ids ..:\n        ");
+    fprintf(stdout, "    mme group ids ....:\n        ");
     DISPLAY_ARRAY(mme_config_p->gummei.nb_mme_gid, "| %u ", mme_config_p->gummei.mme_gid[i]);
-    fprintf(stdout, "    mme codes ......:\n        ");
+    fprintf(stdout, "    mme codes ........:\n        ");
     DISPLAY_ARRAY(mme_config_p->gummei.nb_mmec, "| %u ", mme_config_p->gummei.mmec[i]);
-    fprintf(stdout, "    plmns ..........: (mcc.mnc:tac)\n        ");
+    fprintf(stdout, "    plmns ............: (mcc.mnc:tac)\n        ");
     DISPLAY_ARRAY(mme_config_p->gummei.nb_plmns, "| %3u.%3u:%u ",
                   mme_config_p->gummei.plmn_mcc[i], mme_config_p->gummei.plmn_mnc[i],
                   mme_config_p->gummei.plmn_tac[i]);
     fprintf(stdout, "- S6A:\n");
-    fprintf(stdout, "    conf file ......: %s\n", mme_config_p->s6a_config.conf_file);
+    fprintf(stdout, "    conf file ........: %s\n", mme_config_p->s6a_config.conf_file);
 }
 
 static void usage(void)
