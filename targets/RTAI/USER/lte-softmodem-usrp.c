@@ -419,7 +419,7 @@ static void *eNB_thread(void *arg)
 				// -- PHY procedure --
 			{
 				//phy_procedures_eNB_lte(last_slot, next_slot, PHY_vars_eNB_g[0], 0);//for OAI version berfore 4160
-			  phy_procedures_eNB_lte(last_slot, next_slot, PHY_vars_eNB_g[0], 0,0,NULL);
+				phy_procedures_eNB_lte(last_slot, next_slot, PHY_vars_eNB_g[0], 0,0,NULL);
 #ifndef IFFT_FPGA
 				slot_offset_F = (next_slot)*
 					(PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*

@@ -158,6 +158,7 @@ endif
 
 ifeq ($(USRP),1)
 CFLAGS += -I/opt/uhd/include -L/opt/uhd/lib -luhd -lpthread -lstdc++
+CFLAGS += -DUSRP
 endif
 #CFLAGS += -I/usr/include/c++/4.6 -I/usr/include/c++/4.6/x86_64-linux-gnu -I/usr/include/rtai/
 
