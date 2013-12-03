@@ -41,6 +41,7 @@ int s1ap_mme_itti_send_sctp_request(uint8_t *buffer, uint32_t length,
 int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t * const buffer,
                                  const uint32_t length);
 
-int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id);
+int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id,
+                                   nas_error_code_t error_code);
 
 #endif /* S1AP_MME_ITTI_MESSAGING_H_ */

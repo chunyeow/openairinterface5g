@@ -1652,6 +1652,7 @@ static int _emm_attach_release(void *args)
         emm_sap_t emm_sap;
         emm_sap.primitive = EMMREG_PROC_ABORT;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
         rc = emm_sap_send(&emm_sap);
     }
 

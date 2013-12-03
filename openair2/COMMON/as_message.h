@@ -196,7 +196,7 @@ typedef struct cell_info_req_s {
  * is selected to camp on.
  */
 typedef struct cell_info_cnf_s {
-    UInt8_t errCode;	/* Error code					  */
+    UInt8_t errCode;    /* Error code                     */
     ci_t cellID;    /* Identity of the cell serving the selected PLMN */
     tac_t tac;      /* Code of the tracking area the cell belongs to  */
     AcT_t rat;      /* Radio access technology supported by the cell  */
@@ -242,7 +242,7 @@ typedef struct paging_req_s {
  * AS reports to the NAS that appropriate procedure has to be initiated.
  */
 typedef struct paging_ind_s {
-    UInt8_t cause;  /* Paging cause                 */
+    paging_cause_t cause;  /* Paging cause                 */
 } paging_ind_t;
 
 /*
@@ -252,20 +252,23 @@ typedef struct paging_ind_s {
  */
 
 /* Cause of RRC connection establishment */
-#define AS_CAUSE_EMERGENCY      (NET_ESTABLISH_CAUSE_EMERGENCY)
-#define AS_CAUSE_HIGH_PRIO      (NET_ESTABLISH_CAUSE_HIGH_PRIO)
-#define AS_CAUSE_MT_ACCESS      (NET_ESTABLISH_CAUSE_MT_ACCESS)
-#define AS_CAUSE_MO_SIGNAL      (NET_ESTABLISH_CAUSE_MO_SIGNAL)
-#define AS_CAUSE_MO_DATA        (NET_ESTABLISH_CAUSE_MO_DATA)
-#define AS_CAUSE_V1020          (NET_ESTABLISH_CAUSE_V1020)
+typedef enum as_cause_s {
+    AS_CAUSE_EMERGENCY  = NET_ESTABLISH_CAUSE_EMERGENCY,
+    AS_CAUSE_HIGH_PRIO  = NET_ESTABLISH_CAUSE_HIGH_PRIO,
+    AS_CAUSE_MT_ACCESS  = NET_ESTABLISH_CAUSE_MT_ACCESS,
+    AS_CAUSE_MO_SIGNAL  = NET_ESTABLISH_CAUSE_MO_SIGNAL,
+    AS_CAUSE_MO_DATA    = NET_ESTABLISH_CAUSE_MO_DATA,
+    AS_CAUSE_V1020      = NET_ESTABLISH_CAUSE_V1020
+} as_cause_t;
 
 /* Type of the call associated to the RRC connection establishment */
-#define AS_TYPE_ORIGINATING_SIGNAL  (NET_ESTABLISH_TYPE_ORIGINATING_SIGNAL)
-#define AS_TYPE_EMERGENCY_CALLS     (NET_ESTABLISH_TYPE_EMERGENCY_CALLS)
-#define AS_TYPE_ORIGINATING_CALLS   (NET_ESTABLISH_TYPE_ORIGINATING_CALLS)
-#define AS_TYPE_TERMINATING_CALLS   (NET_ESTABLISH_TYPE_TERMINATING_CALLS)
-#define AS_TYPE_MO_CS_FALLBACK      (NET_ESTABLISH_TYPE_MO_CS_FALLBACK)
-
+typedef enum as_call_type_s {
+    AS_TYPE_ORIGINATING_SIGNAL  = NET_ESTABLISH_TYPE_ORIGINATING_SIGNAL,
+    AS_TYPE_EMERGENCY_CALLS     = NET_ESTABLISH_TYPE_EMERGENCY_CALLS,
+    AS_TYPE_ORIGINATING_CALLS   = NET_ESTABLISH_TYPE_ORIGINATING_CALLS,
+    AS_TYPE_TERMINATING_CALLS   = NET_ESTABLISH_TYPE_TERMINATING_CALLS,
+    AS_TYPE_MO_CS_FALLBACK      = NET_ESTABLISH_TYPE_MO_CS_FALLBACK
+} as_call_type_t;
 
 /*
  * NAS->AS - NAS signalling connection establishment request
@@ -273,11 +276,11 @@ typedef struct paging_ind_s {
  * to transfer initial NAS message to the network while UE is in IDLE mode.
  */
 typedef struct nas_establish_req_s {
-    UInt8_t cause;       /* RRC connection establishment cause  */
-    UInt8_t type;        /* RRC associated call type        */
-    as_stmsi_t s_tmsi;   /* UE identity             */
-    plmn_t plmnID;       /* Selected PLMN identity      */
-    as_nas_info_t initialNasMsg; /* Initial NAS message to transfer */
+    as_cause_t      cause;          /* RRC connection establishment cause   */
+    as_call_type_t  type;           /* RRC associated call type             */
+    as_stmsi_t      s_tmsi;         /* UE identity                          */
+    plmn_t          plmnID;         /* Selected PLMN identity               */
+    as_nas_info_t   initialNasMsg;  /* Initial NAS message to transfer      */
 } nas_establish_req_t;
 
 /*
@@ -287,7 +290,7 @@ typedef struct nas_establish_req_s {
 typedef struct nas_establish_ind_s {
     UInt32_t UEid;       /* UE lower layer identifier       */
     tac_t tac;           /* Code of the tracking area the initiating
-                  * UE belongs to           */
+                          * UE belongs to           */
     as_nas_info_t initialNasMsg; /* Initial NAS message to transfer */
 } nas_establish_ind_t;
 
@@ -297,10 +300,10 @@ typedef struct nas_establish_ind_s {
  * the UE.
  */
 typedef struct nas_establish_rsp_s {
-    UInt32_t UEid;           /* UE lower layer identifier   */
-    as_stmsi_t s_tmsi;       /* UE identity                 */
-    UInt8_t errCode;		 /* Transaction status			*/
-    as_nas_info_t nasMsg;    /* NAS message to transfer     */
+    UInt32_t         UEid;         /* UE lower layer identifier   */
+    as_stmsi_t       s_tmsi;       /* UE identity                 */
+    nas_error_code_t errCode;      /* Transaction status          */
+    as_nas_info_t    nasMsg;       /* NAS message to transfer     */
 } nas_establish_rsp_t;
 
 /*
@@ -308,8 +311,8 @@ typedef struct nas_establish_rsp_s {
  * AS transfers the initial answer message to the NAS.
  */
 typedef struct nas_establish_cnf_s {
-    UInt8_t errCode;		 /* Transaction status			*/
-    as_nas_info_t    nasMsg;     /* NAS message to transfer     */
+    nas_error_code_t errCode;         /* Transaction status          */
+    as_nas_info_t    nasMsg;          /* NAS message to transfer     */
 } nas_establish_cnf_t;
 
 /*
@@ -320,8 +323,8 @@ typedef struct nas_establish_cnf_s {
 
 /* Release cause */
 typedef enum release_cause_s {
-    AS_AUTHENTICATION_FAILURE = 1, /* Authentication procedure failed   */
-    AS_DETACH              /* Detach requested          */
+    AS_AUTHENTICATION_FAILURE = 1,  /* Authentication procedure failed   */
+    AS_DETACH                       /* Detach requested                  */
 } release_cause_t;
 
 /*
@@ -329,9 +332,9 @@ typedef enum release_cause_s {
  * NAS requests the termination of the connection with the UE.
  */
 typedef struct nas_release_req_s {
-    UInt32_t UEid;      /* UE lower layer identifier        */
-    as_stmsi_t s_tmsi;      /* UE identity              */
-    UInt8_t cause;      /* Release cause            */
+    UInt32_t UEid;          /* UE lower layer identifier    */
+    as_stmsi_t s_tmsi;      /* UE identity                  */
+    release_cause_t cause;  /* Release cause                */
 } nas_release_req_t;
 
 /*
@@ -339,7 +342,7 @@ typedef struct nas_release_req_s {
  * AS reports that connection has been terminated by the network.
  */
 typedef struct nas_release_ind_s {
-    UInt8_t cause;      /* Release cause            */
+    release_cause_t cause;      /* Release cause            */
 } nas_release_ind_t;
 
 /*
@@ -366,7 +369,7 @@ typedef struct ul_info_transfer_req_s {
  */
 typedef struct ul_info_transfer_cnf_s {
     UInt32_t         UEid;      /* UE lower layer identifier        */
-    UInt8_t errCode;		/* Transaction status			*/
+    nas_error_code_t errCode;   /* Transaction status               */
 } ul_info_transfer_cnf_t;
 
 /*
@@ -375,7 +378,7 @@ typedef struct ul_info_transfer_cnf_s {
  * at the network side.
  */
 typedef struct ul_info_transfer_ind_s {
-    UInt32_t UEid;      /* UE lower layer identifier        */
+    UInt32_t UEid;          /* UE lower layer identifier        */
     as_nas_info_t nasMsg;   /* Uplink NAS message           */
 } ul_info_transfer_ind_t;
 
@@ -415,9 +418,9 @@ typedef struct {} as_qos_t;
  * bearer initialized at the network side.
  */
 typedef struct rab_establish_req_s {
-    as_stmsi_t s_tmsi;      /* UE identity              */
+    as_stmsi_t s_tmsi;      /* UE identity                      */
     as_rab_id_t rabID;      /* Radio access bearer identity     */
-    as_qos_t QoS;       /* Requested Quality of Service     */
+    as_qos_t QoS;           /* Requested Quality of Service     */
 } rab_establish_req_t;
 
 /*
@@ -434,9 +437,9 @@ typedef struct rab_establish_ind_s {
  * successfully setup or not.
  */
 typedef struct rab_establish_rsp_s {
-    as_stmsi_t s_tmsi;      /* UE identity              */
-    as_rab_id_t rabID;      /* Radio access bearer identity     */
-    UInt8_t errCode;		/* Transaction status			*/
+    as_stmsi_t       s_tmsi;        /* UE identity                      */
+    as_rab_id_t      rabID;         /* Radio access bearer identity     */
+    nas_error_code_t errCode;       /* Transaction status               */
 } rab_establish_rsp_t;
 
 /*
@@ -445,8 +448,8 @@ typedef struct rab_establish_rsp_s {
  * successfully setup at the UE side or not.
  */
 typedef struct rab_establish_cnf_s {
-    as_rab_id_t rabID;      /* Radio access bearer identity     */
-    UInt8_t errCode;		/* Transaction status			*/
+    as_rab_id_t rabID;          /* Radio access bearer identity     */
+    nas_error_code_t errCode;   /* Transaction status               */
 } rab_establish_cnf_t;
 
 /*
@@ -461,7 +464,7 @@ typedef struct rab_establish_cnf_s {
  * to specific radio access bearer at the network side.
  */
 typedef struct rab_release_req_s {
-    as_stmsi_t s_tmsi;      /* UE identity              */
+    as_stmsi_t s_tmsi;      /* UE identity                      */
     as_rab_id_t rabID;      /* Radio access bearer identity     */
 } rab_release_req_t;
 
