@@ -84,6 +84,7 @@ next_message:
             } break;
 #endif
 
+#if !defined(DISABLE_USE_NAS)
             case NAS_UPLINK_DATA_IND: {
                 nas_proc_ul_transfer_ind(NAS_UL_DATA_IND(received_message_p).UEid,
                                          NAS_UL_DATA_IND(received_message_p).nasMsg.data,
@@ -93,6 +94,7 @@ next_message:
             case NAS_DOWNLINK_DATA_CNF: {
                 nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
             } break;
+#endif
 
             case TERMINATE_MESSAGE: {
                 itti_exit_task();
