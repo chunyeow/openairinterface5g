@@ -375,38 +375,7 @@ static s32 UE_id = 0, eNB_id = 0;
 static s32 RN_id=0;
 #endif
 
-#if defined(ENABLE_ITTI)
-int itti_create_task_successful(void){
-# if defined(ENABLE_USE_MME)
-  if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
-      return -1;
-  }
-  if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
-      return -1;
-  }
-# endif
-
-  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
-    return -1;
-  }
-
-  /* Last task to create, others task must be ready before its start */
-  if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
-    return -1;
-  }
-  return 1;
-}
-#endif
-
-void *l2l1_task(void *args_p) {
+static void *l2l1_task(void *args_p) {
   // Framing variables
   s32 slot, last_slot, next_slot;
 
@@ -423,14 +392,16 @@ void *l2l1_task(void *args_p) {
 
   itti_mark_task_ready (TASK_L2L1);
 
-  /* Wait for the initialize message */
-  do {
-    if (message_p != NULL) {
-      free (message_p);
-    }
-    itti_receive_msg (TASK_L2L1, &message_p);
-  } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
-  free (message_p);
+  if (NB_eNB_INST > 0) {
+    /* Wait for the initialize message */
+    do {
+      if (message_p != NULL) {
+        free (message_p);
+      }
+      itti_receive_msg (TASK_L2L1, &message_p);
+    } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
+    free (message_p);
+  }
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {
@@ -869,6 +840,64 @@ void *l2l1_task(void *args_p) {
   return NULL;
 }
 
+#if defined(ENABLE_ITTI)
+static int create_tasks(void) {
+# if defined(ENABLE_USE_MME)
+  {
+    if (NB_eNB_INST > 0) {
+      if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
+          LOG_E(EMU, "Create task failed");
+          LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
+          return -1;
+      }
+
+      if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
+          LOG_E(EMU, "Create task failed");
+          LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
+          return -1;
+      }
+    }
+  }
+# endif
+
+# ifdef OPENAIR2
+  {
+    if (NB_eNB_INST > 0) {
+      if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
+        LOG_E(EMU, "Create task failed");
+        LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
+        exit (-1);
+      }
+    }
+
+    if (NB_UE_INST > 0) {
+      if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
+        LOG_E(EMU, "Create task failed");
+        LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
+        exit (-1);
+      }
+    }
+  }
+# endif
+
+  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
+    return -1;
+  }
+
+  if (NB_eNB_INST > 0) {
+    /* Last task to create, others task must be ready before its start */
+    if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
+      return -1;
+    }
+  }
+  return 0;
+}
+#endif
+
 Packet_OTG_List *otg_pdcp_buffer;
 
 int main(int argc, char **argv) {
@@ -1054,10 +1083,11 @@ int main(int argc, char **argv) {
 
 #if defined(ENABLE_ITTI)
   // Handle signals until all tasks are terminated
-  if (itti_create_task_successful())
+  if (create_tasks() >= 0) {
     itti_wait_tasks_end();
-  else 
-    exit(-1); // need a softer mode 
+  } else {
+    exit(-1); // need a softer mode
+  }
 #else
   eNB_app_task(NULL); // do nothing for the moment
   l2l1_task (NULL);

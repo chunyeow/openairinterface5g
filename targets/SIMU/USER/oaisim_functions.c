@@ -589,24 +589,6 @@ void init_openair2() {
   s32 i;
   s32 UE_id;
  
-#if defined(ENABLE_ITTI)
-  if (NB_eNB_INST > 0) {
-    if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
-      exit (-1);
-    }
-  }
-
-  if (NB_UE_INST > 0) {
-    if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
-      exit (-1);
-    }
-  }
-#endif
-
   l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,
 	   oai_emulation.info.eMBMS_active_state, 
 	   oai_emulation.info.cba_group_active, 
