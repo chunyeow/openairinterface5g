@@ -841,10 +841,10 @@ static void *l2l1_task(void *args_p) {
 }
 
 #if defined(ENABLE_ITTI)
-static int create_tasks(void) {
+static int create_tasks(uint32_t enb_nb, uint32_t ue_nb) {
 # if defined(ENABLE_USE_MME)
   {
-    if (NB_eNB_INST > 0) {
+    if (enb_nb > 0) {
       if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
           LOG_E(EMU, "Create task failed");
           LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
@@ -862,7 +862,7 @@ static int create_tasks(void) {
 
 # ifdef OPENAIR2
   {
-    if (NB_eNB_INST > 0) {
+    if (enb_nb > 0) {
       if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
         LOG_E(EMU, "Create task failed");
         LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
@@ -870,7 +870,7 @@ static int create_tasks(void) {
       }
     }
 
-    if (NB_UE_INST > 0) {
+    if (ue_nb > 0) {
       if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
         LOG_E(EMU, "Create task failed");
         LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
@@ -886,7 +886,7 @@ static int create_tasks(void) {
     return -1;
   }
 
-  if (NB_eNB_INST > 0) {
+  if (enb_nb > 0) {
     /* Last task to create, others task must be ready before its start */
     if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
       LOG_E(EMU, "Create task failed");
@@ -1083,7 +1083,7 @@ int main(int argc, char **argv) {
 
 #if defined(ENABLE_ITTI)
   // Handle signals until all tasks are terminated
-  if (create_tasks() >= 0) {
+  if (create_tasks(NB_eNB_INST, NB_UE_INST) >= 0) {
     itti_wait_tasks_end();
   } else {
     exit(-1); // need a softer mode
