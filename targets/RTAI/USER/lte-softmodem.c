@@ -940,7 +940,7 @@ void *eNB_app_task(void *args_p)
     MessageDef *message_p;
     char *mme_address_v4;
     char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
-    s1ap_register_eNB_t *s1ap_register_eNB;
+    s1ap_register_enb_req_t *s1ap_register_eNB;
     uint32_t hash;
 
     if (EPC_MODE_ENABLED)
@@ -953,9 +953,9 @@ void *eNB_app_task(void *args_p)
     }
 
     /* FIXME: following parameters should be setup by eNB applicative layer ? */
-    message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB);
+    message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB_REQ);
 
-    s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
+    s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_enb_req;
 
     hash = s1ap_generate_eNB_id();
 
