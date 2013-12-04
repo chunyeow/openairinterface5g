@@ -204,6 +204,7 @@ typedef struct {
 
 struct lfds611_queue_state *vcd_queue = NULL;
 pthread_t vcd_dumper_thread;
+#endif
 
 #define BYTE_SIZE   8
 #define NIBBLE_SIZE 4
@@ -259,6 +260,7 @@ static void uint64_to_binary(uint64_t value, char *binary)
     binary[0] = '\0';
 }
 
+#if defined(ENABLE_VCD_FIFO)
 void *vcd_dumper_thread_rt(void *args)
 {
     vcd_queue_user_data_t *data;
