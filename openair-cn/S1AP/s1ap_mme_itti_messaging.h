@@ -29,6 +29,7 @@
 *******************************************************************************/
 
 #include <stdint.h>
+#include <string.h>
 
 #include "intertask_interface.h"
 
@@ -38,10 +39,30 @@
 int s1ap_mme_itti_send_sctp_request(uint8_t *buffer, uint32_t length,
                                     uint32_t assoc_id, uint16_t stream);
 
-int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t * const buffer,
+int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t *const buffer,
                                  const uint32_t length);
 
 int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id,
                                    nas_error_code_t error_code);
+
+static inline void s1ap_mme_itti_nas_establish_ind(
+    const uint32_t ue_id, uint8_t * const nas_msg, const uint32_t nas_msg_length,
+    const long cause, const uint16_t tac)
+{
+    MessageDef     *message_p;
+
+    message_p = itti_alloc_new_message(TASK_S1AP, NAS_CONNECTION_ESTABLISHMENT_IND);
+
+    NAS_CONN_EST_IND(message_p).nas.UEid                 = ue_id;
+    /* Mapping between asn1 definition and NAS definition */
+    NAS_CONN_EST_IND(message_p).nas.asCause              = cause + 1;
+    NAS_CONN_EST_IND(message_p).nas.tac                  = tac;
+    NAS_CONN_EST_IND(message_p).nas.initialNasMsg.length = nas_msg_length;
+
+    NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data = malloc(sizeof(uint8_t) * nas_msg_length);
+    memcpy(NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data, nas_msg, nas_msg_length);
+
+    itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+}
 
 #endif /* S1AP_MME_ITTI_MESSAGING_H_ */

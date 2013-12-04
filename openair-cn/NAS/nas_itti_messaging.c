@@ -28,6 +28,8 @@
 
 *******************************************************************************/
 
+#include <string.h>
+
 #include "intertask_interface.h"
 #include "nas_itti_messaging.h"
 

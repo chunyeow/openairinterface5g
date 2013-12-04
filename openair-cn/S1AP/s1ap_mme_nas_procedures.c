@@ -75,7 +75,11 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
     S1AP_DEBUG("New Initial UE message received with eNB UE S1AP ID: 0x%06x\n",
                eNB_ue_s1ap_id);
 
-    if ((ue_ref = s1ap_is_ue_eNB_id_in_list(eNB_ref, eNB_ue_s1ap_id)) == NULL) {
+    ue_ref = s1ap_is_ue_eNB_id_in_list(eNB_ref, eNB_ue_s1ap_id);
+    if (ue_ref == NULL)
+    {
+        uint16_t tac = 0;
+
         /* This UE eNB Id has currently no known s1 association.
          * Create new UE context by associating new mme_ue_s1ap_id.
          * Update eNB UE list.
@@ -115,57 +119,21 @@ int s1ap_mme_handle_initial_ue_message(uint32_t assoc_id, uint32_t stream,
             /* TODO: should take the first available mme_ue_s1ap_id instead of
              * the mme_ue_s1ap_id variable.
              */
-            assert(0);
+            DevMessage("mme ue s1ap id has wrapped -> case not handled\n");
         }
+
         s1ap_dump_eNB(ue_ref->eNB);
-        {
-            /* We received the first NAS transport message: initial UE message.
-            * The containt of the NAS pdu should be forwarded to NAS for processing
-            */
-            MessageDef          *message_p;
-            nas_establish_ind_t *con_ind_p;
 
-            s1ap_initial_ue_message_t *s1ap_p;
+        OCTET_STRING_TO_TAC(&initialUEMessage_p->tai.tAC, tac);
 
-            message_p = itti_alloc_new_message(TASK_S1AP, NAS_CONNECTION_ESTABLISHMENT_IND);
-            /* We failed to allocate a new message... */
-            if (message_p == NULL) {
-                return -1;
-            }
-            con_ind_p = &message_p->ittiMsg.nas_conn_est_ind.nas;
-
-            s1ap_p = &message_p->ittiMsg.nas_conn_est_ind.transparent;
-
-            s1ap_p->eNB_ue_s1ap_id = eNB_ue_s1ap_id;
-            s1ap_p->mme_ue_s1ap_id = ue_ref->mme_ue_s1ap_id;
-
-#if !defined(DISABLE_USE_NAS)
-            con_ind_p->UEid = ue_ref->mme_ue_s1ap_id;
-#endif
-
-            BIT_STRING_TO_CELL_IDENTITY(&initialUEMessage_p->eutran_cgi.cell_ID,
-                                        s1ap_p->e_utran_cgi.cell_identity);
-            TBCD_TO_PLMN_T(&initialUEMessage_p->eutran_cgi.pLMNidentity,
-                           &s1ap_p->e_utran_cgi.plmn);
-
-#if !defined(DISABLE_USE_NAS)
-            /* Copy the TAI */
-//             TBCD_TO_PLMN_T(&initialUEMessage_p->tai.pLMNidentity, &con_ind_p->tai.plmn);
-            OCTET_STRING_TO_INT16(&initialUEMessage_p->tai.tAC, con_ind_p->tac);
-#else
-            /* TODO: copy the TAC */
-//             TBCD_TO_PLMN_T(&initialUEMessage_p->tai.pLMNidentity, &con_ind_p->tai.plmn);
-            OCTET_STRING_TO_INT16(&initialUEMessage_p->tai.tAC, con_ind_p->tac);
-#endif
-            /* Copy the NAS payload */
-            con_ind_p->initialNasMsg.length = initialUEMessage_p->nas_pdu.size;
-            con_ind_p->initialNasMsg.data = malloc(sizeof(con_ind_p->initialNasMsg.data) *
-                                                   initialUEMessage_p->nas_pdu.size);
-            memcpy(con_ind_p->initialNasMsg.data, initialUEMessage_p->nas_pdu.buf,
-                   initialUEMessage_p->nas_pdu.size);
-
-            return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
-        }
+        /* We received the first NAS transport message: initial UE message.
+         * Send a NAS ESTABLISH IND to NAS layer
+         */
+        s1ap_mme_itti_nas_establish_ind(ue_ref->mme_ue_s1ap_id,
+                                        initialUEMessage_p->nas_pdu.buf,
+                                        initialUEMessage_p->nas_pdu.size,
+                                        initialUEMessage_p->rrC_Establishment_Cause,
+                                        tac);
     }
     return 0;
 }

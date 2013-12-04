@@ -3,11 +3,14 @@
 #ifndef NAS_MESSAGES_TYPES_H_
 #define NAS_MESSAGES_TYPES_H_
 
-#define NAS_UL_DATA_IND(mSGpTR)  (mSGpTR)->ittiMsg.nas_ul_data_ind
-#define NAS_DL_DATA_REQ(mSGpTR)  (mSGpTR)->ittiMsg.nas_dl_data_req
-#define NAS_DL_DATA_CNF(mSGpTR)  (mSGpTR)->ittiMsg.nas_dl_data_cnf
-#define NAS_CONN_EST_CNF(mSGpTR) (mSGpTR)->ittiMsg.nas_conn_est_cnf
-#define NAS_BEARER_PARAM(mSGpTR) (mSGpTR)->ittiMsg.nas_bearer_param
+#define NAS_UL_DATA_IND(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_ind
+#define NAS_DL_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_dl_data_req
+#define NAS_DL_DATA_CNF(mSGpTR)                 (mSGpTR)->ittiMsg.nas_dl_data_cnf
+#define NAS_CONN_EST_IND(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_est_ind
+#define NAS_CONN_EST_CNF(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_est_cnf
+#define NAS_BEARER_PARAM(mSGpTR)                (mSGpTR)->ittiMsg.nas_bearer_param
+#define NAS_AUTHENTICATION_REQ(mSGpTR)          (mSGpTR)->ittiMsg.nas_auth_req
+#define NAS_AUTHENTICATION_PARAM_REQ(mSGpTR)    (mSGpTR)->ittiMsg.nas_auth_param_req
 
 typedef struct {
     
@@ -90,17 +93,28 @@ typedef struct {
 } nas_attach_req_t;
 
 typedef struct {
+    /* UE imsi */
     char imsi[16];
 
 #define NAS_FAILURE_OK  0x0
 #define NAS_FAILURE_IND 0x1
     unsigned failure:1;
     int cause;
-    
 } nas_auth_req_t;
 
 typedef struct {
     char imsi[16];
 } nas_auth_resp_t;
+
+typedef struct nas_auth_param_req_s {
+    uint8_t imsi_length;
+    char    imsi[15];
+
+    uint8_t initial_req:1;
+} nas_auth_param_req_t;
+
+typedef struct nas_attach_accept_s {
+    
+} nas_attach_accept_t;
 
 #endif /* NAS_MESSAGES_TYPES_H_ */

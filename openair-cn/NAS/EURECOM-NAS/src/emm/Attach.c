@@ -47,6 +47,9 @@ Description Defines the attach related EMM procedure executed by the
 
 #ifdef NAS_MME
 #include "mme_api.h"
+# if defined(EPC_BUILD)
+#   include "nas_itti_messaging.h"
+# endif
 #endif
 
 #include <string.h> // memcmp, memcpy
@@ -1834,6 +1837,10 @@ static int _emm_attach_identify(void *args)
     LOG_TRACE(INFO, "EMM-PROC  - Identify incoming UE (ueid=0x%08x) using %s",
               emm_ctx->ueid, (emm_ctx->imsi)? "IMSI" : (emm_ctx->guti)? "GUTI" :
               (emm_ctx->imei)? "IMEI" : "none");
+
+#if defined(EPC_BUILD)
+    nas_itti_auth_info_req(emm_ctx->imsi, 1);
+#endif
 
     /*
      * UE's identification

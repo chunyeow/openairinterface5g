@@ -320,6 +320,10 @@ typedef struct {
  * ---------------------------------------------------------------------------
  */
 typedef struct emm_data_context_s {
+#if defined(EPC_BUILD)
+    RB_ENTRY(emm_data_context_s) entries;
+#endif
+
     unsigned int ueid;   /* UE identifier                    */
     int is_dynamic;  /* Dynamically allocated context indicator      */
     int is_attached;     /* Attachment indicator                 */
@@ -344,10 +348,6 @@ typedef struct emm_data_context_s {
     int emm_cause;   /* EMM failure cause code               */
 
     emm_fsm_state_t _emm_fsm_status;
-
-#if defined(EPC_BUILD)
-    RB_ENTRY(emm_data_context_s) entries;
-#endif
 } emm_data_context_t;
 
 /*

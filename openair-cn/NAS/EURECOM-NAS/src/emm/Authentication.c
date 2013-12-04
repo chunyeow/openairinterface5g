@@ -529,15 +529,15 @@ int emm_proc_authentication(unsigned int ueid, int ksi,
                             emm_common_failure_callback_t failure)
 
 {
-    LOG_FUNC_IN;
-
     int rc = RETURNerror;
+    authentication_data_t *data;
+
+    LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "EMM-PROC  - Initiate authentication KSI = %d", ksi);
 
     /* Allocate parameters of the retransmission timer callback */
-    authentication_data_t *data =
-        (authentication_data_t *)malloc(sizeof(authentication_data_t));
+    data = (authentication_data_t *)malloc(sizeof(authentication_data_t));
 
     if (data != NULL) {
         /* Setup ongoing EMM procedure callback functions */
