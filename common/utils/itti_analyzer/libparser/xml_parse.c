@@ -825,13 +825,13 @@ static int xml_parse_doc(xmlDocPtr doc) {
         CHECK_FCT(locate_type("ittiMsg", xml_head, &message_type));
 
         /* Locate the origin task id field */
-        CHECK_FCT(locate_type("originTaskId", message_header_type, &origin_task_id_type));
+        CHECK_FCT(locate_type_children("originTaskId", message_header_type->child->child, &origin_task_id_type));
         /* Locate the destination task id field */
-        CHECK_FCT(locate_type("destinationTaskId", message_header_type, &destination_task_id_type));
+        CHECK_FCT(locate_type_children("destinationTaskId", message_header_type->child->child, &destination_task_id_type));
         /* Locate the instance field */
-        CHECK_FCT(locate_type("instance", message_header_type, &instance_type));
+        CHECK_FCT(locate_type_children("instance", message_header_type->child->child, &instance_type));
         /* Locate the message size field */
-        CHECK_FCT(locate_type("ittiMsgSize", message_header_type, &message_size_type));
+        CHECK_FCT(locate_type_children("ittiMsgSize", message_header_type->child->child, &message_size_type));
 
         // root->type_hr_display(root, 0);
 

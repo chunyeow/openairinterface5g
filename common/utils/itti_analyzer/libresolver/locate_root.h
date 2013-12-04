@@ -16,6 +16,8 @@ int locate_root(const char *root_name, types_t *head, types_t **root);
 
 int locate_type(const char *type_name, types_t *head, types_t **type);
 
+int locate_type_children(const char *type_name, types_t *head, types_t **type);
+
 uint32_t get_message_header_type_size(void);
 
 uint32_t get_message_size(buffer_t *buffer);

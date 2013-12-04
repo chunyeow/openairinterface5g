@@ -84,11 +84,43 @@ int locate_type(const char *type_name, types_t *head, types_t **type) {
         }
         next_counter ++;
     }
-    g_info("locate_type: %s %d", type_name, next_counter);
+    g_info("locate_type: %s %d %p", type_name, next_counter, next_type);
 
     if (type)
         *type = next_type;
     return (next_type == NULL) ? RC_FAIL : RC_OK;
+}
+
+int locate_type_children(const char *type_name, types_t *head, types_t **type) {
+    types_t *found_type = NULL;
+    int i;
+
+    /* The root element is for example : MessageDef.
+     * This element is the entry for other sub-types.
+     */
+    if (!type_name) {
+        g_warning("FATAL: no element name provided");
+        return RC_BAD_PARAM;
+    }
+    if (!head) {
+        g_warning("Empty list detected");
+        return RC_BAD_PARAM;
+    }
+
+    for (i = 0; i < head->nb_members; i++) {
+        if (head->members_child[i]->name == NULL)
+            continue;
+        if (strcmp (type_name, head->members_child[i]->name) == 0) {
+            /* Matching reference */
+            found_type = head->members_child[i];
+            break;
+        }
+    }
+    g_info("locate_type: %s %d %p", type_name, i, found_type);
+
+    if (type)
+        *type = found_type;
+    return (found_type == NULL) ? RC_FAIL : RC_OK;
 }
 
 uint32_t get_message_header_type_size(void)
