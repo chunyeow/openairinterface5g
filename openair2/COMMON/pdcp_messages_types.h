@@ -15,7 +15,7 @@
 
 //-------------------------------------------------------------------------------------------//
 // Messages between RRC and PDCP layers
-typedef struct {
+typedef struct RrcDcchDataReq_s {
   uint32_t frame;
   uint8_t enb_flag;
   uint32_t rb_id;
@@ -26,7 +26,7 @@ typedef struct {
   uint8_t mode;
 } RrcDcchDataReq;
 
-typedef struct {
+typedef struct RrcDcchDataInd_s {
   uint32_t frame;
   uint8_t dcch_index;
   uint32_t sdu_size;

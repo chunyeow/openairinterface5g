@@ -30,46 +30,46 @@
 
 //-------------------------------------------------------------------------------------------//
 // Messages between RRC and MAC layers
-typedef struct {
+typedef struct RrcMacInSyncInd_s {
   uint32_t frame;
   uint16_t enb_index;
 } RrcMacInSyncInd;
 
 typedef RrcMacInSyncInd RrcMacOutOfSyncInd;
 
-typedef struct {
+typedef struct RrcMacBcchDataReq_s {
   uint32_t frame;
   uint32_t sdu_size;
   uint8_t sdu[BCCH_SDU_SIZE];
   uint8_t enb_index;
 } RrcMacBcchDataReq;
 
-typedef struct {
+typedef struct RrcMacBcchDataInd_s {
   uint32_t frame;
   uint32_t sdu_size;
   uint8_t sdu[BCCH_SDU_SIZE];
   uint8_t enb_index;
 } RrcMacBcchDataInd;
 
-typedef struct {
+typedef struct RrcMacCcchDataReq_s {
   uint32_t frame;
   uint32_t sdu_size;
   uint8_t sdu[CCCH_SDU_SIZE];
   uint8_t enb_index;
 } RrcMacCcchDataReq;
 
-typedef struct {
+typedef struct RrcMacCcchDataCnf_s {
   uint8_t enb_index;
 } RrcMacCcchDataCnf;
 
-typedef struct {
+typedef struct RrcMacCcchDataInd_s {
     uint32_t frame;
     uint32_t sdu_size;
     uint8_t sdu[CCCH_SDU_SIZE];
     uint8_t enb_index;
 } RrcMacCcchDataInd;
 
-typedef struct {
+typedef struct RrcMacMcchDataReq_s {
   uint32_t frame;
   uint32_t sdu_size;
   uint8_t sdu[MCCH_SDU_SIZE];
@@ -77,7 +77,7 @@ typedef struct {
   uint8_t mbsfn_sync_area;
 } RrcMacMcchDataReq;
 
-typedef struct {
+typedef struct RrcMacMcchDataInd_s {
   uint32_t frame;
   uint32_t sdu_size;
   uint8_t sdu[MCCH_SDU_SIZE];
