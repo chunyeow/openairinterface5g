@@ -76,7 +76,7 @@ typedef enum
 //! Thread id of each task
 typedef enum
 {
-    THREAD_FIRST = 1, THREAD_NULL = 0,
+    THREAD_NULL = 0,
 
 #define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             THREAD_##tHREADiD,
 #define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)
@@ -85,6 +85,7 @@ typedef enum
 #undef TASK_DEF
 
     THREAD_MAX,
+    THREAD_FIRST = 1,
 } thread_id_t;
 
 //! Sub-tasks id, to defined offset form thread id
@@ -100,7 +101,7 @@ typedef enum
 //! Tasks id of each task
 typedef enum
 {
-    TASK_FIRST = 1, TASK_UNKNOWN = 0,
+    TASK_UNKNOWN = 0,
 
 #define TASK_DEF(tHREADiD, pRIO, qUEUEsIZE)             tHREADiD,
 #define SUB_TASK_DEF(tHREADiD, sUBtASKiD, qUEUEsIZE)    sUBtASKiD,
@@ -109,6 +110,7 @@ typedef enum
 #undef TASK_DEF
 
     TASK_MAX,
+    TASK_FIRST = 1,
 } task_id_t;
 
 typedef union msg_s
