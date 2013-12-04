@@ -46,9 +46,6 @@ ifeq 	($(gccxml_available), 0)
 $(error gccxml is missing, please install)
 endif
 CFLAGS += -I$(OPENAIR2_DIR)/COMMON -DENABLE_ITTI $(UTILS_incl)
-ifndef DISABLE_ITTI_EVENT_FD
-CFLAGS += -DENABLE_EVENT_FD
-endif
 endif
 
 force_look:
