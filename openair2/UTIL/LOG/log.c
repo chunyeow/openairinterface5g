@@ -300,6 +300,14 @@ int logInit (void)
     g_log->log_component[OSA].filelog = 0;
     g_log->log_component[OSA].filelog_name = "";
 
+    g_log->log_component[ENB_APP].name = "ENB_APP";
+    g_log->log_component[ENB_APP].level = LOG_EMERG;
+    g_log->log_component[ENB_APP].flag = LOG_MED;
+    g_log->log_component[ENB_APP].interval = 1;
+    g_log->log_component[ENB_APP].fd = 0;
+    g_log->log_component[ENB_APP].filelog = 0;
+    g_log->log_component[ENB_APP].filelog_name = "";
+
     g_log->level2string[LOG_EMERG]         = "G"; //EMERG
     g_log->level2string[LOG_ALERT]         = "A"; // ALERT
     g_log->level2string[LOG_CRIT]          = "C"; // CRITIC
