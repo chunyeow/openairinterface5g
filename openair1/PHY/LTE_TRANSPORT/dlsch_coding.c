@@ -141,6 +141,7 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
 	     MAX_DLSCH_PAYLOAD_BYTES/bw_scaling,bw_scaling, i,dlsch->harq_processes[i]);
       if (dlsch->harq_processes[i]) {
           bzero(dlsch->harq_processes[i],sizeof(LTE_DL_eNB_HARQ_t));
+	  //	  dlsch->harq_processes[i]->first_tx=1;
           dlsch->harq_processes[i]->b = (unsigned char*)malloc16(MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
           if (dlsch->harq_processes[i]->b) {
 	    bzero(dlsch->harq_processes[i]->b,MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
@@ -202,7 +203,7 @@ void clean_eNb_dlsch(LTE_eNB_DLSCH_t *dlsch, u8 abstraction_flag) {
 
     for (i=0;i<Mdlharq;i++) {
       if (dlsch->harq_processes[i]) {
-	dlsch->harq_processes[i]->Ndi    = 0;
+	//	dlsch->harq_processes[i]->Ndi    = 0;
 	dlsch->harq_processes[i]->status = 0;
 	dlsch->harq_processes[i]->round  = 0;
 	if (abstraction_flag==0) {
@@ -245,7 +246,8 @@ int dlsch_encoding(unsigned char *a,
   G = get_G(frame_parms,nb_rb,dlsch->rb_alloc,mod_order,num_pdcch_symbols,frame,subframe);
 
    
-  if (dlsch->harq_processes[harq_pid]->Ndi == 1) {  // this is a new packet
+  //  if (dlsch->harq_processes[harq_pid]->Ndi == 1) {  // this is a new packet
+  if (dlsch->harq_processes[harq_pid]->round == 0) {  // this is a new packet
 
     /*
     int i;
@@ -382,7 +384,8 @@ void dlsch_encoding_emul(PHY_VARS_eNB *phy_vars_eNB,
   unsigned char harq_pid = dlsch->current_harq_pid;
   unsigned short i;
 
-  if (dlsch->harq_processes[harq_pid]->Ndi == 1) {
+  //  if (dlsch->harq_processes[harq_pid]->Ndi == 1) {
+  if (dlsch->harq_processes[harq_pid]->round == 0) {
     memcpy(dlsch->harq_processes[harq_pid]->b,
 	   DLSCH_pdu,
 	   dlsch->harq_processes[harq_pid]->TBS>>3);

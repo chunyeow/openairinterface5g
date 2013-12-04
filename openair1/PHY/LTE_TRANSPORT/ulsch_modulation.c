@@ -202,6 +202,86 @@ void dft_lte(mod_sym_t *z,mod_sym_t *d, int32_t Msc_PUSCH, uint8_t Nsymb) {
     dft300((int16_t*)dft_in1,(int16_t*)dft_out1,1);
     dft300((int16_t*)dft_in2,(int16_t*)dft_out2,1);
     break;
+  case 324:
+    dft324((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft324((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft324((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 360:
+    dft360((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft360((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft360((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 384:
+    dft384((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft384((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft384((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 432:
+    dft432((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft432((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft432((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 480:
+    dft480((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft480((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft480((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 540:
+    dft540((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft540((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft540((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 576:
+    dft576((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft576((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft576((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 600:
+    dft600((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft600((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft600((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 648:
+    dft648((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft648((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft648((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 720:
+    dft720((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft720((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft720((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 864:
+    dft864((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft864((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft864((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 900:
+    dft900((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft900((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft900((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 960:
+    dft960((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft960((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft960((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 972:
+    dft972((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft972((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft972((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 1080:
+    dft1080((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft1080((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft1080((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
+  case 1152:
+    dft1152((int16_t*)dft_in0,(int16_t*)dft_out0,1);
+    dft1152((int16_t*)dft_in1,(int16_t*)dft_out1,1);
+    dft1152((int16_t*)dft_in2,(int16_t*)dft_out2,1);
+    break;
   case 1200:
     dft1200((int16_t*)dft_in0,(int16_t*)dft_out0,1);
     dft1200((int16_t*)dft_in1,(int16_t*)dft_out1,1);
@@ -344,6 +424,7 @@ void ulsch_modulation(mod_sym_t **txdataF,
   // Modulation
 
   Msymb = G/Q_m;
+
   if(ulsch->cooperation_flag == 2)
     // For Distributed Alamouti Scheme in Collabrative Communication
     {
@@ -491,8 +572,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 
 	  ((int16_t*)&ulsch->d[i])[0] = (ulsch->b_tilde[j] == 1)  ? (-gain_lin_QPSK) : gain_lin_QPSK;
 	  ((int16_t*)&ulsch->d[i])[1] = (ulsch->b_tilde[j+1] == 1)? (-gain_lin_QPSK) : gain_lin_QPSK;
-	  //      if (i<Msc_PUSCH)
-	  //	msg("input %d (%p): %d,%d\n", i,&ulsch->d[i],((int16_t*)&ulsch->d[i])[0],((int16_t*)&ulsch->d[i])[1]);
+	  //        if (i<Msc_PUSCH)
+	  //	  msg("input %d/%d Msc_PUSCH %d (%p): %d,%d\n", i,Msymb,Msc_PUSCH,&ulsch->d[i],((int16_t*)&ulsch->d[i])[0],((int16_t*)&ulsch->d[i])[1]);
 
 	  break;
 

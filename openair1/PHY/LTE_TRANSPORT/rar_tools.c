@@ -111,7 +111,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   ulsch->harq_processes[harq_pid]->rar_alloc          = 1;
   ulsch->harq_processes[harq_pid]->first_rb           = RIV2first_rb_LUT[rballoc];
   ulsch->harq_processes[harq_pid]->nb_rb              = RIV2nb_rb_LUT[rballoc];
-  ulsch->harq_processes[harq_pid]->Ndi                = 1;
+  //  ulsch->harq_processes[harq_pid]->Ndi                = 1;
 
   cqireq = rar[3]&1;
   if (cqireq==1){
@@ -133,7 +133,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   
   ulsch->Nsymb_pusch                           = 12-(frame_parms->Ncp<<1);
   ulsch->rnti = (((uint16_t)rar[4])<<8)+rar[5];  
-  if (ulsch->harq_processes[harq_pid]->Ndi == 1) {
+  if (ulsch->harq_processes[harq_pid]->round == 0) {
     ulsch->harq_processes[harq_pid]->status = ACTIVE;
     ulsch->harq_processes[harq_pid]->rvidx = 0;
     ulsch->harq_processes[harq_pid]->mcs         = ((rar[2]&1)<<3)|(rar[3]>>5);
@@ -152,7 +152,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   msg("ulsch ra (eNB): NBRB     %d\n",ulsch->harq_processes[harq_pid]->nb_rb);
   msg("ulsch ra (eNB): rballoc  %x\n",ulsch->harq_processes[harq_pid]->first_rb);
   msg("ulsch ra (eNB): harq_pid %d\n",harq_pid);
-  msg("ulsch ra (eNB): Ndi      %d\n",ulsch->harq_processes[harq_pid]->Ndi);  
+  msg("ulsch ra (eNB): round    %d\n",ulsch->harq_processes[harq_pid]->round);  
   msg("ulsch ra (eNB): TBS      %d\n",ulsch->harq_processes[harq_pid]->TBS);
   msg("ulsch ra (eNB): mcs      %d\n",ulsch->harq_processes[harq_pid]->mcs);
   msg("ulsch ra (eNB): Or1      %d\n",ulsch->Or1);
@@ -176,14 +176,14 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
   //  int current_dlsch_cqi = phy_vars_ue->current_dlsch_cqi[eNB_id];  
 
   uint8_t *rar = (uint8_t *)(rar_pdu+1);
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,phy_vars_ue->frame,subframe);
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe==0)?1:0) + phy_vars_ue->frame,subframe);
   uint16_t rballoc;
   uint8_t cqireq;
   double sinr_eff;
   uint16_t *RIV2nb_rb_LUT, *RIV2first_rb_LUT;
   uint16_t RIV_max;
 
-  LOG_D(PHY,"[eNB][RAPROC] generate_ue_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",subframe,harq_pid);
+  LOG_D(PHY,"[eNB][RAPROC] Frame %d: generate_ue_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",phy_vars_ue->frame,subframe,harq_pid);
 
   switch (frame_parms->N_RB_DL) {
     case 6:
@@ -232,8 +232,8 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
     return(-1);
   }
 
-  ulsch->harq_processes[harq_pid]->Ndi                                   = 1;
-  if (ulsch->harq_processes[harq_pid]->Ndi == 1)
+  //  ulsch->harq_processes[harq_pid]->Ndi                                   = 1;
+  if (ulsch->harq_processes[harq_pid]->round == 0)
     ulsch->harq_processes[harq_pid]->status = ACTIVE;
 
   if (cqireq==1) {
@@ -275,7 +275,7 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
   ulsch->Nsymb_pusch                             = 12-(frame_parms->Ncp<<1);
   ulsch->rnti = (((uint16_t)rar[4])<<8)+rar[5];  //rar->t_crnti;
   
-  if (ulsch->harq_processes[harq_pid]->Ndi == 1) {
+  if (ulsch->harq_processes[harq_pid]->round == 0) {
     ulsch->harq_processes[harq_pid]->status = ACTIVE;
     ulsch->harq_processes[harq_pid]->rvidx = 0;
     ulsch->harq_processes[harq_pid]->mcs         = ((rar[2]&1)<<3)|(rar[3]>>5);
@@ -300,10 +300,11 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
     
 
 	//#ifdef DEBUG_RAR
+    msg("ulsch ra (UE): harq_pid %d\n",harq_pid);
     msg("ulsch ra (UE): NBRB     %d\n",ulsch->harq_processes[harq_pid]->nb_rb);
     msg("ulsch ra (UE): first_rb %x\n",ulsch->harq_processes[harq_pid]->first_rb);
     msg("ulsch ra (UE): nb_rb    %d\n",ulsch->harq_processes[harq_pid]->nb_rb);
-    msg("ulsch ra (UE): Ndi      %d\n",ulsch->harq_processes[harq_pid]->Ndi);  
+    msg("ulsch ra (UE): round    %d\n",ulsch->harq_processes[harq_pid]->round);  
     msg("ulsch ra (UE): TBS      %d\n",ulsch->harq_processes[harq_pid]->TBS);
     msg("ulsch ra (UE): mcs      %d\n",ulsch->harq_processes[harq_pid]->mcs);
     msg("ulsch ra (UE): TPC      %d\n",ulsch->harq_processes[harq_pid]->TPC);

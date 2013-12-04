@@ -111,6 +111,7 @@ LTE_UE_DLSCH_t *new_ue_dlsch(uint8_t Kmimo,uint8_t Mdlharq,uint8_t max_turbo_ite
       dlsch->harq_processes[i] = (LTE_DL_UE_HARQ_t *)malloc16(sizeof(LTE_DL_UE_HARQ_t));
       if (dlsch->harq_processes[i]) {
 	memset(dlsch->harq_processes[i],0,sizeof(LTE_DL_UE_HARQ_t));
+	dlsch->harq_processes[i]->first_tx=1;
 	dlsch->harq_processes[i]->b = (uint8_t*)malloc16(MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
 	if (dlsch->harq_processes[i]->b) 
 	  memset(dlsch->harq_processes[i]->b,0,MAX_DLSCH_PAYLOAD_BYTES/bw_scaling);
@@ -235,7 +236,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 
   //  msg("DLSCH Decoding, harq_pid %d Ndi %d\n",harq_pid,harq_process->Ndi);
 
-  if (harq_process->Ndi == 1) {
+  if (harq_process->round == 0) {
     // This is a new packet, so compute quantities regarding segmentation
     harq_process->B = A+24;
     lte_segmentation(NULL,
@@ -309,7 +310,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 				   dlsch->Mdlharq,
 				   dlsch->Kmimo,
 				   harq_process->rvidx,
-				   harq_process->Ndi,
+				   (harq_process->round==0)?1:0,
 				   get_Qm(harq_process->mcs),
 				   harq_process->Nl,
 				   r,
@@ -718,7 +719,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
       dlsch_ue->harq_ack[subframe].ack = 1;
       dlsch_ue->harq_ack[subframe].harq_id = harq_pid;
       dlsch_ue->harq_ack[subframe].send_harq_status = 1;
-      if (dlsch_ue->harq_processes[harq_pid]->Ndi == 1)
+      if (dlsch_ue->harq_processes[harq_pid]->round == 0)
 	memcpy(dlsch_ue->harq_processes[harq_pid]->b,
 	       dlsch_eNB->harq_processes[harq_pid]->b,
 	       dlsch_ue->harq_processes[harq_pid]->TBS>>3);
@@ -746,7 +747,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
     dlsch_ue->harq_ack[subframe].ack = 1;
     dlsch_ue->harq_ack[subframe].harq_id = harq_pid;
     dlsch_ue->harq_ack[subframe].send_harq_status = 1;
-    if (dlsch_ue->harq_processes[harq_pid]->Ndi == 1)
+    if (dlsch_ue->harq_processes[harq_pid]->round == 0)
       memcpy(dlsch_eNB->harq_processes[harq_pid]->b,dlsch_ue->harq_processes[harq_pid]->b,dlsch_ue->harq_processes[harq_pid]->TBS>>3);
     break;
   default:

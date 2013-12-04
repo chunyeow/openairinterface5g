@@ -62,13 +62,8 @@ void generate_pilots(PHY_VARS_eNB *phy_vars_eNB,
 	
 
 
-#ifdef IFFT_FPGA
-    tti_offset = tti*frame_parms->N_RB_DL*12*Nsymb;
-    samples_per_symbol = frame_parms->N_RB_DL*12;
-#else    
     tti_offset = tti*frame_parms->ofdm_symbol_size*Nsymb;
     samples_per_symbol = frame_parms->ofdm_symbol_size;
-#endif
     slot_offset = (tti*2)%20;
     
     //    printf("tti %d : offset %d (slot %d)\n",tti,tti_offset,slot_offset);
@@ -191,13 +186,8 @@ int generate_pilots_slot(PHY_VARS_eNB *phy_vars_eNB,
   second_pilot = (frame_parms->Ncp==0)?4:3;
 
 
-#ifdef IFFT_FPGA
-  slot_offset = slot*frame_parms->N_RB_DL*12*Nsymb;
-  samples_per_symbol = frame_parms->N_RB_DL*12;
-#else    
   slot_offset = slot*frame_parms->ofdm_symbol_size*Nsymb;
   samples_per_symbol = frame_parms->ofdm_symbol_size;
-#endif
     
     //    printf("tti %d : offset %d (slot %d)\n",tti,tti_offset,slot_offset);
     //Generate Pilots

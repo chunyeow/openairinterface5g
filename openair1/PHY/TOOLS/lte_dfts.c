@@ -4139,7 +4139,7 @@ void dft192(int16_t *x,int16_t *y,unsigned char scale_flag){
   if (scale_flag==1) {
     norm128 = _mm_set1_epi16(dft_norm_table[11]);
     
-    for (i=0;i<216;i++) {
+    for (i=0;i<192;i++) {
       y128[i] = _mm_slli_epi16(_mm_mulhi_epi16(y128[i],norm128),1);
     }
   }
@@ -5379,12 +5379,12 @@ void dft324(int16_t *x,int16_t *y,unsigned char scale_flag){ // 108 x 3
     x2128[i+216] = x128[j+2];
   }
 
-  dft96((int16_t *)x2128,(int16_t *)ytmp128,1);
-  dft96((int16_t *)(x2128+108),(int16_t *)(ytmp128+108),1);
-  dft96((int16_t *)(x2128+216),(int16_t *)(ytmp128+216),1);
+  dft108((int16_t *)x2128,(int16_t *)ytmp128,1);
+  dft108((int16_t *)(x2128+108),(int16_t *)(ytmp128+108),1);
+  dft108((int16_t *)(x2128+216),(int16_t *)(ytmp128+216),1);
 
   bfly3_tw1(ytmp128,ytmp128+108,ytmp128+216,y128,y128+108,y128+216);
-  for (i=1,j=0;i<96;i++,j++) {
+  for (i=1,j=0;i<108;i++,j++) {
     bfly3(ytmp128+i,
 	  ytmp128+108+i,
 	  ytmp128+216+i,
@@ -6905,11 +6905,11 @@ void dft480(int16_t *x,int16_t *y,unsigned char scale_flag){ // 120 x 4
 
 
 
-  for (i=0,j=0;i<240;i++,j+=4) {
+  for (i=0,j=0;i<120;i++,j+=4) {
     x2128[i]    = x128[j];
-    x2128[i+240] = x128[j+1];
-    x2128[i+480] = x128[j+2];
-    x2128[i+720] = x128[j+3];
+    x2128[i+120] = x128[j+1];
+    x2128[i+240] = x128[j+2];
+    x2128[i+360] = x128[j+3];
   }
 
   dft120((int16_t *)x2128,(int16_t *)ytmp128,1);
@@ -7401,7 +7401,7 @@ end
 i=i+2;
 fprintf(fd,"%d,%d,%d,%d,%d,%d,%d,%d};\n",twb2(i),twb2(i+1),twb2(i),twb2(i+1),twb2(i),twb2(i+1),twb2(i),twb2(i+1));
 fclose(fd);
-*/
+*/ 
 static int16_t twa576[191*2*4] = {32765,-358,32765,-358,32765,-358,32765,-358,
 32759,-715,32759,-715,32759,-715,32759,-715,
 32749,-1073,32749,-1073,32749,-1073,32749,-1073,
@@ -7801,12 +7801,14 @@ void dft576(int16_t *x,int16_t *y,unsigned char scale_flag){ // 192 x 3
     x2128[i+192] = x128[j+1];
     x2128[i+384] = x128[j+2];
   }
+  
 
   dft192((int16_t *)x2128,(int16_t *)ytmp128,1);
   dft192((int16_t *)(x2128+192),(int16_t *)(ytmp128+192),1);
   dft192((int16_t *)(x2128+384),(int16_t *)(ytmp128+384),1);
-
+  
   bfly3_tw1(ytmp128,ytmp128+192,ytmp128+384,y128,y128+192,y128+384);
+  
   for (i=1,j=0;i<192;i++,j++) {
     bfly3(ytmp128+i,
 	  ytmp128+192+i,
@@ -7816,8 +7818,7 @@ void dft576(int16_t *x,int16_t *y,unsigned char scale_flag){ // 192 x 3
 	  y128+384+i,
 	  twa128+j,
 	  twb128+j);
-  }
-
+	  }
   if (scale_flag==1) {
     norm128 = _mm_set1_epi16(dft_norm_table[14]);
     
@@ -7828,7 +7829,6 @@ void dft576(int16_t *x,int16_t *y,unsigned char scale_flag){ // 192 x 3
 
   _mm_empty();
   _m_empty();
-
 };
 
 /* Twiddles generated with
@@ -8659,9 +8659,9 @@ void dft648(int16_t *x,int16_t *y,unsigned char scale_flag){ // 216 x 3
     x2128[i+432] = x128[j+2];
   }
 
-  dft96((int16_t *)x2128,(int16_t *)ytmp128,1);
-  dft96((int16_t *)(x2128+216),(int16_t *)(ytmp128+216),1);
-  dft96((int16_t *)(x2128+432),(int16_t *)(ytmp128+432),1);
+  dft216((int16_t *)x2128,(int16_t *)ytmp128,1);
+  dft216((int16_t *)(x2128+216),(int16_t *)(ytmp128+216),1);
+  dft216((int16_t *)(x2128+432),(int16_t *)(ytmp128+432),1);
 
   bfly3_tw1(ytmp128,ytmp128+216,ytmp128+432,y128,y128+216,y128+432);
   for (i=1,j=0;i<216;i++,j++) {
@@ -9929,7 +9929,7 @@ void dft864(int16_t *x,int16_t *y,unsigned char scale_flag){ // 288 x 3
   for (i=0,j=0;i<288;i++,j+=3) {
     x2128[i]    = x128[j];
     x2128[i+288] = x128[j+1];
-    x2128[i+288] = x128[j+2];
+    x2128[i+576] = x128[j+2];
   }
 
   dft288((int16_t *)x2128,(int16_t *)ytmp128,1);
@@ -12911,7 +12911,7 @@ void dft1080(int16_t *x,int16_t *y,unsigned char scale_flag){ // 360 x 3
   for (i=0,j=0;i<360;i++,j+=3) {
     x2128[i]    = x128[j];
     x2128[i+360] = x128[j+1];
-    x2128[i+360] = x128[j+2];
+    x2128[i+720] = x128[j+2];
   }
 
   dft360((int16_t *)x2128,(int16_t *)ytmp128,1);

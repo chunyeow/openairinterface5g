@@ -185,8 +185,9 @@ void sub_block_deinterleaving_turbo(uint32_t D,int16_t *d,int16_t *w) {
       k++;k2++;k2++;
     }      
   }
-  if (ND>0)
-    d[2] = LTE_NULL;//d[(3*D)+2];
+
+  //  if (ND>0)
+  //    d[2] = LTE_NULL;//d[(3*D)+2];
 
 }
 
@@ -476,19 +477,19 @@ uint32_t lte_rate_matching_turbo(uint32_t RTC,
   k=0;
 
   for (;(ind<Ncb)&&(k<E);ind++) {
-    e2[k]=w[ind];
+    //    e2[k]=w[ind];
 #ifdef RM_DEBUG_TX
     printf("RM_TX k%d Ind: %d (%d)\n",k,ind,w[ind]);
 #endif
-    if (w[ind] != LTE_NULL) k++;
+    if (w[ind] != LTE_NULL) e2[k++]=w[ind];
   }
   while(k<E) {
     for (ind=0;(ind<Ncb)&&(k<E);ind++) {
-      e2[k] = w[ind];
+      //      e2[k] = w[ind];
 #ifdef RM_DEBUG_TX
     printf("RM_TX k%d Ind: %d (%d)\n",k,ind,w[ind]);
 #endif
-      if (w[ind] != LTE_NULL) k++;
+      if (w[ind] != LTE_NULL) e2[k++]=w[ind];
     }
   }
   /*  

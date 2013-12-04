@@ -174,7 +174,7 @@ void clean_eNb_ulsch(LTE_eNB_ULSCH_t *ulsch, uint8_t abstraction_flag) {
     ulsch->rnti = 0;
     for (i=0;i<Mdlharq;i++) {
       if (ulsch->harq_processes[i]) {
-	  ulsch->harq_processes[i]->Ndi = 0;
+	//	  ulsch->harq_processes[i]->Ndi = 0;
 	  ulsch->harq_processes[i]->status = 0;
 	  ulsch->harq_processes[i]->subframe_scheduling_flag = 0;
 	  //ulsch->harq_processes[i]->phich_active = 0; //this will be done later after transmission of PHICH
@@ -294,9 +294,9 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 
 
 #ifdef DEBUG_ULSCH_DECODING
-  LOG_D(PHY,"ulsch_decoding (Nid_cell %d, rnti %x, x2 %x): Ndi %d, RV %d, mcs %d, O_RI %d, O_ACK %d, G %d, subframe %d\n",
+  LOG_D(PHY,"ulsch_decoding (Nid_cell %d, rnti %x, x2 %x): round %d, RV %d, mcs %d, O_RI %d, O_ACK %d, G %d, subframe %d\n",
       frame_parms->Nid_cell,ulsch->rnti,x2,
-      ulsch->harq_processes[harq_pid]->Ndi,
+      ulsch->harq_processes[harq_pid]->round,
       ulsch->harq_processes[harq_pid]->rvidx,
       ulsch->harq_processes[harq_pid]->mcs,
       ulsch->O_RI,
@@ -305,7 +305,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
       subframe);
 #endif  
 
-  if (ulsch->harq_processes[harq_pid]->Ndi == 1) {
+  if (ulsch->harq_processes[harq_pid]->round == 0) {
     // This is a new packet, so compute quantities regarding segmentation
     ulsch->harq_processes[harq_pid]->B = A+24;
     lte_segmentation(NULL,
@@ -331,10 +331,10 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
   }
   if (sumKr==0) {
     LOG_N(PHY,"[eNB %d] ulsch_decoding.c: FATAL sumKr is 0!\n",phy_vars_eNB->Mod_id);
-    LOG_D(PHY,"ulsch_decoding (Nid_cell %d, rnti %x, x2 %x): harq_pid %d Ndi %d, RV %d, mcs %d, O_RI %d, O_ACK %d, G %d, subframe %d\n",
+    LOG_D(PHY,"ulsch_decoding (Nid_cell %d, rnti %x, x2 %x): harq_pid %d round %d, RV %d, mcs %d, O_RI %d, O_ACK %d, G %d, subframe %d\n",
 	frame_parms->Nid_cell,ulsch->rnti,x2,
 	harq_pid,
-	ulsch->harq_processes[harq_pid]->Ndi,
+	ulsch->harq_processes[harq_pid]->round,
 	ulsch->harq_processes[harq_pid]->rvidx,
 	ulsch->harq_processes[harq_pid]->mcs,
 	ulsch->O_RI,
@@ -407,7 +407,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 
   Q_CQI = Q_m * Qprime;
 #ifdef DEBUG_ULSCH_DECODING
-  printf("ulsch_decoding.c: G %d, Q_RI %d, Q_CQI %d (L %d, Or1 %d)\n",G,Q_RI,Q_CQI,L,ulsch->Or1); 
+  printf("ulsch_decoding.c: G %d, Q_RI %d, Q_CQI %d (L %d, Or1 %d) O_ACK %d\n",G,Q_RI,Q_CQI,L,ulsch->Or1,ulsch->harq_processes[harq_pid]->O_ACK); 
 #endif
   Qprime_CQI = Qprime;
 
@@ -768,7 +768,8 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
       if (y[q+(Q_m*((r*Cmux) + columnset[j]))]!=0)
 	ulsch->q_ACK[(q+(Q_m*i))%len_ACK] += y[q+(Q_m*((r*Cmux) + columnset[j]))];
 #ifdef DEBUG_ULSCH_DECODING
-      LOG_D(PHY,"ACK %d => %d (%d,%d,%d)\n",(q+(Q_m*i))%len_ACK,ulsch->q_ACK[(q+(Q_m*i))%len_ACK],q+(Q_m*((r*Cmux) + columnset[j])),r,columnset[j]);
+      //      LOG_D(PHY,"ACK %d => %d (%d,%d,%d)\n",(q+(Q_m*i))%len_ACK,ulsch->q_ACK[(q+(Q_m*i))%len_ACK],q+(Q_m*((r*Cmux) + columnset[j])),r,columnset[j]);
+      printf("ACK %d => %d (%d,%d,%d)\n",(q+(Q_m*i))%len_ACK,ulsch->q_ACK[(q+(Q_m*i))%len_ACK],q+(Q_m*((r*Cmux) + columnset[j])),r,columnset[j]);
 #endif
       y[q+(Q_m*((r*Cmux) + columnset[j]))]=0;  // NULL LLRs in ACK positions
     }
@@ -874,6 +875,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 #endif
       
     }
+    //    write_output("/tmp/ulsch_e.m","ulsch_e",ulsch->e,iprime,1,0);
     break;
   case 4:
     for (iprime=0;iprime<(Hprime-Qprime_CQI)<<2;) {
@@ -1161,7 +1163,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 				   ulsch->Mdlharq,
 				   1,
 				   ulsch->harq_processes[harq_pid]->rvidx,
-				   ulsch->harq_processes[harq_pid]->Ndi,
+				   (ulsch->harq_processes[harq_pid]->round==0)?1:0,  // clear
 				   get_Qm_ul(ulsch->harq_processes[harq_pid]->mcs),
 				   1,
 				   r,
@@ -1181,14 +1183,14 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 				   &ulsch->harq_processes[harq_pid]->d[r][96], 
 				   ulsch->harq_processes[harq_pid]->w[r]); 
     stop_meas(&phy_vars_eNB->ulsch_deinterleaving_stats);
-    /*    
+        
 #ifdef DEBUG_ULSCH_DECODING    
     msg("decoder input(segment %d) :",r);
     for (i=0;i<(3*8*Kr_bytes)+12;i++)
       msg("%d : %d\n",i,ulsch->harq_processes[harq_pid]->d[r][96+i]);
     msg("\n");
 #endif
-    */
+    
   }
 
 #ifdef OMP

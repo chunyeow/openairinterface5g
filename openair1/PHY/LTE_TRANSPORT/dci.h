@@ -100,9 +100,7 @@ typedef struct DCI0_1_5MHz_TDD_1_6 DCI0_1_5MHz_TDD_1_6_t;
 /// DCI Format Type 1A (1.5 MHz, TDD, frame 1-6, 24 bits)
 struct DCI1A_1_5MHz_TDD_1_6 {
   /// padding
-  uint32_t padding:8;
-  /// SRS request bit
-  uint32_t srs_req:1;
+  uint32_t padding:9;
   /// Downlink Assignment Index
   uint32_t dai:2;
   /// Power Control
@@ -212,9 +210,7 @@ typedef struct DCI0_10MHz_TDD_1_6 DCI0_10MHz_TDD_1_6_t;
 /// DCI Format Type 1A (10 MHz, TDD, frame 1-6, 30 bits)
 struct DCI1A_10MHz_TDD_1_6 {
   /// padding
-  uint32_t padding:2;
-  /// SRS request bit
-  uint32_t srs_req:1;
+  uint32_t padding:3;
   /// Downlink Assignment Index
   uint32_t dai:2;
   /// Power Control
@@ -243,7 +239,7 @@ typedef struct DCI1A_10MHz_TDD_1_6 DCI1A_10MHz_TDD_1_6_t;
 struct DCI0_20MHz_TDD_1_6 {
   /// Padding
   uint32_t padding:2;
-  /// CQI Request
+  /// CQI request
   uint32_t cqi_req:1;
   /// DAI
   uint32_t dai:2;
@@ -268,8 +264,7 @@ typedef struct DCI0_20MHz_TDD_1_6 DCI0_20MHz_TDD_1_6_t;
 
 /// DCI Format Type 1A (20 MHz, TDD, frame 1-6, 27 bits)
 struct DCI1A_20MHz_TDD_1_6 {
-  /// SRS request bit
-  uint32_t srs_req:1;
+  uint32_t padding:1;
   /// Downlink Assignment Index
   uint32_t dai:2;
   /// Power Control
@@ -321,9 +316,7 @@ typedef struct DCI0_1_5MHz_FDD DCI0_1_5MHz_FDD_t;
 
 struct DCI1A_1_5MHz_FDD {
   /// padding
-  uint32_t padding:11;
-  /// Downlink Assignment Index
-  uint32_t srs_req:1;
+  uint32_t padding:12;
   /// Power Control
   uint32_t TPC:2;
   /// Redundancy version
@@ -374,9 +367,7 @@ typedef struct DCI0_5MHz_FDD DCI0_5MHz_FDD_t;
 
 struct DCI1A_5MHz_FDD {
   /// padding
-  uint32_t padding:7;
-  /// Downlink Assignment Index
-  uint32_t srs_req:1;
+  uint32_t padding:8;
   /// Power Control
   uint32_t TPC:2;
   /// Redundancy version
@@ -428,9 +419,7 @@ typedef struct DCI0_10MHz_FDD DCI0_10MHz_FDD_t;
 
 struct DCI1A_10MHz_FDD {
   /// padding
-  uint32_t padding:5;
-  /// Downlink Assignment Index
-  uint32_t srs_req:1;
+  uint32_t padding:6;
   /// Power Control
   uint32_t TPC:2;
   /// Redundancy version
@@ -480,9 +469,7 @@ typedef struct DCI0_20MHz_FDD DCI0_20MHz_FDD_t;
 
 struct DCI1A_20MHz_FDD {
   /// padding
-  uint32_t padding:3;
-  /// Downlink Assignment Index
-  uint32_t srs_req:1;
+  uint32_t padding:4;
   /// Power Control
   uint32_t TPC:2;
   /// Redundancy version

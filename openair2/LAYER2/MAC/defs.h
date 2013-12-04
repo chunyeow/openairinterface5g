@@ -467,7 +467,10 @@ typedef struct{
 typedef struct{
   /// C-RNTI of UE
   u16 rnti;
-
+  /// NDI from last scheduling
+  uint8_t oldNDI[8];
+  /// NDI from last UL scheduling
+  uint8_t oldNDI_UL[8];
   /// Flag to indicate UL has been scheduled at least once
   int ul_active;
 

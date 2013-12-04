@@ -287,18 +287,18 @@ u32 ulsch_encoding(u8 *a,
     ulsch->harq_processes[harq_pid]->control_only = 0;
     
 #ifdef DEBUG_ULSCH_CODING
-  msg("[PHY][UE] ULSCH coding : A %d, Qm %d, mcs %d, harq_pid %d, Ndi %d, RV %d\n",
+  msg("[PHY][UE] ULSCH coding : A %d, Qm %d, mcs %d, harq_pid %d, round %d, RV %d\n",
       ulsch->harq_processes[harq_pid]->TBS,
       Q_m,
       ulsch->harq_processes[harq_pid]->mcs,
       harq_pid,
-      ulsch->harq_processes[harq_pid]->Ndi,
+      ulsch->harq_processes[harq_pid]->round,
       ulsch->harq_processes[harq_pid]->rvidx);
 
   for (i=0;i<ulsch->harq_processes[harq_pid]->O_ACK;i++)
-    msg("ulsch_coding: O_ACK[%d] %d\n",i,ulsch->o_ACK[i]);
+    msg("ulsch_coding: o_ACK[%d] %d\n",i,ulsch->o_ACK[i]);
   for (i=0;i<ulsch->O_RI;i++)
-    msg("ulsch_coding: O_RI[%d] %d\n",i,ulsch->o_RI[i]);
+    msg("ulsch_coding: o_RI[%d] %d\n",i,ulsch->o_RI[i]);
   msg("ulsch_coding: O=%d\n",ulsch->O);
   
   for (i=0;i<1+((8+ulsch->O)/8);i++) {
@@ -311,7 +311,7 @@ u32 ulsch_encoding(u8 *a,
     print_CQI(ulsch->o,HLC_subband_cqi_rank1_2A,0);
 #endif
     
-    if (ulsch->harq_processes[harq_pid]->Ndi == 1) {  // this is a new packet
+    if (ulsch->harq_processes[harq_pid]->round == 0) {  // this is a new packet
       
       start_meas(seg_stats);
       // Add 24-bit crc (polynomial A) to payload

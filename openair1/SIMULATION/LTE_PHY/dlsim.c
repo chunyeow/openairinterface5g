@@ -1294,7 +1294,7 @@ int main(int argc, char **argv) {
 	    if (common_flag == 0) {
 	      
 	      if (round == 0) {   // First round, set Ndi to 1 and rv to floor(round
-		PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Ndi = 1;
+		//PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Ndi = 1;
 		PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->rvidx = round&3;
 		if (PHY_vars_eNB->lte_frame_parms.frame_type == TDD) {
 		  
@@ -1368,7 +1368,7 @@ int main(int argc, char **argv) {
 		}
 	      }
 	      else { // set Ndi to 0
-		PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Ndi = 0;
+		//PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Ndi = 0;
 		PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->rvidx = round&3;
 		
 		if (PHY_vars_eNB->lte_frame_parms.frame_type == TDD) {
@@ -1481,7 +1481,7 @@ int main(int argc, char **argv) {
 		       tbs,
 		       get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
 		       num_pdcch_symbols,
-		       PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Ndi);
+		       PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->round);
 
 	      // use the PMI from previous trial
 	      if (DLSCH_alloc_pdu2_1E[0].tpmi == 5) {

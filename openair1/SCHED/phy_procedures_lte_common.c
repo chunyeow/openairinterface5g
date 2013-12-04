@@ -152,7 +152,7 @@ u8 get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
   u32 ul_frame;
 
   if (frame_parms->frame_type ==FDD) {
-    ul_subframe = (current_subframe>4) ? (current_subframe-4) : (current_subframe+6);
+    ul_subframe = (current_subframe>3) ? (current_subframe-4) : (current_subframe+6);
     ul_frame    = (current_subframe>3) ? (frame+1) : frame; 
   }
   else {

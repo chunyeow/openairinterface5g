@@ -1258,7 +1258,7 @@ void rx_phich(PHY_VARS_UE *phy_vars_ue,
 			 &phy_vars_ue->ulsch_ue_Msg3_frame[eNB_id],
 			 &phy_vars_ue->ulsch_ue_Msg3_subframe[eNB_id]);
       ulsch->harq_processes[harq_pid]->subframe_scheduling_flag = 1;
-      ulsch->harq_processes[harq_pid]->Ndi = 0;
+      //      ulsch->harq_processes[harq_pid]->Ndi = 0;
       ulsch->harq_processes[harq_pid]->round++;
       ulsch->harq_processes[harq_pid]->rvidx = rv_table[ulsch->harq_processes[harq_pid]->round&3];
       if (ulsch->harq_processes[harq_pid]->round>=phy_vars_ue->lte_frame_parms.maxHARQ_Msg3Tx) {
@@ -1279,7 +1279,7 @@ void rx_phich(PHY_VARS_UE *phy_vars_ue,
 	  ngroup_PHICH);
       //#endif
       ulsch->harq_processes[harq_pid]->subframe_scheduling_flag = 1;
-      ulsch->harq_processes[harq_pid]->Ndi = 0;
+      //      ulsch->harq_processes[harq_pid]->Ndi = 0;
       ulsch->harq_processes[harq_pid]->round++;
       ulsch->harq_processes[harq_pid]->rvidx = rv_table[ulsch->harq_processes[harq_pid]->round&3];
     }
@@ -1400,7 +1400,7 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
 	    LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d, subframe %d : PHICH ACK / (no format0 DCI) Setting subframe_scheduling_flag\n",
 		phy_vars_eNB->Mod_id,harq_pid,phy_vars_eNB->frame,subframe);
 	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 1;
-	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->Ndi = 0;
+	    //	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->Ndi = 0;
 	    //	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->round++; //this is already done in phy_procedures
 	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->rvidx = rv_table[ulsch_eNB[UE_id]->harq_processes[harq_pid]->round&3];
 	  }

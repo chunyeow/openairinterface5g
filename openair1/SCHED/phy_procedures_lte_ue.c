@@ -270,7 +270,7 @@ void phy_reset_ue(u8 Mod_id,u8 eNB_index) {
       for(k=0;k<NUMBER_OF_HARQ_PID_MAX && phy_vars_ue->ulsch_ue[i]->harq_processes[k];k++) {
 	phy_vars_ue->ulsch_ue[i]->harq_processes[k]->status = SCH_IDLE;
 	//Set NDIs for all UL HARQs to 0
-	phy_vars_ue->ulsch_ue[i]->harq_processes[k]->Ndi = 0;
+	//	phy_vars_ue->ulsch_ue[i]->harq_processes[k]->Ndi = 0;
 	
       }
     }
@@ -300,8 +300,10 @@ void ra_succeeded(u8 Mod_id,u8 eNB_index) {
   PHY_vars_UE_g[Mod_id]->UE_mode[eNB_index] = PUSCH;
 
   for (i=0;i<8;i++) { 
-    if (PHY_vars_UE_g[Mod_id]->ulsch_ue[eNB_index]->harq_processes[i])
+    if (PHY_vars_UE_g[Mod_id]->ulsch_ue[eNB_index]->harq_processes[i]) {
       PHY_vars_UE_g[Mod_id]->ulsch_ue[eNB_index]->harq_processes[i]->status=IDLE;
+      PHY_vars_UE_g[Mod_id]->dlsch_ue[eNB_index][0]->harq_processes[i]->round=0;
+    }
   }
 
 
@@ -702,7 +704,7 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 	phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
 	LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d harq pid %d, Po_PUSCH : %d dBm\n",
-	      phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame,next_slot>>1,harq_pid, phy_vars_ue->tx_power_dBm);	
+	      phy_vars_ue->Mod_id,harq_pid,(((next_slot>>1)==0)?1:0)+phy_vars_ue->frame,next_slot>>1,harq_pid, phy_vars_ue->tx_power_dBm);	
 
 	// deactivate service request
 	phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 0;
@@ -723,11 +725,10 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 	
 	
 #ifdef DEBUG_PHY_PROC
-	LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d Generating PUSCH : first_rb %d, nb_rb %d, round %d, Ndi %d, mcs %d, rv %d, cyclic_shift %d (cyclic_shift_common %d,n_DMRS2 %d,n_PRS %d), ACK (%d,%d), O_ACK %d\n",
-	      phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame,next_slot>>1,
+	LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d Generating PUSCH : first_rb %d, nb_rb %d, round %d, mcs %d, rv %d, cyclic_shift %d (cyclic_shift_common %d,n_DMRS2 %d,n_PRS %d), ACK (%d,%d), O_ACK %d\n",
+	      phy_vars_ue->Mod_id,harq_pid,(((next_slot>>1)==0)?1:0)+phy_vars_ue->frame,next_slot>>1,
 	      first_rb,nb_rb,
 	      phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->round,
-	      phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->Ndi,
 	      phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->mcs,
 	      phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->rvidx,
 	      (frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift+
@@ -765,10 +766,10 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 	//	debug_LOG_D(PHY,"[UE  %d] Frame %d, Subframe %d ulsch harq_pid %d : O %d, O_ACK %d, O_RI %d, TBS %d\n",phy_vars_ue->Mod_id,phy_vars_ue->frame,next_slot>>1,harq_pid,phy_vars_ue->ulsch_ue[eNB_id]->O,phy_vars_ue->ulsch_ue[eNB_id]->O_ACK,phy_vars_ue->ulsch_ue[eNB_id]->O_RI,phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS);
 	//#endif
 	if (Msg3_flag == 1) {
-	  LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d next slot %d Generating (RRCConnectionRequest) Msg3 (nb_rb %d, first_rb %d, Ndi %d, rvidx %d) Msg3: %x.%x.%x|%x.%x.%x.%x.%x.%x\n",phy_vars_ue->Mod_id,phy_vars_ue->frame,next_slot>>1, next_slot, 
+	  LOG_I(PHY,"[UE  %d][RAPROC] Frame %d, Subframe %d next slot %d Generating (RRCConnectionRequest) Msg3 (nb_rb %d, first_rb %d, round %d, rvidx %d) Msg3: %x.%x.%x|%x.%x.%x.%x.%x.%x\n",phy_vars_ue->Mod_id,(((next_slot>>1)==0)?1:0)+phy_vars_ue->frame,next_slot>>1, next_slot, 
 		phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb,
 		phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->first_rb,
-		phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->Ndi,
+		phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->round,
 		phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->rvidx,
 		phy_vars_ue->prach_resources[eNB_id]->Msg3[0],
 		phy_vars_ue->prach_resources[eNB_id]->Msg3[1],
@@ -810,7 +811,7 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 	 
 #ifdef OPENAIR2
 	  //  LOG_D(PHY,"[UE  %d] ULSCH : Searching for MAC SDUs\n",phy_vars_ue->Mod_id);
-	  if (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->Ndi==1) { 
+	  if (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->round==0) { 
 	    //if (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->calibration_flag == 0) {
 	    access_mode=SCHEDULED_ACCESS;
 	    mac_xface->ue_get_sdu(phy_vars_ue->Mod_id,
@@ -896,7 +897,7 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
 	  phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
 	  LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
-		phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame,next_slot>>1,phy_vars_ue->tx_power_dBm,
+		phy_vars_ue->Mod_id,harq_pid,(((next_slot>>1)==0)?1:0)+phy_vars_ue->frame,next_slot>>1,phy_vars_ue->tx_power_dBm,
 #ifdef EXMIMO
 		get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm)
 #else
@@ -1874,7 +1875,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	  phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->subframe_scheduling_flag =0;
 	  phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->status = IDLE;
 	  phy_vars_ue->ulsch_ue_Msg3_active[eNB_id] = 0;
-	  phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->Ndi = 1;
+	  phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->round = 0;
 	  LOG_D(PHY,"Msg3 inactive\n");
 	  /* Phich is not abstracted for the moment
 	  if (PHY_vars_eNB_g[i]->ulsch_eNB[(u32)UE_id]->harq_processes[harq_pid]->phich_ACK==0) { // NAK
@@ -2013,6 +2014,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	
 #ifdef DEBUG_PHY_PROC
 	LOG_D(PHY,"[UE  %d] Generated UE DLSCH C_RNTI format %d\n",phy_vars_ue->Mod_id,dci_alloc_rx[i].format);
+	dump_dci(&phy_vars_ue->lte_frame_parms, &dci_alloc_rx[i]);
 #endif    
 	
 	// we received a CRNTI, so we're in PUSCH
@@ -2411,7 +2413,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	      phy_vars_ue->Mod_id,
 	      phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
 	      harq_pid,
-	      phy_vars_ue->frame,last_slot>>1);      
+	      phy_vars_ue->frame,((last_slot>>1)==0)?9:(last_slot>>1)-1);      
 #endif	
        
 	if (phy_vars_ue->dlsch_ue[eNB_id][0]) {
@@ -2456,7 +2458,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 #ifdef DEBUG_PHY_PROC
 	    LOG_D(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d DLSCH in error (rv %d,mcs %d)\n",
 		phy_vars_ue->Mod_id,phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-		harq_pid,phy_vars_ue->frame,last_slot>>1,
+		  harq_pid,phy_vars_ue->frame,((last_slot>>1)==0)?9:(last_slot>>1)-1,
 		phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 		phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
 	    
@@ -2467,7 +2469,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	  else {
 	    LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: Received DLSCH (rv %d,mcs %d,TBS %d)\n",
 		  phy_vars_ue->Mod_id,phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-		  harq_pid,phy_vars_ue->frame,last_slot>>1,
+		  harq_pid,phy_vars_ue->frame,((last_slot>>1)==0)?9:(last_slot>>1)-1,
 		  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 		  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,
 		  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS);
@@ -2499,7 +2501,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
 	LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: PDSCH/DLSCH decoding iter %d (mcs %d, rv %d, TBS %d)\n",
 	    phy_vars_ue->Mod_id,
 	    phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,harq_pid,
-	    phy_vars_ue->frame,last_slot>>1,ret,
+	      phy_vars_ue->frame,((last_slot>>1)==0)?9:(last_slot>>1)-1,ret,
 	    phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,
 	    phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 	    phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS);

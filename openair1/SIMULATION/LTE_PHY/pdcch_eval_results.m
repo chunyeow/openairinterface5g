@@ -5,12 +5,14 @@ plot_style = {'b-o';'r-x';'g-d';'y-*';'k-s'};
 
 SNR = -5:0.2:2.8;
 C = zeros(length(SNR),4);
-filebase = 'pdcch_fdd_10_siso_awgn_ic_format0';
+filebase = 'pdcch_fdd_5_siso_awgn_format0';
 
 figure(1)
 hold off
 for L=0:3
+    printf("Opening %s\n",sprintf('%s_L%d.txt',filebase,L));
     fid = fopen(sprintf('%s_L%d.txt',filebase,L),'r');
+    printf("fid %d\n",fid);
     [A,c]=fscanf(fid,'SNR %f : n_errors_ul = %d/%d (%f)\n');
     fclose(fid);
 

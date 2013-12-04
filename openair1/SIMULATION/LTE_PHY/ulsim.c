@@ -798,15 +798,15 @@ int main(int argc, char **argv) {
 	  //	printf("Trial %d : Round %d ",trials,round);
 	  round_trials[round]++;
 	  if (round == 0) {
-	    PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->Ndi = 1;
+	    //PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->Ndi = 1;
 	    PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->rvidx = round>>1;
-	    PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->Ndi = 1;
+	    //PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->Ndi = 1;
 	    PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->rvidx = round>>1;
 	  }
 	  else {
-	    PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->Ndi = 0;
+	    //PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->Ndi = 0;
 	    PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->rvidx = round>>1;
-	    PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->Ndi = 0;
+	    //PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->Ndi = 0;
 	    PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->rvidx = round>>1;
 	  }
 	

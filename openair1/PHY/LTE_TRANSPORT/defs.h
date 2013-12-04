@@ -88,8 +88,6 @@ typedef enum {
 
 
 typedef struct {
-  /// Flag indicating that this DLSCH is active (i.e. not the first round)
-  uint8_t Ndi;
   /// Status Flag indicating for this DLSCH (idle,active,disabled)
   SCH_status_t status;
   /// Transport block size
@@ -131,8 +129,12 @@ typedef struct {
 } LTE_DL_eNB_HARQ_t;
 
 typedef struct {
+  /// Indicator of first transmission
+  uint8_t first_tx;
+  /// Last Ndi received for this process on DCI (used for C-RNTI only)
+  uint8_t DCINdi;
   /// Flag indicating that this ULSCH has a new packet (start of new round) 
-  uint8_t Ndi;
+  //  uint8_t Ndi;
   /// Status Flag indicating for this ULSCH (idle,active,disabled)
   SCH_status_t status;
   /// Subframe scheduling indicator (i.e. Transmission opportunity indicator)
@@ -325,8 +327,6 @@ typedef struct {
   uint8_t dci_alloc;
   /// Flag indicating that this ULSCH has been allocated by a RAR (otherwise it is a retransmission based on PHICH NAK or DCI)
   uint8_t rar_alloc;
-  /// Flag indicating that this ULSCH has new data
-  uint8_t Ndi;
   /// Status Flag indicating for this ULSCH (idle,active,disabled)
   SCH_status_t status;
   /// Subframe scheduling indicator (i.e. Transmission opportunity indicator)
@@ -463,8 +463,10 @@ typedef struct {
 } LTE_eNB_ULSCH_t;
 
 typedef struct {
-  /// Flag indicating that this DLSCH has a new transport block
-  uint8_t Ndi;
+  /// Indicator of first transmission
+  uint8_t first_tx;
+  /// Last Ndi received for this process on DCI (used for C-RNTI only)
+  uint8_t DCINdi;
   /// DLSCH status flag indicating 
   SCH_status_t status;
   /// Transport block size

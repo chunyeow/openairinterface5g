@@ -1963,7 +1963,7 @@ u8 get_num_pdcch_symbols(u8 num_dci,
 
   // compute numCCE
   for (i=0;i<num_dci;i++) {
-    //    printf("dci %d => %d\n",i,dci_alloc[i].L);
+    //     printf("dci %d => %d\n",i,dci_alloc[i].L);
     numCCE += (1<<(dci_alloc[i].L));
   }
 
@@ -2017,11 +2017,6 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
   mod_sym_t *y[2];
   mod_sym_t *wbar[2];
   
-#ifdef IFFT_FPGA
-  u8 qpsk_table_offset = 0; 
-  u8 qpsk_table_offset2 = 0;
-#endif
-
   int nushiftmod3 = frame_parms->nushift%3;
 
   int Msymb2;
@@ -2129,7 +2124,7 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
   e_ptr = e;
   if (frame_parms->mode1_flag) { //SISO
 
-#ifndef IFFT_FPGA
+
     for (i=0;i<Msymb2;i++) {
       //((s16*)(&(y[0][i])))[0] = (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
       //((s16*)(&(y[1][i])))[0] = (*e_ptr == 1) ? -gain_lin_QPSK : gain_lin_QPSK;
@@ -2144,25 +2139,10 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 
       e_ptr++;
     }
-#else
-    for (i=0;i<Msymb2;i++) {
-      qpsk_table_offset = MOD_TABLE_QPSK_OFFSET;
-      if (*e_ptr == 1)
-	qpsk_table_offset+=2;
-      e_ptr++;
-      if (*e_ptr == 1) 
-	qpsk_table_offset+=1;
-      e_ptr++;
-      
-      y[0][i] = (mod_sym_t) qpsk_table_offset;
-      y[1][i] = (mod_sym_t) qpsk_table_offset;
-    }
-
-#endif
   }
   else { //ALAMOUTI    
 
-#ifndef IFFT_FPGA
+
       for (i=0;i<Msymb2;i+=2) {
 
 #ifdef DEBUG_DCI_ENCODING
@@ -2187,49 +2167,6 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 	((s16*)&y[1][i+1])[1] = -((s16*)&y[0][i])[1];
 
       }
-#else  
-      for (i=0;i<Msymb2;i+=2) {
-#ifdef DEBUG_DCI_ENCODING
-  LOG_I(PHY," PDCCH Modulation: Symbol %d : REG %d/%d\n",i,i>>2,Msymb2>>2);
-#endif
-	qpsk_table_offset =  MOD_TABLE_QPSK_OFFSET;  //x0
-	qpsk_table_offset2 =  MOD_TABLE_QPSK_OFFSET;  //x0*
-	
-	if (*e_ptr == 1) { //real
-	  qpsk_table_offset+=2;
-	  qpsk_table_offset2+=2;
-	}
-	e_ptr++;
-	
-	if (*e_ptr == 1) //imag
-	  qpsk_table_offset+=1;
-	else
-	  qpsk_table_offset2+=1;
-	e_ptr++;
-	
-	y[0][i]   = (mod_sym_t) qpsk_table_offset;      // x0
-	y[1][i+1] = (mod_sym_t) qpsk_table_offset2;   // x0*
-	
-	
-	qpsk_table_offset = MOD_TABLE_QPSK_OFFSET; //-x1*
-	qpsk_table_offset2 = MOD_TABLE_QPSK_OFFSET; //x1
-	
-	if (*e_ptr == 1)    // flipping bit for real part of symbol means taking -x1*
-	  qpsk_table_offset2+=2;
-	else
-	  qpsk_table_offset+=2;
-	e_ptr++;
-	
-	if (*e_ptr == 1) {
-	  qpsk_table_offset+=1;
-	  qpsk_table_offset2+=1;
-	}
-	e_ptr++;
-	
-	y[1][i] = (mod_sym_t) qpsk_table_offset;     // -x1*
-	y[0][i+1] = (mod_sym_t) qpsk_table_offset2;  // x1
-      }
-#endif    
   }
 
 
@@ -2243,23 +2180,14 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
 
   mprime=0;
   nsymb = (frame_parms->Ncp==0) ? 14:12;
-#ifdef IFFT_FPGA
-  re_offset = frame_parms->N_RB_DL*12/2;
-#else
   re_offset = frame_parms->first_carrier_offset;
-#endif
 
   // This is the REG allocation algorithm from 36-211, second part of Section 6.8.5
-  //  printf("DCI : txdataF %p (0 %p)\n",&txdataF[0][512*14*subframe],&txdataF[0][0]);
+  //  printf("DCI (SF %d) : txdataF %p (0 %p)\n",subframe,&txdataF[0][512*14*subframe],&txdataF[0][0]);
   for (kprime=0;kprime<frame_parms->N_RB_DL*12;kprime++) {
     for (lprime=0;lprime<num_pdcch_symbols;lprime++) {
 
-#ifdef IFFT_FPGA      
-      symbol_offset = (u32)frame_parms->N_RB_DL*12*(lprime+(subframe*nsymb));
-  
-#else
       symbol_offset = (u32)frame_parms->ofdm_symbol_size*(lprime+(subframe*nsymb));
-#endif
 
 
 	  
@@ -2353,14 +2281,8 @@ u8 generate_dci_top(u8 num_ue_spec_dci,
     } //lprime loop
     
     re_offset++;
-#ifdef IFFT_FPGA
-    if (re_offset == (frame_parms->N_RB_DL*12))
-      re_offset = 0;
-#else
     if (re_offset == (frame_parms->ofdm_symbol_size))
       re_offset = 1;
-#endif
-    
   } // kprime loop
   return(num_pdcch_symbols);
 }

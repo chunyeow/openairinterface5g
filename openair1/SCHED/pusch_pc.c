@@ -94,8 +94,8 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,u8 j, u8 ab
 
     phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += (mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id) + PL);
 
-    LOG_I(PHY,"[UE  %d][RAPROC] frame %d, subframe %d: Msg3 Po_PUSCH %d dBm (%d,%d,%d,%d,%d)\n",
-          phy_vars_ue->Mod_id,phy_vars_ue->frame,subframe,phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
+    LOG_D(PHY,"[UE  %d][RAPROC] frame %d, subframe %d: Msg3 Po_PUSCH %d dBm (%d,%d,%d,%d,%d)\n",
+          phy_vars_ue->Mod_id,((subframe==0)?1:0)+phy_vars_ue->frame,subframe,phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
           100*mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id),
           hundred_times_log10_NPRB[nb_rb-1],
           100*PL,
@@ -116,15 +116,15 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,u8 j, u8 ab
       phy_vars_ue->ulsch_ue[eNB_id]->PHR = 40;
 
     LOG_D(PHY,"[UE  %d][PUSCH %d] frame %d, subframe %d: Po_PUSCH %d dBm : Po_NOMINAL_PUSCH %d,log10(NPRB) %f,PHR %d, PL %d, alpha*PL %f,delta_IF %f,f_pusch %d\n",
-	phy_vars_ue->Mod_id,harq_pid,phy_vars_ue->frame,subframe,
-	phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
-	phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH,
-	hundred_times_log10_NPRB[nb_rb-1]/100.0,
-	phy_vars_ue->ulsch_ue[eNB_id]->PHR,
-	PL,
-	alpha_lut[phy_vars_ue->lte_frame_parms.ul_power_control_config_common.alpha]*PL/100.0,
-	get_hundred_times_delta_IF(phy_vars_ue,eNB_id,harq_pid)/100.0,
-	phy_vars_ue->ulsch_ue[eNB_id]->f_pusch);
+	  phy_vars_ue->Mod_id,harq_pid,((subframe==0)?1:0) + phy_vars_ue->frame,subframe,
+	  phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
+	  phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUSCH,
+	  hundred_times_log10_NPRB[nb_rb-1]/100.0,
+	  phy_vars_ue->ulsch_ue[eNB_id]->PHR,
+	  PL,
+	  alpha_lut[phy_vars_ue->lte_frame_parms.ul_power_control_config_common.alpha]*PL/100.0,
+	  get_hundred_times_delta_IF(phy_vars_ue,eNB_id,harq_pid)/100.0,
+	  phy_vars_ue->ulsch_ue[eNB_id]->f_pusch);
   }
   
 }
