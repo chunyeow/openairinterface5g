@@ -237,7 +237,7 @@ void sctp_handle_new_association_req(
                 close(sd);
                 return;
             } else {
-                SCTP_DEBUG("connectx in progress...\n");
+                SCTP_DEBUG("connectx %d in progress...\n", assoc_id);
             }
         }
     } else {
@@ -270,6 +270,7 @@ void sctp_handle_new_association_req(
     sctp_cnx->cnx_id   = sctp_new_association_req_p->ulp_cnx_id;
     sctp_cnx->ppid     = sctp_new_association_req_p->ppid;
     sctp_cnx->instance = instance;
+    sctp_cnx->assoc_id = assoc_id;
 
     /* Insert new element at end of list */
     STAILQ_INSERT_TAIL(&sctp_cnx_list, sctp_cnx, entries);
@@ -412,6 +413,7 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
                 sctp_cnx->cnx_id, SCTP_STATE_UNREACHABLE, 0, 0);
 
             close(sctp_cnx->sd);
+            STAILQ_REMOVE(&sctp_cnx_list, sctp_cnx, sctp_cnx_list_elm_s, entries);
             sctp_nb_cnx--;
             free(sctp_cnx);
         } else {

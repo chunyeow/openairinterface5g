@@ -69,6 +69,7 @@ char smbv_ip[16];
 
 #include "UTIL/LOG/vcd_signal_dumper.h"
 #include "UTIL/OTG/otg_kpi.h"
+#include "assertions.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -372,9 +373,8 @@ static s32 UE_id = 0, eNB_id = 0;
 static s32 RN_id=0;
 #endif
 
-int itti_create_task_successful(void){
-
 #if defined(ENABLE_ITTI)
+int itti_create_task_successful(void){
 # if defined(ENABLE_USE_MME)
   if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
       LOG_E(EMU, "Create task failed");
@@ -388,103 +388,180 @@ int itti_create_task_successful(void){
   }
 # endif
 
-  if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
-    return -1;
-  }
-
   if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
     LOG_E(EMU, "Create task failed");
     LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
     return -1;
   }
 
-#endif  
+  /* Last task to create, others task must be ready before its start */
+  if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
+    return -1;
+  }
   return 1;
 }
+#endif
 
-/*
- * later, the enb task will be moved from here
- */
-void *eNB_app_task(void *args_p) {
 #if defined(ENABLE_ITTI)
-  MessageDef *message_p;
+/*
+ * later, the eNB task will be moved from here
+ */
 
 # if defined(ENABLE_USE_MME)
-    /* Trying to register each eNB */
+
+#define ENB_REGISTER_RETRY_DELAY 10
+
+uint32_t eNB_app_register()
+{
+  MessageDef *msg_p;
+  uint32_t register_enb_pending = 0;
 
   for (eNB_id = oai_emulation.info.first_enb_local;
-       (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.cli_start_enb[eNB_id] == 1);
-       eNB_id++) {
-      char *mme_address_v4;
-      
-      if (EPC_MODE_ENABLED){
-	  mme_address_v4 = EPC_MODE_MME_ADDRESS;
-      }else {
-	mme_address_v4 = "192.168.12.87";
-      }
-      char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
-      s1ap_register_eNB_t *s1ap_register_eNB;
-      uint32_t hash;
-      
-      //note:  there is an implicit relationship between the data struct and the message name
-      message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB);
-      
-      s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_eNB;
-      
-      hash = s1ap_generate_eNB_id();
+     (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.cli_start_enb[eNB_id] == 1);
+     eNB_id++) {
+    char *mme_address_v4;
 
-      /* Some default/random parameters */
-      s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
-      s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
-      s1ap_register_eNB->tac         = 0;
-      s1ap_register_eNB->mcc         = 208;
-      s1ap_register_eNB->mnc         = 34;
-      s1ap_register_eNB->default_drx = PAGING_DRX_256;
-      s1ap_register_eNB->nb_mme      = 1;
-      s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
-      s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
-      memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
-	     strlen(mme_address_v4));
-      memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
-	     strlen(mme_address_v6));
-      
-      itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
+    if (EPC_MODE_ENABLED){
+      mme_address_v4 = EPC_MODE_MME_ADDRESS;
+    } else {
+      mme_address_v4 = "192.168.12.87";
     }
+    char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
+    s1ap_register_enb_req_t *s1ap_register_eNB;
+    uint32_t hash;
+
+    //note:  there is an implicit relationship between the data struct and the message name
+    msg_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB_REQ);
+
+    s1ap_register_eNB = &S1AP_REGISTER_ENB_REQ(msg_p);
+
+    hash = s1ap_generate_eNB_id();
+
+    /* Some default/random parameters */
+    s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
+    s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
+    s1ap_register_eNB->tac         = 0;
+    s1ap_register_eNB->mcc         = 208;
+    s1ap_register_eNB->mnc         = 34;
+    s1ap_register_eNB->default_drx = PAGING_DRX_256;
+
+    s1ap_register_eNB->nb_mme      = 1;
+    s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
+    s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
+    memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4, strlen(mme_address_v4));
+    memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6, strlen(mme_address_v6));
+
+#   if defined ENB_APP_ENB_REGISTER_2_MME
+    s1ap_register_eNB->nb_mme      = 2;
+    s1ap_register_eNB->mme_ip_address[1].ipv4 = 1;
+    s1ap_register_eNB->mme_ip_address[1].ipv6 = 0;
+    mme_address_v4 = "192.168.12.88";
+    memcpy(s1ap_register_eNB->mme_ip_address[1].ipv4_address, mme_address_v4, strlen(mme_address_v4));
+    memcpy(s1ap_register_eNB->mme_ip_address[1].ipv6_address, mme_address_v6, strlen(mme_address_v6));
+#   endif
+
+    itti_send_msg_to_task(TASK_S1AP, eNB_id, msg_p);
+
+    register_enb_pending ++;
+  }
+
+  return register_enb_pending;
+}
+# endif
+#endif
+
+void *eNB_app_task(void *args_p) {
+#if defined(ENABLE_ITTI)
+# if defined(ENABLE_USE_MME)
+  static uint32_t register_enb_pending;
+  static uint32_t registered_enb;
+  static long enb_register_retry_timer_id;
+# endif
+  MessageDef *msg_p;
+  const char *msg_name;
+  instance_t instance;
+  itti_mark_task_ready (TASK_ENB_APP);
+
+# if defined(ENABLE_USE_MME)
+  /* Try to register each eNB */
+  registered_enb = 0;
+  register_enb_pending = eNB_app_register();
+# else
+  msg_p = itti_alloc_new_message(TASK_ENB_APP, INITIALIZE_MESSAGE);
+  itti_send_msg_to_task(TASK_L2L1, INSTANCE_DEFAULT, msg_p);
 # endif
 
-    itti_mark_task_ready (TASK_ENB_APP); // at the end of init for the current task 
-
   do {
-    // Checks if a message has been sent to L2L1 task
-    itti_receive_msg (TASK_ENB_APP, &message_p);
+    // Wait for a message
+    itti_receive_msg (TASK_ENB_APP, &msg_p);
     
-    if (message_p != NULL) {
-      switch (ITTI_MSG_ID(message_p)) {
+    msg_name = ITTI_MSG_NAME (msg_p);
+    instance = ITTI_MSG_INSTANCE (msg_p);
+
+    switch (ITTI_MSG_ID(msg_p)) {
       case TERMINATE_MESSAGE:
-	itti_exit_task ();
-	break;
-	
+        itti_exit_task ();
+        break;
+
       case MESSAGE_TEST:
-	LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
-	break;
+        LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(msg_p));
+        break;
 
-	/*      case MME_REGISTERED:
-	LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
-	itti_mark_task_ready (TASK_L2L1);
-	break;
-	*/
+# if defined(ENABLE_USE_MME)
+      case S1AP_REGISTER_ENB_CNF:
+        LOG_I(EMU, "[eNB %d] Received %s: associated MME %d\n", instance, msg_name, S1AP_REGISTER_ENB_CNF(msg_p).nb_mme);
+
+        DevAssert(register_enb_pending > 0);
+        register_enb_pending--;
+
+        /* Check if at least eNB is registered with one MME */
+        if (S1AP_REGISTER_ENB_CNF(msg_p).nb_mme > 0) {
+          registered_enb ++;
+        }
+
+        /* Check if all register eNB requests have been processed */
+        if (register_enb_pending == 0) {
+          if (registered_enb == oai_emulation.info.nb_enb_local) {
+            /* If all eNB are registered, start L2L1 task */
+            MessageDef *msg_init_p;
+
+            msg_init_p = itti_alloc_new_message (TASK_ENB_APP, INITIALIZE_MESSAGE);
+            itti_send_msg_to_task (TASK_L2L1, INSTANCE_DEFAULT, msg_init_p);
+          }
+          else {
+            uint32_t not_associated = oai_emulation.info.nb_enb_local - registered_enb;
+
+            LOG_W(EMU, " %d eNB %s not associated with a MME, retrying registration in %d seconds ...\n",
+                  not_associated, not_associated > 1 ? "are" : "is", ENB_REGISTER_RETRY_DELAY);
+
+            /* Restart the eNB registration process in ENB_REGISTER_RETRY_DELAY seconds */
+            if (timer_setup (ENB_REGISTER_RETRY_DELAY, 0, TASK_ENB_APP, INSTANCE_DEFAULT, TIMER_ONE_SHOT, NULL, &enb_register_retry_timer_id) < 0) {
+              LOG_E(EMU, " Can not start eNB register retry timer!\n");
+            }
+          }
+        }
+      break;
+
+      case TIMER_HAS_EXPIRED:
+        LOG_I(EMU, " Received %s: timer_id %d\n", msg_name, TIMER_HAS_EXPIRED(msg_p).timer_id);
+
+        if (TIMER_HAS_EXPIRED(msg_p).timer_id == enb_register_retry_timer_id) {
+          /* Restart the registration process */
+          registered_enb = 0;
+          register_enb_pending = eNB_app_register();
+        }
+        break;
+# endif
+
       default:
-	LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
-	break;
-      }
-      
-      free (message_p);
+        LOG_E(EMU, "Received unexpected message %s\n", msg_name);
+        break;
     }
-  } while(1);
 
-  itti_terminate_tasks(TASK_ENB_APP);
+    free (msg_p);
+  } while(1);
 #endif
 
   return NULL;
@@ -503,10 +580,18 @@ void *l2l1_task(void *args_p) {
   char fname[64], vname[64];
 
 #if defined(ENABLE_ITTI)
-  MessageDef *message_p;
+  MessageDef *message_p = NULL;
 
   itti_mark_task_ready (TASK_L2L1);
 
+  /* Wait for the initialize message */
+  do {
+    if (message_p != NULL) {
+      free (message_p);
+    }
+    itti_receive_msg (TASK_L2L1, &message_p);
+  } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
+  free (message_p);
 #endif
 
   for (frame = 0; frame < oai_emulation.info.n_frames; frame++) {

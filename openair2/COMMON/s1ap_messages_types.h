@@ -4,6 +4,10 @@
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
 
+#define S1AP_REGISTER_ENB_REQ(mSGpTR)           (mSGpTR)->ittiMsg.s1ap_register_enb_req
+
+#define S1AP_REGISTER_ENB_CNF(mSGpTR)           (mSGpTR)->ittiMsg.s1ap_register_enb_cnf
+
 #define S1AP_NAS_FIRST_REQ(mSGpTR)              (mSGpTR)->ittiMsg.s1ap_nas_first_req
 #define S1AP_UPLINK_NAS(mSGpTR)                 (mSGpTR)->ittiMsg.s1ap_uplink_nas
 #define S1AP_UE_CAPABILITIES_IND(mSGpTR)        (mSGpTR)->ittiMsg.s1ap_ue_cap_info_ind
@@ -22,6 +26,24 @@
 #define S1AP_UE_CONTEXT_RELEASE_REQ(mSGpTR)     (mSGpTR)->ittiMsg.s1ap_ue_release_req
 
 //-------------------------------------------------------------------------------------------//
+/* Maximum number of e-rabs to be setup/deleted in a single message.
+ * Even if only one bearer will be modified by message.
+ */
+#define S1AP_MAX_E_RAB  11
+
+/* Length of the transport layer address string
+ * 160 bits / 8 bits by char.
+ */
+#define S1AP_TRANSPORT_LAYER_ADDRESS_SIZE (160 / 8)
+
+#define S1AP_MAX_NB_MME_IP_ADDRESS 10
+#define S1AP_IMSI_LENGTH           16
+
+/* Security key length used within eNB
+ * Even if only 16 bytes will be effectively used,
+ * the key length is 32 bytes (256 bits)
+ */
+#define SECURITY_KEY_LENGTH 32
 
 typedef enum cell_type_e {
     CELL_MACRO_ENB,
@@ -63,7 +85,7 @@ typedef struct net_ip_address_s {
 
 typedef uint64_t bitrate_t;
 
-typedef struct {
+typedef struct ambr_s {
     bitrate_t br_ul;
     bitrate_t br_dl;
 } ambr_t;
@@ -75,19 +97,19 @@ typedef enum priority_level_s {
     PRIORITY_LEVEL_NO_PRIORITY = 15
 } priority_level_t;
 
-typedef enum {
+typedef enum pre_emp_capability_e {
     PRE_EMPTION_CAPABILITY_ENABLED  = 0,
     PRE_EMPTION_CAPABILITY_DISABLED = 1,
     PRE_EMPTION_CAPABILITY_MAX,
 } pre_emp_capability_t;
 
-typedef enum {
+typedef enum pre_emp_vulnerability_e {
     PRE_EMPTION_VULNERABILITY_ENABLED  = 0,
     PRE_EMPTION_VULNERABILITY_DISABLED = 1,
     PRE_EMPTION_VULNERABILITY_MAX,
 } pre_emp_vulnerability_t;
 
-typedef struct {
+typedef struct allocation_retention_priority_s {
     priority_level_t        priority_level;
     pre_emp_capability_t    pre_emp_capability;
     pre_emp_vulnerability_t pre_emp_vulnerability;
@@ -97,25 +119,6 @@ typedef struct security_capabilities_s {
     uint16_t encryption_algorithms;
     uint16_t integrity_algorithms;
 } security_capabilities_t;
-
-/* Maximum number of e-rabs to be setup/deleted in a single message.
- * Even if only one bearer will be modified by message.
- */
-#define S1AP_MAX_E_RAB  11
-
-/* Length of the transport layer address string
- * 160 bits / 8 bits by char.
- */
-#define S1AP_TRANSPORT_LAYER_ADDRESS_SIZE (160 / 8)
-
-#define S1AP_MAX_NB_MME_IP_ADDRESS 10
-#define S1AP_IMSI_LENGTH           16
-
-/* Security key length used within eNB
- * Even if only 16 bytes will be effectively used,
- * the key length is 32 bytes (256 bits)
- */
-#define SECURITY_KEY_LENGTH 32
 
 /* Provides the establishment cause for the RRC connection request as provided
  * by the upper layers. W.r.t. the cause value names: highPriorityAccess
@@ -226,7 +229,20 @@ typedef struct e_rab_failed_s {
     //     cause_t cause;
 } e_rab_failed_t;
 
-typedef struct s1ap_register_eNB_s {
+typedef enum s1ap_ue_ctxt_modification_present_s {
+    S1AP_UE_CONTEXT_MODIFICATION_SECURITY_KEY = (1 << 0),
+    S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR      = (1 << 1),
+    S1AP_UE_CONTEXT_MODIFICATION_UE_SECU_CAP  = (1 << 2),
+} s1ap_ue_ctxt_modification_present_t;
+
+typedef enum s1ap_paging_ind_present_s {
+    S1AP_PAGING_IND_PAGING_DRX      = (1 << 0),
+    S1AP_PAGING_IND_PAGING_PRIORITY = (1 << 1),
+} s1ap_paging_ind_present_t;
+
+//-------------------------------------------------------------------------------------------//
+// eNB application layer -> S1AP messages
+typedef struct s1ap_register_enb_req_s {
     /* Unique eNB_id to identify the eNB within EPC.
      * For macro eNB ids this field should be 20 bits long.
      * For home eNB ids this field should be 28 bits long.
@@ -260,7 +276,18 @@ typedef struct s1ap_register_eNB_s {
     uint8_t          nb_mme;
     /* List of MME to connect to */
     net_ip_address_t mme_ip_address[S1AP_MAX_NB_MME_IP_ADDRESS];
-} s1ap_register_eNB_t;
+} s1ap_register_enb_req_t;
+
+//-------------------------------------------------------------------------------------------//
+// S1AP -> eNB application layer messages
+typedef struct s1ap_register_enb_cnf_s {
+    /* Nb of MME connected */
+    uint8_t          nb_mme;
+
+} s1ap_register_enb_cnf_t;
+
+//-------------------------------------------------------------------------------------------//
+// RRC -> S1AP messages
 
 /* The NAS First Req is the first message exchanged between RRC and S1AP
  * for an UE.
@@ -291,6 +318,61 @@ typedef struct s1ap_uplink_nas_s {
     nas_pdu_t nas_pdu;
 } s1ap_uplink_nas_t;
 
+typedef struct s1ap_ue_cap_info_ind_s {
+    unsigned  eNB_ue_s1ap_id:24;
+    ue_radio_cap_t ue_radio_cap;
+} s1ap_ue_cap_info_ind_t;
+
+typedef struct s1ap_initial_context_setup_resp_s {
+    unsigned  eNB_ue_s1ap_id:24;
+
+    /* Number of e_rab setup-ed in the list */
+    uint8_t       nb_of_e_rabs;
+    /* list of e_rab setup-ed by RRC layers */
+    e_rab_setup_t e_rabs[S1AP_MAX_E_RAB];
+
+    /* Number of e_rab failed to be setup in list */
+    uint8_t        nb_of_e_rabs_failed;
+    /* list of e_rabs that failed to be setup */
+    e_rab_failed_t e_rabs_failed[S1AP_MAX_E_RAB];
+} s1ap_initial_context_setup_resp_t;
+
+typedef struct s1ap_initial_context_setup_fail_s {
+    unsigned  eNB_ue_s1ap_id:24;
+
+    /* TODO add cause */
+} s1ap_initial_context_setup_fail_t, s1ap_ue_ctxt_modification_fail_t;
+
+typedef struct s1ap_nas_non_delivery_ind_s {
+    unsigned  eNB_ue_s1ap_id:24;
+    nas_pdu_t nas_pdu;
+    /* TODO: add cause */
+} s1ap_nas_non_delivery_ind_t;
+
+typedef struct s1ap_ue_ctxt_modification_req_s {
+    unsigned  eNB_ue_s1ap_id:24;
+
+    /* Bit-mask of possible present parameters */
+    s1ap_ue_ctxt_modification_present_t present;
+
+    /* Following fields are optionnaly present */
+
+    /* Security key */
+    uint8_t security_key[SECURITY_KEY_LENGTH];
+
+    /* UE aggregate maximum bitrate */
+    ambr_t ue_ambr;
+
+    /* Security capabilities */
+    security_capabilities_t security_capabilities;
+} s1ap_ue_ctxt_modification_req_t;
+
+typedef struct s1ap_ue_ctxt_modification_resp_s {
+    unsigned  eNB_ue_s1ap_id:24;
+} s1ap_ue_ctxt_modification_resp_t;
+
+//-------------------------------------------------------------------------------------------//
+// S1AP -> RRC messages
 typedef struct s1ap_downlink_nas_s {
     /* UE id for initial connection to S1AP */
     uint16_t ue_initial_id;
@@ -324,69 +406,6 @@ typedef struct s1ap_initial_context_setup_req_s {
     e_rab_t  e_rab_param[S1AP_MAX_E_RAB];
 } s1ap_initial_context_setup_req_t;
 
-typedef struct s1ap_initial_context_setup_resp_s {
-    unsigned  eNB_ue_s1ap_id:24;
-
-    /* Number of e_rab setup-ed in the list */
-    uint8_t       nb_of_e_rabs;
-    /* list of e_rab setup-ed by RRC layers */
-    e_rab_setup_t e_rabs[S1AP_MAX_E_RAB];
-
-    /* Number of e_rab failed to be setup in list */
-    uint8_t        nb_of_e_rabs_failed;
-    /* list of e_rabs that failed to be setup */
-    e_rab_failed_t e_rabs_failed[S1AP_MAX_E_RAB];
-} s1ap_initial_context_setup_resp_t;
-
-typedef struct s1ap_initial_context_setup_fail_s {
-    unsigned  eNB_ue_s1ap_id:24;
-
-    /* TODO add cause */
-} s1ap_initial_context_setup_fail_t, s1ap_ue_ctxt_modification_fail_t;
-
-typedef struct s1ap_ue_cap_info_ind_s {
-    unsigned  eNB_ue_s1ap_id:24;
-    ue_radio_cap_t ue_radio_cap;
-} s1ap_ue_cap_info_ind_t;
-
-typedef struct s1ap_ue_release_req_s {
-    unsigned  eNB_ue_s1ap_id:24;
-    /* TODO: add cause */
-} s1ap_ue_release_req_t, s1ap_ue_release_resp_t;
-
-typedef enum s1ap_ue_ctxt_modification_present_s {
-    S1AP_UE_CONTEXT_MODIFICATION_SECURITY_KEY = (1 << 0),
-    S1AP_UE_CONTEXT_MODIFICATION_UE_AMBR      = (1 << 1),
-    S1AP_UE_CONTEXT_MODIFICATION_UE_SECU_CAP  = (1 << 2),
-} s1ap_ue_ctxt_modification_present_t;
-
-typedef struct s1ap_ue_ctxt_modification_req_s {
-    unsigned  eNB_ue_s1ap_id:24;
-
-    /* Bit-mask of possible present parameters */
-    s1ap_ue_ctxt_modification_present_t present;
-
-    /* Following fields are optionnaly present */
-
-    /* Security key */
-    uint8_t security_key[SECURITY_KEY_LENGTH];
-
-    /* UE aggregate maximum bitrate */
-    ambr_t ue_ambr;
-
-    /* Security capabilities */
-    security_capabilities_t security_capabilities;
-} s1ap_ue_ctxt_modification_req_t;
-
-typedef struct s1ap_ue_ctxt_modification_resp_s {
-    unsigned  eNB_ue_s1ap_id:24;
-} s1ap_ue_ctxt_modification_resp_t;
-
-typedef enum s1ap_paging_ind_present_s {
-    S1AP_PAGING_IND_PAGING_DRX      = (1 << 0),
-    S1AP_PAGING_IND_PAGING_PRIORITY = (1 << 1),
-} s1ap_paging_ind_present_t;
-
 typedef struct s1ap_paging_ind_s {
     /* UE identity index value.
      * Specified in 3GPP TS 36.304
@@ -405,10 +424,11 @@ typedef struct s1ap_paging_ind_s {
     paging_priority_t paging_priority;
 } s1ap_paging_ind_t;
 
-typedef struct s1ap_nas_non_delivery_ind_s {
+//-------------------------------------------------------------------------------------------//
+// S1AP <-> RRC messages
+typedef struct s1ap_ue_release_req_s {
     unsigned  eNB_ue_s1ap_id:24;
-    nas_pdu_t nas_pdu;
     /* TODO: add cause */
-} s1ap_nas_non_delivery_ind_t;
+} s1ap_ue_release_req_t, s1ap_ue_release_resp_t;
 
 #endif /* S1AP_MESSAGES_TYPES_H_ */

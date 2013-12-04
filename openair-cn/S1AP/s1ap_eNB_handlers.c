@@ -55,6 +55,7 @@
 
 #include "s1ap_eNB_default_values.h"
 
+#include "assertions.h"
 #include "conversions.h"
 
 static
@@ -132,6 +133,24 @@ static const char *direction2String[] = {
     "UnSuccessfull outcome", /* successfull outcome */
 };
 
+void s1ap_handle_s1_setup_message(s1ap_eNB_mme_data_t *mme_desc_p) {
+    /* Check that at least one setup message is pending */
+    DevCheck(mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb > 0, mme_desc_p->s1ap_eNB_instance->instance,
+             mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb, 0);
+    /* Decrease pending messages number */
+    mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb --;
+
+    /* If there are no more pending messages, inform eNB app */
+    if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb == 0)
+    {
+      MessageDef                 *message_p;
+
+      message_p = itti_alloc_new_message(TASK_S1AP, S1AP_REGISTER_ENB_CNF);
+      S1AP_REGISTER_ENB_CNF(message_p).nb_mme = mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb;
+      itti_send_msg_to_task(TASK_ENB_APP, mme_desc_p->s1ap_eNB_instance->instance, message_p);
+    }
+}
+
 int s1ap_eNB_handle_message(uint32_t assoc_id, int32_t stream,
                             const uint8_t * const data, const uint32_t data_length)
 {
@@ -173,12 +192,24 @@ int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
                                      uint32_t               stream,
                                      struct s1ap_message_s *message_p)
 {
+    s1ap_eNB_mme_data_t       *mme_desc_p;
+
     /* S1 Setup Failure == Non UE-related procedure -> stream 0 */
     if (stream != 0) {
         S1AP_WARN("[SCTP %d] Received s1 setup failure on stream != 0 (%d)\n",
                   assoc_id, stream);
     }
+
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+        S1AP_ERROR("[SCTP %d] Received S1 setup response for non existing "
+                   "MME context\n", assoc_id);
+        return -1;
+    }
+
     S1AP_ERROR("Received s1 setup failure for MME... please check your parameters\n");
+
+    mme_desc_p->state = S1AP_ENB_STATE_WAITING;
+    s1ap_handle_s1_setup_message(mme_desc_p);
 
     return 0;
 }
@@ -278,6 +309,8 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
      * Mark the association as UP to enable UE contexts creation.
      */
     mme_desc_p->state = S1AP_ENB_STATE_CONNECTED;
+    mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb ++;
+    s1ap_handle_s1_setup_message(mme_desc_p);
 
 #if 0
     /* We call back our self

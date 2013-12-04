@@ -66,7 +66,7 @@ static int s1ap_eNB_generate_s1_setup_request(
     s1ap_eNB_instance_t *instance_p, s1ap_eNB_mme_data_t *s1ap_mme_data_p);
 
 static
-void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap_register_eNB);
+void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_enb_req_t *s1ap_register_eNB);
 static
 void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_association_resp_t *sctp_new_association_resp);
 
@@ -126,47 +126,56 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
      * but not yet associated.
      */
     RB_INSERT(s1ap_mme_map, &instance_p->s1ap_mme_head, s1ap_mme_data_p);
+    s1ap_mme_data_p->state = S1AP_ENB_STATE_WAITING;
+    instance_p->s1ap_mme_nb ++;
+    instance_p->s1ap_mme_pending_nb ++;
 
     itti_send_msg_to_task(TASK_SCTP, instance_p->instance, message_p);
 }
 
 static
-void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_eNB_t *s1ap_register_eNB)
+void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_enb_req_t *s1ap_register_eNB)
 {
     s1ap_eNB_instance_t *new_instance;
     uint8_t index;
 
     DevAssert(s1ap_register_eNB != NULL);
 
-    /* Look if the provided instance already exists
-     * If so notify user...
-     */
+    /* Look if the provided instance already exists */
     new_instance = s1ap_eNB_get_instance(instance);
-    DevAssert(new_instance == NULL);
+    if (new_instance != NULL) {
+        /* Checks if it is a retry on the same eNB */
+        DevCheck(new_instance->eNB_id == s1ap_register_eNB->eNB_id, new_instance->eNB_id, s1ap_register_eNB->eNB_id, 0);
+        DevCheck(new_instance->cell_type == s1ap_register_eNB->cell_type, new_instance->cell_type, s1ap_register_eNB->cell_type, 0);
+        DevCheck(new_instance->tac == s1ap_register_eNB->tac, new_instance->tac, s1ap_register_eNB->tac, 0);
+        DevCheck(new_instance->mcc == s1ap_register_eNB->mcc, new_instance->mcc, s1ap_register_eNB->mcc, 0);
+        DevCheck(new_instance->mnc == s1ap_register_eNB->mnc, new_instance->mnc, s1ap_register_eNB->mnc, 0);
+        DevCheck(new_instance->default_drx == s1ap_register_eNB->default_drx, new_instance->default_drx, s1ap_register_eNB->default_drx, 0);
+    } else {
+        new_instance = calloc(1, sizeof(s1ap_eNB_instance_t));
+        DevAssert(new_instance != NULL);
 
-    new_instance = calloc(1, sizeof(s1ap_eNB_instance_t));
-    DevAssert(new_instance != NULL);
+        RB_INIT(&new_instance->s1ap_ue_head);
+        RB_INIT(&new_instance->s1ap_mme_head);
 
-    RB_INIT(&new_instance->s1ap_ue_head);
-    RB_INIT(&new_instance->s1ap_mme_head);
+        /* Copy usefull parameters */
+        new_instance->instance    = instance;
+        new_instance->eNB_name    = s1ap_register_eNB->eNB_name;
+        new_instance->eNB_id      = s1ap_register_eNB->eNB_id;
+        new_instance->cell_type   = s1ap_register_eNB->cell_type;
+        new_instance->tac         = s1ap_register_eNB->tac;
+        new_instance->mcc         = s1ap_register_eNB->mcc;
+        new_instance->mnc         = s1ap_register_eNB->mnc;
+        new_instance->default_drx = s1ap_register_eNB->default_drx;
 
-    /* Copy usefull parameters */
-    new_instance->instance    = instance;
-    new_instance->eNB_name    = s1ap_register_eNB->eNB_name;
-    new_instance->eNB_id      = s1ap_register_eNB->eNB_id;
-    new_instance->cell_type   = s1ap_register_eNB->cell_type;
-    new_instance->tac         = s1ap_register_eNB->tac;
-    new_instance->mcc         = s1ap_register_eNB->mcc;
-    new_instance->mnc         = s1ap_register_eNB->mnc;
-    new_instance->default_drx = s1ap_register_eNB->default_drx;
+        /* Add the new instance to the list of eNB (meaningfull in virtual mode) */
+        s1ap_eNB_insert_new_instance(new_instance);
 
-    /* Add the new instance to the list of eNB (meaningfull in virtual mode) */
-    s1ap_eNB_insert_new_instance(new_instance);
-
-    S1AP_DEBUG("Registered new eNB[%d] and %s eNB id %u\n",
-               instance,
-               s1ap_register_eNB->cell_type == CELL_MACRO_ENB ? "macro" : "home",
-               s1ap_register_eNB->eNB_id);
+        S1AP_DEBUG("Registered new eNB[%d] and %s eNB id %u\n",
+                   instance,
+                   s1ap_register_eNB->cell_type == CELL_MACRO_ENB ? "macro" : "home",
+                   s1ap_register_eNB->eNB_id);
+    }
 
     DevCheck(s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS,
              S1AP_MAX_NB_MME_IP_ADDRESS, s1ap_register_eNB->nb_mme, 0);
@@ -198,6 +207,9 @@ void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_associa
                   sctp_new_association_resp->sctp_state,
                   instance,
                   sctp_new_association_resp->ulp_cnx_id);
+
+        s1ap_handle_s1_setup_message(s1ap_mme_data_p);
+
         return;
     }
 
@@ -238,14 +250,14 @@ void *s1ap_eNB_task(void *arg)
             case TERMINATE_MESSAGE:
                 itti_exit_task();
                 break;
-            case S1AP_REGISTER_ENB: {
+            case S1AP_REGISTER_ENB_REQ: {
                 /* Register a new eNB.
                  * in Virtual mode eNBs will be distinguished using the mod_id/
                  * Each eNB has to send an S1AP_REGISTER_ENB message with its
                  * own parameters.
                  */
                 s1ap_eNB_handle_register_eNB(ITTI_MESSAGE_GET_INSTANCE(received_msg),
-                                             &received_msg->ittiMsg.s1ap_register_eNB);
+                                             &S1AP_REGISTER_ENB_REQ(received_msg));
             } break;
             case SCTP_NEW_ASSOCIATION_RESP: {
                 s1ap_eNB_handle_sctp_association_resp(ITTI_MESSAGE_GET_INSTANCE(received_msg),
@@ -317,6 +329,8 @@ static int s1ap_eNB_generate_s1_setup_request(
                                &s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID);
     MCC_MNC_TO_PLMNID(instance_p->mcc, instance_p->mnc,
                       &s1SetupRequest_p->global_ENB_ID.pLMNidentity);
+
+    S1AP_INFO("%d -> %02x%02x%02x\n", instance_p->eNB_id, s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID.buf[0], s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID.buf[1], s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID.buf[2]);
 
     INT16_TO_OCTET_STRING(instance_p->tac, &ta.tAC);
     MCC_MNC_TO_TBCD(instance_p->mcc, instance_p->mnc, &plmnIdentity);

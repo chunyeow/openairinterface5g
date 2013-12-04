@@ -172,6 +172,12 @@ typedef struct s1ap_eNB_instance_s {
      */
     STAILQ_ENTRY(s1ap_eNB_instance_s) s1ap_eNB_entries;
 
+    /* Number of MME requested by eNB (tree size) */
+    uint32_t s1ap_mme_nb;
+    /* Number of MME for which association is pending */
+    uint32_t s1ap_mme_pending_nb;
+    /* Number of MME successfully associated to eNB */
+    uint32_t s1ap_mme_associated_nb;
     /* Tree of S1AP MME associations ordered by association ID */
     RB_HEAD(s1ap_mme_map, s1ap_eNB_mme_data_s) s1ap_mme_head;
 
