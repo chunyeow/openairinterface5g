@@ -145,8 +145,10 @@ void *eNB_app_task(void *args_p)
     instance_t instance;
     itti_mark_task_ready (TASK_ENB_APP);
 
-# if defined(OAI_EMU)
+# if defined(ENABLE_USE_MME)
+#   if defined(OAI_EMU)
     enb_nb = oai_emulation.info.nb_enb_local;
+#   endif
 # endif
 
 # if defined(ENABLE_USE_MME)
