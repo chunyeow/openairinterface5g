@@ -258,7 +258,8 @@ typedef enum {
     HW,
     OSA,
     ENB_APP,
-    MAX_LOG_COMPONENTS
+    TMR,
+    MAX_LOG_COMPONENTS,
 } comp_name_t;
 
   //#define msg printf

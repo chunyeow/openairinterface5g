@@ -308,6 +308,14 @@ int logInit (void)
     g_log->log_component[ENB_APP].filelog = 0;
     g_log->log_component[ENB_APP].filelog_name = "";
 
+    g_log->log_component[TMR].name = "TMR";
+    g_log->log_component[TMR].level = LOG_EMERG;
+    g_log->log_component[TMR].flag = LOG_MED;
+    g_log->log_component[TMR].interval = 1;
+    g_log->log_component[TMR].fd = 0;
+    g_log->log_component[TMR].filelog = 0;
+    g_log->log_component[TMR].filelog_name = "";
+
     g_log->level2string[LOG_EMERG]         = "G"; //EMERG
     g_log->level2string[LOG_ALERT]         = "A"; // ALERT
     g_log->level2string[LOG_CRIT]          = "C"; // CRITIC
