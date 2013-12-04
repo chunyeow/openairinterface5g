@@ -76,7 +76,9 @@ int log_list_head = 0;
 int log_shutdown;
 #endif
 
+#ifndef RTAI
 static int gfd;
+#endif
 
 static char *log_level_highlight_start[] = {LOG_RED, LOG_RED, LOG_RED, LOG_RED, LOG_ORANGE, LOG_BLUE, "", ""};  /*!< \brief Optional start-format strings for highlighting */
 static char *log_level_highlight_end[]   = {LOG_RESET, LOG_RESET, LOG_RESET, LOG_RESET, LOG_RESET,LOG_RESET,  "",""};   /*!< \brief Optional end-format strings for highlighting */
@@ -88,7 +90,9 @@ static log_instance_type_t log_instance_type;
 int logInit (void)
 {
 #ifdef USER_MODE
+#ifndef RTAI
     int i;
+#endif
     g_log = calloc(1, sizeof(log_t));
 
 #else
@@ -637,7 +641,7 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
         rtf_put (FIFO_PRINTF_NO, c->log_buffer, len);
     }
 #else
-        fprintf(stdout, "%s", c->log_buffer);
+        fwrite(c->log_buffer, len, 1, stdout);
 #endif
 
 #ifndef RTAI
@@ -926,10 +930,11 @@ int is_newline( char *str, int size)
 
 void logClean (void)
 {
-    int i;
 #ifdef RTAI
     rtf_destroy (FIFO_PRINTF_NO);
 #else
+    int i;
+
     if (g_log->syslog) {
         closelog();
     }
