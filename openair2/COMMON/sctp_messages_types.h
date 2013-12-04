@@ -8,7 +8,7 @@ enum sctp_state_e {
     SCTP_STATE_UNREACHABLE
 };
 
-typedef struct {
+typedef struct sctp_new_association_req_s {
     /* Upper layer connexion identifier */
     uint16_t         ulp_cnx_id;
 
@@ -23,7 +23,7 @@ typedef struct {
     net_ip_address_t remote_address;
 } sctp_new_association_req_t;
 
-typedef struct {
+typedef struct sctp_new_association_ind_s {
     /* Assoc id of the new association */
     int32_t  assoc_id;
 
@@ -35,7 +35,7 @@ typedef struct {
     uint16_t out_streams;
 } sctp_new_association_ind_t;
 
-typedef struct {
+typedef struct sctp_new_association_resp_s {
     /* Upper layer connexion identifier */
     uint16_t ulp_cnx_id;
 
@@ -50,7 +50,7 @@ typedef struct {
     enum sctp_state_e sctp_state;
 } sctp_new_association_resp_t;
 
-typedef struct {
+typedef struct sctp_data_ind_s {
     /* SCTP Association ID */
     int32_t   assoc_id;
 
@@ -64,7 +64,7 @@ typedef struct {
 
 typedef sctp_data_ind_t sctp_data_req_t;
 
-typedef struct {
+typedef struct sctp_listener_register_upper_layer_s {
     /* Port to listen to */
     uint16_t port;
     /* Payload protocol identifier
