@@ -185,6 +185,14 @@ include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 include $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
+include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
+
+INCLUDES  = -I$(TOP_DIR)
+INCLUDES += $(L2_incl)
+INCLUDES += $(ENB_APP_incl)
+INCLUDES += $(UTIL_incl)
+INCLUDES += $(UTILS_incl)
+INCLUDES += -I$(ASN1_MSG_INC)
 
 SIMULATION_OBJS  = $(TOP_DIR)/SIMULATION/TOOLS/gauss.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/TOOLS/random_channel.o
@@ -243,7 +251,8 @@ CFLAGS		+= $(PGM_CFLAGS) -DENABLE_PGM_TRANSPORT
 LIBS		+= $(PGM_LIBS)
 endif
 
-OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS) $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) 
+OBJ  = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS)
+OBJ += $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) $(ENB_APP_OBJS) 
 ifeq ($(OPENAIR2),1)
 OBJ += $(L2_OBJS)
 endif
@@ -293,8 +302,8 @@ $(OAISIM_COMPILED_OBJECTS): | objsdir
 $(OAISIM_COMPILED_OBJECTS) $(OAISIM_PAD_OBJS): %.o : $$(subst $(OBJS_DIR), $(OPENAIR_HOME), $$*.c)
 	@echo Compiling $<
 	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi;
-	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) -o $@ $<
-	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $< > $*.d
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 $(INCLUDES) -o $@ $<
+	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) -DPHY_CONTEXT=1 $(INCLUDES) $< > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
 	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
@@ -308,12 +317,12 @@ $(LFDS_LIB):
 
 oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
 	@echo "Linking oaisim_pad ..."
-	@$(MPICC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
+	@$(MPICC) $(INCLUDES) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
 	-lpthread -llapack_atlas -lforms -lrt $(LIBS) $(DB_LDFLAGS)
 
 oaisim: $(OAISIM_COMPILED_OBJECTS) $(SHARED_DEPENDENCIES)
 	@echo "Linking oaisim ..."
-	@$(CC) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OAISIM_COMPILED_OBJECTS) \
+	@$(CC) $(INCLUDES) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OAISIM_COMPILED_OBJECTS) \
 	-lpthread -llapack_atlas -lforms -lrt $(LIBS) $(DB_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
@@ -325,7 +334,7 @@ endif
 
 oaisimCROWN: $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
-	@$(CC) oaisimCROWN.c -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl) -I$(ASN1_MSG_INC) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt
+	@$(CC) oaisimCROWN.c $(INCLUDES) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt
 
 nasmesh_fix:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
@@ -411,6 +420,7 @@ print:
 	@echo "CFLAGS are "			$(CFLAGS)
 	@echo "EXTRA_CFLAGS are"	$(EXTRA_CFLAGS)
 	@echo "L2 includes are"		$(L2_incl)
+	@echo "INCLUDES are"		$(INCLUDES)
 	@echo "S1AP Includes are"	$(S1AP_Incl)
 	@echo "TOP_DIR Include is"	I$(TOP_DIR)
 	@echo "UTIL includes are"	$(UTIL_incl)

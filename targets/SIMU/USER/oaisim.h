@@ -42,7 +42,6 @@ void calc_path_loss(node_desc_t* node_tx, node_desc_t* node_rx, channel_desc_t *
 
 void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms);
 
-void *eNB_app_task(void *args_p);
 #ifdef ENABLE_ITTI
 int itti_create_task_successful(void);
 void *l2l1_task(void *args_p); 
