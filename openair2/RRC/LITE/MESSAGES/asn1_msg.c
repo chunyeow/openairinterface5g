@@ -1931,12 +1931,8 @@ OAI_UECapability_t *fill_ue_capability() {
   Bandlist[3].bandEUTRA  = 7;   // 2500-2570, 2620-2690 FDD
   Bandlist[3].halfDuplex = 0;
 
-  memset((void*)&InterFreqBandInfo,0,sizeof(InterFreqBandList_t));
-
-  memset((void*)&BandInfoEUTRA[0],0,sizeof(BandInfoEUTRA_t));
-  memset((void*)&BandInfoEUTRA[1],0,sizeof(BandInfoEUTRA_t));
-  memset((void*)&BandInfoEUTRA[2],0,sizeof(BandInfoEUTRA_t));
-  memset((void*)&BandInfoEUTRA[3],0,sizeof(BandInfoEUTRA_t));
+  memset((void*)InterFreqBandInfo, 0, sizeof(InterFreqBandInfo));
+  memset((void*)BandInfoEUTRA, 0, sizeof(BandInfoEUTRA));
 
   InterFreqBandInfo[0][0].interFreqNeedForGaps = 0;
   InterFreqBandInfo[0][1].interFreqNeedForGaps = 1;
@@ -1955,11 +1951,9 @@ OAI_UECapability_t *fill_ue_capability() {
   InterFreqBandInfo[3][2].interFreqNeedForGaps = 1;
   InterFreqBandInfo[3][3].interFreqNeedForGaps = 0;
 
-
-  
   LOG_I(RRC,"Allocating %d bytes for UE_EUTRA_Capability\n",sizeof(*UE_EUTRA_Capability));
-  UE_EUTRA_Capability = CALLOC(1,sizeof(*UE_EUTRA_Capability));
-  memset(UE_EUTRA_Capability,0,sizeof(*UE_EUTRA_Capability));
+
+  UE_EUTRA_Capability = CALLOC(1, sizeof(*UE_EUTRA_Capability));
 
   UE_EUTRA_Capability->accessStratumRelease = 0;//AccessStratumRelease_rel8;
   UE_EUTRA_Capability->ue_Category          = 4;
@@ -1968,10 +1962,10 @@ OAI_UECapability_t *fill_ue_capability() {
   UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0003=0;
   UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0004=0;
   UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0006=0;
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0101=0;    
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0102=0;    
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0103=0;    
-  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0104=0;    
+  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0101=0;
+  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0102=0;
+  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0103=0;
+  UE_EUTRA_Capability->pdcp_Parameters.supportedROHC_Profiles.profile0x0104=0;
 
   UE_EUTRA_Capability->pdcp_Parameters.maxNumberROHC_ContextSessions = &maxNumberROHC_ContextSessions;
 
@@ -2050,10 +2044,11 @@ OAI_UECapability_t *fill_ue_capability() {
 #endif
 
   UECapability.sdu_size = (enc_rval.encoded + 7) / 8;
-  LOG_I(PHY, "[RRC]UE Capability encoded, %d bytes (%d bits)\n", UECapability.sdu_size, enc_rval.encoded+7);
+  LOG_I(PHY, "[RRC]UE Capability encoded, %d bytes (%d bits)\n",
+        UECapability.sdu_size, enc_rval.encoded + 7);
   {
     char *sdu;
-    sdu = malloc (3 * UECapability.sdu_size);
+    sdu = malloc (3 * UECapability.sdu_size + 1 /* For '\0' */);
 
     for (i = 0; i < UECapability.sdu_size; i++)
       sprintf (&sdu[3 * i], "%02x.", UECapability.sdu[i]);
@@ -2073,7 +2068,7 @@ uint8_t do_SIB1_TDD_config_cell (LTE_DL_FRAME_PARMS *frame_parms,TDD_Config_t *t
   tdd_Config->subframeAssignment=frame_parms->tdd_config; //TDD_Config__subframeAssignment_sa3;
   tdd_Config->specialSubframePatterns=0;//frame_parms->tdd_config_S;//TDD_Config__specialSubframePatterns_ssp0;
   //msg ("ASN1 TDD_config %d\n", frame_parms->tdd_config);
-return 0;
+  return 0;
 }
 
 //-----------------------------------------------------------------------------
