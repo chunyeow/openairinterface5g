@@ -41,14 +41,19 @@
 #include "assertions.h"
 #include "intertask_interface.h"
 #include "timer.h"
-
+#include "log.h"
 #include "queue.h"
 
+#if defined (LOG_D) && defined (LOG_E)
+# define TMR_DEBUG(x, args...)  LOG_D(TMR, x, ##args)
+# define TMR_ERROR(x, args...)  LOG_E(TMR, x, ##args)
+#endif
+
 #ifndef TMR_DEBUG
-# define TMR_DEBUG(x, args...) do { fprintf(stdout, "[TMR][D]"x, ##args); } while(0)
+# define TMR_DEBUG(x, args...)  do { fprintf(stdout, "[TMR][D]"x, ##args); } while(0)
 #endif
 #ifndef TMR_ERROR
-# define TMR_ERROR(x, args...) do { fprintf(stdout, "[TMR][E]"x, ##args); } while(0)
+# define TMR_ERROR(x, args...)  do { fprintf(stdout, "[TMR][E]"x, ##args); } while(0)
 #endif
 
 int timer_handle_signal(siginfo_t *info);
@@ -204,6 +209,8 @@ int timer_setup(
     pthread_mutex_lock(&timer_desc.timer_list_mutex);
     STAILQ_INSERT_TAIL(&timer_desc.timer_queue, timer_p, entries);
     pthread_mutex_unlock(&timer_desc.timer_list_mutex);
+#else
+    return -1;
 #endif
 
     return 0;

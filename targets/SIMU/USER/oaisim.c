@@ -74,7 +74,7 @@ char smbv_ip[16];
 #include "enb_app.h"
 
 #if defined(ENABLE_ITTI)
-# include "intertask_interface_init.h"
+# include "intertask_interface.h"
 # include "timer.h"
 # if defined(ENABLE_USE_MME)
 #   include "s1ap_eNB.h"
@@ -963,10 +963,6 @@ int main(int argc, char **argv) {
   // get command-line options
   get_simulation_options (argc, argv); //Command-line options
   
-#if defined(ENABLE_ITTI)
-  itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
-#endif
-
   // Initialize VCD LOG module
   vcd_signal_dumper_init ("openair_dump.vcd");
 

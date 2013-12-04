@@ -14,6 +14,10 @@
 #include "UTIL/OTG/otg_vars.h"
 #include "oml.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface_init.h"
+#endif
+
 mapping log_level_names[] =
 {
     {"emerg", LOG_EMERG},
@@ -380,6 +384,10 @@ void oaisim_config() {
   // init log gen first
  //initialize the log generator 
   logInit();
+
+#if defined(ENABLE_ITTI)
+  itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, oai_emulation.info.itti_dump_file);
+#endif
 
   // init ocg if enabled, otherwise take the params form the init_oai_emulation()
  //  and command line options given by the user
@@ -1007,9 +1015,12 @@ int ocg_config_emu(){
   if (oai_emulation.emulation_config.emulation_time_ms != 0) {
     oai_emulation.info.n_frames  =  (int) oai_emulation.emulation_config.emulation_time_ms / 10; // configure the number of frame
     oai_emulation.info.n_frames_flag = 1;
+  }
+  if (oai_emulation.info.n_frames_flag) {
     LOG_I(OCG, "number of frames in emulation is set to %d\n", oai_emulation.info.n_frames);
-  } else
+  } else {
     LOG_I(OCG, "number of frames in emulation is set to infinity\n");
+  }
   
   oai_emulation.info.seed = (oai_emulation.emulation_config.seed.value == 0) ? oai_emulation.info.seed : oai_emulation.emulation_config.seed.value;
   LOG_I (OCG,"The seed value is set to %d \n", oai_emulation.info.seed );
