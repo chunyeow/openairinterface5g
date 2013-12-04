@@ -43,9 +43,6 @@
 
 s1ap_eNB_internal_data_t s1ap_eNB_internal_data;
 
-static int s1ap_eNB_generate_s1_setup_request(
-    s1ap_eNB_instance_t *instance_p, s1ap_eNB_mme_data_t *s1ap_mme_data_p);
-
 RB_GENERATE(s1ap_mme_map, s1ap_eNB_mme_data_s, entry, s1ap_eNB_compare_assoc_id);
 
 inline int s1ap_eNB_compare_assoc_id(

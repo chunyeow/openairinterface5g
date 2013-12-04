@@ -36,11 +36,12 @@
  *  @ingroup _sctp
  */
 
-#include <stdio.h>
-#include <stdint.h>
-
 #ifndef SCTP_COMMON_H_
 #define SCTP_COMMON_H_
+
+#include <stdio.h>
+#include <stdint.h>
+#include <sys/socket.h>
 
 #if defined(ENB_MODE)
 # include "UTIL/LOG/log.h"
