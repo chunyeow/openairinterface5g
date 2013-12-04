@@ -132,7 +132,16 @@ int ui_messages_read(char *filename)
                 break;
             }
 
-            if (read_data > 0)
+            if (read_data == 0)
+            {
+              break;
+            }
+
+            if (read_data < sizeof(itti_socket_header_t))
+            {
+                g_warning("Failed to read a complete message header from file \"%s\": %s", filename, g_strerror (errno));
+            }
+            else
             {
                 read_fraction += (double) read_data / size;
 
@@ -145,12 +154,10 @@ int ui_messages_read(char *filename)
                 {
                     input_data = malloc (input_data_length);
 
-                    if (read (source, input_data, input_data_length) < 0)
+                    read_data = read (source, input_data, input_data_length);
+                    if (read_data < input_data_length)
                     {
-                        g_warning("Failed to read from file \"%s\": %s", filename, g_strerror (errno));
-                        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages",
-                                                "Failed to read from file \"%s\": %s", filename, g_strerror (errno));
-                        result = RC_FAIL;
+                        g_warning("Failed to read a complete message from file \"%s\": %s", filename, g_strerror (errno));
                         break;
                     }
 
@@ -231,8 +238,7 @@ int ui_messages_read(char *filename)
 
         ui_progress_bar_terminate ();
 
-        g_message(
-                "Read %d messages (%d to display) from file \"%s\"\n", read_messages, ui_tree_view_get_filtered_number(), filename);
+        g_message("Read %d messages (%d to display) from file \"%s\"\n", read_messages, ui_tree_view_get_filtered_number(), filename);
 
         close (source);
     }
