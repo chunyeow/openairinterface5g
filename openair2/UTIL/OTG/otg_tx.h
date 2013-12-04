@@ -166,7 +166,7 @@ int adjust_size(int size);
 */
 void header_size_gen(int src, int dst, int application);
 
-void init_predef_multicast_traffic();
+void init_predef_multicast_traffic(void);
 
 /*! \fn void init_predef_traffic();
 * \brief initialise OTG with predifined value for pre-configured traffic: cbr, openarena,etc. 

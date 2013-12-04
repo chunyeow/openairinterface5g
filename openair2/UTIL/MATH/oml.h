@@ -85,7 +85,7 @@ void init_seeds(int seed);
 * \note 
 * @ingroup  _oml
 */
-double wichman_hill() ;
+double wichman_hill(void) ;
 
 /*! \fn double uniform_rng();
 * \brief generates uniform random number with algo: wichman_hill / random() / Taus
@@ -94,7 +94,7 @@ double wichman_hill() ;
 * \note 
 * @ingroup  _oml
 */
-double uniform_rng();
+double uniform_rng(void);
 
 /*! \fn double uniform_dist(double min, double max);
 * \brief 
