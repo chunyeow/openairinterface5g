@@ -26,9 +26,9 @@
  * Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
  *
  *******************************************************************************/
-/*! \file eRALlte_mih_msg.h
+/*! \file lteRALenb_mih_msg.h
  * \brief
- * \author BRIZZOLA Davide, GAUTHIER Lionel, MAUREL Frederic, WETTERWALD Michelle
+ * \author GAUTHIER Lionel, MAUREL Frederic, WETTERWALD Michelle
  * \date 2012
  * \version
  * \note
@@ -36,10 +36,26 @@
  * \warning
  */
 
-#ifndef __RAL_LTE_MIH_MSG_H__
-#define __RAL_LTE_MIH_MSG_H__
-
-#include <sys/types.h>
+#ifndef __LTE_RAL_ENB_MIH_MSG_H__
+#define __LTE_RAL_ENB_MIH_MSG_H__
+//-----------------------------------------------------------------------------
+#        ifdef LTE_RAL_ENB_MIH_MSG_C
+#            define private_lteralenb_mih_msg(x)    x
+#            define protected_lteralenb_mih_msg(x)  x
+#            define public_lteralenb_mih_msg(x)     x
+#        else
+#            ifdef LTE_RAL_ENB
+#                define private_lteralenb_mih_msg(x)
+#                define protected_lteralenb_mih_msg(x)  extern x
+#                define public_lteralenb_mih_msg(x)     extern x
+#            else
+#                define private_lteralenb_mih_msg(x)
+#                define protected_lteralenb_mih_msg(x)
+#                define public_lteralenb_mih_msg(x)     extern x
+#            endif
+#        endif
+//-----------------------------------------------------------------------------
+#include "lteRALenb.h"
 
 #include "MIH_C_Types.h"
 #include "MIH_C_header_codec.h"
@@ -49,24 +65,15 @@
 /********************  G L O B A L    V A R I A B L E S  ********************/
 /****************************************************************************/
 
-char* g_mihf_ip_address;
-char* g_mihf_remote_port;
-int   g_sockd_mihf;
-
-char* g_ral_ip_address;
-char* g_ral_listening_port_for_mihf;
-
-char* g_link_id;
-char* g_mihf_id;
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-int eRALlte_mihf_connect(void);
+protected_lteralenb_mih_msg(int eRAL_mihf_connect(ral_enb_instance_t instanceP);)
 
-int eRALlte_mih_link_process_message(void);
-
+protected_lteralenb_mih_msg(int eRAL_mih_link_process_message(ral_enb_instance_t instanceP);)
+private_lteralenb_mih_msg(void eRAL_print_buffer(const u_int8_t * bufferP, int lenP);)
 /*
  * --------------------------------------------------------------------------
  * MIH service management messages
@@ -74,27 +81,31 @@ int eRALlte_mih_link_process_message(void);
  */
 
 /* MIH_C_MESSAGE_LINK_REGISTER_INDICATION_ID */
-void eRALlte_send_link_register_indication(
-	MIH_C_TRANSACTION_ID_T *transaction_idP);
+protected_lteralenb_mih_msg(void eRAL_send_link_register_indication(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T *transaction_idP);)
 
 /* MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_CONFIRM_ID */
-void eRALlte_send_capability_discover_confirm(
-	MIH_C_TRANSACTION_ID_T  *tidP,
-	MIH_C_STATUS_T          *statusP,
-	MIH_C_LINK_EVENT_LIST_T *link_evt_listP,
-	MIH_C_LINK_CMD_LIST_T   *link_cmd_listP);
+private_lteralenb_mih_msg(void eRAL_send_capability_discover_confirm(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T  *tidP,\
+        MIH_C_STATUS_T          *statusP,\
+        MIH_C_LINK_EVENT_LIST_T *link_evt_listP,\
+        MIH_C_LINK_CMD_LIST_T   *link_cmd_listP);)
 
 /* MIH_C_MESSAGE_LINK_EVENT_SUBSCRIBE_CONFIRM_ID */
-void eRALlte_send_event_subscribe_confirm(
-	MIH_C_TRANSACTION_ID_T  *transaction_idP,
-	MIH_C_STATUS_T          *statusP,
-	MIH_C_LINK_EVENT_LIST_T *link_event_listP);
+protected_lteralenb_mih_msg(void eRAL_send_event_subscribe_confirm(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T  *transaction_idP,\
+        MIH_C_STATUS_T          *statusP,\
+        MIH_C_LINK_EVENT_LIST_T *link_event_listP);)
 
 /* MIH_C_MESSAGE_LINK_EVENT_UNSUBSCRIBE_CONFIRM_ID */
-void eRALlte_send_event_unsubscribe_confirm(
-	MIH_C_TRANSACTION_ID_T  *transaction_idP,
-	MIH_C_STATUS_T          *statusP,
-	MIH_C_LINK_EVENT_LIST_T *link_event_listP);
+protected_lteralenb_mih_msg(void eRAL_send_event_unsubscribe_confirm(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T  *transaction_idP,\
+        MIH_C_STATUS_T          *statusP,\
+        MIH_C_LINK_EVENT_LIST_T *link_event_listP);)
 
 /*
  * --------------------------------------------------------------------------
@@ -103,38 +114,43 @@ void eRALlte_send_event_unsubscribe_confirm(
  */
 
 /* MIH_C_MESSAGE_LINK_DETECTED_INDICATION_ID */
-void eRALlte_send_link_detected_indication(
-	MIH_C_TRANSACTION_ID_T  *transaction_idP,
-	MIH_C_LINK_DET_INFO_T   *link_detected_infoP);
+protected_lteralenb_mih_msg(void eRAL_send_link_detected_indication(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T  *transaction_idP,\
+        MIH_C_LINK_DET_INFO_T   *link_detected_infoP);)
 
 /* MIH_C_MESSAGE_LINK_UP_INDICATION_ID */
-void eRALlte_send_link_up_indication(
-	MIH_C_TRANSACTION_ID_T  *transaction_idP,
-	MIH_C_LINK_TUPLE_ID_T   *link_identifierP,
-	MIH_C_LINK_ADDR_T       *old_access_routerP,
-	MIH_C_LINK_ADDR_T       *new_access_routerP,
-	MIH_C_IP_RENEWAL_FLAG_T *ip_renewal_flagP,
-	MIH_C_IP_MOB_MGMT_T     *mobility_mngtP);
+protected_lteralenb_mih_msg(void eRAL_send_link_up_indication(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T  *transaction_idP,\
+        MIH_C_LINK_TUPLE_ID_T   *link_identifierP,\
+        MIH_C_LINK_ADDR_T       *old_access_routerP,\
+        MIH_C_LINK_ADDR_T       *new_access_routerP,\
+        MIH_C_IP_RENEWAL_FLAG_T *ip_renewal_flagP,\
+        MIH_C_IP_MOB_MGMT_T     *mobility_mngtP);)
 
 /* MIH_C_MESSAGE_LINK_DOWN_INDICATION_ID */
-void eRALlte_send_link_down_indication(
-	MIH_C_TRANSACTION_ID_T      *transaction_idP,
-	MIH_C_LINK_TUPLE_ID_T       *link_identifierP,
-	MIH_C_LINK_ADDR_T           *old_access_routerP,
-	MIH_C_LINK_DN_REASON_T      *reason_codeP);
+private_lteralenb_mih_msg(void eRAL_send_link_down_indication(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T      *transaction_idP,\
+        MIH_C_LINK_TUPLE_ID_T       *link_identifierP,\
+        MIH_C_LINK_ADDR_T           *old_access_routerP,\
+        MIH_C_LINK_DN_REASON_T      *reason_codeP);)
 
 /* MIH_C_MESSAGE_LINK_PARAMETERS_REPORT_INDICATION_ID */
-void eRALlte_send_link_parameters_report_indication(
-	MIH_C_TRANSACTION_ID_T      *transaction_idP,
-	MIH_C_LINK_TUPLE_ID_T       *link_identifierP,
-	MIH_C_LINK_PARAM_RPT_LIST_T *link_parameters_report_listP);
+protected_lteralenb_mih_msg(void eRAL_send_link_parameters_report_indication(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T      *transaction_idP,\
+        MIH_C_LINK_TUPLE_ID_T       *link_identifierP,\
+        MIH_C_LINK_PARAM_RPT_LIST_T *link_parameters_report_listP);)
 
 /* MIH_C_MESSAGE_LINK_GOING_DOWN_INDICATION_ID */
-void eRALlte_send_link_going_down_indication(
-	MIH_C_TRANSACTION_ID_T      *transaction_idP,
-	MIH_C_LINK_TUPLE_ID_T       *link_identifierP,
-	MIH_C_UNSIGNED_INT2_T       *time_intervalP,
-	MIH_C_LINK_GD_REASON_T      *link_going_down_reasonP);
+private_lteralenb_mih_msg(void eRAL_send_link_going_down_indication(\
+        ral_enb_instance_t instanceP,\
+        MIH_C_TRANSACTION_ID_T      *transaction_idP,\
+        MIH_C_LINK_TUPLE_ID_T       *link_identifierP,\
+        MIH_C_UNSIGNED_INT2_T       *time_intervalP,\
+        MIH_C_LINK_GD_REASON_T      *link_going_down_reasonP);)
 
 /* MIH_C_MESSAGE_LINK_HANDOVER_IMMINENT_INDICATION_ID */
 
@@ -149,32 +165,37 @@ void eRALlte_send_link_going_down_indication(
  */
 
 /* MIH_C_MESSAGE_LINK_GET_PARAMETERS_CONFIRM_ID */
-void eRALlte_send_get_parameters_confirm(
-	MIH_C_TRANSACTION_ID_T       *transaction_idP,
-	MIH_C_STATUS_T               *statusP,
-	MIH_C_LINK_PARAM_LIST_T      *link_parameters_status_listP,
-	MIH_C_LINK_STATES_RSP_LIST_T *link_states_response_listP,
-	MIH_C_LINK_DESC_RSP_LIST_T   *link_descriptors_response_listP);
+protected_lteralenb_mih_msg(void eRAL_send_get_parameters_confirm(\
+        ral_enb_instance_t instanceP,
+        MIH_C_TRANSACTION_ID_T       *transaction_idP,\
+        MIH_C_STATUS_T               *statusP,\
+        MIH_C_LINK_PARAM_LIST_T      *link_parameters_status_listP,\
+        MIH_C_LINK_STATES_RSP_LIST_T *link_states_response_listP,\
+        MIH_C_LINK_DESC_RSP_LIST_T   *link_descriptors_response_listP);)
 
 /* MIH_C_MESSAGE_LINK_CONFIGURE_THRESHOLDS_CONFIRM_ID */
-void eRALlte_send_configure_thresholds_confirm(
-	MIH_C_TRANSACTION_ID_T       *transaction_idP,
-	MIH_C_STATUS_T               *statusP,
-	MIH_C_LINK_CFG_STATUS_LIST_T *link_configure_status_listP);
+protected_lteralenb_mih_msg(void eRAL_send_configure_thresholds_confirm(\
+        ral_enb_instance_t instanceP,
+        MIH_C_TRANSACTION_ID_T       *transaction_idP,\
+        MIH_C_STATUS_T               *statusP,\
+        MIH_C_LINK_CFG_STATUS_LIST_T *link_configure_status_listP);)
 
 /* MIH_C_MESSAGE_LINK_ACTION_CONFIRM_ID */
-void eRALlte_send_link_action_confirm(
-	MIH_C_TRANSACTION_ID_T      *transaction_idP,
-	MIH_C_STATUS_T              *statusP,
-	MIH_C_LINK_SCAN_RSP_LIST_T  *scan_response_setP,
-	MIH_C_LINK_AC_RESULT_T      *link_action_resultP);
+protected_lteralenb_mih_msg(void eRAL_send_link_action_confirm(\
+        ral_enb_instance_t instanceP,
+        MIH_C_TRANSACTION_ID_T      *transaction_idP,\
+        MIH_C_STATUS_T              *statusP,\
+        MIH_C_LINK_SCAN_RSP_LIST_T  *scan_response_setP,\
+        MIH_C_LINK_AC_RESULT_T      *link_action_resultP);)
 
 /*
  * --------------------------------------------------------------------------
  * MIH information messages
  * --------------------------------------------------------------------------
  */
-
+protected_lteralenb_mih_msg(int eRAL_mihf_connect       (ral_enb_instance_t instanceP);)
+private_lteralenb_mih_msg(  int eRAL_send_to_mih        (ral_enb_instance_t instanceP, const u_int8_t *bufferP, int lenP);)
+private_lteralenb_mih_msg(  int eRAL_mih_link_msg_decode(ral_enb_instance_t instanceP, Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_t *message_wrapperP);)
 /****************************************************************************/
 
 #endif

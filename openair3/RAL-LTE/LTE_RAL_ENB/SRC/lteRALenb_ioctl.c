@@ -33,7 +33,7 @@
  * \company EURECOM
  * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
  */
-/*******************************************************************************/
+/*******************************************************************************
 #include <sys/ioctl.h>
 #include <string.h>
 #include <stdio.h>
@@ -49,9 +49,9 @@
 #include "rrc_d_types.h"
 //-----------------------------------------------------------------------------
 // LTE AS sub-system
-#include "rrc_nas_primitives.h"
-#include "nasrg_constant.h"
-#include "nasrg_iocontrol.h"
+//#include "rrc_nas_primitives.h"
+//#include "nasrg_constant.h"
+//#include "nasrg_iocontrol.h"
 //-----------------------------------------------------------------------------
 #include "lteRALenb_mih_msg.h"
 #include "lteRALenb_constants.h"
@@ -69,19 +69,19 @@ extern int init_flag;
 void print_state(u8 state){
 //---------------------------------------------------------------------------
  switch(state){
-    case  NAS_IDLE:DEBUG("NAS_IDLE\n");return;
-    case  NAS_CX_FACH:DEBUG("NAS_CX_FACH\n");return;
-    case  NAS_CX_DCH:DEBUG("NAS_CX_DCH\n");return;
-    case  NAS_CX_RECEIVED:DEBUG("NAS_CX_RECEIVED\n");return;
-    case  NAS_CX_CONNECTING:DEBUG("NAS_CX_CONNECTING\n");return;
-    case  NAS_CX_RELEASING:DEBUG("NAS_CX_RELEASING\n");return;
-    case  NAS_CX_CONNECTING_FAILURE:DEBUG("NAS_CX_CONNECTING_FAILURE\n");return;
-    case  NAS_CX_RELEASING_FAILURE:DEBUG("NAS_CX_RELEASING_FAILURE\n");return;
-    case  NAS_RB_ESTABLISHING:DEBUG("NAS_RB_ESTABLISHING\n");return;
-    case  NAS_RB_RELEASING:DEBUG("NAS_RB_RELEASING\n");return;
-    case  NAS_RB_ESTABLISHED:DEBUG("NAS_RB_ESTABLISHED\n");return;
+    case  NAS_IDLE:printf("NAS_IDLE\n");return;
+    case  NAS_CX_FACH:printf("NAS_CX_FACH\n");return;
+    case  NAS_CX_DCH:printf("NAS_CX_DCH\n");return;
+    case  NAS_CX_RECEIVED:printf("NAS_CX_RECEIVED\n");return;
+    case  NAS_CX_CONNECTING:printf("NAS_CX_CONNECTING\n");return;
+    case  NAS_CX_RELEASING:printf("NAS_CX_RELEASING\n");return;
+    case  NAS_CX_CONNECTING_FAILURE:printf("NAS_CX_CONNECTING_FAILURE\n");return;
+    case  NAS_CX_RELEASING_FAILURE:printf("NAS_CX_RELEASING_FAILURE\n");return;
+    case  NAS_RB_ESTABLISHING:printf("NAS_RB_ESTABLISHING\n");return;
+    case  NAS_RB_RELEASING:printf("NAS_RB_RELEASING\n");return;
+    case  NAS_RB_ESTABLISHED:printf("NAS_RB_ESTABLISHED\n");return;
 
-   default: ERR(" Unknown state\n");
+   default: printf(" Unknown state\n");
  }
 }
 
@@ -91,32 +91,32 @@ void RAL_NASinitMTlist(u8 *msgrep, int num_mts){
   int mt_ix, ch_ix;
   struct nas_msg_cx_list_reply *list;
 
-  memcpy(ralpriv->plmn, DefaultPLMN, DEFAULT_PLMN_SIZE); // DUMMY
+  memcpy(g_enb_ral_obj[instanceP].plmn, DefaultPLMN, DEFAULT_PLMN_SIZE); // DUMMY
   list=(struct nas_msg_cx_list_reply *)(msgrep+1);
   num_mts = msgrep[0];
   for(mt_ix=0; mt_ix<num_mts; ++mt_ix){
     if (list[mt_ix].state != NAS_IDLE){
-      ralpriv->curr_cellId =  list[mt_ix].cellid;
-      ralpriv->mt[mt_ix].ue_id = list[mt_ix].lcr;
-      ralpriv->mt[mt_ix].ipv6_l2id[0]= list[mt_ix].iid6[0];
-      ralpriv->mt[mt_ix].ipv6_l2id[1]= list[mt_ix].iid6[1];
-      ralpriv->mt[mt_ix].num_rbs = list[mt_ix].num_rb;
-      ralpriv->mt[mt_ix].num_class = list[mt_ix].nsclassifier;
-      ralpriv->mt[mt_ix].nas_state = list[mt_ix].state;
-      if (ralpriv->mt[mt_ix].num_class>=2)
-        ralpriv->mt[mt_ix].mt_state= NAS_CONNECTED;
+      g_enb_ral_obj[instanceP].cell_id =  list[mt_ix].cellid;
+      g_enb_ral_obj[instanceP].mt[mt_ix].ue_id = list[mt_ix].lcr;
+      g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]= list[mt_ix].iid6[0];
+      g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[1]= list[mt_ix].iid6[1];
+      g_enb_ral_obj[instanceP].mt[mt_ix].num_rbs = list[mt_ix].num_rb;
+      g_enb_ral_obj[instanceP].mt[mt_ix].num_class = list[mt_ix].nsclassifier;
+      g_enb_ral_obj[instanceP].mt[mt_ix].nas_state = list[mt_ix].state;
+      if (g_enb_ral_obj[instanceP].mt[mt_ix].num_class>=2)
+        g_enb_ral_obj[instanceP].mt[mt_ix].mt_state= NAS_CONNECTED;
       // enter default rb
       ch_ix = 0;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].rbId = RAL_DEFAULT_MC_RAB_ID+1;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].RadioQoSclass = 2;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].cnx_id = (RAL_MAX_RB_PER_UE*mt_ix)+ch_ix+1;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].dscpUL = 0;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].dscpDL = 0;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].nas_state = NAS_CX_DCH;
-      ralpriv->mt[mt_ix].radio_channel[ch_ix].status = RB_CONNECTED;
-      ralpriv->num_connected_mts++;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].rbId = RAL_DEFAULT_MC_RAB_ID+1;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].RadioQoSclass = 2;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].cnx_id = (RAL_MAX_RB_PER_UE*mt_ix)+ch_ix+1;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].dscpUL = 0;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].dscpDL = 0;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].nas_state = NAS_CX_DCH;
+      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].status = RB_CONNECTED;
+      g_enb_ral_obj[instanceP].num_connected_mts++;
       //RAL_printMobileData(mt_ix);
-      DEBUG(" MT%d initialized : address %d %d\n", mt_ix, ralpriv->mt[mt_ix].ipv6_l2id[0], ralpriv->mt[mt_ix].ipv6_l2id[1]);
+      DEBUG(" MT%d initialized : address %d %d\n", mt_ix, g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0], g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[1]);
     }
   }
 }
@@ -136,35 +136,35 @@ void RAL_NASupdatetMTlist(u8 *msgrep, int num_mts){
   num_mts = msgrep[0];
   for(mt_ix=0; mt_ix<num_mts; ++mt_ix){
   // check if MT already known
-    if ((ralpriv->mt[mt_ix].ipv6_l2id[0]== list[mt_ix].iid6[0])&&
-          (ralpriv->mt[mt_ix].ipv6_l2id[1]== list[mt_ix].iid6[1])){
+    if ((g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]== list[mt_ix].iid6[0])&&
+          (g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[1]== list[mt_ix].iid6[1])){
       // MT already known - update
-        ralpriv->mt[mt_ix].num_rbs = list[mt_ix].num_rb;
-        previous_num_class = ralpriv->mt[mt_ix].num_class;
-        ralpriv->mt[mt_ix].num_class = list[mt_ix].nsclassifier;
-        if (ralpriv->mt[mt_ix].num_class>=2)
-          ralpriv->mt[mt_ix].mt_state= RB_CONNECTED;
+        g_enb_ral_obj[instanceP].mt[mt_ix].num_rbs = list[mt_ix].num_rb;
+        previous_num_class = g_enb_ral_obj[instanceP].mt[mt_ix].num_class;
+        g_enb_ral_obj[instanceP].mt[mt_ix].num_class = list[mt_ix].nsclassifier;
+        if (g_enb_ral_obj[instanceP].mt[mt_ix].num_class>=2)
+          g_enb_ral_obj[instanceP].mt[mt_ix].mt_state= RB_CONNECTED;
       //check if state has changed - MT disconnected FFS
-      if ((ralpriv->mt[mt_ix].nas_state==NAS_CX_DCH)&&(list[mt_ix].state == NAS_IDLE)){
+      if ((g_enb_ral_obj[instanceP].mt[mt_ix].nas_state==NAS_CX_DCH)&&(list[mt_ix].state == NAS_IDLE)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d IS NOW IDLE.\n\n",mt_ix);
          // TODO Send linkdown
       }
       //check if state has changed - MT reconnected FFS
-      if ((ralpriv->mt[mt_ix].nas_state==NAS_IDLE)&&(list[mt_ix].state == NAS_CX_DCH)){
+      if ((g_enb_ral_obj[instanceP].mt[mt_ix].nas_state==NAS_IDLE)&&(list[mt_ix].state == NAS_CX_DCH)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d WAS IDLE AND IS NOW CONNECTED.\n\n",mt_ix);
       }
       //check if MT is completely connected
-      if ((ralpriv->mt[mt_ix].num_class - previous_num_class)&&(list[mt_ix].state == NAS_CX_DCH)){
+      if ((g_enb_ral_obj[instanceP].mt[mt_ix].num_class - previous_num_class)&&(list[mt_ix].state == NAS_CX_DCH)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d IS NOW COMPLETELY CONNECTED.\n\n",mt_ix);
          // send linkup: new_ar will contain the address from the MT
          new_ar.choice = MIH_C_CHOICE_3GPP_ADDR;
-         MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(ralpriv->mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
+         MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
 
-         eRALlte_send_link_up_indication(&ralpriv->pending_req_transaction_id, &ralpriv->mt[mt_ix].ltid, NULL, &new_ar, NULL, NULL);
-         //eRALlte_send_link_up_indication(&ralpriv->pending_req_transaction_id, &ralpriv->mt[mt_ix].ltid, NULL, NULL, NULL, NULL);
+         eRALlte_send_link_up_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid, NULL, &new_ar, NULL, NULL);
+         //eRALlte_send_link_up_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid, NULL, NULL, NULL, NULL);
           // if RAL realtime and MEASURES are enabled, start the measuring process in RRC+Driver
           #ifdef RAL_REALTIME
           #ifdef ENABLE_MEDIEVAL_DEMO3
@@ -174,65 +174,65 @@ void RAL_NASupdatetMTlist(u8 *msgrep, int num_mts){
 
       }
 	  //check enter sleep mode
-      if ((ralpriv->mt[mt_ix].nas_state==NAS_CX_DCH)&&(list[mt_ix].state == NAS_CX_RELEASING)){
+      if ((g_enb_ral_obj[instanceP].mt[mt_ix].nas_state==NAS_CX_DCH)&&(list[mt_ix].state == NAS_CX_RELEASING)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d is entering sleep mode. Send LinkDown.\n\n",mt_ix);
          // send linkdown: old_ar (represented by new_ar variable) will contain the address from the MT
          transaction_id = MIH_C_get_new_transaction_id();
          reason_code = MIH_C_LINK_DOWN_REASON_EXPLICIT_DISCONNECT;
          new_ar.choice = MIH_C_CHOICE_3GPP_ADDR;
-         MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(ralpriv->mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
-         eRALlte_send_link_down_indication(&transaction_id, &ralpriv->mt[mt_ix].ltid, &new_ar, &reason_code);
+         MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
+         eRALlte_send_link_down_indication(&transaction_id, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid, &new_ar, &reason_code);
       }
  	  // check leave sleep mode
-      if ((ralpriv->mt[mt_ix].nas_state==NAS_CX_RELEASING)&&(list[mt_ix].state == NAS_CX_DCH)){
+      if ((g_enb_ral_obj[instanceP].mt[mt_ix].nas_state==NAS_CX_RELEASING)&&(list[mt_ix].state == NAS_CX_DCH)){
          DEBUG ("\n\n");
          DEBUG (" MOBILE TERMINAL %d WAS IN SLEEP MODE AND IS NOW ACTIVATED.\n\n",mt_ix);
          // send linkup: new_ar will contain the address from the MT
          new_ar.choice = MIH_C_CHOICE_3GPP_ADDR;
-         MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(ralpriv->mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
-         eRALlte_send_link_up_indication(&ralpriv->pending_req_transaction_id, &ralpriv->mt[mt_ix].ltid, NULL, &new_ar, NULL, NULL);
+         MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
+         eRALlte_send_link_up_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid, NULL, &new_ar, NULL, NULL);
       }
-        ralpriv->mt[mt_ix].nas_state = list[mt_ix].state;
+        g_enb_ral_obj[instanceP].mt[mt_ix].nas_state = list[mt_ix].state;
     }else{
       // MT unknown or different
       if (list[mt_ix].state != NAS_IDLE){
         DEBUG ("\n\n");
         DEBUG (" NEW TERMINAL %d DETECTED.\n\n",mt_ix);
-        ralpriv->mt[mt_ix].ue_id = list[mt_ix].lcr;
-        ralpriv->mt[mt_ix].ipv6_l2id[0]= list[mt_ix].iid6[0];
-        ralpriv->mt[mt_ix].ipv6_l2id[1]= list[mt_ix].iid6[1];
-        ralpriv->mt[mt_ix].num_rbs = list[mt_ix].num_rb;
-        ralpriv->mt[mt_ix].num_class = list[mt_ix].nsclassifier;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ue_id = list[mt_ix].lcr;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]= list[mt_ix].iid6[0];
+        g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[1]= list[mt_ix].iid6[1];
+        g_enb_ral_obj[instanceP].mt[mt_ix].num_rbs = list[mt_ix].num_rb;
+        g_enb_ral_obj[instanceP].mt[mt_ix].num_class = list[mt_ix].nsclassifier;
         // initialize ltid (MIH_C_LINK_TUPLE_ID_T) for that mobile
         // first version
-        //ralpriv->mt[mt_ix].ltid.link_id.link_type = MIH_C_WIRELESS_UMTS;
-        //ralpriv->mt[mt_ix].ltid.link_id.link_addr.choice = MIH_C_CHOICE_3GPP_ADDR;
-        //MIH_C_3GPP_ADDR_set(&ralpriv->mt[mt_ix].ltid.link_id.link_addr._union._3gpp_addr, (u_int8_t*)&(ralpriv->mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
-        //ralpriv->mt[mt_ix].ltid.choice = MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR;
+        //g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_type = MIH_C_WIRELESS_UMTS;
+        //g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_addr.choice = MIH_C_CHOICE_3GPP_ADDR;
+        //MIH_C_3GPP_ADDR_set(&g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_addr._union._3gpp_addr, (u_int8_t*)&(g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
+        //g_enb_ral_obj[instanceP].mt[mt_ix].ltid.choice = MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR;
         // SECOND Version
-        ralpriv->mt[mt_ix].ltid.link_id.link_type = MIH_C_WIRELESS_UMTS;
-        ralpriv->mt[mt_ix].ltid.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
-        ralpriv->mt[mt_ix].ltid.link_id.link_addr.choice = MIH_C_CHOICE_3GPP_3G_CELL_ID;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_type = MIH_C_WIRELESS_UMTS;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ltid.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_addr.choice = MIH_C_CHOICE_3GPP_3G_CELL_ID;
         Bit_Buffer_t *plmn = new_BitBuffer_0();
-        BitBuffer_wrap(plmn, (unsigned char*) ralpriv->plmn, DEFAULT_PLMN_SIZE);
-        MIH_C_PLMN_ID_decode(plmn, &ralpriv->mt[mt_ix].ltid.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id);
+        BitBuffer_wrap(plmn, (unsigned char*) g_enb_ral_obj[instanceP].plmn, DEFAULT_PLMN_SIZE);
+        MIH_C_PLMN_ID_decode(plmn, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id);
         free_BitBuffer(plmn);
-        ralpriv->mt[mt_ix].ltid.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = ralpriv->curr_cellId;
-        ralpriv->mt[mt_ix].ltid.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ltid.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_enb_ral_obj[instanceP].cell_id;
+        g_enb_ral_obj[instanceP].mt[mt_ix].ltid.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
 
         // check state of the UE connection
-        ralpriv->mt[mt_ix].nas_state = list[mt_ix].state;
-        if (ralpriv->mt[mt_ix].num_class>=2){
-          ralpriv->mt[mt_ix].mt_state= RB_CONNECTED;
+        g_enb_ral_obj[instanceP].mt[mt_ix].nas_state = list[mt_ix].state;
+        if (g_enb_ral_obj[instanceP].mt[mt_ix].num_class>=2){
+          g_enb_ral_obj[instanceP].mt[mt_ix].mt_state= RB_CONNECTED;
           // send linkup
-          //ltid = &ralpriv->mt[mt_ix].ltid;
+          //ltid = &g_enb_ral_obj[instanceP].mt[mt_ix].ltid;
           DEBUG (" MOBILE TERMINAL %d IS COMPLETELY CONNECTED.\n\n",mt_ix);
           // new_ar will contain the address from the MT
           new_ar.choice = MIH_C_CHOICE_3GPP_ADDR;
-          MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(ralpriv->mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
+          MIH_C_3GPP_ADDR_set(&(new_ar._union._3gpp_addr), (u_int8_t*)&(g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
 
-          eRALlte_send_link_up_indication(&ralpriv->pending_req_transaction_id, &ralpriv->mt[mt_ix].ltid, NULL, &new_ar, NULL, NULL);
+          eRALlte_send_link_up_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, &g_enb_ral_obj[instanceP].mt[mt_ix].ltid, NULL, &new_ar, NULL, NULL);
           // if RAL realtime and MEASURES are enabled, start the measuring process in RRC+Driver
           #ifdef RAL_REALTIME
           #ifdef ENABLE_MEDIEVAL_DEMO3
@@ -242,14 +242,14 @@ void RAL_NASupdatetMTlist(u8 *msgrep, int num_mts){
         }
         // enter default rb
         ch_ix = 0;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].rbId = RAL_DEFAULT_MC_RAB_ID+1;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].RadioQoSclass = 2;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].cnx_id = (RAL_MAX_RB_PER_UE*mt_ix)+ch_ix+1;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].dscpUL = 0;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].dscpDL = 0;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].nas_state = NAS_CX_DCH;
-        ralpriv->mt[mt_ix].radio_channel[ch_ix].status = RB_CONNECTED;
-        ralpriv->num_connected_mts++;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].rbId = RAL_DEFAULT_MC_RAB_ID+1;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].RadioQoSclass = 2;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].cnx_id = (RAL_MAX_RB_PER_UE*mt_ix)+ch_ix+1;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].dscpUL = 0;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].dscpDL = 0;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].nas_state = NAS_CX_DCH;
+        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].status = RB_CONNECTED;
+        g_enb_ral_obj[instanceP].num_connected_mts++;
         //RAL_printMobileData(mt_ix);
       }
     } // end if MT unknonwn
@@ -259,45 +259,45 @@ void RAL_NASupdatetMTlist(u8 *msgrep, int num_mts){
 //---------------------------------------------------------------------------
 void RAL_verifyPendingRbStatus(void){
 //---------------------------------------------------------------------------
-// ralpriv->mcast.radio_channel.status = RB_CONNECTED;
+// g_enb_ral_obj[instanceP].mcast.radio_channel.status = RB_CONNECTED;
     int mt_ix, ch_ix;
     MIH_C_LINK_TUPLE_ID_T* ltid;
     //int is_unicast;
 
-    mt_ix =  ralpriv->pending_req_mt_ix;
-    ch_ix =  ralpriv->pending_req_ch_ix;
+    mt_ix =  g_enb_ral_obj[instanceP].pending_req_mt_ix;
+    ch_ix =  g_enb_ral_obj[instanceP].pending_req_ch_ix;
 
-    if ((ralpriv->pending_req_flag)%5==0){
-        DEBUG("Pending Req Flag %d, Mobile %d, channel %d\n", ralpriv->pending_req_flag, mt_ix, ch_ix);
-        if (ralpriv->pending_req_multicast == RAL_TRUE){
+    if ((g_enb_ral_obj[instanceP].pending_req_flag)%5==0){
+        DEBUG("Pending Req Flag %d, Mobile %d, channel %d\n", g_enb_ral_obj[instanceP].pending_req_flag, mt_ix, ch_ix);
+        if (g_enb_ral_obj[instanceP].pending_req_multicast == RAL_TRUE){
           mt_ix =0;
           ch_ix =1;
         }
         RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_LIST,mt_ix,0);
-        if ((ralpriv->mt[mt_ix].radio_channel[ch_ix].status == RB_CONNECTED)||((ralpriv->pending_req_flag) > 100)){
+        if ((g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix].status == RB_CONNECTED)||((g_enb_ral_obj[instanceP].pending_req_flag) > 100)){
            DEBUG("RAL_verifyPendingRbStatus -in- mt_ix %d - ch_ix %d \n", mt_ix, ch_ix );
            // send confirmation to upper layer
-           ralpriv->pending_req_status = MIH_C_STATUS_SUCCESS;
-           if ((ralpriv->pending_req_flag) > 100){
-              ralpriv->pending_req_status = MIH_C_STATUS_REJECTED;
+           g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_SUCCESS;
+           if ((g_enb_ral_obj[instanceP].pending_req_flag) > 100){
+              g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_REJECTED;
               if (mt_ix == RAL_MAX_MT)
-                 eRALlte_process_clean_channel(&(ralpriv->mcast.radio_channel));
+                 eRALlte_process_clean_channel(&(g_enb_ral_obj[instanceP].mcast.radio_channel));
               else
-                 eRALlte_process_clean_channel(&(ralpriv->mt[mt_ix].radio_channel[ch_ix]));
+                 eRALlte_process_clean_channel(&(g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix]));
            }
            if (mt_ix == RAL_MAX_MT)
-              ltid = &ralpriv->mcast.ltid;
+              ltid = &g_enb_ral_obj[instanceP].mcast.ltid;
            else
-              ltid = &ralpriv->mt[mt_ix].ltid;
+              ltid = &g_enb_ral_obj[instanceP].mt[mt_ix].ltid;
 
-           if (!ralpriv->pending_mt_flag)
+           if (!g_enb_ral_obj[instanceP].pending_mt_flag)
               // To be updated and completed
               //aRALu_send_link_res_activate_cnf();
-              eRALlte_send_link_up_indication(&ralpriv->pending_req_transaction_id, ltid, NULL, NULL, NULL, NULL);
+              eRALlte_send_link_up_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, ltid, NULL, NULL, NULL, NULL);
            else
-              ralpriv->pending_mt_flag = 0;
-           ralpriv->pending_req_flag = 0;
-           DEBUG("After response, Pending Req Flag = 0 , %d\n", ralpriv->pending_req_flag);
+              g_enb_ral_obj[instanceP].pending_mt_flag = 0;
+           g_enb_ral_obj[instanceP].pending_req_flag = 0;
+           DEBUG("After response, Pending Req Flag = 0 , %d\n", g_enb_ral_obj[instanceP].pending_req_flag);
         }
         //DEBUG("RAL_verifyPendingRbStatus - 2-  \n");
     }
@@ -312,16 +312,13 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
 
 // DEBUG ("\n%d , %d,", mt_ix, ch_ix);
   switch (ioctl_obj){
-/***************************/
       case IO_OBJ_STATS:
           {
             DEBUG("Statistics requested -- FFS \n");
           }
       break;
-/***************************/
       case IO_OBJ_CNX:
          switch (ioctl_cmd){
-      /***/
             case IO_CMD_LIST:
               {
                  // printf("Usage: gioctl cx list\n");
@@ -333,8 +330,8 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
 
                 gifr.type=NAS_MSG_CX_LIST_REQUEST;
                 //gifr.msg=(char *)malloc(NAS_LIST_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1);
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgrep=(u8 *)(gifr.msg);
                 //
                 DEBUG("--\n");
@@ -363,17 +360,14 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 rc = 0;
               }
           break;
-      /***/
           default:
           ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
         rc= -1;
       } //end switch ioctl_cmd 
       break;
 
-/***************************/
       case IO_OBJ_RB:
          switch (ioctl_cmd){
-      /***/
             case IO_CMD_ADD:
               {
                 // printf("Usage: gioctl rb add <lcr> <rab_id> <qos>\n");
@@ -384,20 +378,20 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 MIH_C_LINK_DN_REASON_T reason_code;
                 //
                 gifr.type=NAS_MSG_RB_ESTABLISHMENT_REQUEST;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_rb_establishment_request *)(gifr.msg);
                 msgrep=(struct nas_msg_rb_establishment_reply *)(gifr.msg);
                 //
                 if (mt_ix == RAL_MAX_MT){
                     // multicast
-                    currChannel = &(ralpriv->mcast.radio_channel);
+                    currChannel = &(g_enb_ral_obj[instanceP].mcast.radio_channel);
                     msgreq->lcr = mt_ix;
-                    memcpy ((char *)&(msgreq->mcast_group), (char *)&(ralpriv->mcast.mc_group_addr), 16);
+                    memcpy ((char *)&(msgreq->mcast_group), (char *)&(g_enb_ral_obj[instanceP].mcast.mc_group_addr), 16);
                 }else{
                     // unicast
-                    currChannel = &(ralpriv->mt[mt_ix].radio_channel[ch_ix]);
-                    msgreq->lcr = ralpriv->mt[mt_ix].ue_id;
+                    currChannel = &(g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix]);
+                    msgreq->lcr = g_enb_ral_obj[instanceP].mt[mt_ix].ue_id;
                 }
                 msgreq->cnxid  = currChannel->cnx_id;
                 msgreq->rab_id = currChannel->rbId;
@@ -421,32 +415,31 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                   ERR(" Radio bearer establishment failure: %d\n",msgrep->status);
                   currChannel->status = RB_DISCONNECTED;
                   rc = -1;
-                  ralpriv->pending_req_status = MIH_C_STATUS_REJECTED;
-                  if (ralpriv->pending_mt_flag){
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_REJECTED;
+                  if (g_enb_ral_obj[instanceP].pending_mt_flag){
                      reason_code = MIH_C_LINK_DOWN_REASON_NO_RESOURCE;
                      if (mt_ix == RAL_MAX_MT)
-                         ltid = &ralpriv->mcast.ltid;
+                         ltid = &g_enb_ral_obj[instanceP].mcast.ltid;
                      else
-                         ltid = &ralpriv->mt[mt_ix].ltid;
-                     eRALlte_send_link_down_indication(&ralpriv->pending_req_transaction_id, ltid, NULL, &reason_code);
+                         ltid = &g_enb_ral_obj[instanceP].mt[mt_ix].ltid;
+                     eRALlte_send_link_down_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, ltid, NULL, &reason_code);
                     // aRALu_send_link_res_activate_cnf();
                   }
                   if (mt_ix == RAL_MAX_MT)
-                     eRALlte_process_clean_channel(&(ralpriv->mcast.radio_channel));
+                     eRALlte_process_clean_channel(&(g_enb_ral_obj[instanceP].mcast.radio_channel));
                   else
-                     eRALlte_process_clean_channel(&(ralpriv->mt[mt_ix].radio_channel[ch_ix]));
+                     eRALlte_process_clean_channel(&(g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix]));
                 }else{
                   rc = 0;
-                  ralpriv->pending_req_flag = 1;
-                  ralpriv->pending_req_mt_ix = mt_ix;
-                  ralpriv->pending_req_ch_ix = ch_ix;
-                  ralpriv->pending_req_multicast = currChannel->multicast;
-                  DEBUG("-1- pending_req_mt_ix %d, pending_req_ch_ix %d\n", ralpriv->pending_req_mt_ix, ralpriv->pending_req_ch_ix);
+                  g_enb_ral_obj[instanceP].pending_req_flag = 1;
+                  g_enb_ral_obj[instanceP].pending_req_mt_ix = mt_ix;
+                  g_enb_ral_obj[instanceP].pending_req_ch_ix = ch_ix;
+                  g_enb_ral_obj[instanceP].pending_req_multicast = currChannel->multicast;
+                  DEBUG("-1- pending_req_mt_ix %d, pending_req_ch_ix %d\n", g_enb_ral_obj[instanceP].pending_req_mt_ix, g_enb_ral_obj[instanceP].pending_req_ch_ix);
                 }
               }
           break;
 
-      /***/
              case IO_CMD_DEL:
               {
                 //  printf("Usage: gioctl rb del <lcr> <rab_id>\n");
@@ -457,17 +450,17 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 MIH_C_LINK_DN_REASON_T reason_code;
                 //
                 gifr.type=NAS_MSG_RB_RELEASE_REQUEST;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_rb_release_request *)(gifr.msg);
                 msgrep=(struct nas_msg_rb_release_reply *)(gifr.msg);
                 //
                 if (mt_ix == RAL_MAX_MT){
-                    currChannel = &(ralpriv->mcast.radio_channel);
+                    currChannel = &(g_enb_ral_obj[instanceP].mcast.radio_channel);
                     msgreq->lcr = mt_ix;
                 }else{
-                    currChannel = &(ralpriv->mt[mt_ix].radio_channel[ch_ix]);
-                    msgreq->lcr = ralpriv->mt[mt_ix].ue_id;
+                    currChannel = &(g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix]);
+                    msgreq->lcr = g_enb_ral_obj[instanceP].mt[mt_ix].ue_id;
                 }
                 msgreq->rab_id = currChannel->rbId;
                 msgreq->cnxid = currChannel->cnx_id;
@@ -485,32 +478,30 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 if ((msgrep->status<0)||(msgrep->cnxid!=cnxid)||(err<0)){
                   ERR(" Radio bearer release failure: status %d\n", msgrep->status);
                   rc = -1;
-                  ralpriv->pending_req_status = MIH_C_STATUS_REJECTED;
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_REJECTED;
                 }else{
-                  ralpriv->pending_req_status = MIH_C_STATUS_SUCCESS;
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_SUCCESS;
                 }
-                if (ralpriv->pending_mt_flag){
+                if (g_enb_ral_obj[instanceP].pending_mt_flag){
                    reason_code = MIH_C_LINK_DOWN_REASON_EXPLICIT_DISCONNECT;
                    if (mt_ix == RAL_MAX_MT)
-                       ltid = &ralpriv->mcast.ltid;
+                       ltid = &g_enb_ral_obj[instanceP].mcast.ltid;
                    else
-                       ltid = &ralpriv->mt[mt_ix].ltid;
-                   eRALlte_send_link_down_indication(&ralpriv->pending_req_transaction_id, ltid, NULL, &reason_code);
+                       ltid = &g_enb_ral_obj[instanceP].mt[mt_ix].ltid;
+                   eRALlte_send_link_down_indication(&g_enb_ral_obj[instanceP].pending_req_transaction_id, ltid, NULL, &reason_code);
                     // aRALu_send_link_res_deactivate_cnf();
                 }
 
                 // mark resource as free again anyway
                 if (mt_ix == RAL_MAX_MT)
-                   eRALlte_process_clean_channel(&(ralpriv->mcast.radio_channel));
+                   eRALlte_process_clean_channel(&(g_enb_ral_obj[instanceP].mcast.radio_channel));
                 else
-                   eRALlte_process_clean_channel(&(ralpriv->mt[mt_ix].radio_channel[ch_ix]));
+                   eRALlte_process_clean_channel(&(g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[ch_ix]));
                 DEBUG("Channel released : UE %d, channel %d, cnx_id %d \n\n",mt_ix, ch_ix, cnxid);
               }
           break;
 
-    /***/
 
-      /***/
             case IO_CMD_LIST:
               {
                // printf("Usage: gioctl rb list <lcr>\n");
@@ -520,12 +511,12 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 struct nas_msg_rb_list_reply *list;
                 struct nas_msg_rb_list_request *msgreq;
                 gifr.type=NAS_MSG_RB_LIST_REQUEST;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_rb_list_request *)(gifr.msg);
                 msgrep=(u8 *)(gifr.msg);
                 if (mt_ix < RAL_MAX_MT){
-                    msgreq->lcr = ralpriv->mt[mt_ix].ue_id;
+                    msgreq->lcr = g_enb_ral_obj[instanceP].mt[mt_ix].ue_id;
                 }else{
                     msgreq->lcr = 0;
                     mt_ix =0;  //Temp
@@ -548,18 +539,18 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                   rc = 0;
                   // store channel status
                   for (i=0;i<num_rbs; i++){
-                    if (ralpriv->mt[mt_ix].radio_channel[i].cnx_id == list[rbi].cnxid){
-                      ralpriv->mt[mt_ix].radio_channel[i].nas_state = list[rbi].state;
+                    if (g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[i].cnx_id == list[rbi].cnxid){
+                      g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[i].nas_state = list[rbi].state;
                       if (list[rbi].state == NAS_CX_DCH)
-                        ralpriv->mt[mt_ix].radio_channel[i].status = RB_CONNECTED;
+                        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[i].status = RB_CONNECTED;
                     }
                   }
                   if ((mt_ix==0)&&(i==num_rbs)){
-                    if (ralpriv->mcast.radio_channel.cnx_id == list[rbi].cnxid){
-                      ralpriv->mcast.radio_channel.nas_state = list[rbi].state;
+                    if (g_enb_ral_obj[instanceP].mcast.radio_channel.cnx_id == list[rbi].cnxid){
+                      g_enb_ral_obj[instanceP].mcast.radio_channel.nas_state = list[rbi].state;
                       if (list[rbi].state == NAS_CX_DCH){
-                        ralpriv->mcast.radio_channel.status = RB_CONNECTED;
-                        ralpriv->mt[mt_ix].radio_channel[1].status = RB_CONNECTED;
+                        g_enb_ral_obj[instanceP].mcast.radio_channel.status = RB_CONNECTED;
+                        g_enb_ral_obj[instanceP].mt[mt_ix].radio_channel[1].status = RB_CONNECTED;
                       }
                     }
                   }
@@ -567,28 +558,25 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 DEBUG("List complete \n");
                }
             break;
-      /***/
             default:
             ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
             rc= -1;
          } //end switch ioctl_cmd 
       break;
-/***************************/
       case IO_OBJ_MEAS:
          switch (ioctl_cmd){
-      /***/
             case IO_CMD_ADD:
               {
                 struct nas_msg_enb_measure_trigger *msgreq;
                 struct nas_msg_enb_measure_trigger_reply *msgrep;
                 //
                 gifr.type=NAS_MSG_ENB_MEAS_TRIGGER;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_enb_measure_trigger *)(gifr.msg);
                 msgrep=(struct nas_msg_enb_measure_trigger_reply *)(gifr.msg);
                 //
-                msgreq->cell_id = ralpriv->curr_cellId;
+                msgreq->cell_id = g_enb_ral_obj[instanceP].cell_id;
                 //
                 DEBUG("eNB measures triggered, cell_id %d\n", msgreq->cell_id);
                 err=ioctl(fd, NASRG_IOCTL_RAL, &gifr);
@@ -606,15 +594,14 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 }
               }
             break;
-      /***/
             case IO_CMD_LIST:
               {
                 struct nas_msg_enb_measure_retrieve *msgrep;
 				int ix;
                 //
                 gifr.type=NAS_MSG_ENB_MEAS_RETRIEVE;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgrep=(struct nas_msg_enb_measure_retrieve *)(gifr.msg);
                 //
                 DEBUG("Retrieving measure from NAS\n");
@@ -624,33 +611,30 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                   rc = -1;
                 }
                 // Store the values received
-                ralpriv->num_UEs = msgrep->num_UEs;
-                for (ix=0; ix<ralpriv->num_UEs; ix++){
-                   ralpriv->rlcBufferOccupancy[ix] = msgrep->measures[ix].rlcBufferOccupancy;
-                   ralpriv->scheduledPRB[ix] = msgrep->measures[ix].scheduledPRB;
-                   ralpriv->totalDataVolume[ix] = msgrep->measures[ix].totalDataVolume;
+                g_enb_ral_obj[instanceP].num_UEs = msgrep->num_UEs;
+                for (ix=0; ix<g_enb_ral_obj[instanceP].num_UEs; ix++){
+                   g_enb_ral_obj[instanceP].rlcBufferOccupancy[ix] = msgrep->measures[ix].rlcBufferOccupancy;
+                   g_enb_ral_obj[instanceP].scheduledPRB[ix] = msgrep->measures[ix].scheduledPRB;
+                   g_enb_ral_obj[instanceP].totalDataVolume[ix] = msgrep->measures[ix].totalDataVolume;
                 }
-                ralpriv->totalNumPRBs = msgrep->totalNumPRBs;
+                g_enb_ral_obj[instanceP].totalNumPRBs = msgrep->totalNumPRBs;
                 #ifdef DEBUG_RAL_DETAILS
                 DEBUG("Measures received- cell %d, Number of UEs %d, Total number of PRBs %d\n", msgrep->cell_id, msgrep->num_UEs, msgrep->totalNumPRBs);
-                for (ix=0; ix<ralpriv->num_UEs; ix++)
+                for (ix=0; ix<g_enb_ral_obj[instanceP].num_UEs; ix++)
                   DEBUG("UE%d : RLC Buffers %d, scheduledPRB %d, totalDataVolume %d\n", ix, msgrep->measures[ix].rlcBufferOccupancy,
                         msgrep->measures[ix].scheduledPRB, msgrep->measures[ix].totalDataVolume);
                 #endif
                 RAL_NAS_measures_analyze();
               }
             break;
-      /***/
             default:
             ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
             rc= -1;
          } //end switch ioctl_cmd 
       break;
 
-/***************************/
       case IO_OBJ_MC:
          switch (ioctl_cmd){
-      /***/
             case IO_CMD_ADD:
               {
                 struct nas_msg_mt_mcast_join *msgreq;
@@ -658,12 +642,12 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 struct ral_lte_channel *currChannel;
                 //
                 gifr.type=NAS_RG_MSG_MT_MCAST_JOIN;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_mt_mcast_join *)(gifr.msg);
                 msgrep=(struct nas_msg_mt_mcast_reply *)(gifr.msg);
                 //
-                currChannel = &(ralpriv->mcast.radio_channel);
+                currChannel = &(g_enb_ral_obj[instanceP].mcast.radio_channel);
                 msgreq->ue_id = mt_ix;
                 msgreq->rab_id = currChannel->rbId;
                 msgreq->cnxid = currChannel->cnx_id;
@@ -677,18 +661,17 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 //  check answer from NAS
                 if ((msgrep->result<0)||(msgrep->ue_id!=mt_ix)||(err<0)){
                   ERR(" UE multicast join notification failure: %d\n",msgrep->result);
-                  ralpriv->pending_req_status = MIH_C_STATUS_REJECTED;
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_REJECTED;
                   rc = -1;
                 }else{
                   DEBUG(" ++ UE multicast join notification transmitted to MT \n");
-                  ralpriv->pending_req_status = MIH_C_STATUS_SUCCESS;
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_SUCCESS;
                   rc = 0;
                 }
                 // TODO aRALu_send_link_mc_join_cnf();
               }
             break;
 
-      /***/
              case IO_CMD_DEL:
               {
                 struct nas_msg_mt_mcast_leave *msgreq;
@@ -696,12 +679,12 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 struct ral_lte_channel *currChannel;
                 //
                 gifr.type=NAS_RG_MSG_MT_MCAST_LEAVE;
-                memset (ralpriv->buffer,0,800);
-                gifr.msg= &(ralpriv->buffer[0]);
+                memset (g_enb_ral_obj[instanceP].buffer,0,800);
+                gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_mt_mcast_leave *)(gifr.msg);
                 msgrep=(struct nas_msg_mt_mcast_reply *)(gifr.msg);
                 //
-                currChannel = &(ralpriv->mcast.radio_channel);
+                currChannel = &(g_enb_ral_obj[instanceP].mcast.radio_channel);
                 msgreq->ue_id = mt_ix;
                 msgreq->rab_id = currChannel->rbId;
                 msgreq->cnxid = currChannel->cnx_id;
@@ -715,25 +698,21 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 //  check answer from NAS
                 if ((msgrep->result<0)||(msgrep->ue_id!=mt_ix)||(err<0)){
                   ERR(" UE multicast leave notification failure: %d\n",msgrep->result);
-                  ralpriv->pending_req_status = MIH_C_STATUS_REJECTED;
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_REJECTED;
                   rc = -1;
                 }else{
                   DEBUG(" ++ UE multicast leave notification transmitted to MT \n" );
-                  ralpriv->pending_req_status = MIH_C_STATUS_SUCCESS;
+                  g_enb_ral_obj[instanceP].pending_req_status = MIH_C_STATUS_SUCCESS;
                   rc = 0;
                 }
                 // TODO aRALu_send_link_mc_leave_cnf();
               }
             break;
-    /***/
-      /***/
             default:
             ERR ("RAL_process_NAS_message : invalid ioctl command %d\n",ioctl_cmd);
             rc= -1;
          } //end switch ioctl_cmd 
       break;
-    /***/
-/***************************/
       default:
         ERR ("RAL_process_NAS_message : invalid ioctl object %d\n",ioctl_obj);
         rc= -1;
@@ -741,6 +720,6 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
   //rc=0;
  return rc;
 }
-
+*/
 
 

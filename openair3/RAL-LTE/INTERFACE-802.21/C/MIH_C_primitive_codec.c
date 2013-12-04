@@ -25,14 +25,14 @@ int MIH_C_Link_Primitive_Decode_Link_Event_Subscribe_request(Bit_Buffer_t* bbP, 
     MIH_C_LINK_EVENT_LIST_decode(bbP, &primitiveP->RequestedLinkEventList);
 
     #if MIH_C_DEBUG_DESERIALIZATION
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_DETECTED)            DEBUG("SUBSCRIBE_REQUEST LINK_DETECTED\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_UP)                  DEBUG("SUBSCRIBE_REQUEST LINK_UP\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_DOWN)                DEBUG("SUBSCRIBE_REQUEST LINK_DOWN\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_PARAMETERS_REPORT)   DEBUG("SUBSCRIBE_REQUEST LINK_PARAMETERS_REPORT\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_GOING_DOWN)          DEBUG("SUBSCRIBE_REQUEST LINK_GOING_DOWN\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_HANDOVER_IMMINENT)   DEBUG("SUBSCRIBE_REQUEST LINK_HANDOVER_IMMINENT\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_HANDOVER_COMPLETE)   DEBUG("SUBSCRIBE_REQUEST LINK_HANDOVER_COMPLETE\n");
-    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_PDU_TRANSMIT_STATUS) DEBUG("SUBSCRIBE_REQUEST LINK_PDU_TRANSMIT_STATUS\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_DETECTED)            printf("SUBSCRIBE_REQUEST LINK_DETECTED\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_UP)                  printf("SUBSCRIBE_REQUEST LINK_UP\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_DOWN)                printf("SUBSCRIBE_REQUEST LINK_DOWN\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_PARAMETERS_REPORT)   printf("SUBSCRIBE_REQUEST LINK_PARAMETERS_REPORT\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_GOING_DOWN)          printf("SUBSCRIBE_REQUEST LINK_GOING_DOWN\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_HANDOVER_IMMINENT)   printf("SUBSCRIBE_REQUEST LINK_HANDOVER_IMMINENT\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_HANDOVER_COMPLETE)   printf("SUBSCRIBE_REQUEST LINK_HANDOVER_COMPLETE\n");
+    if (primitiveP->RequestedLinkEventList & MIH_C_BIT_LINK_PDU_TRANSMIT_STATUS) printf("SUBSCRIBE_REQUEST LINK_PDU_TRANSMIT_STATUS\n");
     #endif
 
     if (BitBuffer_isCheckReadOverflowOK(bbP, 0) == BIT_BUFFER_TRUE) {

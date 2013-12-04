@@ -34,19 +34,21 @@
  * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
  */
 /*******************************************************************************/
-#ifndef __RAL_LTE_PROTO_H__
-#define __RAL_LTE_PROTO_H__
+#ifndef __RAL_UE_LTE_PROTO_H__
+#define __RAL_UE_LTE_PROTO_H__
 
 //lteRALue_ioctl.c
-int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid);
+int RAL_ue_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid);
 
 //mRALuD_process.c
-void IAL_NAS_measures_init(void);
-void IAL_NAS_measures_update(int i);
-void IAL_integrate_measure(int measure, int i);
-void rallte_NAS_measures_polling(void);
-int  rallte_NAS_corresponding_cell(int req_index);
-void rallte_verifyPendingConnection(void);
+void IAL_ue_NAS_measures_init(void);
+void IAL_ue_NAS_measures_update(int i);
+void IAL_ue_integrate_measure(int measure, int i);
+void rallte_ue_NAS_measures_polling(void);
+int  rallte_ue_NAS_corresponding_cell(int req_index);
+void rallte_ue_verifyPendingConnection(void);
+
+void* ral_ue_task(void *args_p);
 
 #endif
 

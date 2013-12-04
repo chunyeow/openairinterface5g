@@ -18,8 +18,8 @@
  *  the network side and the access router dummy configuration.
  *
  *****************************************************************************/
-#ifndef __RAL_LTE_VAR_H__
-#define __RAL_LTE_VAR_H__
+#ifndef __LTE_RAL_ENB_VARIABLES_H__
+#define __LTE_RAL_ENB_VARIABLES_H__
 
 // Define working mode : Dummy or Realtime
 //#define RAL_DUMMY
@@ -31,14 +31,7 @@
 //flag to reduce the logs
 #define DEBUG_RAL_DETAILS
 
-#include "rrc_d_types.h"
-#ifdef RAL_DUMMY
-#include "nas_rg_netlink.h"
-#endif
 
-#include "MIH_C_Types.h"
-#include "MIH_C_header_codec.h"
-#include "MIH_C_Link_Primitives.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -48,16 +41,16 @@
 /*Arguments ioctl command
  */
 //arg[0]
-#define IO_OBJ_STATS 0
-#define IO_OBJ_CNX   1
-#define IO_OBJ_RB    2
-#define IO_OBJ_MEAS  3
-#define IO_OBJ_MC    4  // multicast
+//LG#define IO_OBJ_STATS 0
+//LG#define IO_OBJ_CNX   1
+//LG#define IO_OBJ_RB    2
+//LG#define IO_OBJ_MEAS  3
+//LG#define IO_OBJ_MC    4  // multicast
 
 //arg[1]
-#define IO_CMD_ADD   0
-#define IO_CMD_DEL   1
-#define IO_CMD_LIST  2
+//LG#define IO_CMD_ADD   0
+//LG#define IO_CMD_DEL   1
+//LG#define IO_CMD_LIST  2
 
 #define NAS_CONNECTED     1  //same as NAS interface
 #define NAS_DISCONNECTED  0
@@ -139,6 +132,8 @@ const char DestIpv6Addr[ADDR_MAX][16] = { // DUMMY
 extern const char DestIpv6Addr[ADDR_MAX][16];
 #endif
 
+typedef int ral_enb_instance_t;
+
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
 /****************************************************************************/
@@ -146,117 +141,14 @@ extern const char DestIpv6Addr[ADDR_MAX][16];
 /* List of link action types */
 TYPEDEF_BITMAP8(MIH_C_LINK_AC_TYPE_LIST);
 
-/*
- * Radio Bearer data
- */
-struct ral_lte_channel {
-    u32 cnx_id;
-    u8  multicast;
-// MIHF parameters  ix=0 UPLINK, ix=1 DOWNLINK
-    u16 flowId[2];
-    u16 classId[2];
-    float resBitrate[2];
-    float meanBitrate[2];
-    float bktDepth[2];
-    float pkBitrate[2];
-    float MTU[2];
-//NAS driver parameters
-    u16 rbId;
-    u16 RadioQoSclass;
-    u16 dscpUL;
-    u16 dscpDL;
-    u16 nas_state;
-    u16 status;
-};
-
-/*
- * Mobile Terminal data
- */
-struct ral_lte_mt {
-    /* The identifier of the link that is associated with a PoA */
-    MIH_C_LINK_TUPLE_ID_T ltid;
-    u8  ipv6_addr[16];
-    u32 ipv6_l2id[2];
-    u32 ue_id;
-    struct ral_lte_channel radio_channel[RAL_MAX_RB];
-    int num_rbs;
-    int num_class;
-    int nas_state;
-    int mt_state;
-};
-
-/*
- * Multicast data  // TEMP MW A supprimer!!!!
- */
-struct ral_lte_mcast {
-    /* The identifier of the multicast link that is associated with a PoA */
-    MIH_C_LINK_TUPLE_ID_T ltid;
-    struct ral_lte_channel radio_channel;
-    u8 mc_group_addr[16];
-};
-
-/*
- * RAL LTE internal data
- */
-struct ral_lte_priv {
-
-    u8 plmn[3];
-    int curr_cellId;
-    int num_connected_mts;
-
-    u8 pending_req_flag;
-    u8 pending_req_mt_ix;
-    u8 pending_req_ch_ix;
-    u8 pending_req_multicast;
-//    u16 pending_req_transaction_id;
-//    u8 pending_req_status;
-    MIH_C_FLOW_ID_T pending_req_fid;
-
-    struct ral_lte_mt pending_mt;
-    int pending_mt_timer;
-    int pending_mt_flag;
-
-    struct ral_lte_mt mt[RAL_MAX_MT];
-    struct ral_lte_mcast mcast;
-//     struct tqal_ar_mobile mt[TQAL_MAX_MTs];
-//     struct tqal_ar_channel multicast_channel;
-//     u8  mc_group_addr[16];
-    //Added for demo 3 - MW
-    int meas_polling_interval;
-    int meas_polling_counter;
-    u16 num_UEs;
-    u32 rlcBufferOccupancy[RAL_MAX_MT];
-    u32 scheduledPRB[RAL_MAX_MT];
-    u32 totalDataVolume[RAL_MAX_MT];
-    u32 totalNumPRBs;
-    int congestion_flag;
-    int congestion_threshold;
-    int measures_triggered_flag;
-    int requested_period;
-    // MIH-INTERFACE data
-    MIH_C_LINK_AC_TYPE_LIST_T  mih_supported_link_action_list;
-    MIH_C_LINK_EVENT_LIST_T    mih_supported_link_event_list;
-    MIH_C_LINK_CMD_LIST_T      mih_supported_link_command_list;
-    MIH_C_LINK_EVENT_LIST_T    mih_subscribe_req_event_list;
-
-    LIST(MIH_C_LINK_CFG_PARAM, mih_link_cfg_param_thresholds);
-    // to tell what are the configured thresholds in mih_link_cfg_param_thresholds_list
-    MIH_C_BOOLEAN_T  active_mih_link_cfg_param_threshold[MIH_C_LINK_CFG_PARAM_LIST_LENGTH];
 
 
-    MIH_C_LINK_AC_TYPE_T    pending_req_action;
-    MIH_C_STATUS_T          pending_req_status;
-    MIH_C_LINK_AC_RESULT_T  pending_req_ac_result;
-    MIH_C_TRANSACTION_ID_T  pending_req_transaction_id;
-
-    char buffer[800];
-};
 
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/
 /****************************************************************************/
 
-extern struct ral_lte_priv *ralpriv;
+//extern struct ral_lte_priv *ralpriv;
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/

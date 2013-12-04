@@ -36,26 +36,26 @@
  * \warning
  */
 
-#ifndef __LTE_RAL_ENB_THRESHOLDS_H__
-#define __LTE_RAL_ENB_THRESHOLDS_H__
+#ifndef __LTE_RAL_UE_THRESHOLDS_H__
+#define __LTE_RAL_UE_THRESHOLDS_H__
 //-----------------------------------------------------------------------------
-#        ifdef LTE_RAL_ENB_PROCESS_C
-#            define private_lteralenb_thresholds(x)    x
-#            define protected_lteralenb_thresholds(x)  x
-#            define public_lteralenb_thresholds(x)     x
+#        ifdef LTE_RAL_UE_PROCESS_C
+#            define private_lteralue_thresholds(x)    x
+#            define protected_lteralue_thresholds(x)  x
+#            define public_lteralue_thresholds(x)     x
 #        else
-#            ifdef LTE_RAL_ENB
-#                define private_lteralenb_thresholds(x)
-#                define protected_lteralenb_thresholds(x)  extern x
-#                define public_lteralenb_thresholds(x)     extern x
+#            ifdef LTE_RAL_UE
+#                define private_lteralue_thresholds(x)
+#                define protected_lteralue_thresholds(x)  extern x
+#                define public_lteralue_thresholds(x)     extern x
 #            else
-#                define private_lteralenb_thresholds(x)
-#                define protected_lteralenb_thresholds(x)
-#                define public_lteralenb_thresholds(x)     extern x
+#                define private_lteralue_thresholds(x)
+#                define protected_lteralue_thresholds(x)
+#                define public_lteralue_thresholds(x)     extern x
 #            endif
 #        endif
 //-----------------------------------------------------------------------------
-#include "lteRALenb.h"
+#include "lteRALue.h"
 #include "intertask_interface.h"
 
 /****************************************************************************/
@@ -76,7 +76,8 @@
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-protected_lteralenb_thresholds(void eRAL_configure_thresholds_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Configure_Thresholds_request_t* messageP);)
-protected_lteralenb_thresholds(void eRAL_rx_rrc_ral_configure_threshold_conf(instance_t instance, MessageDef *msg_p);)
+protected_lteralue_thresholds(void mRAL_configure_thresholds_request             (ral_ue_instance_t instanceP, MIH_C_Message_Link_Configure_Thresholds_request_t* messageP);)
+protected_lteralue_thresholds(void mRAL_rx_rrc_ral_configure_threshold_conf      (ral_ue_instance_t instance, MessageDef *msg_p);)
+protected_lteralue_thresholds(void mRAL_rx_rrc_ral_measurement_report_indication (ral_ue_instance_t instance, MessageDef *msg_p);)
 
 #endif

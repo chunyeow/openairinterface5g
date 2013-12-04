@@ -172,7 +172,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
                      ralpriv->pending_req_flag = 1;
                      DEBUG(" Connexion establishment pending: pending_req_flag %d\n",ralpriv->pending_req_flag);
                  }
-                 //mRALlte_send_link_action_confirm(&ralpriv->pending_req_transaction_id, &ralpriv->pending_req_status, NULL, &ralpriv->pending_req_ac_result);
+                 //mRAL_send_link_action_confirm(&ralpriv->pending_req_transaction_id, &ralpriv->pending_req_status, NULL, &ralpriv->pending_req_ac_result);
                  rc = 0;
               }
               break;

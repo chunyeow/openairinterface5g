@@ -38,7 +38,7 @@ inline void MIH_C_DEV_STATE_RSP_encode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T 
             MIH_C_BATT_LEVEL_encode(bbP, &dataP->_union.batt_level);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_DEV_STATE_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_DEV_STATE_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ inline void MIH_C_DEV_STATE_RSP_decode(Bit_Buffer_t* bbP, MIH_C_DEV_STATE_RSP_T 
             MIH_C_BATT_LEVEL_decode(bbP, &dataP->_union.batt_level);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_DEV_STATE_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_DEV_STATE_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -218,7 +218,7 @@ inline void MIH_C_LINK_ACTION_REQ_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RE
             MIH_C_LINK_ADDR_encode(bbP, &dataP->_union.link_addr);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_ACTION_REQ_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_ACTION_REQ_T %d\n", dataP->choice);
     }
     MIH_C_LINK_ACTION_encode(bbP, &dataP->link_action);
     MIH_C_LINK_AC_EX_TIME_encode(bbP, &dataP->link_action_ex_time);
@@ -235,7 +235,7 @@ inline void MIH_C_LINK_ACTION_REQ_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RE
             MIH_C_LINK_ADDR_decode(bbP, &dataP->_union.link_addr);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_ACTION_REQ_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_ACTION_REQ_T %d\n", dataP->choice);
     }
     MIH_C_LINK_ACTION_decode(bbP, &dataP->link_action);
     MIH_C_LINK_AC_EX_TIME_decode(bbP, &dataP->link_action_ex_time);
@@ -268,7 +268,7 @@ inline void MIH_C_SIG_STRENGTH_encode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *d
             MIH_C_PERCENTAGE_encode(bbP, &dataP->_union.percentage);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_SIG_STRENGTH_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_SIG_STRENGTH_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -283,7 +283,7 @@ inline void MIH_C_SIG_STRENGTH_decode(Bit_Buffer_t* bbP, MIH_C_SIG_STRENGTH_T *d
             MIH_C_PERCENTAGE_decode(bbP, &dataP->_union.percentage);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_SIG_STRENGTH_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_SIG_STRENGTH_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -327,7 +327,7 @@ inline void MIH_C_LINK_ACTION_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RS
             MIH_C_LINK_SCAN_RSP_LIST_encode(bbP, &dataP->_union.link_scan_rsp_list);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_ACTION_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_ACTION_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -343,7 +343,7 @@ inline void MIH_C_LINK_ACTION_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ACTION_RS
             MIH_C_LINK_SCAN_RSP_LIST_decode(bbP, &dataP->_union.link_scan_rsp_list);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_ACTION_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_ACTION_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -413,7 +413,7 @@ inline void MIH_C_LINK_PARAM_TYPE_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYP
         case 11: MIH_C_LINK_PARAM_802_22_encode(bbP, &dataP->_union.link_param_802_22); break;
         case 12: MIH_C_LINK_PARAM_LTE_encode(bbP, &dataP->_union.link_param_lte); break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_PARAM_TYPE_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_PARAM_TYPE_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -437,7 +437,7 @@ inline void MIH_C_LINK_PARAM_TYPE_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_TYP
         case 11: MIH_C_LINK_PARAM_802_22_decode(bbP, &dataP->_union.link_param_802_22); break;
         case 12: MIH_C_LINK_PARAM_LTE_decode(bbP, &dataP->_union.link_param_802_22); break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_PARAM_TYPE_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_PARAM_TYPE_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -483,7 +483,7 @@ inline void MIH_C_LINK_CFG_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_
             MIH_C_LINK_SCAN_RSP_LIST_encode(bbP, &dataP->_union.link_scan_rsp_list);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_CFG_PARAM_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_CFG_PARAM_T %d\n", dataP->choice);
     }
     MIH_C_TH_ACTION_encode(bbP, &dataP->th_action);
     MIH_C_THRESHOLD_LIST_encode(bbP, &dataP->threshold_list);
@@ -503,7 +503,7 @@ inline void MIH_C_LINK_CFG_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_
             MIH_C_LINK_SCAN_RSP_LIST_decode(bbP, &dataP->_union.link_scan_rsp_list);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_CFG_PARAM_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_CFG_PARAM_T %d\n", dataP->choice);
     }
     MIH_C_TH_ACTION_decode(bbP, &dataP->th_action);
     MIH_C_THRESHOLD_LIST_decode(bbP, &dataP->threshold_list);
@@ -566,7 +566,7 @@ inline void MIH_C_LINK_DESC_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T 
             MIH_C_NUM_QUEUE_encode(bbP, &dataP->_union.num_queue);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_DESC_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_DESC_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -581,7 +581,7 @@ inline void MIH_C_LINK_DESC_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_DESC_RSP_T 
             MIH_C_NUM_QUEUE_decode(bbP, &dataP->_union.num_queue);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_DESC_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_DESC_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -613,7 +613,7 @@ inline void MIH_C_LINK_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP
         case 0:  MIH_C_LINK_PARAM_VAL_encode(bbP, &dataP->_union.link_param_val); break;
         case 1:  MIH_C_QOS_PARAM_VAL_encode(bbP, &dataP->_union.qos_param_val); break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_PARAM_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_PARAM_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -625,7 +625,7 @@ inline void MIH_C_LINK_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_T *dataP
         case 0:  MIH_C_LINK_PARAM_VAL_decode(bbP, &dataP->_union.link_param_val); break;
         case 1:  MIH_C_QOS_PARAM_VAL_decode(bbP, &dataP->_union.qos_param_val); break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_PARAM_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_PARAM_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -656,7 +656,7 @@ inline void MIH_C_LINK_PARAM_RPT_encode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_
         case 0:  break;
         case 1:  MIH_C_THRESHOLD_encode(bbP, &dataP->_union.threshold); break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_PARAM_RPT_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_PARAM_RPT_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -668,7 +668,7 @@ inline void MIH_C_LINK_PARAM_RPT_decode(Bit_Buffer_t* bbP, MIH_C_LINK_PARAM_RPT_
         case 0:  break;
         case 1:  MIH_C_THRESHOLD_decode(bbP, &dataP->_union.threshold); break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_PARAM_RPT_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_PARAM_RPT_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -709,7 +709,7 @@ inline void MIH_C_LINK_STATES_RSP_encode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RS
         case 0:  MIH_C_OPMODE_encode(bbP, &dataP->_union.op_mode); break;
         case 1:  MIH_C_CHANNEL_ID_encode(bbP, &dataP->_union.channel_id); break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_STATES_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_STATES_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -720,7 +720,7 @@ inline void MIH_C_LINK_STATES_RSP_decode(Bit_Buffer_t* bbP, MIH_C_LINK_STATES_RS
         case 0:  MIH_C_OPMODE_decode(bbP, &dataP->_union.op_mode); break;
         case 1:  MIH_C_CHANNEL_ID_decode(bbP, &dataP->_union.channel_id); break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_STATES_RSP_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_STATES_RSP_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -776,7 +776,7 @@ inline void MIH_C_LINK_TUPLE_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T 
         case 0:  break;
         case 1:  MIH_C_LINK_ADDR_encode(bbP, &dataP->_union.link_addr); break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_TUPLE_ID_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_TUPLE_ID_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -788,7 +788,7 @@ inline void MIH_C_LINK_TUPLE_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T 
         case 0:  break;
         case 1:  MIH_C_LINK_ADDR_decode(bbP, &dataP->_union.link_addr); break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_TUPLE_ID_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_TUPLE_ID_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------

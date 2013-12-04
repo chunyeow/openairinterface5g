@@ -26,9 +26,9 @@
  * Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
  *
  *******************************************************************************/
-/*! \file eRALlte_parameters.h
+/*! \file lteRALenb_parameters.h
  * \brief
- * \author BRIZZOLA Davide, GAUTHIER Lionel, MAUREL Frederic, WETTERWALD Michelle
+ * \author GAUTHIER Lionel, MAUREL Frederic, WETTERWALD Michelle
  * \date 2012
  * \version
  * \note
@@ -36,10 +36,26 @@
  * \warning
  */
 
-#ifndef __RAL_LTE_PARAMETERS_H__
-#define __RAL_LTE_PARAMETERS_H__
-
-#include "MIH_C.h"
+#ifndef __LTE_RAL_ENB_PARAMETERS_H__
+#define __LTE_RAL_ENB_PARAMETERS_H__
+//-----------------------------------------------------------------------------
+#        ifdef LTE_RAL_ENB_PARAMETERS_C
+#            define private_lteralenb_parameters(x)    x
+#            define protected_lteralenb_parameters(x)  x
+#            define public_lteralenb_parameters(x)     x
+#        else
+#            ifdef LTE_RAL_ENB
+#                define private_lteralenb_parameters(x)
+#                define protected_lteralenb_parameters(x)  extern x
+#                define public_lteralenb_parameters(x)     extern x
+#            else
+#                define private_lteralenb_parameters(x)
+#                define protected_lteralenb_parameters(x)
+#                define public_lteralenb_parameters(x)     extern x
+#            endif
+#        endif
+//-----------------------------------------------------------------------------
+#include "lteRALenb.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -57,6 +73,6 @@
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-void eRALlte_get_parameters_request(MIH_C_Message_Link_Get_Parameters_request_t* messageP);
+void eRAL_get_parameters_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Get_Parameters_request_t* messageP);
 
 #endif

@@ -9,12 +9,12 @@ unsigned int MIH_C_BITMAP82String(MIH_C_BITMAP8_T* dataP, char* bufP) {
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP8_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP8_T* dataP) {
-    DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *dataP);
+    printf("[MIH_C] %s: %02X\n", __FUNCTION__, *dataP);
     BitBuffer_write8(bbP, *dataP);
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP16_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP16_T* dataP) {
-    DEBUG_ENCODE("%s: %04X\n", __FUNCTION__, *dataP);
+    printf("[MIH_C] %s: %04X\n", __FUNCTION__, *dataP);
     BitBuffer_write16(bbP, *dataP);
 }
 //-----------------------------------------------------------------------------
@@ -25,7 +25,7 @@ unsigned int MIH_C_BITMAP162String(MIH_C_BITMAP16_T* dataP, char* bufP) {
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP24_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP24_T* dataP) {
 //-----------------------------------------------------------------------------
-    DEBUG_ENCODE("%s: %02X%02X%02X\n", __FUNCTION__, dataP->val[0],dataP->val[1], dataP->val[2]);
+    printf("[MIH_C] %s: %02X%02X%02X\n", __FUNCTION__, dataP->val[0],dataP->val[1], dataP->val[2]);
     MIH_C_BITMAP8_encode(bbP, &dataP->val[0]);
     MIH_C_BITMAP8_encode(bbP, &dataP->val[1]);
     MIH_C_BITMAP8_encode(bbP, &dataP->val[2]);
@@ -37,27 +37,27 @@ unsigned int MIH_C_BITMAP242String(MIH_C_BITMAP24_T* dataP, char* bufP) {
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP32_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP32_T* dataP) {
-    DEBUG_ENCODE("%s: %08X\n", __FUNCTION__, *dataP);
+    printf("[MIH_C] %s: %08X\n", __FUNCTION__, *dataP);
     BitBuffer_write32(bbP, *dataP);
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP64_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP64_T* dataP) {
 //-----------------------------------------------------------------------------
-    DEBUG_ENCODE("%s: %16X\n", __FUNCTION__, *dataP);
+    printf("[MIH_C] %s: %16X\n", __FUNCTION__, *dataP);
     BitBuffer_write32(bbP, (MIH_C_UNSIGNED_INT4_T)(*dataP>>32));
     BitBuffer_write32(bbP, (MIH_C_UNSIGNED_INT4_T)*dataP);
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP128_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP128_T* dataP) {
 //-----------------------------------------------------------------------------
-    DEBUG_ENCODE("%s: %16X%16X\n", __FUNCTION__, dataP->val[0], dataP->val[1]);
+    printf("[MIH_C] %s: %16X%16X\n", __FUNCTION__, dataP->val[0], dataP->val[1]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[0]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[1]);
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_BITMAP256_encode(Bit_Buffer_t* bbP, MIH_C_BITMAP256_T* dataP) {
 //-----------------------------------------------------------------------------
-    DEBUG_ENCODE("%s: %16X%16X%16X%16X\n", __FUNCTION__, dataP->val[0], dataP->val[1], dataP->val[2], dataP->val[3]);
+    printf("[MIH_C] %s: %16X%16X%16X%16X\n", __FUNCTION__, dataP->val[0], dataP->val[1], dataP->val[2], dataP->val[3]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[0]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[1]);
     MIH_C_BITMAP64_encode(bbP, &dataP->val[2]);
@@ -98,7 +98,7 @@ inline void MIH_C_OCTET_encode(Bit_Buffer_t* bbP, MIH_C_F1_Generic_Octet_t *data
 }
 //-----------------------------------------------------------------------------
 inline void MIH_C_UNSIGNED_INT1_encode(Bit_Buffer_t* bbP, MIH_C_UNSIGNED_INT1_T* dataP) {
-    DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *dataP);
+    printf("[MIH_C] %s: %02X\n", __FUNCTION__, *dataP);
     BitBuffer_write8(bbP, *dataP);
 }
 //-----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ inline void MIH_C_LIST_LENGTH_encode(Bit_Buffer_t* bbP, u_int16_t lengthP) {
     int          length;
     if (lengthP <= 128) {
         #ifdef DEBUG_TRACE_DETAILS
-        DEBUG_ENCODE("%s: Length %02X\n", __FUNCTION__, lengthP);
+        printf("[MIH_C] %s: Length %02X\n", __FUNCTION__, lengthP);
         #endif
         BitBuffer_write8(bbP, (MIH_C_UNSIGNED_INT1_T)lengthP);
     } else {
@@ -224,7 +224,7 @@ inline void MIH_C_LIST_LENGTH_encode(Bit_Buffer_t* bbP, u_int16_t lengthP) {
         if (((lengthP - 128) % 255) != 0) {
             num_more_bytes += 1;
         }
-        DEBUG_ENCODE("%s: Length %02X on %d more bytes\n", __FUNCTION__, lengthP, num_more_bytes);
+        printf("[MIH_C] %s: Length %02X on %d more bytes\n", __FUNCTION__, lengthP, num_more_bytes);
         BitBuffer_write8(bbP, (MIH_C_UNSIGNED_INT1_T)(128 + num_more_bytes));
         length = lengthP - 128;
         while (length > 0) {
@@ -249,7 +249,7 @@ inline u_int16_t MIH_C_LIST_LENGTH_get_encode_num_bytes(u_int16_t lengthP) {
         if (((lengthP - 128) % 255) != 0) {
             num_more_bytes += 1;
         }
-        DEBUG_ENCODE("%s: Length %02X on %d more bytes\n", __FUNCTION__, lengthP, num_more_bytes);
+        printf("[MIH_C] %s: Length %02X on %d more bytes\n", __FUNCTION__, lengthP, num_more_bytes);
         return num_more_bytes + sizeof (MIH_C_UNSIGNED_INT1_T);
     }
 }
@@ -268,12 +268,12 @@ inline void MIH_C_LIST_LENGTH_decode(Bit_Buffer_t* bbP, u_int16_t *lengthP) {
             num_more_bytes = num_more_bytes - 1;
         }
         #ifdef DEBUG_TRACE_DETAILS
-        DEBUG_DECODE("%s: Length %d \n", __FUNCTION__, *lengthP);
+        printf("[MIH_C] %s: Length %d \n", __FUNCTION__, *lengthP);
         #endif
     } else {
         *lengthP = byte1;
         #ifdef DEBUG_TRACE_DETAILS
-        DEBUG_DECODE("%s: Length %d \n", __FUNCTION__, *lengthP);
+        printf("[MIH_C] %s: Length %d \n", __FUNCTION__, *lengthP);
         #endif
     }
 }

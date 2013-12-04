@@ -34,21 +34,19 @@
  * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
  */
 /*******************************************************************************/
-#ifndef __MRALLTE_CONSTANTS_H__
-#define __MRALLTE_CONSTANTS_H__
+#ifndef __LTERALUE_CONSTANTS_H__
+#define __LTERALUE_CONSTANTS_H__
 //-----------------------------------------------------------------------------
-#define DEFAULT_LOCAL_PORT_RAL    "1235"
-#define DEFAULT_REMOTE_PORT_MIHF  "1025"
-#define DEFAULT_IP_ADDRESS_MIHF   "127.0.0.1"
-#define DEFAULT_IP_ADDRESS_RAL    "127.0.0.1"
-#define DEFAULT_LINK_ID           "link" //"lte"
-#define DEFAULT_MIHF_ID           "mihf1"
+#define UE_DEFAULT_LOCAL_PORT_RAL    "1335"
+#define UE_DEFAULT_REMOTE_PORT_MIHF  "1125"
+#define UE_DEFAULT_IP_ADDRESS_MIHF   "127.0.0.1"
+#define UE_DEFAULT_IP_ADDRESS_RAL    "127.0.0.1"
+#define UE_DEFAULT_LINK_ID_RAL       "ue_lte_link"
+#define UE_DEFAULT_LINK_ADDRESS_RAL  "060080149150"
+#define UE_DEFAULT_MIHF_ID           "mihf_ue"
 #define DEFAULT_ADDRESS_3GPP      "0335060080149150"
 #define DEFAULT_ADDRESS_eNB       "0000000000000001"
 
-//-----------------------------------------------------------------------------
-#define MIH_C_RADIO_POLLING_INTERVAL_MICRO_SECONDS 50000
-#define MIH_C_RADIO_POLLING_INTERVAL_SECONDS       0
 //-----------------------------------------------------------------------------
 // Constants for scenario
 #define PREDEFINED_MIH_NETWORK_ID "eurecom"
@@ -57,10 +55,5 @@
 #define PREDEFINED_CHANNEL_ID 2
 #define PREDEFINED_CLASSES_SERVICE_SUPPORTED 2
 #define PREDEFINED_QUEUES_SUPPORTED 2
-
-#define PREDEFINED_LINK_GOING_DOWN_INDICATION_SIG_STRENGTH 20
-#define PREDEFINED_LINK_DETECTED_INDICATION_SIG_STRENGTH 10
-#define PREDEFINED_LINK_DETECTED_INDICATION_SINR 45
-#define PREDEFINED_LINK_DETECTED_INDICATION_LINK_DATA_RATE 1000
 
 #endif

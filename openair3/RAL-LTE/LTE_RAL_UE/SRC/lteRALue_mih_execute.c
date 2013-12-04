@@ -34,332 +34,19 @@
  * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
  */
 /*******************************************************************************/
-#define MRAL_MODULE
-#define MRALLTE_MIH_EXECUTE_C
+#define LTE_RAL_UE
+#define LTERALUE_MIH_MSG_C
+
 #include <assert.h>
-#include "lteRALue_mih_execute.h"
-#include "lteRALue_variables.h"
-#include "nas_ue_ioctl.h"
-#include "lteRALue_proto.h"
+//-----------------------------------------------------------------------------
+#include "lteRALue.h"
+
+
+
+
 
 //-----------------------------------------------------------------------------
-void mRALlte_action_request(MIH_C_Message_Link_Action_request_t* messageP) {
-//-----------------------------------------------------------------------------
-    MIH_C_STATUS_T status;
-    LIST(MIH_C_LINK_SCAN_RSP, scan_response_set);
-    MIH_C_LINK_AC_RESULT_T link_action_result;
-    MIH_C_TRANSACTION_ID_T transaction_id;
-    unsigned int scan_index, meas_to_send;
-
-
-    memcpy(&g_link_action, &messageP->primitive.LinkAction, sizeof(MIH_C_LINK_ACTION_T));
-
-    status = MIH_C_STATUS_SUCCESS;
-    link_action_result = MIH_C_LINK_AC_RESULT_SUCCESS;
-    scan_response_set_list.length = 0;
-    meas_to_send = ralpriv->num_measures;
-    #ifdef RAL_REALTIME
-    meas_to_send = 1;  // MW-TEMP - For real Time, block reporting to one measure only
-    #endif
-
-    if ( messageP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN) {
-        for (scan_index = 0; scan_index < meas_to_send; scan_index++) {
-            //MIH_C_LINK_ADDR_T - MW-TEMP, set to DEFAULT_ADDRESS_eNB (should not be UE address here)
-            scan_response_set_list.val[scan_index].link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
-            //MIH_C_3GPP_ADDR_set(&scan_response_set_list.val[scan_index].link_addr._union._3gpp_addr, (u_int8_t*)&(ralpriv->ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
-            MIH_C_3GPP_ADDR_set(&scan_response_set_list.val[scan_index].link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_eNB, strlen(DEFAULT_ADDRESS_eNB));
-            // MIH_C_NETWORK_ID_T
-            MIH_C_NETWORK_ID_set(&scan_response_set_list.val[scan_index].network_id, (u_int8_t *)PREDEFINED_MIH_NETWORK_ID, strlen(PREDEFINED_MIH_NETWORK_ID));
-            // MIH_C_SIG_STRENGTH_T
-
-            scan_response_set_list.val[scan_index].sig_strength.choice = MIH_C_SIG_STRENGTH_CHOICE_PERCENTAGE;
-            scan_response_set_list.val[scan_index].sig_strength._union.percentage = ralpriv->integrated_meas_level[scan_index];
-            scan_response_set_list.length += 1;
-        }
-        transaction_id = messageP->header.transaction_id;
-
-        mRALlte_send_link_action_confirm(&transaction_id, &status, &scan_response_set_list, &link_action_result);
-    }
-    if ( messageP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_RES_RETAIN) {
-        // TO DO
-    }
-    if ( messageP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_DATA_FWD_REQ) {
-        // TO DO
-    }
-
-    // do not make actions if SCAN required
-    if (( messageP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN) == 0) {
-        switch (messageP->primitive.LinkAction.link_ac_type) {
-            case MIH_C_LINK_AC_TYPE_NONE:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_NONE: NO ACTION\n", __FUNCTION__);
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_DISCONNECT:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_DISCONNECT: NO ACTION\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_DISCONNECT) {
-				// TO DO
-                } else {
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                }
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_LOW_POWER:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_LOW_POWER\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_LOW_POWER) {
-				// TO DO
-                } else {
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                }
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN) {
-                    if ( ralpriv->pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN ) {
-                        if (ralpriv->state == DISCONNECTED) {
-                            DEBUG("Deactivation requested, but interface already inactive ==> NO OP\n");
-                            ralpriv->pending_req_status = 0;
-                            mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                        } else {
-                            ralpriv->pending_req_action = ralpriv->pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN;
-                            ralpriv->pending_req_status = 0;
-                            ralpriv->pending_req_transaction_id = messageP->header.transaction_id;
-                            DEBUG("Deactivation requested to NAS interface\n");
-                            RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_DEL, ralpriv->cell_id);
-                            //Send immediatly a confirm, otherwise it will arrive to late and MIH-F will report a failure to the MIH-USER
-                            mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, NULL, &link_action_result);
-                        }
-                    } else {
-                        ralpriv->pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN;
-                        ralpriv->pending_req_status = 0;
-                        ralpriv->pending_req_transaction_id = messageP->header.transaction_id;
-                        DEBUG("Deactivation requested to NAS interface\n");
-                        RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_DEL, ralpriv->cell_id);
-                        //Send immediatly a confirm, otherwise it will arrive to late and MIH-F will report a failure to the MIH-USER
-                        mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, NULL, &link_action_result);
-                    }
-                } else {
-                    DEBUG ("[mRAL]: command POWER DOWN not available \n\n");
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, NULL, &link_action_result);
-                }
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_POWER_UP:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_POWER_UP\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
-                    // Activation requested - check it is not already active
-                    if(ralpriv->pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
-                        if (ralpriv->state == CONNECTED) {
-                            DEBUG("Activation requested, but interface already active ==> NO OP\n");
-                            ralpriv->pending_req_status = 0;
-                            mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                        } else {
-                            ralpriv->pending_req_action = ralpriv->pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
-                            ralpriv->pending_req_status = 0;
-                            ralpriv->pending_req_transaction_id = messageP->header.transaction_id;
-                            ralpriv->cell_id = ralpriv->meas_cell_id[0];  // Default cell #0 - Next, choose cell with best conditions
-                            DEBUG("Activation requested to NAS interface on cell %d\n", ralpriv->cell_id);
-                            RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_ADD, ralpriv->cell_id);
-                        }
-                    } else {
-                        ralpriv->pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
-                        ralpriv->pending_req_status = 0;
-                        ralpriv->pending_req_transaction_id = messageP->header.transaction_id;
-                        ralpriv->cell_id = ralpriv->meas_cell_id[0]; // Default cell #0 - Next, choose cell with best conditions
-                        DEBUG("Activation requested to NAS interface on cell %d\n", ralpriv->cell_id);
-                        RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_ADD, ralpriv->cell_id);
-                    }
-                } else {
-                    DEBUG ("[mRAL]: command POWER UP not available \n\n");
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                }
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR: NO ACTION\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR) {
-                } else {
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                }
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES: NO ACTION\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES) {
-                } else {
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                }
-                break;
-
-            case MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES:
-                DEBUG("%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES: NO ACTION\n", __FUNCTION__);
-                if (ralpriv->mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES) {
-                } else {
-                    link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
-                    ralpriv->pending_req_status = 0;
-                    mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-                }
-                break;
-
-            default:
-                ERR("%s Invalid LinkAction.link_ac_type in MIH_C_Message_Link_Action_request\n", __FUNCTION__);
-                status = MIH_C_STATUS_UNSPECIFIED_FAILURE;
-                mRALlte_send_link_action_confirm(&messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
-        }
-    }
-}
-
-//-----------------------------------------------------------------------------
-void mRALlte_get_parameters_request(MIH_C_Message_Link_Get_Parameters_request_t* messageP) {
-//-----------------------------------------------------------------------------
-    MIH_C_STATUS_T                      status;
-    MIH_C_LINK_PARAM_LIST_T             link_parameters_status_list;
-    MIH_C_LINK_STATES_RSP_LIST_T        link_states_response_list;
-    MIH_C_LINK_DESC_RSP_LIST_T          link_descriptors_response_list;
-    unsigned int                        link_index;
-
-    // SAVE REQUEST
-    // MAY BE MERGE REQUESTS ?
-    //memcpy(&g_link_cfg_param_thresholds_list, &messageP->primitive.LinkConfigureParameterList_list, sizeof(MIH_C_LINK_CFG_PARAM_LIST_T));
-
-    status       = MIH_C_STATUS_SUCCESS;
-
-    for (link_index = 0;
-         link_index < messageP->primitive.LinkParametersRequest_list.length;
-         link_index++) {
-
-        //------------------------------------------------
-        //  MIH_C_LINK_PARAM_LIST_T
-        //------------------------------------------------
-        memcpy(&link_parameters_status_list.val[link_index].link_param_type,
-               &messageP->primitive.LinkParametersRequest_list.val[link_index],
-               sizeof(MIH_C_LINK_PARAM_TYPE_T));
-
-        switch (messageP->primitive.LinkParametersRequest_list.val[link_index].choice) {
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_GEN:
-                link_parameters_status_list.val[link_index].choice = MIH_C_LINK_PARAM_CHOICE_LINK_PARAM_VAL;
-                link_parameters_status_list.val[link_index]._union.link_param_val = MIH_C_LINK_PARAM_GEN_SIGNAL_STRENGTH;
-                break;
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_QOS:
-                link_parameters_status_list.val[link_index].choice = MIH_C_LINK_PARAM_CHOICE_QOS_PARAM_VAL;
-                link_parameters_status_list.val[link_index]._union.qos_param_val.choice = MIH_C_QOS_PARAM_VAL_CHOICE_AVG_PK_TX_DELAY;
-                link_parameters_status_list.val[link_index]._union.qos_param_val._union.avg_pk_tx_delay_list.length        = 2; //??
-                link_parameters_status_list.val[link_index]._union.qos_param_val._union.avg_pk_tx_delay_list.val[0].cos_id = 2; //??
-                link_parameters_status_list.val[link_index]._union.qos_param_val._union.avg_pk_tx_delay_list.val[0].value  = 20; //??
-                link_parameters_status_list.val[link_index]._union.qos_param_val._union.avg_pk_tx_delay_list.val[1].cos_id = 3; //??
-                link_parameters_status_list.val[link_index]._union.qos_param_val._union.avg_pk_tx_delay_list.val[2].value  = 50; //??
-                break;
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_LTE:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_GG:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_EDGE:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_ETH:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_802_11:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_C2K:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_FDD:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_HRPD:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_802_16:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_802_20:
-            case MIH_C_LINK_PARAM_TYPE_CHOICE_802_22:
-            default:
-                 ERR("%s TO DO CONTINUE PROCESSING LinkParametersRequest_list of \n", __FUNCTION__);
-        }
-
-        //------------------------------------------------
-        //  MIH_C_LINK_STATES_RSP_LIST_T
-        //------------------------------------------------
-        if (messageP->primitive.LinkStatesRequest & MIH_C_BIT_LINK_STATES_REQ_OP_MODE) {
-            link_states_response_list.val[link_index].choice         = 0;
-            link_states_response_list.val[link_index]._union.op_mode = MIH_C_OPMODE_NORMAL_MODE;
-        } else if (messageP->primitive.LinkStatesRequest & MIH_C_BIT_LINK_STATES_REQ_CHANNEL_ID) {
-            link_states_response_list.val[link_index].choice            = 1;
-            link_states_response_list.val[link_index]._union.channel_id = PREDEFINED_CHANNEL_ID;
-        } else {
-            ERR("%s Invalid LinkStatesRequest in MIH_C_Link_Get_Parameters_request\n", __FUNCTION__);
-            // DEFAULT VALUES
-            link_states_response_list.val[link_index].choice         = 0;
-            link_states_response_list.val[link_index]._union.op_mode = MIH_C_OPMODE_NORMAL_MODE;
-        }
-
-        //------------------------------------------------
-        // MIH_C_LINK_DESC_RSP_LIST_T
-        //------------------------------------------------
-        if (messageP->primitive.LinkDescriptorsRequest & MIH_C_BIT_NUMBER_OF_CLASSES_OF_SERVICE_SUPPORTED) {
-            link_descriptors_response_list.val[link_index].choice         = 0;
-            link_descriptors_response_list.val[link_index]._union.num_cos = PREDEFINED_CLASSES_SERVICE_SUPPORTED;
-        } else if (messageP->primitive.LinkDescriptorsRequest & MIH_C_BIT_NUMBER_OF_QUEUES_SUPPORTED) {
-            link_descriptors_response_list.val[link_index].choice            = 1;
-            link_descriptors_response_list.val[link_index]._union.num_queue = PREDEFINED_QUEUES_SUPPORTED;
-        } else {
-            ERR("%s Invalid LinkDescriptorsRequest in MIH_C_Link_Get_Parameters_request\n", __FUNCTION__);
-            // DEFAULT VALUES
-            link_descriptors_response_list.val[link_index].choice         = 0;
-            link_descriptors_response_list.val[link_index]._union.num_cos = PREDEFINED_CLASSES_SERVICE_SUPPORTED;
-        }
-    }
-    link_parameters_status_list.length    = messageP->primitive.LinkParametersRequest_list.length;
-    link_states_response_list.length      = messageP->primitive.LinkParametersRequest_list.length;
-    link_descriptors_response_list.length = messageP->primitive.LinkParametersRequest_list.length;
-
-
-    mRALte_send_get_parameters_confirm(&messageP->header.transaction_id,
-                                             &status,
-                                             &link_parameters_status_list,
-                                             &link_states_response_list,
-                                             &link_descriptors_response_list);
-}
-
-//-----------------------------------------------------------------------------
-void mRALlte_subscribe_request(MIH_C_Message_Link_Event_Subscribe_request_t* messageP) {
-//-----------------------------------------------------------------------------
-    MIH_C_STATUS_T                      status;
-    MIH_C_LINK_EVENT_LIST_T             mih_subscribed_req_event_list;
-
-    ralpriv->mih_subscribe_req_event_list |= (messageP->primitive.RequestedLinkEventList & ralpriv->mih_supported_link_event_list);
-
-    mih_subscribed_req_event_list = ralpriv->mih_subscribe_req_event_list & messageP->primitive.RequestedLinkEventList;
-
-    status = MIH_C_STATUS_SUCCESS;
-
-    mRALte_send_event_subscribe_confirm(&messageP->header.transaction_id,
-                                        &status,
-                                        &mih_subscribed_req_event_list);
-
-}
-//-----------------------------------------------------------------------------
-void mRALlte_unsubscribe_request(MIH_C_Message_Link_Event_Unsubscribe_request_t* messageP) {
-//-----------------------------------------------------------------------------
-    MIH_C_STATUS_T                      status;
-    MIH_C_LINK_EVENT_LIST_T             mih_unsubscribed_req_event_list;
-    MIH_C_LINK_EVENT_LIST_T             saved_req_event_list;
-
-    saved_req_event_list           = ralpriv->mih_subscribe_req_event_list;
-
-    ralpriv->mih_subscribe_req_event_list &= ((messageP->primitive.RequestedLinkEventList & ralpriv->mih_supported_link_event_list) ^
-                                                messageP->primitive.RequestedLinkEventList);
-
-    mih_unsubscribed_req_event_list = ralpriv->mih_subscribe_req_event_list ^ saved_req_event_list;
-
-    status = MIH_C_STATUS_SUCCESS;
-
-    mRALte_send_event_unsubscribe_confirm(&messageP->header.transaction_id,
-                                        &status,
-                                        &mih_unsubscribed_req_event_list);
-}
-
-//-----------------------------------------------------------------------------
-void mRALlte_configure_thresholds_request(MIH_C_Message_Link_Configure_Thresholds_request_t* messageP) {
+void mRAL_configure_thresholds_request(MIH_C_Message_Link_Configure_Thresholds_request_t* messageP) {
 //-----------------------------------------------------------------------------
     MIH_C_STATUS_T                      status;
     MIH_C_LINK_CFG_STATUS_LIST_T        link_cfg_status_list;
@@ -409,8 +96,9 @@ void mRALlte_configure_thresholds_request(MIH_C_Message_Link_Configure_Threshold
 
     mRALte_send_configure_thresholds_confirm(&messageP->header.transaction_id,&status, &link_cfg_status_list);
 }
+/*
 //-----------------------------------------------------------------------------
-void mRALlte_check_thresholds_signal_strength(MIH_C_THRESHOLD_VAL_T new_valP, MIH_C_THRESHOLD_VAL_T old_valP) {
+void mRAL_check_thresholds_signal_strength(MIH_C_THRESHOLD_VAL_T new_valP, MIH_C_THRESHOLD_VAL_T old_valP) {
 //-----------------------------------------------------------------------------
 
     unsigned int                        threshold_index, threshold_index_mov;
@@ -524,7 +212,9 @@ void mRALlte_check_thresholds_signal_strength(MIH_C_THRESHOLD_VAL_T new_valP, MI
         MIH_C_3GPP_ADDR_set(&link_identifier.link_id.link_addr._union._3gpp_addr, (u_int8_t*)&(ralpriv->ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
         link_identifier.choice                   = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
 
-        mRALlte_send_link_parameters_report_indication(&transaction_id,  &link_identifier, &LinkParametersReportList_list);
+        mRAL_send_link_parameters_report_indication(&transaction_id,  &link_identifier, &LinkParametersReportList_list);
     }
 }
+*/
+
 

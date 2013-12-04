@@ -50,7 +50,7 @@ int MIH_C_Link_Header_Encode(Bit_Buffer_t* bbP, MIH_C_HEADER_T* headerP) {
         BitBuffer_write8b    (bbP, reserved,                    4);
         BitBuffer_write16b   (bbP, headerP->transaction_id,    12);
         BitBuffer_write16    (bbP, headerP->payload_length);
-        DEBUG_ENCODE("%s: version                0x%02X\n", __FUNCTION__, headerP->version);
+        /*DEBUG_ENCODE("%s: version                0x%02X\n", __FUNCTION__, headerP->version);
         DEBUG_ENCODE("%s: ack_req                0x%02X\n", __FUNCTION__, headerP->ack_req);
         DEBUG_ENCODE("%s: ack_rsp                0x%02X\n", __FUNCTION__, headerP->ack_rsp);
         DEBUG_ENCODE("%s: uir                    0x%02X\n", __FUNCTION__, headerP->uir);
@@ -61,7 +61,7 @@ int MIH_C_Link_Header_Encode(Bit_Buffer_t* bbP, MIH_C_HEADER_T* headerP) {
         DEBUG_ENCODE("%s: action_identifier      0x%04X\n", __FUNCTION__, headerP->action_identifier);
         DEBUG_ENCODE("%s: reserved               0x%02X\n", __FUNCTION__, reserved);
         DEBUG_ENCODE("%s: transaction_id         0x%04X\n", __FUNCTION__, headerP->transaction_id);
-        DEBUG_ENCODE("%s: payload_length         0x%02X\n", __FUNCTION__, headerP->payload_length);
+        DEBUG_ENCODE("%s: payload_length         0x%02X\n", __FUNCTION__, headerP->payload_length);*/
 
         // may be check for validity of header field -> set MIH_HEADER_DECODE_FAILURE
         if (BitBuffer_isCheckWriteOverflowOK(bbP, 0) == BIT_BUFFER_FALSE) {
@@ -99,7 +99,7 @@ int MIH_C_Link_Header_Decode(Bit_Buffer_t* bbP, MIH_C_HEADER_T* headerP) {
         headerP->transaction_id      = (MIH_C_TRANSACTION_ID_T)         BitBuffer_read(bbP, 12);
         headerP->payload_length      = (MIH_C_VARIABLE_PAYLOAD_LENGTH_T)BitBuffer_read16(bbP);
 
-        DEBUG_DECODE("%s: version                0x%02X\n", __FUNCTION__, headerP->version);
+        /*DEBUG_DECODE("%s: version                0x%02X\n", __FUNCTION__, headerP->version);
         DEBUG_DECODE("%s: ack_req                0x%02X\n", __FUNCTION__, headerP->ack_req);
         DEBUG_DECODE("%s: ack_rsp                0x%02X\n", __FUNCTION__, headerP->ack_rsp);
         DEBUG_DECODE("%s: uir                    0x%02X\n", __FUNCTION__, headerP->uir);
@@ -110,7 +110,7 @@ int MIH_C_Link_Header_Decode(Bit_Buffer_t* bbP, MIH_C_HEADER_T* headerP) {
         DEBUG_DECODE("%s: action_identifier      0x%04X\n", __FUNCTION__, headerP->action_identifier);
         DEBUG_DECODE("%s: reserved               0x%02X\n", __FUNCTION__, reserved);
         DEBUG_DECODE("%s: transaction_id         0x%04X\n", __FUNCTION__, headerP->transaction_id);
-        DEBUG_DECODE("%s: payload_length         0x%02X\n", __FUNCTION__, headerP->payload_length);
+        DEBUG_DECODE("%s: payload_length         0x%02X\n", __FUNCTION__, headerP->payload_length);*/
         // may be check for validity of header field -> set MIH_HEADER_DECODE_FAILURE
 
         if (BitBuffer_isCheckReadOverflowOK(bbP, 0) == BIT_BUFFER_FALSE) {

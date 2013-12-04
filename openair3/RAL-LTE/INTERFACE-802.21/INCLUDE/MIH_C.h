@@ -39,7 +39,7 @@
 #ifndef __MIH_C_H__
 #    define __MIH_C_H__
 #include "MIH_C_bit_buffer.h"
-#include "MIH_C_log.h"
+#include "UTIL/LOG/log.h"
 #include "MIH_C_Link_Constants.h"
 #include "MIH_C_Types.h"
 #include "MIH_C_header_codec.h"
@@ -56,7 +56,7 @@
 #include "MIH_C_primitive_codec.h"
 #include "MIH_C_msg_codec.h"
 
-void MIH_C_init(int log_outputP);
+void MIH_C_init(void);
 void MIH_C_exit(void);
 
 #define DEBUG_TRACE_DETAILS

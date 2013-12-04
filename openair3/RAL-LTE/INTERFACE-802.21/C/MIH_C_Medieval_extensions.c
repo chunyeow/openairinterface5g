@@ -99,7 +99,7 @@ inline void MIH_C_MARK_encode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
             MIH_C_BITMAP24_encode(bbP, &dataP->_union.flow_label_mask);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_MARK_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_MARK_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ inline void MIH_C_MARK_decode(Bit_Buffer_t* bbP, MIH_C_MARK_T *dataP) {
             MIH_C_BITMAP24_decode(bbP, &dataP->_union.flow_label_mask);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_MARK_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_MARK_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ inline void MIH_C_QOS_encode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
             MIH_C_COS_encode(bbP, &dataP->_union.cos);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_QOS_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_QOS_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -178,7 +178,7 @@ inline void MIH_C_QOS_decode(Bit_Buffer_t* bbP, MIH_C_QOS_T *dataP) {
             MIH_C_COS_decode(bbP, &dataP->_union.cos);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_QOS_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_QOS_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ inline void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_LINK_DATA_RATE_encode(bbP, &dataP->_union_link_data_rate.link_data_rate);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_link_data_rate OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_link_data_rate);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_link_data_rate OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_link_data_rate);
     }
     MIH_C_CHOICE_encode(bbP, &dataP->choice_qos);
     switch (dataP->choice_qos) {
@@ -260,7 +260,7 @@ inline void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_QOS_encode(bbP, &dataP->_union_qos.qos);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_qos OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_qos);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_qos OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_qos);
     }
     MIH_C_CHOICE_encode(bbP, &dataP->choice_jumbo_enable);
     switch (dataP->choice_jumbo_enable) {
@@ -270,7 +270,7 @@ inline void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_JUMBO_ENABLE_encode(bbP, &dataP->_union_jumbo_enable.jumbo_enable);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_jumbo_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_jumbo_enable);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_jumbo_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_jumbo_enable);
     }
     MIH_C_CHOICE_encode(bbP, &dataP->choice_multicast_enable);
     switch (dataP->choice_multicast_enable) {
@@ -280,7 +280,7 @@ inline void MIH_C_RESOURCE_DESC_encode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_MULTICAST_ENABLE_encode(bbP, &dataP->_union_multicast_enable.multicast_enable);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_multicast_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_multicast_enable);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_multicast_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_multicast_enable);
     }
 }
 //-----------------------------------------------------------------------------
@@ -297,7 +297,7 @@ inline void MIH_C_RESOURCE_DESC_decode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_LINK_DATA_RATE_decode(bbP, &dataP->_union_link_data_rate.link_data_rate);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_link_data_rate OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_link_data_rate);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_link_data_rate OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_link_data_rate);
     }
     MIH_C_CHOICE_decode(bbP, &dataP->choice_qos);
     switch (dataP->choice_qos) {
@@ -307,7 +307,7 @@ inline void MIH_C_RESOURCE_DESC_decode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_QOS_decode(bbP, &dataP->_union_qos.qos);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_qos OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_qos);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_qos OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_qos);
     }
     MIH_C_CHOICE_decode(bbP, &dataP->choice_jumbo_enable);
     switch (dataP->choice_jumbo_enable) {
@@ -317,7 +317,7 @@ inline void MIH_C_RESOURCE_DESC_decode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_JUMBO_ENABLE_decode(bbP, &dataP->_union_jumbo_enable.jumbo_enable);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_jumbo_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_jumbo_enable);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_jumbo_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_jumbo_enable);
     }
     MIH_C_CHOICE_decode(bbP, &dataP->choice_multicast_enable);
     switch (dataP->choice_multicast_enable) {
@@ -327,7 +327,7 @@ inline void MIH_C_RESOURCE_DESC_decode(Bit_Buffer_t* bbP, MIH_C_RESOURCE_DESC_T 
             MIH_C_MULTICAST_ENABLE_decode(bbP, &dataP->_union_multicast_enable.multicast_enable);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_multicast_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_multicast_enable);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_multicast_enable OF MIH_C_RESOURCE_DESC_T %d\n", dataP->choice_multicast_enable);
     }
 }
 //-----------------------------------------------------------------------------
@@ -386,7 +386,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_encode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
             MIH_C_MULTICAST_ENABLE_encode(bbP, &dataP->_union_multicast_enable.multicast_enable);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_multicast_enable OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_multicast_enable);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_multicast_enable OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_multicast_enable);
     }
     MIH_C_CHOICE_encode(bbP, &dataP->choice_mark_qos);
     switch (dataP->choice_mark_qos) {
@@ -397,7 +397,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_encode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
             MIH_C_QOS_encode(bbP, &dataP->_union_mark_qos.mark_qos.qos);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_mark_qos OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_qos);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_mark_qos OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_qos);
     }
     MIH_C_CHOICE_encode(bbP, &dataP->choice_mark_drop_eligibility);
     switch (dataP->choice_mark_drop_eligibility) {
@@ -408,7 +408,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_encode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
             MIH_C_DROP_ELIGIBILITY_encode(bbP, &dataP->_union_mark_drop_eligibility.mark_drop_eligibility.drop_eligibility);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE choice_mark_drop_eligibility OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_drop_eligibility);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE choice_mark_drop_eligibility OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_drop_eligibility);
     }
 }
 //-----------------------------------------------------------------------------
@@ -424,7 +424,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_decode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
             MIH_C_MULTICAST_ENABLE_decode(bbP, &dataP->_union_multicast_enable.multicast_enable);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_multicast_enable OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_multicast_enable);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_multicast_enable OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_multicast_enable);
     }
     MIH_C_CHOICE_decode(bbP, &dataP->choice_mark_qos);
     switch (dataP->choice_mark_qos) {
@@ -435,7 +435,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_decode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
             MIH_C_QOS_decode(bbP, &dataP->_union_mark_qos.mark_qos.qos);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_mark_qos OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_qos);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_mark_qos OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_qos);
     }
     MIH_C_CHOICE_decode(bbP, &dataP->choice_mark_drop_eligibility);
     switch (dataP->choice_mark_drop_eligibility) {
@@ -446,7 +446,7 @@ inline void MIH_C_FLOW_ATTRIBUTE_decode(Bit_Buffer_t* bbP, MIH_C_FLOW_ATTRIBUTE_
             MIH_C_DROP_ELIGIBILITY_decode(bbP, &dataP->_union_mark_drop_eligibility.mark_drop_eligibility.drop_eligibility);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE choice_mark_drop_eligibility OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_drop_eligibility);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE choice_mark_drop_eligibility OF MIH_C_FLOW_ATTRIBUTE_T %d\n", dataP->choice_mark_drop_eligibility);
     }
 }
 //-----------------------------------------------------------------------------
@@ -484,7 +484,7 @@ inline void MIH_C_LINK_AC_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T 
             MIH_C_RESOURCE_DESC_encode(bbP, &dataP->_union.resource_desc);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_AC_PARAM_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_AC_PARAM_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -501,7 +501,7 @@ inline void MIH_C_LINK_AC_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_AC_PARAM_T 
             MIH_C_RESOURCE_DESC_decode(bbP, &dataP->_union.resource_desc);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_AC_PARAM_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_AC_PARAM_T %d\n", dataP->choice);
     }
 }
 

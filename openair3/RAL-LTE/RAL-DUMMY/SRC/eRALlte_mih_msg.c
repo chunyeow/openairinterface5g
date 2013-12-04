@@ -1241,7 +1241,7 @@ void eRALlte_send_link_action_confirm(MIH_C_TRANSACTION_ID_T     *tidP,
  ** 	 	 Others:	g_sockd_mihf                               **
  **                                                                        **
  ***************************************************************************/
-int eRALlte_mihf_connect(void)
+int eRALlte_mihf_connect(ral_enb_instance_t instanceP)
 {
     struct addrinfo	info;		/* endpoint information		*/
     struct addrinfo	*addr, *rp;	/* endpoint address		*/
@@ -1259,7 +1259,7 @@ int eRALlte_mihf_connect(void)
     info.ai_flags    = 0;
     info.ai_protocol = 0;		/* Any protocol		*/
 
-    rc = getaddrinfo(g_mihf_ip_address, g_mihf_remote_port, &info, &addr);
+    rc = getaddrinfo(g_enb_ral_obj[instanceP].mihf_ip_address, g_enb_ral_obj[instanceP].mihf_remote_port, &info, &addr);
     if (rc != 0) {
         ERR(" getaddrinfo: %s\n", gai_strerror(rc));
         return -1;
@@ -1271,91 +1271,78 @@ int eRALlte_mihf_connect(void)
      * (or connect(2)) fails, we (close the socket and) try the next address.
      */
     for (rp = addr; rp != NULL; rp = rp->ai_next) {
-
-        g_sockd_mihf = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-        if (g_sockd_mihf < 0) {
+        g_enb_ral_obj[instance].mih_sock_desc = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (g_enb_ral_obj[instance].mih_sock_desc < 0) {
             continue;
-	}
+        }
 
-	optval = 1;
-        setsockopt(g_sockd_mihf, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+        optval = 1;
+        setsockopt(g_enb_ral_obj[instance].mih_sock_desc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
-	/*
-	 * Convert the RAL local network address
-	 */
+        // Convert the RAL local network address
+
         if (rp->ai_family == AF_INET) {
-	    /* IPv4 network address family */
-	    struct sockaddr_in  *addr4 = NULL;
+            /* IPv4 network address family */
+            struct sockaddr_in  *addr4 = NULL;
 
-            DEBUG(" %s is an ipv4 address\n", g_mihf_ip_address);
+            DEBUG(" %s is an ipv4 address\n", g_enb_ral_obj[instanceP].mihf_ip_address);
             addr4             = (struct sockaddr_in *)(&buf[0]);
-            addr4->sin_port   = htons(atoi(g_ral_listening_port_for_mihf));
+            addr4->sin_port   = htons(atoi(g_enb_ral_obj[instanceP].ral_listening_port));
             addr4->sin_family = AF_INET;
-            rc = inet_pton(AF_INET, g_ral_ip_address, &addr4->sin_addr);
-	}
-	else if (rp->ai_family == AF_INET6) {
-	    /* IPv6 network address family */
-	    struct sockaddr_in6 *addr6 = NULL;
+            rc = inet_pton(AF_INET, g_enb_ral_obj[instanceP].ral_ip_address, &addr4->sin_addr);
 
-            DEBUG(" %s is an ipv6 address\n", g_mihf_ip_address);
+        } else if (rp->ai_family == AF_INET6) {
+            /* IPv6 network address family */
+            struct sockaddr_in6 *addr6 = NULL;
+
+            DEBUG(" %s is an ipv6 address\n", g_enb_ral_obj[instanceP].mihf_ip_address);
             addr6              = (struct sockaddr_in6 *)(&buf[0]);
-            addr6->sin6_port   = htons(atoi(g_ral_listening_port_for_mihf));
+            addr6->sin6_port   = htons(atoi(g_enb_ral_obj[instanceP].ral_listening_port));
             addr6->sin6_family = AF_INET6;
-            rc = inet_pton(AF_INET, g_ral_ip_address, &addr6->sin6_addr);
-	}
-	else {
+            rc = inet_pton(AF_INET, g_enb_ral_obj[instanceP].ral_ip_address, &addr6->sin6_addr);
+        } else {
             ERR(" %s is an unknown address format %d\n",
-		g_mihf_ip_address, rp->ai_family);
-	    return -1;
-	}
+                    g_enb_ral_obj[instanceP].mihf_ip_address, rp->ai_family);
+            return -1;
+        }
 
-	if (rc < 0) {
-	    /* The network address convertion failed */
-	    ERR(" inet_pton(RAL IP address %s): %s\n",
-		g_ral_ip_address, strerror(rc));
-	    return -1;
-	}
-	else if (rc == 0) {
-	    /* The network address is not valid */
-	    ERR(" RAL IP address %s is not valid\n", g_ral_ip_address);
-	    return -1;
-	}
+        if (rc < 0) {
+            // The network address convertion failed
+            ERR(" inet_pton(RAL IP address %s): %s\n",
+                 g_enb_ral_obj[instanceP].ral_ip_address, strerror(rc));
+            return -1;
+        } else if (rc == 0) {
+            // The network address is not valid
+            ERR(" RAL IP address %s is not valid\n", g_enb_ral_obj[instanceP].ral_ip_address);
+            return -1;
+        }
 
-	/* Bind the socket to the local RAL network address */
-	rc = bind(g_sockd_mihf, (const struct sockaddr *)buf,
-		  sizeof(struct sockaddr_in));
+        // Bind the socket to the local RAL network address */
+        rc = bind(g_enb_ral_obj[instance].mih_sock_desc, (const struct sockaddr *)buf,
+            sizeof(struct sockaddr_in));
 
-	if (rc < 0) {
-	    ERR(" bind(RAL IP address %s): %s\n",
-		g_ral_ip_address, strerror(errno));
-	    return -1;
-	}
+        if (rc < 0) {
+            ERR(" bind(RAL IP address %s): %s\n", g_enb_ral_obj[instanceP].ral_ip_address, strerror(errno));
+            return -1;
+        }
 
-	/* Connect the socket to the remote MIH-F network address */
-	if (connect(g_sockd_mihf, rp->ai_addr, rp->ai_addrlen) == 0) {
-	    NOTICE(" RAL [%s:%s] is now UDP-CONNECTED to MIH-F [%s:%s]\n",
-		   g_ral_ip_address, g_ral_listening_port_for_mihf,
-		   g_mihf_ip_address, g_mihf_remote_port);
-	    break;
-	}
-	/* 
-	 * We failed to connect:
-	 * Close the socket file descriptor and try to connect to an other
-	 * address.
-	 */
-	close(g_sockd_mihf);
+        // Connect the socket to the remote MIH-F network address
+        if (connect(g_enb_ral_obj[instance].mih_sock_desc, rp->ai_addr, rp->ai_addrlen) == 0) {
+            NOTICE(" RAL [%s:%s] is now UDP-CONNECTED to MIH-F [%s:%s]\n",
+                g_enb_ral_obj[instanceP].ral_ip_address, g_enb_ral_obj[instanceP].ral_listening_port,
+                g_enb_ral_obj[instanceP].mihf_ip_address, g_enb_ral_obj[instanceP].mihf_remote_port);
+            break;
+         }
+         // We failed to connect:
+         // Close the socket file descriptor and try to connect to an other address.
+         close(g_enb_ral_obj[instanceP].mih_sock_desc);
     }
-
-    /*
-     * Unable to connect to a network address
-     */
+    // Unable to connect to a network address
     if (rp == NULL) {
         ERR(" Could not connect to MIH-F\n");
         return -1;
     }
-
     freeaddrinfo(addr);
-
     return 0;
 }
 

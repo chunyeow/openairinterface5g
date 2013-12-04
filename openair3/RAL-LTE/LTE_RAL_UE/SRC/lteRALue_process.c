@@ -34,28 +34,16 @@
  * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
  */
 /*******************************************************************************/
-#define MRAL_MODULE
+#define LTE_RAL_UE
+#define LTERALUE_PROCESS_C
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/socket.h>
 
-#include "lteRALue_variables.h"
-#include "lteRALue_proto.h"
-#include "MIH_C.h"
-#include "lteRALue_mih_msg.h"
-#include "lteRALue_mih_execute.h"
-
-// for real-time
-#include "nas_ue_ioctl.h"
-#include "nasmt_constant.h"
-// for dummy
-//#include "nas_ue_netlink.h"
-
-//global variables
-extern int meas_counter;
-extern int s_nas;
-
+//-----------------------------------------------------------------------------
+#include "lteRALue.h"
+/*
 //---------------------------------------------------------------------------
 // Temp - Enter hard-coded measures in IAL
 void IAL_NAS_measures_init(void){
@@ -187,7 +175,7 @@ void rallte_NAS_measures_polling(void){
         MIH_C_3GPP_ADDR_set(&link_identifier.link_id.link_addr._union._3gpp_addr, (u_int8_t*)&(ralpriv->ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
         link_identifier.choice                   = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
 
-        mRALlte_send_link_down_indication(&transaction_id, &link_identifier, NULL, &down_reason_code);
+        mRAL_send_link_down_indication(&transaction_id, &link_identifier, NULL, &down_reason_code);
 
         ralpriv->link_to_be_detected = MIH_C_BOOLEAN_TRUE;
         // warning may be repeated several times
@@ -208,7 +196,7 @@ void rallte_NAS_measures_polling(void){
             time_interval  = (MIH_C_UNSIGNED_INT2_T)0; // unknown
             going_down_reason_code   = MIH_C_LINK_GOING_DOWN_REASON_LINK_PARAMETER_DEGRADING;
             //
-            mRALlte_send_link_going_down_indication(&transaction_id, &link_identifier, &time_interval, &going_down_reason_code);
+            mRAL_send_link_going_down_indication(&transaction_id, &link_identifier, &time_interval, &going_down_reason_code);
 
         } else 
            if ((ralpriv->link_to_be_detected == MIH_C_BOOLEAN_TRUE) && 
@@ -240,11 +228,11 @@ void rallte_NAS_measures_polling(void){
                                             MIH_C_BIT_NET_CAPS_QOS_CLASS1 |
                                             MIH_C_BIT_NET_CAPS_INTERNET_ACCESS;
               //
-              mRALlte_send_link_detected_indication(&transaction_id, &link_detected_info);
+              mRAL_send_link_detected_indication(&transaction_id, &link_detected_info);
               ralpriv->link_to_be_detected = MIH_C_BOOLEAN_FALSE;
            }
     // LG: TO DO CHECK IF INDEX IS 0
-    mRALlte_check_thresholds_signal_strength(ralpriv->integrated_meas_level[0], ralpriv->prev_integrated_meas_level[0]);
+    mRAL_check_thresholds_signal_strength(ralpriv->integrated_meas_level[0], ralpriv->prev_integrated_meas_level[0]);
 }
 
 //---------------------------------------------------------------------------
@@ -291,16 +279,16 @@ void rallte_verifyPendingConnection(void){
             if (ralpriv->pending_req_flag > 100){
                 ralpriv->pending_req_ac_result = MIH_C_LINK_AC_RESULT_FAILURE;
              }
-            mRALlte_send_link_action_confirm(&ralpriv->pending_req_transaction_id, &ralpriv->pending_req_status, NULL, &ralpriv->pending_req_ac_result);
+            mRAL_send_link_action_confirm(&ralpriv->pending_req_transaction_id, &ralpriv->pending_req_status, NULL, &ralpriv->pending_req_ac_result);
 
-            /*
-            //alternative : send linkup
-            link_identifier.link_id.link_type        = MIH_C_WIRELESS_UMTS;
-            link_identifier.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
-            MIH_C_3GPP_ADDR_set(&link_identifier.link_id.link_addr._union._3gpp_addr, (u_int8_t*)&(ralpriv->ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
-            link_identifier.choice                   = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
-            mRALlte_send_link_up_indication(&ralpriv->pending_req_transaction_id, &link_identifier, NULL, NULL, NULL, NULL);
-            */
+
+            ////alternative : send linkup
+            //link_identifier.link_id.link_type        = MIH_C_WIRELESS_UMTS;
+            //link_identifier.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
+            //MIH_C_3GPP_ADDR_set(&link_identifier.link_id.link_addr._union._3gpp_addr, (u_int8_t*)&(ralpriv->ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
+            //link_identifier.choice                   = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
+            //mRAL_send_link_up_indication(&ralpriv->pending_req_transaction_id, &link_identifier, NULL, NULL, NULL, NULL);
+
 
             DEBUG("After response, Pending Req Flag = %d, cell_id = %d\n", ralpriv->pending_req_flag, ralpriv->cell_id);
             ralpriv->pending_req_flag = 0;
@@ -309,4 +297,4 @@ void rallte_verifyPendingConnection(void){
             //mRALte_send_link_up_indication();
         }
     }
-}
+}*/

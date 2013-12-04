@@ -16,52 +16,43 @@
  *  and requests actions from lower layers to optimize handovers
  *  between heterogeneous networks.
  *****************************************************************************/
+#define LTE_RAL_ENB
+#define LTE_RAL_ENB_MAIN_C
+//-----------------------------------------------------------------------------
+#include <stdio.h>
+# include <sys/epoll.h>
 #include <sys/select.h>
+#include <net/if.h>
 #include <getopt.h>
+#include <stdlib.h>
+#include <time.h>
 //-----------------------------------------------------------------------------
-#define DEFINE_GLOBAL_CONSTANTS
+#include "lteRALenb.h"
+#include "intertask_interface.h"
+#include "OCG.h"
 //-----------------------------------------------------------------------------
-#include "lteRALenb_constants.h"
-#include "lteRALenb_variables.h"
-#include "lteRALenb_proto.h"
-#include "lteRALenb_mih_msg.h"
-//-----------------------------------------------------------------------------
-#include "MIH_C.h"
-//-----------------------------------------------------------------------------
+
 // LTE AS sub-system
 //#include "nas_ue_ioctl.h"
-#include <net/if.h>
 
 #ifdef RAL_REALTIME
-#include "rrc_nas_primitives.h"
-#include "nasrg_constant.h"
-#include "nasrg_iocontrol.h"
+//LG#include "rrc_nas_primitives.h"
+//LG#include "nasrg_constant.h"
+//LG#include "nasrg_iocontrol.h"
 #endif
 
 
 /****************************************************************************/
-/*******************  G L O C A L    D E F I N I T I O N S  *****************/
+/*******************  G L O B A L    D E F I N I T I O N S  *****************/
 /****************************************************************************/
+extern OAI_Emulation oai_emulation;
 
-#ifdef RAL_REALTIME
-//ioctl
-struct nas_ioctl gifr;
-int fd;
-#endif
-#ifdef RAL_DUMMY
-/* NAS socket file descriptor  */
-int g_sockd_nas;  // referenced in lteRALenb_NAS.c
-#endif
-/* RAL LTE internal data  */
-struct ral_lte_priv *ralpriv;
-
-int init_flag = 0;
+//int init_flag = 0;
 
 /****************************************************************************/
 /*******************  L O C A L    D E F I N I T I O N S  *******************/
 /****************************************************************************/
 
-static int g_log_output;
 // static struct ral_lte_priv rl_priv;
 // //
 // static void arg_usage(const char* name);
@@ -70,20 +61,19 @@ static int g_log_output;
 // static void get_IPv6_addr(const char* if_name);
 // static int RAL_initialize(int argc, const char *argv[]);
 
-struct ral_lte_priv rl_priv;
+//struct ral_lte_priv rl_priv;
 
 // void arg_usage(const char* name);
 // int parse_opts(int argc, char* argv[]);
 // void get_IPv6_addr(const char* if_name);
 // int RAL_initialize(int argc, const char *argv[]);
 
-#ifdef RAL_DUMMY
-int netl_s; /* NAS net link socket */
-#endif
+
 
 /****************************************************************************/
 // Next part is used to receive the triggers
 /****************************************************************************/
+/*
 #ifdef MUSER_CONTROL
 
 #define USER_IP_ADDRESS             "127.0.0.1"
@@ -91,10 +81,6 @@ int netl_s; /* NAS net link socket */
 #define NAS_IP_ADDRESS              "127.0.0.1"
 #define NAS_LISTENING_PORT_FOR_USER "22222"
 
-char        *g_mih_user_ip_address             = USER_IP_ADDRESS;
-char        *g_mih_user_remote_port            = USER_REMOTE_PORT;
-char        *g_nas_ip_address                  = NAS_IP_ADDRESS;
-char        *g_nas_listening_port_for_mih_user = NAS_LISTENING_PORT_FOR_USER;
 int          g_sockd_user;
 signed int   g_user_congestion    = 0;
 unsigned int g_ratio_modif        = 0;
@@ -110,14 +96,14 @@ int lteRALenb_trigger_connect(void){
 
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family   = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_DGRAM;   /* Datagram socket */
+    hints.ai_family   = AF_UNSPEC;    // Allow IPv4 or IPv6
+    hints.ai_socktype = SOCK_DGRAM;   // Datagram socket
     hints.ai_flags    = 0;
-    hints.ai_protocol = 0;            /* Any protocol */
+    hints.ai_protocol = 0;            // Any protocol
 
     s = getaddrinfo(g_mih_user_ip_address, g_mih_user_remote_port, &hints, &result);
     if (s != 0) {
-        printf("ERR getaddrinfo: %s\n", gai_strerror(s));
+    	LOG_E (RAL_ENB,"getaddrinfo: %s\n", gai_strerror(s));
         return -1;
     }
 
@@ -130,66 +116,66 @@ int lteRALenb_trigger_connect(void){
         setsockopt( g_sockd_user, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
         if(rp->ai_family == AF_INET) {
-            printf("Destination address  %s is an ipv4 address\n",g_mih_user_ip_address);
+        	LOG_D (RAL_ENB, "Destination address  %s is an ipv4 address\n",g_mih_user_ip_address);
             addr             = (struct sockaddr_in *)(&buf[0]);
             addr->sin_port   = htons(atoi(g_nas_listening_port_for_mih_user));
             addr->sin_family = AF_INET;
             s = inet_pton(AF_INET, g_nas_ip_address, &addr->sin_addr);
             if (s <= 0) {
                 if (s == 0) {
-                    printf("ERR IP address should be a IPv4 ADDR - But found not in presentation format : %s\n", g_nas_ip_address);
+                	LOG_E (RAL_ENB, " IP address should be a IPv4 ADDR - But found not in presentation format : %s\n", g_nas_ip_address);
                 } else {
-                    printf("ERR %s - inet_pton( IPv4 ADDR %s): %s\n", __FUNCTION__, g_nas_ip_address, strerror(s));
+                	LOG_E (RAL_ENB, " %s - inet_pton( IPv4 ADDR %s): %s\n", __FUNCTION__, g_nas_ip_address, strerror(s));
                 }
                 return -1;
             }
 
             s = bind(g_sockd_user, (const struct sockaddr *)addr, sizeof(struct sockaddr_in));
             if (s == -1) {
-                printf("ERR IPv4 Address Bind: %s\n", strerror(errno));
+            	LOG_D (RAL_ENB, "IPv4 Address Bind: %s\n", strerror(errno));
                 return -1;
             }
             // sockd_mihf is of type SOCK_DGRAM, rp->ai_addr is the address to which datagrams are sent by default
             if (connect(g_sockd_user, rp->ai_addr, rp->ai_addrlen) != -1) {
-                printf("  lteRALeNB is now ready to receive triggers\n");
+            	LOG_D (RAL_ENB, "  lteRALeNB is now ready to receive triggers\n");
                 return 0;
             } else {
                 close(g_sockd_user);
             }
         } else if (rp->ai_family == AF_INET6) {
-            printf("Destination address  %s is an ipv6 address\n",g_mih_user_ip_address);
+        	LOG_D (RAL_ENB, "Destination address  %s is an ipv6 address\n",g_mih_user_ip_address);
             addr6              = (struct sockaddr_in6 *)(&buf[0]);
             addr6->sin6_port   = htons(atoi(g_nas_listening_port_for_mih_user));
             addr6->sin6_family = AF_INET6;
             s = inet_pton(AF_INET, g_nas_ip_address, &addr6->sin6_addr);
             if (s <= 0) {
                 if (s == 0) {
-                    printf("ERR IP  address should be a IPv6 ADDR, But found not in presentation format : %s\n", g_nas_ip_address);
+                	LOG_E (RAL_ENB, "IP  address should be a IPv6 ADDR, But found not in presentation format : %s\n", g_nas_ip_address);
                 } else {
-                    printf("ERR %s - inet_pton( IPv6 ADDR %s): %s\n", __FUNCTION__, g_nas_ip_address, strerror(s));
+                	LOG_E (RAL_ENB, "%s - inet_pton( IPv6 ADDR %s): %s\n", __FUNCTION__, g_nas_ip_address, strerror(s));
                 }
                 return -1;
             }
 
             s = bind(g_sockd_user, (const struct sockaddr *)addr6, sizeof(struct sockaddr_in));
             if (s == -1) {
-                printf("ERR  IPv6 Address Bind: %s\n", strerror(errno));
+            	LOG_D (RAL_ENB, "IPv6 Address Bind: %s\n", strerror(errno));
                 return -1;
             }
             if (connect(g_sockd_user, rp->ai_addr, rp->ai_addrlen) != -1) {
-                printf("  lteRALeNB is now ready to receive triggers\n");
+            	LOG_D (RAL_ENB, "lteRALeNB is now ready to receive triggers\n");
                 return 0;
             } else {
                 close(g_sockd_user);
             }
         } else {
-            printf("ERR %s is an unknown address format %d\n",g_mih_user_ip_address,rp->ai_family);
+        	LOG_E (RAL_ENB, "%s is an unknown address format %d\n",g_mih_user_ip_address,rp->ai_family);
         }
         close(g_sockd_user);
     }
 
-    if (rp == NULL) {   /* No address succeeded */
-        printf("ERR Could not establish socket to MIH-User\n");
+    if (rp == NULL) {   // No address succeeded
+    	LOG_E (RAL_ENB, "Could not establish socket to MIH-User\n");
         return -1;
     }
     return -1;
@@ -212,7 +198,7 @@ int lteRALenb_trigger_receive(int sock){
             break;
         case 0x01:
             printf("USER ASK FOR TRIGGERING CONGESTION\n");
-            ralpriv->rlcBufferOccupancy[0] = 95;
+            g_enb_ral_obj[instanceP].rlcBufferOccupancy[0] = 95;
             RAL_NAS_report_congestion(0);
             break;
         default:
@@ -221,163 +207,21 @@ int lteRALenb_trigger_receive(int sock){
     }
     return 0;
 }
-#endif
 
+#endif
+ */
 /****************************************************************************/
 
 
 
-/****************************************************************************
- ** Name:  arg_usage()                                                     **
- ** Description: Displays command line usage                               **
- ** Inputs:  name:  Name of the running process                            **
- **                                                                        **
- ***************************************************************************/
-static void arg_usage(const char *name){
-//-----------------------------------------------------------------------------
-    fprintf(stderr,
-            "Usage: %s [options]\nOptions:\n"
-            "  -V,          --version             Display version information\n"
-            "  -?, -h,      --help                Display this help text\n"
-            "  -P <number>, --ral-listening-port  Listening port for incoming MIH-F messages\n"
-            "  -I <string>, --ral-ip-address      Binding IP(v4 or v6) address for RAL\n"
-            "  -p <number>, --mihf-remote-port    MIH-F remote port\n"
-            "  -i <string>, --mihf-ip-address     MIH-F IP(v4 or v6) address\n"
-            "  -l <number>, --mihf-link-id        MIH-F link identifier\n"
-            "  -m <number>, --mihf-id             MIH-F identifier\n"
-            "  -c,          --output-to-console   All stream outputs are redirected to console\n"
-            "  -f,          --output-to-file      All stream outputs are redirected to file\n"
-            "  -s,          --output-to-syslog    All stream outputs are redirected to syslog\n",
-            name);
-}
-
-/****************************************************************************
- ** Name:  parse_opts()                                                    **
- ** Description: Parses the command line parameters                        **
- ** Inputs:  argc:  Number of parameters in the command line               **
- **     argv:  Command line parameters                                     **
- ***************************************************************************/
-static int parse_opts(int argc, char *argv[]){
-//-----------------------------------------------------------------------------
-    static struct option long_opts[] = {
-        {"version", 0, 0, 'V'},
-        {"help", 0, 0, 'h'},
-        {"help", 0, 0, '?'},
-        {"ral-listening-port", optional_argument, 0, 'P'},
-        {"ral-ip-address",     optional_argument, 0, 'I'},
-        {"mihf-remote-port",   optional_argument, 0, 'p'},
-        {"mihf-ip-address",    optional_argument, 0, 'i'},
-        {"mihf-link-id",       optional_argument, 0, 'l'},
-        {"mihf-id",            optional_argument, 0, 'm'},
-        {"output-to-console",  0, 0, 'c'},
-        {"output-to-file",     0, 0, 'f'},
-        {"output-to-syslog",   0, 0, 's'},
-        {0, 0, 0, 0}
-    };
-
-    /* parse all other cmd line parameters than -c */
-    while (1) {
-        int idx, c;
-        c = getopt_long(argc, argv, "P:I:p:i:l:m:Vh?cfs", long_opts, &idx);
-        if (c == -1) break;
-
-        switch (c) {
-            case 'V':
-                fprintf(stderr, "SVN MODULE VERSION: %s\n", SVN_REV);
-                return -1;
-            case '?':
-            case 'h':
-                arg_usage(basename(argv[0]));
-                return -1;
-            case 'i':
-                strncpy(g_mihf_ip_address, optarg, strlen(g_mihf_ip_address));
-                break;
-            case 'p':
-                strncpy(g_mihf_remote_port, optarg, strlen(g_mihf_remote_port));
-                break;
-            case 'P':
-                strncpy(g_ral_listening_port_for_mihf, optarg,
-                strlen(g_ral_listening_port_for_mihf));
-                break;
-            case 'I':
-                strncpy(g_ral_ip_address, optarg, strlen(g_ral_ip_address));
-                break;
-            case 'l':
-                strncpy(g_link_id, optarg, strlen(g_link_id));
-                break;
-            case 'm':
-                strncpy(g_mihf_id, optarg, strlen(g_mihf_id));
-                break;
-            case 'c':
-                g_log_output = LOG_TO_CONSOLE;
-                break;
-            case 'f':
-                g_log_output = LOG_TO_FILE;
-                break;
-            case 's':
-               g_log_output = LOG_TO_SYSTEM;
-                break;
-            default:
-                break;
-        };
-    }
-    return 0;
-}
-
-#ifdef RAL_REALTIME
-//---------------------------------------------------------------------------
-void IAL_NAS_ioctl_init(void){
-//---------------------------------------------------------------------------
-  // Get an UDP IPv6 socket ??
-  fd=socket(AF_INET6, SOCK_DGRAM, 0);
-  if (fd<0) {
-   ERR("Error opening socket for ioctl\n");
-     exit(1);
-  }
-  strcpy(gifr.name, "oai0");
-}
-#endif
-
-#ifdef RAL_DUMMY
-/****************************************************************************
- ** Name:  NAS_Netlink_socket_init()                                       **
- ** Description: Initializes the communication channel with the NAS dummy  **
- ** Others: netl_s : the NAS net link socket                               **
- **                                                                        **
- ***************************************************************************/
-void NAS_Netlink_socket_init(void){
-//-----------------------------------------------------------------------------
-    int len;
-    struct sockaddr_un local;
-    if ((netl_s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-        perror("NAS_Netlink_socket_init : socket() failed");
-        exit(1);
-    }
-
-    local.sun_family = AF_UNIX;
-    strcpy(local.sun_path, SOCK_RAL_NAS_PATH);
-    unlink(local.sun_path);
-    len = strlen(local.sun_path) + sizeof(local.sun_family);
-
-    if (bind(netl_s, (struct sockaddr *)&local, len) == -1) {
-        perror("NAS_Netlink_socket_init : bind() failed");
-        exit(1);
-    }
-
-    if (listen(netl_s, 1) == -1) {
-        perror("NAS_Netlink_socket_init : listen() failed");
-        exit(1);
-    }
-}
-#endif
 
 /****************************************************************************
  ** Name:  get_IPv6_addr()                                                 **
  ** Description: Gets the IPv6 address of the specified network interface. **
  ** Inputs:  if_name Interface name                                        **
  ***************************************************************************/
-void get_IPv6_addr(const char* if_name){
-//-----------------------------------------------------------------------------
+void eRAL_get_IPv6_addr(const char* if_name){
+    //-----------------------------------------------------------------------------
 #define IPV6_ADDR_LINKLOCAL 0x0020U
 
     FILE *f;
@@ -389,34 +233,34 @@ void get_IPv6_addr(const char* if_name){
     char temp_addr[32];
     int i, j;
 
-    DEBUG(" %s : network interface %s\n", __FUNCTION__, if_name);
+    LOG_D(RAL_ENB, " %s : network interface %s\n", __FUNCTION__, if_name);
 
     if ((f = fopen("/proc/net/if_inet6", "r")) != NULL) {
         while (fscanf(f, "%4s%4s%4s%4s%4s%4s%4s%4s %02x %02x %02x %02x %20s\n",
-                 addr6p[0], addr6p[1], addr6p[2], addr6p[3],
-                 addr6p[4], addr6p[5], addr6p[6], addr6p[7],
-                 &if_idx, &plen, &scope, &dad_status, devname) != EOF) {
+                addr6p[0], addr6p[1], addr6p[2], addr6p[3],
+                addr6p[4], addr6p[5], addr6p[6], addr6p[7],
+                &if_idx, &plen, &scope, &dad_status, devname) != EOF) {
 
             if (!strcmp(devname, if_name)) {
                 found = 1;
                 // retrieve numerical value
                 if ((scope == 0) || (scope == IPV6_ADDR_LINKLOCAL)) {
-                    DEBUG(" adresse  %s:%s:%s:%s:%s:%s:%s:%s",
+                    LOG_D(RAL_ENB, " adresse  %s:%s:%s:%s:%s:%s:%s:%s",
                             addr6p[0], addr6p[1], addr6p[2], addr6p[3],
                             addr6p[4], addr6p[5], addr6p[6], addr6p[7]);
-                    DEBUG(" Scope:");
+                    LOG_D(RAL_ENB, " Scope:");
                     switch (scope) {
                         case 0:
-                            DEBUG(" Global\n");
+                            LOG_D(RAL_ENB, " Global\n");
                             break;
                         case IPV6_ADDR_LINKLOCAL:
-                            DEBUG(" Link\n");
+                            LOG_D(RAL_ENB, " Link\n");
                             break;
                         default:
-                            DEBUG(" Unknown\n");
+                            LOG_D(RAL_ENB, " Unknown\n");
                             break;
                     }
-                    DEBUG(" Numerical value: ");
+                    LOG_D(RAL_ENB, " Numerical value: ");
                     for (i = 0; i < 8; i++) {
                         for (j = 0; j < 4; j++) {
                             addr6p[i][j]= toupper(addr6p[i][j]);
@@ -431,162 +275,289 @@ void get_IPv6_addr(const char* if_name){
 
                     }
                     for (i = 0; i < 16; i++) {
-                        DEBUG("-%hhx-",my_addr[i]);
+                        LOG_D(RAL_ENB, "-%hhx-",my_addr[i]);
                     }
-                    DEBUG("\n");
+                    LOG_D(RAL_ENB, "\n");
                 }
             }
         }
         fclose(f);
         if (!found) {
-            ERR(" %s : interface %s not found\n\n", __FUNCTION__, if_name);
+            LOG_E(RAL_ENB, " %s : interface %s not found\n\n", __FUNCTION__, if_name);
         }
     }
 }
 
+void eRAL_init_default_values(void) {
+    g_conf_enb_ral_listening_port  = ENB_DEFAULT_LOCAL_PORT_RAL;
+    g_conf_enb_ral_ip_address      = ENB_DEFAULT_IP_ADDRESS_RAL;
+    g_conf_enb_ral_link_id         = ENB_DEFAULT_LINK_ID_RAL;
+    g_conf_enb_ral_link_address    = ENB_DEFAULT_LINK_ADDRESS_RAL;
+    g_conf_enb_mihf_remote_port    = ENB_DEFAULT_REMOTE_PORT_MIHF;
+    g_conf_enb_mihf_ip_address     = ENB_DEFAULT_IP_ADDRESS_MIHF;
+    g_conf_enb_mihf_id             = ENB_DEFAULT_MIHF_ID;
+}
+
 /****************************************************************************
- ** Name:  RAL_initialize()                                                **
+ ** Name:  eRAL_initialize()                                               **
  **                                                                        **
  ** Description: Performs overall RAL LTE initialisations:                 **
  **                                                                        **
- ** Inputs:  argc:  Number of parameters in the command line               **
- **     argv:  Command line parameters                                     **
+ ** Inputs: None                                                           **
+ **                                                                        **
  ***************************************************************************/
-int RAL_initialize(int argc, const char *argv[]){
-//-----------------------------------------------------------------------------
-    MIH_C_TRANSACTION_ID_T  transaction_id;
+int eRAL_initialize(void){
+    //-----------------------------------------------------------------------------
+    ral_enb_instance_t  instance = 0;
+    char               *char_tmp = NULL;
 
-    #ifdef RAL_DUMMY
-    unsigned int t;
-    struct sockaddr_un nas_socket;
-    #endif
+    MIH_C_init();
 
-    ralpriv = &rl_priv;
-    memset(ralpriv, 0, sizeof(struct ral_lte_priv));
+    srand(time(NULL));
 
-    /* Initialize defaults
-     */
-    g_ral_ip_address                = strdup(DEFAULT_IP_ADDRESS_RAL);
-    g_ral_listening_port_for_mihf   = strdup(DEFAULT_LOCAL_PORT_RAL);
-    g_mihf_remote_port              = strdup(DEFAULT_REMOTE_PORT_MIHF);
-    g_mihf_ip_address               = strdup(DEFAULT_IP_ADDRESS_MIHF);
-    g_sockd_mihf                    = -1;
-    g_link_id                       = strdup(DEFAULT_LINK_ID);
-    g_mihf_id                       = strdup(DEFAULT_MIHF_ID);
-    g_log_output                    = LOG_TO_CONSOLE;
+    memset(g_enb_ral_obj, 0, sizeof(lte_ral_enb_object_t)*MAX_MODULES);
 
-    /* Parse command line parameters
-     */
-    if (parse_opts(argc, (char**) argv) < 0) {
-        exit(0);
-    }
+    g_enb_ral_fd2instance = hashtable_create (32, NULL, hash_free_int_func);
 
-    MIH_C_init(g_log_output);
+    for (instance = 0; instance < oai_emulation.info.nb_enb_local; instance++) {
+        char_tmp                                        = calloc(1, strlen(g_conf_enb_ral_listening_port) + 3); // 2 digits + \0 ->99 instances
+        sprintf(char_tmp,"%d", atoi(g_conf_enb_ral_listening_port) + instance);
+        g_enb_ral_obj[instance].ral_listening_port      = char_tmp;
 
-    DEBUG(" %s -I %s -P %s -i %s -p %s -l %s -m %s\n", argv[0], g_ral_ip_address, g_ral_listening_port_for_mihf,
-        g_mihf_ip_address, g_mihf_remote_port, g_link_id, g_mihf_id);
+        g_enb_ral_obj[instance].ral_ip_address          = strdup(g_conf_enb_ral_ip_address);
+        g_enb_ral_obj[instance].ral_link_address        = strdup(g_conf_enb_ral_link_address);
 
-    /* Connect to the MIF Function
-     */
-    DEBUG(" Connect to the MIH-F ...\n");
-    if (eRALlte_mihf_connect() < 0 ) {
-        ERR(" %s : Could not connect to MIH-F...exiting\n", __FUNCTION__);
-        exit(-1);
-    }
+        char_tmp                                        = calloc(1, strlen(g_conf_enb_mihf_remote_port) + 3); // 2 digits + \0 ->99 instances
+        sprintf(char_tmp, "%d", atoi(g_conf_enb_mihf_remote_port) + instance);
+        g_enb_ral_obj[instance].mihf_remote_port        = char_tmp;
 
-    // excluded MIH_C_LINK_AC_TYPE_NONE
-    // excluded MIH_C_LINK_AC_TYPE_LINK_DISCONNECT
-    // excluded MIH_C_LINK_AC_TYPE_LINK_LOW_POWER
-    // excluded MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN
-    // excluded MIH_C_LINK_AC_TYPE_LINK_POWER_UP
-    ralpriv->mih_supported_link_action_list = (1 << MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR)  |
+        g_enb_ral_obj[instance].mihf_ip_address         = strdup(g_conf_enb_mihf_ip_address);
+
+        char_tmp                                        = calloc(1, strlen(g_conf_enb_mihf_id) + 3); // 2 digits + \0 ->99 instances
+        sprintf(char_tmp, "%s%02d",g_conf_enb_mihf_id, instance);
+        g_enb_ral_obj[instance].mihf_id                 = char_tmp;
+
+        char_tmp                                        = calloc(1, strlen(g_conf_enb_ral_link_id) + 3); // 2 digits + \0 ->99 instances
+        sprintf(char_tmp, "%s%02d",g_conf_enb_ral_link_id, instance);
+        g_enb_ral_obj[instance].link_id                 = char_tmp;
+        char_tmp                                        = NULL;
+
+        // excluded MIH_C_LINK_AC_TYPE_NONE
+        // excluded MIH_C_LINK_AC_TYPE_LINK_DISCONNECT
+        // excluded MIH_C_LINK_AC_TYPE_LINK_LOW_POWER
+        // excluded MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN
+        // excluded MIH_C_LINK_AC_TYPE_LINK_POWER_UP
+        g_enb_ral_obj[instance].mih_supported_link_action_list = (1 << MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR)  |
                 (1 << MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES) |
                 (1 << MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES);
-    // excluded MIH_C_BIT_LINK_DETECTED
-    // excluded MIH_C_BIT_LINK_GOING_DOWN
-    // excluded MIH_C_BIT_LINK_HANDOVER_IMMINENT
-    // excluded MIH_C_BIT_LINK_HANDOVER_COMPLETE
-    // excluded MIH_C_BIT_LINK_PDU_TRANSMIT_STATUS
-    ralpriv->mih_supported_link_event_list = MIH_C_BIT_LINK_UP | MIH_C_BIT_LINK_DOWN | MIH_C_BIT_LINK_PARAMETERS_REPORT;
-    // excluded MIH_C_BIT_LINK_GET_PARAMETERS
-    // excluded MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS
-    ralpriv->mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS |
+        // excluded MIH_C_BIT_LINK_DETECTED
+        // excluded MIH_C_BIT_LINK_GOING_DOWN
+        // excluded MIH_C_BIT_LINK_HANDOVER_IMMINENT
+        // excluded MIH_C_BIT_LINK_HANDOVER_COMPLETE
+        // excluded MIH_C_BIT_LINK_PDU_TRANSMIT_STATUS
+        g_enb_ral_obj[instance].mih_supported_link_event_list = MIH_C_BIT_LINK_UP | MIH_C_BIT_LINK_DOWN | MIH_C_BIT_LINK_PARAMETERS_REPORT;
+        // excluded MIH_C_BIT_LINK_GET_PARAMETERS
+        // excluded MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS
+        g_enb_ral_obj[instance].mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS |
                 MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE |
                 MIH_C_BIT_LINK_ACTION;
 
-    NOTICE("[MSC_NEW][%s][MIH-F=%s]\n", getTimeStamp4Log(), g_mihf_id);
-    NOTICE("[MSC_NEW][%s][RAL=%s]\n", getTimeStamp4Log(), g_link_id);
-    NOTICE("[MSC_NEW][%s][NAS=%s]\n", getTimeStamp4Log(), "nas");
+        g_enb_ral_obj[instance].link_mihcap_flag = MIH_C_BIT_EVENT_SERVICE_SUPPORTED | MIH_C_BIT_COMMAND_SERVICE_SUPPORTED | MIH_C_BIT_INFORMATION_SERVICE_SUPPORTED;
+
+        g_enb_ral_obj[instance].net_caps = MIH_C_BIT_NET_CAPS_QOS_CLASS5 | MIH_C_BIT_NET_CAPS_INTERNET_ACCESS | MIH_C_BIT_NET_CAPS_MIH_CAPABILITY;
+
+
+        g_enb_ral_obj[instance].transaction_id = (MIH_C_TRANSACTION_ID_T)rand();
+
+        //LOG_N(RAL_ENB, "[MSC_NEW][%s][MIH-F=%s]\n", getTimeStamp4Log(), g_mihf_id);
+        //LOG_N(RAL_ENB, "[MSC_NEW][%s][RAL=%s]\n", getTimeStamp4Log(), g_link_id);
+        //LOG_N(RAL_ENB, "[MSC_NEW][%s][NAS=%s]\n", getTimeStamp4Log(), "nas");
+
+
+        g_enb_ral_obj[instance].ue_htbl = hashtable_create(32, NULL, NULL);
+
+        LOG_D(RAL_ENB, " Connect to the MIH-F for instance %d...\n", instance);
+        g_enb_ral_obj[instance].mih_sock_desc = -1;
+        if (eRAL_mihf_connect(instance) < 0 ) {
+            LOG_E(RAL_ENB, " %s : Could not connect to MIH-F...\n", __FUNCTION__);
+            // TO DO RETRY LATER
+            //exit(-1);
+        } else {
+            itti_subscribe_event_fd(TASK_RAL_ENB, g_enb_ral_obj[instance].mih_sock_desc);
+            hashtable_insert(g_enb_ral_fd2instance, g_enb_ral_obj[instance].mih_sock_desc, (void*)instance);
+        }
+    }
+
+
+
+
 
     /*Initialize the NAS driver communication channel
      */
-    #ifdef RAL_REALTIME
-    IAL_NAS_ioctl_init();
-    #endif
-    #ifdef RAL_DUMMY
-    NAS_Netlink_socket_init();
-    DEBUG(" Waiting for a connection from the NAS Driver ...\n");
-    t = sizeof(nas_socket);
-    if ((g_sockd_nas = accept(netl_s, (struct sockaddr *)&nas_socket, &t)) == -1) {
-        perror("RAL_initialize : g_sockd_nas - accept() failed");
-        exit(1);
-    }
-  #endif
-    DEBUG("NAS Driver Connected.\n\n");
+#ifdef RAL_REALTIME
+    //LG IAL_NAS_ioctl_init();
+#endif
+#ifdef RAL_DUMMY
+    //LG NAS_Netlink_socket_init();
+    //LG LOG_D(RAL_ENB, " Waiting for a connection from the NAS Driver ...\n");
+    //LG t = sizeof(nas_socket);
+    //LG if ((g_sockd_nas = accept(netl_s, (struct sockaddr *)&nas_socket, &t)) == -1) {
+    //LG     perror("RAL_initialize : g_sockd_nas - accept() failed");
+    //LG     exit(1);
+    //LG }
+#endif
+    LOG_D(RAL_ENB, "NAS Driver Connected.\n\n");
 
     /* Start listening to user commands for triggers*/
-    #ifdef MUSER_CONTROL
-    lteRALenb_trigger_connect();
-    #endif
+#ifdef MUSER_CONTROL
+    //LG lteRALenb_trigger_connect();
+#endif
 
 
     /*Get the interface IPv6 address
      */
-    #ifdef RAL_DUMMY
-    get_IPv6_addr("eth0");
-    #else
-    #ifdef RAL_REALTIME
-    get_IPv6_addr("oai0");
-    #endif
-    #endif
+#ifdef RAL_DUMMY
+    //LG get_IPv6_addr("eth0");
+#else
+#ifdef RAL_REALTIME
+    //LG get_IPv6_addr("oai0");
+#endif
+#endif
 
-//  Get list of MTs
-    DEBUG("Obtaining list of MTs\n\n");
-    #ifdef RAL_REALTIME
-    init_flag=1;
-    RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_LIST,0,0);
-    RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_LIST,0,0);
-    init_flag=0;
-    #endif
-    #ifdef RAL_DUMMY
-    eRALlte_NAS_get_MTs_list();
-    #endif
-    RAL_printInitStatus();
-    ralpriv->pending_req_flag = 0;
-//
-    ralpriv->pending_mt_timer = -1;
-    ralpriv->pending_mt_flag = 0;
-//
-    DEBUG(" List of MTs initialized\n\n");
+    //  Get list of MTs
+    //LG LOG_D(RAL_ENB, "Obtaining list of MTs\n\n");
+#ifdef RAL_REALTIME
+    //init_flag=1;
+    //LG RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_LIST,0,0);
+    //LG RAL_process_NAS_message(IO_OBJ_RB, IO_CMD_LIST,0,0);
+    //init_flag=0;
+#endif
+#ifdef RAL_DUMMY
+    //LG eRALlte_NAS_get_MTs_list();
+#endif
+//    RAL_printInitStatus(0);
+//    g_enb_ral_obj[instanceP].pending_req_flag = 0;
+//    //
+//    g_enb_ral_obj[instanceP].pending_mt_timer = -1;
+//    g_enb_ral_obj[instanceP].pending_mt_flag = 0;
+//    //
+//    LOG_D(RAL_ENB, " List of MTs initialized\n\n");
 
-    // Initialize measures for demo3
-    ralpriv->meas_polling_interval = RAL_DEFAULT_MEAS_POLLING_INTERVAL;
-    ralpriv->meas_polling_counter = 1;
+//    // Initialize measures for demo3
+//    g_enb_ral_obj[instanceP].meas_polling_interval = RAL_DEFAULT_MEAS_POLLING_INTERVAL;
+//    g_enb_ral_obj[instanceP].meas_polling_counter = 1;
 
-    ralpriv->congestion_flag = RAL_FALSE;
-    ralpriv->measures_triggered_flag = RAL_FALSE;
-    ralpriv->congestion_threshold = RAL_DEFAULT_CONGESTION_THRESHOLD;
-    transaction_id = (MIH_C_TRANSACTION_ID_T)0;
+//    g_enb_ral_obj[instanceP].congestion_flag = RAL_FALSE;
+//    g_enb_ral_obj[instanceP].measures_triggered_flag = RAL_FALSE;
+//    g_enb_ral_obj[instanceP].congestion_threshold = RAL_DEFAULT_CONGESTION_THRESHOLD;
+//    transaction_id = (MIH_C_TRANSACTION_ID_T)0;
 
-    eRALlte_send_link_register_indication(&transaction_id);
+//    eRALlte_send_link_register_indication(&transaction_id);
 
     return 0;
+}
+
+void eRAL_process_file_descriptors(struct epoll_event *events, int nb_events)
+{
+    int                i;
+    ral_enb_instance_t instance;
+    hashtable_rc_t     rc;
+
+    if (events == NULL) {
+        return;
+    }
+
+    for (i = 0; i < nb_events; i++) {
+        rc = hashtable_get(g_enb_ral_fd2instance, events[i].data.fd, (void**)&instance);
+        if (rc == HASH_TABLE_OK) {
+            eRAL_mih_link_process_message(instance);
+        }
+    }
+}
+
+void* eRAL_task(void *args_p) {
+    int                 nb_events;
+    struct epoll_event *events;
+    MessageDef         *msg_p    = NULL;
+    const char         *msg_name = NULL;
+    instance_t          instance  = 0;
+
+
+    eRAL_initialize();
+    itti_mark_task_ready (TASK_RAL_ENB);
+
+    while(1) {
+        // Wait for a message
+        itti_receive_msg (TASK_RAL_ENB, &msg_p);
+
+        if (msg_p != NULL) {
+
+            msg_name = ITTI_MSG_NAME (msg_p);
+            instance = ITTI_MSG_INSTANCE (msg_p);
+
+            switch (ITTI_MSG_ID(msg_p)) {
+                case TERMINATE_MESSAGE:
+                    // TO DO
+                    itti_exit_task ();
+                    break;
+
+                case TIMER_HAS_EXPIRED:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    break;
+
+                case RRC_RAL_SYSTEM_CONFIGURATION_IND:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_system_configuration_indication(instance, msg_p);
+                    break;
+
+                case RRC_RAL_CONNECTION_ESTABLISHMENT_IND:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_connection_establishment_indication(instance, msg_p);
+                    break;
+
+                case RRC_RAL_CONNECTION_REESTABLISHMENT_IND:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_connection_reestablishment_indication(instance, msg_p);
+                    break;
+
+                case RRC_RAL_CONNECTION_RECONFIGURATION_IND:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_connection_reconfiguration_indication(instance, msg_p);
+                    break;
+
+                case RRC_RAL_MEASUREMENT_REPORT_IND:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_measurement_report_indication(instance, msg_p);
+                    break;
+
+                case RRC_RAL_CONNECTION_RELEASE_IND:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_connection_release_indication(instance, msg_p);
+                    break;
+
+                case RRC_RAL_CONFIGURE_THRESHOLD_CONF:
+                    LOG_D(RAL_ENB, "Received %s\n", msg_name);
+                    eRAL_rx_rrc_ral_configure_threshold_conf(instance, msg_p);
+                    break;
+                default:
+                    LOG_E(RAL_ENB, "Received unexpected message %s\n", msg_name);
+                    break;
+            }
+            free(msg_p);
+            msg_p = NULL;
+        }
+        nb_events = itti_get_events(TASK_RAL_ENB, &events);
+        /* Now handle notifications for other sockets */
+        if (nb_events > 0) {
+            eRAL_process_file_descriptors(events, nb_events);
+        }
+    }
 }
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
-int main(int argc, const char *argv[]){
+/*int main(int argc, const char *argv[]){
 //-----------------------------------------------------------------------------
     int            rc, done;
     fd_set         readfds;
@@ -595,11 +566,11 @@ int main(int argc, const char *argv[]){
 
     RAL_initialize(argc, argv);
 
-    ralpriv->pending_mt_timer = 0;
+    g_enb_ral_obj[instanceP].pending_mt_timer = 0;
 
     done = 0;
     do {
- /* Initialize fd_set and wait for input */
+ // Initialize fd_set and wait for input
         FD_ZERO(&readfds);
         FD_SET(g_sockd_mihf, &readfds);
         #ifdef RAL_DUMMY
@@ -616,29 +587,29 @@ int main(int argc, const char *argv[]){
             perror("main : select() failed");
             done = 1;
         }
-        /* Something is ready for being read */
+        // Something is ready for being read
         else if (rc >= 0){
-          /* Read data coming from the MIH Function */
+          // Read data coming from the MIH Function
           if (FD_ISSET(g_sockd_mihf, &readfds)) {
               done = eRALlte_mih_link_process_message();
           }
           #ifdef RAL_DUMMY
-          /* Read data coming from the NAS driver */
+          // Read data coming from the NAS driver
             if (FD_ISSET(g_sockd_nas, &readfds)) {
                 //printf("Received something from NAS\n");
                 done = eRALlte_NAS_process_message();
             }
           #endif
           #ifdef MUSER_CONTROL
-          /* Get triggers */
+          // Get triggers
           if (FD_ISSET(g_sockd_user,&readfds)){
               done = lteRALenb_trigger_receive(g_sockd_user);
           }
           #endif
 
-          /* Wait until next pending MT's timer expiration */
-          if (ralpriv->pending_mt_timer > 0) {
-              ralpriv->pending_mt_timer --;
+          // Wait until next pending MT's timer expiration
+          if (g_enb_ral_obj[instanceP].pending_mt_timer > 0) {
+              g_enb_ral_obj[instanceP].pending_mt_timer --;
               eRALlte_process_verify_pending_mt_status();
           }
 
@@ -650,9 +621,9 @@ int main(int argc, const char *argv[]){
              time_counter = 1;
           }
             //get measures from NAS - timer = 21x100ms  -- impair
-          if (ralpriv->meas_polling_counter ++ == ralpriv->meas_polling_interval){
+          if (g_enb_ral_obj[instanceP].meas_polling_counter ++ == g_enb_ral_obj[instanceP].meas_polling_interval){
               RAL_NAS_measures_polling();
-              ralpriv->meas_polling_counter =1;
+              g_enb_ral_obj[instanceP].meas_polling_counter =1;
           }
 
         }
@@ -662,3 +633,4 @@ int main(int argc, const char *argv[]){
     MIH_C_exit();
     return 0;
 }
+ */

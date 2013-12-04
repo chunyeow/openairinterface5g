@@ -23,7 +23,7 @@ int MIH_C_Link_Message_Decode_Link_Capability_Discover_request(Bit_Buffer_t* bbP
     if (tlv == MIH_C_TLV_SOURCE_MIHF_ID) {
         MIH_C_MIHF_ID_decode(bbP, &messageP->source);
     } else {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_SOURCE_MIHF_ID\n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_SOURCE_MIHF_ID\n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
 
@@ -33,25 +33,25 @@ int MIH_C_Link_Message_Decode_Link_Capability_Discover_request(Bit_Buffer_t* bbP
     if (tlv == MIH_C_TLV_DESTINATION_MIHF_ID) {
         MIH_C_MIHF_ID_decode(bbP, &messageP->destination);
     } else {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_DESTINATION_MIHF_ID\n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_DESTINATION_MIHF_ID\n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
 
     status = MIH_C_Link_Primitive_Decode_Link_Capability_Discover_request(bbP, &messageP->primitive);
     if (status == MIH_PRIMITIVE_DECODE_OK) {
-        DEBUG(" %s() -> MIH_MESSAGE_DECODE_OK \n", __FUNCTION__);
+        printf("[MIH_C] %s() -> MIH_MESSAGE_DECODE_OK \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_OK;
     }
     if (status == MIH_PRIMITIVE_DECODE_TOO_SHORT) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_TOO_SHORT \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_TOO_SHORT \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_TOO_SHORT;
     }
     if (status == MIH_PRIMITIVE_DECODE_FAILURE) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
     if (status == MIH_PRIMITIVE_DECODE_BAD_PARAMETER) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_BAD_PARAMETER \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_BAD_PARAMETER \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_BAD_PARAMETER;
     }
     return status;
@@ -87,7 +87,7 @@ int MIH_C_Link_Message_Decode_Link_Event_Subscribe_request(Bit_Buffer_t* bbP, MI
     if (tlv == MIH_C_TLV_SOURCE_MIHF_ID) {
         MIH_C_MIHF_ID_decode(bbP, &messageP->source);
     } else {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_SOURCE_MIHF_ID\n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_SOURCE_MIHF_ID\n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
 
@@ -97,25 +97,25 @@ int MIH_C_Link_Message_Decode_Link_Event_Subscribe_request(Bit_Buffer_t* bbP, MI
     if (tlv == MIH_C_TLV_DESTINATION_MIHF_ID) {
         MIH_C_MIHF_ID_decode(bbP, &messageP->destination);
     } else {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_DESTINATION_MIHF_ID\n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_DESTINATION_MIHF_ID\n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
 
     status = MIH_C_Link_Primitive_Decode_Link_Event_Subscribe_request(bbP, &messageP->primitive);
     if (status == MIH_PRIMITIVE_DECODE_OK) {
-        DEBUG(" %s() -> MIH_MESSAGE_DECODE_OK \n", __FUNCTION__);
+        printf("[MIH_C] %s() -> MIH_MESSAGE_DECODE_OK \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_OK;
     }
     if (status == MIH_PRIMITIVE_DECODE_TOO_SHORT) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_TOO_SHORT \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_TOO_SHORT \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_TOO_SHORT;
     }
     if (status == MIH_PRIMITIVE_DECODE_FAILURE) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
     if (status == MIH_PRIMITIVE_DECODE_BAD_PARAMETER) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_BAD_PARAMETER \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_BAD_PARAMETER \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_BAD_PARAMETER;
     }
     return status;
@@ -151,7 +151,7 @@ int MIH_C_Link_Message_Decode_Link_Event_Unsubscribe_request(Bit_Buffer_t* bbP, 
     if (tlv == MIH_C_TLV_SOURCE_MIHF_ID) {
         MIH_C_MIHF_ID_decode(bbP, &messageP->source);
     } else {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_SOURCE_MIHF_ID\n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_SOURCE_MIHF_ID\n", __FUNCTION__);
         return MIH_PRIMITIVE_DECODE_FAILURE;
     }
 
@@ -161,25 +161,25 @@ int MIH_C_Link_Message_Decode_Link_Event_Unsubscribe_request(Bit_Buffer_t* bbP, 
     if (tlv == MIH_C_TLV_DESTINATION_MIHF_ID) {
         MIH_C_MIHF_ID_decode(bbP, &messageP->destination);
     } else {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_DESTINATION_MIHF_ID\n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE @ MIH_C_TLV_DESTINATION_MIHF_ID\n", __FUNCTION__);
         return MIH_PRIMITIVE_DECODE_FAILURE;
     }
 
     status = MIH_C_Link_Primitive_Decode_Link_Event_Unsubscribe_request(bbP, &messageP->primitive);
     if (status == MIH_PRIMITIVE_DECODE_OK) {
-        DEBUG(" %s() -> MIH_MESSAGE_DECODE_OK \n", __FUNCTION__);
+        printf("[MIH_C] %s() -> MIH_MESSAGE_DECODE_OK \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_OK;
     }
     if (status == MIH_PRIMITIVE_DECODE_TOO_SHORT) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_TOO_SHORT \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_TOO_SHORT \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_TOO_SHORT;
     }
     if (status == MIH_PRIMITIVE_DECODE_FAILURE) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_FAILURE \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_FAILURE \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_FAILURE;
     }
     if (status == MIH_PRIMITIVE_DECODE_BAD_PARAMETER) {
-        ERR(" %s() -> MIH_MESSAGE_DECODE_BAD_PARAMETER \n", __FUNCTION__);
+        printf("[MIH_C] ERROR  %s() -> MIH_MESSAGE_DECODE_BAD_PARAMETER \n", __FUNCTION__);
         return MIH_MESSAGE_DECODE_BAD_PARAMETER;
     }
     return status;

@@ -7,7 +7,6 @@
 #include <arpa/inet.h>
 //-----------------------------------------------------------------------------
 #include "MIH_C_bit_buffer.h"
-#include "MIH_C_log.h"
 //-----------------------------------------------------------------------------
 Bit_Buffer_t* new_BitBuffer_0(void)
 //-----------------------------------------------------------------------------
@@ -115,7 +114,7 @@ u_int32_t BitBuffer_read(Bit_Buffer_t* bbP, const unsigned int nb_bitsP)
     //cout << dec << "BitBuffer_read(" << nb_bitsP << ")"<< endl;
     if (BitBuffer_isCheckReadOverflowOK(bbP, nb_bitsP)) {
         if (nb_bitsP > (sizeof(unsigned long)*8)) {
-            ERR("BitBuffer_read nb bits too large - must be <= sizeof(long int)*8");
+            printf("[MIH_C] ERROR BitBuffer_read nb bits too large - must be <= sizeof(long int)*8");
         } else {
             do {
                 data_l          = data_l << 8;
@@ -254,7 +253,7 @@ void BitBuffer_write8b(Bit_Buffer_t* bbP, u_int8_t valueP, unsigned int nb_bitsP
         valueP = valueP & ((u_int8_t)(0xFF) >> (8 - nb_bitsP));
     //std::cout << "BitBuffer_write char " << (u_int32_t)(valueP) << " " << nb_bitsP  << " bits" << std::endl;
     if (nb_bitsP > (sizeof(unsigned char)*8)) {
-        ERR("BitBuffer_write nb bits too large - must be <= sizeof(char)*8");
+        printf("[MIH_C] ERROR BitBuffer_write nb bits too large - must be <= sizeof(char)*8");
     } else {
         if (bbP->m_bit_mod_8_position == 0) {
             if (nb_bitsP == (sizeof(unsigned char)*8)) {
@@ -288,7 +287,7 @@ void BitBuffer_write16b(Bit_Buffer_t* bbP, u_int16_t valueP, unsigned int nb_bit
    if (BitBuffer_isCheckWriteOverflowOK(bbP,nb_bitsP)) {
         valueP = valueP & ((u_int16_t)(0xFFFF) >> (16 - nb_bitsP));
     if (nb_bitsP > (sizeof (u_int16_t)*8)) {
-        ERR("BitBuffer_write nb bits too large - must be <= sizeof (short)*8");
+        printf("[MIH_C] ERROR BitBuffer_write nb bits too large - must be <= sizeof (short)*8");
     } else {
         if (nb_bitsP > 8) {
             //BitBuffer_write8b(bbP,(u_int8_t)(valueP >> (8 - (16-nb_bitsP))), nb_bitsP - 8);
@@ -308,7 +307,7 @@ void BitBuffer_writelittleendian16b(Bit_Buffer_t* bbP, u_int16_t valueP, unsigne
    if (BitBuffer_isCheckWriteOverflowOK(bbP,nb_bitsP)) {
         valueP = valueP & ((u_int16_t)(0xFFFF) >> (16 - nb_bitsP));
     if (nb_bitsP > (sizeof (u_int16_t)*8)) {
-        ERR("BitBuffer_write nb bits too large - must be <= sizeof (short)*8");
+        printf("[MIH_C] ERROR BitBuffer_write nb bits too large - must be <= sizeof (short)*8");
     } else {
         if (nb_bitsP > 8) {
             BitBuffer_write8(bbP,(u_int8_t)(valueP));
@@ -328,7 +327,7 @@ void BitBuffer_write32b(Bit_Buffer_t* bbP, u_int32_t valueP, unsigned int nb_bit
    if (BitBuffer_isCheckWriteOverflowOK(bbP,nb_bitsP)) {
         valueP = valueP & ((u_int32_t)(0xFFFFFFFF) >> (32 - nb_bitsP));
     if (nb_bitsP > (sizeof (u_int32_t)*8)) {
-        ERR("BitBuffer_write nb bits too large - must be <= sizeof (int)*8");
+        printf("[MIH_C] ERROR BitBuffer_write nb bits too large - must be <= sizeof (int)*8");
     } else {
         if (nb_bitsP > 24) {
             //BitBuffer_write8b(bbP,(u_int8_t)(valueP >> (24 - (32-nb_bitsP))), nb_bitsP - 24);
@@ -359,7 +358,7 @@ void BitBuffer_writelittleendian32b(Bit_Buffer_t* bbP, u_int32_t valueP, unsigne
    if (BitBuffer_isCheckWriteOverflowOK(bbP,nb_bitsP)) {
         valueP = valueP & ((u_int32_t)(0xFFFFFFFF) >> (32 - nb_bitsP));
     if (nb_bitsP > (sizeof (u_int32_t)*8)) {
-        ERR("BitBuffer_write nb bits too large - must be <= sizeof (int)*8");
+        printf("[MIH_C] ERROR BitBuffer_write nb bits too large - must be <= sizeof (int)*8");
     } else {
         if (nb_bitsP > 24) {
             BitBuffer_write8(bbP,(u_int8_t)(valueP));

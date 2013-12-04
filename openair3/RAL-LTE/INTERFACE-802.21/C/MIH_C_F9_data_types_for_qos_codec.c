@@ -159,7 +159,7 @@ inline void MIH_C_QOS_PARAM_VAL_encode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T 
         case 4:  MIH_C_PK_DELAY_JITTER_LIST_encode(bbP, &dataP->_union.pk_delay_jitter_list); break;
         case 5:  MIH_C_PK_LOSS_RATE_LIST_encode(bbP, &dataP->_union.pk_loss_rate_list); break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_QOS_PARAM_VAL_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_QOS_PARAM_VAL_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -174,7 +174,7 @@ inline void MIH_C_QOS_PARAM_VAL_decode(Bit_Buffer_t* bbP, MIH_C_QOS_PARAM_VAL_T 
         case 4:  MIH_C_PK_DELAY_JITTER_LIST_decode(bbP, &dataP->_union.pk_delay_jitter_list); break;
         case 5:  MIH_C_PK_LOSS_RATE_LIST_decode(bbP, &dataP->_union.pk_loss_rate_list); break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_QOS_PARAM_VAL_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_QOS_PARAM_VAL_T %d\n", dataP->choice);
     }
 }
 

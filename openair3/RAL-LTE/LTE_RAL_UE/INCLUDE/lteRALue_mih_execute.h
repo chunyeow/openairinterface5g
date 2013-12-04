@@ -38,18 +38,18 @@
 #    define __MRALLTE_MIH_EXECUTE_H__
 //-----------------------------------------------------------------------------
 #        ifdef MRALLTE_MIH_EXECUTE_C
-#            define private_mRALlte_mih_execute(x)    x
-#            define protected_mRALlte_mih_execute(x)  x
-#            define public_mRALlte_mih_execute(x)     x
+#            define private_mRAL_mih_execute(x)    x
+#            define protected_mRAL_mih_execute(x)  x
+#            define public_mRAL_mih_execute(x)     x
 #        else
-#            ifdef MRAL_MODULE
-#                define private_mRALlte_mih_execute(x)
-#                define protected_mRALlte_mih_execute(x)  extern x
-#                define public_mRALlte_mih_execute(x)     extern x
+#            ifdef LTE_RAL_UE
+#                define private_mRAL_mih_execute(x)
+#                define protected_mRAL_mih_execute(x)  extern x
+#                define public_mRAL_mih_execute(x)     extern x
 #            else
-#                define private_mRALlte_mih_execute(x)
-#                define protected_mRALlte_mih_execute(x)
-#                define public_mRALlte_mih_execute(x)     extern x
+#                define private_mRAL_mih_execute(x)
+#                define protected_mRAL_mih_execute(x)
+#                define public_mRAL_mih_execute(x)     extern x
 #            endif
 #        endif
 //-----------------------------------------------------------------------------
@@ -61,21 +61,20 @@
 #include <sys/types.h>
 #include <ctype.h>
 //-----------------------------------------------------------------------------
-#include "MIH_C.h"
-#include "lteRALue_constants.h"
-#include "lteRALue_mih_msg.h"
+#include "lteRALue.h"
+
 //-----------------------------------------------------------------------------
-protected_mRALlte_mih_execute(MIH_C_LINK_ACTION_T g_link_action;)
+protected_mRAL_mih_execute(MIH_C_LINK_ACTION_T g_link_action;)
 //-----------------------------------------------------------------------------
-protected_mRALlte_mih_execute(void mRALlte_action_request(MIH_C_Message_Link_Action_request_t* messageP);)
+protected_mRAL_mih_execute(void mRAL_action_request(MIH_C_Message_Link_Action_request_t* messageP);)
 //-----------------------------------------------------------------------------
-protected_mRALlte_mih_execute(void mRALlte_get_parameters_request(MIH_C_Message_Link_Get_Parameters_request_t* messageP);)
+protected_mRAL_mih_execute(void mRAL_get_parameters_request(MIH_C_Message_Link_Get_Parameters_request_t* messageP);)
 //-----------------------------------------------------------------------------
-protected_mRALlte_mih_execute(void mRALlte_subscribe_request  (MIH_C_Message_Link_Event_Subscribe_request_t*   messageP);)
-protected_mRALlte_mih_execute(void mRALlte_unsubscribe_request(MIH_C_Message_Link_Event_Unsubscribe_request_t* messageP);)
+protected_mRAL_mih_execute(void mRAL_subscribe_request  (MIH_C_Message_Link_Event_Subscribe_request_t*   messageP);)
+protected_mRAL_mih_execute(void mRAL_unsubscribe_request(MIH_C_Message_Link_Event_Unsubscribe_request_t* messageP);)
 //-----------------------------------------------------------------------------
-protected_mRALlte_mih_execute(LIST(MIH_C_LINK_CFG_PARAM, g_link_cfg_param_thresholds);)
+protected_mRAL_mih_execute(LIST(MIH_C_LINK_CFG_PARAM, g_link_cfg_param_thresholds);)
 //-----------------------------------------------------------------------------
-protected_mRALlte_mih_execute(void mRALlte_configure_thresholds_request(MIH_C_Message_Link_Configure_Thresholds_request_t* messageP);)
-public_mRALlte_mih_execute(void mRALlte_check_thresholds_signal_strength(MIH_C_THRESHOLD_VAL_T new_valP, MIH_C_THRESHOLD_VAL_T old_valP);)
+protected_mRAL_mih_execute(void mRAL_configure_thresholds_request(MIH_C_Message_Link_Configure_Thresholds_request_t* messageP);)
+public_mRAL_mih_execute(void mRAL_check_thresholds_signal_strength(MIH_C_THRESHOLD_VAL_T new_valP, MIH_C_THRESHOLD_VAL_T old_valP);)
 #endif

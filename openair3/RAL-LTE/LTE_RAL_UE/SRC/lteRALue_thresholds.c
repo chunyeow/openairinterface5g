@@ -1,55 +1,69 @@
-/*****************************************************************************
- *   Eurecom OpenAirInterface 3
- *    Copyright(c) 2012 Eurecom
- *
- * Source eRAL_thresholds.c
- *
- * Version 0.1
- *
- * Date  07/03/2012
- *
- * Product MIH RAL LTE
- *
- * Subsystem 
- *
- * Authors Michelle Wetterwald, Lionel Gauthier, Frederic Maurel
- *
- * Description 
- *
- *****************************************************************************/
-#define LTE_RAL_ENB
-#define LTE_RAL_ENB_THRESHOLDS_C
-#include <assert.h>
-#include "lteRALenb.h"
+/***************************************************************************
+                         ltmRALue_thresholds.c  -  description
+ ***************************************************************************
+  Eurecom OpenAirInterface 3
+  Copyright(c) 1999 - 2013 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fr/openairinterface
+  Address      : Eurecom, 450 route des Chappes, 06410 Biot Sophia Antipolis, France
+*******************************************************************************/
+/*! \file ltmRALue_thresholds.c
+ * \brief
+ * \author WETTERWALD Michelle, GAUTHIER Lionel, MAUREL Frederic
+ * \date 2013
+ * \company EURECOM
+ * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
+ */
+/*******************************************************************************/
+#define LTE_RAL_UE
+#define LTERALUE_THRESHOLDS_C
+//-----------------------------------------------------------------------------
+#include "lteRALue.h"
 
 
-/****************************************************************************/
-/******************  E X P O R T E D    F U N C T I O N S  ******************/
-/****************************************************************************/
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRAL_configure_thresholds_request()                          **
+ ** Name:  mRAL_configure_thresholds_request()                             **
  **                                                                        **
  ** Description: Forwards the Link_Configure_Thresholds.request message    **
  **   to the RRC layer.                                                    **
  **                                                                        **
  ** Inputs:  msgP:  Pointer to the received message                        **
- **     Others: ralpriv                                                    **
+ **     Others:                                                            **
  **                                                                        **
  ** Outputs:  None                                                         **
  ** Return:   None                                                         **
  ** Others:   None                                                         **
  **                                                                        **
  ***************************************************************************/
-void eRAL_configure_thresholds_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Configure_Thresholds_request_t* msgP)
+void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Configure_Thresholds_request_t* msgP)
 {
     unsigned int                             index;
     unsigned int                             th_index;
     rrc_ral_configure_threshold_req_t        configure_threshold_req;
     MessageDef                              *message_p;
 
-    message_p = itti_alloc_new_message (TASK_RAL_ENB, RRC_RAL_CONFIGURE_THRESHOLD_REQ);
+    message_p = itti_alloc_new_message (TASK_RAL_UE, RRC_RAL_CONFIGURE_THRESHOLD_REQ);
 
     memset(&configure_threshold_req, 0, sizeof(rrc_ral_configure_threshold_req_t));
 
@@ -108,11 +122,11 @@ void eRAL_configure_thresholds_request(ral_enb_instance_t instanceP, MIH_C_Messa
 
 
     memcpy (&message_p->ittiMsg, (void *) &configure_threshold_req, sizeof(rrc_ral_configure_threshold_req_t));
-    itti_send_msg_to_task (TASK_RRC_ENB, instanceP, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void eRAL_rx_rrc_ral_configure_threshold_conf(instance_t instance, MessageDef *msg_p)
+void mRAL_rx_rrc_ral_configure_threshold_conf(ral_ue_instance_t instance, MessageDef *msg_p)
 //---------------------------------------------------------------------------------------------------------------------
 {
     MIH_C_STATUS_T                      status;
@@ -149,8 +163,14 @@ void eRAL_rx_rrc_ral_configure_threshold_conf(instance_t instance, MessageDef *m
             link_cfg_status_list.val[i].config_status            = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].config_status;
             link_cfg_status_list.length += 1;
         }
-        eRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).transaction_id, &status, &link_cfg_status_list);
+        mRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).transaction_id, &status, &link_cfg_status_list);
     } else {
-        eRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).transaction_id, &status, NULL);
+        mRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).transaction_id, &status, NULL);
     }
+}
+//---------------------------------------------------------------------------------------------------------------------
+void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instance, MessageDef *msg_p)
+//---------------------------------------------------------------------------------------------------------------------
+{
+
 }

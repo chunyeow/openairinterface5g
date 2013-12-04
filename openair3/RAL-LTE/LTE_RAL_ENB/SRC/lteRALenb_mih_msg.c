@@ -25,7 +25,7 @@
   Openair Tech : openair_tech@eurecom.fr
   Forums       : http://forums.eurecom.fsr/openairinterface
   Address      : Eurecom, 450 route des Chappes, 06410 Biot Sophia Antipolis, France
-*******************************************************************************/
+ *******************************************************************************/
 /*! \file lteRALenb_mih_msg.c
  * \brief Interface for MIH primitives in LTE-RAL-ENB
  * \author WETTERWALD Michelle, GAUTHIER Lionel, MAUREL Frederic
@@ -34,15 +34,9 @@
  * \email: michelle.wetterwald@eurecom.fr, lionel.gauthier@eurecom.fr, frederic.maurel@eurecom.fr
  */
 /*******************************************************************************/
-#include "lteRALenb_mih_msg.h"
-
-#include "lteRALenb_constants.h"
-#include "lteRALenb_variables.h"
-
-#include "lteRALenb_subscribe.h"
-#include "lteRALenb_parameters.h"
-#include "lteRALenb_thresholds.h"
-#include "lteRALenb_action.h"
+#define LTE_RAL_ENB
+#define LTE_RAL_ENB_MIH_MSG_C
+#include "lteRALenb.h"
 
 /****************************************************************************/
 /*******************  G L O C A L    D E F I N I T I O N S  *****************/
@@ -61,17 +55,6 @@ static u_int8_t g_msg_codec_send_buffer[MSG_CODEC_SEND_BUFFER_SIZE] = {};
 static char g_msg_print_buffer[8192] = {};
 static char g_msg_codec_print_buffer[8192] = {};
 
-static int eRALlte_mih_link_msg_decode(Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_t *message_wrapperP);
-
-static int eRALlte_send_to_mih(const u_int8_t *bufferP, int lenP);
-
-static void eRALlte_print_buffer(const u_int8_t * bufferP, int lenP);
-
-#ifdef MSCGEN_PYTOOL
-#define MSC_GEN_BUF_SIZE 1024
-static char     g_msc_gen_buf[MSC_GEN_BUF_SIZE];
-static unsigned int g_msc_gen_buffer_index;
-#endif
 
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
@@ -83,7 +66,7 @@ static unsigned int g_msc_gen_buffer_index;
  */
 
 /****************************************************************************
- ** Name:  eRALlte_send_link_register_indication()                         **
+ ** Name:  eRAL_send_link_register_indication()                         **
  ** Description: Sends a Link_Register.indication message to the MIHF.     **
  **   This message is ODTONE specific and not defined by the 802.21        **
  **   standard. It allows the Link SAP to send informations to the MIHF    **
@@ -91,17 +74,17 @@ static unsigned int g_msc_gen_buffer_index;
  **      Upon receiving this message the MIHF executes its Link SAPs       **
  **   discovery procedure in order to get the full link capabilities.      **
  ** Inputs:  tidP  Transaction identifier                                  **
- **     Others: g_link_id, g_mihf_id, ralpriv                              **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id, ralpriv                              **
  ** Outputs:  None                                                         **
  **     Others: g_msg_codec_send_buffer                                    **
  ***************************************************************************/
-void eRALlte_send_link_register_indication(MIH_C_TRANSACTION_ID_T  *tidP)
+void eRAL_send_link_register_indication(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T  *tidP)
 {
     MIH_C_Message_Link_Register_indication_t  message;
     Bit_Buffer_t                             *bb;
     int                                       message_total_length;
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_REGISTER_INDICATION\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_REGISTER_INDICATION\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -119,52 +102,32 @@ void eRALlte_send_link_register_indication(MIH_C_TRANSACTION_ID_T  *tidP)
     message.header.action_identifier    = (MIH_C_AID_T)6;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Link_Id.link_type        = MIH_C_WIRELESS_UMTS;
     message.primitive.Link_Id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_3G_CELL_ID;
 
     Bit_Buffer_t *plmn = new_BitBuffer_0();
-    BitBuffer_wrap(plmn, (unsigned char*) ralpriv->plmn, DEFAULT_PLMN_SIZE);
+    BitBuffer_wrap(plmn, (unsigned char*) &g_enb_ral_obj[instanceP].plmn_id, DEFAULT_PLMN_SIZE);
     MIH_C_PLMN_ID_decode(plmn, &message.primitive.Link_Id.link_addr._union._3gpp_3g_cell_id.plmn_id);
-    message.primitive.Link_Id.link_addr._union._3gpp_3g_cell_id.cell_id = ralpriv->curr_cellId;
+    message.primitive.Link_Id.link_addr._union._3gpp_3g_cell_id.cell_id = g_enb_ral_obj[instanceP].cell_id;
     free_BitBuffer(plmn);
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Register_indication(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    MIH_C_LINK_ID2String(&message.primitive.Link_Id, g_msc_gen_buf);
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Register.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Register.indication\\n%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Register.indication\n");
     } else {
-        DEBUG(": Sent Link_Register.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Register.indication\\n%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Register.indication\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_capability_discover_confirm()                **
+ ** Name:  eRAL_send_capability_discover_confirm()                **
  **                                                                        **
  ** Description: Sends capability discover service management response to  **
  **   the MIH-F.                                                **
@@ -174,23 +137,23 @@ void eRALlte_send_link_register_indication(MIH_C_TRANSACTION_ID_T  *tidP)
  **     levt_listP: List of events supported by the link layer **
  **     lcmd_listP: List of commands supported by the link     **
  **    layer                                      **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_capability_discover_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
-     MIH_C_STATUS_T          *statusP,
-     MIH_C_LINK_EVENT_LIST_T *link_evt_listP,
-     MIH_C_LINK_CMD_LIST_T   *link_cmd_listP)
+void eRAL_send_capability_discover_confirm(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T  *tidP,
+        MIH_C_STATUS_T          *statusP,
+        MIH_C_LINK_EVENT_LIST_T *link_evt_listP,
+        MIH_C_LINK_CMD_LIST_T   *link_cmd_listP)
 {
     MIH_C_Message_Link_Capability_Discover_confirm_t  message;
     Bit_Buffer_t                                      *bb;
     int                                               message_total_length;
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_CONFIRM\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_CONFIRM\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -208,8 +171,8 @@ void eRALlte_send_capability_discover_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)1;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Status                   = *statusP;
     message.primitive.SupportedLinkEventList   = link_evt_listP;
@@ -217,41 +180,17 @@ void eRALlte_send_capability_discover_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
 
     message_total_length = MIH_C_Link_Message_Encode_Capability_Discover_confirm(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_STATUS2String(&message.primitive.Status, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n\\nsupported link events=");
-    g_msc_gen_buffer_index += MIH_C_LINK_EVENT_LIST2String2(message.primitive.SupportedLinkEventList, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nsupported commands=");
-    g_msc_gen_buffer_index += MIH_C_LINK_CMD_LIST2String2(message.primitive.SupportedLinkCommandList, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Capability_Discover.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Capability_Discover.confirm\\nstatus=%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Capability_Discover.confirm\n");
     } else {
-        DEBUG(": Sent Link_Capability_Discover.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Capability_Discover.confirm\\nstatus=%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Capability_Discover.confirm\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_event_subscribe_confirm()                    **
+ ** Name:  eRAL_send_event_subscribe_confirm()                    **
  **                                                                        **
  ** Description: Sends a Link_Event_Subscribe.confirm message to the MIHF. **
  **                                                                        **
@@ -261,22 +200,22 @@ void eRALlte_send_capability_discover_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
  ** Inputs:  tidP  Transaction identifier                     **
  **     statusP: Status of operation                        **
  **     levt_listP: List of successfully subscribed link events**
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_event_subscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
-       MIH_C_STATUS_T          *statusP,
-       MIH_C_LINK_EVENT_LIST_T *levt_listP)
+void eRAL_send_event_subscribe_confirm(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T  *tidP,
+        MIH_C_STATUS_T          *statusP,
+        MIH_C_LINK_EVENT_LIST_T *levt_listP)
 {
     MIH_C_Message_Link_Event_Subscribe_confirm_t  message;
     Bit_Buffer_t                                 *bb;
     int                                           message_total_length;
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_EVENT_SUBSCRIBE_CONFIRM\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_EVENT_SUBSCRIBE_CONFIRM\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -294,50 +233,26 @@ void eRALlte_send_event_subscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)4;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Status                   = *statusP;
     message.primitive.ResponseLinkEventList    = levt_listP;
 
     message_total_length = MIH_C_Link_Message_Encode_Event_Subscribe_confirm(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_STATUS2String(&message.primitive.Status, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    if (levt_listP) {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nlink event list=");
- g_msc_gen_buffer_index += MIH_C_LINK_EVENT_LIST2String2(message.primitive.ResponseLinkEventList, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Event_Subscribe.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Subscribe.confirm\\nstatus=%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Event_Subscribe.confirm\n");
     } else {
-        DEBUG(": Sent Link_Event_Subscribe.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Subscribe.confirm\\nstatus=%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Event_Subscribe.confirm\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_event_unsubscribe_confirm()                  **
+ ** Name:  eRAL_send_event_unsubscribe_confirm()                  **
  **                                                                        **
  ** Description: Sends a Link_Event_Unsubscribe.confirm message to the     **
  **   MIHF.                                                     **
@@ -348,22 +263,22 @@ void eRALlte_send_event_subscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
  ** Inputs:  tidP  Transaction identifier                     **
  **     statusP: Status of operation                        **
  **     levt_listP: List of successfully subscribed link events**
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_event_unsubscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
-         MIH_C_STATUS_T          *statusP,
-         MIH_C_LINK_EVENT_LIST_T *levt_listP)
+void eRAL_send_event_unsubscribe_confirm(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T  *tidP,
+        MIH_C_STATUS_T          *statusP,
+        MIH_C_LINK_EVENT_LIST_T *levt_listP)
 {
     MIH_C_Message_Link_Event_Unsubscribe_confirm_t  message;
     Bit_Buffer_t                                   *bb;
     int                                             message_total_length;
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_EVENT_UNSUBSCRIBE_CONFIRM\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_EVENT_UNSUBSCRIBE_CONFIRM\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -381,43 +296,19 @@ void eRALlte_send_event_unsubscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)5;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Status                   = *statusP;
     message.primitive.ResponseLinkEventList    = levt_listP;
 
     message_total_length = MIH_C_Link_Message_Encode_Event_Unsubscribe_confirm(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_STATUS2String(&message.primitive.Status, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    if (levt_listP) {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nlink event list=");
- g_msc_gen_buffer_index += MIH_C_LINK_EVENT_LIST2String2(message.primitive.ResponseLinkEventList, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Event_Unsubscribe.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Unsubscribe.confirm\\nstatus=%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Event_Unsubscribe.confirm\n");
     } else {
-        DEBUG(": Sent Link_Event_Unsubscribe.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Unsubscribe.confirm\\nstatus=%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Event_Unsubscribe.confirm\n");
     }
     free_BitBuffer(bb);
 }
@@ -430,7 +321,7 @@ void eRALlte_send_event_unsubscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_link_detected_indication()                   **
+ ** Name:  eRAL_send_link_detected_indication()                   **
  **                                                                        **
  ** Description: Sends a Link_Detected.indication message to the MIHF.     **
  **                                                                        **
@@ -442,23 +333,23 @@ void eRALlte_send_event_unsubscribe_confirm(MIH_C_TRANSACTION_ID_T  *tidP,
  **                                                                        **
  ** Inputs:  tidP  Transaction identifier                     **
  **     linfoP: Information of the detected link           **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_link_detected_indication(MIH_C_TRANSACTION_ID_T  *tidP, MIH_C_LINK_DET_INFO_T   *linfoP){
+void eRAL_send_link_detected_indication(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T  *tidP, MIH_C_LINK_DET_INFO_T   *linfoP){
     MIH_C_Message_Link_Detected_indication_t  message;
     Bit_Buffer_t                             *bb;
     int                                       message_total_length;
 
-    if (!(ralpriv->mih_supported_link_event_list & MIH_C_BIT_LINK_DETECTED)) {
-      return;
+    if (!(g_enb_ral_obj[instanceP].mih_supported_link_event_list & MIH_C_BIT_LINK_DETECTED)) {
+        return;
     }
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_DETECTED_INDICATION\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_DETECTED_INDICATION\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -476,46 +367,25 @@ void eRALlte_send_link_detected_indication(MIH_C_TRANSACTION_ID_T  *tidP, MIH_C_
     message.header.action_identifier    = (MIH_C_AID_T)1;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     memcpy(&message.primitive.LinkDetectedInfo, linfoP,
-    sizeof(MIH_C_LINK_DET_INFO_T));
+            sizeof(MIH_C_LINK_DET_INFO_T));
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Detected_indication(bb, &message);
 
-#ifdef MSCGEN_PYTOOL
-    g_msc_gen_buffer_index = 0;
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = MIH_C_SIG_STRENGTH2String(&linfoP->sig_strength, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    g_msc_gen_buffer_index = sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nSINR %d\\nData rate %d", linfoP->sinr, linfoP->link_data_rate);
-#endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Detected.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Detected.indication\\n%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Detected.indication\n");
     } else {
-        DEBUG(": Sent Link_Detected.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Detected.indication\\n%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Detected.indication\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
- ** Name:  eRALlte_send_link_up_indication()                               **
+ ** Name:  eRAL_send_link_up_indication()                               **
  ** Description: Sends a Link_Up.indication message to the MIHF.           **
  **                                                                        **
  **   This notification is generated when a layer 2 connection is          **
@@ -529,22 +399,22 @@ void eRALlte_send_link_detected_indication(MIH_C_TRANSACTION_ID_T  *tidP, MIH_C_
  **          mobil_mngtP: Indicates the type of Mobility Management        **
  **                       Protocol supported by the new PoA                **
  ***************************************************************************/
-void eRALlte_send_link_up_indication(MIH_C_TRANSACTION_ID_T  *tidP,
-                                     MIH_C_LINK_TUPLE_ID_T   *lidP,
-                                     MIH_C_LINK_ADDR_T       *old_arP,
-                                     MIH_C_LINK_ADDR_T       *new_arP,
-                                     MIH_C_IP_RENEWAL_FLAG_T *flagP,
-                                     MIH_C_IP_MOB_MGMT_T     *mobil_mngtP)
+void eRAL_send_link_up_indication(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T  *tidP,
+        MIH_C_LINK_TUPLE_ID_T   *lidP,
+        MIH_C_LINK_ADDR_T       *old_arP,
+        MIH_C_LINK_ADDR_T       *new_arP,
+        MIH_C_IP_RENEWAL_FLAG_T *flagP,
+        MIH_C_IP_MOB_MGMT_T     *mobil_mngtP)
 {
     MIH_C_Message_Link_Up_indication_t  message;
     Bit_Buffer_t                        *bb;
     int                                 message_total_length;
 
-    if (!(ralpriv->mih_supported_link_event_list & MIH_C_BIT_LINK_UP)) {
-       return;
+    if (!(g_enb_ral_obj[instanceP].mih_supported_link_event_list & MIH_C_BIT_LINK_UP)) {
+        return;
     }
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_UP_INDICATION\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_UP_INDICATION\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -562,9 +432,9 @@ void eRALlte_send_link_up_indication(MIH_C_TRANSACTION_ID_T  *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)2;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     memcpy(&message.primitive.LinkIdentifier, lidP, sizeof(MIH_C_LINK_TUPLE_ID_T));
 
@@ -575,53 +445,16 @@ void eRALlte_send_link_up_indication(MIH_C_TRANSACTION_ID_T  *tidP,
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Up_indication(bb, &message);
 
-#ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_LINK_ID2String(&lidP->link_id, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nOldAccessRouter=");
-    if (old_arP) {
- g_msc_gen_buffer_index += MIH_C_LINK_ADDR2String(old_arP, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    else {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "null");
-    }
-
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nNewAccessRouter=");
-    if (old_arP) {
- g_msc_gen_buffer_index += MIH_C_LINK_ADDR2String(new_arP, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    else {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "null");
-    }
-
-#endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Up.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Up.indication\\n%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Up.indication\n");
     } else {
-        DEBUG(": Sent Link_Up.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Up.indication\\n%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Up.indication\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
- ** Name:  eRALlte_send_link_down_indication()                             **
+ ** Name:  eRAL_send_link_down_indication()                             **
  ** Description: Sends a Link_Down.indication message to the MIHF.         **
  **                                                                        **
  **   This notification is generated when layer 2 connectivity is lost.    **
@@ -635,20 +468,20 @@ void eRALlte_send_link_up_indication(MIH_C_TRANSACTION_ID_T  *tidP,
  **          old_arP: Old access router link address                       **
  **          reason_codeP: Reason why the link went down                   **
  ***************************************************************************/
-void eRALlte_send_link_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
-                                       MIH_C_LINK_TUPLE_ID_T  *lidP,
-                                       MIH_C_LINK_ADDR_T      *old_arP,
-                                       MIH_C_LINK_DN_REASON_T *reason_codeP)
+void eRAL_send_link_down_indication(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T *tidP,
+        MIH_C_LINK_TUPLE_ID_T  *lidP,
+        MIH_C_LINK_ADDR_T      *old_arP,
+        MIH_C_LINK_DN_REASON_T *reason_codeP)
 {
     MIH_C_Message_Link_Down_indication_t      message;
     Bit_Buffer_t                             *bb;
     int                                       message_total_length;
 
-    if (!(ralpriv->mih_supported_link_event_list & MIH_C_BIT_LINK_DOWN)) {
- return;
+    if (!(g_enb_ral_obj[instanceP].mih_supported_link_event_list & MIH_C_BIT_LINK_DOWN)) {
+        return;
     }
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_DOWN_INDICATION\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_DOWN_INDICATION\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -661,9 +494,9 @@ void eRALlte_send_link_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)3;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     memcpy(&message.primitive.LinkIdentifier, lidP, sizeof(MIH_C_LINK_TUPLE_ID_T));
     message.primitive.OldAccessRouter = old_arP;
@@ -671,46 +504,17 @@ void eRALlte_send_link_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Down_indication(bb, &message);
 
-#ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_LINK_ID2String(&lidP->link_id, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nOldAccessRouter=");
-    if (old_arP) {
-       g_msc_gen_buffer_index += MIH_C_LINK_ADDR2String(old_arP, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    else {
-       g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "null");
-    }
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nReasonCode=");
-    g_msc_gen_buffer_index += MIH_C_LINK_DN_REASON2String(reason_codeP, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-#endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Down.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Down.indication\\n%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Down.indication\n");
     } else {
-        DEBUG(": Sent Link_Down.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Down.indication\\n%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Down.indication\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_link_parameters_report_indication()          **
+ ** Name:  eRAL_send_link_parameters_report_indication()          **
  **                                                                        **
  ** Description: Sends a Link_Parameters_Report.indication message to the  **
  **   MIHF.                                                     **
@@ -723,29 +527,26 @@ void eRALlte_send_link_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
  ** Inputs:  tidP  Transaction identifier                     **
  **     lidP:  Link identifier                            **
  **     lparam_listP: List of link parameter reports             **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_link_parameters_report_indication(MIH_C_TRANSACTION_ID_T *tidP,
-                                   MIH_C_LINK_TUPLE_ID_T       *lidP,
-                                   MIH_C_LINK_PARAM_RPT_LIST_T *lparam_listP)
+void eRAL_send_link_parameters_report_indication(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T *tidP,
+        MIH_C_LINK_TUPLE_ID_T       *lidP,
+        MIH_C_LINK_PARAM_RPT_LIST_T *lparam_listP)
 {
     MIH_C_Message_Link_Parameters_Report_indication_t  message;
     Bit_Buffer_t                                       *bb;
     int                                                message_total_length;
-#ifdef MSCGEN_PYTOOL
-    int                                                i;
-#endif
 
-    if (!(ralpriv->mih_supported_link_event_list & MIH_C_BIT_LINK_PARAMETERS_REPORT)) {
- return;
+    if (!(g_enb_ral_obj[instanceP].mih_supported_link_event_list & MIH_C_BIT_LINK_PARAMETERS_REPORT)) {
+        return;
     }
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_PARAMETERS_REPORT_INDICATION\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_PARAMETERS_REPORT_INDICATION\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -763,9 +564,9 @@ void eRALlte_send_link_parameters_report_indication(MIH_C_TRANSACTION_ID_T *tidP
     message.header.action_identifier    = (MIH_C_AID_T)5;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
 
     memcpy(&message.primitive.LinkIdentifier, lidP, sizeof(MIH_C_LINK_TUPLE_ID_T));
@@ -773,41 +574,17 @@ void eRALlte_send_link_parameters_report_indication(MIH_C_TRANSACTION_ID_T *tidP
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Parameters_Report_indication(bb, &message);
 
-#ifdef MSCGEN_PYTOOL
-    g_msc_gen_buffer_index = 0;
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index += MIH_C_LINK_ID2String(&lidP->link_id, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    for (i = 0; i < lparam_listP->length; i++) {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n");
- g_msc_gen_buffer_index += MIH_C_LINK_PARAM_RPT2String(&lparam_listP->val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-#endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Parameters_Report.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Parameters_Report.indication\\n%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Parameters_Report.indication\n");
     } else {
-        DEBUG(": Sent Link_Parameters_Report.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Parameters_Report.indication\\n%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Parameters_Report.indication\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_link_going_down_indication()                 **
+ ** Name:  eRAL_send_link_going_down_indication()                 **
  **                                                                        **
  ** Description: Sends a Link_Going_Down.indication message to the MIHF.   **
  **                                                                        **
@@ -821,27 +598,27 @@ void eRALlte_send_link_parameters_report_indication(MIH_C_TRANSACTION_ID_T *tidP
  **     timeP:  The time interval (ms) at which the link   **
  **    is expected to go down (0 if unknown)      **
  **     lreasonP: Reason why the link is going to be down    **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_link_going_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
-          MIH_C_LINK_TUPLE_ID_T  *lidP,
-          MIH_C_UNSIGNED_INT2_T  *timeP,
-          MIH_C_LINK_GD_REASON_T *lreasonP)
+void eRAL_send_link_going_down_indication(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T *tidP,
+        MIH_C_LINK_TUPLE_ID_T  *lidP,
+        MIH_C_UNSIGNED_INT2_T  *timeP,
+        MIH_C_LINK_GD_REASON_T *lreasonP)
 {
     MIH_C_Message_Link_Going_Down_indication_t  message;
     Bit_Buffer_t                                *bb;
     int                                         message_total_length;
 
-    if (!(ralpriv->mih_supported_link_event_list & MIH_C_BIT_LINK_GOING_DOWN)) {
- return;
+    if (!(g_enb_ral_obj[instanceP].mih_supported_link_event_list & MIH_C_BIT_LINK_GOING_DOWN)) {
+        return;
     }
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_GOING_DOWN_INDICATION\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_GOING_DOWN_INDICATION\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -859,34 +636,22 @@ void eRALlte_send_link_going_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)6;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
 
     memcpy(&message.primitive.LinkIdentifier, lidP, sizeof(MIH_C_LINK_TUPLE_ID_T));
     message.primitive.TimeInterval = *timeP;
     memcpy(&message.primitive.LinkGoingDownReason, lreasonP,
-    sizeof(MIH_C_LINK_GD_REASON_T));
+            sizeof(MIH_C_LINK_GD_REASON_T));
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Going_Down_indication(bb, &message);
 
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Going_Down.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Going_Down.indication ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Going_Down.indication\n");
     } else {
-        DEBUG(": Sent Link_Going_Down.indication\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Going_Down.indication --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Going_Down.indication\n");
     }
     free_BitBuffer(bb);
 }
@@ -899,7 +664,7 @@ void eRALlte_send_link_going_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_get_parameters_confirm()                     **
+ ** Name:  eRAL_send_get_parameters_confirm()                     **
  **                                                                        **
  ** Description: Sends a Link_Get_Parameters.confirm message to the MIHF.  **
  **                                                                        **
@@ -912,27 +677,24 @@ void eRALlte_send_link_going_down_indication(MIH_C_TRANSACTION_ID_T *tidP,
  **    their current values                       **
  **     lstates_listP: List of current link state information     **
  **     ldesc_listP: List of link descriptors                   **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_get_parameters_confirm(MIH_C_TRANSACTION_ID_T       *tidP,
-      MIH_C_STATUS_T               *statusP,
-      MIH_C_LINK_PARAM_LIST_T      *lparam_listP,
-      MIH_C_LINK_STATES_RSP_LIST_T *lstates_listP,
-      MIH_C_LINK_DESC_RSP_LIST_T   *ldesc_listP)
+void eRAL_send_get_parameters_confirm(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T       *tidP,
+        MIH_C_STATUS_T               *statusP,
+        MIH_C_LINK_PARAM_LIST_T      *lparam_listP,
+        MIH_C_LINK_STATES_RSP_LIST_T *lstates_listP,
+        MIH_C_LINK_DESC_RSP_LIST_T   *ldesc_listP)
 {
     MIH_C_Message_Link_Get_Parameters_confirm_t  message;
     Bit_Buffer_t                                *bb;
     int                                          message_total_length;
-#ifdef MSCGEN_PYTOOL
-    int                                      i;
-#endif
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_GET_PARAMETERS_CONFIRM\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_GET_PARAMETERS_CONFIRM\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -950,9 +712,9 @@ void eRALlte_send_get_parameters_confirm(MIH_C_TRANSACTION_ID_T       *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)1;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Status                        = *statusP;
     message.primitive.LinkParametersStatusList_list = lparam_listP;
@@ -961,58 +723,17 @@ void eRALlte_send_get_parameters_confirm(MIH_C_TRANSACTION_ID_T       *tidP,
 
     message_total_length = MIH_C_Link_Message_Encode_Get_Parameters_confirm(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_STATUS2String(&message.primitive.Status, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    if (lparam_listP) {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n LinkParametersStatusList=");
- for (i = 0; i < lparam_listP->length; i++) {
-     g_msc_gen_buffer_index += MIH_C_LINK_PARAM2String(&lparam_listP->val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-     g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], ", ");
- }
-    }
-    if (lstates_listP) {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n LinkStatesResponseList=");
- for (i = 0; i < lstates_listP->length; i++) {
-     g_msc_gen_buffer_index += MIH_C_LINK_STATES_RSP2String(&lstates_listP->val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-     g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], ", ");
- }
-    }
-    if (ldesc_listP) {
- g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n LinkDescriptorsResponseList=");
- for (i = 0; i < ldesc_listP->length; i++) {
-     g_msc_gen_buffer_index += MIH_C_LINK_DESC_RSP2String(&ldesc_listP->val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-     g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], ", ");
- }
-    }
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Get_Parameters.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Get_Parameters.confirm\\nstatus=%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Get_Parameters.confirm\n");
     } else {
-        DEBUG(": Sent Link_Get_Parameters.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Get_Parameters.confirm\\nstatus=%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Get_Parameters.confirm\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_configure_thresholds_confirm()               **
+ ** Name:  eRAL_send_configure_thresholds_confirm()               **
  **                                                                        **
  ** Description: Sends a Link_Configure_Thresholds.confirm message to the  **
  **   MIHF.                                                     **
@@ -1023,25 +744,22 @@ void eRALlte_send_get_parameters_confirm(MIH_C_TRANSACTION_ID_T       *tidP,
  ** Inputs:  tidP  Transaction identifier                     **
  **     statusP: Status of operation                        **
  **     lstatus_listP: List of link configure status              **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_configure_thresholds_confirm(MIH_C_TRANSACTION_ID_T *tidP,
-    MIH_C_STATUS_T               *statusP,
-    MIH_C_LINK_CFG_STATUS_LIST_T *lstatus_listP)
+void eRAL_send_configure_thresholds_confirm(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T *tidP,
+        MIH_C_STATUS_T               *statusP,
+        MIH_C_LINK_CFG_STATUS_LIST_T *lstatus_listP)
 {
     MIH_C_Message_Link_Configure_Thresholds_confirm_t  message;
     Bit_Buffer_t                                      *bb;
     int                                                message_total_length;
-#ifdef MSCGEN_PYTOOL
-    int                                                i;
-#endif
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_CONFIGURE_THRESHOLDS_CONFIRM\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_CONFIGURE_THRESHOLDS_CONFIRM\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -1059,50 +777,26 @@ void eRALlte_send_configure_thresholds_confirm(MIH_C_TRANSACTION_ID_T *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)2;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Status                        = *statusP;
     message.primitive.LinkConfigureStatusList_list  =  lstatus_listP;
 
     message_total_length = MIH_C_Link_Message_Encode_Configure_Thresholds_confirm(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_STATUS2String(&message.primitive.Status, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n");
-    for (i = 0; i < lstatus_listP->length; i++) {
-        g_msc_gen_buffer_index += MIH_C_LINK_CFG_STATUS2String(&lstatus_listP->val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Configure_Threshold.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Configure_Thresholds.confirm\\nstatus=%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Configure_Threshold.confirm\n");
     } else {
-        DEBUG(": Sent Link_Configure_Threshold.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Configure_Thresholds.confirm\\nstatus=%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Configure_Threshold.confirm\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_link_action_confirm()                        **
+ ** Name:  eRAL_send_link_action_confirm()                        **
  **                                                                        **
  ** Description: Sends a Link_Action.confirm message to the MIHF.          **
  **                                                                        **
@@ -1115,26 +809,23 @@ void eRALlte_send_configure_thresholds_confirm(MIH_C_TRANSACTION_ID_T *tidP,
  **    information                                **
  **     action_resultP: Specifies whether the link action was     **
  **     successful                                **
- **     Others: g_link_id, g_mihf_id                       **
+ **     Others: g_enb_ral_obj[instanceP].link_id, g_enb_ral_obj[instanceP].mihf_id                       **
  **                                                                        **
  ** Outputs:  None                                                      **
  **   Return: None                                       **
  **     Others: g_msg_codec_send_buffer                    **
  **                                                                        **
  ***************************************************************************/
-void eRALlte_send_link_action_confirm(MIH_C_TRANSACTION_ID_T     *tidP,
-                                      MIH_C_STATUS_T             *statusP,
-                                      MIH_C_LINK_SCAN_RSP_LIST_T *response_setP,
-                                      MIH_C_LINK_AC_RESULT_T     *action_resultP)
+void eRAL_send_link_action_confirm(ral_enb_instance_t instanceP, MIH_C_TRANSACTION_ID_T     *tidP,
+        MIH_C_STATUS_T             *statusP,
+        MIH_C_LINK_SCAN_RSP_LIST_T *response_setP,
+        MIH_C_LINK_AC_RESULT_T     *action_resultP)
 {
     MIH_C_Message_Link_Action_confirm_t       message;
     Bit_Buffer_t                             *bb;
     int                                       message_total_length;
-#ifdef MSCGEN_PYTOOL
-    unsigned int                              index;
-#endif
 
-    DEBUG(" Send MIH_C_MESSAGE_LINK_ACTION_CONFIRM\n");
+    LOG_D(RAL_ENB, " Send MIH_C_MESSAGE_LINK_ACTION_CONFIRM\n");
 
     bb = new_BitBuffer_0();
     BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -1152,9 +843,9 @@ void eRALlte_send_link_action_confirm(MIH_C_TRANSACTION_ID_T     *tidP,
     message.header.action_identifier    = (MIH_C_AID_T)3;
     message.header.transaction_id       = *tidP;
 
-    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_link_id, strlen(g_link_id));
+    MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_enb_ral_obj[instanceP].link_id, strlen(g_enb_ral_obj[instanceP].link_id));
 
-    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_mihf_id, strlen(g_mihf_id));
+    MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_enb_ral_obj[instanceP].mihf_id, strlen(g_enb_ral_obj[instanceP].mihf_id));
 
     message.primitive.Status                       = *statusP;
     message.primitive.ScanResponseSet_list         = response_setP;
@@ -1162,65 +853,35 @@ void eRALlte_send_link_action_confirm(MIH_C_TRANSACTION_ID_T     *tidP,
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Action_confirm(bb, &message);
 
-    #ifdef MSCGEN_PYTOOL
-    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-    g_msc_gen_buffer_index = 0;
-    g_msc_gen_buffer_index += MIH_C_STATUS2String(&message.primitive.Status, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    if (response_setP) {
-        for (index = 0; index < response_setP->length; index++) {
-            g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nScan resp:");
-            g_msc_gen_buffer_index += MIH_C_LINK_SCAN_RSP2String(&response_setP->val[index], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-        }
-    }
-    if (action_resultP) {
-            g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nAction result:");
-            g_msc_gen_buffer_index += MIH_C_LINK_AC_RESULT2String2(action_resultP, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-    }
-    #endif
-
-    if (eRALlte_send_to_mih(bb->m_buffer, message_total_length) < 0) {
-        ERR(": Send Link_Action.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Action.confirm\\nstatus=%s ---x][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+    if (eRAL_send_to_mih( instanceP, bb->m_buffer, message_total_length) < 0) {
+        LOG_E(RAL_ENB, ": Send Link_Action.confirm\n");
     } else {
-        DEBUG(": Sent Link_Action.confirm\n");
-        #ifdef MSCGEN_PYTOOL
-        NOTICE("[MSC_MSG][%s][%s][--- Link_Action.confirm\\nstatus=%s --->][%s]\n",
-            getTimeStamp4Log(),
-            g_link_id,
-            g_msc_gen_buf,
-            g_mihf_id);
-        #endif
+        LOG_D(RAL_ENB, ": Sent Link_Action.confirm\n");
     }
     free_BitBuffer(bb);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_mihf_connect()                                    **
+ ** Name:  eRAL_mihf_connect(ral_enb_instance_t instanceP)                 **
  **                                                                        **
  ** Description: Connects the RAL to the remote MIH Function.              **
- **   The calling process should exit upon connection failure   **
- **   in order to properly close the MIH-F socket file          **
- **   descriptor and free the automatically allocated addrinfo  **
- **   structure.                                                **
+ **   The calling process should exit upon connection failure              **
+ **   in order to properly close the MIH-F socket file                     **
+ **   descriptor and free the automatically allocated addrinfo             **
+ **   structure.                                                           **
  **                                                                        **
- ** Inputs:  None                                                      **
- **     Others: g_mihf_ip_address, g_mihf_remote_port      **
- **    g_ral_ip_address,                          **
- **    g_ral_listening_port_for_mihf              **
+ ** Inputs:  None                                                          **
+ **     Others: g_enb_ral_obj[instanceP].mihf_ip_address, g_enb_ral_obj[instanceP].mihf_remote_port                      **
+ **    g_enb_ral_obj[instanceP].ral_ip_address,                                                   **
+ **    g_enb_ral_obj[instanceP].ral_listening_port                                       **
  **                                                                        **
- ** Outputs:  None                                                      **
- **   Return: 0 on success, -1 on failure                **
- **     Others: g_sockd_mihf                               **
+ ** Outputs:  None                                                         **
+ **   Return: 0 on success, -1 on failure                                  **
+ **     Others: g_sockd_mihf                                               **
  **                                                                        **
- ***************************************************************************/
-int eRALlte_mihf_connect(void)
+ ****************************************************************************/
+int eRAL_mihf_connect(ral_enb_instance_t instanceP)
 {
     struct addrinfo info;  /* endpoint information  */
     struct addrinfo *addr, *rp; /* endpoint address  */
@@ -1238,9 +899,9 @@ int eRALlte_mihf_connect(void)
     info.ai_flags    = 0;
     info.ai_protocol = 0;  /* Any protocol  */
 
-    rc = getaddrinfo(g_mihf_ip_address, g_mihf_remote_port, &info, &addr);
+    rc = getaddrinfo(g_enb_ral_obj[instanceP].mihf_ip_address, g_enb_ral_obj[instanceP].mihf_remote_port, &info, &addr);
     if (rc != 0) {
-        ERR(" getaddrinfo: %s\n", gai_strerror(rc));
+        LOG_E(RAL_ENB, " getaddrinfo: %s\n", gai_strerror(rc));
         return -1;
     }
 
@@ -1251,85 +912,85 @@ int eRALlte_mihf_connect(void)
      */
     for (rp = addr; rp != NULL; rp = rp->ai_next) {
 
-        g_sockd_mihf = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-        if (g_sockd_mihf < 0) {
+        g_enb_ral_obj[instanceP].mih_sock_desc = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        if (g_enb_ral_obj[instanceP].mih_sock_desc < 0) {
             continue;
- }
+        }
 
- optval = 1;
-        setsockopt(g_sockd_mihf, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+        optval = 1;
+        setsockopt(g_enb_ral_obj[instanceP].mih_sock_desc, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
- /*
-  * Convert the RAL local network address
-  */
+        /*
+         * Convert the RAL local network address
+         */
         if (rp->ai_family == AF_INET) {
-     /* IPv4 network address family */
-     struct sockaddr_in  *addr4 = NULL;
+            /* IPv4 network address family */
+            struct sockaddr_in  *addr4 = NULL;
 
-            DEBUG(" %s is an ipv4 address\n", g_mihf_ip_address);
+            LOG_D(RAL_ENB, " %s is an ipv4 address\n", g_enb_ral_obj[instanceP].mihf_ip_address);
             addr4             = (struct sockaddr_in *)(&buf[0]);
-            addr4->sin_port   = htons(atoi(g_ral_listening_port_for_mihf));
+            addr4->sin_port   = htons(atoi(g_enb_ral_obj[instanceP].ral_listening_port));
             addr4->sin_family = AF_INET;
-            rc = inet_pton(AF_INET, g_ral_ip_address, &addr4->sin_addr);
- }
- else if (rp->ai_family == AF_INET6) {
-     /* IPv6 network address family */
-     struct sockaddr_in6 *addr6 = NULL;
+            rc = inet_pton(AF_INET, g_enb_ral_obj[instanceP].ral_ip_address, &addr4->sin_addr);
+        }
+        else if (rp->ai_family == AF_INET6) {
+            /* IPv6 network address family */
+            struct sockaddr_in6 *addr6 = NULL;
 
-            DEBUG(" %s is an ipv6 address\n", g_mihf_ip_address);
+            LOG_D(RAL_ENB, " %s is an ipv6 address\n", g_enb_ral_obj[instanceP].mihf_ip_address);
             addr6              = (struct sockaddr_in6 *)(&buf[0]);
-            addr6->sin6_port   = htons(atoi(g_ral_listening_port_for_mihf));
+            addr6->sin6_port   = htons(atoi(g_enb_ral_obj[instanceP].ral_listening_port));
             addr6->sin6_family = AF_INET6;
-            rc = inet_pton(AF_INET, g_ral_ip_address, &addr6->sin6_addr);
- }
- else {
-            ERR(" %s is an unknown address format %d\n",
-  g_mihf_ip_address, rp->ai_family);
-     return -1;
- }
+            rc = inet_pton(AF_INET, g_enb_ral_obj[instanceP].ral_ip_address, &addr6->sin6_addr);
+        }
+        else {
+            LOG_E(RAL_ENB, " %s is an unknown address format %d\n",
+                    g_enb_ral_obj[instanceP].mihf_ip_address, rp->ai_family);
+            return -1;
+        }
 
- if (rc < 0) {
-     /* The network address convertion failed */
-     ERR(" inet_pton(RAL IP address %s): %s\n",
-  g_ral_ip_address, strerror(rc));
-     return -1;
- }
- else if (rc == 0) {
-     /* The network address is not valid */
-     ERR(" RAL IP address %s is not valid\n", g_ral_ip_address);
-     return -1;
- }
+        if (rc < 0) {
+            /* The network address convertion failed */
+            LOG_E(RAL_ENB, " inet_pton(RAL IP address %s): %s\n",
+                    g_enb_ral_obj[instanceP].ral_ip_address, strerror(rc));
+            return -1;
+        }
+        else if (rc == 0) {
+            /* The network address is not valid */
+            LOG_E(RAL_ENB, " RAL IP address %s is not valid\n", g_enb_ral_obj[instanceP].ral_ip_address);
+            return -1;
+        }
 
- /* Bind the socket to the local RAL network address */
- rc = bind(g_sockd_mihf, (const struct sockaddr *)buf,
-    sizeof(struct sockaddr_in));
+        /* Bind the socket to the local RAL network address */
+        rc = bind(g_enb_ral_obj[instanceP].mih_sock_desc, (const struct sockaddr *)buf,
+                sizeof(struct sockaddr_in));
 
- if (rc < 0) {
-     ERR(" bind(RAL IP address %s): %s\n",
-  g_ral_ip_address, strerror(errno));
-     return -1;
- }
+        if (rc < 0) {
+            LOG_E(RAL_ENB, " bind(RAL IP address %s): %s\n",
+                    g_enb_ral_obj[instanceP].ral_ip_address, strerror(errno));
+            return -1;
+        }
 
- /* Connect the socket to the remote MIH-F network address */
- if (connect(g_sockd_mihf, rp->ai_addr, rp->ai_addrlen) == 0) {
-     NOTICE(" RAL [%s:%s] is now UDP-CONNECTED to MIH-F [%s:%s]\n",
-     g_ral_ip_address, g_ral_listening_port_for_mihf,
-     g_mihf_ip_address, g_mihf_remote_port);
-     break;
- }
- /* 
-  * We failed to connect:
-  * Close the socket file descriptor and try to connect to an other
-  * address.
-  */
- close(g_sockd_mihf);
+        /* Connect the socket to the remote MIH-F network address */
+        if (connect(g_enb_ral_obj[instanceP].mih_sock_desc, rp->ai_addr, rp->ai_addrlen) == 0) {
+            LOG_N(RAL_ENB, " RAL [%s:%s] is now UDP-CONNECTED to MIH-F [%s:%s]\n",
+                    g_enb_ral_obj[instanceP].ral_ip_address, g_enb_ral_obj[instanceP].ral_listening_port,
+                    g_enb_ral_obj[instanceP].mihf_ip_address, g_enb_ral_obj[instanceP].mihf_remote_port);
+            break;
+        }
+        /*
+         * We failed to connect:
+         * Close the socket file descriptor and try to connect to an other
+         * address.
+         */
+        close(g_enb_ral_obj[instanceP].mih_sock_desc);
     }
 
     /*
      * Unable to connect to a network address
      */
     if (rp == NULL) {
-        ERR(" Could not connect to MIH-F\n");
+        LOG_E(RAL_ENB, " Could not connect to MIH-F\n");
         return -1;
     }
 
@@ -1339,13 +1000,13 @@ int eRALlte_mihf_connect(void)
 }
 
 /****************************************************************************
- ** Name:  eRALlte_mih_link_process_message()                              **
+ ** Name:  eRAL_mih_link_process_message()                              **
  ** Description: Processes messages received from the MIH-F.               **
  **     Others: g_sockd_mihf                                               **
  **   Return: Always return 0                                              **
  **     Others: g_msg_codec_recv_buffer                                    **
  ***************************************************************************/
-int eRALlte_mih_link_process_message(void){
+int eRAL_mih_link_process_message(ral_enb_instance_t instanceP){
     MIH_C_Message_Wrapper_t  message_wrapper;
     int                      nb_bytes_received ;
     int                      nb_bytes_decoded  ;
@@ -1361,21 +1022,21 @@ int eRALlte_mih_link_process_message(void){
 
     bb = new_BitBuffer_0();
 
-    nb_bytes_received = recvfrom(g_sockd_mihf,
-                                 (void *)g_msg_codec_recv_buffer,
-                                 MSG_CODEC_RECV_BUFFER_SIZE,
-                                 0,
-                                 (struct sockaddr *) &udp_socket,
-                                 &sockaddr_len);
+    nb_bytes_received = recvfrom(g_enb_ral_obj[instanceP].mih_sock_desc,
+            (void *)g_msg_codec_recv_buffer,
+            MSG_CODEC_RECV_BUFFER_SIZE,
+            0,
+            (struct sockaddr *) &udp_socket,
+            &sockaddr_len);
 
     if (nb_bytes_received > 0) {
-        DEBUG(" \n");
-        DEBUG(" %s Received %d bytes\n", __FUNCTION__, nb_bytes_received);
-        eRALlte_print_buffer(g_msg_codec_recv_buffer, nb_bytes_received);
+        LOG_D(RAL_ENB, " \n");
+        LOG_D(RAL_ENB, " %s Received %d bytes\n", __FUNCTION__, nb_bytes_received);
+        eRAL_print_buffer(g_msg_codec_recv_buffer, nb_bytes_received);
         total_bytes_to_decode += nb_bytes_received;
         BitBuffer_wrap(bb, g_msg_codec_recv_buffer, total_bytes_to_decode);
- /* Decode the message received from the MIHF */
-        status  = eRALlte_mih_link_msg_decode(bb, &message_wrapper);
+        /* Decode the message received from the MIHF */
+        status  = eRAL_mih_link_msg_decode(instanceP, bb, &message_wrapper);
         if (status == MIH_MESSAGE_DECODE_OK) {
             nb_bytes_decoded = BitBuffer_getPosition(bb);
             if (nb_bytes_decoded > 0) {
@@ -1392,7 +1053,7 @@ int eRALlte_mih_link_process_message(void){
                     memset(&g_msg_codec_recv_buffer[total_bytes_to_decode], 0 , MSG_CODEC_RECV_BUFFER_SIZE - total_bytes_to_decode);
                 }
             }
-        // data could not be decoded
+            // data could not be decoded
         } else if (status == MIH_MESSAGE_DECODE_FAILURE) {
             memset(g_msg_codec_recv_buffer, 0, MSG_CODEC_RECV_BUFFER_SIZE);
             total_bytes_to_decode = 0;
@@ -1410,7 +1071,7 @@ int eRALlte_mih_link_process_message(void){
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_print_buffer()                                    **
+ ** Name:  eRAL_print_buffer()                                    **
  **                                                                        **
  ** Description: Print the content of a buffer in hexadecimal.             **
  **                                                                        **
@@ -1423,7 +1084,7 @@ int eRALlte_mih_link_process_message(void){
  **     Others: None                                       **
  **                                                                        **
  ***************************************************************************/
-static void eRALlte_print_buffer(const u_int8_t * bufferP, int lenP)
+void eRAL_print_buffer(const u_int8_t * bufferP, int lenP)
 {
     char          c;
     unsigned int  buffer_index = 0;
@@ -1455,8 +1116,8 @@ static void eRALlte_print_buffer(const u_int8_t * bufferP, int lenP)
             buffer_index += sprintf(&g_msg_codec_print_buffer[buffer_index], " %04d |", octet_index);
         }
         /*
-  * Print every single octet in hexadecimal form
-  */
+         * Print every single octet in hexadecimal form
+         */
         buffer_index += sprintf(&g_msg_codec_print_buffer[buffer_index], " %02x", (u_int8_t)(bufferP[octet_index] & 0x00FF));
     }
 
@@ -1485,12 +1146,12 @@ static void eRALlte_print_buffer(const u_int8_t * bufferP, int lenP)
     }
     buffer_index += sprintf(&g_msg_codec_print_buffer[buffer_index], " |\n");
     buffer_index += sprintf(&g_msg_codec_print_buffer[buffer_index], "------+-------------------------------------------------+------------------+\n");
-    DEBUG(g_msg_codec_print_buffer);
+    LOG_D(RAL_ENB, g_msg_codec_print_buffer);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRALlte_send_to_mih()                                     **
+ ** Name:  eRAL_send_to_mih( instanceP, )                                     **
  **                                                                        **
  ** Description: Sends a buffered message to the MIH-F.                    **
  **                                                                        **
@@ -1503,28 +1164,28 @@ static void eRALlte_print_buffer(const u_int8_t * bufferP, int lenP)
  **     Others: None                                       **
  **                                                                        **
  ***************************************************************************/
-static int eRALlte_send_to_mih(const u_int8_t *bufferP, int lenP)
+int eRAL_send_to_mih(ral_enb_instance_t instanceP, const u_int8_t *bufferP, int lenP)
 {
     int result;
-    eRALlte_print_buffer(bufferP, lenP);
-    result = send(g_sockd_mihf, (const void *)bufferP, lenP, 0);
+    eRAL_print_buffer(bufferP, lenP);
+    result = send(g_enb_ral_obj[instanceP].mih_sock_desc, (const void *)bufferP, lenP, 0);
     if (result != lenP) {
-        ERR(" %s : %d bytes failed, returned %d: %s\n",
-     __FUNCTION__, lenP, result, strerror(errno));
+        LOG_E(RAL_ENB, " %s : %d bytes failed, returned %d: %s\n",
+                __FUNCTION__, lenP, result, strerror(errno));
     }
     return result;
 }
 
 /****************************************************************************
- ** Name:  eRALlte_mih_link_msg_decode()                                   **
+ ** Name:  eRAL_mih_link_msg_decode()                                   **
  ** Description: Decode messages received from the MIH-F.                  **
  ** Inputs:  bbP:  Pointer to the buffer to decode                         **
  ** Outputs:  message_wrapperP:                                            **
  **    Pointer to the message wrapper                                      **
  **   Return: < 0 on failure, 0 otherwise                                  **
  ***************************************************************************/
-static int eRALlte_mih_link_msg_decode(Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_t *message_wrapperP){
-//---------------------------------------------------------------------------
+int eRAL_mih_link_msg_decode(ral_enb_instance_t instanceP, Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_t *message_wrapperP){
+    //---------------------------------------------------------------------------
     int  status = MIH_MESSAGE_DECODE_FAILURE;
     MIH_C_HEADER_T header;
     MIH_C_STATUS_T mih_status;
@@ -1535,9 +1196,9 @@ static int eRALlte_mih_link_msg_decode(Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_
 #endif
 
     if ((bbP != NULL) && (message_wrapperP != NULL)){
- /*
-  * Decode MIH protocol header
-  */
+        /*
+         * Decode MIH protocol header
+         */
         status = MIH_C_Link_Header_Decode(bbP, &header);
         if (status == MIH_HEADER_DECODE_TOO_SHORT) {
             return MIH_MESSAGE_DECODE_TOO_SHORT;
@@ -1548,280 +1209,147 @@ static int eRALlte_mih_link_msg_decode(Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_
         }
         message_wrapperP->message_id = MIH_C_MESSAGE_ID(header.service_identifier, header.operation_code, header.action_identifier);
 
- /*
-  * Decode MIH primitives
-  */
+        /*
+         * Decode MIH primitives
+         */
         switch (message_wrapperP->message_id) {
 
             case MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_REQUEST_ID:
-  /*
-   * This primitive is generated by the MIHF when it needs to
-   * receive link-layer event notifications and learn about which
-   * link-layer commands the lower layer can support.
-   * The recipient responds immediately with Link_Capability_
-   * Discover.confirm primitive.
-   */
-                DEBUG(" %s Received MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_REQUEST\n", __FUNCTION__);
+                /*
+                 * This primitive is generated by the MIHF when it needs to
+                 * receive link-layer event notifications and learn about which
+                 * link-layer commands the lower layer can support.
+                 * The recipient responds immediately with Link_Capability_
+                 * Discover.confirm primitive.
+                 */
+                LOG_D(RAL_ENB, " %s Received MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_REQUEST\n", __FUNCTION__);
                 memcpy(&message_wrapperP->_union_message.link_capability_discover_request.header, (const void *)&header, sizeof(MIH_C_HEADER_T));
 
-  /* Decode Link_Capability_Discover.request */
+                /* Decode Link_Capability_Discover.request */
                 status = MIH_C_Link_Message_Decode_Link_Capability_Discover_request(bbP, &message_wrapperP->_union_message.link_capability_discover_request);
                 if (status == MIH_MESSAGE_DECODE_OK) {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_capability_discover_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_capability_discover_request.destination), msg_dst);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Capability_Discover.request --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
 
-      /* Process Link_Capability_Discover.request */
+                    /* Process Link_Capability_Discover.request */
                     MIH_C_Link_Message_Link_Capability_Discover_request2String(&message_wrapperP->_union_message.link_capability_discover_request, g_msg_print_buffer);
-                    DEBUG(" %s", g_msg_print_buffer);
+                    LOG_D(RAL_ENB, " %s", g_msg_print_buffer);
                     mih_status = MIH_C_STATUS_SUCCESS;
-                    DEBUG("**\n");
-      /* Send Link_Capability_Discover.confirm */
-                    eRALlte_send_capability_discover_confirm(&message_wrapperP->_union_message.link_capability_discover_request.header.transaction_id,
-                                                            &mih_status,
-                                                            &ralpriv->mih_supported_link_event_list,
-                                                            &ralpriv->mih_supported_link_command_list);
+                    LOG_D(RAL_ENB, "**\n");
+                    /* Send Link_Capability_Discover.confirm */
+                    eRAL_send_capability_discover_confirm(instanceP, &message_wrapperP->_union_message.link_capability_discover_request.header.transaction_id,
+                            &mih_status,
+                            &g_enb_ral_obj[instanceP].mih_supported_link_event_list,
+                            &g_enb_ral_obj[instanceP].mih_supported_link_command_list);
                 } else {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_capability_discover_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_capability_discover_request.destination), msg_dst);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Capability_Discover.request\\nERR DECODE ---x][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
                 }
                 break;
 
             case MIH_C_MESSAGE_LINK_EVENT_SUBSCRIBE_REQUEST_ID:
-  /*
-   * This primitive is generated by a subscriber such as the MIHF
-   * that is seeking to receive event indications from different
-   * link-layer technologies.
-   * The recipient responds immediately with Link_Event_Subscribe.
-   * confirm primitive.
-   */
-                DEBUG(" %s Received MIH_C_MESSAGE_LINK_EVENT_SUBSCRIBE_REQUEST\n", __FUNCTION__);
+                /*
+                 * This primitive is generated by a subscriber such as the MIHF
+                 * that is seeking to receive event indications from different
+                 * link-layer technologies.
+                 * The recipient responds immediately with Link_Event_Subscribe.
+                 * confirm primitive.
+                 */
+                LOG_D(RAL_ENB, " %s Received MIH_C_MESSAGE_LINK_EVENT_SUBSCRIBE_REQUEST\n", __FUNCTION__);
                 memcpy(&message_wrapperP->_union_message.link_event_subscribe_request.header, (const void *)&header, sizeof(MIH_C_HEADER_T));
 
-  /* Decode Link_Event_Subscribe.request */
+                /* Decode Link_Event_Subscribe.request */
                 status = MIH_C_Link_Message_Decode_Link_Event_Subscribe_request(bbP, &message_wrapperP->_union_message.link_event_subscribe_request);
                 if (status == MIH_MESSAGE_DECODE_OK) {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_subscribe_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_subscribe_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    MIH_C_LINK_EVENT_LIST2String2(&message_wrapperP->_union_message.link_event_subscribe_request.primitive.RequestedLinkEventList, g_msc_gen_buf);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Subscribe.request\\n%s --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        g_msc_gen_buf,
-                        msg_dst);
-                    #endif
-
-      /* Process Link_Event_Subscribe.request */
-                    DEBUG("**\n");
-                    eRALlte_subscribe_request(&message_wrapperP->_union_message.link_event_subscribe_request);
+                    /* Process Link_Event_Subscribe.request */
+                    LOG_D(RAL_ENB, "**\n");
+                    eRAL_subscribe_request(instanceP, &message_wrapperP->_union_message.link_event_subscribe_request);
 
                 } else {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_subscribe_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_subscribe_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    MIH_C_LINK_EVENT_LIST2String2(&message_wrapperP->_union_message.link_event_subscribe_request.primitive.RequestedLinkEventList, g_msc_gen_buf);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Subscribe.request\\nERR DECODE ---x][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
                 }
                 break;
 
             case MIH_C_MESSAGE_LINK_EVENT_UNSUBSCRIBE_REQUEST_ID:
-  /*
-   * This primitive is generated by a subscriber such as the MIHF
-   * that is seeking to unsubscribe from an already subscribed set
-   * of events.
-   * The recipient responds immediately with Link_Event_
-   * Unsubscribe.confirm primitive.
-   */
-                DEBUG(" %s Received MIH_C_MESSAGE_LINK_EVENT_UNSUBSCRIBE_REQUEST\n", __FUNCTION__);
+                /*
+                 * This primitive is generated by a subscriber such as the MIHF
+                 * that is seeking to unsubscribe from an already subscribed set
+                 * of events.
+                 * The recipient responds immediately with Link_Event_
+                 * Unsubscribe.confirm primitive.
+                 */
+                LOG_D(RAL_ENB, " %s Received MIH_C_MESSAGE_LINK_EVENT_UNSUBSCRIBE_REQUEST\n", __FUNCTION__);
                 memcpy(&message_wrapperP->_union_message.link_event_unsubscribe_request.header, (const void *)&header, sizeof(MIH_C_HEADER_T));
 
-  /* Decode Link_Event_Unsubscribe.request */
+                /* Decode Link_Event_Unsubscribe.request */
                 status = MIH_C_Link_Message_Decode_Link_Event_Unsubscribe_request(bbP, &message_wrapperP->_union_message.link_event_unsubscribe_request);
                 if (status == MIH_MESSAGE_DECODE_OK) {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_unsubscribe_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_unsubscribe_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    MIH_C_LINK_EVENT_LIST2String2(&message_wrapperP->_union_message.link_event_unsubscribe_request.primitive.RequestedLinkEventList, g_msc_gen_buf);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Unsubscribe.request\\n%s --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        g_msc_gen_buf,
-                        msg_dst);
-                    #endif
-                    DEBUG("**\n");
-      /* Process Link_Event_Unsubscribe.request */
-                    eRALlte_unsubscribe_request(&message_wrapperP->_union_message.link_event_unsubscribe_request);
+                    LOG_D(RAL_ENB, "**\n");
+                    /* Process Link_Event_Unsubscribe.request */
+                    eRAL_unsubscribe_request(instanceP, &message_wrapperP->_union_message.link_event_unsubscribe_request);
 
                 } else {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_unsubscribe_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_event_unsubscribe_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    MIH_C_LINK_EVENT_LIST2String2(&message_wrapperP->_union_message.link_event_unsubscribe_request.primitive.RequestedLinkEventList, g_msc_gen_buf);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Event_Unsubscribe.request\\nERR DECODE ---x][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
                 }
                 break;
 
             case MIH_C_MESSAGE_LINK_GET_PARAMETERS_REQUEST_ID:
-  /*
-   * This primitive is generated by the MIHF to obtain the current
-   * value of a set of link parameters from a link.
-   * The recipient link responds with Link_Get_Parameters.confirm
-   * primitive.
-   */
-                DEBUG(" %s Received MIH_C_MESSAGE_LINK_GET_PARAMETERS_REQUEST\n", __FUNCTION__);
+                /*
+                 * This primitive is generated by the MIHF to obtain the current
+                 * value of a set of link parameters from a link.
+                 * The recipient link responds with Link_Get_Parameters.confirm
+                 * primitive.
+                 */
+                LOG_D(RAL_ENB, " %s Received MIH_C_MESSAGE_LINK_GET_PARAMETERS_REQUEST\n", __FUNCTION__);
                 memcpy(&message_wrapperP->_union_message.link_get_parameters_request.header, (const void *)&header, sizeof(MIH_C_HEADER_T));
 
-  /* Decode Link_Get_Parameters.request */
+                /* Decode Link_Get_Parameters.request */
                 status = MIH_C_Link_Message_Decode_Link_Get_Parameters_request(bbP, &message_wrapperP->_union_message.link_get_parameters_request);
                 if (status == MIH_MESSAGE_DECODE_OK) {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_get_parameters_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_get_parameters_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    g_msc_gen_buffer_index = 0;
-                    for (i = 0; i < message_wrapperP->_union_message.link_get_parameters_request.primitive.LinkParametersRequest_list.length; i++) {
-                        g_msc_gen_buffer_index += MIH_C_LINK_PARAM_TYPE2String(&message_wrapperP->_union_message.link_get_parameters_request.primitive.LinkParametersRequest_list.val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-                    }
-                    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n Link states request=");
-                    g_msc_gen_buffer_index += MIH_C_LINK_STATES_REQ2String2(&message_wrapperP->_union_message.link_get_parameters_request.primitive.LinkStatesRequest, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-                    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\n Link desc request=");
-                    g_msc_gen_buffer_index += MIH_C_LINK_DESC_REQ2String2(&message_wrapperP->_union_message.link_get_parameters_request.primitive.LinkDescriptorsRequest, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Get_Parameters.request\\n%s --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        g_msc_gen_buf,
-                        msg_dst);
-                    #endif
-                    DEBUG("**\n");
+                    LOG_D(RAL_ENB, "**\n");
                     /* Process Link_Get_Parameters.request */
-                    eRALlte_get_parameters_request(&message_wrapperP->_union_message.link_get_parameters_request);
+                    eRAL_get_parameters_request(instanceP, &message_wrapperP->_union_message.link_get_parameters_request);
                 } else {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_get_parameters_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_get_parameters_request.destination), msg_dst);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Get_Parameters.request\\nERR DECODE ---x][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
                 }
                 break;
 
             case MIH_C_MESSAGE_LINK_CONFIGURE_THRESHOLDS_REQUEST_ID:
-  /*
-   * This primitive is generated by an MIHF that needs to set
-   * threshold values for different link parameters.
-   * The recipient responds immediately with Link_Configure_
-   * Thresholds.confirm primitive.
-   */
-                DEBUG(" %s Received MIH_C_MESSAGE_LINK_CONFIGURE_THRESHOLDS_REQUEST\n", __FUNCTION__);
+                /*
+                 * This primitive is generated by an MIHF that needs to set
+                 * threshold values for different link parameters.
+                 * The recipient responds immediately with Link_Configure_
+                 * Thresholds.confirm primitive.
+                 */
+                LOG_D(RAL_ENB, " %s Received MIH_C_MESSAGE_LINK_CONFIGURE_THRESHOLDS_REQUEST\n", __FUNCTION__);
                 memcpy(&message_wrapperP->_union_message.link_configure_thresholds_request.header, (const void *)&header, sizeof(MIH_C_HEADER_T));
 
-  /* Decode Link_Configure_Thresholds.request */
+                /* Decode Link_Configure_Thresholds.request */
                 status = MIH_C_Link_Message_Decode_Link_Configure_Thresholds_request(bbP, &message_wrapperP->_union_message.link_configure_thresholds_request);
                 if (status == MIH_MESSAGE_DECODE_OK) {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_configure_thresholds_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_configure_thresholds_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    g_msc_gen_buffer_index = 0;
-                    for (i = 0; i < message_wrapperP->_union_message.link_configure_thresholds_request.primitive.LinkConfigureParameterList_list.length; i++) {
-                        g_msc_gen_buffer_index += MIH_C_LINK_CFG_PARAM2String(&message_wrapperP->_union_message.link_configure_thresholds_request.primitive.LinkConfigureParameterList_list.val[i], &g_msc_gen_buf[g_msc_gen_buffer_index]);
-                    }
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Configure_Thresholds.request\\n%s --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        g_msc_gen_buf,
-                        msg_dst);
-                    #endif
-                    DEBUG("**\n");
+                    LOG_D(RAL_ENB, "**\n");
                     /* Process Link_Configure_Thresholds.request */
-                    eRALlte_configure_thresholds_request(&message_wrapperP->_union_message.link_configure_thresholds_request);
+                    eRAL_configure_thresholds_request(instanceP, &message_wrapperP->_union_message.link_configure_thresholds_request);
                 } else {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_configure_thresholds_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_configure_thresholds_request.destination), msg_dst);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Configure_Thresholds.request\\nERR DECODE ---x][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
                 }
                 break;
 
             case MIH_C_MESSAGE_LINK_ACTION_REQUEST_ID:
-  /*
-   * This primitive is used by the MIHF to request an action on a
-   * link-layer connection to enable optimal handling of link-
-   * layer resources for the purpose of handovers.
-   * The MIHF generates this primitive upon request from the MIH
-   * user to perform an action on a pre-defined link-layer
-   * connection.
-   */
-                DEBUG(" %s Received MIH_C_MESSAGE_LINK_ACTION_REQUEST\n", __FUNCTION__);
+                /*
+                 * This primitive is used by the MIHF to request an action on a
+                 * link-layer connection to enable optimal handling of link-
+                 * layer resources for the purpose of handovers.
+                 * The MIHF generates this primitive upon request from the MIH
+                 * user to perform an action on a pre-defined link-layer
+                 * connection.
+                 */
+                LOG_D(RAL_ENB, " %s Received MIH_C_MESSAGE_LINK_ACTION_REQUEST\n", __FUNCTION__);
                 memcpy(&message_wrapperP->_union_message.link_action_request.header, (const void *)&header, sizeof(MIH_C_HEADER_T));
 
-  /* Decode Link_Action.request */
+                /* Decode Link_Action.request */
                 status = MIH_C_Link_Message_Decode_Link_Action_request(bbP, &message_wrapperP->_union_message.link_action_request);
                 if (status == MIH_MESSAGE_DECODE_OK) {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_action_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_action_request.destination), msg_dst);
-                    memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
-                    g_msc_gen_buffer_index = 0;
-                    g_msc_gen_buffer_index += MIH_C_LINK_ACTION2String(&message_wrapperP->_union_message.link_action_request.primitive.LinkAction, g_msc_gen_buf);
-                    g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nExecution Delay=%d", message_wrapperP->_union_message.link_action_request.primitive.ExecutionDelay);
-                    if (message_wrapperP->_union_message.link_action_request.primitive.PoALinkAddress != NULL) {
-                        g_msc_gen_buffer_index += sprintf(&g_msc_gen_buf[g_msc_gen_buffer_index], "\\nPoALinkAddress=");
-                        g_msc_gen_buffer_index += MIH_C_LINK_ADDR2String(message_wrapperP->_union_message.link_action_request.primitive.PoALinkAddress, &g_msc_gen_buf[g_msc_gen_buffer_index]);
-                    }
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Action.request\\n%s --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        g_msc_gen_buf,
-                        msg_dst);
-                    #endif
-                    DEBUG("**\n");
+                    LOG_D(RAL_ENB, "**\n");
                     /* Process Link_Action.request */
-                    eRALlte_action_request(&message_wrapperP->_union_message.link_action_request);
+                    eRAL_action_request(instanceP, &message_wrapperP->_union_message.link_action_request);
                 } else {
-                    #ifdef MSCGEN_PYTOOL
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_action_request.source), msg_src);
-                    MIH_C_MIHF_ID2String(&(message_wrapperP->_union_message.link_action_request.destination), msg_dst);
-                    NOTICE("[MSC_MSG][%s][%s][--- Link_Action.request\\nERR DECODE --->][%s]\n",
-                        getTimeStamp4Log(),
-                        msg_src,
-                        msg_dst);
-                    #endif
                 }
                 break;
             default:
-                WARNING(" UNKNOWN MESSAGE ID SID %d, OP_CODE %d, AID %d\n", header.service_identifier, header.operation_code, header.action_identifier);
+                LOG_W(RAL_ENB, " UNKNOWN MESSAGE ID SID %d, OP_CODE %d, AID %d\n", header.service_identifier, header.operation_code, header.action_identifier);
                 status = MIH_MESSAGE_DECODE_FAILURE;
         }
     }

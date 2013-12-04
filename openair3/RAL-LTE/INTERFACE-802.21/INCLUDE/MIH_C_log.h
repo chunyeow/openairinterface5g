@@ -35,7 +35,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \bug
 * \warning
 */
-
+#error "To be removed"
 #ifndef __MIH_C_LOG_H__
 #    define __MIH_C_LOG_H__
 //-----------------------------------------------------------------------------

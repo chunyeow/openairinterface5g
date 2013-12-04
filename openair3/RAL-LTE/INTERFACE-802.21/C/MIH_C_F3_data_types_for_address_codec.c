@@ -106,7 +106,7 @@ inline void MIH_C_LINK_ADDR_encode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) 
             MIH_C_OTHER_L2_ADDR_encode(bbP, &dataP->_union.other_l2_addr);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_ADDR_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_ADDR_T %d\n", dataP->choice);
     }
 }
 //-----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ inline void MIH_C_LINK_ADDR_decode(Bit_Buffer_t* bbP, MIH_C_LINK_ADDR_T *dataP) 
             MIH_C_OTHER_L2_ADDR_decode(bbP, &dataP->_union.other_l2_addr);
             break;
         default:
-            ERR("NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_ADDR_T %d\n", dataP->choice);
+            printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_ADDR_T %d\n", dataP->choice);
     }
 }
 

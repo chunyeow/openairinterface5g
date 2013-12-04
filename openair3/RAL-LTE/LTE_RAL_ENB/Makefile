@@ -27,14 +27,14 @@ CFLAGS += -I$(NAS_DIR) -I$(RRC_DIR)
 
 LDFLAGS = -L$(INTERFACE_DIR)/LIB -lmih_c-802.21 -lrt
 
-ERAL_OBJS  += $(SRC_DIR)/lteRALenb_main.o
 ERAL_OBJS  += $(SRC_DIR)/lteRALenb_mih_msg.o
+ERAL_OBJS  += $(SRC_DIR)/lteRALenb_rrc_msg.o
 ERAL_OBJS  += $(SRC_DIR)/lteRALenb_thresholds.o
 ERAL_OBJS  += $(SRC_DIR)/lteRALenb_parameters.o
 ERAL_OBJS  += $(SRC_DIR)/lteRALenb_action.o
 ERAL_OBJS  += $(SRC_DIR)/lteRALenb_subscribe.o
-ERAL_OBJS  += $(SRC_DIR)/lteRALenb_ioctl.o
 ERAL_OBJS  += $(SRC_DIR)/lteRALenb_process.o
+ERAL_OBJS  += $(SRC_DIR)/lteRALenb_main.o
 
 OBJS = $(ERAL_OBJS)
 

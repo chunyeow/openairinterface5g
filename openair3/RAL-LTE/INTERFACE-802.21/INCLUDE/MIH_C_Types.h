@@ -19,24 +19,14 @@ Type definition and structure for 802.21 interface
 #ifndef __MIH_C_LINK_TYPES_H__
 #define __MIH_C_LINK_TYPES_H__
 #include <sys/types.h>
+#include <linux/types.h>
 //-----------------------------------------------------------------------------
 #include "MIH_C_Link_Constants.h"
 #include "MIH_C_bit_buffer.h"
-#include "MIH_C_log.h"
+#include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
 #define MIH_C_DEBUG_SERIALIZATION 1
 #define MIH_C_DEBUG_DESERIALIZATION 1
-//-----------------------------------------------------------------------------
-#ifdef MIH_C_DEBUG_SERIALIZATION
-#define DEBUG_ENCODE DEBUG
-#else
-#define DEBUG_ENCODE(x)
-#endif
-#ifdef MIH_C_DEBUG_DESERIALIZATION
-#define DEBUG_DECODE DEBUG
-#else
-#define DEBUG_DECODE(x)
-#endif
 //-----------------------------------------------------------------------------
 #define STR(x)        #x
 
@@ -95,7 +85,6 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
             return sprintf(buffP, "0x%02X", *bitmapP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
-            DEBUG_ENCODE("%s: %hhX\n", __FUNCTION__, *dataP);\
             MIH_C_BITMAP8_encode(bbP, bitmapP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
 
@@ -110,7 +99,6 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
             return sprintf(buffP, "0x%02X", *bitmapP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
-            DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *bitmapP);\
             MIH_C_BITMAP8_encode(bbP, bitmapP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP8_decode(bbP, bitmapP);};
 
@@ -125,7 +113,6 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
             return sprintf(buffP, "0x%04X", *bitmapP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
-            DEBUG_ENCODE("%s: %04X\n", __FUNCTION__, *bitmapP);\
             MIH_C_BITMAP16_encode(bbP, bitmapP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP16_decode(bbP, bitmapP);};
 
@@ -140,7 +127,6 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
             return sprintf(buffP, "0x%02X%02X%02X", bitmapP->val[0], bitmapP->val[1], bitmapP->val[2]);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
-            DEBUG_ENCODE("%s: %02X%02X%02X\n", __FUNCTION__, bitmapP->val[0], bitmapP->val[1], bitmapP->val[2]);\
             MIH_C_BITMAP24_encode(bbP, bitmapP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP24_decode(bbP, bitmapP);};
 
@@ -155,7 +141,6 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
             return sprintf(buffP, "0x%08X", *bitmapP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
-            DEBUG_ENCODE("%s: %08X\n", __FUNCTION__, *bitmapP);\
             MIH_C_BITMAP32_encode(bbP, bitmapP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP32_decode(bbP, bitmapP);};
 
@@ -173,7 +158,6 @@ typedef struct MIH_C_BITMAP256 {u_int64_t val[4];}__attribute__((__packed__)) MI
             return buffer_index;\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {\
-            DEBUG_ENCODE("%s: %16X\n", __FUNCTION__, *bitmapP);\
             MIH_C_BITMAP64_encode(bbP, bitmapP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *bitmapP) {MIH_C_BITMAP64_decode(bbP, bitmapP);};
 
@@ -288,11 +272,9 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             return sprintf(buffP, "0x%02X", *dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *dataP);\
             MIH_C_INTEGER1_encode(bbP, (MIH_C_INTEGER1_T*)dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER1_decode(bbP, (MIH_C_INTEGER1_T*)dataP);\
-            DEBUG_DECODE("%s: %02X\n", __FUNCTION__, *dataP);\
         };
 
     /*! \def TYPEDEF_INTEGER2(DATA_TYPE_NAME)
@@ -306,11 +288,9 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             return sprintf(buffP, "0x%04X", *dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %04X\n", __FUNCTION__, *dataP);\
             MIH_C_INTEGER2_encode(bbP, (MIH_C_INTEGER2_T*)dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER2_decode(bbP, (MIH_C_INTEGER2_T*)dataP);\
-            DEBUG_DECODE("%s: %04X\n", __FUNCTION__, *dataP);\
         };
 
     /*! \def TYPEDEF_INTEGER4(DATA_TYPE_NAME)
@@ -324,11 +304,9 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             return sprintf(buffP, "0x%08X", (MIH_C_INTEGER4_T)*dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %08X\n", __FUNCTION__, *dataP);\
             MIH_C_INTEGER4_encode(bbP, (MIH_C_INTEGER4_T*)dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER4_decode(bbP, (MIH_C_INTEGER4_T*)dataP);\
-            DEBUG_DECODE("%s: %08X\n", __FUNCTION__, *dataP);\
         };
 
     /*! \def TYPEDEF_INTEGER8(DATA_TYPE_NAME)
@@ -345,11 +323,9 @@ typedef int64_t                            MIH_C_INTEGER8_T;
             return buffer_index;\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %16X\n", __FUNCTION__, *dataP);\
             MIH_C_INTEGER8_encode(bbP, (MIH_C_INTEGER8_T*)dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_INTEGER8_decode(bbP, (MIH_C_INTEGER8_T*)dataP);\
-            DEBUG_DECODE("%s: %16X\n", __FUNCTION__, *dataP);\
         };
 #else
     #define TYPEDEF_INTEGER1(DATA_TYPE_NAME)            typedef MIH_C_INTEGER1_T   DATA_TYPE_NAME  ## _T;\
@@ -425,11 +401,9 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             return sprintf(buffP, "0x%02X", *dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *dataP);\
             MIH_C_UNSIGNED_INT1_encode(bbP, dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT1_decode(bbP, dataP);\
-            DEBUG_DECODE("%s: %02X\n", __FUNCTION__, *dataP);\
         };
 
     /*! \def TYPEDEF_UNSIGNED_INT2(DATA_TYPE_NAME)
@@ -443,11 +417,9 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             return sprintf(buffP, "0x%04X", *dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %04X\n", __FUNCTION__, *dataP);\
             MIH_C_UNSIGNED_INT2_encode(bbP, dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT2_decode(bbP, dataP);\
-            DEBUG_DECODE("%s: %04X\n", __FUNCTION__, *dataP);\
         };
 
     /*! \def TYPEDEF_UNSIGNED_INT4(DATA_TYPE_NAME)
@@ -461,11 +433,9 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             return sprintf(buffP, "0x%08X", *dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %08X\n", __FUNCTION__, *dataP);\
             MIH_C_UNSIGNED_INT4_encode(bbP, dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT4_decode(bbP, dataP);\
-            DEBUG_DECODE("%s: %08X\n", __FUNCTION__, *dataP);\
         };
 
     /*! \def TYPEDEF_UNSIGNED_INT8(DATA_TYPE_NAME)
@@ -479,11 +449,9 @@ typedef u_int64_t                          MIH_C_UNSIGNED_INT8_T;
             return sprintf(buffP, "0x%16X", *dataP);\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %16X\n", __FUNCTION__, *dataP);\
             MIH_C_UNSIGNED_INT8_encode(bbP, dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
             MIH_C_UNSIGNED_INT8_decode(bbP, dataP);\
-            DEBUG_DECODE("%s: %16X\n", __FUNCTION__, *dataP);\
         };
 #else
     #define TYPEDEF_UNSIGNED_INT1(DATA_TYPE_NAME)            typedef MIH_C_UNSIGNED_INT1_T   DATA_TYPE_NAME  ## _T;\
@@ -556,8 +524,7 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
     inline void DATA_TYPE_NAME ## _LIST_decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP) {\
         int index = 0;\
         MIH_C_LIST_LENGTH_decode(bbP, &listP->length);\
-        DEBUG_DECODE("%s: Length\n", __FUNCTION__, listP->length);\
-        if (listP->length > MAX_LENGTH) {ERR(" DATA_TYPE_NAME ## _LIST_decode num elements in list out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
+        if (listP->length > MAX_LENGTH) {printf("[MIH_C] ERROR DATA_TYPE_NAME ## _LIST_decode num elements in list out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
         } else {\
             while ((index <  listP->length) && (index < MAX_LENGTH)){\
                 DATA_TYPE_NAME ## _decode(bbP, &listP->val[index++]);\
@@ -567,9 +534,8 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
     inline void DATA_TYPE_NAME ## _LIST_encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP) {\
         int index = 0;\
         if (listP->length > MAX_LENGTH) {\
-            ERR(" DATA_TYPE_NAME ## _LIST_encode num elements in list out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
+            printf("[MIH_C] ERROR DATA_TYPE_NAME ## _LIST_encode num elements in list out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
         } else {\
-            DEBUG_ENCODE("%s: Length\n", __FUNCTION__, listP->length);\
             MIH_C_LIST_LENGTH_encode(bbP, listP->length);\
             while (index <  listP->length) {\
                 DATA_TYPE_NAME ## _encode(bbP, &listP->val[index++]);\
@@ -633,7 +599,6 @@ TYPEDEF_UNSIGNED_INT1(MIH_C_ENUMERATED)
         extern inline void MIH_C_ENUMERATED_encode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
         extern inline void MIH_C_ENUMERATED_decode(Bit_Buffer_t* bbP, MIH_C_ENUMERATED_T* dataP);\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *dataP);\
             MIH_C_ENUMERATED_encode(bbP, dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
 #else
@@ -672,7 +637,6 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
             return buffer_index;\
         };\
         inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {\
-            DEBUG_ENCODE("%s: %02X\n", __FUNCTION__, *dataP);\
             MIH_C_BOOLEAN_encode(bbP, dataP);};\
         inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *dataP) {MIH_C_ENUMERATED_decode(bbP, dataP);};
 #else
@@ -703,28 +667,30 @@ TYPEDEF_ENUMERATED(MIH_C_BOOLEAN)
     };\
     inline void DATA_TYPE_NAME ## _decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *listP) {\
         MIH_C_LIST_LENGTH_decode(bbP, &listP->length);\
-        if (listP->length > MAX_LENGTH) {ERR(" DATA_TYPE_NAME ## _decode String length out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
+        if (listP->length > MAX_LENGTH) {printf("[MIH_C] ERROR DATA_TYPE_NAME ## _decode String length out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
         } else {\
             BitBuffer_readMem(bbP, listP->val, listP->length);\
         }\
     };\
     inline void DATA_TYPE_NAME ## _encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _T *listP) {\
         if (listP->length > MAX_LENGTH) {\
-            ERR(" DATA_TYPE_NAME ## _encode String length out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
+            printf("[MIH_C] ERROR DATA_TYPE_NAME ## _encode String length out of bounds: %d, max is %d\n", listP->length, MAX_LENGTH);\
         } else {\
-            DEBUG_ENCODE("%s: Length %04X\n", __FUNCTION__, listP->length);\
             MIH_C_LIST_LENGTH_encode(bbP, listP->length);\
             BitBuffer_writeMem(bbP, listP->val, listP->length);\
         }\
     };\
     inline void DATA_TYPE_NAME ## _set(DATA_TYPE_NAME ## _T *octet_strP, u_int8_t* strP, u_int16_t lengthP) {\
         if (lengthP > MAX_LENGTH) {\
-            ERR(" DATA_TYPE_NAME ## _set String length out of bounds\n");\
+            printf("[MIH_C] ERROR DATA_TYPE_NAME ## _set String length out of bounds\n");\
             octet_strP->length = 0;\
         } else {\
-            DEBUG_ENCODE("%s: Length %d MAX LENGTH %d\n", __FUNCTION__, lengthP, MAX_LENGTH);\
             octet_strP->length = lengthP;\
-            memcpy((char *)octet_strP->val, (char *)strP, lengthP);\
+            if (strP != NULL) {\
+                memcpy((char *)octet_strP->val, (char *)strP, lengthP);\
+            } else {\
+                memset((char *)octet_strP->val, 0, lengthP);\
+            }\
         }\
     };
 #else
@@ -1229,22 +1195,22 @@ typedef struct MIH_C_RESOURCE_DESC {
     MIH_C_FLOW_ID_T         flow_id;
     MIH_C_CHOICE_T          choice_link_data_rate;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_LINK_DATA_RATE_T   link_data_rate;
     } _union_link_data_rate;
     MIH_C_CHOICE_T          choice_qos;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_QOS_T          qos;
     } _union_qos;
     MIH_C_CHOICE_T          choice_jumbo_enable;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_JUMBO_ENABLE_T     jumbo_enable;
     } _union_jumbo_enable;
     MIH_C_CHOICE_T          choice_multicast_enable;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_MULTICAST_ENABLE_T multicast_enable;
     } _union_multicast_enable;
 } MIH_C_RESOURCE_DESC_T;
@@ -1259,12 +1225,12 @@ typedef struct MIH_C_FLOW_ATTRIBUTE {
     MIH_C_FLOW_ID_T         flow_id;
     MIH_C_CHOICE_T          choice_multicast_enable;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_MULTICAST_ENABLE_T multicast_enable;
     } _union_multicast_enable;
     MIH_C_CHOICE_T          choice_mark_qos;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         struct {
             MIH_C_MARK_T         mark;
             MIH_C_QOS_T          qos;
@@ -1272,7 +1238,7 @@ typedef struct MIH_C_FLOW_ATTRIBUTE {
     } _union_mark_qos;
     MIH_C_CHOICE_T                      choice_mark_drop_eligibility;
     union  {
-        MIH_C_NULL_T                    null;
+        MIH_C_NULL_T                    null_attr;
         struct {
             MIH_C_MARK_T                mark;
             MIH_C_DROP_ELIGIBILITY_T    drop_eligibility;
@@ -1291,7 +1257,7 @@ typedef struct MIH_C_FLOW_ATTRIBUTE {
 typedef struct MIH_C_LINK_AC_PARAM {
     MIH_C_CHOICE_T          choice;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_FLOW_ATTRIBUTE_T   flow_attribute;
         MIH_C_RESOURCE_DESC_T    resource_desc;
     } _union;
@@ -1319,7 +1285,7 @@ typedef struct MIH_C_LINK_ACTION_REQ {
     MIH_C_LINK_ID_T              link_id;
     MIH_C_CHOICE_T               choice;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_LINK_ADDR_T        link_addr;
     } _union;
 
@@ -1373,7 +1339,7 @@ typedef struct MIH_C_LINK_ACTION_RSP {
     MIH_C_LINK_AC_RESULT_T       link_ac_result;
     MIH_C_CHOICE_T               choice;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
     } _union;
 } MIH_C_LINK_ACTION_RSP_T;
@@ -1672,7 +1638,7 @@ typedef struct MIH_C_LINK_CFG_PARAM {
     MIH_C_LINK_PARAM_TYPE_T      link_param_type;
     MIH_C_CHOICE_T               choice;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_TIMER_INTERVAL_T   timer_interval;
         LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
     } _union;
@@ -1944,7 +1910,7 @@ typedef struct MIH_C_LINK_PARAM_RPT {
     MIH_C_LINK_PARAM_T           link_param;
     MIH_C_CHOICE_T               choice;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_THRESHOLD_T        threshold;
     } _union;
 } MIH_C_LINK_PARAM_RPT_T;
@@ -2055,7 +2021,7 @@ typedef struct MIH_C_LINK_TUPLE_ID {
     MIH_C_LINK_ID_T              link_id;
     MIH_C_CHOICE_T               choice;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_LINK_ADDR_T        link_addr;
     } _union;
 } MIH_C_LINK_TUPLE_ID_T;
@@ -2476,17 +2442,17 @@ typedef struct MIH_C_IP_CONFIG
     MIH_C_IP_CFG_MTHDS_T         ip_cfg_mthds;
     MIH_C_CHOICE_T               choice_dhcp_serv;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_DHCP_SERV_T        dhcp_serv;
     } _union_dhcp_serv;
     MIH_C_CHOICE_T               choice_fn_agnt;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_FN_AGNT_T          fn_agnt;
     } _union_fn_agnt;
     MIH_C_CHOICE_T               choice_acc_rtr;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_ACC_RTR_T          acc_rtr;
     } _union_acc_rtr;
 } MIH_C_IP_CONFIG_T;
@@ -2536,17 +2502,17 @@ typedef struct MIH_C_NETWORK_TYPE
  {
     MIH_C_CHOICE_T               choice_link_type;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_LINK_TYPE_T        link_type;
     } _union_link_type;
     MIH_C_CHOICE_T               choice_subtype;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_SUBTYPE_T          subtype;
     } _union_subtype;
     MIH_C_CHOICE_T               choice_type_ext;
     union  {
-        MIH_C_NULL_T             null;
+        MIH_C_NULL_T             null_attr;
         MIH_C_TYPE_EXT_T         type_ext;
     } _union_type_ext;
 } MIH_C_NETWORK_TYPE_T;
@@ -2695,17 +2661,17 @@ TYPEDEF_OCTET_STRING(MIH_C_MIHF_ID, 253)
 typedef struct MIH_C_LINK_DET_CFG  {
     MIH_C_CHOICE_T                choice_network_id;
     union  {
-        MIH_C_NULL_T              null;
+        MIH_C_NULL_T              null_attr;
         MIH_C_NETWORK_ID_T        network_id;
     } _union_network_id;
     MIH_C_CHOICE_T                choice_sig_strength;
     union  {
-        MIH_C_NULL_T              null;
+        MIH_C_NULL_T              null_attr;
         MIH_C_SIG_STRENGTH_T      sig_strength;
     } _union_sig_strength;
     MIH_C_CHOICE_T                choice_link_data_rate;
     union  {
-        MIH_C_NULL_T              null;
+        MIH_C_NULL_T              null_attr;
         MIH_C_LINK_DATA_RATE_T    link_data_rate;
     } _union_link_data_rate;
 } MIH_C_LINK_DET_CFG_T;

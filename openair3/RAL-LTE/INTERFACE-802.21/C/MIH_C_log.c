@@ -5,6 +5,7 @@
  ***************************************************************************/
 #define MIH_C_INTERFACE
 #define MIH_C_LOG_C
+/*
 //-----------------------------------------------------------------------------
 #include "MIH_C_log.h"
 //-----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ int is_newline( char *str, int size){
       if ( str[i] == '\n' )
     return 1;
     }
-    /* if we get all the way to here, there must not have been a newline! */
+    // if we get all the way to here, there must not have been a newline!
     return 0;
 }
 
@@ -161,5 +162,5 @@ int MIH_C_log_exit(void) {
     }
     return 0;
 }
-
+*/
 

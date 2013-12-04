@@ -1,7 +1,7 @@
 /*******************************************************************************
  *
  * Eurecom OpenAirInterface 3
- * Copyright(c) 2012 Eurecom
+ * Copyright(c) 2013 Eurecom
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -26,9 +26,9 @@
  * Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
  *
  *******************************************************************************/
-/*! \file lteRALenb_thresholds.h
+/*! \file lteRALenb_subscribe.h
  * \brief
- * \author GAUTHIER Lionel, MAUREL Frederic, WETTERWALD Michelle
+ * \author  GAUTHIER Lionel, MAUREL Frederic, WETTERWALD Michelle
  * \date 2012
  * \version
  * \note
@@ -36,27 +36,26 @@
  * \warning
  */
 
-#ifndef __LTE_RAL_ENB_THRESHOLDS_H__
-#define __LTE_RAL_ENB_THRESHOLDS_H__
+#ifndef __LTE_RAL_UE_SUBSCRIBE_H__
+#define __LTE_RAL_UE_SUBSCRIBE_H__
 //-----------------------------------------------------------------------------
-#        ifdef LTE_RAL_ENB_PROCESS_C
-#            define private_lteralenb_thresholds(x)    x
-#            define protected_lteralenb_thresholds(x)  x
-#            define public_lteralenb_thresholds(x)     x
+#        ifdef LTE_RAL_UE_PROCESS_C
+#            define private_lteralue_subscribe(x)    x
+#            define protected_lteralue_subscribe(x)  x
+#            define public_lteralue_subscribe(x)     x
 #        else
-#            ifdef LTE_RAL_ENB
-#                define private_lteralenb_thresholds(x)
-#                define protected_lteralenb_thresholds(x)  extern x
-#                define public_lteralenb_thresholds(x)     extern x
+#            ifdef LTE_RAL_UE
+#                define private_lteralue_subscribe(x)
+#                define protected_lteralue_subscribe(x)  extern x
+#                define public_lteralue_subscribe(x)     extern x
 #            else
-#                define private_lteralenb_thresholds(x)
-#                define protected_lteralenb_thresholds(x)
-#                define public_lteralenb_thresholds(x)     extern x
+#                define private_lteralue_subscribe(x)
+#                define protected_lteralue_subscribe(x)
+#                define public_lteralue_subscribe(x)     extern x
 #            endif
 #        endif
 //-----------------------------------------------------------------------------
-#include "lteRALenb.h"
-#include "intertask_interface.h"
+#include "lteRALue.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -70,13 +69,11 @@
 /********************  G L O B A L    V A R I A B L E S  ********************/
 /****************************************************************************/
 
-//LIST(MIH_C_LINK_CFG_PARAM, g_link_cfg_param_thresholds);
-
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
+protected_lteralue_subscribe(void mRAL_subscribe_request  (ral_ue_instance_t instanceP, MIH_C_Message_Link_Event_Subscribe_request_t*   msgP);)
+protected_lteralue_subscribe(void mRAL_unsubscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Event_Unsubscribe_request_t* msgP);)
 
-protected_lteralenb_thresholds(void eRAL_configure_thresholds_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Configure_Thresholds_request_t* messageP);)
-protected_lteralenb_thresholds(void eRAL_rx_rrc_ral_configure_threshold_conf(instance_t instance, MessageDef *msg_p);)
 
 #endif
