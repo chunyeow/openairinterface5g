@@ -132,6 +132,8 @@ variables.itti_recv_msg[63:0]
 +{eNB RRC} (51)variables.itti_recv_msg[63:0]
 [color] 6
 +{UE RRC} (52)variables.itti_recv_msg[63:0]
+[color] 6
++{L2L1} (61)variables.itti_recv_msg[63:0]
 @1401200
 -group_end
 @200
