@@ -399,6 +399,19 @@ static void *l2l1_task(void *args_p) {
         free (message_p);
       }
       itti_receive_msg (TASK_L2L1, &message_p);
+
+      switch (ITTI_MSG_ID(message_p)) {
+        case INITIALIZE_MESSAGE:
+          break;
+
+        case TERMINATE_MESSAGE:
+          itti_exit_task ();
+          break;
+
+        default:
+          LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
+          break;
+      }
     } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
     free (message_p);
   }
