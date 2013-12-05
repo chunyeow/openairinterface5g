@@ -1089,6 +1089,7 @@ static int _emm_as_send(const emm_as_t *msg)
                 nas_itti_dl_data_req(as_msg.msg.dl_info_transfer_req.UEid,
                                      as_msg.msg.dl_info_transfer_req.nasMsg.data,
                                      as_msg.msg.dl_info_transfer_req.nasMsg.length);
+                LOG_FUNC_RETURN (RETURNok);
             } break;
 
             case AS_NAS_ESTABLISH_RSP: {
