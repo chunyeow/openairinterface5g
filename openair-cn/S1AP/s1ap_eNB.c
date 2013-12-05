@@ -208,7 +208,7 @@ void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_associa
                   instance,
                   sctp_new_association_resp->ulp_cnx_id);
 
-        s1ap_handle_s1_setup_message(s1ap_mme_data_p);
+        s1ap_handle_s1_setup_message(s1ap_mme_data_p, sctp_new_association_resp->sctp_state == SCTP_STATE_SHUTDOWN);
 
         return;
     }

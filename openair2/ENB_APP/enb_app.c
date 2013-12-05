@@ -226,6 +226,13 @@ void *eNB_app_task(void *args_p)
                 }
                 break;
 
+            case S1AP_DEREGISTERED_ENB_IND:
+                LOG_W(ENB_APP, "[eNB %d] Received %s: associated MME %d\n", instance, msg_name,
+                      S1AP_DEREGISTERED_ENB_IND(msg_p).nb_mme);
+
+                /* TODO handle recovering of registration */
+                break;
+
             case TIMER_HAS_EXPIRED:
                 LOG_I(ENB_APP, " Received %s: timer_id %d\n", msg_name, TIMER_HAS_EXPIRED(msg_p).timer_id);
 

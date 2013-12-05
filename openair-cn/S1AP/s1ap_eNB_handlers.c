@@ -133,21 +133,47 @@ static const char *direction2String[] = {
     "UnSuccessfull outcome", /* successfull outcome */
 };
 
-void s1ap_handle_s1_setup_message(s1ap_eNB_mme_data_t *mme_desc_p) {
-    /* Check that at least one setup message is pending */
-    DevCheck(mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb > 0, mme_desc_p->s1ap_eNB_instance->instance,
-             mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb, 0);
-    /* Decrease pending messages number */
-    mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb --;
+void s1ap_handle_s1_setup_message(s1ap_eNB_mme_data_t *mme_desc_p, int sctp_shutdown) {
+    if (sctp_shutdown) {
+        /* A previously connected MME has been shutdown */
 
-    /* If there are no more pending messages, inform eNB app */
-    if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb == 0)
-    {
-      MessageDef                 *message_p;
+        /* TODO check if it was used by some eNB and send a message to inform these eNB if there is no more associated MME */
+        if (mme_desc_p->state == S1AP_ENB_STATE_CONNECTED)
+        {
+            mme_desc_p->state = S1AP_ENB_STATE_DISCONNECTED;
 
-      message_p = itti_alloc_new_message(TASK_S1AP, S1AP_REGISTER_ENB_CNF);
-      S1AP_REGISTER_ENB_CNF(message_p).nb_mme = mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb;
-      itti_send_msg_to_task(TASK_ENB_APP, mme_desc_p->s1ap_eNB_instance->instance, message_p);
+            if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb > 0) {
+                /* Decrease associated MME number */
+                mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb --;
+            }
+
+            /* If there are no more associated MME, inform eNB app */
+            if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb == 0) {
+              MessageDef                 *message_p;
+
+              message_p = itti_alloc_new_message(TASK_S1AP, S1AP_DEREGISTERED_ENB_IND);
+              S1AP_DEREGISTERED_ENB_IND(message_p).nb_mme = 0;
+              itti_send_msg_to_task(TASK_ENB_APP, mme_desc_p->s1ap_eNB_instance->instance, message_p);
+            }
+        }
+    } else {
+        /* Check that at least one setup message is pending */
+        DevCheck(mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb > 0, mme_desc_p->s1ap_eNB_instance->instance,
+                 mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb, 0);
+
+        if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb > 0) {
+            /* Decrease pending messages number */
+            mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb --;
+        }
+
+        /* If there are no more pending messages, inform eNB app */
+        if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb == 0) {
+          MessageDef                 *message_p;
+
+          message_p = itti_alloc_new_message(TASK_S1AP, S1AP_REGISTER_ENB_CNF);
+          S1AP_REGISTER_ENB_CNF(message_p).nb_mme = mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb;
+          itti_send_msg_to_task(TASK_ENB_APP, mme_desc_p->s1ap_eNB_instance->instance, message_p);
+        }
     }
 }
 
@@ -209,7 +235,7 @@ int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
     S1AP_ERROR("Received s1 setup failure for MME... please check your parameters\n");
 
     mme_desc_p->state = S1AP_ENB_STATE_WAITING;
-    s1ap_handle_s1_setup_message(mme_desc_p);
+    s1ap_handle_s1_setup_message(mme_desc_p, 0);
 
     return 0;
 }
@@ -310,7 +336,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
      */
     mme_desc_p->state = S1AP_ENB_STATE_CONNECTED;
     mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb ++;
-    s1ap_handle_s1_setup_message(mme_desc_p);
+    s1ap_handle_s1_setup_message(mme_desc_p, 0);
 
 #if 0
     /* We call back our self
