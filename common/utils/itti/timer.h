@@ -31,6 +31,8 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
+#include <signal.h>
+
 #define SIGTIMER SIGRTMIN
 
 typedef enum timer_type_s {
@@ -38,6 +40,8 @@ typedef enum timer_type_s {
     TIMER_ONE_SHOT,
     TIMER_TYPE_MAX,
 } timer_type_t;
+
+int timer_handle_signal(siginfo_t *info);
 
 /** \brief Request a new timer
  *  \param interval_sec timer interval in seconds

@@ -217,6 +217,7 @@ unsigned int build_rfdc(int dcoff_i_rxfe, int dcoff_q_rxfe)
     return (dcoff_i_rxfe + (dcoff_q_rxfe<<8));
 }
 
+#if !defined(ENABLE_ITTI)
 void signal_handler(int sig)
 {
   void *array[10];
@@ -235,6 +236,7 @@ void signal_handler(int sig)
     oai_exit=1;
   }
 }
+#endif
 
 void exit_fun(const char* s)
 {
@@ -480,17 +482,48 @@ void *l2l1_task(void *arg)
           free (message_p);
         }
         itti_receive_msg (TASK_L2L1, &message_p);
+
+        switch (ITTI_MSG_ID(message_p)) {
+          case INITIALIZE_MESSAGE:
+            /* Start eNB thread */
+            start_eNB = 1;
+            break;
+
+          case TERMINATE_MESSAGE:
+            oai_exit=1;
+            itti_exit_task ();
+            break;
+
+          default:
+            LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
+            break;
+        }
       } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
       free (message_p);
-
-      /* Start eNB thread */
-      start_eNB = 1;
     }
 
-    while (!oai_exit)
-    {
-        usleep(500000);
-    }
+    do {
+      // Wait for a message
+      itti_receive_msg (TASK_L2L1, &message_p);
+
+      switch (ITTI_MSG_ID(message_p)) {
+        case TERMINATE_MESSAGE:
+          oai_exit=1;
+          itti_exit_task ();
+          break;
+
+        case MESSAGE_TEST:
+          LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
+          break;
+
+        default:
+          LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
+          break;
+      }
+
+      free (message_p);
+    } while(1);
+
     return NULL;
 }
 #endif
@@ -1270,26 +1303,23 @@ int main(int argc, char **argv) {
   else {
     log_set_instance_type (LOG_INSTANCE_ENB);
   }
-#endif
 
-#if defined(ENABLE_ITTI)
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
 
   if (create_tasks(UE_flag ? 0 : 1, UE_flag ? 1 : 0) < 0) {
     exit(-1); // need a softer mode
   }
-
-  // Handle signals until all tasks are terminated
-//   itti_wait_tasks_end();
 #endif
 
 #ifdef NAS_NETLINK
   netlink_init();
 #endif
 
+#if !defined(ENABLE_ITTI)
   // to make a graceful exit when ctrl-c is pressed
   signal(SIGSEGV, signal_handler);
   signal(SIGINT, signal_handler);
+#endif
 
 #ifndef RTAI
   check_clock();
@@ -1463,11 +1493,15 @@ int main(int argc, char **argv) {
     g_log->log_component[OTG].flag  = LOG_HIGH;
     g_log->log_component[RRC].level = LOG_INFO;
     g_log->log_component[RRC].flag  = LOG_HIGH;
-#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+#if defined(ENABLE_ITTI)
+    g_log->log_component[EMU].level = LOG_INFO;
+    g_log->log_component[EMU].flag  = LOG_HIGH;
+# if defined(ENABLE_USE_MME)
     g_log->log_component[S1AP].level  = LOG_INFO;
     g_log->log_component[S1AP].flag   = LOG_HIGH;
     g_log->log_component[SCTP].level  = LOG_INFO;
     g_log->log_component[SCTP].flag   = LOG_HIGH;
+# endif
 #endif
     g_log->log_component[ENB_APP].level = LOG_INFO;
     g_log->log_component[ENB_APP].flag  = LOG_HIGH;
@@ -1864,8 +1898,13 @@ int main(int argc, char **argv) {
   // wait for end of program
   printf("TYPE <CTRL-C> TO TERMINATE\n");
   //getchar();
+
+#if defined(ENABLE_ITTI)
+  itti_wait_tasks_end();
+#else
   while (oai_exit==0)
     rt_sleep_ns(FRAME_PERIOD);
+#endif
 
   // stop threads
 #ifdef XFORMS

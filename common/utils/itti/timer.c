@@ -85,7 +85,6 @@ do {                                                            \
 
 int timer_handle_signal(siginfo_t *info)
 {
-#if !defined(RTAI)
     struct timer_elm_s  *timer_p;
     MessageDef          *message_p;
     timer_has_expired_t *timer_expired_p;
@@ -127,7 +126,6 @@ int timer_handle_signal(siginfo_t *info)
         free(message_p);
         return -1;
     }
-#endif
 
     return 0;
 }
@@ -141,7 +139,6 @@ int timer_setup(
     void         *timer_arg,
     long         *timer_id)
 {
-#if !defined(RTAI)
     struct sigevent     se;
     struct itimerspec   its;
     struct timer_elm_s *timer_p;
@@ -209,9 +206,6 @@ int timer_setup(
     pthread_mutex_lock(&timer_desc.timer_list_mutex);
     STAILQ_INSERT_TAIL(&timer_desc.timer_queue, timer_p, entries);
     pthread_mutex_unlock(&timer_desc.timer_list_mutex);
-#else
-    return -1;
-#endif
 
     return 0;
 }
@@ -219,7 +213,6 @@ int timer_setup(
 int timer_remove(long timer_id)
 {
     int rc = 0;
-#if !defined(RTAI)
     struct timer_elm_s *timer_p;
 
     TMR_DEBUG("Removing timer 0x%lx\n", timer_id);
@@ -243,7 +236,6 @@ int timer_remove(long timer_id)
     }
     free(timer_p);
     timer_p = NULL;
-#endif
     return rc;
 }
 

@@ -48,10 +48,23 @@
 #include "assertions.h"
 
 #include "signals.h"
+#include "log.h"
+
+#if defined (LOG_D) && defined (LOG_E)
+# define SIG_DEBUG(x, args...)  LOG_D(EMU, x, ##args)
+# define SIG_ERROR(x, args...)  LOG_E(EMU, x, ##args)
+#endif
+
+#ifndef SIG_DEBUG
+# define SIG_DEBUG(x, args...)  do { fprintf(stdout, "[SIG][D]"x, ##args); } while(0)
+#endif
+#ifndef SIG_ERROR
+# define SIG_ERROR(x, args...)  do { fprintf(stdout, "[SIG][E]"x, ##args); } while(0)
+#endif
 
 static sigset_t set;
 
-int signal_init(void)
+int signal_mask(void)
 {
     /* We set the signal mask to avoid threads other than the main thread
      * to receive the timer signal. Note that threads created will inherit this
@@ -72,8 +85,6 @@ int signal_init(void)
 
     return 0;
 }
-
-extern int timer_handle_signal(siginfo_t *info);
 
 int signal_handle(int *end)
 {
@@ -113,24 +124,24 @@ int signal_handle(int *end)
         /* Dispatch the signal to sub-handlers */
         switch(info.si_signo) {
             case SIGUSR1:
-                printf("Received SIGUSR1\n");
+                SIG_DEBUG("Received SIGUSR1\n");
                 *end = 1;
                 break;
 
             case SIGSEGV:   /* Fall through */
             case SIGABRT:
-                printf("Received SIGABORT\n");
+                SIG_DEBUG("Received SIGABORT\n");
                 backtrace_handle_signal(&info);
                 break;
 
             case SIGINT:
-                printf("Received SIGINT\n");
+                SIG_DEBUG("Received SIGINT\n");
                 itti_send_terminate_message(TASK_UNKNOWN);
                 *end = 1;
                 break;
 
             default:
-                printf("Received unknown signal %d\n", info.si_signo);
+                SIG_ERROR("Received unknown signal %d\n", info.si_signo);
                 break;
         }
     }

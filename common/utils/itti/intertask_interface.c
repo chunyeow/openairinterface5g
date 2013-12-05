@@ -339,54 +339,67 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
 #endif
 
-        /* We cannot send a message if the task is not running */
-        DevCheck(itti_desc.threads[destination_thread_id].task_state == TASK_STATE_READY, itti_desc.threads[destination_thread_id].task_state,
-                 TASK_STATE_READY, destination_thread_id);
+        if (itti_desc.threads[destination_thread_id].task_state == TASK_STATE_ENDED)
+        {
+            ITTI_DEBUG("Message %s, number %lu with priority %d can not be sent from %s to queue (%u:%s), ended destination task!\n",
+                       itti_desc.messages_info[message_id].name,
+                       message_number,
+                       priority,
+                       itti_get_task_name(origin_task_id),
+                       destination_task_id,
+                       itti_get_task_name(destination_task_id));
+        }
+        else
+        {
+            /* We cannot send a message if the task is not running */
+            DevCheck(itti_desc.threads[destination_thread_id].task_state == TASK_STATE_READY, destination_thread_id,
+                     itti_desc.threads[destination_thread_id].task_state, message_id);
 
-        /* Allocate new list element */
-        new = (message_list_t *) malloc (sizeof(struct message_list_s));
-        DevAssert(new != NULL);
+            /* Allocate new list element */
+            new = (message_list_t *) malloc (sizeof(struct message_list_s));
+            DevAssert(new != NULL);
 
-        /* Fill in members */
-        new->msg = message;
-        new->message_number = message_number;
-        new->message_priority = priority;
+            /* Fill in members */
+            new->msg = message;
+            new->message_number = message_number;
+            new->message_priority = priority;
 
-        /* Enqueue message in destination task queue */
-        lfds611_queue_enqueue(itti_desc.tasks[destination_task_id].message_queue, new);
+            /* Enqueue message in destination task queue */
+            lfds611_queue_enqueue(itti_desc.tasks[destination_task_id].message_queue, new);
 
 #if defined(OAI_EMU) || defined(RTAI)
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
+            vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
 #endif
 
 #ifdef RTAI
-        if (itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].real_time)
-        {
-            /* This is a RT task, increase destination task messages pending counter */
-            __sync_fetch_and_add (&itti_desc.threads[destination_thread_id].messages_pending, 1);
-        }
-        else
-#endif
-        {
-            /* Only use event fd for tasks, subtasks will pool the queue */
-            if (TASK_GET_PARENT_TASK_ID(destination_task_id) == TASK_UNKNOWN)
+            if (itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].real_time)
             {
-                ssize_t write_ret;
-                uint64_t sem_counter = 1;
-
-                /* Call to write for an event fd must be of 8 bytes */
-                write_ret = write (itti_desc.threads[destination_thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
-                DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, destination_thread_id);
+                /* This is a RT task, increase destination task messages pending counter */
+                __sync_fetch_and_add (&itti_desc.threads[destination_thread_id].messages_pending, 1);
             }
-        }
+            else
+#endif
+            {
+                /* Only use event fd for tasks, subtasks will pool the queue */
+                if (TASK_GET_PARENT_TASK_ID(destination_task_id) == TASK_UNKNOWN)
+                {
+                    ssize_t write_ret;
+                    uint64_t sem_counter = 1;
 
-        ITTI_DEBUG("Message %s, number %lu with priority %d successfully sent from %s to queue (%u:%s)\n",
-                   itti_desc.messages_info[message_id].name,
-                   message_number,
-                   priority,
-                   itti_get_task_name(origin_task_id),
-                   destination_task_id,
-                   itti_get_task_name(destination_task_id));
+                    /* Call to write for an event fd must be of 8 bytes */
+                    write_ret = write (itti_desc.threads[destination_thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
+                    DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, destination_thread_id);
+                }
+            }
+
+            ITTI_DEBUG("Message %s, number %lu with priority %d successfully sent from %s to queue (%u:%s)\n",
+                       itti_desc.messages_info[message_id].name,
+                       message_number,
+                       priority,
+                       itti_get_task_name(origin_task_id),
+                       destination_task_id,
+                       itti_get_task_name(destination_task_id));
+        }
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
@@ -634,6 +647,15 @@ void itti_mark_task_ready(task_id_t task_id)
 }
 
 void itti_exit_task(void) {
+#if defined(OAI_EMU) || defined(RTAI)
+    task_id_t task_id = itti_get_current_task_id();
+
+    if (task_id > TASK_UNKNOWN)
+    {
+        vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_ITTI_RECV_MSG,
+                                                __sync_and_and_fetch (&itti_desc.vcd_receive_msg, ~(1L << task_id)));
+    }
+#endif
     pthread_exit (NULL);
 }
 
@@ -692,12 +714,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
     ITTI_DEBUG("Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
 
-#if !defined(RTAI)
-    /* SR: disable signals module for RTAI (need to harmonize management
-     * between softmodem and oaisim).
-     */
-    CHECK_INIT_RETURN(signal_init());
-#endif
+    CHECK_INIT_RETURN(signal_mask());
 
     /* Saves threads and messages max values */
     itti_desc.task_max = task_max;
@@ -799,9 +816,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
     itti_dump_init (messages_definition_xml, dump_file_name);
 
-#ifndef RTAI
-     CHECK_INIT_RETURN(timer_init ());
-#endif
+    CHECK_INIT_RETURN(timer_init ());
 
     return 0;
 }

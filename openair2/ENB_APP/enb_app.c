@@ -215,7 +215,7 @@ void *eNB_app_task(void *args_p)
                         if (timer_setup (ENB_REGISTER_RETRY_DELAY, 0, TASK_ENB_APP, INSTANCE_DEFAULT, TIMER_ONE_SHOT,
                                          NULL, &enb_register_retry_timer_id) < 0)
                         {
-                            LOG_E(ENB_APP, " Can not start eNB register retry timer!\n");
+                            LOG_E(ENB_APP, " Can not start eNB register retry timer, use \"usleep\" instead!\n");
 
                             usleep(ENB_REGISTER_RETRY_DELAY * 1000000);
                             /* Restart the registration process */

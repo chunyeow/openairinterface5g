@@ -51,6 +51,7 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "signals.h"
 #if defined(ENABLE_VCD_FIFO)
 # include "liblfds611.h"
 #endif
@@ -266,6 +267,10 @@ void *vcd_dumper_thread_rt(void *args)
     vcd_queue_user_data_t *data;
     char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
 
+# if defined(ENABLE_ITTI)
+    signal_mask();
+# endif
+
     while(1) {
         if (lfds611_queue_dequeue(vcd_queue, (void **) &data) == 0) {
             /* No element -> sleep a while */
@@ -313,7 +318,6 @@ void *vcd_dumper_thread_rt(void *args)
 
 void vcd_signal_dumper_init(char *filename)
 {
-
     if (ouput_vcd) {
       //        char filename[] = "/tmp/openair_vcd_dump.vcd";
 
