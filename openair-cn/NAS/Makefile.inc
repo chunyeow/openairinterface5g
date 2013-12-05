@@ -370,6 +370,8 @@ libnas_ies_SRCS = \
 libnas_utils_SRCS = \
     EURECOM-NAS/src/util/nas_log.h      \
     EURECOM-NAS/src/util/nas_log.c      \
+    EURECOM-NAS/src/util/nas_timer.h      \
+    EURECOM-NAS/src/util/nas_timer.c      \
     EURECOM-NAS/src/util/TLVEncoder.h      \
     EURECOM-NAS/src/util/TLVEncoder.c      \
     EURECOM-NAS/src/util/TLVDecoder.h      \

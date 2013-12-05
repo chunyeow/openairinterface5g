@@ -1,20 +1,20 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+            Eurecom OpenAirInterface 3
+            Copyright(c) 2012 Eurecom
 
-Source		timer.h
+Source      timer.h
 
-Version		0.1
+Version     0.1
 
-Date		2012/11/22
+Date        2012/11/22
 
-Product		NAS stack
+Product     NAS stack
 
-Subsystem	Utilities
+Subsystem   Utilities
 
-Author		Frederic Maurel
+Author      Frederic Maurel
 
-Description	Timer utilities
+Description Timer utilities
 
 *****************************************************************************/
 #ifndef __NAS_TIMER_H__
@@ -28,7 +28,7 @@ Description	Timer utilities
  * Timer identifier returned when in inactive state (timer is stopped or has
  * failed to be started)
  */
-#define NAS_TIMER_INACTIVE_ID	(-1)
+#define NAS_TIMER_INACTIVE_ID   (-1)
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -36,12 +36,12 @@ Description	Timer utilities
 
 /* Timer structure */
 struct nas_timer_t {
-    int id;		/* The timer identifier 		*/
-    long sec;		/* The timer interval value in seconds	*/
+    int id;         /* The timer identifier                 */
+    long sec;       /* The timer interval value in seconds  */
 };
 
 /* Type of the callback executed when the timer expired */
-typedef void* (*nas_timer_callback_t)(void*);
+typedef void *(*nas_timer_callback_t)(void *);
 
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/
@@ -51,16 +51,13 @@ typedef void* (*nas_timer_callback_t)(void*);
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-#if defined(NAS_MME) && defined(EPC_BUILD)
-# define nas_timer_init
-# define nas_timer_start
-# define nas_timer_stop
-# define nas_timer_restart
-#else
 int nas_timer_init(void);
-int nas_timer_start(long sec, nas_timer_callback_t cb, void* args);
+int nas_timer_start(long sec, nas_timer_callback_t cb, void *args);
 int nas_timer_stop(int id);
 int nas_timer_restart(int id);
+
+#if defined(EPC_BUILD)
+void nas_timer_handle_signal_expiry(long timer_id, void *arg_p);
 #endif
 
 #endif /* __NAS_TIMER_H__ */

@@ -21,6 +21,7 @@ Description NAS procedure functions triggered by the network
 #include "nas_network.h"
 #include "commonDef.h"
 #include "nas_log.h"
+#include "nas_timer.h"
 
 #include "as_message.h"
 #include "nas_proc.h"
@@ -62,6 +63,7 @@ void nas_network_initialize(void)
 #ifdef NAS_MME
     /* Initialize the internal NAS processing data */
 # if defined(EPC_BUILD)
+    nas_timer_init();
     nas_proc_initialize(mme_config_p);
 # else
     nas_proc_initialize();

@@ -44,6 +44,7 @@
 # include "nas_proc.h"
 # include "emm_main.h"
 # include "nas_log.h"
+# include "nas_timer.h"
 #endif
 
 #define NAS_ERROR(x, args...) do { fprintf(stderr, "[NAS] [E]"x, ##args); } while(0)
@@ -132,6 +133,14 @@ next_message:
                 nas_proc_auth_param_fail(&NAS_AUTHENTICATION_PARAM_FAIL(received_message_p));
             } break;
 #endif
+
+            case TIMER_HAS_EXPIRED: {
+#if !defined(DISABLE_USE_NAS)
+                /* Call the NAS timer api */
+                nas_timer_handle_signal_expiry(TIMER_HAS_EXPIRED(received_message_p).timer_id,
+                                               TIMER_HAS_EXPIRED(received_message_p).arg);
+#endif
+            } break;
 
             case TERMINATE_MESSAGE: {
                 itti_exit_task();
