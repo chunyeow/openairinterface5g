@@ -3,6 +3,7 @@ MESSAGE_DEF(S1AP_REGISTER_ENB_REQ          , MESSAGE_PRIORITY_MED, s1ap_register
 
 /* S1AP -> eNB application layer messages */
 MESSAGE_DEF(S1AP_REGISTER_ENB_CNF          , MESSAGE_PRIORITY_MED, s1ap_register_enb_cnf_t          , s1ap_register_enb_cnf)
+MESSAGE_DEF(S1AP_DEREGISTERED_ENB_IND      , MESSAGE_PRIORITY_MED, s1ap_deregistered_enb_ind_t      , s1ap_deregistered_enb_ind)
 
 /* RRC -> S1AP messages */
 MESSAGE_DEF(S1AP_NAS_FIRST_REQ             , MESSAGE_PRIORITY_MED, s1ap_nas_first_req_t             , s1ap_nas_first_req)

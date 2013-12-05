@@ -7,6 +7,7 @@
 #define S1AP_REGISTER_ENB_REQ(mSGpTR)           (mSGpTR)->ittiMsg.s1ap_register_enb_req
 
 #define S1AP_REGISTER_ENB_CNF(mSGpTR)           (mSGpTR)->ittiMsg.s1ap_register_enb_cnf
+#define S1AP_DEREGISTERED_ENB_IND(mSGpTR)       (mSGpTR)->ittiMsg.s1ap_deregistered_enb_ind
 
 #define S1AP_NAS_FIRST_REQ(mSGpTR)              (mSGpTR)->ittiMsg.s1ap_nas_first_req
 #define S1AP_UPLINK_NAS(mSGpTR)                 (mSGpTR)->ittiMsg.s1ap_uplink_nas
@@ -283,8 +284,12 @@ typedef struct s1ap_register_enb_req_s {
 typedef struct s1ap_register_enb_cnf_s {
     /* Nb of MME connected */
     uint8_t          nb_mme;
-
 } s1ap_register_enb_cnf_t;
+
+typedef struct s1ap_deregistered_enb_ind_s {
+    /* Nb of MME connected */
+    uint8_t          nb_mme;
+} s1ap_deregistered_enb_ind_t;
 
 //-------------------------------------------------------------------------------------------//
 // RRC -> S1AP messages
