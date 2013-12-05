@@ -105,10 +105,26 @@ if(paramsinitialized)
             Db2a_R((meas-1)*120+i+1,:)=fblock.';
         end
     end
+
+    %% estimate the noise
+    no_signal=repmat(1+1j,76800,4);
+    oarf_send_frame(card,no_signal,n_bit);
+    sleep(0.01);
+    noise_received=oarf_get_frame(card);
+    % estimate noise in frequency domain
+    noise_f = zeros(120,301,4);
+    for i=0:119;
+      ifblock=noise_received(i*640+[1:640],:);
+      ifblock(1:128,:)=[];
+      fblock=fft(ifblock);
+      fblock(1,:)=[];
+      fblock(151:360,:)=[];
+      noise_f(i+1,:,:)=fblock;
+    end
     
     %% ------- Do the A to B channel estimation ------- %%
     HA2B=repmat(conj(Da2b_T),1,Nantb).*Da2b_R;
-    phasesA2B=unwrap(angle(HA2B));
+    phasesA2B=mod(angle(HA2B),2*pi);
     if(mean(var(phasesA2B))>0.5)
         disp('The phases of your estimates from A to B are a bit high (larger than 0.5 rad.), something is wrong.');
     end
@@ -118,20 +134,27 @@ if(paramsinitialized)
     tchanestsA2B=ifft(fchanestsA2B);
     
     %% ------- Do the B to A channel estimation ------- %%
-    HB2A=conj(Db2a_T.*repmat(Db2a_R,1,Nantb));
-    phasesB2A=unwrap(angle(HB2A));
-    %if(mean(var(phasesB2A))>0.5)
-    %    disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
-    %end
-    
     if (chanest_full)
-        chanestsB2A=zeros(301,Nantb);
-        inds=repmat([1:Nantb]',1,301);
+      HB2A=zeros(120*Nmeas/10,301,Nantb);
+      for t=1:120*Nmeas/10
         for ci=1:301;
-            data=Db2a_T(:,ci+[0:Nantb-1]*301);
-            rec=Db2a_R(:,ci);
-            chanestsB2A(ci,:)=(inv(data'*data)*data'*rec).';
+            data=Db2a_T((t-1)*10+1:t*10,ci+[0:Nantb-1]*301);
+            rec=Db2a_R((t-1)*10+1:t*10,ci);
+            HB2A(t,ci,:)=(inv(data'*data)*data'*rec).';
         end
+      end
+      phasesB2A=mod(angle(HB2A),2*pi);
+      phasesB2A=reshape(phasesB2A,[],301*Nantb);
+      if(mean(var(phasesB2A))>0.5)
+        disp('The phases of your estimates from B to A are a bit high (larger than 0.5 rad.), something is wrong.');
+      end
+    
+      chanestsB2A=zeros(301,Nantb);
+      for ci=1:301;
+        data=Db2a_T(:,ci+[0:Nantb-1]*301);
+        rec=Db2a_R(:,ci);
+        chanestsB2A(ci,:)=(inv(data'*data)*data'*rec).';
+      end
     else
         chanestsB2A=reshape(diag(Db2a_T'*repmat(Db2a_R,1,Nantb)/(Nmeas*60)),301,Nantb);
     end
@@ -144,10 +167,10 @@ if(paramsinitialized)
     tchanestsB2A=ifft(fchanestsB2A);
     
     %% -- Some plotting code -- %%  (you can uncomment what you see fit)
-    received = [receivedB2A(:,indA) receivedA2B(:,indB)];
+    received = [receivedA2B(:,indB) receivedB2A(:,indA)];
     phases = phasesB2A;
     tchanests = [tchanestsA2B(:,:,end), tchanestsB2A(:,:,end)];
-    fchanests = [fchanestsA2B(:,:,end), fchanestsB2A(:,:,end)];
+    fchanests = [chanestsA2B(:,:,end), chanestsB2A(:,:,end)];
     
     clf
     figure(1)
@@ -162,17 +185,26 @@ if(paramsinitialized)
     plot(t,20*log10(abs(tchanests)))
     xlabel('time')
     ylabel('|h|')
-    legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
-    %legend('A->B1','A->B2','B1->A','B2->A');
-    
+    if Nantb==3
+      legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
+    else
+      legend('A->B1','A->B2','B1->A','B2->A');
+    end
+
     figure(3)
     plot(20*log10(abs(fchanests)));
+    hold on
+    plot(squeeze(10*log10(mean(abs(noise_f(:,:,[indB indA])).^2,1))),'.');
+    hold off
     ylim([40 100])
     xlabel('freq')
     ylabel('|h|')
-    legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
-    %legend('A->B1','A->B2','B1->A','B2->A');
-    
+    if Nantb==3
+      legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A','Noise B1','Noise B2','Noise B3','Noise A');
+    else
+      legend('A->B1','A->B2','B1->A','B2->A','Noise B1','Noise B2','Noise A');
+    end
+
     if (0)
         figure(4)
         wndw = 50;
@@ -214,7 +246,8 @@ if(paramsinitialized)
     end
     axis([-2 2 -2 2])
 
-    disp(squeeze(mean(Fhatloc,1)));
+    %disp(squeeze(mean(Fhatloc,1)));
+    drawnow
     
 else
     error('You have to run init.params.m first!')

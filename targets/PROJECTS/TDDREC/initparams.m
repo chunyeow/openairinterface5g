@@ -15,9 +15,9 @@ eNB_flag = 0;
 card = 0;
 Ntrx=4;
 dual_tx=0;
-active_rfA=[1 1 0 0];
-active_rfB=[0 0 1 1];
-active_rf=active_rfA+active_rfB;
+active_rfA=[0 0 1 0];
+active_rfB=[1 1 0 0];
+active_rf=active_rfA | active_rfB;
 
 if(active_rfA*active_rfB'!=0) error("The A and B transceive chains must be orthogonal./n") endif
 
@@ -36,8 +36,8 @@ syncmode = SYNCMODE_FREE;
 rf_local = [8254744   8255063   8257340   8257340]; %eNB2tx 1.9GHz
 rf_vcocal=rf_vcocal_19G*active_rf;
 
-rffe_rxg_low = 63*active_rf;
-rffe_rxg_final = [30 30 30 30];
+rffe_rxg_low = 31*active_rf;
+rffe_rxg_final = 63*active_rf;
 rffe_band = B19G_TDD*active_rf;
 
 rf_rxdc = rf_rxdc*active_rf;
@@ -49,7 +49,7 @@ oarf_stop(card);
 sleep(0.1);
 oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal_mode);
 autocal_mode=0*active_rf; % Autocalibration is only needed the first time we conf. exmimo
-amp = pow2(14)-1;
+amp = pow2(12.5)-1;
 n_bit = 16;
 
 chanest_full = 1;

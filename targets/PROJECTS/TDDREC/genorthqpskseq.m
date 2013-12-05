@@ -35,7 +35,7 @@ for k=1:Ns
   sndgroup=(k-1)*301+[151:301]; # The second group of OFDM carriers
   for i=0:119
     fblock=[0 carrierdata(i+1,frstgroup) zeros(1,210) carrierdata(i+1,sndgroup)];
-    ifblock=ifft(fblock,512);				
+    ifblock=ifft(fblock,512)*sqrt(512);				
     block = [ifblock(end-127:end) ifblock]; # Cycl. prefix 
     s([1:640]+i*640,k)=floor(amp*block);
   endfor

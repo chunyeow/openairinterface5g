@@ -33,7 +33,7 @@ if(paramsinitialized)
         if(indA(ia)==i)
             [tmpd, tmps]=genrandpskseq(N,M,amp);
             signalA2B(:,i)=tmps*2; %make sure LSB is 0 (switch=tx)
-            signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
+            %signalB2A(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
 	    Da2b_T = [Da2b_T tmpd];
             if(length(indA)> ia) ia=ia+1; end
         end
@@ -52,7 +52,7 @@ if(paramsinitialized)
         if(indB(ib)==i)
             [tmpd, tmps]=genrandpskseq(N,M,amp);
             signalB2A(:,i)=tmps*2; %make sure LSB is 0 (switch=tx)
-            signalA2B(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
+            %signalA2B(:,i)=repmat(1+1j,76800,1); %make sure LSB is 1 (switch=rx)
             Db2a_T=[Db2a_T tmpd];
             if(length(indB)> ib) ib=ib+1; end
         end
@@ -144,13 +144,15 @@ if(paramsinitialized)
     fchanests = [fchanestsA2B(:,:,end), fchanestsB2A(:,:,end)];
     
     clf
+    if (0)
     figure(1)
     for i=1:size(received,2);
         subplot(220+i);
 	plot(20*log10(abs(fftshift(fft(received(:,i))))));
 	ylim([20 140])
     end
-    
+    end
+
     figure(2)
     t=[0:512-1]/512*1e-2;
     plot(t,20*log10(abs(tchanests)))
@@ -191,7 +193,34 @@ if(paramsinitialized)
         ylabel('phase variance')
     end
     
+    figure(4);
+    for t=1
+      i=1;
+      for m=1:Nanta
+	for n=1:Nantb
+	  subplot(Nanta,Nantb,i);
+	  plot(20*log10(abs(fchanestsB2A(:,m,n,t))))
+	  hold on
+	  plot(20*log10(abs(fchanestsA2B(:,m,n,t))),'r')
+	  ylim([0 80])
+	  i=i+1;
+	end
+      end
+    end
     
+    figure(5)
+    for t=1
+      for m=1:Nanta
+	  subplot(2,4,m);
+	  Rb2a_comp = repmat(chanestsB2A(:,m,m,t)',120,1).*Db2a_R(:,(m-1)*301+(1:301),t);
+	  plot(Rb2a_comp(:),'x');
+	  subplot(2,4,4+m);
+	  Ra2b_comp = repmat(chanestsA2B(:,m,m,t)',120,1).*Da2b_R(:,(m-1)*301+(1:301),t);
+	  plot(Ra2b_comp(:),'rx');
+      end
+    end
+
+    if (0)
     %% estimate F matrix assuming it is diagonal for sanity checking
     Fhatloc = zeros(Nmeas,301,Nanta,Nantb);
     for t=1:Nmeas
@@ -218,7 +247,8 @@ if(paramsinitialized)
     axis([-2 2 -2 2])
 
     %disp(squeeze(mean(Fhatloc,2)));
-    
+    end
+
 else
   error('You have to run init.params.m first!')
 end

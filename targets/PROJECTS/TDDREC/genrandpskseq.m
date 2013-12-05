@@ -20,7 +20,7 @@ for i=0:(N/640-1)
     carrierdata(i+1,j)=datablock(j);
   end
   fblock=[0 datablock(1:150) zeros(1,210) datablock(151:301)];
-  ifblock=ifft(fblock,512);
+  ifblock=ifft(fblock,512)*sqrt(512);;
   % Adding cycl. prefix making the block of 640 elements	
   block = [ifblock(end-127:end) ifblock]; 
   s([1:640]+i*640)=floor(amp*block);

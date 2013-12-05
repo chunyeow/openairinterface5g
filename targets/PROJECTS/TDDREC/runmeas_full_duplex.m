@@ -143,13 +143,30 @@ if(paramsinitialized)
         %end
         fchanestsB2A(:,:,meas) = [zeros(1,Nantb); chanestsB2A([1:150],:,meas); zeros(210,Nantb); chanestsB2A(151:301,:,meas)];
         tchanestsB2A(:,:,meas)=ifft(fchanestsB2A(:,:,meas));
+    end % Nmeas
+
+    %% estimate the noise
+    no_signal=repmat(1+1j,76800,4);
+    oarf_send_frame(card,no_signal,n_bit);
+    sleep(0.01);
+    noise_received=oarf_get_frame(card);
+    % estimate noise in frequency domain
+    noise_f = zeros(120,301,4);
+    for i=0:119;
+      ifblock=noise_received(i*640+[1:640],:);
+      ifblock(1:128,:)=[];
+      fblock=fft(ifblock);
+      fblock(1,:)=[];
+      fblock(151:360,:)=[];
+      noise_f(i+1,:,:)=fblock;
     end
-    
+
+
     %% -- Some plotting code -- %%  (you can uncomment what you see fit)
-    received = [receivedB2A(:,indA) receivedA2B(:,indB)];
+    received = [receivedA2B(:,indB) receivedB2A(:,indA)];
     phases = phasesB2A;
     tchanests = [tchanestsA2B(:,:,end), tchanestsB2A(:,:,end)];
-    fchanests = [fchanestsA2B(:,:,end), fchanestsB2A(:,:,end)];
+    fchanests = [chanestsA2B(:,:,end), chanestsB2A(:,:,end)];
     
     clf
     figure(1)
@@ -164,16 +181,25 @@ if(paramsinitialized)
     plot(t,20*log10(abs(tchanests)))
     xlabel('time')
     ylabel('|h|')
-    legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
-    %legend('A->B1','A->B2','B1->A','B2->A');
-    
+    if Nantb==3
+      legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
+    else
+      legend('A->B1','A->B2','B1->A','B2->A');
+    end
+
     figure(3)
     plot(20*log10(abs(fchanests)));
+    hold on
+    plot(squeeze(10*log10(mean(abs(noise_f(:,:,[indB indA])).^2,1))),'.');
+    hold off
     ylim([40 100])
     xlabel('freq')
     ylabel('|h|')
-    legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A');
-    %legend('A->B1','A->B2','B1->A','B2->A');
+    if Nantb==3
+      legend('A->B1','A->B2','A->B3','B1->A','B2->A','B3->A','Noise B1','Noise B2','Noise B3','Noise A');
+    else
+      legend('A->B1','A->B2','B1->A','B2->A','Noise B1','Noise B2','Noise A');
+    end
     
     if (0)
         figure(4)
@@ -219,7 +245,8 @@ if(paramsinitialized)
     end
     axis([-2 2 -2 2])
 
-    disp(squeeze(mean(Fhatloc,2)));
+    %disp(squeeze(mean(Fhatloc,2)));
+    drawnow;
     
 else
   error('You have to run init.params.m first!')
