@@ -20,6 +20,8 @@ Description
 
 #include <string.h>
 
+#if defined(EPC_BUILD)
+
 #include "nas_log.h"
 #include "commonDef.h"
 
@@ -132,3 +134,4 @@ int emm_cn_send(const emm_cn_t *msg)
 
     LOG_FUNC_RETURN (rc);
 }
+#endif

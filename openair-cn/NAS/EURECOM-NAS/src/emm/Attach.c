@@ -1962,9 +1962,9 @@ static int _emm_attach_identify(void *args)
             auth_vector_t *auth = &emm_ctx->vector;
             const OctetString loc_rand = {AUTH_RAND_SIZE, (uint8_t *)auth->rand};
             const OctetString autn = {AUTH_AUTN_SIZE, (uint8_t *)auth->autn};
-            rc = emm_proc_authentication(emm_ctx->ueid, 0, // TODO: eksi != 0
+            rc = emm_proc_authentication(emm_ctx, emm_ctx->ueid, 0, // TODO: eksi != 0
                                          &loc_rand, &autn,
-                                         emm_attach_security,
+                                         _emm_attach_security,
                                          _emm_attach_release,
                                          _emm_attach_release);
             if (rc != RETURNok) {

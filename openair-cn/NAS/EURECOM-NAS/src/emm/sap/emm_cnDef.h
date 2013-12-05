@@ -18,7 +18,9 @@ Description
 
 *****************************************************************************/
 
+#if defined(EPC_BUILD)
 #include "intertask_interface.h"
+#endif
 
 #ifndef __EMM_CNDEF_H__
 #define __EMM_CNDEF_H__
@@ -32,10 +34,10 @@ typedef enum emmcn_primitive_s {
     _EMMCN_END
 } emm_cn_primitive_t;
 
+#if defined(EPC_BUILD)
 typedef nas_auth_param_rsp_t  emm_cn_auth_res_t;
 typedef nas_auth_param_fail_t emm_cn_auth_fail_t;
 
-#if defined(EPC_BUILD)
 typedef struct emm_mme_ul_s {
     emm_cn_primitive_t primitive;
     union {
