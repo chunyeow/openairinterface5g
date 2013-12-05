@@ -75,6 +75,9 @@ OPENAIR2_TOP = $(OPENAIR2_DIR)
 include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
+include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
+
+OBJ +=  $(ENB_APP_OBJS)
 
 ifeq ($(RTAI),1)
 LOG_OBJS=
@@ -101,7 +104,7 @@ ifdef ENABLE_ITTI
 RTAI_OBJ += $(UTILS_OBJS)
 endif
 
-CFLAGS += $(L2_incl) $(UTIL_incl) $(UTILS_incl)
+CFLAGS += $(L2_incl) $(ENB_APP_incl) $(UTIL_incl) $(UTILS_incl)
 
 CFLAGS += -I$(OPENAIR1_DIR) -I$(OPENAIR2_DIR)/RRC/LITE/MESSAGES	#-I$(OPENAIR3_DIR)/MESH -I$(OPENAIR3_DIR)/MESH/RRM
 

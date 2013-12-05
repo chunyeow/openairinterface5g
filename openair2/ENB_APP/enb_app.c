@@ -109,16 +109,16 @@ static uint32_t eNB_app_register()
         s1ap_register_eNB->nb_mme = 1;
         s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
         s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
-        memcpy (s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4, strlen (mme_address_v4));
-        memcpy (s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6, strlen (mme_address_v6));
+        strncpy (s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4, sizeof(s1ap_register_eNB->mme_ip_address[0].ipv4_address));
+        strncpy (s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6, sizeof(s1ap_register_eNB->mme_ip_address[0].ipv6_address));
 
 #   if defined ENB_APP_ENB_REGISTER_2_MME
         s1ap_register_eNB->nb_mme = 2;
         s1ap_register_eNB->mme_ip_address[1].ipv4 = 1;
         s1ap_register_eNB->mme_ip_address[1].ipv6 = 0;
         mme_address_v4 = "192.168.12.88";
-        memcpy(s1ap_register_eNB->mme_ip_address[1].ipv4_address, mme_address_v4, strlen(mme_address_v4));
-        memcpy(s1ap_register_eNB->mme_ip_address[1].ipv6_address, mme_address_v6, strlen(mme_address_v6));
+        strncpy(s1ap_register_eNB->mme_ip_address[1].ipv4_address, mme_address_v4, sizeof(s1ap_register_eNB->mme_ip_address[1].ipv4_address));
+        strncpy(s1ap_register_eNB->mme_ip_address[1].ipv6_address, mme_address_v6, sizeof(s1ap_register_eNB->mme_ip_address[1].ipv6_address));
 #   endif
 
         itti_send_msg_to_task (TASK_S1AP, eNB_id, msg_p);
@@ -176,13 +176,13 @@ void *eNB_app_task(void *args_p)
                 break;
 
             case MESSAGE_TEST:
-                LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(msg_p));
+                LOG_I(ENB_APP, "Received %s\n", ITTI_MSG_NAME(msg_p));
                 break;
 
 # if defined(ENABLE_USE_MME)
             case S1AP_REGISTER_ENB_CNF:
-                LOG_I(EMU,
-                      "[eNB %d] Received %s: associated MME %d\n", instance, msg_name, S1AP_REGISTER_ENB_CNF(msg_p).nb_mme);
+                LOG_I(ENB_APP, "[eNB %d] Received %s: associated MME %d\n", instance, msg_name,
+                      S1AP_REGISTER_ENB_CNF(msg_p).nb_mme);
 
                 DevAssert(register_enb_pending > 0);
                 register_enb_pending--;
@@ -208,21 +208,26 @@ void *eNB_app_task(void *args_p)
                     {
                         uint32_t not_associated = enb_nb - registered_enb;
 
-                        LOG_W(EMU, " %d eNB %s not associated with a MME, retrying registration in %d seconds ...\n",
+                        LOG_W(ENB_APP, " %d eNB %s not associated with a MME, retrying registration in %d seconds ...\n",
                               not_associated, not_associated > 1 ? "are" : "is", ENB_REGISTER_RETRY_DELAY);
 
                         /* Restart the eNB registration process in ENB_REGISTER_RETRY_DELAY seconds */
                         if (timer_setup (ENB_REGISTER_RETRY_DELAY, 0, TASK_ENB_APP, INSTANCE_DEFAULT, TIMER_ONE_SHOT,
                                          NULL, &enb_register_retry_timer_id) < 0)
                         {
-                            LOG_E(EMU, " Can not start eNB register retry timer!\n");
+                            LOG_E(ENB_APP, " Can not start eNB register retry timer!\n");
+
+                            usleep(ENB_REGISTER_RETRY_DELAY * 1000000);
+                            /* Restart the registration process */
+                            registered_enb = 0;
+                            register_enb_pending = eNB_app_register ();
                         }
                     }
                 }
                 break;
 
             case TIMER_HAS_EXPIRED:
-                LOG_I(EMU, " Received %s: timer_id %d\n", msg_name, TIMER_HAS_EXPIRED(msg_p).timer_id);
+                LOG_I(ENB_APP, " Received %s: timer_id %d\n", msg_name, TIMER_HAS_EXPIRED(msg_p).timer_id);
 
                 if (TIMER_HAS_EXPIRED (msg_p).timer_id == enb_register_retry_timer_id)
                 {
@@ -234,7 +239,7 @@ void *eNB_app_task(void *args_p)
 # endif
 
             default:
-                LOG_E(EMU, "Received unexpected message %s\n", msg_name);
+                LOG_E(ENB_APP, "Received unexpected message %s\n", msg_name);
                 break;
         }
 

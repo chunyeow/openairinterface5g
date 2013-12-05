@@ -52,6 +52,8 @@
 #include <getopt.h>
 
 #include "rt_wrapper.h"
+#undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
+
 #include "assertions.h"
 
 #ifdef EMOS
@@ -59,8 +61,13 @@
 #endif
 
 #include "PHY/types.h"
+
 #include "PHY/defs.h"
+#undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
+#undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
+
 #include "openair0_lib.h"
+#undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #include "PHY/vars.h"
 #include "MAC_INTERFACE/vars.h"
@@ -75,6 +82,7 @@
 #endif
 
 #ifdef OPENAIR2
+#include "otg_tx.h"
 #include "LAYER2/MAC/defs.h"
 #include "LAYER2/MAC/vars.h"
 #ifndef CELLULAR
@@ -92,6 +100,8 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "UTIL/OTG/otg_vars.h"
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
+
+#include "enb_app.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -116,8 +126,6 @@ unsigned char scope_enb_num_ue = 1;
 
 #define FRAME_PERIOD 100000000ULL
 #define DAQ_PERIOD 66667ULL
-
-#undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #ifdef RTAI
 static SEM *mutex;
@@ -149,6 +157,9 @@ exmimo_config_t *p_exmimo_config;
 exmimo_id_t     *p_exmimo_id;
 volatile unsigned int *DAQ_MBOX;
 
+#if defined(ENABLE_ITTI)
+volatile int start_eNB = 0;
+#endif
 volatile int oai_exit = 0;
 
 //int time_offset[4] = {-138,-138,-138,-138};
@@ -197,7 +208,7 @@ void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms,
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 void test_config(int card, int ant, unsigned int rf_mode, int UE_flag);
 
-unsigned int build_rflocal(txi, txq, rxi, rxq)
+unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
 {
     return (txi + (txq<<6) + (rxi<<12) + (rxq<<18));
 }
@@ -227,9 +238,6 @@ void signal_handler(int sig)
 
 void exit_fun(const char* s)
 {
-  void *array[10];
-  size_t size;
-
   printf("Exiting: %s\n",s);
 
   oai_exit=1;
@@ -458,16 +466,90 @@ void *emos_thread (void *arg)
 #endif
 
 #if defined(ENABLE_ITTI)
-void *dummy_l2l1_task(void *arg)
+void *l2l1_task(void *arg)
 {
+    MessageDef *message_p = NULL;
+
     itti_set_task_real_time(TASK_L2L1);
     itti_mark_task_ready(TASK_L2L1);
+
+    if (UE_flag == 0) {
+      /* Wait for the initialize message */
+      do {
+        if (message_p != NULL) {
+          free (message_p);
+        }
+        itti_receive_msg (TASK_L2L1, &message_p);
+      } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
+      free (message_p);
+
+      /* Start eNB thread */
+      start_eNB = 1;
+    }
 
     while (!oai_exit)
     {
         usleep(500000);
     }
     return NULL;
+}
+#endif
+
+#if defined(ENABLE_ITTI)
+static int create_tasks(uint32_t enb_nb, uint32_t ue_nb) {
+# if defined(ENABLE_USE_MME)
+  {
+    if (enb_nb > 0) {
+      if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
+          LOG_E(EMU, "Create task failed");
+          LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
+          return -1;
+      }
+
+      if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
+          LOG_E(EMU, "Create task failed");
+          LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
+          return -1;
+      }
+    }
+  }
+# endif
+
+# ifdef OPENAIR2
+  {
+    if (enb_nb > 0) {
+      if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
+        LOG_E(EMU, "Create task failed");
+        LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
+        exit (-1);
+      }
+    }
+
+    if (ue_nb > 0) {
+      if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
+        LOG_E(EMU, "Create task failed");
+        LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
+        exit (-1);
+      }
+    }
+  }
+# endif
+
+  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
+    LOG_E(EMU, "Create task failed");
+    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
+    return -1;
+  }
+
+  if (enb_nb > 0) {
+    /* Last task to create, others task must be ready before its start */
+    if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
+      LOG_E(EMU, "Create task failed");
+      LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
+      return -1;
+    }
+  }
+  return 0;
 }
 #endif
 
@@ -479,7 +561,6 @@ static void *eNB_thread(void *arg)
 #endif
   unsigned char slot=0,last_slot, next_slot;
   int hw_slot,frame=0;
-  unsigned int msg1;
   unsigned int aa,slot_offset, slot_offset_F;
   int diff;
   int delay_cnt;
@@ -488,209 +569,229 @@ static void *eNB_thread(void *arg)
   int i,ret;
   int tx_offset;
 
+#if defined(ENABLE_ITTI)
+  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+  {
+    char *indicator[] = {".  ", ".. ", "...", " ..", "  .", "   "};
+    int i = 0;
+
+    while ((!oai_exit) && (start_eNB == 0)) {
+      LOG_D(HW,"Waiting for eNB application to be ready %s\r", indicator[i]);
+      i = (i + 1) % (sizeof(indicator) / sizeof(indicator[0]));
+      usleep(200000);
+    }
+    LOG_D(HW,"\n");
+  }
+#endif
+
 #ifdef RTAI
-  task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
-  LOG_D(HW,"Started eNB thread (id %p)\n",task);
+    task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
+#endif
+
+  if (!oai_exit) {
+#ifdef RTAI
+    LOG_D(HW,"Started eNB thread (id %p)\n",task);
 #endif
 
 #ifdef HARD_RT
-  rt_make_hard_real_time();
+    rt_make_hard_real_time();
 #endif
 
-  mlockall(MCL_CURRENT | MCL_FUTURE);
+    mlockall(MCL_CURRENT | MCL_FUTURE);
 
-  timing_info.time_min = 100000000ULL;
-  timing_info.time_max = 0;
-  timing_info.time_avg = 0;
-  timing_info.n_samples = 0;
+    timing_info.time_min = 100000000ULL;
+    timing_info.time_max = 0;
+    timing_info.time_avg = 0;
+    timing_info.n_samples = 0;
 
-  while (!oai_exit)
-    {
-      hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-      //LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
-      //this is the mbox counter where we should be 
-      //mbox_target = ((((slot+1)%20)*15+1)>>1)%150;
-      mbox_target = mbox_bounds[slot];
-      //this is the mbox counter where we are
-      mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-      //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
-      if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
-          diff = 150-mbox_current+mbox_target;
-      else if ((mbox_current<15) && (mbox_target>=135))
-          diff = -150+mbox_target-mbox_current;
-      else
-          diff = mbox_target - mbox_current;
-      
-      if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
-        // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
-        LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
-        slot++;
-        if (frame > 0) {
-          oai_exit = 1;
+    while (!oai_exit)
+      {
+        hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+        //LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
+        //this is the mbox counter where we should be
+        //mbox_target = ((((slot+1)%20)*15+1)>>1)%150;
+        mbox_target = mbox_bounds[slot];
+        //this is the mbox counter where we are
+        mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+        //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
+        if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+            diff = 150-mbox_current+mbox_target;
+        else if ((mbox_current<15) && (mbox_target>=135))
+            diff = -150+mbox_target-mbox_current;
+        else
+            diff = mbox_target - mbox_current;
+
+        if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
+          // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
+          LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
+          slot++;
+          if (frame > 0) {
+            oai_exit = 1;
 #if defined(ENABLE_ITTI)
-          itti_send_terminate_message (TASK_L2L1);
+            itti_send_terminate_message (TASK_L2L1);
 #endif
+          }
+          if (slot==20){
+            slot=0;
+            frame++;
+          }
+          continue;
         }
-        if (slot==20){
+        if (diff>8)
+            LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
+
+        delay_cnt = 0;
+        while ((diff>0) && (!oai_exit))
+          {
+            time_in = rt_get_time_ns();
+            //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
+            //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
+            ret = rt_sleep_ns(diff*DAQ_PERIOD);
+            if (ret)
+              LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
+            hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+            //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
+            delay_cnt++;
+            if (delay_cnt == 10)
+              {
+                oai_exit = 1;
+                LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
+              }
+            mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+            if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+              diff = 150-mbox_current+mbox_target;
+            else if ((mbox_current<15) && (mbox_target>=135))
+              diff = -150+mbox_target-mbox_current;
+            else
+              diff = mbox_target - mbox_current;
+          }
+
+        last_slot = (slot)%LTE_SLOTS_PER_FRAME;
+        if (last_slot <0)
+          last_slot+=20;
+        next_slot = (slot+3)%LTE_SLOTS_PER_FRAME;
+
+        //PHY_vars_eNB_g[0]->frame = frame;
+        if (frame>5)
+          {
+            /*
+            if (frame%100==0)
+              LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, next_slot %d (before): DAQ_MBOX %d\n",frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,next_slot,DAQ_MBOX[0]);
+            */
+
+            //if (PHY_vars_eNB_g[0]->frame>5) {
+              timing_info.time_last = timing_info.time_now;
+              timing_info.time_now = rt_get_time_ns();
+
+              if (timing_info.n_samples>0) {
+                time_diff = timing_info.time_now - timing_info.time_last;
+                if (time_diff < timing_info.time_min)
+                  timing_info.time_min = time_diff;
+                if (time_diff > timing_info.time_max)
+                  timing_info.time_max = time_diff;
+                timing_info.time_avg += time_diff;
+              }
+
+              timing_info.n_samples++;
+              /*
+              if ((timing_info.n_samples%2000)==0) {
+                LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
+                      frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
+                      timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
+                timing_info.n_samples = 0;
+                timing_info.time_avg = 0;
+              }
+              */
+              //}
+
+            if (fs4_test==0)
+              {
+                phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0, no_relay,NULL);
+#ifndef IFFT_FPGA
+                slot_offset_F = (next_slot)*
+                                (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
+                                ((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7);
+                slot_offset = (next_slot)*
+                              (PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti>>1);
+                if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_DL)||
+                    ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_S)&&((next_slot&1)==0)))
+                  {
+                    //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
+
+                    for (aa=0; aa<PHY_vars_eNB_g[0]->lte_frame_parms.nb_antennas_tx; aa++)
+                      {
+                        if (PHY_vars_eNB_g[0]->lte_frame_parms.Ncp == 1)
+                          {
+                            PHY_ofdm_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
+#ifdef BIT8_TX
+                                         &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset>>1],
+#else
+                                         dummy_tx_buffer,//&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
+#endif
+                                         PHY_vars_eNB_g[0]->lte_frame_parms.log2_symbol_size,
+                                         6,
+                                         PHY_vars_eNB_g[0]->lte_frame_parms.nb_prefix_samples,
+                                         PHY_vars_eNB_g[0]->lte_frame_parms.twiddle_ifft,
+                                         PHY_vars_eNB_g[0]->lte_frame_parms.rev,
+                                         CYCLIC_PREFIX);
+                          }
+                        else
+                          {
+                            normal_prefix_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
+#ifdef BIT8_TX
+                                              &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset>>1],
+#else
+                                              dummy_tx_buffer,//&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
+#endif
+                                              7,
+                                              &(PHY_vars_eNB_g[0]->lte_frame_parms));
+                          }
+#ifdef EXMIMO
+                        for (i=0; i<PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti/2; i++)
+                          {
+                            tx_offset = (int)slot_offset+time_offset[aa]+i;
+                            if (tx_offset<0)
+                              tx_offset += LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
+                            if (tx_offset>=(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti))
+                              tx_offset -= LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
+                            ((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
+                              ((short*)dummy_tx_buffer)[2*i]<<4;
+                            ((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
+                              ((short*)dummy_tx_buffer)[2*i+1]<<4;
+                          }
+#endif //EXMIMO
+                      }
+                  }
+              }
+
+#endif //IFFT_FPGA
+            /*
+            if (frame%100==0)
+              LOG_D(HW,"hw_slot %d (after): DAQ_MBOX %d\n",hw_slot,DAQ_MBOX[0]);
+            */
+          }
+
+        /*
+        if ((slot%2000)<10)
+        LOG_D(HW,"fun0: doing very hard work\n");
+        */
+
+        slot++;
+        if (slot==20) {
           slot=0;
           frame++;
         }
-        continue;
-      }
-      if (diff>8) 
-          LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
-
-      delay_cnt = 0;
-      while ((diff>0) && (!oai_exit))
-        {
-          time_in = rt_get_time_ns();
-          //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
-          //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
-          ret = rt_sleep_ns(diff*DAQ_PERIOD);
-	  if (ret)
-	    LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
-	  hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-          //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
-          delay_cnt++;
-          if (delay_cnt == 10)
-            {
-              oai_exit = 1;
-              LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
-            }
-	  mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-	  if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
-	    diff = 150-mbox_current+mbox_target;
-	  else if ((mbox_current<15) && (mbox_target>=135))
-	    diff = -150+mbox_target-mbox_current;
-	  else
-	    diff = mbox_target - mbox_current;
-        }
-
-      last_slot = (slot)%LTE_SLOTS_PER_FRAME;
-      if (last_slot <0)
-        last_slot+=20;
-      next_slot = (slot+3)%LTE_SLOTS_PER_FRAME;
-
-      //PHY_vars_eNB_g[0]->frame = frame;
-      if (frame>5)
-        {
-	  /*
-          if (frame%100==0)
-            LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, next_slot %d (before): DAQ_MBOX %d\n",frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,next_slot,DAQ_MBOX[0]);
-	  */
-
-	  //if (PHY_vars_eNB_g[0]->frame>5) {
-	    timing_info.time_last = timing_info.time_now;
-	    timing_info.time_now = rt_get_time_ns();
-	  
-	    if (timing_info.n_samples>0) {
-	      time_diff = timing_info.time_now - timing_info.time_last;
-	      if (time_diff < timing_info.time_min) 
-		timing_info.time_min = time_diff;
-	      if (time_diff > timing_info.time_max) 
-		timing_info.time_max = time_diff;
-	      timing_info.time_avg += time_diff;
-	    }
-
-	    timing_info.n_samples++;
-	    /*
-	    if ((timing_info.n_samples%2000)==0) {
-	      LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
-		    frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
-		    timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
-	      timing_info.n_samples = 0;
-	      timing_info.time_avg = 0;
-	    }
-	    */
-	    //}
-
-          if (fs4_test==0)
-            {
-              phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0, no_relay,NULL);
-#ifndef IFFT_FPGA
-              slot_offset_F = (next_slot)*
-                              (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
-                              ((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7);
-              slot_offset = (next_slot)*
-                            (PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti>>1);
-              if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_DL)||
-                  ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_S)&&((next_slot&1)==0)))
-                {
-                  //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
-
-                  for (aa=0; aa<PHY_vars_eNB_g[0]->lte_frame_parms.nb_antennas_tx; aa++)
-                    {
-                      if (PHY_vars_eNB_g[0]->lte_frame_parms.Ncp == 1)
-                        {
-                          PHY_ofdm_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-#ifdef BIT8_TX
-                                       &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset>>1],
-#else
-                                       dummy_tx_buffer,//&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
-#endif
-                                       PHY_vars_eNB_g[0]->lte_frame_parms.log2_symbol_size,
-                                       6,
-                                       PHY_vars_eNB_g[0]->lte_frame_parms.nb_prefix_samples,
-                                       PHY_vars_eNB_g[0]->lte_frame_parms.twiddle_ifft,
-                                       PHY_vars_eNB_g[0]->lte_frame_parms.rev,
-                                       CYCLIC_PREFIX);
-                        }
-                      else
-                        {
-                          normal_prefix_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-#ifdef BIT8_TX
-                                            &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset>>1],
-#else
-                                            dummy_tx_buffer,//&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
-#endif
-                                            7,
-                                            &(PHY_vars_eNB_g[0]->lte_frame_parms));
-                        }
-#ifdef EXMIMO
-		      for (i=0; i<PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti/2; i++) 
-			{
-			  tx_offset = (int)slot_offset+time_offset[aa]+i;
-			  if (tx_offset<0)
-			    tx_offset += LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
-			  if (tx_offset>=(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti))
-			    tx_offset -= LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
-			  ((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
-			    ((short*)dummy_tx_buffer)[2*i]<<4;
-			  ((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
-			    ((short*)dummy_tx_buffer)[2*i+1]<<4;
-			}
-#endif //EXMIMO
-                    }
-                }
-            }
-
-#endif //IFFT_FPGA
-	  /*
-          if (frame%100==0)
-            LOG_D(HW,"hw_slot %d (after): DAQ_MBOX %d\n",hw_slot,DAQ_MBOX[0]);
-	  */
-        }
-
-      /*
-      if ((slot%2000)<10)
-      LOG_D(HW,"fun0: doing very hard work\n");
-      */
-
-      slot++;
-      if (slot==20) {
-        slot=0;
-        frame++;
-      }
 #if defined(ENABLE_ITTI)
-      itti_update_lte_time(frame, slot);
+        itti_update_lte_time(frame, slot);
 #endif
-    }
+      }
 
-  LOG_D(HW,"eNB_thread: finished, ran %d times.\n",frame);
+      LOG_D(HW,"eNB_thread: finished, ran %d times.\n",frame);
 
 #ifdef HARD_RT
-  rt_make_soft_real_time();
+      rt_make_soft_real_time();
 #endif
+  }
 
   // clean task
 #ifdef RTAI
@@ -706,18 +807,14 @@ static void *UE_thread(void *arg)
 #ifdef RTAI
   RT_TASK *task;
 #endif
-  RTIME in, out, diff;
+  // RTIME in, out, diff;
   int slot=0,frame=0,hw_slot,last_slot, next_slot;
-  unsigned int msg1;
-  unsigned int aa,slot_offset, slot_offset_F;
+  // unsigned int aa;
   static int is_synchronized = 0;
-  static int received_slots = 0;
-  static int slot0 = 0;
   int delay_cnt;
   RTIME time_in;
   int hw_slot_offset=0,rx_offset_mbox=0,mbox_target=0,mbox_current=0;
   int diff2;
-  static int first_run=1;
   int i, ret;
 
 #ifdef RTAI
@@ -830,10 +927,10 @@ static void *UE_thread(void *arg)
             LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, last_slot %d (before): DAQ_MBOX %d\n",frame, PHY_vars_UE_g[0]->frame, slot,hw_slot,last_slot,DAQ_MBOX[0]);
 	  */
 
-          in = rt_get_time_ns();
+          // in = rt_get_time_ns();
           phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode,0,NULL);
-          out = rt_get_time_ns();
-          diff = out-in;
+          // out = rt_get_time_ns();
+          // diff = out-in;
 
 	  /*
           if (frame % 100 == 0)
@@ -934,84 +1031,15 @@ static void *UE_thread(void *arg)
   return 0;
 }
 
-void *eNB_app_task(void *args_p)
-{
-#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
-    MessageDef *message_p;
-    char *mme_address_v4;
-    char *mme_address_v6 = "2001:660:5502:12:30da:829a:2343:b6cf";
-    s1ap_register_enb_req_t *s1ap_register_eNB;
-    uint32_t hash;
-
-    if (EPC_MODE_ENABLED)
-    {
-        mme_address_v4 = EPC_MODE_MME_ADDRESS;
-    }
-    else
-    {
-        mme_address_v4 = "192.168.12.87";
-    }
-
-    /* FIXME: following parameters should be setup by eNB applicative layer ? */
-    message_p = itti_alloc_new_message(TASK_ENB_APP, S1AP_REGISTER_ENB_REQ);
-
-    s1ap_register_eNB = &message_p->ittiMsg.s1ap_register_enb_req;
-
-    hash = s1ap_generate_eNB_id();
-
-    /* Some default/random parameters */
-    s1ap_register_eNB->eNB_id      = eNB_id + (hash & 0xFFFF8);
-    s1ap_register_eNB->cell_type   = CELL_MACRO_ENB;
-    s1ap_register_eNB->tac         = 0;
-    s1ap_register_eNB->mcc         = 208;
-    s1ap_register_eNB->mnc         = 34;
-    s1ap_register_eNB->default_drx = PAGING_DRX_256;
-    s1ap_register_eNB->nb_mme      = 1;
-    s1ap_register_eNB->mme_ip_address[0].ipv4 = 1;
-    s1ap_register_eNB->mme_ip_address[0].ipv6 = 0;
-    memcpy(s1ap_register_eNB->mme_ip_address[0].ipv4_address, mme_address_v4,
-            strlen(mme_address_v4));
-    memcpy(s1ap_register_eNB->mme_ip_address[0].ipv6_address, mme_address_v6,
-            strlen(mme_address_v6));
-
-    itti_send_msg_to_task(TASK_S1AP, eNB_id, message_p);
-
-    itti_mark_task_ready (TASK_ENB_APP); // at the end of init for the current task
-
-    do {
-        // Checks if a message has been sent to L2L1 task
-        itti_receive_msg (TASK_ENB_APP, &message_p);
-
-        if (message_p != NULL) {
-            switch (ITTI_MSG_ID(message_p)) {
-                case TERMINATE_MESSAGE:
-                    itti_exit_task ();
-                    break;
-
-                case MESSAGE_TEST:
-                    LOG_D(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
-                    break;
-
-                default:
-                    LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
-                    break;
-            }
-
-            free (message_p);
-        }
-    } while(1);
-#endif
-
-    return NULL;
-}
-
 int main(int argc, char **argv) {
 
 #ifdef RTAI
-  RT_TASK *task;
+  // RT_TASK *task;
 #endif
   int i,j,aa;
+#if defined (XFORMS) || defined (EMOS) || (! defined (RTAI))
   void *status;
+#endif
 
   /*
   u32 rf_mode_max[4]     = {55759,55759,55759,55759};
@@ -1033,16 +1061,21 @@ int main(int argc, char **argv) {
 
   u16 Nid_cell = 0;
   u8  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
+#ifndef OPENAIR2
   u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
+#endif
 
   int c;
+#ifdef XFORMS
   char do_forms=0;
-  unsigned int fd;
+#endif
+#ifdef ENABLE_TCXO
   unsigned int tcxo = 114;
+#endif
 
   int amp;
-  u8 prach_fmt;
-  int N_ZC;
+  // u8 prach_fmt;
+  // int N_ZC;
 
   char rxg_fname[100];
   char txg_fname[100];
@@ -1060,7 +1093,9 @@ int main(int argc, char **argv) {
   int ret, ant;
   int ant_offset=0;
 
+#if defined (EMOS) || (! defined (RTAI))
   int error_code;
+#endif
   char *itti_dump_file = NULL;
 
   const struct option long_options[] = {
@@ -1082,7 +1117,9 @@ int main(int argc, char **argv) {
           ouput_vcd = 1;
 	  break;
         case 'd':
+#ifdef XFORMS
           do_forms=1;
+#endif
           break;
         case 'U':
           UE_flag = 1;
@@ -1097,7 +1134,9 @@ int main(int argc, char **argv) {
           fs4_test=1;
           break;
         case 'T':
+#ifdef ENABLE_TCXO
           tcxo=atoi(optarg);
+#endif
           break;
         case 'K':
 #if defined(ENABLE_ITTI)
@@ -1163,7 +1202,8 @@ int main(int argc, char **argv) {
 	  rflo_fd = fopen(rflo_fname,"r");
 	  if (rflo_fd) {
 	    printf("Loading RF LO parameters from %s\n",rflo_fname);
-	    fscanf(rflo_fd,"%d %d %d %d",&rf_local[0],&rf_local[1],&rf_local[2],&rf_local[3]);
+	    if (fscanf(rflo_fd,"%d %d %d %d",&rf_local[0],&rf_local[1],&rf_local[2],&rf_local[3]) < 4)
+              LOG_E(EMU, "Error parsing \"%s\"", rflo_fname);
 	  }
 	  else 
 	    printf("%s not found, running with defaults\n",rflo_fname);
@@ -1172,7 +1212,8 @@ int main(int argc, char **argv) {
 	  rfdc_fd = fopen(rfdc_fname,"r");
 	  if (rfdc_fd) {
 	    printf("Loading RF DC parameters from %s\n",rfdc_fname);
-	    fscanf(rfdc_fd,"%d %d %d %d",&rf_rxdc[0],&rf_rxdc[1],&rf_rxdc[2],&rf_rxdc[3]);
+	    if (fscanf(rfdc_fd,"%d %d %d %d",&rf_rxdc[0],&rf_rxdc[1],&rf_rxdc[2],&rf_rxdc[3]) < 4)
+	      LOG_E(EMU, "Error parsing \"%s\"", rfdc_fname);
 	  }
 	  else 
 	    printf("%s not found, running with defaults\n",rfdc_fname);
@@ -1234,28 +1275,8 @@ int main(int argc, char **argv) {
 #if defined(ENABLE_ITTI)
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
 
-# if defined(ENABLE_USE_MME)
-  if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
-    return -1;
-  }
-  if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
-    return -1;
-  }
-  if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
-      return -1;
-  }
-# endif
-
-  if (itti_create_task(TASK_L2L1, dummy_l2l1_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
-    return -1;
+  if (create_tasks(UE_flag ? 0 : 1, UE_flag ? 1 : 0) < 0) {
+    exit(-1); // need a softer mode
   }
 
   // Handle signals until all tasks are terminated
@@ -1328,9 +1349,8 @@ int main(int argc, char **argv) {
   frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex=0; 
   frame_parms->prach_config_common.prach_ConfigInfo.highSpeedFlag=0;
   frame_parms->prach_config_common.prach_ConfigInfo.prach_FreqOffset=0;
-  prach_fmt = get_prach_fmt(frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex,
-			    frame_parms->frame_type);
-  N_ZC = (prach_fmt <4)?839:139;
+  // prach_fmt = get_prach_fmt(frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex, frame_parms->frame_type);
+  // N_ZC = (prach_fmt <4)?839:139;
 
   if (UE_flag==1) {
     g_log->log_component[HW].level = LOG_DEBUG;
@@ -1449,6 +1469,8 @@ int main(int argc, char **argv) {
     g_log->log_component[SCTP].level  = LOG_INFO;
     g_log->log_component[SCTP].flag   = LOG_HIGH;
 #endif
+    g_log->log_component[ENB_APP].level = LOG_INFO;
+    g_log->log_component[ENB_APP].flag  = LOG_HIGH;
 
     PHY_vars_eNB_g = malloc(sizeof(PHY_VARS_eNB*));
     PHY_vars_eNB_g[0] = init_lte_eNB(frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
@@ -1582,22 +1604,6 @@ int main(int argc, char **argv) {
 #ifdef OPENAIR2
   int eMBMS_active=0;
 
-#if defined(ENABLE_ITTI)
-  if (UE_flag == 1) {
-    if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
-      exit (EXIT_FAILURE);
-    }
-  } else {
-    if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
-      exit (EXIT_FAILURE);
-    }
-  }
-#endif
-
   l2_init(frame_parms,eMBMS_active,
 	  0,// cba_group_active
 	  0); // HO flag
@@ -1623,7 +1629,7 @@ int main(int argc, char **argv) {
 	g_otg->application_type[i][j][0] = BCBR; //MCBR, BCBR
       }
     }
-    init_predef_traffic();
+    init_predef_traffic(UE_flag ? 1 : 0, UE_flag ? 0 : 1);
     //  }
 #endif
 
@@ -1725,7 +1731,7 @@ int main(int argc, char **argv) {
 
 #ifdef RTAI
   // make main thread LXRT soft realtime
-  task = rt_task_init_schmod(nam2num("MYTASK"), 9, 0, 0, SCHED_FIFO, 0xF);
+  /* task = */ rt_task_init_schmod(nam2num("MYTASK"), 9, 0, 0, SCHED_FIFO, 0xF);
 
   // start realtime timer and scheduler
   //rt_set_oneshot_mode();
