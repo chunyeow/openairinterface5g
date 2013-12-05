@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <tgmath.h>
+
 #define G_LOG_DOMAIN ("PARSER")
 
 #include "array_type.h"
@@ -34,6 +36,7 @@ int array_dissect_from_buffer(
         int zero_counter = 0;
         gboolean is_string = FALSE;
         char *string;
+        int nb_digits = 0;
 
         /* Factorizes trailing 0 */
         if ((items > 1) && (type_child->type == TYPE_FUNDAMENTAL))
@@ -87,9 +90,11 @@ int array_dissect_from_buffer(
 
         if (is_string == FALSE)
         {
+            nb_digits = log10(items - zero_counter) + 1;
+
             for (i = 0; i < (items - zero_counter); i++)
             {
-                INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%d] ", i));
+                INDENTED_STRING(cbuf, indent, length = sprintf(cbuf, "[%*d] ", nb_digits, i));
                 ui_set_signal_text_cb(user_data, cbuf, length);
 
                 type->child->type_dissect_from_buffer (
