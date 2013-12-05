@@ -4,8 +4,8 @@
     <INITIALIZE_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
     <TERMINATE_MESSAGE enabled="1" foreground_color="#585858" background_color="#ffffff"/>
     <MESSAGE_TEST enabled="0" foreground_color="#585858" background_color="#ffffff"/>
-    <ERROR_LOG enabled="1" foreground_color="#585858" background_color="#ff8080"/>
-    <WARNING_LOG enabled="1" foreground_color="#585858" background_color="#fff050"/>
+    <ERROR_LOG enabled="1" foreground_color="#000000" background_color="#ff8080"/>
+    <WARNING_LOG enabled="1" foreground_color="#303030" background_color="#fff050"/>
     <NOTICE_LOG enabled="0" foreground_color="#585858" background_color="#ffffa0"/>
     <INFO_LOG enabled="0" foreground_color="#585858" background_color="#ffffff"/>
     <DEBUG_LOG enabled="0" foreground_color="#585858" background_color="#ffffff"/>
@@ -26,21 +26,23 @@
     <NAS_UPLINK_DATA_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
     <NAS_UPLINK_DATA_CNF enabled="1" foreground_color="#585858" background_color="#ffffff"/>
     <NAS_UPLINK_DATA_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <S1AP_REGISTER_ENB enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_REGISTER_ENB_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
+    <S1AP_REGISTER_ENB_CNF enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_DEREGISTERED_ENB_IND enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
     <S1AP_NAS_FIRST_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
     <S1AP_UPLINK_NAS enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
     <S1AP_UE_CAPABILITIES_IND enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
     <S1AP_INITIAL_CONTEXT_SETUP_RESP enabled="1" foreground_color="#19431e" background_color="#cbffb1"/>
     <S1AP_INITIAL_CONTEXT_SETUP_FAIL enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
-    <S1AP_NAS_NON_DELIVERY_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <S1AP_UE_CONTEXT_RELEASE_RESP enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <S1AP_UE_CTXT_MODIFICATION_RESP enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <S1AP_UE_CTXT_MODIFICATION_FAIL enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_NAS_NON_DELIVERY_IND enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_UE_CONTEXT_RELEASE_RESP enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_UE_CTXT_MODIFICATION_RESP enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_UE_CTXT_MODIFICATION_FAIL enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
     <S1AP_DOWNLINK_NAS enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
     <S1AP_INITIAL_CONTEXT_SETUP_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
-    <S1AP_UE_CTXT_MODIFICATION_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <S1AP_PAGING_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <S1AP_UE_CONTEXT_RELEASE_REQ enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <S1AP_UE_CTXT_MODIFICATION_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
+    <S1AP_PAGING_IND enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
+    <S1AP_UE_CONTEXT_RELEASE_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
     <SCTP_NEW_ASSOCIATION_REQ enabled="1" foreground_color="#000000" background_color="#aefeff"/>
     <SCTP_NEW_ASSOCIATION_RESP enabled="1" foreground_color="#585858" background_color="#aefeff"/>
     <SCTP_NEW_ASSOCIATION_IND enabled="1" foreground_color="#585858" background_color="#aefeff"/>
