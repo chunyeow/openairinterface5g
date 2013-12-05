@@ -86,24 +86,24 @@ typedef struct {
     Byte_t length;
     union {
         struct {
-            Byte_t digit15:4;
-            Byte_t digit14:4;
-            Byte_t digit13:4;
-            Byte_t digit12:4;
-            Byte_t digit11:4;
-            Byte_t digit10:4;
-            Byte_t digit9:4;
-            Byte_t digit8:4;
-            Byte_t digit7:4;
-            Byte_t digit6:4;
-            Byte_t digit5:4;
-            Byte_t digit4:4;
-            Byte_t digit3:4;
             Byte_t digit2:4;
             Byte_t digit1:4;
+            Byte_t digit4:4;
+            Byte_t digit3:4;
+            Byte_t digit6:4;
+            Byte_t digit5:4;
+            Byte_t digit8:4;
+            Byte_t digit7:4;
+            Byte_t digit10:4;
+            Byte_t digit9:4;
+            Byte_t digit12:4;
+            Byte_t digit11:4;
+            Byte_t digit14:4;
+            Byte_t digit13:4;
 #define EVEN_PARITY 0
 #define ODD_PARITY  1
             Byte_t parity:4;
+            Byte_t digit15:4;
         } num;
 #define IMSI_SIZE   8
         Byte_t value[IMSI_SIZE];

@@ -86,67 +86,67 @@ do {                            \
         ((buf)[3]);             \
 } while(0)
 
-/* Convert an integer on 32 bits to an octet string from asn1c tool */
-#define INT32_TO_OCTET_STRING(x, asn)           \
+/* Convert an integer on 32 bits to an octet string from aSN1c tool */
+#define INT32_TO_OCTET_STRING(x, aSN)           \
 do {                                            \
-    (asn)->buf = calloc(4, sizeof(uint8_t));    \
-    INT32_TO_BUFFER(x, ((asn)->buf));           \
-    (asn)->size = 4;                            \
+    (aSN)->buf = calloc(4, sizeof(uint8_t));    \
+    INT32_TO_BUFFER(x, ((aSN)->buf));           \
+    (aSN)->size = 4;                            \
 } while(0)
 
-#define INT32_TO_BIT_STRING(x, asn) \
+#define INT32_TO_BIT_STRING(x, aSN) \
 do {                                \
-    INT32_TO_OCTET_STRING(x, asn);  \
-    (asn)->bits_unused = 0;         \
+    INT32_TO_OCTET_STRING(x, aSN);  \
+    (aSN)->bits_unused = 0;         \
 } while(0)
 
-#define INT16_TO_OCTET_STRING(x, asn)           \
+#define INT16_TO_OCTET_STRING(x, aSN)           \
 do {                                            \
-    (asn)->buf = calloc(2, sizeof(uint8_t));    \
-    (asn)->size = 2;							\
-    INT16_TO_BUFFER(x, (asn)->buf);             \
+    (aSN)->buf = calloc(2, sizeof(uint8_t));    \
+    (aSN)->size = 2;							\
+    INT16_TO_BUFFER(x, (aSN)->buf);             \
 } while(0)
 
-#define INT8_TO_OCTET_STRING(x, asn)            \
+#define INT8_TO_OCTET_STRING(x, aSN)            \
 do {                                            \
-    (asn)->buf = calloc(1, sizeof(uint8_t));    \
-    (asn)->size = 1;                            \
-    INT8_TO_BUFFER(x, (asn)->buf);              \
+    (aSN)->buf = calloc(1, sizeof(uint8_t));    \
+    (aSN)->size = 1;                            \
+    INT8_TO_BUFFER(x, (aSN)->buf);              \
 } while(0)
 
 #define MME_CODE_TO_OCTET_STRING INT8_TO_OCTET_STRING
 #define M_TMSI_TO_OCTET_STRING   INT32_TO_OCTET_STRING
 #define MME_GID_TO_OCTET_STRING  INT16_TO_OCTET_STRING
 
-#define OCTET_STRING_TO_INT8(asn, x)    \
+#define OCTET_STRING_TO_INT8(aSN, x)    \
 do {                                    \
-    DevCheck((asn)->size == 1, (asn)->size, 0, 0);           \
-    BUFFER_TO_INT8((asn)->buf, x);    \
+    DevCheck((aSN)->size == 1, (aSN)->size, 0, 0);           \
+    BUFFER_TO_INT8((aSN)->buf, x);    \
 } while(0)
 
-#define OCTET_STRING_TO_INT16(asn, x)   \
+#define OCTET_STRING_TO_INT16(aSN, x)   \
 do {                                    \
-    DevCheck((asn)->size == 2, (asn)->size, 0, 0);           \
-    BUFFER_TO_INT16((asn)->buf, x);    \
+    DevCheck((aSN)->size == 2, (aSN)->size, 0, 0);           \
+    BUFFER_TO_INT16((aSN)->buf, x);    \
 } while(0)
 
-#define OCTET_STRING_TO_INT32(asn, x)   \
+#define OCTET_STRING_TO_INT32(aSN, x)   \
 do {                                    \
-    DevCheck((asn)->size == 4, (asn)->size, 0, 0);           \
-    BUFFER_TO_INT32((asn)->buf, x);    \
+    DevCheck((aSN)->size == 4, (aSN)->size, 0, 0);           \
+    BUFFER_TO_INT32((aSN)->buf, x);    \
 } while(0)
 
-#define BIT_STRING_TO_INT32(asn, x)     \
+#define BIT_STRING_TO_INT32(aSN, x)     \
 do {                                    \
-    DevCheck((asn)->bits_unused == 0, (asn)->bits_unused, 0, 0);    \
-    OCTET_STRING_TO_INT32(asn, x);      \
+    DevCheck((aSN)->bits_unused == 0, (aSN)->bits_unused, 0, 0);    \
+    OCTET_STRING_TO_INT32(aSN, x);      \
 } while(0)
 
-#define BIT_STRING_TO_CELL_IDENTITY(asn, x)                         \
+#define BIT_STRING_TO_CELL_IDENTITY(aSN, vALUE)                     \
 do {                                                                \
-    DevCheck((asn)->bits_unused == 4, (asn)->bits_unused, 4, 0);    \
-    x = ((asn)->buf[0] << 20) | ((asn)->buf[1] << 12) |             \
-        ((asn)->buf[2] << 4) | (asn)->buf[3];                       \
+    DevCheck((aSN)->bits_unused == 4, (aSN)->bits_unused, 4, 0);    \
+    vALUE = ((aSN)->buf[0] << 20) | ((aSN)->buf[1] << 12) |         \
+        ((aSN)->buf[2] << 4) | (aSN)->buf[3];                       \
 } while(0)
 
 #define MCC_HUNDREDS(vALUE) \

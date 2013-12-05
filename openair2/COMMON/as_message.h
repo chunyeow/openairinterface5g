@@ -107,6 +107,18 @@ Description Defines the messages supported by the Access Stratum sublayer
 #define NETWORK_FAILURE                               (17)
 #define ESM_FAILURE                                   (19)
 
+typedef enum nas_cause_s {
+    NAS_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED = EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+    NAS_CAUSE_EPS_SERVICES_NOT_ALLOWED                  = EPS_SERVICES_NOT_ALLOWED,
+    NAS_CAUSE_PLMN_NOT_ALLOWED                          = PLMN_NOT_ALLOWED,
+    NAS_CAUSE_TRACKING_AREA_NOT_ALLOWED                 = TRACKING_AREA_NOT_ALLOWED,
+    NAS_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA = ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA,
+    NAS_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN     = EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN,
+    NAS_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA        = NO_SUITABLE_CELLS_IN_TRACKING_AREA,
+    NAS_CAUSE_NETWORK_FAILURE                           = NETWORK_FAILURE,
+    NAS_CAUSE_ESM_FAILURE                               = ESM_FAILURE
+} nas_cause_t;
+
 /*
  * --------------------------------------------------------------------------
  *          Access Stratum message global parameters
@@ -253,6 +265,7 @@ typedef struct paging_ind_s {
 
 /* Cause of RRC connection establishment */
 typedef enum as_cause_s {
+    AS_CAUSE_UNKNOWN    = 0,
     AS_CAUSE_EMERGENCY  = NET_ESTABLISH_CAUSE_EMERGENCY,
     AS_CAUSE_HIGH_PRIO  = NET_ESTABLISH_CAUSE_HIGH_PRIO,
     AS_CAUSE_MT_ACCESS  = NET_ESTABLISH_CAUSE_MT_ACCESS,
@@ -288,10 +301,11 @@ typedef struct nas_establish_req_s {
  * AS transfers the initial NAS message to the NAS.
  */
 typedef struct nas_establish_ind_s {
-    UInt32_t UEid;       /* UE lower layer identifier       */
-    tac_t tac;           /* Code of the tracking area the initiating
-                          * UE belongs to           */
-    as_nas_info_t initialNasMsg; /* Initial NAS message to transfer */
+    UInt32_t      UEid;          /* UE lower layer identifier               */
+    tac_t         tac;           /* Code of the tracking area the initiating
+                                  * UE belongs to                           */
+    as_cause_t    asCause;       /* Establishment cause                     */
+    as_nas_info_t initialNasMsg; /* Initial NAS message to transfer         */
 } nas_establish_ind_t;
 
 /*
