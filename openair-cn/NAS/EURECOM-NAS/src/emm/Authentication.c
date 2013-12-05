@@ -522,7 +522,7 @@ int emm_proc_authentication_delete(void)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int emm_proc_authentication(unsigned int ueid, int ksi,
+int emm_proc_authentication(void *ctx, unsigned int ueid, int ksi,
                             const OctetString *_rand, const OctetString *autn,
                             emm_common_success_callback_t success,
                             emm_common_reject_callback_t reject,
@@ -583,6 +583,7 @@ int emm_proc_authentication(unsigned int ueid, int ksi,
             emm_sap_t emm_sap;
             emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
             emm_sap.u.emm_reg.ueid = ueid;
+            emm_sap.u.emm_reg.ctx  = ctx;
             rc = emm_sap_send(&emm_sap);
         }
     }

@@ -192,8 +192,8 @@ int emm_proc_authentication_delete(void);
 #endif
 
 #ifdef NAS_MME
-int emm_proc_authentication(unsigned int ueid, int ksi,
-                            const OctetString *rand, const OctetString  *autn,
+int emm_proc_authentication(void *ctx, unsigned int ueid, int ksi,
+                            const OctetString *_rand, const OctetString *autn,
                             emm_common_success_callback_t success,
                             emm_common_reject_callback_t reject,
                             emm_common_failure_callback_t failure);
