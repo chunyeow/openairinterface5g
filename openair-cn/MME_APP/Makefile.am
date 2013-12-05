@@ -20,4 +20,5 @@ libmmeapp_la_SOURCES = \
 	mme_app_authentication.c	\
 	mme_app_statistics.c	mme_app_statistics.h	\
 	mme_app_defs.h	mme_app_extern.h	\
+	mme_app_itti_messaging.h	\
 	s6a_2_nas_cause.c

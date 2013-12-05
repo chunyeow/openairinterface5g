@@ -33,6 +33,7 @@
  * Use mme_app_extern.h to expose mme applicative layer procedures/data.
  */
 
+#include "intertask_interface.h"
 #include "mme_app_ue_context.h"
 
 #ifndef MME_APP_DEFS_H_
@@ -69,6 +70,8 @@ int mme_app_handle_authentication_info_answer(s6a_auth_info_ans_t *s6a_auth_info
 
 int mme_app_handle_nas_auth_resp(nas_auth_resp_t *nas_auth_resp_p);
 
-int s6a_error_2_nas_cause(uint32_t s6a_error, int experimental);
+nas_cause_t s6a_error_2_nas_cause(uint32_t s6a_error, int experimental);
+
+void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t *nas_auth_param_req);
 
 #endif /* MME_APP_DEFS_H_ */

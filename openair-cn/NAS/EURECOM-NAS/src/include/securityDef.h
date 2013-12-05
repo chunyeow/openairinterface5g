@@ -42,12 +42,12 @@ Description Contains global security definitions
                 AUTN = (SQN ⊕ AK) || AMF || MAC        */
 #define AUTH_MACS_SIZE  8  /* Re-synchronization MAC:       64 bits  */
 #define AUTH_AUTS_SIZE  16 /* Re-synchronization AUT:       128 bits */
-#define AUTH_RAND_SIZE  16 /* Random challenge:         128 bits */
-#define AUTH_CK_SIZE    16 /* Ciphering key:            128 bits */
-#define AUTH_IK_SIZE    16 /* Integrity key:            128 bits */
+#define AUTH_RAND_SIZE  16 /* Random challenge:         128 bits     */
+#define AUTH_CK_SIZE    16 /* Ciphering key:            128 bits     */
+#define AUTH_IK_SIZE    16 /* Integrity key:            128 bits     */
 #define AUTH_RES_SIZE   16 /* Authentication response:      128 bits */
 #define AUTH_SNID_SIZE  3  /* Serving network's identity:   24 bits  */
-#define AUTH_KASME_SIZE 32 /* ASME security key:        256 bits */
+#define AUTH_KASME_SIZE 32 /* KASME security key:        256 bits    */
 #define AUTH_KNAS_INT_SIZE  AUTH_KASME_SIZE /* NAS integrity key     */
 #define AUTH_KNAS_ENC_SIZE  AUTH_KASME_SIZE /* NAS cyphering key     */
 #define AUTH_KENB_SIZE      AUTH_KASME_SIZE /* eNodeB security key   */
@@ -64,14 +64,15 @@ Description Contains global security definitions
  */
 typedef struct {
     /* ASME security key                */
-    char kasme[AUTH_KASME_SIZE + 1];
+    uint8_t kasme[AUTH_KASME_SIZE];
     /* Random challenge parameter           */
-    char rand[AUTH_RAND_SIZE + 1];
+    uint8_t rand[AUTH_RAND_SIZE];
     /* Authentication token parameter       */
-    char autn[AUTH_AUTN_SIZE + 1];
+    uint8_t autn[AUTH_AUTN_SIZE];
     /* Expected Authentication response parameter   */
 #define AUTH_XRES_SIZE  AUTH_RES_SIZE
-    char xres[AUTH_XRES_SIZE + 1];
+    uint8_t xres_size;
+    uint8_t xres[AUTH_XRES_SIZE];
 } auth_vector_t;
 
 /****************************************************************************/

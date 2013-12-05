@@ -33,7 +33,7 @@
 #include "intertask_interface.h"
 #include "nas_itti_messaging.h"
 
-int nas_itti_dl_data_req(const uint32_t ue_id, void * const data,
+int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length)
 {
     MessageDef *message_p;
@@ -47,7 +47,7 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void * const data,
     return itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
 
-void nas_itti_establish_cnf(const nas_error_code_t error_code, void * const data,
+void nas_itti_establish_cnf(const nas_error_code_t error_code, void *const data,
                             const uint32_t length)
 {
     MessageDef *message_p;

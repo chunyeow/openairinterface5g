@@ -199,6 +199,8 @@ int emm_proc_authentication(unsigned int ueid, int ksi,
                             emm_common_failure_callback_t failure);
 int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
                                      const OctetString *res);
+
+int emm_attach_security(void *args);
 #endif
 
 /*

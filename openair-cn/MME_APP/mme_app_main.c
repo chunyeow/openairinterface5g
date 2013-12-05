@@ -78,13 +78,17 @@ void *mme_app_thread(void *args)
                 mme_app_handle_create_sess_resp(&received_message_p->ittiMsg.sgwCreateSessionResponse);
             } break;
 
-            case NAS_AUTHENTICATION_RESP: {
-                mme_app_handle_nas_auth_resp(&received_message_p->ittiMsg.nas_auth_resp);
+            case NAS_AUTHENTICATION_PARAM_REQ: {
+                mme_app_handle_nas_auth_param_req(&received_message_p->ittiMsg.nas_auth_param_req);
             } break;
 
 #if defined(DISABLE_USE_NAS)
             case NAS_ATTACH_REQ: {
                 mme_app_handle_attach_req(&received_message_p->ittiMsg.nas_attach_req);
+            } break;
+
+            case NAS_AUTHENTICATION_RESP: {
+                mme_app_handle_nas_auth_resp(&received_message_p->ittiMsg.nas_auth_resp);
             } break;
 #endif
 

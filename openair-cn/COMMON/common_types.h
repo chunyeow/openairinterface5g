@@ -32,6 +32,8 @@
 
 #include "commonDef.h"
 
+#include "security_types.h"
+
 #include "queue.h"
 
 #ifndef COMMON_TYPES_H_
@@ -215,9 +217,9 @@ typedef struct {
     rau_tau_timer_t       rau_tau_timer;
 } subscription_data_t;
 
-typedef struct {
-    uint8_t nb_of_vectors;
-    STAILQ_HEAD(e_utran_vector_list, eutran_vector_s) e_utran_vectors;
+typedef struct authentication_info_s {
+    uint8_t         nb_of_vectors;
+    eutran_vector_t eutran_vector;
 } authentication_info_t;
 
 typedef enum {

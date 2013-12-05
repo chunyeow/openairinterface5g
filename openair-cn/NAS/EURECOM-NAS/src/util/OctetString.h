@@ -4,8 +4,8 @@
 #define OCTET_STRING_H_
 
 typedef struct OctetString_tag {
-        uint32_t  length;
-        uint8_t  *value;
+    uint32_t  length;
+    uint8_t  *value;
 } OctetString;
 
 int encode_octet_string(OctetString *octetstring, uint8_t *buffer, uint32_t len);

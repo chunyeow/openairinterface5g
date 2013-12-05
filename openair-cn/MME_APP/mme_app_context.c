@@ -190,7 +190,6 @@ void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
     MME_APP_DEBUG("-----------------------UE contexts-----------------------\n");
     RB_FOREACH(context_p, ue_context_map, &mme_ue_context->ue_context_tree)
     {
-        struct eutran_vector_s *vector_p;
         uint8_t j;
 
         MME_APP_DEBUG("    - IMSI ...........: %"SCNu64"\n", context_p->imsi);
@@ -252,10 +251,13 @@ void mme_app_dump_ue_contexts(mme_ue_context_t *mme_ue_context)
             MME_APP_DEBUG("        Allocated ....: (%010"PRIu64"|%010"PRIu64")\n",
                           context_p->used_ambr.br_dl, context_p->used_ambr.br_ul);
             MME_APP_DEBUG("    - Known vectors ..: %u\n", context_p->nb_of_vectors);
-            STAILQ_FOREACH(vector_p, &context_p->vector_list, entries)
+            for (j = 0; j < context_p->nb_of_vectors; j++)
             {
                 int k;
                 char xres_string[3 * XRES_LENGTH_MAX + 1];
+                eutran_vector_t *vector_p;
+
+                vector_p = &context_p->vector_list[j];
 
                 MME_APP_DEBUG("        - RAND ..: "RAND_FORMAT"\n",
                             RAND_DISPLAY(vector_p->rand));

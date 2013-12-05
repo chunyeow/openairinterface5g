@@ -26,6 +26,7 @@ Description Defines the EMM Service Access Points at which the EPS
 #include "emm_regDef.h"
 #include "emm_esmDef.h"
 #include "emm_asDef.h"
+#include "emm_cnDef.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -46,8 +47,8 @@ typedef enum {
 #ifdef NAS_UE
     EMMREG_S1_ENABLED       = _EMMREG_S1_ENABLED,
     EMMREG_S1_DISABLED      = _EMMREG_S1_DISABLED,
-    EMMREG_NO_IMSI      = _EMMREG_NO_IMSI,
-    EMMREG_NO_CELL      = _EMMREG_NO_CELL,
+    EMMREG_NO_IMSI          = _EMMREG_NO_IMSI,
+    EMMREG_NO_CELL          = _EMMREG_NO_CELL,
     EMMREG_REGISTER_REQ     = _EMMREG_REGISTER_REQ,
     EMMREG_REGISTER_CNF     = _EMMREG_REGISTER_CNF,
     EMMREG_REGISTER_REJ     = _EMMREG_REGISTER_REJ,
@@ -55,7 +56,7 @@ typedef enum {
     EMMREG_ATTACH_REQ       = _EMMREG_ATTACH_REQ,
     EMMREG_ATTACH_FAILED    = _EMMREG_ATTACH_FAILED,
     EMMREG_ATTACH_EXCEEDED  = _EMMREG_ATTACH_EXCEEDED,
-    EMMREG_AUTH_REJ     = _EMMREG_AUTH_REJ,
+    EMMREG_AUTH_REJ         = _EMMREG_AUTH_REJ,
 #endif
 #ifdef NAS_MME
     EMMREG_COMMON_PROC_REQ  = _EMMREG_COMMON_PROC_REQ,
@@ -69,9 +70,9 @@ typedef enum {
     EMMREG_DETACH_REQ       = _EMMREG_DETACH_REQ,
     EMMREG_DETACH_FAILED    = _EMMREG_DETACH_FAILED,
     EMMREG_DETACH_CNF       = _EMMREG_DETACH_CNF,
-    EMMREG_TAU_REQ      = _EMMREG_TAU_REQ,
-    EMMREG_TAU_CNF      = _EMMREG_TAU_CNF,
-    EMMREG_TAU_REJ      = _EMMREG_TAU_REJ,
+    EMMREG_TAU_REQ          = _EMMREG_TAU_REQ,
+    EMMREG_TAU_CNF          = _EMMREG_TAU_CNF,
+    EMMREG_TAU_REJ          = _EMMREG_TAU_REJ,
     EMMREG_SERVICE_REQ      = _EMMREG_SERVICE_REQ,
     EMMREG_SERVICE_CNF      = _EMMREG_SERVICE_CNF,
     EMMREG_SERVICE_REJ      = _EMMREG_SERVICE_REJ,
@@ -97,13 +98,18 @@ typedef enum {
     EMMAS_ESTABLISH_REJ     = _EMMAS_ESTABLISH_REJ,
     EMMAS_RELEASE_REQ       = _EMMAS_RELEASE_REQ,
     EMMAS_RELEASE_IND       = _EMMAS_RELEASE_IND,
-    EMMAS_DATA_REQ      = _EMMAS_DATA_REQ,
-    EMMAS_DATA_IND      = _EMMAS_DATA_IND,
-    EMMAS_PAGE_IND      = _EMMAS_PAGE_IND,
+    EMMAS_DATA_REQ          = _EMMAS_DATA_REQ,
+    EMMAS_DATA_IND          = _EMMAS_DATA_IND,
+    EMMAS_PAGE_IND          = _EMMAS_PAGE_IND,
     EMMAS_STATUS_IND        = _EMMAS_STATUS_IND,
     EMMAS_CELL_INFO_REQ     = _EMMAS_CELL_INFO_REQ,
     EMMAS_CELL_INFO_RES     = _EMMAS_CELL_INFO_RES,
     EMMAS_CELL_INFO_IND     = _EMMAS_CELL_INFO_IND,
+
+#ifdef EPC_BUILD
+    EMMCN_AUTHENTICATION_PARAM_RES      = _EMMCN_AUTHENTICATION_PARAM_RES,
+    EMMCN_AUTHENTICATION_PARAM_FAIL     = _EMMCN_AUTHENTICATION_PARAM_FAIL,
+#endif
 } emm_primitive_t;
 
 /*
@@ -111,14 +117,16 @@ typedef enum {
  */
 #define EMMREG_PRIMITIVE_MIN    _EMMREG_START
 #define EMMESM_PRIMITIVE_MIN    _EMMESM_START
-#define EMMAS_PRIMITIVE_MIN _EMMAS_START
+#define EMMAS_PRIMITIVE_MIN     _EMMAS_START
+#define EMMCN_PRIMITIVE_MIN     _EMMCN_START
 
 /*
  * Maximal identifier for EMM-SAP primitives
  */
 #define EMMREG_PRIMITIVE_MAX    _EMMREG_END
 #define EMMESM_PRIMITIVE_MAX    _EMMESM_END
-#define EMMAS_PRIMITIVE_MAX _EMMAS_END
+#define EMMAS_PRIMITIVE_MAX     _EMMAS_END
+#define EMMCN_PRIMITIVE_MAX     _EMMCN_END
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
@@ -133,6 +141,9 @@ typedef struct {
         emm_reg_t emm_reg;  /* EMMREG-SAP primitives    */
         emm_esm_t emm_esm;  /* EMMESM-SAP primitives    */
         emm_as_t  emm_as;   /* EMMAS-SAP primitives     */
+#if defined(EPC_BUILD)
+        emm_cn_t  emm_cn;   /* EMMCN-SAP primitives     */
+#endif
     } u;
 } emm_sap_t;
 

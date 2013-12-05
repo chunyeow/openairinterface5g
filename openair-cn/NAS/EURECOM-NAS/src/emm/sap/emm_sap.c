@@ -28,6 +28,7 @@ Description Defines the EMM Service Access Points at which the EPS
 #include "emm_reg.h"
 #include "emm_esm.h"
 #include "emm_as.h"
+#include "emm_cn.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -82,11 +83,11 @@ void emm_sap_initialize(void)
  ***************************************************************************/
 int emm_sap_send(emm_sap_t *msg)
 {
-    LOG_FUNC_IN;
-
     int rc = RETURNerror;
 
     emm_primitive_t primitive = msg->primitive;
+
+    LOG_FUNC_IN;
 
     /* Check the EMM-SAP primitive */
     if ( (primitive > EMMREG_PRIMITIVE_MIN) &&
@@ -104,7 +105,16 @@ int emm_sap_send(emm_sap_t *msg)
         /* Forward to the EMMAS-SAP */
         msg->u.emm_as.primitive = primitive;
         rc = emm_as_send(&msg->u.emm_as);
-    } else {
+    }
+#if defined(EPC_BUILD)
+    else if ( (primitive > EMMCN_PRIMITIVE_MIN) &&
+              (primitive < EMMCN_PRIMITIVE_MAX) ) {
+        /* Forward to the EMMCN-SAP */
+        msg->u.emm_cn.primitive = primitive;
+        rc = emm_cn_send(&msg->u.emm_cn);
+    }
+#endif
+    else {
         LOG_TRACE(WARNING, "EMM-SAP -   Out of range primitive (%d)", primitive);
     }
 

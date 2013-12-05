@@ -1143,21 +1143,21 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
 
 /****************************************************************************
  **                                                                        **
- ** Name:    emm_proc_attach_reject()                                  **
+ ** Name:        emm_proc_attach_reject()                                  **
  **                                                                        **
  ** Description: Performs the protocol error abnormal case                 **
  **                                                                        **
  **              3GPP TS 24.301, section 5.5.1.2.7, case b                 **
- **      If the ATTACH REQUEST message is received with a protocol **
- **      error, the network shall return an ATTACH REJECT message. **
+ **              If the ATTACH REQUEST message is received with a protocol **
+ **              error, the network shall return an ATTACH REJECT message. **
  **                                                                        **
- ** Inputs:  ueid:      UE lower layer identifier                  **
- **          emm_cause: EMM cause code to be reported              **
- **      Others:    None                                       **
+ ** Inputs:  ueid:              UE lower layer identifier                  **
+ **                  emm_cause: EMM cause code to be reported              **
+ **                  Others:    None                                       **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    _emm_data                                  **
+ **                  Return:    RETURNok, RETURNerror                      **
+ **                  Others:    _emm_data                                  **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_attach_reject(unsigned int ueid, int emm_cause)
@@ -1174,7 +1174,7 @@ int emm_proc_attach_reject(unsigned int ueid, int emm_cause)
 
     /* Update the EMM cause code */
 #if defined(EPC_BUILD)
-    if (ueid == 0)
+    if (ueid > 0)
 #else
     if (ueid < EMM_DATA_NB_UE_MAX)
 #endif
@@ -1828,19 +1828,15 @@ static int _emm_attach_abort(void *args)
  ***************************************************************************/
 static int _emm_attach_identify(void *args)
 {
-    LOG_FUNC_IN;
-
     int rc = RETURNerror;
     emm_data_context_t *emm_ctx = (emm_data_context_t *)(args);
     int guti_reallocation = FALSE;
 
+    LOG_FUNC_IN;
+
     LOG_TRACE(INFO, "EMM-PROC  - Identify incoming UE (ueid=0x%08x) using %s",
               emm_ctx->ueid, (emm_ctx->imsi)? "IMSI" : (emm_ctx->guti)? "GUTI" :
               (emm_ctx->imei)? "IMEI" : "none");
-
-#if defined(EPC_BUILD)
-    nas_itti_auth_info_req(emm_ctx->imsi, 1);
-#endif
 
     /*
      * UE's identification
@@ -1848,13 +1844,23 @@ static int _emm_attach_identify(void *args)
      */
     if (emm_ctx->imsi) {
         /* The UE identifies itself using an IMSI */
-        rc = mme_api_identify_imsi(emm_ctx->imsi, &emm_ctx->vector);
-        if (rc != RETURNok) {
-            LOG_TRACE(WARNING, "EMM-PROC  - "
-                      "Failed to identify the UE using provided IMSI");
-            emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
+#if defined(EPC_BUILD)
+        if (!emm_ctx->security) {
+            /* Ask upper layer to fetch new security context */
+            nas_itti_auth_info_req(emm_ctx->ueid, emm_ctx->imsi, 1);
+
+            rc = RETURNok;
+        } else
+#endif
+        {
+            rc = mme_api_identify_imsi(emm_ctx->imsi, &emm_ctx->vector);
+            if (rc != RETURNok) {
+                LOG_TRACE(WARNING, "EMM-PROC  - "
+                        "Failed to identify the UE using provided IMSI");
+                emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
+            }
+            guti_reallocation = TRUE;
         }
-        guti_reallocation = TRUE;
     } else if (emm_ctx->guti) {
         /* The UE identifies itself using a GUTI */
         rc = mme_api_identify_guti(emm_ctx->guti, &emm_ctx->vector);
@@ -1945,7 +1951,9 @@ static int _emm_attach_identify(void *args)
              * execution of the security mode control procedure.
              */
             rc = _emm_attach_security(emm_ctx);
-        } else {
+        }
+#if !defined(EPC_BUILD)
+        else {
             /* 3GPP TS 24.401, Figure 5.3.2.1-1, point 5a
              * No EMM context exists for the UE in the network; authentication
              * and NAS security setup to activate integrity protection and NAS
@@ -1956,7 +1964,7 @@ static int _emm_attach_identify(void *args)
             const OctetString autn = {AUTH_AUTN_SIZE, (uint8_t *)auth->autn};
             rc = emm_proc_authentication(emm_ctx->ueid, 0, // TODO: eksi != 0
                                          &loc_rand, &autn,
-                                         _emm_attach_security,
+                                         emm_attach_security,
                                          _emm_attach_release,
                                          _emm_attach_release);
             if (rc != RETURNok) {
@@ -1966,6 +1974,7 @@ static int _emm_attach_identify(void *args)
                 emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
             }
         }
+#endif
     }
 
     if (rc != RETURNok) {
@@ -1977,18 +1986,25 @@ static int _emm_attach_identify(void *args)
 
 /****************************************************************************
  **                                                                        **
- ** Name:    _emm_attach_security()                                    **
+ ** Name:        _emm_attach_security()                                    **
  **                                                                        **
  ** Description: Initiates security mode control EMM common procedure.     **
  **                                                                        **
- ** Inputs:  args:      security argument parameters               **
- **      Others:    None                                       **
+ ** Inputs:          args:      security argument parameters               **
+ **                  Others:    None                                       **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    _emm_data                                  **
+ **                  Return:    RETURNok, RETURNerror                      **
+ **                  Others:    _emm_data                                  **
  **                                                                        **
  ***************************************************************************/
+#if defined(EPC_BUILD)
+int emm_attach_security(void *args)
+{
+    return _emm_attach_security(args);
+}
+#endif
+
 static int _emm_attach_security(void *args)
 {
     LOG_FUNC_IN;

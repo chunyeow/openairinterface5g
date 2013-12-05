@@ -152,8 +152,6 @@ int s6a_parse_authentication_info_avp(struct avp *avp_auth_info,
     DevCheck(hdr->avp_code == AVP_CODE_AUTHENTICATION_INFO,
              hdr->avp_code, AVP_CODE_AUTHENTICATION_INFO, 0);
 
-    /* Init the list of vectors */
-    STAILQ_INIT(&authentication_info->e_utran_vectors);
     authentication_info->nb_of_vectors = 0;
 
     CHECK_FCT(fd_msg_browse(avp_auth_info, MSG_BRW_FIRST_CHILD, &avp, NULL));
@@ -162,11 +160,8 @@ int s6a_parse_authentication_info_avp(struct avp *avp_auth_info,
 
         switch(hdr->avp_code) {
             case AVP_CODE_E_UTRAN_VECTOR: {
-                struct eutran_vector_s *vector;
-                vector = calloc(1, sizeof(struct eutran_vector_s));
-                CHECK_FCT(s6a_parse_e_utran_vector(avp, vector));
-                STAILQ_INSERT_TAIL(&authentication_info->e_utran_vectors,
-                                    vector, entries);
+                DevAssert(authentication_info->nb_of_vectors == 0);
+                CHECK_FCT(s6a_parse_e_utran_vector(avp, &authentication_info->eutran_vector));
                 authentication_info->nb_of_vectors ++;
             } break;
             default:
@@ -191,6 +186,8 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
 
     MessageDef          *message_p;
     s6a_auth_info_ans_t *s6a_auth_info_ans_p;
+
+    int skip_auth_res = 0;
 
     DevAssert(msg != NULL);
 
@@ -240,7 +237,7 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
             s6a_auth_info_ans_p->result.present = S6A_RESULT_EXPERIMENTAL;
             s6a_parse_experimental_result(avp, &s6a_auth_info_ans_p->result.choice.experimental);
 
-            goto err;
+            skip_auth_res = 1;
         } else {
             /* Neither result-code nor experimental-result is present ->
              * totally incorrect behaviour here.
@@ -250,11 +247,14 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
             goto err;
         }
     }
-    CHECK_FCT(fd_msg_search_avp(ans, s6a_fd_cnf.dataobj_s6a_authentication_info, &avp));
-    if (avp) {
-        CHECK_FCT(s6a_parse_authentication_info_avp(avp, &s6a_auth_info_ans_p->auth_info));
-    } else {
-        DevMessage("We requested E-UTRAN vectors with an immediate response...\n");
+
+    if (skip_auth_res == 0) {
+        CHECK_FCT(fd_msg_search_avp(ans, s6a_fd_cnf.dataobj_s6a_authentication_info, &avp));
+        if (avp) {
+            CHECK_FCT(s6a_parse_authentication_info_avp(avp, &s6a_auth_info_ans_p->auth_info));
+        } else {
+            DevMessage("We requested E-UTRAN vectors with an immediate response...\n");
+        }
     }
 
     itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);

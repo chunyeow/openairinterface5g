@@ -1421,9 +1421,9 @@ int nas_proc_dl_transfer_rej(UInt32_t ueid)
  ***************************************************************************/
 int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len)
 {
-    LOG_FUNC_IN;
-
     int rc = RETURNerror;
+
+    LOG_FUNC_IN;
 
     if (len > 0) {
         emm_sap_t emm_sap;
@@ -1441,6 +1441,38 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len)
 
     LOG_FUNC_RETURN (rc);
 }
+
+# if defined(EPC_BUILD)
+int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res)
+{
+    int rc = RETURNerror;
+    emm_sap_t emm_sap;
+
+    LOG_FUNC_IN;
+
+    emm_sap.primitive = EMMCN_AUTHENTICATION_PARAM_RES;
+    emm_sap.u.emm_cn.u.auth_res = emm_cn_auth_res;
+
+    rc = emm_sap_send(&emm_sap);
+
+    LOG_FUNC_RETURN (rc);
+}
+
+int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail)
+{
+    int rc = RETURNerror;
+    emm_sap_t emm_sap;
+
+    LOG_FUNC_IN;
+
+    emm_sap.primitive = EMMCN_AUTHENTICATION_PARAM_FAIL;
+    emm_sap.u.emm_cn.u.auth_fail = emm_cn_auth_fail;
+
+    rc = emm_sap_send(&emm_sap);
+
+    LOG_FUNC_RETURN (rc);
+}
+# endif
 #endif // NAS_MME
 
 /****************************************************************************/

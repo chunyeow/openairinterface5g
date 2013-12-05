@@ -1078,6 +1078,12 @@ static int _emm_as_send(const emm_as_t *msg)
     /* Send the message to the Access Stratum or S1AP in case of MME */
     if (as_msg.msgID > 0) {
 #if defined(EPC_BUILD) && defined(NAS_MME)
+        LOG_TRACE(DEBUG, "EMMAS-SAP - "
+                  "Sending msg with id 0x%x, primitive %s (%d) to S1AP layer for transmission",
+                  as_msg.msgID,
+                  _emm_as_primitive_str[msg->primitive - _EMMAS_START - 1],
+                  msg->primitive);
+
         switch (as_msg.msgID) {
             case AS_DL_INFO_TRANSFER_REQ: {
                 nas_itti_dl_data_req(as_msg.msg.dl_info_transfer_req.UEid,
@@ -1086,14 +1092,14 @@ static int _emm_as_send(const emm_as_t *msg)
             } break;
 
             case AS_NAS_ESTABLISH_RSP: {
-                /* The attach procedure succeeded wihtin MME.
-                 * This message should trigger an S1AP initial context setup
-                 * request.
-                 * NOTE: we support only one bearer per message...
-                 */
-//                 nas_itti_establish_cnf(as_msg.msg.nas_establish_cnf.errCode,
-//                                        as_msg.msg.nas_establish_cnf.nasMsg.data,
-//                                        as_msg.msg.nas_establish_cnf.nasMsg.length);
+                if (as_msg.msg.nas_establish_rsp.errCode != AS_SUCCESS) {
+                    nas_itti_dl_data_req(as_msg.msg.nas_establish_rsp.UEid,
+                                         as_msg.msg.nas_establish_rsp.nasMsg.data,
+                                         as_msg.msg.nas_establish_rsp.nasMsg.length);
+                    LOG_FUNC_RETURN (RETURNok);
+                } else {
+                    /* Handle success case */
+                }
             } break;
 
             default:
@@ -1679,13 +1685,14 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
 static int _emm_as_establish_rej(const emm_as_establish_t *msg,
                                  nas_establish_rsp_t *as_msg)
 {
-    LOG_FUNC_IN;
-
+    EMM_msg *emm_msg;
     int size = 0;
+    nas_message_t nas_msg;
+
+    LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "EMMAS-SAP - Send AS connection establish reject");
 
-    nas_message_t nas_msg;
     memset(&nas_msg, 0 , sizeof(nas_message_t));
 
     /* Setup the AS message */
@@ -1697,7 +1704,7 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
     }
 
     /* Setup the NAS security header */
-    EMM_msg *emm_msg = _emm_as_set_header(&nas_msg, &msg->sctx);
+    emm_msg = _emm_as_set_header(&nas_msg, &msg->sctx);
 
     /* Setup the NAS information message */
     if (emm_msg != NULL) switch (msg->NASinfo) {

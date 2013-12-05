@@ -42,7 +42,7 @@ messages.xml:	$(top_srcdir)/INTERTASK_INTERFACE/intertask_interface_types.h $(me
 
 messages_xml.h: messages.xml
 	@echo "Generating $<"
-	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/"/' messages.xml > messages_xml.h
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' messages.xml > messages_xml.h
 
 clean-local:
 	@rm -rf -v messages.xml messages_xml.h

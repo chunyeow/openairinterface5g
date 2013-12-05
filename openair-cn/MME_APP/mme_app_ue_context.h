@@ -92,6 +92,9 @@ typedef struct bearer_context_s {
  * according to 3GPP TS.23.401 #5.7.2
  */
 typedef struct ue_context_s {
+    /* Tree entry */
+    RB_ENTRY(ue_context_s) rb_entry;
+
     /* Basic identifier for ue. IMSI is encoded on maximum of 15 digits of 4 bits,
      * so usage of an unsigned integer on 64 bits is necessary.
      */
@@ -104,11 +107,14 @@ typedef struct ue_context_s {
     unsigned eNB_ue_s1ap_id:24;
     uint32_t mme_ue_s1ap_id;
 
+    /* ue_id is equal to mme_ue_s1ap_id */
+    uint32_t ue_id;
+
     uint8_t nb_of_vectors;
 
-    struct eutran_vector_s *vector_in_use;
     /* List of authentication vectors for E-UTRAN */
-    STAILQ_HEAD(auth_vectors, eutran_vector_s) vector_list;
+    eutran_vector_t  *vector_list;
+    eutran_vector_t  *vector_in_use;
 
 #define SUBSCRIPTION_UNKNOWN    0x0
 #define SUBSCRIPTION_KNOWN      0x1
@@ -160,10 +166,6 @@ typedef struct ue_context_s {
     uint32_t sgw_s11_teid;
 
     bearer_context_t eps_bearers[BEARERS_PER_UE];
-
-    /* Tree entry */
-    RB_ENTRY(ue_context_s) rb_entry;
-
 } ue_context_t;
 
 typedef struct {

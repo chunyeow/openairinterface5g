@@ -10,6 +10,8 @@
 
 #include "timer_messages_types.h"
 
+#include "security_types.h"
+
 #include "gtpv1_u_messages_types.h"
 #include "ip_forward_messages_types.h"
 #include "mme_app_messages_types.h"

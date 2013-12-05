@@ -22,6 +22,7 @@ Description NAS procedure call manager
 
 #if defined(EPC_BUILD)
 # include "mme_config.h"
+# include "emm_cnDef.h"
 #endif
 
 #include "commonDef.h"
@@ -126,6 +127,17 @@ int nas_proc_establish_ind(UInt32_t ueid, tac_t tac, const Byte_t *data,
 int nas_proc_dl_transfer_cnf(UInt32_t ueid);
 int nas_proc_dl_transfer_rej(UInt32_t ueid);
 int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len);
+#endif
+
+/*
+ * --------------------------------------------------------------------------
+ *      NAS procedures triggered by the mme applicative layer
+ * --------------------------------------------------------------------------
+ */
+#if defined(NAS_MME) && defined(EPC_BUILD)
+int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res);
+
+int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail);
 #endif
 
 #endif /* __NAS_PROC_H__*/

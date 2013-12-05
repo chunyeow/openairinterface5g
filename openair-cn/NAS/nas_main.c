@@ -113,9 +113,7 @@ next_message:
 
                 itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
             } break;
-#endif
-
-#if !defined(DISABLE_USE_NAS)
+#else
             case NAS_UPLINK_DATA_IND: {
                 nas_proc_ul_transfer_ind(NAS_UL_DATA_IND(received_message_p).UEid,
                                          NAS_UL_DATA_IND(received_message_p).nasMsg.data,
@@ -124,6 +122,14 @@ next_message:
 
             case NAS_DOWNLINK_DATA_CNF: {
 //                 nas_proc_dl_transfer_cnf(NAS_DL_DATA_CNF(received_message_p).UEid);
+            } break;
+
+            case NAS_AUTHENTICATION_PARAM_RSP: {
+                nas_proc_auth_param_res(&NAS_AUTHENTICATION_PARAM_RSP(received_message_p));
+            } break;
+
+            case NAS_AUTHENTICATION_PARAM_FAIL: {
+                nas_proc_auth_param_fail(&NAS_AUTHENTICATION_PARAM_FAIL(received_message_p));
             } break;
 #endif
 
@@ -148,7 +154,7 @@ int nas_init(mme_config_t *mme_config_p)
     NAS_DEBUG("Initializing NAS task interface\n");
 
 #if !defined(DISABLE_USE_NAS)
-    nas_log_init(LOG_DEBUG);
+    nas_log_init(0x2F);
     nas_network_initialize(mme_config_p);
 #endif
 

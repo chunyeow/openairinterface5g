@@ -90,8 +90,9 @@ libnas_emm_msg_SRCS =           \
     EURECOM-NAS/src/emm/msg/TrackingAreaUpdateComplete.c
 
 libnas_emm_sap_SRCS =           \
-    EURECOM-NAS/src/emm/sap/emm_as.c \        \
     EURECOM-NAS/src/emm/sap/emm_as.c \
+    EURECOM-NAS/src/emm/sap/emm_cn.c \
+    EURECOM-NAS/src/emm/sap/emm_cn.h \
     EURECOM-NAS/src/emm/sap/EmmDeregisteredNoImsi.c \
     EURECOM-NAS/src/emm/sap/emm_reg.c \
     EURECOM-NAS/src/emm/sap/EmmRegisteredUpdateNeeded.c \

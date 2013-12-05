@@ -11,6 +11,8 @@
 #define NAS_BEARER_PARAM(mSGpTR)                (mSGpTR)->ittiMsg.nas_bearer_param
 #define NAS_AUTHENTICATION_REQ(mSGpTR)          (mSGpTR)->ittiMsg.nas_auth_req
 #define NAS_AUTHENTICATION_PARAM_REQ(mSGpTR)    (mSGpTR)->ittiMsg.nas_auth_param_req
+#define NAS_AUTHENTICATION_PARAM_RSP(mSGpTR)    (mSGpTR)->ittiMsg.nas_auth_param_rsp
+#define NAS_AUTHENTICATION_PARAM_FAIL(mSGpTR)   (mSGpTR)->ittiMsg.nas_auth_param_fail
 
 typedef struct {
     
@@ -24,6 +26,8 @@ typedef struct {
      */
     s1ap_initial_ue_message_t transparent;
 } nas_conn_est_ind_t;
+
+typedef nas_establish_rsp_t nas_conn_est_rej_t;
 
 typedef struct nas_conn_est_cnf_s {
     uint32_t ue_id;
@@ -107,11 +111,35 @@ typedef struct {
 } nas_auth_resp_t;
 
 typedef struct nas_auth_param_req_s {
-    uint8_t imsi_length;
-    char    imsi[15];
+    /* UE identifier */
+    uint32_t ue_id;
 
-    uint8_t initial_req:1;
+    /* Imsi of the UE (In case of initial request) */
+    char     imsi[16];
+    uint8_t  imsi_length;
+
+    /* Indicates whether the procedure corresponds to a new connection or not */
+    uint8_t  initial_req:1;
 } nas_auth_param_req_t;
+
+typedef struct nas_auth_param_rsp_s {
+    /* UE identifier */
+    uint32_t ue_id;
+
+    /* For future use: nb of vectors provided */
+    uint8_t nb_vectors;
+
+    /* Consider only one E-UTRAN vector for the moment... */
+    eutran_vector_t vector;
+} nas_auth_param_rsp_t;
+
+typedef struct nas_auth_param_fail_s {
+    /* UE identifier */
+    uint32_t    ue_id;
+
+    /* S6A mapped to NAS cause */
+    nas_cause_t cause;
+} nas_auth_param_fail_t;
 
 typedef struct nas_attach_accept_s {
     
