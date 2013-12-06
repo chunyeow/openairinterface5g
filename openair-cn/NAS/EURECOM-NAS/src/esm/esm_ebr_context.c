@@ -482,6 +482,7 @@ int esm_ebr_context_check_tft(int pid, int ebi,
     LOG_FUNC_IN;
 
     int rc = RETURNerror;
+    int i;
 
     if (pid < ESM_DATA_PDN_MAX) {
         if (pid != _esm_data.pdn[pid].pid) {
@@ -493,7 +494,7 @@ int esm_ebr_context_check_tft(int pid, int ebi,
         } else if (operation == ESM_EBR_CONTEXT_TFT_CREATE) {
             esm_pdn_t *pdn = _esm_data.pdn[pid].data;
             /* For each EPS bearer context associated to the PDN connection */
-            for (int i = 0; i < pdn->n_bearers; i++) {
+            for (i = 0; i < pdn->n_bearers; i++) {
                 if (pdn->bearer[i]) {
                     if (pdn->bearer[i]->ebi == ebi) {
                         /* Check the packet filter identifiers */
@@ -545,11 +546,14 @@ int esm_ebr_context_check_tft(int pid, int ebi,
 static int _esm_ebr_context_check_identifiers(const network_tft_t *tft1,
         const network_tft_t *tft2)
 {
+    int i;
+    int j;
+
     if ( (tft1 == NULL) || (tft2 == NULL) ) {
         return (RETURNok);
     }
-    for (int i = 0; i < tft1->n_pkfs; i++) {
-        for (int j = 0; j < tft2->n_pkfs; j++) {
+    for (i = 0; i < tft1->n_pkfs; i++) {
+        for (j = 0; j < tft2->n_pkfs; j++) {
             /* Packet filters should have been allocated */
             if (tft1->pkf[i]->id == tft2->pkf[i]->id) {
                 /* 3GPP TS 24.301, section 6.4.2.5, abnormal cases d.1
@@ -582,11 +586,14 @@ static int _esm_ebr_context_check_identifiers(const network_tft_t *tft1,
 static int _esm_ebr_context_check_precedence(const network_tft_t *tft1,
         const network_tft_t *tft2)
 {
+    int i;
+    int j;
+
     if ( (tft1 == NULL) || (tft2 == NULL) ) {
         return (RETURNok);
     }
-    for (int i = 0; i < tft1->n_pkfs; i++) {
-        for (int j = 0; j < tft2->n_pkfs; j++) {
+    for (i = 0; i < tft1->n_pkfs; i++) {
+        for (j = 0; j < tft2->n_pkfs; j++) {
             /* Packet filters should have been allocated */
             if (tft1->pkf[i]->precedence == tft2->pkf[i]->precedence) {
                 /* 3GPP TS 24.301, section 6.4.2.5, abnormal cases d.2

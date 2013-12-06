@@ -112,6 +112,7 @@ int emm_recv_attach_accept(attach_accept_msg *msg, int *emm_cause)
     LOG_FUNC_IN;
 
     int rc;
+    int i;
 
     LOG_TRACE(INFO, "EMMAS-SAP - Received Attach Accept message");
 
@@ -152,7 +153,7 @@ int emm_recv_attach_accept(attach_accept_msg *msg, int *emm_cause)
     /* Get the tracking area list the UE is registered to */
     int n_tais = msg->tailist.numberofelements;
     tai_t tai[n_tais];
-    for (int i = 0; i < n_tais; i++) {
+    for (i = 0; i < n_tais; i++) {
         tai[i].plmn.MCCdigit1 = msg->tailist.mccdigit1;
         tai[i].plmn.MCCdigit2 = msg->tailist.mccdigit2;
         tai[i].plmn.MCCdigit3 = msg->tailist.mccdigit3;

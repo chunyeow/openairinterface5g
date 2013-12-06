@@ -372,6 +372,8 @@ int emm_proc_attach_accept(long t3412, long t3402, long t3423,
     emm_sap_t emm_sap;
     esm_sap_t esm_sap;
     int rc;
+    int i;
+    int j;
 
     LOG_TRACE(INFO, "EMM-PROC  - EPS attach accepted by the network");
 
@@ -381,7 +383,7 @@ int emm_proc_attach_accept(long t3412, long t3402, long t3423,
 
     /* Delete old TAI list and store the received TAI list */
     _emm_data.ltai.n_tais = n_tais;
-    for (int i = 0; (i < n_tais) && (i < EMM_DATA_TAI_MAX); i++) {
+    for (i = 0; (i < n_tais) && (i < EMM_DATA_TAI_MAX); i++) {
         _emm_data.ltai.tai[i] = tai[i];
     }
 
@@ -404,13 +406,13 @@ int emm_proc_attach_accept(long t3412, long t3402, long t3423,
     /* Update the stored list of equivalent PLMNs */
     _emm_data.nvdata.eplmn.n_plmns = 0;
     if (n_eplmns > 0) {
-        for (int i = 0; (i < n_eplmns) && (i < EMM_DATA_EPLMN_MAX); i++) {
+        for (i = 0; (i < n_eplmns) && (i < EMM_DATA_EPLMN_MAX); i++) {
             int is_forbidden = FALSE;
             if (!_emm_data.is_emergency) {
                 /* If the attach procedure is not for emergency bearer
                  * services, the UE shall remove from the list any PLMN
                  * code that is already in the list of forbidden PLMNs */
-                for (int j = 0; j < _emm_data.fplmn.n_plmns; j++) {
+                for (j = 0; j < _emm_data.fplmn.n_plmns; j++) {
                     if (PLMNS_ARE_EQUAL(eplmn[i], _emm_data.fplmn.plmn[j])) {
                         is_forbidden = TRUE;
                         break;

@@ -103,8 +103,10 @@ void esm_pt_initialize(void)
 {
     LOG_FUNC_IN;
 
+    int i;
+
     _esm_pt_data.index = 0;
-    for (int i = 0; i < ESM_PT_DATA_SIZE + 1; i++) {
+    for (i = 0; i < ESM_PT_DATA_SIZE + 1; i++) {
         _esm_pt_data.context[i] = NULL;
     }
 

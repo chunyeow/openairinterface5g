@@ -399,6 +399,8 @@ int esm_recv_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
     LOG_FUNC_IN;
 
     int esm_cause = ESM_CAUSE_SUCCESS;
+    int i;
+    int j;
 
     LOG_TRACE(INFO, "ESM-SAP   - Received Activate Dedicated EPS Bearer "
               "Context Request message (pti=%d, ebi=%d)", pti, ebi);
@@ -481,7 +483,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
     esm_proc_tft_t tft = {0, {NULL}};
     /* Get the list of packet filters */
     const PacketFilters *pkfs = &(msg->tft.packetfilterlist.createtft);
-    for (int i = 0; i < msg->tft.numberofpacketfilters; i++) {
+    for (i = 0; i < msg->tft.numberofpacketfilters; i++) {
         /* Create new temporary packet filter */
         tft.pkf[i] = (network_pkf_t *)malloc(sizeof(network_pkf_t));
         if (tft.pkf[i] != NULL) {
@@ -500,7 +502,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
             const PacketFilter *pkf = &(pkfs[i]->packetfilter);
             if (pkf->flags & TRAFFIC_FLOW_TEMPLATE_IPV4_REMOTE_ADDR_FLAG) {
                 /* IPv4 remote address component */
-                for (int j = 0;
+                for (j = 0;
                         (j < TRAFFIC_FLOW_TEMPLATE_IPV4_ADDR_SIZE)
                         && (j < NET_PACKET_FILTER_IPV4_ADDR_SIZE); j++) {
                     tft.pkf[i]->data.ipv4.addr[j] = pkf->ipv4remoteaddr[j].addr;
@@ -508,7 +510,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
                 }
             } else if (pkf->flags & TRAFFIC_FLOW_TEMPLATE_IPV6_REMOTE_ADDR_FLAG) {
                 /* IPv6 remote address component */
-                for (int j = 0;
+                for (j = 0;
                         (j < TRAFFIC_FLOW_TEMPLATE_IPV6_ADDR_SIZE)
                         && (j < NET_PACKET_FILTER_IPV6_ADDR_SIZE); j++) {
                     tft.pkf[i]->data.ipv6.addr[j] = pkf->ipv6remoteaddr[j].addr;
@@ -560,7 +562,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_request(int pti, int ebi,
         esm_cause = ESM_CAUSE_SUCCESS;
     }
     /* Release temporary traffic flow template data */
-    for (int i = 0; i < tft.n_pkfs; i++) {
+    for (i = 0; i < tft.n_pkfs; i++) {
         free(tft.pkf[i]);
     }
     /* Return the ESM cause value */

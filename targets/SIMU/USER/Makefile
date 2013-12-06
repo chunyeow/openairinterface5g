@@ -367,7 +367,9 @@ rrm_std_cellular:
 	( cd $(OPENAIR2_DIR)/NAS/SIMU_CELLULAR && make cell_rrm CELL_RRM=1 CELLULAR=1 NO_RRM=1)
 
 cleanall: clean cleanasn1
+	@if [ -d $(UE_NAS_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE cleanall OUTDIR=$(UE_NAS_OBJ_DIR); fi
 	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall OUTDIR=$(S1AP_OBJ_DIR); fi
+	@if [ -d $(SCTP_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB cleanall OUTDIR=$(SCTP_OBJ_DIR); fi
 
 cleanalmostall: clean 
 	rm -f $(ASN1_MSG_OBJS1)

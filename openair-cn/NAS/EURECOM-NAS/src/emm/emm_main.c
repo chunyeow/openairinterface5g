@@ -967,10 +967,12 @@ static int _emm_main_get_imei(imei_t *imei, const char *imei_str)
  ***************************************************************************/
 static int _emm_main_imsi_cmp(imsi_t *imsi1, imsi_t *imsi2)
 {
+    int i;
+
     if (imsi1->length != imsi2->length) {
         return FALSE;
     }
-    for (int i = 0; i < imsi1->length; i++) {
+    for (i = 0; i < imsi1->length; i++) {
         if (imsi1->u.value[i] != imsi2->u.value[i]) {
             return FALSE;
         }

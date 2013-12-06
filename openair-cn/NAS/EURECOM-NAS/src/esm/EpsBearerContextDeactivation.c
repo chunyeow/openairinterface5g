@@ -327,6 +327,7 @@ int esm_proc_eps_bearer_context_deactivate(int is_local, int ebi,
     LOG_FUNC_IN;
 
     int rc = RETURNerror;
+    int i;
 
     if (is_local) {
         if (ebi != ESM_SAP_ALL_EBI) {
@@ -362,7 +363,7 @@ int esm_proc_eps_bearer_context_deactivate(int is_local, int ebi,
                       *pid);
         } else {
             esm_pdn_t *pdn = _esm_data.pdn[*pid].data;
-            for (int i = 0; i < pdn->n_bearers; i++) {
+            for (i = 0; i < pdn->n_bearers; i++) {
                 if (pdn->bearer[i]->ebi != ebi) {
                     continue;
                 }

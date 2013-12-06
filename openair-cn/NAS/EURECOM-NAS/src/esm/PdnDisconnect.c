@@ -630,8 +630,9 @@ static void *_pdn_disconnect_t3492_handler(void *args)
 static int _pdn_disconnect_get_default_ebi(int pti)
 {
     int ebi = -1;
+    int i;
 
-    for (int i = 0; i < ESM_DATA_PDN_MAX; i++) {
+    for (i = 0; i < ESM_DATA_PDN_MAX; i++) {
         if ( (_esm_data.pdn[i].pid != -1) && _esm_data.pdn[i].data ) {
             if (_esm_data.pdn[i].data->pti != pti) {
                 continue;

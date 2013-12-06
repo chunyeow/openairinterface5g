@@ -26,14 +26,12 @@ Description Timer utilities
 #include <stdlib.h> // malloc, free
 #include <sys/time.h>   // setitimer
 
-#if !defined(EPC_BUILD)
-# include <signal.h>
-# include <time.h>   // clock_gettime
-#endif
-
-#if defined(NAS_MME) && defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 # include "timer.h"
+#else
+# include <signal.h>
+# include <time.h>   // clock_gettime
 #endif
 #include "nas_timer.h"
 #include "commonDef.h"

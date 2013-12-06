@@ -711,13 +711,14 @@ int nas_proc_get_pdn_status(int *cids, int *states, int n_pdn_max)
 {
     LOG_FUNC_IN;
 
+    int cid;
     int n_defined_pdn = 0;
 
     /* Get the maximum number of supported PDN contexts */
     int n_pdn = esm_main_get_nb_pdns_max();
 
     /* For all PDN contexts */
-    for (int cid = 1; (cid < n_pdn+1) && (n_defined_pdn < n_pdn_max); cid++) {
+    for (cid = 1; (cid < n_pdn+1) && (n_defined_pdn < n_pdn_max); cid++) {
         /* Get the status of this PDN */
         int state = FALSE;
         int is_defined = esm_main_get_pdn_status(cid, &state);
@@ -754,13 +755,14 @@ int nas_proc_get_pdn_param(int *cids, int *types, const char **apns,
 {
     LOG_FUNC_IN;
 
+    int cid;
     int n_defined_pdn = 0;
 
     /* Get the maximum number of supported PDN contexts */
     int n_pdn = esm_main_get_nb_pdns_max();
 
     /* For all PDN contexts */
-    for (int cid = 1; (cid < n_pdn+1) && (n_defined_pdn < n_pdn_max); cid++) {
+    for (cid = 1; (cid < n_pdn+1) && (n_defined_pdn < n_pdn_max); cid++) {
         int emergency, active;
         /* Get PDN connection parameters */
         int rc = esm_main_get_pdn(cid, types, apns, &emergency, &active);

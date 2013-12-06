@@ -58,11 +58,13 @@ void esm_main_initialize(esm_indication_callback_t cb)
 {
     LOG_FUNC_IN;
 
+    int i;
+
     /* Total number of active EPS bearer contexts */
     _esm_data.n_ebrs = 0;
     /* List of active PDN connections */
     _esm_data.n_pdns = 0;
-    for (int i = 0; i < ESM_DATA_PDN_MAX + 1; i++) {
+    for (i = 0; i < ESM_DATA_PDN_MAX + 1; i++) {
         _esm_data.pdn[i].pid = -1;
         _esm_data.pdn[i].is_active = FALSE;
         _esm_data.pdn[i].data = NULL;
@@ -135,21 +137,25 @@ void esm_main_cleanup(void)
 {
     LOG_FUNC_IN;
 
-#ifdef NAS_UE
+    int i;
+    int pid;
+    int bid;
+
+    #ifdef NAS_UE
     /* De-activate EPS bearers and clean up PDN connections */
-    for (int pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
+    for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
         if (_esm_data.pdn[pid].data) {
             esm_pdn_t *pdn = _esm_data.pdn[pid].data;
             if (pdn->apn.length > 0) {
                 free(pdn->apn.value);
             }
             /* Release EPS bearer contexts */
-            for (int bid = 0; bid < pdn->n_bearers; bid++) {
+            for (bid = 0; bid < pdn->n_bearers; bid++) {
                 if (pdn->bearer[bid]) {
                     LOG_TRACE(WARNING, "ESM-MAIN  - Release EPS bearer "
                               "context (ebi=%d)", pdn->bearer[bid]->ebi);
                     /* Delete the TFT */
-                    for (int i = 0; i < pdn->bearer[bid]->tft.n_pkfs; i++) {
+                    for (i = 0; i < pdn->bearer[bid]->tft.n_pkfs; i++) {
                         if (pdn->bearer[bid]->tft.pkf[i]) {
                             free(pdn->bearer[bid]->tft.pkf[i]);
                         }

@@ -384,8 +384,10 @@ const char *IdleMode_get_plmn_id(const plmn_t *plmn, int index, size_t *len)
  ***************************************************************************/
 int IdleMode_get_plmn_fullname_index(const char *plmn)
 {
+    int index;
+
     /* Get the index of the PLMN identifier with specified full name */
-    for (int index = 0; index < _emm_plmn_list.n_plmns; index++) {
+    for (index = 0; index < _emm_plmn_list.n_plmns; index++) {
         if ( strncmp(plmn, _emm_plmn_list.param[index].fullname,
                      NET_FORMAT_LONG_SIZE) != 0 ) {
             continue;
@@ -413,8 +415,10 @@ int IdleMode_get_plmn_fullname_index(const char *plmn)
  ***************************************************************************/
 int IdleMode_get_plmn_shortname_index(const char *plmn)
 {
+    int index;
+
     /* Get the index of the PLMN identifier with specified short name */
-    for (int index = 0; index < _emm_plmn_list.n_plmns; index++) {
+    for (index = 0; index < _emm_plmn_list.n_plmns; index++) {
         if ( !strncmp(plmn, _emm_plmn_list.param[index].shortname,
                       NET_FORMAT_SHORT_SIZE) ) {
             continue;
@@ -442,8 +446,10 @@ int IdleMode_get_plmn_shortname_index(const char *plmn)
  ***************************************************************************/
 int IdleMode_get_plmn_id_index(const char *plmn)
 {
+    int index;
+
     /* Get the index of the PLMN identifier with specified numeric identifier */
-    for (int index = 0; index < _emm_plmn_list.n_plmns; index++) {
+    for (index = 0; index < _emm_plmn_list.n_plmns; index++) {
         if ( !strncmp(plmn, _emm_plmn_list.param[index].num,
                       NET_FORMAT_LONG_SIZE) ) {
             continue;
@@ -480,6 +486,7 @@ int emm_proc_initialize(void)
 
     emm_sap_t emm_sap;
     int rc;
+    int i;
 
     if (!_emm_data.usim_is_valid) {
         /* The USIM application is not present or not valid */
@@ -489,7 +496,7 @@ int emm_proc_initialize(void)
         /* The highest priority is given to either the "equivalent PLMNs"
          * if available, or the last registered PLMN */
         if (_emm_data.nvdata.eplmn.n_plmns > 0) {
-            for (int i=0; i < _emm_data.nvdata.eplmn.n_plmns; i++) {
+            for (i=0; i < _emm_data.nvdata.eplmn.n_plmns; i++) {
                 _emm_plmn_list.plmn[_emm_plmn_list.n_plmns++] =
                     &_emm_data.nvdata.eplmn.plmn[i];
             }
@@ -515,14 +522,14 @@ int emm_proc_initialize(void)
 
         /* Each PLMN/access technology combination in the "User
          * Controlled PLMN Selector with Access Technology" */
-        for (int i=0; i < _emm_data.plmn.n_plmns; i++) {
+        for (i=0; i < _emm_data.plmn.n_plmns; i++) {
             _emm_plmn_list.plmn[_emm_plmn_list.n_plmns++] =
                 &_emm_data.plmn.plmn[i];
         }
 
         /* Each PLMN/access technology combination in the "Operator
          * Controlled PLMN Selector with Access Technology" */
-        for (int i=0; i < _emm_data.oplmn.n_plmns; i++) {
+        for (i=0; i < _emm_data.oplmn.n_plmns; i++) {
             _emm_plmn_list.plmn[_emm_plmn_list.n_plmns++] =
                 &_emm_data.oplmn.plmn[i];
         }
@@ -536,7 +543,7 @@ int emm_proc_initialize(void)
         /* TODO: Schedule periodic network selection attemps (hpplmn timer) */
 
         /* Initialize the PLMNs' parameters */
-        for (int i=0; i < _emm_plmn_list.n_plmns; i++) {
+        for (i=0; i < _emm_plmn_list.n_plmns; i++) {
             struct plmn_param_t *plmn = &(_emm_plmn_list.param[i]);
             int id = _IldlMode_get_opnn_id(_emm_plmn_list.plmn[i]);
             if (id < 0) {
@@ -1077,7 +1084,9 @@ static int _IdleMode_plmn_str(char *plmn_str, const plmn_t *plmn)
  ***************************************************************************/
 static int _IldlMode_get_opnn_id(const plmn_t *plmn)
 {
-    for (int i = 0; i < _emm_data.n_opnns; i++) {
+    int i;
+
+    for (i = 0; i < _emm_data.n_opnns; i++) {
         if (plmn->MCCdigit1 != _emm_data.opnn[i].plmn->MCCdigit1) {
             continue;
         }
