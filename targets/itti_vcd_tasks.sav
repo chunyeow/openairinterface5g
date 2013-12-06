@@ -40,37 +40,37 @@ variables.itti_alloc_msg[63:0]
 variables.itti_send_msg[63:0]
 @28
 [color] 2
-+{eNB app} (45)variables.itti_send_msg[63:0]
++{UE NAS} (45)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB X2AP} (46)variables.itti_send_msg[63:0]
++{UE RRC} (46)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB SCTP} (47)variables.itti_send_msg[63:0]
++{UE PDCP} (47)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB S1AP} (48)variables.itti_send_msg[63:0]
++{UE RLC} (48)variables.itti_send_msg[63:0]
 [color] 2
-+{UE NAS} (49)variables.itti_send_msg[63:0]
++{UE MAC} (49)variables.itti_send_msg[63:0]
 [color] 2
-+{BM} (50)variables.itti_send_msg[63:0]
++{UE PHY} (50)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB RRC} (51)variables.itti_send_msg[63:0]
++{eNB app} (51)variables.itti_send_msg[63:0]
 [color] 2
-+{UE RRC} (52)variables.itti_send_msg[63:0]
++{eNB SCTP} (52)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB PHY} (53)variables.itti_send_msg[63:0]
++{eNB X2AP} (53)variables.itti_send_msg[63:0]
 [color] 2
-+{UE PHY} (54)variables.itti_send_msg[63:0]
++{eNB S1AP} (54)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB MAC} (55)variables.itti_send_msg[63:0]
++{eNB RRC} (55)variables.itti_send_msg[63:0]
 [color] 2
-+{UE MAC} (56)variables.itti_send_msg[63:0]
++{eNB PDCP} (56)variables.itti_send_msg[63:0]
 [color] 2
 +{eNB RLC} (57)variables.itti_send_msg[63:0]
 [color] 2
-+{UE RLC} (58)variables.itti_send_msg[63:0]
++{eNB MAC} (58)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB PDCP} (59)variables.itti_send_msg[63:0]
++{eNB PHY} (59)variables.itti_send_msg[63:0]
 [color] 2
-+{UE PDCP} (60)variables.itti_send_msg[63:0]
++{BM} (60)variables.itti_send_msg[63:0]
 [color] 2
 +{L2L1} (61)variables.itti_send_msg[63:0]
 [color] 2
@@ -93,21 +93,21 @@ functions.itti_enqueue_message
 variables.itti_poll_msg[63:0]
 @28
 [color] 6
-+{eNB PHY} (53)variables.itti_poll_msg[63:0]
++{UE PDCP} (47)variables.itti_poll_msg[63:0]
 [color] 6
-+{UE PHY} (54)variables.itti_poll_msg[63:0]
++{UE RLC} (48)variables.itti_poll_msg[63:0]
 [color] 6
-+{eNB MAC} (55)variables.itti_poll_msg[63:0]
++{UE MAC} (49)variables.itti_poll_msg[63:0]
 [color] 6
-+{UE MAC} (56)variables.itti_poll_msg[63:0]
++{UE PHY} (50)variables.itti_poll_msg[63:0]
+[color] 6
++{eNB PDCP} (56)variables.itti_poll_msg[63:0]
 [color] 6
 +{eNB RLC} (57)variables.itti_poll_msg[63:0]
 [color] 6
-+{UE RLC} (58)variables.itti_poll_msg[63:0]
++{eNB MAC} (58)variables.itti_poll_msg[63:0]
 [color] 6
-+{eNB PDCP} (59)variables.itti_poll_msg[63:0]
-[color] 6
-+{UE PDCP} (60)variables.itti_poll_msg[63:0]
++{eNB PHY} (59)variables.itti_poll_msg[63:0]
 [color] 6
 +{L2L1} (61)variables.itti_poll_msg[63:0]
 @1401200
@@ -117,21 +117,21 @@ variables.itti_poll_msg[63:0]
 variables.itti_recv_msg[63:0]
 @28
 [color] 6
-+{eNB app} (45)variables.itti_recv_msg[63:0]
++{UE NAS} (45)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB X2AP} (46)variables.itti_recv_msg[63:0]
++{UE RRC} (46)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB SCTP} (47)variables.itti_recv_msg[63:0]
++{eNB app} (51)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB S1AP} (48)variables.itti_recv_msg[63:0]
++{eNB SCTP} (52)variables.itti_recv_msg[63:0]
 [color] 6
-+{UE NAS} (49)variables.itti_recv_msg[63:0]
++{eNB X2AP} (53)variables.itti_recv_msg[63:0]
 [color] 6
-+{BM} (50)variables.itti_recv_msg[63:0]
++{eNB S1AP} (54)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB RRC} (51)variables.itti_recv_msg[63:0]
++{eNB RRC} (55)variables.itti_recv_msg[63:0]
 [color] 6
-+{UE RRC} (52)variables.itti_recv_msg[63:0]
++{BM} (60)variables.itti_recv_msg[63:0]
 [color] 6
 +{L2L1} (61)variables.itti_recv_msg[63:0]
 @1401200
