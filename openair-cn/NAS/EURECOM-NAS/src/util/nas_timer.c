@@ -20,13 +20,16 @@ Description Timer utilities
 
 #include <pthread.h>
 #include <assert.h>
-#include <signal.h>
 #include <stdint.h>
 
 #include <string.h> // memset
-#include <time.h>   // clock_gettime
-#include <sys/time.h>   // setitimer
 #include <stdlib.h> // malloc, free
+#include <sys/time.h>   // setitimer
+
+#if !defined(EPC_BUILD)
+# include <signal.h>
+# include <time.h>   // clock_gettime
+#endif
 
 #if defined(NAS_MME) && defined(EPC_BUILD)
 # include "intertask_interface.h"
@@ -50,7 +53,9 @@ Description Timer utilities
  * value when the timer entry was allocated.
  */
 typedef struct {
-#if !defined(EPC_BUILD)
+#if defined(EPC_BUILD)
+    long timer_id;          /* Timer id returned by the timer API from ITTI */
+#else
     pthread_t pid;          /* Thread identifier of the callback    */
 #endif
 
@@ -251,6 +256,8 @@ int nas_timer_start(long sec, nas_timer_callback_t cb, void *args)
     if (ret == -1) {
         return NAS_TIMER_INACTIVE_ID;
     }
+
+    te->timer_id = timer_id;
 #endif
 
     return (id);
@@ -568,7 +575,7 @@ static void _nas_timer_db_insert_entry(int id, nas_timer_entry_t *te)
     restart = _nas_timer_db_insert(&_nas_timer_db.tq[id]);
     nas_timer_unlock_db();
 
-#if defined(EPC_BUILD)
+#if !defined(EPC_BUILD)
     if (restart) {
         /* The new entry is the first entry of the list;
          * restart the system timer */
@@ -661,7 +668,8 @@ static nas_timer_entry_t *_nas_timer_db_remove_entry(int id)
         rc = _nas_timer_sub(&_nas_timer_db.head->entry->tv, &tv, &it.it_value);
 
 #if defined(EPC_BUILD)
-        (void)(rc);
+        timer_remove(_nas_timer_db.head->entry->timer_id);
+        (void) (rc);
 #else
         if (rc < 0) {
             /* The system timer should have already expired */
