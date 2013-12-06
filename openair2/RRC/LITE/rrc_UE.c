@@ -330,12 +330,12 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_ITTI_XER_PRINT)
   {
-    MessageDef *message_p;
+    MessageDef *msg_p;
 
-    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_CCCH_MESSAGE);
-    memcpy (&message_p->ittiMsg, (void *) dl_ccch_msg, sizeof(RrcDlCcchMessage));
+    msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_CCCH_MESSAGE);
+    memcpy (&msg_p->ittiMsg, (void *) dl_ccch_msg, sizeof(RrcDlCcchMessage));
 
-    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
   }
 # else
   {
@@ -344,12 +344,12 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_CCCH_Message, (void *)dl_ccch_msg)) > 0)
     {
-      MessageDef *message_p;
+      MessageDef *msg_p;
 
-      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
-      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&msg_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
     }
   }
 # endif
@@ -1352,6 +1352,10 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
   //  asn_dec_rval_t dec_rval;
   // int i;
   u8 target_eNB_index=0xFF;
+#if defined(ENABLE_ITTI)
+  MessageDef *msg_p;
+#endif
+
   if (Srb_id != 1) {
     LOG_E(RRC,"[UE %d] Frame %d: Received message on DL-DCCH (SRB1), should not have ...\n",Mod_id,frame);
     return;
@@ -1379,12 +1383,10 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_ITTI_XER_PRINT)
   {
-    MessageDef *message_p;
+    msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_DCCH_MESSAGE);
+    memcpy (&msg_p->ittiMsg, (void *) dl_dcch_msg, sizeof(RrcDlDcchMessage));
 
-    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_DCCH_MESSAGE);
-    memcpy (&message_p->ittiMsg, (void *) dl_dcch_msg, sizeof(RrcDlDcchMessage));
-
-    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
   }
 # else
   {
@@ -1393,12 +1395,10 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *)dl_dcch_msg)) > 0)
     {
-      MessageDef *message_p;
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&msg_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
-      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
-
-      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
     }
   }
 # endif
@@ -1495,6 +1495,16 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
           break;
 
         case DL_DCCH_MessageType__c1_PR_rrcConnectionRelease:
+            msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CONN_RELEASE_IND);
+            if ((dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.present
+                    == RRCConnectionRelease__criticalExtensions_PR_c1)
+                    && (dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.choice.c1.present
+                            == RRCConnectionRelease__criticalExtensions__c1_PR_rrcConnectionRelease_r8)) {
+                NAS_CONN_RELEASE_IND(msg_p).cause =
+                        dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.releaseCause;
+            }
+
+            itti_send_msg_to_task(TASK_NAS_UE, Mod_id + NB_eNB_INST, msg_p);
           break;
 
         case DL_DCCH_MessageType__c1_PR_securityModeCommand:
@@ -1513,11 +1523,11 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
           break;
 
 #ifdef Rel10
-          case DL_DCCH_MessageType__c1_PR_ueInformationRequest_r9:
+        case DL_DCCH_MessageType__c1_PR_ueInformationRequest_r9:
           break;
-          case DL_DCCH_MessageType__c1_PR_loggedMeasurementConfiguration_r10:
+        case DL_DCCH_MessageType__c1_PR_loggedMeasurementConfiguration_r10:
           break;
-          case DL_DCCH_MessageType__c1_PR_rnReconfiguration_r10:
+        case DL_DCCH_MessageType__c1_PR_rnReconfiguration_r10:
           break;
 #endif
 
@@ -1589,12 +1599,12 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_ITTI_XER_PRINT)
   {
-    MessageDef *message_p;
+    MessageDef *msg_p;
 
-    message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
-    memcpy (&message_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
+    msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
+    memcpy (&msg_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
 
-    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
   }
 # else
   {
@@ -1603,12 +1613,12 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
     {
-      MessageDef *message_p;
+      MessageDef *msg_p;
 
-      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
-      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&msg_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
     }
   }
 # endif
@@ -1865,42 +1875,42 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
       LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB2 params  eNB %d) --->][MAC_UE][MOD %02d][]\n",
             frame, Mod_id, eNB_index, Mod_id);
       rrc_mac_config_req(Mod_id,0,0,eNB_index,
-			 &UE_rrc_inst[Mod_id].sib2[eNB_index]->radioResourceConfigCommon,
-			 (struct PhysicalConfigDedicated *)NULL,
-			 (MeasObjectToAddMod_t **)NULL,
-			 (MAC_MainConfig_t *)NULL,
-			 0,
-			 (struct LogicalChannelConfig *)NULL,
-			 (MeasGapConfig_t *)NULL,
-			 (TDD_Config_t *)NULL,
-			 (MobilityControlInfo_t *)NULL,
-			 NULL,
-			 NULL,
-			 UE_rrc_inst[Mod_id].sib2[eNB_index]->freqInfo.ul_CarrierFreq,
-			 UE_rrc_inst[Mod_id].sib2[eNB_index]->freqInfo.ul_Bandwidth,
-			 &UE_rrc_inst[Mod_id].sib2[eNB_index]->freqInfo.additionalSpectrumEmission,
-			 UE_rrc_inst[Mod_id].sib2[eNB_index]->mbsfn_SubframeConfigList
-#ifdef Rel10	       
-			 ,0,
-			 (MBSFN_AreaInfoList_r9_t *)NULL,
-			 (PMCH_InfoList_r9_t *)NULL
+                         &UE_rrc_inst[Mod_id].sib2[eNB_index]->radioResourceConfigCommon,
+                         (struct PhysicalConfigDedicated *)NULL,
+                         (MeasObjectToAddMod_t **)NULL,
+                         (MAC_MainConfig_t *)NULL,
+                         0,
+                         (struct LogicalChannelConfig *)NULL,
+                         (MeasGapConfig_t *)NULL,
+                         (TDD_Config_t *)NULL,
+                         (MobilityControlInfo_t *)NULL,
+                         NULL,
+                         NULL,
+                         UE_rrc_inst[Mod_id].sib2[eNB_index]->freqInfo.ul_CarrierFreq,
+                         UE_rrc_inst[Mod_id].sib2[eNB_index]->freqInfo.ul_Bandwidth,
+                         &UE_rrc_inst[Mod_id].sib2[eNB_index]->freqInfo.additionalSpectrumEmission,
+                         UE_rrc_inst[Mod_id].sib2[eNB_index]->mbsfn_SubframeConfigList
+#ifdef Rel10
+                         ,0,
+                         (MBSFN_AreaInfoList_r9_t *)NULL,
+                         (PMCH_InfoList_r9_t *)NULL
 #endif
 #ifdef CBA
-			 ,0,
-			 0
+                         ,0,
+                         0
 #endif
-			 );
+                         );
       UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 1;
       // After SI is received, prepare RRCConnectionRequest
 #ifdef Rel10
       if (UE_rrc_inst[Mod_id].MBMS_flag < 3) // see -Q option
 #endif
-	rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
+        rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
       LOG_I(RRC, "not sending connection request\n");
 
       if (UE_rrc_inst[Mod_id].Info[eNB_index].State == RRC_IDLE) {
-	LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);
-	UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_SI_RECEIVED;
+        LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);
+        UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_SI_RECEIVED;
       }
       break;
     case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib3:
@@ -1945,7 +1955,6 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
     case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib12_v920:
       UE_rrc_inst[Mod_id].sib12[eNB_index] = &typeandinfo->choice.sib12_v920;
       LOG_I(RRC,"[RRC][UE %d] Found SIB12 from eNB %d\n",Mod_id,eNB_index);
-
       break;
     case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib13_v920:
       UE_rrc_inst[Mod_id].sib13[eNB_index] = &typeandinfo->choice.sib13_v920;
@@ -1955,31 +1964,31 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
       LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB13 params eNB %d) --->][MAC_UE][MOD %02d][]\n",
             frame, Mod_id, eNB_index, Mod_id);
       rrc_mac_config_req(Mod_id,0,0,eNB_index,
-          (RadioResourceConfigCommonSIB_t *)NULL,
-          (struct PhysicalConfigDedicated *)NULL,
-          (MeasObjectToAddMod_t **)NULL,
-          (MAC_MainConfig_t *)NULL,
-          0,
-          (struct LogicalChannelConfig *)NULL,
-          (MeasGapConfig_t *)NULL,
-          (TDD_Config_t *)NULL,
-          (MobilityControlInfo_t *)NULL,
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          (MBSFN_SubframeConfigList_t *)NULL
-#ifdef Rel10                                 
-          ,0,
-          &UE_rrc_inst[Mod_id].sib13[eNB_index]->mbsfn_AreaInfoList_r9,
-          (PMCH_InfoList_r9_t *)NULL
+                         (RadioResourceConfigCommonSIB_t *)NULL,
+                         (struct PhysicalConfigDedicated *)NULL,
+                         (MeasObjectToAddMod_t **)NULL,
+                         (MAC_MainConfig_t *)NULL,
+                         0,
+                         (struct LogicalChannelConfig *)NULL,
+                         (MeasGapConfig_t *)NULL,
+                         (TDD_Config_t *)NULL,
+                         (MobilityControlInfo_t *)NULL,
+                         NULL,
+                         NULL,
+                         NULL,
+                         NULL,
+                         NULL,
+                         (MBSFN_SubframeConfigList_t *)NULL
+#ifdef Rel10
+                         ,0,
+                         &UE_rrc_inst[Mod_id].sib13[eNB_index]->mbsfn_AreaInfoList_r9,
+                         (PMCH_InfoList_r9_t *)NULL
 #endif
 #ifdef CBA
-          ,0,
-          0
+                         ,0,
+                         0
 #endif
-      );
+                         );
       UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 1;
       break;
 #endif
@@ -2003,20 +2012,20 @@ void ue_meas_filtering(u8 Mod_id,u32 frame,u8 eNB_index){
   if(UE_rrc_inst[Mod_id].QuantityConfig[0] != NULL) { // Only consider 1 serving cell (index: 0)
     if (UE_rrc_inst[Mod_id].QuantityConfig[0]->quantityConfigEUTRA != NULL) {
       if(UE_rrc_inst[Mod_id].QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRP != NULL) {
-	for (eNB_offset = 0;eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id);eNB_offset++) {
-	  //filter_factor = 1/power(2,*UE_rrc_inst[Mod_id].QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRP/4);
-	  // LOG_N(RRC,"[UE %d] Frame %d : check proper operation in abstraction mode rsrp (%d), rx gain (%d) N_RB_DL (%d)\n",
-	  //	Mod_id,frame,mac_xface->get_RSRP(Mod_id,eNB_offset),mac_xface->get_rx_total_gain_dB(Mod_id),mac_xface->lte_frame_parms->N_RB_DL);
-	  UE_rrc_inst[Mod_id].rsrp_db[eNB_offset] = (dB_fixed_times10(mac_xface->get_RSRP(Mod_id,eNB_offset))/10.0)-mac_xface->get_rx_total_gain_dB(Mod_id)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12);
-	  UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset] = (1.0-a)*UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset] +  a*UE_rrc_inst[Mod_id].rsrp_db[eNB_offset];
-	  //mac_xface->set_RSRP_filtered(Mod_id,eNB_offset,UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset]);
-	  
-	  LOG_D(RRC,"[UE %d] Frame %d: Meas RSRP: eNB_offset: %d rsrp_coef: %3.2f filter_coef: %d before L3 filtering: rsrp: %3.1f after L3 filtering: rsrp: %3.1f \n ",
-		Mod_id, frame, eNB_offset,a,
-		*UE_rrc_inst->QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRP,
-		UE_rrc_inst[Mod_id].rsrp_db[eNB_offset],
-		UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset]);
-	}
+        for (eNB_offset = 0;eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id);eNB_offset++) {
+          //filter_factor = 1/power(2,*UE_rrc_inst[Mod_id].QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRP/4);
+          // LOG_N(RRC,"[UE %d] Frame %d : check proper operation in abstraction mode rsrp (%d), rx gain (%d) N_RB_DL (%d)\n",
+          //	Mod_id,frame,mac_xface->get_RSRP(Mod_id,eNB_offset),mac_xface->get_rx_total_gain_dB(Mod_id),mac_xface->lte_frame_parms->N_RB_DL);
+          UE_rrc_inst[Mod_id].rsrp_db[eNB_offset] = (dB_fixed_times10(mac_xface->get_RSRP(Mod_id,eNB_offset))/10.0)-mac_xface->get_rx_total_gain_dB(Mod_id)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12);
+          UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset] = (1.0-a)*UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset] +  a*UE_rrc_inst[Mod_id].rsrp_db[eNB_offset];
+          //mac_xface->set_RSRP_filtered(Mod_id,eNB_offset,UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset]);
+
+          LOG_D(RRC,"[UE %d] Frame %d: Meas RSRP: eNB_offset: %d rsrp_coef: %3.2f filter_coef: %d before L3 filtering: rsrp: %3.1f after L3 filtering: rsrp: %3.1f \n ",
+            Mod_id, frame, eNB_offset,a,
+            *UE_rrc_inst->QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRP,
+            UE_rrc_inst[Mod_id].rsrp_db[eNB_offset],
+            UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset]);
+        }
       }
     }
     else {
@@ -2028,26 +2037,26 @@ void ue_meas_filtering(u8 Mod_id,u32 frame,u8 eNB_index){
     }
     if (UE_rrc_inst[Mod_id].QuantityConfig[0]->quantityConfigEUTRA != NULL) {
       if(UE_rrc_inst[Mod_id].QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRQ != NULL) {
-	for (eNB_offset = 0;eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id);eNB_offset++) {
-	  // LOG_N(RRC,"[UE %d] Frame %d : check if this operation workes properly in abstraction mode\n",Mod_id,frame);
-	  UE_rrc_inst[Mod_id].rsrq_db[eNB_offset] = (10*log10(mac_xface->get_RSRQ(Mod_id,eNB_offset)))-20;
-	  UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset]=(1-a1)*UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset] + a1 *UE_rrc_inst[Mod_id].rsrq_db[eNB_offset];
-	  //mac_xface->set_RSRP_filtered(Mod_id,eNB_offset,UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset]);
-	  /*
-	  LOG_D(RRC,"[UE %d] meas RSRQ: eNB_offset: %d rsrq_coef: %3.2f filter_coef: %d before L3 filtering: rsrq: %3.1f after L3 filtering: rsrq: %3.1f \n ",
-		Mod_id, eNB_offset,
-		a1,
-		*UE_rrc_inst->QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRQ,
-		mac_xface->get_RSRQ(Mod_id,eNB_offset),
-		UE_rrc_inst[Mod_id].rsrq_db[eNB_offset],
-		UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset]);
-	  */
-	}
+        for (eNB_offset = 0;eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id);eNB_offset++) {
+          // LOG_N(RRC,"[UE %d] Frame %d : check if this operation workes properly in abstraction mode\n",Mod_id,frame);
+          UE_rrc_inst[Mod_id].rsrq_db[eNB_offset] = (10*log10(mac_xface->get_RSRQ(Mod_id,eNB_offset)))-20;
+          UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset]=(1-a1)*UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset] + a1 *UE_rrc_inst[Mod_id].rsrq_db[eNB_offset];
+          //mac_xface->set_RSRP_filtered(Mod_id,eNB_offset,UE_rrc_inst[Mod_id].rsrp_db_filtered[eNB_offset]);
+          /*
+          LOG_D(RRC,"[UE %d] meas RSRQ: eNB_offset: %d rsrq_coef: %3.2f filter_coef: %d before L3 filtering: rsrq: %3.1f after L3 filtering: rsrq: %3.1f \n ",
+            Mod_id, eNB_offset,
+            a1,
+            *UE_rrc_inst->QuantityConfig[0]->quantityConfigEUTRA->filterCoefficientRSRQ,
+            mac_xface->get_RSRQ(Mod_id,eNB_offset),
+            UE_rrc_inst[Mod_id].rsrq_db[eNB_offset],
+            UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset]);
+          */
+        }
       }
     }
     else{
       for (eNB_offset = 0;eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id);eNB_offset++) {
-	UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset]= mac_xface->get_RSRQ(Mod_id,eNB_offset);
+          UE_rrc_inst[Mod_id].rsrq_db_filtered[eNB_offset]= mac_xface->get_RSRQ(Mod_id,eNB_offset);
       }
     } 
   }
@@ -2123,71 +2132,71 @@ void ue_measurement_report_triggering(u8 Mod_id, u32 frame,u8 eNB_index) {
   for(i=0 ; i<NB_CNX_UE ; i++) {
     for(j=0 ; j<MAX_MEAS_ID ; j++) {
       if(UE_rrc_inst[Mod_id].MeasId[i][j] != NULL) {
-	measObjId = UE_rrc_inst[Mod_id].MeasId[i][j]->measObjectId;
-	reportConfigId = UE_rrc_inst[Mod_id].MeasId[i][j]->reportConfigId;
-	if( /*UE_rrc_inst[Mod_id].MeasId[i][j] != NULL && */ UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1] != NULL) {
-	  if(UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1]->measObject.present == MeasObjectToAddMod__measObject_PR_measObjectEUTRA) {
-	    /* consider any neighboring cell detected on the associated frequency to be
-	     * applicable when the concerned cell is not included in the blackCellsToAddModList
-	     * defined within the VarMeasConfig for this measId */
-	    //    LOG_I(RRC,"event %d %d %p \n", measObjId,reportConfigId, UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]);
-	    if((UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1] != NULL) &&
-	       (UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.present==ReportConfigToAddMod__reportConfig_PR_reportConfigEUTRA) &&
-	       (UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.present == ReportConfigEUTRA__triggerType_PR_event)) {
-	      hys = UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.hysteresis;
-	      //LOG_N(RRC,"[UE%d] Frame %d Check below lines for segfault :), Fix me \n",Mod_id, frame);
-	      ttt_ms = timeToTrigger_ms[UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.timeToTrigger];
-	      // Freq specific offset of neighbor cell freq
-	      ofn = ((UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq != NULL) ? 
-		     *UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq : 15); //  /* 15 is the Default */
-	      // cellIndividualOffset of neighbor cell - not defined yet
-	      ocn = 0;
-	      a3_offset = UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.eventId.choice.eventA3.a3_Offset;
-	      
-	      switch (UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.eventId.present) {
-	      case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA1:
-		LOG_D(RRC,"[UE %d] Frame %d : A1 event: check if serving becomes better than threshold\n",Mod_id, frame);
-		break;
-	      case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA2:
-		LOG_D(RRC,"[UE %d] Frame %d : A2 event, check if serving becomes worse than a threshold\n",Mod_id, frame);
-		break;
-	      case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA3:
-		LOG_D(RRC,"[UE %d] Frame %d : A3 event: check if a neighboring cell becomes offset better than serving to trigger a measurement event \n",Mod_id, frame);
-		if ((check_trigger_meas_event(Mod_id,frame,eNB_index,i,j,ofn,ocn,hys,ofs,ocs,a3_offset,ttt_ms)) && 
-		    (UE_rrc_inst[Mod_id].Info[0].State >= RRC_CONNECTED) && 
-		    (UE_rrc_inst[Mod_id].Info[0].T304_active == 0 )      && 
-		    (UE_rrc_inst[Mod_id].HandoverInfoUe.measFlag == 1)) {
-		  //trigger measurement reporting procedure (36.331, section 5.5.5)
-		  if (UE_rrc_inst[Mod_id].measReportList[i][j] == NULL) {
-		    UE_rrc_inst[Mod_id].measReportList[i][j] = malloc(sizeof(MEAS_REPORT_LIST));
-		  }
-		  UE_rrc_inst[Mod_id].measReportList[i][j]->measId = UE_rrc_inst[Mod_id].MeasId[i][j]->measId;
-		  UE_rrc_inst[Mod_id].measReportList[i][j]->numberOfReportsSent = 0;
-		  rrc_ue_generate_MeasurementReport(Mod_id,frame,eNB_index);
-		  UE_rrc_inst[Mod_id].HandoverInfoUe.measFlag = 1;
-		  LOG_I(RRC,"[UE %d] Frame %d: A3 event detected, state: %d \n", Mod_id, frame, UE_rrc_inst[Mod_id].Info[0].State);
-		}
-		else {
-		  if(UE_rrc_inst[Mod_id].measReportList[i][j] != NULL){
-		    free(UE_rrc_inst[Mod_id].measReportList[i][j]);
-		  }
-		  UE_rrc_inst[Mod_id].measReportList[i][j] = NULL;
-		}
-		break;
-	      case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA4:
-		LOG_D(RRC,"[UE %d] Frame %d : received an A4 event, neighbor becomes offset better than a threshold\n",Mod_id, frame);
-		break;
-	      case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA5:
-		LOG_D(RRC,"[UE %d] Frame %d: received an A5 event, serving becomes worse than threshold 1 and neighbor becomes better than threshold 2\n",Mod_id, frame);
-		break;
-	      default:
-		LOG_D(RRC,"Invalid ReportConfigEUTRA__triggerType__event__eventId: %d", 
-		      UE_rrc_inst[Mod_id].ReportConfig[i][j]->reportConfig.choice.reportConfigEUTRA.triggerType.present);
-		break;
-	      }
-	    }
-	  }
-	}
+        measObjId = UE_rrc_inst[Mod_id].MeasId[i][j]->measObjectId;
+        reportConfigId = UE_rrc_inst[Mod_id].MeasId[i][j]->reportConfigId;
+        if( /*UE_rrc_inst[Mod_id].MeasId[i][j] != NULL && */ UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1] != NULL) {
+          if(UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1]->measObject.present == MeasObjectToAddMod__measObject_PR_measObjectEUTRA) {
+            /* consider any neighboring cell detected on the associated frequency to be
+             * applicable when the concerned cell is not included in the blackCellsToAddModList
+             * defined within the VarMeasConfig for this measId */
+            //    LOG_I(RRC,"event %d %d %p \n", measObjId,reportConfigId, UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]);
+            if((UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1] != NULL) &&
+               (UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.present==ReportConfigToAddMod__reportConfig_PR_reportConfigEUTRA) &&
+               (UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.present == ReportConfigEUTRA__triggerType_PR_event)) {
+              hys = UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.hysteresis;
+              //LOG_N(RRC,"[UE%d] Frame %d Check below lines for segfault :), Fix me \n",Mod_id, frame);
+              ttt_ms = timeToTrigger_ms[UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.timeToTrigger];
+              // Freq specific offset of neighbor cell freq
+              ofn = ((UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq != NULL) ?
+                 *UE_rrc_inst[Mod_id].MeasObj[i][measObjId-1]->measObject.choice.measObjectEUTRA.offsetFreq : 15); //  /* 15 is the Default */
+              // cellIndividualOffset of neighbor cell - not defined yet
+              ocn = 0;
+              a3_offset = UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.eventId.choice.eventA3.a3_Offset;
+
+              switch (UE_rrc_inst[Mod_id].ReportConfig[i][reportConfigId-1]->reportConfig.choice.reportConfigEUTRA.triggerType.choice.event.eventId.present) {
+              case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA1:
+            LOG_D(RRC,"[UE %d] Frame %d : A1 event: check if serving becomes better than threshold\n",Mod_id, frame);
+            break;
+              case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA2:
+            LOG_D(RRC,"[UE %d] Frame %d : A2 event, check if serving becomes worse than a threshold\n",Mod_id, frame);
+            break;
+              case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA3:
+            LOG_D(RRC,"[UE %d] Frame %d : A3 event: check if a neighboring cell becomes offset better than serving to trigger a measurement event \n",Mod_id, frame);
+            if ((check_trigger_meas_event(Mod_id,frame,eNB_index,i,j,ofn,ocn,hys,ofs,ocs,a3_offset,ttt_ms)) &&
+                (UE_rrc_inst[Mod_id].Info[0].State >= RRC_CONNECTED) &&
+                (UE_rrc_inst[Mod_id].Info[0].T304_active == 0 )      &&
+                (UE_rrc_inst[Mod_id].HandoverInfoUe.measFlag == 1)) {
+              //trigger measurement reporting procedure (36.331, section 5.5.5)
+              if (UE_rrc_inst[Mod_id].measReportList[i][j] == NULL) {
+                UE_rrc_inst[Mod_id].measReportList[i][j] = malloc(sizeof(MEAS_REPORT_LIST));
+              }
+              UE_rrc_inst[Mod_id].measReportList[i][j]->measId = UE_rrc_inst[Mod_id].MeasId[i][j]->measId;
+              UE_rrc_inst[Mod_id].measReportList[i][j]->numberOfReportsSent = 0;
+              rrc_ue_generate_MeasurementReport(Mod_id,frame,eNB_index);
+              UE_rrc_inst[Mod_id].HandoverInfoUe.measFlag = 1;
+              LOG_I(RRC,"[UE %d] Frame %d: A3 event detected, state: %d \n", Mod_id, frame, UE_rrc_inst[Mod_id].Info[0].State);
+            }
+            else {
+              if(UE_rrc_inst[Mod_id].measReportList[i][j] != NULL){
+                free(UE_rrc_inst[Mod_id].measReportList[i][j]);
+              }
+              UE_rrc_inst[Mod_id].measReportList[i][j] = NULL;
+            }
+            break;
+              case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA4:
+            LOG_D(RRC,"[UE %d] Frame %d : received an A4 event, neighbor becomes offset better than a threshold\n",Mod_id, frame);
+            break;
+              case ReportConfigEUTRA__triggerType__event__eventId_PR_eventA5:
+            LOG_D(RRC,"[UE %d] Frame %d: received an A5 event, serving becomes worse than threshold 1 and neighbor becomes better than threshold 2\n",Mod_id, frame);
+            break;
+              default:
+            LOG_D(RRC,"Invalid ReportConfigEUTRA__triggerType__event__eventId: %d",
+                  UE_rrc_inst[Mod_id].ReportConfig[i][j]->reportConfig.choice.reportConfigEUTRA.triggerType.present);
+            break;
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -2195,13 +2204,13 @@ void ue_measurement_report_triggering(u8 Mod_id, u32 frame,u8 eNB_index) {
 
 //check_trigger_meas_event(Mod_id, frame, eNB_index, i,j,ofn,ocn,hys,ofs,ocs,a3_offset,ttt_ms)
 u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, u8 meas_index, 
-			    Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys, 
-			    Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt) {
+                            Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
+                            Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt) {
   u8 eNB_offset;
   u8 currentCellIndex = mac_xface->lte_frame_parms->Nid_cell;
   
   LOG_I(RRC,"ofn(%d) ocn(%d) hys(%d) ofs(%d) ocs(%d) a3_offset(%d) ttt(%d) rssi %3.1f\n", \
-	ofn,ocn,hys,ofs,ocs,a3_offset,ttt,10*log10(mac_xface->get_RSSI(Mod_id))-mac_xface->get_rx_total_gain_dB(Mod_id));
+        ofn,ocn,hys,ofs,ocs,a3_offset,ttt,10*log10(mac_xface->get_RSSI(Mod_id))-mac_xface->get_rx_total_gain_dB(Mod_id));
   
   //  for (eNB_offset = 0;(eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id))&& (eNB_offset!=eNB_index);eNB_offset++) {
   for (eNB_offset = 1;(eNB_offset<1+mac_xface->get_n_adj_cells(Mod_id));eNB_offset++) {
@@ -2219,10 +2228,10 @@ u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, 
     if (UE_rrc_inst->measTimer[ue_cnx_index][meas_index][eNB_offset-1] >= ttt) {
       UE_rrc_inst->HandoverInfoUe.targetCellId = get_adjacent_cell_id(Mod_id,eNB_offset-1); //check this!
       LOG_D(RRC,"[UE %d] Frame %d eNB %d: Handover triggered: targetCellId: %d currentCellId: %d eNB_offset: %d rsrp source: %3.1f rsrp target: %3.1f\n", \
-	    Mod_id, frame, eNB_index, 
-	    UE_rrc_inst->HandoverInfoUe.targetCellId,ue_cnx_index,eNB_offset,
-	    (dB_fixed_times10(UE_rrc_inst[Mod_id].rsrp_db[0])/10.0)-mac_xface->get_rx_total_gain_dB(Mod_id)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12),
-	    (dB_fixed_times10(UE_rrc_inst[Mod_id].rsrp_db[eNB_offset])/10.0)-mac_xface->get_rx_total_gain_dB(Mod_id)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12));
+            Mod_id, frame, eNB_index,
+            UE_rrc_inst->HandoverInfoUe.targetCellId,ue_cnx_index,eNB_offset,
+            (dB_fixed_times10(UE_rrc_inst[Mod_id].rsrp_db[0])/10.0)-mac_xface->get_rx_total_gain_dB(Mod_id)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12),
+            (dB_fixed_times10(UE_rrc_inst[Mod_id].rsrp_db[eNB_offset])/10.0)-mac_xface->get_rx_total_gain_dB(Mod_id)-dB_fixed(mac_xface->lte_frame_parms->N_RB_DL*12));
       UE_rrc_inst->Info[0].handoverTarget = eNB_offset;
       return 1;
     }
@@ -2244,10 +2253,10 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,
   }
   else {
     dec_rval = uper_decode_complete(NULL,
-				     &asn_DEF_MCCH_Message,
-				     (void **)&mcch,
-				     (const void *)Sdu,
-				     Sdu_len);
+                                    &asn_DEF_MCCH_Message,
+                                    (void **)&mcch,
+                                    (const void *)Sdu,
+                                    Sdu_len);
     if ((dec_rval.code != RC_OK) && (dec_rval.consumed==0)) {
       LOG_E(RRC,"[UE %d] Failed to decode MCCH__MESSAGE (%d bits)\n",Mod_id,dec_rval.consumed);
       //free the memory
@@ -2261,13 +2270,13 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,
     if (mcch->message.present == MCCH_MessageType_PR_c1) {
       LOG_D(RRC,"[UE %d] Found mcch message \n",Mod_id);
       if(mcch->message.choice.c1.present == MCCH_MessageType__c1_PR_mbsfnAreaConfiguration_r9) {
-	/*	
-	memcpy((void*)*mcch_message,
-	       (void*)&mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9,
-	       sizeof(MBSFNAreaConfiguration_r9_t)); */
-	*mcch_message = &mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9;
-	LOG_I(RRC,"[UE %d] Frame %d : Found MBSFNAreaConfiguration from eNB %d \n",Mod_id, frame, eNB_index);
-	decode_MBSFNAreaConfiguration(Mod_id,eNB_index,frame, mbsfn_sync_area);
+        /*
+        memcpy((void*)*mcch_message,
+               (void*)&mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9,
+               sizeof(MBSFNAreaConfiguration_r9_t)); */
+        *mcch_message = &mcch->message.choice.c1.choice.mbsfnAreaConfiguration_r9;
+        LOG_I(RRC,"[UE %d] Frame %d : Found MBSFNAreaConfiguration from eNB %d \n",Mod_id, frame, eNB_index);
+        decode_MBSFNAreaConfiguration(Mod_id,eNB_index,frame, mbsfn_sync_area);
 
       }
     }
@@ -2280,58 +2289,58 @@ void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_s
 	Mod_id, frame, mbsfn_sync_area, UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
   //  store to MAC/PHY necessary parameters for receiving MTCHs
   rrc_mac_config_req(Mod_id,0,0,eNB_index,
-		     (RadioResourceConfigCommonSIB_t *)NULL,
-		     (struct PhysicalConfigDedicated *)NULL,
-		     (MeasObjectToAddMod_t **)NULL,
-		     (MAC_MainConfig_t *)NULL,
-		     0,
-		     (struct LogicalChannelConfig *)NULL,
-		     (MeasGapConfig_t *)NULL,
-		     (TDD_Config_t *)NULL,
-		     (MobilityControlInfo_t *)NULL,
-		     NULL,
-		     NULL,
-		     NULL,
-		     NULL,
-		     NULL,
-		     (MBSFN_SubframeConfigList_t *)NULL
+                     (RadioResourceConfigCommonSIB_t *)NULL,
+                     (struct PhysicalConfigDedicated *)NULL,
+                     (MeasObjectToAddMod_t **)NULL,
+                     (MAC_MainConfig_t *)NULL,
+                     0,
+                     (struct LogicalChannelConfig *)NULL,
+                     (MeasGapConfig_t *)NULL,
+                     (TDD_Config_t *)NULL,
+                     (MobilityControlInfo_t *)NULL,
+                     NULL,
+                     NULL,
+                     NULL,
+                     NULL,
+                     NULL,
+                     (MBSFN_SubframeConfigList_t *)NULL
 #ifdef Rel10	       
-		     ,
-		     0,
-		     (MBSFN_AreaInfoList_r9_t *)NULL,
-		     &UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9
+                     ,
+                     0,
+                     (MBSFN_AreaInfoList_r9_t *)NULL,
+                     &UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9
 #endif
 #ifdef CBA
-		     ,
-		     0,
-		     0
+                     ,
+                     0,
+                     0
 #endif
-		     );
+                     );
 
   UE_rrc_inst[Mod_id].Info[eNB_index].MCCHStatus[mbsfn_sync_area] = 1;
   
   // Config Radio Bearer for MBMS user data (similar way to configure for eNB side in init_MBMS function)
   rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frame,0,eNB_index,
-			   NULL, // SRB_ToAddModList
-			   NULL, // DRB_ToAddModList
-			   (DRB_ToReleaseList_t*)NULL,
-			   0, // security mode
-			   NULL, // key rrc encryption
-			   NULL, // key rrc integrity
-			   NULL // key encryption
+                           NULL, // SRB_ToAddModList
+                           NULL, // DRB_ToAddModList
+                           (DRB_ToReleaseList_t*)NULL,
+                           0, // security mode
+                           NULL, // key rrc encryption
+                           NULL, // key rrc integrity
+                           NULL // key encryption
 #ifdef Rel10
-			   ,&(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9)
+                           ,&(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9)
 #endif
-			   );
-    
+                           );
+
   rrc_rlc_config_asn1_req(NB_eNB_INST+Mod_id, frame,0,eNB_index,
-			  NULL,// SRB_ToAddModList
-			  NULL,// DRB_ToAddModList
-			  NULL,// DRB_ToReleaseList
+                          NULL,// SRB_ToAddModList
+                          NULL,// DRB_ToAddModList
+                          NULL,// DRB_ToReleaseList
 #ifdef Rel10
-			  &(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9)
+                          &(UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9)
 #endif 
-			  );
+                          );
   // */
   
 }
@@ -2441,6 +2450,20 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       /* NAS messages */
+      case NAS_CELL_SELECTION_REQ:
+          LOG_I(RRC, "[UE %d] Received %s: plmnID %d, rat %x\n", Mod_id, msg_name, NAS_CELL_SELECTION_REQ (msg_p).plmnID,
+                NAS_CELL_SELECTION_REQ (msg_p).rat);
+
+          /* TODO process message */
+          break;
+
+      case NAS_CONN_ESTABLI_REQ:
+          LOG_I(RRC, "[UE %d] Received %s: cause %d, type %d, s_tmsi %d, plmnID %d\n", Mod_id, msg_name, NAS_CONN_ESTABLI_REQ (msg_p).cause,
+                NAS_CONN_ESTABLI_REQ (msg_p).type, NAS_CONN_ESTABLI_REQ (msg_p).s_tmsi, NAS_CONN_ESTABLI_REQ (msg_p).plmnID);
+
+          /* TODO process message */
+          break;
+
       case NAS_UPLINK_DATA_REQ:
       {
         uint32_t length;
