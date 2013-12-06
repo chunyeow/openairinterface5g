@@ -1495,16 +1495,18 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
           break;
 
         case DL_DCCH_MessageType__c1_PR_rrcConnectionRelease:
-            msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CONN_RELEASE_IND);
-            if ((dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.present
-                    == RRCConnectionRelease__criticalExtensions_PR_c1)
-                    && (dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.choice.c1.present
-                            == RRCConnectionRelease__criticalExtensions__c1_PR_rrcConnectionRelease_r8)) {
-                NAS_CONN_RELEASE_IND(msg_p).cause =
-                        dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.releaseCause;
-            }
+#if defined(ENABLE_ITTI)
+          msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CONN_RELEASE_IND);
+          if ((dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.present
+                  == RRCConnectionRelease__criticalExtensions_PR_c1)
+                  && (dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.choice.c1.present
+                          == RRCConnectionRelease__criticalExtensions__c1_PR_rrcConnectionRelease_r8)) {
+              NAS_CONN_RELEASE_IND(msg_p).cause =
+                      dl_dcch_msg->message.choice.c1.choice.rrcConnectionRelease.criticalExtensions.choice.c1.choice.rrcConnectionRelease_r8.releaseCause;
+          }
 
-            itti_send_msg_to_task(TASK_NAS_UE, Mod_id + NB_eNB_INST, msg_p);
+          itti_send_msg_to_task(TASK_NAS_UE, Mod_id + NB_eNB_INST, msg_p);
+#endif
           break;
 
         case DL_DCCH_MessageType__c1_PR_securityModeCommand:
