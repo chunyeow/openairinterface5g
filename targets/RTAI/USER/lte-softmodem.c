@@ -605,7 +605,7 @@ static void *eNB_thread(void *arg)
           LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
           slot++;
           if (frame > 0) {
-            exit_fun(NULL);
+            exit_fun("[HW][eNB] missed slot");
           }
           if (slot==20){
             slot=0;
@@ -631,7 +631,7 @@ static void *eNB_thread(void *arg)
             if (delay_cnt == 10)
               {
                 LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
-                exit_fun(NULL);
+                exit_fun("[HW][eNB] HW stopped");
               }
             mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
             if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
@@ -820,73 +820,73 @@ static void *UE_thread(void *arg)
       hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15; //the slot the hw is about to store
       
       if (is_synchronized) {
-	//this is the mbox counter that indicates the start of the frame
-	rx_offset_mbox = (PHY_vars_UE_g[0]->rx_offset * 150) / (10*PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti); 
-	//this is the mbox counter where we should be 
-	mbox_target = (((((slot+1)%20)*15+1)>>1) + rx_offset_mbox + 1)%150;
-	// round up to the next multiple of two (mbox counter from express MIMO gives only even numbers)
-	mbox_target = ((mbox_target+1)-((mbox_target-1)%2))%150;
-	//this is the mbox counter where we are
-	mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-	//this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
-	if ((mbox_current>=120) && (mbox_target<30)) //handle the frame wrap-arround
-	  diff2 = 150-mbox_current+mbox_target;
-	else if ((mbox_current<30) && (mbox_target>=120))
-	  diff2 = -150+mbox_target-mbox_current;
-	else
-	  diff2 = mbox_target - mbox_current;
-	
-	if (diff2 <(-7)) {
-	  LOG_D(HW,"UE Frame %d: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, slot, hw_slot, diff2);
-	  if (frame>0)	  
-            exit_fun(NULL);
-	  slot++;
-	  if (slot==20) {
-	    slot=0;
-	    frame++;
-	  }
-	  continue;
-	}
-	if (diff2>8) 
-	  LOG_D(HW,"UE Frame %d: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, slot, hw_slot, mbox_current, mbox_target, diff2);
-	
-	/*
-	  if (frame%100==0)
-	  LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, rx_offset_mbox %d, mbox_target %d, mbox_current %d, diff %d\n",frame, PHY_vars_UE_g[0]->frame, slot,hw_slot,rx_offset_mbox,mbox_target,mbox_current,diff2);
-	*/
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
-	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff2);
+        //this is the mbox counter that indicates the start of the frame
+        rx_offset_mbox = (PHY_vars_UE_g[0]->rx_offset * 150) / (10*PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti);
+        //this is the mbox counter where we should be
+        mbox_target = (((((slot+1)%20)*15+1)>>1) + rx_offset_mbox + 1)%150;
+        // round up to the next multiple of two (mbox counter from express MIMO gives only even numbers)
+        mbox_target = ((mbox_target+1)-((mbox_target-1)%2))%150;
+        //this is the mbox counter where we are
+        mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+        //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
+        if ((mbox_current>=120) && (mbox_target<30)) //handle the frame wrap-arround
+          diff2 = 150-mbox_current+mbox_target;
+        else if ((mbox_current<30) && (mbox_target>=120))
+          diff2 = -150+mbox_target-mbox_current;
+        else
+          diff2 = mbox_target - mbox_current;
 
-	delay_cnt = 0;
-	while ((diff2>0) && (!oai_exit) && (is_synchronized) )
-	  {
-	    time_in = rt_get_time_ns();
-	    //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d (%d), diff %d, time %llu\n",frame,delay_cnt,hw_slot,((volatile unsigned int *)DAQ_MBOX)[0],slot,mbox_target,diff2,time_in);
-	    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
-	    ret = rt_sleep_ns(diff2*DAQ_PERIOD); 
-	    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
-	    if (ret)
-	      LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
-	    
-	    hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-	    //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
-	    delay_cnt++;
-	    if (delay_cnt == 30)
-	      {
-		LOG_D(HW,"UE frame %d: HW stopped ... \n",frame);
-                exit_fun(NULL);
-	      }
-	    mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-	    if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
-	      diff2 = 150-mbox_current+mbox_target;
-	    else if ((mbox_current<15) && (mbox_target>=135))
-	      diff2 = -150+mbox_target-mbox_current;
-	    else
-	      diff2 = mbox_target - mbox_current;
+        if (diff2 <(-7)) {
+          LOG_D(HW,"UE Frame %d: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, slot, hw_slot, diff2);
+          if (frame>0)
+            exit_fun("[HW][UE] missed slot");
+          slot++;
+          if (slot==20) {
+            slot=0;
+            frame++;
+          }
+          continue;
+        }
+        if (diff2>8)
+          LOG_D(HW,"UE Frame %d: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, slot, hw_slot, mbox_current, mbox_target, diff2);
 
-	    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
-	    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff2);
- 	  }
+        /*
+          if (frame%100==0)
+          LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, rx_offset_mbox %d, mbox_target %d, mbox_current %d, diff %d\n",frame, PHY_vars_UE_g[0]->frame, slot,hw_slot,rx_offset_mbox,mbox_target,mbox_current,diff2);
+        */
+        vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
+        vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff2);
+
+        delay_cnt = 0;
+        while ((diff2>0) && (!oai_exit) && (is_synchronized) )
+          {
+            time_in = rt_get_time_ns();
+            //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d (%d), diff %d, time %llu\n",frame,delay_cnt,hw_slot,((volatile unsigned int *)DAQ_MBOX)[0],slot,mbox_target,diff2,time_in);
+            vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
+            ret = rt_sleep_ns(diff2*DAQ_PERIOD);
+            vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
+            if (ret)
+              LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
+
+            hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+            //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
+            delay_cnt++;
+            if (delay_cnt == 30)
+              {
+                LOG_D(HW,"UE frame %d: HW stopped ... \n",frame);
+                exit_fun("[HW][UE] HW stopped");
+              }
+            mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+            if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+              diff2 = 150-mbox_current+mbox_target;
+            else if ((mbox_current<15) && (mbox_target>=135))
+              diff2 = -150+mbox_target-mbox_current;
+            else
+              diff2 = mbox_target - mbox_current;
+
+            vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
+            vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff2);
+          }
 	
       }
 
@@ -942,7 +942,7 @@ static void *UE_thread(void *arg)
                  PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*sizeof(int));
               */
             if (mode == rx_calib_ue) {
-                exit_fun(NULL);
+                exit_fun("[HW][UE] UE in RX calibration mode");
               }
               else {
                 is_synchronized = 1;
@@ -1600,10 +1600,10 @@ int main(int argc, char **argv) {
     g_otg->num_nodes = 2;
     for (i=0; i<g_otg->num_nodes; i++){
       for (j=0; j<g_otg->num_nodes; j++){ 
-	g_otg->application_idx[i][j] = 1;
-	//g_otg->packet_gen_type=SUBSTRACT_STRING;
-	g_otg->aggregation_level[i][j][0]=1;
-	g_otg->application_type[i][j][0] = BCBR; //MCBR, BCBR
+        g_otg->application_idx[i][j] = 1;
+        //g_otg->packet_gen_type=SUBSTRACT_STRING;
+        g_otg->aggregation_level[i][j][0]=1;
+        g_otg->application_type[i][j][0] = BCBR; //MCBR, BCBR
       }
     }
     init_predef_traffic(UE_flag ? 1 : 0, UE_flag ? 0 : 1);
@@ -1626,8 +1626,8 @@ int main(int argc, char **argv) {
       printf("Setting UE buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms->samples_per_tti*10; i++)
-	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-	  PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
+        for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+          PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
 
       //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;      
   }
@@ -1641,14 +1641,14 @@ int main(int argc, char **argv) {
             for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
               PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
 
-	  // Set the last OFDM symbol of subframe 4 to TX to allow enough time for switch to settle
-	  // (that's ok since the last symbol can be configured as SRS)
-	  /*
+          // Set the last OFDM symbol of subframe 4 to TX to allow enough time for switch to settle
+          // (that's ok since the last symbol can be configured as SRS)
+          /*
           for (i=frame_parms->samples_per_tti*5-0*(frame_parms->ofdm_symbol_size+frame_parms->nb_prefix_samples); 
-	       i<frame_parms->samples_per_tti*5; i++)
+               i<frame_parms->samples_per_tti*5; i++)
             for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
               PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x0; 
-	  */
+          */
         }
       else {
           printf("Setting eNB buffer to fs/4 test signal\n");
@@ -1671,23 +1671,23 @@ int main(int argc, char **argv) {
   openair0_dump_config(card);
 
   printf("EXMIMO_CONFIG: rf_mode 0x %x %x %x %x, [0]: TXRXEn %d, TXLPFEn %d, TXLPF %d, RXLPFEn %d, RXLPF %d, RFBB %d, LNA %d, LNAGain %d, RXLPFMode %d, SWITCH %d, rf_rxdc %d, rf_local %d, rf_vcocal %d\n",  
-	 p_exmimo_config->rf.rf_mode[0],
-	 p_exmimo_config->rf.rf_mode[1],
-	 p_exmimo_config->rf.rf_mode[2],
-	 p_exmimo_config->rf.rf_mode[3],
-	 (p_exmimo_config->rf.rf_mode[0]&3),  // RXen+TXen
-	 (p_exmimo_config->rf.rf_mode[0]&4)>>2,         //TXLPFen
-	 (p_exmimo_config->rf.rf_mode[0]&TXLPFMASK)>>3, //TXLPF
-	 (p_exmimo_config->rf.rf_mode[0]&128)>>7,      //RXLPFen
-	 (p_exmimo_config->rf.rf_mode[0]&RXLPFMASK)>>8, //TXLPF
-	 (p_exmimo_config->rf.rf_mode[0]&RFBBMASK)>>16, // RFBB mode
-	 (p_exmimo_config->rf.rf_mode[0]&LNAMASK)>>12, // RFBB mode
-	 (p_exmimo_config->rf.rf_mode[0]&LNAGAINMASK)>>14, // RFBB mode
-	 (p_exmimo_config->rf.rf_mode[0]&RXLPFMODEMASK)>>19, // RXLPF mode
-	 (p_exmimo_config->framing.tdd_config&TXRXSWITCH_MASK)>>1, // Switch mode
-	 p_exmimo_config->rf.rf_rxdc[0],
-	 p_exmimo_config->rf.rf_local[0],
-	 p_exmimo_config->rf.rf_vcocal[0]);
+         p_exmimo_config->rf.rf_mode[0],
+         p_exmimo_config->rf.rf_mode[1],
+         p_exmimo_config->rf.rf_mode[2],
+         p_exmimo_config->rf.rf_mode[3],
+         (p_exmimo_config->rf.rf_mode[0]&3),  // RXen+TXen
+         (p_exmimo_config->rf.rf_mode[0]&4)>>2,         //TXLPFen
+         (p_exmimo_config->rf.rf_mode[0]&TXLPFMASK)>>3, //TXLPF
+         (p_exmimo_config->rf.rf_mode[0]&128)>>7,      //RXLPFen
+         (p_exmimo_config->rf.rf_mode[0]&RXLPFMASK)>>8, //TXLPF
+         (p_exmimo_config->rf.rf_mode[0]&RFBBMASK)>>16, // RFBB mode
+         (p_exmimo_config->rf.rf_mode[0]&LNAMASK)>>12, // RFBB mode
+         (p_exmimo_config->rf.rf_mode[0]&LNAGAINMASK)>>14, // RFBB mode
+         (p_exmimo_config->rf.rf_mode[0]&RXLPFMODEMASK)>>19, // RXLPF mode
+         (p_exmimo_config->framing.tdd_config&TXRXSWITCH_MASK)>>1, // Switch mode
+         p_exmimo_config->rf.rf_rxdc[0],
+         p_exmimo_config->rf.rf_local[0],
+         p_exmimo_config->rf.rf_vcocal[0]);
   
   for (ant=0;ant<4;ant++)
     p_exmimo_config->rf.do_autocal[ant] = 0;
@@ -2006,7 +2006,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
         for (j=0;j<16;j++) {
             printf("txbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j]);
             phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
-	}
+        }
     }
   }
 }
