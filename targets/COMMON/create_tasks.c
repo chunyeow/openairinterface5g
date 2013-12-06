@@ -53,15 +53,13 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
             {
                 if (itti_create_task (TASK_SCTP, sctp_eNB_task, NULL) < 0)
                 {
-                    LOG_E (EMU, "Create task failed");
-                    LOG_D (EMU, "Initializing SCTP task interface: FAILED\n");
+                    LOG_E(EMU, "Create task for SCTP failed\n");
                     return -1;
                 }
 
                 if (itti_create_task (TASK_S1AP, s1ap_eNB_task, NULL) < 0)
                 {
-                    LOG_E (EMU, "Create task failed");
-                    LOG_D (EMU, "Initializing S1AP task interface: FAILED\n");
+                    LOG_E(EMU, "Create task for S1AP failed\n");
                     return -1;
                 }
             }
@@ -70,8 +68,7 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
             {
                 if (itti_create_task (TASK_NAS_UE, nas_ue_task, NULL) < 0)
                 {
-                    LOG_E (EMU, "Create task failed");
-                    LOG_D (EMU, "Initializing NAS UE task interface: FAILED\n");
+                    LOG_E(EMU, "Create task for NAS UE failed\n");
                     return -1;
                 }
             }
@@ -82,9 +79,8 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         {
             if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0)
             {
-                LOG_E (EMU, "Create task failed");
-                LOG_D (EMU, "Initializing RRC eNB task interface: FAILED\n");
-                exit (-1);
+                LOG_E(EMU, "Create task for RRC eNB failed\n");
+                return -1;
             }
         }
 
@@ -92,9 +88,8 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         {
             if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0)
             {
-                LOG_E (EMU, "Create task failed");
-                LOG_D (EMU, "Initializing RRC UE task interface: FAILED\n");
-                exit (-1);
+                LOG_E(EMU, "Create task for RRC UE failed\n");
+                return -1;
             }
         }
     }
@@ -102,8 +97,7 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
 
     if (itti_create_task (TASK_L2L1, l2l1_task, NULL) < 0)
     {
-        LOG_E (EMU, "Create task failed");
-        LOG_D (EMU, "Initializing L2L1 task interface: FAILED\n");
+        LOG_E(EMU, "Create task for L2L1 failed\n");
         return -1;
     }
 
@@ -112,8 +106,7 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         /* Last task to create, others task must be ready before its start */
         if (itti_create_task (TASK_ENB_APP, eNB_app_task, NULL) < 0)
         {
-            LOG_E (EMU, "Create task failed");
-            LOG_D (EMU, "Initializing eNB APP task interface: FAILED\n");
+            LOG_E(EMU, "Create task for eNB APP failed\n");
             return -1;
         }
     }
