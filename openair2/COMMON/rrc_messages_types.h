@@ -30,18 +30,31 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
+#define NAS_CELL_SELECTION_REQ(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_req
+#define NAS_CONN_ESTABLI_REQ(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_establi_req
+#define NAS_UPLINK_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_req
+
+#define NAS_CELL_SELECTION_CNF(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_cnf
+#define NAS_CELL_SELECTION_IND(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_ind
+#define NAS_PAGING_IND(mSGpTR)                      (mSGpTR)->ittiMsg.nas_paging_ind
+#define NAS_CONN_ESTABLI_CNF(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_establi_cnf
+#define NAS_CONN_RELEASE_IND(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_release_ind
+#define NAS_UPLINK_DATA_CNF(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_cnf
 #define NAS_DOWNLINK_DATA_IND(mSGpTR)               (mSGpTR)->ittiMsg.nas_dl_data_ind
 
-#define NAS_UPLINK_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_req
-#define NAS_UPLINK_DATA_CNF(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_cnf
-#define NAS_UPLINK_DATA_IND(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_ind
-
 //-------------------------------------------------------------------------------------------//
-// Messages between NAS and RRC layers
-typedef dl_info_transfer_ind_t NasDlDataInd;
+// UE: NAS -> RRC messages
+typedef cell_info_req_t         NasCellSelectionReq;
+typedef nas_establish_req_t     NasConnEstabliReq;
+typedef ul_info_transfer_req_t  NasUlDataReq;
 
-typedef ul_info_transfer_req_t NasUlDataReq;
-typedef ul_info_transfer_cnf_t NasUlDataCnf;
-typedef ul_info_transfer_ind_t NasUlDataInd;
+// UE: RRC -> NAS messages
+typedef cell_info_cnf_t         NasCellSelectionCnf;
+typedef cell_info_ind_t         NasCellSelectionInd;
+typedef paging_ind_t            NasPagingInd;
+typedef nas_establish_cnf_t     NasConnEstabCnf;
+typedef nas_release_ind_t       NasConnReleaseInd;
+typedef ul_info_transfer_cnf_t  NasUlDataCnf;
+typedef dl_info_transfer_ind_t  NasDlDataInd;
 
 #endif /* RRC_MESSAGES_TYPES_H_ */
