@@ -156,6 +156,14 @@ int logInit (void)
     g_log->log_component[RRC].filelog = 0;
     g_log->log_component[RRC].filelog_name = "/tmp/rrc.log";
 
+    g_log->log_component[NAS].name = "NAS";
+    g_log->log_component[NAS].level = LOG_TRACE;
+    g_log->log_component[NAS].flag = LOG_MED;
+    g_log->log_component[NAS].interval =  1;
+    g_log->log_component[NAS].fd = 0;
+    g_log->log_component[NAS].filelog = 0;
+    g_log->log_component[NAS].filelog_name = "/tmp/nas.log";
+
     g_log->log_component[EMU].name = "EMU";
     g_log->log_component[EMU].level = LOG_EMERG;
     g_log->log_component[EMU].flag =  LOG_MED;

@@ -248,6 +248,7 @@ typedef enum {
     RLC,
     PDCP,
     RRC,
+    NAS,
     PERF,
     OIP,
     CLI,
