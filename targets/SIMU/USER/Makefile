@@ -5,17 +5,17 @@ default: oaisim
 
 include $(OPENAIR_TARGETS)/Makefile.common
 
-CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
-# FORCE ssse3 for compilation of openair on User Mode Linux
-CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
-CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
-linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
-
 TOP_DIR             = $(OPENAIR1_DIR)
 OPENAIR1_TOP        = $(OPENAIR1_DIR)
 OPENAIR2_TOP        = $(OPENAIR2_DIR)
 OPENAIR3_TOP        = $(OPENAIR3_DIR)
 OPENAIR3            = $(OPENAIR3_DIR)
+
+CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
+# FORCE ssse3 for compilation of openair on User Mode Linux
+CPUFLAGS += $(shell if grep --silent ssse3 /proc/cpuinfo ; then echo "-mssse3" ; else if grep --silent User\ Mode\ Linux /proc/cpuinfo ; then echo "-mssse3" ; else echo ""; fi; fi)
+CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" ; else echo ""; fi)
+linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 CFLAGS += $(COMMON_CFLAGS) -DUSER_MODE -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 $(CPUFLAGS) -I/usr/include/X11 #-Wno-packed-bitfield-compat
 
@@ -187,7 +187,7 @@ include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
 include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
 
-INCLUDES  = -I$(TOP_DIR)
+INCLUDES += -I$(TOP_DIR)
 INCLUDES += $(L2_incl)
 INCLUDES += $(ENB_APP_incl)
 INCLUDES += $(UTIL_incl)
@@ -251,7 +251,7 @@ CFLAGS		+= $(PGM_CFLAGS) -DENABLE_PGM_TRANSPORT
 LIBS		+= $(PGM_LIBS)
 endif
 
-OBJ  = $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS)
+OBJ += $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS)
 OBJ += $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) $(ENB_APP_OBJS) 
 ifeq ($(OPENAIR2),1)
 OBJ += $(L2_OBJS)

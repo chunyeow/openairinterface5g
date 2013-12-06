@@ -41,8 +41,8 @@ else
 RTAI_OBJ += lte-softmodem.o
 endif
 else
-#OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o
-OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o
+#OBJ += sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o
+OBJ += sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o
 ifeq ($(USRP),1)
 OBJ += lte-softmodem-usrp.o
 else

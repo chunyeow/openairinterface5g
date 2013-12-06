@@ -101,14 +101,11 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
-#include "enb_app.h"
-
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
-# include "timer.h"
+# include "create_tasks.h"
 # if defined(ENABLE_USE_MME)
 #   include "s1ap_eNB.h"
-#   include "sctp_eNB_task.h"
 # endif
 #endif
 
@@ -233,16 +230,23 @@ void signal_handler(int sig)
     exit(-1);
   }
   else {
-    oai_exit=1;
+    oai_exit = 1;
   }
 }
 #endif
 
 void exit_fun(const char* s)
 {
-  printf("Exiting: %s\n",s);
+  if (s != NULL) {
+    printf("Exiting: %s\n",s);
+  }
 
-  oai_exit=1;
+  oai_exit = 1;
+
+#if defined(ENABLE_ITTI)
+  itti_send_terminate_message (TASK_UNKNOWN);
+#endif
+
   //rt_sleep_ns(FRAME_PERIOD);
 
   //exit (-1);
@@ -528,64 +532,6 @@ void *l2l1_task(void *arg)
 }
 #endif
 
-#if defined(ENABLE_ITTI)
-static int create_tasks(uint32_t enb_nb, uint32_t ue_nb) {
-# if defined(ENABLE_USE_MME)
-  {
-    if (enb_nb > 0) {
-      if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
-          LOG_E(EMU, "Create task failed");
-          LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
-          return -1;
-      }
-
-      if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
-          LOG_E(EMU, "Create task failed");
-          LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
-          return -1;
-      }
-    }
-  }
-# endif
-
-# ifdef OPENAIR2
-  {
-    if (enb_nb > 0) {
-      if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
-        LOG_E(EMU, "Create task failed");
-        LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
-        exit (-1);
-      }
-    }
-
-    if (ue_nb > 0) {
-      if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
-        LOG_E(EMU, "Create task failed");
-        LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
-        exit (-1);
-      }
-    }
-  }
-# endif
-
-  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
-    return -1;
-  }
-
-  if (enb_nb > 0) {
-    /* Last task to create, others task must be ready before its start */
-    if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
-      return -1;
-    }
-  }
-  return 0;
-}
-#endif
-
 /* This is the main eNB thread. It gets woken up by the kernel driver using the RTAI message mechanism (rt_send and rt_receive). */
 static void *eNB_thread(void *arg)
 {
@@ -659,10 +605,7 @@ static void *eNB_thread(void *arg)
           LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
           slot++;
           if (frame > 0) {
-            oai_exit = 1;
-#if defined(ENABLE_ITTI)
-            itti_send_terminate_message (TASK_L2L1);
-#endif
+            exit_fun(NULL);
           }
           if (slot==20){
             slot=0;
@@ -687,8 +630,8 @@ static void *eNB_thread(void *arg)
             delay_cnt++;
             if (delay_cnt == 10)
               {
-                oai_exit = 1;
                 LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
+                exit_fun(NULL);
               }
             mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
             if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
@@ -896,7 +839,7 @@ static void *UE_thread(void *arg)
 	if (diff2 <(-7)) {
 	  LOG_D(HW,"UE Frame %d: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, slot, hw_slot, diff2);
 	  if (frame>0)	  
-	    oai_exit=1;
+            exit_fun(NULL);
 	  slot++;
 	  if (slot==20) {
 	    slot=0;
@@ -930,8 +873,8 @@ static void *UE_thread(void *arg)
 	    delay_cnt++;
 	    if (delay_cnt == 30)
 	      {
-		oai_exit = 1;
 		LOG_D(HW,"UE frame %d: HW stopped ... \n",frame);
+                exit_fun(NULL);
 	      }
 	    mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
 	    if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
@@ -998,43 +941,43 @@ static void *UE_thread(void *arg)
               memset(PHY_vars_UE_g[0]->lte_ue_common_vars.rxdata[aa],0,
                  PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti*LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*sizeof(int));
               */
-	      if (mode == rx_calib_ue) {
-		oai_exit=1;
-	      }
-	      else {
-		is_synchronized = 1;
-		//start the DMA transfers
-		//LOG_D(HW,"Before openair0_start_rt_acquisition \n");
-		openair0_start_rt_acquisition(card);
-		
-		hw_slot_offset = (PHY_vars_UE_g[0]->rx_offset<<1) / PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti;
-		LOG_D(HW,"Got synch: hw_slot_offset %d\n",hw_slot_offset);
-		}
-	  }
-	  else {
-	    if (openair_daq_vars.freq_offset >= 0) {
-	      openair_daq_vars.freq_offset += 100;
-	      openair_daq_vars.freq_offset *= -1;
-	    }
-	    else {
-	      openair_daq_vars.freq_offset *= -1;
-	    }	      
-	    if (abs(openair_daq_vars.freq_offset) > 7500) {
-	      LOG_I(PHY,"[initial_sync] No cell synchronization found, abondoning\n");
-	      mac_xface->macphy_exit("");
-	    }
-	    else {
-	      LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",openair_daq_vars.freq_offset);
-	      for (i=0; i<4; i++) {
-		if (p_exmimo_config->rf.rf_freq_rx[i])
-		  p_exmimo_config->rf.rf_freq_rx[i] = carrier_freq[i]+openair_daq_vars.freq_offset;
-		if (p_exmimo_config->rf.rf_freq_tx[i])
-		  p_exmimo_config->rf.rf_freq_tx[i] = carrier_freq[i]+openair_daq_vars.freq_offset;
-	      }
-	      openair0_dump_config(card);
-	      rt_sleep_ns(FRAME_PERIOD);
-	      }
-	   }
+            if (mode == rx_calib_ue) {
+                exit_fun(NULL);
+              }
+              else {
+                is_synchronized = 1;
+                //start the DMA transfers
+                //LOG_D(HW,"Before openair0_start_rt_acquisition \n");
+                openair0_start_rt_acquisition(card);
+
+                hw_slot_offset = (PHY_vars_UE_g[0]->rx_offset<<1) / PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti;
+                LOG_D(HW,"Got synch: hw_slot_offset %d\n",hw_slot_offset);
+              }
+          }
+          else {
+            if (openair_daq_vars.freq_offset >= 0) {
+              openair_daq_vars.freq_offset += 100;
+              openair_daq_vars.freq_offset *= -1;
+            }
+            else {
+              openair_daq_vars.freq_offset *= -1;
+            }
+            if (abs(openair_daq_vars.freq_offset) > 7500) {
+              LOG_I(PHY,"[initial_sync] No cell synchronization found, abondoning\n");
+              mac_xface->macphy_exit("");
+            }
+            else {
+              LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",openair_daq_vars.freq_offset);
+              for (i=0; i<4; i++) {
+                if (p_exmimo_config->rf.rf_freq_rx[i])
+                  p_exmimo_config->rf.rf_freq_rx[i] = carrier_freq[i]+openair_daq_vars.freq_offset;
+                if (p_exmimo_config->rf.rf_freq_tx[i])
+                  p_exmimo_config->rf.rf_freq_tx[i] = carrier_freq[i]+openair_daq_vars.freq_offset;
+              }
+              openair0_dump_config(card);
+              rt_sleep_ns(FRAME_PERIOD);
+            }
+          }
         }
 
       /*
@@ -1792,7 +1735,6 @@ int main(int argc, char **argv) {
   // this starts the DMA transfers
   if (UE_flag!=1)
       openair0_start_rt_acquisition(card);
-
 
 #ifdef XFORMS
   if (do_forms==1) {

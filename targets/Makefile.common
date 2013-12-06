@@ -5,6 +5,8 @@ ITTI_MESSAGES_XML	= messages.xml
 ITTI_MESSAGES_FILE	= $(ITTI_DIR)/intertask_interface_types.h
 
 include $(COMMON_UTILS_DIR)/Makefile.inc
+include $(OPENAIR_TARGETS)/COMMON/Makefile.inc
+include $(OPENAIR2_DIR)/NAS/Makefile.inc
 
 $(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
@@ -20,10 +22,6 @@ $(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
 	@echo "Generating messages_xml.h ..."
 	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
 
-ifdef ENABLE_ITTI
-SHARED_DEPENDENCIES = $(ITTI_MESSAGES_H)
-endif
-
 ifdef USE_MME
 CFLAGS			+= -DENB_MODE -DENABLE_USE_MME -DENABLE_EVENT_FD -I$(S1AP_DIR) -I$(SCTP_DIR)
 S1AP_CFLAGS	 	 = $(CFLAGS) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl)
@@ -38,6 +36,18 @@ $(S1AP_OBJ_DIR)/libs1ap.a: force_look
 	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB $(S1AP_OBJ_DIR)/libs1ap.a OUTDIR=$(S1AP_OBJ_DIR)
 $(SCTP_OBJ_DIR)/libsctp.a: force_look
 	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB $(SCTP_OBJ_DIR)/libsctp.a OUTDIR=$(SCTP_OBJ_DIR)
+	
+CFLAGS += $(NAS_UE_incl)
+
+OBJ = $(NAS_UE_OBJS)
+endif
+
+ifdef ENABLE_ITTI
+SHARED_DEPENDENCIES = $(ITTI_MESSAGES_H)
+
+CFLAGS += $(TARGETS_COMMON_incl)
+
+OBJ += $(TARGETS_COMMON_OBJS)
 endif
 
 ifdef ENABLE_ITTI

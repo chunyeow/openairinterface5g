@@ -71,15 +71,9 @@ char smbv_ip[16];
 #include "UTIL/OTG/otg_kpi.h"
 #include "assertions.h"
 
-#include "enb_app.h"
-
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
-# include "timer.h"
-# if defined(ENABLE_USE_MME)
-#   include "s1ap_eNB.h"
-#   include "sctp_eNB_task.h"
-# endif
+# include "create_tasks.h"
 #endif
 
 #define RF
@@ -375,7 +369,7 @@ static s32 UE_id = 0, eNB_id = 0;
 static s32 RN_id=0;
 #endif
 
-static void *l2l1_task(void *args_p) {
+void *l2l1_task(void *args_p) {
   // Framing variables
   s32 slot, last_slot, next_slot;
 
@@ -950,64 +944,6 @@ static void *l2l1_task(void *args_p) {
 
   return NULL;
 }
-
-#if defined(ENABLE_ITTI)
-static int create_tasks(uint32_t enb_nb, uint32_t ue_nb) {
-# if defined(ENABLE_USE_MME)
-  {
-    if (enb_nb > 0) {
-      if (itti_create_task(TASK_SCTP, sctp_eNB_task, NULL) < 0) {
-          LOG_E(EMU, "Create task failed");
-          LOG_D(EMU, "Initializing SCTP task interface: FAILED\n");
-          return -1;
-      }
-
-      if (itti_create_task(TASK_S1AP, s1ap_eNB_task, NULL) < 0) {
-          LOG_E(EMU, "Create task failed");
-          LOG_D(EMU, "Initializing S1AP task interface: FAILED\n");
-          return -1;
-      }
-    }
-  }
-# endif
-
-# ifdef OPENAIR2
-  {
-    if (enb_nb > 0) {
-      if (itti_create_task (TASK_RRC_ENB, rrc_enb_task, NULL) < 0) {
-        LOG_E(EMU, "Create task failed");
-        LOG_D(EMU, "Initializing RRC eNB task interface: FAILED\n");
-        exit (-1);
-      }
-    }
-
-    if (ue_nb > 0) {
-      if (itti_create_task (TASK_RRC_UE, rrc_ue_task, NULL) < 0) {
-        LOG_E(EMU, "Create task failed");
-        LOG_D(EMU, "Initializing RRC UE task interface: FAILED\n");
-        exit (-1);
-      }
-    }
-  }
-# endif
-
-  if (itti_create_task(TASK_L2L1, l2l1_task, NULL) < 0) {
-    LOG_E(EMU, "Create task failed");
-    LOG_D(EMU, "Initializing L2L1 task interface: FAILED\n");
-    return -1;
-  }
-
-  if (enb_nb > 0) {
-    /* Last task to create, others task must be ready before its start */
-    if (itti_create_task(TASK_ENB_APP, eNB_app_task, NULL) < 0) {
-      LOG_E(EMU, "Create task failed");
-      LOG_D(EMU, "Initializing eNB APP task interface: FAILED\n");
-      return -1;
-    }
-  }
-  return 0;
-}
-#endif
 
 Packet_OTG_List *otg_pdcp_buffer;
 

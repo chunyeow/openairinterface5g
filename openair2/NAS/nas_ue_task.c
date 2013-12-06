@@ -60,6 +60,10 @@ void *nas_ue_task(void *args_p) {
         LOG_I(NAS, "[UE %d] Received %s\n", Mod_id, msg_name);
         break;
 
+      case NAS_DOWNLINK_DATA_IND:
+        LOG_I(NAS, "[UE %d] Received %s: UEid %u, lenght %u\n", Mod_id, msg_name,
+              NAS_DOWNLINK_DATA_IND (msg_p).UEid, NAS_DOWNLINK_DATA_IND (msg_p).nasMsg.length);
+        break;
 
       default:
         LOG_E(NAS, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);
