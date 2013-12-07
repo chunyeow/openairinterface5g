@@ -121,50 +121,52 @@ void esm_main_initialize(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:    esm_main_cleanup()                                        **
+ ** Name:        esm_main_cleanup()                                        **
  **                                                                        **
  ** Description: Performs the EPS Session Management clean up procedure    **
  **                                                                        **
- ** Inputs:  None                                                      **
- **          Others:    None                                       **
+ ** Inputs:      None                                                      **
+ **                  Others:    None                                       **
  **                                                                        **
  ** Outputs:     None                                                      **
- **          Return:    None                                       **
- **          Others:    None                                       **
+ **                  Return:    None                                       **
+ **                  Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 void esm_main_cleanup(void)
 {
     LOG_FUNC_IN;
 
-    int i;
-    int pid;
-    int bid;
+#ifdef NAS_UE
+    {
+        int i;
+        int pid;
+        int bid;
 
-    #ifdef NAS_UE
-    /* De-activate EPS bearers and clean up PDN connections */
-    for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
-        if (_esm_data.pdn[pid].data) {
-            esm_pdn_t *pdn = _esm_data.pdn[pid].data;
-            if (pdn->apn.length > 0) {
-                free(pdn->apn.value);
-            }
-            /* Release EPS bearer contexts */
-            for (bid = 0; bid < pdn->n_bearers; bid++) {
-                if (pdn->bearer[bid]) {
-                    LOG_TRACE(WARNING, "ESM-MAIN  - Release EPS bearer "
-                              "context (ebi=%d)", pdn->bearer[bid]->ebi);
-                    /* Delete the TFT */
-                    for (i = 0; i < pdn->bearer[bid]->tft.n_pkfs; i++) {
-                        if (pdn->bearer[bid]->tft.pkf[i]) {
-                            free(pdn->bearer[bid]->tft.pkf[i]);
-                        }
-                    }
-                    free(pdn->bearer[bid]);
+        /* De-activate EPS bearers and clean up PDN connections */
+        for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
+            if (_esm_data.pdn[pid].data) {
+                esm_pdn_t *pdn = _esm_data.pdn[pid].data;
+                if (pdn->apn.length > 0) {
+                    free(pdn->apn.value);
                 }
+                /* Release EPS bearer contexts */
+                for (bid = 0; bid < pdn->n_bearers; bid++) {
+                    if (pdn->bearer[bid]) {
+                        LOG_TRACE(WARNING, "ESM-MAIN  - Release EPS bearer "
+                                  "context (ebi=%d)", pdn->bearer[bid]->ebi);
+                        /* Delete the TFT */
+                        for (i = 0; i < pdn->bearer[bid]->tft.n_pkfs; i++) {
+                            if (pdn->bearer[bid]->tft.pkf[i]) {
+                                free(pdn->bearer[bid]->tft.pkf[i]);
+                            }
+                        }
+                        free(pdn->bearer[bid]);
+                    }
+                }
+                /* Release the PDN connection */
+                free(_esm_data.pdn[pid].data);
             }
-            /* Release the PDN connection */
-            free(_esm_data.pdn[pid].data);
         }
     }
 #endif

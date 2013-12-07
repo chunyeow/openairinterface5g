@@ -211,7 +211,7 @@ int mme_app_handle_attach_req(nas_attach_req_t *attach_req_p)
         ue_context->eNB_ue_s1ap_id = attach_req_p->transparent.eNB_ue_s1ap_id;
         ue_context->mme_ue_s1ap_id = attach_req_p->transparent.mme_ue_s1ap_id;
 
-        STAILQ_INIT(&ue_context->vector_list);
+//         STAILQ_INIT(&ue_context->vector_list);
         DevAssert(mme_insert_ue_context(&mme_app_desc.mme_ue_contexts, ue_context) == 0);
         goto request_auth;
     } else {
@@ -230,7 +230,8 @@ int mme_app_handle_attach_req(nas_attach_req_t *attach_req_p)
         } else {
             MME_APP_DEBUG("UE is not authenticated\n");
             /* UE is not authenticated or an initial request */
-            if (STAILQ_EMPTY(&ue_context->vector_list))
+//              if (STAILQ_EMPTY(&ue_context->vector_list))
+            if (ue_context->nb_of_vectors == 0)
 request_auth: {
                 /* We have no vector for this UE, send an authentication request
                  * to the HSS.

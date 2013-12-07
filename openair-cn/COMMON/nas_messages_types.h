@@ -141,8 +141,10 @@ typedef struct nas_auth_param_fail_s {
     nas_cause_t cause;
 } nas_auth_param_fail_t;
 
+#if defined(DISABLE_USE_NAS)
 typedef struct nas_attach_accept_s {
-    
+    s1ap_initial_ctxt_setup_req_t transparent;
 } nas_attach_accept_t;
+#endif
 
 #endif /* NAS_MESSAGES_TYPES_H_ */
