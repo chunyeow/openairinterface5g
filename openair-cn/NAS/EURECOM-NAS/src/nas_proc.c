@@ -1474,6 +1474,21 @@ int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail)
 
     LOG_FUNC_RETURN (rc);
 }
+
+int nas_proc_deregister_ue(UInt32_t ue_id)
+{
+    int rc = RETURNerror;
+    emm_sap_t emm_sap;
+
+    LOG_FUNC_IN;
+
+    emm_sap.primitive = EMMCN_DEREGISTER_UE;
+    emm_sap.u.emm_cn.u.deregister.UEid = ue_id;
+
+    rc = emm_sap_send(&emm_sap);
+
+    LOG_FUNC_RETURN (rc);
+}
 # endif
 #endif // NAS_MME
 

@@ -34,8 +34,9 @@ Description
  * String representation of EMMCN-SAP primitives
  */
 static const char *_emm_cn_primitive_str[] = {
-    "EMMCN_AUTHENTICATION_PARAM_RES",
-    "EMMCN_AUTHENTICATION_PARAM_FAIL",
+    "EMM_CN_AUTHENTICATION_PARAM_RES",
+    "EMM_CN_AUTHENTICATION_PARAM_FAIL",
+    "EMM_CN_DEREGISTER_UE",
 };
 
 static int _emm_cn_authentication_res(const emm_cn_auth_res_t *msg)
@@ -101,6 +102,15 @@ static int _emm_cn_authentication_fail(const emm_cn_auth_fail_t *msg)
     LOG_FUNC_RETURN (rc);
 }
 
+static int _emm_cn_deregister_ue(const UInt32_t ue_id)
+{
+    int rc = RETURNok;
+
+    LOG_FUNC_IN;
+
+    LOG_FUNC_RETURN (rc);
+}
+
 int emm_cn_send(const emm_cn_t *msg)
 {
     int rc = RETURNerror;
@@ -118,6 +128,10 @@ int emm_cn_send(const emm_cn_t *msg)
 
         case _EMMCN_AUTHENTICATION_PARAM_FAIL:
             rc = _emm_cn_authentication_fail(msg->u.auth_fail);
+            break;
+
+        case EMMCN_DEREGISTER_UE:
+            rc = _emm_cn_deregister_ue(msg->u.deregister.UEid);
             break;
 
         default:

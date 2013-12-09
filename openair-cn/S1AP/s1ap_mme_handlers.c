@@ -697,20 +697,51 @@ int s1ap_mme_handle_path_switch_request(uint32_t assoc_id, uint32_t stream,
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//************************* E-RAB management *********************************//
-////////////////////////////////////////////////////////////////////////////////
-
 int s1ap_handle_sctp_deconnection(uint32_t assoc_id)
 {
+    int current_ue_index = 0;
+    int handled_ues      = 0;
+    int i;
+
+    MessageDef *message_p   = NULL;
+
+    ue_description_t  *ue_ref = NULL;
     eNB_description_t *eNB_association;
 
     /* Checking that the assoc id has a valid eNB attached to. */
-    if ((eNB_association = s1ap_is_eNB_assoc_id_in_list(assoc_id)) == NULL) {
-        S1AP_DEBUG("No eNB attached to this assoc_id: %d\n",
+    eNB_association = s1ap_is_eNB_assoc_id_in_list(assoc_id);
+    if (eNB_association == NULL) {
+        S1AP_ERROR("No eNB attached to this assoc_id: %d\n",
                    assoc_id);
         return -1;
     }
+
+    STAILQ_FOREACH(ue_ref, &eNB_association->ue_list_head, ue_entries)
+    {
+        /* Ask for a release of each UE context associated to the eNB */
+        if (current_ue_index == 0) {
+            message_p = itti_alloc_new_message(TASK_S1AP, S1AP_ENB_DEREGISTERED_IND);
+        }
+
+        S1AP_ENB_DEREGISTERED_IND(message_p).mme_ue_s1ap_id[current_ue_index] = ue_ref->mme_ue_s1ap_id;
+
+        if (current_ue_index == 0 && handled_ues > 0) {
+            S1AP_ENB_DEREGISTERED_IND(message_p).nb_ue_to_deregister = S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE;
+            itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+        }
+
+        handled_ues++;
+        current_ue_index = handled_ues % S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE;
+    }
+
+    if ((handled_ues % S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE) != 0) {
+        S1AP_ENB_DEREGISTERED_IND(message_p).nb_ue_to_deregister = current_ue_index;
+        for (i = current_ue_index; i < S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE; i++) {
+            S1AP_ENB_DEREGISTERED_IND(message_p).mme_ue_s1ap_id[current_ue_index] = 0;
+        }
+        itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+    }
+
     s1ap_remove_eNB(eNB_association);
     s1ap_dump_eNB_list();
 
@@ -755,6 +786,10 @@ int s1ap_handle_new_association(sctp_new_peer_t *sctp_new_peer_p)
 
     return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//************************* E-RAB management *********************************//
+////////////////////////////////////////////////////////////////////////////////
 
 int s1ap_handle_create_session_response(SgwCreateSessionResponse
                                         *session_response_p)

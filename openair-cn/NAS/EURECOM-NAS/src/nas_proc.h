@@ -136,8 +136,8 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len);
  */
 #if defined(NAS_MME) && defined(EPC_BUILD)
 int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res);
-
 int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail);
+int nas_proc_deregister_ue(UInt32_t ue_id);
 #endif
 
 #endif /* __NAS_PROC_H__*/

@@ -60,6 +60,7 @@ static void *nas_intertask_interface(void *args_p)
 
 next_message:
         itti_receive_msg(TASK_NAS, &received_message_p);
+
         switch (ITTI_MSG_ID(received_message_p))
         {
             case NAS_CONNECTION_ESTABLISHMENT_IND: {
@@ -139,6 +140,21 @@ next_message:
                 /* Call the NAS timer api */
                 nas_timer_handle_signal_expiry(TIMER_HAS_EXPIRED(received_message_p).timer_id,
                                                TIMER_HAS_EXPIRED(received_message_p).arg);
+#endif
+            } break;
+
+            case S1AP_ENB_DEREGISTERED_IND: {
+#if !defined(DISABLE_USE_NAS)
+                int i;
+                for (i = 0; i < S1AP_ENB_DEREGISTERED_IND(received_message_p).nb_ue_to_deregister; i ++) {
+                    nas_proc_deregister_ue(S1AP_ENB_DEREGISTERED_IND(received_message_p).mme_ue_s1ap_id[i]);
+                }
+#endif
+            } break;
+
+            case S1AP_DEREGISTER_UE_REQ: {
+#if !defined(DISABLE_USE_NAS)
+                nas_proc_deregister_ue(S1AP_DEREGISTER_UE_REQ(received_message_p).mme_ue_s1ap_id);
 #endif
             } break;
 
