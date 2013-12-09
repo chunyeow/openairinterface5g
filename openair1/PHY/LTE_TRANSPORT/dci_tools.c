@@ -3334,10 +3334,10 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   //  uint32_t hopping;
   //  uint32_t type;
 
-#ifdef DEBUG_DCI
-  msg("dci_tools.c: filling eNB ulsch params for rnti %x, dci format %d, dci %x, subframe %d\n",
+  //#ifdef DEBUG_DCI
+  LOG_I(PHY,"filling eNB ulsch params for rnti %x, dci format %d, dci %x, subframe %d\n",
       rnti,dci_format,*(uint32_t*)dci_pdu,subframe);
-#endif
+  //#endif
 
   if (dci_format == format0) {
 
@@ -3472,9 +3472,9 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
       return(-1);
     }
 
-#ifdef DEBUG_DCI
-    msg("generate_eNB_ulsch_params_from_dci: subframe %d, rnti %x,harq_pid %d\n",subframe,rnti,harq_pid);
-#endif
+    //#ifdef DEBUG_DCI
+    LOG_I(PHY,"generate_eNB_ulsch_params_from_dci: subframe %d, rnti %x,harq_pid %d,ndi %d,cqi_req %d\n",subframe,rnti,harq_pid,ndi,cqi_req);
+    //#endif
 
     ulsch->harq_processes[harq_pid]->dci_alloc                             = 1;
     ulsch->harq_processes[harq_pid]->rar_alloc                             = 0;

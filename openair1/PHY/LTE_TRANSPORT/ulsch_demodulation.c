@@ -1302,7 +1302,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
   
 
   //  uint8_t harq_pid = ( ulsch->RRCConnRequest_flag== 0) ? subframe2harq_pid_tdd(frame_parms->tdd_config,subframe) : 0;
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe==9)?-1:0)+phy_vars_eNB->frame,subframe);
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe>=8)?-1:0)+phy_vars_eNB->frame,subframe);
   uint8_t Qm = get_Qm_ul(ulsch[UE_id]->harq_processes[harq_pid]->mcs);
   uint16_t rx_power_correction;
   int16_t *llrp;

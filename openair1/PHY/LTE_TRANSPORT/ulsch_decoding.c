@@ -272,7 +272,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
   x2 = ((uint32_t)ulsch->rnti<<14) + ((uint32_t)subframe<<9) + frame_parms->Nid_cell; //this is c_init in 36.211 Sec 6.3.1
   
   //  harq_pid = (ulsch->RRCConnRequest_flag == 0) ? subframe2harq_pid_tdd(frame_parms->tdd_config,subframe) : 0;
-  harq_pid = subframe2harq_pid(frame_parms,(((subframe)==9)?-1:0)+phy_vars_eNB->frame,subframe);
+  harq_pid = subframe2harq_pid(frame_parms,(((subframe)>=8)?-1:0)+phy_vars_eNB->frame,subframe);
 
   if (harq_pid==255) {
     LOG_E(PHY, "ulsch_decoding.c: FATAL ERROR: illegal harq_pid, returning\n");
@@ -1184,12 +1184,12 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 				   ulsch->harq_processes[harq_pid]->w[r]); 
     stop_meas(&phy_vars_eNB->ulsch_deinterleaving_stats);
         
-#ifdef DEBUG_ULSCH_DECODING    
+    /*#ifdef DEBUG_ULSCH_DECODING    
     msg("decoder input(segment %d) :",r);
     for (i=0;i<(3*8*Kr_bytes)+12;i++)
       msg("%d : %d\n",i,ulsch->harq_processes[harq_pid]->d[r][96+i]);
     msg("\n");
-#endif
+    #endif*/
     
   }
 
@@ -1670,7 +1670,7 @@ uint32_t ulsch_decoding_emul(PHY_VARS_eNB *phy_vars_eNB,
 
   uint8_t UE_id;
   uint16_t rnti;
-  uint8_t harq_pid = subframe2harq_pid(&phy_vars_eNB->lte_frame_parms,((subframe==9)?-1:0)+phy_vars_eNB->frame,subframe);
+  uint8_t harq_pid = subframe2harq_pid(&phy_vars_eNB->lte_frame_parms,((subframe>=8)?-1:0)+phy_vars_eNB->frame,subframe);
   
   rnti = phy_vars_eNB->ulsch_eNB[UE_index]->rnti;
 #ifdef DEBUG_PHY
