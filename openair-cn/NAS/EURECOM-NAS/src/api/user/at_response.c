@@ -491,6 +491,7 @@ static int _at_response_encode_clac(char* buffer, const at_response_t* data)
 
     const at_clac_resp_t * clac = &(data->response.clac);
     int offset = 0;
+    int i;
 
     if (data->type == AT_COMMAND_ACT) {
 	if (clac->n_acs > 0) {
@@ -498,7 +499,7 @@ static int _at_response_encode_clac(char* buffer, const at_response_t* data)
 		offset += sprintf(buffer, "\r\n");
 	    }
 	    offset += sprintf(buffer+offset, "%s", clac->ac[0]);
-	    for (int i = 1; i < clac->n_acs; i++) {
+	    for (i = 1; i < clac->n_acs; i++) {
 		offset += sprintf(buffer+offset, "\r\n%s", clac->ac[i]);
 	    }
 	}
@@ -872,6 +873,7 @@ static int _at_response_encode_cgdcont(char* buffer, const at_response_t* data)
     LOG_FUNC_IN;
 
     int offset = 0;
+    int i;
 
     if (data->type == AT_COMMAND_GET)
     {
@@ -881,7 +883,7 @@ static int _at_response_encode_cgdcont(char* buffer, const at_response_t* data)
 	}
 
 	/* Display the list of defined PDN contexts */
-	for (int i = 0; i < cgdcont->n_pdns; i++) {
+	for (i = 0; i < cgdcont->n_pdns; i++) {
 	    offset += sprintf(buffer+offset, "+CGDCONT: %u", cgdcont->cid[i]);
 	    if (cgdcont->PDP_type[i] == NET_PDN_TYPE_IPV4) {
 		offset += sprintf(buffer+offset, ",IP");
@@ -950,6 +952,7 @@ static int _at_response_encode_cgact(char* buffer, const at_response_t* data)
     LOG_FUNC_IN;
 
     int offset = 0;
+    int i;
 
     if (data->type == AT_COMMAND_GET)
     {
@@ -958,7 +961,7 @@ static int _at_response_encode_cgact(char* buffer, const at_response_t* data)
 	    offset += sprintf(buffer, "\r\n");
 	}
 	/* Display the list of defined PDN status */
-	for (int i = 0; i < cgact->n_pdns; i++) {
+	for (i = 0; i < cgact->n_pdns; i++) {
 	    offset += sprintf(buffer+offset, "+CGACT: %u,%u\r\n",
 			      cgact->cid[i], cgact->state[i]);
 	}
@@ -996,6 +999,7 @@ static int _at_response_encode_cgpaddr(char* buffer, const at_response_t* data)
 
     int offset = 0;
     const at_cgpaddr_resp_t * cgpaddr = &(data->response.cgpaddr);
+    int i;
 
     if (data->type == AT_COMMAND_SET)
     {
@@ -1004,7 +1008,7 @@ static int _at_response_encode_cgpaddr(char* buffer, const at_response_t* data)
 	}
 	/* Display the list of IP addresses assigned to each defined PDN
 	 * connections */
-	for (int i = 0; i < cgpaddr->n_pdns; i++) {
+	for (i = 0; i < cgpaddr->n_pdns; i++) {
 	    offset += sprintf(buffer+offset, "+CGPADDR: %u", cgpaddr->cid[i]);
 	    if (cgpaddr->PDP_addr_1[i] != NULL) {
 		/* IPv4 address */
@@ -1042,7 +1046,7 @@ static int _at_response_encode_cgpaddr(char* buffer, const at_response_t* data)
 		offset += sprintf(buffer, "\r\n");
 	    }
 	    offset += sprintf(buffer+offset, "+CGPADDR: %u", cgpaddr->cid[0]);
-	    for (int i = 1; i < cgpaddr->n_pdns; i++) {
+	    for (i = 1; i < cgpaddr->n_pdns; i++) {
 		offset += sprintf(buffer+offset, ",%u", cgpaddr->cid[i]);
 	    }
 	    offset += sprintf(buffer+offset, "\r\n");

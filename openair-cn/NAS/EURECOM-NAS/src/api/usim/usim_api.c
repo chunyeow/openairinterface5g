@@ -190,6 +190,7 @@ int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
     LOG_FUNC_IN;
 
     int rc;
+    int i;
 
     /* Compute the authentication response RES = f2K (RAND) */
     /* Compute the cipher key CK = f3K (RAND) */
@@ -203,7 +204,7 @@ int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
     /* Retrieve the sequence number SQN = (SQN ⊕ AK) ⊕ AK */
 #define USIM_API_SQN_SIZE USIM_API_AK_SIZE
     u8 sqn[USIM_API_SQN_SIZE];
-    for (int i = 0; i < USIM_API_SQN_SIZE; i++) {
+    for (i = 0; i < USIM_API_SQN_SIZE; i++) {
 	sqn[i] = rand->value[i] ^ ak[i];
     }
 
@@ -234,13 +235,13 @@ int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
 	u8 sqn_ms[USIM_API_SQNMS_SIZE];
 	memset(sqn_ms, 0, USIM_API_SQNMS_SIZE);
 #define USIM_API_SQN_MS_SIZE	3
-	for (int i = 0; i < USIM_API_SQN_MS_SIZE; i++) {
+	for (i = 0; i < USIM_API_SQN_MS_SIZE; i++) {
 	    sqn_ms[USIM_API_SQNMS_SIZE - i] =
 		((UInt8_t*)(_usim_api_data.sqn_ms))[USIM_API_SQN_MS_SIZE - i];
 	}
 
 	u8 sqnms[USIM_API_SQNMS_SIZE];
-	for (int i = 0; i < USIM_API_SQNMS_SIZE; i++) {
+	for (i = 0; i < USIM_API_SQNMS_SIZE; i++) {
 	    sqnms[i] = sqn_ms[i] ^ ak[i];
 	}
 
