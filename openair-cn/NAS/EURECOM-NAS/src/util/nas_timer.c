@@ -51,7 +51,7 @@ Description Timer utilities
  * value when the timer entry was allocated.
  */
 typedef struct {
-#if defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
     long timer_id;          /* Timer id returned by the timer API from ITTI */
 #else
     pthread_t pid;          /* Thread identifier of the callback    */
@@ -88,7 +88,7 @@ typedef struct {
     timer_queue_t tq[TIMER_DATABASE_SIZE];
     timer_queue_t *head;/* Pointer to the first timer entry to be fired  */
 
-#if !defined(EPC_BUILD)
+#if !defined(ENABLE_ITTI)
     pthread_mutex_t mutex;
 #endif
 } nas_timer_database_t;
@@ -100,12 +100,12 @@ static nas_timer_database_t _nas_timer_db = {
     0,
     {},
     NULL
-#if !defined(EPC_BUILD)
+#if !defined(ENABLE_ITTI)
     , PTHREAD_MUTEX_INITIALIZER
 #endif
 };
 
-#if defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
 #define nas_timer_lock_db()
 #define nas_timer_unlock_db()
 #else
@@ -116,7 +116,7 @@ static nas_timer_database_t _nas_timer_db = {
 /*
  * The handler executed whenever the system timer expires
  */
-#if !defined(EPC_BUILD)
+#if !defined(ENABLE_ITTI)
 static void _nas_timer_handler(int signal);
 #endif
 
@@ -173,7 +173,7 @@ int nas_timer_init(void)
     /* Initialize the timer database */
     _nas_timer_db_init();
 
-#if !defined(EPC_BUILD)
+#if !defined(ENABLE_ITTI)
     /* Setup the timer database handler */
     struct sigaction act;
 
@@ -223,7 +223,7 @@ int nas_timer_start(long sec, nas_timer_callback_t cb, void *args)
 {
     int id;
     nas_timer_entry_t *te;
-#if defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
     int ret;
     long timer_id;
 #endif
@@ -248,9 +248,12 @@ int nas_timer_start(long sec, nas_timer_callback_t cb, void *args)
 
     /* Insert the new entry into the timer queue */
     _nas_timer_db_insert_entry(id, te);
-#if defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
+# if defined(EPC_BUILD)
     ret = timer_setup(sec, 0, TASK_NAS, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
-
+# else
+    ret = timer_setup(sec, 0, TASK_NAS_UE, INSTANCE_DEFAULT, TIMER_PERIODIC, args, &timer_id);
+# endif
     if (ret == -1) {
         return NAS_TIMER_INACTIVE_ID;
     }
@@ -346,7 +349,7 @@ int nas_timer_restart(int id)
  **      Others:    _nas_timer_db                              **
  **                                                                        **
  ***************************************************************************/
-#if defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
 void nas_timer_handle_signal_expiry(long timer_id, void *arg_p)
 {
     /* Get the timer entry for which the system timer expired */
@@ -573,7 +576,7 @@ static void _nas_timer_db_insert_entry(int id, nas_timer_entry_t *te)
     restart = _nas_timer_db_insert(&_nas_timer_db.tq[id]);
     nas_timer_unlock_db();
 
-#if !defined(EPC_BUILD)
+#if !defined(ENABLE_ITTI)
     if (restart) {
         /* The new entry is the first entry of the list;
          * restart the system timer */
@@ -665,7 +668,7 @@ static nas_timer_entry_t *_nas_timer_db_remove_entry(int id)
         /* tv = tv - time() */
         rc = _nas_timer_sub(&_nas_timer_db.head->entry->tv, &tv, &it.it_value);
 
-#if defined(EPC_BUILD)
+#if defined(ENABLE_ITTI)
         timer_remove(_nas_timer_db.head->entry->timer_id);
         (void) (rc);
 #else
@@ -705,7 +708,7 @@ static int _nas_timer_db_remove(timer_queue_t *entry)
             /* Other timers are scheduled to expire */
             return TRUE;
         }
-#if !defined(EPC_BUILD)
+#if !defined(ENABLE_ITTI)
         {
             /* No more timer is scheduled to expire; stop the system timer */
             struct itimerval it;
@@ -727,17 +730,17 @@ static int _nas_timer_db_remove(timer_queue_t *entry)
  */
 /****************************************************************************
  **                                                                        **
- ** Name:    _nas_timer_cmp()                                          **
+ ** Name:        _nas_timer_cmp()                                          **
  **                                                                        **
  ** Description: Performs timeval comparaison                              **
  **                                                                        **
- ** Inputs:  a:     The first timeval structure                **
- **      b:     The second timeval structure               **
- **      Others:    None                                       **
+ ** Inputs:              a:     The first timeval structure                **
+ **                      b:     The second timeval structure               **
+ **                  Others:    None                                       **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    -1 if a < b; 1 if a > b; 0 if a == b       **
- **      Others:    None                                       **
+ **                  Return:    -1 if a < b; 1 if a > b; 0 if a == b       **
+ **                  Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
 static int _nas_timer_cmp(const struct timeval *a, const struct timeval *b)
