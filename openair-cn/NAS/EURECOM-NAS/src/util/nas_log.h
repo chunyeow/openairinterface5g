@@ -20,6 +20,11 @@ Description	Usefull logging functions
 #ifndef __NAS_LOG_H__
 #define __NAS_LOG_H__
 
+#if defined(UE_BUILD) && defined(NAS_UE)
+# include "UTIL/LOG/log.h"
+# undef LOG_TRACE
+#endif
+
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
 /****************************************************************************/
@@ -73,12 +78,48 @@ typedef enum
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
-#define LOG_TRACE log_data(__FILE__, __LINE__); log_trace
-#define LOG_DUMP(a, b) log_dump((a),(b));
+#if defined(UE_BUILD) && defined(NAS_UE)
+# define LOG_TRACE(s, x, args...)                               \
+do {                                                            \
+    switch (s) {                                                \
+        case ERROR:     LOG_E(NAS, " " x "\n", ##args); break;  \
+        case WARNING:   LOG_W(NAS, " " x "\n", ##args); break;  \
+        case INFO:      LOG_I(NAS, " " x "\n", ##args); break;  \
+        default:        LOG_D(NAS, " " x "\n", ##args); break;  \
+    }                                                           \
+} while (0)
 
-#define LOG_FUNC_IN LOG_TRACE(FUNC_IN, "Entering %s()", __FUNCTION__)
-#define LOG_FUNC_OUT LOG_TRACE(FUNC_OUT, "Leaving %s()", __FUNCTION__)
-#define LOG_FUNC_RETURN(rETURNcODE)                                            \
+# define LOG_DUMP(a, b) LOG_D(NAS, " Dump %d\n", b)
+
+# define LOG_FUNC_IN                                                            \
+do {                                                                            \
+    LOG_D(NAS, " %*sEntering %s()\n", nas_log_func_indent, "", __FUNCTION__);   \
+    nas_log_func_indent += 4;                                                   \
+} while (0)
+
+# define LOG_FUNC_OUT                                                           \
+do {                                                                            \
+    nas_log_func_indent -= 4;                                                   \
+    LOG_D(NAS, " %*sLeaving %s()\n", nas_log_func_indent, "", __FUNCTION__);    \
+} while (0)
+
+# define LOG_FUNC_RETURN(rETURNcODE)                                            \
+do {                                                                            \
+    nas_log_func_indent -= 4;                                                   \
+    LOG_D(NAS, " %*sLeaving %s(rc = %ld)\n", nas_log_func_indent, "",           \
+          __FUNCTION__, (long) rETURNcODE);                                     \
+    return (rETURNcODE);                                                        \
+} while (0)
+
+extern int nas_log_func_indent;
+
+#else
+# define LOG_TRACE log_data(__FILE__, __LINE__); log_trace
+# define LOG_DUMP(a, b) log_dump((a),(b));
+
+# define LOG_FUNC_IN LOG_TRACE(FUNC_IN, "Entering %s()", __FUNCTION__)
+# define LOG_FUNC_OUT LOG_TRACE(FUNC_OUT, "Leaving %s()", __FUNCTION__)
+# define LOG_FUNC_RETURN(rETURNcODE)                                            \
 do {                                                                           \
     LOG_TRACE(FUNC_OUT, "Leaving %s(rc = %ld)", __FUNCTION__,                  \
     (long) rETURNcODE);                                                        \
@@ -89,5 +130,6 @@ void nas_log_init(char filter);
 void log_data(const char* filename, int line);
 void log_trace(log_severity_t severity, const char* data, ...);
 void log_dump(const char* data, int len);
+#endif
 
 #endif /* __NAS_LOG_H__*/

@@ -19,7 +19,9 @@ Description	Usefull logging functions
 *****************************************************************************/
 
 #include "nas_log.h"
-
+#if defined(UE_BUILD) && defined(NAS_UE)
+int nas_log_func_indent;
+#else
 #include <stdio.h>	// stderr, sprintf, fprintf, vfprintf
 #include <stdarg.h>	// va_list, va_start, va_end
 
@@ -239,4 +241,5 @@ void log_dump(const char* data, int len)
 /****************************************************************************/
 /*********************  L O C A L    F U N C T I O N S  *********************/
 /****************************************************************************/
+#endif
 

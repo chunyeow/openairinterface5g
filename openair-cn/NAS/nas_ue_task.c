@@ -31,7 +31,10 @@
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 # include "nas_ue_task.h"
-# include "log.h"
+
+# include "nas_log.h"
+# include "nas_user.h"
+# include "user_api.h"
 
 extern unsigned char NB_eNB_INST;
 
@@ -42,6 +45,10 @@ void *nas_ue_task(void *args_p) {
   unsigned int Mod_id;
 
   itti_mark_task_ready (TASK_NAS_UE);
+
+  /* Initialize NAS */
+//  nas_log_init(0x2F);
+  nas_user_initialize (&user_api_emm_callback, &user_api_esm_callback, FIRMWARE_VERSION);
 
   while(1) {
     // Wait for a message
@@ -61,8 +68,7 @@ void *nas_ue_task(void *args_p) {
         break;
 
       case NAS_DOWNLINK_DATA_IND:
-        LOG_I(NAS, "[UE %d] Received %s: UEid %u, lenght %u\n", Mod_id, msg_name,
-              NAS_DOWNLINK_DATA_IND (msg_p).UEid, NAS_DOWNLINK_DATA_IND (msg_p).nasMsg.length);
+        LOG_I(NAS, "[UE %d] Received %s: UEid %u, lenght %u\n", Mod_id, msg_name, NAS_DOWNLINK_DATA_IND (msg_p).UEid, NAS_DOWNLINK_DATA_IND (msg_p).nasMsg.length);
         break;
 
       default:

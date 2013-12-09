@@ -3,6 +3,9 @@ PROJDIR = $(UE_NAS_DIR)/EURECOM-NAS
 include $(UE_NAS_DIR)/EURECOM-NAS/Makefile.inc
 
 libnas_INCLUDES =								\
+	-I$(OPENAIR2_DIR)							\
+	-I$(OPENAIR2_DIR)/NAS						\
+	-I$(SRCDIR)									\
 	-I$(INCDIR)									\
 	-I$(UTILDIR)								\
 	-I$(USERAPIDIR)								\
@@ -224,18 +227,35 @@ libnas_ies_OBJS =													\
     EURECOM-NAS/src/ies/KsiAndSequenceNumber.o
 
 libnas_utils_OBJS =								\
+    EURECOM-NAS/src/util/device.o				\
+    EURECOM-NAS/src/util/memory.o				\
     EURECOM-NAS/src/util/nas_log.o				\
     EURECOM-NAS/src/util/nas_timer.o			\
+    EURECOM-NAS/src/util/socket.o				\
+    EURECOM-NAS/src/util/stty.o					\
     EURECOM-NAS/src/util/TLVEncoder.o			\
     EURECOM-NAS/src/util/TLVDecoder.o			\
     EURECOM-NAS/src/util/OctetString.o
 
+libnas_user_OBJS =								\
+    EURECOM-NAS/src/api/user/user_api.o			\
+    EURECOM-NAS/src/api/user/user_indication.o	\
+    EURECOM-NAS/src/api/user/at_command.o		\
+    EURECOM-NAS/src/api/user/at_error.o			\
+    EURECOM-NAS/src/api/user/at_response.o
+    
+libnas_usim_OBJS =								\
+    EURECOM-NAS/src/api/usim/aka_functions.o	\
+    EURECOM-NAS/src/api/usim/usim_api.o			
+
 libnas_OBJS =									\
-    EURECOM-NAS/src/nas_network.o				\
+    nas_ue_task.o								\
     EURECOM-NAS/src/nas_parser.o				\
     EURECOM-NAS/src/nas_proc.o					\
     EURECOM-NAS/src/nas_user.o					\
     $(libnas_utils_OBJS)						\
+    $(libnas_user_OBJS)							\
+    $(libnas_usim_OBJS)							\
     $(libnas_emm_OBJS)							\
     $(libnas_emm_msg_OBJS)						\
     $(libnas_emm_sap_OBJS)						\
@@ -275,9 +295,9 @@ $(OUTDIR)/libuenas.a: $(NAS_UE_COMPILED_OBJS)
 	@$(AR) rcs $@ $(addprefix $(OUTDIR)/,$(libnas_OBJS))
 
 clean:
-	@$(RM_F_V) $(OUTDIR)/*.o
-	@$(RM_F_V) $(OUTDIR)/*.d
-	@$(RM_F_V) $(OUTDIR)/libuenas.a
+	@$(RM_F_V) --recursive $(OUTDIR)/*
+
+cleanall: clean
 
 showcflags:
 	@echo uenas cflags: $(CFLAGS)
