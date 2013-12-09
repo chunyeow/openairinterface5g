@@ -1,5 +1,7 @@
 # This file gathers compilation directive shared between lte-softmodem and oaisim
 
+CFLAGS				+= -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"'
+
 ITTI_MESSAGES_H		= messages_xml.h
 ITTI_MESSAGES_XML	= messages.xml
 ITTI_MESSAGES_FILE	= $(ITTI_DIR)/intertask_interface_types.h
