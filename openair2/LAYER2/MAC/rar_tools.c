@@ -43,9 +43,6 @@
 #include "UTIL/LOG/log.h"
 #include "OCG.h"
 #include "OCG_extern.h"
-#if defined(USER_MODE) && defined(OAI_EMU)
-# include "UTIL/OPT/opt.h"
-#endif
 
 #define DEBUG_RAR
 
@@ -65,11 +62,9 @@ unsigned short fill_rar(u8 Mod_id,
   RA_HEADER_RAPID *rarh = (RA_HEADER_RAPID *)dlsch_buffer;
   //  RAR_PDU *rar = (RAR_PDU *)(dlsch_buffer+1);
   uint8_t *rar = (uint8_t *)(dlsch_buffer+1);
-  int i;
-  int ra_idx = -1;
+  int i,ra_idx;
   uint16_t rballoc;
-  uint8_t mcs,TPC,ULdelay,cqireq;
-  //uint8_t cqi_req;
+  uint8_t mcs,TPC,cqi_req,ULdelay,cqireq;
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
     if (eNB_mac_inst[Mod_id].RA_template[i].generate_rar == 1) {
@@ -96,22 +91,26 @@ unsigned short fill_rar(u8 Mod_id,
   */
   rar[4] = (uint8_t)(eNB_mac_inst[Mod_id].RA_template[ra_idx].rnti>>8); 
   rar[5] = (uint8_t)(eNB_mac_inst[Mod_id].RA_template[ra_idx].rnti&0xff);
+  eNB_mac_inst[Mod_id].RA_template[ra_idx].timing_offset = 0;
+  //eNB_mac_inst[Mod_id].RA_template[ra_idx].timing_offset /= 16;
   rar[0] = (uint8_t)(eNB_mac_inst[Mod_id].RA_template[ra_idx].timing_offset>>(2+4)); // 7 MSBs of timing advance + divide by 4
   rar[1] = (uint8_t)(eNB_mac_inst[Mod_id].RA_template[ra_idx].timing_offset<<(4-2))&0xf0; // 4 LSBs of timing advance + divide by 4
   rballoc = mac_xface->computeRIV(N_RB_UL,1,1); // first PRB only for UL Grant
   rar[1] |= (rballoc>>7)&7; // Hopping = 0 (bit 3), 3 MSBs of rballoc
   rar[2] = ((uint8_t)(rballoc&0xff))<<1; // 7 LSBs of rballoc
-  mcs = 9;
-  TPC = 4;
+  mcs = 10;
+  TPC = 3;
   ULdelay = 0;
   cqireq = 0;
-  rar[2] |= ((mcs&0xf)>>3);  // mcs 10
-  rar[3] = (((mcs&0xff)<<5)) | ((TPC&7)<<2) | ((ULdelay&1)<<1) | (cqireq&1); 
+  rar[2] |= ((mcs&0x8)>>3);  // mcs 10
+  rar[3] = (((mcs&0x7)<<5)) | ((TPC&7)<<2) | ((ULdelay&1)<<1) | (cqireq&1); 
 
-  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Generating RAR (%02x|%02x.%02x.%02x.%02x.%02x.%02x) for CRNTI %x,preamble %d/%d\n",Mod_id,frame,
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Generating RAR (%02x|%02x.%02x.%02x.%02x.%02x.%02x) for ra_idx %d, CRNTI %x,preamble %d/%d,TIMING OFFSET %d\n",Mod_id,frame,
 	*(uint8_t*)rarh,rar[0],rar[1],rar[2],rar[3],rar[4],rar[5],
+	ra_idx,
 	eNB_mac_inst[Mod_id].RA_template[ra_idx].rnti,
-	rarh->RAPID,eNB_mac_inst[Mod_id].RA_template[0].preamble_index);
+	rarh->RAPID,eNB_mac_inst[Mod_id].RA_template[0].preamble_index,
+	eNB_mac_inst[Mod_id].RA_template[ra_idx].timing_offset);
 
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.opt_enabled){

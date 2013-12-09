@@ -557,8 +557,9 @@ typedef struct {
   u8 generate_rar;
   /// Subframe where Msg3 is to be sent
   u8 Msg3_subframe;
+  u8 preamble_subframe;
   /// Flag to indicate the eNB should generate Msg4 upon reception of SDU from RRC.  This is triggered by first ULSCH reception at eNB for new user.
-  u8 generate_Msg4;
+    u8 generate_Msg4;
   /// Flag to indicate the eNB should generate the DCI for Msg4, after getting the SDU from RRC.
   u8 generate_Msg4_dci;
   /// Flag to indicate that eNB is waiting for ACK that UE has received Msg3.

@@ -425,7 +425,7 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
   (*sib1)->cellSelectionInfo.q_RxLevMin=-65;
   (*sib1)->cellSelectionInfo.q_RxLevMinOffset=NULL;
 
-  (*sib1)->freqBandIndicator = 38;
+  (*sib1)->freqBandIndicator = 7;
 
   schedulingInfo.si_Periodicity=SchedulingInfo__si_Periodicity_rf8;
 
@@ -727,7 +727,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
 #endif
   (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax=RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n10;
 
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize=RACH_ConfigCommon__ra_SupervisionInfo__ra_ResponseWindowSize_sf4;
+  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize=RACH_ConfigCommon__ra_SupervisionInfo__ra_ResponseWindowSize_sf10;
 
   (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer=RACH_ConfigCommon__ra_SupervisionInfo__mac_ContentionResolutionTimer_sf48;
 
@@ -753,7 +753,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
 
   // PDSCH-Config
 #ifdef EXMIMO
-  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=0;
+  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=-32;
 #else
   (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=15;
 #endif
