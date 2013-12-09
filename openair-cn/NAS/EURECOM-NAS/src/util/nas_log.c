@@ -78,12 +78,12 @@ static log_context_t _log_context = {
     0x00,	/* filter	*/
     0,		/* indent	*/
     {
-	{ "DEBUG",	LOG_DEBUG,	LOG_GREEN },	/* DEBUG	*/
-	{ "INFO",	LOG_INFO,	LOG_AUTO  },	/* INFO		*/
-	{ "WARNING",	LOG_WARNING,	LOG_BLUE  },	/* WARNING	*/
-	{ "ERROR",	LOG_ERROR,	LOG_RED   },	/* ERROR	*/
-	{ "",		LOG_FUNC,	LOG_AUTO  },	/* FUNC_IN	*/
-	{ "",		LOG_FUNC,	LOG_AUTO  },	/* FUNC_OUT	*/
+	{ "DEBUG",	NAS_LOG_DEBUG,	        LOG_GREEN },	/* DEBUG	*/
+	{ "INFO",	NAS_LOG_INFO,	        LOG_AUTO  },	/* INFO		*/
+	{ "WARNING",	NAS_LOG_WARNING,	LOG_BLUE  },	/* WARNING	*/
+	{ "ERROR",	NAS_LOG_ERROR,	        LOG_RED   },	/* ERROR	*/
+	{ "",		NAS_LOG_FUNC,	        LOG_AUTO  },	/* FUNC_IN	*/
+	{ "",		NAS_LOG_FUNC,	        LOG_AUTO  },	/* FUNC_OUT	*/
     }		/* level[]	*/
 };
 
@@ -209,7 +209,7 @@ void log_dump(const char* data, int len)
 {
     int i;
     /* Display only authorized logging traces */
-    if ( (len > 0) && (LOG_HEX & _log_context.filter) )
+    if ( (len > 0) && (NAS_LOG_HEX & _log_context.filter) )
     {
 	int bytes = 0;
 
