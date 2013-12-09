@@ -78,6 +78,10 @@ static const int itti_dump_debug = 0;
     while(0)
 #endif
 
+#ifndef EFD_SEMAPHORE
+# define KERNEL_VERSION_PRE_2_6_30 1
+#endif
+
 /* Message sent is an intertask dump type */
 #define ITTI_DUMP_MESSAGE_TYPE      0x1
 #define ITTI_STATISTIC_MESSAGE_TYPE 0x2
@@ -146,7 +150,7 @@ typedef struct {
 } itti_statistic_message_t;
 
 static itti_desc_t itti_dump_queue;
-static FILE *dump_file;
+static FILE *dump_file = NULL;
 static int itti_dump_running = 1;
 
 static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message);
@@ -283,8 +287,8 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     __sync_fetch_and_add (&itti_dump_queue.messages_in_queue, 1);
 #else
     {
-        ssize_t  write_ret;
-        uint64_t sem_counter = 1;
+        ssize_t   write_ret;
+        eventfd_t sem_counter = 1;
 
         /* Call to write for an event fd must be of 8 bytes */
         write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
@@ -523,19 +527,21 @@ static void *itti_dump_socket(void *arg_p)
 #ifndef RTAI
                 if (i == itti_dump_queue.event_fd) {
                     /* Notification of new element to dump from other tasks */
-                    uint64_t sem_counter;
-                    ssize_t  read_ret;
+                    eventfd_t sem_counter;
+                    ssize_t   read_ret;
 
-                    /* Read will always return 1 */
+                    /* Read will always return 1 for kernel versions > 2.6.30 */
                     read_ret = read (itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
                     if (read_ret < 0) {
                         ITTI_DUMP_ERROR("Failed read for semaphore: %s\n", strerror(errno));
                         pthread_exit(NULL);
                     }
                     DevCheck(read_ret == sizeof(sem_counter), read_ret, sizeof(sem_counter), 0);
-
+#if defined(KERNEL_VERSION_PRE_2_6_30)
+                    itti_dump_flush_ring_buffer(1);
+#else
                     itti_dump_flush_ring_buffer(0);
-
+#endif
                     ITTI_DUMP_DEBUG("Write element to file\n");
                 } else
 #endif
@@ -705,7 +711,11 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 #ifdef RTAI
     itti_dump_queue.messages_in_queue = 0;
 #else
+# if defined(KERNEL_VERSION_PRE_2_6_30)
+    itti_dump_queue.event_fd = eventfd(0, 0);
+# else
     itti_dump_queue.event_fd = eventfd(0, EFD_SEMAPHORE);
+# endif
     if (itti_dump_queue.event_fd == -1)
     {
         ITTI_DUMP_ERROR("eventfd failed: %s\n", strerror(errno));

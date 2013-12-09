@@ -83,7 +83,7 @@ const int itti_debug_poll = 0;
 /* Global message size */
 #define MESSAGE_SIZE(mESSAGEiD) (sizeof(MessageHeader) + itti_desc.messages_info[mESSAGEiD].size)
 
-#if !defined(EFD_SEMAPHORE)
+#ifndef EFD_SEMAPHORE
 # define KERNEL_VERSION_PRE_2_6_30 1
 #endif
 
@@ -116,7 +116,7 @@ typedef struct thread_desc_s {
     uint16_t nb_events;
 
 #if defined(KERNEL_VERSION_PRE_2_6_30)
-    uint64_t sem_counter;
+    eventfd_t sem_counter;
 #endif
 
     /* Array of events monitored by the task.
@@ -392,7 +392,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
                 if (TASK_GET_PARENT_TASK_ID(destination_task_id) == TASK_UNKNOWN)
                 {
                     ssize_t write_ret;
-                    uint64_t sem_counter = 1;
+                    eventfd_t sem_counter = 1;
 
                     /* Call to write for an event fd must be of 8 bytes */
                     write_ret = write (itti_desc.threads[destination_thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
@@ -534,8 +534,8 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             (itti_desc.threads[thread_id].events[i].data.fd == itti_desc.threads[thread_id].task_event_fd))
         {
             struct message_list_s *message = NULL;
-            uint64_t sem_counter;
-            ssize_t  read_ret;
+            eventfd_t sem_counter;
+            ssize_t   read_ret;
 
             /* Read will always return 1 */
             read_ret = read (itti_desc.threads[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
@@ -543,7 +543,7 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
 
 #if defined(KERNEL_VERSION_PRE_2_6_30)
             /* Store the value of the semaphore counter */
-            itti_desc.tasks[task_id].sem_counter = sem_counter - 1;
+            itti_desc.threads[task_id].sem_counter = sem_counter - 1;
 #endif
 
             if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 0) {
@@ -567,16 +567,18 @@ void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
 
 #if defined(KERNEL_VERSION_PRE_2_6_30)
     /* Store the value of the semaphore counter */
-    if (itti_desc.tasks[task_id].sem_counter > 0) {
+    if (itti_desc.threads[task_id].sem_counter > 0) {
+        struct message_list_s *message = NULL;
+
         if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 0) {
             /* No element in list -> this should not happen */
-            DevParam(task_id, itti_desc.tasks[task_id].sem_counter, 0);
+            DevParam(task_id, itti_desc.threads[task_id].sem_counter, 0);
         }
         DevAssert(message != NULL);
         *received_msg = message->msg;
         free (message);
 
-        itti_desc.tasks[task_id].sem_counter--;
+        itti_desc.threads[task_id].sem_counter--;
     } else
 #endif
     itti_receive_msg_internal_event_fd(task_id, 0, received_msg);
@@ -720,7 +722,7 @@ static void *itti_rt_relay_thread(void *arg)
                 if (pending_messages > 0)
                 {
                     ssize_t write_ret;
-                    uint64_t sem_counter = pending_messages;
+                    eventfd_t sem_counter = pending_messages;
 
                     /* Call to write for an event fd must be of 8 bytes */
                     write_ret = write (itti_desc.threads[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
