@@ -287,6 +287,7 @@ static void *eNB_thread(void *arg)
   unsigned char last_slot, next_slot;
   int subframe = 0, hw_subframe;
   int frame=0;
+  int skip_first=1;
   unsigned int msg1;
   unsigned int aa,slot_offset, slot_offset_F;
   int diff;
@@ -392,9 +393,9 @@ static void *eNB_thread(void *arg)
 	last_slot+=20;
       next_slot = ((subframe<<1)+4)%LTE_SLOTS_PER_FRAME;
 
-      if ((frame>5)&&1)
+      if ((skip_first == 0) || (frame>5))
 	{
-
+          skip_first = 0;
 	  timing_info.time_last = rt_get_time_ns();
 
 	  //msg("subframe %d, last_slot %d,next_slot %d\n", subframe,last_slot,next_slot);
