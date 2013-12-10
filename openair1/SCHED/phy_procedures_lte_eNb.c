@@ -3514,15 +3514,15 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_ENB, phy_vars_eNB->frame);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,1);
   
-  if (((phy_vars_eNB->lte_frame_parms.frame_type == 1)&&(subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_DL))||
-      (phy_vars_eNB->lte_frame_parms.frame_type == 0)){
+  if ((((phy_vars_eNB->lte_frame_parms.frame_type == TDD)&&(subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_DL))||
+      (phy_vars_eNB->lte_frame_parms.frame_type == FDD)) && ((next_slot&1)==0)) {
 #ifdef Rel10 
     if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 ) 
 #endif 
       phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
   }
-  if (((phy_vars_eNB->lte_frame_parms.frame_type == 1 )&&(subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_UL))||
-      (phy_vars_eNB->lte_frame_parms.frame_type == 0)){
+  if ((((phy_vars_eNB->lte_frame_parms.frame_type == TDD )&&(subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_UL)) ||
+      (phy_vars_eNB->lte_frame_parms.frame_type == FDD)) && ((last_slot&1)==1)){
     phy_procedures_eNB_RX(last_slot,phy_vars_eNB,abstraction_flag,r_type);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_S) &&
