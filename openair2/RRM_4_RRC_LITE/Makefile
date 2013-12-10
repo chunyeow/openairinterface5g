@@ -72,7 +72,42 @@ LDFLAGS +=	-rdynamic
 PROGS =		rrm_exe test_exe
 
 gen-c-from-asn1:
-		cd $(RRC_RRM_ASN1_DIR);asn1c -gen-PER -fcompound-names -fnative-types -fskeletons-copy  $(ASN1_RRC_SPEC_DIR)/EUTRA-RRC-Definitions.asn  $(RRC_RRM_ASN1_DIR)/rrc-rrm.asn; cd -
+		#-fbless-SIZE
+		# Allow SIZE() constraint for INTEGER, ENUMERATED, and other types
+		# for which this constraint is normally prohibited	by  the  stan-
+		# dard.  This  is  a violation of ASN.1 standard, and the compiler
+		# may fail to produce a meaningful code.
+
+		#-fcompound-names
+		# Using this option prevents name collisions in the target	source
+		# code  by	using  complex	names  for target language structures.
+		# (Name collisions may occur if the ASN.1 module reuses  the  same
+		# identifiers in multiple contexts).
+
+		#-findirect-choice
+		# When  generating code for a CHOICE type, compile the CHOICE mem-
+		# bers as indirect pointers instead of declaring them inline. Con-
+		# sider  using this option together with -fno-include-deps to pre-
+		# vent circular references.
+
+		#-fknown-extern-type=<name>
+		# Pretend the specified type is known. The	compiler  will	assume
+		# the  target  language  source files for the given type have been
+		# provided manually.
+
+		#-fno-constraints
+		# Do not generate ASN.1 subtype constraint checking code. This may
+		# make a shorter executable.
+
+		#-fno-include-deps
+		# Do  not  generate  courtesy #include lines for non-critical type
+		# dependencies.  Helps prevent namespace collisions.
+
+		#-funnamed-unions
+		# Enable unnamed unions in the definitions	of  target  language's
+		# structures.
+		#cd $(RRC_RRM_ASN1_DIR);asn1c -gen-PER -fcompound-names -fnative-types -fskeletons-copy  $(ASN1_RRC_SPEC_DIR)/EUTRA-RRC-Definitions.asn  $(RRC_RRM_ASN1_DIR)/rrc-rrm.asn; cd -
+		cd $(RRC_RRM_ASN1_DIR);asn1c -gen-PER  -fno-include-deps -fcompound-names -fnative-types -fskeletons-copy  $(ASN1_RRC_SPEC_DIR)/EUTRA-RRC-Definitions.asn  $(RRC_RRM_ASN1_DIR)/rrc-rrm.asn; cd -
 
 
 libs:

@@ -13,6 +13,10 @@
 #include "UTIL/OTG/otg.h"
 #include "UTIL/OTG/otg_vars.h"
 #include "oml.h"
+#ifdef ENABLE_RAL
+#include "lteRALenb.h"
+#include "lteRALue.h"
+#endif
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -400,7 +404,10 @@ void oaisim_config() {
      }
    } 
     // init other comps
-  
+#ifdef ENABLE_RAL
+  mRAL_init_default_values();
+  eRAL_init_default_values();
+#endif
   olg_config();
   ocg_config_emu(); 
   ocg_config_env();// mobility gen
@@ -444,27 +451,30 @@ int olg_config() {
 		 oai_emulation.info.g_log_level,
 		 oai_emulation.info.g_log_verbosity,
 		 oai_emulation.emulation_config.log_emu.interval);
-/*
+
   // if perf eval then reset the otg log level
-  set_comp_log(PHY,  LOG_NONE, 0x15,1);
-  set_comp_log(EMU,  LOG_FULL, 0x15,1);
-  set_comp_log(OCG,  LOG_NONE, 0x15,1);
-  set_comp_log(OCM,  LOG_NONE, 0x15,1);
-  set_comp_log(OTG,  LOG_NONE, 0x15,1);
-  set_comp_log(MAC,  LOG_NONE, 0x15,1);
-  set_comp_log(OMG,  LOG_NONE, 0x15,1);
-  set_comp_log(OPT,  LOG_ERR, 0x15,1); */
-/*
-  set_log(OCG,  LOG_DEBUG, 1);  
-  set_log(EMU,  LOG_INFO,  20);
-  set_log(MAC,  LOG_DEBUG, 1);  
+  set_comp_log(PHY,  LOG_EMERG, 0x15,1);
+  set_comp_log(EMU,  LOG_EMERG, 0x15,1);
+  set_comp_log(OCG,  LOG_EMERG, 0x15,1);
+  set_comp_log(OCM,  LOG_EMERG, 0x15,1);
+  set_comp_log(OTG,  LOG_EMERG, 0x15,1);
+  set_comp_log(MAC,  LOG_EMERG, 0x15,1);
+  set_comp_log(OMG,  LOG_EMERG, 0x15,1);
+  set_comp_log(OPT,  LOG_EMERG, 0x15,1);
+  set_comp_log(PDCP, LOG_TRACE, LOG_MED,1);
+  set_comp_log(RLC,  LOG_TRACE, LOG_MED,1);
+  set_comp_log(RRC,  LOG_TRACE, LOG_MED,1);
+
+  //set_log(OCG,  LOG_DEBUG, 1);
+  //set_log(EMU,  LOG_INFO,  20);
+  //set_log(MAC,  LOG_DEBUG, 1);
   set_log(RLC,  LOG_TRACE, 1);  
-  set_log(PHY,  LOG_DEBUG, 1);  
+  //set_log(PHY,  LOG_DEBUG, 1);
   set_log(PDCP, LOG_TRACE, 1);  
   set_log(RRC,  LOG_DEBUG, 1);  
-  set_log(OCM,  LOG_INFO, 20);  
-  set_log(OTG,  LOG_INFO, 1);  
-  set_comp_log(OCG,  LOG_ERR, 0x15,1);  
+  //set_log(OCM,  LOG_INFO, 20);
+  //set_log(OTG,  LOG_INFO, 1);
+/*  set_comp_log(OCG,  LOG_ERR, 0x15,1);
   set_comp_log(EMU,  LOG_ERR,  0x15,20);
   set_comp_log(MAC,  LOG_ERR, 0x15,1);  
   set_comp_log(RLC,  LOG_INFO, 0x15,1);  

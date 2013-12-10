@@ -361,15 +361,21 @@ protected_pdcp_fifo(void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t e
 /*
  * Following two types are utilized between NAS driver and PDCP
  */
-typedef struct pdcp_data_req_header_t {
+
+typedef int traffic_type_t;
+
+typedef struct pdcp_data_req_header_s {
   rb_id_t             rb_id;
-  sdu_size_t           data_size;
-  int       inst;
+  sdu_size_t          data_size;
+  int                 inst;
+  traffic_type_t      traffic_type;
 } pdcp_data_req_header_t;
-typedef struct pdcp_data_ind_header_t {
+
+typedef struct pdcp_data_ind_header_s {
   rb_id_t             rb_id;
-  sdu_size_t           data_size;
-  int       inst;
+  sdu_size_t          data_size;
+  int                 inst;
+  int                 dummy;
 } pdcp_data_ind_header_t;
 
 struct pdcp_netlink_element_s {

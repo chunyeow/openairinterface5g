@@ -5,11 +5,11 @@ default: oaisim
 
 include $(OPENAIR_TARGETS)/Makefile.common
 
-TOP_DIR             = $(OPENAIR1_DIR)
-OPENAIR1_TOP        = $(OPENAIR1_DIR)
-OPENAIR2_TOP        = $(OPENAIR2_DIR)
-OPENAIR3_TOP        = $(OPENAIR3_DIR)
-OPENAIR3            = $(OPENAIR3_DIR)
+TOP_DIR               = $(OPENAIR1_DIR)
+OPENAIR1_TOP          = $(OPENAIR1_DIR)
+OPENAIR2_TOP          = $(OPENAIR2_DIR)
+OPENAIR3_TOP          = $(OPENAIR3_DIR)
+OPENAIR3              = $(OPENAIR3_DIR)
 
 CPUFLAGS = -mmmx -msse -msse2 -msse4.1 -march=native
 # FORCE ssse3 for compilation of openair on User Mode Linux
@@ -131,6 +131,14 @@ CFLAGS += -DRel8
 #endif
 endif
 
+ifeq ($(ENABLE_RAL), 1)
+CFLAGS += -DENABLE_RAL
+endif
+
+ifeq ($(MIH_C_MEDIEVAL_EXTENSIONS), 1)
+CFLAGS += -DMIH_C_MEDIEVAL_EXTENSIONS
+endif
+
 ifeq ($(NAS), 1)
 CFLAGS += -DNAS_NETLINK -DLINUX
 NAS_FLAG=1
@@ -185,6 +193,7 @@ include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 include $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
+include $(OPENAIR3_DIR)/RAL-LTE/Makefile.inc
 include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
 
 INCLUDES += -I$(TOP_DIR)

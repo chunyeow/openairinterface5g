@@ -20,6 +20,9 @@ SUB_TASK_DEF(TASK_L2L1,     TASK_PDCP_ENB,              200)
     ///   Radio Resource Control task
     TASK_DEF(TASK_RRC_ENB,  TASK_PRIORITY_MED,          200)
     ///   S1ap task
+/// RAL task for ENB
+TASK_DEF(TASK_RAL_ENB, TASK_PRIORITY_MED, 200)
+
     TASK_DEF(TASK_S1AP,     TASK_PRIORITY_MED,          200)
     ///   X2ap task, acts as both source and target
     TASK_DEF(TASK_X2AP,     TASK_PRIORITY_MED,          200)
@@ -39,4 +42,5 @@ SUB_TASK_DEF(TASK_L2L1,     TASK_PDCP_UE,               200)
     TASK_DEF(TASK_RRC_UE,   TASK_PRIORITY_MED,          200)
     ///   Non Access Stratum task
     TASK_DEF(TASK_NAS_UE,   TASK_PRIORITY_MED,          200)
+    TASK_DEF(TASK_RAL_UE,   TASK_PRIORITY_MED,          200)
 

@@ -92,7 +92,7 @@ obj-m += oai_nw_drv.o
 oai_nw_drv-objs += device.o
 oai_nw_drv-objs += common.o
 oai_nw_drv-objs += ioctl.o
-#oai_nw_drv-objs += classifier.o
+oai_nw_drv-objs += classifier.o
 oai_nw_drv-objs += tool.o
 ifdef OAI_NW_DRIVER_USE_NETLINK
 oai_nw_drv-objs += netlink.o

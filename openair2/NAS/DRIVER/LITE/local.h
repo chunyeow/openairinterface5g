@@ -65,6 +65,8 @@
 #include "constant.h"
 #include "sap.h"
 
+typedef int traffic_type_t;
+
 struct cx_entity {
   int                        sap[OAI_NW_DRV_SAPI_CX_MAX];
   u8                         state;                     // state of the connection
@@ -113,16 +115,18 @@ struct ipversion {
 #endif
 };
 
-typedef struct pdcp_data_req_header_t {
+typedef struct pdcp_data_req_header_s {
   unsigned int           rb_id;
   unsigned int           data_size;
   int                    inst;
+  traffic_type_t         traffic_type;
 } pdcp_data_req_header_t;
 
-typedef struct pdcp_data_ind_header_t {
+typedef struct pdcp_data_ind_header_s {
   unsigned int           rb_id;
   unsigned int           data_size;
   int                    inst;
+  int                    dummy;
 } pdcp_data_ind_header_t;
 
 

@@ -308,6 +308,22 @@ int logInit (void)
     g_log->log_component[OSA].filelog = 0;
     g_log->log_component[OSA].filelog_name = "";
 
+    g_log->log_component[RAL_ENB].name = "eRAL";
+    g_log->log_component[RAL_ENB].level = LOG_EMERG;
+    g_log->log_component[RAL_ENB].flag = LOG_MED;
+    g_log->log_component[RAL_ENB].interval = 1;
+    g_log->log_component[RAL_ENB].fd = 0;
+    g_log->log_component[RAL_ENB].filelog = 0;
+    g_log->log_component[RAL_ENB].filelog_name = "";
+
+    g_log->log_component[RAL_UE].name = "mRAL";
+    g_log->log_component[RAL_UE].level = LOG_EMERG;
+    g_log->log_component[RAL_UE].flag = LOG_MED;
+    g_log->log_component[RAL_UE].interval = 1;
+    g_log->log_component[RAL_UE].fd = 0;
+    g_log->log_component[RAL_UE].filelog = 0;
+    g_log->log_component[RAL_UE].filelog_name = "";
+
     g_log->log_component[ENB_APP].name = "ENB_APP";
     g_log->log_component[ENB_APP].level = LOG_EMERG;
     g_log->log_component[ENB_APP].flag = LOG_MED;

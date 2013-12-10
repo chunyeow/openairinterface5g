@@ -6,9 +6,9 @@
 #include <string.h>
 #include <arpa/inet.h>
 //-----------------------------------------------------------------
+#include "Message.h"
 #include "RRC-RRM-Message.h"
 #include "RRM-RRC-Message.h"
-#include "Message.h"
 #include "Utility.h"
 #include "RRC2RRMMessageConnectionRequest.h"
 #include "RRC2RRMMessageAddUserRequest.h"
@@ -589,6 +589,7 @@ std::string Message::StatusToString(msg_response_status_t statusP)
         default:
             result << "UNKNOWN STATUS " << statusP; return result.str();
     }
+    return result.str();
 }
 //----------------------------------------------------------------------------
 std::string Message::ReasonToString(msg_response_reason_t reasonP)
@@ -624,6 +625,7 @@ std::string Message::ReasonToString(msg_response_reason_t reasonP)
         default:
             result << "UNKNOWN REASON " << reasonP; return result.str();
     }
+    return result.str();
 }
 //-----------------------------------------------------------------
 Message::~Message()

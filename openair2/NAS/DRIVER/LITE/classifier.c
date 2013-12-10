@@ -148,168 +148,59 @@
          && ((((__const uint8_t *) (a))[3] & (((__const uint8_t *) (m))[3])) == (((__const uint8_t *) (b))[3] & (((__const uint8_t *) (m))[3]))))
 
 
-//#define OAI_DRV_DEBUG_CLASS
-//#define OAI_DRV_DEBUG_SEND
 //---------------------------------------------------------------------------
-void oai_nw_drv_create_mask_ipv6_addr(struct in6_addr *masked_addrP, int prefix_len){
+// Find the IP traffic type (UNICAST, MULTICAST, BROADCAST)
+traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb) {
   //---------------------------------------------------------------------------
-  int   u6_addr8_index;
-  int   u6_addr1_index;
-  int   index;
-
-  masked_addrP->s6_addr32[0] = 0xFFFFFFFF;
-  masked_addrP->s6_addr32[1] = 0xFFFFFFFF;
-  masked_addrP->s6_addr32[2] = 0xFFFFFFFF;
-  masked_addrP->s6_addr32[3] = 0xFFFFFFFF;
-
-  switch (prefix_len) {
-  case 128:
-	  return;
-  case 112:
-	  masked_addrP->s6_addr32[3] = htonl(0xFFFF0000);
-	  return;
-  case 96:
-	  masked_addrP->s6_addr32[3] = 0x00000000;
-	  return;
-  case 80:
-	  masked_addrP->s6_addr32[2] = htonl(0xFFFF0000);
-	  masked_addrP->s6_addr32[3] = 0x00000000;
-	  return;
-  case 64:
-	  masked_addrP->s6_addr32[2] = 0x00000000;
-	  masked_addrP->s6_addr32[3] = 0x00000000;
-	  return;
-  case 48:
-	  masked_addrP->s6_addr32[1] = htonl(0xFFFF0000);
-	  masked_addrP->s6_addr32[2] = 0x00000000;
-	  masked_addrP->s6_addr32[3] = 0x00000000;
-	  return;
-  case 32:
-	  masked_addrP->s6_addr32[1] = 0x00000000;
-	  masked_addrP->s6_addr32[2] = 0x00000000;
-	  masked_addrP->s6_addr32[3] = 0x00000000;
-	  return;
-  case 16:
-	  masked_addrP->s6_addr32[0] = htonl(0xFFFF0000);
-	  masked_addrP->s6_addr32[1] = 0x00000000;
-	  masked_addrP->s6_addr32[2] = 0x00000000;
-	  masked_addrP->s6_addr32[3] = 0x00000000;
-	  return;
-  default:
-      u6_addr8_index = prefix_len >> 3;
-      u6_addr1_index = prefix_len & 0x07;
-
-      for (index = u6_addr8_index ; index < 16; index++) {
-          masked_addrP->s6_addr[index] = 0;
-      }
-      if (u6_addr1_index > 0) {
-          masked_addrP->s6_addr[u6_addr8_index+1] = htons(0xFF << (8-u6_addr1_index));
-      }
-      for (index = 0 ; index < 4; index++) {
-    	  masked_addrP->s6_addr32[index] = htonl(masked_addrP->s6_addr32[index]);
-      }
-  }
-
-}
-//---------------------------------------------------------------------------
-void oai_nw_drv_create_mask_ipv4_addr(struct in_addr *masked_addrP, int prefix_len){
-  //---------------------------------------------------------------------------
-  if (prefix_len > 32) {
-      prefix_len = 32;
-  }
-  masked_addrP->s_addr = htonl(0xFFFFFFFF << (32 - prefix_len));
-  return;
-}
-
-
-//---------------------------------------------------------------------------
-// Search the entity with the IPv6 address 'addr'
-// Navid: the ipv6 classifier is not fully tested
-struct cx_entity *oai_nw_drv_find_cx6(struct sk_buff  *skb,
-                                unsigned char    dscp,
-                                struct oai_nw_drv_priv *gpriv,
-                                int              inst,
-                                int             *paddr_type,
-                                unsigned char   *cx_searcher) {
-  //---------------------------------------------------------------------------
-  unsigned char             cxi;
-  struct cx_entity         *cx = NULL;
-  struct classifier_entity *sclassifier= NULL;
-  u32                       mc_addr_hdr;
-  struct in6_addr           masked_addr;
+  traffic_type_t            traffic_type = OAI_NW_DRV_IPVX_ADDR_TYPE_UNKNOWN;
 
   if (skb!=NULL) {
+    switch (ntohs(skb->protocol))  {
+    case ETH_P_IPV6:
+      traffic_type = OAI_NW_DRV_IPV6_ADDR_TYPE_UNKNOWN;
       #ifdef OAI_DRV_DEBUG_CLASS
       printk("SOURCE ADDR %X:%X:%X:%X:%X:%X:%X:%X",NIP6ADDR(&(ipv6_hdr(skb)->saddr)));
       printk("    DEST   ADDR %X:%X:%X:%X:%X:%X:%X:%X\n",NIP6ADDR(&(ipv6_hdr(skb)->daddr)));
       #endif
-      mc_addr_hdr = ntohl(ipv6_hdr(skb)->daddr.in6_u.u6_addr32[0]);
-      //printk("   mc_addr_hdr  %08X\n",mc_addr_hdr);
-      // First check if multicast [1st octet is FF]
-      if ((mc_addr_hdr & 0xFF000000) == 0xFF000000) {
-          // packet type according to the scope of the multicast packet
-          // we don't consider RPT bits in second octet [maybe done later if needed]
-          switch(mc_addr_hdr & 0x000F0000) {
-              case (0x00020000):
-                  *paddr_type = OAI_NW_DRV_IPV6_ADDR_TYPE_MC_SIGNALLING;
-                  #ifdef OAI_DRV_DEBUG_CLASS
-                  printk("nasrg_CLASS_cx6: multicast packet - signalling \n");
-                  #endif
-                  break;
-              case (0x000E0000):
-                  *paddr_type = OAI_NW_DRV_IPV6_ADDR_TYPE_MC_MBMS;
-                  //*pmbms_ix = 0;
-                  //cx=gpriv->cx;  // MBMS associate to Mobile 0
-                  #ifdef OAI_DRV_DEBUG_CLASS
-                  printk("nasrg_CLASS_cx6: multicast packet - MBMS data \n");
-                  #endif
-                  break;
-          default:
-                  printk("nasrg_CLASS_cx6: default \n");
-                  *paddr_type = OAI_NW_DRV_IPV6_ADDR_TYPE_UNKNOWN;
-                  //*pmbms_ix = NASRG_MBMS_SVCES_MAX;
-          }
+      if (IN6_IS_ADDR_MULTICAST(&ipv6_hdr(skb)->daddr.in6_u.u6_addr32[0])) {
+          traffic_type = OAI_NW_DRV_IPV6_ADDR_TYPE_MULTICAST;
+
       } else {
-          *paddr_type = OAI_NW_DRV_IPV6_ADDR_TYPE_UNICAST;
-
-          for (cxi=*cx_searcher; cxi<OAI_NW_DRV_CX_MAX; cxi++) {
-
-              (*cx_searcher)++;
-              sclassifier = gpriv->cx[cxi].sclassifier[dscp];
-
-              while (sclassifier!=NULL) {
-                  if ((sclassifier->ip_version == OAI_NW_DRV_IP_VERSION_6) || (sclassifier->ip_version == OAI_NW_DRV_IP_VERSION_ALL)) {   // verify that this is an IPv6 rule
-                      /*LGif (IN6_IS_ADDR_UNSPECIFIED(&(sclassifier->daddr.ipv6))) {
-                          printk("oai_nw_drv_find_cx6: addr is null \n");
-                          sclassifier = sclassifier->next;
-                          continue;
-                      }*/
-                      #ifdef OAI_DRV_DEBUG_CLASS
-                      printk("cx %d : DSCP %d %X:%X:%X:%X:%X:%X:%X:%X\n",cxi, dscp, NIP6ADDR(&(sclassifier->daddr.ipv6)));
-                      #endif //OAI_DRV_DEBUG_CLASS
-                      //if ((dst = (unsigned int*)&(((struct rt6_info *)skbdst)->rt6i_gateway)) == 0){
-                      // LG: STRANGE
-                      if (IN6_IS_ADDR_UNSPECIFIED(&ipv6_hdr(skb)->daddr)) {
-                          printk("oai_nw_drv_find_cx6: dst addr is null \n");
-                          sclassifier = sclassifier->next;
-                          continue;
-                      }
-
-                      oai_nw_drv_create_mask_ipv6_addr(&masked_addr, sclassifier->dplen);
-                      if (IN6_ARE_ADDR_MASKED_EQUAL(&ipv6_hdr(skb)->daddr, &(sclassifier->daddr.ipv6), &masked_addr)) {
-                              #ifdef OAI_DRV_DEBUG_CLASS
-                              printk("oai_nw_drv_find_cx6: found cx %d: %X:%X:%X:%X:%X:%X:%X:%X\n",cxi, NIP6ADDR(&(sclassifier->daddr.ipv6)));
-                              #endif //OAI_DRV_DEBUG_CLASS
-                              return &gpriv->cx[cxi];
-                      }
-                  }
-                  // Go to next classifier entry for connection
-                  sclassifier = sclassifier->next;
-              }
-          }
+          traffic_type = OAI_NW_DRV_IPV6_ADDR_TYPE_UNICAST;
       }
+      
+      break;
+      
+      
+    case ETH_P_IP:
+      traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_UNKNOWN;
+#ifdef KERNEL_VERSION_GREATER_THAN_2622
+      //print_TOOL_pk_ipv4((struct iphdr *)skb->network_header);
+      if (IN_MULTICAST(htonl(ip_hdr(skb)->daddr))) {
+          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST;
+      } else {
+          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_UNICAST;
+      }
+      // TO DO BROADCAST
+      
+#else
+      //print_TOOL_pk_ipv4(skb->nh.iph);
+      if (IN_MULTICAST(htonl(ip_hdr(skb)->daddr))) {
+          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST;
+      } else {
+          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_UNICAST;
+      }
+      // TO DO BROADCAST
+#endif
+      break;
+      
+      case ETH_P_ARP:
+          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_BROADCAST;
+	  break;
+      
+    default:;
+    }
   }
-  printk("oai_nw_drv_find_cx6 NOT FOUND: %X:%X:%X:%X:%X:%X:%X:%X\n",NIP6ADDR(&ipv6_hdr(skb)->daddr));
-  return cx;
+  return traffic_type;
 }
 

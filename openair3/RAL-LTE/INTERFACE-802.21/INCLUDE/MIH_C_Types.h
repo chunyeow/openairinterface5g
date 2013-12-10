@@ -20,6 +20,9 @@ Type definition and structure for 802.21 interface
 #define __MIH_C_LINK_TYPES_H__
 #include <sys/types.h>
 #include <linux/types.h>
+#warning " Hack USER_MODE"
+#define USER_MODE
+
 //-----------------------------------------------------------------------------
 #include "MIH_C_Link_Constants.h"
 #include "MIH_C_bit_buffer.h"

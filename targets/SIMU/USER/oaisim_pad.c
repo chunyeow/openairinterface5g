@@ -437,6 +437,8 @@ void run(int argc, char *argv[]) {
   pdcp_period = 1;
   omg_period = 10;
 
+  mRAL_init_default_values(); //Default values
+  eRAL_init_default_values(); //Default values
 
   init_oai_emulation(); //Default values
 

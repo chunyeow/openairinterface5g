@@ -20,6 +20,8 @@ void init_openair1();
 
 void init_openair2();
 
+void init_802_21_link_saps();
+
 void init_ocm();
 
 void init_otg_pdcp_buffer();

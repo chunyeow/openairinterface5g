@@ -145,11 +145,10 @@ int oai_nw_drv_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
 // classifier.c
 
 /**
-  \brief Send a socket received from IP to classifier for a particular instance ID.
+  \brief Find the IP traffic type (UNICAST, MULTICAST, BROADCAST) of the IP packet attached to sk_buff.
 */
-void oai_nw_drv_class_send(struct sk_buff *skb,    //!< Pointer to socket buffer
-                          int inst                //!< Instance ID
-                          );
+traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb);
+
 
 
 // tool.c

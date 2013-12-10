@@ -25,6 +25,8 @@
 #include "UTIL/OPT/opt.h"
 #include "UTIL/OTG/otg_config.h"
 #include "UTIL/OTG/otg_tx.h"
+#include "lteRALenb.h"
+#include "lteRALue.h"
 
 #include "cor_SF_sim.h"
 
@@ -74,6 +76,7 @@ Node_list ue_node_list = NULL;
 Node_list enb_node_list = NULL;
 int pdcp_period, omg_period;
 
+
 // time calibration for soft realtime mode
 struct timespec time_spec;
 unsigned long time_last, time_now;
@@ -114,8 +117,22 @@ void get_simulation_options(int argc, char *argv[]) {
   char c;
   int option_index;
   static struct option long_options[] = {
-    {"pdcp_period", 1, 0, 0},
-    {"omg_period", 1, 0, 0},
+    {"pdcp_period",            1,                 0, 0},
+    {"omg_period",             1,                 0, 0},
+    {"enb-ral-listening-port", required_argument, 0, 0},
+    {"enb-ral-ip-address",     required_argument, 0, 0},
+    {"enb-ral-link-id",        required_argument, 0, 0},
+    {"enb-ral-link-address",   required_argument, 0, 0},
+    {"enb-mihf-remote-port",   required_argument, 0, 0},
+    {"enb-mihf-ip-address",    required_argument, 0, 0},
+    {"enb-mihf-id",            required_argument, 0, 0},
+    {"ue-ral-listening-port",  required_argument, 0, 0},
+    {"ue-ral-ip-address",      required_argument, 0, 0},
+    {"ue-ral-link-id",         required_argument, 0, 0},
+    {"ue-ral-link-address",    required_argument, 0, 0},
+    {"ue-mihf-remote-port",    required_argument, 0, 0},
+    {"ue-mihf-ip-address",     required_argument, 0, 0},
+    {"ue-mihf-id",             required_argument, 0, 0},
     {NULL, 0, NULL, 0}
   };
 
@@ -128,10 +145,80 @@ void get_simulation_options(int argc, char *argv[]) {
           printf("PDCP period is %d\n", pdcp_period);
         }
       } else if (! strcmp(long_options[option_index].name, "omg_period")) {
-        if (optarg) {
-          omg_period = atoi(optarg);
-          printf("OMG period is %d\n", omg_period);
-        }
+          if (optarg) {
+            omg_period = atoi(optarg);
+            printf("OMG period is %d\n", omg_period);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-ral-listening-port")) {
+          if (optarg) {
+            g_conf_enb_ral_listening_port = strdup(optarg);
+            printf("eNB RAL listening port is %s\n", g_conf_enb_ral_listening_port);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-ral-ip-address")) {
+          if (optarg) {
+            g_conf_enb_ral_ip_address = strdup(optarg);
+            printf("eNB RAL IP address is %s\n", g_conf_enb_ral_ip_address);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-ral-link-address")) {
+          if (optarg) {
+            g_conf_enb_ral_link_address = strdup(optarg);
+            printf("eNB RAL link address is %s\n", g_conf_enb_ral_link_address);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-mihf-remote-port")) {
+          if (optarg) {
+            g_conf_enb_mihf_remote_port = strdup(optarg);
+            printf("eNB MIH-F remote port is %s\n", g_conf_enb_mihf_remote_port);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-mihf-ip-address")) {
+          if (optarg) {
+            g_conf_enb_mihf_ip_address = strdup(optarg);
+            printf("eNB MIH-F IP address is %s\n", g_conf_enb_mihf_ip_address);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-ral-link-id")) {
+          if (optarg) {
+            g_conf_enb_ral_link_id = strdup(optarg);
+            printf("eNB RAL link id is %s\n", g_conf_enb_ral_link_id);
+          }
+      } else if (! strcmp(long_options[option_index].name, "enb-mihf-id")) {
+          if (optarg) {
+            g_conf_enb_mihf_id = strdup(optarg);
+            printf("eNB MIH-F id is %s\n", g_conf_enb_mihf_id);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-ral-listening-port")) {
+          if (optarg) {
+              g_conf_ue_ral_listening_port = strdup(optarg);
+              printf("UE RAL listening port is %s\n", g_conf_ue_ral_listening_port);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-ral-ip-address")) {
+          if (optarg) {
+              g_conf_ue_ral_ip_address = strdup(optarg);
+              printf("UE RAL IP address is %s\n", g_conf_ue_ral_ip_address);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-ral-link-address")) {
+          if (optarg) {
+              g_conf_ue_ral_link_address = strdup(optarg);
+              printf("UE RAL link address is %s\n", g_conf_ue_ral_link_address);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-mihf-remote-port")) {
+          if (optarg) {
+              g_conf_ue_mihf_remote_port = strdup(optarg);
+              printf("UE MIH-F remote port is %s\n", g_conf_ue_mihf_remote_port);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-mihf-ip-address")) {
+          if (optarg) {
+              g_conf_ue_mihf_ip_address = strdup(optarg);
+              printf("UE MIH-F IP address is %s\n", g_conf_ue_mihf_ip_address);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-ral-link-id")) {
+          if (optarg) {
+              g_conf_ue_ral_link_id = strdup(optarg);
+              printf("UE RAL link id is %s\n", g_conf_ue_ral_link_id);
+          }
+      } else if (! strcmp(long_options[option_index].name, "ue-mihf-id")) {
+          if (optarg) {
+              g_conf_ue_mihf_id = strdup(optarg);
+              printf("UE MIH-F id is %s\n", g_conf_ue_mihf_id);
+          }
       }
       break;
     case 'L':                   // set FDD
@@ -603,8 +690,37 @@ void init_openair2() {
   }
 
   mac_xface->macphy_exit = exit_fun;
+
+#ifdef ENABLE_RAL
+  init_802_21_link_saps();
+#endif
 #endif
 }
+
+void init_802_21_link_saps() {
+#ifdef ENABLE_RAL
+#ifdef OPENAIR2
+#if defined(ENABLE_ITTI)
+  if (NB_eNB_INST > 0) {
+      if (itti_create_task (TASK_RAL_ENB, eRAL_task, NULL) < 0) {
+          LOG_E(EMU, "Create task failed");
+          LOG_D(EMU, "Initializing RAL eNB task interface: FAILED\n");
+          exit (-1);
+      }
+  }
+
+  if (NB_UE_INST > 0) {
+      if (itti_create_task (TASK_RAL_UE, mRAL_task, NULL) < 0) {
+          LOG_E(EMU, "Create task failed");
+          LOG_D(EMU, "Initializing RAL UE task interface: FAILED\n");
+          exit (-1);
+      }
+  }
+#endif
+#endif
+#endif
+}
+
 
 void init_ocm() {
   s32 UE_id, eNB_id;

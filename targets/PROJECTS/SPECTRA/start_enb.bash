@@ -30,6 +30,7 @@ declare -x OPENAIR1_DIR=""
 declare -x OPENAIR2_DIR=""
 declare -x OPENAIR3_DIR=""
 declare -x OPENAIR_TARGETS=""
+declare -x EMULATION_DEV_INTERFACE="eth2"
 ###########################################################
 
 set_openair
@@ -91,13 +92,16 @@ bash_exec "ip route flush cache"
 ip rule add fwmark 5  table lte
 ip route add default dev $LTEIF table lte
 
+ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
+
+
 # start MIH-F
-xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone.conf &
+#xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone.conf &
 
-wait_process_started odtone-mihf
+#wait_process_started odtone-mihf
 
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l7 -u0 -M0 -p2  -g1 -D eth2  \
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE  \
              --enb-ral-listening-port   1234\
              --enb-ral-link-id          enb_lte_link\
              --enb-ral-ip-address       127.0.0.1\

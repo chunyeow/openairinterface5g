@@ -68,8 +68,8 @@
         ntohs((addr)->s6_addr16[7])
 
 
-//#define OAI_DRV_DEBUG_SEND
-//#define OAI_DRV_DEBUG_RECEIVE
+#define OAI_DRV_DEBUG_SEND
+#define OAI_DRV_DEBUG_RECEIVE
 void oai_nw_drv_common_class_wireless2ip(u16 dlen,
                         void *pdcp_sdu,
                         int inst,
@@ -329,7 +329,7 @@ void oai_nw_drv_common_ip2wireless_drop(struct sk_buff *skb, int inst){
 // Request the transfer of data (QoS SAP)
 void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst){
   //---------------------------------------------------------------------------
-  struct pdcp_data_req_header_t     pdcph;
+  struct pdcp_data_req_header_s     pdcph;
   struct oai_nw_drv_priv *priv=netdev_priv(oai_nw_drv_dev[inst]);
 #ifdef LOOPBACK_TEST
   int i;
@@ -350,9 +350,11 @@ void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst){
     return;
   }
 
-  pdcph.data_size  = skb->len;
-  pdcph.rb_id      = skb->mark;
-  pdcph.inst       = inst;
+  pdcph.data_size    = skb->len;
+  pdcph.rb_id        = skb->mark;
+  pdcph.inst         = inst;
+  pdcph.traffic_type = oai_nw_drv_find_traffic_type(skb);
+
 
   bytes_wrote = oai_nw_drv_netlink_send((char *)&pdcph,OAI_NW_DRV_PDCPH_SIZE);
 #ifdef OAI_DRV_DEBUG_SEND
@@ -386,7 +388,7 @@ void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst){
       return;
     }
 #ifdef OAI_DRV_DEBUG_SEND
-  printk("[OAI_IP_DRV][%s] Sending packet of size %d to PDCP \n",__FUNCTION__,skb->len);
+  printk("[OAI_IP_DRV][%s] Sending packet of size %d to PDCP traffic type %d\n",__FUNCTION__,skb->len, pdcph.traffic_type);
 
  for (j=0;j<skb->len;j++)
     printk("%2x ",((unsigned char *)(skb->data))[j]);
@@ -405,7 +407,7 @@ void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst){
 void oai_nw_drv_common_wireless2ip(struct nlmsghdr *nlh) {
 //---------------------------------------------------------------------------
 
-  struct pdcp_data_ind_header_t     *pdcph = (struct pdcp_data_ind_header_t *)NLMSG_DATA(nlh);
+  struct pdcp_data_ind_header_s     *pdcph = (struct pdcp_data_ind_header_s *)NLMSG_DATA(nlh);
   struct oai_nw_drv_priv *priv;
 
   priv = netdev_priv(oai_nw_drv_dev[pdcph->inst]);

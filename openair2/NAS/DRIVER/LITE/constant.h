@@ -36,8 +36,8 @@
 
 //Debug flags
 //#define OAI_NW_DRV_DEBUG_DC
-//#define OAI_NW_DRV_DEBUG_SEND
-//#define OAI_NW_DRV_DEBUG_RECEIVE
+#define OAI_NW_DRV_DEBUG_SEND
+#define OAI_NW_DRV_DEBUG_RECEIVE
 //#define OAI_NW_DRV_DEBUG_CLASS
 //#define OAI_NW_DRV_DEBUG_GC
 //#define OAI_NW_DRV_DEBUG_DC_MEASURE
@@ -102,7 +102,7 @@
 #define OAI_NW_DRV_TIMER_IDLE                  UINT_MAX
 #define OAI_NW_DRV_TIMER_TICK                  HZ
 
-#define OAI_NW_DRV_PDCPH_SIZE                  sizeof(struct pdcp_data_req_header_t)
+#define OAI_NW_DRV_PDCPH_SIZE                  sizeof(struct pdcp_data_req_header_s)
 #define OAI_NW_DRV_IPV4_SIZE                   20
 #define OAI_NW_DRV_IPV6_SIZE                   40
 
@@ -174,13 +174,13 @@
 #define OAI_NW_DRV_DEFAULT_IPV6_ADDR3 0
 
 
+#define OAI_NW_DRV_IPVX_ADDR_TYPE_UNKNOWN        0
 #define OAI_NW_DRV_IPV6_ADDR_TYPE_UNICAST        1
-#define OAI_NW_DRV_IPV6_ADDR_TYPE_MC_SIGNALLING  2
-#define OAI_NW_DRV_IPV6_ADDR_TYPE_MC_MBMS        3
-#define OAI_NW_DRV_IPV6_ADDR_TYPE_UNKNOWN        4
+#define OAI_NW_DRV_IPV6_ADDR_TYPE_MULTICAST      2
+#define OAI_NW_DRV_IPV6_ADDR_TYPE_UNKNOWN        3
 
 #define OAI_NW_DRV_IPV4_ADDR_TYPE_UNICAST        5
-#define OAI_NW_DRV_IPV4_ADDR_TYPE_MC_SIGNALLING  6
+#define OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST      6
 #define OAI_NW_DRV_IPV4_ADDR_TYPE_BROADCAST      7
 #define OAI_NW_DRV_IPV4_ADDR_TYPE_UNKNOWN        8
 

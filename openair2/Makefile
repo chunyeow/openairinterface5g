@@ -134,6 +134,12 @@ nasmesh_netlink.ko:
 naslite_netlink_ether.ko:
 	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
 
+oai_nw_ether.ko:
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+
+oai_nw_drv.ko:
+	(cd NAS/DRIVER/LITE && $(MAKE) -j$(NUM_CORES) $(SET_UM) OAI_NW_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+
 nasmesh_netlink_address_fix.ko:
 	(cd NAS/DRIVER/MESH && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 ADDRESS_FIX=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
 

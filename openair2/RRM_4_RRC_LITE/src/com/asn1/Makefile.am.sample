@@ -866,5 +866,5 @@ clean:
 regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
-	asn1c -gen-PER -fcompound-names -fnative-types -fskeletons-copy /homes/gauthier/PROJETS/OPENAIR4G/openair2/RRM_4_RRC_LITE/src/foreign/generated_c_asn1_rrc/ASN1_files/EUTRA-RRC-Definitions.asn /homes/gauthier/PROJETS/OPENAIR4G/openair2/RRM_4_RRC_LITE/src/com/asn1/rrc-rrm.asn
+	asn1c -gen-PER -fno-include-deps -fcompound-names -fnative-types -fskeletons-copy /homes/gauthier/PROJETS/trunk/openair2/RRM_4_RRC_LITE/src/foreign/generated_c_asn1_rrc/ASN1_files/EUTRA-RRC-Definitions.asn /homes/gauthier/PROJETS/trunk/openair2/RRM_4_RRC_LITE/src/com/asn1/rrc-rrm.asn
 

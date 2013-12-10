@@ -60,6 +60,7 @@ extern int otg_enabled;
 
 #include "../MAC/extern.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
+#include "NAS/DRIVER/LITE/constant.h"
 #include "SIMULATION/ETH_TRANSPORT/extern.h"
 #include "UTIL/OCG/OCG.h"
 #include "UTIL/OCG/OCG_extern.h"
@@ -312,6 +313,22 @@ int
                          pdcp_input_sdu_buffer,
                          PDCP_DATA_PDU);
             }
+
+        } else if ((pdcp_input_header.traffic_type == OAI_NW_DRV_IPV6_ADDR_TYPE_MULTICAST) || (pdcp_input_header.traffic_type == OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST)) {
+            printf("[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ on MBMS bearer/ %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
+                  frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
+
+            if (pdcp_array[pdcp_read_header.inst][pdcp_read_header.rb_id%NB_RB_MAX].instanciated_instance) {
+                pdcp_data_req (pdcp_input_header.inst,
+                         frame, eNB_flag,
+                         pdcp_input_header.rb_id,
+                         RLC_MUI_UNDEFINED,
+                         RLC_SDU_CONFIRM_NO,
+                         pdcp_input_header.data_size,
+                         pdcp_input_sdu_buffer,
+                         PDCP_TM);
+            }
+
         } else if (eNB_flag) {
             // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
             LOG_D(PDCP, "Checking if could sent on default rabs\n");
@@ -537,12 +554,10 @@ int pdcp_fifo_read_input_sdus (u32_t frame, u8_t eNB_flag, u8_t UE_index, u8_t e
     while (pdcp_netlink_dequeue_element(eNB_flag, UE_index, eNB_index, &data) != 0) {
         if (data->pdcp_read_header.rb_id != 0) {
             if (pdcp_array[data->pdcp_read_header.inst][data->pdcp_read_header.rb_id%NB_RB_MAX].instanciated_instance) {
-#ifdef PDCP_DEBUG
-                LOG_D(PDCP, "[MSC_MSG][FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ "
+                LOG_D(PDCP, "[FRAME %05d][IP][MOD %02d][][--- PDCP_DATA_REQ "
                       "/ %d Bytes --->][PDCP][MOD %02d][RB %02d]\n",
                       frame, data->pdcp_read_header.inst, data->pdcp_read_header.data_size,
                       data->pdcp_read_header.inst, data->pdcp_read_header.rb_id);
-#endif
 
                 pdcp_data_req(data->pdcp_read_header.inst,
                               frame,

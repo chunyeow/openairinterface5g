@@ -258,6 +258,8 @@ typedef enum {
     SCTP,
     HW,
     OSA,
+    RAL_ENB,
+    RAL_UE,
     ENB_APP,
     TMR,
     MAX_LOG_COMPONENTS,

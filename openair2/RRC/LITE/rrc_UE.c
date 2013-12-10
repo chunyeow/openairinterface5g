@@ -1218,6 +1218,37 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,
 #endif
     } // c1 present
   } // critical extensions present
+#ifdef ENABLE_RAL
+  {
+      MessageDef                                 *message_ral_p = NULL;
+      rrc_ral_connection_reestablishment_ind_t    connection_reestablishment_ind;
+      int                                         i;
+
+      message_ral_p = itti_alloc_new_message (TASK_RRC_UE, RRC_RAL_CONNECTION_REESTABLISHMENT_IND);
+      memset(&connection_reestablishment_ind, 0, sizeof(rrc_ral_connection_reestablishment_ind_t));
+      // TO DO ral_si_ind.plmn_id        = 0;
+      connection_reestablishment_ind.ue_id            = Mod_id;
+      if (rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->drb_ToAddModList != NULL) {
+          connection_reestablishment_ind.num_drb      = rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->drb_ToAddModList->list.count;
+
+          for (i=0;(i<rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->drb_ToAddModList->list.count) && (i < maxDRB);i++) {
+              // why minus 1 in RRC code for drb_identity ?
+              connection_reestablishment_ind.drb_id[i]   = rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->drb_ToAddModList->list.array[i]->drb_Identity;
+          }
+      } else {
+          connection_reestablishment_ind.num_drb      = 0;
+      }
+      if (rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->srb_ToAddModList != NULL) {
+          connection_reestablishment_ind.num_srb      = rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated->srb_ToAddModList->list.count;
+      } else {
+          connection_reestablishment_ind.num_srb      = 0;
+      }
+      memcpy (&message_ral_p->ittiMsg, (void *) &connection_reestablishment_ind, sizeof(rrc_ral_connection_reestablishment_ind_t));
+#warning "Mod_id ? for instance ?"
+      LOG_I(RRC, "Sending RRC_RAL_CONNECTION_REESTABLISHMENT_IND to mRAL\n");
+      itti_send_msg_to_task (TASK_RAL_UE, Mod_id, message_ral_p);
+  }
+#endif
 }
 
 /* 36.331, 5.3.5.4      Reception of an RRCConnectionReconfiguration including the mobilityControlInfo by the UE (handover) */
@@ -1907,12 +1938,29 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 #ifdef Rel10
       if (UE_rrc_inst[Mod_id].MBMS_flag < 3) // see -Q option
 #endif
-        rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
+      rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
       LOG_I(RRC, "not sending connection request\n");
 
       if (UE_rrc_inst[Mod_id].Info[eNB_index].State == RRC_IDLE) {
-        LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);
-        UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_SI_RECEIVED;
+          LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);
+          UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_SI_RECEIVED;
+#ifdef ENABLE_RAL
+          {
+              MessageDef                            *message_ral_p = NULL;
+              rrc_ral_system_information_ind_t       ral_si_ind;
+
+              message_ral_p = itti_alloc_new_message (TASK_RRC_UE, RRC_RAL_SYSTEM_INFORMATION_IND);
+              memset(&ral_si_ind, 0, sizeof(rrc_ral_system_information_ind_t));
+              // TO DO ral_si_ind.plmn_id        = 0;
+              ral_si_ind.cell_id        = eNB_index;
+              ral_si_ind.dbm            = 0;
+              ral_si_ind.sinr           = 0;
+              ral_si_ind.link_data_rate = 0;
+              memcpy (&message_ral_p->ittiMsg, (void *) &ral_si_ind, sizeof(rrc_ral_system_information_ind_t));
+#warning "Mod_id ? for instance ?"
+              itti_send_msg_to_task (TASK_RAL_UE, Mod_id, message_ral_p);
+          }
+#endif
       }
       break;
     case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib3:
@@ -2480,6 +2528,27 @@ void *rrc_ue_task(void *args_p) {
         pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
         break;
       }
+
+      case RRC_RAL_SCAN_REQ:
+          {
+              // TO DO ASK PHY TO DO A SCAN
+              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          }
+
+      case RRC_RAL_CONFIGURE_THRESHOLD_REQ:
+          {
+              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          }
+
+      case RRC_RAL_CONNECTION_ESTABLISHMENT_REQ:
+          {
+              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          }
+
+      case RRC_RAL_CONNECTION_RELEASE_REQ:
+          {
+              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          }
 
       default:
         LOG_E(RRC, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);
