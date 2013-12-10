@@ -1,6 +1,19 @@
 # This file gathers compilation directive shared between lte-softmodem and oaisim
+COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
+UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
+S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
+SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
 
-CFLAGS				+= -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"'
+UE_NAS_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UE_NAS_DIR))
+S1AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
+SCTP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
+
+export COMMON_UTILS_DIR
+export UE_NAS_DIR
+export S1AP_DIR
+export SCTP_DIR
+
+COMMON_CFLAGS		= -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"'
 
 ITTI_MESSAGES_H		= messages_xml.h
 ITTI_MESSAGES_XML	= messages.xml
@@ -25,20 +38,33 @@ $(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
 	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
 
 ifdef USE_MME
+COMMON_CFLAGS		+= -DENABLE_USE_MME
+
 LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a
 LIBS				+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
 SHARED_DEPENDENCIES	 = $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a
 
 ENABLE_ITTI = 1
+COMMON_CFLAGS		+= -DENABLE_ITTI
+COMMON_CFLAGS		+= -DUSER_MODE
+COMMON_CFLAGS		+= -DLOG_NO_THREAD
+COMMON_CFLAGS		+= -I$(OPENAIR2_DIR)/NAS
+COMMON_CFLAGS 	 	+= $(L2_incl)
+COMMON_CFLAGS		+= $(UTILS_incl)
 
-CFLAGS				+= -DENABLE_ITTI -DENABLE_USE_MME
-export CFLAGS
+UENAS_CFLAGS		 = $(COMMON_CFLAGS)
+export UENAS_CFLAGS
 
 $(UE_NAS_OBJ_DIR)/libuenas.a: force_look
 	@$(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE $(UE_NAS_OBJ_DIR)/libuenas.a OUTDIR=$(UE_NAS_OBJ_DIR)
 
-CFLAGS				+= -DENB_MODE -I$(S1AP_DIR) -I$(SCTP_DIR)
-S1AP_CFLAGS	 		 = $(CFLAGS) -I$(TOP_DIR) $(L2_incl) $(UTIL_incl) $(UTILS_incl)
+COMMON_MME_CFLAGS	 = -I$(SCTP_DIR)
+COMMON_MME_CFLAGS	+= -I$(S1AP_DIR)
+
+S1AP_CFLAGS	 		 = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
+S1AP_CFLAGS	 		+= -DENB_MODE
+S1AP_CFLAGS	 		+= -I$(TOP_DIR)
+S1AP_CFLAGS	 		+= $(UTIL_incl)
 export S1AP_CFLAGS
 
 $(S1AP_OBJ_DIR)/libs1ap.a: force_look
@@ -46,15 +72,13 @@ $(S1AP_OBJ_DIR)/libs1ap.a: force_look
 $(SCTP_OBJ_DIR)/libsctp.a: force_look
 	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB $(SCTP_OBJ_DIR)/libsctp.a OUTDIR=$(SCTP_OBJ_DIR)
 
-CFLAGS += $(NAS_UE_incl)
-
 OBJ = $(NAS_UE_OBJS)
 endif
 
 ifdef ENABLE_ITTI
 SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
 
-CFLAGS += $(TARGETS_COMMON_incl)
+CFLAGS = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS) $(TARGETS_COMMON_incl)
 
 OBJ += $(TARGETS_COMMON_OBJS)
 endif
@@ -73,5 +97,11 @@ force_look:
 common-clean:
 	@$(RM_F_V) $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
 	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean OUTDIR=$(LFDS_OBJ_DIR)
-# 	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean OUTDIR=$(S1AP_OBJ_DIR); fi
-# 	@if [ -d $(SCTP_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean OUTDIR=$(SCTP_OBJ_DIR); fi
+	@if [ -d $(UE_NAS_OBJ_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE clean OUTDIR=$(UE_NAS_OBJ_DIR); fi
+	@if [ -d $(S1AP_OBJ_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean OUTDIR=$(S1AP_OBJ_DIR); fi
+	@if [ -d $(SCTP_OBJ_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean OUTDIR=$(SCTP_OBJ_DIR); fi
+
+common-cleanall:
+	@if [ -d $(UE_NAS_OBJ_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE cleanall OUTDIR=$(UE_NAS_OBJ_DIR); fi
+	@if [ -d $(S1AP_OBJ_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall OUTDIR=$(S1AP_OBJ_DIR); fi
+	@if [ -d $(SCTP_OBJ_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB cleanall OUTDIR=$(SCTP_OBJ_DIR); fi

@@ -328,7 +328,7 @@ cleanalmostall: clean
 	rm -rf condtest synctest lte-softmodem
 	rm -rf synctest_eNB synctest_UE
 
-cleanall: clean cleanasn1
+cleanall: common-cleanall clean cleanasn1
 	rm -rf condtest synctest lte-softmodem lte-softmodem-usrp
 	rm -rf synctest_eNB synctest_UE
 

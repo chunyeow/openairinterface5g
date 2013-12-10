@@ -1,7 +1,11 @@
-CC      = gcc
-MPICC   = gcc #mpicc
-RM_F_V  = rm -f -v
-PWD     = $(shell pwd)
+CC       = gcc
+MPICC    = gcc #mpicc
+RM_F_V   = rm -f -v
+PWD      = $(shell pwd)
+export CC
+export MPICC
+export RM_F_V
+export PWD
 
 OBJS_DIR := $(PWD)/objs
 
@@ -59,17 +63,3 @@ COMMON_CFLAGS =                 \
     -g                          \
     -ggdb                       \
     -O2
-
-COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
-UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
-S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
-SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
-
-UE_NAS_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UE_NAS_DIR))
-S1AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
-SCTP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
-
-export COMMON_UTILS_DIR
-export UE_NAS_DIR
-export S1AP_DIR
-export SCTP_DIR

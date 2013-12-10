@@ -4,7 +4,6 @@ include $(UE_NAS_DIR)/EURECOM-NAS/Makefile.inc
 
 libnas_INCLUDES =								\
 	-I$(OPENAIR2_DIR)							\
-	-I$(OPENAIR2_DIR)/NAS						\
 	-I$(SRCDIR)									\
 	-I$(INCDIR)									\
 	-I$(UTILDIR)								\
@@ -270,13 +269,14 @@ NAS_UE_COMPILED_OBJS = $(addprefix $(OUTDIR)/,$(libnas_OBJS))
 # pull in dependency info for *existing* .o files
 -include $(NAS_UE_COMPILED_OBJS:.o=.d)
 
-CFLAGS +=										\
+CFLAGS =										\
 	-Wall										\
 	-DNAS_UE									\
 	-DUE_BUILD									\
 	-Wuninitialized								\
 	-Werror=implicit-function-declaration		\
-	$(libnas_INCLUDES)
+	$(libnas_INCLUDES)							\
+	$(UENAS_CFLAGS)
 
 .SECONDEXPANSION:
 $(NAS_UE_COMPILED_OBJS): %.o : $$(subst $(OUTDIR), $(UE_NAS_DIR), $$*.c)
@@ -295,9 +295,12 @@ $(OUTDIR)/libuenas.a: $(NAS_UE_COMPILED_OBJS)
 	@$(AR) rcs $@ $(addprefix $(OUTDIR)/,$(libnas_OBJS))
 
 clean:
-	@$(RM_F_V) --recursive $(OUTDIR)/*
+	@$(RM_F_V) -r $(OUTDIR)/*.o
+	@$(RM_F_V) -r $(OUTDIR)/*.d
+	@$(RM_F_V) $(OUTDIR)/libuenas.a
 
-cleanall: clean
+cleanall:
+	@$(RM_F_V) -r $(OUTDIR)
 
 showcflags:
 	@echo uenas cflags: $(CFLAGS)

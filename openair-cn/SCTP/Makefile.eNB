@@ -39,3 +39,5 @@ clean:
 	@$(RM_F_V) $(OUTDIR)/*.o
 	@$(RM_F_V) $(OUTDIR)/*.d
 	@$(RM_F_V) $(OUTDIR)/libsctp.a
+
+cleanall: clean
