@@ -31,14 +31,16 @@
 #define ASSERTIONS_H_
 
 #include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                          \
 do {                                                                    \
     if (!(cOND)) {                                                      \
         fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed.\n",       \
                 __FILE__, __LINE__, __FUNCTION__);                      \
-        fprintf(stderr, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n",  \
-        (int)vALUE1, (int)vALUE2, (int)vALUE3);                         \
+        fprintf(stderr, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n",  \
+        (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3);                         \
         abort();                                                        \
     }                                                                   \
 } while(0)
@@ -48,9 +50,9 @@ do {                                                                    \
     if (!(cOND)) {                                                      \
         fprintf(stderr, "%s:%d:%s\nAssertion `"#cOND"` failed.\n",      \
                 __FILE__, __LINE__, __FUNCTION__);                      \
-        fprintf(stderr, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n"   \
-        #vALUE4": %d\n",                                                \
-        (int)vALUE1, (int)vALUE2, (int)vALUE3, (int)vALUE4);            \
+        fprintf(stderr, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n"   \
+        #vALUE4": %"PRIdMAX"\n",                                                \
+        (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3, (intmax_t)vALUE4);            \
         exit(EXIT_FAILURE);                                             \
     }                                                                   \
 } while(0)
