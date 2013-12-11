@@ -4,6 +4,7 @@ include $(UE_NAS_DIR)/EURECOM-NAS/Makefile.inc
 
 libnas_INCLUDES =								\
 	-I$(OPENAIR2_DIR)							\
+	-I$(UE_NAS_DIR)								\
 	-I$(SRCDIR)									\
 	-I$(INCDIR)									\
 	-I$(UTILDIR)								\
@@ -249,6 +250,7 @@ libnas_usim_OBJS =								\
 
 libnas_OBJS =									\
     nas_ue_task.o								\
+    nas_itti_messaging.o						\
     EURECOM-NAS/src/nas_parser.o				\
     EURECOM-NAS/src/nas_proc.o					\
     EURECOM-NAS/src/nas_user.o					\

@@ -33,6 +33,7 @@
 #include "intertask_interface.h"
 #include "nas_itti_messaging.h"
 
+#if defined(EPC_BUILD) && defined(NAS_MME)
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length)
 {
@@ -60,3 +61,34 @@ void nas_itti_establish_cnf(const nas_error_code_t error_code, void *const data,
 
     itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
+#endif
+
+#if defined(UE_BUILD) && defined(NAS_UE)
+int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat)
+{
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message(TASK_NAS_UE, NAS_CELL_SELECTION_REQ);
+
+    NAS_CELL_SELECTION_REQ(message_p).plmnID    = plmnID;
+    NAS_CELL_SELECTION_REQ(message_p).rat       = rat;
+
+    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+}
+
+int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t s_tmsi, plmn_t plmnID, Byte_t *data, UInt32_t length)
+{
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message(TASK_NAS_UE, NAS_CONN_ESTABLI_REQ);
+
+    NAS_CONN_ESTABLI_REQ(message_p).cause                       = cause;
+    NAS_CONN_ESTABLI_REQ(message_p).type                        = type;
+    NAS_CONN_ESTABLI_REQ(message_p).s_tmsi                      = s_tmsi;
+    NAS_CONN_ESTABLI_REQ(message_p).plmnID                      = plmnID;
+    NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.data          = data;
+    NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.length        = length;
+
+    itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+}
+#endif

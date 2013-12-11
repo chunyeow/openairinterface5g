@@ -128,7 +128,7 @@ void *nas_ue_task(void *args_p) {
 
       itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
       msg_p = NULL;
-      }
+    }
 
     nb_events = itti_get_events(TASK_NAS_UE, &events);
     if ((nb_events > 0) && (events != NULL)) {

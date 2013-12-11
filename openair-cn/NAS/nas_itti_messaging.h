@@ -27,14 +27,16 @@
                  06410 Biot FRANCE
 
 *******************************************************************************/
+#ifndef NAS_ITTI_MESSAGING_H_
+#define NAS_ITTI_MESSAGING_H_
+
 #include <stdint.h>
 #include <ctype.h>
 
 #include "intertask_interface.h"
-#include "conversions.h"
 
-#ifndef NAS_ITTI_MESSAGING_H_
-#define NAS_ITTI_MESSAGING_H_
+# if defined(EPC_BUILD) && defined(NAS_MME)
+#include "conversions.h"
 
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length);
@@ -89,5 +91,11 @@ static inline void nas_itti_establish_rej(const uint32_t ue_id,
 
     itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
+# endif
 
+# if defined(UE_BUILD) && defined(NAS_UE)
+int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat);
+
+int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t s_tmsi, plmn_t plmnID, Byte_t *data, UInt32_t length);
+# endif
 #endif /* NAS_ITTI_MESSAGING_H_ */

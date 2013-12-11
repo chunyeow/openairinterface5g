@@ -36,7 +36,7 @@ Description Defines the EMMAS Service Access Point that provides
 #include <string.h> // memset
 #include <stdlib.h> // malloc, free
 
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if (defined(EPC_BUILD) && defined(NAS_MME)) || (defined(UE_BUILD) && defined(NAS_UE))
 # include "nas_itti_messaging.h"
 #endif
 
@@ -1107,10 +1107,49 @@ static int _emm_as_send(const emm_as_t *msg)
                 break;
         }
 #else
+# if defined(UE_BUILD) && defined(NAS_UE)
+        LOG_TRACE(DEBUG, "EMMAS-SAP - "
+                  "Sending msg with id 0x%x, primitive %s (%d) to RRC layer for transmission",
+                  as_msg.msgID,
+                  _emm_as_primitive_str[msg->primitive - _EMMAS_START - 1],
+                  msg->primitive);
+
+        switch (as_msg.msgID) {
+            case AS_CELL_INFO_REQ: {
+                nas_itti_cell_info_req(as_msg.msg.cell_info_req.plmnID,
+                                       as_msg.msg.cell_info_req.rat);
+                LOG_FUNC_RETURN (RETURNok);
+            } break;
+
+            case AS_NAS_ESTABLISH_REQ: {
+                nas_itti_nas_establish_req(as_msg.msg.nas_establish_req.cause,
+                                           as_msg.msg.nas_establish_req.type,
+                                           as_msg.msg.nas_establish_req.s_tmsi,
+                                           as_msg.msg.nas_establish_req.plmnID,
+                                           as_msg.msg.nas_establish_req.initialNasMsg.data,
+                                           as_msg.msg.nas_establish_req.initialNasMsg.length);
+                LOG_FUNC_RETURN (RETURNok);
+            } break;
+
+            case AS_UL_INFO_TRANSFER_REQ: {
+
+                LOG_FUNC_RETURN (RETURNok);
+            } break;
+
+            case AS_RAB_ESTABLISH_RSP: {
+
+                LOG_FUNC_RETURN (RETURNok);
+            } break;
+
+            default:
+              break;
+        }
+# else
         int bytes = as_message_send(&as_msg);
         if (bytes > 0) {
             LOG_FUNC_RETURN (RETURNok);
         }
+# endif
 #endif
     }
     LOG_FUNC_RETURN (RETURNerror);
