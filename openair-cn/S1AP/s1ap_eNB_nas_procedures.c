@@ -370,8 +370,6 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
         return;
     }
 
-    DevAssert(ue_context_p->ue_state == S1AP_UE_CONNECTED);
-
     /* Prepare the S1AP message to encode */
     memset(&message, 0, sizeof(s1ap_message));
 
@@ -390,6 +388,10 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
     nas_non_delivery_p->mme_ue_s1ap_id = ue_context_p->mme_ue_s1ap_id;
     nas_non_delivery_p->nas_pdu.buf    = s1ap_nas_non_delivery_ind->nas_pdu.buffer;
     nas_non_delivery_p->nas_pdu.size   = s1ap_nas_non_delivery_ind->nas_pdu.length;
+
+    /* Send a dummy cause */
+    nas_non_delivery_p->cause.present = S1ap_Cause_PR_radioNetwork;
+    nas_non_delivery_p->cause.choice.radioNetwork = S1ap_CauseRadioNetwork_radio_connection_with_ue_lost;
 
     /* UE associated signalling -> use the allocated stream */
     s1ap_eNB_itti_send_sctp_data_req(s1ap_eNB_instance_p->instance,
