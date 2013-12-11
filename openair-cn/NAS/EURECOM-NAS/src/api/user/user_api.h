@@ -42,6 +42,8 @@ Description	Implements the API used by the NAS layer running in the UE
 
 int user_api_initialize(const char* host, const char* port, const char* devname, const char* devparams);
 
+int user_api_receive_and_process(int * fd);
+
 int user_api_emm_callback(Stat_t stat, tac_t tac, ci_t ci, AcT_t AcT, const char* data, size_t size);
 int user_api_esm_callback(int cid, network_pdn_state_t state);
 

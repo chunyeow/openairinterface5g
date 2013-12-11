@@ -193,11 +193,7 @@ static void *_nas_user_mngr(void *args)
 {
     LOG_FUNC_IN;
 
-    int ret_code;
     int exit_loop = FALSE;
-    int nb_command;
-    int bytes;
-    int i;
 
     int *fd = (int *) args;
 
@@ -205,65 +201,7 @@ static void *_nas_user_mngr(void *args)
 
     /* User receiving loop */
     while (!exit_loop) {
-        /* Read the user data message */
-        bytes = user_api_read_data (*fd);
-        if (bytes == RETURNerror) {
-            /* Failed to read data from the user application layer;
-             * exit from the receiving loop */
-            LOG_TRACE (ERROR, "UE-MAIN   - "
-                       "Failed to read data from the user application layer");
-            break;
-        }
-
-        if (bytes == 0) {
-            /* A signal was caught before any data were available */
-            continue;
-        }
-
-        /* Decode the user data message */
-        nb_command = user_api_decode_data (bytes);
-        for (i = 0; i < nb_command; i++) {
-            /* Get the user data to be processed */
-            const void *data = user_api_get_data (i);
-            if (data == NULL) {
-                /* Failed to get user data at the given index;
-                 * go ahead and process the next user data */
-                LOG_TRACE (ERROR, "UE-MAIN   - "
-                           "Failed to get user data at index %d",
-                           i);
-                continue;
-            }
-
-            /* Process the user data message */
-            ret_code = nas_user_process_data (data);
-            if (ret_code != RETURNok) {
-                /* The user data message has not been successfully
-                 * processed; cause code will be encoded and sent back
-                 * to the user */
-                LOG_TRACE
-                (WARNING, "UE-MAIN   - "
-                 "The user procedure call failed");
-            }
-
-            /* Encode the user data message */
-            bytes = user_api_encode_data (nas_user_get_data (), i == nb_command - 1);
-            if (bytes == RETURNerror) {
-                /* Failed to encode the user data message;
-                 * go ahead and process the next user data */
-                continue;
-            }
-
-            /* Send the data message to the user */
-            bytes = user_api_send_data (*fd, bytes);
-            if (bytes == RETURNerror) {
-                /* Failed to send data to the user application layer;
-                 * exit from the receiving loop */
-                LOG_TRACE (ERROR, "UE-MAIN   - "
-                           "Failed to send data to the user application layer");
-                exit_loop = TRUE;
-                break;
-            }
-        }
+      exit_loop = user_api_receive_and_process(fd);
     }
 
     /* Close the connection to the user application layer */

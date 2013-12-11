@@ -5,7 +5,7 @@ endif
 include $(PROJDIR)/Makerules
 include $(PROJDIR)/Makefile.inc
 
-export INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(IESDIR) -I$(EMMMSGDIR) -I$(ESMMSGDIR)
+export INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(IESDIR) -I$(EMMMSGDIR) -I$(ESMMSGDIR) -I$(SRCDIR)
 
 TARGET = $(LIBAPI)
 TARGETS = $(TARGET).a $(TARGET).so

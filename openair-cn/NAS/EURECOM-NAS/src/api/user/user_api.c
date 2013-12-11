@@ -25,6 +25,7 @@ Description	Implements the API used by the NAS layer running in the UE
 #include "nas_log.h"
 #include "socket.h"
 #include "device.h"
+#include "nas_user.h"
 
 #include "at_command.h"
 #include "at_response.h"
@@ -206,6 +207,90 @@ int user_api_initialize(const char* host, const char* port,
     }
 
     LOG_FUNC_RETURN (RETURNok);
+}
+
+/****************************************************************************
+ **                                                                        **
+ ** Name:        user_api_receive_and_process()                            **
+ **                                                                        **
+ ** Description: Receives and process messages from user application       **
+ **                                                                        **
+ ** Inputs:      fd:            File descriptor of the connection endpoint **
+ **                             from which data have been received         **
+ **              Others:        None                                       **
+ **                                                                        **
+ ** Outputs:     Return:        FALSE, TRUE                                **
+ **                                                                        **
+ ***************************************************************************/
+int user_api_receive_and_process(int * fd)
+{
+    LOG_FUNC_IN;
+
+    int ret_code;
+    int nb_command;
+    int bytes;
+    int i;
+
+  /* Read the user data message */
+    bytes = user_api_read_data (*fd);
+    if (bytes == RETURNerror) {
+        /* Failed to read data from the user application layer;
+         * exit from the receiving loop */
+        LOG_TRACE (ERROR, "UE-MAIN   - "
+                   "Failed to read data from the user application layer");
+        LOG_FUNC_RETURN(TRUE);
+    }
+
+    if (bytes == 0) {
+        /* A signal was caught before any data were available */
+        LOG_FUNC_RETURN(FALSE);
+    }
+
+    /* Decode the user data message */
+    nb_command = user_api_decode_data (bytes);
+    for (i = 0; i < nb_command; i++) {
+        /* Get the user data to be processed */
+        const void *data = user_api_get_data (i);
+        if (data == NULL) {
+            /* Failed to get user data at the given index;
+             * go ahead and process the next user data */
+            LOG_TRACE (ERROR, "UE-MAIN   - "
+                       "Failed to get user data at index %d",
+                       i);
+            continue;
+        }
+
+        /* Process the user data message */
+        ret_code = nas_user_process_data (data);
+        if (ret_code != RETURNok) {
+            /* The user data message has not been successfully
+             * processed; cause code will be encoded and sent back
+             * to the user */
+            LOG_TRACE
+            (WARNING, "UE-MAIN   - "
+             "The user procedure call failed");
+        }
+
+        /* Encode the user data message */
+        bytes = user_api_encode_data (nas_user_get_data (), i == nb_command - 1);
+        if (bytes == RETURNerror) {
+            /* Failed to encode the user data message;
+             * go ahead and process the next user data */
+            continue;
+        }
+
+        /* Send the data message to the user */
+        bytes = user_api_send_data (*fd, bytes);
+        if (bytes == RETURNerror) {
+            /* Failed to send data to the user application layer;
+             * exit from the receiving loop */
+            LOG_TRACE (ERROR, "UE-MAIN   - "
+                       "Failed to send data to the user application layer");
+            LOG_FUNC_RETURN(TRUE);
+        }
+    }
+
+    LOG_FUNC_RETURN(FALSE);
 }
 
 /****************************************************************************
