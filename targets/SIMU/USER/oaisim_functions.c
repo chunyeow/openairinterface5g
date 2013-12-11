@@ -149,7 +149,9 @@ void get_simulation_options(int argc, char *argv[]) {
             omg_period = atoi(optarg);
             printf("OMG period is %d\n", omg_period);
           }
-      } else if (! strcmp(long_options[option_index].name, "enb-ral-listening-port")) {
+      }
+#if defined(ENABLE_RAL)
+      else if (! strcmp(long_options[option_index].name, "enb-ral-listening-port")) {
           if (optarg) {
             g_conf_enb_ral_listening_port = strdup(optarg);
             printf("eNB RAL listening port is %s\n", g_conf_enb_ral_listening_port);
@@ -220,6 +222,7 @@ void get_simulation_options(int argc, char *argv[]) {
               printf("UE MIH-F id is %s\n", g_conf_ue_mihf_id);
           }
       }
+#endif
       break;
     case 'L':                   // set FDD
       flag_LA = atoi(optarg);
