@@ -2476,7 +2476,7 @@ void *rrc_ue_task(void *args_p) {
                             RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
         break;
 
-#ifdef Rel10
+# ifdef Rel10
       case RRC_MAC_MCCH_DATA_IND:
         LOG_I(RRC, "[UE %d] Received %s: frame %d, eNB %d, mbsfn SA %d\n", Mod_id, msg_name,
               RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
@@ -2485,7 +2485,7 @@ void *rrc_ue_task(void *args_p) {
                              RRC_MAC_MCCH_DATA_IND (msg_p).sdu, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
                              RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
         break;
-#endif
+# endif
 
         /* PDCP messages */
       case RRC_DCCH_DATA_IND:
@@ -2500,11 +2500,34 @@ void *rrc_ue_task(void *args_p) {
         itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
         break;
 
+# if defined(ENABLE_USE_MME)
       /* NAS messages */
       case NAS_CELL_SELECTION_REQ:
-          LOG_I(RRC, "[UE %d] Received %s: plmnID %d, rat %x\n", Mod_id, msg_name, NAS_CELL_SELECTION_REQ (msg_p).plmnID,
-                NAS_CELL_SELECTION_REQ (msg_p).rat);
+          Mod_id = 0; /* TODO force Mod_id to first UE, NAS UE not virtualized yet */
 
+          LOG_I(RRC, "[UE %d] Received %s: state %d, plmnID %d, rat %x\n", Mod_id, msg_name, UE_rrc_inst[Mod_id].RrcState,
+                NAS_CELL_SELECTION_REQ (msg_p).plmnID, NAS_CELL_SELECTION_REQ (msg_p).rat);
+
+          switch (UE_rrc_inst[Mod_id].RrcState) {
+              case RRC_STATE_INACTIVE:
+                /* Need to first activate lower layers */
+
+                UE_rrc_inst[Mod_id].RrcState = RRC_STATE_IDLE;
+                break;
+
+              case RRC_STATE_IDLE:
+                /* Ask to layer 1 to find a cell matching the criterion */
+                break;
+
+              case RRC_STATE_CONNECTED:
+                /* should not happen */
+                LOG_E(RRC, "[UE %d] request %s in RRC state %d\n", Mod_id, msg_name, UE_rrc_inst[Mod_id].RrcState);
+                break;
+
+              default:
+                LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, UE_rrc_inst[Mod_id].RrcState);
+                break;
+          }
           /* TODO process message */
           break;
 
@@ -2550,6 +2573,7 @@ void *rrc_ue_task(void *args_p) {
           {
               LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
           }
+# endif
 
       default:
         LOG_E(RRC, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);
