@@ -46,6 +46,8 @@
 #   include "s1ap_eNB.h"
 #   include "sctp_eNB_task.h"
 # endif
+
+extern unsigned char NB_eNB_INST;
 #endif
 
 #if defined(ENABLE_ITTI)
@@ -203,6 +205,16 @@ void *eNB_app_task(void *args_p)
 
                         msg_init_p = itti_alloc_new_message (TASK_ENB_APP, INITIALIZE_MESSAGE);
                         itti_send_msg_to_task (TASK_L2L1, INSTANCE_DEFAULT, msg_init_p);
+
+#   if defined(OAI_EMU)
+                        /* If also inform all NAS UE tasks */
+                        for (instance = NB_eNB_INST + oai_emulation.info.first_ue_local;
+                            instance < (NB_eNB_INST + oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local); instance ++)
+                        {
+                            msg_init_p = itti_alloc_new_message (TASK_ENB_APP, INITIALIZE_MESSAGE);
+                            itti_send_msg_to_task (TASK_NAS_UE, instance, msg_init_p);
+                        }
+#   endif
                     }
                     else
                     {
