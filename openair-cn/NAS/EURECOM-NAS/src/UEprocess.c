@@ -201,7 +201,7 @@ static void *_nas_user_mngr(void *args)
 
     /* User receiving loop */
     while (!exit_loop) {
-      exit_loop = user_api_receive_and_process(fd);
+      exit_loop = nas_user_receive_and_process(fd);
     }
 
     /* Close the connection to the user application layer */

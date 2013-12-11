@@ -40,6 +40,8 @@ Description NAS procedure functions triggered by the user
 void nas_user_initialize(emm_indication_callback_t emm_cb,
                          esm_indication_callback_t esm_cb, const char *version);
 
+int nas_user_receive_and_process(int * fd);
+
 int nas_user_process_data(const void *data);
 
 const void *nas_user_get_data(void);
