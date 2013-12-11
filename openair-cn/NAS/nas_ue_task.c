@@ -55,7 +55,7 @@ static int nas_ue_process_events(struct epoll_event *events, int nb_events, unsi
     {
       /* If the event has not been yet been processed (not an itti message) */
       if (events[event].data.fd == user_fd) {
-        exit_loop = nas_user_process_data(&user_fd);
+        exit_loop = nas_user_receive_and_process(&user_fd);
       } else {
         LOG_E(NAS, "[UE %d] Received an event from an unknown fd %d!\n", Mod_id, events[event].data.fd);
       }
