@@ -528,7 +528,7 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
          */
         epoll_timeout = 0;
     } else {
-        /* timeout = -1 causes the epoll_wait to wait indefinetely.
+        /* timeout = -1 causes the epoll_wait to wait indefinitely.
          */
         epoll_timeout = -1;
     }
@@ -577,6 +577,8 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             DevAssert(message != NULL);
             *received_msg = message->msg;
             itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
+            /* Mark that the event has been processed */
+            itti_desc.threads[thread_id].events[i].events &= ~EPOLLIN;
             return;
         }
     }
