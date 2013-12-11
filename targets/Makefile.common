@@ -13,7 +13,12 @@ export UE_NAS_DIR
 export S1AP_DIR
 export SCTP_DIR
 
-COMMON_CFLAGS		= -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"'
+#Export common cflags (between softmodem and oaisim)
+COMMON_CFLAGS		= \
+    -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"' \
+    -Wall                       \
+    -fno-strict-aliasing        \
+    -O2
 
 ITTI_MESSAGES_H		= messages_xml.h
 ITTI_MESSAGES_XML	= messages.xml
@@ -78,7 +83,7 @@ endif
 ifdef ENABLE_ITTI
 SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
 
-CFLAGS = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS) $(TARGETS_COMMON_incl)
+CFLAGS += $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS) $(TARGETS_COMMON_incl)
 
 OBJ += $(TARGETS_COMMON_OBJS)
 endif

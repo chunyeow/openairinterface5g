@@ -55,11 +55,3 @@ LIBS =  \
     $(LIBBLAS_LIBS)     \
     $(LIBXML2_LIBS)     \
     $(XPM_LIBS)
-
-#Export common cflags (between softmodem and oaisim)
-COMMON_CFLAGS =                 \
-    -Wall                       \
-    -fno-strict-aliasing        \
-    -g                          \
-    -ggdb                       \
-    -O2
