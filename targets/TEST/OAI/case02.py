@@ -73,7 +73,7 @@ def execute(oai, user, pw, logfile,logdir):
     try:
         test = '01'
         name = 'Run oai.rel8.err'
-        conf = '-a -A AWGN -n 100'
+        conf = '-a -A AWGN -n 100 -l7'
         trace = logdir + '/log_' + case + test + '_3.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'Error(s) found in the execution, check the execution logs'
@@ -90,7 +90,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-a -A AWGN -l7 -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 50)
@@ -106,16 +106,18 @@ def execute(oai, user, pw, logfile,logdir):
         oai.driver(oai,user,pw)
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-a -A AWGN -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-a -A AWGN -l7 -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace_ping = logdir + '/log_ping_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
+                tee_ping = ' 2>&1 | tee ' + trace_ping
                 if user == 'root' :
-                    oai.send_nowait('./oaisim.rel8.nas ' + conf + ' > /dev/null &')
+                    oai.send_nowait('./oaisim.rel8.nas ' + conf + tee + ' &')
                 else :    
-                    oai.send_nowait('echo '+pw+ ' | sudo -S -E ./oaisim.rel8.nas ' + conf + ' > /dev/null &')
+                    oai.send_nowait('echo '+pw+ ' | sudo -S -E ./oaisim.rel8.nas ' + conf + tee + ' &')
                 time.sleep(2)
                 for k in range(NUM_TRIALS) :
-                    oai.send_expect('ping 10.0.'+str(j+1)+'.'+str(NUM_eNB+i+1) + ' -c ' +  str(random.randint(2, 10))+ ' -s ' + str(random.randint(128, 1500)) + tee, ' 0% packet loss', 300)
+                    oai.send_expect('ping 10.0.'+str(j+1)+'.'+str(NUM_eNB+i+1) + ' -c ' +  str(random.randint(2, 10))+ ' -s ' + str(random.randint(128, 1500)) + tee_ping, ' 0% packet loss', 300)
                 if user == 'root' :
                     oai.send('pkill oaisim;')
                     oai.send('pkill oaisim.rel8.nas;')
@@ -138,7 +140,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
+                conf = '-A AWGN -l7 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
@@ -153,7 +155,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -F -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
+                conf = '-A AWGN -l7 -F -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -s15 -x1'
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel8 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
@@ -171,7 +173,7 @@ def execute(oai, user, pw, logfile,logdir):
                 log_name = logdir + '/log_' + case + test + '_' + str(i) + str(j)
                 itti_name = log_name + '.log'
                 trace_name = log_name + '.txt'
-                conf = '-a -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                conf = '-a -l7 -A AWGN -n' + str((i+1+j) * 40) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
                 tee = ' 2>&1 | tee -a ' + trace_name
                 command = './oaisim.rel8.itti ' + conf
                 oai.send('echo ' + command + ' > ' + trace_name + ';')

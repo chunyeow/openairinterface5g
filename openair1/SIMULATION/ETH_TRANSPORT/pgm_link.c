@@ -12,6 +12,7 @@
 
 #include "assertions.h"
 
+#include "pgm_link.h"
 #include "multicast_link.h"
 
 #include "UTIL/OCG/OCG.h"

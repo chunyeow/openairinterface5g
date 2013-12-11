@@ -63,6 +63,8 @@
 #include "UTIL/LOG/vcd_signal_dumper.h"
 //#endif
 
+#include "assertions.h"
+
 //#define DIAG_PHY
 
 #define NS_PER_SLOT 500000
@@ -283,7 +285,7 @@ void init_nCCE_table(void) {
 
 int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rnti, unsigned char subframe) {
 
-  int search_space_free,m,nb_candidates,l,i;
+  int search_space_free,m,nb_candidates = 0,l,i;
   unsigned int Yk;
   /*
     printf("CCE Allocation: ");
@@ -330,6 +332,9 @@ int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rn
     case 4:
     case 8:
       nb_candidates = 2;
+      break;
+    default:
+      DevParam(L, nCCE, rnti);
       break;
     }
 
@@ -918,8 +923,6 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
   //  s16 amp;
   u8 ul_subframe;
   u32 ul_frame;
-  int re_offset;
-  uint32_t *txptr;
 #ifdef Rel10
   MCH_PDU *mch_pduP;
   MCH_PDU  mch_pdu;
@@ -1488,7 +1491,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 				       pdcch_alloc2ul_subframe(&phy_vars_eNB->lte_frame_parms,next_slot>>1));
 	  if (harq_pid==255) {
 	    LOG_E(PHY,"[eNB %d] Frame %d: Bad harq_pid for ULSCH allocation\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame);
-	    mac_xface->macphy_exit("");
+	    mac_exit_wrapper("Invalid harq_pid (255) detected");
 	  }
 #ifdef OPENAIR2
 	  UE_id = find_ue((s16)DCI_pdu->dci_alloc[i].rnti,phy_vars_eNB);
@@ -1497,7 +1500,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 #endif
 	  if (UE_id<0) {
 	    LOG_E(PHY,"[eNB %d] Frame %d: Unknown UE_id for rnti %x\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame,(s16)DCI_pdu->dci_alloc[i].rnti);
-	    mac_xface->macphy_exit("");
+	    mac_exit_wrapper("Invalid UE id (< 0) detected");
 	  }
 #ifdef DEBUG_PHY_PROC
       if (phy_vars_eNB->frame%100 == 0)
@@ -2484,7 +2487,8 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
   u32 harq_pid, round;
   u8 SR_payload,*pucch_payload=NULL,pucch_payload0[2]={0,0},pucch_payload1[2]={0,0};
   s16 n1_pucch0,n1_pucch1,n1_pucch2,n1_pucch3;
-  u8 do_SR=0,pucch_sel;
+  u8 do_SR = 0;
+  u8 pucch_sel = 0;
   s16 metric0=0,metric1=0;
   ANFBmode_t bundling_flag;
   PUCCH_FMT_t format;
@@ -2870,7 +2874,7 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	    printf("%x.",phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0][j]);
 	  printf("\n");
 	  dump_ulsch(phy_vars_eNB,last_slot>>1,i);
-	  mac_xface->macphy_exit("");	  
+	  mac_exit_wrapper("Msg3 error");
 	} // This is Msg3 error
 	else { //normal ULSCH
 	  LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d Error receiving ULSCH, round %d/%d (ACK %d,%d)\n",

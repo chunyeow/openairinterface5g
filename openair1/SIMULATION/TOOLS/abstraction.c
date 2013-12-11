@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <errno.h>
 
 #include "PHY/TOOLS/defs.h"
 #include "defs.h"
@@ -192,10 +192,14 @@ double a[7];
 
 void load_pbch_desc(FILE *pbch_file_fd) {
 
-  int i;
+  int i, ret;
   char dummy[25];
 
-  fscanf(pbch_file_fd,"%d",&pbch_polynomial_degree);
+  ret = fscanf(pbch_file_fd,"%d",&pbch_polynomial_degree);
+  if (ret < 0) {
+    printf("fscanf failed: %s\n", strerror(errno));
+    exit(EXIT_FAILURE);
+  }
   if (pbch_polynomial_degree>6) {
     printf("Illegal degree for pbch interpolation polynomial %d\n",pbch_polynomial_degree);
     exit(-1);
@@ -204,7 +208,11 @@ void load_pbch_desc(FILE *pbch_file_fd) {
   printf("PBCH polynomial : ");
 
   for (i=0;i<=pbch_polynomial_degree;i++) {
-    fscanf(pbch_file_fd,"%s",dummy);
+    ret = fscanf(pbch_file_fd,"%s",dummy);
+    if (ret < 0) {
+      printf("fscanf failed: %s\n", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
     a[i] = strtod(dummy,NULL);
     printf("%f ",a[i]);
   }

@@ -47,6 +47,8 @@
 #include "SCHED/defs.h"
 #endif
 
+#include "assertions.h"
+
 extern uint16_t RIV2nb_rb_LUT6[32];
 extern uint16_t RIV2first_rb_LUT6[32];
 extern uint16_t RIV2nb_rb_LUT25[512];
@@ -99,6 +101,9 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
       RIV2nb_rb_LUT     = &RIV2nb_rb_LUT100[0];
       RIV2first_rb_LUT  = &RIV2first_rb_LUT100[0];
       RIV_max           = RIV_max100;
+      break;
+    default:
+      DevParam(frame_parms->N_RB_DL, harq_pid, 0);
       break;
   }
 
@@ -181,7 +186,7 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
   uint8_t cqireq;
   double sinr_eff;
   uint16_t *RIV2nb_rb_LUT, *RIV2first_rb_LUT;
-  uint16_t RIV_max;
+  uint16_t RIV_max = 0;
 
   LOG_D(PHY,"[eNB][RAPROC] Frame %d: generate_ue_ulsch_params_from_rar: subframe %d (harq_pid %d)\n",phy_vars_ue->frame,subframe,harq_pid);
 
@@ -205,6 +210,9 @@ int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
       RIV2nb_rb_LUT     = &RIV2nb_rb_LUT100[0];
       RIV2first_rb_LUT  = &RIV2first_rb_LUT100[0];
       RIV_max           = RIV_max100;
+      break;
+    default:
+      DevParam(frame_parms->N_RB_DL, eNB_id, harq_pid);
       break;
   }
 

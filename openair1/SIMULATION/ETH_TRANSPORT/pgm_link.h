@@ -3,6 +3,7 @@
 
 /* Define prototypes only if enabled */
 #if defined(ENABLE_PGM_TRANSPORT)
+void bypass_tx_nack(unsigned int frame, unsigned int next_slot);
 
 int pgm_oai_init(char *if_name);
 

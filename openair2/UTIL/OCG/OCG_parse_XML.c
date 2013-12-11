@@ -910,11 +910,11 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 					} else if (beam_width_dB_) {
 						oai_emulation.environment_system_config.antenna.eNB_antenna.beam_width_dB = atof(ch);
 					} else if (alpha_rad_1_) {
-					  		oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[1] = atof(ch);
+					  		oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[0] = atof(ch);
 					} else if (alpha_rad_2_) {
-					  		oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[2] = atof(ch);
+					  		oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[1] = atof(ch);
 					} else if (alpha_rad_3_) {
-					  		oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[3] = atof(ch);
+					  		oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[2] = atof(ch);
 					} else if (antenna_gain_dBi_) {
 						oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_gain_dBi = atof(ch);
 					} else if (tx_power_dBm_) {
@@ -922,11 +922,11 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 					} else if (rx_noise_level_dB_) {
 						oai_emulation.environment_system_config.antenna.eNB_antenna.rx_noise_level_dB = atof(ch);
 					} else if (antenna_orientation_degree_1_) {
-					  		oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[1] = atof(ch);
+					  		oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[0] = atof(ch);
 					} else if (antenna_orientation_degree_2_) {
-					  		oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[2] = atof(ch);
+					  		oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[1] = atof(ch);
 					} else if (antenna_orientation_degree_3_) {
-					  		oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[3] = atof(ch);
+					  		oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[2] = atof(ch);
 					}
 				} else if (UE_antenna_) {
 					if (antenna_gain_dBi_) {

@@ -53,7 +53,7 @@ def execute(oai, user, pw, logfile,logdir):
     try:
         test = '00'
         name = 'Run oai.rel10.sf'
-        conf = '-a -A AWGN -n 100'
+        conf = '-a -A AWGN -l7 -n 100'
         diag = 'OAI is not running normally (Segmentation fault / Exiting / FATAL), debugging might be needed'
         trace = logdir + '/log_' + case + test + '_1.txt'
         tee = ' 2>&1 | tee ' + trace
@@ -73,7 +73,7 @@ def execute(oai, user, pw, logfile,logdir):
     try:
         test = '01'
         name = 'Run oai.rel10.err'
-        conf = '-a -A AWGN -n 100'
+        conf = '-a -A AWGN -l7 -n 100'
         trace = logdir + '/log_' + case + test + '.txt'
         tee = ' 2>&1 | tee ' + trace
         diag = 'Error(s) found in the execution, check the execution logs'
@@ -90,7 +90,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-a -A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-a -l7 -A AWGN -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
@@ -105,7 +105,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
@@ -120,7 +120,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -F -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -F -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
@@ -135,7 +135,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS procedure is not finished completely, make sure that the SIB13/MCCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
@@ -150,7 +150,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS multicast/broadcast data is not received, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 100)
@@ -165,7 +165,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS multicast/broadcast data is not received in fdd mode, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -F -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -F -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 100)
@@ -195,7 +195,7 @@ def execute(oai, user, pw, logfile,logdir):
                 log_name = logdir + '/log_' + case + test + '_' + str(i) + str(j)
                 itti_name = log_name + '.log'
                 trace_name = log_name + '.txt'
-                conf = '-A AWGN -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                conf = '-A AWGN -l7 -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
                 tee = ' 2>&1 | tee -a ' + trace_name
                 command = './oaisim.rel10.itti ' + conf
                 oai.send('echo ' + command + ' > ' + trace_name + ';')

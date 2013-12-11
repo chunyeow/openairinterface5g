@@ -137,12 +137,12 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 			 u8 slot,
 			 u8 abstraction_flag) {
 
-  int aarx,i,rb;
+  int aarx,rb;
   s16 *rxF;
 
   u16 Nid_cell = phy_vars_ue->lte_frame_parms.Nid_cell;
   u8 eNB_offset,nu,l,nushift,k;
-  u16 off,off2;
+  u16 off;
   s16 rx_power_correction;
 
 
@@ -196,13 +196,10 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 #ifndef NEW_FFT
 	  rxF = (s16 *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)<<1];
 	  off  = (phy_vars_ue->lte_frame_parms.first_carrier_offset+k)<<2;
-	  off2 = (phy_vars_ue->lte_frame_parms.first_carrier_offset)<<2;
 #else
 	  rxF = (s16 *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)];
 	  off  = (phy_vars_ue->lte_frame_parms.first_carrier_offset+k)<<1;
-	  off2 = (phy_vars_ue->lte_frame_parms.first_carrier_offset)<<1;
-#endif	  
-
+#endif
 
       if (l==(4-phy_vars_ue->lte_frame_parms.Ncp)) {
 	    for (rb=0;rb<phy_vars_ue->lte_frame_parms.N_RB_DL;rb++) {

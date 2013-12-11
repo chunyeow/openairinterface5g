@@ -52,6 +52,7 @@
 #include <tmmintrin.h>
 #endif
 
+#include "assertions.h"
 
 //#define DEBUG_DCI_ENCODING 1
 //#define DEBUG_DCI_DECODING 1
@@ -2484,7 +2485,7 @@ void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,u8 s
   u16 crc,CCEind,nCCE;
   u32 *CCEmap=NULL,CCEmap_mask=0;
   int L2=(1<<L);
-  unsigned int Yk,nb_candidates,i,m;
+  unsigned int Yk,nb_candidates = 0,i,m;
   unsigned int CCEmap_cand;
 
   nCCE = get_nCCE(lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,frame_parms,mi);
@@ -2516,6 +2517,9 @@ void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,u8 s
     case 4:
     case 8:
       nb_candidates = 2;
+      break;
+    default:
+      DevParam(L2, do_common, eNB_id);
       break;
     }    
   }
@@ -2767,6 +2771,11 @@ u16 dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format1_size_bits  = sizeof_DCI1_20MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_20MHz_FDD_t);
     }
+    break;
+  default:
+    format1_size_bits = 0;
+    format1_size_bytes = 0;
+    DevParam(frame_parms->N_RB_DL, frame_type, 0);
     break;
   }
 

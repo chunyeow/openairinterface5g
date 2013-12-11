@@ -51,8 +51,8 @@
 #define DLSCH 1
 #define ULSCH 2
 
-
-
+#define mac_exit_wrapper(sTRING)	\
+	  mac_xface->macphy_exit(sTRING " in file " __FILE__ ", line ##__LINE__")
 
 /*! \brief MACPHY Interface */
 typedef struct
@@ -60,7 +60,7 @@ typedef struct
     /// Pointer function that initializes L2
     int (*macphy_init)(int eMBMS_active, u8 CBA_active,u8 HO_active);
 
-    /// Pointer function that stops the low-level scheduler due an exit condition        
+    /// Pointer function that stops the low-level scheduler due an exit condition
     void (*macphy_exit)(const char *);
 
     // eNB functions
@@ -71,7 +71,7 @@ typedef struct
     u16 (*fill_rar)(u8 Mod_id,u32 frame,u8 *dlsch_buffer,u16 N_RB_UL, u8 input_buffer_length);
 
     /// Terminate the RA procedure upon reception of l3msg on ulsch
-    void (*terminate_ra_proc)(u8 Mod_id,u32 frame,u16 UE_id, u8 *l3msg,u16 l3msg_len);
+    void (*terminate_ra_proc)(u8 Mod_id,u32 frame,u16 UE_id, u8 *l3msg, u16 l3msg_len);
 
     /// Initiate the RA procedure upon reception (hypothetical) of a valid preamble
     void (*initiate_ra_proc)(u8 Mod_id,u32 frame,u16 preamble,s16 timing_offset,u8 sect_id,u8 subframe,u8 f_id);

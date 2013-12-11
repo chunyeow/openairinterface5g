@@ -18,7 +18,8 @@ COMMON_CFLAGS		= \
     -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"' \
     -Wall                       \
     -fno-strict-aliasing        \
-    -O2
+    -O2                         \
+    -Werror=implicit-function-declaration
 
 ITTI_MESSAGES_H		= messages_xml.h
 ITTI_MESSAGES_XML	= messages.xml

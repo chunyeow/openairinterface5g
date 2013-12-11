@@ -43,6 +43,7 @@
 #include "UTIL/LOG/log.h"
 #include "OCG.h"
 #include "OCG_extern.h"
+#include "UTIL/OPT/opt.h"
 
 #define DEBUG_RAR
 
@@ -62,9 +63,9 @@ unsigned short fill_rar(u8 Mod_id,
   RA_HEADER_RAPID *rarh = (RA_HEADER_RAPID *)dlsch_buffer;
   //  RAR_PDU *rar = (RAR_PDU *)(dlsch_buffer+1);
   uint8_t *rar = (uint8_t *)(dlsch_buffer+1);
-  int i,ra_idx;
+  int i,ra_idx = -1;
   uint16_t rballoc;
-  uint8_t mcs,TPC,cqi_req,ULdelay,cqireq;
+  uint8_t mcs,TPC,ULdelay,cqireq;
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
     if (eNB_mac_inst[Mod_id].RA_template[i].generate_rar == 1) {

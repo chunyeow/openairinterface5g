@@ -43,6 +43,7 @@
 #include "../UTIL/MATH/oml.h"
 #include <math.h>
 #include "otg_form.h"
+#include "otg_kpi.h"
 
 #ifdef ENABLE_DB_STATS
 #include <mysql.h>

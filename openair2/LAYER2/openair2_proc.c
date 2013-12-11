@@ -141,10 +141,10 @@ int dump_eNB_l2_stats(char *buffer, int length){
       }
     }
   }
-  len += sprintf(&buffer[len],"\0");
- 
-  return len;
+
+  return len + 1 /* SR: for trailing \0 */;
 }
+
 #ifdef PROC 
 #ifndef USER_MODE
 static int openair2_stats_read(char *buffer, char **my_buffer, off_t off, int length)
