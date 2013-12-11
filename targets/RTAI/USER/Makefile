@@ -32,6 +32,10 @@ ifndef USRP
 USRP=0
 endif
 
+ifeq ($(ENABLE_RAL), 1)
+CFLAGS += -DENABLE_RAL
+endif
+
 ifeq ($(RTAI),1)
 CFLAGS += -DENABLE_RTAI_CLOCK
 CFLAGS += -DCONFIG_RTAI_LXRT_INLINE  #remend the RTAI warning
@@ -197,7 +201,7 @@ else
 $(RTAI_OBJ): %.o : %.c
 endif
 	@echo Compiling $< ...
-	$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) -o $@ $<
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $< > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
