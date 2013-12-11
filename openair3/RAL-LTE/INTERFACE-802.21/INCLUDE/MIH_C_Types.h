@@ -21,6 +21,7 @@ Type definition and structure for 802.21 interface
 #include <sys/types.h>
 #include <linux/types.h>
 #warning " Hack USER_MODE"
+#undef USER_MODE
 #define USER_MODE
 
 //-----------------------------------------------------------------------------
