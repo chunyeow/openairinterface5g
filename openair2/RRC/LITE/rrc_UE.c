@@ -273,7 +273,8 @@ void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id, u32 frame, u8 eNB_ind
   u8 buffer[100];
   u8 size;
 
-  size = do_RRCConnectionSetupComplete(buffer, Transaction_id, sizeof(nas_attach_req_guti), nas_attach_req_guti);
+//   size = do_RRCConnectionSetupComplete(buffer, Transaction_id, sizeof(nas_attach_req_guti), nas_attach_req_guti);
+  size = do_RRCConnectionSetupComplete(buffer, Transaction_id, sizeof(nas_attach_req_imsi), nas_attach_req_imsi);
 
   LOG_I(RRC,"[UE %d][RAPROC] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionSetupComplete (bytes%d, eNB %d)\n",
     Mod_id,frame, size, eNB_index);
@@ -2496,7 +2497,7 @@ void *rrc_ue_task(void *args_p) {
                             RRC_DCCH_DATA_IND (msg_p).ue_index);
 
         // Message buffer has been processed, free it now.
-        free (RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
         break;
 
       /* NAS messages */
@@ -2555,7 +2556,7 @@ void *rrc_ue_task(void *args_p) {
         break;
     }
 
-    free (msg_p);
+    itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
     msg_p = NULL;
   }
 }

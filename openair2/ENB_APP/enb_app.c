@@ -250,7 +250,7 @@ void *eNB_app_task(void *args_p)
                 break;
         }
 
-        free (msg_p);
+        itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
     } while (1);
 #endif
 

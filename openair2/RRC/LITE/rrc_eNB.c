@@ -3056,7 +3056,7 @@ void *rrc_enb_task(void *args_p) {
                              RRC_DCCH_DATA_IND (msg_p).sdu_size);
 
         // Message buffer has been processed, free it now.
-        free (RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
         break;
 
 #if defined(ENABLE_USE_MME)
@@ -3087,7 +3087,7 @@ void *rrc_enb_task(void *args_p) {
         break;
     }
 
-    free (msg_p);
+    itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
     msg_p = NULL;
   }
 }

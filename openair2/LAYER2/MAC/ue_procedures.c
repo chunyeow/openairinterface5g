@@ -1310,7 +1310,7 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
           break;
       }
 
-      free (msg_p);
+      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
     }
   } while(msg_p != NULL);
 #endif

@@ -37,10 +37,6 @@
 #include <errno.h>
 #include <signal.h>
 
-#ifdef RTAI
-# include <rtai_fifos.h>
-#endif
-
 #include "assertions.h"
 
 #include <sys/epoll.h>
@@ -49,6 +45,10 @@
 
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
+
+#ifdef RTAI
+# include <rtai_shm.h>
+#endif
 
 #if defined(OAI_EMU) || defined(RTAI)
 # include "vcd_signal_dumper.h"
@@ -85,6 +85,11 @@ const int itti_debug_poll = 0;
 
 #ifndef EFD_SEMAPHORE
 # define KERNEL_VERSION_PRE_2_6_30 1
+#endif
+
+#ifdef RTAI
+# define ITTI_MEM_PAGE_SIZE (1024)
+# define ITTI_MEM_SIZE      (16 * 1024 * 1024)
 #endif
 
 typedef enum task_state_s {
@@ -174,6 +179,32 @@ typedef struct itti_desc_s {
 
 static itti_desc_t itti_desc;
 
+void *itti_malloc(task_id_t task_id, ssize_t size)
+{
+    void *ptr = NULL;
+
+#ifdef RTAI
+//     ptr = rt_malloc(size);
+    ptr = malloc(size);
+#else
+    ptr = malloc(size);
+#endif
+
+    DevCheck(ptr != NULL, ptr, size, task_id);
+
+    return ptr;
+}
+
+void itti_free(task_id_t task_id, void *ptr)
+{
+    DevAssert(ptr != NULL);
+#ifdef RTAI
+    free(ptr);
+#else
+    free(ptr);
+#endif
+}
+
 static inline message_number_t itti_increment_message_number(void) {
     /* Atomic operation supported by GCC: returns the current message number
      * and then increment it by 1.
@@ -227,6 +258,7 @@ void itti_update_lte_time(uint32_t frame, uint8_t slot)
 
 int itti_send_broadcast_message(MessageDef *message_p) {
     task_id_t destination_task_id;
+    task_id_t origin_task_id;
     thread_id_t origin_thread_id;
     uint32_t thread_id;
     int ret = 0;
@@ -234,7 +266,8 @@ int itti_send_broadcast_message(MessageDef *message_p) {
 
     DevAssert(message_p != NULL);
 
-    origin_thread_id = TASK_GET_THREAD_ID(message_p->ittiMsgHeader.originTaskId);
+    origin_task_id = message_p->ittiMsgHeader.originTaskId;
+    origin_thread_id = TASK_GET_THREAD_ID(origin_task_id);
 
     destination_task_id = TASK_FIRST;
     for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++) {
@@ -248,7 +281,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
         if (thread_id != origin_thread_id) {
             /* Skip tasks which are not running */
             if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
-                new_message_p = malloc (sizeof(MessageDef));
+                new_message_p = itti_malloc (origin_task_id, sizeof(MessageDef));
                 DevAssert(message_p != NULL);
 
                 memcpy (new_message_p, message_p, sizeof(MessageDef));
@@ -278,7 +311,7 @@ inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, Messag
         origin_task_id = itti_get_current_task_id();
     }
 
-    temp = malloc (sizeof(MessageHeader) + size);
+    temp = itti_malloc (origin_task_id, sizeof(MessageHeader) + size);
     DevAssert(temp != NULL);
 
     temp->ittiMsgHeader.messageId = message_id;
@@ -329,16 +362,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
     /* Increment the global message number */
     message_number = itti_increment_message_number ();
 
-/*
- *
- #ifdef RTAI
-    if ((pthread_self() == itti_desc.threads[TASK_GET_THREAD_ID(origin_task_id)].task_thread) ||
-        (task_id == TASK_UNKNOWN) ||
-        ((TASK_GET_PARENT_TASK_ID(origin_task_id) != TASK_UNKNOWN) &&
-        (pthread_self() == itti_desc.threads[TASK_GET_PARENT_TASK_ID(origin_task_id)].task_thread)))
-#endif
-*/
-    itti_dump_queue_message (message_number, message, itti_desc.messages_info[message_id].name,
+    itti_dump_queue_message (origin_task_id, message_number, message, itti_desc.messages_info[message_id].name,
                              sizeof(MessageHeader) + message->ittiMsgHeader.ittiMsgSize);
 
     if (destination_task_id != TASK_UNKNOWN)
@@ -364,7 +388,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
                      itti_desc.threads[destination_thread_id].task_state, message_id);
 
             /* Allocate new list element */
-            new = (message_list_t *) malloc (sizeof(struct message_list_s));
+            new = (message_list_t *) itti_malloc (origin_task_id, sizeof(struct message_list_s));
             DevAssert(new != NULL);
 
             /* Fill in members */
@@ -552,7 +576,7 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             }
             DevAssert(message != NULL);
             *received_msg = message->msg;
-            free (message);
+            itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
             return;
         }
     }
@@ -659,6 +683,12 @@ void itti_mark_task_ready(task_id_t task_id)
 
     DevCheck(thread_id < itti_desc.thread_max, thread_id, itti_desc.thread_max, 0);
 
+    /* Register the thread in itti dump */
+    itti_dump_thread_use_ring_buffer();
+
+    /* Mark the thread as using LFDS queue */
+    lfds611_queue_use(itti_desc.tasks[task_id].message_queue);
+
 #ifdef RTAI
     /* Assign low priority to created threads */
     {
@@ -667,12 +697,6 @@ void itti_mark_task_ready(task_id_t task_id)
         sched_setscheduler(0, SCHED_FIFO, &sched_param);
     }
 #endif
-
-    /* Register the thread in itti dump */
-    itti_dump_thread_use_ring_buffer();
-
-    /* Mark the thread as using LFDS queue */
-    lfds611_queue_use(itti_desc.tasks[task_id].message_queue);
 
     itti_desc.threads[thread_id].task_state = TASK_STATE_READY;
 }
@@ -779,13 +803,6 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
             ITTI_ERROR("lfds611_queue_new failed for task %u\n", task_id);
             DevAssert(0 == 1);
         }
-
-# ifdef RTAI
-        if (task_id == TASK_L2L1)
-        {
-            ret = rtf_sem_init(56, 0);
-        }
-# endif
     }
 
     /* Initializing each thread */
@@ -844,6 +861,8 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 #ifdef RTAI
     /* Start RT relay thread */
     DevAssert(pthread_create (&itti_desc.rt_relay_thread, NULL, itti_rt_relay_thread, NULL) >= 0);
+
+    rt_global_heap_open();
 #endif
 
 #if defined(OAI_EMU) || defined(RTAI)

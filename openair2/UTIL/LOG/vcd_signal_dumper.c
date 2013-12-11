@@ -167,6 +167,7 @@ const char* eurecomFunctionsNames[] = {
     "pdcp_validate_security",
     "itti_enqueue_message",
     "itti_dump_enqueue_message",
+    "itti_dump_enqueue_message_malloc",
     "test"
 };
 
@@ -270,10 +271,14 @@ void *vcd_dumper_thread_rt(void *args)
 {
     vcd_queue_user_data_t *data;
     char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
+    struct sched_param sched_param;
 
 # if defined(ENABLE_ITTI)
     signal_mask();
 # endif
+
+    sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO) + 1;
+    sched_setscheduler(0, SCHED_FIFO, &sched_param);
 
     while(1) {
         if (lfds611_queue_dequeue(vcd_queue, (void **) &data) == 0) {

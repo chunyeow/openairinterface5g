@@ -81,7 +81,7 @@ typedef struct ral_lte_channel {
     float pkBitrate[2];
     float MTU[2];
 
-#if ! defined(ENABLE_USE_MME)
+// #if ! defined(ENABLE_USE_MME)
     //IP driver parameters
     u16   rbId;
     u16   RadioQoSclass;
@@ -89,7 +89,7 @@ typedef struct ral_lte_channel {
     u16   dscpDL;
     u16   nas_state;
     u16   status;
-#endif
+// #endif
 }ral_lte_channel_t;
 
 /*

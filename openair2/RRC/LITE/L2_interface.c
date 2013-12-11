@@ -485,7 +485,7 @@ u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
     u8 *message_buffer;
 
-    message_buffer = malloc (sdu_size);
+    message_buffer = itti_malloc (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, sdu_size);
     memcpy (message_buffer, Buffer, sdu_size);
 
     message_p = itti_alloc_new_message (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, RRC_DCCH_DATA_REQ);
@@ -524,7 +524,7 @@ void rrc_lite_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u3
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
     u8 *message_buffer;
 
-    message_buffer = malloc (sdu_size);
+    message_buffer = itti_malloc (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, sdu_size);
     memcpy (message_buffer, Buffer, sdu_size);
 
     message_p = itti_alloc_new_message (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, RRC_DCCH_DATA_IND);

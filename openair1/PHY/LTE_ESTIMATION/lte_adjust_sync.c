@@ -25,7 +25,7 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
 {
 
   static int max_pos_fil = 0;
-  int temp, i, aa, max_val = 0, max_pos = 0;
+  int temp = 0, i, aa, max_val = 0, max_pos = 0;
   int diff;
   short Re,Im,ncoef;
 
@@ -73,7 +73,8 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
 
 
 #ifdef DEBUG_PHY
-  LOG_D(PHY,"frame %d: rx_offset (after) = %d : max_pos = %d,max_pos_fil = %d (peak %d)\n",phy_vars_ue->frame,phy_vars_ue->rx_offset,max_pos,max_pos_fil,temp);
+  LOG_D(PHY,"frame %d: rx_offset (after) = %d : max_pos = %d,max_pos_fil = %d (peak %d)\n",
+        phy_vars_ue->frame,phy_vars_ue->rx_offset,max_pos,max_pos_fil,temp);
 #endif //DEBUG_PHY
 
 #ifdef CBMIMO1

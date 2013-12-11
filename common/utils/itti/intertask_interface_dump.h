@@ -31,12 +31,8 @@
 #ifndef INTERTASK_INTERFACE_DUMP_H_
 #define INTERTASK_INTERFACE_DUMP_H_
 
-int itti_dump_queue_message(message_number_t message_number, MessageDef *message_p, const char *message_name,
+int itti_dump_queue_message(task_id_t sender_task, message_number_t message_number, MessageDef *message_p, const char *message_name,
                             const uint32_t message_size);
-
-int itti_dump_queue_generic_string_message(message_number_t message_number,
-                                           char *string_message,
-                                           const uint32_t string_message_length);
 
 int itti_dump_init(const char * const messages_definition_xml, const char * const dump_file_name);
 

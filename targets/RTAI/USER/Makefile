@@ -2,7 +2,7 @@
 include $(OPENAIR_TARGETS)/Makerules
 
 default: lte-softmodem
-all: lte-softmodem
+all: lte-softmodem lte-enb
 
 include $(OPENAIR_TARGETS)/Makefile.common
 
@@ -19,7 +19,9 @@ endif
 
 CFLAGS += -O2
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
-
+ifdef DEBUG
+CFLAGS += -g -ggdb
+endif
 SRC = synctest.c condtest.c #lte-softmodem.c
 
 ifndef RTAI
@@ -33,20 +35,24 @@ endif
 ifeq ($(RTAI),1)
 CFLAGS += -DENABLE_RTAI_CLOCK
 CFLAGS += -DCONFIG_RTAI_LXRT_INLINE  #remend the RTAI warning
-#RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o 
 RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o 
 ifeq ($(USRP),1)
 RTAI_OBJ += lte-softmodem-usrp.o
 else
-RTAI_OBJ += lte-softmodem.o
+# RTAI_OBJ += lte-softmodem.o
+# RTAI_OBJ += lte-enb.o
+# RTAI_OBJ += lte-softmodem-enb.o
+# RTAI_OBJ += lte-softmodem-ue.o
 endif
 else
-#OBJ += sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o lte-softmodem.o rt_wrapper.o
 OBJ += sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o
 ifeq ($(USRP),1)
 OBJ += lte-softmodem-usrp.o
 else
-OBJ += lte-softmodem.o
+# OBJ += lte-softmodem.o
+# OBJ += lte-enb.o
+# OBJ += lte-softmodem-enb.o
+# OBJ += lte-softmodem-ue.o
 endif
 CFLAGS += -DENABLE_USE_CPU_EXECUTION_TIME
 endif
@@ -76,6 +82,7 @@ include $(OPENAIR2_DIR)/LAYER2/Makefile.inc
 include $(OPENAIR2_DIR)/UTIL/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
+include $(OPENAIR3_DIR)/RAL-LTE/Makefile.inc
 
 OBJ +=  $(ENB_APP_OBJS)
 
@@ -176,15 +183,21 @@ SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 -include $(OBJ:.o=.d)
 -include $(ASN1_MSG_OBJS1:.o=.d)
 -include $(RTAI_OBJ:.o=.d)
+-include lte-softmodem.d
+-include lte-enb.d
 
 $(LFDS_LIB):
 	@if [ ! -d $(LFDS_OBJ_DIR)/bin ]; then mkdir -p $(LFDS_OBJ_DIR)/bin; fi;
 	@if [ ! -d $(LFDS_OBJ_DIR)/obj ]; then mkdir -p $(LFDS_OBJ_DIR)/obj; fi;
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux OUTDIR=$(LFDS_OBJ_DIR)
 
+ifeq ($(RTAI),1)
+$(RTAI_OBJ) lte-enb.o lte-softmodem.o: %.o : %.c
+else
 $(RTAI_OBJ): %.o : %.c
+endif
 	@echo Compiling $< ...
-	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $< > $*.d
 	@mv -f $*.d $*.d.tmp
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
@@ -196,7 +209,11 @@ ifdef ENABLE_ITTI
 $(OBJ) $(RTAI_OBJ): $(ITTI_MESSAGES_H)
 endif
 
+ifeq ($(RTAI),1)
 $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
+else
+$(OBJ) $(ASN1_MSG_OBJS1) lte-enb.o lte-softmodem.o: %.o : %.c
+endif
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) $< > $*.d
@@ -216,9 +233,13 @@ condtest: condtest.c
 synctest: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o synctest
 
-lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(SHARED_DEPENDENCIES)
+lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
-	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem $(LDFLAGS) $(LIBS)
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
+
+lte-enb: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-enb.o $(SHARED_DEPENDENCIES)
+	@echo Linking $@
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-enb.o -o lte-enb $(LDFLAGS) $(LIBS)
 
 lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(SHARED_DEPENDENCIES)
 	@echo Linking $@

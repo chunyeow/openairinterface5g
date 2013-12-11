@@ -225,5 +225,9 @@ void itti_wait_tasks_end(void);
  **/
 void itti_send_terminate_message(task_id_t task_id);
 
+void *itti_malloc(task_id_t task_id, ssize_t size);
+
+void itti_free(task_id_t task_id, void *ptr);
+
 #endif /* INTERTASK_INTERFACE_H_ */
 /* @} */

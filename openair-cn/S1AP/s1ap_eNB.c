@@ -288,7 +288,7 @@ void *s1ap_eNB_task(void *arg)
                 break;
         }
 
-        free(received_msg);
+        itti_free (ITTI_MSG_ORIGIN_ID(received_msg), received_msg);
 
         received_msg = NULL;
     }

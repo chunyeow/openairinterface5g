@@ -470,7 +470,7 @@ void *l2l1_task(void *args_p) {
     /* Wait for the initialize message */
     do {
       if (message_p != NULL) {
-        free (message_p);
+        itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
       }
       itti_receive_msg (TASK_L2L1, &message_p);
 
@@ -487,7 +487,7 @@ void *l2l1_task(void *args_p) {
           break;
       }
     } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
-    free (message_p);
+    itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
   }
 #endif
 
@@ -513,7 +513,7 @@ void *l2l1_task(void *args_p) {
             break;
         }
 
-        free (message_p);
+        itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
       }
     } while(message_p != NULL);
 #endif

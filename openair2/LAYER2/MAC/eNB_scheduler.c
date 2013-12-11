@@ -4281,7 +4281,7 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
           break;
       }
 
-      free (msg_p);
+      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
     }
   } while(msg_p != NULL);
 #endif

@@ -90,12 +90,12 @@ static const int itti_dump_debug = 0;
 #define ITTI_DUMP_EXIT_SIGNAL       0x4
 
 typedef struct itti_dump_queue_item_s {
-    void    *data;
-    uint32_t data_size;
-    uint32_t message_number;
-    char     message_name[SIGNAL_NAME_LENGTH];
-    uint32_t message_type;
-    uint32_t message_size;
+    MessageDef *data;
+    uint32_t    data_size;
+    uint32_t    message_number;
+    char        message_name[SIGNAL_NAME_LENGTH];
+    uint32_t    message_type;
+    uint32_t    message_size;
 } itti_dump_queue_item_t;
 
 typedef struct {
@@ -215,6 +215,9 @@ static void itti_dump_fwrite_message(itti_dump_queue_item_t *message)
         fwrite (&message->message_number, sizeof(message->message_number), 1, dump_file);
         fwrite (message->message_name, sizeof(message->message_name), 1, dump_file);
         fwrite (message->data, message->data_size, 1, dump_file);
+// #if !defined(RTAI)
+        fflush (dump_file);
+// #endif
     }
 }
 
@@ -303,7 +306,8 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     return 0;
 }
 
-int itti_dump_queue_message(message_number_t message_number,
+int itti_dump_queue_message(task_id_t sender_task,
+                            message_number_t message_number,
                             MessageDef *message_p,
                             const char *message_name,
                             const uint32_t message_size)
@@ -316,21 +320,22 @@ int itti_dump_queue_message(message_number_t message_number,
         DevAssert(message_name != NULL);
         DevAssert(message_p != NULL);
 
-        new = malloc(sizeof(itti_dump_queue_item_t));
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
+#endif
+        new = itti_malloc(sender_task, sizeof(itti_dump_queue_item_t));
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
+#endif
 
-        if (new == NULL) {
-            ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
-                       __FILE__, __LINE__);
-            return -1;
-        }
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
+#endif
+        new->data = itti_malloc(sender_task, message_size);
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
+#endif
 
-        new->data = malloc(message_size);
-
-        if (new->data == NULL) {
-            ITTI_DUMP_ERROR("Failed to allocate memory (%s:%d)\n",
-                       __FILE__, __LINE__);
-            return -1;
-        }
         memcpy(new->data, message_p, message_size);
         new->data_size       = message_size;
         new->message_number  = message_number;
@@ -764,13 +769,16 @@ static void itti_dump_user_data_delete_function(void *user_data, void *user_stat
     if (user_data != NULL)
     {
         itti_dump_queue_item_t *item;
+        task_id_t task_id;
 
         item = (itti_dump_queue_item_t *)user_data;
+        task_id = ITTI_MSG_ORIGIN_ID(item->data);
+
         if (item->data != NULL)
         {
-            free(item->data);
+            itti_free(task_id, item->data);
         }
-        free(item);
+        itti_free(task_id, item);
     }
 }
 

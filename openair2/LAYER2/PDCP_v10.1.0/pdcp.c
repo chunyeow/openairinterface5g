@@ -519,7 +519,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
                          RRC_DCCH_DATA_REQ (msg_p).sdu_p, RRC_DCCH_DATA_REQ (msg_p).mode);
 
           // Message buffer has been processed, free it now.
-          free (RRC_DCCH_DATA_REQ (msg_p).sdu_p);
+          itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_REQ (msg_p).sdu_p);
           break;
 
         default:
@@ -527,7 +527,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
           break;
       }
 
-      free (msg_p);
+      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
     }
   } while(msg_p != NULL);
 #endif
