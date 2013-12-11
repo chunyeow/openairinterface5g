@@ -95,8 +95,16 @@
 
 #define UE_INDEX_INVALID ((uint8_t) ~0)
 
+typedef enum RRC_STATE_e {
+  RRC_STATE_INACTIVE=0,
+  RRC_STATE_IDLE,
+  RRC_STATE_CONNECTED,
+} RRC_STATE_t;
+
+
 typedef enum UE_STATE_e {
-  RRC_IDLE=0,
+  RRC_INACTIVE=0,
+  RRC_IDLE,
   RRC_SI_RECEIVED,
   RRC_CONNECTED,
   RRC_RECONFIGURED,
@@ -338,6 +346,7 @@ typedef struct OAI_UECapability_s {
 } OAI_UECapability_t;
 
 typedef struct UE_RRC_INST_s {
+  RRC_STATE_t RrcState;
   uint8_t *UECapability;
   uint8_t UECapability_size;
   UE_RRC_INFO Info[NB_SIG_CNX_UE];
