@@ -89,7 +89,14 @@ do {                                                            \
     }                                                           \
 } while (0)
 
-# define LOG_DUMP(a, b) LOG_D(NAS, " Dump %d\n", b)
+# define LOG_DUMP(dATA, lEN)                                                    \
+do {                                                                            \
+    char buffer[3*lEN + 1];                                                     \
+    int i;                                                                      \
+    for (i = 0; i < lEN; i++)                                                   \
+        sprintf (&buffer[3*i], "%02x ", dATA[i]);                               \
+    LOG_D(NAS, " Dump %d: %s\n", lEN, buffer);                                  \
+} while (0)
 
 # define LOG_FUNC_IN                                                            \
 do {                                                                            \
