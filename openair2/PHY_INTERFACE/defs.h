@@ -51,8 +51,12 @@
 #define DLSCH 1
 #define ULSCH 2
 
-#define mac_exit_wrapper(sTRING)	\
-	  mac_xface->macphy_exit(sTRING " in file " __FILE__ ", line ##__LINE__")
+#define mac_exit_wrapper(sTRING)                                                            \
+do {                                                                                        \
+    char temp[300];                                                                         \
+    snprintf(temp, sizeof(temp), "%s in file "__FILE__" at line %d\n", sTRING, __LINE__);   \
+    mac_xface->macphy_exit(temp);                                                           \
+} while(0)
 
 /*! \brief MACPHY Interface */
 typedef struct
