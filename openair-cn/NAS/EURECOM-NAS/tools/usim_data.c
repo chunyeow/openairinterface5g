@@ -200,7 +200,6 @@ int main (int argc, const char* argv[])
 	usim_data.msisdn.number.ext = 1;
 	usim_data.msisdn.number.ton = MSISDN_TON_UNKNOWKN;
 	usim_data.msisdn.number.npi = MSISDN_NPI_ISDN_TELEPHONY;
-	usim_data.msisdn.number.digit[0].msb = 
 	usim_data.msisdn.number.digit[0].msb = 3;
 	usim_data.msisdn.number.digit[0].lsb = 3;
 	usim_data.msisdn.number.digit[1].msb = 6;
