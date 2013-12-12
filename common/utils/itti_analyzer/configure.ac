@@ -41,6 +41,8 @@ AC_CHECK_FUNCS([memset])
 AC_CHECK_FUNCS([socket])
 AC_CHECK_FUNCS([strdup])
 AC_CHECK_FUNCS([strerror])
+AC_CHECK_FUNCS([select])
+AC_CHECK_FUNCS([strstr])
 
 AC_CHECK_HEADERS([arpa/inet.h])
 AC_CHECK_HEADERS([fcntl.h])
@@ -48,6 +50,8 @@ AC_CHECK_HEADERS([libintl.h])
 AC_CHECK_HEADERS([malloc.h])
 AC_CHECK_HEADERS([stddef.h])
 AC_CHECK_HEADERS([netinet/in.h])
+
+AC_CHECK_LIB(m, log10)
 
 PKG_CHECK_MODULES(XML2, [libxml-2.0 >= 2.7.8], [HAVE_XML2=true], [AC_MSG_ERROR(lixml-2.0 not installed)])
 CFLAGS="$CFLAGS $XML2_CFLAGS"
