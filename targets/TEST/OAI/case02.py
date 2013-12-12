@@ -108,7 +108,7 @@ def execute(oai, user, pw, logfile,logdir):
             for j in range(NUM_eNB) :
                 conf = '-a -A AWGN -l7 -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
-                trace_ping = logdir + '/log_ping_' + case + test + '_' + str(i) + str(j) + '.txt'
+                trace_ping = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '_ping.txt'
                 tee = ' 2>&1 | tee ' + trace
                 tee_ping = ' 2>&1 | tee ' + trace_ping
                 if user == 'root' :
