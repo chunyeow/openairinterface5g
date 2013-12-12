@@ -42,6 +42,8 @@ do {                                                                    \
         fprintf(stderr, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n",  \
         (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3);                         \
         fprintf(stderr, "Exiting execution\n");                         \
+        fflush(stdout);                                                 \
+        fflush(stderr);                                                 \
         abort();                                                        \
     }                                                                   \
 } while(0)
@@ -55,6 +57,8 @@ do {                                                                    \
         #vALUE4": %"PRIdMAX"\n",                                                \
         (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3, (intmax_t)vALUE4);            \
         fprintf(stderr, "Exiting execution\n");                         \
+        fflush(stdout);                                                 \
+        fflush(stderr);                                                 \
         exit(EXIT_FAILURE);                                             \
     }                                                                   \
 } while(0)
@@ -68,6 +72,8 @@ do {                                                                    \
         fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed\n",        \
         __FILE__, __LINE__, __FUNCTION__);                              \
         fprintf(stderr, "Exiting execution\n");                         \
+        fflush(stdout);                                                 \
+        fflush(stderr);                                                 \
         abort();                                                        \
     }                                                                   \
 } while(0)
@@ -77,6 +83,8 @@ do {                                                                    \
     fprintf(stderr, "%s:%d:%s Execution interrupted: `"#mESSAGE"`.\n",  \
     __FILE__, __LINE__, __FUNCTION__);                                  \
     fprintf(stderr, "Exiting execution\n");                             \
+    fflush(stdout);                                                 \
+    fflush(stderr);                                                     \
     abort();                                                            \
 } while(0)
 
