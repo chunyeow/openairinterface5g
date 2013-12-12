@@ -91,4 +91,30 @@ int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t
 
     itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
 }
+
+int nas_itti_ul_data_req(const uint32_t ue_id, void *const data, const uint32_t length)
+{
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message(TASK_NAS_UE, NAS_UPLINK_DATA_REQ);
+
+    NAS_UPLINK_DATA_REQ(message_p).UEid          = ue_id;
+    NAS_UPLINK_DATA_REQ(message_p).nasMsg.data   = data;
+    NAS_UPLINK_DATA_REQ(message_p).nasMsg.length = length;
+
+    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+}
+
+void nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID, const nas_error_code_t errCode)
+{
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message(TASK_NAS_UE, NAS_RAB_ESTABLI_RSP);
+
+    NAS_RAB_ESTABLI_RSP(message_p).s_tmsi       = s_tmsi;
+    NAS_RAB_ESTABLI_RSP(message_p).rabID        = rabID;
+    NAS_RAB_ESTABLI_RSP(message_p).errCode      = errCode;
+
+    itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+}
 #endif

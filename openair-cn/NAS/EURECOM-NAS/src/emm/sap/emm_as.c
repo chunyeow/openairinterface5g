@@ -1132,12 +1132,16 @@ static int _emm_as_send(const emm_as_t *msg)
             } break;
 
             case AS_UL_INFO_TRANSFER_REQ: {
-
+                nas_itti_ul_data_req(as_msg.msg.ul_info_transfer_req.UEid,
+                                     as_msg.msg.ul_info_transfer_req.nasMsg.data,
+                                     as_msg.msg.ul_info_transfer_req.nasMsg.length);
                 LOG_FUNC_RETURN (RETURNok);
             } break;
 
             case AS_RAB_ESTABLISH_RSP: {
-
+                nas_itti_rab_establish_rsp(as_msg.msg.rab_establish_rsp.s_tmsi,
+                                           as_msg.msg.rab_establish_rsp.rabID,
+                                           as_msg.msg.rab_establish_rsp.errCode);
                 LOG_FUNC_RETURN (RETURNok);
             } break;
 

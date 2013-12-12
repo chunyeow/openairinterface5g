@@ -34,6 +34,8 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 #define NAS_CONN_ESTABLI_REQ(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_establi_req
 #define NAS_UPLINK_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_req
 
+#define NAS_RAB_ESTABLI_RSP(mSGpTR)                 (mSGpTR)->ittiMsg.nas_rab_est_rsp
+
 #define NAS_CELL_SELECTION_CNF(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_cnf
 #define NAS_CELL_SELECTION_IND(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_ind
 #define NAS_PAGING_IND(mSGpTR)                      (mSGpTR)->ittiMsg.nas_paging_ind
@@ -47,6 +49,8 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 typedef cell_info_req_t         NasCellSelectionReq;
 typedef nas_establish_req_t     NasConnEstabliReq;
 typedef ul_info_transfer_req_t  NasUlDataReq;
+
+typedef rab_establish_rsp_t     NasRabEstRsp;
 
 // UE: RRC -> NAS messages
 typedef cell_info_cnf_t         NasCellSelectionCnf;
