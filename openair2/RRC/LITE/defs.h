@@ -86,6 +86,10 @@
 # include "intertask_interface.h"
 #endif
 
+#if defined(ENABLE_USE_MME)
+# include "commonDef.h"
+#endif
+
 /** @defgroup _rrc_impl_ RRC Layer Reference Implementation
  * @ingroup _ref_implementation_
  * @{
@@ -347,6 +351,10 @@ typedef struct OAI_UECapability_s {
 
 typedef struct UE_RRC_INST_s {
   RRC_STATE_t RrcState;
+# if defined(ENABLE_USE_MME)
+  plmn_t plmnID;
+  Byte_t rat;
+# endif
   uint8_t *UECapability;
   uint8_t UECapability_size;
   UE_RRC_INFO Info[NB_SIG_CNX_UE];

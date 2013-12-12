@@ -40,15 +40,16 @@
 # define NAS_UE_AUTOSTART 1
 
 extern unsigned char NB_eNB_INST;
+extern unsigned char NB_UE_INST;
 
 static int user_fd;
 
-static int nas_ue_process_events(struct epoll_event *events, int nb_events, unsigned int Mod_id)
+static int nas_ue_process_events(struct epoll_event *events, int nb_events)
 {
   int event;
   int exit_loop = FALSE;
 
-  LOG_I(NAS, "[UE %d] Received %d events\n", Mod_id, nb_events);
+  LOG_I(NAS, "[UE] Received %d events\n", nb_events);
 
   for (event = 0; event < nb_events; event++) {
     if (events[event].events != 0)
@@ -57,7 +58,7 @@ static int nas_ue_process_events(struct epoll_event *events, int nb_events, unsi
       if (events[event].data.fd == user_fd) {
         exit_loop = nas_user_receive_and_process(&user_fd);
       } else {
-        LOG_E(NAS, "[UE %d] Received an event from an unknown fd %d!\n", Mod_id, events[event].data.fd);
+        LOG_E(NAS, "[UE] Received an event from an unknown fd %d!\n", events[event].data.fd);
       }
     }
   }
@@ -92,6 +93,19 @@ void *nas_ue_task(void *args_p) {
     nas_user_initialize (&user_api_emm_callback, &user_api_esm_callback, FIRMWARE_VERSION);
   }
 
+  /* Set UE activation state */
+  for (instance = NB_eNB_INST; instance < (NB_eNB_INST + NB_UE_INST); instance++)
+  {
+      MessageDef *message_p;
+
+#if (NAS_UE_AUTOSTART == 0)
+      message_p = itti_alloc_new_message(TASK_NAS_UE, DEACTIVATE_MESSAGE);
+#else
+      message_p = itti_alloc_new_message(TASK_NAS_UE, ACTIVATE_MESSAGE);
+#endif
+      itti_send_msg_to_task(TASK_L2L1, instance, message_p);
+  }
+
   while(1) {
     // Wait for a message or an event
     itti_receive_msg (TASK_NAS_UE, &msg_p);
@@ -104,8 +118,8 @@ void *nas_ue_task(void *args_p) {
       switch (ITTI_MSG_ID(msg_p)) {
         case INITIALIZE_MESSAGE:
           LOG_I(NAS, "[UE %d] Received %s\n", Mod_id, msg_name);
-  #if defined(NAS_UE_AUTOSTART)
-  #endif
+#if (NAS_UE_AUTOSTART != 0)
+#endif
           break;
 
         case TERMINATE_MESSAGE:
@@ -132,8 +146,8 @@ void *nas_ue_task(void *args_p) {
 
     nb_events = itti_get_events(TASK_NAS_UE, &events);
     if ((nb_events > 0) && (events != NULL)) {
-      if (nas_ue_process_events(events, nb_events, Mod_id) == TRUE) {
-        LOG_E(NAS, "[UE %d] Received exit loop\n", Mod_id);
+      if (nas_ue_process_events(events, nb_events) == TRUE) {
+        LOG_E(NAS, "[UE] Received exit loop\n");
       }
     }
   }

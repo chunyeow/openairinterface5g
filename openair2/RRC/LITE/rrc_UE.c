@@ -2508,12 +2508,25 @@ void *rrc_ue_task(void *args_p) {
           LOG_I(RRC, "[UE %d] Received %s: state %d, plmnID %d, rat %x\n", Mod_id, msg_name, UE_rrc_inst[Mod_id].RrcState,
                 NAS_CELL_SELECTION_REQ (msg_p).plmnID, NAS_CELL_SELECTION_REQ (msg_p).rat);
 
+          /* Save cell selection criterion */
+          {
+              UE_rrc_inst[Mod_id].plmnID = NAS_CELL_SELECTION_REQ (msg_p).plmnID;
+              UE_rrc_inst[Mod_id].rat = NAS_CELL_SELECTION_REQ (msg_p).rat;
+          }
+
           switch (UE_rrc_inst[Mod_id].RrcState) {
               case RRC_STATE_INACTIVE:
-                /* Need to first activate lower layers */
+              {
+                  /* Need to first activate lower layers */
+                  MessageDef *message_p;
 
-                UE_rrc_inst[Mod_id].RrcState = RRC_STATE_IDLE;
-                break;
+                  message_p = itti_alloc_new_message(TASK_RRC_UE, ACTIVATE_MESSAGE);
+
+                  itti_send_msg_to_task(TASK_L2L1, NB_eNB_INST + Mod_id, message_p);
+
+                  UE_rrc_inst[Mod_id].RrcState = RRC_STATE_IDLE;
+                  break;
+              }
 
               case RRC_STATE_IDLE:
                 /* Ask to layer 1 to find a cell matching the criterion */
@@ -2540,18 +2553,19 @@ void *rrc_ue_task(void *args_p) {
 
       case NAS_UPLINK_DATA_REQ:
       {
-        uint32_t length;
-        uint8_t *buffer;
+          uint32_t length;
+          uint8_t *buffer;
 
-        LOG_I(RRC, "[UE %d] Received %s: UEid %d\n", Mod_id, msg_name, NAS_UPLINK_DATA_REQ (msg_p).UEid);
+          LOG_I(RRC, "[UE %d] Received %s: UEid %d\n", Mod_id, msg_name, NAS_UPLINK_DATA_REQ (msg_p).UEid);
 
-        /* Create message for PDCP (ULInformationTransfer_t) */
-        length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
+          /* Create message for PDCP (ULInformationTransfer_t) */
+          length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
 
-        /* Transfer data to PDCP */
-        pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
-        break;
+          /* Transfer data to PDCP */
+          pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
+          break;
       }
+# endif
 
       case RRC_RAL_SCAN_REQ:
           {
@@ -2573,7 +2587,6 @@ void *rrc_ue_task(void *args_p) {
           {
               LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
           }
-# endif
 
       default:
         LOG_E(RRC, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);

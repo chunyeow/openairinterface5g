@@ -285,6 +285,16 @@ int log_thread_finalize() {
   return err;
 }
 
+#if defined(ENABLE_ITTI)
+static void set_cli_start(uint8_t instance, uint8_t start) {
+  if (instance < NB_eNB_INST) {
+    oai_emulation.info.cli_start_enb[instance] = start;
+  } else {
+    oai_emulation.info.cli_start_ue[instance - NB_eNB_INST] = start;
+  }
+}
+#endif
+
 #ifdef OPENAIR2
 int omv_write(int pfd, Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data) {
   int i, j;
@@ -478,6 +488,14 @@ void *l2l1_task(void *args_p) {
         case INITIALIZE_MESSAGE:
           break;
 
+        case ACTIVATE_MESSAGE:
+          set_cli_start(ITTI_MSG_INSTANCE (message_p), 1);
+          break;
+
+        case DEACTIVATE_MESSAGE:
+          set_cli_start(ITTI_MSG_INSTANCE (message_p), 0);
+          break;
+
         case TERMINATE_MESSAGE:
           itti_exit_task ();
           break;
@@ -500,6 +518,14 @@ void *l2l1_task(void *args_p) {
 
       if (message_p != NULL) {
         switch (ITTI_MSG_ID(message_p)) {
+          case ACTIVATE_MESSAGE:
+            set_cli_start(ITTI_MSG_INSTANCE (message_p), 1);
+            break;
+
+          case DEACTIVATE_MESSAGE:
+            set_cli_start(ITTI_MSG_INSTANCE (message_p), 0);
+            break;
+
           case TERMINATE_MESSAGE:
             itti_exit_task ();
             break;
@@ -650,67 +676,69 @@ void *l2l1_task(void *args_p) {
           clear_UE_transport_info (oai_emulation.info.nb_ue_local);
 
         for (UE_id = oai_emulation.info.first_ue_local;
-            (UE_id < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local))
-                && (oai_emulation.info.cli_start_ue[UE_id] == 1); UE_id++) {
-          if (frame >= (UE_id * 20)) { // activate UE only after 20*UE_id frames so that different UEs turn on separately
+            (UE_id < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local)); UE_id++) {
+          if (oai_emulation.info.cli_start_ue[UE_id] != 0) {
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+            {
+#else
+            if (frame >= (UE_id * 20)) { // activate UE only after 20*UE_id frames so that different UEs turn on separately
+#endif
+              LOG_D(EMU, "PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n", UE_id, frame, slot, next_slot >> 1, last_slot>>1);
 
-            LOG_D(
-                EMU,
-                "PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n", UE_id, frame, slot, next_slot >> 1, last_slot>>1);
-
-            if (PHY_vars_UE_g[UE_id]->UE_mode[0] != NOT_SYNCHED) {
-              if (frame > 0) {
-                PHY_vars_UE_g[UE_id]->frame = frame;
+              if (PHY_vars_UE_g[UE_id]->UE_mode[0] != NOT_SYNCHED) {
+                if (frame > 0) {
+                  PHY_vars_UE_g[UE_id]->frame = frame;
 
 #ifdef OPENAIR2
-                //Application
-                update_otg_UE (UE_id, oai_emulation.info.time_ms);
+                  //Application
+                  update_otg_UE (UE_id, oai_emulation.info.time_ms);
 
-                //Access layer
-                pdcp_run (frame, 0, UE_id, 0);
+                  //Access layer
+                  pdcp_run (frame, 0, UE_id, 0);
 #endif
 
-                phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag, normal_txrx,
-                                       no_relay, NULL);
-                ue_data[UE_id]->tx_power_dBm = PHY_vars_UE_g[UE_id]->tx_power_dBm;
+                  phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag, normal_txrx,
+                                         no_relay, NULL);
+                  ue_data[UE_id]->tx_power_dBm = PHY_vars_UE_g[UE_id]->tx_power_dBm;
+                }
               }
-            }
-            else {
-              if (abstraction_flag == 1) {
-                LOG_E(
-                    EMU,
-                    "sync not supported in abstraction mode (UE%d,mode%d)\n", UE_id, PHY_vars_UE_g[UE_id]->UE_mode[0]);
-                exit (-1);
-              }
-              if ((frame > 0) && (last_slot == (LTE_SLOTS_PER_FRAME - 2))) {
-                initial_sync (PHY_vars_UE_g[UE_id], normal_txrx);
+              else {
+                if (abstraction_flag == 1) {
+                  LOG_E(
+                      EMU,
+                      "sync not supported in abstraction mode (UE%d,mode%d)\n", UE_id, PHY_vars_UE_g[UE_id]->UE_mode[0]);
+                  exit (-1);
+                }
+                if ((frame > 0) && (last_slot == (LTE_SLOTS_PER_FRAME - 2))) {
+                  initial_sync (PHY_vars_UE_g[UE_id], normal_txrx);
 
-                /*
-                 write_output("dlchan00.m","dlch00",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][0][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
-                 if (PHY_vars_UE_g[0]->lte_frame_parms.nb_antennas_rx>1)
-                 write_output("dlchan01.m","dlch01",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][1][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
-                 write_output("dlchan10.m","dlch10",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][2][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
-                 if (PHY_vars_UE_g[0]->lte_frame_parms.nb_antennas_rx>1)
-                 write_output("dlchan11.m","dlch11",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][3][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
-                 write_output("rxsig.m","rxs",PHY_vars_UE_g[0]->lte_ue_common_vars.rxdata[0],PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti*10,1,1);
-                 write_output("rxsigF.m","rxsF",PHY_vars_UE_g[0]->lte_ue_common_vars.rxdataF[0],2*PHY_vars_UE_g[0]->lte_frame_parms.symbols_per_tti*PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size,2,1);
-                 write_output("pbch_rxF_ext0.m","pbch_ext0",PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->rxdataF_ext[0],6*12*4,1,1);
-                 write_output("pbch_rxF_comp0.m","pbch_comp0",PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->rxdataF_comp[0],6*12*4,1,1);
-                 write_output("pbch_rxF_llr.m","pbch_llr",PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->llr,(frame_parms->Ncp==0) ? 1920 : 1728,1,4);
-                 */
+                  /*
+                   write_output("dlchan00.m","dlch00",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][0][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
+                   if (PHY_vars_UE_g[0]->lte_frame_parms.nb_antennas_rx>1)
+                   write_output("dlchan01.m","dlch01",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][1][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
+                   write_output("dlchan10.m","dlch10",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][2][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
+                   if (PHY_vars_UE_g[0]->lte_frame_parms.nb_antennas_rx>1)
+                   write_output("dlchan11.m","dlch11",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][3][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
+                   write_output("rxsig.m","rxs",PHY_vars_UE_g[0]->lte_ue_common_vars.rxdata[0],PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti*10,1,1);
+                   write_output("rxsigF.m","rxsF",PHY_vars_UE_g[0]->lte_ue_common_vars.rxdataF[0],2*PHY_vars_UE_g[0]->lte_frame_parms.symbols_per_tti*PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size,2,1);
+                   write_output("pbch_rxF_ext0.m","pbch_ext0",PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->rxdataF_ext[0],6*12*4,1,1);
+                   write_output("pbch_rxF_comp0.m","pbch_comp0",PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->rxdataF_comp[0],6*12*4,1,1);
+                   write_output("pbch_rxF_llr.m","pbch_llr",PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->llr,(frame_parms->Ncp==0) ? 1920 : 1728,1,4);
+                   */
+                }
               }
-            }
 #ifdef PRINT_STATS
-            if(last_slot==2 && frame%10==0)
-            if (UE_stats_th[UE_id])
-            fprintf(UE_stats_th[UE_id],"%d %d\n",frame, PHY_vars_UE_g[UE_id]->bitrate[0]/1000);
-            if (UE_stats[UE_id]) {
-              len = dump_ue_stats (PHY_vars_UE_g[UE_id], stats_buffer, 0, normal_txrx, 0);
-              rewind (UE_stats[UE_id]);
-              fwrite (stats_buffer, 1, len, UE_stats[UE_id]);
-              fflush(UE_stats[UE_id]);
-            }
+              if(last_slot==2 && frame%10==0)
+                if (UE_stats_th[UE_id])
+                  fprintf(UE_stats_th[UE_id],"%d %d\n",frame, PHY_vars_UE_g[UE_id]->bitrate[0]/1000);
+              if (UE_stats[UE_id]) {
+                len = dump_ue_stats (PHY_vars_UE_g[UE_id], stats_buffer, 0, normal_txrx, 0);
+                rewind (UE_stats[UE_id]);
+                fwrite (stats_buffer, 1, len, UE_stats[UE_id]);
+                fflush(UE_stats[UE_id]);
+              }
 #endif
+            }
           }
         }
 #ifdef Rel10
