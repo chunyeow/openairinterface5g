@@ -772,11 +772,15 @@ static void itti_dump_user_data_delete_function(void *user_data, void *user_stat
         task_id_t task_id;
 
         item = (itti_dump_queue_item_t *)user_data;
-        task_id = ITTI_MSG_ORIGIN_ID(item->data);
 
         if (item->data != NULL)
         {
+            task_id = ITTI_MSG_ORIGIN_ID(item->data);
             itti_free(task_id, item->data);
+        }
+        else
+        {
+            task_id = TASK_UNKNOWN;
         }
         itti_free(task_id, item);
     }
