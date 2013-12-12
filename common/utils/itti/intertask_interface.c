@@ -190,7 +190,7 @@ void *itti_malloc(task_id_t task_id, ssize_t size)
     ptr = malloc(size);
 #endif
 
-    DevCheck(ptr != NULL, ptr, size, task_id);
+    DevCheck(ptr != NULL, size, task_id, 0);
 
     return ptr;
 }
@@ -432,6 +432,9 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
                        destination_task_id,
                        itti_get_task_name(destination_task_id));
         }
+    } else {
+        /* This is a debug message to TASK_UNKNOWN, we can release safely release it */
+        itti_free(origin_task_id, message);
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
@@ -459,7 +462,8 @@ void itti_subscribe_event_fd(task_id_t task_id, int fd)
         itti_desc.threads[thread_id].nb_events * sizeof(struct epoll_event));
 
     event.events  = EPOLLIN | EPOLLERR;
-    event.data.fd = fd;
+    event.data.u64 = 0;
+    event.data.fd  = fd;
 
     /* Add the event fd to the list of monitored events */
     if (epoll_ctl(itti_desc.threads[thread_id].epoll_fd, EPOLL_CTL_ADD, fd,
