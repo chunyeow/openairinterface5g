@@ -1,6 +1,12 @@
 /* This message asks for task initialization */
 MESSAGE_DEF(INITIALIZE_MESSAGE, MESSAGE_PRIORITY_MED, struct {}, initialize_message)
 
+/* This message asks for task activation */
+MESSAGE_DEF(ACTIVATE_MESSAGE,   MESSAGE_PRIORITY_MED, struct {}, activate_message)
+
+/* This message asks for task deactivation */
+MESSAGE_DEF(DEACTIVATE_MESSAGE, MESSAGE_PRIORITY_MED, struct {}, deactivate_message)
+
 /* This message asks for task termination */
 MESSAGE_DEF(TERMINATE_MESSAGE,  MESSAGE_PRIORITY_MAX, struct {}, terminate_message)
 
