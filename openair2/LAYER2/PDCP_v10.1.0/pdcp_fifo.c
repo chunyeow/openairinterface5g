@@ -65,6 +65,7 @@ extern int otg_enabled;
 #include "UTIL/OCG/OCG.h"
 #include "UTIL/OCG/OCG_extern.h"
 #include "UTIL/LOG/log.h"
+#include "UTIL/OTG/otg_tx.h"
 #include "UTIL/FIFO/pad_list.h"
 #include "platform_constants.h"
 
@@ -770,7 +771,7 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
       (mac_get_rrc_status(eNB_index, eNB_flag, 1 ) > 2)) { */
     for (dst_id = 0; dst_id<NUMBER_OF_UE_MAX; dst_id++) {
       if (mac_get_rrc_status(eNB_index, eNB_flag, dst_id ) > 2) {
-        otg_pkt=packet_gen(src_id, dst_id, ctime, &pkt_size);
+        otg_pkt=packet_gen(src_id, dst_id, 0, ctime, &pkt_size);
         if (otg_pkt != NULL){
           rb_id = dst_id * NB_RB_MAX + DTCH;
           pdcp_data_req(src_id, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO,pkt_size, otg_pkt, PDCP_DATA_PDU);

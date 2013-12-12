@@ -17,7 +17,7 @@
 #include "openair0_lib.h"
 #include "openair_device.h"
 
-exmimo_pci_interface_bot_virtual_t openair0_exmimo_pci[MAX_CARDS] = INIT_ZEROS; // contains userspace pointers for each card
+exmimo_pci_interface_bot_virtual_t openair0_exmimo_pci[MAX_CARDS]; // contains userspace pointers for each card
 
 char *bigshm_top[MAX_CARDS] = INIT_ZEROS;
 
@@ -54,7 +54,7 @@ int openair0_open(void)
     
     if ( openair0_num_detected_cards == 0 )
     {
-        error("No cards detected!\n");
+        fprintf(stderr, "No cards detected!\n");
         return -4;
     }
 
