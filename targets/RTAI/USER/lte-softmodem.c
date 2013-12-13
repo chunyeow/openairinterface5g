@@ -1521,11 +1521,11 @@ int main(int argc, char **argv) {
     p_exmimo_config->framing.eNB_flag   = !UE_flag;
 
   p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
-#ifdef PCIE_INTERFACE_V9
-  p_exmimo_config->framing.resampling_factor = 2;
+#if (BOARD_SWREV_CNTL2>=0x0A)
+  p_exmimo_config->framing.resampling_factor[ant] = 2;
 #else
   for (ant=0; ant<4; ant++)
-    p_exmimo_config->framing.resampling_factor[ant] = 2;
+    p_exmimo_config->framing.resampling_factor = 2;
 #endif
 
   for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
@@ -1938,10 +1938,10 @@ int main(int argc, char **argv) {
 void test_config(int card, int ant, unsigned int rf_mode, int UE_flag) {
     p_exmimo_config->framing.eNB_flag   = !UE_flag;
     p_exmimo_config->framing.tdd_config = 0;
-#ifdef PCIE_INTERFACE_V9
-    p_exmimo_config->framing.resampling_factor = 2;
-#else
+#if (BOARD_SWREV_CNTL2>=0x0A)
     p_exmimo_config->framing.resampling_factor[ant] = 2;
+#else
+    p_exmimo_config->framing.resampling_factor = 2;
 #endif
 
     p_exmimo_config->rf.rf_freq_rx[ant] = 1907600000;

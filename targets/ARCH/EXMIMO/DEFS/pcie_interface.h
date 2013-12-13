@@ -39,11 +39,8 @@
 
 #define FRAME_LENGTH_COMPLEX_SAMPLES   76800
 // Buffer size per channel: FRAME_LENGTH_COMPLEX_SAMPLES+2048 smp/frame: LTE frame+tail, *4 (7.68*4 MsmpPS), *4 Bytes/smp
-#ifdef PCIE_INTERFACE_V9
-#define ADAC_BUFFERSZ_PERCHAN_B  ((FRAME_LENGTH_COMPLEX_SAMPLES+2048)*4)
-#else
 #define ADAC_BUFFERSZ_PERCHAN_B  ((FRAME_LENGTH_COMPLEX_SAMPLES+2048)*4*4)
-#endif
+
 #define BIGSHM_SIZE_PAGES ((( MAX_FIRMWARE_BLOCK_SIZE_B + \
                               MAX_PRINTK_BUFFER_B + \
                               sizeof(exmimo_pci_interface_bot_t) +   \
@@ -322,11 +319,7 @@ typedef struct
   uint32_t adac_intr_period;      // e.g. 1024
   
   uint32_t switch_offset[4];      // sample offsets (relative to start of frame) used to control the RX/TX switch in TDD mode
-#ifdef PCIE_INTERFACE_V9
-  uint32_t resampling_factor;     // 0=>1, 1=>2, 2=>4, applied equally to each chain and TX/RX
-#else
   uint32_t resampling_factor[4];     // 0=>1, 1=>2, 2=>4, applied equally to each chain and TX/RX
-#endif
 } exmimo_framing_t;
 
 
