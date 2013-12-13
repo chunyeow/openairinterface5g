@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.34 (w)1999-2012 BSI
-[*] Mon Dec  2 14:16:26 2013
+[*] Fri Dec 13 07:59:01 2013
 [*]
 [dumpfile] "/homes/winckel/openair/trunk/targets/SIMU/USER/openair_dump.vcd"
-[dumpfile_mtime] "Mon Dec  2 14:03:30 2013"
-[dumpfile_size] 9142217
-[savefile] "/homes/winckel/openair/vcd6.sav"
-[timestart] 0
+[dumpfile_mtime] "Fri Dec 13 07:37:22 2013"
+[dumpfile_size] 14725571
+[savefile] "/homes/winckel/openair/trunk/targets/itti_vcd_tasks.sav"
+[timestart] 10690200000
 [size] 1871 1056
 [pos] -1 -1
-*-30.922449 3089237868 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-23.537477 10702368471 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [sst_width] 223
 [signals_width] 260
 [sst_expanded] 1
@@ -23,42 +23,46 @@ variables.slot_number_eNB[63:0]
 @20000
 -
 @8024
+[color] 3
 variables.frame_number_UE[63:0]
-@28004
+@20000
 -
 @8024
+[color] 3
 variables.slot_number_UE[63:0]
 @20000
 -
-@c08025
+@c08024
 [color] 1
 variables.itti_alloc_msg[63:0]
-@1401201
+@1401200
 -group_end
 @c08022
 [color] 1
 variables.itti_send_msg[63:0]
 @28
 [color] 2
-+{UE NAS} (45)variables.itti_send_msg[63:0]
++{UE NAS} (44)variables.itti_send_msg[63:0]
 [color] 2
-+{UE RRC} (46)variables.itti_send_msg[63:0]
++{UE RRC} (45)variables.itti_send_msg[63:0]
 [color] 2
-+{UE PDCP} (47)variables.itti_send_msg[63:0]
++{UE PDCP} (46)variables.itti_send_msg[63:0]
 [color] 2
-+{UE RLC} (48)variables.itti_send_msg[63:0]
++{UE RLC} (47)variables.itti_send_msg[63:0]
 [color] 2
-+{UE MAC} (49)variables.itti_send_msg[63:0]
++{UE MAC} (48)variables.itti_send_msg[63:0]
 [color] 2
-+{UE PHY} (50)variables.itti_send_msg[63:0]
++{UE PHY} (49)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB app} (51)variables.itti_send_msg[63:0]
++{eNB app} (50)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB SCTP} (52)variables.itti_send_msg[63:0]
++{eNB SCTP} (51)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB X2AP} (53)variables.itti_send_msg[63:0]
++{eNB X2AP} (52)variables.itti_send_msg[63:0]
 [color] 2
-+{eNB S1AP} (54)variables.itti_send_msg[63:0]
++{eNB S1AP} (53)variables.itti_send_msg[63:0]
+[color] 2
++{eNB RAL} (54)variables.itti_send_msg[63:0]
 [color] 2
 +{eNB RRC} (55)variables.itti_send_msg[63:0]
 [color] 2
@@ -88,18 +92,18 @@ functions.itti_dump_enqueue_message
 functions.itti_enqueue_message
 @200
 -
-@c08022
+@c08023
 [color] 5
 variables.itti_poll_msg[63:0]
 @28
 [color] 6
-+{UE PDCP} (47)variables.itti_poll_msg[63:0]
++{UE PDCP} (46)variables.itti_poll_msg[63:0]
 [color] 6
-+{UE RLC} (48)variables.itti_poll_msg[63:0]
++{UE RLC} (47)variables.itti_poll_msg[63:0]
 [color] 6
-+{UE MAC} (49)variables.itti_poll_msg[63:0]
++{UE MAC} (48)variables.itti_poll_msg[63:0]
 [color] 6
-+{UE PHY} (50)variables.itti_poll_msg[63:0]
++{UE PHY} (49)variables.itti_poll_msg[63:0]
 [color] 6
 +{eNB PDCP} (56)variables.itti_poll_msg[63:0]
 [color] 6
@@ -110,24 +114,24 @@ variables.itti_poll_msg[63:0]
 +{eNB PHY} (59)variables.itti_poll_msg[63:0]
 [color] 6
 +{L2L1} (61)variables.itti_poll_msg[63:0]
-@1401200
+@1401201
 -group_end
 @c08022
 [color] 5
 variables.itti_recv_msg[63:0]
 @28
 [color] 6
-+{UE NAS} (45)variables.itti_recv_msg[63:0]
++{UE NAS} (44)variables.itti_recv_msg[63:0]
 [color] 6
-+{UE RRC} (46)variables.itti_recv_msg[63:0]
++{UE RRC} (45)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB app} (51)variables.itti_recv_msg[63:0]
++{eNB app} (50)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB SCTP} (52)variables.itti_recv_msg[63:0]
++{eNB SCTP} (51)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB X2AP} (53)variables.itti_recv_msg[63:0]
++{eNB X2AP} (52)variables.itti_recv_msg[63:0]
 [color] 6
-+{eNB S1AP} (54)variables.itti_recv_msg[63:0]
++{eNB S1AP} (53)variables.itti_recv_msg[63:0]
 [color] 6
 +{eNB RRC} (55)variables.itti_recv_msg[63:0]
 [color] 6
@@ -151,5 +155,14 @@ functions.pdcp_run
 functions.phy_procedures_eNB_lte
 functions.phy_procedures_eNb_rx
 functions.phy_procedures_eNb_tx
+@200
+-
+@28
+[color] 3
+functions.phy_procedures_UE_lte
+[color] 3
+functions.phy_procedures_ue_rx
+[color] 3
+functions.phy_procedures_ue_tx
 [pattern_trace] 1
 [pattern_trace] 0
