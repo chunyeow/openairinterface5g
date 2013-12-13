@@ -357,12 +357,16 @@ uint8_t do_MIB(LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, uint8_t *buffer)
 }
 
 uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
-		BCCH_DL_SCH_Message_t *bcch_message,
-		SystemInformationBlockType1_t **sib1) {
+                BCCH_DL_SCH_Message_t *bcch_message,
+                SystemInformationBlockType1_t **sib1
+#if defined(ENABLE_ITTI)
+              , RrcConfigurationReq *configuration
+#endif
+               ) {
 
   //  SystemInformation_t systemInformation;
   PLMN_IdentityInfo_t PLMN_identity_info;
-  MCC_MNC_Digit_t dummy_mcc[3],dummy_mnc[2];
+  MCC_MNC_Digit_t dummy_mcc[3],dummy_mnc[3];
   asn_enc_rval_t enc_rval;
   SchedulingInfo_t schedulingInfo;
   SIB_Type_t sib_type;
@@ -385,14 +389,42 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 
   asn_set_empty(&PLMN_identity_info.plmn_Identity.mcc->list);//.size=0;
 
-  dummy_mcc[0]=0;ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mcc->list,&dummy_mcc[0]);
-  dummy_mcc[1]=0;ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mcc->list,&dummy_mcc[1]);
-  dummy_mcc[2]=1;ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mcc->list,&dummy_mcc[2]);
+#if defined(ENABLE_ITTI)
+  dummy_mcc[0] = (configuration->mcc / 100) % 10;
+  dummy_mcc[1] = (configuration->mcc / 10) % 10;
+  dummy_mcc[2] = (configuration->mcc / 1) % 10;
+#else
+  dummy_mcc[0] = 0;
+  dummy_mcc[1] = 0;
+  dummy_mcc[2] = 1;
+#endif
+  ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mcc->list,&dummy_mcc[0]);
+  ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mcc->list,&dummy_mcc[1]);
+  ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mcc->list,&dummy_mcc[2]);
 
   PLMN_identity_info.plmn_Identity.mnc.list.size=0;
   PLMN_identity_info.plmn_Identity.mnc.list.count=0;
-  dummy_mnc[0]=0;ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mnc.list,&dummy_mnc[0]);
-  dummy_mnc[1]=1;ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mnc.list,&dummy_mnc[1]);
+#if defined(ENABLE_ITTI)
+  if (configuration->mnc >= 100) {
+      dummy_mnc[0] = (configuration->mnc / 100) % 10;
+      dummy_mnc[1] = (configuration->mnc / 10) % 10;
+      dummy_mnc[2] = (configuration->mnc / 1) % 10;
+  } else {
+    dummy_mnc[0] = (configuration->mnc / 10) % 10;
+    dummy_mnc[1] = (configuration->mnc / 1) % 10;
+    dummy_mnc[2] = 0xf;
+  }
+#else
+  dummy_mnc[0] = 0;
+  dummy_mnc[1] = 1;
+  dummy_mnc[2] = 0xf;
+#endif
+  ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mnc.list,&dummy_mnc[0]);
+  ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mnc.list,&dummy_mnc[1]);
+  if (dummy_mnc[2] != 0xf) {
+    ASN_SEQUENCE_ADD(&PLMN_identity_info.plmn_Identity.mnc.list,&dummy_mnc[2]);
+  }
+
   //assign_enum(&PLMN_identity_info.cellReservedForOperatorUse,PLMN_IdentityInfo__cellReservedForOperatorUse_notReserved);
   PLMN_identity_info.cellReservedForOperatorUse=PLMN_IdentityInfo__cellReservedForOperatorUse_notReserved;
 
@@ -401,17 +433,29 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 
   // 16 bits
   (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf = MALLOC(2);
-  (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[0]=0x00;
-  (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[1]=0x01;
+#if defined(ENABLE_ITTI)
+  (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[0] = (configuration->tac >> 8) & 0xff;
+  (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[1] = (configuration->tac >> 0) & 0xff;
+#else
+  (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[0] = 0x00;
+  (*sib1)->cellAccessRelatedInfo.trackingAreaCode.buf[1] = 0x01;
+#endif
   (*sib1)->cellAccessRelatedInfo.trackingAreaCode.size=2;
   (*sib1)->cellAccessRelatedInfo.trackingAreaCode.bits_unused=0;
 
   // 28 bits
   (*sib1)->cellAccessRelatedInfo.cellIdentity.buf = MALLOC(8);
-  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[3]=0x10;
-  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[2]=0x00;
-  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[1]=0x00;
-  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[0]=0x00;
+#if defined(ENABLE_ITTI)
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[0] = (configuration->cell_identity >> 20) & 0xff;
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[1] = (configuration->cell_identity >> 12) & 0xff;
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[2] = (configuration->cell_identity >>  4) & 0xff;
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[3] = (configuration->cell_identity <<  4) & 0xf0;
+#else
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[0] = 0x00;
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[1] = 0x00;
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[2] = 0x00;
+  (*sib1)->cellAccessRelatedInfo.cellIdentity.buf[3] = 0x10;
+#endif
   (*sib1)->cellAccessRelatedInfo.cellIdentity.size=4;
   (*sib1)->cellAccessRelatedInfo.cellIdentity.bits_unused=4;
 
@@ -436,21 +480,11 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 
   //  ASN_SEQUENCE_ADD(&schedulingInfo.sib_MappingInfo.list,NULL);
 
-
-
-
-
-
-
-
   (*sib1)->tdd_Config = CALLOC(1,sizeof(struct TDD_Config));
-
 
   (*sib1)->tdd_Config->subframeAssignment=frame_parms->tdd_config; //TDD_Config__subframeAssignment_sa3;
 
-
   (*sib1)->tdd_Config->specialSubframePatterns=0;//frame_parms->tdd_config_S;//TDD_Config__specialSubframePatterns_ssp0;
-
 
   (*sib1)->si_WindowLength=SystemInformationBlockType1__si_WindowLength_ms20;
   (*sib1)->systemInfoValueTag=0;
@@ -460,9 +494,29 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
   xer_fprint(stdout, &asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message);
 #endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_BCCH_DL_SCH_Message,
-				   (void*)bcch_message,
-				   buffer,
-				   100);
+                                   (void*)bcch_message,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[10000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    }
+  }
+# endif
+#endif
+
 #ifdef USER_MODE
   LOG_D(RRC,"[eNB] SystemInformationBlockType1 Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
 #endif

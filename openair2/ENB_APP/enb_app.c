@@ -246,9 +246,9 @@ static uint32_t eNB_app_register()
 #   if defined(OAI_EMU)
     eNB_id_start = oai_emulation.info.first_enb_local;
     eNB_id_end = oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local;
-#   endif
 
     DevCheck(eNB_id_end <= NUMBER_OF_eNB_MAX, eNB_id_end, NUMBER_OF_eNB_MAX, 0);
+#   endif
     DevCheck(eNB_id_end <= (sizeof(enb_properties) / sizeof(enb_properties[0])), eNB_id_end, (sizeof(enb_properties) / sizeof(enb_properties[0])), 0);
 
     for (eNB_id = eNB_id_start; (eNB_id < eNB_id_end) ; eNB_id++)
@@ -278,6 +278,7 @@ static uint32_t eNB_app_register()
             /* Some default/random parameters */
             s1ap_register_eNB->eNB_id = enb_properties[eNB_id]->eNB_id;
             s1ap_register_eNB->cell_type = enb_properties[eNB_id]->cell_type;
+            s1ap_register_eNB->eNB_name = enb_properties[eNB_id]->eNB_name;
             s1ap_register_eNB->tac = enb_properties[eNB_id]->tac;
             s1ap_register_eNB->mcc = enb_properties[eNB_id]->mcc;
             s1ap_register_eNB->mnc = enb_properties[eNB_id]->mnc;

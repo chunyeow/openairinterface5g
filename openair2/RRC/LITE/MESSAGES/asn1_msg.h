@@ -75,8 +75,12 @@ u8 get_adjacent_cell_mod_id(uint16_t phyCellId);
 @return size of encoded bit stream in bytes*/
 
 uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
-		BCCH_DL_SCH_Message_t *bcch_message,
-		SystemInformationBlockType1_t **sib1);
+                BCCH_DL_SCH_Message_t *bcch_message,
+                SystemInformationBlockType1_t **sib1
+#if defined(ENABLE_ITTI)
+              , RrcConfigurationReq *configuration
+#endif
+                );
 
 /** 
 \brief Generate a default configuration for SIB2/SIB3 in one System Information PDU (eNB).

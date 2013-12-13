@@ -105,8 +105,11 @@ static const uint8_t RRC_TRANSACTION_IDENTIFIER_NUMBER = 4;
 mui_t rrc_eNB_mui = 0;
 
 /*------------------------------------------------------------------------------*/
-static void init_SI (u8 Mod_id) {
-
+static void init_SI (u8 Mod_id
+#if defined(ENABLE_ITTI)
+                   , RrcConfigurationReq *configuration
+#endif
+                    ) {
   u8 SIwindowsize = 1;
   u16 SIperiod = 8;
 #ifdef Rel10
@@ -176,7 +179,11 @@ static void init_SI (u8 Mod_id) {
                                                 eNB_rrc_inst[Mod_id].SIB1,
                                                 &eNB_rrc_inst[Mod_id].
                                                 siblock1,
-                                                &eNB_rrc_inst[Mod_id].sib1);
+                                                &eNB_rrc_inst[Mod_id].sib1
+#if defined(ENABLE_ITTI)
+                                              , configuration
+#endif
+                                                );
   else
     {
       LOG_E (RRC, "[eNB] init_SI: FATAL, no memory for SIB1 allocated\n");
@@ -2397,10 +2404,18 @@ void rrc_eNB_generate_RRCConnectionSetup (u8 Mod_id, u32 frame, u16 UE_index) {
 }
 
 /*------------------------------------------------------------------------------*/
+#if defined(ENABLE_ITTI)
 char openair_rrc_lite_eNB_init (u8 Mod_id)
 {
+    /* Dummy function, initialization will be done through ITTI messaging */
+    return 0;
+}
+char openair_rrc_lite_eNB_configuration (u8 Mod_id, RrcConfigurationReq *configuration)
+#else
+char openair_rrc_lite_eNB_init (u8 Mod_id)
+#endif
+{
   /*-----------------------------------------------------------------------------*/
-
   unsigned char j;
   LOG_I (RRC, "[eNB %d] Init (UE State = RRC_IDLE)...\n", Mod_id);
   LOG_D (RRC, "[MSC_NEW][FRAME 00000][RRC_eNB][MOD %02d][]\n", Mod_id);
@@ -2470,7 +2485,11 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
          eNB_rrc_inst[Mod_id].num_active_cba_groups);
 #endif
 
-  init_SI (Mod_id);
+  init_SI (Mod_id
+#if defined(ENABLE_ITTI)
+           , configuration
+#endif
+           );
 
 #ifdef Rel10
   switch (eNB_rrc_inst[Mod_id].MBMS_flag) {
@@ -3035,7 +3054,7 @@ void *rrc_enb_task(void *args_p) {
 
       /* Messages from MAC */
       case RRC_MAC_CCCH_DATA_IND:
-        LOG_I(RRC, "[eNB %d] Received %s: instance %d, frame %d,\n", instance, msg_name,
+        LOG_I(RRC, "[eNB %d] Received %s: frame %d,\n", instance, msg_name,
               RRC_MAC_CCCH_DATA_IND (msg_p).frame);
 
         srb_info_p = &eNB_rrc_inst[instance].Srb0;
@@ -3048,7 +3067,7 @@ void *rrc_enb_task(void *args_p) {
 
       /* Messages from PDCP */
       case RRC_DCCH_DATA_IND:
-        LOG_I(RRC, "[eNB %d][UE %d] Received %s: instance %d, frame %d, DCCH %d\n", instance, RRC_DCCH_DATA_IND (msg_p).ue_index, msg_name,
+        LOG_I(RRC, "[eNB %d][UE %d] Received %s: frame %d, DCCH %d\n", instance, RRC_DCCH_DATA_IND (msg_p).ue_index, msg_name,
               RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index);
 
         rrc_eNB_decode_dcch (instance, RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index,
@@ -3081,6 +3100,12 @@ void *rrc_enb_task(void *args_p) {
         rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ(msg_p, msg_name, instance);
         break;
 #endif
+
+      /* Messages from eNB app */
+      case RRC_CONFIGURATION_REQ:
+          LOG_I(RRC, "[eNB %d] Received %s\n", instance, msg_name);
+          openair_rrc_lite_eNB_configuration(instance, &RRC_CONFIGURATION_REQ (msg_p));
+          break;
 
       default:
         LOG_E(RRC, "[eNB %d] Received unexpected message %s\n", instance, msg_name);
