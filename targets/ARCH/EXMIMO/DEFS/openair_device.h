@@ -42,7 +42,7 @@
 */
 #define BOARD_SWREV_LEGACY   0x07
 #define BOARD_SWREV_CMDREGISTERS 0x08
-#define BOARD_SWREV_CNTL2 0x09
+#define BOARD_SWREV_CNTL2 0x0A
 #define BOARD_SWREV_CMDFIFOS 0x11
 
 
@@ -75,6 +75,8 @@
 #define openair_GET_FRAME                    _IOR(openair_IOC_MAGIC,6,int)
 #define openair_START_RT_ACQUISITION         _IOR(openair_IOC_MAGIC,28,int)
 #define openair_STOP                         _IOR(openair_IOC_MAGIC,5,int)
+#define openair_STOP_WITHOUT_RESET           _IOR(openair_IOC_MAGIC,9,int)
+#define openair_RECONFIGURE                  _IOR(openair_IOC_MAGIC,10,int)
 #define openair_UPDATE_FIRMWARE              _IOR(openair_IOC_MAGIC,40,int)
 
 
