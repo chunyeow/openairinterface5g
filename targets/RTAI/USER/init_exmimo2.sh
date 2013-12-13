@@ -16,20 +16,22 @@ if [ ! -e /dev/openair0 ]; then
 fi
 
 DEVICE=`echo $PCI | awk -F\" '{print $(NF-1)}' | awk '{print $2}'`
-if [ $(($DEVICE%100)) == 8 ]; then
+if [ $DEVICE == '2208' ]; then
  echo "Using firmware version 8"
  $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw -s 0x43fffff0 -b -f $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/sdr_expressmimo2
 else 
- if [ $(($DEVICE%100)) == 9 ]; then
+ if [ $DEVICE == '2209' ]; then
   echo "Using firmware version 9"
   #$OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw -s 0x43fffff0 -b -f $OPENAIR0_DIR/express-mimo/software/sdr/exmimo2/sdr_expressmimo2
   $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw -s 0x43fffff0 -b -f $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/sdr_expressmimo2_v9
-else
- if [ $(($DEVICE%100)) == 10 ]; then
-  $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw -s 0x43fffff0 -b -f $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/sdr_expressmimo2_v10
  else
-  echo 'No corresponding firmware found'
-  return
+  if [ $DEVICE == '220a' ]; then
+   echo "Using firware version 10"
+   $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/updatefw -s 0x43fffff0 -b -f $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT/sdr_expressmimo2_v10
+  else
+   echo 'No corresponding firmware found'
+   return
+  fi
  fi
 fi
 

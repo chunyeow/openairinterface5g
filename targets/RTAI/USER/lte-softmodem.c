@@ -189,8 +189,8 @@ int otg_enabled;
 #endif
 int number_of_cards = 1;
 
-//int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
-int mbox_bounds[20] = {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+//int mbox_bounds[20] = {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 
 int init_dlsch_threads(void);
 void cleanup_dlsch_threads(void);
@@ -1295,7 +1295,7 @@ int main(int argc, char **argv) {
   }
   else { //UE_flag==1
     frame_parms->nb_antennas_tx     = 1;
-    frame_parms->nb_antennas_rx     = 2;
+    frame_parms->nb_antennas_rx     = 1;
   }
   frame_parms->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
   frame_parms->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
@@ -1472,7 +1472,7 @@ int main(int argc, char **argv) {
     NB_INST=1;
 
     openair_daq_vars.ue_dl_rb_alloc=0x1fff;
-    openair_daq_vars.target_ue_dl_mcs=0;
+    openair_daq_vars.target_ue_dl_mcs=20;
     openair_daq_vars.ue_ul_nb_rb=6;
     openair_daq_vars.target_ue_ul_mcs=6;
 
@@ -1509,14 +1509,24 @@ int main(int argc, char **argv) {
   
   printf("Card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d\n", card, p_exmimo_id->board_exmimoversion, p_exmimo_id->board_hwrev, p_exmimo_id->board_swrev);
 
-  if (p_exmimo_id->board_swrev>=BOARD_SWREV_CNTL2)
+  // check if the software matches firmware
+  if (p_exmimo_id->board_swrev!=BOARD_SWREV_CNTL2) {
+    printf("Software revision %d and firmware revision %d do not match. Please update either the firmware or the software!\n",BOARD_SWREV_CNTL2,p_exmimo_id->board_swrev);
+    exit(-1);
+  }
+
+  if (p_exmimo_id->board_swrev>=9)
     p_exmimo_config->framing.eNB_flag   = 0; 
   else 
     p_exmimo_config->framing.eNB_flag   = !UE_flag;
 
   p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+#ifdef PCIE_INTERFACE_V9
   p_exmimo_config->framing.resampling_factor = 2;
- 
+#else
+  for (ant=0; ant<4; ant++)
+    p_exmimo_config->framing.resampling_factor[ant] = 2;
+#endif
 
   for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
     p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
@@ -1530,9 +1540,10 @@ int main(int argc, char **argv) {
   }
 
   /*
-  ant_offset = 3;
+  ant_offset = 0;
   for (ant=0; ant<4; ant++) {
     if (ant==ant_offset) {
+      //if (1) {
       p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
       p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
       p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
@@ -1927,8 +1938,12 @@ int main(int argc, char **argv) {
 void test_config(int card, int ant, unsigned int rf_mode, int UE_flag) {
     p_exmimo_config->framing.eNB_flag   = !UE_flag;
     p_exmimo_config->framing.tdd_config = 0;
+#ifdef PCIE_INTERFACE_V9
     p_exmimo_config->framing.resampling_factor = 2;
-    
+#else
+    p_exmimo_config->framing.resampling_factor[ant] = 2;
+#endif
+
     p_exmimo_config->rf.rf_freq_rx[ant] = 1907600000;
     p_exmimo_config->rf.rf_freq_tx[ant] = 1907600000;;
     p_exmimo_config->rf.rx_gain[ant][0] = 20;

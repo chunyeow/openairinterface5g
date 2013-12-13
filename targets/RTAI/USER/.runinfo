@@ -32,3 +32,4 @@ dot11:lxrt+sem+mbx+msg+fifos:!sudo ./dot11 -C 1907600000 -d;sleep 1;popall:contr
 dot11_tx_test: lxrt+sem+mbx+msg+fifos:!sudo ./dot11 -C 1907600000 -d -t;sleep 1;popall:control_c
 eNB2_750:lxrt+sem+mbx+msg+fifos:!sudo ./synctest_eNB -C 746000000 -F enb1tx_750 -d;sleep 1;popall:control_c
 eNB2_1900:lxrt+sem+mbx+msg+fifos:!sudo ./synctest_eNB -C 19076000000 -F enb1tx_1900 -d;sleep 1;popall:control_c
+emos-raw:lxrt+sem+mbx+msg+fifos:!sudo ./emos-raw -C 1907600000;sleep 1;popall:control_c

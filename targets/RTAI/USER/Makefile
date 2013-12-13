@@ -249,6 +249,11 @@ lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(SHARED_DE
 	@echo Linking $@
 	@$(CC) $(USRP_OBJ) $(CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem-usrp $(LDFLAGS) $(LIBS)
 
+OBJ_EMOS = $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o rt_wrapper.o $(OPENAIR2_DIR)/UTIL/LOG/log.o $(OPENAIR2_DIR)/UTIL/LOG/vcd_signal_dumper.o
+emos-raw: $(SHARED_DEPENDENCIES) $(OBJ_EMOS) emos-raw.c
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o emos-raw emos-raw.c $(LDFLAGS) $(LIBS)
+
+
 synctest_eNB: synctest
 	cp synctest synctest_eNB
 
