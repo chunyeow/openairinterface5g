@@ -30,21 +30,33 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
-#define NAS_CELL_SELECTION_REQ(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_req
-#define NAS_CONN_ESTABLI_REQ(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_establi_req
-#define NAS_UPLINK_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_req
+#define RRC_CONFIGURATION_REQ(mSGpTR)   (mSGpTR)->ittiMsg.rrc_configuration_req
 
-#define NAS_RAB_ESTABLI_RSP(mSGpTR)                 (mSGpTR)->ittiMsg.nas_rab_est_rsp
+#define NAS_CELL_SELECTION_REQ(mSGpTR)  (mSGpTR)->ittiMsg.nas_cell_selection_req
+#define NAS_CONN_ESTABLI_REQ(mSGpTR)    (mSGpTR)->ittiMsg.nas_conn_establi_req
+#define NAS_UPLINK_DATA_REQ(mSGpTR)     (mSGpTR)->ittiMsg.nas_ul_data_req
 
-#define NAS_CELL_SELECTION_CNF(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_cnf
-#define NAS_CELL_SELECTION_IND(mSGpTR)              (mSGpTR)->ittiMsg.nas_cell_selection_ind
-#define NAS_PAGING_IND(mSGpTR)                      (mSGpTR)->ittiMsg.nas_paging_ind
-#define NAS_CONN_ESTABLI_CNF(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_establi_cnf
-#define NAS_CONN_RELEASE_IND(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_release_ind
-#define NAS_UPLINK_DATA_CNF(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_cnf
-#define NAS_DOWNLINK_DATA_IND(mSGpTR)               (mSGpTR)->ittiMsg.nas_dl_data_ind
+#define NAS_RAB_ESTABLI_RSP(mSGpTR)     (mSGpTR)->ittiMsg.nas_rab_est_rsp
+
+#define NAS_CELL_SELECTION_CNF(mSGpTR)  (mSGpTR)->ittiMsg.nas_cell_selection_cnf
+#define NAS_CELL_SELECTION_IND(mSGpTR)  (mSGpTR)->ittiMsg.nas_cell_selection_ind
+#define NAS_PAGING_IND(mSGpTR)          (mSGpTR)->ittiMsg.nas_paging_ind
+#define NAS_CONN_ESTABLI_CNF(mSGpTR)    (mSGpTR)->ittiMsg.nas_conn_establi_cnf
+#define NAS_CONN_RELEASE_IND(mSGpTR)    (mSGpTR)->ittiMsg.nas_conn_release_ind
+#define NAS_UPLINK_DATA_CNF(mSGpTR)     (mSGpTR)->ittiMsg.nas_ul_data_cnf
+#define NAS_DOWNLINK_DATA_IND(mSGpTR)   (mSGpTR)->ittiMsg.nas_dl_data_ind
 
 //-------------------------------------------------------------------------------------------//
+// eNB: ENB_APP -> RRC messages
+typedef struct RrcConfigurationReq_s {
+    uint32_t cell_identity;
+
+    uint16_t tac;
+
+    uint16_t mcc;
+    uint16_t mnc;
+} RrcConfigurationReq;
+
 // UE: NAS -> RRC messages
 typedef cell_info_req_t         NasCellSelectionReq;
 typedef nas_establish_req_t     NasConnEstabliReq;

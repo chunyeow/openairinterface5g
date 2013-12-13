@@ -161,6 +161,31 @@ static Enb_properties_t *enb_properties[] =
 };
 
 /*------------------------------------------------------------------------------*/
+static void configure_rrc()
+{
+    uint32_t eNB_id_start = 0;
+    uint32_t eNB_id_end = 1;
+    uint32_t eNB_id;
+    MessageDef *msg_p;
+
+#   if defined(OAI_EMU)
+    eNB_id_start = oai_emulation.info.first_enb_local;
+    eNB_id_end = oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local;
+#   endif
+
+    for (eNB_id = eNB_id_start; (eNB_id < eNB_id_end) ; eNB_id++)
+    {
+        msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
+
+        RRC_CONFIGURATION_REQ (msg_p).cell_identity =   enb_properties[eNB_id]->eNB_id;
+        RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties[eNB_id]->tac;
+        RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties[eNB_id]->mcc;
+        RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties[eNB_id]->mnc;
+
+        itti_send_msg_to_task (TASK_RRC_ENB, eNB_id, msg_p);
+    }
+}
+
 static uint32_t eNB_app_register()
 {
     uint32_t eNB_id_start = 0;
@@ -255,6 +280,8 @@ void *eNB_app_task(void *args_p)
     enb_nb = oai_emulation.info.nb_enb_local;
 #   endif
 # endif
+
+    configure_rrc();
 
 # if defined(ENABLE_USE_MME)
     /* Try to register each eNB */
