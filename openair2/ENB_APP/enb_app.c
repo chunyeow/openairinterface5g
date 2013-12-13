@@ -51,10 +51,11 @@ extern unsigned char NB_eNB_INST;
 #endif
 
 #if defined(ENABLE_ITTI)
-# if defined(ENABLE_USE_MME)
 
 /*------------------------------------------------------------------------------*/
-#define ENB_REGISTER_RETRY_DELAY 10
+# if defined(ENABLE_USE_MME)
+#   define ENB_REGISTER_RETRY_DELAY 10
+# endif
 
 typedef struct mme_ip_address_s {
     unsigned ipv4:1;
@@ -98,7 +99,9 @@ typedef struct Enb_properties_s {
 } Enb_properties_t;
 
 /*------------------------------------------------------------------------------*/
+# if defined(ENABLE_USE_MME)
 static uint32_t enb_nb = 1; /* Default number of eNB */
+# endif
 
 /* eNB 0 properties */
 static Enb_properties_t enb_0_properties =
@@ -230,6 +233,7 @@ static void configure_rrc()
     }
 }
 
+# if defined(ENABLE_USE_MME)
 static uint32_t eNB_app_register()
 {
     uint32_t eNB_id_start = 0;
