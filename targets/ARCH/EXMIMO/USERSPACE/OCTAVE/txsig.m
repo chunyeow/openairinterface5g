@@ -6,51 +6,49 @@ rxgain=0;
 txgain=25;
 eNB_flag = 0;
 card = 0;
-%chan_sel = zeros(1,4);
-%chan_sel(ch) = 1;
-chan_sel = [1 0 0 0];
-
+active_rf = [1 1 1 0];
+autocal = [1 1 1 1];
+resampling_factor = [2 2 2 2];
 limeparms;
-rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * chan_sel;
-rf_mode = rf_mode + (DMAMODE_TX)*chan_sel;
+rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
+rf_mode = rf_mode + (DMAMODE_RX + DMAMODE_TX)*active_rf;
 %rf_mode   = RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1;
 %rf_local= [8253704   8253704   8257340   8257340]; %eNB2tx %850MHz
 %rf_local= [8255004   8253440   8257340   8257340]; % ex2 700 MHz
 rf_local = [8254744   8255063   8257340   8257340]; %eNB2tx 1.9GHz
 %rf_local = [8257292   8257300   8257340   8257340]; %ex2 850 MHz
 %rf_local  = rf_local * chan_sel;
-rf_rxdc = rf_rxdc * chan_sel;
+rf_rxdc = rf_rxdc * active_rf;
 %rf_vcocal = rf_vcocal_859 * chan_sel;
-rf_vcocal = rf_vcocal_19G * chan_sel;
+rf_vcocal = rf_vcocal_19G * active_rf;
 %rf_vcocal = rf_vcocal_26G_eNB * chan_sel;
-rxgain = rxgain*chan_sel;
-txgain = txgain*chan_sel;
-freq_tx = fc*chan_sel;
+rxgain = rxgain*active_rf;
+txgain = txgain*active_rf;
+freq_tx = fc*active_rf;
 freq_rx = freq_tx;
 %freq_rx = freq_tx-120000000*chan_sel;
 %freq_tx = freq_rx+1920000;
 tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTTX;
 syncmode = SYNCMODE_FREE;
-rffe_rxg_low = 61*chan_sel;
-rffe_rxg_final = 61*chan_sel;
-rffe_band = B19G_TDD*chan_sel;
-autocal = chan_sel;
+rffe_rxg_low = 61*[1 1 1 1];
+rffe_rxg_final = 61*[1 1 1 1];
+rffe_band = B19G_TDD*[1 1 1 1];
 
-oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal);
+oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal,resampling_factor);
 amp = pow2(14)-1;
 n_bit = 16;
 
-s = zeros(76800,4);
+s = zeros(76800*4,4);
 
 select = 1;
 
 switch(select)
 
 case 1
-  s(:,1) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
-  s(:,2) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
-  s(:,3) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
-  s(:,4) = floor(amp * (exp(sqrt(-1)*.5*pi*(0:((76800)-1)))));
+  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
+  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
+  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
+  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
 
 case 2
   s(38400+128,1)= 80-1j*40;
@@ -77,11 +75,32 @@ case 4
   
   s(38400+(1:length(pss0_t_fp_re)),1) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
   s(38400+(1:length(pss0_t_fp_re)),2) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
+  s(38400+(1:length(pss0_t_fp_re)),3) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
+  s(38400+(1:length(pss0_t_fp_re)),4) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
+case 5
+  x=1:76800;
+
+  s(:,1) = 1i*8*(mod(x-1,4096)); % + 1i*(8*(mod(x-1,4096)));
+  s(:,2) = 8*(mod(x-1,4096)) + 1i*(8*(mod(x-1,4096)));
+  s(:,3) = 8*(mod(x-1,4096)) + 1i*(8*(mod(x-1,4096)));
+  s(:,4) = 8*(mod(x-1,4096)) + 1i*(8*(mod(x-1,4096)));
+%  s(:,4) = 8*(rem(x-1,2048))-2**15 + 1i*(8*(rem(x-1,2048))-2**15);
+
+%  s(:,4) = 8*(mod(x-1,4096)) + 1i*8*(mod(x-1,4096));
+
+  %s(:,1) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
+  %s(:,2) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
+  %s(:,3) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
+  %s(:,4) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
+
 otherwise 
   error('unknown case')
 endswitch
 
+%s = s*2 - 2**15 -1i*(2**15);
 s = s*2;
+
+
 %s(38400:end,1) = (1+1j);
 %s(38400:end,2) = (1+1j);
 
@@ -93,6 +112,5 @@ oarf_send_frame(card,s,n_bit);
 figure(1)
 hold off
 plot(real(s(:,1)),'r')
-hold on
-plot(imag(s(:,2)),'b')
-hold off
+%hold on
+%plot(imag(s(:,2)),'b')
