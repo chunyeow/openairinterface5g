@@ -65,6 +65,10 @@
 
 #include "assertions.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 //#define DIAG_PHY
 
 #define NS_PER_SLOT 500000
@@ -3510,6 +3514,12 @@ int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, r
 #endif 
 void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, 
 			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
+#if defined(ENABLE_ITTI)
+  MessageDef *msg_p;
+  const char *msg_name;
+  instance_t instance;
+  unsigned int Mod_id;
+#endif
   /*
     if (phy_vars_eNB->frame >= 1000)
     mac_xface->macphy_exit("Exiting after 1000 Frames\n");
@@ -3518,6 +3528,28 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_ENB, phy_vars_eNB->frame);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_LTE,1);
   
+#if defined(ENABLE_ITTI)
+  do {
+    // Checks if a message has been sent to PHY sub-task
+    itti_poll_msg ( TASK_PHY_ENB, &msg_p);
+
+    if (msg_p != NULL) {
+      msg_name = ITTI_MSG_NAME (msg_p);
+      instance = ITTI_MSG_INSTANCE (msg_p);
+      Mod_id = instance;
+
+      switch (ITTI_MSG_ID(msg_p)) {
+
+        default:
+          LOG_E(PHY, "[ENB %d] Received unexpected message %s\n", Mod_id, msg_name);
+          break;
+      }
+
+      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+    }
+  } while(msg_p != NULL);
+#endif
+
   if ((((phy_vars_eNB->lte_frame_parms.frame_type == TDD)&&(subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_DL))||
       (phy_vars_eNB->lte_frame_parms.frame_type == FDD)) && ((next_slot&1)==0)) {
 #ifdef Rel10 

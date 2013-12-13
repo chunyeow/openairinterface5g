@@ -82,6 +82,10 @@ fifo_dump_emos_UE emos_dump_UE;
 
 #include "UTIL/LOG/vcd_signal_dumper.h"
 
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
 #ifndef OPENAIR2
 //#define DIAG_PHY
 #endif
@@ -2229,7 +2233,7 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
   int eNB_id_i = 1;
   u8 dual_stream_UE = 0;
   int ret=0;
-  u8 harq_pid;
+  u8 harq_pid = -1;
   int timing_advance;
   u8 pilot1,pilot2,pilot3;
   u8 i_mod = 0;
@@ -3164,6 +3168,12 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 #endif   
  void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, 
 			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
+#if defined(ENABLE_ITTI)
+  MessageDef *msg_p;
+  const char *msg_name;
+  instance_t instance;
+  unsigned int Mod_id;
+#endif
 
 #undef DEBUG_PHY_PROC
 
@@ -3185,6 +3195,33 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 #ifndef USRP
   vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
 #endif
+#endif
+
+#if defined(ENABLE_ITTI)
+  do {
+    // Checks if a message has been sent to PHY sub-task
+    itti_poll_msg ( TASK_PHY_UE, &msg_p);
+
+    if (msg_p != NULL) {
+      msg_name = ITTI_MSG_NAME (msg_p);
+      instance = ITTI_MSG_INSTANCE (msg_p);
+      Mod_id = instance - NB_eNB_INST;
+
+      switch (ITTI_MSG_ID(msg_p)) {
+        case PHY_FIND_CELL_REQ:
+          LOG_I(PHY, "[UE %d] Received %s from %s\n", Mod_id, msg_name);
+
+          /* TODO process the message */
+          break;
+
+        default:
+          LOG_E(PHY, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);
+          break;
+      }
+
+      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+    }
+  } while(msg_p != NULL);
 #endif
 
   if ((subframe_select(&phy_vars_ue->lte_frame_parms,next_slot>>1)==SF_UL)||
