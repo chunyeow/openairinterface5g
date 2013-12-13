@@ -154,10 +154,54 @@ static Enb_properties_t enb_1_properties =
     }
 };
 
+/* eNB 2 properties */
+static Enb_properties_t enb_2_properties =
+{
+    347474,
+    CELL_MACRO_ENB,
+    "eNB_Eurecom_2",
+    0,
+    208,
+    34,
+    PAGING_DRX_256,
+    1,
+    {
+        {
+            1,
+            0,
+            "192.168.12.87",
+            "2001:660:5502:12:30da:829a:2343:b6cf"
+        },
+    }
+};
+
+/* eNB 3 properties */
+static Enb_properties_t enb_3_properties =
+{
+    347475,
+    CELL_MACRO_ENB,
+    "eNB_Eurecom_3",
+    0,
+    208,
+    34,
+    PAGING_DRX_256,
+    1,
+    {
+        {
+            1,
+            0,
+            "192.168.12.87",
+            "2001:660:5502:12:30da:829a:2343:b6cf"
+        },
+    }
+};
+
 static Enb_properties_t *enb_properties[] =
 {
     &enb_0_properties,
     &enb_1_properties,
+    &enb_2_properties,
+    &enb_3_properties,
 };
 
 /*------------------------------------------------------------------------------*/
@@ -200,8 +244,8 @@ static uint32_t eNB_app_register()
     eNB_id_end = oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local;
 #   endif
 
-    DevCheck(eNB_id_end < NUMBER_OF_eNB_MAX, eNB_id_end, NUMBER_OF_eNB_MAX, 0);
-    DevCheck(eNB_id_end < (sizeof(enb_properties) / sizeof(enb_properties[0])), eNB_id_end, (sizeof(enb_properties) / sizeof(enb_properties[0])), 0);
+    DevCheck(eNB_id_end <= NUMBER_OF_eNB_MAX, eNB_id_end, NUMBER_OF_eNB_MAX, 0);
+    DevCheck(eNB_id_end <= (sizeof(enb_properties) / sizeof(enb_properties[0])), eNB_id_end, (sizeof(enb_properties) / sizeof(enb_properties[0])), 0);
 
     for (eNB_id = eNB_id_start; (eNB_id < eNB_id_end) ; eNB_id++)
     {
