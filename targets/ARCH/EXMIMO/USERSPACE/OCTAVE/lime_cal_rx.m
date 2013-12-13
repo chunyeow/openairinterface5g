@@ -9,9 +9,12 @@ freq_rx = 1907600000*[1 1 1 1];
 freq_tx = freq_rx+1920000;
 rxgain = 30*[1 1 1 1];
 txgain = 0*[1 1 1 1];
-tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTRX;
 syncmode = SYNCMODE_FREE;
+autocal = [1 1 1 1];
+resampling = [2 2 2 2];
 
+rf_mode = (RXEN+0+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM+DMAMODE_RX+0) * [1 1 1 1];
 rf_local = [8254813 8255016 8254813 8254813]; % from the tx calibration
 %rf_local = [8255842   8255064   8257340   8257340]; % 700MHz
 %rf_local = [8256776   8255788   8257340   8257340]; % 850MHz
@@ -21,13 +24,15 @@ rffe_rxg_low = 31*[1 1 1 1];
 rffe_rxg_final = 31*[1 1 1 1];
 rffe_band = B19G_TDD*[1 1 1 1];
 
+oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,0,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal,resampling);
 
+autocal = [2 2 2 2];
 sleepafterconfig=0.2
 
 % coarse calibration loop for both rx chains
 for ant=1:4
-rf_mode = zeros(1,4);
-rf_mode(ant) = (RXEN+0+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM+DMAMODE_RX+0);
+%rf_mode = zeros(1,4);
+%rf_mode(ant) = (RXEN+0+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM+DMAMODE_RX+0);
 dc_off_re_min = 99999;
 dc_off_im_min = 99999;
 
@@ -42,9 +47,9 @@ while (stepsize>=1)
 	else
 	  rxdc_I_s = rxdc_I;	  
 	end
-        rf_rxdc   = ((128+rxdc_I_s) + (128+rxdc_Q_s)*(2^8))*[1 1 1 1];
+        rf_rxdc(ant)   = ((128+rxdc_I_s) + (128+rxdc_Q_s)*(2^8));
 
-	oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,0,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band);
+	oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,0,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal,resampling);
 	sleep(sleepafterconfig)
 
         s=oarf_get_frame(card);
@@ -85,9 +90,9 @@ while (stepsize>=1)
 	else
 	  rxdc_Q_s = rxdc_Q;	  
 	end
-        rf_rxdc   = ((128+rxdc_I_s) + (128+rxdc_Q_s)*(2^8))*[1 1 1 1];
+        rf_rxdc(ant)   = ((128+rxdc_I_s) + (128+rxdc_Q_s)*(2^8));
 
-	oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,0,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band);
+	oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,0,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal,resampling);
 	sleep(sleepafterconfig)
 
         s=oarf_get_frame(card);
