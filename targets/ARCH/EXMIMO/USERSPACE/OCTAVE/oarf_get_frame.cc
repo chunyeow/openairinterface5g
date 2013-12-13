@@ -85,6 +85,7 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
     int i,aa;
     short *rx_sig[MAX_CARDS * MAX_ANTENNAS];
     int ret;
+    int frame_length_samples=0;
 
     ret = openair0_open();
     if ( ret != 0 )
@@ -130,8 +131,19 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
         }
         printf("\n");
     }
-    
-    ComplexMatrix dx (FRAME_LENGTH_COMPLEX_SAMPLES, numant);
+   
+    if (openair0_exmimo_pci[0].exmimo_config_ptr->framing.resampling_factor[0] == 2)
+      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES;
+    else if (openair0_exmimo_pci[0].exmimo_config_ptr->framing.resampling_factor[0] == 1)
+      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES*2;
+    else if (openair0_exmimo_pci[0].exmimo_config_ptr->framing.resampling_factor[0] == 0)
+      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES*4;
+    else
+      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES;
+
+    printf("Info : Only resampling_factor of channel 0 is taken into account for copying received frame for all the other chains\n");
+
+    ComplexMatrix dx (frame_length_samples, numant);
 
     /*
     // set the tx buffer to 0x00010001 to put switch in rx mode
@@ -152,13 +164,13 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
             
         //printf("adc_head[%i] = %p ", i, rx_sig[i]);
     }
-    printf("\n");
+    printf("frame length samples : %d\n",frame_length_samples);
 
     //  msg("Getting buffer...\n");
     if ( no_getframe_ioctl == 0)
         openair0_get_frame(card);
 
-    for (i=0; i<FRAME_LENGTH_COMPLEX_SAMPLES; i++)
+    for (i=0; i<frame_length_samples; i++)
         for (aa=0; aa<numant; aa++)
             dx(i, aa) = Complex( rx_sig[aa][i*2], rx_sig[aa][i*2+1] );
     

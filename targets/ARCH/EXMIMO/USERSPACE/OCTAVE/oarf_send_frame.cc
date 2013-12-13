@@ -61,6 +61,7 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
     octave_value returnvalue;
     int i, ret;
     unsigned int length,aa,nbits, numcols;
+    unsigned int resampling_factor[4];
     int dummy=0;
 
     ret = openair0_open();
@@ -85,11 +86,23 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
     
     printf("colums = %d, rows = %d\n\n\n", numcols, args(1).rows());
 
-    if ( numcols<1 || (numcols > openair0_num_antennas[card]) || (args(1).rows()!=76800))
+    if ( numcols<1 || (numcols > openair0_num_antennas[card]))
     {
         error(FCNNAME);
-        error("input array must be of size (%d, 1..%d).", 76800, openair0_num_antennas[card]);
+        error("input array must be of column size 1..%d.", openair0_num_antennas[card]);
         return octave_value_list();
+    }
+    
+    for (i=0;i<4;i++)
+      resampling_factor[i] = (openair0_exmimo_pci[card].exmimo_config_ptr)->framing.resampling_factor[i];
+    
+    for (i=0;i<numcols;i++){
+    if (args(1).rows()<(76800*(1 << (2-resampling_factor[i]))))
+    {
+        error(FCNNAME);
+        error("input array column number %d must be of size %d.",i,(76800*(1 << (2-resampling_factor[i]))));
+        return octave_value_list();
+    }  
     }
 
     if ((openair0_exmimo_pci[card].exmimo_config_ptr->framing.tdd_config & TXRXSWITCH_MASK) != TXRXSWITCH_TESTTX)
@@ -102,7 +115,7 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
     {
         if (nbits==16)
         {
-            for (i=0;i<76800;i++)
+            for (i=0;i<(76800*(1 << (2-resampling_factor[aa])));i++)
             {
                 if (i<64)
                     printf("%d: %d,%d\n",i,(short)real(dx(i,aa)),(short)imag(dx(i,aa)));
@@ -112,7 +125,7 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
         }
         else if (nbits==8)
         {
-            for (i=0;i<76800;i++)
+            for (i=0;i<(76800*(1 << (2-resampling_factor[aa])));i++)
             {
                 if (i<64)
                     printf("%d: %d,%d\n",i,char(real(dx(i,aa))),char(imag(dx(i,aa))));

@@ -21,11 +21,11 @@ static bool any_bad_argument(const octave_value_list &args)
   octave_value v,w;
   int i;
 
-  if (args.length()!=16)
+  if (args.length()!=17)
     {
       error(FCNNAME);
       error("Wrong number of parameters! Did you add the card number as first parameter?");
-      error("syntax: oarf_config_exmimo(card,freqrx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rx_dc,rf_local,rf_vcolocal,rffe_rxg_low,rffe_rxg_final,autocal)");
+      error("syntax: oarf_config_exmimo(card,freqrx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_flag,rf_mode,rx_dc,rf_local,rf_vcolocal,rffe_rxg_low,rffe_rxg_final,autocal,resampling_factor)");
       return true;
     }
 
@@ -246,7 +246,24 @@ static bool any_bad_argument(const octave_value_list &args)
     error("number of columns for autocal must be 4\n");
   }
 
-    
+  v = args(16);
+  if (v.columns() == 4)
+    {
+      for (i=0;i<v.columns();i++)
+        {
+          if ((v.row_vector_value()(i)<0.0) || (v.row_vector_value()(i)>2.0)) {
+            error(FCNNAME);
+            error("resampling_factor %d must be 0, 1 or 2 (got %f).",i,v.row_vector_value()(i));
+            return true;
+          }
+        }
+    }
+  else {
+    error(FCNNAME);
+    error("number of columns for resampling_factor must be 4\n");
+  }
+
+
   if ( !args(0).is_real_scalar() )
     {
       error(FCNNAME);
@@ -284,6 +301,7 @@ DEFUN_DLD (oarf_config_exmimo, args, nargout,"configure the openair interface - 
   RowVector rffe_rxg_final = args(13).row_vector_value();
   RowVector rffe_band      = args(14).row_vector_value();
   RowVector autocal        = args(15).row_vector_value();
+  RowVector resampling_factor = args(16).row_vector_value();
   int rffe_band_int;
     
   exmimo_config_t *p_exmimo_config;
@@ -301,6 +319,8 @@ DEFUN_DLD (oarf_config_exmimo, args, nargout,"configure the openair interface - 
 	error("Error mapping bigshm");
       if (ret == -3)
 	error("Error mapping RX or TX buffer");
+      if (ret == -5)
+        error("Error Firmware/Software do not match");
       return octave_value(ret);
     }
 
@@ -332,7 +352,7 @@ DEFUN_DLD (oarf_config_exmimo, args, nargout,"configure the openair interface - 
       p_exmimo_config->framing.eNB_flag   = eNB_flag;
       p_exmimo_config->framing.tdd_config = tdd_config;
       p_exmimo_config->framing.multicard_syncmode = multicard_syncmode;
-      p_exmimo_config->framing.resampling_factor = 2;
+//      p_exmimo_config->framing.resampling_factor = 2;
 
       for (ant=0; ant<4; ant++)
         {
@@ -351,7 +371,7 @@ DEFUN_DLD (oarf_config_exmimo, args, nargout,"configure the openair interface - 
 	  p_exmimo_config->rf.rffe_gain_txhigh[ant] = 31;
 	  p_exmimo_config->rf.rffe_gain_rxfinal[ant] = rffe_rxg_final(ant);
 	  p_exmimo_config->rf.rffe_gain_rxlow[ant] = rffe_rxg_low(ant);
-	  
+          p_exmimo_config->framing.resampling_factor[ant] = resampling_factor(ant); 
 	  rffe_band_int = (int) rffe_band(ant);
 	  switch (rffe_band_int) {
 	  case 0:
