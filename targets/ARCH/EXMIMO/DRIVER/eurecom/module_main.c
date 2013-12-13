@@ -63,8 +63,9 @@ static int __init openair_init_module( void )
 
     if( pdev[card] )
     {
-        printk("[openair][INIT_MODULE][INFO]:  openair card (ExpressMIMO) %d found, bus 0x%x, primary 0x%x, secondary 0x%x\n",card,
-                 pdev[card]->bus->number, pdev[card]->bus->primary,pdev[card]->bus->secondary);
+       // This print does not work for 64 bit kernels
+      //  printk("[openair][INIT_MODULE][INFO]:  openair card (ExpressMIMO) %d found, bus 0x%x, primary 0x%x, secondary 0x%x\n",card,
+      //           pdev[card]->bus->number, pdev[card]->bus->primary,pdev[card]->bus->secondary);
 
         pci_read_config_word(pdev[card], PCI_SUBSYSTEM_ID, &subid);
         pci_read_config_word(pdev[card], PCI_SUBSYSTEM_VENDOR_ID, &vendor);
@@ -98,8 +99,9 @@ static int __init openair_init_module( void )
         pdev[card] = pci_get_device(vid,did, pdev[card-1]);
         if(pdev[card])
         {
-            printk("[openair][INIT_MODULE][INFO]: openair card %d found, bus 0x%x, primary 0x%x, secondary 0x%x\n",card,
-                    pdev[card]->bus->number,pdev[card]->bus->primary,pdev[card]->bus->secondary);
+          // This print does not work for 64 bit kernels
+          //  printk("[openair][INIT_MODULE][INFO]: openair card %d found, bus 0x%x, primary 0x%x, secondary 0x%x\n",card,
+          //          pdev[card]->bus->number,pdev[card]->bus->primary,pdev[card]->bus->secondary);
 
             pci_read_config_word(pdev[card], PCI_SUBSYSTEM_ID, &subid);
             pci_read_config_word(pdev[card], PCI_SUBSYSTEM_VENDOR_ID, &vendor);

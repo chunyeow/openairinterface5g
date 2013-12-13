@@ -72,7 +72,10 @@ int openair_device_mmap(struct file *filp, struct vm_area_struct *vma)
         size);
     */
     vma->vm_pgoff = 0;
-    vma->vm_flags |= VM_RESERVED;
+    
+    // not supported by 64 bit kernels
+    //vma->vm_flags |= VM_RESERVED;
+      vma->vm_flags |= VM_IO;
         
     if ( is_card_num_invalid(card) )
         return -EINVAL;
@@ -176,7 +179,17 @@ int openair_device_ioctl(struct inode *inode,struct file *filp, unsigned int cmd
         exmimo_send_pccmd((int)arg, EXMIMO_STOP);
 
         break;
-  
+ 
+    case openair_STOP_WITHOUT_RESET:
+
+        printk("[openair][IOCTL]     openair_STOP_WITHOUT_RESET(card%d)\n", (int)arg);
+        if ( is_card_num_invalid((int)arg) )
+            return -EINVAL;
+
+        exmimo_send_pccmd((int)arg, EXMIMO_STOP_WITHOUT_RESET);
+
+        break;
+ 
     case openair_GET_FRAME:
 
         get_frame_cnt=0;
