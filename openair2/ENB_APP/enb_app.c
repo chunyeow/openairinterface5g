@@ -267,7 +267,7 @@ static uint32_t eNB_app_register()
             if (EPC_MODE_ENABLED)
             {
                 /* Overwrite default IP v4 address by value from command line */
-                enb_properties[eNB_id]->mme_ip_address[0].ipv4 = EPC_MODE_MME_ADDRESS;
+                enb_properties[eNB_id]->mme_ip_address[0].ipv4_address = EPC_MODE_MME_ADDRESS;
             }
 
             /* note:  there is an implicit relationship between the data structure and the message name */
