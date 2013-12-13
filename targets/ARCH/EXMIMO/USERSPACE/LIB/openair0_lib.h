@@ -45,8 +45,13 @@ int openair0_get_frame(int card);
 // return 0 on success
 int openair0_start_rt_acquisition(int card);
 
-// stops continuous acquitision/transmission
+// stops continuous acquitision/transmission and reset the RF chips
 // return 0 on success
 int openair0_stop(int card);
+
+// stops continuous acquitision/transmission without resetting the RF chips
+// return 0 on success
+int openair0_stop_without_reset(int card);
+
 
 #endif

@@ -88,7 +88,12 @@ int openair0_open(void)
         printf("card%d, openair0_exmimo_pci.exmimo_id_ptr      (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.exmimo_id_ptr     (%p) - bigshm_top_kvirtptr(%x)\n",
             card, openair0_exmimo_pci[card].exmimo_id_ptr, bigshm_top[card], exmimo_pci_kvirt[card].exmimo_id_ptr, bigshm_top_kvirtptr[card]);
         */
-        
+  //if (openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev != BOARD_SWREV_CNTL2)
+ //    {
+//       error("Software revision %d and firmware revision %d do not match, Please update either Software or Firmware",BOARD_SWREV_CNTL2,openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev);
+//       return -5; 
+ //    }
+    
         if ( openair0_exmimo_pci[card].exmimo_id_ptr->board_exmimoversion == 1)
             openair0_num_antennas[card] = 2;
 
@@ -176,3 +181,7 @@ int openair0_stop(int card)
     return ioctl(openair0_fd, openair_STOP, card);
 }
 
+int openair0_stop_without_reset(int card)
+{
+    return ioctl(openair0_fd, openair_STOP_WITHOUT_RESET, card);
+}
