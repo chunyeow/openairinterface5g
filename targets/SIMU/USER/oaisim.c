@@ -625,45 +625,45 @@ void *l2l1_task(void *args_p) {
         if ((next_slot % 2) == 0)
           clear_eNB_transport_info (oai_emulation.info.nb_enb_local);
 
-        for (eNB_id = oai_emulation.info.first_enb_local;
-            (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local))
-                && (oai_emulation.info.cli_start_enb[eNB_id] == 1); eNB_id++) {
-          //printf ("debug: Nid_cell %d\n", PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
-          //printf ("debug: frame_type %d,tdd_config %d\n", PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type,PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config);
-          LOG_D(
-              EMU,
-              "PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n", eNB_id, frame, slot, next_slot >> 1, last_slot>>1, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
+        for (eNB_id = oai_emulation.info.first_enb_local; (eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)); eNB_id++) {
+          if (oai_emulation.info.cli_start_enb[eNB_id] != 0) {
+            //printf ("debug: Nid_cell %d\n", PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
+            //printf ("debug: frame_type %d,tdd_config %d\n", PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type,PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config);
+            LOG_D(
+                EMU,
+                "PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n", eNB_id, frame, slot, next_slot >> 1, last_slot>>1, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.frame_type, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.tdd_config, PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Nid_cell);
 
 #ifdef OPENAIR2
-          //Appliation: traffic gen
-          update_otg_eNB (eNB_id, oai_emulation.info.time_ms);
+            //Appliation: traffic gen
+            update_otg_eNB (eNB_id, oai_emulation.info.time_ms);
 
-          //IP/OTG to PDCP and PDCP to IP operation
-          pdcp_run (frame, 1, 0, eNB_id); //PHY_vars_eNB_g[eNB_id]->Mod_id
+            //IP/OTG to PDCP and PDCP to IP operation
+            pdcp_run (frame, 1, 0, eNB_id); //PHY_vars_eNB_g[eNB_id]->Mod_id
 #endif
 
-          // PHY_vars_eNB_g[eNB_id]->frame = frame;
-          phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, no_relay, NULL);
+            // PHY_vars_eNB_g[eNB_id]->frame = frame;
+            phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag, no_relay, NULL);
 
 #ifdef PRINT_STATS
-          if(last_slot==9 && frame%10==0)
-          if(eNB_avg_thr)
-          fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_id]->frame,(PHY_vars_eNB_g[eNB_id]->total_system_throughput)/((PHY_vars_eNB_g[eNB_id]->frame+1)*10));
-          if (eNB_stats[eNB_id]) {
-            len = dump_eNB_stats(PHY_vars_eNB_g[eNB_id], stats_buffer, 0);
-            rewind (eNB_stats[eNB_id]);
-            fwrite (stats_buffer, 1, len, eNB_stats[eNB_id]);
-            fflush(eNB_stats[eNB_id]);
-          }
+            if(last_slot==9 && frame%10==0)
+            if(eNB_avg_thr)
+            fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_id]->frame,(PHY_vars_eNB_g[eNB_id]->total_system_throughput)/((PHY_vars_eNB_g[eNB_id]->frame+1)*10));
+            if (eNB_stats[eNB_id]) {
+              len = dump_eNB_stats(PHY_vars_eNB_g[eNB_id], stats_buffer, 0);
+              rewind (eNB_stats[eNB_id]);
+              fwrite (stats_buffer, 1, len, eNB_stats[eNB_id]);
+              fflush(eNB_stats[eNB_id]);
+            }
 #ifdef OPENAIR2
-          if (eNB_l2_stats) {
-            len = dump_eNB_l2_stats (stats_buffer, 0);
-            rewind (eNB_l2_stats);
-            fwrite (stats_buffer, 1, len, eNB_l2_stats);
-            fflush(eNB_l2_stats);
+            if (eNB_l2_stats) {
+              len = dump_eNB_l2_stats (stats_buffer, 0);
+              rewind (eNB_l2_stats);
+              fwrite (stats_buffer, 1, len, eNB_l2_stats);
+              fflush(eNB_l2_stats);
+            }
+#endif
+#endif
           }
-#endif
-#endif
         }
         // Call ETHERNET emulation here
         //emu_transport (frame, last_slot, next_slot, direction, oai_emulation.info.frame_type, ethernet_flag);
