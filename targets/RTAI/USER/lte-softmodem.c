@@ -1248,10 +1248,6 @@ int main(int argc, char **argv) {
   }
 
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info, messages_definition_xml, itti_dump_file);
-
-  if (create_tasks(UE_flag ? 0 : 1, UE_flag ? 1 : 0) < 0) {
-    exit(-1); // need a softer mode
-  }
 #endif
 
 #ifdef NAS_NETLINK
@@ -1361,8 +1357,8 @@ int main(int argc, char **argv) {
 #endif
     
     compute_prach_seq(&PHY_vars_UE_g[0]->lte_frame_parms.prach_config_common,
-		      PHY_vars_UE_g[0]->lte_frame_parms.frame_type,
-		      PHY_vars_UE_g[0]->X_u);
+                      PHY_vars_UE_g[0]->lte_frame_parms.frame_type,
+                      PHY_vars_UE_g[0]->X_u);
 
     PHY_vars_UE_g[0]->lte_ue_pdcch_vars[0]->crnti = 0x1234;
 #ifndef OPENAIR2
@@ -1391,7 +1387,7 @@ int main(int argc, char **argv) {
         for (i=0; i<4; i++) {
             PHY_vars_UE_g[0]->rx_gain_mode[i]  = max_gain;
             //            frame_parms->rfmode[i] = rf_mode_max[i];
-	    rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAMax;
+            rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAMax;
         }
         PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_max[0] + rxgain[0] - 30; //-30 because it was calibrated with a 30dB gain
     }
@@ -1399,15 +1395,15 @@ int main(int argc, char **argv) {
         for (i=0; i<4; i++) {
             PHY_vars_UE_g[0]->rx_gain_mode[i] = med_gain;
             //            frame_parms->rfmode[i] = rf_mode_med[i];
-	    rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAMed;
+            rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAMed;
         }
-	PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_med[0]  + rxgain[0] - 30; //-30 because it was calibrated with a 30dB gain;
+        PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_med[0]  + rxgain[0] - 30; //-30 because it was calibrated with a 30dB gain;
     }
     else if ((mode == rx_calib_ue_byp)) {
         for (i=0; i<4; i++) {
             PHY_vars_UE_g[0]->rx_gain_mode[i] = byp_gain;
             //            frame_parms->rfmode[i] = rf_mode_byp[i];
-	    rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAByp;
+            rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAByp;
         }
         PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_byp[0]  + rxgain[0] - 30; //-30 because it was calibrated with a 30dB gain;
     }
@@ -1465,9 +1461,9 @@ int main(int argc, char **argv) {
 #endif
 
     compute_prach_seq(&PHY_vars_eNB_g[0]->lte_frame_parms.prach_config_common,
-		      PHY_vars_eNB_g[0]->lte_frame_parms.frame_type,
-		      PHY_vars_eNB_g[0]->X_u);
-    
+                      PHY_vars_eNB_g[0]->lte_frame_parms.frame_type,
+                      PHY_vars_eNB_g[0]->X_u);
+
     NB_eNB_INST=1;
     NB_INST=1;
 
@@ -1486,8 +1482,6 @@ int main(int argc, char **argv) {
       //        frame_parms->rfmode[i] = rf_mode_max[i];
       rf_mode[i] = (rf_mode[i] & (~LNAGAINMASK)) | LNAMax;
     }
-
-
   }
 
   // Initialize card
@@ -1603,7 +1597,14 @@ int main(int argc, char **argv) {
 
   mac_xface->macphy_exit = &exit_fun;
 
-#ifdef OPENAIR2
+#if defined(ENABLE_ITTI)
+  if (create_tasks(UE_flag ? 0 : 1, UE_flag ? 1 : 0) < 0) {
+    exit(-1); // need a softer mode
+  }
+  printf("ITTI tasks created\n");
+#endif
+
+  #ifdef OPENAIR2
   //if (otg_enabled) {
     init_all_otg(0);
     g_otg->seed = 0;
@@ -1853,6 +1854,7 @@ int main(int argc, char **argv) {
   //getchar();
 
 #if defined(ENABLE_ITTI)
+  printf("Entering ITTI signals handler\n");
   itti_wait_tasks_end();
 #else
   while (oai_exit==0)

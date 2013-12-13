@@ -755,12 +755,6 @@ int main(int argc, char **argv)
 
   itti_init(TASK_MAX, THREAD_MAX, MESSAGES_ID_MAX, tasks_info, messages_info,
             messages_definition_xml, itti_dump_file);
-
-  if (create_tasks(1, 0)) {
-    exit(EXIT_FAILURE); // need a softer mode
-  }
-
-  printf("After create tasks\n");
 #endif
 
 #ifdef NAS_NETLINK
@@ -948,6 +942,12 @@ int main(int argc, char **argv)
 
   mac_xface->macphy_exit = &exit_fun;
 
+#if defined(ENABLE_ITTI)
+  if (create_tasks(UE_flag ? 0 : 1, UE_flag ? 1 : 0) < 0) {
+    exit(-1); // need a softer mode
+  }
+  printf("ITTI tasks created\n");
+#endif
 
   number_of_cards = openair0_num_detected_cards;
   if (p_exmimo_id->board_exmimoversion==1) { //ExpressMIMO1
@@ -1088,6 +1088,7 @@ int main(int argc, char **argv)
   //  rt_sleep_ns(FRAME_PERIOD);
 
 #if defined(ENABLE_ITTI)
+  printf("Entering ITTI signals handler\n");
   itti_wait_tasks_end();
 #else
   rt_sem_wait(mutex);

@@ -186,7 +186,7 @@ static void init_SI (u8 Mod_id
                                                 );
   else
     {
-      LOG_E (RRC, "[eNB] init_SI: FATAL, no memory for SIB1 allocated\n");
+      LOG_E (RRC, "[eNB %d] init_SI: FATAL, no memory for SIB1 allocated\n", Mod_id);
       mac_xface->macphy_exit ("");
     }
   /*
@@ -195,28 +195,24 @@ static void init_SI (u8 Mod_id
      mac_xface->lte_frame_parms->frame_type,
      mac_xface->lte_frame_parms->tdd_config);
    */
-  if (eNB_rrc_inst[Mod_id].sizeof_SIB1 == 255)
-    mac_xface->macphy_exit ("");
+    if (eNB_rrc_inst[Mod_id].sizeof_SIB1 == 255)
+        mac_xface->macphy_exit ("");
 
-  eNB_rrc_inst[Mod_id].SIB23 = (u8 *) malloc16 (64);
-  if (eNB_rrc_inst[Mod_id].SIB23)    {
-
-      eNB_rrc_inst[Mod_id].sizeof_SIB23 = do_SIB23 (Mod_id,
-                                                    mac_xface->
-                                                    lte_frame_parms,
-                                                    eNB_rrc_inst[Mod_id].
-                                                    SIB23,
-                                                    &eNB_rrc_inst[Mod_id].
-                                                    systemInformation,
-                                                    &eNB_rrc_inst[Mod_id].
-                                                    sib2,
-                                                    &eNB_rrc_inst[Mod_id].sib3
+    eNB_rrc_inst[Mod_id].SIB23 = (u8 *) malloc16 (64);
+    if (eNB_rrc_inst[Mod_id].SIB23) {
+        eNB_rrc_inst[Mod_id].sizeof_SIB23 = do_SIB23 (Mod_id,
+                                                      mac_xface->
+                                                      lte_frame_parms,
+                                                      eNB_rrc_inst[Mod_id].SIB23,
+                                                      &eNB_rrc_inst[Mod_id].systemInformation,
+                                                      &eNB_rrc_inst[Mod_id].sib2,
+                                                      &eNB_rrc_inst[Mod_id].sib3
 #ifdef Rel10
-                                                    ,
-                                                    &eNB_rrc_inst[Mod_id].sib13,
-                                                    eNB_rrc_inst[Mod_id].MBMS_flag
+                                                      ,
+                                                      &eNB_rrc_inst[Mod_id].sib13,
+                                                      eNB_rrc_inst[Mod_id].MBMS_flag
 #endif
-        );
+                                                      );
       /*
          eNB_rrc_inst[Mod_id].sizeof_SIB23 = do_SIB2_AT4(Mod_id,
          eNB_rrc_inst[Mod_id].SIB23,
@@ -224,7 +220,7 @@ static void init_SI (u8 Mod_id
          &eNB_rrc_inst[Mod_id].sib2);
        */
       if (eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255)
-        mac_xface->macphy_exit ("eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255");
+          mac_xface->macphy_exit ("eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255");
 
       LOG_T (RRC, "[eNB %d] SIB2/3 Contents (partial)\n", Mod_id);
       LOG_T (RRC, "[eNB %d] pusch_config_common.n_SB = %ld\n", Mod_id,
@@ -259,46 +255,42 @@ static void init_SI (u8 Mod_id
              eNB_rrc_inst[Mod_id].sib2->radioResourceConfigCommon.
              pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift);
 
-
 #ifdef Rel10
-      if (eNB_rrc_inst[Mod_id].MBMS_flag > 0) {
-	
+    if (eNB_rrc_inst[Mod_id].MBMS_flag > 0) {
         for (i=0; 
-	     i< eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count;
-	     i++){
-	  // SIB 2
-          //   LOG_D(RRC, "[eNB %d] mbsfn_SubframeConfigList.list.count = %ld\n", Mod_id, eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count);
-           LOG_D (RRC, "[eNB %d] SIB13 contents for MBSFN subframe allocation %d/%d(partial)\n", 
-		  Mod_id,i,eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count);
-	   LOG_D (RRC, "[eNB %d] mbsfn_Subframe_pattern is  = %x\n", Mod_id,
-                 eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.array[i]->subframeAllocation.choice.oneFrame.buf[0]>>0);
-          LOG_D (RRC, "[eNB %d] radioframe_allocation_period  = %ld (just index number, not the real value)\n", Mod_id, eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationPeriod);        // need to display the real value, using array of char (like in dumping SIB2)
-          LOG_D (RRC, "[eNB %d] radioframe_allocation_offset  = %ld\n",
-                 Mod_id,
-                 eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationOffset);
-	}
-          //   SIB13
+             i< eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count;
+             i++){
+            // SIB 2
+            //   LOG_D(RRC, "[eNB %d] mbsfn_SubframeConfigList.list.count = %ld\n", Mod_id, eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count);
+            LOG_D (RRC, "[eNB %d] SIB13 contents for MBSFN subframe allocation %d/%d(partial)\n",
+                   Mod_id,i,eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.count);
+            LOG_D (RRC, "[eNB %d] mbsfn_Subframe_pattern is  = %x\n", Mod_id,
+                   eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.array[i]->subframeAllocation.choice.oneFrame.buf[0]>>0);
+            LOG_D (RRC, "[eNB %d] radioframe_allocation_period  = %ld (just index number, not the real value)\n", Mod_id, eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationPeriod);        // need to display the real value, using array of char (like in dumping SIB2)
+            LOG_D (RRC, "[eNB %d] radioframe_allocation_offset  = %ld\n",
+                   Mod_id,
+                   eNB_rrc_inst[Mod_id].sib2->mbsfn_SubframeConfigList->list.array[i]->radioframeAllocationOffset);
+        }
+        //   SIB13
         for (i=0; 
-	     i<  eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.count;
-	     i++){
-	  LOG_D (RRC,"[eNB %d] SIB13 contents for MBSFN sync area %d/2 (partial)\n", 
-		 Mod_id, i,
-                 eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.count);
-	  LOG_D (RRC,"[eNB %d] MCCH Repetition Period: %d (just index number, not real value)\n",
-                 Mod_id,
-                 eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
-          LOG_D (RRC, "[eNB %d] MCCH Offset: %d\n", Mod_id,
-                 eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_Offset_r9);
-       
-	}
-      }
+             i<  eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.count;
+             i++){
+            LOG_D (RRC,"[eNB %d] SIB13 contents for MBSFN sync area %d/2 (partial)\n",
+                   Mod_id, i,
+                   eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.count);
+            LOG_D (RRC,"[eNB %d] MCCH Repetition Period: %d (just index number, not real value)\n",
+                   Mod_id,
+                   eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
+            LOG_D (RRC, "[eNB %d] MCCH Offset: %d\n", Mod_id,
+                   eNB_rrc_inst[Mod_id].sib13->mbsfn_AreaInfoList_r9.list.array[i]->mcch_Config_r9.mcch_Offset_r9);
+        }
+    }
 #endif
 
-      LOG_D (RRC,
-             "[MSC_MSG][FRAME unknown][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB1.tdd & SIB2 params) --->][MAC_UE][MOD %02d][]\n",
-             Mod_id, Mod_id);
+    LOG_D (RRC, "[MSC_MSG][FRAME unknown][RRC_UE][MOD %02d][][--- MAC_CONFIG_REQ (SIB1.tdd & SIB2 params) --->][MAC_UE][MOD %02d][]\n",
+           Mod_id, Mod_id);
 
-      rrc_mac_config_req (Mod_id, 1, 0, 0,
+    rrc_mac_config_req (Mod_id, 1, 0, 0,
                           (RadioResourceConfigCommonSIB_t *) &
                           eNB_rrc_inst[Mod_id].sib2->
                           radioResourceConfigCommon,
@@ -308,7 +300,7 @@ static void init_SI (u8 Mod_id
                           (struct LogicalChannelConfig *) NULL,
                           (MeasGapConfig_t *) NULL,
                           eNB_rrc_inst[Mod_id].sib1->tdd_Config,
-			  NULL,
+                          NULL,
                           &SIwindowsize, &SIperiod,
                           eNB_rrc_inst[Mod_id].sib2->freqInfo.ul_CarrierFreq,
                           eNB_rrc_inst[Mod_id].sib2->freqInfo.ul_Bandwidth,
@@ -2421,6 +2413,8 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
   LOG_D (RRC, "[MSC_NEW][FRAME 00000][RRC_eNB][MOD %02d][]\n", Mod_id);
   LOG_D (RRC, "[MSC_NEW][FRAME 00000][IP][MOD %02d][]\n", Mod_id);
 
+  DevAssert(eNB_rrc_inst != NULL);
+
   for (j = 0; j < NUMBER_OF_UE_MAX; j++)
     eNB_rrc_inst[Mod_id].Info.UE[j].Status = RRC_IDLE;     //CH_READY;
 
@@ -2460,15 +2454,14 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
   /// System Information INIT
 
 
-  LOG_I (RRC, "Checking release \n");
+  LOG_I (RRC, "[eNB %d] Checking release \n", Mod_id);
 #ifdef Rel10
 
-  // Thishas to come from some top-level configuration
-  printf ("Rel10 RRC detected, MBMS flag %d\n",
-          eNB_rrc_inst[Mod_id].MBMS_flag);
+  // This has to come from some top-level configuration
+  LOG_I (RRC, "[eNB %d] Rel10 RRC detected, MBMS flag %d\n", Mod_id, eNB_rrc_inst[Mod_id].MBMS_flag);
 
 #else
-  printf ("Rel8 RRC\n");
+  LOG_I (RRC, "[eNB %d] Rel8 RRC\n", Mod_id);
 #endif
 #ifdef CBA
   for (j = 0; j < NUM_MAX_CBA_GROUP; j++)
@@ -2477,8 +2470,7 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
   if (eNB_rrc_inst[Mod_id].num_active_cba_groups > NUM_MAX_CBA_GROUP)
     eNB_rrc_inst[Mod_id].num_active_cba_groups = NUM_MAX_CBA_GROUP;
 
-  LOG_D (RRC,
-         "[eNB %d] Initialization of 4 cba_RNTI values (%x %x %x %x) num active groups %d\n",
+  LOG_D (RRC, "[eNB %d] Initialization of 4 cba_RNTI values (%x %x %x %x) num active groups %d\n",
          Mod_id, eNB_rrc_inst[Mod_id].cba_rnti[0],
          eNB_rrc_inst[Mod_id].cba_rnti[1], eNB_rrc_inst[Mod_id].cba_rnti[2],
          eNB_rrc_inst[Mod_id].cba_rnti[3],

@@ -208,7 +208,7 @@ static Enb_properties_t *enb_properties[] =
 };
 
 /*------------------------------------------------------------------------------*/
-static void configure_rrc()
+static void configure_rrc(void)
 {
     uint32_t eNB_id_start = 0;
     uint32_t eNB_id_end = 1;

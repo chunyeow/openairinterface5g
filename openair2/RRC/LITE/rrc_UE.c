@@ -2431,7 +2431,7 @@ void *rrc_ue_task(void *args_p) {
 
       /* MAC messages */
       case RRC_MAC_IN_SYNC_IND:
-        LOG_I(RRC, "[UE %d] Received %s: frame %d, eNB %d\n", Mod_id, msg_name,
+        LOG_D(RRC, "[UE %d] Received %s: frame %d, eNB %d\n", Mod_id, msg_name,
               RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
 
         UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N310_cnt = 0;
@@ -2447,7 +2447,7 @@ void *rrc_ue_task(void *args_p) {
         break;
 
       case RRC_MAC_BCCH_DATA_IND:
-        LOG_I(RRC, "[UE %d] Received %s: frame %d, eNB %d\n", Mod_id, msg_name,
+        LOG_D(RRC, "[UE %d] Received %s: frame %d, eNB %d\n", Mod_id, msg_name,
               RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
 
         decode_BCCH_DLSCH_Message (Mod_id, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
@@ -2525,12 +2525,23 @@ void *rrc_ue_task(void *args_p) {
                   itti_send_msg_to_task(TASK_L2L1, NB_eNB_INST + Mod_id, message_p);
 
                   UE_rrc_inst[Mod_id].RrcState = RRC_STATE_IDLE;
-                  break;
+                  /* Fall through to next case */
               }
 
               case RRC_STATE_IDLE:
-                /* Ask to layer 1 to find a cell matching the criterion */
-                break;
+              {
+                  /* Ask to layer 1 to find a cell matching the criterion */
+                  MessageDef *message_p;
+
+                  message_p = itti_alloc_new_message(TASK_RRC_UE, PHY_FIND_CELL_REQ);
+
+                  PHY_FIND_CELL_REQ (message_p).earfcn_start = 1;
+                  PHY_FIND_CELL_REQ (message_p).earfcn_end = 1;
+
+                  itti_send_msg_to_task(TASK_PHY_UE, NB_eNB_INST + Mod_id, message_p);
+
+                  break;
+              }
 
               case RRC_STATE_CONNECTED:
                 /* should not happen */

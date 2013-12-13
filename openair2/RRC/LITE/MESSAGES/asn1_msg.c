@@ -698,19 +698,17 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
 }
 
 uint8_t do_SIB23(uint8_t Mod_id,
-		 LTE_DL_FRAME_PARMS *frame_parms,
-		 uint8_t *buffer,
-		 BCCH_DL_SCH_Message_t *bcch_message,
-		 SystemInformationBlockType2_t **sib2,
-		 SystemInformationBlockType3_t **sib3
+                 LTE_DL_FRAME_PARMS *frame_parms,
+                 uint8_t *buffer,
+                 BCCH_DL_SCH_Message_t *bcch_message,
+                 SystemInformationBlockType2_t **sib2,
+                 SystemInformationBlockType3_t **sib3
 #ifdef Rel10
-		 ,
+                 ,
                  SystemInformationBlockType13_r9_t **sib13,
-		 uint8_t MBMS_flag
+                 uint8_t MBMS_flag
 #endif
-		 ) {
-
-
+                 ) {
   struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part,*sib3_part;
 #ifdef Rel10
   struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib13_part;
@@ -723,23 +721,23 @@ uint8_t do_SIB23(uint8_t Mod_id,
   if (bcch_message) 
     memset(bcch_message,0,sizeof(BCCH_DL_SCH_Message_t));
   else {
-    LOG_E(RRC,"BCCH_MESSAGE is null, exiting\n");
+    LOG_E(RRC,"[eNB %d] BCCH_MESSAGE is null, exiting\n", Mod_id);
     exit(-1);
   }
 
   if (!sib2) {
-    LOG_E(RRC,"sib2 is null, exiting\n");
+    LOG_E(RRC,"[eNB %d] sib2 is null, exiting\n", Mod_id);
     exit(-1);
   }
 
   if (!sib3) {
-    LOG_E(RRC,"sib3 is null, exiting\n");
+    LOG_E(RRC,"[eNB %d] sib3 is null, exiting\n", Mod_id);
     exit(-1);
   }
 #ifdef Rel10
-  LOG_I(RRC,"Configuration SIB2/3, MBMS = %d\n",MBMS_flag);
+  LOG_I(RRC,"[eNB %d] Configuration SIB2/3, MBMS = %d\n", Mod_id, MBMS_flag);
 #else
-  LOG_I(RRC,"Configuration SIB2/3\n");
+  LOG_I(RRC,"[eNB %d] Configuration SIB2/3\n", Mod_id);
 #endif
   sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
   sib3_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
