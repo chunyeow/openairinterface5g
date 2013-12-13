@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -DUSER_MODE 
-XTRA_CFLAGS = -msse -msse2 -mssse3 
+XTRA_CFLAGS = -msse -msse2 -mssse3 -fPIC
 
 #ifndef OPENAIR0_DIR
 #  $(error Environment variable OPENAIR0_DIR must be set!)
