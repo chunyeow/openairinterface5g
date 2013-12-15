@@ -167,18 +167,18 @@ struct ipversion {
 };
 
 typedef struct pdcp_data_req_header_t {
-  unsigned int             rb_id;
+  unsigned int           rb_id;
   unsigned int           data_size;
-  int            inst;
+  int                    inst;
+  int                    traffic_type;
 } pdcp_data_req_header_t;
 
 typedef struct pdcp_data_ind_header_t {
-  unsigned int            rb_id;
+  unsigned int           rb_id;
   unsigned int           data_size;
-  int            inst;
+  int                    inst;
+  int                    dummy;
 } pdcp_data_ind_header_t;
-
-
 
 extern struct net_device *nasdev[NB_INSTANCES_MAX];
 //extern int bytes_wrote;
