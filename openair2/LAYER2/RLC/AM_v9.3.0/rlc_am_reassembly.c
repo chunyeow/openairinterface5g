@@ -77,6 +77,16 @@ void rlc_am_send_sdu (rlc_am_entity_t *rlcP,u32_t frame, u8_t eNB_flag)
   if ((rlcP->output_sdu_in_construction)) {
     LOG_D(RLC, "\n\n\n[FRAME %05d][RLC_AM][MOD %02d][RB %02d][SEND_SDU] %d bytes sdu %p\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction);
     if (rlcP->output_sdu_size_to_write > 0) {
+        u8_t eNB_id;
+        u8_t UE_id;
+        if (eNB_flag == 0) {
+          /* FIXME: force send on first eNB */
+          eNB_id = 0;
+          UE_id = rlcP->module_id - NB_eNB_INST;
+        } else {
+          UE_id = rlcP->rb_id / NB_RB_MAX;
+          eNB_id = rlcP->module_id;
+        }
         rlcP->stat_rx_pdcp_sdu   += 1;
         rlcP->stat_rx_pdcp_bytes += rlcP->output_sdu_size_to_write;
         #ifdef TEST_RLC_AM
@@ -85,7 +95,7 @@ void rlc_am_send_sdu (rlc_am_entity_t *rlcP,u32_t frame, u8_t eNB_flag)
                    rlcP->output_sdu_size_to_write,
                    rlcP->output_sdu_in_construction);
         #else
-        rlc_data_ind (rlcP->module_id, frame, eNB_flag, RLC_MBMS_NO, rlcP->rb_id, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction, rlcP->is_data_plane);
+        rlc_data_ind (rlcP->module_id, eNB_id, UE_id, frame, eNB_flag, RLC_MBMS_NO, rlcP->rb_id, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction, rlcP->is_data_plane);
         #endif
         rlcP->output_sdu_in_construction = NULL;
     } else {

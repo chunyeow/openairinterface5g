@@ -265,7 +265,7 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
 #ifdef Rel10
   if (pmch_info_listP != NULL) {
 
-    LOG_I(RRC,"[%s %d] Config RLC instant for MBMS\n", (eNB_flagP) ? "eNB" : "UE", module_idP);
+    LOG_I(RLC,"[%s %d] Config RLC instance for MBMS\n", (eNB_flagP) ? "eNB" : "UE", (eNB_flagP) ? module_idP : module_idP - NB_eNB_INST);
 
     for (cnt=0;cnt<pmch_info_listP->list.count;cnt++) {
       pmch_info_r9 = pmch_info_listP->list.array[cnt];
@@ -278,6 +278,7 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t module_idP, u32_t frameP, u
 	  //	  lc_id = (NUMBER_OF_UE_MAX*NB_RB_MAX) + mbms_session->logicalChannelIdentity_r9;
 	  //   test this one and tell Lionel
           if (eNB_flagP) {
+              /* SR: (maxDRB = 11 + 3) * 16 = 224... */
               lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3) * MAX_MOBILES_PER_RG;
           } else {
               lc_id = mbms_session->logicalChannelIdentity_r9 + (maxDRB + 3);
@@ -560,19 +561,19 @@ rlc_op_status_t rrc_rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t 
 //-----------------------------------------------------------------------------
   mem_block_t*   sdu;
 
+  u8_t UE_id = module_idP - NB_eNB_INST;
   sdu = get_free_mem_block(sdu_sizeP);
   if (sdu != NULL) {
     //    msg("[RRC_RLC] MEM_ALLOC %p\n",sdu);
     memcpy (sdu->data, sduP, sdu_sizeP);
-    return rlc_data_req(module_idP, frame, eNB_flagP, MBMS_flagP, rb_idP, muiP, confirmP, sdu_sizeP, sdu);
+    return rlc_data_req(module_idP, frame, eNB_flagP, MBMS_flagP, rb_idP /* + (UE_id * NB_RB_MAX) */, muiP, confirmP, sdu_sizeP, sdu);
   } else {
     return RLC_OP_STATUS_INTERNAL_ERROR;
   }
 }
 
 //-----------------------------------------------------------------------------
-void   rrc_rlc_register_rrc ( void            (*rrc_data_indP)  (module_id_t module_idP, u32_t frame, u8_t eNB_id, rb_id_t rb_idP, sdu_size_t sdu_sizeP, u8_t* sduP),
-                              void            (*rrc_data_confP) (module_id_t module_idP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP) ) {
+void rrc_rlc_register_rrc (rrc_data_ind_cb_t rrc_data_indP, rrc_data_conf_cb_t rrc_data_confP) {
 //-----------------------------------------------------------------------------
    rlc_rrc_data_ind  = rrc_data_indP;
    rlc_rrc_data_conf = rrc_data_confP;

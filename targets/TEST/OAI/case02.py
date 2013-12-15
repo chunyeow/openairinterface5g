@@ -103,29 +103,32 @@ def execute(oai, user, pw, logfile,logdir):
         test = '03'
         name = 'Run oai.rel8.abs.ping'
         diag = 'Data-plane is not working normally, check the OAI protocol stack, OAI driver, and normal operation of the OS'
+        
         oai.driver(oai,user,pw)
-        for i in range(NUM_UE) :
-            for j in range(NUM_eNB) :
-                conf = '-a -A AWGN -l7 -u' + str(i+1) +' -b'+ str(j+1)
+
+        for i in range(NUM_eNB) :
+            for j in range(NUM_UE) :
+                conf = '-a -A AWGN -l6 -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
-                trace_ping = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '_ping.txt'
-                tee = ' 2>&1 | tee ' + trace
-                tee_ping = ' 2>&1 | tee ' + trace_ping
+                tee = ' 2>&1 > ' + trace
+
                 if user == 'root' :
-                    oai.send_nowait('./oaisim.rel8.nas ' + conf + tee + ' &')
+                    oai.send('./oaisim.rel8.nas ' + conf + ' &')
                 else :    
-                    oai.send_nowait('echo '+pw+ ' | sudo -S -E ./oaisim.rel8.nas ' + conf + tee + ' &')
-                time.sleep(2)
+                    oai.send('echo '+pw+ ' | sudo -S -E ./oaisim.rel8.nas ' + conf + tee + ' &')
+                time.sleep(20)
                 for k in range(NUM_TRIALS) :
-                    oai.send_expect('ping 10.0.'+str(j+1)+'.'+str(NUM_eNB+i+1) + ' -c ' +  str(random.randint(2, 10))+ ' -s ' + str(random.randint(128, 1500)) + tee_ping, ' 0% packet loss', 300)
+                    trace_ping = logdir + '/log_' + case + test + '_' + str(i) + str(j) + str(k) + '_ping.txt'
+                    tee_ping = ' 2>&1 | tee ' + trace_ping
+
+                    oai.send_expect('ping 10.0.'+str(j+1)+'.'+str(NUM_eNB+i+1) + ' -c ' +  str(random.randint(2, 10))+ ' -s ' + str(random.randint(128, 1500)) + tee_ping, ' 0% packet loss', 20)
                 if user == 'root' :
-                    oai.send('pkill oaisim;')
+                    oai.send('pkill oaisim.rel8.nas;')
                     oai.send('pkill oaisim.rel8.nas;')
                 else :
-                    oai.send_nowait('echo '+pw+ ' | sudo -S pkill oaisim ;')
-                    oai.send_nowait('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas;')
+                    oai.send('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas;')
                     time.sleep(1)
-                    oai.send_nowait('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas;')
+                    oai.send('echo '+pw+ ' | sudo -S pkill oaisim.rel8.nas;')
         
         oai.rm_driver(oai,user,pw)
 

@@ -54,6 +54,16 @@ rlc_tm_send_sdu (rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flag, u8_t error_i
         rlcP->output_sdu_in_construction = get_free_mem_block (length_in_bytes);
     }
     if ((rlcP->output_sdu_in_construction)) {
+        u8_t eNB_id;
+        u8_t UE_id;
+        if (eNB_flag == 0) {
+          /* FIXME: force send on first eNB */
+          eNB_id = 0;
+          UE_id = rlcP->module_id - NB_eNB_INST;
+        } else {
+          UE_id = rlcP->rb_id / NB_RB_MAX;
+          eNB_id = rlcP->module_id;
+        }
         #ifdef DEBUG_RLC_TM_DISPLAY_ASCII_DATA
         msg ("[RLC_TM %p][SEND_SDU] DATA :", rlcP);
         for (index = 0; index < length_in_bytes; index++) {
@@ -64,7 +74,7 @@ rlc_tm_send_sdu (rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flag, u8_t error_i
 
         memcpy (&rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write], srcP, length_in_bytes);
 
-        rlc_data_ind (rlcP->module_id, frame, eNB_flag, RLC_MBMS_NO, rlcP->rb_id, length_in_bytes, rlcP->output_sdu_in_construction, rlcP->is_data_plane);
+        rlc_data_ind (rlcP->module_id, eNB_id, UE_id, frame, eNB_flag, RLC_MBMS_NO, rlcP->rb_id, length_in_bytes, rlcP->output_sdu_in_construction, rlcP->is_data_plane);
         rlcP->output_sdu_in_construction = NULL;
     } else {
         msg ("[RLC_TM %p][SEND_SDU] ERROR  OUTPUT SDU IS NULL\n", rlcP);

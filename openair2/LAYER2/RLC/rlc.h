@@ -174,8 +174,10 @@ typedef struct {
 #define  RLC_MAX_LC  ((max_val_DRB_Identity+1)* MAX_MOBILES_PER_RG)
 #endif
 
-protected_rlc(void            (*rlc_rrc_data_ind)  (module_id_t , u32_t, u8_t, rb_id_t , sdu_size_t , u8_t* );)
+protected_rlc(void            (*rlc_rrc_data_ind)  (u8_t, u8_t, u32_t, u8_t, rb_id_t , sdu_size_t , u8_t* );)
 protected_rlc(void            (*rlc_rrc_data_conf) (module_id_t , rb_id_t , mui_t, rlc_tx_status_t );)
+typedef void (rrc_data_ind_cb_t)(u8_t eNB_id, u8_t UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_idP, sdu_size_t sdu_sizeP, u8_t* sduP);
+typedef void (rrc_data_conf_cb_t)(module_id_t module_idP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP);
 
 /*! \struct  rlc_pointer_t
 * \brief Structure helping finding the right RLC protocol instance in a rlc_t structure.
@@ -309,8 +311,7 @@ public_rlc_rrc( rlc_op_status_t rrc_rlc_data_req     (module_id_t, u32_t, u8_t, 
 * \param[in]  rrc_data_indP       Pointer on RRC data indicate function.
 * \param[in]  rrc_data_confP      Pointer on RRC data confirm callback function.
 */
-public_rlc_rrc( void   rrc_rlc_register_rrc ( void (*rrc_data_indP)  (module_id_t , u32_t, u8_t, rb_id_t , sdu_size_t , u8_t*),
-                                              void (*rrc_data_conf) (module_id_t , rb_id_t , mui_t, rlc_tx_status_t) );)
+public_rlc_rrc(void rrc_rlc_register_rrc (rrc_data_ind_cb_t rrc_data_indP, rrc_data_conf_cb_t rrc_data_confP);)
 
 //-----------------------------------------------------------------------------
 //   PUBLIC INTERFACE WITH MAC
@@ -409,7 +410,7 @@ public_rlc(rlc_op_status_t rlc_data_req     (module_id_t, u32_t, u8_t, u8_t,rb_i
 * \param[in]  sduP             SDU.
 * \param[in]  is_data_planeP   Boolean, is data radio bearer or not.
 */
-public_rlc(void            rlc_data_ind     (module_id_t, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t, sdu_size_t, mem_block_t*, boolean_t);)
+public_rlc(void            rlc_data_ind     (module_id_t module_idP, u8_t eNB_id, u8_t UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t, sdu_size_t, mem_block_t*, boolean_t);)
 
 
 /*! \fn void rlc_data_conf     (module_id_t module_idP, u32_t frameP, u8_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP, boolean_t is_data_planeP)

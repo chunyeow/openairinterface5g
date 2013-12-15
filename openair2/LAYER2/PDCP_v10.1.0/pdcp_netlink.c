@@ -202,8 +202,8 @@ void *pdcp_netlink_thread_fct(void *arg) {
                               new_data->pdcp_read_header.data_size);
                     } else {
                         LOG_E(PDCP, "[NETLINK] WRONG size %d should be sizeof "
-                              "(pdcp_data_req_header_t) + sizeof(struct nlmsghdr)\n",
-                              nas_nlh_rx->nlmsg_len);
+                              "%d ((pdcp_data_req_header_t) + sizeof(struct nlmsghdr))\n",
+                              nas_nlh_rx->nlmsg_len, sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr));
                     }
                 } else {
                     pdcp_read_state = 0;

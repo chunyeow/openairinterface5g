@@ -50,12 +50,12 @@ void mac_lite_sync_ind(u8 Mod_id, u8 status);
 
 void mac_rrc_meas_ind(u8, MAC_MEAS_REQ_ENTRY*);
 
-void rlcrrc_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag, unsigned int Rb_id, u32 sdu_size, u8 *Buffer);
+void rlcrrc_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag, unsigned int Rb_id, u32 sdu_size, u8 *Buffer);
 
-u8 pdcp_rrc_data_req(u8 module_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+u8 pdcp_rrc_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
                      unsigned int sdu_buffer_size, u8* sdu_buffer, u8 mode);
 
-void pdcp_rrc_data_ind(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size, u8 *Buffer);
+void pdcp_rrc_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size, u8 *Buffer);
 
 void mac_out_of_sync_ind(u8 Mod_id, u32 frame, u16 CH_index);
 

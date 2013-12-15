@@ -482,7 +482,7 @@ void rrc_ue_config_LTE_srb1 (void){
   msg ("[RRC-UE-FRONTEND] Parameters : Mod_id %d, eNB_flag %d, UE_index %d, NB_eNB_INST %d \n",Mod_id, eNB_flag, UE_index, NB_eNB_INST);
 //   rrc_pdcp_config_req (Mod_id+NB_eNB_INST, protocol_ms->rrc.current_SFN, eNB_flag, ACTION_ADD, srb1);
 //   rrc_rlc_config_req(Mod_id+NB_eNB_INST, protocol_ms->rrc.current_SFN, eNB_flag, ACTION_ADD, srb1, SIGNALLING_RADIO_BEARER, Rlc_info_am_config);
-  rrc_pdcp_config_asn1_req(Mod_id+NB_eNB_INST,protocol_ms->rrc.current_SFN,eNB_flag,UE_index,
+  rrc_pdcp_config_asn1_req(Mod_id,UE_index,protocol_ms->rrc.current_SFN,eNB_flag,
       protocol_ms->rrc.ue_rb_asn1.SRB_configList[UE_index],
       (DRB_ToAddModList_t*)NULL,
       (DRB_ToReleaseList_t*)NULL
@@ -558,7 +558,7 @@ void rrc_ue_config_LTE_srb2 (void){
   msg("[UE %d], CONFIG_SRB2 %d corresponding to eNB_index %d\n", Mod_id,srb2,eNB_index);
 //   rrc_pdcp_config_req (Mod_id+NB_eNB_INST, protocol_ms->rrc.current_SFN, eNB_flag, ACTION_ADD, srb2);
 //   rrc_rlc_config_req(Mod_id+NB_eNB_INST,protocol_ms->rrc.current_SFN,eNB_flag,ACTION_ADD,srb2,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
-  rrc_pdcp_config_asn1_req(Mod_id+NB_eNB_INST,protocol_ms->rrc.current_SFN,eNB_flag,UE_index,
+  rrc_pdcp_config_asn1_req(Mod_id,UE_index,protocol_ms->rrc.current_SFN,eNB_flag,
       protocol_ms->rrc.ue_rb_asn1.SRB_configList[UE_index],
       (DRB_ToAddModList_t*)NULL,
       (DRB_ToReleaseList_t*)NULL
@@ -633,7 +633,7 @@ void rrc_ue_config_LTE_default_drb (unsigned char Mod_id){
       rrc_rlc_config_req(Mod_id+NB_eNB_INST,protocol_ms->rrc.current_SFN,eNB_flag,ACTION_ADD,
                           (UE_index * NB_RB_MAX) + (int)*protocol_ms->rrc.ue_rb_asn1.DRB1_config->logicalChannelIdentity,
                           RADIO_ACCESS_BEARER,Rlc_info_um);*/
-      rrc_pdcp_config_asn1_req(Mod_id+NB_eNB_INST,protocol_ms->rrc.current_SFN,eNB_flag,UE_index,
+      rrc_pdcp_config_asn1_req(Mod_id,UE_index,protocol_ms->rrc.current_SFN,eNB_flag,
           (SRB_ToAddModList_t*)NULL,
           protocol_ms->rrc.ue_rb_asn1.DRB_configList[UE_index],
           (DRB_ToReleaseList_t*)NULL

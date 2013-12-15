@@ -60,6 +60,8 @@
 # include "intertask_interface.h"
 #endif
 
+#include "assertions.h"
+
 #define PDCP_DATA_REQ_DEBUG 0
 #define PDCP_DATA_IND_DEBUG 0
 
@@ -67,10 +69,6 @@
 extern int otg_enabled;
 #endif
 
-extern rlc_op_status_t rlc_data_req(module_id_t, u32_t, u8_t, u8_t,rb_id_t, mui_t, confirm_t, sdu_size_t, mem_block_t*);
-extern void rrc_lite_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
-//Added MW - RRC L2 interface
-extern void pdcp_rrc_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer);
 //extern char *packet_gen(int src, int dst, int ctime, int *pkt_size);
 extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size);
 
@@ -86,24 +84,46 @@ extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned in
 BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, sdu_size_t sdu_buffer_size, \
                    unsigned char* sdu_buffer, pdcp_t* test_pdcp_entity, list_t* test_list)
 #else
-BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP, \
+BOOL pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP,
                    sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode)
 #endif
 {
   //-----------------------------------------------------------------------------
-#ifdef PDCP_UNIT_TEST
-  pdcp_t* pdcp = test_pdcp_entity;
-#else
-  pdcp_t* pdcp = &pdcp_array[module_id][rb_id];
-#endif
+  pdcp_t* pdcp;
   u8 i;
   u8 pdcp_header_len=0, pdcp_tailer_len=0;
   u16 pdcp_pdu_size=0, current_sn;
   mem_block_t* pdcp_pdu = NULL;
   rlc_op_status_t rlc_status;
+  module_id_t module_id;
+  rb_id_t rb_id_rlc = 0;
 
- if ((pdcp->instanciated_instance == 0) && (mode != PDCP_TM)) {
-    LOG_W(PDCP, "Instance is not configured, Ignoring SDU...\n");
+  DevCheck4(eNB_id < NB_eNB_INST, eNB_id, NB_eNB_INST, UE_id, rb_id);
+  DevCheck4(UE_id < NB_UE_INST, UE_id, NB_UE_INST, eNB_id, rb_id);
+  DevCheck4(rb_id < NB_RB_MAX, rb_id, NB_RB_MAX, UE_id, eNB_id);
+
+#ifdef PDCP_UNIT_TEST
+  pdcp = test_pdcp_entity;
+#else
+  if (eNB_flag == 0) {
+    pdcp = &pdcp_array_ue[UE_id][rb_id];
+    module_id = NB_eNB_INST + UE_id;
+    rb_id_rlc = rb_id;
+  } else {
+    pdcp = &pdcp_array_eNB[eNB_id][UE_id][rb_id];
+    module_id = eNB_id;
+    rb_id_rlc = rb_id + (NB_RB_MAX * UE_id);
+  }
+#endif
+
+  if ((pdcp->instanciated_instance == 0) && (mode != PDCP_TM)) {
+    if (eNB_flag == 0) {
+      LOG_W(PDCP, "[UE %d] Instance is not configured for eNB %d, rb_id %d Ignoring SDU...\n",
+          UE_id, eNB_id, rb_id);
+    } else {
+      LOG_W(PDCP, "[eNB %d] Instance is not configured for UE %d, rb_id %d Ignoring SDU...\n",
+          eNB_id, UE_id, rb_id);
+    }
     return FALSE;
   }
   if (sdu_buffer_size == 0) {
@@ -118,7 +138,7 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
     LOG_E(PDCP, "Requested SDU size (%d) is bigger than that can be handled by PDCP (%u)!\n",
           sdu_buffer_size, MAX_IP_PACKET_SIZE);
     // XXX What does following call do?
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("PDCP sdu buffer size > MAX_IP_PACKET_SIZE");
   }
 
   // PDCP transparent mode for MBMS traffic 
@@ -128,7 +148,7 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
     pdcp_pdu = get_free_mem_block(sdu_buffer_size);
     if (pdcp_pdu != NULL) {
       memcpy(&pdcp_pdu->data[0], sdu_buffer, sdu_buffer_size); 
-      rlc_status = rlc_data_req(module_id, frame, eNB_flag, RLC_MBMS_YES, rb_id, muiP, confirmP, sdu_buffer_size, pdcp_pdu);
+      rlc_status = rlc_data_req(module_id, frame, eNB_flag, RLC_MBMS_YES, rb_id_rlc, muiP, confirmP, sdu_buffer_size, pdcp_pdu);
     } else
       rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
   } else {
@@ -229,7 +249,7 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
      * Ask sublayer to transmit data and check return value
      * to see if RLC succeeded
      */
-    rlc_status = rlc_data_req(module_id, frame, eNB_flag, 0, rb_id, muiP, confirmP, pdcp_pdu_size, pdcp_pdu);
+    rlc_status = rlc_data_req(module_id, frame, eNB_flag, 0, rb_id_rlc, muiP, confirmP, pdcp_pdu_size, pdcp_pdu);
   }
   switch (rlc_status) {
   case RLC_OP_STATUS_OK:
@@ -277,26 +297,54 @@ BOOL pdcp_data_req(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
 BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, sdu_size_t sdu_buffer_size, \
                    mem_block_t* sdu_buffer, pdcp_t* pdcp_test_entity, list_t* test_list)
 #else
-    BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size, \
-                       mem_block_t* sdu_buffer, u8 is_data_plane)
+BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size, \
+                   mem_block_t* sdu_buffer, u8 is_data_plane)
 #endif
 {
   //-----------------------------------------------------------------------------
 #ifdef PDCP_UNIT_TEST
-  pdcp_t* pdcp = pdcp_test_entity;
-  list_t* sdu_list = test_list;
+  pdcp_t* pdcp;
+  list_t* sdu_list;
 #else
-  pdcp_t* pdcp = &pdcp_array[module_id][rb_id];
-  list_t* sdu_list = &pdcp_sdu_list;
+  pdcp_t* pdcp;
+  list_t* sdu_list;
 #endif
   mem_block_t *new_sdu = NULL;
   int src_id, dst_id,ctime; // otg param
   u8 pdcp_header_len=0, pdcp_tailer_len=0;
   u16 sequence_number;
   u8 payload_offset=0;
+  module_id_t module_id;
 
-  LOG_I(PDCP,"Data indication notification for PDCP entity with module "
-  "ID %d and radio bearer ID %d rlc sdu size %d eNB_flag %d\n", module_id, rb_id, sdu_buffer_size, eNB_flag);
+#ifdef PDCP_UNIT_TEST
+  pdcp = pdcp_test_entity;
+  sdu_list = test_list;
+
+  LOG_I(PDCP, "Data indication notification for PDCP entity for module"
+        "ID %d and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
+        module_id, rb_id, sdu_buffer_size, eNB_flag);
+#else
+  DevCheck(UE_id < NB_UE_INST, UE_id, NB_UE_INST, eNB_id);
+  DevCheck(eNB_id < NB_eNB_INST, eNB_id, NB_eNB_INST, UE_id);
+  DevCheck(rb_id < NB_RB_MAX, rb_id, NB_eNB_INST, NB_RB_MAX);
+
+  if (eNB_flag == 0) {
+    pdcp = &pdcp_array_ue[UE_id][rb_id];
+    module_id = NB_eNB_INST + UE_id;
+
+    LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
+          "and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
+          UE_id, eNB_id, rb_id, sdu_buffer_size, eNB_flag);
+  } else {
+    pdcp = &pdcp_array_eNB[UE_id][eNB_id][rb_id];
+    module_id = eNB_id;
+
+    LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
+          "and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
+          eNB_id, UE_id, rb_id, sdu_buffer_size, eNB_flag);
+  }
+  sdu_list = &pdcp_sdu_list;
+#endif
 
   if (sdu_buffer_size == 0) {
     LOG_W(PDCP, "SDU buffer size is zero! Ignoring this chunk!\n");
@@ -364,7 +412,8 @@ BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
       }
 #endif
       //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
-      pdcp_rrc_data_ind(module_id,
+      pdcp_rrc_data_ind(eNB_id,
+                        UE_id,
                         frame,
                         eNB_flag,
                         rb_id,
@@ -387,20 +436,11 @@ BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
   }
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ){
-    src_id = 0;
-    dst_id = (eNB_flag == 1) ? module_id : module_id /*-  NB_eNB_INST*/;
+    src_id = (eNB_flag != 0) ? UE_id + NB_eNB_INST : eNB_id;
+    dst_id = (eNB_flag == 0) ? UE_id + NB_eNB_INST : eNB_id;
     ctime = oai_emulation.info.time_ms; // avg current simulation time in ms : we may get the exact time through OCG?
-    LOG_D(OTG,"Check received buffer : enb_flag %d mod id %d, rab id %d (src %d, dst %d)\n", eNB_flag, module_id, rb_id, src_id, dst_id);
-
-    if (MBMS_flagP == 0) {
-      src_id = (eNB_flag == 1) ? (rb_id - DTCH) / NB_RB_MAX  /*- NB_eNB_INST */ + 1 :  ((rb_id - DTCH) / NB_RB_MAX);
-    }else {
-#ifdef Rel10
-      src_id = (rb_id - MTCH  - 3 - maxDRB) / maxSessionPerPMCH  /*- NB_eNB_INST */ ;
-      //dst_id is now = module_id (supoosed to be 1 for UE), take the same as module from rlc_data_ind
-      // dst_id generated data from OTG is is 1 (session_id)
-#endif
-    }
+    LOG_D(PDCP, "Check received buffer : enb_flag %d mod id %d, rab id %d (src %d, dst %d)\n",
+          eNB_flag, module_id, rb_id, src_id, dst_id);
 
     if (otg_rx_pkt(src_id, dst_id,ctime,&sdu_buffer->data[payload_offset],
                    sdu_buffer_size - payload_offset ) == 0 ) {
@@ -422,13 +462,17 @@ BOOL pdcp_data_ind(module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rb
        * Prepend PDCP indication header which is going to be removed at pdcp_fifo_flush_sdus()
        */
     memset(new_sdu->data, 0, sizeof (pdcp_data_ind_header_t));
-    ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id;
+    if (eNB_flag == 0) {
+      ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id;
+    } else {
+      ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id + (UE_id * NB_RAB_MAX);
+    }
     ((pdcp_data_ind_header_t *) new_sdu->data)->data_size = sdu_buffer_size - payload_offset;
 
     // Here there is no virtualization possible
 #ifdef IDROMEL_NEMO
     if (eNB_flag == 0)
-      ((pdcp_data_ind_header_t *) new_sdu->data)->inst = rb_id/8;
+      ((pdcp_data_ind_header_t *) new_sdu->data)->inst = rb_id / NB_RAB_MAX;
     else
       ((pdcp_data_ind_header_t *) new_sdu->data)->inst = 0;
 #else
@@ -513,7 +557,7 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
                 RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag, RRC_DCCH_DATA_REQ (msg_p).rb_id,
                 RRC_DCCH_DATA_REQ (msg_p).muip, RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).mode);
 
-          pdcp_data_req (instance, RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag,
+          pdcp_data_req (RRC_DCCH_DATA_REQ (msg_p).eNB_index, RRC_DCCH_DATA_REQ (msg_p).ue_index, RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag,
                          RRC_DCCH_DATA_REQ (msg_p).rb_id, RRC_DCCH_DATA_REQ (msg_p).muip,
                          RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).sdu_size,
                          RRC_DCCH_DATA_REQ (msg_p).sdu_p, RRC_DCCH_DATA_REQ (msg_p).mode);
@@ -556,12 +600,12 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
   pdcp_fifo_read_input_sdus(frame, eNB_flag, UE_index, eNB_index);
 
   // PDCP -> NAS/IP traffic: RX
-  pdcp_fifo_flush_sdus(frame, eNB_flag);
+  pdcp_fifo_flush_sdus(frame, eNB_flag, eNB_index, UE_index);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
 }
 
-BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, u32_t index,
+BOOL rrc_pdcp_config_asn1_req (u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag,
                                SRB_ToAddModList_t* srb2add_list,
                                DRB_ToAddModList_t* drb2add_list,
                                DRB_ToReleaseList_t*  drb2release_list,
@@ -572,8 +616,8 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
 #ifdef Rel10
                               ,PMCH_InfoList_r9_t*  pmch_InfoList_r9
 #endif
-                               ){
-
+                               )
+{
   long int        rb_id          = 0;
   long int        lc_id          = 0;
   long int        srb_id         = 0;
@@ -589,6 +633,8 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
   u32 action                     = ACTION_ADD;
   SRB_ToAddMod_t* srb_toaddmod   = NULL;
   DRB_ToAddMod_t* drb_toaddmod   = NULL;
+  pdcp_t        *pdcp;
+  module_id_t    module_id;
 
 #ifdef Rel10
   int i,j;
@@ -596,53 +642,70 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
   MBMS_SessionInfo_r9_t     *MBMS_SessionInfo= NULL;
 #endif
 
-  LOG_D(PDCP, "[MOD_id %d]CONFIG REQ ASN1 for %s %d\n",module_id,
-        (eNB_flag == 1)? "eNB": "UE", index);
+  if (eNB_flag == 0) {
+    module_id = NB_eNB_INST + UE_id;
+    LOG_D(PDCP, "[UE %d] CONFIG REQ ASN1 for eNB %d (Mod_id %u)\n", UE_id, eNB_id, module_id);
+  } else {
+    module_id = eNB_id;
+    LOG_D(PDCP, "[eNB %d] CONFIG REQ ASN1 for UE %d (Mod_id %u)\n", eNB_id, UE_id, module_id);
+  }
   // srb2add_list does not define pdcp config, we use rlc info to setup the pdcp dcch0 and dcch1 channels
 
   if (srb2add_list != NULL) {
     for (cnt=0;cnt<srb2add_list->list.count;cnt++) {
       srb_id = srb2add_list->list.array[cnt]->srb_Identity;
-      lc_id = srb_id; 
-      rb_id = (index * NB_RB_MAX) + srb_id;
-      if (pdcp_array[module_id][rb_id].instanciated_instance == module_id + 1)
-        action = ACTION_MODIFY;
-      else
-        action = ACTION_ADD;
       srb_toaddmod = srb2add_list->list.array[cnt];
       rlc_type = RLC_MODE_AM;
+      rb_id = srb_id;
+      lc_id = srb_id;
+
+      if (eNB_flag == 0) {
+        pdcp = &pdcp_array_ue[UE_id][srb_id];
+      } else {
+        pdcp = &pdcp_array_eNB[eNB_id][UE_id][srb_id];
+      }
+
+      if (pdcp->instanciated_instance == 1) {
+        action = ACTION_MODIFY;
+      } else {
+        action = ACTION_ADD;
+      }
+
       if (srb_toaddmod->rlc_Config) {
         switch (srb_toaddmod->rlc_Config->present) {
-        case SRB_ToAddMod__rlc_Config_PR_NOTHING:
-          break;
-        case SRB_ToAddMod__rlc_Config_PR_explicitValue:
-          switch (srb_toaddmod->rlc_Config->choice.explicitValue.present) {
-          case RLC_Config_PR_NOTHING:
+          case SRB_ToAddMod__rlc_Config_PR_NOTHING:
+            break;
+          case SRB_ToAddMod__rlc_Config_PR_explicitValue:
+            switch (srb_toaddmod->rlc_Config->choice.explicitValue.present) {
+            case RLC_Config_PR_NOTHING:
+              break;
+            default:
+              pdcp_config_req_asn1 (pdcp,
+                                    eNB_id,
+                                    UE_id,
+                                    frame,
+                                    eNB_flag, // not really required
+                                    rlc_type,
+                                    action,
+                                    lc_id,
+                                    mch_id,
+                                    rb_id,
+                                    srb_sn,
+                                    0, // drb_report
+                                    0, // header compression
+                                    security_mode,
+                                    kRRCenc,
+                                    kRRCint,
+                                    kUPenc);
+              break;
+            }
+            break;
+          case SRB_ToAddMod__rlc_Config_PR_defaultValue:
+            // already the default values
             break;
           default:
-            pdcp_config_req_asn1 (module_id,
-                                  frame,
-                                  eNB_flag, // not really required
-                                  index, // ue/enb index : used for log
-                                  rlc_type,
-                                  action,
-                                  lc_id,
-                                  mch_id,
-                                  rb_id,
-                                  srb_sn,
-                                  0, // drb_report
-                                  0, // header compression
-                                  security_mode,
-                                  kRRCenc,
-                                  kRRCint,
-                                  kUPenc);
+            DevParam(srb_toaddmod->rlc_Config->present, UE_id, eNB_id);
             break;
-          }
-          break;
-        case SRB_ToAddMod__rlc_Config_PR_defaultValue:
-          // already the default values
-          break;
-        default:;
         }
       }
     }
@@ -661,11 +724,21 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
       } else {
         lc_id = -1;
       }
-      rb_id =  (index * NB_RB_MAX) + lc_id;
-      if (pdcp_array[module_id][rb_id].instanciated_instance == module_id + 1)
+      rb_id = lc_id;
+
+      DevCheck4(rb_id < NB_RB_MAX, rb_id, NB_RB_MAX, UE_id, eNB_id);
+
+      if (eNB_flag == 0) {
+        pdcp = &pdcp_array_ue[UE_id][rb_id];
+      } else {
+        pdcp = &pdcp_array_eNB[eNB_id][UE_id][rb_id];
+      }
+
+      if (pdcp->instanciated_instance == 1)
         action = ACTION_MODIFY;
       else
         action = ACTION_ADD;
+
       if (drb_toaddmod->pdcp_Config){
         if (drb_toaddmod->pdcp_Config->discardTimer) {
           // set the value of the timer
@@ -712,10 +785,11 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
         default:
           LOG_W(PDCP,"[MOD_id %d][RB %d] unknown drb_toaddmod->PDCP_Config->headerCompression->present \n",module_id,drb_id);
         }
-        pdcp_config_req_asn1 (module_id,
+        pdcp_config_req_asn1 (pdcp,
+                              eNB_id,
+                              UE_id,
                               frame,
                               eNB_flag, // not really required
-                              index,
                               rlc_type,
                               action,
                               lc_id,
@@ -735,12 +809,18 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
   if (drb2release_list != NULL) {
     for (cnt=0;cnt<drb2release_list->list.count;cnt++) {
       pdrb_id = drb2release_list->list.array[cnt];
-      rb_id =  (index * NB_RB_MAX) + *pdrb_id;
+      rb_id =  *pdrb_id;
+      if (eNB_flag == 0) {
+        pdcp = &pdcp_array_ue[UE_id][rb_id];
+      } else {
+        pdcp = &pdcp_array_eNB[eNB_id][UE_id][rb_id];
+      }
       action = ACTION_REMOVE;
-      pdcp_config_req_asn1 (module_id,
+      pdcp_config_req_asn1 (pdcp,
+                            eNB_id,
+                            UE_id,
                             frame,
                             eNB_flag, // not really required
-                            index,
                             rlc_type,
                             action,
                             lc_id,
@@ -757,29 +837,32 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
   }
 
 #ifdef Rel10
-  if (pmch_InfoList_r9 != NULL){
-    for (i=0;i<pmch_InfoList_r9->list.count;i++){
+  if (pmch_InfoList_r9 != NULL) {
+    for (i=0;i<pmch_InfoList_r9->list.count;i++) {
       mbms_SessionInfoList_r9 = &(pmch_InfoList_r9->list.array[i]->mbms_SessionInfoList_r9);
       for (j=0;j<mbms_SessionInfoList_r9->list.count;j++) {
         MBMS_SessionInfo = mbms_SessionInfoList_r9->list.array[j];
         //lc_id = MBMS_SessionInfo->logicalChannelIdentity_r9; // lcid
         lc_id = MBMS_SessionInfo->sessionId_r9->buf[0];
         mch_id = MBMS_SessionInfo->tmgi_r9.serviceId_r9.buf[2]; //serviceId is 3-octet string
+
         // can set the mch_id = i
         if (eNB_flag)
-          rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id ;
+          rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id;
         else
           rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3);
+
         if (pdcp_mbms_array[module_id][rb_id].instanciated_instance == module_id + 1)
           action = ACTION_MBMS_MODIFY;
         else
           action = ACTION_MBMS_ADD;
 
         rlc_type = RLC_MODE_UM;
-        pdcp_config_req_asn1 (module_id,
+        pdcp_config_req_asn1 (NULL,
+                              eNB_id,
+                              UE_id,
                               frame,
-                              eNB_flag, // not really required
-                              index,
+                              eNB_flag,
                               rlc_type,
                               action,
                               lc_id,
@@ -801,202 +884,248 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag
 
 }
 
-BOOL pdcp_config_req_asn1 (module_id_t module_id, u32 frame, u8_t eNB_flag, u16 index,
+BOOL pdcp_config_req_asn1 (pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8_t eNB_flag,
                            rlc_mode_t rlc_mode, u32  action, u16 lc_id,u16 mch_id, rb_id_t rb_id,
                            u8 rb_sn, u8 rb_report, u16 header_compression_profile,
                            u8 security_mode,
                            u8 *kRRCenc,
                            u8 *kRRCint,
-                           u8 *kUPenc){
+                           u8 *kUPenc)
+{
+  module_id_t module_id = 0;
   switch (action) {
-  case ACTION_ADD:
-    pdcp_array[module_id][rb_id].instanciated_instance = module_id + 1;
-    pdcp_array[module_id][rb_id].is_ue = (eNB_flag == 0) ? 1 : 0;
-    pdcp_array[module_id][rb_id].lcid = lc_id;
-    pdcp_array[module_id][rb_id].header_compression_profile=header_compression_profile;
-    pdcp_array[module_id][rb_id].status_report = rb_report;
-    if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits)
-      pdcp_array[module_id][rb_id].seq_num_size = 7;
-    else if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits)
-      pdcp_array[module_id][rb_id].seq_num_size=12;
-    else
-      pdcp_array[module_id][rb_id].seq_num_size=5;
+    case ACTION_ADD:
+      pdcp->instanciated_instance = 1;
+      pdcp->is_ue = (eNB_flag == 0) ? 1 : 0;
+      pdcp->lcid = lc_id;
+      pdcp->header_compression_profile = header_compression_profile;
+      pdcp->status_report = rb_report;
 
-    pdcp_array[module_id][rb_id].rlc_mode = rlc_mode;
-    pdcp_array[module_id][rb_id].next_pdcp_tx_sn = 0;
-    pdcp_array[module_id][rb_id].next_pdcp_rx_sn = 0;
-    pdcp_array[module_id][rb_id].tx_hfn = 0;
-    pdcp_array[module_id][rb_id].rx_hfn = 0;
-    pdcp_array[module_id][rb_id].last_submitted_pdcp_rx_sn = 4095;
-    pdcp_array[module_id][rb_id].first_missing_pdu = -1;
+      if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
+        pdcp->seq_num_size = 7;
+      } else if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits) {
+        pdcp->seq_num_size=12;
+      } else {
+        pdcp->seq_num_size=5;
+      }
 
-    LOG_I(PDCP,"[%s %d] Config request : Action ADD for %s %d: Frame %d LCID %d (rb id %d) configured with SN size %d bits and RLC %s\n",
-          (eNB_flag) ? "eNB" : "UE", module_id,
-          (eNB_flag) ? "UE" : "eNB", index,
-          frame, lc_id, rb_id, pdcp_array[module_id][rb_id].seq_num_size,
-          (rlc_mode == 1) ? "AM" : (rlc_mode == 2) ? "TM" : "UM");
+      pdcp->rlc_mode = rlc_mode;
+      pdcp->next_pdcp_tx_sn = 0;
+      pdcp->next_pdcp_rx_sn = 0;
+      pdcp->tx_hfn = 0;
+      pdcp->rx_hfn = 0;
+      pdcp->last_submitted_pdcp_rx_sn = 4095;
+      pdcp->first_missing_pdu = -1;
 
-    /* Setup security */
-    if (security_mode != 0xff) {
-        pdcp_config_set_security(module_id, frame, eNB_flag, rb_id, lc_id, security_mode, kRRCenc, kRRCint, kUPenc);
-    }
+      if (eNB_flag == 0) {
+        LOG_I(PDCP, "[UE %d] Config request : Action ADD for eNB %d: Frame %d LCID %d (rb id %d) "
+              "configured with SN size %d bits and RLC %s\n",
+              UE_id, eNB_id, frame, lc_id, rb_id, pdcp->seq_num_size,
+              (rlc_mode == 1) ? "AM" : (rlc_mode == 2) ? "TM" : "UM");
+      } else {
+        LOG_I(PDCP, "[eNB %d] Config request : Action ADD for UE %d: Frame %d LCID %d (rb id %d) "
+              "configured with SN size %d bits and RLC %s\n",
+              eNB_id, UE_id, frame, lc_id, rb_id, pdcp->seq_num_size,
+              (rlc_mode == 1) ? "AM" : (rlc_mode == 2) ? "TM" : "UM");
+      }
 
-    LOG_D(PDCP,  "[MSC_NEW][FRAME %05d][PDCP][MOD %02d][RB %02d]\n", frame, module_id,rb_id);
+      /* Setup security */
+      if (security_mode != 0xff) {
+        pdcp_config_set_security(pdcp, eNB_id, UE_id, frame, eNB_flag, rb_id, lc_id, security_mode, kRRCenc, kRRCint, kUPenc);
+      }
 
-    break;
+      LOG_D(PDCP, "[MSC_NEW][FRAME %05d][PDCP][MOD %02d][RB %02d]\n", frame, (eNB_flag == 0) ? NB_eNB_INST + UE_id : eNB_id, rb_id);
+      break;
+
     case ACTION_MODIFY:
-    pdcp_array[module_id][rb_id].header_compression_profile=header_compression_profile;
-    pdcp_array[module_id][rb_id].status_report = rb_report;
-    pdcp_array[module_id][rb_id].rlc_mode = rlc_mode;
+      pdcp->header_compression_profile=header_compression_profile;
+      pdcp->status_report = rb_report;
+      pdcp->rlc_mode = rlc_mode;
 
-    /* Setup security */
-    if (security_mode != 0xff) {
-        pdcp_config_set_security(module_id, frame, eNB_flag, rb_id, lc_id, security_mode, kRRCenc, kRRCint, kUPenc);
-    }
+      /* Setup security */
+      if (security_mode != 0xff) {
+        pdcp_config_set_security(pdcp, eNB_id, UE_id, frame, eNB_flag, rb_id, lc_id, security_mode, kRRCenc, kRRCint, kUPenc);
+      }
 
-    if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits)
-      pdcp_array[module_id][rb_id].seq_num_size = 7;
-    else if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits)
-      pdcp_array[module_id][rb_id].seq_num_size=12;
-    else
-      pdcp_array[module_id][rb_id].seq_num_size=5;
+      if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
+        pdcp->seq_num_size = 7;
+      } else if (rb_sn == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits) {
+        pdcp->seq_num_size = 12;
+      } else {
+        pdcp->seq_num_size=5;
+      }
 
-    LOG_I(PDCP,"[%s %d] Config request : Action MODIFY for %s %d: Frame %d LCID %d RB id %d configured with SN size %d and RLC %s \n",
-          (eNB_flag) ? "eNB" : "UE", module_id,
-          (eNB_flag) ? "UE" : "eNB", index,
-          frame, lc_id, rb_id, rb_sn,
-          (rlc_mode == 1) ? "AM" : (rlc_mode == 2) ? "TM" : "UM");
-
-    break;
+      if (eNB_flag == 0) {
+        LOG_I(PDCP,"[UE %d] Config request : Action MODIFY for eNB %d: Frame %d LCID %d "
+              "RB id %d configured with SN size %d and RLC %s \n",
+              UE_id, eNB_id, frame, lc_id, rb_id, rb_sn,
+              (rlc_mode == 1) ? "AM" : (rlc_mode == 2) ? "TM" : "UM");
+      } else {
+        LOG_I(PDCP,"[eNB %d] Config request : Action MODIFY for UE %d: Frame %d LCID %d "
+              "RB id %d configured with SN size %d and RLC %s \n",
+              eNB_id, UE_id, frame, lc_id, rb_id, rb_sn,
+              (rlc_mode == 1) ? "AM" : (rlc_mode == 2) ? "TM" : "UM");
+      }
+      break;
     case ACTION_REMOVE:
-    pdcp_array[module_id][rb_id].instanciated_instance = 0;
-    pdcp_array[module_id][rb_id].lcid= 0;
-    pdcp_array[module_id][rb_id].header_compression_profile=0x0;
-    pdcp_array[module_id][rb_id].cipheringAlgorithm=0xff;
-    pdcp_array[module_id][rb_id].integrityProtAlgorithm=0xff;
-    pdcp_array[module_id][rb_id].status_report = 0;
-    pdcp_array[module_id][rb_id].rlc_mode = RLC_NONE;
-    pdcp_array[module_id][rb_id].next_pdcp_tx_sn = 0;
-    pdcp_array[module_id][rb_id].next_pdcp_rx_sn = 0;
-    pdcp_array[module_id][rb_id].tx_hfn = 0;
-    pdcp_array[module_id][rb_id].rx_hfn = 0;
-    pdcp_array[module_id][rb_id].last_submitted_pdcp_rx_sn = 4095;
-    pdcp_array[module_id][rb_id].seq_num_size = 0;
-    pdcp_array[module_id][rb_id].first_missing_pdu = -1;
-    pdcp_array[module_id][rb_id].security_activated = 0;
+      pdcp->instanciated_instance = 0;
+      pdcp->lcid = 0;
+      pdcp->header_compression_profile = 0x0;
+      pdcp->cipheringAlgorithm = 0xff;
+      pdcp->integrityProtAlgorithm = 0xff;
+      pdcp->status_report = 0;
+      pdcp->rlc_mode = RLC_NONE;
+      pdcp->next_pdcp_tx_sn = 0;
+      pdcp->next_pdcp_rx_sn = 0;
+      pdcp->tx_hfn = 0;
+      pdcp->rx_hfn = 0;
+      pdcp->last_submitted_pdcp_rx_sn = 4095;
+      pdcp->seq_num_size = 0;
+      pdcp->first_missing_pdu = -1;
+      pdcp->security_activated = 0;
 
-    LOG_I(PDCP,"[%s %d] Config request : ACTION_REMOVE: Frame %d LCID %d RBID %d configured\n",
-          (eNB_flag) ? "eNB" : "UE", module_id, frame, lc_id, rb_id);
-    /* Security keys */
-    if (pdcp_array[module_id][rb_id].kUPenc != NULL) {
-        free(pdcp_array[module_id][rb_id].kUPenc);
-    }
-    if (pdcp_array[module_id][rb_id].kRRCint != NULL) {
-        free(pdcp_array[module_id][rb_id].kRRCint);
-    }
-    if (pdcp_array[module_id][rb_id].kRRCenc != NULL) {
-        free(pdcp_array[module_id][rb_id].kRRCenc);
-    }
-
-
-    break;
+      if (eNB_flag == 0) {
+        LOG_I(PDCP, "[UE %d] Config request : ACTION_REMOVE for eNB %d: Frame %d LCID %d RBID %d configured\n",
+              UE_id, eNB_id, frame, lc_id, rb_id);
+      } else {
+        LOG_I(PDCP, "[eNB %d] Config request : ACTION_REMOVE for UE %d: Frame %d LCID %d RBID %d configured\n",
+              eNB_id, UE_id, frame, lc_id, rb_id);
+      }
+      /* Security keys */
+      if (pdcp->kUPenc != NULL) {
+        free(pdcp->kUPenc);
+      }
+      if (pdcp->kRRCint != NULL) {
+        free(pdcp->kRRCint);
+      }
+      if (pdcp->kRRCenc != NULL) {
+        free(pdcp->kRRCenc);
+      }
+      break;
     case ACTION_MBMS_ADD:
     case ACTION_MBMS_MODIFY:
-    pdcp_mbms_array[module_id][rb_id].instanciated_instance = module_id + 1 ;
-    pdcp_mbms_array[module_id][rb_id].service_id = mch_id;
-    pdcp_mbms_array[module_id][rb_id].session_id = lc_id;
-    pdcp_mbms_array[module_id][rb_id].rb_id = rb_id;
-    LOG_I(PDCP,"[%s %d] Config request : ACTION_MBMS_ADD: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
-          (eNB_flag == 1) ? "eNB" : "UE", module_id, frame, mch_id, lc_id, rb_id);
-    break;
+      if (eNB_flag == 0) {
+        module_id = UE_id + NB_eNB_INST;
+        LOG_I(PDCP,"[UE %d] Config request for eNB %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
+              UE_id, eNB_id, action == ACTION_MBMS_ADD ? "ACTION_MBMS_ADD" : "ACTION_MBMS_MODIFY", frame, mch_id, lc_id, rb_id);
+      } else {
+        module_id = eNB_id;
+        LOG_I(PDCP,"[eNB %d] Config request for UE %d: %s: Frame %d service_id/mch index %d, session_id/lcid %d, rbid %d configured\n",
+              eNB_id, UE_id, action == ACTION_MBMS_ADD ? "ACTION_MBMS_ADD" : "ACTION_MBMS_MODIFY", frame, mch_id, lc_id, rb_id);
+      }
+      pdcp_mbms_array[module_id][rb_id].instanciated_instance = module_id + 1 ;
+      pdcp_mbms_array[module_id][rb_id].service_id = mch_id;
+      pdcp_mbms_array[module_id][rb_id].session_id = lc_id;
+      pdcp_mbms_array[module_id][rb_id].rb_id = rb_id;
+      break;
     case ACTION_SET_SECURITY_MODE:
-        pdcp_config_set_security(module_id, frame, eNB_flag, rb_id, lc_id, security_mode, kRRCenc, kRRCint, kUPenc);
-        break;
+      pdcp_config_set_security(pdcp, eNB_id, UE_id, frame, eNB_flag, rb_id, lc_id, security_mode, kRRCenc, kRRCint, kUPenc);
+      break;
     default:
-        LOG_W(PDCP,"unknown action %d for the config request\n",action);
-        break;
+      DevParam(action, eNB_id, UE_id);
+      break;
   }
   return 0;
 }
 
-void pdcp_config_set_security(module_id_t module_id, u32 frame, u8 eNB_flag, rb_id_t rb_id,
+void pdcp_config_set_security(pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, rb_id_t rb_id,
                               u16 lc_id, u8 security_mode, u8 *kRRCenc, u8 *kRRCint, u8 *kUPenc)
 {
-    if ((security_mode >= 0) && (security_mode <= 0x77)) {
-        pdcp_array[module_id][rb_id].cipheringAlgorithm     = security_mode & 0x0f;
-        pdcp_array[module_id][rb_id].integrityProtAlgorithm = (security_mode>>4) & 0xf;
-        LOG_D(PDCP,"[%s %d][RB %02d] Set security mode : ACTION_SET_SECURITY_MODE: "
-              "Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
-              (eNB_flag) ? "eNB" : "UE", module_id, rb_id, frame,
-              pdcp_array[module_id][rb_id].cipheringAlgorithm,
-              pdcp_array[module_id][rb_id].integrityProtAlgorithm);
-        pdcp_array[module_id][rb_id].kRRCenc = kRRCenc;
-        pdcp_array[module_id][rb_id].kRRCint = kRRCint;
-        pdcp_array[module_id][rb_id].kUPenc  = kUPenc;
+  DevAssert(pdcp != NULL);
 
-        /* Activate security */
-        pdcp_array[module_id][rb_id].security_activated = 1;
+  if ((security_mode >= 0) && (security_mode <= 0x77)) {
+    pdcp->cipheringAlgorithm     = security_mode & 0x0f;
+    pdcp->integrityProtAlgorithm = (security_mode>>4) & 0xf;
+
+    if (eNB_flag == 0) {
+      LOG_D(PDCP,"[UE %d][RB %02d] Set security mode : ACTION_SET_SECURITY_MODE: "
+            "Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
+            UE_id, rb_id, frame, pdcp->cipheringAlgorithm, pdcp->integrityProtAlgorithm);
     } else {
-        LOG_D(PDCP,"[%s %d] bad security mode %d", security_mode);
+      LOG_D(PDCP,"[eNB %d][UE %d][RB %02d] Set security mode : ACTION_SET_SECURITY_MODE: "
+            "Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
+            eNB_id, UE_id, rb_id, frame, pdcp->cipheringAlgorithm, pdcp->integrityProtAlgorithm);
     }
+    pdcp->kRRCenc = kRRCenc;
+    pdcp->kRRCint = kRRCint;
+    pdcp->kUPenc  = kUPenc;
+
+    /* Activate security */
+    pdcp->security_activated = 1;
+  } else {
+    LOG_D(PDCP,"[%s %d] bad security mode %d", security_mode);
+  }
 }
 
-void rrc_pdcp_config_req (module_id_t module_id, u32 frame, u8_t eNB_flag, u32  action, rb_id_t rb_id, u8 security_mode){
+void rrc_pdcp_config_req (u8 eNB_id, u8 UE_id, u32 frame, u8_t eNB_flag, u32 action, rb_id_t rb_id, u8 security_mode)
+{
+  pdcp_t *pdcp;
+  module_id_t module_id;
+
+  if (eNB_flag == 0) {
+    pdcp = &pdcp_array_ue[UE_id][rb_id];
+    module_id = NB_eNB_INST + UE_id;
+  } else {
+    pdcp = &pdcp_array_eNB[eNB_id][UE_id][rb_id];
+    module_id = eNB_id;
+  }
 
   /*
      * Initialize sequence number state variables of relevant PDCP entity
      */
   switch (action) {
-  case ACTION_ADD:
-    pdcp_array[module_id][rb_id].instanciated_instance = module_id + 1;
-    
-    pdcp_array[module_id][rb_id].next_pdcp_tx_sn = 0;
-    pdcp_array[module_id][rb_id].next_pdcp_rx_sn = 0;
-    pdcp_array[module_id][rb_id].tx_hfn = 0;
-    pdcp_array[module_id][rb_id].rx_hfn = 0;
-    /* SN of the last PDCP SDU delivered to upper layers */
-    pdcp_array[module_id][rb_id].last_submitted_pdcp_rx_sn = 4095;
+    case ACTION_ADD:
+      pdcp->instanciated_instance = 1;
 
-    if ( (rb_id % NB_RB_MAX) < DTCH) // SRB
-      pdcp_array[module_id][rb_id].seq_num_size = 5;
-    else // DRB
-      pdcp_array[module_id][rb_id].seq_num_size = 12;
-    pdcp_array[module_id][rb_id].first_missing_pdu = -1;
-    LOG_D(PDCP,"[%s %d] Config request : Action ADD: Frame %d radio bearer id %d configured\n",
-          (eNB_flag) ? "eNB" : "UE", module_id, frame, rb_id);
-    LOG_D(PDCP,  "[MSC_NEW][FRAME %05d][PDCP][MOD %02d][RB %02d]\n", frame, module_id,rb_id);
-    break;
+      pdcp->next_pdcp_tx_sn = 0;
+      pdcp->next_pdcp_rx_sn = 0;
+      pdcp->tx_hfn = 0;
+      pdcp->rx_hfn = 0;
+      /* SN of the last PDCP SDU delivered to upper layers */
+      pdcp->last_submitted_pdcp_rx_sn = 4095;
+
+      if (rb_id < DTCH) { // SRB
+        pdcp->seq_num_size = 5;
+      } else { // DRB
+        pdcp->seq_num_size = 12;
+      }
+      pdcp->first_missing_pdu = -1;
+      LOG_D(PDCP,"[%s %d] Config request : Action ADD: Frame %d radio bearer id %d configured\n",
+            (eNB_flag) ? "eNB" : "UE", module_id, frame, rb_id);
+      LOG_D(PDCP,  "[MSC_NEW][FRAME %05d][PDCP][MOD %02d][RB %02d]\n", frame, module_id,rb_id);
+      break;
     case ACTION_MODIFY:
-    break;
+      break;
     case ACTION_REMOVE:
-    pdcp_array[module_id][rb_id].instanciated_instance = 0;
-    pdcp_array[module_id][rb_id].next_pdcp_tx_sn = 0;
-    pdcp_array[module_id][rb_id].next_pdcp_rx_sn = 0;
-    pdcp_array[module_id][rb_id].tx_hfn = 0;
-    pdcp_array[module_id][rb_id].rx_hfn = 0;
-    pdcp_array[module_id][rb_id].last_submitted_pdcp_rx_sn = 4095;
-    pdcp_array[module_id][rb_id].seq_num_size = 0;
-    pdcp_array[module_id][rb_id].first_missing_pdu = -1;
-    pdcp_array[module_id][rb_id].security_activated = 0;
-    LOG_D(PDCP,"[%s %d] Config request : ACTION_REMOVE: Frame %d radio bearer id %d configured\n",
-          (eNB_flag) ? "eNB" : "UE", module_id, frame, rb_id);
+      pdcp->instanciated_instance = 0;
+      pdcp->next_pdcp_tx_sn = 0;
+      pdcp->next_pdcp_rx_sn = 0;
+      pdcp->tx_hfn = 0;
+      pdcp->rx_hfn = 0;
+      pdcp->last_submitted_pdcp_rx_sn = 4095;
+      pdcp->seq_num_size = 0;
+      pdcp->first_missing_pdu = -1;
+      pdcp->security_activated = 0;
+      LOG_D(PDCP,"[%s %d] Config request : ACTION_REMOVE: Frame %d radio bearer id %d configured\n",
+            (eNB_flag) ? "eNB" : "UE", module_id, frame, rb_id);
 
-    break;
+      break;
     case ACTION_SET_SECURITY_MODE:
-    if ((security_mode >= 0 ) && (security_mode <=0x77)) {
-      pdcp_array[module_id][rb_id].cipheringAlgorithm= security_mode & 0x0f;
-      pdcp_array[module_id][rb_id].integrityProtAlgorithm = (security_mode>>4) & 0xf;
-      LOG_D(PDCP,"[%s %d] Set security mode : ACTION_SET_SECURITY_MODE: Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
-            (eNB_flag) ? "eNB" : "UE", module_id, frame,
-            pdcp_array[module_id][rb_id].cipheringAlgorithm,
-            pdcp_array[module_id][rb_id].integrityProtAlgorithm );
-    }else
-      LOG_D(PDCP,"[%s %d] bad security mode %d", security_mode);
-    break;
+      if ((security_mode >= 0) && (security_mode <= 0x77)) {
+        pdcp->cipheringAlgorithm= security_mode & 0x0f;
+        pdcp->integrityProtAlgorithm = (security_mode>>4) & 0xf;
+        LOG_D(PDCP,"[%s %d]Set security mode : ACTION_SET_SECURITY_MODE: Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
+              (eNB_flag) ? "eNB" : "UE", module_id, frame,
+              pdcp->cipheringAlgorithm,
+              pdcp->integrityProtAlgorithm );
+      } else {
+        LOG_D(PDCP,"[%s %d] bad security mode %d", security_mode);
+      }
+      break;
     default:
-    break;
+      DevParam(action, UE_id, eNB_id);
+      break;
   }
-
 }
 
 // TODO PDCP module initialization code might be removed
@@ -1050,8 +1179,7 @@ void
 }
 
 //-----------------------------------------------------------------------------
-void
-    pdcp_layer_init ()
+void pdcp_layer_init(void)
 {
   //-----------------------------------------------------------------------------
   unsigned int i, j, k;
@@ -1060,12 +1188,10 @@ void
     * Initialize SDU list
     */
   list_init(&pdcp_sdu_list, NULL);
-  for (i=0; i < MAX_MODULES; i++) {
-    for (j=0; j < NB_RB_MAX; j++) {
-      memset((void*)&pdcp_array[i][j], 0, sizeof(pdcp_t));
-    }
 
-  }
+  memset(pdcp_array_ue, 0, sizeof(pdcp_array_ue));
+  memset(pdcp_array_eNB, 0, sizeof(pdcp_array_eNB));
+
   for (i=0; i < MAX_MODULES; i++) { // MAX service
     for (j=0; j < 16*29; j++) { // max session
       memset((void*)&pdcp_mbms_array[i][j], 0, sizeof(pdcp_mbms_t));

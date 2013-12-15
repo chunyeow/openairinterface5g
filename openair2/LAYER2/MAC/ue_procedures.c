@@ -69,6 +69,8 @@
 # include "intertask_interface.h"
 #endif
 
+#include "assertions.h"
+
 #define DEBUG_HEADER_PARSING 1
 #define ENABLE_MAC_PAYLOAD_DEBUG
 
@@ -208,6 +210,8 @@ u32 ue_get_SR(u8 Mod_id,u32 frame,u8 eNB_id,u16 rnti, u8 subframe) {
   int gapOffset=-1;
   int T=0;
   //  int sfn=0;
+
+  DevCheck(Mod_id < NB_UE_INST, Mod_id, NB_UE_INST, 0);
 
   // determin the measurement gap
   LOG_D(MAC,"[UE %d][SR %x] Frame %d subframe %d PHY asks for SR (SR_COUNTER/dsr_TransMax %d/%d), SR_pending %d\n",
@@ -1011,8 +1015,9 @@ void ue_get_sdu(u8 Mod_id,u32 frame,u8 subframe, u8 eNB_index,u8 *ulsch_buffer,u
   u8 dcch_header_len_tmp=0, dtch_header_len_tmp=0;
   u8 bsr_header_len=0, bsr_ce_len=0, bsr_len=0; 
   u8 phr_header_len=0, phr_ce_len=0,phr_len=0;
-  u16 sdu_lengths[8];
-  u8 sdu_lcids[8],payload_offset=0,num_sdus=0;
+  u16 sdu_lengths[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  u8 sdu_lcids[8]    = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  u8 payload_offset=0,num_sdus=0;
   u8 ulsch_buff[MAX_ULSCH_PAYLOAD_BYTES];
   u16 sdu_length_total=0;
   BSR_SHORT bsr_short;

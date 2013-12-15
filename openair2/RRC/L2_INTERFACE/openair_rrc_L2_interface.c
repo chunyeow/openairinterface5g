@@ -107,35 +107,35 @@ s8 mac_rrc_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu,u16 Sdu_len,u8 eNB
 }
 
 /********************************************************************************************************************/
-void rlcrrc_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
+void rlcrrc_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
 /********************************************************************************************************************/
 #ifdef CELLULAR
   rrc_L2_rlc_data_ind_rx(Mod_id,Srb_id, Sdu_size, Buffer);
 #else  // now this is called from PDCP
   //rlcrrc_lite_data_ind(Mod_id,frame,eNB_flag,Srb_id,Sdu_size,Buffer);
-  rrc_lite_data_ind(Mod_id,frame,eNB_flag,Srb_id,Sdu_size,Buffer);
+  rrc_lite_data_ind(eNB_id, UE_id,frame,eNB_flag,Srb_id,Sdu_size,Buffer);
 #endif //CELLULAR
 }
 
 /********************************************************************************************************************/
-u8 pdcp_rrc_data_req(u8 module_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+u8 pdcp_rrc_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
                      unsigned int sdu_buffer_size, u8* sdu_buffer, u8 mode) {
   /********************************************************************************************************************/
 #ifdef CELLULAR
   return pdcp_data_req( module_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_buffer_size, sdu_buffer, mode);
 #else
-  return rrc_lite_data_req (module_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_buffer_size, sdu_buffer, mode);
+  return rrc_lite_data_req (eNB_id, UE_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_buffer_size, sdu_buffer, mode);
 #endif
 }
 
 /********************************************************************************************************************/
-void pdcp_rrc_data_ind( u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
+void pdcp_rrc_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag, unsigned int Srb_id, unsigned int Sdu_size,u8 *Buffer){
 /********************************************************************************************************************/
 #ifdef CELLULAR
   rrc_L2_rlc_data_ind_rx(Mod_id,Srb_id, Sdu_size, Buffer);
 #else  // now this is called from PDCP
   //rlcrrc_lite_data_ind(Mod_id,frame,eNB_flag,Srb_id,Sdu_size,Buffer);
-  rrc_lite_data_ind(Mod_id,frame,eNB_flag,Srb_id,Sdu_size,Buffer);
+  rrc_lite_data_ind(eNB_id, UE_id,frame,eNB_flag,Srb_id,Sdu_size,Buffer);
 #endif //CELLULAR
 }
 

@@ -52,20 +52,21 @@
 #    define MAX_RG                     2
 #endif
 
-#    define MAX_MANAGED_RG_PER_MOBILE  2
+#define MAX_MANAGED_RG_PER_MOBILE  2
 
-#    define DEFAULT_RAB_ID             3
-#    define NB_RB_MAX  11
-#    define NB_RAB_MAX 8 // 4
-#    define RAB_SHIFT1 9
-#    define RAB_SHIFT2 3
-#    define RAB_OFFSET  0x0007
-#    define RAB_OFFSET1 0x7E00
-#    define RAB_OFFSET2 0x01F8
-#    define DIR_OFFSET  0x8000
-#    define DIR_SHIFT   15
-#    define CH_OFFSET   0x0004
-#    define CH_SHIFT    2
+#define DEFAULT_RAB_ID 3
+#define NB_RB_MAX      11
+#define NB_RAB_MAX     8
+#define RAB_SHIFT1     9
+#define RAB_SHIFT2     3
+#define RAB_OFFSET     0x0007
+#define RAB_OFFSET1    0x7E00
+#define RAB_OFFSET2    0x01F8
+#define DIR_OFFSET     0x8000
+#define DIR_SHIFT      15
+#define CH_OFFSET      0x0004
+#define CH_SHIFT       2
+
 #ifdef MESH
 
 #    define MAX_RB_MOBILE              NB_RB_MAX  * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )

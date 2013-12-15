@@ -476,7 +476,7 @@ void mac_lite_sync_ind(u8 Mod_id,u8 Status){
 }
 
 //-------------------------------------------------------------------------------------------//
-u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
                      unsigned int sdu_size, u8* Buffer, u8 mode) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
@@ -497,26 +497,33 @@ u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 
     RRC_DCCH_DATA_REQ (message_p).sdu_size = sdu_size;
     RRC_DCCH_DATA_REQ (message_p).sdu_p = message_buffer;
     RRC_DCCH_DATA_REQ (message_p).mode = mode;
+    RRC_DCCH_DATA_REQ (message_p).eNB_index = eNB_id;
+    RRC_DCCH_DATA_REQ (message_p).ue_index = UE_id;
 
-    itti_send_msg_to_task (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, Mod_id, message_p);
+    itti_send_msg_to_task (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, eNB_flag ? eNB_id : NB_eNB_INST + UE_id, message_p);
     return TRUE; // TODO should be changed to a CNF message later, currently RRC lite does not used the returned value anyway.
 
   }
 #else
-  return pdcp_data_req (Mod_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_size, Buffer, mode);
+  return pdcp_data_req (eNB_id, UE_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_size, Buffer, mode);
 #endif
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
+void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
 //-------------------------------------------------------------------------------------------//
-  u8 UE_index=(Srb_id-1)/NB_RB_MAX;
   u8 DCCH_index = Srb_id % NB_RB_MAX;
+  u8_t Mod_id;
 
-  LOG_N(RRC,"[%s %d] Frame %d: received a DCCH %d message on SRB %d with Size %d\n",
-	(eNB_flag == 1)? "eNB": "UE", 
-	(eNB_flag == 1)? Mod_id : UE_index, 
-	frame, DCCH_index,Srb_id-1,sdu_size);
+  if (eNB_flag == 0) {
+    Mod_id = UE_id + NB_eNB_INST;
+    LOG_N(RRC, "[UE %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from eNB %d\n",
+          UE_id, frame, DCCH_index,Srb_id-1,sdu_size, eNB_id);
+  } else {
+    Mod_id = eNB_id;
+    LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %d\n",
+          eNB_id, frame, DCCH_index,Srb_id-1,sdu_size, UE_id);
+  }
 
 #if defined(ENABLE_ITTI)
   {
@@ -532,16 +539,17 @@ void rrc_lite_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag,u32 Srb_id, u3
     RRC_DCCH_DATA_IND (message_p).dcch_index = DCCH_index;
     RRC_DCCH_DATA_IND (message_p).sdu_size = sdu_size;
     RRC_DCCH_DATA_IND (message_p).sdu_p = message_buffer;
-    RRC_DCCH_DATA_IND (message_p).ue_index = UE_index;
+    RRC_DCCH_DATA_IND (message_p).ue_index = UE_id;
+    RRC_DCCH_DATA_IND (message_p).eNB_index = eNB_id;
 
     itti_send_msg_to_task ((eNB_flag == 1) ? TASK_RRC_ENB : TASK_RRC_UE, Mod_id, message_p);
   }
 #else
   if (eNB_flag ==1) {
-    rrc_eNB_decode_dcch(Mod_id,frame,DCCH_index,UE_index,Buffer,sdu_size);
+    rrc_eNB_decode_dcch(eNB_id,frame,DCCH_index,UE_id,Buffer,sdu_size);
   }
   else {
-    rrc_ue_decode_dcch(Mod_id-NB_eNB_INST,frame,DCCH_index,Buffer,UE_index);
+    rrc_ue_decode_dcch(UE_id,frame,DCCH_index,Buffer,eNB_id);
   }
 #endif
 }

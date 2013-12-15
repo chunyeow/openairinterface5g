@@ -24,6 +24,8 @@ typedef struct RrcDcchDataReq_s {
   uint32_t sdu_size;
   uint8_t *sdu_p;
   uint8_t mode;
+  uint8_t ue_index;
+  uint8_t eNB_index;
 } RrcDcchDataReq;
 
 typedef struct RrcDcchDataInd_s {
@@ -32,6 +34,7 @@ typedef struct RrcDcchDataInd_s {
   uint32_t sdu_size;
   uint8_t *sdu_p;
   uint8_t ue_index;
+  uint8_t eNB_index;
 } RrcDcchDataInd;
 
 #endif /* PDCP_MESSAGES_TYPES_H_ */

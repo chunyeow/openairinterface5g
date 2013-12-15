@@ -156,7 +156,7 @@ BOOL pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer
 int pdcp_netlink_dequeue_element(uint8_t eNB_flag, uint8_t UE_index, uint8_t eNB_index,
                                  struct pdcp_netlink_element_s **data);
 
-void pdcp_config_set_security(module_id_t module_id, u32 frame, u8 eNB_flag, rb_id_t rb_id,
+void pdcp_config_set_security(pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, rb_id_t rb_id,
                               u16 lc_id, u8 security_mode, u8 *kRRCenc, u8 *kRRCint, u8 *kUPenc);
 
 #if defined(ENABLE_SECURITY)

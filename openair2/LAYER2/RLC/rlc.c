@@ -32,7 +32,10 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "mem_block.h"
 #include "../MAC/extern.h"
 #include "UTIL/LOG/log.h"
-extern void pdcp_data_ind (module_id_t module_idP, u32_t frame, u8_t eNB_flag, u8_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sduP, u8 is_data_plane);
+
+#include "assertions.h"
+
+extern void pdcp_data_ind (u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sduP, u8 is_data_plane);
 
 //#define DEBUG_RLC_PDCP_INTERFACE
 
@@ -54,7 +57,7 @@ void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, uns
   for (octet_index = 0; octet_index < sizeP; octet_index++) {
     if ((octet_index % 16) == 0){
       if (octet_index != 0) {
-          LOG_T(componentP, " |\n");
+        LOG_T(componentP, " |\n");
       }
       LOG_T(componentP, " %04d |", octet_index);
     }
@@ -284,12 +287,23 @@ rlc_op_status_t rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t eNB_
   rb_id_t      mbms_rb_id = 0;
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
-  LOG_D(RLC,"rlc_data_req: module_idP %d (%d), rb_idP %d (%d), muip %d, confirmP %d, sud_sizeP %d, sduP %p\n",module_idP,MAX_MODULES,rb_idP,MAX_RAB,muiP,confirmP,sdu_sizeP,sduP);
+  LOG_D(RLC,"rlc_data_req: module_idP %d (%d), rb_idP %d (%d), muip %d, confirmP %d, sud_sizeP %d, sduP %p\n",
+      module_idP,MAX_MODULES,rb_idP,MAX_RAB,muiP,confirmP,sdu_sizeP,sduP);
 #endif
-  if ((module_idP >= 0) && (module_idP < MAX_MODULES) && (MBMS_flagP == 0)) {
-      if ((rb_idP >= 0) && (rb_idP < MAX_RAB)) {
-          if (sduP != NULL) {
-              if (sdu_sizeP > 0) {
+#ifdef Rel10
+  DevCheck((module_idP < MAX_MODULES), module_idP, MAX_MODULES, MBMS_flagP);
+#else
+  DevCheck((module_idP < MAX_MODULES) && (MBMS_flagP == 0), module_idP, MAX_MODULES, MBMS_flagP);
+#endif
+  DevCheck(rb_idP < MAX_RAB, rb_idP, MAX_RB, 0);
+  DevAssert(sduP != NULL);
+  DevCheck(sdu_sizeP > 0, sdu_sizeP, 0, 0);
+
+#ifndef Rel10
+  DevCheck(MBMS_flagP == 0, MBMS_flagP, 0, 0);
+#endif
+
+  if (MBMS_flagP == 0) {
                   LOG_D(RLC, "[FRAME %05d][RLC][MOD %02d][RB %02d] Display of rlc_data_req:\n",
                                  frame, module_idP, rb_idP);
                   rlc_util_print_hex_octets(RLC, (unsigned char*)sduP->data, sdu_sizeP);
@@ -300,8 +314,8 @@ rlc_op_status_t rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t eNB_
                   switch (rlc[module_idP].m_rlc_pointer[rb_idP].rlc_type) {
                     case RLC_NONE:
                         free_mem_block(sduP);
+      LOG_E(RLC, "Received RLC_NONE as rlc_type for module_idP %d, rb_id %d, eNB_flag %d\n", module_idP, rb_idP, eNB_flagP);
                         return RLC_OP_STATUS_BAD_PARAMETER;
-                        break;
 
                     case RLC_AM:
 #ifdef DEBUG_RLC_DATA_REQ
@@ -415,23 +429,9 @@ rlc_op_status_t rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t eNB_
                         return RLC_OP_STATUS_INTERNAL_ERROR;
 
                   }
-              } else {
-                free_mem_block(sduP);
-                //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : SDU size is 0\n", __FILE__, __LINE__);
-                return RLC_OP_STATUS_BAD_PARAMETER;
-              }
-          } else {
-                free_mem_block(sduP);
-                //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : SDU is NULL\n", __FILE__, __LINE__);
-                return RLC_OP_STATUS_BAD_PARAMETER;
-          }
-      } else {
-          free_mem_block(sduP);
-          //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : parameter rb_id out of bounds :%d\n", __FILE__, __LINE__, rb_idP);
-          return RLC_OP_STATUS_BAD_PARAMETER;
-      }
+
 #ifdef Rel10
-  } else if ((module_idP >= 0) && (module_idP < MAX_MODULES) && (MBMS_flagP == 1)) {
+  } else { /* MBMS_flag != 0 */
       if (rb_idP < (maxSessionPerPMCH * maxServiceCount)) {
           if (eNB_flagP) {
               mbms_rb_id = rb_idP + (maxDRB + 3) * MAX_MOBILES_PER_RG;
@@ -480,22 +480,41 @@ rlc_op_status_t rlc_data_req     (module_id_t module_idP, u32_t frame, u8_t eNB_
       } else {
 	return RLC_OP_STATUS_BAD_PARAMETER;
       }
-#endif
-  } else {
+  }
+#else
+  } else {/* MBMS_flag != 0 */
     free_mem_block(sduP);
+    LOG_E(RLC, "MBMS_flag != 0 while Rel10 is not defined...\n");
     //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : parameter module_id out of bounds :%d\n", __FILE__, __LINE__, module_idP);
     return RLC_OP_STATUS_BAD_PARAMETER;
   }
+#endif
 }
 
 //-----------------------------------------------------------------------------
-void rlc_data_ind     (module_id_t module_idP, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sduP, boolean_t is_data_planeP) {
+void rlc_data_ind     (module_id_t module_idP, u8_t eNB_id, u8_t UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sduP, boolean_t is_data_planeP) {
 //-----------------------------------------------------------------------------
+  char *from_str;
+  char *to_str;
+  u8_t from_value;
+  u8_t to_value;
+
+  if (eNB_flag == 0) {
+    from_str = "UE";
+    to_str = "eNB";
+    from_value = UE_id;
+    to_value = eNB_id;
+  } else {
+    from_str = "eNB";
+    to_str = "UE";
+    from_value = eNB_id;
+    to_value = UE_id;
+  }
     LOG_D(RLC, "[FRAME %05d][RLC][MOD %02d][RB %02d] Display of rlc_data_ind:\n", frame, module_idP, rb_idP);
     rlc_util_print_hex_octets(RLC, (unsigned char*)sduP->data, sdu_sizeP);
     //check_mem_area();
-    // now demux is done at PDCP 
-    //  if ((is_data_planeP)) { 
+  // now demux is done at PDCP
+  //  if ((is_data_planeP)) {
 #ifdef DEBUG_RLC_PDCP_INTERFACE
       msg("[RLC] TTI %d, INST %d : Receiving SDU (%p) of size %d bytes to Rb_id %d\n",
 	  frame, module_idP,
@@ -505,16 +524,19 @@ void rlc_data_ind     (module_id_t module_idP, u32_t frame, u8_t eNB_flag, u8_t 
 #endif //DEBUG_RLC_PDCP_INTERFACE
       switch (rlc[module_idP].m_rlc_pointer[rb_idP].rlc_type) {
          case RLC_AM:
-             LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_AM][MOD %02d][RB %02d][--- RLC_DATA_IND/%d Bytes --->][PDCP][MOD %02d][RB %02d]\n",frame, module_idP,rb_idP,sdu_sizeP, module_idP,rb_idP);
+    LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_AM][%s %02d][RB %02d][--- RLC_DATA_IND/%d Bytes --->][PDCP][%s %02d][RB %02d]\n",
+        frame, from_str, from_value, rb_idP, sdu_sizeP, to_str, to_value, rb_idP);
              break;
          case RLC_UM:
-             LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_UM][MOD %02d][RB %02d][--- RLC_DATA_IND/%d Bytes --->][PDCP][MOD %02d][RB %02d]\n",frame, module_idP,rb_idP,sdu_sizeP, module_idP,rb_idP);
+    LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_UM][%s %02d][RB %02d][--- RLC_DATA_IND/%d Bytes --->][PDCP][%s %02d][RB %02d]\n",
+        frame, from_str, from_value, rb_idP, sdu_sizeP, to_str, to_value, rb_idP);
              break;
          case RLC_TM:
-             LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_TM][MOD %02d][RB %02d][--- RLC_DATA_IND/%d Bytes --->][PDCP][MOD %02d][RB %02d]\n",frame, module_idP,rb_idP,sdu_sizeP, module_idP,rb_idP);
+    LOG_D(RLC, "[MSC_MSG][FRAME %05d][RLC_TM][%s %02d][RB %02d][--- RLC_DATA_IND/%d Bytes --->][PDCP][%s %02d][RB %02d]\n",
+        frame, from_str, from_value, rb_idP, sdu_sizeP, to_str, to_value, rb_idP);
              break;
       }
-      pdcp_data_ind (module_idP, frame, eNB_flag, MBMS_flagP, rb_idP, sdu_sizeP, sduP, is_data_planeP);
+  pdcp_data_ind (eNB_id, UE_id, frame, eNB_flag, MBMS_flagP, rb_idP % NB_RB_MAX, sdu_sizeP, sduP, is_data_planeP);
 }
 //-----------------------------------------------------------------------------
 void rlc_data_conf     (module_id_t module_idP, u32_t frame, u8_t eNB_flag, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP, boolean_t is_data_planeP) {
@@ -540,7 +562,7 @@ void rlc_data_conf     (module_id_t module_idP, u32_t frame, u8_t eNB_flag, rb_i
 }
 //-----------------------------------------------------------------------------
 int
-rlc_module_init ()
+rlc_module_init (void)
 {
 //-----------------------------------------------------------------------------
    int i;
@@ -557,19 +579,19 @@ rlc_module_init ()
 }
 //-----------------------------------------------------------------------------
 void
-rlc_module_cleanup ()
+rlc_module_cleanup (void)
 //-----------------------------------------------------------------------------
 {
 }
 //-----------------------------------------------------------------------------
 void
-rlc_layer_init ()
+rlc_layer_init (void)
 {
 //-----------------------------------------------------------------------------
 }
 //-----------------------------------------------------------------------------
 void
-rlc_layer_cleanup ()
+rlc_layer_cleanup (void)
 //-----------------------------------------------------------------------------
 {
 }

@@ -132,11 +132,11 @@ int rrc_rg_send_to_srb_rlc (int UE_id, int rb_id, char * data_buffer, int data_l
     case RRC_SRB0_ID: //CCCH
     case RRC_SRB1_ID: //DCCH-UM
       //result = rrc_rlc_data_req(Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_NO,data_length,tx_data);
-      if (pdcp_data_req(Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_NO,data_length,tx_data,1))
+      if (pdcp_data_req(0, Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_NO,data_length,tx_data,1))
         result = 1;
       break;
     case RRC_SRB2_ID: //DCCH-AM
-      if (pdcp_data_req(Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_YES,data_length,tx_data,1))
+      if (pdcp_data_req(0, Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_YES,data_length,tx_data,1))
         result = 1;
       break;
     case RRC_SRB3_ID: //DCCH-AM - NAS
@@ -462,7 +462,7 @@ void rrc_rg_config_LTE_srb1 (unsigned char Mod_id){
   msg("[eNB %d] CALLING PDCP + RLC CONFIG SRB1 (rbid %d) for UE %d\n", Mod_id,srb1,UE_index);
 /*  rrc_pdcp_config_req (Mod_id, protocol_bs->rrc.current_SFN, eNB_flag, ACTION_ADD, srb1);
   rrc_rlc_config_req(Mod_id,protocol_bs->rrc.current_SFN,eNB_flag,ACTION_ADD,srb1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);*/
-  rrc_pdcp_config_asn1_req(Mod_id,protocol_bs->rrc.current_SFN,eNB_flag,UE_index,
+  rrc_pdcp_config_asn1_req(Mod_id,UE_index,protocol_bs->rrc.current_SFN,eNB_flag,
       protocol_bs->rrc.rg_rb_asn1.SRB_configList[UE_index],
       (DRB_ToAddModList_t*)NULL,
       (DRB_ToReleaseList_t*)NULL
@@ -538,7 +538,7 @@ void rrc_rg_config_LTE_srb2 (unsigned char Mod_id){
   msg("[eNB %d] CALLING PDCP + RLC CONFIG SRB2 (rbid %d) for UE %d\n", Mod_id,srb2,UE_index);
 /*  rrc_pdcp_config_req (Mod_id, protocol_bs->rrc.current_SFN, eNB_flag, ACTION_ADD, srb2);
   rrc_rlc_config_req(Mod_id,protocol_bs->rrc.current_SFN,eNB_flag,ACTION_ADD,srb2,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);*/
-  rrc_pdcp_config_asn1_req(Mod_id,protocol_bs->rrc.current_SFN,eNB_flag,UE_index,
+  rrc_pdcp_config_asn1_req(Mod_id,UE_index,protocol_bs->rrc.current_SFN,eNB_flag,
       protocol_bs->rrc.rg_rb_asn1.SRB_configList[UE_index],
       (DRB_ToAddModList_t*)NULL,
       (DRB_ToReleaseList_t*)NULL
@@ -628,7 +628,7 @@ void rrc_rg_config_LTE_default_drb (unsigned char Mod_id){
   //                         (UE_index * NB_RB_MAX) + (int)*protocol_bs->rrc.rg_rb_asn1.DRB1_config->logicalChannelIdentity,
   //                         RADIO_ACCESS_BEARER,Rlc_info_um);
 
-      rrc_pdcp_config_asn1_req(Mod_id,protocol_bs->rrc.current_SFN,eNB_flag,UE_index,
+      rrc_pdcp_config_asn1_req(Mod_id,UE_index,protocol_bs->rrc.current_SFN,eNB_flag,
           (SRB_ToAddModList_t*)NULL,
           protocol_bs->rrc.rg_rb_asn1.DRB_configList[UE_index],
           (DRB_ToReleaseList_t*)NULL

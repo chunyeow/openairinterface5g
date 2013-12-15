@@ -23,7 +23,8 @@
 #endif
 
 
-extern unsigned char pdcp_data_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rab_id, u32 muiP, u32 confirmP, sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 is_data_pdu);
+extern unsigned char pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP, \
+    sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode);
 
 
 inline NwGtpv1uRcT gtpv1u_eNB_log_request(NwGtpv1uLogMgrHandleT hLogMgr,
@@ -60,7 +61,8 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
             GTPU_DEBUG("Received T-PDU from gtpv1u stack %u with size %d",
                        pUlpApi->apiInfo.recvMsgInfo.teid, buffer_len);
 
-            pdcp_data_req(0, // module_id,
+            pdcp_data_req(0, // eNB_idx,
+                0, // UE idx
             		0, // frame
             		1, // enb flag
             		5, // rb id

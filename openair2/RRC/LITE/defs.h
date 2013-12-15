@@ -514,7 +514,7 @@ s32  rrc_ue_establish_drb(u8 Mod_id,u32 frame,u8 eNB_index,struct DRB_ToAddMod *
     \param eNB_index Index of corresponding CH/eNB
     \param mobilityControlInfo Pointer to mobilityControlInfo
 */
-void rrc_ue_process_mobilityControlInfo(u8 Mod_id,u32 frame, u8 eNB_index,struct MobilityControlInfo *mobilityControlInfo);
+void rrc_ue_process_mobilityControlInfo(u8 eNB_index, u8 UE_id, u32 frame, struct MobilityControlInfo *mobilityControlInfo);
 
 /** \brief Process a measConfig Message and configure PHY/MAC
     \param Mod_id Instance of UE on which to act
@@ -594,10 +594,10 @@ s8 mac_rrc_lite_data_ind( u8 Mod_id,  u32 frame, unsigned short Srb_id, u8 *Sdu,
 
 void mac_sync_ind( u8 Mod_id, u8 status);
 
-u8 rrc_lite_data_req(u8 Mod_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
+u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
                      unsigned int sdu_size, u8* Buffer, u8 mode);
 
-void rrc_lite_data_ind(module_id_t Mod_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
+void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
 
 void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index);
 
