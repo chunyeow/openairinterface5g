@@ -45,6 +45,7 @@
 
 int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
 {
+    itti_wait_ready(1);
 # ifdef OPENAIR2
     {
 #   if defined(ENABLE_USE_MME)
@@ -110,6 +111,8 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
             return -1;
         }
     }
+    itti_wait_ready(0);
+
     return 0;
 }
 #endif

@@ -171,6 +171,11 @@ int itti_create_task(task_id_t task_id,
 void itti_set_task_real_time(task_id_t task_id);
 #endif
 
+/** \brief Indicates to ITTI if newly created tasks should wait for all tasks to be ready
+ * \param wait_tasks non 0 to make new created tasks to wait, 0 to let created tasks to run
+ **/
+void itti_wait_ready(int wait_tasks);
+
 /** \brief Mark the task as in ready state
  * \param task_id task to mark as ready
  **/
