@@ -173,15 +173,15 @@ void init_oai_emulation() {
 	oai_emulation.environment_system_config.fading.shadowing.inter_site_correlation = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.number_of_sectors = 1;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.beam_width_dB = 1.13;
+	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[0] = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[1] = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[2] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[3] = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_gain_dBi = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.tx_power_dBm = 15;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.rx_noise_level_dB = 0;
+	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[0] = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[1] = 0;
 	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[2] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[3] = 0;
 	oai_emulation.environment_system_config.antenna.UE_antenna.antenna_gain_dBi = 0;
 	oai_emulation.environment_system_config.antenna.UE_antenna.tx_power_dBm = 20;
 	oai_emulation.environment_system_config.antenna.UE_antenna.rx_noise_level_dB = 0; // noise figure 
@@ -364,22 +364,22 @@ void init_oai_emulation() {
   for (i=0; i < NUMBER_OF_eNB_MAX+NUMBER_OF_UE_MAX; i++)
     oai_emulation.info.oai_ifup[i]=0;
   
-   oai_emulation.info.nb_master =0;
-   oai_emulation.info.ethernet_id=0;
-   oai_emulation.info.multicast_group=0; 
-   oai_emulation.info.multicast_ifname=NULL;
-   oai_emulation.info.g_log_level= LOG_INFO;
-   oai_emulation.info.g_log_verbosity= "medium";
+  oai_emulation.info.nb_master =0;
+  oai_emulation.info.ethernet_id=0;
+  oai_emulation.info.multicast_group=0;
+  oai_emulation.info.multicast_ifname=NULL;
+  oai_emulation.info.g_log_level= LOG_INFO;
+  oai_emulation.info.g_log_verbosity = 0x15;
+  oai_emulation.info.g_log_verbosity_option = "medium";
     
-    oai_emulation.info.frame_type=1;
-    oai_emulation.info.tdd_config=3;
-    oai_emulation.info.tdd_config_S=0;
-    oai_emulation.info.extended_prefix_flag=0;
-    oai_emulation.info.N_RB_DL=25;
-    oai_emulation.info.transmission_mode=2;
+  oai_emulation.info.frame_type=1;
+  oai_emulation.info.tdd_config=3;
+  oai_emulation.info.tdd_config_S=0;
+  oai_emulation.info.extended_prefix_flag=0;
+  oai_emulation.info.N_RB_DL=25;
+  oai_emulation.info.transmission_mode=2;
 
-    oai_emulation.profile = "EURECOM";
-	
+  oai_emulation.profile = "EURECOM";
 }
 
 
@@ -436,12 +436,12 @@ int olg_config() {
   // fix me: 
   oai_emulation.info.g_log_level = ((oai_emulation.info.ocg_enabled == 1) && (ocg_log_level != -1)) ? ocg_log_level : oai_emulation.info.g_log_level;
   oai_emulation.info.g_log_verbosity = (((oai_emulation.info.ocg_enabled == 1) && (ocg_log_verbosity != -1)) ? ocg_log_verbosity : 
-					map_str_to_int(log_verbosity_names, oai_emulation.info.g_log_verbosity));
+					map_str_to_int(log_verbosity_names, oai_emulation.info.g_log_verbosity_option));
   
-  LOG_N(EMU,"global log level is set to (%s,%d) with vebosity (%s, 0x%x) and frequency %d\n", 
+  LOG_N(EMU, "global log level is set to (%s,%d) with vebosity (%s, 0x%x) and frequency %d\n",
 	map_int_to_str (log_level_names, oai_emulation.info.g_log_level), 
 	oai_emulation.info.g_log_level,
-	map_int_to_str (log_verbosity_names,oai_emulation.info.g_log_verbosity),
+	map_int_to_str (log_verbosity_names, oai_emulation.info.g_log_verbosity),
 	oai_emulation.info.g_log_verbosity,
 	oai_emulation.emulation_config.log_emu.interval );
   set_glog(oai_emulation.info.g_log_level, oai_emulation.info.g_log_verbosity ); //g_glog
@@ -610,7 +610,7 @@ int ocg_config_topo() {
 
 
 
-int ocg_config_app(){
+int ocg_config_app(void){
 
   char colon[] = ":";
   char comma[] = ",";
@@ -619,8 +619,8 @@ int ocg_config_app(){
   char *check_format1;
   char *check_format2;
   char *check_format1_dst;
-  char *source_id_start;
-  char *source_id_end;
+  char *source_id_start = NULL;
+  char *source_id_end = NULL;
   char *destination_id_start;
   char *destination_id_end;
   int sid_start;
@@ -1003,11 +1003,11 @@ g_otg->application_idx[source_id_index][destination_id_index]+=1;
     }
     init_predef_traffic(oai_emulation.info.nb_ue_local, oai_emulation.info.nb_enb_local);
     
-    for (i=0; i<16; i++){//maxServiceCount
-      for (j=0; j<28; j++){ // maxSessionPerPMCH
-	for (k=0; k<MAX_NUM_APPLICATION; k++){ 
-	  g_otg_multicast->application_type[i][j][k] = map_str_to_int( otg_multicast_app_type_names, oai_emulation.info.otg_traffic);
-	}
+    for (i=0; i<NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX; i++){//maxServiceCount
+      for (j=0; j<NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX; j++){ // maxSessionPerPMCH
+        for (k=0; k<MAX_NUM_APPLICATION; k++){
+          g_otg_multicast->application_type[i][j][k] = map_str_to_int( otg_multicast_app_type_names, oai_emulation.info.otg_traffic);
+        }
       }
     }
     init_predef_multicast_traffic();

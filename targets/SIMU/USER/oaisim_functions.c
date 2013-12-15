@@ -362,7 +362,7 @@ void get_simulation_options(int argc, char *argv[]) {
       oai_emulation.info.g_log_level = atoi(optarg);
       break;
    case 'Y':
-      oai_emulation.info.g_log_verbosity = optarg;
+      oai_emulation.info.g_log_verbosity_option = strdup(optarg);
       break;
     case 'c':
       strcpy(oai_emulation.info.local_server, optarg);
