@@ -1,30 +1,30 @@
 /*******************************************************************************
  * 
- E *urecom OpenAirInterface
- Copyright(c) 1999 - 2011 Eurecom
- 
- This program is free software; you can redistribute it and/or modify it
- under the terms and conditions of the GNU General Public License,
- version 2, as published by the Free Software Foundation.
- 
- This program is distributed in the hope it will be useful, but WITHOUT
- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- more details.
- 
- You should have received a copy of the GNU General Public License along with
- this program; if not, write to the Free Software Foundation, Inc.,
- 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
- 
- The full GNU General Public License is included in this distribution in
- the file called "COPYING".
- 
- Contact Information
- Openair Admin: openair_admin@eurecom.fr
- Openair Tech : openair_tech@eurecom.fr
- Forums       : http://forums.eurecom.fsr/openairinterface
- Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
- 
+ * Eurecom OpenAirInterface 1
+ * Copyright(c) 1999 - 2012 Eurecom
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * The full GNU General Public License is included in this distribution in
+ * the file called "COPYING".
+ *
+ * Contact Information
+ * Openair Admin: openair_admin@eurecom.fr
+ * Openair Tech : openair_tech@eurecom.fr
+ * Forums       : http://forums.eurecom.fsr/openairinterface
+ * Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+ *
  *******************************************************************************/
 
 /*! \file vcd_signal_dumper.c
@@ -51,10 +51,8 @@
 #include <unistd.h>
 #include <assert.h>
 
+#include "assertions.h"
 #include "signals.h"
-#if defined(ENABLE_VCD_FIFO)
-# include "liblfds611.h"
-#endif
 
 #include "vcd_signal_dumper.h"
 
@@ -189,17 +187,20 @@ RTIME start;
 
 #if defined(ENABLE_VCD_FIFO)
 
-# define VCD_STACK_NB_ELEMENTS (2 * 1024 * 1024)
+# define VCD_POLL_DELAY         (500)           // Poll delay in micro-seconds
+# define VCD_MAX_WAIT_DELAY     (200 * 1000)    // Maximum data ready wait delay in micro-seconds
+# define VCD_FIFO_NB_ELEMENTS   (1 << 20)       // Must be a power of 2
+# define VCD_FIFO_MASK          (VCD_FIFO_NB_ELEMENTS - 1)
 
-typedef struct {
+typedef struct vcd_queue_user_data_s {
     uint32_t log_id;
     vcd_signal_dumper_modules module;
-    union {
-        struct {
+    union data_u {
+        struct function_s {
             vcd_signal_dump_functions function_name;
             vcd_signal_dump_in_out    in_out;
         } function;
-        struct {
+        struct variable_s {
             vcd_signal_dump_variables variable_name;
             unsigned long value;
         } variable;
@@ -208,7 +209,15 @@ typedef struct {
     long long unsigned int time;
 } vcd_queue_user_data_t;
 
-struct lfds611_queue_state *vcd_queue = NULL;
+typedef struct vcd_fifo_s {
+    vcd_queue_user_data_t user_data[VCD_FIFO_NB_ELEMENTS];
+
+    volatile uint32_t write_index;
+    volatile uint32_t read_index;
+} vcd_fifo_t;
+
+vcd_fifo_t vcd_fifo;
+
 pthread_t vcd_dumper_thread;
 #endif
 
@@ -267,11 +276,28 @@ static void uint64_to_binary(uint64_t value, char *binary)
 }
 
 #if defined(ENABLE_VCD_FIFO)
+inline static uint32_t vcd_get_write_index(void)
+{
+    uint32_t write_index;
+    uint32_t read_index;
+
+    /* Get current write index and increment it (atomic operation) */
+    write_index = __sync_fetch_and_add(&vcd_fifo.write_index, 1);
+    /* Wrap index */
+    write_index &= VCD_FIFO_MASK;
+
+    /* Check FIFO overflow */
+    DevCheck((read_index = vcd_fifo.read_index, ((write_index + 1) & VCD_FIFO_MASK) != read_index), write_index, read_index, 0);
+
+    return write_index;
+}
+
 void *vcd_dumper_thread_rt(void *args)
 {
     vcd_queue_user_data_t *data;
     char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
     struct sched_param sched_param;
+    uint32_t data_ready_wait;
 
 # if defined(ENABLE_ITTI)
     signal_mask();
@@ -281,10 +307,20 @@ void *vcd_dumper_thread_rt(void *args)
     sched_setscheduler(0, SCHED_FIFO, &sched_param);
 
     while(1) {
-        if (lfds611_queue_dequeue(vcd_queue, (void **) &data) == 0) {
+        if (vcd_fifo.read_index == (vcd_fifo.write_index & VCD_FIFO_MASK)) {
             /* No element -> sleep a while */
-            usleep(500);
+            usleep(VCD_POLL_DELAY);
         } else {
+            data = &vcd_fifo.user_data[vcd_fifo.read_index];
+            data_ready_wait = 0;
+            while (data->module == VCD_SIGNAL_DUMPER_MODULE_FREE)
+            {
+                DevCheck(data_ready_wait < VCD_MAX_WAIT_DELAY, data_ready_wait, VCD_MAX_WAIT_DELAY, 0);
+
+                /* data is not yet ready, wait for it to be completed */
+                data_ready_wait += VCD_POLL_DELAY;
+                usleep(VCD_POLL_DELAY);
+            }
             switch (data->module) {
                 case VCD_SIGNAL_DUMPER_MODULE_VARIABLES:
                     if (vcd_fd != NULL)
@@ -298,6 +334,7 @@ void *vcd_dumper_thread_rt(void *args)
                                 eurecomVariablesNames[variable_name]);
                     }
                     break;
+
                 case VCD_SIGNAL_DUMPER_MODULE_FUNCTIONS:
                     if (vcd_fd != NULL)
                     {
@@ -315,10 +352,13 @@ void *vcd_dumper_thread_rt(void *args)
                         fflush(vcd_fd);
                     }
                     break;
+
                 default:
+                    DevParam(data->module, 0, 0);
                     break;
             }
-            free(data);
+            data->module = VCD_SIGNAL_DUMPER_MODULE_FREE;
+            vcd_fifo.read_index = (vcd_fifo.read_index + 1) & VCD_FIFO_MASK;
         }
     }
     return NULL;
@@ -345,14 +385,10 @@ void vcd_signal_dumper_init(char *filename)
         vcd_signal_dumper_create_header();
 
 #if defined(ENABLE_VCD_FIFO)
-        fprintf(stderr, "[VCD] Creating new stack for inter-thread\n");
+        vcd_fifo.write_index = 0;
+        vcd_fifo.read_index = 0;
 
-        /* Creating wait-free stack between OAI and dumper thread */
-        if (lfds611_queue_new(&vcd_queue, VCD_STACK_NB_ELEMENTS) < 0) {
-            fprintf(stderr, "vcd_signal_dumper_init: Failed to create stack\n");
-            ouput_vcd = 0;
-            return;
-        }
+        fprintf(stderr, "[VCD] Creating dumper thread\n");
 
         if (pthread_create(&vcd_dumper_thread, NULL, vcd_dumper_thread_rt, NULL) < 0)
         {
@@ -490,18 +526,15 @@ void vcd_signal_dumper_dump_variable_by_name(vcd_signal_dump_variables variable_
 {
     if (ouput_vcd) {
 #if defined(ENABLE_VCD_FIFO)
-        vcd_queue_user_data_t *new_data;
+        uint32_t write_index = vcd_get_write_index();
 
         assert(variable_name < VCD_SIGNAL_DUMPER_VARIABLES_END);
         assert(variable_name >= 0);
 
-        new_data = malloc(sizeof(vcd_queue_user_data_t));
-
-        new_data->module = VCD_SIGNAL_DUMPER_MODULE_VARIABLES;
-        new_data->time = vcd_get_time();
-        new_data->data.variable.variable_name = variable_name;
-        new_data->data.variable.value = value;
-        lfds611_queue_enqueue(vcd_queue, new_data);
+        vcd_fifo.user_data[write_index].time = vcd_get_time();
+        vcd_fifo.user_data[write_index].data.variable.variable_name = variable_name;
+        vcd_fifo.user_data[write_index].data.variable.value = value;
+        vcd_fifo.user_data[write_index].module = VCD_SIGNAL_DUMPER_MODULE_VARIABLES; // Set when all other fields are set to validate the user_data
 #else
         char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
 
@@ -526,18 +559,15 @@ void vcd_signal_dumper_dump_function_by_name(vcd_signal_dump_functions  function
 {
     if (ouput_vcd) {
 #if defined(ENABLE_VCD_FIFO)
-        vcd_queue_user_data_t *new_data;
+        uint32_t write_index = vcd_get_write_index();
 
         assert(function_name < VCD_SIGNAL_DUMPER_FUNCTIONS_END);
         assert(function_name >= 0);
 
-        new_data = malloc(sizeof(vcd_queue_user_data_t));
-
-        new_data->module = VCD_SIGNAL_DUMPER_MODULE_FUNCTIONS;
-        new_data->time = vcd_get_time();
-        new_data->data.function.function_name = function_name;
-        new_data->data.function.in_out = in_out;
-        lfds611_queue_enqueue(vcd_queue, new_data);
+        vcd_fifo.user_data[write_index].time = vcd_get_time();
+        vcd_fifo.user_data[write_index].data.function.function_name = function_name;
+        vcd_fifo.user_data[write_index].data.function.in_out = in_out;
+        vcd_fifo.user_data[write_index].module = VCD_SIGNAL_DUMPER_MODULE_FUNCTIONS; // Set when all other fields are set to validate the user_data
 #else
         assert(function_name < VCD_SIGNAL_DUMPER_FUNCTIONS_END);
         assert(function_name >= 0);
