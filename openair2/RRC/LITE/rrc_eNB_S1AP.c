@@ -458,7 +458,7 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
                                        S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer);
 
     /* Transfer data to PDCP */
-    pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 1, (ue_index * NB_RB_MAX) + DCCH, *rrc_eNB_mui++, 0,
+    pdcp_rrc_data_req (instance, ue_index, 0 /* TODO put frame number ! */, 1, DCCH, *rrc_eNB_mui++, 0,
                        length, buffer, 1);
 
     return (0);

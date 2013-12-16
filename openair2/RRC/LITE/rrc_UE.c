@@ -2573,31 +2573,35 @@ void *rrc_ue_task(void *args_p) {
           length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
 
           /* Transfer data to PDCP */
-          pdcp_rrc_data_req (instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
+          pdcp_rrc_data_req (0, instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
           break;
       }
 # endif
 
       case RRC_RAL_SCAN_REQ:
-          {
-              // TO DO ASK PHY TO DO A SCAN
-              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
-          }
+      {
+          // TO DO ASK PHY TO DO A SCAN
+          LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          break;
+      }
 
       case RRC_RAL_CONFIGURE_THRESHOLD_REQ:
-          {
-              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
-          }
+      {
+          LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          break;
+      }
 
       case RRC_RAL_CONNECTION_ESTABLISHMENT_REQ:
-          {
-              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
-          }
+      {
+          LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          break;
+      }
 
       case RRC_RAL_CONNECTION_RELEASE_REQ:
-          {
-              LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
-          }
+      {
+          LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          break;
+      }
 
       default:
         LOG_E(RRC, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);
