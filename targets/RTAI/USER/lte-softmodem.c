@@ -244,7 +244,7 @@ void exit_fun(const char* s)
   oai_exit = 1;
 
 #if defined(ENABLE_ITTI)
-  itti_send_terminate_message (TASK_UNKNOWN);
+  itti_terminate_tasks (TASK_UNKNOWN);
 #endif
 
   //rt_sleep_ns(FRAME_PERIOD);
