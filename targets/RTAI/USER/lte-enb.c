@@ -872,7 +872,9 @@ int main(int argc, char **argv)
     p_exmimo_config->framing.eNB_flag   = 0;  //!UE_flag;
   }
   p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
-  p_exmimo_config->framing.resampling_factor = 2;
+  for (ant = 0; ant < 4; ant++) {
+    p_exmimo_config->framing.resampling_factor[ant] = 2;
+  }
 
   for (ant=0; ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);
        ant++) {
