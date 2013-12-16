@@ -89,7 +89,7 @@ int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t
     NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.data          = data;
     NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.length        = length;
 
-    itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
 }
 
 int nas_itti_ul_data_req(const uint32_t ue_id, void *const data, const uint32_t length)
@@ -105,7 +105,7 @@ int nas_itti_ul_data_req(const uint32_t ue_id, void *const data, const uint32_t 
     return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
 }
 
-void nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID, const nas_error_code_t errCode)
+int nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID, const nas_error_code_t errCode)
 {
     MessageDef *message_p;
 
@@ -115,6 +115,6 @@ void nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID
     NAS_RAB_ESTABLI_RSP(message_p).rabID        = rabID;
     NAS_RAB_ESTABLI_RSP(message_p).errCode      = errCode;
 
-    itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
 }
 #endif

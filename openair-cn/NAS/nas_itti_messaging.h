@@ -100,6 +100,6 @@ int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t
 
 int nas_itti_ul_data_req(const uint32_t ue_id, void *const data, const uint32_t length);
 
-void nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID, const nas_error_code_t errCode);
+int nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID, const nas_error_code_t errCode);
 # endif
 #endif /* NAS_ITTI_MESSAGING_H_ */
