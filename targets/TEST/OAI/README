@@ -17,8 +17,9 @@ Obj.#   Case#   Test#	Description
 01      01      10      "commented test in targets/TEST/OAI/case01.py" 
 01      01      11      "commented test in targets/TEST/OAI/case01.py" 
 01      01      12      "commented test in targets/TEST/OAI/case01.py" 
-01      01      13      Build oaisim Rel8 with RRC lite (new cellular+ITTI) + RAL (802.21) + network device driver(oai_nw_drv type ethernet)
-01      01      14      Build oaisim Rel10 with RRC lite (new cellular+ITTI) + RAL (802.21) + network device driver(oai_nw_drv type ethernet)
+01      01      13      Build network device driver(oai_nw_drv type ethernet)
+01      01      14      Build oaisim Rel8 with RRC lite (new cellular+ITTI) + RAL (802.21) 
+01      01      15      Build oaisim Rel10 with RRC lite (new cellular+ITTI) + RAL (802.21) 
 
 01      02              Run OAI Rel8, and check the operation
 01      02      00      Run OAI Rel8, and search for segmentation fault or exit
