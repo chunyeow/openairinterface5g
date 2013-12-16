@@ -187,7 +187,7 @@ static void init_SI (u8 Mod_id
   else
     {
       LOG_E (RRC, "[eNB %d] init_SI: FATAL, no memory for SIB1 allocated\n", Mod_id);
-      mac_xface->macphy_exit ("");
+      mac_xface->macphy_exit ("[RRC][init_SI] FATAL, no memory for SIB1 allocated");
     }
   /*
      printf ("after SIB1 init : Nid_cell %d\n", mac_xface->lte_frame_parms->Nid_cell);
@@ -196,7 +196,7 @@ static void init_SI (u8 Mod_id
      mac_xface->lte_frame_parms->tdd_config);
    */
     if (eNB_rrc_inst[Mod_id].sizeof_SIB1 == 255)
-        mac_xface->macphy_exit ("");
+        mac_xface->macphy_exit ("[RRC][init_SI] FATAL, eNB_rrc_inst[Mod_id].sizeof_SIB1 == 255");
 
     eNB_rrc_inst[Mod_id].SIB23 = (u8 *) malloc16 (64);
     if (eNB_rrc_inst[Mod_id].SIB23) {
@@ -220,7 +220,7 @@ static void init_SI (u8 Mod_id
          &eNB_rrc_inst[Mod_id].sib2);
        */
       if (eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255)
-          mac_xface->macphy_exit ("eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255");
+          mac_xface->macphy_exit ("[RRC][init_SI] FATAL, eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255");
 
       LOG_T (RRC, "[eNB %d] SIB2/3 Contents (partial)\n", Mod_id);
       LOG_T (RRC, "[eNB %d] pusch_config_common.n_SB = %ld\n", Mod_id,
@@ -324,7 +324,7 @@ static void init_SI (u8 Mod_id
   else
     {
       LOG_E (RRC, "[eNB] init_SI: FATAL, no memory for SIB2/3 allocated\n");
-      mac_xface->macphy_exit ("");
+      mac_xface->macphy_exit ("[RRC][init_SI] FATAL, no memory for SIB2/3 allocated");
     }
 }
 
@@ -367,9 +367,9 @@ static void init_MCCH (u8 Mod_id) {
 
 
       if (eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[sync_area] == 255)
-	mac_xface->macphy_exit ("");
+          mac_xface->macphy_exit ("[RRC][init_MCCH] eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[sync_area] == 255");
       else 
-	eNB_rrc_inst[Mod_id].MCCH_MESS[sync_area].Active = 1;
+          eNB_rrc_inst[Mod_id].MCCH_MESS[sync_area].Active = 1;
     }
   }
   //Set the eNB_rrc_inst[Mod_id].MCCH_MESS.Active to 1 (allow to  transfer MCCH message RRC->MAC in function mac_rrc_data_req)
@@ -2584,7 +2584,7 @@ for (i = 0; i < 8; i++)
   if (dec_rval.consumed == 0)
     {
       LOG_E (RRC, "[eNB %d] FATAL Error in receiving CCCH\n", Mod_id);
-      return -1;                //mac_xface->macphy_exit(""); //exit(-1);
+      return -1;
     }
   if (ul_ccch_msg->message.present == UL_CCCH_MessageType_PR_c1)
     {
@@ -2593,23 +2593,19 @@ for (i = 0; i < 8; i++)
         {
 
         case UL_CCCH_MessageType__c1_PR_NOTHING:
-          LOG_I (RRC,
-                 "[eNB %d] Frame %d : Received PR_NOTHING on UL-CCCH-Message\n",
+          LOG_I (RRC, "[eNB %d] Frame %d : Received PR_NOTHING on UL-CCCH-Message\n",
                  Mod_id, frame);
           break;
 
         case UL_CCCH_MessageType__c1_PR_rrcConnectionReestablishmentRequest:
-          LOG_D (RRC,
-                 "[MSC_MSG][FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND (rrcConnectionReestablishmentRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
+          LOG_D (RRC, "[MSC_MSG][FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND (rrcConnectionReestablishmentRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                  frame, Mod_id, Mod_id);
-          LOG_I (RRC,
-                 "[eNB %d] Frame %d : RRCConnectionReestablishmentRequest not supported yet\n",
+          LOG_I (RRC, "[eNB %d] Frame %d : RRCConnectionReestablishmentRequest not supported yet\n",
                  Mod_id, frame);
           break;
 
         case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
-          LOG_D (RRC,
-                 "[MSC_MSG][FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND  (rrcConnectionRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
+          LOG_D (RRC, "[MSC_MSG][FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND  (rrcConnectionRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                  frame, Mod_id, Mod_id);
 
           rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;

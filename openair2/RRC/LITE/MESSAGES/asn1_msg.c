@@ -682,9 +682,29 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
   xer_fprint(stdout, &asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message);
 #endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_BCCH_DL_SCH_Message,
-				   (void*)bcch_message,
-				   buffer,
-				   100);
+                                   (void*)bcch_message,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[10000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    }
+  }
+# endif
+#endif
+
 #ifdef USER_MODE
   LOG_D(RRC,"[eNB] SystemInformation Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
 #endif
@@ -1035,9 +1055,9 @@ uint8_t do_SIB23(uint8_t Mod_id,
   //  asn_set_empty(&systemInformation->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list);//.size=0;
   //  systemInformation->criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count=0;
   ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,
-		   sib2_part);
+                   sib2_part);
   ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,
-		   sib3_part);
+                   sib3_part);
 #ifdef Rel10
   if (MBMS_flag > 0) {
     ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,sib13_part);
@@ -1049,9 +1069,29 @@ uint8_t do_SIB23(uint8_t Mod_id,
   xer_fprint(stdout, &asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message);
 #endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_BCCH_DL_SCH_Message,
-				   (void*)bcch_message,
-				   buffer,
-				   900);
+                                   (void*)bcch_message,
+                                   buffer,
+                                   900);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[10000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+    }
+  }
+# endif
+#endif
+
 #ifdef USER_MODE
   LOG_D(RRC,"[eNB] SystemInformation Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
 #endif
