@@ -49,7 +49,6 @@
 #include <error.h>
 #include <time.h>
 #include <unistd.h>
-#include <assert.h>
 
 #include "assertions.h"
 #include "signals.h"
@@ -524,12 +523,12 @@ void vcd_signal_dumper_create_header(void)
 void vcd_signal_dumper_dump_variable_by_name(vcd_signal_dump_variables variable_name,
                                              unsigned long             value)
 {
+    DevCheck((0 <= variable_name) && (variable_name < VCD_SIGNAL_DUMPER_VARIABLES_END),
+             variable_name, VCD_SIGNAL_DUMPER_VARIABLES_END, 0);
+
     if (ouput_vcd) {
 #if defined(ENABLE_VCD_FIFO)
         uint32_t write_index = vcd_get_write_index();
-
-        assert(variable_name < VCD_SIGNAL_DUMPER_VARIABLES_END);
-        assert(variable_name >= 0);
 
         vcd_fifo.user_data[write_index].time = vcd_get_time();
         vcd_fifo.user_data[write_index].data.variable.variable_name = variable_name;
@@ -537,9 +536,6 @@ void vcd_signal_dumper_dump_variable_by_name(vcd_signal_dump_variables variable_
         vcd_fifo.user_data[write_index].module = VCD_SIGNAL_DUMPER_MODULE_VARIABLES; // Set when all other fields are set to validate the user_data
 #else
         char binary_string[(sizeof (uint64_t) * BYTE_SIZE) + 1];
-
-        assert(variable_name < VCD_SIGNAL_DUMPER_VARIABLES_END);
-        assert(variable_name >= 0);
 
         if (vcd_fd != NULL)
         {
@@ -557,21 +553,18 @@ void vcd_signal_dumper_dump_variable_by_name(vcd_signal_dump_variables variable_
 void vcd_signal_dumper_dump_function_by_name(vcd_signal_dump_functions  function_name,
                                              vcd_signal_dump_in_out     in_out)
 {
+    DevCheck((0 <= function_name) && (function_name < VCD_SIGNAL_DUMPER_FUNCTIONS_END),
+             function_name, VCD_SIGNAL_DUMPER_FUNCTIONS_END, 0);
+
     if (ouput_vcd) {
 #if defined(ENABLE_VCD_FIFO)
         uint32_t write_index = vcd_get_write_index();
-
-        assert(function_name < VCD_SIGNAL_DUMPER_FUNCTIONS_END);
-        assert(function_name >= 0);
 
         vcd_fifo.user_data[write_index].time = vcd_get_time();
         vcd_fifo.user_data[write_index].data.function.function_name = function_name;
         vcd_fifo.user_data[write_index].data.function.in_out = in_out;
         vcd_fifo.user_data[write_index].module = VCD_SIGNAL_DUMPER_MODULE_FUNCTIONS; // Set when all other fields are set to validate the user_data
 #else
-        assert(function_name < VCD_SIGNAL_DUMPER_FUNCTIONS_END);
-        assert(function_name >= 0);
-
         if (vcd_fd != NULL)
         {
             vcd_signal_dumper_print_time_since_start();
