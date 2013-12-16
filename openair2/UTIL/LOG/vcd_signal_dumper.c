@@ -283,7 +283,7 @@ void *vcd_dumper_thread_rt(void *args)
     while(1) {
         if (lfds611_queue_dequeue(vcd_queue, (void **) &data) == 0) {
             /* No element -> sleep a while */
-            usleep(1);
+            usleep(500);
         } else {
             switch (data->module) {
                 case VCD_SIGNAL_DUMPER_MODULE_VARIABLES:

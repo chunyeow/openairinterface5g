@@ -98,8 +98,8 @@ BOOL pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_i
   module_id_t module_id;
   rb_id_t rb_id_rlc = 0;
 
-  DevCheck4(eNB_id < NB_eNB_INST, eNB_id, NB_eNB_INST, UE_id, rb_id);
-  DevCheck4(UE_id < NB_UE_INST, UE_id, NB_UE_INST, eNB_id, rb_id);
+  DevCheck4(eNB_id < NUMBER_OF_eNB_MAX, eNB_id, NUMBER_OF_eNB_MAX, UE_id, rb_id);
+  DevCheck4(UE_id < NUMBER_OF_UE_MAX, UE_id, NUMBER_OF_UE_MAX, eNB_id, rb_id);
   DevCheck4(rb_id < NB_RB_MAX, rb_id, NB_RB_MAX, UE_id, eNB_id);
 
 #ifdef PDCP_UNIT_TEST
@@ -310,10 +310,9 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
   list_t* sdu_list;
 #endif
   mem_block_t *new_sdu = NULL;
-  int src_id, dst_id,ctime; // otg param
   u8 pdcp_header_len=0, pdcp_tailer_len=0;
   u16 sequence_number;
-  u8 payload_offset=0;
+  u8 payload_offset = 0;
   module_id_t module_id;
 
 #ifdef PDCP_UNIT_TEST
@@ -324,9 +323,9 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
         "ID %d and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
         module_id, rb_id, sdu_buffer_size, eNB_flag);
 #else
-  DevCheck(UE_id < NB_UE_INST, UE_id, NB_UE_INST, eNB_id);
-  DevCheck(eNB_id < NB_eNB_INST, eNB_id, NB_eNB_INST, UE_id);
-  DevCheck(rb_id < NB_RB_MAX, rb_id, NB_eNB_INST, NB_RB_MAX);
+  DevCheck4(UE_id < NUMBER_OF_UE_MAX, UE_id, NUMBER_OF_UE_MAX, eNB_id, rb_id);
+  DevCheck4(eNB_id < NUMBER_OF_eNB_MAX, eNB_id, NUMBER_OF_eNB_MAX, UE_id, rb_id);
+  DevCheck4(rb_id < NB_RB_MAX, rb_id, NB_RB_MAX, eNB_id, UE_id);
 
   if (eNB_flag == 0) {
     pdcp = &pdcp_array_ue[UE_id][rb_id];
@@ -406,7 +405,7 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
     if ( (rb_id % NB_RB_MAX) <  DTCH ){
 #if defined(ENABLE_SECURITY)
       if (pdcp->security_activated == 1) {
-        pdcp_validate_security(pdcp, rb_id % NB_RB_MAX, pdcp_header_len,
+        pdcp_validate_security(pdcp, rb_id, pdcp_header_len,
                                sequence_number, sdu_buffer->data,
                                sdu_buffer_size - pdcp_tailer_len);
       }
@@ -435,7 +434,9 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
     payload_offset=0;
   }
 #if defined(USER_MODE) && defined(OAI_EMU)
-  if (oai_emulation.info.otg_enabled ==1 ){
+  if (oai_emulation.info.otg_enabled == 1) {
+    int src_id, dst_id, ctime;
+
     src_id = (eNB_flag != 0) ? UE_id + NB_eNB_INST : eNB_id;
     dst_id = (eNB_flag == 0) ? UE_id + NB_eNB_INST : eNB_id;
     ctime = oai_emulation.info.time_ms; // avg current simulation time in ms : we may get the exact time through OCG?
@@ -465,6 +466,7 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
     if (eNB_flag == 0) {
       ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id;
     } else {
+      /* RB id for an UE on eNB is instantiated */
       ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id + (UE_id * NB_RAB_MAX);
     }
     ((pdcp_data_ind_header_t *) new_sdu->data)->data_size = sdu_buffer_size - payload_offset;
@@ -525,20 +527,6 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
   instance_t instance;
 #endif
 
-#ifndef NAS_NETLINK
-#ifdef USER_MODE
-#define PDCP_DUMMY_BUFFER_SIZE 38
-//  unsigned char pdcp_dummy_buffer[PDCP_DUMMY_BUFFER_SIZE];
-#endif
-#endif
-//     unsigned int diff, i, k, j;
-//     unsigned char *otg_pkt=NULL;
-//     int src_id, module_id; // src for otg
-//     int dst_id, rb_id; // dst for otg
-//     int service_id, session_id;
-//     int pkt_size=0;
-//     unsigned int ctime=0;
-
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
 
 #if defined(ENABLE_ITTI)
@@ -575,24 +563,6 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
     }
   } while(msg_p != NULL);
 #endif
-
-    /*
-      if ((frame % 128) == 0) {
-      for (i=0; i < NB_UE_INST; i++) {
-      for (j=0; j < NB_CNX_CH; j++) {
-      for (k=0; k < NB_RAB_MAX; k++) {
-      diff = Pdcp_stats_tx_bytes[i][j][k];
-      Pdcp_stats_tx_bytes[i][j][k] = 0;
-      Pdcp_stats_tx_rate[i][j][k] = (diff*8) >> 7;
-
-      diff = Pdcp_stats_rx_bytes[i][j][k];
-      Pdcp_stats_rx_bytes[i][j][k] = 0;
-      Pdcp_stats_rx_rate[i][j][k] = (diff*8) >> 7;
-      }
-      }
-      }
-      }
-    */
 
   pdcp_fifo_read_input_sdus_from_otg(frame, eNB_flag, UE_index, eNB_index);
 
@@ -783,7 +753,9 @@ BOOL rrc_pdcp_config_asn1_req (u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag,
           // set the applicable profile
           break;
         default:
-          LOG_W(PDCP,"[MOD_id %d][RB %d] unknown drb_toaddmod->PDCP_Config->headerCompression->present \n",module_id,drb_id);
+          LOG_W(PDCP,"[MOD_id %d][RB %d] unknown drb_toaddmod->PDCP_Config->headerCompression->present \n",
+                  module_id, drb_id);
+          break;
         }
         pdcp_config_req_asn1 (pdcp,
                               eNB_id,
@@ -893,8 +865,10 @@ BOOL pdcp_config_req_asn1 (pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8_t eN
                            u8 *kUPenc)
 {
   module_id_t module_id = 0;
+
   switch (action) {
     case ACTION_ADD:
+      DevAssert(pdcp != NULL);
       pdcp->instanciated_instance = 1;
       pdcp->is_ue = (eNB_flag == 0) ? 1 : 0;
       pdcp->lcid = lc_id;
@@ -938,6 +912,7 @@ BOOL pdcp_config_req_asn1 (pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8_t eN
       break;
 
     case ACTION_MODIFY:
+      DevAssert(pdcp != NULL);
       pdcp->header_compression_profile=header_compression_profile;
       pdcp->status_report = rb_report;
       pdcp->rlc_mode = rlc_mode;
@@ -968,6 +943,7 @@ BOOL pdcp_config_req_asn1 (pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8_t eN
       }
       break;
     case ACTION_REMOVE:
+      DevAssert(pdcp != NULL);
       pdcp->instanciated_instance = 0;
       pdcp->lcid = 0;
       pdcp->header_compression_profile = 0x0;
@@ -1053,7 +1029,7 @@ void pdcp_config_set_security(pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8 e
     /* Activate security */
     pdcp->security_activated = 1;
   } else {
-    LOG_D(PDCP,"[%s %d] bad security mode %d", security_mode);
+    LOG_E(PDCP,"[%s %d] bad security mode %d", security_mode);
   }
 }
 
@@ -1181,8 +1157,7 @@ void
 //-----------------------------------------------------------------------------
 void pdcp_layer_init(void)
 {
-  //-----------------------------------------------------------------------------
-  unsigned int i, j, k;
+//-----------------------------------------------------------------------------
 
   /*
     * Initialize SDU list
@@ -1192,16 +1167,14 @@ void pdcp_layer_init(void)
   memset(pdcp_array_ue, 0, sizeof(pdcp_array_ue));
   memset(pdcp_array_eNB, 0, sizeof(pdcp_array_eNB));
 
-  for (i=0; i < MAX_MODULES; i++) { // MAX service
-    for (j=0; j < 16*29; j++) { // max session
-      memset((void*)&pdcp_mbms_array[i][j], 0, sizeof(pdcp_mbms_t));
-    }
-  }
+  memset((void*)&pdcp_mbms_array, 0, sizeof(pdcp_mbms_array));
 
   LOG_I(PDCP, "PDCP layer has been initialized\n");
+
   pdcp_output_sdu_bytes_to_write=0;
   pdcp_output_header_bytes_to_write=0;
   pdcp_input_sdu_remaining_size_to_read=0;
+
   /*
     * Initialize PDCP entities (see pdcp_t at pdcp.h)
     */
@@ -1222,26 +1195,20 @@ void pdcp_layer_init(void)
        }
        }*/
 
-  for (i=0;i<NB_UE_INST;i++) { // ue
-    for (k=0;k<NB_eNB_INST;k++) { // enb
-      for(j=0;j<NB_RAB_MAX;j++) {//rb
-        Pdcp_stats_tx[i][k][j]=0;
-        Pdcp_stats_tx_bytes[i][k][j]=0;
-        Pdcp_stats_tx_bytes_last[i][k][j]=0;
-        Pdcp_stats_tx_rate[i][k][j]=0;
+  memset(Pdcp_stats_tx, 0, sizeof(Pdcp_stats_tx));
+  memset(Pdcp_stats_tx_bytes, 0, sizeof(Pdcp_stats_tx_bytes));
+  memset(Pdcp_stats_tx_bytes_last, 0, sizeof(Pdcp_stats_tx_bytes_last));
+  memset(Pdcp_stats_tx_rate, 0, sizeof(Pdcp_stats_tx_rate));
 
-        Pdcp_stats_rx[i][k][j]=0;
-        Pdcp_stats_rx_bytes[i][k][j]=0;
-        Pdcp_stats_rx_bytes_last[i][k][j]=0;
-        Pdcp_stats_rx_rate[i][k][j]=0;
-      }
-    }
-  }
+  memset(Pdcp_stats_rx, 0, sizeof(Pdcp_stats_rx));
+  memset(Pdcp_stats_rx_bytes, 0, sizeof(Pdcp_stats_rx_bytes));
+  memset(Pdcp_stats_rx_bytes_last, 0, sizeof(Pdcp_stats_rx_bytes_last));
+  memset(Pdcp_stats_rx_rate, 0, sizeof(Pdcp_stats_rx_rate));
 }
 
 //-----------------------------------------------------------------------------
 void
-    pdcp_layer_cleanup ()
+    pdcp_layer_cleanup (void)
     //-----------------------------------------------------------------------------
 {
   list_free (&pdcp_sdu_list);
