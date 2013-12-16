@@ -764,7 +764,11 @@ static void *itti_rt_relay_thread(void *arg)
 
     while (itti_desc.running)
     {
-        usleep (100);
+        usleep (200); // Poll for messages a little more than 2 time by slot to get a small latency between RT and other tasks
+
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_RELAY_THREAD, VCD_FUNCTION_IN);
+#endif
 
         /* Checks for all non real time tasks if they have pending messages */
         for (thread_id = THREAD_FIRST; thread_id < itti_desc.thread_max; thread_id++)
@@ -785,6 +789,10 @@ static void *itti_rt_relay_thread(void *arg)
                 }
             }
         }
+
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_RELAY_THREAD, VCD_FUNCTION_OUT);
+#endif
     }
     return NULL;
 }

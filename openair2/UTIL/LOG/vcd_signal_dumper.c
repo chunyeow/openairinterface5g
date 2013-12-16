@@ -165,6 +165,7 @@ const char* eurecomFunctionsNames[] = {
     "itti_enqueue_message",
     "itti_dump_enqueue_message",
     "itti_dump_enqueue_message_malloc",
+    "itti_relay_thread",
     "test"
 };
 
@@ -285,8 +286,8 @@ inline static uint32_t vcd_get_write_index(void)
     /* Wrap index */
     write_index &= VCD_FIFO_MASK;
 
-    /* Check FIFO overflow */
-    DevCheck((read_index = vcd_fifo.read_index, ((write_index + 1) & VCD_FIFO_MASK) != read_index), write_index, read_index, 0);
+    /* Check FIFO overflow (increase VCD_FIFO_NB_ELEMENTS if this assert is triggered) */
+    DevCheck((read_index = vcd_fifo.read_index, ((write_index + 1) & VCD_FIFO_MASK) != read_index), write_index, read_index, VCD_FIFO_NB_ELEMENTS);
 
     return write_index;
 }
@@ -314,6 +315,7 @@ void *vcd_dumper_thread_rt(void *args)
             data_ready_wait = 0;
             while (data->module == VCD_SIGNAL_DUMPER_MODULE_FREE)
             {
+                /* Check wait delay (increase VCD_MAX_WAIT_DELAY if this assert is triggered and that no thread is locked) */
                 DevCheck(data_ready_wait < VCD_MAX_WAIT_DELAY, data_ready_wait, VCD_MAX_WAIT_DELAY, 0);
 
                 /* data is not yet ready, wait for it to be completed */
