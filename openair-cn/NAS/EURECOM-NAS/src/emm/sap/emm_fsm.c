@@ -386,7 +386,9 @@ int emm_fsm_process(const emm_reg_t *evt)
               _emm_fsm_event_str[primitive - _EMMREG_START - 1], primitive,
               _emm_fsm_status_str[status]);
 
+#if defined(EPC_BUILD)
     DevAssert(status != EMM_INVALID);
+#endif
 
     /* Execute the EMM state machine */
     rc = (_emm_fsm_handlers[status])(evt);
