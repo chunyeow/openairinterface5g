@@ -283,8 +283,14 @@ int nas_timer_stop(int id)
 {
     /* Check if the timer entry is active */
     if (_nas_timer_db_is_active(id)) {
+        nas_timer_entry_t *entry;
         /* Remove the entry from the timer queue */
-        (void) _nas_timer_db_remove_entry(id);
+        entry = _nas_timer_db_remove_entry(id);
+#if defined(ENABLE_ITTI)
+        timer_remove(entry->timer_id);
+#else
+        (void)entry;
+#endif
         /* Delete the timer entry */
         _nas_timer_db_delete_entry(id);
         return (NAS_TIMER_INACTIVE_ID);
