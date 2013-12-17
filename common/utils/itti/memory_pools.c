@@ -37,8 +37,12 @@ const static int mp_debug = 0;
 #ifdef RTAI
 # define MP_DEBUG(x, args...) do { if (mp_debug) rt_printk("[MP][D]"x, ##args); } \
     while(0)
+# define MP_ERROR(x, args...) do { rt_printk("[MP][E]"x, ##args); } \
+    while(0)
 #else
 # define MP_DEBUG(x, args...) do { if (mp_debug) fprintf(stdout, "[MP][D]"x, ##args); fflush (stdout); } \
+    while(0)
+# define MP_ERROR(x, args...) do { fprintf(stdout, "[MP][E]"x, ##args); } \
     while(0)
 #endif
 
@@ -71,12 +75,14 @@ typedef uint32_t    pool_start_mark_t;
 typedef uint32_t    pools_start_mark_t;
 
 typedef uint8_t     pool_id_t;
+typedef uint8_t     item_status_t;
 
 typedef struct memory_pool_item_start_s {
     pool_item_start_mark_t      start_mark;
 
     pool_id_t                   pool_id;
-    uint32_t                    info;
+    item_status_t               item_status;
+    uint16_t                    info[2];
 } memory_pool_item_start_t;
 
 typedef struct memory_pool_item_end_s {
@@ -99,6 +105,7 @@ typedef struct memory_pool_s {
     memory_pool_item_t         *items;
 } memory_pool_t;
 
+
 typedef struct memory_pools_s {
     pools_start_mark_t          start_mark;
 
@@ -114,6 +121,9 @@ static const uint32_t               MAX_POOL_ITEM_SIZE =    100 * 1000;
 
 static const pool_item_start_mark_t POOL_ITEM_START_MARK =  CHARS_TO_UINT32 ('P', 'I', 's', 't');
 static const pool_item_end_mark_t   POOL_ITEM_END_MARK =    CHARS_TO_UINT32 ('p', 'i', 'E', 'N');
+
+static const item_status_t          ITEM_STATUS_FREE =      'F';
+static const item_status_t          ITEM_STATUS_ALLOCATED = 'a';
 
 static const pool_start_mark_t      POOL_START_MARK =       CHARS_TO_UINT32 ('P', '_', 's', 't');
 
@@ -165,7 +175,11 @@ static inline void items_group_put_free_item (items_group_t *items_group, items_
         /* Calculate next position */
         next = items_group->current + 1;
         /* Checks if next position is free */
-        if (items_group->indexes[next] == ITEMS_GROUP_INDEX_INVALID)
+        if (items_group->indexes[next] != ITEMS_GROUP_INDEX_INVALID)
+        {
+            MP_DEBUG(" items_group_put_free_item (items_group->indexes[next] != ITEMS_GROUP_INDEX_INVALID) %d, %d\n", next, index);
+        }
+        else
         {
             /* Try to write index in next position */
             index_previous = __sync_fetch_and_add (&items_group->indexes[next], index_to_add);
@@ -175,6 +189,8 @@ static inline void items_group_put_free_item (items_group_t *items_group, items_
                 /* Next position was not free anymore, restore its value */
                 __sync_fetch_and_add (&items_group->indexes[next], -index_to_add);
                 current = ITEMS_GROUP_POSITION_INVALID;
+
+                MP_DEBUG(" items_group_put_free_item (index_previous != ITEMS_GROUP_INDEX_INVALID) %d\n", index);
             }
             else
             {
@@ -184,6 +200,8 @@ static inline void items_group_put_free_item (items_group_t *items_group, items_
                     /* Next position content has been changed, restore its value */
                     __sync_fetch_and_add (&items_group->indexes[next], -index_to_add);
                     current = ITEMS_GROUP_POSITION_INVALID;
+
+                    MP_DEBUG(" items_group_put_free_item (items_group->indexes[next] != index) %d\n", index);
                 }
                 else
                 {
@@ -195,6 +213,8 @@ static inline void items_group_put_free_item (items_group_t *items_group, items_
                         /* Current position does not match calculated next position, restore previous values */
                         __sync_fetch_and_add (&items_group->current, -1);
                         __sync_fetch_and_add (&items_group->indexes[next], -index_to_add);
+
+                        MP_DEBUG(" items_group_put_free_item (next != current) %d\n", index);
                     }
                 }
             }
@@ -354,10 +374,11 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
         /* Initialize items */
         for (item_index = 0; item_index < pool_items_number; item_index++)
         {
-            memory_pool_item = memory_pool_item_from_index (memory_pool, item_index);
-            memory_pool_item->start.start_mark              = POOL_ITEM_START_MARK;
-            memory_pool_item->start.pool_id                 = pool;
-            memory_pool_item->data[memory_pool->item_data_number]  = POOL_ITEM_END_MARK;
+            memory_pool_item                                      = memory_pool_item_from_index (memory_pool, item_index);
+            memory_pool_item->start.start_mark                    = POOL_ITEM_START_MARK;
+            memory_pool_item->start.pool_id                       = pool;
+            memory_pool_item->start.item_status                   = ITEM_STATUS_FREE;
+            memory_pool_item->data[memory_pool->item_data_number] = POOL_ITEM_END_MARK;
         }
     }
 
@@ -366,7 +387,7 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
     return (0);
 }
 
-memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_pools_handle, uint32_t item_size, uint32_t info)
+memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_pools_handle, uint32_t item_size, uint16_t info_0, uint16_t info_1)
 {
     memory_pools_t             *memory_pools;
     memory_pool_item_t         *memory_pool_item;
@@ -402,23 +423,33 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
     if (item_index > ITEMS_GROUP_INDEX_INVALID)
     {
         /* Convert item index into memory_pool_item address */
-        memory_pool_item = memory_pool_item_from_index (&memory_pools->pools[pool], item_index);
-        memory_pool_item->start.info = info;
-        memory_pool_item_handle = memory_pool_item->data;
+        memory_pool_item                    = memory_pool_item_from_index (&memory_pools->pools[pool], item_index);
+        /* Sanity check on item status, must be free */
+        DevCheck (memory_pool_item->start.item_status == ITEM_STATUS_FREE, memory_pool_item->start.item_status, pool, item_index);
 
-        MP_DEBUG(" Alloc [%2u][%6d]{%6u}, %4u, %6u, %p, %p, %p\n",
-                 pool, item_index, memory_pools->pools[pool].items_group_free.minimum,
-                 info, item_size, memory_pools->pools[pool].items, memory_pool_item, memory_pool_item_handle);
+        memory_pool_item->start.item_status = ITEM_STATUS_ALLOCATED;
+        memory_pool_item->start.info[0]     = info_0;
+        memory_pool_item->start.info[1]     = info_1;
+        memory_pool_item_handle             = memory_pool_item->data;
+
+        MP_DEBUG(" Alloc [%2u][%6d]{%6u}, %3u %3u, %6u, %p, %p, %p\n",
+                 pool, item_index,
+                 memory_pools->pools[pool].items_group_free.minimum,
+                 info_0, info_1,
+                 item_size,
+                 memory_pools->pools[pool].items,
+                 memory_pool_item,
+                 memory_pool_item_handle);
     }
     else
     {
-        MP_DEBUG(" Alloc [--][------]{------}, %4u, %6u, failed!\n", info, item_size);
+        MP_DEBUG(" Alloc [--][------]{------}, %3u %3u, %6u, failed!\n", info_0, info_1, item_size);
     }
 
     return memory_pool_item_handle;
 }
 
-void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, uint32_t info)
+void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, uint16_t info)
 {
     memory_pools_t     *memory_pools;
     memory_pool_item_t *memory_pool_item;
@@ -439,15 +470,21 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     pool_item_size = memory_pools->pools[pool].pool_item_size;
     item_index = (((void *) memory_pool_item) - ((void *) memory_pools->pools[pool].items)) / pool_item_size;
 
-    MP_DEBUG(" Free  [%2u][%6d]{%6u}, %4u,         %p, %p, %p, %u\n",
+    MP_DEBUG(" Free  [%2u][%6d]{%6u}, %3u %3u,         %p, %p, %p, %u\n",
              pool, item_index, memory_pools->pools[pool].items_group_free.current,
-             info, memory_pool_item_handle, memory_pool_item, memory_pools->pools[pool].items, item_size * sizeof(memory_pool_data_t));
+             memory_pool_item->start.info[0], memory_pool_item->start.info[1],
+             memory_pool_item_handle, memory_pool_item,
+             memory_pools->pools[pool].items, item_size * sizeof(memory_pool_data_t));
 
     /* Sanity check on calculated item index */
     DevCheck (memory_pool_item == memory_pool_item_from_index(&memory_pools->pools[pool], item_index), memory_pool_item,
               memory_pool_item_from_index(&memory_pools->pools[pool], item_index), pool);
-    /* Check if end marker is still present (no write overflow) */
+    /* Sanity check on end marker, must still be present (no write overflow) */
     DevCheck (memory_pool_item->data[item_size] == POOL_ITEM_END_MARK, pool, 0, 0);
+    /* Sanity check on item status, must be allocated */
+    DevCheck (memory_pool_item->start.item_status == ITEM_STATUS_ALLOCATED, memory_pool_item->start.item_status, pool, item_index);
+
+    memory_pool_item->start.item_status = ITEM_STATUS_FREE;
 
     items_group_put_free_item(&memory_pools->pools[pool].items_group_free, item_index);
 }
