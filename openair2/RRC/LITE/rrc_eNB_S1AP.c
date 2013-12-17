@@ -452,6 +452,10 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
     return (-1);
   }
   else {
+    /* Is it the first income from S1AP ? */
+    if (eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id == 0) {
+      eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
+    }
     /* Create message for PDCP (DLInformationTransfer_t) */
     length = do_DLInformationTransfer (&buffer, rrc_eNB_get_next_transaction_identifier (instance),
                                        S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length,
