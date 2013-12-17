@@ -92,6 +92,7 @@ static const char *_emm_fsm_event_str[] = {
 
 /* String representation of EMM status */
 static const char *_emm_fsm_status_str[EMM_STATE_MAX] = {
+     "INVALID",
 #ifdef NAS_UE
     "NULL",
 #endif
@@ -164,6 +165,7 @@ int EmmCommonProcedureInitiated(const emm_reg_t *);
 
 /* EMM state machine handlers */
 static const emm_fsm_handler_t _emm_fsm_handlers[EMM_STATE_MAX] = {
+    NULL,
 #ifdef NAS_UE
     EmmNull,
 #endif
@@ -371,7 +373,7 @@ int emm_fsm_process(const emm_reg_t *evt)
 
     DevAssert(emm_ctx != NULL);
 
-    status = emm_ctx->_emm_fsm_status;
+    status = emm_fsm_get_status(0, emm_ctx);
 # else
     if (evt->ueid >= EMM_FSM_NB_UE_MAX) {
         LOG_FUNC_RETURN (RETURNerror);
@@ -383,6 +385,8 @@ int emm_fsm_process(const emm_reg_t *evt)
     LOG_TRACE(INFO, "EMM-FSM   - Received event %s (%d) in state %s",
               _emm_fsm_event_str[primitive - _EMMREG_START - 1], primitive,
               _emm_fsm_status_str[status]);
+
+    DevAssert(status != EMM_INVALID);
 
     /* Execute the EMM state machine */
     rc = (_emm_fsm_handlers[status])(evt);

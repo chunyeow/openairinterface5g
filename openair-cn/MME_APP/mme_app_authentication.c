@@ -43,13 +43,17 @@
 
 #include "assertions.h"
 
+static
 int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
                                         const uint8_t nb_of_vectors,
-                                        const plmn_t *plmn);
+                                        const plmn_t *plmn,
+                                        const uint8_t *auts);
 
+static
 int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
                                         const uint8_t nb_of_vectors,
-                                        const plmn_t *plmn)
+                                        const plmn_t *plmn,
+                                        const uint8_t *auts)
 {
     s6a_auth_info_req_t *auth_info_req;
     MessageDef          *message_p;
@@ -62,6 +66,13 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
     MME_APP_IMSI_TO_STRING(imsi, auth_info_req->imsi);
     memcpy(&auth_info_req->visited_plmn, plmn, sizeof(plmn_t));
     auth_info_req->nb_of_vectors = nb_of_vectors;
+    if (auts != NULL) {
+        auth_info_req->re_synchronization = 1;
+        memcpy(auth_info_req->auts, auts, sizeof(auth_info_req->auts));
+    } else {
+        auth_info_req->re_synchronization = 0;
+        memset(auth_info_req->auts, 0, sizeof(auth_info_req->auts));
+    }
 
     return itti_send_msg_to_task(TASK_S6A, INSTANCE_DEFAULT, message_p);
 }
@@ -286,6 +297,14 @@ void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t
 {
     struct ue_context_s *ue_context;
     uint64_t imsi = 0;
+    plmn_t visited_plmn_dongle = {
+        .MCCdigit3 = 2,
+        .MCCdigit2 = 0,
+        .MCCdigit1 = 8,
+        .MNCdigit3 = 2,
+        .MNCdigit2 = 9,
+        .MNCdigit1 = 0xF,
+    };
 
     DevAssert(nas_auth_param_req_p != NULL);
 
@@ -316,10 +335,10 @@ void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t
         /* We have no vector for this UE, send an authentication request
          * to the HSS.
          */
-        plmn_t plmn = {
+        plmn_t visited_plmn_eur = {
+            .MCCdigit3 = 2,
             .MCCdigit2 = 0,
             .MCCdigit1 = 8,
-            .MCCdigit3 = 2,
             .MNCdigit1 = 0,
             .MNCdigit2 = 4,
             .MNCdigit3 = 3,
@@ -328,12 +347,14 @@ void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t
         /* Acquire the current time */
         time(&ue_context->cell_age);
 
-        memcpy(&ue_context->guti.gummei.plmn, &plmn, sizeof(plmn_t));
+        memcpy(&ue_context->guti.gummei.plmn, &visited_plmn_dongle, sizeof(plmn_t));
         MME_APP_DEBUG("and we have no auth. vector for it, request"
                       " authentication information\n");
-        mme_app_request_authentication_info(imsi, 1, &plmn);
+        mme_app_request_authentication_info(imsi, 1, &visited_plmn_dongle, NULL);
     } else {
-        DevMessage("not handled\n");
+        memcpy(&ue_context->guti.gummei.plmn, &visited_plmn_dongle, sizeof(plmn_t));
+
+        mme_app_request_authentication_info(imsi, 1, &visited_plmn_dongle, nas_auth_param_req_p->auts);
     }
 }
 #endif

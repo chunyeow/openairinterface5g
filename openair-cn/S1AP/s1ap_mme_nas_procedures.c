@@ -207,6 +207,8 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
         message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
         message.direction     = S1AP_PDU_PR_initiatingMessage;
 
+        ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
+
         downlinkNasTransport = &message.msg.s1ap_DownlinkNASTransportIEs;
 
         /* Setting UE informations with the ones fount in ue_ref */
@@ -224,7 +226,7 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
         s1ap_mme_itti_send_sctp_request(buffer_p, length,
                                         ue_ref->eNB->sctp_assoc_id,
                                         ue_ref->sctp_stream_send);
-        s1ap_mme_itti_nas_downlink_cnf(ue_ref->mme_ue_s1ap_id, AS_SUCCESS);
+        //s1ap_mme_itti_nas_downlink_cnf(ue_ref->mme_ue_s1ap_id, AS_SUCCESS);
     }
     return 0;
 }

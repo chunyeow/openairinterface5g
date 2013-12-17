@@ -32,6 +32,9 @@ Description Defines the authentication EMM procedure executed by the
 
 *****************************************************************************/
 
+#include <stdlib.h> // malloc, free
+#include <string.h> // memcpy, memcmp, memset
+
 #include "emm_proc.h"
 #include "nas_log.h"
 #include "nas_timer.h"
@@ -45,8 +48,11 @@ Description Defines the authentication EMM procedure executed by the
 #include "usim_api.h"
 #endif
 
-#include <stdlib.h> // malloc, free
-#include <string.h> // memcpy, memcmp, memset
+#ifdef NAS_MME
+# if defined(EPC_BUILD)
+#   include "nas_itti_messaging.h"
+# endif
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -534,7 +540,7 @@ int emm_proc_authentication(void *ctx, unsigned int ueid, int ksi,
 
     LOG_FUNC_IN;
 
-    LOG_TRACE(INFO, "EMM-PROC  - Initiate authentication KSI = %d", ksi);
+    LOG_TRACE(INFO, "EMM-PROC  - Initiate authentication KSI = %d, ctx = %p", ksi, ctx);
 
     /* Allocate parameters of the retransmission timer callback */
     data = (authentication_data_t *)malloc(sizeof(authentication_data_t));
@@ -616,10 +622,10 @@ int emm_proc_authentication(void *ctx, unsigned int ueid, int ksi,
 int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
                                      const OctetString *res)
 {
-    LOG_FUNC_IN;
-
     int rc;
     emm_sap_t emm_sap;
+
+    LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "EMM-PROC  - Authentication complete (ueid=%u, cause=%d)",
               ueid, emm_cause);
@@ -665,21 +671,40 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
     }
 
     if (emm_cause != EMM_CAUSE_SUCCESS) {
-        /* The MME received an authentication failure message or the RES
-         * contained in the Authentication Response message received from
-         * the UE does not match the XRES parameter computed by the network */
-        (void) _authentication_reject(ueid);
-        /*
-         * Notify EMM that the authentication procedure failed
-         */
-        emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
-        emm_sap.u.emm_reg.ueid = ueid;
+        switch (emm_cause) {
+
+#if defined(EPC_BUILD)
+            case EMM_CAUSE_SYNCH_FAILURE:
+                /* USIM has detected a mismatch in SQN.
+                 * Ask for a new vector.
+                 */
+                nas_itti_auth_info_req(ueid, emm_ctx->imsi, 0, res->value);
+
+                rc = RETURNok;
+                LOG_FUNC_RETURN (rc);
+                break;
+#endif
+
+            default:
+                /* The MME received an authentication failure message or the RES
+                 * contained in the Authentication Response message received from
+                 * the UE does not match the XRES parameter computed by the network */
+                (void) _authentication_reject(ueid);
+                /*
+                 * Notify EMM that the authentication procedure failed
+                 */
+                emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
+                emm_sap.u.emm_reg.ueid = ueid;
+                emm_sap.u.emm_reg.ctx  = emm_ctx;
+                break;
+        }
     } else {
         /*
          * Notify EMM that the authentication procedure successfully completed
          */
         emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
         emm_sap.u.emm_reg.u.common.is_attached = emm_ctx->is_attached;
     }
 

@@ -27,13 +27,15 @@
                  06410 Biot FRANCE
 
 *******************************************************************************/
-#ifndef NAS_ITTI_MESSAGING_H_
-#define NAS_ITTI_MESSAGING_H_
 
+#include <string.h>
 #include <stdint.h>
 #include <ctype.h>
 
 #include "intertask_interface.h"
+
+#ifndef NAS_ITTI_MESSAGING_H_
+#define NAS_ITTI_MESSAGING_H_
 
 # if defined(EPC_BUILD) && defined(NAS_MME)
 #include "conversions.h"
@@ -45,7 +47,7 @@ void nas_itti_establish_cnf(const nas_error_code_t error_code, void *const data,
                             const uint32_t length);
 
 static inline void nas_itti_auth_info_req(const uint32_t ue_id,
-        const imsi_t *const imsi, uint8_t initial_req)
+        const imsi_t *const imsi, uint8_t initial_req, const uint8_t *auts)
 {
     MessageDef *message_p;
 
@@ -64,6 +66,15 @@ static inline void nas_itti_auth_info_req(const uint32_t ue_id,
     }
     NAS_AUTHENTICATION_PARAM_REQ(message_p).initial_req = initial_req;
     NAS_AUTHENTICATION_PARAM_REQ(message_p).ue_id = ue_id;
+
+    /* Re-synchronisation */
+    if (auts != NULL) {
+        NAS_AUTHENTICATION_PARAM_REQ(message_p).re_synchronization = 1;
+        memcpy(NAS_AUTHENTICATION_PARAM_REQ(message_p).auts, auts, AUTS_LENGTH);
+    } else {
+        NAS_AUTHENTICATION_PARAM_REQ(message_p).re_synchronization = 0;
+        memset(NAS_AUTHENTICATION_PARAM_REQ(message_p).auts, 0, AUTS_LENGTH);
+    }
 
     itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }

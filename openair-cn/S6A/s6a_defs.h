@@ -117,6 +117,7 @@ typedef struct {
     struct dict_object *dataobj_s6a_number_of_requested_vectors;
     struct dict_object *dataobj_s6a_immediate_response_pref;
     struct dict_object *dataobj_s6a_authentication_info;
+    struct dict_object *dataobj_s6a_re_synchronization_info;
     struct dict_object *dataobj_s6a_ue_srvcc_cap;
 
     /* Handlers */

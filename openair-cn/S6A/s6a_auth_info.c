@@ -340,11 +340,10 @@ int s6a_generate_authentication_info_req(s6a_auth_info_req_t *air_p)
 
     /* Adding the visited plmn id */
     {
-        uint8_t plmn[3] = { 0, 0, 0 };
+        uint8_t plmn[3] = { 0x02, 0xF8, 0x29 };
 
         CHECK_FCT(fd_msg_avp_new(s6a_fd_cnf.dataobj_s6a_visited_plmn_id, 0, &avp));
 
-        PLMN_T_TO_TBCD(air_p->visited_plmn, plmn);
 
         value.os.data = plmn;
         value.os.len  = 3;
@@ -371,6 +370,15 @@ int s6a_generate_authentication_info_req(s6a_auth_info_req_t *air_p)
         value.u32 = 0;
         CHECK_FCT(fd_msg_avp_setvalue(child_avp, &value));
         CHECK_FCT(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, child_avp));
+
+        /* Re-synchronization information containing the AUTS computed at USIM */
+        if (air_p->re_synchronization) {
+            CHECK_FCT(fd_msg_avp_new(s6a_fd_cnf.dataobj_s6a_re_synchronization_info, 0, &child_avp));
+            value.os.len = AUTS_LENGTH;
+            value.os.data = air_p->auts;
+            CHECK_FCT(fd_msg_avp_setvalue(child_avp, &value));
+            CHECK_FCT(fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, child_avp));
+        }
 
         CHECK_FCT(fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp));
     }

@@ -449,7 +449,7 @@ static int _emm_as_data_ind(const emm_as_data_t *msg, int *emm_cause)
     int rc = RETURNerror;
 
     LOG_TRACE(INFO, "EMMAS-SAP - Received AS data transfer indication "
-              "(ueid=%d, delivered=%s, length=%d)", msg->ueid,
+              "(ueid=%u, delivered=%s, length=%d)", msg->ueid,
               (msg->delivered)? "TRUE" : "FALSE", msg->NASmsg.length);
 
     if (msg->delivered) {

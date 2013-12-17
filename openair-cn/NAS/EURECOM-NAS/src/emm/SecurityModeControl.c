@@ -39,6 +39,11 @@ Description Defines the security mode control EMM procedure executed by the
 
 #include <stdlib.h> // malloc, free
 #include <string.h> // memcpy
+#include <inttypes.h>
+
+#if defined(ENABLE_ITTI)
+# include "assertions.h"
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -438,6 +443,7 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
             emm_sap_t emm_sap;
             emm_sap.primitive = EMMREG_COMMON_PROC_REQ;
             emm_sap.u.emm_reg.ueid = ueid;
+            emm_sap.u.emm_reg.ctx  = emm_ctx;
             rc = emm_sap_send(&emm_sap);
         }
     }
@@ -568,6 +574,7 @@ int emm_proc_security_mode_reject(unsigned int ueid)
 #if defined(EPC_BUILD)
     if (ueid > 0) {
         emm_ctx = emm_data_context_get(&_emm_data, ueid);
+        DevAssert(emm_ctx != NULL);
     }
 #else
     if (ueid < EMM_DATA_NB_UE_MAX) {
@@ -591,6 +598,7 @@ int emm_proc_security_mode_reject(unsigned int ueid)
     emm_sap_t emm_sap;
     emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
     emm_sap.u.emm_reg.ueid = ueid;
+    emm_sap.u.emm_reg.ctx  = emm_ctx;
     rc = emm_sap_send(&emm_sap);
 
     LOG_FUNC_RETURN (rc);

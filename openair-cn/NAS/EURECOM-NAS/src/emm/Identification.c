@@ -233,8 +233,8 @@ int emm_proc_identification(unsigned int                   ueid,
 
     int rc = RETURNerror;
 
-    LOG_TRACE(INFO, "EMM-PROC  - Initiate identification type = %s (%d)",
-              _emm_identity_type_str[type], type);
+    LOG_TRACE(INFO, "EMM-PROC  - Initiate identification type = %s (%d), ctx = %p",
+              _emm_identity_type_str[type], type, emm_ctx);
 
     /* Allocate parameters of the retransmission timer callback */
     identification_data_t *data =
@@ -363,6 +363,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
          */
         emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
         emm_sap.u.emm_reg.u.common.is_attached = emm_ctx->is_attached;
     } else {
         LOG_TRACE(ERROR, "EMM-PROC  - No EMM context exists");
@@ -371,6 +372,7 @@ int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
          */
         emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
     }
 
     rc = emm_sap_send(&emm_sap);

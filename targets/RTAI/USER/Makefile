@@ -113,6 +113,7 @@ endif
 
 ifdef ENABLE_ITTI
 RTAI_OBJ += $(UTILS_OBJS)
+CFLAGS += -DEXMIMO_IOT
 endif
 
 CFLAGS += $(L2_incl) $(ENB_APP_incl) $(UTIL_incl) $(UTILS_incl)
@@ -335,7 +336,8 @@ run_eNB2:
 clean: common-clean
 	@$(RM_F_V) $(OBJ) $(RTAI_OBJ)
 	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d)
-	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o $(ASN1_MSG_INC)/asn1_msg.d
+	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.o $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.d
+	@$(RM_F_V) lte-enb.o lte-enb.d lte-softmodem.o lte-softmodem.d
 
 cleanasn1:
 	rm -f $(ASN1_MSG_OBJS1)

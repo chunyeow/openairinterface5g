@@ -51,7 +51,7 @@
 typedef enum {
     ECM_IDLE,
     ECM_CONNECTED,
-    EMM_DEREGISTERED,
+    ECM_DEREGISTERED,
 } mm_state_t;
 
 typedef uint64_t mme_app_imsi_t;

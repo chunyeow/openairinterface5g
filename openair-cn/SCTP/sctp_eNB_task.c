@@ -560,9 +560,10 @@ void *sctp_eNB_task(void *arg)
                                ITTI_MSG_ID(received_msg), ITTI_MSG_NAME(received_msg));
                     break;
             }
+
+            itti_free(TASK_SCTP, received_msg);
+            received_msg = NULL;
         }
-        free(received_msg);
-        received_msg = NULL;
 
         nb_events = itti_get_events(TASK_SCTP, &events);
         /* Now handle notifications for other sockets */

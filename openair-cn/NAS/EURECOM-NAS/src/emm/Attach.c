@@ -1099,7 +1099,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
         }
     } else {
         /* Create UE's EMM context */
-        *emm_ctx = (emm_data_context_t *)malloc(sizeof(emm_data_context_t));
+        *emm_ctx = (emm_data_context_t *)calloc(1, sizeof(emm_data_context_t));
         if (emm_ctx == NULL) {
             LOG_TRACE(WARNING, "EMM-PROC  - Failed to create EMM context");
             ue_ctx.emm_cause = EMM_CAUSE_ILLEGAL_UE;
@@ -1116,9 +1116,9 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
         (*emm_ctx)->esm_msg.length = 0;
         (*emm_ctx)->esm_msg.value = NULL;
         (*emm_ctx)->emm_cause = EMM_CAUSE_SUCCESS;
+        (*emm_ctx)->_emm_fsm_status = EMM_INVALID;
 
-        (*emm_ctx)->_emm_fsm_status = EMM_DEREGISTERED;
-
+        emm_fsm_set_status(ueid, *emm_ctx, EMM_DEREGISTERED);
 #if defined(EPC_BUILD)
         emm_data_context_add(&_emm_data, *(emm_ctx));
 #endif
@@ -1849,7 +1849,7 @@ static int _emm_attach_identify(void *args)
 #if defined(EPC_BUILD)
         if (!emm_ctx->security) {
             /* Ask upper layer to fetch new security context */
-            nas_itti_auth_info_req(emm_ctx->ueid, emm_ctx->imsi, 1);
+            nas_itti_auth_info_req(emm_ctx->ueid, emm_ctx->imsi, 1, NULL);
 
             rc = RETURNok;
         } else

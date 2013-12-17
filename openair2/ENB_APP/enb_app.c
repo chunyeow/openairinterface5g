@@ -111,7 +111,7 @@ static Enb_properties_t enb_0_properties =
     "eNB_Eurecom_0",
     0,
     208,
-    34,
+    92,
     PAGING_DRX_256,
     1, /* There are 2 addresses defined, but use only one by default */
     {
@@ -138,7 +138,7 @@ static Enb_properties_t enb_1_properties =
     "eNB_Eurecom_1",
     0,
     208,
-    34,
+    92,
     PAGING_DRX_256,
     1, /* There are 2 addresses defined, but use only one by default */
     {
@@ -165,7 +165,7 @@ static Enb_properties_t enb_2_properties =
     "eNB_Eurecom_2",
     0,
     208,
-    34,
+    92,
     PAGING_DRX_256,
     1,
     {
@@ -186,7 +186,7 @@ static Enb_properties_t enb_3_properties =
     "eNB_Eurecom_3",
     0,
     208,
-    34,
+    92,
     PAGING_DRX_256,
     1,
     {

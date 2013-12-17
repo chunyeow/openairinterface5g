@@ -152,7 +152,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
     ulsch->harq_processes[harq_pid]->rvidx = 0;
     ulsch->harq_processes[harq_pid]->round++;
   }
-  //#ifdef DEBUG_RAR
+#ifdef DEBUG_RAR
   msg("ulsch ra (eNB): harq_pid %d\n",harq_pid);
   msg("ulsch ra (eNB): NBRB     %d\n",ulsch->harq_processes[harq_pid]->nb_rb);
   msg("ulsch ra (eNB): rballoc  %x\n",ulsch->harq_processes[harq_pid]->first_rb);
@@ -162,7 +162,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   msg("ulsch ra (eNB): mcs      %d\n",ulsch->harq_processes[harq_pid]->mcs);
   msg("ulsch ra (eNB): Or1      %d\n",ulsch->Or1);
   msg("ulsch ra (eNB): ORI      %d\n",ulsch->O_RI);
-  //#endif
+#endif
   return(0);
 }
 

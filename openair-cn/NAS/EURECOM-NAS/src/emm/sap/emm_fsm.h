@@ -38,6 +38,7 @@ Description Defines the EPS Mobility Management procedures executed at
  * different state machines.
  */
 typedef enum {
+    EMM_INVALID,
 #ifdef NAS_UE
     EMM_NULL,
 #endif

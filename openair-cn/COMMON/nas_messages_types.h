@@ -120,6 +120,9 @@ typedef struct nas_auth_param_req_s {
 
     /* Indicates whether the procedure corresponds to a new connection or not */
     uint8_t  initial_req:1;
+
+    uint8_t re_synchronization:1;
+    uint8_t auts[14];
 } nas_auth_param_req_t;
 
 typedef struct nas_auth_param_rsp_s {
