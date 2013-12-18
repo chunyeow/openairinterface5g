@@ -271,7 +271,7 @@ request_auth: {
                 MME_APP_DEBUG("and we have no auth. vector for it, request"
                               " authentication information\n");
 //                 mme_app_dump_ue_contexts();
-                mme_app_request_authentication_info(imsi, 1, &plmn);
+                mme_app_request_authentication_info(imsi, 1, &plmn, NULL);
             } else {
                 nas_auth_req_t *nas_auth_req_p;
                 MessageDef     *message_p;
