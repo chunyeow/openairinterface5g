@@ -45,7 +45,7 @@
 #define ITTI_PORT                (10006)
 
 /* This is the queue size for signal dumper */
-#define ITTI_QUEUE_MAX_ELEMENTS  (200 * 1000)
+#define ITTI_QUEUE_MAX_ELEMENTS  (10 * 1000)
 #define ITTI_DUMP_MAX_CON        (5)    /* Max connections in parallel */
 
 #endif /* INTERTASK_INTERFACE_CONF_H_ */

@@ -230,7 +230,7 @@ void s1ap_eNB_handle_sctp_data_ind(sctp_data_ind_t *sctp_data_ind)
     s1ap_eNB_handle_message(sctp_data_ind->assoc_id, sctp_data_ind->stream,
                             sctp_data_ind->buffer, sctp_data_ind->buffer_length);
 
-    free(sctp_data_ind->buffer);
+    itti_free(TASK_UNKNOWN, sctp_data_ind->buffer);
 }
 
 void *s1ap_eNB_task(void *arg)

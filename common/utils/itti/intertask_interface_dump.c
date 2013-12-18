@@ -64,17 +64,17 @@
 
 #define SIGNAL_NAME_LENGTH  48
 
-static const int itti_dump_debug = 0;
+static const int itti_dump_debug = 0; // 0x8 | 0x4 | 0x2;
 
 #ifdef RTAI
-# define ITTI_DUMP_DEBUG(x, args...) do { if (itti_dump_debug) rt_printk("[ITTI][D]"x, ##args); } \
+# define ITTI_DUMP_DEBUG(m, x, args...) do { if (m & itti_dump_debug) rt_printk("[ITTI_DUMP][D]"x, ##args); } \
     while(0)
-# define ITTI_DUMP_ERROR(x, args...) do { rt_printk("[ITTI][E]"x, ##args); } \
+# define ITTI_DUMP_ERROR(x, args...) do { rt_printk("[ITTI_DUMP][E]"x, ##args); } \
     while(0)
 #else
-# define ITTI_DUMP_DEBUG(x, args...) do { if (itti_dump_debug) fprintf(stdout, "[ITTI][D]"x, ##args); } \
+# define ITTI_DUMP_DEBUG(m, x, args...) do { if (m & itti_dump_debug) fprintf(stdout, "[ITTI_DUMP][D]"x, ##args); } \
     while(0)
-# define ITTI_DUMP_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); } \
+# define ITTI_DUMP_ERROR(x, args...) do { fprintf(stdout, "[ITTI_DUMP][E]"x, ##args); } \
     while(0)
 #endif
 
@@ -153,14 +153,10 @@ static itti_desc_t itti_dump_queue;
 static FILE *dump_file = NULL;
 static int itti_dump_running = 1;
 
-static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message);
-static int itti_dump_handle_new_connection(int sd, const char *xml_definition,
-                                      uint32_t xml_definition_length);
-static int itti_dump_send_xml_definition(const int sd, const char *message_definition_xml,
-                                         const uint32_t message_definition_xml_length);
+static volatile uint32_t pending_messages = 0;
 
-static
-int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
+/*------------------------------------------------------------------------------*/
+static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
 {
     itti_dump_message_t *new_message;
     ssize_t bytes_sent = 0, total_sent = 0;
@@ -202,11 +198,11 @@ int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
     return total_sent;
 }
 
-static void itti_dump_fwrite_message(itti_dump_queue_item_t *message)
+static int itti_dump_fwrite_message(itti_dump_queue_item_t *message)
 {
     itti_socket_header_t header;
 
-    if (dump_file != NULL && message) {
+    if ((dump_file != NULL) && (message != NULL)) {
 
         header.message_size = message->message_size + sizeof(itti_dump_message_t);
         header.message_type = message->message_type;
@@ -218,7 +214,9 @@ static void itti_dump_fwrite_message(itti_dump_queue_item_t *message)
 // #if !defined(RTAI)
         fflush (dump_file);
 // #endif
+        return (1);
     }
+    return (0);
 }
 
 static int itti_dump_send_xml_definition(const int sd, const char *message_definition_xml,
@@ -237,7 +235,7 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
 
     itti_dump_message = calloc(1, itti_dump_message_size);
 
-    ITTI_DUMP_DEBUG("[%d] Sending XML definition message of size %zu to observer peer\n",
+    ITTI_DUMP_DEBUG(0x2, "[%d] Sending XML definition message of size %zu to observer peer\n",
                sd, itti_dump_message_size);
 
     itti_dump_message->message_size = itti_dump_message_size;
@@ -264,11 +262,33 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
     return 0;
 }
 
+static void itti_dump_user_data_delete_function(void *user_data, void *user_state)
+{
+    if (user_data != NULL)
+    {
+        itti_dump_queue_item_t *item;
+        task_id_t task_id;
+
+        item = (itti_dump_queue_item_t *)user_data;
+
+        if (item->data != NULL)
+        {
+            task_id = ITTI_MSG_ORIGIN_ID(item->data);
+            itti_free(task_id, item->data);
+        }
+        else
+        {
+            task_id = TASK_UNKNOWN;
+        }
+        itti_free(task_id, item);
+    }
+}
+
 static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t message_size,
                                      uint32_t message_type)
 {
     struct lfds611_freelist_element *new_queue_element = NULL;
-
+    int overwrite_flag;
     DevAssert(new != NULL);
 
 #if defined(OAI_EMU) || defined(RTAI)
@@ -278,26 +298,39 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     new->message_type = message_type;
     new->message_size = message_size;
 
-    new_queue_element = lfds611_ringbuffer_get_write_element(
-        itti_dump_queue.itti_message_queue, &new_queue_element, NULL);
+    ITTI_DUMP_DEBUG (0x1, " itti_dump_enqueue_message: lfds611_ringbuffer_get_write_element\n");
+    new_queue_element = lfds611_ringbuffer_get_write_element (itti_dump_queue.itti_message_queue, &new_queue_element, &overwrite_flag);
 
-    lfds611_freelist_set_user_data_in_element(new_queue_element, (void *)new);
-
-    lfds611_ringbuffer_put_write_element(itti_dump_queue.itti_message_queue,
-                                         new_queue_element);
-
-#ifdef RTAI
-    __sync_fetch_and_add (&itti_dump_queue.messages_in_queue, 1);
-#else
+    if (overwrite_flag != 0)
     {
-        ssize_t   write_ret;
-        eventfd_t sem_counter = 1;
+        void *old = NULL;
 
-        /* Call to write for an event fd must be of 8 bytes */
-        write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
-        DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+        lfds611_freelist_get_user_data_from_element(new_queue_element, &old);
+        ITTI_DUMP_DEBUG (0x4, " overwrite_flag set, freeing old data %p %p\n", new_queue_element, old);
+        itti_dump_user_data_delete_function (old, NULL);
     }
+
+    lfds611_freelist_set_user_data_in_element(new_queue_element, (void *) new);
+    lfds611_ringbuffer_put_write_element(itti_dump_queue.itti_message_queue, new_queue_element);
+
+    if (overwrite_flag == 0)
+    {
+#ifdef RTAI
+        __sync_fetch_and_add (&itti_dump_queue.messages_in_queue, 1);
+#else
+        {
+            ssize_t   write_ret;
+            eventfd_t sem_counter = 1;
+
+            /* Call to write for an event fd must be of 8 bytes */
+            write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
+            DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+        }
 #endif
+        __sync_fetch_and_add (&pending_messages, 1);
+    }
+
+    ITTI_DUMP_DEBUG (0x2, " Added element to queue %p %p, pending %u, type %u\n", new_queue_element, new, pending_messages, message_type);
 
 #if defined(OAI_EMU) || defined(RTAI)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE, VCD_FUNCTION_OUT);
@@ -306,111 +339,153 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
     return 0;
 }
 
-int itti_dump_queue_message(task_id_t sender_task,
-                            message_number_t message_number,
-                            MessageDef *message_p,
-                            const char *message_name,
-                            const uint32_t message_size)
+static void itti_dump_socket_exit(void)
 {
-    if (itti_dump_running)
-    {
-        itti_dump_queue_item_t *new;
-        size_t message_name_length;
-
-        DevAssert(message_name != NULL);
-        DevAssert(message_p != NULL);
-
-#if defined(OAI_EMU) || defined(RTAI)
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
+#ifndef RTAI
+    close(itti_dump_queue.event_fd);
 #endif
-        new = itti_malloc(sender_task, sizeof(itti_dump_queue_item_t));
-#if defined(OAI_EMU) || defined(RTAI)
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
-#endif
+    close(itti_dump_queue.itti_listen_socket);
 
-#if defined(OAI_EMU) || defined(RTAI)
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
-#endif
-        new->data = itti_malloc(sender_task, message_size);
-#if defined(OAI_EMU) || defined(RTAI)
-        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
-#endif
-
-        memcpy(new->data, message_p, message_size);
-        new->data_size       = message_size;
-        new->message_number  = message_number;
-
-        message_name_length = strlen(message_name) + 1;
-        DevCheck(message_name_length <= SIGNAL_NAME_LENGTH, message_name_length,
-                 SIGNAL_NAME_LENGTH, 0);
-        memcpy(new->message_name, message_name, message_name_length);
-
-        itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
-    }
-
-    return 0;
+    /* Leave the thread as we detected end signal */
+    pthread_exit(NULL);
 }
 
-static void itti_dump_flush_ring_buffer(int flush_all)
+static int itti_dump_flush_ring_buffer(int flush_all)
 {
     struct lfds611_freelist_element *element = NULL;
-    void *user_data;
-    int   j;
+    void   *user_data;
+    int     j;
+    int     consumer;
 
 #ifdef RTAI
     unsigned long number_of_messages;
+#endif
 
-    number_of_messages = itti_dump_queue.messages_in_queue;
-
-    ITTI_DUMP_DEBUG("%lu elements in queue\n", number_of_messages);
-
-    if (number_of_messages == 0) {
-        return;
+    /* Check if there is a least one consumer */
+    consumer = 0;
+    if (dump_file != NULL)
+    {
+        consumer = 1;
     }
-
-    __sync_sub_and_fetch(&itti_dump_queue.messages_in_queue, number_of_messages);
-#endif
-
-    do {
-        /* Acquire the ring element */
-        lfds611_ringbuffer_get_read_element(itti_dump_queue.itti_message_queue, &element);
-
-        DevAssert(element != NULL);
-
-        /* Retrieve user part of the message */
-        lfds611_freelist_get_user_data_from_element(element, &user_data);
-
-        if (((itti_dump_queue_item_t *)user_data)->message_type == ITTI_DUMP_EXIT_SIGNAL)
-        {
-#ifndef RTAI
-            close(itti_dump_queue.event_fd);
-#endif
-            close(itti_dump_queue.itti_listen_socket);
-
-            lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
-
-            /* Leave the thread as we detected end signal */
-            pthread_exit(NULL);
-        }
-
-        /* Write message to file */
-        itti_dump_fwrite_message((itti_dump_queue_item_t *)user_data);
-
-        /* Send message to remote analyzer */
+    else
+    {
         for (j = 0; j < ITTI_DUMP_MAX_CON; j++) {
             if (itti_dump_queue.itti_clients[j].sd > 0) {
-                itti_dump_send_message(itti_dump_queue.itti_clients[j].sd,
-                                        (itti_dump_queue_item_t *)user_data);
+                consumer = 1;
+                break;
+            }
+        }
+    }
+
+    if (consumer > 0)
+    {
+#ifdef RTAI
+        number_of_messages = itti_dump_queue.messages_in_queue;
+
+        ITTI_DUMP_DEBUG(0x4, "%lu elements in queue\n", number_of_messages);
+
+        if (number_of_messages == 0) {
+            return (consumer);
+        }
+
+        __sync_sub_and_fetch(&itti_dump_queue.messages_in_queue, number_of_messages);
+#endif
+
+        do {
+            /* Acquire the ring element */
+            lfds611_ringbuffer_get_read_element(itti_dump_queue.itti_message_queue, &element);
+
+            __sync_fetch_and_sub (&pending_messages, 1);
+
+            if (element == NULL)
+            {
+                if (flush_all != 0)
+                {
+                    flush_all = 0;
+                }
+                else
+                {
+                    ITTI_DUMP_DEBUG(0x8, " Dump event with no data\n");
+                    DevMessage("Dump event with no data\n");
+                }
+            }
+            else
+            {
+                /* Retrieve user part of the message */
+                lfds611_freelist_get_user_data_from_element(element, &user_data);
+
+                ITTI_DUMP_DEBUG (0x2, " removed element from queue %p %p, pending %u\n", element, user_data, pending_messages);
+
+                if (((itti_dump_queue_item_t *)user_data)->message_type == ITTI_DUMP_EXIT_SIGNAL)
+                {
+                    lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
+                    itti_dump_socket_exit();
+                }
+
+                /* Write message to file */
+                itti_dump_fwrite_message((itti_dump_queue_item_t *)user_data);
+
+                /* Send message to remote analyzer */
+                for (j = 0; j < ITTI_DUMP_MAX_CON; j++) {
+                    if (itti_dump_queue.itti_clients[j].sd > 0) {
+                        itti_dump_send_message(itti_dump_queue.itti_clients[j].sd,
+                                                (itti_dump_queue_item_t *)user_data);
+                    }
+                }
+
+                itti_dump_user_data_delete_function (user_data, NULL);
+                lfds611_freelist_set_user_data_in_element(element, NULL);
+
+                /* We have finished with this element, reinsert it in the ring buffer */
+                lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
+            }
+        } while(flush_all
+    #ifdef RTAI
+                && --number_of_messages
+    #endif
+                );
+    }
+
+    return (consumer);
+}
+
+static int itti_dump_handle_new_connection(int sd, const char *xml_definition, uint32_t xml_definition_length)
+{
+    if (itti_dump_queue.nb_connected < ITTI_DUMP_MAX_CON) {
+        uint8_t i;
+
+        for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
+            /* Let's find a place to store the new client */
+            if (itti_dump_queue.itti_clients[i].sd == -1) {
+                break;
             }
         }
 
-        /* We have finished with this element, reinsert it in the ring buffer */
-        lfds611_ringbuffer_put_read_element(itti_dump_queue.itti_message_queue, element);
-    } while(flush_all
-#ifdef RTAI
-            && --number_of_messages
-#endif
-            );
+        ITTI_DUMP_DEBUG(0x2, " Found place to store new connection: %d\n", i);
+
+        DevCheck(i < ITTI_DUMP_MAX_CON, i, ITTI_DUMP_MAX_CON, sd);
+
+        ITTI_DUMP_DEBUG(0x2, " Socket %d accepted\n", sd);
+
+        /* Send the XML message definition */
+        if (itti_dump_send_xml_definition(sd, xml_definition, xml_definition_length) < 0) {
+            ITTI_DUMP_ERROR(" Failed to send XML definition\n");
+            close (sd);
+            return -1;
+        }
+
+        itti_dump_queue.itti_clients[i].sd = sd;
+        itti_dump_queue.nb_connected++;
+    } else {
+        ITTI_DUMP_DEBUG(0x2, " Socket %d rejected\n", sd);
+        /* We have reached max number of users connected...
+         * Reject the connection.
+         */
+        close (sd);
+        return -1;
+    }
+
+    return 0;
 }
 
 static void *itti_dump_socket(void *arg_p)
@@ -428,7 +503,7 @@ static void *itti_dump_socket(void *arg_p)
     struct timeval  timeout;
 #endif
 
-    ITTI_DUMP_DEBUG("Creating TCP dump socket on port %u\n", ITTI_PORT);
+    ITTI_DUMP_DEBUG(0x2, " Creating TCP dump socket on port %u\n", ITTI_PORT);
 
     message_definition_xml = (char *)arg_p;
     DevAssert(message_definition_xml != NULL);
@@ -436,7 +511,7 @@ static void *itti_dump_socket(void *arg_p)
     message_definition_xml_length = strlen(message_definition_xml) + 1;
 
     if ((itti_listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-        ITTI_DUMP_ERROR("Socket creation failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" ocket creation failed (%d:%s)\n", errno, strerror(errno));
         pthread_exit(NULL);
     }
 
@@ -444,7 +519,7 @@ static void *itti_dump_socket(void *arg_p)
     rc = setsockopt(itti_listen_socket, SOL_SOCKET, SO_REUSEADDR,
                     (char *)&on, sizeof(on));
     if (rc < 0) {
-        ITTI_DUMP_ERROR("setsockopt SO_REUSEADDR failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" setsockopt SO_REUSEADDR failed (%d:%s)\n", errno, strerror(errno));
         close(itti_listen_socket);
         pthread_exit(NULL);
     }
@@ -454,7 +529,7 @@ static void *itti_dump_socket(void *arg_p)
      */
     rc = ioctl(itti_listen_socket, FIONBIO, (char *)&on);
     if (rc < 0) {
-        ITTI_DUMP_ERROR("ioctl FIONBIO (non-blocking) failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" ioctl FIONBIO (non-blocking) failed (%d:%s)\n", errno, strerror(errno));
         close(itti_listen_socket);
         pthread_exit(NULL);
     }
@@ -466,11 +541,11 @@ static void *itti_dump_socket(void *arg_p)
 
     if (bind(itti_listen_socket, (struct sockaddr *) &servaddr,
              sizeof(servaddr)) < 0) {
-        ITTI_DUMP_ERROR("Bind failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" Bind failed (%d:%s)\n", errno, strerror(errno));
         pthread_exit(NULL);
     }
     if (listen(itti_listen_socket, 5) < 0) {
-        ITTI_DUMP_ERROR("Listen failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" Listen failed (%d:%s)\n", errno, strerror(errno));
         pthread_exit(NULL);
     }
 
@@ -515,11 +590,22 @@ static void *itti_dump_socket(void *arg_p)
         rc = select(max_sd + 1, &working_set, NULL, NULL, timeout_p);
 
         if (rc < 0) {
-            ITTI_DUMP_ERROR("select failed (%d:%s)\n", errno, strerror(errno));
+            ITTI_DUMP_ERROR(" select failed (%d:%s)\n", errno, strerror(errno));
             pthread_exit(NULL);
         } else if (rc == 0) {
             /* Timeout */
-            itti_dump_flush_ring_buffer(1);
+            if (itti_dump_flush_ring_buffer(1) == 0)
+            {
+                if (itti_dump_running)
+                {
+                    ITTI_DUMP_DEBUG (0x4, " No messages consumers, waiting ...\n");
+                    usleep(100 * 1000);
+                }
+                else
+                {
+                    itti_dump_socket_exit();
+                }
+            }
         }
 
         desc_ready = rc;
@@ -538,16 +624,40 @@ static void *itti_dump_socket(void *arg_p)
                     /* Read will always return 1 for kernel versions > 2.6.30 */
                     read_ret = read (itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
                     if (read_ret < 0) {
-                        ITTI_DUMP_ERROR("Failed read for semaphore: %s\n", strerror(errno));
+                        ITTI_DUMP_ERROR(" Failed read for semaphore: %s\n", strerror(errno));
                         pthread_exit(NULL);
                     }
                     DevCheck(read_ret == sizeof(sem_counter), read_ret, sizeof(sem_counter), 0);
 #if defined(KERNEL_VERSION_PRE_2_6_30)
-                    itti_dump_flush_ring_buffer(1);
+                    if (itti_dump_flush_ring_buffer(1) == 0)
 #else
-                    itti_dump_flush_ring_buffer(0);
+                    if (itti_dump_flush_ring_buffer(0) == 0)
 #endif
-                    ITTI_DUMP_DEBUG("Write element to file\n");
+                    {
+                        if (itti_dump_running)
+                        {
+                            ITTI_DUMP_DEBUG (0x4, " No messages consumers, waiting ...\n");
+                            usleep(100 * 1000);
+#ifndef RTAI
+                            {
+                                ssize_t   write_ret;
+
+                                sem_counter = 1;
+                                /* Call to write for an event fd must be of 8 bytes */
+                                write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
+                                DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+                            }
+#endif
+                        }
+                        else
+                        {
+                            itti_dump_socket_exit();
+                        }
+                    }
+                    else
+                    {
+                        ITTI_DUMP_DEBUG(0x1, " Write element to file\n");
+                    }
                 } else
 #endif
                 if (i == itti_listen_socket) {
@@ -556,10 +666,10 @@ static void *itti_dump_socket(void *arg_p)
                         if (client_socket < 0) {
                             if (errno == EWOULDBLOCK || errno == EAGAIN) {
                                 /* No more new connection */
-                                ITTI_DUMP_DEBUG("No more new connection\n");
+                                ITTI_DUMP_DEBUG(0x2, " No more new connection\n");
                                 continue;
                             } else {
-                                ITTI_DUMP_ERROR("accept failed (%d:%s)\n", errno, strerror(errno));
+                                ITTI_DUMP_ERROR(" accept failed (%d:%s)\n", errno, strerror(errno));
                                 pthread_exit(NULL);
                             }
                         }
@@ -580,7 +690,7 @@ static void *itti_dump_socket(void *arg_p)
                      */
                     uint8_t j;
 
-                    ITTI_DUMP_DEBUG("Socket %d disconnected\n", i);
+                    ITTI_DUMP_DEBUG(0x2, " Socket %d disconnected\n", i);
 
                     /* Close the socket and update info related to this connection */
                     close(i);
@@ -622,41 +732,47 @@ static void *itti_dump_socket(void *arg_p)
     return NULL;
 }
 
-static
-int itti_dump_handle_new_connection(int sd, const char *xml_definition, uint32_t xml_definition_length)
+/*------------------------------------------------------------------------------*/
+int itti_dump_queue_message(task_id_t sender_task,
+                            message_number_t message_number,
+                            MessageDef *message_p,
+                            const char *message_name,
+                            const uint32_t message_size)
 {
-    if (itti_dump_queue.nb_connected < ITTI_DUMP_MAX_CON) {
-        uint8_t i;
+    if (itti_dump_running)
+    {
+        itti_dump_queue_item_t *new;
+        size_t message_name_length;
 
-        for (i = 0; i < ITTI_DUMP_MAX_CON; i++) {
-            /* Let's find a place to store the new client */
-            if (itti_dump_queue.itti_clients[i].sd == -1) {
-                break;
-            }
-        }
+        DevAssert(message_name != NULL);
+        DevAssert(message_p != NULL);
 
-        ITTI_DUMP_DEBUG("Found place to store new connection: %d\n", i);
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
+#endif
+        new = itti_malloc(sender_task, TASK_MAX + 100, sizeof(itti_dump_queue_item_t));
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
+#endif
 
-        DevCheck(i < ITTI_DUMP_MAX_CON, i, ITTI_DUMP_MAX_CON, sd);
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
+#endif
+        new->data = itti_malloc(sender_task, TASK_MAX + 100, message_size);
+#if defined(OAI_EMU) || defined(RTAI)
+        vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
+#endif
 
-        ITTI_DUMP_DEBUG("Socket %d accepted\n", sd);
+        memcpy(new->data, message_p, message_size);
+        new->data_size       = message_size;
+        new->message_number  = message_number;
 
-        /* Send the XML message definition */
-        if (itti_dump_send_xml_definition(sd, xml_definition, xml_definition_length) < 0) {
-            ITTI_DUMP_ERROR("Failed to send XML definition\n");
-            close (sd);
-            return -1;
-        }
+        message_name_length = strlen(message_name) + 1;
+        DevCheck(message_name_length <= SIGNAL_NAME_LENGTH, message_name_length,
+                 SIGNAL_NAME_LENGTH, 0);
+        memcpy(new->message_name, message_name, message_name_length);
 
-        itti_dump_queue.itti_clients[i].sd = sd;
-        itti_dump_queue.nb_connected++;
-    } else {
-        ITTI_DUMP_DEBUG("Socket %d rejected\n", sd);
-        /* We have reached max number of users connected...
-         * Reject the connection.
-         */
-        close (sd);
-        return -1;
+        itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
     }
 
     return 0;
@@ -681,7 +797,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 
         if (dump_file == NULL)
         {
-            ITTI_DUMP_ERROR("can not open dump file \"%s\" (%d:%s)\n", dump_file_name, errno, strerror(errno));
+            ITTI_DUMP_ERROR(" can not open dump file \"%s\" (%d:%s)\n", dump_file_name, errno, strerror(errno));
         }
         else
         {
@@ -700,7 +816,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 
     memset(&itti_dump_queue, 0, sizeof(itti_desc_t));
 
-    ITTI_DUMP_DEBUG("Creating new ring buffer for itti dump of %u elements\n",
+    ITTI_DUMP_DEBUG(0x2, " Creating new ring buffer for itti dump of %u elements\n",
                     ITTI_QUEUE_MAX_ELEMENTS);
 
     if (lfds611_ringbuffer_new(&itti_dump_queue.itti_message_queue,
@@ -708,7 +824,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
                                NULL,
                                NULL) != 1)
     {
-        ITTI_DUMP_ERROR("Failed to create ring buffer...\n");
+        ITTI_DUMP_ERROR(" Failed to create ring buffer...\n");
         /* Always assert on this condition */
         DevAssert(0 == 1);
     }
@@ -723,7 +839,7 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 # endif
     if (itti_dump_queue.event_fd == -1)
     {
-        ITTI_DUMP_ERROR("eventfd failed: %s\n", strerror(errno));
+        ITTI_DUMP_ERROR(" eventfd failed: %s\n", strerror(errno));
         /* Always assert on this condition */
         DevAssert(0 == 1);
     }
@@ -739,51 +855,29 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     /* initialized with default attributes */
     ret = pthread_attr_init(&itti_dump_queue.attr);
     if (ret < 0) {
-        ITTI_DUMP_ERROR("pthread_attr_init failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" pthread_attr_init failed (%d:%s)\n", errno, strerror(errno));
         DevAssert(0 == 1);
     }
 
     ret = pthread_attr_setschedpolicy(&itti_dump_queue.attr, SCHED_FIFO);
     if (ret < 0) {
-        ITTI_DUMP_ERROR("pthread_attr_setschedpolicy (SCHED_IDLE) failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" pthread_attr_setschedpolicy (SCHED_IDLE) failed (%d:%s)\n", errno, strerror(errno));
         DevAssert(0 == 1);
     }
     ret = pthread_attr_setschedparam(&itti_dump_queue.attr, &scheduler_param);
     if (ret < 0) {
-        ITTI_DUMP_ERROR("pthread_attr_setschedparam failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" pthread_attr_setschedparam failed (%d:%s)\n", errno, strerror(errno));
         DevAssert(0 == 1);
     }
 
     ret = pthread_create(&itti_dump_queue.itti_acceptor_thread, &itti_dump_queue.attr,
                          &itti_dump_socket, (void *)messages_definition_xml);
     if (ret < 0) {
-        ITTI_DUMP_ERROR("pthread_create failed (%d:%s)\n", errno, strerror(errno));
+        ITTI_DUMP_ERROR(" pthread_create failed (%d:%s)\n", errno, strerror(errno));
         DevAssert(0 == 1);
     }
 
     return 0;
-}
-
-static void itti_dump_user_data_delete_function(void *user_data, void *user_state)
-{
-    if (user_data != NULL)
-    {
-        itti_dump_queue_item_t *item;
-        task_id_t task_id;
-
-        item = (itti_dump_queue_item_t *)user_data;
-
-        if (item->data != NULL)
-        {
-            task_id = ITTI_MSG_ORIGIN_ID(item->data);
-            itti_free(task_id, item->data);
-        }
-        else
-        {
-            task_id = TASK_UNKNOWN;
-        }
-        itti_free(task_id, item);
-    }
 }
 
 void itti_dump_exit(void)
@@ -791,7 +885,8 @@ void itti_dump_exit(void)
     void *arg;
     itti_dump_queue_item_t *new;
 
-    new = calloc(1, sizeof(itti_dump_queue_item_t));
+    new = itti_malloc(TASK_UNKNOWN, TASK_UNKNOWN, sizeof(itti_dump_queue_item_t));
+    memset(new, 0, sizeof(itti_dump_queue_item_t));
 
     /* Set a flag to stop recording message */
     itti_dump_running = 0;
@@ -799,12 +894,12 @@ void itti_dump_exit(void)
     /* Send the exit signal to other thread */
     itti_dump_enqueue_message(new, 0, ITTI_DUMP_EXIT_SIGNAL);
 
-    ITTI_DUMP_DEBUG("waiting for dumper thread to finish\n");
+    ITTI_DUMP_DEBUG(0x2, " waiting for dumper thread to finish\n");
 
     /* wait for the thread to terminate */
     pthread_join(itti_dump_queue.itti_acceptor_thread, &arg);
 
-    ITTI_DUMP_DEBUG("dumper thread correctly exited\n");
+    ITTI_DUMP_DEBUG(0x2, " dumper thread correctly exited\n");
 
     if (dump_file != NULL)
     {

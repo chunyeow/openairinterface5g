@@ -485,7 +485,7 @@ u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int r
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
     u8 *message_buffer;
 
-    message_buffer = itti_malloc (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, sdu_size);
+    message_buffer = itti_malloc (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, sdu_size);
     memcpy (message_buffer, Buffer, sdu_size);
 
     message_p = itti_alloc_new_message (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, RRC_DCCH_DATA_REQ);
@@ -531,7 +531,7 @@ void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag,u32 Srb_i
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
     u8 *message_buffer;
 
-    message_buffer = itti_malloc (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, sdu_size);
+    message_buffer = itti_malloc (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, sdu_size);
     memcpy (message_buffer, Buffer, sdu_size);
 
     message_p = itti_alloc_new_message (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, RRC_DCCH_DATA_IND);
@@ -542,7 +542,7 @@ void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag,u32 Srb_i
     RRC_DCCH_DATA_IND (message_p).ue_index = UE_id;
     RRC_DCCH_DATA_IND (message_p).eNB_index = eNB_id;
 
-    itti_send_msg_to_task ((eNB_flag == 1) ? TASK_RRC_ENB : TASK_RRC_UE, Mod_id, message_p);
+    itti_send_msg_to_task (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, Mod_id, message_p);
   }
 #else
   if (eNB_flag ==1) {

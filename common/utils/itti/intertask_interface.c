@@ -37,20 +37,21 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "assertions.h"
-
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
-#include "liblfds611.h"
-
-#include "intertask_interface.h"
-#include "intertask_interface_dump.h"
 
 #ifdef RTAI
 # include <rtai_shm.h>
 #endif
 
+#include "liblfds611.h"
+
+#include "assertions.h"
+#include "intertask_interface.h"
+#include "intertask_interface_dump.h"
+
 #if defined(OAI_EMU) || defined(RTAI)
+# include "memory_pools.h"
 # include "vcd_signal_dumper.h"
 #endif
 
@@ -175,6 +176,8 @@ typedef struct itti_desc_s {
 #endif
 
 #if defined(OAI_EMU) || defined(RTAI)
+    memory_pools_handle_t memory_pools_handle;
+
     uint64_t vcd_poll_msg;
     uint64_t vcd_receive_msg;
     uint64_t vcd_send_msg;
@@ -183,18 +186,26 @@ typedef struct itti_desc_s {
 
 static itti_desc_t itti_desc;
 
-void *itti_malloc(task_id_t task_id, ssize_t size)
+void *itti_malloc(task_id_t origin_task_id, task_id_t destination_task_id, ssize_t size)
 {
     void *ptr = NULL;
 
-#ifdef RTAI
-//     ptr = rt_malloc(size);
-    ptr = malloc(size);
+#if defined(OAI_EMU) || defined(RTAI)
+    ptr = memory_pools_allocate (itti_desc.memory_pools_handle, size, origin_task_id, destination_task_id);
 #else
-    ptr = malloc(size);
+    ptr = malloc (size);
 #endif
 
-    DevCheck(ptr != NULL, size, task_id, 0);
+    DevCheck(ptr != NULL, size, origin_task_id, destination_task_id);
+#if defined(OAI_EMU) || defined(RTAI)
+    if (ptr == NULL)
+    {
+        char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
+
+        ITTI_ERROR ("\n%s", statistics);
+        free (statistics);
+    }
+#endif
 
     return ptr;
 }
@@ -202,10 +213,11 @@ void *itti_malloc(task_id_t task_id, ssize_t size)
 void itti_free(task_id_t task_id, void *ptr)
 {
     DevAssert(ptr != NULL);
-#ifdef RTAI
-    free(ptr);
+
+#if defined(OAI_EMU) || defined(RTAI)
+    memory_pools_free (itti_desc.memory_pools_handle, ptr, task_id);
 #else
-    free(ptr);
+    free (ptr);
 #endif
 }
 
@@ -285,7 +297,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
         if (thread_id != origin_thread_id) {
             /* Skip tasks which are not running */
             if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
-                new_message_p = itti_malloc (origin_task_id, sizeof(MessageDef));
+                new_message_p = itti_malloc (origin_task_id, destination_task_id, sizeof(MessageDef));
                 DevAssert(message_p != NULL);
 
                 memcpy (new_message_p, message_p, sizeof(MessageDef));
@@ -294,7 +306,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
             }
         }
     }
-    free (message_p);
+    itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
 
     return ret;
 }
@@ -315,7 +327,7 @@ inline MessageDef *itti_alloc_new_message_sized(task_id_t origin_task_id, Messag
         origin_task_id = itti_get_current_task_id();
     }
 
-    temp = itti_malloc (origin_task_id, sizeof(MessageHeader) + size);
+    temp = itti_malloc (origin_task_id, TASK_UNKNOWN, sizeof(MessageHeader) + size);
     DevAssert(temp != NULL);
 
     temp->ittiMsgHeader.messageId = message_id;
@@ -392,7 +404,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
                      itti_desc.threads[destination_thread_id].task_state, message_id);
 
             /* Allocate new list element */
-            new = (message_list_t *) itti_malloc (origin_task_id, sizeof(struct message_list_s));
+            new = (message_list_t *) itti_malloc (origin_task_id, destination_task_id, sizeof(struct message_list_s));
             DevAssert(new != NULL);
 
             /* Fill in members */
@@ -610,7 +622,7 @@ void itti_receive_msg(task_id_t task_id, MessageDef **received_msg)
         }
         DevAssert(message != NULL);
         *received_msg = message->msg;
-        free (message);
+        itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
 
         itti_desc.threads[task_id].sem_counter--;
     } else
@@ -640,7 +652,7 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
         if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 1)
         {
             *received_msg = message->msg;
-            free (message);
+            itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
         }
     }
 
@@ -908,6 +920,21 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 #endif
 
 #if defined(OAI_EMU) || defined(RTAI)
+    itti_desc.memory_pools_handle = memory_pools_create (4);
+    memory_pools_add_pool (itti_desc.memory_pools_handle, 1000 + ITTI_QUEUE_MAX_ELEMENTS,       50);
+    memory_pools_add_pool (itti_desc.memory_pools_handle, 1000 + (2 * ITTI_QUEUE_MAX_ELEMENTS), 100);
+    memory_pools_add_pool (itti_desc.memory_pools_handle, 1000,                                 1000);
+    memory_pools_add_pool (itti_desc.memory_pools_handle, 1000,                                 10000);
+
+    {
+        char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
+
+        printf ("%s", statistics);
+        free (statistics);
+    }
+#endif
+
+#if defined(OAI_EMU) || defined(RTAI)
     itti_desc.vcd_poll_msg = 0;
     itti_desc.vcd_receive_msg = 0;
     itti_desc.vcd_send_msg = 0;
@@ -967,6 +994,15 @@ void itti_wait_tasks_end(void) {
     } while ((ready_tasks > 0) && (retries--));
 
     itti_desc.running = 0;
+
+#if defined(OAI_EMU) || defined(RTAI)
+    {
+        char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
+
+        printf ("%s", statistics);
+        free (statistics);
+    }
+#endif
 
     if (ready_tasks > 0) {
         ITTI_DEBUG(" Some threads are still running, force exit\n");

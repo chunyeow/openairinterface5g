@@ -560,8 +560,7 @@ void *sctp_eNB_task(void *arg)
                                ITTI_MSG_ID(received_msg), ITTI_MSG_NAME(received_msg));
                     break;
             }
-
-            itti_free(TASK_SCTP, received_msg);
+            itti_free(ITTI_MSG_ORIGIN_ID(received_msg), received_msg);
             received_msg = NULL;
         }
 

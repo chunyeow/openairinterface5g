@@ -13,7 +13,7 @@ int sctp_itti_send_new_message_ind(task_id_t task_id, uint32_t assoc_id, uint8_t
 
     sctp_data_ind_p = &message_p->ittiMsg.sctp_data_ind;
 
-    sctp_data_ind_p->buffer = malloc(sizeof(uint8_t) * buffer_length);
+    sctp_data_ind_p->buffer = itti_malloc(TASK_SCTP, task_id, sizeof(uint8_t) * buffer_length);
 
     /* Copy the buffer */
     memcpy((void *)sctp_data_ind_p->buffer, (void *)buffer, buffer_length);
