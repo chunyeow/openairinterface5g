@@ -23,12 +23,15 @@ int decode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
     decoded++;
     uesecuritycapability->eia = *(buffer + decoded);
     decoded++;
-    uesecuritycapability->uea = *(buffer + decoded);
-    decoded++;
-    uesecuritycapability->uia = *(buffer + decoded) & 0x7f;
-    decoded++;
-    uesecuritycapability->gea = *(buffer + decoded) & 0x7f;
-    decoded++;
+    if (len == decoded + 3) {
+        uesecuritycapability->non_eps_security_present = 1;
+        uesecuritycapability->uea = *(buffer + decoded);
+        decoded++;
+        uesecuritycapability->uia = *(buffer + decoded) & 0x7f;
+        decoded++;
+        uesecuritycapability->gea = *(buffer + decoded) & 0x7f;
+        decoded++;
+    }
 #if defined (NAS_DEBUG)
     dump_ue_security_capability_xml(uesecuritycapability, iei);
 #endif
@@ -54,14 +57,16 @@ int encode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
     encoded++;
     *(buffer + encoded) =  uesecuritycapability->eia;
     encoded++;
-    *(buffer + encoded) = uesecuritycapability->uea;
-    encoded++;
-    *(buffer + encoded) = 0x00 |
-    (uesecuritycapability->uia & 0x7f);
-    encoded++;
-    *(buffer + encoded) = 0x00 |
-    (uesecuritycapability->gea & 0x7f);
-    encoded++;
+    if (uesecuritycapability->non_eps_security_present == 1) {
+        *(buffer + encoded) = uesecuritycapability->uea;
+        encoded++;
+        *(buffer + encoded) = 0x00 |
+        (uesecuritycapability->uia & 0x7f);
+        encoded++;
+        *(buffer + encoded) = 0x00 |
+        (uesecuritycapability->gea & 0x7f);
+        encoded++;
+    }
     *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
     return encoded;
 }
@@ -74,9 +79,11 @@ void dump_ue_security_capability_xml(UeSecurityCapability *uesecuritycapability,
         printf("    <IEI>0x%X</IEI>\n", iei);
     printf("    <EEA>%u</EEA>\n", uesecuritycapability->eea);
     printf("    <EIA>%u</EIA>\n", uesecuritycapability->eia);
-    printf("    <UEA>%u</UEA>\n", uesecuritycapability->uea);
-    printf("    <UIA>%u</UIA>\n", uesecuritycapability->uia);
-    printf("    <GEA>%u</GEA>\n", uesecuritycapability->gea);
+    if (uesecuritycapability->non_eps_security_present == 1) {
+        printf("    <UEA>%u</UEA>\n", uesecuritycapability->uea);
+        printf("    <UIA>%u</UIA>\n", uesecuritycapability->uia);
+        printf("    <GEA>%u</GEA>\n", uesecuritycapability->gea);
+    }
     printf("</Ue Security Capability>\n");
 }
 

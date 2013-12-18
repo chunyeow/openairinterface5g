@@ -31,6 +31,7 @@ typedef struct UeSecurityCapability_tag {
 #define UE_SECURITY_CAPABILITY_EIA6	0b00000010
 #define UE_SECURITY_CAPABILITY_EIA7	0b00000001
     uint8_t  eia;
+    unsigned non_eps_security_present:1;
     /* UMTS encryption algorithms supported (octet 5) */
 #define UE_SECURITY_CAPABILITY_UEA0	0b10000000
 #define UE_SECURITY_CAPABILITY_UEA1	0b01000000

@@ -28,6 +28,10 @@ Description Defines the security mode control EMM procedure executed by the
 
 *****************************************************************************/
 
+#include <stdlib.h> // malloc, free
+#include <string.h> // memcpy
+#include <inttypes.h>
+
 #include "emm_proc.h"
 #include "nas_log.h"
 #include "nas_timer.h"
@@ -37,9 +41,7 @@ Description Defines the security mode control EMM procedure executed by the
 #include "emm_sap.h"
 #include "emm_cause.h"
 
-#include <stdlib.h> // malloc, free
-#include <string.h> // memcpy
-#include <inttypes.h>
+#include "UeSecurityCapability.h"
 
 #if defined(ENABLE_ITTI)
 # include "assertions.h"
@@ -368,16 +370,16 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
                                    emm_common_reject_callback_t reject,
                                    emm_common_failure_callback_t failure)
 {
-    LOG_FUNC_IN;
-
     int rc = RETURNerror;
     int security_context_is_new = FALSE;
 
-    LOG_TRACE(INFO, "EMM-PROC  - Initiate security mode control procedure "
-              "KSI = %d", ksi);
-
     /* Get the UE context */
     emm_data_context_t *emm_ctx = NULL;
+
+    LOG_FUNC_IN;
+
+    LOG_TRACE(INFO, "EMM-PROC  - Initiate security mode control procedure "
+              "KSI = %d", ksi);
 
 #if defined(EPC_BUILD)
     if (ueid > 0) {
