@@ -65,17 +65,25 @@
 #include "signals.h"
 #include "timer.h"
 
-const int itti_debug = 0;
-const int itti_debug_poll = 0;
+/* ITTI DEBUG groups */
+#define ITTI_DEBUG_POLL             (1<<0)
+#define ITTI_DEBUG_SEND             (1<<1)
+#define ITTI_DEBUG_EVEN_FD          (1<<2)
+#define ITTI_DEBUG_INIT             (1<<3)
+#define ITTI_DEBUG_EXIT             (1<<4)
+#define ITTI_DEBUG_ISSUES           (1<<5)
+#define ITTI_DEBUG_MP_STATISTICS    (1<<6)
+
+const int itti_debug = ITTI_DEBUG_ISSUES | ITTI_DEBUG_MP_STATISTICS;
 
 /* Don't flush if using RTAI */
 #ifdef RTAI
-# define ITTI_DEBUG(x, args...) do { if (itti_debug) rt_printk("[ITTI][D]"x, ##args); } \
+# define ITTI_DEBUG(m, x, args...) do { if ((m) & itti_debug) rt_printk("[ITTI][D]"x, ##args); } \
     while(0)
 # define ITTI_ERROR(x, args...) do { rt_printk("[ITTI][E]"x, ##args); } \
     while(0)
 #else
-# define ITTI_DEBUG(x, args...) do { if (itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
+# define ITTI_DEBUG(m, x, args...) do { if ((m) & itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
     while(0)
 # define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); fflush (stdout); } \
     while(0)
@@ -202,7 +210,7 @@ void *itti_malloc(task_id_t origin_task_id, task_id_t destination_task_id, ssize
     {
         char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
 
-        ITTI_ERROR ("\n%s", statistics);
+        ITTI_ERROR (" Memory pools statistics:\n%s", statistics);
         free (statistics);
     }
 #endif
@@ -389,7 +397,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
 
         if (itti_desc.threads[destination_thread_id].task_state == TASK_STATE_ENDED)
         {
-            ITTI_DEBUG(" Message %s, number %lu with priority %d can not be sent from %s to queue (%u:%s), ended destination task!\n",
+            ITTI_DEBUG(ITTI_DEBUG_ISSUES, " Message %s, number %lu with priority %d can not be sent from %s to queue (%u:%s), ended destination task!\n",
                        itti_desc.messages_info[message_id].name,
                        message_number,
                        priority,
@@ -440,7 +448,7 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
                 }
             }
 
-            ITTI_DEBUG(" Message %s, number %lu with priority %d successfully sent from %s to queue (%u:%s)\n",
+            ITTI_DEBUG(ITTI_DEBUG_SEND, " Message %s, number %lu with priority %d successfully sent from %s to queue (%u:%s)\n",
                        itti_desc.messages_info[message_id].name,
                        message_number,
                        priority,
@@ -491,7 +499,7 @@ void itti_subscribe_event_fd(task_id_t task_id, int fd)
         DevAssert(0 == 1);
     }
 
-    ITTI_DEBUG(" Successfully subscribed fd %d for task %s\n", fd, itti_get_task_name(task_id));
+    ITTI_DEBUG(ITTI_DEBUG_EVEN_FD, " Successfully subscribed fd %d for task %s\n", fd, itti_get_task_name(task_id));
 }
 
 void itti_unsubscribe_event_fd(task_id_t task_id, int fd)
@@ -656,8 +664,8 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
         }
     }
 
-    if ((itti_debug_poll) && (*received_msg == NULL)) {
-        ITTI_DEBUG(" No message in queue[(%u:%s)]\n", task_id, itti_get_task_name(task_id));
+    if (*received_msg == NULL) {
+        ITTI_DEBUG(ITTI_DEBUG_POLL, " No message in queue[(%u:%s)]\n", task_id, itti_get_task_name(task_id));
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
@@ -677,7 +685,7 @@ int itti_create_task(task_id_t task_id, void *(*start_routine)(void *), void *ar
 
     itti_desc.threads[thread_id].task_state = TASK_STATE_STARTING;
 
-    ITTI_DEBUG(" Creating thread for task %s ...\n", itti_get_task_name(task_id));
+    ITTI_DEBUG(ITTI_DEBUG_INIT, " Creating thread for task %s ...\n", itti_get_task_name(task_id));
 
     result = pthread_create (&itti_desc.threads[thread_id].task_thread, NULL, start_routine, args_p);
     DevCheck(result >= 0, task_id, thread_id, result);
@@ -706,7 +714,7 @@ void itti_wait_ready(int wait_tasks)
 {
     itti_desc.wait_tasks = wait_tasks;
 
-    ITTI_DEBUG(" wait for tasks: %s, created tasks %d, ready tasks %d\n", itti_desc.wait_tasks ? "yes" : "no",
+    ITTI_DEBUG(ITTI_DEBUG_INIT, " wait for tasks: %s, created tasks %d, ready tasks %d\n", itti_desc.wait_tasks ? "yes" : "no",
         itti_desc.created_tasks, itti_desc.ready_tasks);
 
     DevCheck(itti_desc.created_tasks == itti_desc.ready_tasks, itti_desc.created_tasks, itti_desc.ready_tasks, itti_desc.wait_tasks);
@@ -741,7 +749,7 @@ void itti_mark_task_ready(task_id_t task_id)
         usleep (10000);
     }
 
-    ITTI_DEBUG(" task %s started\n", itti_get_task_name(task_id));
+    ITTI_DEBUG(ITTI_DEBUG_INIT, " task %s started\n", itti_get_task_name(task_id));
 }
 
 void itti_exit_task(void) {
@@ -818,7 +826,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 
     itti_desc.message_number = 1;
 
-    ITTI_DEBUG(" Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
+    ITTI_DEBUG(ITTI_DEBUG_INIT, " Init: %d tasks, %d threads, %d messages\n", task_max, thread_max, messages_id_max);
 
     CHECK_INIT_RETURN(signal_mask());
 
@@ -839,14 +847,14 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     /* Initializing each queue and related stuff */
     for (task_id = TASK_FIRST; task_id < itti_desc.task_max; task_id++)
     {
-        ITTI_DEBUG(" Initializing %stask %s%s%s\n",
+        ITTI_DEBUG(ITTI_DEBUG_INIT, " Initializing %stask %s%s%s\n",
                    itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ? "sub-" : "",
                    itti_desc.tasks_info[task_id].name,
                    itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ? " with parent " : "",
                    itti_desc.tasks_info[task_id].parent_task != TASK_UNKNOWN ?
                    itti_get_task_name(itti_desc.tasks_info[task_id].parent_task) : "");
 
-        ITTI_DEBUG(" Creating queue of message of size %u\n", itti_desc.tasks_info[task_id].queue_size);
+        ITTI_DEBUG(ITTI_DEBUG_INIT, " Creating queue of message of size %u\n", itti_desc.tasks_info[task_id].queue_size);
 
         ret = lfds611_queue_new(&itti_desc.tasks[task_id].message_queue, itti_desc.tasks_info[task_id].queue_size);
         if (ret < 0)
@@ -899,7 +907,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
             DevAssert(0 == 1);
         }
 
-        ITTI_DEBUG(" Successfully subscribed fd %d for thread %d\n",
+        ITTI_DEBUG(ITTI_DEBUG_EVEN_FD, " Successfully subscribed fd %d for thread %d\n",
                    itti_desc.threads[thread_id].task_event_fd, thread_id);
 
 #ifdef RTAI
@@ -929,7 +937,7 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
     {
         char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
 
-        printf ("%s", statistics);
+        ITTI_DEBUG(ITTI_DEBUG_MP_STATISTICS, " Memory pools statistics:\n%s", statistics);
         free (statistics);
     }
 #endif
@@ -976,7 +984,7 @@ void itti_wait_tasks_end(void) {
 
                 result = pthread_tryjoin_np (itti_desc.threads[thread_id].task_thread, NULL);
 
-                ITTI_DEBUG(" Thread %s join status %d\n", itti_get_task_name(task_id), result);
+                ITTI_DEBUG(ITTI_DEBUG_EXIT, " Thread %s join status %d\n", itti_get_task_name(task_id), result);
 
                 if (result == 0) {
                     /* Thread has terminated */
@@ -999,13 +1007,13 @@ void itti_wait_tasks_end(void) {
     {
         char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
 
-        printf ("%s", statistics);
+        ITTI_DEBUG(ITTI_DEBUG_MP_STATISTICS, " Memory pools statistics:\n%s", statistics);
         free (statistics);
     }
 #endif
 
     if (ready_tasks > 0) {
-        ITTI_DEBUG(" Some threads are still running, force exit\n");
+        ITTI_DEBUG(ITTI_DEBUG_ISSUES, " Some threads are still running, force exit\n");
         exit (0);
     }
 
