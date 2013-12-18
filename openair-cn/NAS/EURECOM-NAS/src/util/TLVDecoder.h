@@ -47,16 +47,17 @@
     DECODE_U32(bUFFER + dECODED, vALUE, dECODED)
 
 typedef enum {
-        TLV_DECODE_ERROR_OK                     =  0,
-        TLV_DECODE_UNEXPECTED_IEI               = -1,
-        TLV_DECODE_MANDATORY_FIELD_NOT_PRESENT  = -2,
-        TLV_DECODE_VALUE_DOESNT_MATCH           = -3,
-	/* Fatal errors - received message should not be processed */
-        TLV_DECODE_WRONG_MESSAGE_TYPE           = -10,
-        TLV_DECODE_PROTOCOL_NOT_SUPPORTED       = -11,
-        TLV_DECODE_BUFFER_TOO_SHORT             = -12,
-        TLV_DECODE_BUFFER_NULL                  = -13,
-	TLV_DECODE_MAC_MISMATCH                 = -14,
+    TLV_DECODE_ERROR_OK                     =  0,
+    TLV_DECODE_UNEXPECTED_IEI               = -1,
+    TLV_DECODE_MANDATORY_FIELD_NOT_PRESENT  = -2,
+    TLV_DECODE_VALUE_DOESNT_MATCH           = -3,
+
+    /* Fatal errors - received message should not be processed */
+    TLV_DECODE_WRONG_MESSAGE_TYPE           = -10,
+    TLV_DECODE_PROTOCOL_NOT_SUPPORTED       = -11,
+    TLV_DECODE_BUFFER_TOO_SHORT             = -12,
+    TLV_DECODE_BUFFER_NULL                  = -13,
+    TLV_DECODE_MAC_MISMATCH                 = -14,
 } tlv_decoder_error_code;
 
 /* Defines error code limit below which received message should be discarded

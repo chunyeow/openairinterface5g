@@ -513,6 +513,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
          */
         emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
         emm_sap.u.emm_reg.u.common.is_attached = emm_ctx->is_attached;
     } else {
         LOG_TRACE(ERROR, "EMM-PROC  - No EPS security context exists");
@@ -521,6 +522,7 @@ int emm_proc_security_mode_complete(unsigned int ueid)
          */
         emm_sap.primitive = EMMREG_COMMON_PROC_REJ;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
     }
 
     rc = emm_sap_send(&emm_sap);

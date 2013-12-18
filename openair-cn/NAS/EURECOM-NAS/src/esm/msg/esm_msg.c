@@ -60,17 +60,17 @@ static int _esm_msg_encode_header(const esm_msg_header_t *header, uint8_t *buffe
  ***************************************************************************/
 int esm_msg_decode(ESM_msg *msg, uint8_t *buffer, uint32_t len)
 {
-    LOG_FUNC_IN;
-
     int header_result;
     int decode_result;
+
+    LOG_FUNC_IN;
 
     /* First decode the ESM message header */
     header_result = _esm_msg_decode_header(&msg->header, buffer, len);
     if (header_result < 0) {
-	LOG_TRACE(ERROR, "ESM-MSG   - Failed to decode ESM message header "
-		  "(%d)", header_result);
-	LOG_FUNC_RETURN(header_result);
+        LOG_TRACE(ERROR, "ESM-MSG   - Failed to decode ESM message header "
+                "(%d)", header_result);
+        LOG_FUNC_RETURN(header_result);
     }
 
     buffer += header_result;
@@ -146,14 +146,15 @@ int esm_msg_decode(ESM_msg *msg, uint8_t *buffer, uint32_t len)
             break;
         default:
             LOG_TRACE(ERROR, "ESM-MSG   - Unexpected message type: 0x%x",
-		      msg->header.message_type);
-	    decode_result = TLV_DECODE_WRONG_MESSAGE_TYPE;
+                    msg->header.message_type);
+            decode_result = TLV_DECODE_WRONG_MESSAGE_TYPE;
+            break;
     }
 
     if (decode_result < 0) {
-	LOG_TRACE(ERROR, "ESM-MSG   - Failed to decode L3 ESM message 0x%x "
-		  "(%d)", msg->header.message_type, decode_result);
-	LOG_FUNC_RETURN (decode_result);
+        LOG_TRACE(ERROR, "ESM-MSG   - Failed to decode L3 ESM message 0x%x "
+                "(%u)", msg->header.message_type, decode_result);
+        LOG_FUNC_RETURN (decode_result);
     }
     LOG_FUNC_RETURN (header_result + decode_result);
 }
@@ -305,7 +306,7 @@ static int _esm_msg_decode_header(esm_msg_header_t *header,
 
     /* Check the buffer length */
     if (len < sizeof(esm_msg_header_t)) {
-	return (TLV_DECODE_BUFFER_TOO_SHORT);
+        return (TLV_DECODE_BUFFER_TOO_SHORT);
     }
 
     /* Decode the EPS bearer identity and the protocol discriminator */
@@ -318,9 +319,9 @@ static int _esm_msg_decode_header(esm_msg_header_t *header,
     /* Check the protocol discriminator */
     if (header->protocol_discriminator != EPS_SESSION_MANAGEMENT_MESSAGE)
     {
-	LOG_TRACE(ERROR, "ESM-MSG   - Unexpected protocol discriminator: 0x%x",
-		  header->protocol_discriminator);
-	return (TLV_DECODE_PROTOCOL_NOT_SUPPORTED);
+        LOG_TRACE(ERROR, "ESM-MSG   - Unexpected protocol discriminator: 0x%x",
+                header->protocol_discriminator);
+        return (TLV_DECODE_PROTOCOL_NOT_SUPPORTED);
     }
 
     return (size);

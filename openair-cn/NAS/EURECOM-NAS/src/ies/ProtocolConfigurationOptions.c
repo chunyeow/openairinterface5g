@@ -2,14 +2,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
 #include "ProtocolConfigurationOptions.h"
 
 int decode_protocol_configuration_options(ProtocolConfigurationOptions *protocolconfigurationoptions, uint8_t iei, uint8_t *buffer, uint32_t len)
 {
-    int decoded = 0;
+    uint32_t decoded = 0;
     uint8_t ielen = 0;
     int decode_result;
     if (iei > 0)
@@ -20,20 +19,31 @@ int decode_protocol_configuration_options(ProtocolConfigurationOptions *protocol
     ielen = *(buffer + decoded);
     decoded++;
     CHECK_LENGTH_DECODER(len - decoded, ielen);
-    if (((*buffer >> 7) & 0x1) != 1)
+    if (((*(buffer + decoded) >> 7) & 0x1) != 1)
+    {
+        errorCodeDecoder = TLV_DECODE_VALUE_DOESNT_MATCH;
+        return TLV_DECODE_VALUE_DOESNT_MATCH;
+    }
+    /* Bits 7 to 4 of octet 3 are spare, read as 0 */
+    if (((*(buffer + decoded) & 0x78) >> 3) != 0)
     {
         errorCodeDecoder = TLV_DECODE_VALUE_DOESNT_MATCH;
         return TLV_DECODE_VALUE_DOESNT_MATCH;
     }
     protocolconfigurationoptions->configurationprotol = (*(buffer + decoded) >> 1) & 0x7;
-    //IES_DECODE_U16(protocolconfigurationoptions->protocolid, *(buffer + decoded));
-    IES_DECODE_U16(buffer, decoded, protocolconfigurationoptions->protocolid);
-    protocolconfigurationoptions->lengthofprotocolid = *(buffer + decoded);
     decoded++;
-    if ((decode_result = decode_octet_string(&protocolconfigurationoptions->protocolidcontents, ielen, buffer + decoded, len - decoded)) < 0)
-        return decode_result;
-    else
-        decoded += decode_result;
+    //IES_DECODE_U16(protocolconfigurationoptions->protocolid, *(buffer + decoded));
+    while ((len - decoded) > 0) {
+        IES_DECODE_U16(buffer, decoded, protocolconfigurationoptions->protocolid);
+        DECODE_U8(buffer + decoded, protocolconfigurationoptions->lengthofprotocolid, decoded);
+        if ((decode_result = decode_octet_string(&protocolconfigurationoptions->protocolidcontents,
+                protocolconfigurationoptions->lengthofprotocolid, buffer + decoded, len - decoded)) < 0)
+        {
+            return decode_result;
+        } else {
+            decoded += decode_result;
+        }
+    }
 #if defined (NAS_DEBUG)
     dump_protocol_configuration_options_xml(protocolconfigurationoptions, iei);
 #endif

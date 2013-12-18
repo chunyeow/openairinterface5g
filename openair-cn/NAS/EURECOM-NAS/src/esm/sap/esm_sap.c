@@ -401,17 +401,19 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                          const OctetString *req, OctetString *rsp,
                          esm_sap_error_t *err)
 {
-    LOG_FUNC_IN;
-
     esm_proc_procedure_t esm_procedure = NULL;
     int esm_cause = ESM_CAUSE_SUCCESS;
     int rc = RETURNerror;
+    int decoder_rc;
 
     ESM_msg esm_msg;
+
+    LOG_FUNC_IN;
+
     memset(&esm_msg, 0 , sizeof(ESM_msg));
 
     /* Decode the received ESM message */
-    int decoder_rc = esm_msg_decode(&esm_msg, req->value, req->length);
+    decoder_rc = esm_msg_decode(&esm_msg, req->value, req->length);
 
     /* Process decoding errors */
     if (decoder_rc < 0) {
