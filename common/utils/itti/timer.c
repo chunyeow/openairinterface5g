@@ -147,7 +147,7 @@ int timer_setup(
     if (timer_id == NULL) {
         return -1;
     }
-    DevAssert(type < TIMER_TYPE_MAX);
+    AssertFatal (type < TIMER_TYPE_MAX, "Invalid timer type (%d/%d)\n", type, TIMER_TYPE_MAX);
 
     /* Allocate new timer list element */
     timer_p = malloc(sizeof(struct timer_elm_s));

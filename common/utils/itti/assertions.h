@@ -39,38 +39,35 @@
 #ifndef ASSERTIONS_H_
 #define ASSERTIONS_H_
 
-#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                            \
+#define _Assert_(cOND, eXIT, fORMAT, aRGS...)                             \
 do {                                                                      \
     if (!(cOND)) {                                                        \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed.\n",         \
-                __FILE__, __LINE__, __FUNCTION__);                        \
-        fprintf(stderr, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n\n",  \
-        (int)vALUE1, (int)vALUE2, (int)vALUE3);                           \
-        display_backtrace();                                              \
-        exit(EXIT_FAILURE);                                               \
+        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed!\n" fORMAT,  \
+                __FILE__, __LINE__, __FUNCTION__, ##aRGS);                \
+        if (eXIT != 0) {                                                  \
+            display_backtrace();                                          \
+            fflush(stdout);                                               \
+            fflush(stderr);                                               \
+            exit(EXIT_FAILURE);                                           \
+        }                                                                 \
     }                                                                     \
 } while(0)
 
-#define DevParam(vALUE1, vALUE2, vALUE3)    \
-    DevCheck(0 == 1, vALUE1, vALUE2, vALUE3)
+#define AssertFatal(cOND, fORMAT, aRGS...)  _Assert_(cOND, 1, fORMAT, ##aRGS)
 
-#define DevAssert(cOND)                                                 \
-do {                                                                    \
-    if (!(cOND))    {                                                   \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed.\n",       \
-        __FILE__, __LINE__, __FUNCTION__);                              \
-        display_backtrace();                                            \
-        exit(EXIT_FAILURE);                                             \
-    }                                                                   \
-} while(0)
+#define AssertError(cOND, fORMAT, aRGS...)  _Assert_(cOND, 0, fORMAT, ##aRGS)
 
-#define DevMessage(mESSAGE)                                             \
-do {                                                                    \
-    fprintf(stderr, "%s:%d:%s Execution interrupted: `"#mESSAGE"`.\n",  \
-    __FILE__, __LINE__, __FUNCTION__);                                  \
-    display_backtrace();                                                \
-    exit(EXIT_FAILURE);                                                 \
-} while(0)
+
+
+#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                            \
+_Assert_(cOND, 1, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n\n",        \
+         (int)vALUE1, (int)vALUE2, (int)vALUE3)
+
+#define DevParam(vALUE1, vALUE2, vALUE3)    DevCheck(0, vALUE1, vALUE2, vALUE3)
+
+#define DevAssert(cOND)                     _Assert_(cOND, 1, "")
+
+#define DevMessage(mESSAGE)                 _Assert_(0, 1, #mESSAGE)
 
 #define CHECK_INIT_RETURN(fCT)                                  \
 do {                                                            \

@@ -156,7 +156,7 @@ static inline items_group_index_t items_group_get_free_item (items_group_t *item
 
         /* Get index at current position */
         index = items_group->indexes[current];
-        DevCheck (index > ITEMS_GROUP_INDEX_INVALID, current, index, 0);
+        AssertError (index > ITEMS_GROUP_INDEX_INVALID, "Index (%d) at current position (%d) is not valid!\n", current, index);
 
         /* Clear index at current position */
         items_group->indexes[current] = ITEMS_GROUP_INDEX_INVALID;
@@ -225,7 +225,7 @@ static inline void items_group_put_free_item (items_group_t *items_group, items_
         }
     } while (next != current);
 
-    DevCheck (current < items_group->number, current, items_group->number, 0);
+    AssertFatal (current < items_group->number, "Current position (%d) is above maximum position (%d)\n", current, items_group->number);
 }
 
 /*------------------------------------------------------------------------------*/
@@ -236,7 +236,7 @@ static inline memory_pools_t *memory_pools_from_handler (memory_pools_handle_t m
     /* Recover memory_pools */
     memory_pools = (memory_pools_t *) memory_pools_handle;
     /* Sanity check on passed handle */
-    DevAssert (memory_pools->start_mark == POOLS_START_MARK);
+    AssertFatal (memory_pools->start_mark == POOLS_START_MARK, "Handle %p is not a valid memory pools handle, start mark is missing\n", memory_pools_handle);
 
     return (memory_pools);
 }
@@ -251,7 +251,7 @@ static inline memory_pool_item_t *memory_pool_item_from_handler (memory_pool_ite
     memory_pool_item = (memory_pool_item_t *) address;
 
     /* Sanity check on passed handle */
-    DevAssert (memory_pool_item->start.start_mark == POOL_ITEM_START_MARK);
+    AssertFatal (memory_pool_item->start.start_mark == POOL_ITEM_START_MARK, "Handle %p is not a valid memory pool item handle, start mark is missing\n", memory_pool_item);
 
     return (memory_pool_item);
 }
@@ -272,11 +272,11 @@ memory_pools_handle_t memory_pools_create (uint32_t pools_number)
     memory_pools_t *memory_pools;
     pool_id_t       pool;
 
-    DevCheck (pools_number <= MAX_POOLS_NUMBER, pools_number, MAX_POOLS_NUMBER, 0); /* Limit to a reasonable number of pools */
+    AssertFatal (pools_number <= MAX_POOLS_NUMBER, "Too many memory pools requested (%d/%d)\n", pools_number, MAX_POOLS_NUMBER); /* Limit to a reasonable number of pools */
 
     /* Allocate memory_pools */
     memory_pools = malloc (sizeof(memory_pools_t));
-    DevAssert (memory_pools != NULL);
+    AssertFatal (memory_pools != NULL, "Memory pools structure allocation failed\n");
 
     /* Initialize memory_pools */
     {
@@ -286,7 +286,7 @@ memory_pools_handle_t memory_pools_create (uint32_t pools_number)
 
         /* Allocate pools */
         memory_pools->pools         = calloc (pools_number, sizeof(memory_pool_t));
-        DevAssert (memory_pools->pools != NULL);
+        AssertFatal (memory_pools->pools != NULL, "Memory pools allocation failed\n");
 
         /* Initialize pools */
         for (pool = 0; pool < pools_number; pool++)
@@ -317,13 +317,13 @@ char *memory_pools_statistics(memory_pools_handle_t memory_pools_handle)
     {
         allocated_pool_memory = memory_pools->pools[pool].items_group_free.number * memory_pools->pools[pool].pool_item_size;
         allocated_pools_memory += allocated_pool_memory;
-        printed_chars += sprintf (&statistics[printed_chars], "  %2u: %6u, %6u,  %6u, %6u, %6u Kbytes\n",
+        printed_chars += sprintf (&statistics[printed_chars], "  %2u: %6u, %6lu,  %6u, %6u, %6u Kbytes\n",
                                   pool,
                                   memory_pools->pools[pool].items_group_free.number,
                                   memory_pools->pools[pool].item_data_number * sizeof(memory_pool_data_t),
                                   memory_pools->pools[pool].items_group_free.minimum + 1,
                                   memory_pools->pools[pool].items_group_free.current + 1,
-                                  allocated_pool_memory / (1020));
+                                  allocated_pool_memory / (1024));
     }
     printed_chars = sprintf (&statistics[printed_chars], "Pools memory %u Kbytes\n", allocated_pools_memory / (1024));
 
@@ -338,14 +338,14 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
     items_group_index_t item_index;
     memory_pool_item_t *memory_pool_item;
 
-    DevCheck (pool_items_number <= MAX_POOL_ITEMS_NUMBER, pool_items_number, MAX_POOL_ITEMS_NUMBER, 0);  /* Limit to a reasonable number of items */
-    DevCheck (pool_item_size <= MAX_POOL_ITEM_SIZE, pool_item_size, MAX_POOL_ITEM_SIZE, 0);              /* Limit to a reasonable item size */
+    AssertFatal (pool_items_number <= MAX_POOL_ITEMS_NUMBER, "Too many items for a memory pool (%u/%d)\n", pool_items_number, MAX_POOL_ITEMS_NUMBER); /* Limit to a reasonable number of items */
+    AssertFatal (pool_item_size <= MAX_POOL_ITEM_SIZE, "Item size is too big for memory pool items (%u/%d)\n", pool_item_size, MAX_POOL_ITEM_SIZE);   /* Limit to a reasonable item size */
 
     /* Recover memory_pools */
     memory_pools = memory_pools_from_handler (memory_pools_handle);
 
     /* Check number of already created pools */
-    DevAssert (memory_pools->pools_defined < memory_pools->pools_number);
+    AssertFatal (memory_pools->pools_defined < memory_pools->pools_number, "Can not allocate more memory pool (%d)\n", memory_pools->pools_number);
 
     /* Select pool */
     pool = memory_pools->pools_defined;
@@ -363,7 +363,7 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
 
         /* Allocate free indexes */
         memory_pool->items_group_free.indexes = malloc(pool_items_number * sizeof(items_group_index_t));
-        DevAssert (memory_pool->items_group_free.indexes != NULL);
+        AssertFatal (memory_pool->items_group_free.indexes != NULL, "Memory pool indexes allocation failed\n");
 
         /* Initialize free indexes */
         for (item_index = 0; item_index < pool_items_number; item_index++)
@@ -373,7 +373,7 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
 
         /* Allocate items */
         memory_pool->items = calloc (pool_items_number, memory_pool->pool_item_size);
-        DevAssert (memory_pool->items != NULL);
+        AssertFatal (memory_pool->items != NULL, "Memory pool items allocation failed\n");
 
         /* Initialize items */
         for (item_index = 0; item_index < pool_items_number; item_index++)
@@ -428,7 +428,8 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
         /* Convert item index into memory_pool_item address */
         memory_pool_item                    = memory_pool_item_from_index (&memory_pools->pools[pool], item_index);
         /* Sanity check on item status, must be free */
-        DevCheck (memory_pool_item->start.item_status == ITEM_STATUS_FREE, memory_pool_item->start.item_status, pool, item_index);
+        AssertFatal (memory_pool_item->start.item_status == ITEM_STATUS_FREE, "Item status is not set to free (%d) in pool %u, item %d\n",
+                     memory_pool_item->start.item_status, pool, item_index);
 
         memory_pool_item->start.item_status = ITEM_STATUS_ALLOCATED;
         memory_pool_item->start.info[0]     = info_0;
@@ -467,25 +468,26 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     memory_pool_item = memory_pool_item_from_handler (memory_pool_item_handle);
     /* Recover pool index */
     pool = memory_pool_item->start.pool_id;
-    DevCheck (pool < memory_pools->pools_defined, pool, memory_pools->pools_defined, 0);
+    AssertFatal (pool < memory_pools->pools_defined, "Pool index is invalid (%u/%u)\n", pool, memory_pools->pools_defined);
 
     item_size = memory_pools->pools[pool].item_data_number;
     pool_item_size = memory_pools->pools[pool].pool_item_size;
     item_index = (((void *) memory_pool_item) - ((void *) memory_pools->pools[pool].items)) / pool_item_size;
 
-    MP_DEBUG(" Free  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %u\n",
+    MP_DEBUG(" Free  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %lu\n",
              pool, item_index, memory_pools->pools[pool].items_group_free.current,
              memory_pool_item->start.info[0], memory_pool_item->start.info[1],
              memory_pool_item_handle, memory_pool_item,
              memory_pools->pools[pool].items, item_size * sizeof(memory_pool_data_t));
 
     /* Sanity check on calculated item index */
-    DevCheck (memory_pool_item == memory_pool_item_from_index(&memory_pools->pools[pool], item_index), memory_pool_item,
-              memory_pool_item_from_index(&memory_pools->pools[pool], item_index), pool);
+    AssertFatal (memory_pool_item == memory_pool_item_from_index(&memory_pools->pools[pool], item_index), "Incorrect memory pool item address (%p, %p) for pool %u, item %d\n",
+                 memory_pool_item, memory_pool_item_from_index(&memory_pools->pools[pool], item_index), pool, item_index);
     /* Sanity check on end marker, must still be present (no write overflow) */
-    DevCheck (memory_pool_item->data[item_size] == POOL_ITEM_END_MARK, pool, 0, 0);
+    AssertFatal (memory_pool_item->data[item_size] == POOL_ITEM_END_MARK, "Memory pool item is corrupted, end mark is not present for pool %u, item %d\n", pool, item_index);
     /* Sanity check on item status, must be allocated */
-    DevCheck (memory_pool_item->start.item_status == ITEM_STATUS_ALLOCATED, memory_pool_item->start.item_status, pool, item_index);
+    AssertFatal (memory_pool_item->start.item_status == ITEM_STATUS_ALLOCATED, "Trying to free a non allocated (%x) memory pool item (pool %u, item %d)\n",
+                 memory_pool_item->start.item_status, pool, item_index);
 
     memory_pool_item->start.item_status = ITEM_STATUS_FREE;
 

@@ -165,11 +165,11 @@ static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
     /* Allocate memory for message header and payload */
     size_t size = sizeof(itti_dump_message_t) + message->data_size;
 
-    DevCheck(sd > 0, sd, 0, 0);
-    DevAssert(message != NULL);
+    AssertFatal (sd > 0, "Socket descriptor (%d) is invalid\n", sd);
+    AssertFatal (message != NULL, "Message is NULL\n");
 
     new_message = calloc(1, size);
-    DevAssert(new_message != NULL);
+    AssertFatal (new_message != NULL, "New message allocation failed\n");
 
     /* Preparing the header */
     new_message->header.message_size = size;
@@ -228,8 +228,8 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
     ssize_t bytes_sent = 0, total_sent = 0;
     uint8_t *data_ptr;
 
-    DevCheck(sd > 0, sd, 0, 0);
-    DevAssert(message_definition_xml != NULL);
+    AssertFatal (sd > 0, "Socket descriptor (%d) is invalid\n", sd);
+    AssertFatal (message_definition_xml != NULL, "Message definition XML is NULL\n");
 
     itti_dump_message_size = sizeof(itti_socket_header_t) + message_definition_xml_length;
 
@@ -289,7 +289,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
 {
     struct lfds611_freelist_element *new_queue_element = NULL;
     int overwrite_flag;
-    DevAssert(new != NULL);
+    AssertFatal (new != NULL, "Message to queue is NULL\n");
 
 #if defined(OAI_EMU) || defined(RTAI)
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
@@ -324,7 +324,7 @@ static int itti_dump_enqueue_message(itti_dump_queue_item_t *new, uint32_t messa
 
             /* Call to write for an event fd must be of 8 bytes */
             write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
-            DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+            AssertFatal (write_ret == sizeof(sem_counter), "Write to dump event failed (%ld/%ld)\n",  write_ret, sizeof(sem_counter));
         }
 #endif
         __sync_fetch_and_add (&pending_messages, 1);
@@ -405,8 +405,7 @@ static int itti_dump_flush_ring_buffer(int flush_all)
                 }
                 else
                 {
-                    ITTI_DUMP_DEBUG(0x8, " Dump event with no data\n");
-                    DevMessage("Dump event with no data\n");
+                    AssertFatal (0, "Dump event with no data\n");
                 }
             }
             else
@@ -463,13 +462,13 @@ static int itti_dump_handle_new_connection(int sd, const char *xml_definition, u
 
         ITTI_DUMP_DEBUG(0x2, " Found place to store new connection: %d\n", i);
 
-        DevCheck(i < ITTI_DUMP_MAX_CON, i, ITTI_DUMP_MAX_CON, sd);
+        AssertFatal (i < ITTI_DUMP_MAX_CON, "No more connection available (%d/%d) for socked %d\n", i, ITTI_DUMP_MAX_CON, sd);
 
         ITTI_DUMP_DEBUG(0x2, " Socket %d accepted\n", sd);
 
         /* Send the XML message definition */
         if (itti_dump_send_xml_definition(sd, xml_definition, xml_definition_length) < 0) {
-            ITTI_DUMP_ERROR(" Failed to send XML definition\n");
+            AssertError (0, " Failed to send XML definition\n");
             close (sd);
             return -1;
         }
@@ -506,7 +505,7 @@ static void *itti_dump_socket(void *arg_p)
     ITTI_DUMP_DEBUG(0x2, " Creating TCP dump socket on port %u\n", ITTI_PORT);
 
     message_definition_xml = (char *)arg_p;
-    DevAssert(message_definition_xml != NULL);
+    AssertFatal (message_definition_xml != NULL, "Message definition XML is NULL\n");
 
     message_definition_xml_length = strlen(message_definition_xml) + 1;
 
@@ -627,7 +626,7 @@ static void *itti_dump_socket(void *arg_p)
                         ITTI_DUMP_ERROR(" Failed read for semaphore: %s\n", strerror(errno));
                         pthread_exit(NULL);
                     }
-                    DevCheck(read_ret == sizeof(sem_counter), read_ret, sizeof(sem_counter), 0);
+                    AssertFatal (read_ret == sizeof(sem_counter), "Failed to read from dump event FD (%ld/%ld)\n", read_ret, sizeof(sem_counter));
 #if defined(KERNEL_VERSION_PRE_2_6_30)
                     if (itti_dump_flush_ring_buffer(1) == 0)
 #else
@@ -645,7 +644,7 @@ static void *itti_dump_socket(void *arg_p)
                                 sem_counter = 1;
                                 /* Call to write for an event fd must be of 8 bytes */
                                 write_ret = write(itti_dump_queue.event_fd, &sem_counter, sizeof(sem_counter));
-                                DevCheck(write_ret == sizeof(sem_counter), write_ret, sem_counter, 0);
+                                AssertFatal (write_ret == sizeof(sem_counter), "Failed to write to dump event FD (%ld/%ld)\n", write_ret, sem_counter);
                             }
 #endif
                         }
@@ -703,7 +702,7 @@ static void *itti_dump_socket(void *arg_p)
                     /* In case we don't find the matching sd in list of known
                      * connections -> assert.
                      */
-                    DevCheck(j < ITTI_DUMP_MAX_CON, j, ITTI_DUMP_MAX_CON, i);
+                    AssertFatal (j < ITTI_DUMP_MAX_CON, "Connection index not found (%d/%d) for socked %d\n", j, ITTI_DUMP_MAX_CON, i);
 
                     /* Re-initialize the socket to -1 so we can accept new
                      * incoming connections.
@@ -744,8 +743,8 @@ int itti_dump_queue_message(task_id_t sender_task,
         itti_dump_queue_item_t *new;
         size_t message_name_length;
 
-        DevAssert(message_name != NULL);
-        DevAssert(message_p != NULL);
+        AssertFatal (message_name != NULL, "Message name is NULL\n");
+        AssertFatal (message_p != NULL, "Message is NULL\n");
 
 #if defined(OAI_EMU) || defined(RTAI)
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
@@ -768,8 +767,7 @@ int itti_dump_queue_message(task_id_t sender_task,
         new->message_number  = message_number;
 
         message_name_length = strlen(message_name) + 1;
-        DevCheck(message_name_length <= SIGNAL_NAME_LENGTH, message_name_length,
-                 SIGNAL_NAME_LENGTH, 0);
+        AssertError (message_name_length <= SIGNAL_NAME_LENGTH, "Message name too long (%ld/%d)\n", message_name_length, SIGNAL_NAME_LENGTH);
         memcpy(new->message_name, message_name, message_name_length);
 
         itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
@@ -824,9 +822,8 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
                                NULL,
                                NULL) != 1)
     {
-        ITTI_DUMP_ERROR(" Failed to create ring buffer...\n");
         /* Always assert on this condition */
-        DevAssert(0 == 1);
+        AssertFatal (0, " Failed to create ring buffer...\n");
     }
 
 #ifdef RTAI
@@ -837,11 +834,9 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
 # else
     itti_dump_queue.event_fd = eventfd(0, EFD_SEMAPHORE);
 # endif
-    if (itti_dump_queue.event_fd == -1)
-    {
-        ITTI_DUMP_ERROR(" eventfd failed: %s\n", strerror(errno));
+    if (itti_dump_queue.event_fd == -1) {
         /* Always assert on this condition */
-        DevAssert(0 == 1);
+        AssertFatal (0, "eventfd failed: %s\n", strerror(errno));
     }
 #endif
 
@@ -855,26 +850,22 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
     /* initialized with default attributes */
     ret = pthread_attr_init(&itti_dump_queue.attr);
     if (ret < 0) {
-        ITTI_DUMP_ERROR(" pthread_attr_init failed (%d:%s)\n", errno, strerror(errno));
-        DevAssert(0 == 1);
+        AssertFatal (0, "pthread_attr_init failed (%d:%s)\n", errno, strerror(errno));
     }
 
     ret = pthread_attr_setschedpolicy(&itti_dump_queue.attr, SCHED_FIFO);
     if (ret < 0) {
-        ITTI_DUMP_ERROR(" pthread_attr_setschedpolicy (SCHED_IDLE) failed (%d:%s)\n", errno, strerror(errno));
-        DevAssert(0 == 1);
+        AssertFatal (0, "pthread_attr_setschedpolicy (SCHED_IDLE) failed (%d:%s)\n", errno, strerror(errno));
     }
     ret = pthread_attr_setschedparam(&itti_dump_queue.attr, &scheduler_param);
     if (ret < 0) {
-        ITTI_DUMP_ERROR(" pthread_attr_setschedparam failed (%d:%s)\n", errno, strerror(errno));
-        DevAssert(0 == 1);
+        AssertFatal (0, "pthread_attr_setschedparam failed (%d:%s)\n", errno, strerror(errno));
     }
 
     ret = pthread_create(&itti_dump_queue.itti_acceptor_thread, &itti_dump_queue.attr,
                          &itti_dump_socket, (void *)messages_definition_xml);
     if (ret < 0) {
-        ITTI_DUMP_ERROR(" pthread_create failed (%d:%s)\n", errno, strerror(errno));
-        DevAssert(0 == 1);
+        AssertFatal (0, "pthread_create failed (%d:%s)\n", errno, strerror(errno));
     }
 
     return 0;
