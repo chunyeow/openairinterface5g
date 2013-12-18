@@ -28,6 +28,10 @@
 
  *******************************************************************************/
 
+#ifdef RTAI
+# include <rtai_shm.h>
+#endif
+
 #include "assertions.h"
 #include "memory_pools.h"
 
@@ -410,8 +414,7 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
         if (item_index <= ITEMS_GROUP_INDEX_INVALID)
         {
             /* Allocation failed, skip this pool */
-            break;
-            //continue;
+            continue;
         }
         else
         {
@@ -432,9 +435,9 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
         memory_pool_item->start.info[1]     = info_1;
         memory_pool_item_handle             = memory_pool_item->data;
 
-        MP_DEBUG(" Alloc [%2u][%6d]{%6u}, %3u %3u, %6u, %p, %p, %p\n",
+        MP_DEBUG(" Alloc [%2u][%6d]{%6d}, %3u %3u, %6u, %p, %p, %p\n",
                  pool, item_index,
-                 memory_pools->pools[pool].items_group_free.minimum,
+                 memory_pools->pools[pool].items_group_free.current,
                  info_0, info_1,
                  item_size,
                  memory_pools->pools[pool].items,
@@ -470,7 +473,7 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     pool_item_size = memory_pools->pools[pool].pool_item_size;
     item_index = (((void *) memory_pool_item) - ((void *) memory_pools->pools[pool].items)) / pool_item_size;
 
-    MP_DEBUG(" Free  [%2u][%6d]{%6u}, %3u %3u,         %p, %p, %p, %u\n",
+    MP_DEBUG(" Free  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %u\n",
              pool, item_index, memory_pools->pools[pool].items_group_free.current,
              memory_pool_item->start.info[0], memory_pool_item->start.info[1],
              memory_pool_item_handle, memory_pool_item,
