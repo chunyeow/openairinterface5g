@@ -34,6 +34,9 @@
 
 #include "assertions.h"
 #include "memory_pools.h"
+#if defined(OAI_EMU) || defined(RTAI)
+# include "vcd_signal_dumper.h"
+#endif
 
 /*------------------------------------------------------------------------------*/
 const static int mp_debug = 0;
@@ -48,6 +51,11 @@ const static int mp_debug = 0;
     while(0)
 # define MP_ERROR(x, args...) do { fprintf(stdout, "[MP][E]"x, ##args); } \
     while(0)
+#endif
+
+#if defined(OAI_EMU) || defined(RTAI)
+uint64_t vcd_mp_alloc;
+uint64_t vcd_mp_free;
 #endif
 
 /*------------------------------------------------------------------------------*/
@@ -399,6 +407,11 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
     pool_id_t                   pool;
     items_group_index_t         item_index = ITEMS_GROUP_INDEX_INVALID;
 
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_ALLOC,
+                                            __sync_or_and_fetch (&vcd_mp_alloc, 1L << info_0));
+#endif
+
     /* Recover memory_pools */
     memory_pools = memory_pools_from_handler (memory_pools_handle);
 
@@ -450,10 +463,15 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
         MP_DEBUG(" Alloc [--][------]{------}, %3u %3u, %6u, failed!\n", info_0, info_1, item_size);
     }
 
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_ALLOC,
+                                            __sync_and_and_fetch (&vcd_mp_alloc, ~(1L << info_0)));
+#endif
+
     return memory_pool_item_handle;
 }
 
-void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, uint16_t info)
+void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, uint16_t info_0)
 {
     memory_pools_t     *memory_pools;
     memory_pool_item_t *memory_pool_item;
@@ -461,11 +479,19 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     items_group_index_t item_index;
     uint32_t            item_size;
     uint32_t            pool_item_size;
+    uint16_t            info_1;
 
     /* Recover memory_pools */
     memory_pools = memory_pools_from_handler (memory_pools_handle);
     /* Recover memory pool item */
     memory_pool_item = memory_pool_item_from_handler (memory_pool_item_handle);
+    info_1 = memory_pool_item->start.info[1];
+
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
+                                            __sync_or_and_fetch (&vcd_mp_free, 1L << info_1));
+#endif
+
     /* Recover pool index */
     pool = memory_pool_item->start.pool_id;
     AssertFatal (pool < memory_pools->pools_defined, "Pool index is invalid (%u/%u)\n", pool, memory_pools->pools_defined);
@@ -476,7 +502,7 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
 
     MP_DEBUG(" Free  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %lu\n",
              pool, item_index, memory_pools->pools[pool].items_group_free.current,
-             memory_pool_item->start.info[0], memory_pool_item->start.info[1],
+             memory_pool_item->start.info[0], info_1,
              memory_pool_item_handle, memory_pool_item,
              memory_pools->pools[pool].items, item_size * sizeof(memory_pool_data_t));
 
@@ -492,4 +518,9 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     memory_pool_item->start.item_status = ITEM_STATUS_FREE;
 
     items_group_put_free_item(&memory_pools->pools[pool].items_group_free, item_index);
+
+#if defined(OAI_EMU) || defined(RTAI)
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
+                                            __sync_and_and_fetch (&vcd_mp_free, ~(1L << info_1)));
+#endif
 }

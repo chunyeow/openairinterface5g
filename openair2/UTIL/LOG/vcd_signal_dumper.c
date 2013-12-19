@@ -83,7 +83,9 @@ const char* eurecomVariablesNames[] = {
     "itti_send_msg",
     "itti_poll_msg",
     "itti_recv_msg",
-    "itti_alloc_msg"
+    "itti_alloc_msg",
+    "mp_alloc",
+    "mp_free",
 };
  
 const char* eurecomFunctionsNames[] = {
