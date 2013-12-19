@@ -1448,7 +1448,7 @@ int main(int argc, char **argv) {
 						   num_common_dci,
 						   dci_alloc,
 						   0,
-						   1024,
+						   AMP,
 						   &PHY_vars_eNB->lte_frame_parms,
 						   PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNB_id],
 						   subframe);
@@ -1549,7 +1549,7 @@ int main(int argc, char **argv) {
 	      */
 	      if (num_layers>1)
 		re_allocated = dlsch_modulation(PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNB_id],
-						1024,
+						AMP,
 						subframe,
 						&PHY_vars_eNB->lte_frame_parms,
 						num_pdcch_symbols,
@@ -1559,7 +1559,7 @@ int main(int argc, char **argv) {
 	    
 	    generate_pilots(PHY_vars_eNB,
 			    PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNB_id],
-			    1024,
+			    AMP,
 			    LTE_NUMBER_OF_SUBFRAMES_PER_FRAME);
 	  
 	    start_meas(&PHY_vars_eNB->ofdm_mod_stats);
@@ -2300,15 +2300,15 @@ int main(int argc, char **argv) {
 	     errs[0],
 	     round_trials[0],
 	     errs[1],
-	     round_trials[1],
+	     round_trials[0],
 	     errs[2],
-	     round_trials[2],
+	     round_trials[0],
 	     errs[3],
-	     round_trials[3],
+	     round_trials[0],
 	     (double)errs[0]/(round_trials[0]),
-	     (double)errs[1]/(round_trials[1]),
-	     (double)errs[2]/(round_trials[2]),
-	     (double)errs[3]/(round_trials[3]),
+	     (double)errs[1]/(round_trials[0]),
+	     (double)errs[2]/(round_trials[0]),
+	     (double)errs[3]/(round_trials[0]),
 	     dci_errors,
 	     round_trials[0],
 	     (double)dci_errors/(round_trials[0]),
