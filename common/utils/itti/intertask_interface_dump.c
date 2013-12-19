@@ -67,12 +67,12 @@
 static const int itti_dump_debug = 0; // 0x8 | 0x4 | 0x2;
 
 #ifdef RTAI
-# define ITTI_DUMP_DEBUG(m, x, args...) do { if (m & itti_dump_debug) rt_printk("[ITTI_DUMP][D]"x, ##args); } \
+# define ITTI_DUMP_DEBUG(m, x, args...) do { if ((m) & itti_dump_debug) rt_printk("[ITTI_DUMP][D]"x, ##args); } \
     while(0)
 # define ITTI_DUMP_ERROR(x, args...) do { rt_printk("[ITTI_DUMP][E]"x, ##args); } \
     while(0)
 #else
-# define ITTI_DUMP_DEBUG(m, x, args...) do { if (m & itti_dump_debug) fprintf(stdout, "[ITTI_DUMP][D]"x, ##args); } \
+# define ITTI_DUMP_DEBUG(m, x, args...) do { if ((m) & itti_dump_debug) fprintf(stdout, "[ITTI_DUMP][D]"x, ##args); } \
     while(0)
 # define ITTI_DUMP_ERROR(x, args...) do { fprintf(stdout, "[ITTI_DUMP][E]"x, ##args); } \
     while(0)
@@ -749,7 +749,7 @@ int itti_dump_queue_message(task_id_t sender_task,
 #if defined(OAI_EMU) || defined(RTAI)
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
 #endif
-        new = itti_malloc(sender_task, TASK_MAX + 100, sizeof(itti_dump_queue_item_t));
+        new = itti_malloc(sender_task, TASK_MAX, sizeof(itti_dump_queue_item_t));
 #if defined(OAI_EMU) || defined(RTAI)
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
 #endif
@@ -757,7 +757,7 @@ int itti_dump_queue_message(task_id_t sender_task,
 #if defined(OAI_EMU) || defined(RTAI)
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_IN);
 #endif
-        new->data = itti_malloc(sender_task, TASK_MAX + 100, message_size);
+        new->data = itti_malloc(sender_task, TASK_MAX, message_size);
 #if defined(OAI_EMU) || defined(RTAI)
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_DUMP_ENQUEUE_MESSAGE_MALLOC, VCD_FUNCTION_OUT);
 #endif
