@@ -391,6 +391,8 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
     {
 #if defined(OAI_EMU) || defined(RTAI)
         vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ITTI_ENQUEUE_MESSAGE, VCD_FUNCTION_IN);
+
+        memory_pools_set_info (itti_desc.memory_pools_handle, message, 1, destination_task_id);
 #endif
 
         if (itti_desc.threads[destination_thread_id].task_state == TASK_STATE_ENDED)

@@ -46,4 +46,6 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
 
 void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, uint16_t info_0);
 
+void memory_pools_set_info (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, int index, uint16_t info);
+
 #endif /* MEMORY_POOLS_H_ */

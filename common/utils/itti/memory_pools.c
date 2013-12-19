@@ -61,15 +61,25 @@ uint64_t vcd_mp_free;
 /*------------------------------------------------------------------------------*/
 #define CHARS_TO_UINT32(c1, c2, c3, c4) (((c1) << 24) | ((c2) << 16) | ((c3) << 8) | (c4))
 
+#define MEMORY_POOL_ITEM_INFO_NUMBER    2
+
 /*------------------------------------------------------------------------------*/
 typedef int32_t     items_group_position_t;
 typedef int32_t     items_group_index_t;
 
+typedef union items_group_positions_u {
+    uint64_t                    all;
+    struct {
+        items_group_position_t  put;
+        items_group_position_t  get;
+    } ind;
+} items_group_positions_t;
+
 typedef struct items_group_s {
-    items_group_position_t          number;
-    volatile items_group_position_t current;
-    volatile items_group_position_t minimum;
-    volatile items_group_index_t   *indexes;
+    items_group_position_t              number_plus_one;
+    volatile uint32_t                   minimum;
+    volatile items_group_positions_t    positions;
+    volatile items_group_index_t       *indexes;
 } items_group_t;
 
 /*------------------------------------------------------------------------------*/
@@ -94,7 +104,7 @@ typedef struct memory_pool_item_start_s {
 
     pool_id_t                   pool_id;
     item_status_t               item_status;
-    uint16_t                    info[2];
+    uint16_t                    info[MEMORY_POOL_ITEM_INFO_NUMBER];
 } memory_pool_item_start_t;
 
 typedef struct memory_pool_item_end_s {
@@ -142,32 +152,70 @@ static const pool_start_mark_t      POOL_START_MARK =       CHARS_TO_UINT32 ('P'
 static const pools_start_mark_t     POOLS_START_MARK =      CHARS_TO_UINT32 ('P', 'S', 's', 't');
 
 /*------------------------------------------------------------------------------*/
+static inline uint32_t items_group_number_items (items_group_t *items_group)
+{
+    return items_group->number_plus_one - 1;
+}
+
+static inline uint32_t items_group_free_items (items_group_t *items_group)
+{
+    items_group_positions_t positions;
+    uint32_t                free_items;
+
+    positions.all = items_group->positions.all;
+
+    free_items = items_group->number_plus_one + positions.ind.put - positions.ind.get;
+    free_items %= items_group->number_plus_one;
+
+    return free_items;
+}
+
 static inline items_group_index_t items_group_get_free_item (items_group_t *items_group)
 {
-    items_group_position_t  current;
-    items_group_index_t     index = -1;
+    items_group_position_t  get_raw;
+    items_group_position_t  put;
+    items_group_position_t  get;
+    items_group_position_t  free_items;
 
-    /* Get current position and decrease it */
-    current = __sync_fetch_and_add (&items_group->current, -1);
-    if (current <= ITEMS_GROUP_POSITION_INVALID)
+    items_group_index_t     index = ITEMS_GROUP_INDEX_INVALID;
+
+    /* Get current put position */
+    put = items_group->positions.ind.put % items_group->number_plus_one;
+    /* Get current get position and increase it */
+    get_raw = __sync_fetch_and_add (&items_group->positions.ind.get, 1);
+    get = get_raw % items_group->number_plus_one;
+    if(put == get)
     {
-        /* Current index is not valid, restore previous value */
-        __sync_fetch_and_add (&items_group->current, 1);
+        /* No more item free, restore previous position */
+        __sync_fetch_and_sub (&items_group->positions.ind.get, 1);
     }
     else
     {
-        /* Updates minimum position if needed */
-        while (items_group->minimum > current)
+        /* Get index at current get position */
+        index = items_group->indexes[get];
+        if (index <= ITEMS_GROUP_INDEX_INVALID)
         {
-            items_group->minimum = current;
+            /* Index has not yet been completely freed, restore previous get position */
+            __sync_fetch_and_sub (&items_group->positions.ind.get, 1);
         }
+        else
+        {
+            if (get_raw == items_group->number_plus_one)
+            {
+                /* Wrap get position */
+                __sync_fetch_and_sub (&items_group->positions.ind.get, items_group->number_plus_one);
+            }
 
-        /* Get index at current position */
-        index = items_group->indexes[current];
-        AssertError (index > ITEMS_GROUP_INDEX_INVALID, "Index (%d) at current position (%d) is not valid!\n", current, index);
+            free_items = items_group_free_items(items_group);
+            /* Updates minimum free items if needed */
+            while (items_group->minimum > free_items)
+            {
+                items_group->minimum = free_items;
+            }
 
-        /* Clear index at current position */
-        items_group->indexes[current] = ITEMS_GROUP_INDEX_INVALID;
+            /* Clear index at current get position to indicate that item is free */
+            items_group->indexes[get] = ITEMS_GROUP_INDEX_INVALID;
+        }
     }
 
     return (index);
@@ -175,65 +223,23 @@ static inline items_group_index_t items_group_get_free_item (items_group_t *item
 
 static inline void items_group_put_free_item (items_group_t *items_group, items_group_index_t index)
 {
-    items_group_position_t  next;
-    items_group_position_t  current = ITEMS_GROUP_POSITION_INVALID;
-    items_group_index_t     index_to_add;
-    items_group_index_t     index_previous;
+    items_group_position_t  put_raw;
+    items_group_position_t  put;
 
-    index_to_add = index - ITEMS_GROUP_INDEX_INVALID;
+    /* Get current put position and increase it */
+    put_raw = __sync_fetch_and_add (&items_group->positions.ind.put, 1);
+    put = put_raw % items_group->number_plus_one;
 
-    do
+    if (put_raw == items_group->number_plus_one)
     {
-        /* Calculate next position */
-        next = items_group->current + 1;
-        /* Checks if next position is free */
-        if (items_group->indexes[next] != ITEMS_GROUP_INDEX_INVALID)
-        {
-            MP_DEBUG(" items_group_put_free_item (items_group->indexes[next] != ITEMS_GROUP_INDEX_INVALID) %d, %d\n", next, index);
-        }
-        else
-        {
-            /* Try to write index in next position */
-            index_previous = __sync_fetch_and_add (&items_group->indexes[next], index_to_add);
-            /* Checks if next position was still free */
-            if (index_previous != ITEMS_GROUP_INDEX_INVALID)
-            {
-                /* Next position was not free anymore, restore its value */
-                __sync_fetch_and_add (&items_group->indexes[next], -index_to_add);
-                current = ITEMS_GROUP_POSITION_INVALID;
+        /* Wrap position */
+        __sync_fetch_and_sub (&items_group->positions.ind.put, items_group->number_plus_one);
+    }
 
-                MP_DEBUG(" items_group_put_free_item (index_previous != ITEMS_GROUP_INDEX_INVALID) %d\n", index);
-            }
-            else
-            {
-                /* Checks if next position content is correctly set */
-                if (items_group->indexes[next] != index)
-                {
-                    /* Next position content has been changed, restore its value */
-                    __sync_fetch_and_add (&items_group->indexes[next], -index_to_add);
-                    current = ITEMS_GROUP_POSITION_INVALID;
+    AssertFatal (items_group->indexes[put] <= ITEMS_GROUP_INDEX_INVALID, "Index at current put position (%d) is not marked as free (%d)\n", put, items_group->number_plus_one);
 
-                    MP_DEBUG(" items_group_put_free_item (items_group->indexes[next] != index) %d\n", index);
-                }
-                else
-                {
-                    /* Increase current position and get it */
-                    current = __sync_add_and_fetch (&items_group->current, 1);
-
-                    if (next != current)
-                    {
-                        /* Current position does not match calculated next position, restore previous values */
-                        __sync_fetch_and_add (&items_group->current, -1);
-                        __sync_fetch_and_add (&items_group->indexes[next], -index_to_add);
-
-                        MP_DEBUG(" items_group_put_free_item (next != current) %d\n", index);
-                    }
-                }
-            }
-        }
-    } while (next != current);
-
-    AssertFatal (current < items_group->number, "Current position (%d) is above maximum position (%d)\n", current, items_group->number);
+    /* Save freed item index at current put position */
+    items_group->indexes[put] = index;
 }
 
 /*------------------------------------------------------------------------------*/
@@ -314,23 +320,28 @@ char *memory_pools_statistics(memory_pools_handle_t memory_pools_handle)
     int                 printed_chars;
     uint32_t            allocated_pool_memory;
     uint32_t            allocated_pools_memory = 0;
+    items_group_t      *items_group;
+    uint32_t            pool_items_size;
 
     /* Recover memory_pools */
     memory_pools = memory_pools_from_handler (memory_pools_handle);
 
     statistics = malloc(memory_pools->pools_defined * 200);
 
-    printed_chars = sprintf (&statistics[0], "Pool: number,   size, minimum,   free\n");
+    printed_chars = sprintf (&statistics[0], "Pool:   size, number, minimum,   free, address space and memory used in Kbytes\n");
     for (pool = 0; pool < memory_pools->pools_defined; pool++)
     {
-        allocated_pool_memory = memory_pools->pools[pool].items_group_free.number * memory_pools->pools[pool].pool_item_size;
+        items_group = &memory_pools->pools[pool].items_group_free;
+        allocated_pool_memory = items_group_number_items (items_group) * memory_pools->pools[pool].pool_item_size;
         allocated_pools_memory += allocated_pool_memory;
-        printed_chars += sprintf (&statistics[printed_chars], "  %2u: %6u, %6lu,  %6u, %6u, %6u Kbytes\n",
-                                  pool,
-                                  memory_pools->pools[pool].items_group_free.number,
-                                  memory_pools->pools[pool].item_data_number * sizeof(memory_pool_data_t),
-                                  memory_pools->pools[pool].items_group_free.minimum + 1,
-                                  memory_pools->pools[pool].items_group_free.current + 1,
+        pool_items_size = memory_pools->pools[pool].item_data_number * sizeof(memory_pool_data_t);
+        printed_chars += sprintf (&statistics[printed_chars], "  %2u: %6u, %6u,  %6u, %6u, [%p-%p] %6u\n",
+                                  pool, pool_items_size,
+                                  items_group_number_items (items_group),
+                                  items_group->minimum,
+                                  items_group_free_items (items_group),
+                                  memory_pools->pools[pool].items,
+                                  ((void *) memory_pools->pools[pool].items) + allocated_pool_memory,
                                   allocated_pool_memory / (1024));
     }
     printed_chars = sprintf (&statistics[printed_chars], "Pools memory %u Kbytes\n", allocated_pools_memory / (1024));
@@ -350,27 +361,28 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
     AssertFatal (pool_item_size <= MAX_POOL_ITEM_SIZE, "Item size is too big for memory pool items (%u/%d)\n", pool_item_size, MAX_POOL_ITEM_SIZE);   /* Limit to a reasonable item size */
 
     /* Recover memory_pools */
-    memory_pools = memory_pools_from_handler (memory_pools_handle);
+    memory_pools    = memory_pools_from_handler (memory_pools_handle);
 
     /* Check number of already created pools */
     AssertFatal (memory_pools->pools_defined < memory_pools->pools_number, "Can not allocate more memory pool (%d)\n", memory_pools->pools_number);
 
     /* Select pool */
-    pool = memory_pools->pools_defined;
-    memory_pool = &memory_pools->pools[pool];
+    pool            = memory_pools->pools_defined;
+    memory_pool     = &memory_pools->pools[pool];
 
     /* Initialize pool */
     {
-        memory_pool->pool_id                  = pool;
+        memory_pool->pool_id                            = pool;
         /* Item size in memory_pool_data_t items by excess */
-        memory_pool->item_data_number         = (pool_item_size + sizeof(memory_pool_data_t) - 1) / sizeof(memory_pool_data_t);
-        memory_pool->pool_item_size           = (memory_pool->item_data_number * sizeof(memory_pool_data_t)) + sizeof(memory_pool_item_t);
-        memory_pool->items_group_free.number  = pool_items_number;
-        memory_pool->items_group_free.current = pool_items_number - 1;
-        memory_pool->items_group_free.minimum = pool_items_number - 1;
+        memory_pool->item_data_number                   = (pool_item_size + sizeof(memory_pool_data_t) - 1) / sizeof(memory_pool_data_t);
+        memory_pool->pool_item_size                     = (memory_pool->item_data_number * sizeof(memory_pool_data_t)) + sizeof(memory_pool_item_t);
+        memory_pool->items_group_free.number_plus_one   = pool_items_number + 1;
+        memory_pool->items_group_free.minimum           = pool_items_number;
+        memory_pool->items_group_free.positions.ind.put = pool_items_number;
+        memory_pool->items_group_free.positions.ind.get = 0;
 
         /* Allocate free indexes */
-        memory_pool->items_group_free.indexes = malloc(pool_items_number * sizeof(items_group_index_t));
+        memory_pool->items_group_free.indexes = malloc(memory_pool->items_group_free.number_plus_one * sizeof(items_group_index_t));
         AssertFatal (memory_pool->items_group_free.indexes != NULL, "Memory pool indexes allocation failed\n");
 
         /* Initialize free indexes */
@@ -378,6 +390,8 @@ int memory_pools_add_pool (memory_pools_handle_t memory_pools_handle, uint32_t p
         {
             memory_pool->items_group_free.indexes[item_index] = item_index;
         }
+        /* Last index is not allocated */
+        memory_pool->items_group_free.indexes[item_index] = ITEMS_GROUP_INDEX_INVALID;
 
         /* Allocate items */
         memory_pool->items = calloc (pool_items_number, memory_pool->pool_item_size);
@@ -451,7 +465,7 @@ memory_pool_item_handle_t memory_pools_allocate (memory_pools_handle_t memory_po
 
         MP_DEBUG(" Alloc [%2u][%6d]{%6d}, %3u %3u, %6u, %p, %p, %p\n",
                  pool, item_index,
-                 memory_pools->pools[pool].items_group_free.current,
+                 items_group_free_items (&memory_pools->pools[pool].items_group_free),
                  info_0, info_1,
                  item_size,
                  memory_pools->pools[pool].items,
@@ -500,11 +514,12 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     pool_item_size = memory_pools->pools[pool].pool_item_size;
     item_index = (((void *) memory_pool_item) - ((void *) memory_pools->pools[pool].items)) / pool_item_size;
 
-    MP_DEBUG(" Free  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %lu\n",
-             pool, item_index, memory_pools->pools[pool].items_group_free.current,
+    MP_DEBUG(" Free  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %u\n",
+             pool, item_index,
+             items_group_free_items (&memory_pools->pools[pool].items_group_free),
              memory_pool_item->start.info[0], info_1,
              memory_pool_item_handle, memory_pool_item,
-             memory_pools->pools[pool].items, item_size * sizeof(memory_pool_data_t));
+             memory_pools->pools[pool].items, ((uint32_t) (item_size * sizeof(memory_pool_data_t))));
 
     /* Sanity check on calculated item index */
     AssertFatal (memory_pool_item == memory_pool_item_from_index(&memory_pools->pools[pool], item_index), "Incorrect memory pool item address (%p, %p) for pool %u, item %d\n",
@@ -523,4 +538,53 @@ void memory_pools_free (memory_pools_handle_t memory_pools_handle, memory_pool_i
     vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLE_MP_FREE,
                                             __sync_and_and_fetch (&vcd_mp_free, ~(1L << info_1)));
 #endif
+}
+
+void memory_pools_set_info (memory_pools_handle_t memory_pools_handle, memory_pool_item_handle_t memory_pool_item_handle, int index, uint16_t info)
+{
+    memory_pools_t     *memory_pools;
+    memory_pool_item_t *memory_pool_item;
+    pool_id_t           pool;
+    items_group_index_t item_index;
+    uint32_t            item_size;
+    uint32_t            pool_item_size;
+
+    AssertFatal (index < MEMORY_POOL_ITEM_INFO_NUMBER, "Incorrect info index (%d/%d)\n", index, MEMORY_POOL_ITEM_INFO_NUMBER);
+
+    /* Recover memory pool item */
+    memory_pool_item = memory_pool_item_from_handler (memory_pool_item_handle);
+
+    /* Set info[1] */
+    memory_pool_item->start.info[index] = info;
+
+    /* Check item validity and log (not mandatory) */
+    if (1)
+    {
+        /* Recover memory_pools */
+        memory_pools = memory_pools_from_handler (memory_pools_handle);
+
+        /* Recover pool index */
+        pool = memory_pool_item->start.pool_id;
+        AssertFatal (pool < memory_pools->pools_defined, "Pool index is invalid (%u/%u)\n", pool, memory_pools->pools_defined);
+
+        item_size = memory_pools->pools[pool].item_data_number;
+        pool_item_size = memory_pools->pools[pool].pool_item_size;
+        item_index = (((void *) memory_pool_item) - ((void *) memory_pools->pools[pool].items)) / pool_item_size;
+
+        MP_DEBUG(" Info  [%2u][%6d]{%6d}, %3u %3u,         %p, %p, %p, %u\n",
+                 pool, item_index,
+                 items_group_free_items (&memory_pools->pools[pool].items_group_free),
+                 memory_pool_item->start.info[0], memory_pool_item->start.info[1],
+                 memory_pool_item_handle, memory_pool_item,
+                 memory_pools->pools[pool].items, ((uint32_t) (item_size * sizeof(memory_pool_data_t))));
+
+        /* Sanity check on calculated item index */
+        AssertFatal (memory_pool_item == memory_pool_item_from_index(&memory_pools->pools[pool], item_index), "Incorrect memory pool item address (%p, %p) for pool %u, item %d\n",
+                     memory_pool_item, memory_pool_item_from_index(&memory_pools->pools[pool], item_index), pool, item_index);
+        /* Sanity check on end marker, must still be present (no write overflow) */
+        AssertFatal (memory_pool_item->data[item_size] == POOL_ITEM_END_MARK, "Memory pool item is corrupted, end mark is not present for pool %u, item %d\n", pool, item_index);
+        /* Sanity check on item status, must be allocated */
+        AssertFatal (memory_pool_item->start.item_status == ITEM_STATUS_ALLOCATED, "Trying to free a non allocated (%x) memory pool item (pool %u, item %d)\n",
+                     memory_pool_item->start.item_status, pool, item_index);
+    }
 }
