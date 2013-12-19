@@ -23,6 +23,7 @@
 #include "ui_tree_view.h"
 #include "ui_signal_dissect_view.h"
 #include "ui_filters.h"
+#include "ui_notebook.h"
 
 #include "types.h"
 #include "locate_root.h"
@@ -401,6 +402,24 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
                                  message_id_to_string (signal_buffer->message_id), origin_task_id,
                                  task_id_to_string (origin_task_id, origin_task_id_type), destination_task_id,
                                  task_id_to_string (destination_task_id, destination_task_id_type), instance, data);
+
+    if ((strcmp (message_id_to_string (signal_buffer->message_id), "ERROR_LOG") == 0)
+            || (strcmp (message_id_to_string (signal_buffer->message_id), "WARNING_LOG") == 0)
+            || (strcmp (message_id_to_string (signal_buffer->message_id), "NOTICE_LOG") == 0)
+            || (strcmp (message_id_to_string (signal_buffer->message_id), "INFO_LOG") == 0)
+            || (strcmp (message_id_to_string (signal_buffer->message_id), "DEBUG_LOG") == 0)
+            || (strcmp (message_id_to_string (signal_buffer->message_id), "GENERIC_LOG") == 0))
+    {
+        gchar *string_terminal;
+        gint string_terminal_size;
+        uint32_t message_header_type_size;
+
+        message_header_type_size = get_message_header_type_size ();
+        string_terminal = (gchar *) buffer_at_offset ((buffer_t*) signal_buffer, message_header_type_size);
+        string_terminal_size = get_message_size ((buffer_t*) signal_buffer);
+
+        ui_notebook_terminal_append_data(string_terminal, string_terminal_size);
+    }
 
     /* Increment number of messages */
     ui_main_data.nb_message_received++;
