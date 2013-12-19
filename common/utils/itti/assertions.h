@@ -39,18 +39,18 @@
 #ifndef ASSERTIONS_H_
 #define ASSERTIONS_H_
 
-#define _Assert_(cOND, eXIT, fORMAT, aRGS...)                             \
-do {                                                                      \
-    if (!(cOND)) {                                                        \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed!\n" fORMAT,  \
-                __FILE__, __LINE__, __FUNCTION__, ##aRGS);                \
-        if (eXIT != 0) {                                                  \
-            display_backtrace();                                          \
-            fflush(stdout);                                               \
-            fflush(stderr);                                               \
-            exit(EXIT_FAILURE);                                           \
-        }                                                                 \
-    }                                                                     \
+#define _Assert_(cOND, eXIT, fORMAT, aRGS...)                               \
+do {                                                                        \
+    if (!(cOND)) {                                                          \
+        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed!\n" fORMAT,    \
+                __FILE__, __LINE__, __FUNCTION__, ##aRGS);                  \
+        if (eXIT != 0) {                                                    \
+            display_backtrace();                                            \
+            fflush(stdout);                                                 \
+            fflush(stderr);                                                 \
+            exit(EXIT_FAILURE);                                             \
+        }                                                                   \
+    }                                                                       \
 } while(0)
 
 #define AssertFatal(cOND, fORMAT, aRGS...)  _Assert_(cOND, 1, fORMAT, ##aRGS)
@@ -59,8 +59,8 @@ do {                                                                      \
 
 
 
-#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                            \
-_Assert_(cOND, 1, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n\n",        \
+#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                              \
+_Assert_(cOND, 1, #vALUE1": %d\n"#vALUE2": %d\n"#vALUE3": %d\n\n",          \
          (int)vALUE1, (int)vALUE2, (int)vALUE3)
 
 #define DevParam(vALUE1, vALUE2, vALUE3)    DevCheck(0, vALUE1, vALUE2, vALUE3)
@@ -75,6 +75,8 @@ do {                                                            \
     if ((fct_ret = (fCT)) != 0) {                               \
         fprintf(stderr, "Function "#fCT" has failed\n"          \
         "returning %d\n", fct_ret);                             \
+        fflush(stdout);                                         \
+        fflush(stderr);                                         \
         exit(EXIT_FAILURE);                                     \
     }                                                           \
 } while(0)
