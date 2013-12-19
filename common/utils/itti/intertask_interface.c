@@ -200,11 +200,6 @@ void *itti_malloc(task_id_t origin_task_id, task_id_t destination_task_id, ssize
 
 #if defined(OAI_EMU) || defined(RTAI)
     ptr = memory_pools_allocate (itti_desc.memory_pools_handle, size, origin_task_id, destination_task_id);
-#else
-    ptr = malloc (size);
-#endif
-
-#if defined(OAI_EMU) || defined(RTAI)
     if (ptr == NULL)
     {
         char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
@@ -212,8 +207,11 @@ void *itti_malloc(task_id_t origin_task_id, task_id_t destination_task_id, ssize
         ITTI_ERROR (" Memory pools statistics:\n%s", statistics);
         free (statistics);
     }
+#else
+    ptr = malloc (size);
 #endif
-    AssertFatal (ptr != NULL, "Memory allocation of %ld bytes failed (%d -> %d)\n", size, origin_task_id, destination_task_id);
+
+    AssertFatal (ptr != NULL, "Memory allocation of %d bytes failed (%d -> %d)\n", (int) size, origin_task_id, destination_task_id);
 
     return ptr;
 }
@@ -306,6 +304,7 @@ int itti_send_broadcast_message(MessageDef *message_p) {
             /* Skip tasks which are not running */
             if (itti_desc.threads[thread_id].task_state == TASK_STATE_READY) {
                 new_message_p = itti_malloc (origin_task_id, destination_task_id, sizeof(MessageDef));
+                AssertFatal (new_message_p != NULL, "New message allocation failed\n");
 
                 memcpy (new_message_p, message_p, sizeof(MessageDef));
                 result = itti_send_msg_to_task (destination_task_id, INSTANCE_DEFAULT, new_message_p);
@@ -443,8 +442,8 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
 
                     /* Call to write for an event fd must be of 8 bytes */
                     write_ret = write (itti_desc.threads[destination_thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
-                    AssertFatal (write_ret == sizeof(sem_counter), "Write to task message FD (%d) failed (%ld/%ld)\n",
-                                 destination_thread_id, write_ret, sizeof(sem_counter));
+                    AssertFatal (write_ret == sizeof(sem_counter), "Write to task message FD (%d) failed (%d/%d)\n",
+                                 destination_thread_id, (int) write_ret, (int) sizeof(sem_counter));
                 }
             }
 
@@ -586,7 +585,7 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
 
             /* Read will always return 1 */
             read_ret = read (itti_desc.threads[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
-            AssertFatal (read_ret == sizeof(sem_counter), "Read from task message FD (%d) failed (%ld/%ld)\n", thread_id, read_ret, sizeof(sem_counter));
+            AssertFatal (read_ret == sizeof(sem_counter), "Read from task message FD (%d) failed (%d/%d)\n", thread_id, (int) read_ret, (int) sizeof(sem_counter));
 
 #if defined(KERNEL_VERSION_PRE_2_6_30)
             /* Store the value of the semaphore counter */
