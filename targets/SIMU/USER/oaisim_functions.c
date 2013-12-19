@@ -136,7 +136,7 @@ void get_simulation_options(int argc, char *argv[]) {
     {NULL, 0, NULL, 0}
   };
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vVw:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
+  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
       if (! strcmp(long_options[option_index].name, "pdcp_period")) {
@@ -436,6 +436,7 @@ void get_simulation_options(int argc, char *argv[]) {
     case 'V':
       ouput_vcd = 1;
       oai_emulation.info.vcd_enabled = 1;
+      oai_emulation.info.vcd_file = optarg;
       break;
     case 'w':
       oai_emulation.info.cba_group_active = atoi (optarg);

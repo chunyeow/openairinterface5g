@@ -178,17 +178,14 @@ mapping small_scale_names[] = {
 void terminate(void);
 
 void help(void) {
-  printf (
-      "Usage: oaisim -h -a -F -C tdd_config -V -R N_RB_DL -e -x transmission_mode -m target_dl_mcs -r(ate_adaptation) -n n_frames -s snr_dB -k ricean_factor -t max_delay -f forgetting factor -A channel_model -z cooperation_flag -u nb_local_ue -U UE mobility -b nb_local_enb -B eNB_mobility -M ethernet_flag -p nb_master -g multicast_group -l log_level -c ocg_enable -T traffic model -D multicast network device\n");
+  printf ("Usage: oaisim -h -a -F -C tdd_config -K [log_file] -V [vcd_file] -R N_RB_DL -e -x transmission_mode -m target_dl_mcs -r(ate_adaptation) -n n_frames -s snr_dB -k ricean_factor -t max_delay -f forgetting factor -A channel_model -z cooperation_flag -u nb_local_ue -U UE mobility -b nb_local_enb -B eNB_mobility -M ethernet_flag -p nb_master -g multicast_group -l log_level -c ocg_enable -T traffic model -D multicast network device\n");
 
   printf ("-h provides this help message!\n");
   printf ("-a Activates PHY abstraction mode\n");
-  printf (
-      "-A set the multipath channel simulation,  options are: SCM_A, SCM_B, SCM_C, SCM_D, EPA, EVA, ETU, Rayleigh8, Rayleigh1, Rayleigh1_corr,Rayleigh1_anticorr, Rice8,, Rice1, AWGN \n");
+  printf ("-A set the multipath channel simulation,  options are: SCM_A, SCM_B, SCM_C, SCM_D, EPA, EVA, ETU, Rayleigh8, Rayleigh1, Rayleigh1_corr,Rayleigh1_anticorr, Rice8,, Rice1, AWGN \n");
   printf ("-b Set the number of local eNB\n");
   printf ("-B Set the mobility model for eNB, options are: STATIC, RWP, RWALK, \n");
-  printf (
-      "-c [1,2,3,4] Activate the config generator (OCG) to process the scenario descriptor, or give the scenario manually: -c template_1.xml \n");
+  printf ("-c [1,2,3,4] Activate the config generator (OCG) to process the scenario descriptor, or give the scenario manually: -c template_1.xml \n");
   printf ("-C [0-6] Sets TDD configuration\n");
   printf ("-e Activates extended prefix mode\n");
   printf ("-E Random number generator seed\n");
@@ -199,6 +196,7 @@ void help(void) {
   printf ("-H Enable handover operation (default disabled) \n");
   printf ("-I Enable CLI interface (to connect use telnet localhost 1352)\n");
   printf ("-k Set the Ricean factor (linear)\n");
+  printf ("-K [log_file] Enable ITTI logging into log_file\n");
   printf ("-l Set the global log level (8:trace, 7:debug, 6:info, 4:warn, 3:error) \n");
   printf ("-L [0-1] 0 to disable new link adaptation, 1 to enable new link adapatation\n");
   printf ("-m Gives a fixed DL mcs\n");
@@ -210,20 +208,18 @@ void help(void) {
   printf ("    - wireshark: Enable tracing of layers above PHY using an UDP socket\n");
   printf ("    - pcap:      Enable tracing of layers above PHY to a pcap file\n");
   printf ("    - tshark:    Not implemented yet\n");
-  printf (
-      "-Q Activate and set the MBMS service: 0 : not used (default eMBMS disabled), 1: eMBMS and RRC Connection enabled, 2: eMBMS relaying and RRC Connection enabled, 3: eMBMS enabled, RRC Connection disabled, 4: eMBMS relaying enabled, RRC Connection disabled\n");
+  printf ("-Q Activate and set the MBMS service: 0 : not used (default eMBMS disabled), 1: eMBMS and RRC Connection enabled, 2: eMBMS relaying and RRC Connection enabled, 3: eMBMS enabled, RRC Connection disabled, 4: eMBMS relaying enabled, RRC Connection disabled\n");
   printf ("-R [6,15,25,50,75,100] Sets N_RB_DL\n");
   printf ("-r Activates rate adaptation (DL for now)\n");
   printf ("-s snr_dB set a fixed (average) SNR, this deactivates the openair channel model generator (OCM)\n");
   printf ("-S snir_dB set a fixed (average) SNIR, this deactivates the openair channel model generator (OCM)\n");
   printf ("-t Set the delay spread (microseconds)\n");
-  printf ("-T activate the traffic generator: cbr, mcbr, bcbr, mscbr \n");
+  printf ("-T activate the traffic generator: cbr, mcbr, bcbr, mscbr\n");
   printf ("-u Set the number of local UE\n");
-  printf ("-U Set the mobility model for UE, options are: STATIC, RWP, RWALK \n");
-  printf ("-V Enable VCD dump, file = openair_vcd_dump.vcd\n");
+  printf ("-U Set the mobility model for UE, options are: STATIC, RWP, RWALK\n");
+  printf ("-V [vcd_file] Enable VCD dump into vcd_file\n");
   printf ("-w number of CBA groups, if not specified or zero, CBA is inactive\n");
-  printf (
-      "-W IP address to connect to SMBV and configure SMBV from config file. Requires compilation with SMBV=1, -W0 uses default IP 192.168.12.201\n");
+  printf ("-W IP address to connect to SMBV and configure SMBV from config file. Requires compilation with SMBV=1, -W0 uses default IP 192.168.12.201\n");
   printf ("-x Set the transmission mode (1,2,5,6 supported for now)\n");
   printf ("-Y Set the global log verbosity (none, low, medium, high, full) \n");
   printf ("-z Set the cooperation flag (0 for no cooperation, 1 for delay diversity and 2 for distributed alamouti\n");
@@ -1020,7 +1016,7 @@ int main(int argc, char **argv) {
   get_simulation_options (argc, argv); //Command-line options
   
   // Initialize VCD LOG module
-  vcd_signal_dumper_init ("openair_dump.vcd");
+  vcd_signal_dumper_init (oai_emulation.info.vcd_file);
 
   /*  pthread_t sigth;
    sigset_t sigblock;

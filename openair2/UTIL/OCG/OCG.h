@@ -664,6 +664,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char omv_enabled;
     char *itti_dump_file;
     unsigned char vcd_enabled;
+    char *vcd_file;
     unsigned char eMBMS_active_state;
     unsigned char cba_group_active;
     unsigned char handover_active;
