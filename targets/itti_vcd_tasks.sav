@@ -1,19 +1,19 @@
 [*]
 [*] GTKWave Analyzer v3.3.34 (w)1999-2012 BSI
-[*] Fri Dec 13 07:59:01 2013
+[*] Thu Dec 19 10:33:06 2013
 [*]
-[dumpfile] "/homes/winckel/openair/trunk/targets/SIMU/USER/openair_dump.vcd"
-[dumpfile_mtime] "Fri Dec 13 07:37:22 2013"
-[dumpfile_size] 14725571
+[dumpfile] "/home/winckel/vcd_log.vcd"
+[dumpfile_mtime] "Thu Dec 19 10:26:58 2013"
+[dumpfile_size] 68919271
 [savefile] "/homes/winckel/openair/trunk/targets/itti_vcd_tasks.sav"
-[timestart] 10690200000
+[timestart] 0
 [size] 1871 1056
 [pos] -1 -1
-*-23.537477 10702368471 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-30.425148 4756417000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [sst_width] 223
-[signals_width] 260
+[signals_width] 449
 [sst_expanded] 1
-[sst_vpaned_height] 301
+[sst_vpaned_height] 583
 @8024
 variables.frame_number_eNB[63:0]
 @20000
@@ -32,6 +32,106 @@ variables.frame_number_UE[63:0]
 variables.slot_number_UE[63:0]
 @20000
 -
+@c08022
+[color] 1
+variables.mp_alloc[63:0]
+@28
+[color] 2
+(42)variables.mp_alloc[63:0]
+[color] 2
+(43)variables.mp_alloc[63:0]
+[color] 2
+(44)variables.mp_alloc[63:0]
+[color] 2
+(45)variables.mp_alloc[63:0]
+[color] 2
+(46)variables.mp_alloc[63:0]
+[color] 2
+(47)variables.mp_alloc[63:0]
+[color] 2
+(48)variables.mp_alloc[63:0]
+[color] 2
+(49)variables.mp_alloc[63:0]
+[color] 2
+(50)variables.mp_alloc[63:0]
+[color] 2
+(51)variables.mp_alloc[63:0]
+[color] 2
+(52)variables.mp_alloc[63:0]
+[color] 2
+(53)variables.mp_alloc[63:0]
+[color] 2
+(54)variables.mp_alloc[63:0]
+[color] 2
+(55)variables.mp_alloc[63:0]
+[color] 2
+(56)variables.mp_alloc[63:0]
+[color] 2
+(57)variables.mp_alloc[63:0]
+[color] 2
+(58)variables.mp_alloc[63:0]
+[color] 2
+(59)variables.mp_alloc[63:0]
+[color] 2
+(60)variables.mp_alloc[63:0]
+[color] 2
+(61)variables.mp_alloc[63:0]
+[color] 2
+(62)variables.mp_alloc[63:0]
+[color] 2
+(63)variables.mp_alloc[63:0]
+@1401200
+-group_end
+@c08022
+[color] 5
+variables.mp_free[63:0]
+@28
+[color] 6
+(42)variables.mp_free[63:0]
+[color] 6
+(43)variables.mp_free[63:0]
+[color] 6
+(44)variables.mp_free[63:0]
+[color] 6
+(45)variables.mp_free[63:0]
+[color] 6
+(46)variables.mp_free[63:0]
+[color] 6
+(47)variables.mp_free[63:0]
+[color] 6
+(48)variables.mp_free[63:0]
+[color] 6
+(49)variables.mp_free[63:0]
+[color] 6
+(50)variables.mp_free[63:0]
+[color] 6
+(51)variables.mp_free[63:0]
+[color] 6
+(52)variables.mp_free[63:0]
+[color] 6
+(53)variables.mp_free[63:0]
+[color] 6
+(54)variables.mp_free[63:0]
+[color] 6
+(55)variables.mp_free[63:0]
+[color] 6
+(56)variables.mp_free[63:0]
+[color] 6
+(57)variables.mp_free[63:0]
+[color] 6
+(58)variables.mp_free[63:0]
+[color] 6
+(59)variables.mp_free[63:0]
+[color] 6
+(60)variables.mp_free[63:0]
+[color] 6
+(61)variables.mp_free[63:0]
+[color] 6
+(62)variables.mp_free[63:0]
+[color] 6
+(63)variables.mp_free[63:0]
+@1401200
+-group_end
 @c08024
 [color] 1
 variables.itti_alloc_msg[63:0]
@@ -84,15 +184,17 @@ variables.itti_send_msg[63:0]
 @1401200
 -group_end
 @28
-[color] 1
+[color] 7
 functions.log_record
 [color] 1
+functions.itti_dump_enqueue_message_malloc
+[color] 3
 functions.itti_dump_enqueue_message
-[color] 1
+[color] 3
 functions.itti_enqueue_message
 @200
 -
-@c08023
+@c08022
 [color] 5
 variables.itti_poll_msg[63:0]
 @28
@@ -114,7 +216,8 @@ variables.itti_poll_msg[63:0]
 +{eNB PHY} (59)variables.itti_poll_msg[63:0]
 [color] 6
 +{L2L1} (61)variables.itti_poll_msg[63:0]
-@1401201
+functions.itti_relay_thread
+@1401200
 -group_end
 @c08022
 [color] 5
@@ -143,15 +246,6 @@ variables.itti_recv_msg[63:0]
 @200
 -
 @28
-[color] 3
-functions.rrc_mac_config_req
-@200
--
-@28
-functions.pdcp_run
-@200
--
-@28
 functions.phy_procedures_eNB_lte
 functions.phy_procedures_eNb_rx
 functions.phy_procedures_eNb_tx
@@ -164,5 +258,11 @@ functions.phy_procedures_UE_lte
 functions.phy_procedures_ue_rx
 [color] 3
 functions.phy_procedures_ue_tx
+@200
+-
+@28
+[color] 5
+functions.rrc_mac_config_req
+functions.pdcp_run
 [pattern_trace] 1
 [pattern_trace] 0
