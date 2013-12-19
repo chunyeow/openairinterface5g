@@ -1206,10 +1206,10 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,
           pdu_length = rrcConnectionReconfiguration_r8->dedicatedInfoNASList->list.array[list_count]->size;
           pdu_buffer = rrcConnectionReconfiguration_r8->dedicatedInfoNASList->list.array[list_count]->buf;
 
-          msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_DOWNLINK_DATA_IND);
-          NAS_DOWNLINK_DATA_IND(msg_p).UEid = Mod_id - NB_eNB_INST;
-          NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.length = pdu_length;
-          NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.data = pdu_buffer;
+          msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CONN_ESTABLI_CNF);
+          NAS_CONN_ESTABLI_CNF(msg_p).errCode = AS_SUCCESS;
+          NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.length = pdu_length;
+          NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.data = pdu_buffer;
 
           itti_send_msg_to_task(TASK_NAS_UE, Mod_id, msg_p);
         }
