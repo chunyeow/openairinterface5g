@@ -34,58 +34,38 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                          \
-do {                                                                    \
-    if (!(cOND)) {                                                      \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed.\n",       \
-                __FILE__, __LINE__, __FUNCTION__);                      \
-        fprintf(stderr, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n",  \
-        (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3);                         \
-        fprintf(stderr, "Exiting execution\n");                         \
-        fflush(stdout);                                                 \
-        fflush(stderr);                                                 \
-        abort();                                                        \
-    }                                                                   \
+#define _Assert_(cOND, eXIT, fORMAT, aRGS...)                               \
+do {                                                                        \
+    if (!(cOND)) {                                                          \
+        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed!\n" fORMAT,    \
+                __FILE__, __LINE__, __FUNCTION__, ##aRGS);                  \
+        if (eXIT != 0) {                                                    \
+            fprintf(stderr, "Exiting execution\n");                         \
+            fflush(stdout);                                                 \
+            fflush(stderr);                                                 \
+            abort();                                                        \
+        }                                                                   \
+    }                                                                       \
 } while(0)
 
-#define DevCheck4(cOND, vALUE1, vALUE2, vALUE3, vALUE4)                 \
-do {                                                                    \
-    if (!(cOND)) {                                                      \
-        fprintf(stderr, "%s:%d:%s\nAssertion `"#cOND"` failed.\n",      \
-                __FILE__, __LINE__, __FUNCTION__);                      \
-        fprintf(stderr, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n"   \
-        #vALUE4": %"PRIdMAX"\n",                                                \
-        (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3, (intmax_t)vALUE4);            \
-        fprintf(stderr, "Exiting execution\n");                         \
-        fflush(stdout);                                                 \
-        fflush(stderr);                                                 \
-        exit(EXIT_FAILURE);                                             \
-    }                                                                   \
-} while(0)
+#define AssertFatal(cOND, fORMAT, aRGS...)  _Assert_(cOND, 1, fORMAT, ##aRGS)
 
-#define DevParam(vALUE1, vALUE2, vALUE3)    \
-    DevCheck(0 == 1, vALUE1, vALUE2, vALUE3)
+#define AssertError(cOND, fORMAT, aRGS...)  _Assert_(cOND, 0, fORMAT, ##aRGS)
 
-#define DevAssert(cOND)                                                 \
-do {                                                                    \
-    if (!(cOND))    {                                                   \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed\n",        \
-        __FILE__, __LINE__, __FUNCTION__);                              \
-        fprintf(stderr, "Exiting execution\n");                         \
-        fflush(stdout);                                                 \
-        fflush(stderr);                                                 \
-        abort();                                                        \
-    }                                                                   \
-} while(0)
 
-#define DevMessage(mESSAGE)                                             \
-do {                                                                    \
-    fprintf(stderr, "%s:%d:%s Execution interrupted: `"#mESSAGE"`.\n",  \
-    __FILE__, __LINE__, __FUNCTION__);                                  \
-    fprintf(stderr, "Exiting execution\n");                             \
-    fflush(stdout);                                                 \
-    fflush(stderr);                                                     \
-    abort();                                                            \
-} while(0)
+
+#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                                              \
+_Assert_(cOND, 1, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n\n",  \
+         (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3)
+
+#define DevCheck4(cOND, vALUE1, vALUE2, vALUE3, vALUE4)                                                             \
+_Assert_(cOND, 1, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n"#vALUE4": %"PRIdMAX"\n\n",   \
+         (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3, (intmax_t)vALUE4)
+
+#define DevParam(vALUE1, vALUE2, vALUE3)    DevCheck(0, vALUE1, vALUE2, vALUE3)
+
+#define DevAssert(cOND)                     _Assert_(cOND, 1, "")
+
+#define DevMessage(mESSAGE)                 _Assert_(0, 1, #mESSAGE)
 
 #endif /* ASSERTIONS_H_ */
