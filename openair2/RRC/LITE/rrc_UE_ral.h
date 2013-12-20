@@ -67,10 +67,6 @@
 #include "ral_messages_types.h"
 #include "defs.h"
 
-typedef struct rrc_ral_threshold_key_s {
-    ral_link_param_type_t   link_param_type;
-    ral_threshold_t         threshold;
-}rrc_ral_threshold_key_t;
 private_rrc_ue_ral(  int rrc_ue_ral_delete_all_thresholds_type        (unsigned int mod_idP, ral_link_param_type_t *param_type_pP);)
 private_rrc_ue_ral(  int rrc_ue_ral_delete_threshold                  (unsigned int mod_idP, ral_link_param_type_t *param_type_pP, ral_threshold_t *threshold_pP);)
 protected_rrc_ue_ral(int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageDef *msg_pP);)

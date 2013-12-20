@@ -90,10 +90,21 @@
 # include "commonDef.h"
 #endif
 
+#if defined(ENABLE_RAL)
+# include "collection/hashtable/obj_hashtable.h"
+#endif
+
 /** @defgroup _rrc_impl_ RRC Layer Reference Implementation
  * @ingroup _ref_implementation_
  * @{
  */
+
+#if defined(ENABLE_RAL)
+typedef struct rrc_ral_threshold_key_s {
+    ral_link_param_type_t   link_param_type;
+    ral_threshold_t         threshold;
+}rrc_ral_threshold_key_t;
+#endif
 
 //#define NUM_PRECONFIGURED_LCHAN (NB_CH_CX*2)  //BCCH, CCCH
 
@@ -333,6 +344,9 @@ typedef struct eNB_RRC_INST_s {
   MeasConfig_t                      *measConfig[NUMBER_OF_UE_MAX];
   HANDOVER_INFO                     *handover_info[NUMBER_OF_UE_MAX];
   uint8_t                           HO_flag;
+#if defined(ENABLE_RAL)
+  obj_hash_table_t                  *ral_meas_thresholds;
+#endif
 #if defined(ENABLE_SECURITY)
   /* KeNB as derived from KASME received from EPC */
   uint8_t kenb[NUMBER_OF_UE_MAX][32];
@@ -415,6 +429,9 @@ typedef struct UE_RRC_INST_s {
   float                           rsrq_db[7];
   float                           rsrp_db_filtered[7];
   float                           rsrq_db_filtered[7];
+#if defined(ENABLE_RAL)
+  obj_hash_table_t               *ral_meas_thresholds;
+#endif
 #if defined(ENABLE_SECURITY)
   /* KeNB as computed from parameters within USIM card */
   uint8_t kenb[32];

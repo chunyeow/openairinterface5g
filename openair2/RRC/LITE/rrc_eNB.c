@@ -36,6 +36,8 @@
  * \company Eurecom
  * \email: raymond.knopp@eurecom.fr and navid.nikaein@eurecom.fr
  */
+#define RRC_ENB
+#define RRC_ENB_C
 
 #include "defs.h"
 #include "extern.h"
@@ -83,6 +85,10 @@
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
+#endif
+
+#ifdef ENABLE_RAL
+#include "rrc_eNB_ral.h"
 #endif
 
 //#define XER_PRINT
@@ -3103,6 +3109,13 @@ void *rrc_enb_task(void *args_p) {
           LOG_I(RRC, "[eNB %d] Received %s\n", instance, msg_name);
           openair_rrc_lite_eNB_configuration(instance, &RRC_CONFIGURATION_REQ (msg_p));
           break;
+
+#ifdef ENABLE_RAL
+      case RRC_RAL_CONFIGURE_THRESHOLD_REQ:
+          rrc_enb_ral_handle_configure_threshold_request(instance, msg_p);
+          break;
+#endif
+
 
       default:
         LOG_E(RRC, "[eNB %d] Received unexpected message %s\n", instance, msg_name);

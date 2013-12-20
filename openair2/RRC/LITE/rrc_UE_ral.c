@@ -42,6 +42,7 @@
 #include "rrc_UE_ral.h"
 #include "assertions.h"
 #include "collection/hashtable/obj_hashtable.h"
+#include "RRC/LITE/defs.h"
 #include "RRC/LITE/extern.h"
 
 
@@ -105,6 +106,7 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
     rrc_ral_configure_threshold_req_t *configure_threshold_req_p = NULL;
     ral_link_cfg_param_t              *link_cfg_param_p          = NULL;
     ral_threshold_t                   *threshold_p               = NULL;
+    MessageDef                        *message_p                 = NULL;
     unsigned int                       ix_param                  = 0;
     unsigned int                       ix_thresholds             = 0;
 
@@ -130,6 +132,10 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
                             case RAL_LINK_PARAM_GEN_SINR:
                             case RAL_LINK_PARAM_GEN_THROUGHPUT:
                             case RAL_LINK_PARAM_GEN_PACKET_ERROR_RATE:
+                                message_p = itti_alloc_new_message (TASK_RRC_UE, PHY_MEAS_THRESHOLD_REQ);
+                                PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
+                                memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
+                                itti_send_msg_to_task (TASK_PHY_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
                             default:
                                 LOG_E(RRC, "Message RRC_RAL_CONFIGURE_THRESHOLD_REQ malformed, unknown link_param_gen %d\n", link_cfg_param_p->link_param_type._union.link_param_gen);
@@ -145,6 +151,10 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
                             case RAL_LINK_PARAM_QOS_MAX_PACKET_TRANSFER_DELAY_ALL_COS:
                             case RAL_LINK_PARAM_QOS_STD_DEVIATION_PACKET_TRANSFER_DELAY:
                             case RAL_LINK_PARAM_QOS_PACKET_LOSS_RATE_ALL_COS_FRAME_RATIO:
+                                message_p = itti_alloc_new_message (TASK_RRC_UE, PHY_MEAS_THRESHOLD_REQ);
+                                PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
+                                memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
+                                itti_send_msg_to_task (TASK_MAC_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
                             default:
                                 LOG_E(RRC, "Message RRC_RAL_CONFIGURE_THRESHOLD_REQ malformed, unknown link_param_qos %d\n", link_cfg_param_p->link_param_type._union.link_param_qos);
@@ -158,13 +168,21 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
                             case RAL_LINK_PARAM_LTE_UE_RSRP:
                             case RAL_LINK_PARAM_LTE_UE_RSRQ:
                             case RAL_LINK_PARAM_LTE_UE_CQI:
-
+                                message_p = itti_alloc_new_message (TASK_RRC_UE, PHY_MEAS_THRESHOLD_REQ);
+                                PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
+                                memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
+                                itti_send_msg_to_task (TASK_PHY_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
 
                             case RAL_LINK_PARAM_LTE_AVAILABLE_BW:
-                            case RAL_LINK_PARAM_LTE_PACKET_DELAY:
                             case RAL_LINK_PARAM_LTE_PACKET_LOSS_RATE:
                             case RAL_LINK_PARAM_LTE_L2_BUFFER_STATUS:
+                            case RAL_LINK_PARAM_LTE_PACKET_DELAY:
+                                message_p = itti_alloc_new_message (TASK_RRC_UE, PHY_MEAS_THRESHOLD_REQ);
+                                PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
+                                memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
+                                itti_send_msg_to_task (TASK_MAC_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
+                                break;
                                 break;
 
                             case RAL_LINK_PARAM_LTE_MOBILE_NODE_CAPABILITIES:
@@ -172,6 +190,7 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
                             case RAL_LINK_PARAM_LTE_JUMBO_FEASIBILITY:
                             case RAL_LINK_PARAM_LTE_JUMBO_SETUP_STATUS:
                             case RAL_LINK_PARAM_LTE_NUM_ACTIVE_EMBMS_RECEIVERS_PER_FLOW:
+#warning "TO DO MIH LTE LINK PARAMS IN RRC UE"
                                 break;
 
                             default:
