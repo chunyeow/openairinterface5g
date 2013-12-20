@@ -2,6 +2,7 @@
 #define RAL_MESSAGES_TYPES_H_
 #include "asn1_constants.h"
 #include "platform_types.h"
+#include "commonDef.h"
 /* 802.21 mappings with the RRC protocol :
 (Research Report RR-12-265 Mapping of IEEE 802.21 MIH primitives to EPS/LTE protocols March 13 th, 2012, Michelle WETTERWALD, Prof. Christian BONNET )
 LINK EVENTS:
@@ -33,22 +34,23 @@ LINK COMMANDS:
 		Link_Action / Power Up		RRC Connection establishment
 */
 
-#define RRC_RAL_SYSTEM_CONFIGURATION_IND(mSGpTR)         (mSGpTR)->ittiMsg.rrc_ral_system_configuration_ind
-#define RRC_RAL_SYSTEM_INFORMATION_IND(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_system_information_ind
+#define RRC_RAL_SYSTEM_CONFIGURATION_IND(mSGpTR)          (mSGpTR)->ittiMsg.rrc_ral_system_configuration_ind
+#define RRC_RAL_SYSTEM_INFORMATION_IND(mSGpTR)            (mSGpTR)->ittiMsg.rrc_ral_system_information_ind
 
-#define RRC_RAL_CONFIGURE_THRESHOLD_REQ(mSGpTR)          (mSGpTR)->ittiMsg.rrc_ral_configure_threshold_req
-#define RRC_RAL_CONFIGURE_THRESHOLD_CONF(mSGpTR)         (mSGpTR)->ittiMsg.rrc_ral_configure_threshold_conf
-#define RRC_RAL_MEASUREMENT_REPORT_IND(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_measurement_report_ind
+#define RRC_RAL_CONFIGURE_THRESHOLD_REQ(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_configure_threshold_req
+#define RRC_RAL_CONFIGURE_THRESHOLD_CONF(mSGpTR)          (mSGpTR)->ittiMsg.rrc_ral_configure_threshold_conf
+#define RRC_RAL_MEASUREMENT_REPORT_IND(mSGpTR)            (mSGpTR)->ittiMsg.rrc_ral_measurement_report_ind
 
-#define RRC_RAL_CONNECTION_ESTABLISHMENT_REQ(mSGpTR)     (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_req
-#define RRC_RAL_CONNECTION_ESTABLISHMENT_CONF(mSGpTR)    (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_conf
-#define RRC_RAL_CONNECTION_ESTABLISHMENT_IND(mSGpTR)     (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_ind
-#define RRC_RAL_CONNECTION_REESTABLISHMENT_IND(mSGpTR)   (mSGpTR)->ittiMsg.rrc_ral_connection_reestablishment_ind
-#define RRC_RAL_CONNECTION_RECONFIGURATION_IND(mSGpTR)   (mSGpTR)->ittiMsg.rrc_ral_connection_reconfiguration_ind
+#define RRC_RAL_CONNECTION_ESTABLISHMENT_REQ(mSGpTR)      (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_req
+#define RRC_RAL_CONNECTION_ESTABLISHMENT_CONF(mSGpTR)     (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_conf
+#define RRC_RAL_CONNECTION_ESTABLISHMENT_IND(mSGpTR)      (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_ind
+#define RRC_RAL_CONNECTION_REESTABLISHMENT_IND(mSGpTR)    (mSGpTR)->ittiMsg.rrc_ral_connection_reestablishment_ind
+#define RRC_RAL_CONNECTION_RECONFIGURATION_IND(mSGpTR)    (mSGpTR)->ittiMsg.rrc_ral_connection_reconfiguration_ind
+#define RRC_RAL_CONNECTION_RECONFIGURATION_HO_IND(mSGpTR) (mSGpTR)->ittiMsg.rrc_ral_connection_reconfiguration_ho_ind
 
-#define RRC_RAL_CONNECTION_RELEASE_REQ(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_connection_release_req
-#define RRC_RAL_CONNECTION_RELEASE_CONF(mSGpTR)          (mSGpTR)->ittiMsg.rrc_ral_connection_release_conf
-#define RRC_RAL_CONNECTION_RELEASE_IND(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_connection_release_ind
+#define RRC_RAL_CONNECTION_RELEASE_REQ(mSGpTR)            (mSGpTR)->ittiMsg.rrc_ral_connection_release_req
+#define RRC_RAL_CONNECTION_RELEASE_CONF(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_connection_release_conf
+#define RRC_RAL_CONNECTION_RELEASE_IND(mSGpTR)            (mSGpTR)->ittiMsg.rrc_ral_connection_release_ind
 
 #include "MIH_C_header_codec.h"
 
@@ -149,8 +151,19 @@ typedef struct rrc_ral_connection_reestablishment_ind_s {
 
 
 typedef struct rrc_ral_connection_reconfiguration_ind_s {
-    uint16_t     ue_id;
+    uint16_t             ue_id;
+    uint8_t              num_drb;
+    rb_id_t              drb_id[maxDRB];
+    uint8_t              num_srb;
 }rrc_ral_connection_reconfiguration_ind_t;
+
+typedef struct rrc_ral_connection_reconfiguration_ho_ind_s {
+    uint16_t             ue_id;
+    uint8_t              num_drb;
+    rb_id_t              drb_id[maxDRB];
+    uint8_t              num_srb;
+    //unsigned int cell_id:28;
+}rrc_ral_connection_reconfiguration_ho_ind_t;
 
 
 
@@ -171,6 +184,12 @@ typedef MIH_C_LINK_PARAM_GEN_T                                 ral_link_param_ge
 #define RAL_LINK_PARAM_GEN_PACKET_ERROR_RATE                   MIH_C_LINK_PARAM_GEN_PACKET_ERROR_RATE
 
 typedef MIH_C_LINK_PARAM_QOS_T                                 ral_link_param_qos_t;
+#define RAL_LINK_PARAM_QOS_MAX_NUM_DIF_COS_SUPPORTED            MIH_C_LINK_PARAM_QOS_MAX_NUM_DIF_COS_SUPPORTED
+#define RAL_LINK_PARAM_QOS_MIN_PACKET_TRANSFER_DELAY_ALL_COS    MIH_C_LINK_PARAM_QOS_MIN_PACKET_TRANSFER_DELAY_ALL_COS
+#define RAL_LINK_PARAM_QOS_AVG_PACKET_TRANSFER_DELAY_ALL_COS    MIH_C_LINK_PARAM_QOS_AVG_PACKET_TRANSFER_DELAY_ALL_COS
+#define RAL_LINK_PARAM_QOS_MAX_PACKET_TRANSFER_DELAY_ALL_COS    MIH_C_LINK_PARAM_QOS_MAX_PACKET_TRANSFER_DELAY_ALL_COS
+#define RAL_LINK_PARAM_QOS_STD_DEVIATION_PACKET_TRANSFER_DELAY  MIH_C_LINK_PARAM_QOS_STD_DEVIATION_PACKET_TRANSFER_DELAY
+#define RAL_LINK_PARAM_QOS_PACKET_LOSS_RATE_ALL_COS_FRAME_RATIO MIH_C_LINK_PARAM_QOS_PACKET_LOSS_RATE_ALL_COS_FRAME_RATIO
 
 typedef MIH_C_LINK_PARAM_LTE_T                                 ral_link_param_lte_t;
 #define RAL_LINK_PARAM_LTE_UE_RSRP                             MIH_C_LINK_PARAM_LTE_UE_RSRP
