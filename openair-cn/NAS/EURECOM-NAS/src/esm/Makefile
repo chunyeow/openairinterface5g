@@ -6,7 +6,7 @@ include $(PROJDIR)/Makerules
 include $(PROJDIR)/Makefile.inc
 
 INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(IESDIR) -I$(MMEAPIDIR) \
-	-I$(EMMSAPDIR) -I$(ESMSAPDIR) -I$(ESMMSGDIR)
+	-I$(EMMSAPDIR) -I$(ESMSAPDIR) -I$(ESMMSGDIR) -I$(EMMDIR)
 
 all: $(OBJS)
 	@$(CD) $(ESMMSGDIR) && $(MAKE)

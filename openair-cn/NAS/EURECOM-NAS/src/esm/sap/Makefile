@@ -6,7 +6,7 @@ include $(PROJDIR)/Makerules
 include $(PROJDIR)/Makefile.inc
 
 INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(ESMDIR) \
-	-I$(IESDIR) -I$(ESMMSGDIR)
+	-I$(IESDIR) -I$(ESMMSGDIR) -I$(EMMDIR)
 
 TARGET = $(LIBESMSAP)
 TARGETS = $(TARGET).a $(TARGET).so
