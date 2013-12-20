@@ -37,13 +37,13 @@
 #ifndef __LTERALUE_CONSTANTS_H__
 #define __LTERALUE_CONSTANTS_H__
 //-----------------------------------------------------------------------------
-#define UE_DEFAULT_LOCAL_PORT_RAL    "1335"
-#define UE_DEFAULT_REMOTE_PORT_MIHF  "1125"
+#define UE_DEFAULT_LOCAL_PORT_RAL    "1234"
+#define UE_DEFAULT_REMOTE_PORT_MIHF  "1025"
 #define UE_DEFAULT_IP_ADDRESS_MIHF   "127.0.0.1"
 #define UE_DEFAULT_IP_ADDRESS_RAL    "127.0.0.1"
 #define UE_DEFAULT_LINK_ID_RAL       "ue_lte_link"
 #define UE_DEFAULT_LINK_ADDRESS_RAL  "060080149150"
-#define UE_DEFAULT_MIHF_ID           "mihf_ue"
+#define UE_DEFAULT_MIHF_ID           "mihf2_ue"
 #define DEFAULT_ADDRESS_3GPP      "0335060080149150"
 #define DEFAULT_ADDRESS_eNB       "0000000000000001"
 

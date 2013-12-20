@@ -103,10 +103,11 @@ typedef struct lte_ral_ue_object_s {
 
 
  // network parameters
-    u16 cell_id;
-    u16 nas_state;
+    u16     cell_id;
+    plmn_t  plmn_id;
+    //u16 nas_state;
     int state;
-    u32 curr_signal_level;
+    //u32 curr_signal_level;
     u32 ipv6_l2id[2];
  //measures
     u8  req_num_bs;

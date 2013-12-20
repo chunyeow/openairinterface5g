@@ -212,7 +212,7 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[instanceP].mihf_id, strlen(g_ue_ral_obj[instanceP].mihf_id));
 
 
-    message.primitive.Link_Id.link_type        = MIH_C_WIRELESS_UMTS;
+    message.primitive.Link_Id.link_type        = MIH_C_WIRELESS_LTE; //MIH_C_WIRELESS_UMTS;
     message.primitive.Link_Id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
 
     MIH_C_3GPP_ADDR_set(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)&(g_ue_ral_obj[instanceP].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
@@ -228,8 +228,10 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     #endif
 
     if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+        printf("ERROR RAL_UE, : Send Link_Register.indication\n");
         LOG_E(RAL_UE, ": Send Link_Register.indication\n");
     } else {
+        printf("OK RAL_UE, : Send Link_Register.indication\n");
         LOG_D(RAL_UE, ": Sent Link_Register.indication\n");
     }
     free_BitBuffer(bb);

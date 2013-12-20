@@ -225,8 +225,8 @@ int mRAL_initialize(void) {
                                                   MIH_C_BIT_LINK_HANDOVER_COMPLETE |
                                                   MIH_C_BIT_LINK_PDU_TRANSMIT_STATUS;
 
-        g_ue_ral_obj[instance].mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE | MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE | \
-                                                  MIH_C_BIT_LINK_GET_PARAMETERS  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS | \
+        g_ue_ral_obj[instance].mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE | MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE |
+                                                  MIH_C_BIT_LINK_GET_PARAMETERS  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS |
                                                   MIH_C_BIT_LINK_ACTION;
 
         g_ue_ral_obj[instance].link_to_be_detected = MIH_C_BOOLEAN_TRUE;
@@ -325,6 +325,11 @@ void* mRAL_task(void *args_p) {
                     mRAL_rx_rrc_ral_connection_reconfiguration_indication(instance, msg_p);
                     break;
 
+                case RRC_RAL_CONNECTION_RECONFIGURATION_HO_IND:
+                    LOG_D(RAL_UE, "Received %s\n", msg_name);
+                    //mRAL_rx_rrc_ral_connection_reconfiguration_ho_indication(instance, msg_p);
+                    break;
+
                 case RRC_RAL_MEASUREMENT_REPORT_IND:
                     LOG_D(RAL_UE, "Received %s\n", msg_name);
                     mRAL_rx_rrc_ral_measurement_report_indication(instance, msg_p);
@@ -343,7 +348,7 @@ void* mRAL_task(void *args_p) {
                     LOG_E(RAL_UE, "Received unexpected message %s\n", msg_name);
                     break;
             }
-            free(msg_p);
+            itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
             msg_p = NULL;
         }
         nb_events = itti_get_events(TASK_RAL_UE, &events);
