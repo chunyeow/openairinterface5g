@@ -543,7 +543,7 @@ void* eRAL_task(void *args_p) {
                     LOG_E(RAL_ENB, "Received unexpected message %s\n", msg_name);
                     break;
             }
-            free(msg_p);
+            itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
             msg_p = NULL;
         }
         nb_events = itti_get_events(TASK_RAL_ENB, &events);
