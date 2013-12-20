@@ -720,6 +720,7 @@ void init_802_21_link_saps() {
           exit (-1);
       }
   }
+  sleep(15);
 #endif
 #endif
 #endif
