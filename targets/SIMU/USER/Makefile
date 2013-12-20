@@ -346,6 +346,11 @@ oaisimCROWN: $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
 	@$(CC) oaisimCROWN.c $(INCLUDES) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt
 
+oai_nw_drv:
+	(cd $(OPENAIR2_DIR) && $(MAKE) oai_nw_drv.ko)
+	(cp $(OPENAIR2_DIR)/NAS/DRIVER/LITE/oai_nw_drv.ko . )
+oai_nw_drv_clean:
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/LITE && $(MAKE) clean)
 nasmesh_fix:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
 	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink_address_fix.ko)
