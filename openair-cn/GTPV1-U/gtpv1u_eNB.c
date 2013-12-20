@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-
+#include "assertions.h"
 #include "NwGtpv1u.h"
 #include "NwGtpv1uMsg.h"
 #include "NwLog.h"
@@ -22,7 +22,6 @@
 #include <sys/socket.h>
 #endif
 
-
 extern unsigned char pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP, \
     sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode);
 
@@ -42,6 +41,8 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
     NwGtpv1uUlpHandleT hUlp,
     NwGtpv1uUlpApiT *pUlpApi)
 {
+    int result;
+
     switch(pUlpApi->apiType) {
             /* Here there are two type of messages handled:
              * - T-PDU
@@ -61,16 +62,17 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
             GTPU_DEBUG("Received T-PDU from gtpv1u stack %u with size %d",
                        pUlpApi->apiInfo.recvMsgInfo.teid, buffer_len);
 
-            pdcp_data_req(0, // eNB_idx,
-                0, // UE idx
-            		0, // frame
-            		1, // enb flag
-            		5, // rb id
-            		0, // mui
-            		0, // confirm
-            		buffer_len,
-            		buffer,
-            		1);
+            result = pdcp_data_req(0, // eNB_idx,
+                                   0, // UE idx
+                                   0, // frame
+                                   1, // enb flag
+                                   5, // rb id
+                                   0, // mui
+                                   0, // confirm
+                                   buffer_len,
+                                   buffer,
+                                   1);
+            AssertFatal (result == TRUE, "PDCP data request failed!\n");
         }
         break;
         default: {
