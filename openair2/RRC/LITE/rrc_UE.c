@@ -2488,13 +2488,8 @@ void *rrc_ue_task(void *args_p) {
   const char   *msg_name;
   instance_t    instance;
   unsigned int Mod_id;
-<<<<<<< .mine
-  int           result;
-  SRB_INFO *srb_info_p;
-=======
   int           result;
   SRB_INFO     *srb_info_p;
->>>>>>> .r4801
 
   itti_mark_task_ready (TASK_RRC_UE);
 
