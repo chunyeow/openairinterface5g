@@ -773,8 +773,8 @@ inline void MIH_C_LINK_TUPLE_ID_encode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T 
     MIH_C_LINK_ID_encode(bbP, &dataP->link_id);
     MIH_C_CHOICE_encode(bbP, &dataP->choice);
     switch (dataP->choice) {
-        case 0:  break;
-        case 1:  MIH_C_LINK_ADDR_encode(bbP, &dataP->_union.link_addr); break;
+        case MIH_C_LINK_TUPLE_ID_CHOICE_NULL:  break;
+        case MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR:  MIH_C_LINK_ADDR_encode(bbP, &dataP->_union.link_addr); break;
         default:
             printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_TUPLE_ID_T %d\n", dataP->choice);
     }
@@ -785,8 +785,8 @@ inline void MIH_C_LINK_TUPLE_ID_decode(Bit_Buffer_t* bbP, MIH_C_LINK_TUPLE_ID_T 
     MIH_C_LINK_ID_decode(bbP, &dataP->link_id);
     MIH_C_CHOICE_decode(bbP, &dataP->choice);
     switch (dataP->choice) {
-        case 0:  break;
-        case 1:  MIH_C_LINK_ADDR_decode(bbP, &dataP->_union.link_addr); break;
+        case MIH_C_LINK_TUPLE_ID_CHOICE_NULL:       break;
+        case MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR:  MIH_C_LINK_ADDR_decode(bbP, &dataP->_union.link_addr); break;
         default:
             printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_TUPLE_ID_T %d\n", dataP->choice);
     }
