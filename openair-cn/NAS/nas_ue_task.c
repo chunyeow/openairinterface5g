@@ -29,6 +29,7 @@
 *******************************************************************************/
 
 #if defined(ENABLE_ITTI)
+# include "assertions.h"
 # include "intertask_interface.h"
 # include "nas_ue_task.h"
 # include "UTIL/LOG/log.h"
@@ -74,6 +75,7 @@ void *nas_ue_task(void *args_p) {
   const char           *msg_name;
   instance_t            instance;
   unsigned int          Mod_id;
+  int                   result;
 
   itti_mark_task_ready (TASK_NAS_UE);
 
@@ -167,7 +169,8 @@ void *nas_ue_task(void *args_p) {
             nas_proc_establish_cnf(NAS_CONN_ESTABLI_CNF (msg_p).nasMsg.data, NAS_CONN_ESTABLI_CNF (msg_p).nasMsg.length);
 
             /* TODO checks if NAS will free the nas message, better to do it there anyway! */
-            itti_free (ITTI_MSG_ORIGIN_ID(msg_p), NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.data);
+            result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.data);
+            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory!\n");
           }
           break;
 
@@ -196,7 +199,8 @@ void *nas_ue_task(void *args_p) {
           nas_proc_dl_transfer_ind (NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.data, NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.length);
 
           /* TODO checks if NAS will free the nas message, better to do it there anyway! */
-          itti_free (ITTI_MSG_ORIGIN_ID(msg_p), NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.data);
+          result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.data);
+          AssertFatal (result == EXIT_SUCCESS, "Failed to free memory!\n");
           break;
 
         default:

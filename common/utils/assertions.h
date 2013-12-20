@@ -34,38 +34,42 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#define _Assert_(cOND, eXIT, fORMAT, aRGS...)                               \
-do {                                                                        \
-    if (!(cOND)) {                                                          \
-        fprintf(stderr, "%s:%d:%s Assertion `"#cOND"` failed!\n" fORMAT,    \
-                __FILE__, __LINE__, __FUNCTION__, ##aRGS);                  \
-        if (eXIT != 0) {                                                    \
-            fprintf(stderr, "Exiting execution\n");                         \
-            fflush(stdout);                                                 \
-            fflush(stderr);                                                 \
-            abort();                                                        \
-        }                                                                   \
-    }                                                                       \
+#define _Assert_Exit_                           \
+{                                               \
+    fprintf(stderr, "\nExiting execution\n");   \
+    fflush(stdout);                             \
+    fflush(stderr);                             \
+    abort();                                    \
+}
+
+#define _Assert_(cOND, aCTION, fORMAT, aRGS...)             \
+do {                                                        \
+    if (!(cOND)) {                                          \
+        fprintf(stderr, "\nAssertion ("#cOND") failed!\n"   \
+                "In %s() %s:%d\n" fORMAT,                   \
+                __FUNCTION__, __FILE__, __LINE__, ##aRGS);  \
+        aCTION;                                             \
+    }                                                       \
 } while(0)
 
-#define AssertFatal(cOND, fORMAT, aRGS...)  _Assert_(cOND, 1, fORMAT, ##aRGS)
+#define AssertFatal(cOND, fORMAT, aRGS...)          _Assert_(cOND, _Assert_Exit_, fORMAT, ##aRGS)
 
-#define AssertError(cOND, fORMAT, aRGS...)  _Assert_(cOND, 0, fORMAT, ##aRGS)
+#define AssertError(cOND, aCTION, fORMAT, aRGS...)  _Assert_(cOND, aCTION, fORMAT, ##aRGS)
 
 
 
-#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                                              \
-_Assert_(cOND, 1, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n\n",  \
+#define DevCheck(cOND, vALUE1, vALUE2, vALUE3)                                                          \
+_Assert_(cOND, _Assert_Exit_, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n\n",  \
          (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3)
 
-#define DevCheck4(cOND, vALUE1, vALUE2, vALUE3, vALUE4)                                                             \
-_Assert_(cOND, 1, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n"#vALUE4": %"PRIdMAX"\n\n",   \
+#define DevCheck4(cOND, vALUE1, vALUE2, vALUE3, vALUE4)                                                                         \
+_Assert_(cOND, _Assert_Exit_, #vALUE1": %"PRIdMAX"\n"#vALUE2": %"PRIdMAX"\n"#vALUE3": %"PRIdMAX"\n"#vALUE4": %"PRIdMAX"\n\n",   \
          (intmax_t)vALUE1, (intmax_t)vALUE2, (intmax_t)vALUE3, (intmax_t)vALUE4)
 
 #define DevParam(vALUE1, vALUE2, vALUE3)    DevCheck(0, vALUE1, vALUE2, vALUE3)
 
-#define DevAssert(cOND)                     _Assert_(cOND, 1, "")
+#define DevAssert(cOND)                     _Assert_(cOND, _Assert_Exit_, "")
 
-#define DevMessage(mESSAGE)                 _Assert_(0, 1, #mESSAGE)
+#define DevMessage(mESSAGE)                 _Assert_(0, _Assert_Exit_, #mESSAGE)
 
 #endif /* ASSERTIONS_H_ */
