@@ -325,6 +325,7 @@ typedef struct nas_establish_rsp_s {
  * AS transfers the initial answer message to the NAS.
  */
 typedef struct nas_establish_cnf_s {
+    UInt32_t         UEid;            /* UE lower layer identifier   */
     nas_error_code_t errCode;         /* Transaction status          */
     as_nas_info_t    nasMsg;          /* NAS message to transfer     */
 } nas_establish_cnf_t;
