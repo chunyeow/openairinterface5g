@@ -30,20 +30,3 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-user_parser.o: user_parser.h
-user_parser.o: /homes/roux/lte-epc/openair3/OPENAIRMME/NAS/EURECOM-NAS/src/util/parser.h
-user_simulator.o: user_parser.h
-user_simulator.o: /homes/roux/lte-epc/openair3/OPENAIRMME/NAS/EURECOM-NAS/src/include/commonDef.h
-user_simulator.o: /usr/include/stdint.h /usr/include/features.h
-user_simulator.o: /homes/roux/lte-epc/openair3/OPENAIRMME/NAS/EURECOM-NAS/src/util/socket.h
-user_simulator.o: /homes/roux/lte-epc/openair3/OPENAIRMME/NAS/EURECOM-NAS/src/util/device.h
-user_simulator.o: /usr/include/stdio.h /usr/include/libio.h
-user_simulator.o: /usr/include/_G_config.h /usr/include/wchar.h
-user_simulator.o: /usr/include/xlocale.h /usr/include/errno.h
-user_simulator.o: /usr/include/netdb.h /usr/include/netinet/in.h
-user_simulator.o: /usr/include/endian.h /usr/include/rpc/netdb.h
-user_simulator.o: /usr/include/ctype.h /usr/include/stdlib.h
-user_simulator.o: /usr/include/alloca.h /usr/include/signal.h
-user_simulator.o: /usr/include/time.h /usr/include/string.h
-user_simulator.o: /usr/include/pthread.h /usr/include/sched.h
-user_simulator.o: /usr/include/poll.h
