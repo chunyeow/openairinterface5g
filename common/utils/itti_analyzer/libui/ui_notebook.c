@@ -37,10 +37,12 @@ int ui_notebook_create(GtkWidget *vbox)
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox_notebook, NULL);
     gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(notebook), vbox_notebook, "Messages list");
 
+#if defined (FILTERS_TAB)
     vbox_notebook = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox_notebook, NULL);
     gtk_notebook_set_tab_label_text (GTK_NOTEBOOK(notebook), vbox_notebook, "Filters");
+#endif
 
     vbox_notebook = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
