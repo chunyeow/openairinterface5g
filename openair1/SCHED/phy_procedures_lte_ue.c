@@ -38,6 +38,7 @@
  * \warning
  */
 
+#include "assertions.h"
 #include "defs.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
@@ -3169,10 +3170,11 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
  void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, 
 			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
 #if defined(ENABLE_ITTI)
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
-  unsigned int Mod_id;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
+  unsigned int  Mod_id;
+  int           result;
 #endif
 
 #undef DEBUG_PHY_PROC
@@ -3200,7 +3202,7 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 #if defined(ENABLE_ITTI)
   do {
     // Checks if a message has been sent to PHY sub-task
-    itti_poll_msg ( TASK_PHY_UE, &msg_p);
+    itti_poll_msg (TASK_PHY_UE, &msg_p);
 
     if (msg_p != NULL) {
       msg_name = ITTI_MSG_NAME (msg_p);
@@ -3219,7 +3221,8 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
           break;
       }
 
-      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
   } while(msg_p != NULL);
 #endif

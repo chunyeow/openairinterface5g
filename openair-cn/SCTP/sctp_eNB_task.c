@@ -528,6 +528,7 @@ void *sctp_eNB_task(void *arg)
     int                 nb_events;
     struct epoll_event *events;
     MessageDef         *received_msg = NULL;
+    int                 result;
 
     SCTP_DEBUG("Starting SCTP layer\n");
 
@@ -560,7 +561,8 @@ void *sctp_eNB_task(void *arg)
                                ITTI_MSG_ID(received_msg), ITTI_MSG_NAME(received_msg));
                     break;
             }
-            itti_free(ITTI_MSG_ORIGIN_ID(received_msg), received_msg);
+            result = itti_free(ITTI_MSG_ORIGIN_ID(received_msg), received_msg);
+            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
             received_msg = NULL;
         }
 

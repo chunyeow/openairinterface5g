@@ -266,19 +266,23 @@ static void itti_dump_user_data_delete_function(void *user_data, void *user_stat
     {
         itti_dump_queue_item_t *item;
         task_id_t task_id;
+        int result;
 
         item = (itti_dump_queue_item_t *)user_data;
 
         if (item->data != NULL)
         {
+
             task_id = ITTI_MSG_ORIGIN_ID(item->data);
-            itti_free(task_id, item->data);
+            result = itti_free(task_id, item->data);
+            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
         }
         else
         {
             task_id = TASK_UNKNOWN;
         }
-        itti_free(task_id, item);
+        result = itti_free(task_id, item);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
 }
 

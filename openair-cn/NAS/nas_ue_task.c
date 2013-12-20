@@ -170,7 +170,7 @@ void *nas_ue_task(void *args_p) {
 
             /* TODO checks if NAS will free the nas message, better to do it there anyway! */
             result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.data);
-            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory!\n");
+            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
           }
           break;
 
@@ -198,9 +198,11 @@ void *nas_ue_task(void *args_p) {
 
           nas_proc_dl_transfer_ind (NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.data, NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.length);
 
+          if (0) {
           /* TODO checks if NAS will free the nas message, better to do it there anyway! */
           result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), NAS_DOWNLINK_DATA_IND(msg_p).nasMsg.data);
-          AssertFatal (result == EXIT_SUCCESS, "Failed to free memory!\n");
+          AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
+          }
           break;
 
         default:
@@ -208,7 +210,8 @@ void *nas_ue_task(void *args_p) {
           break;
       }
 
-      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
       msg_p = NULL;
     }
 

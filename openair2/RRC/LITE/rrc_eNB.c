@@ -3021,10 +3021,11 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
 #if defined(ENABLE_ITTI)
 /*------------------------------------------------------------------------------*/
 void *rrc_enb_task(void *args_p) {
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
-  SRB_INFO *srb_info_p;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
+  int           result;
+  SRB_INFO     *srb_info_p;
 
   itti_mark_task_ready (TASK_RRC_ENB);
 
@@ -3067,7 +3068,8 @@ void *rrc_enb_task(void *args_p) {
                              RRC_DCCH_DATA_IND (msg_p).sdu_size);
 
         // Message buffer has been processed, free it now.
-        itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
         break;
 
 #if defined(ENABLE_USE_MME)
@@ -3104,7 +3106,8 @@ void *rrc_enb_task(void *args_p) {
         break;
     }
 
-    itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+    result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+    AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     msg_p = NULL;
   }
 }

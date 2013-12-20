@@ -315,7 +315,8 @@ int itti_send_broadcast_message(MessageDef *message_p) {
             }
         }
     }
-    itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    result = itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
 
     return ret;
 }
@@ -460,7 +461,8 @@ int itti_send_msg_to_task(task_id_t destination_task_id, instance_t instance, Me
         }
     } else {
         /* This is a debug message to TASK_UNKNOWN, we can release safely release it */
-        itti_free(origin_task_id, message);
+        int result = itti_free(origin_task_id, message);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
 
 #if defined(OAI_EMU) || defined(RTAI)
@@ -583,8 +585,9 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             (itti_desc.threads[thread_id].events[i].data.fd == itti_desc.threads[thread_id].task_event_fd))
         {
             struct message_list_s *message = NULL;
-            eventfd_t sem_counter;
-            ssize_t   read_ret;
+            eventfd_t   sem_counter;
+            ssize_t     read_ret;
+            int         result;
 
             /* Read will always return 1 */
             read_ret = read (itti_desc.threads[thread_id].task_event_fd, &sem_counter, sizeof(sem_counter));
@@ -601,7 +604,9 @@ static inline void itti_receive_msg_internal_event_fd(task_id_t task_id, uint8_t
             }
             AssertFatal(message != NULL, "Message from message queue is NULL!\n");
             *received_msg = message->msg;
-            itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
+            result = itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
+            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
+
             /* Mark that the event has been processed */
             itti_desc.threads[thread_id].events[i].events &= ~EPOLLIN;
             return;
@@ -655,8 +660,11 @@ void itti_poll_msg(task_id_t task_id, MessageDef **received_msg) {
 
         if (lfds611_queue_dequeue (itti_desc.tasks[task_id].message_queue, (void **) &message) == 1)
         {
+            int result;
+
             *received_msg = message->msg;
-            itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
+            result = itti_free (ITTI_MSG_ORIGIN_ID(*received_msg), message);
+            AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
         }
     }
 

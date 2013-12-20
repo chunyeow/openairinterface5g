@@ -522,9 +522,10 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
 void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
   //-----------------------------------------------------------------------------
 #if defined(ENABLE_ITTI)
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
+  int           result;
 #endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
@@ -551,7 +552,8 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
                          RRC_DCCH_DATA_REQ (msg_p).sdu_p, RRC_DCCH_DATA_REQ (msg_p).mode);
 
           // Message buffer has been processed, free it now.
-          itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_REQ (msg_p).sdu_p);
+          result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_REQ (msg_p).sdu_p);
+          AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
           break;
 
         default:
@@ -559,7 +561,8 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
           break;
       }
 
-      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
   } while(msg_p != NULL);
 #endif

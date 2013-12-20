@@ -1284,9 +1284,10 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
   int ret;  
 #endif
 #if defined(ENABLE_ITTI)
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
+  int           result;
 #endif
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_IN);
@@ -1315,7 +1316,8 @@ UE_L2_STATE_t ue_scheduler(u8 Mod_id,u32 frame, u8 subframe, lte_subframe_t dire
           break;
       }
 
-      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
   } while(msg_p != NULL);
 #endif

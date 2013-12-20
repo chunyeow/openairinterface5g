@@ -36,6 +36,7 @@
 
  */
 
+#include "assertions.h"
 #include "PHY/defs.h"
 #include "PHY/extern.h"
 
@@ -4230,9 +4231,10 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
   int ret;
 #endif
 #if defined(ENABLE_ITTI)
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
+  int           result;
 #endif
 
   DCI_PDU *DCI_pdu= &eNB_mac_inst[Mod_id].DCI_pdu;
@@ -4250,6 +4252,10 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
       instance = ITTI_MSG_INSTANCE (msg_p);
 
       switch (ITTI_MSG_ID(msg_p)) {
+        case MESSAGE_TEST:
+          LOG_D(MAC, "Received %s\n", ITTI_MSG_NAME(msg_p));
+          break;
+
         case RRC_MAC_BCCH_DATA_REQ:
           LOG_D(MAC, "Received %s from %s: instance %d, frame %d, eNB_index %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
@@ -4281,7 +4287,8 @@ void eNB_dlsch_ulsch_scheduler(u8 Mod_id,u8 cooperation_flag, u32 frame, u8 subf
           break;
       }
 
-      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
   } while(msg_p != NULL);
 #endif

@@ -297,7 +297,8 @@ int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
 #if defined(ENABLE_ITTI)
 void *l2l1_task(void *arg)
 {
-  MessageDef *message_p = NULL;
+  MessageDef   *message_p = NULL;
+  int           result;
 
   itti_set_task_real_time(TASK_L2L1);
   itti_mark_task_ready(TASK_L2L1);
@@ -306,7 +307,8 @@ void *l2l1_task(void *arg)
     /* Wait for the initialize message */
     do {
       if (message_p != NULL) {
-        itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+        result = itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
       }
       itti_receive_msg (TASK_L2L1, &message_p);
 
@@ -326,7 +328,8 @@ void *l2l1_task(void *arg)
           break;
       }
     } while (ITTI_MSG_ID(message_p) != INITIALIZE_MESSAGE);
-    itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    result = itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
   }
 
   do {
@@ -348,7 +351,8 @@ void *l2l1_task(void *arg)
         break;
     }
 
-    itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    result = itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
   } while(1);
 
   return NULL;

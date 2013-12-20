@@ -225,17 +225,21 @@ void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_associa
 static
 void s1ap_eNB_handle_sctp_data_ind(sctp_data_ind_t *sctp_data_ind)
 {
+    int result;
+
     DevAssert(sctp_data_ind != NULL);
 
     s1ap_eNB_handle_message(sctp_data_ind->assoc_id, sctp_data_ind->stream,
                             sctp_data_ind->buffer, sctp_data_ind->buffer_length);
 
-    itti_free(TASK_UNKNOWN, sctp_data_ind->buffer);
+    result = itti_free(TASK_UNKNOWN, sctp_data_ind->buffer);
+    AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
 }
 
 void *s1ap_eNB_task(void *arg)
 {
     MessageDef *received_msg = NULL;
+    int         result;
 
     S1AP_DEBUG("Starting S1AP layer\n");
 
@@ -288,7 +292,8 @@ void *s1ap_eNB_task(void *arg)
                 break;
         }
 
-        itti_free (ITTI_MSG_ORIGIN_ID(received_msg), received_msg);
+        result = itti_free (ITTI_MSG_ORIGIN_ID(received_msg), received_msg);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
 
         received_msg = NULL;
     }

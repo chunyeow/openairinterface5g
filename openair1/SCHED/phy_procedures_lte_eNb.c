@@ -3515,10 +3515,11 @@ int phy_procedures_RN_eNB_TX(unsigned char last_slot, unsigned char next_slot, r
 void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, 
 			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
 #if defined(ENABLE_ITTI)
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
-  unsigned int Mod_id;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
+  unsigned int  Mod_id;
+  int           result;
 #endif
   /*
     if (phy_vars_eNB->frame >= 1000)
@@ -3531,7 +3532,7 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
 #if defined(ENABLE_ITTI)
   do {
     // Checks if a message has been sent to PHY sub-task
-    itti_poll_msg ( TASK_PHY_ENB, &msg_p);
+    itti_poll_msg (TASK_PHY_ENB, &msg_p);
 
     if (msg_p != NULL) {
       msg_name = ITTI_MSG_NAME (msg_p);
@@ -3545,7 +3546,8 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
           break;
       }
 
-      itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+      AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
   } while(msg_p != NULL);
 #endif

@@ -36,6 +36,7 @@
 */
 
 
+#include "assertions.h"
 #include "defs.h"
 #include "PHY/TOOLS/dB_routines.h"
 #include "extern.h"
@@ -2404,11 +2405,12 @@ EXPORT_SYMBOL(Rlc_info_am_config);
 
 #if defined(ENABLE_ITTI)
 void *rrc_ue_task(void *args_p) {
-  MessageDef *msg_p;
-  const char *msg_name;
-  instance_t instance;
+  MessageDef   *msg_p;
+  const char   *msg_name;
+  instance_t    instance;
   unsigned int Mod_id;
-  SRB_INFO *srb_info_p;
+  int           result;
+  SRB_INFO     *srb_info_p;
 
   itti_mark_task_ready (TASK_RRC_UE);
 
@@ -2497,7 +2499,8 @@ void *rrc_ue_task(void *args_p) {
                             RRC_DCCH_DATA_IND (msg_p).eNB_index);
 
         // Message buffer has been processed, free it now.
-        itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_IND (msg_p).sdu_p);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
         break;
 
 # if defined(ENABLE_USE_MME)
@@ -2609,6 +2612,7 @@ void *rrc_ue_task(void *args_p) {
     }
 
     itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+    AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     msg_p = NULL;
   }
 }

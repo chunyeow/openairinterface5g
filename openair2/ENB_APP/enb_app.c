@@ -321,7 +321,9 @@ void *eNB_app_task(void *args_p)
 # endif
     MessageDef *msg_p;
     const char *msg_name;
-    instance_t instance;
+    instance_t  instance;
+    int         result;
+
     itti_mark_task_ready (TASK_ENB_APP);
 
 # if defined(ENABLE_USE_MME)
@@ -406,9 +408,9 @@ void *eNB_app_task(void *args_p)
                         if (timer_setup (ENB_REGISTER_RETRY_DELAY, 0, TASK_ENB_APP, INSTANCE_DEFAULT, TIMER_ONE_SHOT,
                                          NULL, &enb_register_retry_timer_id) < 0)
                         {
-                            LOG_E(ENB_APP, " Can not start eNB register retry timer, use \"usleep\" instead!\n");
+                            LOG_E(ENB_APP, " Can not start eNB register retry timer, use \"sleep\" instead!\n");
 
-                            usleep(ENB_REGISTER_RETRY_DELAY * 1000000);
+                            sleep(ENB_REGISTER_RETRY_DELAY);
                             /* Restart the registration process */
                             registered_enb = 0;
                             register_enb_pending = eNB_app_register ();
@@ -441,7 +443,8 @@ void *eNB_app_task(void *args_p)
                 break;
         }
 
-        itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+        result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), msg_p);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     } while (1);
 #endif
 
