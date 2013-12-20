@@ -211,4 +211,57 @@ def execute(oai, user, pw, logfile,logdir):
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
         log.ok(case, test, name, conf, '', logfile)
+    try:
+        test = '13'
+        name = 'Compile oai_nw_ether IP driver' 
+        conf = 'make oai_nw_drv'
+        trace = logdir + '/log_' + case + test + '.txt;'
+        tee = ' 2>&1 | tee ' + trace
+        diag = 'check the compilation errors for ITTI Rel8'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oai_nw_drv;')
+        oai.send('make oai_nw_drv_clean;')
+        tee = ' 2>&1 | tee ' + trace
+        oai.send_expect_false('make oai_nw_drv' + tee, makerr1,  60)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+    try:
+        test = '14'
+        name = 'Compile oai.rel8.itti.ral.make' 
+        conf = 'make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 Rel8=1'
+        trace = logdir + '/log_' + case + test + '.txt;'
+        tee = ' 2>&1 | tee ' + trace
+        diag = 'check the compilation errors for ITTI Rel8'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oaisim.rel8.itti.ral;')
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 Rel8=1 -j4' + tee, makerr1,  1500)
+        oai.send('cp ./oaisim ./oaisim.rel8.itti.ral;')
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+    try:
+        test = '15'
+        name = 'Compile oai.rel10.itti.ral.make' 
+        conf = 'make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel10=1'
+        trace = logdir + '/log_' + case + test + '.txt;'
+        tee = ' 2>&1 | tee ' + trace
+        diag = 'check the compilation errors for ITTI Rel10'
+        oai.send('make clean;')
+        oai.send('make cleanall;')
+        oai.send('make cleanasn1;')
+        oai.send('rm -f ./oaisim.rel10.itti.ral;')
+        oai.send_expect_false('make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 Rel10=1 -j4' + tee, makerr1,  1500)
+        oai.send('cp ./oaisim ./oaisim.rel10.itti.ral;')
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)
+
 
