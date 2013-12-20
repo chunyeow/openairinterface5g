@@ -362,6 +362,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame, u8_t eNB_flag)
 #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
             for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
                 LOG_D(PDCP, "Checking if could sent on default rab id %d\n", rab_id);
+                pdcp = &pdcp_array_eNB[eNB_index][UE_index][rab_id];
                 if (pdcp->instanciated_instance == (pdcp_input_header.inst + 1)) {
                     result = pdcp_data_req (eNB_id,
                                             UE_id,
@@ -447,6 +448,7 @@ int pdcp_fifo_read_input_sdus (u32_t frame, u8_t eNB_flag, u8_t UE_index, u8_t e
              */
 #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
             for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
+                pdcp = &pdcp_array_eNB[eNB_index][UE_index][rab_id];
                 if (pdcp->instanciated_instance) {
                     pdcp_data_req(eNB_index,
                                   UE_index,
@@ -600,15 +602,15 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
     
     while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {
       LOG_I(OTG,"Mod_id %d Frame %d Got a packet (%p), HEAD of otg_pdcp_buffer[%d] is %p and Nb elements is %d\n", 
-	    module_id,frame, otg_pkt_info, module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
+        module_id,frame, otg_pkt_info, module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])), otg_pdcp_buffer[module_id].nb_elements);
       //otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]));
       dst_id = (otg_pkt_info->otg_pkt).dst_id;
       module_id = (otg_pkt_info->otg_pkt).module_id;
       rb_id = (otg_pkt_info->otg_pkt).rb_id;
       is_ue = (otg_pkt_info->otg_pkt).is_ue;
       pdcp_mode = (otg_pkt_info->otg_pkt).mode;
-      //	LOG_I(PDCP,"pdcp_fifo, pdcp mode is= %d\n",pdcp_mode);
-	
+      //    LOG_I(PDCP,"pdcp_fifo, pdcp mode is= %d\n",pdcp_mode);
+
       // generate traffic if the ue is rrc reconfigured state
       // if (mac_get_rrc_status(module_id, eNB_flag, dst_id ) > 2 /*RRC_CONNECTED*/) { // not needed: this test is already done in update_otg_enb
       otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
@@ -651,12 +653,12 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
           free(otg_pkt);
         }
         /*else {
-	  LOG_I(OTG,"nothing generated (src %d, dst %d)\n",src_id, dst_id);
-	  }*/
+      LOG_I(OTG,"nothing generated (src %d, dst %d)\n",src_id, dst_id);
+      }*/
       }
       /*else {
-	LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, eNB_flag, dst_id ));
-	}*/
+    LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, eNB_flag, dst_id ));
+    }*/
     }
   }
 #endif
