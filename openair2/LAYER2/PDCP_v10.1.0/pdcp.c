@@ -38,6 +38,7 @@
 #ifndef USER_MODE
 #include <rtai_fifos.h>
 #endif
+#include "assertions.h"
 #include "pdcp.h"
 #include "pdcp_util.h"
 #include "pdcp_sequence_manager.h"
@@ -59,8 +60,6 @@
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 #endif
-
-#include "assertions.h"
 
 #define PDCP_DATA_REQ_DEBUG 0
 #define PDCP_DATA_IND_DEBUG 0
@@ -98,9 +97,9 @@ BOOL pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_i
   module_id_t module_id;
   rb_id_t rb_id_rlc = 0;
 
-  DevCheck4(eNB_id < NUMBER_OF_eNB_MAX, eNB_id, NUMBER_OF_eNB_MAX, UE_id, rb_id);
-  DevCheck4(UE_id < NUMBER_OF_UE_MAX, UE_id, NUMBER_OF_UE_MAX, eNB_id, rb_id);
-  DevCheck4(rb_id < NB_RB_MAX, rb_id, NB_RB_MAX, UE_id, eNB_id);
+  AssertError (eNB_id < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", eNB_id, NUMBER_OF_eNB_MAX, UE_id, rb_id);
+  AssertError (UE_id < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", UE_id, NUMBER_OF_UE_MAX, eNB_id, rb_id);
+  AssertError (rb_id < NB_RB_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_id, NB_RB_MAX, UE_id, eNB_id);
 
 #ifdef PDCP_UNIT_TEST
   pdcp = test_pdcp_entity;
@@ -546,10 +545,11 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
                 RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag, RRC_DCCH_DATA_REQ (msg_p).rb_id,
                 RRC_DCCH_DATA_REQ (msg_p).muip, RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).mode);
 
-          pdcp_data_req (RRC_DCCH_DATA_REQ (msg_p).eNB_index, RRC_DCCH_DATA_REQ (msg_p).ue_index, RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag,
-                         RRC_DCCH_DATA_REQ (msg_p).rb_id, RRC_DCCH_DATA_REQ (msg_p).muip,
-                         RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).sdu_size,
-                         RRC_DCCH_DATA_REQ (msg_p).sdu_p, RRC_DCCH_DATA_REQ (msg_p).mode);
+          result = pdcp_data_req (RRC_DCCH_DATA_REQ (msg_p).eNB_index, RRC_DCCH_DATA_REQ (msg_p).ue_index, RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag,
+                                  RRC_DCCH_DATA_REQ (msg_p).rb_id, RRC_DCCH_DATA_REQ (msg_p).muip,
+                                  RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).sdu_size,
+                                  RRC_DCCH_DATA_REQ (msg_p).sdu_p, RRC_DCCH_DATA_REQ (msg_p).mode);
+          AssertFatal (result == TRUE, "PDCP data request failed!\n");
 
           // Message buffer has been processed, free it now.
           result = itti_free (ITTI_MSG_ORIGIN_ID(msg_p), RRC_DCCH_DATA_REQ (msg_p).sdu_p);
@@ -565,6 +565,30 @@ void pdcp_run (u32_t frame, u8 eNB_flag, u8 UE_index, u8 eNB_index) {
       AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
     }
   } while(msg_p != NULL);
+
+# if 0
+  {
+    MessageDef *msg_resp_p;
+
+    msg_resp_p = itti_alloc_new_message(TASK_PDCP_ENB, MESSAGE_TEST);
+
+    itti_send_msg_to_task(TASK_RRC_ENB, 1, msg_resp_p);
+  }
+  {
+    MessageDef *msg_resp_p;
+
+    msg_resp_p = itti_alloc_new_message(TASK_PDCP_ENB, MESSAGE_TEST);
+
+    itti_send_msg_to_task(TASK_ENB_APP, 2, msg_resp_p);
+  }
+  {
+    MessageDef *msg_resp_p;
+
+    msg_resp_p = itti_alloc_new_message(TASK_PDCP_ENB, MESSAGE_TEST);
+
+    itti_send_msg_to_task(TASK_MAC_ENB, 3, msg_resp_p);
+  }
+# endif
 #endif
 
   pdcp_fifo_read_input_sdus_from_otg(frame, eNB_flag, UE_index, eNB_index);

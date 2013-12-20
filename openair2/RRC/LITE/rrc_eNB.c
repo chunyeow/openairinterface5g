@@ -1226,6 +1226,8 @@ void rrc_eNB_process_handoverPreparationInformation(u8 Mod_id,u32 frame, u16 UE_
 /*------------------------------------------------------------------------------*/
 void check_handovers(u8 Mod_id, u32 frame) {
   u8 i;
+  int result;
+
   for (i=0;i<NUMBER_OF_UE_MAX;i++) {
     if(eNB_rrc_inst[Mod_id].handover_info[i] != NULL) {
       if(eNB_rrc_inst[Mod_id].handover_info[i]->ho_prepare == 0xFF) {
@@ -1245,6 +1247,7 @@ void check_handovers(u8 Mod_id, u32 frame) {
                       rrc_eNB_mui++,0,
                       eNB_rrc_inst[Mod_id].handover_info[i]->size,
                       eNB_rrc_inst[Mod_id].handover_info[i]->buf,1);
+        AssertFatal (result == TRUE, "PDCP data request failed!\n");
         eNB_rrc_inst[Mod_id].handover_info[i]->ho_complete = 0xF2;
       }
     }

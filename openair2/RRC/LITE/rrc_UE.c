@@ -2128,6 +2128,7 @@ void rrc_ue_generate_MeasurementReport(u8 eNB_id, u8 UE_id, u32 frame) {
   nElem = 100;
   nElem1 = 33;
   static u32 pframe=0;
+  int result;
   target_eNB_offset = UE_rrc_inst[UE_id].Info[0].handoverTarget; // eNB_offset of target eNB: used to obtain the mod_id of target eNB
 
   for (i=0;i<MAX_MEAS_ID;i++) {
@@ -2159,7 +2160,8 @@ void rrc_ue_generate_MeasurementReport(u8 eNB_id, u8 UE_id, u32 frame) {
         LOG_I(RRC, "[UE %d] Frame %d : Generating Measurement Report for eNB %d\n", UE_id, frame, eNB_id);
         LOG_D(RLC, "[MSC_MSG][FRAME %05d][RRC_UE][UE %02d][][--- PDCP_DATA_REQ/%d Bytes (MeasurementReport to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
               frame, UE_id, size, eNB_id, rrc_mui, eNB_id, DCCH);
-        pdcp_data_req(eNB_id, UE_id, frame, 0, DCCH, rrc_mui++, 0, size, buffer, 1);
+        result = pdcp_data_req(eNB_id, UE_id, frame, 0, DCCH, rrc_mui++, 0, size, buffer, 1);
+        AssertFatal (result == TRUE, "PDCP data request failed!\n");
         //LOG_D(RRC, "[UE %d] Frame %d Sending MeasReport (%d bytes) through DCCH%d to PDCP \n",Mod_id,frame, size, DCCH);
       }
       //          measFlag = 0; //re-setting measFlag so that no more MeasReports are sent in this frame

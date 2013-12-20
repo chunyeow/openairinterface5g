@@ -276,6 +276,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame, u8_t eNB_flag)
   u8 UE_id = 0;
   u8 eNB_id;
   u8 rb_id;
+  int result;
 
   // if remaining bytes to read
   if (pdcp_input_sdu_remaining_size_to_read > 0) {
@@ -326,14 +327,15 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame, u8_t eNB_flag)
                 frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
 
             if (pdcp->instanciated_instance) {
-                pdcp_data_req (eNB_id, UE_id,
-                         frame, eNB_flag,
-                         pdcp_input_header.rb_id,
-                         RLC_MUI_UNDEFINED,
-                         RLC_SDU_CONFIRM_NO,
-                         pdcp_input_header.data_size,
-                         pdcp_input_sdu_buffer,
-                         PDCP_DATA_PDU);
+                result = pdcp_data_req (eNB_id, UE_id,
+                                        frame, eNB_flag,
+                                        pdcp_input_header.rb_id,
+                                        RLC_MUI_UNDEFINED,
+                                        RLC_SDU_CONFIRM_NO,
+                                        pdcp_input_header.data_size,
+                                        pdcp_input_sdu_buffer,
+                                        PDCP_DATA_PDU);
+                AssertFatal (result == TRUE, "PDCP data request failed!\n");
             }
 
         } else if ((pdcp_input_header.traffic_type == OAI_NW_DRV_IPV6_ADDR_TYPE_MULTICAST) || (pdcp_input_header.traffic_type == OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST)) {
@@ -341,16 +343,17 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame, u8_t eNB_flag)
                   frame, pdcp_read_header.inst,  pdcp_read_header.data_size, pdcp_read_header.inst, pdcp_read_header.rb_id);
 
             if (pdcp->instanciated_instance) {
-                pdcp_data_req (eNB_id,
-                               UE_id,
-                               frame,
-                               eNB_flag,
-                               pdcp_input_header.rb_id,
-                               RLC_MUI_UNDEFINED,
-                               RLC_SDU_CONFIRM_NO,
-                               pdcp_input_header.data_size,
-                               pdcp_input_sdu_buffer,
-                               PDCP_TM);
+                result = pdcp_data_req (eNB_id,
+                                        UE_id,
+                                        frame,
+                                        eNB_flag,
+                                        pdcp_input_header.rb_id,
+                                        RLC_MUI_UNDEFINED,
+                                        RLC_SDU_CONFIRM_NO,
+                                        pdcp_input_header.data_size,
+                                        pdcp_input_sdu_buffer,
+                                        PDCP_TM);
+                AssertFatal (result == TRUE, "PDCP data request failed!\n");
             }
 
         } else if (eNB_flag) {
@@ -360,28 +363,30 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame, u8_t eNB_flag)
             for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
                 LOG_D(PDCP, "Checking if could sent on default rab id %d\n", rab_id);
                 if (pdcp->instanciated_instance == (pdcp_input_header.inst + 1)) {
-                    pdcp_data_req (eNB_id,
-                                   UE_id,
-                                   frame, eNB_flag,
-                                   rab_id,
-                                   RLC_MUI_UNDEFINED,
-                                   RLC_SDU_CONFIRM_NO,
-                                   pdcp_input_header.data_size,
-                                   pdcp_input_sdu_buffer,
-                                   PDCP_DATA_PDU);
+                    result = pdcp_data_req (eNB_id,
+                                            UE_id,
+                                            frame, eNB_flag,
+                                            rab_id,
+                                            RLC_MUI_UNDEFINED,
+                                            RLC_SDU_CONFIRM_NO,
+                                            pdcp_input_header.data_size,
+                                            pdcp_input_sdu_buffer,
+                                            PDCP_DATA_PDU);
+                    AssertFatal (result == TRUE, "PDCP data request failed!\n");
                 }
             }
         } else {
             LOG_D(PDCP, "Forcing send on DEFAULT_RAB_ID\n");
-            pdcp_data_req (eNB_id,
-                           UE_id,
-                           frame, eNB_flag,
-                           DEFAULT_RAB_ID,
-                           RLC_MUI_UNDEFINED,
-                           RLC_SDU_CONFIRM_NO,
-                           pdcp_input_header.data_size,
-                           pdcp_input_sdu_buffer,
-                           PDCP_DATA_PDU);
+            result = pdcp_data_req (eNB_id,
+                                    UE_id,
+                                    frame, eNB_flag,
+                                    DEFAULT_RAB_ID,
+                                    RLC_MUI_UNDEFINED,
+                                    RLC_SDU_CONFIRM_NO,
+                                    pdcp_input_header.data_size,
+                                    pdcp_input_sdu_buffer,
+                                    PDCP_DATA_PDU);
+            AssertFatal (result == TRUE, "PDCP data request failed!\n");
         }
         // not necessary
         //memset(pdcp_input_sdu_buffer, 0, MAX_IP_PACKET_SIZE);
@@ -583,6 +588,7 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
   int pkt_size=0, pkt_cnt=0;
   u8 pdcp_mode, is_ue=0;
   Packet_otg_elt * otg_pkt_info;
+  int result;
 
   src_id = eNB_index;
 
@@ -608,21 +614,23 @@ void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index
       otg_pkt = (u8*) (otg_pkt_info->otg_pkt).sdu_buffer;
       pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
       if (otg_pkt != NULL) {
-	if (is_ue == 0 ) {
-	  //rb_id = (/*NB_eNB_INST +*/ dst_id -1 ) * MAX_NUM_RB + DTCH;
-	  LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n", 
-		eNB_index, frame, pkt_cnt++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
-	  pdcp_data_req(eNB_index, UE_index, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt,pdcp_mode);
-	}
-	else {
-	  //rb_id= eNB_index * MAX_NUM_RB + DTCH;
-	  LOG_D(OTG,"[UE %d] sending packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n", 
-		UE_index, src_id, rb_id, src_id, dst_id, pkt_size);
-	  pdcp_data_req(eNB_index, UE_index, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt, PDCP_DATA_PDU);
-	}
-	free(otg_pkt);
+    if (is_ue == 0 ) {
+      //rb_id = (/*NB_eNB_INST +*/ dst_id -1 ) * MAX_NUM_RB + DTCH;
+      LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n",
+        eNB_index, frame, pkt_cnt++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
+      result = pdcp_data_req(eNB_index, UE_index, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt,pdcp_mode);
+      AssertFatal (result == TRUE, "PDCP data request failed!\n");
+    }
+    else {
+      //rb_id= eNB_index * MAX_NUM_RB + DTCH;
+      LOG_D(OTG,"[UE %d] sending packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n",
+        UE_index, src_id, rb_id, src_id, dst_id, pkt_size);
+      result = pdcp_data_req(eNB_index, UE_index, frame, eNB_flag, rb_id, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, pkt_size, otg_pkt, PDCP_DATA_PDU);
+      AssertFatal (result == TRUE, "PDCP data request failed!\n");
+    }
+    free(otg_pkt);
       }
-	  // } //else LOG_D(OTG,"frame %d enb %d-> ue %d link not yet established state %d  \n", frame, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, eNB_flag, dst_id - NB_eNB_INST));
+      // } //else LOG_D(OTG,"frame %d enb %d-> ue %d link not yet established state %d  \n", frame, eNB_index,dst_id - NB_eNB_INST, mac_get_rrc_status(module_id, eNB_flag, dst_id - NB_eNB_INST));
       
     }
   }
