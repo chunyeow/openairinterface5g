@@ -358,8 +358,8 @@ void oai_nw_drv_common_ip2wireless(struct sk_buff *skb, int inst){
 
   bytes_wrote = oai_nw_drv_netlink_send((char *)&pdcph,OAI_NW_DRV_PDCPH_SIZE);
 #ifdef OAI_DRV_DEBUG_SEND
-  printk("[OAI_IP_DRV][%s] Wrote %d bytes (header for %d byte skb) to PDCP via netlink\n",__FUNCTION__,
-  	       bytes_wrote,skb->len);
+  printk("[OAI_IP_DRV][%s] Wrote %d bytes (header for %d byte skb) to PDCP RB %d via netlink\n",__FUNCTION__,
+  	       bytes_wrote,skb->len, pdcph.rb_id);
 #endif
 
 
