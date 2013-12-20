@@ -512,6 +512,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
         esm_sap_t esm_sap;
         esm_sap.primitive = ESM_EPS_BEARER_CONTEXT_DEACTIVATE_REQ;
         esm_sap.ueid = ueid;
+        esm_sap.ctx  = emm_ctx;
         esm_sap.data.eps_bearer_context_deactivate.ebi = ESM_SAP_ALL_EBI;
         rc = esm_sap_send(&esm_sap);
 
@@ -522,6 +523,7 @@ int emm_proc_detach_request(unsigned int ueid, emm_proc_detach_type_t type,
              */
             emm_sap.primitive = EMMREG_DETACH_REQ;
             emm_sap.u.emm_reg.ueid = ueid;
+            emm_sap.u.emm_reg.ctx  = emm_ctx;
             rc = emm_sap_send(&emm_sap);
         }
     }

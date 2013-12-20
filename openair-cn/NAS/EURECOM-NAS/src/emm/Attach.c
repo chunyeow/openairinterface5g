@@ -1117,6 +1117,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
         (*emm_ctx)->esm_msg.value = NULL;
         (*emm_ctx)->emm_cause = EMM_CAUSE_SUCCESS;
         (*emm_ctx)->_emm_fsm_status = EMM_INVALID;
+        (*emm_ctx)->ueid = ueid;
 
         emm_fsm_set_status(ueid, *emm_ctx, EMM_DEREGISTERED);
 #if defined(EPC_BUILD)
@@ -1130,7 +1131,6 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
     if (rc != RETURNok) {
         LOG_TRACE(WARNING, "EMM-PROC  - Failed to update EMM context");
         /* Do not accept the UE to attach to the network */
-        (*emm_ctx)->ueid = ueid;
         (*emm_ctx)->emm_cause = EMM_CAUSE_ILLEGAL_UE;
         rc = _emm_attach_reject(*emm_ctx);
     } else {
@@ -1216,11 +1216,12 @@ int emm_proc_attach_reject(unsigned int ueid, int emm_cause)
  ***************************************************************************/
 int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
 {
-    LOG_FUNC_IN;
-
+    emm_data_context_t *emm_ctx = NULL;
     int rc = RETURNerror;
     emm_sap_t emm_sap;
     esm_sap_t esm_sap;
+
+    LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "EMM-PROC  - EPS attach complete (ueid=%u)", ueid);
 
@@ -1238,7 +1239,6 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
     }
 
     /* Get the UE context */
-    emm_data_context_t *emm_ctx = NULL;
 
 #if defined(EPC_BUILD)
     if (ueid > 0) {
@@ -1263,6 +1263,7 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
         esm_sap.is_standalone = FALSE;
         esm_sap.ueid = ueid;
         esm_sap.recv = esm_msg;
+        esm_sap.ctx  = emm_ctx;
         rc = esm_sap_send(&esm_sap);
     } else {
         LOG_TRACE(ERROR, "EMM-PROC  - No EMM context exists");
@@ -1276,6 +1277,7 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
          */
         emm_sap.primitive = EMMREG_ATTACH_CNF;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
         rc = emm_sap_send(&emm_sap);
     } else if (esm_sap.err != ESM_SAP_DISCARDED) {
         /*
@@ -1283,6 +1285,7 @@ int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg)
          */
         emm_sap.primitive = EMMREG_ATTACH_REJ;
         emm_sap.u.emm_reg.ueid = ueid;
+        emm_sap.u.emm_reg.ctx  = emm_ctx;
         rc = emm_sap_send(&emm_sap);
     } else {
         /*
@@ -1748,14 +1751,17 @@ static int _emm_attach_reject(void *args)
  ***************************************************************************/
 static int _emm_attach_abort(void *args)
 {
+    int rc = RETURNerror;
+    emm_data_context_t *ctx = NULL;
+    attach_data_t *data;
+
     LOG_FUNC_IN;
 
-    int rc = RETURNerror;
-
-    attach_data_t *data = (attach_data_t *)(args);
+    data = (attach_data_t *)(args);
 
     if (data) {
         unsigned int ueid = data->ueid;
+        esm_sap_t esm_sap;
 
         LOG_TRACE(WARNING, "EMM-PROC  - Abort the attach procedure (ueid=%u)",
                   ueid);
@@ -1771,15 +1777,22 @@ static int _emm_attach_abort(void *args)
         }
         free(data);
 
+#if defined(EPC_BUILD)
+        ctx = emm_data_context_get(&_emm_data, ueid);
+#else
+        ctx = _emm_data.ctx[ueid];
+#endif
+
         /*
          * Notify ESM that the network locally refused PDN connectivity
          * to the UE
          */
-        esm_sap_t esm_sap;
         esm_sap.primitive = ESM_PDN_CONNECTIVITY_REJ;
         esm_sap.ueid = ueid;
+        esm_sap.ctx  = ctx;
         esm_sap.recv = NULL;
         rc = esm_sap_send(&esm_sap);
+
         if (rc != RETURNerror) {
             /*
              * Notify EMM that EPS attach procedure failed
@@ -1787,16 +1800,9 @@ static int _emm_attach_abort(void *args)
             emm_sap_t emm_sap;
             emm_sap.primitive = EMMREG_ATTACH_REJ;
             emm_sap.u.emm_reg.ueid = ueid;
+            emm_sap.u.emm_reg.ctx  = ctx;
             rc = emm_sap_send(&emm_sap);
             if (rc != RETURNerror) {
-                struct emm_data_context_s *ctx = NULL;
-
-#if defined(EPC_BUILD)
-                ctx = emm_data_context_get(&_emm_data, ueid);
-#else
-                ctx = _emm_data.ctx[ueid];
-#endif
-
                 /* Release the UE context */
                 rc = _emm_attach_release(ctx);
             }
@@ -2098,6 +2104,7 @@ static int _emm_attach(void *args)
     esm_sap.primitive = ESM_PDN_CONNECTIVITY_REQ;
     esm_sap.is_standalone = FALSE;
     esm_sap.ueid = emm_ctx->ueid;
+    esm_sap.ctx  = emm_ctx;
     esm_sap.recv = &emm_ctx->esm_msg;
     rc = esm_sap_send(&esm_sap);
 
@@ -2214,6 +2221,7 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
      * Notify EMM-AS SAP that Attach Accept message together with an Activate
      * Default EPS Bearer Context Request message has to be sent to the UE
      */
+
     emm_sap.primitive = EMMAS_ESTABLISH_CNF;
     emm_sap.u.emm_as.u.establish.ueid = emm_ctx->ueid;
     if (emm_ctx->guti_is_new && emm_ctx->old_guti) {
@@ -2384,6 +2392,26 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         }
         if (ctx->guti != NULL) {
             memcpy(ctx->guti, guti, sizeof(GUTI_t));
+        } else {
+            return (RETURNerror);
+        }
+    } else {
+        if (ctx->guti == NULL) {
+            ctx->guti = (GUTI_t *)malloc(sizeof(GUTI_t));
+        }
+        if (ctx->guti != NULL) {
+            /* TODO: FIXME */
+            ctx->guti->gummei.plmn.MCCdigit1 = 2;
+            ctx->guti->gummei.plmn.MCCdigit2 = 0;
+            ctx->guti->gummei.plmn.MCCdigit3 = 8;
+            ctx->guti->gummei.plmn.MNCdigit1 = 9;
+            ctx->guti->gummei.plmn.MNCdigit2 = 2;
+            ctx->guti->gummei.plmn.MNCdigit3 = 15;
+
+            ctx->guti->gummei.MMEcode = 0;
+            ctx->guti->gummei.MMEgid  = 0;
+
+            ctx->guti->m_tmsi = (uint32_t) ctx;
         } else {
             return (RETURNerror);
         }

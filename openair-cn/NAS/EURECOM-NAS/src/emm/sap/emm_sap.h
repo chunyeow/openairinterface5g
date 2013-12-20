@@ -23,6 +23,7 @@ Description Defines the EMM Service Access Points at which the EPS
 #ifndef __EMM_SAP_H__
 #define __EMM_SAP_H__
 
+#include "emmData.h"
 #include "emm_regDef.h"
 #include "emm_esmDef.h"
 #include "emm_asDef.h"

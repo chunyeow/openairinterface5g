@@ -29,6 +29,9 @@ Description Defines the PDN connectivity ESM procedure executed by the
 
 *****************************************************************************/
 
+#include <stdlib.h> // malloc, free
+#include <string.h> // memset, memcpy, memcmp
+
 #include "esm_proc.h"
 #include "commonDef.h"
 #include "nas_log.h"
@@ -38,13 +41,14 @@ Description Defines the PDN connectivity ESM procedure executed by the
 #include "esm_pt.h"
 
 #ifdef NAS_MME
-#include "mme_api.h"
+# include "mme_api.h"
 #endif
 
 #include "emm_sap.h"
 
-#include <stdlib.h> // malloc, free
-#include <string.h> // memset, memcpy, memcmp
+#if defined(ENABLE_ITTI)
+# include "assertions.h"
+#endif
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -93,10 +97,13 @@ static void *_pdn_connectivity_t3482_handler(void *);
 /*
  * PDN connection handlers
  */
-static int _pdn_connectivity_create(unsigned int ueid, int pti,
-                                    const OctetString *apn, esm_proc_pdn_type_t pdn_type,
-                                    const OctetString *pdn_addr, int is_emergency);
-int _pdn_connectivity_delete(unsigned int ueid, int pid);
+static int _pdn_connectivity_create(emm_data_context_t *ctx,
+                                    int pti,
+                                    const OctetString *apn,
+                                    esm_proc_pdn_type_t pdn_type,
+                                    const OctetString *pdn_addr,
+                                    int is_emergency);
+int _pdn_connectivity_delete(emm_data_context_t *ctx, int pid);
 
 #endif // NAS_MME
 
@@ -588,7 +595,7 @@ int esm_proc_pdn_connectivity_failure(int is_pending)
  **      Others:    _esm_data                                  **
  **                                                                        **
  ***************************************************************************/
-int esm_proc_pdn_connectivity_request(unsigned int ueid, int pti,
+int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
                                       esm_proc_pdn_request_t request_type,
                                       OctetString *apn,
                                       esm_proc_pdn_type_t pdn_type,
@@ -596,22 +603,24 @@ int esm_proc_pdn_connectivity_request(unsigned int ueid, int pti,
                                       esm_proc_qos_t *esm_qos,
                                       int *esm_cause)
 {
-    LOG_FUNC_IN;
-
     int rc = RETURNerror;
     int pid = RETURNerror;
 
+    LOG_FUNC_IN;
+
     LOG_TRACE(INFO, "ESM-PROC  - PDN connectivity requested by the UE "
-              "(ueid=%u, pti=%d) PDN type = %s, APN = %s", ueid, pti,
+              "(ueid=%u, pti=%d) PDN type = %s, APN = %s", ctx->ueid, pti,
               (pdn_type == ESM_PDN_TYPE_IPV4)? "IPv4" :
               (pdn_type == ESM_PDN_TYPE_IPV6)? "IPv6" : "IPv4v6",
-              (apn)? (char *)(apn->value) : "null");
+              (apn) ? (char *)(apn->value) : "null");
 
+#if !defined(EPC_BUILD)
     /* UE identifier sanity check */
-    if (ueid >= ESM_DATA_NB_UE_MAX) {
+    if (ctx->ueid >= ESM_DATA_NB_UE_MAX) {
         LOG_TRACE(WARNING, "ESM-PROC  - Number of connected UEs exceeded");
         LOG_FUNC_RETURN (RETURNerror);
     }
+#endif
 
     /*
      * Check network IP capabilities
@@ -659,24 +668,17 @@ int esm_proc_pdn_connectivity_request(unsigned int ueid, int pti,
             LOG_FUNC_RETURN (RETURNerror);
         }
 
-        /* Create new ESM context for the UE within the MME */
-        if (_esm_data.ctx[ueid] == NULL) {
-            _esm_data.ctx[ueid] =
-                (esm_data_context_t *)malloc(sizeof(esm_data_context_t));
-            memset(_esm_data.ctx[ueid], 0 , sizeof(esm_data_context_t));
-        }
-        if (_esm_data.ctx[ueid]) {
-            /* Create new PDN connection */
-            pid = _pdn_connectivity_create(ueid, pti, apn, pdn_type,
-                                           pdn_addr, is_emergency);
-            /* Setup ESM QoS parameters */
-            if (esm_qos) {
-                esm_qos->gbrUL = qos.gbr[MME_API_UPLINK];
-                esm_qos->gbrDL = qos.gbr[MME_API_DOWNLINK];
-                esm_qos->mbrUL = qos.mbr[MME_API_UPLINK];
-                esm_qos->mbrDL = qos.mbr[MME_API_DOWNLINK];
-                esm_qos->qci = qos.qci;
-            }
+
+        /* Create new PDN connection */
+        pid = _pdn_connectivity_create(ctx, pti, apn, pdn_type,
+                pdn_addr, is_emergency);
+        /* Setup ESM QoS parameters */
+        if (esm_qos) {
+            esm_qos->gbrUL = qos.gbr[MME_API_UPLINK];
+            esm_qos->gbrDL = qos.gbr[MME_API_DOWNLINK];
+            esm_qos->mbrUL = qos.mbr[MME_API_UPLINK];
+            esm_qos->mbrDL = qos.mbr[MME_API_DOWNLINK];
+            esm_qos->qci = qos.qci;
         }
 
         if (pid < 0) {
@@ -716,7 +718,7 @@ int esm_proc_pdn_connectivity_request(unsigned int ueid, int pti,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_proc_pdn_connectivity_reject(int is_standalone, unsigned int ueid,
+int esm_proc_pdn_connectivity_reject(int is_standalone, emm_data_context_t *ctx,
                                      int ebi, OctetString *msg, int ue_triggered)
 {
     LOG_FUNC_IN;
@@ -724,7 +726,7 @@ int esm_proc_pdn_connectivity_reject(int is_standalone, unsigned int ueid,
     int rc = RETURNerror;
 
     LOG_TRACE(WARNING, "ESM-PROC  - PDN connectivity not accepted by the "
-              "network (ueid=%d)", ueid);
+              "network (ueid=%d)", ctx->ueid);
 
     if (is_standalone) {
         emm_sap_t emm_sap;
@@ -732,7 +734,7 @@ int esm_proc_pdn_connectivity_reject(int is_standalone, unsigned int ueid,
          * Notity EMM that ESM PDU has to be forwarded to lower layers
          */
         emm_sap.primitive = EMMESM_UNITDATA_REQ;
-        emm_sap.u.emm_esm.ueid = ueid;
+        emm_sap.u.emm_esm.ctx = ctx;
         emm_sap.u.emm_esm.u.data.msg.length = msg->length;
         emm_sap.u.emm_esm.u.data.msg.value = msg->value;
         rc = emm_sap_send(&emm_sap);
@@ -746,35 +748,37 @@ int esm_proc_pdn_connectivity_reject(int is_standalone, unsigned int ueid,
 
 /****************************************************************************
  **                                                                        **
- ** Name:    esm_proc_pdn_connectivity_failure()                       **
+ ** Name:        esm_proc_pdn_connectivity_failure()                       **
  **                                                                        **
  ** Description: Performs PDN connectivity procedure upon receiving noti-  **
- **      fication from the EPS Mobility Management sublayer that   **
- **      EMM procedure that initiated PDN connectivity activation  **
- **      locally failed.                                           **
+ **              fication from the EPS Mobility Management sublayer that   **
+ **              EMM procedure that initiated PDN connectivity activation  **
+ **              locally failed.                                           **
  **                                                                        **
- **      The MME releases the PDN connection entry allocated when  **
- **      the PDN connectivity procedure was requested by the UE.   **
+ **              The MME releases the PDN connection entry allocated when  **
+ **              the PDN connectivity procedure was requested by the UE.   **
  **                                                                        **
- ** Inputs:  ueid:      UE local identifier                        **
- **      pid:       Identifier of the PDN connection to be     **
- **             released                                   **
- **      Others:    None                                       **
+ **         Inputs:  ueid:      UE local identifier                        **
+ **                  pid:       Identifier of the PDN connection to be     **
+ **                             released                                   **
+ **                  Others:    None                                       **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    None                                       **
+ **                  Return:    RETURNok, RETURNerror                      **
+ **                  Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_proc_pdn_connectivity_failure(unsigned int ueid, int pid)
+int esm_proc_pdn_connectivity_failure(emm_data_context_t *ctx, int pid)
 {
+    int pti;
+
     LOG_FUNC_IN;
 
     LOG_TRACE(WARNING, "ESM-PROC  - PDN connectivity failure (ueid=%u, pid=%d)",
-              ueid, pid);
+            ctx->ueid, pid);
 
     /* Delete the PDN connection entry */
-    int pti = _pdn_connectivity_delete(ueid, pid);
+    pti = _pdn_connectivity_delete(ctx, pid);
     if (pti != ESM_PT_UNASSIGNED) {
         LOG_FUNC_RETURN (RETURNok);
     }
@@ -1229,26 +1233,28 @@ static int _pdn_connectivity_find_pdn(const OctetString *apn,
  */
 /****************************************************************************
  **                                                                        **
- ** Name:    _pdn_connectivity_create()                                **
+ ** Name:        _pdn_connectivity_create()                                **
  **                                                                        **
  ** Description: Creates a new PDN connection entry for the specified UE   **
  **                                                                        **
- ** Inputs:  ueid:      UE local identifier                        **
- **      pti:       Procedure transaction identity             **
- **      apn:       Access Point Name of the PDN connection    **
- **      pdn_type:  PDN type (IPv4, IPv6, IPv4v6)              **
- **      pdn_addr:  Network allocated PDN IPv4 or IPv6 address **
- **      is_emergency:  TRUE if the PDN connection has to be esta- **
- **             blished for emergency bearer services      **
- **      Others:    _esm_data                                  **
+ ** Inputs:          ueid:      UE local identifier                        **
+ **                  ctx:       UE context                                 **
+ **                  pti:       Procedure transaction identity             **
+ **                  apn:       Access Point Name of the PDN connection    **
+ **                  pdn_type:  PDN type (IPv4, IPv6, IPv4v6)              **
+ **                  pdn_addr:  Network allocated PDN IPv4 or IPv6 address **
+ **              is_emergency:  TRUE if the PDN connection has to be esta- **
+ **                             blished for emergency bearer services      **
+ **                  Others:    _esm_data                                  **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    The identifier of the PDN connection if    **
- **             successfully created; -1 otherwise.        **
- **      Others:    _esm_data                                  **
+ **                  Return:    The identifier of the PDN connection if    **
+ **                             successfully created; -1 otherwise.        **
+ **                  Others:    _esm_data                                  **
  **                                                                        **
  ***************************************************************************/
-static int _pdn_connectivity_create(unsigned int ueid, int pti,
+static int _pdn_connectivity_create(emm_data_context_t *ctx,
+                                    int pti,
                                     const OctetString *apn,
                                     esm_proc_pdn_type_t pdn_type,
                                     const OctetString *pdn_addr,
@@ -1260,25 +1266,14 @@ static int _pdn_connectivity_create(unsigned int ueid, int pti,
               "(pti=%d) APN = %s, IP address = %s (ueid=%u)", pti, apn->value,
               (pdn_type == ESM_PDN_TYPE_IPV4)? esm_data_get_ipv4_addr(pdn_addr) :
               (pdn_type == ESM_PDN_TYPE_IPV6)? esm_data_get_ipv6_addr(pdn_addr) :
-              esm_data_get_ipv4v6_addr(pdn_addr), ueid);
+              esm_data_get_ipv4v6_addr(pdn_addr), ctx->ueid);
 
-    if (ueid < ESM_DATA_NB_UE_MAX) {
-        if (_esm_data.ctx[ueid] == NULL) {
-            LOG_TRACE(ERROR, "ESM-PROC  - ESM context has not been allocated");
-        } else if (_esm_data.ctx[ueid]->n_pdns > ESM_DATA_PDN_MAX) {
-            LOG_TRACE(WARNING, "ESM-PROC  - Number of PDN connection exceeded");
-        } else if (_esm_data.ctx[ueid]->emergency && is_emergency) {
-            LOG_TRACE(WARNING, "ESM-PROC  - PDN connection for emergency bearer "
-                      "services already established");
-        } else {
-            /* Search for an available PDN connection entry */
-            for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
-                if (_esm_data.ctx[ueid]->pdn[pid].data != NULL) {
-                    continue;
-                }
-                break;
-            }
+    /* Search for an available PDN connection entry */
+    for (pid = 0; pid < ESM_DATA_PDN_MAX; pid++) {
+        if (ctx->esm_data_ctx.pdn[pid].data != NULL) {
+            continue;
         }
+        break;
     }
 
     if (pid < ESM_DATA_PDN_MAX) {
@@ -1287,13 +1282,13 @@ static int _pdn_connectivity_create(unsigned int ueid, int pti,
         if (pdn != NULL) {
             memset(pdn, 0, sizeof(esm_pdn_t));
             /* Increment the number of PDN connections */
-            _esm_data.ctx[ueid]->n_pdns += 1;
+            ctx->esm_data_ctx.n_pdns += 1;
             /* Set the PDN connection identifier */
-            _esm_data.ctx[ueid]->pdn[pid].pid = pid;
+            ctx->esm_data_ctx.pdn[pid].pid = pid;
             /* Reset the PDN connection active indicator */
-            _esm_data.ctx[ueid]->pdn[pid].is_active = FALSE;
+            ctx->esm_data_ctx.pdn[pid].is_active = FALSE;
             /* Setup the PDN connection data */
-            _esm_data.ctx[ueid]->pdn[pid].data = pdn;
+            ctx->esm_data_ctx.pdn[pid].data = pdn;
 
             /* Set the procedure transaction identity */
             pdn->pti = pti;
@@ -1317,7 +1312,7 @@ static int _pdn_connectivity_create(unsigned int ueid, int pti,
                 pdn->type = pdn_type;
             }
             /* Return the identifier of the new PDN connection */
-            return (_esm_data.ctx[ueid]->pdn[pid].pid);
+            return (ctx->esm_data_ctx.pdn[pid].pid);
         }
         LOG_TRACE(WARNING, "ESM-PROC  - Failed to create new PDN connection "
                   "(pid=%d)", pid);
@@ -1328,59 +1323,59 @@ static int _pdn_connectivity_create(unsigned int ueid, int pti,
 
 /****************************************************************************
  **                                                                        **
- ** Name:    _pdn_connectivity_delete()                                **
+ ** Name:        _pdn_connectivity_delete()                                **
  **                                                                        **
  ** Description: Deletes PDN connection to the specified UE associated to  **
- **      PDN connection entry with given identifier                **
+ **              PDN connection entry with given identifier                **
  **                                                                        **
- ** Inputs:  ueid:      UE local identifier                        **
- **      pid:       Identifier of the PDN connection to be     **
- **             released                                   **
- **      Others:    _esm_data                                  **
+ ** Inputs:          ueid:      UE local identifier                        **
+ **                  pid:       Identifier of the PDN connection to be     **
+ **                             released                                   **
+ **                  Others:    _esm_data                                  **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    The identity of the procedure transaction  **
- **             assigned to the PDN connection when suc-   **
- **             cessfully released;                        **
- **             UNASSIGNED value otherwise.                **
- **      Others:    _esm_data                                  **
+ **                  Return:    The identity of the procedure transaction  **
+ **                             assigned to the PDN connection when suc-   **
+ **                             cessfully released;                        **
+ **                             UNASSIGNED value otherwise.                **
+ **                  Others:    _esm_data                                  **
  **                                                                        **
  ***************************************************************************/
-int _pdn_connectivity_delete(unsigned int ueid, int pid)
+int _pdn_connectivity_delete(emm_data_context_t *ctx, int pid)
 {
     int pti = ESM_PT_UNASSIGNED;
 
-    if (ueid < ESM_DATA_NB_UE_MAX) {
-        if (_esm_data.ctx[ueid] == NULL) {
-            LOG_TRACE(ERROR, "ESM-PROC  - ESM context has not been allocated");
-        } else if (pid < ESM_DATA_PDN_MAX) {
-            if (pid != _esm_data.ctx[ueid]->pdn[pid].pid) {
-                LOG_TRACE(ERROR,
-                          "ESM-PROC  - PDN connection identifier is not valid");
-            } else if (_esm_data.ctx[ueid]->pdn[pid].data == NULL) {
-                LOG_TRACE(ERROR,
-                          "ESM-PROC  - PDN connection has not been allocated");
-            } else if (_esm_data.ctx[ueid]->pdn[pid].is_active) {
-                LOG_TRACE(ERROR, "ESM-PROC  - PDN connection is active");
-            } else {
-                /* Get the identity of the procedure transaction that created
-                 * the PDN connection */
-                pti = _esm_data.ctx[ueid]->pdn[pid].data->pti;
-            }
+    if (ctx == NULL) {
+        return pti;
+    }
+
+    if (pid < ESM_DATA_PDN_MAX) {
+        if (pid != ctx->esm_data_ctx.pdn[pid].pid) {
+            LOG_TRACE(ERROR,
+                    "ESM-PROC  - PDN connection identifier is not valid");
+        } else if (ctx->esm_data_ctx.pdn[pid].data == NULL) {
+            LOG_TRACE(ERROR,
+                    "ESM-PROC  - PDN connection has not been allocated");
+        } else if (ctx->esm_data_ctx.pdn[pid].is_active) {
+            LOG_TRACE(ERROR, "ESM-PROC  - PDN connection is active");
+        } else {
+            /* Get the identity of the procedure transaction that created
+             * the PDN connection */
+            pti = ctx->esm_data_ctx.pdn[pid].data->pti;
         }
     }
 
     if (pti != ESM_PT_UNASSIGNED) {
         /* Decrement the number of PDN connections */
-        _esm_data.ctx[ueid]->n_pdns -= 1;
+        ctx->esm_data_ctx.n_pdns -= 1;
         /* Set the PDN connection as available */
-        _esm_data.ctx[ueid]->pdn[pid].pid = -1;
+        ctx->esm_data_ctx.pdn[pid].pid = -1;
         /* Release allocated PDN connection data */
-        if (_esm_data.ctx[ueid]->pdn[pid].data->apn.length > 0) {
-            free(_esm_data.ctx[ueid]->pdn[pid].data->apn.value);
+        if (ctx->esm_data_ctx.pdn[pid].data->apn.length > 0) {
+            free(ctx->esm_data_ctx.pdn[pid].data->apn.value);
         }
-        free(_esm_data.ctx[ueid]->pdn[pid].data);
-        _esm_data.ctx[ueid]->pdn[pid].data = NULL;
+        free(ctx->esm_data_ctx.pdn[pid].data);
+        ctx->esm_data_ctx.pdn[pid].data = NULL;
         LOG_TRACE(WARNING, "ESM-PROC  - PDN connection %d released", pid);
     }
 

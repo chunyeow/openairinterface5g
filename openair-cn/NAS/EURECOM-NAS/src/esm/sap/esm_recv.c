@@ -74,14 +74,14 @@ Description Defines functions executed at the ESM Service Access
 int esm_recv_status(int pti, int ebi, const esm_status_msg *msg)
 #endif
 #ifdef NAS_MME
-int esm_recv_status(unsigned int ueid, int pti, int ebi,
+int esm_recv_status(emm_data_context_t *ctx, int pti, int ebi,
                     const esm_status_msg *msg)
 #endif
 {
-    LOG_FUNC_IN;
-
     int esm_cause;
     int rc;
+
+    LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "ESM-SAP   - Received ESM status message (pti=%d, ebi=%d)",
               pti, ebi);
@@ -97,7 +97,7 @@ int esm_recv_status(unsigned int ueid, int pti, int ebi,
     rc = esm_proc_status_ind(pti, ebi, &esm_cause);
 #endif
 #ifdef NAS_MME
-    rc = esm_proc_status_ind(ueid, pti, ebi, &esm_cause);
+    rc = esm_proc_status_ind(ctx, pti, ebi, &esm_cause);
 #endif
     if (rc != RETURNerror) {
         esm_cause = ESM_CAUSE_SUCCESS;
@@ -678,16 +678,16 @@ int esm_recv_deactivate_eps_bearer_context_request(int pti, int ebi,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_pdn_connectivity_request(unsigned int ueid, int pti, int ebi,
+int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
                                       const pdn_connectivity_request_msg *msg,
                                       unsigned int *new_ebi, void *data)
 {
-    LOG_FUNC_IN;
-
     int esm_cause = ESM_CAUSE_SUCCESS;
 
+    LOG_FUNC_IN;
+
     LOG_TRACE(INFO, "ESM-SAP   - Received PDN Connectivity Request message "
-              "(ueid=%d, pti=%d, ebi=%d)", ueid, pti, ebi);
+              "(ueid=%u, pti=%d, ebi=%d)", ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -767,7 +767,7 @@ int esm_recv_pdn_connectivity_request(unsigned int ueid, int pti, int ebi,
     }
 
     /* Execute the PDN connectivity procedure requested by the UE */
-    int pid = esm_proc_pdn_connectivity_request(ueid, pti, request_type,
+    int pid = esm_proc_pdn_connectivity_request(ctx, pti, request_type,
               &esm_data->apn,
               esm_data->pdn_type,
               &esm_data->pdn_addr,
@@ -775,7 +775,7 @@ int esm_recv_pdn_connectivity_request(unsigned int ueid, int pti, int ebi,
               &esm_cause);
     if (pid != RETURNerror) {
         /* Create local default EPS bearer context */
-        int rc = esm_proc_default_eps_bearer_context(ueid, pid, new_ebi,
+        int rc = esm_proc_default_eps_bearer_context(ctx, pid, new_ebi,
                  &esm_data->qos, &esm_cause);
         if (rc != RETURNerror) {
             esm_cause = ESM_CAUSE_SUCCESS;
@@ -806,7 +806,7 @@ int esm_recv_pdn_connectivity_request(unsigned int ueid, int pti, int ebi,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_pdn_disconnect_request(unsigned int ueid, int pti, int ebi,
+int esm_recv_pdn_disconnect_request(emm_data_context_t *ctx, int pti, int ebi,
                                     const pdn_disconnect_request_msg *msg,
                                     unsigned int *linked_ebi)
 {
@@ -815,7 +815,7 @@ int esm_recv_pdn_disconnect_request(unsigned int ueid, int pti, int ebi,
     int esm_cause = ESM_CAUSE_SUCCESS;
 
     LOG_TRACE(INFO, "ESM-SAP   - Received PDN Disconnect Request message "
-              "(ueid=%d, pti=%d, ebi=%d)", ueid, pti, ebi);
+              "(ueid=%d, pti=%d, ebi=%d)", ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -842,14 +842,14 @@ int esm_recv_pdn_disconnect_request(unsigned int ueid, int pti, int ebi,
      * Message processing
      */
     /* Execute the PDN disconnect procedure requested by the UE */
-    int pid = esm_proc_pdn_disconnect_request(ueid, pti, &esm_cause);
+    int pid = esm_proc_pdn_disconnect_request(ctx, pti, &esm_cause);
     if (pid != RETURNerror) {
         /* Get the identity of the default EPS bearer context assigned to
          * the PDN connection to disconnect from */
         *linked_ebi = msg->linkedepsbeareridentity;
         /* Release the associated default EPS bearer context */
         int bid = 0;
-        int rc = esm_proc_eps_bearer_context_deactivate(ueid, FALSE,
+        int rc = esm_proc_eps_bearer_context_deactivate(ctx, FALSE,
                  *linked_ebi,
                  &pid, &bid, &esm_cause);
         if (rc != RETURNerror) {
@@ -880,7 +880,7 @@ int esm_recv_pdn_disconnect_request(unsigned int ueid, int pti, int ebi,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_activate_default_eps_bearer_context_accept(unsigned int ueid,
+int esm_recv_activate_default_eps_bearer_context_accept(emm_data_context_t *ctx,
         int pti, int ebi,
         const activate_default_eps_bearer_context_accept_msg *msg)
 {
@@ -889,7 +889,7 @@ int esm_recv_activate_default_eps_bearer_context_accept(unsigned int ueid,
     int esm_cause = ESM_CAUSE_SUCCESS;
 
     LOG_TRACE(INFO, "ESM-SAP   - Received Activate Default EPS Bearer Context "
-              "Accept message (ueid=%d, pti=%d, ebi=%d)", ueid, pti, ebi);
+              "Accept message (ueid=%d, pti=%d, ebi=%d)", ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -904,7 +904,7 @@ int esm_recv_activate_default_eps_bearer_context_accept(unsigned int ueid,
     /*
      * EPS bearer identity checking
      */
-    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ueid, ebi) ) {
+    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ctx, ebi) ) {
         /* 3GPP TS 24.301, section 7.3.2, case f
          * Reserved or assigned value that does not match an existing EPS
          * bearer context
@@ -918,7 +918,7 @@ int esm_recv_activate_default_eps_bearer_context_accept(unsigned int ueid,
      */
     /* Execute the default EPS bearer context activation procedure accepted
      * by the UE */
-    int rc = esm_proc_default_eps_bearer_context_accept(ueid, ebi, &esm_cause);
+    int rc = esm_proc_default_eps_bearer_context_accept(ctx, ebi, &esm_cause);
     if (rc != RETURNerror) {
         esm_cause = ESM_CAUSE_SUCCESS;
     }
@@ -946,7 +946,7 @@ int esm_recv_activate_default_eps_bearer_context_accept(unsigned int ueid,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_activate_default_eps_bearer_context_reject(unsigned int ueid,
+int esm_recv_activate_default_eps_bearer_context_reject(emm_data_context_t *ctx,
         int pti, int ebi,
         const activate_default_eps_bearer_context_reject_msg *msg)
 {
@@ -955,7 +955,7 @@ int esm_recv_activate_default_eps_bearer_context_reject(unsigned int ueid,
     int esm_cause = ESM_CAUSE_SUCCESS;
 
     LOG_TRACE(INFO, "ESM-SAP   - Received Activate Default EPS Bearer Context "
-              "Reject message (ueid=%d, pti=%d, ebi=%d)", ueid, pti, ebi);
+              "Reject message (ueid=%d, pti=%d, ebi=%d)", ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -970,7 +970,7 @@ int esm_recv_activate_default_eps_bearer_context_reject(unsigned int ueid,
     /*
      * EPS bearer identity checking
      */
-    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ueid, ebi) ) {
+    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ctx, ebi) ) {
         /* 3GPP TS 24.301, section 7.3.2, case f
          * Reserved or assigned value that does not match an existing EPS
          * bearer context
@@ -984,7 +984,7 @@ int esm_recv_activate_default_eps_bearer_context_reject(unsigned int ueid,
      */
     /* Execute the default EPS bearer context activation procedure not accepted
      * by the UE */
-    int rc = esm_proc_default_eps_bearer_context_reject(ueid, ebi, &esm_cause);
+    int rc = esm_proc_default_eps_bearer_context_reject(ctx, ebi, &esm_cause);
     if (rc != RETURNerror) {
         esm_cause = ESM_CAUSE_SUCCESS;
     }
@@ -1012,7 +1012,7 @@ int esm_recv_activate_default_eps_bearer_context_reject(unsigned int ueid,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_activate_dedicated_eps_bearer_context_accept(unsigned int ueid,
+int esm_recv_activate_dedicated_eps_bearer_context_accept(emm_data_context_t *ctx,
         int pti, int ebi,
         const activate_dedicated_eps_bearer_context_accept_msg *msg)
 {
@@ -1022,7 +1022,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_accept(unsigned int ueid,
 
     LOG_TRACE(INFO, "ESM-SAP   - Received Activate Dedicated EPS Bearer "
               "Context Accept message (ueid=%d, pti=%d, ebi=%d)",
-              ueid, pti, ebi);
+              ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -1037,7 +1037,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_accept(unsigned int ueid,
     /*
      * EPS bearer identity checking
      */
-    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ueid, ebi) ) {
+    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ctx, ebi) ) {
         /* 3GPP TS 24.301, section 7.3.2, case f
          * Reserved or assigned value that does not match an existing EPS
          * bearer context
@@ -1051,7 +1051,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_accept(unsigned int ueid,
      */
     /* Execute the dedicated EPS bearer context activation procedure accepted
      * by the UE */
-    int rc = esm_proc_dedicated_eps_bearer_context_accept(ueid, ebi,
+    int rc = esm_proc_dedicated_eps_bearer_context_accept(ctx, ebi,
              &esm_cause);
     if (rc != RETURNerror) {
         esm_cause = ESM_CAUSE_SUCCESS;
@@ -1080,7 +1080,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_accept(unsigned int ueid,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_activate_dedicated_eps_bearer_context_reject(unsigned int ueid,
+int esm_recv_activate_dedicated_eps_bearer_context_reject(emm_data_context_t *ctx,
         int pti, int ebi,
         const activate_dedicated_eps_bearer_context_reject_msg *msg)
 {
@@ -1090,7 +1090,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_reject(unsigned int ueid,
 
     LOG_TRACE(INFO, "ESM-SAP   - Received Activate Dedicated EPS Bearer "
               "Context Reject message (ueid=%d, pti=%d, ebi=%d)",
-              ueid, pti, ebi);
+              ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -1105,7 +1105,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_reject(unsigned int ueid,
     /*
      * EPS bearer identity checking
      */
-    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ueid, ebi) ) {
+    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ctx, ebi) ) {
         /* 3GPP TS 24.301, section 7.3.2, case f
          * Reserved or assigned value that does not match an existing EPS
          * bearer context
@@ -1119,7 +1119,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_reject(unsigned int ueid,
      */
     /* Execute the dedicated EPS bearer context activation procedure not
      *  accepted by the UE */
-    int rc = esm_proc_dedicated_eps_bearer_context_reject(ueid, ebi,
+    int rc = esm_proc_dedicated_eps_bearer_context_reject(ctx, ebi,
              &esm_cause);
     if (rc != RETURNerror) {
         esm_cause = ESM_CAUSE_SUCCESS;
@@ -1147,7 +1147,7 @@ int esm_recv_activate_dedicated_eps_bearer_context_reject(unsigned int ueid,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_recv_deactivate_eps_bearer_context_accept(unsigned int ueid,
+int esm_recv_deactivate_eps_bearer_context_accept(emm_data_context_t *ctx,
         int pti, int ebi,
         const deactivate_eps_bearer_context_accept_msg *msg)
 {
@@ -1156,7 +1156,7 @@ int esm_recv_deactivate_eps_bearer_context_accept(unsigned int ueid,
     int esm_cause = ESM_CAUSE_SUCCESS;
 
     LOG_TRACE(INFO, "ESM-SAP   - Received Deactivate EPS Bearer Context "
-              "Accept message (ueid=%d, pti=%d, ebi=%d)", ueid, pti, ebi);
+              "Accept message (ueid=%d, pti=%d, ebi=%d)", ctx->ueid, pti, ebi);
 
     /*
      * Procedure transaction identity checking
@@ -1171,7 +1171,7 @@ int esm_recv_deactivate_eps_bearer_context_accept(unsigned int ueid,
     /*
      * EPS bearer identity checking
      */
-    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ueid, ebi) ) {
+    else if ( esm_ebr_is_reserved(ebi) || esm_ebr_is_not_in_use(ctx, ebi) ) {
         /* 3GPP TS 24.301, section 7.3.2, case f
          * Reserved or assigned value that does not match an existing EPS
          * bearer context
@@ -1185,11 +1185,11 @@ int esm_recv_deactivate_eps_bearer_context_accept(unsigned int ueid,
      */
     /* Execute the default EPS bearer context activation procedure accepted
      * by the UE */
-    int pid = esm_proc_eps_bearer_context_deactivate_accept(ueid, ebi,
+    int pid = esm_proc_eps_bearer_context_deactivate_accept(ctx, ebi,
               &esm_cause);
     if (pid != RETURNerror) {
         /* Release all the resources reserved for the PDN */
-        int rc = esm_proc_pdn_disconnect_accept(ueid, pid, &esm_cause);
+        int rc = esm_proc_pdn_disconnect_accept(ctx, pid, &esm_cause);
 
         if (rc != RETURNerror) {
             esm_cause = ESM_CAUSE_SUCCESS;

@@ -28,7 +28,6 @@ Description Defines functions used to handle state of EPS bearer contexts
 #endif
 
 #include "nas_timer.h"
-#include "EpsBearerIdentity.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -40,32 +39,6 @@ Description Defines functions used to handle state of EPS bearer contexts
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/
 /****************************************************************************/
-
-/* EPS bearer context states */
-typedef enum {
-    ESM_EBR_INACTIVE,       /* No EPS bearer context exists     */
-    ESM_EBR_ACTIVE,     /* The EPS bearer context is active,
-                 * in the UE, in the network        */
-#ifdef NAS_MME
-    ESM_EBR_INACTIVE_PENDING,   /* The network has initiated an EPS bearer
-                 * context deactivation towards the UE  */
-    ESM_EBR_MODIFY_PENDING, /* The network has initiated an EPS bearer
-                 * context modification towards the UE  */
-    ESM_EBR_ACTIVE_PENDING, /* The network has initiated an EPS bearer
-                 * context activation towards the UE    */
-#endif
-    ESM_EBR_STATE_MAX
-} esm_ebr_state;
-
-#ifdef NAS_MME
-/* ESM message timer retransmission data */
-typedef struct {
-    unsigned int ueid;      /* Lower layers UE identifier       */
-    unsigned int ebi;       /* EPS bearer identity          */
-    unsigned int count;     /* Retransmission counter       */
-    OctetString msg;        /* Encoded ESM message to re-transmit   */
-} esm_ebr_timer_data_t;
-#endif
 
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/
@@ -90,20 +63,20 @@ int esm_ebr_is_not_in_use(int ebi);
 
 #ifdef NAS_MME
 void esm_ebr_initialize(void);
-int esm_ebr_assign(unsigned int ueid, int ebi);
-int esm_ebr_release(unsigned int ueid, int ebi);
+int esm_ebr_assign(emm_data_context_t *ctx, int ebi);
+int esm_ebr_release(emm_data_context_t *ctx, int ebi);
 
-int esm_ebr_start_timer(unsigned int ueid, int ebi, const OctetString *msg,
+int esm_ebr_start_timer(emm_data_context_t *ctx, int ebi, const OctetString *msg,
                         long sec, nas_timer_callback_t cb);
-int esm_ebr_stop_timer(unsigned int ueid, int ebi);
+int esm_ebr_stop_timer(emm_data_context_t *ctx, int ebi);
 
-int esm_ebr_get_pending_ebi(unsigned int ueid, esm_ebr_state status);
+int esm_ebr_get_pending_ebi(emm_data_context_t *ctx, esm_ebr_state status);
 
-int esm_ebr_set_status(unsigned int ueid, int ebi, esm_ebr_state status,
+int esm_ebr_set_status(emm_data_context_t *ctx, int ebi, esm_ebr_state status,
                        int ue_requested);
-esm_ebr_state esm_ebr_get_status(unsigned int ueid, int ebi);
+esm_ebr_state esm_ebr_get_status(emm_data_context_t *ctx, int ebi);
 
-int esm_ebr_is_not_in_use(unsigned int ueid, int ebi);
+int esm_ebr_is_not_in_use(emm_data_context_t *ctx, int ebi);
 #endif
 
 #endif /* __ESM_EBR_H__*/

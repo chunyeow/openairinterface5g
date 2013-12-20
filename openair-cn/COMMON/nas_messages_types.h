@@ -3,16 +3,16 @@
 #ifndef NAS_MESSAGES_TYPES_H_
 #define NAS_MESSAGES_TYPES_H_
 
-#define NAS_UL_DATA_IND(mSGpTR)                 (mSGpTR)->ittiMsg.nas_ul_data_ind
-#define NAS_DL_DATA_REQ(mSGpTR)                 (mSGpTR)->ittiMsg.nas_dl_data_req
-#define NAS_DL_DATA_CNF(mSGpTR)                 (mSGpTR)->ittiMsg.nas_dl_data_cnf
-#define NAS_CONN_EST_IND(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_est_ind
-#define NAS_CONN_EST_CNF(mSGpTR)                (mSGpTR)->ittiMsg.nas_conn_est_cnf
-#define NAS_BEARER_PARAM(mSGpTR)                (mSGpTR)->ittiMsg.nas_bearer_param
-#define NAS_AUTHENTICATION_REQ(mSGpTR)          (mSGpTR)->ittiMsg.nas_auth_req
-#define NAS_AUTHENTICATION_PARAM_REQ(mSGpTR)    (mSGpTR)->ittiMsg.nas_auth_param_req
-#define NAS_AUTHENTICATION_PARAM_RSP(mSGpTR)    (mSGpTR)->ittiMsg.nas_auth_param_rsp
-#define NAS_AUTHENTICATION_PARAM_FAIL(mSGpTR)   (mSGpTR)->ittiMsg.nas_auth_param_fail
+#define NAS_UL_DATA_IND(mSGpTR)                  (mSGpTR)->ittiMsg.nas_ul_data_ind
+#define NAS_DL_DATA_REQ(mSGpTR)                  (mSGpTR)->ittiMsg.nas_dl_data_req
+#define NAS_DL_DATA_CNF(mSGpTR)                  (mSGpTR)->ittiMsg.nas_dl_data_cnf
+#define NAS_CONN_EST_IND(mSGpTR)                 (mSGpTR)->ittiMsg.nas_conn_est_ind
+#define NAS_CONNECTION_ESTABLISHMENT_CNF(mSGpTR) (mSGpTR)->ittiMsg.nas_conn_est_cnf
+#define NAS_BEARER_PARAM(mSGpTR)                 (mSGpTR)->ittiMsg.nas_bearer_param
+#define NAS_AUTHENTICATION_REQ(mSGpTR)           (mSGpTR)->ittiMsg.nas_auth_req
+#define NAS_AUTHENTICATION_PARAM_REQ(mSGpTR)     (mSGpTR)->ittiMsg.nas_auth_param_req
+#define NAS_AUTHENTICATION_PARAM_RSP(mSGpTR)     (mSGpTR)->ittiMsg.nas_auth_param_rsp
+#define NAS_AUTHENTICATION_PARAM_FAIL(mSGpTR)    (mSGpTR)->ittiMsg.nas_auth_param_fail
 
 typedef struct nas_paging_ind_s {
     
@@ -29,6 +29,7 @@ typedef struct nas_conn_est_ind_s {
 
 typedef nas_establish_rsp_t nas_conn_est_rej_t;
 
+#if defined(DISABLE_USE_NAS)
 typedef struct nas_conn_est_cnf_s {
     uint32_t ue_id;
 
@@ -36,6 +37,9 @@ typedef struct nas_conn_est_cnf_s {
     /* Transparent message from MME_APP to S1AP */
     s1ap_initial_ctxt_setup_req_t transparent;
 } nas_conn_est_cnf_t;
+#else
+typedef nas_establish_cnf_t nas_conn_est_cnf_t;
+#endif
 
 typedef struct nas_bearer_param_s {
     unsigned eNB_ue_s1ap_id:24;

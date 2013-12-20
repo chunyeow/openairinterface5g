@@ -47,20 +47,6 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
 
     return itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
-
-void nas_itti_establish_cnf(const nas_error_code_t error_code, void *const data,
-                            const uint32_t length)
-{
-    MessageDef *message_p;
-
-    message_p = itti_alloc_new_message(TASK_NAS, NAS_CONNECTION_ESTABLISHMENT_CNF);
-
-    NAS_CONN_EST_CNF(message_p).nas_establish_cnf.nasMsg.data   = data;
-    NAS_CONN_EST_CNF(message_p).nas_establish_cnf.nasMsg.length = length;
-    NAS_CONN_EST_CNF(message_p).nas_establish_cnf.errCode       = error_code;
-
-    itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
-}
 #endif
 
 #if defined(UE_BUILD) && defined(NAS_UE)

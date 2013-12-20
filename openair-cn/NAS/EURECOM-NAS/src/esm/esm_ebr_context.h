@@ -62,10 +62,10 @@ int esm_ebr_context_check_tft(int pid, int ebi, const network_tft_t *tft,
 #endif
 
 #ifdef NAS_MME
-int esm_ebr_context_create(unsigned int ueid, int pid, int ebi, int is_default,
+int esm_ebr_context_create(emm_data_context_t *ctx, int pid, int ebi, int is_default,
                            const network_qos_t *qos, const network_tft_t *tft);
 
-int esm_ebr_context_release(unsigned int ueid, int ebi, int *pid, int *bid);
+int esm_ebr_context_release(emm_data_context_t *ctx, int ebi, int *pid, int *bid);
 #endif
 
 #endif /* __ESM_EBR_CONTEXT_H__ */

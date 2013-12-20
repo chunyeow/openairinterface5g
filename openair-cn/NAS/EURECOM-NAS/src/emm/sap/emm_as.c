@@ -1092,7 +1092,7 @@ static int _emm_as_send(const emm_as_t *msg)
                 LOG_FUNC_RETURN (RETURNok);
             } break;
 
-            case AS_NAS_ESTABLISH_RSP: {
+            case AS_NAS_ESTABLISH_CNF: {
                 if (as_msg.msg.nas_establish_rsp.errCode != AS_SUCCESS) {
                     nas_itti_dl_data_req(as_msg.msg.nas_establish_rsp.UEid,
                                          as_msg.msg.nas_establish_rsp.nasMsg.data,
@@ -1100,6 +1100,11 @@ static int _emm_as_send(const emm_as_t *msg)
                     LOG_FUNC_RETURN (RETURNok);
                 } else {
                     /* Handle success case */
+                    nas_itti_establish_cnf(as_msg.msg.nas_establish_rsp.UEid,
+                                           as_msg.msg.nas_establish_rsp.errCode,
+                                           as_msg.msg.nas_establish_rsp.nasMsg.data,
+                                           as_msg.msg.nas_establish_rsp.nasMsg.length);
+                    LOG_FUNC_RETURN (RETURNok);
                 }
             } break;
 
@@ -1670,7 +1675,7 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
 
     LOG_FUNC_IN;
 
-    LOG_TRACE(INFO, "EMMAS-SAP - Send AS connection establish response");
+    LOG_TRACE(INFO, "EMMAS-SAP - Send AS connection establish confirmation");
 
     nas_message_t nas_msg;
     memset(&nas_msg, 0 , sizeof(nas_message_t));
@@ -1678,6 +1683,7 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
     /* Setup the AS message */
     as_msg->UEid = msg->ueid;
     if (msg->UEid.guti == NULL) {
+        LOG_TRACE(WARNING, "EMMAS-SAP - GUTI is NULL...");
         LOG_FUNC_RETURN (0);
     }
     as_msg->s_tmsi.MMEcode = msg->UEid.guti->gummei.MMEcode;
@@ -1703,9 +1709,11 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
         int bytes = _emm_as_encode(&as_msg->nasMsg, &nas_msg, size);
         if (bytes > 0) {
             as_msg->errCode = AS_SUCCESS;
-            LOG_FUNC_RETURN (AS_NAS_ESTABLISH_RSP);
+            LOG_FUNC_RETURN (AS_NAS_ESTABLISH_CNF);
         }
     }
+
+    LOG_TRACE(WARNING, "EMMAS-SAP - Size <= 0");
     LOG_FUNC_RETURN (0);
 }
 

@@ -202,14 +202,26 @@ int lowerlayer_release(int cause)
  ***************************************************************************/
 int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
 {
-    LOG_FUNC_IN;
-
     esm_sap_t esm_sap;
     int rc;
+#if defined(NAS_MME)
+    emm_data_context_t *emm_ctx;
+#endif
+
+    LOG_FUNC_IN;
+
+#if defined(NAS_MME)
+    if (ueid > 0) {
+        emm_ctx = emm_data_context_get(&_emm_data, ueid);
+    }
+#endif
 
     esm_sap.primitive = ESM_UNITDATA_IND;
     esm_sap.is_standalone = TRUE;
     esm_sap.ueid = ueid;
+#if defined(NAS_MME)
+    esm_sap.ctx  = emm_ctx;
+#endif
     esm_sap.recv = data;
     rc = esm_sap_send(&esm_sap);
 

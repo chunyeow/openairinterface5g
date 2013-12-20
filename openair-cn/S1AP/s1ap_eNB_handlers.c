@@ -470,7 +470,7 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
             S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer =
             malloc(sizeof(uint8_t) * item_p->nAS_PDU->size);
 
-            memcpy(&S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer,
+            memcpy(S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.buffer,
                    item_p->nAS_PDU->buf, item_p->nAS_PDU->size);
         } else {
             S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.length = 0;

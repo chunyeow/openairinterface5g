@@ -53,9 +53,9 @@ static int _esm_sap_send(int msg_type, int is_standalone, int pti, int ebi,
 #endif
 
 #ifdef NAS_MME
-static int _esm_sap_recv(int msg_type, int is_standalone, unsigned int ueid,
+static int _esm_sap_recv(int msg_type, int is_standalone, emm_data_context_t *ctx,
                          const OctetString *req, OctetString *rsp, esm_sap_error_t *err);
-static int _esm_sap_send(int msg_type, int is_standalone, unsigned int ueid,
+static int _esm_sap_send(int msg_type, int is_standalone, emm_data_context_t *ctx,
                          int pti, int ebi, const esm_sap_data_t *data, OctetString *rsp);
 #endif
 
@@ -186,16 +186,16 @@ int esm_sap_send(esm_sap_t *msg)
 #ifdef NAS_MME
             /* The MME received a PDN connectivity request message */
             rc = _esm_sap_recv(PDN_CONNECTIVITY_REQUEST, msg->is_standalone,
-                               msg->ueid, msg->recv, &msg->send, &msg->err);
+                               msg->ctx, msg->recv, &msg->send, &msg->err);
 #endif
             break;
 
         case ESM_PDN_CONNECTIVITY_REJ:
 #ifdef NAS_MME
             /* PDN connectivity locally failed */
-            pid = esm_proc_default_eps_bearer_context_failure(msg->ueid);
+            pid = esm_proc_default_eps_bearer_context_failure(msg->ctx);
             if (pid != RETURNerror) {
-                rc = esm_proc_pdn_connectivity_failure(msg->ueid, pid);
+                rc = esm_proc_pdn_connectivity_failure(msg->ctx, pid);
             }
 #endif
 #ifdef NAS_UE
@@ -264,7 +264,7 @@ int esm_sap_send(esm_sap_t *msg)
 #ifdef NAS_MME
             /* The MME received activate default ESP bearer context accept */
             rc = _esm_sap_recv(ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT,
-                               msg->is_standalone, msg->ueid,
+                               msg->is_standalone, msg->ctx,
                                msg->recv, &msg->send, &msg->err);
 #endif
 #ifdef NAS_UE
@@ -283,7 +283,7 @@ int esm_sap_send(esm_sap_t *msg)
 #ifdef NAS_MME
             /* The MME received activate default ESP bearer context reject */
             rc = _esm_sap_recv(ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT,
-                               msg->is_standalone, msg->ueid,
+                               msg->is_standalone, msg->ctx,
                                msg->recv, &msg->send, &msg->err);
 #endif
 #ifdef NAS_UE
@@ -325,7 +325,7 @@ int esm_sap_send(esm_sap_t *msg)
                     msg->data.eps_bearer_context_deactivate.ebi, &pid, &bid);
 #endif
 #ifdef NAS_MME
-            rc = esm_proc_eps_bearer_context_deactivate(msg->ueid, TRUE,
+            rc = esm_proc_eps_bearer_context_deactivate(msg->ctx, TRUE,
                     msg->data.eps_bearer_context_deactivate.ebi,
                     &pid, &bid, NULL);
 #endif
@@ -341,7 +341,7 @@ int esm_sap_send(esm_sap_t *msg)
                                &msg->send, &msg->err);
 #endif
 #ifdef NAS_MME
-            rc = _esm_sap_recv(-1, msg->is_standalone, msg->ueid,
+            rc = _esm_sap_recv(-1, msg->is_standalone, msg->ctx,
                                msg->recv, &msg->send, &msg->err);
 #endif
             break;
@@ -396,7 +396,7 @@ int esm_sap_send(esm_sap_t *msg)
  ***************************************************************************/
 static int _esm_sap_recv(int msg_type, int is_standalone,
 #ifdef NAS_MME
-                         unsigned int ueid,
+                         emm_data_context_t *ctx,
 #endif
                          const OctetString *req, OctetString *rsp,
                          esm_sap_error_t *err)
@@ -647,7 +647,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                  * received from the UE
                  */
                 esm_cause = esm_recv_activate_default_eps_bearer_context_accept(
-                                ueid, pti, ebi,
+                                ctx, pti, ebi,
                                 &esm_msg.activate_default_eps_bearer_context_accept);
 
                 if ( (esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) ||
@@ -668,7 +668,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                  * received from the UE
                  */
                 esm_cause = esm_recv_activate_default_eps_bearer_context_reject(
-                                ueid, pti, ebi,
+                                ctx, pti, ebi,
                                 &esm_msg.activate_default_eps_bearer_context_reject);
 
                 if ( (esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) ||
@@ -689,7 +689,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                  * received from the UE
                  */
                 esm_cause = esm_recv_deactivate_eps_bearer_context_accept(
-                                ueid, pti, ebi,
+                                ctx, pti, ebi,
                                 &esm_msg.deactivate_eps_bearer_context_accept);
 
                 if ( (esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) ||
@@ -710,7 +710,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                  * received from the UE
                  */
                 esm_cause = esm_recv_activate_dedicated_eps_bearer_context_accept(
-                                ueid, pti, ebi,
+                                ctx, pti, ebi,
                                 &esm_msg.activate_dedicated_eps_bearer_context_accept);
 
                 if ( (esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) ||
@@ -731,7 +731,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                  * received from the UE
                  */
                 esm_cause = esm_recv_activate_dedicated_eps_bearer_context_reject(
-                                ueid, pti, ebi,
+                                ctx, pti, ebi,
                                 &esm_msg.activate_dedicated_eps_bearer_context_reject);
 
                 if ( (esm_cause == ESM_CAUSE_INVALID_PTI_VALUE) ||
@@ -759,7 +759,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                 /*
                  * Process PDN connectivity request message received from the UE
                  */
-                esm_cause = esm_recv_pdn_connectivity_request(ueid, pti, ebi,
+                esm_cause = esm_recv_pdn_connectivity_request(ctx, pti, ebi,
                             &esm_msg.pdn_connectivity_request,
                             &ebi, &data);
 
@@ -854,7 +854,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                 /*
                  * Process PDN disconnect request message received from the UE
                  */
-                esm_cause = esm_recv_pdn_disconnect_request(ueid, pti, ebi,
+                esm_cause = esm_recv_pdn_disconnect_request(ctx, pti, ebi,
                             &esm_msg.pdn_disconnect_request, &ebi);
 
                 if (esm_cause != ESM_CAUSE_SUCCESS) {
@@ -890,7 +890,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
                 /*
                  * Process received ESM status message
                  */
-                esm_cause = esm_recv_status(ueid, pti, ebi, &esm_msg.esm_status);
+                esm_cause = esm_recv_status(ctx, pti, ebi, &esm_msg.esm_status);
                 break;
 #endif
 
@@ -935,7 +935,7 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
         rc = (*esm_procedure)(is_standalone, ebi, rsp, triggered_by_ue);
 #endif
 #ifdef NAS_MME
-        rc = (*esm_procedure)(is_standalone, ueid, ebi, rsp, triggered_by_ue);
+        rc = (*esm_procedure)(is_standalone, ctx, ebi, rsp, triggered_by_ue);
 #endif
         if (is_discarded) {
             /* Return indication that received message has been discarded */
@@ -980,10 +980,10 @@ static int _esm_sap_recv(int msg_type, int is_standalone,
  ***************************************************************************/
 static int _esm_sap_send(int msg_type, int is_standalone,
 #ifdef NAS_MME
-                         unsigned int ueid,
+        emm_data_context_t *ctx,
 #endif
-                         int pti, int ebi, const esm_sap_data_t *data,
-                         OctetString *rsp)
+        int pti, int ebi, const esm_sap_data_t *data,
+        OctetString *rsp)
 {
     LOG_FUNC_IN;
 
@@ -1103,7 +1103,7 @@ static int _esm_sap_send(int msg_type, int is_standalone,
             rc = (*esm_procedure)(is_standalone, pti, rsp, sent_by_ue);
 #endif
 #ifdef NAS_MME
-            rc = (*esm_procedure)(is_standalone, ueid, pti, rsp, sent_by_ue);
+            rc = (*esm_procedure)(is_standalone, ctx, pti, rsp, sent_by_ue);
 #endif
         }
     }

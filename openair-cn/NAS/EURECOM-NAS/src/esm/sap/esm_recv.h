@@ -23,6 +23,7 @@ Description Defines functions executed at the ESM Service Access
 #define __ESM_RECV_H__
 
 #include "EsmStatus.h"
+#include "emmData.h"
 
 #ifdef NAS_UE
 #include "PdnConnectivityReject.h"
@@ -80,7 +81,7 @@ Description Defines functions executed at the ESM Service Access
 int esm_recv_status(int pti, int ebi, const esm_status_msg *msg);
 #endif
 #ifdef NAS_MME
-int esm_recv_status(unsigned int ueid, int pti, int ebi,
+int esm_recv_status(emm_data_context_t *ctx, int pti, int ebi,
                     const esm_status_msg *msg);
 #endif
 
@@ -124,29 +125,30 @@ int esm_recv_deactivate_eps_bearer_context_request(int pti, int ebi,
  * Transaction related messages
  * ----------------------------
  */
-int esm_recv_pdn_connectivity_request(unsigned int ueid, int pti, int ebi,
+int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
                                       const pdn_connectivity_request_msg *msg, unsigned int *new_ebi, void *data);
 
-int esm_recv_pdn_disconnect_request(unsigned int ueid, int pti, int ebi,
-                                    const pdn_disconnect_request_msg *msg, unsigned int *linked_ebi);
+int esm_recv_pdn_disconnect_request(emm_data_context_t *ctx, int pti, int ebi,
+                                    const pdn_disconnect_request_msg *msg,
+                                    unsigned int *linked_ebi);
 
 /*
  * Messages related to EPS bearer contexts
  * ---------------------------------------
  */
-int esm_recv_activate_default_eps_bearer_context_accept(unsigned int ueid,
+int esm_recv_activate_default_eps_bearer_context_accept(emm_data_context_t *ctx,
         int pti, int ebi, const activate_default_eps_bearer_context_accept_msg *msg);
 
-int esm_recv_activate_default_eps_bearer_context_reject(unsigned int ueid,
+int esm_recv_activate_default_eps_bearer_context_reject(emm_data_context_t *ctx,
         int pti, int ebi, const activate_default_eps_bearer_context_reject_msg *msg);
 
-int esm_recv_activate_dedicated_eps_bearer_context_accept(unsigned int ueid,
+int esm_recv_activate_dedicated_eps_bearer_context_accept(emm_data_context_t *ctx,
         int pti, int ebi, const activate_dedicated_eps_bearer_context_accept_msg *msg);
 
-int esm_recv_activate_dedicated_eps_bearer_context_reject(unsigned int ueid,
+int esm_recv_activate_dedicated_eps_bearer_context_reject(emm_data_context_t *ctx,
         int pti, int ebi, const activate_dedicated_eps_bearer_context_reject_msg *msg);
 
-int esm_recv_deactivate_eps_bearer_context_accept(unsigned int ueid, int pti,
+int esm_recv_deactivate_eps_bearer_context_accept(emm_data_context_t *ctx, int pti,
         int ebi, const deactivate_eps_bearer_context_accept_msg *msg);
 #endif
 

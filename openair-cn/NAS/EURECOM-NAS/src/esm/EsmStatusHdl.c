@@ -73,7 +73,7 @@ Description Defines the ESM status procedure executed by the Non-Access
  ***************************************************************************/
 int esm_proc_status_ind(
 #ifdef NAS_MME
-    unsigned int ueid,
+    emm_data_context_t *ctx,
 #endif
     int pti, int ebi, int *esm_cause)
 {
@@ -148,7 +148,7 @@ int esm_proc_status_ind(
  ***************************************************************************/
 int esm_proc_status(int is_standalone,
 #ifdef NAS_MME
-                    unsigned int ueid,
+                    emm_data_context_t *ctx,
 #endif
                     int ebi, OctetString *msg,
                     int ue_triggered)
@@ -168,7 +168,8 @@ int esm_proc_status(int is_standalone,
     emm_sap.u.emm_esm.ueid = 0;
 #endif
 #ifdef NAS_MME
-    emm_sap.u.emm_esm.ueid = ueid;
+    emm_sap.u.emm_esm.ueid = ctx->ueid;
+    emm_sap.u.emm_esm.ctx  = ctx;
 #endif
     emm_sap.u.emm_esm.u.data.msg.length = msg->length;
     emm_sap.u.emm_esm.u.data.msg.value = msg->value;

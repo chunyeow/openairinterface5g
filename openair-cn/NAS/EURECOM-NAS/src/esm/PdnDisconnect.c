@@ -44,7 +44,7 @@ Description Defines the PDN disconnect ESM procedure executed by the
 /****************************************************************************/
 
 #ifdef NAS_MME
-extern int _pdn_connectivity_delete(unsigned int ueid, int pid);
+extern int _pdn_connectivity_delete(emm_data_context_t *ctx, int pid);
 #endif
 
 /****************************************************************************/
@@ -81,7 +81,7 @@ static void *_pdn_disconnect_t3492_handler(void *);
 /*
  * PDN disconnection handlers
  */
-static int _pdn_disconnect_get_pid(unsigned int ueid, int pti);
+static int _pdn_disconnect_get_pid(esm_data_context_t *ctx, int pti);
 
 #endif // NAS_MME
 
@@ -368,36 +368,30 @@ int esm_proc_pdn_disconnect_reject(int pti, int *esm_cause)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_proc_pdn_disconnect_request(unsigned int ueid, int pti, int *esm_cause)
+int esm_proc_pdn_disconnect_request(emm_data_context_t *ctx, int pti, int *esm_cause)
 {
-    LOG_FUNC_IN;
-
     int pid = RETURNerror;
 
-    LOG_TRACE(INFO, "ESM-PROC  - PDN disconnect requested by the UE "
-              "(ueid=%d, pti=%d)", ueid, pti);
+    LOG_FUNC_IN;
 
-    if (ueid < ESM_DATA_NB_UE_MAX) {
-        /* Get UE's ESM context */
-        esm_data_context_t *ctx = _esm_data.ctx[ueid];
-        if (_esm_data.ctx[ueid] == NULL) {
-            LOG_TRACE(ERROR, "ESM-PROC  - No ESM context exists");
+    LOG_TRACE(INFO, "ESM-PROC  - PDN disconnect requested by the UE "
+              "(ueid=%d, pti=%d)", ctx->ueid, pti);
+
+    /* Get UE's ESM context */
+    if (ctx->esm_data_ctx.n_pdns > 1) {
+        /* Get the identifier of the PDN connection entry assigned to the
+         * procedure transaction identity */
+        pid = _pdn_disconnect_get_pid(&ctx->esm_data_ctx, pti);
+        if (pid < 0) {
+            LOG_TRACE(ERROR, "ESM-PROC  - No PDN connection found (pti=%d)",
+                    pti);
             *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
-        } else if (ctx->n_pdns > 1) {
-            /* Get the identifier of the PDN connection entry assigned to the
-             * procedure transaction identity */
-            pid = _pdn_disconnect_get_pid(ueid, pti);
-            if (pid < 0) {
-                LOG_TRACE(ERROR, "ESM-PROC  - No PDN connection found (pti=%d)",
-                          pti);
-                *esm_cause = ESM_CAUSE_PROTOCOL_ERROR;
-                LOG_FUNC_RETURN (RETURNerror);
-            }
-        } else {
-            /* Attempt to disconnect from the last PDN disconnection
-             * is not allowed */
-            *esm_cause = ESM_CAUSE_LAST_PDN_DISCONNECTION_NOT_ALLOWED;
+            LOG_FUNC_RETURN (RETURNerror);
         }
+    } else {
+        /* Attempt to disconnect from the last PDN disconnection
+         * is not allowed */
+        *esm_cause = ESM_CAUSE_LAST_PDN_DISCONNECTION_NOT_ALLOWED;
     }
 
     LOG_FUNC_RETURN(pid);
@@ -425,18 +419,18 @@ int esm_proc_pdn_disconnect_request(unsigned int ueid, int pti, int *esm_cause)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_proc_pdn_disconnect_accept(unsigned int ueid, int pid, int *esm_cause)
+int esm_proc_pdn_disconnect_accept(emm_data_context_t *ctx, int pid, int *esm_cause)
 {
     LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "ESM-PROC  - PDN disconnect accepted by the UE "
-              "(ueid=%d, pid=%d)", ueid, pid);
+              "(ueid=%d, pid=%d)", ctx->ueid, pid);
 
     /* Release the connectivity with the requested PDN */
     int rc = mme_api_unsubscribe(NULL);
     if (rc != RETURNerror) {
         /* Delete the PDN connection entry */
-        int pti = _pdn_connectivity_delete(ueid, pid);
+        int pti = _pdn_connectivity_delete(ctx, pid);
         if (pti != ESM_PT_UNASSIGNED) {
             LOG_FUNC_RETURN (RETURNok);
         }
@@ -470,7 +464,7 @@ int esm_proc_pdn_disconnect_accept(unsigned int ueid, int pid, int *esm_cause)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_proc_pdn_disconnect_reject(int is_standalone, unsigned int ueid,
+int esm_proc_pdn_disconnect_reject(int is_standalone, emm_data_context_t *ctx,
                                    int ebi, OctetString *msg, int ue_triggered)
 {
     LOG_FUNC_IN;
@@ -479,13 +473,14 @@ int esm_proc_pdn_disconnect_reject(int is_standalone, unsigned int ueid,
     emm_sap_t emm_sap;
 
     LOG_TRACE(WARNING, "ESM-PROC  - PDN disconnect not accepted by the network "
-              "(ueid=%d)", ueid);
+              "(ueid=%d)", ctx->ueid);
 
     /*
      * Notity EMM that ESM PDU has to be forwarded to lower layers
      */
     emm_sap.primitive = EMMESM_UNITDATA_REQ;
-    emm_sap.u.emm_esm.ueid = ueid;
+    emm_sap.u.emm_esm.ueid = ctx->ueid;
+    emm_sap.u.emm_esm.ctx  = ctx;
     emm_sap.u.emm_esm.u.data.msg.length = msg->length;
     emm_sap.u.emm_esm.u.data.msg.value = msg->value;
     rc = emm_sap_send(&emm_sap);
@@ -670,15 +665,15 @@ static int _pdn_disconnect_get_default_ebi(int pti)
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-static int _pdn_disconnect_get_pid(unsigned int ueid, int pti)
+static int _pdn_disconnect_get_pid(esm_data_context_t *ctx, int pti)
 {
     int i = ESM_DATA_PDN_MAX;
 
-    if ( (ueid < ESM_DATA_NB_UE_MAX) && (_esm_data.ctx[ueid] != NULL) ) {
+    if (ctx != NULL) {
         for (i = 0; i < ESM_DATA_PDN_MAX; i++) {
-            if ( (_esm_data.ctx[ueid]->pdn[i].pid != -1) &&
-                    (_esm_data.ctx[ueid]->pdn[i].data != NULL) ) {
-                if (_esm_data.ctx[ueid]->pdn[i].data->pti != pti) {
+            if ( (ctx->pdn[i].pid != -1) &&
+                    (ctx->pdn[i].data != NULL) ) {
+                if (ctx->pdn[i].data->pti != pti) {
                     continue;
                 }
                 /* PDN entry found */
@@ -688,6 +683,6 @@ static int _pdn_disconnect_get_pid(unsigned int ueid, int pti)
     }
 
     /* Return the identifier of the PDN connection */
-    return (_esm_data.ctx[ueid]->pdn[i].pid);
+    return (ctx->pdn[i].pid);
 }
 #endif // NAS_MME

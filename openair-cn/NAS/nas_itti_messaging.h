@@ -43,8 +43,21 @@
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length);
 
-void nas_itti_establish_cnf(const nas_error_code_t error_code, void *const data,
-                            const uint32_t length);
+static inline void nas_itti_establish_cnf(const uint32_t ue_id,
+        const nas_error_code_t error_code, void *const data,
+        const uint32_t length)
+{
+    MessageDef *message_p;
+
+    message_p = itti_alloc_new_message(TASK_NAS, NAS_CONNECTION_ESTABLISHMENT_CNF);
+
+    NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).UEid            = ue_id;
+    NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).errCode         = error_code;
+    NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).nasMsg.data     = data;
+    NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).nasMsg.length   = length;
+
+    itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
+}
 
 static inline void nas_itti_auth_info_req(const uint32_t ue_id,
         const imsi_t *const imsi, uint8_t initial_req, const uint8_t *auts)

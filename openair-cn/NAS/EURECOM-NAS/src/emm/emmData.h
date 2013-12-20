@@ -28,6 +28,8 @@ Description Defines internal private data handled by EPS Mobility
 #include "OctetString.h"
 #include "nas_timer.h"
 
+#include "esmData.h"
+
 #ifdef NAS_MME
 #include "emm_fsm.h"
 #include "mme_api.h"
@@ -348,6 +350,8 @@ typedef struct emm_data_context_s {
     int emm_cause;   /* EMM failure cause code               */
 
     emm_fsm_state_t _emm_fsm_status;
+
+    esm_data_context_t esm_data_ctx;
 } emm_data_context_t;
 
 /*

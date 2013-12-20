@@ -24,6 +24,7 @@ Description Defines the EMMESM Service Access Point that provides
 #define __EMM_ESMDEF_H__
 
 #include "OctetString.h"
+#include "emmData.h"
 
 /****************************************************************************/
 /*********************  G L O B A L    C O N S T A N T S  *******************/
@@ -76,6 +77,9 @@ typedef struct {
 typedef struct {
     emm_esm_primitive_t primitive;
     unsigned int ueid;
+#if defined(NAS_MME)
+    emm_data_context_t *ctx;
+#endif
     union {
         emm_esm_establish_t establish;
         emm_esm_data_t data;

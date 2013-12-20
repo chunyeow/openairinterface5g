@@ -151,16 +151,7 @@ void *s1ap_mme_thread(void *args)
             } break;
 #else
             case NAS_CONNECTION_ESTABLISHMENT_CNF: {
-                if (AS_TERMINATED_NAS == NAS_CONN_EST_CNF(received_message_p).nas_establish_cnf.errCode) {
-                    /* Attach rejected by NAS -> send result via
-                     * DL info transfer message
-                     */
-                    s1ap_generate_downlink_nas_transport(NAS_CONN_EST_CNF(received_message_p).ue_id,
-                                                         NAS_CONN_EST_CNF(received_message_p).nas_establish_cnf.nasMsg.data,
-                                                         NAS_CONN_EST_CNF(received_message_p).nas_establish_cnf.nasMsg.length);
-                } else {
-                    s1ap_handle_conn_est_cnf(&NAS_CONN_EST_CNF(received_message_p));
-                }
+                s1ap_handle_conn_est_cnf(&NAS_CONNECTION_ESTABLISHMENT_CNF(received_message_p));
             } break;
 #endif
 

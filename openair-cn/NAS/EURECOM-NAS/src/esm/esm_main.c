@@ -23,6 +23,7 @@ Description Defines the EPS Session Management procedure call manager,
 #include "commonDef.h"
 #include "nas_log.h"
 
+#include "emmData.h"
 #include "esmData.h"
 #include "esm_pt.h"
 #include "esm_ebr.h"
@@ -106,11 +107,12 @@ void esm_main_initialize(void)
     if (mme_api_get_esm_config(&_esm_data.conf) != RETURNok) {
         LOG_TRACE(ERROR, "ESM-MAIN  - Failed to get MME configuration data");
     }
-
+# if !defined(EPC_BUILD)
     /* Initialize ESM contexts */
     for (i = 0; i < ESM_DATA_NB_UE_MAX; i++) {
         _esm_data.ctx[i] = NULL;
     }
+# endif
 
     /* Initialize the EPS bearer context manager */
     esm_ebr_initialize();

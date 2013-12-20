@@ -28,6 +28,7 @@
 
 *******************************************************************************/
 
+#include <stdio.h>
 #include <stdint.h>
 
 #include "s1ap_common.h"
@@ -226,7 +227,6 @@ int s1ap_generate_downlink_nas_transport(const uint32_t ue_id, void * const data
         s1ap_mme_itti_send_sctp_request(buffer_p, length,
                                         ue_ref->eNB->sctp_assoc_id,
                                         ue_ref->sctp_stream_send);
-        //s1ap_mme_itti_nas_downlink_cnf(ue_ref->mme_ue_s1ap_id, AS_SUCCESS);
     }
     return 0;
 }
@@ -365,26 +365,24 @@ void s1ap_handle_conn_est_cnf(nas_conn_est_cnf_t *nas_conn_est_cnf_p)
      * At least one bearer has been established. We can now send s1ap initial context setup request
      * message to eNB.
      */
-    uint8_t supportedAlgorithms[] = { 0x00, 0x02 };
+    uint8_t supportedAlgorithms[] = { 0x00, 0x00 };
     uint8_t offset = 0;
     uint8_t *buffer_p;
-    uint32_t length;
+    uint32_t length, teid = 12;
 
     ue_description_t *ue_ref = NULL;
     s1ap_message message;
-    s1ap_initial_ctxt_setup_req_t *initial_p;
 
     S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
     S1ap_E_RABToBeSetupItemCtxtSUReq_t    e_RABToBeSetup;
+    S1ap_NAS_PDU_t                        nas_pdu;
 
     DevAssert(nas_conn_est_cnf_p != NULL);
 
-    initial_p = &nas_conn_est_cnf_p->transparent;
-
-    if ((ue_ref = s1ap_is_ue_mme_id_in_list(initial_p->mme_ue_s1ap_id)) == NULL) {
+    if ((ue_ref = s1ap_is_ue_mme_id_in_list(nas_conn_est_cnf_p->UEid)) == NULL) {
         S1AP_DEBUG("This mme ue s1ap id (%08x) is not attached to any UE context\n",
-                   initial_p->mme_ue_s1ap_id);
-        DevParam(initial_p->mme_ue_s1ap_id, 0, 0);
+                nas_conn_est_cnf_p->UEid);
+        DevParam(nas_conn_est_cnf_p->UEid, 0, 0);
     }
 
     /* Start the outcome response timer.
@@ -409,53 +407,72 @@ void s1ap_handle_conn_est_cnf(nas_conn_est_cnf_t *nas_conn_est_cnf_p)
     initialContextSetupRequest_p->eNB_UE_S1AP_ID = (unsigned long)ue_ref->eNB_ue_s1ap_id;
 
     /* uEaggregateMaximumBitrateDL and uEaggregateMaximumBitrateUL expressed in term of bits/sec */
-    initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = initial_p->ambr.br_dl;
-    initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL = initial_p->ambr.br_ul;
+//    initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = initial_p->ambr.br_dl;
+//    initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL = initial_p->ambr.br_ul;
 
-    e_RABToBeSetup.e_RAB_ID = initial_p->ebi;
-    e_RABToBeSetup.e_RABlevelQoSParameters.qCI = initial_p->qci;
-    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel
-    = initial_p->prio_level; //No priority
-    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability
-    = initial_p->pre_emp_capability;
-    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability
-    = initial_p->pre_emp_vulnerability;
+    initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = 1024 * 1024;
+    initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL = 512 * 1024;
+
+//    e_RABToBeSetup.e_RAB_ID = initial_p->ebi;
+    e_RABToBeSetup.e_RAB_ID = 5;
+//    e_RABToBeSetup.e_RABlevelQoSParameters.qCI = initial_p->qci;
+    e_RABToBeSetup.e_RABlevelQoSParameters.qCI = 0;
+
+    memset(&nas_pdu, 0, sizeof(nas_pdu));
+
+    nas_pdu.size = nas_conn_est_cnf_p->nasMsg.length;
+    nas_pdu.buf  = nas_conn_est_cnf_p->nasMsg.data;
+
+    e_RABToBeSetup.nAS_PDU = &nas_pdu;
+    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel =
+            S1ap_PriorityLevel_lowest;
+    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability =
+            S1ap_Pre_emptionCapability_shall_not_trigger_pre_emption;
+    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability =
+            S1ap_Pre_emptionVulnerability_not_pre_emptable;
+    INT32_TO_OCTET_STRING(teid, &e_RABToBeSetup.gTP_TEID);
+//    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.priorityLevel
+//    = initial_p->prio_level; //No priority
+//    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionCapability
+//    = initial_p->pre_emp_capability;
+//    e_RABToBeSetup.e_RABlevelQoSParameters.allocationRetentionPriority.pre_emptionVulnerability
+//    = initial_p->pre_emp_vulnerability;
 
     /* Set the GTP-TEID. This is the S1-U S-GW TEID */
-    INT32_TO_OCTET_STRING(initial_p->teid, &e_RABToBeSetup.gTP_TEID);
+//    INT32_TO_OCTET_STRING(initial_p->teid, &e_RABToBeSetup.gTP_TEID);
 
     /* S-GW IP address(es) for user-plane */
-    if ((initial_p->s_gw_address.pdn_type == IPv4) ||
-        (initial_p->s_gw_address.pdn_type == IPv4_AND_v6))
-    {
-        e_RABToBeSetup.transportLayerAddress.buf = calloc(4, sizeof(uint8_t));
-        /* Only IPv4 supported */
-        memcpy(e_RABToBeSetup.transportLayerAddress.buf,
-               initial_p->s_gw_address.address.ipv4_address,
-               4);
-        offset += 4;
-        e_RABToBeSetup.transportLayerAddress.size = 4;
-        e_RABToBeSetup.transportLayerAddress.bits_unused = 0;
-    }
-    if ((initial_p->s_gw_address.pdn_type == IPv6) ||
-        (initial_p->s_gw_address.pdn_type == IPv4_AND_v6))
-    {
-        if (offset == 0) {
-            /* Both IPv4 and IPv6 provided */
-            /* TODO: check memory allocation */
-            e_RABToBeSetup.transportLayerAddress.buf = calloc(16, sizeof(uint8_t));
-        } else {
-            /* Only IPv6 supported */
-            /* TODO: check memory allocation */
-            e_RABToBeSetup.transportLayerAddress.buf
-            = realloc(e_RABToBeSetup.transportLayerAddress.buf, (16 + offset) * sizeof(uint8_t));
-        }
-        memcpy(&e_RABToBeSetup.transportLayerAddress.buf[offset],
-               initial_p->s_gw_address.address.ipv6_address,
-               16);
-        e_RABToBeSetup.transportLayerAddress.size = 16 + offset;
-        e_RABToBeSetup.transportLayerAddress.bits_unused = 0;
-    }
+//    if ((initial_p->s_gw_address.pdn_type == IPv4) ||
+//        (initial_p->s_gw_address.pdn_type == IPv4_AND_v6))
+//    {
+//        e_RABToBeSetup.transportLayerAddress.buf = calloc(4, sizeof(uint8_t));
+//        /* Only IPv4 supported */
+//        memcpy(e_RABToBeSetup.transportLayerAddress.buf,
+//               initial_p->s_gw_address.address.ipv4_address,
+//               4);
+//        offset += 4;
+//        e_RABToBeSetup.transportLayerAddress.size = 4;
+//        e_RABToBeSetup.transportLayerAddress.bits_unused = 0;
+//    }
+//    if ((initial_p->s_gw_address.pdn_type == IPv6) ||
+//        (initial_p->s_gw_address.pdn_type == IPv4_AND_v6))
+//    {
+//        if (offset == 0) {
+//            /* Both IPv4 and IPv6 provided */
+//            /* TODO: check memory allocation */
+//            e_RABToBeSetup.transportLayerAddress.buf = calloc(16, sizeof(uint8_t));
+//        } else {
+//            /* Only IPv6 supported */
+//            /* TODO: check memory allocation */
+//            e_RABToBeSetup.transportLayerAddress.buf
+//            = realloc(e_RABToBeSetup.transportLayerAddress.buf, (16 + offset) * sizeof(uint8_t));
+//        }
+//        memcpy(&e_RABToBeSetup.transportLayerAddress.buf[offset],
+//               initial_p->s_gw_address.address.ipv6_address,
+//               16);
+//        e_RABToBeSetup.transportLayerAddress.size = 16 + offset;
+//        e_RABToBeSetup.transportLayerAddress.bits_unused = 0;
+//    }
 
     ASN_SEQUENCE_ADD(&initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq,
                      &e_RABToBeSetup);
@@ -473,7 +490,11 @@ void s1ap_handle_conn_est_cnf(nas_conn_est_cnf_t *nas_conn_est_cnf_p)
     initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused
         = 0;
 
-    initialContextSetupRequest_p->securityKey.buf  = initial_p->keNB; /* 256 bits length */
+//    initialContextSetupRequest_p->securityKey.buf  = initial_p->keNB; /* 256 bits length */
+    uint8_t keNB[32];
+    memset(keNB, 0, sizeof(keNB));
+
+    initialContextSetupRequest_p->securityKey.buf = keNB;
     initialContextSetupRequest_p->securityKey.size = 32;
     initialContextSetupRequest_p->securityKey.bits_unused = 0;
 
@@ -481,6 +502,8 @@ void s1ap_handle_conn_est_cnf(nas_conn_est_cnf_t *nas_conn_est_cnf_p)
         // TODO: handle something
         DevMessage("Failed to encode initial context setup request message\n");
     }
+
+    free(nas_conn_est_cnf_p->nasMsg.data);
 
     s1ap_mme_itti_send_sctp_request(buffer_p, length, ue_ref->eNB->sctp_assoc_id,
                                     ue_ref->sctp_stream_send);

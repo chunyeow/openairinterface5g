@@ -18,6 +18,9 @@ Description Defines the ESM Service Access Point that provides EPS
         bearer context handling and resources allocation procedures.
 
 *****************************************************************************/
+
+#include "emmData.h"
+
 #ifndef __ESM_SAPDEF_H__
 #define __ESM_SAPDEF_H__
 
@@ -132,11 +135,14 @@ typedef struct {
                  * within this primitive has to be sent/received
                  * standalone or together within an EMM related
                  * message              */
-    unsigned int ueid;      /* Local UE identifier          */
-    esm_sap_error_t err;    /* ESM-SAP error code           */
-    const OctetString *recv;    /* Encoded ESM message received     */
-    OctetString send;       /* Encoded ESM message to be sent   */
-    esm_sap_data_t data;    /* ESM message data parameters      */
+#if defined(NAS_MME)
+    emm_data_context_t *ctx;   /* UE context                       */
+#endif
+    unsigned int ueid;         /* Local UE identifier              */
+    esm_sap_error_t err;       /* ESM-SAP error code               */
+    const OctetString *recv;   /* Encoded ESM message received     */
+    OctetString send;          /* Encoded ESM message to be sent   */
+    esm_sap_data_t data;       /* ESM message data parameters      */
 } esm_sap_t;
 
 /****************************************************************************/
