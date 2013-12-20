@@ -362,7 +362,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t frame, u8_t eNB_flag)
 #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
             for (rab_id = DEFAULT_RAB_ID; rab_id < MAX_RB; rab_id = rab_id + NB_RB_MAX) {
                 LOG_D(PDCP, "Checking if could sent on default rab id %d\n", rab_id);
-                pdcp = &pdcp_array_eNB[eNB_index][UE_index][rab_id];
+                pdcp = &pdcp_array_eNB[eNB_id][UE_id][rab_id];
                 if (pdcp->instanciated_instance == (pdcp_input_header.inst + 1)) {
                     result = pdcp_data_req (eNB_id,
                                             UE_id,
