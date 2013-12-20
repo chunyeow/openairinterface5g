@@ -11,6 +11,7 @@ echo_success "# Check installed utils and libs"
 echo_success "###############################"
 test_command_install_package "gccxml" "gccxml" "--force-yes"
 test_command_install_package "iptables" "iptables"
+test_command_install_package "ebtables" "ebtables"
 test_command_install_package "ip" "iproute"
 test_install_package "openssl"
 test_install_package "libblas-dev"
@@ -25,6 +26,8 @@ test_install_package "libatlas-base-dev"
 test_install_package "libpgm-5.1-0" "--force-yes"
 test_install_package "libpgm-dev"   "--force-yes"
 test_install_package linux-headers-`uname -r`
+# for ODTONE git clone
+test_install_package "git"
     
 test_install_asn1c_4_rrc_cellular
     
@@ -57,14 +60,14 @@ echo_success "\n###############################"
 echo_success "# COMPILE MIH-F"
 echo_success "###############################"
 cd $ODTONE_ROOT
-b2 --boost-root=$BOOST_ROOT
+b2 --boost-root=$BOOST_ROOT linkflags=-lpthread
 
 
 echo_success "\n###############################"
 echo_success "# COMPILE MIH-USER"
 echo_success "###############################"
 cd  $ODTONE_ROOT/app/lte_test_user/
-b2 --boost-root=$BOOST_ROOT linkflags=-lrt
+b2 --boost-root=$BOOST_ROOT linkflags=-lrt linkflags=-lpthread
 
 
 echo_success "\n###############################"

@@ -1,22 +1,6 @@
 #!/bin/bash
 
 
-#        +-----------+          +------+              +-----------+
-#        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    |
-#        |           |cpenb0+------------------+cpmme0|           |
-#        |           +------+   |bridge|       +------+           |
-#        |           |upenb0+-------+  |              |           |
-#        +-----------+------+   |   |  |              +-----------+
-#                               +---|--+                    |
-#                                   |                 +-----------+
-#                                   |                 |  S+P-GW   |
-#                                   |  VLAN2   +------+           +-------+
-#                                   +----------+upsgw0|           |eth0   +---Internet access
-#                                              +------+           +-------+
-#                                                     |           |
-#                                                     +-----------+
-#
-
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/env_802dot21.bash
@@ -40,6 +24,13 @@ cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
 cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
 cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
 
+bash_exec "/sbin/iptables  -t mangle -F"
+bash_exec "/sbin/iptables  -t nat -F"
+bash_exec "/sbin/iptables  -t raw -F"
+bash_exec "/sbin/iptables  -t filter -F"
+bash_exec "/sbin/ip6tables -t mangle -F"
+bash_exec "/sbin/ip6tables -t filter -F"
+bash_exec "/sbin/ip6tables -t raw -F"
 
 ##################################################
 # LAUNCH eNB  executable
@@ -88,26 +79,41 @@ assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 
 bash_exec "ip route flush cache"
 
-# please add table 200 lte in/etc/iproute2/rt_tables
-ip rule add fwmark 5  table lte
+# please add table 200 lte in /etc/iproute2/rt_tables
+ip rule add fwmark 3  table lte
 ip route add default dev $LTEIF table lte
 
 ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
+/sbin/ebtables -t nat -A POSTROUTING -p arp  -j mark --mark-set 3
+
+/sbin/ip6tables -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark 3
+/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+
+/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark 3
+/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+
+#All other traffic is sent on the RAB you want (mark = RAB ID)
+/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
+/sbin/ip6tables -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
+/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
+/sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
 
 # start MIH-F
-#xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone.conf &
+#xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone_enb.conf &
 
 #wait_process_started odtone-mihf
 
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE  \
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE  \
              --enb-ral-listening-port   1234\
              --enb-ral-link-id          enb_lte_link\
              --enb-ral-ip-address       127.0.0.1\
              --enb-mihf-remote-port     1025\
              --enb-mihf-ip-address      127.0.0.1\
-             --enb-mihf-id              mihf1_enb
+             --enb-mihf-id              mihf1_enb 
 
 
 

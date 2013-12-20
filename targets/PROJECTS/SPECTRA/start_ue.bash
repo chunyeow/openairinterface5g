@@ -82,17 +82,33 @@ ip -6 route add default dev $LTEIF table lte
 ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
 # start MIH-F
-xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone.conf &
-
+xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone_ue.conf &
 wait_process_started odtone-mihf
+sleep 3
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
+NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
+LOG_FILE="/tmp/oai_sim_ue_$NOW.log"
+
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
              --ue-ral-listening-port   1234\
              --ue-ral-link-id          ue_lte_link\
              --ue-ral-ip-address       127.0.0.1\
              --ue-mihf-remote-port     1025\
              --ue-mihf-ip-address      127.0.0.1\
-             --ue-mihf-id              mihf2_ue
+             --ue-mihf-id              mihf2_ue  &
+wait_process_started oaisim
+
+sleep 5
+#echo_warning "Press enter to continue..."
+#read KEY
+
+
+# start MIH-USER
+xterm -hold -e $ODTONE_ROOT/dist/ue_lte_user         --conf.file $ODTONE_ROOT/dist/ue_lte_user.conf &
+wait_process_started ue_lte_user
+
+sleep 100000
+
 
 
 

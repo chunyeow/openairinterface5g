@@ -4,8 +4,9 @@
 #####################################################
 # VARIABLES TO BE FILLED WITH RIGHT VALUES:
 #####################################################
-export BOOST_ROOT=/usr/local/src/boost_1_48_0
-export ODTONE_ROOT=/usr/local/src/odtone_spectra_v1
+export BOOST_ROOT=/usr/local/src/boost_1_49_0
+#export ODTONE_ROOT=/usr/local/src/odtone_spectra_v1
+export ODTONE_ROOT=/usr/local/src/ODTONE
 #####################################################
 
 
@@ -23,6 +24,11 @@ fi
 ENV_SCRIPT_STARTED="yes"
 source $THIS_SCRIPT_PATH/utils.bash
 
+if [ -d $ODTONE_ROOT ]; then
+    echo_success "ODTONE_ROOT     = $ODTONE_ROOT." >&2
+else
+    echo_error "ODTONE_ROOT variable was not set correctly, please update ($ODTONE_ROOT)." >&2
+fi
 if [ ! -d $BOOST_ROOT ]; then
     echo_error "BOOST_ROOT variable was not set correctly, please update (may be you also need to install boost), exiting."
     ENV_SCRIPT_ERRORS="yes"
@@ -41,7 +47,7 @@ else
         fi
         command -v $BOOST_ROOT/b2 >/dev/null 2>&1
         if [ $? -eq 0 ]; then 
-            echo_success "Program b2 is now reachable by the PATH variable." >&2
+            echo_success "Program b2 is now reachable by the PATH variable during the execution of this script." >&2
         else
             echo_error "Built of b2 failed. Please help yourself" >&2
         fi
