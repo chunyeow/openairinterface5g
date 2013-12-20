@@ -50,6 +50,8 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
 #endif
 
 #if defined(UE_BUILD) && defined(NAS_UE)
+extern unsigned char NB_eNB_INST;
+
 int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat)
 {
     MessageDef *message_p;
@@ -59,7 +61,7 @@ int nas_itti_cell_info_req(const plmn_t plmnID, const Byte_t rat)
     NAS_CELL_SELECTION_REQ(message_p).plmnID    = plmnID;
     NAS_CELL_SELECTION_REQ(message_p).rat       = rat;
 
-    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 
 int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t s_tmsi, plmn_t plmnID, Byte_t *data, UInt32_t length)
@@ -75,7 +77,7 @@ int nas_itti_nas_establish_req(as_cause_t cause, as_call_type_t type, as_stmsi_t
     NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.data          = data;
     NAS_CONN_ESTABLI_REQ(message_p).initialNasMsg.length        = length;
 
-    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 
 int nas_itti_ul_data_req(const uint32_t ue_id, void *const data, const uint32_t length)
@@ -88,7 +90,7 @@ int nas_itti_ul_data_req(const uint32_t ue_id, void *const data, const uint32_t 
     NAS_UPLINK_DATA_REQ(message_p).nasMsg.data   = data;
     NAS_UPLINK_DATA_REQ(message_p).nasMsg.length = length;
 
-    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 
 int nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID, const nas_error_code_t errCode)
@@ -101,6 +103,6 @@ int nas_itti_rab_establish_rsp(const as_stmsi_t s_tmsi, const as_rab_id_t rabID,
     NAS_RAB_ESTABLI_RSP(message_p).rabID        = rabID;
     NAS_RAB_ESTABLI_RSP(message_p).errCode      = errCode;
 
-    return itti_send_msg_to_task(TASK_RRC_UE, INSTANCE_DEFAULT, message_p);
+    return itti_send_msg_to_task(TASK_RRC_UE, NB_eNB_INST + 0 /* TODO to be virtualized */, message_p);
 }
 #endif

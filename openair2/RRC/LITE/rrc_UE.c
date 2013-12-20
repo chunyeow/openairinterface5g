@@ -2487,7 +2487,7 @@ void *rrc_ue_task(void *args_p) {
   MessageDef   *msg_p;
   const char   *msg_name;
   instance_t    instance;
-  unsigned int Mod_id;
+  unsigned int  Mod_id;
   int           result;
   SRB_INFO     *srb_info_p;
 
@@ -2655,7 +2655,7 @@ void *rrc_ue_task(void *args_p) {
           length = do_ULInformationTransfer(&buffer, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.length, NAS_UPLINK_DATA_REQ (msg_p).nasMsg.data);
 
           /* Transfer data to PDCP */
-          pdcp_rrc_data_req (0, instance, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
+          pdcp_rrc_data_req (0, Mod_id, 0 /* TODO put frame number ! */, 0, DCCH, rrc_mui++, 0, length, buffer, 1);
           break;
       }
 # endif
