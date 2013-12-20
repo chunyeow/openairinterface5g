@@ -88,6 +88,8 @@ int esm_ebr_context_create(
     esm_data_context_t *esm_ctx;
     esm_pdn_t *pdn = NULL;
 
+    unsigned int ueid = 0;
+
     LOG_FUNC_IN;
 
 #ifdef NAS_UE
@@ -226,6 +228,8 @@ int esm_ebr_context_release(
     int found = FALSE;
     esm_pdn_t *pdn = NULL;
     esm_data_context_t *esm_ctx;
+
+    unsigned int ueid = 0;
 
     LOG_FUNC_IN;
 

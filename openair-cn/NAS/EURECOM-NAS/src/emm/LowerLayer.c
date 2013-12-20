@@ -210,7 +210,7 @@ int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
 
     LOG_FUNC_IN;
 
-#if defined(NAS_MME)
+#if defined(EPC_BUILD) && defined(NAS_MME)
     if (ueid > 0) {
         emm_ctx = emm_data_context_get(&_emm_data, ueid);
     }

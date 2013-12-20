@@ -177,9 +177,7 @@ int esm_ebr_assign(emm_data_context_t *ctx, int ebi)
 {
     esm_ebr_context_t *ebr_ctx;
 
-#ifdef NAS_UE
     unsigned int ueid = 0;
-#endif
 
     int i;
 
