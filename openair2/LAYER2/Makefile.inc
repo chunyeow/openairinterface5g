@@ -70,6 +70,11 @@ SOURCES_L2 +=  $(RLC_DIR)/rlc_rrc.c
 SOURCES_L2 +=  $(RLC_DIR)/rlc_mpls.c
 
 RRC_OBJS =  $(RRC_DIR)/rrc_UE.o
+ifeq ($(ENABLE_RAL),1)
+RRC_OBJS +=  $(RRC_DIR)/rrc_UE_ral.o
+RRC_OBJS +=  $(RRC_DIR)/rrc_eNB_ral.o
+endif
+
 RRC_OBJS += $(RRC_DIR)/rrc_eNB.o
 RRC_OBJS += $(RRC_DIR)/rrc_eNB_S1AP.o
 RRC_OBJS += $(RRC_DIR)/rrc_common.o
