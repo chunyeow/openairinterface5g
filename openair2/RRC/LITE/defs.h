@@ -155,6 +155,7 @@ typedef enum HO_STATE_e {
 typedef struct UE_RRC_INFO_s {
   UE_STATE_t State;
   u8 SIB1Status;
+  u8 SIB1systemInfoValueTag;
   u8 SIStatus;
 #ifdef Rel10
   u8 MCCHStatus[8]; // MAX_MBSFN_AREA
@@ -624,9 +625,9 @@ int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,
 
 void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_sync_area);
 
-int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len);
+int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len, u8 rsrq, u8 rsrp);
 
-int decode_SIB1(u8 Mod_id,u8 eNB_index);
+int decode_SIB1(u8 Mod_id,u8 eNB_index, u8 rsrq, u8 rsrp);
 
 int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window);
 
