@@ -58,7 +58,7 @@ static int nas_ue_process_events(struct epoll_event *events, int nb_events)
     {
       /* If the event has not been yet been processed (not an itti message) */
       if (events[event].data.fd == user_fd) {
-        exit_loop = nas_user_receive_and_process(&user_fd);
+        exit_loop = nas_user_receive_and_process(&user_fd, NULL);
       } else {
         LOG_E(NAS, "[UE] Received an event from an unknown fd %d!\n", events[event].data.fd);
       }
@@ -101,11 +101,7 @@ void *nas_ue_task(void *args_p) {
   {
       MessageDef *message_p;
 
-#if (NAS_UE_AUTOSTART == 0)
       message_p = itti_alloc_new_message(TASK_NAS_UE, DEACTIVATE_MESSAGE);
-#else
-      message_p = itti_alloc_new_message(TASK_NAS_UE, ACTIVATE_MESSAGE);
-#endif
       itti_send_msg_to_task(TASK_L2L1, instance, message_p);
   }
 
@@ -122,6 +118,12 @@ void *nas_ue_task(void *args_p) {
         case INITIALIZE_MESSAGE:
           LOG_I(NAS, "[UE %d] Received %s\n", Mod_id, msg_name);
 #if (NAS_UE_AUTOSTART != 0)
+          {
+            /* Send an activate modem command to NAS like UserProcess should do it */
+            char *user_data = "at+cfun=1\r";
+
+            nas_user_receive_and_process (&user_fd, user_data);
+          }
 #endif
           break;
 

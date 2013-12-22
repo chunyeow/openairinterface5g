@@ -212,7 +212,7 @@ void nas_user_initialize(emm_indication_callback_t emm_cb,
  ** Outputs:     Return:        FALSE, TRUE                                **
  **                                                                        **
  ***************************************************************************/
-int nas_user_receive_and_process(int * fd)
+int nas_user_receive_and_process(int *fd, char *message)
 {
     LOG_FUNC_IN;
 
@@ -221,14 +221,19 @@ int nas_user_receive_and_process(int * fd)
     int bytes;
     int i;
 
-  /* Read the user data message */
-    bytes = user_api_read_data (*fd);
-    if (bytes == RETURNerror) {
-        /* Failed to read data from the user application layer;
-         * exit from the receiving loop */
-        LOG_TRACE (ERROR, "UE-MAIN   - "
-                   "Failed to read data from the user application layer");
-        LOG_FUNC_RETURN(TRUE);
+    if (message != NULL) {
+        /* Set the message in receive buffer (Use to simulate reception of data from UserProcess) */
+        bytes = user_api_set_data(message);
+    } else {
+        /* Read the user data message */
+        bytes = user_api_read_data (*fd);
+        if (bytes == RETURNerror) {
+            /* Failed to read data from the user application layer;
+             * exit from the receiving loop */
+            LOG_TRACE (ERROR, "UE-MAIN   - "
+                       "Failed to read data from the user application layer");
+            LOG_FUNC_RETURN(TRUE);
+        }
     }
 
     if (bytes == 0) {
@@ -261,22 +266,25 @@ int nas_user_receive_and_process(int * fd)
              "The user procedure call failed");
         }
 
-        /* Encode the user data message */
-        bytes = user_api_encode_data (nas_user_get_data (), i == nb_command - 1);
-        if (bytes == RETURNerror) {
-            /* Failed to encode the user data message;
-             * go ahead and process the next user data */
-            continue;
-        }
+        /* Send response to UserProcess (If not in simulated reception) */
+        if (message == NULL) {
+            /* Encode the user data message */
+            bytes = user_api_encode_data (nas_user_get_data (), i == nb_command - 1);
+            if (bytes == RETURNerror) {
+                /* Failed to encode the user data message;
+                 * go ahead and process the next user data */
+                continue;
+            }
 
-        /* Send the data message to the user */
-        bytes = user_api_send_data (*fd, bytes);
-        if (bytes == RETURNerror) {
-            /* Failed to send data to the user application layer;
-             * exit from the receiving loop */
-            LOG_TRACE (ERROR, "UE-MAIN   - "
-                       "Failed to send data to the user application layer");
-            LOG_FUNC_RETURN(TRUE);
+            /* Send the data message to the user */
+            bytes = user_api_send_data (*fd, bytes);
+            if (bytes == RETURNerror) {
+                /* Failed to send data to the user application layer;
+                 * exit from the receiving loop */
+                LOG_TRACE (ERROR, "UE-MAIN   - "
+                           "Failed to send data to the user application layer");
+                LOG_FUNC_RETURN(TRUE);
+            }
         }
     }
 
