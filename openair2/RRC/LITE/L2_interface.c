@@ -322,11 +322,13 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = sdu_size;
         memcpy (RRC_MAC_BCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
+        RRC_MAC_BCCH_DATA_IND (message_p).rsrq = 30 /* TODO change phy to report rspq */;
+        RRC_MAC_BCCH_DATA_IND (message_p).rsrp = 45 /* TODO change phy to report rspp */;
 
         itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
       }
 #else
-      decode_BCCH_DLSCH_Message(Mod_id,frame,eNB_index,Sdu,sdu_size);
+      decode_BCCH_DLSCH_Message(Mod_id,frame,eNB_index,Sdu,sdu_size, 0, 0);
       /*
       if ((frame %2) == 0) {
 	if (UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 0) {

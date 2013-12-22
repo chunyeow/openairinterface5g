@@ -39,6 +39,7 @@
 #define RRC_UE_C
 
 #include "assertions.h"
+#include "asn1_conversions.h"
 #include "defs.h"
 #include "PHY/TOOLS/dB_routines.h"
 #include "extern.h"
@@ -1659,7 +1660,7 @@ const char SIBType[16][6] ={"SIB3\0","SIB4\0","SIB5\0","SIB6\0","SIB7\0","SIB8\0
 const char SIBPeriod[7][7]= {"80ms\0","160ms\0","320ms\0","640ms\0","1280ms\0","2560ms\0","5120ms\0"};
 int siPeriod_int[7] = {80,160,320,640,1280,2560,5120};
 
-int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len) {
+int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len, u8 rsrq, u8 rsrp) {
 
   //BCCH_DL_SCH_Message_t bcch_message;
   BCCH_DL_SCH_Message_t *bcch_message=NULL;//_ptr=&bcch_message;
@@ -1731,36 +1732,38 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 
     if (bcch_message->message.present == BCCH_DL_SCH_MessageType_PR_c1) {
       switch (bcch_message->message.choice.c1.present) {
-      case BCCH_DL_SCH_MessageType__c1_PR_systemInformationBlockType1:
-        if ((frame %2) == 0) {
-          if (UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 0) {
-            memcpy((void*)*sib1,
-                (void*)&bcch_message->message.choice.c1.choice.systemInformationBlockType1,
-                sizeof(SystemInformationBlockType1_t));
-            LOG_D(RRC,"[UE %d] Decoding First SIB1\n",Mod_id);
-            decode_SIB1(Mod_id,eNB_index);
-            //mac_xface->macphy_exit("after decode_SIB1");
+        case BCCH_DL_SCH_MessageType__c1_PR_systemInformationBlockType1:
+          if ((frame %2) == 0) {
+            if (UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 0) {
+              memcpy((void*)*sib1,
+                  (void*)&bcch_message->message.choice.c1.choice.systemInformationBlockType1,
+                  sizeof(SystemInformationBlockType1_t));
+              LOG_D(RRC,"[UE %d] Decoding First SIB1\n",Mod_id);
+              decode_SIB1(Mod_id, eNB_index, rsrq, rsrp);
+              //mac_xface->macphy_exit("after decode_SIB1");
+            }
           }
-        }
-        break;
-      case BCCH_DL_SCH_MessageType__c1_PR_systemInformation:
-        if ((UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 1) &&
-            (UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus == 0)) {
-          //                                                if ((frame %8) == 1) {  // check only in odd frames for SI
-          si_window = (frame%(UE_rrc_inst[Mod_id].Info[eNB_index].SIperiod/10))/(UE_rrc_inst[Mod_id].Info[eNB_index].SIwindowsize/10);
-          memcpy((void*)si[si_window],
-              (void*)&bcch_message->message.choice.c1.choice.systemInformation,
-              sizeof(SystemInformation_t));
-          LOG_D(RRC,"[UE %d] Decoding SI for frame %d, si_window %d\n",Mod_id,frame,si_window);
-          decode_SI(Mod_id,frame,eNB_index,si_window);
-          //mac_xface->macphy_exit("after decode_SI");
+          break;
 
-          //                                }
-        }
-        break;
-      case BCCH_DL_SCH_MessageType__c1_PR_NOTHING:
-      default:
-        break;
+        case BCCH_DL_SCH_MessageType__c1_PR_systemInformation:
+          if ((UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 1) &&
+              (UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus == 0)) {
+            //                                                if ((frame %8) == 1) {  // check only in odd frames for SI
+            si_window = (frame%(UE_rrc_inst[Mod_id].Info[eNB_index].SIperiod/10))/(UE_rrc_inst[Mod_id].Info[eNB_index].SIwindowsize/10);
+            memcpy((void*)si[si_window],
+                (void*)&bcch_message->message.choice.c1.choice.systemInformation,
+                sizeof(SystemInformation_t));
+            LOG_D(RRC,"[UE %d] Decoding SI for frame %d, si_window %d\n",Mod_id,frame,si_window);
+            decode_SI(Mod_id,frame,eNB_index,si_window);
+            //mac_xface->macphy_exit("after decode_SI");
+
+            //                                }
+          }
+          break;
+
+        case BCCH_DL_SCH_MessageType__c1_PR_NOTHING:
+        default:
+          break;
       }
     }
   }
@@ -1773,7 +1776,7 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 }
 
 
-int decode_SIB1(u8 Mod_id,u8 eNB_index) {
+int decode_SIB1(u8 Mod_id,u8 eNB_index, u8 rsrq, u8 rsrp) {
   SystemInformationBlockType1_t **sib1=&UE_rrc_inst[Mod_id].sib1[eNB_index];
   int i;
 
@@ -1846,6 +1849,65 @@ int decode_SIB1(u8 Mod_id,u8 eNB_index) {
   );
 
   UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status = 1;
+  UE_rrc_inst[Mod_id].Info[eNB_index].SIB1systemInfoValueTag = (*sib1)->systemInfoValueTag;
+
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+  {
+    int cell_valid = 0;
+
+    if ((*sib1)->cellAccessRelatedInfo.cellBarred == SystemInformationBlockType1__cellAccessRelatedInfo__cellBarred_notBarred) {
+      /* Cell is not barred */
+      int plmn;
+      int plmn_number;
+
+      plmn_number = (*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.count;
+
+      /* Compare requested PLMN and PLMNs from SIB1*/
+      for (plmn = 0; plmn < plmn_number; plmn++) {
+        PLMN_Identity_t *plmn_Identity;
+
+        plmn_Identity = &(*sib1)->cellAccessRelatedInfo.plmn_IdentityList.list.array[plmn]->plmn_Identity;
+        if (((plmn_Identity->mcc == NULL)
+             ||
+             ((UE_rrc_inst[Mod_id].plmnID.MCCdigit1 == *(plmn_Identity->mcc->list.array[0])) &&
+              (UE_rrc_inst[Mod_id].plmnID.MCCdigit2 == *(plmn_Identity->mcc->list.array[1])) &&
+              (UE_rrc_inst[Mod_id].plmnID.MCCdigit3 == *(plmn_Identity->mcc->list.array[2]))))
+            &&
+            (UE_rrc_inst[Mod_id].plmnID.MNCdigit1 == *(plmn_Identity->mnc.list.array[0])) &&
+            (UE_rrc_inst[Mod_id].plmnID.MNCdigit2 == *(plmn_Identity->mnc.list.array[1])) &&
+            (((UE_rrc_inst[Mod_id].plmnID.MNCdigit3 == 0xf) && (plmn_Identity->mnc.list.count == 2))
+             ||
+             (UE_rrc_inst[Mod_id].plmnID.MNCdigit3 == *(plmn_Identity->mnc.list.array[2])))) {
+          /* PLMN match, send a confirmation to NAS */
+          MessageDef  *msg_p;
+
+          msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CELL_SELECTION_CNF);
+          NAS_CELL_SELECTION_CNF (msg_p).errCode = AS_SUCCESS;
+          NAS_CELL_SELECTION_CNF (msg_p).cellID = BIT_STRING_to_uint32(&(*sib1)->cellAccessRelatedInfo.cellIdentity);
+          NAS_CELL_SELECTION_CNF (msg_p).tac = BIT_STRING_to_uint16(&(*sib1)->cellAccessRelatedInfo.trackingAreaCode);
+          NAS_CELL_SELECTION_CNF (msg_p).rat = 0xFF;
+          NAS_CELL_SELECTION_CNF (msg_p).rsrq = rsrq;
+          NAS_CELL_SELECTION_CNF (msg_p).rsrp = rsrp;
+
+          itti_send_msg_to_task(TASK_NAS_UE, Mod_id + NB_eNB_INST, msg_p);
+          cell_valid = 1;
+          break;
+        }
+      }
+    }
+
+    if (cell_valid == 0)
+    {
+      /* Cell can not be used, ask PHY to try the next one */
+      MessageDef  *msg_p;
+
+      msg_p = itti_alloc_new_message(TASK_RRC_UE, PHY_FIND_NEXT_CELL_REQ);
+
+      itti_send_msg_to_task(TASK_PHY_UE, Mod_id + NB_eNB_INST, msg_p);
+    }
+  }
+#endif
+
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_UE_DECODE_SIB1, VCD_FUNCTION_OUT);
   return 0;
 
@@ -2533,7 +2595,8 @@ void *rrc_ue_task(void *args_p) {
 
         decode_BCCH_DLSCH_Message (Mod_id, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
                                    RRC_MAC_BCCH_DATA_IND (msg_p).enb_index, RRC_MAC_BCCH_DATA_IND (msg_p).sdu,
-                                   RRC_MAC_BCCH_DATA_IND (msg_p).sdu_size);
+                                   RRC_MAC_BCCH_DATA_IND (msg_p).sdu_size,
+                                   RRC_MAC_BCCH_DATA_IND (msg_p).rsrq, RRC_MAC_BCCH_DATA_IND (msg_p).rsrp);
         break;
 
       case RRC_MAC_CCCH_DATA_CNF:

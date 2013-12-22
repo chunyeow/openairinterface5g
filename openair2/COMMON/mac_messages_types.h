@@ -31,58 +31,60 @@
 //-------------------------------------------------------------------------------------------//
 // Messages between RRC and MAC layers
 typedef struct RrcMacInSyncInd_s {
-  uint32_t frame;
-  uint16_t enb_index;
+  uint32_t  frame;
+  uint16_t  enb_index;
 } RrcMacInSyncInd;
 
 typedef RrcMacInSyncInd RrcMacOutOfSyncInd;
 
 typedef struct RrcMacBcchDataReq_s {
-  uint32_t frame;
-  uint32_t sdu_size;
-  uint8_t sdu[BCCH_SDU_SIZE];
-  uint8_t enb_index;
+  uint32_t  frame;
+  uint32_t  sdu_size;
+  uint8_t   sdu[BCCH_SDU_SIZE];
+  uint8_t   enb_index;
 } RrcMacBcchDataReq;
 
 typedef struct RrcMacBcchDataInd_s {
-  uint32_t frame;
-  uint32_t sdu_size;
-  uint8_t sdu[BCCH_SDU_SIZE];
-  uint8_t enb_index;
+  uint32_t  frame;
+  uint32_t  sdu_size;
+  uint8_t   sdu[BCCH_SDU_SIZE];
+  uint8_t   enb_index;
+  uint8_t   rsrq;
+  uint8_t   rsrp;
 } RrcMacBcchDataInd;
 
 typedef struct RrcMacCcchDataReq_s {
-  uint32_t frame;
-  uint32_t sdu_size;
-  uint8_t sdu[CCCH_SDU_SIZE];
-  uint8_t enb_index;
+  uint32_t  frame;
+  uint32_t  sdu_size;
+  uint8_t   sdu[CCCH_SDU_SIZE];
+  uint8_t   enb_index;
 } RrcMacCcchDataReq;
 
 typedef struct RrcMacCcchDataCnf_s {
-  uint8_t enb_index;
+  uint8_t   enb_index;
 } RrcMacCcchDataCnf;
 
 typedef struct RrcMacCcchDataInd_s {
-    uint32_t frame;
-    uint32_t sdu_size;
-    uint8_t sdu[CCCH_SDU_SIZE];
-    uint8_t enb_index;
+    uint32_t  frame;
+    uint32_t  sdu_size;
+    uint8_t   sdu[CCCH_SDU_SIZE];
+    uint8_t   enb_index;
 } RrcMacCcchDataInd;
 
 typedef struct RrcMacMcchDataReq_s {
-  uint32_t frame;
-  uint32_t sdu_size;
-  uint8_t sdu[MCCH_SDU_SIZE];
-  uint8_t enb_index;
-  uint8_t mbsfn_sync_area;
+  uint32_t  frame;
+  uint32_t  sdu_size;
+  uint8_t   sdu[MCCH_SDU_SIZE];
+  uint8_t   enb_index;
+  uint8_t   mbsfn_sync_area;
 } RrcMacMcchDataReq;
 
 typedef struct RrcMacMcchDataInd_s {
-  uint32_t frame;
-  uint32_t sdu_size;
-  uint8_t sdu[MCCH_SDU_SIZE];
-  uint8_t enb_index;
-  uint8_t mbsfn_sync_area;
+  uint32_t  frame;
+  uint32_t  sdu_size;
+  uint8_t   sdu[MCCH_SDU_SIZE];
+  uint8_t   enb_index;
+  uint8_t   mbsfn_sync_area;
 } RrcMacMcchDataInd;
 
 #endif /* MAC_MESSAGES_TYPES_H_ */
