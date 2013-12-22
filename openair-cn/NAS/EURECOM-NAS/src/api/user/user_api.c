@@ -1,21 +1,21 @@
 /*****************************************************************************
-			Eurecom OpenAirInterface 3
-			Copyright(c) 2012 Eurecom
+                        Eurecom OpenAirInterface 3
+                        Copyright(c) 2012 Eurecom
 
-Source		user_api.c
+Source          user_api.c
 
-Version		0.1
+Version         0.1
 
-Date		2012/02/28
+Date            2012/02/28
 
-Product		NAS stack
+Product         NAS stack
 
-Subsystem	Application Programming Interface
+Subsystem       Application Programming Interface
 
-Author		Frederic Maurel
+Author          Frederic Maurel
 
-Description	Implements the API used by the NAS layer running in the UE
-		to send/receive message to/from the user application layer
+Description     Implements the API used by the NAS layer running in the UE
+                to send/receive message to/from the user application layer
 
 *****************************************************************************/
 
@@ -60,15 +60,15 @@ static int _user_api_send(at_response_t* data);
 /* -------------------
  * Connection endpoint
  * -------------------
- *	The connection endpoint is used to send/receive data to/from the
- *	user application layer. Its definition depends on the underlaying
- *	mechanism chosen to communicate (network socket, I/O terminal device).
- *	A connection endpoint is handled using an identifier, and functions
- *	used to retreive the file descriptor actually allocated by the system,
- *	to receive data, to send data, and to perform clean up when connection
- *	is shut down.
- *	Only one single end to end connection with the user is managed at a
- *	time.
+ *      The connection endpoint is used to send/receive data to/from the
+ *      user application layer. Its definition depends on the underlaying
+ *      mechanism chosen to communicate (network socket, I/O terminal device).
+ *      A connection endpoint is handled using an identifier, and functions
+ *      used to retreive the file descriptor actually allocated by the system,
+ *      to receive data, to send data, and to perform clean up when connection
+ *      is shut down.
+ *      Only one single end to end connection with the user is managed at a
+ *      time.
  */
 static struct {
     /* Connection endpoint reference	*/
@@ -114,19 +114,19 @@ static struct {
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 user_api_initialize()                                     **
+ ** Name:        user_api_initialize()                                     **
  **                                                                        **
  ** Description: Initializes the user API from which the NAS layer         **
- **		 will send/receive messages to/from the user application   **
- **		 layer                                                     **
+ **              will send/receive messages to/from the user application   **
+ **              layer                                                     **
  **                                                                        **
- ** Inputs:	 host:		The name of the host from which the user   **
- **				application layer will connect             **
- ** 		 port:		The local port number                      **
- ** 	 	 Others:	None                                       **
+ ** Inputs:      host:          The name of the host from which the user   **
+ **                             application layer will connect             **
+ **              port:          The local port number                      **
+ **              Others:        None                                       **
  **                                                                        **
- ** Outputs:	 Return:	RETURNerror, RETURNok                      **
- ** 	 	 Others:	_user_api_id                               **
+ ** Outputs:     Return:        RETURNerror, RETURNok                      **
+ **              Others:        _user_api_id                               **
  **                                                                        **
  ***************************************************************************/
 int user_api_initialize(const char* host, const char* port,
@@ -137,73 +137,73 @@ int user_api_initialize(const char* host, const char* port,
     gethostname(_user_api_send_buffer, USER_API_SEND_BUFFER_SIZE);
 
     if (devname != NULL) {
-	/* Initialize device handlers */
-	_user_api_id.open  = device_open;
-	_user_api_id.getfd = device_get_fd;
-	_user_api_id.recv  = device_read;
-	_user_api_id.send  = device_write;
-	_user_api_id.close = device_close;
+        /* Initialize device handlers */
+        _user_api_id.open  = device_open;
+        _user_api_id.getfd = device_get_fd;
+        _user_api_id.recv  = device_read;
+        _user_api_id.send  = device_write;
+        _user_api_id.close = device_close;
 
-	/* Initialize communication channel */
-	_user_api_id.endpoint = USER_API_OPEN(DEVICE, devname, devparams);
-	if (_user_api_id.endpoint == NULL) {
-	    LOG_TRACE(ERROR, "USR-API   - Failed to open connection endpoint, "
-		      "%s", strerror(errno));
-	    LOG_FUNC_RETURN (RETURNerror);
-	}
+        /* Initialize communication channel */
+        _user_api_id.endpoint = USER_API_OPEN(DEVICE, devname, devparams);
+        if (_user_api_id.endpoint == NULL) {
+            LOG_TRACE(ERROR, "USR-API   - Failed to open connection endpoint, "
+                      "%s", strerror(errno));
+            LOG_FUNC_RETURN (RETURNerror);
+        }
 
- 	LOG_TRACE(INFO, "USR-API   - User's communication device %d is OPENED "
-		 "on %s/%s", user_api_get_fd(), _user_api_send_buffer, devname);
+        LOG_TRACE(INFO, "USR-API   - User's communication device %d is OPENED "
+                 "on %s/%s", user_api_get_fd(), _user_api_send_buffer, devname);
     }
     else {
-	/* Initialize network socket handlers */
-	_user_api_id.open  = socket_udp_open;
-	_user_api_id.getfd = socket_get_fd;
-	_user_api_id.recv  = socket_recv;
-	_user_api_id.send  = socket_send;
-	_user_api_id.close = socket_close;
+        /* Initialize network socket handlers */
+        _user_api_id.open  = socket_udp_open;
+        _user_api_id.getfd = socket_get_fd;
+        _user_api_id.recv  = socket_recv;
+        _user_api_id.send  = socket_send;
+        _user_api_id.close = socket_close;
 
-	/* Initialize communication channel */
-	_user_api_id.endpoint = USER_API_OPEN(SOCKET_SERVER, host, port);
-	if (_user_api_id.endpoint == NULL) {
-	    const char* error = ( (errno < 0) ?
-				  gai_strerror(errno) : strerror(errno) );
-	    LOG_TRACE(ERROR, "USR-API   - Failed to open connection endpoint, "
-		      "%s", error);
-	    LOG_FUNC_RETURN (RETURNerror);
-	}
+        /* Initialize communication channel */
+        _user_api_id.endpoint = USER_API_OPEN(SOCKET_SERVER, host, port);
+        if (_user_api_id.endpoint == NULL) {
+            const char* error = ( (errno < 0) ?
+                                  gai_strerror(errno) : strerror(errno) );
+            LOG_TRACE(ERROR, "USR-API   - Failed to open connection endpoint, "
+                      "%s", error);
+            LOG_FUNC_RETURN (RETURNerror);
+        }
 
-	LOG_TRACE(INFO, "USR-API   - User's UDP socket %d is BOUND to %s/%s",
-		  user_api_get_fd(), _user_api_send_buffer, port);
+        LOG_TRACE(INFO, "USR-API   - User's UDP socket %d is BOUND to %s/%s",
+                  user_api_get_fd(), _user_api_send_buffer, port);
    }
 
     /* Register the asynchronous notification handlers */
     if (user_ind_register(USER_IND_REG, 0, _user_api_registration_handler) != RETURNok) {
-	LOG_TRACE(WARNING, "USR-API   - "
-		  "Failed to register registration notification");
+        LOG_TRACE(WARNING, "USR-API   - "
+                  "Failed to register registration notification");
     }
     else if (user_ind_register(USER_IND_LOC, 0, _user_api_location_handler) != RETURNok) {
-	LOG_TRACE(WARNING, "USR-API   - "
-		  "Failed to register location notification");
+        LOG_TRACE(WARNING, "USR-API   - "
+                  "Failed to register location notification");
     }
     else if (user_ind_register(USER_IND_PLMN, 0, _user_api_network_handler) != RETURNok) {
-	LOG_TRACE(WARNING, "USR-API   - "
-		  "Failed to register network notification");
+        LOG_TRACE(WARNING, "USR-API   - "
+                  "Failed to register network notification");
     }
     else if (user_ind_register(USER_IND_PLMN, 0, NULL) != RETURNok) {
-	LOG_TRACE(WARNING, "USR-API   - Failed to enable network notification");
+        LOG_TRACE(WARNING, "USR-API   - Failed to enable network notification");
     }
     else if (user_ind_register(USER_IND_PDN, 0, _user_api_pdn_connection_handler) != RETURNok) {
-	LOG_TRACE(WARNING, "USR-API   - "
-		  "Failed to register PDN connection notification");
+        LOG_TRACE(WARNING, "USR-API   - "
+                  "Failed to register PDN connection notification");
     }
     else if (user_ind_register(USER_IND_PDN, AT_CGACT, NULL) != RETURNok) {
-	LOG_TRACE(WARNING, "USR-API   - "
-		  "Failed to enable PDN connection notification");
+        LOG_TRACE(WARNING, "USR-API   - "
+                  "Failed to enable PDN connection notification");
     }
     else {
-	LOG_TRACE(INFO, "USR-API   - "
-		  "Notification handlers successfully registered");
+        LOG_TRACE(INFO, "USR-API   - "
+                  "Notification handlers successfully registered");
     }
 
     LOG_FUNC_RETURN (RETURNok);
@@ -211,18 +211,18 @@ int user_api_initialize(const char* host, const char* port,
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 user_api_get_fd()                                         **
+ ** Name:        user_api_get_fd()                                         **
  **                                                                        **
  ** Description: Get the file descriptor of the connection endpoint used   **
- **		 to send/receive messages to/from the user application     **
- **		 layer                                                     **
+ **              to send/receive messages to/from the user application     **
+ **              layer                                                     **
  **                                                                        **
- ** Inputs:	 None                                                      **
- ** 	 	 Others:	_user_api_id                               **
+ ** Inputs:      None                                                      **
+ **              Others:        _user_api_id                               **
  **                                                                        **
- ** Outputs:	 Return:	The file descriptor of the connection end- **
- **				point used by the user application layer   **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:        The file descriptor of the connection end- **
+ **                             point used by the user application layer   **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 int user_api_get_fd(void)
@@ -233,42 +233,42 @@ int user_api_get_fd(void)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 user_api_get_data()                                       **
+ ** Name:        user_api_get_data()                                       **
  **                                                                        **
  ** Description: Get a generic pointer to the user data structure at the   **
- **		 given index. Casting to the proper type is necessary      **
- **		 before its usage.                                         **
+ **              given index. Casting to the proper type is necessary      **
+ **              before its usage.                                         **
  **                                                                        **
- ** Inputs:	 index:		Index of the user data structure to get    **
- ** 	 	 Others:	_user_data                                 **
+ ** Inputs:      index:         Index of the user data structure to get    **
+ **              Others:        _user_data                                 **
  **                                                                        **
- ** Outputs:	 Return:	A generic pointer to the user data         **
- **				structure                                  **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:        A generic pointer to the user data         **
+ **                             structure                                  **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 const void* user_api_get_data(int index)
 {
     LOG_FUNC_IN;
     if (index < _user_data.n_cmd) {
-	LOG_FUNC_RETURN ((void*)(&_user_data.cmd[index]));
+        LOG_FUNC_RETURN ((void*)(&_user_data.cmd[index]));
     }
     LOG_FUNC_RETURN (NULL);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 user_api_read_data()                                      **
+ ** Name:        user_api_read_data()                                      **
  **                                                                        **
  ** Description: Read data received from the user application layer        **
  **                                                                        **
- ** Inputs:	 fd:		File descriptor of the connection endpoint **
- **				from which data have been received         **
- ** 	 	 Others:	_user_api_id                               **
+ ** Inputs:      fd:            File descriptor of the connection endpoint **
+ **                             from which data have been received         **
+ **          Others:            _user_api_id                               **
  **                                                                        **
- ** Outputs:	 Return:	The number of bytes read when success;     **
- **				RETURNerror Otherwise                      **
- ** 	 	 Others:	_user_api_recv_buffer, _user_api_id        **
+ ** Outputs: Return:            The number of bytes read when success;     **
+ **                             RETURNerror Otherwise                      **
+ **          Others:            _user_api_recv_buffer, _user_api_id        **
  **                                                                        **
  ***************************************************************************/
 int user_api_read_data(int fd)
@@ -280,8 +280,8 @@ int user_api_read_data(int fd)
     /* Sanity check */
     int sfd = user_api_get_fd();
     if (fd != sfd) {
-	LOG_TRACE(ERROR, "USR-API   - Endpoint %d is not the one created for communication with the user application layer (%d)", fd, sfd);
-	LOG_FUNC_RETURN (RETURNerror);
+        LOG_TRACE(ERROR, "USR-API   - Endpoint %d is not the one created for communication with the user application layer (%d)", fd, sfd);
+        LOG_FUNC_RETURN (RETURNerror);
     }
 
     memset(_user_api_recv_buffer, 0, USER_API_RECV_BUFFER_SIZE);
@@ -289,16 +289,16 @@ int user_api_read_data(int fd)
     /* Receive data from the user application layer */
     rbytes = USER_API_RECV(_user_api_recv_buffer, USER_API_RECV_BUFFER_SIZE);
     if (rbytes == RETURNerror) {
-	LOG_TRACE(ERROR, "USR-API   - recv() failed, %s", strerror(errno));
-	LOG_FUNC_RETURN (RETURNerror);
+        LOG_TRACE(ERROR, "USR-API   - recv() failed, %s", strerror(errno));
+        LOG_FUNC_RETURN (RETURNerror);
     }
     else if (rbytes == 0) {
-	//LOG_TRACE(WARNING, "USR-API   - A signal was caught");
+        //LOG_TRACE(WARNING, "USR-API   - A signal was caught");
     }
     else {
-	LOG_TRACE(INFO, "USR-API   - %d bytes received "
-		  "from the user application layer", rbytes);
-	LOG_DUMP(_user_api_recv_buffer, rbytes);
+        LOG_TRACE(INFO, "USR-API   - %d bytes received "
+                  "from the user application layer", rbytes);
+        LOG_DUMP(_user_api_recv_buffer, rbytes);
     }
 
     LOG_FUNC_RETURN (rbytes);
@@ -306,34 +306,64 @@ int user_api_read_data(int fd)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 user_api_send_data()                                      **
+ ** Name:        user_api_set_data()                                       **
+ **                                                                        **
+ ** Description: Set content of data received buffer to allow loop back    **
+ **                                                                        **
+ ** Inputs:         message:    Message to set into the received buffer    **
+ **                                                                        **
+ ** Outputs:         Return:    The number of bytes write when success;    **
+ **                             RETURNerror Otherwise                      **
+ **                  Others:    _user_api_recv_buffer                      **
+ **                                                                        **
+ ***************************************************************************/
+int user_api_set_data(char *message)
+{
+    LOG_FUNC_IN;
+
+    int rbytes;
+
+    memset(_user_api_recv_buffer, 0, USER_API_RECV_BUFFER_SIZE);
+
+    strncpy(_user_api_recv_buffer, message, USER_API_RECV_BUFFER_SIZE);
+    rbytes = strlen(_user_api_recv_buffer);
+
+    LOG_TRACE(INFO, "USR-API   - %d bytes write", rbytes);
+    LOG_DUMP(_user_api_recv_buffer, rbytes);
+
+    LOG_FUNC_RETURN (rbytes);
+}
+
+/****************************************************************************
+ **                                                                        **
+ ** Name:        user_api_send_data()                                      **
  **                                                                        **
  ** Description: Send data to the user application layer                   **
  **                                                                        **
- ** Inputs:	 fd:		File descriptor of the connection endpoint **
- **				to which data have to be sent              **
- ** 		 length:	Number of bytes to send                    **
- ** 	 	 Others:	_user_api_send_buffer, _user_api_id        **
+ ** Inputs:      fd:            File descriptor of the connection endpoint **
+ **                             to which data have to be sent              **
+ **              length:        Number of bytes to send                    **
+ **              Others:        _user_api_send_buffer, _user_api_id        **
  **                                                                        **
- ** Outputs:	 Return:	The number of bytes sent when success;     **
- **				RETURNerror Otherwise                      **
- ** 	 	 Others:	None                                       **
+ ** Outputs:     Return:        The number of bytes sent when success;     **
+ **                             RETURNerror Otherwise                      **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 static int _user_api_send_data(int length)
 {
     int sbytes = USER_API_SEND(_user_api_send_buffer, length);
     if (sbytes == RETURNerror) {
-	LOG_TRACE(ERROR, "USR-API   - send() failed, %s", strerror(errno));
-	return RETURNerror;
+        LOG_TRACE(ERROR, "USR-API   - send() failed, %s", strerror(errno));
+        return RETURNerror;
     }
     else if (sbytes == 0) {
-	LOG_TRACE(WARNING, "USR-API   - A signal was caught");
+        LOG_TRACE(WARNING, "USR-API   - A signal was caught");
     }
     else {
-	LOG_TRACE(INFO, "USR-API   - %d bytes sent "
-		  "to the user application layer", sbytes);
-	LOG_DUMP(_user_api_send_buffer, sbytes);
+        LOG_TRACE(INFO, "USR-API   - %d bytes sent "
+                  "to the user application layer", sbytes);
+        LOG_DUMP(_user_api_send_buffer, sbytes);
     }
 
     return sbytes;
@@ -345,32 +375,32 @@ int user_api_send_data(int fd, int length)
     /* Sanity check */
     int sfd = user_api_get_fd();
     if (fd != sfd) {
-	LOG_TRACE(ERROR, "USR-API   - Endpoint %d is not the one created for communication with the user application layer (%d)", fd, sfd);
-	LOG_FUNC_RETURN (RETURNerror);
+        LOG_TRACE(ERROR, "USR-API   - Endpoint %d is not the one created for communication with the user application layer (%d)", fd, sfd);
+        LOG_FUNC_RETURN (RETURNerror);
     }
 
     /* Send data to the user application layer */
     int sbytes = 0;
     if (length > 0) {
-	sbytes = _user_api_send_data(length);
+        sbytes = _user_api_send_data(length);
     }
     LOG_FUNC_RETURN (sbytes);
 }
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 user_api_close()                                          **
+ ** Name:        user_api_close()                                          **
  **                                                                        **
  ** Description: Close the user API from which the NAS layer sent/received **
- **		 messages to/from the user application layer               **
+ **              messages to/from the user application layer               **
  **                                                                        **
- ** Inputs:	 fd:		File descriptor of the connection endpoint **
- **				allocated by the system to communicate     **
- **				with the user application layer            **
- ** 	 	 Others:	None                                       **
+ ** Inputs:      fd:            File descriptor of the connection endpoint **
+ **                             allocated by the system to communicate     **
+ **                             with the user application layer            **
+ **              Others:        None                                       **
  **                                                                        **
- ** Outputs:	 Return:	None                                       **
- ** 	 	 Others:	_user_api_id                               **
+ ** Outputs:     Return:        None                                       **
+ **              Others:        _user_api_id                               **
  **                                                                        **
  ***************************************************************************/
 void user_api_close(int fd)
@@ -416,31 +446,31 @@ int user_api_decode_data(int length)
     /* Parse the AT command line */
     LOG_TRACE(INFO, "USR-API   - Decode user data: %s", _user_api_recv_buffer);
     _user_data.n_cmd = at_command_decode(_user_api_recv_buffer, length,
-					 _user_data.cmd);
+                                         _user_data.cmd);
 
     if (_user_data.n_cmd > 0) {
-	/* AT command data received from the user application layer
-	 * has been successfully decoded */
-	LOG_TRACE(INFO, "USR-API   - %d AT command%s ha%s been successfully "
-		  "decoded", _user_data.n_cmd,
-		  (_user_data.n_cmd > 1) ? "s" : "",
-		  (_user_data.n_cmd > 1) ? "ve" : "s");
+        /* AT command data received from the user application layer
+         * has been successfully decoded */
+        LOG_TRACE(INFO, "USR-API   - %d AT command%s ha%s been successfully "
+                  "decoded", _user_data.n_cmd,
+                  (_user_data.n_cmd > 1) ? "s" : "",
+                  (_user_data.n_cmd > 1) ? "ve" : "s");
     }
     else
     {
-	int bytes;
+        int bytes;
 
-	/* Failed to decode AT command data received from the user
-	 * application layer; Return syntax error code message */
-	LOG_TRACE(ERROR, "USR-API   - Syntax error: Failed to decode "
-		  "AT command data %s", _user_api_recv_buffer);
+        /* Failed to decode AT command data received from the user
+         * application layer; Return syntax error code message */
+        LOG_TRACE(ERROR, "USR-API   - Syntax error: Failed to decode "
+                  "AT command data %s", _user_api_recv_buffer);
 
-	/* Encode the syntax error code message	*/
-	bytes = at_error_encode(_user_api_send_buffer, AT_ERROR_SYNTAX,
-				AT_ERROR_OPERATION_NOT_SUPPORTED);
+        /* Encode the syntax error code message	*/
+        bytes = at_error_encode(_user_api_send_buffer, AT_ERROR_SYNTAX,
+                                AT_ERROR_OPERATION_NOT_SUPPORTED);
 
-	/* Send the syntax error code message	*/
-	(void) _user_api_send_data(bytes);
+        /* Send the syntax error code message	*/
+        (void) _user_api_send_data(bytes);
     }
 
     LOG_FUNC_RETURN (_user_data.n_cmd);
@@ -475,27 +505,27 @@ int user_api_encode_data(const void* data, int success_code)
     /* Encode AT command error message */
     if (user_data->cause_code != AT_ERROR_SUCCESS)
     {
-	bytes = at_error_encode(_user_api_send_buffer, AT_ERROR_CME,
-				user_data->cause_code);
+        bytes = at_error_encode(_user_api_send_buffer, AT_ERROR_CME,
+                                user_data->cause_code);
     }
     /* Encode AT command response message */
     else
     {
-	bytes = at_response_encode(_user_api_send_buffer, user_data);
+        bytes = at_response_encode(_user_api_send_buffer, user_data);
 
-	/* Add success result code */
-	if ( (success_code) && (bytes != RETURNerror) ) {
-	    bytes += at_error_encode(&_user_api_send_buffer[bytes],
-				     AT_ERROR_OK, 0);
-	}
+        /* Add success result code */
+        if ( (success_code) && (bytes != RETURNerror) ) {
+            bytes += at_error_encode(&_user_api_send_buffer[bytes],
+                                     AT_ERROR_OK, 0);
+        }
     }
 
     if (bytes != RETURNerror) {
-	LOG_TRACE(INFO, "USR-API   - %d bytes encoded", bytes);
+        LOG_TRACE(INFO, "USR-API   - %d bytes encoded", bytes);
     }
     else {
-	LOG_TRACE(ERROR, "USR-API   - Syntax error: Failed to encode AT "
-		  "response data (%d)", user_data->id);
+        LOG_TRACE(ERROR, "USR-API   - Syntax error: Failed to encode AT "
+                  "response data (%d)", user_data->id);
     }
 
     LOG_FUNC_RETURN (bytes);
@@ -525,39 +555,39 @@ int user_api_encode_data(const void* data, int success_code)
  **                                                                        **
  ***************************************************************************/
 int user_api_emm_callback(Stat_t stat, tac_t tac, ci_t ci, AcT_t AcT,
-			  const char* data, size_t size)
+                          const char* data, size_t size)
 {
     LOG_FUNC_IN;
 
     int rc = RETURNok;
 
     if (size > 1) {
-	/*
-	 * The list of available operators present in the network has to be
-	 * displayed to the user application
-	 */
-	rc = user_ind_notify(USER_IND_PLMN, (void*)data, size);
+        /*
+         * The list of available operators present in the network has to be
+         * displayed to the user application
+         */
+        rc = user_ind_notify(USER_IND_PLMN, (void*)data, size);
     }
     else {
-	user_indication_t ind;
-	ind.notification.reg.status = stat;
-	if (size > 0) {
-	    /* The UE's network registration status has changed */
-	    rc = user_ind_notify(USER_IND_REG, (void*)&ind, 0);
-	}
-	if (rc != RETURNerror) {
-	    /* The UE's location area has changed or,
-	     * the UE's network registration status has changed and
-	     * only location information notification is enabled */
-	    ind.notification.loc.tac = tac;
-	    ind.notification.loc.ci  = ci;
-	    ind.notification.loc.AcT = AcT;
-	    rc = user_ind_notify(USER_IND_LOC, (void*)&ind, 0);
-	}
+        user_indication_t ind;
+        ind.notification.reg.status = stat;
+        if (size > 0) {
+            /* The UE's network registration status has changed */
+            rc = user_ind_notify(USER_IND_REG, (void*)&ind, 0);
+        }
+        if (rc != RETURNerror) {
+            /* The UE's location area has changed or,
+             * the UE's network registration status has changed and
+             * only location information notification is enabled */
+            ind.notification.loc.tac = tac;
+            ind.notification.loc.ci  = ci;
+            ind.notification.loc.AcT = AcT;
+            rc = user_ind_notify(USER_IND_LOC, (void*)&ind, 0);
+        }
     }
 
     if (rc != RETURNerror) {
-	LOG_FUNC_RETURN (RETURNok);
+        LOG_FUNC_RETURN (RETURNok);
     }
 
     LOG_FUNC_RETURN (rc);
@@ -650,7 +680,7 @@ static int _user_api_send(at_response_t* data)
  **                                                                        **
  ***************************************************************************/
 static int _user_api_registration_handler(unsigned char id, const void* data,
-					  size_t size)
+                                          size_t size)
 {
     LOG_FUNC_IN;
 
@@ -692,7 +722,7 @@ static int _user_api_registration_handler(unsigned char id, const void* data,
  **                                                                        **
  ***************************************************************************/
 static int _user_api_location_handler(unsigned char id, const void* data,
-				      size_t size)
+                                      size_t size)
 {
     LOG_FUNC_IN;
 
@@ -709,8 +739,8 @@ static int _user_api_location_handler(unsigned char id, const void* data,
     sprintf(at_response.response.cereg.tac, "%.4x", loc->tac);	// two byte
     sprintf(at_response.response.cereg.ci, "%.8x", loc->ci);	// four byte
     if (at_response.response.cereg.AcT != NET_ACCESS_UNAVAILABLE) {
-	at_response.response.cereg.AcT = loc->AcT;
-	at_response.mask |= AT_CEREG_RESP_ACT_MASK;
+        at_response.response.cereg.AcT = loc->AcT;
+        at_response.mask |= AT_CEREG_RESP_ACT_MASK;
     }
 
     /* Encode and send the AT command response message to the user */
@@ -738,7 +768,7 @@ static int _user_api_location_handler(unsigned char id, const void* data,
  **                                                                        **
  ***************************************************************************/
 static int _user_api_network_handler(unsigned char id, const void* data,
-				     size_t size)
+                                     size_t size)
 {
     LOG_FUNC_IN;
 
@@ -776,7 +806,7 @@ static int _user_api_network_handler(unsigned char id, const void* data,
  **                                                                        **
  ***************************************************************************/
 static int _user_api_pdn_connection_handler(unsigned char id, const void* data,
-					    size_t size)
+                                            size_t size)
 {
     LOG_FUNC_IN;
 

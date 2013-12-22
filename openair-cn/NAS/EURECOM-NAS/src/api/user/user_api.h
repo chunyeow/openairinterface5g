@@ -49,6 +49,7 @@ int user_api_get_fd(void);
 const void* user_api_get_data(int index);
 
 int user_api_read_data(int fd);
+int user_api_set_data(char *message);
 int user_api_send_data(int fd, int length);
 void user_api_close(int fd);
 
