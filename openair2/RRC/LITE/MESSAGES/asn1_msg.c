@@ -100,7 +100,9 @@
 int errno;
 #endif
 #else
-#define msg printf
+# if !defined (msg)
+#   define msg printf
+# endif
 #endif
 
 typedef struct xer_sprint_string_s
@@ -356,7 +358,7 @@ uint8_t do_MIB(LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, uint8_t *buffer)
   */
 }
 
-uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
+uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
                 BCCH_DL_SCH_Message_t *bcch_message,
                 SystemInformationBlockType1_t **sib1
 #if defined(ENABLE_ITTI)
@@ -508,10 +510,10 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
     {
       MessageDef *message_p;
 
-      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
     }
   }
 # endif
@@ -527,9 +529,9 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 }
 
 uint8_t do_SIB2_AT4(uint8_t Mod_id,
-		    uint8_t *buffer,
-		    BCCH_DL_SCH_Message_t *bcch_message,
-		    SystemInformationBlockType2_t **sib2) {
+		                uint8_t *buffer,
+                    BCCH_DL_SCH_Message_t *bcch_message,
+                    SystemInformationBlockType2_t **sib2) {
 
   struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part;
 
@@ -696,10 +698,10 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
     {
       MessageDef *message_p;
 
-      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
     }
   }
 # endif
@@ -1083,10 +1085,10 @@ uint8_t do_SIB23(uint8_t Mod_id,
     {
       MessageDef *message_p;
 
-      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
       memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
-      itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
     }
   }
 # endif

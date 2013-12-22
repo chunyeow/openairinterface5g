@@ -180,7 +180,8 @@ static void init_SI (u8 Mod_id
    */
 
   if (eNB_rrc_inst[Mod_id].SIB1)
-    eNB_rrc_inst[Mod_id].sizeof_SIB1 = do_SIB1 (mac_xface->lte_frame_parms,
+    eNB_rrc_inst[Mod_id].sizeof_SIB1 = do_SIB1 (Mod_id,
+                                                mac_xface->lte_frame_parms,
                                                 (uint8_t *)
                                                 eNB_rrc_inst[Mod_id].SIB1,
                                                 &eNB_rrc_inst[Mod_id].
