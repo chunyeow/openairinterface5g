@@ -1846,7 +1846,11 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
     }
   }
 
-  if ((rrc_get_sub_state(Mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE) && (UE_rrc_inst[Mod_id].initialNasMsg.data != NULL)) {
+  if ((rrc_get_sub_state(Mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE)
+# if defined(ENABLE_USE_MME)
+&& (UE_rrc_inst[Mod_id].initialNasMsg.data != NULL)
+#endif
+  ) {
     rrc_ue_generate_RRCConnectionRequest(Mod_id, frame, 0);
     LOG_I(RRC, "not sending connection request\n");
 
