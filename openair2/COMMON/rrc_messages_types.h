@@ -9,6 +9,7 @@
 #define RRC_MESSAGES_TYPES_H_
 
 #include "as_message.h"
+#include "rrc_types.h"
 
 //-------------------------------------------------------------------------------------------//
 // Messages for RRC logging
@@ -30,6 +31,8 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
+#define RRC_STATE_IND(mSGpTR)           (mSGpTR)->ittiMsg.rrc_state_ind
+
 #define RRC_CONFIGURATION_REQ(mSGpTR)   (mSGpTR)->ittiMsg.rrc_configuration_req
 
 #define NAS_CELL_SELECTION_REQ(mSGpTR)  (mSGpTR)->ittiMsg.nas_cell_selection_req
@@ -47,6 +50,11 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 #define NAS_DOWNLINK_DATA_IND(mSGpTR)   (mSGpTR)->ittiMsg.nas_dl_data_ind
 
 //-------------------------------------------------------------------------------------------//
+typedef struct RrcStateInd_s{
+    Rrc_State_t     state;
+    Rrc_Sub_State_t sub_state;
+} RrcStateInd;
+
 // eNB: ENB_APP -> RRC messages
 typedef struct RrcConfigurationReq_s {
     uint32_t cell_identity;
