@@ -607,10 +607,10 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 	      sinr_eff = (p_qam64[0]*pow(I,7) + p_qam64[1]*pow(I,6) + p_qam64[2]*pow(I,5) + p_qam64[3]*pow(I,4) + p_qam64[4]*pow(I,3) + p_qam64[5]*pow(I,2) + p_qam64[6]*I + p_qam64[7]);
 	    }	  
 
- sinr_eff = sinr_eff + 10*log10(beta2_dlsch_MI[TM][mcs]); 
- printf("SINR_Eff = %e\n",sinr_eff);
+  sinr_eff = sinr_eff + 10*log10(beta2_dlsch_MI[TM][mcs]);
+  msg("SINR_Eff = %e\n",sinr_eff);
 
- sinr_eff *= 10;
+  sinr_eff *= 10;
   sinr_eff = floor(sinr_eff);
   // if ((int)sinr_eff%2) {
   //   sinr_eff += 1;

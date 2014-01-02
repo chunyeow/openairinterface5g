@@ -1626,7 +1626,7 @@ int ulsch_abstraction_MIESM(double* sinr_dB,uint8_t TM, uint8_t mcs,uint16_t nrb
     sinr_eff = sinr_eff * beta2_dlsch_MI[TM][mcs]; 
 	}
 
-  printf("SINR_Eff = %e\n",sinr_eff);
+  msg("SINR_Eff = %e\n",sinr_eff);
 
  sinr_eff *= 10;
   sinr_eff = floor(sinr_eff);
