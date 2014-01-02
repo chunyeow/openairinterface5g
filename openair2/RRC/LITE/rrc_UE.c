@@ -2801,7 +2801,7 @@ void *rrc_ue_task(void *args_p) {
               {
                   if (rrc_get_sub_state(Mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE)
                   {
-                      rrc_ue_generate_RRCConnectionRequest(Mod_id, frame, 0);
+                      rrc_ue_generate_RRCConnectionRequest(Mod_id, 0 /* TODO put frame number ! */, 0);
                       LOG_I(RRC, "not sending connection request\n");
 
                       rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_CONNECTING);
