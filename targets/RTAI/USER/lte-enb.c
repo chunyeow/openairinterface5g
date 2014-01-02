@@ -52,6 +52,9 @@
 #include <getopt.h>
 
 #include "rt_wrapper.h"
+#undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
+
+#include "assertions.h"
 
 #ifdef EMOS
 #include <gps.h>
@@ -59,7 +62,11 @@
 
 #include "PHY/types.h"
 #include "PHY/defs.h"
+#undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
+#undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
+
 #include "openair0_lib.h"
+#undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #include "PHY/vars.h"
 #include "MAC_INTERFACE/vars.h"
