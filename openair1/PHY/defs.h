@@ -48,9 +48,14 @@
 #include <math.h>
 //#include <complex.h>
 #ifdef MEX
-#define msg mexPrintf
+# define msg mexPrintf
 #else
-#define msg printf   
+# ifdef OPENAIR2
+#   include "log.h"
+#   define msg(aRGS...) LOG_D(PHY, ##aRGS)
+# else
+#   define msg printf
+# endif
 #endif
 //use msg in the real-time thread context
 #define msg_nrt printf   
