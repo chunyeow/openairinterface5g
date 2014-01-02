@@ -46,6 +46,7 @@
 #include <string.h>
 #endif
 
+#include "rrc_types.h"
 #include "PHY/defs.h"
 #include "COMMON/platform_constants.h"
 
@@ -109,13 +110,6 @@ typedef struct rrc_ral_threshold_key_s {
 //#define NUM_PRECONFIGURED_LCHAN (NB_CH_CX*2)  //BCCH, CCCH
 
 #define UE_INDEX_INVALID ((uint8_t) ~0)
-
-typedef enum RRC_STATE_e {
-  RRC_STATE_INACTIVE=0,
-  RRC_STATE_IDLE,
-  RRC_STATE_CONNECTED,
-} RRC_STATE_t;
-
 
 typedef enum UE_STATE_e {
   RRC_INACTIVE=0,
@@ -365,10 +359,12 @@ typedef struct OAI_UECapability_s {
 } OAI_UECapability_t;
 
 typedef struct UE_RRC_INST_s {
-  RRC_STATE_t RrcState;
+  Rrc_State_t     RrcState;
+  Rrc_Sub_State_t RrcSubState;
 # if defined(ENABLE_USE_MME)
-  plmn_t plmnID;
-  Byte_t rat;
+  plmn_t          plmnID;
+  Byte_t          rat;
+  as_nas_info_t   initialNasMsg;
 # endif
   uint8_t *UECapability;
   uint8_t UECapability_size;

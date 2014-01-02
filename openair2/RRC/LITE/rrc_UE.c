@@ -103,6 +103,70 @@ extern void *bigphys_malloc(int);
 extern inline unsigned int taus(void);
 extern s8 dB_fixed2(u32 x,u32 y);
 
+/*------------------------------------------------------------------------------*/
+static Rrc_State_t rrc_get_state (u8 Mod_id) {
+  return UE_rrc_inst[Mod_id].RrcState;
+}
+
+static Rrc_Sub_State_t rrc_get_sub_state (u8 Mod_id) {
+  return UE_rrc_inst[Mod_id].RrcSubState;
+}
+
+static int rrc_set_state (u8 Mod_id, Rrc_State_t state) {
+  AssertFatal ((RRC_STATE_FIRST <= state) && (state <= RRC_STATE_LAST),
+               "Invalid state %d!\n", state);
+
+  if (UE_rrc_inst[Mod_id].RrcState != state) {
+    MessageDef *msg_p;
+
+    UE_rrc_inst[Mod_id].RrcState = state;
+
+    msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_STATE_IND);
+    RRC_STATE_IND(msg_p).state = UE_rrc_inst[Mod_id].RrcState;
+    RRC_STATE_IND(msg_p).sub_state = UE_rrc_inst[Mod_id].RrcSubState;
+
+    itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
+    return (1);
+  }
+
+  return (0);
+}
+
+static int rrc_set_sub_state (u8 Mod_id, Rrc_Sub_State_t subState) {
+  switch (UE_rrc_inst[Mod_id].RrcState) {
+    case RRC_STATE_INACTIVE:
+      AssertFatal ((RRC_SUB_STATE_INACTIVE_FIRST <= subState) && (subState <= RRC_SUB_STATE_INACTIVE_LAST),
+                   "Invalid sub state %d for state %d!\n", subState, UE_rrc_inst[Mod_id].RrcState);
+      break;
+
+    case RRC_STATE_IDLE:
+      AssertFatal ((RRC_SUB_STATE_IDLE_FIRST <= subState) && (subState <= RRC_SUB_STATE_IDLE_LAST),
+                   "Invalid sub state %d for state %d!\n", subState, UE_rrc_inst[Mod_id].RrcState);
+      break;
+
+    case RRC_STATE_CONNECTED:
+      AssertFatal ((RRC_SUB_STATE_CONNECTED_FIRST <= subState) && (subState <= RRC_SUB_STATE_CONNECTED_LAST),
+                   "Invalid sub state %d for state %d!\n", subState, UE_rrc_inst[Mod_id].RrcState);
+      break;
+  }
+
+  if (UE_rrc_inst[Mod_id].RrcSubState != subState) {
+    MessageDef *msg_p;
+
+    UE_rrc_inst[Mod_id].RrcSubState = subState;
+
+    msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_STATE_IND);
+    RRC_STATE_IND(msg_p).state = UE_rrc_inst[Mod_id].RrcState;
+    RRC_STATE_IND(msg_p).sub_state = UE_rrc_inst[Mod_id].RrcSubState;
+
+    itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
+    return (1);
+  }
+
+  return (0);
+}
+
+/*------------------------------------------------------------------------------*/
 void init_SI_UE(u8 Mod_id,u8 eNB_index) {
 
   int i;
@@ -121,8 +185,6 @@ void init_SI_UE(u8 Mod_id,u8 eNB_index) {
 
   UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status = 0;
   UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 0;
-
-
 }
 
 #ifdef Rel10
@@ -159,6 +221,9 @@ void openair_rrc_lite_ue_init_security(u8 Mod_id)
 /*------------------------------------------------------------------------------*/
 char openair_rrc_lite_ue_init(u8 Mod_id, unsigned char eNB_index){
   /*-----------------------------------------------------------------------------*/
+  rrc_set_state (Mod_id, RRC_STATE_INACTIVE);
+  rrc_set_sub_state (Mod_id, RRC_SUB_STATE_INACTIVE);
+
   LOG_D(RRC,"[UE %d] INIT State = RRC_IDLE (eNB %d)\n",Mod_id,eNB_index);
   LOG_D(RRC,"[MSC_NEW][FRAME 00000][RRC_UE][MOD %02d][]\n", Mod_id+NB_eNB_INST);
   LOG_D(RRC, "[MSC_NEW][FRAME 00000][IP][MOD %02d][]\n", Mod_id+NB_eNB_INST);
@@ -277,11 +342,20 @@ static const char nas_attach_req_guti[] =
 void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id, u32 frame, u8 eNB_index, uint8_t Transaction_id){
   /*------------------------------------------------------------------------------*/
 
-  u8 buffer[100];
-  u8 size;
+  u8    buffer[100];
+  u8    size;
+  char *nas_msg;
+  int   nas_msg_length;
 
-//   size = do_RRCConnectionSetupComplete(buffer, Transaction_id, sizeof(nas_attach_req_guti), nas_attach_req_guti);
-  size = do_RRCConnectionSetupComplete(buffer, Transaction_id, sizeof(nas_attach_req_imsi), nas_attach_req_imsi);
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+  nas_msg         = (char *) UE_rrc_inst[Mod_id].initialNasMsg.data;
+  nas_msg_length  = UE_rrc_inst[Mod_id].initialNasMsg.length;
+#else
+  nas_msg         = nas_attach_req_imsi;
+  nas_msg_length  = sizeof(nas_attach_req_imsi);
+#endif
+
+  size = do_RRCConnectionSetupComplete(buffer, Transaction_id, nas_msg_length, nas_msg);
 
   LOG_I(RRC,"[UE %d][RAPROC] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionSetupComplete (bytes%d, eNB %d)\n",
     Mod_id,frame, size, eNB_index);
@@ -418,6 +492,8 @@ int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info, u8 eNB_index){
           rrc_ue_process_radioResourceConfigDedicated(Mod_id, frame, eNB_index,
               &dl_ccch_msg->message.choice.c1.choice.rrcConnectionSetup.criticalExtensions.choice.c1.choice.rrcConnectionSetup_r8.radioResourceConfigDedicated);
 
+          rrc_set_state (Mod_id, RRC_STATE_CONNECTED);
+          rrc_set_sub_state (Mod_id, RRC_SUB_STATE_CONNECTED);
           rrc_ue_generate_RRCConnectionSetupComplete(Mod_id, frame, eNB_index, dl_ccch_msg->message.choice.c1.choice.rrcConnectionSetup.rrc_TransactionIdentifier);
 
           rval = 0;
@@ -1211,10 +1287,10 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,
                     pdu_length = rrcConnectionReconfiguration_r8->dedicatedInfoNASList->list.array[list_count]->size;
                     pdu_buffer = rrcConnectionReconfiguration_r8->dedicatedInfoNASList->list.array[list_count]->buf;
 
-          msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CONN_ESTABLI_CNF);
-          NAS_CONN_ESTABLI_CNF(msg_p).errCode = AS_SUCCESS;
-          NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.length = pdu_length;
-          NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.data = pdu_buffer;
+                    msg_p = itti_alloc_new_message(TASK_RRC_UE, NAS_CONN_ESTABLI_CNF);
+                    NAS_CONN_ESTABLI_CNF(msg_p).errCode = AS_SUCCESS;
+                    NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.length = pdu_length;
+                    NAS_CONN_ESTABLI_CNF(msg_p).nasMsg.data = pdu_buffer;
 
                     itti_send_msg_to_task(TASK_NAS_UE, Mod_id, msg_p);
                 }
@@ -1681,6 +1757,8 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
   } 
   else {
 
+    rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_RECEIVING_SIB);
+
     //memset(&bcch_message,0,sizeof(BCCH_DL_SCH_Message_t));
     //  LOG_D(RRC,"[UE %d] Decoding DL_BCCH_DLSCH_Message\n",Mod_id)
     /*
@@ -1704,29 +1782,29 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
 
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_ITTI_XER_PRINT)
-  {
-    MessageDef *msg_p;
-
-    msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
-    memcpy (&msg_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
-
-    itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
-  }
-# else
-  {
-    char        message_string[15000];
-    size_t      message_string_size;
-
-    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
-      memcpy(&msg_p->ittiMsg.generic_log, message_string, message_string_size);
+      msg_p = itti_alloc_new_message (TASK_RRC_UE, RRC_DL_BCCH_MESSAGE);
+      memcpy (&msg_p->ittiMsg, (void *) bcch_message, sizeof(RrcDlBcchMessage));
 
-      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
+      itti_send_msg_to_task (TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
     }
-  }
+# else
+    {
+      char        message_string[15000];
+      size_t      message_string_size;
+
+      if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
+      {
+        MessageDef *msg_p;
+
+        msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+        memcpy(&msg_p->ittiMsg.generic_log, message_string, message_string_size);
+
+        itti_send_msg_to_task(TASK_UNKNOWN, Mod_id + NB_eNB_INST, msg_p);
+      }
+    }
 # endif
 #endif
 
@@ -1767,6 +1845,14 @@ int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_le
       }
     }
   }
+
+  if ((rrc_get_sub_state(Mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE) && (UE_rrc_inst[Mod_id].initialNasMsg.data != NULL)) {
+    rrc_ue_generate_RRCConnectionRequest(Mod_id, frame, 0);
+    LOG_I(RRC, "not sending connection request\n");
+
+    rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_CONNECTING);
+  }
+
   /*  if ((UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 1) &&
       (UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus == 1) && (frame >= Mod_id * 20 + 10))
       SEQUENCE_free(&asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message, 0);*/
@@ -2072,8 +2158,10 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
 #ifdef Rel10
       if (UE_rrc_inst[Mod_id].MBMS_flag < 3) // see -Q option
 #endif
+#if !(defined(ENABLE_ITTI) && defined(ENABLE_USE_MME))
       rrc_ue_generate_RRCConnectionRequest(Mod_id,frame,eNB_index);
       LOG_I(RRC, "not sending connection request\n");
+#endif
 
       if (UE_rrc_inst[Mod_id].Info[eNB_index].State == RRC_IDLE) {
           LOG_I(RRC,"[UE %d] Received SIB1/SIB2/SIB3 Switching to RRC_SI_RECEIVED\n",Mod_id);
@@ -2111,6 +2199,8 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
       LOG_I(RRC,"[UE %d] Frame %d Found SIB3 from eNB %d\n",Mod_id,frame,eNB_index);
       dump_sib3(UE_rrc_inst[Mod_id].sib3[eNB_index]);
       UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 1;
+
+      rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_SIB_COMPLETE);
       break;
     case SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib4:
       UE_rrc_inst[Mod_id].sib4[eNB_index] = &typeandinfo->choice.sib4;
@@ -2650,7 +2740,7 @@ void *rrc_ue_task(void *args_p) {
       case NAS_CELL_SELECTION_REQ:
           Mod_id = 0; /* TODO force Mod_id to first UE, NAS UE not virtualized yet */
 
-          LOG_I(RRC, "[UE %d] Received %s: state %d, plmnID %d, rat %x\n", Mod_id, msg_name, UE_rrc_inst[Mod_id].RrcState,
+          LOG_I(RRC, "[UE %d] Received %s: state %d, plmnID %d, rat %x\n", Mod_id, msg_name, rrc_get_state(Mod_id),
                 NAS_CELL_SELECTION_REQ (msg_p).plmnID, NAS_CELL_SELECTION_REQ (msg_p).rat);
 
           /* Save cell selection criterion */
@@ -2659,7 +2749,7 @@ void *rrc_ue_task(void *args_p) {
               UE_rrc_inst[Mod_id].rat = NAS_CELL_SELECTION_REQ (msg_p).rat;
           }
 
-          switch (UE_rrc_inst[Mod_id].RrcState) {
+          switch (rrc_get_state(Mod_id)) {
               case RRC_STATE_INACTIVE:
               {
                   /* Need to first activate lower layers */
@@ -2669,7 +2759,7 @@ void *rrc_ue_task(void *args_p) {
 
                   itti_send_msg_to_task(TASK_L2L1, NB_eNB_INST + Mod_id, message_p);
 
-                  UE_rrc_inst[Mod_id].RrcState = RRC_STATE_IDLE;
+                  rrc_set_state (Mod_id, RRC_STATE_IDLE);
                   /* Fall through to next case */
               }
 
@@ -2684,27 +2774,51 @@ void *rrc_ue_task(void *args_p) {
                   PHY_FIND_CELL_REQ (message_p).earfcn_end = 1;
 
                   itti_send_msg_to_task(TASK_PHY_UE, NB_eNB_INST + Mod_id, message_p);
+                  rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_SEARCHING);
 
                   break;
               }
 
               case RRC_STATE_CONNECTED:
-                /* should not happen */
-                LOG_E(RRC, "[UE %d] request %s in RRC state %d\n", Mod_id, msg_name, UE_rrc_inst[Mod_id].RrcState);
-                break;
+                  /* should not happen */
+                  LOG_E(RRC, "[UE %d] request %s in RRC state %d\n", Mod_id, msg_name, rrc_get_state(Mod_id));
+                  break;
 
               default:
-                LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, UE_rrc_inst[Mod_id].RrcState);
-                break;
+                  LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, rrc_get_state(Mod_id));
+                  break;
           }
-          /* TODO process message */
           break;
 
       case NAS_CONN_ESTABLI_REQ:
           LOG_I(RRC, "[UE %d] Received %s: cause %d, type %d, s_tmsi %d, plmnID %d\n", Mod_id, msg_name, NAS_CONN_ESTABLI_REQ (msg_p).cause,
                 NAS_CONN_ESTABLI_REQ (msg_p).type, NAS_CONN_ESTABLI_REQ (msg_p).s_tmsi, NAS_CONN_ESTABLI_REQ (msg_p).plmnID);
 
-          /* TODO process message */
+          UE_rrc_inst[Mod_id].initialNasMsg = NAS_CONN_ESTABLI_REQ (msg_p).initialNasMsg;
+
+          switch (rrc_get_state(Mod_id)) {
+              case RRC_STATE_IDLE:
+              {
+                  if (rrc_get_sub_state(Mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE)
+                  {
+                      rrc_ue_generate_RRCConnectionRequest(Mod_id, frame, 0);
+                      LOG_I(RRC, "not sending connection request\n");
+
+                      rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_CONNECTING);
+                  }
+                  break;
+              }
+
+              case RRC_STATE_INACTIVE:
+              case RRC_STATE_CONNECTED:
+                  /* should not happen */
+                  LOG_E(RRC, "[UE %d] request %s in RRC state %d\n", Mod_id, msg_name, rrc_get_state(Mod_id));
+                  break;
+
+              default:
+                  LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, rrc_get_state(Mod_id));
+                  break;
+          }
           break;
 
       case NAS_UPLINK_DATA_REQ:
