@@ -3418,7 +3418,7 @@ void schedule_ue_spec(unsigned char Mod_id,
   int mcs;
   //u8 number_of_subbands=13;
   u16 min_rb_unit;
-
+  short ta_update=0;
 
   switch (mac_xface->lte_frame_parms->N_RB_DL) {
   case 6:
@@ -3783,7 +3783,11 @@ void schedule_ue_spec(unsigned char Mod_id,
       TBS = mac_xface->get_TBS_DL(eNB_UE_stats->dlsch_mcs1,nb_available_rb);
       // check first for RLC data on DCCH
       // add the length for  all the control elements (timing adv, drx, etc) : header + payload  
-      ta_len = ((eNB_UE_stats->timing_advance_update/4)!=0) ? 2 : 0;
+#ifndef EXMIMO_IOT
+     ta_len = ((eNB_UE_stats->timing_advance_update/4)!=0) ? 2 : 0;
+#else 
+     ta_len = 0;
+#endif
       
       header_len_dcch = 2; // 2 bytes DCCH SDU subheader 
 
@@ -3964,7 +3968,11 @@ void schedule_ue_spec(unsigned char Mod_id,
 	  
 	  post_padding = TBS - sdu_length_total - header_len_dcch - header_len_dtch - ta_len ; // 1 is for the postpadding header 
 	}
-
+#ifndef EXMIMO_IOT
+	ta_update = eNB_UE_stats->timing_advance_update/4;
+#else 
+	ta_update = 0;
+#endif
 
 	offset = generate_dlsch_header((unsigned char*)eNB_mac_inst[Mod_id].DLSCH_pdu[(unsigned char)next_ue][0].payload[0],
 				       // offset = generate_dlsch_header((unsigned char*)eNB_mac_inst[0].DLSCH_pdu[0][0].payload[0],
@@ -3972,7 +3980,7 @@ void schedule_ue_spec(unsigned char Mod_id,
 				       sdu_lengths,  //
 				       sdu_lcids,
 				       255,                                   // no drx
-				       eNB_UE_stats->timing_advance_update/4, // timing advance
+				       ta_update, // timing advance
 				       NULL,                                  // contention res id
 				       padding,                        
 				       post_padding);
