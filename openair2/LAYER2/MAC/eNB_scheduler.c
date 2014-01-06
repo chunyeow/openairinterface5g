@@ -2209,11 +2209,15 @@ void schedule_ulsch_rnti(u8 Mod_id, unsigned char cooperation_flag, u32 frame, u
 
 	status = mac_get_rrc_status(Mod_id,1,next_ue);
 
+#ifndef EXMIMO_IOT  
 	if (status < RRC_CONNECTED) 
-	  cqi_req = 0;
+    cqi_req = 0;
 	else
-	  cqi_req = 1;
-
+    cqi_req = 1;
+#else
+  cqi_req = 0;
+#endif
+  
 	if (round > 0) {
 	  ndi = eNB_mac_inst[Mod_id].UE_template[UE_id].oldNDI_UL[harq_pid];
 	  mcs = (round&3) + 28; //not correct for round==4! 
