@@ -117,15 +117,19 @@ static int rrc_set_state (u8 Mod_id, Rrc_State_t state) {
                "Invalid state %d!\n", state);
 
   if (UE_rrc_inst[Mod_id].RrcState != state) {
-    MessageDef *msg_p;
-
     UE_rrc_inst[Mod_id].RrcState = state;
 
-    msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_STATE_IND);
-    RRC_STATE_IND(msg_p).state = UE_rrc_inst[Mod_id].RrcState;
-    RRC_STATE_IND(msg_p).sub_state = UE_rrc_inst[Mod_id].RrcSubState;
+#if defined(ENABLE_ITTI)
+    {
+      MessageDef *msg_p;
 
-    itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
+      msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_STATE_IND);
+      RRC_STATE_IND(msg_p).state = UE_rrc_inst[Mod_id].RrcState;
+      RRC_STATE_IND(msg_p).sub_state = UE_rrc_inst[Mod_id].RrcSubState;
+
+      itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
+    }
+#endif
     return (1);
   }
 
@@ -133,6 +137,7 @@ static int rrc_set_state (u8 Mod_id, Rrc_State_t state) {
 }
 
 static int rrc_set_sub_state (u8 Mod_id, Rrc_Sub_State_t subState) {
+#if defined(ENABLE_ITTI)
   switch (UE_rrc_inst[Mod_id].RrcState) {
     case RRC_STATE_INACTIVE:
       AssertFatal ((RRC_SUB_STATE_INACTIVE_FIRST <= subState) && (subState <= RRC_SUB_STATE_INACTIVE_LAST),
@@ -149,17 +154,22 @@ static int rrc_set_sub_state (u8 Mod_id, Rrc_Sub_State_t subState) {
                    "Invalid sub state %d for state %d!\n", subState, UE_rrc_inst[Mod_id].RrcState);
       break;
   }
+#endif
 
   if (UE_rrc_inst[Mod_id].RrcSubState != subState) {
-    MessageDef *msg_p;
-
     UE_rrc_inst[Mod_id].RrcSubState = subState;
 
-    msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_STATE_IND);
-    RRC_STATE_IND(msg_p).state = UE_rrc_inst[Mod_id].RrcState;
-    RRC_STATE_IND(msg_p).sub_state = UE_rrc_inst[Mod_id].RrcSubState;
+#if defined(ENABLE_ITTI)
+    {
+      MessageDef *msg_p;
 
-    itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
+      msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_STATE_IND);
+      RRC_STATE_IND(msg_p).state = UE_rrc_inst[Mod_id].RrcState;
+      RRC_STATE_IND(msg_p).sub_state = UE_rrc_inst[Mod_id].RrcSubState;
+
+      itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
+    }
+#endif
     return (1);
   }
 
