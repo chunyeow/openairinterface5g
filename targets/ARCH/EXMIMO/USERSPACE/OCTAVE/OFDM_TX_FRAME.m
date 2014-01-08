@@ -1,4 +1,4 @@
-function sig = OFDM_TX_FRAME(num_carriers,num_zeros,prefix_length,num_symbols_frame,preamble_length)
+function [sig, sig_f] = OFDM_TX_FRAME(num_carriers,num_zeros,prefix_length,num_symbols_frame,preamble_length)
 
 % sig - output signal
 % sig_length - output signal length
@@ -10,13 +10,16 @@ function sig = OFDM_TX_FRAME(num_carriers,num_zeros,prefix_length,num_symbols_fr
 
 num_useful_carriers = num_carriers - num_zeros -1;
 
-sig = [];
+sig = zeros(1,(num_carriers+prefix_length)*num_symbols_frame);
+sig_f = zeros(num_symbols_frame,num_useful_carriers);
 for k=1:preamble_length
      QAM4_preamble = QAM_MOD(4,floor(256*abs(rand(1,num_useful_carriers/4))));
-     sig = [sig OFDM_TX(num_carriers,num_zeros,prefix_length,QAM4_preamble)];
+     sig((k-1)*(num_carriers+prefix_length)+1:k*(num_carriers+prefix_length)) = OFDM_TX(num_carriers,num_zeros,prefix_length,QAM4_preamble);
+     sig_f(k,:) = QAM4_preamble;
 end
 
-for k=1:(num_symbols_frame - preamble_length)
+for k=preamble_length+1:num_symbols_frame
      QAM_data = QAM_MOD(256,floor(256*abs(rand(1,num_useful_carriers))));
-     sig = [sig OFDM_TX(num_carriers,num_zeros,prefix_length,QAM_data)];
+     sig((k-1)*(num_carriers+prefix_length)+1:k*(num_carriers+prefix_length)) = OFDM_TX(num_carriers,num_zeros,prefix_length,QAM_data);
+     sig_f(k,:) = QAM_data;
 end
