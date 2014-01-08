@@ -200,8 +200,8 @@ typedef struct MIH_C_Link_Configure_Thresholds_request
     LIST(MIH_C_LINK_CFG_PARAM, LinkConfigureParameterList)   /*!< \brief  A list of link threshold parameters.*/
 }__attribute__((__packed__))MIH_C_Link_Configure_Thresholds_request_t;
 
-
-TYPEDEF_LIST(MIH_C_LINK_CFG_STATUS, 16);
+#define MIH_C_LINK_CFG_STATUS_LIST_LENGTH 16
+TYPEDEF_LIST(MIH_C_LINK_CFG_STATUS, MIH_C_LINK_CFG_STATUS_LIST_LENGTH);
 /*! \struct  MIH_C_Link_Configure_Thresholds_confirm
 * \brief Structure defining the Link_Configure_Thresholds.confirm MIH_LINK_SAP primitive (see IEEE Std 802.21-2008 7.3.13.2 Link_Configure_Thresholds.confirm)
 */

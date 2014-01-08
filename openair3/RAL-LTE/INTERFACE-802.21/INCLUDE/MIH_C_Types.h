@@ -546,13 +546,18 @@ u_int16_t MIH_C_LIST_LENGTH_get_encode_length(u_int16_t lengthP);
                 DATA_TYPE_NAME ## _encode(bbP, &listP->val[index++]);\
             }\
         }\
+    };\
+    inline void DATA_TYPE_NAME ## _LIST_init(DATA_TYPE_NAME ## _LIST_T *listP) {\
+        listP->length = 0;\
+        memset(listP->val, 0, MAX_LENGTH*sizeof(DATA_TYPE_NAME ## _T));\
     };
 
 #else
 #define TYPEDEF_LIST(DATA_TYPE_NAME, MAX_LENGTH)    typedef  struct DATA_TYPE_NAME ## _LIST { u_int16_t length; DATA_TYPE_NAME ## _T val[MAX_LENGTH];} DATA_TYPE_NAME ## _LIST_T;\
     extern unsigned int DATA_TYPE_NAME ## _LIST2String(DATA_TYPE_NAME ## _LIST_T *listP, char* bufP);\
     extern void         DATA_TYPE_NAME ## _LIST_decode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP);\
-    extern void         DATA_TYPE_NAME ## _LIST_encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP);
+    extern void         DATA_TYPE_NAME ## _LIST_encode(Bit_Buffer_t *bbP, DATA_TYPE_NAME ## _LIST_T *listP);\
+    extern void         DATA_TYPE_NAME ## _LIST_init(DATA_TYPE_NAME ## _LIST_T *listP);
 #endif
 #define LIST(DATA_TYPE_NAME, VAR_NAME)              DATA_TYPE_NAME ## _LIST_T VAR_NAME ## _list;
 
