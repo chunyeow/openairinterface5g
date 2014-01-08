@@ -361,15 +361,20 @@ void rrc_eNB_send_S1AP_UE_CAPABILITIES_IND(uint8_t mod_id, uint8_t ue_index, UL_
       && (ueCapabilityInformation->criticalExtensions.choice.c1.present
           == UECapabilityInformation__criticalExtensions__c1_PR_ueCapabilityInformation_r8)
       && (ueCapabilityInformation->criticalExtensions.choice.c1.choice.ueCapabilityInformation_r8.ue_CapabilityRAT_ContainerList.list.count > 0)) {
+        UE_CapabilityRAT_ContainerList_t *ue_CapabilityRAT_ContainerList = &ueCapabilityInformation->criticalExtensions.choice.c1.choice.ueCapabilityInformation_r8.ue_CapabilityRAT_ContainerList;
         MessageDef *msg_p;
+
         msg_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_UE_CAPABILITIES_IND);
         S1AP_UE_CAPABILITIES_IND (msg_p).eNB_ue_s1ap_id = eNB_rrc_inst[mod_id].Info.UE[ue_index].eNB_ue_s1ap_id;
-        S1AP_UE_CAPABILITIES_IND (msg_p).ue_radio_cap.length =
-                ueCapabilityInformation->criticalExtensions.choice.c1.choice.ueCapabilityInformation_r8.ue_CapabilityRAT_ContainerList.list.array[0]->ueCapabilityRAT_Container.size;
-        S1AP_UE_CAPABILITIES_IND (msg_p).ue_radio_cap.buffer =
-                ueCapabilityInformation->criticalExtensions.choice.c1.choice.ueCapabilityInformation_r8.ue_CapabilityRAT_ContainerList.list.array[0]->ueCapabilityRAT_Container.buf;
+        S1AP_UE_CAPABILITIES_IND (msg_p).ue_radio_cap.length = ue_CapabilityRAT_ContainerList->list.array[0]->ueCapabilityRAT_Container.size;
+        S1AP_UE_CAPABILITIES_IND (msg_p).ue_radio_cap.buffer = ue_CapabilityRAT_ContainerList->list.array[0]->ueCapabilityRAT_Container.buf;
 
         itti_send_msg_to_task (TASK_S1AP, mod_id, msg_p);
+
+        if (ue_CapabilityRAT_ContainerList->list.count > 1) {
+          LOG_W (RRC,"[eNB %d][UE %d] can only handle 1 UE capability RAT item for now (%d)\n", mod_id, ue_index,
+                 ue_CapabilityRAT_ContainerList->list.count);
+        }
   }
 }
 
