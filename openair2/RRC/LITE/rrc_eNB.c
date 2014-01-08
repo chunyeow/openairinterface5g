@@ -2977,6 +2977,13 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
                       (void *) UE_EUTRA_Capability);
 #endif
 
+#if defined(ENABLE_USE_MME)
+          if (EPC_MODE_ENABLED == 1)
+          {
+            rrc_eNB_send_S1AP_UE_CAPABILITIES_IND(Mod_id, UE_index, ul_dcch_msg);
+          }
+#endif
+
           rrc_eNB_generate_defaultRRCConnectionReconfiguration (Mod_id, frame,
                                                                 UE_index,
                                                                 eNB_rrc_inst[Mod_id].HO_flag);

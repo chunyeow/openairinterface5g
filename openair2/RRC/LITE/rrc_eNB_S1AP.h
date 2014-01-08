@@ -33,6 +33,14 @@ void rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP(uint8_t Mod_id, uint8_t UE_ind
  */
 void rrc_eNB_send_S1AP_UPLINK_NAS(uint8_t Mod_id, uint8_t UE_index, UL_DCCH_Message_t *ul_dcch_msg);
 
+/*! \fn void rrc_eNB_send_S1AP_UE_CAPABILITIES_IND(uint8_t Mod_id, uint8_t UE_index, UL_DCCH_Message_t *ul_dcch_msg)
+ *\brief create a S1AP_UE_CAPABILITIES_IND to transfer a NAS message to S1AP.
+ *\param mod_id Instance ID of eNB.
+ *\param ue_index Instance ID of UE in the eNB.
+ *\param ul_dcch_msg The message receive by RRC holding the NAS message.
+ */
+void rrc_eNB_send_S1AP_UE_CAPABILITIES_IND(uint8_t mod_id, uint8_t ue_index, UL_DCCH_Message_t *ul_dcch_msg);
+
 /*! \fn rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t Mod_id, uint8_t UE_index, RRCConnectionSetupComplete_r8_IEs_t *rrcConnectionSetupComplete)
  *\brief create a S1AP_NAS_FIRST_REQ to indicate that RRC has completed its first connection setup to S1AP.
  *\brief eventually forward a NAS message to S1AP.
