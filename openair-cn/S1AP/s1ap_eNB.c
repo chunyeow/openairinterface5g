@@ -278,6 +278,10 @@ void *s1ap_eNB_task(void *arg)
                 s1ap_eNB_nas_uplink(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                     &S1AP_UPLINK_NAS(received_msg));
             } break;
+            case S1AP_UE_CAPABILITIES_IND: {
+                s1ap_eNB_ue_capabilities(ITTI_MESSAGE_GET_INSTANCE(received_msg),
+                                         &S1AP_UE_CAPABILITIES_IND(received_msg));
+            } break;
             case S1AP_INITIAL_CONTEXT_SETUP_RESP: {
                 s1ap_eNB_initial_ctxt_resp(ITTI_MESSAGE_GET_INSTANCE(received_msg),
                                            &S1AP_INITIAL_CONTEXT_SETUP_RESP(received_msg));
