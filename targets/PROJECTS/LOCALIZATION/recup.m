@@ -1,5 +1,7 @@
 clear all
 
+addpath([getenv('OPENAIR_TARGETS') '/ARCH/EXMIMO/USERSPACE/OCTAVE'])
+
 Nmeas=1
 rx_spec
 Niter=1
