@@ -28,7 +28,7 @@ int pointer_dissect_from_buffer(
     {
         DISPLAY_TYPE("Ptr");
     }
-    if (type->child->name && type->child) {
+    if (type->child && type->child->name) {
         /*
          INDENTED(stdout, indent, fprintf(stdout, "<%s>0x%08x</%s>\n",
          type->child->name, value, type->child->name));

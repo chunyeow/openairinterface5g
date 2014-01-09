@@ -17,12 +17,12 @@ int struct_dissect_from_buffer(
 {
     int i;
     int length = 0;
-    char cbuf[200];
+    char cbuf[50 + (type->name ? strlen (type->name) : 0)];
     char *name;
 
     DISPLAY_PARSE_INFO("structure", type->name, offset, parent_offset);
 
-    memset (cbuf, 0, 200);
+    memset (cbuf, 0, sizeof(cbuf));
 
     if (new_line) {
         DISPLAY_TYPE("Str");

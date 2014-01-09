@@ -55,13 +55,13 @@ int union_dissect_from_buffer(
     buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     int length = 0;
-    char cbuf[200];
+    char cbuf[50 + (type->name ? strlen (type->name) : 0)];
     char *name;
     int union_child = 0;
 
     DISPLAY_PARSE_INFO("union", type->name, offset, parent_offset);
 
-    memset (cbuf, 0, 200);
+    memset (cbuf, 0, sizeof(cbuf));
 
 //    CHECK_FCT(buffer_has_enouch_data(buffer, offset + parent_offset, type->size / 8));
 

@@ -13,7 +13,7 @@ int typedef_dissect_from_buffer(
     buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     int length = 0;
-    char cbuf[200];
+    char cbuf[50 + (type->name ? strlen (type->name) : 0)];
     types_t *type_child = NULL;
 
     DISPLAY_PARSE_INFO("typedef", type->name, offset, parent_offset);
