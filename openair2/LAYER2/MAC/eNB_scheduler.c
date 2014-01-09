@@ -307,7 +307,7 @@ s8 find_UE_id(unsigned char Mod_id,u16 rnti) {
 
 }
 
-s16 find_UE_RNTI(unsigned char Mod_id, unsigned char UE_id) {
+u16 find_UE_RNTI(unsigned char Mod_id, unsigned char UE_id) {
 
   return (eNB_mac_inst[Mod_id].UE_template[UE_id].rnti);
 
@@ -472,14 +472,14 @@ unsigned char *parse_ulsch_header(unsigned char *mac_header,
 	  length -= rx_lengths[num_sdu_cnt]; 
       }
       else {
-	if (((SCH_SUBHEADER_SHORT *)mac_header_ptr)->F == 0) {
-	  length = ((SCH_SUBHEADER_SHORT *)mac_header_ptr)->L;
-	  mac_header_ptr += 2;//sizeof(SCH_SUBHEADER_SHORT);
-	}
-	else { // F = 1 
-	  length = ((((SCH_SUBHEADER_LONG *)mac_header_ptr)->L_MSB & 0x7f ) << 8 ) | (((SCH_SUBHEADER_LONG *)mac_header_ptr)->L_LSB & 0xff);
-	  mac_header_ptr += 3;//sizeof(SCH_SUBHEADER_LONG);
-	}
+        if (((SCH_SUBHEADER_SHORT *)mac_header_ptr)->F == 0) {
+          length = ((SCH_SUBHEADER_SHORT *)mac_header_ptr)->L;
+          mac_header_ptr += 2;//sizeof(SCH_SUBHEADER_SHORT);
+        }
+        else { // F = 1
+          length = ((((SCH_SUBHEADER_LONG *)mac_header_ptr)->L_MSB & 0x7f ) << 8 ) | (((SCH_SUBHEADER_LONG *)mac_header_ptr)->L_LSB & 0xff);
+          mac_header_ptr += 3;//sizeof(SCH_SUBHEADER_LONG);
+        }
       }
       LOG_D(MAC,"[eNB] sdu %d lcid %d tb_length %d length %d (offset now %d)\n",
 	    num_sdus,lcid,tb_length, length,mac_header_ptr-mac_header);
@@ -573,6 +573,7 @@ void rx_sdu(u8 Mod_id,u32 frame,u16 rnti,u8 *sdu, u16 sdu_len) {
             eNB_mac_inst[Mod_id].UE_template[UE_id].bsr_info[LCGID1],
             eNB_mac_inst[Mod_id].UE_template[UE_id].bsr_info[LCGID2],
             eNB_mac_inst[Mod_id].UE_template[UE_id].bsr_info[LCGID3]);
+      payload_ptr += 3;////sizeof(LONG_BSR);
       break;
     default:
       LOG_E(MAC, "[eNB] Received unknown MAC header (0x%02x)\n", rx_ces[i]);
