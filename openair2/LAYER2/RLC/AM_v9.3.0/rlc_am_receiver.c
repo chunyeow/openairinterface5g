@@ -31,6 +31,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#include "rtos_header.h"
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
+#include "assertions.h"
 #include "rlc.h"
 #include "rlc_am.h"
 #include "list.h"
@@ -204,7 +205,7 @@ rlc_am_receive_routing (rlc_am_entity_t *rlcP, u32_t frame, u8_t eNB_flag, struc
 {
     mem_block_t        *tb;
     u8_t               *first_byte;
-    u16_t               tb_size_in_bytes;
+    s16_t               tb_size_in_bytes;
 
     while ((tb = list_remove_head (&data_indP.data))) {
         first_byte = ((struct mac_tb_ind *) (tb->data))->data_ptr;
@@ -218,7 +219,25 @@ rlc_am_receive_routing (rlc_am_entity_t *rlcP, u32_t frame, u8_t eNB_flag, struc
             } else {
                 rlcP->stat_rx_control_bytes += tb_size_in_bytes;
                 rlcP->stat_rx_control_pdu += 1;
-                rlc_am_receive_process_control_pdu (rlcP, frame, tb, first_byte, tb_size_in_bytes);
+                rlc_am_receive_process_control_pdu (rlcP, frame, tb, first_byte, &tb_size_in_bytes);
+                // if data pdu concatenated with control PDU (seen with real hardware LTE dongle integration)
+                if (tb_size_in_bytes > 0) {
+#if defined(RLC_ENABLE_PDU_CONCATENATION)
+                    if ((*first_byte & 0x80) == 0x80) {
+                        rlcP->stat_rx_data_bytes += tb_size_in_bytes;
+                        rlcP->stat_rx_data_pdu   += 1;
+                        rlc_am_receive_process_data_pdu (rlcP, frame, eNB_flag, tb, first_byte, tb_size_in_bytes);
+                    } else {
+                        AssertFatal( tb_size_in_bytes == 0,
+                                            "Not a data PDU concatened to control PDU %ld bytes left",
+                                            tb_size_in_bytes);
+                    }
+#else
+                    AssertFatal( tb_size_in_bytes == 0,
+                                        "Remaining %d bytes following a control PDU",
+                                        tb_size_in_bytes);
+#endif
+                }
             }
             LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][RX ROUTING] VR(R)=%03d VR(MR)=%03d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_r, rlcP->vr_mr);
         }

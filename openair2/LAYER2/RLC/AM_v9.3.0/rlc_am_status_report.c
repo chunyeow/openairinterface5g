@@ -112,7 +112,7 @@ void rlc_am_write16_bit_field(u8_t** dataP, unsigned int* bit_posP, signed int b
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_am_control_pdu_info_t* pdu_infoP)
+signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* headerP, s16_t *total_size_pP, rlc_am_control_pdu_info_t* pdu_infoP)
 //-----------------------------------------------------------------------------
 {
     memset(pdu_infoP, 0, sizeof (rlc_am_control_pdu_info_t));
@@ -125,6 +125,7 @@ signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* headerP, s16_t total
         if (pdu_infoP->cpt != 0x00) return -3;
         pdu_infoP->ack_sn = ((headerP->b2 >> 2) & 0x3F) | (((u16_t)(headerP->b1 & 0x0F)) << 6);
         pdu_infoP->e1     = (headerP->b2 >> 1) & 0x01;
+        *total_size_pP -= 1;
 
         if (pdu_infoP->e1) {
             unsigned int nack_to_read  = 1;
@@ -149,22 +150,18 @@ signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* headerP, s16_t total
 
                 if (!pdu_infoP->nack_list[pdu_infoP->num_nack - 1].e1) {
                     nack_to_read = 0;
+                    *total_size_pP = *total_size_pP - (s16_t)((uint64_t)byte_pos + (uint64_t)((bit_pos + 7)/8) - (uint64_t)headerP);
                     return 0;
                 }
 
                 if (pdu_infoP->num_nack == RLC_AM_MAX_NACK_IN_STATUS_PDU) {
+                    *total_size_pP = *total_size_pP - (s16_t)((uint64_t)byte_pos + (uint64_t)((bit_pos + 7)/8) - (uint64_t)headerP);
                     return -2;
                 }
             }
-#ifdef RLC_TEST_AGREGATED_DATA_PDU_WITH_CONTROL_PDU
-            AssertFatal( (uint64_t)((uint64_t)byte_pos + (bit_pos +7)/8 - (uint64_t)headerP) == total_sizeP,
-                    "Remaining bytes in transport block: %l",
-                    total_sizeP - (int64_t)((uint64_t)byte_pos + (bit_pos +7)/8 - (uint64_t)headerP ));
-#endif
+            *total_size_pP = *total_size_pP - (s16_t)((uint64_t)byte_pos + (uint64_t)((bit_pos + 7)/8) - (uint64_t)headerP);
         } else {
-#ifdef RLC_TEST_AGREGATED_DATA_PDU_WITH_CONTROL_PDU
-            AssertFatal( total_sizeP == 2, "Remaining bytes in transport block: %l", total_sizeP - 2);
-#endif
+            *total_size_pP = *total_size_pP - 2;
         }
         return 0;
     } else {
@@ -195,13 +192,13 @@ void rlc_am_display_control_pdu_infos(rlc_am_control_pdu_info_t* pdu_infoP)
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t*  tbP, u8_t* first_byteP, u16_t tb_size_in_bytesP)
+void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t*  tbP, u8_t* first_byteP, s16_t *tb_size_in_bytes_pP)
 //-----------------------------------------------------------------------------
 {
   //rlc_am_control_pdu_info_t* pdu_info  = ((rlc_am_control_pdu_info_t*)(tbP->data));
   rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10 = (rlc_am_pdu_sn_10_t*)first_byteP;
 
-  if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10, tb_size_in_bytesP, &g_rlc_am_control_pdu_info) >= 0) {
+  if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10, tb_size_in_bytes_pP, &g_rlc_am_control_pdu_info) >= 0) {
 
     rlc_am_tx_buffer_display(rlcP, frame, " TX BUFFER BEFORE PROCESS OF STATUS PDU");
     LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d] RX CONTROL PDU VT(A) %04d VT(S) %04d POLL_SN %04d ACK_SN %04d\n",

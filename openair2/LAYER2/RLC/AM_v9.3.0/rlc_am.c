@@ -571,6 +571,7 @@ rlc_am_mac_data_indication (void *rlcP, u32_t frame, u8 eNB_flag, struct mac_dat
     mem_block_t               *tb;
     int                       num_li;
     int                       num_nack;
+    s16_t                     tb_size;
 
     if (data_indP.data.nb_elements > 0) {
         LOG_D(RLC, "[RLC_AM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc->module_id, l_rlc->rb_id, frame, data_indP.data.nb_elements);
@@ -607,8 +608,9 @@ rlc_am_mac_data_indication (void *rlcP, u32_t frame, u8 eNB_flag, struct mac_dat
                                                                        "/%d Bytes ",
                                                                        ((struct mac_tb_ind *) (tb->data))->size);
             } else {
+                tb_size = (s16_t) ((struct mac_tb_ind *) (tb->data))->size;
                 rlc_am_get_control_pdu_infos((rlc_am_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb->data))->data_ptr,
-                                             (s16_t) ((struct mac_tb_ind *) (tb->data))->size,
+                                             &tb_size,
                                              &control_pdu_info);
 
                 rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length],
