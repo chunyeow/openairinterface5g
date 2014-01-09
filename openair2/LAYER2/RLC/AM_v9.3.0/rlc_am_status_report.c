@@ -29,12 +29,11 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define RLC_AM_MODULE
 #define RLC_AM_STATUS_REPORT_C
 //-----------------------------------------------------------------------------
-#ifdef USER_MODE
-#include <assert.h>
-#endif
+#include <string.h>
 //-----------------------------------------------------------------------------
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
+#include "assertions.h"
 #include "list.h"
 #include "rlc_am.h"
 #include "LAYER2/MAC/extern.h"
@@ -157,6 +156,15 @@ signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* headerP, s16_t total
                     return -2;
                 }
             }
+#ifdef RLC_TEST_AGREGATED_DATA_PDU_WITH_CONTROL_PDU
+            AssertFatal( (uint64_t)((uint64_t)byte_pos + (bit_pos +7)/8 - (uint64_t)headerP) == total_sizeP,
+                    "Remaining bytes in transport block: %l",
+                    total_sizeP - (int64_t)((uint64_t)byte_pos + (bit_pos +7)/8 - (uint64_t)headerP ));
+#endif
+        } else {
+#ifdef RLC_TEST_AGREGATED_DATA_PDU_WITH_CONTROL_PDU
+            AssertFatal( total_sizeP == 2, "Remaining bytes in transport block: %l", total_sizeP - 2);
+#endif
         }
         return 0;
     } else {
