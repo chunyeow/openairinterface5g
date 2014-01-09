@@ -16,7 +16,7 @@ int field_dissect_from_buffer(
     buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     int length = 0;
-    char cbuf[50];
+    char cbuf[200];
     types_t *type_child;
     char array_info[50];
     new_line = FALSE;
