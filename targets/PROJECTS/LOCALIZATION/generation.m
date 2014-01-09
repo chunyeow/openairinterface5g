@@ -1,7 +1,7 @@
-addpath([getenv('OPENAIR1_DIR') '/SIMULATION/LTE_PHY/'])
-addpath([getenv('OPENAIR1_DIR') '/PHY/LTE_ESTIMATION/'])
-addpath([getenv('OPENAIR1_DIR') '/PHY/LTE_REFSIG/'])
-addpath([getenv('OPENAIR_TARGETS') '/ARCH/EXMIMO/USERSPACE/OCTAVE'])
+addpath('../../../openair1/SIMULATION/LTE_PHY/')
+addpath('../../../openair1/PHY/LTE_ESTIMATION/')
+addpath('../../../openair1/PHY/LTE_REFSIG/')
+addpath('../../../targets/ARCH/EXMIMO/USERSPACE/OCTAVE')
 
 nb_rb = 100;
 num_carriers = 2048/100*nb_rb;
@@ -23,5 +23,5 @@ s(1:num_carriers+prefix_length) = pss0_up_cp;
 
 plot(abs(s))
 
-save(sprintf('ofdm_pilots_sync_%d.mat',num_carriers),'s','f','num_carriers','num_zeros','prefix_length','num_symbols_frame','preamble_length');
+save(sprintf('ofdm_pilots_sync_%d.mat',num_carriers),'-v7','s','f','num_carriers','num_zeros','prefix_length','num_symbols_frame','preamble_length');
 mat2wv(s, sprintf('ofdm_pilots_sync_%d.wv',num_carriers), 30.72e6/2048*num_carriers, 1)
