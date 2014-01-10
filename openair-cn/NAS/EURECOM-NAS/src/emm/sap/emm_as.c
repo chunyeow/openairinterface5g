@@ -866,7 +866,7 @@ static EMM_msg *_emm_as_set_header(nas_message_t *msg,
                     msg->header.security_header_type =
                         SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_NEW;
                 }
-                LOG_FUNC_RETURN (&msg->protected.plain.emm);
+                LOG_FUNC_RETURN (&msg->security_protected.plain.emm);
             }
         } else if (security->k_int) {
             if (security->k_enc) {
@@ -878,7 +878,11 @@ static EMM_msg *_emm_as_set_header(nas_message_t *msg,
                 msg->header.security_header_type =
                     SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED;
             }
-            LOG_FUNC_RETURN (&msg->protected.plain.emm);
+            LOG_FUNC_RETURN (&msg->security_protected.plain.emm);
+        } else {
+            /* No valid EPS security context exists */
+            msg->header.security_header_type = SECURITY_HEADER_TYPE_NOT_PROTECTED;
+            LOG_FUNC_RETURN (&msg->plain.emm);
         }
     } else {
         /* No valid EPS security context exists */
@@ -914,7 +918,7 @@ static int _emm_as_encode(as_nas_info_t *info, nas_message_t *msg, int length)
     int bytes = 0;
 
     if (msg->header.security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED) {
-        emm_msg_header_t *header = &msg->protected.plain.emm.header;
+        emm_msg_header_t *header = &msg->security_protected.plain.emm.header;
         /* Expand size of protected NAS message */
         length += NAS_MESSAGE_SECURITY_HEADER_SIZE;
         /* Set header of plain NAS message */

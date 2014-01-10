@@ -28,6 +28,10 @@ Description	Defines the layer 3 messages supported by the NAS sublayer
 #include <stdlib.h>	// malloc, free
 #include <string.h>	// memcpy
 
+#if (defined(EPC_BUILD) && defined(NAS_MME))
+# include "nas_itti_messaging.h"
+#endif
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -215,7 +219,7 @@ int nas_message_decrypt(const char* inbuf, char* outbuf,
  **		 Others:	None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_message_decode(const char* buffer, nas_message_t* msg, int length)
+int nas_message_decode(const char* const buffer, nas_message_t* msg, int length)
 {
     LOG_FUNC_IN;
 
@@ -225,35 +229,42 @@ int nas_message_decode(const char* buffer, nas_message_t* msg, int length)
     int size = _nas_message_header_decode(buffer, &msg->header, length);
 
     if (size < 0) {
-	LOG_FUNC_RETURN (TLV_DECODE_BUFFER_TOO_SHORT);
+        LOG_FUNC_RETURN (TLV_DECODE_BUFFER_TOO_SHORT);
     }
     else if (size > 1) {
-	/* Compute offset of the sequence number field */
-	int offset = size - sizeof(UInt8_t);
-	/* Compute the NAS message authentication code */
-	UInt32_t mac = _nas_message_get_mac(buffer + offset,
-					    0, // TODO !!! dl counter
-					    length - offset);
-	/* Check NAS message integrity */
-	if (mac != msg->header.message_authentication_code) {
-	    LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
-	}
+        /* Compute offset of the sequence number field */
+        int offset = size - sizeof(UInt8_t);
+        /* Compute the NAS message authentication code */
+        UInt32_t mac = _nas_message_get_mac(buffer + offset,
+                                            0, // TODO !!! dl counter
+                                            length - offset);
+        /* Check NAS message integrity */
+        if (mac != msg->header.message_authentication_code) {
+            LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
+        }
 
-	/* Decode security protected NAS message */
-	bytes = _nas_message_protected_decode(buffer + size, &msg->header,
-					      &msg->plain, length - size);
+        /* Decode security protected NAS message */
+        bytes = _nas_message_protected_decode(buffer + size, &msg->header,
+                                              &msg->plain, length - size);
+#if defined(EPC_BUILD) && defined(NAS_MME)
+        /* Message has been decoded and security header removed, handle it has a plain message */
+        nas_itti_plain_msg(buffer, msg, length, 0);
+#endif
     }
     else {
-	/* Decode plain NAS message */
-	bytes = _nas_message_plain_decode(buffer, &msg->header,
-					  &msg->plain, length);
+        /* Decode plain NAS message */
+        bytes = _nas_message_plain_decode(buffer, &msg->header,
+                                          &msg->plain, length);
+#if defined(EPC_BUILD) && defined(NAS_MME)
+        nas_itti_plain_msg(buffer, msg, length, 0);
+#endif
     }
 
     if (bytes < 0) {
-	LOG_FUNC_RETURN (bytes);
+        LOG_FUNC_RETURN (bytes);
     }
     if (size > 1) {
- 	LOG_FUNC_RETURN (size + bytes);
+        LOG_FUNC_RETURN (size + bytes);
     }
     LOG_FUNC_RETURN (bytes);
 }
@@ -275,7 +286,7 @@ int nas_message_decode(const char* buffer, nas_message_t* msg, int length)
  **		 Others:	None                                       **
  **                                                                        **
  ***************************************************************************/
-int nas_message_encode(char* buffer, const nas_message_t* msg, int length)
+int nas_message_encode(char* buffer, const nas_message_t* const msg, int length)
 {
     LOG_FUNC_IN;
 
@@ -285,35 +296,41 @@ int nas_message_encode(char* buffer, const nas_message_t* msg, int length)
     int size = _nas_message_header_encode(buffer, &msg->header, length);
 
     if (size < 0) {
-	LOG_FUNC_RETURN (TLV_ENCODE_BUFFER_TOO_SHORT);
+        LOG_FUNC_RETURN (TLV_ENCODE_BUFFER_TOO_SHORT);
     }
     else if (size > 1) {
-	/* Encode security protected NAS message */
-	bytes = _nas_message_protected_encode(buffer + size, &msg->protected,
-					      length - size);
-	/* Integrity protect the NAS message */
-	if (bytes > 0) {
-	    /* Compute offset of the sequence number field */
-	    int offset = size - sizeof(UInt8_t);
-	    /* Compute the NAS message authentication code */
-	    UInt32_t mac = _nas_message_get_mac(buffer + offset,
-						0, // TODO !!! ul counter
-						length - offset);
-	    /* Set the message authentication code of the NAS message */
-	    *(UInt32_t*)(buffer + sizeof(UInt8_t)) = mac;
-	}
+        /* Encode security protected NAS message */
+        bytes = _nas_message_protected_encode(buffer + size, &msg->security_protected,
+                              length - size);
+        /* Integrity protect the NAS message */
+        if (bytes > 0) {
+            /* Compute offset of the sequence number field */
+            int offset = size - sizeof(UInt8_t);
+            /* Compute the NAS message authentication code */
+            UInt32_t mac = _nas_message_get_mac(buffer + offset,
+                            0, // TODO !!! ul counter
+                            length - offset);
+            /* Set the message authentication code of the NAS message */
+            *(UInt32_t*)(buffer + sizeof(UInt8_t)) = mac;
+        }
+#if defined(EPC_BUILD) && defined(NAS_MME)
+        nas_itti_protected_msg(buffer, msg, length, 1);
+#endif
     }
     else {
-	/* Encode plain NAS message */
-	bytes = _nas_message_plain_encode(buffer, &msg->header,
-					  &msg->plain, length);
+        /* Encode plain NAS message */
+        bytes = _nas_message_plain_encode(buffer, &msg->header,
+                          &msg->plain, length);
+#if defined(EPC_BUILD) && defined(NAS_MME)
+        nas_itti_plain_msg(buffer, msg, length, 1);
+#endif
     }
 
     if (bytes < 0) {
-	LOG_FUNC_RETURN (bytes);
+        LOG_FUNC_RETURN (bytes);
     }
     if (size > 1) {
- 	LOG_FUNC_RETURN (size + bytes);
+        LOG_FUNC_RETURN (size + bytes);
     }
     LOG_FUNC_RETURN (bytes);
 }
@@ -349,8 +366,8 @@ int nas_message_encode(char* buffer, const nas_message_t* msg, int length)
  **                                                                        **
  ***************************************************************************/
 static int _nas_message_header_decode(const char* buffer,
-				      nas_message_security_header_t* header,
-				      int length)
+                                      nas_message_security_header_t* header,
+                                      int length)
 {
     LOG_FUNC_IN;
 
@@ -361,20 +378,20 @@ static int _nas_message_header_decode(const char* buffer,
     DECODE_U8(buffer, *(UInt8_t*)(header), size);
 
     if (header->protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE) {
-	if (header->security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED)
-	{
-	    if (length < NAS_MESSAGE_SECURITY_HEADER_SIZE) {
-		/* The buffer is not big enough to contain security header */
-		LOG_TRACE(WARNING, "NET-API   - The size of the header (%u) "
-			  "exceeds the buffer length (%u)",
-			  NAS_MESSAGE_SECURITY_HEADER_SIZE, length);
-		LOG_FUNC_RETURN (-1);
-	    }
-	    /* Decode the message authentication code */
-	    DECODE_U32(buffer+size, header->message_authentication_code, size);
-	    /* Decode the sequence number */
-	    DECODE_U8(buffer+size, header->sequence_number, size);
-	}
+        if (header->security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED)
+        {
+            if (length < NAS_MESSAGE_SECURITY_HEADER_SIZE) {
+            /* The buffer is not big enough to contain security header */
+            LOG_TRACE(WARNING, "NET-API   - The size of the header (%u) "
+                  "exceeds the buffer length (%u)",
+                  NAS_MESSAGE_SECURITY_HEADER_SIZE, length);
+            LOG_FUNC_RETURN (-1);
+            }
+            /* Decode the message authentication code */
+            DECODE_U32(buffer+size, header->message_authentication_code, size);
+            /* Decode the sequence number */
+            DECODE_U8(buffer+size, header->sequence_number, size);
+        }
     }
 
     LOG_FUNC_RETURN (size);
@@ -495,7 +512,7 @@ static int _nas_message_protected_decode(const char* buffer,
  **                                                                        **
  ***************************************************************************/
 static int _nas_message_header_encode(char* buffer,
-			const nas_message_security_header_t* header, int length)
+                                      const nas_message_security_header_t* header, int length)
 {
     LOG_FUNC_IN;
 
@@ -506,20 +523,23 @@ static int _nas_message_header_encode(char* buffer,
     ENCODE_U8(buffer, *(UInt8_t*)(header), size);
 
     if (header->protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE) {
-	if (header->security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED)
-	{
-	    if (length < NAS_MESSAGE_SECURITY_HEADER_SIZE) {
-		/* The buffer is not big enough to contain security header */
-		LOG_TRACE(WARNING, "NET-API   - The size of the header (%u) "
-			  "exceeds the buffer length (%u)",
-			  NAS_MESSAGE_SECURITY_HEADER_SIZE, length);
-		LOG_FUNC_RETURN (-1);
-	    }
-	    /* Encode the message authentication code */
-	    ENCODE_U32(buffer+size, header->message_authentication_code, size);
-	    /* Encode the sequence number */
-	    ENCODE_U8(buffer+size, header->sequence_number, size);
-	}
+        if (header->security_header_type != SECURITY_HEADER_TYPE_NOT_PROTECTED)
+        {
+            //static uint8_t seq = 0;
+            if (length < NAS_MESSAGE_SECURITY_HEADER_SIZE) {
+            /* The buffer is not big enough to contain security header */
+            LOG_TRACE(WARNING, "NET-API   - The size of the header (%u) "
+                  "exceeds the buffer length (%u)",
+                  NAS_MESSAGE_SECURITY_HEADER_SIZE, length);
+            LOG_FUNC_RETURN (-1);
+            }
+            /* Encode the message authentication code */
+            ENCODE_U32(buffer+size, header->message_authentication_code, size);
+            /* Encode the sequence number */
+            ENCODE_U8(buffer+size, header->sequence_number, size);
+            //ENCODE_U8(buffer+size, seq, size);
+            //seq++;
+        }
     }
 
     LOG_FUNC_RETURN (size);
@@ -600,11 +620,14 @@ static int _nas_message_protected_encode(char* buffer,
 	int size = _nas_message_plain_encode(plain_msg, &msg->header,
 					     &msg->plain, length);
 	if (size > 0) {
+	    //static uint8_t seq = 0;
 	    /* Encrypt the encoded plain NAS message */
 	    bytes = _nas_message_encrypt(buffer, plain_msg,
 					msg->header.security_header_type,
 					msg->header.message_authentication_code,
 					msg->header.sequence_number, size);
+					//seq, size);
+	    //seq ++;
 	}
 	free(plain_msg);
     }

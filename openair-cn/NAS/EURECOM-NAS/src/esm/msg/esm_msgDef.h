@@ -31,9 +31,6 @@ Description	Defines identifiers of the EPS Session Management messages
 #define ESM_HEADER_MINIMUM_LENGTH	ESM_HEADER_LENGTH
 #define ESM_HEADER_MAXIMUM_LENGTH	ESM_HEADER_LENGTH
 
-/* Protocol discriminator identifier for EPS Session Management	*/
-#define EPS_SESSION_MANAGEMENT_MESSAGE  0x2
-
 /* Message identifiers for EPS Session Management		*/
 # define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST   0b11000001 /* 193 = 0xc1 */
 # define ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT    0b11000010 /* 194 = 0xc2 */

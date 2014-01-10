@@ -34,6 +34,80 @@
 #include "nas_itti_messaging.h"
 
 #if defined(EPC_BUILD) && defined(NAS_MME)
+static const UInt8_t emm_message_ids[] =
+{
+    ATTACH_REQUEST,
+    ATTACH_ACCEPT,
+    ATTACH_COMPLETE,
+    ATTACH_REJECT,
+    DETACH_REQUEST,
+    DETACH_ACCEPT,
+    TRACKING_AREA_UPDATE_REQUEST,
+    TRACKING_AREA_UPDATE_ACCEPT,
+    TRACKING_AREA_UPDATE_COMPLETE,
+    TRACKING_AREA_UPDATE_REJECT,
+    EXTENDED_SERVICE_REQUEST,
+    SERVICE_REQUEST,
+    SERVICE_REJECT,
+    GUTI_REALLOCATION_COMMAND,
+    GUTI_REALLOCATION_COMPLETE,
+    AUTHENTICATION_REQUEST,
+    AUTHENTICATION_RESPONSE,
+    AUTHENTICATION_REJECT,
+    AUTHENTICATION_FAILURE,
+    IDENTITY_REQUEST,
+    IDENTITY_RESPONSE,
+    SECURITY_MODE_COMMAND,
+    SECURITY_MODE_COMPLETE,
+    SECURITY_MODE_REJECT,
+    EMM_STATUS,
+    EMM_INFORMATION,
+    DOWNLINK_NAS_TRANSPORT,
+    UPLINK_NAS_TRANSPORT,
+    CS_SERVICE_NOTIFICATION,
+};
+
+static const UInt8_t esm_message_ids[] =
+{
+    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST,
+    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT,
+    ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT,
+    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST,
+    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT,
+    ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT,
+    MODIFY_EPS_BEARER_CONTEXT_REQUEST,
+    MODIFY_EPS_BEARER_CONTEXT_ACCEPT,
+    MODIFY_EPS_BEARER_CONTEXT_REJECT,
+    DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST,
+    DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT,
+    PDN_CONNECTIVITY_REQUEST,
+    PDN_CONNECTIVITY_REJECT,
+    PDN_DISCONNECT_REQUEST,
+    PDN_DISCONNECT_REJECT,
+    BEARER_RESOURCE_ALLOCATION_REQUEST,
+    BEARER_RESOURCE_ALLOCATION_REJECT,
+    BEARER_RESOURCE_MODIFICATION_REQUEST,
+    BEARER_RESOURCE_MODIFICATION_REJECT,
+    ESM_INFORMATION_REQUEST,
+    ESM_INFORMATION_RESPONSE,
+    ESM_STATUS,
+};
+
+static int _nas_find_message_index(const UInt8_t message_id, const UInt8_t *message_ids, const int ids_number)
+{
+    int i;
+
+    for(i = 0; i < ids_number; i ++)
+    {
+        if (message_id == message_ids[i])
+        {
+            return (2 + i);
+        }
+    }
+
+    return (1);
+}
+
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length)
 {
@@ -46,6 +120,88 @@ int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
     NAS_DL_DATA_REQ(message_p).nasMsg.length = length;
 
     return itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
+}
+
+int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance)
+{
+    MessageDef *message_p;
+    int data_length = length < NAS_DATA_LENGHT_MAX ? length : NAS_DATA_LENGHT_MAX;
+
+    {
+        message_p = itti_alloc_new_message(TASK_NAS, NAS_RAW_MSG);
+
+        NAS_RAW_MSG(message_p).lenght = length;
+        memset ((void *) &(NAS_RAW_MSG(message_p).data), 0, NAS_DATA_LENGHT_MAX);
+        memcpy ((void *) &(NAS_RAW_MSG(message_p).data), buffer, data_length);
+
+        itti_send_msg_to_task(TASK_UNKNOWN, instance, message_p);
+        message_p = NULL;
+    }
+
+    if (msg->header.protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE)
+    {
+        message_p = itti_alloc_new_message(TASK_NAS, NAS_EMM_PLAIN_MSG);
+
+        NAS_EMM_PLAIN_MSG(message_p).present = _nas_find_message_index(msg->plain.emm.header.message_type, emm_message_ids, sizeof(emm_message_ids) / sizeof(emm_message_ids[0]));
+        memcpy ((void *) &(NAS_EMM_PLAIN_MSG(message_p).choice), &msg->plain.emm, sizeof (EMM_msg));
+    }
+    else {
+        if (msg->header.protocol_discriminator == EPS_SESSION_MANAGEMENT_MESSAGE)
+        {
+            message_p = itti_alloc_new_message(TASK_NAS, NAS_ESM_PLAIN_MSG);
+
+            NAS_ESM_PLAIN_MSG(message_p).present = _nas_find_message_index(msg->plain.esm.header.message_type, esm_message_ids, sizeof(esm_message_ids) / sizeof(esm_message_ids[0]));
+            memcpy ((void *) &(NAS_ESM_PLAIN_MSG(message_p).choice), &msg->plain.emm, sizeof (ESM_msg));
+        }
+    }
+
+    if (message_p != NULL) {
+        return itti_send_msg_to_task(TASK_UNKNOWN, instance, message_p);
+    }
+
+    return EXIT_FAILURE;
+}
+
+int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance)
+{
+    MessageDef *message_p;
+    int data_length = length < NAS_DATA_LENGHT_MAX ? length : NAS_DATA_LENGHT_MAX;
+
+    {
+        message_p = itti_alloc_new_message(TASK_NAS, NAS_RAW_MSG);
+
+        NAS_RAW_MSG(message_p).lenght = length;
+        memset ((void *) &(NAS_RAW_MSG(message_p).data), 0, NAS_DATA_LENGHT_MAX);
+        memcpy ((void *) &(NAS_RAW_MSG(message_p).data), buffer, data_length);
+
+        itti_send_msg_to_task(TASK_UNKNOWN, instance, message_p);
+        message_p = NULL;
+    }
+
+    if (msg->header.protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE)
+    {
+        message_p = itti_alloc_new_message(TASK_NAS, NAS_EMM_PROTECTED_MSG);
+
+        memcpy ((void *) &(NAS_EMM_PROTECTED_MSG(message_p).header), &msg->header, sizeof (nas_message_security_header_t));
+        NAS_EMM_PROTECTED_MSG(message_p).present = _nas_find_message_index(msg->security_protected.plain.emm.header.message_type, emm_message_ids, sizeof(emm_message_ids) / sizeof(emm_message_ids[0]));
+        memcpy ((void *) &(NAS_EMM_PROTECTED_MSG(message_p).choice), &msg->security_protected.plain.emm, sizeof (EMM_msg));
+    }
+    else {
+        if (msg->header.protocol_discriminator == EPS_SESSION_MANAGEMENT_MESSAGE)
+        {
+            message_p = itti_alloc_new_message(TASK_NAS, NAS_ESM_PROTECTED_MSG);
+
+            memcpy ((void *) &(NAS_ESM_PROTECTED_MSG(message_p).header), &msg->header, sizeof (nas_message_security_header_t));
+            NAS_ESM_PROTECTED_MSG(message_p).present =  _nas_find_message_index(msg->security_protected.plain.esm.header.message_type, esm_message_ids, sizeof(esm_message_ids) / sizeof(esm_message_ids[0]));
+            memcpy ((void *) &(NAS_ESM_PROTECTED_MSG(message_p).choice), &msg->security_protected.plain.esm, sizeof (ESM_msg));
+        }
+    }
+
+    if (message_p != NULL) {
+        return itti_send_msg_to_task(TASK_UNKNOWN, instance, message_p);
+    }
+
+    return EXIT_FAILURE;
 }
 #endif
 

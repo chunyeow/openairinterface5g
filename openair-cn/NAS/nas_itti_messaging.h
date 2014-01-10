@@ -43,6 +43,10 @@
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length);
 
+int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
+
+int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
+
 static inline void nas_itti_establish_cnf(const uint32_t ue_id,
         const nas_error_code_t error_code, void *const data,
         const uint32_t length)

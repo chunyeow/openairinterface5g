@@ -239,6 +239,14 @@ typedef struct {
 typedef int (*emm_indication_callback_t) (Stat_t, tac_t, ci_t, AcT_t,
         const char *, size_t);
 
+typedef enum eps_protocol_discriminator_e {
+    /* Protocol discriminator identifier for EPS Mobility Management */
+    EPS_MOBILITY_MANAGEMENT_MESSAGE =   0x7,
+
+    /* Protocol discriminator identifier for EPS Session Management */
+    EPS_SESSION_MANAGEMENT_MESSAGE =    0x2,
+} eps_protocol_discriminator_t;
+
 /****************************************************************************/
 /********************  G L O B A L    V A R I A B L E S  ********************/
 /****************************************************************************/

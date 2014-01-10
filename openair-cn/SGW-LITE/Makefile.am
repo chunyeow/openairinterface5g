@@ -1,7 +1,11 @@
 AM_CFLAGS = @ADD_CFLAGS@ \
 	-I$(top_srcdir)/COMMON	\
-	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network	\
-	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include	\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network		\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include			\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/ies				\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/emm/msg			\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/esm/msg			\
+	-I$(top_srcdir)/NAS/EURECOM-NAS/src/util			\
     -I$(top_srcdir)/INTERTASK_INTERFACE \
     -I$(top_srcdir)/MME_APP \
     -I$(top_srcdir)/UTILS \

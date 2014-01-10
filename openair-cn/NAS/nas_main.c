@@ -163,9 +163,10 @@ next_message:
             } break;
 
             default: {
-                NAS_DEBUG("Unkwnon message ID %d:%s\n",
+                NAS_DEBUG("Unkwnon message ID %d:%s from %s\n",
                           ITTI_MSG_ID(received_message_p),
-                          ITTI_MSG_NAME(received_message_p));
+                          ITTI_MSG_NAME(received_message_p),
+                          ITTI_MSG_ORIGIN_NAME(received_message_p));
             } break;
         }
         itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);

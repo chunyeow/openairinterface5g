@@ -31,9 +31,6 @@ Description	Defines identifiers of the EPS Mobility Management messages.
 #define EMM_HEADER_MINIMUM_LENGTH	EMM_HEADER_LENGTH
 #define EMM_HEADER_MAXIMUM_LENGTH	EMM_HEADER_LENGTH
 
-/* Protocol discriminator identifier for EPS Mobility Management */
-#define EPS_MOBILITY_MANAGEMENT_MESSAGE 0x7
-
 /* EPS Mobility Management Security header type */
 #define SECURITY_HEADER_TYPE_NOT_PROTECTED			0b0000
 #define SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED		0b0001
