@@ -38,6 +38,7 @@
 #define LTERALUE_SUBSCRIBE_C
 //-----------------------------------------------------------------------------
 #include "lteRALue.h"
+#include "LAYER2/MAC/extern.h"
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
@@ -60,15 +61,16 @@
  ***************************************************************************/
 void mRAL_subscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Event_Subscribe_request_t* msgP)
 {
+    unsigned int   mod_id = instanceP - NB_eNB_INST;
     MIH_C_STATUS_T status = MIH_C_STATUS_REJECTED;
     /* Check whether the action request is supported */
-    if (g_ue_ral_obj[instanceP].mih_supported_link_command_list & MIH_C_BIT_LINK_EVENT_SUBSCRIBE)
+    if (g_ue_ral_obj[mod_id].mih_supported_link_command_list & MIH_C_BIT_LINK_EVENT_SUBSCRIBE)
     {
         MIH_C_LINK_EVENT_LIST_T mih_subscribed_req_event_list;
 
-        g_ue_ral_obj[instanceP].mih_subscribe_req_event_list |= (msgP->primitive.RequestedLinkEventList & g_ue_ral_obj[instanceP].mih_supported_link_event_list);
+        g_ue_ral_obj[mod_id].mih_subscribe_req_event_list |= (msgP->primitive.RequestedLinkEventList & g_ue_ral_obj[mod_id].mih_supported_link_event_list);
 
-        mih_subscribed_req_event_list = g_ue_ral_obj[instanceP].mih_subscribe_req_event_list & msgP->primitive.RequestedLinkEventList;
+        mih_subscribed_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list & msgP->primitive.RequestedLinkEventList;
 
         status = MIH_C_STATUS_SUCCESS;
 
@@ -103,16 +105,18 @@ void mRAL_subscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Even
 void mRAL_unsubscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Event_Unsubscribe_request_t* msgP)
 {
     MIH_C_STATUS_T status = MIH_C_STATUS_REJECTED;
+    unsigned int   mod_id = instanceP - NB_eNB_INST;
+
     /* Check whether the action request is supported */
-    if (g_ue_ral_obj[instanceP].mih_supported_link_command_list & MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE)
+    if (g_ue_ral_obj[mod_id].mih_supported_link_command_list & MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE)
     {
         MIH_C_LINK_EVENT_LIST_T mih_unsubscribed_req_event_list;
         MIH_C_LINK_EVENT_LIST_T saved_req_event_list;
 
-        saved_req_event_list = g_ue_ral_obj[instanceP].mih_subscribe_req_event_list;
+        saved_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list;
 
-        g_ue_ral_obj[instanceP].mih_subscribe_req_event_list &= ~(msgP->primitive.RequestedLinkEventList & g_ue_ral_obj[instanceP].mih_supported_link_event_list);
-        mih_unsubscribed_req_event_list = g_ue_ral_obj[instanceP].mih_subscribe_req_event_list ^ saved_req_event_list;
+        g_ue_ral_obj[mod_id].mih_subscribe_req_event_list &= ~(msgP->primitive.RequestedLinkEventList & g_ue_ral_obj[mod_id].mih_supported_link_event_list);
+        mih_unsubscribed_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list ^ saved_req_event_list;
 
         status = MIH_C_STATUS_SUCCESS;
 

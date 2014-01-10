@@ -20,8 +20,11 @@
 #define LTE_RAL_UE
 #define LTE_RAL_UE_RRC_MSG_C
 #include "lteRALue.h"
+#include "LAYER2/MAC/extern.h"
 
+//---------------------------------------------------------------------------------------------------------------------
 static int ueid2eui48(u8 *euiP, u8* ue_idP)
+//---------------------------------------------------------------------------------------------------------------------
 {
     // inspired by linux-source-3.2.0/net/ipv6/addrconf.c
     memcpy(euiP, ue_idP, 3);
@@ -32,23 +35,69 @@ static int ueid2eui48(u8 *euiP, u8* ue_idP)
     return 0;
 }
 
+
+//---------------------------------------------------------------------------------------------------------------------
+void mRAL_rx_rrc_ral_scan_confirm(instance_t instanceP, MessageDef *msg_p)
+//---------------------------------------------------------------------------------------------------------------------
+{
+    MIH_C_STATUS_T             status;
+    MIH_C_LINK_SCAN_RSP_LIST_T scan_rsp_list;
+    MIH_C_LINK_AC_RESULT_T     ac_result;
+    int                        i;
+
+    status    = MIH_C_STATUS_SUCCESS;
+    ac_result = MIH_C_LINK_AC_RESULT_SUCCESS;
+    memset(&scan_rsp_list, 0, sizeof(MIH_C_LINK_SCAN_RSP_LIST_T));
+
+    for (i = 0 ; i < RRC_RAL_SCAN_CONF (msg_p).num_scan_resp; i++) {
+        // TO DO
+        memcpy(&scan_rsp_list.val[i].link_addr, &RRC_RAL_SCAN_CONF (msg_p).link_scan_resp[i].link_addr, sizeof(MIH_C_LINK_ADDR_T));
+        // TO DO
+        memcpy(&scan_rsp_list.val[i].network_id, &RRC_RAL_SCAN_CONF (msg_p).link_scan_resp[i].network_id, sizeof(MIH_C_NETWORK_ID_T));
+
+        scan_rsp_list.val[i].sig_strength.choice = RRC_RAL_SCAN_CONF (msg_p).link_scan_resp[i].sig_strength.choice;
+        switch (scan_rsp_list.val[i].sig_strength.choice) {
+            case RAL_SIG_STRENGTH_CHOICE_DBM:
+                scan_rsp_list.val[i].sig_strength._union.dbm = RRC_RAL_SCAN_CONF (msg_p).link_scan_resp[i].sig_strength._union.dbm;
+                break;
+            case RAL_SIG_STRENGTH_CHOICE_PERCENTAGE:
+                scan_rsp_list.val[i].sig_strength._union.percentage = RRC_RAL_SCAN_CONF (msg_p).link_scan_resp[i].sig_strength._union.percentage;
+                break;
+            default:
+                LOG_E(RAL_UE, "INVALID RRC_RAL_SCAN_CONF field sig_strength.choice %d\n", scan_rsp_list.val[i].sig_strength.choice);
+                status = MIH_C_STATUS_UNSPECIFIED_FAILURE;
+        }
+        scan_rsp_list.length += 1;
+    }
+    mRAL_send_link_action_confirm(instanceP,
+            &RRC_RAL_SCAN_CONF (msg_p).transaction_id,
+            &status,
+            &scan_rsp_list,
+            &ac_result);
+}
+
+
 //---------------------------------------------------------------------------------------------------------------------
 void mRAL_rx_rrc_ral_system_information_indication(instance_t instanceP, MessageDef *msg_p)
 //---------------------------------------------------------------------------------------------------------------------
 {
-    MIH_C_LINK_DET_INFO_T link_det_info;
-    int i;
+    MIH_C_LINK_DET_INFO_T   link_det_info;
+    int                     i;
+    unsigned int            mod_id = instanceP - NB_eNB_INST;
 
     memset(&link_det_info, 0, sizeof(MIH_C_LINK_DET_INFO_T));
-    // link id
-    link_det_info.link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
-    link_det_info.link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
-
-    link_det_info.link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR;
 
     // save cell parameters
-    g_ue_ral_obj[instanceP].cell_id = RRC_RAL_SYSTEM_INFORMATION_IND(msg_p).cell_id;
-    memcpy(&g_ue_ral_obj[instanceP].plmn_id, &RRC_RAL_SYSTEM_INFORMATION_IND(msg_p).plmn_id, sizeof(g_ue_ral_obj[instanceP].plmn_id));
+    g_ue_ral_obj[mod_id].cell_id = RRC_RAL_SYSTEM_INFORMATION_IND(msg_p).cell_id;
+    memcpy(&g_ue_ral_obj[mod_id].plmn_id, &RRC_RAL_SYSTEM_INFORMATION_IND(msg_p).plmn_id, sizeof(g_ue_ral_obj[mod_id].plmn_id));
+
+    // link id
+    link_det_info.link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
+    #ifdef USE_3GPP_ADDR_AS_LINK_ADDR
+    link_det_info.link_tuple_id.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &link_det_info.link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    #else
+    link_det_info.link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
 
     // preserve byte order of plmn id
     memcpy(link_det_info.link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &RRC_RAL_SYSTEM_INFORMATION_IND(msg_p).plmn_id, 3);
@@ -58,6 +107,9 @@ void mRAL_rx_rrc_ral_system_information_indication(instance_t instanceP, Message
             link_det_info.link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
             link_det_info.link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[2]);
     LOG_D(RAL_UE, "CELL ID %d\n", link_det_info.link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id);
+    #endif
+    //The optional LINK_ADDR may contains a link address of PoA.
+    link_det_info.link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
 
     MIH_C_NETWORK_ID_set(&link_det_info.network_id, (u_int8_t *)PREDEFINED_MIH_NETWORK_ID, strlen(PREDEFINED_MIH_NETWORK_ID));
 
@@ -70,13 +122,13 @@ void mRAL_rx_rrc_ral_system_information_indication(instance_t instanceP, Message
 
     link_det_info.link_data_rate          = RRC_RAL_SYSTEM_INFORMATION_IND(msg_p).link_data_rate;
 
-    link_det_info.link_mihcap_flag        = g_ue_ral_obj[instanceP].link_mihcap_flag;
+    link_det_info.link_mihcap_flag        = g_ue_ral_obj[mod_id].link_mihcap_flag;
 
-    link_det_info.net_caps                = g_ue_ral_obj[instanceP].net_caps;
+    link_det_info.net_caps                = g_ue_ral_obj[mod_id].net_caps;
 
-    mRAL_send_link_detected_indication(instanceP, &g_ue_ral_obj[instanceP].transaction_id, &link_det_info);
+    mRAL_send_link_detected_indication(instanceP, &g_ue_ral_obj[mod_id].transaction_id, &link_det_info);
 
-    g_ue_ral_obj[instanceP].transaction_id ++;
+    g_ue_ral_obj[mod_id].transaction_id ++;
 
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -84,52 +136,34 @@ void mRAL_rx_rrc_ral_connection_establishment_indication(instance_t instanceP, M
 //---------------------------------------------------------------------------------------------------------------------
 {
     MIH_C_LINK_TUPLE_ID_T link_tuple_id;
-    uint8_t               ue_id_array[MIH_C_3GPP_ADDR_LENGTH];
-    uint8_t               mn_link_addr[MIH_C_3GPP_ADDR_LENGTH];
-    uint64_t              ue_id; //EUI-64
-    int                   i;
+    unsigned int          mod_id = instanceP - NB_eNB_INST;
 
     memset(&link_tuple_id, 0, sizeof(MIH_C_LINK_TUPLE_ID_T));
     // The LINK_ID contains the MN LINK_ADDR
     link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
-
-
-    // TEST
-    link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
+    #ifdef USE_3GPP_ADDR_AS_LINK_ADDR
+    link_tuple_id.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    #else
     link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
-    link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR;
-    // preserve byte order of plmn id
-    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[instanceP].plmn_id, 3);
-    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[instanceP].cell_id;
-    // TEST END
-
+    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[mod_id].plmn_id, 3);
+    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[mod_id].cell_id;
     LOG_D(RAL_UE, "PLMN ID %d.%d.%d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[0],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[2]);
     LOG_D(RAL_UE, "CELL ID %d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id);
-    /*link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_ADDR;
-    memset(ue_id_array, 0, MIH_C_3GPP_ADDR_LENGTH);
-#warning "TO DO FIX UE_ID TYPE in rrc_ral_connection_establishment_ind_t"
-    ue_id = (uint64_t)RRC_RAL_CONNECTION_ESTABLISHMENT_IND(msg_p).ue_id;
-    for (i = 0; i < MIH_C_3GPP_ADDR_LENGTH; i++) {
-        ue_id_array[MIH_C_3GPP_ADDR_LENGTH-1-i] = (ue_id & 0x00000000000000FF);
-        ue_id = ue_id >> 8;
-    }
-    ueid2eui48(mn_link_addr, ue_id_array);
-    MIH_C_3GPP_ADDR_set(&(link_tuple_id.link_id.link_addr._union._3gpp_addr), NULL, 8);
-
+    #endif
     //The optional LINK_ADDR may contains a link address of PoA.
-    link_tuple_id.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
-*/
+    link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
 
-    mRAL_send_link_up_indication(instanceP, &g_ue_ral_obj[instanceP].transaction_id,
+    mRAL_send_link_up_indication(instanceP, &g_ue_ral_obj[mod_id].transaction_id,
             &link_tuple_id,
             NULL,   //MIH_C_LINK_ADDR_T       *old_arP,(Optional) Old Access Router link address.
             NULL,   //MIH_C_LINK_ADDR_T       *new_arP,(Optional) New Access Router link address.
             NULL,   //MIH_C_IP_RENEWAL_FLAG_T *flagP, (Optional) Indicates whether the MN needs to change IP Address in the new PoA.
             NULL);  //MIH_C_IP_MOB_MGMT_T     *mobil_mngtP, (Optional) Indicates the type of Mobility Management Protocol supported by the new PoA.
 
-    g_ue_ral_obj[instanceP].transaction_id ++;
+    g_ue_ral_obj[mod_id].transaction_id ++;
 
 }
 //---------------------------------------------------------------------------------------------------------------------
@@ -137,44 +171,31 @@ void mRAL_rx_rrc_ral_connection_reestablishment_indication(instance_t instanceP,
 //---------------------------------------------------------------------------------------------------------------------
 {
     MIH_C_LINK_TUPLE_ID_T link_tuple_id;
-    uint8_t               ue_id_array[MIH_C_3GPP_ADDR_LENGTH];
-    uint8_t               mn_link_addr[MIH_C_3GPP_ADDR_LENGTH];
-    uint64_t              ue_id; //EUI-64
-    int                   i;
+    unsigned int          mod_id = instanceP - NB_eNB_INST;
 
     memset(&link_tuple_id, 0, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    //The optional LINK_ADDR may contains a link address of PoA.
+    link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
     link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
+    #ifdef USE_3GPP_ADDR_AS_LINK_ADDR
+    link_tuple_id.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    #else
     link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
-    link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR;
     // preserve byte order of plmn id
-    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[instanceP].plmn_id, 3);
-    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[instanceP].cell_id;
+    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[mod_id].plmn_id, 3);
+    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[mod_id].cell_id;
     // TEST END
 
     LOG_D(RAL_UE, "PLMN ID %d.%d.%d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[0],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[2]);
     LOG_D(RAL_UE, "CELL ID %d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id);
+    #endif
 
-/*    // The LINK_ID contains the MN LINK_ADDR
-    link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
-    link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_ADDR;
-    memset(ue_id_array, 0, MIH_C_3GPP_ADDR_LENGTH);
-#warning "TO DO FIX UE_ID TYPE in rrc_ral_connection_establishment_ind_t"
-    ue_id = (uint64_t)RRC_RAL_CONNECTION_ESTABLISHMENT_IND(msg_p).ue_id;
-    for (i = 0; i < MIH_C_3GPP_ADDR_LENGTH; i++) {
-        ue_id_array[MIH_C_3GPP_ADDR_LENGTH-1-i] = (ue_id & 0x00000000000000FF);
-        ue_id = ue_id >> 8;
-    }
-    ueid2eui48(mn_link_addr, ue_id_array);
-    MIH_C_3GPP_ADDR_set(&(link_tuple_id.link_id.link_addr._union._3gpp_addr), NULL, 8);
-
-    //The optional LINK_ADDR may contains a link address of PoA.
-    link_tuple_id.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
-*/
     LOG_D(RAL_UE, "RRC_RAL_CONNECTION_ESTABLISHMENT_IND num srb %d num drb %d\n", RRC_RAL_CONNECTION_REESTABLISHMENT_IND(msg_p).num_srb,RRC_RAL_CONNECTION_REESTABLISHMENT_IND(msg_p).num_drb);
     if ((RRC_RAL_CONNECTION_REESTABLISHMENT_IND(msg_p).num_drb > 0) && (RRC_RAL_CONNECTION_REESTABLISHMENT_IND(msg_p).num_srb > 0)) {
-        mRAL_send_link_up_indication(instanceP, &g_ue_ral_obj[instanceP].transaction_id,
+        mRAL_send_link_up_indication(instanceP, &g_ue_ral_obj[mod_id].transaction_id,
             &link_tuple_id,
             NULL,   //MIH_C_LINK_ADDR_T       *old_arP,(Optional) Old Access Router link address.
             NULL,   //MIH_C_LINK_ADDR_T       *new_arP,(Optional) New Access Router link address.
@@ -183,59 +204,45 @@ void mRAL_rx_rrc_ral_connection_reestablishment_indication(instance_t instanceP,
     } else {
         MIH_C_LINK_DN_REASON_T  reason_code = MIH_C_LINK_DOWN_REASON_EXPLICIT_DISCONNECT;
 
-        mRAL_send_link_down_indication(instanceP, &g_ue_ral_obj[instanceP].transaction_id,
+        mRAL_send_link_down_indication(instanceP, &g_ue_ral_obj[mod_id].transaction_id,
                 &link_tuple_id,
                 NULL,
                 &reason_code);
     }
-    g_ue_ral_obj[instanceP].transaction_id ++;}
+    g_ue_ral_obj[mod_id].transaction_id ++;}
 //---------------------------------------------------------------------------------------------------------------------
 void mRAL_rx_rrc_ral_connection_reconfiguration_indication(instance_t instanceP, MessageDef *msg_p)
 //---------------------------------------------------------------------------------------------------------------------
 {
     MIH_C_LINK_TUPLE_ID_T link_tuple_id;
-    uint8_t               ue_id_array[MIH_C_3GPP_ADDR_LENGTH];
-    uint8_t               mn_link_addr[MIH_C_3GPP_ADDR_LENGTH];
-    uint64_t              ue_id; //EUI-64
-    int                   i;
+    unsigned int          mod_id = instanceP - NB_eNB_INST;
 
     memset(&link_tuple_id, 0, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    //The optional LINK_ADDR may contains a link address of PoA.
+    link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
     link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
-    link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
-    link_tuple_id.choice                                            = MIH_C_LINK_TUPLE_ID_CHOICE_LINK_ADDR;
+    #ifdef USE_3GPP_ADDR_AS_LINK_ADDR
+    link_tuple_id.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    #else
     // preserve byte order of plmn id
-    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[instanceP].plmn_id, 3);
-    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[instanceP].cell_id;
+    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[mod_id].plmn_id, 3);
+    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[mod_id].cell_id;
     // TEST END
 
     LOG_D(RAL_UE, "PLMN ID %d.%d.%d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[0],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[2]);
     LOG_D(RAL_UE, "CELL ID %d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id);
-    /*
-    // The LINK_ID contains the MN LINK_ADDR
-    link_tuple_id.link_id.link_type                                 = MIH_C_WIRELESS_LTE;
-    link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_ADDR;
-    memset(ue_id_array, 0, MIH_C_3GPP_ADDR_LENGTH);
-#warning "TO DO FIX UE_ID TYPE in rrc_ral_connection_establishment_ind_t"
-    ue_id = (uint64_t)RRC_RAL_CONNECTION_ESTABLISHMENT_IND(msg_p).ue_id;
-    for (i = 0; i < MIH_C_3GPP_ADDR_LENGTH; i++) {
-        ue_id_array[MIH_C_3GPP_ADDR_LENGTH-1-i] = (ue_id & 0x00000000000000FF);
-        ue_id = ue_id >> 8;
-    }
-    ueid2eui48(mn_link_addr, ue_id_array);
-    MIH_C_3GPP_ADDR_set(&(link_tuple_id.link_id.link_addr._union._3gpp_addr), NULL, 8);
+    #endif
 
-    //The optional LINK_ADDR may contains a link address of PoA.
-    link_tuple_id.choice = MIH_C_LINK_TUPLE_ID_CHOICE_NULL;
-*/
     LOG_D(RAL_UE, "RRC_RAL_CONNECTION_RECONFIGURATION_IND num srb %d num drb %d\n",
             RRC_RAL_CONNECTION_RECONFIGURATION_IND(msg_p).num_srb,
             RRC_RAL_CONNECTION_RECONFIGURATION_IND(msg_p).num_drb);
 
     if ((RRC_RAL_CONNECTION_RECONFIGURATION_IND(msg_p).num_drb > 0) &&
             (RRC_RAL_CONNECTION_RECONFIGURATION_IND(msg_p).num_srb > 0)) {
-        mRAL_send_link_up_indication(instanceP, &g_ue_ral_obj[instanceP].transaction_id,
+        mRAL_send_link_up_indication(instanceP, &g_ue_ral_obj[mod_id].transaction_id,
             &link_tuple_id,
             NULL,   //MIH_C_LINK_ADDR_T       *old_arP,(Optional) Old Access Router link address.
             NULL,   //MIH_C_LINK_ADDR_T       *new_arP,(Optional) New Access Router link address.
@@ -244,12 +251,12 @@ void mRAL_rx_rrc_ral_connection_reconfiguration_indication(instance_t instanceP,
     } else {
         MIH_C_LINK_DN_REASON_T  reason_code = MIH_C_LINK_DOWN_REASON_EXPLICIT_DISCONNECT;
 
-        mRAL_send_link_down_indication(instanceP, &g_ue_ral_obj[instanceP].transaction_id,
+        mRAL_send_link_down_indication(instanceP, &g_ue_ral_obj[mod_id].transaction_id,
                 &link_tuple_id,
                 NULL,
                 &reason_code);
     }
-    g_ue_ral_obj[instanceP].transaction_id ++;
+    g_ue_ral_obj[mod_id].transaction_id ++;
 }
 //---------------------------------------------------------------------------------------------------------------------
 void mRAL_rx_rrc_ral_connection_release_indication(instance_t instanceP, MessageDef *msg_p)

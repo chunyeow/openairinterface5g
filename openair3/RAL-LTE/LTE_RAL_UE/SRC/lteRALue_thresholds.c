@@ -37,6 +37,7 @@
 #define LTE_RAL_UE
 #define LTERALUE_THRESHOLDS_C
 //-----------------------------------------------------------------------------
+#include "assertions.h"
 #include "lteRALue.h"
 
 
@@ -62,6 +63,12 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
     unsigned int                             th_index;
     rrc_ral_configure_threshold_req_t        configure_threshold_req;
     MessageDef                              *message_p;
+    MIH_C_STATUS_T                           status;
+    MIH_C_STATUS_T                           global_status;
+    int                                      result;
+    MIH_C_LINK_CFG_STATUS_LIST_T             link_configure_status_list;
+
+    MIH_C_LINK_CFG_STATUS_LIST_init(&link_configure_status_list);
 
     message_p = itti_alloc_new_message (TASK_RAL_UE, RRC_RAL_CONFIGURE_THRESHOLD_REQ);
 
@@ -70,8 +77,13 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
     // copy transaction id
     configure_threshold_req.transaction_id      = msgP->header.transaction_id;
 
+    global_status = MIH_C_STATUS_SUCCESS;
+
     // configure_threshold_req.num_link_cfg_params = 0; // done
     for (index = 0; index < msgP->primitive.LinkConfigureParameterList_list.length; index++) {
+
+        status = MIH_C_STATUS_SUCCESS;
+
         // copy link_param_type
         configure_threshold_req.link_cfg_params[index].link_param_type.choice = msgP->primitive.LinkConfigureParameterList_list.val[index].link_param_type.choice;
         switch (configure_threshold_req.link_cfg_params[index].link_param_type.choice) {
@@ -91,8 +103,12 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
                         sizeof(ral_link_param_lte_t));
                 break;
             default:
-                assert(1==0);
+                status        = MIH_C_STATUS_UNSPECIFIED_FAILURE;
+                break;
         }
+        // at first error, exit
+
+
         configure_threshold_req.num_link_cfg_params += 1;
 
         // copy choice
@@ -105,8 +121,12 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
                 break;
             case RAL_LINK_CFG_PARAM_CHOICE_TIMER:
                 configure_threshold_req.link_cfg_params[index]._union.timer_interval = msgP->primitive.LinkConfigureParameterList_list.val[index]._union.timer_interval;
+                break;
             default:
-                assert(1==0);
+                printf("ERROR RAL_UE, : mRAL_configure_thresholds_request unknown configure_threshold_req.link_cfg_params[index].union_choice %d\n",
+                        configure_threshold_req.link_cfg_params[index].union_choice);
+                status        = MIH_C_STATUS_UNSPECIFIED_FAILURE;
+                break;
         }
 
         // copy th_action
@@ -117,12 +137,44 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
             configure_threshold_req.link_cfg_params[index].thresholds[th_index].threshold_val  = msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index].threshold_val;
             configure_threshold_req.link_cfg_params[index].thresholds[th_index].threshold_xdir = msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index].threshold_xdir;
             configure_threshold_req.link_cfg_params[index].num_thresholds += 1;
+
+            // Fill ConfigureThreshold_confirm
+            if (link_configure_status_list.length < MIH_C_LINK_CFG_STATUS_LIST_LENGTH) {
+                memcpy(&link_configure_status_list.val[link_configure_status_list.length].link_param_type,
+                        &configure_threshold_req.link_cfg_params[index].link_param_type,
+                        sizeof(ral_link_param_type_t));
+
+                memcpy(&link_configure_status_list.val[link_configure_status_list.length].threshold,
+                        &msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index],
+                        sizeof(ral_link_param_type_t));
+
+                link_configure_status_list.val[link_configure_status_list.length].config_status = status;
+
+                link_configure_status_list.length += 1;
+            } else {
+                LOG_E(RAL_UE, "MIH_C_LINK_CFG_STATUS_LIST overflow for send_configure_thresholds_confirm\n");
+                global_status = MIH_C_STATUS_UNSPECIFIED_FAILURE;
+            }
         }
     }
 
+    if (link_configure_status_list.length > 0) {
+        memcpy (&message_p->ittiMsg, (void *) &configure_threshold_req, sizeof(rrc_ral_configure_threshold_req_t));
+        itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
 
-    memcpy (&message_p->ittiMsg, (void *) &configure_threshold_req, sizeof(rrc_ral_configure_threshold_req_t));
-    itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
+        mRAL_send_configure_thresholds_confirm(instanceP,
+                &msgP->header.transaction_id,
+                &global_status,
+                &link_configure_status_list);
+    } else {
+        mRAL_send_configure_thresholds_confirm(instanceP,
+                &msgP->header.transaction_id,
+                &global_status,
+                NULL);
+
+        result = itti_free (ITTI_MSG_ORIGIN_ID(message_p), message_p);
+        AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------

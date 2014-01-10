@@ -47,10 +47,12 @@
 #define DEFAULT_ADDRESS_3GPP      "0335060080149150"
 #define DEFAULT_ADDRESS_eNB       "0000000000000001"
 
+#define USE_3GPP_ADDR_AS_LINK_ADDR 1
 //-----------------------------------------------------------------------------
 // Constants for scenario
+#define PREDEFINED_MIH_PLMN_ID    503
 #define PREDEFINED_MIH_NETWORK_ID "eurecom"
-#define PREDEFINED_MIH_NETAUX_ID "netaux"
+#define PREDEFINED_MIH_NETAUX_ID  "netaux"
 
 #define PREDEFINED_CHANNEL_ID 2
 #define PREDEFINED_CLASSES_SERVICE_SUPPORTED 2

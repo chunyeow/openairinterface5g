@@ -58,6 +58,7 @@
 #include "lteRALue.h"
 #include "intertask_interface.h"
 
+protected_lteralue_rrc_msg(void mRAL_rx_rrc_ral_scan_confirm                          (instance_t instance, MessageDef *msg_p);)
 protected_lteralue_rrc_msg(void mRAL_rx_rrc_ral_system_information_indication         (instance_t instance, MessageDef *msg_p);)
 protected_lteralue_rrc_msg(void mRAL_rx_rrc_ral_connection_establishment_indication   (instance_t instance, MessageDef *msg_p);)
 protected_lteralue_rrc_msg(void mRAL_rx_rrc_ral_connection_reestablishment_indication (instance_t instance, MessageDef *msg_p);)

@@ -38,6 +38,7 @@
 #define LTERALUE_ACTION_C
 //-----------------------------------------------------------------------------
 #include "lteRALue.h"
+#include "LAYER2/MAC/extern.h"
 
 //-----------------------------------------------------------------------------
 void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_request_t* messageP) {
@@ -47,20 +48,26 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
     MIH_C_LINK_AC_RESULT_T                 link_action_result;
     //unsigned int                           scan_index, meas_to_send;
     MessageDef                            *message_p = NULL;
-    rrc_ral_scan_req_t                     scan_req;
     rrc_ral_connection_release_req_t       release_req;
     rrc_ral_connection_establishment_req_t connection_establishment_req;
+    unsigned int                           mod_id = instanceP - NB_eNB_INST;
 
     status             = MIH_C_STATUS_SUCCESS;
     link_action_result = MIH_C_LINK_AC_RESULT_SUCCESS;
     scan_response_set_list.length = 0;
 
     if ( messageP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN) {
+        //----------------------------------------------------
+        // send a response to MIH-F or it will report an error.
+        //----------------------------------------------------
+        //link_action_result = MIH_C_LINK_AC_RESULT_SUCCESS;
+        //mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
+
+        //----------------------------------------------------
+        // Transmit request to RRC.
+        //----------------------------------------------------
         message_p = itti_alloc_new_message (TASK_RAL_UE, RRC_RAL_SCAN_REQ);
-        memset(&scan_req, 0, sizeof(rrc_ral_scan_req_t));
-        // copy transaction id
-        scan_req.transaction_id  = messageP->header.transaction_id;
-        memcpy (&message_p->ittiMsg, (void *) &scan_req, sizeof(rrc_ral_scan_req_t));
+        RRC_RAL_SCAN_REQ(message_p).transaction_id  = messageP->header.transaction_id;
         itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
     }
     if ( messageP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_RES_RETAIN) {
@@ -88,7 +95,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
             case MIH_C_LINK_AC_TYPE_LINK_DISCONNECT:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_DISCONNECT: NO ACTION\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_DISCONNECT) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_DISCONNECT) {
                     message_p = itti_alloc_new_message (TASK_RAL_UE, RRC_RAL_CONNECTION_RELEASE_REQ);
                     memset(&release_req, 0, sizeof(rrc_ral_connection_release_req_t));
                     // copy transaction id
@@ -103,7 +110,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
             case MIH_C_LINK_AC_TYPE_LINK_LOW_POWER:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_LOW_POWER\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_LOW_POWER) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_LOW_POWER) {
                 // TO DO
                 } else {
                     link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
@@ -113,13 +120,13 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
             case MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN) {
-                    if ( g_ue_ral_obj[instanceP].pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN ) {
-                        if (g_ue_ral_obj[instanceP].state == DISCONNECTED) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN) {
+                    if ( g_ue_ral_obj[mod_id].pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN ) {
+                        if (g_ue_ral_obj[mod_id].state == DISCONNECTED) {
                             LOG_D(RAL_UE, "Deactivation requested, but interface already inactive ==> NO OP\n");
                             mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
                         } else {
-                            g_ue_ral_obj[instanceP].pending_req_action = g_ue_ral_obj[instanceP].pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN;
+                            g_ue_ral_obj[mod_id].pending_req_action = g_ue_ral_obj[mod_id].pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN;
                             //Send immediatly a confirm, otherwise it will arrive to late and MIH-F will report a failure to the MIH-USER
                             mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, NULL, &link_action_result);
 
@@ -130,11 +137,11 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
                             memcpy (&message_p->ittiMsg, (void *) &release_req, sizeof(rrc_ral_connection_release_req_t));
                             itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
                             LOG_D(RAL_UE, "Deactivation requested to NAS interface\n");
-//RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_DEL, g_ue_ral_obj[instanceP].cell_id);
+//RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_DEL, g_ue_ral_obj[mod_id].cell_id);
 
                         }
                     } else {
-                        g_ue_ral_obj[instanceP].pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN;
+                        g_ue_ral_obj[mod_id].pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN;
                         //Send immediatly a confirm, otherwise it will arrive to late and MIH-F will report a failure to the MIH-USER
                         mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, NULL, &link_action_result);
 
@@ -145,7 +152,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
                         memcpy (&message_p->ittiMsg, (void *) &release_req, sizeof(rrc_ral_connection_release_req_t));
                         itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
                         LOG_D(RAL_UE, "Deactivation requested to NAS interface\n");
-//RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_DEL, g_ue_ral_obj[instanceP].cell_id);
+//RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_DEL, g_ue_ral_obj[mod_id].cell_id);
                     }
                 } else {
                     LOG_D(RAL_UE, " command POWER DOWN not available \n\n");
@@ -156,21 +163,21 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
             case MIH_C_LINK_AC_TYPE_LINK_POWER_UP:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_POWER_UP\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
                     // Activation requested - check it is not already active
-                    if(g_ue_ral_obj[instanceP].pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
-                        if (g_ue_ral_obj[instanceP].state == CONNECTED) {
+                    if(g_ue_ral_obj[mod_id].pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
+                        if (g_ue_ral_obj[mod_id].state == CONNECTED) {
                             LOG_D(RAL_UE, "Activation requested, but interface already active ==> NO OP\n");
                             mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
                         } else {
-                            g_ue_ral_obj[instanceP].pending_req_action = g_ue_ral_obj[instanceP].pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
-                            g_ue_ral_obj[instanceP].cell_id = g_ue_ral_obj[instanceP].meas_cell_id[0];  // Default cell #0 - Next, choose cell with best conditions
-                            LOG_D(RAL_UE, "Activation requested to NAS interface on cell %d\n", g_ue_ral_obj[instanceP].cell_id);
-//RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_ADD, g_ue_ral_obj[instanceP].cell_id);
+                            g_ue_ral_obj[mod_id].pending_req_action = g_ue_ral_obj[mod_id].pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
+                            g_ue_ral_obj[mod_id].cell_id = g_ue_ral_obj[mod_id].meas_cell_id[0];  // Default cell #0 - Next, choose cell with best conditions
+                            LOG_D(RAL_UE, "Activation requested to NAS interface on cell %d\n", g_ue_ral_obj[mod_id].cell_id);
+//RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_ADD, g_ue_ral_obj[mod_id].cell_id);
                         }
                     } else {
-                        g_ue_ral_obj[instanceP].pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
-                        g_ue_ral_obj[instanceP].cell_id = g_ue_ral_obj[instanceP].meas_cell_id[0]; // Default cell #0 - Next, choose cell with best conditions
+                        g_ue_ral_obj[mod_id].pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
+                        g_ue_ral_obj[mod_id].cell_id = g_ue_ral_obj[mod_id].meas_cell_id[0]; // Default cell #0 - Next, choose cell with best conditions
                         message_p = itti_alloc_new_message (TASK_RAL_UE, RRC_RAL_CONNECTION_ESTABLISHMENT_REQ);
                         memset(&connection_establishment_req, 0, sizeof(rrc_ral_connection_establishment_req_t));
                         // copy transaction id
@@ -187,7 +194,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
 /* LG KEEP  case MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR: NO ACTION\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR) {
                 } else {
                     link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
                     mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
@@ -196,7 +203,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
             case MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES: NO ACTION\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES) {
                 } else {
                     link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
                     mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
@@ -205,7 +212,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
 
             case MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES:
                 LOG_D(RAL_UE, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES: NO ACTION\n", __FUNCTION__);
-                if (g_ue_ral_obj[instanceP].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES) {
+                if (g_ue_ral_obj[mod_id].mih_supported_action_list  & MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES) {
                 } else {
                     link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
                     mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
