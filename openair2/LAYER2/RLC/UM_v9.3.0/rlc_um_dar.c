@@ -29,6 +29,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define RLC_UM_MODULE
 #define RLC_UM_DAR_C
 #include "platform_types.h"
+#include "assertions.h"
 //-----------------------------------------------------------------------------
 #include "rlc.h"
 #include "rlc_um.h"
@@ -82,8 +83,8 @@ signed int rlc_um_get_pdu_infos(u32_t frame,rlc_um_pdu_sn_10_t* headerP, s16_t t
             }
             sum_li += pdu_infoP->li_list[pdu_infoP->num_li];
             pdu_infoP->num_li = pdu_infoP->num_li + 1;
+            AssertFatal( pdu_infoP->num_li > RLC_AM_MAX_SDU_IN_PDU, "[FRAME %05d][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
             if (pdu_infoP->num_li > RLC_AM_MAX_SDU_IN_PDU) {
-                LOG_E(RLC, "[FRAME %05d][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
                 return -2;
             }
         }
@@ -251,10 +252,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
 
                         break;
                     default:
-                    LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] TRY REASSEMBLY SHOULD NOT GO HERE\n", rlcP->module_id, rlcP->rb_id, frame);
-#ifdef USER_MODE
-                    assert(0 != 0);
-#endif
+                        AssertFatal( 0 !=0, "[RLC_UM][MOD %d][RB %d][FRAME %05d] TRY REASSEMBLY SHOULD NOT GO HERE\n", rlcP->module_id, rlcP->rb_id, frame);
                 }
             } else {
                 if (rlc_um_read_length_indicators(&data, e_li, li_array, &num_li, &size ) >= 0) {
@@ -354,10 +352,7 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
                                 // data is already ok, done by last loop above
                                 rlc_um_reassembly (data, size, rlcP,frame);
                             } else {
-                                LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] SHOULD NOT GO HERE\n", rlcP->module_id, rlcP->rb_id, frame, li_array[0]);
-#ifdef USER_MODE
-                                assert (5!=5);
-#endif
+                                AssertFatal( 0 !=0, "[RLC_UM][MOD %d][RB %d][FRAME %05d] SHOULD NOT GO HERE\n", rlcP->module_id, rlcP->rb_id, frame);
                             	//rlcP->stat_rx_data_pdu_dropped += 1;
                             	rlcP->stat_rx_data_bytes_dropped += size;
                             }
