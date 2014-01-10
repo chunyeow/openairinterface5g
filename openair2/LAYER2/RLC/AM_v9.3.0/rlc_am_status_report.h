@@ -114,7 +114,7 @@ protected_rlc_am_status_report( void rlc_am_display_control_pdu_infos(rlc_am_con
 * \param[in]  first_byte        Pointer on first byte of control PDU.
 * \param[in]  tb_size_in_bytes  Pointer on size of serialized control PDU in bytes.
 */
-protected_rlc_am_status_report( void       rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t*  tbP, u8_t* first_byte, s16_t *tb_size_in_bytes);)
+protected_rlc_am_status_report( void       rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t*  tbP, u8_t** first_byte, s16_t *tb_size_in_bytes);)
 
 /*! \fn int  rlc_am_write_status_pdu(u32_t frame,rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10P, rlc_am_control_pdu_info_t* pdu_infoP)
 * \brief      Remove all marked holes for PDU with sequence number "snP".

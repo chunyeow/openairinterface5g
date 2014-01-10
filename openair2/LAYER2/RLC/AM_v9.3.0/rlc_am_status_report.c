@@ -125,7 +125,7 @@ signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* headerP, s16_t *tota
         if (pdu_infoP->cpt != 0x00) return -3;
         pdu_infoP->ack_sn = ((headerP->b2 >> 2) & 0x3F) | (((u16_t)(headerP->b1 & 0x0F)) << 6);
         pdu_infoP->e1     = (headerP->b2 >> 1) & 0x01;
-        *total_size_pP -= 1;
+        //*total_size_pP -= 1;
 
         if (pdu_infoP->e1) {
             unsigned int nack_to_read  = 1;
@@ -192,11 +192,12 @@ void rlc_am_display_control_pdu_infos(rlc_am_control_pdu_info_t* pdu_infoP)
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t*  tbP, u8_t* first_byteP, s16_t *tb_size_in_bytes_pP)
+void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t*  tbP, u8_t** first_byteP, s16_t *tb_size_in_bytes_pP)
 //-----------------------------------------------------------------------------
 {
   //rlc_am_control_pdu_info_t* pdu_info  = ((rlc_am_control_pdu_info_t*)(tbP->data));
-  rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10 = (rlc_am_pdu_sn_10_t*)first_byteP;
+  rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10 = (rlc_am_pdu_sn_10_t*)*first_byteP;
+  s16_t               initial_pdu_size = *tb_size_in_bytes_pP;
 
   if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10, tb_size_in_bytes_pP, &g_rlc_am_control_pdu_info) >= 0) {
 
@@ -282,6 +283,8 @@ void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, u32_t frame, mem_
   } else {
     LOG_W(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d] ERROR IN DECODING CONTROL PDU\n", frame, rlcP->module_id, rlcP->rb_id);
   }
+  *first_byteP = (u8_t*)((uint64_t)*first_byteP + initial_pdu_size - *tb_size_in_bytes_pP);
+
   free_mem_block(tbP);
   rlc_am_tx_buffer_display(rlcP, frame, NULL);
 }

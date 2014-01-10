@@ -42,6 +42,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define DEBUG_RLC_AM_DISPLAY_TB_DATA
 //#define RLC_AM_GENERATE_ERRORS
 #define DEBUG_DISPLAY_NVIDIA
+#define RLC_ENABLE_PDU_CONCATENATION
 //-----------------------------------------------------------------------------
 signed int rlc_am_get_data_pdu_infos(u32_t frame, rlc_am_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_am_pdu_info_t* pdu_infoP)
 //-----------------------------------------------------------------------------
@@ -219,7 +220,7 @@ rlc_am_receive_routing (rlc_am_entity_t *rlcP, u32_t frame, u8_t eNB_flag, struc
             } else {
                 rlcP->stat_rx_control_bytes += tb_size_in_bytes;
                 rlcP->stat_rx_control_pdu += 1;
-                rlc_am_receive_process_control_pdu (rlcP, frame, tb, first_byte, &tb_size_in_bytes);
+                rlc_am_receive_process_control_pdu (rlcP, frame, tb, &first_byte, &tb_size_in_bytes);
                 // if data pdu concatenated with control PDU (seen with real hardware LTE dongle integration)
                 if (tb_size_in_bytes > 0) {
 #if defined(RLC_ENABLE_PDU_CONCATENATION)
