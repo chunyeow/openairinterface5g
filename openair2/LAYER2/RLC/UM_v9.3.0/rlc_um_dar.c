@@ -70,20 +70,24 @@ signed int rlc_um_get_pdu_infos(u32_t frame,rlc_um_pdu_sn_10_t* headerP, s16_t t
         while (li_to_read)  {
             li_length_in_bytes = li_length_in_bytes ^ 3;
             if (li_length_in_bytes  == 2) {
+                AssertFatal( total_sizeP >= ((uint64_t)(&e_li->b2) - (uint64_t)headerP),
+                        "DECODING PDU TOO FAR PDU size %d", total_sizeP);
                 pdu_infoP->li_list[pdu_infoP->num_li] = ((u16_t)(e_li->b1 << 4)) & 0x07F0;
                 pdu_infoP->li_list[pdu_infoP->num_li] |= (((u8_t)(e_li->b2 >> 4)) & 0x000F);
                 li_to_read = e_li->b1 & 0x80;
                 pdu_infoP->header_size  += 2;
             } else {
+                AssertFatal( total_sizeP >= ((uint64_t)(&e_li->b3) - (uint64_t)headerP),
+                        "DECODING PDU TOO FAR PDU size %d", total_sizeP);
                 pdu_infoP->li_list[pdu_infoP->num_li] = ((u16_t)(e_li->b2 << 8)) & 0x0700;
                 pdu_infoP->li_list[pdu_infoP->num_li] |=  e_li->b3;
                 li_to_read = e_li->b2 & 0x08;
                 e_li++;
                 pdu_infoP->header_size  += 1;
             }
+            AssertFatal( pdu_infoP->num_li >= RLC_AM_MAX_SDU_IN_PDU, "[FRAME %05d][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
             sum_li += pdu_infoP->li_list[pdu_infoP->num_li];
             pdu_infoP->num_li = pdu_infoP->num_li + 1;
-            AssertFatal( pdu_infoP->num_li > RLC_AM_MAX_SDU_IN_PDU, "[FRAME %05d][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
             if (pdu_infoP->num_li > RLC_AM_MAX_SDU_IN_PDU) {
                 return -2;
             }
@@ -230,9 +234,9 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
                             rlc_um_reassembly (data, size, rlcP,frame);
                             rlc_um_send_sdu(rlcP,frame,eNB_flag);
                         } else {
-                        	//clear sdu already done
-                        	rlcP->stat_rx_data_pdu_dropped += 1;
-                        	rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
+                            //clear sdu already done
+                            rlcP->stat_rx_data_pdu_dropped += 1;
+                            rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
                         }
                         rlcP->reassembly_missing_sn_detected = 0;
                         break;
@@ -246,8 +250,13 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
                             //LOG_D(RLC, "[MSC_NBOX][FRAME %05d][RLC_UM][MOD %02d][RB %02d][Missing SN detected][RLC_UM][MOD %02d][RB %02d]\n",
                             //      frame, rlcP->module_id,rlcP->rb_id, rlcP->module_id,rlcP->rb_id);
                             rlcP->reassembly_missing_sn_detected = 1; // not necessary but for readability of the code
-                        	rlcP->stat_rx_data_pdu_dropped += 1;
-                        	rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
+                            rlcP->stat_rx_data_pdu_dropped += 1;
+                            rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
+#if defined(RLC_STOP_ON_LOST_PDU)
+                            AssertFatal( rlcP->reassembly_missing_sn_detected == 1,
+                                    "[RLC_UM][MOD %d][RB %d][FRAME %05d] MISSING PDU DETECTED\n",
+                                    rlcP->module_id, rlcP->rb_id, frame);
+#endif
                         }
 
                         break;
@@ -308,8 +317,8 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
                             if (rlcP->reassembly_missing_sn_detected) {
                                 reassembly_start_index = 1;
                                 data = &data[li_array[0]];
-                            	//rlcP->stat_rx_data_pdu_dropped += 1;
-                            	rlcP->stat_rx_data_bytes_dropped += li_array[0];
+                                //rlcP->stat_rx_data_pdu_dropped += 1;
+                                rlcP->stat_rx_data_bytes_dropped += li_array[0];
                             } else {
                                 reassembly_start_index = 0;
                             }
@@ -361,13 +370,14 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
                         default:
                             LOG_W(RLC, "[MSC_NBOX][FRAME %05d][RLC_UM][MOD %02d][RB %02d][Missing SN detected][RLC_UM][MOD %02d][RB %02d]\n",
                                   frame, rlcP->module_id,rlcP->rb_id, rlcP->module_id,rlcP->rb_id);
-#ifdef USER_MODE
-                            assert(1 != 1);
-#endif
-                        	rlcP->stat_rx_data_pdu_dropped += 1;
-                        	rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
+                            rlcP->stat_rx_data_pdu_dropped += 1;
+                            rlcP->stat_rx_data_bytes_dropped += tb_ind->size;
 
                             rlcP->reassembly_missing_sn_detected = 1;
+#if defined(RLC_STOP_ON_LOST_PDU)
+                            AssertFatal( rlcP->reassembly_missing_sn_detected == 1,
+                                    "[RLC_UM][MOD %d][RB %d][FRAME %05d] MISSING PDU DETECTED\n", rlcP->module_id, rlcP->rb_id, frame);
+#endif
                     }
                 }
             }
@@ -380,6 +390,10 @@ void rlc_um_try_reassembly(rlc_um_entity_t *rlcP, u32_t frame, u8_t eNB_flag, si
 		  frame, rlcP->module_id,rlcP->rb_id, sn, rlcP->module_id,rlcP->rb_id);
             rlcP->reassembly_missing_sn_detected = 1;
             rlc_um_clear_rx_sdu(rlcP);
+#if defined(RLC_STOP_ON_LOST_PDU)
+            AssertFatal( rlcP->reassembly_missing_sn_detected == 1,
+                    "[FRAME %05d][RLC_UM][MOD %d][RB %d] MISSING PDU DETECTED\n", frame, rlcP->module_id, rlcP->rb_id);
+#endif
         }
         sn = (sn + 1) % rlcP->rx_sn_modulo;
         if ((sn == rlcP->vr_uh) || (sn == end_snP)){

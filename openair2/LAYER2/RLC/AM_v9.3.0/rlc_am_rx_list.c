@@ -29,13 +29,11 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define RLC_AM_MODULE
 #define RLC_AM_RX_LIST_C
 //-----------------------------------------------------------------------------
-#ifdef USER_MODE
-#include <assert.h>
-#endif
 //-----------------------------------------------------------------------------
 //#include "rtos_header.h"
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
+#include "assertions.h"
 #include "list.h"
 #include "rlc_am.h"
 #include "LAYER2/MAC/extern.h"
@@ -450,6 +448,12 @@ void rlc_am_rx_list_reassemble_rlc_sdus(rlc_am_entity_t* rlcP,u32_t frame, u8_t 
             }
             rlc_am_rx_pdu_management = ((rlc_am_rx_pdu_management_t*)(cursor->data));
         } else {
+#if defined(RLC_STOP_ON_LOST_PDU)
+            if (list2_get_head(&rlcP->receiver_buffer) != cursor) {
+                AssertFatal( 0 == 1,
+                      "[FRAME %05d][RLC_AM][MOD %d][RB %d] LOST PDU DETECTED\n", frame, rlcP->module_id, rlcP->rb_id);
+            }
+#endif
             return;
         }
 

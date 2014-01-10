@@ -282,6 +282,10 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlcP, u32_t frame, u8_t e
 		      free_mem_block (tbP);
 		      LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU]  PDU DISCARDED, STATUS REQUESTED:\n", frame, rlcP->module_id, rlcP->rb_id);
               rlcP->status_requested = 1;
+#if defined(RLC_STOP_ON_LOST_PDU)
+              AssertFatal( 0 == 1,
+                    "[FRAME %05d][RLC_AM][MOD %d][RB %d] LOST PDU DETECTED\n", frame, rlcP->module_id, rlcP->rb_id);
+#endif
           } else {
             // 5.1.3.2.3
             // Actions when a RLC data PDU is placed in the reception buffer
@@ -333,6 +337,7 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlcP, u32_t frame, u8_t e
                   }
                   rlc_am_rx_list_reassemble_rlc_sdus(rlcP,frame,eNB_flag);
               }
+
               if (rlcP->t_reordering.running) {
                   if ((rlcP->vr_x == rlcP->vr_r) || ((rlc_am_in_rx_window(rlcP, pdu_info->sn) == 0) && (rlcP->vr_x != rlcP->vr_mr))) {
                       rlc_am_stop_and_reset_timer_reordering(rlcP,frame);
