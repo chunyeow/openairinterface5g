@@ -132,6 +132,10 @@ CFLAGS += -DRel8
 #endif
 endif
 
+ifeq ($(RLC_STOP_ON_LOST_PDU), 1)
+CFLAGS += -DRLC_STOP_ON_LOST_PDU
+endif
+
 ifeq ($(ENABLE_RAL), 1)
 CFLAGS += -DENABLE_RAL
 endif
