@@ -127,10 +127,10 @@ static void init_SI (u8 Mod_id
      int N_RB_DL,phich_resource;
 
 
-     do_MIB(mac_xface->lte_frame_parms,0x321,&mib);
+     do_MIB(Mod_id, mac_xface->lte_frame_parms,0x321,&mib);
 
      for (i=0;i<1024;i+=4)
-     do_MIB(mac_xface->lte_frame_parms,i,&mib);
+     do_MIB(Mod_id, mac_xface->lte_frame_parms,i,&mib);
 
      N_RB_DL=6;
      while (N_RB_DL != 0) {
@@ -140,7 +140,7 @@ static void init_SI (u8 Mod_id
      mac_xface->lte_frame_parms->N_RB_DL = N_RB_DL;
      mac_xface->lte_frame_parms->phich_config_common.phich_duration=i;
      mac_xface->lte_frame_parms->phich_config_common.phich_resource = phich_resource;
-     do_MIB(mac_xface->lte_frame_parms,0,&mib);
+     do_MIB(Mod_id, mac_xface->lte_frame_parms,0,&mib);
      }
      if (phich_resource == 1)
      phich_resource = 3;
@@ -722,6 +722,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   /// DRB
   DRB_config = CALLOC (1, sizeof (*DRB_config));
 
+  DRB_config->eps_BearerIdentity = CALLOC(1, sizeof(long));
+  *(DRB_config->eps_BearerIdentity) = 5L; // LW set to first value, allowed value 5..15
   //DRB_config->drb_Identity = (DRB_Identity_t) 1; //allowed values 1..32
   // NN: this is the 1st DRB for this ue, so set it to 1
   DRB_config->drb_Identity = (DRB_Identity_t) 1;        // (UE_index+1); //allowed values 1..32
@@ -729,6 +731,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   *(DRB_config->logicalChannelIdentity) = (long) 3;
   DRB_rlc_config = CALLOC (1, sizeof (*DRB_rlc_config));
   DRB_config->rlc_Config = DRB_rlc_config;
+
   DRB_rlc_config->present = RLC_Config_PR_um_Bi_Directional;
   DRB_rlc_config->choice.um_Bi_Directional.ul_UM_RLC.sn_FieldLength =  SN_FieldLength_size10;
   DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.sn_FieldLength =  SN_FieldLength_size10;
@@ -1065,12 +1068,11 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
                                           SRB_configList2, *DRB_configList, NULL,       // DRB2_list,
-                                          NULL, //*sps_Config,
+                                          NULL, // *sps_Config,
                                           physicalConfigDedicated[UE_index], MeasObj_list, ReportConfig_list, 
                                           quantityConfig,
                                           MeasId_list, mac_MainConfig, NULL,NULL,Sparams,rsrp,
                                           cba_RNTI, dedicatedInfoNASList);
-
 #if defined(ENABLE_ITTI)
   /* Free all NAS PDUs */
   for (i = 0; i < UE_info->nb_of_e_rabs; i++)
@@ -1249,11 +1251,11 @@ void check_handovers(u8 Mod_id, u32 frame) {
         LOG_D(RRC,"[eNB %d] Frame %d: handover Command received for new UE_idx %d current eNB %d target eNB: %d \n",
               Mod_id, frame, i,Mod_id,eNB_rrc_inst[Mod_id].handover_info[i]->modid_t);
         //rrc_eNB_process_handoverPreparationInformation(Mod_id,frame,i);
-        pdcp_data_req(Mod_id, i, frame, 1,
-                      (i* NB_RB_MAX)+DCCH,
-                      rrc_eNB_mui++,0,
-                      eNB_rrc_inst[Mod_id].handover_info[i]->size,
-                      eNB_rrc_inst[Mod_id].handover_info[i]->buf,1);
+        result = pdcp_data_req(Mod_id, i, frame, 1,
+                               (i* NB_RB_MAX)+DCCH,
+                               rrc_eNB_mui++,0,
+                               eNB_rrc_inst[Mod_id].handover_info[i]->size,
+                               eNB_rrc_inst[Mod_id].handover_info[i]->buf,1);
         AssertFatal (result == TRUE, "PDCP data request failed!\n");
         eNB_rrc_inst[Mod_id].handover_info[i]->ho_complete = 0xF2;
       }
@@ -2332,7 +2334,8 @@ void rrc_eNB_generate_RRCConnectionSetup (u8 Mod_id, u32 frame, u16 UE_index) {
   SRB_configList = &eNB_rrc_inst[Mod_id].SRB_configList[UE_index];
 
   eNB_rrc_inst[Mod_id].Srb0.Tx_buffer.payload_size =
-    do_RRCConnectionSetup ((u8 *) eNB_rrc_inst[Mod_id].Srb0.Tx_buffer.Payload,
+    do_RRCConnectionSetup (Mod_id,
+                           (u8 *) eNB_rrc_inst[Mod_id].Srb0.Tx_buffer.Payload,
                            mac_xface->get_transmission_mode (Mod_id,
                                                              find_UE_RNTI
                                                              (Mod_id,

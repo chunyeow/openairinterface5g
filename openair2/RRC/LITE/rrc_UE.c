@@ -297,7 +297,7 @@ void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 eNB_index){
       LOG_T(RRC,"%x.",rv[i]);
     }
     LOG_T(RRC,"\n");
-    UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size = do_RRCConnectionRequest((u8 *)UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload,rv);
+    UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size = do_RRCConnectionRequest(Mod_id, (u8 *)UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload,rv);
 
     LOG_I(RRC,"[UE %d] : Frame %d, Logical Channel UL-CCCH (SRB0), Generating RRCConnectionRequest (bytes %d, eNB %d)\n",
       Mod_id, frame, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size, eNB_index);
@@ -365,7 +365,7 @@ void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id, u32 frame, u8 eNB_ind
   nas_msg_length  = sizeof(nas_attach_req_imsi);
 #endif
 
-  size = do_RRCConnectionSetupComplete(buffer, Transaction_id, nas_msg_length, nas_msg);
+  size = do_RRCConnectionSetupComplete(Mod_id, buffer, Transaction_id, nas_msg_length, nas_msg);
 
   LOG_I(RRC,"[UE %d][RAPROC] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionSetupComplete (bytes%d, eNB %d)\n",
     Mod_id,frame, size, eNB_index);
@@ -381,7 +381,7 @@ void rrc_ue_generate_RRCConnectionReconfigurationComplete(u8 Mod_id, u32 frame, 
 
   u8 buffer[32], size;
 
-  size = do_RRCConnectionReconfigurationComplete(buffer, Transaction_id);
+  size = do_RRCConnectionReconfigurationComplete(Mod_id, buffer, Transaction_id);
 
   LOG_I(RRC,"[UE %d] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionReconfigurationComplete (bytes %d, eNB_index %d)\n",
     Mod_id,frame, size, eNB_index);
@@ -1184,6 +1184,25 @@ void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityMo
       xer_fprint(stdout, &asn_DEF_UL_DCCH_Message, (void*)&ul_dcch_msg);
 #endif	  
 
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+      {
+        char        message_string[20000];
+        size_t      message_string_size;
+
+        if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
+        {
+          MessageDef *message_p;
+
+          message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+          memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+          itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
+        }
+      }
+# endif
+#endif
+
 #ifdef USER_MODE
       LOG_D(RRC, "securityModeComplete Encoded %d bits (%d bytes)\n", enc_rval.encoded, (enc_rval.encoded+7)/8);
 #endif
@@ -1244,6 +1263,25 @@ void rrc_ue_process_ueCapabilityEnquiry(uint8_t Mod_id,uint32_t frame,UECapabili
 
 #ifdef XER_PRINT
           xer_fprint(stdout, &asn_DEF_UL_DCCH_Message, (void*)&ul_dcch_msg);
+#endif
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+          {
+            char        message_string[20000];
+            size_t      message_string_size;
+
+            if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
+            {
+              MessageDef *message_p;
+
+              message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+              memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+              itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
+            }
+          }
+# endif
 #endif
 
 #ifdef USER_MODE
@@ -2397,7 +2435,7 @@ void rrc_ue_generate_MeasurementReport(u8 eNB_id, u8 UE_id, u32 frame) {
 
       if (pframe!=frame){
         pframe=frame;
-        size = do_MeasurementReport(buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
+        size = do_MeasurementReport(UE_id, buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
         LOG_D(RRC, "[UE %d] Frame %d: Sending MeasReport: servingCell(%d) targetCell(%d) rsrp_s(%d) rsrq_s(%d) rsrp_t(%d) rsrq_t(%d) \n",
               UE_id, frame, cellId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
         LOG_I(RRC, "[UE %d] Frame %d : Generating Measurement Report for eNB %d\n", UE_id, frame, eNB_id);

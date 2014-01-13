@@ -282,7 +282,7 @@ uint8_t do_SIB1(LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer,
 }
 */
 // AT4 packet
-uint8_t do_MIB(LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, uint8_t *buffer) {
+uint8_t do_MIB(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, uint8_t *buffer) {
 
   asn_enc_rval_t enc_rval;
   BCCH_BCH_Message_t mib;
@@ -342,9 +342,29 @@ uint8_t do_MIB(LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, uint8_t *buffer)
   mib.message.spare.bits_unused = 6;  // This makes a spare of 10 bits
 
   enc_rval = uper_encode_to_buffer(&asn_DEF_BCCH_BCH_Message,
-				   (void*)&mib,
-				   buffer,
-				   100);
+                                   (void*)&mib,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_BCH_Message, (void *) &mib)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
+    }
+  }
+# endif
+#endif
+
   if (enc_rval.encoded==-1)
     return(-1);
   return((enc_rval.encoded+7)/8);
@@ -1042,7 +1062,6 @@ uint8_t do_SIB23(uint8_t Mod_id,
   }
 #endif
 
-
   bcch_message->message.present = BCCH_DL_SCH_MessageType_PR_c1;
   bcch_message->message.choice.c1.present = BCCH_DL_SCH_MessageType__c1_PR_systemInformation;
 
@@ -1105,7 +1124,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
   return((enc_rval.encoded+7)/8);
 }
 
-uint8_t do_RRCConnectionRequest(uint8_t *buffer,uint8_t *rv) {
+uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv) {
 
   asn_enc_rval_t enc_rval;
   uint8_t buf[5],buf2=0;
@@ -1158,9 +1177,28 @@ uint8_t do_RRCConnectionRequest(uint8_t *buffer,uint8_t *rv) {
 
 
   enc_rval = uper_encode_to_buffer(&asn_DEF_UL_CCCH_Message,
-				   (void*)&ul_ccch_msg,
-				   buffer,
-				   100);
+                                   (void*)&ul_ccch_msg,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_CCCH_Message, (void *) &ul_ccch_msg)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
+    }
+  }
+# endif
+#endif
 
 #ifdef USER_MODE
   LOG_D(RRC,"[UE] RRCConnectionRequest Encoded %d bits (%d bytes), ecause %d\n",enc_rval.encoded,(enc_rval.encoded+7)/8,ecause);
@@ -1170,7 +1208,7 @@ uint8_t do_RRCConnectionRequest(uint8_t *buffer,uint8_t *rv) {
 
 }
 
-uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const uint8_t Transaction_id, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS) {
+uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t *buffer, const uint8_t Transaction_id, const int dedicatedInfoNASLength, const char *dedicatedInfoNAS) {
 
 
   asn_enc_rval_t enc_rval;
@@ -1213,14 +1251,29 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const uint8_t Transaction
   rrcConnectionSetupComplete->criticalExtensions.choice.c1.choice.rrcConnectionSetupComplete_r8.registeredMME->mmec.bits_unused=0;
 */
 
-
-
-
   enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message,
-				   (void*)&ul_dcch_msg,
-				   buffer,
-				   100);
+                                   (void*)&ul_dcch_msg,
+                                   buffer,
+                                   100);
 
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
+    }
+  }
+# endif
+#endif
 
 #ifdef USER_MODE
   LOG_D(RRC,"RRCConnectionSetupComplete Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
@@ -1230,7 +1283,7 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t *buffer, const uint8_t Transaction
 
 }
 
-uint8_t do_RRCConnectionReconfigurationComplete(uint8_t *buffer, const uint8_t Transaction_id) {
+uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer, const uint8_t Transaction_id) {
 
 
   asn_enc_rval_t enc_rval;
@@ -1250,9 +1303,28 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t *buffer, const uint8_t T
   rrcConnectionReconfigurationComplete->criticalExtensions.choice.rrcConnectionReconfigurationComplete_r8.nonCriticalExtension=NULL;
 
  enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message,
-				   (void*)&ul_dcch_msg,
-				   buffer,
-				   100);
+                                 (void*)&ul_dcch_msg,
+                                 buffer,
+                                 100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
+    }
+  }
+# endif
+#endif
 
 #ifdef USER_MODE
  LOG_D(RRC,"RRCConnectionReconfigurationComplete Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
@@ -1262,14 +1334,14 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t *buffer, const uint8_t T
 }
 
 
-uint8_t do_RRCConnectionSetup(uint8_t *buffer,
-			      u8 transmission_mode,
-			      uint8_t UE_id,
-			      uint8_t Transaction_id,
-			      LTE_DL_FRAME_PARMS *frame_parms,
-			      SRB_ToAddModList_t  **SRB_configList,
-			      struct PhysicalConfigDedicated  **physicalConfigDedicated) {
-
+uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
+                              uint8_t *buffer,
+                              u8 transmission_mode,
+                              uint8_t UE_id,
+                              uint8_t Transaction_id,
+                              LTE_DL_FRAME_PARMS *frame_parms,
+                              SRB_ToAddModList_t  **SRB_configList,
+                              struct PhysicalConfigDedicated  **physicalConfigDedicated) {
 
   asn_enc_rval_t enc_rval;
   uint8_t ecause=0;
@@ -1518,9 +1590,28 @@ uint8_t do_RRCConnectionSetup(uint8_t *buffer,
 
 
   enc_rval = uper_encode_to_buffer(&asn_DEF_DL_CCCH_Message,
-				   (void*)&dl_ccch_msg,
-				   buffer,
-				   100);
+                                   (void*)&dl_ccch_msg,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_CCCH_Message, (void *) &dl_ccch_msg)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
+    }
+  }
+# endif
+#endif
 
 #ifdef USER_MODE
   LOG_D(RRC,"RRCConnectionSetup Encoded %d bits (%d bytes), ecause %d\n",enc_rval.encoded,(enc_rval.encoded+7)/8,ecause);
@@ -1805,11 +1896,12 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
 uint8_t TMGI[5] = {4,3,2,1,0};//TMGI is a string of octet, ref. TS 24.008 fig. 10.5.4a
 
 #ifdef Rel10
-uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
-			   uint8_t sync_area,
-			   uint8_t *buffer,
-			   MCCH_Message_t *mcch_message,
-			   MBSFNAreaConfiguration_r9_t **mbsfnAreaConfiguration) {
+uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
+                           LTE_DL_FRAME_PARMS *frame_parms,
+                           uint8_t sync_area,
+                           uint8_t *buffer,
+                           MCCH_Message_t *mcch_message,
+                           MBSFNAreaConfiguration_r9_t **mbsfnAreaConfiguration) {
 
   asn_enc_rval_t enc_rval;
   MBSFN_SubframeConfig_t *mbsfn_SubframeConfig1;
@@ -1910,9 +2002,29 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
   xer_fprint(stdout,&asn_DEF_MCCH_Message,(void*)mcch_message);
 #endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_MCCH_Message,
-				   (void*)mcch_message,
-				   buffer,
-				   100);
+                                   (void*)mcch_message,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_MCCH_Message, (void *) &mcch_message)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, message_p);
+    }
+  }
+# endif
+#endif
+
 #ifdef USER_MODE
   LOG_D(RRC,"[eNB] MCCH Message Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
 #endif
@@ -1925,8 +2037,7 @@ uint8_t do_MBSFNAreaConfig(LTE_DL_FRAME_PARMS *frame_parms,
 }
 #endif
 
-uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,long rsrp_t,long rsrq_t) {
-
+uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,long rsrp_t,long rsrq_t) {
 
   asn_enc_rval_t enc_rval;
 
@@ -1941,7 +2052,6 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   measurementReport->criticalExtensions.present=MeasurementReport__criticalExtensions_PR_c1;
   measurementReport->criticalExtensions.choice.c1.present=MeasurementReport__criticalExtensions__c1_PR_measurementReport_r8;
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.nonCriticalExtension=CALLOC(1,sizeof(*measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.nonCriticalExtension));
-
 
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measId=measid;
 #ifdef Rel10
@@ -1964,7 +2074,6 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   struct MeasResultEUTRA__cgi_Info *measresult_cgi2;
   measresult_cgi2 = CALLOC(1,sizeof(*measresult_cgi2));
 
-
   memset(&measresult_cgi2->cellGlobalId.plmn_Identity,0,sizeof(measresult_cgi2->cellGlobalId.plmn_Identity));
 
   measresult_cgi2->cellGlobalId.plmn_Identity.mcc=CALLOC(1,sizeof(measresult_cgi2->cellGlobalId.plmn_Identity.mcc));
@@ -1980,7 +2089,6 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list.count=0;
   dummy=8;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list,&dummy);
   dummy=0;ASN_SEQUENCE_ADD(&measresult_cgi2->cellGlobalId.plmn_Identity.mnc.list,&dummy);
-
 
   measresult_cgi2->cellGlobalId.cellIdentity.buf=MALLOC(8);
   measresult_cgi2->cellGlobalId.cellIdentity.buf[0]=0x01;
@@ -2010,11 +2118,29 @@ uint8_t do_MeasurementReport(uint8_t *buffer,int measid,int phy_id,int rsrp_s,in
   
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultNeighCells->choice.measResultListEUTRA=*(measResultListEUTRA2);
 
-
   enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message,
-				   (void*)&ul_dcch_msg,
-				   buffer,
-				   100);
+                                   (void*)&ul_dcch_msg,
+                                   buffer,
+                                   100);
+
+#if defined(ENABLE_ITTI)
+# if !defined(DISABLE_XER_SPRINT)
+  {
+    char        message_string[20000];
+    size_t      message_string_size;
+
+    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
+    {
+      MessageDef *message_p;
+
+      message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
+      memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+
+      itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
+    }
+  }
+# endif
+#endif
 
 #ifdef USER_MODE
   printf("Measurement Report Encoded %zu bits (%zu bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
@@ -2447,14 +2573,14 @@ uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *b
 
 //-----------------------------------------------------------------------------
 uint8_t do_RRCConnReconf_defaultCELL(uint8_t Mod_id,
-                                             uint8_t *buffer,
-                                             uint8_t UE_id,
-                                             uint8_t Transaction_id,
- /*                                            struct SRB_ToAddMod **SRB2_config,
-                                             struct DRB_ToAddMod **DRB_config,*/
-                                             SRB_ToAddModList_t  **SRB_configList,
-                                             DRB_ToAddModList_t  **DRB_configList,
-                                             struct PhysicalConfigDedicated  **physicalConfigDedicated) {
+                                     uint8_t *buffer,
+                                     uint8_t UE_id,
+                                     uint8_t Transaction_id,
+/*                                            struct SRB_ToAddMod **SRB2_config,
+                                     struct DRB_ToAddMod **DRB_config,*/
+                                     SRB_ToAddModList_t  **SRB_configList,
+                                     DRB_ToAddModList_t  **DRB_configList,
+                                     struct PhysicalConfigDedicated  **physicalConfigDedicated) {
 //-----------------------------------------------------------------------------
 
   asn_enc_rval_t enc_rval;
@@ -2866,9 +2992,9 @@ uint8_t do_RRCConnReconf_defaultCELL(uint8_t Mod_id,
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.securityConfigHO     = NULL;
 
   enc_rval = uper_encode_to_buffer(&asn_DEF_DL_DCCH_Message,
-				   (void*)&dl_dcch_msg,
-				   buffer,
-				   100);
+                                   (void*)&dl_dcch_msg,
+                                   buffer,
+                                   100);
   
 #ifdef XER_PRINT
   xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)&dl_dcch_msg);
