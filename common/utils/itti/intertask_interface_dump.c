@@ -55,14 +55,13 @@
 #include "assertions.h"
 #include "liblfds611.h"
 
+#include "itti_types.h"
 #include "intertask_interface.h"
 #include "intertask_interface_dump.h"
 
 #if defined(OAI_EMU) || defined(RTAI)
 #include "vcd_signal_dumper.h"
 #endif
-
-#define SIGNAL_NAME_LENGTH  48
 
 static const int itti_dump_debug = 0; // 0x8 | 0x4 | 0x2;
 
@@ -80,18 +79,10 @@ static const int itti_dump_debug = 0; // 0x8 | 0x4 | 0x2;
 # define KERNEL_VERSION_PRE_2_6_30 1
 #endif
 
-/* Message sent is an intertask dump type */
-#define ITTI_DUMP_MESSAGE_TYPE      0x1
-#define ITTI_STATISTIC_MESSAGE_TYPE 0x2
-#define ITTI_DUMP_XML_DEFINITION    0x3
-/* This signal is not meant to be used by remote analyzer */
-#define ITTI_DUMP_EXIT_SIGNAL       0x4
-
 typedef struct itti_dump_queue_item_s {
     MessageDef *data;
     uint32_t    data_size;
     uint32_t    message_number;
-    char        message_name[SIGNAL_NAME_LENGTH];
     uint32_t    message_type;
     uint32_t    message_size;
 } itti_dump_queue_item_t;
@@ -128,24 +119,19 @@ typedef struct itti_desc_s {
 } itti_desc_t;
 
 typedef struct {
-    /* The size of this structure */
-    uint32_t message_size;
-    uint32_t message_type;
-} itti_socket_header_t;
+    itti_socket_header_t socket_header;
 
-typedef struct {
-    itti_socket_header_t header;
-
-    uint32_t message_number;
-    char signal_name[SIGNAL_NAME_LENGTH];
+    itti_signal_header_t signal_header;
 
     /* Message payload is added here, this struct is used as an header */
 } itti_dump_message_t;
 
 typedef struct {
-    itti_socket_header_t header;
-    
+    itti_socket_header_t socket_header;
 } itti_statistic_message_t;
+
+static const itti_message_types_t itti_dump_xml_definition_end =  ITTI_DUMP_XML_DEFINITION_END;
+static const itti_message_types_t itti_dump_message_type_end =    ITTI_DUMP_MESSAGE_TYPE_END;
 
 static itti_desc_t itti_dump_queue;
 static FILE *dump_file = NULL;
@@ -161,23 +147,23 @@ static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
     uint8_t *data_ptr;
 
     /* Allocate memory for message header and payload */
-    size_t size = sizeof(itti_dump_message_t) + message->data_size;
+    size_t size = sizeof(itti_dump_message_t) + message->data_size + sizeof(itti_message_types_t);
 
     AssertFatal (sd > 0, "Socket descriptor (%d) is invalid!\n", sd);
     AssertFatal (message != NULL, "Message is NULL!\n");
 
-    new_message = calloc(1, size);
+    new_message = malloc(size);
     AssertFatal (new_message != NULL, "New message allocation failed!\n");
 
     /* Preparing the header */
-    new_message->header.message_size = size;
-    new_message->header.message_type = ITTI_DUMP_MESSAGE_TYPE;
+    new_message->socket_header.message_size = size;
+    new_message->socket_header.message_type = ITTI_DUMP_MESSAGE_TYPE;
 
-    new_message->message_number = message->message_number;
-    /* Copy the name, but leaves last byte set to 0 in case name is too long */
-    memcpy(new_message->signal_name, message->message_name, SIGNAL_NAME_LENGTH - 1);
+    new_message->signal_header.message_number = message->message_number;
     /* Appends message payload */
     memcpy(&new_message[1], message->data, message->data_size);
+
+    memcpy(((void *) &new_message[1]) + message->data_size, &itti_dump_message_type_end, sizeof(itti_message_types_t));
 
     data_ptr = (uint8_t *)&new_message[0];
 
@@ -202,13 +188,13 @@ static int itti_dump_fwrite_message(itti_dump_queue_item_t *message)
 
     if ((dump_file != NULL) && (message != NULL)) {
 
-        header.message_size = message->message_size + sizeof(itti_dump_message_t);
+        header.message_size = message->message_size + sizeof(itti_dump_message_t) + sizeof(itti_message_types_t);
         header.message_type = message->message_type;
 
         fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
         fwrite (&message->message_number, sizeof(message->message_number), 1, dump_file);
-        fwrite (message->message_name, sizeof(message->message_name), 1, dump_file);
         fwrite (message->data, message->data_size, 1, dump_file);
+        fwrite (&itti_dump_message_type_end, sizeof(itti_message_types_t), 1, dump_file);
 // #if !defined(RTAI)
         fflush (dump_file);
 // #endif
@@ -229,7 +215,7 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
     AssertFatal (sd > 0, "Socket descriptor (%d) is invalid!\n", sd);
     AssertFatal (message_definition_xml != NULL, "Message definition XML is NULL!\n");
 
-    itti_dump_message_size = sizeof(itti_socket_header_t) + message_definition_xml_length;
+    itti_dump_message_size = sizeof(itti_socket_header_t) + message_definition_xml_length + sizeof(itti_message_types_t);
 
     itti_dump_message = calloc(1, itti_dump_message_size);
 
@@ -240,7 +226,8 @@ static int itti_dump_send_xml_definition(const int sd, const char *message_defin
     itti_dump_message->message_type = ITTI_DUMP_XML_DEFINITION;
 
     /* Copying message definition */
-    memcpy(&itti_dump_message[1], message_definition_xml, message_definition_xml_length);
+    memcpy (&itti_dump_message[1], message_definition_xml, message_definition_xml_length);
+    memcpy (((void *) &itti_dump_message[1]) + message_definition_xml_length, &itti_dump_xml_definition_end, sizeof(itti_message_types_t));
 
     data_ptr = (uint8_t *)&itti_dump_message[0];
 
@@ -743,7 +730,6 @@ int itti_dump_queue_message(task_id_t sender_task,
     if (itti_dump_running)
     {
         itti_dump_queue_item_t *new;
-        size_t message_name_length;
 
         AssertFatal (message_name != NULL, "Message name is NULL!\n");
         AssertFatal (message_p != NULL, "Message is NULL!\n");
@@ -767,10 +753,6 @@ int itti_dump_queue_message(task_id_t sender_task,
         memcpy(new->data, message_p, message_size);
         new->data_size       = message_size;
         new->message_number  = message_number;
-
-        message_name_length = strlen(message_name) + 1;
-        AssertError (message_name_length <= SIGNAL_NAME_LENGTH, {}, "Message name too long (%d/%d)!\n", (int) message_name_length, SIGNAL_NAME_LENGTH);
-        memcpy(new->message_name, message_name, message_name_length);
 
         itti_dump_enqueue_message(new, message_size, ITTI_DUMP_MESSAGE_TYPE);
     }
@@ -805,11 +787,12 @@ int itti_dump_init(const char * const messages_definition_xml, const char * cons
             uint32_t message_size = strlen(messages_definition_xml) + 1;
             itti_socket_header_t header;
 
-            header.message_size = sizeof(itti_socket_header_t) + message_size;
+            header.message_size = sizeof(itti_socket_header_t) + message_size + sizeof(itti_message_types_t);
             header.message_type = ITTI_DUMP_XML_DEFINITION;
 
             fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
             fwrite (messages_definition_xml, message_size, 1, dump_file);
+            fwrite (&itti_dump_xml_definition_end, sizeof(itti_message_types_t), 1, dump_file);
             fflush (dump_file);
         }
     }

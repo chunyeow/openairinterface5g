@@ -376,14 +376,14 @@ int ui_filters_read(const char *file_name)
     doc = xmlReadFile (file_name, NULL, 0);
     if (doc == NULL)
     {
-        ui_notification_dialog (GTK_MESSAGE_ERROR, "open filters", "Failed to parse file \"%s\"", file_name);
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "open filters", "Failed to parse file \"%s\"", file_name);
         return RC_FAIL;
     }
 
     ret = xml_parse_filters (doc, file_name);
     if (ret != RC_OK)
     {
-        ui_notification_dialog (GTK_MESSAGE_WARNING, "open filters", "Found no filter definitions in \"%s\"",
+        ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "open filters", "Found no filter definitions in \"%s\"",
                                 file_name);
         return RC_FAIL;
     }
@@ -427,7 +427,7 @@ int ui_filters_file_write(const char *file_name)
     filter_file = fopen (file_name, "w");
     if (filter_file == NULL)
     {
-        g_warning("Failed to open file \"%s\": %s", file_name, g_strerror (errno));
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Failed to open file \"%s\": %s", file_name, g_strerror (errno));
         return RC_FAIL;
     }
 

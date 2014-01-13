@@ -125,9 +125,9 @@ gboolean ui_callback_on_enable_filters(GtkWidget *widget, gpointer data)
 gboolean ui_callback_on_about(GtkWidget *widget, gpointer data)
 {
 #if defined(PACKAGE_STRING)
-    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "Eurecom %s", PACKAGE_STRING);
+    ui_notification_dialog (GTK_MESSAGE_INFO, FALSE, "about", "Eurecom %s", PACKAGE_STRING);
 #else
-    ui_notification_dialog (GTK_MESSAGE_INFO, "about", "Eurecom itti_analyzer");
+    ui_notification_dialog (GTK_MESSAGE_INFO, FALSE, "about", "Eurecom itti_analyzer");
 #endif
 
     return TRUE;
@@ -533,12 +533,16 @@ gboolean ui_pipe_callback(gint source, gpointer user_data)
     {
         case UI_PIPE_CONNECTION_FAILED:
             return ui_handle_socket_connection_failed (source);
-        case UI_PIPE_XML_DEFINITION:
-            return ui_handle_socket_xml_definition (source, input_data, input_data_length);
+
         case UI_PIPE_CONNECTION_LOST:
             return ui_handle_socket_connection_lost (source);
+
+        case UI_PIPE_XML_DEFINITION:
+            return ui_handle_socket_xml_definition (source, input_data, input_data_length);
+
         case UI_PIPE_UPDATE_SIGNAL_LIST:
             return ui_handle_update_signal_list (source, input_data, input_data_length);
+
         default:
             g_warning("[gui] Unhandled message type %u", input_header.message_type);
             g_assert_not_reached();
@@ -560,13 +564,13 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
     if (strlen (ip) == 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_WARNING, "Connect", "Empty host ip address");
+        ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Empty host ip address");
         return FALSE;
     }
 
     if (port == 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_WARNING, "Connect", "Invalid host port value");
+        ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Invalid host port value");
         return FALSE;
     }
 

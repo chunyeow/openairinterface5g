@@ -107,7 +107,7 @@ static void ui_tree_view_init_list(GtkWidget *list)
 
     column = gtk_tree_view_column_new_with_attributes ("Message", renderer_left, "text", COL_MESSAGE, "foreground",
                                                        COL_FOREGROUND, "background", COL_BACKGROUND, "strikethrough",
-                                                       COL_STRIKETHROUGH, NULL);
+                                                       COL_STRIKETHROUGH, "style", COL_STYLE, "weight", COL_WEIGHT, "underline", COL_UNDERLINE, NULL);
     gtk_tree_view_column_set_resizable (column, TRUE);
     gtk_tree_view_column_set_alignment (column, 0.5);
     gtk_tree_view_append_column (GTK_TREE_VIEW(list), column);
@@ -151,6 +151,9 @@ static void ui_tree_view_init_list(GtkWidget *list)
             G_TYPE_STRING, // COL_FOREGROUND
             G_TYPE_STRING, // COL_BACKGROUND
             G_TYPE_BOOLEAN, // COL_STRIKETHROUGH
+            G_TYPE_UINT,
+            G_TYPE_UINT,
+            G_TYPE_UINT,
             // Reference to the buffer here to avoid maintaining multiple lists.
             G_TYPE_POINTER);
 
@@ -173,6 +176,8 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *lte_time, con
                                      const char *origin_task_name, const uint32_t destination_task_id,
                                      const char *destination_task_name, uint32_t instance_id, const char *instance_name, gpointer buffer)
 {
+    static int counter = 0;
+
     GtkTreeIter iter;
     gboolean enabled;
     int message_index;
@@ -193,8 +198,15 @@ static void ui_tree_view_add_to_list(GtkWidget *list, const gchar *lte_time, con
                         COL_FROM_TASK_ID, origin_task_id, COL_TO_TASK_ID, destination_task_id, COL_INSTANCE_ID, instance_id,
                         COL_BUFFER, buffer, COL_FOREGROUND, ui_filters.messages.items[message_index].foreground, COL_BACKGROUND,
                         ui_filters.messages.items[message_index].background, COL_STRIKETHROUGH, !enabled,
+//                        COL_STYLE, (counter % 2) == 0 ? PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL,
+//                        COL_WEIGHT, ((counter + 2) % 4) < 2 ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+//                        COL_UNDERLINE, ((counter + 4) % 8) < 4 ?PANGO_UNDERLINE_SINGLE : PANGO_UNDERLINE_NONE,
+                        COL_STYLE, PANGO_STYLE_NORMAL,
+                        COL_WEIGHT, PANGO_WEIGHT_NORMAL,
+                        COL_UNDERLINE, PANGO_UNDERLINE_NONE,
                         /* End of columns */
                         -1);
+    counter++;
 }
 
 void ui_tree_view_destroy_list(GtkWidget *list)

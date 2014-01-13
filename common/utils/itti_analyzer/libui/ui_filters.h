@@ -5,7 +5,8 @@
 
 #include "itti_types.h"
 
-#define COLOR_SIZE 10
+#define SIGNAL_NAME_LENGTH  100
+#define COLOR_SIZE          10
 
 typedef enum
 {

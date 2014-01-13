@@ -20,6 +20,9 @@ typedef enum col_type_e
     COL_FOREGROUND,
     COL_BACKGROUND,
     COL_STRIKETHROUGH,
+    COL_STYLE,
+    COL_WEIGHT,
+    COL_UNDERLINE,
 
     COL_BUFFER,
     NUM_COLS

@@ -25,6 +25,9 @@
 #include "locate_root.h"
 #include "xml_parse.h"
 
+static const itti_message_types_t itti_dump_xml_definition_end =  ITTI_DUMP_XML_DEFINITION_END;
+static const itti_message_types_t itti_dump_message_type_end =    ITTI_DUMP_MESSAGE_TYPE_END;
+
 static gboolean chooser_running;
 static FILE *messages_file;
 static uint32_t message_number;
@@ -100,7 +103,7 @@ int ui_messages_read(char *file_name)
     source = open (file_name, O_RDONLY);
     if (source < 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to open file \"%s\": %s", file_name,
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "open messages", "Failed to open file \"%s\": %s", file_name,
                                 g_strerror (errno));
         result = RC_FAIL;
     }
@@ -113,7 +116,7 @@ int ui_messages_read(char *file_name)
 
         if (stat (file_name, &st) < 0)
         {
-            ui_notification_dialog (GTK_MESSAGE_ERROR, "get file length",
+            ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "get file length",
                                     "Failed to retrieve length for file \"%s\": %s", file_name, g_strerror (errno));
             result = RC_FAIL;
         }
@@ -131,7 +134,7 @@ int ui_messages_read(char *file_name)
 
             if (read_data == -1)
             {
-                ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages", "Failed to read from file \"%s\": %s",
+                ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "open messages", "Failed to read from file \"%s\": %s",
                                         file_name, g_strerror (errno));
                 result = RC_FAIL;
                 break;
@@ -144,8 +147,11 @@ int ui_messages_read(char *file_name)
 
             if (read_data < sizeof(itti_socket_header_t))
             {
-                g_warning(
-                        "Failed to read a complete message header from file \"%s\": %s", file_name, g_strerror (errno));
+                if (ui_notification_dialog (GTK_MESSAGE_WARNING, TRUE, "open messages",
+                                            "Failed to read a complete message header from file \"%s\": %s", file_name, g_strerror (errno)) == RC_FAIL)
+                {
+                    read_data = 0;
+                }
             }
             else
             {
@@ -163,8 +169,11 @@ int ui_messages_read(char *file_name)
                     read_data = read (source, input_data, input_data_length);
                     if (read_data < input_data_length)
                     {
-                        g_warning(
-                                "Failed to read a complete message from file \"%s\": %s", file_name, g_strerror (errno));
+                        if (ui_notification_dialog (GTK_MESSAGE_WARNING, TRUE, "open messages",
+                                                    "Failed to read a complete message from file \"%s\": %s", file_name, g_strerror (errno)) == RC_FAIL)
+                        {
+                            read_data = 0;
+                        }
                         break;
                     }
 
@@ -173,54 +182,80 @@ int ui_messages_read(char *file_name)
 
                 switch (message_header.message_type)
                 {
+                    case ITTI_DUMP_XML_DEFINITION:
+                        ui_gtk_flush_events ();
+                        if (memcmp (&(((char *) input_data)[input_data_length - sizeof (itti_message_types_t)]),
+                            &itti_dump_xml_definition_end, sizeof (itti_message_types_t)) == 0)
+                        {
+                            result = xml_parse_buffer (input_data, input_data_length - sizeof (itti_message_types_t));
+                            if (result != RC_OK)
+                            {
+                                ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "open messages",
+                                                        "Error in parsing XML definitions in file \"%s\": %s", file_name,
+                                                        rc_strings[-result]);
+                                read_data = 0;
+                            }
+                            ui_gtk_flush_events ();
+                            g_message("Parsed XML definition from file \"%s\"", file_name);
+                        }
+                        else
+                        {
+                            ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "open messages",
+                                                    "Error in parsing XML definitions in file \"%s\", end mark is missing", file_name);
+                        }
+                        /* Data input buffer is kept in case user when to save the log file later */
+                        break;
+
                     case ITTI_DUMP_MESSAGE_TYPE:
                     {
                         itti_signal_header_t *itti_signal_header = input_data;
                         buffer_t *buffer;
 
-                        /* Create the new buffer */
-                        if (buffer_new_from_data (&buffer, input_data + sizeof(itti_signal_header_t),
-                                                  input_data_length - sizeof(itti_signal_header_t), 0) != RC_OK)
+                        if (memcmp (&(((char *) input_data)[input_data_length - sizeof (itti_message_types_t)]),
+                            &itti_dump_message_type_end, sizeof (itti_message_types_t)) == 0)
                         {
-                            g_error("Failed to create new buffer");
-                            g_assert_not_reached ();
+                            /* Create the new buffer */
+                            if (buffer_new_from_data (&buffer, input_data + sizeof(itti_signal_header_t),
+                                                      input_data_length - sizeof(itti_signal_header_t) - sizeof(itti_message_types_t), 0) != RC_OK)
+                            {
+                                g_error("Failed to create new buffer");
+                                g_assert_not_reached ();
+                            }
+
+                            buffer->message_number = itti_signal_header->message_number;
+
+                            ui_signal_add_to_list (buffer, ((read_messages % 1000) == 0) ? (gpointer) 1 : NULL);
+
+                            if ((read_messages % 100) == 0)
+                            {
+                                ui_progress_bar_set_fraction (read_fraction);
+                                ui_gtk_flush_events ();
+                            }
+
+                            read_messages++;
+                        }
+                        else
+                        {
+                            if (ui_notification_dialog (GTK_MESSAGE_WARNING, TRUE, "open messages",
+                                                        "Failed to read a message from file \"%s\", end mark is missing", file_name) == RC_FAIL)
+                            {
+                                read_data = 0;
+                            }
+                            break;
                         }
 
-                        buffer->message_number = itti_signal_header->message_number;
-
-                        ui_signal_add_to_list (buffer, ((read_messages % 1000) == 0) ? (gpointer) 1 : NULL);
-
-                        if ((read_messages % 100) == 0)
-                        {
-                            ui_progress_bar_set_fraction (read_fraction);
-                            ui_gtk_flush_events ();
-                        }
-
-                        read_messages++;
                         free (input_data);
                         break;
                     }
 
-                    case ITTI_DUMP_XML_DEFINITION:
-                        ui_gtk_flush_events ();
-                        result = xml_parse_buffer (input_data, input_data_length);
-                        if (result != RC_OK)
-                        {
-                            ui_notification_dialog (GTK_MESSAGE_ERROR, "open messages",
-                                                    "Error in parsing XML definitions in file \"%s\": %s", file_name,
-                                                    rc_strings[-result]);
-                            read_data = 0;
-                        }
-                        ui_gtk_flush_events ();
-                        g_message("Parsed XML definition from file \"%s\"", file_name);
-                        /* Data input buffer is kept in case user when to save the log file later */
-                        break;
-
                     case ITTI_STATISTIC_MESSAGE_TYPE:
                     default:
-                        ui_notification_dialog (GTK_MESSAGE_WARNING, "open messages",
-                                                "Unknown (or not implemented) record type: %d in file \"%s\"",
-                                                message_header.message_type, file_name);
+                        if (ui_notification_dialog (GTK_MESSAGE_WARNING, TRUE, "open messages",
+                                                    "Unknown (or not implemented) record type: %d in file \"%s\"",
+                                                    message_header.message_type, file_name) == RC_FAIL)
+                        {
+                            read_data = 0;
+                        }
 
                         free (input_data);
                         break;
@@ -266,17 +301,16 @@ static void ui_message_write_callback(const gpointer buffer, const gchar *signal
 
     message_size = signal_buffer->size_bytes;
 
-    message_header.message_size = sizeof(itti_socket_header_t) + sizeof(itti_signal_header) + message_size;
+    message_header.message_size = sizeof(itti_socket_header_t) + sizeof(itti_signal_header) + message_size + sizeof(itti_message_types_t);
     message_header.message_type = ITTI_DUMP_MESSAGE_TYPE;
 
     itti_signal_header.message_number = message_number;
     message_number++;
-    memset (itti_signal_header.signal_name, 0, sizeof(itti_signal_header.signal_name));
-    strncpy (itti_signal_header.signal_name, signal_name, sizeof(itti_signal_header.signal_name));
 
     fwrite (&message_header, sizeof(message_header), 1, messages_file);
     fwrite (&itti_signal_header, sizeof(itti_signal_header), 1, messages_file);
     fwrite (signal_buffer->data, message_size, 1, messages_file);
+    fwrite (&itti_dump_message_type_end, sizeof(itti_message_types_t), 1, messages_file);
 }
 
 static int ui_messages_file_write(char *file_name)
@@ -290,7 +324,7 @@ static int ui_messages_file_write(char *file_name)
     messages_file = fopen (file_name, "w");
     if (messages_file == NULL)
     {
-        g_warning("Failed to open file \"%s\": %s", file_name, g_strerror (errno));
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Failed to open file \"%s\": %s", file_name, g_strerror (errno));
         return RC_FAIL;
     }
 
@@ -298,11 +332,12 @@ static int ui_messages_file_write(char *file_name)
     {
         itti_socket_header_t message_header;
 
-        message_header.message_size = xml_raw_data_size + sizeof(itti_socket_header_t);
+        message_header.message_size = sizeof(itti_socket_header_t) + xml_raw_data_size + sizeof(itti_message_types_t);
         message_header.message_type = ITTI_DUMP_XML_DEFINITION;
 
         fwrite (&message_header, sizeof(message_header), 1, messages_file);
         fwrite (xml_raw_data, xml_raw_data_size, 1, messages_file);
+        fwrite (&itti_dump_xml_definition_end, sizeof(itti_message_types_t), 1, messages_file);
     }
 
     /* Write messages */

@@ -712,7 +712,7 @@ int xml_parse_buffer(char *xml_buffer, const int size) {
 
     if (doc == NULL) {
         g_warning("Failed to parse XML buffer: %s", xml_buffer);
-        ui_notification_dialog(GTK_MESSAGE_ERROR, "parse messages format definition", "Fail to parse XML buffer");
+        ui_notification_dialog(GTK_MESSAGE_ERROR, FALSE, "parse messages format definition", "Fail to parse XML buffer");
         return RC_FAIL;
     }
 
@@ -730,7 +730,7 @@ int xml_parse_file(const char *filename) {
     doc = xmlReadFile (filename, NULL, 0);
 
     if (doc == NULL) {
-        ui_notification_dialog(GTK_MESSAGE_ERROR, "parse messages format definition", "Failed to parse file \"%s\"", filename);
+        ui_notification_dialog(GTK_MESSAGE_ERROR, FALSE, "parse messages format definition", "Failed to parse file \"%s\"", filename);
         return RC_FAIL;
     }
 

@@ -110,7 +110,7 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
     }
 
     /* Create the new buffer */
-    if (buffer_new_from_data(&buffer, data, data_length, 1) != RC_OK) {
+    if (buffer_new_from_data(&buffer, data, data_length - sizeof(itti_message_types_t), 1) != RC_OK) {
         g_error("Failed to create new buffer");
         g_assert_not_reached();
     }
@@ -162,7 +162,7 @@ static int socket_read_xml_definition(socket_data_t *socket_data,
     } while (total_data_read != xml_definition_length);
 
     pipe_xml_definition_message.xml_definition        = xml_definition;
-    pipe_xml_definition_message.xml_definition_length = xml_definition_length;
+    pipe_xml_definition_message.xml_definition_length = xml_definition_length - sizeof(itti_message_types_t);
 
     g_debug("Received XML definition of size %zu, effectively read %zu bytes",
             xml_definition_length, total_data_read);
@@ -186,12 +186,14 @@ static int socket_read(socket_data_t *socket_data)
         }
 
         switch(message_header.message_type) {
-            case ITTI_DUMP_MESSAGE_TYPE:
-                socket_read_itti_message(socket_data, &message_header);
-                break;
             case ITTI_DUMP_XML_DEFINITION:
                 socket_read_xml_definition(socket_data, &message_header);
                 break;
+
+            case ITTI_DUMP_MESSAGE_TYPE:
+                socket_read_itti_message(socket_data, &message_header);
+                break;
+
             case ITTI_STATISTIC_MESSAGE_TYPE:
             default:
                 g_warning("Received unknow (or not implemented) message from socket type: %d",
