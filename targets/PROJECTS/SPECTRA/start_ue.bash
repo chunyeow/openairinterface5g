@@ -16,7 +16,7 @@ declare -x OPENAIR1_DIR=""
 declare -x OPENAIR2_DIR=""
 declare -x OPENAIR3_DIR=""
 declare -x OPENAIR_TARGETS=""
-declare -x EMULATION_DEV_INTERFACE="eth1"
+declare -x EMULATION_DEV_INTERFACE="eth2"
 ###########################################################
 
 set_openair
@@ -51,7 +51,6 @@ bash_exec "make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET "
 #bash_exec "make --directory=$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL "
 
 bash_exec "insmod  $OPENAIR2_DIR/NAS/DRIVER/LITE/$IP_DRIVER_NAME.ko oai_nw_drv_IMEI=${NAS_IMEI[0]},${NAS_IMEI[1]},${NAS_IMEI[2]},${NAS_IMEI[3]},${NAS_IMEI[4]},${NAS_IMEI[5]},${NAS_IMEI[6]},${NAS_IMEI[7]},${NAS_IMEI[8]},${NAS_IMEI[9]},${NAS_IMEI[10]},${NAS_IMEI[11]},${NAS_IMEI[12]},${NAS_IMEI[13]}"
-#bash_exec "insmod  $OPENAIR2_DIR/NAS/DRIVER/UE_LTE/$IP_DRIVER_NAME.ko"
 
 bash_exec "ip route flush cache"
 
@@ -87,25 +86,30 @@ wait_process_started odtone-mihf
 sleep 3
 
 NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
-LOG_FILE="/tmp/oai_sim_ue_$NOW.log"
+#LOG_FILE="./oai_sim_ue_$NOW.log"
 
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
+LOG_FILE="./oai_sim_ue.log"
+rm -f $LOG_FILE
+
+xterm -hold -e gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
              --ue-ral-listening-port   1234\
              --ue-ral-link-id          ue_lte_link\
              --ue-ral-ip-address       127.0.0.1\
              --ue-mihf-remote-port     1025\
              --ue-mihf-ip-address      127.0.0.1\
              --ue-mihf-id              mihf2_ue  &
+             
+#oai_pid=$!
 wait_process_started oaisim
 
 sleep 5
 #echo_warning "Press enter to continue..."
 #read KEY
 
-
 # start MIH-USER
 xterm -hold -e $ODTONE_ROOT/dist/ue_lte_user         --conf.file $ODTONE_ROOT/dist/ue_lte_user.conf &
 wait_process_started ue_lte_user
+
 
 sleep 100000
 
