@@ -53,7 +53,9 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
 {
     g_message("Save messages event occurred");
-    // CHECK_FCT(ui_file_chooser());
+
+    CHECK_FCT(ui_messages_save_file_chooser());
+
     return TRUE;
 }
 
@@ -496,8 +498,6 @@ static gboolean ui_handle_socket_xml_definition(gint fd, void *data, size_t data
     g_assert(data_length == sizeof(pipe_xml_definition_message_t));
 
     xml_parse_buffer (xml_definition_message->xml_definition, xml_definition_message->xml_definition_length);
-
-    free (data);
 
     return TRUE;
 }

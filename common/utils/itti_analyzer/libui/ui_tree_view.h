@@ -2,6 +2,7 @@
 #define UI_TREE_VIEW_H_
 
 #include "ui_filters.h"
+#include "ui_notifications.h"
 
 typedef enum col_type_e
 {
@@ -63,6 +64,8 @@ void ui_tree_view_destroy_list(GtkWidget *list);
 void ui_tree_view_select_row(gint row);
 
 void ui_tree_view_refilter(void);
+
+void ui_tree_view_foreach_message(message_write_callback_t callback, gboolean filter);
 
 guint ui_tree_view_get_filtered_number(void);
 

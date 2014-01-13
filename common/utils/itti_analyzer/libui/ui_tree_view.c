@@ -450,7 +450,7 @@ int ui_tree_view_new_signal_ind(const uint32_t message_number, const gchar *lte_
 
     ui_tree_view_add_to_list (ui_main_data.messages_list, lte_time, message_number, message_id, message_name,
                               origin_task_id, origin_task_name, destination_task_id, destination_task_name, instance_id, instance_name,
-                              (buffer_t *) buffer);
+                              buffer);
 
     return RC_OK;
 }
@@ -524,6 +524,51 @@ void ui_tree_view_refilter()
     }
 
     g_info("ui_tree_view_refilter: last message %d, %d messages displayed", ui_store.filtered_last_msg, ui_store.filtered_msg_number);
+}
+
+typedef struct foreach_message_params_s
+{
+    message_write_callback_t   callback;
+    gboolean                    filter;
+} foreach_message_params_t;
+
+static gboolean foreach_message(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+    foreach_message_params_t *params = (foreach_message_params_t *) data;
+    const gchar *signal_name;
+    uint32_t message_id;
+    uint32_t origin_task_id;
+    uint32_t destination_task_id;
+    uint32_t instance;
+    gpointer buffer = NULL;
+
+    gtk_tree_model_get (model, iter, COL_MESSAGE, &signal_name, COL_MESSAGE_ID, &message_id, COL_FROM_TASK_ID, &origin_task_id, COL_TO_TASK_ID,
+                        &destination_task_id, COL_INSTANCE_ID, &instance, COL_BUFFER, &buffer, -1);
+
+    if (params->filter == TRUE)
+    {
+        gboolean enabled = FALSE;
+
+        enabled = ui_filters_message_enabled (message_id, origin_task_id, destination_task_id, instance);
+        if (enabled == FALSE)
+        {
+            buffer = NULL;
+        }
+    }
+
+    if (buffer != NULL)
+    {
+        params->callback(buffer, signal_name);
+    }
+
+    return FALSE;
+}
+
+void ui_tree_view_foreach_message(message_write_callback_t callback, gboolean filter)
+{
+    foreach_message_params_t params = {callback, filter};
+
+    gtk_tree_model_foreach (GTK_TREE_MODEL(ui_store.store), foreach_message, (void *) &params);
 }
 
 guint ui_tree_view_get_filtered_number(void)

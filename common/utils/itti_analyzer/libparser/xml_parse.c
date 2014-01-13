@@ -29,8 +29,11 @@ extern int debug_parser;
 # define INDENT_START 0
 #endif
 
-types_t *xml_head;
-types_t *root;
+void       *xml_raw_data;
+uint32_t    xml_raw_data_size;
+
+types_t    *xml_head;
+types_t    *root;
 
 static int xml_parse_doc(xmlDocPtr doc);
 
@@ -667,12 +670,20 @@ static int free_elements(types_t *parent, int indent) {
     return RC_OK;
 }
 
-int xml_parse_buffer(const char *xml_buffer, const int size) {
+int xml_parse_buffer(char *xml_buffer, const int size) {
     xmlDocPtr doc; /* the resulting document tree */
 
     if (xml_buffer == NULL) {
         return RC_NULL_POINTER;
     }
+
+    if (xml_raw_data != NULL)
+    {
+        /* Free previous raw data */
+        free (xml_raw_data);
+    }
+    xml_raw_data = xml_buffer;
+    xml_raw_data_size = size;
 
     if (xml_head != NULL)
     {

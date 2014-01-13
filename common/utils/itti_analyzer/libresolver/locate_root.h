@@ -1,6 +1,8 @@
 #ifndef LOCATE_ROOT_H_
 #define LOCATE_ROOT_H_
 
+#include "types.h"
+
 extern types_t *messages_id_enum;
 extern types_t *lte_time_type;
 extern types_t *lte_time_frame_type;
