@@ -31,6 +31,7 @@ static const itti_message_types_t itti_dump_message_type_end =    ITTI_DUMP_MESS
 static gboolean chooser_running;
 static FILE *messages_file;
 static uint32_t message_number;
+static gboolean ui_abort;
 
 int ui_disable_connect_button(void)
 {
@@ -126,6 +127,7 @@ int ui_messages_read(char *file_name)
         ui_main_data.follow_last = TRUE;
 
         /* Initialize the progress bar */
+        ui_abort = FALSE;
         ui_progress_bar_set_fraction (0);
 
         do
@@ -261,7 +263,7 @@ int ui_messages_read(char *file_name)
                         break;
                 }
             }
-        } while (read_data > 0);
+        } while ((ui_abort == FALSE) && (read_data > 0));
 
         if (read_messages > 0)
         {
@@ -561,28 +563,41 @@ int ui_filters_save_file_chooser(void)
     return result;
 }
 
+void ui_progressbar_window_destroy (void)
+{
+    ui_abort = TRUE;
+    ui_progress_bar_terminate();
+}
+
 int ui_progress_bar_set_fraction(double fraction)
 {
-    /* If not exist instantiate */
-    if (!ui_main_data.progressbar && !ui_main_data.progressbar_window)
+    if (ui_abort == FALSE)
     {
-        ui_main_data.progressbar_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+        /* If not exist instantiate */
+        if (!ui_main_data.progressbar && !ui_main_data.progressbar_window)
+        {
+            ui_main_data.progressbar_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-        /* Set the window at center of window */
-        gtk_window_set_position (GTK_WINDOW(ui_main_data.progressbar_window), GTK_WIN_POS_CENTER);
-        gtk_window_set_title (GTK_WINDOW(ui_main_data.progressbar_window), "Processing");
+            /* Set the window at center of window */
+            gtk_window_set_position (GTK_WINDOW(ui_main_data.progressbar_window), GTK_WIN_POS_CENTER);
+            gtk_window_set_title (GTK_WINDOW(ui_main_data.progressbar_window), "Processing");
 
-        gtk_container_set_border_width (GTK_CONTAINER (ui_main_data.progressbar_window), 10);
+            gtk_container_set_border_width (GTK_CONTAINER (ui_main_data.progressbar_window), 10);
 
-        ui_main_data.progressbar = gtk_progress_bar_new ();
+            ui_main_data.progressbar = gtk_progress_bar_new ();
 
-        gtk_container_add (GTK_CONTAINER (ui_main_data.progressbar_window), ui_main_data.progressbar);
-        gtk_widget_show_all (ui_main_data.progressbar_window);
+            gtk_container_add (GTK_CONTAINER (ui_main_data.progressbar_window), ui_main_data.progressbar);
+
+            /* Assign the destroy event */
+            g_signal_connect(ui_main_data.progressbar_window, "destroy", ui_progressbar_window_destroy, NULL);
+
+            gtk_widget_show_all (ui_main_data.progressbar_window);
+        }
+
+        gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(ui_main_data.progressbar), fraction);
+
+//       ui_gtk_flush_events();
     }
-
-    gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(ui_main_data.progressbar), fraction);
-
-//     ui_gtk_flush_events();
 
     return RC_OK;
 }
@@ -592,14 +607,13 @@ int ui_progress_bar_terminate(void)
     if (ui_main_data.progressbar)
     {
         gtk_widget_destroy (ui_main_data.progressbar);
+        ui_main_data.progressbar = NULL;
     }
     if (ui_main_data.progressbar_window)
     {
         gtk_widget_destroy (ui_main_data.progressbar_window);
+        ui_main_data.progressbar_window = NULL;
     }
-
-    ui_main_data.progressbar = NULL;
-    ui_main_data.progressbar_window = NULL;
 
     return RC_OK;
 }

@@ -63,6 +63,8 @@ void ui_gtk_parse_arg(int argc, char *argv[]);
 
 void ui_set_title(const char *fmt, ...);
 
+void ui_main_window_destroy (void);
+
 int ui_gtk_initialize(int argc, char *argv[]);
 
 void ui_gtk_flush_events(void);

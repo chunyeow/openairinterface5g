@@ -164,6 +164,12 @@ void ui_set_title(const char *fmt, ...)
     gtk_window_set_title (GTK_WINDOW(ui_main_data.window), title);
 }
 
+void ui_main_window_destroy (void)
+{
+    ui_progressbar_window_destroy();
+    gtk_main_quit();
+}
+
 int ui_gtk_initialize(int argc, char *argv[])
 {
     GtkWidget *vbox;
@@ -190,7 +196,7 @@ int ui_gtk_initialize(int argc, char *argv[])
     gtk_container_add (GTK_CONTAINER(ui_main_data.window), vbox);
 
     /* Assign the destroy event */
-    g_signal_connect(ui_main_data.window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+    g_signal_connect(ui_main_data.window, "destroy", ui_main_window_destroy, NULL);
 
     /* Show the application window */
     gtk_widget_show_all (ui_main_data.window);

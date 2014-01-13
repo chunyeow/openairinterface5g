@@ -99,7 +99,7 @@ int ui_menu_bar_create(GtkWidget *vbox)
             quit = gtk_menu_item_new_with_mnemonic ("_Quit");
             gtk_widget_add_accelerator (quit, "activate", accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), quit);
-            g_signal_connect(G_OBJECT(quit), "activate", G_CALLBACK(gtk_main_quit), NULL);
+            g_signal_connect(G_OBJECT(quit), "activate", ui_main_window_destroy, NULL);
         }
     }
 

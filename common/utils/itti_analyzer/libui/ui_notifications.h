@@ -17,6 +17,8 @@ int ui_filters_open_file_chooser(void);
 
 int ui_filters_save_file_chooser(void);
 
+void ui_progressbar_window_destroy(void);
+
 int ui_progress_bar_set_fraction(double fraction);
 
 int ui_progress_bar_terminate(void);
