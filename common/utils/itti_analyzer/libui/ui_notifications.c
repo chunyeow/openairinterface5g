@@ -28,7 +28,6 @@
 static const itti_message_types_t itti_dump_xml_definition_end =  ITTI_DUMP_XML_DEFINITION_END;
 static const itti_message_types_t itti_dump_message_type_end =    ITTI_DUMP_MESSAGE_TYPE_END;
 
-static gboolean chooser_running;
 static FILE *messages_file;
 static uint32_t message_number;
 static gboolean ui_abort;
@@ -357,33 +356,79 @@ int ui_messages_open_file_chooser(void)
 {
     int result = RC_OK;
 
-    if (chooser_running == FALSE)
-    {
-        GtkWidget *filechooser;
-        gboolean accept;
-        char *filename;
+    GtkWidget *filechooser;
+    gboolean accept;
+    char *filename;
 
-        chooser_running = TRUE;
-        filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
-                                                   GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                                                   GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+    filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
+                                               GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+    gtk_filter_add (filechooser, "Log files", "*.log");
+    gtk_filter_add (filechooser, "All files", "*");
+
+    /* Process the response */
+    accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+
+    if (accept)
+    {
+        filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    }
+    gtk_widget_destroy (filechooser);
+    if (accept)
+    {
+        result = ui_messages_read (filename);
+        if (result == RC_OK)
+        {
+            /* Update messages file name for future use */
+            if (ui_main_data.messages_file_name != NULL)
+            {
+                g_free (ui_main_data.messages_file_name);
+            }
+            ui_main_data.messages_file_name = filename;
+        }
+        else
+        {
+            g_free (filename);
+        }
+    }
+    return result;
+}
+
+int ui_messages_save_file_chooser(void)
+{
+    int result = RC_OK;
+    GtkWidget *filechooser;
+
+    /* Check if there is something to save */
+    if (xml_raw_data_size > 0)
+    {
+        filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
+                                                   GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
+                                                   GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
         gtk_filter_add (filechooser, "Log files", "*.log");
         gtk_filter_add (filechooser, "All files", "*");
 
-        /* Process the response */
-        accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+        gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filechooser), TRUE);
 
-        if (accept)
+        if (ui_main_data.messages_file_name != NULL)
         {
-            filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+            gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (filechooser), ui_main_data.messages_file_name);
         }
-        gtk_widget_destroy (filechooser);
-        if (accept)
+        else
         {
-            result = ui_messages_read (filename);
+            gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filechooser), "messages.log");
+        }
+
+        /* Process the response */
+        if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+        {
+            char *filename;
+
+            filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+            result = ui_messages_file_write (filename);
             if (result == RC_OK)
             {
-                /* Update messages file name for future use */
+                /* Update filters file name for future use */
                 if (ui_main_data.messages_file_name != NULL)
                 {
                     g_free (ui_main_data.messages_file_name);
@@ -395,65 +440,7 @@ int ui_messages_open_file_chooser(void)
                 g_free (filename);
             }
         }
-        chooser_running = FALSE;
-    }
-    return result;
-}
-
-int ui_messages_save_file_chooser(void)
-{
-    int result = RC_OK;
-
-    if (chooser_running == FALSE)
-    {
-        GtkWidget *filechooser;
-
-        chooser_running = TRUE;
-
-        /* Check if there is something to save */
-        if (xml_raw_data_size > 0)
-        {
-            filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
-                                                       GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
-                                                       GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
-            gtk_filter_add (filechooser, "Log files", "*.log");
-            gtk_filter_add (filechooser, "All files", "*");
-
-            gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filechooser), TRUE);
-
-            if (ui_main_data.messages_file_name != NULL)
-            {
-                gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (filechooser), ui_main_data.messages_file_name);
-            }
-            else
-            {
-                gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filechooser), "messages.log");
-            }
-
-            /* Process the response */
-            if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
-            {
-                char *filename;
-
-                filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-                result = ui_messages_file_write (filename);
-                if (result == RC_OK)
-                {
-                    /* Update filters file name for future use */
-                    if (ui_main_data.messages_file_name != NULL)
-                    {
-                        g_free (ui_main_data.messages_file_name);
-                    }
-                    ui_main_data.messages_file_name = filename;
-                }
-                else
-                {
-                    g_free (filename);
-                }
-            }
-            gtk_widget_destroy (filechooser);
-        }
-        chooser_running = FALSE;
+        gtk_widget_destroy (filechooser);
     }
 
     return result;
@@ -462,47 +449,40 @@ int ui_messages_save_file_chooser(void)
 int ui_filters_open_file_chooser(void)
 {
     int result = RC_OK;
+    GtkWidget *filechooser;
+    gboolean accept;
+    char *filename;
 
-    if (chooser_running == FALSE)
+    filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
+                                               GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+    gtk_filter_add (filechooser, "Filters files", "*.xml");
+    gtk_filter_add (filechooser, "All files", "*");
+
+    /* Process the response */
+    accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+
+    if (accept)
     {
-        GtkWidget *filechooser;
-        gboolean accept;
-        char *filename;
-
-        chooser_running = TRUE;
-
-        filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
-                                                   GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
-                                                   GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
-        gtk_filter_add (filechooser, "Filters files", "*.xml");
-        gtk_filter_add (filechooser, "All files", "*");
-
-        /* Process the response */
-        accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
-
-        if (accept)
+        filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+    }
+    gtk_widget_destroy (filechooser);
+    if (accept)
+    {
+        result = ui_filters_read (filename);
+        if (result == RC_OK)
         {
-            filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+            /* Update filters file name for future use */
+            if (ui_main_data.filters_file_name != NULL)
+            {
+                g_free (ui_main_data.filters_file_name);
+            }
+            ui_main_data.filters_file_name = filename;
         }
-        gtk_widget_destroy (filechooser);
-        if (accept)
+        else
         {
-            result = ui_filters_read (filename);
-            if (result == RC_OK)
-            {
-                /* Update filters file name for future use */
-                if (ui_main_data.filters_file_name != NULL)
-                {
-                    g_free (ui_main_data.filters_file_name);
-                }
-                ui_main_data.filters_file_name = filename;
-            }
-            else
-            {
-                g_free (filename);
-            }
+            g_free (filename);
         }
-        chooser_running = FALSE;
     }
 
     return result;
@@ -511,54 +491,47 @@ int ui_filters_open_file_chooser(void)
 int ui_filters_save_file_chooser(void)
 {
     int result = RC_OK;
+    GtkWidget *filechooser;
 
-    if (chooser_running == FALSE)
+    filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
+                                               GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                               GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
+    gtk_filter_add (filechooser, "Filters files", "*.xml");
+    gtk_filter_add (filechooser, "All files", "*");
+
+    gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filechooser), TRUE);
+
+    if (ui_main_data.filters_file_name != NULL)
     {
-        GtkWidget *filechooser;
+        gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (filechooser), ui_main_data.filters_file_name);
+    }
+    else
+    {
+        gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filechooser), "filters.xml");
+    }
 
-        chooser_running = TRUE;
+    /* Process the response */
+    if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
 
-        filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
-                                                   GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                                   GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
-        gtk_filter_add (filechooser, "Filters files", "*.xml");
-        gtk_filter_add (filechooser, "All files", "*");
-
-        gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filechooser), TRUE);
-
-        if (ui_main_data.filters_file_name != NULL)
+        filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
+        result = ui_filters_file_write (filename);
+        if (result == RC_OK)
         {
-            gtk_file_chooser_set_filename (GTK_FILE_CHOOSER (filechooser), ui_main_data.filters_file_name);
+            /* Update filters file name for future use */
+            if (ui_main_data.filters_file_name != NULL)
+            {
+                g_free (ui_main_data.filters_file_name);
+            }
+            ui_main_data.filters_file_name = filename;
         }
         else
         {
-            gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filechooser), "filters.xml");
+            g_free (filename);
         }
-
-        /* Process the response */
-        if (gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT)
-        {
-            char *filename;
-
-            filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-            result = ui_filters_file_write (filename);
-            if (result == RC_OK)
-            {
-                /* Update filters file name for future use */
-                if (ui_main_data.filters_file_name != NULL)
-                {
-                    g_free (ui_main_data.filters_file_name);
-                }
-                ui_main_data.filters_file_name = filename;
-            }
-            else
-            {
-                g_free (filename);
-            }
-        }
-        gtk_widget_destroy (filechooser);
-        chooser_running = FALSE;
     }
+    gtk_widget_destroy (filechooser);
 
     return result;
 }

@@ -29,8 +29,9 @@
 #include "locate_root.h"
 #include "xml_parse.h"
 
-static gboolean refresh_message_list = TRUE;
-static gboolean filters_changed = FALSE;
+static gboolean refresh_message_list =  TRUE;
+static gboolean filters_changed =       FALSE;
+static gboolean operation_running =     FALSE;
 
 gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 {
@@ -38,13 +39,18 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 
     g_message("Open messages event occurred %d", refresh);
 
-    if (refresh && (ui_main_data.messages_file_name != NULL))
+    if (operation_running == FALSE)
     {
-        CHECK_FCT(ui_messages_read (ui_main_data.messages_file_name));
-    }
-    else
-    {
-        CHECK_FCT(ui_messages_open_file_chooser());
+        operation_running = TRUE;
+        if (refresh && (ui_main_data.messages_file_name != NULL))
+        {
+            CHECK_FCT(ui_messages_read (ui_main_data.messages_file_name));
+        }
+        else
+        {
+            CHECK_FCT(ui_messages_open_file_chooser());
+        }
+        operation_running = FALSE;
     }
 
     return TRUE;
@@ -54,7 +60,12 @@ gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
 {
     g_message("Save messages event occurred");
 
-    CHECK_FCT(ui_messages_save_file_chooser());
+    if (operation_running == FALSE)
+    {
+        operation_running = TRUE;
+        CHECK_FCT(ui_messages_save_file_chooser());
+        operation_running = FALSE;
+    }
 
     return TRUE;
 }
@@ -93,13 +104,19 @@ gboolean ui_callback_on_open_filters(GtkWidget *widget, gpointer data)
 
     g_message("Open filters event occurred");
 
-    if (refresh && (ui_main_data.filters_file_name != NULL))
+    if (operation_running == FALSE)
     {
-        CHECK_FCT(ui_filters_read (ui_main_data.filters_file_name));
-    }
-    else
-    {
-        CHECK_FCT(ui_filters_open_file_chooser());
+        operation_running = TRUE;
+        if (refresh && (ui_main_data.filters_file_name != NULL))
+        {
+
+                CHECK_FCT(ui_filters_read (ui_main_data.filters_file_name));
+        }
+        else
+        {
+            CHECK_FCT(ui_filters_open_file_chooser());
+        }
+        operation_running = FALSE;
     }
 
     return TRUE;
@@ -107,8 +124,14 @@ gboolean ui_callback_on_open_filters(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_on_save_filters(GtkWidget *widget, gpointer data)
 {
-    g_message("Save filters event occurred");
-    CHECK_FCT(ui_filters_save_file_chooser());
+    if (operation_running == FALSE)
+    {
+        operation_running = TRUE;
+        g_message("Save filters event occurred");
+        CHECK_FCT(ui_filters_save_file_chooser());
+        operation_running = FALSE;
+    }
+
     return TRUE;
 }
 
