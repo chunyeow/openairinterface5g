@@ -1194,7 +1194,7 @@ void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityMo
         {
           MessageDef *message_p;
 
-          message_p = itti_alloc_new_message_sized (TASK_RRC_ENB, GENERIC_LOG, message_string_size);
+          message_p = itti_alloc_new_message_sized (TASK_RRC_UE, GENERIC_LOG, message_string_size);
           memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
 
           itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, message_p);
