@@ -54,16 +54,16 @@ void mem_ClearPageReserved(void *kvirt_addr, unsigned int size_pages)
 // returns -1 on error, 0 on success
 int bigshm_init(int card)
 {
-    printk("[openair][module] calling pci_alloc_consistent for card %d, bigshm (size: %u*%lu bytes)...\n", card, BIGSHM_SIZE_PAGES, PAGE_SIZE);
+    printk("[openair][module] calling pci_alloc_consistent for card %d, bigshm (size: %lu*%lu bytes)...\n", card, BIGSHM_SIZE_PAGES, PAGE_SIZE);
 
     if ( sizeof(dma_addr_t) != 4)
-        printk("!!! WARNING: sizeof (dma_addr_t) = %d! Only 32bit mode (= 4) (also: no PAE) is supported at this time!\n", sizeof(dma_addr_t));
+        printk("!!! WARNING: sizeof (dma_addr_t) = %lu! Only 32bit mode (= 4) (also: no PAE) is supported at this time!\n", sizeof(dma_addr_t));
     
     if ( bigshm_head[card] == NULL )
         bigshm_head[card] = pci_alloc_consistent( pdev[card], BIGSHM_SIZE_PAGES<<PAGE_SHIFT, &bigshm_head_phys[card] );
 
     if (bigshm_head[card] == NULL) {
-        printk("[openair][MODULE][ERROR] Cannot Allocate Memory (%d bytes) for shared data (bigshm)\n", BIGSHM_SIZE_PAGES<<PAGE_SHIFT);
+        printk("[openair][MODULE][ERROR] Cannot Allocate Memory (%lu bytes) for shared data (bigshm)\n", BIGSHM_SIZE_PAGES<<PAGE_SHIFT);
         return -ENOMEM;
     }
     else {
@@ -119,7 +119,7 @@ int exmimo_assign_shm_vars(int card_id)
         p_exmimo_pci_phys[card_id] = (exmimo_pci_interface_bot_t *) bigshm_assign( card_id,
                                       sizeof(exmimo_pci_interface_bot_t),
                                       &pphys_exmimo_pci_phys[card_id]);
-        printk("Intializing EXMIMO interface support (exmimo_pci_bot at %p, phys %x, size %d bytes)\n",p_exmimo_pci_phys[card_id],(unsigned int)pphys_exmimo_pci_phys[card_id], sizeof(exmimo_pci_interface_bot_t));
+        printk("Intializing EXMIMO interface support (exmimo_pci_bot at %p, phys %x, size %lu bytes)\n",p_exmimo_pci_phys[card_id],(unsigned int)pphys_exmimo_pci_phys[card_id], sizeof(exmimo_pci_interface_bot_t));
 
         exmimo_pci_kvirt[card_id].firmware_block_ptr = (char *) bigshm_assign( card_id,
                                             MAX_FIRMWARE_BLOCK_SIZE_B,
@@ -173,34 +173,39 @@ int exmimo_assign_shm_vars(int card_id)
 int exmimo_allocate_rx_tx_buffers(int card_id)
 {
     size_t size;
-    int j;
-    
+    int j,i;
+    dma_addr_t dma_addr_dummy; 
     // Round up to the next PAGE_SIZE (typ. 4096 bytes)
     size = (ADAC_BUFFERSZ_PERCHAN_B >> PAGE_SHIFT) + 1;
     size <<= PAGE_SHIFT;
     
     for (j=0; j<MAX_ANTENNAS; j++)
     {
-        exmimo_pci_kvirt[card_id].adc_head[j] = (uint32_t *)pci_alloc_consistent( pdev[card_id], size,
-                                                    (dma_addr_t*)&(p_exmimo_pci_phys[card_id]->adc_head[j]) ); 
+
+        exmimo_pci_kvirt[card_id].adc_head[j] = (uint32_t *)pci_alloc_consistent( pdev[card_id], size, &dma_addr_dummy);
+                                                    p_exmimo_pci_phys[card_id]->adc_head[j]=((uint32_t*)&dma_addr_dummy)[0]; 
         
         printk("exmimo_pci_kvirt[%d].adc_head[%d] = %p (phys = %08x)\n", card_id, j, exmimo_pci_kvirt[card_id].adc_head[j], p_exmimo_pci_phys[card_id]->adc_head[j]);
         if ( exmimo_pci_kvirt[card_id].adc_head[j] == NULL)
             return -1;
-        
+    //  printk("[MODULE MAIN0]Phys address TX[0] : (%8lx)\n",p_exmimo_pci_phys[0]->dac_head[ openair_mmap_getAntTX(2) ]);     
+   
         mem_SetPageReserved( exmimo_pci_kvirt[card_id].adc_head[j], size >> PAGE_SHIFT );
         memset( exmimo_pci_kvirt[card_id].adc_head[j], 0x10+j, size);
         
+    //  printk("[MODULE MAIN1]Phys address TX[0] : (%8lx)\n",p_exmimo_pci_phys[0]->dac_head[ openair_mmap_getAntTX(2) ]);
 
-        exmimo_pci_kvirt[card_id].dac_head[j] = (uint32_t *)pci_alloc_consistent( pdev[card_id], size,
-                                                    (dma_addr_t*)&(p_exmimo_pci_phys[card_id]->dac_head[j]) ); 
+        exmimo_pci_kvirt[card_id].dac_head[j] = (uint32_t *)pci_alloc_consistent( pdev[card_id], size,&dma_addr_dummy);
+                                                    p_exmimo_pci_phys[card_id]->dac_head[j]=((uint32_t*)&dma_addr_dummy)[0]; 
 
-        printk("exmimo_pci_kvirt[%d].dac_head[%d] = %p (phys = %08x)\n", card_id, j, exmimo_pci_kvirt[card_id].dac_head[j], p_exmimo_pci_phys[card_id]->dac_head[j]);
+    //    printk("exmimo_pci_kvirt[%d].dac_head[%d] = %p (phys = %08x)\n", card_id, j, exmimo_pci_kvirt[card_id].dac_head[j], p_exmimo_pci_phys[card_id]->dac_head[j]);
         if ( exmimo_pci_kvirt[card_id].dac_head[j] == NULL)
             return -ENOMEM;
+   //   printk("[MODULE MAIN2]Phys address TX[0] : (%8lx)\n",p_exmimo_pci_phys[0]->dac_head[ openair_mmap_getAntTX(2) ]);
 
         mem_SetPageReserved( exmimo_pci_kvirt[card_id].dac_head[j], size >> PAGE_SHIFT );
         memset( exmimo_pci_kvirt[card_id].dac_head[j], 0x20+j, size);
+   //   printk("[MODULE MAIN3]Phys address TX[0] : (%8lx)\n",p_exmimo_pci_phys[0]->dac_head[ openair_mmap_getAntTX(2) ]);
     }
     return 0;
 }
@@ -215,6 +220,7 @@ int exmimo_allocate_rx_tx_buffers(int card_id)
  */
 int exmimo_memory_alloc(int card)
 {
+int i;
     if ( bigshm_init( card ) ) {
         printk("exmimo_memory_alloc(): bigshm_init failed for card %d.\n", card);
         return -ENOMEM;
@@ -229,6 +235,7 @@ int exmimo_memory_alloc(int card)
         printk("exmimo_memory_alloc(): exmimo_allocate_rx_tx_buffers() failed to allocate enough memory for RX and TX buffers for card %i!\n", card);
         return -ENOMEM;
     }
+
     return 0;
 }
 
@@ -281,7 +288,7 @@ int exmimo_firmware_cleanup(int card)
     }
 
     if ( bigshm_head[card] ) {
-        printk("free bigshm_head[%d] pdev %p, size %u, head %p, phys %x\n", card, pdev[card], BIGSHM_SIZE_PAGES<<PAGE_SHIFT, bigshm_head[card], (unsigned int)bigshm_head_phys[card]);
+        printk("free bigshm_head[%d] pdev %p, size %lu, head %p, phys %x\n", card, pdev[card], BIGSHM_SIZE_PAGES<<PAGE_SHIFT, bigshm_head[card], (unsigned int)bigshm_head_phys[card]);
         mem_ClearPageReserved( bigshm_head[card], BIGSHM_SIZE_PAGES );
 
         pci_free_consistent( pdev[card], BIGSHM_SIZE_PAGES<<PAGE_SHIFT, bigshm_head[card], bigshm_head_phys[card]);

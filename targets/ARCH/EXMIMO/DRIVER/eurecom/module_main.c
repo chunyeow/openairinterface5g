@@ -48,7 +48,6 @@ static int __init openair_init_module( void )
     int res = 0;
     unsigned int readback;
     unsigned int card, j;
-    
     unsigned int vid,did;
     unsigned short vendor, subid;
     exmimo_id_t exmimo_id_tmp[MAX_CARDS];
@@ -153,12 +152,12 @@ static int __init openair_init_module( void )
             }
         }
 
-        if (pci_enable_pcie_error_reporting(pdev[card]) > 0)
-            printk("[openair][INIT_MODULE][INFO]: Enabled PCIe error reporting\n");
-        else
-            printk("[openair][INIT_MODULE][INFO]: Failed to enable PCIe error reporting\n");
+        //if (pci_enable_pcie_error_reporting(pdev[card]) > 0)
+        //    printk("[openair][INIT_MODULE][INFO]: Enabled PCIe error reporting\n");
+        //else
+        //    printk("[openair][INIT_MODULE][INFO]: Failed to enable PCIe error reporting\n");
 
-        pci_cleanup_aer_uncorrect_error_status(pdev[card]);
+        //pci_cleanup_aer_uncorrect_error_status(pdev[card]);
         
         mmio_start[card]  = pci_resource_start(pdev[card], 0); // get start of BAR0
         mmio_length[card] = pci_resource_len  (pdev[card], 0);
@@ -202,7 +201,7 @@ static int __init openair_init_module( void )
             openair_cleanup();
             return -ENOMEM;
         }
-        
+       
         exmimo_pci_kvirt[card].exmimo_id_ptr->board_vendor = exmimo_id_tmp[card].board_vendor;
         exmimo_pci_kvirt[card].exmimo_id_ptr->board_exmimoversion = exmimo_id_tmp[card].board_exmimoversion;
         exmimo_pci_kvirt[card].exmimo_id_ptr->board_hwrev = exmimo_id_tmp[card].board_hwrev;
@@ -276,7 +275,7 @@ static int __init openair_init_module( void )
 
 static void __exit openair_cleanup_module(void)
 {
-    int card;
+    //int card;
     printk("[openair][CLEANUP MODULE]\n");
 
     // stop any ongoing acquisition
