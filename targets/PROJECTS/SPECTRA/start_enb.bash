@@ -107,7 +107,7 @@ ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 #wait_process_started odtone-mihf
 
 
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE  \
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE  \
              --enb-ral-listening-port   1234\
              --enb-ral-link-id          enb_lte_link\
              --enb-ral-ip-address       127.0.0.1\
