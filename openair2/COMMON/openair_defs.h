@@ -10,7 +10,9 @@
 #ifdef USER_MODE
 #include <stdio.h>
 #include <stdlib.h>
-#define msg printf
+#if !defined (msg)
+# define msg(aRGS...) LOG_D(PHY, ##aRGS)
+#endif
 #define malloc16(x) memalign(16,x) //malloc(x)
 #define free16(y,x) free(y)
 #define bigmalloc malloc
