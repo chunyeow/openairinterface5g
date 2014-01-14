@@ -353,11 +353,12 @@ static void init_MCCH (u8 Mod_id) {
       LOG_E(RRC,"[eNB %d][MAIN] init_MCCH: FATAL, no memory for MCCH MESSAGE allocated \n", Mod_id);
       mac_xface->macphy_exit("[RRC][init_MCCH] not enough memory\n");
     } else {
-      eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[sync_area] = do_MBSFNAreaConfig (mac_xface->lte_frame_parms,
-										sync_area,
-										(uint8_t *) eNB_rrc_inst[Mod_id].MCCH_MESSAGE[sync_area],
-										&eNB_rrc_inst[Mod_id].mcch,
-										&eNB_rrc_inst[Mod_id].mcch_message);
+      eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[sync_area] = do_MBSFNAreaConfig (Mod_id,
+                                                                                mac_xface->lte_frame_parms,
+                                                                                sync_area,
+                                                                                (uint8_t *) eNB_rrc_inst[Mod_id].MCCH_MESSAGE[sync_area],
+                                                                                &eNB_rrc_inst[Mod_id].mcch,
+                                                                                &eNB_rrc_inst[Mod_id].mcch_message);
 
       LOG_I(RRC,"mcch message pointer %p for sync area %d \n", eNB_rrc_inst[Mod_id].MCCH_MESSAGE[sync_area],sync_area);
       LOG_D (RRC, "[eNB %d] MCCH_MESSAGE  contents for Sync Area %d (partial)\n", Mod_id,sync_area);
