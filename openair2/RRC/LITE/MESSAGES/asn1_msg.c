@@ -1097,7 +1097,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[10000];
+    char        message_string[15000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
