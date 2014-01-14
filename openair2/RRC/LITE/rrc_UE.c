@@ -137,7 +137,7 @@ static int rrc_set_state (u8 Mod_id, Rrc_State_t state) {
 }
 
 static int rrc_set_sub_state (u8 Mod_id, Rrc_Sub_State_t subState) {
-#if defined(ENABLE_ITTI)
+#if (defined(ENABLE_ITTI) && defined(ENABLE_USE_MME))
   switch (UE_rrc_inst[Mod_id].RrcState) {
     case RRC_STATE_INACTIVE:
       AssertFatal ((RRC_SUB_STATE_INACTIVE_FIRST <= subState) && (subState <= RRC_SUB_STATE_INACTIVE_LAST),
