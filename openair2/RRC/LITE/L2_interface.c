@@ -102,6 +102,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
         RRC_MAC_BCCH_DATA_REQ (message_p).frame = frame;
         RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib1_size;
+        memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
         memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].SIB1, sib1_size);
         RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -136,6 +137,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
         RRC_MAC_BCCH_DATA_REQ (message_p).frame = frame;
         RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib23_size;
+        memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
         memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].SIB23, sib23_size);
         RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -183,6 +185,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
           message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_CCCH_DATA_REQ);
           RRC_MAC_CCCH_DATA_REQ (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
+          memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
           memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, Srb_info->Tx_buffer.Payload, ccch_size);
           RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -222,6 +225,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_MCCH_DATA_REQ);
         RRC_MAC_MCCH_DATA_REQ (message_p).frame = frame;
         RRC_MAC_MCCH_DATA_REQ (message_p).sdu_size = mcch_size;
+        memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
         memcpy (RRC_MAC_MCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].MCCH_MESSAGE[mbsfn_sync_area], mcch_size);
         RRC_MAC_MCCH_DATA_REQ (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_REQ (message_p).mbsfn_sync_area = mbsfn_sync_area;
@@ -270,6 +274,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_MAC_CCCH_DATA_REQ);
         RRC_MAC_CCCH_DATA_REQ (message_p).frame = frame;
         RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
+        memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
         memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload, ccch_size);
         RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
@@ -320,6 +325,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_BCCH_DATA_IND);
         RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = sdu_size;
+        memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
         memcpy (RRC_MAC_BCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_BCCH_DATA_IND (message_p).enb_index = eNB_index;
         RRC_MAC_BCCH_DATA_IND (message_p).rsrq = 30 /* TODO change phy to report rspq */;
@@ -390,6 +396,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_IND);
           RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
+          memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
           memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
           RRC_MAC_CCCH_DATA_IND (message_p).enb_index = eNB_index;
 
@@ -424,6 +431,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_MCCH_DATA_IND);
         RRC_MAC_MCCH_DATA_IND (message_p).frame = frame;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_size = sdu_size;
+        memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
         memcpy (RRC_MAC_MCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_MCCH_DATA_IND (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_IND (message_p).mbsfn_sync_area = mbsfn_sync_area;
@@ -456,6 +464,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           message_p = itti_alloc_new_message (TASK_MAC_ENB, RRC_MAC_CCCH_DATA_IND);
           RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
+          memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
           memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
 
           itti_send_msg_to_task (TASK_RRC_ENB, Mod_id, message_p);
@@ -514,7 +523,7 @@ u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int r
 //-------------------------------------------------------------------------------------------//
 void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
 //-------------------------------------------------------------------------------------------//
-  u8 DCCH_index = Srb_id % NB_RB_MAX;
+  u8 DCCH_index = Srb_id;
   u8_t Mod_id;
 
   if (eNB_flag == 0) {
