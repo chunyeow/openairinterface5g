@@ -16,9 +16,14 @@
 
 static ui_text_view_t *terminal_view;
 
+void ui_notebook_terminal_clear(void)
+{
+     ui_signal_dissect_clear_view(terminal_view);
+}
+
 void ui_notebook_terminal_append_data(gchar *text, gint length)
 {
-  ui_signal_set_text(terminal_view, text, length);
+    ui_signal_set_text(terminal_view, text, length);
 }
 
 int ui_notebook_create(GtkWidget *vbox)

@@ -685,6 +685,8 @@ gboolean ui_callback_signal_clear_list(GtkWidget *widget, gpointer data)
         ui_signal_dissect_clear_view (ui_main_data.text_view);
     }
 
+    ui_notebook_terminal_clear();
+
     return TRUE;
 }
 
