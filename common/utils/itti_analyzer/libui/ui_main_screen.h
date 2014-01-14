@@ -26,6 +26,7 @@ typedef struct {
     GtkToolItem *open_replay_file;
     GtkToolItem *refresh_replay_file;
     GtkToolItem *save_replay_file;
+    GtkToolItem *save_replay_file_filtered;
 
     GtkToolItem *connect;
     GtkToolItem *disconnect;

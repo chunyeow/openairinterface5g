@@ -58,12 +58,14 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
 {
-    g_message("Save messages event occurred");
+    gboolean filtered = (data != NULL) ? TRUE : FALSE;
+
+    g_message("Save messages event occurred %d", filtered);
 
     if (operation_running == FALSE)
     {
         operation_running = TRUE;
-        CHECK_FCT(ui_messages_save_file_chooser());
+        CHECK_FCT(ui_messages_save_file_chooser(filtered));
         operation_running = FALSE;
     }
 

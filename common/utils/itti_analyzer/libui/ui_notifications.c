@@ -315,7 +315,7 @@ static void ui_message_write_callback(const gpointer buffer, const gchar *signal
     fwrite (&itti_dump_message_type_end, sizeof(itti_message_types_t), 1, messages_file);
 }
 
-static int ui_messages_file_write(char *file_name)
+static int ui_messages_file_write(char *file_name, gboolean filtered)
 {
     if (file_name == NULL)
     {
@@ -345,7 +345,7 @@ static int ui_messages_file_write(char *file_name)
     /* Write messages */
     {
         message_number = 1;
-        ui_tree_view_foreach_message (ui_message_write_callback, TRUE);
+        ui_tree_view_foreach_message (ui_message_write_callback, filtered);
     }
 
     fclose (messages_file);
@@ -395,7 +395,7 @@ int ui_messages_open_file_chooser(void)
     return result;
 }
 
-int ui_messages_save_file_chooser(void)
+int ui_messages_save_file_chooser(gboolean filtered)
 {
     int result = RC_OK;
     GtkWidget *filechooser;
@@ -403,7 +403,13 @@ int ui_messages_save_file_chooser(void)
     /* Check if there is something to save */
     if (xml_raw_data_size > 0)
     {
-        filechooser = gtk_file_chooser_dialog_new ("Save file", GTK_WINDOW (ui_main_data.window),
+        static const char *title[] =
+        {
+             "Save file (all messages)",
+             "Save file (filtered messages)",
+        };
+
+        filechooser = gtk_file_chooser_dialog_new (title[filtered], GTK_WINDOW (ui_main_data.window),
                                                    GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_CANCEL,
                                                    GTK_RESPONSE_CANCEL, GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
         gtk_filter_add (filechooser, "Log files", "*.log");
@@ -426,7 +432,7 @@ int ui_messages_save_file_chooser(void)
             char *filename;
 
             filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
-            result = ui_messages_file_write (filename);
+            result = ui_messages_file_write (filename, filtered);
             if (result == RC_OK)
             {
                 /* Update filters file name for future use */

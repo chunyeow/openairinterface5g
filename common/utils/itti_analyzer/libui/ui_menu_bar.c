@@ -37,6 +37,7 @@ int ui_menu_bar_create(GtkWidget *vbox)
     GtkWidget *open_messages;
     GtkWidget *reload_messages;
     GtkWidget *save_messages;
+    GtkWidget *save_messages_filtered;
     GtkWidget *goto_first_messages;
     GtkWidget *goto_messages;
     GtkWidget *goto_last_messages;
@@ -81,7 +82,7 @@ int ui_menu_bar_create(GtkWidget *vbox)
                              (gpointer) TRUE);
 
             save_filters = gtk_menu_item_new_with_mnemonic ("_Save filters file");
-            gtk_widget_add_accelerator (save_filters, "activate", accel_group, GDK_KEY_a, GDK_CONTROL_MASK,
+            gtk_widget_add_accelerator (save_filters, "activate", accel_group, GDK_KEY_v, GDK_CONTROL_MASK,
                                         GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), save_filters);
             g_signal_connect(G_OBJECT(save_filters), "activate", G_CALLBACK(ui_callback_on_save_filters), NULL);
@@ -128,11 +129,19 @@ int ui_menu_bar_create(GtkWidget *vbox)
             g_signal_connect(G_OBJECT(reload_messages), "activate", G_CALLBACK(ui_callback_on_open_messages),
                              (gpointer) TRUE);
 
-            save_messages = gtk_menu_item_new_with_mnemonic ("_Save messages file");
-            gtk_widget_add_accelerator (save_messages, "activate", accel_group, GDK_KEY_s, GDK_CONTROL_MASK,
+            save_messages = gtk_menu_item_new_with_mnemonic ("_Save messages file (all)");
+            gtk_widget_add_accelerator (save_messages, "activate", accel_group, GDK_KEY_a, GDK_CONTROL_MASK,
                                         GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), save_messages);
-            g_signal_connect(G_OBJECT(save_messages), "activate", G_CALLBACK(ui_callback_on_save_messages), NULL);
+            g_signal_connect(G_OBJECT(save_messages), "activate", G_CALLBACK(ui_callback_on_save_messages),
+                             (gpointer) FALSE);
+
+            save_messages_filtered = gtk_menu_item_new_with_mnemonic ("_Save messages file (filtered)");
+            gtk_widget_add_accelerator (save_messages_filtered, "activate", accel_group, GDK_KEY_s, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), save_messages_filtered);
+            g_signal_connect(G_OBJECT(save_messages_filtered), "activate", G_CALLBACK(ui_callback_on_save_messages),
+                             (gpointer) TRUE);
 
             gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), gtk_menu_item_new ()); // Separator
 
@@ -265,10 +274,19 @@ int ui_toolbar_create(GtkWidget *vbox)
     /* Button to save messages file */
     {
         ui_main_data.save_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file), "Save messages file");
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file), "Save messages file (all)");
 
         g_signal_connect(G_OBJECT(ui_main_data.save_replay_file), "clicked",
-                        G_CALLBACK(ui_callback_on_save_messages), NULL);
+                        G_CALLBACK(ui_callback_on_save_messages), (gpointer) FALSE);
+    }
+
+    /* Button to save messages file */
+    {
+        ui_main_data.save_replay_file_filtered = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE_AS);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.save_replay_file_filtered), "Save messages file (filtered)");
+
+        g_signal_connect(G_OBJECT(ui_main_data.save_replay_file_filtered), "clicked",
+                        G_CALLBACK(ui_callback_on_save_messages), (gpointer) TRUE);
     }
 
     /* Button to go to first signal in list */
@@ -352,6 +370,7 @@ int ui_toolbar_create(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.refresh_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file_filtered), FALSE, FALSE, BUTTON_SPACE);
 
     gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
 
