@@ -16,13 +16,13 @@ int struct_dissect_from_buffer(
     buffer_t *buffer, uint32_t offset, uint32_t parent_offset, int indent, gboolean new_line)
 {
     int i;
-    int length = 0;
     char cbuf[50 + (type->name ? strlen (type->name) : 0)];
+    int length = 0;
     char *name;
 
-    DISPLAY_PARSE_INFO("structure", type->name, offset, parent_offset);
-
     memset (cbuf, 0, sizeof(cbuf));
+
+    DISPLAY_PARSE_INFO("structure", type->name, offset, parent_offset);
 
     if (new_line) {
         DISPLAY_TYPE("Str");
@@ -34,16 +34,32 @@ int struct_dissect_from_buffer(
     else {
         name = "_anonymous_";
     }
-    INDENTED_STRING(cbuf, new_line ? indent : 0, length = sprintf (cbuf, "%s :", name));
-    DISPLAY_BRACE(length += sprintf(&cbuf[length], " {"););
-    length += sprintf(&cbuf[length], "\n");
-    ui_set_signal_text_cb(user_data, cbuf, length);
 
-    for (i = 0; i < type->nb_members; i++) {
-        if (type->members_child[i] != NULL)
-            type->members_child[i]->type_dissect_from_buffer (
-                type->members_child[i], ui_set_signal_text_cb, user_data,
-                buffer, offset, parent_offset, indent + DISPLAY_TAB_SIZE, TRUE);
+    if ((strcmp (type->name, "IttiMsgText_s") == 0) &&
+        (type->members_child[0] != NULL) && (strcmp (type->members_child[0]->name, "size") == 0) &&
+        (type->members_child[1] != NULL) && (strcmp (type->members_child[1]->name, "text") == 0))
+    {
+        uint8_t *buf;
+
+        length = buffer_get_uint32_t (buffer, offset + parent_offset);
+        buf = malloc (length + 1);
+        buf[0] = '\n';
+        buffer_fetch_nbytes(buffer, parent_offset + offset + 32, length, &buf[1]);
+        ui_set_signal_text_cb(user_data, buf, length);
+    }
+    else
+    {
+        INDENTED_STRING(cbuf, new_line ? indent : 0, length = sprintf (cbuf, "%s :", name));
+        DISPLAY_BRACE(length += sprintf(&cbuf[length], " {"););
+        length += sprintf(&cbuf[length], "\n");
+        ui_set_signal_text_cb(user_data, cbuf, length);
+
+        for (i = 0; i < type->nb_members; i++) {
+            if (type->members_child[i] != NULL)
+                type->members_child[i]->type_dissect_from_buffer (
+                    type->members_child[i], ui_set_signal_text_cb, user_data,
+                    buffer, offset, parent_offset, indent + DISPLAY_TAB_SIZE, TRUE);
+        }
     }
 
     DISPLAY_BRACE(
