@@ -115,7 +115,7 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
         g_assert_not_reached();
     }
 
-    buffer->message_number = itti_signal_header.message_number;
+    sscanf (itti_signal_header.message_number_char, MESSAGE_NUMBER_CHAR_FORMAT, &buffer->message_number);
 //     buffer_dump(buffer, stdout);
 
     /* Update the number of signals received since last GUI update */
@@ -127,7 +127,7 @@ static int socket_read_itti_message(socket_data_t        *socket_data,
         socket_notify_gui_update(socket_data);
     }
 
-    g_debug("Successfully read new signal %u from socket", itti_signal_header.message_number);
+    g_debug("Successfully read new signal %u from socket", buffer->message_number);
 
     return total_data_read + sizeof(itti_signal_header);
 }

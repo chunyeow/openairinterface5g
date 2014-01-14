@@ -223,7 +223,7 @@ int ui_messages_read(char *file_name)
                                 g_assert_not_reached ();
                             }
 
-                            buffer->message_number = itti_signal_header->message_number;
+                            sscanf (itti_signal_header->message_number_char, MESSAGE_NUMBER_CHAR_FORMAT, &buffer->message_number);
 
                             ui_signal_add_to_list (buffer, ((read_messages % 1000) == 0) ? (gpointer) 1 : NULL);
 
@@ -305,7 +305,8 @@ static void ui_message_write_callback(const gpointer buffer, const gchar *signal
     message_header.message_size = sizeof(itti_socket_header_t) + sizeof(itti_signal_header) + message_size + sizeof(itti_message_types_t);
     message_header.message_type = ITTI_DUMP_MESSAGE_TYPE;
 
-    itti_signal_header.message_number = message_number;
+    sprintf(itti_signal_header.message_number_char, MESSAGE_NUMBER_CHAR_FORMAT, message_number);
+    itti_signal_header.message_number_char[sizeof(itti_signal_header.message_number_char) - 1] = '\n';
     message_number++;
 
     fwrite (&message_header, sizeof(message_header), 1, messages_file);

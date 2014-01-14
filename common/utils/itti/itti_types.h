@@ -38,6 +38,8 @@
 
 #define CHARS_TO_UINT32(c1, c2, c3, c4) (((c4) << 24) | ((c3) << 16) | ((c2) << 8) | (c1))
 
+#define MESSAGE_NUMBER_CHAR_FORMAT      "%11u"
+
 /* Intertask message types */
 enum itti_message_types_e
 {
@@ -66,7 +68,7 @@ typedef struct {
 } itti_socket_header_t;
 
 typedef struct {
-    uint32_t message_number;
+    char message_number_char[12]; /* 9 chars are needed to store an unsigned 32 bits value in decimal, but must be a multiple of 32 bits to avoid alignment issues */
 } itti_signal_header_t;
 
 

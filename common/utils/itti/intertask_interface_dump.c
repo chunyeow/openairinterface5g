@@ -158,8 +158,10 @@ static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
     /* Preparing the header */
     new_message->socket_header.message_size = size;
     new_message->socket_header.message_type = ITTI_DUMP_MESSAGE_TYPE;
-
-    new_message->signal_header.message_number = message->message_number;
+    /* Adds message number in unsigned decimal ASCII format */
+    snprintf(new_message->signal_header.message_number_char, sizeof(new_message->signal_header.message_number_char),
+             MESSAGE_NUMBER_CHAR_FORMAT, message->message_number);
+    new_message->signal_header.message_number_char[sizeof(new_message->signal_header.message_number_char) - 1] = '\n';
     /* Appends message payload */
     memcpy(&new_message[1], message->data, message->data_size);
 
@@ -184,15 +186,17 @@ static int itti_dump_send_message(int sd, itti_dump_queue_item_t *message)
 
 static int itti_dump_fwrite_message(itti_dump_queue_item_t *message)
 {
-    itti_socket_header_t header;
+    itti_dump_message_t  new_message_header;
 
     if ((dump_file != NULL) && (message != NULL)) {
 
-        header.message_size = message->message_size + sizeof(itti_dump_message_t) + sizeof(itti_message_types_t);
-        header.message_type = message->message_type;
+        new_message_header.socket_header.message_size = message->message_size + sizeof(itti_dump_message_t) + sizeof(itti_message_types_t);
+        new_message_header.socket_header.message_type = message->message_type;
+        snprintf(new_message_header.signal_header.message_number_char, sizeof(new_message_header.signal_header.message_number_char),
+                 MESSAGE_NUMBER_CHAR_FORMAT, message->message_number);
+        new_message_header.signal_header.message_number_char[sizeof(new_message_header.signal_header.message_number_char) - 1] = '\n';
 
-        fwrite (&header, sizeof(itti_socket_header_t), 1, dump_file);
-        fwrite (&message->message_number, sizeof(message->message_number), 1, dump_file);
+        fwrite (&new_message_header, sizeof(itti_dump_message_t), 1, dump_file);
         fwrite (message->data, message->data_size, 1, dump_file);
         fwrite (&itti_dump_message_type_end, sizeof(itti_message_types_t), 1, dump_file);
 // #if !defined(RTAI)
