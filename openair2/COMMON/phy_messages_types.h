@@ -8,9 +8,7 @@
 #ifndef PHY_MESSAGES_TYPES_H_
 #define PHY_MESSAGES_TYPES_H_
 
-#ifdef ENABLE_RAL
 #include "ral_messages_types.h"
-#endif
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
 #define PHY_DEACTIVATE_REQ(mSGpTR)          (mSGpTR)->ittiMsg.phy_deactivate_req
@@ -20,10 +18,9 @@
 
 #define PHY_FIND_CELL_IND(mSGpTR)           (mSGpTR)->ittiMsg.phy_find_cell_ind
 
-#ifdef ENABLE_RAL
 #define PHY_MEAS_THRESHOLD_REQ(mSGpTR)      (mSGpTR)->ittiMsg.phy_meas_threshold_req
 #define PHY_MEAS_THRESHOLD_CONF(mSGpTR)     (mSGpTR)->ittiMsg.phy_meas_threshold_conf
-#endif
+#define PHY_MEAS_REPORT_IND(mSGpTR)         (mSGpTR)->ittiMsg.phy_meas_report_ind
 //-------------------------------------------------------------------------------------------//
 #define MAX_REPORTED_CELL   10
 
@@ -52,6 +49,9 @@ typedef struct PhyDeactivateReq_s {
 } PhyDeactivateReq;
 
 typedef struct PhyFindCellReq_s {
+//#   if defined(ENABLE_RAL)
+    ral_transaction_id_t  transaction_id;
+//#   endif
     Earfcn earfcn_start;
     Earfcn earfcn_end;
 } PhyFindCellReq;
@@ -60,25 +60,29 @@ typedef struct PhyFindNextCellReq_s {
 } PhyFindNextCellReq;
 
 
-#ifdef ENABLE_RAL
-typedef struct PhyMeasThreshodReq_s {
+typedef struct PhyMeasThresholdReq_s {
     ral_transaction_id_t      transaction_id;
     ral_link_cfg_param_t      cfg_param;
-} PhyMeasThreshodReq;
-#endif
+} PhyMeasThresholdReq;
+
+typedef struct PhyMeasReportInd_s {
+    ral_threshold_t            threshold;
+    ral_link_param_type_t      link_param_type;
+} PhyMeasReportInd;
 
 // UE: PHY -> RRC messages
 typedef struct PhyFindCellInd_s {
+//#   if defined(ENABLE_RAL)
+    ral_transaction_id_t  transaction_id;
+//#   endif
    uint8_t      cell_nb;
    CellInfo     cells[MAX_REPORTED_CELL];
 } PhyFindCellInd;
 
-#ifdef ENABLE_RAL
 typedef struct PhyMeasThresholdConf_s {
     ral_transaction_id_t     transaction_id;
     ral_status_t             status;
     uint8_t                  num_link_cfg_params;
     ral_link_cfg_status_t    cfg_status[RAL_MAX_LINK_CFG_PARAMS];
 }PhyMeasThresholdConf;
-#endif
 #endif /* PHY_MESSAGES_TYPES_H_ */

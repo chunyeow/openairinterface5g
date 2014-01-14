@@ -373,12 +373,13 @@ run in segments with final trace back after last segment.
 @param traceback flag to indicate that traceback should be performed*/
 void phy_viterbi_dot11_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n);
 
-/*!\fn void phy_viterbi_lte_sse2(int8_t *y, uint8_t *decoded_bytes, uint16_t n)
+/*!\fn void phy_viterbi_lte_sse2(s8 *y, u8 *decoded_bytes, u16 n)
 \brief This routine performs a SIMD optmized Viterbi decoder for the LTE 64-state tail-biting convolutional code.
 @param y Pointer to soft input (coded on 8-bits but should be limited to 4-bit precision to avoid overflow)
 @param decoded_bytes Pointer to decoded output
 @param n Length of input/trellis depth in bits*/
-void phy_viterbi_lte_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n);
+//void phy_viterbi_lte_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n);
+void phy_viterbi_lte_sse2(s8 *y,u8 *decoded_bytes,u16 n);
 
 /*!\fn void phy_generate_viterbi_tables(void)
 \brief This routine initializes metric tables for the optimized Viterbi decoder.

@@ -39,6 +39,10 @@
 #     include "s1ap_eNB.h"
 #     include "nas_ue_task.h"
 #   endif
+#   if defined(ENABLE_RAL)
+#     include "lteRALue.h"
+#     include "lteRALenb.h"
+#   endif
 #   include "RRC/LITE/defs.h"
 # endif
 # include "enb_app.h"
@@ -83,6 +87,12 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
                 LOG_E(EMU, "Create task for RRC eNB failed\n");
                 return -1;
             }
+#   if defined(ENABLE_RAL)
+            if (itti_create_task (TASK_RAL_ENB, eRAL_task, NULL) < 0) {
+                LOG_E(EMU, "Create task for RAL eNB failed\n");
+                return -1;
+            }
+#   endif
         }
 
         if (ue_nb > 0)
@@ -92,6 +102,12 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
                 LOG_E(EMU, "Create task for RRC UE failed\n");
                 return -1;
             }
+#   if defined(ENABLE_RAL)
+            if (itti_create_task (TASK_RAL_UE, mRAL_task, NULL) < 0) {
+                LOG_E(EMU, "Create task for RAL UE failed\n");
+                return -1;
+            }
+#   endif
         }
     }
 # endif

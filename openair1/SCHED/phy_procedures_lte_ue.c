@@ -85,6 +85,9 @@ fifo_dump_emos_UE emos_dump_UE;
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
+#   if defined(ENABLE_RAL)
+#     include "timer.h"
+#   endif
 #endif
 
 #ifndef OPENAIR2
@@ -3166,7 +3169,91 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
   }
   return do_proc;
 }
-#endif   
+#endif
+
+
+#if defined(ENABLE_ITTI)
+#   if defined(ENABLE_RAL)
+
+void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral_threshold_phy_t* threshold_phy_pP, uint16_t valP) {
+    MessageDef *message_p = NULL;
+
+    if (
+       ((threshold_phy_pP->threshold.threshold_val >  valP) && (threshold_phy_pP->threshold.threshold_xdir == MIH_C_ABOVE_THRESHOLD)) ||
+       ((threshold_phy_pP->threshold.threshold_val <  valP) && (threshold_phy_pP->threshold.threshold_xdir == MIH_C_BELOW_THRESHOLD))
+       ) {
+        message_p = itti_alloc_new_message(TASK_PHY_UE , PHY_MEAS_REPORT_IND);
+        memset(&PHY_MEAS_REPORT_IND(message_p), 0, sizeof(PHY_MEAS_REPORT_IND(message_p)));
+
+        memcpy(&PHY_MEAS_REPORT_IND (message_p).threshold,
+                &threshold_phy_pP->threshold,
+                sizeof(PHY_MEAS_REPORT_IND (message_p).threshold));
+
+        memcpy(&PHY_MEAS_REPORT_IND (message_p).link_param_type,
+                &threshold_phy_pP->link_param_type,
+                sizeof(PHY_MEAS_REPORT_IND (message_p).link_param_type));
+        itti_send_msg_to_task(TASK_RRC_UE, instanceP, message_p);
+    }
+}
+
+void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold_phy_t* threshold_phy_pP) {
+    switch (threshold_phy_pP->link_param_type.choice) {
+
+        case RAL_LINK_PARAM_TYPE_CHOICE_GEN:
+            switch (threshold_phy_pP->link_param_type._union.link_param_gen) {
+                case RAL_LINK_PARAM_GEN_DATA_RATE:
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, 0);
+                    break;
+                case RAL_LINK_PARAM_GEN_SIGNAL_STRENGTH:
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, 0);
+                    break;
+                case RAL_LINK_PARAM_GEN_SINR:
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, 0);
+                    break;
+                case RAL_LINK_PARAM_GEN_THROUGHPUT:
+                    break;
+                case RAL_LINK_PARAM_GEN_PACKET_ERROR_RATE:
+                    break;
+                default:;
+            }
+            break;
+
+        case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
+            switch (threshold_phy_pP->link_param_type._union.link_param_gen) {
+                case RAL_LINK_PARAM_LTE_UE_RSRP:
+                    break;
+                case RAL_LINK_PARAM_LTE_UE_RSRQ:
+                    break;
+                case RAL_LINK_PARAM_LTE_UE_CQI:
+                    break;
+                case RAL_LINK_PARAM_LTE_AVAILABLE_BW:
+                    break;
+                case RAL_LINK_PARAM_LTE_PACKET_DELAY:
+                    break;
+                case RAL_LINK_PARAM_LTE_PACKET_LOSS_RATE:
+                    break;
+                case RAL_LINK_PARAM_LTE_L2_BUFFER_STATUS:
+                    break;
+                case RAL_LINK_PARAM_LTE_MOBILE_NODE_CAPABILITIES:
+                    break;
+                case RAL_LINK_PARAM_LTE_EMBMS_CAPABILITY:
+                    break;
+                case RAL_LINK_PARAM_LTE_JUMBO_FEASIBILITY:
+                    break;
+                case RAL_LINK_PARAM_LTE_JUMBO_SETUP_STATUS:
+                    break;
+                case RAL_LINK_PARAM_LTE_NUM_ACTIVE_EMBMS_RECEIVERS_PER_FLOW:
+                    break;
+                default:;
+            }
+            break;
+
+        default:;
+    }
+}
+#   endif
+#endif
+
  void phy_procedures_UE_lte(u8 last_slot, u8 next_slot, PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode, 
 			    relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn) {
 #if defined(ENABLE_ITTI)
@@ -3211,10 +3298,136 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 
       switch (ITTI_MSG_ID(msg_p)) {
         case PHY_FIND_CELL_REQ:
-          LOG_I(PHY, "[UE %d] Received %s from %s\n", Mod_id, msg_name);
+          LOG_I(PHY, "[UE %d] Received %s\n", Mod_id, msg_name);
 
           /* TODO process the message */
+#   if defined(ENABLE_RAL)
+          {
+              MessageDef *message_p;
+
+              message_p = itti_alloc_new_message(TASK_PHY_UE , PHY_FIND_CELL_IND);
+              memset(&PHY_FIND_CELL_IND(message_p), 0, sizeof(PHY_FIND_CELL_IND(message_p)));
+              PHY_FIND_CELL_IND (message_p).transaction_id   = PHY_FIND_CELL_REQ(msg_p).transaction_id;
+              PHY_FIND_CELL_IND (message_p).cell_nb          = 1;
+              PHY_FIND_CELL_IND (message_p).cells[0].earfcn  = 1;
+              PHY_FIND_CELL_IND (message_p).cells[0].cell_id = 06;
+              PHY_FIND_CELL_IND (message_p).cells[0].rsrp    = 39;
+              PHY_FIND_CELL_IND (message_p).cells[0].rsrq    = 39;
+
+              itti_send_msg_to_task(TASK_RRC_UE, instance, message_p);
+
+          }
+#   endif
           break;
+
+#   if defined(ENABLE_RAL)
+        case TIMER_HAS_EXPIRED:
+            // check if it is a measurement timer
+        {
+            hashtable_rc_t       hashtable_rc;
+
+            hashtable_rc = hashtable_is_key_exists(PHY_vars_UE_g[Mod_id]->ral_thresholds_timed, (uint64_t)(TIMER_HAS_EXPIRED(msg_p).timer_id));
+            if (hashtable_rc == HASH_TABLE_OK) {
+                phy_UE_lte_check_measurement_thresholds(instance, (ral_threshold_phy_t*)TIMER_HAS_EXPIRED(msg_p).arg);
+            }
+        }
+            break;
+
+
+        case PHY_MEAS_THRESHOLD_REQ:
+#warning "TO DO LIST OF THRESHOLDS"
+          LOG_I(PHY, "[UE %d] Received %s\n", Mod_id, msg_name);
+          {
+              ral_transaction_id_t transaction_id;
+              ral_threshold_phy_t* threshold_phy_p  = NULL;
+              int                  index, res;
+              long                 timer_id;
+              hashtable_rc_t       hashtable_rc;
+
+
+              transaction_id = PHY_MEAS_THRESHOLD_REQ(msg_p).transaction_id;
+              switch (PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.th_action) {
+
+                  case RAL_TH_ACTION_CANCEL_THRESHOLD:
+                      break;
+
+                  case RAL_TH_ACTION_SET_NORMAL_THRESHOLD:
+                  case RAL_TH_ACTION_SET_ONE_SHOT_THRESHOLD:
+                      for (index = 0; index < PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.num_thresholds; index++) {
+                          threshold_phy_p                  = calloc(1, sizeof(ral_threshold_phy_t));
+                          threshold_phy_p->th_action       = PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.th_action;
+                          memcpy(&threshold_phy_p->link_param_type,
+                                  &PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type,
+                                  sizeof(threshold_phy_p->link_param_type));
+
+                          memcpy(&threshold_phy_p->threshold,
+                                  &PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.thresholds[index],
+                                  sizeof(ral_threshold_t));
+
+                          switch (PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.union_choice) {
+
+                              case RAL_LINK_CFG_PARAM_CHOICE_TIMER_NULL:
+                                  switch (PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type.choice) {
+                                      case RAL_LINK_PARAM_TYPE_CHOICE_GEN:
+                                          SLIST_INSERT_HEAD(
+                                              &PHY_vars_UE_g[Mod_id]->ral_thresholds_gen_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_gen],
+                                              threshold_phy_p,
+                                              ral_thresholds);
+                                          break;
+
+                                      case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
+                                          SLIST_INSERT_HEAD(
+                                              &PHY_vars_UE_g[Mod_id]->ral_thresholds_lte_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_gen],
+                                              threshold_phy_p,
+                                              ral_thresholds);
+                                          break;
+
+                                      default:
+                                          LOG_E(PHY, "[UE %d] BAD PARAMETER cfg_param.link_param_type.choice %d in %s\n",
+                                                  Mod_id, PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type.choice, msg_name);
+                                  }
+                                  break;
+
+                              case RAL_LINK_CFG_PARAM_CHOICE_TIMER:
+                                  res = timer_setup(
+                                      (uint32_t)(PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param._union.timer_interval/1000),//uint32_t      interval_sec,
+                                      (uint32_t)(PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param._union.timer_interval%1000),//uint32_t      interval_us,
+                                      TASK_PHY_UE,
+                                      instance,
+                                      TIMER_PERIODIC,
+                                      threshold_phy_p,
+                                      &timer_id);
+
+                                  if (res == 0) {
+                                      hashtable_rc = hashtable_insert(PHY_vars_UE_g[Mod_id]->ral_thresholds_timed, (uint64_t )timer_id, (void*)threshold_phy_p);
+                                      if (hashtable_rc == HASH_TABLE_OK) {
+                                          threshold_phy_p->timer_id = timer_id;
+                                      } else {
+                                          LOG_E(PHY, "[UE %d]  %s: Error in hashtable. Could not configure threshold index %d \n",
+                                                  Mod_id, msg_name, index);
+                                      }
+
+                                  } else {
+                                      LOG_E(PHY, "[UE %d]  %s: Could not configure threshold index %d because of timer initialization failure\n",
+                                              Mod_id, msg_name, index);
+                                  }
+                                  break;
+
+                              default: // already checked in RRC, should not happen here
+                                  LOG_E(PHY, "[UE %d] BAD PARAMETER cfg_param.union_choice %d in %s\n",
+                                           Mod_id, PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.union_choice, msg_name);
+                          }
+                      }
+                      break;
+
+                  default:
+                      LOG_E(PHY, "[UE %d] BAD PARAMETER th_action value %d in %s\n",
+                              Mod_id, PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.th_action, msg_name);
+              }
+
+          }
+          break;
+#   endif
 
         default:
           LOG_E(PHY, "[UE %d] Received unexpected message %s\n", Mod_id, msg_name);

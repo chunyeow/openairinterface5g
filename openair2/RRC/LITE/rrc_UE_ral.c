@@ -233,3 +233,4 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
     return 0;
 }
 
+

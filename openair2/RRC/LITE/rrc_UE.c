@@ -1373,7 +1373,7 @@ void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,
                 memcpy (&message_ral_p->ittiMsg, (void *) &connection_reestablishment_ind, sizeof(rrc_ral_connection_reestablishment_ind_t));
                 //#warning "Mod_id ? for instance ? => YES"
                 LOG_I(RRC, "Sending RRC_RAL_CONNECTION_REESTABLISHMENT_IND to mRAL\n");
-                itti_send_msg_to_task (TASK_RAL_UE, Mod_id, message_ral_p);
+                itti_send_msg_to_task (TASK_RAL_UE, Mod_id + NB_eNB_INST, message_ral_p);
             }
 #endif
 #endif
@@ -1676,7 +1676,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
                 memcpy (&message_ral_p->ittiMsg, (void *) &connection_reconfiguration_ho_ind, sizeof(rrc_ral_connection_reconfiguration_ho_ind_t));
                 //#warning "Mod_id ? for instance ? => YES"
                 LOG_I(RRC, "Sending RRC_RAL_CONNECTION_REESTABLISHMENT_HO_IND to mRAL\n");
-                itti_send_msg_to_task (TASK_RAL_UE, Mod_id, message_ral_p);
+                itti_send_msg_to_task (TASK_RAL_UE, Mod_id + NB_eNB_INST, message_ral_p);
             }
 #endif
 #endif
@@ -1714,7 +1714,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
                 memcpy (&message_ral_p->ittiMsg, (void *) &connection_reconfiguration_ind, sizeof(rrc_ral_connection_reconfiguration_ind_t));
                 //#warning "Mod_id ? for instance ? => YES"
                 LOG_I(RRC, "Sending RRC_RAL_CONNECTION_REESTABLISHMENT_IND to mRAL\n");
-                itti_send_msg_to_task (TASK_RAL_UE, Mod_id, message_ral_p);
+                itti_send_msg_to_task (TASK_RAL_UE, Mod_id + NB_eNB_INST, message_ral_p);
             }
 #endif
 #endif
@@ -2241,7 +2241,7 @@ int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window) {
               ral_si_ind.link_data_rate = 0;
               memcpy (&message_ral_p->ittiMsg, (void *) &ral_si_ind, sizeof(rrc_ral_system_information_ind_t));
 #warning "Mod_id ? for instance ?"
-              itti_send_msg_to_task (TASK_RAL_UE, Mod_id, message_ral_p);
+              itti_send_msg_to_task (TASK_RAL_UE, Mod_id + NB_eNB_INST, message_ral_p);
           }
 #endif
       }
@@ -2889,10 +2889,120 @@ void *rrc_ue_task(void *args_p) {
       }
 # endif
 
-#ifdef ENABLE_RAL
+# if defined(ENABLE_RAL)
       case RRC_RAL_SCAN_REQ:
-          LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          LOG_I(RRC, "[UE %d] Received %s: state %d\n", Mod_id, msg_name);
+
+          switch (rrc_get_state(Mod_id)) {
+              case RRC_STATE_INACTIVE:
+              {
+                  /* Need to first activate lower layers */
+                  MessageDef *message_p;
+
+                  message_p = itti_alloc_new_message(TASK_RRC_UE, ACTIVATE_MESSAGE);
+
+                  itti_send_msg_to_task(TASK_L2L1, instance, message_p);
+
+                  rrc_set_state (Mod_id, RRC_STATE_IDLE);
+                  /* Fall through to next case */
+              }
+
+              case RRC_STATE_IDLE:
+              {
+                  if (rrc_get_sub_state(Mod_id) != RRC_SUB_STATE_IDLE_SEARCHING) {
+                      /* Ask to layer 1 to find a cell matching the criterion */
+                      MessageDef *message_p;
+
+                      message_p = itti_alloc_new_message(TASK_RRC_UE, PHY_FIND_CELL_REQ);
+
+                      rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_SEARCHING);
+
+                      PHY_FIND_CELL_REQ (message_p).transaction_id = RRC_RAL_SCAN_REQ (msg_p).transaction_id;
+                      PHY_FIND_CELL_REQ (message_p).earfcn_start   = 1;
+                      PHY_FIND_CELL_REQ (message_p).earfcn_end     = 1; //44
+
+                      itti_send_msg_to_task(TASK_PHY_UE, instance, message_p);
+                  }
+                  break;
+              }
+
+              case RRC_STATE_CONNECTED:
+                  /* should not happen */
+                  LOG_E(RRC, "[UE %d] request %s in RRC state %d\n", Mod_id, msg_name, rrc_get_state(Mod_id));
+                  break;
+
+              default:
+                  LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, rrc_get_state(Mod_id));
+                  break;
+          }
           break;
+
+      case PHY_FIND_CELL_IND:
+          LOG_I(RRC, "[UE %d] Received %s: state %d\n", Mod_id, msg_name, rrc_get_state(Mod_id));
+          switch (rrc_get_state(Mod_id)) {
+              case RRC_STATE_IDLE:
+                  switch (rrc_get_sub_state(Mod_id)) {
+                      case RRC_SUB_STATE_IDLE_SEARCHING:
+                      {
+                          MessageDef *message_p;
+                          int         i;
+
+                          message_p = itti_alloc_new_message(TASK_RRC_UE, RRC_RAL_SCAN_CONF);
+
+                          RRC_RAL_SCAN_CONF (message_p).transaction_id = PHY_FIND_CELL_IND(msg_p).transaction_id;
+                          RRC_RAL_SCAN_CONF (message_p).num_scan_resp  = PHY_FIND_CELL_IND(msg_p).cell_nb;
+                          for (i = 0 ; i < PHY_FIND_CELL_IND(msg_p).cell_nb; i++) {
+                              // TO DO
+                              memset(&RRC_RAL_SCAN_CONF (message_p).link_scan_resp[i].link_addr,  0, sizeof(ral_link_addr_t));
+                              // TO DO
+                              memset(&RRC_RAL_SCAN_CONF (message_p).link_scan_resp[i].network_id, 0, sizeof(ral_network_id_t));
+
+                              RRC_RAL_SCAN_CONF (message_p).link_scan_resp[i].sig_strength.choice     = RAL_SIG_STRENGTH_CHOICE_DBM;
+                              RRC_RAL_SCAN_CONF (message_p).link_scan_resp[i].sig_strength._union.dbm = PHY_FIND_CELL_IND(msg_p).cells[i].rsrp;
+                          }
+
+                          rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE);
+
+                          itti_send_msg_to_task(TASK_RAL_UE, instance, message_p);
+                          break;
+                      }
+
+                      default:
+                          LOG_C(RRC, "[UE %d] Invalid RRC state %d substate %d\n",
+                                  Mod_id,
+                                  rrc_get_state(Mod_id),
+                                  rrc_get_sub_state(Mod_id));
+                  }
+                  break;
+
+              case RRC_STATE_INACTIVE:
+              case RRC_STATE_CONNECTED:
+                  /* should not happen */
+                  LOG_E(RRC, "[UE %d] indication %s in RRC state %d\n", Mod_id, msg_name, rrc_get_state(Mod_id));
+                  break;
+
+              default:
+                  LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, rrc_get_state(Mod_id));
+                  break;
+          }
+          break;
+
+      case PHY_MEAS_REPORT_IND:
+      {
+          MessageDef *message_p;
+          message_p = itti_alloc_new_message(TASK_RRC_UE, RRC_RAL_MEASUREMENT_REPORT_IND);
+
+          memcpy(&RRC_RAL_MEASUREMENT_REPORT_IND (message_p).threshold,
+                  &PHY_MEAS_REPORT_IND(msg_p).threshold,
+                  sizeof(RRC_RAL_MEASUREMENT_REPORT_IND (message_p).threshold));
+
+          memcpy(&RRC_RAL_MEASUREMENT_REPORT_IND (message_p).link_param_type,
+                  &PHY_MEAS_REPORT_IND(msg_p).link_param_type,
+                  sizeof(RRC_RAL_MEASUREMENT_REPORT_IND (message_p).link_param_type));
+
+          itti_send_msg_to_task(TASK_RAL_UE, instance, message_p);
+          break;
+      }
 
       case RRC_RAL_CONFIGURE_THRESHOLD_REQ:
           rrc_ue_ral_handle_configure_threshold_request(Mod_id, msg_p);
@@ -2900,9 +3010,33 @@ void *rrc_ue_task(void *args_p) {
 
       case RRC_RAL_CONNECTION_ESTABLISHMENT_REQ:
           LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
+          switch (rrc_get_state(Mod_id)) {
+              case RRC_STATE_IDLE:
+              {
+                  if (rrc_get_sub_state(Mod_id) == RRC_SUB_STATE_IDLE_SIB_COMPLETE)
+                  {
+                      rrc_ue_generate_RRCConnectionRequest(Mod_id, 0 /* TODO put frame number ! */, 0);
+                      LOG_I(RRC, "not sending connection request\n");
+
+                      rrc_set_sub_state (Mod_id, RRC_SUB_STATE_IDLE_CONNECTING);
+                  }
+                  break;
+              }
+
+              case RRC_STATE_INACTIVE:
+              case RRC_STATE_CONNECTED:
+                  /* should not happen */
+                  LOG_E(RRC, "[UE %d] request %s in RRC state %d\n", Mod_id, msg_name, rrc_get_state(Mod_id));
+                  break;
+
+              default:
+                  LOG_C(RRC, "[UE %d] Invalid RRC state %d\n", Mod_id, rrc_get_state(Mod_id));
+                  break;
+          }
           break;
 
       case RRC_RAL_CONNECTION_RELEASE_REQ:
+          Mod_id = 0; /* TODO force Mod_id to first UE, NAS UE not virtualized yet */
           LOG_I(RRC, "[UE %d] Received %s\n", Mod_id, msg_name);
           break;
 #endif

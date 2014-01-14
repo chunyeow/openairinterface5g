@@ -555,8 +555,8 @@ void check_and_adjust_params() {
     NB_eNB_INST+=NB_RN_INST;
     NB_UE_INST+=NB_RN_INST;
   }
-  LOG_I(EMU,"Total number of UE %d (local %d, remote %d, relay %d) mobility %s \n", 
-	NB_UE_INST,oai_emulation.info.nb_ue_local,oai_emulation.info.nb_ue_remote, 
+  LOG_I(EMU,"Total number of UE %d (first local %d , num local %d, remote %d, relay %d) mobility %s \n",
+	NB_UE_INST,oai_emulation.info.first_ue_local, oai_emulation.info.nb_ue_local,oai_emulation.info.nb_ue_remote,
 	NB_RN_INST,
 	oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option);
   
@@ -620,7 +620,9 @@ void init_seed(u8 set_seed) {
 
 void init_openair1() {
   s32 UE_id, eNB_id;
-
+#if defined(ENABLE_RAL)
+  int list_index;
+#endif
   // change the nb_connected_eNB
   init_lte_vars (&frame_parms, oai_emulation.info.frame_type, oai_emulation.info.tdd_config, oai_emulation.info.tdd_config_S,oai_emulation.info.extended_prefix_flag,oai_emulation.info.N_RB_DL, Nid_cell, cooperation_flag, oai_emulation.info.transmission_mode, abstraction_flag,nb_antennas_rx, oai_emulation.info.eMBMS_active_state);
 
@@ -672,6 +674,16 @@ void init_openair1() {
     PHY_vars_UE_g[UE_id]->current_dlsch_cqi[0] = 10;
 
     LOG_I(EMU, "UE %d mode is initialized to %d\n", UE_id, PHY_vars_UE_g[UE_id]->UE_mode[0] );
+#if defined(ENABLE_RAL)
+    PHY_vars_UE_g[UE_id]->ral_thresholds_timed = hashtable_create (64, NULL, NULL);
+    for (list_index = 0; list_index < RAL_LINK_PARAM_GEN_MAX; list_index++) {
+        SLIST_INIT(&PHY_vars_UE_g[UE_id]->ral_thresholds_gen_polled[list_index]);
+    }
+    for (list_index = 0; list_index < RAL_LINK_PARAM_LTE_MAX; list_index++) {
+        SLIST_INIT(&PHY_vars_UE_g[UE_id]->ral_thresholds_lte_polled[list_index]);
+    }
+#endif
+
   }
 }
 
@@ -695,37 +707,8 @@ void init_openair2() {
 
   mac_xface->macphy_exit = exit_fun;
 
-#ifdef ENABLE_RAL
-  init_802_21_link_saps();
-#endif
 #endif
 }
-
-void init_802_21_link_saps() {
-#ifdef ENABLE_RAL
-#ifdef OPENAIR2
-#if defined(ENABLE_ITTI)
-  if (NB_eNB_INST > 0) {
-      if (itti_create_task (TASK_RAL_ENB, eRAL_task, NULL) < 0) {
-          LOG_E(EMU, "Create task failed");
-          LOG_D(EMU, "Initializing RAL eNB task interface: FAILED\n");
-          exit (-1);
-      }
-  }
-
-  if (NB_UE_INST > 0) {
-      if (itti_create_task (TASK_RAL_UE, mRAL_task, NULL) < 0) {
-          LOG_E(EMU, "Create task failed");
-          LOG_D(EMU, "Initializing RAL UE task interface: FAILED\n");
-          exit (-1);
-      }
-  }
-  sleep(15);
-#endif
-#endif
-#endif
-}
-
 
 void init_ocm() {
   s32 UE_id, eNB_id;

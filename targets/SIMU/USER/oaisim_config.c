@@ -458,34 +458,40 @@ int olg_config() {
   set_comp_log(OCG,  LOG_EMERG, 0x15,1);
   set_comp_log(OCM,  LOG_EMERG, 0x15,1);
   set_comp_log(OTG,  LOG_EMERG, 0x15,1);
-  set_comp_log(MAC,  LOG_EMERG, 0x15,1);
+  set_comp_log(MAC,  LOG_DEBUG, 0x15,1);
   set_comp_log(OMG,  LOG_EMERG, 0x15,1);
   set_comp_log(OPT,  LOG_EMERG, 0x15,1);
   set_comp_log(PDCP, LOG_TRACE, LOG_MED,1);
   set_comp_log(RLC,  LOG_TRACE, LOG_MED,1);
   set_comp_log(RRC,  LOG_TRACE, LOG_MED,1);
+#if defined(ENABLE_RAL)
+  set_comp_log(RAL_ENB, LOG_TRACE, LOG_MED,1);
+  set_comp_log(RAL_UE,  LOG_TRACE, LOG_MED,1);
+  set_log(RAL_ENB,  LOG_DEBUG, 1);
+  set_log(RAL_UE,  LOG_DEBUG, 1);
+#endif
 
   //set_log(OCG,  LOG_DEBUG, 1);
   //set_log(EMU,  LOG_INFO,  20);
-  //set_log(MAC,  LOG_DEBUG, 1);
-  set_log(RLC,  LOG_TRACE, 1);  
+  set_log(MAC,  LOG_DEBUG, 1);
+  set_log(RLC,  LOG_TRACE, 1);
   //set_log(PHY,  LOG_DEBUG, 1);
-  set_log(PDCP, LOG_TRACE, 1);  
+  set_log(PDCP, LOG_TRACE, 1);
   set_log(RRC,  LOG_DEBUG, 1);  
   //set_log(OCM,  LOG_INFO, 20);
   //set_log(OTG,  LOG_INFO, 1);
-/*  set_comp_log(OCG,  LOG_ERR, 0x15,1);
+  set_comp_log(OCG,  LOG_ERR, 0x15,1);
   set_comp_log(EMU,  LOG_ERR,  0x15,20);
-  set_comp_log(MAC,  LOG_ERR, 0x15,1);  
+  set_comp_log(MAC,  LOG_DEBUG, 0x15,1);  
   set_comp_log(RLC,  LOG_INFO, 0x15,1);  
-  set_comp_log(PHY,  LOG_ERR, 0x15, 1);  
+  set_comp_log(PHY,  LOG_DEBUG, 0x15, 1);  
   set_comp_log(PDCP, LOG_DEBUG, 0x15,1);  
   set_comp_log(RRC,  LOG_DEBUG, 0x15,1);  
   set_comp_log(OCM,  LOG_ERR, 0x15,20);  
   set_comp_log(OTG,  LOG_ERR, 0x15,1);  
   set_comp_log(OMG,  LOG_ERR, 0x15,1);  
   set_comp_log(OPT,  LOG_ERR, 0x15,1);  
-  */
+  
   // set_comp_log(MAC, LOG_TRACE, LOG_FULL,1);
   return 1; 
 }

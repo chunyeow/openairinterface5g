@@ -360,6 +360,7 @@ static void init_MCCH (u8 Mod_id) {
                                                                                 &eNB_rrc_inst[Mod_id].mcch,
                                                                                 &eNB_rrc_inst[Mod_id].mcch_message);
 
+
       LOG_I(RRC,"mcch message pointer %p for sync area %d \n", eNB_rrc_inst[Mod_id].MCCH_MESSAGE[sync_area],sync_area);
       LOG_D (RRC, "[eNB %d] MCCH_MESSAGE  contents for Sync Area %d (partial)\n", Mod_id,sync_area);
       LOG_D (RRC, "[eNB %d] CommonSF_AllocPeriod_r9 %d\n", Mod_id,

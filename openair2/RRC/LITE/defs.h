@@ -428,6 +428,7 @@ typedef struct UE_RRC_INST_s {
   float                           rsrq_db_filtered[7];
 #if defined(ENABLE_RAL)
   obj_hash_table_t               *ral_meas_thresholds;
+  ral_transaction_id_t            scan_transaction_id;
 #endif
 #if defined(ENABLE_SECURITY)
   /* KeNB as computed from parameters within USIM card */

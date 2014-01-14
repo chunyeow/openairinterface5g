@@ -249,7 +249,7 @@ def execute(oai, user, pw, logfile,logdir):
     try:
         test = '15'
         name = 'Compile oai.rel10.itti.ral.make' 
-        conf = 'make DISABLE_XER_PRINT=1 ENABLE_ITTI=1 Rel10=1'
+        conf = 'make DISABLE_XER_PRINT=1 NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 Rel10=1'
         trace = logdir + '/log_' + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'check the compilation errors for ITTI Rel10'

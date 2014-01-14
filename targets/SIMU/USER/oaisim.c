@@ -472,8 +472,9 @@ void *l2l1_task(void *args_p) {
   int           result;
 
   itti_mark_task_ready (TASK_L2L1);
+  LOG_I(EMU, "TASK_L2L1 is READY\n");
 
-  if (NB_eNB_INST > 0) {
+  if (oai_emulation.info.nb_enb_local > 0) {
     /* Wait for the initialize message */
     do {
       if (message_p != NULL) {
@@ -532,6 +533,7 @@ void *l2l1_task(void *args_p) {
           case MESSAGE_TEST:
             LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
             break;
+
 
           default:
             LOG_E(EMU, "Received unexpected message %s\n", ITTI_MSG_NAME(message_p));
@@ -674,29 +676,29 @@ void *l2l1_task(void *args_p) {
 
         if ((next_slot % 2) == 0)
           clear_UE_transport_info (oai_emulation.info.nb_ue_local);
-
         for (UE_id = oai_emulation.info.first_ue_local;
-            (UE_id < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local)); UE_id++) {
+	     (UE_id < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local)); UE_id++) {
           if (oai_emulation.info.cli_start_ue[UE_id] != 0) {
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
-            {
+	    
 #else
-            if (frame >= (UE_id * 20)) { // activate UE only after 20*UE_id frames so that different UEs turn on separately
+	    if (frame >= (UE_id * 20))  // activate UE only after 20*UE_id frames so that different UEs turn on separately
 #endif
-              LOG_D(EMU, "PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n", UE_id, frame, slot, next_slot >> 1, last_slot>>1);
-
+	      {
+	      LOG_D(EMU, "PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n", UE_id, frame, slot, next_slot >> 1, last_slot>>1);
+	      
               if (PHY_vars_UE_g[UE_id]->UE_mode[0] != NOT_SYNCHED) {
                 if (frame > 0) {
                   PHY_vars_UE_g[UE_id]->frame = frame;
-
+		  
 #ifdef OPENAIR2
                   //Application
                   update_otg_UE (UE_id, oai_emulation.info.time_ms);
-
+		  
                   //Access layer
                   pdcp_run (frame, 0, UE_id, 0);
 #endif
-
+		  
                   phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag, normal_txrx,
                                          no_relay, NULL);
                   ue_data[UE_id]->tx_power_dBm = PHY_vars_UE_g[UE_id]->tx_power_dBm;
@@ -711,7 +713,7 @@ void *l2l1_task(void *args_p) {
                 }
                 if ((frame > 0) && (last_slot == (LTE_SLOTS_PER_FRAME - 2))) {
                   initial_sync (PHY_vars_UE_g[UE_id], normal_txrx);
-
+		  
                   /*
                    write_output("dlchan00.m","dlch00",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][0][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
                    if (PHY_vars_UE_g[0]->lte_frame_parms.nb_antennas_rx>1)
@@ -739,8 +741,8 @@ void *l2l1_task(void *args_p) {
               }
 #endif
             }
-          }
-        }
+	    }
+	  }
 #ifdef Rel10
         for (RN_id=oai_emulation.info.first_rn_local;
             RN_id<oai_emulation.info.first_rn_local+oai_emulation.info.nb_rn_local;
@@ -1078,13 +1080,15 @@ int main(int argc, char **argv) {
 
 #if defined(ENABLE_ITTI)
   // Handle signals until all tasks are terminated
-  if (create_tasks(NB_eNB_INST, NB_UE_INST) >= 0) {
+  if (create_tasks(oai_emulation.info.nb_enb_local, oai_emulation.info.nb_ue_local) >= 0) {
     itti_wait_tasks_end();
   } else {
     exit(-1); // need a softer mode
   }
 #else
-  eNB_app_task(NULL); // do nothing for the moment
+  if (oai_emulation.info.nb_enb_local > 0) {
+      eNB_app_task(NULL); // do nothing for the moment
+  }
   l2l1_task (NULL);
 #endif
 

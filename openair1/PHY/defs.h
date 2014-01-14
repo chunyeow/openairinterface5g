@@ -51,6 +51,11 @@
 # define msg mexPrintf
 #else
 # ifdef OPENAIR2
+#   if defined(ENABLE_RAL)
+#     include "collection/hashtable/hashtable.h"
+#     include "COMMON/ral_messages_types.h"
+#     include "UTIL/queue.h"
+#   endif
 #   include "log.h"
 #   define msg(aRGS...) LOG_D(PHY, ##aRGS)
 # else
@@ -161,6 +166,16 @@ enum transmission_access_mode{
   SCHEDULED_ACCESS,
   CBA_ACCESS
 };
+
+#if defined(ENABLE_RAL)
+  typedef struct ral_threshold_phy_s {
+      SLIST_ENTRY(ral_threshold_phy_s) ral_thresholds;
+      ral_threshold_t                  threshold;
+      ral_th_action_t                  th_action;
+      ral_link_param_type_t            link_param_type;
+      long                             timer_id;
+  }ral_threshold_phy_t;
+#endif
 
 /// Top-level PHY Data Structure for eNB 
 typedef struct {
@@ -319,6 +334,7 @@ typedef struct {
 typedef enum {
   max_gain=0,med_gain,byp_gain
 } rx_gain_t;
+
 
 /// Top-level PHY Data Structure for UE 
 typedef struct
@@ -491,6 +507,12 @@ typedef struct
   time_stats_t dlsch_tc_ext_stats;
   time_stats_t dlsch_tc_intl1_stats;
   time_stats_t dlsch_tc_intl2_stats;
+
+#if defined(ENABLE_RAL)
+  hash_table_t    *ral_thresholds_timed;
+  SLIST_HEAD(ral_thresholds_gen_poll_s, ral_threshold_phy_t) ral_thresholds_gen_polled[RAL_LINK_PARAM_GEN_MAX];
+  SLIST_HEAD(ral_thresholds_lte_poll_s, ral_threshold_phy_t) ral_thresholds_lte_polled[RAL_LINK_PARAM_LTE_MAX];
+#endif
 } PHY_VARS_UE;
 
 /// Top-level PHY Data Structure for RN

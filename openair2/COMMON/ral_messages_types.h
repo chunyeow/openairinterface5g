@@ -37,6 +37,9 @@ LINK COMMANDS:
 #define RRC_RAL_SYSTEM_CONFIGURATION_IND(mSGpTR)          (mSGpTR)->ittiMsg.rrc_ral_system_configuration_ind
 #define RRC_RAL_SYSTEM_INFORMATION_IND(mSGpTR)            (mSGpTR)->ittiMsg.rrc_ral_system_information_ind
 
+#define RRC_RAL_SCAN_REQ(mSGpTR)                          (mSGpTR)->ittiMsg.rrc_ral_scan_req
+#define RRC_RAL_SCAN_CONF(mSGpTR)                         (mSGpTR)->ittiMsg.rrc_ral_scan_conf
+
 #define RRC_RAL_CONFIGURE_THRESHOLD_REQ(mSGpTR)           (mSGpTR)->ittiMsg.rrc_ral_configure_threshold_req
 #define RRC_RAL_CONFIGURE_THRESHOLD_CONF(mSGpTR)          (mSGpTR)->ittiMsg.rrc_ral_configure_threshold_conf
 #define RRC_RAL_MEASUREMENT_REPORT_IND(mSGpTR)            (mSGpTR)->ittiMsg.rrc_ral_measurement_report_ind
@@ -124,7 +127,7 @@ typedef struct rrc_ral_scan_conf_s {
     ral_transaction_id_t transaction_id;
 #define RAL_MAX_LINK_SCAN_RESP 16
     uint8_t                  num_scan_resp;
-    ral_link_scan_resp_t     ink_scan_resp[RAL_MAX_LINK_SCAN_RESP];
+    ral_link_scan_resp_t     link_scan_resp[RAL_MAX_LINK_SCAN_RESP];
 }rrc_ral_scan_conf_t;
 
 typedef struct rrc_ral_connection_establishment_req_s{
@@ -182,6 +185,7 @@ typedef MIH_C_LINK_PARAM_GEN_T                                 ral_link_param_ge
 #define RAL_LINK_PARAM_GEN_SINR                                MIH_C_LINK_PARAM_GEN_SINR
 #define RAL_LINK_PARAM_GEN_THROUGHPUT                          MIH_C_LINK_PARAM_GEN_THROUGHPUT
 #define RAL_LINK_PARAM_GEN_PACKET_ERROR_RATE                   MIH_C_LINK_PARAM_GEN_PACKET_ERROR_RATE
+#define RAL_LINK_PARAM_GEN_MAX                                 RAL_LINK_PARAM_GEN_PACKET_ERROR_RATE
 
 typedef MIH_C_LINK_PARAM_QOS_T                                 ral_link_param_qos_t;
 #define RAL_LINK_PARAM_QOS_MAX_NUM_DIF_COS_SUPPORTED            MIH_C_LINK_PARAM_QOS_MAX_NUM_DIF_COS_SUPPORTED
@@ -190,6 +194,7 @@ typedef MIH_C_LINK_PARAM_QOS_T                                 ral_link_param_qo
 #define RAL_LINK_PARAM_QOS_MAX_PACKET_TRANSFER_DELAY_ALL_COS    MIH_C_LINK_PARAM_QOS_MAX_PACKET_TRANSFER_DELAY_ALL_COS
 #define RAL_LINK_PARAM_QOS_STD_DEVIATION_PACKET_TRANSFER_DELAY  MIH_C_LINK_PARAM_QOS_STD_DEVIATION_PACKET_TRANSFER_DELAY
 #define RAL_LINK_PARAM_QOS_PACKET_LOSS_RATE_ALL_COS_FRAME_RATIO MIH_C_LINK_PARAM_QOS_PACKET_LOSS_RATE_ALL_COS_FRAME_RATIO
+#define RAL_LINK_PARAM_QOS_MAX                                  RAL_LINK_PARAM_QOS_PACKET_LOSS_RATE_ALL_COS_FRAME_RATIO
 
 typedef MIH_C_LINK_PARAM_LTE_T                                 ral_link_param_lte_t;
 #define RAL_LINK_PARAM_LTE_UE_RSRP                             MIH_C_LINK_PARAM_LTE_UE_RSRP
@@ -204,6 +209,7 @@ typedef MIH_C_LINK_PARAM_LTE_T                                 ral_link_param_lt
 #define RAL_LINK_PARAM_LTE_JUMBO_FEASIBILITY                   MIH_C_LINK_PARAM_LTE_JUMBO_FEASIBILITY
 #define RAL_LINK_PARAM_LTE_JUMBO_SETUP_STATUS                  MIH_C_LINK_PARAM_LTE_JUMBO_SETUP_STATUS
 #define RAL_LINK_PARAM_LTE_NUM_ACTIVE_EMBMS_RECEIVERS_PER_FLOW MIH_C_LINK_PARAM_LTE_NUM_ACTIVE_EMBMS_RECEIVERS_PER_FLOW
+#define RAL_LINK_PARAM_LTE_MAX                                 RAL_LINK_PARAM_LTE_NUM_ACTIVE_EMBMS_RECEIVERS_PER_FLOW
 
 #define RAL_LINK_PARAM_TYPE_CHOICE_GEN       MIH_C_LINK_PARAM_TYPE_CHOICE_GEN
 #define RAL_LINK_PARAM_TYPE_CHOICE_QOS       MIH_C_LINK_PARAM_TYPE_CHOICE_QOS
@@ -268,6 +274,8 @@ typedef struct rrc_ral_configure_threshold_conf_s {
 }rrc_ral_configure_threshold_conf_t;
 
 typedef struct rrc_ral_measurement_report_ind_s{
+    ral_threshold_t            threshold;
+    ral_link_param_type_t      link_param_type;
 }rrc_ral_measurement_report_ind_t;
 
 
