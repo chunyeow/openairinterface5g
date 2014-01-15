@@ -67,7 +67,7 @@ typedef struct PhyMeasThresholdReq_s {
 
 typedef struct PhyMeasReportInd_s {
     ral_threshold_t            threshold;
-    ral_link_param_type_t      link_param_type;
+    ral_link_param_t           link_param;
 } PhyMeasReportInd;
 
 // UE: PHY -> RRC messages

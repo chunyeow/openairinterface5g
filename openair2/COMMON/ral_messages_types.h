@@ -173,6 +173,7 @@ typedef struct rrc_ral_connection_reconfiguration_ho_ind_s {
 
 #define RAL_ABOVE_THRESHOLD                                    MIH_C_ABOVE_THRESHOLD
 #define RAL_BELOW_THRESHOLD                                    MIH_C_BELOW_THRESHOLD
+#define RAL_NO_THRESHOLD                                       0xFF
 typedef struct ral_threshold_s {
     uint16_t        threshold_val;
     uint8_t         threshold_xdir;
@@ -224,6 +225,37 @@ typedef struct ral_link_param_type_s {
     } _union;
 } ral_link_param_type_t;
 
+typedef uint16_t               ral_link_param_val_t;
+typedef MIH_C_NUM_COS_TYPES_T  ral_num_cos_types_t  ;
+
+typedef struct ral_qos_param_val_s {
+    ral_choice_t                 choice;
+    union  {
+        ral_num_cos_types_t      num_qos_types;
+        LIST(MIH_C_MIN_PK_TX_DELAY, min_pk_tx_delay)
+        LIST(MIH_C_AVG_PK_TX_DELAY, avg_pk_tx_delay)
+        LIST(MIH_C_MAX_PK_TX_DELAY, max_pk_tx_delay)
+        LIST(MIH_C_PK_DELAY_JITTER, pk_delay_jitter)
+        LIST(MIH_C_PK_LOSS_RATE,    pk_loss_rate)
+    } _union;
+} ral_qos_param_val_t;
+#define RAL_QOS_PARAM_VAL_CHOICE_NUM_QOS_TYPES   MIH_C_QOS_PARAM_VAL_CHOICE_NUM_QOS_TYPES
+#define RAL_QOS_PARAM_VAL_CHOICE_MIN_PK_TX_DELAY MIH_C_QOS_PARAM_VAL_CHOICE_MIN_PK_TX_DELAY
+#define RAL_QOS_PARAM_VAL_CHOICE_AVG_PK_TX_DELAY MIH_C_QOS_PARAM_VAL_CHOICE_AVG_PK_TX_DELAY
+#define RAL_QOS_PARAM_VAL_CHOICE_MAX_PK_TX_DELAY MIH_C_QOS_PARAM_VAL_CHOICE_MAX_PK_TX_DELAY
+#define RAL_QOS_PARAM_VAL_CHOICE_PK_DELAY_JITTER MIH_C_QOS_PARAM_VAL_CHOICE_PK_DELAY_JITTER
+#define RAL_QOS_PARAM_VAL_CHOICE_PK_LOSS_RATE    MIH_C_QOS_PARAM_VAL_CHOICE_PK_LOSS_RATE
+
+typedef struct ral_link_param_s {
+    ral_link_param_type_t      link_param_type;
+    ral_choice_t               choice;
+    union  {
+        ral_link_param_val_t   link_param_val;
+        ral_qos_param_val_t    qos_param_val;
+    } _union;
+} ral_link_param_t;
+#define RAL_LINK_PARAM_CHOICE_LINK_PARAM_VAL MIH_C_LINK_PARAM_CHOICE_LINK_PARAM_VAL
+#define RAL_LINK_PARAM_CHOICE_QOS_PARAM_VAL  MIH_C_LINK_PARAM_CHOICE_QOS_PARAM_VAL
 
 typedef struct ral_link_cfg_param_s {
     ral_link_param_type_t        link_param_type;
@@ -275,7 +307,7 @@ typedef struct rrc_ral_configure_threshold_conf_s {
 
 typedef struct rrc_ral_measurement_report_ind_s{
     ral_threshold_t            threshold;
-    ral_link_param_type_t      link_param_type;
+    ral_link_param_t           link_param;
 }rrc_ral_measurement_report_ind_t;
 
 

@@ -11,4 +11,5 @@
 #include "sctp_messages_def.h"
 #include "x2ap_messages_def.h"
 #include "ral_messages_def.h"
+#include "rlc_messages_def.h"
 
