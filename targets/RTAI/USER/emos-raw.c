@@ -86,7 +86,8 @@ unsigned char scope_enb_num_ue = 1;
 #include <rtai_fifos.h>
 
 //#define CHANSOUNDER_FIFO_SIZE 10485760 // 10 Mbytes FIFO
-#define CHANSOUNDER_FIFO_SIZE 20971520  // 20 Mbytes FIFO
+//#define CHANSOUNDER_FIFO_SIZE 20971520  // 20 Mbytes FIFO
+#define CHANSOUNDER_FIFO_SIZE 104857600 // 100 Mbytes FIFO
 #define CHANSOUNDER_FIFO_MINOR 4               // minor of the FIFO device - this is /dev/rtf3
 #define CHANSOUNDER_FIFO_DEV "/dev/rtf4"
 #endif
@@ -139,6 +140,8 @@ char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
 u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
+
+unsigned int lost_bytes=0;
 
 struct timing_info_t {
   //unsigned int frame, hw_slot, last_slot, next_slot;
@@ -358,7 +361,7 @@ void *emos_thread (void *arg)
 
   time(&starttime_tmp);
   localtime_r(&starttime_tmp,&starttime);
-  snprintf(dumpfile_name,1024,"/tmp/%s_data_%d%02d%02d_%02d%02d%02d.EMOS",
+  snprintf(dumpfile_name,1024,"/mnt/emos/%s_data_%d%02d%02d_%02d%02d%02d.EMOS",
 	   (UE_flag==0) ? "eNB" : "UE",
 	   1900+starttime.tm_year, starttime.tm_mon+1, starttime.tm_mday, starttime.tm_hour, starttime.tm_min, starttime.tm_sec);
 
@@ -376,7 +379,6 @@ void *emos_thread (void *arg)
       bytes = rtf_read_timed(fifo, fifo2file_ptr, channel_buffer_size,100);
       if (bytes<=0)
 	continue;
-
       /*
       if (UE_flag==0)
 	printf("eNB: count %d, frame %d, read: %d bytes from the fifo\n",counter, ((fifo_dump_emos_eNB*)fifo2file_ptr)->frame_tx,bytes);
@@ -426,8 +428,11 @@ void *emos_thread (void *arg)
 	    } 
 	  */
         }
-      if ((counter%2000)==0)
-	printf("[EMOS] count %d (%d sec), total bytes wrote %llu\n", counter, counter/2000, total_bytes);
+      if ((counter%2000)==0) {
+	time(&starttime_tmp);
+	localtime_r(&starttime_tmp,&starttime);
+	printf("[EMOS] %02d:%02d:%02d, frame %d, total bytes wrote %llu, bytes lost %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, total_bytes,lost_bytes);
+      }
     }
   
   free(fifo2file_buffer);
@@ -553,8 +558,17 @@ static void *eNB_thread(void *arg)
 	  timing_info.n_samples++;
 	  
 	  // save raw samples here
+	  /*
+	  bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &(((s32*) openair0_exmimo_pci[card].adc_head[0])[last_slot*SAMPLES_PER_SLOT]), channel_buffer_size/2);
+	  if (bytes!=channel_buffer_size/2) {
+	    lost_bytes += channel_buffer_size/2 - bytes;
+	    LOG_W(PHY,"Frame %d, slot %d: Problem writing EMOS data to FIFO (bytes=%d, size=%d)\n",
+		  frame, last_slot, bytes, channel_buffer_size/2);
+	  }
+	  */
 	  bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &(((s32*) openair0_exmimo_pci[card].adc_head[0])[last_slot*SAMPLES_PER_SLOT]), channel_buffer_size);
 	  if (bytes!=channel_buffer_size) {
+	    lost_bytes += channel_buffer_size - bytes;
 	    LOG_W(PHY,"Frame %d, slot %d: Problem writing EMOS data to FIFO (bytes=%d, size=%d)\n",
 		  frame, last_slot, bytes, channel_buffer_size);
 	  }
@@ -599,23 +613,15 @@ int main(int argc, char **argv) {
   int i,j,aa;
   void *status;
 
-  /*
-  u32 rf_mode_max[4]     = {55759,55759,55759,55759};
-  u32 rf_mode_med[4]     = {39375,39375,39375,39375};
-  u32 rf_mode_byp[4]     = {22991,22991,22991,22991};
-  */
-  u32 my_rf_mode = RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX;
-  u32 rf_mode_base = TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM;
-  u32 rf_mode[4]     = {my_rf_mode,0,0,0};
+  u32 rf_mode_base   = TXLPFNORM + TXLPFEN + TXLPF10 + RXLPFNORM + RXLPFEN + RXLPF10 + LNA1ON +LNAMax + RFBBNORM;
   u32 rf_local[4]    = {8255000,8255000,8255000,8255000}; // UE zepto
     //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
     //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
-
   u32 rf_vcocal[4]   = {910,910,910,910};
   u32 rf_vcocal_850[4] = {2015, 2015, 2015, 2015};
   u32 rf_rxdc[4]     = {32896,32896,32896,32896};
-  u32 rxgain[4]      = {20,20,20,20};
-  u32 txgain[4]      = {20,20,20,20};
+  u32 rxgain[4]      = {0,0,0,0};
+  u32 txgain[4]      = {0,0,0,0};
 
   u16 Nid_cell = 0;
   u8  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
