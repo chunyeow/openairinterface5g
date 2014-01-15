@@ -263,10 +263,6 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlcP, u32_t frame, u8_t e
 
   if (rlc_am_get_data_pdu_infos(frame,rlc_am_pdu_sn_10, tb_size_in_bytesP, pdu_info) >= 0) {
 
-
-#ifdef TRACE_RLC_AM_RX
-      rlc_am_display_data_pdu_infos(rlcP, frame, pdu_info);
-#endif
       ((rlc_am_rx_pdu_management_t*)(tbP->data))->all_segments_received = 0;
       if (rlc_am_in_rx_window(rlcP, pdu_info->sn)) {
 

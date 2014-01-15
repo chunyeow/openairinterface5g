@@ -40,7 +40,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "UTIL/LOG/log.h"
 #define TRACE_STATUS_CREATION
 
-static rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
+rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
 //-----------------------------------------------------------------------------
 u16_t rlc_am_read_bit_field(u8_t** dataP, unsigned int* bit_posP, signed int bits_to_readP) {
 //-----------------------------------------------------------------------------
