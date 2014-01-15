@@ -172,7 +172,7 @@ enum transmission_access_mode{
       SLIST_ENTRY(ral_threshold_phy_s) ral_thresholds;
       ral_threshold_t                  threshold;
       ral_th_action_t                  th_action;
-      ral_link_param_type_t            link_param_type;
+      ral_link_param_t                 link_param;
       long                             timer_id;
   }ral_threshold_phy_t;
 #endif

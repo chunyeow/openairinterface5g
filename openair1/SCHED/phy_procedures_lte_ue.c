@@ -3174,14 +3174,18 @@ int phy_procedures_RN_UE_RX(u8 last_slot, u8 next_slot, relaying_type_t r_type) 
 
 #if defined(ENABLE_ITTI)
 #   if defined(ENABLE_RAL)
+extern PHY_MEASUREMENTS PHY_measurements;
 
 void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral_threshold_phy_t* threshold_phy_pP, uint16_t valP) {
     MessageDef *message_p = NULL;
 
     if (
-       ((threshold_phy_pP->threshold.threshold_val >  valP) && (threshold_phy_pP->threshold.threshold_xdir == MIH_C_ABOVE_THRESHOLD)) ||
-       ((threshold_phy_pP->threshold.threshold_val <  valP) && (threshold_phy_pP->threshold.threshold_xdir == MIH_C_BELOW_THRESHOLD))
-       ) {
+           (
+               ((threshold_phy_pP->threshold.threshold_val >  valP) && (threshold_phy_pP->threshold.threshold_xdir == RAL_ABOVE_THRESHOLD)) ||
+               ((threshold_phy_pP->threshold.threshold_val <  valP) && (threshold_phy_pP->threshold.threshold_xdir == RAL_BELOW_THRESHOLD))
+           )  ||
+           (threshold_phy_pP->threshold.threshold_xdir == RAL_NO_THRESHOLD)
+       ){
         message_p = itti_alloc_new_message(TASK_PHY_UE , PHY_MEAS_REPORT_IND);
         memset(&PHY_MEAS_REPORT_IND(message_p), 0, sizeof(PHY_MEAS_REPORT_IND(message_p)));
 
@@ -3189,18 +3193,32 @@ void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral
                 &threshold_phy_pP->threshold,
                 sizeof(PHY_MEAS_REPORT_IND (message_p).threshold));
 
-        memcpy(&PHY_MEAS_REPORT_IND (message_p).link_param_type,
-                &threshold_phy_pP->link_param_type,
-                sizeof(PHY_MEAS_REPORT_IND (message_p).link_param_type));
+        memcpy(&PHY_MEAS_REPORT_IND (message_p).link_param,
+                &threshold_phy_pP->link_param,
+                sizeof(PHY_MEAS_REPORT_IND (message_p).link_param));\
+
+        switch (threshold_phy_pP->link_param.choice) {
+            case RAL_LINK_PARAM_CHOICE_LINK_PARAM_VAL:
+                PHY_MEAS_REPORT_IND (message_p).link_param._union.link_param_val = valP;
+                break;
+            case RAL_LINK_PARAM_CHOICE_QOS_PARAM_VAL:
+                //PHY_MEAS_REPORT_IND (message_p).link_param._union.qos_param_val.
+                AssertFatal (1 == 0, "TO DO RAL_LINK_PARAM_CHOICE_QOS_PARAM_VAL\n");
+                break;
+        }
         itti_send_msg_to_task(TASK_RRC_UE, instanceP, message_p);
     }
 }
 
 void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold_phy_t* threshold_phy_pP) {
-    switch (threshold_phy_pP->link_param_type.choice) {
+    unsigned int  mod_id;
+
+    mod_id = instanceP - NB_eNB_INST;
+
+    switch (threshold_phy_pP->link_param.link_param_type.choice) {
 
         case RAL_LINK_PARAM_TYPE_CHOICE_GEN:
-            switch (threshold_phy_pP->link_param_type._union.link_param_gen) {
+            switch (threshold_phy_pP->link_param.link_param_type._union.link_param_gen) {
                 case RAL_LINK_PARAM_GEN_DATA_RATE:
                     phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, 0);
                     break;
@@ -3219,8 +3237,9 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
             break;
 
         case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
-            switch (threshold_phy_pP->link_param_type._union.link_param_gen) {
+            switch (threshold_phy_pP->link_param.link_param_type._union.link_param_gen) {
                 case RAL_LINK_PARAM_LTE_UE_RSRP:
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rx_rssi_dBm[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_UE_RSRQ:
                     break;
@@ -3338,14 +3357,11 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
 #warning "TO DO LIST OF THRESHOLDS"
           LOG_I(PHY, "[UE %d] Received %s\n", Mod_id, msg_name);
           {
-              ral_transaction_id_t transaction_id;
               ral_threshold_phy_t* threshold_phy_p  = NULL;
               int                  index, res;
               long                 timer_id;
               hashtable_rc_t       hashtable_rc;
 
-
-              transaction_id = PHY_MEAS_THRESHOLD_REQ(msg_p).transaction_id;
               switch (PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.th_action) {
 
                   case RAL_TH_ACTION_CANCEL_THRESHOLD:
@@ -3356,9 +3372,9 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                       for (index = 0; index < PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.num_thresholds; index++) {
                           threshold_phy_p                  = calloc(1, sizeof(ral_threshold_phy_t));
                           threshold_phy_p->th_action       = PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.th_action;
-                          memcpy(&threshold_phy_p->link_param_type,
+                          memcpy(&threshold_phy_p->link_param.link_param_type,
                                   &PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type,
-                                  sizeof(threshold_phy_p->link_param_type));
+                                  sizeof(ral_link_param_type_t));
 
                           memcpy(&threshold_phy_p->threshold,
                                   &PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.thresholds[index],
@@ -3377,7 +3393,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
 
                                       case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
                                           SLIST_INSERT_HEAD(
-                                              &PHY_vars_UE_g[Mod_id]->ral_thresholds_lte_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_gen],
+                                              &PHY_vars_UE_g[Mod_id]->ral_thresholds_lte_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_lte],
                                               threshold_phy_p,
                                               ral_thresholds);
                                           break;
