@@ -94,7 +94,8 @@ unsigned char scope_enb_num_ue = 1;
 #define FRAME_PERIOD 100000000ULL
 #define DAQ_PERIOD 66667ULL
 #define LTE_SLOTS_PER_FRAME  20
-#define SAMPLES_PER_SLOT (FRAME_LENGTH_COMPLEX_SAMPLES/LTE_SLOTS_PER_FRAME)
+#define RESAMPLING_FACTOR 0
+#define SAMPLES_PER_SLOT (15360/(1<<RESAMPLING_FACTOR))
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #ifdef RTAI
@@ -272,7 +273,7 @@ int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
 
 #ifdef EMOS
 #define NO_ESTIMATES_DISK 20 //No. of estimates that are aquired before dumped to disk
-int channel_buffer_size =  7680*2; //one slot, 4 byte per sample
+int channel_buffer_size =  SAMPLES_PER_SLOT*4; //one slot, 4 byte per sample
 
 
 void *emos_thread (void *arg)
@@ -281,7 +282,7 @@ void *emos_thread (void *arg)
   char *fifo2file_buffer, *fifo2file_ptr;
 
   int fifo, counter=0, bytes;
-  int total_bytes=0;
+  long long unsigned int total_bytes=0;
 
   FILE  *dumpfile_id;
   char  dumpfile_name[1024];
@@ -426,7 +427,7 @@ void *emos_thread (void *arg)
 	  */
         }
       if ((counter%2000)==0)
-	printf("[EMOS] count %d, total bytes wrote %d\n", counter, total_bytes);
+	printf("[EMOS] count %d (%d sec), total bytes wrote %llu\n", counter, counter/2000, total_bytes);
     }
   
   free(fifo2file_buffer);
@@ -893,7 +894,7 @@ int main(int argc, char **argv) {
 
   p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
   for (ant=0; ant<4; ant++) 
-    p_exmimo_config->framing.resampling_factor[ant] = 2;
+    p_exmimo_config->framing.resampling_factor[ant] = RESAMPLING_FACTOR;
  
   /*
   for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
