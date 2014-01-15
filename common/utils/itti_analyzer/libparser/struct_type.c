@@ -35,7 +35,7 @@ int struct_dissect_from_buffer(
         name = "_anonymous_";
     }
 
-    if ((strcmp (type->name, "IttiMsgText_s") == 0) &&
+    if ((strcmp (name, "IttiMsgText_s") == 0) &&
         (type->members_child[0] != NULL) && (strcmp (type->members_child[0]->name, "size") == 0) &&
         (type->members_child[1] != NULL) && (strcmp (type->members_child[1]->name, "text") == 0))
     {
@@ -45,7 +45,7 @@ int struct_dissect_from_buffer(
         buf = malloc (length + 1);
         buf[0] = '\n';
         buffer_fetch_nbytes(buffer, parent_offset + offset + 32, length, &buf[1]);
-        ui_set_signal_text_cb(user_data, buf, length);
+        ui_set_signal_text_cb(user_data, (gchar *) buf, length);
     }
     else
     {
