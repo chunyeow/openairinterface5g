@@ -55,11 +55,11 @@ static char g_msg_codec_print_buffer[8192] = {};
 
 
 //-----------------------------------------------------------------------------
-int mRAL_send_to_mih(ral_ue_instance_t instanceP, u_int8_t  *bufferP, size_t lenP) {
+int mRAL_send_to_mih(ral_ue_instance_t instanceP, u_int8_t  *buffer_pP, size_t lenP) {
 //-----------------------------------------------------------------------------
     int result;
     unsigned int mod_id = instanceP - NB_eNB_INST;
-    result = send(g_ue_ral_obj[mod_id].mih_sock_desc, (const void *)bufferP, lenP, 0);
+    result = send(g_ue_ral_obj[mod_id].mih_sock_desc, (const void *)buffer_pP, lenP, 0);
     if (result != lenP) {
         LOG_E(RAL_UE, "send_to_mih %d bytes failed, returned %d: %s\n", lenP, result, strerror(errno));
     }
@@ -188,7 +188,7 @@ int mRAL_mihf_connect(ral_ue_instance_t instanceP){
 
 
 //-----------------------------------------------------------------------------
-void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3GPP_ADDR_T* _3gpp_addrP, u_int8_t* strP)
+void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3GPP_ADDR_T* _3gpp_addr_pP, u_int8_t* str_pP)
 //-----------------------------------------------------------------------------
 {
     int           i, l;
@@ -197,7 +197,7 @@ void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3G
     unsigned char buf[3];
     u_int8_t _3gpp_byte_address[8];
 
-    strcpy((char *)address_3gpp, (char *)strP);
+    strcpy((char *)address_3gpp, (char *)str_pP);
     for(l=0; l<8; l++)
     {
         i=l*2;
@@ -209,7 +209,7 @@ void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3G
         _3gpp_byte_address[l] = val_temp;
     }
     _3gpp_byte_address[7] += instanceP;
-    MIH_C_3GPP_ADDR_set(_3gpp_addrP, _3gpp_byte_address, 8);
+    MIH_C_3GPP_ADDR_set(_3gpp_addr_pP, _3gpp_byte_address, 8);
 }
 
 
@@ -219,15 +219,15 @@ void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3G
 
 //-----------------------------------------------------------------------------
 void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
-                                        MIH_C_TRANSACTION_ID_T  *transaction_idP) {
+                                        MIH_C_TRANSACTION_ID_T  *transaction_id_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Register_indication_t  message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Register_indication_t));
 
@@ -235,7 +235,7 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)1;
     message.header.operation_code       = (MIH_C_OPCODE_T)3;
     message.header.action_identifier    = (MIH_C_AID_T)6;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -254,7 +254,7 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     ////MIH_C_3GPP_ADDR_set(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP, strlen(DEFAULT_ADDRESS_3GPP));
     ////MIH_C_3GPP_ADDR_load_3gpp_str_address(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Register_indication(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Register_indication(bb_p, &message);
 
     #ifdef MSCGEN_PYTOOL
     memset(g_msc_gen_buf, 0, MSC_GEN_BUF_SIZE);
@@ -262,27 +262,27 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     MIH_C_LINK_ID2String(&message.primitive.Link_Id, g_msc_gen_buf);
     #endif
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         printf("ERROR RAL_UE, : Send Link_Register.indication\n");
         LOG_E(RAL_UE, ": Send Link_Register.indication\n");
     } else {
         printf("OK RAL_UE, : Send Link_Register.indication\n");
         LOG_D(RAL_UE, ": Sent Link_Register.indication\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 //-----------------------------------------------------------------------------
 void mRAL_send_link_detected_indication(ral_ue_instance_t        instanceP,
-                                        MIH_C_TRANSACTION_ID_T  *transaction_idP,
-                                        MIH_C_LINK_DET_INFO_T   *link_detected_infoP) {
+                                        MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
+                                        MIH_C_LINK_DET_INFO_T   *link_detected_info_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Detected_indication_t  message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Detected_indication_t));
 
@@ -290,7 +290,7 @@ void mRAL_send_link_detected_indication(ral_ue_instance_t        instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)2;
     message.header.operation_code       = (MIH_C_OPCODE_T)3;
     message.header.action_identifier    = (MIH_C_AID_T)1;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -298,33 +298,33 @@ void mRAL_send_link_detected_indication(ral_ue_instance_t        instanceP,
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
 
-    memcpy(&message.primitive.LinkDetectedInfo, link_detected_infoP, sizeof(MIH_C_LINK_DET_INFO_T));
+    memcpy(&message.primitive.LinkDetectedInfo, link_detected_info_pP, sizeof(MIH_C_LINK_DET_INFO_T));
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Detected_indication(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Detected_indication(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Detected.indication\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Detected.indication\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 //-----------------------------------------------------------------------------
 void mRAL_send_link_up_indication(ral_ue_instance_t          instanceP,
-                                  MIH_C_TRANSACTION_ID_T    *transaction_idP,
-                                  MIH_C_LINK_TUPLE_ID_T     *link_identifierP,
-                                  MIH_C_LINK_ADDR_T         *old_access_routerP,
-                                  MIH_C_LINK_ADDR_T         *new_access_routerP,
-                                  MIH_C_IP_RENEWAL_FLAG_T   *ip_renewal_flagP,
-                                  MIH_C_IP_MOB_MGMT_T       *mobility_management_supportP) {
+                                  MIH_C_TRANSACTION_ID_T    *transaction_id_pP,
+                                  MIH_C_LINK_TUPLE_ID_T     *link_identifier_pP,
+                                  MIH_C_LINK_ADDR_T         *old_access_router_pP,
+                                  MIH_C_LINK_ADDR_T         *new_access_router_pP,
+                                  MIH_C_IP_RENEWAL_FLAG_T   *ip_renewal_flag_pP,
+                                  MIH_C_IP_MOB_MGMT_T       *mobility_management_support_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Up_indication_t  message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Up_indication_t));
 
@@ -332,7 +332,7 @@ void mRAL_send_link_up_indication(ral_ue_instance_t          instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)2;
     message.header.operation_code       = (MIH_C_OPCODE_T)3;
     message.header.action_identifier    = (MIH_C_AID_T)2;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -340,38 +340,38 @@ void mRAL_send_link_up_indication(ral_ue_instance_t          instanceP,
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
 
-    memcpy(&message.primitive.LinkIdentifier, link_identifierP, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    memcpy(&message.primitive.LinkIdentifier, link_identifier_pP, sizeof(MIH_C_LINK_TUPLE_ID_T));
 
-    message.primitive.OldAccessRouter            = old_access_routerP;
-    message.primitive.NewAccessRouter            = new_access_routerP;
-    message.primitive.IPRenewalFlag              = ip_renewal_flagP;
-    message.primitive.MobilityManagementSupport  = mobility_management_supportP;
+    message.primitive.OldAccessRouter            = old_access_router_pP;
+    message.primitive.NewAccessRouter            = new_access_router_pP;
+    message.primitive.IPRenewalFlag              = ip_renewal_flag_pP;
+    message.primitive.MobilityManagementSupport  = mobility_management_support_pP;
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Up_indication(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Up_indication(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Up.indication\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Up.indication\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 //-----------------------------------------------------------------------------
 void mRAL_send_link_parameters_report_indication(ral_ue_instance_t            instanceP,
-                                                 MIH_C_TRANSACTION_ID_T      *transaction_idP,
-                                                 MIH_C_LINK_TUPLE_ID_T       *link_identifierP,
-                                                 MIH_C_LINK_PARAM_RPT_LIST_T *link_parameters_report_listP) {
+                                                 MIH_C_TRANSACTION_ID_T      *transaction_id_pP,
+                                                 MIH_C_LINK_TUPLE_ID_T       *link_identifier_pP,
+                                                 MIH_C_LINK_PARAM_RPT_LIST_T *link_parameters_report_list_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Parameters_Report_indication_t  message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
     #ifdef MSCGEN_PYTOOL
     unsigned int                              index;
     #endif
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Parameters_Report_indication_t));
 
@@ -379,7 +379,7 @@ void mRAL_send_link_parameters_report_indication(ral_ue_instance_t            in
     message.header.service_identifier   = (MIH_C_SID_T)2;
     message.header.operation_code       = (MIH_C_OPCODE_T)3;
     message.header.action_identifier    = (MIH_C_AID_T)5;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -387,33 +387,33 @@ void mRAL_send_link_parameters_report_indication(ral_ue_instance_t            in
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
 
-    memcpy(&message.primitive.LinkIdentifier, link_identifierP, sizeof(MIH_C_LINK_TUPLE_ID_T));
-    memcpy(&message.primitive.LinkParametersReportList_list, link_parameters_report_listP, sizeof(MIH_C_LINK_PARAM_RPT_LIST_T));
+    memcpy(&message.primitive.LinkIdentifier, link_identifier_pP, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    memcpy(&message.primitive.LinkParametersReportList_list, link_parameters_report_list_pP, sizeof(MIH_C_LINK_PARAM_RPT_LIST_T));
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Parameters_Report_indication(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Parameters_Report_indication(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Parameters_Report.indication\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Parameters_Report.indication\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_link_going_down_indication(ral_ue_instance_t            instanceP,
-                                          MIH_C_TRANSACTION_ID_T      *transaction_idP,
-                                          MIH_C_LINK_TUPLE_ID_T       *link_identifierP,
-                                          MIH_C_UNSIGNED_INT2_T       *time_intervalP,
-                                          MIH_C_LINK_GD_REASON_T      *link_going_down_reasonP) {
+                                          MIH_C_TRANSACTION_ID_T      *transaction_id_pP,
+                                          MIH_C_LINK_TUPLE_ID_T       *link_identifier_pP,
+                                          MIH_C_UNSIGNED_INT2_T       *time_interval_pP,
+                                          MIH_C_LINK_GD_REASON_T      *link_going_down_reason_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Going_Down_indication_t  message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Going_Down_indication_t));
 
@@ -421,7 +421,7 @@ void mRAL_send_link_going_down_indication(ral_ue_instance_t            instanceP
     message.header.service_identifier   = (MIH_C_SID_T)2;
     message.header.operation_code       = (MIH_C_OPCODE_T)3;
     message.header.action_identifier    = (MIH_C_AID_T)6;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -429,35 +429,35 @@ void mRAL_send_link_going_down_indication(ral_ue_instance_t            instanceP
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
 
-    memcpy(&message.primitive.LinkIdentifier, link_identifierP, sizeof(MIH_C_LINK_TUPLE_ID_T));
-    message.primitive.TimeInterval = *time_intervalP;
-    memcpy(&message.primitive.LinkGoingDownReason, link_going_down_reasonP, sizeof(MIH_C_LINK_GD_REASON_T));
+    memcpy(&message.primitive.LinkIdentifier, link_identifier_pP, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    message.primitive.TimeInterval = *time_interval_pP;
+    memcpy(&message.primitive.LinkGoingDownReason, link_going_down_reason_pP, sizeof(MIH_C_LINK_GD_REASON_T));
 
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Going_Down_indication(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Going_Down_indication(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Going_Down.indication\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Going_Down.indication\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_link_down_indication(ral_ue_instance_t            instanceP,
-                                    MIH_C_TRANSACTION_ID_T      *transaction_idP,
-                                    MIH_C_LINK_TUPLE_ID_T       *link_identifierP,
-                                    MIH_C_LINK_ADDR_T           *old_access_routerP,
-                                    MIH_C_LINK_DN_REASON_T      *reason_codeP) {
+                                    MIH_C_TRANSACTION_ID_T      *transaction_id_pP,
+                                    MIH_C_LINK_TUPLE_ID_T       *link_identifier_pP,
+                                    MIH_C_LINK_ADDR_T           *old_access_router_pP,
+                                    MIH_C_LINK_DN_REASON_T      *reason_code_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Down_indication_t      message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Going_Down_indication_t));
 
@@ -465,7 +465,7 @@ void mRAL_send_link_down_indication(ral_ue_instance_t            instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)2;
     message.header.operation_code       = (MIH_C_OPCODE_T)3;
     message.header.action_identifier    = (MIH_C_AID_T)3;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -473,36 +473,36 @@ void mRAL_send_link_down_indication(ral_ue_instance_t            instanceP,
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
 
-    memcpy(&message.primitive.LinkIdentifier, link_identifierP, sizeof(MIH_C_LINK_TUPLE_ID_T));
-    message.primitive.OldAccessRouter = old_access_routerP;
-    memcpy(&message.primitive.ReasonCode, reason_codeP, sizeof(MIH_C_LINK_DN_REASON_T));
+    memcpy(&message.primitive.LinkIdentifier, link_identifier_pP, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    message.primitive.OldAccessRouter = old_access_router_pP;
+    memcpy(&message.primitive.ReasonCode, reason_code_pP, sizeof(MIH_C_LINK_DN_REASON_T));
 
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Down_indication(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Down_indication(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Down.indication\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Down.indication\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_link_action_confirm(ral_ue_instance_t           instanceP,
-                                   MIH_C_TRANSACTION_ID_T     *transaction_idP,
-                                   MIH_C_STATUS_T             *statusP,
-                                   MIH_C_LINK_SCAN_RSP_LIST_T *scan_response_setP,
-                                   MIH_C_LINK_AC_RESULT_T     *link_action_resultP) {
+                                   MIH_C_TRANSACTION_ID_T     *transaction_id_pP,
+                                   MIH_C_STATUS_T             *status_pP,
+                                   MIH_C_LINK_SCAN_RSP_LIST_T *scan_response_set_pP,
+                                   MIH_C_LINK_AC_RESULT_T     *link_action_result_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Action_confirm_t       message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Action_confirm_t));
 
@@ -510,7 +510,7 @@ void mRAL_send_link_action_confirm(ral_ue_instance_t           instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)3;
     message.header.operation_code       = (MIH_C_OPCODE_T)0;
     message.header.action_identifier    = (MIH_C_AID_T)3;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
@@ -518,35 +518,35 @@ void mRAL_send_link_action_confirm(ral_ue_instance_t           instanceP,
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
 
-    message.primitive.Status                       = *statusP;
-    message.primitive.ScanResponseSet_list         = scan_response_setP;
-    message.primitive.LinkActionResult             = link_action_resultP;
+    message.primitive.Status                       = *status_pP;
+    message.primitive.ScanResponseSet_list         = scan_response_set_pP;
+    message.primitive.LinkActionResult             = link_action_result_pP;
 
 
-    message_total_length = MIH_C_Link_Message_Encode_Link_Action_confirm(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Link_Action_confirm(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Action.confirm\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Action.confirm\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_capability_discover_confirm(ral_ue_instance_t        instanceP,
-                                             MIH_C_TRANSACTION_ID_T  *transaction_idP,
-                                             MIH_C_STATUS_T          *statusP,
-                                             MIH_C_LINK_EVENT_LIST_T *supported_link_event_listP,
-                                             MIH_C_LINK_CMD_LIST_T   *supported_link_command_listP) {
+                                             MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
+                                             MIH_C_STATUS_T          *status_pP,
+                                             MIH_C_LINK_EVENT_LIST_T *supported_link_event_list_pP,
+                                             MIH_C_LINK_CMD_LIST_T   *supported_link_command_list_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Capability_Discover_confirm_t  message;
-    Bit_Buffer_t                             *bb;
+    Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
     unsigned int                              mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Capability_Discover_confirm_t));
 
@@ -554,39 +554,39 @@ void mRAL_send_capability_discover_confirm(ral_ue_instance_t        instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)1;
     message.header.operation_code       = (MIH_C_OPCODE_T)0;
     message.header.action_identifier    = (MIH_C_AID_T)1;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
-    message.primitive.Status                   = *statusP;
-    message.primitive.SupportedLinkEventList   = supported_link_event_listP;
-    message.primitive.SupportedLinkCommandList = supported_link_command_listP;
+    message.primitive.Status                   = *status_pP;
+    message.primitive.SupportedLinkEventList   = supported_link_event_list_pP;
+    message.primitive.SupportedLinkCommandList = supported_link_command_list_pP;
 
-    message_total_length = MIH_C_Link_Message_Encode_Capability_Discover_confirm(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Capability_Discover_confirm(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Capability_Discover.confirm\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Capability_Discover.confirm\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_event_subscribe_confirm(ral_ue_instance_t        instanceP,
-                                         MIH_C_TRANSACTION_ID_T  *transaction_idP,
-                                         MIH_C_STATUS_T          *statusP,
-                                         MIH_C_LINK_EVENT_LIST_T *response_link_event_listP) {
+                                         MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
+                                         MIH_C_STATUS_T          *status_pP,
+                                         MIH_C_LINK_EVENT_LIST_T *response_link_event_list_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Event_Subscribe_confirm_t  message;
-    Bit_Buffer_t                                 *bb;
+    Bit_Buffer_t                                 *bb_p;
     int                                           message_total_length;
     unsigned int                                  mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Event_Subscribe_confirm_t));
 
@@ -594,38 +594,38 @@ void mRAL_send_event_subscribe_confirm(ral_ue_instance_t        instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)1;
     message.header.operation_code       = (MIH_C_OPCODE_T)0;
     message.header.action_identifier    = (MIH_C_AID_T)4;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
-    message.primitive.Status                   = *statusP;
-    message.primitive.ResponseLinkEventList    =  response_link_event_listP;
+    message.primitive.Status                   = *status_pP;
+    message.primitive.ResponseLinkEventList    =  response_link_event_list_pP;
 
-    message_total_length = MIH_C_Link_Message_Encode_Event_Subscribe_confirm(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Event_Subscribe_confirm(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Event_Subscribe.confirm\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Event_Subscribe.confirm\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_event_unsubscribe_confirm(ral_ue_instance_t        instanceP,
-                                           MIH_C_TRANSACTION_ID_T  *transaction_idP,
-                                           MIH_C_STATUS_T          *statusP,
-                                           MIH_C_LINK_EVENT_LIST_T *response_link_event_listP) {
+                                           MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
+                                           MIH_C_STATUS_T          *status_pP,
+                                           MIH_C_LINK_EVENT_LIST_T *response_link_event_list_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Event_Unsubscribe_confirm_t  message;
-    Bit_Buffer_t                                   *bb;
+    Bit_Buffer_t                                   *bb_p;
     int                                             message_total_length;
     unsigned int                                    mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Event_Unsubscribe_confirm_t));
 
@@ -633,38 +633,38 @@ void mRAL_send_event_unsubscribe_confirm(ral_ue_instance_t        instanceP,
     message.header.service_identifier   = (MIH_C_SID_T)1;
     message.header.operation_code       = (MIH_C_OPCODE_T)0;
     message.header.action_identifier    = (MIH_C_AID_T)5;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
-    message.primitive.Status                   = *statusP;
-    message.primitive.ResponseLinkEventList    =  response_link_event_listP;
+    message.primitive.Status                   = *status_pP;
+    message.primitive.ResponseLinkEventList    =  response_link_event_list_pP;
 
-    message_total_length = MIH_C_Link_Message_Encode_Event_Unsubscribe_confirm(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Event_Unsubscribe_confirm(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Event_Unsubscribe.confirm\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Event_Unsubscribe.confirm\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_configure_thresholds_confirm(ral_ue_instance_t             instanceP,
-                                              MIH_C_TRANSACTION_ID_T       *transaction_idP,
-                                              MIH_C_STATUS_T               *statusP,
-                                              MIH_C_LINK_CFG_STATUS_LIST_T *link_configure_status_listP) {
+                                              MIH_C_TRANSACTION_ID_T       *transaction_id_pP,
+                                              MIH_C_STATUS_T               *status_pP,
+                                              MIH_C_LINK_CFG_STATUS_LIST_T *link_configure_status_list_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Configure_Thresholds_confirm_t  message;
-    Bit_Buffer_t                                      *bb;
+    Bit_Buffer_t                                      *bb_p;
     int                                                message_total_length;
     unsigned int                                       mod_id = instanceP - NB_eNB_INST;
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Configure_Thresholds_confirm_t));
 
@@ -672,41 +672,41 @@ void mRAL_send_configure_thresholds_confirm(ral_ue_instance_t             instan
     message.header.service_identifier   = (MIH_C_SID_T)3;
     message.header.operation_code       = (MIH_C_OPCODE_T)0;
     message.header.action_identifier    = (MIH_C_AID_T)2;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
-    message.primitive.Status                   = *statusP;
-    message.primitive.LinkConfigureStatusList_list  =  link_configure_status_listP;
+    message.primitive.Status                   = *status_pP;
+    message.primitive.LinkConfigureStatusList_list  =  link_configure_status_list_pP;
 
-    message_total_length = MIH_C_Link_Message_Encode_Configure_Thresholds_confirm(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Configure_Thresholds_confirm(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Configure_Threshold.confirm\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Configure_Threshold.confirm\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 //-----------------------------------------------------------------------------
 void mRAL_send_get_parameters_confirm     (ral_ue_instance_t             instanceP,
-                                             MIH_C_TRANSACTION_ID_T       *transaction_idP,
-                                             MIH_C_STATUS_T               *statusP,
-                                             MIH_C_LINK_PARAM_LIST_T      *link_parameters_status_listP,
-                                             MIH_C_LINK_STATES_RSP_LIST_T *link_states_response_listP,
-                                             MIH_C_LINK_DESC_RSP_LIST_T   *link_descriptors_response_listP) {
+                                             MIH_C_TRANSACTION_ID_T       *transaction_id_pP,
+                                             MIH_C_STATUS_T               *status_pP,
+                                             MIH_C_LINK_PARAM_LIST_T      *link_parameters_status_list_pP,
+                                             MIH_C_LINK_STATES_RSP_LIST_T *link_states_response_list_pP,
+                                             MIH_C_LINK_DESC_RSP_LIST_T   *link_descriptors_response_list_pP) {
 //-----------------------------------------------------------------------------
     MIH_C_Message_Link_Get_Parameters_confirm_t  message;
-    Bit_Buffer_t                                *bb;
+    Bit_Buffer_t                                *bb_p;
     int                                          message_total_length;
     unsigned int                                 mod_id = instanceP - NB_eNB_INST;
 
 
-    bb = new_BitBuffer_0();
-    BitBuffer_wrap(bb, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
+    bb_p = new_BitBuffer_0();
+    BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
 
     memset(&message, 0, sizeof (MIH_C_Message_Link_Get_Parameters_confirm_t));
 
@@ -714,25 +714,25 @@ void mRAL_send_get_parameters_confirm     (ral_ue_instance_t             instanc
     message.header.service_identifier   = (MIH_C_SID_T)3;
     message.header.operation_code       = (MIH_C_OPCODE_T)0;
     message.header.action_identifier    = (MIH_C_AID_T)1;
-    message.header.transaction_id       = *transaction_idP;
+    message.header.transaction_id       = *transaction_id_pP;
 
 
     MIH_C_MIHF_ID_set(&message.source, (u_int8_t*)g_ue_ral_obj[mod_id].link_id, strlen(g_ue_ral_obj[mod_id].link_id));
     MIH_C_MIHF_ID_set(&message.destination, (u_int8_t*)g_ue_ral_obj[mod_id].mihf_id, strlen(g_ue_ral_obj[mod_id].mihf_id));
 
-    message.primitive.Status                        = *statusP;
-    message.primitive.LinkParametersStatusList_list = link_parameters_status_listP;
-    message.primitive.LinkStatesResponse_list       = link_states_response_listP;
-    message.primitive.LinkDescriptorsResponse_list  = link_descriptors_response_listP;
+    message.primitive.Status                        = *status_pP;
+    message.primitive.LinkParametersStatusList_list = link_parameters_status_list_pP;
+    message.primitive.LinkStatesResponse_list       = link_states_response_list_pP;
+    message.primitive.LinkDescriptorsResponse_list  = link_descriptors_response_list_pP;
 
-    message_total_length = MIH_C_Link_Message_Encode_Get_Parameters_confirm(bb, &message);
+    message_total_length = MIH_C_Link_Message_Encode_Get_Parameters_confirm(bb_p, &message);
 
-    if (mRAL_send_to_mih(instanceP, bb->m_buffer,message_total_length)<0){
+    if (mRAL_send_to_mih(instanceP, bb_p->m_buffer,message_total_length)<0){
         LOG_E(RAL_UE, ": Send Link_Get_Parameters.confirm\n");
     } else {
         LOG_D(RAL_UE, ": Sent Link_Get_Parameters.confirm\n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
 }
 
 /***************************************************************************
@@ -857,7 +857,7 @@ int mRAL_mih_link_process_message(ral_ue_instance_t instanceP){
     int                      nb_bytes_decoded  ;
     int                      total_bytes_to_decode ;
     int                      status ;
-    Bit_Buffer_t            *bb;
+    Bit_Buffer_t            *bb_p;
     struct sockaddr_in       udp_socket;
     socklen_t                sockaddr_len;
     unsigned int             mod_id = instanceP - NB_eNB_INST;
@@ -865,7 +865,7 @@ int mRAL_mih_link_process_message(ral_ue_instance_t instanceP){
     total_bytes_to_decode = 0;
     nb_bytes_received     = 0;
 
-    bb = new_BitBuffer_0();
+    bb_p = new_BitBuffer_0();
 
     nb_bytes_received = recvfrom(g_ue_ral_obj[mod_id].mih_sock_desc,
                                  (void *)g_msg_codec_recv_buffer,
@@ -878,9 +878,9 @@ int mRAL_mih_link_process_message(ral_ue_instance_t instanceP){
         LOG_D(RAL_UE, " \n");
         LOG_D(RAL_UE, " %s: Received %d bytes from MIHF\n", __FUNCTION__, nb_bytes_received);
         total_bytes_to_decode += nb_bytes_received;
-        BitBuffer_wrap(bb, g_msg_codec_recv_buffer, total_bytes_to_decode);
-        status  = mRAL_mih_link_msg_decode(instanceP, bb, &message_wrapper);
-        nb_bytes_decoded = BitBuffer_getPosition(bb);
+        BitBuffer_wrap(bb_p, g_msg_codec_recv_buffer, total_bytes_to_decode);
+        status  = mRAL_mih_link_msg_decode(instanceP, bb_p, &message_wrapper);
+        nb_bytes_decoded = BitBuffer_getPosition(bb_p);
         if (status == MIH_MESSAGE_DECODE_OK) {
             if (nb_bytes_decoded > 0) {
                 total_bytes_to_decode = total_bytes_to_decode - nb_bytes_decoded;
@@ -905,6 +905,6 @@ int mRAL_mih_link_process_message(ral_ue_instance_t instanceP){
         }
         LOG_D(RAL_UE, " \n");
     }
-    free_BitBuffer(bb);
+    free_BitBuffer(bb_p);
     return 0;
 }

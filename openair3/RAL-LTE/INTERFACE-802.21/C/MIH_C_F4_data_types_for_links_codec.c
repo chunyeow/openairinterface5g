@@ -454,10 +454,12 @@ unsigned int MIH_C_LINK_CFG_PARAM2String(MIH_C_LINK_CFG_PARAM_T *dataP, char* bu
             buffer_index += sprintf(&bufP[buffer_index], ", TIMER_INTERVAL=");
             buffer_index += MIH_C_TIMER_INTERVAL2String(&dataP->_union.timer_interval, &bufP[buffer_index]);
             break;
+#ifdef RAL_SAME_AS_MEDIEVAL_PROJECT_BUT_I_THINK_THIS_IS_AN_ERROR
         case 2:
             buffer_index += sprintf(&bufP[buffer_index], ", LINK_SCAN_RSP_LIST=");
             buffer_index += MIH_C_LINK_SCAN_RSP_LIST2String(&dataP->_union.link_scan_rsp_list, &bufP[buffer_index]);
             break;
+#endif
         default:
             buffer_index += sprintf(&bufP[buffer_index], ", CHOICE UNINITIALIZED");
     }
@@ -479,9 +481,11 @@ inline void MIH_C_LINK_CFG_PARAM_encode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_
         case 1:
             MIH_C_TIMER_INTERVAL_encode(bbP, &dataP->_union.timer_interval);
             break;
+#ifdef RAL_SAME_AS_MEDIEVAL_PROJECT_BUT_I_THINK_THIS_IS_AN_ERROR
         case 2:
             MIH_C_LINK_SCAN_RSP_LIST_encode(bbP, &dataP->_union.link_scan_rsp_list);
             break;
+#endif
         default:
             printf("[MIH_C] ERROR NO KNOWN VALUE FOR ENCODING CHOICE OF MIH_C_LINK_CFG_PARAM_T %d\n", dataP->choice);
     }
@@ -499,9 +503,11 @@ inline void MIH_C_LINK_CFG_PARAM_decode(Bit_Buffer_t* bbP, MIH_C_LINK_CFG_PARAM_
         case 1:
             MIH_C_TIMER_INTERVAL_decode(bbP, &dataP->_union.timer_interval);
             break;
+#ifdef RAL_SAME_AS_MEDIEVAL_PROJECT_BUT_I_THINK_THIS_IS_AN_ERROR
         case 2:
             MIH_C_LINK_SCAN_RSP_LIST_decode(bbP, &dataP->_union.link_scan_rsp_list);
             break;
+#endif
         default:
             printf("[MIH_C] ERROR NO KNOWN VALUE FOR DECODING CHOICE OF MIH_C_LINK_CFG_PARAM_T %d\n", dataP->choice);
     }

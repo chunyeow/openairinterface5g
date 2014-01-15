@@ -262,6 +262,7 @@ int mRAL_initialize(void) {
             hashtable_insert(g_ue_ral_fd2instance, g_ue_ral_obj[mod_id].mih_sock_desc, (void*)instance);
         }
         mRAL_send_link_register_indication(instance, &g_ue_ral_obj[mod_id].transaction_id);
+        g_ue_ral_obj[mod_id].transaction_id += 1;
     }
     return 0;
 }

@@ -40,6 +40,7 @@
 #include "assertions.h"
 #include "lteRALue.h"
 
+extern unsigned char NB_eNB_INST;
 
 
 /****************************************************************************
@@ -221,8 +222,75 @@ void mRAL_rx_rrc_ral_configure_threshold_conf(ral_ue_instance_t instance, Messag
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
-void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instance, MessageDef *msg_p)
+void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instanceP, MessageDef *msg_p)
 //---------------------------------------------------------------------------------------------------------------------
 {
+    MIH_C_TRANSACTION_ID_T           transaction_id;
+    unsigned int                     mod_id;
+    MIH_C_LINK_TUPLE_ID_T            link_tuple_id;
+    LIST(MIH_C_LINK_PARAM_RPT,  link_parameters_report);
 
+    mod_id                               = instanceP - NB_eNB_INST;
+    transaction_id                       = g_ue_ral_obj[mod_id].transaction_id;
+    g_ue_ral_obj[mod_id].transaction_id += 1;
+
+    memset(&link_tuple_id, 0, sizeof(MIH_C_LINK_TUPLE_ID_T));
+    link_tuple_id.link_id.link_type     = MIH_C_WIRELESS_LTE;
+#ifdef USE_3GPP_ADDR_AS_LINK_ADDR
+    link_tuple_id.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+#else
+    link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
+
+    // preserve byte order of plmn id
+    memcpy(link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[mod_id].plmn_id, 3);
+    link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[mod_id].cell_id;
+
+    LOG_D(RAL_UE, "PLMN ID %d.%d.%d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[0],
+            ink_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
+            link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[2]);
+    LOG_D(RAL_UE, "CELL ID %d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id);
+#endif
+
+    MIH_C_LINK_PARAM_RPT_LIST_init(&link_parameters_report_list);
+    memcpy(&link_parameters_report_list.val[0].link_param,
+            &RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).link_param,
+            sizeof(MIH_C_LINK_PARAM_T));
+
+    if (RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).threshold.threshold_xdir == RAL_NO_THRESHOLD) {
+        link_parameters_report_list.val[0].choice = MIH_C_LINK_PARAM_RPT_CHOICE_NULL;
+    } else {
+        link_parameters_report_list.val[0].choice = MIH_C_LINK_PARAM_RPT_CHOICE_THRESHOLD;
+        link_parameters_report_list.val[0]._union.threshold.threshold_val  = RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).threshold.threshold_val;
+        link_parameters_report_list.val[0]._union.threshold.threshold_xdir = RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).threshold.threshold_xdir;
+    }
+    link_parameters_report_list.length += 1;
+
+    mRAL_send_link_parameters_report_indication(instanceP,
+                                               &transaction_id,
+                                               &link_tuple_id,
+                                               &link_parameters_report_list);
 }
+/*
+ * typedef struct MIH_C_LINK_PARAM {
+    MIH_C_LINK_PARAM_TYPE_T      link_param_type;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_LINK_PARAM_VAL_T   link_param_val;
+        MIH_C_QOS_PARAM_VAL_T    qos_param_val;
+    } _union;
+} MIH_C_LINK_PARAM_T;
+
+ * typedef struct MIH_C_LINK_PARAM_RPT {
+    MIH_C_LINK_PARAM_T           link_param;
+    MIH_C_CHOICE_T               choice;
+    union  {
+        MIH_C_NULL_T             null_attr;
+        MIH_C_THRESHOLD_T        threshold;
+    } _union;
+} MIH_C_LINK_PARAM_RPT_T;
+#define MIH_C_LINK_PARAM_RPT_CHOICE_NULL      0
+#define MIH_C_LINK_PARAM_RPT_CHOICE_THRESHOLD 1
+ *
+ */
+

@@ -1656,7 +1656,9 @@ typedef struct MIH_C_LINK_CFG_PARAM {
     union  {
         MIH_C_NULL_T             null_attr;
         MIH_C_TIMER_INTERVAL_T   timer_interval;
+#ifdef RAL_SAME_AS_MEDIEVAL_PROJECT_BUT_I_THINK_THIS_IS_AN_ERROR
         LIST(MIH_C_LINK_SCAN_RSP, link_scan_rsp)
+#endif
     } _union;
     MIH_C_TH_ACTION_T             th_action;
     LIST(MIH_C_THRESHOLD, threshold)
