@@ -48,10 +48,11 @@
 static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
     S1ap_InitiatingMessage_t *initiating_p)
 {
-    int ret = -1;
+    int         ret = -1;
     MessageDef *message_p;
     char       *message_string = NULL;
     size_t      message_string_size;
+    MessagesIds message_id;
 
     DevAssert(initiating_p != NULL);
 
@@ -68,12 +69,14 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
             ret = s1ap_decode_s1ap_downlinknastransporties(
                 &message->msg.s1ap_DownlinkNASTransportIEs, &initiating_p->value);
             s1ap_xer_print_s1ap_downlinknastransport(s1ap_xer__print2sp, message_string, message);
+            message_id = S1AP_DOWNLINK_NAS_LOG;
             break;
 
         case S1ap_ProcedureCode_id_InitialContextSetup:
             ret = s1ap_decode_s1ap_initialcontextsetuprequesties(
                 &message->msg.s1ap_InitialContextSetupRequestIEs, &initiating_p->value);
             s1ap_xer_print_s1ap_initialcontextsetuprequest(s1ap_xer__print2sp, message_string, message);
+            message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
             break;
 
         default:
@@ -84,8 +87,9 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
 
     message_string_size = strlen(message_string);
 
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+    message_p->ittiMsg.s1ap_downlink_nas_log.size = message_string_size;
+    memcpy(&message_p->ittiMsg.s1ap_downlink_nas_log.text, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 
@@ -101,6 +105,7 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
     MessageDef *message_p;
     char       *message_string = NULL;
     size_t      message_string_size;
+    MessagesIds message_id;
 
     DevAssert(successfullOutcome_p != NULL);
 
@@ -117,6 +122,7 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
             ret = s1ap_decode_s1ap_s1setupresponseies(
                 &message->msg.s1ap_S1SetupResponseIEs, &successfullOutcome_p->value);
             s1ap_xer_print_s1ap_s1setupresponse(s1ap_xer__print2sp, message_string, message);
+            message_id = S1AP_S1_SETUP_LOG;
             break;
 
         default:
@@ -127,8 +133,9 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
 
     message_string_size = strlen(message_string);
 
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, GENERIC_LOG, message_string_size);
-    memcpy(&message_p->ittiMsg.generic_log, message_string, message_string_size);
+    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+    message_p->ittiMsg.s1ap_s1_setup_log.size = message_string_size;
+    memcpy(&message_p->ittiMsg.s1ap_s1_setup_log.text, message_string, message_string_size);
 
     itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
 
