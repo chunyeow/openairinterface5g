@@ -726,8 +726,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   DRB_config->eps_BearerIdentity = CALLOC(1, sizeof(long));
   *(DRB_config->eps_BearerIdentity) = 5L; // LW set to first value, allowed value 5..15
-  //DRB_config->drb_Identity = (DRB_Identity_t) 1; //allowed values 1..32
   // NN: this is the 1st DRB for this ue, so set it to 1
+  // DRB_config->drb_Identity = (DRB_Identity_t) 3;  // LW Forced to 3      // (UE_index+1); //allowed values 1..32
   DRB_config->drb_Identity = (DRB_Identity_t) 1;        // (UE_index+1); //allowed values 1..32
   DRB_config->logicalChannelIdentity = CALLOC (1, sizeof (long));
   *(DRB_config->logicalChannelIdentity) = (long) 3;
@@ -2585,9 +2585,9 @@ int rrc_eNB_decode_ccch (u8 Mod_id, u32 frame, SRB_INFO * Srb_info)
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_UL_CCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_ul_ccch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_ul_ccch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_UL_CCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_ul_ccch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_ul_ccch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -2795,9 +2795,9 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_UL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_ul_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_ul_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_UL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_ul_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_ul_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }

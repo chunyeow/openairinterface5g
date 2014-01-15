@@ -364,9 +364,9 @@ uint8_t do_MIB(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, 
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_bcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_bcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -539,9 +539,9 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_bcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_bcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -728,9 +728,9 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_bcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_bcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -1115,9 +1115,9 @@ uint8_t do_SIB23(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_bcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_bcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -1203,9 +1203,9 @@ uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv) {
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UL_CCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_ul_ccch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_ul_ccch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UL_CCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_ul_ccch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_ul_ccch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
     }
@@ -1279,9 +1279,9 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t *buffer, const uin
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_ul_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_ul_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_ul_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_ul_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
     }
@@ -1331,9 +1331,9 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_ul_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_ul_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_UL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_ul_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_ul_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
     }
@@ -1619,9 +1619,9 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_CCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_ccch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_ccch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_CCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_ccch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_ccch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -1684,9 +1684,9 @@ uint8_t do_SecurityModeCommand(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -1748,9 +1748,9 @@ uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_CCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_ccch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_ccch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_CCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_ccch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_ccch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -1890,9 +1890,9 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -2035,9 +2035,9 @@ uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_MCCH_MESSAGE, message_string_size);
-      msg_p->ittiMsg.rrc_dl_mcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_mcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_MCCH, message_string_size);
+      msg_p->ittiMsg.rrc_dl_mcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_mcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -2153,9 +2153,9 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_DL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_UE, RRC_DL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, NB_eNB_INST + Mod_id, msg_p);
     }
@@ -2199,9 +2199,9 @@ uint8_t do_DLInformationTransfer(uint8_t Mod_id, uint8_t **buffer, uint8_t trans
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -2335,9 +2335,9 @@ OAI_UECapability_t *fill_ue_capability() {
   xer_fprint(stdout,&asn_DEF_UE_EUTRA_Capability,(void *)UE_EUTRA_Capability);
 #endif
   enc_rval = uper_encode_to_buffer(&asn_DEF_UE_EUTRA_Capability,
-				   (void*)UE_EUTRA_Capability,
-				   &UECapability.sdu[0],
-  				   MAX_UE_CAPABILITY_SIZE);
+                                   (void*)UE_EUTRA_Capability,
+                                   &UECapability.sdu[0],
+                                   MAX_UE_CAPABILITY_SIZE);
 
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_XER_SPRINT)
@@ -2574,9 +2574,9 @@ uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *b
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_bcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_bcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
@@ -3034,9 +3034,9 @@ uint8_t do_RRCConnReconf_defaultCELL(uint8_t Mod_id,
     {
       MessageDef *msg_p;
 
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH_MESSAGE, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_dcch_message.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_dcch_message.text, message_string, message_string_size);
+      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_DCCH, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rrc_dl_dcch.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rrc_dl_dcch.text, message_string, message_string_size);
 
       itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
     }
