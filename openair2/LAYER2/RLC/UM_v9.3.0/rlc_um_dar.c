@@ -43,7 +43,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define DEBUG_RLC_UM_RX
 //#define DEBUG_DISPLAY_NVIDIA
 //-----------------------------------------------------------------------------
-signed int rlc_um_get_pdu_infos(u32_t frame,rlc_um_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_um_pdu_info_t* pdu_infoP)
+signed int rlc_um_get_pdu_infos(u32_t frame,rlc_um_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_um_pdu_info_t* pdu_infoP, u8_t sn_lengthP)
 //-----------------------------------------------------------------------------
 {
     memset(pdu_infoP, 0, sizeof (rlc_um_pdu_info_t));
@@ -51,21 +51,31 @@ signed int rlc_um_get_pdu_infos(u32_t frame,rlc_um_pdu_sn_10_t* headerP, s16_t t
     s16_t          sum_li = 0;
     pdu_infoP->num_li = 0;
 
+    AssertFatal( total_sizeP > 0 , "RLC UM PDU LENGTH %d", total_sizeP);
 
-    pdu_infoP->fi  = (headerP->b1 >> 3) & 0x03;
-    pdu_infoP->e   = (headerP->b1 >> 2) & 0x01;
-    pdu_infoP->sn  = headerP->b2 +  (((u16_t)(headerP->b1 & 0x03)) << 8);
+    if (sn_lengthP == 10) {
+        pdu_infoP->fi           = (headerP->b1 >> 3) & 0x03;
+        pdu_infoP->e            = (headerP->b1 >> 2) & 0x01;
+        pdu_infoP->sn           = headerP->b2 + (((u16_t)(headerP->b1 & 0x03)) << 8);
+        pdu_infoP->header_size  = 2;
+        pdu_infoP->payload      = &headerP->data[0];
+    } else if (sn_lengthP == 5) {
+        pdu_infoP->fi           = (headerP->b1 >> 6) & 0x03;
+        pdu_infoP->e            = (headerP->b1 >> 5) & 0x01;
+        pdu_infoP->sn           = headerP->b1 & 0x1F;
+        pdu_infoP->header_size  = 1;
+        pdu_infoP->payload      = &headerP->b2;
+    } else {
+        AssertFatal( sn_lengthP == 5 || sn_lengthP == 10, "RLC UM SN LENGTH %d", sn_lengthP);
+    }
 
-    pdu_infoP->header_size  = 2;
-
-    pdu_infoP->payload = &headerP->data[0];
 
     if (pdu_infoP->e) {
         rlc_am_e_li_t      *e_li;
         unsigned int li_length_in_bytes  = 1;
         unsigned int li_to_read          = 1;
 
-        e_li = (rlc_am_e_li_t*)(headerP->data);
+        e_li = (rlc_am_e_li_t*)(pdu_infoP->payload);
 
         while (li_to_read)  {
             li_length_in_bytes = li_length_in_bytes ^ 3;
@@ -85,10 +95,10 @@ signed int rlc_um_get_pdu_infos(u32_t frame,rlc_um_pdu_sn_10_t* headerP, s16_t t
                 e_li++;
                 pdu_infoP->header_size  += 1;
             }
-            AssertFatal( pdu_infoP->num_li >= RLC_AM_MAX_SDU_IN_PDU, "[FRAME %05d][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
+            AssertFatal( pdu_infoP->num_li <= RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU, "[FRAME %05d][RLC_UM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
             sum_li += pdu_infoP->li_list[pdu_infoP->num_li];
             pdu_infoP->num_li = pdu_infoP->num_li + 1;
-            if (pdu_infoP->num_li > RLC_AM_MAX_SDU_IN_PDU) {
+            if (pdu_infoP->num_li > RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU) {
                 return -2;
             }
         }

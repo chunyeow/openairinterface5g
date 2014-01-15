@@ -137,7 +137,7 @@ static int rrc_set_state (u8 Mod_id, Rrc_State_t state) {
 }
 
 static int rrc_set_sub_state (u8 Mod_id, Rrc_Sub_State_t subState) {
-#if (defined(ENABLE_ITTI) && defined(ENABLE_USE_MME))
+#if (defined(ENABLE_ITTI) && (defined(ENABLE_USE_MME) || defined(ENABLE_RAL)))
   switch (UE_rrc_inst[Mod_id].RrcState) {
     case RRC_STATE_INACTIVE:
       AssertFatal ((RRC_SUB_STATE_INACTIVE_FIRST <= subState) && (subState <= RRC_SUB_STATE_INACTIVE_LAST),
@@ -3001,9 +3001,9 @@ void *rrc_ue_task(void *args_p) {
                   &PHY_MEAS_REPORT_IND(msg_p).threshold,
                   sizeof(RRC_RAL_MEASUREMENT_REPORT_IND (message_p).threshold));
 
-          memcpy(&RRC_RAL_MEASUREMENT_REPORT_IND (message_p).link_param_type,
-                  &PHY_MEAS_REPORT_IND(msg_p).link_param_type,
-                  sizeof(RRC_RAL_MEASUREMENT_REPORT_IND (message_p).link_param_type));
+          memcpy(&RRC_RAL_MEASUREMENT_REPORT_IND (message_p).link_param,
+                  &PHY_MEAS_REPORT_IND(msg_p).link_param,
+                  sizeof(RRC_RAL_MEASUREMENT_REPORT_IND (message_p).link_param));
 
           itti_send_msg_to_task(TASK_RAL_UE, instance, message_p);
           break;

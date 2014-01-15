@@ -132,7 +132,7 @@ struct mac_tb_req {
   // BE CAREFULL TO KEEP THE SAME MAPPING FOR THE 6 FIELDS BELLOW AS FOR  struct mac_tx_tb_management
   unsigned char             *data_ptr;
   unsigned char              first_bit;
-  unsigned short             tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
+  unsigned short             tb_size;
   // align the tb we have to know its size
 
   // for reporting tx status to upper layers
@@ -225,41 +225,5 @@ struct mac_primitive {
   } primitive;
 };
 
-#    ifdef BYPASS_L1
-// List element of TrCh Blocks data
-struct Bypass_TrChBlk_MAC_Interface {
-  unsigned char              first_bit;    // First valid Bit in first word. 0 if word is full
-  unsigned char              valid_checksum;       // 1 if valid checksum (receive only)
-  unsigned char              peer_trch_id;
-  unsigned int             data_start_index;
-  unsigned char              data[100];
-};
-
-struct Bypass_TrChData_MAC_Interface {
-  unsigned short             tf;
-  unsigned char              nb_blocks;
-  unsigned char              updated;
-  struct Bypass_TrChBlk_MAC_Interface tb[32];
-};
-
-struct Bypass_L1 {
-  struct Bypass_TrChData_MAC_Interface ul_trch[JRRM_MAX_TRCH_RG];       // MT write data here. RG read here, index are rg trch ids
-  struct Bypass_TrChData_MAC_Interface dl_trch[JRRM_MAX_TRCH_RG];       // RG write data here. MT read here,
-  unsigned char              mt_ack[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              rg_ack[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              mt_wrote[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              rg_wrote[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              num_mobiles;
-
-  unsigned char              join_request; // act as boolean
-  unsigned char              detach_request;       // act as boolean
-  unsigned char              join_requests[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              join_acks[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              detach_requests[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-  unsigned char              detach_acks[JRRM_MAX_MANAGED_MOBILES_PER_RG];
-};
-
-
-#    endif
 /** @} */
 #endif

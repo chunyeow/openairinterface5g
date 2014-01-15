@@ -68,9 +68,10 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \param[in]  headerP             RLC UM header PDU pointer.
 * \param[in]  total_sizeP         Size of RLC UM PDU.
 * \param[in]  pdu_infoP           Structure containing extracted informations from PDU.
+* \param[in]  sn_lengthP          Sequence number length in bits in PDU header (5 or 10).
 * \return     0 if no error was encountered during the parsing of the PDU, else -1;
 */
-protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(u32_t frame, rlc_um_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_um_pdu_info_t* pdu_infoP));
+protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(u32_t frame, rlc_um_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_um_pdu_info_t* pdu_infoP, u8_t sn_lengthP));
 
 /*! \fn int rlc_um_read_length_indicators(unsigned char**dataP, rlc_um_e_li_t* e_liP, unsigned int* li_arrayP, unsigned int *num_liP, unsigned int *data_sizeP)
 * \brief    Reset protocol variables and state variables to initial values.

@@ -568,13 +568,13 @@ end_push_nack:
 #endif
        tb = get_free_mem_block(sizeof(struct mac_tb_req) + pdu_size);
   memset(tb->data, 0, sizeof(struct mac_tb_req) + pdu_size);
-  //estimation only ((struct mac_tb_req*)(tb->data))->tb_size_in_bits  = pdu_size << 3;
+  //estimation only ((struct mac_tb_req*)(tb->data))->tb_size  = pdu_size;
   ((struct mac_tb_req*)(tb->data))->data_ptr         = (u8_t*)&(tb->data[sizeof(struct mac_tb_req)]);
 
   // warning reuse of pdu_size
   pdu_size = rlc_am_write_status_pdu(frame,(rlc_am_pdu_sn_10_t*)(((struct mac_tb_req*)(tb->data))->data_ptr), &control_pdu_info);
-  ((struct mac_tb_req*)(tb->data))->tb_size_in_bits  = pdu_size << 3;
-  //assert((((struct mac_tb_req*)(tb->data))->tb_size_in_bits >> 3) < 3000);
+  ((struct mac_tb_req*)(tb->data))->tb_size  = pdu_size;
+  //assert((((struct mac_tb_req*)(tb->data))->tb_size) < 3000);
 
 #ifdef TRACE_STATUS_CREATION
   LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][SEND-STATUS] SEND STATUS PDU SIZE %d, rlcP->nb_bytes_requested_by_mac %d, nb_bits_to_transmit>>3 %d\n", frame, rlcP->module_id, rlcP->rb_id, pdu_size, rlcP->nb_bytes_requested_by_mac, nb_bits_to_transmit >> 3);

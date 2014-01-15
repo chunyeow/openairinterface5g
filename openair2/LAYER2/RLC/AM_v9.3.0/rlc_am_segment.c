@@ -426,9 +426,9 @@ void rlc_am_segment_10 (rlc_am_entity_t *rlcP,u32_t frame)
         rlcP->vt_s = (rlcP->vt_s+1) & RLC_AM_SN_MASK;
 
         pdu_tb_req->data_ptr        = (unsigned char*)pdu;
-        pdu_tb_req->tb_size_in_bits = (data_pdu_size - pdu_remaining_size) << 3;
+        pdu_tb_req->tb_size         = data_pdu_size - pdu_remaining_size;
 
-        assert((pdu_tb_req->tb_size_in_bits >> 3) < 3000);
+        assert(pdu_tb_req->tb_size < 3000);
         rlc_am_pdu_polling(rlcP, frame,pdu, pdu_mngt->payload_size);
 
         //list_add_tail_eurecom (pdu_mem, &rlcP->segmentation_pdu_list);

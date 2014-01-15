@@ -350,9 +350,9 @@ rlc_am_get_pdus (rlc_am_entity_t *rlc_pP,u32_t frameP)
                         rlc_pP->stat_tx_data_pdu                   += 1;
                         rlc_pP->stat_tx_retransmit_pdu             += 1;
                         rlc_pP->stat_tx_retransmit_pdu_by_status   += 1;
-                        rlc_pP->stat_tx_data_bytes                 += (((struct mac_tb_req*)(copy->data))->tb_size_in_bits >> 3);
-                        rlc_pP->stat_tx_retransmit_bytes           += (((struct mac_tb_req*)(copy->data))->tb_size_in_bits >> 3);
-                        rlc_pP->stat_tx_retransmit_bytes_by_status += (((struct mac_tb_req*)(copy->data))->tb_size_in_bits >> 3);
+                        rlc_pP->stat_tx_data_bytes                 += (((struct mac_tb_req*)(copy->data))->tb_size);
+                        rlc_pP->stat_tx_retransmit_bytes           += (((struct mac_tb_req*)(copy->data))->tb_size);
+                        rlc_pP->stat_tx_retransmit_bytes_by_status += (((struct mac_tb_req*)(copy->data))->tb_size);
                         list_add_tail_eurecom (copy, &rlc_pP->pdus_to_mac_layer);
                     } else {
                         break;
@@ -390,7 +390,7 @@ rlc_am_get_pdus (rlc_am_entity_t *rlc_pP,u32_t frameP)
                 list_add_list (&rlc_pP->segmentation_pdu_list, &rlc_pP->pdus_to_mac_layer);
                 if (rlc_pP->pdus_to_mac_layer.head != NULL) {
                     rlc_pP->stat_tx_data_pdu                   += 1;
-                    rlc_pP->stat_tx_data_bytes                 += (((struct mac_tb_req*)(rlc_pP->pdus_to_mac_layer.head->data))->tb_size_in_bits >> 3);
+                    rlc_pP->stat_tx_data_bytes                 += (((struct mac_tb_req*)(rlc_pP->pdus_to_mac_layer.head->data))->tb_size);
                     return;
                 }
             }
@@ -523,7 +523,9 @@ rlc_am_mac_data_request (void *rlc_pP,u32 frameP)
   int                 num_nack;
   char                message_string[9000];
   size_t              message_string_size = 0;
+#   if defined(ENABLE_ITTI)
   MessageDef         *msg_p;
+#   endif
   int                 octet_index, index;
 #endif
 
@@ -546,7 +548,7 @@ rlc_am_mac_data_request (void *rlc_pP,u32 frameP)
       while (tb_p != NULL) {
 
           rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)((struct mac_tb_req *) (tb_p->data))->data_ptr;
-          tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size_in_bits >> 3;
+          tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
           if ((((struct mac_tb_req *) (tb_p->data))->data_ptr[0] & RLC_DC_MASK) == RLC_DC_DATA_PDU ) {
               if (rlc_am_get_data_pdu_infos(frameP,rlc_am_pdu_sn_10_p, tb_size_in_bytes, &pdu_info) >= 0) {
@@ -610,12 +612,12 @@ rlc_am_mac_data_request (void *rlc_pP,u32 frameP)
 
                   itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
 # else
-                  rlc_am_display_data_pdu_infos(l_rlc_p, frameP, pdu_info);
+                  rlc_am_display_data_pdu_infos(l_rlc_p, frameP, &pdu_info);
 # endif
               }
           } else {
               if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, &tb_size_in_bytes, &g_rlc_am_control_pdu_info) >= 0) {
-                  tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size_in_bits >> 3; //tb_size_in_bytes modified by rlc_am_get_control_pdu_infos!
+                  tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size; //tb_size_in_bytes modified by rlc_am_get_control_pdu_infos!
 
 #   if defined(ENABLE_ITTI)
                   message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
@@ -667,7 +669,9 @@ rlc_am_mac_data_indication (void *rlc_pP, u32_t frameP, u8 eNB_flagP, struct mac
   int                 num_nack;
   char                message_string[7000];
   size_t              message_string_size = 0;
+#   if defined(ENABLE_ITTI)
   MessageDef         *msg_p;
+#   endif
   int                 octet_index, index;
 #endif
 
@@ -684,9 +688,6 @@ rlc_am_mac_data_indication (void *rlc_pP, u32_t frameP, u8 eNB_flagP, struct mac
           if ((((struct mac_tb_ind *) (tb_p->data))->data_ptr[0] & RLC_DC_MASK) == RLC_DC_DATA_PDU ) {
               if (rlc_am_get_data_pdu_infos(frameP,rlc_am_pdu_sn_10_p, tb_size_in_bytes, &pdu_info) >= 0) {
 #   if defined(ENABLE_ITTI)
-
-
-
                   message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
                   message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
                   message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -746,7 +747,7 @@ rlc_am_mac_data_indication (void *rlc_pP, u32_t frameP, u8 eNB_flagP, struct mac
 
                   itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
 # else
-                  rlc_am_display_data_pdu_infos(l_rlc_p, frameP, pdu_info);
+                  rlc_am_display_data_pdu_infos(l_rlc_p, frameP, &pdu_info);
 # endif
               }
           } else {

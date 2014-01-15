@@ -35,6 +35,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #ifdef USER_MODE
 #include <assert.h>
 #endif
+#include "assertions.h"
 #include "list.h"
 #include "rlc_um.h"
 #include "rlc_primitives.h"
@@ -202,7 +203,17 @@ rlc_um_segment_10 (struct rlc_um_entity *rlcP,u32_t frame)
 
             if (sdu_mngt->sdu_remaining_size > pdu_remaining_size) {
             	LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] SEGMENT10 Filling all remaining PDU with %d bytes\n", rlcP->module_id, rlcP->rb_id, frame, pdu_remaining_size);
-            	LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] SEGMENT10 pdu_mem %p pdu %p pdu->data %p data %p data_sdu %p pdu_remaining_size %d\n", rlcP->module_id, rlcP->rb_id, frame, pdu_mem, pdu, pdu->data, data, data_sdu,pdu_remaining_size);
+            	LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] SEGMENT10 pdu_mem %p pdu_mem->data %p pdu %p pdu->data %p data %p data_sdu %p pdu_remaining_size %d\n",
+            	        rlcP->module_id,\
+            	        rlcP->rb_id,
+            	        frame,
+                        pdu_mem,
+                        pdu_mem->data,
+            	        pdu,
+            	        pdu->data,
+            	        data,
+            	        data_sdu,
+            	        pdu_remaining_size);
 
                 memcpy(data, data_sdu, pdu_remaining_size);
                 sdu_mngt->sdu_remaining_size = sdu_mngt->sdu_remaining_size - pdu_remaining_size;
@@ -306,9 +317,10 @@ rlc_um_segment_10 (struct rlc_um_entity *rlcP,u32_t frame)
         rlcP->vt_us = rlcP->vt_us+1;
 
         pdu_tb_req->data_ptr        = (unsigned char*)pdu;
-        pdu_tb_req->tb_size_in_bits = (data_pdu_size - pdu_remaining_size) << 3;
+        pdu_tb_req->tb_size = data_pdu_size - pdu_remaining_size;
         list_add_tail_eurecom (pdu_mem, &rlcP->pdus_to_mac_layer);
         //rlc_util_print_hex_octets(RLC, pdu_mem->data, data_pdu_size);
+        AssertFatal( pdu_tb_req->tb_size > 0 , "SEGMENT10: FINAL RLC UM PDU LENGTH %d", pdu_tb_req->tb_size);
         pdu = NULL;
         pdu_mem = NULL;
 
@@ -580,9 +592,12 @@ rlc_um_segment_5 (struct rlc_um_entity *rlcP,u32_t frame)
         rlcP->vt_us = rlcP->vt_us+1;
 
         pdu_tb_req->data_ptr        = (unsigned char*)pdu;
-        pdu_tb_req->tb_size_in_bits = (data_pdu_size - pdu_remaining_size) << 3;
+        pdu_tb_req->tb_size         = data_pdu_size - pdu_remaining_size;
         list_add_tail_eurecom (pdu_mem, &rlcP->pdus_to_mac_layer);
         rlc_util_print_hex_octets(RLC, (unsigned char*)pdu_mem->data, data_pdu_size);
+
+        AssertFatal( pdu_tb_req->tb_size > 0 , "SEGMENT5: FINAL RLC UM PDU LENGTH %d", pdu_tb_req->tb_size);
+
         pdu = NULL;
         pdu_mem = NULL;
 

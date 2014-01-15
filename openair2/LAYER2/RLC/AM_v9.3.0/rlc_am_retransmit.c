@@ -545,7 +545,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlcP, u32_t frame
                    &rlcP->pdu_retrans_buffer[snP].payload[start_offset],
                    test_pdu_copy_size);
 
-            ((struct mac_tb_req*)(mb_sub_segment->data))->tb_size_in_bits  = ((((u32_t)fill_payload)+ test_pdu_copy_size) - ((u32_t)(&pdu_sub_segment->b1))) << 3;
+            ((struct mac_tb_req*)(mb_sub_segment->data))->tb_size  = (((u64_t)fill_payload)+ test_pdu_copy_size) - ((u64_t)(&pdu_sub_segment->b1));
 
             // set LSF
             if ((test_pdu_copy_size + start_offset) == rlcP->pdu_retrans_buffer[snP].payload_size) {
@@ -553,12 +553,27 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlcP, u32_t frame
 
                 rlcP->pdu_retrans_buffer[snP].flags.retransmit = 0;
 
-                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][RE-SEGMENT] RE-SEND DATA PDU SN %04d SO %d %d BYTES PAYLOAD %d BYTES LSF!\n", frame, rlcP->module_id,rlcP->rb_id, snP, start_offset, ((struct mac_tb_req*)(mb_sub_segment->data))->tb_size_in_bits >> 3, test_pdu_copy_size);
+                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][RE-SEGMENT] RE-SEND DATA PDU SN %04d SO %d %d BYTES PAYLOAD %d BYTES LSF!\n",
+                        frame,
+                        rlcP->module_id,rlcP->rb_id,
+                        snP,
+                        start_offset,
+                        ((struct mac_tb_req*)(mb_sub_segment->data))->tb_size,
+                        test_pdu_copy_size);
             }
               else {
-                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][RE-SEGMENT] RE-SEND DATA PDU SN %04d SO %d %d BYTES PAYLOAD %d BYTES\n", frame, rlcP->module_id,rlcP->rb_id, snP, start_offset, ((struct mac_tb_req*)(mb_sub_segment->data))->tb_size_in_bits >> 3, test_pdu_copy_size);
+                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][RE-SEGMENT] RE-SEND DATA PDU SN %04d SO %d %d BYTES PAYLOAD %d BYTES\n",
+                        frame,
+                        rlcP->module_id,
+                        rlcP->rb_id,
+                        snP,
+                        start_offset,
+                        ((struct mac_tb_req*)(mb_sub_segment->data))->tb_size,
+                        test_pdu_copy_size);
             }
-            LOG_T(RLC, "[FRAME XXXXX][RLC_AM][MOD XX][RB XX][RE-SEGMENT] *sizeP %d = *sizeP %d - test_pdu_copy_size %d\n",*sizeP - test_pdu_copy_size, *sizeP,  test_pdu_copy_size);
+            LOG_T(RLC, "[FRAME XXXXX][RLC_AM][MOD XX][RB XX][RE-SEGMENT] *sizeP %d = *sizeP %d - test_pdu_copy_size %d\n",
+                    *sizeP - test_pdu_copy_size, *sizeP,
+                    test_pdu_copy_size);
 
             *sizeP = *sizeP - test_pdu_copy_size;
             //---------------------------------------------------------------
@@ -653,8 +668,8 @@ void rlc_am_retransmit_any_pdu(rlc_am_entity_t* rlcP,u32_t frame)
                 rlc_am_start_timer_poll_retransmit(rlcP,frame);
                 rlcP->stat_tx_data_pdu                   += 1;
                 rlcP->stat_tx_retransmit_pdu             += 1;
-                rlcP->stat_tx_data_bytes                 += (((struct mac_tb_req*)(pdu->data))->tb_size_in_bits >> 3);
-                rlcP->stat_tx_retransmit_bytes           += (((struct mac_tb_req*)(pdu->data))->tb_size_in_bits >> 3);
+                rlcP->stat_tx_data_bytes                 += ((struct mac_tb_req*)(pdu->data))->tb_size;
+                rlcP->stat_tx_retransmit_bytes           += ((struct mac_tb_req*)(pdu->data))->tb_size;
                 list_add_tail_eurecom (pdu, &rlcP->pdus_to_mac_layer);
                 return;
             }
@@ -677,8 +692,8 @@ void rlc_am_retransmit_any_pdu(rlc_am_entity_t* rlcP,u32_t frame)
             rlc_am_start_timer_poll_retransmit(rlcP,frame);
             rlcP->stat_tx_data_pdu                   += 1;
             rlcP->stat_tx_retransmit_pdu             += 1;
-            rlcP->stat_tx_data_bytes                 += (((struct mac_tb_req*)(pdu->data))->tb_size_in_bits >> 3);
-            rlcP->stat_tx_retransmit_bytes           += (((struct mac_tb_req*)(pdu->data))->tb_size_in_bits >> 3);
+            rlcP->stat_tx_data_bytes                 += ((struct mac_tb_req*)(pdu->data))->tb_size;
+            rlcP->stat_tx_retransmit_bytes           += ((struct mac_tb_req*)(pdu->data))->tb_size;
             list_add_tail_eurecom (pdu, &rlcP->pdus_to_mac_layer);
             return;
         } else {

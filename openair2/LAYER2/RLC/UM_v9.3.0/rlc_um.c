@@ -33,6 +33,10 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "platform_types.h"
 #include "platform_constants.h"
 //-----------------------------------------------------------------------------
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+#include "assertions.h"
 #include "rlc_um.h"
 #include "list.h"
 #include "rlc_primitives.h"
@@ -43,9 +47,12 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 #include "rlc_um_very_simple_test.h"
 
-
 //#define DEBUG_RLC_UM_TX_STATUS 1
+#define TRACE_RLC_UM_PDU 1
 
+#ifdef TRACE_RLC_UM_PDU
+char  message_string[10000];
+#endif
 //-----------------------------------------------------------------------------
 void rlc_um_stat_req     (rlc_um_entity_t *rlcP,
 		  unsigned int* stat_tx_pdcp_sdu,
@@ -171,12 +178,19 @@ void
 rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
-  rlc_um_entity_t    *l_rlc = (rlc_um_entity_t *) argP;
-  mem_block_t        *tb;
-  rlc_um_pdu_info_t  pdu_info;
-  int                num_li;
+  rlc_um_entity_t    *l_rlc_p = (rlc_um_entity_t *) argP;
+#ifdef TRACE_RLC_UM_PDU
+  mem_block_t        *tb_p;
+  s16_t               tb_size_in_bytes;
+  size_t              message_string_size = 0;
+#   if defined(ENABLE_ITTI)
+  MessageDef         *msg_p;
+#   endif
+  rlc_um_pdu_info_t   pdu_info;
+  int                 octet_index, index;
+#endif
 
-  switch (l_rlc->protocol_state) {
+  switch (l_rlc_p->protocol_state) {
 
       case RLC_NULL_STATE:
         // from 3GPP TS 25.322 V9.2.0 p43
@@ -186,19 +200,19 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
         // establishment, the RLC entity:
         //   - is created; and
         //   - enters the DATA_TRANSFER_READY state.
-        LOG_N(RLC, "[RLC_UM][MOD %d] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", l_rlc->module_id);
+        LOG_N(RLC, "[RLC_UM][MOD %d] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", l_rlc_p->module_id);
 
-        if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc->module_id, l_rlc->rb_id, frame, data_indP.data.nb_elements);
-            rlc[l_rlc->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
+        /*if (data_indP.data.nb_elements > 0) {
+            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_indP.data.nb_elements);
+            rlc[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
                 frame,
-                (l_rlc->is_enb) ? "eNB":"UE",
-                l_rlc->module_id,
+                (l_rlc_p->is_enb) ? "eNB":"UE",
+                l_rlc_p->module_id,
                 data_indP.data.nb_elements);
 
             tb = data_indP.data.head;
             while (tb != NULL) {
-                rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
+                rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
@@ -206,13 +220,13 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
                                                                     ((struct mac_tb_ind *) (tb->data))->size);
                 tb = tb->next;
             }
-            rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], " DROPPED RLC NULL STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
-                l_rlc->module_id,
-                l_rlc->rb_id);
+            rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC NULL STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
+                l_rlc_p->module_id,
+                l_rlc_p->rb_id);
 
-            rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length] = 0;
-            LOG_D(RLC, "%s", rlc[l_rlc->module_id].m_mscgen_trace);
-        }
+            rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
+            LOG_D(RLC, "%s", rlc[l_rlc_p->module_id].m_mscgen_trace);
+        }*/
         list_free (&data_indP.data);
         break;
 
@@ -233,48 +247,75 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
         // entity:
         // - enters the LOCAL_SUSPEND state.
         data_indP.tb_size = data_indP.tb_size >> 3;
+
+#ifdef TRACE_RLC_UM_PDU
         if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc->module_id, l_rlc->rb_id, frame, data_indP.data.nb_elements);
-            rlc[l_rlc->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
-                frame,
-                (l_rlc->is_enb) ? "eNB":"UE",
-                l_rlc->module_id,
-                data_indP.data.nb_elements);
+            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_indP.data.nb_elements);
 
-            tb = data_indP.data.head;
-            while (tb != NULL) {
-                rlc_um_get_pdu_infos(frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb->data))->data_ptr, (s16_t) ((struct mac_tb_ind *) (tb->data))->size, &pdu_info);
+            tb_p = data_indP.data.head;
+            while (tb_p != NULL) {
+                tb_size_in_bytes   = ((struct mac_tb_ind *) (tb_p->data))->size;
 
-                rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "\\nSN %d/%c%c%c",
-                                                                    pdu_info.sn,
-                                                                    (pdu_info.fi & 0x02) ?  '}':'{',
-                                                                    (pdu_info.fi & 0x01) ?  '}':'{',
-                                                                    (pdu_info.e) ?  'E':'_');
-                num_li = 0;
-                if (pdu_info.num_li > 0) {
-                    rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "/LI(");
-                    while (num_li != (pdu_info.num_li - 1)) {
-                        rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "%d,",
-                                                                        pdu_info.li_list[num_li]);
-                        num_li += 1;
-                    }
-                    rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "%d)", pdu_info.li_list[num_li]);
-                }
+                rlc_um_get_pdu_infos(frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+                  message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
+                  message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
+                  message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
+                  message_string_size += sprintf(&message_string[message_string_size], "Payload size: %u\n", pdu_info.payload_size);
+                  message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC UM DATA IND: UMD PDU\n\n");
 
-                rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "/%d Bytes ",
-                                                                    ((struct mac_tb_ind *) (tb->data))->size);
+                  message_string_size += sprintf(&message_string[message_string_size], "Header      :\n");
+                  message_string_size += sprintf(&message_string[message_string_size], "  FI        : %u\n", pdu_info.fi);
+                  message_string_size += sprintf(&message_string[message_string_size], "  E         : %u\n", pdu_info.e);
+                  message_string_size += sprintf(&message_string[message_string_size], "  SN        : %u\n", pdu_info.sn);
 
-                tb = tb->next;
+                  if (pdu_info.e) {
+                      message_string_size += sprintf(&message_string[message_string_size], "\nHeader extension  : \n");
+                      for (index=0; index < pdu_info.num_li; index++) {
+                          message_string_size += sprintf(&message_string[message_string_size], "  LI        : %u\n", pdu_info.li_list[index]);
+                      }
+                  }
+                  message_string_size += sprintf(&message_string[message_string_size], "\nPayload  : \n");
+                  message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+                  message_string_size += sprintf(&message_string[message_string_size], "      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
+                  message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+                  for (octet_index = 0; octet_index < pdu_info.payload_size; octet_index++) {
+                      if ((octet_index % 16) == 0){
+                          if (octet_index != 0) {
+                              message_string_size += sprintf(&message_string[message_string_size], " |\n");
+                          }
+                          message_string_size += sprintf(&message_string[message_string_size], " %04d |", octet_index);
+                      }
+                      /*
+                       * Print every single octet in hexadecimal form
+                       */
+                      message_string_size += sprintf(&message_string[message_string_size], " %02x", pdu_info.payload[octet_index]);
+                      /*
+                       * Align newline and pipes according to the octets in groups of 2
+                       */
+                  }
+                  /*
+                   * Append enough spaces and put final pipe
+                   */
+                  for (index = octet_index; index < 16; ++index) {
+                      message_string_size += sprintf(&message_string[message_string_size], "   ");
+                  }
+                  message_string_size += sprintf(&message_string[message_string_size], " |\n");
+
+#   if defined(ENABLE_ITTI)
+                  msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_IND, message_string_size + sizeof (IttiMsgText));
+                  msg_p->ittiMsg.rlc_um_data_pdu_ind.size = message_string_size;
+                  memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_ind.text, message_string, message_string_size);
+
+                  itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+# else
+                  LOG_T(RLC, "%s", message_string);
+# endif
+
+                  tb_p = tb_p->next;
             }
-            rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], " --->][RLC_UM][MOD %02d][RB %02d]\n",
-                l_rlc->module_id,
-                l_rlc->rb_id);
-
-            rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length] = 0;
-            LOG_D(RLC, "%s", rlc[l_rlc->module_id].m_mscgen_trace);
         }
-
-        rlc_um_receive (l_rlc, frame, eNB_flag, data_indP);
+#endif
+        rlc_um_receive (l_rlc_p, frame, eNB_flag, data_indP);
         break;
 
       case RLC_LOCAL_SUSPEND_STATE:
@@ -294,18 +335,18 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
         // - stays in the LOCAL_SUSPEND state;
         // - modifies only the protocol parameters and timers as indicated by
         //   upper layers.
-        LOG_N(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] RLC_LOCAL_SUSPEND_STATE\n", l_rlc->module_id, l_rlc->rb_id, frame);
-        if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc->module_id, l_rlc->rb_id, frame, data_indP.data.nb_elements);
-            rlc[l_rlc->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
+        LOG_N(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] RLC_LOCAL_SUSPEND_STATE\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame);
+        /*if (data_indP.data.nb_elements > 0) {
+            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_indP.data.nb_elements);
+            rlc[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
                 frame,
-                (l_rlc->is_enb) ? "eNB":"UE",
-                l_rlc->module_id,
+                (l_rlc_p->is_enb) ? "eNB":"UE",
+                l_rlc_p->module_id,
                 data_indP.data.nb_elements);
 
             tb = data_indP.data.head;
             while (tb != NULL) {
-                rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
+                rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
@@ -313,18 +354,18 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
                                                                     ((struct mac_tb_ind *) (tb->data))->size);
                 tb = tb->next;
             }
-            rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], " DROPPED RLC LOCAL SUSPEND STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
-                l_rlc->module_id,
-                l_rlc->rb_id);
+            rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC LOCAL SUSPEND STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
+                l_rlc_p->module_id,
+                l_rlc_p->rb_id);
 
-            rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length] = 0;
-            LOG_D(RLC, "%s", rlc[l_rlc->module_id].m_mscgen_trace);
-        }
+            rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
+            LOG_D(RLC, "%s", rlc[l_rlc_p->module_id].m_mscgen_trace);
+        }*/
         list_free (&data_indP.data);
         break;
 
       default:
-        LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] TX UNKNOWN PROTOCOL STATE %02X hex\n", l_rlc->module_id, l_rlc->rb_id, frame, l_rlc->protocol_state);
+        LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] TX UNKNOWN PROTOCOL STATE %02X hex\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, l_rlc_p->protocol_state);
   }
 }
 
@@ -399,48 +440,108 @@ rlc_um_mac_status_indication (void *rlcP, u32_t frame, u8_t eNB_flag, u16_t tbs_
 struct mac_data_req
 rlc_um_mac_data_request (void *rlcP,u32 frame)
 {
-//-----------------------------------------------------------------------------
-  struct mac_data_req data_req;
-  rlc_um_entity_t *l_rlc = (rlc_um_entity_t *) rlcP;
+    //-----------------------------------------------------------------------------
+    struct mac_data_req data_req;
+    s16_t               tb_size_in_bytes;
+    mem_block_t        *tb_p;
+#ifdef TRACE_RLC_UM_PDU
+    size_t              message_string_size = 0;
+#   if defined(ENABLE_ITTI)
+    MessageDef         *msg_p;
+#   endif
+    rlc_um_pdu_info_t   pdu_info;
+    int                 octet_index, index;
+#endif
+    rlc_um_entity_t *l_rlc_p = (rlc_um_entity_t *) rlcP;
 
-  rlc_um_get_pdus (rlcP,frame);
+    rlc_um_get_pdus (rlcP,frame);
 
-  list_init (&data_req.data, NULL);
-  list_add_list (&l_rlc->pdus_to_mac_layer, &data_req.data);
+    list_init (&data_req.data, NULL);
+    list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
 
 
-  data_req.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (l_rlc);
-  if (data_req.buffer_occupancy_in_bytes > 0) {
-    data_req.buffer_occupancy_in_bytes += l_rlc->tx_header_min_length_in_bytes;
-  }
-  data_req.rlc_info.rlc_protocol_state = l_rlc->protocol_state;
-  if (data_req.data.nb_elements > 0) {
-    //LOG_I(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_REQUEST %d TBs\n", l_rlc->module_id, l_rlc->rb_id, frame, data_req.data.nb_elements);
-      mem_block_t *tb;
-      rlc[l_rlc->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][RLC_UM][MOD %02d][RB %02d][--- MAC_DATA_REQ/ %d TB(s) ",
-              frame,
-              l_rlc->module_id,
-              l_rlc->rb_id,
-              data_req.data.nb_elements);
+    data_req.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (l_rlc_p);
+    if (data_req.buffer_occupancy_in_bytes > 0) {
+        data_req.buffer_occupancy_in_bytes += l_rlc_p->tx_header_min_length_in_bytes;
+    }
+    data_req.rlc_info.rlc_protocol_state = l_rlc_p->protocol_state;
+    if (data_req.data.nb_elements > 0) {
+        //LOG_I(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_REQUEST %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_req.data.nb_elements);
 
-      tb = data_req.data.head;
-      while (tb != NULL) {
-    	  l_rlc->stat_tx_data_pdu   += 1;
-    	  l_rlc->stat_tx_data_bytes += ((struct mac_tb_req *) (tb->data))->tb_size_in_bits>>3;
+        tb_p = data_req.data.head;
+        while (tb_p != NULL) {
+            tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
-          rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], " SN %d %d Bytes ",
-                                                                 (((struct mac_tb_req *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_req *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
-                                                                 ((struct mac_tb_req *) (tb->data))->tb_size_in_bits>>3);
-          tb = tb->next;
-      }
-      rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "BO=%d --->][MAC_%s][MOD %02d][]\n",
-            data_req.buffer_occupancy_in_bytes,
-            (l_rlc->is_enb) ? "eNB":"UE",
-            l_rlc->module_id);
-      rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length] = 0;
-      LOG_D(RLC, "%s", rlc[l_rlc->module_id].m_mscgen_trace);
-  }
-  return data_req;
+            LOG_I(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_REQUEST  TB SIZE %u\n",
+                    l_rlc_p->module_id,
+                    l_rlc_p->rb_id,
+                    frame,
+                    ((struct mac_tb_req *) (tb_p->data))->tb_size);
+            l_rlc_p->stat_tx_data_pdu   += 1;
+            l_rlc_p->stat_tx_data_bytes += tb_size_in_bytes;
+
+            AssertFatal( tb_size_in_bytes > 0 , "RLC UM PDU LENGTH %d", tb_size_in_bytes);
+
+#ifdef TRACE_RLC_UM_PDU
+            rlc_um_get_pdu_infos(frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+            message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
+            message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
+            message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
+            message_string_size += sprintf(&message_string[message_string_size], "Payload size: %u\n", pdu_info.payload_size);
+            message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC UM DATA IND: UMD PDU\n\n");
+
+            message_string_size += sprintf(&message_string[message_string_size], "Header      :\n");
+            message_string_size += sprintf(&message_string[message_string_size], "  FI        : %u\n", pdu_info.fi);
+            message_string_size += sprintf(&message_string[message_string_size], "  E         : %u\n", pdu_info.e);
+            message_string_size += sprintf(&message_string[message_string_size], "  SN        : %u\n", pdu_info.sn);
+
+            if (pdu_info.e) {
+                message_string_size += sprintf(&message_string[message_string_size], "\nHeader extension  : \n");
+                for (index=0; index < pdu_info.num_li; index++) {
+                    message_string_size += sprintf(&message_string[message_string_size], "  LI        : %u\n", pdu_info.li_list[index]);
+                }
+            }
+            message_string_size += sprintf(&message_string[message_string_size], "\nPayload  : \n");
+            message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+            message_string_size += sprintf(&message_string[message_string_size], "      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
+            message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+            for (octet_index = 0; octet_index < pdu_info.payload_size; octet_index++) {
+                if ((octet_index % 16) == 0){
+                    if (octet_index != 0) {
+                        message_string_size += sprintf(&message_string[message_string_size], " |\n");
+                    }
+                    message_string_size += sprintf(&message_string[message_string_size], " %04d |", octet_index);
+                }
+                /*
+                 * Print every single octet in hexadecimal form
+                 */
+                message_string_size += sprintf(&message_string[message_string_size], " %02x", pdu_info.payload[octet_index]);
+                /*
+                 * Align newline and pipes according to the octets in groups of 2
+                 */
+            }
+            /*
+             * Append enough spaces and put final pipe
+             */
+            for (index = octet_index; index < 16; ++index) {
+                message_string_size += sprintf(&message_string[message_string_size], "   ");
+            }
+            message_string_size += sprintf(&message_string[message_string_size], " |\n");
+
+#   if defined(ENABLE_ITTI)
+            msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_REQ, message_string_size + sizeof (IttiMsgText));
+            msg_p->ittiMsg.rlc_um_data_pdu_req.size = message_string_size;
+            memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_req.text, message_string, message_string_size);
+
+            itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+# else
+            LOG_T(RLC, "%s", message_string);
+# endif
+#endif
+            tb_p = tb_p->next;
+        }
+    }
+    return data_req;
 }
 
 //-----------------------------------------------------------------------------

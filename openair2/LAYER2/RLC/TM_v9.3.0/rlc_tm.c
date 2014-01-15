@@ -112,7 +112,7 @@ rlc_tm_no_segment (rlc_tm_entity_t *rlcP)
         ((struct mac_tb_req *) (pdu->data))->rlc = NULL;
         ((struct mac_tb_req *) (pdu->data))->data_ptr = pdu_mngt->first_byte;
         ((struct mac_tb_req *) (pdu->data))->first_bit = 0;
-        ((struct mac_tb_req *) (pdu->data))->tb_size_in_bits = rlcP->rlc_pdu_size;
+        ((struct mac_tb_req *) (pdu->data))->tb_size = rlcP->rlc_pdu_size >> 3;
         list_add_tail_eurecom (pdu, &rlcP->pdus_to_mac_layer);
 
         rlcP->buffer_occupancy -= (sdu_mngt->sdu_size >> 3);
@@ -185,7 +185,7 @@ rlc_tm_mac_data_request (void *rlcP, u32_t frame)
       tb = data_req.data.head;
       while (tb != NULL) {
           rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "%d Bytes ",
-                                                                 ((struct mac_tb_req *) (tb->data))->tb_size_in_bits>>3);
+                                                                 ((struct mac_tb_req *) (tb->data))->tb_size);
           tb = tb->next;
       }
       rlc[l_rlc->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc->module_id].m_mscgen_trace[rlc[l_rlc->module_id].m_mscgen_trace_length], "BO=%d --->][MAC_%s][MOD %02d][]\n",

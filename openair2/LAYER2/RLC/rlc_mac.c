@@ -67,7 +67,7 @@ tbs_size_t mac_rlc_serialize_tb (char* bufferP, list_t transport_blocksP) {
   while (transport_blocksP.nb_elements > 0) {
     tb = list_remove_head (&transport_blocksP);
     if (tb != NULL) {
-       tb_size = ((struct mac_tb_req *) (tb->data))->tb_size_in_bits>>3;
+       tb_size = ((struct mac_tb_req *) (tb->data))->tb_size;
 #ifdef DEBUG_MAC_INTERFACE
         LOG_T(RLC, "[MAC-RLC] DUMP TX PDU(%d bytes):\n", tb_size);
         rlc_util_print_hex_octets(RLC, ((struct mac_tb_req *) (tb->data))->data_ptr, tb_size);
