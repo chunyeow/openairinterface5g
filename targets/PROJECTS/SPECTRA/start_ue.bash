@@ -86,9 +86,9 @@ wait_process_started odtone-mihf
 sleep 3
 
 NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
-#LOG_FILE="./oai_sim_ue_$NOW.log"
+#LOG_FILE="/tmp/oai_sim_ue_$NOW.log"
 
-LOG_FILE="./oai_sim_ue.log"
+LOG_FILE="/tmp/oai_sim_ue.log"
 rm -f $LOG_FILE
 
 xterm -hold -e gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
