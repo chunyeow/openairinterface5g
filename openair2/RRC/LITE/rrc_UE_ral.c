@@ -183,7 +183,6 @@ int rrc_ue_ral_handle_configure_threshold_request(unsigned int mod_idP, MessageD
                                 memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
                                 itti_send_msg_to_task (TASK_MAC_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
-                                break;
 
                             case RAL_LINK_PARAM_LTE_MOBILE_NODE_CAPABILITIES:
                             case RAL_LINK_PARAM_LTE_EMBMS_CAPABILITY:

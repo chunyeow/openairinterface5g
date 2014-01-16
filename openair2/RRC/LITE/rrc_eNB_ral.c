@@ -154,7 +154,7 @@ int rrc_enb_ral_handle_configure_threshold_request(unsigned int mod_idP, Message
                                 message_p = itti_alloc_new_message (TASK_RRC_ENB, PHY_MEAS_THRESHOLD_REQ);
                                 PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
                                 memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
-                                itti_send_msg_to_task (TASK_MAC_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
+                                itti_send_msg_to_task (TASK_MAC_ENB, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
                             default:
                                 LOG_E(RRC, "Message RRC_RAL_CONFIGURE_THRESHOLD_REQ malformed, unknown link_param_qos %d\n", link_cfg_param_p->link_param_type._union.link_param_qos);
@@ -171,7 +171,7 @@ int rrc_enb_ral_handle_configure_threshold_request(unsigned int mod_idP, Message
                                 message_p = itti_alloc_new_message (TASK_RRC_ENB, PHY_MEAS_THRESHOLD_REQ);
                                 PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
                                 memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
-                                itti_send_msg_to_task (TASK_PHY_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
+                                itti_send_msg_to_task (TASK_PHY_ENB, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
 
                             case RAL_LINK_PARAM_LTE_AVAILABLE_BW:
@@ -181,8 +181,7 @@ int rrc_enb_ral_handle_configure_threshold_request(unsigned int mod_idP, Message
                                 message_p = itti_alloc_new_message (TASK_RRC_ENB, PHY_MEAS_THRESHOLD_REQ);
                                 PHY_MEAS_THRESHOLD_REQ(message_p).transaction_id  = transaction_id;
                                 memcpy (&PHY_MEAS_THRESHOLD_REQ(message_p).cfg_param, (void *) link_cfg_param_p, sizeof(ral_link_cfg_param_t));
-                                itti_send_msg_to_task (TASK_MAC_UE, ITTI_MSG_INSTANCE(msg_pP), message_p);
-                                break;
+                                itti_send_msg_to_task (TASK_MAC_ENB, ITTI_MSG_INSTANCE(msg_pP), message_p);
                                 break;
 
                             case RAL_LINK_PARAM_LTE_MOBILE_NODE_CAPABILITIES:
