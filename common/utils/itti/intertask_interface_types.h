@@ -37,7 +37,7 @@
 #ifndef INTERTASK_INTERFACE_TYPES_H_
 #define INTERTASK_INTERFACE_TYPES_H_
 
-#include <stdint.h>
+#include "itti_types.h"
 
 /* Defines to handle bit fields on unsigned long values */
 #define UL_BIT_MASK(lENGTH)             ((1UL << (lENGTH)) - 1UL)
@@ -120,10 +120,6 @@ typedef union msg_s
 #undef MESSAGE_DEF
 } msg_t;
 
-#define INSTANCE_DEFAULT    (UINT16_MAX - 1)
-#define INSTANCE_ALL        (UINT16_MAX)
-
-typedef uint16_t instance_t;
 typedef uint16_t MessageHeaderSize;
 
 typedef struct itti_lte_time_s
