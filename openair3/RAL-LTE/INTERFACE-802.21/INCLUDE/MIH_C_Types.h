@@ -28,7 +28,6 @@ Type definition and structure for 802.21 interface
 //-----------------------------------------------------------------------------
 #include "MIH_C_Link_Constants.h"
 #include "MIH_C_bit_buffer.h"
-#include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
 #define MIH_C_DEBUG_SERIALIZATION 1
 #define MIH_C_DEBUG_DESERIALIZATION 1
