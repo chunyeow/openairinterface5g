@@ -16,18 +16,19 @@
 # This software is distributed without any warranty.
 #===============================================================================
 
-project lte_user
-	;
-
-exe lte_user
-	: mih_usr.cpp
-	  ../../lib/odtone//odtone_base
-	  ../../lib/odtone/mih//odtone_mih
-	  ../../lib/odtone/sap//odtone_sap
-	;
 
 install install
-	: lte_user
-	  lte_user.conf
+	: ue_lte_user
+	  ue_lte_user.conf
 	: <location>../../dist
 	;
+
+project ue_lte_user
+	;
+
+exe ue_lte_user
+	: ue_lte_user.cpp
+	  ../../lib/odtone//odtone
+	  /boost//program_options
+	;
+
