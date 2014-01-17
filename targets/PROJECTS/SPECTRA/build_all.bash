@@ -1,10 +1,10 @@
 #! /bin/bash
+# Author Lionel GAUTHIER
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/env_802dot21.bash
 ###########################################################
-
 
 echo_success "\n###############################"
 echo_success "# Check installed utils and libs"
@@ -26,6 +26,7 @@ test_install_package "libatlas-base-dev"
 test_install_package "libpgm-5.1-0" "--force-yes"
 test_install_package "libpgm-dev"   "--force-yes"
 test_install_package linux-headers-`uname -r`
+test_install_package "tshark"       "--force-yes"
 # for ODTONE git clone
 test_install_package "git"
     
@@ -36,11 +37,8 @@ echo_success "\n###############################"
 echo_success "# COMPILE oaisim"
 echo_success "###############################"
 cd $OPENAIR_TARGETS/SIMU/USER
-#make clean > /dev/null 
-#make cleancell >/dev/null
 echo_success "Executing: make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `"
 make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `
-#make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 Rel10=1 
 if [[ $? -eq 2 ]] ; then
     exit 1
 fi

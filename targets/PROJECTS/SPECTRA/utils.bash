@@ -202,7 +202,7 @@ wait_process_started () {
 is_process_started () {
     if  [ -z "$1" ]
     then
-        echo_error "WAITING FOR PROCESS START: NO PROCESS"
+        echo_error "WAITING FOR PROCESS START: ERROR NO PROCESS NAME IN ARGUMENT"
         return 1
     fi
     ps -C $1 > /dev/null 2>&1
