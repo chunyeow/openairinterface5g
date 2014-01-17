@@ -81,8 +81,8 @@ ip -6 route add default dev $LTEIF table lte
 ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
 # start MIH-F
-xterm -hold -e $ODTONE_ROOT/dist/odtone-mihf --log 4 --conf.file $ODTONE_ROOT/dist/odtone_ue.conf &
-wait_process_started odtone-mihf
+xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE &
+wait_process_started $MIH_F
 sleep 3
 
 NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
@@ -91,13 +91,27 @@ NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
 LOG_FILE="/tmp/oai_sim_ue.log"
 rm -f $LOG_FILE
 
+UE_RAL_LINK_ID=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep links | grep \= | grep -v \# | cut -d"=" -f2`
+UE_RAL_LINK_ID=`trim2 $UE_RAL_LINK_ID`
+UE_RAL_LINK_ID=`echo $UE_RAL_LINK_ID | cut -d" " -f1`
+
+UE_RAL_LISTENING_PORT=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep links | grep \= | grep -v \# | cut -d"=" -f2`
+UE_RAL_LISTENING_PORT=`trim2 $UE_RAL_LISTENING_PORT`
+UE_RAL_LISTENING_PORT=`echo $UE_RAL_LISTENING_PORT | cut -d" " -f2`
+
+UE_RAL_IP_ADDRESS=127.0.0.1
+UE_MIHF_REMOTE_PORT=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep local_port | grep \= | grep -v \# | tr -d " "  | cut -d'=' -f2`
+
+UE_MIHF_IP_ADDRESS=127.0.0.1
+UE_MIHF_ID=`cat $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE | grep id | grep \= | grep -v \# | tr -d " "  | cut -d'=' -f2`
+
 xterm -hold -e gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE  \
-             --ue-ral-listening-port   1234\
-             --ue-ral-link-id          ue_lte_link\
-             --ue-ral-ip-address       127.0.0.1\
-             --ue-mihf-remote-port     1025\
-             --ue-mihf-ip-address      127.0.0.1\
-             --ue-mihf-id              mihf2_ue  &
+             --ue-ral-listening-port   $UE_RAL_LISTENING_PORT \
+             --ue-ral-link-id          $UE_RAL_LINK_ID \
+             --ue-ral-ip-address       $UE_RAL_IP_ADDRESS \
+             --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT \
+             --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS \
+             --ue-mihf-id              $UE_MIHF_ID &
              
 #oai_pid=$!
 wait_process_started oaisim
@@ -107,8 +121,8 @@ sleep 5
 #read KEY
 
 # start MIH-USER
-xterm -hold -e $ODTONE_ROOT/dist/ue_lte_user         --conf.file $ODTONE_ROOT/dist/ue_lte_user.conf &
-wait_process_started ue_lte_user
+xterm -hold -e $ODTONE_MIH_EXE_DIR/$UE_MIH_USER         --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_USER_CONF_FILE &
+wait_process_started $UE_MIH_USER
 
 
 sleep 100000

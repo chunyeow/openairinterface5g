@@ -5,8 +5,20 @@
 # VARIABLES TO BE FILLED WITH RIGHT VALUES:
 #####################################################
 export BOOST_ROOT=/usr/local/src/boost_1_49_0
-#export ODTONE_ROOT=/usr/local/src/odtone_spectra_v1
 export ODTONE_ROOT=/usr/local/src/ODTONE
+
+export MIH_F=odtone-mihf
+export ENB_MIH_F_CONF_FILE=odtone_enb.conf
+export UE_MIH_F_CONF_FILE=odtone_ue.conf
+
+export ODTONE_MIH_USER_DIR=$ODTONE_ROOT/app/lte_test_user
+export ODTONE_MIH_EXE_DIR=$ODTONE_ROOT/dist
+
+export ENB_MIH_USER=enb_lte_user
+export ENB_MIH_USER_CONF_FILE=enb_lte_user.conf
+
+export UE_MIH_USER=ue_lte_user
+export UE_MIH_USER_CONF_FILE=ue_lte_user.conf
 #####################################################
 
 
