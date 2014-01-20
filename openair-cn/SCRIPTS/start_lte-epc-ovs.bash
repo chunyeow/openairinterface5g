@@ -80,14 +80,14 @@ then
         cd ./$OBJ_DIR
     fi
 else
-    OBJ_DIR="OBJS"
+    OBJ_DIR="objs"
     bash_exec "mkdir -m 777 ./$OBJ_DIR"
     echo_success "Created $OBJ_DIR directory"
     echo_success "Invoking autogen"
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure --enable-standalone-epc --disable-nas LDFLAGS=-L/usr/local/lib
+    ../configure --enable-standalone-epc LDFLAGS=-L/usr/local/lib
 fi
 if [ -f Makefile ]
 then
@@ -132,7 +132,7 @@ else
 fi
 
 #######################################################
-# SOURCE $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf
+# SOURCE $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf
 #######################################################
 rm -f /tmp/source.txt
 if [ -f $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf ]
@@ -185,8 +185,8 @@ echo "   Disabling reverse path filtering"
 bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
 assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 
-echo_warning "LG FORCED EXIT"
-exit
+#echo_warning "LG FORCED EXIT"
+#exit
 
 start_openswitch_daemon
 # REMINDER:
@@ -374,6 +374,6 @@ bash_exec "ip link set $PGW_INTERFACE_NAME_FOR_SGI promisc on"
 
 # LAUNCH MME + S+P-GW executable
 ##################################################
-
-gdb --args $OPENAIR3_DIR/OPENAIRMME/objs/OAI_EPC/oai_epc -c $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/mme_default.conf
+cd $OPENAIRCN_DIR/$OBJ_DIR
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -c $OPENAIRCN_DIR/UTILS/CONF/mme_default.conf
 wait_process_started "oai_epc"

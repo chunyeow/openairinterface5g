@@ -228,7 +228,7 @@ test_command_install_script() {
 start_openswitch_daemon() {
   rmmod -s bridge
   if [[ -e "/lib/modules/`uname -r`/extra/openvswitch.ko" ]] ; then
-      bash_exec "insmod /lib/modules/`uname -r`/extra/openvswitch.ko"
+      bash_exec "insmod /lib/modules/`uname -r`/extra/openvswitch.ko" > /dev/null 2>&1
   else
       echo_error "/lib/modules/`uname -r`/extra/openvswitch.ko not found, exiting"
       exit -1

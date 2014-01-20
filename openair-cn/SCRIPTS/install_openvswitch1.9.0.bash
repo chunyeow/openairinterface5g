@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tested on ubuntu 12.04 with updates on 05 april 2013, 07 november 2013
+# Tested on ubuntu 12.04 with updates on 05 april 2013, 07 november 2013, 20 january 2014
 
 # Make sure only root can run our script
 if [[ $EUID -ne 0 ]]; then
@@ -22,8 +22,16 @@ make
 make install
 make modules_install
 
-insmod /lib/modules/`uname -r`/kernel/net/openvswitch/openvswitch.ko
-
+if [ -f /lib/modules/`uname -r`/kernel/net/openvswitch/openvswitch.ko ] ; then
+    insmod /lib/modules/`uname -r`/kernel/net/openvswitch/openvswitch.ko
+else
+    if  [ -f /lib/modules//`uname -r`/extra/openvswitch.ko ] ; then
+        insmod /lib/modules//`uname -r`/extra/openvswitch.ko
+	else 
+       echo_error "Could not find openvswitch.ko, exiting"
+	   exit 1
+    fi
+fi
 # Initialize the configuration database using ovsdb-tool, e.g.:
 
 mkdir -p /usr/local/etc/openvswitch
