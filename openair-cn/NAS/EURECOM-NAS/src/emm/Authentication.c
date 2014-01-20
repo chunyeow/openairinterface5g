@@ -200,7 +200,7 @@ int emm_proc_authentication_request(int native_ksi, int ksi,
 
     int rc = RETURNerror;
 
-    LOG_TRACE(INFO, "EMM-PROC  - Authentication requested ksi = %d", ksi);
+    LOG_TRACE(INFO, "EMM-PROC  - Authentication requested ksi type = %s, ksi = %d", native_ksi ? "native" : "mapped", ksi);
 
     /* 3GPP TS 24.301, section 5.4.2.1
      * The UE shall proceed with an EPS authentication challenge only if a
@@ -245,6 +245,9 @@ int emm_proc_authentication_request(int native_ksi, int ksi,
          * Get the "separation bit" of the AMF field of AUTN */
         int sbit = AUTH_AMF_SEPARATION_BIT(autn->value[AUTH_AMF_INDEX]);
         if (sbit != 0) {
+            /* LW: only 64 bits from the response field are used for the authentication response for this algorithms */
+            res.length = 8; /* Bytes */
+
             /*
              * Perform EPS authentication challenge to check the authenticity
              * of the core network by means of the received AUTN parameter and
