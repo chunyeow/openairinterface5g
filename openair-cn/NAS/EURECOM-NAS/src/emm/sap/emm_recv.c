@@ -124,10 +124,6 @@ int emm_recv_attach_accept(attach_accept_msg *msg, int *emm_cause)
         /* Only list of TACs belonging to one PLMN with consecutive
          * TAC values is supported */
         *emm_cause = EMM_CAUSE_IE_NOT_IMPLEMENTED;
-    } else if (msg->tailist.numberofelements < 1) {
-        /* The tracking area identity list shall contain
-         * at leat one TAI value */
-        *emm_cause = EMM_CAUSE_INVALID_MANDATORY_INFO;
     } else if ( (msg->presencemask & ATTACH_ACCEPT_GUTI_PRESENT) &&
                 (msg->guti.guti.typeofidentity != EPS_MOBILE_IDENTITY_GUTI) ) {
         /* The only supported type of EPS mobile identity is GUTI */
@@ -151,7 +147,10 @@ int emm_recv_attach_accept(attach_accept_msg *msg, int *emm_cause)
         T3423 = gprs_timer_value(&msg->t3423value);
     }
     /* Get the tracking area list the UE is registered to */
-    int n_tais = msg->tailist.numberofelements;
+
+    /* LW: number of elements is coded as N-1 (0 -> 1 element, 1 -> 2 elements...),
+     *  see 3GPP TS 24.301, section 9.9.3.33.1 */
+    int n_tais = msg->tailist.numberofelements + 1;
     tai_t tai[n_tais];
     for (i = 0; i < n_tais; i++) {
         tai[i].plmn.MCCdigit1 = msg->tailist.mccdigit1;

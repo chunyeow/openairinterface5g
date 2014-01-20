@@ -731,11 +731,12 @@ ssize_t taiList(char* buffer, size_t len, const TrackingAreaIdentityList* tai)
 			  tai->mncdigit3);
     }
 
-    if (tai->numberofelements > 0) {
-	index += snprintf(buffer + index, len - index,
-			  ", n_tacs = %u, tac = 0x%.4x",
-			  tai->numberofelements, tai->tac);
-    }
+    index += snprintf(buffer + index, len - index,
+                      ", n_tacs = %u, tac = 0x%.4x",
+                      /* LW: number of elements is coded as N-1 (0 -> 1 element, 1 -> 2 elements...),
+                       *  see 3GPP TS 24.301, section 9.9.3.33.1 */
+                      tai->numberofelements + 1,
+                      tai->tac);
 
     index += snprintf(buffer + index, len - index, "}");
 
