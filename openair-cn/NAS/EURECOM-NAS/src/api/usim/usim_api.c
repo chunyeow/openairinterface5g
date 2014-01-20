@@ -51,14 +51,16 @@ Description	Implements the API used by the NAS layer to read/write
 /*
  * Subscriber authentication security key
  */
-#define USIM_API_K_SIZE		16
-#define USIM_API_K_VALUE	"8BAF473F2F8FD09487CCCBD7097C6862"
+#define USIM_API_K_SIZE         16
+#define USIM_API_K_VALUE        "8BAF473F2F8FD09487CCCBD7097C6862"
+
 static UInt8_t _usim_api_k[USIM_API_K_SIZE];
+
 
 /*
  * List of last used Sequence Numbers SQN
  */
-static struct {
+static struct _usim_api_data_s {
 	/* Highest sequence number the USIM has ever accepted	*/
     UInt32_t sqn_ms;
 	/* List of the last used sequence numbers		*/
@@ -67,6 +69,8 @@ static struct {
     UInt32_t sqn[USIM_API_SQN_LIST_SIZE];
 } _usim_api_data;
 
+static UInt8_t _usim_api_hex_char_to_hex_value (char c);
+static void _usim_api_hex_string_to_hex_value (UInt8_t *hex_value, const char *hex_string, int size);
 static int _usim_api_check_sqn(UInt32_t seq, UInt8_t ind);
 
 /****************************************************************************/
@@ -75,16 +79,16 @@ static int _usim_api_check_sqn(UInt32_t seq, UInt8_t ind);
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 usim_api_read()                                           **
+ ** Name:        usim_api_read()                                           **
  **                                                                        **
  ** Description: Reads data from the USIM application                      **
  **                                                                        **
- ** Inputs:	 None                                                      **
- **		 Others:	File where are stored USIM data            **
+ ** Inputs:      None                                                      **
+ **              Others:        File where are stored USIM data            **
  **                                                                        **
- ** Outputs:	 data:		Pointer to the USIM application data       **
- **		 Return:	RETURNerror, RETURNok                      **
- **		 Others:	None                                       **
+ ** Outputs:     data:          Pointer to the USIM application data       **
+ **              Return:        RETURNerror, RETURNok                      **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 int usim_api_read(usim_data_t* data)
@@ -108,7 +112,7 @@ int usim_api_read(usim_data_t* data)
     }
 
     /* initialize the subscriber authentication security key */
-    memcpy(_usim_api_k, USIM_API_K_VALUE, USIM_API_K_SIZE);
+    _usim_api_hex_string_to_hex_value(_usim_api_k, USIM_API_K_VALUE, USIM_API_K_SIZE);
 
     free(path);
     LOG_FUNC_RETURN (RETURNok);
@@ -116,16 +120,16 @@ int usim_api_read(usim_data_t* data)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 usim_api_write()                                          **
+ ** Name:        usim_api_write()                                          **
  **                                                                        **
  ** Description: Writes data to the USIM application                       **
  **                                                                        **
- ** Inputs:	 data:		Pointer to the USIM application data       **
- **		 Others:	None                                       **
+ ** Inputs:      data:          Pointer to the USIM application data       **
+ **              Others:        None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNerror, RETURNok                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **              Return:        RETURNerror, RETURNok                      **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 int usim_api_write(const usim_data_t* data)
@@ -154,38 +158,38 @@ int usim_api_write(const usim_data_t* data)
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 usim_api_authenticate()                                   **
+ ** Name:        usim_api_authenticate()                                   **
  **                                                                        **
  ** Description: Performs mutual authentication of the USIM to the network,**
- **		 checking whether authentication token AUTN can be accep-  **
- **		 ted. If so, returns an authentication response RES and    **
- **		 the ciphering and integrity keys.                         **
- **		 In case of synch failure, returns a re-synchronization    **
- **		 token AUTS.                                               **
+ **              checking whether authentication token AUTN can be accep-  **
+ **              ted. If so, returns an authentication response RES and    **
+ **              the ciphering and integrity keys.                         **
+ **              In case of synch failure, returns a re-synchronization    **
+ **              token AUTS.                                               **
  **                                                                        **
- **		 3GPP TS 31.102, section 7.1.1.1                           **
+ **              3GPP TS 31.102, section 7.1.1.1                           **
  **                                                                        **
- **		 Authentication and key generating function algorithms are **
- **		 specified in 3GPP TS 35.206.                              **
+ **              Authentication and key generating function algorithms are **
+ **              specified in 3GPP TS 35.206.                              **
  **                                                                        **
- ** Inputs:	 rand:		Random challenge number                    **
- **		 autn:		Authentication token                       **
- **				AUTN = (SQN xor AK) || AMF || MAC          **
- **				            48          16     64 bits     **
- **		 Others:	Security key                               **
+ ** Inputs:      rand:          Random challenge number                    **
+ **              autn:          Authentication token                       **
+ **                             AUTN = (SQN xor AK) || AMF || MAC          **
+ **                                         48          16     64 bits     **
+ **              Others:        Security key                               **
  **                                                                        **
- ** Outputs:	 auts:		Re-synchronization token                   **
- **		 res:		Authentication response                    **
- **		 ck:		Cipherig key                               **
- **		 ik:		Integrity key                              **
- **		 
- **		 Return:	RETURNerror, RETURNok                      **
- **		 Others:	None                                       **
+ ** Outputs:     auts:          Re-synchronization token                   **
+ **              res:           Authentication response                    **
+ **              ck:            Ciphering key                              **
+ **              ik             Integrity key                              **
+ **                                                                        **
+ **              Return:        RETURNerror, RETURNok                      **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
-			  OctetString* auts, OctetString* res,
-			  OctetString* ck, OctetString* ik)
+                          OctetString* auts, OctetString* res,
+                          OctetString* ck, OctetString* ik)
 {
     LOG_FUNC_IN;
 
@@ -199,13 +203,13 @@ int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
 #define USIM_API_AK_SIZE 6
     u8 ak[USIM_API_AK_SIZE];
     f2345(_usim_api_k, rand->value,
-	  res->value, ck->value, ik->value, ak);
+          res->value, ck->value, ik->value, ak);
 
     /* Retrieve the sequence number SQN = (SQN ⊕ AK) ⊕ AK */
 #define USIM_API_SQN_SIZE USIM_API_AK_SIZE
     u8 sqn[USIM_API_SQN_SIZE];
     for (i = 0; i < USIM_API_SQN_SIZE; i++) {
-	sqn[i] = rand->value[i] ^ ak[i];
+        sqn[i] = rand->value[i] ^ ak[i];
     }
 
     /* Compute XMAC = f1K (SQN || RAND || AMF) */
@@ -217,45 +221,45 @@ int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
 #if 0 // TODO !!! TO BE REMOVED
 #define USIM_API_AMF_SIZE 2
     if ( memcmp(xmac, &rand->value[USIM_API_SQN_SIZE + USIM_API_AMF_SIZE],
-		USIM_API_XMAC_SIZE) != 0 ) {
-	LOG_FUNC_RETURN (RETURNerror);
+            USIM_API_XMAC_SIZE) != 0 ) {
+        LOG_FUNC_RETURN (RETURNerror);
     }
 #endif // TODO !!! TO BE REMOVED
 
     /* Verify that the received sequence number SQN is in the correct range */
     rc = _usim_api_check_sqn(*(UInt32_t*)(sqn), sqn[USIM_API_SQN_SIZE - 1]);
     if (rc != RETURNok) {
-	/* Synchronisation failure; compute the AUTS parameter */
+        /* Synchronisation failure; compute the AUTS parameter */
 
-	/* Concealed value of the counter SQNms in the USIM:
-	 * Conc(SQNMS) = SQNMS ⊕ f5*K(RAND) */
-	f5star(_usim_api_k, rand->value, ak);
+        /* Concealed value of the counter SQNms in the USIM:
+         * Conc(SQNMS) = SQNMS ⊕ f5*K(RAND) */
+        f5star(_usim_api_k, rand->value, ak);
 
 #define USIM_API_SQNMS_SIZE USIM_API_SQN_SIZE
-	u8 sqn_ms[USIM_API_SQNMS_SIZE];
-	memset(sqn_ms, 0, USIM_API_SQNMS_SIZE);
+        u8 sqn_ms[USIM_API_SQNMS_SIZE];
+        memset(sqn_ms, 0, USIM_API_SQNMS_SIZE);
 #define USIM_API_SQN_MS_SIZE	3
-	for (i = 0; i < USIM_API_SQN_MS_SIZE; i++) {
-	    sqn_ms[USIM_API_SQNMS_SIZE - i] =
-		((UInt8_t*)(_usim_api_data.sqn_ms))[USIM_API_SQN_MS_SIZE - i];
-	}
+        for (i = 0; i < USIM_API_SQN_MS_SIZE; i++) {
+            sqn_ms[USIM_API_SQNMS_SIZE - i] =
+            ((UInt8_t*)(_usim_api_data.sqn_ms))[USIM_API_SQN_MS_SIZE - i];
+        }
 
-	u8 sqnms[USIM_API_SQNMS_SIZE];
-	for (i = 0; i < USIM_API_SQNMS_SIZE; i++) {
-	    sqnms[i] = sqn_ms[i] ^ ak[i];
-	}
+        u8 sqnms[USIM_API_SQNMS_SIZE];
+        for (i = 0; i < USIM_API_SQNMS_SIZE; i++) {
+            sqnms[i] = sqn_ms[i] ^ ak[i];
+        }
 
-	/* Synchronisation message authentication code:
-	 * MACS = f1*K(SQNMS || RAND || AMF) */
+        /* Synchronisation message authentication code:
+         * MACS = f1*K(SQNMS || RAND || AMF) */
 #define USIM_API_MACS_SIZE USIM_API_XMAC_SIZE
-	u8 macs[USIM_API_MACS_SIZE];
-	f1star(_usim_api_k, rand->value, sqn_ms,
-	       &rand->value[USIM_API_SQN_SIZE], macs);
+        u8 macs[USIM_API_MACS_SIZE];
+        f1star(_usim_api_k, rand->value, sqn_ms,
+               &rand->value[USIM_API_SQN_SIZE], macs);
 
-	/* Synchronisation authentication token:
-	 * AUTS = Conc(SQNMS) || MACS */
-	memcpy(&auts->value[0], sqnms, USIM_API_SQNMS_SIZE);
-	memcpy(&auts->value[USIM_API_SQNMS_SIZE], macs, USIM_API_MACS_SIZE);
+        /* Synchronisation authentication token:
+         * AUTS = Conc(SQNMS) || MACS */
+        memcpy(&auts->value[0], sqnms, USIM_API_SQNMS_SIZE);
+        memcpy(&auts->value[USIM_API_SQNMS_SIZE], macs, USIM_API_MACS_SIZE);
     }
 
     LOG_FUNC_RETURN (RETURNok);
@@ -267,21 +271,76 @@ int usim_api_authenticate(const OctetString* rand, const OctetString* autn,
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _usim_api_check_sqn()                                     **
+ ** Name:        _usim_api_hex_char_to_hex_value()                         **
+ **                                                                        **
+ ** Description: Converts an hexadecimal ASCII coded digit into its value. **
+ **                                                                        **
+ ** Inputs:      c:             A char holding the ASCII coded value       **
+ **              Others:        None                                       **
+ **                                                                        **
+ ** Outputs:     None                                                      **
+ **              Return:        Converted value                            **
+ **              Others:        None                                       **
+ **                                                                        **
+ ***************************************************************************/
+static UInt8_t _usim_api_hex_char_to_hex_value (char c)
+{
+    if (c >= 'A')
+    {
+        /* Remove case bit */
+        c &= ~('a' ^ 'A');
+
+        return (c - 'A' + 10);
+    }
+    else
+    {
+        return (c - '0');
+    }
+}
+
+/****************************************************************************
+ **                                                                        **
+ ** Name:        _usim_api_hex_string_to_hex_value()                       **
+ **                                                                        **
+ ** Description: Converts an hexadecimal ASCII coded string into its value.**
+ **                                                                        **
+ ** Inputs:      hex_value:     A pointer to the location to store the     **
+ **                             conversion result                          **
+ **              size:          The size of hex_value in bytes             **
+ **              Others:        None                                       **
+ **                                                                        **
+ ** Outputs:     hex_value:     Converted value                            **
+ **              Return:        None                                       **
+ **              Others:        None                                       **
+ **                                                                        **
+ ***************************************************************************/
+static void _usim_api_hex_string_to_hex_value (UInt8_t *hex_value, const char *hex_string, int size)
+{
+    int i;
+
+    for (i=0; i < size; i++)
+    {
+        hex_value[i] = (_usim_api_hex_char_to_hex_value(hex_string[2 * i]) << 4) | _usim_api_hex_char_to_hex_value(hex_string[2 * i + 1]);
+    }
+}
+
+/****************************************************************************
+ **                                                                        **
+ ** Name:        _usim_api_check_sqn()                                     **
  **                                                                        **
  ** Description: Verifies the freshness of sequence numbers to determine   **
- **		 whether the specified sequence number is in the correct   **
- **		 range and acceptabled by the USIM.                        **
+ **              whether the specified sequence number is in the correct   **
+ **              range and acceptabled by the USIM.                        **
  **                                                                        **
  **              3GPP TS 31.102, Annex C.2                                 **
  **                                                                        **
- ** Inputs:	 seq:		Sequence number value                      **
- **		 ind:		Index value                                **
- **		 Others:	None                                       **
+ ** Inputs:      seq:           Sequence number value                      **
+ **              ind:           Index value                                **
+ **              Others:        None                                       **
  **                                                                        **
- ** Outputs:	 None                                                      **
- **		 Return:	RETURNerror, RETURNok                      **
- **		 Others:	None                                       **
+ ** Outputs:     None                                                      **
+ **              Return:        RETURNerror, RETURNok                      **
+ **              Others:        None                                       **
  **                                                                        **
  ***************************************************************************/
 static int _usim_api_check_sqn(UInt32_t seq, UInt8_t ind)
