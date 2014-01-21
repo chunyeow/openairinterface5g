@@ -84,11 +84,11 @@ fi
 #######################################################
 # USIM, NVRAM files
 #######################################################
-if [ ! -f $OPENAIRCN_DIR/bin/ue_data ]; then
+if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data ]; then
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
 fi
-if [ ! -f $OPENAIRCN_DIR/bin/usim_data ]; then
+if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data ]; then
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
 fi
@@ -136,7 +136,11 @@ assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 
 bash_exec "ip route flush cache"
 
-# please add table 200 lte in/etc/iproute2/rt_tables
+# Check table 200 lte in /etc/iproute2/rt_tables
+fgrep lte /etc/iproute2/rt_tables
+if [ $? -ne 0 ]; then
+    echo "200 lte " >> /etc/iproute2/rt_tables
+fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
