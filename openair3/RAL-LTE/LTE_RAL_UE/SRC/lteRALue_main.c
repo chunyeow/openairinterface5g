@@ -26,7 +26,7 @@
   Forums       : http://forums.eurecom.fsr/openairinterface
   Address      : Eurecom, 450 route des Chappes, 06410 Biot Sophia Antipolis, France
 *******************************************************************************/
-/*! \file ltmRALue_main.c
+/*! \file lteRALue_main.c
  * \brief This file contains the main() function for the LTE-RAL-UE
  * \author WETTERWALD Michelle, GAUTHIER Lionel, MAUREL Frederic
  * \date 2013
@@ -45,6 +45,7 @@
 #include <stdlib.h>
 #include <time.h>
 //-----------------------------------------------------------------------------
+#include "assertions.h"
 #include "lteRALue.h"
 #include "LAYER2/MAC/extern.h"
 #include "intertask_interface.h"
@@ -55,32 +56,6 @@ extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;
 extern OAI_Emulation oai_emulation;
 
-
-/*
-//int netl_s, s_nas;
-//struct sockaddr_un ralu_socket;
-int wait_start_mihf;
-int listen_mih;
-struct ral_lte_priv rl_priv;
-struct ral_lte_priv *ralpriv;
-//ioctl
-struct nas_ioctl gifr;
-*/
-
-
-//---------------------------------------------------------------------------
-void IAL_NAS_ioctl_init(void){
-//---------------------------------------------------------------------------
-/*
-  // Get an UDP IPv6 socket ??
-  fd=socket(AF_INET6, SOCK_DGRAM, 0);
-  if (fd<0) {
-    LOG_E(RAL_UE, "Error opening socket for ioctl\n");
-    exit(1);
-  }
-  strcpy(gifr.name, "oai0");
-*/
-}
 
 //---------------------------------------------------------------------------
 void mRAL_get_IPv6_addr(void) {
@@ -253,14 +228,10 @@ int mRAL_initialize(void) {
 
         LOG_D(RAL_UE, " Connect to the MIH-F for module id instance %d...\n", mod_id,  instance);
         g_ue_ral_obj[mod_id].mih_sock_desc = -1;
-        if (mRAL_mihf_connect(instance) < 0 ) {
-            LOG_E(RAL_UE, " %s : Could not connect to MIH-F...\n", __FUNCTION__);
-            // TO DO RETRY LATER
-            //exit(-1);
-        } else {
-            itti_subscribe_event_fd(TASK_RAL_UE, g_ue_ral_obj[mod_id].mih_sock_desc);
-            hashtable_insert(g_ue_ral_fd2instance, g_ue_ral_obj[mod_id].mih_sock_desc, (void*)instance);
-        }
+        AssertFatal (mRAL_mihf_connect(instance) >= 0, "%s : Could not connect to MIH-F...\n", __FUNCTION__);
+        itti_subscribe_event_fd(TASK_RAL_UE, g_ue_ral_obj[mod_id].mih_sock_desc);
+        hashtable_insert(g_ue_ral_fd2instance, g_ue_ral_obj[mod_id].mih_sock_desc, (void*)instance);
+
         mRAL_send_link_register_indication(instance, &g_ue_ral_obj[mod_id].transaction_id);
         g_ue_ral_obj[mod_id].transaction_id += 1;
     }
