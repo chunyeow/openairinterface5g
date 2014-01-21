@@ -742,7 +742,7 @@ static UInt32_t _nas_message_get_mac(const char* buffer, UInt32_t count,
     LOG_FUNC_IN;
     /* TODO: run integrity protection algorithm */
     /* TODO: Return the message authentication code */
-#if defined(EPC_BUILD)
+#if defined(EPC_BUILD) || defined(UE_BUILD)
     LOG_FUNC_RETURN (0);
 #else
     LOG_FUNC_RETURN (0xabababab);
