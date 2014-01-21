@@ -115,13 +115,13 @@ int main (int argc, const char* argv[])
 	 * IMSI = MCC + MNC + MSIN = 208 (France) + 10 (SFR) + 00001234
 	 */
 	usim_data.imsi.length = 8;
-	usim_data.imsi.u.num.parity = 0b0000; // Type of identity = IMSI, even
-	usim_data.imsi.u.num.digit1 = 2;		// MCC digit 1
-	usim_data.imsi.u.num.digit2 = 0;		// MCC digit 2
-	usim_data.imsi.u.num.digit3 = 8;		// MCC digit 3
-	usim_data.imsi.u.num.digit4 = 1;		// MNC digit 1
-	usim_data.imsi.u.num.digit5 = 0;		// MNC digit 2
-	usim_data.imsi.u.num.digit6 = 0b1111;		// MNC digit 3
+	usim_data.imsi.u.num.parity = EVEN_PARITY;      // Parity: even
+	usim_data.imsi.u.num.digit1 = 2;                // MCC digit 1
+	usim_data.imsi.u.num.digit2 = 0;                // MCC digit 2
+	usim_data.imsi.u.num.digit3 = 8;                // MCC digit 3
+	usim_data.imsi.u.num.digit4 = 1;                // MNC digit 1
+	usim_data.imsi.u.num.digit5 = 0;                // MNC digit 2
+	usim_data.imsi.u.num.digit6 = 0b1111;           // MNC digit 3
 	usim_data.imsi.u.num.digit7 = 0;
 	usim_data.imsi.u.num.digit8 = 0;
 	usim_data.imsi.u.num.digit9 = 0;
@@ -137,6 +137,7 @@ int main (int argc, const char* argv[])
 	usim_data.keys.ksi = KSI;
 	memset(&usim_data.keys.ck, 0, USIM_CK_SIZE);
 	memset(&usim_data.keys.ik, 0, USIM_IK_SIZE);
+
 	/*
 	 * Higher Priority PLMN search period
 	 */
@@ -371,25 +372,40 @@ static void _display_usage(const char* command)
  */
 static void _display_usim_data(const usim_data_t* data)
 {
+    int digits;
+
     printf("Administrative Data:\n");
     printf("\tUE_Operation_Mode\t= 0x%.2x\n", data->ad.UE_Operation_Mode);
     printf("\tAdditional_Info\t\t= 0x%.4x\n", data->ad.Additional_Info);
     printf("\tMNC_Length\t\t= %d\n\n", data->ad.MNC_Length);
 
-    printf("IMSI\t= %u%u%u%u%u%u%u%u%u%u%u%u%u\n\n",
-	   data->imsi.u.num.digit1,
-	   data->imsi.u.num.digit2,
-	   data->imsi.u.num.digit3,
-	   data->imsi.u.num.digit4,
-	   data->imsi.u.num.digit5,
-	   data->imsi.u.num.digit7,
-	   data->imsi.u.num.digit8,
-	   data->imsi.u.num.digit9,
-	   data->imsi.u.num.digit10,
-	   data->imsi.u.num.digit11,
-	   data->imsi.u.num.digit12,
-	   data->imsi.u.num.digit13,
-	   data->imsi.u.num.digit14);
+    printf("IMSI:\n");
+    printf("\tlength\t= %d\n", data->imsi.length);
+    printf("\tparity\t= %s\n", data->imsi.u.num.parity == EVEN_PARITY ? "Even" : "Odd");
+    digits = (data->imsi.length * 2) - 1 - (data->imsi.u.num.parity == EVEN_PARITY ? 1 : 0);
+    printf("\tdigits\t= %d\n", digits);
+    printf("\tdigits\t= %u%u%u%u%u%x%u%u%u%u",
+           data->imsi.u.num.digit1, // MCC digit 1
+           data->imsi.u.num.digit2, // MCC digit 2
+           data->imsi.u.num.digit3, // MCC digit 3
+           data->imsi.u.num.digit4, // MNC digit 1
+           data->imsi.u.num.digit5, // MNC digit 2
+           data->imsi.u.num.digit6, // MNC digit 3
+           data->imsi.u.num.digit7,
+           data->imsi.u.num.digit8,
+           data->imsi.u.num.digit9,
+           data->imsi.u.num.digit10);
+    if (digits >= 11)
+        printf("%x", data->imsi.u.num.digit11);
+    if (digits >= 12)
+        printf("%x", data->imsi.u.num.digit12);
+    if (digits >= 13)
+        printf("%x", data->imsi.u.num.digit13);
+    if (digits >= 14)
+        printf("%x", data->imsi.u.num.digit14);
+    if (digits >= 15)
+        printf("%x", data->imsi.u.num.digit15);
+    printf("\n\n");
 
     printf("Ciphering and Integrity Keys:\n");
     printf("\tKSI\t: 0x%.2x\n", data->keys.ksi);
