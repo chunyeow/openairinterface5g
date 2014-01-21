@@ -78,7 +78,7 @@ then
         cd ./$OBJ_DIR
         echo_success "Invoking configure"
         rm -f Makefile
-        ../configure --enable-standalone-epc --disable-nas LDFLAGS=-L/usr/local/lib
+        ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
     else
         cd ./$OBJ_DIR
     fi
@@ -90,7 +90,7 @@ else
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure --enable-standalone-epc LDFLAGS=-L/usr/local/lib
+    ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
 fi
 if [ -f Makefile ]
 then
@@ -358,7 +358,7 @@ else
     for i in 5 6 7 8 9 10 11 12 13 14 15
     do
         # create vlan interface
-        bash_exec "vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i"
+        bash_exec "vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i" > /dev/null 2>&1
         sync
         bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
         sync
@@ -391,5 +391,5 @@ else
     fi
 fi
 cd $OPENAIRCN_DIR/$OBJ_DIR
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -c $MME_CONFIG_FILE
+$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -c $MME_CONFIG_FILE
 wait_process_started "oai_epc"
