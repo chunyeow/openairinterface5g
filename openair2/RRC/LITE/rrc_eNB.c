@@ -2146,6 +2146,37 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete (u8 Mod_id, u32 frame,
                      eNB_rrc_inst[Mod_id].kenb[UE_index], &kRRCint);
 #endif
 
+#ifdef ENABLE_RAL
+	{
+		MessageDef                                 *message_ral_p = NULL;
+		rrc_ral_connection_reconfiguration_ind_t    connection_reconfiguration_ind;
+		int                                         i;
+	
+		message_ral_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_RAL_CONNECTION_RECONFIGURATION_IND);
+		memset(&connection_reconfiguration_ind, 0, sizeof(rrc_ral_connection_reconfiguration_ind_t));
+		connection_reconfiguration_ind.ue_id = Mod_id;
+		if (DRB_configList != NULL) {
+			connection_reconfiguration_ind.num_drb      = DRB_configList->list.count;
+	
+			for (i=0; (i<DRB_configList->list.count) && (i < maxDRB); i++) {
+				connection_reconfiguration_ind.drb_id[i]   = DRB_configList->list.array[i]->drb_Identity;
+			}
+		} else {
+			connection_reconfiguration_ind.num_drb      = 0;
+		}
+		if (SRB_configList != NULL) {
+			connection_reconfiguration_ind.num_srb      = SRB_configList->list.count;
+		} else {
+			connection_reconfiguration_ind.num_srb      = 0;
+		}
+		memcpy (&message_ral_p->ittiMsg, (void *) &connection_reconfiguration_ind, sizeof(rrc_ral_connection_reconfiguration_ind_t));
+		//#warning "Mod_id ? for instance ? => YES"
+		LOG_I(RRC, "Sending RRC_RAL_CONNECTION_RECONFIGURATION_IND to RAL\n");
+		itti_send_msg_to_task (TASK_RAL_ENB, Mod_id, message_ral_p);
+	}
+	#endif
+
+
   // Refresh SRBs/DRBs
   rrc_pdcp_config_asn1_req (Mod_id, UE_index, frame, 1,
                             SRB_configList,

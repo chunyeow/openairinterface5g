@@ -1679,7 +1679,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
                 }
                 memcpy (&message_ral_p->ittiMsg, (void *) &connection_reconfiguration_ho_ind, sizeof(rrc_ral_connection_reconfiguration_ho_ind_t));
                 //#warning "Mod_id ? for instance ? => YES"
-                LOG_I(RRC, "Sending RRC_RAL_CONNECTION_REESTABLISHMENT_HO_IND to mRAL\n");
+                LOG_I(RRC, "Sending RRC_RAL_CONNECTION_RECONFIGURATION_HO_IND to mRAL\n");
                 itti_send_msg_to_task (TASK_RAL_UE, Mod_id + NB_eNB_INST, message_ral_p);
             }
 #endif
@@ -1717,7 +1717,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
                 }
                 memcpy (&message_ral_p->ittiMsg, (void *) &connection_reconfiguration_ind, sizeof(rrc_ral_connection_reconfiguration_ind_t));
                 //#warning "Mod_id ? for instance ? => YES"
-                LOG_I(RRC, "Sending RRC_RAL_CONNECTION_REESTABLISHMENT_IND to mRAL\n");
+                LOG_I(RRC, "Sending RRC_RAL_CONNECTION_RECONFIGURATION_IND to mRAL\n");
                 itti_send_msg_to_task (TASK_RAL_UE, Mod_id + NB_eNB_INST, message_ral_p);
             }
 #endif
@@ -1738,6 +1738,11 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
           }
 
           itti_send_msg_to_task(TASK_NAS_UE, Mod_id + NB_eNB_INST, msg_p);
+#if defined(ENABLE_RAL)
+          msg_p = itti_alloc_new_message(TASK_RRC_UE, RRC_RAL_CONNECTION_RELEASE_IND);
+          RRC_RAL_CONNECTION_RELEASE_IND(msg_p).ue_id = Mod_id;
+          itti_send_msg_to_task(TASK_RAL_UE, Mod_id + NB_eNB_INST, msg_p);
+#endif
 #endif
           break;
 
