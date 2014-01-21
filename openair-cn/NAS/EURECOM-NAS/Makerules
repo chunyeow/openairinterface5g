@@ -6,7 +6,13 @@ AR		= /usr/bin/ar
 CD		= cd
 MAKE		= make
 
-CFLAGS		= $(INCLUDES) $(DEFINES) -g -pthread
+# machine hardware name
+HARDWARE_NAME = $(shell uname -m)
+ifeq ($(HARDWARE_NAME), x86_64)
+    CFLAGS		= $(INCLUDES) $(DEFINES) -fPIC -g -pthread
+else
+    CFLAGS      = $(INCLUDES) $(DEFINES) -g -pthread
+endif
 DEFINES		= -DLINUX -D_REENTRANT -Wall -O -std=gnu99
 
 SVN_REV = $(shell svnversion -n .)
