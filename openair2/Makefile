@@ -160,6 +160,11 @@ nascellrg_netlink.ko:
 nascellrg_clean.ko:
 	(cd NAS/DRIVER/CELLULAR/NASRG && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_DRIVER_TYPE_ETHERNET=1 NAS_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` clean)
 
+# Driver for UE using LTE core network (MME, S+P-GW)
+ue_ip.ko:
+	(cd NETWORK_DRIVER/UE_IP && $(MAKE) -j$(NUM_CORES) $(SET_UM) NAS_NETLINK=1 OAI_NW_DRIVER_USE_NETLINK=1 V=1 -C /usr/src/$(LINUX_KERNEL) M=`pwd` modules)
+
+
 rt_emul:
 	(cd SIMULATION/USER_TOOLS/RT_EMUL_LAUNCHER && $(MAKE))
 
