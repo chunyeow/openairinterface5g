@@ -1,6 +1,9 @@
 #!/bin/bash
-# start MME+S/P-GW with openvswitch setting
-
+# Author Lionel GAUTHIER 01/20/2014
+#
+# This script start MME+S/P-GW (all in one executable, on one host) with openvswitch setting
+# eNB executable have to be launched on the same host by your own (start_lte-enb-ovs.bash).
+#
 #                                                                           hss.eur
 #                                                                             |
 #        +-----------+          +------+              +-----------+           v   +----------+
@@ -374,6 +377,19 @@ bash_exec "ip link set $PGW_INTERFACE_NAME_FOR_SGI promisc on"
 
 # LAUNCH MME + S+P-GW executable
 ##################################################
+MME_CONFIG_FILE=$OPENAIRCN_DIR/UTILS/CONF/mme_default.conf
+if [ -f $OPENAIRCN_DIR/UTILS/CONF/mme_$HOSTNAME.conf ]; then
+    MME_CONFIG_FILE=$OPENAIRCN_DIR/UTILS/CONF/mme_$HOSTNAME.conf
+    echo_warning "MME config file found is now $MME_CONFIG_FILE"
+else
+    echo_warning "MME config file for host $HOSTNAME not found, trying default: $MME_CONFIG_FILE"
+    if [ -f $MME_CONFIG_FILE ]; then
+        echo_success "Default MME config file found: $MME_CONFIG_FILE"
+    else
+        echo_error "Default MME config file not found, exiting"
+        exit 1
+    fi
+fi
 cd $OPENAIRCN_DIR/$OBJ_DIR
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -c $OPENAIRCN_DIR/UTILS/CONF/mme_default.conf
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -c $MME_CONFIG_FILE
 wait_process_started "oai_epc"
