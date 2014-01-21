@@ -111,8 +111,9 @@ typedef struct eNB_description_s {
     /*@}*/
 } eNB_description_t;
 
-extern uint32_t nb_eNB_associated;
-extern mme_config_t *global_mme_config_p;
+extern int              hss_associated;
+extern uint32_t         nb_eNB_associated;
+extern mme_config_t    *global_mme_config_p;
 
 /** \brief S1AP layer top init
  * @returns -1 in case of failure

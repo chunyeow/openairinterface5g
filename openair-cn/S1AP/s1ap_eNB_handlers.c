@@ -218,7 +218,12 @@ int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
                                      uint32_t               stream,
                                      struct s1ap_message_s *message_p)
 {
-    s1ap_eNB_mme_data_t       *mme_desc_p;
+    S1ap_S1SetupFailureIEs_t   *s1_setup_failure_p;
+    s1ap_eNB_mme_data_t        *mme_desc_p;
+
+    DevAssert(message_p != NULL);
+
+    s1_setup_failure_p = &message_p->msg.s1ap_S1SetupFailureIEs;
 
     /* S1 Setup Failure == Non UE-related procedure -> stream 0 */
     if (stream != 0) {
@@ -232,7 +237,12 @@ int s1ap_eNB_handle_s1_setup_failure(uint32_t               assoc_id,
         return -1;
     }
 
-    S1AP_ERROR("Received s1 setup failure for MME... please check your parameters\n");
+    if ((s1_setup_failure_p->cause.present == S1ap_Cause_PR_misc) &&
+        (s1_setup_failure_p->cause.choice.misc == S1ap_CauseMisc_unspecified)) {
+        S1AP_WARN("Received s1 setup failure for MME... MME is not ready\n");
+    } else {
+        S1AP_ERROR("Received s1 setup failure for MME... please check your parameters\n");
+    }
 
     mme_desc_p->state = S1AP_ENB_STATE_WAITING;
     s1ap_handle_s1_setup_message(mme_desc_p, 0);

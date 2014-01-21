@@ -62,9 +62,12 @@
 #if !defined(MME_CLIENT_TEST)
 // static pthread_t s1ap_task_thread;
 
-uint32_t nb_eNB_associated = 0;
-STAILQ_HEAD(eNB_list_s, eNB_description_s) eNB_list_head;
-static int indent = 0;
+int         hss_associated = 0;
+uint32_t    nb_eNB_associated = 0;
+STAILQ_HEAD(eNB_list_s, eNB_description_s)
+            eNB_list_head;
+
+static int  indent = 0;
 
 void *s1ap_mme_thread(void *args);
 
@@ -103,6 +106,10 @@ void *s1ap_mme_thread(void *args)
 
         switch (ITTI_MSG_ID(received_message_p))
         {
+            case ACTIVATE_MESSAGE: {
+                hss_associated = 1;
+            } break;
+
             case SCTP_DATA_IND: {
                 /* New message received from SCTP layer.
                  * Decode and handle it.

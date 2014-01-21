@@ -50,8 +50,15 @@ void s6a_peer_connected_cb(struct peer_info *info, void *arg)
     if (info == NULL) {
         S6A_ERROR("Failed to connect to HSS entity\n");
     } else {
+        MessageDef     *message_p;
+
         S6A_DEBUG("Peer %*s is now connected...\n",
                 (int)info->pi_diamidlen, info->pi_diamid);
+
+        /* Inform S1AP that connection to HSS is established */
+        message_p = itti_alloc_new_message(TASK_S6A, ACTIVATE_MESSAGE);
+
+        itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
     }
 
     /* For test */
