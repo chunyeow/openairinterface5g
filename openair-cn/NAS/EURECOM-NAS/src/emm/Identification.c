@@ -142,12 +142,42 @@ int emm_proc_identification_request(emm_proc_identity_type_t type)
 
     switch (type) {
         case EMM_IDENT_TYPE_IMSI:
+        {
+            imsi_t modified_imsi;
+
             /* International Mobile Subscriber Identity is requested */
             if (_emm_data.imsi) {
+                memcpy (&modified_imsi, _emm_data.imsi, sizeof (modified_imsi));
+
+                /* LW: Eventually replace the 0xF value set in MNC digit 3 by a 0 to avoid IMSI to be truncated before reaching HSS */
+                if (modified_imsi.u.num.digit6 == 0xF)
+                {
+                    modified_imsi.u.num.digit6 = 0;
+                }
                 emm_sap.u.emm_as.u.security.identType = EMM_IDENT_TYPE_IMSI;
-                emm_sap.u.emm_as.u.security.imsi = _emm_data.imsi;
+                emm_sap.u.emm_as.u.security.imsi = &modified_imsi;
+
+                LOG_TRACE(INFO, "EMM-PROC  - IMSI = %u%u%u %u%u%u %u%u%u%u%x%x%x%x%x",
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit1,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit2,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit3,
+
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit4,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit5,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit6,
+
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit7,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit8,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit9,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit10,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit11,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit12,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit13,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit14,
+                          emm_sap.u.emm_as.u.security.imsi->u.num.digit15);
             }
             break;
+        }
 
         case EMM_IDENT_TYPE_IMEI:
             /* International Mobile Equipment Identity is requested */
