@@ -13,7 +13,9 @@ linux-headers-`uname -r` vlan -y
 
 rmmod bridge
 cd /usr/local/src/
-wget http://openvswitch.org/releases/openvswitch-1.9.0.tar.gz
+if [ ! -f /usr/local/src/openvswitch-1.9.0.tar.gz ]; then
+    wget http://openvswitch.org/releases/openvswitch-1.9.0.tar.gz
+fi
 tar -xzf openvswitch-1.9.0.tar.gz
 cd openvswitch-1.9.0
 ./boot.sh
@@ -27,7 +29,7 @@ if [ -f /lib/modules/`uname -r`/kernel/net/openvswitch/openvswitch.ko ] ; then
 else
     if  [ -f /lib/modules//`uname -r`/extra/openvswitch.ko ] ; then
         insmod /lib/modules//`uname -r`/extra/openvswitch.ko
-	else 
+	else
        echo_error "Could not find openvswitch.ko, exiting"
 	   exit 1
     fi
@@ -56,7 +58,7 @@ ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock --remote=db:O
 
 ovs-vsctl --no-wait init
 
-# Then start the main Open vSwitch daemon, telling it to 
+# Then start the main Open vSwitch daemon, telling it to
 # connect to the same Unix domain socket:
 
 ovs-vswitchd --pidfile --detach

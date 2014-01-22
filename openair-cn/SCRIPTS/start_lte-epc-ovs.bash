@@ -61,6 +61,10 @@ then
     done
 fi
 
+# May we have booted on a new kernel, not the one when we build vswitch kernel module
+if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
+    $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
+fi
 
 IPTABLES=`which iptables`
 
