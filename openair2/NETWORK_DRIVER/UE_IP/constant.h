@@ -53,7 +53,7 @@
 #define UE_IP_TIMER_IDLE                  UINT_MAX
 #define UE_IP_TIMER_TICK                  HZ
 
-#define UE_IP_PDCPH_SIZE                  sizeof(struct pdcp_data_req_header_t)
+#define UE_IP_PDCPH_SIZE                  sizeof(struct pdcp_data_req_header_s)
 #define UE_IP_IPV4_SIZE                   20
 #define UE_IP_IPV6_SIZE                   40
 

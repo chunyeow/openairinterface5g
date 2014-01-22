@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 /*! \file common.c
-* \brief 
+* \brief
 * \author Navid Nikaein and Raymond Knopp, Lionel GAUTHIER
 * \date 2013
 * \version 1.0
@@ -226,7 +226,7 @@ void ue_ip_common_ip2wireless_drop(struct sk_buff *skb,  int inst){
 // Request the transfer of data (QoS SAP)
 void ue_ip_common_ip2wireless(struct sk_buff *skb, int inst){
   //---------------------------------------------------------------------------
-  struct pdcp_data_req_header_t     pdcph;
+  struct pdcp_data_req_header_s     pdcph;
   struct ue_ip_priv *priv=netdev_priv(ue_ip_dev[inst]);
 #ifdef LOOPBACK_TEST
   int i;
@@ -306,7 +306,7 @@ void ue_ip_common_ip2wireless(struct sk_buff *skb, int inst){
 void ue_ip_common_wireless2ip(struct nlmsghdr *nlh) {
 //---------------------------------------------------------------------------
 
-  struct pdcp_data_ind_header_t     *pdcph = (struct pdcp_data_ind_header_t *)NLMSG_DATA(nlh);
+  struct pdcp_data_ind_header_s     *pdcph = (struct pdcp_data_ind_header_s *)NLMSG_DATA(nlh);
   struct ue_ip_priv *priv;
 
   priv = netdev_priv(ue_ip_dev[pdcph->inst]);
