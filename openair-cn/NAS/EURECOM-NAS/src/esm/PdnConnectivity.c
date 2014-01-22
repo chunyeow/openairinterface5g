@@ -31,6 +31,7 @@ Description Defines the PDN connectivity ESM procedure executed by the
 
 #include <stdlib.h> // malloc, free
 #include <string.h> // memset, memcpy, memcmp
+#include <ctype.h>  // isprint
 
 #include "esm_proc.h"
 #include "commonDef.h"
@@ -233,7 +234,7 @@ int esm_proc_pdn_connectivity(int cid, int is_to_define,
                           "already exists",
                           (_esm_data.pdn[pid].data->type != ESM_PDN_TYPE_IPV4)?
                           (_esm_data.pdn[pid].data->type != ESM_PDN_TYPE_IPV6)?
-          "IPv4v6" : "IPv6" : "IPv4", apn->value);
+                          "IPv4v6" : "IPv6" : "IPv4", apn->value);
                 LOG_FUNC_RETURN (RETURNerror);
             }
         }
@@ -349,11 +350,18 @@ int esm_proc_pdn_connectivity_accept(int pti, esm_proc_pdn_type_t pdn_type,
 {
     LOG_FUNC_IN;
 
-    int rc;
-    int pid = RETURNerror;
+    int     rc;
+    int     pid = RETURNerror;
+    char    apn_first_char[4];
+
+    if (isprint(apn->value[0])) {
+        apn_first_char[0] = '\0';
+    } else {
+        sprintf (apn_first_char, "%02X", apn->value[0]);
+    }
 
     LOG_TRACE(INFO, "ESM-PROC  - PDN connectivity accepted by the network "
-              "(pti=%d) APN = %s, IP address = %s", pti, apn->value,
+              "(pti=%d) APN = %s\"%s\", IP address = %s", pti, apn_first_char, isprint(apn->value[0]) ? &apn->value[0] : &apn->value[1],
               (pdn_type == ESM_PDN_TYPE_IPV4)? esm_data_get_ipv4_addr(pdn_addr) :
               (pdn_type == ESM_PDN_TYPE_IPV6)? esm_data_get_ipv6_addr(pdn_addr) :
               esm_data_get_ipv4v6_addr(pdn_addr));
