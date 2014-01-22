@@ -111,7 +111,11 @@ static Enb_properties_t enb_0_properties =
     "eNB_Eurecom_0",
     0,
     208,
+#ifdef EXMIMO_IOT
     92,
+#else
+    10,
+#endif
     PAGING_DRX_256,
     1, /* There are 2 addresses defined, but use only one by default */
     {
