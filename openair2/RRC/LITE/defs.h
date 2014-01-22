@@ -139,7 +139,7 @@ typedef enum HO_STATE_e {
 #define MAX_MEAS_ID 6
 
 #define PAYLOAD_SIZE_MAX 1024
-#define RRC_BUF_SIZE 140
+#define RRC_BUF_SIZE 255
 #define UNDEF_SECURITY_MODE 0xff
 #define NO_SECURITY_MODE 0x33
 

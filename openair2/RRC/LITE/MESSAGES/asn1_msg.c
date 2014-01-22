@@ -56,6 +56,7 @@
 #include <asn_internal.h>	/* for _ASN_DEFAULT_STACK_MAX */
 #include <per_encoder.h>
 
+#include "assertions.h"
 #include "RRCConnectionRequest.h"
 #include "UL-CCCH-Message.h"
 #include "UL-DCCH-Message.h"
@@ -353,6 +354,8 @@ uint8_t do_MIB(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, 
                                    (void*)&mib,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -528,6 +531,8 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
                                    (void*)bcch_message,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -717,6 +722,8 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
                                    (void*)bcch_message,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1104,6 +1111,8 @@ uint8_t do_SIB23(uint8_t Mod_id,
                                    (void*)bcch_message,
                                    buffer,
                                    900);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1192,6 +1201,8 @@ uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv) {
                                    (void*)&ul_ccch_msg,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1268,6 +1279,8 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t *buffer, const uin
                                    (void*)&ul_dcch_msg,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1316,10 +1329,12 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer,
   rrcConnectionReconfigurationComplete->criticalExtensions.present = RRCConnectionReconfigurationComplete__criticalExtensions_PR_rrcConnectionReconfigurationComplete_r8;
   rrcConnectionReconfigurationComplete->criticalExtensions.choice.rrcConnectionReconfigurationComplete_r8.nonCriticalExtension=NULL;
 
- enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message,
-                                 (void*)&ul_dcch_msg,
-                                 buffer,
-                                 100);
+  enc_rval = uper_encode_to_buffer(&asn_DEF_UL_DCCH_Message,
+                                   (void*)&ul_dcch_msg,
+                                   buffer,
+                                   100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1608,6 +1623,8 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
                                    (void*)&dl_ccch_msg,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1673,6 +1690,8 @@ uint8_t do_SecurityModeCommand(uint8_t Mod_id,
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -1738,7 +1757,10 @@ uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    100);
-#if defined(ENABLE_ITTI)
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
+
+  #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
     char        message_string[19950];
@@ -1772,27 +1794,28 @@ uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
   return((enc_rval.encoded+7)/8);
 }
 
-uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id,
-                                        uint8_t                          *buffer,
-                                        uint8_t                           UE_id,
-                                        uint8_t                           Transaction_id,
-                                        SRB_ToAddModList_t                *SRB_list,
-                                        DRB_ToAddModList_t                *DRB_list,
-                                        DRB_ToReleaseList_t               *DRB_list2,
-                                        struct SPS_Config                 *sps_Config,
-                                        struct PhysicalConfigDedicated    *physicalConfigDedicated,
-                                        MeasObjectToAddModList_t          *MeasObj_list,
-                                        ReportConfigToAddModList_t        *ReportConfig_list,
-                                        QuantityConfig_t                  *quantityConfig,
-                                        MeasIdToAddModList_t              *MeasId_list,
-                                        MAC_MainConfig_t                  *mac_MainConfig,
-                                        MeasGapConfig_t                   *measGapConfig,
-                                        MobilityControlInfo_t 		  *mobilityInfo,
-                                        struct MeasConfig__speedStatePars *speedStatePars,
-                                        RSRP_Range_t                      *rsrp,
-                                        C_RNTI_t                          *cba_rnti, 
-                                        struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList
-                                       ) {
+uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod_id,
+                                         uint8_t                            *buffer,
+                                         uint8_t                             UE_id,
+                                         uint8_t                             Transaction_id,
+                                         SRB_ToAddModList_t                 *SRB_list,
+                                         DRB_ToAddModList_t                 *DRB_list,
+                                         DRB_ToReleaseList_t                *DRB_list2,
+                                         struct SPS_Config                  *sps_Config,
+                                         struct PhysicalConfigDedicated     *physicalConfigDedicated,
+                                         MeasObjectToAddModList_t           *MeasObj_list,
+                                         ReportConfigToAddModList_t         *ReportConfig_list,
+                                         QuantityConfig_t                   *quantityConfig,
+                                         MeasIdToAddModList_t               *MeasId_list,
+                                         MAC_MainConfig_t                   *mac_MainConfig,
+                                         MeasGapConfig_t                    *measGapConfig,
+                                         MobilityControlInfo_t              *mobilityInfo,
+                                         struct MeasConfig__speedStatePars  *speedStatePars,
+                                         RSRP_Range_t                       *rsrp,
+                                         C_RNTI_t                           *cba_rnti,
+                                         struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList
+                                                                            *dedicatedInfoNASList
+                                        ) {
 
   asn_enc_rval_t enc_rval;
   
@@ -1876,6 +1899,9 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    RRC_BUF_SIZE); 
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
+
 #ifdef XER_PRINT
    xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)&dl_dcch_msg);
 #endif
@@ -1909,7 +1935,6 @@ uint8_t do_RRCConnectionReconfiguration(uint8_t                           Mod_id
   //#endif
 
   return((enc_rval.encoded+7)/8);
-
 }
 
 uint8_t TMGI[5] = {4,3,2,1,0};//TMGI is a string of octet, ref. TS 24.008 fig. 10.5.4a
@@ -2024,6 +2049,8 @@ uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
                                    (void*)mcch_message,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -2142,6 +2169,8 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
                                    (void*)&ul_dcch_msg,
                                    buffer,
                                    100);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -2338,6 +2367,8 @@ OAI_UECapability_t *fill_ue_capability() {
                                    (void*)UE_EUTRA_Capability,
                                    &UECapability.sdu[0],
                                    MAX_UE_CAPABILITY_SIZE);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if defined(DISABLE_XER_SPRINT)
@@ -2563,6 +2594,8 @@ uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *b
                                    (void*)bcch_message,
                                    buffer,
                                    900);
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
@@ -3019,7 +3052,9 @@ uint8_t do_RRCConnReconf_defaultCELL(uint8_t Mod_id,
                                    (void*)&dl_dcch_msg,
                                    buffer,
                                    100);
-  
+  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
+               enc_rval.failed_type->name, enc_rval.encoded);
+
 #ifdef XER_PRINT
   xer_fprint(stdout,&asn_DEF_DL_DCCH_Message,(void*)&dl_dcch_msg);
 #endif

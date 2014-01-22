@@ -598,9 +598,9 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 #if defined(ENABLE_ITTI)
   eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[Mod_id].Info.UE[UE_index];
 #endif
-  u8 buffer[RRC_BUF_SIZE];
-  u8 size;
-  int i;
+  u8    buffer[RRC_BUF_SIZE];
+  u16   size;
+  int   i;
 
   // configure SRB1/SRB2, PhysicalConfigDedicated, MAC_MainConfig for UE
   eNB_RRC_INST *rrc_inst = &eNB_rrc_inst[Mod_id];
@@ -1096,7 +1096,6 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   //rrc_rlc_data_req(Mod_id,frame, 1,(UE_index*NB_RB_MAX)+DCCH,rrc_eNB_mui++,0,size,(char*)buffer);
   pdcp_rrc_data_req (Mod_id, UE_index, frame, 1, DCCH,
                      rrc_eNB_mui++, 0, size, buffer, 1);
-
 }
 
 /*------------------------------------------------------------------------------*/
@@ -1269,11 +1268,11 @@ void check_handovers(u8 Mod_id, u32 frame) {
 // 5.3.5.4 RRCConnectionReconfiguration including the mobilityControlInfo to prepare the UE handover
 void rrc_eNB_generate_RRCConnectionReconfiguration_handover (u8 Mod_id, u32 frame,u16 UE_index,u8 *nas_pdu,u32 nas_length)  {
 
-  u8 buffer[RRC_BUF_SIZE];
-  u8 size;
-  int i;
-  uint8_t rv[2];
-  u16 Idx;
+  u8        buffer[RRC_BUF_SIZE];
+  u16       size;
+  int       i;
+  uint8_t   rv[2];
+  u16       Idx;
   // configure SRB1/SRB2, PhysicalConfigDedicated, MAC_MainConfig for UE
   eNB_RRC_INST *rrc_inst = &eNB_rrc_inst[Mod_id];
 
