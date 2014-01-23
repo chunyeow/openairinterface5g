@@ -38,7 +38,7 @@ trim ()
     echo "$1" | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}'
 }
 
-trim2() 
+trim2()
 {
     local var=$@
     var="${var#"${var%%[![:space:]]*}"}"   # remove leading whitespace characters
@@ -249,6 +249,19 @@ start_openswitch_daemon() {
   fi
 }
 
+stop_openswitch_daemon() {
+    pkill ovs-vswitchd
+    pkill ovsdb-server
+    sync
+    if  ! is_process_started ovs-vswitchd  ; then
+        pkill -9 ovs-vswitchd
+    fi
+    if ! is_process_started ovsdb-server ; then
+        pkill -9 ovsdb-server
+    fi
+    rmmod -f openvswitch
+}
+
 check_epc_config() {
     if [ ! -f $OPENAIR3_DIR/OPENAIRMME/UTILS/CONF/epc_$HOSTNAME.conf ]
     then
@@ -299,6 +312,314 @@ check_for_root_rights() {
         echo "This script must be run as root" 1>&2
         exit -1
     fi
+}
+
+clean_openvswitch_network(){
+    ##################################################
+    # del bridge between eNB and MME/SPGW
+    ##################################################
+    bash_exec "tunctl -d $ENB_INTERFACE_NAME_FOR_S1_MME"
+    bash_exec "tunctl -d $ENB_INTERFACE_NAME_FOR_S1U"
+    bash_exec "tunctl -d $MME_INTERFACE_NAME_FOR_S1_MME"
+    bash_exec "tunctl -d $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
+    bash_exec "tunctl -d $MME_INTERFACE_NAME_FOR_S11_MME"
+    bash_exec "tunctl -d $SGW_INTERFACE_NAME_FOR_S11"
+    bash_exec "ovs-vsctl del-br       $BRIDGE"
+
+    stop_openswitch_daemon
+}
+
+build_openvswitch_network() {
+    start_openswitch_daemon
+    # REMINDER:
+    #                                                                           hss.eur
+    #                                                                             |
+    #        +-----------+          +------+              +-----------+           v   +----------+
+    #        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    +----+      +---+   HSS    |
+    #        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
+    #        |           +------+   |bridge|       +------+           +----+      +---+          |
+    #        |           |upenb0+-------+  |              |           |               +----------+
+    #        +-----------+------+   |   |  |              +-+-------+-+
+    #                               |   |  +----------------| s11mme|---+
+    #                               |   |                   +---+---+   |
+    #                               |   |             (optional)|       |
+    #                               |   |                   +---+---+   |
+    #                               +---|------------------ | s11sgw|---+        router.eur
+    #                                   |                 +-+-------+-+              |   +--------------+
+    #                                   |                 |  S+P-GW   |              v   |   ROUTER     |
+    #                                   |  VLAN2   +------+           +-------+     +----+              +----+
+    #                                   +----------+upsgw0|           |sgi    +-...-+    |              |    +---...Internet
+    #                                              +------+           +-------+     +----+              +----+
+    #                                                     |           |      11 VLANS    |              |
+    #                                                     +-----------+   ids=[5..15]    +--------------+
+    #
+    ##################################################
+    # build bridge between eNB and MME/SPGW
+    ##################################################
+    bash_exec "tunctl -t $ENB_INTERFACE_NAME_FOR_S1_MME"
+    bash_exec "tunctl -t $ENB_INTERFACE_NAME_FOR_S1U"
+    bash_exec "tunctl -t $MME_INTERFACE_NAME_FOR_S1_MME"
+    bash_exec "tunctl -t $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
+    bash_exec "tunctl -t $MME_INTERFACE_NAME_FOR_S11_MME"
+    bash_exec "tunctl -t $SGW_INTERFACE_NAME_FOR_S11"
+
+    bash_exec "ovs-vsctl add-br       $BRIDGE"
+    bash_exec "ovs-vsctl add-port     $BRIDGE $ENB_INTERFACE_NAME_FOR_S1_MME        tag=1"
+    bash_exec "ovs-vsctl add-port     $BRIDGE $MME_INTERFACE_NAME_FOR_S1_MME        tag=1"
+    bash_exec "ovs-vsctl add-port     $BRIDGE $ENB_INTERFACE_NAME_FOR_S1U           tag=2"
+    bash_exec "ovs-vsctl add-port     $BRIDGE $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP tag=2"
+    bash_exec "ovs-vsctl add-port     $BRIDGE $MME_INTERFACE_NAME_FOR_S11_MME       tag=3"
+    bash_exec "ovs-vsctl add-port     $BRIDGE $SGW_INTERFACE_NAME_FOR_S11           tag=3"
+
+    bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S1_MME promisc up"
+    bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S1_MME $MME_IP_ADDRESS_FOR_S1_MME netmask `cidr2mask $MME_IP_NETMASK_FOR_S1_MME` promisc up"
+    bash_exec "ifconfig $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP promisc up"
+    bash_exec "ifconfig $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP netmask `cidr2mask $SGW_IP_NETMASK_FOR_S1U_S12_S4_UP` promisc up"
+
+    bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME promisc up"
+    bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME $ENB_IP_ADDRESS_FOR_S1_MME netmask `cidr2mask $ENB_IP_NETMASK_FOR_S1_MME` promisc up"
+    bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U promisc up"
+    bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U $ENB_IP_ADDRESS_FOR_S1U netmask `cidr2mask $ENB_IP_NETMASK_FOR_S1U` promisc up"
+
+    bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S11_MME promisc up"
+    bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S11_MME $MME_IP_ADDRESS_FOR_S11_MME netmask `cidr2mask $MME_IP_NETMASK_FOR_S11_MME` promisc up"
+    bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U promisc up"
+    bash_exec "ifconfig $SGW_INTERFACE_NAME_FOR_S11 $SGW_IP_ADDRESS_FOR_S11 netmask `cidr2mask $SGW_IP_NETMASK_FOR_S11` promisc up"
+}
+
+test_openvswitch_network() {
+
+    ## TEST NETWORK BETWEEN ENB-MME-SP-GW
+    iperf  --bind $MME_IP_ADDRESS_FOR_S1_MME -u -s 2>&1  > /dev/null &
+    iperf  --bind $ENB_IP_ADDRESS_FOR_S1_MME -u --num 1K -c $MME_IP_ADDRESS_FOR_S1_MME 2>&1 | grep -i WARNING > /dev/null
+    if [ $? -eq 0 ]; then
+        echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and MME S1"
+        pkill iperf 2>&1 > /dev/null
+        exit 1
+    else
+        echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and MME S1"
+
+    fi
+    pkill iperf 2>&1 > /dev/null
+
+    iperf  --bind $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP -u -s 2>&1  > /dev/null &
+    iperf  --bind $ENB_IP_ADDRESS_FOR_S1U -u --num 1K -c $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP 2>&1 | grep -i WARNING > /dev/null
+    if [ $? -eq 0 ]; then
+        echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and S-GW S1-U"
+        pkill iperf 2>&1 > /dev/null
+        exit 1
+    else
+        echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and S-GW S1-U"
+    fi
+    pkill iperf 2>&1 > /dev/null
+
+    iperf  --bind $SGW_IP_ADDRESS_FOR_S11 -u -s 2>&1  > /dev/null &
+    iperf  --bind $MME_IP_ADDRESS_FOR_S11_MME -u --num 1K -c $SGW_IP_ADDRESS_FOR_S11 2>&1 | grep -i WARNING > /dev/null
+    if [ $? -eq 0 ]; then
+        echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between MME and S-GW S11"
+        pkill iperf 2>&1 > /dev/null
+        exit 1
+    else
+        echo_success "NETWORK TEST SUCCESS (openvswitch) between MME and S-GW S11"
+    fi
+    pkill iperf 2>&1 > /dev/null
+}
+
+build_epc_network() {
+
+    cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_NETFILTER_FOR_SGI
+    if [ $? -ne 0 ]
+    then
+        export ENABLE_USE_NETFILTER_FOR_SGI=0
+    else
+        export ENABLE_USE_NETFILTER_FOR_SGI=1
+    fi
+
+    cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_RAW_FOR_SGI
+    if [ $? -ne 0 ]
+    then
+        export ENABLE_USE_RAW_FOR_SGI=0
+    else
+        export ENABLE_USE_RAW_FOR_SGI=1
+    fi
+
+    build_openvswitch_network
+
+    ping -c 1 router.eur > /dev/null || { echo "router.eur does not respond to ping" >&2 ; exit ; }
+    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
+    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
+    echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
+
+    if [ $ENABLE_USE_NETFILTER_FOR_SGI -eq 1 ]; then
+
+        bash_exec "modprobe nf_conntrack"
+        bash_exec "modprobe nf_conntrack_ftp"
+
+        ######################################################
+        # PREROUTING
+        ######################################################
+        # We restore the mark following the CONNMARK mark. In fact, it does a simple MARK=CONNMARK
+        # where MARK is the standard mark (usable by tc)
+        # In French: Cette option de cible restaure le paquet marqué dans la marque de connexion
+        # comme défini par CONNMARK. Un masque peut aussi être défini par l'option --mask.
+        # Si une option mask est placée, seules les options masquées seront placées.
+        # Notez que cette option de cible n'est valide que dans la table mangle.
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -j CONNMARK --restore-mark"
+
+        # TEST bash_exec "$IPTABLES -t mangle -A PREROUTING -m mark --mark 0 -i $PGW_INTERFACE_NAME_FOR_SGI -j MARK --set-mark 15"
+        # We set the mark of the initial packet as value of the conntrack mark for all the packets of the connection.
+        # This mark will be restore for the other packets by the first rule of POSTROUTING --restore-mark).
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -j CONNMARK --save-mark"
+
+
+        ######################################################
+        # POSTROUTING
+        ######################################################
+
+        # MARK=CONNMARK
+        bash_exec "iptables -A POSTROUTING -t mangle -o tap0 -j CONNMARK --restore-mark"
+        # If we’ve got a mark no need to get further[
+        bash_exec "iptables -A POSTROUTING -t mangle -o tap0 -m mark ! --mark 0 -j ACCEPT"
+
+        #bash_exec "iptables -A POSTROUTING -p tcp --dport 21 -t mangle -j MARK --set-mark 1"
+        #bash_exec "iptables -A POSTROUTING -p tcp --dport 80 -t mangle -j MARK --set-mark 2"
+
+        # We set the mark of the initial packet as value of the conntrack mark for all the packets
+        # of the connection. This mark will be restore for the other packets by the first rule
+        # of POSTROUTING (–restore-mark).
+        bash_exec "iptables -A POSTROUTING -t mangle -j CONNMARK --save-mark"
+
+        bash_exec "iptables -A PREROUTING  -t mangle -j CONNMARK --restore-mark"
+
+        # We restore the mark following the CONNMARK mark.
+        # In fact, it does a simple MARK=CONNMARK where MARK is the standard mark (usable by tc)
+        #bash_exec "$IPTABLES -A OUTPUT -t mangle -m mark ! --mark 0 -j CONNMARK --restore-mark"
+
+        # If we’ve got a mark no need to get further[1]
+        #TEST bash_exec "$IPTABLES -A OUTPUT -t mangle -p icmp -j MARK --set-mark 14"
+        #bash_exec "$IPTABLES -A OUTPUT -t mangle -m mark ! --mark 0 -j ACCEPT"
+
+
+        # We set the mark of the initial packet as value of the conntrack mark for all the packets of the connection.
+        # This mark will be restore for the other packets by the first rule of OUTPUT (–restore-mark).
+        #bash_exec "$IPTABLES -A OUTPUT -t mangle -j CONNMARK --save-mark"
+
+
+
+
+        ######################################################
+        # NETFILTER QUEUE
+        ######################################################
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 5 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 6 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 7 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 8 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 9 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 10 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 11 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 12 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 13 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 14 -j NFQUEUE --queue-num 1"
+        bash_exec "$IPTABLES -t mangle -A PREROUTING -i $PGW_INTERFACE_NAME_FOR_SGI -m connmark  --mark 15 -j NFQUEUE --queue-num 1"
+
+        #echo 0 > /proc/sys/net/bridge/bridge-nf-call-iptables #To disable Iptables in the bridge.
+        #Raw table: Some years ago appeared a new tables in Iptables.
+        #This table can be used to avoid packets (connection really) to enter the NAT table:
+        # iptables -t raw -I PREROUTING -i BRIDGE -s x.x.x.x -j NOTRACK.
+
+
+
+
+        #bash_exec "$IPTABLES -t nat -A POSTROUTING -o $PGW_INTERFACE_NAME_FOR_SGI -j SNAT --to-source $PGW_IP_ADDR_FOR_SGI"
+    else
+        # # get ipv4 address from PGW_INTERFACE_NAME_FOR_SGI
+        #IP_ADDR=`ifconfig $PGW_INTERFACE_NAME_FOR_SGI | awk '/inet addr/ {split ($2,A,":"); print A[2]}' | tr '\n' ' ' | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}'`
+
+        #NETWORK=`echo $IP_ADDR | cut -d . -f 1,2,3`
+
+        bash_exec "modprobe 8021q"
+
+        for i in 5 6 7 8 9 10 11 12 13 14 15
+        do
+            # create vlan interface
+            bash_exec "vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i" > /dev/null 2>&1
+            sync
+            bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
+            sync
+            # configure vlan interface
+            #CIDR=$NETWORK'.'$i'/24'
+            base=200
+            NET=$(( $i + $base ))
+            CIDR='10.0.'$NET'.2/8'
+            bash_exec "ip -4 addr add  $CIDR dev $PGW_INTERFACE_NAME_FOR_SGI.$i"
+        done
+    fi
+
+
+    bash_exec "ip link set $PGW_INTERFACE_NAME_FOR_SGI promisc on"
+
+    ##################################################
+    # build bridge between SPGW and Internet
+    ##################################################
+
+    # # get ipv4 address from PGW_INTERFACE_NAME_FOR_SGI
+    # IP_ADDR=`ifconfig $PGW_INTERFACE_NAME_FOR_SGI | awk '/inet addr/ {split ($2,A,":"); print A[2]}' | tr '\n' ' ' | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}'`
+    # if [ $IP_ADDR ]; then
+    #   bash_exec "ip -4 addr del $IP_ADDR dev $PGW_INTERFACE_NAME_FOR_SGI"
+    # fi
+    #
+    # # remove all ipv6 address from PGW_INTERFACE_NAME_FOR_SGI
+    # IP_ADDR="not empty"
+    # until [ "$IP_ADDR"x == "x" ]; do
+    #   IP_ADDR=`ifconfig $PGW_INTERFACE_NAME_FOR_SGI | grep 'inet6' | head -1 | tr '\n' ' ' | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}' | cut -d ' ' -f3`
+    #   if [ $IP_ADDR ]; then
+    #     bash_exec "ip -6 addr del $IP_ADDR dev $PGW_INTERFACE_NAME_FOR_SGI"
+    #   fi
+    # done
+}
+
+test_epc_network() {
+    # Get MAC address of router.eur
+    ping -c 1 hss.eur > /dev/null || { echo "hss.eur does not respond to ping" >&2 ; exit ; }
+    ping -c 1 router.eur > /dev/null || { echo "router.eur does not respond to ping" >&2 ; exit ; }
+    test_openvswitch_network
+}
+
+clean_epc_network() {
+    bash_exec "modprobe tun"
+    bash_exec "modprobe ip_tables"
+    bash_exec "modprobe iptable_nat"
+    bash_exec "modprobe x_tables"
+
+    bash_exec "$IPTABLES -P INPUT ACCEPT"
+    bash_exec "$IPTABLES -F INPUT"
+    bash_exec "$IPTABLES -P OUTPUT ACCEPT"
+    bash_exec "$IPTABLES -F OUTPUT"
+    bash_exec "$IPTABLES -P FORWARD ACCEPT"
+    bash_exec "$IPTABLES -F FORWARD"
+    bash_exec "$IPTABLES -t raw    -F"
+    bash_exec "$IPTABLES -t nat    -F"
+    bash_exec "$IPTABLES -t mangle -F"
+    bash_exec "$IPTABLES -t filter -F"
+
+    bash_exec "ip route flush cache"
+
+    echo "   Disabling forwarding"
+    bash_exec "sysctl -w net.ipv4.ip_forward=0"
+    assert "  `sysctl -n net.ipv4.ip_forward` -eq 0" $LINENO
+
+    echo "   Enabling DynamicAddr.."
+    bash_exec "sysctl -w net.ipv4.ip_dynaddr=1"
+    assert "  `sysctl -n net.ipv4.ip_dynaddr` -eq 1" $LINENO
+
+    bash_exec "sysctl -w net.ipv4.conf.all.log_martians=1"
+    assert "  `sysctl -n net.ipv4.conf.all.log_martians` -eq 1" $LINENO
+
+
+    echo "   Disabling reverse path filtering"
+    bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
+    assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
+    clean_openvswitch_network
 }
 
 ###########################################################
