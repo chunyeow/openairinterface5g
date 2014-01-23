@@ -11,9 +11,13 @@
 #        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
 #        |           +------+   |bridge|       +------+           +----+      +---+          |
 #        |           |upenb0+-------+  |              |           |               +----------+
-#        +-----------+------+   |   |  |              +-----------+
-#                               +---|--+                    |                   router.eur
-#                                   |                 +-----------+              |   +--------------+
+#        +-----------+------+   |   |  |              +-+-------+-+
+#                               |   |  +----------------| s11mme|---+
+#                               |   |                   +---+---+   |
+#                               |   |             (optional)|       |
+#                               |   |                   +---+---+   |
+#                               +---|------------------ | s11sgw|---+        router.eur
+#                                   |                 +-+-------+-+              |   +--------------+
 #                                   |                 |  S+P-GW   |              v   |   ROUTER     |
 #                                   |  VLAN2   +------+           +-------+     +----+              +----+
 #                                   +----------+upsgw0|           |sgi    +-...-+    |              |    +---...Internet
@@ -198,20 +202,26 @@ assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 
 start_openswitch_daemon
 # REMINDER:
-#        +-----------+          +------+              +-----------+
-#        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    |
-#        |           |cpenb0+------------------+cpmme0|           |
-#        |           +------+   |bridge|       +------+           |
-#        |           |upenb0+-------+  |              |           |
-#        +-----------+------+   |   |  |              +-----------+
-#                               +---|--+                    |
-#                                   |                 +-----------+
-#                                   |                 |  S+P-GW   |
-#                                   |  VLAN2   +------+           +-------+   +----+    +----+
-#                                   +----------+upsgw0|           |pgwsgi0+---+br2 +----+eth0|
-#                                              +------+           +-------+   +----+    +----+
-#                                                     |           |
-#                                                     +-----------+
+#                                                                           hss.eur
+#                                                                             |
+#        +-----------+          +------+              +-----------+           v   +----------+
+#        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    +----+      +---+   HSS    |
+#        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
+#        |           +------+   |bridge|       +------+           +----+      +---+          |
+#        |           |upenb0+-------+  |              |           |               +----------+
+#        +-----------+------+   |   |  |              +-+-------+-+
+#                               |   |  +----------------| s11mme|---+
+#                               |   |                   +---+---+   |
+#                               |   |             (optional)|       |
+#                               |   |                   +---+---+   |
+#                               +---|------------------ | s11sgw|---+        router.eur
+#                                   |                 +-+-------+-+              |   +--------------+
+#                                   |                 |  S+P-GW   |              v   |   ROUTER     |
+#                                   |  VLAN2   +------+           +-------+     +----+              +----+
+#                                   +----------+upsgw0|           |sgi    +-...-+    |              |    +---...Internet
+#                                              +------+           +-------+     +----+              +----+
+#                                                     |           |      11 VLANS    |              |
+#                                                     +-----------+   ids=[5..15]    +--------------+
 #
 ##################################################
 # del bridge between eNB and MME/SPGW
@@ -220,6 +230,8 @@ bash_exec "tunctl -d $ENB_INTERFACE_NAME_FOR_S1_MME"
 bash_exec "tunctl -d $ENB_INTERFACE_NAME_FOR_S1U"
 bash_exec "tunctl -d $MME_INTERFACE_NAME_FOR_S1_MME"
 bash_exec "tunctl -d $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
+bash_exec "tunctl -d $MME_INTERFACE_NAME_FOR_S11_MME"
+bash_exec "tunctl -d $SGW_INTERFACE_NAME_FOR_S11"
 bash_exec "ovs-vsctl del-br       $BRIDGE"
 
 ##################################################
@@ -229,12 +241,16 @@ bash_exec "tunctl -t $ENB_INTERFACE_NAME_FOR_S1_MME"
 bash_exec "tunctl -t $ENB_INTERFACE_NAME_FOR_S1U"
 bash_exec "tunctl -t $MME_INTERFACE_NAME_FOR_S1_MME"
 bash_exec "tunctl -t $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
+bash_exec "tunctl -t $MME_INTERFACE_NAME_FOR_S11_MME"
+bash_exec "tunctl -t $SGW_INTERFACE_NAME_FOR_S11"
 
 bash_exec "ovs-vsctl add-br       $BRIDGE"
 bash_exec "ovs-vsctl add-port     $BRIDGE $ENB_INTERFACE_NAME_FOR_S1_MME        tag=1"
 bash_exec "ovs-vsctl add-port     $BRIDGE $MME_INTERFACE_NAME_FOR_S1_MME        tag=1"
 bash_exec "ovs-vsctl add-port     $BRIDGE $ENB_INTERFACE_NAME_FOR_S1U           tag=2"
 bash_exec "ovs-vsctl add-port     $BRIDGE $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP tag=2"
+bash_exec "ovs-vsctl add-port     $BRIDGE $MME_INTERFACE_NAME_FOR_S11_MME       tag=3"
+bash_exec "ovs-vsctl add-port     $BRIDGE $SGW_INTERFACE_NAME_FOR_S11           tag=3"
 
 bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S1_MME promisc up"
 bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S1_MME $MME_IP_ADDRESS_FOR_S1_MME netmask `cidr2mask $MME_IP_NETMASK_FOR_S1_MME` promisc up"
@@ -246,16 +262,21 @@ bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME $ENB_IP_ADDRESS_FOR_S1_MME ne
 bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U promisc up"
 bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U $ENB_IP_ADDRESS_FOR_S1U netmask `cidr2mask $ENB_IP_NETMASK_FOR_S1U` promisc up"
 
+bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S11_MME promisc up"
+bash_exec "ifconfig $MME_INTERFACE_NAME_FOR_S11_MME $MME_IP_ADDRESS_FOR_S11_MME netmask `cidr2mask $MME_IP_NETMASK_FOR_S11_MME` promisc up"
+bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U promisc up"
+bash_exec "ifconfig $SGW_INTERFACE_NAME_FOR_S11 $SGW_IP_ADDRESS_FOR_S11 netmask `cidr2mask $SGW_IP_NETMASK_FOR_S11` promisc up"
 
-## TEST
+
+## TEST NETWORK BETWEEN ENB-MME-SP-GW
 iperf  --bind $MME_IP_ADDRESS_FOR_S1_MME -u -s 2>&1  > /dev/null &
 iperf  --bind $ENB_IP_ADDRESS_FOR_S1_MME -u --num 1K -c $MME_IP_ADDRESS_FOR_S1_MME 2>&1 | grep -i WARNING > /dev/null
 if [ $? -eq 0 ]; then
-    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and MME control plane"
+    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and MME S1"
     pkill iperf 2>&1 > /dev/null
     exit 1
 else
-    echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and MME control plane"
+    echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and MME S1"
 
 fi
 pkill iperf 2>&1 > /dev/null
@@ -263,13 +284,25 @@ pkill iperf 2>&1 > /dev/null
 iperf  --bind $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP -u -s 2>&1  > /dev/null &
 iperf  --bind $ENB_IP_ADDRESS_FOR_S1U -u --num 1K -c $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP 2>&1 | grep -i WARNING > /dev/null
 if [ $? -eq 0 ]; then
-    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and S-GW user plane"
+    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and S-GW S1-U"
     pkill iperf 2>&1 > /dev/null
     exit 1
 else
-    echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and S-GW user plane"
+    echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and S-GW S1-U"
 fi
 pkill iperf 2>&1 > /dev/null
+
+iperf  --bind $SGW_IP_ADDRESS_FOR_S11 -u -s 2>&1  > /dev/null &
+iperf  --bind $MME_IP_ADDRESS_FOR_S11_MME -u --num 1K -c $SGW_IP_ADDRESS_FOR_S11 2>&1 | grep -i WARNING > /dev/null
+if [ $? -eq 0 ]; then
+    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between MME and S-GW S11"
+    pkill iperf 2>&1 > /dev/null
+    exit 1
+else
+    echo_success "NETWORK TEST SUCCESS (openvswitch) between MME and S-GW S11"
+fi
+pkill iperf 2>&1 > /dev/null
+
 
 ##################################################
 # del bridge between SPGW and Internet
