@@ -161,4 +161,8 @@ else
     fi
 fi
 cd $OPENAIRCN_DIR/$OBJ_DIR
-$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -c $MME_CONFIG_FILE
+
+ITTI_LOG_FILE=/tmp/itti_mme.log
+rotate_log_file $ITTI_LOG_FILE
+
+$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $MME_CONFIG_FILE

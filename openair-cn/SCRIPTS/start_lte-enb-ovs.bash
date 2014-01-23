@@ -144,7 +144,11 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
+ITTI_LOG_FILE=/tmp/itti_enb.log
+rotate_log_file $ITTI_LOG_FILE
+
+
 #gdb --args
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -O $MME_IP_ADDRESS_FOR_S1_MME
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE -O $MME_IP_ADDRESS_FOR_S1_MME
 
 

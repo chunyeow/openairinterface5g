@@ -122,6 +122,15 @@ extract() {
     return 0
 }
 
+rotate_log_file () {
+    if [ -f $1 ]; then
+        TIMESTAMP=`date +%Y-%m-%d.%Hh_%Mm_%Ss`
+        NEWLOGFILE=$1.$TIMESTAMP
+        mv $1 $NEWLOGFILE
+        cat /dev/null > $1
+        nohup gzip -f -9 $NEWLOGFILE &
+    fi
+}
 
 set_openair() {
     path=`pwd`
@@ -339,11 +348,11 @@ build_openvswitch_network() {
     #        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
     #        |           +------+   |bridge|       +------+           +----+      +---+          |
     #        |           |upenb0+-------+  |              |           |               +----------+
-    #        +-----------+------+   |   |  |              +-+-------+-+
-    #                               |   |  +----------------| s11mme|---+
-    #                               |   |                   +---+---+   |
-    #                               |   |             (optional)|       |
-    #                               |   |                   +---+---+   |
+    #        |           +------+   |   |  |              +-+-------+-+
+    #        |           |          |   |  +----------------| s11mme|---+
+    #        |           |          |   |                   +---+---+   |
+    #        |           |          |   |             (optional)|       |
+    #        +-----------+          |   |                   +---+---+   |
     #                               +---|------------------ | s11sgw|---+        router.eur
     #                                   |                 +-+-------+-+              |   +--------------+
     #                                   |                 |  S+P-GW   |              v   |   ROUTER     |
@@ -423,6 +432,7 @@ test_openvswitch_network() {
         echo_success "NETWORK TEST SUCCESS (openvswitch) between MME and S-GW S11"
     fi
     pkill iperf 2>&1 > /dev/null
+    return 0
 }
 
 build_epc_network() {
