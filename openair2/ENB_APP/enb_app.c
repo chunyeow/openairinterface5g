@@ -109,12 +109,12 @@ static Enb_properties_t enb_0_properties =
     347472,
     CELL_MACRO_ENB,
     "eNB_Eurecom_0",
-    0,
-    208,
+    1,      /* Tracking area code, 0x0000 and 0xfffe are reserved values */
+    208,    /* Mobile Country Code */
 #ifdef EXMIMO_IOT
-    92,
+    92,     /* Mobile Network Code */
 #else
-    10,
+    10,     /* Mobile Network Code */
 #endif
     PAGING_DRX_256,
     1, /* There are 2 addresses defined, but use only one by default */
@@ -140,7 +140,7 @@ static Enb_properties_t enb_1_properties =
     347473,
     CELL_MACRO_ENB,
     "eNB_Eurecom_1",
-    0,
+    1,
     208,
     92,
     PAGING_DRX_256,
@@ -167,7 +167,7 @@ static Enb_properties_t enb_2_properties =
     347474,
     CELL_MACRO_ENB,
     "eNB_Eurecom_2",
-    0,
+    1,
     208,
     92,
     PAGING_DRX_256,
@@ -188,7 +188,7 @@ static Enb_properties_t enb_3_properties =
     347475,
     CELL_MACRO_ENB,
     "eNB_Eurecom_3",
-    0,
+    1,
     208,
     92,
     PAGING_DRX_256,
