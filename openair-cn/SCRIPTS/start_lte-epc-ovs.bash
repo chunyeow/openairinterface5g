@@ -28,12 +28,13 @@ THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
-test_command_install_package "gccxml" "gccxml" "--force-yes"
-test_command_install_package "vconfig" "vlan"
+test_command_install_package "gccxml"   "gccxml" "--force-yes"
+test_command_install_package "vconfig"  "vlan"
 test_command_install_package "iptables" "iptables"
-test_command_install_package "ip" "iproute"
+test_command_install_package "iperf"    "iperf"
+test_command_install_package "ip"       "iproute"
 test_command_install_script   "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
-test_command_install_script   "tunctl" "uml-utilities"
+test_command_install_script   "tunctl"  "uml-utilities"
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
         cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
@@ -152,8 +153,8 @@ else
 fi
 
 
-ping -c 1 hss.eur || { echo "hss.eur does not respond to ping" >&2 ; exit ; }
-ping -c 1 router.eur || { echo "router.eur does not respond to ping" >&2 ; exit ; }
+ping -c 1 hss.eur > /dev/null || { echo "hss.eur does not respond to ping" >&2 ; exit ; }
+ping -c 1 router.eur > /dev/null || { echo "router.eur does not respond to ping" >&2 ; exit ; }
 IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
 export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
 
@@ -244,6 +245,31 @@ bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME promisc up"
 bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1_MME $ENB_IP_ADDRESS_FOR_S1_MME netmask `cidr2mask $ENB_IP_NETMASK_FOR_S1_MME` promisc up"
 bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U promisc up"
 bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U $ENB_IP_ADDRESS_FOR_S1U netmask `cidr2mask $ENB_IP_NETMASK_FOR_S1U` promisc up"
+
+
+## TEST
+iperf  --bind $MME_IP_ADDRESS_FOR_S1_MME -u -s 2>&1  > /dev/null &
+iperf  --bind $ENB_IP_ADDRESS_FOR_S1_MME -u --num 1K -c $MME_IP_ADDRESS_FOR_S1_MME 2>&1 | grep -i WARNING > /dev/null
+if [ $? -eq 0 ]; then
+    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and MME control plane"
+    pkill iperf 2>&1 > /dev/null
+    exit 1
+else
+    echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and MME control plane"
+
+fi
+pkill iperf 2>&1 > /dev/null
+
+iperf  --bind $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP -u -s 2>&1  > /dev/null &
+iperf  --bind $ENB_IP_ADDRESS_FOR_S1U -u --num 1K -c $SGW_IP_ADDRESS_FOR_S1U_S12_S4_UP 2>&1 | grep -i WARNING > /dev/null
+if [ $? -eq 0 ]; then
+    echo_error "NETWORK ERROR CONFIGURATION (openvswitch) between ENB and S-GW user plane"
+    pkill iperf 2>&1 > /dev/null
+    exit 1
+else
+    echo_success "NETWORK TEST SUCCESS (openvswitch) between ENB and S-GW user plane"
+fi
+pkill iperf 2>&1 > /dev/null
 
 ##################################################
 # del bridge between SPGW and Internet
