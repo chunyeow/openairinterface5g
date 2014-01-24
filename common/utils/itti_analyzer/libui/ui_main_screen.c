@@ -160,6 +160,7 @@ void ui_set_title(const char *fmt, ...)
 
     vsnprintf (buffer, sizeof(buffer), fmt, args);
     snprintf (title, sizeof(title), "%s  %s", name, buffer);
+    va_end (args);
 
     gtk_window_set_title (GTK_WINDOW(ui_main_data.window), title);
 }
@@ -190,7 +191,6 @@ int ui_gtk_initialize(int argc, char *argv[])
 
     CHECK_FCT(ui_menu_bar_create(vbox));
     CHECK_FCT(ui_toolbar_create(vbox));
-//     CHECK_FCT(ui_tree_view_create(ui_main_data.window, vbox));
     CHECK_FCT(ui_notebook_create(vbox));
 
     gtk_container_add (GTK_CONTAINER(ui_main_data.window), vbox);

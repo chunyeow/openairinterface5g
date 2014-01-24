@@ -44,11 +44,11 @@ gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
         operation_running = TRUE;
         if (refresh && (ui_main_data.messages_file_name != NULL))
         {
-            CHECK_FCT(ui_messages_read (ui_main_data.messages_file_name));
+            ui_messages_read (ui_main_data.messages_file_name);
         }
         else
         {
-            CHECK_FCT(ui_messages_open_file_chooser());
+            ui_messages_open_file_chooser ();
         }
         operation_running = FALSE;
     }
@@ -65,7 +65,7 @@ gboolean ui_callback_on_save_messages(GtkWidget *widget, gpointer data)
     if (operation_running == FALSE)
     {
         operation_running = TRUE;
-        CHECK_FCT(ui_messages_save_file_chooser(filtered));
+        ui_messages_save_file_chooser(filtered);
         operation_running = FALSE;
     }
 
@@ -111,12 +111,11 @@ gboolean ui_callback_on_open_filters(GtkWidget *widget, gpointer data)
         operation_running = TRUE;
         if (refresh && (ui_main_data.filters_file_name != NULL))
         {
-
-                CHECK_FCT(ui_filters_read (ui_main_data.filters_file_name));
+            ui_filters_read (ui_main_data.filters_file_name);
         }
         else
         {
-            CHECK_FCT(ui_filters_open_file_chooser());
+            ui_filters_open_file_chooser ();
         }
         operation_running = FALSE;
     }
@@ -130,7 +129,7 @@ gboolean ui_callback_on_save_filters(GtkWidget *widget, gpointer data)
     {
         operation_running = TRUE;
         g_message("Save filters event occurred");
-        CHECK_FCT(ui_filters_save_file_chooser());
+        ui_filters_save_file_chooser();
         operation_running = FALSE;
     }
 
@@ -484,34 +483,22 @@ static gboolean ui_handle_update_signal_list(gint fd, void *data, size_t data_le
 
 static gboolean ui_handle_socket_connection_failed(gint fd)
 {
-    GtkWidget *dialogbox;
-
-    dialogbox = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                        GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-                                        "Failed to connect to provided host/ip address");
-
-    gtk_dialog_run (GTK_DIALOG(dialogbox));
-    gtk_widget_destroy (dialogbox);
+    ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "connect", "Failed to connect to provided host/ip address");
 
     /* Re-enable connect button */
     ui_enable_connect_button ();
+    operation_running = FALSE;
     return TRUE;
 }
 
 static gboolean ui_handle_socket_connection_lost(gint fd)
 {
-    GtkWidget *dialogbox;
-
-    dialogbox = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                        GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-                                        "Connection with remote host has been lost");
-
-    gtk_dialog_run (GTK_DIALOG(dialogbox));
-    gtk_widget_destroy (dialogbox);
+    ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Connection with remote host has been lost");
 
     /* Re-enable connect button */
     ui_enable_connect_button ();
-    ui_set_sensitive_save_message_buttons (TRUE);
+    operation_running = FALSE;
+
     return TRUE;
 }
 
@@ -590,32 +577,37 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
     if (strlen (ip) == 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Empty host ip address");
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Empty host ip address");
         return FALSE;
     }
 
     if (port == 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Invalid host port value");
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Invalid host port value");
         return FALSE;
     }
 
-    ui_pipe_new (pipe_fd, ui_pipe_callback, NULL);
-
-    memcpy (ui_main_data.pipe_fd, pipe_fd, sizeof(int) * 2);
-
-    /* Disable the connect button */
-    ui_disable_connect_button ();
-    ui_set_sensitive_save_message_buttons (FALSE);
-
-    ui_callback_signal_clear_list (widget, data);
-
-    if (socket_connect_to_remote_host (ip, port, pipe_fd[1]) != 0)
+    if (operation_running == FALSE)
     {
-        ui_enable_connect_button ();
-        return FALSE;
+        operation_running = TRUE;
+
+        ui_pipe_new (pipe_fd, ui_pipe_callback, NULL);
+
+        memcpy (ui_main_data.pipe_fd, pipe_fd, sizeof(int) * 2);
+
+        /* Disable the connect button */
+        ui_disable_connect_button ();
+        ui_set_sensitive_save_message_buttons (FALSE);
+
+        ui_callback_signal_clear_list (widget, data);
+
+        if (socket_connect_to_remote_host (ip, port, pipe_fd[1]) != 0)
+        {
+            ui_enable_connect_button ();
+            operation_running = FALSE;
+            return FALSE;
+        }
     }
-    ui_set_title ("%s:%d", ip, port);
 
     return TRUE;
 }
@@ -627,7 +619,8 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
     ui_pipe_write_message (ui_main_data.pipe_fd[0], UI_PIPE_DISCONNECT_EVT, NULL, 0);
 
     ui_enable_connect_button ();
-    ui_set_sensitive_save_message_buttons (TRUE);
+    operation_running = FALSE;
+
     return TRUE;
 }
 

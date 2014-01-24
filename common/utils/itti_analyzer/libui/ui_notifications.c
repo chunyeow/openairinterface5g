@@ -49,6 +49,7 @@ int ui_enable_connect_button(void)
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.connect), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.disconnect), FALSE);
     socket_abort_connection = TRUE;
+    ui_set_sensitive_save_message_buttons (TRUE);
     ui_set_title ("");
 
     return RC_OK;
@@ -365,7 +366,7 @@ int ui_messages_open_file_chooser(void)
     int result = RC_OK;
 
     GtkWidget *filechooser;
-    gboolean accept;
+    gboolean response_accept;
     char *filename;
 
     filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
@@ -375,14 +376,14 @@ int ui_messages_open_file_chooser(void)
     gtk_filter_add (filechooser, "All files", "*");
 
     /* Process the response */
-    accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+    response_accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
 
-    if (accept)
+    if (response_accept)
     {
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
     }
     gtk_widget_destroy (filechooser);
-    if (accept)
+    if (response_accept)
     {
         ui_set_sensitive_save_message_buttons (FALSE);
 
@@ -468,7 +469,7 @@ int ui_filters_open_file_chooser(void)
 {
     int result = RC_OK;
     GtkWidget *filechooser;
-    gboolean accept;
+    gboolean response_accept;
     char *filename;
 
     filechooser = gtk_file_chooser_dialog_new ("Select file", GTK_WINDOW (ui_main_data.window),
@@ -478,14 +479,14 @@ int ui_filters_open_file_chooser(void)
     gtk_filter_add (filechooser, "All files", "*");
 
     /* Process the response */
-    accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
+    response_accept = gtk_dialog_run (GTK_DIALOG (filechooser)) == GTK_RESPONSE_ACCEPT;
 
-    if (accept)
+    if (response_accept)
     {
         filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filechooser));
     }
     gtk_widget_destroy (filechooser);
-    if (accept)
+    if (response_accept)
     {
         result = ui_filters_read (filename);
         if (result == RC_OK)

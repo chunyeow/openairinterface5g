@@ -319,24 +319,28 @@ void *socket_thread_fct(void *arg)
     tv.tv_sec = 0;
     tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
 
+    ui_set_title ("connecting to %s:%d ...", socket_data->ip_address, socket_data->port);
+
     do {
         /* Connecting to remote peer */
-        ret = connect(socket_data->sd, (struct sockaddr *)&si_me, sizeof(struct sockaddr_in));
-        if ((ret < 0) && ((socket_abort_connection) ||  (retry < 0))) {
-            if (retry < 0) {
-                g_warning("Failed to connect to peer %s:%d",
-                          socket_data->ip_address, socket_data->port);
-                ui_pipe_write_message(socket_data->pipe_fd,
-                                      UI_PIPE_CONNECTION_FAILED, NULL, 0);
+        ret = connect(socket_data->sd, (struct sockaddr *) &si_me, sizeof(struct sockaddr_in));
+        if (ret < 0) {
+            if ((socket_abort_connection) || (retry < 0)) {
+                if (retry < 0) {
+                    g_warning("Failed to connect to peer %s:%d", socket_data->ip_address, socket_data->port);
+                    ui_pipe_write_message(socket_data->pipe_fd, UI_PIPE_CONNECTION_FAILED, NULL, 0);
+                }
+                free(socket_data->ip_address);
+                free(socket_data);
+                /* Quit the thread */
+                pthread_exit(NULL);
             }
-            free(socket_data->ip_address);
-            free(socket_data);
-            /* Quit the thread */
-            pthread_exit(NULL);
+            usleep(SOCKET_US_BEFORE_CONNECT_RETRY);
+            retry--;
         }
-        usleep(SOCKET_US_BEFORE_CONNECT_RETRY);
-        retry --;
     } while (ret < 0);
+
+    ui_set_title ("%s:%d", socket_data->ip_address, socket_data->port);
 
     /* Set the socket as non-blocking */
     fcntl(socket_data->sd, F_SETFL, O_NONBLOCK);
