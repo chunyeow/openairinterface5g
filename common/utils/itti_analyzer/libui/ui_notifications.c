@@ -24,6 +24,7 @@
 
 #include "locate_root.h"
 #include "xml_parse.h"
+#include "socket.h"
 
 static const itti_message_types_t itti_dump_xml_definition_end =  ITTI_DUMP_XML_DEFINITION_END;
 static const itti_message_types_t itti_dump_message_type_end =    ITTI_DUMP_MESSAGE_TYPE_END;
@@ -37,6 +38,7 @@ int ui_disable_connect_button(void)
     /* Disable Connect button and enable disconnect button */
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.connect), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.disconnect), TRUE);
+    socket_abort_connection = FALSE;
 
     return RC_OK;
 }
@@ -46,6 +48,7 @@ int ui_enable_connect_button(void)
     /* Disable Disconnect button and enable connect button */
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.connect), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (ui_main_data.disconnect), FALSE);
+    socket_abort_connection = TRUE;
     ui_set_title ("");
 
     return RC_OK;
@@ -280,6 +283,10 @@ int ui_messages_read(char *file_name)
             basename = g_path_get_basename (file_name);
             ui_set_title ("\"%s\"", basename);
         }
+        else
+        {
+            result = RC_FAIL;
+        }
 
         ui_progress_bar_terminate ();
 
@@ -377,6 +384,8 @@ int ui_messages_open_file_chooser(void)
     gtk_widget_destroy (filechooser);
     if (accept)
     {
+        ui_set_sensitive_save_message_buttons (FALSE);
+
         result = ui_messages_read (filename);
         if (result == RC_OK)
         {
@@ -386,6 +395,8 @@ int ui_messages_open_file_chooser(void)
                 g_free (ui_main_data.messages_file_name);
             }
             ui_main_data.messages_file_name = filename;
+
+            ui_set_sensitive_save_message_buttons (TRUE);
         }
         else
         {
@@ -572,6 +583,8 @@ int ui_progress_bar_set_fraction(double fraction)
             g_signal_connect(ui_main_data.progressbar_window, "destroy", ui_progressbar_window_destroy, NULL);
 
             gtk_widget_show_all (ui_main_data.progressbar_window);
+
+            gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop), TRUE);
         }
 
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(ui_main_data.progressbar), fraction);
@@ -594,6 +607,7 @@ int ui_progress_bar_terminate(void)
         gtk_widget_destroy (ui_main_data.progressbar_window);
         ui_main_data.progressbar_window = NULL;
     }
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop), FALSE);
 
     return RC_OK;
 }

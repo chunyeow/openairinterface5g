@@ -21,6 +21,8 @@ typedef struct {
     GList    *signal_list;
 } socket_data_t;
 
+gboolean socket_abort_connection;
+
 int socket_connect_to_remote_host(const char *remote_ip, const uint16_t port,
                                   int pipe_fd);
 

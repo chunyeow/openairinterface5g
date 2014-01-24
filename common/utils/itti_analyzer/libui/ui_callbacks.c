@@ -511,6 +511,7 @@ static gboolean ui_handle_socket_connection_lost(gint fd)
 
     /* Re-enable connect button */
     ui_enable_connect_button ();
+    ui_set_sensitive_save_message_buttons (TRUE);
     return TRUE;
 }
 
@@ -605,6 +606,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
     /* Disable the connect button */
     ui_disable_connect_button ();
+    ui_set_sensitive_save_message_buttons (FALSE);
 
     ui_callback_signal_clear_list (widget, data);
 
@@ -620,13 +622,12 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
 {
-    /* We have to retrieve the ip address and port of remote host */
-
     g_message("Disconnect event occurred");
 
     ui_pipe_write_message (ui_main_data.pipe_fd[0], UI_PIPE_DISCONNECT_EVT, NULL, 0);
 
     ui_enable_connect_button ();
+    ui_set_sensitive_save_message_buttons (TRUE);
     return TRUE;
 }
 

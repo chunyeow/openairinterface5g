@@ -7,6 +7,7 @@
 #include "ui_main_screen.h"
 #include "ui_menu_bar.h"
 #include "ui_callbacks.h"
+#include "ui_notifications.h"
 
 static const guint BUTTON_SPACE = 0;
 static const guint LABEL_SPACE = 5;
@@ -14,10 +15,18 @@ static const guint SEPARATOR_SPACE = 5;
 
 void ui_set_sensitive_move_buttons(gboolean enable)
 {
-    // gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_clear_button), enable);
-    // gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_button), enable);
     gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), enable);
     gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_first_button), enable);
+}
+
+void ui_set_sensitive_save_message_buttons(gboolean enable)
+{
+    if (ui_main_data.nb_message_received == 0)
+    {
+        enable = FALSE;
+    }
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.save_replay_file), enable);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.save_replay_file_filtered), enable);
 }
 
 int ui_menu_bar_create(GtkWidget *vbox)
@@ -271,6 +280,15 @@ int ui_toolbar_create(GtkWidget *vbox)
                         G_CALLBACK(ui_callback_on_open_messages), (gpointer) TRUE);
     }
 
+    /* Stop reading messages file */
+    {
+        ui_main_data.stop = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.stop), "Stop loading messages file");
+
+        g_signal_connect(G_OBJECT(ui_main_data.stop), "clicked",
+                        ui_progressbar_window_destroy, NULL);
+    }
+
     /* Button to save messages file */
     {
         ui_main_data.save_replay_file = gtk_tool_button_new_from_stock(GTK_STOCK_SAVE);
@@ -369,8 +387,11 @@ int ui_toolbar_create(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(hbox), messages_label, FALSE, FALSE, LABEL_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.refresh_replay_file), FALSE, FALSE, BUTTON_SPACE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.stop), FALSE, FALSE, BUTTON_SPACE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file_filtered), FALSE, FALSE, BUTTON_SPACE);
+    ui_set_sensitive_save_message_buttons(FALSE);
 
     gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
 

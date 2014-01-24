@@ -24,8 +24,13 @@
 
 #include "xml_parse.h"
 
+#define SOCKET_NB_CONNECT_RETRY             (5 * 60 * 10) /* About 5 minutes time-out for connecting to peer */
+#define SOCKET_US_BEFORE_CONNECT_RETRY      (100 * 1000)  /* Retry connection after 100 ms */
+
 #define SOCKET_NB_SIGNALS_BEFORE_SIGNALLING 10
 #define SOCKET_MS_BEFORE_SIGNALLING         100
+
+gboolean socket_abort_connection = FALSE;
 
 void *socket_thread_fct(void *arg);
 
@@ -264,6 +269,7 @@ void *socket_thread_fct(void *arg)
     int                 ret;
     struct sockaddr_in  si_me;
     socket_data_t      *socket_data;
+    int                 retry = SOCKET_NB_CONNECT_RETRY;
 
     /* master file descriptor list */
     fd_set              master_fds;
@@ -313,18 +319,24 @@ void *socket_thread_fct(void *arg)
     tv.tv_sec = 0;
     tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
 
-    /* Connecting to remote peer */
-    ret = connect(socket_data->sd, (struct sockaddr *)&si_me, sizeof(struct sockaddr_in));
-    if (ret < 0) {
-        g_warning("Failed to connect to peer %s:%d",
-                socket_data->ip_address, socket_data->port);
-        ui_pipe_write_message(socket_data->pipe_fd,
-                              UI_PIPE_CONNECTION_FAILED, NULL, 0);
-        free(socket_data->ip_address);
-        free(socket_data);
-        /* Quit the thread */
-        pthread_exit(NULL);
-    }
+    do {
+        /* Connecting to remote peer */
+        ret = connect(socket_data->sd, (struct sockaddr *)&si_me, sizeof(struct sockaddr_in));
+        if ((ret < 0) && ((socket_abort_connection) ||  (retry < 0))) {
+            if (retry < 0) {
+                g_warning("Failed to connect to peer %s:%d",
+                          socket_data->ip_address, socket_data->port);
+                ui_pipe_write_message(socket_data->pipe_fd,
+                                      UI_PIPE_CONNECTION_FAILED, NULL, 0);
+            }
+            free(socket_data->ip_address);
+            free(socket_data);
+            /* Quit the thread */
+            pthread_exit(NULL);
+        }
+        usleep(SOCKET_US_BEFORE_CONNECT_RETRY);
+        retry --;
+    } while (ret < 0);
 
     /* Set the socket as non-blocking */
     fcntl(socket_data->sd, F_SETFL, O_NONBLOCK);
