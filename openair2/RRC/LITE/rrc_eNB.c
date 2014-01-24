@@ -1096,23 +1096,18 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   memset (buffer, 0, RRC_BUF_SIZE);
 
-#ifdef EXMIMO_IOT
-  size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
-                                          NULL /* SRB_configList2 */, *DRB_configList, NULL,       // DRB2_list,
-                                          NULL, //*sps_Config,
-                                          NULL/*physicalConfigDedicated[UE_index]*/, NULL, NULL,
-                                          NULL,     //*QuantityConfig,
-                                          NULL, mac_MainConfig, NULL,NULL,NULL,NULL,
-                                          cba_RNTI, dedicatedInfoNASList);    //*measGapConfig);
-#else
   size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
                                           SRB_configList2, *DRB_configList, NULL,       // DRB2_list,
                                           NULL, // *sps_Config,
                                           physicalConfigDedicated[UE_index], MeasObj_list, ReportConfig_list, 
                                           quantityConfig,
-                                          MeasId_list, mac_MainConfig, NULL,NULL,Sparams,rsrp,
-                                          cba_RNTI, dedicatedInfoNASList);
+#ifdef EXMIMO_IOT
+                                          NULL,
+#else
+                                          MeasId_list,
 #endif
+                                          mac_MainConfig, NULL, NULL, Sparams, rsrp,
+                                          cba_RNTI, dedicatedInfoNASList);
 
 #if defined(ENABLE_ITTI)
   /* Free all NAS PDUs */
