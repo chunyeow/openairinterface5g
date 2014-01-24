@@ -33,6 +33,9 @@ static gboolean refresh_message_list =  TRUE;
 static gboolean filters_changed =       FALSE;
 static gboolean operation_running =     FALSE;
 
+static const char *ui_ip;
+static uint16_t ui_port;
+
 gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 {
     gboolean refresh = (data != NULL) ? TRUE : FALSE;
@@ -551,6 +554,7 @@ gboolean ui_pipe_callback(gint source, gpointer user_data)
             return ui_handle_socket_connection_lost (source);
 
         case UI_PIPE_XML_DEFINITION:
+            ui_set_title ("%s:%d", ui_ip, ui_port);
             return ui_handle_socket_xml_definition (source, input_data, input_data_length);
 
         case UI_PIPE_UPDATE_SIGNAL_LIST:
@@ -565,25 +569,23 @@ gboolean ui_pipe_callback(gint source, gpointer user_data)
 
 gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 {
-    /* We have to retrieve the ip address and port of remote host */
-    const char *ip;
-    uint16_t port;
+    /* We have to retrieve the ip address and ui_port of remote host */
     int pipe_fd[2];
 
-    port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
-    ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
+    ui_port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
+    ui_ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
 
-    g_message("Connect event occurred to %s:%d", ip, port);
+    g_message("Connect event occurred to %s:%d", ui_ip, ui_port);
 
-    if (strlen (ip) == 0)
+    if (strlen (ui_ip) == 0)
     {
         ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Empty host ip address");
         return FALSE;
     }
 
-    if (port == 0)
+    if (ui_port == 0)
     {
-        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Invalid host port value");
+        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Invalid host ui_port value");
         return FALSE;
     }
 
@@ -601,7 +603,9 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
         ui_callback_signal_clear_list (widget, data);
 
-        if (socket_connect_to_remote_host (ip, port, pipe_fd[1]) != 0)
+        ui_set_title ("connecting to %s:%d ...", ui_ip, ui_port);
+
+        if (socket_connect_to_remote_host (ui_ip, ui_port, pipe_fd[1]) != 0)
         {
             ui_enable_connect_button ();
             operation_running = FALSE;

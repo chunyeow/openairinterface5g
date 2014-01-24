@@ -319,8 +319,6 @@ void *socket_thread_fct(void *arg)
     tv.tv_sec = 0;
     tv.tv_usec = 1000 * SOCKET_MS_BEFORE_SIGNALLING;
 
-    ui_set_title ("connecting to %s:%d ...", socket_data->ip_address, socket_data->port);
-
     do {
         /* Connecting to remote peer */
         ret = connect(socket_data->sd, (struct sockaddr *) &si_me, sizeof(struct sockaddr_in));
@@ -339,8 +337,6 @@ void *socket_thread_fct(void *arg)
             retry--;
         }
     } while (ret < 0);
-
-    ui_set_title ("%s:%d", socket_data->ip_address, socket_data->port);
 
     /* Set the socket as non-blocking */
     fcntl(socket_data->sd, F_SETFL, O_NONBLOCK);
