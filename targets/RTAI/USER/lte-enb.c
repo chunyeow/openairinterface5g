@@ -186,6 +186,7 @@ int number_of_cards = 1;
 //int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 //int mbox_bounds[10] = {15, 30, 45, 60, 75, 90, 105, 120, 135, 0}; // mbox boundaries of subframes
 int mbox_bounds[10] = {14, 28, 44, 58, 74, 88, 104, 118, 134, 148}; // mbox boundaries of subframes
+//int mbox_bounds[10] = {16, 30, 46, 60, 76, 90, 106, 120, 136, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 
 int init_dlsch_threads(void);
 void cleanup_dlsch_threads(void);
@@ -1096,7 +1097,7 @@ int main(int argc, char **argv)
 
   // wait for end of program
   printf("TYPE <CTRL-C> TO TERMINATE\n");
-  getchar();
+  //getchar();
   //while (oai_exit==0)
   //  rt_sleep_ns(FRAME_PERIOD);
 
