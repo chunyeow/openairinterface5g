@@ -727,12 +727,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   DRB_config->eps_BearerIdentity = CALLOC(1, sizeof(long));
   *(DRB_config->eps_BearerIdentity) = 5L;               // LW: set to first value, allowed value 5..15
-#ifdef EXMIMO_IOT
-  DRB_config->drb_Identity = (DRB_Identity_t) 3;        // LW: Forced to 3
-#else
   // NN: this is the 1st DRB for this ue, so set it to 1
   DRB_config->drb_Identity = (DRB_Identity_t) 1;        // (UE_index+1); //allowed values 1..32
-#endif
   DRB_config->logicalChannelIdentity = CALLOC (1, sizeof (long));
   *(DRB_config->logicalChannelIdentity) = (long) 3;
   DRB_rlc_config = CALLOC (1, sizeof (*DRB_rlc_config));
