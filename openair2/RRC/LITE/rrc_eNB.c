@@ -734,7 +734,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   DRB_rlc_config = CALLOC (1, sizeof (*DRB_rlc_config));
   DRB_config->rlc_Config = DRB_rlc_config;
 
-#if EXMIMO_IOT
+#ifdef EXMIMO_IOT
   DRB_rlc_config->present = RLC_Config_PR_am;
   DRB_rlc_config->choice.am.ul_AM_RLC.t_PollRetransmit = T_PollRetransmit_ms50;
   DRB_rlc_config->choice.am.ul_AM_RLC.pollPDU = PollPDU_p16;
@@ -751,7 +751,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   DRB_pdcp_config = CALLOC (1, sizeof (*DRB_pdcp_config));
   DRB_config->pdcp_Config = DRB_pdcp_config;
-#if EXMIMO_IOT
+#ifdef EXMIMO_IOT
   DRB_pdcp_config->discardTimer = CALLOC (1, sizeof (long));
   *DRB_pdcp_config->discardTimer = PDCP_Config__discardTimer_infinity;
 #else
@@ -760,7 +760,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   DRB_pdcp_config->rlc_AM = NULL;
   DRB_pdcp_config->rlc_UM = NULL;
 
-#if EXMIMO_IOT
+#ifdef EXMIMO_IOT
   PDCP_rlc_AM = CALLOC (1, sizeof (*PDCP_rlc_AM));
   DRB_pdcp_config->rlc_AM = PDCP_rlc_AM;
   PDCP_rlc_AM->statusReportRequired = FALSE;
