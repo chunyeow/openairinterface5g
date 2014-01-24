@@ -619,6 +619,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   struct DRB_ToAddMod *DRB_config;
   struct RLC_Config *DRB_rlc_config;
   struct PDCP_Config *DRB_pdcp_config;
+  struct PDCP_Config__rlc_AM *PDCP_rlc_AM;
   struct PDCP_Config__rlc_UM *PDCP_rlc_UM;
   struct LogicalChannelConfig *DRB_lchan_config;
   struct LogicalChannelConfig__ul_SpecificParameters
@@ -725,27 +726,54 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   DRB_config = CALLOC (1, sizeof (*DRB_config));
 
   DRB_config->eps_BearerIdentity = CALLOC(1, sizeof(long));
-  *(DRB_config->eps_BearerIdentity) = 5L; // LW set to first value, allowed value 5..15
+  *(DRB_config->eps_BearerIdentity) = 5L;               // LW: set to first value, allowed value 5..15
+#ifdef EXMIMO_IOT
+  DRB_config->drb_Identity = (DRB_Identity_t) 3;        // LW: Forced to 3
+#else
   // NN: this is the 1st DRB for this ue, so set it to 1
-  // DRB_config->drb_Identity = (DRB_Identity_t) 3;  // LW Forced to 3      // (UE_index+1); //allowed values 1..32
   DRB_config->drb_Identity = (DRB_Identity_t) 1;        // (UE_index+1); //allowed values 1..32
+#endif
   DRB_config->logicalChannelIdentity = CALLOC (1, sizeof (long));
   *(DRB_config->logicalChannelIdentity) = (long) 3;
   DRB_rlc_config = CALLOC (1, sizeof (*DRB_rlc_config));
   DRB_config->rlc_Config = DRB_rlc_config;
 
+#if EXMIMO_IOT
+  DRB_rlc_config->present = RLC_Config_PR_am;
+  DRB_rlc_config->choice.am.ul_AM_RLC.t_PollRetransmit = T_PollRetransmit_ms50;
+  DRB_rlc_config->choice.am.ul_AM_RLC.pollPDU = PollPDU_p16;
+  DRB_rlc_config->choice.am.ul_AM_RLC.pollByte = PollByte_kBinfinity;
+  DRB_rlc_config->choice.am.ul_AM_RLC.maxRetxThreshold = UL_AM_RLC__maxRetxThreshold_t8;
+  DRB_rlc_config->choice.am.dl_AM_RLC.t_Reordering = T_Reordering_ms35;
+  DRB_rlc_config->choice.am.dl_AM_RLC.t_StatusProhibit = T_StatusProhibit_ms25;
+#else
   DRB_rlc_config->present = RLC_Config_PR_um_Bi_Directional;
   DRB_rlc_config->choice.um_Bi_Directional.ul_UM_RLC.sn_FieldLength =  SN_FieldLength_size10;
   DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.sn_FieldLength =  SN_FieldLength_size10;
   DRB_rlc_config->choice.um_Bi_Directional.dl_UM_RLC.t_Reordering =   T_Reordering_ms5;
+#endif
 
   DRB_pdcp_config = CALLOC (1, sizeof (*DRB_pdcp_config));
   DRB_config->pdcp_Config = DRB_pdcp_config;
+#if EXMIMO_IOT
+  DRB_pdcp_config->discardTimer = CALLOC (1, sizeof (long));
+  *DRB_pdcp_config->discardTimer = PDCP_Config__discardTimer_infinity;
+#else
   DRB_pdcp_config->discardTimer = NULL;
+#endif
   DRB_pdcp_config->rlc_AM = NULL;
+  DRB_pdcp_config->rlc_UM = NULL;
+
+#if EXMIMO_IOT
+  PDCP_rlc_AM = CALLOC (1, sizeof (*PDCP_rlc_AM));
+  DRB_pdcp_config->rlc_AM = PDCP_rlc_AM;
+  PDCP_rlc_AM->statusReportRequired = FALSE;
+#else
   PDCP_rlc_UM = CALLOC (1, sizeof (*PDCP_rlc_UM));
   DRB_pdcp_config->rlc_UM = PDCP_rlc_UM;
   PDCP_rlc_UM->pdcp_SN_Size = PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits;
+#endif
+
   DRB_pdcp_config->headerCompression.present = PDCP_Config__headerCompression_PR_notUsed;
 
   DRB_lchan_config = CALLOC (1, sizeof (*DRB_lchan_config));
@@ -1068,6 +1096,15 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
 
   memset (buffer, 0, RRC_BUF_SIZE);
 
+#ifdef EXMIMO_IOT
+  size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
+                                          NULL /* SRB_configList2 */, *DRB_configList, NULL,       // DRB2_list,
+                                          NULL, //*sps_Config,
+                                          NULL/*physicalConfigDedicated[UE_index]*/, NULL, NULL,
+                                          NULL,     //*QuantityConfig,
+                                          NULL, mac_MainConfig, NULL,NULL,NULL,NULL,
+                                          cba_RNTI, dedicatedInfoNASList);    //*measGapConfig);
+#else
   size = do_RRCConnectionReconfiguration (Mod_id, buffer, UE_index, rrc_eNB_get_next_transaction_identifier(Mod_id),  //Transaction_id,
                                           SRB_configList2, *DRB_configList, NULL,       // DRB2_list,
                                           NULL, // *sps_Config,
@@ -1075,6 +1112,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
                                           quantityConfig,
                                           MeasId_list, mac_MainConfig, NULL,NULL,Sparams,rsrp,
                                           cba_RNTI, dedicatedInfoNASList);
+#endif
+
 #if defined(ENABLE_ITTI)
   /* Free all NAS PDUs */
   for (i = 0; i < UE_info->nb_of_e_rabs; i++)
