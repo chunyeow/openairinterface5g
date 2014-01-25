@@ -160,6 +160,29 @@ gboolean ui_callback_on_about(GtkWidget *widget, gpointer data)
     return TRUE;
 }
 
+gint ui_callback_check_string (const char *string, const gint lenght, const guint message_number)
+{
+    gint real_length;
+
+    real_length = strnlen (string, lenght);
+    if (lenght != real_length)
+    {
+        if (message_number)
+        {
+            g_warning("Bad string format for message %u, '\\0' found before end of string (%d/%d)\n", message_number, real_length, lenght);
+        }
+        else
+        {
+            g_warning("Bad string format, '\\0' found before end of string (%d/%d)\n", real_length, lenght);
+        }
+        return (real_length);
+    }
+    else
+    {
+        return (lenght);
+    }
+}
+
 gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel *model, GtkTreePath *path,
                                       gboolean path_currently_selected, gpointer user_data)
 {
@@ -325,6 +348,7 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                     message_header_type_size = get_message_header_type_size ();
                     data = (gchar *) buffer_at_offset ((buffer_t*) buffer, message_header_type_size);
                     data_size = get_message_size ((buffer_t*) buffer);
+                    data_size = ui_callback_check_string (data, data_size, message_number);
 
                     g_info("    dump message %d: header type size: %u, data size: %u, buffer %p, follow last %d",
                            message_number, message_header_type_size, data_size, buffer, ui_main_data.follow_last);
@@ -446,7 +470,7 @@ void ui_signal_add_to_list(gpointer data, gpointer user_data)
         message_header_type_size = get_message_header_type_size ();
         string_terminal = (gchar *) buffer_at_offset ((buffer_t*) signal_buffer, message_header_type_size);
         string_terminal_size = get_message_size ((buffer_t*) signal_buffer);
-
+        string_terminal_size = ui_callback_check_string (string_terminal, string_terminal_size, signal_buffer->message_number);
         ui_notebook_terminal_append_data(string_terminal, string_terminal_size);
     }
 

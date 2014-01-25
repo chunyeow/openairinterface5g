@@ -9,6 +9,7 @@
 
 #include "struct_type.h"
 #include "buffers.h"
+#include "ui_callbacks.h"
 #include "ui_interface.h"
 
 int struct_dissect_from_buffer(
@@ -37,15 +38,15 @@ int struct_dissect_from_buffer(
 
     if ((strcmp (name, "IttiMsgText_s") == 0) &&
         (type->members_child[0] != NULL) && (strcmp (type->members_child[0]->name, "size") == 0) &&
-        (type->members_child[1] != NULL) && (strcmp (type->members_child[1]->name, "text") == 0))
-    {
+        (type->members_child[1] != NULL) && (strcmp (type->members_child[1]->name, "text") == 0)) {
         uint8_t *buf;
 
         length = buffer_get_uint32_t (buffer, offset + parent_offset);
         buf = malloc (length + 1);
         buf[0] = '\n';
         buffer_fetch_nbytes(buffer, parent_offset + offset + 32, length, &buf[1]);
-        ui_set_signal_text_cb(user_data, (gchar *) buf, length);
+        length = ui_callback_check_string ((char *) &buf[1], length, 0);
+        ui_set_signal_text_cb(user_data, (char *) buf, length + 1);
     }
     else
     {

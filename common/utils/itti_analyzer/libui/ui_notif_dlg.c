@@ -21,7 +21,7 @@ int ui_notification_dialog(GtkMessageType type, gboolean cancel, const char *tit
 
     g_warning("%s", buffer);
 
-    dialogbox = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_MODAL, type,
+    dialogbox = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL, type,
                                         cancel ? GTK_BUTTONS_OK_CANCEL : GTK_BUTTONS_OK, "%s",
                                         buffer);
     gtk_dialog_set_default_response (GTK_DIALOG(dialogbox), GTK_RESPONSE_OK);

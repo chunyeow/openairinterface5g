@@ -24,8 +24,9 @@ gboolean ui_callback_on_enable_filters(GtkWidget *widget,
 gboolean ui_callback_on_about(GtkWidget *widget,
                               gpointer   data);
 
-void ui_signal_add_to_list(gpointer data,
-                           gpointer user_data);
+gint ui_callback_check_string (const char *string,
+                               const gint lenght,
+                               const guint message_number);
 
 gboolean ui_callback_on_connect(GtkWidget *widget,
                                 gpointer   data);
@@ -42,6 +43,9 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection,
                                       GtkTreePath      *path,
                                       gboolean          path_currently_selected,
                                       gpointer          userdata);
+
+void ui_signal_add_to_list(gpointer data,
+                           gpointer user_data);
 
 gboolean ui_callback_on_menu_enable (GtkWidget *widget, gpointer data);
 
