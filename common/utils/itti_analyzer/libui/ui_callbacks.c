@@ -33,8 +33,10 @@ static gboolean refresh_message_list =  TRUE;
 static gboolean filters_changed =       FALSE;
 static gboolean operation_running =     FALSE;
 
-static const char *ui_ip;
-static uint16_t ui_port;
+static const char  *ui_ip;
+static uint16_t     ui_port;
+static GtkWidget   *dialogbox_connect;
+static gboolean     ui_auto_reconnect;
 
 gboolean ui_callback_on_open_messages(GtkWidget *widget, gpointer data)
 {
@@ -223,7 +225,11 @@ gboolean ui_callback_on_select_signal(GtkTreeSelection *selection, GtkTreeModel 
                 if (ui_tree_view_last_event->type == GDK_BUTTON_PRESS)
                 {
                     /* Callback is due to a button click */
-                    ui_main_data.follow_last = FALSE;
+                    if (ui_tree_view_last_event->button == 1)
+                    {
+                        /* It was a left mouse click */
+                        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.signals_go_to_last_button), FALSE);
+                    }
 
                     if (ui_tree_view_last_event->button == 3)
                     {
@@ -510,21 +516,26 @@ static gboolean ui_handle_update_signal_list(gint fd, void *data, size_t data_le
 
 static gboolean ui_handle_socket_connection_failed(gint fd)
 {
-    ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "connect", "Failed to connect to provided host/ip address");
+    gtk_dialog_response(GTK_DIALOG (dialogbox_connect), GTK_RESPONSE_REJECT);
 
-    /* Re-enable connect button */
-    ui_enable_connect_button ();
-    operation_running = FALSE;
     return TRUE;
 }
 
 static gboolean ui_handle_socket_connection_lost(gint fd)
 {
-    ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Connection with remote host has been lost");
-
-    /* Re-enable connect button */
-    ui_enable_connect_button ();
-    operation_running = FALSE;
+    if (operation_running)
+    {
+        operation_running = FALSE;
+        if (ui_auto_reconnect)
+        {
+            ui_callback_on_connect (NULL, (gpointer) FALSE);
+        }
+        else
+        {
+            ui_enable_connect_button();
+            ui_set_sensitive_save_message_buttons (TRUE);
+        }
+    }
 
     return TRUE;
 }
@@ -578,7 +589,7 @@ gboolean ui_pipe_callback(gint source, gpointer user_data)
             return ui_handle_socket_connection_lost (source);
 
         case UI_PIPE_XML_DEFINITION:
-            ui_set_title ("%s:%d", ui_ip, ui_port);
+            gtk_dialog_response(GTK_DIALOG (dialogbox_connect), GTK_RESPONSE_OK);
             return ui_handle_socket_xml_definition (source, input_data, input_data_length);
 
         case UI_PIPE_UPDATE_SIGNAL_LIST:
@@ -591,26 +602,68 @@ gboolean ui_pipe_callback(gint source, gpointer user_data)
     return FALSE;
 }
 
+gboolean ui_callback_on_auto_reconnect(GtkWidget *widget, gpointer data)
+{
+    gboolean enabled;
+    gboolean changed = TRUE;
+
+    gboolean toggle = (data != NULL) ? TRUE : FALSE;
+
+    enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.auto_reconnect));
+
+    if (toggle)
+    {
+        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.auto_reconnect), !enabled);
+        return TRUE;
+    }
+
+    g_info("Auto reconnect event occurred %d %d ", toggle, enabled);
+
+    ui_auto_reconnect = enabled;
+
+    if (changed)
+    {
+        /* Set the tool tip text */
+        if (enabled)
+        {
+            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(ui_main_data.auto_reconnect), "Disable automatic reconnection");
+        }
+        else
+        {
+            gtk_tool_item_set_tooltip_text (GTK_TOOL_ITEM(ui_main_data.auto_reconnect), "Enable automatic reconnection");
+        }
+    }
+
+    return TRUE;
+}
+
 gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 {
     /* We have to retrieve the ip address and ui_port of remote host */
+    gboolean start = (data != NULL) ? TRUE : FALSE;
     int pipe_fd[2];
 
-    ui_port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
-    ui_ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
-
-    g_message("Connect event occurred to %s:%d", ui_ip, ui_port);
-
-    if (strlen (ui_ip) == 0)
+    if (start)
     {
-        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Empty host ip address");
-        return FALSE;
+        ui_port = atoi (gtk_entry_get_text (GTK_ENTRY(ui_main_data.port_entry)));
+        ui_ip = gtk_entry_get_text (GTK_ENTRY(ui_main_data.ip_entry));
     }
 
-    if (ui_port == 0)
+    g_message("Connect event occurred to %s:%d %s", ui_ip, ui_port, start ? "START" : "RETRY");
+
+    if (start)
     {
-        ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Invalid host ui_port value");
-        return FALSE;
+        if (strlen (ui_ip) == 0)
+        {
+            ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Empty host ip address");
+            return FALSE;
+        }
+
+        if (ui_port == 0)
+        {
+            ui_notification_dialog (GTK_MESSAGE_ERROR, FALSE, "Connect", "Invalid host ui_port value");
+            return FALSE;
+        }
     }
 
     if (operation_running == FALSE)
@@ -623,17 +676,51 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 
         /* Disable the connect button */
         ui_disable_connect_button ();
-        ui_set_sensitive_save_message_buttons (FALSE);
-
-        ui_callback_signal_clear_list (widget, data);
 
         ui_set_title ("connecting to %s:%d ...", ui_ip, ui_port);
-
-        if (socket_connect_to_remote_host (ui_ip, ui_port, pipe_fd[1]) != 0)
         {
-            ui_enable_connect_button ();
-            operation_running = FALSE;
-            return FALSE;
+            const static char *message_formats[] =
+            {
+                "Connecting to %s:%d ...",
+                "Connection lost!\n\n" "Trying to reconnect to %s:%d ..."
+            };
+            gint response;
+
+            if (socket_connect_to_remote_host (ui_ip, ui_port, pipe_fd[1]) != 0)
+            {
+                ui_enable_connect_button ();
+                operation_running = FALSE;
+                return FALSE;
+            }
+
+            dialogbox_connect = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER,
+                                                GTK_BUTTONS_CANCEL, message_formats[start ? 0 : 1], ui_ip, ui_port);
+            gtk_window_set_title (GTK_WINDOW(dialogbox_connect), "Connect");
+
+            response = gtk_dialog_run (GTK_DIALOG (dialogbox_connect));
+            g_message("Connect dialog response %s (%d)", gtk_get_respose_string(response), response);
+
+            if (response == GTK_RESPONSE_OK)
+            {
+                /* Connection is established */
+                ui_set_sensitive_save_message_buttons (FALSE);
+                ui_callback_signal_clear_list (NULL, NULL);
+                ui_set_title ("%s:%d", ui_ip, ui_port);
+            }
+            else
+            {
+                /* Connection can not be established */
+                if (response == GTK_RESPONSE_REJECT)
+                {
+                    /* Connection retry time-out */
+                    ui_notification_dialog (GTK_MESSAGE_WARNING, FALSE, "Connect", "Failed to connect to provided host/ip address");
+                }
+
+                /* Re-enable connect button */
+                ui_enable_connect_button();
+                operation_running = FALSE;
+            }
+            gtk_widget_destroy (dialogbox_connect);
         }
     }
 
@@ -654,8 +741,8 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_signal_go_to_first(GtkWidget *widget, gpointer data)
 {
+    gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.signals_go_to_last_button), FALSE);
     ui_tree_view_select_row (0);
-    ui_main_data.follow_last = FALSE;
 
     return TRUE;
 }
@@ -668,6 +755,7 @@ gboolean ui_callback_signal_go_to(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_signal_go_to_entry(GtkWidget *widget, gpointer data)
 {
+    gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.signals_go_to_last_button), FALSE);
     // gtk_entry_buffer_set_text(GTK_ENTRY(ui_main_data.signals_go_to_entry), "");
     gtk_window_set_focus (GTK_WINDOW(ui_main_data.window), ui_main_data.messages_list);
     return TRUE;
@@ -675,8 +763,28 @@ gboolean ui_callback_signal_go_to_entry(GtkWidget *widget, gpointer data)
 
 gboolean ui_callback_signal_go_to_last(GtkWidget *widget, gpointer data)
 {
-    ui_tree_view_select_row (ui_tree_view_get_filtered_number () - 1);
-    ui_main_data.follow_last = TRUE;
+    gboolean enable = (data != NULL) ? TRUE : FALSE;
+    gboolean enabled;
+
+    if (enable)
+    {
+        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.signals_go_to_last_button), TRUE);
+        return TRUE;
+    }
+
+    enabled = gtk_toggle_tool_button_get_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.signals_go_to_last_button));
+
+    g_info("Button signal go to last event occurred %d %d", enable, enabled);
+
+    if (enabled)
+    {
+        ui_main_data.follow_last = TRUE;
+        ui_tree_view_select_row (ui_tree_view_get_filtered_number () - 1);
+    }
+    else
+    {
+        ui_main_data.follow_last = FALSE;
+    }
 
     return TRUE;
 }

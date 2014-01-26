@@ -34,6 +34,10 @@ int ui_menu_bar_create(GtkWidget *vbox)
     GtkAccelGroup *accel_group;
     GtkWidget *menu_bar;
 
+    GtkWidget *system_menu;
+    GtkWidget *system;
+    GtkWidget *quit;
+
     GtkWidget *filters_menu;
     GtkWidget *filters;
     GtkWidget *open_filters;
@@ -45,6 +49,7 @@ int ui_menu_bar_create(GtkWidget *vbox)
     GtkWidget *messages;
     GtkWidget *open_messages;
     GtkWidget *reload_messages;
+    GtkWidget *stop_loading;
     GtkWidget *save_messages;
     GtkWidget *save_messages_filtered;
     GtkWidget *goto_first_messages;
@@ -53,9 +58,14 @@ int ui_menu_bar_create(GtkWidget *vbox)
     GtkWidget *display_message_header;
     GtkWidget *display_brace;
 
+    GtkWidget *connect_menu;
+    GtkWidget *connect;
+    GtkWidget *auto_reconnect;
+    GtkWidget *connect_to;
+    GtkWidget *disconnect;
+
     GtkWidget *help_menu;
     GtkWidget *help;
-    GtkWidget *quit;
     GtkWidget *about;
 
     if (!vbox)
@@ -65,6 +75,23 @@ int ui_menu_bar_create(GtkWidget *vbox)
     gtk_window_add_accel_group(GTK_WINDOW(ui_main_data.window), accel_group);
 
     menu_bar = gtk_menu_bar_new();
+
+    /* Create the System sub-menu */
+    {
+        system = gtk_menu_item_new_with_mnemonic ("_System");
+        gtk_menu_shell_append (GTK_MENU_SHELL(menu_bar), system);
+
+        system_menu = gtk_menu_new ();
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM(system), system_menu);
+
+        /* Create the Filters menu items */
+        {
+            quit = gtk_menu_item_new_with_mnemonic ("_Quit");
+            gtk_widget_add_accelerator (quit, "activate", accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(system_menu), quit);
+            g_signal_connect(G_OBJECT(quit), "activate", ui_main_window_destroy, NULL);
+        }
+    }
 
     /* Create the Filters sub-menu */
     {
@@ -103,13 +130,6 @@ int ui_menu_bar_create(GtkWidget *vbox)
                                         GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), enable_filters);
             g_signal_connect(G_OBJECT(enable_filters), "activate", G_CALLBACK(ui_callback_on_enable_filters), NULL);
-
-            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), gtk_menu_item_new ()); // Separator
-
-            quit = gtk_menu_item_new_with_mnemonic ("_Quit");
-            gtk_widget_add_accelerator (quit, "activate", accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
-            gtk_menu_shell_append (GTK_MENU_SHELL(filters_menu), quit);
-            g_signal_connect(G_OBJECT(quit), "activate", ui_main_window_destroy, NULL);
         }
     }
 
@@ -138,7 +158,14 @@ int ui_menu_bar_create(GtkWidget *vbox)
             g_signal_connect(G_OBJECT(reload_messages), "activate", G_CALLBACK(ui_callback_on_open_messages),
                              (gpointer) TRUE);
 
-            save_messages = gtk_menu_item_new_with_mnemonic ("_Save messages file (all)");
+            stop_loading = gtk_menu_item_new_with_mnemonic ("S_top loading messages file");
+            gtk_widget_add_accelerator (stop_loading, "activate", accel_group, GDK_KEY_x, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), stop_loading);
+            g_signal_connect(G_OBJECT(stop_loading), "activate", G_CALLBACK(ui_progressbar_window_destroy),
+                             NULL);
+
+            save_messages = gtk_menu_item_new_with_mnemonic ("S_ave messages file (all)");
             gtk_widget_add_accelerator (save_messages, "activate", accel_group, GDK_KEY_a, GDK_CONTROL_MASK,
                                         GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), save_messages);
@@ -171,7 +198,7 @@ int ui_menu_bar_create(GtkWidget *vbox)
             gtk_widget_add_accelerator (goto_last_messages, "activate", accel_group, GDK_KEY_l, GDK_CONTROL_MASK,
                                         GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), goto_last_messages);
-            g_signal_connect(G_OBJECT(goto_last_messages), "activate", G_CALLBACK(ui_callback_signal_go_to_last), NULL);
+            g_signal_connect(G_OBJECT(goto_last_messages), "activate", G_CALLBACK(ui_callback_signal_go_to_last), (gpointer) TRUE);
 
             gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), gtk_menu_item_new ()); // Separator
 
@@ -187,6 +214,36 @@ int ui_menu_bar_create(GtkWidget *vbox)
                                         GTK_ACCEL_VISIBLE);
             gtk_menu_shell_append (GTK_MENU_SHELL(messages_menu), display_brace);
             g_signal_connect(G_OBJECT(display_brace), "activate", G_CALLBACK(ui_callback_display_brace), NULL);
+        }
+    }
+
+    /* Create the Connect sub-menu */
+    {
+        connect = gtk_menu_item_new_with_mnemonic ("_Connect");
+        gtk_menu_shell_append (GTK_MENU_SHELL(menu_bar), connect);
+
+        connect_menu = gtk_menu_new ();
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM(connect), connect_menu);
+
+        /* Create the Help menu item */
+        {
+            auto_reconnect = gtk_menu_item_new_with_mnemonic ("_Automatic reconnection");
+            gtk_widget_add_accelerator (auto_reconnect, "activate", accel_group, GDK_KEY_t, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(connect_menu), auto_reconnect);
+            g_signal_connect(G_OBJECT(auto_reconnect), "activate", G_CALLBACK(ui_callback_on_auto_reconnect), (gpointer) TRUE);
+
+            connect_to = gtk_menu_item_new_with_mnemonic ("_Connect");
+            gtk_widget_add_accelerator (connect_to, "activate", accel_group, GDK_KEY_c, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(connect_menu), connect_to);
+            g_signal_connect(G_OBJECT(connect_to), "activate", G_CALLBACK(ui_callback_on_connect), (gpointer) TRUE);
+
+            disconnect = gtk_menu_item_new_with_mnemonic ("_Disconnect");
+            gtk_widget_add_accelerator (disconnect, "activate", accel_group, GDK_KEY_u, GDK_CONTROL_MASK,
+                                        GTK_ACCEL_VISIBLE);
+            gtk_menu_shell_append (GTK_MENU_SHELL(connect_menu), disconnect);
+            g_signal_connect(G_OBJECT(disconnect), "activate", G_CALLBACK(ui_callback_on_disconnect), NULL);
         }
     }
 
@@ -282,10 +339,10 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     /* Stop reading messages file */
     {
-        ui_main_data.stop = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
-        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.stop), "Stop loading messages file");
+        ui_main_data.stop_loading = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
+        gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.stop_loading), "Stop loading messages file");
 
-        g_signal_connect(G_OBJECT(ui_main_data.stop), "clicked",
+        g_signal_connect(G_OBJECT(ui_main_data.stop_loading), "clicked",
                         ui_progressbar_window_destroy, NULL);
     }
 
@@ -331,14 +388,24 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     /* Button to go to last signal in list */
     {
-        ui_main_data.signals_go_to_last_button = gtk_tool_button_new_from_stock(GTK_STOCK_GOTO_LAST);
+        ui_main_data.signals_go_to_last_button = gtk_toggle_tool_button_new_from_stock(GTK_STOCK_GOTO_LAST);
         /* Set the tooltip text */
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.signals_go_to_last_button), "Goto last signal");
 
         gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.signals_go_to_last_button), FALSE);
 
         g_signal_connect(G_OBJECT(ui_main_data.signals_go_to_last_button), "clicked",
-                        G_CALLBACK(ui_callback_signal_go_to_last), NULL);
+                        G_CALLBACK(ui_callback_signal_go_to_last), (gpointer) FALSE);
+        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.signals_go_to_last_button), TRUE);
+    }
+
+    /* Button to automatically try to reconnect */
+    {
+        ui_main_data.auto_reconnect = gtk_toggle_tool_button_new();
+        gtk_tool_button_set_label (GTK_TOOL_BUTTON(ui_main_data.auto_reconnect), "Auto");
+        g_signal_connect(G_OBJECT(ui_main_data.auto_reconnect), "clicked",
+                         G_CALLBACK(ui_callback_on_auto_reconnect), (gpointer) FALSE);
+        gtk_toggle_tool_button_set_active (GTK_TOGGLE_TOOL_BUTTON(ui_main_data.auto_reconnect), FALSE);
     }
 
     /* Button to connect to remote */
@@ -348,7 +415,7 @@ int ui_toolbar_create(GtkWidget *vbox)
         gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(ui_main_data.connect), "Connect to remote host");
 
         g_signal_connect(G_OBJECT(ui_main_data.connect), "clicked",
-                        G_CALLBACK(ui_callback_on_connect), NULL);
+                        G_CALLBACK(ui_callback_on_connect), (gpointer) TRUE);
     }
 
     /* Button to disconnect from remote */
@@ -387,8 +454,8 @@ int ui_toolbar_create(GtkWidget *vbox)
     gtk_box_pack_start(GTK_BOX(hbox), messages_label, FALSE, FALSE, LABEL_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.open_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.refresh_replay_file), FALSE, FALSE, BUTTON_SPACE);
-    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.stop), FALSE, FALSE, BUTTON_SPACE);
-    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop), FALSE);
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.stop_loading), FALSE, FALSE, BUTTON_SPACE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop_loading), FALSE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.save_replay_file_filtered), FALSE, FALSE, BUTTON_SPACE);
     ui_set_sensitive_save_message_buttons(FALSE);
@@ -401,6 +468,7 @@ int ui_toolbar_create(GtkWidget *vbox)
 
     gtk_box_pack_start(GTK_BOX(hbox), gtk_separator_new(GTK_ORIENTATION_VERTICAL), FALSE, FALSE, SEPARATOR_SPACE);
 
+    gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.auto_reconnect), FALSE, FALSE, LABEL_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.connect), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(ui_main_data.disconnect), FALSE, FALSE, BUTTON_SPACE);
     gtk_box_pack_start(GTK_BOX(hbox), ip_label, FALSE, FALSE, LABEL_SPACE);

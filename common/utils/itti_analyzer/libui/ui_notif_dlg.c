@@ -5,9 +5,26 @@
 #include "ui_notif_dlg.h"
 #include "ui_main_screen.h"
 
-static const char * const title_type[] =
+static const char * const gtk_response_strings[] =
+    {"GTK_RESPONSE_NONE", "GTK_RESPONSE_REJECT", "GTK_RESPONSE_ACCEPT", "GTK_RESPONSE_DELETE_EVENT", "GTK_RESPONSE_OK",
+     "GTK_RESPONSE_CANCEL", "GTK_RESPONSE_CLOSE", "GTK_RESPONSE_YES", "GTK_RESPONSE_NO", "GTK_RESPONSE_APPLY", "GTK_RESPONSE_HELP"};
+
+static const char * const title_type_strings[] =
     {"Info", "Warning", "Question", "Error", "Other"};
 
+const char * gtk_get_respose_string (gint response)
+{
+    gint response_index = - response - 1;
+
+    if ((0 <= response_index) && (response_index < (sizeof (gtk_response_strings) / sizeof (gtk_response_strings[0]))))
+    {
+        return (gtk_response_strings[response_index]);
+    }
+    else
+    {
+        return ("Invalid response value!");
+    }
+}
 int ui_notification_dialog(GtkMessageType type, gboolean cancel, const char *title, const char *fmt, ...)
 {
     va_list     args;
@@ -26,7 +43,7 @@ int ui_notification_dialog(GtkMessageType type, gboolean cancel, const char *tit
                                         buffer);
     gtk_dialog_set_default_response (GTK_DIALOG(dialogbox), GTK_RESPONSE_OK);
 
-    snprintf (buffer, sizeof(buffer), "%s: %s", title_type[type], title);
+    snprintf (buffer, sizeof(buffer), "%s: %s", title_type_strings[type], title);
     gtk_window_set_title (GTK_WINDOW(dialogbox), buffer);
 
     if (gtk_dialog_run (GTK_DIALOG (dialogbox)) == GTK_RESPONSE_CANCEL)

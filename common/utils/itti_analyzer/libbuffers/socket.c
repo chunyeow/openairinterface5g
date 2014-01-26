@@ -24,8 +24,10 @@
 
 #include "xml_parse.h"
 
-#define SOCKET_NB_CONNECT_RETRY             (5 * 60 * 10) /* About 5 minutes time-out for connecting to peer */
-#define SOCKET_US_BEFORE_CONNECT_RETRY      (100 * 1000)  /* Retry connection after 100 ms */
+/* Retry connection after 100 ms */
+#define SOCKET_US_BEFORE_CONNECT_RETRY      (100 * 1000)
+/* About 10 minutes time-out for connecting to peer */
+#define SOCKET_NB_CONNECT_RETRY             ((10 * 60 * 1000 * 1000) / SOCKET_US_BEFORE_CONNECT_RETRY)
 
 #define SOCKET_NB_SIGNALS_BEFORE_SIGNALLING 10
 #define SOCKET_MS_BEFORE_SIGNALLING         100
@@ -330,6 +332,7 @@ void *socket_thread_fct(void *arg)
                 }
                 free(socket_data->ip_address);
                 free(socket_data);
+                socket_abort_connection = FALSE;
                 /* Quit the thread */
                 pthread_exit(NULL);
             }

@@ -127,7 +127,6 @@ int ui_messages_read(char *file_name)
         size = st.st_size;
 
         ui_callback_signal_clear_list (NULL, NULL);
-        ui_main_data.follow_last = TRUE;
 
         /* Initialize the progress bar */
         ui_abort = FALSE;
@@ -585,7 +584,7 @@ int ui_progress_bar_set_fraction(double fraction)
 
             gtk_widget_show_all (ui_main_data.progressbar_window);
 
-            gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop), TRUE);
+            gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop_loading), TRUE);
         }
 
         gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(ui_main_data.progressbar), fraction);
@@ -608,7 +607,7 @@ int ui_progress_bar_terminate(void)
         gtk_widget_destroy (ui_main_data.progressbar_window);
         ui_main_data.progressbar_window = NULL;
     }
-    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop), FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui_main_data.stop_loading), FALSE);
 
     return RC_OK;
 }

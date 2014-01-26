@@ -28,6 +28,11 @@ gint ui_callback_check_string (const char *string,
                                const gint lenght,
                                const guint message_number);
 
+gboolean ui_pipe_callback(gint source, gpointer user_data);
+
+gboolean ui_callback_on_auto_reconnect(GtkWidget *widget,
+                                       gpointer data);
+
 gboolean ui_callback_on_connect(GtkWidget *widget,
                                 gpointer   data);
 
@@ -71,8 +76,6 @@ gboolean ui_callback_display_brace(GtkWidget *widget,
 
 gboolean ui_callback_signal_clear_list(GtkWidget *widget,
                                        gpointer   data);
-
-gboolean ui_pipe_callback(gint source, gpointer user_data);
 
 gboolean ui_callback_on_menu_none(GtkWidget *widget,
                                   gpointer data);
