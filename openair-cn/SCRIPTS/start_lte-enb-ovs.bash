@@ -39,6 +39,14 @@ declare BRIDGE="vswitch"
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
+test_command_install_package "gccxml"   "gccxml" "--force-yes"
+test_command_install_package "vconfig"  "vlan"
+test_command_install_package "iptables" "iptables"
+test_command_install_package "iperf"    "iperf"
+test_command_install_package "ip"       "iproute"
+test_command_install_script  "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
+test_command_install_package "tunctl"  "uml-utilities"
+test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
 
 
 #######################################################
