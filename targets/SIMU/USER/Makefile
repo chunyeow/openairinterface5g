@@ -74,7 +74,7 @@ ENABLE_DB = $(shell if [ `dpkg -l | grep libmysqlclient -c` = "0" ]; then  echo 
 ifeq ($(ENABLE_DB), 1)
 CFLAGS +=-I/usr/include/mysql -L/usr/lib/mysql -DENABLE_DB_STATS
 DB_LDFLAGS = -lmysqlclient
-endif 
+endif
 endif
 
 ifdef PRINT_STATS
@@ -240,7 +240,7 @@ endif
 OAISIM_PAD_OBJS =  $(OPENAIR_TARGETS)/SIMU/USER/discrete_event_generator.o
 OAISIM_PAD_OBJS += $(OPENAIR_TARGETS)/SIMU/USER/threadpool.o
 OAISIM_PAD_OBJS += $(OPENAIR_TARGETS)/SIMU/USER/oaisim_pad.o
-#deactivate the log offloading 
+#deactivate the log offloading
 ifndef LOG_THREAD
 CFLAGS +=-DLOG_NO_THREAD
 endif
@@ -266,7 +266,7 @@ LIBS		+= $(PGM_LIBS)
 endif
 
 OBJ += $(PHY_OBJS) $(SIMULATION_OBJS) $(ETHERNET_TRANSPORT_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(STATS_OBJS) $(NAS_OBJS)
-OBJ += $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) $(ENB_APP_OBJS) 
+OBJ += $(INT_OBJS) $(UTIL_OBJ) $(UTILS_OBJS) $(OAISIM_OBJS_COMMON) $(ENB_APP_OBJS)
 ifeq ($(OPENAIR2),1)
 OBJ += $(L2_OBJS)
 endif
@@ -297,6 +297,10 @@ printvars:
 	@echo S1AP objs: $(S1AP_BUILT_OBJS)
 	@echo CFLAGS: $(CFLAGS)
 	@echo Enable PGM: $(ENABLE_PGM)
+
+##UTIL_YAC_C = $(OPENAIR2_TOP)/UTIL/enb_parser.o
+##$(UTIL_LEX_C) = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))
+
 
 OAISIM_COMPILED_OBJECTS = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))
 
@@ -337,7 +341,7 @@ oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
 oaisim: $(OAISIM_COMPILED_OBJECTS) $(SHARED_DEPENDENCIES)
 	@echo "Linking oaisim ..."
 	@$(CC) $(INCLUDES) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OAISIM_COMPILED_OBJECTS) \
-	-lpthread -llapack_atlas -lforms -lrt $(LIBS) $(DB_LDFLAGS)
+	-lpthread -llapack_atlas -lforms -lrt -lconfig $(LIBS) $(DB_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
 	mv oaisim oaisim_eNB
@@ -363,7 +367,7 @@ nasmesh_fix_install:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
 	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink_address_fix.ko)
 	(sudo insmod $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko)
-	(cp $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko . )	
+	(cp $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko . )
 nasmesh_nl:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
 	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink.ko)
@@ -387,7 +391,7 @@ rrm_std_cellular:
 
 cleanall: common-cleanall clean cleanasn1
 
-cleanalmostall: clean 
+cleanalmostall: clean
 	rm -f $(ASN1_MSG_OBJS1)
 
 clean: common-clean
@@ -456,21 +460,21 @@ otg_all: otg_latency otg_gp
 
 # need to check if the file exists before calling otgplot
 otg_latency:
-	export TITLE="Application OWD(ms)" 
-	cp /tmp/otg_latency.dat /tmp/onewaydelay.dat	
+	export TITLE="Application OWD(ms)"
+	cp /tmp/otg_latency.dat /tmp/onewaydelay.dat
 	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/otg_latency.dat" "[$(COL1):$(COL2)]"
 otg_latency_bg:
-	export TITLE="Background OWD(ms)" 
+	export TITLE="Background OWD(ms)"
 	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/otg_latency_bg.dat" "[$(COL1):$(COL2)]"
 otg_gp:
-	export TITLE="Application Goodput(Kb/s)" 
+	export TITLE="Application Goodput(Kb/s)"
 	cp /tmp/otg_GP.dat /tmp/goodput.dat
 	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/goodput.dat" "[$(COL1):$(COL2)]"
 otg_gp_bg:
-	export TITLE="Background Goodput(Kb/s)" 
+	export TITLE="Background Goodput(Kb/s)"
 	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/otg_GP_bg.dat" "[$(COL1):$(COL2)]"
 otg_jitter:
-	export TITLE="Aplication Jitter(ms)" 
+	export TITLE="Aplication Jitter(ms)"
 	$(OPENAIR2_DIR)/UTIL/OTG/OTGplot "/tmp/otg_jitter.dat" "[$(COL1):$(COL2)]"
 
 pexpect = $(shell if [ `dpkg -l | grep pexpect -c` = "0" ]; then  echo "0" ; else  echo "1" ; fi )
@@ -478,7 +482,7 @@ pexpect = $(shell if [ `dpkg -l | grep pexpect -c` = "0" ]; then  echo "0" ; els
 pre-ci:
 	@echo "Pre-commit check"
 
-ifeq 	($(pexpect), 1) 
+ifeq 	($(pexpect), 1)
 ifndef	PW
 	@echo "Usage: make pre-ci PW=mypassword"
 	@echo "Password is used to access the local host through ssh."
