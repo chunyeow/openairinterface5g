@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "enb_app.h"
+#include "enb_config.h"
 #include "assertions.h"
 
 #include "log.h"
@@ -48,6 +49,7 @@
 # endif
 
 extern unsigned char NB_eNB_INST;
+extern char         *g_conf_config_file_name;
 #endif
 
 #if defined(ENABLE_ITTI)
@@ -57,159 +59,14 @@ extern unsigned char NB_eNB_INST;
 #   define ENB_REGISTER_RETRY_DELAY 10
 # endif
 
-typedef struct mme_ip_address_s {
-    unsigned ipv4:1;
-    unsigned ipv6:1;
-    char *ipv4_address;
-    char *ipv6_address;
-} mme_ip_address_t;
-
-typedef struct Enb_properties_s {
-    /* Unique eNB_id to identify the eNB within EPC.
-     * For macro eNB ids this field should be 20 bits long.
-     * For home eNB ids this field should be 28 bits long.
-     */
-    uint32_t eNB_id;
-
-    /* The type of the cell */
-    enum cell_type_e cell_type;
-
-    /* Optional name for the cell
-     * NOTE: the name can be NULL (i.e no name) and will be cropped to 150
-     * characters.
-     */
-    char *eNB_name;
-
-    /* Tracking area code */
-    uint16_t tac;
-
-    /* Mobile Country Code
-     * Mobile Network Code
-     */
-    uint16_t mcc;
-    uint16_t mnc;
-
-    /* Default Paging DRX of the eNB as defined in TS 36.304 */
-    paging_drx_t default_drx;
-
-    /* Nb of MME to connect to */
-    uint8_t          nb_mme;
-    /* List of MME to connect to */
-    mme_ip_address_t mme_ip_address[S1AP_MAX_NB_MME_IP_ADDRESS];
-} Enb_properties_t;
-
 /*------------------------------------------------------------------------------*/
 # if defined(ENABLE_USE_MME)
 static uint32_t enb_nb = 1; /* Default number of eNB */
 # endif
 
-/* eNB 0 properties */
-static Enb_properties_t enb_0_properties =
-{
-    347472,
-    CELL_MACRO_ENB,
-    "eNB_Eurecom_0",
-    1,      /* Tracking area code, 0x0000 and 0xfffe are reserved values */
-    208,    /* Mobile Country Code */
-#ifdef EXMIMO_IOT
-    92,     /* Mobile Network Code */
-#else
-    10,     /* Mobile Network Code */
-#endif
-    PAGING_DRX_256,
-    1, /* There are 2 addresses defined, but use only one by default */
-    {
-        {
-            1,
-            0,
-            "192.168.12.87",
-            "2001:660:5502:12:30da:829a:2343:b6cf"
-        },
-        {
-            1,
-            0,
-            "192.168.12.86",
-            ""
-        }
-    }
-};
 
-/* eNB 1 properties */
-static Enb_properties_t enb_1_properties =
-{
-    347473,
-    CELL_MACRO_ENB,
-    "eNB_Eurecom_1",
-    1,
-    208,
-    92,
-    PAGING_DRX_256,
-    1, /* There are 2 addresses defined, but use only one by default */
-    {
-        {
-            1,
-            0,
-            "192.168.12.87",
-            "2001:660:5502:12:30da:829a:2343:b6cf"
-        },
-        {
-            1,
-            0,
-            "192.168.12.88",
-            ""
-        }
-    }
-};
-
-/* eNB 2 properties */
-static Enb_properties_t enb_2_properties =
-{
-    347474,
-    CELL_MACRO_ENB,
-    "eNB_Eurecom_2",
-    1,
-    208,
-    92,
-    PAGING_DRX_256,
-    1,
-    {
-        {
-            1,
-            0,
-            "192.168.12.87",
-            "2001:660:5502:12:30da:829a:2343:b6cf"
-        },
-    }
-};
-
-/* eNB 3 properties */
-static Enb_properties_t enb_3_properties =
-{
-    347475,
-    CELL_MACRO_ENB,
-    "eNB_Eurecom_3",
-    1,
-    208,
-    92,
-    PAGING_DRX_256,
-    1,
-    {
-        {
-            1,
-            0,
-            "192.168.12.87",
-            "2001:660:5502:12:30da:829a:2343:b6cf"
-        },
-    }
-};
-
-static Enb_properties_t *enb_properties[] =
-{
-    &enb_0_properties,
-    &enb_1_properties,
-    &enb_2_properties,
-    &enb_3_properties,
-};
+extern Enb_properties_t *g_enb_properties[];
+extern int               g_num_enb_properties;
 
 /*------------------------------------------------------------------------------*/
 static void configure_rrc(void)
@@ -228,10 +85,10 @@ static void configure_rrc(void)
     {
         msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
 
-        RRC_CONFIGURATION_REQ (msg_p).cell_identity =   enb_properties[eNB_id]->eNB_id;
-        RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties[eNB_id]->tac;
-        RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties[eNB_id]->mcc;
-        RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties[eNB_id]->mnc;
+        RRC_CONFIGURATION_REQ (msg_p).cell_identity =   g_enb_properties[eNB_id]->eNB_id;
+        RRC_CONFIGURATION_REQ (msg_p).tac =             g_enb_properties[eNB_id]->tac;
+        RRC_CONFIGURATION_REQ (msg_p).mcc =             g_enb_properties[eNB_id]->mcc;
+        RRC_CONFIGURATION_REQ (msg_p).mnc =             g_enb_properties[eNB_id]->mnc;
 
         itti_send_msg_to_task (TASK_RRC_ENB, eNB_id, msg_p);
     }
@@ -253,7 +110,8 @@ static uint32_t eNB_app_register()
 
     DevCheck(eNB_id_end <= NUMBER_OF_eNB_MAX, eNB_id_end, NUMBER_OF_eNB_MAX, 0);
 #   endif
-    DevCheck(eNB_id_end <= (sizeof(enb_properties) / sizeof(enb_properties[0])), eNB_id_end, (sizeof(enb_properties) / sizeof(enb_properties[0])), 0);
+    //DevCheck(eNB_id_end <= (sizeof(g_enb_properties) / sizeof(g_enb_properties[0])), eNB_id_end, (sizeof(g_enb_properties) / sizeof(g_enb_properties[0])), 0);
+    DevCheck((eNB_id_end - eNB_id_start) == g_num_enb_properties, eNB_id_end - eNB_id_start, g_num_enb_properties, 0);
 
     for (eNB_id = eNB_id_start; (eNB_id < eNB_id_end) ; eNB_id++)
     {
@@ -266,12 +124,12 @@ static uint32_t eNB_app_register()
 
             /* Overwrite default eNB ID */
             hash = s1ap_generate_eNB_id ();
-            enb_properties[eNB_id]->eNB_id = eNB_id + (hash & 0xFFFF8);
+            g_enb_properties[eNB_id]->eNB_id = eNB_id + (hash & 0xFFFF8);
 
             if (EPC_MODE_ENABLED)
             {
                 /* Overwrite default IP v4 address by value from command line */
-                enb_properties[eNB_id]->mme_ip_address[0].ipv4_address = EPC_MODE_MME_ADDRESS;
+                g_enb_properties[eNB_id]->mme_ip_address[0].ipv4_address = EPC_MODE_MME_ADDRESS;
             }
 
             /* note:  there is an implicit relationship between the data structure and the message name */
@@ -280,26 +138,26 @@ static uint32_t eNB_app_register()
             s1ap_register_eNB = &S1AP_REGISTER_ENB_REQ(msg_p);
 
             /* Some default/random parameters */
-            s1ap_register_eNB->eNB_id = enb_properties[eNB_id]->eNB_id;
-            s1ap_register_eNB->cell_type = enb_properties[eNB_id]->cell_type;
-            s1ap_register_eNB->eNB_name = enb_properties[eNB_id]->eNB_name;
-            s1ap_register_eNB->tac = enb_properties[eNB_id]->tac;
-            s1ap_register_eNB->mcc = enb_properties[eNB_id]->mcc;
-            s1ap_register_eNB->mnc = enb_properties[eNB_id]->mnc;
-            s1ap_register_eNB->default_drx = enb_properties[eNB_id]->default_drx;
+            s1ap_register_eNB->eNB_id = g_enb_properties[eNB_id]->eNB_id;
+            s1ap_register_eNB->cell_type = g_enb_properties[eNB_id]->cell_type;
+            s1ap_register_eNB->eNB_name = g_enb_properties[eNB_id]->eNB_name;
+            s1ap_register_eNB->tac = g_enb_properties[eNB_id]->tac;
+            s1ap_register_eNB->mcc = g_enb_properties[eNB_id]->mcc;
+            s1ap_register_eNB->mnc = g_enb_properties[eNB_id]->mnc;
+            s1ap_register_eNB->default_drx = g_enb_properties[eNB_id]->default_drx;
 
-            s1ap_register_eNB->nb_mme = enb_properties[eNB_id]->nb_mme;
+            s1ap_register_eNB->nb_mme = g_enb_properties[eNB_id]->nb_mme;
             DevCheck(s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, eNB_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);
 
             for (mme_id = 0; mme_id < s1ap_register_eNB->nb_mme; mme_id++)
             {
-                s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = enb_properties[eNB_id]->mme_ip_address[mme_id].ipv4;
-                s1ap_register_eNB->mme_ip_address[mme_id].ipv6 = enb_properties[eNB_id]->mme_ip_address[mme_id].ipv6;
+                s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv4;
+                s1ap_register_eNB->mme_ip_address[mme_id].ipv6 = g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv6;
                 strncpy (s1ap_register_eNB->mme_ip_address[mme_id].ipv4_address,
-                         enb_properties[eNB_id]->mme_ip_address[mme_id].ipv4_address,
+                         g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv4_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv4_address));
                 strncpy (s1ap_register_eNB->mme_ip_address[mme_id].ipv6_address,
-                         enb_properties[eNB_id]->mme_ip_address[mme_id].ipv6_address,
+                         g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv6_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv6_address));
             }
 
@@ -333,6 +191,7 @@ void *eNB_app_task(void *args_p)
 # if defined(ENABLE_USE_MME)
 #   if defined(OAI_EMU)
     enb_nb = oai_emulation.info.nb_enb_local;
+    enb_config_init(g_conf_config_file_name);
 #   endif
 # endif
 
