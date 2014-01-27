@@ -201,20 +201,20 @@ int decode_tracking_area_update_request(tracking_area_update_request_msg *tracki
             case TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_IEI:
                 if ((decoded_result =
                     decode_additional_update_type(&tracking_area_update_request->additionalupdatetype,
-                    TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_IEI,
-                    buffer + decoded, len - decoded)) <= 0)
+                                                  TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_IEI,
+                                                  buffer + decoded, len - decoded)) <= 0)
                     return decoded_result;
                 decoded += decoded_result;
                 /* Set corresponding mask to 1 in presencemask */
                 tracking_area_update_request->presencemask |= TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
                 break;
 
-	    case TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_IEI:
-		if ((decoded_result = 
-		     decode_guti_type(&tracking_area_update_request->oldgutitype,
-				TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_IEI,
-				buffer + decoded, len - decoded)) <= 0)
-                    return decoded_result;
+            case TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_IEI:
+                if ((decoded_result =
+                     decode_guti_type(&tracking_area_update_request->oldgutitype,
+                                      TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_IEI,
+                                      buffer + decoded, len - decoded)) <= 0)
+                        return decoded_result;
                 decoded += decoded_result;
                 /* Set corresponding mask to 1 in presencemask */
                 tracking_area_update_request->presencemask |= TRACKING_AREA_UPDATE_REQUEST_OLD_GUTI_TYPE_PRESENT;

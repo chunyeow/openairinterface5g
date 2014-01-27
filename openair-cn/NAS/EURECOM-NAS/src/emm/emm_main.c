@@ -325,7 +325,8 @@ void emm_main_initialize(emm_indication_callback_t cb, const char *imei)
                               _usim_data.imsi.u.value[3],
                               _usim_data.imsi.u.value[4],
                               _usim_data.imsi.u.value[5],
-                              _usim_data.imsi.u.value[6], _usim_data.imsi.u.value[7]);
+                              _usim_data.imsi.u.value[6],
+                              _usim_data.imsi.u.value[7]);
                     memset(&_emm_data.nvdata.rplmn, 0xFF, sizeof(plmn_t));
                     _emm_data.nvdata.eplmn.n_plmns = 0;
                 }
