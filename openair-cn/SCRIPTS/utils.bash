@@ -213,6 +213,20 @@ assert() {
     fi
 }
 
+test_command_install_lib() {
+  # usage: test_command_install_package searched_binary package_to_be_installed_if_binary_not_found optional_option_to_apt_get_install
+  if [ ! -f $1 ]; then
+      echo_warning "$2 seems to be not installed, trying..."
+      apt-get install $2 -y
+      if [ ! -f $1 ]; then
+          echo_error "$1 unavailable"
+          exit 1
+      fi
+  fi
+  echo_success "$1 available"
+}
+
+
 test_command_install_package() {
   # usage: test_command_install_package searched_binary package_to_be_installed_if_binary_not_found optional_option_to_apt_get_install
   if [ $# -eq 2 ]; then
