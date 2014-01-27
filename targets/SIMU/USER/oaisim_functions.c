@@ -114,236 +114,189 @@ extern pdcp_mbms_t pdcp_mbms_array[MAX_MODULES][16*29];
 
 extern void help (void);
 
-void get_simulation_options(int argc, char *argv[]) {
-  char c;
-  int option_index;
-  static struct option long_options[] = {
-    {"enb-conf",               required_argument, 0, 0},
-    {"pdcp_period",            required_argument, 0, 0},
-    {"omg_period",             required_argument, 0, 0},
-    {"enb-ral-listening-port", required_argument, 0, 0},
-    {"enb-ral-ip-address",     required_argument, 0, 0},
-    {"enb-ral-link-id",        required_argument, 0, 0},
-    {"enb-ral-link-address",   required_argument, 0, 0},
-    {"enb-mihf-remote-port",   required_argument, 0, 0},
-    {"enb-mihf-ip-address",    required_argument, 0, 0},
-    {"enb-mihf-id",            required_argument, 0, 0},
-    {"ue-ral-listening-port",  required_argument, 0, 0},
-    {"ue-ral-ip-address",      required_argument, 0, 0},
-    {"ue-ral-link-id",         required_argument, 0, 0},
-    {"ue-ral-link-address",    required_argument, 0, 0},
-    {"ue-mihf-remote-port",    required_argument, 0, 0},
-    {"ue-mihf-ip-address",     required_argument, 0, 0},
-    {"ue-mihf-id",             required_argument, 0, 0},
-    {NULL, 0, NULL, 0}
-  };
+enum {
+    LONG_OPTION_START = 0x100, /* Start after regular single char options */
 
-  while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
-    switch (c) {
-    case 0:
-      if (! strcmp(long_options[option_index].name, "enb-conf")) {
-          if (optarg) {
-              g_conf_config_file_name = strdup(optarg);
-              printf("eNB configuration file is %s\n", g_conf_config_file_name);
-          }
-      } else if (! strcmp(long_options[option_index].name, "pdcp_period")) {
-        if (optarg) {
-          pdcp_period = atoi(optarg);
-          printf("PDCP period is %d\n", pdcp_period);
-        }
-      } else if (! strcmp(long_options[option_index].name, "omg_period")) {
-          if (optarg) {
-            omg_period = atoi(optarg);
-            printf("OMG period is %d\n", omg_period);
-          }
+    LONG_OPTION_ENB_CONF,
+
+    LONG_OPTION_PDNC_PERIOD,
+    LONG_OPTION_OMG_PERIOD,
+
+    LONG_OPTION_ENB_RAL_LISTENING_PORT,
+    LONG_OPTION_ENB_RAL_IP_ADDRESS,
+    LONG_OPTION_ENB_RAL_LINK_ID,
+    LONG_OPTION_ENB_RAL_LINK_ADDRESS,
+
+    LONG_OPTION_ENB_MIHF_REMOTE_PORT,
+    LONG_OPTION_ENB_MIHF_IP_ADDRESS,
+    LONG_OPTION_ENB_MIHF_ID,
+
+    LONG_OPTION_UE_RAL_LISTENING_PORT,
+    LONG_OPTION_UE_RAL_IP_ADDRESS,
+    LONG_OPTION_UE_RAL_LINK_ID,
+    LONG_OPTION_UE_RAL_LINK_ADDRESS,
+
+    LONG_OPTION_UE_MIHF_REMOTE_PORT,
+    LONG_OPTION_UE_MIHF_IP_ADDRESS,
+    LONG_OPTION_UE_MIHF_ID,
+} long_option_e;
+
+static struct option long_options[] = {
+  {"enb-conf",               required_argument, 0, LONG_OPTION_ENB_CONF},
+
+  {"pdcp_period",            required_argument, 0, LONG_OPTION_PDNC_PERIOD},
+  {"omg_period",             required_argument, 0, LONG_OPTION_OMG_PERIOD},
+
+  {"enb-ral-listening-port", required_argument, 0, LONG_OPTION_ENB_RAL_LISTENING_PORT},
+  {"enb-ral-ip-address",     required_argument, 0, LONG_OPTION_ENB_RAL_IP_ADDRESS},
+  {"enb-ral-link-id",        required_argument, 0, LONG_OPTION_ENB_RAL_LINK_ID},
+  {"enb-ral-link-address",   required_argument, 0, LONG_OPTION_ENB_RAL_LINK_ADDRESS},
+
+  {"enb-mihf-remote-port",   required_argument, 0, LONG_OPTION_ENB_MIHF_REMOTE_PORT},
+  {"enb-mihf-ip-address",    required_argument, 0, LONG_OPTION_ENB_MIHF_IP_ADDRESS},
+  {"enb-mihf-id",            required_argument, 0, LONG_OPTION_ENB_MIHF_ID},
+
+  {"ue-ral-listening-port",  required_argument, 0, LONG_OPTION_UE_RAL_LISTENING_PORT},
+  {"ue-ral-ip-address",      required_argument, 0, LONG_OPTION_UE_RAL_IP_ADDRESS},
+  {"ue-ral-link-id",         required_argument, 0, LONG_OPTION_UE_RAL_LINK_ID},
+  {"ue-ral-link-address",    required_argument, 0, LONG_OPTION_UE_RAL_LINK_ADDRESS},
+
+  {"ue-mihf-remote-port",    required_argument, 0, LONG_OPTION_UE_MIHF_REMOTE_PORT},
+  {"ue-mihf-ip-address",     required_argument, 0, LONG_OPTION_UE_MIHF_IP_ADDRESS},
+  {"ue-mihf-id",             required_argument, 0, LONG_OPTION_UE_MIHF_ID},
+  {NULL, 0, NULL, 0}
+};
+
+void get_simulation_options(int argc, char *argv[]) {
+  int option;
+
+  while ((option = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, NULL)) != -1) {
+    switch (option) {
+    case LONG_OPTION_ENB_CONF:
+      if (optarg) {
+          g_conf_config_file_name = strdup(optarg);
+          printf("eNB configuration file is %s\n", g_conf_config_file_name);
       }
+      break;
+
+    case LONG_OPTION_PDNC_PERIOD:
+      if (optarg) {
+        pdcp_period = atoi(optarg);
+        printf("PDCP period is %d\n", pdcp_period);
+      }
+      break;
+
+    case LONG_OPTION_OMG_PERIOD:
+      if (optarg) {
+        omg_period = atoi(optarg);
+        printf("OMG period is %d\n", omg_period);
+      }
+      break;
+
 #if defined(ENABLE_RAL)
-      else if (! strcmp(long_options[option_index].name, "enb-ral-listening-port")) {
-          if (optarg) {
-            g_conf_enb_ral_listening_port = strdup(optarg);
-            printf("eNB RAL listening port is %s\n", g_conf_enb_ral_listening_port);
-          }
-      } else if (! strcmp(long_options[option_index].name, "enb-ral-ip-address")) {
-          if (optarg) {
-            g_conf_enb_ral_ip_address = strdup(optarg);
-            printf("eNB RAL IP address is %s\n", g_conf_enb_ral_ip_address);
-          }
-      } else if (! strcmp(long_options[option_index].name, "enb-ral-link-address")) {
-          if (optarg) {
-            g_conf_enb_ral_link_address = strdup(optarg);
-            printf("eNB RAL link address is %s\n", g_conf_enb_ral_link_address);
-          }
-      } else if (! strcmp(long_options[option_index].name, "enb-mihf-remote-port")) {
-          if (optarg) {
-            g_conf_enb_mihf_remote_port = strdup(optarg);
-            printf("eNB MIH-F remote port is %s\n", g_conf_enb_mihf_remote_port);
-          }
-      } else if (! strcmp(long_options[option_index].name, "enb-mihf-ip-address")) {
-          if (optarg) {
-            g_conf_enb_mihf_ip_address = strdup(optarg);
-            printf("eNB MIH-F IP address is %s\n", g_conf_enb_mihf_ip_address);
-          }
-      } else if (! strcmp(long_options[option_index].name, "enb-ral-link-id")) {
-          if (optarg) {
-            g_conf_enb_ral_link_id = strdup(optarg);
-            printf("eNB RAL link id is %s\n", g_conf_enb_ral_link_id);
-          }
-      } else if (! strcmp(long_options[option_index].name, "enb-mihf-id")) {
-          if (optarg) {
-            g_conf_enb_mihf_id = strdup(optarg);
-            printf("eNB MIH-F id is %s\n", g_conf_enb_mihf_id);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-ral-listening-port")) {
-          if (optarg) {
-              g_conf_ue_ral_listening_port = strdup(optarg);
-              printf("UE RAL listening port is %s\n", g_conf_ue_ral_listening_port);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-ral-ip-address")) {
-          if (optarg) {
-              g_conf_ue_ral_ip_address = strdup(optarg);
-              printf("UE RAL IP address is %s\n", g_conf_ue_ral_ip_address);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-ral-link-address")) {
-          if (optarg) {
-              g_conf_ue_ral_link_address = strdup(optarg);
-              printf("UE RAL link address is %s\n", g_conf_ue_ral_link_address);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-mihf-remote-port")) {
-          if (optarg) {
-              g_conf_ue_mihf_remote_port = strdup(optarg);
-              printf("UE MIH-F remote port is %s\n", g_conf_ue_mihf_remote_port);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-mihf-ip-address")) {
-          if (optarg) {
-              g_conf_ue_mihf_ip_address = strdup(optarg);
-              printf("UE MIH-F IP address is %s\n", g_conf_ue_mihf_ip_address);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-ral-link-id")) {
-          if (optarg) {
-              g_conf_ue_ral_link_id = strdup(optarg);
-              printf("UE RAL link id is %s\n", g_conf_ue_ral_link_id);
-          }
-      } else if (! strcmp(long_options[option_index].name, "ue-mihf-id")) {
-          if (optarg) {
-              g_conf_ue_mihf_id = strdup(optarg);
-              printf("UE MIH-F id is %s\n", g_conf_ue_mihf_id);
-          }
+    case LONG_OPTION_ENB_RAL_LISTENING_PORT:
+      if (optarg) {
+        g_conf_enb_ral_listening_port = strdup(optarg);
+        printf("eNB RAL listening port is %s\n", g_conf_enb_ral_listening_port);
       }
+      break;
+
+    case LONG_OPTION_ENB_RAL_IP_ADDRESS:
+      if (optarg) {
+        g_conf_enb_ral_ip_address = strdup(optarg);
+        printf("eNB RAL IP address is %s\n", g_conf_enb_ral_ip_address);
+      }
+      break;
+
+    case LONG_OPTION_ENB_RAL_LINK_ADDRESS:
+      if (optarg) {
+        g_conf_enb_ral_link_address = strdup(optarg);
+        printf("eNB RAL link address is %s\n", g_conf_enb_ral_link_address);
+      }
+      break;
+
+    case LONG_OPTION_ENB_RAL_LINK_ID:
+      if (optarg) {
+        g_conf_enb_ral_link_id = strdup(optarg);
+        printf("eNB RAL link id is %s\n", g_conf_enb_ral_link_id);
+      }
+      break;
+
+    case LONG_OPTION_ENB_MIHF_REMOTE_PORT:
+      if (optarg) {
+        g_conf_enb_mihf_remote_port = strdup(optarg);
+        printf("eNB MIH-F remote port is %s\n", g_conf_enb_mihf_remote_port);
+      }
+      break;
+
+    case LONG_OPTION_ENB_MIHF_IP_ADDRESS:
+      if (optarg) {
+        g_conf_enb_mihf_ip_address = strdup(optarg);
+        printf("eNB MIH-F IP address is %s\n", g_conf_enb_mihf_ip_address);
+      }
+      break;
+
+    case LONG_OPTION_ENB_MIHF_ID:
+      if (optarg) {
+        g_conf_enb_mihf_id = strdup(optarg);
+        printf("eNB MIH-F id is %s\n", g_conf_enb_mihf_id);
+      }
+      break;
+
+    case LONG_OPTION_UE_RAL_LISTENING_PORT:
+      if (optarg) {
+          g_conf_ue_ral_listening_port = strdup(optarg);
+          printf("UE RAL listening port is %s\n", g_conf_ue_ral_listening_port);
+      }
+      break;
+
+    case LONG_OPTION_UE_RAL_IP_ADDRESS:
+      if (optarg) {
+          g_conf_ue_ral_ip_address = strdup(optarg);
+          printf("UE RAL IP address is %s\n", g_conf_ue_ral_ip_address);
+      }
+      break;
+
+    case LONG_OPTION_UE_RAL_LINK_ID:
+      if (optarg) {
+          g_conf_ue_ral_link_id = strdup(optarg);
+          printf("UE RAL link id is %s\n", g_conf_ue_ral_link_id);
+      }
+      break;
+
+    case LONG_OPTION_UE_RAL_LINK_ADDRESS:
+      if (optarg) {
+          g_conf_ue_ral_link_address = strdup(optarg);
+          printf("UE RAL link address is %s\n", g_conf_ue_ral_link_address);
+      }
+      break;
+
+    case LONG_OPTION_UE_MIHF_REMOTE_PORT:
+      if (optarg) {
+          g_conf_ue_mihf_remote_port = strdup(optarg);
+          printf("UE MIH-F remote port is %s\n", g_conf_ue_mihf_remote_port);
+      }
+      break;
+
+    case LONG_OPTION_UE_MIHF_IP_ADDRESS:
+      if (optarg) {
+          g_conf_ue_mihf_ip_address = strdup(optarg);
+          printf("UE MIH-F IP address is %s\n", g_conf_ue_mihf_ip_address);
+      }
+      break;
+
+    case LONG_OPTION_UE_MIHF_ID:
+      if (optarg) {
+          g_conf_ue_mihf_id = strdup(optarg);
+          printf("UE MIH-F id is %s\n", g_conf_ue_mihf_id);
+      }
+      break;
 #endif
-      break;
-    case 'L':                   // set FDD
-      flag_LA = atoi(optarg);
-      break;
-    case 'F':                   // set FDD
-      printf("Setting Frame to FDD\n");
-      oai_emulation.info.frame_type = 0;
-      break;
-    case 'C':
-      oai_emulation.info.tdd_config = atoi (optarg);
-      if (oai_emulation.info.tdd_config > 6) {
-        printf("Illegal tdd_config %d (should be 0-6)\n", oai_emulation.info.tdd_config);
-        exit (-1);
-      }
-      break;
-    case 'Q':
-      //eMBMS_active=1;
-      // 0 : not used (default), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 4: eMBMS relaying enabled, RRC disabled
-      oai_emulation.info.eMBMS_active_state = atoi (optarg);
-      break;
-    case 'R':
-      oai_emulation.info.N_RB_DL = atoi (optarg);
-      if ((oai_emulation.info.N_RB_DL != 6) && (oai_emulation.info.N_RB_DL != 15) && (oai_emulation.info.N_RB_DL != 25)
-        && (oai_emulation.info.N_RB_DL != 50) && (oai_emulation.info.N_RB_DL != 75) && (oai_emulation.info.N_RB_DL != 100)) {
-        printf("Illegal N_RB_DL %d (should be one of 6,15,25,50,75,100)\n", oai_emulation.info.N_RB_DL);
-        exit (-1);
-      }
-    case 'N':
-      Nid_cell = atoi (optarg);
-      if (Nid_cell > 503) {
-        printf("Illegal Nid_cell %d (should be 0 ... 503)\n", Nid_cell);
-        exit(-1);
-      }
-      break;
-    case 'h':
-      help ();
-      exit (1);
-      break;
-    case 'H':
-      oai_emulation.info.handover_active=1;
-      printf("Activate the handover procedure at RRC\n");
-      break;
-    case 'x':
-      oai_emulation.info.transmission_mode = atoi (optarg);
-      if ((oai_emulation.info.transmission_mode != 1) &&  (oai_emulation.info.transmission_mode != 2) && (oai_emulation.info.transmission_mode != 5) && (oai_emulation.info.transmission_mode != 6)) {
-        printf("Unsupported transmission mode %d\n",oai_emulation.info.transmission_mode);
-        exit(-1);
-      }
-      break;
-    case 'y':
-      nb_antennas_rx=atoi(optarg);
-      if (nb_antennas_rx>4) {
-        printf("Cannot have more than 4 antennas\n");
-        exit(-1);
-      }
-      break;
-    case 'm':
-      target_dl_mcs = atoi (optarg);
-      break;
-    case 'r':
-      rate_adaptation_flag = 1;
-      break;
-    case 'n':
-      oai_emulation.info.n_frames = atoi (optarg);
-      //n_frames = (n_frames >1024) ? 1024: n_frames; // adjust the n_frames if higher that 1024
-      oai_emulation.info.n_frames_flag = 1;
-      break;
-    case 's':
-      snr_dB = atoi (optarg);
-      //      set_snr = 1;
-      oai_emulation.info.ocm_enabled=0;
-      break;
-    case 'S':
-      sinr_dB = atoi (optarg);
-      set_sinr = 1;
-      oai_emulation.info.ocm_enabled=0;
-      break;
-    case 'j' :
-      // number of relay nodes: currently only applicable to eMBMS
-      oai_emulation.info.nb_rn_local = atoi (optarg);
-      break;
-    case 'J':
-      ue_connection_test=1;
-      oai_emulation.info.ocm_enabled=0;
-      snr_step = atof(optarg);
-      break;
-    case 'k':
-      //ricean_factor = atof (optarg);
-      printf("[SIM] Option k is no longer supported on the command line. Please specify your channel model in the xml template\n");
-      exit(-1);
-      break;
-    case 'K':
-      oai_emulation.info.itti_dump_file = optarg;
-      break;
-    case 't':
-      //Td = atof (optarg);
-      printf("[SIM] Option t is no longer supported on the command line. Please specify your channel model in the xml template\n");
-      exit(-1);
-      break;
-    case 'f':
-      forgetting_factor = atof (optarg);
-      break;
-    case 'z':
-      cooperation_flag = atoi (optarg);
-      break;
-    case 'u':
-      oai_emulation.info.nb_ue_local = atoi (optarg);
-      break;
-    case 'b':
-      oai_emulation.info.nb_enb_local = atoi (optarg);
-      break;
+
     case 'a':
       abstraction_flag = 1;
       break;
+
     case 'A':
       //oai_emulation.info.ocm_enabled=1;
       if (optarg == NULL)
@@ -352,9 +305,114 @@ void get_simulation_options(int argc, char *argv[]) {
         oai_emulation.environment_system_config.fading.small_scale.selected_option= optarg;
       //awgn_flag = 1;
       break;
-    case 'p':
-      oai_emulation.info.nb_master = atoi (optarg);
+
+    case 'b':
+      oai_emulation.info.nb_enb_local = atoi (optarg);
       break;
+
+    case 'B':
+      oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = optarg;
+      //oai_emulation.info.omg_model_enb = atoi (optarg);
+      break;
+
+    case 'c':
+      strcpy(oai_emulation.info.local_server, optarg);
+      oai_emulation.info.ocg_enabled=1;
+      break;
+
+    case 'C':
+      oai_emulation.info.tdd_config = atoi (optarg);
+      if (oai_emulation.info.tdd_config > 6) {
+        printf("Illegal tdd_config %d (should be 0-6)\n", oai_emulation.info.tdd_config);
+        exit (-1);
+      }
+      break;
+
+    case 'D':
+      oai_emulation.info.multicast_ifname = strdup(optarg);
+      break;
+
+    case 'e':
+      oai_emulation.info.extended_prefix_flag = 1;
+      break;
+
+    case 'E':
+      set_seed = 1;
+      oai_emulation.info.seed = atoi (optarg);
+      break;
+
+    case 'f':
+      forgetting_factor = atof (optarg);
+      break;
+
+    case 'F':                   // set FDD
+      printf("Setting Frame to FDD\n");
+      oai_emulation.info.frame_type = 0;
+      break;
+
+    case 'g':
+      oai_emulation.info.multicast_group = atoi (optarg);
+      break;
+
+    case 'G' :
+      oai_emulation.info.otg_bg_traffic_enabled = 1;
+      break;
+
+    case 'h':
+      help ();
+      exit (1);
+      break;
+
+    case 'H':
+      oai_emulation.info.handover_active=1;
+      printf("Activate the handover procedure at RRC\n");
+      break;
+
+    case 'i':
+#ifdef PROC
+      Process_Flag=1;
+      node_id = wgt+atoi(optarg);
+      port+=atoi(optarg);
+#endif
+      break;
+
+    case 'I':
+      oai_emulation.info.cli_enabled = 1;
+      break;
+
+    case 'j' :
+      // number of relay nodes: currently only applicable to eMBMS
+      oai_emulation.info.nb_rn_local = atoi (optarg);
+      break;
+
+    case 'J':
+      ue_connection_test=1;
+      oai_emulation.info.ocm_enabled=0;
+      snr_step = atof(optarg);
+      break;
+
+    case 'k':
+      //ricean_factor = atof (optarg);
+      printf("[SIM] Option k is no longer supported on the command line. Please specify your channel model in the xml template\n");
+      exit(-1);
+      break;
+
+    case 'K':
+      oai_emulation.info.itti_dump_file = optarg;
+      break;
+
+    case 'l':
+      oai_emulation.info.g_log_level = atoi(optarg);
+      break;
+
+    case 'L':                   // set FDD
+      flag_LA = atoi(optarg);
+      break;
+
+    case 'm':
+      target_dl_mcs = atoi (optarg);
+      break;
+
     case 'M':
       abstraction_flag = 1;
       ethernet_flag = 1;
@@ -362,36 +420,33 @@ void get_simulation_options(int argc, char *argv[]) {
       oai_emulation.info.master_id = oai_emulation.info.ethernet_id;
       oai_emulation.info.ethernet_flag = 1;
       break;
-    case 'e':
-      oai_emulation.info.extended_prefix_flag = 1;
+
+    case 'n':
+      oai_emulation.info.n_frames = atoi (optarg);
+      //n_frames = (n_frames >1024) ? 1024: n_frames; // adjust the n_frames if higher that 1024
+      oai_emulation.info.n_frames_flag = 1;
       break;
-    case 'l':
-      oai_emulation.info.g_log_level = atoi(optarg);
+
+    case 'N':
+      Nid_cell = atoi (optarg);
+      if (Nid_cell > 503) {
+        printf("Illegal Nid_cell %d (should be 0 ... 503)\n", Nid_cell);
+        exit(-1);
+      }
       break;
-   case 'Y':
-      oai_emulation.info.g_log_verbosity_option = strdup(optarg);
+
+    case 'O':
+      g_conf_config_file_name = optarg;
       break;
-    case 'c':
-      strcpy(oai_emulation.info.local_server, optarg);
-      oai_emulation.info.ocg_enabled=1;
+
+    case 'o':
+      oai_emulation.info.slot_isr = 1;
       break;
-    case 'g':
-      oai_emulation.info.multicast_group = atoi (optarg);
+
+    case 'p':
+      oai_emulation.info.nb_master = atoi (optarg);
       break;
-    case 'D':
-      oai_emulation.info.multicast_ifname = strdup(optarg);
-      break;
-    case 'B':
-      oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = optarg;
-      //oai_emulation.info.omg_model_enb = atoi (optarg);
-      break;
-    case 'U':
-      oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = optarg;
-      break;
-    case 'T':
-      oai_emulation.info.otg_enabled = 1;
-      oai_emulation.info.otg_traffic = optarg;
-      break;
+
     case 'P':
       oai_emulation.info.opt_enabled = 1;
 
@@ -409,13 +464,87 @@ void get_simulation_options(int argc, char *argv[]) {
       }
       oai_emulation.info.opt_mode = opt_type;
       break;
-    case 'E':
-      set_seed = 1;
-      oai_emulation.info.seed = atoi (optarg);
+
+    case 'Q':
+      //eMBMS_active=1;
+      // 0 : not used (default), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 4: eMBMS relaying enabled, RRC disabled
+      oai_emulation.info.eMBMS_active_state = atoi (optarg);
       break;
-    case 'I':
-      oai_emulation.info.cli_enabled = 1;
+
+    case 'r':
+      rate_adaptation_flag = 1;
       break;
+
+    case 'R':
+      oai_emulation.info.N_RB_DL = atoi (optarg);
+      if ((oai_emulation.info.N_RB_DL != 6) && (oai_emulation.info.N_RB_DL != 15) && (oai_emulation.info.N_RB_DL != 25)
+        && (oai_emulation.info.N_RB_DL != 50) && (oai_emulation.info.N_RB_DL != 75) && (oai_emulation.info.N_RB_DL != 100)) {
+        printf("Illegal N_RB_DL %d (should be one of 6,15,25,50,75,100)\n", oai_emulation.info.N_RB_DL);
+        exit (-1);
+      }
+      break;
+
+    case 's':
+      snr_dB = atoi (optarg);
+      //      set_snr = 1;
+      oai_emulation.info.ocm_enabled=0;
+      break;
+
+    case 'S':
+      sinr_dB = atoi (optarg);
+      set_sinr = 1;
+      oai_emulation.info.ocm_enabled=0;
+      break;
+
+    case 't':
+      //Td = atof (optarg);
+      printf("[SIM] Option t is no longer supported on the command line. Please specify your channel model in the xml template\n");
+      exit(-1);
+      break;
+
+    case 'T':
+      oai_emulation.info.otg_enabled = 1;
+      oai_emulation.info.otg_traffic = optarg;
+      break;
+
+    case 'u':
+      oai_emulation.info.nb_ue_local = atoi (optarg);
+      break;
+
+    case 'U':
+      oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = optarg;
+      break;
+
+    case 'v':
+      oai_emulation.info.omv_enabled = 1;
+      break;
+
+    case 'V':
+      ouput_vcd = 1;
+      oai_emulation.info.vcd_enabled = 1;
+      oai_emulation.info.vcd_file = optarg;
+      break;
+
+    case 'w':
+      oai_emulation.info.cba_group_active = atoi (optarg);
+      break;
+
+    case 'W':
+#ifdef SMBV
+      config_smbv = 1;
+      if(atoi(optarg)!=0)
+    strcpy(smbv_ip,optarg);
+#endif
+      break;
+
+    case 'x':
+      oai_emulation.info.transmission_mode = atoi (optarg);
+      if ((oai_emulation.info.transmission_mode != 1) &&  (oai_emulation.info.transmission_mode != 2) && (oai_emulation.info.transmission_mode != 5) && (oai_emulation.info.transmission_mode != 6)) {
+        printf("Unsupported transmission mode %d\n",oai_emulation.info.transmission_mode);
+        exit(-1);
+      }
+      break;
+
     case 'X':
 #ifdef PROC
       temp=atoi(optarg);
@@ -430,49 +559,33 @@ void get_simulation_options(int argc, char *argv[]) {
       }
 #endif
       break;
-    case 'i':
-#ifdef PROC
-      Process_Flag=1;
-      node_id = wgt+atoi(optarg);
-      port+=atoi(optarg);
-#endif
+
+    case 'y':
+      nb_antennas_rx=atoi(optarg);
+      if (nb_antennas_rx>4) {
+        printf("Cannot have more than 4 antennas\n");
+        exit(-1);
+      }
       break;
-    case 'v':
-      oai_emulation.info.omv_enabled = 1;
+
+    case 'Y':
+      oai_emulation.info.g_log_verbosity_option = strdup(optarg);
       break;
-    case 'V':
-      ouput_vcd = 1;
-      oai_emulation.info.vcd_enabled = 1;
-      oai_emulation.info.vcd_file = optarg;
+
+    case 'z':
+      cooperation_flag = atoi (optarg);
       break;
-    case 'w':
-      oai_emulation.info.cba_group_active = atoi (optarg);
-      break;
-    case 'W':
-#ifdef SMBV
-      config_smbv = 1;
-      if(atoi(optarg)!=0)
-	strcpy(smbv_ip,optarg);
-#endif
-      break;
-    case 'G' :
-      oai_emulation.info.otg_bg_traffic_enabled = 1;
-      break;
+
     case 'Z':
       /* Sebastien ROUX: Reserved for future use (currently used in ltenow branch) */
       break;
-    case 'O':
-      g_conf_config_file_name = optarg;
-      break;
-    case 'o':
-      oai_emulation.info.slot_isr = 1;
-      break;
+
     default:
       help ();
       exit (-1);
       break;
     }
-    }
+  }
 }
 
 void check_and_adjust_params() {
