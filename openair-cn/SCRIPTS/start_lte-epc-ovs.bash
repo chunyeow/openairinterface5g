@@ -38,7 +38,7 @@ test_command_install_package "iptables" "iptables"
 test_command_install_package "iperf"    "iperf"
 test_command_install_package "ip"       "iproute"
 test_command_install_script   "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
-test_command_install_script   "tunctl"  "uml-utilities"
+test_command_install_package  "tunctl"  "uml-utilities"
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
         cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
@@ -73,11 +73,11 @@ fi
 
 IPTABLES=`which iptables`
 
-cd $OPENAIRCN_DIR
 ##################################
 # Get or set OBJ DIR and compile #
 ##################################
 # TEST IF EXIST
+cd $OPENAIRCN_DIR
 OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
 if [ -n "$OBJ_DIR" ]
 then
@@ -101,6 +101,8 @@ else
     echo_success "Invoking configure"
     ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
 fi
+
+pkill oai_epc
 if [ -f Makefile ]
 then
     echo_success "Compiling..."
@@ -111,7 +113,6 @@ else
 fi
 cd $OPENAIRCN_DIR
 
-pkill oai_epc
 
 #######################################################
 # SOURCE $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf
