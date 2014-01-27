@@ -29,9 +29,9 @@ test_install_package linux-headers-`uname -r`
 test_install_package "tshark"       "--force-yes"
 # for ODTONE git clone
 test_install_package "git"
-    
+
 test_install_asn1c_4_rrc_cellular
-    
+
 
 echo_success "\n###############################"
 echo_success "# COMPILE oaisim"

@@ -110,7 +110,7 @@ ENB_MIHF_ID=`cat $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE | grep id | grep \= | 
 #remove 2 last digits (vitualization, index on 2 digits)
 ENB_RAL_LINK_ID_STRIPPED=${ENB_RAL_LINK_ID%%??}
 
-#xterm -hold -e gdb --args 
+#xterm -hold -e gdb --args
 $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -K $LOG_FILE -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE  \
              --enb-ral-listening-port   $ENB_RAL_LISTENING_PORT \
              --enb-ral-link-id          $ENB_RAL_LINK_ID_STRIPPED \
@@ -123,7 +123,7 @@ wait_process_started oaisim
 
 # start MIH-USER
 #  wait for emulation start
-tshark -c 500 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1 
+tshark -c 500 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1
 #xterm -hold -e $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER    --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER_CONF_FILE &
 #wait_process_started $ENB_MIH_USER
 

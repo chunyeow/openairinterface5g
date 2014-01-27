@@ -25,7 +25,7 @@ export UE_MIH_USER_CONF_FILE=ue_lte_user.conf
 ENV_SCRIPT_SOURCED="?"
 ENV_SCRIPT_ERRORS="no"
 
-if [[ $BASH_SOURCE != $0 ]]; then 
+if [[ $BASH_SOURCE != $0 ]]; then
     THIS_SCRIPT_PATH=${BASH_SOURCE%env_802dot21.bash}
     [[ x"$THIS_SCRIPT_PATH" == x ]] && THIS_SCRIPT_PATH="./"
     ENV_SCRIPT_SOURCED="yes"
@@ -46,7 +46,7 @@ if [ ! -d $BOOST_ROOT ]; then
     ENV_SCRIPT_ERRORS="yes"
 else
     command -v b2 >/dev/null 2>&1
-    if [ $? -ne 0 ]; then 
+    if [ $? -ne 0 ]; then
         echo_warning "Program b2 is not installed or not in the PATH variable. Trying to resolve..." >&2
         if [[ -x "$BOOST_ROOT/b2" ]]; then
             echo_success "Program b2 found in dir $BOOST_ROOT." >&2
@@ -58,7 +58,7 @@ else
             export PATH=$PATH:$BOOST_ROOT
         fi
         command -v $BOOST_ROOT/b2 >/dev/null 2>&1
-        if [ $? -eq 0 ]; then 
+        if [ $? -eq 0 ]; then
             echo_success "Program b2 is now reachable by the PATH variable during the execution of this script." >&2
         else
             echo_error "Built of b2 failed. Please help yourself" >&2

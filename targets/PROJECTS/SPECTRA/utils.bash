@@ -41,7 +41,7 @@ trim ()
     echo "$1" | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}'
 }
 
-trim2() 
+trim2()
 {
     local var=$@
     var="${var#"${var%%[![:space:]]*}"}"   # remove leading whitespace characters
