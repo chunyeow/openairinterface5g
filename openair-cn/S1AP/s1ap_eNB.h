@@ -42,17 +42,14 @@
 typedef struct s1ap_eNB_config_s {
     // MME related params
     unsigned char mme_enabled;          ///< MME enabled ?
-    char          mme_ip_address[16];   ///< MME IP v4 address
 } s1ap_eNB_config_t;
 
 #if defined(OAI_EMU)
 # define EPC_MODE_ENABLED       oai_emulation.info.s1ap_config.mme_enabled
-# define EPC_MODE_MME_ADDRESS   oai_emulation.info.s1ap_config.mme_ip_address
 #else
 extern s1ap_eNB_config_t s1ap_config;
 
 # define EPC_MODE_ENABLED       s1ap_config.mme_enabled
-# define EPC_MODE_MME_ADDRESS   s1ap_config.mme_ip_address
 #endif
 
 void *s1ap_eNB_task(void *arg);
