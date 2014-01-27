@@ -166,6 +166,7 @@ u8 eNB_id=0;
 u32 carrier_freq_fdd[4]= {2680e6,0,0,0};
 u32 carrier_freq_tdd[4]= {2590e6-4000,0,0,0};
 u32 carrier_freq[4];
+char *g_conf_config_file_name = NULL;
 
 struct timing_info_t {
   //unsigned int frame, hw_slot, last_slot, next_slot;
@@ -721,18 +722,7 @@ int main(int argc, char **argv)
 #endif
         break;
       case 'O':
-#if defined(ENABLE_USE_MME)
-        EPC_MODE_ENABLED = 1;
-        if (optarg == NULL) { /* No IP address provided: use localhost */
-          memcpy(&EPC_MODE_MME_ADDRESS[0], "127.0.0.1", 10);
-        } else {
-          u8 ip_length = strlen(optarg) + 1;
-          memcpy(&EPC_MODE_MME_ADDRESS[0], optarg,
-                 ip_length > 16 ? 16 : ip_length);
-        }
-#else
-        printf("You enabled mme mode without s1ap compiled...\n");
-#endif
+        g_conf_config_file_name = optarg;
         break;
       case 'R':
         N_RB_DL = atoi(optarg);
