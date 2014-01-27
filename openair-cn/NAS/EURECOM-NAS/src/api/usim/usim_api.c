@@ -146,7 +146,7 @@ int usim_api_write(const usim_data_t* data)
 
     /* Write USIM application data */
     if (memory_write(path, data, sizeof(usim_data_t)) != RETURNok) {
-	
+
 	LOG_TRACE(ERROR, "USIM-API  - Unable to write USIM file %s", path);
 	free(path);
 	LOG_FUNC_RETURN (RETURNerror);
