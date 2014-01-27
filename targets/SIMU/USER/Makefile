@@ -336,7 +336,7 @@ $(LFDS_LIB):
 oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
 	@echo "Linking oaisim_pad ..."
 	@$(MPICC) $(INCLUDES) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
-	-lpthread -llapack_atlas -lforms -lrt $(LIBS) $(DB_LDFLAGS)
+	-lpthread -llapack_atlas -lforms -lrt -lconfig $(LIBS) $(DB_LDFLAGS)
 
 oaisim: $(OAISIM_COMPILED_OBJECTS) $(SHARED_DEPENDENCIES)
 	@echo "Linking oaisim ..."
@@ -352,7 +352,7 @@ endif
 
 oaisimCROWN: $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
-	@$(CC) oaisimCROWN.c $(INCLUDES) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt
+	@$(CC) oaisimCROWN.c $(INCLUDES) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt -lconfig 
 
 oai_nw_drv:
 	(cd $(OPENAIR2_DIR) && $(MAKE) oai_nw_drv.ko)
