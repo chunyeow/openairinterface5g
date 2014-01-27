@@ -140,6 +140,7 @@ char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
 u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
+char *g_conf_config_file_name = NULL;
 
 unsigned int lost_bytes=0;
 
@@ -699,100 +700,88 @@ int main(int argc, char **argv) {
 #endif
           break;
         case 'O':
-#if defined(ENABLE_USE_MME)
-          EPC_MODE_ENABLED = 1;
-          if (optarg == NULL) /* No IP address provided: use localhost */
-          {
-            memcpy(&EPC_MODE_MME_ADDRESS[0], "127.0.0.1", 10);
-          } else {
-            u8 ip_length = strlen(optarg) + 1;
-            memcpy(&EPC_MODE_MME_ADDRESS[0], optarg,
-            ip_length > 16 ? 16 : ip_length);
-          }
-#else
-          printf("You enabled mme mode without s1ap compiled...\n");
-#endif
+          g_conf_config_file_name = optarg;
           break;
-	case 'F':
-	  sprintf(rxg_fname,"%srxg.lime",optarg);
-	  rxg_fd = fopen(rxg_fname,"r");
-	  if (rxg_fd) {
-	    printf("Loading RX Gain parameters from %s\n",rxg_fname);
-	    l=0;
-	    while (fgets(line, sizeof(line), rxg_fd)) {
-	      if ((strlen(line)==0) || (*line == '#')) continue; //ignore empty or comment lines
-	      else {
-		if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
-		if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
-		if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
-		l++;
-	      }
-	    }
-	  }
-	  else 
-	    printf("%s not found, running with defaults\n",rxg_fname);
+        case 'F':
+          sprintf(rxg_fname,"%srxg.lime",optarg);
+          rxg_fd = fopen(rxg_fname,"r");
+          if (rxg_fd) {
+            printf("Loading RX Gain parameters from %s\n",rxg_fname);
+            l=0;
+            while (fgets(line, sizeof(line), rxg_fd)) {
+              if ((strlen(line)==0) || (*line == '#')) continue; //ignore empty or comment lines
+              else {
+            if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
+            if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
+            if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
+            l++;
+              }
+            }
+          }
+          else
+            printf("%s not found, running with defaults\n",rxg_fname);
 
-	  sprintf(txg_fname,"%stxg.lime",optarg);
-	  txg_fd = fopen(txg_fname,"r");
-	  if (txg_fd) {
-	    printf("Loading TX Gain parameters from %s\n",txg_fname);
-	    l=0;
-	    while (fgets(line, sizeof(line), txg_fd)) {
-	      if ((strlen(line)==0) || (*line == '#')) {
-		continue; //ignore empty or comment lines
-	      }
-	      else {
-		if (l==0) sscanf(line,"%d %d %d %d",&txgain[0],&txgain[1],&txgain[2],&txgain[3]);
-		if (l==1) sscanf(line,"%d",&tx_max_power);
-		l++;
-	      }
-	    }
-	  }
-	  else 
-	    printf("%s not found, running with defaults\n",txg_fname);
+          sprintf(txg_fname,"%stxg.lime",optarg);
+          txg_fd = fopen(txg_fname,"r");
+          if (txg_fd) {
+            printf("Loading TX Gain parameters from %s\n",txg_fname);
+            l=0;
+            while (fgets(line, sizeof(line), txg_fd)) {
+              if ((strlen(line)==0) || (*line == '#')) {
+            continue; //ignore empty or comment lines
+              }
+              else {
+            if (l==0) sscanf(line,"%d %d %d %d",&txgain[0],&txgain[1],&txgain[2],&txgain[3]);
+            if (l==1) sscanf(line,"%d",&tx_max_power);
+            l++;
+              }
+            }
+          }
+          else
+            printf("%s not found, running with defaults\n",txg_fname);
 
-	  sprintf(rflo_fname,"%srflo.lime",optarg);
-	  rflo_fd = fopen(rflo_fname,"r");
-	  if (rflo_fd) {
-	    printf("Loading RF LO parameters from %s\n",rflo_fname);
-	    fscanf(rflo_fd,"%d %d %d %d",&rf_local[0],&rf_local[1],&rf_local[2],&rf_local[3]);
-	  }
-	  else 
-	    printf("%s not found, running with defaults\n",rflo_fname);
+          sprintf(rflo_fname,"%srflo.lime",optarg);
+          rflo_fd = fopen(rflo_fname,"r");
+          if (rflo_fd) {
+            printf("Loading RF LO parameters from %s\n",rflo_fname);
+            fscanf(rflo_fd,"%d %d %d %d",&rf_local[0],&rf_local[1],&rf_local[2],&rf_local[3]);
+          }
+          else
+            printf("%s not found, running with defaults\n",rflo_fname);
 
-	  sprintf(rfdc_fname,"%srfdc.lime",optarg);
-	  rfdc_fd = fopen(rfdc_fname,"r");
-	  if (rfdc_fd) {
-	    printf("Loading RF DC parameters from %s\n",rfdc_fname);
-	    fscanf(rfdc_fd,"%d %d %d %d",&rf_rxdc[0],&rf_rxdc[1],&rf_rxdc[2],&rf_rxdc[3]);
-	  }
-	  else 
-	    printf("%s not found, running with defaults\n",rfdc_fname);
+          sprintf(rfdc_fname,"%srfdc.lime",optarg);
+          rfdc_fd = fopen(rfdc_fname,"r");
+          if (rfdc_fd) {
+            printf("Loading RF DC parameters from %s\n",rfdc_fname);
+            fscanf(rfdc_fd,"%d %d %d %d",&rf_rxdc[0],&rf_rxdc[1],&rf_rxdc[2],&rf_rxdc[3]);
+          }
+          else
+            printf("%s not found, running with defaults\n",rfdc_fname);
 
-	  break;
-	  /*
-	case 256:
-	  mode = rx_calib_ue;
-	  rx_input_level_dBm = atoi(optarg);
-	  printf("Running with UE calibration on (LNA max), input level %d dBm\n",rx_input_level_dBm);
-	  break;
-	case 257:
-	  mode = rx_calib_ue_med;
-	  rx_input_level_dBm = atoi(optarg);
-	  printf("Running with UE calibration on (LNA med), input level %d dBm\n",rx_input_level_dBm);
-	  break;
-	case 258:
-	  mode = rx_calib_ue_byp;
-	  rx_input_level_dBm = atoi(optarg);
-	  printf("Running with UE calibration on (LNA byp), input level %d dBm\n",rx_input_level_dBm);
-	  break;
-	case 259:
-	  mode = debug_prach;
-	  break;
-	case 260:
-	  mode = no_L2_connect;
-	  break;
-	  */
+          break;
+          /*
+        case 256:
+          mode = rx_calib_ue;
+          rx_input_level_dBm = atoi(optarg);
+          printf("Running with UE calibration on (LNA max), input level %d dBm\n",rx_input_level_dBm);
+          break;
+        case 257:
+          mode = rx_calib_ue_med;
+          rx_input_level_dBm = atoi(optarg);
+          printf("Running with UE calibration on (LNA med), input level %d dBm\n",rx_input_level_dBm);
+          break;
+        case 258:
+          mode = rx_calib_ue_byp;
+          rx_input_level_dBm = atoi(optarg);
+          printf("Running with UE calibration on (LNA byp), input level %d dBm\n",rx_input_level_dBm);
+          break;
+        case 259:
+          mode = debug_prach;
+          break;
+        case 260:
+          mode = no_L2_connect;
+          break;
+          */
         default:
           break;
         }

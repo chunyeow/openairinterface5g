@@ -202,7 +202,7 @@ void help(void) {
   printf ("-m Gives a fixed DL mcs\n");
   printf ("-M Set the machine ID for Ethernet-based emulation\n");
   printf ("-n Set the number of frames for the simulation\n");
-  printf ("-O [mme ipv4 address] Enable MME mode\n");
+  printf ("-O [enb_conf_file] eNB configuration file name\n");
   printf ("-p Set the total number of machine in emulation - valid if M is set\n");
   printf ("-P [trace type] Enable protocol analyzer. Possible values for OPT:\n");
   printf ("    - wireshark: Enable tracing of layers above PHY using an UDP socket\n");

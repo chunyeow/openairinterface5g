@@ -118,9 +118,9 @@ void get_simulation_options(int argc, char *argv[]) {
   char c;
   int option_index;
   static struct option long_options[] = {
-    {"config-file",            required_argument, 0, 0},
-    {"pdcp_period",            1,                 0, 0},
-    {"omg_period",             1,                 0, 0},
+    {"enb-conf",               required_argument, 0, 0},
+    {"pdcp_period",            required_argument, 0, 0},
+    {"omg_period",             required_argument, 0, 0},
     {"enb-ral-listening-port", required_argument, 0, 0},
     {"enb-ral-ip-address",     required_argument, 0, 0},
     {"enb-ral-link-id",        required_argument, 0, 0},
@@ -141,10 +141,10 @@ void get_simulation_options(int argc, char *argv[]) {
   while ((c = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, &option_index)) != -1) {
     switch (c) {
     case 0:
-      if (! strcmp(long_options[option_index].name, "config-file")) {
+      if (! strcmp(long_options[option_index].name, "enb-conf")) {
           if (optarg) {
               g_conf_config_file_name = strdup(optarg);
-              printf("config file is %s\n", g_conf_config_file_name);
+              printf("eNB configuration file is %s\n", g_conf_config_file_name);
           }
       } else if (! strcmp(long_options[option_index].name, "pdcp_period")) {
         if (optarg) {
@@ -462,19 +462,7 @@ void get_simulation_options(int argc, char *argv[]) {
       /* Sebastien ROUX: Reserved for future use (currently used in ltenow branch) */
       break;
     case 'O':
-#if defined(ENABLE_USE_MME)
-      EPC_MODE_ENABLED = 1;
-      if (optarg == NULL) /* No IP address provided: use localhost */
-      {
-          memcpy(&EPC_MODE_MME_ADDRESS[0], "127.0.0.1", 10);
-      } else {
-        u8 ip_length = strlen(optarg) + 1;
-        memcpy(&EPC_MODE_MME_ADDRESS[0], optarg,
-               ip_length > 16 ? 16 : ip_length);
-      }
-#else
-      printf("You enabled MME mode without compiling using ENABLE_USE_MME=1 ...\n");
-#endif
+      g_conf_config_file_name = optarg;
       break;
     case 'o':
       oai_emulation.info.slot_isr = 1;
