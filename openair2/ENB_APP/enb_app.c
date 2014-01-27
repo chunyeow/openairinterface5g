@@ -126,12 +126,6 @@ static uint32_t eNB_app_register()
             hash = s1ap_generate_eNB_id ();
             g_enb_properties[eNB_id]->eNB_id = eNB_id + (hash & 0xFFFF8);
 
-            if (EPC_MODE_ENABLED)
-            {
-                /* Overwrite default IP v4 address by value from command line */
-                g_enb_properties[eNB_id]->mme_ip_address[0].ipv4_address = EPC_MODE_MME_ADDRESS;
-            }
-
             /* note:  there is an implicit relationship between the data structure and the message name */
             msg_p = itti_alloc_new_message (TASK_ENB_APP, S1AP_REGISTER_ENB_REQ);
 
@@ -191,9 +185,9 @@ void *eNB_app_task(void *args_p)
 # if defined(ENABLE_USE_MME)
 #   if defined(OAI_EMU)
     enb_nb = oai_emulation.info.nb_enb_local;
-    enb_config_init(g_conf_config_file_name);
 #   endif
 # endif
+    enb_config_init(g_conf_config_file_name);
 
     configure_rrc();
 

@@ -34,6 +34,10 @@
 #include "log.h"
 #include "assertions.h"
 #include "enb_config.h"
+#if defined(OAI_EMU)
+# include "OCG.h"
+# include "OCG_extern.h"
+#endif
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 # if defined(ENABLE_USE_MME)
@@ -76,14 +80,22 @@ int enb_config_init(char* lib_config_file_name_pP) {
 
   config_init(&cfg);
 
-  /* Read the file. If there is an error, report it and exit. */
-  if(! config_read_file(&cfg, lib_config_file_name_pP))
+  if(lib_config_file_name_pP != NULL)
   {
-      LOG_E(ENB_APP, "%s:%d - %s\n", lib_config_file_name_pP, config_error_line(&cfg), config_error_text(&cfg));
-      config_destroy(&cfg);
-      AssertFatal (1 == 0, "Failed to parse config file %s!\n", lib_config_file_name_pP);
+      /* Read the file. If there is an error, report it and exit. */
+      if(! config_read_file(&cfg, lib_config_file_name_pP))
+      {
+          LOG_E(ENB_APP, "%s:%d - %s\n", lib_config_file_name_pP, config_error_line(&cfg), config_error_text(&cfg));
+          config_destroy(&cfg);
+          AssertFatal (1 == 0, "Failed to parse eNB configuration file %s!\n", lib_config_file_name_pP);
+      }
   }
-
+  else
+  {
+      LOG_E(ENB_APP, "No eNB configuration file provided!\n");
+      config_destroy(&cfg);
+      AssertFatal (0, "No eNB configuration file provided!\n");
+  }
 
   // Get list of active eNBs, (only these will be configured)
   g_num_enb_properties = 0;
@@ -123,7 +135,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
             ) {
               parse_error = 1;
               AssertFatal (parse_error == 0,
-                      "Failed to parse config file %s, %u th enb\n",
+                      "Failed to parse eNB configuration file %s, %u th enb\n",
                       lib_config_file_name_pP, i);
           }
           // search if in active list
@@ -138,7 +150,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
                       g_enb_properties[enb_properties_index]->cell_type = CELL_HOME_ENB;
                   } else {
                       AssertFatal (1 == 0,
-                              "Failed to parse config file %s, enb %d unknown value for cell_type choice: CELL_MACRO_ENB or CELL_HOME_ENB !\n",
+                              "Failed to parse eNB configuration file %s, enb %d unknown value for cell_type choice: CELL_MACRO_ENB or CELL_HOME_ENB !\n",
                               lib_config_file_name_pP, i);
                   }
                   g_enb_properties[enb_properties_index]->eNB_name = strdup(enb_name);
@@ -156,10 +168,10 @@ int enb_config_init(char* lib_config_file_name_pP) {
                       g_enb_properties[enb_properties_index]->default_drx = PAGING_DRX_256;
                   } else {
                       AssertFatal (1 == 0,
-                              "Failed to parse config file %s, enb %d unknown value for default_drx choice: PAGING_DRX_32..PAGING_DRX_256 !\n",
+                              "Failed to parse eNB configuration file %s, enb %d unknown value for default_drx choice: PAGING_DRX_32..PAGING_DRX_256 !\n",
                               lib_config_file_name_pP, i);
                   }
-                  AssertFatal (parse_error == 0, "Failed to parse config file %s, enb %d\n", lib_config_file_name_pP, i);
+                  AssertFatal (parse_error == 0, "Failed to parse eNB configuration file %s, enb %d\n", lib_config_file_name_pP, i);
 
                   setting_mme_addresses = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_MME_IP_ADDRESS);
                   num_mme_address     = config_setting_length(setting_mme_addresses);
@@ -175,7 +187,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
                         ) {
                           parse_error = 1;
                           AssertFatal (parse_error == 0,
-                                  "Failed to parse config file %s, %u th enb %u th mme address\n",
+                                  "Failed to parse eNB configuration file %s, %u th enb %u th mme address\n",
                                   lib_config_file_name_pP, i, j);
                       }
                       g_enb_properties[enb_properties_index]->nb_mme += 1;
@@ -184,6 +196,9 @@ int enb_config_init(char* lib_config_file_name_pP) {
                       g_enb_properties[enb_properties_index]->mme_ip_address[j].ipv6_address = strdup(ipv6);
                       if (strcmp(active, "yes") == 0) {
                           g_enb_properties[enb_properties_index]->mme_ip_address[j].active = 1;
+#if defined(ENABLE_USE_MME)
+                          EPC_MODE_ENABLED = 1;
+#endif
                       } // else { (calloc)
 
                       if (strcmp(preference, "ipv4") == 0) {
@@ -202,7 +217,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
       }
   }
   AssertFatal (enb_properties_index == g_num_enb_properties,
-          "Failed to parse config file %s, mismatch between %u active eNBs and %u corresponding defined eNBs!\n",
+          "Failed to parse eNB configuration file %s, mismatch between %u active eNBs and %u corresponding defined eNBs!\n",
           lib_config_file_name_pP, g_num_enb_properties, enb_properties_index);
   return 0;
 }

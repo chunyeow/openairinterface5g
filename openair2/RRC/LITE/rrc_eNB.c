@@ -726,13 +726,16 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   DRB_config = CALLOC (1, sizeof (*DRB_config));
 
   DRB_config->eps_BearerIdentity = CALLOC(1, sizeof(long));
-  *(DRB_config->eps_BearerIdentity) = 5L;               // LW: set to first value, allowed value 5..15
+  *(DRB_config->eps_BearerIdentity) = 5L; // LW set to first value, allowed value 5..15
+  // DRB_config->drb_Identity = (DRB_Identity_t) 1; //allowed values 1..32
+  // NN: this is the 1st DRB for this ue, so set it to 1
   // NN: this is the 1st DRB for this ue, so set it to 1
   DRB_config->drb_Identity = (DRB_Identity_t) 1;        // (UE_index+1); //allowed values 1..32
   DRB_config->logicalChannelIdentity = CALLOC (1, sizeof (long));
   *(DRB_config->logicalChannelIdentity) = (long) 3;
   DRB_rlc_config = CALLOC (1, sizeof (*DRB_rlc_config));
   DRB_config->rlc_Config = DRB_rlc_config;
+
 
 #ifdef EXMIMO_IOT
   DRB_rlc_config->present = RLC_Config_PR_am;
@@ -769,7 +772,6 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration (u8 Mod_id, u32
   DRB_pdcp_config->rlc_UM = PDCP_rlc_UM;
   PDCP_rlc_UM->pdcp_SN_Size = PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits;
 #endif
-
   DRB_pdcp_config->headerCompression.present = PDCP_Config__headerCompression_PR_notUsed;
 
   DRB_lchan_config = CALLOC (1, sizeof (*DRB_lchan_config));
@@ -2174,7 +2176,6 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete (u8 Mod_id, u32 frame,
   derive_key_rrc_int(eNB_rrc_inst[Mod_id].integrity_algorithm[UE_index],
                      eNB_rrc_inst[Mod_id].kenb[UE_index], &kRRCint);
 #endif
-
 #ifdef ENABLE_RAL
 	{
 		MessageDef                                 *message_ral_p = NULL;
@@ -2204,7 +2205,6 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete (u8 Mod_id, u32 frame,
 		itti_send_msg_to_task (TASK_RAL_ENB, Mod_id, message_ral_p);
 	}
 	#endif
-
 
   // Refresh SRBs/DRBs
   rrc_pdcp_config_asn1_req (Mod_id, UE_index, frame, 1,
@@ -2496,26 +2496,16 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
 
 #if defined(ENABLE_USE_MME)
   /* Connect eNB to MME */
-  if (EPC_MODE_ENABLED > 0)
-    {
-# if !defined(ENABLE_ITTI)
-      if (s1ap_eNB_init (EPC_MODE_MME_ADDRESS, Mod_id) < 0)
-        {
-          mac_xface->macphy_exit ("");
-          return -1;
-        }
-# endif
-    }
-  else
+  if (EPC_MODE_ENABLED <= 0)
 #endif
-  {
-    /* Init security parameters */
-    for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
-      eNB_rrc_inst[Mod_id].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
-      eNB_rrc_inst[Mod_id].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
-      rrc_lite_eNB_init_security(Mod_id, j);
+    {
+      /* Init security parameters */
+      for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
+        eNB_rrc_inst[Mod_id].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
+        eNB_rrc_inst[Mod_id].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
+        rrc_lite_eNB_init_security(Mod_id, j);
+      }
     }
-  }
 
   eNB_rrc_inst[Mod_id].Info.Nb_ue = 0;
 
