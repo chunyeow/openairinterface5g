@@ -568,9 +568,11 @@ int ui_progress_bar_set_fraction(double fraction)
         if (!ui_main_data.progressbar && !ui_main_data.progressbar_window)
         {
             ui_main_data.progressbar_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+            /* Keep progress bar window on top of main window */
+            gtk_window_set_transient_for (GTK_WINDOW(ui_main_data.progressbar_window), GTK_WINDOW(ui_main_data.window));
 
-            /* Set the window at center of window */
-            gtk_window_set_position (GTK_WINDOW(ui_main_data.progressbar_window), GTK_WIN_POS_CENTER);
+            /* Set the window at center of main window */
+            gtk_window_set_position (GTK_WINDOW(ui_main_data.progressbar_window), GTK_WIN_POS_CENTER_ON_PARENT);
             gtk_window_set_title (GTK_WINDOW(ui_main_data.progressbar_window), "Processing");
 
             gtk_container_set_border_width (GTK_CONTAINER (ui_main_data.progressbar_window), 10);
