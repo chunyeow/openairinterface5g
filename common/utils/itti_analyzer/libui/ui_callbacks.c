@@ -693,7 +693,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
                 return FALSE;
             }
 
-            dialogbox_connect = gtk_message_dialog_new (GTK_WINDOW(ui_main_data.window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER,
+            dialogbox_connect = gtk_message_dialog_new (NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER,
                                                 GTK_BUTTONS_CANCEL, message_formats[start ? 0 : 1], ui_ip, ui_port);
             gtk_window_set_title (GTK_WINDOW(dialogbox_connect), "Connect");
 
@@ -721,6 +721,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
                 operation_running = FALSE;
             }
             gtk_widget_destroy (dialogbox_connect);
+            dialogbox_connect = NULL;
         }
     }
 
@@ -733,8 +734,15 @@ gboolean ui_callback_on_disconnect(GtkWidget *widget, gpointer data)
 
     ui_pipe_write_message (ui_main_data.pipe_fd[0], UI_PIPE_DISCONNECT_EVT, NULL, 0);
 
-    ui_enable_connect_button ();
-    operation_running = FALSE;
+    if (dialogbox_connect != NULL)
+    {
+        gtk_dialog_response(GTK_DIALOG (dialogbox_connect), GTK_RESPONSE_CLOSE);
+    }
+    else
+    {
+        ui_enable_connect_button ();
+        operation_running = FALSE;
+    }
 
     return TRUE;
 }
