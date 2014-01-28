@@ -637,6 +637,16 @@ gboolean ui_callback_on_auto_reconnect(GtkWidget *widget, gpointer data)
     return TRUE;
 }
 
+void ui_callback_dialogbox_connect_destroy(void)
+{
+    if (dialogbox_connect != NULL)
+    {
+        gtk_widget_destroy (dialogbox_connect);
+        dialogbox_connect = NULL;
+        g_message("Connect dialogbox destroyed");
+    }
+}
+
 gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
 {
     /* We have to retrieve the ip address and ui_port of remote host */
@@ -685,6 +695,8 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
                 "Connection lost!\n\n" "Trying to reconnect to %s:%d ..."
             };
             gint response;
+            gint x, y;
+            gint w, h;
 
             if (socket_connect_to_remote_host (ui_ip, ui_port, pipe_fd[1]) != 0)
             {
@@ -693,13 +705,31 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
                 return FALSE;
             }
 
+            /* Create dialog box for connect message:
+             * - non modal mode does not seems to work, don't set the parent window to allow some interactions with it!
+             */
             dialogbox_connect = gtk_message_dialog_new (NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_OTHER,
                                                 GTK_BUTTONS_CANCEL, message_formats[start ? 0 : 1], ui_ip, ui_port);
             gtk_window_set_title (GTK_WINDOW(dialogbox_connect), "Connect");
 
+            /* Set the window at center of main window manually as there is no parent defined */
+            gtk_window_get_position (GTK_WINDOW(ui_main_data.window), &x, &y);
+            gtk_window_get_size (GTK_WINDOW(ui_main_data.window), &w, &h);
+            g_message("Main window position: %d,%d dimension: %d,%d", x, y, w, h);
+            x += w / 2;
+            y += h / 2;
+            g_message("Connect window position %d,%d", x, y);
+            gtk_window_set_gravity (GTK_WINDOW(dialogbox_connect), GDK_GRAVITY_CENTER);
+            gtk_window_move (GTK_WINDOW(dialogbox_connect), x, y);
+
             response = gtk_dialog_run (GTK_DIALOG (dialogbox_connect));
             g_message("Connect dialog response %s (%d)", gtk_get_respose_string(response), response);
 
+            if (response == GTK_RESPONSE_NONE)
+            {
+                /* Dialogbox has been destroyed when program is exited, do nothing */
+                return (TRUE);
+            }
             if (response == GTK_RESPONSE_OK)
             {
                 /* Connection is established */
@@ -720,8 +750,7 @@ gboolean ui_callback_on_connect(GtkWidget *widget, gpointer data)
                 ui_enable_connect_button();
                 operation_running = FALSE;
             }
-            gtk_widget_destroy (dialogbox_connect);
-            dialogbox_connect = NULL;
+            ui_callback_dialogbox_connect_destroy ();
         }
     }
 

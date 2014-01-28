@@ -15,6 +15,7 @@
 #include "logs.h"
 #include "rc.h"
 
+#include "ui_callbacks.h"
 #include "ui_interface.h"
 #include "ui_main_screen.h"
 #include "ui_menu_bar.h"
@@ -167,6 +168,7 @@ void ui_set_title(const char *fmt, ...)
 
 void ui_main_window_destroy (void)
 {
+    ui_callback_dialogbox_connect_destroy();
     ui_progressbar_window_destroy();
     gtk_main_quit();
 }

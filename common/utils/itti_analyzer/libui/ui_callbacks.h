@@ -33,6 +33,8 @@ gboolean ui_pipe_callback(gint source, gpointer user_data);
 gboolean ui_callback_on_auto_reconnect(GtkWidget *widget,
                                        gpointer data);
 
+void ui_callback_dialogbox_connect_destroy(void);
+
 gboolean ui_callback_on_connect(GtkWidget *widget,
                                 gpointer   data);
 
