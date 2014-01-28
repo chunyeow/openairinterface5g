@@ -182,7 +182,7 @@ libnas_ies_OBJS =													\
     EURECOM-NAS/src/ies/PdnAddress.o								\
     EURECOM-NAS/src/ies/MobileStationClassmark3.o					\
     EURECOM-NAS/src/ies/ServiceType.o								\
-    EURECOM-NAS/src/ies/RequestType.o								\
+    EURECOM-NAS/src/ies/NasRequestType.o							\
     EURECOM-NAS/src/ies/PlmnList.o									\
     EURECOM-NAS/src/ies/EpsQualityOfService.o						\
     EURECOM-NAS/src/ies/NasMessageContainer.o						\

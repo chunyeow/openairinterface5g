@@ -28,7 +28,7 @@ Description	Defines constants and functions used by the AS simulator
 #include "EpsMobileIdentity.h"
 #include "MobileIdentity.h"
 #include "IdentityType2.h"
-#include "RequestType.h"
+#include "NasRequestType.h"
 #include "PdnType.h"
 #include "PdnAddress.h"
 #include "NasSecurityAlgorithms.h"

@@ -247,7 +247,7 @@ libnas_ies_SRCS =													\
     EURECOM-NAS/src/ies/PdnAddress.c								\
     EURECOM-NAS/src/ies/MobileStationClassmark3.c					\
     EURECOM-NAS/src/ies/ServiceType.c								\
-    EURECOM-NAS/src/ies/RequestType.c								\
+    EURECOM-NAS/src/ies/NasRequestType.c							\
     EURECOM-NAS/src/ies/PlmnList.c									\
     EURECOM-NAS/src/ies/EpsQualityOfService.c						\
     EURECOM-NAS/src/ies/NasMessageContainer.c						\
@@ -341,7 +341,7 @@ libnas_ies_SRCS =													\
     EURECOM-NAS/src/ies/RadioPriority.h								\
     EURECOM-NAS/src/ies/Nonce.h										\
     EURECOM-NAS/src/ies/KsiAndSequenceNumber.h						\
-    EURECOM-NAS/src/ies/RequestType.h								\
+    EURECOM-NAS/src/ies/NasRequestType.h							\
     EURECOM-NAS/src/ies/ProtocolConfigurationOptions.h				\
     EURECOM-NAS/src/ies/AuthenticationResponseParameter.h			\
     EURECOM-NAS/src/ies/MobileStationClassmark3.h					\

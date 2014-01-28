@@ -4,8 +4,8 @@
 
 #include "OctetString.h"
 
-#ifndef REQUEST_TYPE_H_
-#define REQUEST_TYPE_H_
+#ifndef NAS_REQUEST_TYPE_H_
+#define NAS_REQUEST_TYPE_H_
 
 #define REQUEST_TYPE_MINIMUM_LENGTH 1
 #define REQUEST_TYPE_MAXIMUM_LENGTH 1
@@ -26,5 +26,5 @@ int decode_request_type(RequestType *requesttype, uint8_t iei, uint8_t *buffer, 
 
 int decode_u8_request_type(RequestType *requesttype, uint8_t iei, uint8_t value, uint32_t len);
 
-#endif /* REQUEST TYPE_H_ */
+#endif /* NAS_REQUEST_TYPE_H_ */
 

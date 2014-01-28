@@ -6,7 +6,7 @@
 #include "EpsBearerIdentity.h"
 #include "ProcedureTransactionIdentity.h"
 #include "MessageType.h"
-#include "RequestType.h"
+#include "NasRequestType.h"
 #include "PdnType.h"
 #include "EsmInformationTransferFlag.h"
 #include "AccessPointName.h"

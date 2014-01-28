@@ -5,7 +5,7 @@
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
-#include "RequestType.h"
+#include "NasRequestType.h"
 
 int decode_request_type(RequestType *requesttype, uint8_t iei, uint8_t *buffer, uint32_t len)
 {
