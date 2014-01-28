@@ -663,11 +663,28 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
     }
 
     if (rc != RETURNerror) {
+        mme_api_ip_version_t mme_pdn_index;
         int is_emergency = (request_type == ESM_PDN_REQUEST_EMERGENCY);
         mme_api_qos_t qos;
 
+        switch (pdn_type)
+        {
+            case ESM_PDN_TYPE_IPV4:
+                mme_pdn_index = MME_API_IPV4_ADDR;
+                break;
+
+            case ESM_PDN_TYPE_IPV6:
+                mme_pdn_index = MME_API_IPV6_ADDR;
+                break;
+
+            case ESM_PDN_TYPE_IPV4V6:
+            default:
+                mme_pdn_index = MME_API_IPV4V6_ADDR;
+                break;
+        }
+
         /* Check if connectivity with the requested PDN can be established */
-        rc = mme_api_subscribe(apn, pdn_addr, is_emergency, &qos);
+        rc = mme_api_subscribe(apn, mme_pdn_index, pdn_addr, is_emergency, &qos);
 
         if (rc != RETURNok) {
             LOG_TRACE(WARNING, "ESM-PROC  - Connectivity to the requested PDN "

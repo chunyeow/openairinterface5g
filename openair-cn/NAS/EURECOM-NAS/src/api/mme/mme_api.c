@@ -82,13 +82,7 @@ static const UInt8_t _mme_api_xres[AUTH_XRES_SIZE] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-/* Network IP version capability */
-enum {
-    MME_API_IPV4_ADDR,
-    MME_API_IPV6_ADDR,
-    MME_API_IPV4V6_ADDR,
-    MME_API_ADDR_MAX
-} _mme_api_ip_capability = MME_API_IPV4V6_ADDR;
+static mme_api_ip_version_t _mme_api_ip_capability = MME_API_IPV4V6_ADDR;
 
 /* Pool of IPv4 addresses */
 static uint8_t _mme_api_ipv4_addr[MME_API_PDN_MAX][4] = {
@@ -439,7 +433,7 @@ int mme_api_new_guti(const imsi_t *imsi, GUTI_t *guti, tac_t *tac, int *n_tacs)
  **                  Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int mme_api_subscribe(OctetString *apn, OctetString *pdn_addr,
+int mme_api_subscribe(OctetString *apn, mme_api_ip_version_t mme_pdn_index, OctetString *pdn_addr,
                       int is_emergency, mme_api_qos_t *qos)
 {
     int rc = RETURNok;
@@ -460,9 +454,9 @@ int mme_api_subscribe(OctetString *apn, OctetString *pdn_addr,
     /* Assign PDN address */
     if ( pdn_addr && (_mme_api_pdn_id < MME_API_PDN_MAX) ) {
         pdn_addr->length =
-            _mme_api_pdn_addr[_mme_api_ip_capability][_mme_api_pdn_id].length;
+            _mme_api_pdn_addr[mme_pdn_index][_mme_api_pdn_id].length;
         pdn_addr->value =
-            _mme_api_pdn_addr[_mme_api_ip_capability][_mme_api_pdn_id].value;
+            _mme_api_pdn_addr[mme_pdn_index][_mme_api_pdn_id].value;
         /* Increment the total number of PDN connections */
         _mme_api_pdn_id += 1;
     } else {

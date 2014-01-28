@@ -49,6 +49,14 @@ typedef enum mme_api_feature_s {
     MME_API_SINGLE_ADDR_BEARERS     = (1<<4),
 } mme_api_feature_t;
 
+/* Network IP version capability */
+typedef enum mme_api_ip_version_e {
+    MME_API_IPV4_ADDR,
+    MME_API_IPV6_ADDR,
+    MME_API_IPV4V6_ADDR,
+    MME_API_ADDR_MAX
+} mme_api_ip_version_t;
+
 /*
  * EPS Mobility Management configuration data
  * ------------------------------------------
@@ -105,7 +113,7 @@ int mme_api_identify_imsi(const imsi_t *imsi, auth_vector_t *vector);
 int mme_api_identify_imei(const imei_t *imei, auth_vector_t *vector);
 int mme_api_new_guti(const imsi_t *imsi, GUTI_t *guti, tac_t *tac, int *n_tacs);
 
-int mme_api_subscribe(OctetString *apn, OctetString *pdn_addr,
+int mme_api_subscribe(OctetString *apn, mme_api_ip_version_t mme_pdn_index, OctetString *pdn_addr,
                       int is_emergency, mme_api_qos_t *qos);
 int mme_api_unsubscribe(OctetString *apn);
 
