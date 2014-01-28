@@ -232,8 +232,4 @@ inline int s1ap_eNB_compare_assoc_id(
 RB_PROTOTYPE(s1ap_mme_map, s1ap_eNB_mme_data_s, entry,
              s1ap_eNB_compare_assoc_id);
 
-int s1ap_eNB_init(s1ap_eNB_instance_t *eNB_desc_p,
-                  char *local_ip_addr[],  int nb_local_ip,
-                  char *remote_ip_addr[], int nb_remote_ip);
-
 #endif /* S1AP_ENB_DEFS_H_ */
