@@ -360,7 +360,7 @@ uint8_t do_MIB(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame, 
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_BCH_Message, (void *) &mib)) > 0)
@@ -1207,7 +1207,7 @@ uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv) {
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_CCCH_Message, (void *) &ul_ccch_msg)) > 0)
@@ -1285,7 +1285,7 @@ uint8_t do_RRCConnectionSetupComplete(uint8_t Mod_id, uint8_t *buffer, const uin
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
@@ -1339,7 +1339,7 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer,
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
@@ -1629,7 +1629,7 @@ uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_CCCH_Message, (void *) &dl_ccch_msg)) > 0)
@@ -1696,7 +1696,7 @@ uint8_t do_SecurityModeCommand(uint8_t Mod_id,
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *) &dl_dcch_msg)) > 0)
@@ -1763,7 +1763,7 @@ uint8_t do_UECapabilityEnquiry(uint8_t Mod_id,
   #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *) &dl_dcch_msg)) > 0)
@@ -1909,7 +1909,7 @@ uint16_t do_RRCConnectionReconfiguration(uint8_t                             Mod
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[30000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *) &dl_dcch_msg)) > 0)
@@ -2055,7 +2055,7 @@ uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_MCCH_Message, (void *) &mcch_message)) > 0)
@@ -2175,7 +2175,7 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
@@ -2600,7 +2600,7 @@ uint8_t do_SIB2_cell(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *b
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *) &bcch_message)) > 0)
@@ -3062,7 +3062,7 @@ uint8_t do_RRCConnReconf_defaultCELL(uint8_t Mod_id,
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
   {
-    char        message_string[19950];
+    char        message_string[20000];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *) &dl_dcch_msg)) > 0)

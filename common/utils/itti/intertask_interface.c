@@ -929,11 +929,12 @@ int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_i
 #endif
 
 #if defined(OAI_EMU) || defined(RTAI)
-    itti_desc.memory_pools_handle = memory_pools_create (4);
+    itti_desc.memory_pools_handle = memory_pools_create (5);
     memory_pools_add_pool (itti_desc.memory_pools_handle, 1000 + ITTI_QUEUE_MAX_ELEMENTS,       50);
     memory_pools_add_pool (itti_desc.memory_pools_handle, 1000 + (2 * ITTI_QUEUE_MAX_ELEMENTS), 100);
     memory_pools_add_pool (itti_desc.memory_pools_handle, 10000,                                1000);
-    memory_pools_add_pool (itti_desc.memory_pools_handle,  500,                                 20000);
+    memory_pools_add_pool (itti_desc.memory_pools_handle,  400,                                 20050);
+    memory_pools_add_pool (itti_desc.memory_pools_handle,  100,                                 30050);
 
     {
         char *statistics = memory_pools_statistics (itti_desc.memory_pools_handle);
