@@ -224,6 +224,15 @@ int nas_message_decode(const char* const buffer, nas_message_t* msg, int length)
     LOG_FUNC_IN;
 
     int bytes;
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+    int down_link;
+
+# if ((defined(EPC_BUILD) && defined(NAS_MME)))
+    down_link = 0;
+# else
+    down_link = 1;
+# endif
+#endif
 
     /* Decode the header */
     int size = _nas_message_header_decode(buffer, &msg->header, length);
@@ -248,7 +257,7 @@ int nas_message_decode(const char* const buffer, nas_message_t* msg, int length)
                                               &msg->plain, length - size);
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         /* Message has been decoded and security header removed, handle it has a plain message */
-        nas_itti_plain_msg(buffer, msg, length, 0);
+        nas_itti_plain_msg(buffer, msg, length, down_link);
 #endif
     }
     else {
@@ -256,7 +265,7 @@ int nas_message_decode(const char* const buffer, nas_message_t* msg, int length)
         bytes = _nas_message_plain_decode(buffer, &msg->header,
                                           &msg->plain, length);
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-        nas_itti_plain_msg(buffer, msg, length, 0);
+        nas_itti_plain_msg(buffer, msg, length, down_link);
 #endif
     }
 
@@ -291,6 +300,15 @@ int nas_message_encode(char* buffer, const nas_message_t* const msg, int length)
     LOG_FUNC_IN;
 
     int bytes;
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+    int down_link;
+
+# if ((defined(EPC_BUILD) && defined(NAS_MME)))
+    down_link = 1;
+# else
+    down_link = 0;
+# endif
+#endif
 
     /* Encode the header */
     int size = _nas_message_header_encode(buffer, &msg->header, length);
@@ -314,7 +332,7 @@ int nas_message_encode(char* buffer, const nas_message_t* const msg, int length)
             *(UInt32_t*)(buffer + sizeof(UInt8_t)) = mac;
         }
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-        nas_itti_protected_msg(buffer, msg, length, 1);
+        nas_itti_protected_msg(buffer, msg, length, down_link);
 #endif
     }
     else {
@@ -322,7 +340,7 @@ int nas_message_encode(char* buffer, const nas_message_t* const msg, int length)
         bytes = _nas_message_plain_encode(buffer, &msg->header,
                           &msg->plain, length);
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-        nas_itti_plain_msg(buffer, msg, length, 1);
+        nas_itti_plain_msg(buffer, msg, length, down_link);
 #endif
     }
 
