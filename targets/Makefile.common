@@ -96,7 +96,7 @@ endif
 CFLAGS += -I$(OPENAIR2_DIR)/COMMON -DENABLE_ITTI $(UTILS_incl)
 endif
 
-$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE) $(ITTI_MESSAGES_XML:.xml=.d)
+$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
 	@gccxml $(COMMON_CFLAGS) $< -fxml=$@
 	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
