@@ -45,12 +45,22 @@ Description Implements the API used by the NAS layer running in the MME
 
 /* Default APN */
 static const OctetString mme_api_default_apn = {
-    14, (uint8_t *)("www.eurecom.fr")
+    /* LW: apn seems to be coded using a one byte size field before each part of the name */
+#if 1
+    15, (uint8_t *)("\x0e" "www.eurecom.fr")
+#else
+    35, (uint8_t *)("\x08" "internet"
+                    "\x02" "v4"
+                    "\x03" "pft"
+                    "\x06" "mnc092"
+                    "\x06" "mcc208"
+                    "\x04" "gprs")
+#endif
 };
 
 /* APN configured for emergency bearer services */
 static const OctetString mme_api_emergency_apn = {
-    18, (uint8_t *)("www.eurecom_sos.fr")
+    19, (uint8_t *)("\x12" "www.eurecom_sos.fr")
 };
 
 /* Public Land Mobile Network identifier */
