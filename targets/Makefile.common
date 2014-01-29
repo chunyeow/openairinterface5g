@@ -43,12 +43,17 @@ COMMON_CFLAGS		+= -DLOG_NO_THREAD
 COMMON_CFLAGS		+= -I$(OPENAIR2_DIR)/NAS
 COMMON_CFLAGS 	 	+= $(L2_incl)
 COMMON_CFLAGS		+= $(UTILS_incl)
+
+openair_cn_available = $(shell if [ -d "$(UE_NAS_DIR)" ]; then echo "0" ; else  echo "1" ; fi )
+ifeq 	($(openair_cn_available), 0)
+COMMON_CFLAGS		+= -DENABLE_NAS_UE_LOGGING
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/api/network
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/include
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/ies
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/emm/msg
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/esm/msg
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/util
+endif
 
 UENAS_CFLAGS		 = $(COMMON_CFLAGS)
 export UENAS_CFLAGS
