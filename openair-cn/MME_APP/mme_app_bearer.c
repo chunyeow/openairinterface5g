@@ -341,7 +341,7 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
         memcpy(&NAS_BEARER_PARAM(message_p).ambr, &ue_context_p->subscribed_ambr,
                sizeof(ambr_t));
 
-        return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+        return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
     }
 
     return 0;

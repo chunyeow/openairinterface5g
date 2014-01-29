@@ -4,13 +4,18 @@
 #ifndef NAS_MESSAGES_TYPES_H_
 #define NAS_MESSAGES_TYPES_H_
 
-#define NAS_RAW_MSG(mSGpTR)                         (mSGpTR)->ittiMsg.nas_raw_msg
+#define NAS_DL_RAW_MSG(mSGpTR)                      (mSGpTR)->ittiMsg.nas_dl_raw_msg
+#define NAS_UL_RAW_MSG(mSGpTR)                      (mSGpTR)->ittiMsg.nas_ul_raw_msg
 
-#define NAS_EMM_PROTECTED_MSG(mSGpTR)               (mSGpTR)->ittiMsg.nas_emm_protected_msg
-#define NAS_EMM_PLAIN_MSG(mSGpTR)                   (mSGpTR)->ittiMsg.nas_emm_plain_msg
+#define NAS_DL_EMM_PROTECTED_MSG(mSGpTR)            (mSGpTR)->ittiMsg.nas_dl_emm_protected_msg
+#define NAS_UL_EMM_PROTECTED_MSG(mSGpTR)            (mSGpTR)->ittiMsg.nas_ul_emm_protected_msg
+#define NAS_DL_EMM_PLAIN_MSG(mSGpTR)                (mSGpTR)->ittiMsg.nas_dl_emm_plain_msg
+#define NAS_UL_EMM_PLAIN_MSG(mSGpTR)                (mSGpTR)->ittiMsg.nas_ul_emm_plain_msg
 
-#define NAS_ESM_PROTECTED_MSG(mSGpTR)               (mSGpTR)->ittiMsg.nas_esm_protected_msg
-#define NAS_ESM_PLAIN_MSG(mSGpTR)                   (mSGpTR)->ittiMsg.nas_esm_plain_msg
+#define NAS_DL_ESM_PROTECTED_MSG(mSGpTR)            (mSGpTR)->ittiMsg.nas_dl_esm_protected_msg
+#define NAS_UL_ESM_PROTECTED_MSG(mSGpTR)            (mSGpTR)->ittiMsg.nas_ul_esm_protected_msg
+#define NAS_DL_ESM_PLAIN_MSG(mSGpTR)                (mSGpTR)->ittiMsg.nas_dl_esm_plain_msg
+#define NAS_UL_ESM_PLAIN_MSG(mSGpTR)                (mSGpTR)->ittiMsg.nas_ul_esm_plain_msg
 
 #define NAS_UL_DATA_IND(mSGpTR)                     (mSGpTR)->ittiMsg.nas_ul_data_ind
 #define NAS_DL_DATA_REQ(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_req

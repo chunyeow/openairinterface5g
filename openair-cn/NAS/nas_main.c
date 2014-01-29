@@ -53,13 +53,13 @@
 
 static void *nas_intertask_interface(void *args_p)
 {
-    itti_mark_task_ready(TASK_NAS);
+    itti_mark_task_ready(TASK_NAS_MME);
 
     while(1) {
         MessageDef *received_message_p;
 
 next_message:
-        itti_receive_msg(TASK_NAS, &received_message_p);
+        itti_receive_msg(TASK_NAS_MME, &received_message_p);
 
         switch (ITTI_MSG_ID(received_message_p))
         {
@@ -71,7 +71,7 @@ next_message:
 
                 NAS_DEBUG("NAS abstraction: Generating NAS ATTACH REQ\n");
 
-                message_p = itti_alloc_new_message(TASK_NAS, NAS_ATTACH_REQ);
+                message_p = itti_alloc_new_message(TASK_NAS_MME, NAS_ATTACH_REQ);
 
                 nas_req_p = &message_p->ittiMsg.nas_attach_req;
                 transparent = &message_p->ittiMsg.nas_attach_req.transparent;
@@ -107,7 +107,7 @@ next_message:
 
                 NAS_DEBUG("NAS abstraction: Generating NAS AUTHENTICATION RESPONSE\n");
 
-                message_p = itti_alloc_new_message(TASK_NAS, NAS_AUTHENTICATION_RESP);
+                message_p = itti_alloc_new_message(TASK_NAS_MME, NAS_AUTHENTICATION_RESP);
 
                 nas_resp_p = &message_p->ittiMsg.nas_auth_resp;
 
@@ -180,11 +180,11 @@ int nas_init(mme_config_t *mme_config_p)
     NAS_DEBUG("Initializing NAS task interface\n");
 
 #if !defined(DISABLE_USE_NAS)
-    nas_log_init(0x2F);
+    nas_log_init(0xfF);
     nas_network_initialize(mme_config_p);
 #endif
 
-    if (itti_create_task(TASK_NAS, &nas_intertask_interface,
+    if (itti_create_task(TASK_NAS_MME, &nas_intertask_interface,
                                         NULL) < 0) {
         NAS_ERROR("Create task failed");
         NAS_DEBUG("Initializing NAS task interface: FAILED\n");

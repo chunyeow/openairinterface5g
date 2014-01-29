@@ -37,15 +37,17 @@
 #ifndef NAS_ITTI_MESSAGING_H_
 #define NAS_ITTI_MESSAGING_H_
 
+# if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
+int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
+
+int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
+# endif
+
 # if defined(EPC_BUILD) && defined(NAS_MME)
 #include "conversions.h"
 
 int nas_itti_dl_data_req(const uint32_t ue_id, void *const data,
                          const uint32_t length);
-
-int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
-
-int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
 
 static inline void nas_itti_establish_cnf(const uint32_t ue_id,
         const nas_error_code_t error_code, void *const data,
@@ -53,7 +55,7 @@ static inline void nas_itti_establish_cnf(const uint32_t ue_id,
 {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message(TASK_NAS, NAS_CONNECTION_ESTABLISHMENT_CNF);
+    message_p = itti_alloc_new_message(TASK_NAS_MME, NAS_CONNECTION_ESTABLISHMENT_CNF);
 
     NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).UEid            = ue_id;
     NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).errCode         = error_code;
@@ -68,7 +70,7 @@ static inline void nas_itti_auth_info_req(const uint32_t ue_id,
 {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message(TASK_NAS, NAS_AUTHENTICATION_PARAM_REQ);
+    message_p = itti_alloc_new_message(TASK_NAS_MME, NAS_AUTHENTICATION_PARAM_REQ);
 
     hexa_to_ascii((uint8_t *)imsi->u.value,
                   NAS_AUTHENTICATION_PARAM_REQ(message_p).imsi, 8);
@@ -101,7 +103,7 @@ static inline void nas_itti_establish_rej(const uint32_t ue_id,
 {
     MessageDef *message_p;
 
-    message_p = itti_alloc_new_message(TASK_NAS, NAS_AUTHENTICATION_PARAM_REQ);
+    message_p = itti_alloc_new_message(TASK_NAS_MME, NAS_AUTHENTICATION_PARAM_REQ);
 
     hexa_to_ascii((uint8_t *)imsi->u.value,
                   NAS_AUTHENTICATION_PARAM_REQ(message_p).imsi, 8);

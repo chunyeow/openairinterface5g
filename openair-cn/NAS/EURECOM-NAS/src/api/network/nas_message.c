@@ -28,7 +28,7 @@ Description	Defines the layer 3 messages supported by the NAS sublayer
 #include <stdlib.h>	// malloc, free
 #include <string.h>	// memcpy
 
-#if (defined(EPC_BUILD) && defined(NAS_MME))
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
 # include "nas_itti_messaging.h"
 #endif
 
@@ -246,7 +246,7 @@ int nas_message_decode(const char* const buffer, nas_message_t* msg, int length)
         /* Decode security protected NAS message */
         bytes = _nas_message_protected_decode(buffer + size, &msg->header,
                                               &msg->plain, length - size);
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         /* Message has been decoded and security header removed, handle it has a plain message */
         nas_itti_plain_msg(buffer, msg, length, 0);
 #endif
@@ -255,7 +255,7 @@ int nas_message_decode(const char* const buffer, nas_message_t* msg, int length)
         /* Decode plain NAS message */
         bytes = _nas_message_plain_decode(buffer, &msg->header,
                                           &msg->plain, length);
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         nas_itti_plain_msg(buffer, msg, length, 0);
 #endif
     }
@@ -313,7 +313,7 @@ int nas_message_encode(char* buffer, const nas_message_t* const msg, int length)
             /* Set the message authentication code of the NAS message */
             *(UInt32_t*)(buffer + sizeof(UInt8_t)) = mac;
         }
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         nas_itti_protected_msg(buffer, msg, length, 1);
 #endif
     }
@@ -321,7 +321,7 @@ int nas_message_encode(char* buffer, const nas_message_t* const msg, int length)
         /* Encode plain NAS message */
         bytes = _nas_message_plain_encode(buffer, &msg->header,
                           &msg->plain, length);
-#if defined(EPC_BUILD) && defined(NAS_MME)
+#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         nas_itti_plain_msg(buffer, msg, length, 1);
 #endif
     }

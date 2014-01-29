@@ -285,7 +285,7 @@ request_auth: {
                 MME_APP_IMSI_TO_STRING(imsi, nas_auth_req_p->imsi);
                 nas_auth_req_p->failure = NAS_FAILURE_OK;
 
-                return itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+                return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
             }
         }
     }
@@ -295,9 +295,15 @@ request_auth: {
 void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t
                                        *nas_auth_param_req_p)
 {
-    struct ue_context_s *ue_context;
-    uint64_t imsi = 0;
-    plmn_t visited_plmn_dongle = {
+    static const plmn_t visited_plmn_eur = {
+        .MCCdigit3 = 2,
+        .MCCdigit2 = 0,
+        .MCCdigit1 = 8,
+        .MNCdigit1 = 0,
+        .MNCdigit2 = 1,
+        .MNCdigit3 = 0,
+    };
+    static const plmn_t visited_plmn_dongle = {
         .MCCdigit3 = 2,
         .MCCdigit2 = 0,
         .MCCdigit1 = 8,
@@ -306,7 +312,16 @@ void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t
         .MNCdigit1 = 0xF,
     };
 
+    plmn_t *visited_plmn;
+    struct ue_context_s *ue_context;
+    uint64_t imsi = 0;
     DevAssert(nas_auth_param_req_p != NULL);
+
+#if 1
+    visited_plmn = &visited_plmn_eur;
+#else
+    visited_plmn = &visited_plmn_dongle;
+#endif
 
     MME_APP_STRING_TO_IMSI(nas_auth_param_req_p->imsi, &imsi);
 
@@ -331,30 +346,21 @@ void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t
         ue_context->ue_id = nas_auth_param_req_p->ue_id;
 
         DevAssert(mme_insert_ue_context(&mme_app_desc.mme_ue_contexts, ue_context) == 0);
-
         /* We have no vector for this UE, send an authentication request
          * to the HSS.
          */
-        plmn_t visited_plmn_eur = {
-            .MCCdigit3 = 2,
-            .MCCdigit2 = 0,
-            .MCCdigit1 = 8,
-            .MNCdigit1 = 0,
-            .MNCdigit2 = 4,
-            .MNCdigit3 = 3,
-        };
 
         /* Acquire the current time */
         time(&ue_context->cell_age);
 
-        memcpy(&ue_context->guti.gummei.plmn, &visited_plmn_dongle, sizeof(plmn_t));
+        memcpy(&ue_context->guti.gummei.plmn, visited_plmn, sizeof(plmn_t));
         MME_APP_DEBUG("and we have no auth. vector for it, request"
                       " authentication information\n");
-        mme_app_request_authentication_info(imsi, 1, &visited_plmn_dongle, NULL);
+        mme_app_request_authentication_info(imsi, 1, visited_plmn, NULL);
     } else {
-        memcpy(&ue_context->guti.gummei.plmn, &visited_plmn_dongle, sizeof(plmn_t));
+        memcpy(&ue_context->guti.gummei.plmn, visited_plmn, sizeof(plmn_t));
 
-        mme_app_request_authentication_info(imsi, 1, &visited_plmn_dongle, nas_auth_param_req_p->auts);
+        mme_app_request_authentication_info(imsi, 1, visited_plmn, nas_auth_param_req_p->auts);
     }
 }
 #endif

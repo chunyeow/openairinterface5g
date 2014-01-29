@@ -62,7 +62,7 @@ static inline void s1ap_mme_itti_nas_establish_ind(
     NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data = malloc(sizeof(uint8_t) * nas_msg_length);
     memcpy(NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data, nas_msg, nas_msg_length);
 
-    itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 
 #endif /* S1AP_MME_ITTI_MESSAGING_H_ */

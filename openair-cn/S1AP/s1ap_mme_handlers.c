@@ -734,7 +734,7 @@ int s1ap_handle_sctp_deconnection(uint32_t assoc_id)
 
         if (current_ue_index == 0 && handled_ues > 0) {
             S1AP_ENB_DEREGISTERED_IND(message_p).nb_ue_to_deregister = S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE;
-            itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+            itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
         }
 
         handled_ues++;
@@ -746,7 +746,7 @@ int s1ap_handle_sctp_deconnection(uint32_t assoc_id)
         for (i = current_ue_index; i < S1AP_ITTI_UE_PER_DEREGISTER_MESSAGE; i++) {
             S1AP_ENB_DEREGISTERED_IND(message_p).mme_ue_s1ap_id[current_ue_index] = 0;
         }
-        itti_send_msg_to_task(TASK_NAS, INSTANCE_DEFAULT, message_p);
+        itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
     }
 
     s1ap_remove_eNB(eNB_association);
