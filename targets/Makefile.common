@@ -29,20 +29,6 @@ include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(OPENAIR_TARGETS)/COMMON/Makefile.inc
 include $(OPENAIR2_DIR)/NAS/Makefile.inc
 
-$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
-	@echo "Generating messages.xml ..."
-	@gccxml $(L2_incl) $(UTILS_incl) $< -fxml=$@
-	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
-	@mv -f $(basename $@).d $(basename $@).d.tmp
-	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
-	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
-	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
-	@rm -f $(basename $@).d.tmp
-
-$(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
-	@echo "Generating messages_xml.h ..."
-	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
-
 ifdef USE_MME
 COMMON_CFLAGS		+= -DENABLE_USE_MME
 
@@ -57,6 +43,12 @@ COMMON_CFLAGS		+= -DLOG_NO_THREAD
 COMMON_CFLAGS		+= -I$(OPENAIR2_DIR)/NAS
 COMMON_CFLAGS 	 	+= $(L2_incl)
 COMMON_CFLAGS		+= $(UTILS_incl)
+COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/api/network
+COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/include
+COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/ies
+COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/emm/msg
+COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/esm/msg
+COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/util
 
 UENAS_CFLAGS		 = $(COMMON_CFLAGS)
 export UENAS_CFLAGS
@@ -81,6 +73,8 @@ $(SCTP_OBJ_DIR)/libsctp.a: force_look
 OBJ = $(NAS_UE_OBJS)
 endif
 
+export COMMON_CFLAGS
+
 ifdef ENABLE_ITTI
 SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
 
@@ -96,6 +90,20 @@ $(error gccxml is missing, please install)
 endif
 CFLAGS += -I$(OPENAIR2_DIR)/COMMON -DENABLE_ITTI $(UTILS_incl)
 endif
+
+$(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE) $(ITTI_MESSAGES_XML:.xml=.d)
+	@echo "Generating messages.xml ..."
+	@gccxml $(COMMON_CFLAGS) $< -fxml=$@
+	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
+	@mv -f $(basename $@).d $(basename $@).d.tmp
+	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
+	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
+	@rm -f $(basename $@).d.tmp
+
+$(ITTI_MESSAGES_H): $(ITTI_MESSAGES_XML)
+	@echo "Generating messages_xml.h ..."
+	@sed -e 's/[ ]*//' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$$/\\n"/' $< > $@
 
 force_look:
 	@true
