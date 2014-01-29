@@ -31,12 +31,12 @@
     <NAS_UL_RAW_MSG enabled="1" foreground_color="#f16262" background_color="#8f5801"/>
     <NAS_DL_EMM_PLAIN_MSG enabled="1" foreground_color="#89e133" background_color="#8f5801"/>
     <NAS_UL_EMM_PLAIN_MSG enabled="1" foreground_color="#f16262" background_color="#8f5801"/>
-    <NAS_DL_EMM_PROTECTED_MSG enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <NAS_UL_EMM_PROTECTED_MSG enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <NAS_DL_ESM_PLAIN_MSG enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <NAS_UL_ESM_PLAIN_MSG enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <NAS_DL_ESM_PROTECTED_MSG enabled="1" foreground_color="#585858" background_color="#ffffff"/>
-    <NAS_UL_ESM_PROTECTED_MSG enabled="1" foreground_color="#585858" background_color="#ffffff"/>
+    <NAS_DL_EMM_PROTECTED_MSG enabled="1" foreground_color="#89e133" background_color="#8f5801"/>
+    <NAS_UL_EMM_PROTECTED_MSG enabled="1" foreground_color="#f16262" background_color="#8f5801"/>
+    <NAS_DL_ESM_PLAIN_MSG enabled="1" foreground_color="#89e133" background_color="#8f5801"/>
+    <NAS_UL_ESM_PLAIN_MSG enabled="1" foreground_color="#f16262" background_color="#8f5801"/>
+    <NAS_DL_ESM_PROTECTED_MSG enabled="1" foreground_color="#89e133" background_color="#8f5801"/>
+    <NAS_UL_ESM_PROTECTED_MSG enabled="1" foreground_color="#f16262" background_color="#8f5801"/>
     <NAS_PAGING_IND enabled="1" foreground_color="#e0e0e0" background_color="#2d315c"/>
     <NAS_CONNECTION_ESTABLISHMENT_IND enabled="1" foreground_color="#585858" background_color="#ffffff"/>
     <NAS_CONNECTION_ESTABLISHMENT_CNF enabled="1" foreground_color="#585858" background_color="#ffffff"/>
