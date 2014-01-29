@@ -180,7 +180,7 @@ int nas_init(mme_config_t *mme_config_p)
     NAS_DEBUG("Initializing NAS task interface\n");
 
 #if !defined(DISABLE_USE_NAS)
-    nas_log_init(0xfF);
+    nas_log_init(0x2F);
     nas_network_initialize(mme_config_p);
 #endif
 
