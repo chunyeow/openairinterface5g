@@ -1190,7 +1190,7 @@ void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityMo
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
       {
-        char        message_string[20000];
+        char        message_string[19950];
         size_t      message_string_size;
 
         if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
@@ -1274,7 +1274,7 @@ void rrc_ue_process_ueCapabilityEnquiry(uint8_t Mod_id,uint32_t frame,UECapabili
 #if defined(ENABLE_ITTI)
 # if !defined(DISABLE_XER_SPRINT)
           {
-            char        message_string[20000];
+            char        message_string[19950];
             size_t      message_string_size;
 
             if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_UL_DCCH_Message, (void *) &ul_dcch_msg)) > 0)
@@ -1560,7 +1560,7 @@ void  rrc_ue_decode_dcch(u8 Mod_id,u32 frame,u8 Srb_id, u8 *Buffer,u8 eNB_index)
   }
 # else
   {
-    char        message_string[20000];
+    char        message_string[19950];
     size_t      message_string_size;
 
     if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_DL_DCCH_Message, (void *)dl_dcch_msg)) > 0)
