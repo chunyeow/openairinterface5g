@@ -120,36 +120,53 @@ int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int l
 {
     MessageDef *message_p;
     int data_length = length < NAS_DATA_LENGHT_MAX ? length : NAS_DATA_LENGHT_MAX;
+    int message_type = -1;
+    MessagesIds messageId_raw = -1;
+    MessagesIds messageId_plain = -1;
 
-    {
-        message_p = itti_alloc_new_message(TASK_ORIGIN, down_link ? NAS_DL_RAW_MSG : NAS_UL_RAW_MSG);
-
-        NAS_DL_RAW_MSG(message_p).lenght = length;
-        memset ((void *) &(NAS_DL_RAW_MSG(message_p).data), 0, NAS_DATA_LENGHT_MAX);
-        memcpy ((void *) &(NAS_DL_RAW_MSG(message_p).data), buffer, data_length);
-
-        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-        message_p = NULL;
-    }
-
+    /* Define message ids */
     if (msg->header.protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE)
     {
-        message_p = itti_alloc_new_message(TASK_ORIGIN, down_link ? NAS_DL_EMM_PLAIN_MSG : NAS_UL_EMM_PLAIN_MSG);
-
-        NAS_DL_EMM_PLAIN_MSG(message_p).present = _nas_find_message_index(msg->plain.emm.header.message_type, emm_message_ids, sizeof(emm_message_ids) / sizeof(emm_message_ids[0]));
-        memcpy ((void *) &(NAS_DL_EMM_PLAIN_MSG(message_p).choice), &msg->plain.emm, sizeof (EMM_msg));
+        message_type    = 0;
+        messageId_raw   = down_link ? NAS_DL_EMM_RAW_MSG : NAS_UL_EMM_RAW_MSG;
+        messageId_plain = down_link ? NAS_DL_EMM_PLAIN_MSG : NAS_UL_EMM_PLAIN_MSG;
     }
-    else {
+    else
+    {
         if (msg->header.protocol_discriminator == EPS_SESSION_MANAGEMENT_MESSAGE)
         {
-            message_p = itti_alloc_new_message(TASK_ORIGIN, down_link ? NAS_DL_ESM_PLAIN_MSG : NAS_UL_ESM_PLAIN_MSG);
-
-            NAS_DL_ESM_PLAIN_MSG(message_p).present = _nas_find_message_index(msg->plain.esm.header.message_type, esm_message_ids, sizeof(esm_message_ids) / sizeof(esm_message_ids[0]));
-            memcpy ((void *) &(NAS_DL_ESM_PLAIN_MSG(message_p).choice), &msg->plain.emm, sizeof (ESM_msg));
+            message_type    = 1;
+            messageId_raw   = down_link ? NAS_DL_ESM_RAW_MSG : NAS_UL_ESM_RAW_MSG;
+            messageId_plain = down_link ? NAS_DL_ESM_PLAIN_MSG : NAS_UL_ESM_PLAIN_MSG;
         }
     }
 
-    if (message_p != NULL) {
+    if (message_type >= 0)
+    {
+        /* Create and send the RAW message */
+        message_p = itti_alloc_new_message(TASK_ORIGIN, messageId_raw);
+
+        NAS_DL_EMM_RAW_MSG(message_p).lenght = length;
+        memset ((void *) &(NAS_DL_EMM_RAW_MSG(message_p).data), 0, NAS_DATA_LENGHT_MAX);
+        memcpy ((void *) &(NAS_DL_EMM_RAW_MSG(message_p).data), buffer, data_length);
+
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+        /* Create and send the plain message */
+        if (message_type == 0)
+        {
+            message_p = itti_alloc_new_message(TASK_ORIGIN, messageId_plain);
+
+            NAS_DL_EMM_PLAIN_MSG(message_p).present = _nas_find_message_index(msg->plain.emm.header.message_type, emm_message_ids, sizeof(emm_message_ids) / sizeof(emm_message_ids[0]));
+            memcpy ((void *) &(NAS_DL_EMM_PLAIN_MSG(message_p).choice), &msg->plain.emm, sizeof (EMM_msg));
+        }
+        else {
+            message_p = itti_alloc_new_message(TASK_ORIGIN, messageId_plain);
+
+            NAS_DL_ESM_PLAIN_MSG(message_p).present = _nas_find_message_index(msg->plain.esm.header.message_type, esm_message_ids, sizeof(esm_message_ids) / sizeof(esm_message_ids[0]));
+            memcpy ((void *) &(NAS_DL_ESM_PLAIN_MSG(message_p).choice), &msg->plain.esm, sizeof (ESM_msg));
+        }
+
         return itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
     }
 
@@ -158,19 +175,7 @@ int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int l
 
 int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int down_link)
 {
-    MessageDef *message_p;
-    int data_length = length < NAS_DATA_LENGHT_MAX ? length : NAS_DATA_LENGHT_MAX;
-
-    {
-        message_p = itti_alloc_new_message(TASK_ORIGIN, down_link ? NAS_DL_RAW_MSG : NAS_UL_RAW_MSG);
-
-        NAS_DL_RAW_MSG(message_p).lenght = length;
-        memset ((void *) &(NAS_DL_RAW_MSG(message_p).data), 0, NAS_DATA_LENGHT_MAX);
-        memcpy ((void *) &(NAS_DL_RAW_MSG(message_p).data), buffer, data_length);
-
-        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-        message_p = NULL;
-    }
+    MessageDef *message_p = NULL;
 
     if (msg->header.protocol_discriminator == EPS_MOBILITY_MANAGEMENT_MESSAGE)
     {
