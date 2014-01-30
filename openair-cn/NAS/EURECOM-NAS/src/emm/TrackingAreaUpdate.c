@@ -69,6 +69,7 @@ static int _emm_tracking_area_update_reject(void *args);
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
 
+#ifdef NAS_MME
 /****************************************************************************
  **                                                                        **
  ** Name:        emm_proc_tracking_area_update_reject()                    **
@@ -113,6 +114,7 @@ int emm_proc_tracking_area_update_reject(unsigned int ueid, int emm_cause)
 
     LOG_FUNC_RETURN(rc);
 }
+#endif // NAS_MME
 
 /****************************************************************************/
 /*********************  L O C A L    F U N C T I O N S  *********************/
