@@ -137,6 +137,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
                             imei_t *imei, tai_t *tai, int eea, int eia, const OctetString *esm_msg);
 int emm_proc_attach_reject(unsigned int ueid, int emm_cause);
 int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg);
+int emm_proc_tracking_area_update_reject(unsigned int ueid, int emm_cause);
 #endif
 
 /*

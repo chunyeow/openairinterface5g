@@ -368,6 +368,12 @@ static int _emm_as_recv(unsigned int ueid, const char *msg, int len,
             break;
 #endif
 #ifdef NAS_MME
+        case ATTACH_REQUEST:
+            rc = emm_recv_attach_request(ueid,
+                                         &emm_msg->attach_request,
+                                         emm_cause);
+            break;
+
         case IDENTITY_RESPONSE:
             rc = emm_recv_identity_response(ueid,
                                             &emm_msg->identity_response,
@@ -722,7 +728,9 @@ static int _emm_as_establish_req(const emm_as_establish_t *msg, int *emm_cause)
             break;
 
         case TRACKING_AREA_UPDATE_REQUEST:
-            rc = RETURNok;  /* TODO */
+            rc = emm_recv_tracking_area_update_request(msg->ueid,
+                                                       &emm_msg->tracking_area_update_request,
+                                                       emm_cause);
             break;
 
         case SERVICE_REQUEST:
@@ -1096,6 +1104,7 @@ static int _emm_as_send(const emm_as_t *msg)
                 LOG_FUNC_RETURN (RETURNok);
             } break;
 
+            case AS_NAS_ESTABLISH_RSP:
             case AS_NAS_ESTABLISH_CNF: {
                 if (as_msg.msg.nas_establish_rsp.errCode != AS_SUCCESS) {
                     nas_itti_dl_data_req(as_msg.msg.nas_establish_rsp.UEid,
@@ -1766,6 +1775,10 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
     if (emm_msg != NULL) switch (msg->NASinfo) {
             case EMM_AS_NAS_INFO_ATTACH:
                 size = emm_send_attach_reject(msg, &emm_msg->attach_reject);
+                break;
+
+            case EMM_AS_NAS_INFO_TAU:
+                size = emm_send_tracking_area_update_reject(msg, &emm_msg->tracking_area_update_reject);
                 break;
 
             default:

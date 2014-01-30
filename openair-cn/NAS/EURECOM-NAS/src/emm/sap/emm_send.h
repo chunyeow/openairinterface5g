@@ -130,6 +130,9 @@ int emm_send_security_mode_reject(const emm_as_security_t *,
 int emm_send_attach_accept(const emm_as_establish_t *, attach_accept_msg *);
 int emm_send_attach_reject(const emm_as_establish_t *, attach_reject_msg *);
 
+int emm_send_tracking_area_update_reject(const emm_as_establish_t *msg,
+                                         tracking_area_update_reject_msg *emm_msg);
+
 int emm_send_identity_request(const emm_as_security_t *, identity_request_msg *);
 int emm_send_authentication_request(const emm_as_security_t *,
                                     authentication_request_msg *);

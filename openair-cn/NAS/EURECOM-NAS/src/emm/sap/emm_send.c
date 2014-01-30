@@ -992,6 +992,44 @@ int emm_send_attach_reject(const emm_as_establish_t *msg,
 
 /****************************************************************************
  **                                                                        **
+ ** Name:        emm_send_tracking_area_update_reject()                    **
+ **                                                                        **
+ ** Description: Builds Tracking Area Update Reject message                **
+ **                                                                        **
+ **              The Tracking Area Update Reject message is sent by the    **
+ **              network to the UE to indicate that the corresponding      **
+ **              tracking area update has been rejected.                   **
+ **                                                                        **
+ ** Inputs:      msg:           The EMMAS-SAP primitive to process         **
+ **              Others:        None                                       **
+ **                                                                        **
+ ** Outputs:     emm_msg:       The EMM message to be sent                 **
+ **              Return:        The size of the EMM message                **
+ **              Others:        None                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_send_tracking_area_update_reject(const emm_as_establish_t *msg,
+                                         tracking_area_update_reject_msg *emm_msg)
+{
+    LOG_FUNC_IN;
+
+    int size = EMM_HEADER_MAXIMUM_LENGTH;
+
+    LOG_TRACE(INFO, "EMMAS-SAP - Send Tracking Area Update Reject message (cause=%d)",
+              msg->emm_cause);
+
+    /* Mandatory - Message type */
+    emm_msg->messagetype = TRACKING_AREA_UPDATE_REJECT;
+
+    /* Mandatory - EMM cause */
+    size += EMM_CAUSE_MAXIMUM_LENGTH;
+    emm_msg->emmcause = msg->emm_cause;
+
+    LOG_FUNC_RETURN (size);
+}
+
+/****************************************************************************
+ **                                                                        **
  ** Name:    emm_send_identity_request()                               **
  **                                                                        **
  ** Description: Builds Identity Request message                           **

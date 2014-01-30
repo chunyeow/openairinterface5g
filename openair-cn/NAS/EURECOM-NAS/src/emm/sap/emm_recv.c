@@ -747,6 +747,37 @@ int emm_recv_detach_request(unsigned int ueid, const detach_request_msg *msg,
 
 /****************************************************************************
  **                                                                        **
+ ** Name:        emm_recv_tracking_area_update_request()                   **
+ **                                                                        **
+ ** Description: Processes Tracking Area Update Request message            **
+ **                                                                        **
+ ** Inputs:      ueid:          UE lower layer identifier                  **
+ **              msg:           The received EMM message                   **
+ **              Others:        None                                       **
+ **                                                                        **
+ ** Outputs:     emm_cause:     EMM cause code                             **
+ **              Return:        RETURNok, RETURNerror                      **
+ **              Others:        None                                       **
+ **                                                                        **
+ ***************************************************************************/
+int emm_recv_tracking_area_update_request(unsigned int  ueid,
+                                          const tracking_area_update_request_msg *msg,
+                                          int *emm_cause)
+{
+    int rc = RETURNok;
+
+    LOG_FUNC_IN;
+
+    LOG_TRACE(INFO, "EMMAS-SAP - Received Tracking Area Update Request message");
+
+    /* LW: Not completely implemented; send a Received Tracking Area Update Reject to induce a Attach Request from UE! */
+    rc = emm_proc_tracking_area_update_reject(ueid, EMM_CAUSE_IMPLICITLY_DETACHED);
+
+    LOG_FUNC_RETURN (rc);
+}
+
+/****************************************************************************
+ **                                                                        **
  ** Name:    emm_recv_identity_response()                              **
  **                                                                        **
  ** Description: Processes Identity Response message                       **
