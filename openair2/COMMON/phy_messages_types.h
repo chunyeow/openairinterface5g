@@ -8,9 +8,12 @@
 #ifndef PHY_MESSAGES_TYPES_H_
 #define PHY_MESSAGES_TYPES_H_
 
+#include "PHY/impl_defs_lte.h"
 #include "ral_messages_types.h"
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
+#define PHY_CONFIGURATION_REQ(mSGpTR)       (mSGpTR)->ittiMsg.phy_configuration_req
+
 #define PHY_DEACTIVATE_REQ(mSGpTR)          (mSGpTR)->ittiMsg.phy_deactivate_req
 
 #define PHY_FIND_CELL_REQ(mSGpTR)           (mSGpTR)->ittiMsg.phy_find_cell_req
@@ -44,45 +47,52 @@ typedef struct CellInfo_s {
 } CellInfo;
 
 //-------------------------------------------------------------------------------------------//
+// eNB: ENB_APP -> PHY messages
+typedef struct PhyConfigurationReq_s {
+    lte_frame_type_t        frame_type;
+    lte_prefix_type_t       prefix_type;
+    uint32_t                downlink_frequency;
+    int32_t                 uplink_frequency_offset;
+} PhyConfigurationReq;
+
 // UE: RRC -> PHY messages
 typedef struct PhyDeactivateReq_s {
 } PhyDeactivateReq;
 
 typedef struct PhyFindCellReq_s {
 //#   if defined(ENABLE_RAL)
-    ral_transaction_id_t  transaction_id;
+    ral_transaction_id_t    transaction_id;
 //#   endif
-    Earfcn earfcn_start;
-    Earfcn earfcn_end;
+    Earfcn                  earfcn_start;
+    Earfcn                  earfcn_end;
 } PhyFindCellReq;
 
 typedef struct PhyFindNextCellReq_s {
 } PhyFindNextCellReq;
 
-
 typedef struct PhyMeasThresholdReq_s {
-    ral_transaction_id_t      transaction_id;
-    ral_link_cfg_param_t      cfg_param;
+    ral_transaction_id_t    transaction_id;
+    ral_link_cfg_param_t    cfg_param;
 } PhyMeasThresholdReq;
 
 typedef struct PhyMeasReportInd_s {
-    ral_threshold_t            threshold;
-    ral_link_param_t           link_param;
+    ral_threshold_t         threshold;
+    ral_link_param_t        link_param;
 } PhyMeasReportInd;
 
 // UE: PHY -> RRC messages
 typedef struct PhyFindCellInd_s {
 //#   if defined(ENABLE_RAL)
-    ral_transaction_id_t  transaction_id;
+    ral_transaction_id_t    transaction_id;
 //#   endif
-   uint8_t      cell_nb;
-   CellInfo     cells[MAX_REPORTED_CELL];
+   uint8_t                  cell_nb;
+   CellInfo                 cells[MAX_REPORTED_CELL];
 } PhyFindCellInd;
 
 typedef struct PhyMeasThresholdConf_s {
-    ral_transaction_id_t     transaction_id;
-    ral_status_t             status;
-    uint8_t                  num_link_cfg_params;
-    ral_link_cfg_status_t    cfg_status[RAL_MAX_LINK_CFG_PARAMS];
+    ral_transaction_id_t    transaction_id;
+    ral_status_t            status;
+    uint8_t                 num_link_cfg_params;
+    ral_link_cfg_status_t   cfg_status[RAL_MAX_LINK_CFG_PARAMS];
 }PhyMeasThresholdConf;
 #endif /* PHY_MESSAGES_TYPES_H_ */

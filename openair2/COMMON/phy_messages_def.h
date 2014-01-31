@@ -6,6 +6,9 @@
  */
 
 //-------------------------------------------------------------------------------------------//
+// eNB: ENB_APP -> PHY messages
+MESSAGE_DEF(PHY_CONFIGURATION_REQ,   MESSAGE_PRIORITY_MED_PLUS, PhyConfigurationReq,  phy_configuration_req)
+
 // UE: RRC -> PHY messages
 MESSAGE_DEF(PHY_DEACTIVATE_REQ,      MESSAGE_PRIORITY_MED_PLUS, PhyDeactivateReq,     phy_deactivate_req)
 
