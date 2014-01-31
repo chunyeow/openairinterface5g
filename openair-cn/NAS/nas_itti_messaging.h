@@ -38,9 +38,9 @@
 #define NAS_ITTI_MESSAGING_H_
 
 # if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
+int nas_itti_plain_msg(const char *buffer, const nas_message_t *msg, const int length, const int instance);
 
-int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int instance);
+int nas_itti_protected_msg(const char *buffer, const nas_message_t *msg, const int length, const int instance);
 # endif
 
 # if defined(EPC_BUILD) && defined(NAS_MME)

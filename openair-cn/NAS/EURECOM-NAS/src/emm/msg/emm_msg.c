@@ -212,7 +212,7 @@ int emm_msg_decode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
     } else {
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         /* Message has been decoded and security header removed, handle it has a plain message */
-        nas_itti_plain_msg(buffer_log, msg, len_log, down_link);
+        nas_itti_plain_msg((char *) buffer_log, (nas_message_t *) msg, len_log, down_link);
 #endif
     }
     LOG_FUNC_RETURN (header_result + decode_result);
@@ -381,7 +381,7 @@ int emm_msg_encode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
                   "(%d)", msg->header.message_type, encode_result);
     } else {
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-        nas_itti_plain_msg(buffer_log, msg, header_result + encode_result, down_link);
+        nas_itti_plain_msg((char *) buffer_log, (nas_message_t *) msg, header_result + encode_result, down_link);
 #endif
     }
     LOG_FUNC_RETURN (header_result + encode_result);

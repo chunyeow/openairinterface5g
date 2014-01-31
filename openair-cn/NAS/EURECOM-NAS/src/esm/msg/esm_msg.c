@@ -174,7 +174,7 @@ int esm_msg_decode(ESM_msg *msg, uint8_t *buffer, uint32_t len)
     } else {
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
         /* Message has been decoded and security header removed, handle it has a plain message */
-        nas_itti_plain_msg(buffer_log, msg, len_log, down_link);
+        nas_itti_plain_msg((char *) buffer_log, (nas_message_t *) msg, len_log, down_link);
 #endif
     }
 
@@ -297,16 +297,16 @@ int esm_msg_encode(ESM_msg *msg, uint8_t *buffer, uint32_t len)
             break;
         default:
             LOG_TRACE(ERROR, "ESM-MSG   - Unexpected message type: 0x%x",
-		      msg->header.message_type);
-	    encode_result = TLV_ENCODE_WRONG_MESSAGE_TYPE;
+                      msg->header.message_type);
+            encode_result = TLV_ENCODE_WRONG_MESSAGE_TYPE;
     }
 
     if (encode_result < 0) {
-	LOG_TRACE(ERROR, "ESM-MSG   - Failed to encode L3 ESM message 0x%x "
-		  "(%d)", msg->header.message_type, encode_result);
+        LOG_TRACE(ERROR, "ESM-MSG   - Failed to encode L3 ESM message 0x%x "
+                  "(%d)", msg->header.message_type, encode_result);
     } else {
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-        nas_itti_plain_msg(buffer_log, msg, header_result + encode_result, down_link);
+        nas_itti_plain_msg((char *) buffer_log, (nas_message_t *) msg, header_result + encode_result, down_link);
 #endif
     }
 

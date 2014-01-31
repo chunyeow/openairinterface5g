@@ -116,7 +116,7 @@ static int _nas_find_message_index(const UInt8_t message_id, const UInt8_t *mess
     return (1);
 }
 
-int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int length, const int down_link)
+int nas_itti_plain_msg(const char *buffer, const nas_message_t *msg, const int length, const int down_link)
 {
     MessageDef *message_p;
     int data_length = length < NAS_DATA_LENGHT_MAX ? length : NAS_DATA_LENGHT_MAX;
@@ -173,7 +173,7 @@ int nas_itti_plain_msg(const char* buffer, const nas_message_t* msg, const int l
     return EXIT_FAILURE;
 }
 
-int nas_itti_protected_msg(const char* buffer, const nas_message_t* msg, const int length, const int down_link)
+int nas_itti_protected_msg(const char *buffer, const nas_message_t *msg, const int length, const int down_link)
 {
     MessageDef *message_p = NULL;
 
