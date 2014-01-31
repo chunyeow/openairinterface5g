@@ -60,63 +60,56 @@ extern char         *g_conf_config_file_name;
 # endif
 
 /*------------------------------------------------------------------------------*/
-# if defined(ENABLE_USE_MME)
-static uint32_t enb_nb = 1; /* Default number of eNB */
-# endif
-
-
-extern Enb_properties_t *g_enb_properties[];
-extern int               g_num_enb_properties;
+static Enb_properties_t    *enb_properties[MAX_ENB];
+static int                  enb_nb_properties;
 
 /*------------------------------------------------------------------------------*/
-static void configure_rrc(void)
+static void configure_phy(uint32_t enb_id)
 {
-    uint32_t eNB_id_start = 0;
-    uint32_t eNB_id_end = 1;
-    uint32_t eNB_id;
     MessageDef *msg_p;
 
-#   if defined(OAI_EMU)
-    eNB_id_start = oai_emulation.info.first_enb_local;
-    eNB_id_end = oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local;
-#   endif
+    msg_p = itti_alloc_new_message (TASK_ENB_APP, PHY_CONFIGURATION_REQ);
 
-    for (eNB_id = eNB_id_start; (eNB_id < eNB_id_end) ; eNB_id++)
-    {
-        msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
+    PHY_CONFIGURATION_REQ (msg_p).frame_type =              enb_properties[enb_id]->frame_type;
+    PHY_CONFIGURATION_REQ (msg_p).prefix_type =             enb_properties[enb_id]->prefix_type;
+    PHY_CONFIGURATION_REQ (msg_p).downlink_frequency =      enb_properties[enb_id]->downlink_frequency;
+    PHY_CONFIGURATION_REQ (msg_p).uplink_frequency_offset = enb_properties[enb_id]->uplink_frequency_offset;
 
-        RRC_CONFIGURATION_REQ (msg_p).cell_identity =   g_enb_properties[eNB_id]->eNB_id;
-        RRC_CONFIGURATION_REQ (msg_p).tac =             g_enb_properties[eNB_id]->tac;
-        RRC_CONFIGURATION_REQ (msg_p).mcc =             g_enb_properties[eNB_id]->mcc;
-        RRC_CONFIGURATION_REQ (msg_p).mnc =             g_enb_properties[eNB_id]->mnc;
-
-        itti_send_msg_to_task (TASK_RRC_ENB, eNB_id, msg_p);
-    }
+    itti_send_msg_to_task (TASK_PHY_ENB, enb_id, msg_p);
 }
 
-# if defined(ENABLE_USE_MME)
-static uint32_t eNB_app_register()
+/*------------------------------------------------------------------------------*/
+static void configure_rrc(uint32_t enb_id)
 {
-    uint32_t eNB_id_start = 0;
-    uint32_t eNB_id_end = 1;
-    uint32_t eNB_id;
+    MessageDef *msg_p;
+
+    msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
+
+    RRC_CONFIGURATION_REQ (msg_p).cell_identity =   enb_properties[enb_id]->eNB_id;
+    RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties[enb_id]->tac;
+    RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties[enb_id]->mcc;
+    RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties[enb_id]->mnc;
+
+    itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
+}
+
+/*------------------------------------------------------------------------------*/
+# if defined(ENABLE_USE_MME)
+static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end)
+{
+    uint32_t enb_id;
     uint32_t mme_id;
     MessageDef *msg_p;
     uint32_t register_enb_pending = 0;
 
 #   if defined(OAI_EMU)
-    eNB_id_start = oai_emulation.info.first_enb_local;
-    eNB_id_end = oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local;
 
-    DevCheck(eNB_id_end <= NUMBER_OF_eNB_MAX, eNB_id_end, NUMBER_OF_eNB_MAX, 0);
 #   endif
-    //DevCheck(eNB_id_end <= (sizeof(g_enb_properties) / sizeof(g_enb_properties[0])), eNB_id_end, (sizeof(g_enb_properties) / sizeof(g_enb_properties[0])), 0);
-    DevCheck((eNB_id_end - eNB_id_start) == g_num_enb_properties, eNB_id_end - eNB_id_start, g_num_enb_properties, 0);
 
-    for (eNB_id = eNB_id_start; (eNB_id < eNB_id_end) ; eNB_id++)
+    for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++)
     {
 #   if defined(OAI_EMU)
-        if (oai_emulation.info.cli_start_enb[eNB_id] == 1)
+        if (oai_emulation.info.cli_start_enb[enb_id] == 1)
 #   endif
         {
             s1ap_register_enb_req_t *s1ap_register_eNB;
@@ -124,7 +117,7 @@ static uint32_t eNB_app_register()
 
             /* Overwrite default eNB ID */
             hash = s1ap_generate_eNB_id ();
-            g_enb_properties[eNB_id]->eNB_id = eNB_id + (hash & 0xFFFF8);
+            enb_properties[enb_id]->eNB_id = enb_id + (hash & 0xFFFF8);
 
             /* note:  there is an implicit relationship between the data structure and the message name */
             msg_p = itti_alloc_new_message (TASK_ENB_APP, S1AP_REGISTER_ENB_REQ);
@@ -132,30 +125,30 @@ static uint32_t eNB_app_register()
             s1ap_register_eNB = &S1AP_REGISTER_ENB_REQ(msg_p);
 
             /* Some default/random parameters */
-            s1ap_register_eNB->eNB_id = g_enb_properties[eNB_id]->eNB_id;
-            s1ap_register_eNB->cell_type = g_enb_properties[eNB_id]->cell_type;
-            s1ap_register_eNB->eNB_name = g_enb_properties[eNB_id]->eNB_name;
-            s1ap_register_eNB->tac = g_enb_properties[eNB_id]->tac;
-            s1ap_register_eNB->mcc = g_enb_properties[eNB_id]->mcc;
-            s1ap_register_eNB->mnc = g_enb_properties[eNB_id]->mnc;
-            s1ap_register_eNB->default_drx = g_enb_properties[eNB_id]->default_drx;
+            s1ap_register_eNB->eNB_id = enb_properties[enb_id]->eNB_id;
+            s1ap_register_eNB->cell_type = enb_properties[enb_id]->cell_type;
+            s1ap_register_eNB->eNB_name = enb_properties[enb_id]->eNB_name;
+            s1ap_register_eNB->tac = enb_properties[enb_id]->tac;
+            s1ap_register_eNB->mcc = enb_properties[enb_id]->mcc;
+            s1ap_register_eNB->mnc = enb_properties[enb_id]->mnc;
+            s1ap_register_eNB->default_drx = enb_properties[enb_id]->default_drx;
 
-            s1ap_register_eNB->nb_mme = g_enb_properties[eNB_id]->nb_mme;
-            DevCheck(s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, eNB_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);
+            s1ap_register_eNB->nb_mme = enb_properties[enb_id]->nb_mme;
+            AssertFatal (s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, "Too many MME for eNB %d (%d/%d)!", enb_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);
 
             for (mme_id = 0; mme_id < s1ap_register_eNB->nb_mme; mme_id++)
             {
-                s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv4;
-                s1ap_register_eNB->mme_ip_address[mme_id].ipv6 = g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv6;
+                s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = enb_properties[enb_id]->mme_ip_address[mme_id].ipv4;
+                s1ap_register_eNB->mme_ip_address[mme_id].ipv6 = enb_properties[enb_id]->mme_ip_address[mme_id].ipv6;
                 strncpy (s1ap_register_eNB->mme_ip_address[mme_id].ipv4_address,
-                         g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv4_address,
+                         enb_properties[enb_id]->mme_ip_address[mme_id].ipv4_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv4_address));
                 strncpy (s1ap_register_eNB->mme_ip_address[mme_id].ipv6_address,
-                         g_enb_properties[eNB_id]->mme_ip_address[mme_id].ipv6_address,
+                         enb_properties[enb_id]->mme_ip_address[mme_id].ipv6_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv6_address));
             }
 
-            itti_send_msg_to_task (TASK_S1AP, eNB_id, msg_p);
+            itti_send_msg_to_task (TASK_S1AP, enb_id, msg_p);
 
             register_enb_pending++;
         }
@@ -170,11 +163,15 @@ static uint32_t eNB_app_register()
 void *eNB_app_task(void *args_p)
 {
 #if defined(ENABLE_ITTI)
+    uint32_t    enb_nb = 1; /* Default number of eNB is 1 */
+    uint32_t    enb_id_start = 0;
+    uint32_t    enb_id_end = enb_id_start + enb_nb;
 # if defined(ENABLE_USE_MME)
-    static uint32_t register_enb_pending;
-    static uint32_t registered_enb;
-    static long enb_register_retry_timer_id;
+    uint32_t    register_enb_pending;
+    uint32_t    registered_enb;
+    long    enb_register_retry_timer_id;
 # endif
+    uint32_t    enb_id;
     MessageDef *msg_p;
     const char *msg_name;
     instance_t  instance;
@@ -184,17 +181,32 @@ void *eNB_app_task(void *args_p)
 
 # if defined(ENABLE_USE_MME)
 #   if defined(OAI_EMU)
-    enb_nb = oai_emulation.info.nb_enb_local;
+    enb_nb =        oai_emulation.info.nb_enb_local;
+    enb_id_start =  oai_emulation.info.first_enb_local;
+    enb_id_end =    oai_emulation.info.first_enb_local + enb_nb;
+
+    AssertFatal (enb_id_end <= NUMBER_OF_eNB_MAX,
+                 "Last eNB index is greater or equal to maximum eNB index (%d/%d)!",
+                 enb_id_end, NUMBER_OF_eNB_MAX);
 #   endif
 # endif
-    enb_config_init(g_conf_config_file_name);
 
-    configure_rrc();
+    enb_nb_properties = enb_config_init(g_conf_config_file_name, enb_properties);
+
+    AssertFatal (enb_nb <= enb_nb_properties,
+                 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
+                 g_conf_config_file_name, enb_nb, enb_nb_properties);
+
+    for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++)
+    {
+        configure_phy(enb_id);
+        configure_rrc(enb_id);
+    }
 
 # if defined(ENABLE_USE_MME)
     /* Try to register each eNB */
     registered_enb = 0;
-    register_enb_pending = eNB_app_register ();
+    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end);
 # else
     /* Start L2L1 task */
     msg_p = itti_alloc_new_message(TASK_ENB_APP, INITIALIZE_MESSAGE);
@@ -245,7 +257,7 @@ void *eNB_app_task(void *args_p)
                         itti_send_msg_to_task (TASK_L2L1, INSTANCE_DEFAULT, msg_init_p);
 
 #   if defined(OAI_EMU)
-                        /* If also inform all NAS UE tasks */
+                        /* Also inform all NAS UE tasks */
                         for (instance = NB_eNB_INST + oai_emulation.info.first_ue_local;
                             instance < (NB_eNB_INST + oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local); instance ++)
                         {
@@ -270,7 +282,7 @@ void *eNB_app_task(void *args_p)
                             sleep(ENB_REGISTER_RETRY_DELAY);
                             /* Restart the registration process */
                             registered_enb = 0;
-                            register_enb_pending = eNB_app_register ();
+                            register_enb_pending = eNB_app_register (enb_id_start, enb_id_end);
                         }
                     }
                 }
@@ -290,7 +302,7 @@ void *eNB_app_task(void *args_p)
                 {
                     /* Restart the registration process */
                     registered_enb = 0;
-                    register_enb_pending = eNB_app_register ();
+                    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end);
                 }
                 break;
 # endif
