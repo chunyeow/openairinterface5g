@@ -60,7 +60,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
   config_setting_t *setting_mme_addresses;
   config_setting_t *setting_mme_address;
   config_setting_t *setting_enb;
-  int               num_enbs, num_mme_address, i, j, parse_error, enb_properties_index;
+  int               num_enbs, num_mme_address, i, j, parse_error = 0, enb_properties_index;
   long int          enb_id;
   const char*       cell_type;
   long int          tac;
@@ -68,11 +68,15 @@ int enb_config_init(char* lib_config_file_name_pP) {
   long int          mcc;
   long int          mnc;
   const char*       default_drx;
+  const char*       frame_type;
+  const char*       prefix_type;
+  long int          downlink_frequency;
+  long int          uplink_frequency_offset;
   char*             ipv4;
   char*             ipv6;
   char*             active;
   char*             preference;
-  char*             active_enb[MAX_ENB];
+  const char*       active_enb[MAX_ENB];
 
 
   memset((char*)g_enb_properties, 0 , MAX_ENB * sizeof(Enb_properties_t*));
@@ -87,7 +91,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
       {
           LOG_E(ENB_APP, "%s:%d - %s\n", lib_config_file_name_pP, config_error_line(&cfg), config_error_text(&cfg));
           config_destroy(&cfg);
-          AssertFatal (1 == 0, "Failed to parse eNB configuration file %s!\n", lib_config_file_name_pP);
+          AssertFatal (0, "Failed to parse eNB configuration file %s!\n", lib_config_file_name_pP);
       }
   }
   else
@@ -133,8 +137,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
                      && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_DEFAULT_PAGING_DRX,  &default_drx)
                 )
             ) {
-              parse_error = 1;
-              AssertFatal (parse_error == 0,
+              AssertError (0, parse_error ++,
                       "Failed to parse eNB configuration file %s, %u th enb\n",
                       lib_config_file_name_pP, i);
           }
@@ -149,9 +152,9 @@ int enb_config_init(char* lib_config_file_name_pP) {
                   } else  if (strcmp(cell_type, "CELL_HOME_ENB") == 0) {
                       g_enb_properties[enb_properties_index]->cell_type = CELL_HOME_ENB;
                   } else {
-                      AssertFatal (1 == 0,
-                              "Failed to parse eNB configuration file %s, enb %d unknown value for cell_type choice: CELL_MACRO_ENB or CELL_HOME_ENB !\n",
-                              lib_config_file_name_pP, i);
+                      AssertError (0, parse_error ++,
+                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for cell_type choice: CELL_MACRO_ENB or CELL_HOME_ENB !\n",
+                              lib_config_file_name_pP, i, cell_type);
                   }
                   g_enb_properties[enb_properties_index]->eNB_name = strdup(enb_name);
                   g_enb_properties[enb_properties_index]->tac      = (uint16_t)tac;
@@ -167,11 +170,51 @@ int enb_config_init(char* lib_config_file_name_pP) {
                   } else  if (strcmp(default_drx, "PAGING_DRX_256") == 0) {
                       g_enb_properties[enb_properties_index]->default_drx = PAGING_DRX_256;
                   } else {
-                      AssertFatal (1 == 0,
-                              "Failed to parse eNB configuration file %s, enb %d unknown value for default_drx choice: PAGING_DRX_32..PAGING_DRX_256 !\n",
-                              lib_config_file_name_pP, i);
+                      AssertError (0, parse_error ++,
+                              "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for default_drx choice: PAGING_DRX_32..PAGING_DRX_256 !\n",
+                              lib_config_file_name_pP, i, default_drx);
                   }
-                  AssertFatal (parse_error == 0, "Failed to parse eNB configuration file %s, enb %d\n", lib_config_file_name_pP, i);
+
+                  // Parse optional physical parameters
+                  if(config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_FRAME_TYPE, &frame_type)) {
+                      if (strcmp(frame_type, "FDD") == 0) {
+                          g_enb_properties[enb_properties_index]->frame_type = FDD;
+                      } else  if (strcmp(frame_type, "TDD") == 0) {
+                          g_enb_properties[enb_properties_index]->frame_type = TDD;
+                      } else {
+                          AssertError (0, parse_error ++,
+                                  "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for frame_type choice: FDD or TDD !\n",
+                                  lib_config_file_name_pP, i, frame_type);
+                      }
+                  } else {
+                      g_enb_properties[enb_properties_index]->frame_type = FDD; // Default frame type
+                  }
+
+                  if(config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_PREFIX_TYPE, &prefix_type)) {
+                      if (strcmp(prefix_type, "NORMAL") == 0) {
+                          g_enb_properties[enb_properties_index]->prefix_type = NORMAL;
+                      } else  if (strcmp(prefix_type, "EXTENDED") == 0) {
+                          g_enb_properties[enb_properties_index]->prefix_type = EXTENDED;
+                      } else {
+                          AssertError (0, parse_error ++,
+                                  "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for prefix_type choice: NORMAL or EXTENDED !\n",
+                                  lib_config_file_name_pP, i, prefix_type);
+                      }
+                  } else {
+                      g_enb_properties[enb_properties_index]->prefix_type = NORMAL; // Default prefix type
+                  }
+
+                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
+                      g_enb_properties[enb_properties_index]->downlink_frequency = downlink_frequency;
+                  } else {
+                      g_enb_properties[enb_properties_index]->downlink_frequency = 2680000000; // Default downlink frequency
+                  }
+
+                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
+                      g_enb_properties[enb_properties_index]->uplink_frequency_offset = uplink_frequency_offset;
+                  } else {
+                      g_enb_properties[enb_properties_index]->uplink_frequency_offset = -120000000; // Default uplink frequency offset
+                  }
 
                   setting_mme_addresses = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_MME_IP_ADDRESS);
                   num_mme_address     = config_setting_length(setting_mme_addresses);
@@ -185,9 +228,8 @@ int enb_config_init(char* lib_config_file_name_pP) {
                               && config_setting_lookup_string(setting_mme_address, ENB_CONFIG_STRING_MME_IP_ADDRESS_PREFERENCE, (const char **)&preference)
                             )
                         ) {
-                          parse_error = 1;
-                          AssertFatal (parse_error == 0,
-                                  "Failed to parse eNB configuration file %s, %u th enb %u th mme address\n",
+                          AssertError (0, parse_error ++,
+                                  "Failed to parse eNB configuration file %s, %u th enb %u th mme address !\n",
                                   lib_config_file_name_pP, i, j);
                       }
                       g_enb_properties[enb_properties_index]->nb_mme += 1;
@@ -216,8 +258,12 @@ int enb_config_init(char* lib_config_file_name_pP) {
           }
       }
   }
-  AssertFatal (enb_properties_index == g_num_enb_properties,
-          "Failed to parse eNB configuration file %s, mismatch between %u active eNBs and %u corresponding defined eNBs!\n",
+  AssertError (enb_properties_index == g_num_enb_properties, parse_error ++,
+          "Failed to parse eNB configuration file %s, mismatch between %u active eNBs and %u corresponding defined eNBs !\n",
           lib_config_file_name_pP, g_num_enb_properties, enb_properties_index);
+
+  AssertFatal (parse_error == 0,
+               "Failed to parse eNB configuration file %s, found %d error%s !\n",
+               lib_config_file_name_pP, parse_error, parse_error > 1 ? "s" : "");
   return 0;
 }
