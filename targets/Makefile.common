@@ -31,19 +31,25 @@ include $(OPENAIR2_DIR)/NAS/Makefile.inc
 
 ifdef USE_MME
 COMMON_CFLAGS		+= -DENABLE_USE_MME
-
-LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a
-LIBS				+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
-SHARED_DEPENDENCIES	 = $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a
-
 ENABLE_ITTI = 1
+endif
+
+ifdef ENABLE_ITTI
 COMMON_CFLAGS		+= -DENABLE_ITTI
 COMMON_CFLAGS		+= -DUSER_MODE
-COMMON_CFLAGS		+= -DLOG_NO_THREAD
 COMMON_CFLAGS		+= -I$(OPENAIR1_DIR)
 COMMON_CFLAGS		+= -I$(OPENAIR2_DIR)/NAS
 COMMON_CFLAGS 	 	+= $(L2_incl)
 COMMON_CFLAGS		+= $(UTILS_incl)
+SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
+endif
+
+ifdef USE_MME
+LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a
+LIBS				+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
+SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a
+
+COMMON_CFLAGS		+= -DLOG_NO_THREAD
 
 openair_cn_available = $(shell if [ -d "$(UE_NAS_DIR)" ]; then echo "0" ; else  echo "1" ; fi )
 ifeq 	($(openair_cn_available), 0)
@@ -82,8 +88,6 @@ endif
 export COMMON_CFLAGS
 
 ifdef ENABLE_ITTI
-SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
-
 CFLAGS += $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS) $(TARGETS_COMMON_incl)
 
 OBJ += $(TARGETS_COMMON_OBJS)
@@ -100,7 +104,7 @@ endif
 $(ITTI_MESSAGES_XML): $(ITTI_MESSAGES_FILE)
 	@echo "Generating messages.xml ..."
 	@gccxml $(COMMON_CFLAGS) $< -fxml=$@
-	@$(CC) -MM $(L2_incl) $(UTILS_incl) $< > $(basename $@).d
+	@$(CC) -MM $(COMMON_CFLAGS) $< > $(basename $@).d
 	@mv -f $(basename $@).d $(basename $@).d.tmp
 	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
 	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
