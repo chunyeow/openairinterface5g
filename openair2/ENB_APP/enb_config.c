@@ -126,9 +126,16 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
       num_enbs = config_setting_length(setting);
       for (i = 0; i < num_enbs; i++) {
           setting_enb = config_setting_get_elem(setting, i);
-          if(  !(
-                        config_setting_lookup_int   (setting_enb, ENB_CONFIG_STRING_ENB_ID,              &enb_id)
-                     && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_CELL_TYPE,           &cell_type)
+
+          if(! config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_ENB_ID, &enb_id)) {
+              uint32_t hash;
+
+              /* Calculate a default eNB ID */
+              hash = s1ap_generate_eNB_id ();
+              enb_id = i + (hash & 0xFFFF8);
+          }
+
+          if(  !(       config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_CELL_TYPE,           &cell_type)
                      && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_ENB_NAME,            &enb_name)
                      && config_setting_lookup_int   (setting_enb, ENB_CONFIG_STRING_TRACKING_AREA_CODE,  &tac)
                      && config_setting_lookup_int   (setting_enb, ENB_CONFIG_STRING_MOBILE_COUNTRY_CODE, &mcc)

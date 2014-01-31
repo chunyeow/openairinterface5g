@@ -113,11 +113,6 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end)
 #   endif
         {
             s1ap_register_enb_req_t *s1ap_register_eNB;
-            uint32_t hash;
-
-            /* Overwrite default eNB ID */
-            hash = s1ap_generate_eNB_id ();
-            enb_properties[enb_id]->eNB_id = enb_id + (hash & 0xFFFF8);
 
             /* note:  there is an implicit relationship between the data structure and the message name */
             msg_p = itti_alloc_new_message (TASK_ENB_APP, S1AP_REGISTER_ENB_REQ);
