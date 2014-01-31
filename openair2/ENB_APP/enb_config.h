@@ -35,6 +35,14 @@
 #include "PHY/impl_defs_lte.h"
 #include "s1ap_messages_types.h"
 
+#define IPV4_STR_ADDR_TO_INT_NWBO(AdDr_StR,NwBo,MeSsAgE ) do {\
+            struct in_addr inp;\
+            if ( inet_aton(AdDr_StR, &inp ) < 0 ) {\
+                AssertFatal (0, MeSsAgE);\
+            } else {\
+                NwBo = inp.s_addr;\
+            }\
+        } while (0);
 #define ENB_CONFIG_STRING_ACTIVE_ENBS               "Active_eNBs"
 
 #define ENB_CONFIG_STRING_ENB_LIST                  "eNBs"
@@ -59,6 +67,11 @@
 #define ENB_CONFIG_STRING_MME_IP_ADDRESS_ACTIVE     "active"
 #define ENB_CONFIG_STRING_MME_IP_ADDRESS_PREFERENCE "preference"
 
+#define ENB_CONFIG_STRING_NETWORK_INTERFACES_CONFIG             "NETWORK_INTERFACES"
+#define ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1_MME         "ENB_INTERFACE_NAME_FOR_S1_MME"
+#define ENB_CONFIG_STRING_ENB_IPV4_ADDRESS_FOR_S1_MME           "ENB_IPV4_ADDRESS_FOR_S1_MME"
+#define ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U            "ENB_INTERFACE_NAME_FOR_S1U"
+#define ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U                 "ENB_IPV4_ADDRESS_FOR_S1U"
 typedef struct mme_ip_address_s {
     unsigned  ipv4:1;
     unsigned  ipv6:1;
@@ -105,6 +118,13 @@ typedef struct Enb_properties_s {
     uint8_t             nb_mme;
     /* List of MME to connect to */
     mme_ip_address_t    mme_ip_address[S1AP_MAX_NB_MME_IP_ADDRESS];
+
+    char     *enb_interface_name_for_S1U;
+    uint32_t  enb_ipv4_address_for_S1U;
+
+    char     *enb_interface_name_for_S1_MME;
+    uint32_t  enb_ipv4_address_for_S1_MME;
+
 } Enb_properties_t;
 
 
