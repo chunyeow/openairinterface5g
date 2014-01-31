@@ -99,7 +99,7 @@ typedef struct Enb_properties_s {
     lte_frame_type_t    frame_type;
     lte_prefix_type_t   prefix_type;
     uint32_t            downlink_frequency;
-    uint32_t            uplink_frequency_offset;
+    int32_t             uplink_frequency_offset;
 
     /* Nb of MME to connect to */
     uint8_t             nb_mme;

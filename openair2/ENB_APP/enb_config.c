@@ -70,7 +70,7 @@ int enb_config_init(char* lib_config_file_name_pP) {
   const char*       default_drx;
   const char*       frame_type;
   const char*       prefix_type;
-  long int          downlink_frequency;
+  long long int     downlink_frequency;
   long int          uplink_frequency_offset;
   char*             ipv4;
   char*             ipv6;
@@ -204,10 +204,10 @@ int enb_config_init(char* lib_config_file_name_pP) {
                       g_enb_properties[enb_properties_index]->prefix_type = NORMAL; // Default prefix type
                   }
 
-                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
+                  if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
                       g_enb_properties[enb_properties_index]->downlink_frequency = downlink_frequency;
                   } else {
-                      g_enb_properties[enb_properties_index]->downlink_frequency = 2680000000; // Default downlink frequency
+                      g_enb_properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
                   }
 
                   if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
