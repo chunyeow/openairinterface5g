@@ -1,9 +1,9 @@
-function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NFrames_max, decimation, is_eNb)
+function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NFrames_max, decimation, is_eNb, EMOS_CHANNEL)
 % 
 % EMOS Single User Import Filter
 %
 % [estimates, NFrames] = 
-%       load_estimates_lte(filename, NFrames_max, decimation, is_eNb)
+%       load_estimates_lte(filename, NFrames_max, decimation, is_eNb, EMOS_CHANNEL)
 %
 % Parameters:
 % filename          - filename(s) of the EMOS data file
@@ -11,7 +11,8 @@ function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NF
 %                     maximum file contents
 % decimation        - read every 'decimation' frame
 % is_eNb            - if ~= 0 we load data from an eNb
-% version           - for backward compatibility (see details below)
+% EMOS_CHANNEL      - if the measurement contains the full channel
+%                     estimate, set this to 1
 %
 % Returns:
 % estimates         - A structure array containing timestamp, etc
@@ -26,7 +27,7 @@ function [estimates, NFrames, gps_data, H] = load_estimates_lte_new(filename, NF
 %   20100317  0.1       Created based on load_estimates
 
 if nargin < 5
-    version = Inf;
+    EMOS_CHANNEL = 0;
 end
 if nargin < 4
     is_eNb = 1;

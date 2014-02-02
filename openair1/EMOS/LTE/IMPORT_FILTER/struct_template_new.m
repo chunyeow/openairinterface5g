@@ -33,7 +33,7 @@ NB_ANTENNAS_TX = 2;
 MAX_CQI_BITS = 40;
 MAX_DCI_SIZE_BITS = 45;
 
-EMOS_CHANNEL = 0;
+% EMOS_CHANNEL = 0;
 
 % enable this line to enable error checking
 % get_dump_size
