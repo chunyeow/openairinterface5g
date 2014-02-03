@@ -89,6 +89,8 @@ static void configure_rrc(uint32_t enb_id)
     RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties[enb_id]->tac;
     RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties[enb_id]->mcc;
     RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties[enb_id]->mnc;
+    RRC_CONFIGURATION_REQ (msg_p).default_drx =     enb_properties[enb_id]->default_drx;
+    RRC_CONFIGURATION_REQ (msg_p).frame_type =      enb_properties[enb_id]->frame_type;
 
     itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
 }

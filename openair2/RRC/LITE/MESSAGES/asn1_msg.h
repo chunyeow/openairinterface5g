@@ -104,6 +104,9 @@ uint8_t do_SIB23(uint8_t Mod_id,
                  SystemInformationBlockType13_r9_t **sib13,
                  uint8_t MBMS_flag
 #endif
+#if defined(ENABLE_ITTI)
+               , RrcConfigurationReq *configuration
+#endif
 );
 
 /** 

@@ -219,12 +219,19 @@ static void init_SI (u8 Mod_id
                                                       &eNB_rrc_inst[Mod_id].sib13,
                                                       eNB_rrc_inst[Mod_id].MBMS_flag
 #endif
+#if defined(ENABLE_ITTI)
+                                                    , configuration
+#endif
                                                       );
       /*
          eNB_rrc_inst[Mod_id].sizeof_SIB23 = do_SIB2_AT4(Mod_id,
          eNB_rrc_inst[Mod_id].SIB23,
          &eNB_rrc_inst[Mod_id].systemInformation,
-         &eNB_rrc_inst[Mod_id].sib2);
+         &eNB_rrc_inst[Mod_id].sib2,
+#if defined(ENABLE_ITTI)
+       , configuration
+#endif
+         );
        */
       if (eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255)
           mac_xface->macphy_exit ("[RRC][init_SI] FATAL, eNB_rrc_inst[Mod_id].sizeof_SIB23 == 255");
