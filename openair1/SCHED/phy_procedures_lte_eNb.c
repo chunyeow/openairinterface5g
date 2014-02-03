@@ -3749,6 +3749,13 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
           break;
 #   endif
 
+        /* Messages from eNB app */
+        case PHY_CONFIGURATION_REQ:
+          LOG_I(PHY, "[eNB %d] Received %s\n", instance, msg_name);
+          /* TODO */
+
+          break;
+
         default:
           LOG_E(PHY, "[ENB %d] Received unexpected message %s\n", Mod_id, msg_name);
           break;
