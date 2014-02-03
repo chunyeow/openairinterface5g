@@ -50,8 +50,10 @@ void phy_config_sib1_eNB(u8 Mod_id,
    
   LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id]->lte_frame_parms;
 
-  lte_frame_parms->tdd_config    = tdd_Config->subframeAssignment;
-  lte_frame_parms->tdd_config_S  = tdd_Config->specialSubframePatterns;  
+  if (tdd_Config) {
+      lte_frame_parms->tdd_config    = tdd_Config->subframeAssignment;
+      lte_frame_parms->tdd_config_S  = tdd_Config->specialSubframePatterns;
+  }
   lte_frame_parms->SIwindowsize  = SIwindowsize;
   lte_frame_parms->SIPeriod      = SIPeriod;
 }
