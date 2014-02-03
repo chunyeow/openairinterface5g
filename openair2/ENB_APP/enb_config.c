@@ -48,8 +48,9 @@
 
 #include "LAYER2/MAC/extern.h"
 
-int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_properties) {
+static Enb_properties_array_t enb_properties;
 
+const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   config_t          cfg;
   config_setting_t *setting;
   config_setting_t *setting_mme_addresses;
@@ -79,7 +80,7 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
   char*             preference;
   const char*       active_enb[MAX_ENB];
 
-  memset((char*)enb_properties, 0 , MAX_ENB * sizeof(Enb_properties_t*));
+  memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
   memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
 
   config_init(&cfg);
@@ -154,31 +155,31 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
           // search if in active list
           for (j=0; j < num_enb_properties; j++) {
               if (strcmp(active_enb[j], enb_name) == 0) {
-                  enb_properties[enb_properties_index] = calloc(1, sizeof(Enb_properties_t));
+                  enb_properties.properties[enb_properties_index] = calloc(1, sizeof(Enb_properties_t));
 
-                  enb_properties[enb_properties_index]->eNB_id   = enb_id;
+                  enb_properties.properties[enb_properties_index]->eNB_id   = enb_id;
                   if (strcmp(cell_type, "CELL_MACRO_ENB") == 0) {
-                      enb_properties[enb_properties_index]->cell_type = CELL_MACRO_ENB;
+                      enb_properties.properties[enb_properties_index]->cell_type = CELL_MACRO_ENB;
                   } else  if (strcmp(cell_type, "CELL_HOME_ENB") == 0) {
-                      enb_properties[enb_properties_index]->cell_type = CELL_HOME_ENB;
+                      enb_properties.properties[enb_properties_index]->cell_type = CELL_HOME_ENB;
                   } else {
                       AssertError (0, parse_error ++,
                               "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for cell_type choice: CELL_MACRO_ENB or CELL_HOME_ENB !\n",
                               lib_config_file_name_pP, i, cell_type);
                   }
-                  enb_properties[enb_properties_index]->eNB_name = strdup(enb_name);
-                  enb_properties[enb_properties_index]->tac      = (uint16_t)tac;
-                  enb_properties[enb_properties_index]->mcc      = (uint16_t)mcc;
-                  enb_properties[enb_properties_index]->mnc      = (uint16_t)mnc;
+                  enb_properties.properties[enb_properties_index]->eNB_name = strdup(enb_name);
+                  enb_properties.properties[enb_properties_index]->tac      = (uint16_t)tac;
+                  enb_properties.properties[enb_properties_index]->mcc      = (uint16_t)mcc;
+                  enb_properties.properties[enb_properties_index]->mnc      = (uint16_t)mnc;
 
                   if (strcmp(default_drx, "PAGING_DRX_32") == 0) {
-                      enb_properties[enb_properties_index]->default_drx = PAGING_DRX_32;
+                      enb_properties.properties[enb_properties_index]->default_drx = PAGING_DRX_32;
                   } else  if (strcmp(default_drx, "PAGING_DRX_64") == 0) {
-                      enb_properties[enb_properties_index]->default_drx = PAGING_DRX_64;
+                      enb_properties.properties[enb_properties_index]->default_drx = PAGING_DRX_64;
                   } else  if (strcmp(default_drx, "PAGING_DRX_128") == 0) {
-                      enb_properties[enb_properties_index]->default_drx = PAGING_DRX_128;
+                      enb_properties.properties[enb_properties_index]->default_drx = PAGING_DRX_128;
                   } else  if (strcmp(default_drx, "PAGING_DRX_256") == 0) {
-                      enb_properties[enb_properties_index]->default_drx = PAGING_DRX_256;
+                      enb_properties.properties[enb_properties_index]->default_drx = PAGING_DRX_256;
                   } else {
                       AssertError (0, parse_error ++,
                               "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for default_drx choice: PAGING_DRX_32..PAGING_DRX_256 !\n",
@@ -188,47 +189,47 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
                   // Parse optional physical parameters
                   if(config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_FRAME_TYPE, &frame_type)) {
                       if (strcmp(frame_type, "FDD") == 0) {
-                          enb_properties[enb_properties_index]->frame_type = FDD;
+                          enb_properties.properties[enb_properties_index]->frame_type = FDD;
                       } else  if (strcmp(frame_type, "TDD") == 0) {
-                          enb_properties[enb_properties_index]->frame_type = TDD;
+                          enb_properties.properties[enb_properties_index]->frame_type = TDD;
                       } else {
                           AssertError (0, parse_error ++,
                                   "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for frame_type choice: FDD or TDD !\n",
                                   lib_config_file_name_pP, i, frame_type);
                       }
                   } else {
-                      enb_properties[enb_properties_index]->frame_type = FDD; // Default frame type
+                      enb_properties.properties[enb_properties_index]->frame_type = FDD; // Default frame type
                   }
 
                   if(config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_PREFIX_TYPE, &prefix_type)) {
                       if (strcmp(prefix_type, "NORMAL") == 0) {
-                          enb_properties[enb_properties_index]->prefix_type = NORMAL;
+                          enb_properties.properties[enb_properties_index]->prefix_type = NORMAL;
                       } else  if (strcmp(prefix_type, "EXTENDED") == 0) {
-                          enb_properties[enb_properties_index]->prefix_type = EXTENDED;
+                          enb_properties.properties[enb_properties_index]->prefix_type = EXTENDED;
                       } else {
                           AssertError (0, parse_error ++,
                                   "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for prefix_type choice: NORMAL or EXTENDED !\n",
                                   lib_config_file_name_pP, i, prefix_type);
                       }
                   } else {
-                      enb_properties[enb_properties_index]->prefix_type = NORMAL; // Default prefix type
+                      enb_properties.properties[enb_properties_index]->prefix_type = NORMAL; // Default prefix type
                   }
 
                   if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
-                      enb_properties[enb_properties_index]->downlink_frequency = downlink_frequency;
+                      enb_properties.properties[enb_properties_index]->downlink_frequency = downlink_frequency;
                   } else {
-                      enb_properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
+                      enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
                   }
 
                   if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
-                      enb_properties[enb_properties_index]->uplink_frequency_offset = uplink_frequency_offset;
+                      enb_properties.properties[enb_properties_index]->uplink_frequency_offset = uplink_frequency_offset;
                   } else {
-                      enb_properties[enb_properties_index]->uplink_frequency_offset = -120000000; // Default uplink frequency offset
+                      enb_properties.properties[enb_properties_index]->uplink_frequency_offset = -120000000; // Default uplink frequency offset
                   }
 
                   setting_mme_addresses = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_MME_IP_ADDRESS);
                   num_mme_address     = config_setting_length(setting_mme_addresses);
-                  enb_properties[enb_properties_index]->nb_mme = 0;
+                  enb_properties.properties[enb_properties_index]->nb_mme = 0;
                   for (j = 0; j < num_mme_address; j++) {
                       setting_mme_address = config_setting_get_elem(setting_mme_addresses, j);
                       if(  !(
@@ -242,24 +243,24 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
                                   "Failed to parse eNB configuration file %s, %u th enb %u th mme address !\n",
                                   lib_config_file_name_pP, i, j);
                       }
-                      enb_properties[enb_properties_index]->nb_mme += 1;
+                      enb_properties.properties[enb_properties_index]->nb_mme += 1;
 
-                      enb_properties[enb_properties_index]->mme_ip_address[j].ipv4_address = strdup(ipv4);
-                      enb_properties[enb_properties_index]->mme_ip_address[j].ipv6_address = strdup(ipv6);
+                      enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv4_address = strdup(ipv4);
+                      enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv6_address = strdup(ipv6);
                       if (strcmp(active, "yes") == 0) {
-                          enb_properties[enb_properties_index]->mme_ip_address[j].active = 1;
+                          enb_properties.properties[enb_properties_index]->mme_ip_address[j].active = 1;
 #if defined(ENABLE_USE_MME)
                           EPC_MODE_ENABLED = 1;
 #endif
                       } // else { (calloc)
 
                       if (strcmp(preference, "ipv4") == 0) {
-                          enb_properties[enb_properties_index]->mme_ip_address[j].ipv4 = 1;
+                          enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv4 = 1;
                       } else if (strcmp(preference, "ipv6") == 0) {
-                          enb_properties[enb_properties_index]->mme_ip_address[j].ipv6 = 1;
+                          enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv6 = 1;
                       } else if (strcmp(preference, "no") == 0) {
-                          enb_properties[enb_properties_index]->mme_ip_address[j].ipv4 = 1;
-                          enb_properties[enb_properties_index]->mme_ip_address[j].ipv6 = 1;
+                          enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv4 = 1;
+                          enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv6 = 1;
                       }
                   }
                   enb_properties_index += 1;
@@ -268,6 +269,8 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
           }
       }
   }
+  enb_properties.number = num_enb_properties;
+
   AssertError (enb_properties_index == num_enb_properties, parse_error ++,
           "Failed to parse eNB configuration file %s, mismatch between %u active eNBs and %u corresponding defined eNBs !\n",
           lib_config_file_name_pP, num_enb_properties, enb_properties_index);
@@ -275,5 +278,10 @@ int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_proper
   AssertFatal (parse_error == 0,
                "Failed to parse eNB configuration file %s, found %d error%s !\n",
                lib_config_file_name_pP, parse_error, parse_error > 1 ? "s" : "");
-  return num_enb_properties;
+
+  return &enb_properties;
+}
+
+const Enb_properties_array_t *enb_config_get(void) {
+    return &enb_properties;
 }

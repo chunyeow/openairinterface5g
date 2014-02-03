@@ -132,6 +132,13 @@ typedef struct Enb_properties_s {
 
 } Enb_properties_t;
 
-int enb_config_init(char* lib_config_file_name_pP, Enb_properties_t **enb_properties);
+typedef struct Enb_properties_array_s {
+    int                  number;
+    Enb_properties_t    *properties[MAX_ENB];
+} Enb_properties_array_t;
+
+const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP);
+
+const Enb_properties_array_t *enb_config_get(void);
 
 #endif /* ENB_CONFIG_H_ */

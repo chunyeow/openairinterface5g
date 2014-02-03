@@ -60,44 +60,40 @@ extern char         *g_conf_config_file_name;
 # endif
 
 /*------------------------------------------------------------------------------*/
-static Enb_properties_t    *enb_properties[MAX_ENB];
-static int                  enb_nb_properties;
-
-/*------------------------------------------------------------------------------*/
-static void configure_phy(uint32_t enb_id)
+static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_properties)
 {
     MessageDef *msg_p;
 
     msg_p = itti_alloc_new_message (TASK_ENB_APP, PHY_CONFIGURATION_REQ);
 
-    PHY_CONFIGURATION_REQ (msg_p).frame_type =              enb_properties[enb_id]->frame_type;
-    PHY_CONFIGURATION_REQ (msg_p).prefix_type =             enb_properties[enb_id]->prefix_type;
-    PHY_CONFIGURATION_REQ (msg_p).downlink_frequency =      enb_properties[enb_id]->downlink_frequency;
-    PHY_CONFIGURATION_REQ (msg_p).uplink_frequency_offset = enb_properties[enb_id]->uplink_frequency_offset;
+    PHY_CONFIGURATION_REQ (msg_p).frame_type =              enb_properties->properties[enb_id]->frame_type;
+    PHY_CONFIGURATION_REQ (msg_p).prefix_type =             enb_properties->properties[enb_id]->prefix_type;
+    PHY_CONFIGURATION_REQ (msg_p).downlink_frequency =      enb_properties->properties[enb_id]->downlink_frequency;
+    PHY_CONFIGURATION_REQ (msg_p).uplink_frequency_offset = enb_properties->properties[enb_id]->uplink_frequency_offset;
 
     itti_send_msg_to_task (TASK_PHY_ENB, enb_id, msg_p);
 }
 
 /*------------------------------------------------------------------------------*/
-static void configure_rrc(uint32_t enb_id)
+static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_properties)
 {
     MessageDef *msg_p;
 
     msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
 
-    RRC_CONFIGURATION_REQ (msg_p).cell_identity =   enb_properties[enb_id]->eNB_id;
-    RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties[enb_id]->tac;
-    RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties[enb_id]->mcc;
-    RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties[enb_id]->mnc;
-    RRC_CONFIGURATION_REQ (msg_p).default_drx =     enb_properties[enb_id]->default_drx;
-    RRC_CONFIGURATION_REQ (msg_p).frame_type =      enb_properties[enb_id]->frame_type;
+    RRC_CONFIGURATION_REQ (msg_p).cell_identity =   enb_properties->properties[enb_id]->eNB_id;
+    RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties->properties[enb_id]->tac;
+    RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties->properties[enb_id]->mcc;
+    RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties->properties[enb_id]->mnc;
+    RRC_CONFIGURATION_REQ (msg_p).default_drx =     enb_properties->properties[enb_id]->default_drx;
+    RRC_CONFIGURATION_REQ (msg_p).frame_type =      enb_properties->properties[enb_id]->frame_type;
 
     itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
 }
 
 /*------------------------------------------------------------------------------*/
 # if defined(ENABLE_USE_MME)
-static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end)
+static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, const Enb_properties_array_t *enb_properties)
 {
     uint32_t enb_id;
     uint32_t mme_id;
@@ -122,26 +118,26 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end)
             s1ap_register_eNB = &S1AP_REGISTER_ENB_REQ(msg_p);
 
             /* Some default/random parameters */
-            s1ap_register_eNB->eNB_id = enb_properties[enb_id]->eNB_id;
-            s1ap_register_eNB->cell_type = enb_properties[enb_id]->cell_type;
-            s1ap_register_eNB->eNB_name = enb_properties[enb_id]->eNB_name;
-            s1ap_register_eNB->tac = enb_properties[enb_id]->tac;
-            s1ap_register_eNB->mcc = enb_properties[enb_id]->mcc;
-            s1ap_register_eNB->mnc = enb_properties[enb_id]->mnc;
-            s1ap_register_eNB->default_drx = enb_properties[enb_id]->default_drx;
+            s1ap_register_eNB->eNB_id =         enb_properties->properties[enb_id]->eNB_id;
+            s1ap_register_eNB->cell_type =      enb_properties->properties[enb_id]->cell_type;
+            s1ap_register_eNB->eNB_name =       enb_properties->properties[enb_id]->eNB_name;
+            s1ap_register_eNB->tac =            enb_properties->properties[enb_id]->tac;
+            s1ap_register_eNB->mcc =            enb_properties->properties[enb_id]->mcc;
+            s1ap_register_eNB->mnc =            enb_properties->properties[enb_id]->mnc;
+            s1ap_register_eNB->default_drx =    enb_properties->properties[enb_id]->default_drx;
 
-            s1ap_register_eNB->nb_mme = enb_properties[enb_id]->nb_mme;
+            s1ap_register_eNB->nb_mme =         enb_properties->properties[enb_id]->nb_mme;
             AssertFatal (s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, "Too many MME for eNB %d (%d/%d)!", enb_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);
 
             for (mme_id = 0; mme_id < s1ap_register_eNB->nb_mme; mme_id++)
             {
-                s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = enb_properties[enb_id]->mme_ip_address[mme_id].ipv4;
-                s1ap_register_eNB->mme_ip_address[mme_id].ipv6 = enb_properties[enb_id]->mme_ip_address[mme_id].ipv6;
+                s1ap_register_eNB->mme_ip_address[mme_id].ipv4 = enb_properties->properties[enb_id]->mme_ip_address[mme_id].ipv4;
+                s1ap_register_eNB->mme_ip_address[mme_id].ipv6 = enb_properties->properties[enb_id]->mme_ip_address[mme_id].ipv6;
                 strncpy (s1ap_register_eNB->mme_ip_address[mme_id].ipv4_address,
-                         enb_properties[enb_id]->mme_ip_address[mme_id].ipv4_address,
+                         enb_properties->properties[enb_id]->mme_ip_address[mme_id].ipv4_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv4_address));
                 strncpy (s1ap_register_eNB->mme_ip_address[mme_id].ipv6_address,
-                         enb_properties[enb_id]->mme_ip_address[mme_id].ipv6_address,
+                         enb_properties->properties[enb_id]->mme_ip_address[mme_id].ipv6_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv6_address));
             }
 
@@ -159,20 +155,21 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end)
 /*------------------------------------------------------------------------------*/
 void *eNB_app_task(void *args_p)
 {
+    const Enb_properties_array_t   *enb_properties;
 #if defined(ENABLE_ITTI)
-    uint32_t    enb_nb = 1; /* Default number of eNB is 1 */
-    uint32_t    enb_id_start = 0;
-    uint32_t    enb_id_end = enb_id_start + enb_nb;
+    uint32_t                        enb_nb = 1; /* Default number of eNB is 1 */
+    uint32_t                        enb_id_start = 0;
+    uint32_t                        enb_id_end = enb_id_start + enb_nb;
 # if defined(ENABLE_USE_MME)
-    uint32_t    register_enb_pending;
-    uint32_t    registered_enb;
-    long    enb_register_retry_timer_id;
+    uint32_t                        register_enb_pending;
+    uint32_t                        registered_enb;
+    long                            enb_register_retry_timer_id;
 # endif
-    uint32_t    enb_id;
-    MessageDef *msg_p;
-    const char *msg_name;
-    instance_t  instance;
-    int         result;
+    uint32_t                        enb_id;
+    MessageDef                     *msg_p;
+    const char                     *msg_name;
+    instance_t                      instance;
+    int                             result;
 
     itti_mark_task_ready (TASK_ENB_APP);
 
@@ -188,22 +185,22 @@ void *eNB_app_task(void *args_p)
 #   endif
 # endif
 
-    enb_nb_properties = enb_config_init(g_conf_config_file_name, enb_properties);
+    enb_properties = enb_config_init(g_conf_config_file_name);
 
-    AssertFatal (enb_nb <= enb_nb_properties,
+    AssertFatal (enb_nb <= enb_properties->number,
                  "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
-                 g_conf_config_file_name, enb_nb, enb_nb_properties);
+                 g_conf_config_file_name, enb_nb, enb_properties->number);
 
     for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++)
     {
-        configure_phy(enb_id);
-        configure_rrc(enb_id);
+        configure_phy(enb_id, enb_properties);
+        configure_rrc(enb_id, enb_properties);
     }
 
 # if defined(ENABLE_USE_MME)
     /* Try to register each eNB */
     registered_enb = 0;
-    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end);
+    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
 # else
     /* Start L2L1 task */
     msg_p = itti_alloc_new_message(TASK_ENB_APP, INITIALIZE_MESSAGE);
@@ -279,7 +276,7 @@ void *eNB_app_task(void *args_p)
                             sleep(ENB_REGISTER_RETRY_DELAY);
                             /* Restart the registration process */
                             registered_enb = 0;
-                            register_enb_pending = eNB_app_register (enb_id_start, enb_id_end);
+                            register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
                         }
                     }
                 }
@@ -299,7 +296,7 @@ void *eNB_app_task(void *args_p)
                 {
                     /* Restart the registration process */
                     registered_enb = 0;
-                    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end);
+                    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
                 }
                 break;
 # endif
