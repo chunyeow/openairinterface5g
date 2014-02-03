@@ -97,7 +97,7 @@ static uint16_t get_next_ue_initial_id(uint8_t mod_id) {
 static uint8_t get_UE_index_from_initial_id(uint8_t mod_id, uint16_t ue_initial_id) {
   uint8_t ue_index;
 
-  DevCheck(mod_id < NB_eNB_INST, mod_id, NB_eNB_INST, 0);
+  AssertFatal(mod_id < NB_eNB_INST, "eNB index invalid (%d/%d)!", mod_id, NB_eNB_INST);
   LOG_D(RRC, "[eNB %d] get_UE_index_from_initial_id: ue_initial_id %d\n", ue_initial_id);
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
@@ -124,7 +124,7 @@ static uint8_t get_UE_index_from_initial_id(uint8_t mod_id, uint16_t ue_initial_
 static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint32_t eNB_ue_s1ap_id) {
   uint8_t ue_index;
 
-  DevCheck(mod_id < NB_eNB_INST, mod_id, NB_eNB_INST, 0);
+  AssertFatal(mod_id < NB_eNB_INST, "eNB index invalid (%d/%d)!", mod_id, NB_eNB_INST);
   LOG_D(RRC, "[eNB %d] get_UE_index_from_eNB_ue_s1ap_id: eNB_ue_s1ap_id %d\n", mod_id, eNB_ue_s1ap_id);
 
   for (ue_index = 0; ue_index < NUMBER_OF_UE_MAX; ue_index++) {
@@ -390,8 +390,9 @@ void rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t mod_id, uint8_t ue_index,
     S1AP_NAS_FIRST_REQ (message_p).ue_initial_id = eNB_rrc_inst[mod_id].Info.UE[ue_index].ue_initial_id;
 
     /* Assume that cause is coded in the same way in RRC and S1ap, just check that the value is in S1ap range */
-    DevCheck(eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause < RRC_CAUSE_LAST,
-             eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause, RRC_CAUSE_LAST, mod_id);
+    AssertFatal(eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause < RRC_CAUSE_LAST,
+                "Establishment cause invalid (%d/%d) for eNB %d!",
+                eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause, RRC_CAUSE_LAST, mod_id);
     S1AP_NAS_FIRST_REQ (message_p).establishment_cause = eNB_rrc_inst[mod_id].Info.UE[ue_index].establishment_cause;
 
     /* Forward NAS message */S1AP_NAS_FIRST_REQ (message_p).nas_pdu.buffer =

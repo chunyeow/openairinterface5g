@@ -405,7 +405,7 @@ static void init_MCCH (u8 Mod_id) {
                       (struct LogicalChannelConfig *) NULL,
                       (MeasGapConfig_t *) NULL,
                       (TDD_Config_t *) NULL,
-		      NULL,
+                      NULL,
                       (u8 *) NULL,
                       (u16 *) NULL,
                       NULL, NULL, NULL, (MBSFN_SubframeConfigList_t *) NULL
@@ -434,29 +434,27 @@ static void init_MBMS (u8 Mod_id, u32 frame) {
       // Configuring PDCP and RLC for MBMS Radio Bearer
 
       rrc_pdcp_config_asn1_req (Mod_id, 0, frame, 1,
-				NULL,      // SRB_ToAddModList
+                                NULL,      // SRB_ToAddModList
                                 NULL,   // DRB_ToAddModList
                                 (DRB_ToReleaseList_t *) NULL,
-				0, // security mode
-				NULL, // key rrc encryption
-				NULL, // key rrc integrity
-				NULL // key encryption
+                                0, // security mode
+                                NULL, // key rrc encryption
+                                NULL, // key rrc integrity
+                                NULL // key encryption
 #ifdef Rel10
                                 ,
                                 &(eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9)
 #endif
-			     );
+                                );
     
     rrc_rlc_config_asn1_req(Mod_id, frame, 1, 0,
-			    NULL,// SRB_ToAddModList
-			    NULL,// DRB_ToAddModList
-			    NULL,// DRB_ToReleaseList
-			    &(eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9));
+                            NULL,// SRB_ToAddModList
+                            NULL,// DRB_ToAddModList
+                            NULL,// DRB_ToReleaseList
+                            &(eNB_rrc_inst[Mod_id].mcch_message->pmch_InfoList_r9));
     
     //rrc_mac_config_req();
-    
   }  
-  
 }
 #endif
 
@@ -495,7 +493,7 @@ static uint8_t rrc_eNB_get_next_free_UE_index (uint8_t Mod_id, uint64_t UE_ident
 {
   uint8_t i, first_index = UE_INDEX_INVALID, reg = 0;
 
-  DevCheck(Mod_id < NB_eNB_INST, Mod_id, NB_eNB_INST, 0);
+  AssertFatal(Mod_id < NB_eNB_INST, "eNB index invalid (%d/%d)!", Mod_id, NB_eNB_INST);
 
   for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
     if ((first_index == UE_INDEX_INVALID) && (eNB_rrc_inst[Mod_id].Info.UE_list[i] == 0)) {
@@ -519,8 +517,8 @@ static uint8_t rrc_eNB_get_next_free_UE_index (uint8_t Mod_id, uint64_t UE_ident
 
 void rrc_eNB_free_UE_index (uint8_t Mod_id, uint8_t UE_id)
 {
-  DevCheck(Mod_id < NB_eNB_INST, Mod_id, UE_id, NB_eNB_INST);
-  DevCheck(UE_id < NUMBER_OF_UE_MAX, Mod_id, UE_id, NUMBER_OF_UE_MAX);
+  AssertFatal(Mod_id < NB_eNB_INST, "eNB index invalid (%d/%d) for UE %d!", Mod_id, NB_eNB_INST, UE_id);
+  AssertFatal(UE_id < NUMBER_OF_UE_MAX, "UE index invalid (%d/%d) for eNB %d!", UE_id, NUMBER_OF_UE_MAX, Mod_id);
 
   LOG_I (RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", Mod_id, UE_id, eNB_rrc_inst[Mod_id].Info.UE_list[UE_id]);
   eNB_rrc_inst[Mod_id].Info.UE[UE_id].Status = RRC_IDLE;
@@ -2398,7 +2396,7 @@ void rrc_eNB_generate_RRCConnectionSetup (u8 Mod_id, u32 frame, u16 UE_index) {
   SRB_ToAddMod_t *SRB1_config;
   int cnt;
 
-  DevCheck(UE_index < NUMBER_OF_UE_MAX, UE_index, NUMBER_OF_UE_MAX, 0);
+  AssertFatal(UE_index < NUMBER_OF_UE_MAX, "UE index invalid (%d/%d) for eNB %d!", UE_index, NUMBER_OF_UE_MAX, Mod_id);
 
   SRB_configList = &eNB_rrc_inst[Mod_id].SRB_configList[UE_index];
 
@@ -2496,7 +2494,7 @@ char openair_rrc_lite_eNB_init (u8 Mod_id)
   LOG_D (RRC, "[MSC_NEW][FRAME 00000][RRC_eNB][MOD %02d][]\n", Mod_id);
   LOG_D (RRC, "[MSC_NEW][FRAME 00000][IP][MOD %02d][]\n", Mod_id);
 
-  DevAssert(eNB_rrc_inst != NULL);
+  AssertFatal(eNB_rrc_inst != NULL, "eNB_rrc_inst not initialized!");
 
   for (j = 0; j < NUMBER_OF_UE_MAX; j++)
     eNB_rrc_inst[Mod_id].Info.UE[j].Status = RRC_IDLE;     //CH_READY;
