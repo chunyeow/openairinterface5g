@@ -32,7 +32,6 @@ declare UE_IPv4="10.0.0.8"
 declare UE_IPv6="2001:1::8"
 declare UE_IPv6_CIDR=$UE_IPv6"/64"
 declare UE_IPv4_CIDR=$UE_IPv4"/24"
-declare BRIDGE="vswitch"
 
 
 ###########################################################
@@ -116,6 +115,24 @@ ITTI_LOG_FILE=/tmp/itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
 
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --config-file $THIS_SCRIPT_PATH/CONF/enb.host.$HOSTNAME.conf
+#######################################################
+# FIND CONFIG FILE
+#######################################################
+CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/all.sfr.default_vswitch.conf
+SEARCHED_CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/all.sfr."$HOSTNAME"_vswitch.conf
+if [ -f $SEARCHED_CONFIG_FILE ]; then
+    CONFIG_FILE=$SEARCHED_CONFIG_FILE
+    echo_warning "config file found is now $CONFIG_FILE"
+else
+    echo_warning "config file $SEARCHED_CONFIG_FILE for host $HOSTNAME not found, trying default: $CONFIG_FILE"
+    if [ -f $CONFIG_FILE ]; then
+        echo_success "Default config file found: $CONFIG_FILE"
+    else
+        echo_error "Default config file not found, exiting"
+        exit 1
+    fi
+fi
+
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE
 
 

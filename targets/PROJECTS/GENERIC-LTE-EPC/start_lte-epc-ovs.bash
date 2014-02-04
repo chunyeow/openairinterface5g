@@ -71,7 +71,6 @@ if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
     $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
 fi
 
-IPTABLES=`which iptables`
 
 ##################################
 # Get or set OBJ DIR and compile #
@@ -115,55 +114,106 @@ cd $OPENAIRCN_DIR
 
 
 #######################################################
-# SOURCE $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf
+# FIND CONFIG FILE
 #######################################################
-rm -f /tmp/source.txt
-if [ -f $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf ]
-then
-    cat $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf | tr -d " " > /tmp/source.txt
-    source /tmp/source.txt
+CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/epc.sfr.default.vswitch.conf
+SEARCHED_CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/epc.sfr."$HOSTNAME".vswitch.conf
+if [ -f $SEARCHED_CONFIG_FILE ]; then
+    CONFIG_FILE=$SEARCHED_CONFIG_FILE
+    echo_warning "config file found is now $CONFIG_FILE"
 else
-    echo_error "Missing config file $OPENAIRCN_DIR/UTILS/CONF/epc_$HOSTNAME.conf (Please write your own config file), exiting"
-    exit 1
+    echo_warning "config file $SEARCHED_CONFIG_FILE for host $HOSTNAME not found, trying default: $CONFIG_FILE"
+    if [ -f $CONFIG_FILE ]; then
+        echo_success "Default config file found: $CONFIG_FILE"
+    else
+        echo_error "Default config file not found, exiting"
+        exit 1
+    fi
 fi
 
-#######################################################
-# SOURCE $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf
-#######################################################
-rm -f /tmp/source.txt
-if [ -f $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf ]
-then
-    cat $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf | tr -d " " > /tmp/source.txt
-    source /tmp/source.txt
+CONFIG_FILE_ENB=$THIS_SCRIPT_PATH/CONF/enb.sfr.default.vswitch.conf
+SEARCHED_CONFIG_FILE_ENB=$THIS_SCRIPT_PATH/CONF/enb.sfr."$HOSTNAME".vswitch.conf
+if [ -f $SEARCHED_CONFIG_FILE_ENB ]; then
+    CONFIG_FILE_ENB=$SEARCHED_CONFIG_FILE_ENB
+    echo_warning "config file eNB found is now $CONFIG_FILE_ENB"
 else
-    echo_error "Missing config file $OPENAIRCN_DIR/UTILS/CONF/enb_$HOSTNAME.conf (Please write your own config file), exiting"
-    exit 1
+    echo_warning "config file eNB $SEARCHED_CONFIG_FILE_ENB for host $HOSTNAME not found, trying default: $CONFIG_FILE_ENB"
+    if [ -f $CONFIG_FILE_ENB ]; then
+        echo_success "Default config file eNB found: $CONFIG_FILE_ENB"
+    else
+        echo_error "Default config file eNB not found, exiting"
+        exit 1
+    fi
 fi
 
-clean_epc_network
-build_epc_network
-test_epc_network
+
+
+#######################################################
+# SOURCE CONFIG FILE
+#######################################################
+rm -f /tmp/source.txt
+VARIABLES="
+           ENB_INTERFACE_NAME_FOR_S1_MME\|\
+           ENB_IPV4_ADDRESS_FOR_S1_MME\|\
+           ENB_INTERFACE_NAME_FOR_S1U\|\
+           ENB_IPV4_ADDRESS_FOR_S1U\|\
+           ENB_BRIDGE\|\
+           MME_INTERFACE_NAME_FOR_S1_MME\|\
+           MME_IPV4_ADDRESS_FOR_S1_MME\|\
+           MME_INTERFACE_NAME_FOR_S11_MME\|\
+           MME_IPV4_ADDRESS_FOR_S11_MME\|\
+           MME_BRIDGE\|\
+           SGW_INTERFACE_NAME_FOR_S11\|\
+           SGW_IPV4_ADDRESS_FOR_S11\|\
+           SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP\|\
+           SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP\|\
+           SGW_INTERFACE_NAME_FOR_S5_S8_UP\|\
+           SGW_IPV4_ADDRESS_FOR_S5_S8_UP\|\
+           SGW_BRIDGE\|\
+           PGW_INTERFACE_NAME_FOR_S5_S8\|\
+           PGW_IPV4_ADDRESS_FOR_S5_S8\|\
+           PGW_INTERFACE_NAME_FOR_SGI\|\
+           PGW_IPV4_ADDR_FOR_SGI"
+
+VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
+VARIABLES=$(echo $VARIABLES | tr -d ' ')
+cat $CONFIG_FILE | grep -w "$VARIABLES"| tr -d " " | tr -d ";" > /tmp/source.txt
+cat $CONFIG_FILE_ENB | grep -w "$VARIABLES"| tr -d " " | tr -d ";" >> /tmp/source.txt
+source /tmp/source.txt
+
+declare ENB_IPV4_NETMASK_FOR_S1_MME=$(       echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f2 -d '/')
+declare ENB_IPV4_NETMASK_FOR_S1U=$(          echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f2 -d '/')
+declare MME_IPV4_NETMASK_FOR_S1_MME=$(       echo $MME_IPV4_ADDRESS_FOR_S1_MME        | cut -f2 -d '/')
+declare MME_IPV4_NETMASK_FOR_S11_MME=$(      echo $MME_IPV4_ADDRESS_FOR_S11_MME       | cut -f2 -d '/')
+declare SGW_IPV4_NETMASK_FOR_S11=$(          echo $SGW_IPV4_ADDRESS_FOR_S11           | cut -f2 -d '/')
+declare SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP=$(echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP | cut -f2 -d '/')
+declare SGW_IPV4_NETMASK_FOR_S5_S8_UP=$(     echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP      | cut -f2 -d '/')
+declare PGW_IPV4_NETMASK_FOR_S5_S8=$(        echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f2 -d '/')
+declare PGW_IPV4_NETMASK_FOR_SGI=$(          echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f2 -d '/')
+
+ENB_IPV4_ADDRESS_FOR_S1_MME=$(               echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
+ENB_IPV4_ADDRESS_FOR_S1U=$(                  echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f1 -d '/')
+MME_IPV4_ADDRESS_FOR_S1_MME=$(               echo $MME_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
+MME_IPV4_ADDRESS_FOR_S11_MME=$(              echo $MME_IPV4_ADDRESS_FOR_S11_MME       | cut -f1 -d '/')
+SGW_IPV4_ADDRESS_FOR_S11=$(                  echo $SGW_IPV4_ADDRESS_FOR_S11           | cut -f1 -d '/')
+SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP=$(        echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP | cut -f1 -d '/')
+SGW_IPV4_ADDRESS_FOR_S5_S8_UP=$(             echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP      | cut -f1 -d '/')
+PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f1 -d '/')
+PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
+
+clean_epc_ovs_network
+exit
+build_epc_ovs_network
+test_epc_ovs_network
 
 ##################################################..
 
 # LAUNCH MME + S+P-GW executable
 ##################################################
-MME_CONFIG_FILE=$OPENAIRCN_DIR/UTILS/CONF/mme_default.conf
-if [ -f $OPENAIRCN_DIR/UTILS/CONF/mme_$HOSTNAME.conf ]; then
-    MME_CONFIG_FILE=$OPENAIRCN_DIR/UTILS/CONF/mme_$HOSTNAME.conf
-    echo_warning "MME config file found is now $MME_CONFIG_FILE"
-else
-    echo_warning "MME config file for host $HOSTNAME not found, trying default: $MME_CONFIG_FILE"
-    if [ -f $MME_CONFIG_FILE ]; then
-        echo_success "Default MME config file found: $MME_CONFIG_FILE"
-    else
-        echo_error "Default MME config file not found, exiting"
-        exit 1
-    fi
-fi
+
 cd $OPENAIRCN_DIR/$OBJ_DIR
 
 ITTI_LOG_FILE=/tmp/itti_mme.log
 rotate_log_file $ITTI_LOG_FILE
 
-$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $MME_CONFIG_FILE
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $CONFIG_FILE
