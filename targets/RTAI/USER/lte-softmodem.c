@@ -100,6 +100,7 @@ unsigned short config_frames[4] = {2,9,11,13};
 #include "UTIL/OTG/otg_vars.h"
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
+#include "enb_config.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -167,8 +168,10 @@ int fs4_test=0;
 char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
-u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
-char *g_conf_config_file_name = NULL;
+u32 carrier_freq[4] =           {1907600000,1907600000,1907600000,1907600000}; /* For UE! */
+u32 downlink_frequency[4] =     {1907600000,1907600000,1907600000,1907600000};
+s32 uplink_frequency_offset[4]= {-120000000,-120000000,-120000000,-120000000};
+static char *conf_config_file_name = NULL;
 
 struct timing_info_t {
   //unsigned int frame, hw_slot, last_slot, next_slot;
@@ -1013,6 +1016,7 @@ static void *UE_thread(void *arg)
 }
 
 int main(int argc, char **argv) {
+  const Enb_properties_array_t *enb_properties;
 
 #ifdef RTAI
   // RT_TASK *task;
@@ -1106,10 +1110,14 @@ int main(int argc, char **argv) {
           UE_flag = 1;
           break;
         case 'C':
-          carrier_freq[0] = atoi(optarg);
-          carrier_freq[1] = atoi(optarg);
-          carrier_freq[2] = atoi(optarg);
-          carrier_freq[3] = atoi(optarg);
+          downlink_frequency[0] = atoi(optarg);
+          downlink_frequency[1] = atoi(optarg);
+          downlink_frequency[2] = atoi(optarg);
+          downlink_frequency[3] = atoi(optarg);
+          carrier_freq[0] = downlink_frequency[0];
+          carrier_freq[1] = downlink_frequency[1];
+          carrier_freq[2] = downlink_frequency[2];
+          carrier_freq[3] = downlink_frequency[3];
           break;
         case 'S':
           fs4_test=1;
@@ -1127,7 +1135,7 @@ int main(int argc, char **argv) {
 #endif
           break;
         case 'O':
-          g_conf_config_file_name = optarg;
+          conf_config_file_name = optarg;
           break;
         case 'F':
           sprintf(rxg_fname,"%srxg.lime",optarg);
@@ -1214,6 +1222,28 @@ int main(int argc, char **argv) {
         }
     }
 
+  frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
+
+  if ((UE_flag == 0) && (conf_config_file_name != NULL)) {
+    int i;
+
+    NB_eNB_INST = 1;
+
+    /* Read eNB configuration file */
+    enb_properties = enb_config_init(conf_config_file_name);
+
+    AssertFatal (NB_eNB_INST <= enb_properties->number,
+                 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
+                 conf_config_file_name, NB_eNB_INST, enb_properties->number);
+
+    /* Update some simulation parameters */
+    frame_parms->frame_type =   enb_properties->properties[0]->frame_type;
+    for (i = 0 ; i < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); i++) {
+      downlink_frequency[i] =       enb_properties->properties[0]->downlink_frequency;
+      uplink_frequency_offset[i] =  enb_properties->properties[0]->uplink_frequency_offset;
+    }
+  }
+
   if (UE_flag==1)
     printf("configuring for UE\n");
   else
@@ -1258,7 +1288,6 @@ int main(int argc, char **argv) {
 #endif
 
   // init the parameters
-  frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
   frame_parms->N_RB_DL            = 25;
   frame_parms->N_RB_UL            = 25;
   frame_parms->Ncp                = 0;
@@ -1288,7 +1317,6 @@ int main(int argc, char **argv) {
   }
   frame_parms->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
   frame_parms->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
-  frame_parms->frame_type         = 1;
   frame_parms->tdd_config         = 3;
   frame_parms->tdd_config_S       = 0;
   frame_parms->phich_config_common.phich_resource = oneSixth;
@@ -1314,6 +1342,7 @@ int main(int argc, char **argv) {
   // prach_fmt = get_prach_fmt(frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex, frame_parms->frame_type);
   // N_ZC = (prach_fmt <4)?839:139;
 
+  g_log->level = LOG_WARNING;
   if (UE_flag==1) {
     g_log->log_component[HW].level = LOG_DEBUG;
     g_log->log_component[HW].flag  = LOG_HIGH;
@@ -1532,6 +1561,8 @@ int main(int argc, char **argv) {
   for (ant=max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant<4;ant++) {
     p_exmimo_config->rf.rf_mode[ant] = 0;
     carrier_freq[ant] = 0; //this turns off all other LIMEs
+    downlink_frequency[ant] = 0; //this turns off all other LIMEs
+    uplink_frequency_offset[ant] = 0;
   }
 
   /*
@@ -1545,26 +1576,42 @@ int main(int argc, char **argv) {
     }
     else {
       p_exmimo_config->rf.rf_mode[ant] = 0;
-      carrier_freq[ant] = 0; //this turns off all other LIMEs
+      downlink_frequency[ant] = 0; //this turns off all other LIMEs
     }
   }
   */
 
   for (ant = 0; ant<4; ant++) { 
     p_exmimo_config->rf.do_autocal[ant] = 1;
-    p_exmimo_config->rf.rf_freq_rx[ant] = carrier_freq[ant];
-    p_exmimo_config->rf.rf_freq_tx[ant] = carrier_freq[ant];
+    if (UE_flag==0) {
+      /* eNB */
+      if (frame_parms->frame_type == FDD) {
+        p_exmimo_config->rf.rf_freq_rx[ant] = downlink_frequency[ant] + uplink_frequency_offset[ant];
+      } else {
+        p_exmimo_config->rf.rf_freq_rx[ant] = downlink_frequency[ant];
+      }
+      p_exmimo_config->rf.rf_freq_tx[ant] = downlink_frequency[ant];
+    } else {
+      /* UE */
+      p_exmimo_config->rf.rf_freq_rx[ant] = carrier_freq[ant];
+      if (frame_parms->frame_type == FDD) {
+        p_exmimo_config->rf.rf_freq_tx[ant] = carrier_freq[ant] + uplink_frequency_offset[ant];
+      } else {
+        p_exmimo_config->rf.rf_freq_tx[ant] = carrier_freq[ant];
+      }
+    }
+
     p_exmimo_config->rf.rx_gain[ant][0] = rxgain[ant];
     p_exmimo_config->rf.tx_gain[ant][0] = txgain[ant];
     
     p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
     p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
 
-    if ((carrier_freq[ant] >= 850000000) && (carrier_freq[ant] <= 865000000)) {
+    if ((downlink_frequency[ant] >= 850000000) && (downlink_frequency[ant] <= 865000000)) {
       p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal_850[ant];
       p_exmimo_config->rf.rffe_band_mode[ant] = DD_TDD;	    
     }
-    else if ((carrier_freq[ant] >= 1900000000) && (carrier_freq[ant] <= 2000000000)) {
+    else if ((downlink_frequency[ant] >= 1900000000) && (downlink_frequency[ant] <= 2000000000)) {
       p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
       p_exmimo_config->rf.rffe_band_mode[ant] = B19G_TDD;	    
     }
@@ -1578,7 +1625,6 @@ int main(int argc, char **argv) {
     p_exmimo_config->rf.rffe_gain_rxfinal[ant] = 52;
     p_exmimo_config->rf.rffe_gain_rxlow[ant] = 31;
   }
-
 
   dump_frame_parms(frame_parms);
   

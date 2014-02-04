@@ -93,6 +93,7 @@
 #include "UTIL/OTG/otg_vars.h"
 #include "UTIL/MATH/oml.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
+#include "enb_config.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -166,7 +167,7 @@ u8 eNB_id=0;
 u32 carrier_freq_fdd[4]= {2680e6,0,0,0};
 u32 carrier_freq_tdd[4]= {2590e6-4000,0,0,0};
 u32 carrier_freq[4];
-char *g_conf_config_file_name = NULL;
+static char *conf_config_file_name = NULL;
 
 struct timing_info_t {
   //unsigned int frame, hw_slot, last_slot, next_slot;
@@ -636,6 +637,7 @@ static void *eNB_thread(void *arg)
 
 int main(int argc, char **argv)
 {
+  const Enb_properties_array_t *enb_properties;
 #ifdef RTAI
   RT_TASK *task;
 #endif
@@ -722,7 +724,7 @@ int main(int argc, char **argv)
 #endif
         break;
       case 'O':
-        g_conf_config_file_name = optarg;
+        conf_config_file_name = optarg;
         break;
       case 'R':
         N_RB_DL = atoi(optarg);
@@ -740,6 +742,26 @@ int main(int argc, char **argv)
         break;
       default:
         break;
+    }
+  }
+
+  NB_eNB_INST=1;
+  NB_INST=1;
+
+  if ((UE_flag == 0) && (conf_config_file_name != NULL)) {
+    int i;
+
+    /* Read eNB configuration file */
+    enb_properties = enb_config_init(conf_config_file_name);
+
+    AssertFatal (NB_eNB_INST <= enb_properties->number,
+                 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
+                 conf_config_file_name, NB_eNB_INST, enb_properties->number);
+
+    /* Update some simulation parameters */
+    frame_type =        enb_properties->properties[0]->frame_type;
+    for (i = 0 ; i < (sizeof(carrier_freq) / sizeof (carrier_freq[0])); i++) {
+      carrier_freq[i] = enb_properties->properties[0]->downlink_frequency;
     }
   }
 
@@ -778,15 +800,16 @@ int main(int argc, char **argv)
                 Nid_cell, cooperation_flag, transmission_mode, abstraction_flag,
                 nb_antennas_rx,0);
 
-  g_log->log_component[HW].level = LOG_INFO;
+  g_log->level = LOG_WARNING;
+  g_log->log_component[HW].level = LOG_WARNING;
   g_log->log_component[HW].flag  = LOG_LOW;
-  g_log->log_component[PHY].level = LOG_INFO;
+  g_log->log_component[PHY].level = LOG_WARNING;
   g_log->log_component[PHY].flag  = LOG_LOW;
   g_log->log_component[MAC].level = LOG_INFO;
   g_log->log_component[MAC].flag  = LOG_LOW;
-  g_log->log_component[RLC].level = LOG_INFO;
+  g_log->log_component[RLC].level = LOG_WARNING;
   g_log->log_component[RLC].flag  = LOG_LOW;
-  g_log->log_component[PDCP].level = LOG_INFO;
+  g_log->log_component[PDCP].level = LOG_WARNING;
   g_log->log_component[PDCP].flag  = LOG_LOW;
   g_log->log_component[RRC].level = LOG_INFO;
   g_log->log_component[RRC].flag  = LOG_LOW;
@@ -824,16 +847,10 @@ int main(int argc, char **argv)
   }
 #endif
 
-
-  NB_eNB_INST=1;
-  NB_INST=1;
-
   openair_daq_vars.ue_dl_rb_alloc=0x1fff;
   openair_daq_vars.target_ue_dl_mcs=16;
   openair_daq_vars.ue_ul_nb_rb=6;
   openair_daq_vars.target_ue_ul_mcs=9;
-
-
 
   // set eNB to max gain
   PHY_vars_eNB_g[0]->rx_total_gain_eNB_dB =  rxg_max[0] + rxgain[0] -

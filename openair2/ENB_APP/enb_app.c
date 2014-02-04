@@ -49,7 +49,6 @@
 # endif
 
 extern unsigned char NB_eNB_INST;
-extern char         *g_conf_config_file_name;
 #endif
 
 #if defined(ENABLE_ITTI)
@@ -185,11 +184,11 @@ void *eNB_app_task(void *args_p)
 #   endif
 # endif
 
-    enb_properties = enb_config_init(g_conf_config_file_name);
+    enb_properties = enb_config_get();
 
     AssertFatal (enb_nb <= enb_properties->number,
-                 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
-                 g_conf_config_file_name, enb_nb, enb_properties->number);
+                 "Number of eNB is greater than eNB defined in configuration file (%d/%d)!",
+                 enb_nb, enb_properties->number);
 
     for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++)
     {

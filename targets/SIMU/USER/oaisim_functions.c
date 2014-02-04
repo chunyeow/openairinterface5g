@@ -7,6 +7,7 @@
 
 #include <sys/timerfd.h>
 
+#include "assertions.h"
 #include "oaisim_functions.h"
 
 #include "PHY/extern.h"
@@ -29,6 +30,7 @@
 #include "lteRALue.h"
 
 #include "cor_SF_sim.h"
+#include "enb_config.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
@@ -53,7 +55,7 @@ int otg_times = 0;
 int if_times = 0;
 int for_times = 0;
 
-char *g_conf_config_file_name = NULL;
+static char *conf_config_file_name = NULL;
 u16 Nid_cell = 0; //needed by init_lte_vars
 int nb_antennas_rx=2; // //
 u8 target_dl_mcs = 0;
@@ -168,14 +170,15 @@ static struct option long_options[] = {
 };
 
 void get_simulation_options(int argc, char *argv[]) {
-  int option;
+  int                           option;
+  const Enb_properties_array_t *enb_properties;
 
   while ((option = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, NULL)) != -1) {
     switch (option) {
     case LONG_OPTION_ENB_CONF:
       if (optarg) {
-          g_conf_config_file_name = strdup(optarg);
-          printf("eNB configuration file is %s\n", g_conf_config_file_name);
+          conf_config_file_name = strdup(optarg);
+          printf("eNB configuration file is %s\n", conf_config_file_name);
       }
       break;
 
@@ -436,7 +439,7 @@ void get_simulation_options(int argc, char *argv[]) {
       break;
 
     case 'O':
-      g_conf_config_file_name = optarg;
+      conf_config_file_name = optarg;
       break;
 
     case 'o':
@@ -585,6 +588,21 @@ void get_simulation_options(int argc, char *argv[]) {
       exit (-1);
       break;
     }
+  }
+
+  if ((oai_emulation.info.nb_enb_local > 0) && (conf_config_file_name != NULL))
+  {
+      /* Read eNB configuration file */
+      enb_properties = enb_config_init(conf_config_file_name);
+
+      AssertFatal (oai_emulation.info.nb_enb_local <= enb_properties->number,
+                   "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
+                   conf_config_file_name, oai_emulation.info.nb_enb_local, enb_properties->number);
+
+      /* Update some simulation parameters */
+      oai_emulation.info.frame_type =           enb_properties->properties[0]->frame_type;
+      oai_emulation.info.extended_prefix_flag = enb_properties->properties[0]->prefix_type;
+
   }
 }
 
