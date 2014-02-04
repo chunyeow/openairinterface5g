@@ -375,33 +375,42 @@ create_openvswitch_interface() {
 
 build_enb_vlan_network() {
     # create vlan interface
-    if [ is_real_interface $ENB_INTERFACE_NAME_FOR_S1_MME ]; then
+    is_real_interface $ENB_INTERFACE_NAME_FOR_S1_MME
+    if [ $? -eq 1 ]; then
+        ifconfig    "$ENB_INTERFACE_NAME_FOR_S1_MME".1 down" > /dev/null 2>&1
         vconfig rem "$ENB_INTERFACE_NAME_FOR_S1_MME".1 > /dev/null 2>&1
         sync
         bash_exec "vconfig add ENB_INTERFACE_NAME_FOR_S1_MME 1"
         sync
         bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME.1"
     else
-        echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME "$ENB_INTERFACE_NAME_FOR_S1_MME" (waiting for ethx)"
+        echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME "$ENB_INTERFACE_NAME_FOR_S1_MME' (waiting for ethx)'
     fi;
-    if [ is_real_interface $ENB_INTERFACE_NAME_FOR_S1U ]; then
-        vconfig rem $ENB_INTERFACE_NAME_FOR_S1U.2 > /dev/null 2>&1
+    
+    is_real_interface $ENB_INTERFACE_NAME_FOR_S1U
+    if [ $? -eq 1 ]; then
+        ifconfig   "$ENB_INTERFACE_NAME_FOR_S1U".2 down" > /dev/null 2>&1
+        vconfig rem "$ENB_INTERFACE_NAME_FOR_S1U".2 > /dev/null 2>&1
         sync
         bash_exec "vconfig add ENB_INTERFACE_NAME_FOR_S1U 2"
         sync
         bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U.2"
         sync
     else
-        echo_fatal "BAD INTERFACE NAME FOR ENB S1U "$ENB_INTERFACE_NAME_FOR_S1U" (waiting for ethx)"
+        echo_fatal "BAD INTERFACE NAME FOR ENB S1U "$ENB_INTERFACE_NAME_FOR_S1U' (waiting for ethx)'
     fi;
 }
 
 clean_enb_vlan_network() {
-    # create vlan interface
-    if [ is_real_interface $ENB_INTERFACE_NAME_FOR_S1_MME ]; then
+    is_real_interface $ENB_INTERFACE_NAME_FOR_S1_MME
+    if [ $? -eq 1 ]; then
+        ifconfig   "$ENB_INTERFACE_NAME_FOR_S1_MME".2 down" > /dev/null 2>&1
         vconfig rem "$ENB_INTERFACE_NAME_FOR_S1_MME".1 > /dev/null 2>&1
     fi;
-    if [ is_real_interface $ENB_INTERFACE_NAME_FOR_S1U ]; then
+    
+    is_real_interface $ENB_INTERFACE_NAME_FOR_S1U
+    if [ $? -eq 1 ]; then
+        ifconfig   "$ENB_INTERFACE_NAME_FOR_S1U".2 down" > /dev/null 2>&1
         vconfig rem $ENB_INTERFACE_NAME_FOR_S1U.2 > /dev/null 2>&1
     fi;
     sync;
@@ -458,26 +467,26 @@ build_mme_spgw_vlan_network() {
     
     # create vlan interface
     if [ is_real_interface $MME_INTERFACE_NAME_FOR_S1_MME ]; then
+        ifconfig   "$MME_INTERFACE_NAME_FOR_S1_MME".1 down" > /dev/null 2>&1
         bash_exec "vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME.1" > /dev/null 2>&1
         sync
         bash_exec "vconfig add MME_INTERFACE_NAME_FOR_S1_MME 1"
         sync
         bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME.1"
     else
-        echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME "$MME_INTERFACE_NAME_FOR_S1_MME" (waiting for ethx)"
+        echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME "$MME_INTERFACE_NAME_FOR_S1_MME' (waiting for ethx)'
     fi;
     if [ is_real_interface $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP ]; then
+        ifconfig   "$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP".2 down" > /dev/null 2>&1
         vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2 > /dev/null 2>&1
         sync
         bash_exec "vconfig add SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP 2"
         sync
-        bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2"
+        bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2"
         sync
     else
-        echo_fatal "BAD INTERFACE NAME FOR SGW S1U "$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP" (waiting for ethx)"
+        echo_fatal "BAD INTERFACE NAME FOR SGW S1U "$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP' (waiting for ethx)'
     fi;
-    
-    
     
     ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
     IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
@@ -569,6 +578,7 @@ build_mme_spgw_vlan_network() {
         for i in 5 6 7 8 9 10 11 12 13 14 15
         do
             # create vlan interface
+            ifconfig   "$PGW_INTERFACE_NAME_FOR_SGI".$i down" > /dev/null 2>&1
             vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i > /dev/null 2>&1
             sync
             bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
@@ -622,12 +632,20 @@ clean_epc_vlan_network() {
 
     bash_exec "modprobe 8021q"
 
-    ip link set $PGW_INTERFACE_NAME_FOR_SGI off > /dev/null 2>&1
+    ifconfig   "$MME_INTERFACE_NAME_FOR_S1_MME".1 down" > /dev/null 2>&1
+    vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME.1 > /dev/null 2>&1
+
+    ifconfig   "$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP".2 down" > /dev/null 2>&1
+    vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2 > /dev/null 2>&1
+
+
     for i in 5 6 7 8 9 10 11 12 13 14 15
     do
         # delete vlan interface
+        ifconfig   "$PGW_INTERFACE_NAME_FOR_SGI".$i down" > /dev/null 2>&1
         vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i > /dev/null 2>&1
     done
+    ip link set $PGW_INTERFACE_NAME_FOR_SGI down > /dev/null 2>&1
 }
 
 build_openvswitch_network() {
@@ -857,9 +875,6 @@ build_epc_ovs_network() {
         #This table can be used to avoid packets (connection really) to enter the NAT table:
         # iptables -t raw -I PREROUTING -i BRIDGE -s x.x.x.x -j NOTRACK.
 
-
-
-
         #bash_exec "$IPTABLES -t nat -A POSTROUTING -o $PGW_INTERFACE_NAME_FOR_SGI -j SNAT --to-source $PGW_IP_ADDR_FOR_SGI"
     else
         # # get ipv4 address from PGW_INTERFACE_NAME_FOR_SGI
@@ -872,6 +887,7 @@ build_epc_ovs_network() {
         for i in 5 6 7 8 9 10 11 12 13 14 15
         do
             # create vlan interface
+            ifconfig   "$PGW_INTERFACE_NAME_FOR_SGI".$i down" > /dev/null 2>&1
             vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i > /dev/null 2>&1
             sync
             bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
