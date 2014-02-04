@@ -417,10 +417,10 @@ clean_enb_vlan_network() {
 
 test_enb_vlan_network() {
     # TEST INTERFACES
-    ping -q -c 1 $MME_IPV4_ADDRESS_FOR_S1_MME > /dev/null 2>&1
-    if [ $? -ne 0 ]; then echo_fatal "PING MME S1_MME ERROR, ADDRESS IS $MME_IPV4_ADDRESS_FOR_S1_MME"; fi;
-    ping -q -c 1 $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP > /dev/null 2>&1
-    if [ $? -ne 0 ]; then echo_fatal "PING SGW S1U ERROR, ADDRESS IS $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP"; fi;
+    #ping -q -c 1 $MME_IPV4_ADDRESS_FOR_S1_MME > /dev/null 2>&1
+    #if [ $? -ne 0 ]; then echo_fatal "PING MME S1_MME ERROR, ADDRESS IS $MME_IPV4_ADDRESS_FOR_S1_MME"; fi;
+    #ping -q -c 1 $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP > /dev/null 2>&1
+    #if [ $? -ne 0 ]; then echo_fatal "PING SGW S1U ERROR, ADDRESS IS $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP"; fi;
     return 0
 }
 
