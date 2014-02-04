@@ -31,11 +31,13 @@ source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
 test_command_install_package "gccxml"   "gccxml" "--force-yes"
-test_command_install_package "vconfig"  "vlan"
+test_command_install_package "vconfig"  "vlan" "--force-yes"
 test_command_install_package "iptables" "iptables"
-test_command_install_package "iperf"    "iperf"
+test_command_install_package "iperf"    "iperf" "--force-yes"
 test_command_install_package "ip"       "iproute"
 test_command_install_package  "tunctl"  "uml-utilities"
+test_command_install_lib      "/usr/lib/libconfig.so"  "libconfig-dev"  "--force-yes"
+
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
         cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
@@ -113,8 +115,8 @@ cd $OPENAIRCN_DIR
 #######################################################
 # FIND CONFIG FILE
 #######################################################
-CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/epc.sfr.default_vlan.conf
-SEARCHED_CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/epc.sfr."$HOSTNAME"_vlan.conf
+CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/epc.sfr.default.vlan.conf
+SEARCHED_CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/epc.sfr."$HOSTNAME".vlan.conf
 if [ -f $SEARCHED_CONFIG_FILE ]; then
     CONFIG_FILE=$SEARCHED_CONFIG_FILE
     echo_warning "config file found is now $CONFIG_FILE"
@@ -160,8 +162,8 @@ declare SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP=$(echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_
 #declare PGW_IPV4_NETMASK_FOR_S5_S8=$(        echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f2 -d '/')
 declare PGW_IPV4_NETMASK_FOR_SGI=$(          echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f2 -d '/')
 
-ENB_IPV4_ADDRESS_FOR_S1_MME=$(               echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
-ENB_IPV4_ADDRESS_FOR_S1U=$(                  echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f1 -d '/')
+#ENB_IPV4_ADDRESS_FOR_S1_MME=$(               echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
+#ENB_IPV4_ADDRESS_FOR_S1U=$(                  echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f1 -d '/')
 MME_IPV4_ADDRESS_FOR_S1_MME=$(               echo $MME_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
 #MME_IPV4_ADDRESS_FOR_S11_MME=$(              echo $MME_IPV4_ADDRESS_FOR_S11_MME       | cut -f1 -d '/')
 #SGW_IPV4_ADDRESS_FOR_S11=$(                  echo $SGW_IPV4_ADDRESS_FOR_S11           | cut -f1 -d '/')
@@ -171,7 +173,7 @@ SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP=$(        echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_
 PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
 
 clean_epc_vlan_network
-build_epc_vlan_network
+build_mme_spgw_vlan_network
 test_epc_vlan_network
 
 ##################################################..
