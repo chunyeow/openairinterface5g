@@ -68,6 +68,7 @@ typedef struct RrcConfigurationReq_s {
     paging_drx_t        default_drx;
 
     lte_frame_type_t    frame_type;
+    int16_t             eutra_band;
 } RrcConfigurationReq;
 
 // UE: NAS -> RRC messages

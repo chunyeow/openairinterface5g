@@ -61,6 +61,8 @@
 #define ENB_CONFIG_STRING_DEFAULT_PAGING_DRX            "default_paging_drx"
 
 #define ENB_CONFIG_STRING_FRAME_TYPE                    "frame_type"
+#define ENB_CONFIG_STRING_TDD_CONFIG                    "tdd_config"
+#define ENB_CONFIG_STRING_TDD_CONFIG_S                  "tdd_config_s"
 #define ENB_CONFIG_STRING_PREFIX_TYPE                   "prefix_type"
 #define ENB_CONFIG_STRING_EUTRA_BAND                    "eutra_band"
 #define ENB_CONFIG_STRING_DOWNLINK_FREQUENCY            "downlink_frequency"
@@ -129,7 +131,7 @@ static int enb_check_band_frequencies(char* lib_config_file_name_pP,
                                       int32_t uplink_frequency_offset,
                                       lte_frame_type_t frame_type)
 {
-    int result = 0;
+    int errors = 0;
 
     if (band > 0)
     {
@@ -140,26 +142,28 @@ static int enb_check_band_frequencies(char* lib_config_file_name_pP,
             if (band == eutra_bands[band_index].band)
             {
                 uint32_t uplink_frequency = downlink_frequency + uplink_frequency_offset;
-                result = 1;
 
-                AssertError (eutra_bands[band_index].dl_min < downlink_frequency, result = 0, "Downlink frequency %u too low (%u) for band %d!",
-                             downlink_frequency, eutra_bands[band_index].dl_min, band);
-                AssertError (downlink_frequency < eutra_bands[band_index].dl_max, result = 0, "Downlink frequency %u too high (%u) for band %d!",
-                             downlink_frequency, eutra_bands[band_index].dl_max, band);
+                AssertError (eutra_bands[band_index].dl_min < downlink_frequency, errors ++,
+                             "Failed to parse eNB configuration file %s, enb %d downlink frequency %u too low (%u) for band %d!",
+                             lib_config_file_name_pP, enb_properties_index, downlink_frequency, eutra_bands[band_index].dl_min, band);
+                AssertError (downlink_frequency < eutra_bands[band_index].dl_max, errors ++,
+                             "Failed to parse eNB configuration file %s, enb %d downlink frequency %u too high (%u) for band %d!",
+                             lib_config_file_name_pP, enb_properties_index, downlink_frequency, eutra_bands[band_index].dl_max, band);
 
-                AssertError (eutra_bands[band_index].ul_min < uplink_frequency, result = 0, "Uplink frequency %u too low (%u) for band %d!",
-                             uplink_frequency, eutra_bands[band_index].ul_min, band);
-                AssertError (uplink_frequency < eutra_bands[band_index].ul_max, result = 0, "Uplink frequency %u too high (%u) for band %d!",
-                             uplink_frequency, eutra_bands[band_index].ul_max, band);
+                AssertError (eutra_bands[band_index].ul_min < uplink_frequency, errors ++,
+                             "Failed to parse eNB configuration file %s, enb %d uplink frequency %u too low (%u) for band %d!",
+                             lib_config_file_name_pP, enb_properties_index, uplink_frequency, eutra_bands[band_index].ul_min, band);
+                AssertError (uplink_frequency < eutra_bands[band_index].ul_max, errors ++,
+                             "Failed to parse eNB configuration file %s, enb %d uplink frequency %u too high (%u) for band %d!",
+                             lib_config_file_name_pP, enb_properties_index, uplink_frequency, eutra_bands[band_index].ul_max, band);
 
-                AssertError (eutra_bands[band_index].frame_type == frame_type, result = 0, "Invalid frame type (%d/%d) for band %d!",
-                        eutra_bands[band_index].frame_type, frame_type, band);
-
-                AssertFatal (result == 1, "Invalid settings for eNB %d in file %s!", enb_properties_index, lib_config_file_name_pP);
+                AssertError (eutra_bands[band_index].frame_type == frame_type, errors ++,
+                             "Failed to parse eNB configuration file %s, enb %d invalid frame type (%d/%d) for band %d!",
+                             lib_config_file_name_pP, enb_properties_index, eutra_bands[band_index].frame_type, frame_type, band);
             }
         }
     }
-    return result;
+    return errors;
 }
 
 const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
@@ -174,7 +178,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   int               num_mme_address;
   int               i;
   int               j;
-  int               parse_error = 0;
+  int               parse_errors = 0;
   long int          enb_id;
   const char*       cell_type;
   long int          tac;
@@ -183,6 +187,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   long int          mnc;
   const char*       default_drx;
   const char*       frame_type;
+  long int          tdd_config;
+  long int          tdd_config_s;
   const char*       prefix_type;
   long int          eutra_band;
   double            downlink_frequency;
@@ -234,7 +240,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   if(setting != NULL)
   {
       enb_properties_index = 0;
-      parse_error      = 0;
+      parse_errors      = 0;
       num_enbs = config_setting_length(setting);
       for (i = 0; i < num_enbs; i++) {
           setting_enb = config_setting_get_elem(setting, i);
@@ -259,7 +265,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                      && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_DEFAULT_PAGING_DRX,  &default_drx)
                 )
             ) {
-              AssertError (0, parse_error ++,
+              AssertError (0, parse_errors ++,
                       "Failed to parse eNB configuration file %s, %u th enb\n",
                       lib_config_file_name_pP, i);
           }
@@ -274,7 +280,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                   } else  if (strcmp(cell_type, "CELL_HOME_ENB") == 0) {
                       enb_properties.properties[enb_properties_index]->cell_type = CELL_HOME_ENB;
                   } else {
-                      AssertError (0, parse_error ++,
+                      AssertError (0, parse_errors ++,
                               "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for cell_type choice: CELL_MACRO_ENB or CELL_HOME_ENB !\n",
                               lib_config_file_name_pP, i, cell_type);
                   }
@@ -292,7 +298,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                   } else  if (strcmp(default_drx, "PAGING_DRX_256") == 0) {
                       enb_properties.properties[enb_properties_index]->default_drx = PAGING_DRX_256;
                   } else {
-                      AssertError (0, parse_error ++,
+                      AssertError (0, parse_errors ++,
                               "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for default_drx choice: PAGING_DRX_32..PAGING_DRX_256 !\n",
                               lib_config_file_name_pP, i, default_drx);
                   }
@@ -304,12 +310,30 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       } else  if (strcmp(frame_type, "TDD") == 0) {
                           enb_properties.properties[enb_properties_index]->frame_type = TDD;
                       } else {
-                          AssertError (0, parse_error ++,
+                          AssertError (0, parse_errors ++,
                                   "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for frame_type choice: FDD or TDD !\n",
                                   lib_config_file_name_pP, i, frame_type);
                       }
                   } else {
                       enb_properties.properties[enb_properties_index]->frame_type = FDD; // Default frame type
+                  }
+
+                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_TDD_CONFIG, &tdd_config)) {
+                      enb_properties.properties[enb_properties_index]->tdd_config = tdd_config;
+                      AssertError (tdd_config <= TDD_Config__subframeAssignment_sa6, parse_errors ++,
+                              "Failed to parse eNB configuration file %s, enb %d illegal tdd_config %ld (should be 0-%d)!",
+                              lib_config_file_name_pP, i, tdd_config, TDD_Config__subframeAssignment_sa6);
+                  } else {
+                      enb_properties.properties[enb_properties_index]->tdd_config = 3; // Default TDD sub-frame configuration
+                  }
+
+                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_TDD_CONFIG_S, &tdd_config_s)) {
+                      enb_properties.properties[enb_properties_index]->tdd_config_s = tdd_config_s;
+                      AssertError (tdd_config_s <= TDD_Config__specialSubframePatterns_ssp8, parse_errors ++,
+                              "Failed to parse eNB configuration file %s, enb %d illegal tdd_config_s %ld (should be 0-%d)!",
+                              lib_config_file_name_pP, i, tdd_config_s, TDD_Config__specialSubframePatterns_ssp8);
+                  } else {
+                      enb_properties.properties[enb_properties_index]->tdd_config_s = 0; // Default TDD S-sub-frame configuration
                   }
 
                   if(config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_PREFIX_TYPE, &prefix_type)) {
@@ -318,7 +342,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       } else  if (strcmp(prefix_type, "EXTENDED") == 0) {
                           enb_properties.properties[enb_properties_index]->prefix_type = EXTENDED;
                       } else {
-                          AssertError (0, parse_error ++,
+                          AssertError (0, parse_errors ++,
                                   "Failed to parse eNB configuration file %s, enb %d unknown value \"%s\" for prefix_type choice: NORMAL or EXTENDED !\n",
                                   lib_config_file_name_pP, i, prefix_type);
                       }
@@ -349,12 +373,12 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       }
                   }
 
-                  enb_check_band_frequencies(lib_config_file_name_pP,
-                                             enb_properties_index,
-                                             enb_properties.properties[enb_properties_index]->eutra_band,
-                                             enb_properties.properties[enb_properties_index]->downlink_frequency,
-                                             enb_properties.properties[enb_properties_index]->uplink_frequency_offset,
-                                             enb_properties.properties[enb_properties_index]->frame_type);
+                  parse_errors += enb_check_band_frequencies(lib_config_file_name_pP,
+                                                             enb_properties_index,
+                                                             enb_properties.properties[enb_properties_index]->eutra_band,
+                                                             enb_properties.properties[enb_properties_index]->downlink_frequency,
+                                                             enb_properties.properties[enb_properties_index]->uplink_frequency_offset,
+                                                             enb_properties.properties[enb_properties_index]->frame_type);
 
                   setting_mme_addresses = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_MME_IP_ADDRESS);
                   num_mme_address     = config_setting_length(setting_mme_addresses);
@@ -368,7 +392,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                               && config_setting_lookup_string(setting_mme_address, ENB_CONFIG_STRING_MME_IP_ADDRESS_PREFERENCE, (const char **)&preference)
                             )
                         ) {
-                          AssertError (0, parse_error ++,
+                          AssertError (0, parse_errors ++,
                                   "Failed to parse eNB configuration file %s, %u th enb %u th mme address !\n",
                                   lib_config_file_name_pP, i, j);
                       }
@@ -400,13 +424,13 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   }
   enb_properties.number = num_enb_properties;
 
-  AssertError (enb_properties_index == num_enb_properties, parse_error ++,
+  AssertError (enb_properties_index == num_enb_properties, parse_errors ++,
           "Failed to parse eNB configuration file %s, mismatch between %u active eNBs and %u corresponding defined eNBs !\n",
           lib_config_file_name_pP, num_enb_properties, enb_properties_index);
 
-  AssertFatal (parse_error == 0,
+  AssertFatal (parse_errors == 0,
                "Failed to parse eNB configuration file %s, found %d error%s !\n",
-               lib_config_file_name_pP, parse_error, parse_error > 1 ? "s" : "");
+               lib_config_file_name_pP, parse_errors, parse_errors > 1 ? "s" : "");
 
   return &enb_properties;
 }

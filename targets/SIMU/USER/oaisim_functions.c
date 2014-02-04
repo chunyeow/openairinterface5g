@@ -325,10 +325,8 @@ void get_simulation_options(int argc, char *argv[]) {
 
     case 'C':
       oai_emulation.info.tdd_config = atoi (optarg);
-      if (oai_emulation.info.tdd_config > 6) {
-        printf("Illegal tdd_config %d (should be 0-6)\n", oai_emulation.info.tdd_config);
-        exit (-1);
-      }
+      AssertFatal (oai_emulation.info.tdd_config <= TDD_Config__subframeAssignment_sa6, "Illegal tdd_config %d (should be 0-%d)!",
+                   oai_emulation.info.tdd_config, TDD_Config__subframeAssignment_sa6);
       break;
 
     case 'D':
@@ -601,8 +599,9 @@ void get_simulation_options(int argc, char *argv[]) {
 
       /* Update some simulation parameters */
       oai_emulation.info.frame_type =           enb_properties->properties[0]->frame_type;
+      oai_emulation.info.tdd_config =           enb_properties->properties[0]->tdd_config;
+      oai_emulation.info.tdd_config_S =         enb_properties->properties[0]->tdd_config_s;
       oai_emulation.info.extended_prefix_flag = enb_properties->properties[0]->prefix_type;
-
   }
 }
 

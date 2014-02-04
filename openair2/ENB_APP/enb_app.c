@@ -86,6 +86,7 @@ static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_pro
     RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties->properties[enb_id]->mnc;
     RRC_CONFIGURATION_REQ (msg_p).default_drx =     enb_properties->properties[enb_id]->default_drx;
     RRC_CONFIGURATION_REQ (msg_p).frame_type =      enb_properties->properties[enb_id]->frame_type;
+    RRC_CONFIGURATION_REQ (msg_p).eutra_band =      enb_properties->properties[enb_id]->eutra_band;
 
     itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
 }

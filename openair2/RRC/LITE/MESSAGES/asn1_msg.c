@@ -503,7 +503,12 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
   (*sib1)->cellSelectionInfo.q_RxLevMin=-65;
   (*sib1)->cellSelectionInfo.q_RxLevMinOffset=NULL;
 
-  (*sib1)->freqBandIndicator = 7;
+  (*sib1)->freqBandIndicator =
+#if defined(ENABLE_ITTI)
+          configuration->eutra_band;
+#else
+          7;
+#endif
 
   schedulingInfo.si_Periodicity=SchedulingInfo__si_Periodicity_rf8;
 
@@ -518,11 +523,11 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
   if (configuration->frame_type == TDD)
 #endif
   {
-      (*sib1)->tdd_Config = CALLOC(1,sizeof(struct TDD_Config));
+      (*sib1)->tdd_Config =                             CALLOC(1,sizeof(struct TDD_Config));
 
-      (*sib1)->tdd_Config->subframeAssignment=frame_parms->tdd_config; //TDD_Config__subframeAssignment_sa3;
+      (*sib1)->tdd_Config->subframeAssignment =         frame_parms->tdd_config;
 
-      (*sib1)->tdd_Config->specialSubframePatterns=0;//frame_parms->tdd_config_S;//TDD_Config__specialSubframePatterns_ssp0;
+      (*sib1)->tdd_Config->specialSubframePatterns =    frame_parms->tdd_config_S;
   }
 
   (*sib1)->si_WindowLength=SystemInformationBlockType1__si_WindowLength_ms20;

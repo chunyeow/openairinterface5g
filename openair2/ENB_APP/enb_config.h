@@ -85,6 +85,8 @@ typedef struct Enb_properties_s {
 
     /* Physical parameters */
     lte_frame_type_t    frame_type;
+    uint8_t             tdd_config;
+    uint8_t             tdd_config_s;
     lte_prefix_type_t   prefix_type;
     int16_t             eutra_band;
     uint32_t            downlink_frequency;
