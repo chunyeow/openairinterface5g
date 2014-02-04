@@ -2817,10 +2817,9 @@ int rrc_eNB_decode_dcch (u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index,
   UL_DCCH_Message_t *ul_dcch_msg = NULL;        //&uldcchmsg;
   UE_EUTRA_Capability_t *UE_EUTRA_Capability = NULL;
 
-  if (Srb_id != 1)
+  if ((Srb_id != 1) && (Srb_id != 2))
     {
-      LOG_E (RRC,
-             "[eNB %d] Frame %d: Received message on SRB%d, should not have ...\n",
+      LOG_E (RRC, "[eNB %d] Frame %d: Received message on SRB%d, should not have ...\n",
              Mod_id, frame, Srb_id);
     }
 
