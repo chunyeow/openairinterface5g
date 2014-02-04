@@ -174,7 +174,7 @@ PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI        
 
 clean_epc_vlan_network
 build_mme_spgw_vlan_network
-test_epc_vlan_network
+#test_epc_vlan_network
 
 ##################################################..
 

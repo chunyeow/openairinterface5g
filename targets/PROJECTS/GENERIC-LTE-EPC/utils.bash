@@ -647,7 +647,7 @@ clean_epc_vlan_network() {
         ifconfig    $PGW_INTERFACE_NAME_FOR_SGI.$i down > /dev/null 2>&1
         vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i      > /dev/null 2>&1
     done
-    ip link set $PGW_INTERFACE_NAME_FOR_SGI down > /dev/null 2>&1
+    #ip link set $PGW_INTERFACE_NAME_FOR_SGI down > /dev/null 2>&1
 }
 
 build_openvswitch_network() {

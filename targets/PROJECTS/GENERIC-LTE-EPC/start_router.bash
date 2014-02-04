@@ -160,20 +160,23 @@ bash_exec "modprobe 8021q"
 
 for i in 5 6 7 8 9 10 11 12 13 14 15
 do
+    ifconfig $INTIF.$i down > /dev/null 2>&1
+    sync
     vconfig rem $INTIF.$i > /dev/null 2>&1
     sync
+done
+
+for i in 5 6 7 8 9 10 11 12 13 14 15
+do
     bash_exec "vconfig add $INTIF $i"
     sync
     NET=$(( $i + 200 ))
     CIDR='10.0.'$NET'.1/8'
-    bash_exec "ip -4 addr add $CIDR broadcast 192.174.$NET.255 dev $INTIF.$i"
+    bash_exec "ip -4 addr add $CIDR dev $INTIF.$i"
     bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF.$i -m state --state ESTABLISHED,RELATED -j ACCEPT"
     bash_exec "iptables -A FORWARD -i $INTIF.$i -o $EXTIF -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
     bash_exec "echo 1 > /proc/sys/net/ipv4/conf/$INTIF.$i/proxy_arp"
     bash_exec "echo 0 > /proc/sys/net/ipv4/conf/$INTIF.$i/rp_filter"
-    #assert "  `sysctl -n net.ipv4.conf.$INTIF.$i.proxy_arp` -eq 1" $LINENO
-    #assert "  `sysctl -n net.ipv4.conf.$INTIF.$i.rp_forward` -eq 0" $LINENO
-    #assert "  `sysctl -n net.ipv4.conf.$INTIF.$i.rp_filter` -eq 0" $LINENO
 done
 for i in 5 6 7 8 9 10 11 12 13 14 15
 do
