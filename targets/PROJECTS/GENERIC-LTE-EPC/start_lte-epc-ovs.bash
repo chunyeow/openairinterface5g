@@ -202,7 +202,6 @@ PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8   
 PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
 
 clean_epc_ovs_network
-exit
 build_epc_ovs_network
 test_epc_ovs_network
 
