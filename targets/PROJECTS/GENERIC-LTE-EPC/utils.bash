@@ -387,7 +387,7 @@ build_enb_vlan_network() {
         sync
         bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1_MME 1"
         sync
-        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME.1"
+        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME/$ENB_IPV4_NETMASK_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME.1"
     else
         echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME $ENB_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx)'
     fi;
@@ -399,7 +399,7 @@ build_enb_vlan_network() {
         sync
         bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1U 2"
         sync
-        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U".2
+        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U/$ENB_IPV4_NETMASK_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U".2
         sync
     else
         echo_fatal "BAD INTERFACE NAME FOR ENB S1U $ENB_INTERFACE_NAME_FOR_S1U"' (waiting for ethx)'
@@ -478,7 +478,7 @@ build_mme_spgw_vlan_network() {
         sync
         bash_exec "vconfig add $MME_INTERFACE_NAME_FOR_S1_MME 1"
         sync
-        bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME.1"
+        bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME/$MME_IPV4_NETMASK_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME.1"
     else
         echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME $MME_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx)'
     fi;
@@ -490,7 +490,7 @@ build_mme_spgw_vlan_network() {
         sync
         bash_exec "vconfig add $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP 2"
         sync
-        bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2"
+        bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP/$SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2"
         sync
     else
         echo_fatal "BAD INTERFACE NAME FOR SGW S1U $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"' (waiting for ethx)'
