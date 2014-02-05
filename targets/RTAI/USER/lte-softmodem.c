@@ -113,65 +113,13 @@ unsigned short config_frames[4] = {2,9,11,13};
 #ifdef XFORMS
 #include "PHY/TOOLS/lte_phy_scope.h"
 #include "stats.h"
-// current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
-// at eNB 0, an UL scope for every UE 
-FD_lte_phy_scope_ue  *form_ue[NUMBER_OF_UE_MAX];
-FD_lte_phy_scope_enb *form_enb[NUMBER_OF_UE_MAX];
-FD_stats_form *form_stats=NULL;
-char title[255];
-unsigned char scope_enb_num_ue = 1;
-#endif //XFORMS
-
-#define FRAME_PERIOD 100000000ULL
-#define DAQ_PERIOD 66667ULL
-
-#ifdef RTAI
-static SEM *mutex;
-//static CND *cond;
-
-static int thread0;
-static int thread1;
-//static int sync_thread;
-#else
-pthread_t thread0;
-pthread_t thread1;
-pthread_attr_t attr_dlsch_threads;
-struct sched_param sched_param_dlsch;
 #endif
 
-pthread_t  thread2; //xforms
-pthread_t  thread3; //emos
+#define FRAME_PERIOD    100000000ULL
+#define DAQ_PERIOD      66667ULL
 
-/*
-static int instance_cnt=-1; //0 means worker is busy, -1 means its free
-int instance_cnt_ptr_kern,*instance_cnt_ptr_user;
-int pci_interface_ptr_kern;
-*/
-//extern unsigned int bigphys_top;
-//extern unsigned int mem_base;
-
-int card = 0;
-exmimo_config_t *p_exmimo_config;
-exmimo_id_t     *p_exmimo_id;
-volatile unsigned int *DAQ_MBOX;
-
-#if defined(ENABLE_ITTI)
-volatile int start_eNB = 0;
-#endif
-volatile int oai_exit = 0;
-
-//int time_offset[4] = {-138,-138,-138,-138};
-//int time_offset[4] = {-145,-145,-145,-145};
-int time_offset[4] = {0,0,0,0};
-
-int fs4_test=0;
-char UE_flag=0;
-u8  eNB_id=0,UE_id=0;
-
-u32 carrier_freq[4] =           {1907600000,1907600000,1907600000,1907600000}; /* For UE! */
-u32 downlink_frequency[4] =     {1907600000,1907600000,1907600000,1907600000};
-s32 uplink_frequency_offset[4]= {-120000000,-120000000,-120000000,-120000000};
-static char *conf_config_file_name = NULL;
+#define MY_RF_MODE      (RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX)
+#define RF_MODE_BASE    (TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM)
 
 struct timing_info_t {
   //unsigned int frame, hw_slot, last_slot, next_slot;
@@ -183,19 +131,6 @@ struct timing_info_t {
 extern s16* sync_corr_ue0;
 extern s16 prach_ifft[4][1024*2];
 
-
-runmode_t mode;
-int rx_input_level_dBm;
-#ifdef XFORMS
-extern int otg_enabled;
-#else
-int otg_enabled;
-#endif
-int number_of_cards = 1;
-
-int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
-//int mbox_bounds[20] = {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
-
 int init_dlsch_threads(void);
 void cleanup_dlsch_threads(void);
 s32 init_rx_pdsch_thread(void);
@@ -203,11 +138,117 @@ void cleanup_rx_pdsch_thread(void);
 int init_ulsch_threads(void);
 void cleanup_ulsch_threads(void);
 
-LTE_DL_FRAME_PARMS *frame_parms;
-
 void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 void test_config(int card, int ant, unsigned int rf_mode, int UE_flag);
+
+#ifdef XFORMS
+// current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
+// at eNB 0, an UL scope for every UE 
+FD_lte_phy_scope_ue  *form_ue[NUMBER_OF_UE_MAX];
+FD_lte_phy_scope_enb *form_enb[NUMBER_OF_UE_MAX];
+FD_stats_form                  *form_stats=NULL;
+char title[255];
+unsigned char                   scope_enb_num_ue = 1;
+#endif //XFORMS
+
+#ifdef RTAI
+static SEM                     *mutex;
+//static CND *cond;
+
+static int                      thread0;
+static int                      thread1;
+//static int sync_thread;
+#else
+pthread_t                       thread0;
+pthread_t                       thread1;
+pthread_attr_t                  attr_dlsch_threads;
+struct sched_param              sched_param_dlsch;
+#endif
+
+#ifdef XFORMS
+static pthread_t                thread2; //xforms
+#endif
+#ifdef EMOS
+static pthread_t                thread3; //emos
+#endif
+
+/*
+static int instance_cnt=-1; //0 means worker is busy, -1 means its free
+int instance_cnt_ptr_kern,*instance_cnt_ptr_user;
+int pci_interface_ptr_kern;
+*/
+//extern unsigned int bigphys_top;
+//extern unsigned int mem_base;
+
+int                             card = 0;
+static exmimo_config_t         *p_exmimo_config;
+static exmimo_id_t             *p_exmimo_id;
+static volatile unsigned int   *DAQ_MBOX;
+
+#if defined(ENABLE_ITTI)
+static volatile int             start_eNB = 0;
+static volatile int             start_UE = 0;
+#endif
+volatile int                    oai_exit = 0;
+
+//static int                      time_offset[4] = {-138,-138,-138,-138};
+//static int                      time_offset[4] = {-145,-145,-145,-145};
+static int                      time_offset[4] = {0,0,0,0};
+
+static int                      fs4_test=0;
+static char                     UE_flag=0;
+static u8                       eNB_id=0,UE_id=0;
+
+u32                             carrier_freq[4] =           {1907600000,1907600000,1907600000,1907600000}; /* For UE! */
+static u32                      downlink_frequency[4] =     {1907600000,1907600000,1907600000,1907600000};
+static s32                      uplink_frequency_offset[4]= {-120000000,-120000000,-120000000,-120000000};
+static char                    *conf_config_file_name = NULL;
+
+static char                    *itti_dump_file = NULL;
+
+static char                     rxg_fname[100];
+static char                     txg_fname[100];
+static char                     rflo_fname[100];
+static char                     rfdc_fname[100];
+static FILE                    *rxg_fd=NULL;
+static FILE                    *txg_fd=NULL;
+static FILE                    *rflo_fd=NULL;
+static FILE                    *rfdc_fd=NULL;
+static unsigned int             rxg_max[4] =    {133,133,133,133};
+static unsigned int             rxg_med[4] =    {127,127,127,127};
+static unsigned int             rxg_byp[4] =    {120,120,120,120};
+static int                      tx_max_power =  0;
+
+/*
+u32 rf_mode_max[4]     = {55759,55759,55759,55759};
+u32 rf_mode_med[4]     = {39375,39375,39375,39375};
+u32 rf_mode_byp[4]     = {22991,22991,22991,22991};
+*/
+static u32                      rf_mode[4] =        {MY_RF_MODE,0,0,0};
+static u32                      rf_local[4] =       {8255000,8255000,8255000,8255000}; // UE zepto
+  //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
+  //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
+
+static u32                      rf_vcocal[4] =      {910,910,910,910};
+static u32                      rf_vcocal_850[4] =  {2015, 2015, 2015, 2015};
+static u32                      rf_rxdc[4] =        {32896,32896,32896,32896};
+static u32                      rxgain[4] =         {20,20,20,20};
+static u32                      txgain[4] =         {20,20,20,20};
+
+static runmode_t                mode;
+static int                      rx_input_level_dBm;
+#ifdef XFORMS
+extern int                      otg_enabled;
+#else
+int                             otg_enabled;
+#endif
+int                             number_of_cards =   1;
+
+static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+//static int                      mbox_bounds[20] =   {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+
+static LTE_DL_FRAME_PARMS      *frame_parms;
 
 unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
 {
@@ -523,6 +564,14 @@ void *l2l1_task(void *arg)
           itti_exit_task ();
           break;
 
+        case ACTIVATE_MESSAGE:
+          start_UE = 1;
+          break;
+
+        case DEACTIVATE_MESSAGE:
+          start_UE = 0;
+          break;
+
         case MESSAGE_TEST:
           LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
           break;
@@ -563,7 +612,7 @@ static void *eNB_thread(void *arg)
     int i = 0;
 
     while ((!oai_exit) && (start_eNB == 0)) {
-      LOG_D(HW,"Waiting for eNB application to be ready %s\r", indicator[i]);
+      LOG_N(HW,"Waiting for eNB application to be ready %s\r", indicator[i]);
       i = (i + 1) % (sizeof(indicator) / sizeof(indicator[0]));
       usleep(200000);
     }
@@ -801,6 +850,21 @@ static void *UE_thread(void *arg)
   int diff2;
   int i, ret;
 
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+  /* Wait for NAS UE to start cell selection */
+  {
+    char *indicator[] = {".  ", ".. ", "...", " ..", "  .", "   "};
+    int i = 0;
+
+    while ((!oai_exit) && (start_UE == 0)) {
+      LOG_N(HW,"Waiting for UE to be activated %s\r", indicator[i]);
+      i = (i + 1) % (sizeof(indicator) / sizeof(indicator[0]));
+      usleep(200000);
+    }
+    LOG_D(HW,"\n");
+  }
+#endif
+
 #ifdef RTAI
   task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
   LOG_D(HW,"Started UE thread (id %p)\n",task);
@@ -1015,75 +1079,13 @@ static void *UE_thread(void *arg)
   return 0;
 }
 
-int main(int argc, char **argv) {
-  const Enb_properties_array_t *enb_properties;
+void get_options (int argc, char **argv)
+{
+  int   c;
+  char  line[1000];
+  int   l;
 
-#ifdef RTAI
-  // RT_TASK *task;
-#endif
-  int i,j,aa;
-#if defined (XFORMS) || defined (EMOS) || (! defined (RTAI))
-  void *status;
-#endif
-
-  /*
-  u32 rf_mode_max[4]     = {55759,55759,55759,55759};
-  u32 rf_mode_med[4]     = {39375,39375,39375,39375};
-  u32 rf_mode_byp[4]     = {22991,22991,22991,22991};
-  */
-  u32 my_rf_mode = RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX;
-  u32 rf_mode_base = TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM;
-  u32 rf_mode[4]     = {my_rf_mode,0,0,0};
-  u32 rf_local[4]    = {8255000,8255000,8255000,8255000}; // UE zepto
-    //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
-    //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
-
-  u32 rf_vcocal[4]   = {910,910,910,910};
-  u32 rf_vcocal_850[4] = {2015, 2015, 2015, 2015};
-  u32 rf_rxdc[4]     = {32896,32896,32896,32896};
-  u32 rxgain[4]      = {20,20,20,20};
-  u32 txgain[4]      = {20,20,20,20};
-
-  u16 Nid_cell = 0;
-  u8  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
-#ifndef OPENAIR2
-  u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
-#endif
-
-  int c;
-#ifdef XFORMS
-  char do_forms=0;
-#endif
-#ifdef ENABLE_TCXO
-  unsigned int tcxo = 114;
-#endif
-
-  int amp;
-  // u8 prach_fmt;
-  // int N_ZC;
-
-  char rxg_fname[100];
-  char txg_fname[100];
-  char rflo_fname[100];
-  char rfdc_fname[100];
-  FILE *rxg_fd=NULL;
-  FILE *txg_fd=NULL;
-  FILE *rflo_fd=NULL;
-  FILE *rfdc_fd=NULL;
-  unsigned int rxg_max[4]={133,133,133,133}, rxg_med[4]={127,127,127,127}, rxg_byp[4]={120,120,120,120};
-  int tx_max_power=0;
-
-  char line[1000];
-  int l;
-  int ret, ant;
-  int ant_offset=0;
-
-#if defined (EMOS) || (! defined (RTAI))
-  int error_code;
-#endif
-  char *itti_dump_file = NULL;
-
-  const struct option long_options[] = {
+  static const struct option long_options[] = {
     {"calib-ue-rx", required_argument, NULL, 256},
     {"calib-ue-rx-med", required_argument, NULL, 257},
     {"calib-ue-rx-byp", required_argument, NULL, 258},
@@ -1091,16 +1093,13 @@ int main(int argc, char **argv) {
     {"no-L2-connect", no_argument, NULL, 260},
     {NULL, 0, NULL, 0}};
 
-  mode = normal_txrx;
-
-
   while ((c = getopt_long (argc, argv, "C:K:O:ST:UdF:V",long_options,NULL)) != -1)
     {
       switch (c)
         {
-	case 'V':
+    case 'V':
           ouput_vcd = 1;
-	  break;
+      break;
         case 'd':
 #ifdef XFORMS
           do_forms=1;
@@ -1221,6 +1220,47 @@ int main(int argc, char **argv) {
           break;
         }
     }
+
+}
+
+int main(int argc, char **argv) {
+  const Enb_properties_array_t *enb_properties;
+
+#ifdef RTAI
+  // RT_TASK *task;
+#endif
+  int i,j,aa;
+#if defined (XFORMS) || defined (EMOS) || (! defined (RTAI))
+  void *status;
+#endif
+
+  u16 Nid_cell = 0;
+  u8  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
+#ifndef OPENAIR2
+  u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
+#endif
+
+#ifdef XFORMS
+  char do_forms=0;
+#endif
+#ifdef ENABLE_TCXO
+  unsigned int tcxo = 114;
+#endif
+
+  int amp;
+  // u8 prach_fmt;
+  // int N_ZC;
+
+  int ret, ant;
+  int ant_offset=0;
+
+#if defined (EMOS) || (! defined (RTAI))
+  int error_code;
+#endif
+
+  mode = normal_txrx;
+
+  get_options (argc, argv); //Command-line options
 
   frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
 
@@ -1553,7 +1593,7 @@ int main(int argc, char **argv) {
 #endif
 
   for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
-    p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
+    p_exmimo_config->rf.rf_mode[ant] = RF_MODE_BASE;
   for (ant=0;ant<frame_parms->nb_antennas_tx;ant++)
     p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
   for (ant=0;ant<frame_parms->nb_antennas_rx;ant++)
