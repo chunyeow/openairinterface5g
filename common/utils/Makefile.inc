@@ -17,4 +17,5 @@ UTILS_OBJS = $(ITTI_OBJS) $(HASHTABLE_OBJS)
 
 UTILS_incl = 				\
     -I$(COMMON_UTILS_DIR)   \
+    -I$(HASHTABLE_DIR)      \
 	-I$(ITTI_DIR)
