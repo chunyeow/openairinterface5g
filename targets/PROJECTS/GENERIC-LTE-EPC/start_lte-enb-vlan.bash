@@ -50,6 +50,45 @@ test_command_install_package "ip"       "iproute"
 test_command_install_package "tunctl"  "uml-utilities"
 test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
 
+#######################################################
+# FIND CONFIG FILE
+#######################################################
+CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/enb.sfr.default.vlan.conf
+SEARCHED_CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/enb.sfr."$HOSTNAME".vlan.conf
+if [ -f $SEARCHED_CONFIG_FILE ]; then
+    CONFIG_FILE=$SEARCHED_CONFIG_FILE
+    echo_warning "config file found is now $CONFIG_FILE"
+else
+    echo_warning "config file $SEARCHED_CONFIG_FILE for host $HOSTNAME not found, trying default: $CONFIG_FILE"
+    if [ -f $CONFIG_FILE ]; then
+        echo_success "Default config file found: $CONFIG_FILE"
+    else
+        echo_error "Default config file not found, exiting"
+        exit 1
+    fi
+fi
+
+#######################################################
+# SOURCE CONFIG FILE
+#######################################################
+rm -f /tmp/source.txt
+VARIABLES="
+           ENB_INTERFACE_NAME_FOR_S1_MME\|\
+           ENB_IPV4_ADDRESS_FOR_S1_MME\|\
+           ENB_INTERFACE_NAME_FOR_S1U\|\
+           ENB_IPV4_ADDRESS_FOR_S1U"
+
+VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
+VARIABLES=$(echo $VARIABLES | tr -d ' ')
+cat $CONFIG_FILE | grep -w "$VARIABLES"| tr -d " " | tr -d ";" > /tmp/source.txt
+source /tmp/source.txt
+
+declare ENB_IPV4_NETMASK_FOR_S1_MME=$(       echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f2 -d '/')
+declare ENB_IPV4_NETMASK_FOR_S1U=$(       echo $ENB_IPV4_ADDRESS_FOR_S1U        | cut -f2 -d '/')
+
+ENB_IPV4_ADDRESS_FOR_S1_MME=$(               echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
+ENB_IPV4_ADDRESS_FOR_S1U=$(                  echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f1 -d '/')
+
 
 #######################################################
 # USIM, NVRAM files
@@ -76,7 +115,9 @@ fi
 # NETWORK TOPOLOGY
 ##################################################
 clean_enb_vlan_network
+echo_success "clean_enb_vlan_network Done"
 build_enb_vlan_network
+echo_success "build_enb_vlan_network Done"
 test_enb_vlan_network
 
 ##################################################
@@ -125,23 +166,6 @@ ITTI_LOG_FILE=/tmp/itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
 
 
-#######################################################
-# FIND CONFIG FILE
-#######################################################
-CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/enb.sfr.default_vlan.conf
-SEARCHED_CONFIG_FILE=$THIS_SCRIPT_PATH/CONF/enb.sfr."$HOSTNAME"_vlan.conf
-if [ -f $SEARCHED_CONFIG_FILE ]; then
-    CONFIG_FILE=$SEARCHED_CONFIG_FILE
-    echo_warning "config file found is now $CONFIG_FILE"
-else
-    echo_warning "config file $SEARCHED_CONFIG_FILE for host $HOSTNAME not found, trying default: $CONFIG_FILE"
-    if [ -f $CONFIG_FILE ]; then
-        echo_success "Default config file found: $CONFIG_FILE"
-    else
-        echo_error "Default config file not found, exiting"
-        exit 1
-    fi
-fi
 
 gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE
 

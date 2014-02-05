@@ -324,6 +324,9 @@ check_for_root_rights() {
 }
 
 is_openvswitch_interface() {
+   if [ "a$1" == "a" ]; then
+       return 0
+   fi
    if [ "a${1:0:3}" == "aeth" ]; then
        return 0;
    else 
@@ -339,6 +342,9 @@ is_openvswitch_interface() {
 }
 
 is_real_interface() {
+   if [ "a$1" == "a" ]; then
+       return 0
+   fi
    IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $1 | sed 's/^.*NAME=//' | tr -d '"'`
    if [ "$IF" == "$1" ]; then
        if [ "a${1:0:3}" == "aeth" ]; then
@@ -379,7 +385,7 @@ build_enb_vlan_network() {
         ifconfig    $ENB_INTERFACE_NAME_FOR_S1_MME.1 down > /dev/null 2>&1
         vconfig rem $ENB_INTERFACE_NAME_FOR_S1_MME.1      > /dev/null 2>&1
         sync
-        bash_exec "vconfig add ENB_INTERFACE_NAME_FOR_S1_MME 1"
+        bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1_MME 1"
         sync
         bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME.1"
     else
@@ -391,7 +397,7 @@ build_enb_vlan_network() {
         ifconfig    $ENB_INTERFACE_NAME_FOR_S1U.2 down > /dev/null 2>&1
         vconfig rem $ENB_INTERFACE_NAME_FOR_S1U.2      > /dev/null 2>&1
         sync
-        bash_exec "vconfig add ENB_INTERFACE_NAME_FOR_S1U 2"
+        bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1U 2"
         sync
         bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U".2
         sync
