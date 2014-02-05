@@ -1079,35 +1079,63 @@ static void *UE_thread(void *arg)
   return 0;
 }
 
-void get_options (int argc, char **argv)
+enum {
+  LONG_OPTION_START = 0x100, /* Start after regular single char options */
+
+  LONG_OPTION_CALIB_UE_RX,
+  LONG_OPTION_CALIB_UE_RX_MED,
+  LONG_OPTION_CALIB_UE_RX_BYP,
+
+  LONG_OPTION_DEBUG_UE_PRACH,
+
+  LONG_OPTION_NO_L2_CONNECT,
+} long_option_e;
+
+static void get_options (int argc, char **argv)
 {
-  int   c;
-  char  line[1000];
-  int   l;
+  int                           c;
+  char                          line[1000];
+  int                           l;
+  const Enb_properties_array_t *enb_properties;
 
   static const struct option long_options[] = {
-    {"calib-ue-rx", required_argument, NULL, 256},
-    {"calib-ue-rx-med", required_argument, NULL, 257},
-    {"calib-ue-rx-byp", required_argument, NULL, 258},
-    {"debug-ue-prach", no_argument, NULL, 259},
-    {"no-L2-connect", no_argument, NULL, 260},
+    {"calib-ue-rx",     required_argument,  NULL, LONG_OPTION_CALIB_UE_RX},
+    {"calib-ue-rx-med", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_MED},
+    {"calib-ue-rx-byp", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_BYP},
+    {"debug-ue-prach",  no_argument,        NULL, LONG_OPTION_DEBUG_UE_PRACH},
+    {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
 
-  while ((c = getopt_long (argc, argv, "C:K:O:ST:UdF:V",long_options,NULL)) != -1)
+  while ((c = getopt_long (argc, argv, "C:dF:K:O:ST:UV",long_options,NULL)) != -1)
     {
       switch (c)
         {
-    case 'V':
-          ouput_vcd = 1;
-      break;
-        case 'd':
-#ifdef XFORMS
-          do_forms=1;
-#endif
+        case LONG_OPTION_CALIB_UE_RX:
+          mode = rx_calib_ue;
+          rx_input_level_dBm = atoi(optarg);
+          printf("Running with UE calibration on (LNA max), input level %d dBm\n",rx_input_level_dBm);
           break;
-        case 'U':
-          UE_flag = 1;
+
+        case LONG_OPTION_CALIB_UE_RX_MED:
+          mode = rx_calib_ue_med;
+          rx_input_level_dBm = atoi(optarg);
+          printf("Running with UE calibration on (LNA med), input level %d dBm\n",rx_input_level_dBm);
           break;
+
+        case LONG_OPTION_CALIB_UE_RX_BYP:
+          mode = rx_calib_ue_byp;
+          rx_input_level_dBm = atoi(optarg);
+          printf("Running with UE calibration on (LNA byp), input level %d dBm\n",rx_input_level_dBm);
+          break;
+
+        case LONG_OPTION_DEBUG_UE_PRACH:
+          mode = debug_prach;
+          break;
+
+        case LONG_OPTION_NO_L2_CONNECT:
+          mode = no_L2_connect;
+          break;
+
         case 'C':
           downlink_frequency[0] = atoi(optarg);
           downlink_frequency[1] = atoi(optarg);
@@ -1118,24 +1146,13 @@ void get_options (int argc, char **argv)
           carrier_freq[2] = downlink_frequency[2];
           carrier_freq[3] = downlink_frequency[3];
           break;
-        case 'S':
-          fs4_test=1;
-          break;
-        case 'T':
-#ifdef ENABLE_TCXO
-          tcxo=atoi(optarg);
+
+        case 'd':
+#ifdef XFORMS
+          do_forms=1;
 #endif
           break;
-        case 'K':
-#if defined(ENABLE_ITTI)
-          itti_dump_file = strdup(optarg);
-#else
-          printf("-K option is disabled when ENABLE_ITTI is not defined\n");
-#endif
-          break;
-        case 'O':
-          conf_config_file_name = optarg;
-          break;
+
         case 'F':
           sprintf(rxg_fname,"%srxg.lime",optarg);
           rxg_fd = fopen(rxg_fname,"r");
@@ -1145,10 +1162,10 @@ void get_options (int argc, char **argv)
             while (fgets(line, sizeof(line), rxg_fd)) {
               if ((strlen(line)==0) || (*line == '#')) continue; //ignore empty or comment lines
               else {
-            if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
-            if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
-            if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
-            l++;
+                if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
+                if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
+                if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
+                l++;
               }
             }
           }
@@ -1162,12 +1179,12 @@ void get_options (int argc, char **argv)
             l=0;
             while (fgets(line, sizeof(line), txg_fd)) {
               if ((strlen(line)==0) || (*line == '#')) {
-            continue; //ignore empty or comment lines
+                continue; //ignore empty or comment lines
               }
               else {
-            if (l==0) sscanf(line,"%d %d %d %d",&txgain[0],&txgain[1],&txgain[2],&txgain[3]);
-            if (l==1) sscanf(line,"%d",&tx_max_power);
-            l++;
+                if (l==0) sscanf(line,"%d %d %d %d",&txgain[0],&txgain[1],&txgain[2],&txgain[3]);
+                if (l==1) sscanf(line,"%d",&tx_max_power);
+                l++;
               }
             }
           }
@@ -1193,39 +1210,67 @@ void get_options (int argc, char **argv)
           }
           else
             printf("%s not found, running with defaults\n",rfdc_fname);
+          break;
 
+        case 'K':
+#if defined(ENABLE_ITTI)
+          itti_dump_file = strdup(optarg);
+#else
+          printf("-K option is disabled when ENABLE_ITTI is not defined\n");
+#endif
           break;
-        case 256:
-          mode = rx_calib_ue;
-          rx_input_level_dBm = atoi(optarg);
-          printf("Running with UE calibration on (LNA max), input level %d dBm\n",rx_input_level_dBm);
+
+        case 'O':
+          conf_config_file_name = optarg;
           break;
-        case 257:
-          mode = rx_calib_ue_med;
-          rx_input_level_dBm = atoi(optarg);
-          printf("Running with UE calibration on (LNA med), input level %d dBm\n",rx_input_level_dBm);
+
+        case 'S':
+          fs4_test=1;
           break;
-        case 258:
-          mode = rx_calib_ue_byp;
-          rx_input_level_dBm = atoi(optarg);
-          printf("Running with UE calibration on (LNA byp), input level %d dBm\n",rx_input_level_dBm);
+
+        case 'T':
+#ifdef ENABLE_TCXO
+          tcxo=atoi(optarg);
+#endif
           break;
-        case 259:
-          mode = debug_prach;
+
+        case 'U':
+          UE_flag = 1;
           break;
-        case 260:
-          mode = no_L2_connect;
+
+        case 'V':
+          ouput_vcd = 1;
           break;
+
         default:
           break;
         }
     }
 
+  if ((UE_flag == 0) && (conf_config_file_name != NULL)) {
+    int i;
+
+    NB_eNB_INST = 1;
+
+    /* Read eNB configuration file */
+    enb_properties = enb_config_init(conf_config_file_name);
+
+    AssertFatal (NB_eNB_INST <= enb_properties->number,
+                 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
+                 conf_config_file_name, NB_eNB_INST, enb_properties->number);
+
+    /* Update some simulation parameters */
+    frame_parms->frame_type =       enb_properties->properties[0]->frame_type;
+    frame_parms->tdd_config =       enb_properties->properties[0]->tdd_config;
+    frame_parms->tdd_config_S =     enb_properties->properties[0]->tdd_config_s;
+    for (i = 0 ; i < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); i++) {
+      downlink_frequency[i] =       enb_properties->properties[0]->downlink_frequency;
+      uplink_frequency_offset[i] =  enb_properties->properties[0]->uplink_frequency_offset;
+    }
+  }
 }
 
 int main(int argc, char **argv) {
-  const Enb_properties_array_t *enb_properties;
-
 #ifdef RTAI
   // RT_TASK *task;
 #endif
@@ -1260,34 +1305,61 @@ int main(int argc, char **argv) {
 
   mode = normal_txrx;
 
+  frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
+  /* Set some default values that may be overwritten while reading options */
+  frame_parms->frame_type         = 1;
+  frame_parms->tdd_config         = 3;
+  frame_parms->tdd_config_S       = 0;
+
   get_options (argc, argv); //Command-line options
 
-  frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
-
-  if ((UE_flag == 0) && (conf_config_file_name != NULL)) {
-    int i;
-
-    NB_eNB_INST = 1;
-
-    /* Read eNB configuration file */
-    enb_properties = enb_config_init(conf_config_file_name);
-
-    AssertFatal (NB_eNB_INST <= enb_properties->number,
-                 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
-                 conf_config_file_name, NB_eNB_INST, enb_properties->number);
-
-    /* Update some simulation parameters */
-    frame_parms->frame_type =   enb_properties->properties[0]->frame_type;
-    for (i = 0 ; i < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); i++) {
-      downlink_frequency[i] =       enb_properties->properties[0]->downlink_frequency;
-      uplink_frequency_offset[i] =  enb_properties->properties[0]->uplink_frequency_offset;
-    }
-  }
-
+  set_glog(LOG_WARNING, LOG_MED);
   if (UE_flag==1)
+  {
     printf("configuring for UE\n");
+
+    set_comp_log(HW,      LOG_DEBUG,  LOG_HIGH, 1);
+#ifdef OPENAIR2
+    set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
+#else
+    set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
+#endif
+    set_comp_log(MAC,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(RLC,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(PDCP,    LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(RRC,     LOG_INFO,   LOG_HIGH, 1);
+#if defined(ENABLE_ITTI)
+    set_comp_log(EMU,     LOG_INFO,   LOG_HIGH, 1);
+# if defined(ENABLE_USE_MME)
+    set_comp_log(NAS,     LOG_INFO,   LOG_HIGH, 1);
+# endif
+#endif
+  }
   else
+  {
     printf("configuring for eNB\n");
+
+    set_comp_log(HW,      LOG_DEBUG,  LOG_HIGH, 1);
+#ifdef OPENAIR2
+    set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
+#else
+    set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
+#endif
+    set_comp_log(MAC,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(RLC,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(PDCP,    LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(RRC,     LOG_INFO,   LOG_HIGH, 1);
+#if defined(ENABLE_ITTI)
+    set_comp_log(EMU,     LOG_INFO,   LOG_HIGH, 1);
+# if defined(ENABLE_USE_MME)
+    set_comp_log(S1AP,    LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(SCTP,    LOG_INFO,   LOG_HIGH, 1);
+# endif
+#endif
+    set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);;
+  }
 
   //randominit (0);
   set_taus_seed (0);
@@ -1334,7 +1406,8 @@ int main(int argc, char **argv) {
   frame_parms->Ncp_UL             = 0;
   frame_parms->Nid_cell           = Nid_cell;
   frame_parms->nushift            = 0;
-  if (UE_flag==0) {
+  if (UE_flag==0)
+  {
     switch (transmission_mode) {
     case 1: 
       frame_parms->nb_antennas_tx     = 1;
@@ -1351,14 +1424,13 @@ int main(int argc, char **argv) {
       exit(-1);
     }
   }
-  else { //UE_flag==1
+  else
+  { //UE_flag==1
     frame_parms->nb_antennas_tx     = 1;
     frame_parms->nb_antennas_rx     = 1;
   }
   frame_parms->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
   frame_parms->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
-  frame_parms->tdd_config         = 3;
-  frame_parms->tdd_config_S       = 0;
   frame_parms->phich_config_common.phich_resource = oneSixth;
   frame_parms->phich_config_common.phich_duration = normal;
   // UL RS Config
@@ -1382,35 +1454,8 @@ int main(int argc, char **argv) {
   // prach_fmt = get_prach_fmt(frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex, frame_parms->frame_type);
   // N_ZC = (prach_fmt <4)?839:139;
 
-  g_log->level = LOG_WARNING;
-  if (UE_flag==1) {
-    g_log->log_component[HW].level = LOG_DEBUG;
-    g_log->log_component[HW].flag  = LOG_HIGH;
-#ifdef OPENAIR2
-    g_log->log_component[PHY].level = LOG_INFO;
-#else
-    g_log->log_component[PHY].level = LOG_INFO;
-#endif
-    g_log->log_component[PHY].flag  = LOG_HIGH;
-    g_log->log_component[MAC].level = LOG_INFO;
-    g_log->log_component[MAC].flag  = LOG_HIGH;
-    g_log->log_component[RLC].level = LOG_INFO;
-    g_log->log_component[RLC].flag  = LOG_HIGH;
-    g_log->log_component[PDCP].level = LOG_INFO;
-    g_log->log_component[PDCP].flag  = LOG_HIGH;
-    g_log->log_component[OTG].level = LOG_INFO;
-    g_log->log_component[OTG].flag  = LOG_HIGH;
-    g_log->log_component[RRC].level = LOG_INFO;
-    g_log->log_component[RRC].flag  = LOG_HIGH;
-#if defined(ENABLE_ITTI)
-    g_log->log_component[EMU].level = LOG_INFO;
-    g_log->log_component[EMU].flag  = LOG_HIGH;
-# if defined(ENABLE_USE_MME)
-    g_log->log_component[NAS].level = LOG_INFO;
-    g_log->log_component[NAS].flag  = LOG_HIGH;
-# endif
-#endif
-
+  if (UE_flag==1)
+  {
     PHY_vars_UE_g = malloc(sizeof(PHY_VARS_UE*));
     PHY_vars_UE_g[0] = init_lte_UE(frame_parms, UE_id,abstraction_flag,transmission_mode);
     
@@ -1482,39 +1527,8 @@ int main(int argc, char **argv) {
     
     //  printf("tx_max_power = %d -> amp %d\n",tx_max_power,get_tx_amp(tx_max_power,tx_max_power));
   }
-  else { //this is eNB
-    g_log->log_component[HW].level = LOG_DEBUG;
-    g_log->log_component[HW].flag  = LOG_HIGH;
-#ifdef OPENAIR2
-    g_log->log_component[PHY].level = LOG_INFO;
-#else
-    g_log->log_component[PHY].level = LOG_INFO;
-#endif
-    g_log->log_component[PHY].flag  = LOG_HIGH;
-
-    g_log->log_component[MAC].level = LOG_INFO;
-    g_log->log_component[MAC].flag  = LOG_HIGH;
-    g_log->log_component[RLC].level = LOG_INFO;
-    g_log->log_component[RLC].flag  = LOG_HIGH;
-    g_log->log_component[PDCP].level = LOG_INFO;
-    g_log->log_component[PDCP].flag  = LOG_HIGH;
-    g_log->log_component[OTG].level = LOG_INFO;
-    g_log->log_component[OTG].flag  = LOG_HIGH;
-    g_log->log_component[RRC].level = LOG_INFO;
-    g_log->log_component[RRC].flag  = LOG_HIGH;
-#if defined(ENABLE_ITTI)
-    g_log->log_component[EMU].level = LOG_INFO;
-    g_log->log_component[EMU].flag  = LOG_HIGH;
-# if defined(ENABLE_USE_MME)
-    g_log->log_component[S1AP].level  = LOG_INFO;
-    g_log->log_component[S1AP].flag   = LOG_HIGH;
-    g_log->log_component[SCTP].level  = LOG_INFO;
-    g_log->log_component[SCTP].flag   = LOG_HIGH;
-# endif
-#endif
-    g_log->log_component[ENB_APP].level = LOG_INFO;
-    g_log->log_component[ENB_APP].flag  = LOG_HIGH;
-
+  else
+  { //this is eNB
     PHY_vars_eNB_g = malloc(sizeof(PHY_VARS_eNB*));
     PHY_vars_eNB_g[0] = init_lte_eNB(frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
     
@@ -1557,14 +1571,14 @@ int main(int argc, char **argv) {
   // Initialize card
   ret = openair0_open();
   if ( ret != 0 ) {
-          if (ret == -1)
-              printf("Error opening /dev/openair0");
-          if (ret == -2)
-              printf("Error mapping bigshm");
-          if (ret == -3)
-              printf("Error mapping RX or TX buffer");
-          return(ret);
-     }
+    if (ret == -1)
+        printf("Error opening /dev/openair0");
+    if (ret == -2)
+        printf("Error mapping bigshm");
+    if (ret == -3)
+        printf("Error mapping RX or TX buffer");
+    return(ret);
+  }
 
   printf ("Detected %d number of cards, %d number of antennas.\n", openair0_num_detected_cards, openair0_num_antennas[card]);
   
@@ -1674,8 +1688,8 @@ int main(int argc, char **argv) {
   int eMBMS_active=0;
 
   l2_init(frame_parms,eMBMS_active,
-	  0,// cba_group_active
-	  0); // HO flag
+          0,// cba_group_active
+          0); // HO flag
   if (UE_flag == 1)
     mac_xface->dl_phy_sync_success (0, 0, 0, 1);
   else
@@ -1691,80 +1705,83 @@ int main(int argc, char **argv) {
   printf("ITTI tasks created\n");
 #endif
 
-  #ifdef OPENAIR2
-  //if (otg_enabled) {
-    init_all_otg(0);
-    g_otg->seed = 0;
-    init_seeds(g_otg->seed);
-    g_otg->num_nodes = 2;
-    for (i=0; i<g_otg->num_nodes; i++){
-      for (j=0; j<g_otg->num_nodes; j++){ 
-        g_otg->application_idx[i][j] = 1;
-        //g_otg->packet_gen_type=SUBSTRACT_STRING;
-        g_otg->aggregation_level[i][j][0]=1;
-        g_otg->application_type[i][j][0] = BCBR; //MCBR, BCBR
-      }
+#ifdef OPENAIR2
+//if (otg_enabled) {
+  init_all_otg(0);
+  g_otg->seed = 0;
+  init_seeds(g_otg->seed);
+  g_otg->num_nodes = 2;
+  for (i=0; i<g_otg->num_nodes; i++){
+    for (j=0; j<g_otg->num_nodes; j++){
+      g_otg->application_idx[i][j] = 1;
+      //g_otg->packet_gen_type=SUBSTRACT_STRING;
+      g_otg->aggregation_level[i][j][0]=1;
+      g_otg->application_type[i][j][0] = BCBR; //MCBR, BCBR
     }
-    init_predef_traffic(UE_flag ? 1 : 0, UE_flag ? 0 : 1);
-    //  }
+  }
+  init_predef_traffic(UE_flag ? 1 : 0, UE_flag ? 0 : 1);
+//  }
 #endif
 
 #ifdef OPENAIR2
-    //init_pdcp_thread();
+  //init_pdcp_thread();
 #endif
 
-    number_of_cards = openair0_num_detected_cards;
-    if (p_exmimo_id->board_exmimoversion==1) //ExpressMIMO1
-      openair_daq_vars.timing_advance = 138;
-    else //ExpressMIMO2
-      openair_daq_vars.timing_advance = 0;
+  number_of_cards = openair0_num_detected_cards;
+  if (p_exmimo_id->board_exmimoversion==1) //ExpressMIMO1
+    openair_daq_vars.timing_advance = 138;
+  else //ExpressMIMO2
+    openair_daq_vars.timing_advance = 0;
 
   // connect the TX/RX buffers
-  if (UE_flag==1) {
-      setup_ue_buffers(PHY_vars_UE_g[0],frame_parms,ant_offset);
-      printf("Setting UE buffer to all-RX\n");
+  if (UE_flag==1)
+  {
+    setup_ue_buffers(PHY_vars_UE_g[0],frame_parms,ant_offset);
+    printf("Setting UE buffer to all-RX\n");
+    // Set LSBs for antenna switch (ExpressMIMO)
+    for (i=0; i<frame_parms->samples_per_tti*10; i++)
+      for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+        PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
+
+    //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;
+  }
+  else
+  {
+    setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,ant_offset);
+    if (fs4_test==0)
+    {
+      printf("Setting eNB buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms->samples_per_tti*10; i++)
         for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-          PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
+          PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
 
-      //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;      
-  }
-  else {
-    setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,ant_offset);
-      if (fs4_test==0)
+      // Set the last OFDM symbol of subframe 4 to TX to allow enough time for switch to settle
+      // (that's ok since the last symbol can be configured as SRS)
+      /*
+      for (i=frame_parms->samples_per_tti*5-0*(frame_parms->ofdm_symbol_size+frame_parms->nb_prefix_samples);
+           i<frame_parms->samples_per_tti*5; i++)
+        for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+          PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x0;
+      */
+    }
+    else
+    {
+      printf("Setting eNB buffer to fs/4 test signal\n");
+      for (j=0; j<PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti*10; j+=4)
+        for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
         {
-          printf("Setting eNB buffer to all-RX\n");
-          // Set LSBs for antenna switch (ExpressMIMO)
-          for (i=0; i<frame_parms->samples_per_tti*10; i++)
-            for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-              PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
-
-          // Set the last OFDM symbol of subframe 4 to TX to allow enough time for switch to settle
-          // (that's ok since the last symbol can be configured as SRS)
-          /*
-          for (i=frame_parms->samples_per_tti*5-0*(frame_parms->ofdm_symbol_size+frame_parms->nb_prefix_samples); 
-               i<frame_parms->samples_per_tti*5; i++)
-            for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-              PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x0; 
-          */
+          amp = 0x8000;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+1] = 0;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+3] = amp-1;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+5] = 0;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+7] = amp;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j] = amp-1;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+2] = 0;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+4] = amp;
+          ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+6] = 0;
         }
-      else {
-          printf("Setting eNB buffer to fs/4 test signal\n");
-          for (j=0; j<PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti*10; j+=4)
-            for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-              {
-                amp = 0x8000;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+1] = 0;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+3] = amp-1;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+5] = 0;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+7] = amp;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j] = amp-1;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+2] = 0;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+4] = amp;
-                ((short*)PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa])[2*j+6] = 0;
-              }
-      }
+    }
   }
 
   openair0_dump_config(card);
@@ -2025,30 +2042,29 @@ int main(int argc, char **argv) {
 }
 
 void test_config(int card, int ant, unsigned int rf_mode, int UE_flag) {
-    p_exmimo_config->framing.eNB_flag   = !UE_flag;
-    p_exmimo_config->framing.tdd_config = 0;
+  p_exmimo_config->framing.eNB_flag   = !UE_flag;
+  p_exmimo_config->framing.tdd_config = 0;
 #if (BOARD_SWREV_CNTL2>=0x0A)
-    p_exmimo_config->framing.resampling_factor[ant] = 2;
+  p_exmimo_config->framing.resampling_factor[ant] = 2;
 #else
-    p_exmimo_config->framing.resampling_factor = 2;
+  p_exmimo_config->framing.resampling_factor = 2;
 #endif
 
-    p_exmimo_config->rf.rf_freq_rx[ant] = 1907600000;
-    p_exmimo_config->rf.rf_freq_tx[ant] = 1907600000;;
-    p_exmimo_config->rf.rx_gain[ant][0] = 20;
-    p_exmimo_config->rf.tx_gain[ant][0] = 10;
-    p_exmimo_config->rf.rf_mode[ant] = rf_mode;
-    
-    p_exmimo_config->rf.rf_local[ant] = build_rflocal(20,25,26,04);
-    p_exmimo_config->rf.rf_rxdc[ant] = build_rfdc(128, 128);
-    p_exmimo_config->rf.rf_vcocal[ant] = (0xE<<6) + 0xE;
+  p_exmimo_config->rf.rf_freq_rx[ant] = 1907600000;
+  p_exmimo_config->rf.rf_freq_tx[ant] = 1907600000;;
+  p_exmimo_config->rf.rx_gain[ant][0] = 20;
+  p_exmimo_config->rf.tx_gain[ant][0] = 10;
+  p_exmimo_config->rf.rf_mode[ant] = rf_mode;
+
+  p_exmimo_config->rf.rf_local[ant] = build_rflocal(20,25,26,04);
+  p_exmimo_config->rf.rf_rxdc[ant] = build_rfdc(128, 128);
+  p_exmimo_config->rf.rf_vcocal[ant] = (0xE<<6) + 0xE;
 }
 
 void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
 
   int i;
   if (phy_vars_ue) {
-
     if ((frame_parms->nb_antennas_rx>1) && (carrier>0)) {
       printf("RX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
@@ -2093,24 +2109,24 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
     
     // replace RX signal buffers with mmaped HW versions
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
-        free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-        phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (s32*) openair0_exmimo_pci[card].adc_head[i+carrier];
-        
-        printf("rxdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-        for (j=0;j<16;j++) {
-            printf("rxbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j]);
-            phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j] = 16-j;
-        }
+      free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
+      phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (s32*) openair0_exmimo_pci[card].adc_head[i+carrier];
+
+      printf("rxdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
+      for (j=0;j<16;j++) {
+        printf("rxbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j]);
+        phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j] = 16-j;
+      }
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
-        free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-        phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (s32*) openair0_exmimo_pci[card].dac_head[i+carrier];
+      free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
+      phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (s32*) openair0_exmimo_pci[card].dac_head[i+carrier];
 
-        printf("txdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-        for (j=0;j<16;j++) {
-            printf("txbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j]);
-            phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
-        }
+      printf("txdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
+      for (j=0;j<16;j++) {
+        printf("txbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j]);
+        phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
+      }
     }
   }
 }
