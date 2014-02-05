@@ -525,9 +525,19 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
   {
       (*sib1)->tdd_Config =                             CALLOC(1,sizeof(struct TDD_Config));
 
-      (*sib1)->tdd_Config->subframeAssignment =         frame_parms->tdd_config;
+      (*sib1)->tdd_Config->subframeAssignment =
+#if defined(ENABLE_ITTI)
+              configuration->tdd_config;
+#else
+              frame_parms->tdd_config;
+#endif
 
-      (*sib1)->tdd_Config->specialSubframePatterns =    frame_parms->tdd_config_S;
+      (*sib1)->tdd_Config->specialSubframePatterns =
+#if defined(ENABLE_ITTI)
+              configuration->tdd_config_s;
+#else
+              frame_parms->tdd_config_S;
+#endif
   }
 
   (*sib1)->si_WindowLength=SystemInformationBlockType1__si_WindowLength_ms20;

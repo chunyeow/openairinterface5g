@@ -68,6 +68,8 @@ typedef struct RrcConfigurationReq_s {
     paging_drx_t        default_drx;
 
     lte_frame_type_t    frame_type;
+    uint8_t             tdd_config;
+    uint8_t             tdd_config_s;
     int16_t             eutra_band;
 } RrcConfigurationReq;
 
