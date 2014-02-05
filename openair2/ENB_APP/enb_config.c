@@ -168,24 +168,25 @@ static int enb_check_band_frequencies(char* lib_config_file_name_pP,
 
 const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   config_t          cfg;
-  config_setting_t *setting;
-  config_setting_t *setting_mme_addresses;
-  config_setting_t *setting_mme_address;
-  config_setting_t *setting_enb;
-  int               num_enb_properties = 0;
-  int               enb_properties_index = 0;
+  config_setting_t *setting                       = NULL;
+  config_setting_t *subsetting                    = NULL;
+  config_setting_t *setting_mme_addresses         = NULL;
+  config_setting_t *setting_mme_address           = NULL;
+  config_setting_t *setting_enb                   = NULL;
+  int               num_enb_properties            = 0;
+  int               enb_properties_index          = 0;
   int               num_enbs;
   int               num_mme_address;
   int               i;
   int               j;
-  int               parse_errors = 0;
-  long int          enb_id;
-  const char*       cell_type;
-  long int          tac;
-  const char*       enb_name;
-  long int          mcc;
-  long int          mnc;
-  const char*       default_drx;
+  int               parse_errors                  = 0;
+  long int          enb_id                        = 0;
+  const char*       cell_type                     = NULL;
+  long int          tac                           = 0;
+  const char*       enb_name                      = NULL;
+  long int          mcc                           = 0;
+  long int          mnc                           = 0;
+  const char*       default_drx                   = NULL;
   const char*       frame_type;
   long int          tdd_config;
   long int          tdd_config_s;
@@ -193,11 +194,18 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   long int          eutra_band;
   double            downlink_frequency;
   double            uplink_frequency_offset;
-  char*             ipv4;
-  char*             ipv6;
-  char*             active;
-  char*             preference;
+  char*             ipv4                          = NULL;
+  char*             ipv6                          = NULL;
+  char*             active                        = NULL;
+  char*             preference                    = NULL;
   const char*       active_enb[MAX_ENB];
+  char*             enb_interface_name_for_S1U    = NULL;
+  char*             enb_ipv4_address_for_S1U      = NULL;
+  char*             enb_interface_name_for_S1_MME = NULL;
+  char*             enb_ipv4_address_for_S1_MME   = NULL;
+  char             *astring                       = NULL;
+  char             *address                       = NULL;
+  char             *cidr                          = NULL;
 
   memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
   memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
@@ -374,11 +382,11 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                   }
 
                   parse_errors += enb_check_band_frequencies(lib_config_file_name_pP,
-                                                             enb_properties_index,
-                                                             enb_properties.properties[enb_properties_index]->eutra_band,
-                                                             enb_properties.properties[enb_properties_index]->downlink_frequency,
-                                                             enb_properties.properties[enb_properties_index]->uplink_frequency_offset,
-                                                             enb_properties.properties[enb_properties_index]->frame_type);
+                                             enb_properties_index,
+                                             enb_properties.properties[enb_properties_index]->eutra_band,
+                                             enb_properties.properties[enb_properties_index]->downlink_frequency,
+                                             enb_properties.properties[enb_properties_index]->uplink_frequency_offset,
+                                             enb_properties.properties[enb_properties_index]->frame_type);
 
                   setting_mme_addresses = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_MME_IP_ADDRESS);
                   num_mme_address     = config_setting_length(setting_mme_addresses);
@@ -416,6 +424,36 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv6 = 1;
                       }
                   }
+                  subsetting = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_NETWORK_INTERFACES_CONFIG);
+                  if(subsetting != NULL) {
+                      if(  (
+                              config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1_MME,
+                                      (const char **)&enb_interface_name_for_S1_MME)
+                           && config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_IPV4_ADDRESS_FOR_S1_MME,
+                                   (const char **)&enb_ipv4_address_for_S1_MME)
+                           && config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U,
+                                   (const char **)&enb_interface_name_for_S1U)
+                           && config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U,
+                                   (const char **)&enb_ipv4_address_for_S1U)
+                         )
+                     ){
+                          enb_properties.properties[enb_properties_index]->enb_interface_name_for_S1U = strdup(enb_interface_name_for_S1U);
+                          cidr = enb_ipv4_address_for_S1U;
+                          address = strtok(cidr, "/");
+                          if (address) {
+                              address = strdup(address);
+                              IPV4_STR_ADDR_TO_INT_NWBO ( address, enb_properties.properties[enb_properties_index]->enb_ipv4_address_for_S1U, "BAD IP ADDRESS FORMAT FOR eNB S1_U !\n" );
+                          }
+
+                          enb_properties.properties[enb_properties_index]->enb_interface_name_for_S1_MME = strdup(enb_interface_name_for_S1_MME);
+                          cidr = enb_ipv4_address_for_S1_MME;
+                          address = strtok(cidr, "/");
+                          if (address) {
+                              address = strdup(address);
+                              IPV4_STR_ADDR_TO_INT_NWBO ( address, enb_properties.properties[enb_properties_index]->enb_ipv4_address_for_S1_MME, "BAD IP ADDRESS FORMAT FOR eNB S1_MME !\n" );
+                          }
+                      }
+                  }
                   enb_properties_index += 1;
                   break;
               }
@@ -433,6 +471,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                lib_config_file_name_pP, parse_errors, parse_errors > 1 ? "s" : "");
 
   return &enb_properties;
+
 }
 
 const Enb_properties_array_t *enb_config_get(void) {
