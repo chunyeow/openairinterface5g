@@ -254,6 +254,8 @@ typedef enum {
     CLI,
     MSC,
     OCM,
+    UDP_,
+    GTPU,
     S1AP,
     SCTP,
     HW,
