@@ -6,6 +6,12 @@ if [ -z "$PCI" ]; then
  return
 fi
 
+## This part corrects the wrong configuration of the endpoint done by the bios in some machines
+echo "$PCI" | while read config_reg; do
+SLOT_NUMBER=`echo $config_reg | awk -F\" '{print $1}'`
+setpci -s $SLOT_NUMBER 60.b=10
+done
+
 sudo rmmod openair_rf
 sudo insmod $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom/openair_rf.ko
 sleep 1
