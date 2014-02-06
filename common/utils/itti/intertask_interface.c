@@ -65,6 +65,14 @@
 #include "signals.h"
 #include "timer.h"
 
+#ifdef RTAI
+# include <rtai.h>
+# include <rtai_fifos.h>
+#    define FIFO_PRINTF_MAX_STRING_SIZE 1000
+#    define FIFO_PRINTF_NO              62
+#    define FIFO_PRINTF_SIZE            65536
+#endif
+
 /* ITTI DEBUG groups */
 #define ITTI_DEBUG_POLL             (1<<0)
 #define ITTI_DEBUG_SEND             (1<<1)
@@ -78,14 +86,11 @@ const int itti_debug = ITTI_DEBUG_ISSUES | ITTI_DEBUG_MP_STATISTICS;
 
 /* Don't flush if using RTAI */
 #ifdef RTAI
-# define ITTI_DEBUG(m, x, args...) do { if ((m) & itti_debug) rt_printk("[ITTI][D]"x, ##args); } \
-    while(0)
+# define ITTI_DEBUG(m, x, args...)  do { if ((m) & itti_debug) rt_log_debug (x, ##args); } while(0);
 #else
-# define ITTI_DEBUG(m, x, args...) do { if ((m) & itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } \
-    while(0)
+# define ITTI_DEBUG(m, x, args...)  do { if ((m) & itti_debug) fprintf(stdout, "[ITTI][D]"x, ##args); fflush (stdout); } while(0);
 #endif
-#define ITTI_ERROR(x, args...) do { fprintf(stdout, "[ITTI][E]"x, ##args); fflush (stdout); } \
-    while(0)
+#define ITTI_ERROR(x, args...) 	    do { fprintf(stdout, "[ITTI][E]"x, ##args); fflush (stdout); } while(0);
 
 /* Global message size */
 #define MESSAGE_SIZE(mESSAGEiD) (sizeof(MessageHeader) + itti_desc.messages_info[mESSAGEiD].size)
@@ -252,7 +257,14 @@ const char *itti_get_message_name(MessagesIds message_id) {
 
 const char *itti_get_task_name(task_id_t task_id)
 {
-    AssertFatal (task_id < itti_desc.task_max, "Task id (%d) is out of range (%d)!\n", task_id, itti_desc.task_max);
+    if (itti_desc.task_max > 0)
+    {
+        AssertFatal (task_id < itti_desc.task_max, "Task id (%d) is out of range (%d)!\n", task_id, itti_desc.task_max);
+    }
+    else
+    {
+        return ("ITTI NOT INITIALIZED !!!");
+    }
 
     return (itti_desc.tasks_info[task_id].name);
 }
@@ -274,6 +286,27 @@ static task_id_t itti_get_current_task_id(void)
 
     return TASK_UNKNOWN;
 }
+
+#ifdef RTAI
+static void rt_log_debug(char *format, ...)
+{
+    task_id_t   task_id;
+    va_list     args;
+    char        log_buffer[FIFO_PRINTF_MAX_STRING_SIZE];
+    int         len;
+
+    task_id = itti_get_current_task_id ();
+    len = snprintf(log_buffer, FIFO_PRINTF_MAX_STRING_SIZE-1, "[ITTI][D][%s]", itti_get_task_name(task_id));
+    va_start(args, format);
+    len += vsnprintf(&log_buffer[len], FIFO_PRINTF_MAX_STRING_SIZE-1-len, format, args);
+    va_end (args);
+
+    if (task_id != TASK_UNKNOWN)
+        fwrite(log_buffer, len, 1, stdout);
+    else
+        rtf_put (FIFO_PRINTF_NO, log_buffer, len);
+}
+#endif
 
 void itti_update_lte_time(uint32_t frame, uint8_t slot)
 {
