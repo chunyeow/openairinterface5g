@@ -240,7 +240,7 @@ static runmode_t                mode;
 static int                      rx_input_level_dBm;
 #ifdef XFORMS
 extern int                      otg_enabled;
-static char                     do_forms = 0;
+static char                     do_forms=0;
 #else
 int                             otg_enabled;
 #endif
@@ -300,10 +300,9 @@ void exit_fun(const char* s)
 
 #ifdef XFORMS
 void *scope_thread(void *arg) {
-    s16 prach_corr[1024], i;
     char stats_buffer[16384];
     //FILE *UE_stats, *eNB_stats;
-    int len=0;
+    int len = 0;
     struct sched_param sched_param;
 
     sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO)+1; 
@@ -343,7 +342,7 @@ void *scope_thread(void *arg) {
               
         }
         //printf("doing forms\n");
-        usleep(1000000);
+        usleep(100000); // 100 ms
     }
     
     //fclose (UE_stats);
@@ -1138,14 +1137,15 @@ static void get_options (int argc, char **argv)
           break;
 
         case 'C':
-          downlink_frequency[0] = atoi(optarg);
-          downlink_frequency[1] = atoi(optarg);
-          downlink_frequency[2] = atoi(optarg);
-          downlink_frequency[3] = atoi(optarg);
+          downlink_frequency[0] = atof(optarg); // Use float to avoid issue with frequency over 2^31.
+          downlink_frequency[1] = downlink_frequency[0];
+          downlink_frequency[2] = downlink_frequency[0];
+          downlink_frequency[3] = downlink_frequency[0];
           carrier_freq[0] = downlink_frequency[0];
           carrier_freq[1] = downlink_frequency[1];
           carrier_freq[2] = downlink_frequency[2];
           carrier_freq[3] = downlink_frequency[3];
+          printf("Downlink frequency set to %u\n", downlink_frequency[0]);
           break;
 
         case 'd':
@@ -1305,7 +1305,7 @@ int main(int argc, char **argv) {
 
   frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
   /* Set some default values that may be overwritten while reading options */
-  frame_parms->frame_type         = 1;
+  frame_parms->frame_type         = 1; /* TDD */
   frame_parms->tdd_config         = 3;
   frame_parms->tdd_config_S       = 0;
 
