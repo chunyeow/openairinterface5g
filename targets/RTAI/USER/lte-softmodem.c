@@ -240,6 +240,7 @@ static runmode_t                mode;
 static int                      rx_input_level_dBm;
 #ifdef XFORMS
 extern int                      otg_enabled;
+static char                     do_forms = 0;
 #else
 int                             otg_enabled;
 #endif
@@ -342,7 +343,7 @@ void *scope_thread(void *arg) {
               
         }
         //printf("doing forms\n");
-        sleep(0.1);
+        usleep(1000000);
     }
     
     //fclose (UE_stats);
@@ -1285,9 +1286,6 @@ int main(int argc, char **argv) {
   u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
 #endif
 
-#ifdef XFORMS
-  char do_forms=0;
-#endif
 #ifdef ENABLE_TCXO
   unsigned int tcxo = 114;
 #endif
