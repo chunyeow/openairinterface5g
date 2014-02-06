@@ -20,6 +20,7 @@ Description	Memory access utilities
 
 #include "memory.h"
 #include "commonDef.h"
+#include "nas_log.h"
 
 #include <stdio.h>	// fopen, fread, fclose
 #include <stdlib.h>	// getenv, malloc, free
@@ -64,7 +65,8 @@ char* memory_get_path(const char* dirname, const char* filename)
         path = getenv(DEFAULT_NAS_PATH);
     }
     if (path == NULL) {
-        return NULL;
+        LOG_TRACE(WARNING, "MEMORY  - %s and %s environment variables are not defined trying local directory", dirname, DEFAULT_NAS_PATH);
+        path = ".";
     }
 
     /* Append non-volatile data file name */
