@@ -1079,24 +1079,24 @@ static void *UE_thread(void *arg)
   return 0;
 }
 
-enum {
-  LONG_OPTION_START = 0x100, /* Start after regular single char options */
-
-  LONG_OPTION_CALIB_UE_RX,
-  LONG_OPTION_CALIB_UE_RX_MED,
-  LONG_OPTION_CALIB_UE_RX_BYP,
-
-  LONG_OPTION_DEBUG_UE_PRACH,
-
-  LONG_OPTION_NO_L2_CONNECT,
-} long_option_e;
-
 static void get_options (int argc, char **argv)
 {
   int                           c;
   char                          line[1000];
   int                           l;
   const Enb_properties_array_t *enb_properties;
+
+  enum long_option_e {
+    LONG_OPTION_START = 0x100, /* Start after regular single char options */
+
+    LONG_OPTION_CALIB_UE_RX,
+    LONG_OPTION_CALIB_UE_RX_MED,
+    LONG_OPTION_CALIB_UE_RX_BYP,
+
+    LONG_OPTION_DEBUG_UE_PRACH,
+
+    LONG_OPTION_NO_L2_CONNECT,
+  };
 
   static const struct option long_options[] = {
     {"calib-ue-rx",     required_argument,  NULL, LONG_OPTION_CALIB_UE_RX},
@@ -1313,6 +1313,12 @@ int main(int argc, char **argv) {
 
   get_options (argc, argv); //Command-line options
 
+  //randominit (0);
+  set_taus_seed (0);
+
+  // initialize the log (see log.h for details)
+  logInit();
+
   set_glog(LOG_WARNING, LOG_MED);
   if (UE_flag==1)
   {
@@ -1360,12 +1366,6 @@ int main(int argc, char **argv) {
 #endif
     set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);;
   }
-
-  //randominit (0);
-  set_taus_seed (0);
-
-  // initialize the log (see log.h for details)
-  logInit();
 
   if (ouput_vcd) {
     if (UE_flag==1)

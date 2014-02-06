@@ -116,62 +116,62 @@ extern pdcp_mbms_t pdcp_mbms_array[MAX_MODULES][16*29];
 
 extern void help (void);
 
-enum {
-    LONG_OPTION_START = 0x100, /* Start after regular single char options */
-
-    LONG_OPTION_ENB_CONF,
-
-    LONG_OPTION_PDNC_PERIOD,
-    LONG_OPTION_OMG_PERIOD,
-
-    LONG_OPTION_ENB_RAL_LISTENING_PORT,
-    LONG_OPTION_ENB_RAL_IP_ADDRESS,
-    LONG_OPTION_ENB_RAL_LINK_ID,
-    LONG_OPTION_ENB_RAL_LINK_ADDRESS,
-
-    LONG_OPTION_ENB_MIHF_REMOTE_PORT,
-    LONG_OPTION_ENB_MIHF_IP_ADDRESS,
-    LONG_OPTION_ENB_MIHF_ID,
-
-    LONG_OPTION_UE_RAL_LISTENING_PORT,
-    LONG_OPTION_UE_RAL_IP_ADDRESS,
-    LONG_OPTION_UE_RAL_LINK_ID,
-    LONG_OPTION_UE_RAL_LINK_ADDRESS,
-
-    LONG_OPTION_UE_MIHF_REMOTE_PORT,
-    LONG_OPTION_UE_MIHF_IP_ADDRESS,
-    LONG_OPTION_UE_MIHF_ID,
-} long_option_e;
-
-static struct option long_options[] = {
-  {"enb-conf",               required_argument, 0, LONG_OPTION_ENB_CONF},
-
-  {"pdcp_period",            required_argument, 0, LONG_OPTION_PDNC_PERIOD},
-  {"omg_period",             required_argument, 0, LONG_OPTION_OMG_PERIOD},
-
-  {"enb-ral-listening-port", required_argument, 0, LONG_OPTION_ENB_RAL_LISTENING_PORT},
-  {"enb-ral-ip-address",     required_argument, 0, LONG_OPTION_ENB_RAL_IP_ADDRESS},
-  {"enb-ral-link-id",        required_argument, 0, LONG_OPTION_ENB_RAL_LINK_ID},
-  {"enb-ral-link-address",   required_argument, 0, LONG_OPTION_ENB_RAL_LINK_ADDRESS},
-
-  {"enb-mihf-remote-port",   required_argument, 0, LONG_OPTION_ENB_MIHF_REMOTE_PORT},
-  {"enb-mihf-ip-address",    required_argument, 0, LONG_OPTION_ENB_MIHF_IP_ADDRESS},
-  {"enb-mihf-id",            required_argument, 0, LONG_OPTION_ENB_MIHF_ID},
-
-  {"ue-ral-listening-port",  required_argument, 0, LONG_OPTION_UE_RAL_LISTENING_PORT},
-  {"ue-ral-ip-address",      required_argument, 0, LONG_OPTION_UE_RAL_IP_ADDRESS},
-  {"ue-ral-link-id",         required_argument, 0, LONG_OPTION_UE_RAL_LINK_ID},
-  {"ue-ral-link-address",    required_argument, 0, LONG_OPTION_UE_RAL_LINK_ADDRESS},
-
-  {"ue-mihf-remote-port",    required_argument, 0, LONG_OPTION_UE_MIHF_REMOTE_PORT},
-  {"ue-mihf-ip-address",     required_argument, 0, LONG_OPTION_UE_MIHF_IP_ADDRESS},
-  {"ue-mihf-id",             required_argument, 0, LONG_OPTION_UE_MIHF_ID},
-  {NULL, 0, NULL, 0}
-};
-
 void get_simulation_options(int argc, char *argv[]) {
   int                           option;
   const Enb_properties_array_t *enb_properties;
+
+  enum long_option_e {
+      LONG_OPTION_START = 0x100, /* Start after regular single char options */
+
+      LONG_OPTION_ENB_CONF,
+
+      LONG_OPTION_PDNC_PERIOD,
+      LONG_OPTION_OMG_PERIOD,
+
+      LONG_OPTION_ENB_RAL_LISTENING_PORT,
+      LONG_OPTION_ENB_RAL_IP_ADDRESS,
+      LONG_OPTION_ENB_RAL_LINK_ID,
+      LONG_OPTION_ENB_RAL_LINK_ADDRESS,
+
+      LONG_OPTION_ENB_MIHF_REMOTE_PORT,
+      LONG_OPTION_ENB_MIHF_IP_ADDRESS,
+      LONG_OPTION_ENB_MIHF_ID,
+
+      LONG_OPTION_UE_RAL_LISTENING_PORT,
+      LONG_OPTION_UE_RAL_IP_ADDRESS,
+      LONG_OPTION_UE_RAL_LINK_ID,
+      LONG_OPTION_UE_RAL_LINK_ADDRESS,
+
+      LONG_OPTION_UE_MIHF_REMOTE_PORT,
+      LONG_OPTION_UE_MIHF_IP_ADDRESS,
+      LONG_OPTION_UE_MIHF_ID,
+  };
+
+  static struct option long_options[] = {
+    {"enb-conf",               required_argument, 0, LONG_OPTION_ENB_CONF},
+
+    {"pdcp_period",            required_argument, 0, LONG_OPTION_PDNC_PERIOD},
+    {"omg_period",             required_argument, 0, LONG_OPTION_OMG_PERIOD},
+
+    {"enb-ral-listening-port", required_argument, 0, LONG_OPTION_ENB_RAL_LISTENING_PORT},
+    {"enb-ral-ip-address",     required_argument, 0, LONG_OPTION_ENB_RAL_IP_ADDRESS},
+    {"enb-ral-link-id",        required_argument, 0, LONG_OPTION_ENB_RAL_LINK_ID},
+    {"enb-ral-link-address",   required_argument, 0, LONG_OPTION_ENB_RAL_LINK_ADDRESS},
+
+    {"enb-mihf-remote-port",   required_argument, 0, LONG_OPTION_ENB_MIHF_REMOTE_PORT},
+    {"enb-mihf-ip-address",    required_argument, 0, LONG_OPTION_ENB_MIHF_IP_ADDRESS},
+    {"enb-mihf-id",            required_argument, 0, LONG_OPTION_ENB_MIHF_ID},
+
+    {"ue-ral-listening-port",  required_argument, 0, LONG_OPTION_UE_RAL_LISTENING_PORT},
+    {"ue-ral-ip-address",      required_argument, 0, LONG_OPTION_UE_RAL_IP_ADDRESS},
+    {"ue-ral-link-id",         required_argument, 0, LONG_OPTION_UE_RAL_LINK_ID},
+    {"ue-ral-link-address",    required_argument, 0, LONG_OPTION_UE_RAL_LINK_ADDRESS},
+
+    {"ue-mihf-remote-port",    required_argument, 0, LONG_OPTION_UE_MIHF_REMOTE_PORT},
+    {"ue-mihf-ip-address",     required_argument, 0, LONG_OPTION_UE_MIHF_IP_ADDRESS},
+    {"ue-mihf-id",             required_argument, 0, LONG_OPTION_UE_MIHF_ID},
+    {NULL, 0, NULL, 0}
+  };
 
   while ((option = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, NULL)) != -1) {
     switch (option) {
