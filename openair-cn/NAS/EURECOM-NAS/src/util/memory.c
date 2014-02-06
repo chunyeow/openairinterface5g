@@ -61,17 +61,20 @@ char* memory_get_path(const char* dirname, const char* filename)
     /* Get non-volatile data directory */
     const char* path = getenv(dirname);
     if (path == NULL) {
-	path = getenv(DEFAULT_NAS_PATH);
+        path = getenv(DEFAULT_NAS_PATH);
+    }
+    if (path == NULL) {
+        return NULL;
     }
 
     /* Append non-volatile data file name */
     size_t size = strlen(path) + strlen(filename) + 1;
     char* data_filename = (char*)malloc(size+1);
     if (data_filename != NULL) {
-	if (size != sprintf(data_filename, "%s/%s", path, filename)) {
-	    free(data_filename);
-	    return NULL;
-	}
+        if (size != sprintf(data_filename, "%s/%s", path, filename)) {
+            free(data_filename);
+            return NULL;
+        }
     }
 
     return data_filename;
