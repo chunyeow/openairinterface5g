@@ -7,7 +7,8 @@ eNB_test:lxrt+sem+mbx+msg+smi:!sudo ./lte-softmodem -S -F enb2tx;sleep 1;popall:
 UE:lxrt+sem+mbx+msg+fifos:!sudo ./synctest -U -d -T 108;sleep 1;popall:control_c
 #UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907602944 -V;sleep 1;popall:control_c
 #EXMIMO2 card 1
-UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600480 -V;sleep 1;popall:control_c
+#UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600480 -V;sleep 1;popall:control_c
+UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600480 -V -K /tmp/itti_UE0.log;sleep 1;popall:control_c
 #EXMIMO2 card 5 
 #UE0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907597240 -V;sleep 1;popall:control_c
 UE0_smbv:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907598252 -V;sleep 1;popall:control_c
@@ -24,9 +25,9 @@ UE1noL2:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600000 -F ue1 
 UE2:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600000 -F ue2;sleep 1;popall:control_c
 UE2prach:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600000 -F ue2 --debug-ue-prach;sleep 1;popall:control_c
 UE2noL2:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -U -d -C 1907600000 -F ue2 --no-L2-connect;sleep 1;popall:control_c
-eNB0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -C 1907600000 -d -V;sleep 1;popall:control_c
+#eNB0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -C 1907600000 -d -V;sleep 1;popall:control_c
 #eNB0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -C 1907598252 -d -V;sleep 1;popall:control_c
-eNB1:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -C 1907600000 -F ex2_2 -d;sleep 1;popall:control_c
+eNB0:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -d -O../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.pft.sud.conf -V -K /tmp/itti_eNB0.log;sleep 1;popall:control_ceNB1:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -C 1907600000 -F ex2_2 -d;sleep 1;popall:control_c
 eNB2:lxrt+sem+mbx+msg+fifos:!sudo ./lte-softmodem -C 1907600000 -F ue2 -d;sleep 1;popall:control_c
 dot11:lxrt+sem+mbx+msg+fifos:!sudo ./dot11 -C 1907600000 -d;sleep 1;popall:control_c
 dot11_tx_test: lxrt+sem+mbx+msg+fifos:!sudo ./dot11 -C 1907600000 -d -t;sleep 1;popall:control_c
