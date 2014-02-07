@@ -264,7 +264,7 @@ void *scope_thread(void *arg)
 
     }
     //printf("doing forms\n");
-    sleep(1);
+    usleep(100000); // 100 ms
   }
 
   //fclose (UE_stats);

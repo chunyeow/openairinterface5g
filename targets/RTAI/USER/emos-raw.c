@@ -140,7 +140,7 @@ char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
 u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
-char *g_conf_config_file_name = NULL;
+char *conf_config_file_name = NULL;
 
 unsigned int lost_bytes=0;
 
@@ -263,7 +263,7 @@ void *scope_thread(void *arg) {
               
         }
         //printf("doing forms\n");
-        sleep(0.1);
+        usleep(100000); // 100 ms
     }
     
     //fclose (UE_stats);
@@ -671,9 +671,9 @@ int main(int argc, char **argv) {
     {
       switch (c)
         {
-	case 'V':
+          case 'V':
           ouput_vcd = 1;
-	  break;
+          break;
         case 'd':
           do_forms=1;
           break;
@@ -700,7 +700,7 @@ int main(int argc, char **argv) {
 #endif
           break;
         case 'O':
-          g_conf_config_file_name = optarg;
+          conf_config_file_name = optarg;
           break;
         case 'F':
           sprintf(rxg_fname,"%srxg.lime",optarg);
@@ -711,10 +711,10 @@ int main(int argc, char **argv) {
             while (fgets(line, sizeof(line), rxg_fd)) {
               if ((strlen(line)==0) || (*line == '#')) continue; //ignore empty or comment lines
               else {
-            if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
-            if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
-            if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
-            l++;
+                if (l==0) sscanf(line,"%d %d %d %d",&rxg_max[0],&rxg_max[1],&rxg_max[2],&rxg_max[3]);
+                if (l==1) sscanf(line,"%d %d %d %d",&rxg_med[0],&rxg_med[1],&rxg_med[2],&rxg_med[3]);
+                if (l==2) sscanf(line,"%d %d %d %d",&rxg_byp[0],&rxg_byp[1],&rxg_byp[2],&rxg_byp[3]);
+                l++;
               }
             }
           }
