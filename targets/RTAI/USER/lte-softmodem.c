@@ -299,10 +299,12 @@ void exit_fun(const char* s)
 }
 
 #ifdef XFORMS
-void *scope_thread(void *arg) {
+static void *scope_thread(void *arg) {
     char stats_buffer[16384];
-    //FILE *UE_stats, *eNB_stats;
+# ifdef ENABLE_XFORMS_WRITE_STATS
+    FILE *UE_stats, *eNB_stats;
     int len = 0;
+# endif
     struct sched_param sched_param;
 
     sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO)+1; 
@@ -319,21 +321,30 @@ void *scope_thread(void *arg) {
     
     while (!oai_exit) {
         if (UE_flag==1) {
-            len = dump_ue_stats (PHY_vars_UE_g[0], stats_buffer, 0, mode,rx_input_level_dBm);
+# ifdef ENABLE_XFORMS_WRITE_STATS
+            len =
+# endif
+                    dump_ue_stats (PHY_vars_UE_g[0], stats_buffer, 0, mode,rx_input_level_dBm);
             fl_set_object_label(form_stats->stats_text, stats_buffer);
-            //rewind (UE_stats);
-            //fwrite (stats_buffer, 1, len, UE_stats);
-            
+# ifdef ENABLE_XFORMS_WRITE_STATS
+            rewind (UE_stats);
+            fwrite (stats_buffer, 1, len, UE_stats);
+# endif
             phy_scope_UE(form_ue[UE_id], 
                          PHY_vars_UE_g[UE_id],
                          eNB_id,
                          UE_id,7);
             
         } else {
-            len = dump_eNB_stats (PHY_vars_eNB_g[0], stats_buffer, 0);
+# ifdef ENABLE_XFORMS_WRITE_STATS
+            len =
+# endif
+                    dump_eNB_stats (PHY_vars_eNB_g[0], stats_buffer, 0);
             fl_set_object_label(form_stats->stats_text, stats_buffer);
-            //rewind (eNB_stats);
-            //fwrite (stats_buffer, 1, len, eNB_stats);
+# ifdef ENABLE_XFORMS_WRITE_STATS
+            rewind (eNB_stats);
+            fwrite (stats_buffer, 1, len, eNB_stats);
+# endif
             for(UE_id=0;UE_id<scope_enb_num_ue;UE_id++) {
                 phy_scope_eNB(form_enb[UE_id], 
                               PHY_vars_eNB_g[eNB_id],
@@ -345,8 +356,10 @@ void *scope_thread(void *arg) {
         usleep(100000); // 100 ms
     }
     
-    //fclose (UE_stats);
-    //fclose (eNB_stats);
+# ifdef ENABLE_XFORMS_WRITE_STATS
+    fclose (UE_stats);
+    fclose (eNB_stats);
+# endif
     
     pthread_exit((void*)arg);
 }
@@ -517,6 +530,25 @@ void *emos_thread (void *arg)
 #endif
 
 #if defined(ENABLE_ITTI)
+static void wait_system_ready (char *message, volatile int *start_flag)
+{
+  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+  {
+    static char *indicator[] = {".    ", "..   ", "...  ", ".... ", ".....",
+                                " ....", "  ...", "   ..", "    .", "     "};
+    int i = 0;
+
+    while ((!oai_exit) && (*start_flag == 0)) {
+      LOG_N(EMU, message, indicator[i]);
+      i = (i + 1) % (sizeof(indicator) / sizeof(indicator[0]));
+      usleep(200000);
+    }
+    LOG_D(EMU,"\n");
+  }
+}
+#endif
+
+  #if defined(ENABLE_ITTI)
 void *l2l1_task(void *arg)
 {
     MessageDef *message_p = NULL;
@@ -607,17 +639,7 @@ static void *eNB_thread(void *arg)
 
 #if defined(ENABLE_ITTI)
   /* Wait for eNB application initialization to be complete (eNB registration to MME) */
-  {
-    char *indicator[] = {".  ", ".. ", "...", " ..", "  .", "   "};
-    int i = 0;
-
-    while ((!oai_exit) && (start_eNB == 0)) {
-      LOG_N(HW,"Waiting for eNB application to be ready %s\r", indicator[i]);
-      i = (i + 1) % (sizeof(indicator) / sizeof(indicator[0]));
-      usleep(200000);
-    }
-    LOG_D(HW,"\n");
-  }
+  wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
 #endif
 
 #ifdef RTAI
@@ -852,17 +874,7 @@ static void *UE_thread(void *arg)
 
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
   /* Wait for NAS UE to start cell selection */
-  {
-    char *indicator[] = {".  ", ".. ", "...", " ..", "  .", "   "};
-    int i = 0;
-
-    while ((!oai_exit) && (start_UE == 0)) {
-      LOG_N(HW,"Waiting for UE to be activated %s\r", indicator[i]);
-      i = (i + 1) % (sizeof(indicator) / sizeof(indicator[0]));
-      usleep(200000);
-    }
-    LOG_D(HW,"\n");
-  }
+  wait_system_ready ("Waiting for UE to be activated by UserProcess %s\r", &start_UE);
 #endif
 
 #ifdef RTAI
@@ -1334,7 +1346,7 @@ int main(int argc, char **argv) {
     set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(RRC,     LOG_INFO,   LOG_HIGH, 1);
 #if defined(ENABLE_ITTI)
-    set_comp_log(EMU,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)
     set_comp_log(NAS,     LOG_INFO,   LOG_HIGH, 1);
 # endif
@@ -1356,7 +1368,7 @@ int main(int argc, char **argv) {
     set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(RRC,     LOG_INFO,   LOG_HIGH, 1);
 #if defined(ENABLE_ITTI)
-    set_comp_log(EMU,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)
     set_comp_log(S1AP,    LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(SCTP,    LOG_INFO,   LOG_HIGH, 1);
