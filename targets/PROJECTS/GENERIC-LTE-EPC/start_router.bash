@@ -3,8 +3,8 @@
 #############################################################
 #Setting the EXTERNAL and INTERNAL interfaces for the network
 #############################################################
-declare EXTIF="eth0"
-declare INTIF="eth3"
+declare EXTIF="eth1"
+declare INTIF="eth2"
 
 IPTABLES=/sbin/iptables
 DEPMOD=/sbin/depmod
@@ -169,6 +169,7 @@ done
 for i in 5 6 7 8 9 10 11 12 13 14 15
 do
     bash_exec "vconfig add $INTIF $i"
+    bash_exec "ifconfig $INTIF.$i up"
     sync
     NET=$(( $i + 200 ))
     CIDR='10.0.'$NET'.1/8'
