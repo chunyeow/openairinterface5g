@@ -59,5 +59,19 @@ typedef struct sgw_app_s{
 
 } sgw_app_t;
 
+typedef struct ipv4_address_s {
+
+}ipv4_address_t;
+typedef struct ipv6_address_s {
+
+}ipv6_address_t;
+
+typedef struct pgw_app_s{
+    STAILQ_HEAD(free_ipv4_addresses_head_s,      ipv4_address_s) free_ipv4_addresses_head;
+    STAILQ_HEAD(free_ipv6_addresses_head_s,      ipv6_address_s) free_ipv6_addresses_head;
+    STAILQ_HEAD(allocated_ipv4_addresses_head_s, ipv4_address_s) allocated_ipv4_addresses_head;
+    STAILQ_HEAD(allocated_ipv6_addresses_head_s, ipv6_address_s) allocated_ipv6_addresses_head;
+} pgw_app_t;
+
 #endif
 

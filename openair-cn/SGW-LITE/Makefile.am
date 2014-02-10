@@ -12,11 +12,12 @@ AM_CFLAGS = @ADD_CFLAGS@ \
     -I$(top_srcdir)/UTILS/HASHTABLE
 
 noinst_LTLIBRARIES = libsgw_lite.la
-libsgw_lite_la_LDFLAGS = -all-static
+libsgw_lite_la_LDFLAGS = -all-static -lconfig
 
-libsgw_lite_la_SOURCES=						\
-	s11_causes.c		s11_causes.h			\
-	sgw_lite_task.c						\
-	sgw_lite_handlers.c		sgw_lite_handlers.h	\
+libsgw_lite_la_SOURCES=							\
+	spgw_config.c				spgw_config.h	\
+	s11_causes.c				s11_causes.h	\
+	sgw_lite_task.c								\
+	sgw_lite_handlers.c			sgw_lite_handlers.h	\
 	sgw_lite_context_manager.c	sgw_lite_context_manager.h \
-	sgw_lite.h
+	sgw_lite.h	sgw_lite_defs.h	sgw_lite_ie_defs.h	

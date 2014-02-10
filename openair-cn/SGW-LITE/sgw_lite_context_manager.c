@@ -27,6 +27,8 @@
                  06410 Biot FRANCE
 
 *******************************************************************************/
+#define SGW_LITE
+#define SGW_LITE_CONTEXT_MANAGER_C
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -65,7 +67,7 @@ void sgw_lite_display_s11teid2mme_mappings(void)
     SPGW_APP_DEBUG("+--------------------------------------+\n");
     SPGW_APP_DEBUG("| MME <--- S11 TE ID MAPPINGS ---> SGW |\n");
     SPGW_APP_DEBUG("+--------------------------------------+\n");
-    hashtbl_apply_funct_on_elements(sgw_app.s11teid2mme_hashtable, sgw_lite_display_s11teid2mme_mapping, NULL);
+    hashtable_apply_funct_on_elements(sgw_app.s11teid2mme_hashtable, sgw_lite_display_s11teid2mme_mapping, NULL);
     SPGW_APP_DEBUG("+--------------------------------------+\n");
 }
 //-----------------------------------------------------------------------------
@@ -91,7 +93,7 @@ static void sgw_lite_display_s11_bearer_context_information(uint64_t keyP, void 
 //-----------------------------------------------------------------------------
 {
     s_plus_p_gw_eps_bearer_context_information_t * sp_context_information= NULL;
-    hashtbl_rc_t                                   hash_rc;
+    hashtable_rc_t                                   hash_rc;
 
     if (dataP != NULL) {
     	sp_context_information = (s_plus_p_gw_eps_bearer_context_information_t *)dataP;
@@ -111,7 +113,7 @@ static void sgw_lite_display_s11_bearer_context_information(uint64_t keyP, void 
         SPGW_APP_DEBUG("|\t\t\tdefault_bearer:    %u\n", sp_context_information->sgw_eps_bearer_context_information.pdn_connection.default_bearer);
         SPGW_APP_DEBUG("|\t\t\teps_bearers:\n");
 
-        hash_rc = hashtbl_apply_funct_on_elements(sp_context_information->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers,
+        hash_rc = hashtable_apply_funct_on_elements(sp_context_information->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers,
         		sgw_lite_display_pdn_connection_sgw_eps_bearers,
         		NULL);
         if (hash_rc != HASH_TABLE_OK) {
@@ -131,7 +133,7 @@ void sgw_lite_display_s11_bearer_context_information_mapping(void)
     SPGW_APP_DEBUG("+-----------------------------------------+\n");
     SPGW_APP_DEBUG("| S11 BEARER CONTEXT INFORMATION MAPPINGS |\n");
     SPGW_APP_DEBUG("+-----------------------------------------+\n");
-    hashtbl_apply_funct_on_elements(sgw_app.s11_bearer_context_information_hashtable, sgw_lite_display_s11_bearer_context_information, NULL);
+    hashtable_apply_funct_on_elements(sgw_app.s11_bearer_context_information_hashtable, sgw_lite_display_s11_bearer_context_information, NULL);
     SPGW_APP_DEBUG("+--------------------------------------+\n");
 }
 //-----------------------------------------------------------------------------
@@ -140,7 +142,7 @@ void pgw_lite_cm_free_apn(pgw_apn_t *apnP)
 {
 	if (apnP != NULL) {
 		if (apnP->pdn_connections != NULL) {
-		    obj_hashtbl_destroy(apnP->pdn_connections);
+		    obj_hashtable_destroy(apnP->pdn_connections);
 		}
 	}
 }
@@ -175,7 +177,7 @@ mme_sgw_tunnel_t *sgw_lite_cm_create_s11_tunnel(Teid_t remote_teid, Teid_t local
     /* Trying to insert the new tunnel into the tree.
      * If collision_p is not NULL (0), it means tunnel is already present.
      */
-    hashtbl_insert(sgw_app.s11teid2mme_hashtable, local_teid, new_tunnel);
+    hashtable_insert(sgw_app.s11teid2mme_hashtable, local_teid, new_tunnel);
 
     return new_tunnel;
 }
@@ -186,7 +188,7 @@ int sgw_lite_cm_remove_s11_tunnel(Teid_t local_teid)
 {
     int  temp;
 
-    temp = hashtbl_remove(sgw_app.s11teid2mme_hashtable, local_teid);
+    temp = hashtable_remove(sgw_app.s11teid2mme_hashtable, local_teid);
 
     return temp;
 }
@@ -223,7 +225,7 @@ sgw_pdn_connection_t * sgw_lite_cm_create_pdn_connection(void)
     }
 	memset(pdn_connection, 0, sizeof(sgw_pdn_connection_t));
 
-    pdn_connection->sgw_eps_bearers = hashtbl_create(12, NULL, NULL);
+    pdn_connection->sgw_eps_bearers = hashtable_create(12, NULL, NULL);
     if ( pdn_connection->sgw_eps_bearers == NULL) {
         SPGW_APP_ERROR("Failed to create eps bearers collection object\n");
         free(pdn_connection);
@@ -238,7 +240,7 @@ void sgw_lite_cm_free_pdn_connection(sgw_pdn_connection_t *pdn_connectionP)
 {
 	if (pdn_connectionP != NULL) {
 		if (pdn_connectionP->sgw_eps_bearers != NULL) {
-		    hashtbl_destroy(pdn_connectionP->sgw_eps_bearers);
+		    hashtable_destroy(pdn_connectionP->sgw_eps_bearers);
 		}
 	}
 }
@@ -250,14 +252,14 @@ void sgw_lite_cm_free_s_plus_p_gw_eps_bearer_context_information(s_plus_p_gw_eps
 		return;
 	}
 	/*if (contextP->sgw_eps_bearer_context_information.pdn_connections != NULL) {
-		obj_hashtbl_destroy(contextP->sgw_eps_bearer_context_information.pdn_connections);
+		obj_hashtable_destroy(contextP->sgw_eps_bearer_context_information.pdn_connections);
 	}*/
 	if (contextP->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers != NULL) {
-	    hashtbl_destroy(contextP->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers);
+	    hashtable_destroy(contextP->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers);
 	}
 
 	if (contextP->pgw_eps_bearer_context_information.apns != NULL) {
-		obj_hashtbl_destroy(contextP->pgw_eps_bearer_context_information.apns);
+		obj_hashtable_destroy(contextP->pgw_eps_bearer_context_information.apns);
 	}
     free(contextP);
 }
@@ -278,7 +280,7 @@ s_plus_p_gw_eps_bearer_context_information_t * sgw_lite_cm_create_bearer_context
 	memset(new_bearer_context_information, 0, sizeof(s_plus_p_gw_eps_bearer_context_information_t));
     SPGW_APP_DEBUG("sgw_lite_cm_create_bearer_context_information_in_collection %d\n", teid);
 
-    /*new_bearer_context_information->sgw_eps_bearer_context_information.pdn_connections = obj_hashtbl_create(32, NULL, NULL, sgw_lite_cm_free_pdn_connection);
+    /*new_bearer_context_information->sgw_eps_bearer_context_information.pdn_connections = obj_hashtable_create(32, NULL, NULL, sgw_lite_cm_free_pdn_connection);
 
     if ( new_bearer_context_information->sgw_eps_bearer_context_information.pdn_connections == NULL) {
         SPGW_APP_ERROR("Failed to create PDN connections collection object entry for EPS bearer teid %u \n", teid);
@@ -286,7 +288,7 @@ s_plus_p_gw_eps_bearer_context_information_t * sgw_lite_cm_create_bearer_context
         return NULL;
     }*/
 
-    new_bearer_context_information->pgw_eps_bearer_context_information.apns = obj_hashtbl_create(32, NULL, NULL, pgw_lite_cm_free_apn);
+    new_bearer_context_information->pgw_eps_bearer_context_information.apns = obj_hashtable_create(32, NULL, NULL, pgw_lite_cm_free_apn);
 
     if ( new_bearer_context_information->pgw_eps_bearer_context_information.apns == NULL) {
         SPGW_APP_ERROR("Failed to create APN collection object entry for EPS bearer S11 teid %u \n", teid);
@@ -297,7 +299,7 @@ s_plus_p_gw_eps_bearer_context_information_t * sgw_lite_cm_create_bearer_context
     /* Trying to insert the new tunnel into the tree.
      * If collision_p is not NULL (0), it means tunnel is already present.
      */
-    hashtbl_insert(sgw_app.s11_bearer_context_information_hashtable, teid, new_bearer_context_information);
+    hashtable_insert(sgw_app.s11_bearer_context_information_hashtable, teid, new_bearer_context_information);
     SPGW_APP_DEBUG("Added new s_plus_p_gw_eps_bearer_context_information_t in s11_bearer_context_information_hashtable key teid %u\n", teid);
 
     return new_bearer_context_information;
@@ -305,7 +307,7 @@ s_plus_p_gw_eps_bearer_context_information_t * sgw_lite_cm_create_bearer_context
 
 int sgw_lite_cm_remove_bearer_context_information(Teid_t teid) {
 	int temp;
-    temp = hashtbl_remove(sgw_app.s11_bearer_context_information_hashtable, teid);
+    temp = hashtable_remove(sgw_app.s11_bearer_context_information_hashtable, teid);
     return temp;
 }
 
@@ -316,7 +318,7 @@ sgw_eps_bearer_entry_t * sgw_lite_cm_create_eps_bearer_entry_in_collection(hash_
 //-----------------------------------------------------------------------------
 {
 	sgw_eps_bearer_entry_t *new_eps_bearer_entry;
-	hashtbl_rc_t            hash_rc = HASH_TABLE_OK;
+	hashtable_rc_t            hash_rc = HASH_TABLE_OK;
 
     if (eps_bearersP == NULL) {
         SPGW_APP_ERROR("Failed to create EPS bearer entry for EPS bearer id %u. reason eps bearer hashtable is NULL \n", eps_bearer_idP);
@@ -333,10 +335,10 @@ sgw_eps_bearer_entry_t * sgw_lite_cm_create_eps_bearer_entry_in_collection(hash_
 
     new_eps_bearer_entry->eps_bearer_id = eps_bearer_idP;
 
-    hash_rc = hashtbl_insert(eps_bearersP, eps_bearer_idP, new_eps_bearer_entry);
-    SPGW_APP_DEBUG("Inserted new EPS bearer entry for EPS bearer id %u status %s\n", eps_bearer_idP, hashtble_rc_code2string(hash_rc));
+    hash_rc = hashtable_insert(eps_bearersP, eps_bearer_idP, new_eps_bearer_entry);
+    SPGW_APP_DEBUG("Inserted new EPS bearer entry for EPS bearer id %u status %s\n", eps_bearer_idP, hashtable_rc_code2string(hash_rc));
 
-    hash_rc = hashtbl_apply_funct_on_elements(eps_bearersP,
+    hash_rc = hashtable_apply_funct_on_elements(eps_bearersP,
     		sgw_lite_display_pdn_connection_sgw_eps_bearers,
     		NULL);
     if (hash_rc != HASH_TABLE_OK) {
@@ -358,7 +360,7 @@ int sgw_lite_cm_remove_eps_bearer_entry(hash_table_t *eps_bearersP, ebi_t eps_be
     if (eps_bearersP == NULL) {
         return -1;
     }
-    temp = hashtbl_remove(eps_bearersP, eps_bearer_idP);
+    temp = hashtable_remove(eps_bearersP, eps_bearer_idP);
 
     return temp;
 }

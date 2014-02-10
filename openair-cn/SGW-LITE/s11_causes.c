@@ -27,6 +27,8 @@
                  06410 Biot FRANCE
 
 *******************************************************************************/
+#define SGW_LITE
+#define S11_CAUSES_C
 
 #include <stdio.h>
 #include <stdlib.h>

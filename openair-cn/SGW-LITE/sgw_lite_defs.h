@@ -44,6 +44,6 @@
     while(0)
 #endif
 
-int sgw_lite_init(const mme_config_t *mme_config);
+int sgw_lite_init(char* config_file_name_pP);
 
 #endif /* SGW_LITE_DEFS_H_ */
