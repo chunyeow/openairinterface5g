@@ -29,6 +29,7 @@
  *******************************************************************************/
 
 #include <string.h>
+#include <stdio.h>
 
 #include "enb_app.h"
 #include "enb_config.h"
@@ -97,10 +98,12 @@ static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_pro
 # if defined(ENABLE_USE_MME)
 static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, const Enb_properties_array_t *enb_properties)
 {
-    uint32_t enb_id;
-    uint32_t mme_id;
-    MessageDef *msg_p;
-    uint32_t register_enb_pending = 0;
+    uint32_t         enb_id;
+    uint32_t         mme_id;
+    MessageDef      *msg_p;
+    uint32_t         register_enb_pending = 0;
+    char            *str                  = NULL;
+    struct in_addr   addr;
 
 #   if defined(OAI_EMU)
 
@@ -142,6 +145,12 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
                          enb_properties->properties[enb_id]->mme_ip_address[mme_id].ipv6_address,
                          sizeof(s1ap_register_eNB->mme_ip_address[0].ipv6_address));
             }
+
+            s1ap_register_eNB->enb_ip_address.ipv6 = 0;
+            s1ap_register_eNB->enb_ip_address.ipv4 = 1;
+            addr.s_addr = enb_properties->properties[enb_id]->enb_ipv4_address_for_S1_MME;
+            str = inet_ntoa(addr);
+            strcpy(s1ap_register_eNB->enb_ip_address.ipv4_address, str);
 
             itti_send_msg_to_task (TASK_S1AP, enb_id, msg_p);
 

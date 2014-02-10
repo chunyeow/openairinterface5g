@@ -427,13 +427,13 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                   subsetting = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_NETWORK_INTERFACES_CONFIG);
                   if(subsetting != NULL) {
                       if(  (
-                              config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1_MME,
+                              config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1_MME,
                                       (const char **)&enb_interface_name_for_S1_MME)
-                           && config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_IPV4_ADDRESS_FOR_S1_MME,
+                           && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_IPV4_ADDRESS_FOR_S1_MME,
                                    (const char **)&enb_ipv4_address_for_S1_MME)
-                           && config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U,
+                           && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U,
                                    (const char **)&enb_interface_name_for_S1U)
-                           && config_setting_lookup_string( setting, ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U,
+                           && config_setting_lookup_string( subsetting, ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U,
                                    (const char **)&enb_ipv4_address_for_S1U)
                          )
                      ){
@@ -441,7 +441,6 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           cidr = enb_ipv4_address_for_S1U;
                           address = strtok(cidr, "/");
                           if (address) {
-                              address = strdup(address);
                               IPV4_STR_ADDR_TO_INT_NWBO ( address, enb_properties.properties[enb_properties_index]->enb_ipv4_address_for_S1U, "BAD IP ADDRESS FORMAT FOR eNB S1_U !\n" );
                           }
 
@@ -449,7 +448,6 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           cidr = enb_ipv4_address_for_S1_MME;
                           address = strtok(cidr, "/");
                           if (address) {
-                              address = strdup(address);
                               IPV4_STR_ADDR_TO_INT_NWBO ( address, enb_properties.properties[enb_properties_index]->enb_ipv4_address_for_S1_MME, "BAD IP ADDRESS FORMAT FOR eNB S1_MME !\n" );
                           }
                       }
