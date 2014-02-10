@@ -140,6 +140,7 @@ rotate_log_file () {
         NEWLOGFILE=$1.$TIMESTAMP
         mv $1 $NEWLOGFILE
         cat /dev/null > $1
+        sync
         nohup gzip -f -9 $NEWLOGFILE &
     fi
 }
@@ -387,6 +388,8 @@ build_enb_vlan_network() {
         sync
         bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1_MME 1"
         sync
+        bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1_MME.1 up"
+        sync
         bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME/$ENB_IPV4_NETMASK_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME.1"
     else
         echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME $ENB_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx)'
@@ -398,6 +401,8 @@ build_enb_vlan_network() {
         vconfig rem $ENB_INTERFACE_NAME_FOR_S1U.2      > /dev/null 2>&1
         sync
         bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1U 2"
+        sync
+        bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1U.2 up"
         sync
         bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U/$ENB_IPV4_NETMASK_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U".2
         sync
@@ -478,6 +483,8 @@ build_mme_spgw_vlan_network() {
         sync
         bash_exec "vconfig add $MME_INTERFACE_NAME_FOR_S1_MME 1"
         sync
+        bash_exec "ifconfig  $MME_INTERFACE_NAME_FOR_S1_MME.1 up"
+        sync
         bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME/$MME_IPV4_NETMASK_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME.1"
     else
         echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME $MME_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx)'
@@ -489,6 +496,8 @@ build_mme_spgw_vlan_network() {
         vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2      > /dev/null 2>&1
         sync
         bash_exec "vconfig add $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP 2"
+        sync
+        bash_exec "ifconfig  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2 up"
         sync
         bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP/$SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2"
         sync
@@ -590,6 +599,8 @@ build_mme_spgw_vlan_network() {
             vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i > /dev/null 2>&1
             sync
             bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
+            sync
+            bash_exec "ifconfig  $PGW_INTERFACE_NAME_FOR_SGI.$i up"
             sync
             # configure vlan interface
             #CIDR=$NETWORK'.'$i'/24'
