@@ -187,7 +187,8 @@ typedef struct sgi_read_thread_args_s {
 //-----------------------------------------------------------------------------
 // sgi_task.c
 //-----------------------------------------------------------------------------
-int sgi_init(const mme_config_t *mme_config);
+#include "spgw_config.h"
+int sgi_init(const pgw_config_t *pgw_config_p);
 char* sgi_status_2_str(SGIStatus_t statusP);
 
 //-----------------------------------------------------------------------------

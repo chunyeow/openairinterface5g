@@ -277,7 +277,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
     struct ipv6hdr             *ip6h_p                   = NULL;
     sgi_teid_mapping_t         *mapping_p                = NULL;
     sgi_addr_mapping_t         *addr_mapping_p           = NULL;
-    hashtbl_rc_t                hash_rc;
+    hashtable_rc_t                hash_rc;
     struct in6_addr             src6_addr;        /* source address */
     struct in6_addr            *src6_addr_p;      /* source address */
     u_int32_t                   src4_addr;
@@ -297,8 +297,8 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
         // The entry should be here but all signalling tied with RRC procedures not finished so
         // a data packet can arrive before the MODIFY_BEARER REQUEST
         src4_addr = iph_p->saddr;
-        if (hashtbl_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
             if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
                 SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
                 return -1;
@@ -314,7 +314,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
                     addr_mapping_p->is_outgoing_packet_seen = 1;
                     addr_mapping_p->enb_S1U_teid            = mapping_p->enb_S1U_teid;
                     addr_mapping_p->sgw_S1U_teid            = originating_sgw_S1u_teidP;
-                    hashtbl_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
+                    hashtable_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
                     SGI_IF_DEBUG("%s ASSOCIATED %d.%d.%d.%d to MAC %02x:%02x:%02x:%02x:%02x:%02x teid %d\n",
                             __FUNCTION__, NIPADDR(src4_addr), NMACADDR(eh_p->ether_shost), originating_sgw_S1u_teidP);
                 } else {
@@ -324,7 +324,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
             }
 
         } else {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
         }
         break;
 
@@ -336,8 +336,8 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
         // a data packet can arrive before the MODIFY_BEARER REQUEST
         memcpy(&src4_addr, &((unsigned char*)(&arph_p[1]))[ETH_ALEN], 4);
         SGI_IF_ERROR("%s ARP OPCODE %s TARGET IP %d.%d.%d.%d\n", __FUNCTION__, sgi_arpopcode_2_str(ntohl(arph_p->ar_op)), NIPADDR(src4_addr));
-            if (hashtbl_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
-                hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            if (hashtable_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+                hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
                 if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
                     SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
                     return -1;
@@ -353,7 +353,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
                         addr_mapping_p->is_outgoing_packet_seen = 1;
                         addr_mapping_p->enb_S1U_teid            = mapping_p->enb_S1U_teid;
                         addr_mapping_p->sgw_S1U_teid            = originating_sgw_S1u_teidP;
-                        hashtbl_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
+                        hashtable_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
                         SGI_IF_DEBUG("%s ASSOCIATED %d.%d.%d.%d to MAC %02x:%02x:%02x:%02x:%02x:%02x teid %d\n",
                                 __FUNCTION__, NIPADDR(src4_addr), NMACADDR(eh_p->ether_shost), originating_sgw_S1u_teidP);
                     } else {
@@ -363,7 +363,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
                 }
 
             } else {
-                hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+                hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
             }
             break;
 
@@ -372,8 +372,8 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
     case ETHERTYPE_IPV6:
         ip6h_p     = (struct ipv6hdr *) (buffer_pP + sizeof(struct ether_header));
 
-        if (obj_hashtbl_get(sgi_data_pP->addr_v6_mapping, &src6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+        if (obj_hashtable_get(sgi_data_pP->addr_v6_mapping, &src6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
             if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
                 SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
                 return -1;
@@ -397,7 +397,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
                             return -1;
                         }
                         memcpy(src6_addr_p->s6_addr, ip6h_p->saddr.s6_addr, 16);
-                        obj_hashtbl_insert(sgi_data_pP->addr_v6_mapping, src6_addr_p,sizeof(struct in6_addr), (void*)addr_mapping_p);
+                        obj_hashtable_insert(sgi_data_pP->addr_v6_mapping, src6_addr_p,sizeof(struct in6_addr), (void*)addr_mapping_p);
                     } else {
                         SGI_IF_ERROR("Error TOO MANY IPv6 address already registered for teid %d\n", originating_sgw_S1u_teidP);
                         return -1;
@@ -405,7 +405,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
             }
 
         } else {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
         }
         break;
 
@@ -432,7 +432,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
     struct ipv6hdr             *ip6h_p                   = (struct ipv6hdr *) buffer_pP;
     sgi_teid_mapping_t         *mapping_p                = NULL;
     sgi_addr_mapping_t         *addr_mapping_p           = NULL;
-    hashtbl_rc_t                hash_rc;
+    hashtable_rc_t                hash_rc;
     struct in6_addr             src6_addr;        /* source address */
     struct in6_addr            *src6_addr_p;      /* source address */
     u_int32_t                   src4_addr;
@@ -453,8 +453,8 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
         // a data packet can arrive before the MODIFY_BEARER REQUEST
         sgi_data_pP->eh.ether_type = htons(ETHERTYPE_IP);
         src4_addr = iph_p->saddr;
-        if (hashtbl_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, src4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
             if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
                 SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
                 return -1;
@@ -468,7 +468,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
                     addr_mapping_p->is_outgoing_packet_seen = 1;
                     addr_mapping_p->enb_S1U_teid            = mapping_p->enb_S1U_teid;
                     addr_mapping_p->sgw_S1U_teid            = originating_sgw_S1u_teidP;
-                    hashtbl_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
+                    hashtable_insert(sgi_data_pP->addr_v4_mapping, src4_addr, (void*)addr_mapping_p);
                     SGI_IF_DEBUG("%s ASSOCIATED %d.%d.%d.%d to teid %d\n",
                             __FUNCTION__, NIPADDR(src4_addr), originating_sgw_S1u_teidP);
                 } else {
@@ -478,7 +478,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
             }
 
         } else {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
         }
         break;
 
@@ -487,8 +487,8 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
     //*******************
     case 6:
         sgi_data_pP->eh.ether_type = htons(ETHERTYPE_IPV6);
-        if (obj_hashtbl_get(sgi_data_pP->addr_v6_mapping, &src6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+        if (obj_hashtable_get(sgi_data_pP->addr_v6_mapping, &src6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
             if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
                 SGI_IF_ERROR("%s Error unknown context SGW teid %d\n", __FUNCTION__, originating_sgw_S1u_teidP);
                 return -1;
@@ -510,7 +510,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
                             return -1;
                         }
                         memcpy(src6_addr_p->s6_addr, ip6h_p->saddr.s6_addr, 16);
-                        obj_hashtbl_insert(sgi_data_pP->addr_v6_mapping, src6_addr_p,sizeof(struct in6_addr), (void*)addr_mapping_p);
+                        obj_hashtable_insert(sgi_data_pP->addr_v6_mapping, src6_addr_p,sizeof(struct in6_addr), (void*)addr_mapping_p);
                     } else {
                         SGI_IF_ERROR("Error TOO MANY IPv6 address already registered for teid %d\n", originating_sgw_S1u_teidP);
                         return -1;
@@ -518,7 +518,7 @@ int sgi_send_data(uint8_t *buffer_pP, uint32_t length, sgi_data_t *sgi_data_pP, 
             }
 
         } else {
-            hash_rc = hashtbl_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
+            hash_rc = hashtable_get(sgi_data_pP->teid_mapping, originating_sgw_S1u_teidP, (void**)&mapping_p);
         }
         break;
 

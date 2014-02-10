@@ -57,7 +57,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     //*******************
         iph_p      = (struct iphdr *)   (data_pP + sizeof(struct ether_header));
         dest4_addr = iph_p->daddr;
-        if (hashtbl_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) == HASH_TABLE_OK) {
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) == HASH_TABLE_OK) {
             memcpy(eh_p->ether_dhost, addr_mapping_p->ue_mac_addr, ETH_ALEN);
 
         } else {
@@ -78,7 +78,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     //*******************
         ip6h_p     = (struct ipv6hdr *) (data_pP + sizeof(struct ether_header));
         memcpy(dest6_addr.__in6_u.__u6_addr8, ip6h_p->daddr.__in6_u.__u6_addr8, 16);
-        if (obj_hashtbl_get(sgi_data_pP->addr_v6_mapping, (void*)&dest6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) == HASH_TABLE_OK) {
+        if (obj_hashtable_get(sgi_data_pP->addr_v6_mapping, (void*)&dest6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) == HASH_TABLE_OK) {
             memcpy(eh_p->ether_dhost, addr_mapping_p->ue_mac_addr, ETH_ALEN);
         } else {
             SGI_IF_WARNING("%s Dropping incoming egress IPV6 packet, IPV6 dest %X:%X:%X:%X:%X:%X:%X:%X not found \n", __FUNCTION__, NIP6ADDR(&dest6_addr));
@@ -106,7 +106,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         // get "    unsigned char __ar_tip[4];      /* Target IP address.  */" (from /usr/include/net/if_apr.h line 68)
         memcpy(&dest4_addr, &((unsigned char*)(&arph_p[1]))[ETH_ALEN*2+4], 4);
         SGI_IF_DEBUG("%s ARP OPCODE %s TARGET IP %d.%d.%d.%d\n", __FUNCTION__, sgi_arpopcode_2_str(ntohl(arph_p->ar_op)), NIPADDR(dest4_addr));
-        if (hashtbl_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) == HASH_TABLE_OK) {
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) == HASH_TABLE_OK) {
             memcpy(eh_p->ether_dhost, addr_mapping_p->ue_mac_addr, ETH_ALEN);
         } else {
             if (sgi_data_pP->ipv4_addr == dest4_addr) {
@@ -196,7 +196,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     //*******************
         iph_p      = (struct iphdr *)   (data_pP + sizeof(struct ether_header));
         dest4_addr = iph_p->daddr;
-        if (hashtbl_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
             if (sgi_data_pP->ipv4_addr == dest4_addr) {
                 SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
                 return;
@@ -214,7 +214,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
     //*******************
         ip6h_p     = (struct ipv6hdr *) (data_pP + sizeof(struct ether_header));
         memcpy(dest6_addr.__in6_u.__u6_addr8, ip6h_p->daddr.__in6_u.__u6_addr8, 16);
-        if (obj_hashtbl_get(sgi_data_pP->addr_v6_mapping, (void*)&dest6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+        if (obj_hashtable_get(sgi_data_pP->addr_v6_mapping, (void*)&dest6_addr, sizeof(struct in6_addr), (void**)&addr_mapping_p) != HASH_TABLE_OK) {
             SGI_IF_WARNING("%s Dropping incoming egress IPV6 packet, IPV6 dest %X:%X:%X:%X:%X:%X:%X:%X not found \n", __FUNCTION__, NIP6ADDR(&dest6_addr));
             return;
         }
@@ -239,7 +239,7 @@ void sgi_process_raw_packet(sgi_data_t *sgi_data_pP, unsigned char* data_pP, int
         // get "    unsigned char __ar_tip[4];      /* Target IP address.  */" (from /usr/include/net/if_apr.h line 68)
         memcpy(&dest4_addr, &((unsigned char*)(&arph_p[1]))[ETH_ALEN*2+4], 4);
         SGI_IF_DEBUG("%s ARP OPCODE %s TARGET IP %d.%d.%d.%d\n", __FUNCTION__, sgi_arpopcode_2_str(ntohl(arph_p->ar_op)), NIPADDR(dest4_addr));
-        if (hashtbl_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
+        if (hashtable_get(sgi_data_pP->addr_v4_mapping, dest4_addr, (void**)&addr_mapping_p) != HASH_TABLE_OK) {
             if (sgi_data_pP->ipv4_addr == dest4_addr) {
                 SGI_IF_DEBUG("%s Dropping incoming egress IPV4 packet not UE IP flow\n", __FUNCTION__);
                 return;

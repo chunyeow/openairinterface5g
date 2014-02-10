@@ -143,7 +143,7 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
     sgi_create_endpoint_resp_p->paa            = req_p->paa;
     sgi_create_endpoint_resp_p->status         = SGI_STATUS_OK;
 
-    if (hashtbl_is_key_exists(sgi_dataP->teid_mapping, req_p->sgw_S1u_teid) == HASH_TABLE_OK)
+    if (hashtable_is_key_exists(sgi_dataP->teid_mapping, req_p->sgw_S1u_teid) == HASH_TABLE_OK)
     {
         SGI_IF_ERROR("SGI_STATUS_ERROR_CONTEXT_ALREADY_EXIST Context: S11 teid %u\n", req_p->context_teid);
         sgi_create_endpoint_resp_p->status       = SGI_STATUS_ERROR_CONTEXT_ALREADY_EXIST;
@@ -156,7 +156,7 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
 
             mapping->eps_bearer_id              = req_p->eps_bearer_id;
             mapping->enb_S1U_teid               = -1;
-            if (hashtbl_insert(sgi_dataP->teid_mapping, req_p->sgw_S1u_teid, mapping) != 0) {
+            if (hashtable_insert(sgi_dataP->teid_mapping, req_p->sgw_S1u_teid, mapping) != 0) {
                 SGI_IF_ERROR("SGI_STATUS_ERROR_SYSTEM_FAILURE Context: S11 teid %u\n", req_p->context_teid);
                 sgi_create_endpoint_resp_p->status  = SGI_STATUS_ERROR_SYSTEM_FAILURE;
                 free(mapping);
@@ -191,7 +191,7 @@ static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointR
     sgi_update_endpoint_resp_p->enb_S1u_teid   = req_p->enb_S1u_teid;
     sgi_update_endpoint_resp_p->status         = SGI_STATUS_OK;
 
-    if (hashtbl_get(sgi_dataP->teid_mapping, req_p->sgw_S1u_teid, (void**)&mapping) == HASH_TABLE_OK)
+    if (hashtable_get(sgi_dataP->teid_mapping, req_p->sgw_S1u_teid, (void**)&mapping) == HASH_TABLE_OK)
     {
         mapping->enb_S1U_teid = req_p->enb_S1u_teid;
     } else {
@@ -202,7 +202,7 @@ static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointR
 }
 
 //-----------------------------------------------------------------------------
-int sgi_init(const mme_config_t *mme_config_p)
+int sgi_init(const pgw_config_t *pgw_config_p)
 //-----------------------------------------------------------------------------
 {
 
@@ -221,30 +221,30 @@ int sgi_init(const mme_config_t *mme_config_p)
     sgi_data_p->thread_started = 0;
     pthread_mutex_init (&sgi_data_p->thread_started_mutex, NULL);
 
-    sgi_data_p->teid_mapping = hashtbl_create (SGI_MAX_EPS_BEARERS, NULL, NULL);
+    sgi_data_p->teid_mapping = hashtable_create (SGI_MAX_EPS_BEARERS, NULL, NULL);
     if (sgi_data_p->teid_mapping == NULL) {
         SGI_IF_ERROR("Failed to create SGI hashtable teid_mapping\n");
         return -1;
     }
 
-    sgi_data_p->addr_v4_mapping = hashtbl_create (SGI_MAX_SERVED_USERS_PER_PGW, NULL, NULL);
+    sgi_data_p->addr_v4_mapping = hashtable_create (SGI_MAX_SERVED_USERS_PER_PGW, NULL, NULL);
     if (sgi_data_p->addr_v4_mapping == NULL) {
         SGI_IF_ERROR("Failed to create SGI hashtable addr_v4_mapping\n");
         return -1;
     }
 
-    sgi_data_p->addr_v6_mapping = obj_hashtbl_create (SGI_MAX_SERVED_USERS_PER_PGW, NULL, NULL, NULL);
+    sgi_data_p->addr_v6_mapping = obj_hashtable_create (SGI_MAX_SERVED_USERS_PER_PGW, NULL, NULL, NULL);
     if (sgi_data_p->addr_v6_mapping == NULL) {
         SGI_IF_ERROR("Failed to create SGI hashtable addr_v6_mapping\n");
         return -1;
     }
 
 
-    len = strlen(mme_config_p->ipv4.pgw_interface_name_for_SGI);
+    len = strlen(pgw_config_p->ipv4.pgw_interface_name_for_SGI);
     sgi_data_p->interface_name = calloc(len + 1, sizeof(char));
-    memcpy(sgi_data_p->interface_name, mme_config_p->ipv4.pgw_interface_name_for_SGI, len);
+    memcpy(sgi_data_p->interface_name, pgw_config_p->ipv4.pgw_interface_name_for_SGI, len);
     sgi_data_p->interface_name[len] = '\0';
-    sgi_data_p->ipv4_addr = mme_config_p->ipv4.pgw_ip_addr_for_SGI;
+    sgi_data_p->ipv4_addr = pgw_config_p->ipv4.pgw_ipv4_address_for_SGI;
 
     sgi_data_p->interface_index = if_nametoindex(sgi_data_p->interface_name);
 
