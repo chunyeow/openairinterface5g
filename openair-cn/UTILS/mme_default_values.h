@@ -93,9 +93,13 @@
  *        |           |cpenb0+------------------+cpmme0|           |
  *        |           +------+   |bridge|       +------+           |
  *        |           |upenb0+-------+  |              |           |
- *        +-----------+------+   |   |  |              +-----------+
- *                               +---|--+                    |
- *                                   |                 +-----------+
+ *        +-----------+------+   |   |  |              +-+------+--+
+ *                               +---|--+                |s11mme|
+ *                                   |                   +---+--+
+ *                                   |                 VLAN3 | (optional)
+ *                                   |                   +---+--+
+ *                                   |                   |s11sgw|
+ *                                   |                 +-+------+--+
  *                                   |                 |  S+P-GW   |
  *                                   |  VLAN2   +------+           +--------+
  *                                   +----------+upsgw0|           |pgwsgi0 +
@@ -131,8 +135,6 @@
 #define DEFAULT_MME_INTERFACE_NAME_FOR_S1_MME         ("cpmme0")     ///< MME control plane interface
 #define DEFAULT_MME_IP_ADDRESS_FOR_S1_MME             ("192.168.11.1")   ///< MME control plane IP address
 #define DEFAULT_MME_IP_NETMASK_FOR_S1_MME             24;
-
-#define IPV4_UP_UE_SUBNET      ("10.2.0.0")
 
 
 #endif /* MME_DEFAULT_VALUES_H_ */

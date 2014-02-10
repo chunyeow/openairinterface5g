@@ -36,6 +36,44 @@
 #ifndef MME_CONFIG_H_
 #define MME_CONFIG_H_
 
+#define MME_CONFIG_STRING_MME_CONFIG                     "MME"
+#define MME_CONFIG_STRING_REALM                          "REALM"
+#define MME_CONFIG_STRING_MAXENB                         "MAXENB"
+#define MME_CONFIG_STRING_MAXUE                          "MAXUE"
+#define MME_CONFIG_STRING_RELATIVE_CAPACITY              "RELATIVE_CAPACITY"
+#define MME_CONFIG_STRING_STATISTIC_TIMER                "MME_STATISTIC_TIMER"
+#define MME_CONFIG_STRING_EMERGENCY_ATTACH_SUPPORTED     "EMERGENCY_ATTACH_SUPPORTED"
+#define MME_CONFIG_STRING_UNAUTHENTICATED_IMSI_SUPPORTED "UNAUTHENTICATED_IMSI_SUPPORTED"
+
+#define MME_CONFIG_STRING_INTERTASK_INTERFACE_CONFIG     "INTERTASK_INTERFACE"
+#define MME_CONFIG_STRING_INTERTASK_INTERFACE_QUEUE_SIZE "ITTI_QUEUE_SIZE"
+
+#define MME_CONFIG_STRING_S6A_CONFIG                     "S6A"
+#define MME_CONFIG_STRING_S6A_CONF_FILE_PATH             "S6A_CONF"
+
+#define MME_CONFIG_STRING_SCTP_CONFIG                    "SCTP"
+#define MME_CONFIG_STRING_SCTP_INSTREAMS                 "SCTP_INSTREAMS"
+#define MME_CONFIG_STRING_SCTP_OUTSTREAMS                "SCTP_OUTSTREAMS"
+
+
+#define MME_CONFIG_STRING_S1AP_CONFIG                    "S1AP"
+#define MME_CONFIG_STRING_S1AP_OUTCOME_TIMER             "S1AP_OUTCOME_TIMER"
+
+#define MME_CONFIG_STRING_GUMMEI_CONFIG                  "GUMMEI"
+#define MME_CONFIG_STRING_MME_CODE                       "MME_CODE"
+#define MME_CONFIG_STRING_MME_GID                        "MME_GID"
+#define MME_CONFIG_STRING_PLMN                           "PLMN"
+#define MME_CONFIG_STRING_MCC                            "MCC"
+#define MME_CONFIG_STRING_MNC                            "MNC"
+#define MME_CONFIG_STRING_TAC                            "TAC"
+
+#define MME_CONFIG_STRING_NETWORK_INTERFACES_CONFIG      "NETWORK_INTERFACES"
+#define MME_CONFIG_STRING_INTERFACE_NAME_FOR_S1_MME      "MME_INTERFACE_NAME_FOR_S1_MME"
+#define MME_CONFIG_STRING_IPV4_ADDRESS_FOR_S1_MME        "MME_IPV4_ADDRESS_FOR_S1_MME"
+#define MME_CONFIG_STRING_INTERFACE_NAME_FOR_S11_MME     "MME_INTERFACE_NAME_FOR_S11_MME"
+#define MME_CONFIG_STRING_IPV4_ADDRESS_FOR_S11_MME       "MME_IPV4_ADDRESS_FOR_S11_MME"
+
+
 typedef struct mme_config_s {
     /* Reader/writer lock for this configuration */
     pthread_rwlock_t rw_lock;
@@ -81,33 +119,15 @@ typedef struct mme_config_s {
         uint8_t  outcome_drop_timer_sec;
     } s1ap_config;
     struct {
-        char     *sgw_interface_name_for_S1u_S12_S4_up;
         uint32_t  sgw_ip_address_for_S1u_S12_S4_up;
-        int       sgw_ip_netmask_for_S1u_S12_S4_up;
-
-        char     *sgw_interface_name_for_S5_S8_up;
-        uint32_t  sgw_ip_address_for_S5_S8_up;
-        int       sgw_ip_netmask_for_S5_S8_up;
-
-        char     *pgw_interface_name_for_S5_S8;
-        uint32_t  pgw_ip_address_for_S5_S8;
-        int       pgw_ip_netmask_for_S5_S8;
-
-        char     *pgw_interface_name_for_SGI;
-        uint32_t  pgw_ip_addr_for_SGI;
-        int       pgw_ip_netmask_for_SGI;
 
         char     *mme_interface_name_for_S1_MME;
         uint32_t  mme_ip_address_for_S1_MME;
-        int       mme_ip_netmask_for_S1_MME;
 
         char     *mme_interface_name_for_S11;
         uint32_t  mme_ip_address_for_S11;
-        int       mme_ip_netmask_for_S11;
 
-        char     *sgw_interface_name_for_S11;
         uint32_t  sgw_ip_address_for_S11;
-        int       sgw_ip_netmask_for_S11;
     } ipv4;
     struct {
         char *conf_file;
@@ -126,6 +146,6 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config);
 #define config_write_lock(mMEcONFIG) pthread_rwlock_wrlock(&(mMEcONFIG)->rw_lock)
 #define config_unlock(mMEcONFIG)     pthread_rwlock_unlock(&(mMEcONFIG)->rw_lock)
 
-int yyparse(struct mme_config_s *mme_config_p);
+//int yyparse(struct mme_config_s *mme_config_p);
 
 #endif /* MME_CONFIG_H_ */
