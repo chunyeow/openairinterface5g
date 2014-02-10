@@ -65,9 +65,9 @@ int main(int argc, char *argv[])
     CHECK_INIT_RETURN(udp_init(&mme_config));
     CHECK_INIT_RETURN(s11_sgw_init(&mme_config));
     CHECK_INIT_RETURN(gtpv1u_init(&mme_config));
-    CHECK_INIT_RETURN(sgi_init(&mme_config));
+    CHECK_INIT_RETURN(sgi_init(&pgw_config));
 
-    CHECK_INIT_RETURN(sgw_lite_init(&mme_config));
+    CHECK_INIT_RETURN(sgw_lite_init(mme_config.config_file));
 
     /* Handle signals here */
     itti_wait_tasks_end();
