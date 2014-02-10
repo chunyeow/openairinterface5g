@@ -192,7 +192,7 @@ static int gtpv1u_create_s1u_tunnel(Gtpv1uCreateTunnelReq *create_tunnel_reqP)
     uint32_t                 s1u_teid;
     gtpv1u_teid2enb_info_t  *gtpv1u_teid2enb_info;
     MessageDef              *message_p;
-    hashtbl_rc_t             hash_rc;
+    hashtable_rc_t             hash_rc;
 
     GTPU_DEBUG("Rx GTPV1U_CREATE_TUNNEL_REQ Context %d\n", create_tunnel_reqP->context_teid);
     memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
@@ -228,10 +228,10 @@ static int gtpv1u_create_s1u_tunnel(Gtpv1uCreateTunnelReq *create_tunnel_reqP)
     message_p->ittiMsg.gtpv1uCreateTunnelResp.context_teid  = create_tunnel_reqP->context_teid;
     message_p->ittiMsg.gtpv1uCreateTunnelResp.eps_bearer_id = create_tunnel_reqP->eps_bearer_id;
 
-    hash_rc = hashtbl_is_key_exists(gtpv1u_sgw_data.S1U_mapping, s1u_teid);
+    hash_rc = hashtable_is_key_exists(gtpv1u_sgw_data.S1U_mapping, s1u_teid);
 
     if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
-        hash_rc = hashtbl_insert(gtpv1u_sgw_data.S1U_mapping, s1u_teid, gtpv1u_teid2enb_info);
+        hash_rc = hashtable_insert(gtpv1u_sgw_data.S1U_mapping, s1u_teid, gtpv1u_teid2enb_info);
         message_p->ittiMsg.gtpv1uCreateTunnelResp.status       = 0;
     } else {
         message_p->ittiMsg.gtpv1uCreateTunnelResp.status       = 0xFF;
@@ -258,7 +258,7 @@ static int gtpv1u_delete_s1u_tunnel(Teid_t context_teidP, Teid_t S1U_teidP)
     message_p->ittiMsg.gtpv1uDeleteTunnelResp.S1u_teid     = S1U_teidP;
     message_p->ittiMsg.gtpv1uDeleteTunnelResp.context_teid = context_teidP;
 
-    if (hashtbl_remove(gtpv1u_sgw_data.S1U_mapping, S1U_teidP) == HASH_TABLE_OK ) {
+    if (hashtable_remove(gtpv1u_sgw_data.S1U_mapping, S1U_teidP) == HASH_TABLE_OK ) {
         message_p->ittiMsg.gtpv1uDeleteTunnelResp.status       = 0;
     } else {
         message_p->ittiMsg.gtpv1uDeleteTunnelResp.status       = -1;
@@ -270,7 +270,7 @@ static int gtpv1u_delete_s1u_tunnel(Teid_t context_teidP, Teid_t S1U_teidP)
 
 static int gtpv1u_update_s1u_tunnel(Gtpv1uUpdateTunnelReq *reqP)
 {
-    hashtbl_rc_t             hash_rc;
+    hashtable_rc_t             hash_rc;
     gtpv1u_teid2enb_info_t  *gtpv1u_teid2enb_info;
     MessageDef              *message_p;
 
@@ -280,7 +280,7 @@ static int gtpv1u_update_s1u_tunnel(Gtpv1uUpdateTunnelReq *reqP)
     		reqP->enb_S1u_teid);
     message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_UPDATE_TUNNEL_RESP);
 
-    hash_rc = hashtbl_get(gtpv1u_sgw_data.S1U_mapping, reqP->sgw_S1u_teid, (void**)&gtpv1u_teid2enb_info);
+    hash_rc = hashtable_get(gtpv1u_sgw_data.S1U_mapping, reqP->sgw_S1u_teid, (void**)&gtpv1u_teid2enb_info);
 
     if (hash_rc == HASH_TABLE_OK) {
     	gtpv1u_teid2enb_info->teid_enb    = reqP->enb_S1u_teid;
@@ -390,7 +390,7 @@ static void *gtpv1u_thread(void *args)
             	Gtpv1uTunnelDataReq    *data_req_p;
                 NwGtpv1uUlpApiT         stack_req;
                 NwGtpv1uRcT             rc;
-                hashtbl_rc_t            hash_rc;
+                hashtable_rc_t            hash_rc;
                 gtpv1u_teid2enb_info_t  *gtpv1u_teid2enb_info;
 
                 data_req_p = &received_message_p->ittiMsg.gtpv1uTunnelDataReq;
@@ -407,7 +407,7 @@ static void *gtpv1u_thread(void *args)
                 NW_IN    NwGtpv1uMsgHandleT           hMsg;
                 } NwGtpv1uSendtoInfoT;*/
 
-                hash_rc = hashtbl_get(gtpv1u_sgw_data.S1U_mapping, (uint64_t)data_req_p->local_S1u_teid, (void**)&gtpv1u_teid2enb_info);
+                hash_rc = hashtable_get(gtpv1u_sgw_data.S1U_mapping, (uint64_t)data_req_p->local_S1u_teid, (void**)&gtpv1u_teid2enb_info);
 
                 if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
                     GTPU_ERROR("nwGtpv1uProcessUlpReq failed: while getting teid %u in hashtable S1U_mapping\n", data_req_p->local_S1u_teid);
@@ -481,9 +481,9 @@ int gtpv1u_init(const mme_config_t *mme_config_p)
 
     memset(&gtpv1u_sgw_data, 0, sizeof(gtpv1u_sgw_data));
 
-    gtpv1u_sgw_data.S1U_mapping = hashtbl_create (8192, NULL, NULL);
+    gtpv1u_sgw_data.S1U_mapping = hashtable_create (8192, NULL, NULL);
     if (gtpv1u_sgw_data.S1U_mapping == NULL) {
-        perror("hashtbl_create");
+        perror("hashtable_create");
         GTPU_ERROR("Initializing TASK_GTPV1_U task interface: ERROR\n");
         return -1;
     }

@@ -10,7 +10,7 @@
 
 #include "gtpv1u_eNB_defs.h"
 
-#include "udp_primitives_client.h"
+#include "udp_eNB_task.h"
 #include "UTIL/LOG/log.h"
 #include "COMMON/platform_types.h"
 
@@ -138,7 +138,7 @@ int gtpv1u_create_tunnel_endpoint(gtpv1u_data_t *gtpv1u_data_p, uint8_t ue_id,
     struct gtpv1u_ue_data_s     *new_ue_p;
     struct gtpv1u_ue_data_s     *temp;
     struct gtpv1u_bearer_s      *bearer;
-    hashtbl_rc_t                 hash_rc;
+    hashtable_rc_t                 hash_rc;
 
     if (rab_id > MAX_BEARERS_PER_UE) {
         LOG_E(GTPU, "Could not use rab_id %d > max %d\n",
@@ -147,7 +147,7 @@ int gtpv1u_create_tunnel_endpoint(gtpv1u_data_t *gtpv1u_data_p, uint8_t ue_id,
     }
 
 
-    if ((hash_rc = hashtbl_get(gtpv1u_data_p->ue_mapping, (uint64_t)ue_id, (void**)&new_ue_p)) == HASH_TABLE_OK) {
+    if ((hash_rc = hashtable_get(gtpv1u_data_p->ue_mapping, (uint64_t)ue_id, (void**)&new_ue_p)) == HASH_TABLE_OK) {
         /* A context for this UE already exist in the tree, use it */
         /* We check that the tunnel is not already configured */
         if (new_ue_p->bearers[rab_id].state != BEARER_DOWN) {
@@ -166,7 +166,7 @@ int gtpv1u_create_tunnel_endpoint(gtpv1u_data_t *gtpv1u_data_p, uint8_t ue_id,
         new_ue_p = calloc(1, sizeof(struct gtpv1u_ue_data_s));
         new_ue_p->ue_id = ue_id;
 
-        hash_rc = hashtbl_insert(gtpv1u_data_p->ue_mapping, (uint64_t)ue_id, new_ue_p);
+        hash_rc = hashtable_insert(gtpv1u_data_p->ue_mapping, (uint64_t)ue_id, new_ue_p);
 
         if ((hash_rc != HASH_TABLE_OK) && (hash_rc != HASH_TABLE_INSERT_OVERWRITTEN_DATA)) {
             LOG_E(GTPU, "Failed to insert new UE context\n");
@@ -254,7 +254,7 @@ int gtpv1u_new_data_req(gtpv1u_data_t *gtpv1u_data_p,
     struct gtpv1u_ue_data_s  ue;
     struct gtpv1u_ue_data_s *ue_inst_p;
     struct gtpv1u_bearer_s  *bearer_p;
-    hashtbl_rc_t             hash_rc;
+    hashtable_rc_t           hash_rc;
 
     memset(&ue, 0, sizeof(struct gtpv1u_ue_data_s));
 
@@ -264,7 +264,7 @@ int gtpv1u_new_data_req(gtpv1u_data_t *gtpv1u_data_p,
     assert(rab_id <= MAX_BEARERS_PER_UE);
 
     /* Check that UE context is present in ue map. */
-    hash_rc = hashtbl_get(gtpv1u_data_p->ue_mapping, (uint64_t)ue_id, (void**)&ue_inst_p);
+    hash_rc = hashtable_get(gtpv1u_data_p->ue_mapping, (uint64_t)ue_id, (void**)&ue_inst_p);
 
     if (hash_rc ==  HASH_TABLE_KEY_NOT_EXISTS ) {
         LOG_E(GTPU, "[UE %d] Trying to send data on non-existing UE context\n", ue_id);
@@ -462,9 +462,9 @@ int gtpv1u_eNB_init(gtpv1u_data_t *gtpv1u_data_p)
     gtpv1u_eNB_create_sockets(gtpv1u_data_p);
 #endif
     /* Initialize UE hashtable */
-    gtpv1u_data_p->ue_mapping = hashtbl_create (256, NULL, NULL);
+    gtpv1u_data_p->ue_mapping = hashtable_create (256, NULL, NULL);
     if (gtpv1u_data_p->ue_mapping == NULL) {
-        perror("hashtbl_create");
+        perror("hashtable_create");
         GTPU_ERROR("Initializing TASK_GTPV1_U task interface: ERROR\n");
         return -1;
     }
@@ -515,7 +515,7 @@ int gtpv1u_eNB_init(gtpv1u_data_t *gtpv1u_data_p)
         return -1;
     }
 
-    gtpv1u_create_tunnel_endpoint(gtpv1u_data_p, 0, 0, "192.168.1.1", 2152);
+    //gtpv1u_create_tunnel_endpoint(gtpv1u_data_p, 0, 0, "192.168.1.1", 2152);
 
 //     GTPU_INFO("Initializing GTPU stack for eNB %u: DONE\n",
 //               gtpv1u_data_p->eNB_id);

@@ -1,6 +1,6 @@
 #include "NwGtpv1u.h"
 #include "gtpv1u.h"
-#include "udp_primitives_client.h"
+#include "udp_eNB_task.h"
 #include "hashtable.h"
 
 //TEST LG #define GTPU_IN_KERNEL

@@ -1,4 +1,4 @@
-all: libgtpv1u.a
+OUTDIR = .
 
 libgtpv1u_OBJECTS = \
 	nw-gtpv1u/src/NwGtpv1uTunnelEndPoint.o	\
@@ -8,41 +8,37 @@ libgtpv1u_OBJECTS = \
 	gtpv1u_eNB.o	\
 	gtpv1u_teid_pool.o
 
+# pull in dependency info for *existing* .o files
+-include $(OUTDIR)/*.d
+
 CFLAGS = \
-	-I./nw-gtpv1u/shared	\
-	-I./nw-gtpv1u/include	\
-	-I../UTILS      \
-	-I../UTILS/HASHTABLE  \
-	-I../UDP      \
-	-I$(OPENAIR2_DIR)   \
-	-DUSER_MODE		\
-	-DENABLE_USE_MME	\
-	-DUSER_MODE		\
-	-DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 \
-	-g			\
-	-O2			\
 	-Wall			\
+	$(GTPV1U_CFLAGS)		\
+	-DENB_MODE		\
+	-Werror=uninitialized	\
 	-Werror=implicit-function-declaration
 
--include .deps/*.d
--include .deps/nw-gtpv1u/src/*.d
-
-$(libgtpv1u_OBJECTS): %.o : %.c
+$(OUTDIR)/%.o : %.c
 	@echo "Compiling $<"
+	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi;
 	@$(CC) -c $(CFLAGS) -o $@ $<
-	@if ! test -d ".deps/nw-gtpv1u/src/" ; then mkdir -p .deps/nw-gtpv1u/src/; fi
-	@$(CC) -MM $(CFLAGS) $*.c > .deps/$*.d
-	@mv -f .deps/$*.d .deps/$*.d.tmp
-	@sed -e 's|.*:|$*.o:|' < .deps/$*.d.tmp > .deps/$*.d
-	@sed -e 's/.*://' -e 's/\\$$//' < .deps/$*.d.tmp | fmt -1 | \
-	sed -e 's/^ *//' -e 's/$$/:/' >> .deps/$*.d
-	@rm -f .deps/$*.d.tmp
+	@$(CC) -MM $(CFLAGS) $< > $(basename $@).d
+	@mv -f $(basename $@).d $(basename $@).d.tmp
+	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
+	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
+	@rm -f $(basename $@).d.tmp
 
-libgtpv1u.a: $(libgtpv1u_OBJECTS)
-	@echo Creating GTP-U archive
-	@$(AR) rcvs $@ $(libgtpv1u_OBJECTS)
+objsdir:
+	@if [ ! -d $(OUTDIR) ]; then mkdir -p $(OUTDIR); fi;
+
+$(OUTDIR)/libgtpv1u.a: $(addprefix $(OUTDIR)/,$(libgtpv1u_OBJECTS))
+	@echo Creating GTPV1U archive
+	@$(AR) rcs $@ $(addprefix $(OUTDIR)/,$(libgtpv1u_OBJECTS))
 
 clean:
-	rm -f libgtpv1u.a
-	rm -rf .deps/
-	rm -f $(libgtpv1u_OBJECTS)
+	@$(RM_F_V) $(OUTDIR)/*.o
+	@$(RM_F_V) $(OUTDIR)/*.d
+	@$(RM_F_V) $(OUTDIR)/libgtpv1u.a
+
+cleanall: clean
