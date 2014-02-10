@@ -115,9 +115,7 @@ fi
 # NETWORK TOPOLOGY
 ##################################################
 clean_enb_vlan_network
-echo_success "clean_enb_vlan_network Done"
 build_enb_vlan_network
-echo_success "build_enb_vlan_network Done"
 test_enb_vlan_network
 
 ##################################################
@@ -155,7 +153,7 @@ assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 bash_exec "ip route flush cache"
 
 # Check table 200 lte in /etc/iproute2/rt_tables
-fgrep lte /etc/iproute2/rt_tables
+fgrep lte /etc/iproute2/rt_tables  > /dev/null 
 if [ $? -ne 0 ]; then
     echo "200 lte " >> /etc/iproute2/rt_tables
 fi
