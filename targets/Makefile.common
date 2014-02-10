@@ -3,15 +3,21 @@ COMMON_UTILS_DIR    = $(OPENAIR_HOME)/common/utils
 UE_NAS_DIR          = $(OPENAIR_HOME)/openair-cn/NAS
 S1AP_DIR            = $(OPENAIR_HOME)/openair-cn/S1AP
 SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
+UDP_DIR             = $(OPENAIR_HOME)/openair-cn/UDP
+GTPV1U_DIR          = $(OPENAIR_HOME)/openair-cn/GTPV1-U
 
 UE_NAS_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UE_NAS_DIR))
 S1AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
 SCTP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
+UDP_OBJ_DIR         = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UDP_DIR))
+GTPV1U_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(GTPV1U_DIR))
 
 export COMMON_UTILS_DIR
 export UE_NAS_DIR
 export S1AP_DIR
 export SCTP_DIR
+export UDP_DIR
+export GTPV1U_DIR
 
 #Export common cflags (between softmodem and oaisim)
 COMMON_CFLAGS		= \
@@ -47,7 +53,8 @@ endif
 ifdef USE_MME
 LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a
 LIBS				+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
-SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a
+LIBS				+= $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a 
+SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
 
 COMMON_CFLAGS		+= -DLOG_NO_THREAD
 
@@ -70,6 +77,8 @@ $(UE_NAS_OBJ_DIR)/libuenas.a: force_look
 
 COMMON_MME_CFLAGS	 = -I$(SCTP_DIR)
 COMMON_MME_CFLAGS	+= -I$(S1AP_DIR)
+COMMON_MME_CFLAGS	+= -I$(UDP_DIR)
+COMMON_MME_CFLAGS	+= -I$(GTPV1U_DIR)
 
 S1AP_CFLAGS	 		 = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
 S1AP_CFLAGS	 		+= -DENB_MODE
@@ -77,10 +86,30 @@ S1AP_CFLAGS	 		+= -I$(TOP_DIR)
 S1AP_CFLAGS	 		+= $(UTIL_incl)
 export S1AP_CFLAGS
 
+UDP_CFLAGS	 		 = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
+UDP_CFLAGS	 		+= -DENB_MODE
+UDP_CFLAGS	 		+= -I$(TOP_DIR)
+UDP_CFLAGS	 		+= $(UTIL_incl)
+UDP_CFLAGS	 		+= -I$(OPENAIR_HOME)/openair2/ENB_APP
+export UDP_CFLAGS
+
+GTPV1U_CFLAGS	 		 = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
+GTPV1U_CFLAGS	 		+= -DENB_MODE
+GTPV1U_CFLAGS	 		+= -I$(TOP_DIR)
+GTPV1U_CFLAGS	 		+= -I$(GTPV1U_DIR)/nw-gtpv1u/include
+GTPV1U_CFLAGS	 		+= -I$(GTPV1U_DIR)/nw-gtpv1u/shared
+GTPV1U_CFLAGS	 		+= -I$(OPENAIR_HOME)/openair2/ENB_APP
+GTPV1U_CFLAGS	 		+= $(UTIL_incl) -I$(OPENAIRCN_DIR)/UTILS
+export GTPV1U_CFLAGS
+
 $(S1AP_OBJ_DIR)/libs1ap.a: force_look
 	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB $(S1AP_OBJ_DIR)/libs1ap.a OUTDIR=$(S1AP_OBJ_DIR)
 $(SCTP_OBJ_DIR)/libsctp.a: force_look
 	@$(MAKE) -C $(SCTP_DIR) -f Makefile.eNB $(SCTP_OBJ_DIR)/libsctp.a OUTDIR=$(SCTP_OBJ_DIR)
+$(UDP_OBJ_DIR)/libudp.a: force_look
+	@$(MAKE) -C $(UDP_DIR) -f Makefile.eNB $(UDP_OBJ_DIR)/libudp.a OUTDIR=$(UDP_OBJ_DIR)
+$(GTPV1U_OBJ_DIR)/libgtpv1u.a: force_look
+	@$(MAKE) -C $(GTPV1U_DIR) -f Makefile.eNB $(GTPV1U_OBJ_DIR)/libgtpv1u.a OUTDIR=$(GTPV1U_OBJ_DIR)
 
 OBJ = $(NAS_UE_OBJS)
 endif
@@ -124,8 +153,13 @@ common-clean:
 	@if [ -d $(UE_NAS_OBJ_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE clean OUTDIR=$(UE_NAS_OBJ_DIR); fi
 	@if [ -d $(S1AP_OBJ_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean OUTDIR=$(S1AP_OBJ_DIR); fi
 	@if [ -d $(SCTP_OBJ_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean OUTDIR=$(SCTP_OBJ_DIR); fi
+	@if [ -d $(UDP_OBJ_DIR) ]; then $(MAKE) -C $(UDP_DIR) -f Makefile.eNB clean OUTDIR=$(UDP_OBJ_DIR); fi
+	@if [ -d $(GTPV1U_OBJ_DIR) ]; then $(MAKE) -C $(GTPV1U_DIR) -f Makefile.eNB clean OUTDIR=$(GTPV1U_OBJ_DIR); fi
 
 common-cleanall:
 	@if [ -d $(UE_NAS_OBJ_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE cleanall OUTDIR=$(UE_NAS_OBJ_DIR); fi
 	@if [ -d $(S1AP_OBJ_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall OUTDIR=$(S1AP_OBJ_DIR); fi
 	@if [ -d $(SCTP_OBJ_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB cleanall OUTDIR=$(SCTP_OBJ_DIR); fi
+	@if [ -d $(UDP_OBJ_DIR) ]; then $(MAKE) -C $(UDP_DIR) -f Makefile.eNB cleanall OUTDIR=$(UDP_OBJ_DIR); fi
+	@if [ -d $(GTPV1U_OBJ_DIR) ]; then $(MAKE) -C $(GTPV1U_DIR) -f Makefile.eNB cleanall OUTDIR=$(GTPV1U_OBJ_DIR); fi
+	
