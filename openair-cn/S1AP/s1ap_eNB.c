@@ -110,6 +110,9 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
     memcpy(&sctp_new_association_req_p->remote_address, mme_ip_address,
            sizeof(*mme_ip_address));
 
+    memcpy(&sctp_new_association_req_p->local_address, local_ip_addr,
+            sizeof(*local_ip_addr));
+
     /* Create new MME descriptor */
     s1ap_mme_data_p = calloc(1, sizeof(*s1ap_mme_data_p));
     DevAssert(s1ap_mme_data_p != NULL);
