@@ -1,43 +1,41 @@
-libudp_OBJECTS = \
-	udp_primitives_client.o
+# include $(OPENAIR_TARGETS)/SIMU/USER/Makerules
 
--include .deps/*.d
+OUTDIR = .
 
-.PHONY = depdir
+libudp_OBJECTS =			\
+	udp_eNB_task.o
+
+# pull in dependency info for *existing* .o files
+-include $(OUTDIR)/*.d
 
 CFLAGS = \
-	-I../UTILS		\
-	-I$(OPENAIR2_DIR)	\
-	-I$(OPENAIR2_DIR)/COMMON	\
-	-I$(OPENAIR2_DIR)/GTPV1U	\
-	-I$(OPENAIR2_DIR)/GTPV1U/nw-gtpv1u/include	\
-	-I$(OPENAIR2_DIR)/GTPV1U/nw-gtpv1u/shared	\
-	-I$(OPENAIR2_DIR)/UTIL	\
-	-DUPDATE_RELEASE_9	\
-	-DENB_MODE		\
-	-DENABLE_USE_MME	\
-	-DUSER_MODE		\
-	-O2			\
-	-g			\
 	-Wall			\
+	$(UDP_CFLAGS)		\
+	-DENB_MODE		\
+	-Werror=uninitialized	\
 	-Werror=implicit-function-declaration
 
-$(libudp_OBJECTS): %.o : %.c
+$(OUTDIR)/%.o : %.c
 	@echo "Compiling $<"
+	@if [ ! -d $(dir $@) ]; then mkdir -p $(dir $@); fi;
 	@$(CC) -c $(CFLAGS) -o $@ $<
-	@if ! test -d ".deps/" ; then mkdir -p .deps; fi
-	@$(CC) -MM $(CFLAGS) $*.c > .deps/$*.d
-	@mv -f .deps/$*.d .deps/$*.d.tmp
-	@sed -e 's|.*:|$*.o:|' < .deps/$*.d.tmp > .deps/$*.d
-	@sed -e 's/.*://' -e 's/\\$$//' < .deps/$*.d.tmp | fmt -1 | \
-	sed -e 's/^ *//' -e 's/$$/:/' >> .deps/$*.d
-	@rm -f .deps/$*.d.tmp
+	@$(CC) -MM $(CFLAGS) $< > $(basename $@).d
+	@mv -f $(basename $@).d $(basename $@).d.tmp
+	@sed -e 's|.*:|$@:|' < $(basename $@).d.tmp > $(basename $@).d
+	@sed -e 's/.*://' -e 's/\\$$//' < $(basename $@).d.tmp | fmt -1 | \
+	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
+	@rm -f $(basename $@).d.tmp
 
-libudp.a: $(libudp_OBJECTS)
+objsdir:
+	@if [ ! -d $(OUTDIR) ]; then mkdir -p $(OUTDIR); fi;
+
+$(OUTDIR)/libudp.a: $(addprefix $(OUTDIR)/,$(libudp_OBJECTS))
 	@echo Creating UDP archive
-	@$(AR) rcvs $@ $(libudp_OBJECTS)
+	@$(AR) rcs $@ $(addprefix $(OUTDIR)/,$(libudp_OBJECTS))
 
 clean:
-	rm -f $(libudp_OBJECTS)
-	rm -rf .deps/
-	rm -f libudp.a
+	@$(RM_F_V) $(OUTDIR)/*.o
+	@$(RM_F_V) $(OUTDIR)/*.d
+	@$(RM_F_V) $(OUTDIR)/libudp.a
+
+cleanall: clean

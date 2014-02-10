@@ -1,8 +1,11 @@
 #include <pthread.h>
 #include <stdint.h>
 
-#ifndef UDP_PRIMITIVES_CLIENT_H_
-#define UDP_PRIMITIVES_CLIENT_H_
+#ifndef UDP_ENB_TASK_H_
+#define UDP_ENB_TASK_H_
+#include "enb_config.h"
+#include "intertask_interface_types.h"
+
 
 /** \brief UDP recv callback prototype. Will be called every time a payload is
  *  received on socket.
@@ -20,10 +23,11 @@ typedef int (*udp_recv_callback)(uint16_t  port,
                                  void     *arg_p);
 
 typedef struct {
-    udp_recv_callback recv_callback;
-    pthread_t         recv_thread;
-    int               sd;
-    void             *arg_p;
+    int       sd;              /* Socket descriptor to use */
+    pthread_t listener_thread; /* Thread affected to recv */
+    char     *local_address;   /* Local ipv4 address to use */
+    uint16_t  local_port;      /* Local port to use */
+    task_id_t task_id;         /* Task who has requested the new endpoint */
 } udp_data_t;
 
 /** \brief Create new datagram connection-less socket and create new thread
@@ -50,5 +54,18 @@ int udp_create_connection(char *ip_addr, uint16_t port,
  */
 int udp_send_to(int sd, uint16_t port, uint32_t address,
                 const uint8_t *buffer, uint32_t length);
+
+
+/** \brief UDP ITTI task on eNB.
+ *  \param args_p
+ *  @returns always NULL
+ */
+void *udp_eNB_task(void *args_p);
+
+/** \brief init UDP layer.
+ *  \param enb_config_p configuration of eNB
+ *  @returns always 0
+ */
+int udp_enb_init(const Enb_properties_t *enb_config_p);
 
 #endif /* UDP_PRIMITIVES_CLIENT_H_ */
