@@ -336,6 +336,10 @@ is_openvswitch_interface() {
        else
            if [ "a${1:0:4}" == "awifi" ]; then
                return 0;
+           else
+               if [ "a${1:0:4}" == "anone" ]; then
+                   return 0;
+               fi
            fi
        fi
    fi
@@ -363,6 +367,32 @@ is_real_interface() {
    return 0
 }
 
+is_vlan_interface() {
+   if [ "a$1" == "a" ]; then
+       return 0
+   fi
+   if [[ $1 == *.* ]]
+   then
+       interface_name=`echo $1 | cut -f1 -d '.'`
+       vlan=`echo $1 | cut -f2 -d '.'`
+       IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $interface_name | sed 's/^.*NAME=//' | tr -d '"'`
+       if [ "$IF" == "$interface_name" ]; then
+           if [ "a${interface_name:0:3}" == "aeth" ]; then
+               return 1;
+           else 
+               if [ "a${interface_name:0:4}" == "awlan" ]; then
+                   return 1;
+               else
+                   if [ "a${interface_name:0:4}" == "awifi" ]; then
+                       return 1;
+                   fi
+               fi
+           fi
+       fi
+   fi
+   return 0
+}
+
 
 delete_openvswitch_interface() {
   is_openvswitch_interface $1 
@@ -381,47 +411,51 @@ create_openvswitch_interface() {
 
 build_enb_vlan_network() {
     # create vlan interface
-    is_real_interface $ENB_INTERFACE_NAME_FOR_S1_MME
+    is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1_MME
     if [ $? -eq 1 ]; then
-        ifconfig    $ENB_INTERFACE_NAME_FOR_S1_MME.1 down > /dev/null 2>&1
-        vconfig rem $ENB_INTERFACE_NAME_FOR_S1_MME.1      > /dev/null 2>&1
+        interface_name=`echo $ENB_INTERFACE_NAME_FOR_S1_MME | cut -f1 -d '.'`
+        vlan=`echo $ENB_INTERFACE_NAME_FOR_S1_MME | cut -f2 -d '.'`
+        ifconfig    $ENB_INTERFACE_NAME_FOR_S1_MME down > /dev/null 2>&1
+        vconfig rem $ENB_INTERFACE_NAME_FOR_S1_MME      > /dev/null 2>&1
         sync
-        bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1_MME 1"
+        bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1_MME.1 up"
+        bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1_MME up"
         sync
-        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME/$ENB_IPV4_NETMASK_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME.1"
+        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME/$ENB_IPV4_NETMASK_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME"
     else
-        echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME $ENB_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx)'
+        echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME $ENB_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
     
-    is_real_interface $ENB_INTERFACE_NAME_FOR_S1U
+    is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1U
     if [ $? -eq 1 ]; then
-        ifconfig    $ENB_INTERFACE_NAME_FOR_S1U.2 down > /dev/null 2>&1
-        vconfig rem $ENB_INTERFACE_NAME_FOR_S1U.2      > /dev/null 2>&1
+        interface_name=`echo $ENB_INTERFACE_NAME_FOR_S1U | cut -f1 -d '.'`
+        vlan=`echo $ENB_INTERFACE_NAME_FOR_S1U | cut -f2 -d '.'`
+        ifconfig    $ENB_INTERFACE_NAME_FOR_S1U down > /dev/null 2>&1
+        vconfig rem $ENB_INTERFACE_NAME_FOR_S1U      > /dev/null 2>&1
         sync
-        bash_exec "vconfig add $ENB_INTERFACE_NAME_FOR_S1U 2"
+        bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1U.2 up"
+        bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U up"
         sync
-        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U/$ENB_IPV4_NETMASK_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U".2
+        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U/$ENB_IPV4_NETMASK_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U"
         sync
     else
-        echo_fatal "BAD INTERFACE NAME FOR ENB S1U $ENB_INTERFACE_NAME_FOR_S1U"' (waiting for ethx)'
+        echo_fatal "BAD INTERFACE NAME FOR ENB S1U $ENB_INTERFACE_NAME_FOR_S1U"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
 }
 
 clean_enb_vlan_network() {
-    is_real_interface $ENB_INTERFACE_NAME_FOR_S1_MME
+    is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1_MME
     if [ $? -eq 1 ]; then
-        ifconfig    $ENB_INTERFACE_NAME_FOR_S1_MME.1 down > /dev/null 2>&1
-        vconfig rem $ENB_INTERFACE_NAME_FOR_S1_MME.1      > /dev/null 2>&1
+        ifconfig    $ENB_INTERFACE_NAME_FOR_S1_MME down > /dev/null 2>&1
+        vconfig rem $ENB_INTERFACE_NAME_FOR_S1_MME      > /dev/null 2>&1
     fi;
     
-    is_real_interface $ENB_INTERFACE_NAME_FOR_S1U
+    is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1U
     if [ $? -eq 1 ]; then
-        ifconfig    $ENB_INTERFACE_NAME_FOR_S1U.2 down > /dev/null 2>&1
-        vconfig rem $ENB_INTERFACE_NAME_FOR_S1U.2 > /dev/null 2>&1
+        ifconfig    $ENB_INTERFACE_NAME_FOR_S1U down > /dev/null 2>&1
+        vconfig rem $ENB_INTERFACE_NAME_FOR_S1U > /dev/null 2>&1
     fi;
     sync;
 }
@@ -476,33 +510,37 @@ build_mme_spgw_vlan_network() {
     bash_exec "modprobe 8021q"
     
     # create vlan interface
-    is_real_interface $MME_INTERFACE_NAME_FOR_S1_MME
+    is_vlan_interface $MME_INTERFACE_NAME_FOR_S1_MME
     if [ $? -eq 1 ]; then
-        ifconfig    $MME_INTERFACE_NAME_FOR_S1_MME.1 down > /dev/null 2>&1
-        vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME.1      > /dev/null 2>&1
+        interface_name=`echo $MME_INTERFACE_NAME_FOR_S1_MME | cut -f1 -d '.'`
+        vlan=`echo $MME_INTERFACE_NAME_FOR_S1_MME | cut -f2 -d '.'`
+        ifconfig    $MME_INTERFACE_NAME_FOR_S1_MME down > /dev/null 2>&1
+        vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME      > /dev/null 2>&1
         sync
-        bash_exec "vconfig add $MME_INTERFACE_NAME_FOR_S1_MME 1"
+        bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $MME_INTERFACE_NAME_FOR_S1_MME.1 up"
+        bash_exec "ifconfig  $MME_INTERFACE_NAME_FOR_S1_MME up"
         sync
-        bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME/$MME_IPV4_NETMASK_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME.1"
+        bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME/$MME_IPV4_NETMASK_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME"
     else
-        echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME $MME_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx)'
+        echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME $MME_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
     
-    is_real_interface $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
+    is_vlan_interface $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
     if [ $? -eq 1 ]; then
-        ifconfig    $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2 down > /dev/null 2>&1
-        vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2      > /dev/null 2>&1
+        interface_name=`echo $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP | cut -f1 -d '.'`
+        vlan=`echo $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP | cut -f2 -d '.'`
+        ifconfig    $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP down > /dev/null 2>&1
+        vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP      > /dev/null 2>&1
         sync
-        bash_exec "vconfig add $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP 2"
+        bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2 up"
+        bash_exec "ifconfig  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP up"
         sync
-        bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP/$SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2"
+        bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP/$SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
         sync
     else
-        echo_fatal "BAD INTERFACE NAME FOR SGW S1U $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"' (waiting for ethx)'
+        echo_fatal "BAD INTERFACE NAME FOR SGW S1U $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
     
     ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
@@ -651,11 +689,11 @@ clean_epc_vlan_network() {
 
     bash_exec "modprobe 8021q"
 
-    ifconfig    $MME_INTERFACE_NAME_FOR_S1_MME.1 down > /dev/null 2>&1
-    vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME.1      > /dev/null 2>&1
+    ifconfig    $MME_INTERFACE_NAME_FOR_S1_MME down > /dev/null 2>&1
+    vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME      > /dev/null 2>&1
 
-    ifconfig    $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2 down > /dev/null 2>&1
-    vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP.2      > /dev/null 2>&1
+    ifconfig    $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP down > /dev/null 2>&1
+    vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP      > /dev/null 2>&1
 
 
     for i in 5 6 7 8 9 10 11 12 13 14 15
@@ -994,6 +1032,7 @@ clean_epc_ovs_network() {
     
     clean_openvswitch_network
 }
+
 
 ###########################################################
 IPTABLES=/sbin/iptables

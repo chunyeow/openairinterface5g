@@ -160,7 +160,7 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
-ITTI_LOG_FILE=/tmp/itti_enb.$HOSTNAME.log
+ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
 
 

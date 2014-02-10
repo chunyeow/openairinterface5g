@@ -183,7 +183,7 @@ build_mme_spgw_vlan_network
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 
-ITTI_LOG_FILE=/tmp/itti_mme.log
+ITTI_LOG_FILE=./itti_mme.log
 rotate_log_file $ITTI_LOG_FILE
 
 gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $CONFIG_FILE
