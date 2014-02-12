@@ -129,6 +129,8 @@ OBJ += $(OPENAIR1_DIR)/PHY/TOOLS/lte_phy_scope.o
 OBJ += stats.o
 endif
 
+OBJ_SYNC = $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o rt_wrapper.o $(OPENAIR2_DIR)/UTIL/LOG/log.o $(OPENAIR2_DIR)/UTIL/LOG/vcd_signal_dumper.o 
+
 ifdef SMBV
 CFLAGS += -DSMBV
 endif
@@ -235,8 +237,8 @@ $(USRP_OBJ):$(USRP_FILE_OBJ)
 condtest: condtest.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) condtest.c -o condtest
 
-synctest: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o synctest
+synctest: $(OBJ_SYNC) $(SHARED_DEPENDENCIES) synctest.c
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o synctest synctest.c $(LDFLAGS) $(LIBS)
 
 lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
