@@ -163,7 +163,7 @@ ip route add default dev $LTEIF table lte
 ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
 
-
+nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
 gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE
 
