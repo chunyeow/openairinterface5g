@@ -185,5 +185,7 @@ cd $OPENAIRCN_DIR/$OBJ_DIR
 
 ITTI_LOG_FILE=./itti_mme.log
 rotate_log_file $ITTI_LOG_FILE
+STDOUT_LOG_FILE=./stdout_mme.log
+rotate_log_file $STDOUT_LOG_FILE
 
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $CONFIG_FILE
+$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $CONFIG_FILE | tee $STDOUT_LOG_FILE 2>&1
