@@ -105,10 +105,10 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 200)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
@@ -120,10 +120,10 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -F -s 15 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -F -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 100)
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 200)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
@@ -135,10 +135,10 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS procedure is not finished completely, make sure that the SIB13/MCCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -s 15 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -x 1 -Q3 -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 200)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
@@ -150,10 +150,10 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS multicast/broadcast data is not received, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 100)
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 200)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
@@ -165,10 +165,10 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'eMBMS multicast/broadcast data is not received in fdd mode, make sure that the SIB13/MCCH/MTCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -F -s 15 -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -l7 -F -x 1 -T mscbr -Q3 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
-                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 100)
+                oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received a multicast packet',  (i+1) * 200)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
     else:
@@ -189,7 +189,7 @@ def execute(oai, user, pw, logfile,logdir):
     try:
         test = '09'
         name = 'Run oai.rel10.itti.phy.eMBMS.MCCH'
-        diag = 'eMBMS procedure is not finished completely, make sure that the SIB13/MCCH have been correclty received by UEs'
+        diag = 'eMBMS procedure is not finished completely, check the eNB config file (enb.sfr.sud.conf), and make sure that the SIB13/MCCH have been correclty received by UEs'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
                 log_name = logdir + '/log_' + case + test + '_' + str(i) + str(j)
@@ -199,7 +199,7 @@ def execute(oai, user, pw, logfile,logdir):
                 tee = ' 2>&1 | tee -a ' + trace_name
                 command = './oaisim.rel10.itti ' + conf
                 oai.send('echo ' + command + ' > ' + trace_name + ';')
-                oai.send_expect(command + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 100)
+                oai.send_expect(command + tee, ' Found MBSFNAreaConfiguration from eNB ' + str(j),  (i+1) * 200)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile, trace_name)
     else:

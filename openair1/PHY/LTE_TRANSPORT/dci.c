@@ -2309,8 +2309,14 @@ u8 generate_dci_top_emul(PHY_VARS_eNB *phy_vars_eNB,
   eNB_transport_info[phy_vars_eNB->Mod_id].num_ue_spec_dci = num_ue_spec_dci;
   eNB_transport_info[phy_vars_eNB->Mod_id].num_common_dci = num_common_dci;
 
-  LOG_D(PHY,"[eNB %d][DCI][EMUL] num spec dci %d num comm dci %d\n", phy_vars_eNB->Mod_id, num_ue_spec_dci,num_common_dci);
-  n_dci_dl =0;
+  LOG_D(PHY,"[eNB %d][DCI][EMUL] num spec dci %d num comm dci %d num PMCH %d \n", phy_vars_eNB->Mod_id, num_ue_spec_dci,num_common_dci,
+	eNB_transport_info[phy_vars_eNB->Mod_id].num_pmch);
+
+  if (eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pmch_flag == 1 )
+    n_dci_dl = eNB_transport_info[phy_vars_eNB->Mod_id].num_pmch;
+  else 
+    n_dci_dl = 0;
+
   for (n_dci =0 ; 
        n_dci < (eNB_transport_info[phy_vars_eNB->Mod_id].num_ue_spec_dci+ eNB_transport_info[phy_vars_eNB->Mod_id].num_common_dci);
        n_dci++) {

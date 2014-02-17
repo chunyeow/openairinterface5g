@@ -1070,18 +1070,21 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 #endif
 	}
       }
-
-      if (is_pmch_subframe(phy_vars_eNB->frame,next_slot>>1,&phy_vars_eNB->lte_frame_parms)) {
+    }
+    if (is_pmch_subframe(phy_vars_eNB->frame,next_slot>>1,&phy_vars_eNB->lte_frame_parms)) {
+      
+      if (abstraction_flag==0){
 	if ((next_slot%2) == 0) {
 	  // This is DL-Cell spec pilots in Control region
 	  generate_pilots_slot(phy_vars_eNB,
 			       phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
 			       AMP,
 			       next_slot,1);
-
+	}
+      }
 #ifdef Rel10
-	  // if mcch is active, send regardless of the node type: eNB or RN
-	  // when mcch is active, MAC sched does not allow MCCH and MTCH multiplexing 
+      // if mcch is active, send regardless of the node type: eNB or RN
+      // when mcch is active, MAC sched does not allow MCCH and MTCH multiplexing 
 	  mch_pduP = mac_xface->get_mch_sdu(phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1);
 	  switch (r_type){
 	  case no_relay:
@@ -1129,9 +1132,9 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	    }// switch 
 	
 	  if (mch_pduP){
-	    fill_eNB_dlsch_MCH(phy_vars_eNB,mch_pduP->mcs,1,0);
+	    fill_eNB_dlsch_MCH(phy_vars_eNB,mch_pduP->mcs,1,0, abstraction_flag);
 	    // Generate PMCH
-	    generate_mch(phy_vars_eNB,next_slot>>1,(uint8_t*)mch_pduP->payload);
+	    generate_mch(phy_vars_eNB,next_slot>>1,(uint8_t*)mch_pduP->payload,abstraction_flag);
 #ifdef DEBUG_PHY
 	    for (i=0;i<mch_pduP->Pdu_size;i++)
 	      msg("%2x.",(uint8_t)mch_pduP->payload[i]);
@@ -1141,37 +1144,41 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	    LOG_D(PHY,"[eNB/RN] Frame %d subframe %d: MCH not generated \n",phy_vars_eNB->frame,next_slot>>1);
 	  }
 #endif
-	}
-      }
-      else {
+    }
+    
+    else {
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,1);
-	generate_pilots_slot(phy_vars_eNB,
-			     phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
-			     AMP,
-			     next_slot,0);
-        generate_pilots_slot(phy_vars_eNB,
-                             phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
-                             AMP,
-                             next_slot+1,0);
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,0);
 	
-	if (next_slot == 0) {
+	if (abstraction_flag==0){
+	  generate_pilots_slot(phy_vars_eNB,
+			       phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
+			       AMP,
+			       next_slot,0);
+	  generate_pilots_slot(phy_vars_eNB,
+			       phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
+			       AMP,
+			       next_slot+1,0);
 	  
-	  // First half of PSS/SSS (FDD)
-	  if (phy_vars_eNB->lte_frame_parms.frame_type == FDD) {
-	    generate_pss(phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
-			 AMP,
-			 &phy_vars_eNB->lte_frame_parms,
-			 (phy_vars_eNB->lte_frame_parms.Ncp==0) ? 6 : 5,
-			 0);
-	    generate_sss(phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
-			 AMP,
-			 &phy_vars_eNB->lte_frame_parms,
-			 (phy_vars_eNB->lte_frame_parms.Ncp==0) ? 5 : 4,
-			 0);
+	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,0);
+	
+	  if (next_slot == 0) {
+	  
+	    // First half of PSS/SSS (FDD)
+	    if (phy_vars_eNB->lte_frame_parms.frame_type == FDD) {
+	      generate_pss(phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
+			   AMP,
+			   &phy_vars_eNB->lte_frame_parms,
+			   (phy_vars_eNB->lte_frame_parms.Ncp==0) ? 6 : 5,
+			   0);
+	      generate_sss(phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
+			   AMP,
+			   &phy_vars_eNB->lte_frame_parms,
+			   (phy_vars_eNB->lte_frame_parms.Ncp==0) ? 5 : 4,
+			   0);
+	    }
 	  }
-	}
-      }      
+	}    
+      }
       if (next_slot == 0) {
 	
 	if ((phy_vars_eNB->frame&3) == 0) {
@@ -1332,7 +1339,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,u8
 	  }
 	}
       }
-    }
+    
       
     
     //return;

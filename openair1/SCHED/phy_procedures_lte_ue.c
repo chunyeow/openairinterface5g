@@ -3005,8 +3005,8 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
       LOG_I(PHY,"Throughput %5.1f kbps\n",(float) phy_vars_ue->bitrate[eNB_id]/1000.0);
     }
   }
-  
   if (is_pmch_subframe(((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,&phy_vars_ue->lte_frame_parms)) {
+  LOG_I(PHY,"ue calling pmch subframe ..\n ");
  
     if ((last_slot%2)==1) {
       LOG_D(PHY,"[UE %d] Frame %d, subframe %d: Querying for PMCH demodulation(%d)\n",
@@ -3022,47 +3022,54 @@ int lte_ue_pdcch_procedures(u8 eNB_id,u8 last_slot, PHY_VARS_UE *phy_vars_ue,u8 
       if (pmch_mcs>=0) {
 	LOG_D(PHY,"[UE %d] Frame %d, subframe %d: Programming PMCH demodulation for mcs %d\n",phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,pmch_mcs);
 	fill_UE_dlsch_MCH(phy_vars_ue,pmch_mcs,1,0,0);
-	
-	for (l=2;l<12;l++) {
+	if (abstraction_flag == 0 ) { 
+	  for (l=2;l<12;l++) {
+	    
+	    slot_fep_mbsfn(phy_vars_ue,
+			   l,
+			   last_slot>>1,
+			   0,0);//phy_vars_ue->rx_offset,0);
+	  }
 	  
-	  slot_fep_mbsfn(phy_vars_ue,
-			 l,
-			 last_slot>>1,
-			 0,0);//phy_vars_ue->rx_offset,0);
-	}
-	
-	for (l=2;l<12;l++) {
-	  rx_pmch(phy_vars_ue,
-		  0,
-		  last_slot>>1,
-		  l);
-	  
-	  
-	}
-	/*	printf("PMCH decoding, Frame %d, subframe %d, G %d\n", 
+	  for (l=2;l<12;l++) {
+	    rx_pmch(phy_vars_ue,
+		    0,
+		    last_slot>>1,
+		    l);
+	    
+	    
+	  }
+	  /*	printf("PMCH decoding, Frame %d, subframe %d, G %d\n", 
 	       ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,
 	       last_slot>>1,
 	       phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G);
 	*/
-	phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G = get_G(&phy_vars_ue->lte_frame_parms,
+	  phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G = get_G(&phy_vars_ue->lte_frame_parms,
 								   phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->nb_rb,
-								   phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->rb_alloc,
-								   get_Qm(phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->mcs),
-								   2,
-								   ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1);
-					
-	dlsch_unscrambling(&phy_vars_ue->lte_frame_parms,1,phy_vars_ue->dlsch_ue_MCH[0],
-			   phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G,
-			   phy_vars_ue->lte_ue_pdsch_vars_MCH[0]->llr[0],0,last_slot-1);
-
-	ret = dlsch_decoding(phy_vars_ue,
-			     phy_vars_ue->lte_ue_pdsch_vars_MCH[0]->llr[0],		 
-			     &phy_vars_ue->lte_frame_parms,
-			     phy_vars_ue->dlsch_ue_MCH[0],
-			     phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0],
-			     last_slot>>1,
-			     0,
-			     0,0);    
+								     phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->rb_alloc,
+								     get_Qm(phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->mcs),
+								     2,
+								     ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1);
+	  
+	  dlsch_unscrambling(&phy_vars_ue->lte_frame_parms,1,phy_vars_ue->dlsch_ue_MCH[0],
+			     phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->G,
+			     phy_vars_ue->lte_ue_pdsch_vars_MCH[0]->llr[0],0,last_slot-1);
+	  
+	  ret = dlsch_decoding(phy_vars_ue,
+			       phy_vars_ue->lte_ue_pdsch_vars_MCH[0]->llr[0],		 
+			       &phy_vars_ue->lte_frame_parms,
+			       phy_vars_ue->dlsch_ue_MCH[0],
+			       phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0],
+			       last_slot>>1,
+			       0,
+			       0,0);
+	}
+	else { // abstraction
+	  ret = dlsch_decoding_emul(phy_vars_ue,
+				    (((last_slot>>1)==0) ? 9 : ((last_slot>>1)-1)),
+				    5, // PMCH
+				    eNB_id);
+	}
 	if (mcch_active == 1)
 	  phy_vars_ue->dlsch_mcch_trials[sync_area][0]++;
 	else 

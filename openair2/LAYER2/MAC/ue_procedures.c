@@ -560,7 +560,7 @@ int ue_query_mch(uint8_t Mod_id, uint32_t frame, uint32_t subframe, uint8_t eNB_
     mch_scheduling_period = 8<<(UE_mac_inst[Mod_id].pmch_Config[0]->mch_SchedulingPeriod_r9);
 
   for (i=0; 
-       i< eNB_mac_inst[Mod_id].num_active_mbsfn_area;
+       i< UE_mac_inst[Mod_id].num_active_mbsfn_area;
        i++ ){ 
     // assume, that there is always a mapping
     if ((j=ue_get_mbsfn_sf_alloction(Mod_id,i,eNB_index)) == -1)
@@ -570,9 +570,10 @@ int ue_query_mch(uint8_t Mod_id, uint32_t frame, uint32_t subframe, uint8_t eNB_
     mbsfn_period = 1<<(UE_mac_inst[Mod_id].mbsfn_SubframeConfig[0]->radioframeAllocationPeriod);
     mcch_period = 32<<(UE_mac_inst[Mod_id].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
     
-    LOG_D(MAC,"[UE %d] Frame %d subframe %d: Checking MBSFN Sync Area %d/%d with SF allocation %d/%d for MCCH and MTCH (mbsfn period %d, mcch period %d)\n", 
+    LOG_D(MAC,"[UE %d] Frame %d subframe %d: Checking MBSFN Sync Area %d/%d with SF allocation %d/%d for MCCH and MTCH (mbsfn period %d, mcch period %d,mac sched period (%d,%d))\n", 
 	  Mod_id,frame, subframe,i,UE_mac_inst[Mod_id].num_active_mbsfn_area,
-	  j,UE_mac_inst[Mod_id].num_sf_allocation_pattern,mbsfn_period,mcch_period);
+	  j,UE_mac_inst[Mod_id].num_sf_allocation_pattern,mbsfn_period,mcch_period,
+	  mch_scheduling_period,UE_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->radioframeAllocationOffset);
     
     // get the real MCS value 
     switch (UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.signallingMCS_r9) {

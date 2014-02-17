@@ -951,7 +951,7 @@ void *l2l1_task(void *args_p) {
     // calibrate at the end of each frame if there is some time  left
     if ((sleep_time_us > 0) && (ethernet_flag == 0)) {
       LOG_I(EMU, "[TIMING] Adjust average frame duration, sleep for %d us\n", sleep_time_us);
-      usleep (sleep_time_us);
+      //usleep (sleep_time_us);
       sleep_time_us = 0; // reset the timer, could be done per n SF
     }
 #ifdef SMBV

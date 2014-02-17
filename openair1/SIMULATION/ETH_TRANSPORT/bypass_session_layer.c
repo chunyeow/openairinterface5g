@@ -258,8 +258,9 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
         }
 
         for (n_ue = oai_emulation.info.master[messg->master_id].first_ue;
-                n_ue < oai_emulation.info.master[messg->master_id].first_ue +
-                oai_emulation.info.master[messg->master_id].nb_ue; n_ue ++) {
+	     n_ue < oai_emulation.info.master[messg->master_id].first_ue +
+	            oai_emulation.info.master[messg->master_id].nb_ue; 
+	     n_ue ++) {
             fill_phy_ue_vars(n_ue, last_slot);
         }
     } else {
@@ -566,7 +567,8 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                 n_enb<(oai_emulation.info.first_enb_local+oai_emulation.info.nb_enb_local);
                 n_enb++) {
             total_tbs=0;
-            for (n_dci = 0; n_dci < (eNB_transport_info[n_enb].num_ue_spec_dci +
+            for (n_dci = 0; n_dci < (eNB_transport_info[n_enb].num_pmch + 
+				     eNB_transport_info[n_enb].num_ue_spec_dci +
                                      eNB_transport_info[n_enb].num_common_dci);
                  n_dci++) {
                 total_tbs +=eNB_transport_info[n_enb].tbs[n_dci];

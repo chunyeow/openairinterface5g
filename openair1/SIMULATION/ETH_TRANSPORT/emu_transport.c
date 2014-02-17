@@ -269,8 +269,10 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
     // to be added later
 
     //DCI
-    nb_total_dci= eNB_transport_info[enb_id].num_ue_spec_dci+
+    nb_total_dci= eNB_transport_info[enb_id].num_pmch + 
+                  eNB_transport_info[enb_id].num_ue_spec_dci +
                   eNB_transport_info[enb_id].num_common_dci;
+
     PHY_vars_eNB_g[enb_id]->num_ue_spec_dci[(next_slot>>1)&1] =
         eNB_transport_info[enb_id].num_ue_spec_dci;
     PHY_vars_eNB_g[enb_id]->num_common_dci[(next_slot>>1)&1]  =
@@ -279,7 +281,7 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
     if (nb_total_dci >0) {
 
         memcpy(PHY_vars_eNB_g[enb_id]->dci_alloc[(next_slot>>1)&1],
-	           eNB_transport_info[enb_id].dci_alloc,
+	       eNB_transport_info[enb_id].dci_alloc,
                (nb_total_dci) * sizeof(DCI_ALLOC_t));
 
         n_dci_dl=0;
@@ -287,12 +289,13 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
         for (n_dci = 0; n_dci < nb_total_dci; n_dci++) {
 
             //exclude ul dci
-            if (eNB_transport_info[enb_id].dci_alloc[n_dci_dl].format > 0) {
+	  if ((eNB_transport_info[enb_id].dci_alloc[n_dci_dl].format > 0) || (eNB_transport_info[enb_id].num_pmch > 0 )) {
 #ifdef DEBUG_EMU
-                LOG_D(EMU, "dci spec %d common %d tbs is %d payload offset %d\n",
+                LOG_D(EMU, "dci spec %d common %d pmch %d tbs is %d payload offset %d\n",
                       eNB_transport_info[enb_id].num_ue_spec_dci,
                       eNB_transport_info[enb_id].num_common_dci,
-                      eNB_transport_info[enb_id].tbs[n_dci_dl],
+                      eNB_transport_info[enb_id].num_pmch,
+		      eNB_transport_info[enb_id].tbs[n_dci_dl],
                       payload_offset);
 #endif
                 switch (eNB_transport_info[enb_id].dlsch_type[n_dci_dl]) {
@@ -345,11 +348,24 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
                                &eNB_transport_info[enb_id].transport_blocks[payload_offset],
                                eNB_transport_info[enb_id].tbs[n_dci_dl]);
                         break;
+       
+		case 5:
+		  memcpy(PHY_vars_eNB_g[enb_id]->dlsch_eNB_MCH->harq_processes[0]->b,
+			 &eNB_transport_info[enb_id].transport_blocks[payload_offset],
+			 eNB_transport_info[enb_id].tbs[n_dci_dl]);
+#ifdef DEBUG_EMU
+		  LOG_D(EMU, "PMCH eNB_transport_info[enb_id].tbs[n_dci_dl] %d \n",
+			eNB_transport_info[enb_id].tbs[n_dci_dl]);
+#endif            
+		  break;
 
-                }
-                payload_offset += eNB_transport_info[enb_id].tbs[n_dci_dl];
-            }
-            n_dci_dl++;
+		default:
+		  LOG_W(EMU,"not supported dlsch type %d \n", eNB_transport_info[enb_id].dlsch_type[n_dci_dl]);
+		  break;
+		}
+		payload_offset += eNB_transport_info[enb_id].tbs[n_dci_dl];
+	  }
+	  n_dci_dl++;
         }
 #ifdef DEBUG_EMU
         LOG_D(EMU, "Fill phy eNB vars done next slot %d !\n", next_slot);
@@ -385,11 +401,10 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
           UE_transport_info[ue_id].cntl.sr,
           ue_cntl_delay[ue_id][last_slot%2].sr,
           UE_transport_info[ue_id].cntl.pucch_sel,
-          ue_cntl_delay[ue_id][last_slot%2].pucch_sel );
+          ue_cntl_delay[ue_id][last_slot%2].pucch_sel);
 #endif
     //ue_cntl_delay[subframe%2].prach_flag ;
-    PHY_vars_UE_g[ue_id]->generate_prach =
-        ue_cntl_delay[ue_id][last_slot%2].prach_flag;//UE_transport_info[ue_id].cntl.prach_flag;
+    PHY_vars_UE_g[ue_id]->generate_prach = ue_cntl_delay[ue_id][last_slot%2].prach_flag;//UE_transport_info[ue_id].cntl.prach_flag;
     if (PHY_vars_UE_g[ue_id]->generate_prach == 1) {
         //     if (PHY_vars_UE_g[ue_id]->prach_resources[enb_id] == NULL)
         //  PHY_vars_UE_g[ue_id]->prach_resources[enb_id] = malloc(sizeof(PRACH_RESOURCES_t));
@@ -398,8 +413,7 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
             ue_cntl_delay[ue_id][last_slot%2].prach_id;
     }
 
-    pucch_format=
-        ue_cntl_delay[ue_id][last_slot%2].pucch_flag;// UE_transport_info[ue_id].cntl.pucch_flag;
+    pucch_format= ue_cntl_delay[ue_id][last_slot%2].pucch_flag;// UE_transport_info[ue_id].cntl.pucch_flag;
     if ((last_slot + 1) % 2 == 0) {
         if (pucch_format == pucch_format1) { // UE_transport_info[ue_id].cntl.sr;
             PHY_vars_UE_g[ue_id]->sr[subframe] = ue_cntl_delay[ue_id][last_slot%2].sr;

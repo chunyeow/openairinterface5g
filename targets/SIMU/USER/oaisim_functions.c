@@ -1175,9 +1175,14 @@ void update_otg_UE(int UE_id, unsigned int ctime) {
     src_id = module_id;
 
     for (dst_id=0;dst_id<NUMBER_OF_eNB_MAX;dst_id++) {
-      if (mac_get_rrc_status(UE_id, 0/*eNB_flag*/, dst_id ) > 2 /*RRC_CONNECTED*/) {
+      if (mac_get_rrc_status(UE_id, 0, dst_id ) > 2 /*RRC_CONNECTED*/) {
 	Packet_otg_elt *otg_pkt = malloc (sizeof(Packet_otg_elt));
-	// Manage to add this packet to the tail of your list
+	if (otg_pkt!=NULL)
+	  memset(otg_pkt,0,sizeof(Packet_otg_elt));
+	else {
+	  LOG_E(OTG,"not enough memory\n");
+	  exit(-1);
+	}// Manage to add this packet to the tail of your list
 	(otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(src_id, dst_id, 0, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
 
 	if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {

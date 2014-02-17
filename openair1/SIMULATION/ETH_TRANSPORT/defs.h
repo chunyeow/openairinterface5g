@@ -51,6 +51,7 @@ typedef unsigned int (*rx_handler_t) (unsigned char, char*, unsigned int);
 
 typedef struct  {
   u32 pbch_flag:1;
+  u32 pmch_flag:1;
   u32 pss:2;
   u32 sss:8;
   u32 cfi:2;
@@ -77,10 +78,12 @@ typedef struct  {
 } UE_cntl;
 
 #define MAX_TRANSPORT_BLOCKS_BUFFER_SIZE 16384
-#define MAX_NUM_DCI 5
+//#define MAX_PMCH_TRANSPORT_BLOCKS_BUFFER_SIZE 8192 // 16384
+#define MAX_NUM_DCI 5+1 // +1: for PMCH/MCH
 
 typedef struct {
   eNB_cntl cntl;
+  u8 num_pmch;
   u8 num_common_dci;
   u8 num_ue_spec_dci;
   DCI_ALLOC_t dci_alloc[MAX_NUM_DCI];
@@ -89,6 +92,7 @@ typedef struct {
   u8 ue_id[MAX_NUM_DCI];
   u16 tbs[MAX_NUM_DCI*2];    // times 2 for dual-stream MIMO formats
   u8 transport_blocks[MAX_TRANSPORT_BLOCKS_BUFFER_SIZE]; 
+  //u8 pmch_transport_blocks[MAX_PMCH_TRANSPORT_BLOCKS_BUFFER_SIZE]; 
 } __attribute__((__packed__)) eNB_transport_info_t ;
 
 typedef struct {

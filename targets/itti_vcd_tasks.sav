@@ -2,10 +2,10 @@
 [*] GTKWave Analyzer v3.3.34 (w)1999-2012 BSI
 [*] Thu Dec 19 10:33:06 2013
 [*]
-[dumpfile] "/home/winckel/vcd_log.vcd"
+[dumpfile] "/tmp/log.vcd"
 [dumpfile_mtime] "Thu Dec 19 10:26:58 2013"
 [dumpfile_size] 68919271
-[savefile] "/homes/winckel/openair/trunk/targets/itti_vcd_tasks.sav"
+[savefile] "$OPENAIR_TARGETS/itti_vcd_tasks.sav"
 [timestart] 0
 [size] 1871 1056
 [pos] -1 -1

@@ -334,12 +334,12 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
           "and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
           UE_id, eNB_id, rb_id, sdu_buffer_size, eNB_flag);
   } else {
-    pdcp = &pdcp_array_eNB[UE_id][eNB_id][rb_id];
+    pdcp = &pdcp_array_eNB[eNB_id][UE_id][rb_id];
     module_id = eNB_id;
 
     LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
-          "and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
-          eNB_id, UE_id, rb_id, sdu_buffer_size, eNB_flag);
+          "and radio bearer ID %d rlc sdu size %d eNB_flag %d eNB_id %d\n",
+          eNB_id, UE_id, rb_id, sdu_buffer_size, eNB_flag, eNB_id);
   }
   sdu_list = &pdcp_sdu_list;
 #endif
@@ -466,14 +466,14 @@ BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_fl
       ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id;
     } else {
       /* RB id for an UE on eNB is instantiated */
-      ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id + (UE_id * NB_RAB_MAX);
+      ((pdcp_data_ind_header_t *) new_sdu->data)->rb_id     = rb_id + (UE_id * NB_RB_MAX);
     }
     ((pdcp_data_ind_header_t *) new_sdu->data)->data_size = sdu_buffer_size - payload_offset;
 
     // Here there is no virtualization possible
 #ifdef IDROMEL_NEMO
     if (eNB_flag == 0)
-      ((pdcp_data_ind_header_t *) new_sdu->data)->inst = rb_id / NB_RAB_MAX;
+      ((pdcp_data_ind_header_t *) new_sdu->data)->inst = rb_id / NB_RB_MAX;
     else
       ((pdcp_data_ind_header_t *) new_sdu->data)->inst = 0;
 #else

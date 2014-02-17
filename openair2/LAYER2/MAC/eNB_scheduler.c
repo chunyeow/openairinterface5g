@@ -1160,7 +1160,7 @@ int schedule_MBMS(unsigned char Mod_id,u32 frame, u8 subframe) {
 	    ii = eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0] & (0x80>>msi_pos);
 	    msi_pos++;
 	  }
-	  //LOG_D(MAC,"[eNB %d] Frame %d subframe %d : sync area %d sf allocation pattern %d sf alloc %x msi pos is %d \n", Mod_id,frame, subframe,i,j,eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0], msi_pos);
+	  LOG_D(MAC,"[eNB %d] Frame %d subframe %d : sync area %d sf allocation pattern %d sf alloc %x msi pos is %d \n", Mod_id,frame, subframe,i,j,eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[j]->subframeAllocation.choice.oneFrame.buf[0], msi_pos);
 	}
       
       // Check if the subframe is for MSI, MCCH or MTCHs and Set the correspoding flag to 1

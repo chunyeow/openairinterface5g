@@ -15,6 +15,8 @@ First, you must have all four openair SW directories, openair1, openair2, openai
 1. The following packages must be available on your system:
 
         - libblas and libblas-dev
+	- libconfig++8-dev
+	- libgtk-3-dev
         - libxml2 and libxml2-dev and gccxml
         - libforms-bin libforms-dev
 	- libatlas-base-dev and libatlas-headers (for Ubuntu 11.04, libatlas-dev instead of libatlas-headers)

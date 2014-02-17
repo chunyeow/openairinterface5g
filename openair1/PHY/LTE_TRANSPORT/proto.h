@@ -222,14 +222,20 @@ int mch_modulation(mod_sym_t **txdataF,
     @param phy_vars_eNB Pointer to eNB variables
     @param subframe Subframe for PMCH
     @param a Pointer to transport block
+    @param abstraction_flag 
+
 */
-void generate_mch(PHY_VARS_eNB *phy_vars_eNB,int subframe,uint8_t *a);
+void generate_mch(PHY_VARS_eNB *phy_vars_eNB,int subframe,uint8_t *a,int abstraction_flag);
 
 /** \brief This function generates the frequency-domain pilots (cell-specific downlink reference signals)
     @param phy_vars_eNB Pointer to eNB variables
     @param mcs MCS for MBSFN
+    @param ndi new data indicator
+    @param rdvix
+    @param abstraction_flag 
+
 */
-void fill_eNB_dlsch_MCH(PHY_VARS_eNB *phy_vars_eNB,int mcs,int ndi,int rvidx);
+void fill_eNB_dlsch_MCH(PHY_VARS_eNB *phy_vars_eNB,int mcs,int ndi,int rvidx,int abstraction_flag);
 
 /** \brief This function generates the frequency-domain pilots (cell-specific downlink reference signals)
     @param phy_vars_ue Pointer to UE variables

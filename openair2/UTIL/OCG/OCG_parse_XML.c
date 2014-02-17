@@ -73,6 +73,8 @@ static int wall_penetration_loss_dB_;
 static int system_bandwidth_MB_;
 static int system_frequency_GHz_;
 static int transmission_mode_;
+static int frame_type_;
+static int tdd_config_;
 static int antenna_;
 static int eNB_antenna_;
 static int UE_antenna_;
@@ -263,6 +265,10 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 		system_frequency_GHz_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "TRANSMISSION_MODE")) {
 		transmission_mode_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "FRAME_TYPE")) {
+		frame_type_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "TDD_CONFIG")) {
+		tdd_config_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "ANTENNA")) {
 		antenna_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "eNB_ANTENNA")) {
@@ -589,6 +595,10 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		system_frequency_GHz_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "TRANSMISSION_MODE")) {
 		transmission_mode_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "FRAME_TYPE")) {
+		frame_type_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "TDD_CONFIG")) {
+		tdd_config_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "ANTENNA")) {
 		antenna_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "eNB_ANTENNA")) {
@@ -903,6 +913,10 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 				oai_emulation.environment_system_config.system_frequency_GHz = atof(ch);
 			} else if (transmission_mode_) {
 				oai_emulation.info.transmission_mode = atof(ch);
+			} else if (frame_type_) {
+			  oai_emulation.info.frame_type_name =  strndup(ch, len);
+			} else if (tdd_config_) {
+				oai_emulation.info.tdd_config = atof(ch);
 			} else if (antenna_) {
 				if (eNB_antenna_) {
 					if (number_of_sectors_) {

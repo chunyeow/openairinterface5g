@@ -44,7 +44,7 @@
 #include "PHY/CODING/extern.h"
 #include "SCHED/extern.h"
 #include "SIMULATION/TOOLS/defs.h"
-//#define DEBUG_DLSCH_DECODING
+#define DEBUG_DLSCH_DECODING
 
 
 void free_ue_dlsch(LTE_UE_DLSCH_t *dlsch) {
@@ -660,6 +660,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   u16 i;
 #endif
 
+  // may not be necessaru for PMCH??
   for (eNB_id2=0;eNB_id2<NB_eNB_INST;eNB_id2++) {
     if (PHY_vars_eNB_g[eNB_id2]->lte_frame_parms.Nid_cell == phy_vars_ue->lte_frame_parms.Nid_cell)
       break;
@@ -749,6 +750,35 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
     dlsch_ue->harq_ack[subframe].send_harq_status = 1;
     if (dlsch_ue->harq_processes[harq_pid]->round == 0)
       memcpy(dlsch_eNB->harq_processes[harq_pid]->b,dlsch_ue->harq_processes[harq_pid]->b,dlsch_ue->harq_processes[harq_pid]->TBS>>3);
+    break;
+  case 5: // PMCH
+ 
+    dlsch_ue  = phy_vars_ue->dlsch_ue_MCH[eNB_id];
+    dlsch_eNB = PHY_vars_eNB_g[eNB_id2]->dlsch_eNB_MCH;
+
+    LOG_D(PHY,"decoding pmch emul (size is %d, enb %d %d)\n",  dlsch_ue->harq_processes[0]->TBS>>3, eNB_id, eNB_id2);
+#ifdef DEBUG_DLSCH_DECODING
+    for (i=0;i<dlsch_ue->harq_processes[0]->TBS>>3;i++)
+      LOG_T(PHY,"%x.",dlsch_eNB->harq_processes[0]->b[i]);
+    LOG_T(PHY,"\n");
+#endif
+    /*
+      if (dlsch_abstraction_MIESM(phy_vars_ue->sinr_dB, phy_vars_ue->transmission_mode[eNB_id], dlsch_eNB->rb_alloc, 
+				dlsch_eNB->harq_processes[0]->mcs,PHY_vars_eNB_g[eNB_id]->mu_mimo_mode[ue_id].dl_pow_off) == 1) {
+    */ 
+    if (1) {
+      // reset HARQ 
+      dlsch_ue->harq_processes[0]->status = SCH_IDLE;
+      dlsch_ue->harq_processes[0]->round  = 0;
+      memcpy(dlsch_ue->harq_processes[0]->b,
+	     dlsch_eNB->harq_processes[0]->b,
+	     dlsch_ue->harq_processes[0]->TBS>>3);
+      return(1);
+    }
+    else {
+      // retransmission
+      return(1+dlsch_ue->max_turbo_iterations);
+    }
     break;
   default:
     dlsch_ue = phy_vars_ue->dlsch_ue[eNB_id][0];

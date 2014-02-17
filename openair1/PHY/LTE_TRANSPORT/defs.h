@@ -70,7 +70,8 @@
 #define MAX_NUM_RE (14*1200)
 
 #define SI_RNTI 0xffff 
-#define P_RNTI  0xfffd
+#define M_RNTI 0xfffd
+#define P_RNTI  0xfffe
 #define CBA_RNTI 0xfff4
 #define C_RNTI  0x1234
 

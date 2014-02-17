@@ -232,7 +232,7 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
      0);*/
 #ifdef Rel10
     LOG_I(RRC,"[UE] eMBMS active state is %d \n", eMBMS_active);
-    for (i=0;i<NB_eNB_INST;i++) {
+    for (i=0;i<NB_UE_INST;i++) {
       UE_rrc_inst[i].MBMS_flag = (uint8_t)eMBMS_active;
     }
 #endif 

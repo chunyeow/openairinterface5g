@@ -693,12 +693,13 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned int n_frames;
     unsigned int n_frames_flag;	// if set, then let the emulation goes to infinity
     unsigned char frame_type;
+    char * frame_type_name;
     unsigned char tdd_config;
     unsigned char tdd_config_S;
     unsigned char extended_prefix_flag;
     unsigned char N_RB_DL;
     unsigned char transmission_mode;
-
+ 
     int max_predefined_traffic_config_index;
     int max_customized_traffic_config_index;
 
