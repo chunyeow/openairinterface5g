@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 
 ## INSTRUCTIONS
 ## - check the coherence of the OPENAIRITS_DIR and MOD_DIR with YOUR platform
@@ -12,8 +12,8 @@
 ## voila !!
 
 #Path configuration
-#MOD_DIR=/lib/modules/`uname -r`/kernel
-MOD_DIR=/lib/modules/2.6.32.11+drm33.2.openairinterface.bigphys.rtai/updates
+MOD_DIR=/lib/modules/`uname -r`/kernel
+#MOD_DIR=/lib/modules/2.6.32.11+drm33.2.openairinterface.bigphys.rtai/updates
 
 #Modules compilation
 cd ${OPENAIRITS_DIR}/mac/DOT11/

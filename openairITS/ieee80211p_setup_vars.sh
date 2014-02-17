@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 
 ## INSTRUCTIONS
 ## - check the coherence of the OPENAIRITS_DIR and MOD_DIR with YOUR platform

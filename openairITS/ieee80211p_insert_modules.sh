@@ -1,4 +1,4 @@
-#!bin/sh
+#!/bin/sh
 
 # Module loading
 sudo depmod -a
