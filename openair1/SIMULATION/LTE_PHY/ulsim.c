@@ -802,6 +802,8 @@ int main(int argc, char **argv) {
 	fflush(stdout);
 	round=0;
 	while (round < 4) {
+	  PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->round=round;
+	  PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->round=round;
 	  //	printf("Trial %d : Round %d ",trials,round);
 	  round_trials[round]++;
 	  if (round == 0) {
