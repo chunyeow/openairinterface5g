@@ -124,6 +124,7 @@ int main(int argc, char **argv) {
   int aarx,aatx;
   double channelx,channely;
   double sigma2, sigma2_dB=10,SNR,SNR2,snr0=-2.0,snr1,SNRmeas,rate,saving_bler;
+  double input_snr_step=.2,snr_int=30;
   double blerr;
 
   //int **txdataF, **txdata;
@@ -222,7 +223,7 @@ int main(int argc, char **argv) {
 
   logInit();
 
-  while ((c = getopt (argc, argv, "hapbm:n:Y:X:s:q:d:D:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
+  while ((c = getopt (argc, argv, "hapbm:n:Y:X:s:w:e:q:d:D:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
     switch (c) {
     case 'a':
       channel_model = AWGN;
@@ -310,7 +311,13 @@ int main(int argc, char **argv) {
       }
       break;
     case 's':
-      snr0 = atoi(optarg);
+      snr0 = atof(optarg);
+      break;
+    case 'w':
+      snr_int = atof(optarg);
+      break;
+    case 'e':
+      input_snr_step= atof(optarg);
       break;
     case 'y':
       n_rx = atoi(optarg);
@@ -405,7 +412,7 @@ int main(int argc, char **argv) {
   printf("Setting mcs = %d\n",mcs);
   printf("n_frames = %d\n",	n_frames);
 
-  snr1 = snr0+25.0;
+  snr1 = snr0+snr_int;
   printf("SNR0 %f, SNR1 %f\n",snr0,snr1);
 
   /*
@@ -698,7 +705,7 @@ int main(int argc, char **argv) {
     if ((subframe>5) || (subframe < 4))
       PHY_vars_UE->frame++;
  
-    for (SNR=snr0;SNR<snr1;SNR+=.2) {
+    for (SNR=snr0;SNR<snr1;SNR+=input_snr_step) {
       errs[0]=0;
       errs[1]=0;
       errs[2]=0;
@@ -1173,15 +1180,15 @@ int main(int argc, char **argv) {
 	     errs[0],
 	     round_trials[0],
 	     errs[1],
-	     round_trials[1],
+	     round_trials[0],
 	     errs[2],
-	     round_trials[2],
+	     round_trials[0],
 	     errs[3],
-	     round_trials[3],
+	     round_trials[0],
 	     (double)errs[0]/(round_trials[0]),
-	     (double)errs[1]/(round_trials[1]),
-	     (double)errs[2]/(round_trials[2]),
-	     (double)errs[3]/(round_trials[3]),
+	     (double)errs[1]/(round_trials[0]),
+	     (double)errs[2]/(round_trials[0]),
+	     (double)errs[3]/(round_trials[0]),
 	     rate*((double)(round_trials[0])/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3])),
 	     100*((double)(round_trials[0])/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3])),
 	     rate,
