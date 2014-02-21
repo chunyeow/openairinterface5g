@@ -8159,8 +8159,8 @@ void dft600(int16_t *x,int16_t *y,unsigned char scale_flag){ // 300 x 2
     x2128[i+300] = x128[j+1];
   }
 
-  dft300((int16_t *)x2128,(int16_t *)ytmp128,0);
-  dft300((int16_t *)(x2128+300),(int16_t *)(ytmp128+300),0);
+  dft300((int16_t *)x2128,(int16_t *)ytmp128,1);
+  dft300((int16_t *)(x2128+300),(int16_t *)(ytmp128+300),1);
 
 
   bfly2_tw1(ytmp128,ytmp128+300,y128,y128+300);
@@ -8173,7 +8173,7 @@ void dft600(int16_t *x,int16_t *y,unsigned char scale_flag){ // 300 x 2
   }
 
   if (scale_flag==1) {
-    norm128 = _mm_set1_epi16(dft_norm_table[8]);
+    norm128 = _mm_set1_epi16(ONE_OVER_SQRT2_Q15);
     
     for (i=0;i<600;i++) {
       y128[i] = _mm_slli_epi16(_mm_mulhi_epi16(y128[i],norm128),1);
