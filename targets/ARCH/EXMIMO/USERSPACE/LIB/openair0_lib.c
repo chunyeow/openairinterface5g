@@ -1,4 +1,4 @@
-/** openair0_lib : API to interface with ExpressMIMO-1&2 kernel driver
+/*e openair0_lib : API to interface with ExpressMIMO-1&2 kernel driver
  * 
  *  Authors: Matthias Ihmig <matthias.ihmig@mytum.de>, 2013
  *           Raymond Knopp <raymond.knopp@eurecom.fr>
@@ -78,16 +78,16 @@ int openair0_open(void)
         }
 
         // calculate userspace addresses
-        openair0_exmimo_pci[card].firmware_block_ptr = (char*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[card].firmware_block_ptr - bigshm_top_kvirtptr[card]);
-        openair0_exmimo_pci[card].printk_buffer_ptr  = (char*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[card].printk_buffer_ptr  - bigshm_top_kvirtptr[card]);
-        openair0_exmimo_pci[card].exmimo_config_ptr  = (exmimo_config_t*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[card].exmimo_config_ptr  - bigshm_top_kvirtptr[card]);
-        openair0_exmimo_pci[card].exmimo_id_ptr      = (exmimo_id_t*)     (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[card].exmimo_id_ptr      - bigshm_top_kvirtptr[card]);
+        openair0_exmimo_pci[card].firmware_block_ptr = (char*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].firmware_block_ptr - bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].printk_buffer_ptr  = (char*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].printk_buffer_ptr  - bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].exmimo_config_ptr  = (exmimo_config_t*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].exmimo_config_ptr  - bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].exmimo_id_ptr      = (exmimo_id_t*)     (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].exmimo_id_ptr      - bigshm_top_kvirtptr[0]);
 
-        /*printf("openair0_exmimo_pci.firmware_block_ptr (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.firmware_block_ptr(%p) - bigshm_top_kvirtptr(%x)\n",
-            openair0_exmimo_pci.firmware_block_ptr, bigshm_top, exmimo_pci_kvirt.firmware_block_ptr, bigshm_top_kvirtptr);
-        printf("card%d, openair0_exmimo_pci.exmimo_id_ptr      (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.exmimo_id_ptr     (%p) - bigshm_top_kvirtptr(%x)\n",
-            card, openair0_exmimo_pci[card].exmimo_id_ptr, bigshm_top[card], exmimo_pci_kvirt[card].exmimo_id_ptr, bigshm_top_kvirtptr[card]);
-        */
+        //printf("openair0_exmimo_pci.firmware_block_ptr (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.firmware_block_ptr(%p) - bigshm_top_kvirtptr(%x)\n",
+        //    openair0_exmimo_pci[card].firmware_block_ptr, bigshm_top, exmimo_pci_kvirt[card].firmware_block_ptr, bigshm_top_kvirtptr[card]);
+        //printf("card%d, openair0_exmimo_pci.exmimo_id_ptr      (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.exmimo_id_ptr     (%p) - bigshm_top_kvirtptr(%x)\n",
+        //    card, openair0_exmimo_pci[card].exmimo_id_ptr, bigshm_top[card], exmimo_pci_kvirt[card].exmimo_id_ptr, bigshm_top_kvirtptr[card]);
+        
   //if (openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev != BOARD_SWREV_CNTL2)
  //    {
 //       error("Software revision %d and firmware revision %d do not match, Please update either Software or Firmware",BOARD_SWREV_CNTL2,openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev);
@@ -99,6 +99,7 @@ int openair0_open(void)
 
         if ( openair0_exmimo_pci[card].exmimo_id_ptr->board_exmimoversion == 2)
             openair0_num_antennas[card] = 4;
+
 
         for (ant=0; ant<openair0_num_antennas[card]; ant++)
         {
@@ -127,6 +128,7 @@ int openair0_open(void)
                 return -3;
             }
         }
+
         //printf("p_exmimo_config = %p, p_exmimo_id = %p\n", openair0_exmimo_pci.exmimo_config_ptr, openair0_exmimo_pci.exmimo_id_ptr);
         
         printf("card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d, %d antennas\n", card, openair0_exmimo_pci[card].exmimo_id_ptr->board_exmimoversion,
