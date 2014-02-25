@@ -47,16 +47,16 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-void           *rlc_tm_tx (void *argP);
-void            rlc_tm_rx_no_segment (void *argP, struct mac_data_ind data_indP);
-void            rlc_tm_rx_segment (void *argP, struct mac_data_ind data_indP);
+void           *rlc_tm_tx (void *arg_pP);
+void            rlc_tm_rx_no_segment (void *arg_pP, struct mac_data_ind data_indP);
+void            rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP);
 //-----------------------------------------------------------------------------
 void
-rlc_tm_get_pdus (void *argP)
+rlc_tm_get_pdus (void *arg_pP)
 {
 //-----------------------------------------------------------------------------
 
-  struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) argP;
+  struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) arg_pP;
 
   switch (rlc->protocol_state) {
 
@@ -80,12 +80,12 @@ rlc_tm_get_pdus (void *argP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_tm_rx_no_segment (void *argP, struct mac_data_ind data_indP)
+rlc_tm_rx_no_segment (void *arg_pP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
-  struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) argP;
-  mem_block_t *tb;
+  struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) arg_pP;
+  mem_block_t *tb_p;
   u8_t             *first_byte;
   u8_t              tb_size_in_bytes;
   u8_t              first_bit;
@@ -100,17 +100,17 @@ rlc_tm_rx_no_segment (void *argP, struct mac_data_ind data_indP)
         // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
         // -      is created; and
         // -      enters the DATA_TRANSFER_READY state.
-        msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", argP);
+        msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
         list_free (&data_indP.data);
         break;
 
       case RLC_DATA_TRANSFER_READY_STATE:
         rlc->output_sdu_size_to_write = 0;      // size of sdu reassemblied
-        while ((tb = list_remove_head (&data_indP.data))) {
-          first_byte = ((struct mac_tb_ind *) (tb->data))->data_ptr;
+        while ((tb_p = list_remove_head (&data_indP.data))) {
+          first_byte = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
 
           tb_size_in_bytes = (data_indP.tb_size + 7) >> 3;
-          first_bit = ((struct mac_tb_ind *) (tb->data))->first_bit;
+          first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
           if (first_bit > 0) {
             // shift data of transport_block TO CHECK
             bits_to_shift_last_loop = 0;
@@ -123,18 +123,18 @@ rlc_tm_rx_no_segment (void *argP, struct mac_data_ind data_indP)
             }
           }
 
-          ((struct rlc_tm_rx_pdu_management *) (tb->data))->first_byte = first_byte;
+          ((struct rlc_tm_rx_pdu_management *) (tb_p->data))->first_byte = first_byte;
 
           if (rlc->delivery_of_erroneous_sdu == RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO_DETECT) {
             rlc_tm_send_sdu_no_segment (rlc, 0, first_byte, data_indP.tb_size);
           } else if (rlc->delivery_of_erroneous_sdu == RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_YES) {
-            rlc_tm_send_sdu_no_segment (rlc, (((struct mac_tb_ind *) (tb->data))->error_indication), first_byte, data_indP.tb_size);
+            rlc_tm_send_sdu_no_segment (rlc, (((struct mac_tb_ind *) (tb_p->data))->error_indication), first_byte, data_indP.tb_size);
           } else {              //RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_NO
-            if (!(((struct mac_tb_ind *) (tb->data))->error_indication)) {
+            if (!(((struct mac_tb_ind *) (tb_p->data))->error_indication)) {
               rlc_tm_send_sdu_no_segment (rlc, 0, first_byte, data_indP.tb_size);
             }
           }
-          free_mem_block (tb);
+          free_mem_block (tb_p);
         }
         break;
 
@@ -145,22 +145,22 @@ rlc_tm_rx_no_segment (void *argP, struct mac_data_ind data_indP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_tm_rx_segment (void *argP, struct mac_data_ind data_indP)
+rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
-  struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) argP;
-  mem_block_t *tb;
-  s32_t             tb_size_in_bits;
-  u8_t             *first_byte;
-  u8_t              error_in_sdu;
-  u8_t              tb_size_in_bytes;
-  u8_t              first_bit;
-  u8_t              byte;
+  struct rlc_tm_entity *rlc             = (struct rlc_tm_entity_s *) arg_pP;
+  mem_block_t          *tb_p            = NULL;
+  sdu_size_t            tb_size_in_bits = 0;
+  u8_t                 *first_byte_p    = NULL;
+  u8_t                  error_in_sdu    = 0;
+  sdu_size_t            tb_size_in_bytes= 0;
+  u8_t                  first_bit       = 0;
+  u8_t                  byte            = 0;
 
 
   //just for debug
-  u8_t             *debug;
+  u8_t                 *debug           = NULL;
 
   switch (rlc->protocol_state) {
 
@@ -170,7 +170,7 @@ rlc_tm_rx_segment (void *argP, struct mac_data_ind data_indP)
         // Upon reception of a CRLC-CONFIG-Req from upper layer indicating establishment, the RLC entity:
         // -      is created; and
         // -      enters the DATA_TRANSFER_READY state.
-        msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", argP);
+        msg ("[RLC_TM %p] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", arg_pP);
         list_free (&data_indP.data);
         break;
 
@@ -183,9 +183,9 @@ rlc_tm_rx_segment (void *argP, struct mac_data_ind data_indP)
 
             case RLC_TM_DELIVERY_OF_ERRONEOUS_SDU_YES:
               error_in_sdu = 0;
-              while ((tb = list_remove_head (&data_indP.data))) {
+              while ((tb_p = list_remove_head (&data_indP.data))) {
 
-                if ((((struct mac_tb_ind *) (tb->data))->error_indication)) {
+                if ((((struct mac_tb_ind *) (tb_p->data))->error_indication)) {
                   error_in_sdu = 1;
                 }
               }
@@ -200,16 +200,16 @@ rlc_tm_rx_segment (void *argP, struct mac_data_ind data_indP)
               }
               debug = (u8_t*)&rlc->output_sdu_in_construction->data[0];
 
-              while ((tb = list_remove_head (&data_indP.data))) {
+              while ((tb_p = list_remove_head (&data_indP.data))) {
 
-                if ((((struct mac_tb_ind *) (tb->data))->error_indication) && (error_in_sdu)) {
+                if ((((struct mac_tb_ind *) (tb_p->data))->error_indication) && (error_in_sdu)) {
                   error_in_sdu = 1;
                 } else {
-                  first_byte = ((struct mac_tb_ind *) (tb->data))->data_ptr;
+                  first_byte = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
 
                   tb_size_in_bytes = (data_indP.tb_size + 7) >> 3;
                   tb_size_in_bits = data_indP.tb_size;
-                  first_bit = ((struct mac_tb_ind *) (tb->data))->first_bit;
+                  first_bit = ((struct mac_tb_ind *) (tb_p->data))->first_bit;
 
                   while (tb_size_in_bits > 0) {
 
@@ -272,7 +272,7 @@ rlc_tm_rx_segment (void *argP, struct mac_data_ind data_indP)
                     }
                   }
                 }
-                free_mem_block (tb);
+                free_mem_block (tb_p);
               }
               if (!(error_in_sdu)) {
                 rlc_tm_send_sdu_segment (rlc, 0);

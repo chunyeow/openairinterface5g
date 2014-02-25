@@ -47,16 +47,16 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \brief Structure containing a RLC TM instance protocol variables, allocation variables, buffers and other miscellaneous variables.
 */
 typedef struct rlc_tm_entity {
-  module_id_t       enb_module_id;                      /*!< \brief eNB Virtualization index for this protocol instance, meaningful if is_enb is set. */
-  module_id_t       ue_module_id;                       /*!< \brief UE Virtualization index for this protocol instance. */
-  u8_t              allocation;      /*!< \brief Boolean for rlc_tm_entity_t struct allocation. */
-  u8_t              protocol_state;  /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE, RLC_LOCAL_SUSPEND_STATE. */
-  boolean_t         is_uplink_downlink; /*!< \brief Is this instance is a transmitter, a receiver or both? */
-  boolean_t         is_data_plane;      /*!< \brief To know if the RLC belongs to a data radio bearer or a signalling radio bearer, for statistics and trace purpose. */
+  module_id_t          enb_module_id;      /*!< \brief eNB Virtualization index for this protocol instance, meaningful if is_enb is set. */
+  module_id_t          ue_module_id;       /*!< \brief UE Virtualization index for this protocol instance, meaningful if is_enb is set. */
+  boolean_t            allocation;         /*!< \brief Boolean for rlc_tm_entity_t struct allocation. */
+  rlc_protocol_state_t protocol_state;     /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE, RLC_LOCAL_SUSPEND_STATE. */
+  boolean_t            is_uplink_downlink; /*!< \brief Is this instance is a transmitter, a receiver or both? */
+  boolean_t            is_data_plane;      /*!< \brief To know if the RLC belongs to a data radio bearer or a signalling radio bearer, for statistics and trace purpose. */
   // for stats and trace purpose :
-  logical_chan_id_t channel_id;        /*!< \brief Transport channel identifier. */
-  rb_id_t           rb_id;             /*!< \brief Radio bearer identifier, for statistics and trace purpose. */
-  boolean_t         is_enb;            /*!< \brief To know if the RLC belongs to a eNB or UE. */
+  logical_chan_id_t    channel_id;         /*!< \brief Transport channel identifier. */
+  rb_id_t              rb_id;              /*!< \brief Radio bearer identifier, for statistics and trace purpose. */
+  boolean_t            is_enb;             /*!< \brief To know if the RLC belongs to a eNB or UE. */
   //-----------------------------
   // tranmission
   //-----------------------------
@@ -69,7 +69,7 @@ typedef struct rlc_tm_entity {
   u16_t             current_sdu_index;       /*!< \brief Current SDU index in input_sdus array to be segmented. */
   list_t            pdus_to_mac_layer;       /*!< \brief PDUs buffered for transmission to MAC layer. */
   sdu_size_t        rlc_pdu_size;
-  u32_t             buffer_occupancy;        /*!< \brief Number of bytes contained in input_sdus buffer.*/
+  rlc_buffer_occupancy_t buffer_occupancy;        /*!< \brief Number of bytes contained in input_sdus buffer.*/
   //-----------------------------
   // receiver
   //-----------------------------

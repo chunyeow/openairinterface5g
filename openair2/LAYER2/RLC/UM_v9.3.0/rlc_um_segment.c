@@ -45,7 +45,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define TRACE_RLC_UM_SEGMENT 1
 //-----------------------------------------------------------------------------
 void
-rlc_um_segment_10 (struct rlc_um_entity *rlc_pP,frame_t frameP)
+rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 {
 //-----------------------------------------------------------------------------
     list_t              pdus;
@@ -475,7 +475,7 @@ rlc_um_segment_10 (struct rlc_um_entity *rlc_pP,frame_t frameP)
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_segment_5 (struct rlc_um_entity *rlc_pP,frame_t frameP)
+rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
 {
 //-----------------------------------------------------------------------------
     list_t              pdus;

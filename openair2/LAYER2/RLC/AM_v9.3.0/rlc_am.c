@@ -709,7 +709,11 @@ rlc_am_mac_data_request (void *rlc_pP, frame_t frameP)
                   msg_p->ittiMsg.rlc_am_data_pdu_req.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_am_data_pdu_req.text, message_string, message_string_size);
 
-                  itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+                  if (l_rlc_p->is_enb) {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+                  } else {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                  }
 # else
                   rlc_am_display_data_pdu_infos(l_rlc_p, frameP, &pdu_info);
 # endif
@@ -741,7 +745,11 @@ rlc_am_mac_data_request (void *rlc_pP, frame_t frameP)
                   msg_p->ittiMsg.rlc_am_status_pdu_req.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_am_status_pdu_req.text, message_string, message_string_size);
 
-                  itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+                  if (l_rlc_p->is_enb) {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+                  } else {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                  }
 #   endif
               }
           }
@@ -844,7 +852,11 @@ rlc_am_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, 
                   msg_p->ittiMsg.rlc_am_data_pdu_ind.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_am_data_pdu_ind.text, message_string, message_string_size);
 
-                  itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+                  if (l_rlc_p->is_enb) {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+                  } else {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                  }
 # else
                   rlc_am_display_data_pdu_infos(l_rlc_p, frameP, &pdu_info);
 # endif
@@ -875,7 +887,11 @@ rlc_am_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, 
                   msg_p->ittiMsg.rlc_am_status_pdu_ind.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_am_status_pdu_ind.text, message_string, message_string_size);
 
-                  itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+                  if (l_rlc_p->is_enb) {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+                  } else {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                  }
 #   endif
               }
           }

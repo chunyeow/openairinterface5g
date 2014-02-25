@@ -318,7 +318,11 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
                   msg_p->ittiMsg.rlc_um_data_pdu_ind.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_ind.text, message_string, message_string_size);
 
-                  itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+                  if (l_rlc_p->is_enb) {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+                  } else {
+                      itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+                  }
 # else
                   LOG_T(RLC, "%s", message_string);
 # endif
@@ -576,7 +580,11 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
             msg_p->ittiMsg.rlc_um_data_pdu_req.size = message_string_size;
             memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_req.text, message_string, message_string_size);
 
-            itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->module_id + NB_eNB_INST, msg_p);
+            if (l_rlc_p->is_enb) {
+                itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+            } else {
+                itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+            }
 # else
             LOG_T(RLC, "%s", message_string);
 # endif

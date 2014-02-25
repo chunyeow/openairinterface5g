@@ -48,7 +48,7 @@ typedef int                traffic_type_t;
 typedef u32_t              mbms_session_id_t;
 typedef u16_t              mbms_service_id_t;
 typedef u16_t              rnti_t;
-
+typedef u32_t              rlc_buffer_occupancy_t;
 typedef signed int         rlc_op_status_t;
 
 typedef unsigned char      crc8_t;

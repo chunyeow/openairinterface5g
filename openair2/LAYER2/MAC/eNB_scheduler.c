@@ -1453,7 +1453,7 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
           module_idP,frameP,MTCH,TBS,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
 
-      rlc_status = mac_rlc_status_ind(module_idP,frameP,1,RLC_MBMS_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
+      rlc_status = mac_rlc_status_ind(module_idP,0,frameP,1,RLC_MBMS_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
       //printf("frameP %d, subframeP %d,  rlc_status.bytes_in_buffer is %d\n",frameP,subframeP, rlc_status.bytes_in_buffer);
 
@@ -1461,7 +1461,7 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
           LOG_I(MAC,"[eNB %d][MBMS USER-PLANE], Frame %d, MTCH->MCH, Requesting %d bytes from RLC (header len mtch %d)\n",
               module_idP,frameP,TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch,header_len_mtch);
 
-          sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,frameP, 1, RLC_MBMS_YES,
+          sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP, 0, frameP, 1, RLC_MBMS_YES,
               MTCH + (maxDRB + 3) * MAX_MOBILES_PER_RG,
               (char*)&mch_buffer[sdu_length_total]);
           //sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,frameP, RLC_MBMS_NO,  MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)), (char*)&mch_buffer[sdu_length_total]);
@@ -1544,7 +1544,7 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
       if (oai_emulation.info.opt_enabled)
         trace_pdu(1, (uint8_t *)eNB_mac_inst[module_idP].MCH_pdu.payload,
             TBS, module_idP, 6, 0xffff,  // M_RNTI = 6 in wirehsark
-            eNB_mac_inst[module_idP].subframeP,0,0);
+            eNB_mac_inst[module_idP].subframe,0,0);
       LOG_D(OPT,"[eNB %d][MCH] Frame %d : MAC PDU with size %d\n",
           module_idP, frameP, TBS);
 #endif
@@ -4324,7 +4324,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,u8 cooperation_flag, frame
           case RRC_MAC_BCCH_DATA_REQ:
             LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
-                RRC_MAC_BCCH_DATA_REQ (msg_p).frameP, RRC_MAC_BCCH_DATA_REQ (msg_p).enb_index);
+                RRC_MAC_BCCH_DATA_REQ (msg_p).frame, RRC_MAC_BCCH_DATA_REQ (msg_p).enb_index);
 
             // TODO process BCCH data req.
             break;
@@ -4332,7 +4332,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,u8 cooperation_flag, frame
           case RRC_MAC_CCCH_DATA_REQ:
             LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
-                RRC_MAC_CCCH_DATA_REQ (msg_p).frameP, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
+                RRC_MAC_CCCH_DATA_REQ (msg_p).frame, RRC_MAC_CCCH_DATA_REQ (msg_p).enb_index);
 
             // TODO process CCCH data req.
             break;
@@ -4341,7 +4341,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,u8 cooperation_flag, frame
           case RRC_MAC_MCCH_DATA_REQ:
             LOG_D(MAC, "Received %s from %s: instance %d, frameP %d, eNB_index %d, mbsfn_sync_area %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
-                RRC_MAC_MCCH_DATA_REQ (msg_p).frameP, RRC_MAC_MCCH_DATA_REQ (msg_p).enb_index, RRC_MAC_MCCH_DATA_REQ (msg_p).mbsfn_sync_area);
+                RRC_MAC_MCCH_DATA_REQ (msg_p).frame, RRC_MAC_MCCH_DATA_REQ (msg_p).enb_index, RRC_MAC_MCCH_DATA_REQ (msg_p).mbsfn_sync_area);
 
             // TODO process MCCH data req.
             break;

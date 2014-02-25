@@ -2468,7 +2468,7 @@ void rrc_ue_generate_MeasurementReport(u8 eNB_id, u8 UE_id, frame_t frameP) {
 }
 
 // Measurement report triggering, described in 36.331 Section 5.5.4.1: called periodically 
-void ue_measurement_report_triggering(module_id_t Mod_id, u32 frameP,u8 eNB_index) {
+void ue_measurement_report_triggering(module_id_t Mod_id, frame_t frameP,u8 eNB_index) {
   u8               i,j;
   Hysteresis_t     hys;
   TimeToTrigger_t  ttt_ms;
@@ -2554,7 +2554,7 @@ void ue_measurement_report_triggering(module_id_t Mod_id, u32 frameP,u8 eNB_inde
 }
 
 //check_trigger_meas_event(Mod_id, frameP, eNB_index, i,j,ofn,ocn,hys,ofs,ocs,a3_offset,ttt_ms)
-u8 check_trigger_meas_event(module_id_t Mod_id,u32 frameP, u8 eNB_index, u8 ue_cnx_index, u8 meas_index,
+u8 check_trigger_meas_event(module_id_t Mod_id,frame_t frameP, u8 eNB_index, u8 ue_cnx_index, u8 meas_index,
     Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys,
     Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt) {
   u8 eNB_offset;
@@ -2591,7 +2591,7 @@ u8 check_trigger_meas_event(module_id_t Mod_id,u32 frameP, u8 eNB_index, u8 ue_c
 }
 
 #ifdef Rel10
-int decode_MCCH_Message(module_id_t Mod_id, u32 frameP, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area) {
+int decode_MCCH_Message(module_id_t Mod_id, frame_t frameP, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area) {
 
   MCCH_Message_t *mcch=NULL;
   MBSFNAreaConfiguration_r9_t **mcch_message=&UE_rrc_inst[Mod_id].mcch_message[eNB_index];
@@ -2635,7 +2635,7 @@ int decode_MCCH_Message(module_id_t Mod_id, u32 frameP, u8 eNB_index, u8 *Sdu, u
   return 0;
 }
 
-void decode_MBSFNAreaConfiguration(module_id_t Mod_id, u8 eNB_index, u32 frameP,u8 mbsfn_sync_area) {
+void decode_MBSFNAreaConfiguration(module_id_t Mod_id, u8 eNB_index, frame_t frameP,u8 mbsfn_sync_area) {
   LOG_D(RRC,"[UE %d] Frame %d : Number of MCH(s) in the MBSFN Sync Area %d  is %d\n", 
       Mod_id, frameP, mbsfn_sync_area, UE_rrc_inst[Mod_id].mcch_message[eNB_index]->pmch_InfoList_r9.list.count);
   //  store to MAC/PHY necessary parameters for receiving MTCHs
@@ -2733,7 +2733,7 @@ void *rrc_ue_task(void *args_p) {
         /* MAC messages */
       case RRC_MAC_IN_SYNC_IND:
         LOG_D(RRC, "[UE %d] Received %s: frameP %d, eNB %d\n", Mod_id, msg_name,
-            RRC_MAC_IN_SYNC_IND (msg_p).frameP, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
+            RRC_MAC_IN_SYNC_IND (msg_p).frame, RRC_MAC_IN_SYNC_IND (msg_p).enb_index);
 
         UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].N310_cnt = 0;
         if (UE_rrc_inst[Mod_id].Info[RRC_MAC_IN_SYNC_IND (msg_p).enb_index].T310_active == 1)
@@ -2742,16 +2742,16 @@ void *rrc_ue_task(void *args_p) {
 
       case RRC_MAC_OUT_OF_SYNC_IND:
         LOG_I(RRC, "[UE %d] Received %s: frameP %d, eNB %d\n", Mod_id, msg_name,
-            RRC_MAC_OUT_OF_SYNC_IND (msg_p).frameP, RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index);
+            RRC_MAC_OUT_OF_SYNC_IND (msg_p).frame, RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index);
 
         UE_rrc_inst[Mod_id].Info[RRC_MAC_OUT_OF_SYNC_IND (msg_p).enb_index].N310_cnt ++;
         break;
 
       case RRC_MAC_BCCH_DATA_IND:
         LOG_D(RRC, "[UE %d] Received %s: frameP %d, eNB %d\n", Mod_id, msg_name,
-            RRC_MAC_BCCH_DATA_IND (msg_p).frameP, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
+            RRC_MAC_BCCH_DATA_IND (msg_p).frame, RRC_MAC_BCCH_DATA_IND (msg_p).enb_index);
 
-        decode_BCCH_DLSCH_Message (Mod_id, RRC_MAC_BCCH_DATA_IND (msg_p).frameP,
+        decode_BCCH_DLSCH_Message (Mod_id, RRC_MAC_BCCH_DATA_IND (msg_p).frame,
             RRC_MAC_BCCH_DATA_IND (msg_p).enb_index, RRC_MAC_BCCH_DATA_IND (msg_p).sdu,
             RRC_MAC_BCCH_DATA_IND (msg_p).sdu_size,
             RRC_MAC_BCCH_DATA_IND (msg_p).rsrq, RRC_MAC_BCCH_DATA_IND (msg_p).rsrp);
@@ -2767,23 +2767,23 @@ void *rrc_ue_task(void *args_p) {
 
       case RRC_MAC_CCCH_DATA_IND:
         LOG_I(RRC, "[UE %d] Received %s: frameP %d, eNB %d\n", Mod_id, msg_name,
-            RRC_MAC_CCCH_DATA_IND (msg_p).frameP, RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
+            RRC_MAC_CCCH_DATA_IND (msg_p).frame, RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
 
         srb_info_p = &UE_rrc_inst[Mod_id].Srb0[RRC_MAC_CCCH_DATA_IND (msg_p).enb_index];
 
         memcpy (srb_info_p->Rx_buffer.Payload, RRC_MAC_CCCH_DATA_IND (msg_p).sdu,
             RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size);
         srb_info_p->Rx_buffer.payload_size = RRC_MAC_CCCH_DATA_IND (msg_p).sdu_size;
-        rrc_ue_decode_ccch (Mod_id, RRC_MAC_CCCH_DATA_IND (msg_p).frameP, srb_info_p,
+        rrc_ue_decode_ccch (Mod_id, RRC_MAC_CCCH_DATA_IND (msg_p).frame, srb_info_p,
             RRC_MAC_CCCH_DATA_IND (msg_p).enb_index);
         break;
 
 # ifdef Rel10
       case RRC_MAC_MCCH_DATA_IND:
         LOG_I(RRC, "[UE %d] Received %s: frameP %d, eNB %d, mbsfn SA %d\n", Mod_id, msg_name,
-            RRC_MAC_MCCH_DATA_IND (msg_p).frameP, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
+            RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index, RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
 
-        decode_MCCH_Message (Mod_id, RRC_MAC_MCCH_DATA_IND (msg_p).frameP, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
+        decode_MCCH_Message (Mod_id, RRC_MAC_MCCH_DATA_IND (msg_p).frame, RRC_MAC_MCCH_DATA_IND (msg_p).enb_index,
             RRC_MAC_MCCH_DATA_IND (msg_p).sdu, RRC_MAC_MCCH_DATA_IND (msg_p).sdu_size,
             RRC_MAC_MCCH_DATA_IND (msg_p).mbsfn_sync_area);
         break;
@@ -2792,9 +2792,9 @@ void *rrc_ue_task(void *args_p) {
 /* PDCP messages */
       case RRC_DCCH_DATA_IND:
         LOG_I(RRC, "[UE %d] Received %s: frameP %d, DCCH %d, eNB %d\n", Mod_id, msg_name,
-            RRC_DCCH_DATA_IND (msg_p).frameP, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).eNB_index);
+            RRC_DCCH_DATA_IND (msg_p).frame, RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).eNB_index);
 
-        rrc_ue_decode_dcch (Mod_id, RRC_DCCH_DATA_IND (msg_p).frameP,
+        rrc_ue_decode_dcch (Mod_id, RRC_DCCH_DATA_IND (msg_p).frame,
             RRC_DCCH_DATA_IND (msg_p).dcch_index, RRC_DCCH_DATA_IND (msg_p).sdu_p,
             RRC_DCCH_DATA_IND (msg_p).eNB_index);
 

@@ -60,7 +60,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #        include "platform_types.h"
 #        include "rlc_um_entity.h"
 //-----------------------------------------------------------------------------
-/*! \fn int rlc_um_fsm_notify_event (struct rlc_um_entity *rlcP, u8_t eventP)
+/*! \fn int rlc_um_fsm_notify_event (rlc_um_entity_t *rlcP, u8_t eventP)
 * \brief    Send an event to the RLC UM finite state machine.
 * \param[in]  rlcP        RLC UM protocol instance pointer.
 * \param[in]  eventP      Event (#RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_NULL_STATE_EVENT,
@@ -71,6 +71,6 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \return     1 if no error was encountered, 0 if the event was not processed.
 * \Note       This FSM is not LTE 9.3.0 compliant, it has to be modified or removed.
 */
-protected_rlc_um_fsm(int      rlc_um_fsm_notify_event (struct rlc_um_entity *rlcP, u8_t eventP));
+protected_rlc_um_fsm(int      rlc_um_fsm_notify_event (rlc_um_entity_t *rlcP, u8_t eventP));
 /** @} */
 #    endif

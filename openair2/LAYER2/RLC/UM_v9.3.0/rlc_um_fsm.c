@@ -38,7 +38,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 //-----------------------------------------------------------------------------
 int
-rlc_um_fsm_notify_event (struct rlc_um_entity *rlc_pP, u8_t eventP)
+rlc_um_fsm_notify_event (rlc_um_entity_t *rlc_pP, u8_t eventP)
 {
 //-----------------------------------------------------------------------------
 

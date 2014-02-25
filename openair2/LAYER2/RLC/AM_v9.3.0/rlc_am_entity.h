@@ -48,23 +48,24 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #        include "list.h"
 #        include "rlc_primitives.h"
 #        include "rlc_def_lte.h"
+#        include "rlc_def.h"
 #        include "rlc_am_structs.h"
 #        include "rlc_am_constants.h"
 //-----------------------------------------------------------------------------
 /*! \struct  rlc_am_entity_t
 * \brief Structure containing a RLC AM instance protocol variables, statistic variables, allocation variables, buffers and other miscellaneous variables.
 */
-typedef struct rlc_am_entity {
-  module_id_t       enb_module_id;                      /*!< \brief eNB Virtualization index for this protocol instance, meaningful if is_enb is set. */
+typedef struct rlc_am_entity_s {
+  module_id_t       enb_module_id;                      /*!< \brief eNB Virtualization index for this protocol instance. */
   module_id_t       ue_module_id;                       /*!< \brief UE Virtualization index for this protocol instance. */
   rb_id_t           rb_id;                              /*!< \brief Radio bearer identifier, for statistics and trace purpose. */
   logical_chan_id_t channel_id;                         /*!< \brief Transport channel identifier. */
   boolean_t         is_data_plane;                      /*!< \brief To know if the RLC belongs to a data radio bearer or a signalling radio bearer, for statistics and trace purpose. */
   boolean_t         is_enb;                             /*!< \brief To know if the RLC belongs to a eNB or UE. */
 
-  signed int        sdu_buffer_occupancy;               /*!< \brief Number of bytes of unsegmented SDUs. */
-  signed int        retransmission_buffer_occupancy;    /*!< \brief Number of bytes of PDUs in retransmission buffer waiting for a ACK. */
-  signed int        status_buffer_occupancy;            /*!< \brief Number of bytes of control PDUs waiting for transmission. */
+  rlc_buffer_occupancy_t sdu_buffer_occupancy;               /*!< \brief Number of bytes of unsegmented SDUs. */
+  rlc_buffer_occupancy_t retransmission_buffer_occupancy;    /*!< \brief Number of bytes of PDUs in retransmission buffer waiting for a ACK. */
+  rlc_buffer_occupancy_t status_buffer_occupancy;            /*!< \brief Number of bytes of control PDUs waiting for transmission. */
 
   //---------------------------------------------------------------------
   // TX BUFFERS
@@ -96,7 +97,7 @@ typedef struct rlc_am_entity {
   //---------------------------------------------------------------------
   // PROTOCOL VARIABLES
   //---------------------------------------------------------------------
-  u8_t            protocol_state; /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE. */
+  rlc_protocol_state_t protocol_state; /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE. */
   //-----------------------------
   // TX STATE VARIABLES
   //-----------------------------
@@ -174,18 +175,18 @@ typedef struct rlc_am_entity {
   u16_t             nb_bytes_requested_by_mac;  /*!< \brief Number of bytes requested by lower layer for next transmission. */
   list_t            pdus_to_mac_layer;          /*!< \brief PDUs buffered for transmission to MAC layer. */
   list_t            control_pdu_list;           /*!< \brief Control PDUs buffered for transmission to MAC layer. */
-  s16_t             first_retrans_pdu_sn;       /*!< \brief Lowest sequence number of PDU to be retransmitted. */
+  rlc_sn_t          first_retrans_pdu_sn;       /*!< \brief Lowest sequence number of PDU to be retransmitted. */
   list_t            segmentation_pdu_list;      /*!< \brief List of "freshly" segmented PDUs. */
 
-  u32_t             status_requested;             /*!< \brief Status requested by peer. */
-  u32_t             last_frame_status_indication; /*!< \brief The last frame number a  MAC status indication has been received by RLC. */
+  boolean_t         status_requested;             /*!< \brief Status requested by peer. */
+  frame_t           last_frame_status_indication; /*!< \brief The last frame number a  MAC status indication has been received by RLC. */
   //-----------------------------
   // buffer occupancy measurements sent to MAC
   //-----------------------------
   // note occupancy of other buffers is deducted from nb elements in lists
-  u32_t             buffer_occupancy_retransmission_buffer;   /*!< \brief Number of PDUs. */
+  rlc_buffer_occupancy_t  buffer_occupancy_retransmission_buffer;   /*!< \brief Number of PDUs. */
 
-  u8_t              allocation;                              /*!< \brief Boolean for rlc_am_entity_t struct allocation. */
+  boolean_t               allocation;                              /*!< \brief Boolean for rlc_am_entity_t struct allocation. */
 } rlc_am_entity_t;
 /** @} */
 #    endif

@@ -88,7 +88,6 @@ BOOL pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
   u16                current_sn      = 0;
   mem_block_t       *pdcp_pdu_p      = NULL;
   rlc_op_status_t    rlc_status;
-  rb_id_t            rb_id_rlc       = 0;
 
   AssertError (enb_mod_idP < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", enb_mod_idP, NUMBER_OF_eNB_MAX, ue_mod_idP, rb_idP);
   AssertError (ue_mod_idP < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", ue_mod_idP, NUMBER_OF_UE_MAX, enb_mod_idP, rb_idP);
@@ -279,7 +278,7 @@ BOOL pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
    */
   /*  
    if (rb_id>=DTCH) {
-    if (eNB_flag == 1) {
+    if (enb_flagP == 1) {
       Pdcp_stats_tx[module_id][(rb_id & RAB_OFFSET2 )>> RAB_SHIFT2][(rb_id & RAB_OFFSET)-DTCH]++;
       Pdcp_stats_tx_bytes[module_id][(rb_id & RAB_OFFSET2 )>> RAB_SHIFT2][(rb_id & RAB_OFFSET)-DTCH] += sdu_buffer_size;
     } else {
@@ -326,13 +325,13 @@ BOOL pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
       pdcp_p = &pdcp_array_ue[ue_mod_idP][rb_idP];
 
       LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
-          "and radio bearer ID %d rlc sdu size %d eNB_flag %d\n",
+          "and radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
           ue_mod_idP, enb_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
   } else {
       pdcp_p = &pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP];
 
       LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
-          "and radio bearer ID %d rlc sdu size %d eNB_flag %d eNB_id %d\n",
+          "and radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
           enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
   }
   sdu_list_p = &pdcp_sdu_list;
@@ -522,7 +521,7 @@ BOOL pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
 }
 
 //-----------------------------------------------------------------------------
-void pdcp_run (frame_t frameP, eNB_flag_t  eNB_flag, module_id_t ue_mod_idP, module_id_t enb_mod_idP) {
+void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP) {
   //-----------------------------------------------------------------------------
 #if defined(ENABLE_ITTI)
   MessageDef   *msg_p;
@@ -536,7 +535,7 @@ void pdcp_run (frame_t frameP, eNB_flag_t  eNB_flag, module_id_t ue_mod_idP, mod
 #if defined(ENABLE_ITTI)
   do {
       // Checks if a message has been sent to PDCP sub-task
-      itti_poll_msg (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, &msg_p);
+      itti_poll_msg (enb_flagP ? TASK_PDCP_ENB : TASK_PDCP_UE, &msg_p);
 
       if (msg_p != NULL) {
           msg_name = ITTI_MSG_NAME (msg_p);
@@ -544,7 +543,7 @@ void pdcp_run (frame_t frameP, eNB_flag_t  eNB_flag, module_id_t ue_mod_idP, mod
 
           switch (ITTI_MSG_ID(msg_p)) {
           case RRC_DCCH_DATA_REQ:
-            LOG_I(PDCP, "Received %s from %s: instance %d, frame %d, eNB_flag %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
+            LOG_I(PDCP, "Received %s from %s: instance %d, frame %d, enb_flagP %d, rb_id %d, muiP %d, confirmP %d, mode %d\n",
                 msg_name, ITTI_MSG_ORIGIN_NAME(msg_p), instance,
                 RRC_DCCH_DATA_REQ (msg_p).frame, RRC_DCCH_DATA_REQ (msg_p).enb_flag, RRC_DCCH_DATA_REQ (msg_p).rb_id,
                 RRC_DCCH_DATA_REQ (msg_p).muip, RRC_DCCH_DATA_REQ (msg_p).confirmp, RRC_DCCH_DATA_REQ (msg_p).mode);
@@ -595,13 +594,13 @@ void pdcp_run (frame_t frameP, eNB_flag_t  eNB_flag, module_id_t ue_mod_idP, mod
 # endif
 #endif
 
-  pdcp_fifo_read_input_sdus_from_otg(frameP, eNB_flag, ue_mod_idP, enb_mod_idP);
+  pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
-  pdcp_fifo_read_input_sdus(frameP, eNB_flag, ue_mod_idP, enb_mod_idP);
+  pdcp_fifo_read_input_sdus(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
 
   // PDCP -> NAS/IP traffic: RX
-  pdcp_fifo_flush_sdus(frameP, eNB_flag, enb_mod_idP, ue_mod_idP);
+  pdcp_fifo_flush_sdus(frameP, enb_flagP, enb_mod_idP, ue_mod_idP);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
 }
@@ -841,32 +840,37 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
   }
 
 #ifdef Rel10
-  if (pmch_InfoList_r9 != NULL) {
-      for (i=0;i<pmch_InfoList_r9->list.count;i++) {
-          mbms_SessionInfoList_r9 = &(pmch_InfoList_r9->list.array[i]->mbms_SessionInfoList_r9);
-          for (j=0;j<mbms_SessionInfoList_r9->list.count;j++) {
-              MBMS_SessionInfo = mbms_SessionInfoList_r9->list.array[j];
-              //lc_id = MBMS_SessionInfo->logicalChannelIdentity_r9; // lcid
-              lc_id = MBMS_SessionInfo->sessionId_r9->buf[0];
-              mch_id = MBMS_SessionInfo->tmgi_r9.serviceId_r9.buf[2]; //serviceId is 3-octet string
+  if (pmch_InfoList_r9_pP != NULL) {
+      for (i=0;i<pmch_InfoList_r9_pP->list.count;i++) {
+          mbms_SessionInfoList_r9_p = &(pmch_InfoList_r9_pP->list.array[i]->mbms_SessionInfoList_r9);
+          for (j=0;j<mbms_SessionInfoList_r9_p->list.count;j++) {
+              MBMS_SessionInfo_p = mbms_SessionInfoList_r9_p->list.array[j];
+              lc_id = MBMS_SessionInfo_p->sessionId_r9->buf[0];
+              mch_id = MBMS_SessionInfo_p->tmgi_r9.serviceId_r9.buf[2]; //serviceId is 3-octet string
 
               // can set the mch_id = i
-              if (eNB_flag)
+              if (enb_flagP) {
                 rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id;
-              else
+                if (pdcp_mbms_array_eNB[enb_mod_idP][rb_id].instanciated_instance == module_id + 1)
+                  action = ACTION_MBMS_MODIFY;
+                else
+                  action = ACTION_MBMS_ADD;
+              } else {
                 rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3);
+                if (pdcp_mbms_array_ue[ue_mod_idP][rb_id].instanciated_instance == module_id + 1)
+                  action = ACTION_MBMS_MODIFY;
+                else
+                  action = ACTION_MBMS_ADD;
+              }
 
-              if (pdcp_mbms_array[module_id][rb_id].instanciated_instance == module_id + 1)
-                action = ACTION_MBMS_MODIFY;
-              else
-                action = ACTION_MBMS_ADD;
+
 
               rlc_type = RLC_MODE_UM;
               pdcp_config_req_asn1 (NULL,
                   enb_mod_idP,
                   ue_mod_idP,
                   frameP,
-                  eNB_flag,
+                  enb_flagP,
                   rlc_type,
                   action,
                   lc_id,
@@ -875,10 +879,10 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
                   0, // set to deafult
                   0,
                   0,
-                  security_mode,
-                  kRRCenc,
-                  kRRCint,
-                  kUPenc);
+                  security_modeP,
+                  kRRCenc_pP,
+                  kRRCint_pP,
+                  kUPenc_pP);
           }
       }
   }
@@ -1054,7 +1058,7 @@ void pdcp_config_set_security(pdcp_t    *pdcp_pP,
     module_id_t     enb_mod_idP,
     module_id_t     ue_mod_idP,
     frame_t    frameP,
-    eNB_flag_t eNB_flag,
+    eNB_flag_t enb_flagP,
     rb_id_t    rb_idP,
     u16        lc_idP,
     u8         security_modeP,
@@ -1068,7 +1072,7 @@ void pdcp_config_set_security(pdcp_t    *pdcp_pP,
       pdcp_pP->cipheringAlgorithm     = security_modeP & 0x0f;
       pdcp_pP->integrityProtAlgorithm = (security_modeP>>4) & 0xf;
 
-      if (eNB_flag == 0) {
+      if (enb_flagP == 0) {
           LOG_D(PDCP,"[UE %d][RB %02d] Set security mode : ACTION_SET_SECURITY_MODE: "
               "Frame %d  cipheringAlgorithm %d integrityProtAlgorithm %d\n",
               ue_mod_idP, rb_idP, frameP, pdcp_pP->cipheringAlgorithm, pdcp_pP->integrityProtAlgorithm);

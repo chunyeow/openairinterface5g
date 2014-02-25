@@ -362,7 +362,7 @@ static Data_Flow_Unit omv_data;
 static module_id_t UE_inst  = 0;
 static module_id_t eNB_inst = 0;
 #ifdef Rel10
-static module_id_t RN_inst=0;
+static module_id_t RN_id    = 0;
 #endif
 
 Packet_OTG_List *otg_pdcp_buffer;
@@ -781,21 +781,21 @@ void *l2l1_task(void *args_p) {
                   if ( oai_emulation.info.frame_type == 0) {
                       // RN == UE
                       if (frame>0) {
-                          if (PHY_vars_UE_g[UE_id]->UE_mode[0] != NOT_SYNCHED) {
+                          if (PHY_vars_UE_g[UE_inst]->UE_mode[0] != NOT_SYNCHED) {
                               LOG_D(EMU,"[RN %d] PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
-                                  RN_id, UE_id, frame, slot, next_slot >> 1,last_slot>>1);
-                              PHY_vars_UE_g[UE_id]->frame = frame;
-                              phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_id], 0, abstraction_flag,normal_txrx,
+                                  RN_id, UE_inst, frame, slot, next_slot >> 1,last_slot>>1);
+                              PHY_vars_UE_g[UE_inst]->frame = frame;
+                              phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst], 0, abstraction_flag,normal_txrx,
                                   r_type, PHY_vars_RN_g[RN_id]);
                           }
                           else if (last_slot == (LTE_SLOTS_PER_FRAME-2)) {
-                              initial_sync(PHY_vars_UE_g[UE_id],normal_txrx);
+                              initial_sync(PHY_vars_UE_g[UE_inst],normal_txrx);
                           }
                       }
                       // RN == eNB
                       LOG_D(EMU,"[RN %d] PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
-                          RN_id, eNB_id, frame, slot, next_slot >> 1,last_slot>>1);
-                      phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_id], abstraction_flag,
+                          RN_id, eNB_inst, frame, slot, next_slot >> 1,last_slot>>1);
+                      phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_inst], abstraction_flag,
                           r_type, PHY_vars_RN_g[RN_id]);
                   }
                   else {

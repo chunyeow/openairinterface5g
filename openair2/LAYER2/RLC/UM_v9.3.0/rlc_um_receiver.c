@@ -43,7 +43,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define DEBUG_RLC_UM_RX
 
 //-----------------------------------------------------------------------------
-void rlc_um_display_rx_window(struct rlc_um_entity *rlc_pP)
+void rlc_um_display_rx_window(rlc_um_entity_t *rlc_pP)
 //-----------------------------------------------------------------------------
 {
 /*
@@ -145,7 +145,7 @@ void rlc_um_display_rx_window(struct rlc_um_entity *rlc_pP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_receive (struct rlc_um_entity *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
+rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
