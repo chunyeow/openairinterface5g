@@ -185,7 +185,8 @@ typedef struct rlc_mbms_s {
   mbms_session_id_t session_id; // lcid
   mbms_service_id_t service_id;
   rb_id_t           rb_id;
-  module_id_t            instanciated_instance;
+  module_id_t       instanciated_instance;
+  rlc_um_entity_t   um;
 } rlc_mbms_t;
 
 public_rlc(rlc_mbms_t           rlc_mbms_array_ue[NUMBER_OF_UE_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
@@ -226,20 +227,19 @@ private_rlc_mac(struct mac_data_ind   mac_rlc_deserialize_tb (char*, tb_size_t, 
 //   PUBLIC INTERFACE WITH RRC
 //-----------------------------------------------------------------------------
 #ifdef Rel10
-/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP,  u8_t UE_index, SRB_ToAddMod_t* srb2addmod, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP, MBMS_SessionInfoList_r9_t *SessionInfo_listP)
+/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP,  SRB_ToAddMod_t* srb2addmod, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP, MBMS_SessionInfoList_r9_t *SessionInfo_listP)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in]  frameP              Frame index.
 * \param[in]  eNB_flagP           Flag to indicate eNB (1) or UE (0)
-* \param[in]  UE_index           Index of UE in eNB RRC
 * \param[in]  srb2add_listP      SRB configuration list to be created.
 * \param[in]  drb2add_listP      DRB configuration list to be created.
 * \param[in]  drb2release_listP  DRB configuration list to be released.
 * \param[in]  pmch_info_listP    eMBMS pmch info list to be created.
 * \return     A status about the processing, OK or error code.
 */
-public_rlc_rrc( rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t, module_id_t, frame_t, eNB_flag_t, u8_t UE_index, SRB_ToAddModList_t*, DRB_ToAddModList_t*, DRB_ToReleaseList_t*, PMCH_InfoList_r9_t *pmch_info_listP);)
+public_rlc_rrc( rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t, module_id_t, frame_t, eNB_flag_t, SRB_ToAddModList_t*, DRB_ToAddModList_t*, DRB_ToReleaseList_t*, PMCH_InfoList_r9_t *pmch_info_listP);)
 #else
 /*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, SRB_ToAddModList_t* srb2add_listP, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP, MBMS_SessionInfoList_r9_t *SessionInfo_listP)
 * \brief  Function for RRC to configure a Radio Bearer.

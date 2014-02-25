@@ -41,11 +41,13 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #    define __RLC_DEF_H__
 //----------------------------------------------------------
 // protocol states
-#    define RLC_NULL_STATE                            0x00
-#    define RLC_DATA_TRANSFER_READY_STATE             0x01
-#    define RLC_RESET_PENDING_STATE                   0x12
-#    define RLC_RESET_AND_SUSPEND_STATE               0x14
-#    define RLC_LOCAL_SUSPEND_STATE                   0x08
+typedef enum rlc_protocol_state_e {
+  RLC_NULL_STATE                    =        0x00,
+  RLC_DATA_TRANSFER_READY_STATE     =        0x01,
+  RLC_RESET_PENDING_STATE           =        0x12,
+  RLC_RESET_AND_SUSPEND_STATE       =        0x14,
+  RLC_LOCAL_SUSPEND_STATE           =        0x08
+} rlc_protocol_state_t;
 //----------------------------------------------------------
 enum RLC_OPERATION_MODE { TRANSMITTER_ONLY = 0x00,
 RECEIVER_ONLY = 0x01,

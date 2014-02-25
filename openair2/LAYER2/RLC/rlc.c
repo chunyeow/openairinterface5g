@@ -36,7 +36,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 #include "assertions.h"
 
-extern void pdcp_data_ind (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, u8_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sdu_pP, u8 is_data_plane);
+extern void pdcp_data_ind (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sdu_pP, u8 is_data_plane);
 
 #define DEBUG_RLC_PDCP_INTERFACE
 
@@ -116,7 +116,7 @@ rlc_op_status_t rlc_stat_req     (
                   unsigned int* stat_timer_status_prohibit_timed_out) {
 //-----------------------------------------------------------------------------
     rlc_mode_t             rlc_mode = RLC_NONE;
-    void                  *rlc      = NULL;
+    void                  *rlc_p      = NULL;
 
 #ifdef OAI_EMU
     AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
@@ -144,13 +144,13 @@ rlc_op_status_t rlc_stat_req     (
               AssertFatal (0 , "enB RLC not configured rb id %u  module eNB id %u!\n", rb_idP, enb_mod_idP);
               break;
           case RLC_AM:
-              rlc = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
+              rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
               break;
           case RLC_UM:
-              rlc = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
+              rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
               break;
           case RLC_TM:
-              rlc = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
+              rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
               break;
           default:
               AssertFatal (0 , "enB RLC internal memory error rb id %u module eNB id %u!\n", rb_idP, enb_mod_idP);
@@ -162,13 +162,13 @@ rlc_op_status_t rlc_stat_req     (
               AssertFatal (0 , "UE RLC not configured rb id %u module ue id %u!\n", rb_idP, ue_mod_idP);
               break;
           case RLC_AM:
-              rlc = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
+              rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
               break;
           case RLC_UM:
-              rlc = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
+              rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
               break;
           case RLC_TM:
-              rlc = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
+              rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
               break;
           default:
               AssertFatal (0 , "UE RLC internal memory error rb id %u module ue id %u!\n", rb_idP, ue_mod_idP);
@@ -207,7 +207,7 @@ rlc_op_status_t rlc_stat_req     (
             break;
 
         case RLC_AM:
-            rlc_am_stat_req((rlc_am_entity_t*)rlc,
+            rlc_am_stat_req((rlc_am_entity_t*)rlc_p,
                             stat_tx_pdcp_sdu,
                             stat_tx_pdcp_bytes,
                             stat_tx_pdcp_sdu_discarded,
@@ -251,7 +251,7 @@ rlc_op_status_t rlc_stat_req     (
            *stat_rx_data_bytes_out_of_window     = 0;
            *stat_timer_poll_retransmit_timed_out = 0;
            *stat_timer_status_prohibit_timed_out = 0;
-           rlc_um_stat_req ((rlc_um_entity_t*)rlc,
+           rlc_um_stat_req ((rlc_um_entity_t*)rlc_p,
                               stat_tx_pdcp_sdu,
                               stat_tx_pdcp_bytes,
                               stat_tx_pdcp_sdu_discarded,
@@ -335,22 +335,23 @@ rlc_op_status_t rlc_stat_req     (
     }
 }
 //-----------------------------------------------------------------------------
-rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
-                                  module_id_t ue_mod_idP,
-                                  frame_t frameP,
-                                  eNB_flag_t eNB_flagP,
-                                  MBMS_flag_t MBMS_flagP,
-                                  rb_id_t rb_idP,
-                                  mui_t muiP,
-                                  confirm_t confirmP,
-                                  sdu_size_t sdu_sizeP,
+rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
+                                  module_id_t  ue_mod_idP,
+                                  frame_t      frameP,
+                                  eNB_flag_t   eNB_flagP,
+                                  MBMS_flag_t  MBMS_flagP,
+                                  rb_id_t      rb_idP,
+                                  mui_t        muiP,
+                                  confirm_t    confirmP,
+                                  sdu_size_t   sdu_sizeP,
                                   mem_block_t *sdu_pP) {
 //-----------------------------------------------------------------------------
-  mem_block_t           *new_sdu    = NULL;
-  rlc_mode_t             rlc_mode   = RLC_NONE;
-  void                  *rlc        = NULL;
+  mem_block_t           *new_sdu_p    = NULL;
+  rlc_mode_t             rlc_mode     = RLC_NONE;
+  void                  *rlc_p        = NULL;
 #ifdef Rel10
   rb_id_t                mbms_rb_id = 0;
+  rlc_um_entity_t       *rlc_um_p   = NULL;
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
   LOG_D(RLC,"rlc_data_req: %s enb id  %u  ue id %u, rb_id %u (MAX %d), muip %d, confirmP %d, sud_sizeP %d, sdu_pP %p\n",
@@ -401,13 +402,13 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
             AssertFatal (0 , "enB RLC not configured rb id %u module %u!\n", rb_idP, enb_mod_idP);
             break;
         case RLC_AM:
-            rlc = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
+            rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
             break;
         case RLC_UM:
-            rlc = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
+            rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
             break;
         case RLC_TM:
-            rlc = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
+            rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
             break;
         default:
             AssertFatal (0 , "enB RLC internal memory error rb id %u module %u!\n", rb_idP, enb_mod_idP);
@@ -419,13 +420,13 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
             AssertFatal (0 , "UE RLC not configured rb id %u module %u!\n", rb_idP, ue_mod_idP);
             break;
         case RLC_AM:
-            rlc = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
+            rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
             break;
         case RLC_UM:
-            rlc = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
+            rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
             break;
         case RLC_TM:
-            rlc = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
+            rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
             break;
         default:
             AssertFatal (0 , "UE RLC internal memory error rb id %u module %u!\n", rb_idP, ue_mod_idP);
@@ -459,21 +460,21 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
 #ifdef DEBUG_RLC_DATA_REQ
               msg("RLC_AM\n");
 #endif
-              new_sdu = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_am_data_req_alloc));
+              new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_am_data_req_alloc));
 
-              if (new_sdu != NULL) {
+              if (new_sdu_p != NULL) {
                   // PROCESS OF COMPRESSION HERE:
-                  memset (new_sdu->data, 0, sizeof (struct rlc_am_data_req_alloc));
-                  memcpy (&new_sdu->data[sizeof (struct rlc_am_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
+                  memset (new_sdu_p->data, 0, sizeof (struct rlc_am_data_req_alloc));
+                  memcpy (&new_sdu_p->data[sizeof (struct rlc_am_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
 
-                  ((struct rlc_am_data_req *) (new_sdu->data))->data_size = sdu_sizeP;
-                  ((struct rlc_am_data_req *) (new_sdu->data))->conf = confirmP;
-                  ((struct rlc_am_data_req *) (new_sdu->data))->mui  = muiP;
-                  ((struct rlc_am_data_req *) (new_sdu->data))->data_offset = sizeof (struct rlc_am_data_req_alloc);
+                  ((struct rlc_am_data_req *) (new_sdu_p->data))->data_size = sdu_sizeP;
+                  ((struct rlc_am_data_req *) (new_sdu_p->data))->conf = confirmP;
+                  ((struct rlc_am_data_req *) (new_sdu_p->data))->mui  = muiP;
+                  ((struct rlc_am_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_am_data_req_alloc);
                   free_mem_block(sdu_pP);
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
 
-                  if (((rlc_am_entity_t*)rlc)->is_data_plane) {
+                  if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
                           frame,
                           (eNB_flagP) ? "eNB" : "UE",
@@ -497,7 +498,7 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
                           rb_idP);
                   }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_am_data_req((rlc_am_entity_t*)rlc, frame, new_sdu);
+                  rlc_am_data_req((rlc_am_entity_t*)rlc_p, frame, new_sdu_p);
                   return RLC_OP_STATUS_OK;
               } else {
                   return RLC_OP_STATUS_INTERNAL_ERROR;
@@ -505,19 +506,19 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
               break;
 
           case RLC_UM:
-              new_sdu = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_um_data_req_alloc));
+            new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_um_data_req_alloc));
 
-              if (new_sdu != NULL) {
+              if (new_sdu_p != NULL) {
                   // PROCESS OF COMPRESSION HERE:
-                  memset (new_sdu->data, 0, sizeof (struct rlc_um_data_req_alloc));
-                  memcpy (&new_sdu->data[sizeof (struct rlc_um_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
+                  memset (new_sdu_p->data, 0, sizeof (struct rlc_um_data_req_alloc));
+                  memcpy (&new_sdu_p->data[sizeof (struct rlc_um_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
 
-                  ((struct rlc_um_data_req *) (new_sdu->data))->data_size = sdu_sizeP;
-                  ((struct rlc_um_data_req *) (new_sdu->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
+                  ((struct rlc_um_data_req *) (new_sdu_p->data))->data_size = sdu_sizeP;
+                  ((struct rlc_um_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
                   free_mem_block(sdu_pP);
 
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-                  if (((rlc_am_entity_t*)rlc)->is_data_plane) {
+                  if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
                           frame,
                           (eNB_flagP) ? "eNB" : "UE",
@@ -541,7 +542,7 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
                                      rb_idP);
                   }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_um_data_req((rlc_um_entity_t*)rlc, frame, new_sdu);
+                  rlc_um_data_req((rlc_um_entity_t*)rlc_p, frame, new_sdu_p);
 
                   //free_mem_block(new_sdu);
                   return RLC_OP_STATUS_OK;
@@ -551,18 +552,18 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
               break;
 
           case RLC_TM:
-              new_sdu = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_tm_data_req_alloc));
+            new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_tm_data_req_alloc));
 
-              if (new_sdu != NULL) {
+              if (new_sdu_p != NULL) {
                   // PROCESS OF COMPRESSION HERE:
-                  memset (new_sdu->data, 0, sizeof (struct rlc_tm_data_req_alloc));
-                  memcpy (&new_sdu->data[sizeof (struct rlc_tm_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
+                  memset (new_sdu_p->data, 0, sizeof (struct rlc_tm_data_req_alloc));
+                  memcpy (&new_sdu_p->data[sizeof (struct rlc_tm_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
 
-                  ((struct rlc_tm_data_req *) (new_sdu->data))->data_size = sdu_sizeP;
-                  ((struct rlc_tm_data_req *) (new_sdu->data))->data_offset = sizeof (struct rlc_tm_data_req_alloc);
+                  ((struct rlc_tm_data_req *) (new_sdu_p->data))->data_size = sdu_sizeP;
+                  ((struct rlc_tm_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_tm_data_req_alloc);
                   free_mem_block(sdu_pP);
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-                  if (((rlc_tm_entity_t*)rlc)->is_data_plane) {
+                  if (((rlc_tm_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
                                  frame,
                                  (eNB_flagP) ? "eNB" : "UE",
@@ -586,7 +587,7 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
                                      rb_idP);
                   }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_tm_data_req((rlc_tm_entity_t*)rlc, new_sdu);
+                  rlc_tm_data_req((rlc_tm_entity_t*)rlc_p, new_sdu_p);
                   return RLC_OP_STATUS_OK;
               } else {
                   //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : out of memory\n", __FILE__, __LINE__);
@@ -605,23 +606,25 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
       if (rb_idP < (maxSessionPerPMCH * maxServiceCount)) {
           if (eNB_flagP) {
               mbms_rb_id = rb_idP + (maxDRB + 3) * MAX_MOBILES_PER_RG;
+              //rlc_um_p   = rlc_mbms_array_eNB[enb_mod_idP][mbms_rb_id].;
           } else {
               mbms_rb_id = rb_idP + (maxDRB + 3);
+              //rlc_um_p   = rlc_mbms_array_ue[ue_mod_idP][mbms_rb_id];
           }
 	  //  LOG_I(RLC,"DUY rlc_data_req: mbms_rb_id in RLC instant is: %d\n", mbms_rb_id);
           if (sdu_pP != NULL) {
               if (sdu_sizeP > 0) {
                   LOG_I(RLC,"received a packet with size %d for MBMS \n", sdu_sizeP);
-                  new_sdu = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_um_data_req_alloc));
-                  if (new_sdu != NULL) {
+                  new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_um_data_req_alloc));
+                  if (new_sdu_p != NULL) {
                       // PROCESS OF COMPRESSION HERE:
-                      memset (new_sdu->data, 0, sizeof (struct rlc_um_data_req_alloc));
-                      memcpy (&new_sdu->data[sizeof (struct rlc_um_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
-                      ((struct rlc_um_data_req *) (new_sdu->data))->data_size = sdu_sizeP;
-                      ((struct rlc_um_data_req *) (new_sdu->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
+                      memset (new_sdu_p->data, 0, sizeof (struct rlc_um_data_req_alloc));
+                      memcpy (&new_sdu_p->data[sizeof (struct rlc_um_data_req_alloc)], &sdu_pP->data[0], sdu_sizeP);
+                      ((struct rlc_um_data_req *) (new_sdu_p->data))->data_size = sdu_sizeP;
+                      ((struct rlc_um_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
                       free_mem_block(sdu_pP);
                       LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-                      if (rlc[module_idP].m_rlc_um_array[rlc[module_idP].m_rlc_pointer[mbms_rb_id].rlc_index].is_data_plane) {
+                      if (rlc_um_p->is_data_plane) {
                           LOG_D(RLC, "[FRAME %5u][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
                             frame,
                             enb_mod_idP,
@@ -659,7 +662,7 @@ rlc_op_status_t rlc_data_req     (module_id_t enb_mod_idP,
                           }
                       }
                       LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                      rlc_um_data_req(&rlc[module_idP].m_rlc_um_array[rlc[module_idP].m_rlc_pointer[mbms_rb_id].rlc_index], frame, new_sdu);
+                      rlc_um_data_req(rlc_um_p, frameP, new_sdu_p);
 
                       //free_mem_block(new_sdu);
                       return RLC_OP_STATUS_OK;
