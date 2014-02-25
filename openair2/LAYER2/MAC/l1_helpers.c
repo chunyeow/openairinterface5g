@@ -39,23 +39,23 @@
 #include "extern.h"
 #include "UTIL/LOG/log.h"
 
-s8 get_Po_NOMINAL_PUSCH(u8 Mod_id) {
+s8 get_Po_NOMINAL_PUSCH(module_id_t module_idP) {
   RACH_ConfigCommon_t *rach_ConfigCommon = NULL;
 
-  if (UE_mac_inst[Mod_id].radioResourceConfigCommon)
-    rach_ConfigCommon = &UE_mac_inst[Mod_id].radioResourceConfigCommon->rach_ConfigCommon;
+  if (UE_mac_inst[module_idP].radioResourceConfigCommon)
+    rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
   else {
-    LOG_E(MAC,"[UE %d] FATAL radioResourceConfigCommon is NULL !!!\n",Mod_id);
+    LOG_E(MAC,"[UE %d] FATAL radioResourceConfigCommon is NULL !!!\n",module_idP);
     mac_xface->macphy_exit("");
   }
 
   return(-120 + (rach_ConfigCommon->powerRampingParameters.preambleInitialReceivedTargetPower<<1) + 
-	 get_DELTA_PREAMBLE(Mod_id));
+	 get_DELTA_PREAMBLE(module_idP));
 }
 
-s8 get_deltaP_rampup(u8 Mod_id) {
+s8 get_deltaP_rampup(module_id_t module_idP) {
 
-  LOG_D(MAC,"[PUSCH]%d dB\n",UE_mac_inst[Mod_id].RA_PREAMBLE_TRANSMISSION_COUNTER<<1);
-  return((s8)(UE_mac_inst[Mod_id].RA_PREAMBLE_TRANSMISSION_COUNTER<<1));
+  LOG_D(MAC,"[PUSCH]%d dB\n",UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER<<1);
+  return((s8)(UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER<<1));
  
 }

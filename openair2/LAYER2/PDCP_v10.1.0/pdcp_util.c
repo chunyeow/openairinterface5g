@@ -87,12 +87,15 @@ void util_flush_hex_octets(comp_name_t component, unsigned char* data, unsigned 
     LOG_W(component, "Incoming buffer is NULL! Ignoring...\n");
     return;
   }
+  printf("[PDCP]");
 
   unsigned long octet_index = 0;
   for (octet_index = 0; octet_index < size; ++octet_index) {
-    LOG_T(component, "%02x.", data[octet_index]);
+      //LOG_T(component, "%02x.", data[octet_index]);
+      printf("%02x.", data[octet_index]);
   }
-  LOG_T(component, " \n");
+  //LOG_T(component, " \n");
+  printf(" \n");
 }
 
 /*

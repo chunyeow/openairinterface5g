@@ -69,6 +69,7 @@
 #include "constant.h"
 #include "sap.h"
 #include "rrc_nas_primitives.h"
+#include "COMMON/platform_types.h"
 
 struct rb_entity
 {
@@ -166,18 +167,18 @@ struct ipversion {
 #endif
 };
 
-typedef struct pdcp_data_req_header_t {
-  unsigned int           rb_id;
-  unsigned int           data_size;
-  int                    inst;
-  int                    traffic_type;
+typedef struct pdcp_data_req_header_s {
+  rb_id_t             rb_id;
+  sdu_size_t          data_size;
+  signed int          inst;
+  traffic_type_t      traffic_type;
 } pdcp_data_req_header_t;
 
-typedef struct pdcp_data_ind_header_t {
-  unsigned int           rb_id;
-  unsigned int           data_size;
-  int                    inst;
-  int                    dummy;
+typedef struct pdcp_data_ind_header_s {
+  rb_id_t             rb_id;
+  sdu_size_t          data_size;
+  signed int          inst;
+  traffic_type_t      dummy_traffic_type;
 } pdcp_data_ind_header_t;
 
 extern struct net_device *nasdev[NB_INSTANCES_MAX];

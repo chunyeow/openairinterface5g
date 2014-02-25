@@ -45,6 +45,7 @@
 #define __OCG_H__
 
 #include "PHY/impl_defs_top.h"
+#include "platform_types.h"
 
 #if defined(ENABLE_USE_MME)
 # include "s1ap_eNB.h"
@@ -625,9 +626,9 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
   typedef struct
   {
     unsigned char nb_ue;
-    unsigned char first_ue;
+    module_id_t        first_ue;
     unsigned char nb_enb;
-    unsigned char first_enb;
+    module_id_t        first_enb;
   } master_info_t;
 
   typedef struct
@@ -643,9 +644,9 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char nb_enb_remote;
     unsigned char nb_rn_local;
     unsigned char nb_rn_remote;
-    unsigned char first_enb_local;
-    unsigned char first_rn_local;
-    unsigned char first_ue_local;
+    module_id_t   first_enb_local;
+    module_id_t   first_rn_local;
+    module_id_t   first_ue_local;
     unsigned short master_id;
     unsigned char nb_master;
     unsigned int master_list;

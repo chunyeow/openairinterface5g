@@ -361,7 +361,7 @@ void nas_COMMON_del_send(struct sk_buff *skb, struct cx_entity *cx, struct class
 
 void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst){
   //---------------------------------------------------------------------------
-  struct pdcp_data_req_header_t     pdcph;
+  struct pdcp_data_req_header_s     pdcph;
   struct nas_priv *priv=netdev_priv(nasdev[inst]);
 #ifdef LOOPBACK_TEST
   int i;
@@ -479,7 +479,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
 void nas_COMMON_QOS_receive(){
   //---------------------------------------------------------------------------
   u8 sapi;
-  struct pdcp_data_ind_header_t     pdcph;
+  struct pdcp_data_ind_header_s     pdcph;
   unsigned char data_buffer[2048];
   struct classifier_entity *rclass;
   struct nas_priv *priv;
@@ -540,7 +540,7 @@ void nas_COMMON_QOS_receive(){
 void nas_COMMON_QOS_receive(struct nlmsghdr *nlh)
 {
 
-  struct pdcp_data_ind_header_t     *pdcph = (struct pdcp_data_ind_header_t *)NLMSG_DATA(nlh);
+  struct pdcp_data_ind_header_s     *pdcph = (struct pdcp_data_ind_header_s *)NLMSG_DATA(nlh);
   struct classifier_entity *rclass;
   struct nas_priv *priv;
 

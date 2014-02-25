@@ -59,7 +59,8 @@ typedef struct rlc_um_timer {
 */
 
 typedef struct rlc_um_entity {
-  module_id_t       module_id;          /*!< \brief Virtualization index for this protocol instance, means handset or eNB index.*/
+  module_id_t       enb_module_id;      /*!< \brief eNB Virtualization index for this protocol instance, meaningful if is_enb is set. */
+  module_id_t       ue_module_id;       /*!< \brief UE Virtualization index for this protocol instance. */
   u8_t              allocation;         /*!< \brief Boolean for rlc_am_entity_t struct allocation. */
   u8_t              is_uplink_downlink; /*!< \brief Is this instance is a transmitter, a receiver or both? */
   u8_t              protocol_state;     /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE, RLC_LOCAL_SUSPEND_STATE. */
@@ -114,7 +115,8 @@ typedef struct rlc_um_entity {
   mem_block_t      *dar_buffer_alloc;               /*!< \brief Allocated memory for the DAR buffer. */
   list_t            pdus_from_mac_layer;            /*!< \brief Not Used. */
 
-  u16_t             rb_id;                          /*!< \brief Radio bearer identifier, for statistics and trace purpose. */
+  logical_chan_id_t channel_id;                     /*!< \brief Transport channel identifier. */
+  rb_id_t           rb_id;                          /*!< \brief Radio bearer identifier, for statistics and trace purpose. */
   u16_t             last_reassemblied_sn;           /*!< \brief Sequence number of the last reassemblied PDU. */
   u16_t             last_reassemblied_missing_sn;   /*!< \brief Sequence number of the last found missing PDU. */
   u16_t             reassembly_missing_sn_detected; /*!< \brief Act as a boolean, set if a hole in the sequence numbering of received PDUs has been found. */

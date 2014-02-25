@@ -39,17 +39,17 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "rlc_am.h"
 #include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
-signed int rlc_am_in_tx_window(rlc_am_entity_t* rlcP, u16_t snP)
+signed int rlc_am_in_tx_window(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if (snP >= RLC_AM_SN_MODULO) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(snP - rlcP->vt_a)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(rlcP->vt_ms - rlcP->vt_a)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(snP - rlc_pP->vt_a)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(rlc_pP->vt_ms - rlc_pP->vt_a)) % RLC_AM_SN_MODULO;
     if ((shifted_sn >= 0) && (shifted_sn < upper_bound)) {
         return 1;
     } else {
@@ -57,17 +57,17 @@ signed int rlc_am_in_tx_window(rlc_am_entity_t* rlcP, u16_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_in_rx_window(rlc_am_entity_t* rlcP, u16_t snP)
+signed int rlc_am_in_rx_window(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if (snP >= RLC_AM_SN_MODULO) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(snP - rlcP->vr_r)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(rlcP->vr_mr - rlcP->vr_r)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(snP - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(rlc_pP->vr_mr - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
     if ((shifted_sn >= 0) && (shifted_sn < upper_bound)) {
         return 1;
     } else {
@@ -75,17 +75,17 @@ signed int rlc_am_in_rx_window(rlc_am_entity_t* rlcP, u16_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_sn_gte_vr_h(rlc_am_entity_t* rlcP, u16_t snP)
+signed int rlc_am_sn_gte_vr_h(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if (snP >= RLC_AM_SN_MODULO) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(snP - rlcP->vr_r)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(rlcP->vr_h - rlcP->vr_r)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(snP - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(rlc_pP->vr_h - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
     if (shifted_sn >= upper_bound) {
         return 1;
     } else {
@@ -93,17 +93,17 @@ signed int rlc_am_sn_gte_vr_h(rlc_am_entity_t* rlcP, u16_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_sn_gte_vr_x(rlc_am_entity_t* rlcP, u16_t snP)
+signed int rlc_am_sn_gte_vr_x(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if (snP >= RLC_AM_SN_MODULO) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(snP - rlcP->vr_r)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(rlcP->vr_x - rlcP->vr_r)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(snP - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(rlc_pP->vr_x - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
     if (shifted_sn >= upper_bound) {
         return 1;
     } else {
@@ -111,17 +111,17 @@ signed int rlc_am_sn_gte_vr_x(rlc_am_entity_t* rlcP, u16_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_sn_gt_vr_ms(rlc_am_entity_t* rlcP, u16_t snP)
+signed int rlc_am_sn_gt_vr_ms(rlc_am_entity_t* rlc_pP, rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if (snP >= RLC_AM_SN_MODULO) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(snP - rlcP->vr_r)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(rlcP->vr_ms - rlcP->vr_r)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(snP - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(rlc_pP->vr_ms - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
     if (shifted_sn > upper_bound) {
         return 1;
     } else {
@@ -129,17 +129,17 @@ signed int rlc_am_sn_gt_vr_ms(rlc_am_entity_t* rlcP, u16_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_tx_sn1_gt_sn2(rlc_am_entity_t* rlcP, u16_t sn1P, u16_t sn2P)
+signed int rlc_am_tx_sn1_gt_sn2(rlc_am_entity_t* rlc_pP, rlc_sn_t sn1P, rlc_sn_t sn2P)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if ((sn1P >= RLC_AM_SN_MODULO) || (sn2P >= RLC_AM_SN_MODULO)) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(sn1P - rlcP->vt_a)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(sn2P - rlcP->vt_a)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(sn1P - rlc_pP->vt_a)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(sn2P - rlc_pP->vt_a)) % RLC_AM_SN_MODULO;
     if (shifted_sn > upper_bound) {
         return 1;
     } else {
@@ -147,17 +147,17 @@ signed int rlc_am_tx_sn1_gt_sn2(rlc_am_entity_t* rlcP, u16_t sn1P, u16_t sn2P)
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_rx_sn1_gt_sn2(rlc_am_entity_t* rlcP, u16_t sn1P, u16_t sn2P)
+signed int rlc_am_rx_sn1_gt_sn2(rlc_am_entity_t* rlc_pP, rlc_sn_t sn1P, rlc_sn_t sn2P)
 //-----------------------------------------------------------------------------
 {
-    u16_t shifted_sn;
-    u16_t upper_bound;
+  rlc_usn_t shifted_sn;
+  rlc_usn_t upper_bound;
 
     if ((sn1P >= RLC_AM_SN_MODULO) || (sn2P >= RLC_AM_SN_MODULO)) {
         return 0;
     }
-    shifted_sn  = ((u16_t)(sn1P - rlcP->vr_r)) % RLC_AM_SN_MODULO;
-    upper_bound = ((u16_t)(sn2P - rlcP->vr_r)) % RLC_AM_SN_MODULO;
+    shifted_sn  = ((rlc_usn_t)(sn1P - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
+    upper_bound = ((rlc_usn_t)(sn2P - rlc_pP->vr_r)) % RLC_AM_SN_MODULO;
     if (shifted_sn > upper_bound) {
         return 1;
     } else {

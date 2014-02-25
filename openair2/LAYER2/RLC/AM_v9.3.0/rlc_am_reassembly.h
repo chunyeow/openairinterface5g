@@ -56,36 +56,36 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #            define public_rlc_am_reassembly(x)     extern x
 #        endif
 #    endif
-/*! \fn void rlc_am_clear_rx_sdu (rlc_am_entity_t *rlcP)
+/*! \fn void rlc_am_clear_rx_sdu (rlc_am_entity_t *rlc_pP)
 * \brief    Reset the data cursor index in the output SDU buffer to zero.
-* \param[in]  rlcP                      RLC AM protocol instance pointer.
+* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
 */
-private_rlc_am_reassembly(   void rlc_am_clear_rx_sdu (rlc_am_entity_t *rlcP);)
+private_rlc_am_reassembly(   void rlc_am_clear_rx_sdu (rlc_am_entity_t *rlc_pP);)
 
-/*! \fn void rlc_am_reassembly   (u8_t * srcP, s32_t lengthP, rlc_am_entity_t *rlcP,u32_t frame)
+/*! \fn void rlc_am_reassembly   (u8_t * srcP, s32_t lengthP, rlc_am_entity_t *rlc_pP,frame_t frameP)
 * \brief    Concatenate datas at the tail of the output SDU in construction. This SDU in construction will be sent to higher layer.
 * \param[in]  srcP                      Pointer on data to be reassemblied.
 * \param[in]  lengthP                   Length of data to be reassemblied.
-* \param[in]  rlcP                      RLC AM protocol instance pointer.
-* \param[in]  frame                     Frame index.
+* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
+* \param[in]  frameP                     Frame index.
 */
-private_rlc_am_reassembly(   void rlc_am_reassembly   (u8_t * srcP, s32_t lengthP, rlc_am_entity_t *rlcP,u32_t frame);)
+private_rlc_am_reassembly(   void rlc_am_reassembly   (u8_t * srcP, s32_t lengthP, rlc_am_entity_t *rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_am_send_sdu     (rlc_am_entity_t *rlcP,u32_t frame)
+/*! \fn void rlc_am_send_sdu     (rlc_am_entity_t *rlc_pP,frame_t frameP)
 * \brief    Send the output SDU in construction to higher layer.
-* \param[in]  rlcP                      RLC AM protocol instance pointer.
-* \param[in]  frame                     Frame index.
+* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
+* \param[in]  frameP                     Frame index.
 */
-private_rlc_am_reassembly(   void rlc_am_send_sdu     (rlc_am_entity_t *rlcP,u32_t frame, u8_t eNB_flag);)
+private_rlc_am_reassembly(   void rlc_am_send_sdu     (rlc_am_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_flagP);)
 
-/*! \fn void rlc_am_reassemble_pdu(rlc_am_entity_t* rlcP, u32_t frame, u8_t eNB_flag, mem_block_t* tbP)
+/*! \fn void rlc_am_reassemble_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, u8_t eNB_flagP, mem_block_t* tb_pP)
 * \brief    Reassembly a RLC AM PDU, depending of the content of this PDU, data will be reassemblied to the current output SDU, the current will be sent to higher layers or not, after or before the reassembly, or no send of SDU will be triggered, depending on FI field in PDU header.
-* \param[in]  rlcP                      RLC AM protocol instance pointer.
-* \param[in]  frame                     Frame index.
-* \param[in]  eNB_flag                  Flag to indicate eNB (1) or UE (0).
-* \param[in]  tbP                       RLC AM PDU embedded in a mem_block_t.
+* \param[in]  rlc_pP                      RLC AM protocol instance pointer.
+* \param[in]  frameP                     Frame index.
+* \param[in]  eNB_flagP                  Flag to indicate eNB (1) or UE (0).
+* \param[in]  tb_pP                       RLC AM PDU embedded in a mem_block_t.
 */
-protected_rlc_am_reassembly( void rlc_am_reassemble_pdu(rlc_am_entity_t* rlcP, u32_t frame, u8_t eNB_flag, mem_block_t* tbP);)
+protected_rlc_am_reassembly( void rlc_am_reassemble_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, mem_block_t* tb_pP);)
 /** @} */
 #endif
 

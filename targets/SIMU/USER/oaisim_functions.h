@@ -30,9 +30,9 @@ void update_omg_ocm();
 
 void update_ocm();
 
-void update_otg_eNB(int module_id, unsigned int ctime);
+void update_otg_eNB(module_id_t module_idP, unsigned int ctime);
 
-void update_otg_UE(int module_id, unsigned int ctime);
+void update_otg_UE(module_id_t module_idP, unsigned int ctime);
 
 void exit_fun(const char* s);
 

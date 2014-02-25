@@ -57,32 +57,32 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #        endif
 #    endif
 
-/*! \fn void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame)
+/*! \fn void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
 * \brief      Check if timer status-prohibit has timed-out, if so it is stopped and has the status "timed-out".
-* \param[in]  rlcP              RLC AM protocol instance pointer.
-* \param[in]  frame             Frame index
+* \param[in]  rlc_pP              RLC AM protocol instance pointer.
+* \param[in]  frameP             Frame index
 */
-protected_rlc_am_timer_status_prohibit(void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame));
+protected_rlc_am_timer_status_prohibit(void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP));
 
-/*! \fn void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlcP)
+/*! \fn void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlc_pP)
 * \brief      Stop and reset the timer status-prohibit.
-* \param[in]  rlcP              RLC AM protocol instance pointer.
-* \param[in]  frame             Frame index
+* \param[in]  rlc_pP              RLC AM protocol instance pointer.
+* \param[in]  frameP             Frame index
 */
-protected_rlc_am_timer_status_prohibit(void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame);)
+protected_rlc_am_timer_status_prohibit(void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame)
+/*! \fn void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
 * \brief      Re-arm (based on RLC AM config parameter) and start timer status-prohibit.
-* \param[in]  rlcP              RLC AM protocol instance pointer.
-* \param[in]  frame             Frame index
+* \param[in]  rlc_pP              RLC AM protocol instance pointer.
+* \param[in]  frameP             Frame index
 */
-protected_rlc_am_timer_status_prohibit(void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlcP,u32_t frame);)
+protected_rlc_am_timer_status_prohibit(void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlcP, u32_t time_outP)
+/*! \fn void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlc_pP, u32_t time_outP)
 * \brief      Initialize the timer status-prohibit with RLC AM time-out config parameter.
-* \param[in]  rlcP              RLC AM protocol instance pointer.
-* \param[in]  time_outP         Time-out in frame units.
+* \param[in]  rlc_pP              RLC AM protocol instance pointer.
+* \param[in]  time_outP         Time-out in frameP units.
 */
-protected_rlc_am_timer_status_prohibit(void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlcP, u32_t time_outP);)
+protected_rlc_am_timer_status_prohibit(void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlc_pP, u32_t time_outP);)
 /** @} */
 #endif

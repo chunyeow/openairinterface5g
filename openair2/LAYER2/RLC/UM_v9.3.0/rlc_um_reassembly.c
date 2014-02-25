@@ -33,6 +33,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #ifdef USER_MODE
 #include <string.h>
 #endif
+#include "assertions.h"
 #include "rlc.h"
 #include "rlc_um.h"
 #include "rlc_primitives.h"
@@ -40,101 +41,144 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 
-//#define DEBUG_RLC_UM_DISPLAY_ASCII_DATA 1
+//#define TRACE_RLC_UM_DISPLAY_ASCII_DATA 1
 
 //-----------------------------------------------------------------------------
 inline void
-rlc_um_clear_rx_sdu (rlc_um_entity_t *rlcP)
+rlc_um_clear_rx_sdu (rlc_um_entity_t *rlc_pP)
 {
 //-----------------------------------------------------------------------------
-  rlcP->output_sdu_size_to_write = 0;
+  rlc_pP->output_sdu_size_to_write = 0;
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_reassembly (u8_t * srcP, s32_t lengthP, rlc_um_entity_t *rlcP,u32_t frame)
+rlc_um_reassembly (u8_t * src_pP, s32_t lengthP, rlc_um_entity_t *rlc_pP, frame_t frameP)
 {
 //-----------------------------------------------------------------------------
-  int             sdu_max_size;
-#ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
-  int             index;
-#endif
+  sdu_size_t      sdu_max_size;
 
-  LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d][REASSEMBLY] reassembly()  %d bytes %d bytes already reassemblied\n", rlcP->module_id, rlcP->rb_id, frame, lengthP, rlcP->output_sdu_size_to_write);
+  LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u][REASSEMBLY] reassembly()  %d bytes %d bytes already reassemblied\n",
+          frameP,
+          (rlc_pP->is_enb) ? "eNB" : "UE",
+          rlc_pP->enb_module_id,
+          rlc_pP->ue_module_id,
+          rlc_pP->rb_id,
+          lengthP,
+          rlc_pP->output_sdu_size_to_write);
 
   if (lengthP <= 0) {
       return;
   }
 
-  if ((rlcP->is_data_plane)) {
-    sdu_max_size = RLC_SDU_MAX_SIZE_DATA_PLANE;
+  if ((rlc_pP->is_data_plane)) {
+      sdu_max_size = RLC_SDU_MAX_SIZE_DATA_PLANE;
   } else {
-    sdu_max_size = RLC_SDU_MAX_SIZE_CONTROL_PLANE;
+      sdu_max_size = RLC_SDU_MAX_SIZE_CONTROL_PLANE;
   }
 
-  if (rlcP->output_sdu_in_construction == NULL) {
-    //    msg("[RLC_UM_LITE] Getting mem_block ...\n");
-    rlcP->output_sdu_in_construction = get_free_mem_block (sdu_max_size);
-    rlcP->output_sdu_size_to_write = 0;
+  if (rlc_pP->output_sdu_in_construction == NULL) {
+      //    msg("[RLC_UM_LITE] Getting mem_block ...\n");
+      rlc_pP->output_sdu_in_construction = get_free_mem_block (sdu_max_size);
+      rlc_pP->output_sdu_size_to_write = 0;
   }
 
-  if ((rlcP->output_sdu_in_construction)) {
-
-    // check if no overflow in size
-    if ((rlcP->output_sdu_size_to_write + lengthP) <= sdu_max_size) {
-      memcpy (&rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write], srcP, lengthP);
-      rlcP->output_sdu_size_to_write += lengthP;
-#ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
-      rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write] = 0;
-      LOG_T(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d][REASSEMBLY] DATA :", rlcP->module_id, rlcP->rb_id, frame);
-      rlc_util_print_hex_octets(RLC, (unsigned char*)rlcP->output_sdu_in_construction->data, rlcP->output_sdu_size_to_write);
+  if ((rlc_pP->output_sdu_in_construction)) {
+      // check if no overflow in size
+      if ((rlc_pP->output_sdu_size_to_write + lengthP) <= sdu_max_size) {
+          memcpy (&rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write], src_pP, lengthP);
+          rlc_pP->output_sdu_size_to_write += lengthP;
+#ifdef TRACE_RLC_UM_DISPLAY_ASCII_DATA
+          rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write] = 0;
+          LOG_T(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u][REASSEMBLY] DATA :",
+                  frameP
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id);
+          rlc_util_print_hex_octets(RLC, (unsigned char*)rlc_pP->output_sdu_in_construction->data, rlc_pP->output_sdu_size_to_write);
 #endif
-    } else {
-      LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d][REASSEMBLY] [max_sdu size %d] ERROR  SDU SIZE OVERFLOW SDU GARBAGED\n", rlcP->module_id, rlcP->rb_id, frame, sdu_max_size);
-      // erase  SDU
-      rlcP->output_sdu_size_to_write = 0;
-    }
+      } else {
+#if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
+      AssertFatal(0, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u] RLC_UM_DATA_IND, SDU TOO BIG, DROPPED\n",
+          frameP,
+          (rlc_pP->is_enb) ? "eNB" : "UE",
+          rlc_pP->enb_module_id,
+          rlc_pP->ue_module_id,
+          rlc_pP->rb_id);
+#endif
+          LOG_E(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u][REASSEMBLY] [max_sdu size %d] ERROR  SDU SIZE OVERFLOW SDU GARBAGED\n",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id,
+                  sdu_max_size);
+          // erase  SDU
+          rlc_pP->output_sdu_size_to_write = 0;
+      }
   } else {
-    LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d][REASSEMBLY]ERROR  OUTPUT SDU IS NULL\n", rlcP->module_id, rlcP->rb_id, frame);
+      LOG_E(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u][REASSEMBLY]ERROR  OUTPUT SDU IS NULL\n",
+              frameP,
+              (rlc_pP->is_enb) ? "eNB" : "UE",
+              rlc_pP->enb_module_id,
+              rlc_pP->ue_module_id,
+              rlc_pP->rb_id);
+#if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
+      AssertFatal(0, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u] RLC_UM_DATA_IND, SDU DROPPED, OUT OF MEMORY\n",
+          frameP,
+          (rlc_pP->is_enb) ? "eNB" : "UE",
+          rlc_pP->enb_module_id,
+          rlc_pP->ue_module_id,
+          rlc_pP->rb_id);
+#endif
   }
 
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_send_sdu (rlc_um_entity_t *rlcP,u32_t frame, u8_t eNB_flag)
+rlc_um_send_sdu (rlc_um_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_flagP)
 {
 //-----------------------------------------------------------------------------
 
-  if ((rlcP->output_sdu_in_construction)) {
-    LOG_D(RLC, "\n\n\n[RLC_UM][MOD %d][RB %d][FRAME %05d][SEND_SDU] %d bytes sdu %p\n", rlcP->module_id, rlcP->rb_id, frame, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction);
+  if ((rlc_pP->output_sdu_in_construction)) {
+    LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u] SEND_SDU to upper layers %d bytes sdu %p\n",
+            frameP,
+            (rlc_pP->is_enb) ? "eNB" : "UE",
+            rlc_pP->enb_module_id,
+            rlc_pP->ue_module_id,
+            rlc_pP->rb_id,
+            rlc_pP->output_sdu_size_to_write,
+            rlc_pP->output_sdu_in_construction);
 
-    if (rlcP->output_sdu_size_to_write > 0) {
-        u8_t UE_id, eNB_id;
-        if (eNB_flag == 0) {
-          UE_id = rlcP->module_id - NB_eNB_INST;
-          /* FIXME: force send on eNB 0 */
-          eNB_id = 0;
-        } else {
-          UE_id = rlcP->rb_id / NB_RB_MAX;
-          eNB_id = rlcP->module_id;
-        }
-        rlcP->stat_rx_pdcp_sdu += 1;
-        rlcP->stat_rx_pdcp_bytes += rlcP->output_sdu_size_to_write;
+    if (rlc_pP->output_sdu_size_to_write > 0) {
+        rlc_pP->stat_rx_pdcp_sdu += 1;
+        rlc_pP->stat_rx_pdcp_bytes += rlc_pP->output_sdu_size_to_write;
 #ifdef TEST_RLC_UM
-        #ifdef DEBUG_RLC_UM_DISPLAY_ASCII_DATA
-        rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write] = 0;
-        LOG_T(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d][SEND_SDU] DATA :", rlcP->module_id, rlcP->rb_id, frame);
-        rlc_util_print_hex_octets(RLC, rlcP->output_sdu_in_construction->data, rlcP->output_sdu_size_to_write);
+        #ifdef TRACE_RLC_UM_DISPLAY_ASCII_DATA
+        rlc_pP->output_sdu_in_construction->data[rlc_pP->output_sdu_size_to_write] = 0;
+        LOG_T(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u][SEND_SDU] DATA :",
+                frameP,
+                (rlc_pP->is_enb) ? "eNB" : "UE",
+                rlc_pP->enb_module_id,
+                rlc_pP->ue_module_id,
+                rlc_pP->rb_id);
+        rlc_util_print_hex_octets(RLC, rlc_pP->output_sdu_in_construction->data, rlc_pP->output_sdu_size_to_write);
         #endif
-        rlc_um_v9_3_0_test_data_ind (rlcP->module_id, rlcP->rb_id, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction);
+        rlc_um_v9_3_0_test_data_ind (rlc_pP->module_id, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction);
 #else
-        // msg("[RLC] DATA IND ON MOD_ID %d RB ID %d, size %d\n",rlcP->module_id, rlcP->rb_id, frame,rlcP->output_sdu_size_to_write);
-        rlc_data_ind (rlcP->module_id, eNB_id, UE_id, frame, eNB_flag, rlcP->is_mxch, rlcP->rb_id, rlcP->output_sdu_size_to_write, rlcP->output_sdu_in_construction,rlcP->is_data_plane);
+        // msg("[RLC] DATA IND ON MOD_ID %d RB ID %d, size %d\n",rlc_pP->module_id, rlc_pP->rb_id, frameP,rlc_pP->output_sdu_size_to_write);
+        rlc_data_ind (rlc_pP->enb_module_id, rlc_pP->ue_module_id, frameP, eNB_flagP, rlc_pP->is_mxch, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction,rlc_pP->is_data_plane);
 #endif
-        rlcP->output_sdu_in_construction = NULL;
+        rlc_pP->output_sdu_in_construction = NULL;
     } else {
-      LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d][SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",rlcP->module_id, rlcP->rb_id, frame);
+        LOG_E(RLC, "[FRAME %5u][%s][RLC_UM][MOD %u/%u][RB %u][SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",
+                frameP,
+                (rlc_pP->is_enb) ? "eNB" : "UE",
+                rlc_pP->enb_module_id,
+                rlc_pP->ue_module_id,
+                rlc_pP->rb_id);
     }
-    rlcP->output_sdu_size_to_write = 0;
+    rlc_pP->output_sdu_size_to_write = 0;
   }
 }

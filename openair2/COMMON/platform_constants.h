@@ -55,8 +55,8 @@
 #define MAX_MANAGED_RG_PER_MOBILE  2
 
 #define DEFAULT_RAB_ID 3
-#define NB_RB_MAX      11
-#define NB_RAB_MAX     8
+#define NB_RB_MAX      (maxDRB + 3) /* was 11, now 14, maxDRB comes from asn1_constants.h, + 3 because of 3 SRB, one invisible id 0, then id 1 and 2 */
+#define NB_RAB_MAX     maxDRB       /* was 8, now 11 */
 #define RAB_SHIFT1     9
 #define RAB_SHIFT2     3
 #define RAB_OFFSET     0x0007
@@ -69,36 +69,36 @@
 
 #ifdef MESH
 
-#    define MAX_RB_MOBILE              NB_RB_MAX  * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
-#    define MAX_RAB_MOBILE             NB_RAB_MAX * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
-#    define MAX_RB_RG                  MAX_RB_MOBILE //NB_RB_MAX  *  MAX_MOBILES_PER_RG
-#    define MAX_RAB_RG                 (NB_RB_MAX+1) * (MAX_MOBILES_PER_RG + 1)
-#    define MAX_RAB                    MAX_RAB_RG
-#    define MAX_RB                     MAX_RB_RG
+//#    define MAX_RB_MOBILE              NB_RB_MAX  * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
+//#    define MAX_RAB_MOBILE             NB_RAB_MAX * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
+//#    define MAX_RB_RG                  MAX_RB_MOBILE //NB_RB_MAX  *  MAX_MOBILES_PER_RG
+//#    define MAX_RAB_RG                 (NB_RB_MAX+1) * (MAX_MOBILES_PER_RG + 1)
+//#    define MAX_RAB                    MAX_RAB_RG
+//#    define MAX_RB                     MAX_RB_RG
 #else
 
-#    define MAX_RB_MOBILE              NB_RB_MAX * MAX_MANAGED_RG_PER_MOBILE
-#    define MAX_RAB_MOBILE             NB_RAB_MAX * MAX_MANAGED_RG_PER_MOBILE
-#    define MAX_RB_RG                  NB_RB_MAX * MAX_MOBILES_PER_RG
-#    define MAX_RAB_RG                 NB_RB_MAX * MAX_MOBILES_PER_RG
-#    //ifdef NODE_RG
-#        define MAX_RAB                MAX_RAB_RG
-#        define MAX_RB                 MAX_RB_RG
-#    //else
-#      //  ifdef NODE_MT
-#        //    define MAX_RAB            MAX_RAB_MOBILE
-#          //  define MAX_RB             MAX_RB_MOBILE
-#        //else
-#          //error NODE_RG or NODE_MT must be defined
-#        //endif
+//#    define MAX_RB_MOBILE              NB_RB_MAX * MAX_MANAGED_RG_PER_MOBILE
+//#    define MAX_RAB_MOBILE             NB_RAB_MAX * MAX_MANAGED_RG_PER_MOBILE
+//#    define MAX_RB_RG                  NB_RB_MAX * MAX_MOBILES_PER_RG
+//#    define MAX_RAB_RG                 NB_RB_MAX * MAX_MOBILES_PER_RG
+//#    ifdef NODE_RG
+//#        define MAX_RAB                MAX_RAB_RG
+//#        define MAX_RB                 MAX_RB_RG
+//#    else
+//#      //  ifdef NODE_MT
+//#        //    define MAX_RAB            MAX_RAB_MOBILE
+//#          //  define MAX_RB             MAX_RB_MOBILE
+//#        //else
+//#          //error NODE_RG or NODE_MT must be defined
+//#        //endif
 //#    endif
 #endif //MESH
 
 // RLC_MODE
-#        define RLC_NONE     0
-#        define RLC_MODE_AM  1
-#        define RLC_MODE_TM  2
-#        define RLC_MODE_UM  3
+#        define RLC_NONE     (rlc_mode_t)0
+#        define RLC_MODE_AM  (rlc_mode_t)1
+#        define RLC_MODE_TM  (rlc_mode_t)2
+#        define RLC_MODE_UM  (rlc_mode_t)3
 
 //E_R
 #        define E_R_RLC_ER_RELEASE          1

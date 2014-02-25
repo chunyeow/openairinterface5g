@@ -2,7 +2,7 @@
  *   Eurecom OpenAirInterface 3
  *    Copyright(c) 2012 Eurecom
  *
- * Source eRAL_subscribe.c
+ * Source lteRALenb_subscribe.c
  *
  * Version 0.1
  *
@@ -27,18 +27,18 @@
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRAL_subscribe_request()                               **
+ ** Name:  eRAL_subscribe_request()                                        **
  **                                                                        **
  ** Description: Subscribes the MIH-F to receive specified link event      **
- **   indications and sends Link Event Subscribe confirmation   **
- **   to the MIH-F.                                             **
+ **   indications and sends Link Event Subscribe confirmation              **
+ **   to the MIH-F.                                                        **
  **                                                                        **
- ** Inputs:  msgP:  Pointer to the received MIH message        **
- **     Others: None                                       **
+ ** Inputs:  msgP:  Pointer to the received MIH message                    **
+ **     Others: None                                                       **
  **                                                                        **
- ** Outputs:  None                                                      **
- **   Return: None                                       **
- **     Others: ralpriv                                    **
+ ** Outputs:  None                                                         **
+ **   Return: None                                                         **
+ **     Others: ralpriv                                                    **
  **                                                                        **
  ***************************************************************************/
 void eRAL_subscribe_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Event_Subscribe_request_t* msgP)
@@ -69,18 +69,18 @@ void eRAL_subscribe_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Eve
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRAL_unsubscribe_request()                             **
+ ** Name:  eRAL_unsubscribe_request()                                      **
  **                                                                        **
  ** Description: Unsubscribes the MIH-F to receive specified link event    **
- **   indications and sends Link Event Unsubscribe confirmation **
- **   to the MIH-F.                                             **
+ **   indications and sends Link Event Unsubscribe confirmation            **
+ **   to the MIH-F.                                                        **
  **                                                                        **
- ** Inputs:  msgP:  Pointer to the received MIH message        **
- **     Others: None                                       **
+ ** Inputs:  msgP:  Pointer to the received MIH message                    **
+ **     Others: None                                                       **
  **                                                                        **
- ** Outputs:  None                                                      **
- **   Return: None                                       **
- **     Others: ralpriv                                    **
+ ** Outputs:  None                                                         **
+ **   Return: None                                                         **
+ **     Others: ralpriv                                                    **
  **                                                                        **
  ***************************************************************************/
 void eRAL_unsubscribe_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Event_Unsubscribe_request_t* msgP)

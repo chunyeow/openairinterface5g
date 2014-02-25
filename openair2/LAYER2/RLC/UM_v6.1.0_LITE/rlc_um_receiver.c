@@ -97,9 +97,9 @@ rlc_um_receive_process_pdu (struct rlc_um_entity *rlcP, struct rlc_um_rx_pdu_man
             msg ("[RLC_UM_LITE][RB %d] GOOD CRC ON RLC HEADER 1 byte\n", rlcP->rb_id);
           }
         }
-        rlc_um_reassembly ((u8_t *) (&dataP->li_data_7[0]), tb_sizeP - 2, rlcP);
+        rlc_um_reassembly ((u8_t *) (&dataP->li_data_7[0]), tb_sizeP - 2, rlcP, 0);
       } else {
-        rlc_um_reassembly ((u8_t *) (&dataP->li_data_7[0]), tb_sizeP - 1, rlcP);
+        rlc_um_reassembly ((u8_t *) (&dataP->li_data_7[0]), tb_sizeP - 1, rlcP, 0);
       }
     }
     //---------------------------------

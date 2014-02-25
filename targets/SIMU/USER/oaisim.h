@@ -40,7 +40,7 @@ int ulsch_abstraction(double* sinr_dB,u8 TM, u8 mcs,u16 nb_rb, u16 first_rb);
 
 void calc_path_loss(node_desc_t* node_tx, node_desc_t* node_rx, channel_desc_t *ch_desc, Environment_System_Config env_desc, double **SF);
 
-void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms);
+void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, frame_t frame, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms);
 
 #ifdef OPENAIR2
 int omv_write (int pfd,  Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data);

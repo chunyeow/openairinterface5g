@@ -40,6 +40,7 @@
 #include "extern.h"
 #include "LAYER2/MAC/extern.h"
 #include "COMMON/openair_defs.h"
+#include "COMMON/platform_types.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
 #include "LAYER2/RLC/rlc.h"
 #include "COMMON/mac_rrc_primitives.h"
@@ -54,7 +55,7 @@ extern UE_MAC_INST *UE_mac_inst;
 extern mui_t rrc_eNB_mui;
 
 //configure  BCCH & CCCH Logical Channels and associated rrc_buffers, configure associated SRBs
-void openair_rrc_on(u8 Mod_id, u8 eNB_flag) {
+void openair_rrc_on(module_id_t Mod_id, eNB_flag_t eNB_flag) {
   unsigned short i;
 
   if (eNB_flag == 1) {
@@ -208,8 +209,8 @@ void rrc_config_buffer(SRB_INFO *Srb_info, u8 Lchan_type, u8 Role) {
 void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
   /*-----------------------------------------------------------------------------*/
 
-  int i;
-  OAI_UECapability_t *UECap;
+  module_id_t         module_id;
+  OAI_UECapability_t *UECap     = NULL;
   //  uint8_t dummy_buffer[100];
 
   LOG_D(RRC, "[OPENAIR][INIT] Init function start: NB_UE_INST=%d, NB_eNB_INST=%d\n", NB_UE_INST, NB_eNB_INST);
@@ -221,9 +222,9 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
 
     // fill UE capability
     UECap = fill_ue_capability ();
-    for (i = 0; i < NB_UE_INST; i++) {
-      UE_rrc_inst[i].UECapability = UECap->sdu;
-      UE_rrc_inst[i].UECapability_size = UECap->sdu_size;
+    for (module_id = 0; module_id < NB_UE_INST; module_id++) {
+      UE_rrc_inst[module_id].UECapability = UECap->sdu;
+      UE_rrc_inst[module_id].UECapability_size = UECap->sdu_size;
     }
     /*
      do_UECapabilityEnquiry(0,
@@ -232,8 +233,8 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
      0);*/
 #ifdef Rel10
     LOG_I(RRC,"[UE] eMBMS active state is %d \n", eMBMS_active);
-    for (i=0;i<NB_UE_INST;i++) {
-      UE_rrc_inst[i].MBMS_flag = (uint8_t)eMBMS_active;
+    for (module_id=0;module_id<NB_UE_INST;module_id++) {
+      UE_rrc_inst[module_id].MBMS_flag = (uint8_t)eMBMS_active;
     }
 #endif 
   }
@@ -244,17 +245,17 @@ void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
     eNB_rrc_inst = (eNB_RRC_INST*) malloc16(NB_eNB_INST*sizeof(eNB_RRC_INST));
     memset (eNB_rrc_inst, 0, NB_eNB_INST * sizeof(eNB_RRC_INST));
     LOG_I(RRC,"[eNB] handover active state is %d \n", HO_active);
-    for (i=0;i<NB_eNB_INST;i++) {
-      eNB_rrc_inst[i].HO_flag   = (uint8_t)HO_active;
+    for (module_id=0;module_id<NB_eNB_INST;module_id++) {
+      eNB_rrc_inst[module_id].HO_flag   = (uint8_t)HO_active;
     }
 #ifdef Rel10
     LOG_I(RRC,"[eNB] eMBMS active state is %d \n", eMBMS_active);
-    for (i=0;i<NB_eNB_INST;i++) {
-      eNB_rrc_inst[i].MBMS_flag = (uint8_t)eMBMS_active;
+    for (module_id=0;module_id<NB_eNB_INST;module_id++) {
+      eNB_rrc_inst[module_id].MBMS_flag = (uint8_t)eMBMS_active;
     }
 #endif 
 #ifdef CBA
-    for (i=0;i<NB_eNB_INST;i++) {
+    for (module_id=0;module_id<NB_eNB_INST;module_id++) {
       eNB_rrc_inst[i].num_active_cba_groups = cba_group_active;
     }
 #endif
@@ -287,7 +288,7 @@ void rrc_top_cleanup(void) {
 }
 
 
-void rrc_t310_expiration(u32 frame, u8 Mod_id, u8 eNB_index) {
+void rrc_t310_expiration(frame_t frameP, u8 Mod_id, u8 eNB_index) {
 
   if (UE_rrc_inst[Mod_id].Info[eNB_index].State != RRC_CONNECTED) {
     LOG_D(RRC, "Timer 310 expired, going to RRC_IDLE\n");
@@ -305,7 +306,7 @@ void rrc_t310_expiration(u32 frame, u8 Mod_id, u8 eNB_index) {
            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
       rrc_pdcp_config_req (eNB_index, Mod_id, frame, 0, ACTION_REMOVE,
                            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, 0);
-      rrc_rlc_config_req (Mod_id + NB_eNB_INST, frame, 0, ACTION_REMOVE,
+      rrc_rlc_config_req (eNB_index, Mod_id, frame, 0, ACTION_REMOVE,
                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, SIGNALLING_RADIO_BEARER, Rlc_info_um);
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Active = 0;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Status = IDLE;
@@ -317,9 +318,9 @@ void rrc_t310_expiration(u32 frame, u8 Mod_id, u8 eNB_index) {
   }
 }
 
-RRC_status_t rrc_rx_tx(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index){
+RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
   
-  if(eNB_flag == 0) {
+  if(eNB_flagP == 0) {
     // check timers
 
     if (UE_rrc_inst[Mod_id].Info[index].T300_active == 1) {

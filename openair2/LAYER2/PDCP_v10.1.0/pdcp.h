@@ -185,43 +185,7 @@ typedef struct pdcp_mbms_t {
  * XXX And later this should be configured through the Makefile
  * under targets/TEST/PDCP/
  */
-#undef PDCP_UNIT_TEST
 
-#ifdef PDCP_UNIT_TEST
-/*! \fn BOOL pdcp_data_req(module_id_t, u32_t, u8_t, rb_id_t, sdu_size_t, unsigned char*, pdcp_t*, list_t*)
-* \brief This functions handles data transfer requests coming from test code (see below for actual code)
-* \param[in] module_id Module ID
-* \param[in] frame Frame number
-* \param[in] Shows if relevant PDCP entity is part of an eNB or a UE
-* \param[in] rab_id Radio Bearer ID
-* \param[in] sdu_buffer_size Size of incoming SDU in bytes
-* \param[in] sdu_buffer Buffer carrying SDU
-* \param[in] test_pdcp_entity PDCP entity used for testing purposes
-* \param[in] test_list list_t used for testing purposes
-* \param[out] test_list Newly created PDU is enqueued into the list
-* \param[out] test_pdcp PDCP sequence numbering state is updated
-* \return TRUE on success, FALSE otherwise
-* \note None
-* @ingroup _pdcp
-*/
-public_pdcp(BOOL pdcp_data_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rab_id, sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, pdcp_t* test_pdcp_entity, list_t* test_list);)
-/*! \fn BOOL pdcp_data_ind(module_id_t, u32_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
-* \brief This functions handles data transfer indications coming from test code (see below for actual code)
-* \param[in] module_id Module ID
-* \param[in] frame Frame number
-* \param[in] Shows if relevant PDCP entity is part of an eNB or a UE
-* \param[in] rab_id Radio Bearer ID
-* \param[in] sdu_buffer_size Size of incoming SDU in bytes
-* \param[in] sdu_buffer Buffer carrying SDU
-* \param[in] test_list Incoming PDU is received/dequeued from this list
-* \param[in] test_pdcp_entity PDCP entity used for testing purposes
-* \return TRUE on success, FALSE otherwise
-* \note None
-* @ingroup _pdcp
-*/
-public_pdcp(BOOL pdcp_data_ind (module_id_t module_id, u32_t frame, u8_t eNB_flag, rb_id_t rab_id, sdu_size_t sdu_buffer_size, \
-                                mem_block_t* sdu_buffer, pdcp_t* test_pdcp_entity, list_t* test_list);)
-#else
 /*! \fn BOOL pdcp_data_req(module_id_t, u32_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
 * \brief This functions handles data transfer requests coming either from RRC or from IP
 * \param[in] module_id Module ID
@@ -237,10 +201,10 @@ public_pdcp(BOOL pdcp_data_ind (module_id_t module_id, u32_t frame, u8_t eNB_fla
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(BOOL pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, rb_id_t rb_id, u32 muiP, u32 confirmP, \
+public_pdcp(BOOL pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, rb_id_t rb_id, mui_t muiP, u32 confirmP, \
     sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode));
 
-/*! \fn BOOL pdcp_data_ind(module_id_t, u32_t, u8_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
+/*! \fn BOOL pdcp_data_ind(module_id_t, module_id_t, u32_t, u8_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
 * \brief This functions handles data transfer indications coming from RLC
 * \param[in] module_id Module ID
 * \param[in] frame Frame number
@@ -254,9 +218,8 @@ public_pdcp(BOOL pdcp_data_req(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, 
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size,
+public_pdcp(BOOL pdcp_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size,
                    mem_block_t* sdu_buffer, u8 is_data_plane));
-#endif // PDCP_UNIT_TEST
 
 /*! \fn void rrc_pdcp_config_req(module_id_t, rb_id_t,u8)
 * \brief This functions initializes relevant PDCP entity
@@ -269,9 +232,15 @@ public_pdcp(BOOL pdcp_data_ind(u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag, 
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(void rrc_pdcp_config_req (u8 eNB_id, u8 UE_id, u32 frame, u8_t eNB_flag, u32 action, rb_id_t rb_id, u8 security_mode);)
+public_pdcp(void rrc_pdcp_config_req (module_id_t enb_idP,
+                                      module_id_t ue_idP,
+                                      frame_t     frameP,
+                                      eNB_flag_t  eNB_flagP,
+                                      u32         actionP,
+                                      rb_id_t     rb_idP,
+                                      u8          security_modeP);)
 
-/*! \fn bool rrc_pdcp_config_asn1_req (module_id_t module_id, u32_t frame, u8_t eNB_flag, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list)
+/*! \fn bool rrc_pdcp_config_asn1_req (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  module_id         Virtualized module identifier.
 * \param[in]  frame              Frame index.
@@ -287,20 +256,23 @@ public_pdcp(void rrc_pdcp_config_req (u8 eNB_id, u8 UE_id, u32 frame, u8_t eNB_f
 * \return     A status about the processing, OK or error code.
 */
 public_pdcp(
-BOOL rrc_pdcp_config_asn1_req (u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag,
-                               SRB_ToAddModList_t* srb2add_list,
-                               DRB_ToAddModList_t* drb2add_list,
-                               DRB_ToReleaseList_t*  drb2release_list,
-                               u8 security_mode,
-                               u8 *kRRCenc,
-                               u8 *kRRCint,
-                               u8 *kUPenc
+BOOL rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
+                               module_id_t          ue_idP,
+                               frame_t              frameP,
+                               eNB_flag_t           eNB_flagP,
+                               SRB_ToAddModList_t  *srb2add_list,
+                               DRB_ToAddModList_t  *drb2add_list,
+                               DRB_ToReleaseList_t *drb2release_list,
+                               u8                   security_modeP,
+                               u8                  *kRRCenc,
+                               u8                  *kRRCint,
+                               u8                  *kUPenc
 #ifdef Rel10
-                              ,PMCH_InfoList_r9_t*  pmch_InfoList_r9
+                              ,PMCH_InfoList_r9_t  *pmch_InfoList_r9
 #endif
                                ));
 
-/*! \fn BOOL pdcp_config_req_asn1 (module_id_t module_id, u32 frame, u8_t eNB_flag, u32  action, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode)
+/*! \fn BOOL pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, u32  action, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  module_id         Virtualized module identifier.
 * \param[in]  frame              Frame index.
@@ -316,13 +288,23 @@ BOOL rrc_pdcp_config_asn1_req (u8 eNB_id, u8 UE_id, u32_t frame, u8_t eNB_flag,
 * \param[in]  kUPenc             User-Plane encryption key
 * \return     A status about the processing, OK or error code.
 */
-public_pdcp(BOOL pdcp_config_req_asn1 (pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8_t eNB_flag,
-    rlc_mode_t rlc_mode, u32 action, u16 lc_id, u16 mch_id, rb_id_t rb_id,
-    u8 rb_sn, u8 rb_report, u16 header_compression_profile,
-    u8 security_mode,
-    u8 *kRRCenc,
-    u8 *kRRCint,
-    u8 *kUPenc));
+public_pdcp(BOOL pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
+                                       module_id_t enb_idP,
+                                       module_id_t ue_idP,
+                                       frame_t     frameP,
+                                       eNB_flag_t  eNB_flagP,
+                                       rlc_mode_t  rlc_mode,
+                                       u32         action,
+                                       u16         lc_id,
+                                       u16         mch_id,
+                                       rb_id_t     rb_id,
+                                       u8          rb_sn,
+                                       u8          rb_report,
+                                       u16         header_compression_profile,
+                                       u8          security_mode,
+                                       u8         *kRRCenc,
+                                       u8         *kRRCint,
+                                       u8         *kUPenc));
 /*! \fn void rrc_pdcp_config_release(module_id_t, rb_id_t)
 * \brief This functions is unused
 * \param[in] module_id Module ID of relevant PDCP entity
@@ -341,20 +323,20 @@ public_pdcp(BOOL pdcp_config_req_asn1 (pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 fr
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(void pdcp_run (u32_t frame, u8_t eNB_flag, u8 UE_index,u8 eNB_index);)
-public_pdcp(int pdcp_module_init ();)
-public_pdcp(void pdcp_module_cleanup ();)
-public_pdcp(void pdcp_layer_init ();)
-public_pdcp(void pdcp_layer_cleanup ();)
-public_pdcp(int pdcp_netlink_init(void);)
+public_pdcp(void pdcp_run            (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP);)
+public_pdcp(int pdcp_module_init     (void);)
+public_pdcp(void pdcp_module_cleanup (void);)
+public_pdcp(void pdcp_layer_init     (void);)
+public_pdcp(void pdcp_layer_cleanup  (void);)
+public_pdcp(int pdcp_netlink_init    (void);)
 
 #define PDCP2NAS_FIFO 21
 #define NAS2PDCP_FIFO 22
 
-protected_pdcp_fifo(int pdcp_fifo_flush_sdus(u32_t frame, u8 eNB_flag, u8 eNB_id, u8 UE_id);)
-protected_pdcp_fifo(int pdcp_fifo_read_input_sdus_remaining_bytes (u32_t,u8_t);)
-protected_pdcp_fifo(int pdcp_fifo_read_input_sdus (u32_t frame, u8_t eNB_flag, u8_t UE_index, u8_t eNB_index);)
-protected_pdcp_fifo(void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t eNB_flag, u8 UE_index, u8 eNB_index);)
+protected_pdcp_fifo(int pdcp_fifo_flush_sdus                      (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t enb_idP, module_id_t ue_mod_idP);)
+protected_pdcp_fifo(int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t eNB_flagP);)
+protected_pdcp_fifo(int pdcp_fifo_read_input_sdus                 (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP);)
+protected_pdcp_fifo(void pdcp_fifo_read_input_sdus_from_otg       (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP);)
 
 //-----------------------------------------------------------------------------
 
@@ -362,20 +344,19 @@ protected_pdcp_fifo(void pdcp_fifo_read_input_sdus_from_otg (u32_t frame, u8_t e
  * Following two types are utilized between NAS driver and PDCP
  */
 
-typedef int traffic_type_t;
 
 typedef struct pdcp_data_req_header_s {
   rb_id_t             rb_id;
   sdu_size_t          data_size;
-  int                 inst;
+  signed int          inst;
   traffic_type_t      traffic_type;
 } pdcp_data_req_header_t;
 
 typedef struct pdcp_data_ind_header_s {
   rb_id_t             rb_id;
   sdu_size_t          data_size;
-  int                 inst;
-  int                 dummy;
+  signed int          inst;
+  traffic_type_t      dummy_traffic_type;
 } pdcp_data_ind_header_t;
 
 struct pdcp_netlink_element_s {
@@ -406,7 +387,8 @@ typedef struct pdcp_missing_pdu_info_t {
 protected_pdcp(signed int             pdcp_2_nas_irq;)
 protected_pdcp(pdcp_t                 pdcp_array_ue[NUMBER_OF_UE_MAX][NB_RB_MAX];)
 protected_pdcp(pdcp_t                 pdcp_array_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][NB_RB_MAX];)
-public_pdcp(pdcp_mbms_t               pdcp_mbms_array[MAX_MODULES][16*29];) // MAX_SERVICEx MAX_SESSION
+public_pdcp(pdcp_mbms_t               pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
+public_pdcp(pdcp_mbms_t               pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
 protected_pdcp(sdu_size_t             pdcp_output_sdu_bytes_to_write;)
 protected_pdcp(sdu_size_t             pdcp_output_header_bytes_to_write;)
 protected_pdcp(list_t                 pdcp_sdu_list;)

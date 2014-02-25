@@ -65,20 +65,21 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 */
 protected_rlc_um_reassembly(void rlc_um_clear_rx_sdu (rlc_um_entity_t *rlcP));
 
-/*! \fn void rlc_um_reassembly (u8_t * srcP, s32_t lengthP, rlc_um_entity_t *rlcP)
+/*! \fn void rlc_um_reassembly (u8_t * srcP, s32_t lengthP, rlc_um_entity_t *rlcP, frame_t frame)
 * \brief    Reassembly lengthP bytes to the end of the SDU in construction.
 * \param[in]  srcP        Pointer on data to be reassemblied.
 * \param[in]  lengthP     Length to reassembly.
 * \param[in]  rlcP        RLC UM protocol instance pointer.
 * \param[in]  frame       Frame index.
 */
-protected_rlc_um_reassembly(void     rlc_um_reassembly (u8_t * srcP, s32_t lengthP, rlc_um_entity_t *rlcP, u32_t frame));
+protected_rlc_um_reassembly(void     rlc_um_reassembly (u8_t * srcP, s32_t lengthP, rlc_um_entity_t *rlcP, frame_t frame));
 
-/*! \fn void rlc_um_send_sdu (rlc_um_entity_t *rlcP,u32_t frame)
+/*! \fn void rlc_um_send_sdu (rlc_um_entity_t *rlcP,frame_t frame,eNB_flag_t eNB_flagP)
 * \brief    Send SDU if any reassemblied to upper layer.
 * \param[in]  rlcP        RLC UM protocol instance pointer.
-* \param[in]  frame       Frame index.
+* \param[in]  frameP      Frame index.
+* \param[in]  eNB_flagP   Boolean to know if rlcP is in eNB (1 or true), or in UE (0 or false).
 */
-protected_rlc_um_reassembly(void     rlc_um_send_sdu (rlc_um_entity_t *rlcP,u32_t frame,u8 eNB_flag));
+protected_rlc_um_reassembly(void     rlc_um_send_sdu (rlc_um_entity_t *rlcP,frame_t frameP,eNB_flag_t eNB_flagP));
 /** @} */
 #    endif

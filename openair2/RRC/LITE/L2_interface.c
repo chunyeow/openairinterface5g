@@ -60,10 +60,10 @@ extern UE_MAC_INST *UE_mac_inst;
 //#define RRC_DATA_REQ_DEBUG
 #define DEBUG_RRC
 
-u32 mui=0;
+mui_t mui=0;
 
 //-------------------------------------------------------------------------------------------//
-s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer, u8 eNB_flag, u8 eNB_index,
+s8 mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 Nb_tb, u8 *buffer_pP, eNB_flag_t eNB_flagP, u8 eNB_index,
                          u8 mbsfn_sync_area) {
 //-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
@@ -71,21 +71,21 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 
 #ifdef DEBUG_RRC
   int i;
-  LOG_D(RRC,"[eNB %d] mac_rrc_data_req to SRB ID=%d\n",Mod_id,Srb_id);
+  LOG_D(RRC,"[eNB %d] mac_rrc_data_req to SRB ID=%d\n",Mod_idP,Srb_id);
 #endif
 
-  if( eNB_flag == 1){
+  if( eNB_flagP == 1){
 
     if((Srb_id & RAB_OFFSET) == BCCH){
-      if(eNB_rrc_inst[Mod_id].SI.Active==0) return 0;
+      if(eNB_rrc_inst[Mod_idP].SI.Active==0) return 0;
 
       // All even frames transmit SIB in SF 5
-      if (eNB_rrc_inst[Mod_id].sizeof_SIB1 == 255) {
-	LOG_E(RRC,"[eNB %d] MAC Request for SIB1 and SIB1 not initialized\n",Mod_id);
+      if (eNB_rrc_inst[Mod_idP].sizeof_SIB1 == 255) {
+	LOG_E(RRC,"[eNB %d] MAC Request for SIB1 and SIB1 not initialized\n",Mod_idP);
 	mac_xface->macphy_exit("");
       }
-      if ((frame%2) == 0) {
-        memcpy(&Buffer[0],eNB_rrc_inst[Mod_id].SIB1,eNB_rrc_inst[Mod_id].sizeof_SIB1);
+      if ((frameP%2) == 0) {
+        memcpy(&buffer_pP[0],eNB_rrc_inst[Mod_idP].SIB1,eNB_rrc_inst[Mod_idP].sizeof_SIB1);
 
 #if defined(ENABLE_ITTI)
       {
@@ -100,7 +100,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         }
 
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
-        RRC_MAC_BCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_REQ (message_p).frame = frameP;
         RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib1_size;
         memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
         memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].SIB1, sib1_size);
@@ -111,21 +111,21 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 #endif
 
 #ifdef DEBUG_RRC
-	LOG_D(RRC,"[eNB %d] Frame %d : BCCH request => SIB 1\n",Mod_id,frame);
-	for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_SIB1;i++)
-	  LOG_T(RRC,"%x.",Buffer[i]);
+	LOG_D(RRC,"[eNB %d] Frame %d : BCCH request => SIB 1\n",Mod_idP,frameP);
+	for (i=0;i<eNB_rrc_inst[Mod_idP].sizeof_SIB1;i++)
+	  LOG_T(RRC,"%x.",buffer_pP[i]);
 	LOG_T(RRC,"\n");
 #endif
 
-	return (eNB_rrc_inst[Mod_id].sizeof_SIB1);
+	return (eNB_rrc_inst[Mod_idP].sizeof_SIB1);
       } // All RFN mod 8 transmit SIB2-3 in SF 5
-      else if ((frame%8) == 1){
-	memcpy(&Buffer[0],eNB_rrc_inst[Mod_id].SIB23,eNB_rrc_inst[Mod_id].sizeof_SIB23);
+      else if ((frameP%8) == 1){
+	memcpy(&buffer_pP[0],eNB_rrc_inst[Mod_idP].SIB23,eNB_rrc_inst[Mod_idP].sizeof_SIB23);
 
 #if defined(ENABLE_ITTI)
       {
         MessageDef *message_p;
-        int sib23_size = eNB_rrc_inst[Mod_id].sizeof_SIB23;
+        int sib23_size = eNB_rrc_inst[Mod_idP].sizeof_SIB23;
         int sdu_size = sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu);
 
         if (sib23_size > sdu_size)
@@ -135,23 +135,23 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         }
 
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_BCCH_DATA_REQ);
-        RRC_MAC_BCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_REQ (message_p).frame = frameP;
         RRC_MAC_BCCH_DATA_REQ (message_p).sdu_size = sib23_size;
         memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
-        memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].SIB23, sib23_size);
+        memcpy (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_idP].SIB23, sib23_size);
         RRC_MAC_BCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
-        itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+        itti_send_msg_to_task (TASK_MAC_ENB, Mod_idP, message_p);
       }
 #endif
 
 #ifdef DEBUG_RRC
-	LOG_D(RRC,"[eNB %d] Frame %d BCCH request => SIB 2-3\n",Mod_id,frame);
-	for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_SIB23;i++)
-	  LOG_T(RRC,"%x.",Buffer[i]);
+	LOG_D(RRC,"[eNB %d] Frame %d BCCH request => SIB 2-3\n",Mod_idP,frameP);
+	for (i=0;i<eNB_rrc_inst[Mod_idP].sizeof_SIB23;i++)
+	  LOG_T(RRC,"%x.",buffer_pP[i]);
 	LOG_T(RRC,"\n");
 #endif
-	return(eNB_rrc_inst[Mod_id].sizeof_SIB23);
+	return(eNB_rrc_inst[Mod_idP].sizeof_SIB23);
       }
       else
 	return(0);
@@ -159,17 +159,17 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 
 
     if( (Srb_id & RAB_OFFSET ) == CCCH){
-      LOG_D(RRC,"[eNB %d] Frame %d CCCH request (Srb_id %d)\n",Mod_id,frame, Srb_id);
+      LOG_D(RRC,"[eNB %d] Frame %d CCCH request (Srb_id %d)\n",Mod_idP,frameP, Srb_id);
 
-      if(eNB_rrc_inst[Mod_id].Srb0.Active==0) {
-	LOG_E(RRC,"[eNB %d] CCCH Not active\n",Mod_id);
+      if(eNB_rrc_inst[Mod_idP].Srb0.Active==0) {
+	LOG_E(RRC,"[eNB %d] CCCH Not active\n",Mod_idP);
 	return -1;
       }
-      Srb_info=&eNB_rrc_inst[Mod_id].Srb0;
+      Srb_info=&eNB_rrc_inst[Mod_idP].Srb0;
 
       // check if data is there for MAC
       if(Srb_info->Tx_buffer.payload_size>0){//Fill buffer
-	LOG_D(RRC,"[eNB %d] CCCH (%p) has %d bytes (dest: %p, src %p)\n",Mod_id,Srb_info,Srb_info->Tx_buffer.payload_size,Buffer,Srb_info->Tx_buffer.Payload);
+	LOG_D(RRC,"[eNB %d] CCCH (%p) has %d bytes (dest: %p, src %p)\n",Mod_idP,Srb_info,Srb_info->Tx_buffer.payload_size,buffer_pP,Srb_info->Tx_buffer.Payload);
 
 #if defined(ENABLE_ITTI)
         {
@@ -183,17 +183,17 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
           }
 
           message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_CCCH_DATA_REQ);
-          RRC_MAC_CCCH_DATA_REQ (message_p).frame = frame;
+          RRC_MAC_CCCH_DATA_REQ (message_p).frame = frameP;
           RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
           memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
           memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, Srb_info->Tx_buffer.Payload, ccch_size);
           RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
-          itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+          itti_send_msg_to_task (TASK_MAC_ENB, Mod_idP, message_p);
         }
 #endif
 
-        memcpy(Buffer,Srb_info->Tx_buffer.Payload,Srb_info->Tx_buffer.payload_size);
+        memcpy(buffer_pP,Srb_info->Tx_buffer.Payload,Srb_info->Tx_buffer.payload_size);
 	Sdu_size = Srb_info->Tx_buffer.payload_size;
 	Srb_info->Tx_buffer.payload_size=0;
       }
@@ -214,7 +214,7 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 #if defined(ENABLE_ITTI)
       {
         MessageDef *message_p;
-        int mcch_size = eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area];
+        int mcch_size = eNB_rrc_inst[Mod_idP].sizeof_MCCH_MESSAGE[mbsfn_sync_area];
         int sdu_size = sizeof(RRC_MAC_MCCH_DATA_REQ (message_p).sdu);
 
         if (mcch_size > sdu_size) {
@@ -223,29 +223,29 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         }
 
         message_p = itti_alloc_new_message (TASK_RRC_ENB, RRC_MAC_MCCH_DATA_REQ);
-        RRC_MAC_MCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_MCCH_DATA_REQ (message_p).frame = frameP;
         RRC_MAC_MCCH_DATA_REQ (message_p).sdu_size = mcch_size;
         memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
-        memcpy (RRC_MAC_MCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_id].MCCH_MESSAGE[mbsfn_sync_area], mcch_size);
+        memcpy (RRC_MAC_MCCH_DATA_REQ (message_p).sdu, eNB_rrc_inst[Mod_idP].MCCH_MESSAGE[mbsfn_sync_area], mcch_size);
         RRC_MAC_MCCH_DATA_REQ (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_REQ (message_p).mbsfn_sync_area = mbsfn_sync_area;
 
-        itti_send_msg_to_task (TASK_MAC_ENB, Mod_id, message_p);
+        itti_send_msg_to_task (TASK_MAC_ENB, Mod_idP, message_p);
       }
 #endif
 
-      memcpy(&Buffer[0],
-	     eNB_rrc_inst[Mod_id].MCCH_MESSAGE[mbsfn_sync_area],
-	     eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
+      memcpy(&buffer_pP[0],
+	     eNB_rrc_inst[Mod_idP].MCCH_MESSAGE[mbsfn_sync_area],
+	     eNB_rrc_inst[Mod_idP].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
       
 #ifdef DEBUG_RRC
-      LOG_D(RRC,"[eNB %d] Frame %d : MCCH request => MCCH_MESSAGE \n",Mod_id,frame);
-      for (i=0;i<eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area];i++)
-	LOG_T(RRC,"%x.",Buffer[i]);
+      LOG_D(RRC,"[eNB %d] Frame %d : MCCH request => MCCH_MESSAGE \n",Mod_id,frameP);
+      for (i=0;i<eNB_rrc_inst[Mod_idP].sizeof_MCCH_MESSAGE[mbsfn_sync_area];i++)
+	LOG_T(RRC,"%x.",buffer_pP[i]);
       LOG_T(RRC,"\n");
 #endif
       
-      return (eNB_rrc_inst[Mod_id].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
+      return (eNB_rrc_inst[Mod_idP].sizeof_MCCH_MESSAGE[mbsfn_sync_area]);
       //      }
       //else
       //return(0);
@@ -255,10 +255,10 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 
   else{   //This is an UE
 #ifdef DEBUG_RRC
-    LOG_D(RRC,"[UE %d] Frame %d Filling CCCH SRB_ID %d\n",Mod_id,frame,Srb_id);
-    LOG_D(RRC,"[UE %d] Frame %d Buffer status %d,\n",Mod_id,frame, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size);
+    LOG_D(RRC,"[UE %d] Frame %d Filling CCCH SRB_ID %d\n",Mod_idP,frameP,Srb_id);
+    LOG_D(RRC,"[UE %d] Frame %d buffer_pP status %d,\n",Mod_idP,frameP, UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size);
 #endif
-    if( (UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size > 0) ) {
+    if( (UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size > 0) ) {
 
 #if defined(ENABLE_ITTI)
       {
@@ -272,21 +272,21 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
         }
 
         message_p = itti_alloc_new_message (TASK_RRC_UE, RRC_MAC_CCCH_DATA_REQ);
-        RRC_MAC_CCCH_DATA_REQ (message_p).frame = frame;
+        RRC_MAC_CCCH_DATA_REQ (message_p).frame = frameP;
         RRC_MAC_CCCH_DATA_REQ (message_p).sdu_size = ccch_size;
         memset (RRC_MAC_BCCH_DATA_REQ (message_p).sdu, 0, sizeof(RRC_MAC_BCCH_DATA_REQ (message_p).sdu));
-        memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload, ccch_size);
+        memcpy (RRC_MAC_CCCH_DATA_REQ (message_p).sdu, UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.Payload, ccch_size);
         RRC_MAC_CCCH_DATA_REQ (message_p).enb_index = eNB_index;
 
-        itti_send_msg_to_task (TASK_MAC_UE, Mod_id + NB_eNB_INST, message_p);
+        itti_send_msg_to_task (TASK_MAC_UE, Mod_idP + NB_eNB_INST, message_p);
       }
 #endif
 
-      memcpy(&Buffer[0],&UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.Payload[0],UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size);
-      u8 Ret_size=UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size;
+      memcpy(&buffer_pP[0],&UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.Payload[0],UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size);
+      u8 Ret_size=UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size;
       //   UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size=0;
-      UE_rrc_inst[Mod_id].Info[eNB_index].T300_active = 1;
-      UE_rrc_inst[Mod_id].Info[eNB_index].T300_cnt = 0;
+      UE_rrc_inst[Mod_idP].Info[eNB_index].T300_active = 1;
+      UE_rrc_inst[Mod_idP].Info[eNB_index].T300_cnt = 0;
       //      msg("[RRC][UE %d] Sending rach\n",Mod_id);
       return(Ret_size);
     }
@@ -298,18 +298,18 @@ s8 mac_rrc_lite_data_req(u8 Mod_id, u32 frame, u16 Srb_id, u8 Nb_tb, u8 *Buffer,
 }
 
 //-------------------------------------------------------------------------------------------//
-s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size,u8 eNB_flag,u8 eNB_index,u8 mbsfn_sync_area){
+s8 mac_rrc_lite_data_ind(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 *Sdu, u16 sdu_size,eNB_flag_t eNB_flagP,u8 eNB_index,u8 mbsfn_sync_area){
 //-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
   /*
   int si_window;
   */
 
-  if(eNB_flag == 0){
+  if(eNB_flagP == 0){
 
     if(Srb_id == BCCH){
       
-      LOG_T(RRC,"[UE %d] Received SDU for BCCH on SRB %d from eNB %d\n",Mod_id,Srb_id,eNB_index);
+      LOG_T(RRC,"[UE %d] Received SDU for BCCH on SRB %d from eNB %d\n",Mod_idP,Srb_id,eNB_index);
 
 #if defined(ENABLE_ITTI)
       {
@@ -323,7 +323,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         }
 
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_BCCH_DATA_IND);
-        RRC_MAC_BCCH_DATA_IND (message_p).frame = frame;
+        RRC_MAC_BCCH_DATA_IND (message_p).frame = frameP;
         RRC_MAC_BCCH_DATA_IND (message_p).sdu_size = sdu_size;
         memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
         memcpy (RRC_MAC_BCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
@@ -331,14 +331,14 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         RRC_MAC_BCCH_DATA_IND (message_p).rsrq = 30 /* TODO change phy to report rspq */;
         RRC_MAC_BCCH_DATA_IND (message_p).rsrp = 45 /* TODO change phy to report rspp */;
 
-        itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
+        itti_send_msg_to_task (TASK_RRC_UE, Mod_idP + NB_eNB_INST, message_p);
       }
 #else
-      decode_BCCH_DLSCH_Message(Mod_id,frame,eNB_index,Sdu,sdu_size, 0, 0);
+      decode_BCCH_DLSCH_Message(Mod_idP,frameP,eNB_index,Sdu,sdu_size, 0, 0);
       /*
-      if ((frame %2) == 0) {
+      if ((frameP %2) == 0) {
 	if (UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 0) {
-	  LOG_D(RRC,"[UE %d] Frame %d : Received SIB1 from eNB %d (%d bytes)\n",Mod_id,frame,eNB_index,sdu_size);
+	  LOG_D(RRC,"[UE %d] Frame %d : Received SIB1 from eNB %d (%d bytes)\n",Mod_id,frameP,eNB_index,sdu_size);
 	  if (UE_rrc_inst[Mod_id].SIB1[eNB_index])
 	    memcpy(UE_rrc_inst[Mod_id].SIB1[eNB_index],&Sdu[0],sdu_size);
 	  else {
@@ -353,11 +353,11 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
       else {
 	if ((UE_rrc_inst[Mod_id].Info[eNB_index].SIB1Status == 1) &&
 	    (UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus == 0)) {
-	  si_window = (frame%UE_rrc_inst[Mod_id].Info[eNB_index].SIperiod)/frame%UE_rrc_inst[Mod_id].Info[eNB_index].SIwindowsize;
-	  LOG_D(RRC,"[UE %d] Frame %d : Received SI (%d bytes), in window %d (SIperiod %d, SIwindowsize %d)\n",Mod_id,frame,sdu_size,si_window,UE_rrc_inst[Mod_id].Info[eNB_index].SIperiod,UE_rrc_inst[Mod_id].Info[eNB_index].SIwindowsize);
+	  si_window = (frameP%UE_rrc_inst[Mod_id].Info[eNB_index].SIperiod)/frameP%UE_rrc_inst[Mod_id].Info[eNB_index].SIwindowsize;
+	  LOG_D(RRC,"[UE %d] Frame %d : Received SI (%d bytes), in window %d (SIperiod %d, SIwindowsize %d)\n",Mod_id,frameP,sdu_size,si_window,UE_rrc_inst[Mod_id].Info[eNB_index].SIperiod,UE_rrc_inst[Mod_id].Info[eNB_index].SIwindowsize);
 	  memcpy(UE_rrc_inst[Mod_id].SI[eNB_index],&Sdu[0],sdu_size);
-	  if (decode_SI(Mod_id,frame,eNB_index,si_window)==0) {
-	    LOG_D(RRC,"[UE %d] Frame %d :Decoded SI successfully\n",Mod_id,frame);
+	  if (decode_SI(Mod_id,frameP,eNB_index,si_window)==0) {
+	    LOG_D(RRC,"[UE %d] Frame %d :Decoded SI successfully\n",Mod_id,frameP);
 	    UE_rrc_inst[Mod_id].Info[eNB_index].SIStatus = 1;
 	  }
 	  }
@@ -380,7 +380,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 
     if((Srb_id & RAB_OFFSET) == CCCH){
       if (sdu_size>0) {
-        LOG_T(RRC,"[UE %d] Received SDU for CCCH on SRB %d from eNB %d\n",Mod_id,Srb_id & RAB_OFFSET,eNB_index);
+        LOG_T(RRC,"[UE %d] Received SDU for CCCH on SRB %d from eNB %d\n",Mod_idP,Srb_id & RAB_OFFSET,eNB_index);
 
 #if defined(ENABLE_ITTI)
         {
@@ -394,20 +394,20 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           }
 
           message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_IND);
-          RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
+          RRC_MAC_CCCH_DATA_IND (message_p).frame = frameP;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
           memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
           memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
           RRC_MAC_CCCH_DATA_IND (message_p).enb_index = eNB_index;
 
-          itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
+          itti_send_msg_to_task (TASK_RRC_UE, Mod_idP + NB_eNB_INST, message_p);
       }
 #else
-        Srb_info = &UE_rrc_inst[Mod_id].Srb0[eNB_index];
+        Srb_info = &UE_rrc_inst[Mod_idP].Srb0[eNB_index];
 
         memcpy(Srb_info->Rx_buffer.Payload,Sdu,sdu_size);
         Srb_info->Rx_buffer.payload_size = sdu_size;
-        rrc_ue_decode_ccch(Mod_id, frame, Srb_info, eNB_index);
+        rrc_ue_decode_ccch(Mod_idP, frameP, Srb_info, eNB_index);
 #endif
       }
     }
@@ -415,7 +415,7 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 #ifdef Rel10
     if ((Srb_id & RAB_OFFSET) == MCCH) {
       LOG_T(RRC,"[UE %d] Frame %d: Received SDU on MBSFN sync area %d for MCCH on SRB %d from eNB %d\n",
-	    Mod_id,frame, mbsfn_sync_area, Srb_id & RAB_OFFSET,eNB_index);
+	    Mod_id,frameP, mbsfn_sync_area, Srb_id & RAB_OFFSET,eNB_index);
 
 #if defined(ENABLE_ITTI)
       {
@@ -429,17 +429,17 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
         }
 
         message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_MCCH_DATA_IND);
-        RRC_MAC_MCCH_DATA_IND (message_p).frame = frame;
+        RRC_MAC_MCCH_DATA_IND (message_p).frame = frameP;
         RRC_MAC_MCCH_DATA_IND (message_p).sdu_size = sdu_size;
         memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
         memcpy (RRC_MAC_MCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
         RRC_MAC_MCCH_DATA_IND (message_p).enb_index = eNB_index;
         RRC_MAC_MCCH_DATA_IND (message_p).mbsfn_sync_area = mbsfn_sync_area;
 
-        itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
+        itti_send_msg_to_task (TASK_RRC_UE, Mod_idP + NB_eNB_INST, message_p);
       }
 #else
-      decode_MCCH_Message(Mod_id, frame, eNB_index, Sdu, sdu_size, mbsfn_sync_area);
+      decode_MCCH_Message(Mod_id, frameP, eNB_index, Sdu, sdu_size, mbsfn_sync_area);
 #endif
     }
 #endif // Rel10
@@ -447,8 +447,8 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
   }
 
   else{  // This is an eNB
-    Srb_info = &eNB_rrc_inst[Mod_id].Srb0;
-    LOG_T(RRC,"[eNB %d] Received SDU for CCCH on SRB %d\n",Mod_id,Srb_info->Srb_id);
+    Srb_info = &eNB_rrc_inst[Mod_idP].Srb0;
+    LOG_T(RRC,"[eNB %d] Received SDU for CCCH on SRB %d\n",Mod_idP,Srb_info->Srb_id);
     
 #if defined(ENABLE_ITTI)
         {
@@ -462,19 +462,19 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
           }
 
           message_p = itti_alloc_new_message (TASK_MAC_ENB, RRC_MAC_CCCH_DATA_IND);
-          RRC_MAC_CCCH_DATA_IND (message_p).frame = frame;
+          RRC_MAC_CCCH_DATA_IND (message_p).frame = frameP;
           RRC_MAC_CCCH_DATA_IND (message_p).sdu_size = sdu_size;
           memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, sizeof(RRC_MAC_CCCH_DATA_IND (message_p).sdu));
           memcpy (RRC_MAC_CCCH_DATA_IND (message_p).sdu, Sdu, sdu_size);
 
-          itti_send_msg_to_task (TASK_RRC_ENB, Mod_id, message_p);
+          itti_send_msg_to_task (TASK_RRC_ENB, Mod_idP, message_p);
       }
 #else
     //    msg("\n******INST %d Srb_info %p, Srb_id=%d****\n\n",Mod_id,Srb_info,Srb_info->Srb_id);
     if (sdu_size > 0) {
 	 		memcpy(Srb_info->Rx_buffer.Payload,Sdu,sdu_size);
 			Srb_info->Rx_buffer.payload_size = sdu_size;
-    	rrc_eNB_decode_ccch(Mod_id,frame,Srb_info);
+    	rrc_eNB_decode_ccch(Mod_idP,frameP,Srb_info);
 		}
 #endif
   }
@@ -485,13 +485,13 @@ s8 mac_rrc_lite_data_ind(u8 Mod_id, u32 frame, u16 Srb_id, u8 *Sdu, u16 sdu_size
 
 //-------------------------------------------------------------------------------------------//
 // this function is Not USED anymore
-void mac_lite_sync_ind(u8 Mod_id,u8 Status){
+void mac_lite_sync_ind(module_id_t Mod_idP,u8 Status){
 //-------------------------------------------------------------------------------------------//
 }
 
 //-------------------------------------------------------------------------------------------//
-u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
-                     unsigned int sdu_size, u8* Buffer, u8 mode) {
+u8 rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, u32 confirmP,
+                     sdu_size_t sdu_size, u8* buffer_pP, u8 mode) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
@@ -500,10 +500,10 @@ u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int r
     u8 *message_buffer;
 
     message_buffer = itti_malloc (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, sdu_size);
-    memcpy (message_buffer, Buffer, sdu_size);
+    memcpy (message_buffer, buffer_pP, sdu_size);
 
     message_p = itti_alloc_new_message (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, RRC_DCCH_DATA_REQ);
-    RRC_DCCH_DATA_REQ (message_p).frame = frame;
+    RRC_DCCH_DATA_REQ (message_p).frame = frameP;
     RRC_DCCH_DATA_REQ (message_p).enb_flag = eNB_flag;
     RRC_DCCH_DATA_REQ (message_p).rb_id = rb_id;
     RRC_DCCH_DATA_REQ (message_p).muip = muiP;
@@ -511,32 +511,32 @@ u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int r
     RRC_DCCH_DATA_REQ (message_p).sdu_size = sdu_size;
     RRC_DCCH_DATA_REQ (message_p).sdu_p = message_buffer;
     RRC_DCCH_DATA_REQ (message_p).mode = mode;
-    RRC_DCCH_DATA_REQ (message_p).eNB_index = eNB_id;
-    RRC_DCCH_DATA_REQ (message_p).ue_index = UE_id;
+    RRC_DCCH_DATA_REQ (message_p).eNB_index = enb_mod_idP;
+    RRC_DCCH_DATA_REQ (message_p).ue_index = ue_mod_idP;
 
-    itti_send_msg_to_task (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, eNB_flag ? eNB_id : NB_eNB_INST + UE_id, message_p);
+    itti_send_msg_to_task (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, eNB_flag ? enb_mod_idP : NB_eNB_INST + ue_mod_idP, message_p);
     return TRUE; // TODO should be changed to a CNF message later, currently RRC lite does not used the returned value anyway.
 
   }
 #else
-  return pdcp_data_req (eNB_id, UE_id, frame, eNB_flag, rb_id, muiP, confirmP, sdu_size, Buffer, mode);
+  return pdcp_data_req (enb_mod_idP, ue_mod_idP, frameP, eNB_flagP, rb_idP, muiP, confirmP, sdu_size, buffer_pP, mode);
 #endif
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag,u32 Srb_id, u32 sdu_size,u8 *Buffer){
+void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP,rb_id_t Srb_id, sdu_size_t sdu_sizeP,u8 *buffer_pP){
 //-------------------------------------------------------------------------------------------//
   u8 DCCH_index = Srb_id;
   u8_t Mod_id;
 
-  if (eNB_flag == 0) {
-    Mod_id = UE_id + NB_eNB_INST;
+  if (eNB_flagP == 0) {
+    Mod_id = ue_mod_idP + NB_eNB_INST;
     LOG_N(RRC, "[UE %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from eNB %d\n",
-          UE_id, frame, DCCH_index,Srb_id-1,sdu_size, eNB_id);
+          ue_mod_idP, frameP, DCCH_index,Srb_id-1,sdu_sizeP, enb_mod_idP);
   } else {
-    Mod_id = eNB_id;
+    Mod_id = enb_mod_idP;
     LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %d\n",
-          eNB_id, frame, DCCH_index,Srb_id-1,sdu_size, UE_id);
+          enb_mod_idP, frameP, DCCH_index,Srb_id-1,sdu_sizeP, ue_mod_idP);
   }
 
 #if defined(ENABLE_ITTI)
@@ -546,86 +546,86 @@ void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag,u32 Srb_i
     u8 *message_buffer;
 
     message_buffer = itti_malloc (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, sdu_size);
-    memcpy (message_buffer, Buffer, sdu_size);
+    memcpy (message_buffer, buffer_pP, sdu_sizeP);
 
-    message_p = itti_alloc_new_message (eNB_flag ? TASK_PDCP_ENB : TASK_PDCP_UE, RRC_DCCH_DATA_IND);
-    RRC_DCCH_DATA_IND (message_p).frame = frame;
+    message_p = itti_alloc_new_message (eNB_flagP ? TASK_PDCP_ENB : TASK_PDCP_UE, RRC_DCCH_DATA_IND);
+    RRC_DCCH_DATA_IND (message_p).frame      = frameP;
     RRC_DCCH_DATA_IND (message_p).dcch_index = DCCH_index;
-    RRC_DCCH_DATA_IND (message_p).sdu_size = sdu_size;
-    RRC_DCCH_DATA_IND (message_p).sdu_p = message_buffer;
-    RRC_DCCH_DATA_IND (message_p).ue_index = UE_id;
-    RRC_DCCH_DATA_IND (message_p).eNB_index = eNB_id;
+    RRC_DCCH_DATA_IND (message_p).sdu_size   = sdu_sizeP;
+    RRC_DCCH_DATA_IND (message_p).sdu_p      = message_buffer;
+    RRC_DCCH_DATA_IND (message_p).ue_index   = ue_mod_idP;
+    RRC_DCCH_DATA_IND (message_p).eNB_index  = enb_mod_idP;
 
     itti_send_msg_to_task (eNB_flag ? TASK_RRC_ENB : TASK_RRC_UE, Mod_id, message_p);
   }
 #else
-  if (eNB_flag ==1) {
-    rrc_eNB_decode_dcch(eNB_id,frame,DCCH_index,UE_id,Buffer,sdu_size);
+  if (eNB_flagP ==1) {
+    rrc_eNB_decode_dcch(enb_mod_idP,frameP,DCCH_index,ue_mod_idP,buffer_pP,sdu_sizeP);
   }
   else {
-    rrc_ue_decode_dcch(UE_id,frame,DCCH_index,Buffer,eNB_id);
+    rrc_ue_decode_dcch(ue_mod_idP,frameP,DCCH_index,buffer_pP,enb_mod_idP);
   }
 #endif
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index) {
+void rrc_lite_in_sync_ind(module_id_t Mod_idP, frame_t frameP, u16 eNB_index) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_IN_SYNC_IND);
-    RRC_MAC_IN_SYNC_IND (message_p).frame = frame;
+    RRC_MAC_IN_SYNC_IND (message_p).frame = frameP;
     RRC_MAC_IN_SYNC_IND (message_p).enb_index = eNB_index;
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_idP + NB_eNB_INST, message_p);
   }
 #else
-  UE_rrc_inst[Mod_id].Info[eNB_index].N310_cnt=0;
-  if (UE_rrc_inst[Mod_id].Info[eNB_index].T310_active==1)
-    UE_rrc_inst[Mod_id].Info[eNB_index].N311_cnt++;
+  UE_rrc_inst[Mod_idP].Info[eNB_index].N310_cnt=0;
+  if (UE_rrc_inst[Mod_idP].Info[eNB_index].T310_active==1)
+    UE_rrc_inst[Mod_idP].Info[eNB_index].N311_cnt++;
 #endif
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_out_of_sync_ind(u8  Mod_id, u32 frame, u16 eNB_index){
+void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, u16 eNB_index){
 //-------------------------------------------------------------------------------------------//
 //  rlc_info_t rlc_infoP;
 //  rlc_infoP.rlc_mode=RLC_UM;
 
   LOG_I(RRC,"[UE %d] Frame %d: OUT OF SYNC FROM eNB %d (T310 %d, N310 %d, N311 %d)\n ",
-        Mod_id,frame,eNB_index,
-        UE_rrc_inst[Mod_id].Info[eNB_index].T310_cnt,
-        UE_rrc_inst[Mod_id].Info[eNB_index].N310_cnt,
-        UE_rrc_inst[Mod_id].Info[eNB_index].N311_cnt);
+      Mod_idP,frameP,eNB_index,
+        UE_rrc_inst[Mod_idP].Info[eNB_index].T310_cnt,
+        UE_rrc_inst[Mod_idP].Info[eNB_index].N310_cnt,
+        UE_rrc_inst[Mod_idP].Info[eNB_index].N311_cnt);
 
 #if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;
 
     message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_OUT_OF_SYNC_IND);
-    RRC_MAC_OUT_OF_SYNC_IND (message_p).frame = frame;
+    RRC_MAC_OUT_OF_SYNC_IND (message_p).frame = frameP;
     RRC_MAC_OUT_OF_SYNC_IND (message_p).enb_index = eNB_index;
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_idP + NB_eNB_INST, message_p);
   }
 #else
-  UE_rrc_inst[Mod_id].Info[eNB_index].N310_cnt++;
+  UE_rrc_inst[Mod_idP].Info[eNB_index].N310_cnt++;
 #endif
 }
 
 //-------------------------------------------------------------------------------------------//
-int mac_get_rrc_lite_status(u8 Mod_id,u8 eNB_flag,u8 index){
+int mac_get_rrc_lite_status(module_id_t Mod_idP,eNB_flag_t eNB_flag,u8 index){
 //-------------------------------------------------------------------------------------------//
   if(eNB_flag == 1)
-    return(eNB_rrc_inst[Mod_id].Info.UE[index].Status);
+    return(eNB_rrc_inst[Mod_idP].Info.UE[index].Status);
   else
-    return(UE_rrc_inst[Mod_id].Info[index].State);
+    return(UE_rrc_inst[Mod_idP].Info[index].State);
 }
 
 //-------------------------------------------------------------------------------------------//
-int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
+int mac_ue_ccch_success_ind(module_id_t Mod_idP, u8 eNB_index) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
@@ -634,11 +634,11 @@ int mac_ue_ccch_success_ind(u8 Mod_id, u8 eNB_index) {
     message_p = itti_alloc_new_message (TASK_MAC_UE, RRC_MAC_CCCH_DATA_CNF);
     RRC_MAC_CCCH_DATA_CNF (message_p).enb_index = eNB_index;
 
-    itti_send_msg_to_task (TASK_RRC_UE, Mod_id + NB_eNB_INST, message_p);
+    itti_send_msg_to_task (TASK_RRC_UE, Mod_idP + NB_eNB_INST, message_p);
   }
 #else
   // reset the tx buffer to indicate RRC that ccch was successfully transmitted (for example if contention resolution succeeds)
-  UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size=0;
+  UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size=0;
 #endif
   return 0;
 }

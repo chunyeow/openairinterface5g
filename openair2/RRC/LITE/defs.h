@@ -234,8 +234,8 @@ union{
 typedef struct HANDOVER_INFO_s {
   u8 ho_prepare;
   u8 ho_complete;
-  u8 modid_s; //Mod_id of serving cell
-  u8 modid_t; //Mod_id of target cell
+  u8 modid_s; //module_idP of serving cell
+  u8 modid_t; //module_idP of target cell
   u8 ueid_s; //UE index in serving cell
   u8 ueid_t; //UE index in target cell
   AS_Config_t as_config; /* these two parameters are taken from 36.331 section 10.2.2: HandoverPreparationInformation-r8-IEs */
@@ -444,147 +444,147 @@ typedef struct UE_RRC_INST_s {
 int rrc_init_global_param(void);
 int L3_xface_init(void);
 void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_enabled);
-char openair_rrc_lite_eNB_init(u8 Mod_id);
-char openair_rrc_lite_ue_init(u8 Mod_id,u8 CH_IDX);
+char openair_rrc_lite_eNB_init(module_id_t module_idP);
+char openair_rrc_lite_ue_init(module_id_t module_idP,u8 CH_IDX);
 void rrc_config_buffer(SRB_INFO *srb_info, u8 Lchan_type, u8 Role);
-void openair_rrc_on(u8 Mod_id,u8 eNB_flag);
+void openair_rrc_on(module_id_t module_idP, eNB_flag_t eNB_flagP);
 void rrc_top_cleanup(void);
 
 /** \brief Function to update timers every subframe.  For UE it updates T300,T304 and T310.
-@param Mod_id Instance of UE/eNB
+@param module_idP Instance of UE/eNB
 @param frame Frame index
 @param eNB_flag Flag to indicate if this instance is and eNB or UE
 @param index Index of corresponding eNB (for UE)
 */
-RRC_status_t rrc_rx_tx(u8 Mod_id,u32 frame, u8 eNB_flag,u8 index);
+RRC_status_t rrc_rx_tx(module_id_t module_idP,frame_t frameP, eNB_flag_t eNB_flagP,u8 index);
 
 // UE RRC Procedures
 
 /** \brief Decodes DL-CCCH message and invokes appropriate routine to handle the message
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param Srb_info Pointer to SRB_INFO structure (SRB0)
     \param eNB_index Index of corresponding eNB/CH*/
-int rrc_ue_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info,u8 eNB_index);
+int rrc_ue_decode_ccch(module_id_t module_idP, frame_t frameP, SRB_INFO *Srb_info,u8 eNB_index);
 
 /** \brief Decodes a DL-DCCH message and invokes appropriate routine to handle the message
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param Srb_id Index of Srb (1,2)
-    \param Buffer Pointer to received SDU
+    \param buffer_pP Pointer to received SDU
     \param eNB_index Index of corresponding CH/eNB*/
-void rrc_ue_decode_dcch(u8 Mod_id, u32 frame, u8 Srb_id, u8* Buffer,u8 eNB_index);
+void rrc_ue_decode_dcch(module_id_t module_idP, frame_t frameP, u8 Srb_id, u8* buffer_pP,u8 eNB_index);
 
 /** \brief Generate/Encodes RRCConnnectionRequest message at UE 
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param Srb_id Index of Srb (1,2)
     \param eNB_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionRequest(u8 Mod_id, u32 frame, u8 eNB_index);
+void rrc_ue_generate_RRCConnectionRequest(module_id_t module_idP, frame_t frameP, u8 eNB_index);
 
 /** \brief Generates/Encodes RRCConnnectionSetupComplete message at UE 
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionSetupComplete(u8 Mod_id,u32 frame,u8 eNB_index, uint8_t Transaction_id);
+void rrc_ue_generate_RRCConnectionSetupComplete(module_id_t module_idP,frame_t frameP,u8 eNB_index, uint8_t Transaction_id);
 
 /** \brief process the received rrcConnectionReconfiguration message at UE 
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param *rrcConnectionReconfiguration pointer to the sturcture
     \param eNB_index Index of corresponding eNB/CH*/
-void rrc_ue_process_rrcConnectionReconfiguration(u8 Mod_id, u32 frame,RRCConnectionReconfiguration_t *rrcConnectionReconfiguration,u8 eNB_index);
+void rrc_ue_process_rrcConnectionReconfiguration(module_id_t module_idP, frame_t frameP,RRCConnectionReconfiguration_t *rrcConnectionReconfiguration,u8 eNB_index);
 
 /** \brief Generates/Encodes RRCConnectionReconfigurationComplete  message at UE 
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH*/
-void rrc_ue_generate_RRCConnectionReconfigurationComplete(u8 Mod_id, u32 frame, u8 eNB_index, uint8_t Transaction_id);
+void rrc_ue_generate_RRCConnectionReconfigurationComplete(module_id_t module_idP, frame_t frameP, u8 eNB_index, uint8_t Transaction_id);
 
 /** \brief Establish SRB1 based on configuration in SRB_ToAddMod structure.  Configures RLC/PDCP accordingly
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH
     \param SRB_config Pointer to SRB_ToAddMod IE from configuration
     @returns 0 on success*/
-s32  rrc_ue_establish_srb1(u8 Mod_id,u32 frame,u8 eNB_index,struct SRB_ToAddMod *SRB_config);
+s32  rrc_ue_establish_srb1(module_id_t module_idP,frame_t frameP,u8 eNB_index,struct SRB_ToAddMod *SRB_config);
 
 /** \brief Establish SRB2 based on configuration in SRB_ToAddMod structure.  Configures RLC/PDCP accordingly
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param frame Frame index
     \param eNB_index Index of corresponding eNB/CH
     \param SRB_config Pointer to SRB_ToAddMod IE from configuration
     @returns 0 on success*/
-s32  rrc_ue_establish_srb2(u8 Mod_id,u32 frame, u8 eNB_index,struct SRB_ToAddMod *SRB_config);
+s32  rrc_ue_establish_srb2(module_id_t module_idP,frame_t frameP, u8 eNB_index,struct SRB_ToAddMod *SRB_config);
 
 /** \brief Establish a DRB according to DRB_ToAddMod structure
-    \param Mod_id Instance ID of UE
+    \param module_idP Instance ID of UE
     \param eNB_index Index of corresponding CH/eNB
     \param DRB_config Pointer to DRB_ToAddMod IE from configuration
     @returns 0 on success */
-s32  rrc_ue_establish_drb(u8 Mod_id,u32 frame,u8 eNB_index,struct DRB_ToAddMod *DRB_config);
+s32  rrc_ue_establish_drb(module_id_t module_idP,frame_t frameP,u8 eNB_index,struct DRB_ToAddMod *DRB_config);
 
 /** \brief Process MobilityControlInfo Message to proceed with handover and configure PHY/MAC
-    \param Mod_id Instance of UE on which to act
+    \param module_idP Instance of UE on which to act
     \param frame frame time interval
     \param eNB_index Index of corresponding CH/eNB
     \param mobilityControlInfo Pointer to mobilityControlInfo
 */
-void rrc_ue_process_mobilityControlInfo(u8 eNB_index, u8 UE_id, u32 frame, struct MobilityControlInfo *mobilityControlInfo);
+void rrc_ue_process_mobilityControlInfo(module_id_t enb_module_idP, module_id_t ue_module_idP, frame_t frameP, struct MobilityControlInfo *mobilityControlInfo);
 
 /** \brief Process a measConfig Message and configure PHY/MAC
-    \param Mod_id Instance of UE on which to act
+    \param module_idP Instance of UE on which to act
     \param frame frame time interval
     \param eNB_index Index of corresponding CH/eNB
     \param  measConfig Pointer to MeasConfig  IE from configuration*/
-void rrc_ue_process_measConfig(u8 Mod_id,u32 frame, u8 eNB_index,MeasConfig_t *measConfig);
+void rrc_ue_process_measConfig(module_id_t module_idP,frame_t frameP, u8 eNB_index,MeasConfig_t *measConfig);
 
 /** \brief Process a RadioResourceConfigDedicated Message and configure PHY/MAC
-    \param Mod_id Instance of UE on which to act
+    \param module_idP Instance of UE on which to act
     \param eNB_index Index of corresponding CH/eNB
     \param radioResourceConfigDedicated Pointer to RadioResourceConfigDedicated IE from configuration*/
-void rrc_ue_process_radioResourceConfigDedicated(u8 Mod_id,u32 frame, u8 eNB_index,
+void rrc_ue_process_radioResourceConfigDedicated(module_id_t module_idP,frame_t frameP, u8 eNB_index,
 						 RadioResourceConfigDedicated_t *radioResourceConfigDedicated);
 
 // eNB/CH RRC Procedures
 
 /**\brief Function to get the next transaction identifier.
-   \param Mod_id Instance ID for CH/eNB
+   \param module_idP Instance ID for CH/eNB
    \return a transaction identifier*/
-uint8_t rrc_eNB_get_next_transaction_identifier(uint8_t Mod_id);
+uint8_t rrc_eNB_get_next_transaction_identifier(module_id_t module_idP);
 
 /**\brief Entry routine to decode a UL-CCCH-Message.  Invokes PER decoder and parses message.
-   \param Mod_id Instance ID for CH/eNB
+   \param module_idP Instance ID for CH/eNB
    \param frame  Frame index
    \param Srb_info Pointer to SRB0 information structure (buffer, etc.)*/
-int rrc_eNB_decode_ccch(u8 Mod_id, u32 frame, SRB_INFO *Srb_info);
+int rrc_eNB_decode_ccch(module_id_t module_idP, frame_t frameP, SRB_INFO *Srb_info);
 
 /**\brief Entry routine to decode a UL-DCCH-Message.  Invokes PER decoder and parses message.
-   \param Mod_id Instance ID for CH/eNB
+   \param module_idP Instance ID for CH/eNB
    \param frame Frame index
    \param UE_index Index of UE sending the message
    \param Rx_sdu Pointer Received Message
    \param sdu_size Size of incoming SDU*/
-int rrc_eNB_decode_dcch(u8 Mod_id, u32 frame, u8 Srb_id, u8 UE_index, u8 *Rx_sdu, u8 sdu_size);  
+int rrc_eNB_decode_dcch(module_id_t module_idP, frame_t frameP, u8 Srb_id, u8 UE_index, u8 *Rx_sdu, u8 sdu_size);
 
 /**\brief Generate the RRCConnectionSetup based on information coming from RRM
-   \param Mod_id Instance ID for eNB/CH
+   \param module_idP Instance ID for eNB/CH
    \param frame Frame index
    \param UE_index Index of UE receiving the message*/
-void rrc_eNB_generate_RRCConnectionSetup(u8 Mod_id,u32 frame, u16 UE_index);
+void rrc_eNB_generate_RRCConnectionSetup(module_id_t module_idP,frame_t frameP, u16 UE_index);
 
 /**\brief Process the RRCConnectionSetupComplete based on information coming from UE
-   \param Mod_id Instance ID for eNB/CH
+   \param module_idP Instance ID for eNB/CH
    \param frame Frame index
    \param UE_index Index of UE transmitting the message
    \param rrcConnectionSetupComplete Pointer to RRCConnectionSetupComplete message*/
-void rrc_eNB_process_RRCConnectionSetupComplete(u8 Mod_id, u32 frame, u8 UE_index, 
+void rrc_eNB_process_RRCConnectionSetupComplete(module_id_t module_idP, frame_t frameP, u8 UE_index,
 						RRCConnectionSetupComplete_r8_IEs_t *rrcConnectionSetupComplete);
 
 /**\brief Process the RRCConnectionReconfigurationComplete based on information coming from UE
-   \param Mod_id Instance ID for eNB/CH
+   \param module_idP Instance ID for eNB/CH
    \param UE_index Index of UE transmitting the messages
    \param rrcConnectionReconfigurationComplete Pointer to RRCConnectionReconfigurationComplete message*/
-void rrc_eNB_process_RRCConnectionReconfigurationComplete(u8 Mod_id,u32 frame,u8 UE_index,RRCConnectionReconfigurationComplete_r8_IEs_t *rrcConnectionReconfigurationComplete);
+void rrc_eNB_process_RRCConnectionReconfigurationComplete(module_id_t module_idP,frame_t frameP,u8 UE_index,RRCConnectionReconfigurationComplete_r8_IEs_t *rrcConnectionReconfigurationComplete);
 
 #if defined(ENABLE_ITTI)
 /**\brief RRC eNB task.
@@ -597,61 +597,69 @@ void *rrc_ue_task(void *args_p);
 #endif
 
 /**\brief Generate/decode the handover RRCConnectionReconfiguration at eNB
-   \param Mod_id Instance ID for eNB/CH
+   \param module_idP Instance ID for eNB/CH
    \param frame Frame index
    \param UE_index Index of UE transmitting the messages*/
-void rrc_eNB_generate_RRCConnectionReconfiguration_handover(u8 Mod_id, u32 frame, u16 UE_index, u8 *nas_pdu, u32 nas_length);
+void rrc_eNB_generate_RRCConnectionReconfiguration_handover(module_id_t module_idP, frame_t frameP, u16 UE_index, u8 *nas_pdu, u32 nas_length);
 
 //L2_interface.c
-s8 mac_rrc_lite_data_req( u8 Mod_id, u32 frame, unsigned short Srb_id, u8 Nb_tb, u8 *Buffer,u8 eNB_flag, u8 eNB_index, u8 mbsfn_sync_area);
+s8 mac_rrc_lite_data_req( module_id_t module_idP, frame_t frameP, unsigned short Srb_id, u8 Nb_tb, u8 *buffer_pP,eNB_flag_t eNB_flagP, u8 eNB_index, u8 mbsfn_sync_area);
 
-s8 mac_rrc_lite_data_ind( u8 Mod_id,  u32 frame, unsigned short Srb_id, u8 *Sdu, unsigned short Sdu_len,u8 eNB_flag,u8 eNB_index, u8 mbsfn_sync_area);
+s8 mac_rrc_lite_data_ind( module_id_t module_idP,  frame_t frameP, unsigned short Srb_id, u8 *Sdu, unsigned short Sdu_len,eNB_flag_t eNB_flagP,u8 eNB_index, u8 mbsfn_sync_area);
 
-void mac_sync_ind( u8 Mod_id, u8 status);
+void mac_sync_ind( module_id_t Mod_instP, u8 status);
 
-u8 rrc_lite_data_req(u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, unsigned int rb_id, u32 muiP, u32 confirmP,
-                     unsigned int sdu_size, u8* Buffer, u8 mode);
+u8 rrc_lite_data_req(module_id_t enb_mod_idP,
+                     module_id_t ue_mod_idP,
+                     frame_t     frameP,
+                     eNB_flag_t  eNB_flagP,
+                     rb_id_t     rb_idP,
+                     mui_t       muiP,
+                     u32         confirmP,
+                     sdu_size_t  sdu_sizeP,
+                     u8         *Buffer_pP,
+                     u8          modeP);
 
-void rrc_lite_data_ind(u8_t eNB_id, u8_t UE_id, u32 frame, u8 eNB_flag, u32 Rb_id, u32 sdu_size,u8 *Buffer);
+void rrc_lite_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t Rb_id, sdu_size_t sdu_size,u8 *buffer_pP);
 
-void rrc_lite_in_sync_ind(u8 Mod_id, u32 frame, u16 eNB_index);
+void rrc_lite_in_sync_ind(module_id_t module_idP, frame_t frameP, u16 eNB_index);
 
-void rrc_lite_out_of_sync_ind(u8 Mod_id, u32 frame, unsigned short eNB_index);
+void rrc_lite_out_of_sync_ind(module_id_t module_idP, frame_t frameP, unsigned short eNB_index);
 
-int decode_MCCH_Message(u8 Mod_id, u32 frame, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area);
+int decode_MCCH_Message(module_id_t module_idP, frame_t frameP, u8 eNB_index, u8 *Sdu, u8 Sdu_len,u8 mbsfn_sync_area);
 
-void decode_MBSFNAreaConfiguration(u8 Mod_id, u8 eNB_index, u32 frame,u8 mbsfn_sync_area);
+void decode_MBSFNAreaConfiguration(module_id_t module_idP, u8 eNB_index, frame_t frameP,u8 mbsfn_sync_area);
 
-int decode_BCCH_DLSCH_Message(u8 Mod_id,u32 frame,u8 eNB_index,u8 *Sdu,u8 Sdu_len, u8 rsrq, u8 rsrp);
+int decode_BCCH_DLSCH_Message(module_id_t module_idP,frame_t frameP,u8 eNB_index,u8 *Sdu,u8 Sdu_len, u8 rsrq, u8 rsrp);
 
-int decode_SIB1(u8 Mod_id,u8 eNB_index, u8 rsrq, u8 rsrp);
+int decode_SIB1(module_id_t module_idP,u8 eNB_index, u8 rsrq, u8 rsrp);
 
-int decode_SI(u8 Mod_id,u32 frame,u8 eNB_index,u8 si_window);
+int decode_SI(module_id_t module_idP,frame_t frameP,u8 eNB_index,u8 si_window);
 
-void ue_meas_filtering(u8 Mod_id,u32 frame,u8 eNB_index);
+void ue_meas_filtering(module_id_t module_idP,frame_t frameP,u8 eNB_index);
 
-void ue_measurement_report_triggering(u8 Mod_id, u32 frame,u8 eNB_index);
+void ue_measurement_report_triggering(module_id_t module_idP, frame_t frameP,u8 eNB_index);
 
-int mac_get_rrc_lite_status(u8 Mod_id,u8 eNB_flag,u8 index);
+int mac_get_rrc_lite_status(module_id_t module_idP,eNB_flag_t eNB_flagP,u8 index);
 
-void rrc_eNB_generate_UECapabilityEnquiry(u8 Mod_id, u32 frame, u16 UE_index);
+void rrc_eNB_generate_UECapabilityEnquiry(module_id_t module_idP, frame_t frameP, u16 UE_index);
 
-void rrc_eNB_generate_SecurityModeCommand(u8 Mod_id, u32 frame, u16 UE_index);
+void rrc_eNB_generate_SecurityModeCommand(module_id_t module_idP, frame_t frameP, u16 UE_index);
 
-void rrc_eNB_process_MeasurementReport(u8 Mod_id,u32 frame, u16 UE_index,MeasResults_t *measResults2) ;
+void rrc_eNB_process_MeasurementReport(u8 module_idP,frame_t frameP, u16 UE_index,MeasResults_t *measResults2) ;
 
-void rrc_eNB_generate_HandoverPreparationInformation (u8 Mod_id, u32 frame, u8 UE_index, PhysCellId_t targetPhyId) ;
+void rrc_eNB_generate_HandoverPreparationInformation (u8 module_idP, frame_t frameP, u8 UE_index, PhysCellId_t targetPhyId) ;
 
-void check_handovers(u8 Mod_id, u32 frame);
+void check_handovers(u8 module_idP, frame_t frameP);
 
-u8 check_trigger_meas_event(u8 Mod_id,u32 frame, u8 eNB_index, u8 ue_cnx_index, u8 meas_index, 
+u8 check_trigger_meas_event(u8 module_idP,frame_t frameP, u8 eNB_index, u8 ue_cnx_index, u8 meas_index,
 			    Q_OffsetRange_t ofn, Q_OffsetRange_t ocn, Hysteresis_t hys, 
 			    Q_OffsetRange_t ofs, Q_OffsetRange_t ocs, long a3_offset, TimeToTrigger_t ttt);
 
-//void rrc_ue_process_ueCapabilityEnquiry(uint8_t Mod_id,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
-//void rrc_ue_process_securityModeCommand(uint8_t Mod_id,uint32_t frame,SecurityModeCommand_t *securityModeCommand,uint8_t eNB_index);
+//void rrc_ue_process_ueCapabilityEnquiry(uint8_t module_idP,uint32_t frame,UECapabilityEnquiry_t *UECapabilityEnquiry,uint8_t eNB_index);
+//void rrc_ue_process_securityModeCommand(uint8_t module_idP,uint32_t frame,SecurityModeCommand_t *securityModeCommand,uint8_t eNB_index);
 
-void rrc_eNB_free_UE_index (u8 Mod_id, u8 UE_id);
+void rrc_eNB_free_UE_index (module_id_t enb_mod_idP, module_id_t ue_mod_idP);
 
 long binary_search_int(int elements[], long numElem, int value);
 

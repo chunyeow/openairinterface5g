@@ -42,7 +42,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 #define TRACE_RLC_AM_FREE_SDU
 //-----------------------------------------------------------------------------
-void rlc_am_free_in_sdu(rlc_am_entity_t *rlcP, u32_t frame, unsigned int index_in_bufferP)
+void rlc_am_free_in_sdu(rlc_am_entity_t *rlcP, frame_t frameP, unsigned int index_in_bufferP)
 //-----------------------------------------------------------------------------
 {
     if (index_in_bufferP <= RLC_AM_SDU_CONTROL_BUFFER_SIZE) {
@@ -65,7 +65,16 @@ void rlc_am_free_in_sdu(rlc_am_entity_t *rlcP, u32_t frame, unsigned int index_i
         }
     }
 #ifdef TRACE_RLC_AM_FREE_SDU
-    LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][FREE SDU] SDU INDEX %03d current_sdu_index=%d next_sdu_index=%d nb_sdu_no_segmented=%d\n", frame, rlcP->module_id, rlcP->rb_id, index_in_bufferP, rlcP->current_sdu_index, rlcP->next_sdu_index, rlcP->nb_sdu_no_segmented);
+    LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][FREE SDU] SDU INDEX %03d current_sdu_index=%d next_sdu_index=%d nb_sdu_no_segmented=%d\n",
+          frameP,
+          (rlcP->is_enb) ? "eNB" : "UE",
+          rlcP->enb_module_id,
+          rlcP->ue_module_id,
+          rlcP->rb_id,
+          index_in_bufferP,
+          rlcP->current_sdu_index,
+          rlcP->next_sdu_index,
+          rlcP->nb_sdu_no_segmented);
 #endif
 }
 // called when segmentation is done

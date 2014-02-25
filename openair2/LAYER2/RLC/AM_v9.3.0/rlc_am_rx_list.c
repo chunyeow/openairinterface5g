@@ -44,356 +44,668 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 // returns 0 if success
 // returns neg value if failure
 //-----------------------------------------------------------------------------
-signed int rlc_am_rx_list_insert_pdu(rlc_am_entity_t* rlcP, u32 frame, mem_block_t* tbP)
+signed int rlc_am_rx_list_insert_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
-    rlc_am_pdu_info_t* pdu_info        = &((rlc_am_rx_pdu_management_t*)(tbP->data))->pdu_info;
-    rlc_am_pdu_info_t* pdu_info_cursor;
-    rlc_am_pdu_info_t* pdu_info_previous_cursor;
-    mem_block_t*       cursor;
-    mem_block_t*       previous_cursor = NULL;
+    rlc_am_pdu_info_t* pdu_info_p                  = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
+    rlc_am_pdu_info_t* pdu_info_cursor_p           = NULL;
+    rlc_am_pdu_info_t* pdu_info_previous_cursor_p  = NULL;
+    mem_block_t*       cursor_p                    = NULL;
+    mem_block_t*       previous_cursor_p           = NULL;
 
-    cursor = rlcP->receiver_buffer.head;
+    cursor_p = rlc_pP->receiver_buffer.head;
     // it is assumed this pdu is in rx window
 
-    if (cursor) {
-        if (rlcP->vr_mr < rlcP->vr_r) {
-            if (pdu_info->sn >= rlcP->vr_r) {
-                pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-                while ((cursor != NULL)  && (pdu_info_cursor->sn >= rlcP->vr_r)){ // LG added =
-                    if (pdu_info->sn < pdu_info_cursor->sn) {
-                        if (previous_cursor != NULL) {
-                            pdu_info_previous_cursor = &((rlc_am_rx_pdu_management_t*)(previous_cursor->data))->pdu_info;
-                            if ((pdu_info_previous_cursor->sn == pdu_info->sn)) {
-                                if (pdu_info->rf != pdu_info_previous_cursor->rf) {
-                                    LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+    if (cursor_p) {
+        if (rlc_pP->vr_mr < rlc_pP->vr_r) {
+            if (pdu_info_p->sn >= rlc_pP->vr_r) {
+                pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+                while ((cursor_p != NULL)  && (pdu_info_cursor_p->sn >= rlc_pP->vr_r)){ // LG added =
+                    if (pdu_info_p->sn < pdu_info_cursor_p->sn) {
+                        if (previous_cursor_p != NULL) {
+                            pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
+                            if ((pdu_info_previous_cursor_p->sn == pdu_info_p->sn)) {
+                                if (pdu_info_p->rf != pdu_info_previous_cursor_p->rf) {
+                                    LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n",
+                                          frameP,
+                                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                                          rlc_pP->enb_module_id,
+                                          rlc_pP->ue_module_id,
+                                          rlc_pP->rb_id,
+                                          __LINE__,
+                                          pdu_info_p->sn);
                                     return -2;
-                                } else if (pdu_info->rf == 1) {
-                                    if ((pdu_info_previous_cursor->so + pdu_info_previous_cursor->payload_size - 1) >= pdu_info->so) {
-                                        LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SO OVERLAP -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                                } else if (pdu_info_p->rf == 1) {
+                                    if ((pdu_info_previous_cursor_p->so + pdu_info_previous_cursor_p->payload_size - 1) >= pdu_info_p->so) {
+                                        LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SO OVERLAP -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n",
+                                              frameP,
+                                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                                              rlc_pP->enb_module_id,
+                                              rlc_pP->ue_module_id,
+                                              rlc_pP->rb_id,
+                                              __LINE__,
+                                              pdu_info_p->sn);
                                         return -2;
                                     }
                                 }
                             }
                         }
-                        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) > vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                        list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) > vr(r))\n",
+                              frameP,
+                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                              rlc_pP->enb_module_id,
+                              rlc_pP->ue_module_id,
+                              rlc_pP->rb_id,
+                              __LINE__,
+                              pdu_info_p->sn);
+                        list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                         return 0;
 
-                    } else if (pdu_info->sn == pdu_info_cursor->sn) {
-                        if (pdu_info_cursor->rf == 0) {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                    } else if (pdu_info_p->sn == pdu_info_cursor_p->sn) {
+                        if (pdu_info_cursor_p->rf == 0) {
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DUPLICATE -> DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
-                        } else if (pdu_info->rf == 1) {
-                            if ((pdu_info->so + pdu_info->payload_size - 1) < pdu_info_cursor->so) {
+                        } else if (pdu_info_p->rf == 1) {
+                            if ((pdu_info_p->so + pdu_info_p->payload_size - 1) < pdu_info_cursor_p->so) {
 
-                                if (previous_cursor != NULL) {
-                                    pdu_info_previous_cursor = &((rlc_am_rx_pdu_management_t*)(previous_cursor->data))->pdu_info;
-                                    if ((pdu_info_previous_cursor->sn == pdu_info_cursor->sn)) {
-                                        if ((pdu_info_previous_cursor->so + pdu_info_previous_cursor->payload_size - 1) < pdu_info->so) {
+                                if (previous_cursor_p != NULL) {
+                                    pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
+                                    if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                        if ((pdu_info_previous_cursor_p->so + pdu_info_previous_cursor_p->payload_size - 1) < pdu_info_p->so) {
 
-                                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn, pdu_info->so);
-                                            list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn >= vr(r))\n",
+                                                  frameP,
+                                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                                  rlc_pP->enb_module_id,
+                                                  rlc_pP->ue_module_id,
+                                                  rlc_pP->rb_id,
+                                                  __LINE__,
+                                                  pdu_info_p->sn,
+                                                  pdu_info_p->so);
+                                            list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                                             return 0;
                                         } else {
-                                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP PREVIOUS SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP PREVIOUS SO DUPLICATE -> DROPPED\n",
+                                                  frameP,
+                                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                                  rlc_pP->enb_module_id,
+                                                  rlc_pP->ue_module_id,
+                                                  rlc_pP->rb_id,
+                                                  __LINE__,
+                                                  pdu_info_p->sn);
                                             return -2;
                                         }
                                     }
                                 }
-                                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn, pdu_info->so);
-                                list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                                LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn >= vr(r))\n",
+                                      frameP,
+                                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                                      rlc_pP->enb_module_id,
+                                      rlc_pP->ue_module_id,
+                                      rlc_pP->rb_id,
+                                      __LINE__,
+                                      pdu_info_p->sn,
+                                      pdu_info_p->so);
+                                list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                                 return 0;
 
-                            } else if (pdu_info->so <= pdu_info_cursor->so) {
-                                LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            } else if (pdu_info_p->so <= pdu_info_cursor_p->so) {
+                                LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n",
+                                      frameP,
+                                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                                      rlc_pP->enb_module_id,
+                                      rlc_pP->ue_module_id,
+                                      rlc_pP->rb_id,
+                                      __LINE__,
+                                      pdu_info_p->sn);
                                 return -2;
                             }
                         } else {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
                         }
                     }
-                    previous_cursor = cursor;
-                    cursor = cursor->next;
-                    if (cursor != NULL) {
-                        pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
+                    previous_cursor_p = cursor_p;
+                    cursor_p = cursor_p->next;
+                    if (cursor_p != NULL) {
+                        pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
                     }
                 }
-                if (cursor != NULL) {
-                    LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                    list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                if (cursor_p != NULL) {
+                    LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and sn >= vr(r))\n",
+                          frameP,
+                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                          rlc_pP->enb_module_id,
+                          rlc_pP->ue_module_id,
+                          rlc_pP->rb_id,
+                          __LINE__,
+                          pdu_info_p->sn);
+                    list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                     return 0;
                 } else {
-                    if (pdu_info_cursor->rf == 0) {
-                        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                        list2_add_tail(tbP, &rlcP->receiver_buffer);
+                    if (pdu_info_cursor_p->rf == 0) {
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n",
+                              frameP,
+                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                              rlc_pP->enb_module_id,
+                              rlc_pP->ue_module_id,
+                              rlc_pP->rb_id,
+                              __LINE__,
+                              pdu_info_p->sn);
+                        list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                         return 0;
-                    } else if ((pdu_info->rf == 1) && (pdu_info_cursor->rf == 1) && (pdu_info->sn == pdu_info_cursor->sn)) {
-                        if ((pdu_info_cursor->so + pdu_info_cursor->payload_size - 1) < pdu_info->so) {
-                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                            list2_add_tail(tbP, &rlcP->receiver_buffer);
+                    } else if ((pdu_info_p->rf == 1) && (pdu_info_cursor_p->rf == 1) && (pdu_info_p->sn == pdu_info_cursor_p->sn)) {
+                        if ((pdu_info_cursor_p->so + pdu_info_cursor_p->payload_size - 1) < pdu_info_p->so) {
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
+                            list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                             return 0;
                         } else {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
                         }
-                    } else if (pdu_info->sn != pdu_info_cursor->sn) {
-                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                            list2_add_tail(tbP, &rlcP->receiver_buffer);
+                    } else if (pdu_info_p->sn != pdu_info_cursor_p->sn) {
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
+                            list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                             return 0;
                     }
                 }
-                LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                      frameP,
+                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                      rlc_pP->enb_module_id,
+                      rlc_pP->ue_module_id,
+                      rlc_pP->rb_id,
+                      __LINE__,
+                      pdu_info_p->sn);
                 return -2;
-            } else { // (pdu_info->sn < rlcP->vr_r)
-                cursor = rlcP->receiver_buffer.tail;
-                pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-                while ((cursor != NULL) && (pdu_info_cursor->sn < rlcP->vr_r)){
-                    //pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-                    if (pdu_info->sn > pdu_info_cursor->sn) {
-                        if (previous_cursor != NULL) {
-                            pdu_info_previous_cursor = &((rlc_am_rx_pdu_management_t*)(previous_cursor->data))->pdu_info;
-                            if ((pdu_info_previous_cursor->sn == pdu_info_cursor->sn)) {
-                                if (pdu_info->rf != pdu_info_previous_cursor->rf) {
-                                    LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+            } else { // (pdu_info_p->sn < rlc_pP->vr_r)
+                cursor_p = rlc_pP->receiver_buffer.tail;
+                pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+                while ((cursor_p != NULL) && (pdu_info_cursor_p->sn < rlc_pP->vr_r)){
+                    //pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+                    if (pdu_info_p->sn > pdu_info_cursor_p->sn) {
+                        if (previous_cursor_p != NULL) {
+                            pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
+                            if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                if (pdu_info_p->rf != pdu_info_previous_cursor_p->rf) {
+                                    LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n",
+                                          frameP,
+                                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                                          rlc_pP->enb_module_id,
+                                          rlc_pP->ue_module_id,
+                                          rlc_pP->rb_id,
+                                          __LINE__, pdu_info_p->sn);
                                     return -2;
-                                } else if (pdu_info->rf == 1) {
-                                    if ((pdu_info->so + pdu_info->payload_size - 1) >= pdu_info_previous_cursor->so) {
-                                        LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SO OVERLAP -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                                } else if (pdu_info_p->rf == 1) {
+                                    if ((pdu_info_p->so + pdu_info_p->payload_size - 1) >= pdu_info_previous_cursor_p->so) {
+                                        LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SO OVERLAP -> DROPPED (vr(mr) < vr(r) and sn >= vr(r))\n",
+                                            frameP,
+                                            (rlc_pP->is_enb) ? "eNB" : "UE",
+                                            rlc_pP->enb_module_id,
+                                            rlc_pP->ue_module_id,
+                                            rlc_pP->rb_id,
+                                            __LINE__,
+                                            pdu_info_p->sn);
                                         return -2;
                                     }
                                 }
                             }
                         }
-                        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                        list2_insert_after_element(tbP, cursor, &rlcP->receiver_buffer);
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r))\n",
+                              frameP,
+                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                              rlc_pP->enb_module_id,
+                              rlc_pP->ue_module_id,
+                              rlc_pP->rb_id,
+                              __LINE__,
+                              pdu_info_p->sn);
+                        list2_insert_after_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                         return 0;
-                    } else if (pdu_info->sn == pdu_info_cursor->sn) {
-                        if (pdu_info_cursor->rf == 0) {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                    } else if (pdu_info_p->sn == pdu_info_cursor_p->sn) {
+                        if (pdu_info_cursor_p->rf == 0) {
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DUPLICATE -> DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
-                        } else if (pdu_info->rf == 1) {
-                            if ((pdu_info_cursor->so + pdu_info_cursor->payload_size - 1) < pdu_info->so) {
+                        } else if (pdu_info_p->rf == 1) {
+                            if ((pdu_info_cursor_p->so + pdu_info_cursor_p->payload_size - 1) < pdu_info_p->so) {
 
-                                if (previous_cursor != NULL) {
-                                    pdu_info_previous_cursor = &((rlc_am_rx_pdu_management_t*)(previous_cursor->data))->pdu_info;
-                                    if ((pdu_info_previous_cursor->sn == pdu_info_cursor->sn)) {
-                                        if ((pdu_info->so + pdu_info->payload_size - 1) < pdu_info_previous_cursor->so) {
+                                if (previous_cursor_p != NULL) {
+                                    pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
+                                    if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                        if ((pdu_info_p->so + pdu_info_p->payload_size - 1) < pdu_info_previous_cursor_p->so) {
 
-                                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn < vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn, pdu_info->so);
-                                            list2_insert_after_element(tbP, cursor, &rlcP->receiver_buffer);
+                                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn < vr(r))\n",
+                                                  frameP,
+                                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                                  rlc_pP->enb_module_id,
+                                                  rlc_pP->ue_module_id,
+                                                  rlc_pP->rb_id,
+                                                  __LINE__,
+                                                  pdu_info_p->sn,
+                                                  pdu_info_p->so);
+                                            list2_insert_after_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                                             return 0;
                                         } else {
-                                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP PREVIOUS SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP PREVIOUS SO DUPLICATE -> DROPPED\n",
+                                                  frameP,
+                                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                                  rlc_pP->enb_module_id,
+                                                  rlc_pP->ue_module_id,
+                                                  rlc_pP->rb_id,
+                                                  __LINE__,
+                                                  pdu_info_p->sn);
                                             return -2;
                                         }
                                     }
                                 }
-                                LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn < vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn, pdu_info->so);
-                                list2_insert_after_element(tbP, cursor, &rlcP->receiver_buffer);
+                                LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) < vr(r) and sn < vr(r))\n",
+                                      frameP,
+                                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                                      rlc_pP->enb_module_id,
+                                      rlc_pP->ue_module_id,
+                                      rlc_pP->rb_id,
+                                      __LINE__,
+                                      pdu_info_p->sn,
+                                      pdu_info_p->so);
+                                list2_insert_after_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                                 return 0;
 
-                            } else if (pdu_info_cursor->so <= pdu_info->so) {
-                                LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            } else if (pdu_info_cursor_p->so <= pdu_info_p->so) {
+                                LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n",
+                                      frameP,
+                                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                                      rlc_pP->enb_module_id,
+                                      rlc_pP->ue_module_id,
+                                      rlc_pP->rb_id,
+                                      __LINE__,
+                                      pdu_info_p->sn);
                                 return -2;
                             }
                         } else {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
                         }
                     }
-                    previous_cursor = cursor;
-                    cursor = cursor->previous;
-                    if (cursor != NULL) {
-                        pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
+                    previous_cursor_p = cursor_p;
+                    cursor_p = cursor_p->previous;
+                    if (cursor_p != NULL) {
+                        pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
                     }
                 }
-                if (cursor != NULL) {
-                    LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and sn < vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                    list2_insert_after_element(tbP, cursor, &rlcP->receiver_buffer);
+                if (cursor_p != NULL) {
+                    LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and sn < vr(r))\n",
+                          frameP,
+                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                          rlc_pP->enb_module_id,
+                          rlc_pP->ue_module_id,
+                          rlc_pP->rb_id,
+                          __LINE__,
+                          pdu_info_p->sn);
+                    list2_insert_after_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                     return 0;
                 } else {
-                    if (pdu_info_cursor->rf == 0) {
-                        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                        list2_add_tail(tbP, &rlcP->receiver_buffer);
+                    if (pdu_info_cursor_p->rf == 0) {
+                        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n",
+                              frameP,
+                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                              rlc_pP->enb_module_id,
+                              rlc_pP->ue_module_id,
+                              rlc_pP->rb_id,
+                              __LINE__,
+                              pdu_info_p->sn);
+                        list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                         return 0;
-                    } else if ((pdu_info->rf == 1) && (pdu_info_cursor->rf == 1) && (pdu_info->sn == pdu_info_cursor->sn)) {
-                        if ((pdu_info_cursor->so + pdu_info_cursor->payload_size - 1) < pdu_info->so) {
-                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                            list2_add_tail(tbP, &rlcP->receiver_buffer);
+                    } else if ((pdu_info_p->rf == 1) && (pdu_info_cursor_p->rf == 1) && (pdu_info_p->sn == pdu_info_cursor_p->sn)) {
+                        if ((pdu_info_cursor_p->so + pdu_info_cursor_p->payload_size - 1) < pdu_info_p->so) {
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
+                            list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                             return 0;
                         } else {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
                         }
-                    } else if (pdu_info->sn != pdu_info_cursor->sn) {
-                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                            list2_add_tail(tbP, &rlcP->receiver_buffer);
+                    } else if (pdu_info_p->sn != pdu_info_cursor_p->sn) {
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) < vr(r) and vr(h) > vr(r) and sn >= vr(r))\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
+                            list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                             return 0;
                     }
                 }
-                LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                      frameP,
+                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                      rlc_pP->enb_module_id,
+                      rlc_pP->ue_module_id,
+                      rlc_pP->rb_id,
+                      __LINE__,
+                      pdu_info_p->sn);
                 return -2;
             }
-        } else { // (pdu_info->vr_mr > rlcP->vr_r), > and not >=
+        } else { // (pdu_info_p->vr_mr > rlc_pP->vr_r), > and not >=
             // FAR MORE SIMPLE CASE
-            while (cursor != NULL){
-                //msg ("[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d cursor %p\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, cursor);
-                pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-                if (pdu_info->sn < pdu_info_cursor->sn) {
+            while (cursor_p != NULL){
+                //msg ("[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d cursor_p %p\n", frameP, rlc_pP->module_id, rlc_pP->rb_id, __LINE__, cursor_p);
+                pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+                if (pdu_info_p->sn < pdu_info_cursor_p->sn) {
 
-                    if (previous_cursor != NULL) {
-                        pdu_info_previous_cursor = &((rlc_am_rx_pdu_management_t*)(previous_cursor->data))->pdu_info;
-                        if ((pdu_info_previous_cursor->sn == pdu_info->sn)) {
-                            if (pdu_info->rf != pdu_info_previous_cursor->rf) {
-                                LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) > vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                    if (previous_cursor_p != NULL) {
+                        pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
+                        if ((pdu_info_previous_cursor_p->sn == pdu_info_p->sn)) {
+                            if (pdu_info_p->rf != pdu_info_previous_cursor_p->rf) {
+                                LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) > vr(r))\n",
+                                      frameP,
+                                      (rlc_pP->is_enb) ? "eNB" : "UE",
+                                      rlc_pP->enb_module_id,
+                                      rlc_pP->ue_module_id,
+                                      rlc_pP->rb_id,
+                                      __LINE__,
+                                      pdu_info_p->sn);
                                 return -2;
-                            } else if (pdu_info->rf == 1) {
-                                if ((pdu_info_previous_cursor->so + pdu_info_previous_cursor->payload_size - 1) >= pdu_info->so) {
-                                    LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SO OVERLAP -> DROPPED (vr(mr) > vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                            } else if (pdu_info_p->rf == 1) {
+                                if ((pdu_info_previous_cursor_p->so + pdu_info_previous_cursor_p->payload_size - 1) >= pdu_info_p->so) {
+                                    LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SO OVERLAP -> DROPPED (vr(mr) > vr(r))\n",
+                                          frameP,
+                                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                                          rlc_pP->enb_module_id,
+                                          rlc_pP->ue_module_id,
+                                          rlc_pP->rb_id,
+                                          __LINE__,
+                                          pdu_info_p->sn);
                                     return -2;
                                 }
                             }
                         }
                     }
-                    LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) > vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-                    list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                    LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) > vr(r))\n",
+                          frameP,
+                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                          rlc_pP->enb_module_id,
+                          rlc_pP->ue_module_id,
+                          rlc_pP->rb_id,
+                          __LINE__,
+                          pdu_info_p->sn);
+                    list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                     return 0;
 
-                } else if (pdu_info->sn == pdu_info_cursor->sn) {
-                    if (pdu_info_cursor->rf == 0) {
-                        LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) > vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                } else if (pdu_info_p->sn == pdu_info_cursor_p->sn) {
+                    if (pdu_info_cursor_p->rf == 0) {
+                        LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d WRONG RF -> DROPPED (vr(mr) > vr(r))\n",
+                              frameP,
+                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                              rlc_pP->enb_module_id,
+                              rlc_pP->ue_module_id,
+                              rlc_pP->rb_id,
+                              __LINE__,
+                              pdu_info_p->sn);
                         return -2;
-                    } else if (pdu_info->rf == 1) {
+                    } else if (pdu_info_p->rf == 1) {
 
-                        if ((pdu_info->so + pdu_info->payload_size - 1) < pdu_info_cursor->so) {
+                        if ((pdu_info_p->so + pdu_info_p->payload_size - 1) < pdu_info_cursor_p->so) {
 
-                            if (previous_cursor != NULL) {
-                                pdu_info_previous_cursor = &((rlc_am_rx_pdu_management_t*)(previous_cursor->data))->pdu_info;
-                                if ((pdu_info_previous_cursor->sn == pdu_info_cursor->sn)) {
-                                    if ((pdu_info_previous_cursor->so + pdu_info_previous_cursor->payload_size - 1) < pdu_info->so) {
+                            if (previous_cursor_p != NULL) {
+                                pdu_info_previous_cursor_p = &((rlc_am_rx_pdu_management_t*)(previous_cursor_p->data))->pdu_info;
+                                if ((pdu_info_previous_cursor_p->sn == pdu_info_cursor_p->sn)) {
+                                    if ((pdu_info_previous_cursor_p->so + pdu_info_previous_cursor_p->payload_size - 1) < pdu_info_p->so) {
 
-                                        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn, pdu_info->so);
-                                        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] PREVIOUS SO %d PAYLOAD SIZE %d\n", frame, rlcP->module_id, rlcP->rb_id, pdu_info_previous_cursor->so, pdu_info_previous_cursor->payload_size);
-                                        list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                                        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) > vr(r) and sn >= vr(r))\n",
+                                              frameP,
+                                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                                              rlc_pP->enb_module_id,
+                                              rlc_pP->ue_module_id,
+                                              rlc_pP->rb_id,
+                                              __LINE__,
+                                              pdu_info_p->sn,
+                                              pdu_info_p->so);
+                                        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] PREVIOUS SO %d PAYLOAD SIZE %d\n",
+                                              frameP,
+                                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                                              rlc_pP->enb_module_id,
+                                              rlc_pP->ue_module_id,
+                                              rlc_pP->rb_id,
+                                              pdu_info_previous_cursor_p->so,
+                                              pdu_info_previous_cursor_p->payload_size);
+                                        list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                                         return 0;
                                     } else {
-                                        LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP PREVIOUS SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                                        LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP PREVIOUS SO DUPLICATE -> DROPPED\n",
+                                              frameP,
+                                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                                              rlc_pP->enb_module_id,
+                                              rlc_pP->ue_module_id,
+                                              rlc_pP->rb_id,
+                                              __LINE__,
+                                              pdu_info_p->sn);
                                         return -2;
                                     }
                                 }
                             }
-                            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) > vr(r) and sn >= vr(r))\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn, pdu_info->so);
-                            list2_insert_before_element(tbP, cursor, &rlcP->receiver_buffer);
+                            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d SEGMENT OFFSET %05d (vr(mr) > vr(r) and sn >= vr(r))\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn,
+                                  pdu_info_p->so);
+                            list2_insert_before_element(tb_pP, cursor_p, &rlc_pP->receiver_buffer);
                             return 0;
-                        } else if (pdu_info->so <= pdu_info_cursor->so) {
-                            LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                        } else if (pdu_info_p->so <= pdu_info_cursor_p->so) {
+                            LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n",
+                                  frameP,
+                                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                                  rlc_pP->enb_module_id,
+                                  rlc_pP->ue_module_id,
+                                  rlc_pP->rb_id,
+                                  __LINE__,
+                                  pdu_info_p->sn);
                             return -2;
                         }
                     } else {
-                        LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                        LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED\n",
+                              frameP,
+                              (rlc_pP->is_enb) ? "eNB" : "UE",
+                              rlc_pP->enb_module_id,
+                              rlc_pP->ue_module_id,
+                              rlc_pP->rb_id,
+                              __LINE__,
+                              pdu_info_p->sn);
                         return -2;
                     }
                 }
-                previous_cursor = cursor;
-                cursor = cursor->next;
+                previous_cursor_p = cursor_p;
+                cursor_p = cursor_p->next;
             }
-            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) > vr(r))(last inserted)\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-            // pdu_info_cursor can not be NULL here
-            if  (pdu_info->sn == pdu_info_cursor->sn) {
-                if ((pdu_info_cursor->so + pdu_info_cursor->payload_size - 1) < pdu_info->so) {
-                    list2_add_tail(tbP, &rlcP->receiver_buffer);
+            LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (vr(mr) > vr(r))(last inserted)\n",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id,
+                  __LINE__,
+                  pdu_info_p->sn);
+            // pdu_info_cursor_p can not be NULL here
+            if  (pdu_info_p->sn == pdu_info_cursor_p->sn) {
+                if ((pdu_info_cursor_p->so + pdu_info_cursor_p->payload_size - 1) < pdu_info_p->so) {
+                    list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                     return 0;
                 } else {
-                    LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+                    LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d OVERLAP SO DUPLICATE -> DROPPED\n",
+                          frameP,
+                          (rlc_pP->is_enb) ? "eNB" : "UE",
+                          rlc_pP->enb_module_id,
+                          rlc_pP->ue_module_id,
+                          rlc_pP->rb_id,
+                          __LINE__,
+                          pdu_info_p->sn);
                     return -2;
                 }
             } else {
-                list2_add_tail(tbP, &rlcP->receiver_buffer);
+                list2_add_tail(tb_pP, &rlc_pP->receiver_buffer);
                 return 0;
             }
         }
     } else {
-        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d (only inserted)\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
-        list2_add_head(tbP, &rlcP->receiver_buffer);
+        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d (only inserted)\n",
+              frameP,
+              (rlc_pP->is_enb) ? "eNB" : "UE",
+              rlc_pP->enb_module_id,
+              rlc_pP->ue_module_id,
+              rlc_pP->rb_id,
+              __LINE__,
+              pdu_info_p->sn);
+        list2_add_head(tb_pP, &rlc_pP->receiver_buffer);
         return 0;
     }
-    LOG_N(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][INSERT PDU] LINE %d RX PDU SN %04d DROPPED @4\n", frame, rlcP->module_id, rlcP->rb_id, __LINE__, pdu_info->sn);
+    LOG_N(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][INSERT PDU] LINE %d RX PDU SN %04d DROPPED @4\n",
+          frameP,
+          (rlc_pP->is_enb) ? "eNB" : "UE",
+          rlc_pP->enb_module_id,
+          rlc_pP->ue_module_id,
+          rlc_pP->rb_id,
+          __LINE__,
+          pdu_info_p->sn);
     return -1;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_rx_check_all_byte_segments(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t* tbP)
+void rlc_am_rx_check_all_byte_segments(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
-    rlc_am_pdu_info_t* pdu_info        = &((rlc_am_rx_pdu_management_t*)(tbP->data))->pdu_info;
-    mem_block_t*       cursor;
-    mem_block_t*       first_cursor;
-    u16_t              sn = pdu_info->sn;
-    //list2_t            list;
-    u16_t              next_waited_so;
-    u16_t              last_end_so;
+    rlc_am_pdu_info_t  *pdu_info_p        = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
+    mem_block_t        *cursor_p        = NULL;
+    mem_block_t        *first_cursor_p  = NULL;
+    rlc_sn_t            sn              = pdu_info_p->sn;
+    sdu_size_t          next_waited_so;
+    sdu_size_t          last_end_so;
 
     //msg("rlc_am_rx_check_all_byte_segments(%d) @0\n",sn);
-    if (pdu_info->rf == 0) {
-        ((rlc_am_rx_pdu_management_t*)(tbP->data))->all_segments_received = 1;
+    if (pdu_info_p->rf == 0) {
+        ((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received = 1;
         return;
     }
     // for re-segmented AMD PDUS
-    cursor = tbP;
+    cursor_p = tb_pP;
     //list2_init(&list, NULL);
-    //list2_add_head(cursor, &list);
+    //list2_add_head(cursor_p, &list);
     //msg("rlc_am_rx_check_all_byte_segments(%d) @1\n",sn);
 
     // get all previous PDU with same SN
-    while (cursor->previous != NULL) {
-        if (((rlc_am_rx_pdu_management_t*)(cursor->previous->data))->pdu_info.sn == sn) {
-            //list2_add_head(cursor->previous, &list);
-            cursor = cursor->previous;
+    while (cursor_p->previous != NULL) {
+        if (((rlc_am_rx_pdu_management_t*)(cursor_p->previous->data))->pdu_info.sn == sn) {
+            //list2_add_head(cursor_p->previous, &list);
+            cursor_p = cursor_p->previous;
             //msg("rlc_am_rx_check_all_byte_segments(%d) @2\n",sn);
         } else {
             break;
         }
     }
-    // in case all first segments up to tbP are in list
+    // in case all first segments up to tb_pP are in list
     // the so field of the first PDU should be 0
-    //cursor = list.head;
-    pdu_info = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-    if (pdu_info->so != 0) {
+    //cursor_p = list.head;
+    pdu_info_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+    if (pdu_info_p->so != 0) {
         return;
     }
     //msg("rlc_am_rx_check_all_byte_segments(%d) @3\n",sn);
-    next_waited_so = pdu_info->payload_size;
-    first_cursor = cursor;
+    next_waited_so = pdu_info_p->payload_size;
+    first_cursor_p = cursor_p;
     // then check if all segments are contiguous
-    last_end_so = pdu_info->payload_size;
-    while (cursor->next != NULL) {
+    last_end_so = pdu_info_p->payload_size;
+    while (cursor_p->next != NULL) {
     //msg("rlc_am_rx_check_all_byte_segments(%d) @4\n",sn);
-        cursor = cursor->next;
-        pdu_info = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
+        cursor_p = cursor_p->next;
+        pdu_info_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
 
-        if (pdu_info->sn == sn) {
+        if (pdu_info_p->sn == sn) {
             // extra check normally not necessary
             if (
-                !(pdu_info->rf == 1) ||
-                !(pdu_info->so <= last_end_so)
+                !(pdu_info_p->rf == 1) ||
+                !(pdu_info_p->so <= last_end_so)
                 ) {
-    //msg("rlc_am_rx_check_all_byte_segments(%d) @5 pdu_info->rf %d pdu_info->so %d\n",sn, pdu_info->rf, pdu_info->so);
+    //msg("rlc_am_rx_check_all_byte_segments(%d) @5 pdu_info_p->rf %d pdu_info_p->so %d\n",sn, pdu_info_p->rf, pdu_info_p->so);
                     return;
             } else {
-                if (pdu_info->so == next_waited_so) {
-                    next_waited_so = next_waited_so + pdu_info->payload_size;
+                if (pdu_info_p->so == next_waited_so) {
+                    next_waited_so = next_waited_so + pdu_info_p->payload_size;
     //msg("rlc_am_rx_check_all_byte_segments(%d) @6\n",sn);
-                } else { // assumed pdu_info->so + pdu_info->payload_size > next_waited_so
-                    next_waited_so = (next_waited_so + pdu_info->payload_size) - (next_waited_so - pdu_info->so);
+                } else { // assumed pdu_info_p->so + pdu_info_p->payload_size > next_waited_so
+                    next_waited_so = (next_waited_so + pdu_info_p->payload_size) - (next_waited_so - pdu_info_p->so);
     //msg("rlc_am_rx_check_all_byte_segments(%d) @7\n",sn);
                 }
-                if (pdu_info->lsf > 0) {
+                if (pdu_info_p->lsf > 0) {
     //msg("rlc_am_rx_check_all_byte_segments(%d) @8\n",sn);
-		  rlc_am_rx_mark_all_segments_received(rlcP, frame, first_cursor);
+		  rlc_am_rx_mark_all_segments_received(rlc_pP, frameP, first_cursor_p);
                 }
             }
-            last_end_so = pdu_info->so + pdu_info->payload_size;
+            last_end_so = pdu_info_p->so + pdu_info_p->payload_size;
         } else {
     //msg("rlc_am_rx_check_all_byte_segments(%d) @9\n",sn);
             return;
@@ -401,84 +713,92 @@ void rlc_am_rx_check_all_byte_segments(rlc_am_entity_t* rlcP, u32_t frame, mem_b
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_rx_mark_all_segments_received(rlc_am_entity_t* rlcP, u32_t frame, mem_block_t* fisrt_segment_tbP)
+void rlc_am_rx_mark_all_segments_received(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t* fisrt_segment_tbP)
 //-----------------------------------------------------------------------------
 {
-    rlc_am_pdu_info_t* pdu_info        = &((rlc_am_rx_pdu_management_t*)(fisrt_segment_tbP->data))->pdu_info;
-    rlc_am_pdu_info_t* pdu_info_cursor;
-    mem_block_t*       cursor;
-    u16_t              sn = pdu_info->sn;
+    rlc_am_pdu_info_t* pdu_info_p          = &((rlc_am_rx_pdu_management_t*)(fisrt_segment_tbP->data))->pdu_info;
+    rlc_am_pdu_info_t* pdu_info_cursor_p = NULL;
+    mem_block_t*       cursor_p          = NULL;
+    rlc_sn_t           sn                = pdu_info_p->sn;
 
-    cursor = fisrt_segment_tbP;
-    if (cursor) {
-        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU] ALL SEGMENTS RECEIVED SN %04d:\n", frame, rlcP->module_id, rlcP->rb_id, sn);
+    cursor_p = fisrt_segment_tbP;
+    if (cursor_p) {
+        LOG_D(RLC, "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU] ALL SEGMENTS RECEIVED SN %04d:\n",
+              frameP,
+              (rlc_pP->is_enb) ? "eNB" : "UE",
+              rlc_pP->enb_module_id,
+              rlc_pP->ue_module_id,
+              rlc_pP->rb_id,
+              sn);
         do {
-            pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-            if (pdu_info_cursor->sn == sn) {
-                ((rlc_am_rx_pdu_management_t*)(cursor->data))->all_segments_received = 1;
+            pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+            if (pdu_info_cursor_p->sn == sn) {
+                ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->all_segments_received = 1;
             } else {
                 return;
             }
-            cursor = cursor->next;
-        } while (cursor != NULL);
+            cursor_p = cursor_p->next;
+        } while (cursor_p != NULL);
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_rx_list_reassemble_rlc_sdus(rlc_am_entity_t* rlcP,u32_t frame, u8_t eNB_flag)
+void rlc_am_rx_list_reassemble_rlc_sdus(rlc_am_entity_t* rlc_pP,frame_t frameP, u8_t eNB_flag)
 //-----------------------------------------------------------------------------
 {
-    mem_block_t*                cursor;
-    rlc_am_rx_pdu_management_t* rlc_am_rx_old_pdu_management;
+    mem_block_t*                cursor_p                     = NULL;
+    rlc_am_rx_pdu_management_t* rlc_am_rx_old_pdu_management = NULL;
 
-    cursor = list2_get_head(&rlcP->receiver_buffer);
-    if (cursor == NULL) {
+    cursor_p = list2_get_head(&rlc_pP->receiver_buffer);
+    if (cursor_p == NULL) {
         return;
     }
 
-    rlc_am_rx_pdu_management_t* rlc_am_rx_pdu_management = ((rlc_am_rx_pdu_management_t*)(cursor->data));
+    rlc_am_rx_pdu_management_t* rlc_am_rx_pdu_management_p = ((rlc_am_rx_pdu_management_t*)(cursor_p->data));
 
     do {
-        if (rlc_am_rx_pdu_management->all_segments_received > 0) {
-            cursor = list2_remove_head(&rlcP->receiver_buffer);
-            rlc_am_reassemble_pdu(rlcP, frame, eNB_flag, cursor);
-            rlc_am_rx_old_pdu_management = rlc_am_rx_pdu_management;
-            cursor = list2_get_head(&rlcP->receiver_buffer);
-            if (cursor == NULL) {
+        if (rlc_am_rx_pdu_management_p->all_segments_received > 0) {
+            cursor_p = list2_remove_head(&rlc_pP->receiver_buffer);
+            rlc_am_reassemble_pdu(rlc_pP, frameP, eNB_flag, cursor_p);
+            rlc_am_rx_old_pdu_management = rlc_am_rx_pdu_management_p;
+            cursor_p = list2_get_head(&rlc_pP->receiver_buffer);
+            if (cursor_p == NULL) {
                 return;
             }
-            rlc_am_rx_pdu_management = ((rlc_am_rx_pdu_management_t*)(cursor->data));
+            rlc_am_rx_pdu_management_p = ((rlc_am_rx_pdu_management_t*)(cursor_p->data));
         } else {
 #if defined(RLC_STOP_ON_LOST_PDU)
-            if (list2_get_head(&rlcP->receiver_buffer) != cursor) {
+            if (list2_get_head(&rlc_pP->receiver_buffer) != cursor_p) {
                 AssertFatal( 0 == 1,
-                      "[FRAME %05d][RLC_AM][MOD %d][RB %d] LOST PDU DETECTED\n", frame, rlcP->module_id, rlcP->rb_id);
+                      "[FRAME %05u][%s][RLC_AM][MOD %u/%u][RB %u] LOST PDU DETECTED\n",
+                       frameP,
+                       (rlc_pP->is_enb) ? "eNB" : "UE",
+                       rlc_pP->enb_module_id,
+                       rlc_pP->ue_module_id,
+                       rlc_pP->rb_id);
             }
 #endif
             return;
         }
 
-    } while ((rlc_am_rx_pdu_management->pdu_info.sn == ((rlc_am_rx_old_pdu_management->pdu_info.sn + 1) & RLC_AM_SN_MASK)) || ((rlc_am_rx_pdu_management->pdu_info.sn == rlc_am_rx_old_pdu_management->pdu_info.sn) && (rlc_am_rx_pdu_management->all_segments_received > 0)));
+    } while ((rlc_am_rx_pdu_management_p->pdu_info.sn == ((rlc_am_rx_old_pdu_management->pdu_info.sn + 1) & RLC_AM_SN_MASK)) || ((rlc_am_rx_pdu_management_p->pdu_info.sn == rlc_am_rx_old_pdu_management->pdu_info.sn) && (rlc_am_rx_pdu_management_p->all_segments_received > 0)));
 }
 //-----------------------------------------------------------------------------
 mem_block_t *
-list2_insert_before_element (mem_block_t * element_to_insertP, mem_block_t * elementP, list2_t * listP)
+list2_insert_before_element (mem_block_t * element_to_insert_pP, mem_block_t * element_pP, list2_t * list_pP)
 //-----------------------------------------------------------------------------
 {
-    //msg ("list2_insert_before_element\n");
-    //check_mem_area(NULL);
-    if ((element_to_insertP != NULL) && (elementP != NULL)) {
-        listP->nb_elements = listP->nb_elements + 1;
-        mem_block_t *previous = elementP->previous;
-        element_to_insertP->previous = previous;
-        element_to_insertP->next     = elementP;
-        elementP->previous           = element_to_insertP;
+    if ((element_to_insert_pP != NULL) && (element_pP != NULL)) {
+        list_pP->nb_elements = list_pP->nb_elements + 1;
+        mem_block_t *previous = element_pP->previous;
+        element_to_insert_pP->previous = previous;
+        element_to_insert_pP->next     = element_pP;
+        element_pP->previous           = element_to_insert_pP;
         if (previous != NULL) {
-            previous->next = element_to_insertP;
-        } else if (listP->head == elementP) {
-            listP->head = element_to_insertP;
+            previous->next = element_to_insert_pP;
+        } else if (list_pP->head == element_pP) {
+            list_pP->head = element_to_insert_pP;
         }
-        //check_mem_area(NULL);
-        return element_to_insertP;
+        return element_to_insert_pP;
     } else {
         assert(2==1);
         return NULL;
@@ -486,72 +806,69 @@ list2_insert_before_element (mem_block_t * element_to_insertP, mem_block_t * ele
 }
 //-----------------------------------------------------------------------------
 mem_block_t *
-list2_insert_after_element (mem_block_t * element_to_insertP, mem_block_t * elementP, list2_t * listP)
+list2_insert_after_element (mem_block_t * element_to_insert_pP, mem_block_t * element_pP, list2_t * list_pP)
 //-----------------------------------------------------------------------------
 {
-    //msg ("list2_insert_after_element\n");
-    //check_mem_area(NULL);
 
-    if ((element_to_insertP != NULL) && (elementP != NULL)) {
-        listP->nb_elements = listP->nb_elements + 1;
-        mem_block_t *next = elementP->next;
-        element_to_insertP->previous = elementP;
-        element_to_insertP->next     = next;
-        elementP->next               = element_to_insertP;
+    if ((element_to_insert_pP != NULL) && (element_pP != NULL)) {
+        list_pP->nb_elements = list_pP->nb_elements + 1;
+        mem_block_t *next = element_pP->next;
+        element_to_insert_pP->previous = element_pP;
+        element_to_insert_pP->next     = next;
+        element_pP->next               = element_to_insert_pP;
         if (next != NULL) {
-            next->previous = element_to_insertP;
-        } else if (listP->tail == elementP) {
-            listP->tail = element_to_insertP;
+            next->previous = element_to_insert_pP;
+        } else if (list_pP->tail == element_pP) {
+            list_pP->tail = element_to_insert_pP;
         }
-        //check_mem_area(NULL);
-        return element_to_insertP;
+        return element_to_insert_pP;
     } else {
         assert(2==1);
         return NULL;
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_rx_list_display (rlc_am_entity_t* rlcP, char* messageP)
+void rlc_am_rx_list_display (rlc_am_entity_t* rlc_pP, char* message_pP)
 //-----------------------------------------------------------------------------
 {
-    mem_block_t      *cursor;
-    unsigned int     loop = 0;
+    mem_block_t      *cursor_p = NULL;
+    unsigned int      loop     = 0;
 
-    cursor = rlcP->receiver_buffer.head;
-    if (messageP) {
-        LOG_T(RLC, "Display list %s %s VR(R)=%04d:\n", rlcP->receiver_buffer.name, messageP, rlcP->vr_r);
+    cursor_p = rlc_pP->receiver_buffer.head;
+    if (message_pP) {
+        LOG_T(RLC, "Display list %s %s VR(R)=%04d:\n", rlc_pP->receiver_buffer.name, message_pP, rlc_pP->vr_r);
     } else {
-        LOG_T(RLC, "Display list %s VR(R)=%04d:\n", rlcP->receiver_buffer.name, rlcP->vr_r);
+        LOG_T(RLC, "Display list %s VR(R)=%04d:\n", rlc_pP->receiver_buffer.name, rlc_pP->vr_r);
     }
-    if (cursor) {
+    if (cursor_p) {
     // almost one element
-        while (cursor != NULL) {
+        while (cursor_p != NULL) {
             //if (((loop % 16) == 0) && (loop > 0)) {
             if ((loop % 4) == 0) {
                 LOG_T(RLC, "\nRX SN:\t");
             }
-            if (((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.rf) {
-                if (((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.lsf) {
+            if (((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.rf) {
+                if (((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.lsf) {
                     LOG_T(RLC, "%04d (%04d->%04d LSF)\t",
-                        ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.sn,
-                        ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.so,
-                        ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.so + ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.payload_size - 1);
+                        ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.sn,
+                        ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.so,
+                        ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.so + ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.payload_size - 1);
                 } else {
                     LOG_T(RLC, "%04d (%04d->%04d)\t",
-                        ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.sn,
-                        ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.so,
-                        ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.so + ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.payload_size - 1);
+                        ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.sn,
+                        ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.so,
+                        ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.so + ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.payload_size - 1);
                 }
             } else {
                 LOG_T(RLC, "%04d (%04d NOSEG)\t",
-                    ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.sn,
-                    ((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.payload_size);
+                    ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.sn,
+                    ((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.payload_size);
             }
-            //if (cursor == cursor->next) {
+            //if (cursor_p == cursor_p->next) {
             //    rlc_am_v9_3_0_test_print_trace();
             //}
-            assert(cursor != cursor->next);
-            cursor = cursor->next;
+            assert(cursor_p != cursor_p->next);
+            cursor_p = cursor_p->next;
             loop++;
         }
         LOG_T(RLC, "\n");

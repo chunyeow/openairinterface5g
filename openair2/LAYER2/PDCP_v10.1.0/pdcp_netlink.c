@@ -25,18 +25,18 @@
   Forums       : http://forums.eurecom.fsr/openairinterface
   Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
 
-*******************************************************************************/
+ *******************************************************************************/
 
 /*! \file pdcp_netlink.c
-* \brief pdcp communication with linux IP interface,
-* have a look at http://man7.org/linux/man-pages/man7/netlink.7.html for netlink.
-* Read operation from netlink should be achieved in an asynchronous way to avoid
-* subframe overload, netlink congestion...
-* \author Sebastien ROUX
-* \date 2013
-* \version 0.1
-* @ingroup pdcp
-*/
+ * \brief pdcp communication with linux IP interface,
+ * have a look at http://man7.org/linux/man-pages/man7/netlink.7.html for netlink.
+ * Read operation from netlink should be achieved in an asynchronous way to avoid
+ * subframe overload, netlink congestion...
+ * \author Sebastien ROUX
+ * \date 2013
+ * \version 0.1
+ * @ingroup pdcp
+ */
 
 #include <pthread.h>
 #include <stdio.h>
@@ -81,163 +81,199 @@ static pthread_t pdcp_netlink_thread;
  * and the corresponding entity in User-space.
  * one queue for eNBs (index 0)/one queue for UEs (index 1)
  */
-static struct lfds611_queue_state **pdcp_netlink_queue = NULL;
-static uint32_t *pdcp_netlink_nb_element = NULL;
+static struct lfds611_queue_state **pdcp_netlink_queue_enb = NULL;
+static struct lfds611_queue_state **pdcp_netlink_queue_ue = NULL;
+static uint32_t *pdcp_netlink_nb_element_enb = NULL;
+static uint32_t *pdcp_netlink_nb_element_ue = NULL;
 
 static void *pdcp_netlink_thread_fct(void *arg);
 
 int pdcp_netlink_init(void) {
 
-    int i, nb_modules;
-    pthread_attr_t attr;
-    struct sched_param sched_param;
+  int                i;
+  int                nb_inst_enb;
+  int                nb_inst_ue;
+  pthread_attr_t     attr;
+  struct sched_param sched_param;
 
 #if defined(USER_MODE) && defined(OAI_EMU)
-    nb_modules = NB_eNB_INST + NB_UE_INST;
+  nb_inst_enb = oai_emulation.info.nb_enb_local;
+  nb_inst_ue  = oai_emulation.info.nb_ue_local;
 #else
-    nb_modules = 1;
+  nb_inst_enb = 1;
+  nb_inst_ue  = 1;
 #endif
 
-    pdcp_netlink_queue = calloc(nb_modules, sizeof(struct lfds611_queue_state*));
-    pdcp_netlink_nb_element = malloc(nb_modules * sizeof(uint32_t));
+  pdcp_netlink_queue_enb      = calloc(nb_inst_enb, sizeof(struct lfds611_queue_state*));
+  pdcp_netlink_nb_element_enb = malloc(nb_inst_enb * sizeof(uint32_t));
 
-    LOG_I(PDCP, "Creating %d queues for Netlink -> PDCP communication\n",
-          nb_modules);
+  pdcp_netlink_queue_ue       = calloc(nb_inst_ue, sizeof(struct lfds611_queue_state*));
+  pdcp_netlink_nb_element_ue  = malloc(nb_inst_ue * sizeof(uint32_t));
 
-    for (i = 0; i < nb_modules; i++) {
-        pdcp_netlink_nb_element[i] = 0;
-        if (lfds611_queue_new(&pdcp_netlink_queue[i], PDCP_QUEUE_NB_ELEMENTS) < 0) {
-            LOG_E(PDCP, "Failed to create new FIFO for Netlink -> PDCP communcation instance %d\n", i);
-            exit(EXIT_FAILURE);
-        }
-    }
+  LOG_I(PDCP, "Creating %d queues for eNB Netlink -> PDCP communication\n", nb_inst_enb);
+  LOG_I(PDCP, "Creating %d queues for UE Netlink -> PDCP communication\n", nb_inst_ue);
 
-    if (pthread_attr_init(&attr) != 0) {
-        LOG_E(PDCP, "Failed to initialize pthread attribute for Netlink -> PDCP communication (%d:%s)\n",
-              errno, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+  for (i = 0; i < nb_inst_enb; i++) {
+      pdcp_netlink_nb_element_enb[i] = 0;
+      if (lfds611_queue_new(&pdcp_netlink_queue_enb[i], PDCP_QUEUE_NB_ELEMENTS) < 0) {
+          LOG_E(PDCP, "Failed to create new FIFO for eNB Netlink -> PDCP communcation instance %d\n", i);
+          exit(EXIT_FAILURE);
+      }
+  }
+  for (i = 0; i < nb_inst_ue; i++) {
+      pdcp_netlink_nb_element_ue[i] = 0;
+      if (lfds611_queue_new(&pdcp_netlink_queue_ue[i], PDCP_QUEUE_NB_ELEMENTS) < 0) {
+          LOG_E(PDCP, "Failed to create new FIFO for UE Netlink -> PDCP communcation instance %d\n", i);
+          exit(EXIT_FAILURE);
+      }
+  }
 
-    sched_param.sched_priority = 10;
+  if (pthread_attr_init(&attr) != 0) {
+      LOG_E(PDCP, "Failed to initialize pthread attribute for Netlink -> PDCP communication (%d:%s)\n",
+          errno, strerror(errno));
+      exit(EXIT_FAILURE);
+  }
 
-    pthread_attr_setschedpolicy(&attr, SCHED_RR);
-    pthread_attr_setschedparam(&attr, &sched_param);
+  sched_param.sched_priority = 10;
 
-    /* Create one thread that fetchs packets from the netlink.
-     * When the netlink fifo is full, packets are silently dropped, this behaviour
-     * should be avoided if we want a reliable link.
-     */
-    if (pthread_create(&pdcp_netlink_thread, &attr, pdcp_netlink_thread_fct, NULL) != 0) {
-        LOG_E(PDCP, "Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
-              errno, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+  pthread_attr_setschedpolicy(&attr, SCHED_RR);
+  pthread_attr_setschedparam(&attr, &sched_param);
 
-    return 0;
+  /* Create one thread that fetchs packets from the netlink.
+   * When the netlink fifo is full, packets are silently dropped, this behaviour
+   * should be avoided if we want a reliable link.
+   */
+  if (pthread_create(&pdcp_netlink_thread, &attr, pdcp_netlink_thread_fct, NULL) != 0) {
+      LOG_E(PDCP, "Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
+          errno, strerror(errno));
+      exit(EXIT_FAILURE);
+  }
+
+  return 0;
 }
 
-int pdcp_netlink_dequeue_element(uint8_t eNB_flag, uint8_t UE_index, uint8_t eNB_index,
-                                 struct pdcp_netlink_element_s **data)
+int pdcp_netlink_dequeue_element(
+                                 module_id_t                     enb_mod_idP,
+                                 module_id_t                     ue_mod_idP,
+                                 eNB_flag_t                      eNB_flagP,
+                                 struct pdcp_netlink_element_s **data_ppP)
 {
-    int ret = 0;
-    module_id_t module_id;
+  int ret = 0;
 
-#if defined(USER_MODE) && defined(OAI_EMU)
-    module_id = (eNB_flag != 0) ? eNB_index : NB_eNB_INST + UE_index;
-#else
-    module_id = 0;
-#endif
+  if (eNB_flagP) {
+      ret = lfds611_queue_dequeue(pdcp_netlink_queue_enb[enb_mod_idP], (void **)data_ppP);
+      if (ret != 0) {
+          LOG_D(PDCP, "De-queueing packet for eNB instance %d\n", enb_mod_idP);
+      }
+  } else {
+      ret = lfds611_queue_dequeue(pdcp_netlink_queue_ue[ue_mod_idP], (void **)data_ppP);
+      if (ret != 0) {
+          LOG_D(PDCP, "De-queueing packet for UE instance %d\n", ue_mod_idP);
+      }
+  }
 
-    ret = lfds611_queue_dequeue(pdcp_netlink_queue[module_id], (void **)data);
-
-    if (ret != 0) {
-        LOG_D(PDCP, "De-queueing packet for module %d\n", module_id);
-    }
-    return ret;
+  return ret;
 }
 
 static
 void *pdcp_netlink_thread_fct(void *arg) {
-    int len;
-    struct pdcp_netlink_element_s *new_data = NULL;
-    uint8_t pdcp_read_state;
+  int                            len             = 0;
+  struct pdcp_netlink_element_s *new_data_p      = NULL;
+  uint8_t                        pdcp_thread_read_state ;
+  eNB_flag_t                     eNB_flag        = 0;
 
-    pdcp_read_state = 0;
-    memset(nl_rx_buf, 0, NL_MAX_PAYLOAD);
+  pdcp_thread_read_state = 0;
+  memset(nl_rx_buf, 0, NL_MAX_PAYLOAD);
 
-    while (1) {
+  while (1) {
 
-        len = recvmsg(nas_sock_fd, &nas_msg_rx, 0);
+      len = recvmsg(nas_sock_fd, &nas_msg_rx, 0);
 
-        if (len == 0) {
-            /* Other peer (kernel) has performed an orderly shutdown
-             */
-            LOG_E(PDCP, "Kernel module has closed the netlink\n");
-            exit(EXIT_FAILURE);
-        } else if (len < 0) {
-            /* There was an error */
-            LOG_E(PDCP, "An error occured while reading netlink (%d:%s)\n",
-                  errno, strerror(errno));
-            exit(EXIT_FAILURE);
-        } else {
-            /* Normal read.
-             * NOTE: netlink messages can be assembled to form a multipart message
-             */
-            for (nas_nlh_rx = (struct nlmsghdr *) nl_rx_buf;
-                 NLMSG_OK(nas_nlh_rx, len);
-                 nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
+      if (len == 0) {
+          /* Other peer (kernel) has performed an orderly shutdown
+           */
+          LOG_E(PDCP, "[NETLINK_THREAD] Kernel module has closed the netlink\n");
+          exit(EXIT_FAILURE);
+      } else if (len < 0) {
+          /* There was an error */
+          LOG_E(PDCP, "[NETLINK_THREAD] An error occured while reading netlink (%d:%s)\n",
+              errno, strerror(errno));
+          exit(EXIT_FAILURE);
+      } else {
+          /* Normal read.
+           * NOTE: netlink messages can be assembled to form a multipart message
+           */
+          for (nas_nlh_rx = (struct nlmsghdr *) nl_rx_buf;
+              NLMSG_OK(nas_nlh_rx, len);
+              nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
 
-                /* There is no need to check for nlmsg_type because
-                 * the header is not set in our drivers.
-                 */
-                if (pdcp_read_state == 0) {
-                    new_data = malloc(sizeof(struct pdcp_netlink_element_s));
+              /* There is no need to check for nlmsg_type because
+               * the header is not set in our drivers.
+               */
+              if (pdcp_thread_read_state == 0) {
+                  new_data_p = malloc(sizeof(struct pdcp_netlink_element_s));
 
-                    if (nas_nlh_rx->nlmsg_len == sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)) {
-                        pdcp_read_state = 1;
-                        memcpy((void *)&new_data->pdcp_read_header, (void *)NLMSG_DATA(nas_nlh_rx), sizeof(pdcp_data_req_header_t));
-                        LOG_I(PDCP, "[NETLINK] RX pdcp_data_req_header_t inst %u, "
-                              "rb_id %u data_size %d\n",
-                              new_data->pdcp_read_header.inst, new_data->pdcp_read_header.rb_id,
-                              new_data->pdcp_read_header.data_size);
-                    } else {
-                        LOG_E(PDCP, "[NETLINK] WRONG size %d should be sizeof "
-                              "%d ((pdcp_data_req_header_t) + sizeof(struct nlmsghdr))\n",
-                              nas_nlh_rx->nlmsg_len, sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr));
-                    }
-                } else {
-                    pdcp_read_state = 0;
+                  if (nas_nlh_rx->nlmsg_len == sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr)) {
+                      pdcp_thread_read_state = 1;
+                      memcpy((void *)&new_data_p->pdcp_read_header, (void *)NLMSG_DATA(nas_nlh_rx), sizeof(pdcp_data_req_header_t));
+                      LOG_I(PDCP, "[NETLINK_THREAD] RX pdcp_data_req_header_t inst %u, "
+                          "rb_id %u data_size %d\n",
+                          new_data_p->pdcp_read_header.inst,
+                          new_data_p->pdcp_read_header.rb_id,
+                          new_data_p->pdcp_read_header.data_size);
+                  } else {
+                      LOG_E(PDCP, "[NETLINK_THREAD] WRONG size %d should be sizeof "
+                          "%d ((pdcp_data_req_header_t) + sizeof(struct nlmsghdr))\n",
+                          nas_nlh_rx->nlmsg_len,
+                          sizeof (pdcp_data_req_header_t) + sizeof(struct nlmsghdr));
+                  }
+              } else {
+                  pdcp_thread_read_state = 0;
 
 #ifdef OAI_EMU
-                    if (new_data->pdcp_read_header.inst >= oai_emulation.info.nb_enb_local) {
-                        new_data->pdcp_read_header.inst = new_data->pdcp_read_header.inst
-                        - oai_emulation.info.nb_enb_local + NB_eNB_INST
-                        + oai_emulation.info.first_ue_local;
-                    } else {
-                        new_data->pdcp_read_header.inst = new_data->pdcp_read_header.inst
-                        + oai_emulation.info.first_enb_local;
-                    }
+                  if (new_data_p->pdcp_read_header.inst >= oai_emulation.info.nb_enb_local) {
+                      new_data_p->pdcp_read_header.inst = new_data_p->pdcp_read_header.inst
+                          - oai_emulation.info.nb_enb_local +
+                          + oai_emulation.info.first_ue_local;
+                      eNB_flag = 0;
+                  } else {
+                      new_data_p->pdcp_read_header.inst = new_data_p->pdcp_read_header.inst
+                          + oai_emulation.info.first_enb_local;
+                      eNB_flag = 1;
+                  }
 #else
-                    new_data->pdcp_read_header.inst = 0;
+                  new_data_p->pdcp_read_header.inst = 0;
 #endif
-                    new_data->data = malloc(sizeof(uint8_t) * new_data->pdcp_read_header.data_size);
-                    /* Copy the data */
-                    memcpy(new_data->data, NLMSG_DATA(nas_nlh_rx), new_data->pdcp_read_header.data_size);
+                  new_data_p->data = malloc(sizeof(uint8_t) * new_data_p->pdcp_read_header.data_size);
+                  /* Copy the data */
+                  memcpy(new_data_p->data, NLMSG_DATA(nas_nlh_rx), new_data_p->pdcp_read_header.data_size);
 
-                    if (pdcp_netlink_nb_element[new_data->pdcp_read_header.inst]
-                        > PDCP_QUEUE_NB_ELEMENTS) {
-                        LOG_E(PDCP, "[Mod %02x] We reached maximum number of elements in pdcp queue (%d)\n",
-                              new_data->pdcp_read_header.inst, pdcp_netlink_nb_element);
-                    }
+                  if (eNB_flag) {
+                      if (pdcp_netlink_nb_element_enb[new_data_p->pdcp_read_header.inst]
+                                                  > PDCP_QUEUE_NB_ELEMENTS) {
+                          LOG_E(PDCP, "[NETLINK_THREAD][Inst %02x] We reached maximum number of elements in eNB pdcp queue (%d)\n",
+                              new_data_p->pdcp_read_header.inst, pdcp_netlink_nb_element_enb);
+                      }
 
-                    LOG_D(PDCP, "En-queueing packet for module %d\n", new_data->pdcp_read_header.inst);
+                      LOG_D(PDCP, "[NETLINK_THREAD] En-queueing packet for eNB instance  %d\n", new_data_p->pdcp_read_header.inst);
 
-                    /* Enqueue the element in the right queue */
-//                     lfds611_queue_enqueue(pdcp_netlink_queue[new_data->pdcp_read_header.inst], new_data);
-                    lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue[new_data->pdcp_read_header.inst], new_data);
-                }
-            }
-        }
-    }
-    return NULL;
+                      /* Enqueue the element in the right queue */
+                      lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_enb[new_data_p->pdcp_read_header.inst], new_data_p);
+                  } else {
+                      if (pdcp_netlink_nb_element_ue[new_data_p->pdcp_read_header.inst]
+                                                  > PDCP_QUEUE_NB_ELEMENTS) {
+                          LOG_E(PDCP, "[NETLINK_THREAD][Inst %02x] We reached maximum number of elements in UE pdcp queue (%d)\n",
+                              new_data_p->pdcp_read_header.inst, pdcp_netlink_nb_element_ue);
+                      }
+
+                      LOG_D(PDCP, "[NETLINK_THREAD] En-queueing packet for UE instance  %d\n", new_data_p->pdcp_read_header.inst);
+
+                      /* Enqueue the element in the right queue */
+                      lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_ue[new_data_p->pdcp_read_header.inst], new_data_p);
+                  }
+              }
+          }
+      }
+  }
+  return NULL;
 }

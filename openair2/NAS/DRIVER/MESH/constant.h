@@ -92,27 +92,27 @@
 // Radio Bearers
 #define NAS_RB_ESTABLISHING       0x24
 #define NAS_RB_RELEASING          0x28
-#define NAS_RB_DCH					      0x2A
+#define NAS_RB_DCH                0x2A
 
 
 #define NAS_TIMER_ESTABLISHMENT_DEFAULT 12
-#define NAS_TIMER_RELEASE_DEFAULT 2
-#define NAS_TIMER_IDLE UINT_MAX
-#define NAS_TIMER_TICK HZ
+#define NAS_TIMER_RELEASE_DEFAULT       2
+#define NAS_TIMER_IDLE                  UINT_MAX
+#define NAS_TIMER_TICK                  HZ
 
-#define NAS_PDCPH_SIZE sizeof(struct pdcp_data_req_header_t)
-#define NAS_IPV4_SIZE 20
-#define NAS_IPV6_SIZE 40
+#define NAS_PDCPH_SIZE                  sizeof(struct pdcp_data_req_header_s)
+#define NAS_IPV4_SIZE                   20
+#define NAS_IPV6_SIZE                   40
 
-#define NAS_DIRECTION_SEND	0
-#define NAS_DIRECTION_RECEIVE	1
-#define NAS_DIRECTION_FORWARD	2
+#define NAS_DIRECTION_SEND      0
+#define NAS_DIRECTION_RECEIVE   1
+#define NAS_DIRECTION_FORWARD   2
 
 // function number
-#define NAS_FCT_DEL_SEND	1
-#define NAS_FCT_QOS_SEND	2
-#define NAS_FCT_DC_SEND	3
-#define NAS_FCT_CTL_SEND	4
+#define NAS_FCT_DEL_SEND        1
+#define NAS_FCT_QOS_SEND        2
+#define NAS_FCT_DC_SEND         3
+#define NAS_FCT_CTL_SEND        4
 
 // type of IOCTL command
 #define NAS_IOCTL_RRM 0x89F0

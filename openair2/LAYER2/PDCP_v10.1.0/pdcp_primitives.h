@@ -153,11 +153,11 @@ BOOL pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_b
 BOOL pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
      u8 bitmap[512], pdcp_control_pdu_for_pdcp_status_report* pdu);
 
-int pdcp_netlink_dequeue_element(uint8_t eNB_flag, uint8_t UE_index, uint8_t eNB_index,
-                                 struct pdcp_netlink_element_s **data);
+int pdcp_netlink_dequeue_element(module_id_t enb_mod_idP, module_id_t ue_mod_idP, eNB_flag_t eNB_flagP,
+                                 struct pdcp_netlink_element_s **data_ppP);
 
-void pdcp_config_set_security(pdcp_t *pdcp, u8 eNB_id, u8 UE_id, u32 frame, u8 eNB_flag, rb_id_t rb_id,
-                              u16 lc_id, u8 security_mode, u8 *kRRCenc, u8 *kRRCint, u8 *kUPenc);
+void pdcp_config_set_security(pdcp_t *pdcp_pP, module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP,
+                              u16 lc_idP, u8 security_modeP, u8 *kRRCenc_pP, u8 *kRRCint_pP, u8 *kUPenc_pP);
 
 #if defined(ENABLE_SECURITY)
 int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,

@@ -32,13 +32,30 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "rlc_tm.h"
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
-void config_req_rlc_tm (rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flagP, module_id_t module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP)
+void config_req_rlc_tm ( u32_t frame, u8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP)
 {
 //-----------------------------------------------------------------------------
-    rlc_tm_init(rlcP);
-    rlcP->protocol_state = RLC_DATA_TRANSFER_READY_STATE;
-    rlc_tm_set_debug_infos(rlcP, frame, eNB_flagP, module_idP, rb_idP, rb_typeP);
-    rlc_tm_configure(rlcP, config_tmP->is_uplink_downlink);
+    rlc_tm_entity_t *rlc = NULL;
+
+    LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (is_uplink_downlink=%d) --->][RLC_TM][MOD %u/%u][RB %u]\n",
+                                                                                                       frame,
+                                                                                                       ( eNB_flagP > 0) ? "eNB":"UE",
+                                                                                                       enb_module_idP,
+                                                                                                       ue_module_idP,
+                                                                                                       config_tmP->is_uplink_downlink,
+                                                                                                       enb_module_idP,
+                                                                                                       ue_module_idP,
+                                                                                                       rb_idP);
+
+    if (eNB_flagP) {
+        rlc = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.tm;
+    } else {
+        rlc = &rlc_array_ue[ue_module_idP][rb_idP].rlc.tm;
+    }
+    rlc_tm_init(rlc);
+    rlc->protocol_state = RLC_DATA_TRANSFER_READY_STATE;
+    rlc_tm_set_debug_infos(rlc, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
+    rlc_tm_configure(rlc, config_tmP->is_uplink_downlink);
 }
 
 //-----------------------------------------------------------------------------
@@ -101,6 +118,7 @@ rlc_tm_cleanup (rlc_tm_entity_t *rlcP)
     if ((rlcP->output_sdu_in_construction)) {
         free_mem_block (rlcP->output_sdu_in_construction);
     }
+    memset(rlcP, 0, sizeof(rlc_tm_entity_t));
 }
 
 //-----------------------------------------------------------------------------
@@ -112,12 +130,22 @@ void rlc_tm_configure(rlc_tm_entity_t *rlcP, u8_t is_uplink_downlinkP)
 }
 
 //-----------------------------------------------------------------------------
-void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flagP, module_id_t module_idP, rb_id_t rb_idP, rb_type_t rb_typeP)
+void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP, rb_type_t rb_typeP)
 //-----------------------------------------------------------------------------
 {
-    msg ("[FRAME %05d][RLC_TM][MOD %02d][RB %02d][SET DEBUG INFOS] module_id %d rb_id %d rb_type %d\n", frame, module_idP, rb_idP, module_idP, rb_idP, rb_typeP);
+    msg ("[FRAME %05d][%s][RLC_TM][MOD %02u/%02u][RB %u][SET DEBUG INFOS] enb module_id %d ue module_id %d rb_id %d rb_type %d\n",
+          frame,
+          (eNB_flagP) ? "eNB" : "UE",
+          enb_module_idP,
+          ue_module_idP,
+          rb_idP,
+          enb_module_idP,
+          ue_module_idP,
+          rb_idP,
+          rb_typeP);
 
-    rlcP->module_id = module_idP;
+    rlcP->enb_module_id = enb_module_idP;
+    rlcP->ue_module_id  = ue_module_idP;
     rlcP->rb_id     = rb_idP;
     if (rb_typeP != SIGNALLING_RADIO_BEARER) {
         rlcP->is_data_plane = 1;

@@ -57,14 +57,14 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #                define public_rlc_am_in_sdu(x)     extern x
 #            endif
 #        endif
-/*! \fn void rlc_am_free_in_sdu (rlc_am_entity_t *rlcP, u32_t frame, unsigned int index_in_bufferP)
+/*! \fn void rlc_am_free_in_sdu (rlc_am_entity_t *rlcP, frame_t frameP, unsigned int index_in_bufferP)
 * \brief    Free a higher layer SDU stored in input_sdus[] buffer.
 * \param[in]  rlcP                      RLC AM protocol instance pointer.
 * \param[in]  frame                     Frame index.
 * \param[in]  index_in_bufferP          Position index of the SDU.
 * \note Update also the RLC AM instance variables nb_sdu, current_sdu_index, nb_sdu_no_segmented.
 */
-protected_rlc_am_in_sdu(void rlc_am_free_in_sdu      (rlc_am_entity_t *rlcP, u32_t frame, unsigned int index_in_bufferP);)
+protected_rlc_am_in_sdu(void rlc_am_free_in_sdu      (rlc_am_entity_t *rlcP, frame_t frameP, unsigned int index_in_bufferP);)
 
 
 /*! \fn void rlc_am_free_in_sdu_data (rlc_am_entity_t *rlcP, unsigned int index_in_bufferP)

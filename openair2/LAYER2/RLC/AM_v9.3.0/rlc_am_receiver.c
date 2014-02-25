@@ -42,194 +42,248 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define DEBUG_RLC_AM_DISPLAY_TB_DATA
 //#define RLC_AM_GENERATE_ERRORS
 //-----------------------------------------------------------------------------
-signed int rlc_am_get_data_pdu_infos(u32_t frame, rlc_am_pdu_sn_10_t* headerP, s16_t total_sizeP, rlc_am_pdu_info_t* pdu_infoP)
+signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_pP, s16_t total_sizeP, rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
-    memset(pdu_infoP, 0, sizeof (rlc_am_pdu_info_t));
+    memset(pdu_info_pP, 0, sizeof (rlc_am_pdu_info_t));
 
     s16_t          sum_li = 0;
-    pdu_infoP->d_c = headerP->b1 >> 7;
-    pdu_infoP->num_li = 0;
+    pdu_info_pP->d_c = header_pP->b1 >> 7;
+    pdu_info_pP->num_li = 0;
 
 
-    if (pdu_infoP->d_c) {
-        pdu_infoP->rf  = (headerP->b1 >> 6) & 0x01;
-        pdu_infoP->p   = (headerP->b1 >> 5) & 0x01;
-        pdu_infoP->fi  = (headerP->b1 >> 3) & 0x03;
-        pdu_infoP->e   = (headerP->b1 >> 2) & 0x01;
-        pdu_infoP->sn  = headerP->b2 +  (((u16_t)(headerP->b1 & 0x03)) << 8);
+    if (pdu_info_pP->d_c) {
+        pdu_info_pP->rf  = (header_pP->b1 >> 6) & 0x01;
+        pdu_info_pP->p   = (header_pP->b1 >> 5) & 0x01;
+        pdu_info_pP->fi  = (header_pP->b1 >> 3) & 0x03;
+        pdu_info_pP->e   = (header_pP->b1 >> 2) & 0x01;
+        pdu_info_pP->sn  = header_pP->b2 +  (((u16_t)(header_pP->b1 & 0x03)) << 8);
 
-        pdu_infoP->header_size  = 2;
-        if (pdu_infoP->rf) {
-            pdu_infoP->lsf = (headerP->data[0] >> 7) & 0x01;
-            pdu_infoP->so  = headerP->data[1] +  (((u16_t)(headerP->data[0] & 0x7F)) << 8);
-            pdu_infoP->payload = &headerP->data[2];
-            pdu_infoP->header_size  += 2;
+        pdu_info_pP->header_size  = 2;
+        if (pdu_info_pP->rf) {
+            pdu_info_pP->lsf = (header_pP->data[0] >> 7) & 0x01;
+            pdu_info_pP->so  = header_pP->data[1] +  (((u16_t)(header_pP->data[0] & 0x7F)) << 8);
+            pdu_info_pP->payload = &header_pP->data[2];
+            pdu_info_pP->header_size  += 2;
         } else {
-            pdu_infoP->payload = &headerP->data[0];
+            pdu_info_pP->payload = &header_pP->data[0];
         }
 
-        if (pdu_infoP->e) {
+        if (pdu_info_pP->e) {
             rlc_am_e_li_t      *e_li;
             unsigned int li_length_in_bytes  = 1;
             unsigned int li_to_read          = 1;
 
-            if (pdu_infoP->rf) {
-                e_li = (rlc_am_e_li_t*)(&headerP->data[2]);
+            if (pdu_info_pP->rf) {
+                e_li = (rlc_am_e_li_t*)(&header_pP->data[2]);
             } else {
-                e_li = (rlc_am_e_li_t*)(headerP->data);
+                e_li = (rlc_am_e_li_t*)(header_pP->data);
             }
             while (li_to_read)  {
                 li_length_in_bytes = li_length_in_bytes ^ 3;
                 if (li_length_in_bytes  == 2) {
-                    pdu_infoP->li_list[pdu_infoP->num_li] = ((u16_t)(e_li->b1 << 4)) & 0x07F0;
-                    pdu_infoP->li_list[pdu_infoP->num_li] |= (((u8_t)(e_li->b2 >> 4)) & 0x000F);
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] = ((u16_t)(e_li->b1 << 4)) & 0x07F0;
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] |= (((u8_t)(e_li->b2 >> 4)) & 0x000F);
                     li_to_read = e_li->b1 & 0x80;
-                    pdu_infoP->header_size  += 2;
+                    pdu_info_pP->header_size  += 2;
                 } else {
-                    pdu_infoP->li_list[pdu_infoP->num_li] = ((u16_t)(e_li->b2 << 8)) & 0x0700;
-                    pdu_infoP->li_list[pdu_infoP->num_li] |=  e_li->b3;
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] = ((u16_t)(e_li->b2 << 8)) & 0x0700;
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] |=  e_li->b3;
                     li_to_read = e_li->b2 & 0x08;
                     e_li++;
-                    pdu_infoP->header_size  += 1;
+                    pdu_info_pP->header_size  += 1;
                 }
-                sum_li += pdu_infoP->li_list[pdu_infoP->num_li];
-                pdu_infoP->num_li = pdu_infoP->num_li + 1;
-                if (pdu_infoP->num_li > RLC_AM_MAX_SDU_IN_PDU) {
-                    LOG_E(RLC, "[FRAME %05d][RLC_AM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ", frame, pdu_infoP->sn);
+                sum_li += pdu_info_pP->li_list[pdu_info_pP->num_li];
+                pdu_info_pP->num_li = pdu_info_pP->num_li + 1;
+                if (pdu_info_pP->num_li > RLC_AM_MAX_SDU_IN_PDU) {
+                    LOG_E(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][GET PDU INFO]  SN %04d TOO MANY LIs ",
+                          frameP,
+                          pdu_info_pP->sn);
                     return -2;
                 }
             }
             if (li_length_in_bytes  == 2) {
-                pdu_infoP->payload = &e_li->b3;
+                pdu_info_pP->payload = &e_li->b3;
             } else {
-                pdu_infoP->payload = &e_li->b1;
+                pdu_info_pP->payload = &e_li->b1;
             }
         }
-        pdu_infoP->payload_size = total_sizeP - pdu_infoP->header_size;
-        if (pdu_infoP->payload_size > sum_li) {
-            pdu_infoP->hidden_size = pdu_infoP->payload_size - sum_li;
+        pdu_info_pP->payload_size = total_sizeP - pdu_info_pP->header_size;
+        if (pdu_info_pP->payload_size > sum_li) {
+            pdu_info_pP->hidden_size = pdu_info_pP->payload_size - sum_li;
         }
         return 0;
     } else {
-        LOG_W(RLC, "[FRAME %05d][RLC_AM][MOD XX][RB XX][GET DATA PDU INFO]  SN %04d ERROR CONTROL PDU ", frame,  pdu_infoP->sn);
+        LOG_W(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][GET DATA PDU INFO]  SN %04d ERROR CONTROL PDU ",
+              frameP,
+              pdu_info_pP->sn);
         return -1;
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_display_data_pdu_infos(rlc_am_entity_t *rlcP, u32_t frame, rlc_am_pdu_info_t* pdu_infoP)
+void rlc_am_display_data_pdu_infos(rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     int num_li;
 
-    if (pdu_infoP->d_c) {
-        if (pdu_infoP->rf) {
-            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][DISPLAY DATA PDU] RX DATA PDU SN %04d FI %1d SO %05d LSF %01d POLL %1d ", frame, rlcP->module_id, rlcP->rb_id, pdu_infoP->sn, pdu_infoP->fi, pdu_infoP->so, pdu_infoP->lsf, pdu_infoP->p);
+    if (pdu_info_pP->d_c) {
+        if (pdu_info_pP->rf) {
+            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][DISPLAY DATA PDU] RX DATA PDU SN %04d FI %1d SO %05d LSF %01d POLL %1d ",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id,
+                  pdu_info_pP->sn,
+                  pdu_info_pP->fi,
+                  pdu_info_pP->so,
+                  pdu_info_pP->lsf, pdu_info_pP->p);
         } else {
-            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][DISPLAY DATA PDU] RX DATA PDU SN %04d FI %1d POLL %1d ", frame, rlcP->module_id, rlcP->rb_id, pdu_infoP->sn, pdu_infoP->fi, pdu_infoP->p);
+            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][DISPLAY DATA PDU] RX DATA PDU SN %04d FI %1d POLL %1d ",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id,
+                  pdu_info_pP->sn,
+                  pdu_info_pP->fi,
+                  pdu_info_pP->p);
         }
-        for (num_li = 0; num_li < pdu_infoP->num_li; num_li++) {
-            LOG_D(RLC, "LI %05d ",  pdu_infoP->li_list[num_li]);
+        for (num_li = 0; num_li < pdu_info_pP->num_li; num_li++) {
+            LOG_D(RLC, "LI %05d ",  pdu_info_pP->li_list[num_li]);
         }
-        if (pdu_infoP->hidden_size > 0) {
-            LOG_D(RLC, "hidden size %05d ",  pdu_infoP->hidden_size);
+        if (pdu_info_pP->hidden_size > 0) {
+            LOG_D(RLC, "hidden size %05d ",  pdu_info_pP->hidden_size);
         }
         LOG_D(RLC, "\n");
     } else {
-        LOG_E(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][DISPLAY DATA PDU] ERROR RX CONTROL PDU\n", frame, rlcP->module_id, rlcP->rb_id);
+        LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][DISPLAY DATA PDU] ERROR RX CONTROL PDU\n",
+              frameP,
+              (rlc_pP->is_enb) ? "eNB" : "UE",
+              rlc_pP->enb_module_id,
+              rlc_pP->ue_module_id,
+              rlc_pP->rb_id);
     }
 }
-// assumed the sn of the tb is equal to VR(MS)
+// assumed the sn of the tb_p is equal to VR(MS)
 //-----------------------------------------------------------------------------
-void rlc_am_rx_update_vr_ms(rlc_am_entity_t *rlcP, u32_t frame, mem_block_t* tbP)
+void rlc_am_rx_update_vr_ms(rlc_am_entity_t *rlc_pP, frame_t frameP, mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
-    //rlc_am_pdu_info_t* pdu_info        = &((rlc_am_rx_pdu_management_t*)(tbP->data))->pdu_info;
-    rlc_am_pdu_info_t* pdu_info_cursor;
-    mem_block_t*       cursor;
+    //rlc_am_pdu_info_t* pdu_info_p        = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
+    rlc_am_pdu_info_t* pdu_info_cursor_p = NULL;
+    mem_block_t*       cursor_p;
 
-    cursor = tbP;
-    if (cursor) {
+    cursor_p = tb_pP;
+    if (cursor_p) {
         do {
-            pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-            if (((rlc_am_rx_pdu_management_t*)(cursor->data))->all_segments_received == 0) {
+            pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+            if (((rlc_am_rx_pdu_management_t*)(cursor_p->data))->all_segments_received == 0) {
 #ifdef TRACE_RLC_AM_RX
-               LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][UPDATE VR(MS)] UPDATED VR(MS) %04d -> %04d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_ms, pdu_info_cursor->sn);
+               LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][UPDATE VR(MS)] UPDATED VR(MS) %04d -> %04d\n",
+                     frameP,
+                     (rlc_pP->is_enb) ? "eNB" : "UE",
+                     rlc_pP->enb_module_id,
+                     rlc_pP->ue_module_id,
+                     rlc_pP->rb_id,
+                     rlc_pP->vr_ms, pdu_info_cursor_p->sn);
 #endif
-                rlcP->vr_ms = pdu_info_cursor->sn;
+                rlc_pP->vr_ms = pdu_info_cursor_p->sn;
                 return;
             }
-            cursor = cursor->next;
-        } while (cursor != NULL);
+            cursor_p = cursor_p->next;
+        } while (cursor_p != NULL);
 #ifdef TRACE_RLC_AM_RX
-        LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][UPDATE VR(MS)] UPDATED VR(MS) %04d -> %04d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_ms, (pdu_info_cursor->sn + 1)  & RLC_AM_SN_MASK);
+        LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][UPDATE VR(MS)] UPDATED VR(MS) %04d -> %04d\n",
+              frameP,
+              (rlc_pP->is_enb) ? "eNB" : "UE",
+              rlc_pP->enb_module_id,
+              rlc_pP->ue_module_id,
+              rlc_pP->rb_id,
+              rlc_pP->vr_ms,
+              (pdu_info_cursor_p->sn + 1)  & RLC_AM_SN_MASK);
 #endif
-        rlcP->vr_ms = (pdu_info_cursor->sn + 1)  & RLC_AM_SN_MASK;
+        rlc_pP->vr_ms = (pdu_info_cursor_p->sn + 1)  & RLC_AM_SN_MASK;
     }
 }
-// assumed the sn of the tb is equal to VR(R)
+// assumed the sn of the tb_p is equal to VR(R)
 //-----------------------------------------------------------------------------
-void rlc_am_rx_update_vr_r(rlc_am_entity_t *rlcP,u32_t frame,mem_block_t* tbP)
+void rlc_am_rx_update_vr_r(rlc_am_entity_t *rlc_pP,frame_t frameP,mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
-    rlc_am_pdu_info_t* pdu_info_cursor;
-    mem_block_t*       cursor;
-    cursor = tbP;
-    if (cursor) {
+    rlc_am_pdu_info_t* pdu_info_cursor_p = NULL;
+    mem_block_t*       cursor_p;
+
+    cursor_p = tb_pP;
+    if (cursor_p) {
         do {
-            pdu_info_cursor = &((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info;
-            if ((((rlc_am_rx_pdu_management_t*)(cursor->data))->all_segments_received == 0) ||
-               (rlcP->vr_r != pdu_info_cursor->sn)) {
+            pdu_info_cursor_p = &((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info;
+            if ((((rlc_am_rx_pdu_management_t*)(cursor_p->data))->all_segments_received == 0) ||
+               (rlc_pP->vr_r != pdu_info_cursor_p->sn)) {
                 return;
             }
 #ifdef TRACE_RLC_AM_RX
-            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][UPDATE VR(R)] UPDATED VR(R) %04d -> %04d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_r, (pdu_info_cursor->sn + 1) & RLC_AM_SN_MASK);
+            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][UPDATE VR(R)] UPDATED VR(R) %04d -> %04d\n",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id,
+                  rlc_pP->vr_r,
+                  (pdu_info_cursor_p->sn + 1) & RLC_AM_SN_MASK);
 #endif
-            if (((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.rf == 1) {
-                if (((rlc_am_rx_pdu_management_t*)(cursor->data))->pdu_info.lsf == 1) {
-                    rlcP->vr_r = (rlcP->vr_r + 1) & RLC_AM_SN_MASK;
+            if (((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.rf == 1) {
+                if (((rlc_am_rx_pdu_management_t*)(cursor_p->data))->pdu_info.lsf == 1) {
+                    rlc_pP->vr_r = (rlc_pP->vr_r + 1) & RLC_AM_SN_MASK;
                 }
             } else  {
-                rlcP->vr_r = (rlcP->vr_r + 1) & RLC_AM_SN_MASK;
+                rlc_pP->vr_r = (rlc_pP->vr_r + 1) & RLC_AM_SN_MASK;
             }
-            cursor = cursor->next;
-        } while (cursor != NULL);
-        //rlcP->vr_r = (pdu_info_cursor->sn + 1) & RLC_AM_SN_MASK;
+            cursor_p = cursor_p->next;
+        } while (cursor_p != NULL);
+        //rlc_pP->vr_r = (pdu_info_cursor_p->sn + 1) & RLC_AM_SN_MASK;
     }
 }
 //-----------------------------------------------------------------------------
 void
-rlc_am_receive_routing (rlc_am_entity_t *rlcP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
+rlc_am_receive_routing (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
 //-----------------------------------------------------------------------------
 {
-    mem_block_t        *tb;
-    u8_t               *first_byte;
+    mem_block_t        *tb_p             = NULL;
+    u8_t               *first_byte_p     = NULL;
     s16_t               tb_size_in_bytes;
 
-    while ((tb = list_remove_head (&data_indP.data))) {
-        first_byte = ((struct mac_tb_ind *) (tb->data))->data_ptr;
-        tb_size_in_bytes = ((struct mac_tb_ind *) (tb->data))->size;
+    while ((tb_p = list_remove_head (&data_indP.data))) {
+        first_byte_p = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
+        tb_size_in_bytes = ((struct mac_tb_ind *) (tb_p->data))->size;
 
         if (tb_size_in_bytes > 0) {
-            if ((*first_byte & 0x80) == 0x80) {
-                rlcP->stat_rx_data_bytes += tb_size_in_bytes;
-                rlcP->stat_rx_data_pdu   += 1;
-                rlc_am_receive_process_data_pdu (rlcP, frame, eNB_flag, tb, first_byte, tb_size_in_bytes);
+            if ((*first_byte_p & 0x80) == 0x80) {
+                rlc_pP->stat_rx_data_bytes += tb_size_in_bytes;
+                rlc_pP->stat_rx_data_pdu   += 1;
+                rlc_am_receive_process_data_pdu (rlc_pP, frameP, eNB_flagP, tb_p, first_byte_p, tb_size_in_bytes);
             } else {
-                rlcP->stat_rx_control_bytes += tb_size_in_bytes;
-                rlcP->stat_rx_control_pdu += 1;
-                rlc_am_receive_process_control_pdu (rlcP, frame, tb, &first_byte, &tb_size_in_bytes);
+                rlc_pP->stat_rx_control_bytes += tb_size_in_bytes;
+                rlc_pP->stat_rx_control_pdu += 1;
+                rlc_am_receive_process_control_pdu (rlc_pP, frameP, tb_p, &first_byte_p, &tb_size_in_bytes);
                 // Test if remaining bytes not processed (up to know, highest probability is bug in MAC)
                 AssertFatal( tb_size_in_bytes == 0,
                                         "Remaining %d bytes following a control PDU",
                                         tb_size_in_bytes);
             }
-            LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][RX ROUTING] VR(R)=%03d VR(MR)=%03d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_r, rlcP->vr_mr);
+            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RX ROUTING] VR(R)=%03d VR(MR)=%03d\n",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id,
+                  rlc_pP->vr_r,
+                  rlc_pP->vr_mr);
         }
     } // end while
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlcP, u32_t frame, u8_t eNB_flag, mem_block_t* tbP, u8_t* first_byteP, u16_t tb_size_in_bytesP)
+void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, mem_block_t* tb_pP, u8_t* first_byte_pP, u16_t tb_size_in_bytesP)
 //-----------------------------------------------------------------------------
 {
   // 5.1.3.2 Receive operations
@@ -258,29 +312,54 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlcP, u32_t frame, u8_t e
   //         - place the received RLC data PDU in the reception buffer;
   //         - if some byte segments of the AMD PDU contained in the RLC data PDU have been received before:
   //             - discard the duplicate byte segments.
-  rlc_am_pdu_info_t* pdu_info = &((rlc_am_rx_pdu_management_t*)(tbP->data))->pdu_info;
-  rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10 = (rlc_am_pdu_sn_10_t*)first_byteP;
+  rlc_am_pdu_info_t*  pdu_info_p         = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
+  rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)first_byte_pP;
 
-  if (rlc_am_get_data_pdu_infos(frame,rlc_am_pdu_sn_10, tb_size_in_bytesP, pdu_info) >= 0) {
+  if (rlc_am_get_data_pdu_infos(frameP,rlc_am_pdu_sn_10_p, tb_size_in_bytesP, pdu_info_p) >= 0) {
 
-      ((rlc_am_rx_pdu_management_t*)(tbP->data))->all_segments_received = 0;
-      if (rlc_am_in_rx_window(rlcP, pdu_info->sn)) {
+      ((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received = 0;
+      if (rlc_am_in_rx_window(rlc_pP, pdu_info_p->sn)) {
 
-          if (pdu_info->p) {
-              LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU]  POLL BIT SET, STATUS REQUESTED:\n", frame, rlcP->module_id, rlcP->rb_id);
-              rlcP->status_requested = 1;
+          if (pdu_info_p->p) {
+              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  POLL BIT SET, STATUS REQUESTED:\n",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id);
+              rlc_pP->status_requested = 1;
           }
-          LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU] VR(R) %04d VR(H) %04d VR(MR) %04d VR(MS) %04d VR(X) %04d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_r, rlcP->vr_h, rlcP->vr_mr, rlcP->vr_ms, rlcP->vr_x);
+          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU] VR(R) %04d VR(H) %04d VR(MR) %04d VR(MS) %04d VR(X) %04d\n",
+                frameP,
+                (rlc_pP->is_enb) ? "eNB" : "UE",
+                rlc_pP->enb_module_id,
+                rlc_pP->ue_module_id,
+                rlc_pP->rb_id,
+                rlc_pP->vr_r,
+                rlc_pP->vr_h,
+                rlc_pP->vr_mr,
+                rlc_pP->vr_ms,
+                rlc_pP->vr_x);
 
-	      if (rlc_am_rx_list_insert_pdu(rlcP, frame,tbP) < 0) {
-	    	  rlcP->stat_rx_data_pdu_dropped     += 1;
-	    	  rlcP->stat_rx_data_bytes_dropped   += tb_size_in_bytesP;
-		      free_mem_block (tbP);
-		      LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU]  PDU DISCARDED, STATUS REQUESTED:\n", frame, rlcP->module_id, rlcP->rb_id);
-              rlcP->status_requested = 1;
+          if (rlc_am_rx_list_insert_pdu(rlc_pP, frameP,tb_pP) < 0) {
+              rlc_pP->stat_rx_data_pdu_dropped     += 1;
+              rlc_pP->stat_rx_data_bytes_dropped   += tb_size_in_bytesP;
+              free_mem_block (tb_pP);
+              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  PDU DISCARDED, STATUS REQUESTED:\n",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  rlc_pP->rb_id);
+              rlc_pP->status_requested = 1;
 #if defined(RLC_STOP_ON_LOST_PDU)
               AssertFatal( 0 == 1,
-                    "[FRAME %05d][RLC_AM][MOD %d][RB %d] LOST PDU DETECTED\n", frame, rlcP->module_id, rlcP->rb_id);
+                    "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] LOST PDU DETECTED\n",
+                    frameP,
+                    (rlc_pP->is_enb) ? "eNB" : "UE",
+                    rlc_pP->enb_module_id,
+                    rlc_pP->ue_module_id,
+                    rlc_pP->rb_id);
 #endif
           } else {
             // 5.1.3.2.3
@@ -316,45 +395,64 @@ void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlcP, u32_t frame, u8_t e
 
 
 #ifdef TRACE_RLC_AM_RX
-              LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU]  RX LIST AFTER INSERTION:\n", frame, rlcP->module_id, rlcP->rb_id);
-              rlc_am_rx_list_display(rlcP, "rlc_am_receive_process_data_pdu AFTER INSERTION ");
+              LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  RX LIST AFTER INSERTION:\n",
+                    frameP,
+                    (rlc_pP->is_enb) ? "eNB" : "UE",
+                    rlc_pP->enb_module_id,
+                    rlc_pP->ue_module_id,
+                    rlc_pP->rb_id);
+              rlc_am_rx_list_display(rlc_pP, "rlc_am_receive_process_data_pdu AFTER INSERTION ");
 #endif
-              if (rlc_am_sn_gte_vr_h(rlcP, pdu_info->sn) > 0) {
-                  rlcP->vr_h = (pdu_info->sn + 1) & RLC_AM_SN_MASK;
+              if (rlc_am_sn_gte_vr_h(rlc_pP, pdu_info_p->sn) > 0) {
+                  rlc_pP->vr_h = (pdu_info_p->sn + 1) & RLC_AM_SN_MASK;
               }
-              rlc_am_rx_check_all_byte_segments(rlcP, frame, tbP);
-              if ((pdu_info->sn == rlcP->vr_ms) && (((rlc_am_rx_pdu_management_t*)(tbP->data))->all_segments_received)) {
-                  rlc_am_rx_update_vr_ms(rlcP, frame, tbP);
+              rlc_am_rx_check_all_byte_segments(rlc_pP, frameP, tb_pP);
+              if ((pdu_info_p->sn == rlc_pP->vr_ms) && (((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received)) {
+                  rlc_am_rx_update_vr_ms(rlc_pP, frameP, tb_pP);
               }
-              if (pdu_info->sn == rlcP->vr_r) {
-                 if (((rlc_am_rx_pdu_management_t*)(tbP->data))->all_segments_received) {
-                      rlc_am_rx_update_vr_r(rlcP, frame, tbP);
-                      rlcP->vr_mr = (rlcP->vr_r + RLC_AM_WINDOW_SIZE) & RLC_AM_SN_MASK;
+              if (pdu_info_p->sn == rlc_pP->vr_r) {
+                 if (((rlc_am_rx_pdu_management_t*)(tb_pP->data))->all_segments_received) {
+                      rlc_am_rx_update_vr_r(rlc_pP, frameP, tb_pP);
+                      rlc_pP->vr_mr = (rlc_pP->vr_r + RLC_AM_WINDOW_SIZE) & RLC_AM_SN_MASK;
                   }
-                  rlc_am_rx_list_reassemble_rlc_sdus(rlcP,frame,eNB_flag);
+                  rlc_am_rx_list_reassemble_rlc_sdus(rlc_pP,frameP,eNB_flagP);
               }
 
-              if (rlcP->t_reordering.running) {
-                  if ((rlcP->vr_x == rlcP->vr_r) || ((rlc_am_in_rx_window(rlcP, pdu_info->sn) == 0) && (rlcP->vr_x != rlcP->vr_mr))) {
-                      rlc_am_stop_and_reset_timer_reordering(rlcP,frame);
+              if (rlc_pP->t_reordering.running) {
+                  if ((rlc_pP->vr_x == rlc_pP->vr_r) || ((rlc_am_in_rx_window(rlc_pP, pdu_info_p->sn) == 0) && (rlc_pP->vr_x != rlc_pP->vr_mr))) {
+                      rlc_am_stop_and_reset_timer_reordering(rlc_pP,frameP);
                   }
               }
-              if (!(rlcP->t_reordering.running)) {
-                  if (rlcP->vr_h != rlcP->vr_r) { // - if VR (H) > VR(R) translated to - if VR (H) != VR(R)
-                      rlc_am_start_timer_reordering(rlcP,frame);
-                      rlcP->vr_x = rlcP->vr_h;
+              if (!(rlc_pP->t_reordering.running)) {
+                  if (rlc_pP->vr_h != rlc_pP->vr_r) { // - if VR (H) > VR(R) translated to - if VR (H) != VR(R)
+                      rlc_am_start_timer_reordering(rlc_pP,frameP);
+                      rlc_pP->vr_x = rlc_pP->vr_h;
                   }
               }
           }
-          LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU] VR(R) %04d VR(H) %04d  VR(MS) %04d  VR(MR) %04d\n", frame, rlcP->module_id, rlcP->rb_id, rlcP->vr_r, rlcP->vr_h, rlcP->vr_ms, rlcP->vr_mr);
+          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU] VR(R) %04d VR(H) %04d  VR(MS) %04d  VR(MR) %04d\n",
+                frameP,
+                (rlc_pP->is_enb) ? "eNB" : "UE",
+                rlc_pP->enb_module_id,
+                rlc_pP->ue_module_id,
+                rlc_pP->rb_id,
+                rlc_pP->vr_r,
+                rlc_pP->vr_h,
+                rlc_pP->vr_ms,
+                rlc_pP->vr_mr);
       } else {
-    	  rlcP->stat_rx_data_pdu_out_of_window     += 1;
-    	  rlcP->stat_rx_data_bytes_out_of_window   += tb_size_in_bytesP;
-          free_mem_block (tbP);
-          LOG_D(RLC, "[FRAME %05d][RLC_AM][MOD %02d][RB %02d][PROCESS RX PDU]  PDU OUT OF RX WINDOW, DISCARDED, STATUS REQUESTED:\n", frame, rlcP->module_id, rlcP->rb_id);
-          rlcP->status_requested = 1;
+          rlc_pP->stat_rx_data_pdu_out_of_window     += 1;
+          rlc_pP->stat_rx_data_bytes_out_of_window   += tb_size_in_bytesP;
+          free_mem_block (tb_pP);
+          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][PROCESS RX PDU]  PDU OUT OF RX WINDOW, DISCARDED, STATUS REQUESTED:\n",
+                frameP,
+                (rlc_pP->is_enb) ? "eNB" : "UE",
+                rlc_pP->enb_module_id,
+                rlc_pP->ue_module_id,
+                rlc_pP->rb_id);
+          rlc_pP->status_requested = 1;
       }
   } else {
-      free_mem_block (tbP);
+      free_mem_block (tb_pP);
   }
 }

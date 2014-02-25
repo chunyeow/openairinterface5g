@@ -144,6 +144,7 @@
 #include "PHY/TOOLS/time_meas.h"
 #include "PHY/CODING/defs.h"
 #include "PHY/TOOLS/defs.h"
+#include "platform_types.h"
 
 #ifdef OPENAIR_LTE
 
@@ -180,30 +181,30 @@ enum transmission_access_mode{
 /// Top-level PHY Data Structure for eNB 
 typedef struct {
   /// Module ID indicator for this instance
-  u8 Mod_id;
-  u8 local_flag;
-  unsigned int rx_total_gain_eNB_dB;
-  u32 frame;
-  LTE_DL_FRAME_PARMS  lte_frame_parms;
+  module_id_t               Mod_id;
+  u8                   local_flag;
+  unsigned int         rx_total_gain_eNB_dB;
+  frame_t              frame;
+  LTE_DL_FRAME_PARMS   lte_frame_parms;
   PHY_MEASUREMENTS_eNB PHY_measurements_eNB[NUMBER_OF_eNB_SECTORS_MAX]; /// Measurement variables 
-  LTE_eNB_COMMON   lte_eNB_common_vars;
-  LTE_eNB_SRS      lte_eNB_srs_vars[NUMBER_OF_UE_MAX];
-  LTE_eNB_PBCH     lte_eNB_pbch;
-  LTE_eNB_PUSCH    *lte_eNB_pusch_vars[NUMBER_OF_UE_MAX];
-  LTE_eNB_PRACH    lte_eNB_prach_vars;
-  LTE_eNB_DLSCH_t  *dlsch_eNB[NUMBER_OF_UE_MAX][2];   // Nusers times two spatial streams
+  LTE_eNB_COMMON       lte_eNB_common_vars;
+  LTE_eNB_SRS          lte_eNB_srs_vars[NUMBER_OF_UE_MAX];
+  LTE_eNB_PBCH         lte_eNB_pbch;
+  LTE_eNB_PUSCH       *lte_eNB_pusch_vars[NUMBER_OF_UE_MAX];
+  LTE_eNB_PRACH        lte_eNB_prach_vars;
+  LTE_eNB_DLSCH_t     *dlsch_eNB[NUMBER_OF_UE_MAX][2];   // Nusers times two spatial streams
   // old: LTE_eNB_DLSCH_t  **dlsch_eNB[2];   // Nusers times two spatial streams
-  LTE_eNB_ULSCH_t  *ulsch_eNB[NUMBER_OF_UE_MAX+1];      // Nusers + number of RA
-  LTE_eNB_DLSCH_t  *dlsch_eNB_SI,*dlsch_eNB_ra;
-  LTE_eNB_DLSCH_t  *dlsch_eNB_MCH;
-  LTE_eNB_UE_stats eNB_UE_stats[NUMBER_OF_UE_MAX];
-  LTE_eNB_UE_stats *eNB_UE_stats_ptr[NUMBER_OF_UE_MAX];
+  LTE_eNB_ULSCH_t     *ulsch_eNB[NUMBER_OF_UE_MAX+1];      // Nusers + number of RA
+  LTE_eNB_DLSCH_t     *dlsch_eNB_SI,*dlsch_eNB_ra;
+  LTE_eNB_DLSCH_t     *dlsch_eNB_MCH;
+  LTE_eNB_UE_stats     eNB_UE_stats[NUMBER_OF_UE_MAX];
+  LTE_eNB_UE_stats    *eNB_UE_stats_ptr[NUMBER_OF_UE_MAX];
 
   /// cell-specific reference symbols
-  unsigned int lte_gold_table[20][2][14];
+  unsigned int         lte_gold_table[20][2][14];
   
   /// mbsfn reference symbols
-  unsigned int lte_gold_mbsfn_table[10][3][42];
+  unsigned int         lte_gold_mbsfn_table[10][3][42];
   
   u32 X_u[64][839];
 

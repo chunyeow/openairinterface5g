@@ -10,7 +10,7 @@
 
 
  ***************************************************************************/
-
+#ifdef OLD_RRC_CELLULAR
 #    ifndef __RRM_CONFIG_STRUCTS_H__
 #        define __RRM_CONFIG_STRUCTS_H__
 
@@ -171,4 +171,4 @@ typedef volatile struct {
 //typedef   RG_CONFIG MAIN_RADIO_GATEWAY;
 
 #    endif
-
+#endif

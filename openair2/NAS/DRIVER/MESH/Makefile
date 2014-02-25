@@ -60,7 +60,7 @@ GT301  = $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_301),-DKERNEL_VERSION_GREATER_
 #      EXTRA COMPILER FLAGS
 ####################################################
 EXTRA_CFLAGS = -fno-common $(if $(IS_KERNEL_SUBVERSION_GREATER_THAN_20),-mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4)  $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) $(GT2622) $(GT2629) $(V3) $(GT32) $(GT301)
-
+EXTRA_CFLAGS += -I$(OPENAIR2_DIR)
 ifdef NAS_NETLINK
 EXTRA_CFLAGS += -DNAS_NETLINK
 else

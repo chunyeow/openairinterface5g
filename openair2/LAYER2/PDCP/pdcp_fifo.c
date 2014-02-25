@@ -259,9 +259,6 @@ pdcp_fifo_read_input_sdus_remaining_bytes ()
 {
 //-----------------------------------------------------------------------------
   sdu_size_t             bytes_read=0;
-  // if remaining bytes to read
-
-
 
   if (pdcp_input_sdu_remaining_size_to_read > 0) {
 

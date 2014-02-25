@@ -47,14 +47,14 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 #include "rlc_um_very_simple_test.h"
 
-//#define DEBUG_RLC_UM_TX_STATUS 1
+#define DEBUG_RLC_UM_TX_STATUS 1
 #define TRACE_RLC_UM_PDU 1
 
 #ifdef TRACE_RLC_UM_PDU
 char  message_string[10000];
 #endif
 //-----------------------------------------------------------------------------
-void rlc_um_stat_req     (rlc_um_entity_t *rlcP,
+void rlc_um_stat_req     (rlc_um_entity_t *rlc_pP,
 		  unsigned int* stat_tx_pdcp_sdu,
 		  unsigned int* stat_tx_pdcp_bytes,
 		  unsigned int* stat_tx_pdcp_sdu_discarded,
@@ -73,43 +73,43 @@ void rlc_um_stat_req     (rlc_um_entity_t *rlcP,
 		  unsigned int* stat_rx_data_bytes_out_of_window,
 		  unsigned int* stat_timer_reordering_timed_out) {
 //-----------------------------------------------------------------------------
-    *stat_tx_pdcp_sdu                     = rlcP->stat_tx_pdcp_sdu;
-    *stat_tx_pdcp_bytes                   = rlcP->stat_tx_pdcp_bytes;
-    *stat_tx_pdcp_sdu_discarded           = rlcP->stat_tx_pdcp_sdu_discarded;
-    *stat_tx_pdcp_bytes_discarded         = rlcP->stat_tx_pdcp_bytes_discarded;
-    *stat_tx_data_pdu                     = rlcP->stat_tx_data_pdu;
-    *stat_tx_data_bytes                   = rlcP->stat_tx_data_bytes;
-    *stat_rx_pdcp_sdu                     = rlcP->stat_rx_pdcp_sdu;
-    *stat_rx_pdcp_bytes                   = rlcP->stat_rx_pdcp_bytes;
-    *stat_rx_data_pdus_duplicate          = rlcP->stat_rx_data_pdus_duplicate;
-    *stat_rx_data_bytes_duplicate         = rlcP->stat_rx_data_bytes_duplicate;
-    *stat_rx_data_pdu                     = rlcP->stat_rx_data_pdu;
-    *stat_rx_data_bytes                   = rlcP->stat_rx_data_bytes;
-    *stat_rx_data_pdu_dropped             = rlcP->stat_rx_data_pdu_dropped;
-    *stat_rx_data_bytes_dropped           = rlcP->stat_rx_data_bytes_dropped;
-    *stat_rx_data_pdu_out_of_window       = rlcP->stat_rx_data_pdu_out_of_window;
-    *stat_rx_data_bytes_out_of_window     = rlcP->stat_rx_data_bytes_out_of_window;
-    *stat_timer_reordering_timed_out      = rlcP->stat_timer_reordering_timed_out;
+    *stat_tx_pdcp_sdu                     = rlc_pP->stat_tx_pdcp_sdu;
+    *stat_tx_pdcp_bytes                   = rlc_pP->stat_tx_pdcp_bytes;
+    *stat_tx_pdcp_sdu_discarded           = rlc_pP->stat_tx_pdcp_sdu_discarded;
+    *stat_tx_pdcp_bytes_discarded         = rlc_pP->stat_tx_pdcp_bytes_discarded;
+    *stat_tx_data_pdu                     = rlc_pP->stat_tx_data_pdu;
+    *stat_tx_data_bytes                   = rlc_pP->stat_tx_data_bytes;
+    *stat_rx_pdcp_sdu                     = rlc_pP->stat_rx_pdcp_sdu;
+    *stat_rx_pdcp_bytes                   = rlc_pP->stat_rx_pdcp_bytes;
+    *stat_rx_data_pdus_duplicate          = rlc_pP->stat_rx_data_pdus_duplicate;
+    *stat_rx_data_bytes_duplicate         = rlc_pP->stat_rx_data_bytes_duplicate;
+    *stat_rx_data_pdu                     = rlc_pP->stat_rx_data_pdu;
+    *stat_rx_data_bytes                   = rlc_pP->stat_rx_data_bytes;
+    *stat_rx_data_pdu_dropped             = rlc_pP->stat_rx_data_pdu_dropped;
+    *stat_rx_data_bytes_dropped           = rlc_pP->stat_rx_data_bytes_dropped;
+    *stat_rx_data_pdu_out_of_window       = rlc_pP->stat_rx_data_pdu_out_of_window;
+    *stat_rx_data_bytes_out_of_window     = rlc_pP->stat_rx_data_bytes_out_of_window;
+    *stat_timer_reordering_timed_out      = rlc_pP->stat_timer_reordering_timed_out;
 }
 //-----------------------------------------------------------------------------
 u32_t
-rlc_um_get_buffer_occupancy (rlc_um_entity_t *rlcP)
+rlc_um_get_buffer_occupancy (rlc_um_entity_t *rlc_pP)
 {
 //-----------------------------------------------------------------------------
-    if (rlcP->buffer_occupancy > 0) {
-        return rlcP->buffer_occupancy;
+    if (rlc_pP->buffer_occupancy > 0) {
+        return rlc_pP->buffer_occupancy;
     } else {
         return 0;
     }
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_get_pdus (void *argP,u32_t frame)
+rlc_um_get_pdus (void *argP, frame_t frameP)
 {
 //-----------------------------------------------------------------------------
-  rlc_um_entity_t *rlc = (rlc_um_entity_t *) argP;
+  rlc_um_entity_t *rlc_p = (rlc_um_entity_t *) argP;
 
-  switch (rlc->protocol_state) {
+  switch (rlc_p->protocol_state) {
 
       case RLC_NULL_STATE:
         // from 3GPP TS 25.322 V9.2.0 p43
@@ -139,11 +139,11 @@ rlc_um_get_pdus (void *argP,u32_t frame)
         // - enters the LOCAL_SUSPEND state.
 
         // SEND DATA TO MAC
-    	  if (rlc->tx_sn_length == 10) {
-              rlc_um_segment_10 (rlc,frame);
+    	  if (rlc_p->tx_sn_length == 10) {
+              rlc_um_segment_10 (rlc_p,frameP);
     	  }
-    	  if (rlc->tx_sn_length == 5) {
-              rlc_um_segment_5 (rlc,frame);
+    	  if (rlc_p->tx_sn_length == 5) {
+              rlc_um_segment_5 (rlc_p,frameP);
     	  }
         break;
 
@@ -169,13 +169,19 @@ rlc_um_get_pdus (void *argP,u32_t frame)
         break;
 
       default:
-        LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n", rlc->module_id, rlc->rb_id, frame, rlc->protocol_state);
+        LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_REQ UNKNOWN PROTOCOL STATE %02X hex\n",
+                frameP,
+                (rlc_p->is_enb) ? "eNB" : "UE",
+                rlc_p->enb_module_id,
+                rlc_p->ue_module_id,
+                rlc_p->rb_id,
+                rlc_p->protocol_state);
   }
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
+rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
   rlc_um_entity_t    *l_rlc_p = (rlc_um_entity_t *) argP;
@@ -200,19 +206,19 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
         // establishment, the RLC entity:
         //   - is created; and
         //   - enters the DATA_TRANSFER_READY state.
-        LOG_N(RLC, "[RLC_UM][MOD %d] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", l_rlc_p->module_id);
+        LOG_N(RLC, "[RLC_UM][MOD %02u/%02u] ERROR MAC_DATA_IND IN RLC_NULL_STATE\n", l_rlc_p->enb_module_id, l_rlc_p->ue_module_id);
 
         /*if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_indP.data.nb_elements);
-            rlc[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
-                frame,
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frameP, data_indP.data.nb_elements);
+            rlc_p[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc_p[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
+                frameP,
                 (l_rlc_p->is_enb) ? "eNB":"UE",
                 l_rlc_p->module_id,
                 data_indP.data.nb_elements);
 
             tb = data_indP.data.head;
             while (tb != NULL) {
-                rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
+                rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
@@ -220,12 +226,12 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
                                                                     ((struct mac_tb_ind *) (tb->data))->size);
                 tb = tb->next;
             }
-            rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC NULL STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
+            rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC NULL STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
                 l_rlc_p->module_id,
                 l_rlc_p->rb_id);
 
-            rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
-            LOG_D(RLC, "%s", rlc[l_rlc_p->module_id].m_mscgen_trace);
+            rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
+            LOG_D(RLC, "%s", rlc_p[l_rlc_p->module_id].m_mscgen_trace);
         }*/
         list_free (&data_indP.data);
         break;
@@ -250,13 +256,19 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
 
 #ifdef TRACE_RLC_UM_PDU
         if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_indP.data.nb_elements);
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n",
+                    frameP,
+                    (l_rlc_p->is_enb) ? "eNB" : "UE",
+                    l_rlc_p->enb_module_id,
+                    l_rlc_p->ue_module_id,
+                    l_rlc_p->rb_id,
+                    data_indP.data.nb_elements);
 
             tb_p = data_indP.data.head;
             while (tb_p != NULL) {
                 tb_size_in_bytes   = ((struct mac_tb_ind *) (tb_p->data))->size;
 
-                rlc_um_get_pdu_infos(frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+                rlc_um_get_pdu_infos(frameP,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_ind *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
                   message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
                   message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
                   message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -315,7 +327,7 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
             }
         }
 #endif
-        rlc_um_receive (l_rlc_p, frame, eNB_flag, data_indP);
+        rlc_um_receive (l_rlc_p, frameP, eNB_flagP, data_indP);
         break;
 
       case RLC_LOCAL_SUSPEND_STATE:
@@ -335,18 +347,23 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
         // - stays in the LOCAL_SUSPEND state;
         // - modifies only the protocol parameters and timers as indicated by
         //   upper layers.
-        LOG_N(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] RLC_LOCAL_SUSPEND_STATE\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame);
+        LOG_N(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_LOCAL_SUSPEND_STATE\n",
+                frameP,
+                (l_rlc_p->is_enb) ? "eNB" : "UE",
+                l_rlc_p->enb_module_id,
+                l_rlc_p->ue_module_id,
+                l_rlc_p->rb_id);
         /*if (data_indP.data.nb_elements > 0) {
-            LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_indP.data.nb_elements);
-            rlc[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
-                frame,
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_IND %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frameP, data_indP.data.nb_elements);
+            rlc_p[l_rlc_p->module_id].m_mscgen_trace_length = sprintf(rlc_p[l_rlc_p->module_id].m_mscgen_trace, "[MSC_MSG][FRAME %05d][MAC_%s][MOD %02d][][--- MAC_DATA_IND/ %d TB(s) ",
+                frameP,
                 (l_rlc_p->is_enb) ? "eNB":"UE",
                 l_rlc_p->module_id,
                 data_indP.data.nb_elements);
 
             tb = data_indP.data.head;
             while (tb != NULL) {
-                rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
+                rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
@@ -354,57 +371,63 @@ rlc_um_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
                                                                     ((struct mac_tb_ind *) (tb->data))->size);
                 tb = tb->next;
             }
-            rlc[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC LOCAL SUSPEND STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
+            rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " DROPPED RLC LOCAL SUSPEND STATE ---X][RLC_UM][MOD %02d][RB %02d]\n",
                 l_rlc_p->module_id,
                 l_rlc_p->rb_id);
 
-            rlc[l_rlc_p->module_id].m_mscgen_trace[rlc[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
-            LOG_D(RLC, "%s", rlc[l_rlc_p->module_id].m_mscgen_trace);
+            rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length] = 0;
+            LOG_D(RLC, "%s", rlc_p[l_rlc_p->module_id].m_mscgen_trace);
         }*/
         list_free (&data_indP.data);
         break;
 
       default:
-        LOG_E(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] TX UNKNOWN PROTOCOL STATE %02X hex\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, l_rlc_p->protocol_state);
+        LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] TX UNKNOWN PROTOCOL STATE %02X hex\n",
+                frameP,
+                (l_rlc_p->is_enb) ? "eNB" : "UE",
+                l_rlc_p->enb_module_id,
+                l_rlc_p->ue_module_id,
+                l_rlc_p->rb_id,
+                l_rlc_p->protocol_state);
   }
 }
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_um_mac_status_indication (void *rlcP, u32_t frame, u8_t eNB_flag, u16_t tbs_sizeP, struct mac_status_ind tx_statusP)
+rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, u16_t tbs_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
   u16_t  sdu_size = 0;
   u16_t  sdu_remaining_size = 0;
   s32_t diff_time=0;
-  rlc_um_entity_t   *rlc = NULL;
+  rlc_um_entity_t   *rlc_p = NULL;
   
   status_resp.buffer_occupancy_in_pdus         = 0;
   status_resp.buffer_occupancy_in_bytes        = 0;
   status_resp.head_sdu_remaining_size_to_send  = 0;
   status_resp.head_sdu_creation_time           = 0;
   status_resp.head_sdu_is_segmented            = 0;
-  status_resp.rlc_info.rlc_protocol_state      = ((rlc_um_entity_t *) rlcP)->protocol_state;
+  status_resp.rlc_info.rlc_protocol_state      = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
 
-  if (rlcP) {
-      rlc = (rlc_um_entity_t *) rlcP;
-      rlc_um_check_timer_dar_time_out(rlc,frame,eNB_flag);
+  if (rlc_pP) {
+      rlc_p = (rlc_um_entity_t *) rlc_pP;
+      rlc_um_check_timer_dar_time_out(rlc_p,frameP,eNB_flagP);
 
-      rlc->nb_bytes_requested_by_mac = tbs_sizeP;
+      rlc_p->nb_bytes_requested_by_mac = tbs_sizeP;
 
-      status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (rlc);
+      status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (rlc_p);
       if (status_resp.buffer_occupancy_in_bytes > 0) {
           
-	  status_resp.buffer_occupancy_in_bytes += rlc->tx_header_min_length_in_bytes;
-	  status_resp.buffer_occupancy_in_pdus = rlc->nb_sdu;
+	  status_resp.buffer_occupancy_in_bytes += rlc_p->tx_header_min_length_in_bytes;
+	  status_resp.buffer_occupancy_in_pdus = rlc_p->nb_sdu;
 	 
-	  diff_time =   frame - ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index])->data)->sdu_creation_time;
-	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (u32_t) diff_time :  (u32_t)(0xffffffff - diff_time + frame) ;
-	  //msg("rlc status for frame %d diff time %d resp %d\n", frame, diff_time,status_resp.head_sdu_creation_time) ;
+	  diff_time =   frameP - ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_creation_time;
+	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (u32_t) diff_time :  (u32_t)(0xffffffff - diff_time + frameP) ;
+	  //msg("rlc_p status for frameP %d diff time %d resp %d\n", frameP, diff_time,status_resp.head_sdu_creation_time) ;
 	  
-	  sdu_size            = ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index])->data)->sdu_size;
-	  sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) (rlc->input_sdus[rlc->current_sdu_index])->data)->sdu_remaining_size;
+	  sdu_size            = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_size;
+	  sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_remaining_size;
 	  
 	  status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;	
 	  if (sdu_size == sdu_remaining_size)  {
@@ -416,17 +439,37 @@ rlc_um_mac_status_indication (void *rlcP, u32_t frame, u8_t eNB_flag, u16_t tbs_
 	
       } else {
       }
-      //msg("[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_STATUS_INDICATION BO = %d\n", ((rlc_um_entity_t *) rlcP)->module_id, ((rlc_um_entity_t *) rlcP)->rb_id, status_resp.buffer_occupancy_in_bytes);
+      //msg("[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION BO = %d\n", ((rlc_um_entity_t *) rlc_pP)->module_id, ((rlc_um_entity_t *) rlc_pP)->rb_id, status_resp.buffer_occupancy_in_bytes);
 
-      status_resp.rlc_info.rlc_protocol_state = ((rlc_um_entity_t *) rlcP)->protocol_state;
+      status_resp.rlc_info.rlc_protocol_state = ((rlc_um_entity_t *) rlc_pP)->protocol_state;
       #ifdef DEBUG_RLC_UM_TX_STATUS
-      if ((((rlc_um_entity_t *) rlcP)->rb_id > 0) && (status_resp.buffer_occupancy_in_bytes > 0)) {
-          LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n", ((rlc_um_entity_t *) rlcP)->module_id, ((rlc_um_entity_t *) rlcP)->rb_id, frame, tbs_sizeP, status_resp.buffer_occupancy_in_bytes);
+      if ((((rlc_um_entity_t *) rlc_pP)->rb_id > 0) && (status_resp.buffer_occupancy_in_bytes > 0)) {
+          LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n",
+                  frameP,
+                  (rlc_p->is_enb) ? "eNB" : "UE",
+                  rlc_p->enb_module_id,
+                  rlc_p->ue_module_id,
+                  rlc_p->rb_id,
+                  tbs_sizeP,
+                  status_resp.buffer_occupancy_in_bytes);
+
           if ((tx_statusP.tx_status == MAC_TX_STATUS_SUCCESSFUL) && (tx_statusP.no_pdu)) {
-              LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",((rlc_um_entity_t *) rlcP)->module_id, ((rlc_um_entity_t *) rlcP)->rb_id, frame, tx_statusP.no_pdu);
+              LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION  TX STATUS   SUCCESSFUL %d PDUs\n",
+                      frameP,
+                      (rlc_p->is_enb) ? "eNB" : "UE",
+                      rlc_p->enb_module_id,
+                      rlc_p->ue_module_id,
+                      rlc_p->rb_id,
+                      tx_statusP.no_pdu);
           }
           if ((tx_statusP.tx_status == MAC_TX_STATUS_UNSUCCESSFUL) && (tx_statusP.no_pdu)) {
-              LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",((rlc_um_entity_t *) rlcP)->module_id, ((rlc_um_entity_t *) rlcP)->rb_id, frame, tx_statusP.no_pdu);
+              LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION  TX STATUS UNSUCCESSFUL %d PDUs\n",
+                      frameP,
+                      (rlc_p->is_enb) ? "eNB" : "UE",
+                      rlc_p->enb_module_id,
+                      rlc_p->ue_module_id,
+                      rlc_p->rb_id,
+                      tx_statusP.no_pdu);
           }
       }
       #endif
@@ -438,7 +481,7 @@ rlc_um_mac_status_indication (void *rlcP, u32_t frame, u8_t eNB_flag, u16_t tbs_
 
 //-----------------------------------------------------------------------------
 struct mac_data_req
-rlc_um_mac_data_request (void *rlcP,u32 frame)
+rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
 {
     //-----------------------------------------------------------------------------
     struct mac_data_req data_req;
@@ -452,9 +495,9 @@ rlc_um_mac_data_request (void *rlcP,u32 frame)
     rlc_um_pdu_info_t   pdu_info;
     int                 octet_index, index;
 #endif
-    rlc_um_entity_t *l_rlc_p = (rlc_um_entity_t *) rlcP;
+    rlc_um_entity_t *l_rlc_p = (rlc_um_entity_t *) rlc_pP;
 
-    rlc_um_get_pdus (rlcP,frame);
+    rlc_um_get_pdus (rlc_pP,frameP);
 
     list_init (&data_req.data, NULL);
     list_add_list (&l_rlc_p->pdus_to_mac_layer, &data_req.data);
@@ -466,16 +509,16 @@ rlc_um_mac_data_request (void *rlcP,u32 frame)
     }
     data_req.rlc_info.rlc_protocol_state = l_rlc_p->protocol_state;
     if (data_req.data.nb_elements > 0) {
-        //LOG_I(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_REQUEST %d TBs\n", l_rlc_p->module_id, l_rlc_p->rb_id, frame, data_req.data.nb_elements);
-
         tb_p = data_req.data.head;
         while (tb_p != NULL) {
             tb_size_in_bytes   = ((struct mac_tb_req *) (tb_p->data))->tb_size;
 
-            LOG_I(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] MAC_DATA_REQUEST  TB SIZE %u\n",
-                    l_rlc_p->module_id,
+            LOG_I(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_DATA_REQUEST  TB SIZE %u\n",
+                    frameP,
+                    (l_rlc_p->is_enb) ? "eNB" : "UE",
+                    l_rlc_p->enb_module_id,
+                    l_rlc_p->ue_module_id,
                     l_rlc_p->rb_id,
-                    frame,
                     ((struct mac_tb_req *) (tb_p->data))->tb_size);
             l_rlc_p->stat_tx_data_pdu   += 1;
             l_rlc_p->stat_tx_data_bytes += tb_size_in_bytes;
@@ -483,7 +526,7 @@ rlc_um_mac_data_request (void *rlcP,u32 frame)
             AssertFatal( tb_size_in_bytes > 0 , "RLC UM PDU LENGTH %d", tb_size_in_bytes);
 
 #ifdef TRACE_RLC_UM_PDU
-            rlc_um_get_pdu_infos(frame,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
+            rlc_um_get_pdu_infos(frameP,(rlc_um_pdu_sn_10_t*) ((struct mac_tb_req *) (tb_p->data))->data_ptr, tb_size_in_bytes, &pdu_info, l_rlc_p->rx_sn_length);
             message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
             message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
             message_string_size += sprintf(&message_string[message_string_size], "Header size : %u\n", pdu_info.header_size);
@@ -546,34 +589,36 @@ rlc_um_mac_data_request (void *rlcP,u32 frame)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_mac_data_indication (void *rlcP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
+rlc_um_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
-    rlc_um_rx (rlcP, frame, eNB_flag, data_indP);
-    rlc_um_check_timer_dar_time_out(rlcP,frame,eNB_flag);
+    rlc_um_rx (rlc_pP, frameP, eNB_flagP, data_indP);
+    rlc_um_check_timer_dar_time_out(rlc_pP,frameP,eNB_flagP);
 }
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_data_req (void *rlcP, u32_t frame, mem_block_t *sduP)
+rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
 {
 //-----------------------------------------------------------------------------
-  rlc_um_entity_t *rlc = (rlc_um_entity_t *) rlcP;
+  rlc_um_entity_t *rlc_p = (rlc_um_entity_t *) rlc_pP;
 
 #ifndef USER_MODE
   unsigned long int rlc_um_time_us;
   int min, sec, usec;
 #endif
 
-  LOG_I(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
-     rlc->module_id,
-     rlc->rb_id,
-     frame,
-	 ((struct rlc_um_data_req *) (sduP->data))->data_size,
-	 rlc->buffer_occupancy,
-	 rlc->nb_sdu,
-      rlc->current_sdu_index,
-	 rlc->next_sdu_index);
+  LOG_I(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC_UM_DATA_REQ size %d Bytes, BO %d , NB SDU %d current_sdu_index=%d next_sdu_index=%d\n",
+     frameP,
+     (rlc_p->is_enb) ? "eNB" : "UE",
+     rlc_p->enb_module_id,
+     rlc_p->ue_module_id,
+     rlc_p->rb_id,
+     ((struct rlc_um_data_req *) (sdu_pP->data))->data_size,
+     rlc_p->buffer_occupancy,
+     rlc_p->nb_sdu,
+     rlc_p->current_sdu_index,
+     rlc_p->next_sdu_index);
 
   /*#ifndef USER_MODE
   rlc_um_time_us = (unsigned long int)(rt_get_time_ns ()/(RTIME)1000);
@@ -581,30 +626,43 @@ rlc_um_data_req (void *rlcP, u32_t frame, mem_block_t *sduP)
   min = (sec / 60) % 60;
   sec = sec % 60;
   usec =  rlc_um_time_us % 1000000;
-  msg ("[RLC_UM_LITE][RB  %d] at time %2d:%2d.%6d\n", rlc->rb_id, min, sec , usec);
+  msg ("[RLC_UM_LITE][RB  %d] at time %2d:%2d.%6d\n", rlc_p->rb_id, min, sec , usec);
 #endif*/
-  if (rlc->input_sdus[rlc->next_sdu_index] == NULL) {
-    rlc->input_sdus[rlc->next_sdu_index] = sduP;
+  if (rlc_p->input_sdus[rlc_p->next_sdu_index] == NULL) {
+    rlc_p->input_sdus[rlc_p->next_sdu_index] = sdu_pP;
     // IMPORTANT : do not change order of affectations
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size = ((struct rlc_um_data_req *) (sduP->data))->data_size;
-    rlc->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size;
-    rlc->nb_sdu += 1;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->first_byte = (u8_t*)&sduP->data[sizeof (struct rlc_um_data_req_alloc)];
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
-                                                                              (sduP->data))->sdu_size;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_segmented_size = 0;
-    ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_creation_time = frame;
-    rlc->next_sdu_index = (rlc->next_sdu_index + 1) % rlc->size_input_sdus_buffer;
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size = ((struct rlc_um_data_req *) (sdu_pP->data))->data_size;
+    rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
+    rlc_p->nb_sdu += 1;
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->first_byte = (u8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)];
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
+                                                                              (sdu_pP->data))->sdu_size;
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_segmented_size = 0;
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_creation_time = frameP;
+    rlc_p->next_sdu_index = (rlc_p->next_sdu_index + 1) % rlc_p->size_input_sdus_buffer;
 
-    rlc->stat_tx_pdcp_sdu   += 1;
-    rlc->stat_tx_pdcp_bytes += ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size;
+    rlc_p->stat_tx_pdcp_sdu   += 1;
+    rlc_p->stat_tx_pdcp_bytes += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
 
   } else {
-    LOG_W(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] RLC-UM_DATA_REQ input buffer full SDU garbaged\n",rlc->module_id, rlc->rb_id, frame);
-    rlc->stat_tx_pdcp_sdu             += 1;
-    rlc->stat_tx_pdcp_bytes           += ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size;
-    rlc->stat_tx_pdcp_sdu_discarded   += 1;
-    rlc->stat_tx_pdcp_bytes_discarded += ((struct rlc_um_tx_sdu_management *) (sduP->data))->sdu_size;
-    free_mem_block (sduP);
+    LOG_W(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] RLC-UM_DATA_REQ input buffer full SDU garbaged\n",
+          frameP,
+          (rlc_p->is_enb) ? "eNB" : "UE",
+          rlc_p->enb_module_id,
+          rlc_p->ue_module_id,
+          rlc_p->rb_id);
+    rlc_p->stat_tx_pdcp_sdu             += 1;
+    rlc_p->stat_tx_pdcp_bytes           += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
+    rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
+    rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
+    free_mem_block (sdu_pP);
+#if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
+      AssertFatal(0, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_UM_DATA_REQ, SDU DROPPED, INPUT BUFFER OVERFLOW\n",
+          frameP,
+          (rlc_p->is_enb) ? "eNB" : "UE",
+          rlc_p->enb_module_id,
+          rlc_p->ue_module_id,
+          rlc_p->rb_id);
+#endif
   }
 }

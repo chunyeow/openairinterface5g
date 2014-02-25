@@ -43,7 +43,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define DEBUG_RLC_UM_RX
 
 //-----------------------------------------------------------------------------
-void rlc_um_display_rx_window(struct rlc_um_entity *rlcP)
+void rlc_um_display_rx_window(struct rlc_um_entity *rlc_pP)
 //-----------------------------------------------------------------------------
 {
 /*
@@ -73,21 +73,21 @@ void rlc_um_display_rx_window(struct rlc_um_entity *rlcP)
  */
     unsigned long sn = 0;
     unsigned long end_sn = 0;
-    char         str[4];
-    char         time_out_str[11];
-    int          str_index;
-    char         color[32];
+    char          str[4];
+    char          time_out_str[11];
+    int           str_index;
+    char          color[32];
 
     LOG_T(RLC, "\n");
     LOG_T(RLC, "+-------------------------------------------------------------------------------------------------------+");
     LOG_T(RLC, "\n");
-    sprintf(time_out_str, "%010d", rlcP->t_reordering.frame_time_out);
+    sprintf(time_out_str, "%010d", rlc_pP->t_reordering.frame_time_out);
     time_out_str[10] = 0;
     LOG_T(RLC, "| RLC UM RB %02d    VR(UR)=%03d    VR(UX)=%03d    VR(UH)=%03d    t-Reordering: %s %s %s             |",
-          rlcP->rb_id, rlcP->vr_ur, rlcP->vr_ux, rlcP->vr_uh,
-      (rlcP->t_reordering.running)?" ON":"OFF",
-      (rlcP->t_reordering.running)?"Time-out frame:":"               ",
-      (rlcP->t_reordering.running)?time_out_str:"          ");
+          rlc_pP->rb_id, rlc_pP->vr_ur, rlc_pP->vr_ux, rlc_pP->vr_uh,
+      (rlc_pP->t_reordering.running)?" ON":"OFF",
+      (rlc_pP->t_reordering.running)?"Time-out frameP:":"               ",
+      (rlc_pP->t_reordering.running)?time_out_str:"          ");
     LOG_T(RLC, "\n");
     LOG_T(RLC, "+------+------------------------------------------------------------------------------------------------+");
     LOG_T(RLC, "\n");
@@ -95,7 +95,7 @@ void rlc_um_display_rx_window(struct rlc_um_entity *rlcP)
     LOG_T(RLC, "\n");
     LOG_T(RLC, "+------+------------------------------------------------------------------------------------------------+");
     LOG_T(RLC, "\n");
-    if (rlcP->rx_sn_length == 10) {
+    if (rlc_pP->rx_sn_length == 10) {
         end_sn = RLC_UM_SN_10_BITS_MODULO;
     } else {
         end_sn = RLC_UM_SN_5_BITS_MODULO;
@@ -116,20 +116,20 @@ void rlc_um_display_rx_window(struct rlc_um_entity *rlcP)
             LOG_T(RLC, "%s%s| %04d |", RLC_FG_COLOR_DEFAULT, RLC_NORMAL_VIDEO, sn);
         }
         strcpy(color, RLC_FG_COLOR_DEFAULT);
-        if (sn == rlcP->vr_ur) {
+        if (sn == rlc_pP->vr_ur) {
             str[str_index++] = 'R';
             strcpy(color, RLC_FG_COLOR_BLUE);
         }
-        if (sn == rlcP->vr_ux) {
+        if (sn == rlc_pP->vr_ux) {
             str[str_index++] = 'X';
             strcpy(color, RLC_FG_COLOR_ORANGE);
         }
-        if (sn == rlcP->vr_uh) {
+        if (sn == rlc_pP->vr_uh) {
             str[str_index++] = 'H';
             strcpy(color, RLC_FG_COLOR_RED);
         }
 
-        if (rlc_um_get_pdu_from_dar_buffer(rlcP, sn)) {
+        if (rlc_um_get_pdu_from_dar_buffer(rlc_pP, sn)) {
             // test RLC_REVERSE_VIDEO
             if (str_index <= 2) str[str_index] = '.';
             LOG_T(RLC, "%s%s%s", color, RLC_REVERSE_VIDEO, str);
@@ -145,26 +145,34 @@ void rlc_um_display_rx_window(struct rlc_um_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_receive (struct rlc_um_entity *rlcP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
+rlc_um_receive (struct rlc_um_entity *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
-    mem_block_t        *tb;
-    u8_t               *first_byte;
-    u16_t               tb_size_in_bytes;
+    mem_block_t        *tb_p             = NULL;
+    u8_t               *first_byte_p     = NULL;
+    u16_t               tb_size_in_bytes = 0;
 
-    while ((tb = list_remove_head (&data_indP.data))) {
+    while ((tb_p = list_remove_head (&data_indP.data))) {
 
-		first_byte = ((struct mac_tb_ind *) (tb->data))->data_ptr;
-		tb_size_in_bytes = ((struct mac_tb_ind *) (tb->data))->size;
+        first_byte_p = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
+        tb_size_in_bytes = ((struct mac_tb_ind *) (tb_p->data))->size;
 
-    	rlcP->stat_rx_data_bytes += tb_size_in_bytes;
-    	rlcP->stat_rx_data_pdu   += 1;
+        rlc_pP->stat_rx_data_bytes += tb_size_in_bytes;
+        rlc_pP->stat_rx_data_pdu   += 1;
 
-    	if (tb_size_in_bytes > 0) {
-			rlc_um_receive_process_dar (rlcP, frame, eNB_flag, tb, (rlc_um_pdu_sn_10_t *)first_byte, tb_size_in_bytes);
-			LOG_D(RLC, "[RLC_UM][MOD %d][RB %d][FRAME %05d] VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n", rlcP->module_id, rlcP->rb_id, frame, rlcP->vr_ur, rlcP->vr_ux, rlcP->vr_uh);
-			rlc_um_display_rx_window(rlcP);
-		}
+        if (tb_size_in_bytes > 0) {
+            rlc_um_receive_process_dar (rlc_pP, frameP, eNB_flagP, tb_p, (rlc_um_pdu_sn_10_t *)first_byte_p, tb_size_in_bytes);
+            LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u] VR(UR)=%03d VR(UX)=%03d VR(UH)=%03d\n",
+                    frameP,
+                    (rlc_pP->is_enb) ? "eNB" : "UE",
+                    rlc_pP->enb_module_id,
+                    rlc_pP->ue_module_id,
+                    rlc_pP->rb_id,
+                    rlc_pP->vr_ur,
+                    rlc_pP->vr_ux,
+                    rlc_pP->vr_uh);
+            rlc_um_display_rx_window(rlc_pP);
+        }
     }
 }

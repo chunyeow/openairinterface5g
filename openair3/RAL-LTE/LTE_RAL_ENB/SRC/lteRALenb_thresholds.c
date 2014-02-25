@@ -29,7 +29,7 @@
 
 /****************************************************************************
  **                                                                        **
- ** Name:  eRAL_configure_thresholds_request()                          **
+ ** Name:  eRAL_configure_thresholds_request()                             **
  **                                                                        **
  ** Description: Forwards the Link_Configure_Thresholds.request message    **
  **   to the RRC layer.                                                    **
