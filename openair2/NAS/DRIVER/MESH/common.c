@@ -40,7 +40,6 @@
 //#include "nas_common.h"
 #include "local.h"
 #include "proto_extern.h"
-//#include "LAYER2/PDCP/pdcp.h"
 #ifndef NAS_NETLINK
 #include "rtai_fifos.h"
 #endif
