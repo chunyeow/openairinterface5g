@@ -58,7 +58,7 @@
 #include "PHY_INTERFACE/defs.h"
 #include "PHY/defs.h"
 #include "SCHED/defs.h"
-#include "LAYER2/PDCP/pdcp.h"
+#include "LAYER2/PDCP_v10.1.0/pdcp.h"
 #include "RRC/LITE/defs.h"
 #include "UTIL/LOG/log.h"
 #include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
