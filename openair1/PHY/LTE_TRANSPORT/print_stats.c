@@ -261,7 +261,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 
   unsigned int success=0;
-  u8 eNB,UE_id,i,j,number_of_cards=1;
+  u8 eNB,UE_id,i,j,number_of_cards_l=1;
   u32 ulsch_errors=0;
   u32 ulsch_round_attempts[4]={0,0,0,0},ulsch_round_errors[4]={0,0,0,0};
   u32 harq_pid_ul, harq_pid_dl;
@@ -277,9 +277,9 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
   phy_vars_eNB->total_system_throughput = 0;//phy_vars_eNB->eNB_UE_stats[UE_id].total_transmitted_bits + phy_vars_eNB->total_system_throughput;
   // }
 
-  for (eNB=0;eNB<number_of_cards;eNB++) {
+  for (eNB=0;eNB<number_of_cards_l;eNB++) {
     len += sprintf(&buffer[len],"[eNB PROC] eNB %d/%d Frame %d: RX Gain %d dB, I0 %d dBm (%d,%d) dB \n",
-		   eNB,number_of_cards,
+		   eNB,number_of_cards_l,
 		   phy_vars_eNB->frame,
 		   phy_vars_eNB->rx_total_gain_eNB_dB,
 		   phy_vars_eNB->PHY_measurements_eNB[eNB].n0_power_tot_dBm,

@@ -472,7 +472,7 @@ typedef struct{
   /// NDI from last UL scheduling
   uint8_t oldNDI_UL[8];
   /// Flag to indicate UL has been scheduled at least once
-  int ul_active;
+  boolean_t ul_active;
 
   // PHY interface info
 
@@ -536,7 +536,7 @@ typedef struct{
 
 typedef struct {
   /// Flag to indicate this process is active
-  u8 RA_active;
+  boolean_t RA_active;
   /// Size of DCI for RA-Response (bytes)
   u8 RA_dci_size_bytes1;
   /// Size of DCI for RA-Response (bits)
@@ -1129,9 +1129,9 @@ void        init_ue_sched_info(void);
 void        add_ue_ulsch_info (module_id_t module_idP,  module_id_t ue_mod_idP, sub_frame_t subframe,UE_ULSCH_STATUS status);
 void        add_ue_dlsch_info (module_id_t module_idP, module_id_t ue_mod_idP, sub_frame_t subframe,UE_DLSCH_STATUS status);
 module_id_t find_UE_id        (module_id_t module_idP, rnti_t rnti) ;
-u16         find_UE_RNTI      (module_id_t module_idP, module_id_t ue_mod_idP);
+rnti_t      find_UE_RNTI      (module_id_t module_idP, module_id_t ue_mod_idP);
 u8          find_active_UEs   (module_id_t module_idP);
-u8          is_UE_active      (module_id_t module_idP, module_id_t ue_mod_idP );
+boolean_t   is_UE_active      (module_id_t module_idP, module_id_t ue_mod_idP );
 u8          find_ulgranted_UEs(module_id_t module_idP);
 u8          find_dlgranted_UEs(module_id_t module_idP);
 u8          process_ue_cqi    (module_id_t module_idP, module_id_t ue_mod_idP);
@@ -1343,13 +1343,13 @@ BSR_SHORT *get_bsr_short(module_id_t module_idP, u8 bsr_len);
 */
 BSR_LONG * get_bsr_long(module_id_t module_idP, u8 bsr_len);
 
-/*! \fn  int update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid)
+/*! \fn  boolean_t update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid)
    \brief get the rlc stats and update the bsr level for each lcid 
 \param[in] Mod_id instance of the UE
 \param[in] frame Frame index
 \param[in] lcid logical channel identifier
 */
-int update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcgid);
+boolean_t update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcgid);
 
 /*! \fn  locate (int *table, int size, int value)
    \brief locate the BSR level in the table as defined in 36.321. This function requires that he values in table to be monotonic, either increasing or decreasing. The returned value is not less than 0, nor greater than n-1, where n is the size of table. 

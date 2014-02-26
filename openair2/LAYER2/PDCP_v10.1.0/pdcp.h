@@ -28,7 +28,7 @@
 *******************************************************************************/
 
 /*! \file pdcp.c
-* \brief pdcp interface with RLC
+* \brief pdcp interface with RLC, RRC
 * \author  Lionel GAUTHIER and Navid Nikaein
 * \date 2009-2012
 * \version 1.0
@@ -82,23 +82,16 @@
 #include "PMCH-InfoList-r9.h"
 #endif
 
-#ifndef FALSE
-#define FALSE (0x00)
-#endif
-#ifndef TRUE
-#define TRUE  !(FALSE)
-#endif
 
-extern pthread_t pdcp_thread;
-extern pthread_attr_t pdcp_thread_attr;
+extern pthread_t       pdcp_thread;
+extern pthread_attr_t  pdcp_thread_attr;
 extern pthread_mutex_t pdcp_mutex;
-extern pthread_cond_t pdcp_cond;
-extern int pdcp_instance_cnt;
+extern pthread_cond_t  pdcp_cond;
+extern int             pdcp_instance_cnt;
 
 int init_pdcp_thread(void);
 void cleanup_pdcp_thread(void);
 
-typedef unsigned char BOOL;
 
 public_pdcp(unsigned int Pdcp_stats_tx[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
 public_pdcp(unsigned int Pdcp_stats_tx_bytes[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
@@ -110,13 +103,13 @@ public_pdcp(unsigned int Pdcp_stats_rx_bytes_last[NB_MODULES_MAX][NB_CNX_CH][NB_
 public_pdcp(unsigned int Pdcp_stats_rx_rate[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
 
 typedef struct pdcp_t {
-  BOOL instanciated_instance;
-  u16  header_compression_profile;
+  boolean_t instanciated_instance;
+  u16       header_compression_profile;
 
   /* SR: added this flag to distinguish UE/eNB instance as pdcp_run for virtual
    * mode can receive data on NETLINK for eNB while eNB_flag = 0 and for UE when eNB_flag = 1
    */
-  u8 is_ue;
+  boolean_t is_ue;
 
   /* Configured security algorithms */
   u8 cipheringAlgorithm;
@@ -133,27 +126,27 @@ typedef struct pdcp_t {
 
   u8 security_activated;
 
-  u8 rlc_mode;
+  rlc_mode_t rlc_mode;
   u8 status_report;
   u8 seq_num_size;
 
-  u8 lcid;
+  logical_chan_id_t lcid;
   /*
    * Sequence number state variables
    *
    * TX and RX window
    */
-  u16  next_pdcp_tx_sn;
-  u16  next_pdcp_rx_sn;
+  pdcp_sn_t next_pdcp_tx_sn;
+  pdcp_sn_t next_pdcp_rx_sn;
   /*
    * TX and RX Hyper Frame Numbers
    */
-  u16  tx_hfn;
-  u16  rx_hfn;
+  pdcp_hfn_t tx_hfn;
+  pdcp_hfn_t rx_hfn;
   /*
    * SN of the last PDCP SDU delivered to upper layers
    */
-  u16  last_submitted_pdcp_rx_sn;
+  pdcp_sn_t  last_submitted_pdcp_rx_sn;
 
   /*
    * Following array is used as a bitmap holding missing sequence
@@ -168,15 +161,12 @@ typedef struct pdcp_t {
   short int first_missing_pdu;
 } pdcp_t;
 
+#if defined(Rel10)
 typedef struct pdcp_mbms_t {
-  BOOL instanciated_instance;
-
-  uint16_t service_id;
-  uint32_t session_id; // lcid
-
-  uint16_t rb_id;
-
+  boolean_t instanciated_instance;
+  rb_id_t   rb_id;
 } pdcp_mbms_t;
+#endif
 /*
  * Following symbolic constant alters the behaviour of PDCP
  * and makes it linked to PDCP test code under targets/TEST/PDCP/
@@ -186,9 +176,10 @@ typedef struct pdcp_mbms_t {
  * under targets/TEST/PDCP/
  */
 
-/*! \fn BOOL pdcp_data_req(module_id_t, u32_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
+/*! \fn boolean_t pdcp_data_req(module_id_t, u32_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
 * \brief This functions handles data transfer requests coming either from RRC or from IP
-* \param[in] module_id Module ID
+* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
+* \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in] frame Frame number
 * \param[in] Shows if relevant PDCP entity is part of an eNB or a UE
 * \param[in] rab_id Radio Bearer ID
@@ -201,12 +192,13 @@ typedef struct pdcp_mbms_t {
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(BOOL pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, rb_id_t rb_id, mui_t muiP, u32 confirmP, \
+public_pdcp(boolean_t pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, rb_id_t rb_id, mui_t muiP, u32 confirmP, \
     sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode));
 
-/*! \fn BOOL pdcp_data_ind(module_id_t, module_id_t, u32_t, u8_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
+/*! \fn boolean_t pdcp_data_ind(module_id_t, module_id_t, frame_t, eNB_flag_t, MBMS_flag_t, rb_id_t, sdu_size_t, mem_block_t*, boolean_t)
 * \brief This functions handles data transfer indications coming from RLC
-* \param[in] module_id Module ID
+* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
+* \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in] frame Frame number
 * \param[in] Shows if relevant PDCP entity is part of an eNB or a UE
 * \param[in] Tells if MBMS traffic
@@ -218,16 +210,18 @@ public_pdcp(BOOL pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t fr
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(BOOL pdcp_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, u8_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size,
-                   mem_block_t* sdu_buffer, u8 is_data_plane));
+public_pdcp(boolean_t pdcp_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, MBMS_flag_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size,
+                   mem_block_t* sdu_buffer, boolean_t is_data_plane));
 
-/*! \fn void rrc_pdcp_config_req(module_id_t, rb_id_t,u8)
+/*! \fn void rrc_pdcp_config_req(module_id_t , module_id_t ,frame_t,eNB_flag_t,u32,rb_id_t,u8)
 * \brief This functions initializes relevant PDCP entity
-* \param[in] module_id Module ID of relevant PDCP entity
-* \param[in] frame frame counter (TTI)
-* \param[in] eNB_flag flag indicating the node type
-* \param[in] action flag for action: add, remove , modify
-* \param[in] rab_id Radio Bearer ID of relevant PDCP entity
+* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
+* \param[in]  ue_mod_idP         Virtualized ue module identifier.
+* \param[in] frameP frame counter (TTI)
+* \param[in] eNB_flagP flag indicating the node type
+* \param[in] actionP flag for action: add, remove , modify
+* \param[in] rb_idP Radio Bearer ID of relevant PDCP entity
+* \param[in] security_modeP Radio Bearer ID of relevant PDCP entity
 * \return none
 * \note None
 * @ingroup _pdcp
@@ -242,7 +236,8 @@ public_pdcp(void rrc_pdcp_config_req (module_id_t enb_idP,
 
 /*! \fn bool rrc_pdcp_config_asn1_req (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list)
 * \brief  Function for RRC to configure a Radio Bearer.
-* \param[in]  module_id         Virtualized module identifier.
+* \param[in]  enb_mod_idP        Virtualized enb module identifier.
+* \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in]  frame              Frame index.
 * \param[in]  eNB_flag           Flag to indicate eNB (1) or UE (0)
 * \param[in]  index             index of UE or eNB depending on the eNB_flag
@@ -256,7 +251,7 @@ public_pdcp(void rrc_pdcp_config_req (module_id_t enb_idP,
 * \return     A status about the processing, OK or error code.
 */
 public_pdcp(
-BOOL rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
+boolean_t rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
                                module_id_t          ue_idP,
                                frame_t              frameP,
                                eNB_flag_t           eNB_flagP,
@@ -272,9 +267,11 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
 #endif
                                ));
 
-/*! \fn BOOL pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, u32  action, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode)
+/*! \fn boolean_t pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, u32  action, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode)
 * \brief  Function for RRC to configure a Radio Bearer.
-* \param[in]  module_id         Virtualized module identifier.
+* \param[in]  pdcp_pP            Pointer on PDCP structure.
+* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
+* \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in]  frame              Frame index.
 * \param[in]  eNB_flag           Flag to indicate eNB (1) or UE (0)
 * \param[in]  action             add, remove, modify a RB
@@ -288,7 +285,7 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
 * \param[in]  kUPenc             User-Plane encryption key
 * \return     A status about the processing, OK or error code.
 */
-public_pdcp(BOOL pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
+public_pdcp(boolean_t pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
                                        module_id_t enb_idP,
                                        module_id_t ue_idP,
                                        frame_t     frameP,
@@ -315,10 +312,12 @@ public_pdcp(BOOL pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
 */
 //public_pdcp(void rrc_pdcp_config_release (module_id_t, rb_id_t);)
 
-/*! \fn void pdcp_run(u32_t, u8_t)
+/*! \fn void pdcp_run(frame_t, eNB_flag_t, module_id_t,module_id_t)
 * \brief Runs PDCP entity to let it handle incoming/outgoing SDUs
 * \param[in] frame Frame number
 * \param[in] eNB_flag Indicates if this PDCP entity belongs to an eNB or to a UE
+* \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
+* \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \return none
 * \note None
 * @ingroup _pdcp
@@ -372,7 +371,7 @@ struct pdcp_netlink_element_s {
  * into pdcp.missing_pdus for every missing PDU
  */
 typedef struct pdcp_missing_pdu_info_t {
-  u16 sequence_number;
+  pdcp_sn_t sequence_number;
 } pdcp_missing_pdu_info_t;
 #endif
 
@@ -387,8 +386,10 @@ typedef struct pdcp_missing_pdu_info_t {
 protected_pdcp(signed int             pdcp_2_nas_irq;)
 protected_pdcp(pdcp_t                 pdcp_array_ue[NUMBER_OF_UE_MAX][NB_RB_MAX];)
 protected_pdcp(pdcp_t                 pdcp_array_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][NB_RB_MAX];)
-public_pdcp(pdcp_mbms_t               pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
-public_pdcp(pdcp_mbms_t               pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
+#if defined(Rel10)
+public_pdcp(pdcp_mbms_t               pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSessionPerPMCH];)   // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
+public_pdcp(pdcp_mbms_t               pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];) // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
+#endif
 protected_pdcp(sdu_size_t             pdcp_output_sdu_bytes_to_write;)
 protected_pdcp(sdu_size_t             pdcp_output_header_bytes_to_write;)
 protected_pdcp(list_t                 pdcp_sdu_list;)

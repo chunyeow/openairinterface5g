@@ -91,7 +91,7 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
 //-----------------------------------------------------------------------------
     struct mac_data_req    data_request;
     rb_id_t                rb_id    = 0;
-    rlc_mode_t             rlc_mode = RLC_NONE;
+    rlc_mode_t             rlc_mode = RLC_MODE_NONE;
     void                  *rlc_p      = NULL;
 
 #ifdef DEBUG_MAC_INTERFACE
@@ -126,17 +126,17 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
         rb_id = lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][channel_idP];
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
         switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               AssertFatal (0 , "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
               return (tbs_size_t)0;
               break;
-          case RLC_AM:
+          case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.am;
               break;
-          case RLC_UM:
+          case RLC_MODE_UM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.um;
               break;
-          case RLC_TM:
+          case RLC_MODE_TM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.tm;
               break;
           default:
@@ -146,17 +146,17 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
         rb_id = lcid2rbid_ue[ue_mod_idP][channel_idP];
         rlc_mode = rlc_array_ue[ue_mod_idP][rb_id].mode;
         switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               AssertFatal (0 , "UE RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, ue_mod_idP);
               return (tbs_size_t)0;
               break;
-          case RLC_AM:
+          case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.am;
               break;
-          case RLC_UM:
+          case RLC_MODE_UM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.um;
               break;
-          case RLC_TM:
+          case RLC_MODE_TM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.tm;
               break;
           default:
@@ -165,20 +165,20 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
     }
 
     switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
         break;
 
-        case RLC_AM:
+        case RLC_MODE_AM:
             data_request = rlc_am_mac_data_request((rlc_am_entity_t*)rlc_p, frameP);
             return mac_rlc_serialize_tb(buffer_pP, data_request.data);
             break;
 
-        case RLC_UM:
+        case RLC_MODE_UM:
             data_request = rlc_um_mac_data_request((rlc_um_entity_t*)rlc_p, frameP);
             return mac_rlc_serialize_tb(buffer_pP, data_request.data);
             break;
 
-        case RLC_TM:
+        case RLC_MODE_TM:
             data_request = rlc_tm_mac_data_request((rlc_tm_entity_t*)rlc_p, frameP);
             return mac_rlc_serialize_tb(buffer_pP, data_request.data);
             break;
@@ -200,7 +200,7 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
                            crc_t              *crcs_pP) {
 //-----------------------------------------------------------------------------
     rb_id_t                rb_id    = 0;
-    rlc_mode_t             rlc_mode = RLC_NONE;
+    rlc_mode_t             rlc_mode = RLC_MODE_NONE;
     void                  *rlc_p      = NULL;
 #ifdef DEBUG_MAC_INTERFACE
     if (num_tbP) {
@@ -242,16 +242,16 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
         AssertFatal (rb_id < NB_RB_MAX, "enB RB id is too high (%u/%d) lcid %u enb module %u ue module id %u!\n", rb_id, NB_RB_MAX, channel_idP, enb_mod_idP, ue_mod_idP);
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
         switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               AssertFatal (0 , "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
               break;
-          case RLC_AM:
+          case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.am;
               break;
-          case RLC_UM:
+          case RLC_MODE_UM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.um;
               break;
-          case RLC_TM:
+          case RLC_MODE_TM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.tm;
               break;
           default:
@@ -262,16 +262,16 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
         AssertFatal (rb_id < NB_RB_MAX, "UE RB id is too high (%u/%d) lcid %u enb module %u ue module id %u!\n", rb_id, NB_RB_MAX, channel_idP, enb_mod_idP, ue_mod_idP);
         rlc_mode = rlc_array_ue[ue_mod_idP][rb_id].mode;
         switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               AssertFatal (0 , "UE RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, ue_mod_idP);
               break;
-          case RLC_AM:
+          case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.am;
               break;
-          case RLC_UM:
+          case RLC_MODE_UM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.um;
               break;
-          case RLC_TM:
+          case RLC_MODE_TM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.tm;
               break;
           default:
@@ -280,25 +280,25 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
     }
     struct mac_data_ind data_ind = mac_rlc_deserialize_tb(buffer_pP, tb_sizeP, num_tbP, crcs_pP);
     switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
         //handle_event(WARNING,"FILE %s FONCTION mac_rlc_data_ind() LINE %s : no radio bearer configured :%d\n", __FILE__, __LINE__, channel_idP);
         break;
 
-        case RLC_AM:
+        case RLC_MODE_AM:
 #ifdef DEBUG_MAC_INTERFACE
             LOG_D(RLC, "MAC DATA IND TO RLC_AM MOD_ID %s enb id %u ue id %u \n", (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
 #endif
             rlc_am_mac_data_indication((rlc_am_entity_t*)rlc_p, frameP, eNB_flagP, data_ind);
             break;
 
-        case RLC_UM:
+        case RLC_MODE_UM:
 #ifdef DEBUG_MAC_INTERFACE
             LOG_D(RLC, "MAC DATA IND TO RLC_UM MOD_ID %s enb id %u ue id %u \n", (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
 #endif
             rlc_um_mac_data_indication((rlc_um_entity_t*)rlc_p, frameP, eNB_flagP, data_ind);
             break;
 
-        case RLC_TM:
+        case RLC_MODE_TM:
 #ifdef DEBUG_MAC_INTERFACE
             LOG_D(RLC, "MAC DATA IND TO RLC_TM MOD_ID %s enb id %u ue id %u \n", (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
 #endif
@@ -313,7 +313,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
   struct mac_status_ind  tx_status;
   struct mac_status_resp status_resp;
   rb_id_t                rb_id    = 0;
-  rlc_mode_t             rlc_mode = RLC_NONE;
+  rlc_mode_t             rlc_mode = RLC_MODE_NONE;
   void                  *rlc_p      = NULL;
 
   memset (&mac_rlc_status_resp, 0, sizeof(mac_rlc_status_resp_t));
@@ -355,17 +355,17 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
       }
       rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
       switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
             //LOG_E (RLC, "enB RLC not configured rb id %u lcid %u enb id  %u ue id %u!\n", rb_id, channel_idP, enb_mod_idP, ue_mod_idP);
             return mac_rlc_status_resp;
             break;
-        case RLC_AM:
+        case RLC_MODE_AM:
             rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.am;
             break;
-        case RLC_UM:
+        case RLC_MODE_UM:
             rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.um;
             break;
-        case RLC_TM:
+        case RLC_MODE_TM:
             rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.tm;
             break;
         default:
@@ -384,17 +384,17 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
       }
       rlc_mode = rlc_array_ue[ue_mod_idP][rb_id].mode;
       switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
             AssertFatal (0 , "UE RLC not configured rb id %u lcid %u enb id  %u ue id %u!\n", rb_id, channel_idP, enb_mod_idP, ue_mod_idP);
             return mac_rlc_status_resp;
             break;
-        case RLC_AM:
+        case RLC_MODE_AM:
             rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.am;
             break;
-        case RLC_UM:
+        case RLC_MODE_UM:
             rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.um;
             break;
-        case RLC_TM:
+        case RLC_MODE_TM:
             rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_id].rlc.tm;
             break;
         default:
@@ -403,11 +403,11 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
   }
 
   switch (rlc_mode) {
-      case RLC_NONE:
+      case RLC_MODE_NONE:
       //handle_event(WARNING,"FILE %s FONCTION mac_rlc_data_ind() LINE %s : no radio bearer configured :%d\n", __FILE__, __LINE__, channel_idP);
       break;
 
-      case RLC_AM:
+      case RLC_MODE_AM:
           status_resp = rlc_am_mac_status_indication((rlc_am_entity_t*)rlc_p, frameP, tb_sizeP, tx_status);
           mac_rlc_status_resp.bytes_in_buffer                 = status_resp.buffer_occupancy_in_bytes;
           mac_rlc_status_resp.head_sdu_creation_time          = status_resp.head_sdu_creation_time;
@@ -416,7 +416,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
           return mac_rlc_status_resp;
           break;
 
-      case RLC_UM:
+      case RLC_MODE_UM:
           status_resp = rlc_um_mac_status_indication((rlc_um_entity_t*)rlc_p, frameP, eNB_flagP, tb_sizeP, tx_status);
           mac_rlc_status_resp.bytes_in_buffer                 = status_resp.buffer_occupancy_in_bytes;
           mac_rlc_status_resp.pdus_in_buffer                  = status_resp.buffer_occupancy_in_pdus;
@@ -426,7 +426,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
           return mac_rlc_status_resp;
           break;
 
-      case RLC_TM:
+      case RLC_MODE_TM:
           status_resp = rlc_tm_mac_status_indication((rlc_tm_entity_t*)rlc_p, frameP, tb_sizeP, tx_status);
           mac_rlc_status_resp.bytes_in_buffer = status_resp.buffer_occupancy_in_bytes;
           mac_rlc_status_resp.pdus_in_buffer  = status_resp.buffer_occupancy_in_pdus;

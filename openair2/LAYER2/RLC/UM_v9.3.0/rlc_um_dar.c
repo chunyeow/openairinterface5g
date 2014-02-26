@@ -886,7 +886,6 @@ inline signed int rlc_um_in_window(rlc_um_entity_t *rlc_pP, frame_t frameP, rlc_
 inline signed int rlc_um_in_reordering_window(rlc_um_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP) {
 //-----------------------------------------------------------------------------
     rlc_sn_t   modulus = (signed int)rlc_pP->vr_uh - rlc_pP->rx_um_window_size;
-    rlc_sn_t   sn = snP;
 
     snP           = (snP - modulus) % rlc_pP->rx_sn_modulo;
 

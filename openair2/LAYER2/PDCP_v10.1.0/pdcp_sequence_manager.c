@@ -40,9 +40,9 @@
 /*
  * Initializes sequence numbering state
  * @param pdcp_entity The PDCP entity to be initialized
- * @return BOOL TRUE on success, FALSE otherwise
+ * @return boolean_t TRUE on success, FALSE otherwise
  */
-BOOL pdcp_init_seq_numbers(pdcp_t* pdcp_entity)
+boolean_t pdcp_init_seq_numbers(pdcp_t* pdcp_entity)
 {
   if (pdcp_entity == NULL)
     return FALSE;
@@ -64,7 +64,7 @@ BOOL pdcp_init_seq_numbers(pdcp_t* pdcp_entity)
   return TRUE;
 }
 
-BOOL pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity)
+boolean_t pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity)
 {
   if (pdcp_entity == NULL)
     return FALSE;
@@ -81,7 +81,7 @@ BOOL pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity)
 /**
  * Check if SN number is in the range according to SN size
  */
-BOOL pdcp_is_seq_num_valid(u16 seq_num, u8 seq_num_size)
+boolean_t pdcp_is_seq_num_valid(u16 seq_num, u8 seq_num_size)
 {
   if (seq_num >= 0 && seq_num <= pdcp_calculate_max_seq_num_for_given_size(seq_num_size))
     return TRUE;
@@ -121,7 +121,7 @@ u16 pdcp_get_next_tx_seq_number(pdcp_t* pdcp_entity)
   return pdcp_seq_num;
 }
 
-BOOL pdcp_advance_rx_window(pdcp_t* pdcp_entity)
+boolean_t pdcp_advance_rx_window(pdcp_t* pdcp_entity)
 {
   if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE)
     return FALSE;
@@ -146,7 +146,7 @@ BOOL pdcp_advance_rx_window(pdcp_t* pdcp_entity)
  * @return 1 if SN is okay, 0 otherwise
  * XXX Reordering window should also be handled here
  */
-BOOL pdcp_is_rx_seq_number_valid(u16 seq_num, pdcp_t* pdcp_entity)
+boolean_t pdcp_is_rx_seq_number_valid(u16 seq_num, pdcp_t* pdcp_entity)
 {
   LOG_D(PDCP, "Incoming RX Seq # is %04d\n", seq_num);
 
@@ -187,7 +187,7 @@ BOOL pdcp_is_rx_seq_number_valid(u16 seq_num, pdcp_t* pdcp_entity)
   }
 }
 
-BOOL pdcp_mark_current_pdu_as_received(u16 seq_num, pdcp_t* pdcp_entity)
+boolean_t pdcp_mark_current_pdu_as_received(u16 seq_num, pdcp_t* pdcp_entity)
 {
   /*
    * Incoming sequence number and PDCP entity were already

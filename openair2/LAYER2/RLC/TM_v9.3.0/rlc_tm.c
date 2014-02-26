@@ -64,7 +64,7 @@ rlc_tm_send_sdu (rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flag, u8_t error_i
 
         memcpy (&rlcP->output_sdu_in_construction->data[rlcP->output_sdu_size_to_write], srcP, length_in_bytes);
 
-        rlc_data_ind (rlcP->enb_module_id, rlcP->ue_module_id, frame, eNB_flag, RLC_MBMS_NO, rlcP->rb_id, length_in_bytes, rlcP->output_sdu_in_construction, rlcP->is_data_plane);
+        rlc_data_ind (rlcP->enb_module_id, rlcP->ue_module_id, frame, eNB_flag, MBMS_FLAG_NO, rlcP->rb_id, length_in_bytes, rlcP->output_sdu_in_construction, rlcP->is_data_plane);
         rlcP->output_sdu_in_construction = NULL;
     } else {
         msg ("[RLC_TM %p][SEND_SDU] ERROR  OUTPUT SDU IS NULL\n", rlcP);
@@ -182,7 +182,6 @@ rlc_tm_mac_data_indication (void *rlcP, u32_t frame, u8_t eNB_flag, struct mac_d
 {
 //-----------------------------------------------------------------------------
     rlc_tm_entity_t *l_rlc = (rlc_tm_entity_t *) rlcP;
-    mem_block_t     *tb;
 
     if (data_indP.data.nb_elements > 0) {
         LOG_D(RLC, "[RLC_TM][%s][MOD %02u/%02u][RB %d][FRAME %05d] MAC_DATA_IND %d TBs\n",

@@ -1067,7 +1067,6 @@ int main(int argc, char **argv) {
   init_omv ();
 #endif
   //Before this call, NB_UE_INST and NB_eNB_INST are not set correctly
-
   check_and_adjust_params ();
 
   set_seed = oai_emulation.emulation_config.seed.value;

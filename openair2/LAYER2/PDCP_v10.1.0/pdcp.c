@@ -76,7 +76,7 @@ extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned in
  * this mem_block_t to be dissected for testing purposes. For further details see test
  * code at targets/TEST/PDCP/test_pdcp.c:test_pdcp_data_req()
  */
-BOOL pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, u32 confirmP,
+boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, u32 confirmP,
     sdu_size_t sdu_buffer_sizeP, unsigned char* sdu_buffer_pP, u8 modeP)
 {
   //-----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ BOOL pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
       pdcp_pdu_p = get_free_mem_block(sdu_buffer_sizeP);
       if (pdcp_pdu_p != NULL) {
           memcpy(&pdcp_pdu_p->data[0], sdu_buffer_pP, sdu_buffer_sizeP);
-          rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, RLC_MBMS_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
+          rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_FLAG_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
       } else {
         rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
@@ -291,8 +291,8 @@ BOOL pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
 }
 
 
-BOOL pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, u8_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_buffer_sizeP, \
-    mem_block_t* sdu_buffer_pP, u8 is_data_planeP)
+boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, MBMS_flag_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_buffer_sizeP, \
+    mem_block_t* sdu_buffer_pP, boolean_t is_data_planeP)
 {
   //-----------------------------------------------------------------------------
   pdcp_t      *pdcp_p          = NULL;
@@ -300,7 +300,7 @@ BOOL pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fram
   mem_block_t *new_sdu_p       = NULL;
   u8           pdcp_header_len = 0;
   u8           pdcp_tailer_len = 0;
-  u16          sequence_number = 0;
+  pdcp_sn_t    sequence_number = 0;
   u8           payload_offset  = 0;
 
   AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
@@ -605,7 +605,7 @@ void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, mo
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
 }
 
-BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
+boolean_t rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
     module_id_t               ue_mod_idP,
     frame_t              frameP,
     eNB_flag_t           enb_flagP,
@@ -625,7 +625,7 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
   long int        lc_id          = 0;
   long int        srb_id         = 0;
   long int        mch_id         = 0;
-  rlc_mode_t      rlc_type       = RLC_NONE;
+  rlc_mode_t      rlc_type       = RLC_MODE_NONE;
   DRB_Identity_t  drb_id         = 0;
   DRB_Identity_t *pdrb_id_p      = NULL;
   u8              drb_sn         = 0;
@@ -637,7 +637,6 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
   SRB_ToAddMod_t *srb_toaddmod_p = NULL;
   DRB_ToAddMod_t *drb_toaddmod_p = NULL;
   pdcp_t         *pdcp_p         = NULL;
-  module_id_t     module_id      = -1;
 
 #ifdef Rel10
   int i,j;
@@ -646,9 +645,9 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
 #endif
 
   if (enb_flagP == 0) {
-      LOG_D(PDCP, "[UE %d] CONFIG REQ ASN1 for eNB %d\n", ue_mod_idP, enb_mod_idP);
+      LOG_D(PDCP, "[UE %u] CONFIG REQ ASN1 for eNB %u\n", ue_mod_idP, enb_mod_idP);
   } else {
-      LOG_D(PDCP, "[eNB %d] CONFIG REQ ASN1 for UE %d\n", enb_mod_idP, ue_mod_idP);
+      LOG_D(PDCP, "[eNB %u] CONFIG REQ ASN1 for UE %u\n", enb_mod_idP, ue_mod_idP);
   }
   // srb2add_list does not define pdcp config, we use rlc info to setup the pdcp dcch0 and dcch1 channels
 
@@ -784,8 +783,8 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
                 // set the applicable profile
                 break;
               default:
-                LOG_W(PDCP,"[MOD_id %d][RB %d] unknown drb_toaddmod->PDCP_Config->headerCompression->present \n",
-                    module_id, drb_id);
+                LOG_W(PDCP,"[MOD_id %u/%u][RB %u] unknown drb_toaddmod->PDCP_Config->headerCompression->present \n",
+                    enb_mod_idP, ue_mod_idP, drb_id);
                 break;
               }
               pdcp_config_req_asn1 (pdcp_p,
@@ -850,14 +849,14 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
 
               // can set the mch_id = i
               if (enb_flagP) {
-                rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id;
-                if (pdcp_mbms_array_eNB[enb_mod_idP][rb_id].instanciated_instance == module_id + 1)
+                rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id; // 1
+                if (pdcp_mbms_array_eNB[enb_mod_idP][mch_id][lc_id].instanciated_instance == enb_mod_idP + 1)
                   action = ACTION_MBMS_MODIFY;
                 else
                   action = ACTION_MBMS_ADD;
               } else {
-                rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3);
-                if (pdcp_mbms_array_ue[ue_mod_idP][rb_id].instanciated_instance == module_id + 1)
+                rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3); // 15
+                if (pdcp_mbms_array_ue[ue_mod_idP][mch_id][lc_id].instanciated_instance == ue_mod_idP + 1)
                   action = ACTION_MBMS_MODIFY;
                 else
                   action = ACTION_MBMS_ADD;
@@ -865,24 +864,23 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
 
 
 
-              rlc_type = RLC_MODE_UM;
-              pdcp_config_req_asn1 (NULL,
+              pdcp_config_req_asn1 (NULL,  // unused for MBMS
                   enb_mod_idP,
                   ue_mod_idP,
                   frameP,
                   enb_flagP,
-                  rlc_type,
+                  RLC_MODE_NONE,
                   action,
                   lc_id,
                   mch_id,
                   rb_id,
-                  0, // set to deafult
-                  0,
-                  0,
-                  security_modeP,
-                  kRRCenc_pP,
-                  kRRCint_pP,
-                  kUPenc_pP);
+                  0,   // unused for MBMS
+                  0,   // unused for MBMS
+                  0,   // unused for MBMS
+                  0,   // unused for MBMS
+                  NULL,  // unused for MBMS
+                  NULL,  // unused for MBMS
+                  NULL); // unused for MBMS
           }
       }
   }
@@ -892,49 +890,49 @@ BOOL rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
 
 }
 
-BOOL pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
+boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
     module_id_t     enb_mod_idP,
     module_id_t     ue_mod_idP,
-    frame_t    frameP,
-    eNB_flag_t enb_flagP,
-    rlc_mode_t rlc_modeP,
-    u32        actionP,
-    u16        lc_idP,
-    u16        mch_idP,
-    rb_id_t    rb_idP,
-    u8         rb_snP,
-    u8         rb_reportP,
-    u16        header_compression_profileP,
-    u8         security_modeP,
-    u8        *kRRCenc_pP,
-    u8        *kRRCint_pP,
-    u8        *kUPenc_pP)
+    frame_t         frameP,
+    eNB_flag_t      enb_flagP,
+    rlc_mode_t      rlc_modeP,
+    u32             actionP,
+    u16             lc_idP,
+    u16             mch_idP,
+    rb_id_t         rb_idP,
+    u8              rb_snP,
+    u8              rb_reportP,
+    u16             header_compression_profileP,
+    u8              security_modeP,
+    u8             *kRRCenc_pP,
+    u8             *kRRCint_pP,
+    u8             *kUPenc_pP)
 {
 
   switch (actionP) {
   case ACTION_ADD:
     DevAssert(pdcp_pP != NULL);
-    pdcp_pP->instanciated_instance = 1;
-    pdcp_pP->is_ue = (enb_flagP == 0) ? 1 : 0;
-    pdcp_pP->lcid = lc_idP;
+    pdcp_pP->instanciated_instance      = 1;
+    pdcp_pP->is_ue                      = (enb_flagP == 0) ? 1 : 0;
+    pdcp_pP->lcid                       = lc_idP;
     pdcp_pP->header_compression_profile = header_compression_profileP;
-    pdcp_pP->status_report = rb_reportP;
+    pdcp_pP->status_report              = rb_reportP;
 
     if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
         pdcp_pP->seq_num_size = 7;
     } else if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits) {
-        pdcp_pP->seq_num_size=12;
+        pdcp_pP->seq_num_size = 12;
     } else {
-        pdcp_pP->seq_num_size=5;
+        pdcp_pP->seq_num_size = 5;
     }
 
-    pdcp_pP->rlc_mode = rlc_modeP;
-    pdcp_pP->next_pdcp_tx_sn = 0;
-    pdcp_pP->next_pdcp_rx_sn = 0;
-    pdcp_pP->tx_hfn = 0;
-    pdcp_pP->rx_hfn = 0;
+    pdcp_pP->rlc_mode                  = rlc_modeP;
+    pdcp_pP->next_pdcp_tx_sn           = 0;
+    pdcp_pP->next_pdcp_rx_sn           = 0;
+    pdcp_pP->tx_hfn                    = 0;
+    pdcp_pP->rx_hfn                    = 0;
     pdcp_pP->last_submitted_pdcp_rx_sn = 4095;
-    pdcp_pP->first_missing_pdu = -1;
+    pdcp_pP->first_missing_pdu         = -1;
 
     if (enb_flagP == 0) {
         LOG_I(PDCP, "[UE %d] Config request : Action ADD for eNB %d: Frame %d LCID %d (rb id %d) "
@@ -995,7 +993,7 @@ BOOL pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
     pdcp_pP->cipheringAlgorithm = 0xff;
     pdcp_pP->integrityProtAlgorithm = 0xff;
     pdcp_pP->status_report = 0;
-    pdcp_pP->rlc_mode = RLC_NONE;
+    pdcp_pP->rlc_mode = RLC_MODE_NONE;
     pdcp_pP->next_pdcp_tx_sn = 0;
     pdcp_pP->next_pdcp_rx_sn = 0;
     pdcp_pP->tx_hfn = 0;
@@ -1023,6 +1021,7 @@ BOOL pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
         free(pdcp_pP->kRRCenc);
     }
     break;
+#if defined(Rel10)
   case ACTION_MBMS_ADD:
   case ACTION_MBMS_MODIFY:
     if (enb_flagP == 0) {
@@ -1033,17 +1032,14 @@ BOOL pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
             enb_mod_idP, ue_mod_idP, actionP == ACTION_MBMS_ADD ? "ACTION_MBMS_ADD" : "ACTION_MBMS_MODIFY", frameP, mch_idP, lc_idP, rb_idP);
     }
     if (enb_flagP == 1) {
-        pdcp_mbms_array_eNB[enb_mod_idP][rb_idP].instanciated_instance = 1 ;
-        pdcp_mbms_array_eNB[enb_mod_idP][rb_idP].service_id = mch_idP;
-        pdcp_mbms_array_eNB[enb_mod_idP][rb_idP].session_id = lc_idP;
-        pdcp_mbms_array_eNB[enb_mod_idP][rb_idP].rb_id = rb_idP;
+        pdcp_mbms_array_eNB[enb_mod_idP][mch_idP][lc_idP].instanciated_instance = 1 ;
+        pdcp_mbms_array_eNB[enb_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
     } else {
-        pdcp_mbms_array_eNB[ue_mod_idP][rb_idP].instanciated_instance = 1 ;
-        pdcp_mbms_array_eNB[ue_mod_idP][rb_idP].service_id = mch_idP;
-        pdcp_mbms_array_eNB[ue_mod_idP][rb_idP].session_id = lc_idP;
-        pdcp_mbms_array_eNB[ue_mod_idP][rb_idP].rb_id = rb_idP;
+        pdcp_mbms_array_eNB[ue_mod_idP][mch_idP][lc_idP].instanciated_instance = 1 ;
+        pdcp_mbms_array_eNB[ue_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
     }
     break;
+#endif
   case ACTION_SET_SECURITY_MODE:
     pdcp_config_set_security(pdcp_pP, enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, lc_idP, security_modeP, kRRCenc_pP, kRRCint_pP, kUPenc_pP);
     break;
@@ -1210,9 +1206,13 @@ void pdcp_module_cleanup (void)
 void pdcp_layer_init(void)
 {
   //-----------------------------------------------------------------------------
-  module_id_t  instance, instance2;
-  rb_id_t rb_id;
-  int     j;
+  module_id_t       instance;
+  module_id_t       instance2;
+  rb_id_t           rb_id;
+#if defined(Rel10)
+  mbms_session_id_t session_id;
+  mbms_service_id_t service_id;
+#endif
   /*
    * Initialize SDU list
    */
@@ -1222,9 +1222,13 @@ void pdcp_layer_init(void)
       for (rb_id = 0; rb_id < NB_RB_MAX; rb_id++) {
           memset(&pdcp_array_ue[instance][rb_id], 0, sizeof(pdcp_t));
       }
-      for (j = 0; j < 16*29; j++) {
-          memset(&pdcp_mbms_array_ue[instance][j], 0, sizeof(pdcp_mbms_t));
+#if defined(Rel10)
+      for (service_id = 0; service_id < maxServiceCount; service_id++) {
+          for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
+              memset(&pdcp_mbms_array_ue[instance][service_id][session_id], 0, sizeof(pdcp_mbms_t));
+          }
       }
+#endif
   }
   for (instance = 0; instance < NUMBER_OF_eNB_MAX; instance++) {
       for (instance2 = 0; instance2 < NUMBER_OF_UE_MAX; instance2++) {
@@ -1232,9 +1236,13 @@ void pdcp_layer_init(void)
               memset(&pdcp_array_eNB[instance][instance2][rb_id], 0, sizeof(pdcp_t));
           }
       }
-      for (j = 0; j < 16*29; j++) {
-          memset(&pdcp_mbms_array_eNB[instance][j], 0, sizeof(pdcp_mbms_t));
+#if defined(Rel10)
+      for (service_id = 0; service_id < maxServiceCount; service_id++) {
+          for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
+              memset(&pdcp_mbms_array_eNB[instance][service_id][session_id], 0, sizeof(pdcp_mbms_t));
+          }
       }
+#endif
   }
 
   LOG_I(PDCP, "PDCP layer has been initialized\n");

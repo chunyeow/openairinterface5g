@@ -125,7 +125,7 @@ void rlc_am_send_sdu (rlc_am_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_fla
               rlc_pP->output_sdu_size_to_write,
               rlc_pP->output_sdu_in_construction);
 #else
-          rlc_data_ind (rlc_pP->enb_module_id, rlc_pP->ue_module_id, frameP, eNB_flagP, RLC_MBMS_NO, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction, rlc_pP->is_data_plane);
+          rlc_data_ind (rlc_pP->enb_module_id, rlc_pP->ue_module_id, frameP, eNB_flagP, MBMS_FLAG_NO, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction, rlc_pP->is_data_plane);
 #endif
           rlc_pP->output_sdu_in_construction = NULL;
       } else {

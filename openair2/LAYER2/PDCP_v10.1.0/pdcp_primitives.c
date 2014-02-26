@@ -40,7 +40,7 @@
 #include "pdcp.h"
 #include "pdcp_primitives.h"
 
-extern BOOL util_mark_nth_bit_of_octet(u8_t* octet, u8_t index);
+extern boolean_t util_mark_nth_bit_of_octet(u8_t* octet, u8_t index);
 
 /*
  * Parses data/control field out of buffer of User Plane PDCP Data PDU with
@@ -129,7 +129,7 @@ u8 pdcp_get_sequence_number_of_pdu_with_SRB_sn(unsigned char* pdu_buffer)
  * @param pdu_buffer PDCP PDU buffer
  * @return TRUE on success, FALSE otherwise
  */
-BOOL pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu_buffer, \
+boolean_t pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu_buffer, \
      pdcp_control_plane_data_pdu_header* pdu)
 {
   if (pdu_buffer == NULL || pdu == NULL)
@@ -150,7 +150,7 @@ BOOL pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu
  * @param pdu_buffer PDCP PDU buffer
  * @return TRUE on success, FALSE otherwise
  */
-BOOL pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_buffer, \
+boolean_t pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_buffer, \
      pdcp_user_plane_data_pdu_header_with_long_sn* pdu)
 {
   if (pdu_buffer == NULL || pdu == NULL)
@@ -182,7 +182,7 @@ BOOL pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_b
  * @param pdu A status report header
  * @return TRUE on success, FALSE otherwise
  */
-BOOL pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
+boolean_t pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
      u8 bitmap[512], pdcp_control_pdu_for_pdcp_status_report* pdu)
 {
   if (pdu_buffer == NULL || pdu == NULL)

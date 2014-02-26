@@ -9,12 +9,6 @@
 #ifndef PDCP_PRIMITIVES_H
 #define PDCP_PRIMITIVES_H
 
-#ifndef TRUE
-  #define TRUE 0x01
-  #define FALSE 0x00
-  typedef unsigned char BOOL;
-#endif
-
 /*
  * 3GPP TS 36.323 V10.1.0 (2011-03)
  */
@@ -130,7 +124,7 @@ u8 pdcp_get_sequence_number_of_pdu_with_SRB_sn(unsigned char* pdu_buffer);
  * @param pdu_buffer PDCP PDU buffer
  * @return TRUE on success, FALSE otherwise
  */
-BOOL pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu_buffer, \
+boolean_t pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu_buffer, \
 							      pdcp_control_plane_data_pdu_header* pdu);
 /*
  * Fills the incoming buffer with the fields of the header for long SN (RLC UM and AM)
@@ -138,7 +132,7 @@ BOOL pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer(unsigned char* pdu
  * @param pdu_buffer PDCP PDU buffer
  * @return TRUE on success, FALSE otherwise
  */
-BOOL pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_buffer, \
+boolean_t pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_buffer, \
      pdcp_user_plane_data_pdu_header_with_long_sn* pdu);
 
 /*
@@ -150,7 +144,7 @@ BOOL pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer(unsigned char* pdu_b
  * @param pdu A status report header
  * @return TRUE on success, FALSE otherwise
  */
-BOOL pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
+boolean_t pdcp_serialize_control_pdu_for_pdcp_status_report(unsigned char* pdu_buffer, \
      u8 bitmap[512], pdcp_control_pdu_for_pdcp_status_report* pdu);
 
 int pdcp_netlink_dequeue_element(module_id_t enb_mod_idP, module_id_t ue_mod_idP, eNB_flag_t eNB_flagP,

@@ -199,8 +199,8 @@ void initiate_ra_proc(module_id_t module_idP, frame_t frameP, u16 preamble_index
   LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Initiating RA procedure for preamble index %d\n",module_idP,frameP,preamble_index);
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
-      if (eNB_mac_inst[module_idP].RA_template[i].RA_active==0) {
-          eNB_mac_inst[module_idP].RA_template[i].RA_active=1;
+      if (eNB_mac_inst[module_idP].RA_template[i].RA_active==FALSE) {
+          eNB_mac_inst[module_idP].RA_template[i].RA_active=TRUE;
           eNB_mac_inst[module_idP].RA_template[i].generate_rar=1;
           eNB_mac_inst[module_idP].RA_template[i].generate_Msg4=0;
           eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4=0;
@@ -224,7 +224,7 @@ void cancel_ra_proc(module_id_t module_idP, frame_t frameP, rnti_t rnti) {
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
       if (rnti == eNB_mac_inst[module_idP].RA_template[i].rnti) {
-          eNB_mac_inst[module_idP].RA_template[i].RA_active=0;
+          eNB_mac_inst[module_idP].RA_template[i].RA_active=FALSE;
           eNB_mac_inst[module_idP].RA_template[i].generate_rar=0;
           eNB_mac_inst[module_idP].RA_template[i].generate_Msg4=0;
           eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4=0;
@@ -251,7 +251,7 @@ void terminate_ra_proc(module_id_t module_idP,frame_t frameP,rnti_t rnti,unsigne
           eNB_mac_inst[module_idP].RA_template[i].rnti, rnti,
           eNB_mac_inst[module_idP].RA_template[i].RA_active);
       if ((eNB_mac_inst[module_idP].RA_template[i].rnti==rnti) &&
-          (eNB_mac_inst[module_idP].RA_template[i].RA_active==1)) {
+          (eNB_mac_inst[module_idP].RA_template[i].RA_active==TRUE)) {
 
           payload_ptr = parse_ulsch_header(msg3,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,msg3_len);
           LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
@@ -307,16 +307,16 @@ module_id_t find_UE_id(module_id_t module_idP, rnti_t rnti) {
 
 }
 
-u16 find_UE_RNTI(module_id_t module_idP, module_id_t ue_mod_idP) {
+rnti_t find_UE_RNTI(module_id_t module_idP, module_id_t ue_mod_idP) {
 
   return (eNB_mac_inst[module_idP].UE_template[ue_mod_idP].rnti);
 
 }
-u8 is_UE_active(module_id_t module_idP, module_id_t ue_mod_idP ){
+boolean_t is_UE_active(module_id_t module_idP, module_id_t ue_mod_idP ){
   if (eNB_mac_inst[module_idP].UE_template[ue_mod_idP].rnti !=0 )
-    return 1;
+    return TRUE;
   else
-    return 0 ;
+    return FALSE ;
 }
 u8 find_active_UEs(module_id_t module_idP){
 
@@ -326,7 +326,7 @@ u8 find_active_UEs(module_id_t module_idP){
 
   for (ue_mod_id=0;ue_mod_id<NUMBER_OF_UE_MAX;ue_mod_id++) {
 
-      if (((rnti=eNB_mac_inst[module_idP].UE_template[ue_mod_id].rnti) !=0)&&(eNB_mac_inst[module_idP].UE_template[ue_mod_id].ul_active==1)){
+      if (((rnti=eNB_mac_inst[module_idP].UE_template[ue_mod_id].rnti) !=0)&&(eNB_mac_inst[module_idP].UE_template[ue_mod_id].ul_active==TRUE)){
 
           if (mac_xface->get_eNB_UE_stats(module_idP,rnti) != NULL){ // check at the phy enb_ue state for this rnti
               nb_active_ue++;
@@ -369,7 +369,7 @@ u8 find_num_active_UEs_in_cbagroup(module_id_t module_idP, unsigned char group_i
   for (UE_id=group_id;UE_id<NUMBER_OF_UE_MAX;UE_id+=eNB_mac_inst[module_idP].num_active_cba_groups) {
 
       if (((rnti=eNB_mac_inst[module_idP].UE_template[UE_id].rnti) !=0) &&
-          (eNB_mac_inst[module_idP].UE_template[UE_id].ul_active==1)    &&
+          (eNB_mac_inst[module_idP].UE_template[UE_id].ul_active==TRUE)    &&
           (mac_get_rrc_status(module_idP,1,UE_id) > RRC_CONNECTED)){
           //  && (UE_is_to_be_scheduled(module_idP,UE_id)))
           // check at the phy enb_ue state for this rnti
@@ -383,9 +383,9 @@ u8 find_num_active_UEs_in_cbagroup(module_id_t module_idP, unsigned char group_i
   return(nb_ue_in_pusch);
 }
 #endif 
-s8 add_new_ue(module_id_t enb_mod_idP, u16 rntiP) {
+s8 add_new_ue(module_id_t enb_mod_idP, rnti_t rntiP) {
   module_id_t ue_mod_id;
-  int    j;
+  int         j;
 
   for (ue_mod_id=0;ue_mod_id<NUMBER_OF_UE_MAX;ue_mod_id++) {
       if (eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].rnti == 0) {
@@ -415,7 +415,7 @@ s8 mac_remove_ue(module_id_t enb_mod_idP, module_id_t ue_mod_idP) {
 
   eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].ul_SR             = 0;
   eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].rnti              = 0;
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].ul_active         = 0;
+  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].ul_active         = FALSE;
   eNB_ulsch_info[enb_mod_idP][ue_mod_idP].rnti                        = 0;
   eNB_ulsch_info[enb_mod_idP][ue_mod_idP].status                      = S_UL_NONE;
   eNB_dlsch_info[enb_mod_idP][ue_mod_idP].rnti                        = 0;
@@ -511,12 +511,12 @@ unsigned char *parse_ulsch_header(unsigned char *mac_header,
 
 void SR_indication(module_id_t enb_mod_idP, frame_t frameP, rnti_t rntiP, sub_frame_t subframeP) {
 
-  s8 ue_mod_id = find_UE_id(enb_mod_idP, rntiP);
+  smodule_id_t ue_mod_id = find_UE_id(enb_mod_idP, rntiP);
 
   if (ue_mod_id >= 0) {
       LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d \n",enb_mod_idP,rntiP,frameP,subframeP, ue_mod_id);
       eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_SR = 1;
-      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = 1;
+      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = TRUE;
   } else {
       AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
   }
@@ -602,7 +602,7 @@ void rx_sdu(module_id_t enb_mod_idP,frame_t frameP,rnti_t rntiP,u8 *sdu, u16 sdu
               LOG_D(MAC,"[eNB %d] Frame %d : ULSCH -> UL-DCCH, received %d bytes form UE %d on LCID %d(%d) \n",
                   enb_mod_idP,frameP, rx_lengths[i], ue_mod_id, rx_lcids[i], rx_lcids[i]);
 
-              mac_rlc_data_ind(enb_mod_idP,ue_mod_id, frameP,1,RLC_MBMS_NO,
+              mac_rlc_data_ind(enb_mod_idP,ue_mod_id, frameP,ENB_FLAG_YES,MBMS_FLAG_NO,
                   rx_lcids[i],
                   (char *)payload_ptr,
                   rx_lengths[i],
@@ -628,7 +628,7 @@ void rx_sdu(module_id_t enb_mod_idP,frame_t frameP,rnti_t rntiP,u8 *sdu, u16 sdu
               enb_mod_idP,frameP, rx_lengths[i], ue_mod_id,rx_lcids[i],rx_lcids[i]);
 
           if ((rx_lengths[i] <SCH_PAYLOAD_SIZE_MAX) &&  (rx_lengths[i] > 0) ) {   // MAX SIZE OF transport block
-              mac_rlc_data_ind(enb_mod_idP,ue_mod_id, frameP,1,RLC_MBMS_NO,
+              mac_rlc_data_ind(enb_mod_idP,ue_mod_id, frameP,ENB_FLAG_YES,MBMS_FLAG_NO,
                   DTCH,
                   (char *)payload_ptr,
                   rx_lengths[i],
@@ -969,6 +969,7 @@ void add_common_dci(DCI_PDU *DCI_pdu,
 
 
   DCI_pdu->Num_common_dci++;
+  LOG_D(MAC,"add common dci format %d for rnti %d \n",dci_fmt,rnti);
 }
 
 void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_size_bytes,unsigned char aggregation,unsigned char dci_size_bits,unsigned char dci_fmt,u8 ra_flag) {
@@ -1453,7 +1454,7 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
           module_idP,frameP,MTCH,TBS,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
 
-      rlc_status = mac_rlc_status_ind(module_idP,0,frameP,1,RLC_MBMS_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
+      rlc_status = mac_rlc_status_ind(module_idP,0,frameP,ENB_FLAG_YES,MBMS_FLAG_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
       //printf("frameP %d, subframeP %d,  rlc_status.bytes_in_buffer is %d\n",frameP,subframeP, rlc_status.bytes_in_buffer);
 
@@ -1461,10 +1462,10 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
           LOG_I(MAC,"[eNB %d][MBMS USER-PLANE], Frame %d, MTCH->MCH, Requesting %d bytes from RLC (header len mtch %d)\n",
               module_idP,frameP,TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch,header_len_mtch);
 
-          sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP, 0, frameP, 1, RLC_MBMS_YES,
+          sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP, 0, frameP, ENB_FLAG_YES, MBMS_FLAG_YES,
               MTCH + (maxDRB + 3) * MAX_MOBILES_PER_RG,
               (char*)&mch_buffer[sdu_length_total]);
-          //sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,frameP, RLC_MBMS_NO,  MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)), (char*)&mch_buffer[sdu_length_total]);
+          //sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,frameP, MBMS_FLAG_NO,  MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)), (char*)&mch_buffer[sdu_length_total]);
           LOG_I(MAC,"[eNB %d][MBMS USER-PLANE] Got %d bytes for MTCH %d\n",module_idP,sdu_lengths[num_sdus],MTCH);
           eNB_mac_inst[module_idP].mtch_active=1;
           sdu_lcids[num_sdus] = MTCH;
@@ -1597,7 +1598,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
 
-      if (RA_template[i].RA_active == 1) {
+      if (RA_template[i].RA_active == TRUE) {
 
           LOG_I(MAC,"[eNB %d][RAPROC] RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
               module_idP,i,RA_template[i].generate_rar,RA_template[i].generate_Msg4,RA_template[i].wait_ack_Msg4, RA_template[i].rnti);
@@ -1886,7 +1887,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
                   RA_template[i].generate_Msg4=0;
                   RA_template[i].generate_Msg4_dci=1;
                   RA_template[i].wait_ack_Msg4=1;
-                  RA_template[i].RA_active = 0;
+                  RA_template[i].RA_active = FALSE;
                   lcid=0;
 
                   if ((TBsize - rrc_sdu_length - msg4_header) <= 2) {
@@ -2002,7 +2003,7 @@ void schedule_ulsch(module_id_t module_idP, frame_t frameP,unsigned char coopera
   // not sure about the break (can there be more than 1 active RA procedure?)
 
   for (i=0;i<NB_RA_PROC_MAX;i++) {
-      if ((eNB_mac_inst[module_idP].RA_template[i].RA_active == 1) &&
+      if ((eNB_mac_inst[module_idP].RA_template[i].RA_active == TRUE) &&
           (eNB_mac_inst[module_idP].RA_template[i].generate_rar == 0) &&
           (eNB_mac_inst[module_idP].RA_template[i].Msg3_subframe == sched_subframe)) {
           first_rb++;
@@ -3216,7 +3217,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
               else {
                   LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d : Msg4 acknowledged\n",module_idP,frameP,subframeP);
                   eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4=0;
-                  eNB_mac_inst[module_idP].RA_template[i].RA_active=0;
+                  eNB_mac_inst[module_idP].RA_template[i].RA_active=FALSE;
               }
           }
       }
@@ -3818,8 +3819,8 @@ void schedule_ue_spec(module_id_t   module_idP,
               module_idP,
               ue_mod_id,
               frameP,
-              1,
-              RLC_MBMS_NO,
+              ENB_FLAG_YES,
+              MBMS_FLAG_NO,
               DCCH,
               (TBS-ta_len-header_len_dcch)); // transport block set size
 
@@ -3830,8 +3831,8 @@ void schedule_ue_spec(module_id_t   module_idP,
                   module_idP,
                   ue_mod_id,
                   frameP,
-                  1,
-                  RLC_MBMS_NO,
+                  ENB_FLAG_YES,
+                  MBMS_FLAG_NO,
                   DCCH,
                   (char *)&dlsch_buffer[sdu_lengths[0]]);
 
@@ -3858,8 +3859,8 @@ void schedule_ue_spec(module_id_t   module_idP,
               module_idP,
               ue_mod_id,
               frameP,
-              1,
-              RLC_MBMS_NO,
+              ENB_FLAG_YES,
+              MBMS_FLAG_NO,
               DCCH+1,
               (TBS-ta_len-header_len_dcch-sdu_length_total)); // transport block set size less allocations for timing advance and
           // DCCH SDU
@@ -3871,8 +3872,8 @@ void schedule_ue_spec(module_id_t   module_idP,
                   module_idP,
                   ue_mod_id,
                   frameP,
-                  1,
-                  RLC_MBMS_NO,
+                  ENB_FLAG_YES,
+                  MBMS_FLAG_NO,
                   DCCH+1,
                   (char *)&dlsch_buffer[sdu_lengths[0]]);
 
@@ -3897,8 +3898,8 @@ void schedule_ue_spec(module_id_t   module_idP,
               module_idP,
               ue_mod_id,
               frameP,
-              1,
-              RLC_MBMS_NO,
+              ENB_FLAG_YES,
+              MBMS_FLAG_NO,
               DTCH,
               TBS-ta_len-header_len_dcch-sdu_length_total-header_len_dtch);
 
@@ -3910,8 +3911,8 @@ void schedule_ue_spec(module_id_t   module_idP,
                   module_idP,
                   ue_mod_id,
                   frameP,
-                  1,
-                  RLC_MBMS_NO,
+                  ENB_FLAG_YES,
+                  MBMS_FLAG_NO,
                   DTCH,
                   (char*)&dlsch_buffer[sdu_length_total]);
 

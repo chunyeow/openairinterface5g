@@ -115,7 +115,7 @@ rlc_op_status_t rlc_stat_req     (
                   unsigned int* stat_timer_poll_retransmit_timed_out,
                   unsigned int* stat_timer_status_prohibit_timed_out) {
 //-----------------------------------------------------------------------------
-    rlc_mode_t             rlc_mode = RLC_NONE;
+    rlc_mode_t             rlc_mode = RLC_MODE_NONE;
     void                  *rlc_p      = NULL;
 
 #ifdef OAI_EMU
@@ -140,16 +140,16 @@ rlc_op_status_t rlc_stat_req     (
     if (eNB_flagP) {
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
         switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               AssertFatal (0 , "enB RLC not configured rb id %u  module eNB id %u!\n", rb_idP, enb_mod_idP);
               break;
-          case RLC_AM:
+          case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
               break;
-          case RLC_UM:
+          case RLC_MODE_UM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
               break;
-          case RLC_TM:
+          case RLC_MODE_TM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
               break;
           default:
@@ -158,16 +158,16 @@ rlc_op_status_t rlc_stat_req     (
     } else {
         rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
         switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               AssertFatal (0 , "UE RLC not configured rb id %u module ue id %u!\n", rb_idP, ue_mod_idP);
               break;
-          case RLC_AM:
+          case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
               break;
-          case RLC_UM:
+          case RLC_MODE_UM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
               break;
-          case RLC_TM:
+          case RLC_MODE_TM:
               rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
               break;
           default:
@@ -175,7 +175,7 @@ rlc_op_status_t rlc_stat_req     (
         }
     }
     switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
             *stat_tx_pdcp_sdu                     = 0;
             *stat_tx_pdcp_bytes                   = 0;
             *stat_tx_pdcp_sdu_discarded           = 0;
@@ -206,7 +206,7 @@ rlc_op_status_t rlc_stat_req     (
             return RLC_OP_STATUS_BAD_PARAMETER;
             break;
 
-        case RLC_AM:
+        case RLC_MODE_AM:
             rlc_am_stat_req((rlc_am_entity_t*)rlc_p,
                             stat_tx_pdcp_sdu,
                             stat_tx_pdcp_bytes,
@@ -238,7 +238,7 @@ rlc_op_status_t rlc_stat_req     (
                             return RLC_OP_STATUS_OK;
            break;
 
-       case RLC_UM:
+       case RLC_MODE_UM:
            *stat_tx_retransmit_pdu_by_status     = 0;
            *stat_tx_retransmit_bytes_by_status   = 0;
            *stat_tx_retransmit_pdu               = 0;
@@ -272,7 +272,7 @@ rlc_op_status_t rlc_stat_req     (
            return RLC_OP_STATUS_OK;
            break;
 
-       case RLC_TM:
+       case RLC_MODE_TM:
            *stat_tx_pdcp_sdu                     = 0;
            *stat_tx_pdcp_bytes                   = 0;
            *stat_tx_pdcp_sdu_discarded           = 0;
@@ -347,7 +347,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                   mem_block_t *sdu_pP) {
 //-----------------------------------------------------------------------------
   mem_block_t           *new_sdu_p    = NULL;
-  rlc_mode_t             rlc_mode     = RLC_NONE;
+  rlc_mode_t             rlc_mode     = RLC_MODE_NONE;
   void                  *rlc_p        = NULL;
 #ifdef Rel10
   rb_id_t                mbms_rb_id = 0;
@@ -398,16 +398,16 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
   if (eNB_flagP) {
       rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
       switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
             AssertFatal (0 , "enB RLC not configured rb id %u module %u!\n", rb_idP, enb_mod_idP);
             break;
-        case RLC_AM:
+        case RLC_MODE_AM:
             rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
             break;
-        case RLC_UM:
+        case RLC_MODE_UM:
             rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
             break;
-        case RLC_TM:
+        case RLC_MODE_TM:
             rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
             break;
         default:
@@ -416,16 +416,16 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
   } else {
       rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
       switch (rlc_mode) {
-        case RLC_NONE:
+        case RLC_MODE_NONE:
             AssertFatal (0 , "UE RLC not configured rb id %u module %u!\n", rb_idP, ue_mod_idP);
             break;
-        case RLC_AM:
+        case RLC_MODE_AM:
             rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
             break;
-        case RLC_UM:
+        case RLC_MODE_UM:
             rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
             break;
-        case RLC_TM:
+        case RLC_MODE_TM:
             rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
             break;
         default:
@@ -447,18 +447,18 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
       LOG_D(RLC,"RLC_TYPE : %d ",rlc_mode);
 #endif
       switch (rlc_mode) {
-          case RLC_NONE:
+          case RLC_MODE_NONE:
               free_mem_block(sdu_pP);
-              LOG_E(RLC, "Received RLC_NONE as rlc_type for %s eNB id  %u, ue id %u, rb_id %u\n",
+              LOG_E(RLC, "Received RLC_MODE_NONE as rlc_type for %s eNB id  %u, ue id %u, rb_id %u\n",
                     (eNB_flagP) ? "eNB" : "UE",
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
               return RLC_OP_STATUS_BAD_PARAMETER;
 
-          case RLC_AM:
+          case RLC_MODE_AM:
 #ifdef DEBUG_RLC_DATA_REQ
-              msg("RLC_AM\n");
+              msg("RLC_MODE_AM\n");
 #endif
               new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_am_data_req_alloc));
 
@@ -505,7 +505,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
               }
               break;
 
-          case RLC_UM:
+          case RLC_MODE_UM:
             new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_um_data_req_alloc));
 
               if (new_sdu_p != NULL) {
@@ -551,7 +551,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
               }
               break;
 
-          case RLC_TM:
+          case RLC_MODE_TM:
             new_sdu_p = get_free_mem_block (sdu_sizeP + sizeof (struct rlc_tm_data_req_alloc));
 
               if (new_sdu_p != NULL) {
@@ -692,7 +692,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 //-----------------------------------------------------------------------------
 void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sdu_pP, boolean_t is_data_planeP) {
 //-----------------------------------------------------------------------------
-  rlc_mode_t             rlc_mode   = RLC_NONE;
+  rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
   if (eNB_flagP) {
       rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
@@ -714,7 +714,9 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
 
 
   switch (rlc_mode) {
-      case RLC_AM:
+      case RLC_MODE_NONE:
+        break;
+      case RLC_MODE_AM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                    frame,
                    (eNB_flagP) ? "eNB" : "UE",
@@ -726,7 +728,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
                    ue_mod_idP,
                    rb_idP);
           break;
-      case RLC_UM:
+      case RLC_MODE_UM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                    frame,
                    (eNB_flagP) ? "eNB" : "UE",
@@ -738,7 +740,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
                    ue_mod_idP,
                    rb_idP);
           break;
-      case RLC_TM:
+      case RLC_MODE_TM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                  frame,
                  (eNB_flagP) ? "eNB" : "UE",
@@ -763,7 +765,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                         rlc_tx_status_t statusP,
                         boolean_t       is_data_planeP) {
 //-----------------------------------------------------------------------------
-    rlc_mode_t             rlc_mode   = RLC_NONE;
+    rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
     if (eNB_flagP) {
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
@@ -774,7 +776,9 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
         if (rlc_rrc_data_conf != NULL) {
             LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
             switch (rlc_mode) {
-                case RLC_AM:
+                case RLC_MODE_NONE:
+                    break;
+                case RLC_MODE_AM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
                             frame,
                             (eNB_flagP) ? "eNB" : "UE",
@@ -785,7 +789,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                             ue_mod_idP,
                             muiP);
                     break;
-                case RLC_UM:
+                case RLC_MODE_UM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
                             frame,
                             (eNB_flagP) ? "eNB" : "UE",
@@ -796,7 +800,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                             ue_mod_idP,
                             muiP);
                     break;
-                case RLC_TM:
+                case RLC_MODE_TM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
                             frame,
                             (eNB_flagP) ? "eNB" : "UE",
@@ -822,6 +826,10 @@ rlc_module_init (void)
    module_id_t  module_id1;
    module_id_t  module_id2;
    rb_id_t      rb_id;
+#if defined(Rel10)
+  mbms_session_id_t session_id;
+  mbms_service_id_t service_id;
+#endif
 
    LOG_D(RLC, "MODULE INIT\n");
    rlc_rrc_data_ind  = NULL;
@@ -832,18 +840,26 @@ rlc_module_init (void)
        for (k=0; k < RLC_MAX_LC; k++) {
            lcid2rbid_ue[module_id1][k] = RLC_RB_UNALLOCATED;
        }
-       for (k=0; k < 16*29; k++) {
-           memset(&rlc_mbms_array_ue[module_id1][k], 0, sizeof(rlc_mbms_t));
-       }
+#if defined(Rel10)
+      for (service_id = 0; service_id < maxServiceCount; service_id++) {
+          for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
+              memset(&rlc_mbms_array_ue[module_id1][service_id][session_id], 0, sizeof(rlc_mbms_t));
+          }
+      }
+#endif
        for (rb_id=0; rb_id < NB_RB_MAX; rb_id++) {
            memset(&rlc_array_ue[module_id1][rb_id], 0, sizeof(rlc_t));
        }
    }
 
    for (module_id1=0; module_id1 < NUMBER_OF_eNB_MAX; module_id1++) {
-       for (k=0; k < 16*29; k++) {
-           memset(&rlc_mbms_array_eNB[module_id1][k], 0, sizeof(rlc_mbms_t));
-       }
+#if defined(Rel10)
+      for (service_id = 0; service_id < maxServiceCount; service_id++) {
+          for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
+              memset(&rlc_mbms_array_eNB[module_id1][service_id][session_id], 0, sizeof(rlc_mbms_t));
+          }
+      }
+#endif
        for (module_id2=0; module_id2 < NUMBER_OF_UE_MAX; module_id2++) {
            for (rb_id=0; rb_id < NB_RB_MAX; rb_id++) {
                memset(&rlc_array_eNB[module_id1][module_id2][rb_id], 0, sizeof(rlc_t));

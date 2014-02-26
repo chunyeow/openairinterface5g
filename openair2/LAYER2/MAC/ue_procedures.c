@@ -367,8 +367,8 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,u8 *sdu,u16 sdu_len,u8 eN
           mac_rlc_data_ind(eNB_index,
               module_idP,
               frameP,
-              0,
-              RLC_MBMS_NO,
+              ENB_FLAG_NO,
+              MBMS_FLAG_NO,
               DCCH,
               (char *)payload_ptr,
               rx_lengths[i],
@@ -380,8 +380,8 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,u8 *sdu,u16 sdu_len,u8 eN
           mac_rlc_data_ind(eNB_index,
               module_idP,
               frameP,
-              0,
-              RLC_MBMS_NO,
+              ENB_FLAG_NO,
+              MBMS_FLAG_NO,
               DCCH1,
               (char *)payload_ptr,
               rx_lengths[i],
@@ -401,8 +401,8 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,u8 *sdu,u16 sdu_len,u8 eN
           mac_rlc_data_ind(eNB_index,
               module_idP,
               frameP,
-              0,
-              RLC_MBMS_NO,
+              ENB_FLAG_NO,
+              MBMS_FLAG_NO,
               DTCH,
               (char *)payload_ptr,
               rx_lengths[i],
@@ -517,8 +517,8 @@ void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, u8 *sdu, u16 sdu_le
                   0,
                   module_idP,
                   frameP,
-                  0,
-                  RLC_MBMS_YES,
+                  ENB_FLAG_NO,
+                  MBMS_FLAG_YES,
                   MTCH + (maxDRB + 3),
                   (char *)payload_ptr,
                   rx_lengths[i],
@@ -1080,14 +1080,14 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 e
 
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH] == LCID_NOT_EMPTY) {
 
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,0,RLC_MBMS_NO,
+      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
           DCCH,
           (buflen-dcch_header_len-bsr_len-phr_len));
       LOG_D(MAC, "[UE %d] Frame %d : UL-DCCH -> ULSCH, RRC message has %d bytes to "
           "send (Transport Block size %d, mac header len %d)\n",
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dcch_header_len);
 
-      sdu_lengths[0] += mac_rlc_data_req(0, module_idP,frameP,0, RLC_MBMS_NO,
+      sdu_lengths[0] += mac_rlc_data_req(0, module_idP,frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
           DCCH,
           (char *)&ulsch_buff[sdu_lengths[0]]);
 
@@ -1106,7 +1106,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 e
   // DCCH1
   if (UE_mac_inst[module_idP].scheduling_info.LCID_status[DCCH1] == LCID_NOT_EMPTY) {
 
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,0,RLC_MBMS_NO,
+      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
           DCCH1,
           (buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-sdu_length_total));
 
@@ -1114,7 +1114,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 e
           " send (Transport Block size %d, mac header len %d)\n",
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dcch1_header_len);
 
-      sdu_lengths[num_sdus] = mac_rlc_data_req(0, module_idP,frameP,0,RLC_MBMS_NO,
+      sdu_lengths[num_sdus] = mac_rlc_data_req(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
           DCCH1,
           (char *)&ulsch_buff[sdu_lengths[0]]);
       sdu_length_total += sdu_lengths[num_sdus];
@@ -1140,7 +1140,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 e
     else 
       dtch_header_len = 2;//sizeof(SCH_SUBHEADER_SHORT);
        */
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,0,RLC_MBMS_NO,
+      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
           DTCH,
           buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-dtch_header_len-sdu_length_total);
 
@@ -1148,7 +1148,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 e
           module_idP,frameP, rlc_status.bytes_in_buffer,buflen,dtch_header_len,
           UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DTCH]);
 
-      sdu_lengths[num_sdus] = mac_rlc_data_req(0, module_idP,frameP, 0, RLC_MBMS_NO,
+      sdu_lengths[num_sdus] = mac_rlc_data_req(0, module_idP,frameP, ENB_FLAG_NO, MBMS_FLAG_NO,
           DTCH,
           (char *)&ulsch_buff[sdu_length_total]);
 
@@ -1586,10 +1586,10 @@ u8 get_bsr_len (module_id_t module_idP, u16 buflen) {
 }
 
 
-int  update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcg_id){
+boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcg_id){
 
   mac_rlc_status_resp_t rlc_status;
-  u8 sr_pending = 0;
+  boolean_t sr_pending = FALSE;
   if ((lcg_id < 0) || (lcg_id > MAX_NUM_LCGID) )
     return sr_pending;
   // fixme: need a better way to reset 
@@ -1599,11 +1599,11 @@ int  update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcg_id){
   }
   //  for (lcid =0 ; lcid < MAX_NUM_LCID; lcid++) {
   if (UE_mac_inst[module_idP].scheduling_info.LCGID[lcid] == lcg_id) {
-      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,0,RLC_MBMS_NO,
+      rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
           lcid,
           0);
       if (rlc_status.bytes_in_buffer > 0 ) {
-          sr_pending = 1;
+          sr_pending = TRUE;
           UE_mac_inst[module_idP].scheduling_info.LCID_status[lcid] = LCID_NOT_EMPTY;
           UE_mac_inst[module_idP].scheduling_info.BSR[lcg_id] += locate (BSR_TABLE,BSR_TABLE_SIZE, rlc_status.bytes_in_buffer);
           UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcg_id] += rlc_status.bytes_in_buffer;

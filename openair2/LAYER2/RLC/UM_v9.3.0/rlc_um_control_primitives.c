@@ -51,12 +51,12 @@ void config_req_rlc_um (frame_t         frameP,
                         rb_type_t       rb_typeP)
 {
   //-----------------------------------------------------------------------------
-  rlc_um_entity_t *rlc = NULL;
+  rlc_um_entity_t *rlc_p = NULL;
 
   if (eNB_flagP) {
-      rlc = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.um;
+      rlc_p = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.um;
   } else {
-      rlc = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
+      rlc_p = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
   }
   LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%d sn_field_length=%d is_mXch=%d --->][RLC_UM][MOD %u/%u][RB %u]    \n",
       frame,
@@ -70,10 +70,10 @@ void config_req_rlc_um (frame_t         frameP,
           ue_module_idP,
           rb_idP);
 
-  rlc_um_init(rlc);
-  if (rlc_um_fsm_notify_event (rlc, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-      rlc_um_set_debug_infos(rlc, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
-      rlc_um_configure(rlc,
+  rlc_um_init(rlc_p);
+  if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+      rlc_um_set_debug_infos(rlc_p, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
+      rlc_um_configure(rlc_p,
           frame,
           config_um_pP->timer_reordering,
           config_um_pP->sn_field_length,
@@ -84,25 +84,38 @@ void config_req_rlc_um (frame_t         frameP,
 //-----------------------------------------------------------------------------
 u32_t t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
 
-void config_req_rlc_um_asn1 (frame_t      frameP,
-                             eNB_flag_t   eNB_flagP,
-                             u8_t         mbms_flagP,
-                             module_id_t  enb_module_idP,
-                             module_id_t  ue_module_idP,
-                             UL_UM_RLC_t *ul_rlc_pP,
-                             DL_UM_RLC_t *dl_rlc_pP,
-                             rb_id_t      rb_idP,
-                             rb_type_t    rb_typeP)
+void config_req_rlc_um_asn1 (frame_t            frameP,
+                             eNB_flag_t         eNB_flagP,
+                             MBMS_flag_t        mbms_flagP,
+                             module_id_t        enb_module_idP,
+                             module_id_t        ue_module_idP,
+                             mbms_session_id_t  mbms_session_idP,
+                             mbms_service_id_t  mbms_service_idP,
+                             UL_UM_RLC_t       *ul_rlc_pP,
+                             DL_UM_RLC_t       *dl_rlc_pP,
+                             rb_id_t            rb_idP,
+                             rb_type_t          rb_typeP)
 {
   u32_t            ul_sn_FieldLength = 0;
   u32_t            dl_sn_FieldLength = 0;
   u32_t            t_Reordering;
-  rlc_um_entity_t *rlc               = NULL;
-
-  if (eNB_flagP) {
-      rlc = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.um;
-  } else {
-      rlc = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
+  rlc_um_entity_t *rlc_p               = NULL;
+#if defined(rel10)
+  if (mbms_flagP) {
+      if (eNB_flagP) {
+          rlc_p = &rlc_mbms_array_eNB[enb_module_idP][mbms_service_idP][mbms_session_idP].um;
+      } else {
+          rlc_p = &rlc_mbms_array_ue[ue_module_idP][mbms_service_idP][mbms_session_idP].um;
+      }
+  }
+  else
+#endif
+  {
+      if (eNB_flagP) {
+          rlc_p = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.um;
+      } else {
+          rlc_p = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
+      }
   }
 
   //-----------------------------------------------------------------------------
@@ -116,9 +129,9 @@ void config_req_rlc_um_asn1 (frame_t      frameP,
               ue_module_idP,
               rb_idP);
 
-  rlc_um_init(rlc);
-  if (rlc_um_fsm_notify_event (rlc, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-      rlc_um_set_debug_infos(rlc, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
+  rlc_um_init(rlc_p);
+  if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+      rlc_um_set_debug_infos(rlc_p, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
       if (ul_rlc_pP != NULL) {
           switch (ul_rlc_pP->sn_FieldLength) {
           case SN_FieldLength_size5:
@@ -130,10 +143,10 @@ void config_req_rlc_um_asn1 (frame_t      frameP,
           default:
             LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID Uplink sn_FieldLength %d, RLC NOT CONFIGURED\n",
                 frame,
-                (rlc->is_enb) ? "eNB" : "UE",
-                    rlc->enb_module_id,
-                    rlc->ue_module_id,
-                    rlc->rb_id,
+                (rlc_p->is_enb) ? "eNB" : "UE",
+                    rlc_p->enb_module_id,
+                    rlc_p->ue_module_id,
+                    rlc_p->rb_id,
                     ul_rlc_pP->sn_FieldLength);
             return;
           }
@@ -150,10 +163,10 @@ void config_req_rlc_um_asn1 (frame_t      frameP,
           default:
             LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID Downlink sn_FieldLength %d, RLC NOT CONFIGURED\n",
                 frame,
-                (rlc->is_enb) ? "eNB" : "UE",
-                    rlc->enb_module_id,
-                    rlc->ue_module_id,
-                    rlc->rb_id,
+                (rlc_p->is_enb) ? "eNB" : "UE",
+                    rlc_p->enb_module_id,
+                    rlc_p->ue_module_id,
+                    rlc_p->rb_id,
                     dl_rlc_pP->sn_FieldLength);
             return;
           }
@@ -162,23 +175,23 @@ void config_req_rlc_um_asn1 (frame_t      frameP,
           } else {
               LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID T_Reordering %d, RLC NOT CONFIGURED\n",
                   frame,
-                  (rlc->is_enb) ? "eNB" : "UE",
-                      rlc->enb_module_id,
-                      rlc->ue_module_id,
-                      rlc->rb_id,
+                  (rlc_p->is_enb) ? "eNB" : "UE",
+                      rlc_p->enb_module_id,
+                      rlc_p->ue_module_id,
+                      rlc_p->rb_id,
                       dl_rlc_pP->t_Reordering);
               return;
           }
       }
       if (eNB_flagP > 0) {
-          rlc_um_configure(rlc,
+          rlc_um_configure(rlc_p,
               frame,
               t_Reordering,
               ul_sn_FieldLength,
               dl_sn_FieldLength,
               mbms_flagP);
       } else {
-          rlc_um_configure(rlc,
+          rlc_um_configure(rlc_p,
               frame,
               t_Reordering,
               dl_sn_FieldLength,

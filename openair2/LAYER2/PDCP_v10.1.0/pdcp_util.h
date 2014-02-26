@@ -76,6 +76,6 @@ void util_print_binary_representation(unsigned char* message, u8_t octet);
  * @param index Index
  * @return TRUE on success, FALSE otherwise
  */
-BOOL util_mark_nth_bit_of_octet(u8_t* octet, u8_t index);
+boolean_t util_mark_nth_bit_of_octet(u8_t* octet, u8_t index);
 
 #endif // PDCP_UTIL_H

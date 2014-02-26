@@ -43,17 +43,17 @@
  * @param pdcp_entity The PDCP entity to be initialized
  * @return none
  */
-BOOL pdcp_init_seq_numbers(pdcp_t* pdcp_entity);
+boolean_t pdcp_init_seq_numbers(pdcp_t* pdcp_entity);
 /**
  * Checks if incoming PDCP entitiy pointer and relevant sequence number size is valid
  * @return TRUE (0x01) if it is valid, FALSE (0x00) otherwise
  */
-BOOL pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity);
+boolean_t pdcp_is_seq_num_size_valid(pdcp_t* pdcp_entity);
 /**
  * Check if SN number is in the range according to SN size
  * @return TRUE if it is valid, FALSE otherwise
  */
-BOOL pdcp_is_seq_num_valid(u16 seq_num, u8 seq_num_size);
+boolean_t pdcp_is_seq_num_valid(u16 seq_num, u8 seq_num_size);
 /**
  * Returns the maximum allowed sequence number value for given size of SN field
  * @return Max sequence number value
@@ -66,16 +66,16 @@ u16 pdcp_get_next_tx_seq_number(pdcp_t* pdcp_entity);
 /**
  * Advances the RX window state of given PDCP entity upon successfull receipt of a SDU
  */
-BOOL pdcp_advance_rx_window(pdcp_t* pdcp_entity);
+boolean_t pdcp_advance_rx_window(pdcp_t* pdcp_entity);
 /**
  * Checks if incoming PDU has a sequence number in accordance with the RX window
  * @return TRUE if it is valid, FALSE otherwise
  */
-BOOL pdcp_is_rx_seq_number_valid(u16 seq_num, pdcp_t* pdcp_entity);
+boolean_t pdcp_is_rx_seq_number_valid(u16 seq_num, pdcp_t* pdcp_entity);
 /**
 * Updates missing PDU bitmap with incoming sequence number
 * @return TRUE if successful, FALSE otherwise
 */
-BOOL pdcp_mark_current_pdu_as_received(u16 seq_num, pdcp_t* pdcp_entity);
+boolean_t pdcp_mark_current_pdu_as_received(u16 seq_num, pdcp_t* pdcp_entity);
 
 #endif

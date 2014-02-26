@@ -2486,7 +2486,7 @@ char openair_rrc_lite_eNB_init (module_id_t Mod_id)
 }
 char openair_rrc_lite_eNB_configuration (u8 Mod_id, RrcConfigurationReq *configuration)
 #else
-char openair_rrc_lite_eNB_init (u8 Mod_id)
+char openair_rrc_lite_eNB_init (module_id_t Mod_id)
 #endif
 {
   /*-----------------------------------------------------------------------------*/
@@ -2599,11 +2599,9 @@ int rrc_eNB_decode_ccch (module_id_t Mod_id, frame_t frameP, SRB_INFO * Srb_info
 {
   /*------------------------------------------------------------------------------*/
 
-  u16 Idx, UE_index;
-
-  asn_dec_rval_t dec_rval;
-  //UL_CCCH_Message_t ulccchmsg;
-  UL_CCCH_Message_t *ul_ccch_msg = NULL;        //&ulccchmsg;
+  u16                            Idx, UE_index;
+  asn_dec_rval_t                 dec_rval;
+  UL_CCCH_Message_t             *ul_ccch_msg = NULL;
   RRCConnectionRequest_r8_IEs_t *rrcConnectionRequest;
   int i, rval;
 

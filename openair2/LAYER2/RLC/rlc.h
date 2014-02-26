@@ -108,13 +108,25 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define  RLC_OP_STATUS_INTERNAL_ERROR    2
 #define  RLC_OP_STATUS_OUT_OF_RESSOURCES 3
 
-#define  RLC_SDU_CONFIRM_YES   1
-#define  RLC_SDU_CONFIRM_NO    0
-
-#define  RLC_MUI_UNDEFINED     0
+#define  RLC_MUI_UNDEFINED     (mui_t)0
 
 #define  RLC_RB_UNALLOCATED    (rb_id_t)0
 
+//-----------------------------------------------------------------------------
+//   PUBLIC RLC CONSTANTS
+//-----------------------------------------------------------------------------
+
+typedef enum rlc_confirm_e {
+  RLC_SDU_CONFIRM_NO    = 0,
+  RLC_SDU_CONFIRM_YES   = 1,
+} rlc_confirm_t;
+
+typedef enum rlc_mode_e {
+  RLC_MODE_NONE    = 0,
+  RLC_MODE_AM      = 1,
+  RLC_MODE_UM      = 2,
+  RLC_MODE_TM      = 4
+} rlc_mode_t;
 
 /*! \struct  rlc_info_t
 * \brief Structure containing RLC protocol configuration parameters.
@@ -132,11 +144,11 @@ typedef volatile struct {
 * \brief Primitive exchanged between RLC and MAC informing about the buffer occupancy of the RLC protocol instance.
 */
 typedef  struct {
-    u32_t                        bytes_in_buffer; /*!< \brief Bytes buffered in RLC protocol instance. */
-    u32_t                        pdus_in_buffer;  /*!< \brief Number of PDUs buffered in RLC protocol instance (OBSOLETE). */
-    u32_t                        head_sdu_creation_time;           /*!< \brief Head SDU creation time. */
-    u32_t                        head_sdu_remaining_size_to_send;  /*!< \brief remaining size of sdu: could be the total size or the remaining size of already segmented sdu */
-    u32_t                        head_sdu_is_segmented;	    /*!< \brief 0 if head SDU has not been segmented, 1 if already segmeneted */
+    rlc_buffer_occupancy_t       bytes_in_buffer; /*!< \brief Bytes buffered in RLC protocol instance. */
+    rlc_buffer_occupancy_t       pdus_in_buffer;  /*!< \brief Number of PDUs buffered in RLC protocol instance (OBSOLETE). */
+    frame_t                      head_sdu_creation_time;           /*!< \brief Head SDU creation time. */
+    sdu_size_t                   head_sdu_remaining_size_to_send;  /*!< \brief remaining size of sdu: could be the total size or the remaining size of already segmented sdu */
+    boolean_t                    head_sdu_is_segmented;	    /*!< \brief 0 if head SDU has not been segmented, 1 if already segmeneted */
 } mac_rlc_status_resp_t;
 
 
@@ -164,9 +176,9 @@ typedef struct {
 #endif
 
 protected_rlc(void            (*rlc_rrc_data_ind)  (module_id_t, module_id_t, frame_t, eNB_flag_t, rb_id_t , sdu_size_t , u8_t* );)
-protected_rlc(void            (*rlc_rrc_data_conf) (module_id_t , module_id_t , u8_t, rb_id_t , mui_t, rlc_tx_status_t );)
+protected_rlc(void            (*rlc_rrc_data_conf) (module_id_t , module_id_t , eNB_flag_t, rb_id_t , mui_t, rlc_tx_status_t );)
 typedef void (rrc_data_ind_cb_t)(module_id_t eNB_inst, module_id_t UE_inst, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, u8_t* sduP);
-typedef void (rrc_data_conf_cb_t)(module_id_t eNB_inst, module_id_t UE_inst, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP);
+typedef void (rrc_data_conf_cb_t)(module_id_t eNB_inst, module_id_t UE_inst, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP);
 
 
 /*! \struct  rlc_t
@@ -182,15 +194,23 @@ typedef struct rlc_t {
 }rlc_t;
 
 typedef struct rlc_mbms_s {
-  mbms_session_id_t session_id; // lcid
-  mbms_service_id_t service_id;
   rb_id_t           rb_id;
   module_id_t       instanciated_instance;
   rlc_um_entity_t   um;
 } rlc_mbms_t;
 
-public_rlc(rlc_mbms_t           rlc_mbms_array_ue[NUMBER_OF_UE_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
-public_rlc(rlc_mbms_t           rlc_mbms_array_eNB[NUMBER_OF_eNB_MAX][16*29];) // MAX_SERVICEx MAX_SESSION
+#if !defined(Rel10)
+#    if !defined(maxServiceCount)
+         //unused arrays rlc_mbms_array_ue rlc_mbms_array_eNB
+#        define maxServiceCount 1
+#    endif
+#    if !defined(maxSessionPerPMCH)
+         //unused arrays rlc_mbms_array_ue rlc_mbms_array_eNB
+#        define maxSessionPerPMCH 1
+#    endif
+#endif
+public_rlc(rlc_mbms_t           rlc_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSessionPerPMCH];)   // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
+public_rlc(rlc_mbms_t           rlc_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];)   // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
 
 public_rlc(rb_id_t      lcid2rbid_ue[NUMBER_OF_UE_MAX][RLC_MAX_LC];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
 public_rlc(rb_id_t      lcid2rbid_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][RLC_MAX_LC];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
@@ -227,7 +247,7 @@ private_rlc_mac(struct mac_data_ind   mac_rlc_deserialize_tb (char*, tb_size_t, 
 //   PUBLIC INTERFACE WITH RRC
 //-----------------------------------------------------------------------------
 #ifdef Rel10
-/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP,  SRB_ToAddMod_t* srb2addmod, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP, MBMS_SessionInfoList_r9_t *SessionInfo_listP)
+/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP,  SRB_ToAddMod_t* srb2addmod, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP, PMCH_InfoList_r9_t *pmch_info_listP)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
@@ -241,7 +261,7 @@ private_rlc_mac(struct mac_data_ind   mac_rlc_deserialize_tb (char*, tb_size_t, 
 */
 public_rlc_rrc( rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t, module_id_t, frame_t, eNB_flag_t, SRB_ToAddModList_t*, DRB_ToAddModList_t*, DRB_ToReleaseList_t*, PMCH_InfoList_r9_t *pmch_info_listP);)
 #else
-/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, SRB_ToAddModList_t* srb2add_listP, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP, MBMS_SessionInfoList_r9_t *SessionInfo_listP)
+/*! \fn rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, SRB_ToAddModList_t* srb2add_listP, DRB_ToAddModList_t* drb2add_listP, DRB_ToReleaseList_t*  drb2release_listP)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
@@ -360,23 +380,6 @@ public_rlc_mac(void                  mac_rlc_data_ind     (module_id_t, module_i
 * \return     The maximum number of bytes that the RLC instance can send in the next transmission sequence.
 */
 public_rlc_mac(mac_rlc_status_resp_t mac_rlc_status_ind   (module_id_t, module_id_t, frame_t, eNB_flag_t, MBMS_flag_t, logical_chan_id_t, tb_size_t );)
-
-//-----------------------------------------------------------------------------
-//   PUBLIC RLC CONSTANTS
-//-----------------------------------------------------------------------------
-/** RLC null type identifier. */
-#define  RLC_NONE  (rlc_mode_t)0
-/** RLC AM type identifier. */
-#define  RLC_AM    (rlc_mode_t)1
-/** RLC UM type identifier. */
-#define  RLC_UM    (rlc_mode_t)2
-/** RLC TM type identifier. */
-#define  RLC_TM    (rlc_mode_t)4
-
-#define  RLC_MBMS_NO   0
-#define  RLC_MBMS_YES  1
-
-#define RLC_CHANNEL_ID_DUMMY -1
 //-----------------------------------------------------------------------------
 //   RLC methods
 //-----------------------------------------------------------------------------

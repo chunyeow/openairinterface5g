@@ -296,7 +296,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_ind
               else if (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DCCH] > 0) {
                   // This is for triggering a transmission on DCCH using PRACH (during handover, or sending SR for example)
                   dcch_header_len = 2 + 2;  /// SHORT Subheader + C-RNTI control element
-                  rlc_status = mac_rlc_status_ind(0, module_idP,frameP,0,RLC_MBMS_NO,
+                  rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
                       DCCH,
                       6);
                   if (UE_mac_inst[module_idP].crnti_before_ho)
@@ -306,7 +306,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_ind
                     LOG_D(MAC,"[UE %d] Frame %d : UL-DCCH -> ULSCH, RRC message has %d bytes to send through PRACH(mac header len %d)\n",
                         module_idP,frameP, rlc_status.bytes_in_buffer,dcch_header_len);
 
-                  sdu_lengths[0] = mac_rlc_data_req(eNB_indexP, module_idP,frameP,0, RLC_MBMS_NO,
+                  sdu_lengths[0] = mac_rlc_data_req(eNB_indexP, module_idP,frameP,ENB_FLAG_NO, MBMS_FLAG_NO,
                       DCCH,
                       (char *)&ulsch_buff[0]);
 
@@ -355,7 +355,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_ind
                   UE_mac_inst[module_idP].RA_tx_frame,UE_mac_inst[module_idP].RA_tx_subframe);
               // compute backoff parameters
               if (UE_mac_inst[module_idP].RA_backoff_cnt>0) {
-                  frame_diff = (s32)frameP - UE_mac_inst[module_idP].RA_backoff_frame;
+                  frame_diff = (sframe_t)frameP - UE_mac_inst[module_idP].RA_backoff_frame;
                   if (frame_diff < 0)
                     frame_diff = -frame_diff;
                   UE_mac_inst[module_idP].RA_backoff_cnt -= ((10*frame_diff) + (subframeP-UE_mac_inst[module_idP].RA_backoff_subframe));

@@ -54,6 +54,7 @@
 
 #include "defs.h"
 #include "extern.h"
+#include "assertions.h"
 #include "PHY_INTERFACE/extern.h"
 #include "PHY_INTERFACE/defs.h"
 #include "PHY/defs.h"
@@ -67,11 +68,6 @@
 #endif //PHY_EMUL
 
 #include "SCHED/defs.h"
-
-//#ifdef BIGPHYSAREA
-//extern void *bigphys_malloc(int);
-//#endif
-
 
 /***********************************************************************/
 void dl_phy_sync_success(module_id_t   module_idP,

@@ -69,11 +69,11 @@
 #define MAX_NUM_CHANNEL_BITS (14*1200*6)  // 14 symbols, 1200 REs, 12 bits/RE
 #define MAX_NUM_RE (14*1200)
 
-#define SI_RNTI 0xffff 
-#define M_RNTI 0xfffd
-#define P_RNTI  0xfffe
-#define CBA_RNTI 0xfff4
-#define C_RNTI  0x1234
+#define SI_RNTI  (rnti_t)0xffff
+#define M_RNTI   (rnti_t)0xfffd
+#define P_RNTI   (rnti_t)0xfffe
+#define CBA_RNTI (rnti_t)0xfff4
+#define C_RNTI   (rnti_t)0x1234
 
 #define PMI_2A_11 0
 #define PMI_2A_1m1 1
@@ -677,9 +677,9 @@ typedef struct {
   /// Position of first CCE of the dci
   unsigned int nCCE;
   /// flag to indicate that this is a RA response
-  uint8_t ra_flag;
+  boolean_t ra_flag;
   /// rnti
-  uint16_t rnti;
+  rnti_t rnti;
   /// Format
   DCI_format_t format;
   /// DCI pdu

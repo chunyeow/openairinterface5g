@@ -67,47 +67,6 @@
 #define CH_OFFSET      0x0004
 #define CH_SHIFT       2
 
-#ifdef MESH
-
-//#    define MAX_RB_MOBILE              NB_RB_MAX  * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
-//#    define MAX_RAB_MOBILE             NB_RAB_MAX * ( MAX_MANAGED_RG_PER_MOBILE + MAX_MOBILES_PER_RG - 1 )
-//#    define MAX_RB_RG                  MAX_RB_MOBILE //NB_RB_MAX  *  MAX_MOBILES_PER_RG
-//#    define MAX_RAB_RG                 (NB_RB_MAX+1) * (MAX_MOBILES_PER_RG + 1)
-//#    define MAX_RAB                    MAX_RAB_RG
-//#    define MAX_RB                     MAX_RB_RG
-#else
-
-//#    define MAX_RB_MOBILE              NB_RB_MAX * MAX_MANAGED_RG_PER_MOBILE
-//#    define MAX_RAB_MOBILE             NB_RAB_MAX * MAX_MANAGED_RG_PER_MOBILE
-//#    define MAX_RB_RG                  NB_RB_MAX * MAX_MOBILES_PER_RG
-//#    define MAX_RAB_RG                 NB_RB_MAX * MAX_MOBILES_PER_RG
-//#    ifdef NODE_RG
-//#        define MAX_RAB                MAX_RAB_RG
-//#        define MAX_RB                 MAX_RB_RG
-//#    else
-//#      //  ifdef NODE_MT
-//#        //    define MAX_RAB            MAX_RAB_MOBILE
-//#          //  define MAX_RB             MAX_RB_MOBILE
-//#        //else
-//#          //error NODE_RG or NODE_MT must be defined
-//#        //endif
-//#    endif
-#endif //MESH
-
-// RLC_MODE
-#        define RLC_NONE     (rlc_mode_t)0
-#        define RLC_MODE_AM  (rlc_mode_t)1
-#        define RLC_MODE_TM  (rlc_mode_t)2
-#        define RLC_MODE_UM  (rlc_mode_t)3
-
-//E_R
-#        define E_R_RLC_ER_RELEASE          1
-#        define E_R_RLC_ER_MODIFICATION     2
-#        define E_R_RLC_ER_RE_ESTABLISHMENT 4
-#        define E_R_RLC_ER_STOP             8
-#        define E_R_RLC_ER_CONTINUE         16
-#        define E_R_RLC_ER_NONE             0
-
 // RLC_AM_SEND_MRW
 #        define SEND_MRW_OFF    15
 #        define SEND_MRW_ON     240
@@ -134,7 +93,8 @@
 #        endif
 #    endif
 
-
+#define  UNUSED_PARAM_MBMS_SESSION_ID  0
+#define  UNUSED_PARAM_MBMS_SERVICE_ID  0
 
 #ifdef USER_MODE
 #define printk printf

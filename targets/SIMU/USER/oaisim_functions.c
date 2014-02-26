@@ -118,8 +118,10 @@ extern channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX];
 extern channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
 
 extern mapping small_scale_names[];
-extern pdcp_mbms_t pdcp_mbms_array[MAX_MODULES][16*29];
-//extern int eMBMS_active;
+#if defined(Rel10)
+extern pdcp_mbms_t pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSessionPerPMCH];
+extern pdcp_mbms_t pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];
+#endif
 
 extern void help (void);
 
@@ -751,7 +753,7 @@ void init_seed(u8 set_seed) {
 }
 
 void init_openair1() {
-  s32 UE_id, eNB_id;
+  module_id_t UE_id, eNB_id;
 #if defined(ENABLE_RAL)
   int list_index;
 #endif
@@ -821,16 +823,16 @@ void init_openair1() {
 
 void init_openair2() {
 #ifdef OPENAIR2
-  s32 i;
-  s32 UE_id;
+  module_id_t enb_id;
+  module_id_t UE_id;
 
   l2_init (&PHY_vars_eNB_g[0]->lte_frame_parms,
       oai_emulation.info.eMBMS_active_state,
       oai_emulation.info.cba_group_active,
       oai_emulation.info.handover_active);
 
-  for (i = 0; i < NB_eNB_INST; i++)
-    mac_xface->mrbch_phy_sync_failure (i, 0, i);
+  for (enb_id = 0; enb_id < NB_eNB_INST; enb_id++)
+    mac_xface->mrbch_phy_sync_failure (enb_id, 0, enb_id);
 
   if (abstraction_flag == 1) {
       for (UE_id = 0; UE_id < NB_UE_INST; UE_id++)
@@ -843,7 +845,7 @@ void init_openair2() {
 }
 
 void init_ocm() {
-  s32 UE_id, eNB_id;
+  module_id_t UE_id, eNB_id;
   /* Added for PHY abstraction */
   LOG_I(OCM,"Running with frame_type %d, Nid_cell %d, N_RB_DL %d, EP %d, mode %d, target dl_mcs %d, rate adaptation %d, nframes %d, abstraction %d, channel %s\n", oai_emulation.info.frame_type, Nid_cell, oai_emulation.info.N_RB_DL, oai_emulation.info.extended_prefix_flag, oai_emulation.info.transmission_mode,target_dl_mcs,rate_adaptation_flag,oai_emulation.info.n_frames,abstraction_flag,oai_emulation.environment_system_config.fading.small_scale.selected_option);
 
@@ -934,7 +936,7 @@ void init_ocm() {
 }
 
 void init_otg_pdcp_buffer() {
-  s32 i;
+  module_id_t i;
   otg_pdcp_buffer = malloc((NB_UE_INST + NB_eNB_INST) * sizeof(Packet_OTG_List));
 
   for (i = 0; i < NB_UE_INST + NB_eNB_INST; i++) {
@@ -944,7 +946,7 @@ void init_otg_pdcp_buffer() {
 }
 
 void update_omg () {
-  s32 UE_id, eNB_id;
+  module_id_t UE_id, eNB_id;
   int new_omg_model;
 
   if ((frame % omg_period) == 0 ) { // call OMG every 10ms
@@ -977,7 +979,7 @@ void update_omg_ocm() {
 }
 
 void update_ocm() {
-  s32 UE_id, eNB_id;
+  module_id_t UE_id, eNB_id;
   for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++)
     enb_data[eNB_id]->tx_power_dBm = PHY_vars_eNB_g[eNB_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
   for (UE_id = 0; UE_id < NB_UE_INST; UE_id++)
@@ -1030,7 +1032,7 @@ void update_ocm() {
 }
 
 #ifdef OPENAIR2
-void update_otg_eNB(module_id_t module_idP, unsigned int ctime) {
+void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime) {
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ) {
 
@@ -1040,23 +1042,23 @@ void update_otg_eNB(module_id_t module_idP, unsigned int ctime) {
       for (dst_id = 0; dst_id < NUMBER_OF_UE_MAX; dst_id++) {
           for_times += 1;
           // generate traffic if the ue is rrc reconfigured state
-          if (mac_get_rrc_status(module_idP, 1/*eNB_flag*/, dst_id) > 2 /*RRC_CONNECTED*/ ) {
+          if (mac_get_rrc_status(enb_module_idP, ENB_FLAG_YES, dst_id) > 2 /*RRC_CONNECTED*/ ) {
 
               for (app_id=0; app_id<MAX_NUM_APPLICATION; app_id++){
                   otg_pkt = malloc (sizeof(Packet_otg_elt));
                   if_times += 1;
 
-                  (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(module_idP, dst_id + NB_eNB_INST, app_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
+                  (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen(enb_module_idP, dst_id + NB_eNB_INST, app_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
 
                   if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
                       otg_times += 1;
                       (otg_pkt->otg_pkt).rb_id = dst_id * NB_RB_MAX + DTCH; // app could be binded to a given DRB
-                      (otg_pkt->otg_pkt).module_id = module_idP;
+                      (otg_pkt->otg_pkt).module_id = enb_module_idP;
                       (otg_pkt->otg_pkt).dst_id = dst_id;
                       (otg_pkt->otg_pkt).is_ue = 0;
                       (otg_pkt->otg_pkt).mode = PDCP_DATA_PDU;
                       //Adding the packet to the OTG-PDCP buffer
-                      pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[module_idP]));
+                      pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[enb_module_idP]));
                       LOG_I(EMU, "[eNB %d] ADD pkt to OTG buffer with size %d for dst %d on rb_id %d for app id %d \n",
                           (otg_pkt->otg_pkt).module_id, otg_pkt->otg_pkt.sdu_buffer_size, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id, app_id);
                   } else {
@@ -1064,33 +1066,31 @@ void update_otg_eNB(module_id_t module_idP, unsigned int ctime) {
                       otg_pkt=NULL;
                   }
               }
-              //LOG_T(EMU,"[eNB %d] UE mod id %d is not connected\n", module_id, dst_id);
-              //LOG_I(EMU,"HEAD of otg_pdcp_buffer[%d] is %p\n", module_id, pkt_list_get_head(&(otg_pdcp_buffer[module_id])));
-
           }
       }
 
 #ifdef Rel10
-      int service_id, session_id, rb_id;
+      mbms_service_id_t service_id;
+      mbms_session_id_t session_id;
+      rb_id_t           rb_id;
       // MBSM multicast traffic
       // if (frame >= 50) {// only generate when UE can receive MTCH (need to control this value)
       for (service_id = 0; service_id < 2 ; service_id++) { //maxServiceCount
           for (session_id = 0; session_id < 2; session_id++) { // maxSessionPerPMCH
-              //   LOG_I(OTG,"DUY:frame %d, pdcp_mbms_array[module_id][rb_id].instanciated_instance is %d\n",frame,pdcp_mbms_array[module_id][service_id*maxSessionPerPMCH + session_id].instanciated_instance);
-              if (pdcp_mbms_array[module_idP][service_id*maxSessionPerPMCH + session_id].instanciated_instance == module_idP + 1){ // this service/session is configured
+              if (pdcp_mbms_array_eNB[enb_module_idP][service_id][session_id].instanciated_instance == enb_module_idP + 1){ // this service/session is configured
 
                   otg_pkt = malloc (sizeof(Packet_otg_elt));
                   // LOG_T(OTG,"multicast packet gen for (service/mch %d, session/lcid %d, rb_id %d)\n", service_id, session_id, service_id*maxSessionPerPMCH + session_id);
-                  rb_id = pdcp_mbms_array[module_idP][service_id*maxSessionPerPMCH + session_id].rb_id;
-                  (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen_multicast(module_idP, session_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
+                  rb_id = pdcp_mbms_array_eNB[enb_module_idP][service_id][session_id].rb_id;
+                  (otg_pkt->otg_pkt).sdu_buffer = (u8*) packet_gen_multicast(enb_module_idP, session_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
                   if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
                       (otg_pkt->otg_pkt).rb_id = rb_id;
-                      (otg_pkt->otg_pkt).module_id = module_idP;
+                      (otg_pkt->otg_pkt).module_id = enb_module_idP;
                       (otg_pkt->otg_pkt).dst_id = session_id;
                       (otg_pkt->otg_pkt).is_ue = 0;
                       //Adding the packet to the OTG-PDCP buffer
                       (otg_pkt->otg_pkt).mode = PDCP_TM;
-                      pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[module_idP]));
+                      pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[enb_module_idP]));
                       LOG_I(EMU, "[eNB %d] ADD packet (%p) multicast to OTG buffer for dst %d on rb_id %d\n",
                           (otg_pkt->otg_pkt).module_id, otg_pkt, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id);
                   } else {
@@ -1132,11 +1132,6 @@ void update_otg_eNB(module_id_t module_idP, unsigned int ctime) {
       }
       //    } // end multicast traffic
 #endif
-
-      //LOG_I(EMU, "[eNB %d] update OTG nb_elts = %d \n", module_id, otg_pdcp_buffer[module_idP].nb_elements);
-
-      //free(otg_pkt);
-      //otg_pkt = NULL;
   }
 #else
   if (otg_enabled==1) {
@@ -1159,13 +1154,7 @@ void update_otg_eNB(module_id_t module_idP, unsigned int ctime) {
                   free(otg_pkt);
                   otg_pkt=NULL;
               }
-              /*else {
-    LOG_I(OTG,"nothing generated (src %d, dst %d)\n",src_id, dst_id);
-    }*/
           }
-          /*else {
-  LOG_I(OTG,"rrc_status (src %d, dst %d) = %d\n",src_id, dst_id, mac_get_rrc_status(src_id, eNB_flag, dst_id ));
-  }*/
       }
   }
 #endif

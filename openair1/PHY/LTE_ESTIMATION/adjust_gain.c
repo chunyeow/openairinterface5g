@@ -154,9 +154,9 @@ phy_adjust_gain (PHY_VARS_UE *phy_vars_ue, u8 eNB_id) {
 #endif
 
 #ifdef DEBUG_PHY
-  if ((mac_xface->frame%100==0) || (mac_xface->frame < 10))
-    msg("[PHY][ADJUST_GAIN] frame %d, clear = %d, rx_power = %d, rx_power_fil = %d, rx_power_fil_dB = %d, coef=%d, ncoef=%d, rx_total_gain_dB = %d (%d,%d,%d)\n",
-	mac_xface->frame,clear,rx_power,rx_power_fil,rx_power_fil_dB,coef,ncoef,phy_vars_ue->rx_total_gain_dB,
+  if ((phy_vars_ue->frame%100==0) || (phy_vars_ue->frame < 10))
+    msg("[PHY][ADJUST_GAIN] frame %d,  rx_power = %d, rx_power_fil = %d, rx_power_fil_dB = %d, coef=%d, ncoef=%d, rx_total_gain_dB = %d (%d,%d,%d)\n",
+        phy_vars_ue->frame,rx_power,rx_power_fil,rx_power_fil_dB,coef,ncoef,phy_vars_ue->rx_total_gain_dB,
 	TARGET_RX_POWER,MAX_RF_GAIN,MIN_RF_GAIN);
 #endif //DEBUG_PHY
 	

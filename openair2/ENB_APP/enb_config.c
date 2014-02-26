@@ -203,7 +203,6 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   char*             enb_ipv4_address_for_S1U      = NULL;
   char*             enb_interface_name_for_S1_MME = NULL;
   char*             enb_ipv4_address_for_S1_MME   = NULL;
-  char             *astring                       = NULL;
   char             *address                       = NULL;
   char             *cidr                          = NULL;
 

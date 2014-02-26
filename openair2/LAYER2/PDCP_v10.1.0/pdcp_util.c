@@ -131,7 +131,7 @@ void util_print_binary_representation(unsigned char* message, u8_t octet)
  * @param index Index of bit to be set
  * @return TRUE on success, FALSE otherwise
  */
-BOOL util_mark_nth_bit_of_octet(u8_t* octet, u8_t index)
+boolean_t util_mark_nth_bit_of_octet(u8_t* octet, u8_t index)
 {
   u8_t mask = 0x80;
 
