@@ -105,7 +105,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -s20 -l7 -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 200)
@@ -120,7 +120,7 @@ def execute(oai, user, pw, logfile,logdir):
         diag = 'RRC procedure is not finished completely in FDD mode, check the execution logs and trace BCCH, CCCH, and DCCH channels'
         for i in range(NUM_UE) :
             for j in range(NUM_eNB) :
-                conf = '-A AWGN -l7 -F -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
+                conf = '-A AWGN -s20 -l7 -F -x 1 -n' + str((i+1+j) * 100) + ' -u' + str(i+1) +' -b'+ str(j+1)
                 trace = logdir + '/log_' + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 | tee ' + trace
                 oai.send_expect('./oaisim.rel10 ' + conf + tee, ' Received RRCConnectionReconfigurationComplete from UE ' + str(i),  (i+1) * 200)
@@ -195,7 +195,7 @@ def execute(oai, user, pw, logfile,logdir):
                 log_name = logdir + '/log_' + case + test + '_' + str(i) + str(j)
                 itti_name = log_name + '.log'
                 trace_name = log_name + '.txt'
-                conf = '-A AWGN -l7 -s 15 -x 1 -Q3 --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.sfr.sud.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                conf = '-A AWGN -l7 -x 1 -Q3 --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.sfr.sud.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
                 tee = ' 2>&1 | tee -a ' + trace_name
                 command = './oaisim.rel10.itti ' + conf
                 oai.send('echo ' + command + ' > ' + trace_name + ';')
@@ -205,3 +205,6 @@ def execute(oai, user, pw, logfile,logdir):
     else:
         log.ok(case, test, name, conf, '', logfile)  
         
+
+
+

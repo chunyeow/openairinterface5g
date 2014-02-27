@@ -655,6 +655,18 @@ typedef struct{
   eNB_STATS eNB_stats;
   /// eNB to UE statistics 
   eNB_UE_STATS eNB_UE_stats[NUMBER_OF_UE_MAX];
+  
+  // MAC function execution peformance profiler
+  time_stats_t eNB_scheduler;
+  time_stats_t schedule_si;
+  time_stats_t schedule_ra;
+  time_stats_t schedule_ulsch;
+  time_stats_t fill_DLSCH_dci;
+  time_stats_t schedule_dlsch_preprocessor; 
+  time_stats_t schedule_dlsch; // include rlc_data_req + MAC header + preprocessor
+  time_stats_t schedule_mch;
+  time_stats_t rx_ulsch_sdu; // include rlc_data_ind
+  
 }eNB_MAC_INST;
 
 typedef struct {
@@ -805,6 +817,14 @@ typedef struct{
   uint16_t cba_rnti[NUM_MAX_CBA_GROUP];
   uint8_t cba_last_access[NUM_MAX_CBA_GROUP];
 //#endif
+  
+  time_stats_t ue_scheduler; // total 
+  time_stats_t tx_ulsch_sdu;  // inlcude rlc_data_req + mac header gen
+  time_stats_t rx_dlsch_sdu ; // include mac_rrc_data_ind or mac_rlc_status_ind+mac_rlc_data_ind and  mac header parser
+  time_stats_t ue_query_mch; 
+  time_stats_t rx_mch_sdu; 
+  time_stats_t rx_si; // include mac_rrc_data_ind
+    
 }UE_MAC_INST;
 
 typedef struct {

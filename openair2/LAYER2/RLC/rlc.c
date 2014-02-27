@@ -436,7 +436,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 
   if (MBMS_flagP == 0) {
       LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_req:\n",
-          frame,
+          frameP,
           (eNB_flagP) ? "eNB" : "UE",
           enb_mod_idP,
           ue_mod_idP,
@@ -476,7 +476,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 
                   if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
-                          frame,
+                          frameP,
                           (eNB_flagP) ? "eNB" : "UE",
                           enb_mod_idP,
                           ue_mod_idP,
@@ -487,7 +487,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                           rb_idP);
                   } else {
                       LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
-                          frame,
+                          frameP,
                           (eNB_flagP) ? "eNB" : "UE",
                           enb_mod_idP,
                           ue_mod_idP,
@@ -498,7 +498,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                           rb_idP);
                   }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_am_data_req((rlc_am_entity_t*)rlc_p, frame, new_sdu_p);
+                  rlc_am_data_req((rlc_am_entity_t*)rlc_p, frameP, new_sdu_p);
                   return RLC_OP_STATUS_OK;
               } else {
                   return RLC_OP_STATUS_INTERNAL_ERROR;
@@ -520,7 +520,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                   if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
-                          frame,
+                          frameP,
                           (eNB_flagP) ? "eNB" : "UE",
                           enb_mod_idP,
                           ue_mod_idP,
@@ -531,7 +531,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                           rb_idP);
                   } else {
                       LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
-                                     frame,
+                                     frameP,
                                      (eNB_flagP) ? "eNB" : "UE",
                                      enb_mod_idP,
                                      ue_mod_idP,
@@ -542,7 +542,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                      rb_idP);
                   }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_um_data_req((rlc_um_entity_t*)rlc_p, frame, new_sdu_p);
+                  rlc_um_data_req((rlc_um_entity_t*)rlc_p, frameP, new_sdu_p);
 
                   //free_mem_block(new_sdu);
                   return RLC_OP_STATUS_OK;
@@ -565,7 +565,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                   if (((rlc_tm_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
-                                 frame,
+                                 frameP,
                                  (eNB_flagP) ? "eNB" : "UE",
                                  enb_mod_idP,
                                  ue_mod_idP,
@@ -576,7 +576,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                  rb_idP);
                   } else {
                        LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
-                                     frame,
+                                     frameP,
                                      (eNB_flagP) ? "eNB" : "UE",
                                      enb_mod_idP,
                                      ue_mod_idP,
@@ -626,7 +626,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                       LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                       if (rlc_um_p->is_data_plane) {
                           LOG_D(RLC, "[FRAME %5u][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
-                            frame,
+                            frameP,
                             enb_mod_idP,
                             ue_mod_idP,
                             rb_idP,
@@ -639,7 +639,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                       } else {
                           if (eNB_flagP) {
                               LOG_D(RLC, "[FRAME %5u][RRC_eNB][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
-                                 frame,
+                                 frameP,
                                  enb_mod_idP,
                                  ue_mod_idP,
                                  rb_idP,
@@ -650,7 +650,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                  mbms_rb_id);
                           } else {
                               LOG_D(RLC, "[FRAME %5u][RRC_UE][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
-                                 frame,
+                                 frameP,
                                  enb_mod_idP,
                                  ue_mod_idP,
                                  rb_idP,
@@ -701,7 +701,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
   }
 
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_ind: size %u\n",
-        frame,
+        frameP,
         (eNB_flagP) ? "eNB" : "UE",
         enb_mod_idP,
         ue_mod_idP,
@@ -718,7 +718,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
         break;
       case RLC_MODE_AM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
-                   frame,
+                   frameP,
                    (eNB_flagP) ? "eNB" : "UE",
                    enb_mod_idP,
                    ue_mod_idP,
@@ -730,7 +730,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
           break;
       case RLC_MODE_UM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
-                   frame,
+                   frameP,
                    (eNB_flagP) ? "eNB" : "UE",
                    enb_mod_idP,
                    ue_mod_idP,
@@ -742,7 +742,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
           break;
       case RLC_MODE_TM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
-                 frame,
+                 frameP,
                  (eNB_flagP) ? "eNB" : "UE",
                  enb_mod_idP,
                  ue_mod_idP,
@@ -753,7 +753,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
                  rb_idP);
           break;
   }
-  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frame, eNB_flagP, MBMS_flagP, rb_idP % NB_RB_MAX, sdu_sizeP, sdu_pP, is_data_planeP);
+  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frameP, eNB_flagP, MBMS_flagP, rb_idP % NB_RB_MAX, sdu_sizeP, sdu_pP, is_data_planeP);
 }
 //-----------------------------------------------------------------------------
 void rlc_data_conf     (module_id_t     enb_mod_idP,
@@ -780,7 +780,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                     break;
                 case RLC_MODE_AM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                            frame,
+                            frameP,
                             (eNB_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
@@ -791,7 +791,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                     break;
                 case RLC_MODE_UM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                            frame,
+                            frameP,
                             (eNB_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
@@ -802,7 +802,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                     break;
                 case RLC_MODE_TM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                            frame,
+                            frameP,
                             (eNB_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,

@@ -280,11 +280,7 @@ int main(int argc, char **argv) {
   int print_perf=0;
   int llr8_flag=0;
 
-  reset_meas(&ts);
-  start_meas(&ts);
-  sleep(1);
-  stop_meas(&ts);
-  cpu_freq_GHz = (double)ts.diff/1000000000;
+  cpu_freq_GHz = (double)get_cpu_freq_GHz();
 
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
 
@@ -483,6 +479,7 @@ int main(int argc, char **argv) {
 	break;
       case 'P':
 	print_perf=1;
+	opp_enabled=1; // to enable the time meas
 	break;
       case 'L':
 	llr8_flag=1;
@@ -1657,9 +1654,9 @@ int main(int argc, char **argv) {
 	    //	    printf("amc: ****************** eNB2UE[%d]->n_rx = %d,dd %d\n",round,eNB2UE[round]->nb_rx,eNB2UE[round]->channel_offset);
 	    if(abstx==1 && num_rounds>1)
 	      if(round==0 && hold_channel==0){
-		random_channel(eNB2UE[1]);
-		random_channel(eNB2UE[2]);
-		random_channel(eNB2UE[3]);		
+		random_channel(eNB2UE[1],0);
+		random_channel(eNB2UE[2],0);
+		random_channel(eNB2UE[3],0);		
 	      }
 	  }
 	

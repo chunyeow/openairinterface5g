@@ -657,12 +657,13 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char multicast_group;
     char *multicast_ifname;
     // status
-    unsigned char ocg_enabled;
-    unsigned char ocm_enabled;
-    unsigned char opt_enabled;
-    unsigned char opt_mode; 
-    unsigned char otg_enabled; 
-    unsigned char omv_enabled;
+    unsigned char ocg_enabled; // openair config generator
+    unsigned char ocm_enabled; // openair channel modeling 
+    unsigned char opt_enabled;//openair packet tracer
+    unsigned char opt_mode;  // openair packet tracer mode: wireshark, pcap
+    unsigned char otg_enabled;  // openair traffic generator
+    unsigned char omv_enabled; // openair mobility visulizer
+    unsigned char opp_enabled; // openair performance profiler 
     char *itti_dump_file;
     unsigned char vcd_enabled;
     char *vcd_file;

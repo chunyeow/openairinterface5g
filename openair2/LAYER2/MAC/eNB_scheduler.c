@@ -529,6 +529,8 @@ void rx_sdu(module_id_t enb_mod_idP,frame_t frameP,rnti_t rntiP,u8 *sdu, u16 sdu
   unsigned short rx_lengths[NB_RB_MAX];
   module_id_t         ue_mod_id = find_UE_id(enb_mod_idP,rntiP);
   int ii,j;
+  start_meas(&eNB_mac_inst[enb_mod_idP].rx_ulsch_sdu);
+  
   for(ii=0; ii<NB_RB_MAX; ii++) rx_lengths[ii] = 0;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,1);
@@ -648,7 +650,7 @@ void rx_sdu(module_id_t enb_mod_idP,frame_t frameP,rnti_t rntiP,u8 *sdu, u16 sdu
   }
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,0);
-
+  stop_meas(&eNB_mac_inst[enb_mod_idP].rx_ulsch_sdu);
 }
 
 unsigned char generate_dlsch_header(unsigned char *mac_header,
@@ -986,6 +988,8 @@ void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_si
 
 void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned char *nprb,unsigned int *nCCE) {
 
+  start_meas(&eNB_mac_inst[module_idP].schedule_si);
+  
   unsigned char bcch_sdu_length;
   int mcs = -1;
   void *BCCH_alloc_pdu=(void*)&eNB_mac_inst[module_idP].BCCH_alloc_pdu;
@@ -1088,13 +1092,16 @@ void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned char *nprb,unsi
       eNB_mac_inst[module_idP].bcch_active=1;
       *nprb=3;
       *nCCE=4;
-      return;
   }
-  eNB_mac_inst[module_idP].bcch_active=0;
-  *nprb=0;
-  *nCCE=0;
-  //LOG_D(MAC,"[eNB %d] Frame %d : BCCH not active \n",module_idP,frameP);
-
+  else {
+    eNB_mac_inst[module_idP].bcch_active=0;
+    *nprb=0;
+    *nCCE=0;
+    //LOG_D(MAC,"[eNB %d] Frame %d : BCCH not active \n",Mod_id,frame);
+  }
+  // this might be misleading when bcch is inactive
+  stop_meas(&eNB_mac_inst[module_idP].schedule_si);
+  return;
 }
 
 #ifdef Rel10
@@ -1588,6 +1595,7 @@ MCH_PDU *get_mch_sdu(uint8_t module_idP,uint32_t frameP, sub_frame_t subframeP) 
 // First stage of Random-Access Scheduling
 void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,unsigned char Msg3_subframe,unsigned char *nprb,unsigned int *nCCE) {
 
+  start_meas(&eNB_mac_inst[module_idP].schedule_ra);
   RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].RA_template[0];
   unsigned char i;//,harq_pid,round;
   u16 rrc_sdu_length;
@@ -1942,6 +1950,7 @@ void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,un
            */
       }
   }
+  stop_meas(&eNB_mac_inst[module_idP].schedule_ra);
 }
 
 // This has to be updated to include BSR information
@@ -1980,10 +1989,9 @@ u8 rb_table[33] = {1,2,3,4,5,6,8,9,10,12,15,16,18,20,24,25,27,30,32,36,40,45,48,
 
 void schedule_ulsch(module_id_t module_idP, frame_t frameP,unsigned char cooperation_flag,sub_frame_t subframeP, unsigned char sched_subframe,unsigned int *nCCE) {//,int calibration_flag) {
 
+  start_meas(&eNB_mac_inst[module_idP].schedule_ulsch);
   u8           granted_UEs;
   unsigned int nCCE_available;
-
-
   u16 first_rb=1,i;
 
   granted_UEs = find_ulgranted_UEs(module_idP);
@@ -2017,6 +2025,7 @@ void schedule_ulsch(module_id_t module_idP, frame_t frameP,unsigned char coopera
   if ((eNB_mac_inst[module_idP].num_active_cba_groups > 0) && (*nCCE == 0))
     schedule_ulsch_cba_rnti(module_idP, cooperation_flag, frameP, subframeP, sched_subframe, granted_UEs, nCCE, &nCCE_available, &first_rb);
 #endif   
+  stop_meas(&eNB_mac_inst[module_idP].schedule_ulsch);
 
 }
 #ifdef CBA
@@ -2660,8 +2669,8 @@ u32 allocate_prbs_sub(int nb_rb, u8 *rballoc) {
 
 
 void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,u32 RBalloc,u8 RA_scheduled,int mbsfn_flag) {
+  
   // loop over all allocated UEs and compute frequency allocations for PDSCH
-
   module_id_t   ue_mod_id = -1;
   u8            first_rb,nb_rb=3;
   rnti_t        rnti;
@@ -2680,7 +2689,9 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 
   if (mbsfn_flag>0)
     return;
-
+  
+  start_meas(&eNB_mac_inst[module_idP].fill_DLSCH_dci);
+  
   // clear vrb_map
   memset(vrb_map,0,100);
 
@@ -3392,6 +3403,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 
 
   }
+  stop_meas(&eNB_mac_inst[module_idP].fill_DLSCH_dci);
 }
 
 
@@ -3442,6 +3454,11 @@ void schedule_ue_spec(module_id_t   module_idP,
   int                   mcs;
   u16                   min_rb_unit;
   short                 ta_update        = 0;
+ 
+  if (mbsfn_flag>0)
+    return;
+  
+  reset_meas(&eNB_mac_inst[module_idP].schedule_dlsch);
 
   switch (mac_xface->lte_frame_parms->N_RB_DL) {
   case 6:
@@ -3460,9 +3477,6 @@ void schedule_ue_spec(module_id_t   module_idP,
     min_rb_unit=2;
     break;
   }
-
-  if (mbsfn_flag>0)
-    return;
 
   //int **rballoc_sub = (int **)malloc(1792*sizeof(int *));
   granted_UEs = find_dlgranted_UEs(module_idP);
@@ -3505,14 +3519,15 @@ void schedule_ue_spec(module_id_t   module_idP,
 
 
   /// CALLING Pre_Processor for downlink scheduling (Returns estimation of RBs required by each UE and the allocation on sub-band)
+  start_meas(&eNB_mac_inst[module_idP].schedule_dlsch_preprocessor); 
   dlsch_scheduler_pre_processor(module_idP,
-      frameP,
-      subframeP,
-      dl_pow_off,
-      pre_nb_available_rbs,
-      mac_xface->lte_frame_parms->N_RBGS,
-      rballoc_sub_UE);
-
+				frameP,
+				subframeP,
+				dl_pow_off,
+				pre_nb_available_rbs,
+				mac_xface->lte_frame_parms->N_RBGS,
+				rballoc_sub_UE);
+  stop_meas(&eNB_mac_inst[module_idP].schedule_dlsch_preprocessor); 
 
   for (ue_mod_id=0;ue_mod_id<granted_UEs;ue_mod_id++) {
 
@@ -3596,11 +3611,13 @@ void schedule_ue_spec(module_id_t   module_idP,
       if (eNB_UE_stats==NULL)
         mac_xface->macphy_exit("[MAC][eNB] Cannot find eNB_UE_stats\n");
 
-      //eNB_UE_stats->dlsch_mcs1 = openair_daq_vars.target_ue_dl_mcs;
-      // int flag_LA=0;
-      //printf("CQI %d\n",eNB_UE_stats->DL_cqi[0]);
-
-      eNB_UE_stats->dlsch_mcs1 = cqi_to_mcs[eNB_UE_stats->DL_cqi[0]];
+      if (openair_daq_vars.target_ue_dl_mcs <= 0) {
+	eNB_UE_stats->dlsch_mcs1 = cqi_to_mcs[eNB_UE_stats->DL_cqi[0]];
+	LOG_T(MAC,"CQI %d\n",eNB_UE_stats->DL_cqi[0]);
+      }
+      else 
+	eNB_UE_stats->dlsch_mcs1 = openair_daq_vars.target_ue_dl_mcs;
+      
 
       if(eNB_UE_stats->dlsch_mcs1>22)
         eNB_UE_stats->dlsch_mcs1=22;
@@ -4285,10 +4302,12 @@ void schedule_ue_spec(module_id_t   module_idP,
       }
       //printf("MAC nCCE : %d\n",*nCCE_used);
   }
+  stop_meas(&eNB_mac_inst[module_idP].schedule_dlsch);
 }
 
 void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,u8 cooperation_flag, frame_t frameP, sub_frame_t subframeP) {//, int calibration_flag) {
-
+ 
+  start_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
   unsigned char nprb=0;
   unsigned int nCCE=0;
   int mbsfn_status=0;
@@ -4411,8 +4430,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,u8 cooperation_flag, frame
 
 #ifdef Rel10
   if (eNB_mac_inst[module_idP].MBMS_flag >0) {
-
+    start_meas(&eNB_mac_inst[module_idP].schedule_mch);
       mbsfn_status = schedule_MBMS(module_idP,frameP,subframeP);
+    stop_meas(&eNB_mac_inst[module_idP].schedule_mch);
   }
 #endif
 
@@ -4688,4 +4708,6 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,u8 cooperation_flag, frame
   LOG_D(MAC,"frameP %d, subframeP %d nCCE %d\n",frameP,subframeP,nCCE);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,0);
+  stop_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
+  
 }

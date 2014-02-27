@@ -2636,7 +2636,7 @@ uint16_t quantize_wideband_pmi(PHY_MEASUREMENTS *meas,uint8_t eNB_id) {
   }
 */
  
-uint8_t sinr2cqi(int sinr,uint8_t trans_mode) {
+uint8_t sinr2cqi(double sinr,uint8_t trans_mode) {
   // int flag_LA=0;
 
   if(flag_LA==0){
@@ -2751,7 +2751,9 @@ void fill_CQI(void *o,UCI_format_t uci_format,PHY_MEASUREMENTS *meas,uint8_t eNB
   if(flag_LA==1)
     sinr_tmp = sinr_eff;
   else
-    sinr_tmp = meas->wideband_cqi_avg[eNB_id];
+    sinr_tmp = (double) meas->wideband_cqi_avg[eNB_id];
+
+  LOG_I(PHY,"Filling CQI %f for eNB %d\n",sinr_tmp,eNB_id);
 
   switch (uci_format) {
   case wideband_cqi_rank1_2A:

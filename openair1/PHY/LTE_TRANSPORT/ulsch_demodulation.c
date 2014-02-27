@@ -1607,6 +1607,7 @@ void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t subframe, uint8_t UE_id) {
   uint32_t nsymb = (PHY_vars_eNB->lte_frame_parms.Ncp == 0) ? 14 : 12;
   uint8_t harq_pid = subframe2harq_pid(&PHY_vars_eNB->lte_frame_parms,PHY_vars_eNB->frame,subframe);
   printf("Dumping ULSCH in subframe %d with harq_pid %d, for NB_rb %d, mcs %d, Qm %d, N_symb %d\n", subframe,harq_pid,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs,get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs),PHY_vars_eNB->ulsch_eNB[UE_id]->Nsymb_pusch);
+#ifndef OAI_EMU 
   write_output("/tmp/ulsch_d.m","ulsch_dseq",&PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->d[0][96], 
 	       PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->Kplus*3,1,0);
   write_output("/tmp/rxsig0.m","rxs0", &PHY_vars_eNB->lte_eNB_common_vars.rxdata[0][0][0],PHY_vars_eNB->lte_frame_parms.samples_per_tti*10,1,1);
@@ -1639,6 +1640,7 @@ void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t subframe, uint8_t UE_id) {
   write_output("/tmp/ulsch_rxF_llr.m","ulsch_llr",PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->llr,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb*12*get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs)*PHY_vars_eNB->ulsch_eNB[UE_id]->Nsymb_pusch,1,0);	
   write_output("/tmp/ulsch_ch_mag.m","ulsch_ch_mag",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->ul_ch_mag[0][0][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);	  
   //  write_output("ulsch_ch_mag1.m","ulsch_ch_mag1",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->ul_ch_mag[0][1][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);	  
-#endif	  
+#endif	 
+#endif 
 }
 

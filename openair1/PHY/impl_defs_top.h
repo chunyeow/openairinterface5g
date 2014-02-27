@@ -239,6 +239,10 @@
 #define AMP 512//1024 //4096
 #endif
 
+#define AMP_OVER_SQRT2 ((AMP*ONE_OVER_SQRT2_Q15)>>15)
+#define AMP_OVER_2 (AMP>>1)
+
+
 #ifndef OPENAIR_LTE
 ///
 /// PHY-MAC Interface Defs 
@@ -486,7 +490,8 @@ typedef struct
 
 } PHY_MEASUREMENTS_eNB;
 
-#define MCS_COUNT 24
+#define MCS_COUNT 28
+#define MCS_TABLE_LENGTH_MAX 64
 
 #endif //__PHY_IMPLEMENTATION_DEFS_H__ 
 /**@}

@@ -119,6 +119,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 
     len += sprintf(&buffer[len], "[UE PROC] RX total power eNB%d: %d dB, avg: %d dB\n",eNB,phy_vars_ue->PHY_measurements.rx_power_tot_dB[eNB],phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB]);
     len += sprintf(&buffer[len], "[UE PROC] RX total power lin: %d, avg: %d, RX total noise lin: %d, avg: %d\n",phy_vars_ue->PHY_measurements.rx_power_tot[eNB], phy_vars_ue->PHY_measurements.rx_power_avg[eNB], phy_vars_ue->PHY_measurements.n0_power_tot, phy_vars_ue->PHY_measurements.n0_power_avg);
+    len += sprintf(&buffer[len], "[UE PROC] effective SINR %.2f dB\n",phy_vars_ue->sinr_eff);
     len += sprintf(&buffer[len], "[UE PROC] Wideband CQI eNB %d: %d dB, avg: %d dB\n",eNB,phy_vars_ue->PHY_measurements.wideband_cqi_tot[eNB],phy_vars_ue->PHY_measurements.wideband_cqi_avg[eNB]);
 
     len += sprintf(&buffer[len], "[UE PROC] Subband CQI eNB%d (Ant 0): [%d %d %d %d %d %d %d] dB\n",
@@ -195,6 +196,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
       RRC_status = mac_get_rrc_status(phy_vars_ue->Mod_id,0,0);
       len += sprintf(&buffer[len],"[UE PROC] RRC status = %d\n",RRC_status);
 #endif
+      len += sprintf(&buffer[len],"[UE PROC] RSRP[0] %d, RSSI %d, RSRQ[0] %d\n",phy_vars_ue->PHY_measurements.rsrp[0], phy_vars_ue->PHY_measurements.rssi, phy_vars_ue->PHY_measurements.rsrq[0]);
     
     len += sprintf(&buffer[len], "[UE PROC] Transmission Mode %d (mode1_flag %d)\n",phy_vars_ue->transmission_mode[eNB],phy_vars_ue->lte_frame_parms.mode1_flag);
     if (phy_vars_ue->transmission_mode[eNB] == 6)
@@ -252,8 +254,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
   }
 
   len += sprintf(&buffer[len],"EOF\n");
-  /* SR: for trailing '\0' */
-  len ++;
+  len += sprintf(&buffer[len],"\0");
 
   return len;
 } // is_clusterhead
@@ -479,8 +480,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
     len += sprintf(&buffer[len],"\n");
   }
   len += sprintf(&buffer[len],"EOF\n");
-  /* SR: for trailing '\0' */
-  len++;
-
+  len += sprintf(&buffer[len],"\0");
+  
   return len;
 }

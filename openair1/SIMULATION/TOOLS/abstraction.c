@@ -69,7 +69,8 @@ void freq_channel(channel_desc_t *desc,u16 nb_rb,s16 n_samples) {
     init_freq_channel(desc,nb_rb,n_samples);
     freq_channel_init=1;
   }
-    
+   
+  start_meas(&desc->interp_freq);
   for (f=-n_samples/2;f<n_samples/2;f++) {
 	clut = cos_lut[n_samples/2+f];
         slut = sin_lut[n_samples/2+f];
@@ -88,6 +89,7 @@ void freq_channel(channel_desc_t *desc,u16 nb_rb,s16 n_samples) {
 	}
       }
   }
+  stop_meas(&desc->interp_freq);
 }
 
 double compute_pbch_sinr(channel_desc_t *desc,
@@ -188,7 +190,7 @@ double compute_sinr(channel_desc_t *desc,
 }
 
 int pbch_polynomial_degree;
-double a[7];
+double pbch_awgn_polynomial[7];
 
 void load_pbch_desc(FILE *pbch_file_fd) {
 
@@ -213,8 +215,8 @@ void load_pbch_desc(FILE *pbch_file_fd) {
       printf("fscanf failed: %s\n", strerror(errno));
       exit(EXIT_FAILURE);
     }
-    a[i] = strtod(dummy,NULL);
-    printf("%f ",a[i]);
+    pbch_awgn_polynomial[i] = strtod(dummy,NULL);
+    printf("%f ",pbch_awgn_polynomial[i]);
   }
   printf("\n");
 } 
@@ -222,19 +224,24 @@ void load_pbch_desc(FILE *pbch_file_fd) {
 double pbch_bler(double sinr) {
 
   int i;
-  double log10_bler=a[pbch_polynomial_degree];
+  double log10_bler=pbch_awgn_polynomial[pbch_polynomial_degree];
   double sinrpow=sinr;
+  double bler=0.0;
   //  printf("log10bler %f\n",log10_bler);
   if (sinr<-7.9)
-    return(1.0);
+    bler= 1.0;
   else if (sinr>=0.0)
-    return(1e-4);
-
-  for (i=1;i<=pbch_polynomial_degree;i++) {
-    //    printf("sinrpow %f\n",sinrpow);
-    log10_bler += (a[pbch_polynomial_degree-i]*sinrpow);
-    sinrpow *= sinr;
-    //    printf("log10bler %f\n",log10_bler);
+    bler=0.0001;
+  else  {
+    for (i=1;i<=pbch_polynomial_degree;i++) {
+      //    printf("sinrpow %f\n",sinrpow);
+      log10_bler += (pbch_awgn_polynomial[pbch_polynomial_degree-i]*sinrpow);
+      sinrpow *= sinr;
+      //    printf("log10bler %f\n",log10_bler);
+    }
+    bler = pow(10.0,log10_bler);
   }
-  return(pow(10.0,log10_bler));
+  printf ("sinr %f bler %f\n",sinr,bler);
+  return(bler);
+
 }

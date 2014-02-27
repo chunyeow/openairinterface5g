@@ -102,6 +102,18 @@ public_pdcp(unsigned int Pdcp_stats_rx_bytes[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_M
 public_pdcp(unsigned int Pdcp_stats_rx_bytes_last[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
 public_pdcp(unsigned int Pdcp_stats_rx_rate[NB_MODULES_MAX][NB_CNX_CH][NB_RAB_MAX]);
 
+typedef struct pdcp_stats_t {
+  time_stats_t pdcp_run;
+  time_stats_t data_req;
+  time_stats_t data_ind;
+  time_stats_t encrption;
+  time_stats_t decrption;
+  time_stats_t pdcp_ip;
+  time_stats_t ip_pdcp;
+
+}pdcp_stats_t; // common to eNB and UE
+
+
 typedef struct pdcp_t {
   boolean_t instanciated_instance;
   u16       header_compression_profile;
@@ -384,6 +396,8 @@ typedef struct pdcp_missing_pdu_info_t {
 #define PDCP_MAX_SN_12BIT 4095 // 2^12-1
 
 protected_pdcp(signed int             pdcp_2_nas_irq;)
+public_pdcp(pdcp_stats_t           UE_pdcp_stats[NUMBER_OF_UE_MAX];)
+public_pdcp(pdcp_stats_t           eNB_pdcp_stats[NUMBER_OF_eNB_MAX];)
 protected_pdcp(pdcp_t                 pdcp_array_ue[NUMBER_OF_UE_MAX][NB_RB_MAX];)
 protected_pdcp(pdcp_t                 pdcp_array_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][NB_RB_MAX];)
 #if defined(Rel10)

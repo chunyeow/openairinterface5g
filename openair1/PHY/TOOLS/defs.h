@@ -588,4 +588,6 @@ void idft2048(int16_t *x,int16_t *y,int scale);
 /** @} */ 
 
 
+double interp(double x, double *xs, double *ys, int count);
+
 #endif //__PHY_TOOLS_DEFS__H__

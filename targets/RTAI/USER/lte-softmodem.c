@@ -1118,7 +1118,7 @@ static void get_options (int argc, char **argv)
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
 
-  while ((c = getopt_long (argc, argv, "C:dF:K:O:ST:UV",long_options,NULL)) != -1)
+  while ((c = getopt_long (argc, argv, "C:dF:K:qO:ST:UV",long_options,NULL)) != -1)
     {
       switch (c)
         {
@@ -1254,7 +1254,10 @@ static void get_options (int argc, char **argv)
         case 'V':
           ouput_vcd = 1;
           break;
-
+	  /*	case  'q': 
+	  opp_enabled = 1;
+	  break;
+	  */
         default:
           break;
         }

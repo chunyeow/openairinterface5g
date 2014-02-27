@@ -468,7 +468,7 @@ rlc_op_status_t
 rb_release_rlc_am (rlc_am_entity_t *rlcP, frame_t frameP, module_id_t enb_mod_idP, module_id_t ue_mod_idP)
 {
 //-----------------------------------------------------------------------------
-  rlc_am_cleanup(rlcP,frame);
+  rlc_am_cleanup(rlcP,frameP);
   return RLC_OP_STATUS_OK;
 }
 //-----------------------------------------------------------------------------
@@ -504,20 +504,20 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
         switch (rlc_mode) {
         case RLC_MODE_AM:
             LOG_D(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u] RELEASE RB AM\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
             lcid = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am.channel_id;
             AssertFatal (lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][lcid] == rb_idP, "Mismatch in RLC AM LC %u/RB %u mapping for RB %u\n", lcid, lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][lcid], rb_idP);
             lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][lcid] = RLC_RB_UNALLOCATED;
-            status = rb_release_rlc_am(&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am, frame, enb_mod_idP, ue_mod_idP);
+            status = rb_release_rlc_am(&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am, frameP, enb_mod_idP, ue_mod_idP);
             rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am.allocation = 0;
             rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode = RLC_MODE_NONE;
             break;
         case RLC_MODE_TM:
             LOG_D(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u] RELEASE RB TM\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
@@ -530,7 +530,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
             break;
         case RLC_MODE_UM:
             LOG_D(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u] RELEASE RB UM\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
@@ -543,7 +543,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
             break;
         default:
             LOG_E(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u] RELEASE RB mode %d\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP,
@@ -556,20 +556,20 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
         switch (rlc_mode) {
         case RLC_MODE_AM:
             LOG_D(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] RELEASE RB AM\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
             lcid = rlc_array_ue[ue_mod_idP][rb_idP].rlc.am.channel_id;
             AssertFatal (lcid2rbid_ue[ue_mod_idP][lcid] == rb_idP, "Mismatch in RLC AM LC %u/RB %u mapping for RB %u\n", lcid, lcid2rbid_ue[ue_mod_idP][lcid], rb_idP);
             lcid2rbid_ue[ue_mod_idP][lcid] = RLC_RB_UNALLOCATED;
-            status = rb_release_rlc_am(&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am, frame, enb_mod_idP, ue_mod_idP);
+            status = rb_release_rlc_am(&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am, frameP, enb_mod_idP, ue_mod_idP);
             rlc_array_ue[ue_mod_idP][rb_idP].rlc.am.allocation = 0;
             rlc_array_ue[ue_mod_idP][rb_idP].mode = RLC_MODE_NONE;
             break;
         case RLC_MODE_TM:
             LOG_D(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] RELEASE RB TM\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
@@ -582,7 +582,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
             break;
         case RLC_MODE_UM:
             LOG_D(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] RELEASE RB UM\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
@@ -595,7 +595,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
             break;
         default:
             LOG_E(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] RELEASE RB mode %d\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP,
@@ -637,7 +637,7 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
         if (rlc_mode != RLC_MODE_NONE) {
             LOG_E(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB RB IS ALREADY ALLOCATED\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP,
@@ -653,14 +653,14 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
                 rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am.allocation = 1;
                 rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode = RLC_MODE_AM;
                 LOG_I(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB AM\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
                         chan_idP);
             } else {
                 LOG_D(RLC,"[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB AM IS ALREADY ALLOCATED\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
@@ -674,14 +674,14 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
                 rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm.allocation = 1;
                 rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode = RLC_MODE_TM;
                 LOG_I(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB TM\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
                         chan_idP);
             } else {
                 LOG_D(RLC,"[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB TM IS ALREADY ALLOCATED\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
@@ -695,14 +695,14 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
                 rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um.allocation = 1;
                 rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode = RLC_MODE_UM;
                 LOG_I(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB UM\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
                         chan_idP);
             } else {
                 LOG_D(RLC,"[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB UM IS ALREADY ALLOCATED\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
@@ -712,7 +712,7 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
             break;
         default:
             LOG_E(RLC, "[Frame %05u][eNB][RLC_RRC][INST %u/%u][RB %u] %s BAD PARAMETER RLC MODE %d\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP,
@@ -724,7 +724,7 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
         rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
         if (rlc_mode != RLC_MODE_NONE) {
             LOG_E(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB RB IS ALREADY ALLOCATED\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP,
@@ -740,14 +740,14 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
                 rlc_array_ue[ue_mod_idP][rb_idP].rlc.am.allocation = 1;
                 rlc_array_ue[ue_mod_idP][rb_idP].mode = RLC_MODE_AM;
                 LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB AM\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
                         chan_idP);
             } else {
                 LOG_D(RLC,"[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB AM IS ALREADY ALLOCATED\n",
-                    frame,
+                    frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
@@ -761,14 +761,14 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
                 rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm.allocation = 1;
                 rlc_array_ue[ue_mod_idP][rb_idP].mode = RLC_MODE_TM;
                 LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB TM\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
                         chan_idP);
             } else {
                 LOG_D(RLC,"[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB TM IS ALREADY ALLOCATED\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
@@ -782,14 +782,14 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
                 rlc_array_ue[ue_mod_idP][rb_idP].rlc.um.allocation = 1;
                 rlc_array_ue[ue_mod_idP][rb_idP].mode = RLC_MODE_UM;
                 LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB UM\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
                         chan_idP);
             } else {
                 LOG_D(RLC,"[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u][LCH Id %d] ADD RB UM IS ALREADY ALLOCATED\n",
-                        frame,
+                        frameP,
                         enb_mod_idP,
                         ue_mod_idP,
                         rb_idP,
@@ -799,7 +799,7 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
             break;
         default:
             LOG_E(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] %s BAD PARAMETER RLC MODE %d\n",
-                    frame,
+                    frameP,
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP,
@@ -816,7 +816,7 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
     rlc_op_status_t status;
 
     LOG_D(RLC, "[FRAME %05u][%s][RLC][MOD %u/%u] CONFIG_REQ for Rab %u\n",
-            frame,
+            frameP,
             (enb_flagP) ? "eNB" : "UE",
             enb_mod_idP,
             ue_mod_idP,
@@ -846,20 +846,20 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
     switch (actionP) {
 
         case ACTION_ADD:
-            if ((status = rrc_rlc_add_rlc(enb_mod_idP, ue_mod_idP, frame, enb_flagP, rb_idP, rb_idP, rlc_infoP.rlc_mode)) != RLC_OP_STATUS_OK) {
+            if ((status = rrc_rlc_add_rlc(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, rb_idP, rlc_infoP.rlc_mode)) != RLC_OP_STATUS_OK) {
               return status;
             }
         case ACTION_MODIFY:
             switch (rlc_infoP.rlc_mode) {
                 case RLC_MODE_AM:
                     LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] MODIFY RB AM\n",
-                            frame,
+                            frameP,
                             enb_mod_idP,
                             ue_mod_idP,
                             rb_idP);
 
                     config_req_rlc_am(
-                      frame,
+                      frameP,
                       enb_flagP,
                       enb_mod_idP,
                       ue_mod_idP,
@@ -869,12 +869,12 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
                     break;
                 case RLC_MODE_UM:
                     LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] MODIFY RB UM\n",
-                            frame,
+                            frameP,
                             enb_mod_idP,
                             ue_mod_idP,
                             rb_idP);
                     config_req_rlc_um(
-                      frame,
+                      frameP,
                       enb_flagP,
                       enb_mod_idP,
                       ue_mod_idP,
@@ -884,12 +884,12 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
                     break;
                 case RLC_MODE_TM:
                     LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] MODIFY RB TM\n",
-                            frame,
+                            frameP,
                             enb_mod_idP,
                             ue_mod_idP,
                             rb_idP);
                     config_req_rlc_tm(
-                      frame,
+                      frameP,
                       enb_flagP,
                       enb_mod_idP,
                       ue_mod_idP,
@@ -903,7 +903,7 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
             break;
 
         case ACTION_REMOVE:
-            return rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, rb_idP, frame, enb_flagP);
+            return rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, rb_idP, frameP, enb_flagP);
             break;
         default:
             return RLC_OP_STATUS_BAD_PARAMETER;
@@ -919,7 +919,7 @@ rlc_op_status_t rrc_rlc_data_req     (module_id_t enb_mod_idP, module_id_t ue_mo
   sdu = get_free_mem_block(sdu_sizeP);
   if (sdu != NULL) {
     memcpy (sdu->data, sduP, sdu_sizeP);
-    return rlc_data_req(enb_mod_idP, ue_mod_idP, frame, enb_flagP, MBMS_flagP, rb_idP, muiP, confirmP, sdu_sizeP, sdu);
+    return rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_flagP, rb_idP, muiP, confirmP, sdu_sizeP, sdu);
   } else {
     return RLC_OP_STATUS_INTERNAL_ERROR;
   }

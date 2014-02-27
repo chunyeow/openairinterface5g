@@ -45,4 +45,16 @@ void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, frame_t frame, u16 next_slot
 #ifdef OPENAIR2
 int omv_write (int pfd,  Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data);
 void omv_end (int pfd, Data_Flow_Unit omv_data);
+
+void reset_opp_meas(void);
+void print_opp_meas(void);
+
 #endif
+
+
+
+
+
+
+
+

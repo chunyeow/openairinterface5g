@@ -247,12 +247,14 @@ u32 ulsch_encoding(u8 *a,
 
   // fill CQI/PMI information
   if (ulsch->O>0) {
+    /*  //not correctly done
     if (flag_LA==1)
       sinr_eff = sinr_eff_cqi_calc(phy_vars_ue, 0); //eNB_id is missing here
     else
       sinr_eff = 0;
+    */
     rnti = phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti;
-    fill_CQI(ulsch->o,ulsch->uci_format,meas,0,rnti, tmode,sinr_eff);
+    fill_CQI(ulsch->o,ulsch->uci_format,meas,0,rnti, tmode,phy_vars_ue->sinr_eff);
    
     LOG_D(PHY,"UE CQI\n");
     print_CQI(ulsch->o,ulsch->uci_format,0);

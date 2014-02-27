@@ -58,7 +58,7 @@ int           for_times             = 0;
 static char  *conf_config_file_name = NULL;
 u16           Nid_cell              = 0; //needed by init_lte_vars
 int           nb_antennas_rx        = 2; // //
-u8            target_dl_mcs         = 0;
+u8            target_dl_mcs         = 0; // not set
 u8            rate_adaptation_flag  = 0;
 u8            set_sinr              = 0;
 double        snr_dB, sinr_dB;
@@ -72,7 +72,7 @@ double        forgetting_factor     = 0.0;
 u8            beta_ACK              = 0;
 u8            beta_RI               = 0;
 u8            beta_CQI              = 2;
-u8            target_ul_mcs         = 2;
+u8            target_ul_mcs         = 4;
 LTE_DL_FRAME_PARMS *frame_parms     = NULL;
 int           map1,map2;
 double      **ShaF                  = NULL;
@@ -123,7 +123,8 @@ extern pdcp_mbms_t pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSess
 extern pdcp_mbms_t pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];
 #endif
 
-extern void help (void);
+extern time_stats_t dl_chan_stats;
+extern time_stats_t ul_chan_stats;
 
 void get_simulation_options(int argc, char *argv[]) {
   int                           option;
@@ -182,7 +183,7 @@ void get_simulation_options(int argc, char *argv[]) {
       {NULL, 0, NULL, 0}
   };
 
-  while ((option = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:Q:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, NULL)) != -1) {
+  while ((option = getopt_long (argc, argv, "aA:b:B:c:C:D:d:eE:f:FGg:hHi:IJ:j:k:K:l:L:m:M:n:N:oO:p:P:qQ:rR:s:S:t:T:u:U:vV:w:W:x:X:y:Y:z:Z:", long_options, NULL)) != -1) {
       switch (option) {
       case LONG_OPTION_ENB_CONF:
         if (optarg) {
@@ -474,7 +475,11 @@ void get_simulation_options(int argc, char *argv[]) {
         }
         oai_emulation.info.opt_mode = opt_type;
         break;
-
+    case 'q':
+      // openair performane profiler 
+      oai_emulation.info.opp_enabled = 1; // this var is used for OCG
+      opp_enabled = 1; // this is the global var used by oaisim 
+      break;
       case 'Q':
         //eMBMS_active=1;
         // 0 : not used (default), 1: eMBMS and RRC enabled, 2: eMBMS relaying and RRC enabled, 3: eMBMS enabled, RRC disabled, 4: eMBMS relaying enabled, RRC disabled
@@ -507,9 +512,7 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 't':
-        //Td = atof (optarg);
-        printf("[SIM] Option t is no longer supported on the command line. Please specify your channel model in the xml template\n");
-        exit(-1);
+	target_ul_mcs = atoi (optarg);
         break;
 
       case 'T':
@@ -856,7 +859,10 @@ void init_ocm() {
       get_beta_map_up();
 #endif
       get_MIESM_param();
+
+      //load_pbch_desc();
   }
+  
 
   for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++) {
       enb_data[eNB_id] = (node_desc_t *)malloc(sizeof(node_desc_t));
@@ -912,7 +918,7 @@ void init_ocm() {
               forgetting_factor,
               0,
               0);
-          random_channel(eNB2UE[eNB_id][UE_id]);
+          random_channel(eNB2UE[eNB_id][UE_id],abstraction_flag);
           LOG_D(OCM,"[SIM] Initializing channel (%s, %d) from UE %d to eNB %d\n", oai_emulation.environment_system_config.fading.small_scale.selected_option,
               map_str_to_int(small_scale_names, oai_emulation.environment_system_config.fading.small_scale.selected_option),UE_id, eNB_id);
 
@@ -924,15 +930,12 @@ void init_ocm() {
               0,
               0);
 
-          random_channel(UE2eNB[UE_id][eNB_id]);
-      }
+      random_channel(UE2eNB[UE_id][eNB_id],abstraction_flag);
+
+      // to make channel reciprocal uncomment following line instead of previous. However this only works for SISO at the moment. For MIMO the channel would need to be transposed.
+      //UE2eNB[UE_id][eNB_id] = eNB2UE[eNB_id][UE_id];
+    }
   }
-
-  // Not needed anymore, done automatically in init_freq_channel upon first call to the function
-
-  // if (abstraction_flag==1)
-  //    init_freq_channel(eNB2UE[0][0],PHY_vars_UE_g[0]->lte_frame_parms.N_RB_DL,PHY_vars_UE_g[0]->lte_frame_parms.N_RB_DL*12+1);
-  freq_channel(eNB2UE[0][0],PHY_vars_UE_g[0]->lte_frame_parms.N_RB_DL,PHY_vars_UE_g[0]->lte_frame_parms.N_RB_DL*12+1);
 }
 
 void init_otg_pdcp_buffer() {

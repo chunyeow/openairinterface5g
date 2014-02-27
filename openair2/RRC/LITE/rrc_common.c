@@ -304,9 +304,9 @@ void rrc_t310_expiration(frame_t frameP, u8 Mod_id, u8 eNB_index) {
     if (UE_rrc_inst[Mod_id].Srb2[eNB_index].Active == 1) {
       msg ("[RRC Inst %d] eNB_index %d, Remove RB %d\n ", Mod_id, eNB_index,
            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
-      rrc_pdcp_config_req (eNB_index, Mod_id, frame, 0, ACTION_REMOVE,
+      rrc_pdcp_config_req (eNB_index, Mod_id, frameP, 0, ACTION_REMOVE,
                            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, 0);
-      rrc_rlc_config_req (eNB_index, Mod_id, frame, 0, ACTION_REMOVE,
+      rrc_rlc_config_req (eNB_index, Mod_id, frameP, 0, ACTION_REMOVE,
                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, SIGNALLING_RADIO_BEARER, Rlc_info_um);
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Active = 0;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Status = IDLE;
@@ -326,13 +326,13 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
     if (UE_rrc_inst[Mod_id].Info[index].T300_active == 1) {
       if ((UE_rrc_inst[Mod_id].Info[index].T300_cnt % 10) == 0)
         LOG_D(RRC,
-              "[UE %d][RAPROC] Frame %d T300 Count %d ms\n", Mod_id, frame, UE_rrc_inst[Mod_id].Info[index].T300_cnt);
+              "[UE %d][RAPROC] Frame %d T300 Count %d ms\n", Mod_id, frameP, UE_rrc_inst[Mod_id].Info[index].T300_cnt);
       if (UE_rrc_inst[Mod_id].Info[index].T300_cnt
           == T300[UE_rrc_inst[Mod_id].sib2[index]->ue_TimersAndConstants.t300]) {
         UE_rrc_inst[Mod_id].Info[index].T300_active = 0;
         // ALLOW CCCH to be used
         UE_rrc_inst[Mod_id].Srb0[index].Tx_buffer.payload_size = 0;
-        rrc_ue_generate_RRCConnectionRequest (Mod_id, frame, index);
+        rrc_ue_generate_RRCConnectionRequest (Mod_id, frameP, index);
         return (RRC_ConnSetup_failed);
       }
       UE_rrc_inst[Mod_id].Info[index].T300_cnt++;
@@ -356,11 +356,11 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
         UE_rrc_inst[Mod_id].Info[index].N311_cnt = 0;
       }
       if ((UE_rrc_inst[Mod_id].Info[index].T310_cnt % 10) == 0)
-        LOG_D(RRC, "[UE %d] Frame %d T310 Count %d ms\n", Mod_id, frame, UE_rrc_inst[Mod_id].Info[index].T310_cnt);
+        LOG_D(RRC, "[UE %d] Frame %d T310 Count %d ms\n", Mod_id, frameP, UE_rrc_inst[Mod_id].Info[index].T310_cnt);
       if (UE_rrc_inst[Mod_id].Info[index].T310_cnt
           == T310[UE_rrc_inst[Mod_id].sib2[index]->ue_TimersAndConstants.t310]) {
         UE_rrc_inst[Mod_id].Info[index].T310_active = 0;
-        rrc_t310_expiration (frame, Mod_id, index);
+        rrc_t310_expiration (frameP, Mod_id, index);
         return (RRC_PHY_RESYNCH);
       }
       UE_rrc_inst[Mod_id].Info[index].T310_cnt++;
@@ -369,7 +369,7 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
     
     if (UE_rrc_inst[Mod_id].Info[index].T304_active==1) {
       if ((UE_rrc_inst[Mod_id].Info[index].T304_cnt % 10) == 0)
-	LOG_D(RRC,"[UE %d][RAPROC] Frame %d T304 Count %d ms\n",Mod_id,frame,
+	LOG_D(RRC,"[UE %d][RAPROC] Frame %d T304 Count %d ms\n",Mod_id,frameP,
 	      UE_rrc_inst[Mod_id].Info[index].T304_cnt);
       if (UE_rrc_inst[Mod_id].Info[index].T304_cnt == 0) {
 	UE_rrc_inst[Mod_id].Info[index].T304_active = 0;
@@ -382,11 +382,11 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
     }
     // Layer 3 filtering of RRC measurements
     if (UE_rrc_inst[Mod_id].QuantityConfig[0] != NULL) {
-      ue_meas_filtering(Mod_id,frame,index);
+      ue_meas_filtering(Mod_id,frameP,index);
     }
-    ue_measurement_report_triggering(Mod_id,frame,index);
+    ue_measurement_report_triggering(Mod_id,frameP,index);
     if (UE_rrc_inst[Mod_id].Info[0].handoverTarget > 0)       
-      LOG_I(RRC,"[UE %d] Frame %d : RRC handover initiated\n", Mod_id, frame);
+      LOG_I(RRC,"[UE %d] Frame %d : RRC handover initiated\n", Mod_id, frameP);
     if((UE_rrc_inst[Mod_id].Info[index].State == RRC_HO_EXECUTION)   && 
        (UE_rrc_inst[Mod_id].HandoverInfoUe.targetCellId != 0xFF)) {
       UE_rrc_inst[Mod_id].Info[index].State= RRC_IDLE;
@@ -395,7 +395,7 @@ RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
 
   }
   else {
-    check_handovers(Mod_id,frame);
+    check_handovers(Mod_id,frameP);
   }
   
   return (RRC_OK);

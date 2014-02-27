@@ -582,7 +582,16 @@ void phy_config_dedicated_ue(u8 Mod_id,u8 CH_index,
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
 
-  
+  phy_vars_ue->total_TBS[CH_index]=0;
+  phy_vars_ue->total_TBS_last[CH_index]=0;
+  phy_vars_ue->bitrate[CH_index]=0;
+  phy_vars_ue->total_received_bits[CH_index]=0;
+  phy_vars_ue->dlsch_errors[CH_index]=0;
+  phy_vars_ue->dlsch_errors_last[CH_index]=0;
+  phy_vars_ue->dlsch_received[CH_index]=0;
+  phy_vars_ue->dlsch_received_last[CH_index]=0;
+  phy_vars_ue->dlsch_fer[CH_index]=0;
+ 
 
     
     if (physicalConfigDedicated) {

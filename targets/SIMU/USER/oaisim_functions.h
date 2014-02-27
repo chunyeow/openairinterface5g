@@ -40,6 +40,8 @@ void init_time();
 
 void init_pad();
 
+void help(void);
+
 int init_slot_isr(void);
 
 void wait_for_slot_isr(void);

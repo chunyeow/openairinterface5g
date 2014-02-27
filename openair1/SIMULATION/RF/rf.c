@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+//#include "PHY/defs.h"
+#include "SIMULATION/TOOLS/defs.h"
  
+/*
 extern void randominit(void);
 extern double gaussdouble(double,double);
   //free(input_data);
@@ -10,6 +14,7 @@ extern double gaussdouble(double,double);
 //extern int write_output(const char *,const char *,void *,int,int,char);
 //flag change
 extern int write_output(const char *,const char *,void *,int,int,char);
+*/
 
 //double pn[1024];
 
@@ -206,8 +211,9 @@ void rf_rx_simple(double **r_re,
 #ifdef RF_MAIN
 #define INPUT_dBm -70.0
 
-#include "../../PHY/TOOLS/defs.h"
-#include "../TOOLS/defs.h"
+int QPSK[4]={AMP_OVER_SQRT2|(AMP_OVER_SQRT2<<16),AMP_OVER_SQRT2|((65536-AMP_OVER_SQRT2)<<16),((65536-AMP_OVER_SQRT2)<<16)|AMP_OVER_SQRT2,((65536-AMP_OVER_SQRT2)<<16)|(65536-AMP_OVER_SQRT2)};
+int QPSK2[4]={AMP_OVER_2|(AMP_OVER_2<<16),AMP_OVER_2|((65536-AMP_OVER_2)<<16),((65536-AMP_OVER_2)<<16)|AMP_OVER_2,((65536-AMP_OVER_2)<<16)|(65536-AMP_OVER_2)};
+
 
 int main(int argc, char* argv[]) {
 
@@ -217,31 +223,71 @@ int main(int argc, char* argv[]) {
   int length      = 100000;
   int i,j,n;
   double input_amp = pow(10.0,(.05*INPUT_dBm))/sqrt(2);
-  double **r_re,**r_im;
   double nf[2] = {3.0,3.0};
   double ip =0.0;
-  
-  r_re = malloc(nb_antennas*sizeof (double *));
-  r_im = malloc(nb_antennas*sizeof (double *));
-  printf("Input amp = %f\n",input_amp);
+  double path_loss_dB = -90, rx_gain_dB = 125;
+  double tx_pwr, rx_pwr;
 
-  randominit();
+  u32 **input = malloc(nb_antennas*sizeof(u32*));
+  u32 **output = malloc(nb_antennas*sizeof(u32*));
+  
+  double **s_re = malloc(nb_antennas*sizeof (double *));
+  double **s_im = malloc(nb_antennas*sizeof (double *));
+  double **r_re = malloc(nb_antennas*sizeof (double *));
+  double **r_im = malloc(nb_antennas*sizeof (double *));
+
+  channel_desc_t *channel;
+
+  srand(0);
+  randominit(0);
+  set_taus_seed(0);
+
+  channel = new_channel_desc_scm(nb_antennas,
+				 nb_antennas,
+				 AWGN,
+				 7.68e6,
+				 0,
+				 0,
+				 path_loss_dB);
 
   for (i=0;i<nb_antennas;i++) {
-
+    s_re[i] = (double *)malloc(length * sizeof (double ));
+    s_im[i] = (double *)malloc(length * sizeof (double ));
     r_re[i] = (double *)malloc(length * sizeof (double ));
     r_im[i] = (double *)malloc(length * sizeof (double ));
-
+    input[i] = (u32*)malloc(length * sizeof(u32));
+    output[i] = (u32*)malloc(length * sizeof(u32));
   }    
 
   for (i=0;i<nb_antennas;i++) {
-    // generate fs/4 complex exponential
-    for (j=0;j<length;j++) {
-      r_re[i][j] = 0; //input_amp; // * cos(M_PI*j/2);
-      r_im[i][j] = 0; //input_amp; // * sin(M_PI*j/2);
+    // generate a random QPSK signal
+    for (j=0;j<length/2;j++) {
+      input[i][j] = QPSK[taus()&3];
     }
   }
   
+  tx_pwr = dac_fixed_gain(s_re,
+			  s_im,
+			  input,
+			  0,
+			  nb_antennas,
+			  length,
+			  0,
+			  512,
+			  14,
+			  15.0);
+
+  multipath_channel(channel,s_re,s_im,r_re,r_im,
+		    length,0);
+  
+  rf_rx_simple(r_re,
+	       r_im,
+	       nb_antennas,
+	       length,
+	       1.0/7.68e6 * 1e9,// sampling time (ns)
+	       rx_gain_dB - 66.227);
+
+  /*
   rf_rx(r_re,
 	r_im,
 	nb_antennas,
@@ -257,9 +303,22 @@ int main(int argc, char* argv[]) {
 	-500.0,          // pn_amp (dBc)
 	-0.0,              // IQ imbalance (dB),
 	0.0);           // IQ phase imbalance (rad)
+  */
 
-  write_output("/tmp/test_output_re.m","rfout_re",r_re[0],length,1,7);
-  write_output("/tmp/test_output_im.m","rfout_im",r_im[0],length,1,7);
-  //  write_output("pn.m","pnoise",pn,1024,1,7);
+  adc(r_re,
+      r_im,
+      0,
+      0,
+      output,
+      nb_antennas,
+      length,
+      12);
+  
+  write_output("s_im.m","s_im",s_im[0],length,1,7);
+  write_output("s_re.m","s_re",s_re[0],length,1,7);
+  write_output("r_im.m","r_im",r_im[0],length,1,7);
+  write_output("r_re.m","r_re",r_re[0],length,1,7);
+  write_output("input.m","rfin",input[0],length,1,1);
+  write_output("output.m","rfout",output[0],length,1,1);
 }
 #endif

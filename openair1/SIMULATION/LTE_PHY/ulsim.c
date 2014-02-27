@@ -201,7 +201,6 @@ int main(int argc, char **argv) {
   u8 N0=30;
   double tx_gain=1.0;
   double cpu_freq_GHz;
-  time_stats_t ts;
   int avg_iter,iter_trials;
 
   uint32_t UL_alloc_pdu;
@@ -212,11 +211,7 @@ int main(int argc, char **argv) {
   uint8_t llr8_flag=0;
   int nb_rb_set = 0;
 
-  reset_meas(&ts);
-  start_meas(&ts);
-  sleep(1);
-  stop_meas(&ts);
-  cpu_freq_GHz = (double)ts.diff/1000000000;
+  cpu_freq_GHz = (double)get_cpu_freq_GHz();
 
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
 
@@ -389,6 +384,7 @@ int main(int argc, char **argv) {
       break;
     case 'P':
       dump_perf=1;
+      opp_enabled=1;
       break;
     case 'L':
       llr8_flag=1;

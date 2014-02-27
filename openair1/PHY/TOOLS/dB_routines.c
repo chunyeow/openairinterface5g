@@ -569,7 +569,7 @@ s16 dB_fixed_times10(u32 x) {
     dB_power = dB_table_times10[(x&255)-1];
   }
   if (dB_power > 900)
-    return(0);
+    return(900);
   return dB_power;
 }
 
@@ -593,7 +593,7 @@ s8 dB_fixed(u32 x) {
     dB_power = dB_table[(x&255)-1];
   }
   if (dB_power > 90)
-    return(0);
+    return(90);
   return dB_power;
 }
 

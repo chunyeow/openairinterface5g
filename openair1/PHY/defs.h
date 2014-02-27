@@ -301,10 +301,16 @@ typedef struct {
   unsigned int total_dlsch_bitrate;
   unsigned int total_transmitted_bits;
   unsigned int total_system_throughput;
- 
+  
+  time_stats_t phy_proc;
+  time_stats_t phy_proc_tx;
+  time_stats_t phy_proc_rx;
+  time_stats_t rx_prach;
+  
   time_stats_t ofdm_mod_stats;
   time_stats_t dlsch_encoding_stats;
   time_stats_t dlsch_modulation_stats;
+   time_stats_t dlsch_scrambling_stats;
   time_stats_t dlsch_rate_matching_stats;
   time_stats_t dlsch_turbo_encoding_stats;
   time_stats_t dlsch_interleaving_stats;
@@ -452,6 +458,9 @@ typedef struct
    /// sinr for all subcarriers of first symbol for the CQI Calculation 
   double *sinr_CQI_dB;
 
+  /// sinr_effective used for CQI calulcation
+  double sinr_eff;
+
   /// N0 (used for abstraction)
   double N0;
   
@@ -488,7 +497,11 @@ typedef struct
 
   /// Transmission mode per eNB
   u8 transmission_mode[NUMBER_OF_CONNECTED_eNB_MAX];
-
+ 
+  time_stats_t phy_proc;
+  time_stats_t phy_proc_tx;
+  time_stats_t phy_proc_rx;
+  
   time_stats_t ofdm_mod_stats;
   time_stats_t ulsch_encoding_stats;
   time_stats_t ulsch_modulation_stats;
@@ -508,6 +521,7 @@ typedef struct
   time_stats_t dlsch_turbo_decoding_stats;
   time_stats_t dlsch_deinterleaving_stats;
   time_stats_t dlsch_llr_stats;
+  time_stats_t dlsch_unscrambling_stats;
   time_stats_t dlsch_tc_init_stats;
   time_stats_t dlsch_tc_alpha_stats;
   time_stats_t dlsch_tc_beta_stats;
@@ -515,7 +529,8 @@ typedef struct
   time_stats_t dlsch_tc_ext_stats;
   time_stats_t dlsch_tc_intl1_stats;
   time_stats_t dlsch_tc_intl2_stats;
-
+  time_stats_t tx_prach;
+  
 #if defined(ENABLE_RAL)
   hash_table_t    *ral_thresholds_timed;
   SLIST_HEAD(ral_thresholds_gen_poll_s, ral_threshold_phy_t) ral_thresholds_gen_polled[RAL_LINK_PARAM_GEN_MAX];

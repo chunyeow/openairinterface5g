@@ -59,7 +59,7 @@ void config_req_rlc_um (frame_t         frameP,
       rlc_p = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
   }
   LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%d sn_field_length=%d is_mXch=%d --->][RLC_UM][MOD %u/%u][RB %u]    \n",
-      frame,
+      frameP,
       (eNB_flagP) ? "eNB" : "UE",
           enb_module_idP,
           ue_module_idP,
@@ -72,9 +72,9 @@ void config_req_rlc_um (frame_t         frameP,
 
   rlc_um_init(rlc_p);
   if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-      rlc_um_set_debug_infos(rlc_p, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
+      rlc_um_set_debug_infos(rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
       rlc_um_configure(rlc_p,
-          frame,
+          frameP,
           config_um_pP->timer_reordering,
           config_um_pP->sn_field_length,
           config_um_pP->sn_field_length,
@@ -120,7 +120,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
 
   //-----------------------------------------------------------------------------
   LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%dms sn_field_length=  --->][RLC_UM][MOD %u/%u][RB %u]    \n",
-      frame,
+      frameP,
       (eNB_flagP) ? "eNB" : "UE",
           enb_module_idP,
           ue_module_idP,
@@ -131,7 +131,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
 
   rlc_um_init(rlc_p);
   if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-      rlc_um_set_debug_infos(rlc_p, frame, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
+      rlc_um_set_debug_infos(rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
       if (ul_rlc_pP != NULL) {
           switch (ul_rlc_pP->sn_FieldLength) {
           case SN_FieldLength_size5:
@@ -142,7 +142,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
             break;
           default:
             LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID Uplink sn_FieldLength %d, RLC NOT CONFIGURED\n",
-                frame,
+                frameP,
                 (rlc_p->is_enb) ? "eNB" : "UE",
                     rlc_p->enb_module_id,
                     rlc_p->ue_module_id,
@@ -162,7 +162,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
             break;
           default:
             LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID Downlink sn_FieldLength %d, RLC NOT CONFIGURED\n",
-                frame,
+                frameP,
                 (rlc_p->is_enb) ? "eNB" : "UE",
                     rlc_p->enb_module_id,
                     rlc_p->ue_module_id,
@@ -174,7 +174,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
               t_Reordering = t_Reordering_tab[dl_rlc_pP->t_Reordering];
           } else {
               LOG_E(RLC,"[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID T_Reordering %d, RLC NOT CONFIGURED\n",
-                  frame,
+                  frameP,
                   (rlc_p->is_enb) ? "eNB" : "UE",
                       rlc_p->enb_module_id,
                       rlc_p->ue_module_id,
@@ -185,14 +185,14 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
       }
       if (eNB_flagP > 0) {
           rlc_um_configure(rlc_p,
-              frame,
+              frameP,
               t_Reordering,
               ul_sn_FieldLength,
               dl_sn_FieldLength,
               mbms_flagP);
       } else {
           rlc_um_configure(rlc_p,
-              frame,
+              frameP,
               t_Reordering,
               dl_sn_FieldLength,
               ul_sn_FieldLength,
@@ -321,7 +321,7 @@ void rlc_um_configure(rlc_um_entity_t *rlc_pP,
       rlc_pP->rx_header_min_length_in_bytes = 1;
   } else if (rx_sn_field_lengthP != 0) {
       LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %u/%u][RB %u][CONFIGURE] INVALID RX SN LENGTH %d BITS NOT IMPLEMENTED YET, RLC NOT CONFIGURED\n",
-          frame,
+          frameP,
           (rlc_pP->is_enb) ? "eNB" : "UE",
               rlc_pP->enb_module_id,
               rlc_pP->ue_module_id,
@@ -342,7 +342,7 @@ void rlc_um_configure(rlc_um_entity_t *rlc_pP,
       rlc_pP->tx_header_min_length_in_bytes = 1;
   } else if (tx_sn_field_lengthP != 0) {
       LOG_E(RLC, "[FRAME %05d][%s][RLC_UM][MOD %02d/%02][RB %u][CONFIGURE] INVALID RX SN LENGTH %d BITS NOT IMPLEMENTED YET, RLC NOT CONFIGURED\n",
-          frame,
+          frameP,
           (rlc_pP->is_enb) ? "eNB" : "UE",
               rlc_pP->enb_module_id,
               rlc_pP->ue_module_id,
@@ -378,7 +378,7 @@ void rlc_um_set_debug_infos(rlc_um_entity_t *rlc_pP,
 //-----------------------------------------------------------------------------
 {
   LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][SET DEBUG INFOS] enb_module_id %u ue_module_id %u rb_id %d rb_type %d\n",
-      frame,
+      frameP,
       (rlc_pP->is_enb) ? "eNB" : "UE",
           eNB_flagP,
           enb_module_idP,

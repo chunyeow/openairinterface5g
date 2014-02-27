@@ -35,7 +35,7 @@
 
 #define PI 3.1416
 #define Am 20
-#define MCS_COUNT 24
+
 #define MCL (-70) /*minimum coupling loss (MCL) in dB*/
 //double sinr[NUMBER_OF_eNB_MAX][2*25];
 /*
@@ -169,7 +169,7 @@ void calc_path_loss(node_desc_t* enb_data, node_desc_t* ue_data, channel_desc_t 
   
   path_loss = env_desc.fading.free_space_model_parameters.pathloss_0_dB - 
                 10*env_desc.fading.free_space_model_parameters.pathloss_exponent * log10(dist/1000); 
-  //printf("dist %f, Path loss %f\n",dist,ch_desc->path_loss_dB);
+  LOG_D(OCM,"dist %f, Path loss %f\n",dist,ch_desc->path_loss_dB);
 
   /* Calculating the angle in the range -pi to pi from the slope */
   alpha = atan2((ue_data->x - enb_data->x), (ue_data->y - enb_data->y));
@@ -522,20 +522,13 @@ void get_beta_map() {
   file_path = (char*) malloc(512);
 
   for (mcs = 0; mcs < MCS_COUNT; mcs++) {
-    sprintf(file_path,"%s/SIMULATION/LTE_PHY/BLER_SIMULATIONS/AWGN/Perf_Curves_Abs/awgn_bler_tx1_mcs%d.csv",getenv("OPENAIR1_DIR"),mcs);
+    sprintf(file_path,"%s/SIMULATION/LTE_PHY/BLER_SIMULATIONS/AWGN/AWGN_results/bler_tx1_chan18_nrx1_mcs%d.csv",getenv("OPENAIR1_DIR"),mcs);
     fp = fopen(file_path,"r");
     if (fp == NULL) {
-      LOG_W(OCM,"ERROR: Unable to open the file %s, try an alternative path\n", file_path);
-      memset(file_path, 0, 512);
-      sprintf(file_path,"AWGN/awgn_snr_bler_mcs%d.csv",mcs);
-      LOG_I(OCM,"Opening the alternative path %s\n", file_path);
-      fp = fopen(file_path,"r");
-      if (fp == NULL) {
-      LOG_E(OCM,"ERROR: Unable to open the file %s, exisitng\n", file_path);
+      LOG_E(OCM,"ERROR: Unable to open the file %s! Exitng.\n", file_path);
       exit(-1);
       }
-    }
-    // else {
+     // else {
     if (fgets (buffer, 1000, fp) != NULL) {
       if (fgets (buffer, 1000, fp) != NULL) {
         table_length[mcs] = 0;
@@ -551,6 +544,10 @@ void get_beta_map() {
             sinr_bler_map[mcs][0][table_length[mcs]] = perf_array[0];
             sinr_bler_map[mcs][1][table_length[mcs]] = (perf_array[4] / perf_array[5]);
             table_length[mcs]++;
+	if (table_length[mcs]>MCS_TABLE_LENGTH_MAX) {
+	  LOG_E(OCM,"Error reading MCS table. Increase MCS_TABLE_LENGTH_MAX (mcs %d)!\n",mcs);
+	  exit(-1);
+	}
           }
           if (fgets (buffer, 1000, fp) != NULL) {
           }
@@ -560,10 +557,8 @@ void get_beta_map() {
       fclose(fp);
       //   }
     LOG_D(OCM,"Print the table for mcs %d\n",mcs);
-    // printf("Print the table for mcs %d\n",mcs);
     for (t = 0; t<table_length[mcs]; t++)
       LOG_D(OCM,"%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
-      // printf("%lf  %lf \n ",sinr_bler_map[mcs][0][t],sinr_bler_map[mcs][1][t]);
   }
   free(file_path);
 }

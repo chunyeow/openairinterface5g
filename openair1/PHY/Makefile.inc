@@ -80,5 +80,7 @@ PHY_OBJS += $(TOP_DIR)/PHY/TOOLS/sqrt.o
 ifdef SMBV
 PHY_OBJS += $(TOP_DIR)/PHY/TOOLS/smbv.o
 endif
+PHY_OBJS += $(TOP_DIR)/PHY/TOOLS/time_meas.o
+PHY_OBJS += $(TOP_DIR)/PHY/TOOLS/lut.o
 #PHY_OBJS += $(TOP_DIR)/SIMULATION/TOOLS/rangen_double.o
 

@@ -63,7 +63,12 @@ typedef struct {
   /// initial phase for frequency offset simulation 
   double ip;
   /// number of paths taken by transmit signal
-  u16 nb_paths;
+  u16 nb_paths; 
+  /// timing measurements
+  time_stats_t random_channel;
+  time_stats_t interp_time;
+  time_stats_t interp_freq;
+  time_stats_t convolution;
 } channel_desc_t;
 
 typedef struct {
@@ -164,7 +169,7 @@ typedef enum {
 \param random_aoa If set to 1, AoA of ricean component is randomized
 */
 
-channel_desc_t *new_channel_desc(u8 nb_tx,u8 nb_rx, u8 nb_taps, u8 channel_length, double *amps, double* delays, struct complex** R_sqrt, double Td, double BW, double ricean_factor, double aoa, double forgetting_factor, double max_Doppler, s32 channel_offset, double path_loss_dB,u8 random_aoa);
+//channel_desc_t *new_channel_desc(u8 nb_tx,u8 nb_rx, u8 nb_taps, u8 channel_length, double *amps, double* delays, struct complex** R_sqrt, double Td, double BW, double ricean_factor, double aoa, double forgetting_factor, double max_Doppler, s32 channel_offset, double path_loss_dB,u8 random_aoa);
 
 channel_desc_t *new_channel_desc_scm(u8 nb_tx,
 				     u8 nb_rx, 
@@ -180,7 +185,7 @@ channel_desc_t *new_channel_desc_scm(u8 nb_tx,
 \brief This routine generates a random channel response (time domain) according to a tapped delay line model. 
 \param desc Pointer to the channel descriptor
 */
-int random_channel(channel_desc_t *desc);
+int random_channel(channel_desc_t *desc, u8 abstraction_flag);
 
 /**\fn void multipath_channel(channel_desc_t *desc,
 		       double **tx_sig_re, 
@@ -239,6 +244,9 @@ double compute_sinr(channel_desc_t *desc,
 			 u16 nb_rb);
 
 double pbch_bler(double sinr);
+
+void load_pbch_desc(FILE *pbch_file_fd);
+
 /**@}*/
 
 /**

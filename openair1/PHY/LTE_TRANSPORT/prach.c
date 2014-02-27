@@ -827,6 +827,8 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,u8 subframe,u16 *preamble_energy_list, 
     NCS = NCS_restricted[Ncs_config];
   }
 
+  start_meas(&phy_vars_eNB->rx_prach);
+
   n_ra_prb = n_ra_prboffset;
   prach_root_sequence_map = (prach_fmt < 4) ? prach_root_sequence_map0_3 : prach_root_sequence_map4;
   
@@ -1133,6 +1135,8 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,u8 subframe,u16 *preamble_energy_list, 
 #endif
     //  exit(-1);
   }// preamble_index
+  stop_meas(&phy_vars_eNB->rx_prach);
+
 }
 
 void init_prach_tables(int N_ZC) {

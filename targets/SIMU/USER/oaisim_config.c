@@ -337,6 +337,8 @@ void init_oai_emulation() {
   oai_emulation.info.cli_enabled=0;// I flag
   oai_emulation.info.omv_enabled =0; // v flag 
   oai_emulation.info.vcd_enabled=0;
+  oai_emulation.info.opp_enabled=0;
+
   oai_emulation.info.cba_group_active=0;
   oai_emulation.info.eMBMS_active_state=0;
   oai_emulation.info.handover_active=0;

@@ -495,34 +495,14 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 	}
     }
   }       
-  //printf("sinr_eff1 = %f\n",sinr_eff);
+  LOG_D(OCM,"sinr_eff (lin, unweighted) = %f\n",sinr_eff);
   sinr_eff =  -beta2_dlsch[TM][mcs]*log((sinr_eff)/(12*rb_count));
+  LOG_D(OCM,"sinr_eff (lin, weighted) = %f\n",sinr_eff);
   sinr_eff = 10 * log10(sinr_eff);
-  LOG_I(OCM,"sinr_eff2 = %f\n",sinr_eff);
+  LOG_D(OCM,"sinr_eff (dB) = %f\n",sinr_eff);
 
-  // table lookup
-  sinr_eff *= 10;
-  sinr_eff = floor(sinr_eff);
-  // if ((int)sinr_eff%2) {
-  //   sinr_eff += 1;
-  // }
-  sinr_eff /= 10;
-  msg("Imran sinr_eff after rounding = %f\n",sinr_eff);
- for (index = 0; index < table_length[mcs]; index++) {
-    if(index == 0) {
-      if (sinr_eff < sinr_bler_map[mcs][0][index]) {
-        bler = 1;
-        break;
-      }
-      else if(sinr_eff > sinr_bler_map[mcs][0][table_length[mcs]]){
-	bler = 0;
-	break;
-      }
-    }
-    if (sinr_eff == sinr_bler_map[mcs][0][index]) {
-      bler = sinr_bler_map[mcs][1][index];
-    }
-  }
+  bler = interp(sinr_eff,&sinr_bler_map[mcs][0][0],&sinr_bler_map[mcs][1][0],table_length[mcs]);
+
 #ifdef USER_MODE // need to be adapted for the emulation in the kernel space 
    if (uniformrandom() < bler) {
      LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
@@ -591,56 +571,34 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
     }
   }
   // averaging of accumulated MI 
-	  I = I/(12*rb_count);  
-	  //Now  I->SINR_effective Mapping
-	  
-	  if(mcs<10)
-	    {
-	      sinr_eff = (p_qpsk[0]*pow(I,7) + p_qpsk[1]*pow(I,6) + p_qpsk[2]*pow(I,5) + p_qpsk[3]*pow(I,4) + p_qpsk[4]*pow(I,3) + p_qpsk[5]*pow(I,2) + p_qpsk[6]*I + p_qpsk[7]);
-	    }
-	  else if(mcs>9 && mcs<17)
-	    {
-	      sinr_eff = (p_qam16[0]*pow(I,7) + p_qam16[1]*pow(I,6) + p_qam16[2]*pow(I,5) + p_qam16[3]*pow(I,4) + p_qam16[4]*pow(I,3) + p_qam16[5]*pow(I,2) + p_qam16[6]*I + p_qam16[7]);
-	    }
-	  else if(mcs>16 && mcs<23)
-	    {
-	      sinr_eff = (p_qam64[0]*pow(I,7) + p_qam64[1]*pow(I,6) + p_qam64[2]*pow(I,5) + p_qam64[3]*pow(I,4) + p_qam64[4]*pow(I,3) + p_qam64[5]*pow(I,2) + p_qam64[6]*I + p_qam64[7]);
-	    }	  
-
-  sinr_eff = sinr_eff + 10*log10(beta2_dlsch_MI[TM][mcs]);
-  msg("SINR_Eff = %e\n",sinr_eff);
-
-  sinr_eff *= 10;
-  sinr_eff = floor(sinr_eff);
-  // if ((int)sinr_eff%2) {
-  //   sinr_eff += 1;
-  // }
-  sinr_eff /= 10;
-  msg("sinr_eff after rounding = %f\n",sinr_eff);
-
-  for (index = 0; index < table_length[mcs]; index++) {
-    if(index == 0) {
-      if (sinr_eff < sinr_bler_map[mcs][0][index]) {
-        bler = 1;
-        break;
-      }
-      else if(sinr_eff > sinr_bler_map[mcs][0][table_length[mcs]]){
-	bler = 0;
-	break;
-      }
+  I = I/(12*rb_count);  
+  //Now  I->SINR_effective Mapping
+  
+  if(mcs<10)
+    {
+      sinr_eff = (p_qpsk[0]*pow(I,7) + p_qpsk[1]*pow(I,6) + p_qpsk[2]*pow(I,5) + p_qpsk[3]*pow(I,4) + p_qpsk[4]*pow(I,3) + p_qpsk[5]*pow(I,2) + p_qpsk[6]*I + p_qpsk[7]);
     }
-    if (sinr_eff == sinr_bler_map[mcs][0][index]) {
-      bler = sinr_bler_map[mcs][1][index];
+  else if(mcs>9 && mcs<17)
+    {
+      sinr_eff = (p_qam16[0]*pow(I,7) + p_qam16[1]*pow(I,6) + p_qam16[2]*pow(I,5) + p_qam16[3]*pow(I,4) + p_qam16[4]*pow(I,3) + p_qam16[5]*pow(I,2) + p_qam16[6]*I + p_qam16[7]);
     }
-  }
-
+  else if(mcs>16 && mcs<23)
+    {
+      sinr_eff = (p_qam64[0]*pow(I,7) + p_qam64[1]*pow(I,6) + p_qam64[2]*pow(I,5) + p_qam64[3]*pow(I,4) + p_qam64[4]*pow(I,3) + p_qam64[5]*pow(I,2) + p_qam64[6]*I + p_qam64[7]);
+    }	  
+  
+  //sinr_eff = sinr_eff + 10*log10(beta2_dlsch_MI[TM][mcs]); 
+  LOG_D(OCM,"SINR_Eff = %e\n",sinr_eff);
+  
+  bler = interp(sinr_eff,&sinr_bler_map[mcs][0][0],&sinr_bler_map[mcs][1][0],table_length[mcs]);
+  
 #ifdef USER_MODE // need to be adapted for the emulation in the kernel space 
-   if (uniformrandom() < bler) {
-    msg("abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
+  if (uniformrandom() < bler) {
+    LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
     return(0);
   }
   else {
-    msg("abstraction_decoding successful (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
+    LOG_I(OCM,"abstraction_decoding successful (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
     return(1);
   }
 #endif
@@ -660,7 +618,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   u16 i;
 #endif
 
-  // may not be necessaru for PMCH??
+  // may not be necessary for PMCH??
   for (eNB_id2=0;eNB_id2<NB_eNB_INST;eNB_id2++) {
     if (PHY_vars_eNB_g[eNB_id2]->lte_frame_parms.Nid_cell == phy_vars_ue->lte_frame_parms.Nid_cell)
       break;
