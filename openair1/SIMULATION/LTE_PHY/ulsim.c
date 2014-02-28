@@ -211,6 +211,8 @@ int main(int argc, char **argv) {
   uint8_t llr8_flag=0;
   int nb_rb_set = 0;
 
+  opp_enabled=1; // to enable the time meas
+
   cpu_freq_GHz = (double)get_cpu_freq_GHz();
 
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
