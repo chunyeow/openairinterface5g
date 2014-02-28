@@ -1,8 +1,15 @@
 #!/bin/bash
 # Author Lionel GAUTHIER
 
-# OAI NETWORKING--------------------------------
-declare -x EMULATION_DEV_INTERFACE="eth2"
+#------------------------------------------------
+# ENB CONFIG FILE
+#------------------------------------------------
+declare -x ENB_CONFIG_FILE="CONF/enb.sfr.yang.conf"
+
+#------------------------------------------------
+# OAI NETWORKING
+#------------------------------------------------
+declare -x EMULATION_DEV_INTERFACE="eth1"
 declare -x IP_DRIVER_NAME="oai_nw_drv"
 declare -x LTEIF="oai0"
 declare -x ENB_IPv4="10.0.0.1"
@@ -10,9 +17,13 @@ declare -x ENB_IPv6="2001:1::1"
 declare -x ENB_IPv6_CIDR=$ENB_IPv6"/64"
 declare -x ENB_IPv4_CIDR=$ENB_IPv4"/24"
 declare -a NAS_IMEI=( 3 9 1 8 3 6 6 2 0 0 0 0 0 0 )
-# OAI MIH----------------------------------------
+declare -x IP_DEFAULT_MARK="3"
+#------------------------------------------------
+# OAI MIH
+#------------------------------------------------
 declare -x ENB_RAL_IP_ADDRESS="127.0.0.1"
 declare -x ENB_MIHF_IP_ADDRESS=127.0.0.1
+
 #------------------------------------------------
 LOG_FILE="/tmp/oai_sim_enb.log"
 
@@ -68,26 +79,30 @@ bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
 assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
 bash_exec "ip route flush cache"
 
-# please add table 200 lte in /etc/iproute2/rt_tables
-ip rule add fwmark 3  table lte
+# Check table 200 lte in /etc/iproute2/rt_tables
+fgrep lte /etc/iproute2/rt_tables  > /dev/null 
+if [ $? -ne 0 ]; then
+    echo '200 lte ' >> /etc/iproute2/rt_tables
+fi
+ip rule add fwmark $IP_DEFAULT_MARK  table lte
 ip route add default dev $LTEIF table lte
 ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
 /sbin/ebtables -t nat -A POSTROUTING -p arp  -j mark --mark-set 3
 
-/sbin/ip6tables -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
-/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark 3
-/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+/sbin/ip6tables -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $IP_DEFAULT_MARK
 
-/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
-/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark 3
-/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $IP_DEFAULT_MARK
 
 #All other traffic is sent on the RAB you want (mark = RAB ID)
-/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
-/sbin/ip6tables -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
-/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
-/sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
+/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/ip6tables -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
+/sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
 
 # start MIH-F
 xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE &
@@ -117,7 +132,8 @@ $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -K $LOG_FILE -l9 -u0 -b1 -M0 -p2  -g1 -D $
              --enb-ral-ip-address       $ENB_RAL_IP_ADDRESS \
              --enb-mihf-remote-port     $ENB_MIHF_REMOTE_PORT \
              --enb-mihf-ip-address      $ENB_MIHF_IP_ADDRESS \
-             --enb-mihf-id              $ENB_MIHF_ID &
+             --enb-mihf-id              $ENB_MIHF_ID \
+             -O $ENB_CONFIG_FILE  | grep  "PDCP\|RLC" &
 
 wait_process_started oaisim
 
