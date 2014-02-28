@@ -175,9 +175,9 @@ typedef struct {
 #define  RLC_MAX_LC  ((max_val_DRB_Identity+1)* NUMBER_OF_UE_MAX)
 #endif
 
-protected_rlc(void            (*rlc_rrc_data_ind)  (module_id_t, module_id_t, frame_t, eNB_flag_t, rb_id_t , sdu_size_t , u8_t* );)
+protected_rlc(void            (*rlc_rrc_data_ind)  (module_id_t, module_id_t, frame_t, eNB_flag_t, rb_id_t , sdu_size_t , uint8_t* );)
 protected_rlc(void            (*rlc_rrc_data_conf) (module_id_t , module_id_t , eNB_flag_t, rb_id_t , mui_t, rlc_tx_status_t );)
-typedef void (rrc_data_ind_cb_t)(module_id_t eNB_inst, module_id_t UE_inst, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, u8_t* sduP);
+typedef void (rrc_data_ind_cb_t)(module_id_t eNB_inst, module_id_t UE_inst, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, uint8_t* sduP);
 typedef void (rrc_data_conf_cb_t)(module_id_t eNB_inst, module_id_t UE_inst, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, rlc_tx_status_t statusP);
 
 
@@ -352,7 +352,7 @@ public_rlc_rrc(void rrc_rlc_register_rrc (rrc_data_ind_cb_t rrc_data_indP, rrc_d
 */
 public_rlc_mac(tbs_size_t            mac_rlc_data_req     (module_id_t, module_id_t, frame_t, eNB_flag_t, MBMS_flag_t, logical_chan_id_t, char*);)
 
-/*! \fn void mac_rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, u32_t frameP, char* bufferP, tb_size_t tb_sizeP, num_tb_t num_tbP, crc_t *crcs)
+/*! \fn void mac_rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flagP, logical_chan_id_t rb_idP, uint32_t frameP, char* bufferP, tb_size_t tb_sizeP, num_tb_t num_tbP, crc_t *crcs)
 * \brief    Interface with MAC layer, deserialize the transport blocks sent by MAC, then map data indication to the RLC instance corresponding to the radio bearer identifier.
 * \param[in]  enb_mod_idP      Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP       Virtualized ue module identifier.

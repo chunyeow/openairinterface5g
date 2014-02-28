@@ -43,11 +43,11 @@
 
 void generate_grouphop(LTE_DL_FRAME_PARMS *frame_parms) {
 
-  u8 ns;
-  u8 reset=1;
-  u32 x1, x2, s=0;
+  uint8_t ns;
+  uint8_t reset=1;
+  uint32_t x1, x2, s=0;
   // This is from Section 5.5.1.3
-  u32 fss_pusch = frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
+  uint32_t fss_pusch = frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
 
   x2 = frame_parms->Nid_cell/30;
 #ifdef DEBUG_GROUPHOP
@@ -61,7 +61,7 @@ void generate_grouphop(LTE_DL_FRAME_PARMS *frame_parms) {
 	s = lte_gold_generic(&x1,&x2,reset);
 	reset = 0;
       }
-      frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[ns] = (((u8*)&s)[ns&3]+fss_pusch)%30;
+      frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[ns] = (((uint8_t*)&s)[ns&3]+fss_pusch)%30;
     }
 #ifdef DEBUG_GROUPHOP
       msg("%d.",frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[ns]);
@@ -74,10 +74,10 @@ void generate_grouphop(LTE_DL_FRAME_PARMS *frame_parms) {
 
 void generate_seqhop(LTE_DL_FRAME_PARMS *frame_parms) {
 
-  u8 ns,reset=1;
-  u32 x1, x2, s=0;
+  uint8_t ns,reset=1;
+  uint32_t x1, x2, s=0;
   // This is from Section 5.5.1.3
-  u32 fss_pusch = frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
+  uint32_t fss_pusch = frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
 
   x2 = (32*(frame_parms->Nid_cell/30) + fss_pusch)%30;
 
@@ -102,17 +102,17 @@ void generate_seqhop(LTE_DL_FRAME_PARMS *frame_parms) {
 
 void generate_nPRS(LTE_DL_FRAME_PARMS *frame_parms) {
 
-  u16 n=0;
-  u8 reset=1;
-  u32 x1, x2, s=0;
+  uint16_t n=0;
+  uint8_t reset=1;
+  uint32_t x1, x2, s=0;
   // This is from Section 5.5.1.3
-  u8 Nsymb_UL = (frame_parms->Ncp_UL == 0) ? 7 : 6;
-  u16 next = 0;
-  u8 ns=0;
+  uint8_t Nsymb_UL = (frame_parms->Ncp_UL == 0) ? 7 : 6;
+  uint16_t next = 0;
+  uint8_t ns=0;
 
-  u32 fss_pusch = frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
+  uint32_t fss_pusch = frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH;
 
-  x2 = (32*(u32)(frame_parms->Nid_cell/30)) + fss_pusch;
+  x2 = (32*(uint32_t)(frame_parms->Nid_cell/30)) + fss_pusch;
 #ifdef DEBUG_GROUPHOP
   msg("[PHY] nPRS:");
 #endif
@@ -120,10 +120,10 @@ void generate_nPRS(LTE_DL_FRAME_PARMS *frame_parms) {
     if ((n&3) == 0) {
       s = lte_gold_generic(&x1,&x2,reset);
       reset = 0;
-      //      printf("n %d : s (%d,%d,%d,%d)\n",n,((u8*)&s)[0],((u8*)&s)[1],((u8*)&s)[2],((u8*)&s)[3]);
+      //      printf("n %d : s (%d,%d,%d,%d)\n",n,((uint8_t*)&s)[0],((uint8_t*)&s)[1],((uint8_t*)&s)[2],((uint8_t*)&s)[3]);
     }
     if (n == next) {
-      frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.nPRS[ns] = ((u8*)&s)[next&3];
+      frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.nPRS[ns] = ((uint8_t*)&s)[next&3];
 #ifdef DEBUG_GROUPHOP
       msg("%d.",frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.nPRS[ns]);
 #endif

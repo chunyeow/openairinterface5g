@@ -50,10 +50,10 @@ int generate_sss(mod_sym_t **txdataF,
 		 unsigned short symbol,
 		 unsigned short slot_offset) {
 
-  u8 i,aa,Nsymb;
+  uint8_t i,aa,Nsymb;
   short *d,k;
-  u8 Nid2;
-  u16 Nid1;
+  uint8_t Nid2;
+  uint16_t Nid1;
 
 
   Nid2 = frame_parms->Nid_cell % 3;
@@ -93,12 +93,12 @@ int generate_sss(mod_sym_t **txdataF,
 }
 
 int pss_ch_est(PHY_VARS_UE *phy_vars_ue,
-	       s32 pss_ext[4][72],
-	       s32 sss_ext[4][72])  {
+	       int32_t pss_ext[4][72],
+	       int32_t sss_ext[4][72])  {
 
   short *pss;
   short *pss_ext2,*sss_ext2,*sss_ext3,tmp_re,tmp_im,tmp_re2,tmp_im2;
-  u8 aarx,i;
+  uint8_t aarx,i;
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
 
   switch (phy_vars_ue->lte_ue_common_vars.eNb_id) {
@@ -125,12 +125,12 @@ int pss_ch_est(PHY_VARS_UE *phy_vars_ue,
     for (i=0;i<62;i++) {
 
       // This is H*(PSS) = R* \cdot PSS
-      tmp_re = (s16)(((pss_ext2[i<<1] * (s32)pss[i<<1])>>15)     + ((pss_ext2[1+(i<<1)] * (s32)pss[1+(i<<1)])>>15));
-      tmp_im = (s16)(((pss_ext2[i<<1] * (s32)pss[1+(i<<1)])>>15) - ((pss_ext2[1+(i<<1)] * (s32)pss[(i<<1)])>>15));
+      tmp_re = (int16_t)(((pss_ext2[i<<1] * (int32_t)pss[i<<1])>>15)     + ((pss_ext2[1+(i<<1)] * (int32_t)pss[1+(i<<1)])>>15));
+      tmp_im = (int16_t)(((pss_ext2[i<<1] * (int32_t)pss[1+(i<<1)])>>15) - ((pss_ext2[1+(i<<1)] * (int32_t)pss[(i<<1)])>>15));
       //      printf("H*(%d,%d) : (%d,%d)\n",aarx,i,tmp_re,tmp_im);
       // This is R(SSS) \cdot H*(PSS)
-      tmp_re2 = (s16)(((tmp_re * (s32)sss_ext2[i<<1])>>15)     - ((tmp_im * (s32)sss_ext2[1+(i<<1)]>>15))); 
-      tmp_im2 = (s16)(((tmp_re * (s32)sss_ext2[1+(i<<1)])>>15) + ((tmp_im * (s32)sss_ext2[(i<<1)]>>15)));
+      tmp_re2 = (int16_t)(((tmp_re * (int32_t)sss_ext2[i<<1])>>15)     - ((tmp_im * (int32_t)sss_ext2[1+(i<<1)]>>15))); 
+      tmp_im2 = (int16_t)(((tmp_re * (int32_t)sss_ext2[1+(i<<1)])>>15) + ((tmp_im * (int32_t)sss_ext2[(i<<1)]>>15)));
       //      printf("SSSi(%d,%d) : (%d,%d)\n",aarx,i,sss_ext2[i<<1],sss_ext2[1+(i<<1)]); 
       //      printf("SSSo(%d,%d) : (%d,%d)\n",aarx,i,tmp_re2,tmp_im2);
       // MRC on RX antennas
@@ -150,21 +150,21 @@ int pss_ch_est(PHY_VARS_UE *phy_vars_ue,
 
 
 int pss_sss_extract(PHY_VARS_UE *phy_vars_ue,
-		    s32 pss_ext[4][72],
-		    s32 sss_ext[4][72]) {
+		    int32_t pss_ext[4][72],
+		    int32_t sss_ext[4][72]) {
 
     
   
-  u16 rb,nb_rb=6;
-  u8 i,aarx;
-  s32 *pss_rxF,*pss_rxF_ext;
-  s32 *sss_rxF,*sss_rxF_ext;
+  uint16_t rb,nb_rb=6;
+  uint8_t i,aarx;
+  int32_t *pss_rxF,*pss_rxF_ext;
+  int32_t *sss_rxF,*sss_rxF_ext;
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
 
   int rx_offset = frame_parms->ofdm_symbol_size-3*12;
-  u8 pss_symb,sss_symb;
+  uint8_t pss_symb,sss_symb;
 
-  s32 **rxdataF =  phy_vars_ue->lte_ue_common_vars.rxdataF;
+  int32_t **rxdataF =  phy_vars_ue->lte_ue_common_vars.rxdataF;
 
   if (frame_parms->frame_type == 0) {
     pss_symb = 6-frame_parms->Ncp;
@@ -234,18 +234,18 @@ short phase_re[7] = {16383, 25101, 30791, 32767, 30791, 25101, 16383};
 short phase_im[7] = {-28378, -21063, -11208, 0, 11207, 21062, 28377};
 
 
-int rx_sss(PHY_VARS_UE *phy_vars_ue,s32 *tot_metric,u8 *flip_max,u8 *phase_max) {
+int rx_sss(PHY_VARS_UE *phy_vars_ue,int32_t *tot_metric,uint8_t *flip_max,uint8_t *phase_max) {
   
-  u8 i;
-  s32 pss_ext[4][72];
-  s32 sss0_ext[4][72],sss5_ext[4][72];
-  u8 Nid2 = phy_vars_ue->lte_ue_common_vars.eNb_id;
-  u8 flip,phase;
-  u16 Nid1;
-  s16 *sss0,*sss5;
+  uint8_t i;
+  int32_t pss_ext[4][72];
+  int32_t sss0_ext[4][72],sss5_ext[4][72];
+  uint8_t Nid2 = phy_vars_ue->lte_ue_common_vars.eNb_id;
+  uint8_t flip,phase;
+  uint16_t Nid1;
+  int16_t *sss0,*sss5;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
-  s32 metric;
-  s16 *d0,*d5;
+  int32_t metric;
+  int16_t *d0,*d5;
 
   if (phy_vars_ue->lte_frame_parms.frame_type == 0) { // FDD 
 #ifdef DEBUG_SSS
@@ -373,8 +373,8 @@ int rx_sss(PHY_VARS_UE *phy_vars_ue,s32 *tot_metric,u8 *flip_max,u8 *phase_max) 
 	}
 	// This is the inner product using one particular value of each unknown parameter
 	for (i=0;i<62;i++) {
-	  metric += (s16)(((d0[i]*((((phase_re[phase]*(s32)sss0[i<<1])>>19)-((phase_im[phase]*(s32)sss0[1+(i<<1)])>>19)))) + 
-			   (d5[i]*((((phase_re[phase]*(s32)sss5[i<<1])>>19)-((phase_im[phase]*(s32)sss5[1+(i<<1)])>>19))))));
+	  metric += (int16_t)(((d0[i]*((((phase_re[phase]*(int32_t)sss0[i<<1])>>19)-((phase_im[phase]*(int32_t)sss0[1+(i<<1)])>>19)))) + 
+			   (d5[i]*((((phase_re[phase]*(int32_t)sss5[i<<1])>>19)-((phase_im[phase]*(int32_t)sss5[1+(i<<1)])>>19))))));
 	} 
 	// if the current metric is better than the last save it
 	if (metric > *tot_metric) {

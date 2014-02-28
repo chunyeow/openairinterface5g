@@ -26,9 +26,7 @@
 #        define public_list2(x) extern x
 #    endif
 //-----------------------------------------------------------------------------
-#include "platform_types.h"
 #include "platform_constants.h"
-#include "PHY/defs.h"
 
 #define LIST_NAME_MAX_CHAR 32
 

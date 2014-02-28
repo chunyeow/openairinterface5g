@@ -90,13 +90,13 @@ extern pthread_cond_t dlsch_cond[8];
 static void * rx_pdsch_thread(void *param) {
 
   //unsigned long cpuid;
-  u8 rx_pdsch_thread_index = 0;
-  u8 dlsch_thread_index = 0;
-  u8 pilot1,pilot2,pilot3,harq_pid,subframe;
-  u8 last_slot;
+  uint8_t rx_pdsch_thread_index = 0;
+  uint8_t dlsch_thread_index = 0;
+  uint8_t pilot1,pilot2,pilot3,harq_pid,subframe;
+  uint8_t last_slot;
 
-  u8 dual_stream_UE = 0;
-  u8 i_mod = 0;
+  uint8_t dual_stream_UE = 0;
+  uint8_t i_mod = 0;
 
   RTIME time_in,time_out;
 #ifdef RTAI

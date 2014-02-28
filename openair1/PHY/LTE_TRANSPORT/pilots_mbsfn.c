@@ -43,11 +43,11 @@
     
 int generate_mbsfn_pilot(PHY_VARS_eNB *phy_vars_eNB,
 			 mod_sym_t **txdataF,
-			 s16 amp,
-			 u16 subframe) {
+			 int16_t amp,
+			 uint16_t subframe) {
 
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;  
-  u32 subframe_offset,Nsymb,samples_per_symbol;
+  uint32_t subframe_offset,Nsymb,samples_per_symbol;
 
   
 

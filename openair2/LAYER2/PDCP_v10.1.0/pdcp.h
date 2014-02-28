@@ -116,7 +116,7 @@ typedef struct pdcp_stats_t {
 
 typedef struct pdcp_t {
   boolean_t instanciated_instance;
-  u16       header_compression_profile;
+  uint16_t       header_compression_profile;
 
   /* SR: added this flag to distinguish UE/eNB instance as pdcp_run for virtual
    * mode can receive data on NETLINK for eNB while eNB_flag = 0 and for UE when eNB_flag = 1
@@ -124,23 +124,23 @@ typedef struct pdcp_t {
   boolean_t is_ue;
 
   /* Configured security algorithms */
-  u8 cipheringAlgorithm;
-  u8 integrityProtAlgorithm;
+  uint8_t cipheringAlgorithm;
+  uint8_t integrityProtAlgorithm;
 
   /* User-Plane encryption key
    * Control-Plane RRC encryption key
    * Control-Plane RRC integrity key
    * These keys are configured by RRC layer
    */
-  u8 *kUPenc;
-  u8 *kRRCint;
-  u8 *kRRCenc;
+  uint8_t *kUPenc;
+  uint8_t *kRRCint;
+  uint8_t *kRRCenc;
 
-  u8 security_activated;
+  uint8_t security_activated;
 
   rlc_mode_t rlc_mode;
-  u8 status_report;
-  u8 seq_num_size;
+  uint8_t status_report;
+  uint8_t seq_num_size;
 
   logical_chan_id_t lcid;
   /*
@@ -165,7 +165,7 @@ typedef struct pdcp_t {
    * numbers to generate a PDCP Control PDU for PDCP status
    * report (see 6.2.6)
    */
-  u8 missing_pdu_bitmap[512];
+  uint8_t missing_pdu_bitmap[512];
   /*
    * This is intentionally signed since we need a 'NULL' value
    * which is not also a valid sequence number
@@ -188,7 +188,7 @@ typedef struct pdcp_mbms_t {
  * under targets/TEST/PDCP/
  */
 
-/*! \fn boolean_t pdcp_data_req(module_id_t, u32_t, u8_t, rb_id_t, sdu_size_t, unsigned char*)
+/*! \fn boolean_t pdcp_data_req(module_id_t, uint32_t, uint8_t, rb_id_t, sdu_size_t, unsigned char*)
 * \brief This functions handles data transfer requests coming either from RRC or from IP
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
@@ -204,8 +204,8 @@ typedef struct pdcp_mbms_t {
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(boolean_t pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, rb_id_t rb_id, mui_t muiP, u32 confirmP, \
-    sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, u8 mode));
+public_pdcp(boolean_t pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, rb_id_t rb_id, mui_t muiP, confirm_t confirmP, \
+    sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, pdcp_transmission_mode_t mode));
 
 /*! \fn boolean_t pdcp_data_ind(module_id_t, module_id_t, frame_t, eNB_flag_t, MBMS_flag_t, rb_id_t, sdu_size_t, mem_block_t*, boolean_t)
 * \brief This functions handles data transfer indications coming from RLC
@@ -225,7 +225,7 @@ public_pdcp(boolean_t pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame
 public_pdcp(boolean_t pdcp_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, MBMS_flag_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size,
                    mem_block_t* sdu_buffer, boolean_t is_data_plane));
 
-/*! \fn void rrc_pdcp_config_req(module_id_t , module_id_t ,frame_t,eNB_flag_t,u32,rb_id_t,u8)
+/*! \fn void rrc_pdcp_config_req(module_id_t , module_id_t ,frame_t,eNB_flag_t,uint32_t,rb_id_t,uint8_t)
 * \brief This functions initializes relevant PDCP entity
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
@@ -242,9 +242,9 @@ public_pdcp(void rrc_pdcp_config_req (module_id_t enb_idP,
                                       module_id_t ue_idP,
                                       frame_t     frameP,
                                       eNB_flag_t  eNB_flagP,
-                                      u32         actionP,
+                                      uint32_t         actionP,
                                       rb_id_t     rb_idP,
-                                      u8          security_modeP);)
+                                      uint8_t          security_modeP);)
 
 /*! \fn bool rrc_pdcp_config_asn1_req (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list)
 * \brief  Function for RRC to configure a Radio Bearer.
@@ -270,16 +270,16 @@ boolean_t rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
                                SRB_ToAddModList_t  *srb2add_list,
                                DRB_ToAddModList_t  *drb2add_list,
                                DRB_ToReleaseList_t *drb2release_list,
-                               u8                   security_modeP,
-                               u8                  *kRRCenc,
-                               u8                  *kRRCint,
-                               u8                  *kUPenc
+                               uint8_t                   security_modeP,
+                               uint8_t                  *kRRCenc,
+                               uint8_t                  *kRRCint,
+                               uint8_t                  *kUPenc
 #ifdef Rel10
                               ,PMCH_InfoList_r9_t  *pmch_InfoList_r9
 #endif
                                ));
 
-/*! \fn boolean_t pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, u32  action, rb_id_t rb_id, u8 rb_sn, u8 rb_report, u16 header_compression_profile, u8 security_mode)
+/*! \fn boolean_t pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, uint32_t  action, rb_id_t rb_id, uint8_t rb_sn, uint8_t rb_report, uint16_t header_compression_profile, uint8_t security_mode)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  pdcp_pP            Pointer on PDCP structure.
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
@@ -303,17 +303,17 @@ public_pdcp(boolean_t pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
                                        frame_t     frameP,
                                        eNB_flag_t  eNB_flagP,
                                        rlc_mode_t  rlc_mode,
-                                       u32         action,
-                                       u16         lc_id,
-                                       u16         mch_id,
+                                       uint32_t         action,
+                                       uint16_t         lc_id,
+                                       uint16_t         mch_id,
                                        rb_id_t     rb_id,
-                                       u8          rb_sn,
-                                       u8          rb_report,
-                                       u16         header_compression_profile,
-                                       u8          security_mode,
-                                       u8         *kRRCenc,
-                                       u8         *kRRCint,
-                                       u8         *kUPenc));
+                                       uint8_t          rb_sn,
+                                       uint8_t          rb_report,
+                                       uint16_t         header_compression_profile,
+                                       uint8_t          security_mode,
+                                       uint8_t         *kRRCenc,
+                                       uint8_t         *kRRCint,
+                                       uint8_t         *kUPenc));
 /*! \fn void rrc_pdcp_config_release(module_id_t, rb_id_t)
 * \brief This functions is unused
 * \param[in] module_id Module ID of relevant PDCP entity
@@ -360,14 +360,14 @@ typedef struct pdcp_data_req_header_s {
   rb_id_t             rb_id;
   sdu_size_t          data_size;
   signed int          inst;
-  traffic_type_t      traffic_type;
+  ip_traffic_type_t   traffic_type;
 } pdcp_data_req_header_t;
 
 typedef struct pdcp_data_ind_header_s {
   rb_id_t             rb_id;
   sdu_size_t          data_size;
   signed int          inst;
-  traffic_type_t      dummy_traffic_type;
+  ip_traffic_type_t   dummy_traffic_type;
 } pdcp_data_ind_header_t;
 
 struct pdcp_netlink_element_s {

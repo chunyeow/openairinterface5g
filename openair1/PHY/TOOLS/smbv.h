@@ -71,34 +71,34 @@ int smbv_send_config (const char* fname, char* smbv_ip);
 
 #ifndef CONFIG_SMBV
 // writes basic init commands to config file
-int smbv_init_config(const char* fname, u16 sequence_length);
+int smbv_init_config(const char* fname, uint16_t sequence_length);
 
 // writes config from frame_parms to config file
 int smbv_write_config_from_frame_parms(const char* fname, LTE_DL_FRAME_PARMS *frame_parms);
 
 // This function creates a datalist for an allocation containing the data in buffer
 // len is in bytes
-int smbv_configure_datalist_for_alloc(const char* fname, u8 alloc, u8 subframe, u8 *buffer, u32 len);
+int smbv_configure_datalist_for_alloc(const char* fname, uint8_t alloc, uint8_t subframe, uint8_t *buffer, uint32_t len);
 
 // checks if frame is part of the config_frames[]
-int smbv_is_config_frame(u32 frame);
+int smbv_is_config_frame(uint32_t frame);
 
 // This function creates a datalist for user containing the data in buffer
 // len is in bytes
-int smbv_configure_datalist_for_user(const char* fname, u8 user, u8 *buffer, u32 len);
+int smbv_configure_datalist_for_user(const char* fname, uint8_t user, uint8_t *buffer, uint32_t len);
 
 // configures one of maximal 4 users
-int smbv_configure_user(const char* fname, u8 user, u8 transmission_mode, u16 rnti);
+int smbv_configure_user(const char* fname, uint8_t user, uint8_t transmission_mode, uint16_t rnti);
 
 // Configures the PDCCH 
-int smbv_configure_pdcch(const char* fname,u8 subframe,u8 num_pdcch_symbols,u8 num_dci);
+int smbv_configure_pdcch(const char* fname,uint8_t subframe,uint8_t num_pdcch_symbols,uint8_t num_dci);
 
 // Configures the common DCIs SI, RA and PA
 // type is either "SI", "RA" or "PA"
 // item is the row in the DCI table
-int smbv_configure_common_dci(const char* fname, u8 subframe, const char* type, DCI_ALLOC_t *dci_alloc, u8 item);
+int smbv_configure_common_dci(const char* fname, uint8_t subframe, const char* type, DCI_ALLOC_t *dci_alloc, uint8_t item);
 
 // Configures UE-spec DCI for user 1,2,3,4
 // item is the row in the DCI table
-int smbv_configure_ue_spec_dci(const char* fname, u8 subframe, u8 user, DCI_ALLOC_t *dci_alloc, u8 item);
+int smbv_configure_ue_spec_dci(const char* fname, uint8_t subframe, uint8_t user, DCI_ALLOC_t *dci_alloc, uint8_t item);
 #endif

@@ -201,7 +201,7 @@ unsigned char *parse_header(unsigned char *mac_header,
   return(mac_header_ptr);
 }
 
-u32 ue_get_SR(module_id_t module_idP,frame_t frameP,u8 eNB_id,u16 rnti, sub_frame_t subframe) {
+uint32_t ue_get_SR(module_id_t module_idP,frame_t frameP,uint8_t eNB_id,uint16_t rnti, sub_frame_t subframe) {
 
   // no UL-SCH resources available for this tti && UE has a valid PUCCH resources for SR configuration for this tti
   //  int MGL=6;// measurement gap length in ms
@@ -267,7 +267,7 @@ u32 ue_get_SR(module_id_t module_idP,frame_t frameP,u8 eNB_id,u16 rnti, sub_fram
   }
 }
 
-void ue_send_sdu(module_id_t module_idP,frame_t frameP,u8 *sdu,u16 sdu_len,u8 eNB_index) {
+void ue_send_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index) {
 
   unsigned char rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
   unsigned char rx_lcids[NB_RB_MAX];
@@ -354,13 +354,13 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,u8 *sdu,u16 sdu_len,u8 eN
 #if defined(ENABLE_MAC_PAYLOAD_DEBUG)
           int j;
           for (j=0;j<rx_lengths[i];j++)
-            LOG_T(MAC,"%x.",(u8)payload_ptr[j]);
+            LOG_T(MAC,"%x.",(uint8_t)payload_ptr[j]);
           LOG_T(MAC,"\n");
 #endif      
           mac_rrc_data_ind(module_idP,
               frameP,
               CCCH,
-              (u8 *)payload_ptr,rx_lengths[i],0,eNB_index,0);
+              (uint8_t *)payload_ptr,rx_lengths[i],0,eNB_index,0);
 
       }
       else if (rx_lcids[i] == DCCH) {
@@ -416,7 +416,7 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,u8 *sdu,u16 sdu_len,u8 eN
   stop_meas(&UE_mac_inst[module_idP].rx_dlsch_sdu);
 }
 
-void ue_decode_si(module_id_t module_idP,frame_t frameP, u8 eNB_index, void *pdu,u16 len) {
+void ue_decode_si(module_id_t module_idP,frame_t frameP, uint8_t eNB_index, void *pdu,uint16_t len) {
 
   start_meas(&UE_mac_inst[module_idP].rx_si);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_SI, VCD_FUNCTION_IN);
@@ -426,7 +426,7 @@ void ue_decode_si(module_id_t module_idP,frame_t frameP, u8 eNB_index, void *pdu
   mac_rrc_data_ind(module_idP,
       frameP,
       BCCH,
-      (u8 *)pdu,
+      (uint8_t *)pdu,
       len,
       0,
       eNB_index,
@@ -482,7 +482,7 @@ unsigned char *parse_mch_header(unsigned char *mac_header,
 }
 
 // this function is for sending mch_sdu from phy to mac
-void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, u8 *sdu, u16 sdu_len, u8 eNB_index, u8 sync_area) {
+void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, uint8_t *sdu, uint16_t sdu_len, uint8_t eNB_index, uint8_t sync_area) {
 
   unsigned char num_sdu, i, *payload_ptr;
   unsigned char rx_lcids[NB_RB_MAX]; 
@@ -544,7 +544,7 @@ void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, u8 *sdu, u16 sdu_le
   stop_meas(&UE_mac_inst[module_idP].rx_mch_sdu); 
 }
 
-s8 ue_get_mbsfn_sf_alloction (module_id_t module_idP, u8 mbsfn_sync_area, unsigned char eNB_index){
+int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_area, unsigned char eNB_index){
   // currently there is one-to-one mapping between sf allocation pattern and sync area
   if (mbsfn_sync_area > MAX_MBSFN_AREA){
       LOG_W(MAC,"[UE %d] MBSFN synchronization area %d out of range for eNB %d\n ", module_idP, mbsfn_sync_area, eNB_index);
@@ -781,13 +781,13 @@ int ue_query_mch(module_id_t module_idP, uint32_t frameP, uint32_t subframe, uin
 
 #endif
 
-unsigned char generate_ulsch_header(u8 *mac_header,
-    u8 num_sdus,
-    u8 short_padding,
-    u16 *sdu_lengths,
-    u8 *sdu_lcids,
+unsigned char generate_ulsch_header(uint8_t *mac_header,
+    uint8_t num_sdus,
+    uint8_t short_padding,
+    uint16_t *sdu_lengths,
+    uint8_t *sdu_lcids,
     POWER_HEADROOM_CMD *power_headroom,
-    u16 *crnti,
+    uint16_t *crnti,
     BSR_SHORT *truncated_bsr,
     BSR_SHORT *short_bsr,
     BSR_LONG *long_bsr,
@@ -853,8 +853,8 @@ unsigned char generate_ulsch_header(u8 *mac_header,
       mac_header_ptr->E    = 0;
       mac_header_ptr->LCID = CRNTI;
       last_size=1;
-      *((u16 *)ce_ptr)=(*crnti);
-      ce_ptr+=sizeof(u16);
+      *((uint16_t *)ce_ptr)=(*crnti);
+      ce_ptr+=sizeof(uint16_t);
       //    printf("offset %d\n",ce_ptr-mac_header_control_elements);
   }
 
@@ -972,7 +972,7 @@ unsigned char generate_ulsch_header(u8 *mac_header,
 #ifdef DEBUG_HEADER_PARSING
           LOG_D(MAC,"[UE] short sdu\n");
           LOG_T(MAC,"[UE] last subheader : %x (R%d,E%d,LCID%d,F%d,L%d)\n",
-              ((u16*)mac_header_ptr)[0],
+              ((uint16_t*)mac_header_ptr)[0],
               ((SCH_SUBHEADER_SHORT *)mac_header_ptr)->R,
               ((SCH_SUBHEADER_SHORT *)mac_header_ptr)->E,
               ((SCH_SUBHEADER_SHORT *)mac_header_ptr)->LCID,
@@ -1023,18 +1023,18 @@ unsigned char generate_ulsch_header(u8 *mac_header,
 
 }
 
-void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 eNB_index,u8 *ulsch_buffer,u16 buflen, u8 *access_mode) {
+void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint8_t *ulsch_buffer,uint16_t buflen, uint8_t *access_mode) {
 
   mac_rlc_status_resp_t rlc_status;
-  u8 dcch_header_len=0,dcch1_header_len=0,dtch_header_len=0;
-  u8 dcch_header_len_tmp=0, dtch_header_len_tmp=0;
-  u8 bsr_header_len=0, bsr_ce_len=0, bsr_len=0; 
-  u8 phr_header_len=0, phr_ce_len=0,phr_len=0;
-  u16 sdu_lengths[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  u8 sdu_lcids[8]    = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  u8 payload_offset=0,num_sdus=0;
-  u8 ulsch_buff[MAX_ULSCH_PAYLOAD_BYTES];
-  u16 sdu_length_total=0;
+  uint8_t dcch_header_len=0,dcch1_header_len=0,dtch_header_len=0;
+  uint8_t dcch_header_len_tmp=0, dtch_header_len_tmp=0;
+  uint8_t bsr_header_len=0, bsr_ce_len=0, bsr_len=0; 
+  uint8_t phr_header_len=0, phr_ce_len=0,phr_len=0;
+  uint16_t sdu_lengths[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  uint8_t sdu_lcids[8]    = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  uint8_t payload_offset=0,num_sdus=0;
+  uint8_t ulsch_buff[MAX_ULSCH_PAYLOAD_BYTES];
+  uint16_t sdu_length_total=0;
   BSR_SHORT bsr_short;
   BSR_LONG bsr_long;
   BSR_SHORT *bsr_s=&bsr_short;
@@ -1285,14 +1285,14 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, u8 e
 // 3. Perform SR/BSR procedures for scheduling feedback
 // 4. Perform PHR procedures
 
-UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP, lte_subframe_t directionP,u8 eNB_indexP) {
+UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP, lte_subframe_t directionP,uint8_t eNB_indexP) {
 
   int lcid; // lcid index
   int TTI= 1;
   int bucketsizeduration = -1;
   int bucketsizeduration_max = -1;
   // mac_rlc_status_resp_t rlc_status[MAX_NUM_LCGID]; // 4
-  // s8 lcg_id;
+  // int8_t lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
 #ifdef EXMIMO
   int ret;  
@@ -1498,7 +1498,7 @@ double uniform_rngen(int min, int max) {
   return (max - min) * random + min;
 }
 
-int use_cba_access(module_id_t module_idP,frame_t frameP,u8 subframe, u8 eNB_index){
+int use_cba_access(module_id_t module_idP,frame_t frameP,uint8_t subframe, uint8_t eNB_index){
 
   if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]<64))   ||
       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]<64))   ||
@@ -1554,10 +1554,10 @@ int get_bsr_lcgid (module_id_t module_idP){
       return MAX_NUM_LCGID;
 }
 
-u8 get_bsr_len (module_id_t module_idP, u16 buflen) {
+uint8_t get_bsr_len (module_id_t module_idP, uint16_t buflen) {
 
   int lcgid=0;
-  u8 bsr_len=0,  num_lcgid=0;
+  uint8_t bsr_len=0,  num_lcgid=0;
   int pdu = 0;
 
   for (lcgid=0; lcgid < MAX_NUM_LCGID; lcgid++ ) { 
@@ -1580,7 +1580,7 @@ u8 get_bsr_len (module_id_t module_idP, u16 buflen) {
 }
 
 
-boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcg_id){
+boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint8_t lcg_id){
 
   mac_rlc_status_resp_t rlc_status;
   boolean_t sr_pending = FALSE;
@@ -1612,9 +1612,9 @@ boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, u8 lcid, u8 lcg_id
   return sr_pending;
 }
 
-u8 locate (const u32 *table, int size, int value){
+uint8_t locate (const uint32_t *table, int size, int value){
 
-  u8 ju, jm, jl;
+  uint8_t ju, jm, jl;
   int ascend;
 
   if (value == 0) return 0; //elseif (value > 150000) return 63;
@@ -1636,7 +1636,7 @@ u8 locate (const u32 *table, int size, int value){
 
 }
 
-int get_sf_periodicBSRTimer(u8 sf_offset){
+int get_sf_periodicBSRTimer(uint8_t sf_offset){
 
   switch (sf_offset) {
   case MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_sf5:
@@ -1688,7 +1688,7 @@ int get_sf_periodicBSRTimer(u8 sf_offset){
   }
 }
 
-int get_sf_retxBSRTimer(u8 sf_offset){
+int get_sf_retxBSRTimer(uint8_t sf_offset){
 
   switch (sf_offset) {
   case MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf320:
@@ -1714,7 +1714,7 @@ int get_sf_retxBSRTimer(u8 sf_offset){
     break;
   }
 }
-int get_ms_bucketsizeduration(u8 bucketsizeduration){
+int get_ms_bucketsizeduration(uint8_t bucketsizeduration){
 
   switch (bucketsizeduration) {
   case LogicalChannelConfig__ul_SpecificParameters__bucketSizeDuration_ms50:
@@ -1748,7 +1748,7 @@ void update_phr(module_id_t module_idP){
   UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[module_idP].scheduling_info.prohibitPHR_Timer);
   // LOG_D(MAC,"phr %d %d\n ",UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF, UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF);
 }
-u8 get_phr_mapping (module_id_t module_idP, u8 eNB_index){
+uint8_t get_phr_mapping (module_id_t module_idP, uint8_t eNB_index){
 
   //power headroom reporting range is from -23 ...+40 dB, as described in 36313
   //note: mac_xface->get_Po_NOMINAL_PUSCH(module_idP) is float
@@ -1757,19 +1757,19 @@ u8 get_phr_mapping (module_id_t module_idP, u8 eNB_index){
   else if (mac_xface->get_PHR(module_idP,eNB_index) >= 40)
     return 63;
   else  // -23 to 40
-    return  (u8) mac_xface->get_PHR(module_idP,eNB_index) + PHR_MAPPING_OFFSET;
+    return  (uint8_t) mac_xface->get_PHR(module_idP,eNB_index) + PHR_MAPPING_OFFSET;
 
 }
-int get_sf_perioidicPHR_Timer(u8 perioidicPHR_Timer){
+int get_sf_perioidicPHR_Timer(uint8_t perioidicPHR_Timer){
   return (perioidicPHR_Timer+1)*10;
 }
 
 
-int get_sf_prohibitPHR_Timer(u8 prohibitPHR_Timer){
+int get_sf_prohibitPHR_Timer(uint8_t prohibitPHR_Timer){
   return (prohibitPHR_Timer)*10;
 }
 
-int get_db_dl_PathlossChange(u8 dl_PathlossChange){
+int get_db_dl_PathlossChange(uint8_t dl_PathlossChange){
   switch (dl_PathlossChange){
   case MAC_MainConfig__phr_Config__setup__dl_PathlossChange_dB1:
     return 1;

@@ -69,12 +69,12 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \brief Structure containing RLC AM configuration parameters.
 */
 typedef volatile struct {
-    u16_t max_retx_threshold;  /*!< \brief Maximum number of retransmissions for one RLC AM PDU. */
-    u16_t poll_pdu;            /*!< \brief Generate a status each poll_pdu pdu sent. */
-    u16_t poll_byte;           /*!< \brief Generate a status each time poll_byte bytes have been sent. */
-    u32_t t_poll_retransmit;   /*!< \brief t-PollRetransmit timer initial value. */
-    u32_t t_reordering;        /*!< \brief t-Reordering timer initial value. */
-    u32_t t_status_prohibit;   /*!< \brief t-StatusProhibit timer initial value. */
+    uint16_t max_retx_threshold;  /*!< \brief Maximum number of retransmissions for one RLC AM PDU. */
+    uint16_t poll_pdu;            /*!< \brief Generate a status each poll_pdu pdu sent. */
+    uint16_t poll_byte;           /*!< \brief Generate a status each time poll_byte bytes have been sent. */
+    uint32_t t_poll_retransmit;   /*!< \brief t-PollRetransmit timer initial value. */
+    uint32_t t_reordering;        /*!< \brief t-Reordering timer initial value. */
+    uint32_t t_status_prohibit;   /*!< \brief t-StatusProhibit timer initial value. */
 } rlc_am_info_t;
 
 //-----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ public_rlc_am_init( void rlc_am_init   (rlc_am_entity_t* rlc_pP,frame_t frameP);
 */
 public_rlc_am_init( void rlc_am_cleanup(rlc_am_entity_t* rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_am_configure(rlc_am_entity_t *rlc_pP, frame_t frameP, u16_t max_retx_thresholdP, u16_t poll_pduP, u16_t poll_byteP, u32_t t_poll_retransmitP, u32_t t_reorderingP, u32_t t_status_prohibitP)
+/*! \fn void rlc_am_configure(rlc_am_entity_t *rlc_pP, frame_t frameP, uint16_t max_retx_thresholdP, uint16_t poll_pduP, uint16_t poll_byteP, uint32_t t_poll_retransmitP, uint32_t t_reorderingP, uint32_t t_status_prohibitP)
 * \brief    Set RLC AM protocol parameters.
 * \param[in]  rlc_pP                      RLC AM protocol instance pointer.
 * \param[in]  frame                     Frame index
@@ -106,12 +106,12 @@ AMD PDU.
 */
 public_rlc_am_init( void rlc_am_configure(rlc_am_entity_t *rlc_pP,
                                           frame_t frameP,
-                                          u16_t max_retx_thresholdP,
-                                          u16_t poll_pduP,
-                                          u16_t poll_byteP,
-                                          u32_t t_poll_retransmitP,
-                                          u32_t t_reorderingP,
-                                          u32_t t_status_prohibitP);)
+                                          uint16_t max_retx_thresholdP,
+                                          uint16_t poll_pduP,
+                                          uint16_t poll_byteP,
+                                          uint32_t t_poll_retransmitP,
+                                          uint32_t t_reorderingP,
+                                          uint32_t t_status_prohibitP);)
 
 /*! \fn void rlc_am_set_debug_infos(rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP, rb_type_t rb_typeP)
 * \brief    Set informations that will be displayed in traces, helping the debug process.

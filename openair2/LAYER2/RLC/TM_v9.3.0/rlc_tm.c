@@ -39,7 +39,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
 void
-rlc_tm_send_sdu (rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flag, u8_t error_indicationP, u8 * srcP, u16_t length_in_bitsP)
+rlc_tm_send_sdu (rlc_tm_entity_t *rlcP, uint32_t frame, uint8_t eNB_flag, uint8_t error_indicationP, uint8_t * srcP, uint16_t length_in_bitsP)
 {
     //-----------------------------------------------------------------------------
     int             length_in_bytes;
@@ -96,7 +96,7 @@ rlc_tm_no_segment (rlc_tm_entity_t *rlcP)
         // SHOULD BE OPTIMIZED...SOON
         pdu_mngt = (struct rlc_tm_tx_pdu_management *) (pdu->data);
         memset (pdu->data, 0, sizeof (struct rlc_tm_tx_pdu_management));
-        pdu_mngt->first_byte = (u8_t*)&pdu->data[sizeof (struct rlc_tm_tx_data_pdu_struct)];
+        pdu_mngt->first_byte = (uint8_t*)&pdu->data[sizeof (struct rlc_tm_tx_data_pdu_struct)];
 
         memcpy (pdu_mngt->first_byte, sdu_mngt->first_byte, ((rlcP->rlc_pdu_size + 7) >> 3));
         ((struct mac_tb_req *) (pdu->data))->rlc = NULL;
@@ -114,13 +114,13 @@ rlc_tm_no_segment (rlc_tm_entity_t *rlcP)
 }
 //-----------------------------------------------------------------------------
 void
-rlc_tm_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
+rlc_tm_rx (void *argP, uint32_t frame, uint8_t eNB_flag, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
 
   rlc_tm_entity_t *rlc = (rlc_tm_entity_t *) argP;
   mem_block_t *tb;
-  u8_t             *first_byte;
+  uint8_t             *first_byte;
 
     rlc->output_sdu_size_to_write = 0;      // size of sdu reassemblied
     while ((tb = list_remove_head (&data_indP.data))) {
@@ -135,7 +135,7 @@ rlc_tm_rx (void *argP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_tm_mac_status_indication (void *rlcP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_tm_mac_status_indication (void *rlcP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -150,7 +150,7 @@ rlc_tm_mac_status_indication (void *rlcP, u16 tb_sizeP, struct mac_status_ind tx
 
 //-----------------------------------------------------------------------------
 struct mac_data_req
-rlc_tm_mac_data_request (void *rlcP, u32_t frame)
+rlc_tm_mac_data_request (void *rlcP, uint32_t frame)
 {
 //-----------------------------------------------------------------------------
   rlc_tm_entity_t *l_rlc = (rlc_tm_entity_t *) rlcP;
@@ -178,7 +178,7 @@ rlc_tm_mac_data_request (void *rlcP, u32_t frame)
 
 //-----------------------------------------------------------------------------
 void
-rlc_tm_mac_data_indication (void *rlcP, u32_t frame, u8_t eNB_flag, struct mac_data_ind data_indP)
+rlc_tm_mac_data_indication (void *rlcP, uint32_t frame, uint8_t eNB_flag, struct mac_data_ind data_indP)
 {
 //-----------------------------------------------------------------------------
     rlc_tm_entity_t *l_rlc = (rlc_tm_entity_t *) rlcP;
@@ -219,7 +219,7 @@ rlc_tm_data_req (void *rlcP, mem_block_t *sduP)
     ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_size = ((struct rlc_tm_data_req *) (sduP->data))->data_size;
     rlc->buffer_occupancy += ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_size >> 3;
     rlc->nb_sdu += 1;
-    ((struct rlc_tm_tx_sdu_management *) (sduP->data))->first_byte = (u8*)&sduP->data[sizeof (struct rlc_tm_data_req_alloc)];
+    ((struct rlc_tm_tx_sdu_management *) (sduP->data))->first_byte = (uint8_t*)&sduP->data[sizeof (struct rlc_tm_data_req_alloc)];
     rlc->input_sdus[rlc->next_sdu_index] = sduP;
     rlc->next_sdu_index = (rlc->next_sdu_index + 1) % rlc->size_input_sdus_buffer;
   } else {

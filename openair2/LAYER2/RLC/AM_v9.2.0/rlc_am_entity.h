@@ -18,34 +18,34 @@
 struct rlc_am_entity {
   module_id_t    module_id;
   // for stats and trace purpose :
-  u16_t             data_plane;   // act as a boolean
+  uint16_t             data_plane;   // act as a boolean
 
-  u16_t              rb_id;
+  uint16_t              rb_id;
   //-----------------------------
   // polling info
   //-----------------------------
-  u16_t             poll_pdu_trigger;
-  u16_t             poll_sdu_trigger;
-  u16_t             timer_poll_trigger;
-  u16_t             timer_poll_prohibit_trigger;
-  u8_t              last_transmission_pdu_poll_trigger;
-  u8_t              last_retransmission_pdu_poll_trigger;
-  u8_t              poll_window_trigger;
+  uint16_t             poll_pdu_trigger;
+  uint16_t             poll_sdu_trigger;
+  uint16_t             timer_poll_trigger;
+  uint16_t             timer_poll_prohibit_trigger;
+  uint8_t              last_transmission_pdu_poll_trigger;
+  uint8_t              last_retransmission_pdu_poll_trigger;
+  uint8_t              poll_window_trigger;
   //mem_block_t      *timer_rst;
-  u16_t             time_out_events;
+  uint16_t             time_out_events;
   //mem_block_t      *timer_mrw;    // if NULL : no timer is running
-  //u8_t timer_mrw_is_running;
+  //uint8_t timer_mrw_is_running;
 
 
-  u16_t             timer_rst_init;
-  u16_t             timer_mrw_init;
+  uint16_t             timer_rst_init;
+  uint16_t             timer_mrw_init;
 
-  u32_t             transmitted_pdu_types;
+  uint32_t             transmitted_pdu_types;
   int                last_tx_status_frame;
 
-  u32_t            *frame_tick_milliseconds;      // pointer on this tick variable handled by RRC : READ ONLY
+  uint32_t            *frame_tick_milliseconds;      // pointer on this tick variable handled by RRC : READ ONLY
 
-  u8_t              missing_pdu_indicator;
+  uint8_t              missing_pdu_indicator;
   //-----------------------------
   // tranmission
   //-----------------------------
@@ -59,8 +59,8 @@ struct rlc_am_entity {
 
   //struct cnt_dbl_lk_list_up  transmission_buffer; // output of mux module
 
-  //u16_t                        data_pdu_size;
-  //u16_t                        control_pdu_size;
+  //uint16_t                        data_pdu_size;
+  //uint16_t                        control_pdu_size;
 
 
 
@@ -72,43 +72,43 @@ struct rlc_am_entity {
 
   // implementation specific: our transmiter buffer is an array whose size must be a power of 2
 #        define RLC_AM_DISCARD_REASSEMBLY_AT_LI_INDEX_0  0x00
-  u8_t              discard_reassembly_after_li;  // when received mrw sufi
-  u16_t             discard_reassembly_start_sn;
+  uint8_t              discard_reassembly_after_li;  // when received mrw sufi
+  uint16_t             discard_reassembly_start_sn;
   //-----------------------------
   // management of received PDU for piggybacked status PDU and status PDU
   //-----------------------------
   struct sufi_to_insert_in_status status_in_construction[NB_MAX_SUFI];
   struct sufi_ack ack;
-  u8_t              sufi_to_insert_index;
+  uint8_t              sufi_to_insert_index;
   //-----------------------------
   // Reset
   //-----------------------------
-  u8_t              send_status_pdu_requested;
-  u8_t              reset_sequence_number;
-  u8_t              last_received_rsn;
-  u8_t              max_rst;
+  uint8_t              send_status_pdu_requested;
+  uint8_t              reset_sequence_number;
+  uint8_t              last_received_rsn;
+  uint8_t              max_rst;
   //-----------------------------
   // Mapping info
   //-----------------------------
-  u8_t              dcch_logical_channel_identity;
-  u8_t              dtch_logical_channel_identity;
-  u8_t              nb_logical_channels_per_rlc;
+  uint8_t              dcch_logical_channel_identity;
+  uint8_t              dtch_logical_channel_identity;
+  uint8_t              nb_logical_channels_per_rlc;
   //-----------------------------
   // buffer occupancy measurements sent to MAC
   //-----------------------------
   // note occupancy of other buffers is deducted from nb elements in lists
-  u32_t             buffer_occupancy_retransmission_buffer;       // nb of pdus
+  uint32_t             buffer_occupancy_retransmission_buffer;       // nb of pdus
 
   //**************************************************************
   // new members
   //**************************************************************
-  u8_t              allocation;
-  u8_t              location;     // UTRAN/UE
-  u8_t              protocol_state;
+  uint8_t              allocation;
+  uint8_t              location;     // UTRAN/UE
+  uint8_t              protocol_state;
   //-----------------------------
   // STATE VARIABLES
   //-----------------------------
-  u16_t             vt_s;         // send state variable
+  uint16_t             vt_s;         // send state variable
   // This state variable contains the "Sequence Number" of the next AMD PDU to 
   // be transmitted for the first time (i.e. excluding retransmitted PDUs). It 
   // shall be updated after the aforementioned AMD PDU is transmitted or after 
@@ -117,7 +117,7 @@ struct rlc_am_entity {
   // The initial value of this variable is 0
   
   
-  u16_t             vt_a;         // Acknowledge state variable
+  uint16_t             vt_a;         // Acknowledge state variable
   // This state variable contains the "Sequence Number" following the "Sequence 
   // Number" of the last in-sequence acknowledged AMD PDU. This forms the lower 
   // edge of the transmission window of acceptable acknowledgements. VT(A) shall
@@ -128,7 +128,7 @@ struct rlc_am_entity {
   // following the last in-sequence acknowledged AMD PDU.
 	
   
-  u16_t             vt_ms;        // Maximum send state variable
+  uint16_t             vt_ms;        // Maximum send state variable
   // This state variable contains the "Sequence Number" of the first AMD PDU 
   // that can be rejected by the peer Receiver, VT(MS) = VT(A) + VT(WS). 
   // This value represents the upper edge of the transmission window. The 
@@ -139,7 +139,7 @@ struct rlc_am_entity {
   // The initial value of this variable is Configured_Tx_Window_size.
   
   
-  u16_t             vt_pdu;
+  uint16_t             vt_pdu;
   // This state variable is used when the "poll every Poll_PDU PDU" polling 
   // trigger is configured. It shall be incremented by 1 for each AMD PDU that 
   // is transmitted including both new and retransmitted AMD PDUs. When it 
@@ -148,7 +148,7 @@ struct rlc_am_entity {
   // The initial value of this variable is 0.
   
   
-  u16_t             vt_sdu;
+  uint16_t             vt_sdu;
   // This state variable is used when the "poll every Poll_SDU SDU" polling 
   // trigger is configured. It shall be incremented by 1 for a given SDU when 
   // the AMD PDU carrying the first segment of this SDU is scheduled to be 
@@ -161,7 +161,7 @@ struct rlc_am_entity {
   // The initial value of this variable is 0.
 	
 	
-  u16_t             vt_rst;       // Reset state variable
+  uint16_t             vt_rst;       // Reset state variable
   // This state variable is used to count the number of times a RESET PDU is 
   // scheduled to be transmitted before the reset procedure is completed. 
   // VT(RST) shall be incremented by 1 according to subclauses 11.4.2 and 
@@ -171,7 +171,7 @@ struct rlc_am_entity {
   // The initial value of this variable is 0.
 	
 	
-  u16_t             vt_mrw;       // MRW command send state variable
+  uint16_t             vt_mrw;       // MRW command send state variable
   // This state variable is used to count the number of times a MRW command is 
   // transmitted. VT(MRW) is incremented by 1 each time a timer Timer_MRW 
   // expires. VT(MRW) shall be reset when the SDU discard with explicit 
@@ -179,14 +179,14 @@ struct rlc_am_entity {
   // The initial value of this variable is 0. 
   
   
-  u16_t             vt_ws;        // transmitter window size state variable
+  uint16_t             vt_ws;        // transmitter window size state variable
   // This state variable contains the size that shall be used for the 
   // transmission window. VT(WS) shall be set equal to the WSN field when the 
   // transmitter receives a STATUS PDU including a WINDOW SUFI.
   // The initial value of this variable is Configured_Tx_Window_size.
 	
 	
-  u16_t             vr_r;         // Receive state variable
+  uint16_t             vr_r;         // Receive state variable
   // This state variable contains the "Sequence Number" following that of the 
   // last in-sequence AMD PDU received. It shall be updated upon the receipt of 
   // the AMD PDU with "Sequence Number" equal to VR(R).
@@ -195,7 +195,7 @@ struct rlc_am_entity {
   // following the last in-sequence received AMD PDU.
 	
 	
-  u16_t             vr_h;         // Highest expected state variable
+  uint16_t             vr_h;         // Highest expected state variable
   // This state variable contains the "Sequence Number" following the highest 
   // "Sequence Number" of any AMD PDU received or identified to be missing.. 
   // When a AMD PDU is received with "Sequence Number" x or a POLL SUFI is 
@@ -204,7 +204,7 @@ struct rlc_am_entity {
   // The initial value of this variable is 0.
 	
 	
-  u16_t             vr_mr;        // Maximum acceptable Receive state variable
+  uint16_t             vr_mr;        // Maximum acceptable Receive state variable
   // This state variable contains the "Sequence Number" of the first AMD PDU 
   // that shall be rejected by the Receiver, 
   // VR(MR) = VR(R) + Configured_Rx_Window_Size..
@@ -341,21 +341,21 @@ struct rlc_am_entity {
   //-----------------------------
   // PROTOCOL PARAMETERS
   //-----------------------------
-  u16_t             max_dat;  
+  uint16_t             max_dat;  
   // The maximum number of transmissions of an AMD PDU is equal to MaxDAT – 1.
   // This protocol parameter represents the upper limit for state variable 
   // VT(DAT). When VT(DAT) equals the value MaxDAT, either RLC RESET procedure 
   // or SDU discard procedure shall be initiated according to the configuration 
   // by upper layers.
   
-  u16_t             poll_pdu;  
+  uint16_t             poll_pdu;  
   // This protocol parameter indicates how often the transmitter shall poll the 
   // Receiver in the case where "polling every Poll_PDU PDU" is configured by 
   // upper layers. It represents the upper limit for the state variable VT(PDU).
   // When VT(PDU) equals the value Poll_PDU a poll shall be transmitted to the 
   // peer entity.
   
-  u16_t             poll_sdu;  
+  uint16_t             poll_sdu;  
   // This protocol parameter indicates how often the transmitter shall poll the 
   // Receiver in the case where "polling every Poll_SDU SDU" is configured by 
   // upper layers. It represents the upper limit for state variable VT(SDU). 
@@ -363,39 +363,39 @@ struct rlc_am_entity {
   // peer entity.
   
   
-  u16_t             poll_window;  
+  uint16_t             poll_window;  
   // This protocol parameter indicates when the transmitter shall poll the 
   // Receiver in the case where "window-based polling" is configured by upper 
   // layers. A poll is triggered for each AMD PDU when J >= Poll_Window, where 
   // J is the transmission window percentage.(see formula of J in spec document)
   
   
-  u16_t             max_rst;  
+  uint16_t             max_rst;  
   // The maximum number of transmissions of a RESET PDU is equal to MaxRST – 1. 
   // This protocol parameter represents the upper limit for state variable 
   // VT(RST). When VT(RST) equals the value MaxRST, unrecoverable error shall be
   // indicated to upper layers.
   
   
-  u16_t             configured_tx_window_size;
+  uint16_t             configured_tx_window_size;
   // This protocol parameter indicates both the maximum allowed transmission 
   // window size and the value for the state variable VT(WS).
   
   
-  //u16_t             configured_rx_window_size;
+  //uint16_t             configured_rx_window_size;
   // This protocol parameter indicates the reception window size. This parameter
   // is applicable both for RLC UM and AM. This parameter is only configured for
   // RLC-UM in case out-of-sequence reception is supported.
   
   
-  u16_t             max_mrw;
+  uint16_t             max_mrw;
   // The maximum number of transmissions of an MRW command is equal to MaxMRW. 
   // This protocol parameter represents the upper limit for state variable 
   // VT(MRW). When VT(MRW) equals the value MaxMRW, the RLC RESET procedure 
   // shall be initiated.
             
       
-  u16_t             first_li_in_next_pdu; // indicates :
+  uint16_t             first_li_in_next_pdu; // indicates :
   // value = 000000000000000 that the previous PDU was exactly
   // with the last segment of an RLC SDU and there is no LI that
   // indicates the end of the SDU in the previous RLC PDU.
@@ -418,26 +418,26 @@ struct rlc_am_entity {
   //-----------------------------
   // discard
   //-----------------------------
-  u8_t              sdu_discard_mode;
-  u8_t              send_mrw;
+  uint8_t              sdu_discard_mode;
+  uint8_t              send_mrw;
   //-----------------------------
   // tranmission
   //-----------------------------
   mem_block_t     **input_sdus;   // should be accessed as an array
   mem_block_t      *input_sdus_alloc;     // allocation of the array
-  u16_t             size_input_sdus_buffer;
-  u16_t             nb_sdu;
+  uint16_t             size_input_sdus_buffer;
+  uint16_t             nb_sdu;
 
-  u16_t             next_sdu_index;       // next location of incoming sdu
-  u16_t             current_sdu_index;
-  u32_t             buffer_occupancy;
+  uint16_t             next_sdu_index;       // next location of incoming sdu
+  uint16_t             current_sdu_index;
+  uint32_t             buffer_occupancy;
   // for segmentation procedures (optimization save space on stack)
-  u16_t             li[RLC_AM_SEGMENT_NB_MAX_LI_PER_PDU];
+  uint16_t             li[RLC_AM_SEGMENT_NB_MAX_LI_PER_PDU];
 
 
 
   // implementation specific: our transmiter buffer is an array whose size must be a power of 2
-  u16_t             recomputed_configured_tx_window_size;
+  uint16_t             recomputed_configured_tx_window_size;
 
   mem_block_t      *(*rlc_segment) (struct rlc_am_entity * rlcP);
 
@@ -447,12 +447,12 @@ struct rlc_am_entity {
   list2_t         retransmission_buffer_to_send;        // contains PDUs that must be immediatly retransmitted
   list_t          control;      // contains control pdus
 
-  u16_t             nb_pdu_requested_by_mac_on_ch1;
-  u16_t             nb_pdu_requested_by_mac_on_ch2;
-  u16_t             pdu_size;
+  uint16_t             nb_pdu_requested_by_mac_on_ch1;
+  uint16_t             nb_pdu_requested_by_mac_on_ch2;
+  uint16_t             pdu_size;
 
-  u8_t              li_one_byte_short_to_add_in_next_pdu;
-  u8_t              li_exactly_filled_to_add_in_next_pdu;
+  uint8_t              li_one_byte_short_to_add_in_next_pdu;
+  uint8_t              li_exactly_filled_to_add_in_next_pdu;
 
   list_t          pdus_to_mac_layer_ch1;
   list_t          pdus_to_mac_layer_ch2;
@@ -466,9 +466,9 @@ struct rlc_am_entity {
   mem_block_t      *receiver_buffer_alloc;
   mem_block_t     **receiver_buffer;
 
-  u16_t             last_reassemblied_sn;
-  u16_t             configured_rx_window_size;
-  u16_t             recomputed_configured_rx_window_size;
+  uint16_t             last_reassemblied_sn;
+  uint16_t             configured_rx_window_size;
+  uint16_t             recomputed_configured_rx_window_size;
 
   list_t          pdus_from_mac_layer_ch1;
   list_t          pdus_from_mac_layer_ch2;
@@ -478,9 +478,9 @@ struct rlc_am_entity {
   //-----------------------------
   mem_block_t      *holes_alloc;
   struct rlc_am_hole *holes;
-  u16_t             nb_missing_pdus;
-  u16_t             ack_sn;
-  u16_t             nb_holes;
+  uint16_t             nb_missing_pdus;
+  uint16_t             ack_sn;
+  uint16_t             nb_holes;
 #        ifdef BYPASS_L1
   unsigned int    pdu_counter;
 #        endif

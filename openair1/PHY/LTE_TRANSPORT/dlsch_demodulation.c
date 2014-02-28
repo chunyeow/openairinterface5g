@@ -92,7 +92,7 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
              PDSCH_t type,
              unsigned char eNB_id,
              unsigned char eNB_id_i, //if this == phy_vars_ue->n_connected_eNB, we assume MU interference
-             u8 subframe,
+             uint8_t subframe,
              unsigned char symbol,
              unsigned char first_symbol_flag,
              unsigned char dual_stream_flag,
@@ -655,7 +655,7 @@ void dlsch_channel_compensation(int **rxdataF_ext,
                                 int **rho,
                                 LTE_DL_FRAME_PARMS *frame_parms,
                                 unsigned char symbol,
-                                u8 first_symbol_flag,
+                                uint8_t first_symbol_flag,
                                 unsigned char mod_order,
                                 unsigned short nb_rb,
                                 unsigned char output_shift,
@@ -1334,7 +1334,7 @@ void dlsch_detection_mrc(LTE_DL_FRAME_PARMS *frame_parms,
 void dlsch_scale_channel(int **dl_ch_estimates_ext,
                          LTE_DL_FRAME_PARMS *frame_parms,
                          LTE_UE_DLSCH_t **dlsch_ue,
-                         u8 symbol,
+                         uint8_t symbol,
                          unsigned short nb_rb){
 
   short rb, ch_amp;
@@ -1385,7 +1385,7 @@ void dlsch_scale_channel(int **dl_ch_estimates_ext,
 void dlsch_channel_level(int **dl_ch_estimates_ext,
 			 LTE_DL_FRAME_PARMS *frame_parms,
 			 int *avg,
-			 u8 symbol,
+			 uint8_t symbol,
 			 unsigned short nb_rb){
 
   short rb;
@@ -1447,7 +1447,7 @@ void dlsch_channel_level_prec(int **dl_ch_estimates_ext,
                               LTE_DL_FRAME_PARMS *frame_parms,
                               unsigned char *pmi_ext,
                               int *avg,
-                              u8 symbol,
+                              uint8_t symbol,
                               unsigned short nb_rb){
 
   short rb;
@@ -1530,8 +1530,8 @@ void dlsch_alamouti(LTE_DL_FRAME_PARMS *frame_parms,
   __m128i *ch_mag0,*ch_mag1,*ch_mag0b,*ch_mag1b, amp, *rxF0_128;
   unsigned char rb,re;
   int jj = (symbol*frame_parms->N_RB_DL*12);
-  u8 symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
-  u8 pilots = ((symbol_mod==0)||(symbol_mod==(4-frame_parms->Ncp))) ? 1 : 0;
+  uint8_t symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
+  uint8_t pilots = ((symbol_mod==0)||(symbol_mod==(4-frame_parms->Ncp))) ? 1 : 0;
   rxF0_128 = (__m128i*) &rxdataF_comp[0][jj];
 
   amp = _mm_set1_epi16(ONE_OVER_SQRT2_Q15);
@@ -2932,7 +2932,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 
 #ifdef USER_MODE
 
-void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u16 coded_bits_per_codeword) {
+void dump_dlsch2(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword) {
 
   unsigned int nsymb = (phy_vars_ue->lte_frame_parms.Ncp == 0) ? 14 : 12;
   char fname[32],vname[32];

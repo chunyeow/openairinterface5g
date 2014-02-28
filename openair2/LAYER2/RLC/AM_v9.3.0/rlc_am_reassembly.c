@@ -45,7 +45,7 @@ inline void rlc_am_clear_rx_sdu (rlc_am_entity_t *rlc_pP)
   rlc_pP->output_sdu_size_to_write = 0;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_reassembly (u8_t * src_pP, s32_t lengthP, rlc_am_entity_t *rlc_pP, frame_t frameP)
+void rlc_am_reassembly (uint8_t * src_pP, int32_t lengthP, rlc_am_entity_t *rlc_pP, frame_t frameP)
 //-----------------------------------------------------------------------------
 {
   LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][REASSEMBLY PAYLOAD] reassembly()  %d bytes\n",

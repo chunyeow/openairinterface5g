@@ -42,12 +42,12 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define DEBUG_RLC_AM_DISPLAY_TB_DATA
 //#define RLC_AM_GENERATE_ERRORS
 //-----------------------------------------------------------------------------
-signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_pP, s16_t total_sizeP, rlc_am_pdu_info_t* pdu_info_pP)
+signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     memset(pdu_info_pP, 0, sizeof (rlc_am_pdu_info_t));
 
-    s16_t          sum_li = 0;
+    int16_t          sum_li = 0;
     pdu_info_pP->d_c = header_pP->b1 >> 7;
     pdu_info_pP->num_li = 0;
 
@@ -57,12 +57,12 @@ signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_
         pdu_info_pP->p   = (header_pP->b1 >> 5) & 0x01;
         pdu_info_pP->fi  = (header_pP->b1 >> 3) & 0x03;
         pdu_info_pP->e   = (header_pP->b1 >> 2) & 0x01;
-        pdu_info_pP->sn  = header_pP->b2 +  (((u16_t)(header_pP->b1 & 0x03)) << 8);
+        pdu_info_pP->sn  = header_pP->b2 +  (((uint16_t)(header_pP->b1 & 0x03)) << 8);
 
         pdu_info_pP->header_size  = 2;
         if (pdu_info_pP->rf) {
             pdu_info_pP->lsf = (header_pP->data[0] >> 7) & 0x01;
-            pdu_info_pP->so  = header_pP->data[1] +  (((u16_t)(header_pP->data[0] & 0x7F)) << 8);
+            pdu_info_pP->so  = header_pP->data[1] +  (((uint16_t)(header_pP->data[0] & 0x7F)) << 8);
             pdu_info_pP->payload = &header_pP->data[2];
             pdu_info_pP->header_size  += 2;
         } else {
@@ -82,12 +82,12 @@ signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_
             while (li_to_read)  {
                 li_length_in_bytes = li_length_in_bytes ^ 3;
                 if (li_length_in_bytes  == 2) {
-                    pdu_info_pP->li_list[pdu_info_pP->num_li] = ((u16_t)(e_li->b1 << 4)) & 0x07F0;
-                    pdu_info_pP->li_list[pdu_info_pP->num_li] |= (((u8_t)(e_li->b2 >> 4)) & 0x000F);
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] = ((uint16_t)(e_li->b1 << 4)) & 0x07F0;
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] |= (((uint8_t)(e_li->b2 >> 4)) & 0x000F);
                     li_to_read = e_li->b1 & 0x80;
                     pdu_info_pP->header_size  += 2;
                 } else {
-                    pdu_info_pP->li_list[pdu_info_pP->num_li] = ((u16_t)(e_li->b2 << 8)) & 0x0700;
+                    pdu_info_pP->li_list[pdu_info_pP->num_li] = ((uint16_t)(e_li->b2 << 8)) & 0x0700;
                     pdu_info_pP->li_list[pdu_info_pP->num_li] |=  e_li->b3;
                     li_to_read = e_li->b2 & 0x08;
                     e_li++;
@@ -250,8 +250,8 @@ rlc_am_receive_routing (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_
 //-----------------------------------------------------------------------------
 {
     mem_block_t        *tb_p             = NULL;
-    u8_t               *first_byte_p     = NULL;
-    s16_t               tb_size_in_bytes;
+    uint8_t               *first_byte_p     = NULL;
+    int16_t               tb_size_in_bytes;
 
     while ((tb_p = list_remove_head (&data_indP.data))) {
         first_byte_p = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
@@ -283,7 +283,7 @@ rlc_am_receive_routing (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_
     } // end while
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, mem_block_t* tb_pP, u8_t* first_byte_pP, u16_t tb_size_in_bytesP)
+void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, mem_block_t* tb_pP, uint8_t* first_byte_pP, uint16_t tb_size_in_bytesP)
 //-----------------------------------------------------------------------------
 {
   // 5.1.3.2 Receive operations

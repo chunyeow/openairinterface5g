@@ -45,7 +45,7 @@
 
 
 //---------------------------------------------------------------------------
-u8 oai_nw_drv_TOOL_get_dscp6(struct ipv6hdr *iph){
+uint8_t oai_nw_drv_TOOL_get_dscp6(struct ipv6hdr *iph){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -64,7 +64,7 @@ u8 oai_nw_drv_TOOL_get_dscp6(struct ipv6hdr *iph){
 }
 
 //---------------------------------------------------------------------------
-u8 oai_nw_drv_TOOL_get_dscp4(struct iphdr *iph){
+uint8_t oai_nw_drv_TOOL_get_dscp4(struct iphdr *iph){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -82,7 +82,7 @@ u8 oai_nw_drv_TOOL_get_dscp4(struct iphdr *iph){
 }
 
 //---------------------------------------------------------------------------
-int oai_nw_drv_TOOL_network6(struct in6_addr *addr, struct in6_addr *prefix, u8 plen){
+int oai_nw_drv_TOOL_network6(struct in6_addr *addr, struct in6_addr *prefix, uint8_t plen){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -126,7 +126,7 @@ int oai_nw_drv_TOOL_network6(struct in6_addr *addr, struct in6_addr *prefix, u8 
 }
 
 //---------------------------------------------------------------------------
-int oai_nw_drv_TOOL_network4(u32 *addr, u32 *prefix, u8 plen){
+int oai_nw_drv_TOOL_network4(uint32_t *addr, uint32_t *prefix, uint8_t plen){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -158,9 +158,9 @@ int oai_nw_drv_TOOL_network4(u32 *addr, u32 *prefix, u8 plen){
 //}
 
 //---------------------------------------------------------------------------
-u8 *oai_nw_drv_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol){
+uint8_t *oai_nw_drv_TOOL_get_protocol6(struct ipv6hdr *iph, uint8_t *protocol){
 //---------------------------------------------------------------------------
-    u16 size;
+    uint16_t size;
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
     printk("OAI_NW_DRV_TOOL_GET_PROTOCOL6 - begin \n");
@@ -187,16 +187,16 @@ u8 *oai_nw_drv_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol){
         case IPPROTO_UDP:
         case IPPROTO_TCP:
         case IPPROTO_ICMPV6:
-            return (u8 *)((u8 *)iph+size);
+            return (uint8_t *)((uint8_t *)iph+size);
         case IPPROTO_HOPOPTS:
         case IPPROTO_ROUTING:
         case IPPROTO_DSTOPTS:
-            *protocol=((u8 *)iph+size)[0];
-            size+=((u8 *)iph+size)[1]*8+8;
+            *protocol=((uint8_t *)iph+size)[0];
+            size+=((uint8_t *)iph+size)[1]*8+8;
             break;
         case IPPROTO_FRAGMENT:
-            *protocol=((u8 *)iph+size)[0];
-            size+=((u8 *)iph+size)[1]+8;
+            *protocol=((uint8_t *)iph+size)[0];
+            size+=((uint8_t *)iph+size)[1]+8;
             break;
         case IPPROTO_NONE:
         case IPPROTO_AH:
@@ -208,7 +208,7 @@ u8 *oai_nw_drv_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol){
 }
 
 //---------------------------------------------------------------------------
-u8 *oai_nw_drv_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol){
+uint8_t *oai_nw_drv_TOOL_get_protocol4(struct iphdr *iph, uint8_t *protocol){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -233,7 +233,7 @@ u8 *oai_nw_drv_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol){
     case IPPROTO_UDP:
     case IPPROTO_TCP:
     case IPPROTO_ICMP:
-        return (u8 *)((u8 *)iph+iph->tot_len);
+        return (uint8_t *)((uint8_t *)iph+iph->tot_len);
     default:
         return NULL;
     }
@@ -241,7 +241,7 @@ u8 *oai_nw_drv_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol){
 
 //---------------------------------------------------------------------------
 // Convert the IMEI to iid
-void oai_nw_drv_TOOL_imei2iid(u8 *imei, u8 *iid){
+void oai_nw_drv_TOOL_imei2iid(uint8_t *imei, uint8_t *iid){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -325,11 +325,11 @@ char *oai_nw_drv_TOOL_get_udpmsg(struct udphdr *udph){
 
 //---------------------------------------------------------------------------
 // Compute the UDP checksum (the data size must be odd)
-u16 oai_nw_drv_TOOL_udpcksum(struct in6_addr *saddr, struct in6_addr *daddr, u8 proto, u32 udplen, void *data){
+uint16_t oai_nw_drv_TOOL_udpcksum(struct in6_addr *saddr, struct in6_addr *daddr, uint8_t proto, uint32_t udplen, void *data){
 //---------------------------------------------------------------------------
-    u32 i;
-  u16 *data16;
-    u32 csum=0;
+    uint32_t i;
+  uint16_t *data16;
+    uint32_t csum=0;
 
 // Start debug information
 #ifdef OAI_NW_DRV_DEBUG_TOOL
@@ -382,7 +382,7 @@ u16 oai_nw_drv_TOOL_udpcksum(struct in6_addr *saddr, struct in6_addr *daddr, u8 
         if (csum>0xffff)
             csum-=0xffff;
     }
-    return htons((u16)(~csum)&0xffff);
+    return htons((uint16_t)(~csum)&0xffff);
 }
 
 //---------------------------------------------------------------------------
@@ -583,12 +583,12 @@ void print_TOOL_pk_all(struct sk_buff *skb){
     }
 }*/
 
-/*int oai_nw_drv_TOOL_inet_pton4(char *src, u32 *dst)
+/*int oai_nw_drv_TOOL_inet_pton4(char *src, uint32_t *dst)
 {
-    u32 val;
+    uint32_t val;
     int n;
-    u8 c;
-    u32 parts[4];
+    uint8_t c;
+    uint32_t parts[4];
 
     c = *src;
     val=0;

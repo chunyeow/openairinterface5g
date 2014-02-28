@@ -59,17 +59,17 @@ int slot_fep_ul(LTE_DL_FRAME_PARMS *frame_parms,
 		unsigned char eNb_id,
 		int no_prefix);
 
-void normal_prefix_mod(s32 *txdataF,s32 *txdata,u8 nsymb,LTE_DL_FRAME_PARMS *frame_parms);
+void normal_prefix_mod(int32_t *txdataF,int32_t *txdata,uint8_t nsymb,LTE_DL_FRAME_PARMS *frame_parms);
 
-void remove_7_5_kHz(PHY_VARS_eNB *phy_vars_eNB,u8 subframe);
+void remove_7_5_kHz(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe);
 
-void apply_7_5_kHz(PHY_VARS_UE *phy_vars_ue,s32*txdata,u8 subframe);
+void apply_7_5_kHz(PHY_VARS_UE *phy_vars_ue,int32_t*txdata,uint8_t subframe);
 
 void init_prach625(LTE_DL_FRAME_PARMS *frame_parms);
 
-void remove_625_Hz(PHY_VARS_eNB *phy_vars_eNB,s16 *prach);
+void remove_625_Hz(PHY_VARS_eNB *phy_vars_eNB,int16_t *prach);
 
-void apply_625_Hz(PHY_VARS_UE *phy_vars_ue,s16 *prach);
+void apply_625_Hz(PHY_VARS_UE *phy_vars_ue,int16_t *prach);
 
 #endif
 /** @}*/

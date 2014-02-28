@@ -21,8 +21,8 @@
 //-----------------------------------------------------------------------------
 int fifo_printf_null (const char *fmt, ...) {return 0;}
 #else
-static u8_t       fifo_printed_l1[FIFO_PRINTF_MAX_STRING_SIZE];
-static u8_t       fifo_printed_l2[FIFO_PRINTF_MAX_STRING_SIZE];
+static uint8_t       fifo_printed_l1[FIFO_PRINTF_MAX_STRING_SIZE];
+static uint8_t       fifo_printed_l2[FIFO_PRINTF_MAX_STRING_SIZE];
 //-----------------------------------------------------------------------------
 void
 fifo_printf_init (void)

@@ -66,7 +66,7 @@ extern int s_mgr; //socket with QoS Mgr
 extern int init_flag;
 
 //---------------------------------------------------------------------------
-void print_state(u8 state){
+void print_state(uint8_t state){
 //---------------------------------------------------------------------------
  switch(state){
     case  NAS_IDLE:printf("NAS_IDLE\n");return;
@@ -86,7 +86,7 @@ void print_state(u8 state){
 }
 
 //---------------------------------------------------------------------------
-void RAL_NASinitMTlist(u8 *msgrep, int num_mts){
+void RAL_NASinitMTlist(uint8_t *msgrep, int num_mts){
 //---------------------------------------------------------------------------
   int mt_ix, ch_ix;
   struct nas_msg_cx_list_reply *list;
@@ -122,7 +122,7 @@ void RAL_NASinitMTlist(u8 *msgrep, int num_mts){
 }
 
 //---------------------------------------------------------------------------
-void RAL_NASupdatetMTlist(u8 *msgrep, int num_mts){
+void RAL_NASupdatetMTlist(uint8_t *msgrep, int num_mts){
 //---------------------------------------------------------------------------
   int mt_ix, ch_ix;
   struct nas_msg_cx_list_reply *list;
@@ -322,17 +322,17 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
             case IO_CMD_LIST:
               {
                  // printf("Usage: gioctl cx list\n");
-                u8 *msgrep;
-                u8 i;
+                uint8_t *msgrep;
+                uint8_t i;
                 struct nas_msg_cx_list_reply *list;
-                u8 lcr;
+                uint8_t lcr;
                 short int num_mts;
 
                 gifr.type=NAS_MSG_CX_LIST_REQUEST;
                 //gifr.msg=(char *)malloc(NAS_LIST_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1);
                 memset (g_enb_ral_obj[instanceP].buffer,0,800);
                 gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
-                msgrep=(u8 *)(gifr.msg);
+                msgrep=(uint8_t *)(gifr.msg);
                 //
                 DEBUG("--\n");
                 DEBUG("Connexion list requested\n");
@@ -348,7 +348,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
                 for(lcr=0; lcr<num_mts; ++lcr){
                   DEBUG("%u\t\t%u\t%u\t", list[lcr].lcr, list[lcr].cellid, list[lcr].iid4);
                   for (i=0;i<8;++i)
-                    DEBUG("%02x", *((u8 *)list[lcr].iid6+i));
+                    DEBUG("%02x", *((uint8_t *)list[lcr].iid6+i));
                   DEBUG("\t%u\t%u\t", list[lcr].num_rb, list[lcr].nsclassifier);
                   print_state(list[lcr].state);
                 }
@@ -505,16 +505,16 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int mt_ix, int ch_ix){
             case IO_CMD_LIST:
               {
                // printf("Usage: gioctl rb list <lcr>\n");
-                u8 *msgrep;
-                u8 rbi, i;
-                u8 num_rbs;
+                uint8_t *msgrep;
+                uint8_t rbi, i;
+                uint8_t num_rbs;
                 struct nas_msg_rb_list_reply *list;
                 struct nas_msg_rb_list_request *msgreq;
                 gifr.type=NAS_MSG_RB_LIST_REQUEST;
                 memset (g_enb_ral_obj[instanceP].buffer,0,800);
                 gifr.msg= &(g_enb_ral_obj[instanceP].buffer[0]);
                 msgreq=(struct nas_msg_rb_list_request *)(gifr.msg);
-                msgrep=(u8 *)(gifr.msg);
+                msgrep=(uint8_t *)(gifr.msg);
                 if (mt_ix < RAL_MAX_MT){
                     msgreq->lcr = g_enb_ral_obj[instanceP].mt[mt_ix].ue_id;
                 }else{

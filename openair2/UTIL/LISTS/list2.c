@@ -9,7 +9,7 @@
 #define LIST2_C
 #include "list.h"
 #ifdef USER_MODE
-#include <assert.h>
+#include "assertions.h"
 #else
 #define NULL 0
 #endif
@@ -226,8 +226,6 @@ list2_add_tail (mem_block_t * elementP, list2_t * listP)
       elementP->previous = tail;
     }
     listP->tail = elementP;
-  } else {
-    msg ("[CNT_DL_LK_LIST_UP][ERROR] add_cnt_dbl_lk_list_up_tail() element NULL\n");
   }
 }
 
@@ -265,11 +263,11 @@ void
 list2_display (list2_t * listP)
 {
 //-----------------------------------------------------------------------------
-
+/*
   mem_block_t      *cursor;
   unsigned short             nb_elements = 0;
-  //u32_t nb_bytes;
-  // u32_t index;
+  //uint32_t nb_bytes;
+  // uint32_t index;
 
   // test lists
   if (listP) {
@@ -279,20 +277,18 @@ list2_display (list2_t * listP)
       msg ("Display list %s %p", listP->name, listP);
       while (cursor != NULL) {
         msg ("%d:", cursor->pool_id);
-        /*nb_bytes = (( sdu_management*)(cursor->misc))->size;
-           for (index=0; index < nb_bytes; index++) {
-           msg("%02X.",cursor->data[index]);
-           } */
+        //nb_bytes = (( sdu_management*)(cursor->misc))->size;
+        //   for (index=0; index < nb_bytes; index++) {
+        //   msg("%02X.",cursor->data[index]);
+        //   }
         msg ("\n");
         cursor = cursor->next;
         nb_elements++;
       }
       msg (" found nb_elements %d nb_elements %d\n", nb_elements, listP->nb_elements);
 #ifdef USER_MODE
-      assert(nb_elements == listP->nb_elements);
+      AssertFatal(nb_elements == listP->nb_elements, "Bad count of elements %d != %d", nb_elements, listP->nb_elements);
 #endif
     }
-  } else {
-    msg ("[SDU_MNGT][WARNING] display_cnt_dbl_lk_list_up() : list is NULL\n");
-  }
+  }*/
 }

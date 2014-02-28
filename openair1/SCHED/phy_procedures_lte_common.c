@@ -144,12 +144,12 @@ void get_Msg3_alloc_ret(LTE_DL_FRAME_PARMS *frame_parms,
   }
 }
 
-u8 get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
-		     u32 frame,
+uint8_t get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
+		     uint32_t frame,
 		     unsigned char current_subframe) {
 
-  u8 ul_subframe=0;
-  u32 ul_frame;
+  uint8_t ul_subframe=0;
+  uint32_t ul_frame;
 
   if (frame_parms->frame_type ==FDD) {
     ul_subframe = (current_subframe>3) ? (current_subframe-4) : (current_subframe+6);
@@ -316,14 +316,14 @@ unsigned char ul_ACK_subframe2_M(LTE_DL_FRAME_PARMS *frame_parms,unsigned char s
 }
 
 // This function implements table 10.1-1 of 36-213, p. 69
-u8 get_ack(LTE_DL_FRAME_PARMS *frame_parms,
+uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,
 	   harq_status_t *harq_ack,
 	   unsigned char subframe,
 	   unsigned char *o_ACK) {
 
   //printf("get_ack: SF %d\n",subframe);
-  u8 status=0;
-  u8 subframe_dl;
+  uint8_t status=0;
+  uint8_t subframe_dl;
 
   if (frame_parms->frame_type == FDD) {
     if (subframe < 4)
@@ -410,15 +410,15 @@ u8 get_ack(LTE_DL_FRAME_PARMS *frame_parms,
   return(status);
 }
 
-u8 Np6[4]={0,1,3,5};
-u8 Np15[4]={0,3,8,13};
-u8 Np25[4]={0,5,13,22};
-u8 Np50[4]={0,11,27,44};
-u8 Np75[4]={0,16,41,66};
-u8 Np100[4]={0,22,55,88};
+uint8_t Np6[4]={0,1,3,5};
+uint8_t Np15[4]={0,3,8,13};
+uint8_t Np25[4]={0,5,13,22};
+uint8_t Np50[4]={0,11,27,44};
+uint8_t Np75[4]={0,16,41,66};
+uint8_t Np100[4]={0,22,55,88};
 // This is part of the PUCCH allocation procedure (see Section 10.1 36.213)
-u16 get_Np(u8 N_RB_DL,u8 nCCE,u8 plus1) {
-  u8 *Np;
+uint16_t get_Np(uint8_t N_RB_DL,uint8_t nCCE,uint8_t plus1) {
+  uint8_t *Np;
   switch (N_RB_DL) {
     case 6:
       Np=Np6;
@@ -498,13 +498,13 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
   }
 }
 
-lte_subframe_t get_subframe_direction(u8 Mod_id,u8 subframe) {
+lte_subframe_t get_subframe_direction(uint8_t Mod_id,uint8_t subframe) {
 
   return(subframe_select(&PHY_vars_eNB_g[Mod_id]->lte_frame_parms,subframe));
 
 }
 
-u8 phich_subframe_to_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,u32 frame,u8 subframe) {
+uint8_t phich_subframe_to_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t subframe) {
 
   //LOG_D(PHY,"phich_subframe_to_harq_pid.c: frame %d, subframe %d\n",frame,subframe);
   return(subframe2harq_pid(frame_parms,
@@ -544,8 +544,8 @@ unsigned int is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
 }
 
 
-LTE_eNB_UE_stats* get_eNB_UE_stats(u8 Mod_id, u16 rnti) {
-  s8 UE_id;
+LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint16_t rnti) {
+  int8_t UE_id;
   if ((PHY_vars_eNB_g == NULL) || (PHY_vars_eNB_g[Mod_id] == NULL)) {
     LOG_E(PHY,"get_eNB_UE_stats: No phy_vars_eNB found (or not allocated) for Mod_id %d\n",Mod_id);
     return NULL;
@@ -555,11 +555,11 @@ LTE_eNB_UE_stats* get_eNB_UE_stats(u8 Mod_id, u16 rnti) {
     LOG_E(PHY,"get_eNB_UE_stats: UE with rnti %x not found\n",rnti);
     return NULL;
   }
-  return(&PHY_vars_eNB_g[Mod_id]->eNB_UE_stats[(u32)UE_id]);
+  return(&PHY_vars_eNB_g[Mod_id]->eNB_UE_stats[(uint32_t)UE_id]);
 }
 
-s8 find_ue(u16 rnti, PHY_VARS_eNB *phy_vars_eNB) {
-  u8 i;
+int8_t find_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB) {
+  uint8_t i;
 
   for (i=0;i<NUMBER_OF_UE_MAX;i++) {
     if ((phy_vars_eNB->dlsch_eNB[i]) && 

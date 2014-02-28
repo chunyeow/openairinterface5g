@@ -11,8 +11,8 @@
 
 //#define cmin(a,b) ((a)<(b) ? (a) : (b))
 
-static u32 bitrev[32]    = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
-static u32 bitrev_x3[32] = {0,48,24,72,12,60,36,84,6,54,30,78,18,66,42,90,3,51,27,75,15,63,39,87,9,57,33,81,21,69,45,93};
+static uint32_t bitrev[32]    = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30,1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31};
+static uint32_t bitrev_x3[32] = {0,48,24,72,12,60,36,84,6,54,30,78,18,66,42,90,3,51,27,75,15,63,39,87,9,57,33,81,21,69,45,93};
 static uint32_t bitrev_cc[32] = {1,17,9,25,5,21,13,29,3,19,11,27,7,23,15,31,0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30};
 
 //#define RM_DEBUG_TX 1
@@ -323,7 +323,7 @@ uint32_t generate_dummy_w_cc(uint32_t D, uint8_t *w){
 
   uint32_t RCC = (D>>5), ND;
   uint32_t col,Kpi,index;
-  s32 k;
+  int32_t k;
 #ifdef RM_DEBUG_CC
   uint32_t nulled=0;
 #endif
@@ -562,14 +562,14 @@ printf("threed %d\n",threed);
   
 
 uint32_t lte_rate_matching_cc(uint32_t RCC,
-				  u16 E,
+				  uint16_t E,
 				  uint8_t *w,
 				  uint8_t *e) {
 
   
   uint32_t ind=0,k;
 
-  u16 Kw = 3*(RCC<<5);
+  uint16_t Kw = 3*(RCC<<5);
 
 #ifdef RM_DEBUG_CC
   uint32_t nulled=0;
@@ -627,7 +627,7 @@ int lte_rate_matching_turbo_rx(uint32_t RTC,
   
   uint32_t Nir,Ncb,Gp,GpmodC,E,Ncbmod,ind,k;
   int16_t *soft_input2;
-//   s32 w_tmp;
+//   int32_t w_tmp;
 #ifdef RM_DEBUG
   int nulled=0;
 #endif
@@ -745,7 +745,7 @@ int lte_rate_matching_turbo_rx(uint32_t RTC,
 
 
 void lte_rate_matching_cc_rx(uint32_t RCC,
-			     u16 E, 
+			     uint16_t E, 
 			     int8_t *w,
 			     uint8_t *dummy_w,
 			     int8_t *soft_input) {
@@ -753,7 +753,7 @@ void lte_rate_matching_cc_rx(uint32_t RCC,
   
   
   uint32_t ind=0,k;
-  u16 Kw = 3*(RCC<<5);
+  uint16_t Kw = 3*(RCC<<5);
   uint32_t acc=1;
   int16_t w16[Kw];
 #ifdef RM_DEBUG_CC

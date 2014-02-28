@@ -60,7 +60,7 @@ V3= $(if $(IS_KERNEL_MAIN_VERSION_IS_3),-DKERNEL_MAIN_VERSION_IS_3=1)
 ####################################################
 #      EXTRA COMPILER FLAGS
 ####################################################
-EXTRA_CFLAGS = -fno-common $(if $(IS_KERNEL_GREATER_THAN_2620),-mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4)  $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) $(GT2622) $(GT2629) $(V3) $(GT32) $(GT35)
+EXTRA_CFLAGS = -I$(OPENAIR2_DIR)/COMMON -fno-common $(if $(IS_KERNEL_GREATER_THAN_2620),-mregparm=3  -fno-stack-protector -mpreferred-stack-boundary=4)  $(if $(SET_X64),-DARCH_64,) $(if $(SET_X64),-mcmodel=kernel,) $(if $(SET_X64),-m64,) $(GT2622) $(GT2629) $(V3) $(GT32) $(GT35)
 
 ifdef ADDRCONF
 EXTRA_CFLAGS += -DADDRCONF

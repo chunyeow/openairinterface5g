@@ -68,5 +68,5 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #define voip_sdu  "Nos tests montrent que le nouveau Toshiba MK7559GSXP, un disque dur de 750 Go"
 #define very_small_sdu "NoS tEsTs MoNtReNt"
 
-public_rlc_um_very_simple_test(void rlc_um_test_send_sdu (rlc_um_entity_t* rlcP,  u32_t frame, unsigned int sdu_typeP));
+public_rlc_um_very_simple_test(void rlc_um_test_send_sdu (rlc_um_entity_t* rlcP,  uint32_t frame, unsigned int sdu_typeP));
 #    endif

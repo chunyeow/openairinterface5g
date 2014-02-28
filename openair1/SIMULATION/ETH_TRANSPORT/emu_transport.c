@@ -212,9 +212,9 @@ unsigned int emul_rx_handler(unsigned char Mode,char *rx_buffer,
     return (Rx_size+2);
 }
 
-void clear_eNB_transport_info(u8 nb_eNB)
+void clear_eNB_transport_info(uint8_t nb_eNB)
 {
-    u8 eNB_id;
+    uint8_t eNB_id;
 
     for (eNB_id=0; eNB_id<nb_eNB; eNB_id++) {
         eNB_transport_info_TB_index[eNB_id]=0;
@@ -225,9 +225,9 @@ void clear_eNB_transport_info(u8 nb_eNB)
     //  LOG_T(EMU, "EMUL clear_eNB_transport_info\n");
 }
 
-void clear_UE_transport_info(u8 nb_UE)
+void clear_UE_transport_info(uint8_t nb_UE)
 {
-    u8 UE_id;
+    uint8_t UE_id;
 
     for (UE_id=0; UE_id<nb_UE; UE_id++) {
         UE_transport_info_TB_index[UE_id]=0;
@@ -243,7 +243,7 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
     unsigned int harq_pid;
     LTE_eNB_DLSCH_t *dlsch_eNB;
     unsigned short ue_id;
-    u8 nb_total_dci;
+    uint8_t nb_total_dci;
     int i;
 
 #ifdef DEBUG_EMU
@@ -253,13 +253,13 @@ void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot)
     // eNB
     // PBCH : copy payload
 
-    *(u32 *)PHY_vars_eNB_g[enb_id]->pbch_pdu =
+    *(uint32_t *)PHY_vars_eNB_g[enb_id]->pbch_pdu =
         eNB_transport_info[enb_id].cntl.pbch_payload;
     /*  LOG_I(EMU," RX slot %d ENB TRANSPORT pbch payload %d pdu[0] %d  pdu[0] %d \n",
       next_slot ,
       eNB_transport_info[enb_id].cntl.pbch_payload,
-      ((u8*)PHY_vars_eNB_g[enb_id]->pbch_pdu)[0],
-      ((u8*)PHY_vars_eNB_g[enb_id]->pbch_pdu)[1]);
+      ((uint8_t*)PHY_vars_eNB_g[enb_id]->pbch_pdu)[0],
+      ((uint8_t*)PHY_vars_eNB_g[enb_id]->pbch_pdu)[1]);
     */
     //  }
     //CFI
@@ -383,8 +383,8 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
     unsigned int harq_pid;
     LTE_UE_ULSCH_t *ulsch;
     PUCCH_FMT_t pucch_format;
-    //  u8 ue_transport_info_index[NUMBER_OF_eNB_MAX];
-    u8 subframe = (last_slot+1)>>1;
+    //  uint8_t ue_transport_info_index[NUMBER_OF_eNB_MAX];
+    uint8_t subframe = (last_slot+1)>>1;
 
     memcpy(&ue_cntl_delay[ue_id][(last_slot+1)%2], &UE_transport_info[ue_id].cntl,
            sizeof(UE_cntl));
@@ -454,7 +454,7 @@ void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot)
             ue_cntl_delay[ue_id][last_slot%2].pusch_ack & 0x1;
         PHY_vars_UE_g[ue_id]->ulsch_ue[enb_id]->o_ACK[1]=
             (ue_cntl_delay[ue_id][last_slot%2].pusch_ack>>1) & 0x1;
-        //*(u32 *)ulsch->o                        = ue_cntl_delay[ue_id][last_slot%2].pusch_uci;
+        //*(uint32_t *)ulsch->o                        = ue_cntl_delay[ue_id][last_slot%2].pusch_uci;
 
         if ((last_slot % 2) == 1) {
             PHY_vars_UE_g[ue_id]->ulsch_ue[enb_id]->O =

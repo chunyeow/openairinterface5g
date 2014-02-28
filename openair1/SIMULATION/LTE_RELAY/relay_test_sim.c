@@ -35,7 +35,7 @@ PHY_VARS_eNB *PHY_vars_eNb;
 PHY_VARS_UE *PHY_vars_UE[NUM_OF_RN];   // this variable is modified to enable multiple relay nodes (# Relay Node = "NUM_OF_RN"); 
 
 // In the following function the first parameter ("unsigned char numRN") is added for # RN in the Parallel Relay Network (PRN); 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx, unsigned char transmission_mode, u8 extended_prefix_flag) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx, unsigned char transmission_mode, uint8_t extended_prefix_flag) {
 	
 	unsigned int j;	
 	LTE_DL_FRAME_PARMS *lte_frame_parms;
@@ -149,8 +149,8 @@ int main(int argc, char **argv) {
 	double ricean_factor = 0.0000005;
 	double Td = 0.8;
 	double iqim = 0.0;
-	u8 channel_length, nb_taps=8;
-	u8 extended_prefix_flag=0, transmission_mode=1, n_tx=1, n_rx=1;
+	uint8_t channel_length, nb_taps=8;
+	uint8_t extended_prefix_flag=0, transmission_mode=1, n_tx=1, n_rx=1;
 
 	int eNb_id = 0, eNb_id_i = 1;
 	unsigned char mcs, dual_stream_UE=0, awgn_flag=0, round, dci_flag=1;
@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
 
 	channel_desc_t *eNB2UE[NUM_OF_RN];  //which is a pointer array whose size will be the "# of RNs (UEs)" in the system;
 
-	u8 num_pdcch_symbols;
-	u8 pilot1, pilot2, pilot3;
+	uint8_t num_pdcch_symbols;
+	uint8_t pilot1, pilot2, pilot3;
 	
 	//unsigned int NUM_OF_RN = 1;
 		

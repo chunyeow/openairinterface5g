@@ -48,14 +48,14 @@
 #if defined(ENABLE_SECURITY)
 
 static
-u32 pdcp_get_next_count_tx(pdcp_t *pdcp_entity, u8 pdcp_header_len, u16 pdcp_sn);
+uint32_t pdcp_get_next_count_tx(pdcp_t *pdcp_entity, uint8_t pdcp_header_len, uint16_t pdcp_sn);
 static
-u32 pdcp_get_next_count_rx(pdcp_t *pdcp_entity, u8 pdcp_header_len, u16 pdcp_sn);
+uint32_t pdcp_get_next_count_rx(pdcp_t *pdcp_entity, uint8_t pdcp_header_len, uint16_t pdcp_sn);
 
 static
-u32 pdcp_get_next_count_tx(pdcp_t *pdcp_entity, u8 pdcp_header_len, u16 pdcp_sn)
+uint32_t pdcp_get_next_count_tx(pdcp_t *pdcp_entity, uint8_t pdcp_header_len, uint16_t pdcp_sn)
 {
-    u32 count;
+    uint32_t count;
     /* For TX COUNT = TX_HFN << length of SN | pdcp SN */
     if (pdcp_header_len == PDCP_CONTROL_PLANE_DATA_PDU_SN_SIZE) {
         /* 5 bits length SN */
@@ -70,9 +70,9 @@ u32 pdcp_get_next_count_tx(pdcp_t *pdcp_entity, u8 pdcp_header_len, u16 pdcp_sn)
 }
 
 static
-u32 pdcp_get_next_count_rx(pdcp_t *pdcp_entity, u8 pdcp_header_len, u16 pdcp_sn)
+uint32_t pdcp_get_next_count_rx(pdcp_t *pdcp_entity, uint8_t pdcp_header_len, uint16_t pdcp_sn)
 {
-    u32 count;
+    uint32_t count;
     /* For RX COUNT = RX_HFN << length of SN | pdcp SN of received PDU */
     if (pdcp_header_len == PDCP_CONTROL_PLANE_DATA_PDU_SN_SIZE) {
         /* 5 bits length SN */
@@ -87,10 +87,10 @@ u32 pdcp_get_next_count_rx(pdcp_t *pdcp_entity, u8 pdcp_header_len, u16 pdcp_sn)
 }
 
 int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
-                        u8 pdcp_header_len, u16 current_sn, u8 *pdcp_pdu_buffer,
-                        u16 sdu_buffer_size)
+                        uint8_t pdcp_header_len, uint16_t current_sn, uint8_t *pdcp_pdu_buffer,
+                        uint16_t sdu_buffer_size)
 {
-    u8 *buffer_encrypted = NULL;
+    uint8_t *buffer_encrypted = NULL;
     stream_cipher_t encrypt_params;
 
     DevAssert(pdcp_entity != NULL);
@@ -106,7 +106,7 @@ int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
 
     if (rb_id < DTCH) {
         /* SRBs */
-        u8 *mac_i;
+        uint8_t *mac_i;
 
         LOG_D(PDCP, "[OSA][RB %d] %s Applying control-plane security\n",
               rb_id, (pdcp_entity->is_ue != 0) ? "UE -> eNB" : "eNB -> UE");
@@ -145,10 +145,10 @@ int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
 }
 
 int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
-                           u8 pdcp_header_len, u16 current_sn, u8 *pdcp_pdu_buffer,
-                           u16 sdu_buffer_size)
+                           uint8_t pdcp_header_len, uint16_t current_sn, uint8_t *pdcp_pdu_buffer,
+                           uint16_t sdu_buffer_size)
 {
-    u8 *buffer_decrypted = NULL;
+    uint8_t *buffer_decrypted = NULL;
     stream_cipher_t decrypt_params;
 
     DevAssert(pdcp_entity != NULL);
@@ -158,7 +158,7 @@ int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_VALIDATE_SECURITY, VCD_FUNCTION_IN);
 
-    buffer_decrypted = (u8*)&pdcp_pdu_buffer[pdcp_header_len];
+    buffer_decrypted = (uint8_t*)&pdcp_pdu_buffer[pdcp_header_len];
 
     decrypt_params.direction  = (pdcp_entity->is_ue == 1) ? SECU_DIRECTION_DOWNLINK : SECU_DIRECTION_UPLINK ;
     decrypt_params.bearer     = rb_id - 1;

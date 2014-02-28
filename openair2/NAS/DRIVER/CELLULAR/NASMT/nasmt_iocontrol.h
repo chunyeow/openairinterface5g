@@ -76,7 +76,7 @@
 #define NAS_LIST_RB_MAX  32
 #define NAS_LIST_CLASS_MAX  32
 
-typedef u16 nasMsgType_t;
+typedef uint16_t nasMsgType_t;
 
 struct nas_ioctl
 {
@@ -87,25 +87,25 @@ struct nas_ioctl
 
 struct nas_msg_statistic_reply
 {
-  u32 rx_packets;
-  u32 tx_packets;
-  u32 rx_bytes;
-  u32 tx_bytes;
-  u32 rx_errors;
-  u32 tx_errors;
-  u32 rx_dropped;
-  u32 tx_dropped;
+  uint32_t rx_packets;
+  uint32_t tx_packets;
+  uint32_t rx_bytes;
+  uint32_t tx_bytes;
+  uint32_t rx_errors;
+  uint32_t tx_errors;
+  uint32_t rx_dropped;
+  uint32_t tx_dropped;
 };
 
 struct nas_msg_cx_list_reply
 {
   nasLocalConnectionRef_t lcr;   // Local Connection reference
-  u8 state;
+  uint8_t state;
   nasCellID_t cellid;    // cell identification
-  u32 iid6[2];       // IPv6  interface identification
-  u8 iid4;       // IPv4 interface identification
-  u16 num_rb;
-  u16 nsclassifier;
+  uint32_t iid6[2];       // IPv6  interface identification
+  uint8_t iid4;       // IPv4 interface identification
+  uint16_t num_rb;
+  uint16_t nsclassifier;
 };
 struct nas_msg_cx_establishment_reply
 {
@@ -130,7 +130,7 @@ struct nas_msg_rb_list_reply
   nasRadioBearerId_t rab_id;
   nasSapId_t sapi;
   nasQoSTrafficClass_t qos;
-  u8 state;
+  uint8_t state;
 };
 struct nas_msg_rb_list_request
 {
@@ -161,26 +161,26 @@ struct nas_msg_class_add_request
 {
   nasLocalConnectionRef_t lcr; // Local Connection reference
   nasRadioBearerId_t rab_id;
-  u8 dir; // direction (send or receive)
-  u8 dscp; // codepoint
-  u8 fct;
-  u16 classref;
-  u8 version;
+  uint8_t dir; // direction (send or receive)
+  uint8_t dscp; // codepoint
+  uint8_t fct;
+  uint16_t classref;
+  uint8_t version;
   union
   {
     struct in6_addr ipv6;
-    u32 ipv4;
+    uint32_t ipv4;
   } saddr; // IP source address
-  u8 splen; // prefix length
+  uint8_t splen; // prefix length
   union
   {
     struct in6_addr ipv6;
-    u32 ipv4;
+    uint32_t ipv4;
   } daddr; // IP destination address
-  u8 dplen; // prefix length
-  u8 protocol;   // high layer protocol type
-  u16 sport;   // source port
-  u16 dport;   // destination port
+  uint8_t dplen; // prefix length
+  uint8_t protocol;   // high layer protocol type
+  uint16_t sport;   // source port
+  uint16_t dport;   // destination port
 };
 struct nas_msg_class_add_reply
 {
@@ -189,9 +189,9 @@ struct nas_msg_class_add_reply
 struct nas_msg_class_del_request
 {
   nasLocalConnectionRef_t lcr; // Local Connection reference
-  u8 dir; // direction (send or receive)
-  u8 dscp; // codepoint
-  u16 classref;
+  uint8_t dir; // direction (send or receive)
+  uint8_t dscp; // codepoint
+  uint16_t classref;
 };
 struct nas_msg_class_del_reply
 {
@@ -201,14 +201,14 @@ struct nas_msg_class_del_reply
 struct nas_msg_class_list_request
 {
   nasLocalConnectionRef_t lcr;   // Local Connection reference
-  u8 dir;
-  u8 dscp;
+  uint8_t dir;
+  uint8_t dscp;
 };
 
 
 // Messages for Measurement transfer - MW 01/04/2005
-typedef u32 nioctlProviderId_t;
-typedef u16 nioctlSignalLoss_t;
+typedef uint32_t nioctlProviderId_t;
+typedef uint16_t nioctlSignalLoss_t;
 typedef struct nioctlMeasures {
         nasCellID_t cell_id;
         nasSigLevel_t level;
@@ -219,7 +219,7 @@ struct nas_msg_measure_request
 {
   nasNumRGsMeas_t num_cells;
   nasCellID_t cellid[MAX_MEASURE_NB]; // Cell identification
-  u16 num_providers;
+  uint16_t num_providers;
   nioctlProviderId_t provider_id[MAX_MEASURE_NB]; // Provider identification
 };
 struct nas_msg_measure_reply
@@ -230,7 +230,7 @@ struct nas_msg_measure_reply
 };
 
 // Messages for L2Id transfer - MW
-typedef u32 nioctlL2Id_t[2];
+typedef uint32_t nioctlL2Id_t[2];
 
 struct nas_msg_l2id_reply
 {

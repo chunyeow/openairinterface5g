@@ -74,7 +74,7 @@ extern int nas_netlink_init(void);
 
 //int bytes_wrote;
 //int bytes_read;
-u8 NULL_IMEI[14]={0x05, 0x04, 0x03, 0x01, 0x02 ,0x00, 0x00, 0x00, 0x05, 0x04, 0x03 ,0x00, 0x01, 0x08};
+uint8_t NULL_IMEI[14]={0x05, 0x04, 0x03, 0x01, 0x02 ,0x00, 0x00, 0x00, 0x05, 0x04, 0x03 ,0x00, 0x01, 0x08};
 
 
 static unsigned int  nas_IMEI[6]={0x03, 0x01, 0x02 ,0x00, 0x00, 0x00}; // may change to char
@@ -98,7 +98,7 @@ int find_inst(struct net_device *dev) {
 //void interrupt(void){
 void *nas_interrupt(void){
   //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
 
   //  struct nas_priv *priv=netdev_priv(dev_id);
   //  unsigned int flags;
@@ -325,7 +325,7 @@ static const struct net_device_ops nasmesh_netdev_ops = {
 // Initialisation of the network device
 void nas_init(struct net_device *dev){
   //---------------------------------------------------------------------------
-  u8 cxi, dscpi;
+  uint8_t cxi, dscpi;
   struct nas_priv *priv;
   //  int inst;
 
@@ -398,7 +398,7 @@ void nas_init(struct net_device *dev){
       priv->cx[cxi].nsclassifier=0;
       priv->cx[cxi].nfclassifier=0;
       // initialisation of the IP address
-      //  TOOL_imei2iid(IMEI, (u8 *)priv->cx[cxi].iid6);
+      //  TOOL_imei2iid(IMEI, (uint8_t *)priv->cx[cxi].iid6);
       priv->cx[cxi].iid4=0;
       //
     }
@@ -407,10 +407,10 @@ void nas_init(struct net_device *dev){
 #ifdef ADDRCONF    
     #ifdef NETLINK
         nas_TOOL_imei2iid(IMEI, dev->dev_addr);// IMEI to device address (for stateless autoconfiguration address)
-        nas_TOOL_imei2iid(IMEI, (u8 *)priv->cx[0].iid6);
+        nas_TOOL_imei2iid(IMEI, (uint8_t *)priv->cx[0].iid6);
     #else
         nas_TOOL_imei2iid(nas_IMEI, dev->dev_addr);// IMEI to device address (for stateless autoconfiguration address)
-        nas_TOOL_imei2iid(nas_IMEI, (u8 *)priv->cx[0].iid6);
+        nas_TOOL_imei2iid(nas_IMEI, (uint8_t *)priv->cx[0].iid6);
     #endif
 // this is more appropriate for user space soft realtime emulation    
 #else
@@ -419,7 +419,7 @@ void nas_init(struct net_device *dev){
 	
 	((unsigned char*)dev->dev_addr)[7] = (unsigned char)find_inst(dev);
 	
-        memcpy((u8 *)priv->cx[0].iid6,&nas_IMEI[0],8);
+        memcpy((uint8_t *)priv->cx[0].iid6,&nas_IMEI[0],8);
     
         printk("INIT: init IMEI to IID\n");
  #endif  
@@ -477,7 +477,7 @@ int init_module (void) {
       nas_mesh_init(inst);
       //memcpy(nasdev[inst]->dev_addr,&nas_IMEI[0],8);
       nas_TOOL_imei2iid(nas_IMEI, nasdev[inst]->dev_addr);// IMEI to device address (for stateless autoconfiguration address)
-      nas_TOOL_imei2iid(nas_IMEI, (u8 *)priv->cx[0].iid6);
+      nas_TOOL_imei2iid(nas_IMEI, (uint8_t *)priv->cx[0].iid6);
       // TO HAVE DIFFERENT HW @ 
       ((unsigned char*)nasdev[inst]->dev_addr)[7] = ((unsigned char*)nasdev[inst]->dev_addr)[7] + (unsigned char)inst + 1;
       printk("Setting HW addr for INST %d to : %X%X\n",inst,*((unsigned int *)&nasdev[inst]->dev_addr[0]),*((unsigned int *)&nasdev[inst]->dev_addr[4]));

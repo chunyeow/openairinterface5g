@@ -33,7 +33,7 @@ The RESET PDUs and the RESET ACK PDUs have higher priority than AMD PDUs.
 #include  "LAYER2/MAC/extern.h"
 #define DEBUG_RESET
 //-----------------------------------------------------------------------------
-void            send_reset_ack_pdu (u8_t rsnP, struct rlc_am_entity *rlcP);
+void            send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP);
 void            send_reset_pdu (struct rlc_am_entity *rlcP);
 void            reset_rlc_am (struct rlc_am_entity *rlcP);
 void            process_reset_ack (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP);
@@ -135,7 +135,7 @@ send_reset_pdu (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-send_reset_ack_pdu (u8_t rsnP, struct rlc_am_entity *rlcP)
+send_reset_ack_pdu (uint8_t rsnP, struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *pdu;
@@ -235,8 +235,8 @@ void
 process_reset (mem_block_t * pduP, struct rlc_am_reset_header *controlP, struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
-  u8_t              rsn;
-  u8_t              saved_vt_rst;
+  uint8_t              rsn;
+  uint8_t              saved_vt_rst;
 
 /* From 25.322 V5.0.0 (2002-03)
    Reception of the RESET PDU by the Receiver

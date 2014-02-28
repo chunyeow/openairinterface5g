@@ -36,7 +36,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 #include "assertions.h"
 
-extern void pdcp_data_ind (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sdu_pP, u8 is_data_plane);
+extern void pdcp_data_ind (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, MBMS_flag_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sdu_pP, uint8_t is_data_plane);
 
 #define DEBUG_RLC_PDCP_INTERFACE
 
@@ -85,7 +85,7 @@ rlc_op_status_t rlc_stat_req     (
                   module_id_t   enb_mod_idP,
                   module_id_t   ue_mod_idP,
                   frame_t       frameP,
-                  eNB_flag_t    eNB_flagP,
+                  eNB_flag_t    enb_flagP,
                   rb_id_t       rb_idP,
                   unsigned int* stat_tx_pdcp_sdu,
                   unsigned int* stat_tx_pdcp_bytes,
@@ -119,25 +119,32 @@ rlc_op_status_t rlc_stat_req     (
     void                  *rlc_p      = NULL;
 
 #ifdef OAI_EMU
-    AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-        "eNB module id is too low (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local);
-    AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-        "eNB module id is too high (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-    AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-        "UE module id is too low (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local);
-    AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-        "UE module id is too high (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
 #endif
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
-    if (eNB_flagP) {
+    if (enb_flagP) {
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
         switch (rlc_mode) {
           case RLC_MODE_NONE:
@@ -338,7 +345,7 @@ rlc_op_status_t rlc_stat_req     (
 rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                   module_id_t  ue_mod_idP,
                                   frame_t      frameP,
-                                  eNB_flag_t   eNB_flagP,
+                                  eNB_flag_t   enb_flagP,
                                   MBMS_flag_t  MBMS_flagP,
                                   rb_id_t      rb_idP,
                                   mui_t        muiP,
@@ -355,7 +362,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
   LOG_D(RLC,"rlc_data_req: %s enb id  %u  ue id %u, rb_id %u (MAX %d), muip %d, confirmP %d, sud_sizeP %d, sdu_pP %p\n",
-        (eNB_flagP) ? "eNB" : "UE",
+        (enb_flagP) ? "eNB" : "UE",
         enb_mod_idP,
         ue_mod_idP,
         rb_idP,
@@ -370,22 +377,29 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
   AssertFatal(MBMS_flagP == 0, "MBMS_flagP %u", MBMS_flagP);
 #endif
 #ifdef OAI_EMU
-  AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-      "eNB module id is too low (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local);
-  AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-      "eNB module id is too high (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-  AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-      "UE module id is too low (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local);
-  AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-      "UE module id is too high (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+  if (enb_flagP) {
+      AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+          "eNB module id is too low (%u/%d)!\n",
+          enb_mod_idP,
+          oai_emulation.info.first_enb_local);
+      AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+          "eNB module id is too high (%u/%d)!\n",
+          enb_mod_idP,
+          oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+      AssertFatal (ue_mod_idP  < NB_UE_INST,
+          "UE module id is too high (%u/%d)!\n",
+          ue_mod_idP,
+          oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+  } else {
+      AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+          "UE module id is too high (%u/%d)!\n",
+          ue_mod_idP,
+          oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+      AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+          "UE module id is too low (%u/%d)!\n",
+          ue_mod_idP,
+          oai_emulation.info.first_ue_local);
+  }
 #endif
   AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
   DevAssert(sdu_pP != NULL);
@@ -395,7 +409,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
   DevCheck(MBMS_flagP == 0, MBMS_flagP, 0, 0);
 #endif
 
-  if (eNB_flagP) {
+  if (enb_flagP) {
       rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
       switch (rlc_mode) {
         case RLC_MODE_NONE:
@@ -437,7 +451,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
   if (MBMS_flagP == 0) {
       LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_req:\n",
           frameP,
-          (eNB_flagP) ? "eNB" : "UE",
+          (enb_flagP) ? "eNB" : "UE",
           enb_mod_idP,
           ue_mod_idP,
           rb_idP);
@@ -450,7 +464,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
           case RLC_MODE_NONE:
               free_mem_block(sdu_pP);
               LOG_E(RLC, "Received RLC_MODE_NONE as rlc_type for %s eNB id  %u, ue id %u, rb_id %u\n",
-                    (eNB_flagP) ? "eNB" : "UE",
+                    (enb_flagP) ? "eNB" : "UE",
                     enb_mod_idP,
                     ue_mod_idP,
                     rb_idP);
@@ -477,7 +491,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
                           frameP,
-                          (eNB_flagP) ? "eNB" : "UE",
+                          (enb_flagP) ? "eNB" : "UE",
                           enb_mod_idP,
                           ue_mod_idP,
                           rb_idP,
@@ -488,7 +502,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   } else {
                       LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
                           frameP,
-                          (eNB_flagP) ? "eNB" : "UE",
+                          (enb_flagP) ? "eNB" : "UE",
                           enb_mod_idP,
                           ue_mod_idP,
                           rb_idP,
@@ -521,7 +535,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
                           frameP,
-                          (eNB_flagP) ? "eNB" : "UE",
+                          (enb_flagP) ? "eNB" : "UE",
                           enb_mod_idP,
                           ue_mod_idP,
                           rb_idP,
@@ -532,7 +546,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   } else {
                       LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
                                      frameP,
-                                     (eNB_flagP) ? "eNB" : "UE",
+                                     (enb_flagP) ? "eNB" : "UE",
                                      enb_mod_idP,
                                      ue_mod_idP,
                                      rb_idP,
@@ -566,7 +580,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   if (((rlc_tm_entity_t*)rlc_p)->is_data_plane) {
                       LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
                                  frameP,
-                                 (eNB_flagP) ? "eNB" : "UE",
+                                 (enb_flagP) ? "eNB" : "UE",
                                  enb_mod_idP,
                                  ue_mod_idP,
                                  rb_idP,
@@ -577,7 +591,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   } else {
                        LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
                                      frameP,
-                                     (eNB_flagP) ? "eNB" : "UE",
+                                     (enb_flagP) ? "eNB" : "UE",
                                      enb_mod_idP,
                                      ue_mod_idP,
                                      rb_idP,
@@ -604,7 +618,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 #ifdef Rel10
   } else { /* MBMS_flag != 0 */
       if (rb_idP < (maxSessionPerPMCH * maxServiceCount)) {
-          if (eNB_flagP) {
+          if (enb_flagP) {
               mbms_rb_id = rb_idP + (maxDRB + 3) * MAX_MOBILES_PER_RG;
               //rlc_um_p   = rlc_mbms_array_eNB[enb_mod_idP][mbms_rb_id].;
           } else {
@@ -637,7 +651,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                             rb_idP,
                             mbms_rb_id);
                       } else {
-                          if (eNB_flagP) {
+                          if (enb_flagP) {
                               LOG_D(RLC, "[FRAME %5u][RRC_eNB][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
                                  frameP,
                                  enb_mod_idP,
@@ -690,11 +704,11 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 }
 
 //-----------------------------------------------------------------------------
-void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sdu_pP, boolean_t is_data_planeP) {
+void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, MBMS_flag_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sdu_pP, boolean_t is_data_planeP) {
 //-----------------------------------------------------------------------------
   rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
-  if (eNB_flagP) {
+  if (enb_flagP) {
       rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
   } else {
       rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
@@ -702,7 +716,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
 
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_ind: size %u\n",
         frameP,
-        (eNB_flagP) ? "eNB" : "UE",
+        (enb_flagP) ? "eNB" : "UE",
         enb_mod_idP,
         ue_mod_idP,
         rb_idP,
@@ -719,7 +733,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
       case RLC_MODE_AM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                    frameP,
-                   (eNB_flagP) ? "eNB" : "UE",
+                   (enb_flagP) ? "eNB" : "UE",
                    enb_mod_idP,
                    ue_mod_idP,
                    rb_idP,
@@ -731,7 +745,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
       case RLC_MODE_UM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                    frameP,
-                   (eNB_flagP) ? "eNB" : "UE",
+                   (enb_flagP) ? "eNB" : "UE",
                    enb_mod_idP,
                    ue_mod_idP,
                    rb_idP,
@@ -743,7 +757,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
       case RLC_MODE_TM:
           LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                  frameP,
-                 (eNB_flagP) ? "eNB" : "UE",
+                 (enb_flagP) ? "eNB" : "UE",
                  enb_mod_idP,
                  ue_mod_idP,
                  rb_idP,
@@ -753,13 +767,13 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
                  rb_idP);
           break;
   }
-  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frameP, eNB_flagP, MBMS_flagP, rb_idP % NB_RB_MAX, sdu_sizeP, sdu_pP, is_data_planeP);
+  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_flagP, rb_idP % NB_RB_MAX, sdu_sizeP, sdu_pP, is_data_planeP);
 }
 //-----------------------------------------------------------------------------
 void rlc_data_conf     (module_id_t     enb_mod_idP,
                         module_id_t     ue_mod_idP,
                         frame_t         frameP,
-                        eNB_flag_t      eNB_flagP,
+                        eNB_flag_t      enb_flagP,
                         rb_id_t         rb_idP,
                         mui_t           muiP,
                         rlc_tx_status_t statusP,
@@ -767,7 +781,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
 //-----------------------------------------------------------------------------
     rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
-    if (eNB_flagP) {
+    if (enb_flagP) {
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
     } else {
         rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
@@ -781,7 +795,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                 case RLC_MODE_AM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
                             frameP,
-                            (eNB_flagP) ? "eNB" : "UE",
+                            (enb_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
                             muiP,
@@ -792,7 +806,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                 case RLC_MODE_UM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
                             frameP,
-                            (eNB_flagP) ? "eNB" : "UE",
+                            (enb_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
                             muiP,
@@ -803,7 +817,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                 case RLC_MODE_TM:
                     LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
                             frameP,
-                            (eNB_flagP) ? "eNB" : "UE",
+                            (enb_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
                             muiP,
@@ -813,7 +827,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                     break;
             }
             LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-            rlc_rrc_data_conf (enb_mod_idP , ue_mod_idP, eNB_flagP, rb_idP , muiP, statusP);
+            rlc_rrc_data_conf (enb_mod_idP , ue_mod_idP, enb_flagP, rb_idP , muiP, statusP);
         }
     }
 }

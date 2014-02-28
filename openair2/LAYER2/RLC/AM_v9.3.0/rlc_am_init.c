@@ -52,7 +52,7 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
     
     rlc_pP->input_sdus_alloc         = get_free_mem_block(RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
     rlc_pP->input_sdus               = (rlc_am_tx_sdu_management_t*)((rlc_pP->input_sdus_alloc)->data);
-    rlc_pP->pdu_retrans_buffer_alloc = get_free_mem_block((u16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
+    rlc_pP->pdu_retrans_buffer_alloc = get_free_mem_block((uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
     rlc_pP->pdu_retrans_buffer       = (rlc_am_tx_data_pdu_management_t*)((rlc_pP->pdu_retrans_buffer_alloc)->data);
     LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", frameP, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
     LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", frameP, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
@@ -124,12 +124,12 @@ void rlc_am_cleanup(rlc_am_entity_t *rlc_pP, frame_t frameP)
 //-----------------------------------------------------------------------------
 void rlc_am_configure(rlc_am_entity_t *rlc_pP,
 		      frame_t          frameP,
-                      u16_t            max_retx_thresholdP,
-                      u16_t            poll_pduP,
-                      u16_t            poll_byteP,
-                      u32_t            t_poll_retransmitP,
-                      u32_t            t_reorderingP,
-                      u32_t            t_status_prohibitP)
+                      uint16_t            max_retx_thresholdP,
+                      uint16_t            poll_pduP,
+                      uint16_t            poll_byteP,
+                      uint32_t            t_poll_retransmitP,
+                      uint32_t            t_reorderingP,
+                      uint32_t            t_status_prohibitP)
 //-----------------------------------------------------------------------------
 {
     LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][CONFIGURE] max_retx_threshold %d poll_pdu %d poll_byte %d t_poll_retransmit %d t_reordering %d t_status_prohibit %d\n",

@@ -151,7 +151,7 @@ void nasmt_ASCTL_start_sclassifier(struct cx_entity *cx,struct rb_entity *rb){
 //---------------------------------------------------------------------------
 void nasmt_ASCTL_timer(unsigned long data){
 //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
   struct cx_entity *cx;
   struct rb_entity *rb;
   spin_lock(&gpriv->lock);
@@ -231,7 +231,7 @@ void nasmt_ASCTL_timer(unsigned long data){
 // Request the sleep of a connexion
 int nasmt_ASCTL_enter_sleep_mode(struct cx_entity *cx){
 //---------------------------------------------------------------------------
-  u8 sig_category;
+  uint8_t sig_category;
 // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("nasmt_ASCTL_enter_sleep_mode - begin \n");
@@ -253,7 +253,7 @@ int nasmt_ASCTL_enter_sleep_mode(struct cx_entity *cx){
 // Request to reactivate a connexion
 int nasmt_ASCTL_leave_sleep_mode(struct cx_entity *cx){
 //---------------------------------------------------------------------------
-  u8 sig_category;
+  uint8_t sig_category;
 // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("nasmt_ASCTL_leave_sleep_mode - begin \n");
@@ -368,7 +368,7 @@ int nasmt_ASCTL_DC_send_cx_release_request(struct cx_entity *cx){
     {
       cx->state=NAS_IDLE;
       cx->iid4=0;
-//      nasmt_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)cx->iid6);
+//      nasmt_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)cx->iid6);
       nasmt_COMMON_flush_rb(cx);
       nasmt_CLASS_flush_sclassifier(cx);
 
@@ -472,10 +472,10 @@ void nasmt_ASCTL_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity 
 
 //---------------------------------------------------------------------------
 // Request the transfer of data (DC SAP)
-void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, u8 sig_category){
+void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig_category){
 //---------------------------------------------------------------------------
   struct nas_ue_dc_element *p;
-  u8 nasmt_data[10];
+  uint8_t nasmt_data[10];
   unsigned int nasmt_length;
   char data_type = 'Z';
   int bytes_wrote = 0;
@@ -557,7 +557,7 @@ void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, u8 sig_cate
 void nasmt_ASCTL_DC_decode_cx_establish_resp(struct cx_entity *cx, struct nas_ue_dc_element *p){
 //---------------------------------------------------------------------------
 
-  u8 sig_category;
+  uint8_t sig_category;
 // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("nasmt_ASCTL_DC_decode_cx_establish - begin \n");
@@ -571,7 +571,7 @@ void nasmt_ASCTL_DC_decode_cx_establish_resp(struct cx_entity *cx, struct nas_ue
     if (p->nasUEDCPrimitive.conn_establish_resp.status == TERMINATED){
       cx->state=NAS_CX_DCH; //to be changed to NAS_CX_FACH
       cx->iid4=1;
-      nasmt_TOOL_imei2iid(NAS_RG_IMEI, (u8 *)cx->iid6);
+      nasmt_TOOL_imei2iid(NAS_RG_IMEI, (uint8_t *)cx->iid6);
       sig_category = NAS_CMD_OPEN_RB;
 //For demo, add automatically a radio bearer
 #ifdef DEMO_3GSM
@@ -608,7 +608,7 @@ void nasmt_ASCTL_DC_decode_cx_loss_ind(struct cx_entity *cx, struct nas_ue_dc_el
 // End debug information
      cx->state=NAS_IDLE;
      cx->iid4=0;
-     //nasmt_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)cx->iid6);
+     //nasmt_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)cx->iid6);
      nasmt_COMMON_flush_rb(cx);
 #ifdef NAS_DEBUG_DC
     printk(" nasmt_ASCTL_DC_decode_cx_loss: CONN_LOSS_IND reception\n");
@@ -655,12 +655,12 @@ void nasmt_ASCTL_DC_decode_sig_data_ind(struct cx_entity *cx, struct nas_ue_dc_e
   printk(" Local Connection reference %u\n",p->nasUEDCPrimitive.data_transfer_ind.localConnectionRef);
   printk(" Signaling Priority %u\n",p->nasUEDCPrimitive.data_transfer_ind.priority);
   printk(" NAS Data length %u\n",p->nasUEDCPrimitive.data_transfer_ind.nasDataLength);
-  printk(" NAS Data string %s\n", (u8 *)p+p->length);
+  printk(" NAS Data string %s\n", (uint8_t *)p+p->length);
   #endif
 
   //nasmt_COMMON_receive(p->length, p->nasUEDCPrimitive.data_transfer_ind.nasDataLength, cx->sap[GRAAL_DC_OUTPUT_SAPI]); // original
   #ifndef NAS_NETLINK
-    //void nasmt_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer, int rb_id, int sap);
+    //void nasmt_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap);
     // data_buffer is NULL because FIFO should be read directly in the skbuff (LITE has an intermediary buffer)
     nasmt_COMMON_receive(p->length, p->nasUEDCPrimitive.data_transfer_ind.nasDataLength, NULL, 2, cx->sap[NAS_DC_OUTPUT_SAPI]);
   #else
@@ -718,7 +718,7 @@ void nasmt_ASCTL_DC_decode_rb_establish_ind(struct cx_entity *cx, struct nas_ue_
 void nasmt_ASCTL_DC_decode_rb_release_ind(struct cx_entity *cx, struct nas_ue_dc_element *p){
 //---------------------------------------------------------------------------
   struct rb_entity *rb;
-  u8 dscp;
+  uint8_t dscp;
   int hard_coded_rbId = 3;
 
 // Start debug information
@@ -752,7 +752,7 @@ void nasmt_ASCTL_DC_decode_rb_release_ind(struct cx_entity *cx, struct nas_ue_dc
 // Decode MEASUREMENT_IND message from RRC
 void nasmt_ASCTL_DC_decode_measurement_ind(struct cx_entity *cx, struct nas_ue_dc_element *p){
 //---------------------------------------------------------------------------
-  u8 i;
+  uint8_t i;
 // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("nasmt_ASCTL_DC_decode_measurement - begin \n");
@@ -796,7 +796,7 @@ void nasmt_ASCTL_DC_decode_measurement_ind(struct cx_entity *cx, struct nas_ue_d
 // Decode MBMS_UE_NOTIFY_IND message from RRC
 void nasmt_ASCTL_DC_decode_mbms_ue_notify_ind(struct cx_entity *cx, struct nas_ue_dc_element *p){
 //---------------------------------------------------------------------------
-  u8 i, j, k;
+  uint8_t i, j, k;
 // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("nasmt_ASCTL_DC_decode_mbms_ue_notify - begin \n");
@@ -869,7 +869,7 @@ int nasmt_ASCTL_DC_receive(struct cx_entity *cx, char *buffer){
     #ifndef NAS_NETLINK
     p= (struct nas_ue_dc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
-    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (u8 *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
+    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
     if (bytes_read!=p->length){
       printk("nasmt_ASCTL_DC_receive: Problem while reading primitive header\n");
       return bytes_read;
@@ -1002,7 +1002,7 @@ int nasmt_ASCTL_GC_receive(char *buffer){
     #ifndef NAS_NETLINK
     p= (struct nas_ue_gc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
-    bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (u8 *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
+    bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
     if (bytes_read!=p->length){
       printk("nasmt_ASCTL_GC_receive: Problem while reading primitive's header\n");
       return bytes_read;
@@ -1016,7 +1016,7 @@ int nasmt_ASCTL_GC_receive(char *buffer){
     switch (p->type){
     case INFO_BROADCAST_IND :
       #ifndef NAS_NETLINK
-      bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (u8 *)p+p->length, p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
+      bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+p->length, p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
       if (bytes_read!=p->length+p->nasUEGCPrimitive.broadcast_ind.nasDataLength){
         printk("nasmt_ASCTL_GC_receive: INFO_BROADCAST_IND reception, Problem while reading primitive's data\n");
         return bytes_read;
@@ -1026,7 +1026,7 @@ int nasmt_ASCTL_GC_receive(char *buffer){
       printk(" nasmt_ASCTL_GC_receive : INFO_BROADCAST_IND reception\n");
       printk(" Primitive length %d \n", (int)(p->type));
       printk(" Data length %u\n", p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
-      printk(" Data string %s\n", (u8 *)p+p->length);
+      printk(" Data string %s\n", (uint8_t *)p+p->length);
       #endif
       return bytes_read;
     default :

@@ -111,7 +111,7 @@ void free_ue_ulsch(LTE_UE_ULSCH_t *ulsch) {
   
 }
 
-LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, u8 abstraction_flag) {
+LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, uint8_t abstraction_flag) {
 
   LTE_UE_ULSCH_t *ulsch;
   unsigned char exit_flag = 0,i,j,r;
@@ -183,13 +183,13 @@ LTE_UE_ULSCH_t *new_ue_ulsch(unsigned char Mdlharq,unsigned char N_RB_UL, u8 abs
 }
 
 
-u32 ulsch_encoding(u8 *a,
+uint32_t ulsch_encoding(uint8_t *a,
 		   PHY_VARS_UE *phy_vars_ue,
-		   u8 harq_pid,
-		   u8 eNB_id,
-		   u8 tmode,
-		   u8 control_only_flag,
-		   u8 Nbundled) {
+		   uint8_t harq_pid,
+		   uint8_t eNB_id,
+		   uint8_t tmode,
+		   uint8_t control_only_flag,
+		   uint8_t Nbundled) {
 
   time_stats_t *seg_stats=&phy_vars_ue->ulsch_segmentation_stats;
   time_stats_t *rm_stats=&phy_vars_ue->ulsch_rate_matching_stats;
@@ -197,29 +197,29 @@ u32 ulsch_encoding(u8 *a,
   time_stats_t *i_stats=&phy_vars_ue->ulsch_interleaving_stats;
   time_stats_t *m_stats=&phy_vars_ue->ulsch_multiplexing_stats;
   
-  //  u16 offset;
-  u32 crc=1;
-  u16 iind;
-  u32 A;
-  u8 Q_m=0;
-  u32 Kr=0,Kr_bytes,r,r_offset=0;
-  u8 y[6*14*1200],*yptr;;
-  u8 *columnset;
-  u32 sumKr=0;
-  u32 Qprime,L,G,Q_CQI=0,Q_RI=0,Q_ACK=0,H=0,Hprime=0,Hpp=0,Cmux=0,Rmux=0,Rmux_prime=0;
-  u32 Qprime_ACK=0,Qprime_CQI=0,Qprime_RI=0,len_ACK=0,len_RI=0;
-  //  u32 E;
-  u8 ack_parity;
-  u32 i,q,j,iprime,j2;
-  u16 o_RCC;
-  u8 o_flip[8];
-  u32 wACK_idx;
+  //  uint16_t offset;
+  uint32_t crc=1;
+  uint16_t iind;
+  uint32_t A;
+  uint8_t Q_m=0;
+  uint32_t Kr=0,Kr_bytes,r,r_offset=0;
+  uint8_t y[6*14*1200],*yptr;;
+  uint8_t *columnset;
+  uint32_t sumKr=0;
+  uint32_t Qprime,L,G,Q_CQI=0,Q_RI=0,Q_ACK=0,H=0,Hprime=0,Hpp=0,Cmux=0,Rmux=0,Rmux_prime=0;
+  uint32_t Qprime_ACK=0,Qprime_CQI=0,Qprime_RI=0,len_ACK=0,len_RI=0;
+  //  uint32_t E;
+  uint8_t ack_parity;
+  uint32_t i,q,j,iprime,j2;
+  uint16_t o_RCC;
+  uint8_t o_flip[8];
+  uint32_t wACK_idx;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
   PHY_MEASUREMENTS *meas = &phy_vars_ue->PHY_measurements;
   LTE_UE_ULSCH_t *ulsch=phy_vars_ue->ulsch_ue[eNB_id];
   LTE_UE_DLSCH_t **dlsch = phy_vars_ue->dlsch_ue[eNB_id];
   double sinr_eff;
-  u16 rnti;
+  uint16_t rnti;
 
   if (!ulsch) {
     LOG_E(PHY,"Null ulsch ptr %p\n",ulsch);
@@ -320,9 +320,9 @@ u32 ulsch_encoding(u8 *a,
       crc = crc24a(a,
 		   A)>>8;
       
-      a[A>>3] = ((u8*)&crc)[2];
-      a[1+(A>>3)] = ((u8*)&crc)[1];
-      a[2+(A>>3)] = ((u8*)&crc)[0];
+      a[A>>3] = ((uint8_t*)&crc)[2];
+      a[1+(A>>3)] = ((uint8_t*)&crc)[1];
+      a[2+(A>>3)] = ((uint8_t*)&crc)[0];
       
       ulsch->harq_processes[harq_pid]->B = A+24;
       ulsch->harq_processes[harq_pid]->b = a;
@@ -876,18 +876,18 @@ u32 ulsch_encoding(u8 *a,
 #include "LAYER2/MAC/extern.h"
 #include "LAYER2/MAC/defs.h"
 #endif
-int ulsch_encoding_emul(u8 *ulsch_buffer,
+int ulsch_encoding_emul(uint8_t *ulsch_buffer,
 			PHY_VARS_UE *phy_vars_ue,
-			u8 eNB_id,
-			u8 harq_pid,
-			u8 control_only_flag) {
+			uint8_t eNB_id,
+			uint8_t harq_pid,
+			uint8_t control_only_flag) {
 
   LTE_UE_ULSCH_t *ulsch = phy_vars_ue->ulsch_ue[eNB_id];
   LTE_UE_DLSCH_t **dlsch = phy_vars_ue->dlsch_ue[eNB_id];
   PHY_MEASUREMENTS *meas = &phy_vars_ue->PHY_measurements;
-  u8 tmode = phy_vars_ue->transmission_mode[eNB_id];
+  uint8_t tmode = phy_vars_ue->transmission_mode[eNB_id];
   double sinr_eff;  
-  u16 rnti=phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti;
+  uint16_t rnti=phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti;
   LOG_D(PHY,"EMUL UE ulsch_encoding for eNB %d,mod_id %d, harq_pid %d rnti %x, ACK(%d,%d) \n",
 	eNB_id,phy_vars_ue->Mod_id, harq_pid, rnti,ulsch->o_ACK[0],ulsch->o_ACK[1]);
 
@@ -925,7 +925,7 @@ int ulsch_encoding_emul(u8 *ulsch_buffer,
   // msg("\nphy_vars_ue->Mod_id%d\n",phy_vars_ue->Mod_id);
   
   UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_flag = 1;
-  //UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_uci = *(u32 *)ulsch->o;
+  //UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_uci = *(uint32_t *)ulsch->o;
   memcpy(UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_uci,
 	 ulsch->o,
 	 MAX_CQI_BYTES); 

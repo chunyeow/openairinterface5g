@@ -50,19 +50,19 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #        include "mac_rlc_primitives.h"
 //-----------------------
 struct rlc_tm_tx_sdu_management {
-  u8_t             *first_byte;
-  s32_t             sdu_creation_time;
-  u16_t             sdu_segmented_size;
-  u16_t             sdu_size;
+  uint8_t             *first_byte;
+  int32_t             sdu_creation_time;
+  uint16_t             sdu_segmented_size;
+  uint16_t             sdu_size;
 };
 //-----------------------
 struct rlc_tm_tx_pdu_management {
-  u8_t             *first_byte;
-  u8_t              dummy[MAC_HEADER_MAX_SIZE];
+  uint8_t             *first_byte;
+  uint8_t              dummy[MAC_HEADER_MAX_SIZE];
 };
 //-----------------------
 struct rlc_tm_rx_pdu_management {
-  u8_t             *first_byte;
+  uint8_t             *first_byte;
 };
 //-----------------------
 struct rlc_tm_tx_data_pdu_struct {
@@ -77,7 +77,7 @@ struct rlc_tm_tx_data_pdu_struct {
     struct rlc_indication dummy4;
 #        endif
   } dummy;
-  u8_t              data[1];
+  uint8_t              data[1];
 };
 //-----------------------
 struct rlc_tm_data_req_alloc {  // alloc enought bytes for sdu mngt also

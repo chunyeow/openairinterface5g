@@ -19,7 +19,7 @@
 #include "rrm_config_structs.h"
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
-void            config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, u8_t rb_idP, rb_type_t rb_typeP);
+void            config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, uint8_t rb_idP, rb_type_t rb_typeP);
 void            send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_idP, mem_block_t * cprimitiveP);
 void            init_rlc_am (struct rlc_am_entity *rlcP);
 void            rlc_am_reset_state_variables (struct rlc_am_entity *rlcP);
@@ -42,7 +42,7 @@ rlc_am_probing_get_buffer_occupancy_measurements (struct rlc_am_entity *rlcP, pr
 }*/
 //-----------------------------------------------------------------------------
 void
-config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, u8_t rb_idP, rb_type_t rb_typeP)
+config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, uint8_t rb_idP, rb_type_t rb_typeP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *mb;
@@ -322,7 +322,7 @@ void
 rlc_am_discard_all_pdus (struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
-  u16_t             index;
+  uint16_t             index;
 
   index = 0;
   while (index < rlcP->recomputed_configured_rx_window_size) {

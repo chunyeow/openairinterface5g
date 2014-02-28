@@ -59,7 +59,7 @@ static int eRALlte_NAS_read_rb_release_reply(void);
 static int eRALlte_NAS_read_cnx_status_reply(void);
 static int eRALlte_NAS_read_rb_list_reply(void);
 
-static void imei2l2id(const u8* imei, u32* l2id);
+static void imei2l2id(const uint8_t* imei, uint32_t* l2id);
 
 static void _eRALlte_NAS_get_MTs_list(int n_mts, int n_rbs);
 static int _eRALlte_NAS_update_MTs_list(int mt_ix, int ch_ix);
@@ -132,8 +132,8 @@ static void _eRALlte_NAS_get_MTs_list(int n_mts, int n_rbs)
 	if (mt_ix < ADDR_MAX) {
 	    memcpy((char *) ralpriv->mt[mt_ix].ipv6_addr,
 		   (char *) DestIpv6Addr[mt_ix], 16);
-	    imei2l2id((u8*) &DestIpv6Addr[mt_ix][8],
-		      (u32*) &ralpriv->mt[mt_ix].ipv6_l2id[0]);
+	    imei2l2id((uint8_t*) &DestIpv6Addr[mt_ix][8],
+		      (uint32_t*) &ralpriv->mt[mt_ix].ipv6_l2id[0]);
 	    DEBUG(" MT%d initialized : address %d %d\n", mt_ix,
 		  ralpriv->mt[mt_ix].ipv6_l2id[0],
 		  ralpriv->mt[mt_ix].ipv6_l2id[1]);
@@ -187,8 +187,8 @@ static int _eRALlte_NAS_update_MTs_list(int mt_ix, int ch_ix)
 
 	ralpriv->mt[mt_ix].ltid = ralpriv->pending_mt.ltid;
 
-	imei2l2id((u8*) &ralpriv->pending_mt.ipv6_addr[8],
-		  (u32*) &ralpriv->mt[mt_ix].ipv6_l2id[0]);
+	imei2l2id((uint8_t*) &ralpriv->pending_mt.ipv6_addr[8],
+		  (uint32_t*) &ralpriv->mt[mt_ix].ipv6_l2id[0]);
 	DEBUG (" MT%d initialized : address %d %d\n", mt_ix,
 	       ralpriv->mt[mt_ix].ipv6_l2id[0],
 	       ralpriv->mt[mt_ix].ipv6_l2id[1]);
@@ -885,7 +885,7 @@ static int eRALlte_NAS_read_rb_list_reply(void)
  ** 	 	 Others:	None                                       **
  **                                                                        **
  ***************************************************************************/
-static void imei2l2id(const u8* imei, u32* l2id)
+static void imei2l2id(const uint8_t* imei, uint32_t* l2id)
 {
     if ( !(imei) || !(l2id) ) {
 	ERR(" %s : input parameter is NULL\n", __FUNCTION__);

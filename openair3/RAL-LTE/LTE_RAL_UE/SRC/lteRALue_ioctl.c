@@ -50,10 +50,10 @@
 extern struct nas_ioctl gifr;
 extern int fd;
 // 0335060080149150
-u8 NAS_DEFAULT_IMEI[16]={0x00, 0x03, 0x03, 0x05, 0x00 ,0x06, 0x00, 0x00, 0x08, 0x00, 0x01 ,0x04, 0x09, 0x01, 0x05, 0x00};
+uint8_t NAS_DEFAULT_IMEI[16]={0x00, 0x03, 0x03, 0x05, 0x00 ,0x06, 0x00, 0x00, 0x08, 0x00, 0x01 ,0x04, 0x09, 0x01, 0x05, 0x00};
 
 //---------------------------------------------------------------------------
-void print_state(u8 state){
+void print_state(uint8_t state){
 //---------------------------------------------------------------------------
     switch(state){
       case NAS_IDLE:DEBUG("NAS_IDLE\n");return;
@@ -78,7 +78,7 @@ void print_state(u8 state){
 
 //---------------------------------------------------------------------------
 // Convert the IMEI to iid
-void RAL_imei2iid(u8 *imei, u8 *iid){
+void RAL_imei2iid(uint8_t *imei, uint8_t *iid){
 //---------------------------------------------------------------------------
 // Start debug information
   if (!imei ||! iid ){
@@ -220,15 +220,15 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
             case IO_CMD_LIST:
               {
                  //printf("Usage: gioctl cx list\n");
-                 u8 *msgrep;
-                 u8 i;
+                 uint8_t *msgrep;
+                 uint8_t i;
                  struct nas_msg_cx_list_reply *list;
-                 u8 lcr;
+                 uint8_t lcr;
                  gifr.type=NAS_MSG_CX_LIST_REQUEST;
                  //gifr.msg=(char *)malloc(NAS_LIST_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1);
                  memset (ralpriv->buffer,0,800);
                  gifr.msg= &(ralpriv->buffer[0]);
-                 msgrep=(u8 *)(gifr.msg);
+                 msgrep=(uint8_t *)(gifr.msg);
                 //
                  NOTICE("[MSC_MSG][%s][%s][--- ioctl : NAS_MSG_CX_LIST_REQUEST --->][nas]\n", getTimeStamp4Log(), g_link_id);
                  err=ioctl(fd, NASMT_IOCTL_RAL, &gifr);
@@ -242,7 +242,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
                      lcr=0;
                      DEBUG("%u\t\t%u\t%u\t", list[lcr].lcr, list[lcr].cellid, list[lcr].iid4);
                      for (i=0;i<8;++i)
-                         DEBUG("%02x", *((u8 *)list[lcr].iid6+i));
+                         DEBUG("%02x", *((uint8_t *)list[lcr].iid6+i));
                      DEBUG("\t%u\t%u\t", list[lcr].num_rb, list[lcr].nsclassifier);
                      print_state(list[lcr].state);
 
@@ -269,8 +269,8 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
             case IO_CMD_LIST:
               {
                  //printf("Usage: gioctl rb list <lcr>\n");
-                 u8 *msgrep;
-                 u8 rbi;
+                 uint8_t *msgrep;
+                 uint8_t rbi;
                  struct nas_msg_rb_list_reply *list;
                  struct nas_msg_rb_list_request *msgreq;
                  gifr.type=NAS_MSG_RB_LIST_REQUEST;
@@ -278,7 +278,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
                  memset (ralpriv->buffer,0,800);
                  gifr.msg= &(ralpriv->buffer[0]);
                  msgreq=(struct nas_msg_rb_list_request *)(gifr.msg);
-                 msgrep=(u8 *)(gifr.msg);
+                 msgrep=(uint8_t *)(gifr.msg);
                  msgreq->lcr=0; //Temp <lcr> - MT
                 //
                  NOTICE("[MSC_MSG][%s][%s][--- ioctl : NAS_MSG_RB_LIST_REQUEST --->][nas]\n", getTimeStamp4Log(), g_link_id);
@@ -315,7 +315,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
       case IO_OBJ_MEAS:
         //
          {
-           u8 i;
+           uint8_t i;
            struct nas_msg_measure_request *msgreq;
            struct nas_msg_measure_reply *msgrep;
            gifr.type=NAS_MSG_MEAS_REQUEST;
@@ -367,7 +367,7 @@ int RAL_process_NAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
                ERR("IOCTL error, err=%d\n",err);
                rc = -1;
                // default IMEI address : NAS_DEFAULT_IMEI
-               RAL_imei2iid(NAS_DEFAULT_IMEI, (u8 *)&(ralpriv->ipv6_l2id[0]));
+               RAL_imei2iid(NAS_DEFAULT_IMEI, (uint8_t *)&(ralpriv->ipv6_l2id[0]));
            } else {
                NOTICE("[MSC_MSG][%s][nas][--- NAS_MSG_IMEI_REPLY --->][%s]\n", getTimeStamp4Log(), g_link_id);
                DEBUG("IMEI value received= %d %d\n", msgrep->l2id[0], msgrep->l2id[1]);

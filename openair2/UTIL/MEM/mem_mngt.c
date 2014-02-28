@@ -29,7 +29,7 @@
 #endif
 //-----------------------------------------------------------------------------
 #ifdef USER_MODE
-u32_t             counters[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+uint32_t             counters[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #endif
 //-----------------------------------------------------------------------------
 /*
@@ -40,7 +40,7 @@ pool_buffer_init (void *arg)
 {
 //-----------------------------------------------------------------------------
 
-  u32_t             index, mb_index, pool_index;
+  uint32_t             index, mb_index, pool_index;
   mem_pool       *memory = (mem_pool *) arg;
   int             pool_sizes[11] = { MEM_MNGT_MB0_NB_BLOCKS, MEM_MNGT_MB1_NB_BLOCKS,
     MEM_MNGT_MB2_NB_BLOCKS, MEM_MNGT_MB3_NB_BLOCKS,
@@ -153,7 +153,7 @@ free_mem_block (mem_block_t * leP)
 
 //-----------------------------------------------------------------------------
 mem_block_t      *
-get_free_mem_block (u16_t sizeP)
+get_free_mem_block (uint16_t sizeP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *le = NULL;
@@ -357,9 +357,9 @@ check_free_mem_block (mem_block_t * leP)
 //-----------------------------------------------------------------------------
   int             block_index;
   if ((leP >= &mem->mem_blocks[0]) && (leP <= &mem->mem_blocks[MEM_MNGT_NB_ELEMENTS])) {
-    block_index = ((u32_t) leP - (u32) (&mem->mem_blocks[0])) / sizeof (mem_block_t);
+    block_index = ((uint32_t) leP - (uint32_t) (&mem->mem_blocks[0])) / sizeof (mem_block_t);
     if (block_index < MEM_MNGT_MB0_NB_BLOCKS) {
-      if (((u32_t) (leP->data) != (u32) (&(mem->mem_pool0[block_index][0]))) && (leP->pool_id != MEM_MNGT_POOL_ID0)) {
+      if (((uint32_t) (leP->data) != (uint32_t) (&(mem->mem_pool0[block_index][0]))) && (leP->pool_id != MEM_MNGT_POOL_ID0)) {
         msg ("[MEM][ERROR][FATAL] free mem block is corrupted\n");
       }
     } else if (block_index < (MEM_MNGT_MB0_NB_BLOCKS + MEM_MNGT_MB1_NB_BLOCKS)) {

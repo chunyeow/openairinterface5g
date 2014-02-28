@@ -66,7 +66,7 @@ void rlc_am_shift_up_holes (rlc_am_entity_t *rlc_pP, rlc_sn_t snP, int indexP)
     assert(rlc_pP->pdu_retrans_buffer[snP].num_holes < RLC_AM_MAX_HOLES_REPORT_PER_PDU);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_remove_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, u16_t so_startP, u16_t so_stopP)
+void rlc_am_remove_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, uint16_t so_startP, uint16_t so_stopP)
 //-----------------------------------------------------------------------------
 {
     int i;

@@ -69,10 +69,10 @@ struct net_device *gdev;
 struct nas_priv *gpriv;
 //int bytes_wrote;
 //int bytes_read;
-u8 NAS_RG_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x01};
-u8 NAS_NULL_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00};
+uint8_t NAS_RG_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x01};
+uint8_t NAS_NULL_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00};
 
-u16 local_rg_cell_id;
+uint16_t local_rg_cell_id;
 
 #ifdef NAS_NETLINK
 extern void nasrg_netlink_release(void);
@@ -84,7 +84,7 @@ extern void nasrg_ASCTL_timer(unsigned long data);
 //---------------------------------------------------------------------------
 void *nasrg_interrupt(void){
 //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
 #ifdef NAS_DEBUG_INTERRUPT
   printk("nasrg_interrupt - begin\n");
 #endif
@@ -316,7 +316,7 @@ static const struct net_device_ops nasrg_netdev_ops = {
 // Initialisation of the network device
 void nasrg_init(struct net_device *dev){
 //---------------------------------------------------------------------------
-  u8 cxi, dscpi;
+  uint8_t cxi, dscpi;
 
   printk("nasrg_init: begin\n");
 
@@ -388,7 +388,7 @@ void nasrg_init(struct net_device *dev){
         gpriv->cx[cxi].sclassifier[dscpi]=NULL;
       gpriv->cx[cxi].nsclassifier=0;
       // initialisation of the IP address
-      nasrg_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)gpriv->cx[cxi].iid6);
+      nasrg_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)gpriv->cx[cxi].iid6);
       gpriv->cx[cxi].iid4=0;
     }
     spin_lock_init(&gpriv->lock);

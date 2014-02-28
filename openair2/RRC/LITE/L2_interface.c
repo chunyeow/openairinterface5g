@@ -63,11 +63,11 @@ extern UE_MAC_INST *UE_mac_inst;
 mui_t mui=0;
 
 //-------------------------------------------------------------------------------------------//
-s8 mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 Nb_tb, u8 *buffer_pP, eNB_flag_t enb_flagP, u8 eNB_index,
-                         u8 mbsfn_sync_area) {
+int8_t mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, uint16_t Srb_id, uint8_t Nb_tb, uint8_t *buffer_pP, eNB_flag_t enb_flagP, uint8_t eNB_index,
+                         uint8_t mbsfn_sync_area) {
 //-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
-  u8 Sdu_size=0;
+  uint8_t Sdu_size=0;
 
 #ifdef DEBUG_RRC
   int i;
@@ -283,7 +283,7 @@ s8 mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 Nb_
 #endif
 
       memcpy(&buffer_pP[0],&UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.Payload[0],UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size);
-      u8 Ret_size=UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size;
+      uint8_t Ret_size=UE_rrc_inst[Mod_idP].Srb0[eNB_index].Tx_buffer.payload_size;
       //   UE_rrc_inst[Mod_id].Srb0[eNB_index].Tx_buffer.payload_size=0;
       UE_rrc_inst[Mod_idP].Info[eNB_index].T300_active = 1;
       UE_rrc_inst[Mod_idP].Info[eNB_index].T300_cnt = 0;
@@ -298,7 +298,7 @@ s8 mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 Nb_
 }
 
 //-------------------------------------------------------------------------------------------//
-s8 mac_rrc_lite_data_ind(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 *Sdu, u16 sdu_size,eNB_flag_t enb_flagP,u8 eNB_index,u8 mbsfn_sync_area){
+int8_t mac_rrc_lite_data_ind(module_id_t Mod_idP, frame_t frameP, uint16_t Srb_id, uint8_t *Sdu, uint16_t sdu_size,eNB_flag_t enb_flagP,uint8_t eNB_index,uint8_t mbsfn_sync_area){
 //-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
   /*
@@ -485,19 +485,19 @@ s8 mac_rrc_lite_data_ind(module_id_t Mod_idP, frame_t frameP, u16 Srb_id, u8 *Sd
 
 //-------------------------------------------------------------------------------------------//
 // this function is Not USED anymore
-void mac_lite_sync_ind(module_id_t Mod_idP,u8 Status){
+void mac_lite_sync_ind(module_id_t Mod_idP,uint8_t Status){
 //-------------------------------------------------------------------------------------------//
 }
 
 //-------------------------------------------------------------------------------------------//
-u8 rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, u32 confirmP,
-                     sdu_size_t sdu_size, u8* buffer_pP, u8 mode) {
+uint8_t rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, uint32_t confirmP,
+                     sdu_size_t sdu_size, uint8_t* buffer_pP, pdcp_transmission_mode_t mode) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
     MessageDef *message_p;
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
-    u8 *message_buffer;
+    uint8_t *message_buffer;
 
     message_buffer = itti_malloc (enb_flagP ? TASK_RRC_ENB : TASK_RRC_UE, enb_flagP ? TASK_PDCP_ENB : TASK_PDCP_UE, sdu_size);
     memcpy (message_buffer, buffer_pP, sdu_size);
@@ -524,10 +524,10 @@ u8 rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t fr
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP,rb_id_t Srb_id, sdu_size_t sdu_sizeP,u8 *buffer_pP){
+void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP,rb_id_t Srb_id, sdu_size_t sdu_sizeP,uint8_t *buffer_pP){
 //-------------------------------------------------------------------------------------------//
-  u8 DCCH_index = Srb_id;
-  u8_t Mod_id;
+  uint8_t DCCH_index = Srb_id;
+  uint8_t Mod_id;
 
   if (enb_flagP == 0) {
     Mod_id = ue_mod_idP + NB_eNB_INST;
@@ -543,7 +543,7 @@ void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
   {
     MessageDef *message_p;
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
-    u8 *message_buffer;
+    uint8_t *message_buffer;
 
     message_buffer = itti_malloc (enb_flagP ? TASK_PDCP_ENB : TASK_PDCP_UE, enb_flagP ? TASK_RRC_ENB : TASK_RRC_UE, sdu_sizeP);
     memcpy (message_buffer, buffer_pP, sdu_sizeP);
@@ -569,7 +569,7 @@ void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_in_sync_ind(module_id_t Mod_idP, frame_t frameP, u16 eNB_index) {
+void rrc_lite_in_sync_ind(module_id_t Mod_idP, frame_t frameP, uint16_t eNB_index) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {
@@ -589,7 +589,7 @@ void rrc_lite_in_sync_ind(module_id_t Mod_idP, frame_t frameP, u16 eNB_index) {
 }
 
 //-------------------------------------------------------------------------------------------//
-void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, u16 eNB_index){
+void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, uint16_t eNB_index){
 //-------------------------------------------------------------------------------------------//
 //  rlc_info_t rlc_infoP;
 //  rlc_infoP.rlc_mode=RLC_UM;
@@ -616,7 +616,7 @@ void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, u16 eNB_index
 }
 
 //-------------------------------------------------------------------------------------------//
-int mac_get_rrc_lite_status(module_id_t Mod_idP,eNB_flag_t enb_flagP,u8 index){
+int mac_get_rrc_lite_status(module_id_t Mod_idP,eNB_flag_t enb_flagP,uint8_t index){
 //-------------------------------------------------------------------------------------------//
   if(enb_flagP == 1)
     return(eNB_rrc_inst[Mod_idP].Info.UE[index].Status);
@@ -625,7 +625,7 @@ int mac_get_rrc_lite_status(module_id_t Mod_idP,eNB_flag_t enb_flagP,u8 index){
 }
 
 //-------------------------------------------------------------------------------------------//
-int mac_ue_ccch_success_ind(module_id_t Mod_idP, u8 eNB_index) {
+int mac_ue_ccch_success_ind(module_id_t Mod_idP, uint8_t eNB_index) {
 //-------------------------------------------------------------------------------------------//
 #if defined(ENABLE_ITTI)
   {

@@ -18,16 +18,16 @@ void print_shorts(char *s,__m128i *x);
 void print_bytes(char *s,__m128i *x);
 #endif
 
-s32 dot_product(s16 *x,
-		s16 *y,
-		u32 N, //must be a multiple of 8
-		u8 output_shift) {
+int32_t dot_product(int16_t *x,
+		int16_t *y,
+		uint32_t N, //must be a multiple of 8
+		uint8_t output_shift) {
 
   __m128i *x128,*y128,mmtmp1,mmtmp2,mmtmp3,mmcumul,mmcumul_re,mmcumul_im;
   __m64 mmtmp7;
   __m128i minus_i = _mm_set_epi16(-1,1,-1,1,-1,1,-1,1);
-  u32 n;
-  s32 result;
+  uint32_t n;
+  int32_t result;
 
   x128 = (__m128i*) x;
   y128 = (__m128i*) y;
@@ -115,7 +115,7 @@ void print_bytes(char *s,__m128i *x) {
 
 void print_shorts(char *s,__m128i *x) {
 
-  s16 *tempb = (s16 *)x;
+  int16_t *tempb = (int16_t *)x;
 
   printf("%s  : %d,%d,%d,%d,%d,%d,%d,%d\n",s,
          tempb[0],tempb[1],tempb[2],tempb[3],tempb[4],tempb[5],tempb[6],tempb[7]
@@ -125,7 +125,7 @@ void print_shorts(char *s,__m128i *x) {
 
 void print_ints(char *s,__m128i *x) {
 
-  s32 *tempb = (s32 *)x;
+  int32_t *tempb = (int32_t *)x;
 
   printf("%s  : %d,%d,%d,%d\n",s,
          tempb[0],tempb[1],tempb[2],tempb[3]
@@ -135,14 +135,14 @@ void print_ints(char *s,__m128i *x) {
 
 void main(void) {
 
-  s32 result;
+  int32_t result;
 
-  s16 x[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};  
-  s16 y[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};  
-  //  s16 y[16*2] __attribute__((aligned(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+  int16_t x[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};  
+  int16_t y[16*2] __attribute__((aligned(16))) = {1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13,1<<0,1<<1,1<<2,1<<3,1<<4,1<<5,1<<6,1<<7,1<<8,1<<9,1<<10,1<<11,1<<12,1<<13,1<<12,1<<13};  
+  //  int16_t y[16*2] __attribute__((aligned(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
   result = dot_product(x,y,8*2,15);
 
-  printf("result = %d, %d\n", ((s16*) &result)[0],  ((s16*) &result)[1] );
+  printf("result = %d, %d\n", ((int16_t*) &result)[0],  ((int16_t*) &result)[1] );
 }
 #endif

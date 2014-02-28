@@ -196,7 +196,7 @@ int eRAL_process_cmp_mt_addr(const char* mt_addr, const char* l2id)
 {
     int i;
     for (i = 0; i < 8; i++) {
-        if ((u8)l2id[i] != (u8)mt_addr[i+8]) {
+        if ((uint8_t)l2id[i] != (uint8_t)mt_addr[i+8]) {
             return 0;
         }
     }
@@ -227,7 +227,7 @@ int eRAL_process_find_mt_by_addr(ral_enb_instance_t instanceP, const char* mt_ad
         const char* l2id = (const char*)(&g_enb_ral_obj[instanceP].mt[mt_ix].ipv6_l2id[0]);
         int i;
         for (i = 0; i < 8; i++) {
-            if ((u8)l2id[i] != (u8)mt_addr[i+8]) {
+            if ((uint8_t)l2id[i] != (uint8_t)mt_addr[i+8]) {
                 break;
             }
         }

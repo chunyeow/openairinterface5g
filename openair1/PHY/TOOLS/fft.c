@@ -54,8 +54,8 @@
 /// Function ReverseBits()
 /// computes bit reversed permutation vector
 
-u16 ReverseBits(u16 index, 
-			   u16 NumBits)
+uint16_t ReverseBits(uint16_t index, 
+			   uint16_t NumBits)
 {
   // This routine reverse bit orders the bits of the argument 'index'
   // It assumes the index has NumBits bits.
@@ -71,7 +71,7 @@ u16 ReverseBits(u16 index,
 }
 
 
-void init_fft(u16 size, u8 logsize,u16 *local_rev) {
+void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev) {
 
 
   int i;
@@ -86,27 +86,27 @@ void init_fft(u16 size, u8 logsize,u16 *local_rev) {
 
 #define SHIFT 14 // Shift of twiddle amplitude
 
-void fft(s16 *x,          /// complex input
-	 s16 *y,          /// complex output
-	 s16 *twiddle,    /// complex twiddle factors
-	 u16 *rev,        /// bit reversed permutation vector
-	 u8 log2size,     /// log2(FFT_SIZE)
-	 u8 scale,
-	 u8 input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
+void fft(int16_t *x,          /// complex input
+	 int16_t *y,          /// complex output
+	 int16_t *twiddle,    /// complex twiddle factors
+	 uint16_t *rev,        /// bit reversed permutation vector
+	 uint8_t log2size,     /// log2(FFT_SIZE)
+	 uint8_t scale,
+	 uint8_t input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
 {
 
   int i,j,k;             // counters
   int bs;                // block_size
   int n_b;               // numer of blocks
-  u16 index;       // reverse index
-  u8 scale2=1;//scale;
-  u16 *revl=rev;
+  uint16_t index;       // reverse index
+  uint8_t scale2=1;//scale;
+  uint16_t *revl=rev;
 
   register __m64 mm0,mm1,mm2;//mm3,mm4,mm5,mm6,mm7;
 
   __m64 *x_pt = (__m64 *)x,*y_pt = (__m64 *)y,*tw_pt=(__m64 *)twiddle;  // output data pointer and twiddle pointer
 
-  u32   size = 1<<log2size;   // size of the FFT
+  uint32_t   size = 1<<log2size;   // size of the FFT
   // FFT does not shift the result
 
 
@@ -186,14 +186,14 @@ void fft(s16 *x,          /// complex input
       msg("[PHY_fft_intel_mmx: y_pt = %p\n",y_pt);
 
       msg("[PHY_fft_intel_mmx] : y[0] = (%d %d %d %d)  y[1] = (%d %d %d %d)\n",
-      ((s16 *)(&y_pt[0]))[0],
-      ((s16 *)(&y_pt[0]))[1],
-      ((s16 *)(&y_pt[0]))[2],
-      ((s16 *)(&y_pt[0]))[3],
-      ((s16 *)(&y_pt[1]))[0],
-      ((s16 *)(&y_pt[1]))[1],
-      ((s16 *)(&y_pt[1]))[2],
-      ((s16 *)(&y_pt[1]))[3]);
+      ((int16_t *)(&y_pt[0]))[0],
+      ((int16_t *)(&y_pt[0]))[1],
+      ((int16_t *)(&y_pt[0]))[2],
+      ((int16_t *)(&y_pt[0]))[3],
+      ((int16_t *)(&y_pt[1]))[0],
+      ((int16_t *)(&y_pt[1]))[1],
+      ((int16_t *)(&y_pt[1]))[2],
+      ((int16_t *)(&y_pt[1]))[3]);
     */
     mm0 = _mm_adds_pi16(y_pt[0],y_pt[1]);//top of butterfly
     mm1 = _mm_subs_pi16(y_pt[0],y_pt[1]);//bottom of butterfly
@@ -317,18 +317,18 @@ void fft(s16 *x,          /// complex input
 
 #else //EXPRESSMIMO_TARGET
 
-void init_fft(u16 size, u8 logsize,u16 *local_rev) {
+void init_fft(uint16_t size, uint8_t logsize,uint16_t *local_rev) {
 
   return;
 }
 
-void fft(s16 *x,          /// complex input
-	 s16 *y,          /// complex output
-	 s16 *twiddle,    /// complex twiddle factors
-	 u16 *rev,        /// bit reversed permutation vector
-	 u8 log2size,     /// log2(FFT_SIZE)
-	 u8 scale,
-	 u8 input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
+void fft(int16_t *x,          /// complex input
+	 int16_t *y,          /// complex output
+	 int16_t *twiddle,    /// complex twiddle factors
+	 uint16_t *rev,        /// bit reversed permutation vector
+	 uint8_t log2size,     /// log2(FFT_SIZE)
+	 uint8_t scale,
+	 uint8_t input_fmt)   /// 0 means 64-bit complex interleaved format else complex-multiply ready repeated format
 {
 
 }
@@ -343,18 +343,18 @@ void fft(s16 *x,          /// complex input
 #ifdef MAIN
 #include "twiddle256.h"
 
-u32 s0, s1, s2, b;
+uint32_t s0, s1, s2, b;
 
-inline void pset_taus_seed(u32 off) {
+inline void pset_taus_seed(uint32_t off) {
 
 
-  s0 = (u32)0x1e23d852 + (off<<4);
-  s1 = (u32)0x81f38a1c + (off<<4);
-  s2 = (u32)0xfe1a133e + (off<<4);
+  s0 = (uint32_t)0x1e23d852 + (off<<4);
+  s1 = (uint32_t)0x81f38a1c + (off<<4);
+  s2 = (uint32_t)0xfe1a133e + (off<<4);
 
 }
 
-inline u32 ptaus() {
+inline uint32_t ptaus() {
 
   b = (((s0 << 13) ^ s0) >> 19);
   s0 = (((s0 & 0xFFFFFFFE) << 12)^  b);
@@ -367,7 +367,7 @@ inline u32 ptaus() {
 
 main() {
 
-  s16 local_rev[256];
+  int16_t local_rev[256];
   int i;
   int input[512],output[512];
   
@@ -399,12 +399,12 @@ main() {
 
   printf("input = [");
   for (i=0;i<256;i++)
-    printf("%d+sqrt(-1)*(%d)\n",((s16*)input)[2*i],((s16*)input)[1+(2*i)]);
+    printf("%d+sqrt(-1)*(%d)\n",((int16_t*)input)[2*i],((int16_t*)input)[1+(2*i)]);
   printf("];\n");
 
   printf("output = [");
   for (i=0;i<256;i++)
-    printf("%d+sqrt(-1)*(%d)\n",((s16*)output)[4*i],((s16*)output)[1+(4*i)]);
+    printf("%d+sqrt(-1)*(%d)\n",((int16_t*)output)[4*i],((int16_t*)output)[1+(4*i)]);
   printf("];\n");
 }
 

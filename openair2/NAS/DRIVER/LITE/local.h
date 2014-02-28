@@ -63,20 +63,19 @@
 #define IP2PDCP_FIFO 22
 
 #include "constant.h"
+#include "platform_types.h"
 #include "sap.h"
-
-typedef int traffic_type_t;
 
 struct cx_entity {
   int                        sap[OAI_NW_DRV_SAPI_CX_MAX];
-  u8                         state;                     // state of the connection
+  uint8_t                         state;                     // state of the connection
   OaiNwDrvLocalConnectionRef_t    lcr;                       // Local connection reference
   OaiNwDrvCellID_t                cellid;                    // cell identification
-  u32                        countimer;                 // timeout's counter
-  u8                         retry;                     // number of retransmission
+  uint32_t                        countimer;                 // timeout's counter
+  uint8_t                         retry;                     // number of retransmission
 
-  u32                        iid6[2];                   // IPv6  interface identification
-  u8                         iid4;                      // IPv4 interface identification
+  uint32_t                        iid6[2];                   // IPv6  interface identification
+  uint8_t                         iid4;                      // IPv4 interface identification
   int                        lastRRCprimitive;
   //measures
   int                        req_prov_id [OAI_NW_DRV_MAX_MEASURE_NB];
@@ -92,48 +91,48 @@ struct oai_nw_drv_priv {
   struct timer_list          timer;
   spinlock_t                 lock;
   struct net_device_stats    stats;
-  u8                         retry_limit;
-  u32                        timer_establishment;
-  u32                        timer_release;
+  uint8_t                         retry_limit;
+  uint32_t                        timer_establishment;
+  uint32_t                        timer_release;
   struct cx_entity           cx[OAI_NW_DRV_CX_MAX];
   //struct classifier_entity  *rclassifier[OAI_NW_DRV_DSCP_MAX]; // receive classifier
-  u16                        nrclassifier;
+  uint16_t                        nrclassifier;
   int                        sap[OAI_NW_DRV_SAPI_MAX];
   struct sock               *nl_sk;
-  u8                         nlmsg[OAI_NW_DRV_PRIMITIVE_MAX_LENGTH+sizeof(struct nlmsghdr)];
-  u8                         xbuffer[OAI_NW_DRV_PRIMITIVE_MAX_LENGTH]; // transmition buffer
-  u8                         rbuffer[OAI_NW_DRV_PRIMITIVE_MAX_LENGTH]; // reception buffer
+  uint8_t                         nlmsg[OAI_NW_DRV_PRIMITIVE_MAX_LENGTH+sizeof(struct nlmsghdr)];
+  uint8_t                         xbuffer[OAI_NW_DRV_PRIMITIVE_MAX_LENGTH]; // transmition buffer
+  uint8_t                         rbuffer[OAI_NW_DRV_PRIMITIVE_MAX_LENGTH]; // reception buffer
 };
 
 struct ipversion {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
-    u8    reserved:4,
+    uint8_t    reserved:4,
           version:4;
 #else
-    u8    version:4,
+    uint8_t    version:4,
           reserved:4;
 #endif
 };
 
 typedef struct pdcp_data_req_header_s {
-  unsigned int           rb_id;
-  unsigned int           data_size;
-  int                    inst;
-  traffic_type_t         traffic_type;
+  rb_id_t             rb_id;
+  sdu_size_t          data_size;
+  signed int          inst;
+  ip_traffic_type_t   traffic_type;
 } pdcp_data_req_header_t;
 
 typedef struct pdcp_data_ind_header_s {
-  unsigned int           rb_id;
-  unsigned int           data_size;
-  int                    inst;
-  int                    dummy;
+  rb_id_t             rb_id;
+  sdu_size_t          data_size;
+  signed int          inst;
+  ip_traffic_type_t   dummy_traffic_type;
 } pdcp_data_ind_header_t;
 
 
 
 extern struct net_device *oai_nw_drv_dev[OAI_NW_DRV_NB_INSTANCES_MAX];
 
-extern u8 OAI_NW_DRV_NULL_IMEI[14];
+extern uint8_t OAI_NW_DRV_NULL_IMEI[14];
 
 
 

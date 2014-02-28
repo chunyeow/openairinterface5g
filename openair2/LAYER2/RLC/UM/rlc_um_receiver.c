@@ -49,23 +49,23 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
                                       sdu_size_t                        tb_sizeP)
 {
 //-----------------------------------------------------------------------------
-  u8_t           *data_pdu_p              = NULL;
+  uint8_t           *data_pdu_p              = NULL;
   sdu_size_t      remaining_data_size   = 0;
   int             nb_li                 = 0;
   int             li_index              = 0;
   sdu_size_t      li[32];
 
-  if ((data_pP->byte1 & RLC_E_MASK) == (u8_t) RLC_E_NEXT_FIELD_IS_DATA) {
-    rlc_um_reassembly ((u8_t *) (&data_pP->li_data_7[0]), tb_sizeP - 1, rlc_pP, 0);
+  if ((data_pP->byte1 & RLC_E_MASK) == (uint8_t) RLC_E_NEXT_FIELD_IS_DATA) {
+    rlc_um_reassembly ((uint8_t *) (&data_pP->li_data_7[0]), tb_sizeP - 1, rlc_pP, 0);
   } else {
-    while ((li[nb_li] = ((((u16_t) data_pP->li_data_7[nb_li << 1]) << 8) + data_pP->li_data_7[(nb_li << 1) + 1])) & RLC_E_NEXT_FIELD_IS_LI_E) {
-      li[nb_li] = li[nb_li] & (~(u16_t) RLC_E_NEXT_FIELD_IS_LI_E);
+    while ((li[nb_li] = ((((uint16_t) data_pP->li_data_7[nb_li << 1]) << 8) + data_pP->li_data_7[(nb_li << 1) + 1])) & RLC_E_NEXT_FIELD_IS_LI_E) {
+      li[nb_li] = li[nb_li] & (~(uint16_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - (nb_li << 1);
-    data_pdu_p = (u8_t *) (&data_pP->li_data_7[nb_li << 1]);
+    data_pdu_p = (uint8_t *) (&data_pP->li_data_7[nb_li << 1]);
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
@@ -86,7 +86,7 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
           default:             // li is length
             remaining_data_size = remaining_data_size - (li[li_index] >> 1);
             rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP);
-            data_pdu_p = (u8_t *) ((u64_t) data_pdu_p + (li[li_index] >> 1));
+            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
             rlc_um_send_sdu (rlc_pP);
       }
       li_index++;
@@ -101,47 +101,47 @@ rlc_um_receive_15_process_waited_pdu (struct rlc_um_entity             *rlc_pP,
 
 //-----------------------------------------------------------------------------
 inline void
-rlc_um_receive_7_process_waited_pdu (struct rlc_um_entity *rlc_pP, struct rlc_um_rx_pdu_management *pdu_mngtP, struct rlc_um_rx_data_pdu_struct *dataP, u16_t tb_sizeP)
+rlc_um_receive_7_process_waited_pdu (struct rlc_um_entity *rlc_pP, struct rlc_um_rx_pdu_management *pdu_mngtP, struct rlc_um_rx_data_pdu_struct *dataP, uint16_t tb_sizeP)
 {
 //-----------------------------------------------------------------------------
-  u8_t           *data_pdu_p            = NULL;
+  uint8_t           *data_pdu_p            = NULL;
   sdu_size_t      remaining_data_size   = 0;
   int             nb_li                 = 0;
   int             li_index              = 0;
   sdu_size_t      li[32];
 
-  if ((dataP->byte1 & RLC_E_MASK) == (u8_t) RLC_E_NEXT_FIELD_IS_DATA) {
-    rlc_um_reassembly ((u8_t *) (&dataP->li_data_7[0]), tb_sizeP - 1, rlc_pP, 0);
+  if ((dataP->byte1 & RLC_E_MASK) == (uint8_t) RLC_E_NEXT_FIELD_IS_DATA) {
+    rlc_um_reassembly ((uint8_t *) (&dataP->li_data_7[0]), tb_sizeP - 1, rlc_pP, 0);
   } else {
-    while ((li[nb_li] = ((u16_t) dataP->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
-      li[nb_li] = li[nb_li] & (~(u8_t) RLC_E_NEXT_FIELD_IS_LI_E);
+    while ((li[nb_li] = ((uint16_t) dataP->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
+      li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - nb_li;
-    data_pdu_p = (u8_t *) (&dataP->li_data_7[nb_li]);
+    data_pdu_p = (uint8_t *) (&dataP->li_data_7[nb_li]);
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
-          case (u8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
+          case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
             PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_LAST_PDU_EXACTLY_FILLED\n", rlc_pP, pdu_mngtP);
             rlc_um_send_sdu (rlc_pP);
             break;
 
-          case (u8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+          case (uint8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
             PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_LAST_PDU_ONE_BYTE_SHORT\n", rlc_pP, pdu_mngtP);
             rlc_pP->output_sdu_size_to_write -= 1;
             rlc_um_send_sdu (rlc_pP);
             break;
 
-          case (u8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
-          case (u8_t) RLC_LI_PDU_PADDING:
+          case (uint8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
+          case (uint8_t) RLC_LI_PDU_PADDING:
             PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_PDU_PADDING\n", rlc_pP, pdu_mngtP);
             remaining_data_size = 0;
             break;
 
-          case (u8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
+          case (uint8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
             PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU\n", rlc_pP, pdu_mngtP);
             rlc_pP->output_sdu_size_to_write = 0;
             break;
@@ -150,7 +150,7 @@ rlc_um_receive_7_process_waited_pdu (struct rlc_um_entity *rlc_pP, struct rlc_um
             PRINT_RLC_UM_RX_DECODE_LI ("[RLC_UM %p] RX_7 PDU %p Li LI_SIZE %d Bytes\n", rlc_pP, pdu_mngtP, li[li_index] >> 1);
             remaining_data_size = remaining_data_size - (li[li_index] >> 1);
             rlc_um_reassembly (data_pdu_p, (li[li_index] >> 1), rlc_pP);
-            data_pdu_p = (u8_t *) ((u64_t) data_pdu_p + (li[li_index] >> 1));
+            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
             rlc_um_send_sdu (rlc_pP);
       }
       li_index++;
@@ -171,26 +171,26 @@ rlc_um_receive_15_process_unsynchronized_pdu (struct rlc_um_entity             *
                                               sdu_size_t                       tb_sizeP)
 {
 //-----------------------------------------------------------------------------
-  u8_t             *data_pdu_p            = NULL;
+  uint8_t             *data_pdu_p            = NULL;
   int               nb_li                 = 0;
   int               li_index              = 0;
   sdu_size_t        remaining_data_size   = 0;
   sdu_size_t        li[32];
-  u8_t              start_processing      = 0;
+  uint8_t              start_processing      = 0;
 
   rlc_pP->output_sdu_size_to_write = 0;
 
-  if ((data_pP->byte1 & RLC_E_MASK) == (u8_t) RLC_E_NEXT_FIELD_IS_DATA) {
+  if ((data_pP->byte1 & RLC_E_MASK) == (uint8_t) RLC_E_NEXT_FIELD_IS_DATA) {
     return;
   } else {
-    while ((li[nb_li] = ((((u16_t) data_pP->li_data_7[nb_li << 1]) << 8) + data_pP->li_data_7[(nb_li << 1) + 1])) & RLC_E_NEXT_FIELD_IS_LI_E) {
-      li[nb_li] = li[nb_li] & (~(u16_t) RLC_E_NEXT_FIELD_IS_LI_E);
+    while ((li[nb_li] = ((((uint16_t) data_pP->li_data_7[nb_li << 1]) << 8) + data_pP->li_data_7[(nb_li << 1) + 1])) & RLC_E_NEXT_FIELD_IS_LI_E) {
+      li[nb_li] = li[nb_li] & (~(uint16_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - (nb_li << 1);
-    data_pdu_p = (u8_t *) (&data_pP->li_data_7[nb_li << 1]);
+    data_pdu_p = (uint8_t *) (&data_pP->li_data_7[nb_li << 1]);
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
@@ -213,7 +213,7 @@ rlc_um_receive_15_process_unsynchronized_pdu (struct rlc_um_entity             *
               rlc_um_send_sdu (rlc_pP);
             }
             start_processing = 1;
-            data_pdu_p = (u8_t *) ((u64_t) data_pdu_p + (li[li_index] >> 1));
+            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
       }
       li_index++;
     }
@@ -233,39 +233,39 @@ rlc_um_receive_7_process_unsynchronized_pdu (struct rlc_um_entity            *rl
                                             sdu_size_t                        tb_sizeP)
 {
 //-----------------------------------------------------------------------------
-  u8_t             *data_pdu_p            = NULL;
+  uint8_t             *data_pdu_p            = NULL;
   int               nb_li                 = 0;
   int               li_index              = 0;
   sdu_size_t        remaining_data_size   = 0;
   sdu_size_t        li[32];
-  u8_t              start_processing      = 0;
+  uint8_t              start_processing      = 0;
 
   rlc_pP->output_sdu_size_to_write = 0;
 
-  if ((data_pP->byte1 & RLC_E_MASK) == (u8_t) RLC_E_NEXT_FIELD_IS_DATA) {
+  if ((data_pP->byte1 & RLC_E_MASK) == (uint8_t) RLC_E_NEXT_FIELD_IS_DATA) {
     return;
   } else {
-    while ((li[nb_li] = ((u16_t) data_pP->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
-      li[nb_li] = li[nb_li] & (~(u8_t) RLC_E_NEXT_FIELD_IS_LI_E);
+    while ((li[nb_li] = ((uint16_t) data_pP->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
+      li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
       nb_li++;
     }
     nb_li++;                    // count the last li
 
     remaining_data_size = tb_sizeP - 1 - nb_li;
 
-    data_pdu_p = (u8_t *) (&data_pP->li_data_7[nb_li]);
+    data_pdu_p = (uint8_t *) (&data_pP->li_data_7[nb_li]);
 
     while (li_index < nb_li) {
       switch (li[li_index]) {
-          case (u8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
-          case (u8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
+          case (uint8_t) RLC_LI_LAST_PDU_ONE_BYTE_SHORT:
+          case (uint8_t) RLC_LI_LAST_PDU_EXACTLY_FILLED:
             start_processing = 1;
             break;
-          case (u8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
-          case (u8_t) RLC_LI_PDU_PADDING:
+          case (uint8_t) RLC_LI_PDU_PIGGY_BACKED_STATUS:    // ignore
+          case (uint8_t) RLC_LI_PDU_PADDING:
             remaining_data_size = 0;
             break;
-          case (u8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
+          case (uint8_t) RLC_LI_1ST_BYTE_SDU_IS_1ST_BYTE_PDU:
             start_processing = 1;
             rlc_pP->output_sdu_size_to_write = 0;
             break;
@@ -276,7 +276,7 @@ rlc_um_receive_7_process_unsynchronized_pdu (struct rlc_um_entity            *rl
               rlc_um_send_sdu (rlc_pP);
             }
             start_processing = 1;
-            data_pdu_p = (u8_t *) ((u64_t) data_pdu_p + (li[li_index] >> 1));
+            data_pdu_p = (uint8_t *) ((uint64_t) data_pdu_p + (li[li_index] >> 1));
       }
       li_index++;
     }
@@ -297,11 +297,11 @@ rlc_um_receive_15 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
   struct rlc_um_rx_data_pdu_struct *data_p                   = NULL;
   struct rlc_um_rx_pdu_management  *pdu_mngt_p               = NULL;
   struct mem_block                 *tb_p                     = NULL;
-  u8_t                             *first_byte_p             = NULL;
+  uint8_t                             *first_byte_p             = NULL;
   sdu_size_t                        tb_size_in_bytes         = 0;
-  u8_t                              first_bit                = 0;
-  u8_t                              bits_to_shift            = 0;
-  u8_t                              bits_to_shift_last_loop  = 0;
+  uint8_t                              first_bit                = 0;
+  uint8_t                              bits_to_shift            = 0;
+  uint8_t                              bits_to_shift_last_loop  = 0;
 
   while ((tb_p = remove_up_head (&data_indP.data))) {
 
@@ -350,11 +350,11 @@ rlc_um_receive_7 (struct rlc_um_entity *rlc_pP, struct mac_data_ind data_indP)
   struct rlc_um_rx_data_pdu_struct *data_p                   = NULL;
   struct rlc_um_rx_pdu_management  *pdu_mngt_p               = NULL;
   struct mem_block                 *tb_p                     = NULL;
-  u8_t                             *first_byte_p             = NULL;
+  uint8_t                             *first_byte_p             = NULL;
   sdu_size_t                        tb_size_in_bytes         = 0;
-  u8_t                              first_bit                = 0;
-  u8_t                              bits_to_shift            = 0;
-  u8_t                              bits_to_shift_last_loop  = 0;
+  uint8_t                              first_bit                = 0;
+  uint8_t                              bits_to_shift            = 0;
+  uint8_t                              bits_to_shift_last_loop  = 0;
 
   while ((tb_p = remove_up_head (&data_indP.data))) {
 

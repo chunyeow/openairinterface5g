@@ -19,7 +19,7 @@
 #include "rrm_config_structs.h"
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
-void            config_req_rlc_um (struct rlc_um_entity *rlcP, module_id_t module_idP, rlc_um_info_t * config_umP, u8_t rb_idP, rb_type_t rb_typeP);
+void            config_req_rlc_um (struct rlc_um_entity *rlcP, module_id_t module_idP, rlc_um_info_t * config_umP, uint8_t rb_idP, rb_type_t rb_typeP);
 void            send_rlc_um_control_primitive (struct rlc_um_entity *rlcP, module_id_t module_idP, mem_block_t *cprimitiveP);
 void            init_rlc_um (struct rlc_um_entity *rlcP);
 void            rlc_um_reset_state_variables (struct rlc_um_entity *rlcP);
@@ -39,7 +39,7 @@ rlc_um_probing_get_buffer_occupancy_measurements (struct rlc_um_entity *rlcP, pr
 }*/
 //-----------------------------------------------------------------------------
 void
-config_req_rlc_um (struct rlc_um_entity *rlcP, module_id_t module_idP, rlc_um_info_t * config_umP, u8_t rb_idP, rb_type_t rb_typeP)
+config_req_rlc_um (struct rlc_um_entity *rlcP, module_id_t module_idP, rlc_um_info_t * config_umP, uint8_t rb_idP, rb_type_t rb_typeP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t *mb;

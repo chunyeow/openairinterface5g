@@ -44,7 +44,7 @@ node_desc_t *enb_data[NUMBER_OF_eNB_MAX];
 node_desc_t *ue_data[NUMBER_OF_UE_MAX];
 //double sinr_bler_map[MCS_COUNT][2][16];
 
-extern u16 beta_ack[16],beta_ri[16],beta_cqi[16];
+extern uint16_t beta_ack[16],beta_ri[16],beta_cqi[16];
 //extern  char* namepointer_chMag ;
 
 
@@ -53,7 +53,7 @@ FD_lte_phy_scope_enb *form_enb;
 char title[255];
 #endif
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,u8 extended_prefix_flag,u8 N_RB_DL,u8 frame_type,u8 tdd_config,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint8_t N_RB_DL,uint8_t frame_type,uint8_t tdd_config,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
   double **s_re,**s_im,**r_re,**r_im;
   double forgetting_factor=0.0; //in [0,1] 0 means a new channel every time, 1 means keep the same channel
   double iqim=0.0;
-  u8 extended_prefix_flag=0;
+  uint8_t extended_prefix_flag=0;
   int cqi_flag=0,cqi_error,cqi_errors,ack_errors,cqi_crc_falsepositives,cqi_crc_falsenegatives;
   int ch_realization;
   int eNB_id = 0;
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
   unsigned int coded_bits_per_codeword,nsymb;
   int subframe=3;
   unsigned int tx_lev=0,tx_lev_dB,trials,errs[4]={0,0,0,0},round_trials[4]={0,0,0,0};
-  u8 transmission_mode=1,n_rx=1;
+  uint8_t transmission_mode=1,n_rx=1;
  
   FILE *bler_fd;
   char bler_fname[512];
@@ -186,19 +186,19 @@ int main(int argc, char **argv) {
   int hold_channel=0; 
   channel_desc_t *UE2eNB;
 
-  u8 control_only_flag = 0;
+  uint8_t control_only_flag = 0;
   int delay = 0;	
   double maxDoppler = 0.0;	
-  u8 srs_flag = 0;
+  uint8_t srs_flag = 0;
 
-  u8 N_RB_DL=25,osf=1;
+  uint8_t N_RB_DL=25,osf=1;
 
-  u8 cyclic_shift = 0;
-  u8 cooperation_flag = 0; //0 no cooperation, 1 delay diversity, 2 Alamouti
-  u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
-  u8 tdd_config=3,frame_type=FDD;
+  uint8_t cyclic_shift = 0;
+  uint8_t cooperation_flag = 0; //0 no cooperation, 1 delay diversity, 2 Alamouti
+  uint8_t beta_ACK=0,beta_RI=0,beta_CQI=2;
+  uint8_t tdd_config=3,frame_type=FDD;
 
-  u8 N0=30;
+  uint8_t N0=30;
   double tx_gain=1.0;
   double cpu_freq_GHz;
   int avg_iter,iter_trials;
@@ -575,7 +575,7 @@ int main(int argc, char **argv) {
     else {
       ((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->type    = 0;
       ((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->rballoc = computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,first_rb,nb_rb);// 12 RBs from position 8
-      printf("nb_rb %d/%d, rballoc %d (dci %x)\n",nb_rb,PHY_vars_eNB->lte_frame_parms.N_RB_UL,((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->rballoc,*(u32 *)&UL_alloc_pdu);
+      printf("nb_rb %d/%d, rballoc %d (dci %x)\n",nb_rb,PHY_vars_eNB->lte_frame_parms.N_RB_UL,((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->rballoc,*(uint32_t *)&UL_alloc_pdu);
       ((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->mcs     = mcs;
       ((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->ndi     = 1;
       ((DCI0_5MHz_FDD_t*)&UL_alloc_pdu)->TPC     = 0;
@@ -598,7 +598,7 @@ int main(int argc, char **argv) {
     else {
       ((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->type    = 0;
       ((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->rballoc = computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,first_rb,nb_rb);// 12 RBs from position 8
-      printf("nb_rb %d/%d, rballoc %d (dci %x)\n",nb_rb,PHY_vars_eNB->lte_frame_parms.N_RB_UL,((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->rballoc,*(u32 *)&UL_alloc_pdu);
+      printf("nb_rb %d/%d, rballoc %d (dci %x)\n",nb_rb,PHY_vars_eNB->lte_frame_parms.N_RB_UL,((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->rballoc,*(uint32_t *)&UL_alloc_pdu);
       ((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->mcs     = mcs;
       ((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->ndi     = 1;
       ((DCI0_10MHz_FDD_t*)&UL_alloc_pdu)->TPC     = 0;
@@ -621,7 +621,7 @@ int main(int argc, char **argv) {
     else {
       ((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->type    = 0;
       ((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->rballoc = computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,first_rb,nb_rb);// 12 RBs from position 8
-      printf("nb_rb %d/%d, rballoc %d (dci %x)\n",nb_rb,PHY_vars_eNB->lte_frame_parms.N_RB_UL,((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->rballoc,*(u32 *)&UL_alloc_pdu);
+      printf("nb_rb %d/%d, rballoc %d (dci %x)\n",nb_rb,PHY_vars_eNB->lte_frame_parms.N_RB_UL,((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->rballoc,*(uint32_t *)&UL_alloc_pdu);
       ((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->mcs     = mcs;
       ((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->ndi     = 1;
       ((DCI0_20MHz_FDD_t*)&UL_alloc_pdu)->TPC     = 0;

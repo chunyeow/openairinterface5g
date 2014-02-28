@@ -20,8 +20,8 @@
 #    define UMTS_TIMER_TIMED_OUT    0x02
 
 
-void            umts_timer_check_time_out (list2_t * atimer_listP, u32_t current_frame_tick_millisecondsP);
-mem_block      *umts_add_timer_list_up (list2_t * atimer_listP, void (*procP) (void *, void *), void *protocolP, void *timer_idP, u32_t frame_time_outP, u32 current_frame_tick_millisecondsP);
+void            umts_timer_check_time_out (list2_t * atimer_listP, uint32_t current_frame_tick_millisecondsP);
+mem_block      *umts_add_timer_list_up (list2_t * atimer_listP, void (*procP) (void *, void *), void *protocolP, void *timer_idP, uint32_t frame_time_outP, uint32_t current_frame_tick_millisecondsP);
 
 struct timer_unit {
 
@@ -29,7 +29,7 @@ struct timer_unit {
   void           *protocol;     // arg should be a pointer on a allocated protocol entity private struct including its variables
   void           *timer_id;     // arg should be a value or a pointer identifying the timer
   // Example: rlc_am_sdu_discard_time_out(rlc_am, sdu)
-  u32_t             frame_time_out;
-  u32_t             frame_tick_start;
+  uint32_t             frame_time_out;
+  uint32_t             frame_tick_start;
 };
 #endif

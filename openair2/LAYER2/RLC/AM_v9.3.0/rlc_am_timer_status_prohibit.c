@@ -115,7 +115,7 @@ void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
 	}
 }
 //-----------------------------------------------------------------------------
-void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlc_pP, u32_t time_outP)
+void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlc_pP, uint32_t time_outP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_status_prohibit.running        = 0;

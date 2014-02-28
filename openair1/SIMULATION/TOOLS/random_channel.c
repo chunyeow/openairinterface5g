@@ -12,10 +12,10 @@
 //#define DEBUG_CH
 
 void fill_channel_desc(channel_desc_t *chan_desc,
-		       u8 nb_tx,
-		       u8 nb_rx, 
-		       u8 nb_taps, 
-		       u8 channel_length, 
+		       uint8_t nb_tx,
+		       uint8_t nb_rx, 
+		       uint8_t nb_taps, 
+		       uint8_t channel_length, 
 		       double *amps, 
 		       double *delays, 
 		       struct complex** R_sqrt, 
@@ -25,11 +25,11 @@ void fill_channel_desc(channel_desc_t *chan_desc,
 		       double aoa, 
 		       double forgetting_factor,
 		       double max_Doppler, 
-		       s32 channel_offset, 
+		       int32_t channel_offset, 
 		       double path_loss_dB,
-		       u8 random_aoa) {
+		       uint8_t random_aoa) {
   
-  u16 i,j;
+  uint16_t i,j;
   double delta_tau;
 
   LOG_I(OCM,"[CHANNEL] Getting new channel descriptor, nb_tx %d, nb_rx %d, nb_taps %d, channel_length %d\n",
@@ -156,16 +156,16 @@ struct complex *R_sqrt_21_anticorr[1]     = {R_sqrt_21_anticorr_tap};
 struct complex **R_sqrt_ptr2;
 
 
-channel_desc_t *new_channel_desc_scm(u8 nb_tx, 
-				     u8 nb_rx, 
+channel_desc_t *new_channel_desc_scm(uint8_t nb_tx, 
+				     uint8_t nb_rx, 
 				     SCM_t channel_model, 
 				     double BW, 
 				     double forgetting_factor,
-				     s32 channel_offset, 
+				     int32_t channel_offset, 
 				     double path_loss_dB) {
 
   channel_desc_t *chan_desc = (channel_desc_t *)malloc(sizeof(channel_desc_t));
-  u16 i,j;
+  uint16_t i,j;
   double sum_amps;
   double aoa,ricean_factor,Td,maxDoppler;
   int channel_length,nb_taps;
@@ -767,7 +767,7 @@ channel_desc_t *new_channel_desc_scm(u8 nb_tx,
 }
 
 
-int random_channel(channel_desc_t *desc, u8 abstraction_flag) {
+int random_channel(channel_desc_t *desc, uint8_t abstraction_flag) {
 		    
   double s;
   int i,k,l,aarx,aatx;

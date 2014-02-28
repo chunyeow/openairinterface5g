@@ -358,7 +358,7 @@ void main(int argc, char *argv[])
     sprintf(vname,"fftout_m%d",(int)abs(input_dB));
     
     write_output(fname,vname,
-		 (s16 *)data16_out,
+		 (int16_t *)data16_out,
 		 N*2,
 		 2,
 		 1);
@@ -367,7 +367,7 @@ void main(int argc, char *argv[])
     sprintf(vname,"fftin_m%d",(int)abs(input_dB));
     
     write_output(fname,vname,
-		 (s16 *)data16,
+		 (int16_t *)data16,
 		 N,
 		 1,
 		 1);

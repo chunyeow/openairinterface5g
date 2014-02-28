@@ -337,7 +337,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
 //-----------------------------------------------------------------------------
 void
-config_req_rlc_um (struct rlc_um_entity *rlcP, UM * config_umP, void *upper_layerP, void *(*data_indP) (void *, struct mem_block * sduP), u8_t rb_idP)
+config_req_rlc_um (struct rlc_um_entity *rlcP, UM * config_umP, void *upper_layerP, void *(*data_indP) (void *, struct mem_block * sduP), uint8_t rb_idP)
 {
 //-----------------------------------------------------------------------------
   struct mem_block *mb;

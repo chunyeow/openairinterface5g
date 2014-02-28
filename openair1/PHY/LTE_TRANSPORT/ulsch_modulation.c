@@ -469,8 +469,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 	    qam16_table_offset_im+=1;
 
       
-	  ((int16_t*)&ulsch->d[i])[0]=-(int16_t)(((s32)amp*qam16_table[qam16_table_offset_re])>>15);
-	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((s32)amp*qam16_table[qam16_table_offset_im])>>15);
+	  ((int16_t*)&ulsch->d[i])[0]=-(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_re])>>15);
+	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_im])>>15);
 
 	  //UE1,x0*
 	  qam16_table_offset_re = 0;
@@ -490,10 +490,10 @@ void ulsch_modulation(mod_sym_t **txdataF,
 	    qam16_table_offset_im+=1;
 
       
-	  //	  ((int16_t*)&ulsch->d[i+1])[0]=-(int16_t)(((s32)amp*qam16_table[qam16_table_offset_re])>>15);
-	  //	  ((int16_t*)&ulsch->d[i+1])[1]=(int16_t)(((s32)amp*qam16_table[qam16_table_offset_im])>>15);
-	  ((int16_t*)&ulsch->d[i+1])[0]=(int16_t)(((s32)amp*qam16_table[qam16_table_offset_re])>>15);
-	  ((int16_t*)&ulsch->d[i+1])[1]=-(int16_t)(((s32)amp*qam16_table[qam16_table_offset_im])>>15);
+	  //	  ((int16_t*)&ulsch->d[i+1])[0]=-(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_re])>>15);
+	  //	  ((int16_t*)&ulsch->d[i+1])[1]=(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_im])>>15);
+	  ((int16_t*)&ulsch->d[i+1])[0]=(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_re])>>15);
+	  ((int16_t*)&ulsch->d[i+1])[1]=-(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_im])>>15);
 
       
 	  break;
@@ -526,8 +526,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 	    qam64_table_offset_im+=1;
       
       
-	  ((int16_t*)&ulsch->d[i])[0]=-(int16_t)(((s32)amp*qam64_table[qam64_table_offset_re])>>15);
-	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((s32)amp*qam64_table[qam64_table_offset_im])>>15);
+	  ((int16_t*)&ulsch->d[i])[0]=-(int16_t)(((int32_t)amp*qam64_table[qam64_table_offset_re])>>15);
+	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((int32_t)amp*qam64_table[qam64_table_offset_im])>>15);
 
 	  //UE1,x0*
 	  qam64_table_offset_re = 0;
@@ -553,8 +553,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 	    qam64_table_offset_im+=1;
       
       
-	  ((int16_t*)&ulsch->d[i+1])[0]=(int16_t)(((s32)amp*qam64_table[qam64_table_offset_re])>>15);
-	  ((int16_t*)&ulsch->d[i+1])[1]=-(int16_t)(((s32)amp*qam64_table[qam64_table_offset_im])>>15);
+	  ((int16_t*)&ulsch->d[i+1])[0]=(int16_t)(((int32_t)amp*qam64_table[qam64_table_offset_re])>>15);
+	  ((int16_t*)&ulsch->d[i+1])[1]=-(int16_t)(((int32_t)amp*qam64_table[qam64_table_offset_im])>>15);
 
 	  break;
 
@@ -595,8 +595,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 	    qam16_table_offset_im+=1;
 
       
-	  ((int16_t*)&ulsch->d[i])[0]=(int16_t)(((s32)amp*qam16_table[qam16_table_offset_re])>>15);
-	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((s32)amp*qam16_table[qam16_table_offset_im])>>15);
+	  ((int16_t*)&ulsch->d[i])[0]=(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_re])>>15);
+	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((int32_t)amp*qam16_table[qam16_table_offset_im])>>15);
 	  //      msg("input(16qam) %d (%p): %d,%d\n", i,&ulsch->d[i],((int16_t*)&ulsch->d[i])[0],((int16_t*)&ulsch->d[i])[1]);
 	  break;
      
@@ -625,8 +625,8 @@ void ulsch_modulation(mod_sym_t **txdataF,
 	    qam64_table_offset_im+=1;
       
       
-	  ((int16_t*)&ulsch->d[i])[0]=(int16_t)(((s32)amp*qam64_table[qam64_table_offset_re])>>15);
-	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((s32)amp*qam64_table[qam64_table_offset_im])>>15);
+	  ((int16_t*)&ulsch->d[i])[0]=(int16_t)(((int32_t)amp*qam64_table[qam64_table_offset_re])>>15);
+	  ((int16_t*)&ulsch->d[i])[1]=(int16_t)(((int32_t)amp*qam64_table[qam64_table_offset_im])>>15);
 
 	  break;
 

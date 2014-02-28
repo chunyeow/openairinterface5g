@@ -230,8 +230,8 @@ void nasrg_send_meas_request_to_rrc (int ue_id, struct rrc_rrm_measure_ctl *rrm_
   meas_request.period = rrm_control->period;
 
  // send to RRC
-  count = write(rrc_rg_rrm_in_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) & meas_request, sizeof (measurement_request));
+  count = write(rrc_rg_rrm_in_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) & meas_request, sizeof (measurement_request));
   if (count > 0) {
     printf ("RRM message sent successfully on RRM FIFO, length: %d\n", count);
   } else {
@@ -423,7 +423,7 @@ int nasrg_meas_loop (int time, int UE_Id){
 
 //-----------------------------------------------------------------------------
 //void rrc_rg_print_meas_report (struct rrc_rg_mt_meas_rep *p){
-void nasrg_print_meas_report (char *rrc_rrm_meas_payload, u16 type){
+void nasrg_print_meas_report (char *rrc_rrm_meas_payload, uint16_t type){
 //-----------------------------------------------------------------------------
   int i, j;
   char *payload[20] =
@@ -494,7 +494,7 @@ void nasrg_print_meas_report (char *rrc_rrm_meas_payload, u16 type){
 }
 
 //-----------------------------------------------------------------------------
-void nasrg_print_bs_meas_report (char *rrc_rrm_meas_payload, u16 type){
+void nasrg_print_bs_meas_report (char *rrc_rrm_meas_payload, uint16_t type){
 //-----------------------------------------------------------------------------
   int i, j;
   char *payload[20] =

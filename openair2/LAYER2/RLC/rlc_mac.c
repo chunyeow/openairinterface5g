@@ -33,7 +33,7 @@ struct mac_data_ind mac_rlc_deserialize_tb (char* buffer_pP, tb_size_t tb_sizeP,
         tb_p = get_free_mem_block(sizeof (mac_rlc_max_rx_header_size_t) + tb_sizeP);
         if (tb_p != NULL) {
             ((struct mac_tb_ind *) (tb_p->data))->first_bit = 0;
-            ((struct mac_tb_ind *) (tb_p->data))->data_ptr = (u8_t*)&tb_p->data[sizeof (mac_rlc_max_rx_header_size_t)];
+            ((struct mac_tb_ind *) (tb_p->data))->data_ptr = (uint8_t*)&tb_p->data[sizeof (mac_rlc_max_rx_header_size_t)];
             ((struct mac_tb_ind *) (tb_p->data))->size = tb_sizeP;
             if (crcs_pP)
                 ((struct mac_tb_ind *) (tb_p->data))->error_indication = crcs_pP[nb_tb_read];
@@ -84,7 +84,7 @@ tbs_size_t mac_rlc_serialize_tb (char* buffer_pP, list_t transport_blocksP) {
 tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
                                  module_id_t       ue_mod_idP,
                                  frame_t           frameP,
-                                 eNB_flag_t        eNB_flagP,
+                                 eNB_flag_t        enb_flagP,
                                  MBMS_flag_t       MBMS_flagP,
                                  logical_chan_id_t channel_idP,
                                  char             *buffer_pP) {
@@ -96,7 +96,7 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
 
 #ifdef DEBUG_MAC_INTERFACE
     LOG_D(RLC, "\n[RLC] Inst %s enb id %d ue id %d: MAC_RLC_DATA_REQ channel %d (%d) MAX RB %d, Num_tb %d\n",
-               (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP, channel_idP, RLC_MAX_LC, NB_RB_MAX);
+               (enb_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP, channel_idP, RLC_MAX_LC, NB_RB_MAX);
 
 #endif // DEBUG_MAC_INTERFACE
     if (MBMS_flagP)
@@ -104,25 +104,32 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
     else
         AssertFatal (channel_idP < NB_RB_MAX,        "channel id is too high (%u/%d)!\n",     channel_idP, NB_RB_MAX);
 
-    AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-        "eNB module id is too low (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local);
-    AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-        "eNB module id is too high (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-    AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-        "UE module id is too low (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local);
-    AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-        "UE module id is too high (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
 
 
-    if (eNB_flagP) {
+    if (enb_flagP) {
         rb_id = lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][channel_idP];
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
         switch (rlc_mode) {
@@ -191,7 +198,7 @@ tbs_size_t mac_rlc_data_req     (module_id_t       enb_mod_idP,
 void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
                            module_id_t         ue_mod_idP,
                            frame_t             frameP,
-                           eNB_flag_t          eNB_flagP,
+                           eNB_flag_t          enb_flagP,
                            MBMS_flag_t         MBMS_flagP,
                            logical_chan_id_t   channel_idP,
                            char               *buffer_pP,
@@ -206,7 +213,7 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
     if (num_tbP) {
       LOG_D(RLC, "[Frame %5u][%s][RLC][MOD %u/%u] MAC_RLC_DATA_IND on channel %d (%d), rb max %d, Num_tb %d\n",
               frameP,
-              (eNB_flagP) ? "eNB" : "UE",
+              (enb_flagP) ? "eNB" : "UE",
               enb_mod_idP,
               ue_mod_idP,
               channel_idP,
@@ -215,29 +222,37 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
               num_tbP);
     }
 #endif // DEBUG_MAC_INTERFACE
+#ifdef OAI_EMU
     if (MBMS_flagP)
         AssertFatal (channel_idP < RLC_MAX_LC,        "channel id is too high (%u/%d)!\n",     channel_idP, RLC_MAX_LC);
     else
         AssertFatal (channel_idP < NB_RB_MAX,        "channel id is too high (%u/%d)!\n",     channel_idP, NB_RB_MAX);
 
-    AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-        "eNB module id is too low (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local);
-    AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-        "eNB module id is too high (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-    AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-        "UE module id is too low (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local);
-    AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-        "UE module id is too high (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-
-    if (eNB_flagP) {
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
+#endif
+    if (enb_flagP) {
         rb_id = lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][channel_idP];
         AssertFatal (rb_id < NB_RB_MAX, "enB RB id is too high (%u/%d) lcid %u enb module %u ue module id %u!\n", rb_id, NB_RB_MAX, channel_idP, enb_mod_idP, ue_mod_idP);
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
@@ -286,28 +301,28 @@ void mac_rlc_data_ind     (module_id_t         enb_mod_idP,
 
         case RLC_MODE_AM:
 #ifdef DEBUG_MAC_INTERFACE
-            LOG_D(RLC, "MAC DATA IND TO RLC_AM MOD_ID %s enb id %u ue id %u \n", (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
+            LOG_D(RLC, "MAC DATA IND TO RLC_AM MOD_ID %s enb id %u ue id %u \n", (enb_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
 #endif
-            rlc_am_mac_data_indication((rlc_am_entity_t*)rlc_p, frameP, eNB_flagP, data_ind);
+            rlc_am_mac_data_indication((rlc_am_entity_t*)rlc_p, frameP, enb_flagP, data_ind);
             break;
 
         case RLC_MODE_UM:
 #ifdef DEBUG_MAC_INTERFACE
-            LOG_D(RLC, "MAC DATA IND TO RLC_UM MOD_ID %s enb id %u ue id %u \n", (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
+            LOG_D(RLC, "MAC DATA IND TO RLC_UM MOD_ID %s enb id %u ue id %u \n", (enb_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
 #endif
-            rlc_um_mac_data_indication((rlc_um_entity_t*)rlc_p, frameP, eNB_flagP, data_ind);
+            rlc_um_mac_data_indication((rlc_um_entity_t*)rlc_p, frameP, enb_flagP, data_ind);
             break;
 
         case RLC_MODE_TM:
 #ifdef DEBUG_MAC_INTERFACE
-            LOG_D(RLC, "MAC DATA IND TO RLC_TM MOD_ID %s enb id %u ue id %u \n", (eNB_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
+            LOG_D(RLC, "MAC DATA IND TO RLC_TM MOD_ID %s enb id %u ue id %u \n", (enb_flagP) ? "eNB" : "UE", enb_mod_idP, ue_mod_idP);
 #endif
-            rlc_tm_mac_data_indication((rlc_tm_entity_t*)rlc_p, frameP, eNB_flagP, data_ind);
+            rlc_tm_mac_data_indication((rlc_tm_entity_t*)rlc_p, frameP, enb_flagP, data_ind);
             break;
     }
 }
 //-----------------------------------------------------------------------------
-mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t eNB_flagP, MBMS_flag_t MBMS_flagP, logical_chan_id_t channel_idP, tb_size_t tb_sizeP) {
+mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, MBMS_flag_t MBMS_flagP, logical_chan_id_t channel_idP, tb_size_t tb_sizeP) {
 //-----------------------------------------------------------------------------
   mac_rlc_status_resp_t  mac_rlc_status_resp;
   struct mac_status_ind  tx_status;
@@ -319,35 +334,44 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
   memset (&mac_rlc_status_resp, 0, sizeof(mac_rlc_status_resp_t));
   memset (&tx_status          , 0, sizeof(struct mac_status_ind));
 
+#ifdef OAI_EMU
   if (MBMS_flagP)
-      AssertFatal (channel_idP < RLC_MAX_LC,        "%s channel id is too high (%u/%d) enb module id %u ue module id %u!\n",(eNB_flagP) ? "eNB" : "UE",  channel_idP, RLC_MAX_LC, enb_mod_idP, ue_mod_idP);
+      AssertFatal (channel_idP < RLC_MAX_LC,        "%s channel id is too high (%u/%d) enb module id %u ue module id %u!\n",(enb_flagP) ? "eNB" : "UE",  channel_idP, RLC_MAX_LC, enb_mod_idP, ue_mod_idP);
   else
-      AssertFatal (channel_idP < NB_RB_MAX,        "%s channel id is too high (%u/%d) enb module id %u ue module id %u!\n",(eNB_flagP) ? "eNB" : "UE", channel_idP, NB_RB_MAX, enb_mod_idP, ue_mod_idP);
+      AssertFatal (channel_idP < NB_RB_MAX,        "%s channel id is too high (%u/%d) enb module id %u ue module id %u!\n",(enb_flagP) ? "eNB" : "UE", channel_idP, NB_RB_MAX, enb_mod_idP, ue_mod_idP);
 
-  AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-      "eNB module id is too low (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local);
-  AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-      "eNB module id is too high (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-  AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-      "UE module id is too low (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local);
-  AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-      "UE module id is too high (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
+#endif
 
 
-  if (eNB_flagP) {
+  if (enb_flagP) {
       rb_id = lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][channel_idP];
       if (rb_id >= NB_RB_MAX) {
           /*LOG_D(RLC, "[FRAME %05d][%s][RLC][MOD %u/%u] MAC STATUS IND TO NOT CONFIGURED BEARER lc id %u \n",
               frameP,
-              (eNB_flagP) ? "eNB" : "UE",
+              (enb_flagP) ? "eNB" : "UE",
               enb_mod_idP,
               ue_mod_idP,
               channel_idP);*/
@@ -376,7 +400,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
       if (rb_id >= NB_RB_MAX) {
           /*LOG_D(RLC, "[FRAME %05d][%s][RLC][MOD %u/%u] MAC STATUS IND TO NOT CONFIGURED BEARER lc id %u \n",
               frameP,
-              (eNB_flagP) ? "eNB" : "UE",
+              (enb_flagP) ? "eNB" : "UE",
               enb_mod_idP,
               ue_mod_idP,
               channel_idP);*/
@@ -417,7 +441,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind     (module_id_t enb_mod_idP, module_id
           break;
 
       case RLC_MODE_UM:
-          status_resp = rlc_um_mac_status_indication((rlc_um_entity_t*)rlc_p, frameP, eNB_flagP, tb_sizeP, tx_status);
+          status_resp = rlc_um_mac_status_indication((rlc_um_entity_t*)rlc_p, frameP, enb_flagP, tb_sizeP, tx_status);
           mac_rlc_status_resp.bytes_in_buffer                 = status_resp.buffer_occupancy_in_bytes;
           mac_rlc_status_resp.pdus_in_buffer                  = status_resp.buffer_occupancy_in_pdus;
           mac_rlc_status_resp.head_sdu_creation_time          = status_resp.head_sdu_creation_time;

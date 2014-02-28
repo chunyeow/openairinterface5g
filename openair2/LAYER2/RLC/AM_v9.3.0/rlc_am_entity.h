@@ -131,9 +131,9 @@ typedef struct rlc_am_entity_s {
   //-----------------------------
   // PARAMETERS CONFIGURED BY RRC
   //-----------------------------
-  u16_t           max_retx_threshold; /*!< \brief This parameter is used by the transmitting side of each AM RLC entity to limit the number of retransmissions of an AMD PDU. */
-  u16_t           poll_pdu;           /*!< \brief This parameter is used by the transmitting side of each AM RLC entity to trigger a poll for every pollPDU PDUs. */
-  u16_t           poll_byte;          /*!< \brief This parameter is used by the transmitting side of each AM RLC entity to trigger a poll for every pollByte bytes. */
+  uint16_t           max_retx_threshold; /*!< \brief This parameter is used by the transmitting side of each AM RLC entity to limit the number of retransmissions of an AMD PDU. */
+  uint16_t           poll_pdu;           /*!< \brief This parameter is used by the transmitting side of each AM RLC entity to trigger a poll for every pollPDU PDUs. */
+  uint16_t           poll_byte;          /*!< \brief This parameter is used by the transmitting side of each AM RLC entity to trigger a poll for every pollByte bytes. */
 
   //---------------------------------------------------------------------
   // STATISTICS
@@ -172,7 +172,7 @@ typedef struct rlc_am_entity_s {
   //---------------------------------------------------------------------
   // OUTPUTS
   //---------------------------------------------------------------------
-  u16_t             nb_bytes_requested_by_mac;  /*!< \brief Number of bytes requested by lower layer for next transmission. */
+  uint16_t             nb_bytes_requested_by_mac;  /*!< \brief Number of bytes requested by lower layer for next transmission. */
   list_t            pdus_to_mac_layer;          /*!< \brief PDUs buffered for transmission to MAC layer. */
   list_t            control_pdu_list;           /*!< \brief Control PDUs buffered for transmission to MAC layer. */
   rlc_sn_t          first_retrans_pdu_sn;       /*!< \brief Lowest sequence number of PDU to be retransmitted. */

@@ -55,12 +55,12 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \brief Structure containing SDU variables related to its segmentation and transmission.
 */
 typedef struct rlc_um_tx_sdu_management {
-    u8_t             *first_byte;                 /*!< \brief Pointer on SDU payload. */
-    s32_t             sdu_creation_time;          /*!< \brief Time stamped with mac_xface->frame. */
-    u16_t             sdu_remaining_size;         /*!< \brief Remaining size in bytes to be filled in a PDU. */
-  u16_t             sdu_test_remaining_size;
-  u16_t             sdu_segmented_size;           /*!< \brief Bytes already segmented in a/several PDU(s). */
-  u16_t             sdu_size;                     /*!< \brief SDU size in bytes. */
+    uint8_t             *first_byte;                 /*!< \brief Pointer on SDU payload. */
+    int32_t             sdu_creation_time;          /*!< \brief Time stamped with mac_xface->frame. */
+    uint16_t             sdu_remaining_size;         /*!< \brief Remaining size in bytes to be filled in a PDU. */
+  uint16_t             sdu_test_remaining_size;
+  uint16_t             sdu_segmented_size;           /*!< \brief Bytes already segmented in a/several PDU(s). */
+  uint16_t             sdu_size;                     /*!< \brief SDU size in bytes. */
 }rlc_um_tx_sdu_management_t;
 /** @} */
 
@@ -72,17 +72,17 @@ typedef struct rlc_um_tx_sdu_management {
 * \brief Structure helping coding and decoding the first byte of a UMD PDU.
 */
 typedef struct rlc_um_pdu_sn_5 {
-  u8_t     b1;      /*!< \brief 1st byte. */
-  u8_t     data[3]; /*!< \brief Following bytes. */
+  uint8_t     b1;      /*!< \brief 1st byte. */
+  uint8_t     data[3]; /*!< \brief Following bytes. */
 } __attribute__((__packed__)) rlc_um_pdu_sn_5_t ;
 
 /*! \struct  rlc_um_pdu_sn_10_t
 * \brief Structure helping coding and decoding the first 2 bytes of a UMD PDU.
 */
 typedef struct rlc_um_pdu_sn_10 {
-    u8_t  b1;      /*!< \brief 1st byte. */
-    u8_t  b2;      /*!< \brief 2nd byte. */
-    u8_t  data[2]; /*!< \brief Following bytes. */
+    uint8_t  b1;      /*!< \brief 1st byte. */
+    uint8_t  b2;      /*!< \brief 2nd byte. */
+    uint8_t  data[2]; /*!< \brief Following bytes. */
 }__attribute__((__packed__)) rlc_um_pdu_sn_10_t ;
 
 
@@ -90,9 +90,9 @@ typedef struct rlc_um_pdu_sn_10 {
 * \brief Structure helping coding and decoding LI and e bits in UMD PDUs.
 */
 typedef struct rlc_um_e_li {
-    u8_t  b1; /*!< \brief 1st byte. */
-    u8_t  b2; /*!< \brief 2nd byte. */
-    u8_t  b3; /*!< \brief 3rd byte. */
+    uint8_t  b1; /*!< \brief 1st byte. */
+    uint8_t  b2; /*!< \brief 2nd byte. */
+    uint8_t  b3; /*!< \brief 3rd byte. */
 }rlc_um_e_li_t;
 /** @} */
 /**
@@ -103,16 +103,16 @@ typedef struct rlc_um_e_li {
 * \brief Structure for storing decoded informations from the header of a UMD PDU.
 */
 typedef struct rlc_um_pdu_info {
-    u16_t  free_bits:3; /*!< \brief unused bits in bitfield. */
-    u16_t  fi:2;        /*!< \brief Framing Info field. */
-    u16_t  e:1;         /*!< \brief Extension bit field. */
-    u16_t  sn:10;       /*!< \brief Sequence Number field. */
-    u16_t  num_li;      /*!< \brief Number of Length Indicators. */
-    s16_t  li_list[RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU]; /*!< \brief List of Length Indicators. */
-    s16_t  hidden_size; /*!< \brief Part of payload size in bytes that is not included in the sum of LI fields. */;
-    u8_t*  payload;     /*!< \brief Pointer on PDU payload. */
-    s16_t  payload_size;/*!< \brief Size of payload in bytes. */
-    s16_t  header_size; /*!< \brief Size of header in bytes (including SO field and LI fields). */
+    uint16_t  free_bits:3; /*!< \brief unused bits in bitfield. */
+    uint16_t  fi:2;        /*!< \brief Framing Info field. */
+    uint16_t  e:1;         /*!< \brief Extension bit field. */
+    uint16_t  sn:10;       /*!< \brief Sequence Number field. */
+    uint16_t  num_li;      /*!< \brief Number of Length Indicators. */
+    int16_t  li_list[RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU]; /*!< \brief List of Length Indicators. */
+    int16_t  hidden_size; /*!< \brief Part of payload size in bytes that is not included in the sum of LI fields. */;
+    uint8_t*  payload;     /*!< \brief Pointer on PDU payload. */
+    int16_t  payload_size;/*!< \brief Size of payload in bytes. */
+    int16_t  header_size; /*!< \brief Size of header in bytes (including SO field and LI fields). */
 } rlc_um_pdu_info_t ;
 /** @} */
 

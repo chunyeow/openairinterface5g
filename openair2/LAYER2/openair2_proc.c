@@ -68,7 +68,7 @@ static mapping rrc_status_names[] = {
 
 int dump_eNB_l2_stats(char *buffer, int length){
   
-  u8 eNB_id,UE_id,number_of_cards;
+  uint8_t eNB_id,UE_id,number_of_cards;
   int len= length;
   
 #ifdef EXMIMO

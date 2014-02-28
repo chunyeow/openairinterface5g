@@ -40,7 +40,7 @@ double computeRhoA_eNB(PDSCH_CONFIG_DEDICATED *pdsch_config_dedicated,
 
 double computeRhoB_eNB(PDSCH_CONFIG_DEDICATED  *pdsch_config_dedicated,
                        PDSCH_CONFIG_COMMON *pdsch_config_common,
-                       u8 n_antenna_port,
+                       uint8_t n_antenna_port,
                        LTE_eNB_DLSCH_t *dlsch_eNB){
 
   double rho_a_dB, rho_b_dB;
@@ -89,7 +89,7 @@ double computeRhoA_UE(PDSCH_CONFIG_DEDICATED *pdsch_config_dedicated,
 
 double computeRhoB_UE(PDSCH_CONFIG_DEDICATED  *pdsch_config_dedicated,
                       PDSCH_CONFIG_COMMON *pdsch_config_common,
-                      u8 n_antenna_port,
+                      uint8_t n_antenna_port,
                       LTE_UE_DLSCH_t *dlsch_ue,
                       unsigned char dl_power_off){
 

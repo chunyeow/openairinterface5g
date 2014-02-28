@@ -84,11 +84,11 @@ void rrm_connection_response (void){
   response.equipment_id = 0;
   response.status = STATUS_CONNECTION_ACCEPTED;
 
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & confirm, sizeof (add_user_confirm));
-  count = write(rrc_rg_rrm_in_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) & response, sizeof (connection_response));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) sim_data, strlen (sim_data));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & confirm, sizeof (add_user_confirm));
+  count = write(rrc_rg_rrm_in_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) & response, sizeof (connection_response));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) sim_data, strlen (sim_data));
   if (count > 0) {
     printf ("RRM message sent successfully on RRM FIFO, length: %d\n", count);
     } else {
@@ -114,11 +114,11 @@ void rrm_add_user_response (char *rcve_buffer){
   response.tx_id = request->tx_id;
   response.status = ADD_USER_SUCCESSFUL;
 
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & confirm, sizeof (add_user_confirm));
-  count = write(rrc_rg_rrm_in_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) & response, sizeof (add_user_response));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) sim_data, strlen (sim_data));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & confirm, sizeof (add_user_confirm));
+  count = write(rrc_rg_rrm_in_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) & response, sizeof (add_user_response));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) sim_data, strlen (sim_data));
   if (count > 0) {
     printf ("RRM message sent successfully on RRM FIFO, length: %d\n", count);
     } else {
@@ -144,11 +144,11 @@ void rrm_remove_user_response (char *rcve_buffer){
   response.tx_id = request->tx_id;
   response.status = REMOVE_USER_SUCCESSFUL;
 
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & confirm, sizeof (add_user_confirm));
-  count = write(rrc_rg_rrm_in_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) & response, sizeof (remove_user_response));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) sim_data, strlen (sim_data));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & confirm, sizeof (add_user_confirm));
+  count = write(rrc_rg_rrm_in_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) & response, sizeof (remove_user_response));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) sim_data, strlen (sim_data));
   if (count > 0) {
     printf ("RRM message sent successfully on RRM FIFO, length: %d\n", count);
     } else {
@@ -180,11 +180,11 @@ void rrm_add_radio_access_bearer_response (char *rcve_buffer){
   response.tx_id = request->tx_id;
   response.status = ADD_RADIO_ACCESS_BEARER_SUCCESSFUL;
 
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & confirm, sizeof (add_user_confirm));
-  count = write(rrc_rg_rrm_in_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) & response, sizeof (add_radio_access_bearer_response));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) sim_data, strlen (sim_data));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & confirm, sizeof (add_user_confirm));
+  count = write(rrc_rg_rrm_in_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) & response, sizeof (add_radio_access_bearer_response));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) sim_data, strlen (sim_data));
   if (count > 0) {
     printf ("RRM message sent successfully on RRM FIFO, length: %d\n", count);
     } else {
@@ -227,11 +227,11 @@ void rrm_remove_radio_access_bearer_response (char *rcve_buffer){
   response.tx_id = request->tx_id;
   response.status = REMOVE_RADIO_ACCESS_BEARER_SUCCESSFUL;
 
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (u8 *) & confirm, sizeof (add_user_confirm));
-  count = write(rrc_rg_rrm_in_fifo, (u8 *) & rpc_mess, sizeof (rpc_message));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) & response, sizeof (remove_radio_access_bearer_response));
-  count += write(rrc_rg_rrm_in_fifo, (u8 *) sim_data, strlen (sim_data));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  //count = rtf_put (protocol_bs->rrc.rc_rrm.output_fifo, (uint8_t *) & confirm, sizeof (add_user_confirm));
+  count = write(rrc_rg_rrm_in_fifo, (uint8_t *) & rpc_mess, sizeof (rpc_message));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) & response, sizeof (remove_radio_access_bearer_response));
+  count += write(rrc_rg_rrm_in_fifo, (uint8_t *) sim_data, strlen (sim_data));
   if (count > 0) {
     printf ("RRM message sent successfully on RRM FIFO, length: %d\n", count);
     } else {

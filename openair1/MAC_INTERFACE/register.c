@@ -24,7 +24,7 @@ pointer to the macphy_scheduler() routine*/
 
 
 
-void dummy_macphy_scheduler(u8 last_slot) 
+void dummy_macphy_scheduler(uint8_t last_slot) 
 {
   //if (last_slot == 0)
   //  mac_xface->frame++;
@@ -47,7 +47,7 @@ void dummy_macphy_init(void )
     msg("[OPENAIR][MAC XFACE] dummy_macphy_init(): no MAC registered!\n"); 
 }
 
-MAC_xface *mac_register(void macphy_scheduler(u8 last_slot), void macphy_setparams(void *),void macphy_init(void ),void mrbch_phy_sync_failure(unsigned char,unsigned char),void chbch_phy_sync_success(unsigned char,unsigned char)) {
+MAC_xface *mac_register(void macphy_scheduler(uint8_t last_slot), void macphy_setparams(void *),void macphy_init(void ),void mrbch_phy_sync_failure(unsigned char,unsigned char),void chbch_phy_sync_success(unsigned char,unsigned char)) {
 
   if (openair_daq_vars.mac_registered == 0) {
 

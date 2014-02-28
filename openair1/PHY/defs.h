@@ -182,7 +182,7 @@ enum transmission_access_mode{
 typedef struct {
   /// Module ID indicator for this instance
   module_id_t               Mod_id;
-  u8                   local_flag;
+  uint8_t                   local_flag;
   unsigned int         rx_total_gain_eNB_dB;
   frame_t              frame;
   LTE_DL_FRAME_PARMS   lte_frame_parms;
@@ -206,13 +206,13 @@ typedef struct {
   /// mbsfn reference symbols
   unsigned int         lte_gold_mbsfn_table[10][3][42];
   
-  u32 X_u[64][839];
+  uint32_t X_u[64][839];
 
-  u8 pbch_pdu[4]; //PBCH_PDU_SIZE
+  uint8_t pbch_pdu[4]; //PBCH_PDU_SIZE
   char eNB_generate_rar;
 
   /// Indicator set to 0 after first SR
-  u8 first_sr[NUMBER_OF_UE_MAX];
+  uint8_t first_sr[NUMBER_OF_UE_MAX];
 
   unsigned int max_peak_val; 
   int max_eNB_id, max_sync_pos;
@@ -240,8 +240,8 @@ typedef struct {
   char             log2_maxp; /// holds the maximum channel/precoder coefficient
 
   /// For emulation only (used by UE abstraction to retrieve DCI)
-  u8 num_common_dci[2];                         // num_dci in even/odd subframes
-  u8 num_ue_spec_dci[2];                         // num_dci in even/odd subframes
+  uint8_t num_common_dci[2];                         // num_dci in even/odd subframes
+  uint8_t num_ue_spec_dci[2];                         // num_dci in even/odd subframes
   DCI_ALLOC_t dci_alloc[2][NUM_DCI_MAX]; // dci_alloc from even/odd subframes
 
 
@@ -266,13 +266,13 @@ typedef struct {
 
   // SRS Variables
   SOUNDINGRS_UL_CONFIG_DEDICATED soundingrs_ul_config_dedicated[NUMBER_OF_UE_MAX];
-  u8 ncs_cell[20][7];
+  uint8_t ncs_cell[20][7];
 
   // Scheduling Request Config
   SCHEDULING_REQUEST_CONFIG scheduling_request_config[NUMBER_OF_UE_MAX];
 
   // Transmission mode per UE
-  u8 transmission_mode[NUMBER_OF_UE_MAX];
+  uint8_t transmission_mode[NUMBER_OF_UE_MAX];
 
   /// cba_last successful reception for each group, used for collision detection
   uint8_t cba_last_reception[4];
@@ -310,7 +310,7 @@ typedef struct {
   time_stats_t ofdm_mod_stats;
   time_stats_t dlsch_encoding_stats;
   time_stats_t dlsch_modulation_stats;
-   time_stats_t dlsch_scrambling_stats;
+  time_stats_t dlsch_scrambling_stats;
   time_stats_t dlsch_rate_matching_stats;
   time_stats_t dlsch_turbo_encoding_stats;
   time_stats_t dlsch_interleaving_stats;
@@ -354,20 +354,20 @@ typedef enum {
 typedef struct
 {
   /// Module ID indicator for this instance
-  u8 Mod_id;
-  u8 local_flag;
+  uint8_t Mod_id;
+  uint8_t local_flag;
   unsigned int tx_total_gain_dB;
   unsigned int rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card
   rx_gain_t rx_gain_mode[4];
   unsigned int rx_gain_max[4];
   unsigned int rx_gain_med[4];
   unsigned int rx_gain_byp[4];
-  s8 tx_power_dBm;
-  s8 tx_power_max_dBm;
-  u32 frame;
-  u8 n_connected_eNB;
-  u8 ho_initiated;
-  u8 ho_triggered;
+  int8_t tx_power_dBm;
+  int8_t tx_power_max_dBm;
+  uint32_t frame;
+  uint8_t n_connected_eNB;
+  uint8_t ho_initiated;
+  uint8_t ho_triggered;
   PHY_MEASUREMENTS PHY_measurements; /// Measurement variables 
   LTE_DL_FRAME_PARMS  lte_frame_parms;
   LTE_DL_FRAME_PARMS  lte_frame_parms_before_ho; // frame parame before ho used to recover if ho fails
@@ -388,19 +388,19 @@ typedef struct
   LTE_UE_DLSCH_t   *dlsch_ue_SI[NUMBER_OF_CONNECTED_eNB_MAX],*dlsch_ue_ra[NUMBER_OF_CONNECTED_eNB_MAX];
   LTE_UE_DLSCH_t   *dlsch_ue_MCH[NUMBER_OF_CONNECTED_eNB_MAX];
   // For abstraction-purposes only
-  u8               sr[10];
-  u8               pucch_sel[10];
-  u8               pucch_payload[22];
+  uint8_t               sr[10];
+  uint8_t               pucch_sel[10];
+  uint8_t               pucch_payload[22];
 
   UE_MODE_t        UE_mode[NUMBER_OF_CONNECTED_eNB_MAX];
-  s8               g_pucch[NUMBER_OF_CONNECTED_eNB_MAX];
+  int8_t               g_pucch[NUMBER_OF_CONNECTED_eNB_MAX];
   /// cell-specific reference symbols
   unsigned int lte_gold_table[7][20][2][14];
 
 /// mbsfn reference symbols
   unsigned int lte_gold_mbsfn_table[10][3][42];
   
-  u32 X_u[64][839];
+  uint32_t X_u[64][839];
 
   char ulsch_no_allocation_counter[NUMBER_OF_CONNECTED_eNB_MAX];
 
@@ -434,10 +434,10 @@ typedef struct
   int dlsch_mtch_trials[MAX_MBSFN_AREA][NUMBER_OF_CONNECTED_eNB_MAX];
   int current_dlsch_cqi[NUMBER_OF_CONNECTED_eNB_MAX];
   unsigned char first_run_timing_advance[NUMBER_OF_CONNECTED_eNB_MAX];
-  u8               generate_prach;
-  u8               prach_cnt;
-  u8               prach_PreambleIndex;
-  //  u8               prach_timer;
+  uint8_t               generate_prach;
+  uint8_t               prach_cnt;
+  uint8_t               prach_PreambleIndex;
+  //  uint8_t               prach_timer;
   int              rx_offset; /// Timing offset
   int              timing_advance; ///timing advance signalled from eNB
   /// Flag to tell if UE is secondary user (cognitive mode)
@@ -477,7 +477,7 @@ typedef struct
 
   PUCCH_CONFIG_DEDICATED pucch_config_dedicated[NUMBER_OF_CONNECTED_eNB_MAX];
 
-  u8 ncs_cell[20][7];
+  uint8_t ncs_cell[20][7];
 
   /// UL-POWER-Control
   UL_POWER_CONTROL_DEDICATED ul_power_control_dedicated[NUMBER_OF_CONNECTED_eNB_MAX];
@@ -496,7 +496,7 @@ typedef struct
   SCHEDULING_REQUEST_CONFIG scheduling_request_config[NUMBER_OF_CONNECTED_eNB_MAX];
 
   /// Transmission mode per eNB
-  u8 transmission_mode[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint8_t transmission_mode[NUMBER_OF_CONNECTED_eNB_MAX];
  
   time_stats_t phy_proc;
   time_stats_t phy_proc_tx;
@@ -541,13 +541,13 @@ typedef struct
 /// Top-level PHY Data Structure for RN
 typedef struct {
   /// Module ID indicator for this instance
-  u8 Mod_id;
-  u32 frame;
+  uint8_t Mod_id;
+  uint32_t frame;
   // phy_vars_eNB 
   // phy_vars ue 
   // cuurently only used to store and forward the PMCH
-  u8 mch_avtive[10]; 
-  u8 sync_area[10]; // num SF
+  uint8_t mch_avtive[10];
+  uint8_t sync_area[10]; // num SF
   LTE_UE_DLSCH_t   *dlsch_rn_MCH[10];
    
 } PHY_VARS_RN;

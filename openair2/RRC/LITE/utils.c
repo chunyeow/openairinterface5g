@@ -26,8 +26,8 @@ char bcmp(void *x, void *y,int Size ){
 
 
 //------------------------------------------------------------------------------------------------------------------//
-u16 find_free_dtch_position(u8 Mod_id, u16 UE_CH_index){
-  u16 i,j;
+uint16_t find_free_dtch_position(uint8_t Mod_id, uint16_t UE_CH_index){
+  uint16_t i,j;
   if(UE_CH_index==0)
     j=0;
   else 
@@ -46,9 +46,9 @@ u16 find_free_dtch_position(u8 Mod_id, u16 UE_CH_index){
 }
 
 //-------------------------------------------------------------------------------------------//
-u8 rrc_find_free_ue_index(u8 Mod_id){
+uint8_t rrc_find_free_ue_index(uint8_t Mod_id){
 //-------------------------------------------------------------------------------------------//
-  u16 i;
+  uint16_t i;
   for(i=1;i<=NB_CNX_CH;i++)
     if ( (CH_rrc_inst[Mod_id].Info.UE_list[i][0] == 0) &&
 	 (CH_rrc_inst[Mod_id].Info.UE_list[i][1] == 0) &&	
@@ -72,9 +72,9 @@ unsigned short rrc_find_ue_index(unsigned char Mod_id, L2_ID Mac_id){
   */
 }
 //-------------------------------------------------------------------------------------------//
-u8 rrc_is_node_isolated(u8 Mod_id){
+uint8_t rrc_is_node_isolated(uint8_t Mod_id){
 //-------------------------------------------------------------------------------------------//
-  /*u8 i;
+  /*uint8_t i;
   for(i=0;i<NB_CNX_UE;i++)
     if( Rrc_inst[Mod_id].Rrc_info[i].Info.UE_info.Nb_bcch_wait < NB_WAIT_CH_BCCH) 
       break;
@@ -83,9 +83,9 @@ u8 rrc_is_node_isolated(u8 Mod_id){
 }
 
 //-------------------------------------------------------------------------------------------//
-u8 find_rrc_info_index(u8 Mod_id,u8 CH_id){
+uint8_t find_rrc_info_index(uint8_t Mod_id,uint8_t CH_id){
   //-------------------------------------------------------------------------------------------//
-  /*u8 i;
+  /*uint8_t i;
 
   for (i=0;i<NB_CNX_UE;i++){
     msg("RRC_FIND_CH_INFO %d, Now %d \n",CH_id,Rrc_inst[Mod_id].Rrc_info[i].Info.UE_info.CH_id);
@@ -101,9 +101,9 @@ u8 find_rrc_info_index(u8 Mod_id,u8 CH_id){
 }
 /*
 //--------------------------------------------------------------------------------------------//
-SRB_INFO* rrc_find_srb_info(u8 Mod_id,u16 Srb_id){
+SRB_INFO* rrc_find_srb_info(uint8_t Mod_id,uint16_t Srb_id){
     //----------------------------------------------------------------------------------------//
-  u8 i;
+  uint8_t i;
   if(Rrc_inst[Mod_id].Rrc_info[0].Status == CH_READY){
     for(i=0;i<NB_CNX_CH;i++){
       //msg("i=%d, Srb0Id %d Srb2Id %d S_id=%d\n",i,Rrc_inst[Mod_id].Srb0[i].Srb_id,Rrc_inst[Mod_id].Srb2[i].Srb_info.Srb_id, Srb_id);
@@ -130,9 +130,9 @@ SRB_INFO* rrc_find_srb_info(u8 Mod_id,u16 Srb_id){
 }
 
 //--------------------------------------------------------------------------------------------//
-RB_INFO* rrc_find_rb_info(u8 Mod_id,u16 Rb_id){
+RB_INFO* rrc_find_rb_info(uint8_t Mod_id,uint16_t Rb_id){
     //----------------------------------------------------------------------------------------//
-  u16 i,j;
+  uint16_t i,j;
   if(Rrc_inst[Mod_id].Rrc_info[0].Status == CH_READY){
     for(i=0;i<NB_CNX_CH;i++)
       for(j=0;j<NB_RAB_MAX;j++){
@@ -154,7 +154,7 @@ RB_INFO* rrc_find_rb_info(u8 Mod_id,u16 Rb_id){
 */
 
 /*------------------------------------------------------------------------------*/
-unsigned char rrc_is_mobile_already_associated(u8 Mod_id, L2_ID Mac_id){
+unsigned char rrc_is_mobile_already_associated(uint8_t Mod_id, L2_ID Mac_id){
   /*------------------------------------------------------------------------------*/
   /*
   unsigned char i; 

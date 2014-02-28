@@ -49,7 +49,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
                   PHY_VARS_UE *phy_vars_ue,
                   int eNB_id,
                   int UE_id,
-                  u8 subframe);
+                  uint8_t subframe);
 
 
 

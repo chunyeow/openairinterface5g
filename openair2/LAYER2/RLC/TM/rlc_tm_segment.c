@@ -89,7 +89,7 @@ rlc_tm_no_segment (struct rlc_tm_entity *rlcP)
     // SHOULD BE OPTIMIZED...SOON
     pdu_mngt = (struct rlc_tm_tx_pdu_management *) (pdu->data);
     memset (pdu->data, 0, sizeof (struct rlc_tm_tx_pdu_management));
-    pdu_mngt->first_byte = (u8_t*)&pdu->data[sizeof (struct rlc_tm_tx_data_pdu_struct)];
+    pdu_mngt->first_byte = (uint8_t*)&pdu->data[sizeof (struct rlc_tm_tx_data_pdu_struct)];
 
     memcpy (pdu_mngt->first_byte, sdu_mngt->first_byte, ((rlcP->rlc_pdu_size + 7) >> 3));
     ((struct mac_tb_req *) (pdu->data))->rlc = NULL;
@@ -151,7 +151,7 @@ rlc_tm_segment (struct rlc_tm_entity *rlcP)
       // SHOULD BE OPTIMIZED...SOON
       pdu_mngt = (struct rlc_tm_tx_pdu_management *) (pdu->data);
       memset (pdu->data, 0, sizeof (struct rlc_tm_tx_pdu_management));
-      pdu_mngt->first_byte = (u8_t*)&pdu->data[sizeof (struct rlc_tm_tx_data_pdu_struct)];
+      pdu_mngt->first_byte = (uint8_t*)&pdu->data[sizeof (struct rlc_tm_tx_data_pdu_struct)];
 
       memcpy (pdu_mngt->first_byte, &sdu_mngt->first_byte[sdu_mngt->sdu_segmented_size >> 3], ((rlcP->rlc_pdu_size + 7) >> 3));
 

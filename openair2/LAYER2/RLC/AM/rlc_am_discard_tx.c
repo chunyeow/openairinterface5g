@@ -116,12 +116,12 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_configured (struc
   struct rlc_am_tx_sdu_management *last_sdu_discarded_mngt;
   mem_block_t      *le;
   struct rlc_am_status_header *pdu;
-  u8_t             *p8;
+  uint8_t             *p8;
   int             last_sn_mrw_length;
-  u8_t              count_sdu_discarded;
-  u8_t              byte_aligned;
+  uint8_t              count_sdu_discarded;
+  uint8_t              byte_aligned;
 #ifdef DEBUG_RLC_AM_DISCARD
-  u16_t             sn_mrw_length;
+  uint16_t             sn_mrw_length;
 #endif
   while (rlcP->sdu_discarded.head) {
 
@@ -270,11 +270,11 @@ rlc_am_sdu_discard_with_explicit_signalling_procedure_send_mrw_not_configured (s
   mem_block_t      *le;
   struct rlc_am_status_header *pdu;
   int             last_sn_mrw_length;
-  u8_t             *p8;
-  u8_t              count_sdu_discarded;
-  u8_t              byte_aligned;
+  uint8_t             *p8;
+  uint8_t              count_sdu_discarded;
+  uint8_t              byte_aligned;
 #ifdef DEBUG_RLC_AM_DISCARD
-  u16_t             sn_mrw_length;
+  uint16_t             sn_mrw_length;
 #endif
   while (rlcP->sdu_discarded.head) {
 

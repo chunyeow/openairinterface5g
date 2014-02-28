@@ -228,6 +228,6 @@ list_display (list_t * listP)
       //      msg (" found nb_elements %d nb_elements %d\n", nb_elements, listP->nb_elements);
     }
   } else {
-    msg ("[SDU_MNGT][WARNING] display_cnt_list() : list is NULL\n");
+    //msg ("[SDU_MNGT][WARNING] display_cnt_list() : list is NULL\n");
   }
 }

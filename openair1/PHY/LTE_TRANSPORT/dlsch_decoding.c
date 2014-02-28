@@ -162,13 +162,13 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
   uint32_t A,E;
   uint32_t G;
   uint32_t ret,offset;
-  u16 iind;
+  uint16_t iind;
   //  uint8_t dummy_channel_output[(3*8*block_length)+12];
   short dummy_w[MAX_NUM_DLSCH_SEGMENTS][3*(6144+64)];
   uint32_t r,r_offset=0,Kr,Kr_bytes,err_flag=0;
   uint8_t crc_type;
 #ifdef DEBUG_DLSCH_DECODING
-  u16 i;
+  uint16_t i;
 #endif
   uint8_t (*tc)(int16_t *y,
 		uint8_t *,
@@ -615,7 +615,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   uint32_t eNB_id2;
   uint32_t ue_id;
 #ifdef DEBUG_DLSCH_DECODING
-  u16 i;
+  uint16_t i;
 #endif
 
   // may not be necessary for PMCH??
@@ -662,7 +662,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   case 2: // TB0
     dlsch_ue  = phy_vars_ue->dlsch_ue[eNB_id][0];
     harq_pid = dlsch_ue->current_harq_pid;
-    ue_id= (uint32_t)find_ue((s16)phy_vars_ue->lte_ue_pdcch_vars[(uint32_t)eNB_id]->crnti,PHY_vars_eNB_g[eNB_id2]);
+    ue_id= (uint32_t)find_ue((int16_t)phy_vars_ue->lte_ue_pdcch_vars[(uint32_t)eNB_id]->crnti,PHY_vars_eNB_g[eNB_id2]);
     dlsch_eNB = PHY_vars_eNB_g[eNB_id2]->dlsch_eNB[ue_id][0];
 
 #ifdef DEBUG_DLSCH_DECODING
@@ -698,7 +698,7 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
   case 3: // TB1
     dlsch_ue = phy_vars_ue->dlsch_ue[eNB_id][1];
     harq_pid = dlsch_ue->current_harq_pid;
-    dlsch_eNB = PHY_vars_eNB_g[eNB_id2]->dlsch_eNB[(uint32_t)find_ue((s16)phy_vars_ue->lte_ue_pdcch_vars[(uint32_t)eNB_id]->crnti,
+    dlsch_eNB = PHY_vars_eNB_g[eNB_id2]->dlsch_eNB[(uint32_t)find_ue((int16_t)phy_vars_ue->lte_ue_pdcch_vars[(uint32_t)eNB_id]->crnti,
 								PHY_vars_eNB_g[eNB_id2])][1];
      // reset HARQ 
     dlsch_ue->harq_processes[harq_pid]->status = SCH_IDLE;

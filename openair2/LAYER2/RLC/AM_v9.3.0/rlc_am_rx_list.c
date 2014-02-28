@@ -742,7 +742,7 @@ void rlc_am_rx_mark_all_segments_received(rlc_am_entity_t* rlc_pP, frame_t frame
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_rx_list_reassemble_rlc_sdus(rlc_am_entity_t* rlc_pP,frame_t frameP, u8_t eNB_flag)
+void rlc_am_rx_list_reassemble_rlc_sdus(rlc_am_entity_t* rlc_pP,frame_t frameP, uint8_t eNB_flag)
 //-----------------------------------------------------------------------------
 {
     mem_block_t*                cursor_p                     = NULL;

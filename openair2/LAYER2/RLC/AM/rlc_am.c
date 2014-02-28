@@ -33,16 +33,16 @@
 //#define DEBUG_RLC_AM_BO
 //-----------------------------------------------------------------------------
 void            display_protocol_vars_rlc_am (struct rlc_am_entity *rlcP);
-u32_t             rlc_am_get_buffer_occupancy_in_pdus_for_ch1 (struct rlc_am_entity *rlcP);
-u32_t             rlc_am_get_buffer_occupancy_in_pdus_for_ch2 (struct rlc_am_entity *rlcP);
+uint32_t             rlc_am_get_buffer_occupancy_in_pdus_for_ch1 (struct rlc_am_entity *rlcP);
+uint32_t             rlc_am_get_buffer_occupancy_in_pdus_for_ch2 (struct rlc_am_entity *rlcP);
 void           *rlc_am_tx (void *argP);
 void            rlc_am_rx (void *argP, struct mac_data_ind data_indP);
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_am_get_buffer_occupancy_in_bytes_ch1 (struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
-  u32_t             sum = 0;
+  uint32_t             sum = 0;
 
   if (rlcP->buffer_occupancy > 0) {
   sum += (rlcP->pdus_to_mac_layer_ch1.nb_elements * rlcP->pdu_size);
@@ -65,7 +65,7 @@ rlc_am_get_buffer_occupancy_in_bytes_ch1 (struct rlc_am_entity *rlcP)
 }
 
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_am_get_buffer_occupancy_in_bytes_ch2 (struct rlc_am_entity * rlcP)
 {
 //-----------------------------------------------------------------------------
@@ -76,11 +76,11 @@ rlc_am_get_buffer_occupancy_in_bytes_ch2 (struct rlc_am_entity * rlcP)
 }
 
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_am_get_buffer_occupancy_in_pdus_ch1 (struct rlc_am_entity * rlcP)
 {
 //-----------------------------------------------------------------------------
-  u32_t             sum = 0;
+  uint32_t             sum = 0;
 
   sum += rlcP->pdus_to_mac_layer_ch1.nb_elements;
   sum += rlcP->buffer_occupancy_retransmission_buffer;
@@ -95,7 +95,7 @@ rlc_am_get_buffer_occupancy_in_pdus_ch1 (struct rlc_am_entity * rlcP)
   return sum;
 }
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_am_get_buffer_occupancy_in_pdus_ch2 (struct rlc_am_entity * rlcP)
 {
 //-----------------------------------------------------------------------------
@@ -107,7 +107,7 @@ rlc_am_get_buffer_occupancy_in_pdus_ch2 (struct rlc_am_entity * rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_get_pdus (void *argP, u8_t traffic_typeP)
+rlc_am_get_pdus (void *argP, uint8_t traffic_typeP)
 {
 //-----------------------------------------------------------------------------
 
@@ -330,7 +330,7 @@ rlc_am_rx (void *argP, struct mac_data_ind data_indP)
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_am_mac_status_indication (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_am_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -360,7 +360,7 @@ rlc_am_mac_status_indication (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_am_mac_status_indication_on_first_channel (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_am_mac_status_indication_on_first_channel (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -381,7 +381,7 @@ rlc_am_mac_status_indication_on_first_channel (void *rlcP, u16_t no_tbP, u16 tb_
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_am_mac_status_indication_on_second_channel (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_am_mac_status_indication_on_second_channel (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -506,10 +506,10 @@ rlc_am_data_req (void *rlcP, mem_block_t * sduP)
 {
 //-----------------------------------------------------------------------------
   struct rlc_am_entity *rlc = (struct rlc_am_entity *) rlcP;
-  u32_t             mui;
-  u16_t             data_offset;
-  u16_t             data_size;
-  u8_t              conf;
+  uint32_t             mui;
+  uint16_t             data_offset;
+  uint16_t             data_size;
+  uint8_t              conf;
 
 
   if ((rlc->input_sdus[rlc->next_sdu_index] == NULL) && (((rlc->next_sdu_index + 1) % rlc->size_input_sdus_buffer) != rlc->current_sdu_index)) {

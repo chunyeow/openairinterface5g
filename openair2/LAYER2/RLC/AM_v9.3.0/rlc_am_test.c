@@ -83,8 +83,8 @@ static int  g_mui = 0;
 static int  g_send_sdu_ids[TEST_MAX_SEND_SDU][2];
 static int  g_send_id_write_index[2];
 static int  g_send_id_read_index[2];
-static u8_t g_buffer[32];
-static s8_t *g_sdus[] = {"En dépit de son volontarisme affiché, le premier ministre est de plus en plus décrié pour son incompétence. La tension politique et dans l'opinion publique est encore montée d'un cran au Japon, sur fond d'inquiétantes nouvelles, avec du plutonium détecté dans le sol autour de la centrale de Fukushima. Le premier ministre Naoto Kan a solennellement déclaré que son gouvernement était «en état d'alerte maximum». Tout en reconnaissant que la situation restait «imprévisible». Ce volontarisme affiché par le premier ministre - que Nicolas Sarkozy rencontrera demain lors d'une visite au Japon - ne l'a pas empêché d'être la cible de violentes critiques de la part de parlementaires sur sa gestion de la crise. Attaqué sur le manque de transparence, il a assuré qu'il rendait publiques toutes les informations en sa possession. Un député de l'opposition, Yosuke Isozaki, a aussi reproché à Naoto Kan de ne pas avoir ordonné l'évacuation des populations dans la zone comprise entre 20 et 30 km autour de la centrale. «Peut-il y avoir quelque chose de plus irresponsable que cela ?», a-t-il lancé. Pour l'heure, la zone d'évacuation est limitée à un rayon de 20 km, seul le confinement étant recommandé pour les 10 km suivants. Sur ce sujet, les autorités japonaises ont été fragilisées mardi par les déclarations de Greenpeace, affirmant que ses experts avaient détecté une radioactivité dangereuse à 40 km de la centrale. L'organisation écologiste a appelé à une extension de la zone d'évacuation, exhortant Tokyo à «cesser de privilégier la politique aux dépens de la science». L'Agence japonaise de sûreté nucléaire a balayé ces critiques.",
+static uint8_t g_buffer[32];
+static int8_t *g_sdus[] = {"En dépit de son volontarisme affiché, le premier ministre est de plus en plus décrié pour son incompétence. La tension politique et dans l'opinion publique est encore montée d'un cran au Japon, sur fond d'inquiétantes nouvelles, avec du plutonium détecté dans le sol autour de la centrale de Fukushima. Le premier ministre Naoto Kan a solennellement déclaré que son gouvernement était «en état d'alerte maximum». Tout en reconnaissant que la situation restait «imprévisible». Ce volontarisme affiché par le premier ministre - que Nicolas Sarkozy rencontrera demain lors d'une visite au Japon - ne l'a pas empêché d'être la cible de violentes critiques de la part de parlementaires sur sa gestion de la crise. Attaqué sur le manque de transparence, il a assuré qu'il rendait publiques toutes les informations en sa possession. Un député de l'opposition, Yosuke Isozaki, a aussi reproché à Naoto Kan de ne pas avoir ordonné l'évacuation des populations dans la zone comprise entre 20 et 30 km autour de la centrale. «Peut-il y avoir quelque chose de plus irresponsable que cela ?», a-t-il lancé. Pour l'heure, la zone d'évacuation est limitée à un rayon de 20 km, seul le confinement étant recommandé pour les 10 km suivants. Sur ce sujet, les autorités japonaises ont été fragilisées mardi par les déclarations de Greenpeace, affirmant que ses experts avaient détecté une radioactivité dangereuse à 40 km de la centrale. L'organisation écologiste a appelé à une extension de la zone d'évacuation, exhortant Tokyo à «cesser de privilégier la politique aux dépens de la science». L'Agence japonaise de sûreté nucléaire a balayé ces critiques.",
 
 "La pâquerette (Bellis perennis) est une plante vivace des prés, des pelouses, des bords de chemins et des prairies, haute de dix à vingt centimètres, de la famille des Astéracées, dont les fleurs naissent sur des inflorescences appelées capitules : celles du pourtour, que l'on croit à tort être des pétales, appelées fleurs ligulées, parce qu'elles ont la forme d'une languette, ou demi-fleurons, sont des fleurs femelles, dont la couleur varie du blanc au rose plus ou moins prononcé ; celles du centre, jaunes, appelées fleurs tubuleuses, parce que leur corolle forme un tube, ou fleurons, sont hermaphrodites. Ainsi, contrairement à l'opinion populaire, ce qu'on appelle une « fleur » de pâquerette n'est en réalité pas « une » fleur mais un capitule portant des fleurs très nombreuses.Leurs fruits s'envolent grâce au vent et dégagent des odeurs qui attirent les insectes.Une variété muricole peut pousser sur des murs humides verticaux.Les pâquerettes sont des fleurs rustiques et très communes en Europe, sur les gazons, les prairies, les chemins et les zones d'herbe rase.Elles ont la particularité, comme certaines autres fleurs de plantes herbacées, de se fermer la nuit et de s'ouvrir le matin pour s'épanouir au soleil ; elles peuvent aussi se fermer pendant les averses, voire un peu avant, ce qui permet dans les campagnes de prédire la pluie légèrement à l'avance.",
 
@@ -213,11 +213,11 @@ void rlc_am_v9_3_0_test_read_write_bit_field()
 //-----------------------------------------------------------------------------
 {
   unsigned int bit_pos_write       = 0; // range from 0 (MSB/left) to 7 (LSB/right)
-  u8_t*        byte_pos_write      = g_buffer;
+  uint8_t*        byte_pos_write      = g_buffer;
 
   unsigned int bit_pos_read       = 0; // range from 0 (MSB/left) to 7 (LSB/right)
-  u8_t*        byte_pos_read      = g_buffer;
-  u16_t        read_value;
+  uint8_t*        byte_pos_read      = g_buffer;
+  uint16_t        read_value;
 
   memset (g_buffer, 0, 1024);
   // byte 0
@@ -578,8 +578,8 @@ void rlc_am_v9_3_0_test_mac_rlc_loop (struct mac_data_ind *data_indP,  struct ma
 //-----------------------------------------------------------------------------
 void rlc_am_v9_3_0_test_exchange_pdus(rlc_am_entity_t *am_txP,
                                       rlc_am_entity_t *am_rxP,
-                                      u16_t           bytes_txP,
-                                      u16_t           bytes_rxP)
+                                      uint16_t           bytes_txP,
+                                      uint16_t           bytes_rxP)
 //-----------------------------------------------------------------------------
 {
   struct mac_data_req    data_request_tx;
@@ -664,12 +664,12 @@ void rlc_am_v9_3_0_test_data_ind (module_id_t module_idP, rb_id_t rb_idP, sdu_si
 void rlc_am_v9_3_0_test_tx_rx()
 //-----------------------------------------------------------------------------
 {
-  u16_t                 max_retx_threshold = 255;
-  u16_t                 poll_pdu           = 8;
-  u16_t                 poll_byte          = 1000;
-  u32_t                 t_poll_retransmit  = 15;
-  u32_t                 t_reordering       = 5000;
-  u32_t                 t_status_prohibit  = 10;
+  uint16_t                 max_retx_threshold = 255;
+  uint16_t                 poll_pdu           = 8;
+  uint16_t                 poll_byte          = 1000;
+  uint32_t                 t_poll_retransmit  = 15;
+  uint32_t                 t_reordering       = 5000;
+  uint32_t                 t_status_prohibit  = 10;
   int                   i,j,r;
 
   srand (0);

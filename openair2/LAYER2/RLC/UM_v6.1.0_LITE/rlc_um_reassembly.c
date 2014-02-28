@@ -24,7 +24,7 @@
 //#define DEBUG_RLC_UM_SEND_SDU
 
 void            rlc_um_clear_rx_sdu (struct rlc_um_entity *rlcP);
-void            rlc_um_reassembly (u8_t * srcP, s32_t lengthP, struct rlc_um_entity *rlcP);
+void            rlc_um_reassembly (uint8_t * srcP, int32_t lengthP, struct rlc_um_entity *rlcP);
 void            rlc_um_send_sdu_minus_1_byte (struct rlc_um_entity *rlcP);
 void            rlc_um_send_sdu (struct rlc_um_entity *rlcP);
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ rlc_um_clear_rx_sdu (struct rlc_um_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_reassembly (u8_t * srcP, s32_t lengthP, struct rlc_um_entity *rlcP)
+rlc_um_reassembly (uint8_t * srcP, int32_t lengthP, struct rlc_um_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
   int             sdu_max_size;

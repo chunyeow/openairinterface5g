@@ -101,7 +101,7 @@ signed int rlc_am_in_sdu_is_empty(rlc_am_entity_t *rlcP)
     return 0;
 }
 
-  //u8_t                       in_sdu_data_ring_buffer   [RLC_AM_SDU_DATA_BUFFER_SIZE];
+  //uint8_t                       in_sdu_data_ring_buffer   [RLC_AM_SDU_DATA_BUFFER_SIZE];
   //rlc_am_in_sdu_control_t    in_sdu_control_ring_buffer[RLC_AM_SDU_CONTROL_BUFFER_SIZE];
 
   //signed   int               in_sdu_data_buffer_index_start;
@@ -182,9 +182,9 @@ void rlc_am_in_sdu_data_copy_sdu(rlc_am_entity_t *rlcP, char* sourceP, unsigned 
 void rlc_am_in_sdu_data_req (rlc_am_entity_t *rlcP, mem_block_t * sduP)
 //-----------------------------------------------------------------------------
 {
-  u32_t             mui;
-  u16_t             data_offset;
-  u16_t             data_size;
+  uint32_t             mui;
+  uint16_t             data_offset;
+  uint16_t             data_size;
 
   if (rlcP->protocol_state == RLC_NULL_STATE) {
 #ifdef DEBUG_RLC_AM_DATA_REQUEST

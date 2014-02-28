@@ -61,7 +61,7 @@ void print_error(int status){
 }
 
 //---------------------------------------------------------------------------
-void print_state(u8 state){
+void print_state(uint8_t state){
 //---------------------------------------------------------------------------
   switch(state){
     case NAS_IDLE:printf("NAS_IDLE\n");return;
@@ -217,13 +217,13 @@ int main(int argc, char *argv[]){
     /***/
 //  printf("Usage: gioctl cx list\n");
     if (strcmp(argv[2], "list")==0){
-      u8 *msgrep;
-      u8 i;
+      uint8_t *msgrep;
+      uint8_t i;
       struct nas_msg_cx_list_reply *list;
-      u8 lcr;
+      uint8_t lcr;
       gifr.type=NAS_MSG_CX_LIST_REQUEST;
       gifr.msg=(char *)malloc(NAS_LIST_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1);
-      msgrep=(u8 *)(gifr.msg);
+      msgrep=(uint8_t *)(gifr.msg);
       //
       printf(" Connexion list requested\n");
       err=ioctl(fd, NASMT_IOCTL_RAL, &gifr);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[]){
       {
         printf("%u\t\t%u\t%u\t", list[lcr].lcr, list[lcr].cellid, list[lcr].iid4);
         for (i=0;i<8;++i)
-          printf("%02x", *((u8 *)list[lcr].iid6+i));
+          printf("%02x", *((uint8_t *)list[lcr].iid6+i));
         printf("\t%u\t%u\t", list[lcr].num_rb, list[lcr].nsclassifier);
         print_state(list[lcr].state);
       }
@@ -314,8 +314,8 @@ int main(int argc, char *argv[]){
     /***/
 //  printf("Usage: gioctl rb list <lcr>\n");
     if (strcmp(argv[2], "list")==0){
-      u8 *msgrep;
-      u8 rbi;
+      uint8_t *msgrep;
+      uint8_t rbi;
       struct nas_msg_rb_list_reply *list;
       struct nas_msg_rb_list_request *msgreq;
       if (argc<4){
@@ -325,7 +325,7 @@ int main(int argc, char *argv[]){
       gifr.type=NAS_MSG_RB_LIST_REQUEST;
       gifr.msg=(char *)malloc(NAS_LIST_RB_MAX*sizeof(struct nas_msg_rb_list_reply)+1);
       msgreq=(struct nas_msg_rb_list_request *)(gifr.msg);
-      msgrep=(u8 *)(gifr.msg);
+      msgrep=(uint8_t *)(gifr.msg);
       msgreq->lcr=strtoul(argv[3], NULL, 0);
       //
       printf(" Radio bearer list requested\n");
@@ -359,7 +359,7 @@ int main(int argc, char *argv[]){
     {
       struct nas_msg_class_add_request *msgreq;
       struct nas_msg_class_add_reply *msgrep;
-      u8 i,j;
+      uint8_t i,j;
       gifr.type=NAS_MSG_CLASS_ADD_REQUEST;
       gifr.msg=(char *)malloc(sizeof(msgrep)<sizeof(msgreq)?sizeof(msgreq):sizeof(msgrep));
       msgreq=(struct nas_msg_class_add_request *)(gifr.msg);
@@ -559,7 +559,7 @@ int main(int argc, char *argv[]){
     /***/
     if (strcmp(argv[2], "del")==0)
     {
-      u8 i;
+      uint8_t i;
       struct nas_msg_class_del_request *msgreq;
       struct nas_msg_class_del_reply *msgrep;
       gifr.type=NAS_MSG_CLASS_DEL_REQUEST;
@@ -628,8 +628,8 @@ int main(int argc, char *argv[]){
     /***/
     if (strcmp(argv[2], "list")==0)
     {
-      u8 *msgrep;
-      u8 cli, i;
+      uint8_t *msgrep;
+      uint8_t cli, i;
       struct nas_msg_class_list_reply *list;
       struct nas_msg_class_list_request *msgreq;
       char addr[45];
@@ -646,7 +646,7 @@ int main(int argc, char *argv[]){
         return -1;
       }
       msgreq=(struct nas_msg_class_list_request *)(gifr.msg);
-      msgrep=(u8 *)(gifr.msg);
+      msgrep=(uint8_t *)(gifr.msg);
       i=3;
       if (strcmp(argv[i], "send")==0)
       {

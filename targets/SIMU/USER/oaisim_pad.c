@@ -79,15 +79,15 @@
 #define TARGET_SF_TIME_NS 1000000       // 1ms = 1000000 ns
 
 //#ifdef OPENAIR2
-//u16 NODE_ID[1];
-//u8 NB_INST = 2;
+//uint16_t NODE_ID[1];
+//uint8_t NB_INST = 2;
 //#endif //OPENAIR2
 extern int otg_times;
 extern int for_times;
 extern int if_times;
 int for_main_times = 0;
 
-u32 frame=0;
+frame_t frame=0;
 char stats_buffer[16384];
 channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX];
 channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
@@ -103,14 +103,14 @@ extern int  nrbPost;
 extern int frbPost;
 extern void kpi_gen();
 
-extern u16 Nid_cell;
-extern u8 target_dl_mcs;
-extern u8 rate_adaptation_flag;
+extern uint16_t Nid_cell;
+extern uint8_t target_dl_mcs;
+extern uint8_t rate_adaptation_flag;
 extern double snr_dB, sinr_dB;
-extern u8 set_seed;
-extern u8 cooperation_flag;          // for cooperative communication
-extern u8 abstraction_flag, ethernet_flag;
-extern u8 ue_connection_test;
+extern uint8_t set_seed;
+extern uint8_t cooperation_flag;          // for cooperative communication
+extern uint8_t abstraction_flag, ethernet_flag;
+extern uint8_t ue_connection_test;
 extern int map1,map2;
 extern double **ShaF;
 // pointers signal buffers (s = transmit, r,r0 = receive)
@@ -276,7 +276,7 @@ void pad_init() {
 void pad_finalize() {
 
   int ret, i;
-  s32 UE_id;
+  module_id_t UE_id;
 
   ret = threadpool_destroy(pool);
   if (ret)
@@ -358,8 +358,8 @@ int main (int argc, char *argv[]) {
 void run(int argc, char *argv[]) {
 
 
-  s32 i;
-  s32 UE_id, eNB_id;
+  int32_t i;
+  module_id_t UE_id, eNB_id;
   Job_elt *job_elt;
   int ret;
 
@@ -370,7 +370,7 @@ void run(int argc, char *argv[]) {
   Event event;
 
   // Framing variables
-  s32 slot, last_slot, next_slot;
+  int32_t slot, last_slot, next_slot;
 
   FILE *SINRpost;
   char SINRpost_fname[512];
@@ -395,7 +395,7 @@ void run(int argc, char *argv[]) {
   int port,Process_Flag=0,wgt,Channel_Flag=0,temp;
 #endif
 
-  // u8 awgn_flag = 0;
+  // uint8_t awgn_flag = 0;
 
 #ifdef PRINT_STATS
   int len;
@@ -406,7 +406,7 @@ void run(int argc, char *argv[]) {
  #endif
 
 #ifdef SMBV
-  u8 config_smbv = 0;
+  uint8_t config_smbv = 0;
   char smbv_ip[16];
   strcpy(smbv_ip,DEFAULT_SMBV_IP);
 #endif

@@ -22,24 +22,24 @@
 #include "LAYER2/MAC/vars.h"
 #include "UTIL/LOG/log_extern.h"
 
-u16 n_rnti = 0x1235;
+uint16_t n_rnti = 0x1235;
 int n_users = 1;
-u8 mcs = 0;
-u32 DLSCH_RB_ALLOC = 0x1000;
+uint8_t mcs = 0;
+uint32_t DLSCH_RB_ALLOC = 0x1000;
 
-u8 BCCH_alloc_pdu[8];
+uint8_t BCCH_alloc_pdu[8];
 uint64_t DLSCH_alloc_pdu_1[2];
 
-void eNB_scheduler(u8 Mod_id, u8 cooperation_flag, u8 frame, u8 subframe) {
+void eNB_scheduler(uint8_t Mod_id, uint8_t cooperation_flag, uint8_t frame, uint8_t subframe) {
 
   msg("Doing Scheduler for eNB, frame %d subframe %d\n",frame,subframe);
 }
 
 DCI_PDU DCI_pdu;
 
-DCI_PDU *get_dci(u8 Mod_id, u8 frame, u8 subframe) {
+DCI_PDU *get_dci(uint8_t Mod_id, uint8_t frame, uint8_t subframe) {
   int i,k;
-  u8 transmission_mode = PHY_vars_eNB_g[0]->transmission_mode[0];
+  uint8_t transmission_mode = PHY_vars_eNB_g[0]->transmission_mode[0];
   int dci_length_bytes,dci_length;
   int BCCH_pdu_size_bits, BCCH_pdu_size_bytes;
 
@@ -277,9 +277,9 @@ DCI_PDU *get_dci(u8 Mod_id, u8 frame, u8 subframe) {
   return(&DCI_pdu);
 }
 
-u8 DLSCH_pdu[768*8];
+uint8_t DLSCH_pdu[768*8];
 
-u8 *get_DLSCH_pdu(u8 Mod_id,u16 rnti,u8 abstraction_flag) {
+uint8_t *get_DLSCH_pdu(uint8_t Mod_id,uint16_t rnti,uint8_t abstraction_flag) {
   int i;
   memset(DLSCH_pdu, 0, 768);
   for(i=0; i<768; i++)
@@ -287,7 +287,7 @@ u8 *get_DLSCH_pdu(u8 Mod_id,u16 rnti,u8 abstraction_flag) {
   return(DLSCH_pdu);
 }
 
-void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
+void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
 
   int aa, slot_offset, slot_offset_F;
   int nthreads,tid;
@@ -322,11 +322,11 @@ void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot, LTE_DL_FRAME_
 
 void lte_param_init(  unsigned char transmission_mode,
   unsigned char extended_prefix_flag,
-  u16 Nid_cell,
-  u8 N_RB_DL,
-  u8 osf,
-  u8 fdd_flag,
-  u8 tdd_config) {
+  uint16_t Nid_cell,
+  uint8_t N_RB_DL,
+  uint8_t osf,
+  uint8_t fdd_flag,
+  uint8_t tdd_config) {
 
     unsigned int ind,i,j;
     LTE_DL_FRAME_PARMS *lte_frame_parms;
@@ -434,26 +434,26 @@ int main(int argc, char **argv) {
   int subframe_offset;
   char fname[40], vname[40];
 
-  u8 transmission_mode = 1;
+  uint8_t transmission_mode = 1;
   unsigned char eNB_id = 0;
-  u16 Nid_cell=0;
-  u8 tdd_config = 3;
-  u8 fdd_flag = 0;
-  u8 N_RB_DL=25,osf=1;
+  uint16_t Nid_cell=0;
+  uint8_t tdd_config = 3;
+  uint8_t fdd_flag = 0;
+  uint8_t N_RB_DL=25,osf=1;
   double BW = 7.68;
 
   int n_frames=1;
   int frame;
-  s8 slot, next_slot, last_slot;
+  int8_t slot, next_slot, last_slot;
 
-  u32 nsymb,tx_lev,tx_lev_dB;
-  u8 extended_prefix_flag=0;
+  uint32_t nsymb,tx_lev,tx_lev_dB;
+  uint8_t extended_prefix_flag=0;
 
   LTE_DL_FRAME_PARMS *frame_parms;
 
-  u16 amask=0;
-  u8 frame_mod4,num_pdcch_symbols;
-  u16 NB_RB=25;
+  uint16_t amask=0;
+  uint8_t frame_mod4,num_pdcch_symbols;
+  uint16_t NB_RB=25;
 
 
 

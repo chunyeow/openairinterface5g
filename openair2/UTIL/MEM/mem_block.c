@@ -20,7 +20,7 @@
 //#define DEBUG_MEM_MNGT_ALLOC
 //-----------------------------------------------------------------------------
 #if defined(USER_MODE) && defined(DEBUG_MEM_MNGT_ALLOC)
-u32_t             counters[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+uint32_t             counters[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #endif
 //-----------------------------------------------------------------------------
 /*
@@ -31,7 +31,7 @@ pool_buffer_init ()
 {
 //-----------------------------------------------------------------------------
 
-  u32_t             index, mb_index, pool_index;
+  uint32_t             index, mb_index, pool_index;
   mem_pool       *memory = (mem_pool *) &mem_block_var;
   int             pool_sizes[14] = { MEM_MNGT_MB0_NB_BLOCKS, MEM_MNGT_MB1_NB_BLOCKS,
     MEM_MNGT_MB2_NB_BLOCKS, MEM_MNGT_MB3_NB_BLOCKS,
@@ -139,7 +139,7 @@ free_mem_block (mem_block_t * leP)
 
 //-----------------------------------------------------------------------------
 mem_block_t      *
-get_free_mem_block (u16_t sizeP)
+get_free_mem_block (uint16_t sizeP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *le = NULL;

@@ -37,7 +37,7 @@
 #define DEBUG_RLC_UM_SEND_SDU
 //-----------------------------------------------------------------------------
 void
-rlc_um_reassembly (u8_t * srcP, u16_t lengthP, struct rlc_um_entity *rlcP)
+rlc_um_reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_um_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
   int             sdu_max_size;

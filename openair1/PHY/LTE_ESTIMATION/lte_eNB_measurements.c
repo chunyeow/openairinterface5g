@@ -13,7 +13,7 @@
 #define k1 1024
 #define k2 (1024-k1)
 
-s32 rx_power_avg_eNB[3][3];
+int32_t rx_power_avg_eNB[3][3];
 
 
 void lte_eNB_I0_measurements(PHY_VARS_eNB *phy_vars_eNb,
@@ -25,10 +25,10 @@ void lte_eNB_I0_measurements(PHY_VARS_eNB *phy_vars_eNb,
   PHY_MEASUREMENTS_eNB *phy_measurements = &phy_vars_eNb->PHY_measurements_eNB[eNB_id];
 			     
 			     
-  u32 aarx,rx_power_correction;
-  u32 rb;
-  s32 *ul_ch;
-  s32 n0_power_tot;
+  uint32_t aarx,rx_power_correction;
+  uint32_t rb;
+  int32_t *ul_ch;
+  int32_t n0_power_tot;
 
   // noise measurements
   // for the moment we measure the noise on the 7th OFDM symbol (in S subframe) 
@@ -124,10 +124,10 @@ void lte_eNB_srs_measurements(PHY_VARS_eNB *phy_vars_eNb,
   PHY_MEASUREMENTS_eNB *phy_measurements = &phy_vars_eNb->PHY_measurements_eNB[eNB_id];
   LTE_eNB_SRS *eNB_srs_vars = &phy_vars_eNb->lte_eNB_srs_vars[UE_id];
 
-  s32 aarx,rx_power_correction;
-  s32 rx_power;
-  u32 rb;
-  s32 *ul_ch;
+  int32_t aarx,rx_power_correction;
+  int32_t rx_power;
+  uint32_t rb;
+  int32_t *ul_ch;
 
   //printf("Running eNB_srs_measurements for eNB_id %d\n",eNB_id);
 
@@ -179,7 +179,7 @@ void lte_eNB_srs_measurements(PHY_VARS_eNB *phy_vars_eNb,
   phy_measurements->wideband_cqi_tot[UE_id] = dB_fixed2(rx_power,2*phy_measurements->n0_power_tot);
   // times 2 since we have noise only in the odd carriers of the srs comb
 
-  phy_measurements->rx_rssi_dBm[UE_id] = (s32)dB_fixed(rx_power_avg_eNB[UE_id][eNB_id])-phy_vars_eNb->rx_total_gain_eNB_dB;
+  phy_measurements->rx_rssi_dBm[UE_id] = (int32_t)dB_fixed(rx_power_avg_eNB[UE_id][eNB_id])-phy_vars_eNb->rx_total_gain_eNB_dB;
  
  
   
@@ -229,7 +229,7 @@ void lte_eNB_srs_measurements(PHY_VARS_eNB *phy_vars_eNb,
 }
       
 void lte_eNB_I0_measurements_emul(PHY_VARS_eNB *phy_vars_eNb,
-				  u8 sect_id) {
+				  uint8_t sect_id) {
 
   LOG_D(PHY,"EMUL lte_eNB_IO_measurements_emul: eNB %d, sect %d\n",phy_vars_eNb->Mod_id,sect_id);
 }

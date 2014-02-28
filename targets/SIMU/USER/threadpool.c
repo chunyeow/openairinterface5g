@@ -41,7 +41,7 @@
 #include "UTIL/FIFO/pad_list.h"
 #include "threadpool.h"
 
-extern u8 abstraction_flag;
+extern uint8_t abstraction_flag;
 extern Signal_buffers *signal_buffers_g;
 
 extern channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX];

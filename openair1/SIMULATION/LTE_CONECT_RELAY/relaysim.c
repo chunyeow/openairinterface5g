@@ -273,7 +273,7 @@ void do_forms(FD_lte_scope *form, LTE_DL_FRAME_PARMS *frame_parms, short **chann
 }
 #endif
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,u8 extended_prefix_flag,u8 fdd_flag, u16 Nid_cell,u8 tdd_config,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint8_t fdd_flag, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
   int i;
@@ -345,20 +345,20 @@ DCI1E_5MHz_2A_M10PRB_TDD_t  DLSCH_alloc_pdu2_1E[2];
 #define CCCH_RB_ALLOC computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,0,2)
 //#define DLSCH_RB_ALLOC 0x1fbf // ignore DC component,RB13
 //#define DLSCH_RB_ALLOC 0x0001
-void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
+void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
 
   int aa, slot_offset, slot_offset_F;
 
 #ifdef IFFT_FPGA
-  s32 **txdataF2;
+  int32_t **txdataF2;
   int i, l;
 
-  txdataF2    = (s32 **)malloc(2*sizeof(s32*));
-  txdataF2[0] = (s32 *)malloc(NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(s32));
-  txdataF2[1] = (s32 *)malloc(NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(s32));
+  txdataF2    = (int32_t **)malloc(2*sizeof(int32_t*));
+  txdataF2[0] = (int32_t *)malloc(NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(int32_t));
+  txdataF2[1] = (int32_t *)malloc(NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(int32_t));
   
-  bzero(txdataF2[0],NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(s32));
-  bzero(txdataF2[1],NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(s32));
+  bzero(txdataF2[0],NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(int32_t));
+  bzero(txdataF2[1],NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7)*sizeof(int32_t));
   
   slot_offset_F = (next_slot)*(frame_parms->N_RB_DL*12)*((frame_parms->Ncp==1) ? 6 : 7);
   slot_offset = (next_slot)*(frame_parms->samples_per_tti>>1);
@@ -373,9 +373,9 @@ void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot, LTE_DL_FRAME_
     l = slot_offset_F;	
     for (i=0;i<NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7);i++) 
       if ((i%512>=1) && (i%512<=150))
-	txdataF2[aa][i] = ((s32*)mod_table)[txdataF[aa][l++]];
+	txdataF2[aa][i] = ((int32_t*)mod_table)[txdataF[aa][l++]];
       else if (i%512>=362)
-	txdataF2[aa][i] = ((s32*)mod_table)[txdataF[aa][l++]];
+	txdataF2[aa][i] = ((int32_t*)mod_table)[txdataF[aa][l++]];
       else 
 	txdataF2[aa][i] = 0;
     
@@ -441,16 +441,16 @@ int main(int argc, char **argv) {
   double forgetting_factor=0.0; //in [0,1] 0 means a new channel every time, 1 means keep the same channel
   double iqim=0.0;
 
-  u8 extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
-  u16 Nid_cell=0;
+  uint8_t extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
+  uint16_t Nid_cell=0;
 
   int eNB_id = 0, eNB_id_i = NUMBER_OF_eNB_MAX;
   unsigned char mcs,dual_stream_UE = 0,awgn_flag=0,round,dci_flag=0;
   unsigned char i_mod = 2;
   unsigned short NB_RB;
   unsigned char Ns,l,m;
-  u16 tdd_config=3;
-  u16 n_rnti=0x1234;
+  uint16_t tdd_config=3;
+  uint16_t n_rnti=0x1234;
   int n_users = 1;
 
   SCM_t channel_model=Rayleigh1;
@@ -488,13 +488,13 @@ int main(int argc, char **argv) {
   int n_ch_rlz = 1;
   //channel_desc_t *eNB2UE;
   double snr;
-  u8 num_pdcch_symbols=3,num_pdcch_symbols_2=0;
-  u8 pilot1,pilot2,pilot3;
-  u8 rx_sample_offset = 0;
+  uint8_t num_pdcch_symbols=3,num_pdcch_symbols_2=0;
+  uint8_t pilot1,pilot2,pilot3;
+  uint8_t rx_sample_offset = 0;
   //char stats_buffer[4096];
   //int len;
-  u8 num_rounds = 4,fix_rounds=0;
-  u8 subframe=6;
+  uint8_t num_rounds = 4,fix_rounds=0;
+  uint8_t subframe=6;
   int u;
   int abstx=0;
   int iii;
@@ -508,9 +508,9 @@ int main(int argc, char **argv) {
   // int bler;
   double blerr,uncoded_ber,avg_ber;
   short *uncoded_ber_bit;
-  u8 N_RB_DL=25,osf=1;
-  s16 amp;
-  u8 fdd_flag = 0;
+  uint8_t N_RB_DL=25,osf=1;
+  int16_t amp;
+  uint8_t fdd_flag = 0;
 
 	//RELAY SIM PARAMETERS FOR NEW CHANNEL
 #ifdef REL_AMPLIFY_FORWARD
@@ -537,7 +537,7 @@ int main(int argc, char **argv) {
   FD_lte_scope *form;
   char title[255];
 #endif
-  u32 DLSCH_RB_ALLOC = 0x1fff;
+  uint32_t DLSCH_RB_ALLOC = 0x1fff;
 
   signal(SIGSEGV, handler); 
 
@@ -1339,7 +1339,7 @@ tikz_fd = fopen(tikz_fname,"w");
 	      // printf("Did not Crash here 2\n");
 	  
 	      if (transmission_mode == 5) {
-		amp = (s16)(((s32)1024*ONE_OVER_SQRT2_Q15)>>15);
+		amp = (int16_t)(((int32_t)1024*ONE_OVER_SQRT2_Q15)>>15);
 	      }
 	      else
 		amp = 1024;
@@ -1652,8 +1652,8 @@ tikz_fd = fopen(tikz_fname,"w");
 			{
 			  for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			    { 
-			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP/2);
-			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP/2) ;
+			      ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP/2);
+			      ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP/2) ;
 			    }
 			}
 		    }
@@ -1666,8 +1666,8 @@ tikz_fd = fopen(tikz_fname,"w");
 		      {
 			for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			  { 
-			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=AMP/2;
-			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
+			    ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=AMP/2;
+			    ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
 			  }
 		      }
 		  }

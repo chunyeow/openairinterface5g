@@ -20,7 +20,7 @@
 #        include "rlc.h"
 
 typedef volatile struct {
-  u32             e_r;
+  uint32_t             e_r;
   int             timer_poll;
   int             timer_poll_prohibit;
   int             timer_discard;
@@ -30,43 +30,43 @@ typedef volatile struct {
   int             timer_rst;
   int             timer_mrw;
   int             missing_pdu_indicator;
-  u32             pdu_size;
+  uint32_t             pdu_size;
 //      int                                 in_sequence_delivery; // not implemented
-  u8              max_rst;
-  u8              max_dat;
-  u16             poll_pdu;
-  u16             poll_sdu;
-  u8              poll_window;
-  u32             tx_window_size;
-  u32             rx_window_size;
-  u8              max_mrw;
-  u8              last_transmission_pdu_poll_trigger;
-  u8              last_retransmission_pdu_poll_trigger;
+  uint8_t              max_rst;
+  uint8_t              max_dat;
+  uint16_t             poll_pdu;
+  uint16_t             poll_sdu;
+  uint8_t              poll_window;
+  uint32_t             tx_window_size;
+  uint32_t             rx_window_size;
+  uint8_t              max_mrw;
+  uint8_t              last_transmission_pdu_poll_trigger;
+  uint8_t              last_retransmission_pdu_poll_trigger;
   enum RLC_SDU_DISCARD_MODE sdu_discard_mode;
-  u32             send_mrw;
+  uint32_t             send_mrw;
 } AM;
 
 typedef volatile struct {
-  u32             e_r;
-  u32             timer_discard;
-  u32             sdu_discard_mode;
-  u32             segmentation_indication;
-  u32             delivery_of_erroneous_sdu;
+  uint32_t             e_r;
+  uint32_t             timer_discard;
+  uint32_t             sdu_discard_mode;
+  uint32_t             segmentation_indication;
+  uint32_t             delivery_of_erroneous_sdu;
 } TM;
 
 typedef volatile struct {
-  u32             e_r;
-  u32             timer_discard;
-  u32             sdu_discard_mode;
+  uint32_t             e_r;
+  uint32_t             timer_discard;
+  uint32_t             sdu_discard_mode;
 } UM;
 
 typedef volatile struct {
-  u8              logch_identity;
-  u8              mac_logch_priority;
+  uint8_t              logch_identity;
+  uint8_t              mac_logch_priority;
 } MAP_INFO;
 
 typedef volatile struct {
-  u32             rlc_mode;
+  uint32_t             rlc_mode;
   AM              am;
   TM              tm;
   UM              um;
@@ -83,7 +83,7 @@ typedef volatile struct {
   rb_type_t       rb_type;
   RLC_INFO        rlc_info;
   PDCP_INFO       pdcp_info;
-  u16             rb_id;
+  uint16_t             rb_id;
   // Added for OPENAIR MAC
   //LCHAN_DESC      Lchan_desc;
 
@@ -119,21 +119,21 @@ typedef volatile struct {
 
 
 typedef volatile struct {
-  u8              rrm_action;   // ACTION_NULL,ADD,REMOVE,MODIFY
-  u8              rrm_element;  // rb,trch,cctrch
-  u8              rrm_element_index;    // rb/trch/cctrch index
+  uint8_t              rrm_action;   // ACTION_NULL,ADD,REMOVE,MODIFY
+  uint8_t              rrm_element;  // rb,trch,cctrch
+  uint8_t              rrm_element_index;    // rb/trch/cctrch index
 } RRM_COMMAND_MT;
 
 typedef volatile struct {
-  u8              rrm_action;   // ACTION_NULL,ADD,REMOVE,MODIFY
-  u8              mobile;
-  u8              rrm_element;  // rb,trch,cctrch
-  u8              rrm_element_index;    // rb/trch/cctrch index
+  uint8_t              rrm_action;   // ACTION_NULL,ADD,REMOVE,MODIFY
+  uint8_t              mobile;
+  uint8_t              rrm_element;  // rb,trch,cctrch
+  uint8_t              rrm_element_index;    // rb/trch/cctrch index
 } RRM_COMMAND_RG;
 
 
 typedef volatile struct {
-  u8              nb_commands;
+  uint8_t              nb_commands;
   RRM_COMMAND_RG  rrm_commands[JRRM_MAX_COMMANDS_PER_TRANSACTION];
 
 
@@ -143,7 +143,7 @@ typedef volatile struct {
 } RG_CONFIG;
 
 typedef volatile struct {
-  u8              nb_commands;
+  uint8_t              nb_commands;
   RRM_COMMAND_MT  rrm_commands[JRRM_MAX_COMMANDS_PER_TRANSACTION];
 
   RADIOBEARER     bearer[MAX_RB_MOBILE];

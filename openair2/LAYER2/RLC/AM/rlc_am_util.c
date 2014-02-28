@@ -14,14 +14,14 @@
 #include "rlc_am_structs.h"
 #include "mem_block.h"
 //-----------------------------------------------------------------------------
-inline int      rlc_am_comp_sn (struct rlc_am_entity *rlcP, u16_t low_boundaryP, u16 sn1P, u16 sn2P);
+inline int      rlc_am_comp_sn (struct rlc_am_entity *rlcP, uint16_t low_boundaryP, uint16_t sn1P, uint16_t sn2P);
 void            adjust_vr_r_mr (struct rlc_am_entity *rlcP);
 void            adjust_vt_a_ms (struct rlc_am_entity *rlcP);
 void            display_protocol_vars_rlc_am (struct rlc_am_entity *rlcP);
 void            display_retransmission_buffer (struct rlc_am_entity *rlcP);
 void            display_receiver_buffer (struct rlc_am_entity *rlcP);
-void            rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, u8_t * messageP);
-void            rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, u8_t * messageP);
+void            rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP);
+void            rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP);
 void            rlc_am_display_data_pdu7 (mem_block_t * pduP);
 //-----------------------------------------------------------------------------
 #ifdef DEBUG_RLC_AM_CONFIRM
@@ -40,12 +40,12 @@ debug_rlc_am_confirm (struct rlc_am_entity *rlcP, mem_block_t * confP)
 // return -1 if sn1 < sn2
 //-----------------------------------------------------------------------------
 inline int
-rlc_am_comp_sn (struct rlc_am_entity *rlcP, u16_t low_boundaryP, u16 sn1P, u16 sn2P)
+rlc_am_comp_sn (struct rlc_am_entity *rlcP, uint16_t low_boundaryP, uint16_t sn1P, uint16_t sn2P)
 {
 //-----------------------------------------------------------------------------
   // we require that sn are in tx window, if they are not we consider that they are always
   // before low_boundaryP (one loop over the max sn 0x0FFF), never above the boundary
-  u16_t             bound = (low_boundaryP + rlcP->configured_tx_window_size - 1) & SN_12BITS_MASK;
+  uint16_t             bound = (low_boundaryP + rlcP->configured_tx_window_size - 1) & SN_12BITS_MASK;
   if (sn1P == sn2P) {
     return 0;
   }
@@ -120,7 +120,7 @@ adjust_vt_a_ms (struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
 
-  u16_t             vt_a_index, vt_s_index;
+  uint16_t             vt_a_index, vt_s_index;
 
   vt_a_index = rlcP->vt_a % rlcP->recomputed_configured_tx_window_size;
   vt_s_index = rlcP->vt_s % rlcP->recomputed_configured_tx_window_size;
@@ -138,7 +138,7 @@ adjust_vr_r_mr (struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
 
-  u16_t             vr_r_index, vr_h_index;
+  uint16_t             vr_r_index, vr_h_index;
 
   vr_r_index = rlcP->vr_r % rlcP->recomputed_configured_rx_window_size;
   vr_h_index = rlcP->vr_h % rlcP->recomputed_configured_rx_window_size;
@@ -172,8 +172,8 @@ display_retransmission_buffer (struct rlc_am_entity *rlcP)
 {
   //-----------------------------------------------------------------------------
 
-  u16_t             working_sn, working_sn_index;
-  u16_t             end_sn, end_sn_index;
+  uint16_t             working_sn, working_sn_index;
+  uint16_t             end_sn, end_sn_index;
 
   working_sn = rlcP->vt_a;
   working_sn_index = working_sn % rlcP->recomputed_configured_tx_window_size;
@@ -205,8 +205,8 @@ display_receiver_buffer (struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
 
-  u16_t             working_sn, working_sn_index;
-  u16_t             end_sn, end_sn_index;
+  uint16_t             working_sn, working_sn_index;
+  uint16_t             end_sn, end_sn_index;
 
   working_sn = rlcP->vr_r;
   working_sn_index = working_sn % rlcP->recomputed_configured_rx_window_size;
@@ -234,13 +234,13 @@ display_receiver_buffer (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, u8_t * messageP)
+rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP)
 {
 //-----------------------------------------------------------------------------
 
   int             error_found = 0;
-  u16_t             working_sn, working_sn_index;
-  u16_t             end_sn, end_sn_index;
+  uint16_t             working_sn, working_sn_index;
+  uint16_t             end_sn, end_sn_index;
 
   //---------------------------------------------
   // check if pdu remaining outside the window
@@ -294,13 +294,13 @@ rlc_am_check_retransmission_buffer (struct rlc_am_entity *rlcP, u8_t * messageP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, u8_t * messageP)
+rlc_am_check_receiver_buffer (struct rlc_am_entity *rlcP, uint8_t * messageP)
 {
 //-----------------------------------------------------------------------------
 
   int             error_found = 0;
-  u16_t             working_sn, working_sn_index;
-  u16_t             end_sn, end_sn_index;
+  uint16_t             working_sn, working_sn_index;
+  uint16_t             end_sn, end_sn_index;
 
   working_sn = rlcP->vr_h;
   working_sn_index = working_sn % rlcP->recomputed_configured_tx_window_size;
@@ -332,7 +332,7 @@ rlc_am_display_data_pdu7 (mem_block_t * pduP)
   int             index;
   int             nb_li = 0;
   int             li_index = 0;
-  u16_t             li[32];
+  uint16_t             li[32];
 
   if ((pduP)) {
     pdu_mngt = (struct rlc_am_tx_data_pdu_management *) (pduP->data);
@@ -360,7 +360,7 @@ rlc_am_display_data_pdu7 (mem_block_t * pduP)
       msg ("[RLC_AM] DISPLAY DATA PDU CONTAINS LI(s) ");
       nb_li = 0;
       while ((li[nb_li] = (rlc_header->li_data_7[nb_li])) & RLC_E_NEXT_FIELD_IS_LI_E) {
-        li[nb_li] = li[nb_li] & (~(u8_t) RLC_E_NEXT_FIELD_IS_LI_E);
+        li[nb_li] = li[nb_li] & (~(uint8_t) RLC_E_NEXT_FIELD_IS_LI_E);
         nb_li++;
       }
       nb_li++;

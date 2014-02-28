@@ -53,7 +53,7 @@ rlc_um_clear_rx_sdu (rlc_um_entity_t *rlc_pP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_reassembly (u8_t * src_pP, s32_t lengthP, rlc_um_entity_t *rlc_pP, frame_t frameP)
+rlc_um_reassembly (uint8_t * src_pP, int32_t lengthP, rlc_um_entity_t *rlc_pP, frame_t frameP)
 {
 //-----------------------------------------------------------------------------
   sdu_size_t      sdu_max_size;

@@ -41,7 +41,7 @@ PHY_VARS_UE *PHY_vars_UE;
 DCI2_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu2;
 channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,u16 Nid_cell,u8 tdd_config) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t tdd_config) {
 
   unsigned int ind;
   LTE_DL_FRAME_PARMS *lte_frame_parms;

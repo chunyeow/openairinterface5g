@@ -6,17 +6,17 @@
 #include "SIMULATION/RF/defs.h"
 #include <complex.h>
 
-void tv_channel(channel_desc_t *desc,double complex ***H,u16 length);
+void tv_channel(channel_desc_t *desc,double complex ***H,uint16_t length);
 double frand_a_b(double a, double b);
-void tv_conv(double complex **h, double complex *x, double complex *y, u16 nb_samples, u8 nb_taps, int delay);
+void tv_conv(double complex **h, double complex *x, double complex *y, uint16_t nb_samples, uint8_t nb_taps, int delay);
 
 void multipath_tv_channel(channel_desc_t *desc,
 			  double **tx_sig_re, 
 			  double **tx_sig_im, 
 			  double **rx_sig_re,
 			  double **rx_sig_im,
-			  u16 length,
-			  u8 keep_channel) {
+			  uint16_t length,
+			  uint8_t keep_channel) {
   
     double complex **tx,**rx,***H_t,*rx_temp;//, *tv_H_t;
   double path_loss = pow(10,desc->path_loss_dB/20);
@@ -103,7 +103,7 @@ void multipath_tv_channel(channel_desc_t *desc,
 }
 
 //TODO: make phi_rad a parameter of this function
-void tv_channel(channel_desc_t *desc,double complex ***H,u16 length){
+void tv_channel(channel_desc_t *desc,double complex ***H,uint16_t length){
   
   int i,j,p,l,k;
   double *alpha,*phi_rad,pi=acos(-1),*w_Hz;
@@ -169,7 +169,7 @@ for(j=0;j<desc->nb_paths;j++)
 }
 
 // time varying convolution 
-void tv_conv(double complex **h, double complex *x, double complex *y, u16 nb_samples, u8 nb_taps, int dd) {
+void tv_conv(double complex **h, double complex *x, double complex *y, uint16_t nb_samples, uint8_t nb_taps, int dd) {
   
   int i,j;
   for(i=0;i<((int)nb_samples-dd);i++) {

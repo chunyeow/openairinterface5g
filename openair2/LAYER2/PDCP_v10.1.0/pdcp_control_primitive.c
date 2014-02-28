@@ -19,7 +19,7 @@
 #include "debug_l2.h"
 //-----------------------------------------------------------------------------
 void
-configure_pdcp_req (struct pdcp_entity *pdcpP, void *rlcP, u8 rlc_sap_typeP, u8 header_compression_typeP)
+configure_pdcp_req (struct pdcp_entity *pdcpP, void *rlcP, uint8_t rlc_sap_typeP, uint8_t header_compression_typeP)
 {
 //-----------------------------------------------------------------------------
   mem_block      *mb;

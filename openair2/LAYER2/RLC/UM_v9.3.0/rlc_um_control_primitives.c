@@ -82,7 +82,7 @@ void config_req_rlc_um (frame_t         frameP,
   }
 }
 //-----------------------------------------------------------------------------
-u32_t t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
+uint32_t t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
 
 void config_req_rlc_um_asn1 (frame_t            frameP,
                              eNB_flag_t         eNB_flagP,
@@ -96,9 +96,9 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
                              rb_id_t            rb_idP,
                              rb_type_t          rb_typeP)
 {
-  u32_t            ul_sn_FieldLength = 0;
-  u32_t            dl_sn_FieldLength = 0;
-  u32_t            t_Reordering;
+  uint32_t            ul_sn_FieldLength = 0;
+  uint32_t            dl_sn_FieldLength = 0;
+  uint32_t            t_Reordering;
   rlc_um_entity_t *rlc_p               = NULL;
 #if defined(rel10)
   if (mbms_flagP) {
@@ -303,10 +303,10 @@ rlc_um_cleanup (rlc_um_entity_t *rlc_pP)
 //-----------------------------------------------------------------------------
 void rlc_um_configure(rlc_um_entity_t *rlc_pP,
     frame_t          frameP,
-    u32_t            timer_reorderingP,
-    u32_t            rx_sn_field_lengthP,
-    u32_t            tx_sn_field_lengthP,
-    u32_t            is_mXchP)
+    uint32_t            timer_reorderingP,
+    uint32_t            rx_sn_field_lengthP,
+    uint32_t            tx_sn_field_lengthP,
+    uint32_t            is_mXchP)
 //-----------------------------------------------------------------------------
 {
   if (rx_sn_field_lengthP == 10) {

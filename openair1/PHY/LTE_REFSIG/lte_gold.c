@@ -21,7 +21,7 @@ N_{ID}^{cell = 0..503
 //unsigned int lte_gold_table[3][20][2][14];  // need 55 bytes for sequence
 // slot index x pilot within slot x sequence
 
-void lte_gold(LTE_DL_FRAME_PARMS *frame_parms,u32 lte_gold_table[20][2][14],u16 Nid_cell) {
+void lte_gold(LTE_DL_FRAME_PARMS *frame_parms,uint32_t lte_gold_table[20][2][14],uint16_t Nid_cell) {
 
   unsigned char ns,l,Ncp=1-frame_parms->Ncp;
   unsigned int n,x1,x2;//,x1tmp,x2tmp;

@@ -42,28 +42,28 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
 //-----------------------------------------------------------------------------
-u16_t rlc_am_read_bit_field(u8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_readP) {
+uint16_t rlc_am_read_bit_field(uint8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_readP) {
 //-----------------------------------------------------------------------------
-    u16_t        value     = 0;
+    uint16_t        value     = 0;
     unsigned int bits_read = 0;
     do {
            // bits read > bits to read
         if ((8 - *bit_pos_pP) > bits_to_readP) {
            bits_read = 8 - *bit_pos_pP;
-           value = (value << bits_to_readP) | ((((u16_t)(**data_ppP)) & (u16_t)(0x00FF >> *bit_pos_pP)) >> (bits_read -
+           value = (value << bits_to_readP) | ((((uint16_t)(**data_ppP)) & (uint16_t)(0x00FF >> *bit_pos_pP)) >> (bits_read -
 bits_to_readP));
            *bit_pos_pP = *bit_pos_pP + bits_to_readP;
            return value;
            // bits read == bits to read
         } else if ((8 - *bit_pos_pP) == bits_to_readP) {
-           value = (value << bits_to_readP) | (((u16_t)(**data_ppP)) & (u16_t)(0x00FF >> *bit_pos_pP));
+           value = (value << bits_to_readP) | (((uint16_t)(**data_ppP)) & (uint16_t)(0x00FF >> *bit_pos_pP));
            *bit_pos_pP = 0;
            *data_ppP = *data_ppP + 1;
            return value;
            // bits read < bits to read
         } else {
            bits_read = 8 - *bit_pos_pP;
-           value = (value << bits_read) | ((((u16_t)(**data_ppP)) & (u16_t)(0x00FF >> *bit_pos_pP)));
+           value = (value << bits_read) | ((((uint16_t)(**data_ppP)) & (uint16_t)(0x00FF >> *bit_pos_pP)));
            *bit_pos_pP = 0;
            *data_ppP = *data_ppP + 1;
            bits_to_readP = bits_to_readP - bits_read;
@@ -72,7 +72,7 @@ bits_to_readP));
     return value;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_write8_bit_field(u8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_writeP, u8_t valueP) {
+void rlc_am_write8_bit_field(uint8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_writeP, uint8_t valueP) {
 //-----------------------------------------------------------------------------
     unsigned int available_bits;
 
@@ -80,13 +80,13 @@ void rlc_am_write8_bit_field(u8_t** data_ppP, unsigned int* bit_pos_pP, signed i
         available_bits = 8 - *bit_pos_pP;
         // available_bits > bits to write
         if (available_bits > bits_to_writeP) {
-           **data_ppP = **data_ppP | (((valueP & (((u8_t)0xFF) >> (available_bits - bits_to_writeP)))) << (available_bits -
+           **data_ppP = **data_ppP | (((valueP & (((uint8_t)0xFF) >> (available_bits - bits_to_writeP)))) << (available_bits -
 bits_to_writeP));
            *bit_pos_pP = *bit_pos_pP + bits_to_writeP;
            return;
            // bits read == bits to read
         } else if (available_bits == bits_to_writeP) {
-           **data_ppP = **data_ppP | (valueP & (((u8_t)0xFF) >> (8 - bits_to_writeP)));
+           **data_ppP = **data_ppP | (valueP & (((uint8_t)0xFF) >> (8 - bits_to_writeP)));
            *bit_pos_pP = 0;
            *data_ppP = *data_ppP + 1;
            return;
@@ -100,15 +100,15 @@ bits_to_writeP));
     } while (bits_to_writeP > 0);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_write16_bit_field(u8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_writeP, u16_t valueP) {
+void rlc_am_write16_bit_field(uint8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_writeP, uint16_t valueP) {
 //-----------------------------------------------------------------------------
     assert(bits_to_writeP <= 16);
 
     if (bits_to_writeP > 8) {
-        rlc_am_write8_bit_field(data_ppP,bit_pos_pP,  bits_to_writeP - 8, (u8_t)(valueP >> 8));
-        rlc_am_write8_bit_field(data_ppP,bit_pos_pP,  8, (u8_t)(valueP & 0x00FF));
+        rlc_am_write8_bit_field(data_ppP,bit_pos_pP,  bits_to_writeP - 8, (uint8_t)(valueP >> 8));
+        rlc_am_write8_bit_field(data_ppP,bit_pos_pP,  8, (uint8_t)(valueP & 0x00FF));
     } else {
-        rlc_am_write8_bit_field(data_ppP,bit_pos_pP,  bits_to_writeP, (u8_t)(valueP & 0x00FF));
+        rlc_am_write8_bit_field(data_ppP,bit_pos_pP,  bits_to_writeP, (uint8_t)(valueP & 0x00FF));
     }
 }
 //-----------------------------------------------------------------------------
@@ -123,14 +123,14 @@ signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* header_pP, sdu_ssize
     if (!pdu_info_pP->d_c) {
         pdu_info_pP->cpt    = (header_pP->b1 >> 4) & 0x07;
         if (pdu_info_pP->cpt != 0x00) return -3;
-        pdu_info_pP->ack_sn = ((header_pP->b2 >> 2) & 0x3F) | (((u16_t)(header_pP->b1 & 0x0F)) << 6);
+        pdu_info_pP->ack_sn = ((header_pP->b2 >> 2) & 0x3F) | (((uint16_t)(header_pP->b1 & 0x0F)) << 6);
         pdu_info_pP->e1     = (header_pP->b2 >> 1) & 0x01;
         //*total_size_pP -= 1;
 
         if (pdu_info_pP->e1) {
             unsigned int nack_to_read  = 1;
             unsigned int bit_pos       = 7; // range from 0 (MSB/left) to 7 (LSB/right)
-            u8_t*        byte_pos_p      = &header_pP->b2;
+            uint8_t*        byte_pos_p      = &header_pP->b2;
 
             while (nack_to_read)  {
                 pdu_info_pP->nack_list[pdu_info_pP->num_nack].nack_sn = rlc_am_read_bit_field(&byte_pos_p, &bit_pos, 10);
@@ -192,7 +192,7 @@ void rlc_am_display_control_pdu_infos(rlc_am_control_pdu_info_t* pdu_info_pP)
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t*  tb_pP, u8_t** first_byte_ppP, sdu_ssize_t *tb_size_in_bytes_pP)
+void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t*  tb_pP, uint8_t** first_byte_ppP, sdu_ssize_t *tb_size_in_bytes_pP)
 //-----------------------------------------------------------------------------
 {
   rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)*first_byte_ppP;
@@ -300,7 +300,7 @@ void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP,
           rlc_pP->ue_module_id,
           rlc_pP->rb_id);
   }
-  *first_byte_ppP = (u8_t*)((uint64_t)*first_byte_ppP + initial_pdu_size - *tb_size_in_bytes_pP);
+  *first_byte_ppP = (uint8_t*)((uint64_t)*first_byte_ppP + initial_pdu_size - *tb_size_in_bytes_pP);
 
   free_mem_block(tb_pP);
   rlc_am_tx_buffer_display(rlc_pP, frameP, NULL);
@@ -310,7 +310,7 @@ int rlc_am_write_status_pdu(frame_t frameP, rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10
 //-----------------------------------------------------------------------------
 {
   unsigned int bit_pos       = 4; // range from 0 (MSB/left) to 7 (LSB/right)
-  u8_t*        byte_pos_p    = &rlc_am_pdu_sn_10_pP->b1;
+  uint8_t*        byte_pos_p    = &rlc_am_pdu_sn_10_pP->b1;
   unsigned int index         = 0;
   unsigned int num_bytes     = 0;
 
@@ -706,7 +706,7 @@ end_push_nack:
        tb_p = get_free_mem_block(sizeof(struct mac_tb_req) + pdu_size);
   memset(tb_p->data, 0, sizeof(struct mac_tb_req) + pdu_size);
   //estimation only ((struct mac_tb_req*)(tb_p->data))->tb_size  = pdu_size;
-  ((struct mac_tb_req*)(tb_p->data))->data_ptr         = (u8_t*)&(tb_p->data[sizeof(struct mac_tb_req)]);
+  ((struct mac_tb_req*)(tb_p->data))->data_ptr         = (uint8_t*)&(tb_p->data[sizeof(struct mac_tb_req)]);
 
   // warning reuse of pdu_size
   pdu_size = rlc_am_write_status_pdu(frameP,(rlc_am_pdu_sn_10_t*)(((struct mac_tb_req*)(tb_p->data))->data_ptr), &control_pdu_info);

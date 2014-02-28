@@ -86,11 +86,11 @@ protected_rlc_am_timer_poll_retransmit(void rlc_am_stop_and_reset_timer_poll_ret
 */
 protected_rlc_am_timer_poll_retransmit(void rlc_am_start_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, u32_t time_outP)
+/*! \fn void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, uint32_t time_outP)
 * \brief      Initialize the timer Poll-retransmit with RLC AM time-out config parameter.
 * \param[in]  rlc_pP              RLC AM protocol instance pointer.
 * \param[in]  time_outP         Time-out in frame units.
 */
-protected_rlc_am_timer_poll_retransmit(void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, u32_t time_outP);)
+protected_rlc_am_timer_poll_retransmit(void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, uint32_t time_outP);)
 /** @} */
 #endif

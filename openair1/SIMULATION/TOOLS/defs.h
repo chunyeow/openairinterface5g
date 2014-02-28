@@ -21,17 +21,17 @@ The present clause specifies several numerical functions for testing of digital 
 
 typedef struct {
   ///Number of tx antennas
-  u8 nb_tx; 
+  uint8_t nb_tx; 
   ///Number of rx antennas
-  u8 nb_rx;
+  uint8_t nb_rx;
   ///number of taps
-  u8 nb_taps; 
+  uint8_t nb_taps; 
   ///linear amplitudes of taps
   double *amps; 
   ///Delays of the taps in mus. length(delays)=nb_taps. Has to be between 0 and Td. 
   double *delays; 
   ///length of impulse response. should be set to 11+2*bw*t_max 
-  u8 channel_length; 
+  uint8_t channel_length; 
   ///channel state vector. size(state) = nb_taps * (n_tx * n_rx);
   struct complex **a; 
   ///interpolated (sample-spaced) channel impulse response. size(ch) = (n_tx * n_rx) * channel_length. ATTENTION: the dimensions of ch are the transposed ones of a. This is to allow the use of BLAS when applying the correlation matrices to the state.
@@ -47,7 +47,7 @@ typedef struct {
   ///Angle of arrival of wavefront (in radians). For Ricean channel only. This assumes that both RX and TX have linear antenna arrays with lambda/2 antenna spacing. Furhter it is assumed that the arrays are parallel to each other and that they are far enough apart so that we can safely assume plane wave propagation.  
   double aoa; 
   ///If set to 1, aoa is randomized according to a uniform random distribution 
-  s8 random_aoa;
+  int8_t random_aoa;
   ///in Hz. if >0 generate a channel with a Clarke's Doppler profile with a maximum Doppler bandwidth max_Doppler. CURRENTLY NOT IMPLEMENTED!
   double max_Doppler; 
   ///Square root of the full correlation matrix size(R_tx) = nb_taps * (n_tx * n_rx) * (n_tx * n_rx).
@@ -55,15 +55,15 @@ typedef struct {
   ///path loss including shadow fading in dB 
   double path_loss_dB;
   ///additional delay of channel in samples. 
-  s32 channel_offset; 
+  int32_t channel_offset; 
   ///This parameter (0...1) allows for simple 1st order temporal variation. 0 means a new channel every call, 1 means keep channel constant all the time
   double forgetting_factor;
   ///needs to be set to 1 for the first call, 0 otherwise.
-  u8 first_run;
+  uint8_t first_run;
   /// initial phase for frequency offset simulation 
   double ip;
   /// number of paths taken by transmit signal
-  u16 nb_paths; 
+  uint16_t nb_paths; 
   /// timing measurements
   time_stats_t random_channel;
   time_stats_t interp_time;
@@ -73,7 +73,7 @@ typedef struct {
 
 typedef struct {
   /// Number of sectors (set to 1 in case of an omnidirectional antenna)
-  u8 n_sectors;
+  uint8_t n_sectors;
   /// Antenna orientation for each sector (for non-omnidirectional antennas) in radians wrt north
   double alpha_rad[3];
   /// Antenna 3dB beam width (in radians) 
@@ -169,14 +169,14 @@ typedef enum {
 \param random_aoa If set to 1, AoA of ricean component is randomized
 */
 
-//channel_desc_t *new_channel_desc(u8 nb_tx,u8 nb_rx, u8 nb_taps, u8 channel_length, double *amps, double* delays, struct complex** R_sqrt, double Td, double BW, double ricean_factor, double aoa, double forgetting_factor, double max_Doppler, s32 channel_offset, double path_loss_dB,u8 random_aoa);
+//channel_desc_t *new_channel_desc(uint8_t nb_tx,uint8_t nb_rx, uint8_t nb_taps, uint8_t channel_length, double *amps, double* delays, struct complex** R_sqrt, double Td, double BW, double ricean_factor, double aoa, double forgetting_factor, double max_Doppler, int32_t channel_offset, double path_loss_dB,uint8_t random_aoa);
 
-channel_desc_t *new_channel_desc_scm(u8 nb_tx,
-				     u8 nb_rx, 
+channel_desc_t *new_channel_desc_scm(uint8_t nb_tx,
+				     uint8_t nb_rx, 
 				     SCM_t channel_model, 
 				     double BW, 
 				     double forgetting_factor,
-				     s32 channel_offset, 
+				     int32_t channel_offset, 
 				     double path_loss_dB);
 
 
@@ -185,15 +185,15 @@ channel_desc_t *new_channel_desc_scm(u8 nb_tx,
 \brief This routine generates a random channel response (time domain) according to a tapped delay line model. 
 \param desc Pointer to the channel descriptor
 */
-int random_channel(channel_desc_t *desc, u8 abstraction_flag);
+int random_channel(channel_desc_t *desc, uint8_t abstraction_flag);
 
 /**\fn void multipath_channel(channel_desc_t *desc,
 		       double **tx_sig_re, 
 		       double **tx_sig_im, 
 		       double **rx_sig_re,
 		       double **rx_sig_im,
-		       u32 length,
-		       u8 keep_channel)
+		       uint32_t length,
+		       uint8_t keep_channel)
 
 \brief This function generates and applys a random frequency selective random channel model.
 @param desc Pointer to channel descriptor
@@ -210,15 +210,15 @@ void multipath_channel(channel_desc_t *desc,
 		       double **tx_sig_im, 
 		       double **rx_sig_re,
 		       double **rx_sig_im,
-		       u32 length,
-		       u8 keep_channel);
+		       uint32_t length,
+		       uint8_t keep_channel);
 /*
 \fn double compute_pbch_sinr(channel_desc_t *desc,
                              channel_desc_t *desc_i1, 
 			     channel_desc_t *desc_i2,
 			     double snr_dB,double snr_i1_dB,
 			     double snr_i2_dB,
-			     u16 nb_rb)
+			     uint16_t nb_rb)
 
 \brief This function computes the average SINR over all frequency resources of the PBCH.  It is used for PHY abstraction of the PBCH BLER
 @param desc Pointer to channel descriptor of eNB
@@ -234,14 +234,14 @@ double compute_pbch_sinr(channel_desc_t *desc,
 			 channel_desc_t *desc_i2,
 			 double snr_dB,double snr_i1_dB,
 			 double snr_i2_dB,
-			 u16 nb_rb);
+			 uint16_t nb_rb);
 
 double compute_sinr(channel_desc_t *desc,
 			 channel_desc_t *desc_i1, 
 			 channel_desc_t *desc_i2,
 			 double snr_dB,double snr_i1_dB,
 			 double snr_i2_dB,
-			 u16 nb_rb);
+			 uint16_t nb_rb);
 
 double pbch_bler(double sinr);
 
@@ -323,16 +323,16 @@ int gauss(unsigned int *gauss_LUT,unsigned char Nbits);
 double gaussdouble(double,double);
 void randominit(unsigned int seed_init);
 double uniformrandom(void);
-void freq_channel(channel_desc_t *desc,u16 nb_rb, s16 n_samples);
-void init_freq_channel(channel_desc_t *desc,u16 nb_rb,s16 n_samples);
-u8 multipath_channel_nosigconv(channel_desc_t *desc);
+void freq_channel(channel_desc_t *desc,uint16_t nb_rb, int16_t n_samples);
+void init_freq_channel(channel_desc_t *desc,uint16_t nb_rb,int16_t n_samples);
+uint8_t multipath_channel_nosigconv(channel_desc_t *desc);
 void multipath_tv_channel(channel_desc_t *desc,
 		       double **tx_sig_re, 
 		       double **tx_sig_im, 
 		       double **rx_sig_re,
 		       double **rx_sig_im,
-		       u16 length,
-		       u8 keep_channel);
+		       uint16_t length,
+		       uint8_t keep_channel);
 
 /**@} */
 /**@} */

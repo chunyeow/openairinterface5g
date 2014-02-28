@@ -31,7 +31,7 @@ struct pdcp_entity {
   //struct list     output_sdu_list;
 
 #ifdef ROHC
-  void            (*pdcp_process_input_sdus) (struct pdcp_entity *pdcpP, u16 data_sizeP, mem_block * sduP);
+  void            (*pdcp_process_input_sdus) (struct pdcp_entity *pdcpP, uint16_t data_sizeP, mem_block * sduP);
 #else
   void            (*pdcp_process_input_sdus) (struct pdcp_entity *pdcpP);
 #endif

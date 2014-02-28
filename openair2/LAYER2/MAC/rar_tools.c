@@ -56,9 +56,9 @@ extern inline unsigned int taus(void);
 
 unsigned short fill_rar(module_id_t module_idP,
                         frame_t frameP,
-                        u8 *dlsch_buffer,
-                        u16 N_RB_UL,
-                        u8 input_buffer_length) {
+                        uint8_t *dlsch_buffer,
+                        uint16_t N_RB_UL,
+                        uint8_t input_buffer_length) {
 
   RA_HEADER_RAPID *rarh = (RA_HEADER_RAPID *)dlsch_buffer;
   //  RAR_PDU *rar = (RAR_PDU *)(dlsch_buffer+1);
@@ -125,7 +125,7 @@ unsigned short fill_rar(module_id_t module_idP,
   return(eNB_mac_inst[module_idP].RA_template[ra_idx].rnti);
 }
 
-uint16_t ue_process_rar(module_id_t module_idP, frame_t frameP, u8 *dlsch_buffer,rnti_t *t_crnti,u8 preamble_index) {
+uint16_t ue_process_rar(module_id_t module_idP, frame_t frameP, uint8_t *dlsch_buffer,rnti_t *t_crnti,uint8_t preamble_index) {
 
   RA_HEADER_RAPID *rarh = (RA_HEADER_RAPID *)dlsch_buffer;
   //  RAR_PDU *rar = (RAR_PDU *)(dlsch_buffer+1);

@@ -43,5 +43,5 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #        include "platform_types.h"
 #        include "rlc_tm_entity.h"
 //-----------------------------------------------------------------------------
-extern int      rlc_tm_fsm_notify_event (struct rlc_tm_entity *rlcP, u8_t eventP);
+extern int      rlc_tm_fsm_notify_event (struct rlc_tm_entity *rlcP, uint8_t eventP);
 #    endif

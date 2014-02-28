@@ -12,5 +12,5 @@
 //-----------------------------------------------------------------------------
 #        include "platform_types.h"
 //-----------------------------------------------------------------------------
-extern void     rlc_am_status_report_from_mac (void *rlcP, u16_t eventP);
+extern void     rlc_am_status_report_from_mac (void *rlcP, uint16_t eventP);
 #    endif

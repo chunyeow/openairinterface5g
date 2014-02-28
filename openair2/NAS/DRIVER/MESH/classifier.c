@@ -56,7 +56,7 @@
 
 //---------------------------------------------------------------------------
 // Add a new classifier rule (send direction)
-struct classifier_entity *nas_CLASS_add_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
+struct classifier_entity *nas_CLASS_add_sclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref){
   //---------------------------------------------------------------------------
   struct classifier_entity *gc;
 
@@ -93,8 +93,8 @@ struct classifier_entity *nas_CLASS_add_sclassifier(struct cx_entity *cx, u8 dsc
 
 //---------------------------------------------------------------------------
 // Add a new classifier rule (receive direction)
-struct classifier_entity *nas_CLASS_add_rclassifier(u8 dscp, 
-						    u16 classref,
+struct classifier_entity *nas_CLASS_add_rclassifier(uint8_t dscp, 
+						    uint16_t classref,
 						    struct nas_priv *gpriv){
   //---------------------------------------------------------------------------
   struct classifier_entity *gc;
@@ -125,7 +125,7 @@ struct classifier_entity *nas_CLASS_add_rclassifier(u8 dscp,
 
 //---------------------------------------------------------------------------
 // Add a new classifier rule (forwarding)
-struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
+struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref){
   //---------------------------------------------------------------------------
   struct classifier_entity *gc;
 #ifdef NAS_DEBUG_CLASS
@@ -162,7 +162,7 @@ struct classifier_entity *nas_CLASS_add_fclassifier(struct cx_entity *cx, u8 dsc
 //---------------------------------------------------------------------------
 void nas_CLASS_flush_sclassifier(struct cx_entity *cx){
   //---------------------------------------------------------------------------
-  u8 dscpi;
+  uint8_t dscpi;
   struct classifier_entity *gc;
 #ifdef NAS_DEBUG_CLASS
   printk("NAS_CLASS_FLUSH_SCLASSIFIER: begin\n");
@@ -190,7 +190,7 @@ void nas_CLASS_flush_sclassifier(struct cx_entity *cx){
 //---------------------------------------------------------------------------
 void nas_CLASS_flush_fclassifier(struct cx_entity *cx){
   //---------------------------------------------------------------------------
-  u8 dscpi;
+  uint8_t dscpi;
   struct classifier_entity *gc;
 #ifdef NAS_DEBUG_CLASS
   printk("NAS_CLASS_FLUSH_FCLASSIFIER: begin\n");
@@ -219,7 +219,7 @@ void nas_CLASS_flush_fclassifier(struct cx_entity *cx){
 //---------------------------------------------------------------------------
 void nas_CLASS_flush_rclassifier(struct nas_priv *gpriv){
   //---------------------------------------------------------------------------
-  u8 dscpi;
+  uint8_t dscpi;
   struct classifier_entity *gc;
 #ifdef NAS_DEBUG_CLASS
   printk("NAS_CLASS_FLUSH_RCLASSIFIER: begin\n");
@@ -240,7 +240,7 @@ void nas_CLASS_flush_rclassifier(struct nas_priv *gpriv){
 
 //---------------------------------------------------------------------------
 // Delete a classifier rule (send direction)
-void nas_CLASS_del_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
+void nas_CLASS_del_sclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref){
   //---------------------------------------------------------------------------
   struct classifier_entity *p,*np;
 #ifdef NAS_DEBUG_CLASS
@@ -280,7 +280,7 @@ void nas_CLASS_del_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
 
 //---------------------------------------------------------------------------
 // Delete a classifier rule (send direction)
-void nas_CLASS_del_fclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
+void nas_CLASS_del_fclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref){
   //---------------------------------------------------------------------------
   struct classifier_entity *p,*np;
 #ifdef NAS_DEBUG_CLASS
@@ -320,7 +320,7 @@ void nas_CLASS_del_fclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
 
 //---------------------------------------------------------------------------
 // Delete a classifier rule (receive direction)
-void nas_CLASS_del_rclassifier(u8 dscp, u16 classref,struct nas_priv *gpriv){
+void nas_CLASS_del_rclassifier(uint8_t dscp, uint16_t classref,struct nas_priv *gpriv){
   //---------------------------------------------------------------------------
   struct classifier_entity *p,*np;
 #ifdef NAS_DEBUG_CLASS
@@ -438,7 +438,7 @@ struct cx_entity *nas_CLASS_cx4(struct sk_buff *skb,
   //---------------------------------------------------------------------------
   unsigned char cxi;
   unsigned char *addr;
-  u32 daddr;
+  uint32_t daddr;
   struct cx_entity *default_ip=NULL;
   struct classifier_entity *p=NULL;
   
@@ -566,9 +566,9 @@ struct cx_entity *nas_CLASS_MPLS(struct sk_buff *skb,
 void nas_CLASS_send(struct sk_buff *skb,int inst){
   //---------------------------------------------------------------------------
   struct classifier_entity *p, *sp;
-  u8 *protocolh,version;
-  u8 protocol, dscp, exp,label;
-  u16 classref;
+  uint8_t *protocolh,version;
+  uint8_t protocol, dscp, exp,label;
+  uint16_t classref;
   struct cx_entity *cx;
   unsigned int i;
 

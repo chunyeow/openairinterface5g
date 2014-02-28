@@ -3675,11 +3675,11 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 }
 
 
-double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, u8 eNB_id){
-  u8 transmission_mode = phy_vars_ue->transmission_mode[eNB_id];
+double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id){
+  uint8_t transmission_mode = phy_vars_ue->transmission_mode[eNB_id];
   PHY_MEASUREMENTS *meas = &phy_vars_ue->PHY_measurements;
   LTE_DL_FRAME_PARMS *frame_parms =  &phy_vars_ue->lte_frame_parms;
-  s32 **dl_channel_est = phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id];
+  int32_t **dl_channel_est = phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id];
   double *s_dB;
   s_dB = phy_vars_ue->sinr_CQI_dB;   
   //  LTE_UE_ULSCH_t *ulsch  = phy_vars_ue->ulsch_ue[eNB_id]; 
@@ -3690,8 +3690,8 @@ double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, u8 eNB_id){
   double channely=0;
   double channelx_i=0;
   double channely_i=0;
-  u16 q = quantize_subband_pmi(meas,eNB_id);
-  u8 qq;
+  uint16_t q = quantize_subband_pmi(meas,eNB_id);
+  uint8_t qq;
   
   switch(transmission_mode){
   case 1:
@@ -3701,7 +3701,7 @@ double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, u8 eNB_id){
 	  { 
 	    for (a_rx=0;a_rx<frame_parms->nb_antennas_rx;a_rx++)
 	      {
-		s_dB[count] = 10*log10(pow(((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2],2) + pow(((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2],2)) - meas->n0_power_avg_dB;    
+		s_dB[count] = 10*log10(pow(((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2],2) + pow(((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2],2)) - meas->n0_power_avg_dB;    
 	      }
 	  }
       }
@@ -3713,7 +3713,7 @@ double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, u8 eNB_id){
 	  { 
 	    for (a_rx=0;a_rx<frame_parms->nb_antennas_rx;a_rx++)
 	      {
-		abs_channel += (pow(((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2],2) + pow(((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2],2)); 
+		abs_channel += (pow(((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2],2) + pow(((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2],2)); 
 	      }
 	  }
 	s_dB[count] = 10*log10(abs_channel/2) - meas->n0_power_avg_dB;
@@ -3734,62 +3734,62 @@ double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, u8 eNB_id){
 	      switch(qq){
 	      case 0:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		  channelx_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
 		}
 		else
 		  {
-		    channelx += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channely += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channelx_i -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channely_i -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
+		    channelx += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channely += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx_i -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channely_i -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
 		  }
 		break;
 	      case 1:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		  channelx_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
 		}
 		else
 		  {
-		    channelx -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channely -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channelx_i += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channely_i += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
+		    channelx -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channely -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx_i += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channely_i += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
 		  }
 		break;
 	      case 2:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		  channelx_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
 		}
 		else
 		  {
-		    channelx -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channely += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channelx_i += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channely_i -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];	
+		    channelx -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channely += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx_i += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channely_i -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];	
 		  }
 		break;
 	      case 3:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		  channelx_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely_i = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely_i = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];	
 		}
 		else
 		  {
-		    channelx += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channely -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channelx_i -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channely_i += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];	
+		    channelx += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channely -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx_i -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channely_i += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];	
 		  }
 		break;
 	      default:
@@ -3815,46 +3815,46 @@ double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, u8 eNB_id){
 	      switch(qq){
 	      case 0:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
 		}
 		else
 		  {
-		    channelx += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channely += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channely += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
 		  }
 		break; 
 	      case 1:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
 		}
 		else
 		  {
-		    channelx -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		    channely -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channely -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
 		  }
 		break;
 	      case 2:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
 		}
 		else
 		  {
-		    channelx -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channely += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channely += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
 		  }
 		break;
 	      case 3:
 		if (channelx==0 || channely==0){
-		  channelx = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
-		  channely = ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		  channelx = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		  channely = ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
 		}
 		else
 		  {
-		    channelx += ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
-		    channely -= ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
+		    channelx += ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+1+(LTE_CE_FILTER_LENGTH)*2];
+		    channely -= ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count+(LTE_CE_FILTER_LENGTH)*2];
 		  }
 		break;
 	      default:

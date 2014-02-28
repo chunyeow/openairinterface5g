@@ -55,7 +55,7 @@
 #include <net/udp.h>
 
 
-void nas_COMMON_receive(u16 dlen, 
+void nas_COMMON_receive(uint16_t dlen, 
 			void *pdcp_sdu,
 			int inst,
 			struct classifier_entity *rclass,
@@ -65,7 +65,7 @@ void nas_COMMON_receive(u16 dlen,
   struct sk_buff *skb;
   struct ipversion *ipv;
   struct nas_priv *gpriv=netdev_priv(nasdev[inst]);
-  u32 odaddr,osaddr;
+  uint32_t odaddr,osaddr;
 
   int i;
 
@@ -75,7 +75,7 @@ void nas_COMMON_receive(u16 dlen,
 
   struct udphdr *uh;
   struct tcphdr *th;
-  u16 *cksum,check;
+  uint16_t *cksum,check;
 
   struct iphdr *network_header; 
 
@@ -244,10 +244,10 @@ void nas_COMMON_receive(u16 dlen,
 	  case IPPROTO_TCP:
 
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-	    cksum  = (u16*)&(((struct tcphdr*)((network_header + (network_header->ihl<<2))))->check);
+	    cksum  = (uint16_t*)&(((struct tcphdr*)((network_header + (network_header->ihl<<2))))->check);
 	    //check  = csum_tcpudp_magic(((struct iphdr *)network_header)->saddr, ((struct iphdr *)network_header)->daddr, tcp_hdrlen(skb), IPPROTO_TCP, ~(*cksum));	    
 #else
-	    cksum  = (u16*)&(((struct tcphdr*)((skb->data + (skb->nh.iph->ihl<<2))))->check);
+	    cksum  = (uint16_t*)&(((struct tcphdr*)((skb->data + (skb->nh.iph->ihl<<2))))->check);
 	    //check  = csum_tcpudp_magic(((struct iphdr *)skb->data)->saddr, ((struct iphdr *)skb->data)->daddr,tcp_hdrlen(skb), IPPROTO_TCP, ~(*cksum));
 #endif
 
@@ -274,10 +274,10 @@ void nas_COMMON_receive(u16 dlen,
 	  case IPPROTO_UDP:
 
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-	    cksum  = (u16*)&(((struct udphdr*)((network_header + (network_header->ihl<<2))))->check);
+	    cksum  = (uint16_t*)&(((struct udphdr*)((network_header + (network_header->ihl<<2))))->check);
 	    // check = csum_tcpudp_magic(((struct iphdr *)network_header)->saddr, ((struct iphdr *)network_header)->daddr, udp_hdr(skb)->len, IPPROTO_UDP, ~(*cksum));
 #else		
-	    cksum  = (u16*)&(((struct udphdr*)((skb->data + (skb->nh.iph->ihl<<2))))->check);
+	    cksum  = (uint16_t*)&(((struct udphdr*)((skb->data + (skb->nh.iph->ihl<<2))))->check);
 	    //check = csum_tcpudp_magic(((struct iphdr *)skb->data)->saddr, ((struct iphdr *)skb->data)->daddr, udp_hdr(skb)->len, IPPROTO_UDP, ~(*cksum));
 #endif 
 #ifdef NAS_DEBUG_RECEIVE
@@ -477,7 +477,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
 //---------------------------------------------------------------------------
 void nas_COMMON_QOS_receive(){
   //---------------------------------------------------------------------------
-  u8 sapi;
+  uint8_t sapi;
   struct pdcp_data_ind_header_s     pdcph;
   unsigned char data_buffer[2048];
   struct classifier_entity *rclass;
@@ -670,7 +670,7 @@ void nas_COMMON_flush_rb(struct cx_entity *cx){
   //---------------------------------------------------------------------------
   struct rb_entity *rb;
   struct classifier_entity *gc;
-  u8 dscp;
+  uint8_t dscp;
   // End debug information
 #ifdef NAS_DEBUG_CLASS
   printk("NAS_COMMON_FLUSH_RB - begin\n");

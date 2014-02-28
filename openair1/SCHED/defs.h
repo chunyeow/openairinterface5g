@@ -58,58 +58,58 @@ enum openair_SYNCH_STATUS {
 
 
 typedef struct {
-  u8 is_eNB;
-  u8 mode;
-  u8 synch_source;
-  u32  slot_count;
-  u32  sched_cnt;
-  u32  synch_wait_cnt;
-  u32  sync_state;
-  u32  scheduler_interval_ns;
-  u32  last_adac_cnt;
-  u8 first_sync_call;
-  s32  instance_cnt;
-  u8 one_shot_get_frame;
-  u8 do_synch;
-  u8 node_configured;  // &1..basic config, &3..ue config &5..eNb config
-  u8 node_running;
-  u8 tx_test;
-  u8 mac_registered;
-  //u8 freq;
-  u32  freq;
-  u32  rx_gain_val;
-  u32  rx_gain_mode;
-  u32  tcxo_dac;
-  u32  auto_freq_correction;
-  s32  freq_offset;
-  u32  tx_rx_switch_point;
-  u32  manual_timing_advance;  /// 1 to override automatic timing advance
-  u32  timing_advance;
-  u32  dual_tx;                /// 1 for dual-antenna TX, 0 for single-antenna TX
-  u32  tdd;                    /// 1 for TDD mode, 0 for FDD mode
-  u32  rx_rf_mode;
-  u32  node_id;
-  u32  rach_detection_count;
-  u32  channel_vacant[4];  
-  u32  target_ue_dl_mcs;
-  u32  target_ue_ul_mcs;
-  u32  ue_ul_nb_rb;
-  u32  ue_dl_rb_alloc;
-  u32  dlsch_rate_adaptation;
-  u32  dlsch_transmission_mode;
-  u32  ulsch_allocation_mode;
-  u32  rx_total_gain_dB;
-  u32  hw_frame;
-  u32  get_frame_done;
-  u32  use_ia_receiver;
+  boolean_t  is_eNB;
+  uint8_t    mode;
+  uint8_t    synch_source;
+  uint32_t   slot_count;
+  uint32_t   sched_cnt;
+  uint32_t   synch_wait_cnt;
+  uint32_t   sync_state;
+  uint32_t   scheduler_interval_ns;
+  uint32_t   last_adac_cnt;
+  uint8_t    first_sync_call;
+  int32_t    instance_cnt;
+  uint8_t    one_shot_get_frame;
+  uint8_t    do_synch;
+  uint8_t    node_configured;  // &1..basic config, &3..ue config &5..eNb config
+  uint8_t    node_running;
+  uint8_t    tx_test;
+  uint8_t    mac_registered;
+  //uint8_t freq;
+  uint32_t   freq;
+  uint32_t   rx_gain_val;
+  uint32_t   rx_gain_mode;
+  uint32_t   tcxo_dac;
+  uint32_t   auto_freq_correction;
+  int32_t    freq_offset;
+  uint32_t   tx_rx_switch_point;
+  uint32_t   manual_timing_advance;  /// 1 to override automatic timing advance
+  uint32_t   timing_advance;
+  uint32_t   dual_tx;                /// 1 for dual-antenna TX, 0 for single-antenna TX
+  uint32_t   tdd;                    /// 1 for TDD mode, 0 for FDD mode
+  uint32_t   rx_rf_mode;
+  uint32_t   node_id;
+  uint32_t   rach_detection_count;
+  uint32_t   channel_vacant[4];
+  uint32_t   target_ue_dl_mcs;
+  uint32_t   target_ue_ul_mcs;
+  uint32_t   ue_ul_nb_rb;
+  uint32_t   ue_dl_rb_alloc;
+  uint32_t   dlsch_rate_adaptation;
+  uint32_t   dlsch_transmission_mode;
+  uint32_t   ulsch_allocation_mode;
+  uint32_t   rx_total_gain_dB;
+  uint32_t   hw_frame;
+  uint32_t   get_frame_done;
+  uint32_t   use_ia_receiver;
 } OPENAIR_DAQ_VARS;
 
 #ifndef USER_MODE
-s32 openair_sched_init(void);
+int32_t openair_sched_init(void);
 void openair_sched_cleanup(void);
 void openair_sched_exit(char *);
 void openair1_restart(void);
-s32 init_dlsch_threads(void); 
+int32_t init_dlsch_threads(void); 
 void cleanup_dlsch_threads(void); 
 #endif //USER_MODE
 
@@ -128,7 +128,7 @@ void cleanup_dlsch_threads(void);
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
   @param *phy_vars_rn pointer to RN variables
 */
-void phy_procedures_eNB_lte(u8 last_slot, u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag, relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn);
+void phy_procedures_eNB_lte(uint8_t last_slot, uint8_t next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag, relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn);
 /*!
   \brief Top-level entry routine for UE procedures.  Called every slot by process scheduler. In even slots, it performs RX functions from previous subframe (if required).  On odd slots, it generate TX waveform for the following subframe.
   @param last_slot Index of last slot (0-19)
@@ -140,7 +140,7 @@ void phy_procedures_eNB_lte(u8 last_slot, u8 next_slot,PHY_VARS_eNB *phy_vars_eN
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
   @param *phy_vars_rn pointer to RN variables
 */
-void phy_procedures_UE_lte(u8 last_slot, u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
+void phy_procedures_UE_lte(uint8_t last_slot, uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,runmode_t mode,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
 
 #ifdef Rel10  
 /*!
@@ -168,7 +168,7 @@ int phy_procedures_RN_UE_RX(unsigned char last_slot, unsigned char next_slot, re
   @param mode calib/normal mode
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type);
+void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,runmode_t mode,relaying_type_t r_type);
 /*!
   \brief Scheduling for UE RX procedures in normal subframes.  
   @param last_slot Index of last slot (0-19)
@@ -179,7 +179,7 @@ void phy_procedures_UE_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abs
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
   @param phy_vars_rn pointer to RN variables
 */
-int phy_procedures_UE_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,runmode_t mode,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
+int phy_procedures_UE_RX(uint8_t last_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,runmode_t mode,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
 
 /*!
   \brief Scheduling for UE TX procedures in TDD S-subframes.  
@@ -189,7 +189,7 @@ int phy_procedures_UE_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abst
   @param abstraction_flag Indicator of PHY abstraction
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag,relaying_type_t r_type);
+void phy_procedures_UE_S_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for UE RX procedures in TDD S-subframes.  
@@ -199,7 +199,7 @@ void phy_procedures_UE_S_TX(u8 next_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 a
   @param abstraction_flag Indicator of PHY abstraction
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_UE_S_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 abstraction_flag, relaying_type_t r_type);
+void phy_procedures_UE_S_RX(uint8_t last_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t abstraction_flag, relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB TX procedures in normal subframes.  
@@ -209,7 +209,7 @@ void phy_procedures_UE_S_RX(u8 last_slot,PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 a
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
   @param phy_vars_rn pointer to the RN variables
 */
-void phy_procedures_eNB_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
+void phy_procedures_eNB_TX(uint8_t next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn);
 
 /*!
   \brief Scheduling for eNB RX procedures in normal subframes.  
@@ -218,7 +218,7 @@ void phy_procedures_eNB_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstractio
   @param abstraction_flag Indicator of PHY abstraction
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
+void phy_procedures_eNB_RX(uint8_t last_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB TX procedures in TDD S-subframes.  
@@ -227,7 +227,7 @@ void phy_procedures_eNB_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstractio
   @param abstraction_flag Indicator of PHY abstraction
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_S_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
+void phy_procedures_eNB_S_TX(uint8_t next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Scheduling for eNB RX procedures in TDD S-subframes.  
@@ -236,7 +236,7 @@ void phy_procedures_eNB_S_TX(u8 next_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstract
   @param abstraction_flag Indicator of PHY abstraction
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
 */
-void phy_procedures_eNB_S_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag,relaying_type_t r_type);
+void phy_procedures_eNB_S_RX(uint8_t last_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type);
 
 /*!
   \brief Function to compute subframe type as a function of Frame type and TDD Configuration (implements Table 4.2.2 from 36.211, p.11 from version 8.6) and subframe index.
@@ -244,7 +244,7 @@ void phy_procedures_eNB_S_RX(u8 last_slot,PHY_VARS_eNB *phy_vars_eNB,u8 abstract
   @param subframe Subframe index
   @returns Subframe type (DL,UL,S) 
 */
-lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,u8 subframe);
+lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe);
 
 /*!
   \brief Function to compute subframe type as a function of Frame type and TDD Configuration (implements Table 4.2.2 from 36.211, p.11 from version 8.6) and subframe index.  Same as subframe_select, except that it uses the Mod_id and is provided as a service to the MAC scheduler.
@@ -252,7 +252,7 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,u8 subframe);
   @param subframe Subframe index
   @returns Subframe type (DL,UL,S) 
 */
-lte_subframe_t get_subframe_direction(u8 Mod_id, u8 subframe);
+lte_subframe_t get_subframe_direction(uint8_t Mod_id, uint8_t subframe);
 
 /*!
   \brief Function to indicate PHICH transmission subframes.  Implements Table 9.1.2-1 for TDD.
@@ -260,7 +260,7 @@ lte_subframe_t get_subframe_direction(u8 Mod_id, u8 subframe);
   @param subframe Subframe index
   @returns 1 if PHICH can be transmitted in subframe (always 1 for FDD)
 */
-u32 is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 subframe);
+uint32_t is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe);
 
 /*!
   \brief Function to compute timing of Msg3 transmission on UL-SCH (first UE transmission in RA procedure). This implements the timing in paragraph a) from Section 6.1.1 in 36.213 (p. 17 in version 8.6).  Used by eNB upon transmission of random-access response (RA_RNTI) to program corresponding ULSCH reception procedure.  Used by UE upon reception of random-access response (RA_RNTI) to program corresponding ULSCH transmission procedure.  This does not support the UL_delay field in RAR (always assumed to be 0).
@@ -271,10 +271,10 @@ u32 is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 subframe);
   @param subframe subframe index where Msg3 is to be transmitted (n, n+1 or n+2)
 */
 void get_Msg3_alloc(LTE_DL_FRAME_PARMS *frame_parms,
-		    u8 current_subframe, 
-		    u32 current_frame,
-		    u32 *frame,
-		    u8 *subframe);
+		    uint8_t current_subframe, 
+		    uint32_t current_frame,
+		    uint32_t *frame,
+		    uint8_t *subframe);
 
 /*!
   \brief Function to compute timing of Msg3 retransmission on UL-SCH (first UE transmission in RA procedure). 
@@ -285,10 +285,10 @@ void get_Msg3_alloc(LTE_DL_FRAME_PARMS *frame_parms,
   @param subframe subframe index where Msg3 is to be transmitted (n, n+1 or n+2)
 */
 void get_Msg3_alloc_ret(LTE_DL_FRAME_PARMS *frame_parms,
-			u8 current_subframe, 
-			u32 current_frame,
-			u32 *frame,
-			u8 *subframe);
+			uint8_t current_subframe, 
+			uint32_t current_frame,
+			uint32_t *frame,
+			uint8_t *subframe);
 
 /* \brief Get ULSCH harq_pid for Msg3 from RAR subframe.  This returns n+k mod 10 (k>6) and corresponds to the rule in Section 6.1.1 from 36.213
    @param frame_parms Pointer to DL Frame Parameters
@@ -296,7 +296,7 @@ void get_Msg3_alloc_ret(LTE_DL_FRAME_PARMS *frame_parms,
    @param current_subframe subframe of RAR transmission
    @returns harq_pid (0 ... 7)
  */
-u8 get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,u32 frame,u8 current_subframe);
+uint8_t get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t current_subframe);
 
 /* \brief Get ULSCH harq_pid from PHICH subframe
    @param frame_parms Pointer to DL Frame Parameters
@@ -308,22 +308,22 @@ u8 get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,u32 frame,u8 current_subfra
     @param Mod_id Instance index of UE
     @param eNB_index Index of eNB
  */
-void ra_failed(u8 Mod_id,u8 eNB_index);
+void ra_failed(uint8_t Mod_id,uint8_t eNB_index);
 
 /** \brief Function to indicate success of contention resolution or RA procedure.
     @param Mod_id Instance index of UE
     @param eNB_index Index of eNB
  */
-void ra_succeeded(u8 Mod_id,u8 eNB_index);
+void ra_succeeded(uint8_t Mod_id,uint8_t eNB_index);
 
-u8 phich_subframe_to_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,u32 frame,u8 subframe);
+uint8_t phich_subframe_to_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t subframe);
 
 /* \brief Get PDSCH subframe (n+k) from PDCCH subframe n using relationship from Table 8-2 from 36.213
    @param frame_parms Pointer to DL Frame Parameters
    @param n subframe of PDCCH
    @returns PDSCH subframe (0 ... 7) (note: this is n+k from Table 8-2)
  */
-u8 pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 n);
+uint8_t pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t n);
 
 //
 /*!
@@ -334,7 +334,7 @@ u8 pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 n);
   @param o_ACK Pointer to ACK/NAK payload for PUCCH/PUSCH
   @returns status indicator for PUCCH/PUSCH transmission
 */
-u8 get_ack(LTE_DL_FRAME_PARMS *frame_parms,harq_status_t *harq_ack,u8 subframe,u8 *o_ACK);
+uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,harq_status_t *harq_ack,uint8_t subframe,uint8_t *o_ACK);
 
 /*!
   \brief Compute UL ACK subframe from DL subframe. This is used to retrieve corresponding DLSCH HARQ pid at eNB upon reception of ACK/NAK information on PUCCH/PUSCH.  Derived from Table 10.1-1 in 36.213 (p. 69 in version 8.6)
@@ -343,7 +343,7 @@ u8 get_ack(LTE_DL_FRAME_PARMS *frame_parms,harq_status_t *harq_ack,u8 subframe,u
   @param ACK_index TTI bundling index (0,1)
   @returns Subframe index for corresponding DL transmission
 */
-u8 ul_ACK_subframe2_dl_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 subframe,u8 ACK_index);
+uint8_t ul_ACK_subframe2_dl_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe,uint8_t ACK_index);
 
 /*!
   \brief Computes number of DL subframes represented by a particular ACK received on UL (M from Table 10.1-1 in 36.213, p. 69 in version 8.6)
@@ -351,7 +351,7 @@ u8 ul_ACK_subframe2_dl_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 subframe,u8 A
   @param subframe Subframe for UE transmission (n in 36.213)
   @returns Number of DL subframes (M)
 */
-u8 ul_ACK_subframe2_M(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe);
+uint8_t ul_ACK_subframe2_M(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe);
 
 /*!
   \brief Indicates the SR TXOp in current subframe.  Implements Table 10.1-5 from 36.213.
@@ -360,7 +360,7 @@ u8 ul_ACK_subframe2_M(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe);
   @param subframe index of next subframe
   @returns 1 if TXOp is active.
 */
-u8 is_SR_TXOp(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 subframe);
+uint8_t is_SR_TXOp(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe);
 
 /*!
   \brief Indicates the SR TXOp in current subframe for eNB and particular UE index.  Implements Table 10.1-5 from 36.213.
@@ -369,7 +369,7 @@ u8 is_SR_TXOp(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 subframe);
   @param subframe index of last subframe
   @returns 1 if TXOp is active.
 */
-u8 is_SR_subframe(PHY_VARS_eNB *phy_vars_eNB,u8 UE_id,u8 subframe);
+uint8_t is_SR_subframe(PHY_VARS_eNB *phy_vars_eNB,uint8_t UE_id,uint8_t subframe);
 
 /*!
   \brief Gives the UL subframe corresponding to a PDDCH order in subframe n
@@ -377,7 +377,7 @@ u8 is_SR_subframe(PHY_VARS_eNB *phy_vars_eNB,u8 UE_id,u8 subframe);
   @param n subframe of PDCCH
   @returns UL subframe corresponding to pdcch order
 */
-u8 pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 n);
+uint8_t pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t n);
 
 /*!
   \brief Gives the UL frame corresponding to a PDDCH order in subframe n
@@ -386,24 +386,24 @@ u8 pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS *frame_parms,u8 n);
   @param n subframe of PDCCH
   @returns UL frame corresponding to pdcch order
 */
-u8 pdcch_alloc2ul_frame(LTE_DL_FRAME_PARMS *frame_parms,u32 frame, u8 n);
+uint8_t pdcch_alloc2ul_frame(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame, uint8_t n);
 
 
-u16 get_Np(u8 N_RB_DL,u8 nCCE,u8 plus1);
+uint16_t get_Np(uint8_t N_RB_DL,uint8_t nCCE,uint8_t plus1);
 
 int get_nCCE_offset(unsigned char L, int nCCE, int common_dci, unsigned short rnti, unsigned char subframe);
 
 
-s8 find_ue(u16 rnti, PHY_VARS_eNB *phy_vars_eNB);
-s32 add_ue(s16 rnti, PHY_VARS_eNB *phy_vars_eNB);
-s32 remove_ue(u16 rnti, PHY_VARS_eNB *phy_vars_eNB,u8 abstraction_flag);
+int8_t find_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB);
+int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB);
+int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag);
 
-void process_timing_advance(u8 Mod_id,s16 timing_advance);
-void process_timing_advance_rar(PHY_VARS_UE *phy_vars_ue,u16 timing_advance);
+void process_timing_advance(uint8_t Mod_id,int16_t timing_advance);
+void process_timing_advance_rar(PHY_VARS_UE *phy_vars_ue,uint16_t timing_advance);
 
 unsigned int get_tx_amp(int gain_dBm, int gain_max_dBm);
 
-void phy_reset_ue(u8 Mod_id,u8 eNB_index);
+void phy_reset_ue(uint8_t Mod_id,uint8_t eNB_index);
 
 /** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in 
 subframe n-4 which is acknowledged in subframe n (for FDD) according to n1_pucch = Ncce + N1_pucch.  For
@@ -415,11 +415,11 @@ TDD, this routine computes the complex procedure described in Section 10.1 of 36
 @param SR 1 means there's a positive SR in parallel to ACK/NAK
 @returns n1_pucch
 */
-u16 get_n1_pucch(PHY_VARS_UE *phy_vars_ue,
-		 u8 eNB_id,
-		 u8 subframe,
-		 u8 *b,
-		 u8 SR);
+uint16_t get_n1_pucch(PHY_VARS_UE *phy_vars_ue,
+		 uint8_t eNB_id,
+		 uint8_t subframe,
+		 uint8_t *b,
+		 uint8_t SR);
 
 /** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in 
 subframe n-4 which is acknowledged in subframe n (for FDD) according to n1_pucch = Ncce + N1_pucch.  For
@@ -434,12 +434,12 @@ TDD, this routine computes the procedure described in Section 10.1 of 36.213 (th
 @param n1_pucch3 Pointer to n1_pucch3
 */
 void get_n1_pucch_eNB(PHY_VARS_eNB *phy_vars_eNB,
-		      u8 UE_id,
-		      u8 subframe,
-		      s16 *n1_pucch0,
-		      s16 *n1_pucch1,
-		      s16 *n1_pucch2,
-		      s16 *n1_pucch3);
+		      uint8_t UE_id,
+		      uint8_t subframe,
+		      int16_t *n1_pucch0,
+		      int16_t *n1_pucch1,
+		      int16_t *n1_pucch2,
+		      int16_t *n1_pucch3);
 
 
 /*!
@@ -452,13 +452,13 @@ void get_n1_pucch_eNB(PHY_VARS_eNB *phy_vars_eNB,
   @param pucch_sel Selection of n1_pucch0 or n1_pucch1 (TDD specific)
   @param SR_payload Indication of SR presence (TDD specific)
 */
-void process_HARQ_feedback(u8 UE_id, 
-			   u8 subframe, 
+void process_HARQ_feedback(uint8_t UE_id, 
+			   uint8_t subframe, 
 			   PHY_VARS_eNB *phy_vars_eNB,
-			   u8 pusch_flag, 
-			   u8 *pucch_payload, 
-			   u8 pucch_sel,
-			   u8 SR_payload);
+			   uint8_t pusch_flag, 
+			   uint8_t *pucch_payload, 
+			   uint8_t pucch_sel,
+			   uint8_t SR_payload);
 
 /*!
   \brief This function retrieves the PHY UE mode. It is used as a helper function for the UE MAC.
@@ -466,7 +466,7 @@ void process_HARQ_feedback(u8 UE_id,
   @param eNB_index ID of eNB
   @returns UE mode
 */ 
-UE_MODE_t get_ue_mode(u8 Mod_id,u8 eNB_index);
+UE_MODE_t get_ue_mode(uint8_t Mod_id,uint8_t eNB_index);
 
 /** \brief This function implements the power control mechanism for PUCCH from 36.213.
     @param phy_vars_ue PHY variables
@@ -475,7 +475,7 @@ UE_MODE_t get_ue_mode(u8 Mod_id,u8 eNB_index);
     @param pucch_fmt Format of PUCCH that is being transmitted
     @returns Transmit power
  */
-s8 pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,PUCCH_FMT_t pucch_fmt);
+int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,PUCCH_FMT_t pucch_fmt);
 
 /** \brief This function implements the power control mechanism for PUCCH from 36.213.
     @param phy_vars_ue PHY variables
@@ -484,20 +484,20 @@ s8 pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,PUCCH_FMT_t p
     @param j index of type of PUSCH (SPS, Normal, Msg3)
     @returns Transmit power
  */
-void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,u8 j, u8 abstraction_flag);
+void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,uint8_t j, uint8_t abstraction_flag);
 
-s8 get_PHR(u8 Mod_id, u8 eNB_index);
+int8_t get_PHR(uint8_t Mod_id, uint8_t eNB_index);
 
-LTE_eNB_UE_stats* get_eNB_UE_stats(u8 Mod_id, u16 rnti);
-int get_ue_active_harq_pid(u8 Mod_id,u16 rnti,u8 subframe,u8 *harq_pid,u8 *round,u8 ul_flag);
+LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint16_t rnti);
+int get_ue_active_harq_pid(uint8_t Mod_id,uint16_t rnti,uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag);
 void ulsch_decoding_procedures(unsigned char last_slot, unsigned int i, PHY_VARS_eNB *phy_vars_eNB, unsigned char abstraction_flag);
 
 
-void dump_dlsch(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 subframe,u8 harq_pid);
-void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 subframe);
-void dump_dlsch_ra(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 subframe);
+void dump_dlsch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,uint8_t harq_pid);
+void dump_dlsch_SI(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe);
+void dump_dlsch_ra(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe);
 
-u8 pdcch_alloc2ul_frame(LTE_DL_FRAME_PARMS *frame_parms,u32 frame, u8 n);
+uint8_t pdcch_alloc2ul_frame(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame, uint8_t n);
 
 /**@}*/
 #endif //OPENAIR_LTE

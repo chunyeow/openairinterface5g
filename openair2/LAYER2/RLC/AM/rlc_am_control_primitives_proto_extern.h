@@ -15,7 +15,7 @@
 #        include "mem_block.h"
 #        include "rrm_config_structs.h"
 //-----------------------------------------------------------------------------
-extern void     config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, u8_t rb_idP, rb_type_t rb_typeP);
+extern void     config_req_rlc_am (struct rlc_am_entity *rlcP, module_id_t module_idP, rlc_am_info_t * config_amP, uint8_t rb_idP, rb_type_t rb_typeP);
 extern void     send_rlc_am_control_primitive (struct rlc_am_entity *rlcP, module_id_t module_idP, mem_block_t * cprimitiveP);
 extern void     init_rlc_am (struct rlc_am_entity *rlcP);
 extern void     rlc_am_reset_state_variables (struct rlc_am_entity *rlcP);

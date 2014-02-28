@@ -86,11 +86,11 @@ rlc_tm_rx_no_segment (void *arg_pP, struct mac_data_ind data_indP)
 
   struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) arg_pP;
   mem_block_t *tb_p;
-  u8_t             *first_byte;
-  u8_t              tb_size_in_bytes;
-  u8_t              first_bit;
-  u8_t              bits_to_shift;
-  u8_t              bits_to_shift_last_loop;
+  uint8_t             *first_byte;
+  uint8_t              tb_size_in_bytes;
+  uint8_t              first_bit;
+  uint8_t              bits_to_shift;
+  uint8_t              bits_to_shift_last_loop;
 
   switch (rlc->protocol_state) {
 
@@ -152,15 +152,15 @@ rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
   struct rlc_tm_entity *rlc             = (struct rlc_tm_entity_s *) arg_pP;
   mem_block_t          *tb_p            = NULL;
   sdu_size_t            tb_size_in_bits = 0;
-  u8_t                 *first_byte_p    = NULL;
-  u8_t                  error_in_sdu    = 0;
+  uint8_t                 *first_byte_p    = NULL;
+  uint8_t                  error_in_sdu    = 0;
   sdu_size_t            tb_size_in_bytes= 0;
-  u8_t                  first_bit       = 0;
-  u8_t                  byte            = 0;
+  uint8_t                  first_bit       = 0;
+  uint8_t                  byte            = 0;
 
 
   //just for debug
-  u8_t                 *debug           = NULL;
+  uint8_t                 *debug           = NULL;
 
   switch (rlc->protocol_state) {
 
@@ -198,7 +198,7 @@ rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
                 rlc->output_sdu_size_to_write = 0;
                 rlc->last_bit_position_reassemblied = 0;
               }
-              debug = (u8_t*)&rlc->output_sdu_in_construction->data[0];
+              debug = (uint8_t*)&rlc->output_sdu_in_construction->data[0];
 
               while ((tb_p = list_remove_head (&data_indP.data))) {
 
@@ -290,7 +290,7 @@ rlc_tm_rx_segment (void *arg_pP, struct mac_data_ind data_indP)
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_tm_mac_status_indication (void *rlcP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_tm_mac_status_indication (void *rlcP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -336,7 +336,7 @@ rlc_tm_data_req (void *rlcP, mem_block_t *sduP)
 {
 //-----------------------------------------------------------------------------
   struct rlc_tm_entity *rlc = (struct rlc_tm_entity *) rlcP;
-  u8_t              discard_go_on;
+  uint8_t              discard_go_on;
 
 
   #ifdef DEBUG_RLC_TM_DATA_REQUEST
@@ -379,7 +379,7 @@ rlc_tm_data_req (void *rlcP, mem_block_t *sduP)
       rlc->buffer_occupancy += (((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_size >> 3);
     }
     rlc->nb_sdu += 1;
-    ((struct rlc_tm_tx_sdu_management *) (sduP->data))->first_byte = (u8*)&sduP->data[sizeof (struct rlc_tm_data_req_alloc)];
+    ((struct rlc_tm_tx_sdu_management *) (sduP->data))->first_byte = (uint8_t*)&sduP->data[sizeof (struct rlc_tm_data_req_alloc)];
     ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_segmented_size = 0;
     ((struct rlc_tm_tx_sdu_management *) (sduP->data))->sdu_creation_time = *rlc->frame_tick_milliseconds;
     rlc->input_sdus[rlc->next_sdu_index] = sduP;

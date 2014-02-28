@@ -36,7 +36,7 @@ static char msc_gen_buff[MSC_GEN_BUF_SIZE];
      Reception side
  ***************************************************************************/
 //---------------------------------------------------------------------------
-void print_state(u8 state){
+void print_state(uint8_t state){
 //---------------------------------------------------------------------------
 	switch(state){
         case NAS_DISCONNECTED:DEBUG("NAS_DISCONNECTED\n");return;
@@ -123,7 +123,7 @@ int IAL_decode_NAS_message(void){
 
                     DEBUG(" %u\t%u\t", p->cellid, p->iid4);
                     for (i=0;i<8;++i)
-                    DEBUG("%02x", *((u8 *)p->iid6+i));
+                    DEBUG("%02x", *((uint8_t *)p->iid6+i));
                     DEBUG("\t%u\t%u\t", p->num_rb, p->nsclassifier);
                     print_state(p->state);
 
@@ -373,7 +373,7 @@ int IAL_process_DNAS_message(int ioctl_obj, int ioctl_cmd, int ioctl_cellid){
 
 //---------------------------------------------------------------------------
 // Convert the IMEI to iid
-void TQAL_NAS_imei2iid(u8 *imei, u8 *iid){
+void TQAL_NAS_imei2iid(uint8_t *imei, uint8_t *iid){
 //---------------------------------------------------------------------------
 // Start debug information
 
@@ -396,7 +396,7 @@ void TQAL_NAS_imei2iid(u8 *imei, u8 *iid){
 
 //---------------------------------------------------------------------------
 // Convert the IMEI to iid
-void TQAL_NAS_imei2iid2(u8 *imei, u32 *iid){
+void TQAL_NAS_imei2iid2(uint8_t *imei, uint32_t *iid){
 //---------------------------------------------------------------------------
 // Start debug information
 

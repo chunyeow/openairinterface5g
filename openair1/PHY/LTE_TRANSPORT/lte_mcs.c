@@ -106,9 +106,9 @@ unsigned char I_TBS2I_MCS(unsigned char I_TBS) {
   return I_MCS;
 }
 
-u16 get_TBS_DL(u8 mcs, u16 nb_rb) {
+uint64_t get_TBS_DL(uint8_t mcs, uint16_t nb_rb) {
 
-  u16 TBS;
+  uint64_t TBS;
 
   if ((nb_rb > 0) && (mcs < 29)) {
 #ifdef TBS_FIX
@@ -121,13 +121,13 @@ u16 get_TBS_DL(u8 mcs, u16 nb_rb) {
     return(TBS);
   }
   else {
-    return(0);
+    return(uint64_t)0;
   }
 }
 
-u16 get_TBS_UL(u8 mcs, u16 nb_rb) {
+uint64_t get_TBS_UL(uint8_t mcs, uint16_t nb_rb) {
 
-  u16 TBS = 0;
+  uint64_t TBS = 0;
 
   if ((nb_rb > 0) && (mcs < 29)) {
 #ifdef TBS_FIX
@@ -140,12 +140,12 @@ u16 get_TBS_UL(u8 mcs, u16 nb_rb) {
     return(TBS);
   }
   else {
-    return(0);
+    return(uint64_t)0;
   }
 }
 
 
-int adjust_G2(LTE_DL_FRAME_PARMS *frame_parms,u32 *rb_alloc,u8 mod_order,u8 subframe,u8 symbol) {
+int adjust_G2(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_order,uint8_t subframe,uint8_t symbol) {
 
   int rb,re_pbch_sss=0;
   int rb_alloc_ind,nsymb;
@@ -237,10 +237,10 @@ int adjust_G2(LTE_DL_FRAME_PARMS *frame_parms,u32 *rb_alloc,u8 mod_order,u8 subf
   return(re_pbch_sss);
 }
 
-int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,u32 *rb_alloc,u8 mod_order,u8 subframe) {
+int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_order,uint8_t subframe) {
 
   int rb,re_pbch_sss=0;
-  u8 rb_alloc_ind;
+  uint8_t rb_alloc_ind;
 
   if ((subframe!=0) && (subframe!=5) && (subframe!=6))  // if not PBCH/SSS/PSS or SSS/PSS
     return(0);
@@ -326,7 +326,7 @@ int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,u32 *rb_alloc,u8 mod_order,u8 subfr
   return(0);
 }
 
-int get_G(LTE_DL_FRAME_PARMS *frame_parms,u16 nb_rb,u32 *rb_alloc,u8 mod_order,u8 num_pdcch_symbols,int frame,u8 subframe) {
+int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint8_t mod_order,uint8_t num_pdcch_symbols,int frame,uint8_t subframe) {
 
   
 
@@ -396,7 +396,7 @@ unsigned char SE2I_TBS(float SE,
 
 //added for ALU icic purpose
 
-u8 Get_SB_size(u8 n_rb_dl){
+uint8_t Get_SB_size(uint8_t n_rb_dl){
 
 	if(n_rb_dl<27)
 		return 4;

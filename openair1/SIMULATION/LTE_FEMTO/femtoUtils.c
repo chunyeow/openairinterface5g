@@ -409,7 +409,7 @@ void _parseInterferenceLevels(options_t *opts, char *interfLevels,int nInterf)
 }
 
 
-void _allocData(options_t opts, data_t *data ,u8 n_tx,u8 n_rx, int Frame_length_complex_samples)
+void _allocData(options_t opts, data_t *data ,uint8_t n_tx,uint8_t n_rx, int Frame_length_complex_samples)
 {
   int i,j;
   data->s_re = (double**)malloc(n_tx*sizeof(double*));

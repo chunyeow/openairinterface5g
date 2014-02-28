@@ -83,7 +83,7 @@ static void nasrg_rrcnl_data_ready (struct sk_buff *skb){
 //---------------------------------------------------------------------------
   struct nlmsghdr *nlh = NULL;
   char target_sap;
-  u8 cxi;
+  uint8_t cxi;
 
 // Start debug information
 #ifdef NAS_DEBUG_RRCNL

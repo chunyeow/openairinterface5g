@@ -21,13 +21,13 @@ ________________________________________________________________*/
 #endif //PHY_EMUL
 #include "PHY_INTERFACE/defs.h"
 
-extern const u32 BSR_TABLE[BSR_TABLE_SIZE];
-//extern u32 EBSR_Level[63];
+extern const uint32_t BSR_TABLE[BSR_TABLE_SIZE];
+//extern uint32_t EBSR_Level[63];
 
 extern UE_MAC_INST *UE_mac_inst;
 extern eNB_MAC_INST *eNB_mac_inst;
 extern MAC_RLC_XFACE *Mac_rlc_xface;
-extern u8 Is_rrc_registered;
+extern uint8_t Is_rrc_registered;
 
 extern eNB_ULSCH_INFO eNB_ulsch_info[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX]; // eNBxUE = 8x8 
 extern eNB_DLSCH_INFO eNB_dlsch_info[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX]; // eNBxUE = 8x8 
@@ -38,7 +38,7 @@ extern eNB_DLSCH_INFO eNB_dlsch_info[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX]; // eN
 extern MAC_xface *mac_xface;
 extern RRC_XFACE *Rrc_xface;
 
-extern u8 Is_rrc_registered;
+extern uint8_t Is_rrc_registered;
 
 #ifndef PHY_EMUL
 #ifndef PHYSIM
@@ -56,7 +56,7 @@ extern EMULATION_VARS *Emul_vars;
 #endif //PHY_EMUL
 
 
-extern u32 RRC_CONNECTION_FLAG;
+extern uint32_t RRC_CONNECTION_FLAG;
 
 
 extern DCI0_5MHz_TDD_1_6_t       UL_alloc_pdu;

@@ -132,7 +132,7 @@ int rrc_rg_send_to_srb_rlc (int UE_id, int rb_id, char * data_buffer, int data_l
     case RRC_SRB0_ID: //CCCH
     case RRC_SRB1_ID: //DCCH-UM
       //result = rrc_rlc_data_req(Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_NO,data_length,tx_data);
-      if (pdcp_data_req(0, Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_NO,data_length,tx_data,1))
+      if (pdcp_data_req(0, Mod_id,protocol_bs->rrc.current_SFN, eNB_flag,(UE_id*NB_RB_MAX)+DCCH,protocol_bs->rrc.next_MUI++,RRC_RLC_CONFIRM_NO,data_length,tx_data,PDCP_MODE_DATA_PDU))
         result = 1;
       break;
     case RRC_SRB2_ID: //DCCH-AM

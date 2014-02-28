@@ -55,34 +55,34 @@
 
 // Parameter types
 //----------------------------------------------------------
-typedef u16 netlIPVersion_t;
+typedef uint16_t netlIPVersion_t;
 typedef struct netlIPAddr {
         netlIPVersion_t ip_version;
         struct in6_addr ip_address;
 } netlIPAddr_t;
-typedef u32 netlStatValue_t;
-typedef u32 netlProviderId_t;
-typedef u16 netlCellID_t; // ID of the cell for connection
-typedef u32 netlMobileId_t; // mobile identifier
-typedef u16 netlStatus_t; // establishment status
-typedef u32 netlCnxid_t;
-typedef u16 netlRadioBearerId_t;
-typedef u16 netlQoSTrafficClass_t; //QoS traffic class requested
-typedef u16 netlIPdscp_t; // DSCP code transported to service NAS
+typedef uint32_t netlStatValue_t;
+typedef uint32_t netlProviderId_t;
+typedef uint16_t netlCellID_t; // ID of the cell for connection
+typedef uint32_t netlMobileId_t; // mobile identifier
+typedef uint16_t netlStatus_t; // establishment status
+typedef uint32_t netlCnxid_t;
+typedef uint16_t netlRadioBearerId_t;
+typedef uint16_t netlQoSTrafficClass_t; //QoS traffic class requested
+typedef uint16_t netlIPdscp_t; // DSCP code transported to service NAS
 typedef struct netlRBDef {
         netlRadioBearerId_t rbId;
         netlQoSTrafficClass_t QoSclass;
         netlIPdscp_t dscp;
 } netlrbParms_t;
-typedef u16  netlNumRBsInList_t; // number of RBs defined in the list
-typedef u16  netlNumCellsMeas_t; // number of RGs that could be measured
-typedef u32 netlSigLevel_t; // Signal level measured
+typedef uint16_t  netlNumRBsInList_t; // number of RBs defined in the list
+typedef uint16_t  netlNumCellsMeas_t; // number of RGs that could be measured
+typedef uint32_t netlSigLevel_t; // Signal level measured
 typedef struct netlMeasures {
         netlCellID_t cell_id;
         netlSigLevel_t level;
         netlProviderId_t provider_id;
 } netlMeasures_t;
-typedef u16 netlMcast_t;
+typedef uint16_t netlMcast_t;
 
 
 
@@ -108,7 +108,7 @@ struct nas_rg_msg_cnx_status_request  //FFS
 struct nas_rg_msg_cnx_status_reply  //FFS
 {
   netlMobileId_t  ue_id;
-	u8 iid[8]; 		// interface identification - EUI64
+	uint8_t iid[8]; 		// interface identification - EUI64
   netlIPAddr_t  l3_addr;
 	netlStatus_t status;
 	netlNumRBsInList_t num_rb;
@@ -194,14 +194,14 @@ struct nas_rg_msg_mt_mcast_leave_rep
 struct nas_rg_netl_hdr
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
 };
 struct nas_rg_netl_request
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
   union {
     struct nas_rg_msg_cnx_status_request   cnx_stat_req;
     struct nas_rg_msg_rb_list_request      rb_list_req;
@@ -214,8 +214,8 @@ struct nas_rg_netl_request
 struct nas_rg_netl_reply
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
   union {
     struct nas_rg_msg_statistic_reply    statistics_rep;
     struct nas_rg_msg_cnx_status_reply   cnx_stat_rep;
@@ -229,8 +229,8 @@ struct nas_rg_netl_reply
 struct nas_rg_netl_indication
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
   union {
     struct nas_rg_msg_signal_loss sign_loss;
   } tqalNASPrimitive;

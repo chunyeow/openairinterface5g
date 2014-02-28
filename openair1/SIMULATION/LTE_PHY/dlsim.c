@@ -60,7 +60,7 @@ void handler(int sig) {
   exit(1);
 }
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,u8 extended_prefix_flag,u8 fdd_flag, u16 Nid_cell,u8 tdd_config,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint8_t fdd_flag, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
   int i;
@@ -147,7 +147,7 @@ uint64_t DLSCH_alloc_pdu_1[2];
 #define CCCH_RB_ALLOC computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,0,2)
 //#define DLSCH_RB_ALLOC 0x1fbf // igore DC component,RB13
 //#define DLSCH_RB_ALLOC 0x0001
-void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
+void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
 
   int aa, slot_offset, slot_offset_F;
 
@@ -193,16 +193,16 @@ int main(int argc, char **argv) {
   double forgetting_factor=0.0; //in [0,1] 0 means a new channel every time, 1 means keep the same channel
   double iqim=0.0;
 
-  u8 extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
-  u16 Nid_cell=0;
+  uint8_t extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
+  uint16_t Nid_cell=0;
 
   int eNB_id = 0, eNB_id_i = 1;
   unsigned char mcs=0,mcs_i=0,dual_stream_UE = 0,awgn_flag=0,round,dci_flag=0;
   unsigned char i_mod = 2;
   unsigned short NB_RB;
   unsigned char Ns,l,m;
-  u16 tdd_config=3;
-  u16 n_rnti=0x1234;
+  uint16_t tdd_config=3;
+  uint16_t n_rnti=0x1234;
   int n_users = 1;
 
   SCM_t channel_model=Rayleigh1;
@@ -239,13 +239,13 @@ int main(int argc, char **argv) {
   int n_frames;
   int n_ch_rlz = 1;
   channel_desc_t *eNB2UE[4];
-  u8 num_pdcch_symbols=1,num_pdcch_symbols_2=0;
-  u8 pilot1,pilot2,pilot3;
-  u8 rx_sample_offset = 0;
+  uint8_t num_pdcch_symbols=1,num_pdcch_symbols_2=0;
+  uint8_t pilot1,pilot2,pilot3;
+  uint8_t rx_sample_offset = 0;
   //char stats_buffer[4096];
   //int len;
-  u8 num_rounds = 4,fix_rounds=0;
-  u8 subframe=7;
+  uint8_t num_rounds = 4,fix_rounds=0;
+  uint8_t subframe=7;
   int u;
   int n=0;
   int abstx=0;
@@ -261,13 +261,13 @@ int main(int argc, char **argv) {
   int bler;
   double blerr[4],uncoded_ber,avg_ber;
   short *uncoded_ber_bit=NULL;
-  u8 N_RB_DL=25,osf=1;
-  u8 fdd_flag = 0;
+  uint8_t N_RB_DL=25,osf=1;
+  uint8_t fdd_flag = 0;
 #ifdef XFORMS
   FD_lte_phy_scope_ue *form_ue;
   char title[255];
 #endif
-  u32 DLSCH_RB_ALLOC = 0x1fff;
+  uint32_t DLSCH_RB_ALLOC = 0x1fff;
   int numCCE=0;
   int dci_length_bytes=0,dci_length=0;
   double BW = 5.0;
@@ -1812,8 +1812,8 @@ int main(int argc, char **argv) {
 			{
 			  for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			    { 
-			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE[round]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP);
-			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE[round]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP);
+			      ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE[round]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP);
+			      ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE[round]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP);
 			    }
 			}
 		    }
@@ -1826,8 +1826,8 @@ int main(int argc, char **argv) {
 		      {
 			for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			  { 
-			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)(AMP);
-			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
+			    ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)(AMP);
+			    ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+((l+(Ns%2)*pilot2)*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
 			  }
 		      }
 		  }

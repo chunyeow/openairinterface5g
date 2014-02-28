@@ -1400,7 +1400,7 @@ uint8_t do_RRCConnectionReconfigurationComplete(uint8_t Mod_id, uint8_t *buffer,
 
 uint8_t do_RRCConnectionSetup(uint8_t Mod_id,
                               uint8_t *buffer,
-                              u8 transmission_mode,
+                              uint8_t transmission_mode,
                               uint8_t UE_id,
                               uint8_t Transaction_id,
                               LTE_DL_FRAME_PARMS *frame_parms,

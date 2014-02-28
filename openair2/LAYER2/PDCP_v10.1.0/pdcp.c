@@ -76,19 +76,19 @@ extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned in
  * this mem_block_t to be dissected for testing purposes. For further details see test
  * code at targets/TEST/PDCP/test_pdcp.c:test_pdcp_data_req()
  */
-boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, u32 confirmP,
-    sdu_size_t sdu_buffer_sizeP, unsigned char* sdu_buffer_pP, u8 modeP)
+boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, confirm_t confirmP,
+    sdu_size_t sdu_buffer_sizeP, unsigned char* sdu_buffer_pP, pdcp_transmission_mode_t modeP)
 {
   //-----------------------------------------------------------------------------
   pdcp_t            *pdcp_p          = NULL;
-  u8                 i               = 0;
-  u8                 pdcp_header_len = 0;
-  u8                 pdcp_tailer_len = 0;
-  u16                pdcp_pdu_size   = 0;
-  u16                current_sn      = 0;
+  uint8_t            i               = 0;
+  uint8_t            pdcp_header_len = 0;
+  uint8_t            pdcp_tailer_len = 0;
+  uint16_t           pdcp_pdu_size   = 0;
+  uint16_t           current_sn      = 0;
   mem_block_t       *pdcp_pdu_p      = NULL;
   rlc_op_status_t    rlc_status;
-  boolean_t          ret=TRUE;
+  boolean_t          ret             = TRUE;
 
   AssertError (enb_mod_idP < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", enb_mod_idP, NUMBER_OF_eNB_MAX, ue_mod_idP, rb_idP);
   AssertError (ue_mod_idP < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", ue_mod_idP, NUMBER_OF_UE_MAX, enb_mod_idP, rb_idP);
@@ -100,7 +100,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
       pdcp_p = &pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP];
   }
 
-  if ((pdcp_p->instanciated_instance == 0) && (modeP != PDCP_TM)) {
+  if ((pdcp_p->instanciated_instance == 0) && (modeP != PDCP_TRANSMISSION_MODE_TRANSPARENT)) {
       if (enb_flagP == 0) {
           LOG_W(PDCP, "[UE %d] Instance is not configured for eNB %d, rb_id %d Ignoring SDU...\n",
               ue_mod_idP, enb_mod_idP, rb_idP);
@@ -132,7 +132,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
  
   // PDCP transparent mode for MBMS traffic 
 
-  if (modeP == PDCP_TM) {
+  if (modeP == PDCP_TRANSMISSION_MODE_TRANSPARENT) {
       LOG_D(PDCP, " [TM] Asking for a new mem_block of size %d\n",sdu_buffer_sizeP);
       pdcp_pdu_p = get_free_mem_block(sdu_buffer_sizeP);
       if (pdcp_pdu_p != NULL) {
@@ -197,7 +197,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
               }
           } else {
               pdcp_user_plane_data_pdu_header_with_long_sn pdu_header;
-              pdu_header.dc = (modeP == 1) ? PDCP_DATA_PDU :  PDCP_CONTROL_PDU;
+              pdu_header.dc = (modeP == PDCP_TRANSMISSION_MODE_DATA) ? PDCP_DATA_PDU_BIT_SET :  PDCP_CONTROL_PDU_BIT_SET;
               pdu_header.sn = pdcp_get_next_tx_seq_number(pdcp_p);
               current_sn = pdu_header.sn ;
               if (pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer((unsigned char*)pdcp_pdu_p->data, &pdu_header) == FALSE) {
@@ -270,7 +270,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
        * Ask sublayer to transmit data and check return value
        * to see if RLC succeeded
        */
-      rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, 0, rb_idP, muiP, confirmP, pdcp_pdu_size, pdcp_pdu_p);
+      rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_FLAG_NO, rb_idP, muiP, confirmP, pdcp_pdu_size, pdcp_pdu_p);
   }
   switch (rlc_status) {
   case RLC_OP_STATUS_OK:
@@ -327,32 +327,41 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
   pdcp_t      *pdcp_p          = NULL;
   list_t      *sdu_list_p      = NULL;
   mem_block_t *new_sdu_p       = NULL;
-  u8           pdcp_header_len = 0;
-  u8           pdcp_tailer_len = 0;
+  uint8_t           pdcp_header_len = 0;
+  uint8_t           pdcp_tailer_len = 0;
   pdcp_sn_t    sequence_number = 0;
-  u8           payload_offset  = 0;
+  uint8_t           payload_offset  = 0;
 
   if (enb_flagP)
     start_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
   else 
     start_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
 
-  AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-      "eNB inst is too low (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local);
-  AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-      "eNB inst is too high (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-  AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-      "UE inst is too low (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local);
-  AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-      "UE inst is too high (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+#ifdef OAI_EMU
+  if (enb_flagP) {
+      AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+          "eNB module id is too low (%u/%d)!\n",
+          enb_mod_idP,
+          oai_emulation.info.first_enb_local);
+      AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+          "eNB module id is too high (%u/%d)!\n",
+          enb_mod_idP,
+          oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+      AssertFatal (ue_mod_idP  < NB_UE_INST,
+          "UE module id is too high (%u/%d)!\n",
+          ue_mod_idP,
+          oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+  } else {
+      AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+          "UE module id is too high (%u/%d)!\n",
+          ue_mod_idP,
+          oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+      AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+          "UE module id is too low (%u/%d)!\n",
+          ue_mod_idP,
+          oai_emulation.info.first_ue_local);
+  }
+#endif
   DevCheck4(rb_idP < NB_RB_MAX, rb_idP, NB_RB_MAX, enb_mod_idP, ue_mod_idP);
 
   if (enb_flagP == 0) {
@@ -409,7 +418,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
 
       if (pdcp_header_len == PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE) { // DRB
           sequence_number =     pdcp_get_sequence_number_of_pdu_with_long_sn((unsigned char*)sdu_buffer_pP->data);
-          //       u8 dc = pdcp_get_dc_filed((unsigned char*)sdu_buffer->data);
+          //       uint8_t dc = pdcp_get_dc_filed((unsigned char*)sdu_buffer->data);
       } else { //SRB1/2
           sequence_number =   pdcp_get_sequence_number_of_pdu_with_SRB_sn((unsigned char*)sdu_buffer_pP->data);
       }
@@ -449,7 +458,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
               enb_flagP,
               rb_idP,
               sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
-              (u8*)&sdu_buffer_pP->data[pdcp_header_len]);
+              (uint8_t*)&sdu_buffer_pP->data[pdcp_header_len]);
           free_mem_block(sdu_buffer_pP);
           // free_mem_block(new_sdu);
           if (enb_flagP)
@@ -678,10 +687,10 @@ boolean_t rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
     SRB_ToAddModList_t  *srb2add_list_pP,
     DRB_ToAddModList_t  *drb2add_list_pP,
     DRB_ToReleaseList_t *drb2release_list_pP,
-    u8                   security_modeP,
-    u8                  *kRRCenc_pP,
-    u8                  *kRRCint_pP,
-    u8                  *kUPenc_pP
+    uint8_t                   security_modeP,
+    uint8_t                  *kRRCenc_pP,
+    uint8_t                  *kRRCint_pP,
+    uint8_t                  *kUPenc_pP
 #ifdef Rel10
 ,PMCH_InfoList_r9_t*  pmch_InfoList_r9_pP
 #endif
@@ -694,12 +703,12 @@ boolean_t rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
   rlc_mode_t      rlc_type       = RLC_MODE_NONE;
   DRB_Identity_t  drb_id         = 0;
   DRB_Identity_t *pdrb_id_p      = NULL;
-  u8              drb_sn         = 0;
-  u8              srb_sn         = 5; // fixed sn for SRBs
-  u8              drb_report     = 0;
+  uint8_t              drb_sn         = 0;
+  uint8_t              srb_sn         = 5; // fixed sn for SRBs
+  uint8_t              drb_report     = 0;
   long int        cnt            = 0;
-  u16 header_compression_profile = 0;
-  u32 action                     = ACTION_ADD;
+  uint16_t header_compression_profile = 0;
+  uint32_t action                     = ACTION_ADD;
   SRB_ToAddMod_t *srb_toaddmod_p = NULL;
   DRB_ToAddMod_t *drb_toaddmod_p = NULL;
   pdcp_t         *pdcp_p         = NULL;
@@ -962,17 +971,17 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
     frame_t         frameP,
     eNB_flag_t      enb_flagP,
     rlc_mode_t      rlc_modeP,
-    u32             actionP,
-    u16             lc_idP,
-    u16             mch_idP,
+    uint32_t             actionP,
+    uint16_t             lc_idP,
+    uint16_t             mch_idP,
     rb_id_t         rb_idP,
-    u8              rb_snP,
-    u8              rb_reportP,
-    u16             header_compression_profileP,
-    u8              security_modeP,
-    u8             *kRRCenc_pP,
-    u8             *kRRCint_pP,
-    u8             *kUPenc_pP)
+    uint8_t              rb_snP,
+    uint8_t              rb_reportP,
+    uint16_t             header_compression_profileP,
+    uint8_t              security_modeP,
+    uint8_t             *kRRCenc_pP,
+    uint8_t             *kRRCint_pP,
+    uint8_t             *kUPenc_pP)
 {
 
   switch (actionP) {
@@ -1122,11 +1131,11 @@ void pdcp_config_set_security(pdcp_t    *pdcp_pP,
     frame_t    frameP,
     eNB_flag_t enb_flagP,
     rb_id_t    rb_idP,
-    u16        lc_idP,
-    u8         security_modeP,
-    u8        *kRRCenc,
-    u8        *kRRCint,
-    u8        *kUPenc)
+    uint16_t        lc_idP,
+    uint8_t         security_modeP,
+    uint8_t        *kRRCenc,
+    uint8_t        *kRRCint,
+    uint8_t        *kUPenc)
 {
   DevAssert(pdcp_pP != NULL);
 
@@ -1154,7 +1163,7 @@ void pdcp_config_set_security(pdcp_t    *pdcp_pP,
   }
 }
 
-void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, u32 actionP, rb_id_t rb_idP, u8 security_modeP)
+void rrc_pdcp_config_req (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, uint32_t actionP, rb_id_t rb_idP, uint8_t security_modeP)
 {
   pdcp_t *pdcp_p = NULL;
 

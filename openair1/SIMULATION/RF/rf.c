@@ -228,8 +228,8 @@ int main(int argc, char* argv[]) {
   double path_loss_dB = -90, rx_gain_dB = 125;
   double tx_pwr, rx_pwr;
 
-  u32 **input = malloc(nb_antennas*sizeof(u32*));
-  u32 **output = malloc(nb_antennas*sizeof(u32*));
+  uint32_t **input = malloc(nb_antennas*sizeof(uint32_t*));
+  uint32_t **output = malloc(nb_antennas*sizeof(uint32_t*));
   
   double **s_re = malloc(nb_antennas*sizeof (double *));
   double **s_im = malloc(nb_antennas*sizeof (double *));
@@ -255,8 +255,8 @@ int main(int argc, char* argv[]) {
     s_im[i] = (double *)malloc(length * sizeof (double ));
     r_re[i] = (double *)malloc(length * sizeof (double ));
     r_im[i] = (double *)malloc(length * sizeof (double ));
-    input[i] = (u32*)malloc(length * sizeof(u32));
-    output[i] = (u32*)malloc(length * sizeof(u32));
+    input[i] = (uint32_t*)malloc(length * sizeof(uint32_t));
+    output[i] = (uint32_t*)malloc(length * sizeof(uint32_t));
   }    
 
   for (i=0;i<nb_antennas;i++) {

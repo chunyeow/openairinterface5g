@@ -54,16 +54,16 @@ PHY_VARS_UE *PHY_vars_UE[2];
 void do_forms2(FD_lte_scope *form, 
 	       LTE_DL_FRAME_PARMS *frame_parms, 
 	       int pdcch_symbols,
-	       s16 **channel, 
-	       s16 **channel_f, 
-	       s16 **rx_sig, 
-	       s16 **rx_sig_f, 
-	       s16 *pdcch_comp, 
-	       s16 *dlsch_comp, 
-	       s16 *dlsch_comp_i, 
-	       s16 *dlsch_llr, 
-	       s16 *pbch_comp, 
-	       s8 *pbch_llr, 
+	       int16_t **channel, 
+	       int16_t **channel_f, 
+	       int16_t **rx_sig, 
+	       int16_t **rx_sig_f, 
+	       int16_t *pdcch_comp, 
+	       int16_t *dlsch_comp, 
+	       int16_t *dlsch_comp_i, 
+	       int16_t *dlsch_llr, 
+	       int16_t *pbch_comp, 
+	       int8_t *pbch_llr, 
 	       int coded_bits_per_codeword)
 {
 
@@ -81,7 +81,7 @@ void do_forms2(FD_lte_scope *form,
 
   extern int* sync_corr_ue0;
   
-  //  u16 nsymb = (frame_parms->Ncp == 0) ? 14 : 12;
+  //  uint16_t nsymb = (frame_parms->Ncp == 0) ? 14 : 12;
 
   llr = malloc(max(coded_bits_per_codeword,1920)*sizeof(float));
   llr_time = malloc(max(coded_bits_per_codeword,1920)*sizeof(float));
@@ -231,7 +231,7 @@ void do_forms2(FD_lte_scope *form,
 }  
 #endif
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,u8 frame_type,u16 Nid_cell,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint8_t frame_type,uint16_t Nid_cell,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
   int i;
@@ -323,7 +323,7 @@ int main(int argc, char **argv) {
 
   int i,iout,l,aa,aarx;
   double sigma2, sigma2_dB=0,SNR,snr0=10.0,snr1=11.0;
-  u8 snr1set=0;
+  uint8_t snr1set=0;
   //mod_sym_t **txdataF;
 #ifdef IFFT_FPGA
   int **txdataF2;
@@ -333,17 +333,17 @@ int main(int argc, char **argv) {
   double iqim = 0.0;
   unsigned char pbch_pdu[6];
   FILE *output_fd=NULL;
-  u8 write_output_file=0;
+  uint8_t write_output_file=0;
   int trial, n_errors=0,n_errors2=0,n_alamouti=0;
-  u8 transmission_mode = 1,n_tx=1,n_rx=1;
+  uint8_t transmission_mode = 1,n_tx=1,n_rx=1;
   unsigned char eNb_id = 0;
-  u16 Nid_cell=0;
-  u8 awgn_flag=0;
+  uint16_t Nid_cell=0;
+  uint8_t awgn_flag=0;
   int n_frames=1;
   channel_desc_t *eNB2UE=NULL,*eNB2UE1=NULL,*eNB2UE2=NULL;
-  u32 nsymb,tx_lev=0;
-  u8 extended_prefix_flag=0,frame_type=1;
-  s8 interf1=-21,interf2=-21;
+  uint32_t nsymb,tx_lev=0;
+  uint8_t extended_prefix_flag=0,frame_type=1;
+  int8_t interf1=-21,interf2=-21;
   LTE_DL_FRAME_PARMS *frame_parms;
 #ifdef EMOS
   fifo_dump_emos emos_dump;
@@ -351,14 +351,14 @@ int main(int argc, char **argv) {
 
   FILE *input_fd=NULL,*pbch_file_fd=NULL;
   char input_val_str[50],input_val_str2[50];
-  u8 num_pdcch_symbols=1;
-  u16 NB_RB=25;
+  uint8_t num_pdcch_symbols=1;
+  uint16_t NB_RB=25;
 
   SCM_t channel_model=Rayleigh8;
 
-  u8 abstraction_flag=0;
+  uint8_t abstraction_flag=0;
   double pbch_sinr; 
-  u8 N_RB_DL=25,osf=1;
+  uint8_t N_RB_DL=25,osf=1;
 
   int openair_fd=(int)0;
   int tcxo=74,fc=0;
@@ -369,17 +369,17 @@ int main(int argc, char **argv) {
 
 
   DCI_ALLOC_t dci_alloc[8],dci_alloc_rx[8];
-  u16 n_rnti=1234,dci_cnt;
-  u16 coded_bits_per_codeword;
+  uint16_t n_rnti=1234,dci_cnt;
+  uint16_t coded_bits_per_codeword;
   double tmp_re,tmp_im,foff,deltaF=0.0,cs,sn;
-  u32 carrier_freq[4]={1907600000,1907600000,1907600000,1907600000};
-  u32 rf_mode[4]     = {55759,55759,55759,55759};
-  u32 rf_local[4]    = {8254681, 8254816, 8254617, 8254617}; //eNB khalifa
+  uint32_t carrier_freq[4]={1907600000,1907600000,1907600000,1907600000};
+  uint32_t rf_mode[4]     = {55759,55759,55759,55759};
+  uint32_t rf_local[4]    = {8254681, 8254816, 8254617, 8254617}; //eNB khalifa
     //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
-  u32 rf_vcocal[4]   = {910,910,910,910};
-  u32 rf_rxdc[4]     = {32896,32896,32896,32896};
-  u32 rxgain[4]={30,30,30,30};
-  u32 do_forms=0;
+  uint32_t rf_vcocal[4]   = {910,910,910,910};
+  uint32_t rf_rxdc[4]     = {32896,32896,32896,32896};
+  uint32_t rxgain[4]={30,30,30,30};
+  uint32_t do_forms=0;
   int ret;
 
 #ifdef XFORMS
@@ -822,50 +822,50 @@ int main(int argc, char **argv) {
     //pbch_pdu[0]=100;
     //pbch_pdu[1]=1;
     //pbch_pdu[2]=0;
-    ((u8*) pbch_pdu)[0] = 0;
+    ((uint8_t*) pbch_pdu)[0] = 0;
     switch (PHY_vars_eNB->lte_frame_parms.N_RB_DL) {
     case 6:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0x1f) | (0<<5);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0x1f) | (0<<5);
       break;
     case 15:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0x1f) | (1<<5);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0x1f) | (1<<5);
       break;
     case 25:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0x1f) | (2<<5);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0x1f) | (2<<5);
       break;
     case 50:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0x1f) | (3<<5);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0x1f) | (3<<5);
       break;
     case 100:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0x1f) | (4<<5);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0x1f) | (4<<5);
       break;
     default:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0x1f) | (2<<5);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0x1f) | (2<<5);
       break;
     }
-    ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0xef) | 
+    ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0xef) | 
       ((PHY_vars_eNB->lte_frame_parms.phich_config_common.phich_duration << 4)&0x10);
     
     switch (PHY_vars_eNB->lte_frame_parms.phich_config_common.phich_resource) {
     case oneSixth:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0xf3) | (0<<3);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0xf3) | (0<<3);
       break;
     case half:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0xf3) | (1<<3);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0xf3) | (1<<3);
       break;
     case one:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0xf3) | (2<<3);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0xf3) | (2<<3);
       break;
     case two:
-      ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0xf3) | (3<<3);
+      ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0xf3) | (3<<3);
       break;
     default:
       break;
     }
     
-    ((u8*) pbch_pdu)[0] = (((u8*) pbch_pdu)[0]&0xfc) | ((PHY_vars_eNB->frame>>8)&0x3);
-    ((u8*) pbch_pdu)[1] = PHY_vars_eNB->frame&0xfc;
-    ((u8*) pbch_pdu)[2] = 0;
+    ((uint8_t*) pbch_pdu)[0] = (((uint8_t*) pbch_pdu)[0]&0xfc) | ((PHY_vars_eNB->frame>>8)&0x3);
+    ((uint8_t*) pbch_pdu)[1] = PHY_vars_eNB->frame&0xfc;
+    ((uint8_t*) pbch_pdu)[2] = 0;
     
     if (PHY_vars_eNB->lte_frame_parms.frame_type == 1) {
       generate_pss(PHY_vars_eNB->lte_eNB_common_vars.txdataF[0],
@@ -1550,31 +1550,31 @@ int main(int argc, char **argv) {
 	    do_forms2(form_dl,
 		      frame_parms,
 		      PHY_vars_UE[0]->lte_ue_pdcch_vars[0]->num_pdcch_symbols,    
-		      (s16**)PHY_vars_UE[0]->lte_ue_common_vars.dl_ch_estimates_time,
-		      (s16**)PHY_vars_UE[0]->lte_ue_common_vars.dl_ch_estimates[0],
-		      (s16**)PHY_vars_UE[0]->lte_ue_common_vars.rxdata,
-		      (s16**)PHY_vars_UE[0]->lte_ue_common_vars.rxdataF,
-		      (s16*)PHY_vars_UE[0]->lte_ue_pdcch_vars[0]->rxdataF_comp[0],
-		      (s16*)PHY_vars_UE[0]->lte_ue_pdsch_vars[0]->rxdataF_comp[0],
-		      (s16*)PHY_vars_UE[0]->lte_ue_pdsch_vars[1]->rxdataF_comp[0],
-		      (s16*)PHY_vars_UE[0]->lte_ue_pdsch_vars[0]->llr[0],
-		      (s16*)PHY_vars_UE[0]->lte_ue_pbch_vars[0]->rxdataF_comp[0],
-		      (s8*)PHY_vars_UE[0]->lte_ue_pbch_vars[0]->llr,
+		      (int16_t**)PHY_vars_UE[0]->lte_ue_common_vars.dl_ch_estimates_time,
+		      (int16_t**)PHY_vars_UE[0]->lte_ue_common_vars.dl_ch_estimates[0],
+		      (int16_t**)PHY_vars_UE[0]->lte_ue_common_vars.rxdata,
+		      (int16_t**)PHY_vars_UE[0]->lte_ue_common_vars.rxdataF,
+		      (int16_t*)PHY_vars_UE[0]->lte_ue_pdcch_vars[0]->rxdataF_comp[0],
+		      (int16_t*)PHY_vars_UE[0]->lte_ue_pdsch_vars[0]->rxdataF_comp[0],
+		      (int16_t*)PHY_vars_UE[0]->lte_ue_pdsch_vars[1]->rxdataF_comp[0],
+		      (int16_t*)PHY_vars_UE[0]->lte_ue_pdsch_vars[0]->llr[0],
+		      (int16_t*)PHY_vars_UE[0]->lte_ue_pbch_vars[0]->rxdataF_comp[0],
+		      (int8_t*)PHY_vars_UE[0]->lte_ue_pbch_vars[0]->llr,
 		      coded_bits_per_codeword);
 	    if (N_carriers==2)
 	    do_forms2(form_dl1,
 		      frame_parms,
 		      PHY_vars_UE[1]->lte_ue_pdcch_vars[0]->num_pdcch_symbols,    
-		      (s16**)PHY_vars_UE[1]->lte_ue_common_vars.dl_ch_estimates_time,
-		      (s16**)PHY_vars_UE[1]->lte_ue_common_vars.dl_ch_estimates[0],
-		      (s16**)PHY_vars_UE[1]->lte_ue_common_vars.rxdata,
-		      (s16**)PHY_vars_UE[1]->lte_ue_common_vars.rxdataF,
-		      (s16*)PHY_vars_UE[1]->lte_ue_pdcch_vars[0]->rxdataF_comp[0],
-		      (s16*)PHY_vars_UE[1]->lte_ue_pdsch_vars[0]->rxdataF_comp[0],
-		      (s16*)PHY_vars_UE[1]->lte_ue_pdsch_vars[3]->rxdataF_comp[0],
-		      (s16*)PHY_vars_UE[1]->lte_ue_pdsch_vars[0]->llr[0],
-		      (s16*)PHY_vars_UE[1]->lte_ue_pbch_vars[0]->rxdataF_comp[0],
-		      (s8*)PHY_vars_UE[1]->lte_ue_pbch_vars[0]->llr,
+		      (int16_t**)PHY_vars_UE[1]->lte_ue_common_vars.dl_ch_estimates_time,
+		      (int16_t**)PHY_vars_UE[1]->lte_ue_common_vars.dl_ch_estimates[0],
+		      (int16_t**)PHY_vars_UE[1]->lte_ue_common_vars.rxdata,
+		      (int16_t**)PHY_vars_UE[1]->lte_ue_common_vars.rxdataF,
+		      (int16_t*)PHY_vars_UE[1]->lte_ue_pdcch_vars[0]->rxdataF_comp[0],
+		      (int16_t*)PHY_vars_UE[1]->lte_ue_pdsch_vars[0]->rxdataF_comp[0],
+		      (int16_t*)PHY_vars_UE[1]->lte_ue_pdsch_vars[3]->rxdataF_comp[0],
+		      (int16_t*)PHY_vars_UE[1]->lte_ue_pdsch_vars[0]->llr[0],
+		      (int16_t*)PHY_vars_UE[1]->lte_ue_pbch_vars[0]->rxdataF_comp[0],
+		      (int8_t*)PHY_vars_UE[1]->lte_ue_pbch_vars[0]->llr,
 		      1920);
 	  }
 #endif

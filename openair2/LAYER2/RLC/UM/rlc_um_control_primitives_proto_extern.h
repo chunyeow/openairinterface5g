@@ -295,7 +295,7 @@ POSSIBILITY OF SUCH DAMAGES.
 #        include "mem_block.h"
 #        include "rrm_config_structs.h"
 //-----------------------------------------------------------------------------
-extern void     config_req_rlc_um (struct rlc_um_entity *rlcP, UM * config_umP, void *upper_layerP, void *(*data_indP) (void *, struct mem_block * sduP), u8_t rb_idP);
+extern void     config_req_rlc_um (struct rlc_um_entity *rlcP, UM * config_umP, void *upper_layerP, void *(*data_indP) (void *, struct mem_block * sduP), uint8_t rb_idP);
 extern void     send_rlc_um_control_primitive (struct rlc_um_entity *rlcP, struct mem_block *cprimitiveP);
 extern void     init_rlc_um (struct rlc_um_entity *rlcP);
 extern void     rlc_um_reset_state_variables (struct rlc_um_entity *rlcP);

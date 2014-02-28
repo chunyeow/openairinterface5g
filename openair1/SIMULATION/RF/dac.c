@@ -4,14 +4,14 @@
 
 void dac(double **s_re,
 	 double **s_im,
-	 u32 **input,
-	 u32 input_offset,
-	 u32 nb_tx_antennas,
-	 u32 length,
+	 uint32_t **input,
+	 uint32_t input_offset,
+	 uint32_t nb_tx_antennas,
+	 uint32_t length,
 	 double amp_dBm,
-	 u8 B,
-	 u32 meas_length,
-	 u32 meas_offset) {
+	 uint8_t B,
+	 uint32_t meas_length,
+	 uint32_t meas_offset) {
 
   int i;
   int aa;
@@ -51,13 +51,13 @@ void dac(double **s_re,
 
 double dac_fixed_gain(double **s_re,
 		      double **s_im,
-		      u32 **input,
-		      u32 input_offset,
-		      u32 nb_tx_antennas,
-		      u32 length,
-		      u32 input_offset_meas,
-		      u32 length_meas,
-		      u8 B,
+		      uint32_t **input,
+		      uint32_t input_offset,
+		      uint32_t nb_tx_antennas,
+		      uint32_t length,
+		      uint32_t input_offset_meas,
+		      uint32_t length_meas,
+		      uint8_t B,
 		      double txpwr_dBm) {
 
   int i;
@@ -68,7 +68,7 @@ double dac_fixed_gain(double **s_re,
 
   amp1 = 0;
   for (aa=0;aa<nb_tx_antennas;aa++) {
-    amp1 += sqrt((double)signal_energy((s32*)&input[aa][input_offset_meas],length_meas) * (512.0/300.0));
+    amp1 += sqrt((double)signal_energy((int32_t*)&input[aa][input_offset_meas],length_meas) * (512.0/300.0));
   }
   amp1/=nb_tx_antennas;
 

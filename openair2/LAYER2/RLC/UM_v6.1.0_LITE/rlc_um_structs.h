@@ -18,24 +18,24 @@
 //#endif //USER_MODE
 //-----------------------
 struct rlc_um_tx_sdu_management {
-  u8_t             *first_byte;
-  s32_t             sdu_creation_time;
-  u16_t             sdu_remaining_size;
-  u16_t             sdu_segmented_size;
-  u16_t             sdu_size;
-  u8_t              use_special_li;
+  uint8_t             *first_byte;
+  int32_t             sdu_creation_time;
+  uint16_t             sdu_remaining_size;
+  uint16_t             sdu_segmented_size;
+  uint16_t             sdu_size;
+  uint8_t              use_special_li;
 };
 //-----------------------
 struct rlc_um_tx_pdu_management {
-  u8_t             *first_byte;   // point to first byte of RLC header
-  u8_t             *payload;
-  u16_t             data_size;    // size of payload (not included byte1, LIs, and padding)
-  u8_t              dummy[MAC_HEADER_MAX_SIZE];   // optimization for MAC layer : reserve bytes for MAC header
+  uint8_t             *first_byte;   // point to first byte of RLC header
+  uint8_t             *payload;
+  uint16_t             data_size;    // size of payload (not included byte1, LIs, and padding)
+  uint8_t              dummy[MAC_HEADER_MAX_SIZE];   // optimization for MAC layer : reserve bytes for MAC header
 };
 //-----------------------
 struct rlc_um_rx_pdu_management {
-  u8_t             *first_byte;
-  u8_t              sn;
+  uint8_t             *first_byte;
+  uint8_t              sn;
 };
 //-----------------------
 struct rlc_um_tx_data_pdu_management {
@@ -53,13 +53,13 @@ struct rlc_um_tx_data_pdu_management {
 };
 //-----------------------
 struct rlc_um_rx_data_pdu_struct {
-  u8_t              byte1;
-  u8_t              li_data_7[1];
+  uint8_t              byte1;
+  uint8_t              li_data_7[1];
 };
 //-----------------------
 struct rlc_um_tx_data_pdu_struct {
-  u8_t              byte1;
-  u8_t              li_data_7[1];
+  uint8_t              byte1;
+  uint8_t              li_data_7[1];
 };
 //-----------------------
 struct rlc_um_data_req_alloc {  // alloc enought bytes for sdu mngt also

@@ -104,7 +104,11 @@ pkill oai_epc
 if [ -f Makefile ]
 then
     echo_success "Compiling..."
-    bash_exec "make"
+    make -j `cat /proc/cpuinfo | grep processor | wc -l`
+    if [ $? -ne 0 ]; then
+        echo_error "Build failed, exiting"
+        exit 1
+    fi
 else
     echo_error "Configure failed, exiting"
     exit 1

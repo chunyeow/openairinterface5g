@@ -44,7 +44,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 
 //-----------------------------------------------------------------------------
 void
-rlc_um_test_send_sdu     (rlc_um_entity_t* rlcP,  u32_t frame, unsigned int sdu_typeP) {
+rlc_um_test_send_sdu     (rlc_um_entity_t* rlcP,  uint32_t frame, unsigned int sdu_typeP) {
 //-----------------------------------------------------------------------------
     mem_block_t *sdu_mem;
     switch (sdu_typeP) {

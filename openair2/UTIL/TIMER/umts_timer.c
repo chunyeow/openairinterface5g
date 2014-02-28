@@ -17,12 +17,12 @@
 #include "openair_defs.h"
 //-----------------------------------------------------------------------------
 void
-umts_timer_check_time_out (list2_t * atimer_listP, u32_t current_frame_tick_millisecondsP)
+umts_timer_check_time_out (list2_t * atimer_listP, uint32_t current_frame_tick_millisecondsP)
 {
 //-----------------------------------------------------------------------------
   struct timer_unit *timer;
   mem_block_t      *mem_unit;
-  u8_t              time_out = 255;
+  uint8_t              time_out = 255;
   mem_unit = atimer_listP->head;
   // do it simple now.
   while ((mem_unit) && (time_out)) {
@@ -60,14 +60,14 @@ umts_timer_delete_timer (list2_t * atimer_listP, void *timer_idP)
 
 //-----------------------------------------------------------------------------
 mem_block_t      *
-umts_add_timer_list_up (list2_t * atimer_listP, void (*procP) (void *, void *), void *protocolP, void *timer_idP, u32_t frame_time_outP, u32 current_frame_tick_millisecondsP)
+umts_add_timer_list_up (list2_t * atimer_listP, void (*procP) (void *, void *), void *protocolP, void *timer_idP, uint32_t frame_time_outP, uint32_t current_frame_tick_millisecondsP)
 {
 //-----------------------------------------------------------------------------
   struct mem_block_t *mb;
   struct timer_unit *timer;
   mem_block_t      *mem_unit;
-  s32_t             remaining_time;
-  u8_t              inserted = 0;
+  int32_t             remaining_time;
+  uint8_t              inserted = 0;
 
   mb = get_free_mem_block (sizeof (struct timer_unit));
   ((struct timer_unit *) (mb->data))->proc = procP;

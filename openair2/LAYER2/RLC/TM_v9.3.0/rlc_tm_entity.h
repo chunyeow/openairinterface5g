@@ -63,10 +63,10 @@ typedef struct rlc_tm_entity {
   // sdu communication;
   mem_block_t     **input_sdus;              /*!< \brief Input SDU buffer (for SDUs coming from upper layers). Should be accessed as an array. */
   mem_block_t      *input_sdus_alloc;        /*!< \brief Allocated memory for the input SDU buffer (for SDUs coming from upper layers). */
-  u16_t             size_input_sdus_buffer;  /*!< \brief Size of the input SDU buffer. */
-  u16_t             nb_sdu;                  /*!< \brief Total number of SDUs in input_sdus[] */
-  u16_t             next_sdu_index;          /*!< \brief Next SDU index for a new incomin SDU in input_sdus[]. */
-  u16_t             current_sdu_index;       /*!< \brief Current SDU index in input_sdus array to be segmented. */
+  uint16_t             size_input_sdus_buffer;  /*!< \brief Size of the input SDU buffer. */
+  uint16_t             nb_sdu;                  /*!< \brief Total number of SDUs in input_sdus[] */
+  uint16_t             next_sdu_index;          /*!< \brief Next SDU index for a new incomin SDU in input_sdus[]. */
+  uint16_t             current_sdu_index;       /*!< \brief Current SDU index in input_sdus array to be segmented. */
   list_t            pdus_to_mac_layer;       /*!< \brief PDUs buffered for transmission to MAC layer. */
   sdu_size_t        rlc_pdu_size;
   rlc_buffer_occupancy_t buffer_occupancy;        /*!< \brief Number of bytes contained in input_sdus buffer.*/

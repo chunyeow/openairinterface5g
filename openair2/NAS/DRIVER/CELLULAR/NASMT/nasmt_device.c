@@ -71,11 +71,11 @@ struct net_device *gdev;
 struct nas_priv *gpriv;
 //int bytes_wrote;
 //int bytes_read;
-u8 NAS_NULL_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00};
-u8 NAS_RG_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x01};
+uint8_t NAS_NULL_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00};
+uint8_t NAS_RG_IMEI[14]={0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ,0x00, 0x00, 0x01};
 
 // TEMP
-//u8 nas_IMEI[14];
+//uint8_t nas_IMEI[14];
 static unsigned char nas_IMEI[14];
 static int m_arg=0;
 
@@ -92,7 +92,7 @@ extern void nasmt_ASCTL_timer(unsigned long data);
 //void nasmt_interrupt(void){
 void *nasmt_interrupt(void){
 //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
   char *buffer = NULL;
 #ifdef NAS_DEBUG_INTERRUPT
   printk("nasmt_interrupt - begin\n");
@@ -326,7 +326,7 @@ static const struct net_device_ops nasmt_netdev_ops = {
 // Initialisation of the network device
 void nasmt_init(struct net_device *dev){
 //---------------------------------------------------------------------------
-  u8 cxi, dscpi;
+  uint8_t cxi, dscpi;
 
   printk("nasmt_init: begin\n");
 
@@ -400,17 +400,17 @@ void nasmt_init(struct net_device *dev){
     }
     gpriv->cx[cxi].nsclassifier=0;
     // initialisation of the IP address
-    nasmt_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)gpriv->cx[cxi].iid6);
+    nasmt_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)gpriv->cx[cxi].iid6);
     gpriv->cx[cxi].iid4=0;
 //
     spin_lock_init(&gpriv->lock);
     printk("nasmt_init: init IMEI to IID\n");
 
     #ifdef NAS_DRIVER_TYPE_ETHERNET
-    nasmt_TOOL_eth_imei2iid(nas_IMEI, dev->dev_addr ,(u8 *)gpriv->cx[0].iid6, dev->addr_len);
+    nasmt_TOOL_eth_imei2iid(nas_IMEI, dev->dev_addr ,(uint8_t *)gpriv->cx[0].iid6, dev->addr_len);
     #else
     nasmt_TOOL_imei2iid(nas_IMEI, dev->dev_addr);// IMEI to device address (for stateless autoconfiguration address)
-    nasmt_TOOL_imei2iid(nas_IMEI, (u8 *)gpriv->cx[0].iid6);
+    nasmt_TOOL_imei2iid(nas_IMEI, (uint8_t *)gpriv->cx[0].iid6);
     #endif
 
     nasmt_ASCTL_init();

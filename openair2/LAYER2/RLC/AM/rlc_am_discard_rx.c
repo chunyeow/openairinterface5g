@@ -25,9 +25,9 @@
 //-----------------------------------------------------------------------------
 void            rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP);
 void            rlc_am_free_discard_procedure (mem_block_t * mb_current_procedureP);
-inline void     rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, u16_t sn_mrw_iP, u8_t nlengthP);
-u8_t             *retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, u8 * byte1P, u8 * byte_alignedP);
-u8_t             *retransmission_buffer_management_mrw_ack (struct rlc_am_entity *rlcP, u8 * byte1P, u8 * byte_alignedP);
+inline void     rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t sn_mrw_iP, uint8_t nlengthP);
+uint8_t             *retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte1P, uint8_t * byte_alignedP);
+uint8_t             *retransmission_buffer_management_mrw_ack (struct rlc_am_entity *rlcP, uint8_t * byte1P, uint8_t * byte_alignedP);
 //-----------------------------------------------------------------------------
 void
 rlc_am_received_sufi_ack_check_discard_procedures (struct rlc_am_entity *rlcP)
@@ -117,11 +117,11 @@ rlc_am_free_discard_procedure (mem_block_t * mb_current_procedureP)
 
 //-----------------------------------------------------------------------------
 inline void
-rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, u16_t sn_mrw_iP, u8_t nlengthP)
+rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, uint16_t sn_mrw_iP, uint8_t nlengthP)
 {
 //-----------------------------------------------------------------------------
-  u16_t             working_sn;
-  u16_t             working_sn_index;     // index in buffer
+  uint16_t             working_sn;
+  uint16_t             working_sn_index;     // index in buffer
 
   // should start reassembly with sn working_sn
   working_sn = rlcP->last_reassemblied_sn;
@@ -162,21 +162,21 @@ rlc_am_discard_free_receiver_buffer (struct rlc_am_entity *rlcP, u16_t sn_mrw_iP
 }
 
 //-----------------------------------------------------------------------------
-u8_t             *
-retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, u8_t * byte1P, u8 * byte_alignedP)
+uint8_t             *
+retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, uint8_t * byte1P, uint8_t * byte_alignedP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *mb;
-  u8_t             *p8;
-  u16_t             sn_mrw_i[15];
-  u16_t             new_vr_r;
-  u16_t             working_sn;
-  u16_t             working_sn_index;     // index in buffer
-  u8_t              sn_mrw_i_index;
-  u8_t              mrw_length;
-  u8_t              nlength;
+  uint8_t             *p8;
+  uint16_t             sn_mrw_i[15];
+  uint16_t             new_vr_r;
+  uint16_t             working_sn;
+  uint16_t             working_sn_index;     // index in buffer
+  uint8_t              sn_mrw_i_index;
+  uint8_t              mrw_length;
+  uint8_t              nlength;
 #ifdef DEBUG_RLC_AM_DISCARD
-  u8_t              i;
+  uint8_t              i;
 #endif
   /* From 3GPP TS 25.322 V5.0.0 (2002-03)
      Upon reception of the STATUS PDU/piggybacked STATUS PDU containing an MRW SUFI, the Receiver shall:
@@ -385,19 +385,19 @@ retransmission_buffer_management_mrw (struct rlc_am_entity *rlcP, u8_t * byte1P,
 }
 
 //-----------------------------------------------------------------------------
-u8_t             *
-retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, u8_t * byte1P, u8 * byte_alignedP)
+uint8_t             *
+retransmission_buffer_management_mrw_ack (struct rlc_am_entity * rlcP, uint8_t * byte1P, uint8_t * byte_alignedP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *mb;
   mem_block_t      *mb_current_procedure;
   struct rlc_am_tx_data_pdu_management *rlc_header;
   struct rlc_am_discard_procedure *procedure;
-  u8_t             *p8;
+  uint8_t             *p8;
 
-  u16_t             sn_ack;
-  u16_t             index;
-  u8_t              n;            // field of mrw_ack sufi
+  uint16_t             sn_ack;
+  uint16_t             index;
+  uint8_t              n;            // field of mrw_ack sufi
 
   //-------------------------------------
   // DECODE SUFI MRW_ACK

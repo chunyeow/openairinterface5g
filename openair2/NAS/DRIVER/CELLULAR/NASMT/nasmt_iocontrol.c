@@ -75,7 +75,7 @@ int nasmt_ioCTL_statistic_request(struct nas_ioctl *gifr){
 ///////////////////////////////////////////////////////////////////////////////
 // Connections List
 //---------------------------------------------------------------------------
-void nasmt_set_msg_cx_list_reply(u8 *msgrep){
+void nasmt_set_msg_cx_list_reply(uint8_t *msgrep){
 //---------------------------------------------------------------------------
   struct cx_entity *cx;
   nasLocalConnectionRef_t lcr;
@@ -100,7 +100,7 @@ void nasmt_set_msg_cx_list_reply(u8 *msgrep){
 //---------------------------------------------------------------------------
 int nasmt_ioCTL_cx_list_request(struct nas_ioctl *gifr){
 //---------------------------------------------------------------------------
-  u8 msgrep[NAS_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1];
+  uint8_t msgrep[NAS_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1];
   printk("nasmt_ioCTL_cx_list: connection list requested\n");
   nasmt_set_msg_cx_list_reply(msgrep);
   if (copy_to_user(gifr->msg, msgrep, NAS_CX_MAX*sizeof(struct nas_msg_cx_list_reply)+1))
@@ -202,13 +202,13 @@ int nasmt_ioCTL_cx_release_request(struct nas_ioctl *gifr){
 ///////////////////////////////////////////////////////////////////////////////
 // Radio Bearer List
 //---------------------------------------------------------------------------
-void nasmt_set_msg_rb_list_reply(u8 *msgrep, struct nas_msg_rb_list_request *msgreq){
+void nasmt_set_msg_rb_list_reply(uint8_t *msgrep, struct nas_msg_rb_list_request *msgreq){
 //---------------------------------------------------------------------------
   struct cx_entity *cx;
   cx=nasmt_COMMON_search_cx(msgreq->lcr);
   if (cx!=NULL)
   {
-    u8 rbi;
+    uint8_t rbi;
     struct rb_entity *rb;
     struct nas_msg_rb_list_reply *list;
     if (cx->num_rb > NAS_LIST_RB_MAX)
@@ -231,7 +231,7 @@ void nasmt_set_msg_rb_list_reply(u8 *msgrep, struct nas_msg_rb_list_request *msg
 //---------------------------------------------------------------------------
 int nasmt_ioCTL_rb_list_request(struct nas_ioctl *gifr){
 //---------------------------------------------------------------------------
-  u8 msgrep[NAS_LIST_RB_MAX*sizeof(struct nas_msg_rb_list_reply)+1];
+  uint8_t msgrep[NAS_LIST_RB_MAX*sizeof(struct nas_msg_rb_list_reply)+1];
   struct nas_msg_rb_list_request msgreq;
   printk("nasmt_ioCTL_rb_list: Radio Bearer list requested\n");
   if (copy_from_user(&msgreq, gifr->msg, sizeof(msgreq)))
@@ -308,12 +308,12 @@ int nasmt_ioCTL_rb_release_request(struct nas_ioctl *gifr){
 ///////////////////////////////////////////////////////////////////////////////
 // Classifier List
 //---------------------------------------------------------------------------
-void nasmt_set_msg_class_list_reply(u8 *msgrep, struct nas_msg_class_list_request *msgreq){
+void nasmt_set_msg_class_list_reply(uint8_t *msgrep, struct nas_msg_class_list_request *msgreq){
 //---------------------------------------------------------------------------
   struct cx_entity *cx;
   struct classifier_entity *gc;
   struct nas_msg_class_list_reply *list;
-  u8 cli;
+  uint8_t cli;
   list=(struct nas_msg_class_list_reply *)(msgrep+1);
   switch(msgreq->dir)
   {
@@ -366,7 +366,7 @@ void nasmt_set_msg_class_list_reply(u8 *msgrep, struct nas_msg_class_list_reques
 //---------------------------------------------------------------------------
 int nasmt_ioCTL_class_list_request(struct nas_ioctl *gifr){
 //---------------------------------------------------------------------------
-  u8 msgrep[NAS_LIST_CLASS_MAX*sizeof(struct nas_msg_class_list_reply)+1];
+  uint8_t msgrep[NAS_LIST_CLASS_MAX*sizeof(struct nas_msg_class_list_reply)+1];
   struct nas_msg_class_list_request msgreq;
   printk("nasmt_ioCTL_class_list: classifier list requested\n");
   if (copy_from_user(&msgreq, gifr->msg, sizeof(msgreq)))

@@ -192,18 +192,18 @@ typedef struct GRANTED_LCHAN_TABLE_ENTRY{
   LCHAN_ID Lchan_id;
 }GRANTED_LCHAN_TABLE_ENTRY;
 
-void clear_macphy_data_req(u8);
+void clear_macphy_data_req(uint8_t);
 //void clean_macphy_interface(void);
 unsigned char phy_resources_compare(PHY_RESOURCES *,PHY_RESOURCES*);
-MACPHY_DATA_REQ_TABLE_ENTRY* find_data_req_entry(u8,MACPHY_REQ_ENTRY_KEY*);
-void print_active_requests(u8);
-void mac_process_meas_ul(u8 Mod_id,UL_MEAS *UL_meas, u16 Index);
-void mac_process_meas_dl(u8 Mod_id,DL_MEAS *DL_meas, u16 Index);
+MACPHY_DATA_REQ_TABLE_ENTRY* find_data_req_entry(uint8_t,MACPHY_REQ_ENTRY_KEY*);
+void print_active_requests(uint8_t);
+void mac_process_meas_ul(uint8_t Mod_id,UL_MEAS *UL_meas, uint16_t Index);
+void mac_process_meas_dl(uint8_t Mod_id,DL_MEAS *DL_meas, uint16_t Index);
 
 
 
 
-MACPHY_DATA_REQ *new_macphy_data_req(u8);
+MACPHY_DATA_REQ *new_macphy_data_req(uint8_t);
 //PHY_RESOURCES_TABLE_ENTRY *new_phy_resources(void);
 //MACPHY_DATA_IND *new_macphy_data_ind(void);
 #endif

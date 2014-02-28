@@ -10,10 +10,10 @@ static  __m128i m0,m1,m2,m4     __attribute__ ((aligned(16)));
 
 //#define DEBUG_CMULT
 
-int mult_cpx_vector(s16 *x1, 
-		    s16 *x2, 
-		    s16 *y, 
-		    u32 N, 
+int mult_cpx_vector(int16_t *x1, 
+		    int16_t *x2, 
+		    int16_t *y, 
+		    uint32_t N, 
 		    int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements with repeated formatted output
@@ -30,11 +30,11 @@ int mult_cpx_vector(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   /*
 #ifdef USER_MODE
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
 #endif
   */
@@ -59,9 +59,9 @@ int mult_cpx_vector(s16 *x1,
     /*
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     */
@@ -86,7 +86,7 @@ int mult_cpx_vector(s16 *x1,
 
     /*
 #ifdef USER_MODE
-    temps = (s16 *)&y_128[0];
+    temps = (int16_t *)&y_128[0];
     printf("y0 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif USER_MODE
     */
@@ -147,10 +147,10 @@ int mult_cpx_vector(s16 *x1,
   return(0);
 }
 
-int mult_cpx_vector_unprepared(s16 *x1, 
-			       s16 *x2, 
-			       s16 *y, 
-			       u32 N, 
+int mult_cpx_vector_unprepared(int16_t *x1, 
+			       int16_t *x2, 
+			       int16_t *y, 
+			       uint32_t N, 
 			       int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements with repeated formatted output
@@ -167,10 +167,10 @@ int mult_cpx_vector_unprepared(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
 #ifdef DEBUG_CMULT
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
 #endif
   __m128i *x1_128; 
@@ -194,9 +194,9 @@ int mult_cpx_vector_unprepared(s16 *x1,
     /*
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     */
@@ -230,7 +230,7 @@ int mult_cpx_vector_unprepared(s16 *x1,
 
     /*
 #ifdef USER_MODE
-    temps = (s16 *)&y_128[0];
+    temps = (int16_t *)&y_128[0];
     printf("y0 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif USER_MODE
     */
@@ -292,10 +292,10 @@ int mult_cpx_vector_unprepared(s16 *x1,
 }
  
 //__attribute__ ((force_align_arg_pointer)) 
-int mult_cpx_vector_norep(s16 *x1, 
-			   s16 *x2, 
-			   s16 *y, 
-			   u32 N, 
+int mult_cpx_vector_norep(int16_t *x1, 
+			   int16_t *x2, 
+			   int16_t *y, 
+			   uint32_t N, 
 			   int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements with normal formatted output
@@ -312,7 +312,7 @@ int mult_cpx_vector_norep(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1,m2,m3;
 
@@ -320,7 +320,7 @@ int mult_cpx_vector_norep(s16 *x1,
 #ifdef DEBUG_CMULT
   __m128i temp;
   int *tempd;
-  s16 *temps;
+  int16_t *temps;
 #endif //DEBUG_CMULT
   
 
@@ -347,9 +347,9 @@ int mult_cpx_vector_norep(s16 *x1,
         
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     
@@ -384,9 +384,9 @@ int mult_cpx_vector_norep(s16 *x1,
 
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)&x1_128[1];
+    temps = (int16_t *)&x1_128[1];
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)&x2_128[1];
+    temps = (int16_t *)&x2_128[1];
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
 
@@ -423,9 +423,9 @@ int mult_cpx_vector_norep(s16 *x1,
     
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)&x1_128[2];
+    temps = (int16_t *)&x1_128[2];
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)&x2_128[2];
+    temps = (int16_t *)&x2_128[2];
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif //DEBUG_CMULT
 
@@ -453,9 +453,9 @@ int mult_cpx_vector_norep(s16 *x1,
    
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)&x1_128[3];
+    temps = (int16_t *)&x1_128[3];
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)&x2_128[3];
+    temps = (int16_t *)&x2_128[3];
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
  
     temp = m0;
@@ -496,10 +496,10 @@ int mult_cpx_vector_norep(s16 *x1,
 }
 
 
-int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1, 
-					    s16 *x2, 
-					    s16 *y, 
-					    u32 N, 
+int mult_cpx_vector_norep_unprepared_conjx2(int16_t *x1, 
+					    int16_t *x2, 
+					    int16_t *y, 
+					    uint32_t N, 
 					    int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements with normal formatted output, conjugate x1
@@ -516,7 +516,7 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1,m2,m3;
 
@@ -526,7 +526,7 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
 #ifdef DEBUG_CMULT
   __m128i temp;
   int *tempd;
-  s16 *temps;
+  int16_t *temps;
 #endif //DEBUG_CMULT
   
 
@@ -549,9 +549,9 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
         
 #ifdef DEBUG_CMULT
     printf("**i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     
@@ -598,9 +598,9 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
 
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)&x1_128[1];
+    temps = (int16_t *)&x1_128[1];
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)&x2_128[1];
+    temps = (int16_t *)&x2_128[1];
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
 
@@ -639,9 +639,9 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
     
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)&x1_128[2];
+    temps = (int16_t *)&x1_128[2];
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)&x2_128[2];
+    temps = (int16_t *)&x2_128[2];
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif //DEBUG_CMULT
 
@@ -672,9 +672,9 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
    
 #ifdef DEBUG_CMULT
     printf("i=%d\n",i);
-    temps = (s16 *)&x1_128[3];
+    temps = (int16_t *)&x1_128[3];
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)&x2_128[3];
+    temps = (int16_t *)&x2_128[3];
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
  
     temp = m0;
@@ -717,10 +717,10 @@ int mult_cpx_vector_norep_unprepared_conjx2(s16 *x1,
 static __m128i norep_tmp32 __attribute__ ((aligned(16)));
 
 //__attribute__ ((force_align_arg_pointer)) 
-int mult_cpx_vector_norep2(s16 *x1, 
-			   s16 *x2, 
-			   s16 *y, 
-			   u32 N, 
+int mult_cpx_vector_norep2(int16_t *x1, 
+			   int16_t *x2, 
+			   int16_t *y, 
+			   uint32_t N, 
 			   int output_shift) 
 {
   // Multiply elementwise two complex vectors of N elements with normal formatted output and no loop unrollin
@@ -737,7 +737,7 @@ int mult_cpx_vector_norep2(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1,m2,m3;
 
@@ -745,7 +745,7 @@ int mult_cpx_vector_norep2(s16 *x1,
 #ifdef USER_MODE
   __m128i temp;
   int *tempd;
-  s16 *temps;
+  int16_t *temps;
 #endif
   */
 
@@ -770,9 +770,9 @@ int mult_cpx_vector_norep2(s16 *x1,
     /*    
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     */
@@ -799,7 +799,7 @@ int mult_cpx_vector_norep2(s16 *x1,
 
     /*
 #ifdef USER_MODE
-    printf("tmp : %d,%d,%d,%d\n",((s16 *)&tmp32)[0],((s16 *)&tmp32)[1],((s16 *)&tmp32)[2],((s16 *)&tmp32)[3]);
+    printf("tmp : %d,%d,%d,%d\n",((int16_t *)&tmp32)[0],((int16_t *)&tmp32)[1],((int16_t *)&tmp32)[2],((int16_t *)&tmp32)[3]);
 #endif
     */
 
@@ -819,10 +819,10 @@ int mult_cpx_vector_norep2(s16 *x1,
 }
 
 
-int mult_cpx_vector_norep_conj(s16 *x1, 
-			       s16 *x2, 
-			       s16 *y, 
-			       u32 N, 
+int mult_cpx_vector_norep_conj(int16_t *x1, 
+			       int16_t *x2, 
+			       int16_t *y, 
+			       uint32_t N, 
 			       int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements after conjugating and shuffling x1
@@ -839,13 +839,13 @@ int mult_cpx_vector_norep_conj(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1,m2,m4;
 
   /*    
 #ifdef USER_MODE
-  s16 *temps;
+  int16_t *temps;
   int *tempw;
 #endif
   */
@@ -871,9 +871,9 @@ int mult_cpx_vector_norep_conj(s16 *x1,
     /*    
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     */
@@ -881,7 +881,7 @@ int mult_cpx_vector_norep_conj(s16 *x1,
     m4 = _mm_shufflelo_epi16(x1_128[0],_MM_SHUFFLE(1,0,1,0));
     m4 = _mm_shufflehi_epi16(m4,_MM_SHUFFLE(1,0,1,0));
     /*
-    temps = (s16 *)&m4;
+    temps = (int16_t *)&m4;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
     */
     m0 = _mm_madd_epi16(m4,x2_128[0]); //pmaddwd_r2r(mm1,mm0);         // 1- compute x1[0]*x2[0]
@@ -993,10 +993,10 @@ int mult_cpx_vector_norep_conj(s16 *x1,
 }
 
 
-int mult_cpx_vector_norep_conj2(s16 *x1, 
-				s16 *x2, 
-				s16 *y, 
-				u32 N, 
+int mult_cpx_vector_norep_conj2(int16_t *x1, 
+				int16_t *x2, 
+				int16_t *y, 
+				uint32_t N, 
 				int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements after conjugating and shuffling x1
@@ -1013,14 +1013,14 @@ int mult_cpx_vector_norep_conj2(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1,m2,m4;
   __m128i tmp32;
 
       
 
-//   s16 *temps;
+//   int16_t *temps;
   int *tempw;
 
   
@@ -1046,9 +1046,9 @@ int mult_cpx_vector_norep_conj2(s16 *x1,
 /*
     //#ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
     //#endif
 */
@@ -1057,7 +1057,7 @@ int mult_cpx_vector_norep_conj2(s16 *x1,
     m4 = _mm_shufflelo_epi16(x1_128[0],_MM_SHUFFLE(1,0,1,0));
     m4 = _mm_shufflehi_epi16(m4,_MM_SHUFFLE(1,0,1,0));
 /*
-    temps = (s16 *)&m4;
+    temps = (int16_t *)&m4;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 */
     m0 = _mm_madd_epi16(m4,x2_128[0]); //pmaddwd_r2r(mm1,mm0);         // 1- compute x1[0]*x2[0]
@@ -1084,7 +1084,7 @@ int mult_cpx_vector_norep_conj2(s16 *x1,
 
 
 
-    //        printf("tmp : %d,%d,%d,%d\n",((s16 *)&tmp32)[0],((s16 *)&tmp32)[1],((s16 *)&tmp32)[2],((s16 *)&tmp32)[3]);
+    //        printf("tmp : %d,%d,%d,%d\n",((int16_t *)&tmp32)[0],((int16_t *)&tmp32)[1],((int16_t *)&tmp32)[2],((int16_t *)&tmp32)[3]);
 
     y_32[0] = ((int *)&tmp32)[0];        // 1- pack in a 128 bit register [re im re im]
     y_32[1] = ((int *)&tmp32)[1];        // 1- pack in a 128 bit register [re im re im]
@@ -1106,10 +1106,10 @@ int mult_cpx_vector_norep_conj2(s16 *x1,
 }
 
 
-int mult_cpx_vector2(s16 *x1, 
-		     s16 *x2, 
-		     s16 *y, 
-		     u32 N, 
+int mult_cpx_vector2(int16_t *x1, 
+		     int16_t *x2, 
+		     int16_t *y, 
+		     uint32_t N, 
 		     int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements
@@ -1126,13 +1126,13 @@ int mult_cpx_vector2(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1;
 
   /*
 #ifdef USER_MODE
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
 #endif
   */
@@ -1156,9 +1156,9 @@ int mult_cpx_vector2(s16 *x1,
     
 /* #ifdef USER_MODE */
 /*     printf("i=%d\n",i); */
-/*     temps = (s16 *)x1_128; */
+/*     temps = (int16_t *)x1_128; */
 /*     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]); */
-/*     temps = (s16 *)x2_128; */
+/*     temps = (int16_t *)x2_128; */
 /*     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]); */
 /* #endif */
 
@@ -1189,10 +1189,10 @@ int mult_cpx_vector2(s16 *x1,
   return(0);
 }
 
-int mult_cpx_vector_add(s16 *x1, 
-		    s16 *x2, 
-		    s16 *y, 
-		    u32 N, 
+int mult_cpx_vector_add(int16_t *x1, 
+		    int16_t *x2, 
+		    int16_t *y, 
+		    uint32_t N, 
 		    int output_shift)
 {
   // Multiply elementwise two complex vectors of N elements and add it to y
@@ -1209,13 +1209,13 @@ int mult_cpx_vector_add(s16 *x1,
   // log2_amp - increase the output amplitude by a factor 2^log2_amp (default is 0)
   //            WARNING: log2_amp>0 can cause overflow!!
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1;
 
   /*
 #ifdef USER_MODE
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
   __m128i temp;
 #endif
@@ -1240,9 +1240,9 @@ int mult_cpx_vector_add(s16 *x1,
     /*
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     */
@@ -1268,7 +1268,7 @@ int mult_cpx_vector_add(s16 *x1,
     y_128[0] = _mm_add_epi16(m0,y_128[0]);
 
 
-    //        temps = (s16 *)&y_128[0];
+    //        temps = (int16_t *)&y_128[0];
     //    printf("y0 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 
 
@@ -1330,10 +1330,10 @@ int mult_cpx_vector_add(s16 *x1,
   return(0);
 }
 
-int mult_cpx_vector_add32(s16 *x1, 
-			  s16 *x2, 
-			  s16 *y, 
-			  u32 N)
+int mult_cpx_vector_add32(int16_t *x1, 
+			  int16_t *x2, 
+			  int16_t *y, 
+			  uint32_t N)
 
 {
   // Multiply elementwise two complex vectors of N elements and add it to y
@@ -1348,12 +1348,12 @@ int mult_cpx_vector_add32(s16 *x1,
   // N        - the size f the vectors (this function does N cpx mpy. WARNING: N>=4;
   //
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
   //register __m128i m0;
 
   /*
 #ifdef USER_MODE
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
   __m128i temp;
 #endif
@@ -1381,9 +1381,9 @@ int mult_cpx_vector_add32(s16 *x1,
     /*
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
     tempd = (int *)y_128;
     printf("y : %d,%d,%d,%d\n",tempd[0],tempd[1],tempd[2],tempd[3]);
@@ -1413,10 +1413,10 @@ int mult_cpx_vector_add32(s16 *x1,
   return(0);
 }
 
-int mult_vector32(s16 *x1, 
-		  s16 *x2, 
-		  s16 *y, 
-		  u32 N)
+int mult_vector32(int16_t *x1, 
+		  int16_t *x2, 
+		  int16_t *y, 
+		  uint32_t N)
 
 {
   // Multiply elementwise two real vectors of N elements y = real(x1).*real(x2)
@@ -1431,7 +1431,7 @@ int mult_vector32(s16 *x1,
   // N        - the size f the vectors (this function does N cpx mpy. WARNING: N>=4;
   //
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   __m128i *x1_128; 
   __m128i *x2_128; 
@@ -1483,9 +1483,9 @@ int mult_vector32(s16 *x1,
 /*
 The following code does not work, because there is no signed 32bit multiplication intrinsic. It only works for unsigned values
 
-int mult_cpx_vector32_conj(s16 *x, 
-			   s16 *y, 
-			   u32 N)
+int mult_cpx_vector32_conj(int16_t *x, 
+			   int16_t *y, 
+			   uint32_t N)
 
 {
   // elementwise multiplication of two complex vectors of N elements such that y = x * conj(x) = real(x)*real(x)+imag(x)*imag(x)
@@ -1497,11 +1497,11 @@ int mult_cpx_vector32_conj(s16 *x,
   // N        - the size f the vectors (this function does N cpx mpy. WARNING: N>=4;
   //
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
 #ifdef USER_MODE
   char *tempc;
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
   long long *templ;
   __m128i temp;
@@ -1581,9 +1581,9 @@ int mult_cpx_vector32_conj(s16 *x,
 }
 */
 
-int mult_cpx_vector32_conj(s16 *x, 
-			   s16 *y, 
-			   u32 N)
+int mult_cpx_vector32_conj(int16_t *x, 
+			   int16_t *y, 
+			   uint32_t N)
 
 {
   // Elementwise multiplication of two complex vectors of N elements such that y = x * conj(x) = real(x)*real(x)+imag(x)*imag(x)
@@ -1595,7 +1595,7 @@ int mult_cpx_vector32_conj(s16 *x,
   // N        - the size f the vectors (this function does N cpx mpy. WARNING: N>=4;
   //
 
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   int *xi = (int*) x; 
   long long int *yl = (long long int*) y; 
@@ -1633,17 +1633,17 @@ int mult_cpx_vector32_conj(s16 *x,
 }
 
 
-int shift_and_pack(s16 *y, 
-		   u32 N, 
+int shift_and_pack(int16_t *y, 
+		   uint32_t N, 
 		   int output_shift)
 {
-  u32 i;                 // loop counter
+  uint32_t i;                 // loop counter
 
   //register __m128i m0,m1;
 
   /*
 #ifdef USER_MODE
-  s16 *temps;
+  int16_t *temps;
   int *tempd;
   __m128i temp;
 #endif
@@ -1662,9 +1662,9 @@ int shift_and_pack(s16 *y,
     /*
 #ifdef USER_MODE
     printf("i=%d\n",i);
-    temps = (s16 *)x1_128;
+    temps = (int16_t *)x1_128;
     printf("x1 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
-    temps = (s16 *)x2_128;
+    temps = (int16_t *)x2_128;
     printf("x2 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 #endif
     */
@@ -1674,7 +1674,7 @@ int shift_and_pack(s16 *y,
     m0 = _mm_packs_epi32(m0,m0);        // 1- pack in a 128 bit register [re im re im]
     y_128[0] = _mm_unpacklo_epi32(m0,m0);        // 1- pack in a 128 bit register [re im re im]
 
-    //    temps = (s16 *)&y_128[0];
+    //    temps = (int16_t *)&y_128[0];
     //    printf("y0 : %d,%d,%d,%d,%d,%d,%d,%d\n",temps[0],temps[1],temps[2],temps[3],temps[4],temps[5],temps[6],temps[7]);
 
     //unroll 1
@@ -1707,9 +1707,9 @@ int shift_and_pack(s16 *y,
 
 main () {
 
-s16 input[256] __attribute__((aligned(16)));
-s16 input2[256] __attribute__((aligned(16)));
-s16 output[256] __attribute__((aligned(16)));
+int16_t input[256] __attribute__((aligned(16)));
+int16_t input2[256] __attribute__((aligned(16)));
+int16_t output[256] __attribute__((aligned(16)));
 
  int i;
  
@@ -1759,11 +1759,11 @@ s16 output[256] __attribute__((aligned(16)));
 #else  //EXPRESSMIMO_TARGET
 
 /*
-int mult_cpx_vector(s16 *x1, 
-		    s16 *x2, 
-		    s16 *y, 
-		    u32 N, 
-		    u16 output_shift)
+int mult_cpx_vector(int16_t *x1, 
+		    int16_t *x2, 
+		    int16_t *y, 
+		    uint32_t N, 
+		    uint16_t output_shift)
 {
 
 }

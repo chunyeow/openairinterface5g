@@ -66,8 +66,8 @@ int nasmt_netlink_init(void);
 int nasmt_netlink_send(unsigned char *data_buffer, unsigned int data_length, int destination);
 
 // nasmt_common.c
-//void nasmt_COMMON_receive(u16 hlen, u16 dlength, int sap);
-void nasmt_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer, int rb_id, int sap);
+//void nasmt_COMMON_receive(uint16_t hlen, uint16_t dlength, int sap);
+void nasmt_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap);
 
 void nasmt_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc);
 void nasmt_COMMON_del_send(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc);
@@ -91,7 +91,7 @@ int  nasmt_ASCTL_GC_receive(char *buffer);
 int  nasmt_ASCTL_DC_send_cx_establish_request(struct cx_entity *cx);
 int  nasmt_ASCTL_DC_send_cx_release_request(struct cx_entity *cx);
 void nasmt_ASCTL_DC_send_sig_data_request(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc);
-void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, u8 sig_category);
+void nasmt_ASCTL_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig_category);
 int nasmt_ASCTL_leave_sleep_mode(struct cx_entity *cx);
 int nasmt_ASCTL_enter_sleep_mode(struct cx_entity *cx);
 
@@ -101,27 +101,27 @@ int nasmt_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
 
 // nasmt_classifier.c
 void nasmt_CLASS_send(struct sk_buff *skb);
-struct classifier_entity *nasmt_CLASS_add_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref);
-struct classifier_entity *nasmt_CLASS_add_rclassifier(u8 dscp, u16 classref);
-void nasmt_CLASS_del_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref);
-void nasmt_CLASS_del_rclassifier(u8 dscp, u16 classref);
+struct classifier_entity *nasmt_CLASS_add_sclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref);
+struct classifier_entity *nasmt_CLASS_add_rclassifier(uint8_t dscp, uint16_t classref);
+void nasmt_CLASS_del_sclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref);
+void nasmt_CLASS_del_rclassifier(uint8_t dscp, uint16_t classref);
 void nasmt_CLASS_flush_sclassifier(struct cx_entity *cx);
 void nasmt_CLASS_flush_rclassifier(void);
 
 // nasmt_tool.c
-u8 nasmt_TOOL_invfct(struct classifier_entity *gc);
-void nasmt_TOOL_fct(struct classifier_entity *gc, u8 fct);
-void nasmt_TOOL_imei2iid(u8 *imei, u8 *iid);
+uint8_t nasmt_TOOL_invfct(struct classifier_entity *gc);
+void nasmt_TOOL_fct(struct classifier_entity *gc, uint8_t fct);
+void nasmt_TOOL_imei2iid(uint8_t *imei, uint8_t *iid);
 
 void nasmt_TOOL_eth_imei2iid(unsigned char *imei, unsigned char *addr ,unsigned char *iid, unsigned char len);
-u8 nasmt_TOOL_get_dscp6(struct ipv6hdr *iph);
-u8 nasmt_TOOL_get_dscp4(struct iphdr *iph);
-u8 *nasmt_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol);
-u8 *nasmt_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol);
+uint8_t nasmt_TOOL_get_dscp6(struct ipv6hdr *iph);
+uint8_t nasmt_TOOL_get_dscp4(struct iphdr *iph);
+uint8_t *nasmt_TOOL_get_protocol6(struct ipv6hdr *iph, uint8_t *protocol);
+uint8_t *nasmt_TOOL_get_protocol4(struct iphdr *iph, uint8_t *protocol);
 
 void nasmt_TOOL_pk_icmp6(struct icmp6hdr *icmph);
 
-void nasmt_TOOL_print_state(u8 state);
+void nasmt_TOOL_print_state(uint8_t state);
 void nasmt_TOOL_print_buffer(unsigned char * buffer,int length);
 void nasmt_TOOL_print_rb_entity(struct rb_entity *rb);
 void nasmt_TOOL_print_classifier(struct classifier_entity *gc);

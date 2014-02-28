@@ -52,13 +52,13 @@ void dlsch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
 		      int mbsfn_flag,
 		      LTE_eNB_DLSCH_t *dlsch,
 		      int G,
-		      u8 q,
-		      u8 Ns) {
+		      uint8_t q,
+		      uint8_t Ns) {
 
   int i,j,k=0;
-  //  u8 reset;
-  u32 x1, x2, s=0;
-  u8 *e=dlsch->e;
+  //  uint8_t reset;
+  uint32_t x1, x2, s=0;
+  uint8_t *e=dlsch->e;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_SCRAMBLING, VCD_FUNCTION_IN);
 
@@ -97,13 +97,13 @@ void dlsch_unscrambling(LTE_DL_FRAME_PARMS *frame_parms,
 			int mbsfn_flag,
 			LTE_UE_DLSCH_t *dlsch,
 			int G,
-			s16* llr,
-			u8 q,
-			u8 Ns) {
+			int16_t* llr,
+			uint8_t q,
+			uint8_t Ns) {
 
   int i,j,k=0;
-  //  u8 reset;
-  u32 x1, x2, s=0;
+  //  uint8_t reset;
+  uint32_t x1, x2, s=0;
   
   //  reset = 1;
   // x1 is set in first call to lte_gold_generic

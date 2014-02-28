@@ -24,7 +24,7 @@
 
 //-----------------------------------------------------------------------------
 void
-reassembly (u8_t * srcP, u16_t lengthP, struct rlc_am_entity *rlcP)
+reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
   int             sdu_max_size_allowed;

@@ -32,7 +32,7 @@ PHY_VARS_UE *PHY_vars_UE;
 #define CCCH_RB_ALLOC computeRIV(PHY_vars_eNB->lte_frame_parms.N_RB_UL,0,2)
 #define DLSCH_RB_ALLOC 0x1fbf // igore DC component,RB13
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,u16 Nid_cell,u8 tdd_config,u8 N_RB_DL,lte_frame_type_t frame_type,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,lte_frame_type_t frame_type,uint8_t osf) {
 
   unsigned int i;
   LTE_DL_FRAME_PARMS *lte_frame_parms;
@@ -129,11 +129,11 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
 
 DCI_PDU DCI_pdu;
 
-DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,u8 log2L, u8 log2Lcommon, u8 format_selector, u32 rnti)
+DCI_PDU *get_dci(LTE_DL_FRAME_PARMS *lte_frame_parms,uint8_t log2L, uint8_t log2Lcommon, uint8_t format_selector, uint32_t rnti)
 {
-  u8 BCCH_alloc_pdu[8];
-  u8 DLSCH_alloc_pdu[8];
-  u8 UL_alloc_pdu[8];
+  uint8_t BCCH_alloc_pdu[8];
+  uint8_t DLSCH_alloc_pdu[8];
+  uint8_t UL_alloc_pdu[8];
 
   int i;
   int dci_length_bytes,dci_length;
@@ -474,7 +474,7 @@ int main(int argc, char **argv) {
   double **s_re,**s_im,**r_re,**r_im;
   double iqim=0.0;
   //  int subframe_offset;
-  u8 subframe=0;
+  uint8_t subframe=0;
 #ifdef XFORMS
   FD_lte_phy_scope_ue *form_ue;
   char title[255];
@@ -482,28 +482,28 @@ int main(int argc, char **argv) {
   int trial, n_errors_common=0,n_errors_ul=0,n_errors_dl=0,n_errors_cfi=0,n_errors_hi=0;
   unsigned char eNb_id = 0;
 
-  u8 awgn_flag=0;
+  uint8_t awgn_flag=0;
   int n_frames=1;
   channel_desc_t *eNB2UE;
-  u32 nsymb,tx_lev,tx_lev_dB=0,num_pdcch_symbols=3;
-  u8 extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
-  u16 Nid_cell=0;
-  //  s8 interf1=-128,interf2=-128;
-  u8 dci_cnt=0;
+  uint32_t nsymb,tx_lev,tx_lev_dB=0,num_pdcch_symbols=3;
+  uint8_t extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
+  uint16_t Nid_cell=0;
+  //  int8_t interf1=-128,interf2=-128;
+  uint8_t dci_cnt=0;
   LTE_DL_FRAME_PARMS *frame_parms;
-  u8 log2L=2, log2Lcommon=2, format_selector=0;
-  u8 numCCE,nCCE_max,common_active=0,ul_active=0,dl_active=0;
-  u32 rv;
+  uint8_t log2L=2, log2Lcommon=2, format_selector=0;
+  uint8_t numCCE,nCCE_max,common_active=0,ul_active=0,dl_active=0;
+  uint32_t rv;
 
   DCI_format_t format = format1;
-  u32 n_trials_common=0,n_trials_ul=0,n_trials_dl=0,false_detection_cnt=0;
-  u8 common_rx,ul_rx,dl_rx;
-  u8 tdd_config=3;
+  uint32_t n_trials_common=0,n_trials_ul=0,n_trials_dl=0,false_detection_cnt=0;
+  uint8_t common_rx,ul_rx,dl_rx;
+  uint8_t tdd_config=3;
 
   FILE *input_fd=NULL;
   char input_val_str[50],input_val_str2[50];
-  u16 n_rnti=0x1234;
-  u8 osf=1,N_RB_DL=25;
+  uint16_t n_rnti=0x1234;
+  uint8_t osf=1,N_RB_DL=25;
 
   SCM_t channel_model=Rayleigh1_anticorr;
 
@@ -512,10 +512,10 @@ int main(int argc, char **argv) {
   void* dlsch_pdu = NULL;
   //  int ret;
 
-  u8 harq_pid;
-  u8 phich_ACK;
+  uint8_t harq_pid;
+  uint8_t phich_ACK;
 
-  u8 num_phich_interf = 0;
+  uint8_t num_phich_interf = 0;
   lte_frame_type_t frame_type=TDD;
   int re_offset;
   uint32_t *txptr; 
@@ -864,7 +864,7 @@ int main(int argc, char **argv) {
       txptr = (uint32_t*)&PHY_vars_eNB->lte_eNB_common_vars.txdataF[eNb_id][aa][subframe*PHY_vars_eNB->lte_frame_parms.samples_per_tti];
       for (i=0;i<PHY_vars_eNB->lte_frame_parms.N_RB_DL*6;i++) {
 	txptr[re_offset++] = QPSK[taus()&3];
-	//printf("%i => %d,%d\n",re_offset-1,*(s16_t*)&txptr[re_offset-1],*(1+(s16_t*)&txptr[re_offset-1]));
+	//printf("%i => %d,%d\n",re_offset-1,*(int16_t*)&txptr[re_offset-1],*(1+(int16_t*)&txptr[re_offset-1]));
       }
       re_offset=1; //skip DC
       for (i=0;i<PHY_vars_eNB->lte_frame_parms.N_RB_DL*6;i++)
@@ -1106,8 +1106,8 @@ int main(int argc, char **argv) {
 			{
 			  for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			    { 
-			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP);
-			      ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP);
+			      ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP);
+			      ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP);
 			    }
 			}
 		    }
@@ -1120,8 +1120,8 @@ int main(int argc, char **argv) {
 		      {
 			for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			  { 
-			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)(AMP);
-			    ((s16 *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
+			    ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(short)(AMP);
+			    ((int16_t *) PHY_vars_UE->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
 			  }
 		      }
 		  }

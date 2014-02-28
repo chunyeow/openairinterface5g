@@ -53,7 +53,7 @@ extern void *bigphys_malloc(int);
 #endif
 
 void rrc_init_ch_req(unsigned char Mod_id, rrm_init_ch_req_t  *smsg){
- u16 Index;
+ uint16_t Index;
  MAC_CONFIG_REQ Mac_config_req;
  // MAC_MEAS_REQ Mac_meas_req;
 
@@ -108,7 +108,7 @@ void rrc_init_ch_req(unsigned char Mod_id, rrm_init_ch_req_t  *smsg){
 }
 
 void rrc_init_mr_req(unsigned char Mod_id, rrci_init_mr_req_t  *smsg){
-  u16 Index;
+  uint16_t Index;
   MAC_CONFIG_REQ Mac_config_req;
   // MAC_MEAS_REQ Mac_meas_req;
   msg("-----------------------------------------------------------------------------------------------------------------\n");

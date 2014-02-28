@@ -36,10 +36,10 @@ extern rx_handler_t rx_handler;
 extern tx_handler_t tx_handler;
 
 extern eNB_transport_info_t eNB_transport_info[NUMBER_OF_eNB_MAX];
-extern u16 eNB_transport_info_TB_index[NUMBER_OF_eNB_MAX];
+extern uint16_t eNB_transport_info_TB_index[NUMBER_OF_eNB_MAX];
 
 extern UE_transport_info_t UE_transport_info[NUMBER_OF_UE_MAX];
-extern u16 UE_transport_info_TB_index[NUMBER_OF_UE_MAX];
+extern uint16_t UE_transport_info_TB_index[NUMBER_OF_UE_MAX];
 
 extern UE_cntl ue_cntl_delay[NUMBER_OF_UE_MAX][2];
 

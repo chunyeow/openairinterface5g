@@ -62,14 +62,14 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 */
 private_rlc_am_reassembly(   void rlc_am_clear_rx_sdu (rlc_am_entity_t *rlc_pP);)
 
-/*! \fn void rlc_am_reassembly   (u8_t * srcP, s32_t lengthP, rlc_am_entity_t *rlc_pP,frame_t frameP)
+/*! \fn void rlc_am_reassembly   (uint8_t * srcP, int32_t lengthP, rlc_am_entity_t *rlc_pP,frame_t frameP)
 * \brief    Concatenate datas at the tail of the output SDU in construction. This SDU in construction will be sent to higher layer.
 * \param[in]  srcP                      Pointer on data to be reassemblied.
 * \param[in]  lengthP                   Length of data to be reassemblied.
 * \param[in]  rlc_pP                      RLC AM protocol instance pointer.
 * \param[in]  frameP                     Frame index.
 */
-private_rlc_am_reassembly(   void rlc_am_reassembly   (u8_t * srcP, s32_t lengthP, rlc_am_entity_t *rlc_pP,frame_t frameP);)
+private_rlc_am_reassembly(   void rlc_am_reassembly   (uint8_t * srcP, int32_t lengthP, rlc_am_entity_t *rlc_pP,frame_t frameP);)
 
 /*! \fn void rlc_am_send_sdu     (rlc_am_entity_t *rlc_pP,frame_t frameP)
 * \brief    Send the output SDU in construction to higher layer.
@@ -78,7 +78,7 @@ private_rlc_am_reassembly(   void rlc_am_reassembly   (u8_t * srcP, s32_t length
 */
 private_rlc_am_reassembly(   void rlc_am_send_sdu     (rlc_am_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_flagP);)
 
-/*! \fn void rlc_am_reassemble_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, u8_t eNB_flagP, mem_block_t* tb_pP)
+/*! \fn void rlc_am_reassemble_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, uint8_t eNB_flagP, mem_block_t* tb_pP)
 * \brief    Reassembly a RLC AM PDU, depending of the content of this PDU, data will be reassemblied to the current output SDU, the current will be sent to higher layers or not, after or before the reassembly, or no send of SDU will be triggered, depending on FI field in PDU header.
 * \param[in]  rlc_pP                      RLC AM protocol instance pointer.
 * \param[in]  frameP                     Frame index.

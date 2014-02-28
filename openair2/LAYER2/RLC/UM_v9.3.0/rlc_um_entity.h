@@ -45,12 +45,12 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #        include "rlc_def.h"
 
 typedef struct rlc_um_timer_s {
-    u32_t  frame_time_out;/*!< \brief When set, indicate the frame number the timer will time-out. */
-    u32_t  frame_start;   /*!< \brief indicate the frame number the timer has been started. */
-    u32_t  time_out;      /*!< \brief Configured timer duration in frames. */
-    u32_t  running:1;     /*!< \brief The timer is running. */
-    u32_t  timed_out:1;   /*!< \brief The timer has timed-out. */
-    u32_t  dummy:30;      /*!< \brief Bits not used. */
+    uint32_t  frame_time_out;/*!< \brief When set, indicate the frame number the timer will time-out. */
+    uint32_t  frame_start;   /*!< \brief indicate the frame number the timer has been started. */
+    uint32_t  time_out;      /*!< \brief Configured timer duration in frames. */
+    uint32_t  running:1;     /*!< \brief The timer is running. */
+    uint32_t  timed_out:1;   /*!< \brief The timer has timed-out. */
+    uint32_t  dummy:30;      /*!< \brief Bits not used. */
 } rlc_um_timer_t ;
 
 
@@ -81,10 +81,10 @@ typedef struct rlc_um_entity_s {
   //*****************************************************************************
   // CONFIGURATION PARAMETERS
   //*****************************************************************************
-  u8_t              tx_sn_length;                     /*!< \brief Length of sequence number in bits, can be 5 or 10. */
-  u8_t              rx_sn_length;                     /*!< \brief Length of sequence number in bits, can be 5 or 10. */
-  u8_t              tx_header_min_length_in_bytes;    /*!< \brief Length of PDU header, can be 1 or 2 bytes. */
-  u8_t              rx_header_min_length_in_bytes;    /*!< \brief Length of PDU header, can be 1 or 2 bytes. */
+  uint8_t              tx_sn_length;                     /*!< \brief Length of sequence number in bits, can be 5 or 10. */
+  uint8_t              rx_sn_length;                     /*!< \brief Length of sequence number in bits, can be 5 or 10. */
+  uint8_t              tx_header_min_length_in_bytes;    /*!< \brief Length of PDU header, can be 1 or 2 bytes. */
+  uint8_t              rx_header_min_length_in_bytes;    /*!< \brief Length of PDU header, can be 1 or 2 bytes. */
   rlc_sn_t          tx_sn_modulo;                     /*!< \brief Module of the sequence number of PDU, can be RLC_UM_SN_5_BITS_MODULO or RLC_UM_SN_10_BITS_MODULO. */
   rlc_sn_t          rx_sn_modulo;                     /*!< \brief Module of the sequence number of PDU, can be RLC_UM_SN_5_BITS_MODULO or RLC_UM_SN_10_BITS_MODULO. */
   rlc_sn_t          rx_um_window_size;
@@ -95,12 +95,12 @@ typedef struct rlc_um_entity_s {
   // sdu communication;
   mem_block_t     **input_sdus;                /*!< \brief Input SDU buffer (for SDUs coming from upper layers). Should be accessed as an array. */
   mem_block_t     * input_sdus_alloc;          /*!< \brief Allocated memory for the input SDU buffer (for SDUs coming from upper layers). */
-  u16_t             size_input_sdus_buffer;    /*!< \brief Size of the input SDU buffer. */
-  u16_t             nb_sdu;                    /*!< \brief Total number of SDUs in input_sdus[] */
-  u16_t             next_sdu_index;            /*!< \brief Next SDU index for a new incomin SDU in input_sdus[]. */
-  u16_t             current_sdu_index;         /*!< \brief Current SDU index in input_sdus array to be segmented. */
+  uint16_t             size_input_sdus_buffer;    /*!< \brief Size of the input SDU buffer. */
+  uint16_t             nb_sdu;                    /*!< \brief Total number of SDUs in input_sdus[] */
+  uint16_t             next_sdu_index;            /*!< \brief Next SDU index for a new incomin SDU in input_sdus[]. */
+  uint16_t             current_sdu_index;         /*!< \brief Current SDU index in input_sdus array to be segmented. */
   rlc_buffer_occupancy_t buffer_occupancy;          /*!< \brief Number of bytes contained in input_sdus buffer.*/
-  u32_t             nb_bytes_requested_by_mac; /*!< \brief Number of bytes requested by lower layer for next transmission. */
+  uint32_t             nb_bytes_requested_by_mac; /*!< \brief Number of bytes requested by lower layer for next transmission. */
   list_t            pdus_to_mac_layer;         /*!< \brief PDUs buffered for transmission to MAC layer. */
   //*****************************************************************************
   // RECEIVER

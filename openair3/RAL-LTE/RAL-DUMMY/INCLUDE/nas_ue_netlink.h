@@ -63,27 +63,27 @@
 
 // Parameter types
 //----------------------------------------------------------
-typedef u16 netlIPVersion_t;
+typedef uint16_t netlIPVersion_t;
 typedef struct netlIPAddr {
         netlIPVersion_t ip_version;
         struct in6_addr ip_address;
 } netlIPAddr_t;
-typedef u32 netlStatValue_t;
-typedef u32 netlProviderId_t;
-typedef u16 netlCellID_t; // ID of the cell for connection
-typedef u16 netlConnectionStatus_t; // connection establishment status
-typedef u16 netlRadioBearerId_t;
-typedef u16 netlQoSTrafficClass_t; //QoS traffic class requested
-typedef u16 netlIPdscp_t; // DSCP code transported to service NAS
+typedef uint32_t netlStatValue_t;
+typedef uint32_t netlProviderId_t;
+typedef uint16_t netlCellID_t; // ID of the cell for connection
+typedef uint16_t netlConnectionStatus_t; // connection establishment status
+typedef uint16_t netlRadioBearerId_t;
+typedef uint16_t netlQoSTrafficClass_t; //QoS traffic class requested
+typedef uint16_t netlIPdscp_t; // DSCP code transported to service NAS
 typedef struct netlRBDef {
         netlRadioBearerId_t rbId;
         netlQoSTrafficClass_t QoSclass;
         netlIPdscp_t dscp;
-        u8 state;
+        uint8_t state;
 } netlrbParms_t;
-typedef u16  netlNumRBsInList_t; // number of RBs defined in the list
-typedef u16  netlNumCellsMeas_t; // number of RGs that could be measured
-typedef u32 netlSigLevel_t; // Signal level measured
+typedef uint16_t  netlNumRBsInList_t; // number of RBs defined in the list
+typedef uint16_t  netlNumCellsMeas_t; // number of RGs that could be measured
+typedef uint32_t netlSigLevel_t; // Signal level measured
 typedef struct netlMeasures {
         netlCellID_t cell_id;
         netlSigLevel_t level;
@@ -109,7 +109,7 @@ struct nas_ue_msg_statistic_reply
 struct nas_ue_msg_cnx_status_reply
 {
 	netlCellID_t cellid;		// cell identification
-	u8 iid[8]; 		// interface identification - EUI64
+	uint8_t iid[8]; 		// interface identification - EUI64
   netlIPAddr_t   ip_addr;
 	netlConnectionStatus_t status;
 	netlNumRBsInList_t num_rb;
@@ -118,12 +118,12 @@ struct nas_ue_msg_cnx_status_reply
 
 struct nas_ue_msg_cnx_list_reply
 {
-	u8 state;
-	u16 cellid;		// cell identification
-	u32 iid6[2]; 			// IPv6  interface identification
-	u8 iid4; 			// IPv4 interface identification
-	u16 num_rb;
-	u16 nsclassifier;
+	uint8_t state;
+	uint16_t cellid;		// cell identification
+	uint32_t iid6[2]; 			// IPv6  interface identification
+	uint8_t iid4; 			// IPv4 interface identification
+	uint16_t num_rb;
+	uint16_t nsclassifier;
 };
 
 
@@ -135,7 +135,7 @@ struct nas_ue_msg_cnx_establish_request
 struct nas_ue_msg_cnx_establish_reply
 {
 	netlConnectionStatus_t status;
-//	u8 iid6[8]; 	// IPv6  interface identification - EUI64
+//	uint8_t iid6[8]; 	// IPv6  interface identification - EUI64
 };
 
 struct nas_ue_msg_cnx_release_reply
@@ -153,7 +153,7 @@ struct nas_ue_msg_measure_request
 {
   netlNumCellsMeas_t num_cells;
 	netlCellID_t cellid[NAS_UE_NETL_MAX_MEASURE_NB]; // Cell identification
-  u16 num_providers;
+  uint16_t num_providers;
 	netlProviderId_t provider_id[NAS_UE_NETL_MAX_MEASURE_NB]; // Provider identification
 };
 
@@ -161,7 +161,7 @@ struct nas_ue_msg_measure_reply
 {
   netlNumCellsMeas_t num_cells;
   netlMeasures_t measures[NAS_UE_NETL_MAX_MEASURE_NB];
-  u16 signal_lost_flag;
+  uint16_t signal_lost_flag;
 };
 
 struct nas_ue_msg_measure_indicate
@@ -176,7 +176,7 @@ struct nas_ue_msg_signal_loss
 
 struct nas_ue_l2id_reply
 {
-  u32 l2id [2];
+  uint32_t l2id [2];
 };
 
 ///////////////////////////
@@ -187,14 +187,14 @@ struct nas_ue_l2id_reply
 struct nas_ue_netl_hdr
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
 };
 struct nas_ue_netl_request
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
   union {
     struct nas_ue_msg_cnx_establish_request cnx_req;
     struct nas_ue_msg_measure_request meas_req;
@@ -203,8 +203,8 @@ struct nas_ue_netl_request
 struct nas_ue_netl_reply
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
   union {
     struct nas_ue_msg_statistic_reply  statistics_rep;
     struct nas_ue_msg_cnx_status_reply cnx_stat_rep;
@@ -219,8 +219,8 @@ struct nas_ue_netl_reply
 struct nas_ue_netl_indication
 {
 	char name[IFNAMSIZ];
-	u16 type;
-  u16 length;
+	uint16_t type;
+  uint16_t length;
   union {
     struct nas_ue_msg_measure_indicate meas_ind;
     struct nas_ue_msg_signal_loss sign_loss;

@@ -96,7 +96,7 @@ static void * dlsch_thread(void *param) {
   //unsigned long cpuid;
   unsigned char dlsch_thread_index = *((unsigned char *)param);
   unsigned int ret;
-  u8 harq_pid;
+  uint8_t harq_pid;
 
   RTIME time_in,time_out;
 #ifdef RTAI

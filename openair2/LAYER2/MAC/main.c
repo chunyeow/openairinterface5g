@@ -73,7 +73,7 @@
 void dl_phy_sync_success(module_id_t   module_idP,
     frame_t       frameP,
     unsigned char eNB_index,
-    u8            first_sync){  //init as MR
+    uint8_t            first_sync){  //init as MR
   /***********************************************************************/
   LOG_D(MAC,"[UE %d] Frame %d: PHY Sync to eNB_index %d successful \n", module_idP, frameP, eNB_index);
   if (first_sync==1) {
@@ -87,7 +87,7 @@ void dl_phy_sync_success(module_id_t   module_idP,
 }
 
 /***********************************************************************/
-void mrbch_phy_sync_failure(module_id_t module_idP, frame_t frameP, u8 free_eNB_index){//init as CH
+void mrbch_phy_sync_failure(module_id_t module_idP, frame_t frameP, uint8_t free_eNB_index){//init as CH
   /***********************************************************************/
   LOG_I(MAC,"[eNB %d] Frame %d: PHY Sync failure \n",module_idP,frameP);
   layer2_init_eNB(module_idP, free_eNB_index);
@@ -107,7 +107,7 @@ char layer2_init_UE(module_id_t module_idP){
 }
 
 /***********************************************************************/
-void mac_UE_out_of_sync_ind(module_id_t module_idP, frame_t frameP, u16 eNB_index){
+void mac_UE_out_of_sync_ind(module_id_t module_idP, frame_t frameP, uint16_t eNB_index){
   /***********************************************************************/
 
   //  Mac_rlc_xface->mac_out_of_sync_ind(Mod_id, frameP, eNB_index);
@@ -115,7 +115,7 @@ void mac_UE_out_of_sync_ind(module_id_t module_idP, frame_t frameP, u16 eNB_inde
 
 
 /***********************************************************************/
-int mac_top_init(int eMBMS_active, u8 cba_group_active, u8 HO_active){
+int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
   /***********************************************************************/
   module_id_t    Mod_id,i,j;
   RA_TEMPLATE *RA_template;
@@ -285,7 +285,7 @@ int mac_top_init(int eMBMS_active, u8 cba_group_active, u8 HO_active){
 
   //ICIC init param
 #ifdef ICIC
-  u8 SB_size;
+  uint8_t SB_size;
   SB_size=mac_xface->get_SB_size(mac_xface->lte_frame_parms->N_RB_DL);
 
   srand (time(NULL));
@@ -387,7 +387,7 @@ void mac_top_cleanup(void){
   free( Mac_rlc_xface);
 }
 
-int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, u8 cba_group_active, u8 HO_active) {
+int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active) {
 
 
 

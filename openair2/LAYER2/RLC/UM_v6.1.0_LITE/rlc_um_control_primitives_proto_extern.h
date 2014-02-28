@@ -13,7 +13,7 @@
 #        include "mem_block.h"
 #        include "rrm_config_structs.h"
 //-----------------------------------------------------------------------------
-extern void     config_req_rlc_um (struct rlc_um_entity *rlcP, module_id_t module_idP, rlc_um_info_t * config_umP, u8_t rb_idP, rb_type_t rb_typeP);
+extern void     config_req_rlc_um (struct rlc_um_entity *rlcP, module_id_t module_idP, rlc_um_info_t * config_umP, uint8_t rb_idP, rb_type_t rb_typeP);
 extern void     send_rlc_um_control_primitive (struct rlc_um_entity *rlcP, module_id_t module_idP, mem_block_t *cprimitiveP);
 extern void     init_rlc_um (struct rlc_um_entity *rlcP);
 extern void     rlc_um_reset_state_variables (struct rlc_um_entity *rlcP);

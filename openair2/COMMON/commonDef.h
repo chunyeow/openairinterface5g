@@ -53,8 +53,8 @@ Description Contains global common definitions
             Standard data type definitions
 -----------------------------------------------------------------------------
 */
-typedef int8_t      SByte_t;    /* 8 bit signed integer     */
-typedef int8_t      Int8_t;     /* 8 bit signed integer     */
+typedef int8_t      SByte_t;    /* 8 bit  signed integer     */
+typedef int8_t      Int8_t;     /* 8 bit  signed integer     */
 typedef int16_t     Int16_t;    /* 16 bit signed integer    */
 typedef int32_t     Int32_t;    /* 32 bit signed integer    */
 typedef int64_t     Int64_t;    /* 64 bit signed integer    */

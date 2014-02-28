@@ -84,12 +84,12 @@ int setup_oai_hw(LTE_DL_FRAME_PARMS *frame_parms,
     // replace RX signal buffers with mmaped HW versions
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       free(phy_vars_ue->lte_ue_common_vars.rxdata[i]);
-      phy_vars_ue->lte_ue_common_vars.rxdata[i] = (s32*)((int)dummy_tx_rx_vars.RX_DMA_BUFFER[0]-bigphys_top+mem_base);
+      phy_vars_ue->lte_ue_common_vars.rxdata[i] = (int32_t*)((int)dummy_tx_rx_vars.RX_DMA_BUFFER[0]-bigphys_top+mem_base);
       printf("rxdata[%d] @ %p\n",i,phy_vars_ue->lte_ue_common_vars.rxdata[i]);
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
       free(phy_vars_ue->lte_ue_common_vars.txdata[i]);
-      phy_vars_ue->lte_ue_common_vars.txdata[i] = (s32*)((int)dummy_tx_rx_vars.TX_DMA_BUFFER[0]-bigphys_top+mem_base);
+      phy_vars_ue->lte_ue_common_vars.txdata[i] = (int32_t*)((int)dummy_tx_rx_vars.TX_DMA_BUFFER[0]-bigphys_top+mem_base);
       printf("txdata[%d] @ %p\n",i,phy_vars_ue->lte_ue_common_vars.txdata[i]);
     }
   }
@@ -98,12 +98,12 @@ int setup_oai_hw(LTE_DL_FRAME_PARMS *frame_parms,
     // replace RX signal buffers with mmaped HW versions
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-      phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (s32*)((int)dummy_tx_rx_vars.RX_DMA_BUFFER[0]-bigphys_top+mem_base);
+      phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (int32_t*)((int)dummy_tx_rx_vars.RX_DMA_BUFFER[0]-bigphys_top+mem_base);
       printf("rxdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-      phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (s32*)((int)dummy_tx_rx_vars.TX_DMA_BUFFER[0]-bigphys_top+mem_base);
+      phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (int32_t*)((int)dummy_tx_rx_vars.TX_DMA_BUFFER[0]-bigphys_top+mem_base);
       printf("txdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
       for (j=0;j<16;j++) {
 	printf("txbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j]);

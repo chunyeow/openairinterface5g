@@ -12,6 +12,6 @@
 //-----------------------------------------------------------------------------
 #        include "rlc_am_entity.h"
 //-----------------------------------------------------------------------------
-extern void     reassembly (u8_t * srcP, u16_t lengthP, struct rlc_am_entity *rlcP);
+extern void     reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_am_entity *rlcP);
 extern void     send_sdu (struct rlc_am_entity *rlcP);
 #    endif

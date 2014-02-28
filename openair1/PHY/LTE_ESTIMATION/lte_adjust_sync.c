@@ -40,8 +40,8 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
   for (i = 0; i < frame_parms->nb_prefix_samples; i++) {
     temp = 0;
     for (aa=0;aa<frame_parms->nb_antennas_rx;aa++) {
-      Re = ((s16*)phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_id][aa])[(i<<2)];
-      Im = ((s16*)phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_id][aa])[1+(i<<2)];
+      Re = ((int16_t*)phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_id][aa])[(i<<2)];
+      Im = ((int16_t*)phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_id][aa])[1+(i<<2)];
       temp += (Re*Re/2) + (Im*Im/2);
     }
     if (temp > max_val) {
@@ -135,8 +135,8 @@ int lte_est_timing_advance(LTE_DL_FRAME_PARMS *frame_parms,
     for (i = 0; i < frame_parms->ofdm_symbol_size/2; i++) {
       temp = 0;
       for (aa=0;aa<frame_parms->nb_antennas_rx;aa++) {
-	Re = ((s16*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[(i<<2)];
-	Im = ((s16*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[1+(i<<2)];
+	Re = ((int16_t*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[(i<<2)];
+	Im = ((int16_t*)lte_eNb_srs->srs_ch_estimates_time[ind][aa])[1+(i<<2)];
 	temp += (Re*Re/2) + (Im*Im/2);
       }
       if (temp > max_val) {
@@ -161,7 +161,7 @@ int lte_est_timing_advance(LTE_DL_FRAME_PARMS *frame_parms,
 }
 
 
-int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,u8 UE_id,u8 subframe)
+int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_t subframe)
 {
   static int first_run=1;
   static int max_pos_fil2=0;
@@ -171,11 +171,11 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,u8 UE_id,u8 subframe
 
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;
   LTE_eNB_PUSCH *eNB_pusch_vars = phy_vars_eNB->lte_eNB_pusch_vars[UE_id];
-  s32 **ul_ch_estimates_time=  eNB_pusch_vars->drs_ch_estimates_time[0];
+  int32_t **ul_ch_estimates_time=  eNB_pusch_vars->drs_ch_estimates_time[0];
 
-  u8 harq_pid = subframe2harq_pid(frame_parms,((subframe==9)?-1:0)+phy_vars_eNB->frame,subframe);
-  u8 Ns = 1; //we take the estimate from the second slot
-  u8 cyclic_shift = (frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift +
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe==9)?-1:0)+phy_vars_eNB->frame,subframe);
+  uint8_t Ns = 1; //we take the estimate from the second slot
+  uint8_t cyclic_shift = (frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift +
 		     phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->n_DMRS2 +
 		     frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.nPRS[(subframe<<1)+Ns]) % 12;
 
@@ -186,8 +186,8 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,u8 UE_id,u8 subframe
   for (i = 0; i < frame_parms->ofdm_symbol_size; i++) {
       temp = 0;
       for (aa=0;aa<frame_parms->nb_antennas_rx;aa++) {
-	Re = ((s16*)ul_ch_estimates_time[aa])[(i<<2)];
-	Im = ((s16*)ul_ch_estimates_time[aa])[1+(i<<2)];
+	Re = ((int16_t*)ul_ch_estimates_time[aa])[(i<<2)];
+	Im = ((int16_t*)ul_ch_estimates_time[aa])[1+(i<<2)];
 	temp += (Re*Re/2) + (Im*Im/2);
       }
       if (temp > max_val) {

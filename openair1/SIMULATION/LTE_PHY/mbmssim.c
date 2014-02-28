@@ -34,7 +34,7 @@
 PHY_VARS_eNB *PHY_vars_eNB;
 PHY_VARS_UE *PHY_vars_UE;
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,u8 extended_prefix_flag,lte_frame_type_t frame_type, u16 Nid_cell,u8 tdd_config,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,lte_frame_type_t frame_type, uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
   int i,l,aa,aarx;
   double sigma2, sigma2_dB=0,SNR,snr0=-2.0,snr1=0.0;
-  u8 snr1set=0;
+  uint8_t snr1set=0;
   double snr_step=1,input_snr_step=1;
   //mod_sym_t **txdataF;
   int **txdata;
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
   double iqim = 0.0;
   int subframe=1;
   char fname[40];//, vname[40];
-  u8 transmission_mode = 1,n_tx=1,n_rx=2;
-  u16 Nid_cell=0;
+  uint8_t transmission_mode = 1,n_tx=1,n_rx=2;
+  uint16_t Nid_cell=0;
 
   FILE *fd;
 
@@ -127,13 +127,13 @@ int main(int argc, char **argv) {
 
   int n_frames=1;
   channel_desc_t *eNB2UE;
-  u32 nsymb,tx_lev,tx_lev_dB;
-  u8 extended_prefix_flag=1;
+  uint32_t nsymb,tx_lev,tx_lev_dB;
+  uint8_t extended_prefix_flag=1;
   LTE_DL_FRAME_PARMS *frame_parms;
   int hold_channel=0;
 
   
-  u16 NB_RB=25;
+  uint16_t NB_RB=25;
 
   int tdd_config=3;
   
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
  
   unsigned int trials,errs[4]={0,0,0,0};//,round_trials[4]={0,0,0,0};
   
-  u8 N_RB_DL=25,osf=1;
+  uint8_t N_RB_DL=25,osf=1;
   double BW=5.0;
 
   lte_frame_type_t frame_type = FDD; 

@@ -2,7 +2,7 @@
 
 // Approximate 10*log10(x) in fixed point : x = 0...(2^32)-1
 
-s8 dB_table[256] = {
+int8_t dB_table[256] = {
    0,
    3,
    5,
@@ -261,7 +261,7 @@ s8 dB_table[256] = {
   24
 };
 
-s16 dB_table_times10[256] = {
+int16_t dB_table_times10[256] = {
   0,
   30,
   47,
@@ -520,10 +520,10 @@ s16 dB_table_times10[256] = {
   240
 };
 /*
-s8 dB_fixed(int x) {
+int8_t dB_fixed(int x) {
 
   int i=0,adj=0;
-  s8 log10=0;
+  int8_t log10=0;
     
   // find MSB
   for (i=31;i>=0;i--) {
@@ -550,8 +550,8 @@ s8 dB_fixed(int x) {
 }
 */
 
-s16 dB_fixed_times10(u32 x) {
-  s16 dB_power=0;
+int16_t dB_fixed_times10(uint32_t x) {
+  int16_t dB_power=0;
 
 
   if (x==0) {
@@ -573,9 +573,9 @@ s16 dB_fixed_times10(u32 x) {
   return dB_power;
 }
 
-s8 dB_fixed(u32 x) {
+int8_t dB_fixed(uint32_t x) {
 
-  s8 dB_power=0;
+  int8_t dB_power=0;
 
 
   if (x==0) {
@@ -597,7 +597,7 @@ s8 dB_fixed(u32 x) {
   return dB_power;
 }
 
-s8 dB_fixed2(u32 x, u32 y) {
+int8_t dB_fixed2(uint32_t x, uint32_t y) {
 
   if ((x>0) && (y>0) )
     if (x>y)

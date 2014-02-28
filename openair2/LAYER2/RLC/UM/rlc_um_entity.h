@@ -27,17 +27,17 @@ struct rlc_um_entity {
 #        ifndef NO_THREAD_SAFE
   pthread_mutex_t mutex_input_buffer;
 #        endif
-  u8_t              allocation;
-  u8_t              protocol_state;
+  uint8_t              allocation;
+  uint8_t              protocol_state;
   // for stats and trace purpose :
-  u16_t             data_plane;   // act as a boolean
+  uint16_t             data_plane;   // act as a boolean
   //*****************************************************************************
   // TRANSMITER
   //*****************************************************************************
   //-----------------------------
   // protocol variables
   //-----------------------------
-  u16_t             first_li_in_next_pdu; // indicates :
+  uint16_t             first_li_in_next_pdu; // indicates :
   // value = 000000000000000 that the previous PDU was exactly
   // with the last segment of an RLC SDU and there is no LI that
   // indicates the end of the SDU in the previous RLC PDU.
@@ -49,39 +49,39 @@ struct rlc_um_entity {
   // piggybacked STATUS PDU.
   // value = 111111111111111 The rest of the RLC PDU is padding. The padding
   // length can be zero.
-  u8_t              vt_us;        // This state variable contains the "Sequence Number" 
+  uint8_t              vt_us;        // This state variable contains the "Sequence Number" 
   // of the next UMD PDU to be transmitted. It shall be 
   // incremented by 1 each time a UMD PDU is transmitted.
   // The initial value of this variable is 0.
   //-----------------------------
   // discard info
   //-----------------------------
-  u8_t              sdu_discard_mode;
+  uint8_t              sdu_discard_mode;
   //-----------------------------
   // timers
   //-----------------------------
-  u16_t             timer_discard_init;
-  u32_t            *frame_tick_milliseconds;      // pointer on this tick variable handled by RRC : READ ONLY
+  uint16_t             timer_discard_init;
+  uint32_t            *frame_tick_milliseconds;      // pointer on this tick variable handled by RRC : READ ONLY
   //-----------------------------
   // tranmission
   //-----------------------------
   // sdu communication;
   mem_block     **input_sdus;   // should be accessed as an array
   mem_block      *input_sdus_alloc;     // allocation of the array
-  u16_t             size_input_sdus_buffer;
-  u16_t             nb_sdu;
+  uint16_t             size_input_sdus_buffer;
+  uint16_t             nb_sdu;
 
-  u16_t             next_sdu_index;       // next location of incoming sdu
-  u16_t             current_sdu_index;
+  uint16_t             next_sdu_index;       // next location of incoming sdu
+  uint16_t             current_sdu_index;
 
-  u32_t             buffer_occupancy;
-  u16_t             data_pdu_size;
-  u16_t             data_pdu_size_in_bits;
-  u16_t             nb_pdu_requested_by_mac;
+  uint32_t             buffer_occupancy;
+  uint16_t             data_pdu_size;
+  uint16_t             data_pdu_size_in_bits;
+  uint16_t             nb_pdu_requested_by_mac;
 
-  u8_t              li_one_byte_short_to_add_in_next_pdu;
-  u8_t              li_exactly_filled_to_add_in_next_pdu;
-  u8_t              li_length_15_was_used_for_previous_pdu;
+  uint8_t              li_one_byte_short_to_add_in_next_pdu;
+  uint8_t              li_exactly_filled_to_add_in_next_pdu;
+  uint8_t              li_length_15_was_used_for_previous_pdu;
 
   cnt_list_up     pdus_to_mac_layer;
   //-----------------------------
@@ -91,7 +91,7 @@ struct rlc_um_entity {
   //-----------------------------
   // Mapping info
   //-----------------------------
-  u8_t              logical_channel_identity;
+  uint8_t              logical_channel_identity;
 
   void           *upper_layer;  // may be PDCP or (RRC)
   //*****************************************************************************
@@ -100,7 +100,7 @@ struct rlc_um_entity {
   //-----------------------------
   // protocol variables
   //-----------------------------
-  u8_t              vr_us;        // This state variable contains the "Sequence Number" 
+  uint8_t              vr_us;        // This state variable contains the "Sequence Number" 
   // following that of the last UMD PDU received. When a UMD PDU 
   // with "Sequence Number" equal to x is received, the state
   // variable shall set equal to x + 1.
@@ -117,15 +117,15 @@ struct rlc_um_entity {
 
   list_up         pdus_from_mac_layer;
 
-  u8_t              last_reassemblied_sn:7;
-  u8_t              rb_id;
-  void           *(*rlc_data_ind) (void *, mem_block * sduP, u8_t);
+  uint8_t              last_reassemblied_sn:7;
+  uint8_t              rb_id;
+  void           *(*rlc_data_ind) (void *, mem_block * sduP, uint8_t);
 
-  u32_t             tx_sdus;
-  u32_t             rx_sdus;
-  u32_t             tx_pdus;
-  u32_t             rx_pdus;
-  u32_t             rx_pdus_in_error;
-  u8_t              first_pdu;
+  uint32_t             tx_sdus;
+  uint32_t             rx_sdus;
+  uint32_t             tx_pdus;
+  uint32_t             rx_pdus;
+  uint32_t             rx_pdus_in_error;
+  uint8_t              first_pdu;
 };
 #    endif

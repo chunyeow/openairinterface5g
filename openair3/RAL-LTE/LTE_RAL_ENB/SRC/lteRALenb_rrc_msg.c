@@ -21,7 +21,7 @@
 #define LTE_RAL_ENB_RRC_MSG_C
 #include "lteRALenb.h"
 
-static int ueid2eui48(u8 *euiP, u8* ue_idP)
+static int ueid2eui48(uint8_t *euiP, uint8_t* ue_idP)
 {
     // inspired by linux-source-3.2.0/net/ipv6/addrconf.c
     memcpy(euiP, ue_idP, 3);

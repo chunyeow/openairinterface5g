@@ -13,7 +13,7 @@ int slot_fep_mbsfn(PHY_VARS_UE *phy_vars_ue,
 
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
   LTE_UE_COMMON *ue_common_vars   = &phy_vars_ue->lte_ue_common_vars;
-  u8 eNB_id = 0;//ue_common_vars->eNb_id;
+  uint8_t eNB_id = 0;//ue_common_vars->eNb_id;
   
   unsigned char aa;
   unsigned char frame_type = frame_parms->frame_type; // Frame Type: 0 - FDD, 1 - TDD;

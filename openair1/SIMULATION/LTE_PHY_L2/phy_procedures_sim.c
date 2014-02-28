@@ -57,8 +57,8 @@
 #define DLSCH_RB_ALLOC 0x1fff
 
 
-u16 NODE_ID[1];
-u8 NB_INST=2;
+uint16_t NODE_ID[1];
+uint8_t NB_INST=2;
 
 void init_bypass() {
 
@@ -111,9 +111,9 @@ void help(void) {
 }
 
 #ifdef XFORMS
-void do_forms(FD_phy_procedures_sim *form, LTE_UE_DLSCH **lte_ue_dlsch_vars,LTE_eNB_ULSCH **lte_eNB_ulsch_vars, struct complex **ch,u32 ch_len) {
+void do_forms(FD_phy_procedures_sim *form, LTE_UE_DLSCH **lte_ue_dlsch_vars,LTE_eNB_ULSCH **lte_eNB_ulsch_vars, struct complex **ch,uint32_t ch_len) {
 
-  s32 j,s,i;
+  int32_t j,s,i;
   float I[3600],Q[3600],I2[3600],Q2[3600],I3[300],Q3[300];
 
   j=0;
@@ -170,36 +170,36 @@ void do_forms(FD_phy_procedures_sim *form, LTE_UE_DLSCH **lte_ue_dlsch_vars,LTE_
 #endif
 
 
-void do_DL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX],u16 next_slot,double *nf,double snr_dB,u8 abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms) {
+void do_DL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX],uint16_t next_slot,double *nf,double snr_dB,uint8_t abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms) {
 
   mod_sym_t **txdataF;
 #ifdef IFFT_FPGA
-  s32 **txdataF2;
+  int32_t **txdataF2;
   int l;
 #endif
-  s32 **txdata,**rxdata;
+  int32_t **txdata,**rxdata;
   
-  u8 eNB_id=0,UE_id=0,aa;
+  uint8_t eNB_id=0,UE_id=0,aa;
   double tx_pwr, rx_pwr;
-  s32 rx_pwr2;
-  u32 i;
-  u32 slot_offset;
+  int32_t rx_pwr2;
+  uint32_t i;
+  uint32_t slot_offset;
     
   if (abstraction_flag == 0) {
 #ifdef IFFT_FPGA
-    txdata    = (s32 **)malloc(2*sizeof(s32*));
-    txdata[0] = (s32 *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    txdata[1] = (s32 *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    txdata    = (int32_t **)malloc(2*sizeof(int32_t*));
+    txdata[0] = (int32_t *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    txdata[1] = (int32_t *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
 
-    bzero(txdata[0],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    bzero(txdata[1],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    bzero(txdata[0],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    bzero(txdata[1],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
     
-    txdataF2    = (s32 **)malloc(2*sizeof(s32*));
-    txdataF2[0] = (s32 *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    txdataF2[1] = (s32 *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    txdataF2    = (int32_t **)malloc(2*sizeof(int32_t*));
+    txdataF2[0] = (int32_t *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    txdataF2[1] = (int32_t *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
     
-    bzero(txdataF2[0],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    bzero(txdataF2[1],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    bzero(txdataF2[0],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    bzero(txdataF2[1],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
 #endif
     
     
@@ -226,9 +226,9 @@ void do_DL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
 	l = slot_offset;	
 	for (i=0;i<NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7);i++) 
 	  if ((i%512>=1) && (i%512<=150))
-	    txdataF2[aa][i] = ((s32*)mod_table)[txdataF[aa][l++]];
+	    txdataF2[aa][i] = ((int32_t*)mod_table)[txdataF[aa][l++]];
 	  else if (i%512>=362)
-	    txdataF2[aa][i] = ((s32*)mod_table)[txdataF[aa][l++]];
+	    txdataF2[aa][i] = ((int32_t*)mod_table)[txdataF[aa][l++]];
 	  else 
 	    txdataF2[aa][i] = 0;
 	
@@ -398,36 +398,36 @@ void do_DL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
   
 }
 
-void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX],u16 next_slot,double *nf,double snr_dB,u8 abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms) {
+void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX],uint16_t next_slot,double *nf,double snr_dB,uint8_t abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms) {
 
   mod_sym_t **txdataF;
 #ifdef IFFT_FPGA
-  s32 **txdataF2;
+  int32_t **txdataF2;
   int l;
 #endif
-  s32 **txdata,**rxdata;
+  int32_t **txdata,**rxdata;
 
-  u8 UE_id=0,eNB_id=0,aa;
+  uint8_t UE_id=0,eNB_id=0,aa;
   double tx_pwr, rx_pwr;
-  s32 rx_pwr2;
-  u32 i;
-  u32 slot_offset;
+  int32_t rx_pwr2;
+  uint32_t i;
+  uint32_t slot_offset;
 
   if (abstraction_flag==0) {
 #ifdef IFFT_FPGA
-    txdata    = (s32 **)malloc(2*sizeof(s32*));
-    txdata[0] = (s32 *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    txdata[1] = (s32 *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    txdata    = (int32_t **)malloc(2*sizeof(int32_t*));
+    txdata[0] = (int32_t *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    txdata[1] = (int32_t *)malloc(OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
     
-    bzero(txdata[0],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    bzero(txdata[1],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    bzero(txdata[0],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    bzero(txdata[1],OFDM_SYMBOL_SIZE_SAMPLES*((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
     
-    txdataF2    = (s32 **)malloc(2*sizeof(s32*));
-    txdataF2[0] = (s32 *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    txdataF2[1] = (s32 *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    txdataF2    = (int32_t **)malloc(2*sizeof(int32_t*));
+    txdataF2[0] = (int32_t *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    txdataF2[1] = (int32_t *)malloc(NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
     
-    bzero(txdataF2[0],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
-    bzero(txdataF2[1],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(s32));
+    bzero(txdataF2[0],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
+    bzero(txdataF2[1],NUMBER_OF_OFDM_CARRIERS*((PHY_vars_eNB_g[eNB_id]->lte_frame_parms.Ncp==1) ? 6 : 7)*sizeof(int32_t));
 #endif
   }  
 
@@ -456,9 +456,9 @@ void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
 	l = slot_offset;	
 	for (i=0;i<NUMBER_OF_OFDM_CARRIERS*((frame_parms->Ncp==1) ? 6 : 7);i++) 
 	  if ((i%512>=1) && (i%512<=150))
-	    txdataF2[aa][i] = ((s32*)mod_table)[txdataF[aa][l++]];
+	    txdataF2[aa][i] = ((int32_t*)mod_table)[txdataF[aa][l++]];
 	  else if (i%512>=362)
-	    txdataF2[aa][i] = ((s32*)mod_table)[txdataF[aa][l++]];
+	    txdataF2[aa][i] = ((int32_t*)mod_table)[txdataF[aa][l++]];
 	  else 
 	    txdataF2[aa][i] = 0;
 	
@@ -560,7 +560,7 @@ void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
 	printf("[SIM][UL] CH %d : CH in %f dB for slot %d (subframe %d), sptti %d\n",eNB_id,10*log10(rx_pwr),next_slot,next_slot>>1,frame_parms->samples_per_tti);  
 #endif
 	/*
-	u8 aarx,aatx,k;
+	uint8_t aarx,aatx,k;
 	for (aarx=0;aarx<UE2eNB[1][0]->nb_rx;aarx++)
 	for (aatx=0;aatx<UE2eNB[1][0]->nb_tx;aatx++)
 	for (k=0;k<UE2eNB[1][0]->channel_length;k++)
@@ -666,36 +666,36 @@ int main(int argc, char **argv) {
 
  
   char c;
-  s32 i,j;
+  int32_t i,j;
   double **s_re,**s_im,**r_re,**r_im,**r_re0,**r_im0;
   double amps[8] = {0.3868472 , 0.3094778 , 0.1547389 , 0.0773694 , 0.0386847 , 0.0193424 , 0.0096712 , 0.0038685};
   double aoa=.03,ricean_factor=.001,Td=1.0,forgetting_factor=.5,maxDoppler=0;
-  u8 channel_length,nb_taps=8;
+  uint8_t channel_length,nb_taps=8;
 
 
-  s32 n_frames,n_errors;
+  int32_t n_frames,n_errors;
 
-  s32 slot,last_slot, next_slot;
+  int32_t slot,last_slot, next_slot;
 
   double nf[2] = {3.0,3.0}; //currently unused
   double snr_dB;
 
 
 
-  u8 target_dl_mcs=4;
-  u8 target_ul_mcs=2;
-  u8 rate_adaptation_flag;
-  u8 transmission_mode;
-  u8 abstraction_flag=0,ethernet_flag=0;
-  u16 ethernet_id=0;
-  u8 extended_prefix_flag=0;
-  s32 UE_id,eNB_id,ret; 
+  uint8_t target_dl_mcs=4;
+  uint8_t target_ul_mcs=2;
+  uint8_t rate_adaptation_flag;
+  uint8_t transmission_mode;
+  uint8_t abstraction_flag=0,ethernet_flag=0;
+  uint16_t ethernet_id=0;
+  uint8_t extended_prefix_flag=0;
+  int32_t UE_id,eNB_id,ret; 
 #ifdef EMOS
   fifo_dump_emos emos_dump;
 #endif
-  //u8 nb_ue_local=1,nb_ue_remote=0;
-  //u8 nb_eNB_local=1,nb_eNB_remote=0;
-  //u8 first_eNB_local=0,first_UE_local=0, nb_machine=0;
+  //uint8_t nb_ue_local=1,nb_ue_remote=0;
+  //uint8_t nb_eNB_local=1,nb_eNB_remote=0;
+  //uint8_t first_eNB_local=0,first_UE_local=0, nb_machine=0;
  
   char * g_log_level="trace"; // by default global log level is set to trace 
   lte_subframe_t direction;
@@ -880,7 +880,7 @@ int main(int argc, char **argv) {
   printf("Running with mode %d, target dl_mcs %d, rate adaptation %d, nframes %d\n",
   	 transmission_mode,target_dl_mcs,rate_adaptation_flag,n_frames);
 
-  channel_length = (u8) (11+2*BW*Td);
+  channel_length = (uint8_t) (11+2*BW*Td);
 
   //PHY_vars = malloc(sizeof(PHY_VARS));
   //  PHY_VARS_eNB *PHY_vars_eNB; 
@@ -1064,16 +1064,16 @@ int main(int argc, char **argv) {
   if (abstraction_flag==0) {
     /*
 #ifdef IFFT_FPGA
-    txdata    = (s32 **)malloc16(2*sizeof(s32*));
-    txdata[0] = (s32 *)malloc16(FRAME_LENGTH_BYTES);
-    txdata[1] = (s32 *)malloc16(FRAME_LENGTH_BYTES);
+    txdata    = (int32_t **)malloc16(2*sizeof(int32_t*));
+    txdata[0] = (int32_t *)malloc16(FRAME_LENGTH_BYTES);
+    txdata[1] = (int32_t *)malloc16(FRAME_LENGTH_BYTES);
     
     bzero(txdata[0],FRAME_LENGTH_BYTES);
     bzero(txdata[1],FRAME_LENGTH_BYTES);
     
-    txdataF2    = (s32 **)malloc16(2*sizeof(s32*));
-    txdataF2[0] = (s32 *)malloc16(FRAME_LENGTH_BYTES_NO_PREFIX);
-    txdataF2[1] = (s32 *)malloc16(FRAME_LENGTH_BYTES_NO_PREFIX);
+    txdataF2    = (int32_t **)malloc16(2*sizeof(int32_t*));
+    txdataF2[0] = (int32_t *)malloc16(FRAME_LENGTH_BYTES_NO_PREFIX);
+    txdataF2[1] = (int32_t *)malloc16(FRAME_LENGTH_BYTES_NO_PREFIX);
     
     bzero(txdataF2[0],FRAME_LENGTH_BYTES_NO_PREFIX);
     bzero(txdataF2[1],FRAME_LENGTH_BYTES_NO_PREFIX);
@@ -1246,7 +1246,7 @@ int main(int argc, char **argv) {
     
       if (direction  == SF_DL) {
 	/*
-	  u8 aarx,aatx,k;	  for (aarx=0;aarx<UE2eNB[1][0]->nb_rx;aarx++)
+	  uint8_t aarx,aatx,k;	  for (aarx=0;aarx<UE2eNB[1][0]->nb_rx;aarx++)
 	  for (aatx=0;aatx<UE2eNB[1][0]->nb_tx;aatx++)
 	  for (k=0;k<UE2eNB[1][0]->channel_length;k++)
 	  printf("DL A(%d,%d,%d)->(%f,%f)\n",k,aarx,aatx,UE2eNB[1][0]->ch[aarx+(aatx*UE2eNB[1][0]->nb_rx)][k].r,UE2eNB[1][0]->ch[aarx+(aatx*UE2eNB[1][0]->nb_rx)][k].i);

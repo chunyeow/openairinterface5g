@@ -38,13 +38,13 @@ rlc_am_demux_routing (struct rlc_am_entity *rlcP, unsigned int traffic_typeP, st
   struct rlc_am_pdu_header *data;
   struct rlc_am_reset_header *control;
   mem_block_t      *tb;
-  u8_t             *first_byte;
-  u16_t             tb_size_in_bytes;
-  u8_t              first_bit;
-  u8_t              bits_to_shift;
-  u8_t              bits_to_shift_last_loop;
+  uint8_t             *first_byte;
+  uint16_t             tb_size_in_bytes;
+  uint8_t              first_bit;
+  uint8_t              bits_to_shift;
+  uint8_t              bits_to_shift_last_loop;
 
-  u8_t              data_received;
+  uint8_t              data_received;
   int index;
 
   //-------------------------------------------------------

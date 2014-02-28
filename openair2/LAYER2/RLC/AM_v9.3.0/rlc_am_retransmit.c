@@ -278,7 +278,7 @@ mem_block_t* rlc_am_retransmit_get_copy (rlc_am_entity_t *rlc_pP, frame_t frameP
         memcpy(mb_copy->data, mb_original_p->data, size);
 
         rlc_am_pdu_sn_10_t *pdu_p                         = (rlc_am_pdu_sn_10_t*) (&mb_copy->data[sizeof(struct mac_tb_req)]);
-        ((struct mac_tb_req*)(mb_copy->data))->data_ptr = (u8_t*)pdu_p;
+        ((struct mac_tb_req*)(mb_copy->data))->data_ptr = (uint8_t*)pdu_p;
 
         pdu_mngt->flags.retransmit = 0;
 
@@ -347,7 +347,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
         //LG avoid WARNING int                    test_max_copy_payload_size;
         int                    test_pdu_copy_size          = 0;
 
-        ((struct mac_tb_req*)(mb_sub_segment_p->data))->data_ptr         = (u8_t*)&(mb_sub_segment_p->data[sizeof(struct mac_tb_req)]);
+        ((struct mac_tb_req*)(mb_sub_segment_p->data))->data_ptr         = (uint8_t*)&(mb_sub_segment_p->data[sizeof(struct mac_tb_req)]);
 
         if (rlc_am_get_data_pdu_infos(frameP,pdu_original_p, rlc_pP->pdu_retrans_buffer[snP].header_and_payload_size, &pdu_info) >= 0) {
             int li_index = 0;
@@ -393,8 +393,8 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
 
             pdu_sub_segment_p->b1 = (pdu_original_p->b1 & 0x83) | 0x40;
             pdu_sub_segment_p->b2 = pdu_original_p->b2;
-            pdu_sub_segment_p->data[0] = ((u8_t)(start_offset >> 8));
-            pdu_sub_segment_p->data[1] = ((u8_t)(start_offset & 0xFF));
+            pdu_sub_segment_p->data[0] = ((uint8_t)(start_offset >> 8));
+            pdu_sub_segment_p->data[1] = ((uint8_t)(start_offset & 0xFF));
 
             *sizeP = *sizeP - 4;
 
@@ -407,8 +407,8 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
             int            not_test_fi                 = 0; // by default not 1st byte and not last byte af a SDU
             int            test_start_offset;
             unsigned int   test_li_length_in_bytes     = 1;
-            s16_t          test_li_list[RLC_AM_MAX_SDU_IN_PDU];
-            u8_t*          fill_payload_p;
+            int16_t          test_li_list[RLC_AM_MAX_SDU_IN_PDU];
+            uint8_t*          fill_payload_p;
             //int            test_fi_last_byte_pdu_is_last_byte_sdu = 0;
             //int            test_fi_first_byte_pdu_is_first_byte_sdu = 0;
 
@@ -734,7 +734,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
                         }
                         e_li_sub_segment->b1 = e_li_sub_segment->b1 | (test_li_list[fill_num_li] >> 4);
                         e_li_sub_segment->b2 = test_li_list[fill_num_li] << 4;
-                        fill_payload_p         = (u8_t*)(&e_li_sub_segment->b3);
+                        fill_payload_p         = (uint8_t*)(&e_li_sub_segment->b3);
                         *sizeP               = *sizeP - 2;
                     } else {
                         if (fill_num_li != (test_num_li - 1)) {
@@ -743,7 +743,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
                         e_li_sub_segment->b2 = e_li_sub_segment->b2 | (test_li_list[fill_num_li] >> 8);
                         e_li_sub_segment->b3 = test_li_list[fill_num_li] & 0xFF;
                         e_li_sub_segment++;
-                        fill_payload_p         = (u8_t*)e_li_sub_segment;
+                        fill_payload_p         = (uint8_t*)e_li_sub_segment;
                         *sizeP               = *sizeP - 1;
                     }
                     LOG_T(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][RE-SEGMENT] ADD LI %d\n",
@@ -761,7 +761,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
                           rlc_pP->enb_module_id,
                           rlc_pP->ue_module_id,
                           rlc_pP->rb_id);
-                fill_payload_p = (u8_t*)e_li_sub_segment;
+                fill_payload_p = (uint8_t*)e_li_sub_segment;
             }
             //---------------------------------------------------------------
             // copy payload to retransmit
@@ -770,7 +770,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
                    &rlc_pP->pdu_retrans_buffer[snP].payload[start_offset],
                    test_pdu_copy_size);
 
-            ((struct mac_tb_req*)(mb_sub_segment_p->data))->tb_size  = (((u64_t)fill_payload_p)+ test_pdu_copy_size) - ((u64_t)(&pdu_sub_segment_p->b1));
+            ((struct mac_tb_req*)(mb_sub_segment_p->data))->tb_size  = (((uint64_t)fill_payload_p)+ test_pdu_copy_size) - ((uint64_t)(&pdu_sub_segment_p->b1));
 
             // set LSF
             if ((test_pdu_copy_size + start_offset) == rlc_pP->pdu_retrans_buffer[snP].payload_size) {

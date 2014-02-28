@@ -60,7 +60,7 @@ int             pdcp_instance_cnt;
 static void *pdcp_thread_main(void* param);
 
 static void *pdcp_thread_main(void* param) {
-  u8 eNB_flag = !UE_flag;
+  uint8_t eNB_flag = !UE_flag;
 
   LOG_I(PDCP,"This is pdcp_thread eNB_flag = %d\n",eNB_flag);
 

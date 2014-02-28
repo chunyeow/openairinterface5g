@@ -33,8 +33,8 @@ void nasrg_rrm_from_rrc_read (void);
 
 int nasrg_meas_loop (int time, int UE_Id);
 void nas_rg_print_buffer (char *buffer, int length);
-/*void nasrg_print_meas_report (char *rrc_rrm_meas_payload, u16 type);
-void nasrg_print_bs_meas_report (char *rrc_rrm_meas_payload, u16 type);*/
+/*void nasrg_print_meas_report (char *rrc_rrm_meas_payload, uint16_t type);
+void nasrg_print_bs_meas_report (char *rrc_rrm_meas_payload, uint16_t type);*/
 void nasrg_print_meas_report (char *rrc_rrm_meas_payload, unsigned short type);
 void nasrg_print_bs_meas_report (char *rrc_rrm_meas_payload, unsigned short type);
 #endif

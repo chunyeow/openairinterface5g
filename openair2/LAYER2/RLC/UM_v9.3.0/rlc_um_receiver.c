@@ -150,8 +150,8 @@ rlc_um_receive (rlc_um_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, s
 //-----------------------------------------------------------------------------
 
     mem_block_t        *tb_p             = NULL;
-    u8_t               *first_byte_p     = NULL;
-    u16_t               tb_size_in_bytes = 0;
+    uint8_t               *first_byte_p     = NULL;
+    uint16_t               tb_size_in_bytes = 0;
 
     while ((tb_p = list_remove_head (&data_indP.data))) {
 

@@ -35,7 +35,7 @@ PHY_VARS_UE *PHY_vars_UE;
 
 #define DLSCH_RB_ALLOC 0x1fbf // igore DC component,RB13
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,unsigned char frame_type, u16 Nid_cell,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,unsigned char frame_type, uint16_t Nid_cell,uint8_t N_RB_DL,uint8_t osf) {
 
   //  unsigned int ind;
   LTE_DL_FRAME_PARMS *lte_frame_parms;
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 
   int i,l,aa;
   double sigma2, sigma2_dB=0,SNR,snr0=-2.0,snr1;
-  u8 snr1set=0;
+  uint8_t snr1set=0;
   //mod_sym_t **txdataF;
   int **txdata,**txdata1,**txdata2;
   double **s_re,**s_im,**s_re1,**s_im1,**s_re2,**s_im2,**r_re,**r_im,**r_re1,**r_im1,**r_re2,**r_im2;
@@ -137,20 +137,20 @@ int main(int argc, char **argv) {
   //  int sync_pos, sync_pos_slot;
   //  FILE *rx_frame_file;
   FILE *output_fd;
-  u8 write_output_file=0;
+  uint8_t write_output_file=0;
   int result;
   int freq_offset;
   //  int subframe_offset;
   //  char fname[40], vname[40];
   int trial, n_trials, ntrials=1, n_errors,n_errors2,n_alamouti;
-  u8 transmission_mode = 1,n_tx=1,n_rx=1;
-  u16 Nid_cell=0;
+  uint8_t transmission_mode = 1,n_tx=1,n_rx=1;
+  uint16_t Nid_cell=0;
 
   int n_frames=1;
   channel_desc_t *eNB2UE,*eNB2UE1,*eNB2UE2;
-  u32 nsymb,tx_lev,tx_lev1,tx_lev2;
-  u8 extended_prefix_flag=0;
-  s8 interf1=-21,interf2=-21;
+  uint32_t nsymb,tx_lev,tx_lev1,tx_lev2;
+  uint8_t extended_prefix_flag=0;
+  int8_t interf1=-21,interf2=-21;
   LTE_DL_FRAME_PARMS *frame_parms;
 #ifdef EMOS
   fifo_dump_emos emos_dump;
@@ -159,17 +159,17 @@ int main(int argc, char **argv) {
   FILE *input_fd=NULL,*pbch_file_fd=NULL;
   char input_val_str[50],input_val_str2[50];
   //  double input_val1,input_val2;
-  //  u16 amask=0;
-  u8 frame_mod4,num_pdcch_symbols;
-  u16 NB_RB=25;
+  //  uint16_t amask=0;
+  uint8_t frame_mod4,num_pdcch_symbols;
+  uint16_t NB_RB=25;
 
   SCM_t channel_model=AWGN;//Rayleigh1_anticorr;
 
   DCI_ALLOC_t dci_alloc[8];
-  u8 abstraction_flag=0;//,calibration_flag=0;
+  uint8_t abstraction_flag=0;//,calibration_flag=0;
   double pbch_sinr;
   int pbch_tx_ant;
-  u8 N_RB_DL=25,osf=1;
+  uint8_t N_RB_DL=25,osf=1;
 
   int openair_fd,rx_sig_fifo_fd,get_frame=0;
   int frequency=0,fc=0;

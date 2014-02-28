@@ -20,14 +20,14 @@
 //#define DEBUG_CREATE_STATUS_SUFI
 //#define PROCESS_STATUS
 
-void            rlc_am_write_sufi_no_more_in_control_pdu (u8_t * dataP, u8 byte_alignedP);
-void            rlc_am_write_sufi_ack_in_control_pdu (u8_t * dataP, u16_t snP, u8 byte_alignedP);
+void            rlc_am_write_sufi_no_more_in_control_pdu (uint8_t * dataP, uint8_t byte_alignedP);
+void            rlc_am_write_sufi_ack_in_control_pdu (uint8_t * dataP, uint16_t snP, uint8_t byte_alignedP);
 int              rlc_am_send_status (struct rlc_am_entity *rlcP);
 int                 rlc_am_create_status_pdu (struct rlc_am_entity *rlcP, list_t* listP);
 void            rlc_am_find_holes (struct rlc_am_entity *rlcP);
 //-----------------------------------------------------------------------------
 void
-rlc_am_write_sufi_no_more_in_control_pdu (u8_t * dataP, u8 byte_alignedP)
+rlc_am_write_sufi_no_more_in_control_pdu (uint8_t * dataP, uint8_t byte_alignedP)
 {
 //-----------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ rlc_am_write_sufi_no_more_in_control_pdu (u8_t * dataP, u8 byte_alignedP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_write_sufi_ack_in_control_pdu (u8_t * dataP, u16_t snP, u8 byte_alignedP)
+rlc_am_write_sufi_ack_in_control_pdu (uint8_t * dataP, uint16_t snP, uint8_t byte_alignedP)
 {
 //-----------------------------------------------------------------------------
 
@@ -53,13 +53,13 @@ rlc_am_write_sufi_ack_in_control_pdu (u8_t * dataP, u16_t snP, u8 byte_alignedP)
   if (!byte_alignedP) {
     *dataP = (*dataP & 0xF0) | RLC_AM_SUFI_ACK;
     dataP++;
-    *dataP++ = (u8_t) (snP >> 4);
-    *dataP = (u8_t) (snP << 4);
+    *dataP++ = (uint8_t) (snP >> 4);
+    *dataP = (uint8_t) (snP << 4);
   } else {
     *dataP = RLC_AM_SUFI_ACK << 4;
-    *dataP = *dataP | (u8_t) (snP >> 8);
+    *dataP = *dataP | (uint8_t) (snP >> 8);
     dataP++;
-    *dataP = (u8_t) (snP);
+    *dataP = (uint8_t) (snP);
   }
 }
 
@@ -98,16 +98,16 @@ rlc_am_create_status_pdu (struct rlc_am_entity *rlcP, list_t * listP)
 //-----------------------------------------------------------------------------
   mem_block_t      *mb = NULL;
   struct rlc_am_status_header *pdu;
-  u8_t             *p8;
-  u8_t             *tmp;
+  uint8_t             *p8;
+  uint8_t             *tmp;
   int             hole_index = 0;
   signed int      pdu_remaining_size;   // remaining size for SUFIs BITMAP, LIST, RLIST, WINDOW
   int             current_sn;
   signed int      remaining_sn;
   int             pdu_status_count = 0;
   int             length_sufi;
-  s16_t             last_hole_sn = -1;
-  u8_t              byte_aligned;
+  int16_t             last_hole_sn = -1;
+  uint8_t              byte_aligned;
 
 
   remaining_sn = rlcP->vr_h - rlcP->vr_r;
@@ -301,9 +301,9 @@ rlc_am_find_holes (struct rlc_am_entity *rlcP)
 //-----------------------------------------------------------------------------
 
 
-  u16_t             working_sn, working_sn_index;
-  u16_t             end_sn;
-  u16_t             distance;
+  uint16_t             working_sn, working_sn_index;
+  uint16_t             end_sn;
+  uint16_t             distance;
   int             hole_index;
 
   //--------------------------------------------------
@@ -375,19 +375,19 @@ rlc_am_find_holes (struct rlc_am_entity *rlcP)
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_process_status_info (struct rlc_am_entity *rlcP, u8_t * statusP)
+rlc_am_process_status_info (struct rlc_am_entity *rlcP, uint8_t * statusP)
 {
 //-----------------------------------------------------------------------------
 
-  u8_t             *byte1;
-  u8_t              byte_aligned; // 1: quartet starts on bit 7, 0: quartet starts on bit 3 (of a byte)
-  u8_t              sufi_type;
-  u8_t              end_process = 0;
-  s16_t             ack_sn = -1;
-  s16_t             first_error_indicated_sn = -1;
-  s16_t             sn_index;
-  s16_t             current_sn;
-  s16_t             current_index;
+  uint8_t             *byte1;
+  uint8_t              byte_aligned; // 1: quartet starts on bit 7, 0: quartet starts on bit 3 (of a byte)
+  uint8_t              sufi_type;
+  uint8_t              end_process = 0;
+  int16_t             ack_sn = -1;
+  int16_t             first_error_indicated_sn = -1;
+  int16_t             sn_index;
+  int16_t             current_sn;
+  int16_t             current_index;
 
   byte1 = statusP;
 
@@ -555,12 +555,12 @@ rlc_am_process_status_info (struct rlc_am_entity *rlcP, u8_t * statusP)
 
 //-----------------------------------------------------------------------------
 mem_block_t      *
-rlc_am_create_status_pdu_mrw_ack (struct rlc_am_entity *rlcP, u8_t nP, u16_t sn_ackP)
+rlc_am_create_status_pdu_mrw_ack (struct rlc_am_entity *rlcP, uint8_t nP, uint16_t sn_ackP)
 {
 //-----------------------------------------------------------------------------
   mem_block_t      *le;
   struct rlc_am_status_header *pdu;
-  u8_t             *p8;
+  uint8_t             *p8;
 
 #ifdef DEBUG_STATUS
   msg ("[RLC_AM %p][STATUS] rlc_am_mrw_send_ack(N=%d, sn_ack=0x%04X)\n", rlcP, nP, sn_ackP);

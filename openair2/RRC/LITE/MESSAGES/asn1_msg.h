@@ -65,7 +65,7 @@ int xer_sprint(char *string, size_t string_size, struct asn_TYPE_descriptor_s *t
 
 uint16_t get_adjacent_cell_id(uint8_t Mod_id,uint8_t index);
 
-u8 get_adjacent_cell_mod_id(uint16_t phyCellId);
+uint8_t get_adjacent_cell_mod_id(uint16_t phyCellId);
 
 /** 
 \brief Generate a default configuration for SIB1 (eNB).
@@ -116,7 +116,7 @@ routine only generates an mo-data establishment cause.
 @param rv 5 byte random string or S-TMSI
 @returns Size of encoded bit stream in bytes*/
 
-uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,u8 *rv);
+uint8_t do_RRCConnectionRequest(uint8_t Mod_id, uint8_t *buffer,uint8_t *rv);
 
 /** \brief Generate an RRCConnectionSetupComplete UL-DCCH-Message (UE)
 @param buffer Pointer to PER-encoded ASN.1 description of UL-DCCH-Message PDU

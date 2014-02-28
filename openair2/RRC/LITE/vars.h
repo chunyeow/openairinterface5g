@@ -71,7 +71,7 @@ unsigned short Data_to_read;
 
 #define MAX_U32 0xFFFFFFFF
 
-u8 DRB2LCHAN[8];
+uint8_t DRB2LCHAN[8];
 
 long logicalChannelGroup0 = 0;
 long  logicalChannelSR_Mask_r9=0;
@@ -103,21 +103,21 @@ LogicalChannelConfig_t SRB2_logicalChannelConfig_defaultValue = {&LCSRB2
 
 //CONSTANTS
 rlc_info_t Rlc_info_um,Rlc_info_am_config;
-u16 RACH_FREQ_ALLOC;
-//u8 NB_RACH;
+uint16_t RACH_FREQ_ALLOC;
+//uint8_t NB_RACH;
 LCHAN_DESC BCCH_LCHAN_DESC,CCCH_LCHAN_DESC,DCCH_LCHAN_DESC,DTCH_DL_LCHAN_DESC,DTCH_UL_LCHAN_DESC;
 MAC_MEAS_T BCCH_MEAS_TRIGGER,CCCH_MEAS_TRIGGER,DCCH_MEAS_TRIGGER,DTCH_MEAS_TRIGGER;
 MAC_AVG_T BCCH_MEAS_AVG, CCCH_MEAS_AVG,DCCH_MEAS_AVG, DTCH_MEAS_AVG;
 
 // timers 
-u16 T300[8] = {100,200,300,400,600,1000,1500,2000};
-u16 T310[8] = {0,50,100,200,500,1000,2000};
-u16 N310[8] = {1,2,3,4,6,8,10,20};
-u16 N311[8] = {1,2,3,4,6,8,10,20};
-u32 T304[8] = {50,100,150,200,500,1000,2000,MAX_U32};
+uint16_t T300[8] = {100,200,300,400,600,1000,1500,2000};
+uint16_t T310[8] = {0,50,100,200,500,1000,2000};
+uint16_t N310[8] = {1,2,3,4,6,8,10,20};
+uint16_t N311[8] = {1,2,3,4,6,8,10,20};
+uint32_t T304[8] = {50,100,150,200,500,1000,2000,MAX_U32};
 
 // TimeToTrigger enum mapping table (36.331 TimeToTrigger IE)
-u32 timeToTrigger_ms[16] = {0,40,64,80,100,128,160,256,320,480,512,640,1024,1280,2560,5120};
+uint32_t timeToTrigger_ms[16] = {0,40,64,80,100,128,160,256,320,480,512,640,1024,1280,2560,5120};
 
 /* 36.133 Section 9.1.4 RSRP Measurement Report Mapping, Table: 9.1.4-1 */
 float RSRP_meas_mapping[100] = {

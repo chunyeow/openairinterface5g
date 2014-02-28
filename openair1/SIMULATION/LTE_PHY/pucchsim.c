@@ -33,7 +33,7 @@ DCI2_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu2;
 
 
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,u16 Nid_cell,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 
   int i,l,aa;
   double sigma2, sigma2_dB=0,SNR,snr0=-2.0,snr1=0.0;
-  u8 snr1set=0;
+  uint8_t snr1set=0;
   //mod_sym_t **txdataF;
 #ifdef IFFT_FPGA
   int **txdataF2;
@@ -106,14 +106,14 @@ int main(int argc, char **argv) {
   double ricean_factor=0.0000005,iqim=0.0;
 
   int trial, n_trials, ntrials=1, n_errors;
-  u8 transmission_mode = 1,n_tx=1,n_rx=1;
+  uint8_t transmission_mode = 1,n_tx=1,n_rx=1;
   unsigned char eNB_id = 0;
-  u16 Nid_cell=0;
+  uint16_t Nid_cell=0;
 
   int n_frames=1;
   channel_desc_t *UE2eNB;
-  u32 nsymb,tx_lev;
-  u8 extended_prefix_flag=0;
+  uint32_t nsymb,tx_lev;
+  uint8_t extended_prefix_flag=0;
 
   LTE_DL_FRAME_PARMS *frame_parms;
 #ifdef EMOS
@@ -123,20 +123,20 @@ int main(int argc, char **argv) {
   SCM_t channel_model=Rayleigh1_corr;
 
   //  double pucch_sinr;
-  u8 osf=1,N_RB_DL=25;
-  u32 pucch_tx=0,pucch1_missed=0,pucch1_false=0,sig;
+  uint8_t osf=1,N_RB_DL=25;
+  uint32_t pucch_tx=0,pucch1_missed=0,pucch1_false=0,sig;
   PUCCH_FMT_t pucch_format = pucch_format1;
   PUCCH_CONFIG_DEDICATED pucch_config_dedicated;
-  u8 subframe=0;
-  u8 pucch_payload,pucch_payload_rx;
+  uint8_t subframe=0;
+  uint8_t pucch_payload,pucch_payload_rx;
   double tx_gain=1.0;
-  s32 stat;
+  int32_t stat;
   double stat_no_sig,stat_sig;
-  u8 N0=40;
-  u8 pucch1_thres=13;
+  uint8_t N0=40;
+  uint8_t pucch1_thres=13;
 
-  u16 n1_pucch = 0;
-  u16 n2_pucch = 0;
+  uint16_t n1_pucch = 0;
+  uint16_t n2_pucch = 0;
 
   number_of_cards = 1;
   openair_daq_vars.rx_rf_mode = 1;
@@ -582,7 +582,7 @@ int main(int argc, char **argv) {
 	
 	//      if (sig == 1)
 	//	  printf("*");
-	PHY_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dB = N0;//(s8)(sigma2_dB-10*log10(PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(12*NB_RB)));      
+	PHY_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dB = N0;//(int8_t)(sigma2_dB-10*log10(PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(12*NB_RB)));      
 	stat = rx_pucch(PHY_vars_eNB,
 			pucch_format,
 			0,

@@ -61,7 +61,7 @@ int smbv_post_processing(const char* fname) {
     return 0;
 }
 
-int smbv_init_config(const char* fname, u16 sequence_length) {
+int smbv_init_config(const char* fname, uint16_t sequence_length) {
 
     FILE *f_ptr;
     int k;
@@ -183,7 +183,7 @@ int smbv_write_config_from_frame_parms(const char* fname, LTE_DL_FRAME_PARMS *fr
 
 // This function creates a datalist for an allocation containing the data in buffer
 // len is in bytes
-int smbv_configure_datalist_for_alloc(const char* fname, u8 alloc, u8 subframe, u8 *buffer, u32 len) {
+int smbv_configure_datalist_for_alloc(const char* fname, uint8_t alloc, uint8_t subframe, uint8_t *buffer, uint32_t len) {
     FILE *f_ptr;
     f_ptr = fopen(fname,"a");
     char strbuf[(8<<1)+1];
@@ -218,7 +218,7 @@ int smbv_configure_datalist_for_alloc(const char* fname, u8 alloc, u8 subframe, 
     return 0;
 }
 
-int smbv_is_config_frame(u32 frame) {
+int smbv_is_config_frame(uint32_t frame) {
     
     extern const unsigned short config_frames[MAX_CONFIG_FRAMES];
     int i;
@@ -233,7 +233,7 @@ int smbv_is_config_frame(u32 frame) {
 
 // This function creates a datalist for user containing the data in buffer
 // len is in bytes
-int smbv_configure_datalist_for_user(const char* fname, u8 user, u8 *buffer, u32 len) {
+int smbv_configure_datalist_for_user(const char* fname, uint8_t user, uint8_t *buffer, uint32_t len) {
     FILE *f_ptr;
     f_ptr = fopen(fname,"a");
     char strbuf[(8<<1)+1];
@@ -267,7 +267,7 @@ int smbv_configure_datalist_for_user(const char* fname, u8 user, u8 *buffer, u32
     return 0;
 }
 
-int smbv_configure_user(const char* fname, u8 user, u8 transmission_mode, u16 rnti) {
+int smbv_configure_user(const char* fname, uint8_t user, uint8_t transmission_mode, uint16_t rnti) {
     FILE *f_ptr;
     f_ptr = fopen(fname,"a");
 
@@ -281,7 +281,7 @@ int smbv_configure_user(const char* fname, u8 user, u8 transmission_mode, u16 rn
     return 0;
 };
 
-int smbv_configure_pdcch(const char* fname,u8 subframe,u8 num_pdcch_symbols,u8 num_dci) {
+int smbv_configure_pdcch(const char* fname,uint8_t subframe,uint8_t num_pdcch_symbols,uint8_t num_dci) {
 
     int k;
     FILE *f_ptr;
@@ -303,7 +303,7 @@ int smbv_configure_pdcch(const char* fname,u8 subframe,u8 num_pdcch_symbols,u8 n
     return 0;
 }
 
-int smbv_configure_common_dci(const char* fname, u8 subframe, const char* type, DCI_ALLOC_t *dci_alloc, u8 item) {
+int smbv_configure_common_dci(const char* fname, uint8_t subframe, const char* type, DCI_ALLOC_t *dci_alloc, uint8_t item) {
     
     FILE *f_ptr;
     void *dci_pdu = &dci_alloc->dci_pdu[0];
@@ -358,7 +358,7 @@ int smbv_configure_common_dci(const char* fname, u8 subframe, const char* type, 
     return 0;
 }
 
-int smbv_configure_ue_spec_dci(const char* fname, u8 subframe, u8 user, DCI_ALLOC_t *dci_alloc, u8 item) {
+int smbv_configure_ue_spec_dci(const char* fname, uint8_t subframe, uint8_t user, DCI_ALLOC_t *dci_alloc, uint8_t item) {
 
     FILE *f_ptr;
     void *dci_pdu = &dci_alloc->dci_pdu[0];

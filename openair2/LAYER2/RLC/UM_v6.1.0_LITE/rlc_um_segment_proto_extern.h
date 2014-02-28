@@ -11,7 +11,7 @@
 //-----------------------------------------------------------------------------
 #        include "rlc_um_entity.h"
 //-----------------------------------------------------------------------------
-extern u8_t     rlc_um_crc8_xor (char *mem_areaP, signed int num_bytesP);
+extern uint8_t     rlc_um_crc8_xor (char *mem_areaP, signed int num_bytesP);
 extern void     rlc_um_segment_15 (struct rlc_um_entity *rlcP);
 extern void     rlc_um_segment_7 (struct rlc_um_entity *rlcP);
 #    endif

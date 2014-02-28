@@ -17,13 +17,13 @@ double **cos_lut=NULL,**sin_lut=NULL;
 
 
 
-void init_freq_channel(channel_desc_t *desc,u16 nb_rb,s16 n_samples) {
+void init_freq_channel(channel_desc_t *desc,uint16_t nb_rb,int16_t n_samples) {
 
 
   double delta_f,freq;  // 90 kHz spacing
   double delay;
-  s16 f;
-  u8 l;
+  int16_t f;
+  uint8_t l;
 
 
   cos_lut = (double **)malloc(n_samples*sizeof(double*));
@@ -54,11 +54,11 @@ void init_freq_channel(channel_desc_t *desc,u16 nb_rb,s16 n_samples) {
   }
 }
 
-void freq_channel(channel_desc_t *desc,u16 nb_rb,s16 n_samples) {
+void freq_channel(channel_desc_t *desc,uint16_t nb_rb,int16_t n_samples) {
 
 
-  s16 f;
-  u8 aarx,aatx,l;
+  int16_t f;
+  uint8_t aarx,aatx,l;
   double *clut,*slut;
   static int freq_channel_init=0;
 
@@ -97,11 +97,11 @@ double compute_pbch_sinr(channel_desc_t *desc,
 			 channel_desc_t *desc_i2,
 			 double snr_dB,double snr_i1_dB,
 			 double snr_i2_dB,
-			 u16 nb_rb) {
+			 uint16_t nb_rb) {
 
   double avg_sinr,snr=pow(10.0,.1*snr_dB),snr_i1=pow(10.0,.1*snr_i1_dB),snr_i2=pow(10.0,.1*snr_i2_dB);
-  u16 f;
-  u8 aarx,aatx;
+  uint16_t f;
+  uint8_t aarx,aatx;
   double S;
   struct complex S_i1;
   struct complex S_i2;
@@ -147,11 +147,11 @@ double compute_sinr(channel_desc_t *desc,
 		    channel_desc_t *desc_i2,
 		    double snr_dB,double snr_i1_dB,
 		    double snr_i2_dB,
-		    u16 nb_rb) {
+		    uint16_t nb_rb) {
 
   double avg_sinr,snr=pow(10.0,.1*snr_dB),snr_i1=pow(10.0,.1*snr_i1_dB),snr_i2=pow(10.0,.1*snr_i2_dB);
-  u16 f;
-  u8 aarx,aatx;
+  uint16_t f;
+  uint8_t aarx,aatx;
   double S;
   struct complex S_i1;
   struct complex S_i2;

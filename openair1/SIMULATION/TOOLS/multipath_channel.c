@@ -6,7 +6,7 @@
 #include "SIMULATION/RF/defs.h"
 
 //#define DEBUG_CH
-u8 multipath_channel_nosigconv(channel_desc_t *desc){
+uint8_t multipath_channel_nosigconv(channel_desc_t *desc){
   
   random_channel(desc,0);
        return(1);
@@ -19,8 +19,8 @@ void multipath_channel(channel_desc_t *desc,
 		       double **tx_sig_im, 
 		       double **rx_sig_re,
 		       double **rx_sig_im,
-		       u32 length,
-		       u8 keep_channel) {
+		       uint32_t length,
+		       uint8_t keep_channel) {
  
   int i,ii,j,l;
   int length1, length2, tail;
@@ -117,8 +117,8 @@ void multipath_channel(channel_desc_t *desc,
 		       double **tx_sig_im, 
 		       double **rx_sig_re,
 		       double **rx_sig_im,
-		       u32 length,
-		       u8 keep_channel) {
+		       uint32_t length,
+		       uint8_t keep_channel) {
  
   int i,ii,j,l;
   struct complex rx_tmp,tx;

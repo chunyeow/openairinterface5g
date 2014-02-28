@@ -47,9 +47,9 @@
 int number_rb_ul;
 int first_rbUL ;
 
-extern Signal_buffers *signal_buffers_g;
+extern Signal_buffers_t *signal_buffers_g;
 
-void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, uint32_t frame,u16 next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
+void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame,uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
 
   int aa, slot_offset, slot_offset_F;
 
@@ -114,23 +114,23 @@ void do_DL_sig(double **r_re0,double **r_im0,
                channel_desc_t *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX],
                node_desc_t *enb_data[NUMBER_OF_eNB_MAX],
                node_desc_t *ue_data[NUMBER_OF_UE_MAX],
-               u16 next_slot,u8 abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms,
-               u8 UE_id) {
+               uint16_t next_slot,uint8_t abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms,
+               uint8_t UE_id) {
 
-  s32 att_eNB_id=-1;
-  s32 **txdata,**rxdata;
+  int32_t att_eNB_id=-1;
+  int32_t **txdata,**rxdata;
   
-  u8 eNB_id=0;
+  uint8_t eNB_id=0;
   double tx_pwr, rx_pwr;
-  s32 rx_pwr2;
-  u32 i,aa;
-  u32 slot_offset,slot_offset_meas;
+  int32_t rx_pwr2;
+  uint32_t i,aa;
+  uint32_t slot_offset,slot_offset_meas;
 
   double min_path_loss=-200;
-  u8 hold_channel=0;
-  //  u8 aatx,aarx;
-  u8 nb_antennas_rx = eNB2UE[0][0]->nb_rx; // number of rx antennas at UE
-  u8 nb_antennas_tx = eNB2UE[0][0]->nb_tx; // number of tx antennas at eNB
+  uint8_t hold_channel=0;
+  //  uint8_t aatx,aarx;
+  uint8_t nb_antennas_rx = eNB2UE[0][0]->nb_rx; // number of rx antennas at UE
+  uint8_t nb_antennas_tx = eNB2UE[0][0]->nb_tx; // number of tx antennas at eNB
 
   if (next_slot==0)
     hold_channel = 0;
@@ -188,7 +188,7 @@ void do_DL_sig(double **r_re0,double **r_im0,
       //dlsch_abstraction(PHY_vars_UE_g[UE_id]->sinr_dB, rb_alloc, 8);
       // fill in perfect channel estimates
       channel_desc_t *desc1 = eNB2UE[att_eNB_id][UE_id];
-      s32 **dl_channel_est = PHY_vars_UE_g[UE_id]->lte_ue_common_vars.dl_ch_estimates[0];
+      int32_t **dl_channel_est = PHY_vars_UE_g[UE_id]->lte_ue_common_vars.dl_ch_estimates[0];
       //      double scale = pow(10.0,(enb_data[att_eNB_id]->tx_power_dBm + eNB2UE[att_eNB_id][UE_id]->path_loss_dB + (double) PHY_vars_UE_g[UE_id]->rx_total_gain_dB)/20.0);
       double scale = pow(10.0,(PHY_vars_eNB_g[att_eNB_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower+eNB2UE[att_eNB_id][UE_id]->path_loss_dB + (double) PHY_vars_UE_g[UE_id]->rx_total_gain_dB)/20.0);
       //this factor is not really needed (it was actually wrong in the non abstraction mode)
@@ -207,8 +207,8 @@ void do_DL_sig(double **r_re0,double **r_im0,
 		{ 
 		  for (count1=0;count1<frame_parms->N_RB_DL*12;count1++)
 		    { 
-		      ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count1+(count*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(desc1->chF[a_rx+(a_tx*nb_antennas_rx)][count1].x*scale);
-		      ((s16 *) dl_channel_est[(a_tx<<1)+a_rx])[2*count1+1+(count*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(desc1->chF[a_rx+(a_tx*nb_antennas_rx)][count1].y*scale) ;
+		      ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count1+(count*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(desc1->chF[a_rx+(a_tx*nb_antennas_rx)][count1].x*scale);
+		      ((int16_t *) dl_channel_est[(a_tx<<1)+a_rx])[2*count1+1+(count*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(desc1->chF[a_rx+(a_tx*nb_antennas_rx)][count1].y*scale) ;
 		    }
 		}
 	    }
@@ -406,31 +406,31 @@ void do_DL_sig(double **r_re0,double **r_im0,
 }
 
 
-void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX],node_desc_t *enb_data[NUMBER_OF_eNB_MAX],node_desc_t *ue_data[NUMBER_OF_UE_MAX],u16 next_slot,u8 abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms, u32 frame) {
+void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX],node_desc_t *enb_data[NUMBER_OF_eNB_MAX],node_desc_t *ue_data[NUMBER_OF_UE_MAX],uint16_t next_slot,uint8_t abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms, uint32_t frame) {
 
-  s32 **txdata,**rxdata;
+  int32_t **txdata,**rxdata;
 #ifdef PHY_ABSTRACTION_UL
-  s32 att_eNB_id=-1;
+  int32_t att_eNB_id=-1;
 #endif
-  u8 eNB_id=0,UE_id=0;
+  uint8_t eNB_id=0,UE_id=0;
 
-  u8 nb_antennas_rx = UE2eNB[0][0]->nb_rx; // number of rx antennas at eNB
-  u8 nb_antennas_tx = UE2eNB[0][0]->nb_tx; // number of tx antennas at UE
+  uint8_t nb_antennas_rx = UE2eNB[0][0]->nb_rx; // number of rx antennas at eNB
+  uint8_t nb_antennas_tx = UE2eNB[0][0]->nb_tx; // number of tx antennas at UE
 
   double tx_pwr, rx_pwr;
-  s32 rx_pwr2;
-  u32 i,aa;
-  u32 slot_offset,slot_offset_meas;
+  int32_t rx_pwr2;
+  uint32_t i,aa;
+  uint32_t slot_offset,slot_offset_meas;
 
-  u8 hold_channel=0;
+  uint8_t hold_channel=0;
 
 #ifdef PHY_ABSTRACTION_UL
   double min_path_loss=-200;
-  u16 ul_nb_rb=0 ;
-  u16 ul_fr_rb=0;
+  uint16_t ul_nb_rb=0 ;
+  uint16_t ul_fr_rb=0;
   int ulnbrb2 ;
   int ulfrrb2 ;
-  u8 harq_pid;
+  uint8_t harq_pid;
   int subframe = (next_slot>>1);
 #endif  
 
@@ -460,8 +460,8 @@ void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
 	if(subframe>1 && subframe <5)
           {
             harq_pid = subframe2harq_pid(frame_parms,frame,subframe);
-            ul_nb_rb = PHY_vars_eNB_g[att_eNB_id]->ulsch_eNB[(u8)UE_id]->harq_processes[harq_pid]->nb_rb;
-            ul_fr_rb = PHY_vars_eNB_g[att_eNB_id]->ulsch_eNB[(u8)UE_id]->harq_processes[harq_pid]->first_rb;
+            ul_nb_rb = PHY_vars_eNB_g[att_eNB_id]->ulsch_eNB[(uint8_t)UE_id]->harq_processes[harq_pid]->nb_rb;
+            ul_fr_rb = PHY_vars_eNB_g[att_eNB_id]->ulsch_eNB[(uint8_t)UE_id]->harq_processes[harq_pid]->first_rb;
           }
 	
 	if(ul_nb_rb>1 && (ul_fr_rb < 25 && ul_fr_rb > -1))

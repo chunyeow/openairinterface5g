@@ -52,14 +52,14 @@
 #    define   PRINT_RLC_UM_DISCARD_SDU  //
 #endif
 //-----------------------------------------------------------------------------
-mem_block      *rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, u16_t li0P, u16 li1P);
-inline void     rlc_um_encode_pdu_15 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, u16_t * li_arrayP, u8_t nb_liP);
-inline void     rlc_um_encode_pdu_7 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, u16_t * li_arrayP, u8_t nb_liP);
+mem_block      *rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, uint16_t li0P, uint16_t li1P);
+inline void     rlc_um_encode_pdu_15 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, uint16_t * li_arrayP, uint8_t nb_liP);
+inline void     rlc_um_encode_pdu_7 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, uint16_t * li_arrayP, uint8_t nb_liP);
 inline void     rlc_um_fill_pdus (struct rlc_um_entity *rlcP, list_up * pdusP, list_up * segmented_sdusP);
 void            rlc_um_segment_15 (struct rlc_um_entity *rlcP);
 //-----------------------------------------------------------------------------
 mem_block      *
-rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, u16_t li0P, u16 li1P)
+rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, uint16_t li0P, uint16_t li1P)
 {
 //-----------------------------------------------------------------------------
   struct rlc_um_tx_data_pdu_struct *rlc_header;
@@ -76,14 +76,14 @@ rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, u16_t li0P, u16 li1P
   memset (pdu->data, 0, sizeof (struct rlc_um_tx_pdu_management));
 
   if (rlcP->data_pdu_size > 125) {
-    rlc_header->li_data_7[0] = (u8_t) (li0P >> 8);
-    rlc_header->li_data_7[1] = (u8_t) (li0P | RLC_E_NEXT_FIELD_IS_LI_E);
-    rlc_header->li_data_7[2] = (u8_t) (li1P >> 8);
-    rlc_header->li_data_7[3] = (u8_t) li1P;
+    rlc_header->li_data_7[0] = (uint8_t) (li0P >> 8);
+    rlc_header->li_data_7[1] = (uint8_t) (li0P | RLC_E_NEXT_FIELD_IS_LI_E);
+    rlc_header->li_data_7[2] = (uint8_t) (li1P >> 8);
+    rlc_header->li_data_7[3] = (uint8_t) li1P;
     rlcP->li_length_15_was_used_for_previous_pdu = 1;
   } else {
-    rlc_header->li_data_7[0] = (u8_t) (li0P | RLC_E_NEXT_FIELD_IS_LI_E);
-    rlc_header->li_data_7[1] = (u8_t) li1P;
+    rlc_header->li_data_7[0] = (uint8_t) (li0P | RLC_E_NEXT_FIELD_IS_LI_E);
+    rlc_header->li_data_7[1] = (uint8_t) li1P;
     rlcP->li_length_15_was_used_for_previous_pdu = 0;
   }
   rlc_header->byte1 = (rlcP->vt_us << 1) | RLC_E_NEXT_FIELD_IS_LI_E;
@@ -93,7 +93,7 @@ rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, u16_t li0P, u16 li1P
 #endif
   rlcP->vt_us = (rlcP->vt_us + 1) & 0x7F;
 
-  pdu_mngt->first_byte = (u8_t *) rlc_header;
+  pdu_mngt->first_byte = (uint8_t *) rlc_header;
   pdu_mngt->data_size = 0;
   pdu_mngt->payload = NULL;
 
@@ -102,10 +102,10 @@ rlc_um_build_pdu_with_only_2li (struct rlc_um_entity *rlcP, u16_t li0P, u16 li1P
 
 //-----------------------------------------------------------------------------
 inline void
-rlc_um_encode_pdu_15 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, u16_t * li_arrayP, u8_t nb_liP)
+rlc_um_encode_pdu_15 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, uint16_t * li_arrayP, uint8_t nb_liP)
 {
 //-----------------------------------------------------------------------------
-  u8_t              li_index;
+  uint8_t              li_index;
 
 #ifdef DEBUG_RLC_UM_SEGMENT
   int             index;
@@ -123,7 +123,7 @@ rlc_um_encode_pdu_15 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_stru
   rlcP->vt_us = (rlcP->vt_us + 1) & 127;
 
   nb_liP = nb_liP << 1;
-  pdu_mngtP->payload = (u8_t *) ((u32_t) (&rlc_headerP->li_data_7[nb_liP]));
+  pdu_mngtP->payload = (uint8_t *) ((uint32_t) (&rlc_headerP->li_data_7[nb_liP]));
 
   if (nb_liP) {
     rlc_headerP->byte1 |= RLC_E_NEXT_FIELD_IS_LI_E;
@@ -135,16 +135,16 @@ rlc_um_encode_pdu_15 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_stru
       rlc_headerP->li_data_7[li_index] = li_arrayP[li_index >> 1] | RLC_E_NEXT_FIELD_IS_LI_E;
       li_index += 1;
     }
-    rlc_headerP->li_data_7[li_index - 1] = rlc_headerP->li_data_7[li_index - 1] ^ (u8_t) RLC_E_NEXT_FIELD_IS_LI_E;
+    rlc_headerP->li_data_7[li_index - 1] = rlc_headerP->li_data_7[li_index - 1] ^ (uint8_t) RLC_E_NEXT_FIELD_IS_LI_E;
   }
 }
 
 //-----------------------------------------------------------------------------
 inline void
-rlc_um_encode_pdu_7 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, u16_t * li_arrayP, u8_t nb_liP)
+rlc_um_encode_pdu_7 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struct *rlc_headerP, struct rlc_um_tx_pdu_management *pdu_mngtP, uint16_t * li_arrayP, uint8_t nb_liP)
 {
 //-----------------------------------------------------------------------------
-  u8_t              li_index;
+  uint8_t              li_index;
 
 #ifdef DEBUG_RLC_UM_SEGMENT_ENCODE
   int             index;
@@ -162,17 +162,17 @@ rlc_um_encode_pdu_7 (struct rlc_um_entity *rlcP, struct rlc_um_tx_data_pdu_struc
 #endif
   rlcP->vt_us = (rlcP->vt_us + 1) & 127;
 
-  pdu_mngtP->payload = (u8_t *) ((u32_t) (&rlc_headerP->li_data_7[nb_liP]));
+  pdu_mngtP->payload = (uint8_t *) ((uint32_t) (&rlc_headerP->li_data_7[nb_liP]));
 
   if (nb_liP) {
     rlc_headerP->byte1 |= RLC_E_NEXT_FIELD_IS_LI_E;
     li_index = 0;
     // COPY LI
     while (li_index < nb_liP) {
-      rlc_headerP->li_data_7[li_index] = (u8_t) (li_arrayP[li_index]) | RLC_E_NEXT_FIELD_IS_LI_E;
+      rlc_headerP->li_data_7[li_index] = (uint8_t) (li_arrayP[li_index]) | RLC_E_NEXT_FIELD_IS_LI_E;
       li_index += 1;
     }
-    rlc_headerP->li_data_7[li_index - 1] = rlc_headerP->li_data_7[li_index - 1] ^ (u8_t) RLC_E_NEXT_FIELD_IS_LI_E;
+    rlc_headerP->li_data_7[li_index - 1] = rlc_headerP->li_data_7[li_index - 1] ^ (uint8_t) RLC_E_NEXT_FIELD_IS_LI_E;
   }
 }
 
@@ -183,14 +183,14 @@ rlc_um_fill_pdus (struct rlc_um_entity *rlcP, list_up * pdusP, list_up * segment
 //-----------------------------------------------------------------------------
   mem_block      *pdu;
   mem_block      *sdu;
-  u8_t             *data_sdu = NULL;
-  u8_t             *data_pdu;
+  uint8_t             *data_sdu = NULL;
+  uint8_t             *data_pdu;
   struct rlc_um_tx_data_pdu_struct *rlc_header;
   struct rlc_um_tx_pdu_management *pdu_mngt;
   struct rlc_um_tx_sdu_management *sdu_mngt;
 
-  u16_t             pdu_remaining_size;
-  u16_t             sdu_available_size;
+  uint16_t             pdu_remaining_size;
+  uint16_t             sdu_available_size;
 
   pdu = NULL;
   sdu = NULL;
@@ -202,7 +202,7 @@ rlc_um_fill_pdus (struct rlc_um_entity *rlcP, list_up * pdusP, list_up * segment
     rlc_header = (struct rlc_um_tx_data_pdu_struct *) (pdu_mngt->first_byte);
 
     pdu_remaining_size = pdu_mngt->data_size;
-    data_pdu = (u8_t *) pdu_mngt->payload;
+    data_pdu = (uint8_t *) pdu_mngt->payload;
 #ifdef DEBUG_RLC_UM_SEGMENT_FILL_DATA
     msg ("[RLC_UM %p] SEGMENT FILL GET PDU %p REMAINING SIZE=%d\n", rlcP, pdu, pdu_remaining_size);
 #endif
@@ -229,7 +229,7 @@ rlc_um_fill_pdus (struct rlc_um_entity *rlcP, list_up * pdusP, list_up * segment
 #endif
           pdu_remaining_size -= sdu_available_size;
           sdu_mngt->sdu_segmented_size += sdu_available_size;
-          data_pdu = (u8_t *) ((u32_t) data_pdu + sdu_available_size);
+          data_pdu = (uint8_t *) ((uint32_t) data_pdu + sdu_available_size);
           sdu_available_size = 0;
 
           // dispatch the sdu
@@ -255,7 +255,7 @@ rlc_um_fill_pdus (struct rlc_um_entity *rlcP, list_up * pdusP, list_up * segment
 #endif
           sdu_mngt->sdu_segmented_size += pdu_remaining_size;
           sdu_available_size -= pdu_remaining_size;
-          data_sdu = (u8_t *) ((u32_t) data_sdu + (u32) pdu_remaining_size);
+          data_sdu = (uint8_t *) ((uint32_t) data_sdu + (uint32_t) pdu_remaining_size);
           // dispatch the pdu
           ((struct mac_tb_req *) (pdu->data))->rlc = NULL;
           ((struct mac_tb_req *) (pdu->data))->data_ptr = &rlc_header->byte1;
@@ -294,11 +294,11 @@ rlc_um_segment_15 (struct rlc_um_entity *rlcP)
   struct rlc_um_tx_data_pdu_struct *rlc_header;
   mem_block      *pdu;
   mem_block      *sdu_copy;
-  s16_t             pdu_remaining_size;
-  u16_t             li[RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU];
-  u8_t              discard_go_on = 1;
-  u8_t              li_index = 0;
-  u8_t              nb_pdu_to_transmit = rlcP->nb_pdu_requested_by_mac;
+  int16_t             pdu_remaining_size;
+  uint16_t             li[RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU];
+  uint8_t              discard_go_on = 1;
+  uint8_t              li_index = 0;
+  uint8_t              nb_pdu_to_transmit = rlcP->nb_pdu_requested_by_mac;
 
   pdu = NULL;
 
@@ -528,7 +528,7 @@ rlc_um_segment_15 (struct rlc_um_entity *rlcP)
   if ((sdu_mngt)) {
     if (sdu_mngt->sdu_remaining_size > 0) {
       sdu_copy = get_free_copy_mem_block ();
-      sdu_copy->data = (u8_t *) sdu_mngt;
+      sdu_copy->data = (uint8_t *) sdu_mngt;
       add_up_tail (sdu_copy, &segmented_sdus);
     }
     rlc_um_fill_pdus (rlcP, &pdus, &segmented_sdus);
@@ -549,11 +549,11 @@ rlc_um_segment_7 (struct rlc_um_entity *rlcP)
   struct rlc_um_tx_data_pdu_struct *rlc_header;
   mem_block      *pdu;
   mem_block      *sdu_copy;
-  s16_t             pdu_remaining_size;
-  u16_t             li[RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU];
-  u8_t              discard_go_on = 1;
-  u8_t              li_index = 0;
-  u8_t              nb_pdu_to_transmit = rlcP->nb_pdu_requested_by_mac;
+  int16_t             pdu_remaining_size;
+  uint16_t             li[RLC_UM_SEGMENT_NB_MAX_LI_PER_PDU];
+  uint8_t              discard_go_on = 1;
+  uint8_t              li_index = 0;
+  uint8_t              nb_pdu_to_transmit = rlcP->nb_pdu_requested_by_mac;
 
   pdu = NULL;
 
@@ -754,7 +754,7 @@ rlc_um_segment_7 (struct rlc_um_entity *rlcP)
   if ((sdu_mngt)) {
     if (sdu_mngt->sdu_remaining_size > 0) {
       sdu_copy = get_free_copy_mem_block ();
-      sdu_copy->data = (u8_t *) sdu_mngt;
+      sdu_copy->data = (uint8_t *) sdu_mngt;
       add_up_tail (sdu_copy, &segmented_sdus);
     }
     rlc_um_fill_pdus (rlcP, &pdus, &segmented_sdus);

@@ -20,11 +20,11 @@
 
 
 PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms, 
-			   u8 eNB_id,
-			   u8 Nid_cell,
-			   u8 cooperation_flag,
-			   u8 transmission_mode,
-			   u8 abstraction_flag) {
+			   uint8_t eNB_id,
+			   uint8_t Nid_cell,
+			   uint8_t cooperation_flag,
+			   uint8_t transmission_mode,
+			   uint8_t abstraction_flag) {
 
   int i,j;
   PHY_VARS_eNB* PHY_vars_eNB = malloc(sizeof(PHY_VARS_eNB));
@@ -99,9 +99,9 @@ PHY_VARS_eNB* init_lte_eNB(LTE_DL_FRAME_PARMS *frame_parms,
 }
 
 PHY_VARS_UE* init_lte_UE(LTE_DL_FRAME_PARMS *frame_parms, 
-			 u8 UE_id,
-			 u8 abstraction_flag,
-			 u8 transmission_mode) {
+			 uint8_t UE_id,
+			 uint8_t abstraction_flag,
+			 uint8_t transmission_mode) {
 
   int i,j;
   PHY_VARS_UE* PHY_vars_UE = malloc(sizeof(PHY_VARS_UE));
@@ -140,8 +140,8 @@ PHY_VARS_UE* init_lte_UE(LTE_DL_FRAME_PARMS *frame_parms,
   return (PHY_vars_UE);
 }
 PHY_VARS_RN* init_lte_RN(LTE_DL_FRAME_PARMS *frame_parms, 
-			 u8 RN_id,
-			 u8 eMBMS_active_state) {
+			 uint8_t RN_id,
+			 uint8_t eMBMS_active_state) {
 
   int i;
   PHY_VARS_RN* PHY_vars_RN = malloc(sizeof(PHY_VARS_RN));
@@ -160,16 +160,16 @@ PHY_VARS_RN* init_lte_RN(LTE_DL_FRAME_PARMS *frame_parms,
   return (PHY_vars_RN);
 }
 void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
-		   u8 frame_type,
-		   u8 tdd_config,
-		   u8 tdd_config_S,
-		   u8 extended_prefix_flag, 
-		   u8 N_RB_DL,
-		   u16 Nid_cell,
-		   u8 cooperation_flag,u8 transmission_mode,u8 abstraction_flag,
-		   int nb_antennas_rx, u8 eMBMS_active_state) {
+		   uint8_t frame_type,
+		   uint8_t tdd_config,
+		   uint8_t tdd_config_S,
+		   uint8_t extended_prefix_flag, 
+		   uint8_t N_RB_DL,
+		   uint16_t Nid_cell,
+		   uint8_t cooperation_flag,uint8_t transmission_mode,uint8_t abstraction_flag,
+		   int nb_antennas_rx, uint8_t eMBMS_active_state) {
 
-  u8 eNB_id,UE_id,RN_id;
+  uint8_t eNB_id,UE_id,RN_id;
 
   mac_xface = malloc(sizeof(MAC_xface));
 

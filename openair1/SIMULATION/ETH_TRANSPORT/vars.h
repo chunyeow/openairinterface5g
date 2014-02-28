@@ -38,10 +38,10 @@ rx_handler_t rx_handler;
 tx_handler_t tx_handler;
 
 eNB_transport_info_t eNB_transport_info[NUMBER_OF_eNB_MAX];
-u16 eNB_transport_info_TB_index[NUMBER_OF_eNB_MAX];
+uint16_t eNB_transport_info_TB_index[NUMBER_OF_eNB_MAX];
 
 UE_transport_info_t UE_transport_info[NUMBER_OF_UE_MAX];
-u16 UE_transport_info_TB_index[NUMBER_OF_UE_MAX];
+uint16_t UE_transport_info_TB_index[NUMBER_OF_UE_MAX];
 
 UE_cntl ue_cntl_delay[NUMBER_OF_UE_MAX][2];
 

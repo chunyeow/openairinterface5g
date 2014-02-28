@@ -55,10 +55,10 @@
 
 extern inline unsigned int taus(void);
 
-s8 get_DELTA_PREAMBLE(module_id_t module_idP) {
+int8_t get_DELTA_PREAMBLE(module_id_t module_idP) {
 
-  u8 prachConfigIndex = UE_mac_inst[module_idP].radioResourceConfigCommon->prach_Config.prach_ConfigInfo.prach_ConfigIndex;
-  u8 preambleformat;
+  uint8_t prachConfigIndex = UE_mac_inst[module_idP].radioResourceConfigCommon->prach_Config.prach_ConfigInfo.prach_ConfigIndex;
+  uint8_t preambleformat;
 
   if (UE_mac_inst[module_idP].tdd_Config) { // TDD
       if (prachConfigIndex < 20)
@@ -96,16 +96,16 @@ s8 get_DELTA_PREAMBLE(module_id_t module_idP) {
 
 /// This routine implements Section 5.1.2 (Random Access Resource Selection) from 36.321
 void get_prach_resources(module_id_t module_idP,
-    u8 eNB_index,
-    u8 t_id,
-    u8 first_Msg3,
+    uint8_t eNB_index,
+    uint8_t t_id,
+    uint8_t first_Msg3,
     RACH_ConfigDedicated_t *rach_ConfigDedicated) {
 
-  u8 Msg3_size = UE_mac_inst[module_idP].RA_Msg3_size;
+  uint8_t Msg3_size = UE_mac_inst[module_idP].RA_Msg3_size;
   PRACH_RESOURCES_t *prach_resources = &UE_mac_inst[module_idP].RA_prach_resources;
   RACH_ConfigCommon_t *rach_ConfigCommon = NULL;
-  u8 noGroupB = 0;
-  u8 f_id = 0,num_prach=0;
+  uint8_t noGroupB = 0;
+  uint8_t f_id = 0,num_prach=0;
 
   if (UE_mac_inst[module_idP].radioResourceConfigCommon)
     rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
@@ -185,7 +185,7 @@ void get_prach_resources(module_id_t module_idP,
   UE_mac_inst[module_idP].RA_prach_resources.ra_RNTI = 1 + t_id + 10*f_id;
 }
 
-void Msg1_tx(module_id_t module_idP,frame_t frameP, u8 eNB_id) {
+void Msg1_tx(module_id_t module_idP,frame_t frameP, uint8_t eNB_id) {
 
   // start contention resolution timer
   UE_mac_inst[module_idP].RA_attempt_number++;
@@ -200,7 +200,7 @@ void Msg1_tx(module_id_t module_idP,frame_t frameP, u8 eNB_id) {
 }
 
 
-void Msg3_tx(module_id_t module_idP,frame_t frameP, u8 eNB_id) {
+void Msg3_tx(module_id_t module_idP,frame_t frameP, uint8_t eNB_id) {
 
   // start contention resolution timer
   LOG_I(MAC,"[UE %d][RAPROC] Frame %d : Msg3_tx: Setting contention resolution timer\n",module_idP,frameP);
@@ -218,19 +218,19 @@ void Msg3_tx(module_id_t module_idP,frame_t frameP, u8 eNB_id) {
 }
 
 
-PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_indexP,sub_frame_t subframeP){
+PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, uint8_t eNB_indexP,sub_frame_t subframeP){
 
 
-  u8                        Size=0;
+  uint8_t                        Size=0;
   UE_MODE_t                 UE_mode = mac_xface->get_ue_mode(module_idP,eNB_indexP);
-  u8                        lcid = CCCH;
-  u16                       Size16;
+  uint8_t                        lcid = CCCH;
+  uint16_t                       Size16;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
-  s32                       frame_diff=0;
+  int32_t                       frame_diff=0;
   mac_rlc_status_resp_t     rlc_status;
-  u8                        dcch_header_len=0;
-  u16                       sdu_lengths[8];
-  u8                        ulsch_buff[MAX_ULSCH_PAYLOAD_BYTES];
+  uint8_t                        dcch_header_len=0;
+  uint16_t                       sdu_lengths[8];
+  uint8_t                        ulsch_buff[MAX_ULSCH_PAYLOAD_BYTES];
 
   if (UE_mode == PRACH) {
       if (UE_mac_inst[module_idP].radioResourceConfigCommon)
@@ -248,7 +248,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_ind
                   &UE_mac_inst[module_idP].CCCH_pdu.payload[sizeof(SCH_SUBHEADER_SHORT)+1],0,
                   eNB_indexP,
                   0);
-              Size16 = (u16)Size;
+              Size16 = (uint16_t)Size;
 
               //	LOG_D(MAC,"[UE %d] Frame %d: Requested RRCConnectionRequest, got %d bytes\n",module_idP,frameP,Size);
               LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_UE][MOD %02d][][--- MAC_DATA_REQ (RRCConnectionRequest eNB %d) --->][MAC_UE][MOD %02d][]\n",
@@ -279,7 +279,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_ind
                   // Fill in preamble and PRACH resource
                   get_prach_resources(module_idP,eNB_indexP,subframeP,1,NULL);
 
-                  generate_ulsch_header((u8*)&UE_mac_inst[module_idP].CCCH_pdu.payload[0],  // mac header
+                  generate_ulsch_header((uint8_t*)&UE_mac_inst[module_idP].CCCH_pdu.payload[0],  // mac header
                       1,      // num sdus
                       0,            // short pading
                       &Size16,  // sdu length
@@ -334,7 +334,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, u8 eNB_ind
                   UE_mac_inst[module_idP].RA_backoff_subframe = subframeP;
                   // Fill in preamble and PRACH resource
                   get_prach_resources(module_idP,eNB_indexP,subframeP,1,NULL);
-                  generate_ulsch_header((u8*)ulsch_buff,  // mac header
+                  generate_ulsch_header((uint8_t*)ulsch_buff,  // mac header
                       1,      // num sdus
                       0,            // short pading
                       &Size16,  // sdu length

@@ -121,23 +121,23 @@ int compareints (const void * a, const void * b)
 }
 
 
-s32 generate_srs_tx(PHY_VARS_UE *phy_vars_ue,
-		    u8 eNB_id,
-		    s16 amp,
-		    u32 subframe) {
+int32_t generate_srs_tx(PHY_VARS_UE *phy_vars_ue,
+		    uint8_t eNB_id,
+		    int16_t amp,
+		    uint32_t subframe) {
 
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
   SOUNDINGRS_UL_CONFIG_DEDICATED *soundingrs_ul_config_dedicated=&phy_vars_ue->soundingrs_ul_config_dedicated[eNB_id];
   mod_sym_t *txdataF = phy_vars_ue->lte_ue_common_vars.txdataF[0];
-  u16 msrsb=0,Nb=0,nb,b,msrs0=0,k,Msc_RS,Msc_RS_idx,carrier_pos,symbol_offset;
-  u16 *Msc_idx_ptr;
-  u32 k0,T_SFC;
-  u32 subframe_offset;
-  u8 Bsrs  = soundingrs_ul_config_dedicated->srs_Bandwidth;
-  u8 Csrs  = frame_parms->soundingrs_ul_config_common.srs_BandwidthConfig;
-  u8 Ssrs  = frame_parms->soundingrs_ul_config_common.srs_SubframeConfig;
-  u8 n_RRC = soundingrs_ul_config_dedicated->freqDomainPosition;
-  u8 kTC   = soundingrs_ul_config_dedicated->transmissionComb;
+  uint16_t msrsb=0,Nb=0,nb,b,msrs0=0,k,Msc_RS,Msc_RS_idx,carrier_pos,symbol_offset;
+  uint16_t *Msc_idx_ptr;
+  uint32_t k0,T_SFC;
+  uint32_t subframe_offset;
+  uint8_t Bsrs  = soundingrs_ul_config_dedicated->srs_Bandwidth;
+  uint8_t Csrs  = frame_parms->soundingrs_ul_config_common.srs_BandwidthConfig;
+  uint8_t Ssrs  = frame_parms->soundingrs_ul_config_common.srs_SubframeConfig;
+  uint8_t n_RRC = soundingrs_ul_config_dedicated->freqDomainPosition;
+  uint8_t kTC   = soundingrs_ul_config_dedicated->transmissionComb;
 
 
   if (frame_parms->N_RB_UL < 41) {
@@ -175,7 +175,7 @@ s32 generate_srs_tx(PHY_VARS_UE *phy_vars_ue,
   }
 
 #ifdef USER_MODE
-  Msc_idx_ptr = (u16*) bsearch((u16*) &Msc_RS, (u16*) dftsizes, 33, sizeof(u16), compareints);
+  Msc_idx_ptr = (uint16_t*) bsearch((uint16_t*) &Msc_RS, (uint16_t*) dftsizes, 33, sizeof(uint16_t), compareints);
   if (Msc_idx_ptr)
     Msc_RS_idx = Msc_idx_ptr - dftsizes;
   else {
@@ -208,8 +208,8 @@ s32 generate_srs_tx(PHY_VARS_UE *phy_vars_ue,
   symbol_offset = subframe_offset+(frame_parms->symbols_per_tti-1)*frame_parms->ofdm_symbol_size;
 
   for (k=0;k<Msc_RS;k++) {
-    ((short*) txdataF)[2*(symbol_offset + carrier_pos)]   = (short) (((s32) amp * (s32) ul_ref_sigs[0][0][Msc_RS_idx][k<<1])>>15);
-    ((short*) txdataF)[2*(symbol_offset + carrier_pos)+1] = (short) (((s32) amp * (s32) ul_ref_sigs[0][0][Msc_RS_idx][(k<<1)+1])>>15);
+    ((short*) txdataF)[2*(symbol_offset + carrier_pos)]   = (short) (((int32_t) amp * (int32_t) ul_ref_sigs[0][0][Msc_RS_idx][k<<1])>>15);
+    ((short*) txdataF)[2*(symbol_offset + carrier_pos)+1] = (short) (((int32_t) amp * (int32_t) ul_ref_sigs[0][0][Msc_RS_idx][(k<<1)+1])>>15);
     carrier_pos+=2;
     if (carrier_pos >= frame_parms->ofdm_symbol_size)
       carrier_pos=1;
@@ -241,7 +241,7 @@ s32 generate_srs_tx(PHY_VARS_UE *phy_vars_ue,
   return(0);
 }
 
-int generate_srs_tx_emul(PHY_VARS_UE *phy_vars_ue,u8 subframe) {
+int generate_srs_tx_emul(PHY_VARS_UE *phy_vars_ue,uint8_t subframe) {
 
   LOG_D(PHY,"[UE] generate_srs_tx_emul for subframe %d\n",subframe);
   return(0); 
@@ -251,13 +251,13 @@ int generate_srs_rx(LTE_DL_FRAME_PARMS *frame_parms,
 		    SOUNDINGRS_UL_CONFIG_DEDICATED *soundingrs_ul_config_dedicated,		    
 		    int *txdataF) {
 
-  u16 msrsb=0,Nb=0,nb,b,msrs0=0,k,Msc_RS,Msc_RS_idx,carrier_pos;
-  u16 *Msc_idx_ptr;
+  uint16_t msrsb=0,Nb=0,nb,b,msrs0=0,k,Msc_RS,Msc_RS_idx,carrier_pos;
+  uint16_t *Msc_idx_ptr;
   int k0;
-  u8 Bsrs  = soundingrs_ul_config_dedicated->srs_Bandwidth;
-  u8 Csrs  = frame_parms->soundingrs_ul_config_common.srs_BandwidthConfig;
-  u8 n_RRC = soundingrs_ul_config_dedicated->freqDomainPosition;
-  u8 kTC   = soundingrs_ul_config_dedicated->transmissionComb;
+  uint8_t Bsrs  = soundingrs_ul_config_dedicated->srs_Bandwidth;
+  uint8_t Csrs  = frame_parms->soundingrs_ul_config_common.srs_BandwidthConfig;
+  uint8_t n_RRC = soundingrs_ul_config_dedicated->freqDomainPosition;
+  uint8_t kTC   = soundingrs_ul_config_dedicated->transmissionComb;
 
   if (frame_parms->N_RB_UL < 41) {
     msrs0 = msrsb_6_40[Csrs][0];
@@ -294,7 +294,7 @@ int generate_srs_rx(LTE_DL_FRAME_PARMS *frame_parms,
   }
 
 #ifdef USER_MODE
-  Msc_idx_ptr = (u16*) bsearch((u16*) &Msc_RS, (u16*) dftsizes, 33, sizeof(u16), compareints);
+  Msc_idx_ptr = (uint16_t*) bsearch((uint16_t*) &Msc_RS, (uint16_t*) dftsizes, 33, sizeof(uint16_t), compareints);
   if (Msc_idx_ptr)
     Msc_RS_idx = Msc_idx_ptr - dftsizes;
   else {

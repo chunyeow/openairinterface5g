@@ -33,7 +33,7 @@
 
 #define BW 7.68
 
-extern u16 beta_ack[16],beta_ri[16],beta_cqi[16];
+extern uint16_t beta_ack[16],beta_ri[16],beta_cqi[16];
 extern unsigned short dftsizes[33];
 extern short *ul_ref_sigs[30][2][33];
 
@@ -186,7 +186,7 @@ void do_forms(FD_lte_scope *form, LTE_DL_FRAME_PARMS *frame_parms, short **chann
 }
 #endif
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,u8 extended_prefix_flag,u16 Nid_cell,u8 tdd_config,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag,uint16_t Nid_cell,uint8_t tdd_config,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
   int i, kk;
@@ -336,7 +336,7 @@ void real_fir(double *re_in, double *im_in, double *re_out, double *im_out, doub
 }
 
 // Modif Channel quantization at UE
-void do_quantization_UE(PHY_VARS_UE *PHY_vars_UE, unsigned int nsymb, u8 pilot0, int quant_v, short *dl_ch_estimates, int dec_f)  {
+void do_quantization_UE(PHY_VARS_UE *PHY_vars_UE, unsigned int nsymb, uint8_t pilot0, int quant_v, short *dl_ch_estimates, int dec_f)  {
         int k;
         short tx_energy;
 	short dl_ch_estimates_norm[PHY_vars_UE->lte_frame_parms.ofdm_symbol_size*nsymb];
@@ -392,12 +392,12 @@ void do_quantization_UE(PHY_VARS_UE *PHY_vars_UE, unsigned int nsymb, u8 pilot0,
 */
 }
 
-void do_quantization_eNB(PHY_VARS_eNB *PHY_vars_eNB, PHY_VARS_UE *PHY_vars_UE, unsigned int nsymb, u8 pilot0, u8 pilot1, int quant_v, short *drs_ch_estimates, int UE_id)  {
+void do_quantization_eNB(PHY_VARS_eNB *PHY_vars_eNB, PHY_VARS_UE *PHY_vars_UE, unsigned int nsymb, uint8_t pilot0, uint8_t pilot1, int quant_v, short *drs_ch_estimates, int UE_id)  {
         int k, aa, aarx;
         short tx_energy;
 	short drs_ch_estimates_norm[2*PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb];
 
-        u8 pilot[2];
+        uint8_t pilot[2];
         pilot[0] = pilot0;
         pilot[1] = pilot1;
 	
@@ -592,12 +592,12 @@ int main(int argc, char **argv) {
 //modif start UL
   unsigned int coded_bits_per_codeword_UE;
   double sigma2_UE[2], sigma2_UE_dB[2]={10,10}, SNRmeas[2], rate_UE=0;
-  u8 control_only_flag = 0;
-  u8 cooperation_flag = 0; 
+  uint8_t control_only_flag = 0;
+  uint8_t cooperation_flag = 0; 
   int **txdata_UE[2];
-  u8 cyclic_shift = 0;
-  u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
-  u8 srs_flag = 0;
+  uint8_t cyclic_shift = 0;
+  uint8_t beta_ACK=0,beta_RI=0,beta_CQI=2;
+  uint8_t srs_flag = 0;
   char fname[20],vname[20];
 //modif end UL
   double snr_step=1, snr_int=30;
@@ -620,8 +620,8 @@ int llb;
   //double hold_channel=0; //use hold_channel=1 instead of forgetting_factor=1 (more efficient)
   double iqim=0.0;
 
-  u8 extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
-  u16 Nid_cell=0;
+  uint8_t extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
+  uint16_t Nid_cell=0;
 
   int eNB_id = 0, eNB_id_i = NUMBER_OF_eNB_MAX;
 //modif start UL
@@ -634,8 +634,8 @@ int llb;
   unsigned char i_mod = 2;
   unsigned short NB_RB=conv_nprb(0,DLSCH_RB_ALLOC);
   unsigned char Ns,l,m;
-  u16 tdd_config=3;
-  u16 n_rnti=0x1234;
+  uint16_t tdd_config=3;
+  uint16_t n_rnti=0x1234;
 
   int decalibration = 0, phase_offset = 0;
 
@@ -689,13 +689,13 @@ int llb;
   channel_desc_t *eNB2UE[2][2];
   channel_desc_t *UE2eNB[2][2];
   double snr;
-  u8 num_pdcch_symbols=3,num_pdcch_symbols_2=0;
-  u8 pilot1,pilot2,pilot3;
-  u8 rx_sample_offset = 0;
+  uint8_t num_pdcch_symbols=3,num_pdcch_symbols_2=0;
+  uint8_t pilot1,pilot2,pilot3;
+  uint8_t rx_sample_offset = 0;
   //char stats_buffer[4096];
   //int len;
-  u8 num_rounds = 1,fix_rounds=0;
-  u8 subframe_DL=6;
+  uint8_t num_rounds = 1,fix_rounds=0;
+  uint8_t subframe_DL=6;
 //modif start UL
   int subframe_UL=2;
 //modif end UL
@@ -711,8 +711,8 @@ int llb;
   // int bler;
   double blerr,uncoded_ber[2],avg_ber[2];
   short *uncoded_ber_bit;
-  u8 N_RB_DL=25,osf=1;
-  s16 amp;
+  uint8_t N_RB_DL=25,osf=1;
+  int16_t amp;
 //modif start UL
   unsigned char harq_pid[2];
   FILE *trch_out_fd=NULL;
@@ -1137,7 +1137,7 @@ for(aa=0;aa<2;aa++)
 
   UL_alloc_pdu.type    = 0;
   UL_alloc_pdu.rballoc = computeRIV(PHY_vars_eNB[0]->lte_frame_parms.N_RB_UL,first_rb,nb_rb_UE);// 12 RBs from position 8
-  printf("rballoc %d (dci %x)\n",UL_alloc_pdu.rballoc,*(u32 *)&UL_alloc_pdu);
+  printf("rballoc %d (dci %x)\n",UL_alloc_pdu.rballoc,*(uint32_t *)&UL_alloc_pdu);
   UL_alloc_pdu.mcs     = mcs_UE;
   UL_alloc_pdu.ndi     = 1;
   UL_alloc_pdu.TPC     = 0;
@@ -1604,7 +1604,7 @@ for (kk=0; kk<2; kk++) {
 			       0,
 			       subframe_DL<<1);
 	      if (transmission_mode == 5) {
-		amp = (s16)(((s32)1024*ONE_OVER_SQRT2_Q15)>>15);
+		amp = (int16_t)(((int32_t)1024*ONE_OVER_SQRT2_Q15)>>15);
 	      }
 	      else
 		amp = 1024;
@@ -1960,8 +1960,8 @@ for (kk=0; kk<2; kk++) {
 			{
 			  for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			    { 
-			      ((s16 *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE[kk][kk]->chF[aarx+(aa*PHY_vars_UE[kk]->lte_frame_parms.nb_antennas_rx)][i].x*AMP/2);
-			      ((s16 *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE[kk][kk]->chF[aarx+(aa*PHY_vars_UE[kk]->lte_frame_parms.nb_antennas_rx)][i].y*AMP/2) ;
+			      ((int16_t *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE[kk][kk]->chF[aarx+(aa*PHY_vars_UE[kk]->lte_frame_parms.nb_antennas_rx)][i].x*AMP/2);
+			      ((int16_t *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE[kk][kk]->chF[aarx+(aa*PHY_vars_UE[kk]->lte_frame_parms.nb_antennas_rx)][i].y*AMP/2) ;
 			    }
 			}
 		    }
@@ -1974,8 +1974,8 @@ for (kk=0; kk<2; kk++) {
 		      {
 			for (i=0;i<frame_parms->N_RB_DL*12;i++)
 			  { 
-			    ((s16 *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=AMP/2;
-			    ((s16 *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
+			    ((int16_t *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=AMP/2;
+			    ((int16_t *) PHY_vars_UE[kk]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
 			  }
 		      }
 		  }

@@ -91,21 +91,19 @@ struct ipversion {
 #endif
 };
 
-typedef int traffic_type_t;
-
 
 typedef struct pdcp_data_req_header_s {
-  unsigned int           rb_id;
-  unsigned int           data_size;
-  int                    inst;
-  traffic_type_t         traffic_type;
+  rb_id_t             rb_id;
+  sdu_size_t          data_size;
+  signed int          inst;
+  ip_traffic_type_t   traffic_type;
 } pdcp_data_req_header_t;
 
 typedef struct pdcp_data_ind_header_s {
-  unsigned int           rb_id;
-  unsigned int           data_size;
-  int                    inst;
-  int                    dummy;
+  rb_id_t             rb_id;
+  sdu_size_t          data_size;
+  signed int          inst;
+  ip_traffic_type_t   dummy_traffic_type;
 } pdcp_data_ind_header_t;
 
 

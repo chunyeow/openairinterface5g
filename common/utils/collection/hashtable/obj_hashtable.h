@@ -1,13 +1,10 @@
-#ifndef _OBJ_HASH_TABLE_H_
-#define _OBJ_HASH_TABLE_H_
+#ifndef _UTILS_COLLECTION_OBJ_HASH_TABLE_H_
+#define _UTILS_COLLECTION_OBJ_HASH_TABLE_H_
 #include<stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 
-#include "hashtable.h"
-
-typedef size_t hash_size_t;
-
+#include "collection/hashtable/hashtable.h"
 
 typedef struct obj_hash_node_s {
     int                 key_size;
@@ -33,8 +30,6 @@ hashtable_rc_t      obj_hashtable_remove  (obj_hash_table_t *hashtblP, const voi
 hashtable_rc_t      obj_hashtable_get     (obj_hash_table_t *hashtblP, const void* keyP, int key_sizeP, void ** dataP);
 hashtable_rc_t      obj_hashtable_get_keys(obj_hash_table_t *hashtblP, void ** keysP, unsigned int *sizeP);
 hashtable_rc_t      obj_hashtable_resize  (obj_hash_table_t *hashtblP, hash_size_t sizeP);
-
-
 
 #endif
 

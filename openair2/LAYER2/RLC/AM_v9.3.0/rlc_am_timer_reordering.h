@@ -78,11 +78,11 @@ protected_rlc_am_timer_reordering(void rlc_am_stop_and_reset_timer_reordering(rl
 */
 protected_rlc_am_timer_reordering(void rlc_am_start_timer_reordering(rlc_am_entity_t *rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_am_init_timer_reordering(rlc_am_entity_t *rlc_pP, u32_t time_outP)
+/*! \fn void rlc_am_init_timer_reordering(rlc_am_entity_t *rlc_pP, uint32_t time_outP)
 * \brief      Initialize the timer reordering with RLC AM time-out config parameter.
 * \param[in]  rlc_pP              RLC AM protocol instance pointer.
 * \param[in]  time_outP         Time-out in frameP units.
 */
-protected_rlc_am_timer_reordering(void rlc_am_init_timer_reordering(rlc_am_entity_t *rlc_pP, u32_t time_outP);)
+protected_rlc_am_timer_reordering(void rlc_am_init_timer_reordering(rlc_am_entity_t *rlc_pP, uint32_t time_outP);)
 /** @} */
 #endif

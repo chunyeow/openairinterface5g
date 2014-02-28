@@ -56,7 +56,7 @@
 #endif
 
 /* sec 5.9, 36.321: MAC Reset Procedure */
-void ue_mac_reset(module_id_t module_idP,u8 eNB_index) {
+void ue_mac_reset(module_id_t module_idP,uint8_t eNB_index) {
 
   //Resetting Bj
   UE_mac_inst[module_idP].scheduling_info.Bj[0] = 0;
@@ -84,7 +84,7 @@ void ue_mac_reset(module_id_t module_idP,u8 eNB_index) {
 
 }
 
-int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,u8 UE_id,u8 eNB_index,
+int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,uint8_t eNB_index,
     RadioResourceConfigCommonSIB_t  *radioResourceConfigCommon,
     struct PhysicalConfigDedicated  *physicalConfigDedicated,
     MeasObjectToAddMod_t           **measObj,
@@ -94,20 +94,20 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,u8 UE_id,u8 eNB_
     MeasGapConfig_t                 *measGapConfig,
     TDD_Config_t                    *tdd_Config,
     MobilityControlInfo_t           *mobilityControlInfo,
-    u8                              *SIwindowsize,
-    u16                             *SIperiod,
+    uint8_t                              *SIwindowsize,
+    uint16_t                             *SIperiod,
     ARFCN_ValueEUTRA_t              *ul_CarrierFreq,
     long                            *ul_Bandwidth,
     AdditionalSpectrumEmission_t    *additionalSpectrumEmission,
     struct MBSFN_SubframeConfigList *mbsfn_SubframeConfigList
 #ifdef Rel10
-    ,u8                              MBMS_Flag,
+    ,uint8_t                              MBMS_Flag,
     MBSFN_AreaInfoList_r9_t         *mbsfn_AreaInfoList,
     PMCH_InfoList_r9_t              *pmch_InfoList
 #endif 
 #ifdef CBA
-    ,u8                              num_active_cba_groups,
-    u16                              cba_rnti
+    ,uint8_t                              num_active_cba_groups,
+    uint16_t                              cba_rnti
 #endif
 ) {
 
@@ -178,24 +178,24 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,u8 UE_id,u8 eNB_
           if (mac_MainConfig->ul_SCH_Config) {
 
               if (mac_MainConfig->ul_SCH_Config->periodicBSR_Timer)
-                UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer = (u16) *mac_MainConfig->ul_SCH_Config->periodicBSR_Timer;
+                UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer = (uint16_t) *mac_MainConfig->ul_SCH_Config->periodicBSR_Timer;
               else
-                UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer = (u16) MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_infinity;
+                UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer = (uint16_t) MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_infinity;
 
               if (mac_MainConfig->ul_SCH_Config->maxHARQ_Tx)
-                UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx     = (u16) *mac_MainConfig->ul_SCH_Config->maxHARQ_Tx;
+                UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx     = (uint16_t) *mac_MainConfig->ul_SCH_Config->maxHARQ_Tx;
               else
-                UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx     = (u16) MAC_MainConfig__ul_SCH_Config__maxHARQ_Tx_n5;
+                UE_mac_inst[Mod_id].scheduling_info.maxHARQ_Tx     = (uint16_t) MAC_MainConfig__ul_SCH_Config__maxHARQ_Tx_n5;
               if (mac_MainConfig->ul_SCH_Config->retxBSR_Timer)
-                UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer     = (u16) mac_MainConfig->ul_SCH_Config->retxBSR_Timer;
+                UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer     = (uint16_t) mac_MainConfig->ul_SCH_Config->retxBSR_Timer;
               else
-                UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer     = (u16)MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf2560;
+                UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer     = (uint16_t)MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf2560;
           }
 #ifdef Rel10   
           if (mac_MainConfig->sr_ProhibitTimer_r9)
-            UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer  = (u16) *mac_MainConfig->sr_ProhibitTimer_r9;
+            UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer  = (uint16_t) *mac_MainConfig->sr_ProhibitTimer_r9;
           else
-            UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer  = (u16) 0;
+            UE_mac_inst[Mod_id].scheduling_info.sr_ProhibitTimer  = (uint16_t) 0;
 #endif
           UE_mac_inst[Mod_id].scheduling_info.periodicBSR_SF  = get_sf_periodicBSRTimer(UE_mac_inst[Mod_id].scheduling_info.periodicBSR_Timer);
           UE_mac_inst[Mod_id].scheduling_info.retxBSR_SF     = get_sf_retxBSRTimer(UE_mac_inst[Mod_id].scheduling_info.retxBSR_Timer);

@@ -40,16 +40,16 @@
 #include "PHY/defs.h"
 #include "MAC_INTERFACE/extern.h"
 
-//u16 pcfich_reg[4];
-//u8 pcfich_first_reg_idx = 0;
+//uint16_t pcfich_reg[4];
+//uint8_t pcfich_first_reg_idx = 0;
 
 //#define DEBUG_PCFICH
 
 void generate_pcfich_reg_mapping(LTE_DL_FRAME_PARMS *frame_parms) {
 
-  u16 kbar = 6 * (frame_parms->Nid_cell %(2*frame_parms->N_RB_DL));
-  u16 first_reg;
-  u16 *pcfich_reg = frame_parms->pcfich_reg;
+  uint16_t kbar = 6 * (frame_parms->Nid_cell %(2*frame_parms->N_RB_DL));
+  uint16_t first_reg;
+  uint16_t *pcfich_reg = frame_parms->pcfich_reg;
   
   pcfich_reg[0] = kbar/6;
   first_reg = pcfich_reg[0];
@@ -78,12 +78,12 @@ void generate_pcfich_reg_mapping(LTE_DL_FRAME_PARMS *frame_parms) {
 }
 
 void pcfich_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
-		       u8 subframe,
-		       u8 *b,
-		       u8 *bt) {
-  u32 i;
-  u8 reset;
-  u32 x1, x2, s=0;
+		       uint8_t subframe,
+		       uint8_t *b,
+		       uint8_t *bt) {
+  uint32_t i;
+  uint8_t reset;
+  uint32_t x1, x2, s=0;
 
   reset = 1;
   // x1 is set in lte_gold_generic
@@ -101,12 +101,12 @@ void pcfich_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
 }
 
 void pcfich_unscrambling(LTE_DL_FRAME_PARMS *frame_parms,
-			 u8 subframe,
-			 s16 *d) {
+			 uint8_t subframe,
+			 int16_t *d) {
 
-  u32 i;
-  u8 reset;
-  u32 x1, x2, s=0;
+  uint32_t i;
+  uint8_t reset;
+  uint32_t x1, x2, s=0;
 
   reset = 1;
   // x1 is set in lte_gold_generic
@@ -126,27 +126,27 @@ void pcfich_unscrambling(LTE_DL_FRAME_PARMS *frame_parms,
   }
 }
 
-u8 pcfich_b[4][32]={{0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1},
+uint8_t pcfich_b[4][32]={{0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1},
 		    {1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0},
 		    {1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1},
 		    {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};
 
-void generate_pcfich(u8 num_pdcch_symbols,
-		     s16 amp,
+void generate_pcfich(uint8_t num_pdcch_symbols,
+		     int16_t amp,
 		     LTE_DL_FRAME_PARMS *frame_parms,
 		     mod_sym_t **txdataF,
-		     u8 subframe) {
+		     uint8_t subframe) {
 
-  u8 pcfich_bt[32],nsymb,pcfich_quad;
+  uint8_t pcfich_bt[32],nsymb,pcfich_quad;
   mod_sym_t pcfich_d[2][16];
-  u8 i;
-  u32 symbol_offset,m,re_offset,reg_offset;
-  s16 gain_lin_QPSK;
+  uint8_t i;
+  uint32_t symbol_offset,m,re_offset,reg_offset;
+  int16_t gain_lin_QPSK;
 #ifdef IFFT_FPGA
-  u8 qpsk_table_offset = 0; 
-  u8 qpsk_table_offset2 = 0;
+  uint8_t qpsk_table_offset = 0; 
+  uint8_t qpsk_table_offset2 = 0;
 #endif
-  u16 *pcfich_reg = frame_parms->pcfich_reg;
+  uint16_t *pcfich_reg = frame_parms->pcfich_reg;
 
   int nushiftmod3 = frame_parms->nushift%3;
 #ifdef DEBUG_PCFICH
@@ -159,17 +159,17 @@ void generate_pcfich(u8 num_pdcch_symbols,
 
   // modulation
   if (frame_parms->mode1_flag==1) 
-    gain_lin_QPSK = (s16)((amp*ONE_OVER_SQRT2_Q15)>>15);  
+    gain_lin_QPSK = (int16_t)((amp*ONE_OVER_SQRT2_Q15)>>15);  
   else
     gain_lin_QPSK = amp/2;  
 
   if (frame_parms->mode1_flag) { // SISO
 #ifndef IFFT_FPGA
     for (i=0;i<16;i++) {
-      ((s16*)(&(pcfich_d[0][i])))[0]   = ((pcfich_bt[2*i] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
-      ((s16*)(&(pcfich_d[1][i])))[0]   = ((pcfich_bt[2*i] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
-      ((s16*)(&(pcfich_d[0][i])))[1]   = ((pcfich_bt[2*i+1] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
-      ((s16*)(&(pcfich_d[1][i])))[1]   = ((pcfich_bt[2*i+1] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[0][i])))[0]   = ((pcfich_bt[2*i] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[1][i])))[0]   = ((pcfich_bt[2*i] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[0][i])))[1]   = ((pcfich_bt[2*i+1] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[1][i])))[1]   = ((pcfich_bt[2*i+1] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
     }
 #else
     for (i=0;i<16;i++) {
@@ -188,16 +188,16 @@ void generate_pcfich(u8 num_pdcch_symbols,
 #ifndef IFFT_FPGA
     for (i=0;i<16;i+=2) {
       // first antenna position n -> x0
-      ((s16*)(&(pcfich_d[0][i])))[0]   = ((pcfich_bt[2*i] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
-      ((s16*)(&(pcfich_d[0][i])))[1]   = ((pcfich_bt[2*i+1] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[0][i])))[0]   = ((pcfich_bt[2*i] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[0][i])))[1]   = ((pcfich_bt[2*i+1] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
       // second antenna position n -> -x1*
-      ((s16*)(&(pcfich_d[1][i])))[0]   = ((pcfich_bt[2*i+2] == 1) ? gain_lin_QPSK : -gain_lin_QPSK);
-      ((s16*)(&(pcfich_d[1][i])))[1]   = ((pcfich_bt[2*i+3] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[1][i])))[0]   = ((pcfich_bt[2*i+2] == 1) ? gain_lin_QPSK : -gain_lin_QPSK);
+      ((int16_t*)(&(pcfich_d[1][i])))[1]   = ((pcfich_bt[2*i+3] == 1) ? -gain_lin_QPSK : gain_lin_QPSK);
       // fill in the rest of the ALAMOUTI precoding
-      ((s16*)&pcfich_d[0][i+1])[0] = -((s16*)&pcfich_d[1][i])[0];
-      ((s16*)&pcfich_d[0][i+1])[1] =  ((s16*)&pcfich_d[1][i])[1];
-      ((s16*)&pcfich_d[1][i+1])[0] =  ((s16*)&pcfich_d[0][i])[0];
-      ((s16*)&pcfich_d[1][i+1])[1] = -((s16*)&pcfich_d[0][i])[1];
+      ((int16_t*)&pcfich_d[0][i+1])[0] = -((int16_t*)&pcfich_d[1][i])[0];
+      ((int16_t*)&pcfich_d[0][i+1])[1] =  ((int16_t*)&pcfich_d[1][i])[1];
+      ((int16_t*)&pcfich_d[1][i+1])[0] =  ((int16_t*)&pcfich_d[0][i])[0];
+      ((int16_t*)&pcfich_d[1][i+1])[1] = -((int16_t*)&pcfich_d[0][i])[1];
     
       
     }  
@@ -244,11 +244,11 @@ void generate_pcfich(u8 num_pdcch_symbols,
   nsymb = (frame_parms->Ncp==0) ? 14:12;
   
 #ifdef IFFT_FPGA      
-  symbol_offset = (u32)frame_parms->N_RB_DL*12*((subframe*nsymb));
+  symbol_offset = (uint32_t)frame_parms->N_RB_DL*12*((subframe*nsymb));
   re_offset = frame_parms->N_RB_DL*12/2;
   
 #else
-  symbol_offset = (u32)frame_parms->ofdm_symbol_size*((subframe*nsymb));
+  symbol_offset = (uint32_t)frame_parms->ofdm_symbol_size*((subframe*nsymb));
   re_offset = frame_parms->first_carrier_offset;
 
 #endif
@@ -256,7 +256,7 @@ void generate_pcfich(u8 num_pdcch_symbols,
   // loop over 4 quadruplets and lookup REGs
   m=0;
   for (pcfich_quad=0;pcfich_quad<4;pcfich_quad++) {
-    reg_offset = re_offset+((u16)pcfich_reg[pcfich_quad]*6);
+    reg_offset = re_offset+((uint16_t)pcfich_reg[pcfich_quad]*6);
 #ifdef IFFT_FPGA
     if (reg_offset>=(frame_parms->N_RB_DL*12))
       reg_offset-=(frame_parms->N_RB_DL*12);
@@ -271,8 +271,8 @@ void generate_pcfich(u8 num_pdcch_symbols,
 	/*
 #ifndef IFFT_FPGA
 	printf("pcfich: quad %d, i %d, offset %d => m%d (%d,%d)\n",pcfich_quad,i,reg_offset+i,m,
-	       ((s16*)&txdataF[0][symbol_offset+reg_offset+i])[0],
-	       ((s16*)&txdataF[0][symbol_offset+reg_offset+i])[1]);
+	       ((int16_t*)&txdataF[0][symbol_offset+reg_offset+i])[0],
+	       ((int16_t*)&txdataF[0][symbol_offset+reg_offset+i])[1]);
 #else
 	printf("pcfich: quad %d, i %d, offset %d => m%d (%d)\n",pcfich_quad,i,reg_offset+i,m,
 	       txdataF[0][symbol_offset+reg_offset+i]);
@@ -288,20 +288,20 @@ void generate_pcfich(u8 num_pdcch_symbols,
 }
 
 
-u8 rx_pcfich(LTE_DL_FRAME_PARMS *frame_parms,
-	     u8 subframe,
+uint8_t rx_pcfich(LTE_DL_FRAME_PARMS *frame_parms,
+	     uint8_t subframe,
 	     LTE_UE_PDCCH *lte_ue_pdcch_vars,
 	     MIMO_mode_t mimo_mode) {
 
-  u8 pcfich_quad;
-  u8 i,j;
-  u16 reg_offset;
+  uint8_t pcfich_quad;
+  uint8_t i,j;
+  uint16_t reg_offset;
 
-  s32 **rxdataF_comp = lte_ue_pdcch_vars->rxdataF_comp;
-  s16 pcfich_d[32],*pcfich_d_ptr;
-  s32 metric,old_metric=-16384;
-  u8 num_pdcch_symbols=3;
-  u16 *pcfich_reg = frame_parms->pcfich_reg;
+  int32_t **rxdataF_comp = lte_ue_pdcch_vars->rxdataF_comp;
+  int16_t pcfich_d[32],*pcfich_d_ptr;
+  int32_t metric,old_metric=-16384;
+  uint8_t num_pdcch_symbols=3;
+  uint16_t *pcfich_reg = frame_parms->pcfich_reg;
 
   // demapping
   // loop over 4 quadruplets and lookup REGs
@@ -314,12 +314,12 @@ u8 rx_pcfich(LTE_DL_FRAME_PARMS *frame_parms,
     //    if (frame_parms->mode1_flag==1) {  // SISO
       for (i=0;i<4;i++) {
 
-	  pcfich_d_ptr[0] = ((s16*)&rxdataF_comp[0][reg_offset+i])[0]; // RE component
-	  pcfich_d_ptr[1] = ((s16*)&rxdataF_comp[0][reg_offset+i])[1]; // IM component
+	  pcfich_d_ptr[0] = ((int16_t*)&rxdataF_comp[0][reg_offset+i])[0]; // RE component
+	  pcfich_d_ptr[1] = ((int16_t*)&rxdataF_comp[0][reg_offset+i])[1]; // IM component
 	/*
 			printf("rx_pcfich: quad %d, i %d, offset %d => m%d (%d,%d) => pcfich_d_ptr[0] %d \n",pcfich_quad,i,reg_offset+i,m,
-	       ((s16*)&rxdataF_comp[0][reg_offset+i])[0],
-	       ((s16*)&rxdataF_comp[0][reg_offset+i])[1],
+	       ((int16_t*)&rxdataF_comp[0][reg_offset+i])[0],
+	       ((int16_t*)&rxdataF_comp[0][reg_offset+i])[1],
 	       pcfich_d_ptr[0]);
 	*/
 	pcfich_d_ptr+=2;
@@ -334,15 +334,15 @@ u8 rx_pcfich(LTE_DL_FRAME_PARMS *frame_parms,
 	pcfich_d_ptr[3] = 0;
 	for (j=0;j<frame_parms->nb_antennas_rx;j++) {
 
-	  pcfich_d_ptr[0] += (((s16*)&rxdataF_comp[j][reg_offset+i])[0]+
-			     ((s16*)&rxdataF_comp[j+2][reg_offset+i+1])[0]); // RE component
-	  pcfich_d_ptr[1] += (((s16*)&rxdataF_comp[j][reg_offset+i])[1] -
-			     ((s16*)&rxdataF_comp[j+2][reg_offset+i+1])[1]);// IM component
+	  pcfich_d_ptr[0] += (((int16_t*)&rxdataF_comp[j][reg_offset+i])[0]+
+			     ((int16_t*)&rxdataF_comp[j+2][reg_offset+i+1])[0]); // RE component
+	  pcfich_d_ptr[1] += (((int16_t*)&rxdataF_comp[j][reg_offset+i])[1] -
+			     ((int16_t*)&rxdataF_comp[j+2][reg_offset+i+1])[1]);// IM component
 	  
-	  pcfich_d_ptr[2] += (((s16*)&rxdataF_comp[j][reg_offset+i+1])[0]-
-			     ((s16*)&rxdataF_comp[j+2][reg_offset+i])[0]); // RE component
-	  pcfich_d_ptr[3] += (((s16*)&rxdataF_comp[j][reg_offset+i+1])[1] +
-			     ((s16*)&rxdataF_comp[j+2][reg_offset+i])[1]);// IM component
+	  pcfich_d_ptr[2] += (((int16_t*)&rxdataF_comp[j][reg_offset+i+1])[0]-
+			     ((int16_t*)&rxdataF_comp[j+2][reg_offset+i])[0]); // RE component
+	  pcfich_d_ptr[3] += (((int16_t*)&rxdataF_comp[j][reg_offset+i+1])[1] +
+			     ((int16_t*)&rxdataF_comp[j+2][reg_offset+i])[1]);// IM component
 
 
 	}
@@ -363,7 +363,7 @@ u8 rx_pcfich(LTE_DL_FRAME_PARMS *frame_parms,
     metric = 0;
     for (j=0;j<32;j++) {
       //printf("pcfich_b[%d][%d] %d => pcfich_d[%d] %d\n",i,j,pcfich_b[i][j],j,pcfich_d[j]);
-      metric += (s32)(((pcfich_b[i][j]==0) ? (pcfich_d[j]) : (-pcfich_d[j])));
+      metric += (int32_t)(((pcfich_b[i][j]==0) ? (pcfich_d[j]) : (-pcfich_d[j])));
     }
 #ifdef DEBUG_PCFICH
     msg("metric %d : %d\n",i,metric);

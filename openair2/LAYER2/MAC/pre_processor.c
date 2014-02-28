@@ -80,7 +80,7 @@ void store_dlsch_buffer (module_id_t Mod_id,
 
   module_id_t           next_ue;
   rnti_t                rnti;
-  u16                   i=0;
+  uint16_t                   i=0;
   mac_rlc_status_resp_t rlc_status;
   unsigned char         UE_id,granted_UEs;
 
@@ -146,12 +146,12 @@ void store_dlsch_buffer (module_id_t Mod_id,
 void assign_rbs_required (module_id_t      Mod_id,
     frame_t     frameP,
     sub_frame_t subframe,
-    u16 *nb_rbs_required){
+    uint16_t *nb_rbs_required){
 
 
   module_id_t            next_ue;
   rnti_t            rnti;
-  u16               TBS = 0;
+  uint16_t               TBS = 0;
   LTE_eNB_UE_stats *eNB_UE_stats = NULL;
   module_id_t            ue_inst;
   unsigned char granted_UEs;
@@ -271,7 +271,7 @@ void sort_UEs (module_id_t      Mod_id,
   module_id_t            next_ue1,next_ue2;
   unsigned char     round1=0,round2=0,harq_pid1=0,harq_pid2=0;
   module_id_t            ue_inst;
-  u16               granted_UEs,i=0,ii=0,j=0;
+  uint16_t               granted_UEs,i=0,ii=0,j=0;
   rnti_t            rnti1,rnti2;
   LTE_eNB_UE_stats *eNB_UE_stats1 = NULL;
   LTE_eNB_UE_stats *eNB_UE_stats2 = NULL;
@@ -341,8 +341,8 @@ void sort_UEs (module_id_t      Mod_id,
 void dlsch_scheduler_pre_processor (module_id_t        Mod_id,
     frame_t       frameP,
     sub_frame_t   subframeP,
-    u8           *dl_pow_off,
-    u16          *pre_nb_available_rbs,
+    uint8_t           *dl_pow_off,
+    uint16_t          *pre_nb_available_rbs,
     int           N_RBGS,
     unsigned char rballoc_sub_UE[NUMBER_OF_UE_MAX][N_RBGS_MAX]){
 
@@ -351,16 +351,16 @@ void dlsch_scheduler_pre_processor (module_id_t        Mod_id,
   module_id_t             UE_id, i;
   module_id_t             UE_id_sorted[NUMBER_OF_UE_MAX];
   module_id_t             granted_UEs;
-  u16                ii,j;
-  u16                nb_rbs_required[NUMBER_OF_UE_MAX];
-  u16                nb_rbs_required_remaining[NUMBER_OF_UE_MAX];
-  u16                nb_rbs_required_remaining_1[NUMBER_OF_UE_MAX];
-  u16                i1,i2,i3,r1=0;
-  u16                average_rbs_per_user=0;
+  uint16_t                ii,j;
+  uint16_t                nb_rbs_required[NUMBER_OF_UE_MAX];
+  uint16_t                nb_rbs_required_remaining[NUMBER_OF_UE_MAX];
+  uint16_t                nb_rbs_required_remaining_1[NUMBER_OF_UE_MAX];
+  uint16_t                i1,i2,i3,r1=0;
+  uint16_t                average_rbs_per_user=0;
   rnti_t             rnti,rnti1,rnti2;
   LTE_eNB_UE_stats  *eNB_UE_stats1 = NULL;
   LTE_eNB_UE_stats  *eNB_UE_stats2 = NULL;
-  u16                min_rb_unit;
+  uint16_t                min_rb_unit;
 
 
   switch (mac_xface->lte_frame_parms->N_RB_DL) {
@@ -424,7 +424,7 @@ void dlsch_scheduler_pre_processor (module_id_t        Mod_id,
   }
   // hypotetical assignement
   if((total_ue_count > 0) && ( min_rb_unit * total_ue_count <= mac_xface->lte_frame_parms->N_RB_DL ) )
-    average_rbs_per_user = (u16) ceil(mac_xface->lte_frame_parms->N_RB_DL/total_ue_count);
+    average_rbs_per_user = (uint16_t) ceil(mac_xface->lte_frame_parms->N_RB_DL/total_ue_count);
   else 
     average_rbs_per_user = min_rb_unit;
 

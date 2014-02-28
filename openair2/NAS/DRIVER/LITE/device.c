@@ -75,7 +75,7 @@ extern void oai_nw_drv_netlink_release(void);
 extern int oai_nw_drv_netlink_init(void);
 #endif
 
-u8 NULL_IMEI[14]={0x05, 0x04, 0x03, 0x01, 0x02 ,0x00, 0x00, 0x00, 0x05, 0x04, 0x03 ,0x00, 0x01, 0x08};
+uint8_t NULL_IMEI[14]={0x05, 0x04, 0x03, 0x01, 0x02 ,0x00, 0x00, 0x00, 0x05, 0x04, 0x03 ,0x00, 0x01, 0x08};
 
 static unsigned char oai_nw_drv_IMEI[14];
 static int           m_arg=0;
@@ -96,7 +96,7 @@ int oai_nw_drv_find_inst(struct net_device *dev) {
 #ifndef OAI_NW_DRIVER_USE_NETLINK
 void *oai_nw_drv_interrupt(void){
   //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
 
   //  struct oai_nw_drv_priv *priv=netdev_priv(dev_id);
   //  unsigned int flags;
@@ -334,7 +334,7 @@ static const struct net_device_ops nasmesh_netdev_ops = {
 // Initialisation of the network device
 void oai_nw_drv_init(struct net_device *dev){
   //---------------------------------------------------------------------------
-  u8               cxi;
+  uint8_t               cxi;
   struct oai_nw_drv_priv *priv;
   int              index;
 
@@ -443,7 +443,7 @@ void oai_nw_drv_init(struct net_device *dev){
         priv->cx[cxi].nfclassifier=0;
 		*/
         // initialisation of the IP address
-        oai_nw_drv_TOOL_eNB_imei2iid(oai_nw_drv_IMEI, (u8 *)priv->cx[cxi].iid6, dev->addr_len);
+        oai_nw_drv_TOOL_eNB_imei2iid(oai_nw_drv_IMEI, (uint8_t *)priv->cx[cxi].iid6, dev->addr_len);
         priv->cx[cxi].iid4=0;
         //
     }
@@ -455,10 +455,10 @@ void oai_nw_drv_init(struct net_device *dev){
     #ifdef OAI_NW_DRIVER_USE_NETLINK
     oai_nw_drv_TOOL_eNB_imei2iid(oai_nw_drv_IMEI, dev->dev_addr, dev->addr_len);// IMEI to device address (for stateless autoconfiguration address)
 
-    oai_nw_drv_TOOL_eNB_imei2iid(oai_nw_drv_IMEI, (u8 *)priv->cx[0].iid6, dev->addr_len);
+    oai_nw_drv_TOOL_eNB_imei2iid(oai_nw_drv_IMEI, (uint8_t *)priv->cx[0].iid6, dev->addr_len);
     #else
     oai_nw_drv_TOOL_imei2iid(oai_nw_drv_IMEI, dev->dev_addr);// IMEI to device address (for stateless autoconfiguration address)
-    oai_nw_drv_TOOL_imei2iid(oai_nw_drv_IMEI, (u8 *)priv->cx[0].iid6);
+    oai_nw_drv_TOOL_imei2iid(oai_nw_drv_IMEI, (uint8_t *)priv->cx[0].iid6);
     #endif
 // this is more appropriate for user space soft realtime emulation
 #else
@@ -466,7 +466,7 @@ void oai_nw_drv_init(struct net_device *dev){
     for (index = 0; index < dev->addr_len;  index++) {
         dev->dev_addr[index] = 16*oai_nw_drv_IMEI[index]+oai_nw_drv_IMEI[index+1]);
     }
-    memcpy((u8 *)priv->cx[0].iid6,&oai_nw_drv_IMEI[0],dev->addr_len);
+    memcpy((uint8_t *)priv->cx[0].iid6,&oai_nw_drv_IMEI[0],dev->addr_len);
 
     printk("INIT: init IMEI to IID\n");
 #endif
@@ -476,7 +476,7 @@ void oai_nw_drv_init(struct net_device *dev){
     }
      printk("\n[OAI_IP_DRV][%s] Setting priv->cx to : ", __FUNCTION__);
      for (index = 0; index < 8;  index++) {
-         printk("%02X", ((u8 *)(priv->cx[0].iid6))[index]);
+         printk("%02X", ((uint8_t *)(priv->cx[0].iid6))[index]);
      }
     printk("\n");
     printk("[OAI_IP_DRV][%s] INIT: end\n", __FUNCTION__);

@@ -17,7 +17,7 @@
 #include "umts_timer_proto_extern.h"
 /*
 void            rlc_am_timer_epc_notify_time_out (struct rlc_am_entity *rlcP, void *arg_not_usedP);
-void            rlc_am_timer_epc_fsm (struct rlc_am_entity *rlcP, u8_t eventP);
+void            rlc_am_timer_epc_fsm (struct rlc_am_entity *rlcP, uint8_t eventP);
 //-----------------------------------------------------------------------------
 void
 rlc_am_timer_epc_notify_time_out (struct rlc_am_entity *rlcP, void *arg_not_usedP)
@@ -28,7 +28,7 @@ rlc_am_timer_epc_notify_time_out (struct rlc_am_entity *rlcP, void *arg_not_used
 
 //-----------------------------------------------------------------------------
 void
-rlc_am_timer_epc_fsm (struct rlc_am_entity *rlcP, u8_t eventP)
+rlc_am_timer_epc_fsm (struct rlc_am_entity *rlcP, uint8_t eventP)
 {
 //-----------------------------------------------------------------------------
   // from 25.322 V4.3.0

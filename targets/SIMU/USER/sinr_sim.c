@@ -69,7 +69,7 @@ void extract_position (Node_list input_node_list, node_desc_t **node_data, int n
     }
   }
 }
-void extract_position_fixed_enb  (node_desc_t **node_data, int nb_nodes, u32 frame){    
+void extract_position_fixed_enb  (node_desc_t **node_data, int nb_nodes, frame_t frame){    
      int i;
      
      for (i=0;i<nb_nodes;i++) {
@@ -88,7 +88,7 @@ void extract_position_fixed_enb  (node_desc_t **node_data, int nb_nodes, u32 fra
      }
 }
 
-void extract_position_fixed_ue  (node_desc_t **node_data, int nb_nodes, u32 frame){    
+void extract_position_fixed_ue  (node_desc_t **node_data, int nb_nodes, frame_t frame){    
      int i;
    if(frame<50)
      for (i=0;i<nb_nodes;i++) {
@@ -203,13 +203,13 @@ void calc_path_loss(node_desc_t* enb_data, node_desc_t* ue_data, channel_desc_t 
 
 
 
-void init_snr(channel_desc_t* eNB2UE, node_desc_t *enb_data, node_desc_t *ue_data, double* sinr_dB, double* N0, u8 transmission_mode, u16 q, u8 dl_power_off) {
+void init_snr(channel_desc_t* eNB2UE, node_desc_t *enb_data, node_desc_t *ue_data, double* sinr_dB, double* N0, uint8_t transmission_mode, uint16_t q, uint8_t dl_power_off) {
 
-  u16 nb_rb = 25; //No. of resource blocks
+  uint16_t nb_rb = 25; //No. of resource blocks
   double thermal_noise,abs_channel,channelx, channely,channelx_i, channely_i ;
   int count;
   int aarx,aatx;
-  u8 qq;
+  uint8_t qq;
     
   /* Thermal noise is calculated using 10log10(K*T*B) K = Boltzmann's constant T = room temperature B = bandwidth */
   thermal_noise = -174 + 10*log10(eNB2UE->BW*1e6); //value in dBm 
@@ -424,7 +424,7 @@ void init_snr(channel_desc_t* eNB2UE, node_desc_t *enb_data, node_desc_t *ue_dat
 }//function ends
 
 #ifdef PHY_ABSTRACTION_UL
-void init_snr_up(channel_desc_t* UE2eNB, node_desc_t *enb_data, node_desc_t *ue_data, double* sinr_dB, double* N0,u16 nb_rb,u16 fr_rb) {
+void init_snr_up(channel_desc_t* UE2eNB, node_desc_t *enb_data, node_desc_t *ue_data, double* sinr_dB, double* N0,uint16_t nb_rb,uint16_t fr_rb) {
 
   int return_value;
   double thermal_noise;

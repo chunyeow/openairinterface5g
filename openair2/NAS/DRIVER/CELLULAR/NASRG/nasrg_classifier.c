@@ -122,7 +122,7 @@ void nasrg_create_mask_ipv4_addr(struct in_addr *masked_addrP, int prefix_len){
 
 //---------------------------------------------------------------------------
 // Add a new classifier rule (send direction)
-struct classifier_entity *nasrg_CLASS_add_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
+struct classifier_entity *nasrg_CLASS_add_sclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref){
 //---------------------------------------------------------------------------
   struct classifier_entity *gc;
 
@@ -159,7 +159,7 @@ struct classifier_entity *nasrg_CLASS_add_sclassifier(struct cx_entity *cx, u8 d
 
 //---------------------------------------------------------------------------
 // Add a new classifier rule (receive direction)
-struct classifier_entity *nasrg_CLASS_add_rclassifier(u8 dscp, u16 classref){
+struct classifier_entity *nasrg_CLASS_add_rclassifier(uint8_t dscp, uint16_t classref){
 //---------------------------------------------------------------------------
   struct classifier_entity *gc;
 
@@ -191,7 +191,7 @@ struct classifier_entity *nasrg_CLASS_add_rclassifier(u8 dscp, u16 classref){
 
 //---------------------------------------------------------------------------
 // Add a new classifier rule (mbms direction)
-struct classifier_entity *nasrg_CLASS_add_mbmsclassifier(int mbms_ix, u16 classref){
+struct classifier_entity *nasrg_CLASS_add_mbmsclassifier(int mbms_ix, uint16_t classref){
 //---------------------------------------------------------------------------
   struct classifier_entity *gc;
 
@@ -224,7 +224,7 @@ struct classifier_entity *nasrg_CLASS_add_mbmsclassifier(int mbms_ix, u16 classr
 //---------------------------------------------------------------------------
 void nasrg_CLASS_flush_sclassifier(struct cx_entity *cx){
 //---------------------------------------------------------------------------
-  u8 dscpi;
+  uint8_t dscpi;
   struct classifier_entity *gc;
 
   #ifdef NAS_DEBUG_CLASS
@@ -250,7 +250,7 @@ void nasrg_CLASS_flush_sclassifier(struct cx_entity *cx){
 //---------------------------------------------------------------------------
 void nasrg_CLASS_flush_rclassifier(){
 //---------------------------------------------------------------------------
-  u8 dscpi;
+  uint8_t dscpi;
   struct classifier_entity *gc;
 
   #ifdef NAS_DEBUG_CLASS
@@ -293,7 +293,7 @@ void nasrg_CLASS_flush_mbmsclassifier(){
 
 //---------------------------------------------------------------------------
 // Delete a classifier rule (send direction)
-void nasrg_CLASS_del_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
+void nasrg_CLASS_del_sclassifier(struct cx_entity *cx, uint8_t dscp, uint16_t classref){
 //---------------------------------------------------------------------------
   struct classifier_entity *p,*np;
 
@@ -329,7 +329,7 @@ void nasrg_CLASS_del_sclassifier(struct cx_entity *cx, u8 dscp, u16 classref){
 
 //---------------------------------------------------------------------------
 // Delete a classifier rule (receive direction)
-void nasrg_CLASS_del_rclassifier(u8 dscp, u16 classref){
+void nasrg_CLASS_del_rclassifier(uint8_t dscp, uint16_t classref){
 //---------------------------------------------------------------------------
   struct classifier_entity *p,*np;
 
@@ -361,7 +361,7 @@ void nasrg_CLASS_del_rclassifier(u8 dscp, u16 classref){
 
 //---------------------------------------------------------------------------
 // Delete a classifier rule (mbms direction)
-void nasrg_CLASS_del_mbmsclassifier(int mbms_ix, u16 classref){
+void nasrg_CLASS_del_mbmsclassifier(int mbms_ix, uint16_t classref){
 //---------------------------------------------------------------------------
   struct classifier_entity *p,*np;
 
@@ -396,7 +396,7 @@ void nasrg_CLASS_del_mbmsclassifier(int mbms_ix, u16 classref){
 // Search the entity with the IPv4 address 'addr'
 struct cx_entity *nasrg_CLASS_cx4(struct sk_buff *skb){
 //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
   #ifdef NAS_DEBUG_CLASS
   printk("nasrg_CLASS_cx4: begin\n");
   #endif
@@ -410,7 +410,7 @@ struct cx_entity *nasrg_CLASS_cx4(struct sk_buff *skb){
 struct cx_entity *nasrg_CLASS_cx4(struct sk_buff *skb, unsigned char dscp, int *paddr_type, unsigned char *cx_index) {
   //---------------------------------------------------------------------------
   unsigned char cxi;
-  u32 daddr;
+  uint32_t daddr;
   struct cx_entity *cx=NULL;
   struct classifier_entity *pclassifier=NULL;
   struct in_addr masked_addr;
@@ -469,8 +469,8 @@ struct cx_entity *nasrg_CLASS_cx4(struct sk_buff *skb, unsigned char dscp, int *
 struct cx_entity *nasrg_CLASS_cx6(struct sk_buff *skb, int* paddr_type, int* pmbms_ix){
 //---------------------------------------------------------------------------
   struct cx_entity * cx=NULL;
-  u8 cxi;
-  u32 mc_addr_hdr, uni_ifid1, uni_ifid2;
+  uint8_t cxi;
+  uint32_t mc_addr_hdr, uni_ifid1, uni_ifid2;
   //int addr_type = NASRG_ADDR_UNKNOWN;
 
   #ifdef NAS_DEBUG_CLASS
@@ -538,10 +538,10 @@ struct cx_entity *nasrg_CLASS_cx6(struct sk_buff *skb, int* paddr_type, int* pmb
 // Navid: the ipv6 classifier is not fully tested
 struct cx_entity *nasrg_CLASS_cx6(struct sk_buff *skb, unsigned char dscp, int *paddr_type, unsigned char *cx_index, int* pmbms_ix) {
   //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
   struct cx_entity *cx = NULL;
   struct classifier_entity *sclassifier= NULL;
-  u32 mc_addr_hdr;
+  uint32_t mc_addr_hdr;
   struct in6_addr masked_addr;
 
   #ifdef NAS_DEBUG_CLASS
@@ -630,10 +630,10 @@ struct cx_entity *nasrg_CLASS_cx6(struct sk_buff *skb, unsigned char dscp, int *
 void nasrg_CLASS_send(struct sk_buff *skb){
 //---------------------------------------------------------------------------
   struct classifier_entity  *pclassifier, *sp;
-  u8 *protocolh = NULL;
-  u8 version;
-  u8 protocol, dscp;
-  u16 classref;
+  uint8_t *protocolh = NULL;
+  uint8_t version;
+  uint8_t protocol, dscp;
+  uint16_t classref;
   struct cx_entity *cx;
   unsigned int i;
   #ifdef NAS_DEBUG_CLASS

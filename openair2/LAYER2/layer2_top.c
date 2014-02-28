@@ -53,7 +53,7 @@ ________________________________________________________________*/
 #include "LAYER2/MAC/vars.h"
 #include "LAYER2/MAC/defs.h"
 
-extern void  macphy_scheduler(u8);
+extern void  macphy_scheduler(uint8_t);
 extern MAC_xface *mac_register(void *, void*, void*, void*,void*);
 extern int mac_unregister(MAC_xface *);
 extern MAC_xface *mac_xface;

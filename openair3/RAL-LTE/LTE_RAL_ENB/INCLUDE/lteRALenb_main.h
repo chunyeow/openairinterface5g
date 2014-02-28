@@ -70,11 +70,11 @@ public_lteralenb_main(char*   g_conf_enb_mihf_id;)
  * Radio Bearer data
  */
 typedef struct ral_lte_channel {
-    u32   cnx_id;
-    u8    multicast;
+    uint32_t   cnx_id;
+    uint8_t    multicast;
 // MIHF parameters  ix=0 UPLINK, ix=1 DOWNLINK
-    u16   flowId[2];
-    u16   classId[2];
+    uint16_t   flowId[2];
+    uint16_t   classId[2];
     float resBitrate[2];
     float meanBitrate[2];
     float bktDepth[2];
@@ -83,12 +83,12 @@ typedef struct ral_lte_channel {
 
 // #if ! defined(ENABLE_USE_MME)
     //IP driver parameters
-    u16   rbId;
-    u16   RadioQoSclass;
-    u16   dscpUL;
-    u16   dscpDL;
-    u16   nas_state;
-    u16   status;
+    uint16_t   rbId;
+    uint16_t   RadioQoSclass;
+    uint16_t   dscpUL;
+    uint16_t   dscpDL;
+    uint16_t   nas_state;
+    uint16_t   status;
 // #endif
 }ral_lte_channel_t;
 
@@ -98,9 +98,9 @@ typedef struct ral_lte_channel {
 typedef struct ral_lte_mt_s {
     /* The identifier of the link that is associated with a PoA */
     MIH_C_LINK_TUPLE_ID_T ltid;
-    u8  ipv6_addr[16];
-    u32 ipv6_l2id[2];
-    u32 ue_id;
+    uint8_t  ipv6_addr[16];
+    uint32_t ipv6_l2id[2];
+    uint32_t ue_id;
     struct ral_lte_channel radio_channel[RAL_MAX_RB];
     int num_rbs;
     int num_class;
@@ -116,7 +116,7 @@ typedef struct ral_lte_mcast_s {
     /* The identifier of the multicast link that is associated with a PoA */
     MIH_C_LINK_TUPLE_ID_T ltid;
     struct ral_lte_channel radio_channel;
-    u8 mc_group_addr[16];
+    uint8_t mc_group_addr[16];
 }ral_lte_mcast_t;
 
 /*
@@ -144,12 +144,12 @@ typedef struct lte_ral_enb_object {
 
     int num_connected_mts;
 
-    u8 pending_req_flag;
-    u8 pending_req_mt_ix;
-    u8 pending_req_ch_ix;
-    u8 pending_req_multicast;
-//    u16 pending_req_transaction_id;
-//    u8 pending_req_status;
+    uint8_t pending_req_flag;
+    uint8_t pending_req_mt_ix;
+    uint8_t pending_req_ch_ix;
+    uint8_t pending_req_multicast;
+//    uint16_t pending_req_transaction_id;
+//    uint8_t pending_req_status;
     MIH_C_FLOW_ID_T pending_req_fid;
 
     ral_lte_mt_t pending_mt;
@@ -164,11 +164,11 @@ typedef struct lte_ral_enb_object {
                                                         // periodic reports. Valid Range: 0..65535
     //long                    measurement_timer_id;
 
-    //u16                     num_UEs;
-    //u32                     rlcBufferOccupancy[RAL_MAX_MT];
-    //u32                     scheduledPRB[RAL_MAX_MT];
-    //u32                     totalDataVolume[RAL_MAX_MT];
-    //u32                     totalNumPRBs;
+    //uint16_t                     num_UEs;
+    //uint32_t                     rlcBufferOccupancy[RAL_MAX_MT];
+    //uint32_t                     scheduledPRB[RAL_MAX_MT];
+    //uint32_t                     totalDataVolume[RAL_MAX_MT];
+    //uint32_t                     totalNumPRBs;
 
 
     //int                     congestion_flag;

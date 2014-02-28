@@ -1,8 +1,8 @@
 #include "defs.h"
 
-int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,u8 osf) {
+int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf) {
 
-  u8 log2_osf;
+  uint8_t log2_osf;
 
   if (frame_parms->Ncp==1) {
     frame_parms->nb_prefix_samples0=512;

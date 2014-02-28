@@ -605,7 +605,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
   unsigned int i,j,iind;//,pi;
   unsigned char iteration_cnt=0;
   unsigned int crc,oldcrc,crc_len;
-  u8 temp;
+  uint8_t temp;
   __m128i tmp128[(n+8)>>3];
   __m128i tmp, zeros=_mm_setzero_si128();
 
@@ -873,7 +873,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
 
 
     pi5_p=pi5tab8[iind];
-    u16 decoded_bytes_interl[6144/16] __attribute__((aligned(16)));
+    uint16_t decoded_bytes_interl[6144/16] __attribute__((aligned(16)));
     if ((n2&0x7f) == 0) {  // n2 is a multiple of 128 bits
       for (i=0;i<(n2>>4);i++) {
 	tmp=_mm_insert_epi8(tmp,ext2[*pi5_p++],0);
@@ -892,7 +892,7 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
 	tmp=_mm_insert_epi8(tmp,ext2[*pi5_p++],13);
 	tmp=_mm_insert_epi8(tmp,ext2[*pi5_p++],14);
 	tmp=_mm_insert_epi8(tmp,ext2[*pi5_p++],15);
-	decoded_bytes_interl[i]=(u16) _mm_movemask_epi8(_mm_cmpgt_epi8(tmp,zeros));
+	decoded_bytes_interl[i]=(uint16_t) _mm_movemask_epi8(_mm_cmpgt_epi8(tmp,zeros));
 	((__m128i *)systematic1)[i] = _mm_adds_epi8(_mm_subs_epi8(tmp,((__m128i*)ext)[i]),((__m128i *)systematic0)[i]);
       }
     }
@@ -939,14 +939,14 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
 	  
 	  tmp2=_mm_and_si128(tmp,mask);
 	  tmp2=_mm_cmpeq_epi16(tmp2,mask);
-	  decoded_bytes[n_128*0+i]=(u8) _mm_movemask_epi8(_mm_packs_epi16(tmp2,zeros));
+	  decoded_bytes[n_128*0+i]=(uint8_t) _mm_movemask_epi8(_mm_packs_epi16(tmp2,zeros));
 	  
 	  int j;
 	  for (j=1; j<16; j++) {
 	    mask=_mm_slli_epi16(mask,1);
 	    tmp2=_mm_and_si128(tmp,mask);
 	    tmp2=_mm_cmpeq_epi16(tmp2,mask);
-	    decoded_bytes[n_128*j +i]=(u8) _mm_movemask_epi8(_mm_packs_epi16(tmp2,zeros));
+	    decoded_bytes[n_128*j +i]=(uint8_t) _mm_movemask_epi8(_mm_packs_epi16(tmp2,zeros));
 	  }
 	}
       }
@@ -981,17 +981,17 @@ unsigned char phy_threegpplte_turbo_decoder8(short *y,
 	oldcrc&=0x00ffffff;
 	crc = crc24a(&decoded_bytes[F>>3],
 		     n-24-F)>>8;
-	temp=((u8 *)&crc)[2];
-	((u8 *)&crc)[2] = ((u8 *)&crc)[0];
-	((u8 *)&crc)[0] = temp;
+	temp=((uint8_t *)&crc)[2];
+	((uint8_t *)&crc)[2] = ((uint8_t *)&crc)[0];
+	((uint8_t *)&crc)[0] = temp;
 	break; 
       case CRC24_B:
 	oldcrc&=0x00ffffff;
 	crc = crc24b(decoded_bytes,
 		     n-24)>>8;
-	temp=((u8 *)&crc)[2];
-	((u8 *)&crc)[2] = ((u8 *)&crc)[0];
-	((u8 *)&crc)[0] = temp;
+	temp=((uint8_t *)&crc)[2];
+	((uint8_t *)&crc)[2] = ((uint8_t *)&crc)[0];
+	((uint8_t *)&crc)[0] = temp;
 	break;
       case CRC16:
 	oldcrc&=0x0000ffff;

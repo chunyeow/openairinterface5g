@@ -7,8 +7,8 @@
 //#define DEBUG_CH 
 
 int lte_dl_channel_estimation(PHY_VARS_UE *phy_vars_ue,
-			      u8 eNB_id,
-			      u8 eNB_offset,
+			      uint8_t eNB_id,
+			      uint8_t eNB_offset,
 			      unsigned char Ns,
 			      unsigned char p,
 			      unsigned char l,
@@ -25,9 +25,9 @@ int lte_dl_channel_estimation(PHY_VARS_UE *phy_vars_ue,
   //  unsigned int n;
   //  int i;
 
-  u16 Nid_cell = (eNB_offset == 0) ? phy_vars_ue->lte_frame_parms.Nid_cell : phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1];
+  uint16_t Nid_cell = (eNB_offset == 0) ? phy_vars_ue->lte_frame_parms.Nid_cell : phy_vars_ue->PHY_measurements.adj_cell_id[eNB_offset-1];
 
-  u8 nushift,pilot1,pilot2,pilot3;
+  uint8_t nushift,pilot1,pilot2,pilot3;
   int **dl_ch_estimates=phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_offset];
   int **rxdataF=phy_vars_ue->lte_ue_common_vars.rxdataF;
 

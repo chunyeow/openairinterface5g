@@ -22,9 +22,9 @@ unsigned int lte_gold_generic(unsigned int *x1, unsigned int *x2, unsigned char 
 @param lte_gold_table pointer to table where sequences are stored
 @param Nid_cell Cell Id (to compute sequences for local and adjacent cells) */
 
-void lte_gold(LTE_DL_FRAME_PARMS *frame_parms,u32 lte_gold_table[20][2][14],u16 Nid_cell);
+void lte_gold(LTE_DL_FRAME_PARMS *frame_parms,uint32_t lte_gold_table[20][2][14],uint16_t Nid_cell);
 
-void lte_gold_mbsfn(LTE_DL_FRAME_PARMS *frame_parms,u32 lte_gold_mbsfn_table[10][3][42],u16 Nid_MBSFN);
+void lte_gold_mbsfn(LTE_DL_FRAME_PARMS *frame_parms,uint32_t lte_gold_mbsfn_table[10][3][42],uint16_t Nid_MBSFN);
 
 
 /*! \brief This function generates the cell-specific reference signal sequence (36-211, Sec 6.10.1.1)
@@ -66,7 +66,7 @@ int lte_dl_mbsfn(PHY_VARS_eNB *phy_vars_eNB, mod_sym_t *output,
 @param p antenna intex
 */
 int lte_dl_cell_spec_rx(PHY_VARS_UE *phy_vars_ue,
-			u8 eNB_offset,
+			uint8_t eNB_offset,
 			int *output,
 			unsigned char Ns,
 			unsigned char l,

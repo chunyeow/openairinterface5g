@@ -64,22 +64,29 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
           ue_mod_idP);
 
 #ifdef OAI_EMU
-  AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-      "eNB module id is too low (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local);
-  AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-      "eNB module id is too high (%u/%d)!\n",
-      enb_mod_idP,
-      oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-  AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-      "UE module id is too low (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local);
-  AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-      "UE module id is too high (%u/%d)!\n",
-      ue_mod_idP,
-      oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
 #endif
   if (srb2add_listP != NULL) {
       for (cnt=0;cnt<srb2add_listP->list.count;cnt++) {
@@ -479,7 +486,7 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
     rlc_op_status_t  status;
 
 #ifdef OAI_EMU
-    AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
+    AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
         "eNB module id is too low (%u/%d)!\n",
         enb_mod_idP,
         oai_emulation.info.first_enb_local);
@@ -487,14 +494,21 @@ rlc_op_status_t rrc_rlc_remove_rlc   (module_id_t enb_mod_idP, module_id_t ue_mo
         "eNB module id is too high (%u/%d)!\n",
         enb_mod_idP,
         oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-    AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-        "UE module id is too low (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local);
-    AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-        "UE module id is too high (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
 #endif
 
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
@@ -613,22 +627,29 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
     unsigned int     allocation;
     
 #ifdef OAI_EMU
-    AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-        "eNB module id is too low (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local);
-    AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-        "eNB module id is too high (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-    AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-        "UE module id is too low (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local);
-    AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-        "UE module id is too high (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
 #endif
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
     AssertFatal (chan_idP < RLC_MAX_LC, "LC id is too high (%u/%d)!\n", chan_idP, RLC_MAX_LC);
@@ -823,22 +844,29 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
             rb_idP);
 
 #ifdef OAI_EMU
-    AssertFatal (enb_mod_idP >= oai_emulation.info.first_enb_local,
-        "eNB module id is too low (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local);
-    AssertFatal (enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local),
-        "eNB module id is too high (%u/%d)!\n",
-        enb_mod_idP,
-        oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-    AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
-        "UE module id is too low (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local);
-    AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
-        "UE module id is too high (%u/%d)!\n",
-        ue_mod_idP,
-        oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    if (enb_flagP) {
+        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too low (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local);
+        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+            "eNB module id is too high (%u/%d)!\n",
+            enb_mod_idP,
+            oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
+        AssertFatal (ue_mod_idP  < NB_UE_INST,
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+    } else {
+        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+            "UE module id is too high (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
+        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+            "UE module id is too low (%u/%d)!\n",
+            ue_mod_idP,
+            oai_emulation.info.first_ue_local);
+    }
 #endif
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
 #warning TO DO rrc_rlc_config_req

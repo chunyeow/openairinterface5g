@@ -62,7 +62,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #                define public_rlc_um_dar(x)     extern x
 #            endif
 #        endif
-/*! \fn signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, s16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, u8_t sn_lengthP)
+/*! \fn signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP)
 * \brief    Extract PDU informations (header fields, data size, etc) from the serialized PDU.
 * \param[in]  frameP             Frame index.
 * \param[in]  header_pP          RLC UM header PDU pointer.
@@ -71,7 +71,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 * \param[in]  sn_lengthP         Sequence number length in bits in PDU header (5 or 10).
 * \return     0 if no error was encountered during the parsing of the PDU, else -1;
 */
-protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(frame_t frameP, rlc_um_pdu_sn_10_t* header_pP, s16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, u8_t sn_lengthP));
+protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(frame_t frameP, rlc_um_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP));
 
 /*! \fn int rlc_um_read_length_indicators(unsigned char**data_ppP, rlc_um_e_li_t* e_li_pP, unsigned int* li_array_pP, unsigned int *num_li_pP, sdu_size_t *data_size_pP)
 * \brief    Reset protocol variables and state variables to initial values.
@@ -115,12 +115,12 @@ protected_rlc_um_dar(void rlc_um_stop_and_reset_timer_reordering(rlc_um_entity_t
 */
 protected_rlc_um_dar(void rlc_um_start_timer_reordering(rlc_um_entity_t *rlc_pP,frame_t frameP);)
 
-/*! \fn void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, u32_t time_outP)
+/*! \fn void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, uint32_t time_outP)
 * \brief      Initialize the timer reordering with RLC UM time-out config parameter.
 * \param[in]  rlc_pP            RLC UM protocol instance pointer.
 * \param[in]  time_outP         Time-out in frameP units.
 */
-protected_rlc_um_dar(void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, u32_t time_outP);)
+protected_rlc_um_dar(void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, uint32_t time_outP);)
 
 /*! \fn void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP,frame_t frameP,eNB_flag_t eNB_flagP)
 * \brief    Check if t-Reordering expires and take the appropriate actions as described in 3GPP specifications.
@@ -130,21 +130,21 @@ protected_rlc_um_dar(void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, 
 */
 protected_rlc_um_dar(  void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP,frame_t frameP,eNB_flag_t eNB_flagP));
 
-/*! \fn mem_block_t *rlc_um_remove_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, u16_t snP)
+/*! \fn mem_block_t *rlc_um_remove_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, uint16_t snP)
 * \brief    Remove the PDU with sequence number snP from the DAR buffer and return it.
 * \param[in]  rlc_pP        RLC UM protocol instance pointer.
 * \param[in]  snP           Sequence number.
 * \return     The PDU stored in the DAR buffer having sequence number snP, else return NULL.
 */
-private_rlc_um_dar(  mem_block_t *rlc_um_remove_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, u16_t snP));
+private_rlc_um_dar(  mem_block_t *rlc_um_remove_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, uint16_t snP));
 
-/*! \fn mem_block_t *rlc_um_remove_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, u16_t snP)
+/*! \fn mem_block_t *rlc_um_remove_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, uint16_t snP)
 * \brief    Get the PDU with sequence number snP from the DAR buffer.
 * \param[in]  rlc_pP        RLC UM protocol instance pointer.
 * \param[in]  snP           Sequence number.
 * \return     The PDU stored in the DAR buffer having sequence number snP, else return NULL.
 */
-protected_rlc_um_dar(  inline mem_block_t* rlc_um_get_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, u16_t snP));
+protected_rlc_um_dar(  inline mem_block_t* rlc_um_get_pdu_from_dar_buffer(rlc_um_entity_t *rlc_pP, uint16_t snP));
 
 /*! \fn signed int rlc_um_in_window(rlc_um_entity_t *rlc_pP, frame_t frameP, rlc_sn_t lower_boundP, rlc_sn_t snP, rlc_sn_t higher_boundP)
 * \brief    Compute if the sequence number of a PDU is in a window .

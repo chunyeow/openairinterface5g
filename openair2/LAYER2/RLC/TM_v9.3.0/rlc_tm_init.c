@@ -32,7 +32,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "rlc_tm.h"
 #include "LAYER2/MAC/extern.h"
 //-----------------------------------------------------------------------------
-void config_req_rlc_tm ( u32_t frame, u8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP)
+void config_req_rlc_tm ( uint32_t frame, uint8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP)
 {
 //-----------------------------------------------------------------------------
     rlc_tm_entity_t *rlc = NULL;
@@ -122,7 +122,7 @@ rlc_tm_cleanup (rlc_tm_entity_t *rlcP)
 }
 
 //-----------------------------------------------------------------------------
-void rlc_tm_configure(rlc_tm_entity_t *rlcP, u8_t is_uplink_downlinkP)
+void rlc_tm_configure(rlc_tm_entity_t *rlcP, uint8_t is_uplink_downlinkP)
 {
     //-----------------------------------------------------------------------------
     rlcP->is_uplink_downlink = is_uplink_downlinkP;
@@ -130,7 +130,7 @@ void rlc_tm_configure(rlc_tm_entity_t *rlcP, u8_t is_uplink_downlinkP)
 }
 
 //-----------------------------------------------------------------------------
-void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, u32_t frame, u8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP, rb_type_t rb_typeP)
+void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, uint32_t frame, uint8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP, rb_type_t rb_typeP)
 //-----------------------------------------------------------------------------
 {
     msg ("[FRAME %05d][%s][RLC_TM][MOD %02u/%02u][RB %u][SET DEBUG INFOS] enb module_id %d ue module_id %d rb_id %d rb_type %d\n",

@@ -323,7 +323,7 @@ POSSIBILITY OF SUCH DAMAGES.
 #endif
 //-----------------------------------------------------------------------------
 int
-rlc_um_fsm_notify_event (struct rlc_um_entity *rlcP, u8_t eventP)
+rlc_um_fsm_notify_event (struct rlc_um_entity *rlcP, uint8_t eventP)
 {
 //-----------------------------------------------------------------------------
 

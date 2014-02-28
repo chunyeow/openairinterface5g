@@ -13,6 +13,6 @@
 //-----------------------------------------------------------------------------
 extern void     rlc_um_send_sdu_minus_1_byte (struct rlc_um_entity *rlcP);
 extern void     rlc_um_clear_rx_sdu (struct rlc_um_entity *rlcP);
-extern void     rlc_um_reassembly (u8_t * srcP, u16_t lengthP, struct rlc_um_entity *rlcP);
+extern void     rlc_um_reassembly (uint8_t * srcP, uint16_t lengthP, struct rlc_um_entity *rlcP);
 extern void     rlc_um_send_sdu (struct rlc_um_entity *rlcP);
 #    endif

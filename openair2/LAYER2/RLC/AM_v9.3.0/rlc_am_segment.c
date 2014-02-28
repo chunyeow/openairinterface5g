@@ -42,7 +42,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #include "UTIL/LOG/log.h"
 
 //-----------------------------------------------------------------------------
-void rlc_am_pdu_polling (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_am_pdu_sn_10_t *pdu_pP, s16_t payload_sizeP)
+void rlc_am_pdu_polling (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_am_pdu_sn_10_t *pdu_pP, int16_t payload_sizeP)
 //-----------------------------------------------------------------------------
 {
     // 5.2.2 Polling

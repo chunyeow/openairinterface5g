@@ -150,7 +150,7 @@ void nas_mesh_start_default_sclassifier(struct cx_entity *cx,struct rb_entity *r
 //---------------------------------------------------------------------------
 void nas_mesh_timer(unsigned long data,struct nas_priv *gpriv){
   //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
   struct cx_entity *cx;
   struct rb_entity *rb;
 //  spin_lock(&gpriv->lock);
@@ -324,7 +324,7 @@ int nas_mesh_DC_send_cx_release_request(struct cx_entity *cx,
 	{
 	  cx->state=NAS_IDLE;
 	  cx->iid4=0;
-	  //			nas_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)cx->iid6);
+	  //			nas_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)cx->iid6);
 	  nas_COMMON_flush_rb(cx);
 
 #ifdef NAS_DEBUG_DC
@@ -424,11 +424,11 @@ void nas_mesh_DC_send_sig_data_request(struct sk_buff *skb,
 
 //---------------------------------------------------------------------------
 // Request the transfer of data (DC SAP)
-void nas_mesh_DC_send_peer_sig_data_request(struct cx_entity *cx, u8 sig_category,
+void nas_mesh_DC_send_peer_sig_data_request(struct cx_entity *cx, uint8_t sig_category,
 					      struct nas_priv *gpriv){
   //---------------------------------------------------------------------------
   struct nas_ue_dc_element *p;
-  u8 nas_data[10];
+  uint8_t nas_data[10];
   unsigned int nas_length;
   char data_type = 'Z';
   int bytes_wrote=0;
@@ -488,7 +488,7 @@ void nas_mesh_DC_send_peer_sig_data_request(struct cx_entity *cx, u8 sig_categor
 // Decode CONN_ESTABLISH_RESP message from RRC
 void nas_mesh_DC_decode_cx_establish_resp(struct cx_entity *cx, struct nas_ue_dc_element *p,struct nas_priv *gpriv){
   //---------------------------------------------------------------------------
-  u8 sig_category;
+  uint8_t sig_category;
   // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("NAS_MESH_DC_DECODE_CX_ESTABLISH - begin \n");
@@ -510,7 +510,7 @@ void nas_mesh_DC_decode_cx_establish_resp(struct cx_entity *cx, struct nas_ue_dc
   if (p->nasUEDCPrimitive.conn_establish_resp.status == TERMINATED){
     cx->state=NAS_CX_DCH; //to be changed to NAS_CX_FACH
     cx->iid4=1;
-    //nas_TOOL_imei2iid(NAS_RG_IMEI, (u8 *)cx->iid6);
+    //nas_TOOL_imei2iid(NAS_RG_IMEI, (uint8_t *)cx->iid6);
     sig_category = NAS_CMD_OPEN_RB;
     //For demo, add automatically a radio bearer
 #ifdef DEMO_3GSM
@@ -551,7 +551,7 @@ void nas_mesh_DC_decode_cx_loss_ind(struct cx_entity *cx, struct nas_ue_dc_eleme
   // End debug information
   cx->state=NAS_IDLE;
   cx->iid4=0;
-  //nas_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)cx->iid6);
+  //nas_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)cx->iid6);
   nas_COMMON_flush_rb(cx);
 #ifdef NAS_DEBUG_DC
   printk("NAS_MESH_DC_RECEIVE: CONN_LOSS_IND reception\n");
@@ -606,7 +606,7 @@ void nas_mesh_DC_decode_sig_data_ind(struct cx_entity *cx, struct nas_ue_dc_elem
   printk(" Local Connection reference %u\n",p->nasUEDCPrimitive.data_transfer_ind.localConnectionRef);
   printk(" Signaling Priority %u\n",p->nasUEDCPrimitive.data_transfer_ind.priority);
   printk(" NAS Data length %u\n",p->nasUEDCPrimitive.data_transfer_ind.nasDataLength);
-  printk(" NAS Data string %s\n", (u8 *)p+p->length);
+  printk(" NAS Data string %s\n", (uint8_t *)p+p->length);
 #endif
 
 }
@@ -696,7 +696,7 @@ void nas_mesh_DC_decode_rb_release_ind(struct cx_entity *cx, struct nas_ue_dc_el
 // Decode MEASUREMENT_IND message from RRC
 void nas_mesh_DC_decode_measurement_ind(struct cx_entity *cx, struct nas_ue_dc_element *p){
   //---------------------------------------------------------------------------
-  u8 i;
+  uint8_t i;
   // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("NAS_MESH_DC_DECODE_MEASUREMENT_IND - begin \n");
@@ -765,7 +765,7 @@ int nas_mesh_DC_receive(struct cx_entity *cx,struct nas_priv *gpriv){
     //get the rest of the primitive
 #ifdef NAS_NETLINK
 #else
-//    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (u8 *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
+//    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
 #endif
     if (bytes_read!=p->length){
       printk("NAS_MESH_DC_RECEIVE: Problem while reading primitive header\n");
@@ -881,7 +881,7 @@ int nas_mesh_GC_receive(struct nas_priv *gpriv){
       //get the rest of the primitive
 #ifdef NAS_NETLINK
 #else
-//      bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (u8 *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
+//      bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
 #endif
       if (bytes_read!=p->length)
 	{
@@ -894,7 +894,7 @@ int nas_mesh_GC_receive(struct nas_priv *gpriv){
 	case INFO_BROADCAST_IND :
 #ifdef NAS_NETLINK
 #else
-//	  bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (u8 *)p+p->length, p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
+//	  bytes_read += rtf_get(gpriv->sap[NAS_GC_SAPI], (uint8_t *)p+p->length, p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
 #endif
 	  if (bytes_read!=p->length+p->nasUEGCPrimitive.broadcast_ind.nasDataLength)
 	    {
@@ -905,7 +905,7 @@ int nas_mesh_GC_receive(struct nas_priv *gpriv){
 	  printk("NAS_MESH_GC_RECEIVE: INFO_BROADCAST_IND reception\n");
 	  printk(" Primitive length %d \n", (int)(p->type));
 	  printk(" Data length %u\n", p->nasUEGCPrimitive.broadcast_ind.nasDataLength);
-	  printk(" Data string %s\n", (u8 *)p+p->length);
+	  printk(" Data string %s\n", (uint8_t *)p+p->length);
 #endif //NAS_DEBUG_GC
 	  return bytes_read;
 	default :

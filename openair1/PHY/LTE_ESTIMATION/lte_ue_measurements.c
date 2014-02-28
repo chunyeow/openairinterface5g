@@ -50,7 +50,7 @@ __m128i mmtmpPMI1 __attribute__ ((aligned(16)));
 __m128i mmtmpPMI2 __attribute__ ((aligned(16)));
 __m128i mmtmpPMI3 __attribute__ ((aligned(16)));
 
-s16 get_PL(u8 Mod_id,u8 eNB_index) {
+int16_t get_PL(uint8_t Mod_id,uint8_t eNB_index) {
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   int RSoffset;
@@ -64,12 +64,12 @@ s16 get_PL(u8 Mod_id,u8 eNB_index) {
   else
     RSoffset = 3;
 
-  return((s16)(phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->PHY_measurements.rssi/RSoffset) + 
+  return((int16_t)(phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->PHY_measurements.rssi/RSoffset) + 
   	       phy_vars_ue->lte_frame_parms.pdsch_config_common.referenceSignalPower));
 }
 
 
-u8 get_n_adj_cells (u8 Mod_id){
+uint8_t get_n_adj_cells (uint8_t Mod_id){
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue)  
@@ -78,7 +78,7 @@ u8 get_n_adj_cells (u8 Mod_id){
     return 0;
 }
 
-s8 get_rx_total_gain_dB (u8 Mod_id){
+int8_t get_rx_total_gain_dB (uint8_t Mod_id){
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue)  
@@ -86,7 +86,7 @@ s8 get_rx_total_gain_dB (u8 Mod_id){
   else 
     return -1;
 }
-s8 get_RSSI (u8 Mod_id){
+int8_t get_RSSI (uint8_t Mod_id){
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue)  
@@ -94,7 +94,7 @@ s8 get_RSSI (u8 Mod_id){
   else 
     return -1;
 }
-u8 get_RSRP(u8 Mod_id,u8 eNB_index) {
+uint8_t get_RSRP(uint8_t Mod_id,uint8_t eNB_index) {
   
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue)
@@ -102,7 +102,7 @@ u8 get_RSRP(u8 Mod_id,u8 eNB_index) {
   return 0;
 }
 
-u8 get_RSRQ(u8 Mod_id,u8 eNB_index) {
+uint8_t get_RSRQ(uint8_t Mod_id,uint8_t eNB_index) {
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue)
@@ -110,7 +110,7 @@ u8 get_RSRQ(u8 Mod_id,u8 eNB_index) {
   return 0;
 }
 
-s8 set_RSRP_filtered(u8 Mod_id,u8 eNB_index,float rsrp) {
+int8_t set_RSRP_filtered(uint8_t Mod_id,uint8_t eNB_index,float rsrp) {
   
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue){
@@ -121,7 +121,7 @@ s8 set_RSRP_filtered(u8 Mod_id,u8 eNB_index,float rsrp) {
   return -1;
 }
 
-s8 set_RSRQ_filtered(u8 Mod_id,u8 eNB_index,float rsrq) {
+int8_t set_RSRQ_filtered(uint8_t Mod_id,uint8_t eNB_index,float rsrq) {
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
   if (phy_vars_ue){
@@ -134,16 +134,16 @@ s8 set_RSRQ_filtered(u8 Mod_id,u8 eNB_index,float rsrq) {
 }
  
 void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
-			 u8 slot,
-			 u8 abstraction_flag) {
+			 uint8_t slot,
+			 uint8_t abstraction_flag) {
 
   int aarx,rb;
-  s16 *rxF;
+  int16_t *rxF;
 
-  u16 Nid_cell = phy_vars_ue->lte_frame_parms.Nid_cell;
-  u8 eNB_offset,nu,l,nushift,k;
-  u16 off;
-  s16 rx_power_correction;
+  uint16_t Nid_cell = phy_vars_ue->lte_frame_parms.Nid_cell;
+  uint8_t eNB_offset,nu,l,nushift,k;
+  uint16_t off;
+  int16_t rx_power_correction;
 
 
   // if the fft size an odd power of 2, the output of the fft is shifted one too much, so we need to compensate for that
@@ -194,10 +194,10 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 #endif
 	for (aarx=0;aarx<phy_vars_ue->lte_frame_parms.nb_antennas_rx;aarx++) {
 #ifndef NEW_FFT
-	  rxF = (s16 *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)<<1];
+	  rxF = (int16_t *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)<<1];
 	  off  = (phy_vars_ue->lte_frame_parms.first_carrier_offset+k)<<2;
 #else
-	  rxF = (s16 *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)];
+	  rxF = (int16_t *)&phy_vars_ue->lte_ue_common_vars.rxdataF[aarx][(l*phy_vars_ue->lte_frame_parms.ofdm_symbol_size)];
 	  off  = (phy_vars_ue->lte_frame_parms.first_carrier_offset+k)<<1;
 #endif
 
@@ -623,7 +623,7 @@ void lte_ue_measurements(PHY_VARS_UE *phy_vars_ue,
   }
 
 
-  void lte_ue_measurements_emul(PHY_VARS_UE *phy_vars_ue,u8 last_slot,u8 eNB_id) {
+  void lte_ue_measurements_emul(PHY_VARS_UE *phy_vars_ue,uint8_t last_slot,uint8_t eNB_id) {
 
     msg("[PHY] EMUL UE lte_ue_measurements_emul last slot %d, eNB_id %d\n",last_slot,eNB_id);
   }

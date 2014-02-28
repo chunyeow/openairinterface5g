@@ -27,7 +27,7 @@ __m128i zeroM;//,tmp_over_sqrt_10,tmp_sum_4_over_sqrt_10,tmp_sign,tmp_sign_3_ove
 #endif
 
 
-void dump_mch(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u16 coded_bits_per_codeword,int subframe) {
+void dump_mch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_codeword,int subframe) {
 
   unsigned int nsymb_pmch=12;
   char fname[32],vname[32];
@@ -334,7 +334,7 @@ void mch_extract_rbs(int **rxdataF,
 void mch_channel_level(int **dl_ch_estimates_ext,
 		       LTE_DL_FRAME_PARMS *frame_parms,
 		       int *avg,
-		       u8 symbol,
+		       uint8_t symbol,
 		       unsigned short nb_rb){
 
   int i,aarx,nre;
@@ -534,15 +534,15 @@ int mch_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
 		 unsigned char symbol,
 		 short **llr32p) {
 
-  u32 *rxF = (u32*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-  u32 *llr32;
+  uint32_t *rxF = (uint32_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+  uint32_t *llr32;
   int i,len;
 
   if (symbol==2) {
-      llr32 = (u32*)dlsch_llr;
+      llr32 = (uint32_t*)dlsch_llr;
   }
   else {
-      llr32 = (u32*)(*llr32p);
+      llr32 = (uint32_t*)(*llr32p);
   }
  
   if (!llr32) {
@@ -581,20 +581,20 @@ void mch_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
 		   short *dlsch_llr,
 		   int **dl_ch_mag,
 		   unsigned char symbol,
-		   s16 **llr32p) {
+		   int16_t **llr32p) {
 
     __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
     __m128i *ch_mag;
     __m128i llr128[2],xmm0;
     int i,len;
     unsigned char len_mod4=0;
-    u32 *llr32;
+    uint32_t *llr32;
     
     if (symbol==2) {
-        llr32 = (u32*)dlsch_llr;
+        llr32 = (uint32_t*)dlsch_llr;
     }
     else {
-        llr32 = (u32*)*llr32p;
+        llr32 = (uint32_t*)*llr32p;
     }
   
     
@@ -627,14 +627,14 @@ void mch_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
         // lambda_1=y_R, lambda_2=|y_R|-|h|^2, lamda_3=y_I, lambda_4=|y_I|-|h|^2
         llr128[0] = _mm_unpacklo_epi32(rxF[i],xmm0); 
         llr128[1] = _mm_unpackhi_epi32(rxF[i],xmm0);
-        llr32[0] = ((u32 *)&llr128[0])[0];
-        llr32[1] = ((u32 *)&llr128[0])[1];
-        llr32[2] = ((u32 *)&llr128[0])[2];
-        llr32[3] = ((u32 *)&llr128[0])[3];
-        llr32[4] = ((u32 *)&llr128[1])[0];
-        llr32[5] = ((u32 *)&llr128[1])[1];
-        llr32[6] = ((u32 *)&llr128[1])[2];
-        llr32[7] = ((u32 *)&llr128[1])[3];
+        llr32[0] = ((uint32_t *)&llr128[0])[0];
+        llr32[1] = ((uint32_t *)&llr128[0])[1];
+        llr32[2] = ((uint32_t *)&llr128[0])[2];
+        llr32[3] = ((uint32_t *)&llr128[0])[3];
+        llr32[4] = ((uint32_t *)&llr128[1])[0];
+        llr32[5] = ((uint32_t *)&llr128[1])[1];
+        llr32[6] = ((uint32_t *)&llr128[1])[2];
+        llr32[7] = ((uint32_t *)&llr128[1])[3];
         llr32+=8;
   }
   _mm_empty();
@@ -660,7 +660,7 @@ void mch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
 //   int j=0;
   unsigned char len_mod4;
   short *llr;
-  s16 *llr2;
+  int16_t *llr2;
   
   if (symbol==2)
     llr = dlsch_llr;
@@ -750,7 +750,7 @@ void mch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
 int avg_pmch[4];
 int rx_pmch(PHY_VARS_UE *phy_vars_ue,
 	   unsigned char eNB_id,
-	   u8 subframe,
+	   uint8_t subframe,
 	   unsigned char symbol) {
 
   LTE_UE_COMMON *lte_ue_common_vars  = &phy_vars_ue->lte_ue_common_vars;

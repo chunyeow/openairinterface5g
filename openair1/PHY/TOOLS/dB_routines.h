@@ -8,6 +8,6 @@
 #ifndef DB_ROUTINES_H_
 #define DB_ROUTINES_H_
 
-s16 dB_fixed_times10(u32 x);
+int16_t dB_fixed_times10(uint32_t x);
 
 #endif /* DB_ROUTINES_H_ */

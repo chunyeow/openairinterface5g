@@ -24,10 +24,10 @@
 //#define DEBUG_RLC_UM_MAC_DATA_INDICATION
 //#define DEBUG_RLC_UM_DISCARD_SDU
 //-----------------------------------------------------------------------------
-u32_t             rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP);
+uint32_t             rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP);
 void            rlc_um_get_pdus (void *argP);
 void            rlc_um_rx (void *argP, struct mac_data_ind data_indP);
-struct mac_status_resp rlc_um_mac_status_indication (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac_status_ind
+struct mac_status_resp rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind
                                                      tx_statusP);
 struct mac_data_req rlc_um_mac_data_request (void *rlcP);
 void            rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP);
@@ -52,7 +52,7 @@ rlc_um_stat_req     (struct rlc_um_entity *rlcP,
 			*rx_data_pdu_out_of_window = rlcP->rx_data_pdu_out_of_window;
 }
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_um_get_buffer_occupancy (struct rlc_um_entity *rlcP)
 {
 //-----------------------------------------------------------------------------
@@ -186,7 +186,7 @@ rlc_um_rx (void *argP, struct mac_data_ind data_indP)
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_um_mac_status_indication (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
@@ -280,8 +280,8 @@ rlc_um_data_req (void *rlcP, mem_block_t *sduP)
 {
 //-----------------------------------------------------------------------------
   struct rlc_um_entity *rlc = (struct rlc_um_entity *) rlcP;
-  u8_t              use_special_li;
-  u8_t              insert_sdu = 0;
+  uint8_t              use_special_li;
+  uint8_t              insert_sdu = 0;
 #ifdef DEBUG_RLC_UM_DISCARD_SDU
   int             index;
 #endif

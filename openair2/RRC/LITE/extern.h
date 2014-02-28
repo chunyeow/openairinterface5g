@@ -67,7 +67,7 @@ extern unsigned short Header_read_idx,Data_read_idx,Header_size;
 extern unsigned short Data_to_read;
 #endif //NO_RRM
 
-extern u8 DRB2LCHAN[8];
+extern uint8_t DRB2LCHAN[8];
 
 extern LogicalChannelConfig_t SRB1_logicalChannelConfig_defaultValue;
 extern LogicalChannelConfig_t SRB2_logicalChannelConfig_defaultValue;
@@ -88,19 +88,19 @@ extern void* bigphys_malloc(int);
 
 //CONSTANTS
 extern rlc_info_t Rlc_info_um,Rlc_info_am_config;
-//u8 RACH_TIME_ALLOC;
-extern u16 RACH_FREQ_ALLOC;
-//u8 NB_RACH;
+//uint8_t RACH_TIME_ALLOC;
+extern uint16_t RACH_FREQ_ALLOC;
+//uint8_t NB_RACH;
 extern LCHAN_DESC BCCH_LCHAN_DESC,CCCH_LCHAN_DESC,DCCH_LCHAN_DESC,DTCH_DL_LCHAN_DESC,DTCH_UL_LCHAN_DESC;
 extern MAC_MEAS_T BCCH_MEAS_TRIGGER,CCCH_MEAS_TRIGGER,DCCH_MEAS_TRIGGER,DTCH_MEAS_TRIGGER;
 extern MAC_AVG_T BCCH_MEAS_AVG,CCCH_MEAS_AVG,DCCH_MEAS_AVG, DTCH_MEAS_AVG;
 
-extern u16 T300[8];
-extern u16 T310[8];
-extern u16 N310[8];
-extern u16 N311[8];
-extern u32 T304[8];
-extern u32 timeToTrigger_ms[16]; 
+extern uint16_t T300[8];
+extern uint16_t T310[8];
+extern uint16_t N310[8];
+extern uint16_t N311[8];
+extern uint32_t T304[8];
+extern uint32_t timeToTrigger_ms[16]; 
 extern float RSRP_meas_mapping[100];
 extern float RSRQ_meas_mapping[33];
 

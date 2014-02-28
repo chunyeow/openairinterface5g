@@ -122,7 +122,7 @@ void rlc_am_start_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP)
           rlc_pP->t_poll_retransmit.frame_time_out);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, u32_t time_outP)
+void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, uint32_t time_outP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_poll_retransmit.running         = 0;

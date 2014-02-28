@@ -426,13 +426,13 @@ typedef struct {
   /// ACK/NAK Bundling flag
   uint8_t bundling;
   /// "q" sequences for CQI/PMI (for definition see 36-212 V8.6 2009-03, p.27)
-  s8 q[MAX_CQI_PAYLOAD];
+  int8_t q[MAX_CQI_PAYLOAD];
   /// number of coded CQI bits after interleaving
   uint8_t o_RCC;
   /// coded and interleaved CQI bits
-  s8 o_w[(MAX_CQI_BITS+8)*3];
+  int8_t o_w[(MAX_CQI_BITS+8)*3];
   /// coded CQI bits
-  s8 o_d[96+((MAX_CQI_BITS+8)*3)];
+  int8_t o_d[96+((MAX_CQI_BITS+8)*3)];
   /// coded ACK bits
   int16_t q_ACK[MAX_ACK_PAYLOAD];
   /// coded RI bits
@@ -509,7 +509,7 @@ typedef struct {
   /// Number of MIMO layers (streams) (for definition see 36-212 V8.6 2009-03, p.17)
   uint8_t Nl;
   /// current delta_pucch
-  s8 delta_PUCCH;
+  int8_t delta_PUCCH;
   /// Number of soft channel bits
   uint32_t G;
   /// Current Number of RBs
@@ -525,7 +525,7 @@ typedef struct {
 
 typedef struct {
   /// UL RSSI per receive antenna
-  s32 UL_rssi[NB_ANTENNAS_RX];
+  int32_t UL_rssi[NB_ANTENNAS_RX];
   /// DL Wideband CQI index (2 TBs)
   uint8_t DL_cqi[2];
   /// DL Subband CQI index (from HLC feedback)
@@ -539,9 +539,9 @@ typedef struct {
   /// CRNTI of UE
   uint16_t crnti; ///user id (rnti) of connected UEs
   /// Initial timing offset estimate from PRACH for RAR
-  s32 UE_timing_offset; 
+  int32_t UE_timing_offset; 
   /// Timing advance estimate from PUSCH for MAC timing advance signalling
-  s32 timing_advance_update; 
+  int32_t timing_advance_update; 
   /// Current mode of UE (NOT SYCHED, RAR, PUSCH)
   UE_MODE_t mode;
   /// Current sector where UE is attached
@@ -569,7 +569,7 @@ typedef struct {
   uint32_t sr_received;
   uint32_t sr_total;
 
-  s8 dlsch_mcs_offset;
+  int8_t dlsch_mcs_offset;
   /// Target mcs1 after rate-adaptation (used by MAC layer scheduler)
   uint8_t dlsch_mcs1;
   /// Target mcs2 after rate-adaptation (used by MAC layer scheduler)

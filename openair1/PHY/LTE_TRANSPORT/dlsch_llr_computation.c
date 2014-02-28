@@ -653,21 +653,21 @@ int dlsch_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
                    int **rxdataF_comp,
                    short *dlsch_llr,
                    unsigned char symbol,
-                   u8 first_symbol_flag,
-                   u16 nb_rb,
-                   u16 pbch_pss_sss_adjust,
+                   uint8_t first_symbol_flag,
+                   uint16_t nb_rb,
+                   uint16_t pbch_pss_sss_adjust,
                    short **llr32p) {
 
-  u32 *rxF = (u32*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-  u32 *llr32;
+  uint32_t *rxF = (uint32_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+  uint32_t *llr32;
   int i,len;
-  u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+  uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
 
   if (first_symbol_flag==1) {
-      llr32 = (u32*)dlsch_llr;
+      llr32 = (uint32_t*)dlsch_llr;
   }
   else {
-      llr32 = (u32*)(*llr32p);
+      llr32 = (uint32_t*)(*llr32p);
   }
  
   if (!llr32) {
@@ -709,23 +709,23 @@ void dlsch_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                      short *dlsch_llr,
                      int **dl_ch_mag,
                      unsigned char symbol,
-                     u8 first_symbol_flag,
+                     uint8_t first_symbol_flag,
                      unsigned short nb_rb,
-                     u16 pbch_pss_sss_adjust,
-                     s16 **llr32p) {
+                     uint16_t pbch_pss_sss_adjust,
+                     int16_t **llr32p) {
 
     __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
     __m128i *ch_mag;
     __m128i llr128[2];
     int i,len;
     unsigned char symbol_mod,len_mod4=0;
-    u32 *llr32;
+    uint32_t *llr32;
     
     if (first_symbol_flag==1) {
-        llr32 = (u32*)dlsch_llr;
+        llr32 = (uint32_t*)dlsch_llr;
     }
     else {
-        llr32 = (u32*)*llr32p;
+        llr32 = (uint32_t*)*llr32p;
     }
   
     symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
@@ -760,14 +760,14 @@ void dlsch_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
         // lambda_1=y_R, lambda_2=|y_R|-|h|^2, lamda_3=y_I, lambda_4=|y_I|-|h|^2
         llr128[0] = _mm_unpacklo_epi32(rxF[i],xmm0); 
         llr128[1] = _mm_unpackhi_epi32(rxF[i],xmm0);
-        llr32[0] = _mm_extract_epi32(llr128[0],0); //((u32 *)&llr128[0])[0];
-        llr32[1] = _mm_extract_epi32(llr128[0],1); //((u32 *)&llr128[0])[1];
-        llr32[2] = _mm_extract_epi32(llr128[0],2); //((u32 *)&llr128[0])[2];
-        llr32[3] = _mm_extract_epi32(llr128[0],3); //((u32 *)&llr128[0])[3];
-        llr32[4] = _mm_extract_epi32(llr128[1],0); //((u32 *)&llr128[1])[0];
-        llr32[5] = _mm_extract_epi32(llr128[1],1); //((u32 *)&llr128[1])[1];
-        llr32[6] = _mm_extract_epi32(llr128[1],2); //((u32 *)&llr128[1])[2];
-        llr32[7] = _mm_extract_epi32(llr128[1],3); //((u32 *)&llr128[1])[3];
+        llr32[0] = _mm_extract_epi32(llr128[0],0); //((uint32_t *)&llr128[0])[0];
+        llr32[1] = _mm_extract_epi32(llr128[0],1); //((uint32_t *)&llr128[0])[1];
+        llr32[2] = _mm_extract_epi32(llr128[0],2); //((uint32_t *)&llr128[0])[2];
+        llr32[3] = _mm_extract_epi32(llr128[0],3); //((uint32_t *)&llr128[0])[3];
+        llr32[4] = _mm_extract_epi32(llr128[1],0); //((uint32_t *)&llr128[1])[0];
+        llr32[5] = _mm_extract_epi32(llr128[1],1); //((uint32_t *)&llr128[1])[1];
+        llr32[6] = _mm_extract_epi32(llr128[1],2); //((uint32_t *)&llr128[1])[2];
+        llr32[7] = _mm_extract_epi32(llr128[1],3); //((uint32_t *)&llr128[1])[3];
         llr32+=8;
   }
   _mm_empty();
@@ -784,9 +784,9 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                      int **dl_ch_mag,
                      int **dl_ch_magb,
                      unsigned char symbol,
-                     u8 first_symbol_flag,
+                     uint8_t first_symbol_flag,
                      unsigned short nb_rb,
-                     u16 pbch_pss_sss_adjust,
+                     uint16_t pbch_pss_sss_adjust,
                      short **llr_save) {
 
     __m128i *rxF = (__m128i*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
@@ -794,7 +794,7 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
     int i,len,len2;
     unsigned char symbol_mod,len_mod4;
     short *llr;
-    s16 *llr2;
+    int16_t *llr2;
     
     if (first_symbol_flag==1)
         llr = dlsch_llr;
@@ -914,21 +914,21 @@ int dlsch_qpsk_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
                         unsigned char symbol,
                         unsigned char first_symbol_flag,
                         unsigned short nb_rb,
-                        u16 pbch_pss_sss_adjust,
+                        uint16_t pbch_pss_sss_adjust,
                         short **llr16p) {
     
-    s16 *rxF=(s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i=(s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho=(s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF=(int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i=(int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho=(int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
     
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
     
     if (!llr16) {
@@ -1143,22 +1143,22 @@ int dlsch_qpsk_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                          unsigned char symbol,
                          unsigned char first_symbol_flag,
                          unsigned short nb_rb,
-                         u16 pbch_pss_sss_adjust,
+                         uint16_t pbch_pss_sss_adjust,
                          short **llr16p) {
     
-    s16 *rxF=(s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i=(s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag_i = (s16*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho=(s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF=(int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i=(int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag_i = (int16_t*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho=(int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
     
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
     
     if (!llr16) {
@@ -1402,22 +1402,22 @@ int dlsch_qpsk_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                          unsigned char symbol,
                          unsigned char first_symbol_flag,
                          unsigned short nb_rb,
-                         u16 pbch_pss_sss_adjust,
+                         uint16_t pbch_pss_sss_adjust,
                          short **llr16p) {
     
-    s16 *rxF=(s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i=(s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag_i = (s16*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho=(s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF=(int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i=(int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag_i = (int16_t*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho=(int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
     
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
     
     if (!llr16) {
@@ -2089,23 +2089,23 @@ int dlsch_16qam_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
                          unsigned char symbol,
                          unsigned char first_symbol_flag,
                          unsigned short nb_rb,
-                         u16 pbch_pss_sss_adjust,
+                         uint16_t pbch_pss_sss_adjust,
                          short **llr16p) {
 
-    s16 *rxF      = (s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i    = (s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag   = (s16*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho      = (s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF      = (int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i    = (int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag   = (int16_t*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho      = (int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
   
     // first symbol has different structure due to more pilots
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
   
 
@@ -2592,24 +2592,24 @@ int dlsch_16qam_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                           unsigned char symbol,
                           unsigned char first_symbol_flag,
                           unsigned short nb_rb,
-                          u16 pbch_pss_sss_adjust,
+                          uint16_t pbch_pss_sss_adjust,
                           short **llr16p) {
 
-    s16 *rxF      = (s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i    = (s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag   = (s16*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag_i = (s16*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho      = (s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF      = (int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i    = (int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag   = (int16_t*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag_i = (int16_t*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho      = (int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
   
     // first symbol has different structure due to more pilots
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
   
 
@@ -3124,24 +3124,24 @@ int dlsch_16qam_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                           unsigned char symbol,
                           unsigned char first_symbol_flag,
                           unsigned short nb_rb,
-                          u16 pbch_pss_sss_adjust,
+                          uint16_t pbch_pss_sss_adjust,
                           short **llr16p) {
 
-    s16 *rxF      = (s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i    = (s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag   = (s16*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag_i = (s16*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho      = (s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF      = (int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i    = (int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag   = (int16_t*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag_i = (int16_t*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho      = (int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
   
     // first symbol has different structure due to more pilots
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
   
 
@@ -4468,23 +4468,23 @@ int dlsch_64qam_qpsk_llr(LTE_DL_FRAME_PARMS *frame_parms,
                          unsigned char symbol,
                          unsigned char first_symbol_flag,
                          unsigned short nb_rb,
-                         u16 pbch_pss_sss_adjust,
+                         uint16_t pbch_pss_sss_adjust,
                          short **llr16p) {
 
-    s16 *rxF      = (s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i    = (s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag   = (s16*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho      = (s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF      = (int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i    = (int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag   = (int16_t*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho      = (int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
 
     //first symbol has different structure due to more pilots
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
   
     if (!llr16) {
@@ -5730,24 +5730,24 @@ int dlsch_64qam_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                           unsigned char symbol,
                           unsigned char first_symbol_flag,
                           unsigned short nb_rb,
-                          u16 pbch_pss_sss_adjust,
+                          uint16_t pbch_pss_sss_adjust,
                           short **llr16p) {
 
-    s16 *rxF      = (s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i    = (s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag   = (s16*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag_i = (s16*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho      = (s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF      = (int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i    = (int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag   = (int16_t*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag_i = (int16_t*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho      = (int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
 
     //first symbol has different structure due to more pilots
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
   
     if (!llr16) {
@@ -7120,24 +7120,24 @@ int dlsch_64qam_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
                           unsigned char symbol,
                           unsigned char first_symbol_flag,
                           unsigned short nb_rb,
-                          u16 pbch_pss_sss_adjust,
+                          uint16_t pbch_pss_sss_adjust,
                           short **llr16p) {
 
-    s16 *rxF      = (s16*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rxF_i    = (s16*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag   = (s16*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *ch_mag_i = (s16*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *rho      = (s16*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
-    s16 *llr16;
+    int16_t *rxF      = (int16_t*)&rxdataF_comp[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rxF_i    = (int16_t*)&rxdataF_comp_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag   = (int16_t*)&dl_ch_mag[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *ch_mag_i = (int16_t*)&dl_ch_mag_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *rho      = (int16_t*)&rho_i[0][(symbol*frame_parms->N_RB_DL*12)];
+    int16_t *llr16;
     int len;
-    u8 symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
+    uint8_t symbol_mod = (symbol >= (7-frame_parms->Ncp))? (symbol-(7-frame_parms->Ncp)) : symbol;
 
     //first symbol has different structure due to more pilots
     if (first_symbol_flag == 1) {
-        llr16 = (s16*)dlsch_llr;
+        llr16 = (int16_t*)dlsch_llr;
     }
     else {
-        llr16 = (s16*)(*llr16p);
+        llr16 = (int16_t*)(*llr16p);
     }
   
     if (!llr16) {

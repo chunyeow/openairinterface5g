@@ -199,14 +199,14 @@ int L3_xface_init(void) {
 }
 #endif
 
-void rrc_config_buffer(SRB_INFO *Srb_info, u8 Lchan_type, u8 Role) {
+void rrc_config_buffer(SRB_INFO *Srb_info, uint8_t Lchan_type, uint8_t Role) {
 
   Srb_info->Rx_buffer.payload_size = 0;
   Srb_info->Tx_buffer.payload_size = 0;
 }
 
 /*------------------------------------------------------------------------------*/
-void openair_rrc_top_init(int eMBMS_active, u8 cba_group_active,u8 HO_active){
+void openair_rrc_top_init(int eMBMS_active, uint8_t cba_group_active,uint8_t HO_active){
   /*-----------------------------------------------------------------------------*/
 
   module_id_t         module_id;
@@ -288,7 +288,7 @@ void rrc_top_cleanup(void) {
 }
 
 
-void rrc_t310_expiration(frame_t frameP, u8 Mod_id, u8 eNB_index) {
+void rrc_t310_expiration(frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
 
   if (UE_rrc_inst[Mod_id].Info[eNB_index].State != RRC_CONNECTED) {
     LOG_D(RRC, "Timer 310 expired, going to RRC_IDLE\n");
@@ -318,7 +318,7 @@ void rrc_t310_expiration(frame_t frameP, u8 Mod_id, u8 eNB_index) {
   }
 }
 
-RRC_status_t rrc_rx_tx(u8 Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,u8 index){
+RRC_status_t rrc_rx_tx(uint8_t Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,uint8_t index){
   
   if(eNB_flagP == 0) {
     // check timers

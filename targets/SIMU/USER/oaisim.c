@@ -46,7 +46,7 @@ char           smbv_fname[] = "smbv_config_file.smbv";
 unsigned short smbv_nframes = 4; // how many frames to configure 1,..,4
 unsigned short config_frames[4] = {2,9,11,13};
 unsigned char  smbv_frame_cnt = 0;
-u8             config_smbv = 0;
+uint8_t             config_smbv = 0;
 char           smbv_ip[16];
 #endif
 
@@ -117,16 +117,16 @@ int                    map1, map2;
 extern double        **ShaF;
 double                 snr_dB, sinr_dB, snr_direction; //,sinr_direction;
 extern double          snr_step;
-extern u8              set_sinr;
-extern u8              ue_connection_test;
-extern u8              set_seed;
-u8                     cooperation_flag; // for cooperative communication
-extern u8              target_dl_mcs;
-extern u8              target_ul_mcs;
-u8                     rate_adaptation_flag;
-extern u8              abstraction_flag;
-extern u8              ethernet_flag;
-extern u16             Nid_cell;
+extern uint8_t              set_sinr;
+extern uint8_t              ue_connection_test;
+extern uint8_t              set_seed;
+uint8_t                     cooperation_flag; // for cooperative communication
+extern uint8_t              target_dl_mcs;
+extern uint8_t              target_ul_mcs;
+uint8_t                     rate_adaptation_flag;
+extern uint8_t              abstraction_flag;
+extern uint8_t              ethernet_flag;
+extern uint16_t             Nid_cell;
 
 extern LTE_DL_FRAME_PARMS *frame_parms;
 
@@ -366,7 +366,7 @@ static module_id_t eNB_inst = 0;
 static module_id_t RN_id    = 0;
 #endif
 
-Packet_OTG_List *otg_pdcp_buffer;
+Packet_OTG_List_t *otg_pdcp_buffer;
 
 typedef enum l2l1_task_state_e
 {
@@ -381,7 +381,7 @@ void *l2l1_task(void *args_p) {
   clock_t               t;
 
   // Framing variables
-  s32                   slot, last_slot, next_slot;
+  int32_t                   slot, last_slot, next_slot;
 
 #ifdef Rel10
   relaying_type_t       r_type = no_relay; // no relaying
@@ -584,7 +584,7 @@ void *l2l1_task(void *args_p) {
           frame %= (oai_emulation.info.n_frames - 1);
       }
 
-      update_omg (); // frequency is defined in the omg_global params configurable by the user
+      update_omg (frame); // frequency is defined in the omg_global params configurable by the user
 
       update_omg_ocm ();
 
@@ -974,7 +974,7 @@ void *l2l1_task(void *args_p) {
 /*------------------------------------------------------------------------------*/
 int main(int argc, char **argv) {
 
-  s32 i;
+  int32_t i;
   // pointers signal buffers (s = transmit, r,r0 = receive)
   clock_t t;
 
@@ -1185,7 +1185,7 @@ int main(int argc, char **argv) {
 }
 
 void reset_opp_meas(void){
-  u8 eNB_id=0,UE_id=0;
+  uint8_t eNB_id=0,UE_id=0;
  
   reset_meas(&oaisim_stats);
   reset_meas(&oaisim_stats_f); // frame 
@@ -1317,7 +1317,7 @@ void reset_opp_meas(void){
 }
 
 void print_opp_meas(void){
-  u8 eNB_id=0,UE_id=0;
+  uint8_t eNB_id=0,UE_id=0;
 
   print_meas(&oaisim_stats,"[OAI][total_exec_time]", &oaisim_stats,&oaisim_stats);
   print_meas(&oaisim_stats_f,"[OAI][SF_exec_time]", &oaisim_stats,&oaisim_stats_f);

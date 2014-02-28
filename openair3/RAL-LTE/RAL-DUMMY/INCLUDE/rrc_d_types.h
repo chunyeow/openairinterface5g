@@ -9,9 +9,9 @@
 #ifndef __RRC_DTYPES_H__
 #define __RRC_DTYPES_H__
 
-typedef unsigned char  u8;
-typedef unsigned short u16;
-typedef unsigned int   u32;
+typedef unsigned char  uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int   uint32_t;
 
 
 #endif

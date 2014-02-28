@@ -25,43 +25,43 @@ short conjugate75[8]__attribute__((aligned(16))) = {-1,1,-1,1,-1,1,-1,1} ;
 short conjugate75_2[8]__attribute__((aligned(16))) = {1,-1,1,-1,1,-1,1,-1} ;
 short negate[8]__attribute__((aligned(16))) = {-1,-1,-1,-1,-1,-1,-1,-1};
 
-void apply_7_5_kHz(PHY_VARS_UE *phy_vars_ue,s32*txdata,u8 slot) {
+void apply_7_5_kHz(PHY_VARS_UE *phy_vars_ue,int32_t*txdata,uint8_t slot) {
 
 
-  u16 len;
-  u32 *kHz7_5ptr;
+  uint16_t len;
+  uint32_t *kHz7_5ptr;
   __m128i *txptr128,*kHz7_5ptr128,mmtmp_re,mmtmp_im,mmtmp_re2,mmtmp_im2;
-  u32 slot_offset;
-//   u8 aa;
-  u32 i;
+  uint32_t slot_offset;
+//   uint8_t aa;
+  uint32_t i;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
 
   switch (frame_parms->N_RB_UL) {
   
   case 6:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s6n_kHz_7_5 : (u32*)s6e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s6n_kHz_7_5 : (uint32_t*)s6e_kHz_7_5;
     break;
   case 15:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s15n_kHz_7_5 : (u32*)s15e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s15n_kHz_7_5 : (uint32_t*)s15e_kHz_7_5;
     break;
   case 25:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s25n_kHz_7_5 : (u32*)s25e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s25n_kHz_7_5 : (uint32_t*)s25e_kHz_7_5;
     break;
   case 50:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s50n_kHz_7_5 : (u32*)s50e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s50n_kHz_7_5 : (uint32_t*)s50e_kHz_7_5;
     break;
   case 75:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s75n_kHz_7_5 : (u32*)s75e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s75n_kHz_7_5 : (uint32_t*)s75e_kHz_7_5;
     break;
   case 100:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s100n_kHz_7_5 : (u32*)s100e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s100n_kHz_7_5 : (uint32_t*)s100e_kHz_7_5;
     break;
   default:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s25n_kHz_7_5 : (u32*)s25e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s25n_kHz_7_5 : (uint32_t*)s25e_kHz_7_5;
     break;
   }
 
-  slot_offset = (u32)slot * phy_vars_ue->lte_frame_parms.samples_per_tti/2;
+  slot_offset = (uint32_t)slot * phy_vars_ue->lte_frame_parms.samples_per_tti/2;
   //  if ((slot&1)==1)
   //    slot_offset += (len/4);
   len = phy_vars_ue->lte_frame_parms.samples_per_tti/2;
@@ -121,47 +121,47 @@ void apply_7_5_kHz(PHY_VARS_UE *phy_vars_ue,s32*txdata,u8 slot) {
 }
 
 
-void remove_7_5_kHz(PHY_VARS_eNB *phy_vars_eNB,u8 slot) {
+void remove_7_5_kHz(PHY_VARS_eNB *phy_vars_eNB,uint8_t slot) {
 
 
-  s32 **rxdata=phy_vars_eNB->lte_eNB_common_vars.rxdata[0];
-  s32 **rxdata_7_5kHz=phy_vars_eNB->lte_eNB_common_vars.rxdata_7_5kHz[0];
-  u16 len;
-  u32 *kHz7_5ptr;
+  int32_t **rxdata=phy_vars_eNB->lte_eNB_common_vars.rxdata[0];
+  int32_t **rxdata_7_5kHz=phy_vars_eNB->lte_eNB_common_vars.rxdata_7_5kHz[0];
+  uint16_t len;
+  uint32_t *kHz7_5ptr;
   __m128i *rxptr128,*rxptr128_7_5kHz,*kHz7_5ptr128,kHz7_5_2,mmtmp_re,mmtmp_im,mmtmp_re2,mmtmp_im2;
-  u32 slot_offset,slot_offset2;
-  u8 aa;
-  u32 i;
+  uint32_t slot_offset,slot_offset2;
+  uint8_t aa;
+  uint32_t i;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_eNB->lte_frame_parms;
 
   switch (phy_vars_eNB->lte_frame_parms.N_RB_UL) {
     
   case 6:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s6n_kHz_7_5 : (u32*)s6e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s6n_kHz_7_5 : (uint32_t*)s6e_kHz_7_5;
     break;
   case 15:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s15n_kHz_7_5 : (u32*)s15e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s15n_kHz_7_5 : (uint32_t*)s15e_kHz_7_5;
     break;
   case 25:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s25n_kHz_7_5 : (u32*)s25e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s25n_kHz_7_5 : (uint32_t*)s25e_kHz_7_5;
     break;
   case 50:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s50n_kHz_7_5 : (u32*)s50e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s50n_kHz_7_5 : (uint32_t*)s50e_kHz_7_5;
     break;
   case 75:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s75n_kHz_7_5 : (u32*)s75e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s75n_kHz_7_5 : (uint32_t*)s75e_kHz_7_5;
     break;
   case 100:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s100n_kHz_7_5 : (u32*)s100e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s100n_kHz_7_5 : (uint32_t*)s100e_kHz_7_5;
     break;
   default:
-    kHz7_5ptr = (frame_parms->Ncp==0) ? (u32*)s25n_kHz_7_5 : (u32*)s25e_kHz_7_5;
+    kHz7_5ptr = (frame_parms->Ncp==0) ? (uint32_t*)s25n_kHz_7_5 : (uint32_t*)s25e_kHz_7_5;
     break;
   }
 
  
-  slot_offset = (u32)slot * phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
-  slot_offset2 = (u32)(slot&1) * phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
+  slot_offset = (uint32_t)slot * phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
+  slot_offset2 = (uint32_t)(slot&1) * phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
 
   len = phy_vars_eNB->lte_frame_parms.samples_per_tti/2;
 
@@ -197,17 +197,17 @@ void remove_7_5_kHz(PHY_VARS_eNB *phy_vars_eNB,u8 slot) {
 
 
 
-void apply_625_Hz(PHY_VARS_UE *phy_vars_ue,s16 *prach) {
+void apply_625_Hz(PHY_VARS_UE *phy_vars_ue,int16_t *prach) {
 
-  u32 *Hz625ptr;
+  uint32_t *Hz625ptr;
   __m128i *txptr128,*Hz625ptr128,mmtmp_re,mmtmp_im,mmtmp_re2,mmtmp_im2;
-  u8 aa;
-  u32 Ncp,len;
-  u32 i;
+  uint8_t aa;
+  uint32_t Ncp,len;
+  uint32_t i;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
-  u8 frame_type         = phy_vars_ue->lte_frame_parms.frame_type;
-  u8 prach_ConfigIndex  = phy_vars_ue->lte_frame_parms.prach_config_common.prach_ConfigInfo.prach_ConfigIndex; 
-  u8 prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
+  uint8_t frame_type         = phy_vars_ue->lte_frame_parms.frame_type;
+  uint8_t prach_ConfigIndex  = phy_vars_ue->lte_frame_parms.prach_config_common.prach_ConfigInfo.prach_ConfigIndex; 
+  uint8_t prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
 
   switch (prach_fmt) {
   case 0:
@@ -231,31 +231,31 @@ void apply_625_Hz(PHY_VARS_UE *phy_vars_ue,s16 *prach) {
   switch (frame_parms->N_RB_UL) {
     
   case 6:
-    Hz625ptr = (u32*)sig625_1_25MHz;
+    Hz625ptr = (uint32_t*)sig625_1_25MHz;
     len = 1536 + (Ncp>>4);
     break;
   case 15:
-    Hz625ptr = (u32*)sig625_2_5MHz;
+    Hz625ptr = (uint32_t*)sig625_2_5MHz;
     len = 3072 + (Ncp>>3);
     break;
   case 25:
-    Hz625ptr = (u32*)sig625_5MHz;
+    Hz625ptr = (uint32_t*)sig625_5MHz;
     len = 6144+(Ncp>>2);
     break;
   case 50:
-    Hz625ptr = (u32*)sig625_10MHz;
+    Hz625ptr = (uint32_t*)sig625_10MHz;
     len = 12288+(Ncp>>1);
     break;
   case 75:
-    Hz625ptr = (u32*)sig625_15MHz;
+    Hz625ptr = (uint32_t*)sig625_15MHz;
     len = 18432+((2*Ncp)/3);
     break;
   case 100:
-    Hz625ptr = (u32*)sig625_20MHz;
+    Hz625ptr = (uint32_t*)sig625_20MHz;
     len = 24576+Ncp;
     break;
   default:
-    Hz625ptr = (u32*)sig625_5MHz;
+    Hz625ptr = (uint32_t*)sig625_5MHz;
     len = 6144+(Ncp>>2);
     break;
   }
@@ -314,16 +314,16 @@ void apply_625_Hz(PHY_VARS_UE *phy_vars_ue,s16 *prach) {
   }
 }
 
-void remove_625_Hz(PHY_VARS_eNB *phy_vars_eNB,s16 *prach) {
+void remove_625_Hz(PHY_VARS_eNB *phy_vars_eNB,int16_t *prach) {
 
-  u32 *Hz625ptr;
+  uint32_t *Hz625ptr;
   __m128i *txptr128,*Hz625ptr128,Hz625_2,mmtmp_re,mmtmp_im,mmtmp_re2,mmtmp_im2;
-  u8 aa;
-  u32 i,Ncp,len;
+  uint8_t aa;
+  uint32_t i,Ncp,len;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_eNB->lte_frame_parms;
-  u8 frame_type         = frame_parms->frame_type;
-  u8 prach_ConfigIndex  = frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex; 
-  u8 prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
+  uint8_t frame_type         = frame_parms->frame_type;
+  uint8_t prach_ConfigIndex  = frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex; 
+  uint8_t prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
 
   switch (prach_fmt) {
   case 0:
@@ -347,31 +347,31 @@ void remove_625_Hz(PHY_VARS_eNB *phy_vars_eNB,s16 *prach) {
   switch (frame_parms->N_RB_UL) {
     
   case 6:
-    Hz625ptr = (u32*)sig625_1_25MHz;
+    Hz625ptr = (uint32_t*)sig625_1_25MHz;
     len = 1536 + (Ncp>>4);
     break;
   case 15:
-    Hz625ptr = (u32*)sig625_2_5MHz;
+    Hz625ptr = (uint32_t*)sig625_2_5MHz;
     len = 3072 + (Ncp>>3) ;
     break;
   case 25:
-    Hz625ptr = (u32*)sig625_5MHz;
+    Hz625ptr = (uint32_t*)sig625_5MHz;
     len = 6144+(Ncp>>2);
     break;
   case 50:
-    Hz625ptr = (u32*)sig625_10MHz;
+    Hz625ptr = (uint32_t*)sig625_10MHz;
     len = 12288+(Ncp>>1);
     break;
   case 75:
-    Hz625ptr = (u32*)sig625_15MHz;
+    Hz625ptr = (uint32_t*)sig625_15MHz;
     len = 18432+((2*Ncp)/3);
     break;
   case 100:
-    Hz625ptr = (u32*)sig625_20MHz;
+    Hz625ptr = (uint32_t*)sig625_20MHz;
     len = 24576+Ncp;
     break;
   default:
-    Hz625ptr = (u32*)sig625_5MHz;
+    Hz625ptr = (uint32_t*)sig625_5MHz;
     len = 11400;
     break;
   }
@@ -434,12 +434,12 @@ void remove_625_Hz(PHY_VARS_eNB *phy_vars_eNB,s16 *prach) {
 
 void init_prach625(LTE_DL_FRAME_PARMS *frame_parms) {
 
-  u32 len,i,Ncp;
+  uint32_t len,i,Ncp;
   double fs;
-  s16 *Hz625ptr;
-  u8 frame_type         = frame_parms->frame_type;
-  u8 prach_ConfigIndex  = frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex; 
-  u8 prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
+  int16_t *Hz625ptr;
+  uint8_t frame_type         = frame_parms->frame_type;
+  uint8_t prach_ConfigIndex  = frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex; 
+  uint8_t prach_fmt = get_prach_fmt(prach_ConfigIndex,frame_type);
 
   switch (prach_fmt) {
   case 0:
@@ -499,8 +499,8 @@ void init_prach625(LTE_DL_FRAME_PARMS *frame_parms) {
   }
 
   for (i=0;i<len;i++) {
-    Hz625ptr[i<<1]     = (s16)floor(32767.0*cos(2*M_PI*625*i/fs));
-    Hz625ptr[1+(i<<1)] = (s16)floor(32767.0*sin(2*M_PI*625*i/fs));
+    Hz625ptr[i<<1]     = (int16_t)floor(32767.0*cos(2*M_PI*625*i/fs));
+    Hz625ptr[1+(i<<1)] = (int16_t)floor(32767.0*sin(2*M_PI*625*i/fs));
     //    printf("prach625 %d: (%d,%d)\n",i,Hz625ptr[i<<1],Hz625ptr[1+(i<<1)]);
   }
 

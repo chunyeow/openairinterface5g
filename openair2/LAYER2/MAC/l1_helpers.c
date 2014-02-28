@@ -39,7 +39,7 @@
 #include "extern.h"
 #include "UTIL/LOG/log.h"
 
-s8 get_Po_NOMINAL_PUSCH(module_id_t module_idP) {
+int8_t get_Po_NOMINAL_PUSCH(module_id_t module_idP) {
   RACH_ConfigCommon_t *rach_ConfigCommon = NULL;
 
   if (UE_mac_inst[module_idP].radioResourceConfigCommon)
@@ -53,9 +53,9 @@ s8 get_Po_NOMINAL_PUSCH(module_id_t module_idP) {
 	 get_DELTA_PREAMBLE(module_idP));
 }
 
-s8 get_deltaP_rampup(module_id_t module_idP) {
+int8_t get_deltaP_rampup(module_id_t module_idP) {
 
   LOG_D(MAC,"[PUSCH]%d dB\n",UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER<<1);
-  return((s8)(UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER<<1));
+  return((int8_t)(UE_mac_inst[module_idP].RA_PREAMBLE_TRANSMISSION_COUNTER<<1));
  
 }

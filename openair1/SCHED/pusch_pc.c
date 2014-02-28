@@ -42,18 +42,18 @@
 #include "PHY/LTE_TRANSPORT/proto.h"
 #include "PHY/extern.h"
 
-s16 get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 harq_pid) {
+int16_t get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t harq_pid) {
  
-  u32 Nre = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->Nsymb_initial *
+  uint32_t Nre = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->Nsymb_initial *
             phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb*12;
 
   if (Nre==0)
     return(0);
 
-  u32 MPR = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->sumKr / Nre;  
+  uint32_t MPR = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->sumKr / Nre;  
   // Note: MPR is the effective spectral efficiency of the PUSCH
 
-  u16 beta_offset_pusch = (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->control_only == 1) ? 
+  uint16_t beta_offset_pusch = (phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->control_only == 1) ? 
     phy_vars_ue->ulsch_ue[eNB_id]->beta_offset_cqi_times8:8;
 
   if (phy_vars_ue->ul_power_control_dedicated[eNB_id].deltaMCS_Enabled == 1) {
@@ -65,18 +65,18 @@ s16 get_hundred_times_delta_IF(PHY_VARS_UE *phy_vars_ue,u8 eNB_id,u8 harq_pid) {
   }
 }
 
-u16 hundred_times_log10_NPRB[100] = {0,301,477,602,698,778,845,903,954,1000,1041,1079,1113,1146,1176,1204,1230,1255,1278,1301,1322,1342,1361,1380,1397,1414,1431,1447,1462,1477,1491,1505,1518,1531,1544,1556,1568,1579,1591,1602,1612,1623,1633,1643,1653,1662,1672,1681,1690,1698,1707,1716,1724,1732,1740,1748,1755,1763,1770,1778,1785,1792,1799,1806,1812,1819,1826,1832,1838,1845,1851,1857,1863,1869,1875,1880,1886,1892,1897,1903,1908,1913,1919,1924,1929,1934,1939,1944,1949,1954,1959,1963,1968,1973,1977,1982,1986,1991,1995,2000}; 
+uint16_t hundred_times_log10_NPRB[100] = {0,301,477,602,698,778,845,903,954,1000,1041,1079,1113,1146,1176,1204,1230,1255,1278,1301,1322,1342,1361,1380,1397,1414,1431,1447,1462,1477,1491,1505,1518,1531,1544,1556,1568,1579,1591,1602,1612,1623,1633,1643,1653,1662,1672,1681,1690,1698,1707,1716,1724,1732,1740,1748,1755,1763,1770,1778,1785,1792,1799,1806,1812,1819,1826,1832,1838,1845,1851,1857,1863,1869,1875,1880,1886,1892,1897,1903,1908,1913,1919,1924,1929,1934,1939,1944,1949,1954,1959,1963,1968,1973,1977,1982,1986,1991,1995,2000}; 
 
-u8 alpha_lut[8] = {0,40,50,60,70,80,90,100};
+uint8_t alpha_lut[8] = {0,40,50,60,70,80,90,100};
 
-void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,u8 j, u8 abstraction_flag) {
+void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,uint8_t j, uint8_t abstraction_flag) {
 
-  u8 harq_pid = subframe2harq_pid(&phy_vars_ue->lte_frame_parms,
+  uint8_t harq_pid = subframe2harq_pid(&phy_vars_ue->lte_frame_parms,
 				  ((subframe==0)?1:0) + phy_vars_ue->frame,
 				  subframe);
   
-  u8 nb_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb;
-  s8 PL;
+  uint8_t nb_rb = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb;
+  int8_t PL;
   
   
   // P_pusch = 10*log10(nb_rb + P_opusch(j)+ alpha(u)*PL + delta_TF(i) + f(i))
@@ -129,7 +129,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,u8 subframe,u8 eNB_id,u8 j, u8 ab
   
 }
 
-s8 get_PHR(u8 Mod_id, u8 eNB_index){
+int8_t get_PHR(uint8_t Mod_id, uint8_t eNB_index){
 
   return PHY_vars_UE_g[Mod_id]->ulsch_ue[eNB_index]->PHR; 
 }

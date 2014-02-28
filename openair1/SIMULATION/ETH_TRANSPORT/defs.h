@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 //#include "openair_defs.h"
 
-typedef enum {
+typedef enum emu_transport_info_e {
     EMU_TRANSPORT_INFO_ERROR    = 0x0,
     EMU_TRANSPORT_INFO_WAIT_PM,
     EMU_TRANSPORT_INFO_WAIT_SM,
@@ -49,64 +49,64 @@ typedef unsigned int (*rx_handler_t) (unsigned char, char*, unsigned int);
 
 /*************************************************************/
 
-typedef struct  {
-  u32 pbch_flag:1;
-  u32 pmch_flag:1;
-  u32 pss:2;
-  u32 sss:8;
-  u32 cfi:2;
-  u32 phich:19; // max 200 bit
-  //  u32 pbch_payload:24;
-  u32 pbch_payload;
+typedef struct eNB_cntl_s {
+  uint32_t pbch_flag:1;
+  uint32_t pmch_flag:1;
+  uint32_t pss:2;
+  uint32_t sss:8;
+  uint32_t cfi:2;
+  uint32_t phich:19; // max 200 bit
+  //  uint32_t pbch_payload:24;
+  uint32_t pbch_payload;
 } eNB_cntl;
 
-typedef struct  {
-  u8 pucch_flag:3;  // 0,7 = none, 1 = type 1, 2=type 1a, 3=type 1b, 4=type 2, 5=type 2a, 6=type 2b
-  u8 pucch_Ncs1:3;  // physical configuration of pucch, for abstraction purposes
-  u32 pucch_payload:21;        // ack/nak/cqi information
-  u8 sr:1;
-  u8 pusch_flag:1;  // 0=none,1=active
-  u8 pucch_sel:1; 
-  //u32 pusch_uci;     // uci information on pusch
-  u8 pusch_uci[MAX_CQI_BYTES];
-  u8 uci_format;
-  u8 length_uci;
-  u8 pusch_ri:2;    // ri information on pusch
-  u8 pusch_ack:2;   // ack/nak on pusch
-  u8 prach_flag:1;  // 0=none,1=active
-  u8 prach_id:6;    // this is the PHY preamble index for the prach
+typedef struct UE_cntl_s {
+  uint8_t pucch_flag:3;  // 0,7 = none, 1 = type 1, 2=type 1a, 3=type 1b, 4=type 2, 5=type 2a, 6=type 2b
+  uint8_t pucch_Ncs1:3;  // physical configuration of pucch, for abstraction purposes
+  uint32_t pucch_payload:21;        // ack/nak/cqi information
+  uint8_t sr:1;
+  uint8_t pusch_flag:1;  // 0=none,1=active
+  uint8_t pucch_sel:1;
+  //uint32_t pusch_uci;     // uci information on pusch
+  uint8_t pusch_uci[MAX_CQI_BYTES];
+  uint8_t uci_format;
+  uint8_t length_uci;
+  uint8_t pusch_ri:2;    // ri information on pusch
+  uint8_t pusch_ack:2;   // ack/nak on pusch
+  uint8_t prach_flag:1;  // 0=none,1=active
+  uint8_t prach_id:6;    // this is the PHY preamble index for the prach
 } UE_cntl;
 
 #define MAX_TRANSPORT_BLOCKS_BUFFER_SIZE 16384
 //#define MAX_PMCH_TRANSPORT_BLOCKS_BUFFER_SIZE 8192 // 16384
 #define MAX_NUM_DCI 5+1 // +1: for PMCH/MCH
 
-typedef struct {
+typedef struct eNB_transport_info_s {
   eNB_cntl cntl;
-  u8 num_pmch;
-  u8 num_common_dci;
-  u8 num_ue_spec_dci;
+  uint8_t num_pmch;
+  uint8_t num_common_dci;
+  uint8_t num_ue_spec_dci;
   DCI_ALLOC_t dci_alloc[MAX_NUM_DCI];
-  u8 dlsch_type[MAX_NUM_DCI];
-  u8 harq_pid[MAX_NUM_DCI];
-  u8 ue_id[MAX_NUM_DCI];
-  u16 tbs[MAX_NUM_DCI*2];    // times 2 for dual-stream MIMO formats
-  u8 transport_blocks[MAX_TRANSPORT_BLOCKS_BUFFER_SIZE]; 
-  //u8 pmch_transport_blocks[MAX_PMCH_TRANSPORT_BLOCKS_BUFFER_SIZE]; 
+  uint8_t dlsch_type[MAX_NUM_DCI];
+  uint8_t harq_pid[MAX_NUM_DCI];
+  uint8_t ue_id[MAX_NUM_DCI];
+  uint16_t tbs[MAX_NUM_DCI*2];    // times 2 for dual-stream MIMO formats
+  uint8_t transport_blocks[MAX_TRANSPORT_BLOCKS_BUFFER_SIZE];
+  //uint8_t pmch_transport_blocks[MAX_PMCH_TRANSPORT_BLOCKS_BUFFER_SIZE];
 } __attribute__((__packed__)) eNB_transport_info_t ;
 
-typedef struct {
+typedef struct UE_transport_info_s {
   UE_cntl cntl;
-  u8 num_eNB;
-  u16 rnti[NUMBER_OF_CONNECTED_eNB_MAX];
-  u8 eNB_id[NUMBER_OF_CONNECTED_eNB_MAX]; 
-  u8 harq_pid[NUMBER_OF_CONNECTED_eNB_MAX];
-  u16 tbs[NUMBER_OF_CONNECTED_eNB_MAX];
-  u8 transport_blocks[MAX_TRANSPORT_BLOCKS_BUFFER_SIZE];//*NUMBER_OF_CONNECTED_eNB_MAX];
+  uint8_t num_eNB;
+  uint16_t rnti[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint8_t eNB_id[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint8_t harq_pid[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint16_t tbs[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint8_t transport_blocks[MAX_TRANSPORT_BLOCKS_BUFFER_SIZE];//*NUMBER_OF_CONNECTED_eNB_MAX];
 } __attribute__((__packed__)) UE_transport_info_t ;
 
 /*! \brief */
-typedef struct bypass_msg_header {
+typedef struct bypass_msg_header_s {
   unsigned char  Message_type; /*! \brief control or data*/
   //unsigned char  nb_master; /*! \brief */
   unsigned char  master_id; /*! \brief */
@@ -119,7 +119,7 @@ typedef struct bypass_msg_header {
   unsigned int   failing_master_id;
 } __attribute__((__packed__)) bypass_msg_header_t;
 
-typedef struct bypass_proto2multicast_header_t {
+typedef struct bypass_proto2multicast_header_s {
   unsigned int      size;
 } bypass_proto2multicast_header_t;
 

@@ -96,7 +96,7 @@ pdcp_fifo_flush_sdus ()
   mem_block_t     *sdu = list_get_head (&pdcp_sdu_list);
   int             bytes_wrote = 0;
   int             pdcp_nb_sdu_sent = 0;
-  u8              cont = 1;
+  uint8_t              cont = 1;
   int ret;
 
 
@@ -128,13 +128,13 @@ pdcp_fifo_flush_sdus ()
 
 #ifndef USER_MODE
       bytes_wrote = rtf_put (PDCP2NAS_FIFO,
-			     &(((u8 *) sdu->data)[sizeof (pdcp_data_ind_header_t) - pdcp_output_header_bytes_to_write]),
+			     &(((uint8_t *) sdu->data)[sizeof (pdcp_data_ind_header_t) - pdcp_output_header_bytes_to_write]),
 			     pdcp_output_header_bytes_to_write);
 
 #else
 #ifdef NAS_NETLINK
 #ifdef LINUX
-      memcpy(NLMSG_DATA(nas_nlh), &(((u8 *) sdu->data)[sizeof (pdcp_data_ind_header_t) - pdcp_output_header_bytes_to_write]),
+      memcpy(NLMSG_DATA(nas_nlh), &(((uint8_t *) sdu->data)[sizeof (pdcp_data_ind_header_t) - pdcp_output_header_bytes_to_write]),
                              pdcp_output_header_bytes_to_write);
       nas_nlh->nlmsg_len = pdcp_output_header_bytes_to_write;
 #endif //LINUX
@@ -207,7 +207,7 @@ pdcp_fifo_flush_sdus ()
       // continue writing sdu
 #ifndef USER_MODE
       bytes_wrote = rtf_put (PDCP2NAS_FIFO,
-                             (u8 *) (&(sdu->data[sizeof (pdcp_data_ind_header_t) + ((pdcp_data_ind_header_t *) sdu->data)->data_size - pdcp_output_sdu_bytes_to_write])),
+                             (uint8_t *) (&(sdu->data[sizeof (pdcp_data_ind_header_t) + ((pdcp_data_ind_header_t *) sdu->data)->data_size - pdcp_output_sdu_bytes_to_write])),
                              pdcp_output_sdu_bytes_to_write);
 #else  // USER_MODE
       bytes_wrote = pdcp_output_sdu_bytes_to_write;
@@ -325,7 +325,7 @@ pdcp_fifo_read_input_sdus ()
     while (cont > 0) {
 
       bytes_read = rtf_get (NAS2PDCP_FIFO,
-                            &(((u8 *) & pdcp_input_header)[pdcp_input_index_header]),
+                            &(((uint8_t *) & pdcp_input_header)[pdcp_input_index_header]),
                             sizeof (pdcp_data_req_header_t) - pdcp_input_index_header);
 
 

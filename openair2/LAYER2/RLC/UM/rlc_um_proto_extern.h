@@ -296,7 +296,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
 extern void     rlc_um_get_pdus (void *argP);
 extern void     rlc_um_rx (void *argP, struct mac_data_ind data_indP);
-extern struct mac_status_resp rlc_um_mac_status_indication (void *rlcP, u16_t no_tbP, u16 tb_sizeP, struct mac_status_ind tx_statusP);
+extern struct mac_status_resp rlc_um_mac_status_indication (void *rlcP, uint16_t no_tbP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP);
 extern struct mac_data_req rlc_um_mac_data_request (void *rlcP);
 extern void     rlc_um_mac_data_indication (void *rlcP, struct mac_data_ind data_indP);
 extern void     rlc_um_data_req (void *rlcP, struct mem_block *sduP);

@@ -12,12 +12,6 @@
 #include "PHY/defs.h"
 #else
 #include "PHY/TOOLS/time_meas.h"
-#define u32 uint32_t
-#define s32 int32_t
-#define u16 uint16_t
-#define s16 int16_t
-#define u8 uint8_t
-#define s8 int8_t
 #endif 
 
 #define CRC24_A 0
@@ -379,7 +373,7 @@ void phy_viterbi_dot11_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n);
 @param decoded_bytes Pointer to decoded output
 @param n Length of input/trellis depth in bits*/
 //void phy_viterbi_lte_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n);
-void phy_viterbi_lte_sse2(s8 *y,u8 *decoded_bytes,u16 n);
+void phy_viterbi_lte_sse2(int8_t *y,uint8_t *decoded_bytes,uint16_t n);
 
 /*!\fn void phy_generate_viterbi_tables(void)
 \brief This routine initializes metric tables for the optimized Viterbi decoder.

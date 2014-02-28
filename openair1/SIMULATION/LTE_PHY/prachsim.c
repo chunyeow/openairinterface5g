@@ -32,7 +32,7 @@ DCI2_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu2;
 
 
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,u16 Nid_cell,u8 N_RB_DL,u8 osf) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,unsigned char extended_prefix_flag,uint16_t Nid_cell,uint8_t N_RB_DL,uint8_t osf) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
@@ -88,7 +88,7 @@ void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmi
 
 }
 
-extern u16 prach_root_sequence_map0_3[838];
+extern uint16_t prach_root_sequence_map0_3[838];
 
 int main(int argc, char **argv) {
 
@@ -96,8 +96,8 @@ int main(int argc, char **argv) {
 
   int i,aa,aarx;
   double sigma2, sigma2_dB=0,SNR,snr0=-2.0,snr1=0.0,ue_speed0=0.0,ue_speed1=0.0;
-  u8 snr1set=0;
-  u8 ue_speed1set=0;
+  uint8_t snr1set=0;
+  uint8_t ue_speed1set=0;
   //mod_sym_t **txdataF;
 #ifdef IFFT_FPGA
   int **txdataF2;
@@ -106,16 +106,16 @@ int main(int argc, char **argv) {
   double **s_re,**s_im,**r_re,**r_im;
   double iqim=0.0;
   int trial, ntrials=1;
-  u8 transmission_mode = 1,n_tx=1,n_rx=1;
-  u16 Nid_cell=0;
+  uint8_t transmission_mode = 1,n_tx=1,n_rx=1;
+  uint16_t Nid_cell=0;
 
-  u8 awgn_flag=0;
-  u8 hs_flag=0;
+  uint8_t awgn_flag=0;
+  uint8_t hs_flag=0;
   int n_frames=1;
   channel_desc_t *UE2eNB;
-  u32 nsymb,tx_lev,tx_lev_dB;
-  u8 extended_prefix_flag=0;
-  //  s8 interf1=-19,interf2=-19;
+  uint32_t nsymb,tx_lev,tx_lev_dB;
+  uint8_t extended_prefix_flag=0;
+  //  int8_t interf1=-19,interf2=-19;
   LTE_DL_FRAME_PARMS *frame_parms;
 #ifdef EMOS
   fifo_dump_emos emos_dump;
@@ -124,15 +124,15 @@ int main(int argc, char **argv) {
 
   SCM_t channel_model=Rayleigh1;
 
-  //  u8 abstraction_flag=0,calibration_flag=0;
+  //  uint8_t abstraction_flag=0,calibration_flag=0;
   //  double prach_sinr;
-  u8 osf=1,N_RB_DL=25;
-  u32 prach_errors=0;
-  u8 subframe=3;
-  u16 preamble_energy_list[64],preamble_tx=99,preamble_delay_list[64];
-  u16 preamble_max,preamble_energy_max;
+  uint8_t osf=1,N_RB_DL=25;
+  uint32_t prach_errors=0;
+  uint8_t subframe=3;
+  uint16_t preamble_energy_list[64],preamble_tx=99,preamble_delay_list[64];
+  uint16_t preamble_max,preamble_energy_max;
   PRACH_RESOURCES_t prach_resources;
-  u8 prach_fmt;
+  uint8_t prach_fmt;
   int N_ZC;
   int delay = 0;
   double delay_avg=0;
@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
 
   PHY_vars_UE->prach_resources[0] = &prach_resources;
   if (preamble_tx == 99)
-    preamble_tx = (u16)(taus()&0x3f);
+    preamble_tx = (uint16_t)(taus()&0x3f);
   if (n_frames == 1)
      printf("raPreamble %d\n",preamble_tx);
 

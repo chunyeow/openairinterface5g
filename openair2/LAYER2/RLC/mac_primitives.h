@@ -99,85 +99,85 @@
 
 //#ifdef USER_MODE
 //struct rlc_entity_info {
-//  u8_t              rlc_protocol_state;
+//  uint8_t              rlc_protocol_state;
 //};
 //
 //struct mac_tx_tb_management {
 //  // BE CAREFULL TO KEEP THE SAME MAPPING FOR THE 6 FIELDS BELLOW AS FOR  struct mac_tb_req
-//  u8_t             *data_ptr;
-//  u8_t              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc.
+//  uint8_t             *data_ptr;
+//  uint8_t              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc.
 //  // Previously designed for interlayers optimizations, (avoid aligning on byte boundary)
 //  // but not used by L1 !, so extra cost for alignement in MAC.
-//  u16_t             tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
+//  uint16_t             tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
 //  // align the tb we have to know its size
 //
 //  // for reporting tx status to upper layers
 //  void           *rlc;
-//  void            (*rlc_callback) (void *rlcP, u16_t rlc_tb_type);
-//  u16_t             rlc_tb_type;
+//  void            (*rlc_callback) (void *rlcP, uint16_t rlc_tb_type);
+//  uint16_t             rlc_tb_type;
 //
-//  u16_t             log_ch_interface_src; // index of the logical channel interface from which the tb was submitted
-//  u8_t              mac_header[MAC_HEADER_MAX_SIZE];      // worst case : tctf(5bits)+UE-Id type(2bits)+UE-Id(16 or 32bits)+C/T(4bits)=43bits max
+//  uint16_t             log_ch_interface_src; // index of the logical channel interface from which the tb was submitted
+//  uint8_t              mac_header[MAC_HEADER_MAX_SIZE];      // worst case : tctf(5bits)+UE-Id type(2bits)+UE-Id(16 or 32bits)+C/T(4bits)=43bits max
 //};
 //
 //struct mac_rx_tb_management {
-//  u8_t             *data_ptr;
-//  u16_t             tb_size;      // in bits
-//  u8_t              valid_checksum;
-//  u8_t              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc
+//  uint8_t             *data_ptr;
+//  uint16_t             tb_size;      // in bits
+//  uint8_t              valid_checksum;
+//  uint8_t              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc
 //};
 //
 //struct mac_tb_req {
 //  // BE CAREFULL TO KEEP THE SAME MAPPING FOR THE 6 FIELDS BELLOW AS FOR  struct mac_tx_tb_management
-//  u8_t             *data_ptr;
-//  u8_t              first_bit;
-//  u16_t             tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
+//  uint8_t             *data_ptr;
+//  uint8_t              first_bit;
+//  uint16_t             tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
 //  // align the tb we have to know its size
 //
 //  // for reporting tx status to upper layers
 //  void           *rlc;
-//  void            (*rlc_callback) (void *rlcP, u16_t rlc_tb_type);
-//  u16_t             rlc_tb_type;
+//  void            (*rlc_callback) (void *rlcP, uint16_t rlc_tb_type);
+//  uint16_t             rlc_tb_type;
 //
-//  u8_t              mac_header[MAC_HEADER_MAX_SIZE];      // worst case : tctf(5bits)+UE-Id type(2bits)+UE-Id(16 or 32bits)+C/T(4bits)=43bits max
+//  uint8_t              mac_header[MAC_HEADER_MAX_SIZE];      // worst case : tctf(5bits)+UE-Id type(2bits)+UE-Id(16 or 32bits)+C/T(4bits)=43bits max
 //};
 //
 //struct mac_status_ind {
-//  u16_t             no_pdu;
-//  u16_t             tx_status;    // successful, unsuccessful
+//  uint16_t             no_pdu;
+//  uint16_t             tx_status;    // successful, unsuccessful
 //};
 //
 //struct mac_tb_ind {
-//  u8_t             *data_ptr;
-//  u16_t             size;
-//  u8_t              error_indication;
-//  //u8_t              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc
+//  uint8_t             *data_ptr;
+//  uint16_t             size;
+//  uint8_t              error_indication;
+//  //uint8_t              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc
 //};
 ////---------------------
 //struct mac_data_req {
 //  list_t          data;
-//  u32_t             buffer_occupancy_in_bytes;
-//  u16_t             buffer_occupancy_in_pdus;
+//  uint32_t             buffer_occupancy_in_bytes;
+//  uint16_t             buffer_occupancy_in_pdus;
 //  struct rlc_entity_info rlc_info;
-//  u8_t              ue_id_type_indicator;
+//  uint8_t              ue_id_type_indicator;
 //};
 ////---------------------
 //struct mac_data_ind {
 //  list_t          data;
-//  u16_t             no_tb;
-//  u16_t             tb_size;      // in bits
-//  //u8_t              error_indication;
-//  //u8_t              rx_timing_deviation;
+//  uint16_t             no_tb;
+//  uint16_t             tb_size;      // in bits
+//  //uint8_t              error_indication;
+//  //uint8_t              rx_timing_deviation;
 //};
 ////---------------------
 //struct mac_status_resp {
-//  u32_t             buffer_occupancy_in_bytes;
-//  u32_t             buffer_occupancy_in_pdus;
+//  uint32_t             buffer_occupancy_in_bytes;
+//  uint32_t             buffer_occupancy_in_pdus;
 //  struct rlc_entity_info rlc_info;
 //};
 ////---------------------
 //struct mac_primitive {
-//  u8_t              primitive_type;
+//  uint8_t              primitive_type;
 //  union {
 //    struct mac_data_req data_req;
 //    struct mac_status_resp status_resp;

@@ -23,7 +23,7 @@
 
 #include "defs.h"
 
-void lte_gold_mbsfn(LTE_DL_FRAME_PARMS *frame_parms,u32 lte_gold_mbsfn_table[10][3][42],u16 Nid_mbsfn) {
+void lte_gold_mbsfn(LTE_DL_FRAME_PARMS *frame_parms,uint32_t lte_gold_mbsfn_table[10][3][42],uint16_t Nid_mbsfn) {
 
   unsigned char sfn,l;
   unsigned int n,x1,x2;//,x1tmp,x2tmp;

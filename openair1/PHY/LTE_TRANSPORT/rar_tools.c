@@ -64,7 +64,7 @@ extern uint16_t RIV_max6,RIV_max25,RIV_max50,RIV_max100;
 
 #ifdef OPENAIR2
 int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
-				       u32 frame,
+				       uint32_t frame,
 				       unsigned char subframe,
 				       LTE_eNB_ULSCH_t *ulsch,
 				       LTE_DL_FRAME_PARMS *frame_parms) {
@@ -166,7 +166,7 @@ int generate_eNB_ulsch_params_from_rar(unsigned char *rar_pdu,
   return(0);
 }
 
-s8 delta_PUSCH_msg2[8] = {-6,-4,-2,0,2,4,6,8};
+int8_t delta_PUSCH_msg2[8] = {-6,-4,-2,0,2,4,6,8};
 
 int generate_ue_ulsch_params_from_rar(PHY_VARS_UE *phy_vars_ue,
 				      unsigned char eNB_id ){

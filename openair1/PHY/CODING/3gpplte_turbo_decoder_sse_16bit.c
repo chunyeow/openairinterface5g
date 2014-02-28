@@ -658,7 +658,7 @@ unsigned char phy_threegpplte_turbo_decoder16(short *y,
   unsigned int i,j,iind;//,pi;
   unsigned char iteration_cnt=0;
   unsigned int crc,oldcrc,crc_len;
-  u8 temp;
+  uint8_t temp;
 
   __m128i tmp, zeros=_mm_setzero_si128();
 
@@ -875,17 +875,17 @@ unsigned char phy_threegpplte_turbo_decoder16(short *y,
 	oldcrc&=0x00ffffff;
 	crc = crc24a(&decoded_bytes[F>>3],
 		     n-24-F)>>8;
-	temp=((u8 *)&crc)[2];
-	((u8 *)&crc)[2] = ((u8 *)&crc)[0];
-	((u8 *)&crc)[0] = temp;
+	temp=((uint8_t *)&crc)[2];
+	((uint8_t *)&crc)[2] = ((uint8_t *)&crc)[0];
+	((uint8_t *)&crc)[0] = temp;
 	break;
       case CRC24_B:
 	oldcrc&=0x00ffffff;
 	crc = crc24b(decoded_bytes,
 		     n-24)>>8;
-	temp=((u8 *)&crc)[2];
-	((u8 *)&crc)[2] = ((u8 *)&crc)[0];
-	((u8 *)&crc)[0] = temp;
+	temp=((uint8_t *)&crc)[2];
+	((uint8_t *)&crc)[2] = ((uint8_t *)&crc)[0];
+	((uint8_t *)&crc)[0] = temp;
 	break;
       case CRC16:
 	oldcrc&=0x0000ffff;

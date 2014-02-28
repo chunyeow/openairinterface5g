@@ -106,7 +106,7 @@ void free_eNB_dlsch(LTE_eNB_DLSCH_t *dlsch) {
   
 }
 
-LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigned char N_RB_DL, u8 abstraction_flag) {
+LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigned char N_RB_DL, uint8_t abstraction_flag) {
 
   LTE_eNB_DLSCH_t *dlsch;
   unsigned char exit_flag = 0,i,j,r;
@@ -189,7 +189,7 @@ LTE_eNB_DLSCH_t *new_eNB_dlsch(unsigned char Kmimo,unsigned char Mdlharq,unsigne
   
 }
 
-void clean_eNb_dlsch(LTE_eNB_DLSCH_t *dlsch, u8 abstraction_flag) {
+void clean_eNb_dlsch(LTE_eNB_DLSCH_t *dlsch, uint8_t abstraction_flag) {
 
   unsigned char Mdlharq;
   unsigned char i,j,r;
@@ -219,10 +219,10 @@ void clean_eNb_dlsch(LTE_eNB_DLSCH_t *dlsch, u8 abstraction_flag) {
  
 int dlsch_encoding(unsigned char *a,
 		   LTE_DL_FRAME_PARMS *frame_parms,
-		   u8 num_pdcch_symbols,
+		   uint8_t num_pdcch_symbols,
 		   LTE_eNB_DLSCH_t *dlsch,
 		   int frame,
-		   u8 subframe,
+		   uint8_t subframe,
 		   time_stats_t *rm_stats,
 		   time_stats_t *te_stats,
 		   time_stats_t *i_stats) {
@@ -259,9 +259,9 @@ int dlsch_encoding(unsigned char *a,
     // Add 24-bit crc (polynomial A) to payload
     crc = crc24a(a,
 		 A)>>8;
-    a[A>>3] = ((u8*)&crc)[2];
-    a[1+(A>>3)] = ((u8*)&crc)[1];
-    a[2+(A>>3)] = ((u8*)&crc)[0];
+    a[A>>3] = ((uint8_t*)&crc)[2];
+    a[1+(A>>3)] = ((uint8_t*)&crc)[1];
+    a[2+(A>>3)] = ((uint8_t*)&crc)[0];
     //    printf("CRC %x (A %d)\n",crc,A);
 
     dlsch->harq_processes[harq_pid]->B = A+24;
@@ -377,7 +377,7 @@ int dlsch_encoding(unsigned char *a,
 
 #ifdef PHY_ABSTRACTION
 void dlsch_encoding_emul(PHY_VARS_eNB *phy_vars_eNB,
-			 u8 *DLSCH_pdu,
+			 uint8_t *DLSCH_pdu,
 			 LTE_eNB_DLSCH_t *dlsch) {
 
   //int payload_offset = 0;

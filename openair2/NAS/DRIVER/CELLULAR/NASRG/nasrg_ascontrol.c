@@ -292,7 +292,7 @@ void nasrg_ASCTL_start_default_mbms_service(void){
 //---------------------------------------------------------------------------
 void nasrg_ASCTL_timer(unsigned long data){
 //---------------------------------------------------------------------------
-  u8 cxi;
+  uint8_t cxi;
   struct cx_entity *cx;
   struct rb_entity *rb;
   spin_lock(&gpriv->lock);
@@ -361,7 +361,7 @@ void nasrg_ASCTL_timer(unsigned long data){
  ***************************************************************************/
 //---------------------------------------------------------------------------
 // Encode INFO_BROADCAST_REQ message
-int nasrg_ASCTL_GC_send_broadcast_request(u8 category){
+int nasrg_ASCTL_GC_send_broadcast_request(uint8_t category){
 //---------------------------------------------------------------------------
   char *xmit_data = "TESTING BROADCASTING ROUTER ADVERTISEMENT. TESTING BROADCASTING ROUTER ADVERTISEMENT. BROADCASTING ROUTER.\0";
   int bytes_wrote = 0;
@@ -530,7 +530,7 @@ int nasrg_ASCTL_GC_send_mbms_bearer_establish_req(int mbms_ix ){
 int nasrg_ASCTL_GC_send_mbms_bearer_release_req(int mbms_ix){
 //-----------------------------------------------------------------------------
   struct nas_rg_gc_element *p;
-  u16 classref=0;
+  uint16_t classref=0;
   int bytes_wrote = 0;
 
    p= (struct nas_rg_gc_element *)(gpriv->xbuffer);
@@ -564,7 +564,7 @@ int nasrg_ASCTL_GC_send_mbms_bearer_release_req(int mbms_ix){
 
 //---------------------------------------------------------------------------
 // Confirm the establishment of a connection (DC channel)
-int nasrg_ASCTL_DC_send_cx_establish_confirm(struct cx_entity *cx, u8 response){
+int nasrg_ASCTL_DC_send_cx_establish_confirm(struct cx_entity *cx, uint8_t response){
 //---------------------------------------------------------------------------
   struct nas_rg_dc_element *p;
   int bytes_wrote = 0;
@@ -861,7 +861,7 @@ void nasrg_ASCTL_DC_decode_cx_establish_ind(struct cx_entity *cx, struct nas_rg_
   }
 // End debug information
   if (nasrg_ASCTL_DC_send_cx_establish_confirm(cx, ACCEPTED)>0){
-    nasrg_TOOL_imei2iid(p->nasRGDCPrimitive.conn_establish_ind.InterfaceIMEI, (u8 *)cx->iid6);
+    nasrg_TOOL_imei2iid(p->nasRGDCPrimitive.conn_establish_ind.InterfaceIMEI, (uint8_t *)cx->iid6);
     cx->iid4=97;  // A AUTOMATISER
     cx->lcr = p->nasRGDCPrimitive.conn_establish_ind.localConnectionRef;
     cx->state=NAS_CX_DCH;
@@ -893,7 +893,7 @@ void nasrg_ASCTL_DC_decode_cx_release_ind(struct cx_entity *cx, struct nas_rg_dc
 // End debug information
    cx->state=NAS_IDLE;
    cx->iid4=0;
-   nasrg_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)cx->iid6);
+   nasrg_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)cx->iid6);
    nasrg_COMMON_flush_rb(cx);
   nasrg_CLASS_flush_sclassifier(cx);
 #ifdef NAS_DEBUG_DC
@@ -920,7 +920,7 @@ void nasrg_ASCTL_DC_decode_cx_loss_ind(struct cx_entity *cx, struct nas_rg_dc_el
 // End debug information
    cx->state = NAS_IDLE;
    cx->iid4=0;
-   nasrg_TOOL_imei2iid(NAS_NULL_IMEI, (u8 *)cx->iid6);
+   nasrg_TOOL_imei2iid(NAS_NULL_IMEI, (uint8_t *)cx->iid6);
    nasrg_COMMON_flush_rb(cx);
 #ifdef NAS_DEBUG_DC
    printk("nasrg_ASCTL_DC_decode_cx_loss: CONN_LOSS_IND reception\n");
@@ -985,7 +985,7 @@ void nasrg_ASCTL_DC_decode_rb_establish_cnf(struct cx_entity *cx, struct nas_rg_
 // Decode DATA_TRANSFER_IND message from RRC
 void nasrg_ASCTL_DC_decode_data_transfer_ind(struct cx_entity *cx, struct nas_rg_dc_element *p, char *buffer){
 //---------------------------------------------------------------------------
-  u8 nasrg_data[10];
+  uint8_t nasrg_data[10];
   unsigned int nas_length;
   char data_type;
   int bytes_read=0;
@@ -1016,7 +1016,7 @@ void nasrg_ASCTL_DC_decode_data_transfer_ind(struct cx_entity *cx, struct nas_rg
       // receive in a skbuff
       //nasrg_COMMON_receive((p->length) + 1, nas_length, cx->sap[NAS_DC_OUTPUT_SAPI]); // original
       #ifndef NAS_NETLINK
-      //void nasrg_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer, int rb_id, int sap);
+      //void nasrg_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap);
       // data_buffer is NULL because FIFO should be read directly in the skbuff (LITE has an intermediary buffer)
       nasrg_COMMON_receive((p->length) + 1, nas_length, NULL, 2, cx->sap[NAS_DC_OUTPUT_SAPI]);
       #else
@@ -1170,7 +1170,7 @@ void nasrg_ASCTL_DC_decode_mbms_ue_notify_cnf(struct cx_entity *cx, struct nas_r
 // Decode ENB_MEASUREMENT_IND message from RRC
 void nasrg_ASCTL_DC_decode_eNBmeasurement_ind(struct nas_rg_dc_element *p){
 //---------------------------------------------------------------------------
-  u8 i;
+  uint8_t i;
 // Start debug information
 #ifdef NAS_DEBUG_DC
   printk("nasrg_ASCTL_DC_decode_eNBmeasurement_ind - begin \n");
@@ -1230,7 +1230,7 @@ int nasrg_ASCTL_DC_receive(struct cx_entity *cx, char *buffer){
     #ifndef NAS_NETLINK
     p= (struct nas_rg_dc_element *)(gpriv->rbuffer);
     //get the rest of the primitive
-    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (u8 *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
+    bytes_read += rtf_get(cx->sap[NAS_DC_OUTPUT_SAPI], (uint8_t *)p+NAS_TL_SIZE, p->length-NAS_TL_SIZE);
     if (bytes_read!=p->length){
       printk("nasrg_ASCTL_DC_receive: Problem while reading primitive's header\n");
       return bytes_read;

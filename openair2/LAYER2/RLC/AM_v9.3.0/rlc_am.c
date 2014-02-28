@@ -56,12 +56,12 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 extern rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
 
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_am_get_buffer_occupancy_in_bytes (rlc_am_entity_t *rlc_pP,frame_t frameP)
 {
 //-----------------------------------------------------------------------------
-  u32_t max_li_overhead;
-  u32_t header_overhead;
+  uint32_t max_li_overhead;
+  uint32_t header_overhead;
 
   // priority of control trafic
   if (rlc_pP->status_requested) {
@@ -146,12 +146,12 @@ void config_req_rlc_am (frame_t         frameP,
            config_am_pP->t_status_prohibit);
 
 }
-u32_t pollPDU_tab[PollPDU_pInfinity+1]={4,8,16,32,64,128,256,1024};  // What is PollPDU_pInfinity??? 1024 for now
-u32_t maxRetxThreshold_tab[UL_AM_RLC__maxRetxThreshold_t32+1]={1,2,3,4,6,8,16,32};
-u32_t pollByte_tab[PollByte_spare1]={25,50,75,100,125,250,375,500,750,1000,1250,1500,2000,3000,10000};  // What is PollByte_kBinfinity??? 10000 for now
-u32_t PollRetransmit_tab[T_PollRetransmit_spare9]={5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,300,350,400,450,500};
-u32_t am_t_Reordering_tab[T_Reordering_spare1]={0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
-u32_t t_StatusProhibit_tab[T_StatusProhibit_spare8]={0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,300,350,400,450,500};
+uint32_t pollPDU_tab[PollPDU_pInfinity+1]={4,8,16,32,64,128,256,1024};  // What is PollPDU_pInfinity??? 1024 for now
+uint32_t maxRetxThreshold_tab[UL_AM_RLC__maxRetxThreshold_t32+1]={1,2,3,4,6,8,16,32};
+uint32_t pollByte_tab[PollByte_spare1]={25,50,75,100,125,250,375,500,750,1000,1250,1500,2000,3000,10000};  // What is PollByte_kBinfinity??? 10000 for now
+uint32_t PollRetransmit_tab[T_PollRetransmit_spare9]={5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,300,350,400,450,500};
+uint32_t am_t_Reordering_tab[T_Reordering_spare1]={0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
+uint32_t t_StatusProhibit_tab[T_StatusProhibit_spare8]={0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,300,350,400,450,500};
 
 //-----------------------------------------------------------------------------
 void config_req_rlc_am_asn1 (frame_t                 frameP,
@@ -528,13 +528,13 @@ rlc_am_rx (void *arg_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_i
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_am_mac_status_indication (void *rlc_pP, frame_t frameP, u16 tb_sizeP, struct mac_status_ind tx_statusP)
+rlc_am_mac_status_indication (void *rlc_pP, frame_t frameP, uint16_t tb_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp  status_resp;
-  u16_t  sdu_size = 0;
-  u16_t  sdu_remaining_size = 0;
-  s32_t diff_time=0;
+  uint16_t  sdu_size = 0;
+  uint16_t  sdu_remaining_size = 0;
+  int32_t diff_time=0;
   rlc_am_entity_t *rlc = (rlc_am_entity_t *) rlc_pP;
 
   status_resp.buffer_occupancy_in_bytes        = 0;
@@ -561,7 +561,7 @@ rlc_am_mac_status_indication (void *rlc_pP, frame_t frameP, u16 tb_sizeP, struct
           status_resp.buffer_occupancy_in_pdus = rlc->nb_sdu;
           diff_time =   frameP - ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_creation_time;
 
-          status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (u32_t) diff_time :  (u32_t)(0xffffffff - diff_time + frameP) ;
+          status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + frameP) ;
 
           sdu_size            = ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_size;
           sdu_remaining_size  = ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_remaining_size;
@@ -612,7 +612,7 @@ rlc_am_mac_data_request (void *rlc_pP, frame_t frameP)
   rlc_am_pdu_info_t   pdu_info;
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p;
   mem_block_t        *tb_p;
-  s16_t               tb_size_in_bytes;
+  int16_t               tb_size_in_bytes;
   int                 num_nack;
   char                message_string[9000];
   size_t              message_string_size = 0;
@@ -767,12 +767,12 @@ rlc_am_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, 
     rlc_am_entity_t           *l_rlc_p = (rlc_am_entity_t *) rlc_pP;
     /*rlc_am_control_pdu_info_t control_pdu_info;
     int                       num_li;
-    s16_t                     tb_size;*/
+    int16_t                     tb_size;*/
 #ifdef TRACE_RLC_AM_PDU
   rlc_am_pdu_info_t   pdu_info;
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p;
   mem_block_t        *tb_p;
-  s16_t               tb_size_in_bytes;
+  int16_t               tb_size_in_bytes;
   int                 num_nack;
   char                message_string[7000];
   size_t              message_string_size = 0;
@@ -908,10 +908,10 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
 {
 //-----------------------------------------------------------------------------
   rlc_am_entity_t  *rlc_p = (rlc_am_entity_t *) rlc_pP;
-  u32_t             mui;
-  u16_t             data_offset;
-  u16_t             data_size;
-  u8_t              conf;
+  uint32_t             mui;
+  uint16_t             data_offset;
+  uint16_t             data_size;
+  uint8_t              conf;
 
 
   if ((rlc_p->input_sdus[rlc_p->next_sdu_index].mem_block == NULL) &&
@@ -939,7 +939,7 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
       rlc_p->nb_sdu += 1;
       rlc_p->nb_sdu_no_segmented += 1;
 
-      rlc_p->input_sdus[rlc_p->next_sdu_index].first_byte = (u8_t*)(&sdu_pP->data[data_offset]);
+      rlc_p->input_sdus[rlc_p->next_sdu_index].first_byte = (uint8_t*)(&sdu_pP->data[data_offset]);
       rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_remaining_size = rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_size;
       rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_segmented_size = 0;
       rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_creation_time = frameP;

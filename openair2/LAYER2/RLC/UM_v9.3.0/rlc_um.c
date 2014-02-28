@@ -92,7 +92,7 @@ void rlc_um_stat_req     (rlc_um_entity_t *rlc_pP,
     *stat_timer_reordering_timed_out      = rlc_pP->stat_timer_reordering_timed_out;
 }
 //-----------------------------------------------------------------------------
-u32_t
+uint32_t
 rlc_um_get_buffer_occupancy (rlc_um_entity_t *rlc_pP)
 {
 //-----------------------------------------------------------------------------
@@ -187,7 +187,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
   rlc_um_entity_t    *l_rlc_p = (rlc_um_entity_t *) argP;
 #ifdef TRACE_RLC_UM_PDU
   mem_block_t        *tb_p;
-  s16_t               tb_size_in_bytes;
+  int16_t               tb_size_in_bytes;
   size_t              message_string_size = 0;
 #   if defined(ENABLE_ITTI)
   MessageDef         *msg_p;
@@ -219,7 +219,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
             tb = data_indP.data.head;
             while (tb != NULL) {
                 rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
-                                                                    (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
+                                                                    (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((uint16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x04) ?  'E':'_',
@@ -368,7 +368,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
             tb = data_indP.data.head;
             while (tb != NULL) {
                 rlc_p[l_rlc_p->module_id].m_mscgen_trace_length += sprintf(&rlc_p[l_rlc_p->module_id].m_mscgen_trace[rlc_p[l_rlc_p->module_id].m_mscgen_trace_length], " SN %d %c%c%c %d Bytes ",
-                                                                    (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((u16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
+                                                                    (((struct mac_tb_ind *) (tb->data))->data_ptr[1]) +  (((uint16_t)((((struct mac_tb_ind *) (tb->data))->data_ptr[0]) & 0x03)) << 8),
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x10) ?  '}':'{',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x08) ?  '{':'}',
                                                                     (((struct mac_tb_ind *) (tb->data))->data_ptr[0] & 0x04) ?  'E':'_',
@@ -398,13 +398,13 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
 
 //-----------------------------------------------------------------------------
 struct mac_status_resp
-rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, u16_t tbs_sizeP, struct mac_status_ind tx_statusP)
+rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, uint16_t tbs_sizeP, struct mac_status_ind tx_statusP)
 {
 //-----------------------------------------------------------------------------
   struct mac_status_resp status_resp;
-  u16_t  sdu_size = 0;
-  u16_t  sdu_remaining_size = 0;
-  s32_t diff_time=0;
+  uint16_t  sdu_size = 0;
+  uint16_t  sdu_remaining_size = 0;
+  int32_t diff_time=0;
   rlc_um_entity_t   *rlc_p = NULL;
   
   status_resp.buffer_occupancy_in_pdus         = 0;
@@ -427,7 +427,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
 	  status_resp.buffer_occupancy_in_pdus = rlc_p->nb_sdu;
 	 
 	  diff_time =   frameP - ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_creation_time;
-	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (u32_t) diff_time :  (u32_t)(0xffffffff - diff_time + frameP) ;
+	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + frameP) ;
 	  //msg("rlc_p status for frameP %d diff time %d resp %d\n", frameP, diff_time,status_resp.head_sdu_creation_time) ;
 	  
 	  sdu_size            = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_size;
@@ -489,7 +489,7 @@ rlc_um_mac_data_request (void *rlc_pP,frame_t frameP)
 {
     //-----------------------------------------------------------------------------
     struct mac_data_req data_req;
-    s16_t               tb_size_in_bytes;
+    int16_t               tb_size_in_bytes;
     mem_block_t        *tb_p;
 #ifdef TRACE_RLC_UM_PDU
     size_t              message_string_size = 0;
@@ -642,7 +642,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size = ((struct rlc_um_data_req *) (sdu_pP->data))->data_size;
     rlc_p->buffer_occupancy += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
     rlc_p->nb_sdu += 1;
-    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->first_byte = (u8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)];
+    ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->first_byte = (uint8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)];
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_remaining_size = ((struct rlc_um_tx_sdu_management *)
                                                                               (sdu_pP->data))->sdu_size;
     ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_segmented_size = 0;

@@ -147,7 +147,7 @@ int oai_nw_drv_CTL_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd);
 /**
   \brief Find the IP traffic type (UNICAST, MULTICAST, BROADCAST) of the IP packet attached to sk_buff.
 */
-traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb);
+ip_traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb);
 
 
 

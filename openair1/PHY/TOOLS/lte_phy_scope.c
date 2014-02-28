@@ -115,13 +115,13 @@ void phy_scope_eNB(FD_lte_phy_scope_enb *form,
     int i,arx,atx,ind,k;
     LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_enb->lte_frame_parms;
     int nsymb_ce = 12*frame_parms->N_RB_UL*frame_parms->symbols_per_tti;
-    u8 nb_antennas_rx = frame_parms->nb_antennas_rx;
-    u8 nb_antennas_tx = 1; // frame_parms->nb_antennas_tx; // in LTE Rel. 8 and 9 only a single transmit antenna is assumed at the UE
-    s16 **rxsig_t;
-    s16 **chest_t;
-    s16 **chest_f;
-    s16 *pusch_llr;
-    s16 *pusch_comp;
+    uint8_t nb_antennas_rx = frame_parms->nb_antennas_rx;
+    uint8_t nb_antennas_tx = 1; // frame_parms->nb_antennas_tx; // in LTE Rel. 8 and 9 only a single transmit antenna is assumed at the UE
+    int16_t **rxsig_t;
+    int16_t **chest_t;
+    int16_t **chest_f;
+    int16_t *pusch_llr;
+    int16_t *pusch_comp;
     float Re,Im,ymax;
     float *llr, *bit;
     float I[nsymb_ce*2], Q[nsymb_ce*2];
@@ -131,9 +131,9 @@ void phy_scope_eNB(FD_lte_phy_scope_enb *form,
     float time[FRAME_LENGTH_COMPLEX_SAMPLES];
     float freq[nsymb_ce*nb_antennas_rx*nb_antennas_tx];
     int frame = phy_vars_enb->frame;
-    u32 total_dlsch_bitrate = phy_vars_enb->total_dlsch_bitrate;
+    uint32_t total_dlsch_bitrate = phy_vars_enb->total_dlsch_bitrate;
     int coded_bits_per_codeword = 0;
-    u8 harq_pid; // in TDD config 3 it is sf-2, i.e., can be 0,1,2
+    uint8_t harq_pid; // in TDD config 3 it is sf-2, i.e., can be 0,1,2
     int mcs = 0;
     // choose max MCS to compute coded_bits_per_codeword
     if (phy_vars_enb->ulsch_eNB[UE_id]!=NULL) {
@@ -148,11 +148,11 @@ void phy_scope_eNB(FD_lte_phy_scope_enb *form,
     llr = (float*) calloc(coded_bits_per_codeword,sizeof(float)); // init to zero
     bit = malloc(coded_bits_per_codeword*sizeof(float));
     
-    rxsig_t = (s16**) phy_vars_enb->lte_eNB_common_vars.rxdata[eNB_id];
-    chest_t = (s16**) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->drs_ch_estimates_time[eNB_id];
-    chest_f = (s16**) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->drs_ch_estimates[eNB_id];
-    pusch_llr = (s16*) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->llr;
-    pusch_comp = (s16*) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->rxdataF_comp[eNB_id][0];
+    rxsig_t = (int16_t**) phy_vars_enb->lte_eNB_common_vars.rxdata[eNB_id];
+    chest_t = (int16_t**) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->drs_ch_estimates_time[eNB_id];
+    chest_f = (int16_t**) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->drs_ch_estimates[eNB_id];
+    pusch_llr = (int16_t*) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->llr;
+    pusch_comp = (int16_t*) phy_vars_enb->lte_eNB_pusch_vars[UE_id]->rxdataF_comp[eNB_id][0];
     
     // Received signal in time domain of receive antenna 0
     if (rxsig_t != NULL) { 
@@ -391,21 +391,21 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
                   PHY_VARS_UE *phy_vars_ue,
                   int eNB_id,
                   int UE_id,
-                  u8 subframe){    
+                  uint8_t subframe){    
     int i,arx,atx,ind,k;
     LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
     int nsymb_ce = frame_parms->ofdm_symbol_size*frame_parms->symbols_per_tti;
-    u8 nb_antennas_rx = frame_parms->nb_antennas_rx;
-    u8 nb_antennas_tx = frame_parms->nb_antennas_tx_eNB;
-    s16 **rxsig_t;
-    s16 **chest_t;
-    s16 **chest_f;
-    s16 *pdsch_llr;
-    s16 *pdsch_comp;
-    s8 *pdcch_llr;
-    s16 *pdcch_comp;
-    s8 *pbch_llr;
-    s16 *pbch_comp;
+    uint8_t nb_antennas_rx = frame_parms->nb_antennas_rx;
+    uint8_t nb_antennas_tx = frame_parms->nb_antennas_tx_eNB;
+    int16_t **rxsig_t;
+    int16_t **chest_t;
+    int16_t **chest_f;
+    int16_t *pdsch_llr;
+    int16_t *pdsch_comp;
+    int8_t *pdcch_llr;
+    int16_t *pdcch_comp;
+    int8_t *pbch_llr;
+    int16_t *pbch_comp;
     float Re,Im,ymax=1;
     int num_pdcch_symbols=3;
     float *llr, *bit, *chest_f_abs, llr_pbch[1920], bit_pbch[1920], *llr_pdcch, *bit_pdcch;
@@ -415,7 +415,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
     float time[FRAME_LENGTH_COMPLEX_SAMPLES];
     float freq[nsymb_ce*nb_antennas_rx*nb_antennas_tx];
     int frame = phy_vars_ue->frame;
-    u32 total_dlsch_bitrate = phy_vars_ue->bitrate[eNB_id];
+    uint32_t total_dlsch_bitrate = phy_vars_ue->bitrate[eNB_id];
     int coded_bits_per_codeword = 0;
     int mcs = 0;
     unsigned char harq_pid = 0;
@@ -460,16 +460,16 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
     llr_pdcch = (float*) calloc(12*frame_parms->N_RB_DL*num_pdcch_symbols*2,sizeof(float)); // init to zero
     bit_pdcch = (float*) calloc(12*frame_parms->N_RB_DL*num_pdcch_symbols*2,sizeof(float));
     
-    rxsig_t = (s16**) phy_vars_ue->lte_ue_common_vars.rxdata;
-    chest_t = (s16**) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_id];
-    chest_f = (s16**) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id];
-    pbch_llr = (s8*) phy_vars_ue->lte_ue_pbch_vars[eNB_id]->llr;
-    pbch_comp = (s16*) phy_vars_ue->lte_ue_pbch_vars[eNB_id]->rxdataF_comp[0];
-    pdcch_llr = (s8*) phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->llr;
-    pdcch_comp = (s16*) phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->rxdataF_comp[0];
-    pdsch_llr = (s16*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->llr[0]; // stream 0
-    //    pdsch_llr = (s16*) phy_vars_ue->lte_ue_pdsch_vars_SI[eNB_id]->llr[0]; // stream 0
-    pdsch_comp = (s16*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp[0];
+    rxsig_t = (int16_t**) phy_vars_ue->lte_ue_common_vars.rxdata;
+    chest_t = (int16_t**) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates_time[eNB_id];
+    chest_f = (int16_t**) phy_vars_ue->lte_ue_common_vars.dl_ch_estimates[eNB_id];
+    pbch_llr = (int8_t*) phy_vars_ue->lte_ue_pbch_vars[eNB_id]->llr;
+    pbch_comp = (int16_t*) phy_vars_ue->lte_ue_pbch_vars[eNB_id]->rxdataF_comp[0];
+    pdcch_llr = (int8_t*) phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->llr;
+    pdcch_comp = (int16_t*) phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->rxdataF_comp[0];
+    pdsch_llr = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->llr[0]; // stream 0
+    //    pdsch_llr = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars_SI[eNB_id]->llr[0]; // stream 0
+    pdsch_comp = (int16_t*) phy_vars_ue->lte_ue_pdsch_vars[eNB_id]->rxdataF_comp[0];
     
     // Received signal in time domain of receive antenna 0
     if (rxsig_t != NULL) { 

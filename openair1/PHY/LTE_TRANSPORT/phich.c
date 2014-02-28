@@ -53,7 +53,7 @@
 
 //unsigned short phich_reg[MAX_NUM_PHICH_GROUPS][3];
 
-u8 rv_table[4] = {0, 3, 1, 2};
+uint8_t rv_table[4] = {0, 3, 1, 2};
 
 uint8_t get_mi(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe) {
 
@@ -125,7 +125,7 @@ unsigned char subframe2_ul_harq(LTE_DL_FRAME_PARMS *frame_parms,unsigned char su
   return(0);
 }
 
-uint8_t phich_frame2_pusch_frame(LTE_DL_FRAME_PARMS *frame_parms,uint8_t frame,uint8_t subframe) {
+uint8_t phich_frame2_pusch_frame(LTE_DL_FRAME_PARMS *frame_parms,frame_t frame,uint8_t subframe) {
   if (frame_parms->frame_type == FDD) {
     return((subframe<4) ? (frame - 1) : frame);
   }
@@ -243,7 +243,7 @@ uint8_t phich_subframe2_pusch_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint8_t s
   return(0);
 }
 
-int check_pcfich(LTE_DL_FRAME_PARMS *frame_parms,u16 reg) {
+int check_pcfich(LTE_DL_FRAME_PARMS *frame_parms,uint16_t reg) {
 
   if ((reg == frame_parms->pcfich_reg[0]) ||
       (reg == frame_parms->pcfich_reg[1]) ||
@@ -260,8 +260,8 @@ void generate_phich_reg_mapping(LTE_DL_FRAME_PARMS *frame_parms) {
   unsigned short n2 = n1;
   unsigned short mprime = 0;
   unsigned short Ngroup_PHICH;
-  //  u16 *phich_reg = frame_parms->phich_reg;
-  u16 *pcfich_reg = frame_parms->pcfich_reg;
+  //  uint16_t *phich_reg = frame_parms->phich_reg;
+  uint16_t *pcfich_reg = frame_parms->pcfich_reg;
 
   // compute Ngroup_PHICH (see formula at beginning of Section 6.9 in 36-211
   Ngroup_PHICH = (frame_parms->phich_config_common.phich_resource*frame_parms->N_RB_DL)/48;
@@ -987,7 +987,7 @@ void rx_phich(PHY_VARS_UE *phy_vars_ue,
   int16_t phich_d[24],*phich_d_ptr,HI16;
   //  unsigned int i,aa;
   int8_t d[24],*dp;
-  u16 reg_offset;
+  uint16_t reg_offset;
 
   // scrambling
   uint32_t x1, x2, s=0;

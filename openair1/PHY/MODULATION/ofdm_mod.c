@@ -16,9 +16,9 @@ This section deals with basic functions for OFDM Modulation.
 //#define DEBUG_OFDM_MOD
 
 
-void normal_prefix_mod(s32 *txdataF,s32 *txdata,u8 nsymb,LTE_DL_FRAME_PARMS *frame_parms) {
+void normal_prefix_mod(int32_t *txdataF,int32_t *txdata,uint8_t nsymb,LTE_DL_FRAME_PARMS *frame_parms) {
 
-  u8 i;
+  uint8_t i;
   int short_offset=0;
 
   if ((2*nsymb) < frame_parms->symbols_per_tti)

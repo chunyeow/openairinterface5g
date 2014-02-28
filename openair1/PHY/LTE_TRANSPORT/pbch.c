@@ -70,30 +70,30 @@ extern __m128i zero;
 
 #define PBCH_A 24
 
-//u8 pbch_d[96+(3*(16+PBCH_A))], pbch_w[3*3*(16+PBCH_A)],pbch_e[1920];  //one bit per byte
+//uint8_t pbch_d[96+(3*(16+PBCH_A))], pbch_w[3*3*(16+PBCH_A)],pbch_e[1920];  //one bit per byte
 int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
 		  mod_sym_t **txdataF,
 		  int amp,
 		  LTE_DL_FRAME_PARMS *frame_parms,
-		  u8 *pbch_pdu,
-		  u8 frame_mod4) {
+		  uint8_t *pbch_pdu,
+		  uint8_t frame_mod4) {
 
   int i, l;
 
-  u32  pbch_D,pbch_E;//,pbch_coded_bytes;
-  u8 pbch_a[PBCH_A>>3];
-  u8 RCC;
+  uint32_t  pbch_D,pbch_E;//,pbch_coded_bytes;
+  uint8_t pbch_a[PBCH_A>>3];
+  uint8_t RCC;
 
-  u32 nsymb = (frame_parms->Ncp==NORMAL) ? 14:12;
-  u32 pilots;
+  uint32_t nsymb = (frame_parms->Ncp==NORMAL) ? 14:12;
+  uint32_t pilots;
 #ifdef INTERFERENCE_MITIGATION
-  u32 pilots_2;
+  uint32_t pilots_2;
 #endif
-  u32 second_pilot = (frame_parms->Ncp==NORMAL) ? 4 : 3;
-  u32 jj=0;
-  u32 re_allocated=0;
-  u32 rb, re_offset, symbol_offset;
-  u16 amask=0;
+  uint32_t second_pilot = (frame_parms->Ncp==NORMAL) ? 4 : 3;
+  uint32_t jj=0;
+  uint32_t re_allocated=0;
+  uint32_t rb, re_offset, symbol_offset;
+  uint16_t amask=0;
 
   pbch_D    = 16+PBCH_A;
 
@@ -107,19 +107,19 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
     // Encode data
     
     // CRC attachment
-    //  crc = (u16) (crc16(pbch_pdu, pbch_crc_bits-16) >> 16); 
+    //  crc = (uint16_t) (crc16(pbch_pdu, pbch_crc_bits-16) >> 16); 
     
     /*
     // scramble crc with PBCH CRC mask (Table 5.3.1.1-1 of 3GPP 36.212-860)
     switch (frame_parms->nb_antennas_tx_eNB) {
     case 1:
-    crc = crc ^ (u16) 0;
+    crc = crc ^ (uint16_t) 0;
     break;
     case 2:
-    crc = crc ^ (u16) 0xFFFF;
+    crc = crc ^ (uint16_t) 0xFFFF;
     break;
     case 4:
-    crc = crc ^ (u16) 0xAAAA;
+    crc = crc ^ (uint16_t) 0xAAAA;
     break;
     default:
     msg("[PBCH] Unknown number of TX antennas!\n");
@@ -320,29 +320,29 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
   return(0);
 }
 
-s32 generate_pbch_emul(PHY_VARS_eNB *phy_vars_eNB,u8 *pbch_pdu) {
+int32_t generate_pbch_emul(PHY_VARS_eNB *phy_vars_eNB,uint8_t *pbch_pdu) {
   
   LOG_D(PHY,"[eNB %d] generate_pbch_emul \n",phy_vars_eNB->Mod_id);
   eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pbch_flag=1;
   // Copy PBCH payload 
-  eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pbch_payload=*(u32 *)pbch_pdu;
+  eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pbch_payload=*(uint32_t *)pbch_pdu;
   return(0);
 }
 
-u16 pbch_extract(int **rxdataF,
+uint16_t pbch_extract(int **rxdataF,
 		 int **dl_ch_estimates,
 		 int **rxdataF_ext,
 		 int **dl_ch_estimates_ext,
-		 u32 symbol,
+		 uint32_t symbol,
 		 LTE_DL_FRAME_PARMS *frame_parms) {
   
 
-  u16 rb,nb_rb=6;
-  u8 i,j,aarx,aatx;
+  uint16_t rb,nb_rb=6;
+  uint8_t i,j,aarx,aatx;
   int *dl_ch0,*dl_ch0_ext,*rxF,*rxF_ext;
  
-  u32 nsymb = (frame_parms->Ncp==0) ? 7:6;
-  u32 symbol_mod = symbol % nsymb;
+  uint32_t nsymb = (frame_parms->Ncp==0) ? 7:6;
+  uint32_t symbol_mod = symbol % nsymb;
 
   int rx_offset = frame_parms->ofdm_symbol_size-3*12;
   int ch_offset = frame_parms->N_RB_DL*6-3*12;
@@ -447,15 +447,15 @@ __m128i avg128;
 //compute average channel_level on each (TX,RX) antenna pair
 int pbch_channel_level(int **dl_ch_estimates_ext,
 		       LTE_DL_FRAME_PARMS *frame_parms,
-		       u32 symbol) {
+		       uint32_t symbol) {
 
-  s16 rb, nb_rb=6;
-  u8 aatx,aarx;
+  int16_t rb, nb_rb=6;
+  uint8_t aatx,aarx;
   __m128i *dl_ch128;
   int avg1=0,avg2=0;
 
-  u32 nsymb = (frame_parms->Ncp==0) ? 7:6;
-  u32 symbol_mod = symbol % nsymb;
+  uint32_t nsymb = (frame_parms->Ncp==0) ? 7:6;
+  uint32_t symbol_mod = symbol % nsymb;
 
   for (aatx=0;aatx<4;aatx++) //frame_parms->nb_antennas_tx_eNB;aatx++)
     for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++) {
@@ -503,11 +503,11 @@ void pbch_channel_compensation(int **rxdataF_ext,
 			       int **dl_ch_estimates_ext,
 			       int **rxdataF_comp,
 			       LTE_DL_FRAME_PARMS *frame_parms,
-			       u8 symbol,
-			       u8 output_shift) {
+			       uint8_t symbol,
+			       uint8_t output_shift) {
 
-  u16 rb,nb_rb=6;
-  u8 aatx,aarx,symbol_mod;
+  uint16_t rb,nb_rb=6;
+  uint8_t aatx,aarx,symbol_mod;
   __m128i *dl_ch128,*rxdataF128,*rxdataF_comp128;
 
   symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
@@ -598,9 +598,9 @@ void pbch_channel_compensation(int **rxdataF_ext,
 
 void pbch_detection_mrc(LTE_DL_FRAME_PARMS *frame_parms,
 			int **rxdataF_comp,
-			u8 symbol) {
+			uint8_t symbol) {
 
-  u8 aatx, symbol_mod;
+  uint8_t aatx, symbol_mod;
   int i, nb_rb=6;
   __m128i *rxdataF_comp128_0,*rxdataF_comp128_1;
 
@@ -621,11 +621,11 @@ void pbch_detection_mrc(LTE_DL_FRAME_PARMS *frame_parms,
 }
 
 void pbch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
-		     u8 *pbch_e,
-		     u32 length) {
+		     uint8_t *pbch_e,
+		     uint32_t length) {
   int i;
-  u8 reset;
-  u32 x1, x2, s=0;
+  uint8_t reset;
+  uint32_t x1, x2, s=0;
 
   reset = 1;
   // x1 is set in lte_gold_generic
@@ -645,12 +645,12 @@ void pbch_scrambling(LTE_DL_FRAME_PARMS *frame_parms,
 }
 
 void pbch_unscrambling(LTE_DL_FRAME_PARMS *frame_parms,
-		       s8* llr,
-		       u32 length,
-		       u8 frame_mod4) {
+		       int8_t* llr,
+		       uint32_t length,
+		       uint8_t frame_mod4) {
   int i;
-  u8 reset;
-  u32 x1, x2, s=0;
+  uint8_t reset;
+  uint32_t x1, x2, s=0;
 
   reset = 1;
   // x1 is set in first call to lte_gold_generic
@@ -675,20 +675,20 @@ void pbch_unscrambling(LTE_DL_FRAME_PARMS *frame_parms,
 
 void pbch_alamouti(LTE_DL_FRAME_PARMS *frame_parms,
 		   int **rxdataF_comp,
-		   u8 symbol) {
+		   uint8_t symbol) {
 
 
-  s16 *rxF0,*rxF1;
+  int16_t *rxF0,*rxF1;
   //  __m128i *ch_mag0,*ch_mag1,*ch_mag0b,*ch_mag1b;
-  u8 rb,re,symbol_mod;
+  uint8_t rb,re,symbol_mod;
   int jj;
 
   //  printf("Doing alamouti\n");
   symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
   jj         = (symbol_mod*6*12);
 
-  rxF0     = (s16*)&rxdataF_comp[0][jj];  //tx antenna 0  h0*y
-  rxF1     = (s16*)&rxdataF_comp[2][jj];  //tx antenna 1  h1*y
+  rxF0     = (int16_t*)&rxdataF_comp[0][jj];  //tx antenna 0  h0*y
+  rxF1     = (int16_t*)&rxdataF_comp[2][jj];  //tx antenna 1  h1*y
 
   for (rb=0;rb<6;rb++) {
 
@@ -713,11 +713,11 @@ void pbch_alamouti(LTE_DL_FRAME_PARMS *frame_parms,
   
 }
 
-void pbch_quantize(s8 *pbch_llr8,
-		   s16 *pbch_llr,
-		   u16 len) {
+void pbch_quantize(int8_t *pbch_llr8,
+		   int16_t *pbch_llr,
+		   uint16_t len) {
 
-  u16 i;
+  uint16_t i;
 
   for (i=0;i<len;i++) { 
     if (pbch_llr[i]>7)
@@ -734,25 +734,25 @@ static unsigned char dummy_w_rx[3*3*(16+PBCH_A)];
 static int8_t pbch_w_rx[3*3*(16+PBCH_A)],pbch_d_rx[96+(3*(16+PBCH_A))];
 
 
-u16 rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
+uint16_t rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
 	    LTE_UE_PBCH *lte_ue_pbch_vars,
 	    LTE_DL_FRAME_PARMS *frame_parms,
-	    u8 eNB_id,
+	    uint8_t eNB_id,
 	    MIMO_mode_t mimo_mode,
-	    u8 frame_mod4) {
+	    uint8_t frame_mod4) {
 
-  u8 log2_maxh;//,aatx,aarx;
+  uint8_t log2_maxh;//,aatx,aarx;
   int max_h=0;
 
   int symbol,i;
-  u32 nsymb = (frame_parms->Ncp==0) ? 14:12;
-  u16  pbch_E;
-  u8 pbch_a[8];
-  u8 RCC;
+  uint32_t nsymb = (frame_parms->Ncp==0) ? 14:12;
+  uint16_t  pbch_E;
+  uint8_t pbch_a[8];
+  uint8_t RCC;
 
-  s8 *pbch_e_rx;
-  u8 *decoded_output = lte_ue_pbch_vars->decoded_output;
-  u16 crc;
+  int8_t *pbch_e_rx;
+  uint8_t *decoded_output = lte_ue_pbch_vars->decoded_output;
+  uint16_t crc;
 
 
   //  pbch_D    = 16+PBCH_A;
@@ -886,11 +886,11 @@ u16 rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
 #ifdef DEBUG_PBCH
   msg("PBCH CRC %x : %x\n",
       crc16(pbch_a,PBCH_A),
-      ((u16)pbch_a[PBCH_A>>3]<<8)+pbch_a[(PBCH_A>>3)+1]);
+      ((uint16_t)pbch_a[PBCH_A>>3]<<8)+pbch_a[(PBCH_A>>3)+1]);
 #endif
 
   crc = (crc16(pbch_a,PBCH_A)>>16) ^ 
-    (((u16)pbch_a[PBCH_A>>3]<<8)+pbch_a[(PBCH_A>>3)+1]);
+    (((uint16_t)pbch_a[PBCH_A>>3]<<8)+pbch_a[(PBCH_A>>3)+1]);
 
   if (crc == 0x0000)
     return(1);
@@ -905,14 +905,14 @@ u16 rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
 }
 
 #ifdef PHY_ABSTRACTION
-u16 rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
-		 u8 eNB_id,
-		 u8 pbch_phase) {
+uint16_t rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
+		 uint8_t eNB_id,
+		 uint8_t pbch_phase) {
 
   double bler=0.0, x=0.0;
   double sinr=0.0;
-  u16 nb_rb = phy_vars_ue->lte_frame_parms.N_RB_DL;
-  s16 f;
+  uint16_t nb_rb = phy_vars_ue->lte_frame_parms.N_RB_DL;
+  int16_t f;
   
   // compute effective sinr
   // TODO: adapt this to varible bandwidth

@@ -43,15 +43,15 @@
 
 //---------------------------------------------------------------------------
 // Receive data from FIFO (QOS or DC) 
-//void nasmt_COMMON_receive(u16 hlen, u16 dlen, int sap){
-//void nasmt_COMMON_receive(u16 hlen, u16 dlen, void *pdcp_sdu, int sap){
-void nasmt_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer, int rb_id, int sap){
+//void nasmt_COMMON_receive(uint16_t hlen, uint16_t dlen, int sap){
+//void nasmt_COMMON_receive(uint16_t hlen, uint16_t dlen, void *pdcp_sdu, int sap){
+void nasmt_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap){
 //---------------------------------------------------------------------------
   struct sk_buff *skb;
   struct ipversion *ipv;
   unsigned int hard_header_len;
-  u16  *p_ether_type;
-  u16  ether_type;
+  uint16_t  *p_ether_type;
+  uint16_t  ether_type;
 
 #ifdef NAS_DEBUG_RECEIVE
   printk("nasmt_COMMON_receive: begin\n");
@@ -142,8 +142,8 @@ void nasmt_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer,
      printk("nasmt_COMMON_receive: ether_type=%04X\n", ether_type);
      #endif
      skb->protocol = eth_type_trans(skb, gdev);
-     // minus 1(short) instead of 2(bytes) because u16*
-     p_ether_type = (u16 *)&(skb->mac_header[hard_header_len-2]);
+     // minus 1(short) instead of 2(bytes) because uint16_t*
+     p_ether_type = (uint16_t *)&(skb->mac_header[hard_header_len-2]);
      ether_type = ntohs(*p_ether_type);
      #ifdef NAS_DEBUG_RECEIVE
      printk("nasmt_COMMON_receive: ether_type=%04X\n", ether_type);
@@ -268,7 +268,7 @@ void nasmt_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct cla
 //---------------------------------------------------------------------------
 void nasmt_COMMON_QOS_receive(struct cx_entity *cx){
 //---------------------------------------------------------------------------
-  u8 sapi;
+  uint8_t sapi;
   //struct pdcp_data_ind     pdcph;
   struct pdcp_data_ind_header_t  pdcph;
   int bytes_read = 0;
@@ -292,7 +292,7 @@ void nasmt_COMMON_QOS_receive(struct cx_entity *cx){
         printk("nasmt_COMMON_QOS_receive: problem while reading PDCP header\n");
         return;
     }
-    //void nasmt_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer, int rb_id, int sap);
+    //void nasmt_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap);
     // data_buffer is NULL because FIFO should be read directly in the skbuff (LITE has an intermediary buffer)
     nasmt_COMMON_receive(NAS_PDCPH_SIZE, pdcph.data_size, NULL, pdcph->rb_id, gpriv->sap[sapi]);
     // check if another frame is in the FIFO, otherwise return
@@ -325,7 +325,7 @@ void nasmt_COMMON_QOS_receive(struct nlmsghdr *nlh){
   printk("nasmt_COMMON_QOS_receive - receive from PDCP, size %d, rab %d\\n", pdcph->data_size, pdcph->rb_id);
 #endif //NAS_DEBUG_RECEIVE
 
-    //void nasmt_COMMON_receive(u16 bytes_read, u16 payload_length, void *data_buffer, int rb_id, int sap);
+    //void nasmt_COMMON_receive(uint16_t bytes_read, uint16_t payload_length, void *data_buffer, int rb_id, int sap);
     nasmt_COMMON_receive(NAS_PDCPH_SIZE + pdcph->data_size, pdcph->data_size, (unsigned char *)NLMSG_DATA(nlh) + NAS_PDCPH_SIZE, pdcph->rb_id, 0);
 
 }
@@ -411,7 +411,7 @@ void nasmt_COMMON_del_rb(struct cx_entity *cx, nasRadioBearerId_t rab_id, nasIPd
 //---------------------------------------------------------------------------
   struct rb_entity *rb, *curr_rb, *prev_rb;
   struct classifier_entity *p;
-  u16 classref=0;
+  uint16_t classref=0;
 
 // Start debug information
 #ifdef NAS_DEBUG_CLASS
@@ -467,7 +467,7 @@ void nasmt_COMMON_flush_rb(struct cx_entity *cx){
 //---------------------------------------------------------------------------
   struct rb_entity *rb;
   struct classifier_entity *gc;
-  u8 dscp;
+  uint8_t dscp;
 // Start debug information
 #ifdef NAS_DEBUG_CLASS
   printk("nasmt_COMMON_flush_rb - begin\n");

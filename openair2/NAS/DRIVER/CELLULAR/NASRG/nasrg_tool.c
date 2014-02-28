@@ -12,7 +12,7 @@
 
 //---------------------------------------------------------------------------
 //
-void nasrg_TOOL_fct(struct classifier_entity *gc, u8 fct){
+void nasrg_TOOL_fct(struct classifier_entity *gc, uint8_t fct){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -42,7 +42,7 @@ void nasrg_TOOL_fct(struct classifier_entity *gc, u8 fct){
 }
 
 //---------------------------------------------------------------------------
-u8 nasrg_TOOL_invfct(struct classifier_entity *gc){
+uint8_t nasrg_TOOL_invfct(struct classifier_entity *gc){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -65,7 +65,7 @@ u8 nasrg_TOOL_invfct(struct classifier_entity *gc){
 }
 
 //---------------------------------------------------------------------------
-u8 nasrg_TOOL_get_dscp6(struct ipv6hdr *iph){
+uint8_t nasrg_TOOL_get_dscp6(struct ipv6hdr *iph){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -81,7 +81,7 @@ u8 nasrg_TOOL_get_dscp6(struct ipv6hdr *iph){
 }
 
 //---------------------------------------------------------------------------
-u8 nasrg_TOOL_get_dscp4(struct iphdr *iph){
+uint8_t nasrg_TOOL_get_dscp4(struct iphdr *iph){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -96,9 +96,9 @@ u8 nasrg_TOOL_get_dscp4(struct iphdr *iph){
 }
 
 //---------------------------------------------------------------------------
-u8 *nasrg_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol){
+uint8_t *nasrg_TOOL_get_protocol6(struct ipv6hdr *iph, uint8_t *protocol){
 //---------------------------------------------------------------------------
- u16 size;
+ uint16_t size;
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
  printk("nasrg_TOOL_get_protocol6 - begin \n");
@@ -120,16 +120,16 @@ u8 *nasrg_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol){
   case IPPROTO_UDP:
   case IPPROTO_TCP:
   case IPPROTO_ICMPV6:
-   return (u8 *)((u8 *)iph+size);
+   return (uint8_t *)((uint8_t *)iph+size);
   case IPPROTO_HOPOPTS:
   case IPPROTO_ROUTING:
   case IPPROTO_DSTOPTS:
-   *protocol=((u8 *)iph+size)[0];
-   size+=((u8 *)iph+size)[1]*8+8;
+   *protocol=((uint8_t *)iph+size)[0];
+   size+=((uint8_t *)iph+size)[1]*8+8;
    break;
   case IPPROTO_FRAGMENT:
-   *protocol=((u8 *)iph+size)[0];
-   size+=((u8 *)iph+size)[1]+8;
+   *protocol=((uint8_t *)iph+size)[0];
+   size+=((uint8_t *)iph+size)[1]+8;
    break;
   case IPPROTO_NONE:
   case IPPROTO_AH:
@@ -141,7 +141,7 @@ u8 *nasrg_TOOL_get_protocol6(struct ipv6hdr *iph, u8 *protocol){
 }
 
 //---------------------------------------------------------------------------
-u8 *nasrg_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol){
+uint8_t *nasrg_TOOL_get_protocol4(struct iphdr *iph, uint8_t *protocol){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -161,7 +161,7 @@ u8 *nasrg_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol){
  case IPPROTO_UDP:
  case IPPROTO_TCP:
  case IPPROTO_ICMP:
-  return (u8 *)((u8 *)iph+iph->tot_len);
+  return (uint8_t *)((uint8_t *)iph+iph->tot_len);
  default:
   return NULL;
  }
@@ -169,7 +169,7 @@ u8 *nasrg_TOOL_get_protocol4(struct iphdr *iph, u8 *protocol){
 
 //---------------------------------------------------------------------------
 // Convert the IMEI to iid
-void nasrg_TOOL_imei2iid(u8 *imei, u8 *iid){
+void nasrg_TOOL_imei2iid(uint8_t *imei, uint8_t *iid){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -204,7 +204,7 @@ void nasrg_TOOL_imei2iid(u8 *imei, u8 *iid){
 
 //---------------------------------------------------------------------------
 // Convert the RG IMEI to iid
-void nasrg_TOOL_RGimei2iid(u8 *imei, u8 *iid){
+void nasrg_TOOL_RGimei2iid(uint8_t *imei, uint8_t *iid){
 //---------------------------------------------------------------------------
 // Start debug information
 #ifdef NAS_DEBUG_TOOL
@@ -260,7 +260,7 @@ void nasrg_TOOL_pk_icmp6(struct icmp6hdr *icmph){
 
 
 //---------------------------------------------------------------------------
-void nasrg_TOOL_print_state(u8 state){
+void nasrg_TOOL_print_state(uint8_t state){
 //---------------------------------------------------------------------------
   switch(state){
     case  NAS_IDLE:printk("NAS_IDLE\n");return;

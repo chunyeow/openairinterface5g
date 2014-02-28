@@ -45,7 +45,7 @@
         ntohs((addr)->s6_addr16[6]), \
         ntohs((addr)->s6_addr16[7])
 
-u8 g_msgrep[OAI_NW_DRV_LIST_CLASS_MAX*sizeof(struct oai_nw_drv_msg_class_list_reply)+1];
+uint8_t g_msgrep[OAI_NW_DRV_LIST_CLASS_MAX*sizeof(struct oai_nw_drv_msg_class_list_reply)+1];
 
 // Statistic
 //---------------------------------------------------------------------------

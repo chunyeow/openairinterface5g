@@ -39,15 +39,15 @@ const bool true = 1;
 #define MAX_HARQ_ROUNDS 4
 #define MAX_FRAMES 2*MAX_HARQ_ROUNDS+1
 
-const u8 cp_type = 0;         // Normal cyclic prefix
-const u8 n_txantenna_ch = 1;  // Number of CH transmit antennas
-const u8 n_rxantenna_ch = 1;  // Number of CH receive antennas
-const u8 n_txantenna_mr = 1;  // Number of MR transmit antennas
-const u8 n_rxantenna_mr = 1;  // Number of MR receive antennas
-const u8 oversampling = 1;
-const u8 subframe_hop1 = 1;   // Subframe for CH1 PDCCH+PDSCH transmission
-const u8 subframe_hop2 = 7;  // Subframe for MR PDU to CH2
-const u8 n_pdcch_symbols = 3; // Number of PDCCH symbols in DL subframes
+const uint8_t cp_type = 0;         // Normal cyclic prefix
+const uint8_t n_txantenna_ch = 1;  // Number of CH transmit antennas
+const uint8_t n_rxantenna_ch = 1;  // Number of CH receive antennas
+const uint8_t n_txantenna_mr = 1;  // Number of MR transmit antennas
+const uint8_t n_rxantenna_mr = 1;  // Number of MR receive antennas
+const uint8_t oversampling = 1;
+const uint8_t subframe_hop1 = 1;   // Subframe for CH1 PDCCH+PDSCH transmission
+const uint8_t subframe_hop2 = 7;  // Subframe for MR PDU to CH2
+const uint8_t n_pdcch_symbols = 3; // Number of PDCCH symbols in DL subframes
 
 typedef enum {
   analysis_single,      // Simulate one SNR point
@@ -152,28 +152,28 @@ typedef struct {
   PHY_VARS_UE** phy_vars_mr;
   sh_channel_t** channels_hop1;
   sh_channel_t** channels_hop2;
-  s32* rxdata[1];
+  int32_t* rxdata[1];
   double* snr_hop1;
   double* snr_hop2;
   int mcs_hop1;
   int mcs_hop2;
-  u32 tbs_hop1;
-  u32 tbs_hop2;
-  u32 tbs_col;
-  u16 rnti_hop1;
-  u16 rnti_hop2;
+  uint32_t tbs_hop1;
+  uint32_t tbs_hop2;
+  uint32_t tbs_col;
+  uint16_t rnti_hop1;
+  uint16_t rnti_hop2;
   int input_buffer_length;
-  u8* input_buffer;
+  uint8_t* input_buffer;
   int mr_buffer_length;
-  u8* mr_buffer[MAX_RELAYS];
-  u32 n_coded_bits_hop1;
-  u32 n_coded_bits_hop2;
+  uint8_t* mr_buffer[MAX_RELAYS];
+  uint32_t n_coded_bits_hop1;
+  uint32_t n_coded_bits_hop2;
   int n_ber_frames_hop1[MAX_RELAYS];
   int n_ber_frames_hop2;
-  u8 n_avail_pdcch_symbols;
-  u8 subframe_hop1;
-  u8 subframe_hop2;
-  u8 harq_pid_hop2;
+  uint8_t n_avail_pdcch_symbols;
+  uint8_t subframe_hop1;
+  uint8_t subframe_hop2;
+  uint8_t harq_pid_hop2;
 } context_t;
 
 void transmit_one_pdu(args_t* args, context_t* context, int pdu, results_t* results);
@@ -190,29 +190,29 @@ void setup_snrsweep_c(double** snrs, int* n_tests, double* snr_hop1, double* snr
 void setup_frame_params(LTE_DL_FRAME_PARMS* frame_parms, unsigned char transmission_mode);
 void setup_phy_vars(LTE_DL_FRAME_PARMS* frame_parms, PHY_VARS_eNB* phy_vars_ch_src, 
     PHY_VARS_UE** phy_vars_mr, PHY_VARS_eNB* phy_vars_ch_dest, int n_relays);
-u16 rballoc_type0(int n_rb, int rbg_size);
-void setup_broadcast_dci(DCI_ALLOC_t* dci, u16 rnti, int harq_round, int mcs, int n_rb);
-void setup_distributed_dci(DCI_ALLOC_t* dci, u16 rnti, int harq_round, int mcs, int n_rb);
-void alloc_broadcast_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, u16 rnti);
+uint16_t rballoc_type0(int n_rb, int rbg_size);
+void setup_broadcast_dci(DCI_ALLOC_t* dci, uint16_t rnti, int harq_round, int mcs, int n_rb);
+void setup_distributed_dci(DCI_ALLOC_t* dci, uint16_t rnti, int harq_round, int mcs, int n_rb);
+void alloc_broadcast_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, uint16_t rnti);
 void free_broadcast_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays);
-void alloc_distributed_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, u16 rnti);
+void alloc_distributed_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, uint16_t rnti);
 void free_distributed_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays);
-void ofdm_modulation(mod_sym_t** tx_f, s32** tx_t, LTE_DL_FRAME_PARMS* frame_parms, u8 subframe, u8 nsymb);
+void ofdm_modulation(mod_sym_t** tx_f, int32_t** tx_t, LTE_DL_FRAME_PARMS* frame_parms, uint8_t subframe, uint8_t nsymb);
 channel_vars_t alloc_channel_vars(LTE_DL_FRAME_PARMS* frame_parms);
 void free_channel_vars(channel_vars_t v);
 sh_channel_t* alloc_sh_channel(channel_vars_t* cvars, SCM_t channel_model, int n_txantennas, int n_rxantennas, double channel_correlation);
 void free_sh_channel(sh_channel_t* c);
-void transmit_subframe(sh_channel_t* channel, s32** src, LTE_DL_FRAME_PARMS* frame_parms, u8 subframe, u8 nsymb, double ampl, bool accumulate);
-void deliver_subframe(sh_channel_t* channel, s32** dst, LTE_DL_FRAME_PARMS* frame_parms, u8 subframe, u8 nsymb, double stddev);
-void ofdm_fep(PHY_VARS_UE* phy_vars_mr, u8 subframe);
-int rx_dlsch_symbol(PHY_VARS_UE* phy_vars, u8 subframe, u8 symbol, u8 first_symbol);
-u32 get_ulsch_G(LTE_UE_ULSCH_t *ulsch, u8 harq_pid);
-double compute_ber_soft(u8* ref, s16* rec, int n);
+void transmit_subframe(sh_channel_t* channel, int32_t** src, LTE_DL_FRAME_PARMS* frame_parms, uint8_t subframe, uint8_t nsymb, double ampl, bool accumulate);
+void deliver_subframe(sh_channel_t* channel, int32_t** dst, LTE_DL_FRAME_PARMS* frame_parms, uint8_t subframe, uint8_t nsymb, double stddev);
+void ofdm_fep(PHY_VARS_UE* phy_vars_mr, uint8_t subframe);
+int rx_dlsch_symbol(PHY_VARS_UE* phy_vars, uint8_t subframe, uint8_t symbol, uint8_t first_symbol);
+uint32_t get_ulsch_G(LTE_UE_ULSCH_t *ulsch, uint8_t harq_pid);
+double compute_ber_soft(uint8_t* ref, int16_t* rec, int n);
 void print_dlsch_eNB_stats(LTE_eNB_DLSCH_t* d);
 void print_dlsch_ue_stats(LTE_UE_DLSCH_t* d);
 void print_ulsch_ue_stats(LTE_UE_ULSCH_t* d);
 void print_ulsch_eNB_stats(LTE_eNB_ULSCH_t* d);
-int block_valid(u8* ref, u8* rec, int n);
+int block_valid(uint8_t* ref, uint8_t* rec, int n);
 void init_results(results_t* r, args_t* a);
 void clear_results(results_t* r);
 void free_results(results_t* r);
@@ -222,8 +222,8 @@ void write_results_data(FILE* f, results_t* r);
 double calc_delay(int* n_frames, int n_harq);
 
 // Function declarations missing in LTE_TRANSPORT/proto.h:
-u8 pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS* frame_parms, u8 n);
-u8 ul_subframe2pdcch_alloc_subframe(LTE_DL_FRAME_PARMS* frame_parms, u8 n);
+uint8_t pdcch_alloc2ul_subframe(LTE_DL_FRAME_PARMS* frame_parms, uint8_t n);
+uint8_t ul_subframe2pdcch_alloc_subframe(LTE_DL_FRAME_PARMS* frame_parms, uint8_t n);
 
 int main(int argc, char **argv) {
   args_t args;
@@ -499,8 +499,8 @@ void transmit_one_pdu(args_t* args, context_t* context, int pdu, results_t* resu
   int n_re_hop1;
   int n_re_hop2;
   int n_active_relays;
-  u8 n_used_pdcch_symbols;
-  u32 tx_energy;
+  uint8_t n_used_pdcch_symbols;
+  uint32_t tx_energy;
   //double awgn_stddev;
   double tx_ampl;
   double raw_ber;
@@ -532,7 +532,7 @@ void transmit_one_pdu(args_t* args, context_t* context, int pdu, results_t* resu
 
   // Generate input data
   for(k = 0; k < context->input_buffer_length; k++)
-    context->input_buffer[k] = (u8)(taus()&0xff);
+    context->input_buffer[k] = (uint8_t)(taus()&0xff);
 
   hop1_active = true;
   while(hop1_active || hop2_active) {
@@ -1461,7 +1461,7 @@ void setup_phy_vars(LTE_DL_FRAME_PARMS* frame_parms, PHY_VARS_eNB* phy_vars_ch_s
   phy_vars_ch_dest->pusch_config_dedicated[0].betaOffset_CQI_Index = 2;
 }
 
-void alloc_broadcast_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, u16 rnti)
+void alloc_broadcast_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, uint16_t rnti)
 {
   int k;
 
@@ -1488,7 +1488,7 @@ void free_broadcast_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** p
   }
 }
 
-void alloc_distributed_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, u16 rnti)
+void alloc_distributed_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE** phy_vars_mr, int n_relays, uint16_t rnti)
 {
   int k;
   int l;
@@ -1518,7 +1518,7 @@ void free_distributed_transport_channel(PHY_VARS_eNB* phy_vars_ch, PHY_VARS_UE**
   //free_eNB_ulsch(phy_vars_ch->ulsch_eNB[0]);
 }
 
-u16 rballoc_type0(int n_rb, int rbg_size)
+uint16_t rballoc_type0(int n_rb, int rbg_size)
 {
   int rb = 0;
   int k;
@@ -1528,7 +1528,7 @@ u16 rballoc_type0(int n_rb, int rbg_size)
   return rb;
 }
 
-void setup_broadcast_dci(DCI_ALLOC_t* dci, u16 rnti, int harq_round, int mcs, int n_rb)
+void setup_broadcast_dci(DCI_ALLOC_t* dci, uint16_t rnti, int harq_round, int mcs, int n_rb)
 {
   DCI1_5MHz_TDD_t* dci_data = (DCI1_5MHz_TDD_t*) dci->dci_pdu;
 
@@ -1549,7 +1549,7 @@ void setup_broadcast_dci(DCI_ALLOC_t* dci, u16 rnti, int harq_round, int mcs, in
   dci->format = format1;
 }
 
-void setup_distributed_dci(DCI_ALLOC_t* dci, u16 rnti, int harq_round, int mcs, int n_rb)
+void setup_distributed_dci(DCI_ALLOC_t* dci, uint16_t rnti, int harq_round, int mcs, int n_rb)
 {
   DCI0_5MHz_TDD_1_6_t* dci_data = (DCI0_5MHz_TDD_1_6_t*) dci->dci_pdu;
 
@@ -1591,10 +1591,10 @@ void setup_distributed_dci(DCI_ALLOC_t* dci, u16 rnti, int harq_round, int mcs, 
   dci->format = format0;
 }
 
-void ofdm_modulation(mod_sym_t** tx_f, s32** tx_t, LTE_DL_FRAME_PARMS* frame_parms, u8 subframe, u8 nsymb)
+void ofdm_modulation(mod_sym_t** tx_f, int32_t** tx_t, LTE_DL_FRAME_PARMS* frame_parms, uint8_t subframe, uint8_t nsymb)
 {
   mod_sym_t* src;
-  s32* dst;
+  int32_t* dst;
 
   if(frame_parms->Ncp == 0) { // Normal prefix
     src = &tx_f[0][subframe*14*frame_parms->ofdm_symbol_size];
@@ -1647,8 +1647,8 @@ void free_sh_channel(sh_channel_t* c)
   free(c->channel);
 }
 
-void transmit_subframe(sh_channel_t* channel, s32** src, LTE_DL_FRAME_PARMS* frame_parms, 
-    u8 subframe, u8 nsymb, double ampl, bool accumulate)
+void transmit_subframe(sh_channel_t* channel, int32_t** src, LTE_DL_FRAME_PARMS* frame_parms, 
+    uint8_t subframe, uint8_t nsymb, double ampl, bool accumulate)
 {
   int k;
   int symbols_per_slot = (frame_parms->Ncp == 0 ? 7 : 6);
@@ -1663,8 +1663,8 @@ void transmit_subframe(sh_channel_t* channel, s32** src, LTE_DL_FRAME_PARMS* fra
   }
 
   for(k = 0; k < nsamples; k++) {
-    channel->cvars->s_re[0][k] = (double)((s16*)src[0])[2*subframe*frame_parms->samples_per_tti + (k<<1)];
-    channel->cvars->s_im[0][k] = (double)((s16*)src[0])[2*subframe*frame_parms->samples_per_tti + (k<<1) + 1];
+    channel->cvars->s_re[0][k] = (double)((int16_t*)src[0])[2*subframe*frame_parms->samples_per_tti + (k<<1)];
+    channel->cvars->s_im[0][k] = (double)((int16_t*)src[0])[2*subframe*frame_parms->samples_per_tti + (k<<1) + 1];
     /*
     if(accumulate) {
       channel->cvars->r_re_t[0][k] = channel->cvars->s_re[0][k];
@@ -1695,8 +1695,8 @@ void transmit_subframe(sh_channel_t* channel, s32** src, LTE_DL_FRAME_PARMS* fra
   }
 }
 
-void deliver_subframe(sh_channel_t* channel, s32** dst, LTE_DL_FRAME_PARMS* frame_parms,
-    u8 subframe, u8 nsymb, double stddev)
+void deliver_subframe(sh_channel_t* channel, int32_t** dst, LTE_DL_FRAME_PARMS* frame_parms,
+    uint8_t subframe, uint8_t nsymb, double stddev)
 {
   int k;
   int symbols_per_slot = (frame_parms->Ncp == 0 ? 7 : 6);
@@ -1712,14 +1712,14 @@ void deliver_subframe(sh_channel_t* channel, s32** dst, LTE_DL_FRAME_PARMS* fram
   }
 
   for(k = 0; k < nsamples; k++) {
-    ((s16*)dst[0])[2*subframe*frame_parms->samples_per_tti + (k<<1)] = 
-      (s16) (channel->cvars->r_re[0][k] + stddev*0.707*gaussdouble(0.0, 1.0));
-    ((s16*)dst[0])[2*subframe*frame_parms->samples_per_tti + (k<<1) + 1] = 
-      (s16) (channel->cvars->r_im[0][k] + stddev*0.707*gaussdouble(0.0, 1.0));
+    ((int16_t*)dst[0])[2*subframe*frame_parms->samples_per_tti + (k<<1)] = 
+      (int16_t) (channel->cvars->r_re[0][k] + stddev*0.707*gaussdouble(0.0, 1.0));
+    ((int16_t*)dst[0])[2*subframe*frame_parms->samples_per_tti + (k<<1) + 1] = 
+      (int16_t) (channel->cvars->r_im[0][k] + stddev*0.707*gaussdouble(0.0, 1.0));
   }
 }
 
-void ofdm_fep(PHY_VARS_UE* phy_vars_mr, u8 subframe)
+void ofdm_fep(PHY_VARS_UE* phy_vars_mr, uint8_t subframe)
 {
   int n_symbols_per_slot = (phy_vars_mr->lte_frame_parms.Ncp == 0 ? 7 : 6);
   int slot;
@@ -1732,7 +1732,7 @@ void ofdm_fep(PHY_VARS_UE* phy_vars_mr, u8 subframe)
   slot_fep(phy_vars_mr, 0, 2*subframe+2, 0, 0);
 }
 
-int rx_dlsch_symbol(PHY_VARS_UE* phy_vars, u8 subframe, u8 symbol, u8 first_symbol)
+int rx_dlsch_symbol(PHY_VARS_UE* phy_vars, uint8_t subframe, uint8_t symbol, uint8_t first_symbol)
 {
   int s;
   s = rx_pdsch(phy_vars, PDSCH, 0, 0, subframe, symbol, first_symbol, 0, 0);
@@ -1741,17 +1741,17 @@ int rx_dlsch_symbol(PHY_VARS_UE* phy_vars, u8 subframe, u8 symbol, u8 first_symb
   return s;
 }
 
-u32 get_ulsch_G(LTE_UE_ULSCH_t *ulsch, u8 harq_pid)
+uint32_t get_ulsch_G(LTE_UE_ULSCH_t *ulsch, uint8_t harq_pid)
 {
-  u8 Q_m = 0;
-  u32 Kr = 0;
+  uint8_t Q_m = 0;
+  uint32_t Kr = 0;
   int r;
-  u32 sumKr = 0;
-  u32 Qprime;
-  u32 L;
-  u32 G;
-  u32 Q_CQI = 0;
-  u32 Q_RI = 0;
+  uint32_t sumKr = 0;
+  uint32_t Qprime;
+  uint32_t L;
+  uint32_t G;
+  uint32_t Q_CQI = 0;
+  uint32_t Q_RI = 0;
 
   Q_m = get_Qm(ulsch->harq_processes[harq_pid]->mcs);
 
@@ -1805,7 +1805,7 @@ u32 get_ulsch_G(LTE_UE_ULSCH_t *ulsch, u8 harq_pid)
   return G;
 }
 
-double compute_ber_soft(u8* ref, s16* rec, int n)
+double compute_ber_soft(uint8_t* ref, int16_t* rec, int n)
 {
   int k;
   int e = 0;
@@ -1902,7 +1902,7 @@ void print_ulsch_eNB_stats(LTE_eNB_ULSCH_t* d)
   }
 }
 
-int block_valid(u8* ref, u8* rec, int n)
+int block_valid(uint8_t* ref, uint8_t* rec, int n)
 {
   int k;
 

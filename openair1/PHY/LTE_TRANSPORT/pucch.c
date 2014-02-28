@@ -41,11 +41,11 @@
 #include "PHY/extern.h"
 #include "LAYER2/MAC/extern.h"
 
-//u8 ncs_cell[20][7];
+//uint8_t ncs_cell[20][7];
 //#define DEBUG_PUCCH_TX
 //#define DEBUG_PUCCH_RX
 
-s16 cfo_pucch_np[24*7] = {20787,-25330,27244,-18205,31356,-9512,32767,0,31356,9511,27244,18204,20787,25329,
+int16_t cfo_pucch_np[24*7] = {20787,-25330,27244,-18205,31356,-9512,32767,0,31356,9511,27244,18204,20787,25329,
 			  27244,-18205,30272,-12540,32137,-6393,32767,0,32137,6392,30272,12539,27244,18204,
 			  31356,-9512,32137,-6393,32609,-3212,32767,0,32609,3211,32137,6392,31356,9511,
 			  32767,0,32767,0,32767,0,32767,0,32767,0,32767,0,32767,0,
@@ -53,7 +53,7 @@ s16 cfo_pucch_np[24*7] = {20787,-25330,27244,-18205,31356,-9512,32767,0,31356,95
 			  27244,18204,30272,12539,32137,6392,32767,0,32137,-6393,30272,-12540,27244,-18205,
 			  20787,25329,27244,18204,31356,9511,32767,0,31356,-9512,27244,-18205,20787,-25330};
 
-s16 cfo_pucch_ep[24*6] = {24278,-22005,29621,-14010,32412,-4808,32412,4807,29621,14009,24278,22004,
+int16_t cfo_pucch_ep[24*6] = {24278,-22005,29621,-14010,32412,-4808,32412,4807,29621,14009,24278,22004,
 			  28897,-15447,31356,-9512,32609,-3212,32609,3211,31356,9511,28897,15446,
 			  31785,-7962,32412,-4808,32727,-1608,32727,1607,32412,4807,31785,7961,
 			  32767,0,32767,0,32767,0,32767,0,32767,0,32767,0,
@@ -62,10 +62,10 @@ s16 cfo_pucch_ep[24*6] = {24278,-22005,29621,-14010,32412,-4808,32412,4807,29621
 			  24278,22004,29621,14009,32412,4807,32412,-4808,29621,-14010,24278,-22005};
 
 
-void init_ncs_cell(LTE_DL_FRAME_PARMS *frame_parms,u8 ncs_cell[20][7]) {
+void init_ncs_cell(LTE_DL_FRAME_PARMS *frame_parms,uint8_t ncs_cell[20][7]) {
 
-  u8 ns,l,reset=1,i,N_UL_symb;
-  u32 x1,x2,j=0,s=0;
+  uint8_t ns,l,reset=1,i,N_UL_symb;
+  uint32_t x1,x2,j=0,s=0;
   
   N_UL_symb = (frame_parms->Ncp==0) ? 7 : 6;
   x2 = frame_parms->Nid_cell;
@@ -93,17 +93,17 @@ void init_ncs_cell(LTE_DL_FRAME_PARMS *frame_parms,u8 ncs_cell[20][7]) {
   }
 }
 
-s16 alpha_re[12] = {32767, 28377, 16383,     0,-16384,  -28378,-32768,-28378,-16384,    -1, 16383, 28377};
-s16 alpha_im[12] = {0,     16383, 28377, 32767, 28377,   16383,     0,-16384,-28378,-32768,-28378,-16384};
+int16_t alpha_re[12] = {32767, 28377, 16383,     0,-16384,  -28378,-32768,-28378,-16384,    -1, 16383, 28377};
+int16_t alpha_im[12] = {0,     16383, 28377, 32767, 28377,   16383,     0,-16384,-28378,-32768,-28378,-16384};
 
-s16 W4[3][4] = {{32767, 32767, 32767, 32767},
+int16_t W4[3][4] = {{32767, 32767, 32767, 32767},
 		{32767,-32768, 32767,-32768},
 		{32767,-32768,-32768, 32767}};
-s16 W3_re[3][6] = {{32767, 32767, 32767},
+int16_t W3_re[3][6] = {{32767, 32767, 32767},
 		   {32767,-16384,-16384},
 		   {32767,-16384,-16384}};
 
-s16 W3_im[3][6] = {{0    ,0     ,0     },
+int16_t W3_im[3][6] = {{0    ,0     ,0     },
 		   {0    , 28377,-28378},
 		   {0    ,-28378, 28377}};
 
@@ -111,38 +111,38 @@ char pucch_format_string[6][20] = {"format 1\0","format 1a\0","format 1b\0","for
 
 void generate_pucch(mod_sym_t **txdataF,
 		    LTE_DL_FRAME_PARMS *frame_parms,
-		    u8 ncs_cell[20][7],
+		    uint8_t ncs_cell[20][7],
 		    PUCCH_FMT_t fmt,
 		    PUCCH_CONFIG_DEDICATED *pucch_config_dedicated,
-		    u16 n1_pucch,
-		    u16 n2_pucch,
-		    u8 shortened_format,
-		    u8 *payload,
-		    s16 amp,
-		    u8 subframe) {
+		    uint16_t n1_pucch,
+		    uint16_t n2_pucch,
+		    uint8_t shortened_format,
+		    uint8_t *payload,
+		    int16_t amp,
+		    uint8_t subframe) {
   
-  u32 u,v,n;
-  u32 z[12*14],*zptr;
-  s16 d0;
-  u8 ns,N_UL_symb,nsymb,n_oc,n_oc0,n_oc1;
-  u8 c = (frame_parms->Ncp==0) ? 3 : 2;
-  u16 nprime,nprime0,nprime1;
-  u16 i,j,re_offset,thres,h;
-  u8 Nprime_div_deltaPUCCH_Shift,Nprime,d;
-  u8 m,l,refs;
-  u8 n_cs,S,alpha_ind,rem;
-  s16 tmp_re,tmp_im,ref_re,ref_im,W_re=0,W_im=0;
+  uint32_t u,v,n;
+  uint32_t z[12*14],*zptr;
+  int16_t d0;
+  uint8_t ns,N_UL_symb,nsymb,n_oc,n_oc0,n_oc1;
+  uint8_t c = (frame_parms->Ncp==0) ? 3 : 2;
+  uint16_t nprime,nprime0,nprime1;
+  uint16_t i,j,re_offset,thres,h;
+  uint8_t Nprime_div_deltaPUCCH_Shift,Nprime,d;
+  uint8_t m,l,refs;
+  uint8_t n_cs,S,alpha_ind,rem;
+  int16_t tmp_re,tmp_im,ref_re,ref_im,W_re=0,W_im=0;
   mod_sym_t *txptr;
-  u32 symbol_offset;
+  uint32_t symbol_offset;
 
-  u8 deltaPUCCH_Shift          = frame_parms->pucch_config_common.deltaPUCCH_Shift;
-  u8 NRB2                      = frame_parms->pucch_config_common.nRB_CQI;
-  u8 Ncs1_div_deltaPUCCH_Shift = frame_parms->pucch_config_common.nCS_AN;
+  uint8_t deltaPUCCH_Shift          = frame_parms->pucch_config_common.deltaPUCCH_Shift;
+  uint8_t NRB2                      = frame_parms->pucch_config_common.nRB_CQI;
+  uint8_t Ncs1_div_deltaPUCCH_Shift = frame_parms->pucch_config_common.nCS_AN;
 
-  u32 u0 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[subframe<<1]) % 30;
-  u32 u1 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[1+(subframe<<1)]) % 30;
-  u32 v0=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[subframe<<1];
-  u32 v1=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[1+(subframe<<1)];
+  uint32_t u0 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[subframe<<1]) % 30;
+  uint32_t u1 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[1+(subframe<<1)]) % 30;
+  uint32_t v0=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[subframe<<1];
+  uint32_t v1=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[1+(subframe<<1)];
   
   if ((deltaPUCCH_Shift==0) || (deltaPUCCH_Shift>3)) {
     msg("[PHY] generate_pucch: Illegal deltaPUCCH_shift %d (should be 1,2,3)\n",deltaPUCCH_Shift);
@@ -215,10 +215,10 @@ void generate_pucch(mod_sym_t **txdataF,
       // Compute n_cs (36.211 p. 18)
       n_cs = ncs_cell[ns][l];
       if (frame_parms->Ncp==0) { // normal CP
-	n_cs = ((u16)n_cs + (nprime*deltaPUCCH_Shift + (n_oc%deltaPUCCH_Shift))%Nprime)%12;
+	n_cs = ((uint16_t)n_cs + (nprime*deltaPUCCH_Shift + (n_oc%deltaPUCCH_Shift))%Nprime)%12;
       }
       else {
-	n_cs = ((u16)n_cs + (nprime*deltaPUCCH_Shift + (n_oc>>1))%Nprime)%12;	
+	n_cs = ((uint16_t)n_cs + (nprime*deltaPUCCH_Shift + (n_oc>>1))%Nprime)%12;	
       }
 
 
@@ -282,8 +282,8 @@ void generate_pucch(mod_sym_t **txdataF,
       for (n=0;n<12;n++) {
 
 	// this is r_uv^alpha(n)
-	tmp_re = (s16)(((s32)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][n<<1] - (s32)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)])>>15);
-	tmp_im = (s16)(((s32)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)] + (s32)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][n<<1])>>15);
+	tmp_re = (int16_t)(((int32_t)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][n<<1] - (int32_t)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)])>>15);
+	tmp_im = (int16_t)(((int32_t)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)] + (int32_t)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][n<<1])>>15);
 
 	// this is S(ns)*w_noc(m)*r_uv^alpha(n)
 	ref_re = (tmp_re*W_re - tmp_im*W_im)>>15;
@@ -293,34 +293,34 @@ void generate_pucch(mod_sym_t **txdataF,
 	  switch (fmt) {
 	  case pucch_format1:   //OOK 1-bit
 	    
-	    ((s16 *)&zptr[n])[0] = ((s32)amp*ref_re)>>15;
-	    ((s16 *)&zptr[n])[1] = ((s32)amp*ref_im)>>15;
+	    ((int16_t *)&zptr[n])[0] = ((int32_t)amp*ref_re)>>15;
+	    ((int16_t *)&zptr[n])[1] = ((int32_t)amp*ref_im)>>15;
 	    
 	    break;
 	    
 	  case pucch_format1a:  //BPSK 1-bit
 	    d0 = (payload[0]&1)==0 ? amp : -amp;
-	    ((s16 *)&zptr[n])[0] = ((s32)d0*ref_re)>>15;
-	    ((s16 *)&zptr[n])[1] = ((s32)d0*ref_im)>>15;
+	    ((int16_t *)&zptr[n])[0] = ((int32_t)d0*ref_re)>>15;
+	    ((int16_t *)&zptr[n])[1] = ((int32_t)d0*ref_im)>>15;
 	    //	    printf("d0 %d\n",d0);
 	    break;
 	    
 	  case pucch_format1b:  //QPSK 2-bits (Table 5.4.1-1 from 36.211, pg. 18)
 	    if (((payload[0]&1)==0) && ((payload[1]&1)==0))  {// 1
-	      ((s16 *)&zptr[n])[0] = ((s32)amp*ref_re)>>15;
-	      ((s16 *)&zptr[n])[1] = ((s32)amp*ref_im)>>15;
+	      ((int16_t *)&zptr[n])[0] = ((int32_t)amp*ref_re)>>15;
+	      ((int16_t *)&zptr[n])[1] = ((int32_t)amp*ref_im)>>15;
 	    }
 	    else if (((payload[0]&1)==0) && ((payload[1]&1)==1))  {// -j
-	      ((s16 *)&zptr[n])[0] = ((s32)amp*ref_im)>>15;
-	      ((s16 *)&zptr[n])[1] = (-(s32)amp*ref_re)>>15;
+	      ((int16_t *)&zptr[n])[0] = ((int32_t)amp*ref_im)>>15;
+	      ((int16_t *)&zptr[n])[1] = (-(int32_t)amp*ref_re)>>15;
 	    }
 	    else if (((payload[0]&1)==1) && ((payload[1]&1)==0))  {// j
-	      ((s16 *)&zptr[n])[0] = (-(s32)amp*ref_im)>>15;
-	      ((s16 *)&zptr[n])[1] = ((s32)amp*ref_re)>>15;
+	      ((int16_t *)&zptr[n])[0] = (-(int32_t)amp*ref_im)>>15;
+	      ((int16_t *)&zptr[n])[1] = ((int32_t)amp*ref_re)>>15;
 	    }
 	    else  {// -1
-	      ((s16 *)&zptr[n])[0] = (-(s32)amp*ref_re)>>15;
-	      ((s16 *)&zptr[n])[1] = (-(s32)amp*ref_im)>>15;
+	      ((int16_t *)&zptr[n])[0] = (-(int32_t)amp*ref_re)>>15;
+	      ((int16_t *)&zptr[n])[1] = (-(int32_t)amp*ref_im)>>15;
 	    }
 	    break;
 	    
@@ -339,12 +339,12 @@ void generate_pucch(mod_sym_t **txdataF,
 	}
 	else {   // These are PUCCH reference symbols
 
-	  ((s16 *)&zptr[n])[0] = ((s32)amp*ref_re)>>15;
-	  ((s16 *)&zptr[n])[1] = ((s32)amp*ref_im)>>15;
+	  ((int16_t *)&zptr[n])[0] = ((int32_t)amp*ref_re)>>15;
+	  ((int16_t *)&zptr[n])[1] = ((int32_t)amp*ref_im)>>15;
 	  //	  printf("ref\n");
 	}
 #ifdef DEBUG_PUCCH_TX
-	msg("[PHY] PUCCH subframe %d z(%d,%d) => %d,%d, alpha(%d) => %d,%d\n",subframe,l,n,((s16 *)&zptr[n])[0],((s16 *)&zptr[n])[1],
+	msg("[PHY] PUCCH subframe %d z(%d,%d) => %d,%d, alpha(%d) => %d,%d\n",subframe,l,n,((int16_t *)&zptr[n])[0],((int16_t *)&zptr[n])[1],
 	    alpha_ind,alpha_re[alpha_ind],alpha_im[alpha_ind]);
 #endif
 	alpha_ind = (alpha_ind + n_cs)%12;
@@ -388,7 +388,7 @@ void generate_pucch(mod_sym_t **txdataF,
       if (re_offset==frame_parms->ofdm_symbol_size)
 	re_offset = 0; 
 #ifdef DEBUG_PUCCH_TX
-      msg("[PHY] PUCCH subframe %d (%d,%d,%d,%d) => %d,%d\n",subframe,l,i,re_offset-1,m,((s16 *)&z[j])[0],((s16 *)&z[j])[1]);
+      msg("[PHY] PUCCH subframe %d (%d,%d,%d,%d) => %d,%d\n",subframe,l,i,re_offset-1,m,((int16_t *)&z[j])[0],((int16_t *)&z[j])[1]);
 #endif
     }
   }
@@ -397,10 +397,10 @@ void generate_pucch(mod_sym_t **txdataF,
 
 void generate_pucch_emul(PHY_VARS_UE *phy_vars_ue,
 			 PUCCH_FMT_t format,
-			 u8 ncs1,
-			 u8 *pucch_payload,
-			 u8 sr,
-			 u8 subframe) {
+			 uint8_t ncs1,
+			 uint8_t *pucch_payload,
+			 uint8_t sr,
+			 uint8_t subframe) {
 
   UE_transport_info[phy_vars_ue->Mod_id].cntl.pucch_flag    = format;
   UE_transport_info[phy_vars_ue->Mod_id].cntl.pucch_Ncs1    = ncs1;
@@ -428,47 +428,47 @@ void generate_pucch_emul(PHY_VARS_UE *phy_vars_ue,
 
 }
 
-s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
+int32_t rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	     PUCCH_FMT_t fmt,
-	     u8 UE_id,
-	     u16 n1_pucch,
-	     u16 n2_pucch,
-	     u8 shortened_format,
-	     u8 *payload,
-	     u8 subframe,
-	     u8 pucch1_thres) {
+	     uint8_t UE_id,
+	     uint16_t n1_pucch,
+	     uint16_t n2_pucch,
+	     uint8_t shortened_format,
+	     uint8_t *payload,
+	     uint8_t subframe,
+	     uint8_t pucch1_thres) {
 
 
   LTE_eNB_COMMON *eNB_common_vars                = &phy_vars_eNB->lte_eNB_common_vars;
   LTE_DL_FRAME_PARMS *frame_parms                = &phy_vars_eNB->lte_frame_parms;
   //  PUCCH_CONFIG_DEDICATED *pucch_config_dedicated = &phy_vars_eNB->pucch_config_dedicated[UE_id];
-  s8 sigma2_dB                                   = phy_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dB;
-  u32 u,v,n,aa;
-  u32 z[12*14];
-  s16 *zptr;
-  s16 rxcomp[NB_ANTENNAS_RX][2*12*14];
-  u8 ns,N_UL_symb,nsymb,n_oc,n_oc0,n_oc1;
-  u8 c = (frame_parms->Ncp==0) ? 3 : 2;
-  u16 nprime,nprime0,nprime1;
-  u16 i,j,re_offset,thres,h,off;
-  u8 Nprime_div_deltaPUCCH_Shift,Nprime,d;
-  u8 m,l,refs,phase,re,l2,phase_max=0;
-  u8 n_cs,S,alpha_ind,rem;
-  s16 tmp_re,tmp_im,W_re=0,W_im=0;
-  s16 *rxptr;
-  u32 symbol_offset;
-  s16 stat_ref_re,stat_ref_im,*cfo,chest_re,chest_im;
-  s32 stat_re=0,stat_im=0;
-  s32 stat,stat_max=0;
+  int8_t sigma2_dB                                   = phy_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dB;
+  uint32_t u,v,n,aa;
+  uint32_t z[12*14];
+  int16_t *zptr;
+  int16_t rxcomp[NB_ANTENNAS_RX][2*12*14];
+  uint8_t ns,N_UL_symb,nsymb,n_oc,n_oc0,n_oc1;
+  uint8_t c = (frame_parms->Ncp==0) ? 3 : 2;
+  uint16_t nprime,nprime0,nprime1;
+  uint16_t i,j,re_offset,thres,h,off;
+  uint8_t Nprime_div_deltaPUCCH_Shift,Nprime,d;
+  uint8_t m,l,refs,phase,re,l2,phase_max=0;
+  uint8_t n_cs,S,alpha_ind,rem;
+  int16_t tmp_re,tmp_im,W_re=0,W_im=0;
+  int16_t *rxptr;
+  uint32_t symbol_offset;
+  int16_t stat_ref_re,stat_ref_im,*cfo,chest_re,chest_im;
+  int32_t stat_re=0,stat_im=0;
+  int32_t stat,stat_max=0;
 
-  u8 deltaPUCCH_Shift          = frame_parms->pucch_config_common.deltaPUCCH_Shift;
-  u8 NRB2                      = frame_parms->pucch_config_common.nRB_CQI;
-  u8 Ncs1_div_deltaPUCCH_Shift = frame_parms->pucch_config_common.nCS_AN;
+  uint8_t deltaPUCCH_Shift          = frame_parms->pucch_config_common.deltaPUCCH_Shift;
+  uint8_t NRB2                      = frame_parms->pucch_config_common.nRB_CQI;
+  uint8_t Ncs1_div_deltaPUCCH_Shift = frame_parms->pucch_config_common.nCS_AN;
 
-  u32 u0 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[subframe<<1]) % 30;
-  u32 u1 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[1+(subframe<<1)]) % 30;
-  u32 v0=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[subframe<<1];
-  u32 v1=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[1+(subframe<<1)];
+  uint32_t u0 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[subframe<<1]) % 30;
+  uint32_t u1 = (frame_parms->Nid_cell + frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.grouphop[1+(subframe<<1)]) % 30;
+  uint32_t v0=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[subframe<<1];
+  uint32_t v1=frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.seqhop[1+(subframe<<1)];
 
 
   if ((deltaPUCCH_Shift==0) || (deltaPUCCH_Shift>3)) {
@@ -486,7 +486,7 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
     return(-1);
   }
 
-  zptr = (s16 *)z;
+  zptr = (int16_t *)z;
   thres = (c*Ncs1_div_deltaPUCCH_Shift);
   Nprime_div_deltaPUCCH_Shift = (n1_pucch < thres) ? Ncs1_div_deltaPUCCH_Shift : (12/deltaPUCCH_Shift);
   Nprime = Nprime_div_deltaPUCCH_Shift * deltaPUCCH_Shift;
@@ -542,10 +542,10 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
       // Compute n_cs (36.211 p. 18)
       n_cs = phy_vars_eNB->ncs_cell[ns][l];
       if (frame_parms->Ncp==0) { // normal CP
-	n_cs = ((u16)n_cs + (nprime*deltaPUCCH_Shift + (n_oc%deltaPUCCH_Shift))%Nprime)%12;
+	n_cs = ((uint16_t)n_cs + (nprime*deltaPUCCH_Shift + (n_oc%deltaPUCCH_Shift))%Nprime)%12;
       }
       else {
-	n_cs = ((u16)n_cs + (nprime*deltaPUCCH_Shift + (n_oc>>1))%Nprime)%12;	
+	n_cs = ((uint16_t)n_cs + (nprime*deltaPUCCH_Shift + (n_oc>>1))%Nprime)%12;	
       }
 
 
@@ -609,8 +609,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
       for (n=0;n<12;n++) {
 
 	// this is r_uv^alpha(n)
-	tmp_re = (s16)(((s32)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][n<<1] - (s32)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)])>>15);
-	tmp_im = (s16)(((s32)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)] + (s32)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][n<<1])>>15);
+	tmp_re = (int16_t)(((int32_t)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][n<<1] - (int32_t)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)])>>15);
+	tmp_im = (int16_t)(((int32_t)alpha_re[alpha_ind] * ul_ref_sigs[u][v][0][1+(n<<1)] + (int32_t)alpha_im[alpha_ind] * ul_ref_sigs[u][v][0][n<<1])>>15);
 
 	// this is S(ns)*w_noc(m)*r_uv^alpha(n)
 	zptr[n<<1] = (tmp_re*W_re - tmp_im*W_im)>>15;
@@ -638,7 +638,7 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 #endif
   nsymb = N_UL_symb<<1;
 
-  zptr = (s16*)z;
+  zptr = (int16_t*)z;
 
   // Do detection
   for (aa=0;aa<frame_parms->nb_antennas_rx;aa++) {
@@ -659,17 +659,17 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
       
       symbol_offset = (unsigned int)frame_parms->ofdm_symbol_size*l;
 #ifndef NEW_FFT
-      rxptr = (s16 *)&eNB_common_vars->rxdataF[0][aa][2*symbol_offset];
+      rxptr = (int16_t *)&eNB_common_vars->rxdataF[0][aa][2*symbol_offset];
 #else
-      rxptr = (s16 *)&eNB_common_vars->rxdataF[0][aa][symbol_offset];
+      rxptr = (int16_t *)&eNB_common_vars->rxdataF[0][aa][symbol_offset];
 #endif      
       for (i=0;i<12;i++,j+=2,re_offset++) {
 #ifndef NEW_FFT	
-	rxcomp[aa][j]   = (s16)((rxptr[re_offset<<2]*(s32)zptr[j])>>15)   - ((rxptr[1+(re_offset<<2)]*(s32)zptr[1+j])>>15);
-	rxcomp[aa][1+j] = (s16)((rxptr[re_offset<<2]*(s32)zptr[1+j])>>15) + ((rxptr[1+(re_offset<<2)]*(s32)zptr[j])>>15);
+	rxcomp[aa][j]   = (int16_t)((rxptr[re_offset<<2]*(int32_t)zptr[j])>>15)   - ((rxptr[1+(re_offset<<2)]*(int32_t)zptr[1+j])>>15);
+	rxcomp[aa][1+j] = (int16_t)((rxptr[re_offset<<2]*(int32_t)zptr[1+j])>>15) + ((rxptr[1+(re_offset<<2)]*(int32_t)zptr[j])>>15);
 #else
-	rxcomp[aa][j]   = (s16)((rxptr[re_offset<<1]*(s32)zptr[j])>>15)   - ((rxptr[1+(re_offset<<1)]*(s32)zptr[1+j])>>15);
-	rxcomp[aa][1+j] = (s16)((rxptr[re_offset<<1]*(s32)zptr[1+j])>>15) + ((rxptr[1+(re_offset<<1)]*(s32)zptr[j])>>15);
+	rxcomp[aa][j]   = (int16_t)((rxptr[re_offset<<1]*(int32_t)zptr[j])>>15)   - ((rxptr[1+(re_offset<<1)]*(int32_t)zptr[1+j])>>15);
+	rxcomp[aa][1+j] = (int16_t)((rxptr[re_offset<<1]*(int32_t)zptr[1+j])>>15) + ((rxptr[1+(re_offset<<1)]*(int32_t)zptr[j])>>15);
 #endif
 	if (re_offset==frame_parms->ofdm_symbol_size)
 	  re_offset = 0; 
@@ -705,8 +705,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	  cfo =  (frame_parms->Ncp==0) ? &cfo_pucch_np[14*phase] : &cfo_pucch_ep[12*phase];
 	  
 	  for (l=0;l<(nsymb>>1);l++) {
-	    stat_re += ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    stat_im += ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    stat_re += ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    stat_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    off+=2;
 #ifdef DEBUG_PUCCH_RX
 	    LOG_D(PHY,"[eNB] PUCCH subframe %d (%d,%d) => (%d,%d) x (%d,%d) : (%d,%d)\n",subframe,l,re,
@@ -716,8 +716,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 #endif	    
 	  }
 	  for (l2=0,l=(nsymb>>1);l<(nsymb-1);l++,l2++) {
-	    stat_re += ((rxcomp[aa][off]*(s32)cfo[l2<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l2<<1)])>>15);
-	    stat_im += ((rxcomp[aa][off]*(s32)cfo[1+(l2<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l2<<1)])>>15);
+	    stat_re += ((rxcomp[aa][off]*(int32_t)cfo[l2<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l2<<1)])>>15);
+	    stat_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l2<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l2<<1)])>>15);
 	    off+=2;
 #ifdef DEBUG_PUCCH_RX
 	    LOG_D(PHY,"[eNB] PUCCH subframe %d (%d,%d) => (%d,%d) x (%d,%d) : (%d,%d)\n",subframe,l2,re,
@@ -768,12 +768,12 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	  
 	  for (l=0;l<(nsymb>>1);l++) {
 	    if ((l<2)||(l>(nsymb>>1) - 3)) {  //data symbols
-	      stat_re += ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	      stat_im += ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	      stat_re += ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	      stat_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    } 
 	    else {   //reference symbols
-	      stat_ref_re += ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	      stat_ref_im += ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	      stat_ref_re += ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	      stat_ref_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    }
 	    off+=2;
 #ifdef DEBUG_PUCCH_RX
@@ -786,12 +786,12 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 
 	  for (l2=0,l=(nsymb>>1);l<(nsymb-1);l++,l2++) {
 	    if ((l2<2) || ((l2>(nsymb>>1) - 3)) ) {  // data symbols
-	      stat_re += ((rxcomp[aa][off]*(s32)cfo[l2<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l2<<1)])>>15);
-	      stat_im += ((rxcomp[aa][off]*(s32)cfo[1+(l2<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l2<<1)])>>15);
+	      stat_re += ((rxcomp[aa][off]*(int32_t)cfo[l2<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l2<<1)])>>15);
+	      stat_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l2<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l2<<1)])>>15);
 	    }
 	    else {  //reference_symbols
-	      stat_ref_re += ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	      stat_ref_im += ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	      stat_ref_re += ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	      stat_ref_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    }
 	    off+=2;
 #ifdef DEBUG_PUCCH_RX
@@ -837,8 +837,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	  // channel estimate for first slot
 	  for (l=2;l<(nsymb>>1)-2;l++) {
 	    off=(re<<1) + (24*l);
-	    chest_re += ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    chest_im += ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    chest_re += ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    chest_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	  }
 #ifdef DEBUG_PUCCH_RX
 	  LOG_D(PHY,"[eNB] PUCCH subframe %d l %d re %d chest1 => (%d,%d)\n",subframe,l,re,
@@ -846,8 +846,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 #endif	    
 	  for (l=0;l<2;l++) {
 	    off=(re<<1) + (24*l);
-	    tmp_re = ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    tmp_im = ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    tmp_re = ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    tmp_im = ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    stat_re += ((tmp_re*chest_re)>>15) + ((tmp_im*chest_im)>>15);
 	    stat_im += ((tmp_re*chest_im)>>15) - ((tmp_im*chest_re)>>15);
 	    off+=2;
@@ -860,8 +860,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	  }
 	  for (l=(nsymb>>1)-2;l<(nsymb>>1);l++) {
 	    off=(re<<1) + (24*l);
-	    tmp_re = ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    tmp_im = ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    tmp_re = ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    tmp_im = ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    stat_re += ((tmp_re*chest_re)>>15) + ((tmp_im*chest_im)>>15);
 	    stat_im += ((tmp_re*chest_im)>>15) - ((tmp_im*chest_re)>>15);
 	    off+=2;
@@ -878,8 +878,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	  // channel estimate for second slot
 	  for (l=2;l<(nsymb>>1)-2;l++) {
 	    off=(re<<1) + (24*l) + (nsymb>>1)*24;
-	    chest_re += ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    chest_im += ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    chest_re += ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    chest_im += ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	  }
 #ifdef DEBUG_PUCCH_RX
 	  LOG_D(PHY,"[eNB] PUCCH subframe %d l %d re %d chest2 => (%d,%d)\n",subframe,l,re,
@@ -887,8 +887,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 #endif	    
 	  for (l=0;l<2;l++) {
 	    off=(re<<1) + (24*l) + (nsymb>>1)*24;
-	    tmp_re = ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    tmp_im = ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    tmp_re = ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    tmp_im = ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    stat_re += ((tmp_re*chest_re)>>15) + ((tmp_im*chest_im)>>15);
 	    stat_im += ((tmp_re*chest_im)>>15) - ((tmp_im*chest_re)>>15);
 	    off+=2;
@@ -901,8 +901,8 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
 	  }
 	  for (l=(nsymb>>1)-2;l<(nsymb>>1)-1;l++) {
 	    off=(re<<1) + (24*l) + (nsymb>>1)*24;
-	    tmp_re = ((rxcomp[aa][off]*(s32)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(s32)cfo[1+(l<<1)])>>15);
-	    tmp_im = ((rxcomp[aa][off]*(s32)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(s32)cfo[(l<<1)])>>15);
+	    tmp_re = ((rxcomp[aa][off]*(int32_t)cfo[l<<1])>>15)     - ((rxcomp[aa][1+off]*(int32_t)cfo[1+(l<<1)])>>15);
+	    tmp_im = ((rxcomp[aa][off]*(int32_t)cfo[1+(l<<1)])>>15) + ((rxcomp[aa][1+off]*(int32_t)cfo[(l<<1)])>>15);
 	    stat_re += ((tmp_re*chest_re)>>9) + ((tmp_im*chest_im)>>9);
 	    stat_im += ((tmp_re*chest_im)>>9) - ((tmp_im*chest_re)>>9);
 	    off+=2;
@@ -938,19 +938,19 @@ s32 rx_pucch(PHY_VARS_eNB *phy_vars_eNB,
     LOG_E(PHY,"[eNB] PUCCH fmt2/2a/2b not supported\n");
   }
 
-  return((s32)stat_max);
+  return((int32_t)stat_max);
 
 }
 
 
-s32 rx_pucch_emul(PHY_VARS_eNB *phy_vars_eNB,
-		  u8 UE_index,
+int32_t rx_pucch_emul(PHY_VARS_eNB *phy_vars_eNB,
+		  uint8_t UE_index,
 		  PUCCH_FMT_t fmt,
-		  u8 n1_pucch_sel,
-		  u8 *payload,
-		  u8 subframe) {
-  u8 UE_id;
-  u16 rnti;
+		  uint8_t n1_pucch_sel,
+		  uint8_t *payload,
+		  uint8_t subframe) {
+  uint8_t UE_id;
+  uint16_t rnti;
 
   rnti = phy_vars_eNB->ulsch_eNB[UE_index]->rnti;
   for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {

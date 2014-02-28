@@ -57,7 +57,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 #                define public_rlc_am_retransmit(x)     extern x
 #            endif
 #        endif
-/*! \fn void  rlc_am_nack_pdu (rlc_am_entity_t *rlcP, frame_t frameP, u16_t snP, sdu_size_t so_startP, sdu_size_t so_endP)
+/*! \fn void  rlc_am_nack_pdu (rlc_am_entity_t *rlcP, frame_t frameP, uint16_t snP, sdu_size_t so_startP, sdu_size_t so_endP)
 * \brief      The RLC AM PDU which have the sequence number snP is marked NACKed with segment offset fields.
 * \param[in]  rlcP         RLC AM protocol instance pointer.
 * \param[in]  frameP        Frame index.

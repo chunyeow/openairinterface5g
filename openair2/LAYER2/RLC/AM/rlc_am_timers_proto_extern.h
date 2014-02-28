@@ -13,5 +13,5 @@
 #        include "platform_types.h"
 
 extern void     rlc_am_timer_epc_notify_time_out (struct rlc_am_entity *rlcP, void *arg_not_usedP);
-extern void     rlc_am_timer_epc_fsm (struct rlc_am_entity *rlcP, u8_t eventP);
+extern void     rlc_am_timer_epc_fsm (struct rlc_am_entity *rlcP, uint8_t eventP);
 #    endif

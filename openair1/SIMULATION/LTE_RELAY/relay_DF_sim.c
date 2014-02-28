@@ -256,7 +256,7 @@ void do_forms(FD_lte_scope *form, LTE_DL_FRAME_PARMS *frame_parms, short **chann
 #endif
 
 // In the following function the first parameter ("unsigned char num_relay") is added for # RN in the Parallel Relay Network (PRN); 
-void lte_param_init(unsigned char num_relay, unsigned char N_tx, unsigned char N_rx, unsigned char transmission_mode, u8 extended_prefix_flag, u16 Nid_cell, u8 tdd_config, u8 N_RB_DL, u8 osf) {
+void lte_param_init(unsigned char num_relay, unsigned char N_tx, unsigned char N_rx, unsigned char transmission_mode, uint8_t extended_prefix_flag, uint16_t Nid_cell, uint8_t tdd_config, uint8_t N_RB_DL, uint8_t osf) {
 	
 	LTE_DL_FRAME_PARMS *lte_frame_parms;
 	int i;
@@ -391,8 +391,8 @@ int main(int argc, char **argv) {
 	double hold_channel = 0;          // use hold_channel=1 instead of forgetting_factor=1 (more efficient)
 	double iqim = 0.0;
 
-	u8 extended_prefix_flag=0, transmission_mode=1, n_tx=1, n_rx=1;
-	u16 Nid_cell=0;
+	uint8_t extended_prefix_flag=0, transmission_mode=1, n_tx=1, n_rx=1;
+	uint16_t Nid_cell=0;
 
 	int eNB_id = 0, eNB_id_i = NUMBER_OF_eNB_MAX;
 	unsigned char mcs, dual_stream_UE = 0; 
@@ -400,8 +400,8 @@ int main(int argc, char **argv) {
 	unsigned char i_mod = 2;
 	unsigned short NB_RB = conv_nprb(0, DLSCH_RB_ALLOC);
 	unsigned char Ns, l, m;
-	u16 tdd_config = 3;
-	u16 n_rnti = 0x1234;
+	uint16_t tdd_config = 3;
+	uint16_t n_rnti = 0x1234;
 	int n_users = 1;              // if we select 'n_users = # of RN', would it be possible to simulate PRN setup?
 	unsigned int num_relay;
 	
@@ -441,13 +441,13 @@ int main(int argc, char **argv) {
 	int n_ch_rlz = 1;
 	channel_desc_t **eNB2UE;        // which is a pointer array whose size will be the "# of RNs (UEs)" in the system;
 	double snr;
-	u8 num_pdcch_symbols=3, num_pdcch_symbols_2=0;
-	u8 pilot1, pilot2, pilot3;
-	u8 rx_sample_offset = 0;
+	uint8_t num_pdcch_symbols=3, num_pdcch_symbols_2=0;
+	uint8_t pilot1, pilot2, pilot3;
+	uint8_t rx_sample_offset = 0;
 	//char stats_buffer[4096];
 	//int len;
-	u8 num_rounds=4,fix_rounds=0;
-	u8 subframe=6;
+	uint8_t num_rounds=4,fix_rounds=0;
+	uint8_t subframe=6;
 	int u;
 	int abstx=0;
 	int iii;
@@ -460,8 +460,8 @@ int main(int argc, char **argv) {
 	// int bler;
 	double blerr, uncoded_ber, avg_ber;
 	short *uncoded_ber_bit;
-	u8 N_RB_DL = 25, osf = 1;
-	s16 amp;
+	uint8_t N_RB_DL = 25, osf = 1;
+	int16_t amp;
 	
 	#ifdef XFORMS
 		FD_lte_scope *form;
@@ -1158,7 +1158,7 @@ int main(int argc, char **argv) {
 							// printf("Did not Crash here 2\n");
 							
 							if (transmission_mode == 5) {
-								amp = (s16)(((s32)1024*ONE_OVER_SQRT2_Q15)>>15);
+								amp = (int16_t)(((int32_t)1024*ONE_OVER_SQRT2_Q15)>>15);
 							}
 							else
 								amp = 1024;
@@ -1475,8 +1475,8 @@ int main(int argc, char **argv) {
 											for(aa=0; aa<frame_parms->nb_antennas_tx; aa++) { 
 												for (aarx=0; aarx<frame_parms->nb_antennas_rx; aarx++){
 													for (i=0; i<frame_parms->N_RB_DL*12; i++){ 
-														((s16 *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE[j]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP/2);
-														((s16 *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(s16)(eNB2UE[j]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP/2) ;
+														((int16_t *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE[j]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].x*AMP/2);
+														((int16_t *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[k][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=(int16_t)(eNB2UE[j]->chF[aarx+(aa*frame_parms->nb_antennas_rx)][i].y*AMP/2) ;
 													}
 												}
 											}
@@ -1486,8 +1486,8 @@ int main(int argc, char **argv) {
 										for(aa=0;aa<frame_parms->nb_antennas_tx;aa++) { 
 											for (aarx=0;aarx<frame_parms->nb_antennas_rx;aarx++){
 												for (i=0;i<frame_parms->N_RB_DL*12;i++){ 
-													((s16 *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=AMP/2;
-													((s16 *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
+													((int16_t *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=AMP/2;
+													((int16_t *) PHY_vars_UE[j]->lte_ue_common_vars.dl_ch_estimates[0][(aa<<1)+aarx])[2*i+1+(l*frame_parms->ofdm_symbol_size+LTE_CE_FILTER_LENGTH)*2]=0/2;
 												}
 											}
 										}

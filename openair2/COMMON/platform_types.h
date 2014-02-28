@@ -10,73 +10,42 @@
 #    define __PLATFORM_TYPES_H__
 
 #ifdef USER_MODE
-# include "openair_types.h"
+#include <stdint.h>
+//#else
+//#include <linux/types.h>
 #endif
 
-typedef unsigned char      u8_t;
-typedef unsigned short int u16_t;
-typedef unsigned int       u32_t;
-typedef unsigned long  int u64_t;
-
-typedef signed char        s8_t;
-typedef signed short int   s16_t;
-typedef signed int         s32_t;
-typedef signed long  int   s64_t;
-
-typedef unsigned int       config_action_t;
-
-typedef u16_t              sdu_size_t;
-typedef s16_t              sdu_ssize_t;
-typedef unsigned int       tbs_size_t;
-typedef unsigned int       tb_size_t;
-typedef u16_t              rb_id_t;
-typedef u16_t              srb_id_t;
-typedef u32_t              frame_t;
-typedef s32_t              sframe_t;
-typedef u32_t              sub_frame_t;
-typedef u8_t               module_id_t;
-typedef s8_t               smodule_id_t;
-typedef unsigned int       mui_t;
-typedef unsigned int       confirm_t;
-typedef unsigned int       logical_chan_id_t;
-typedef unsigned int       num_tb_t;
-typedef unsigned int       crc_t;
-typedef unsigned int       rlc_tx_status_t;
-typedef s16_t              rlc_sn_t;
-typedef u16_t              rlc_usn_t;
-typedef u16_t              pdcp_sn_t;
-typedef u32_t              pdcp_hfn_t;
-typedef int                traffic_type_t;
-typedef u32_t              mbms_session_id_t;
-typedef u16_t              mbms_service_id_t;
-typedef u16_t              rnti_t;
-typedef u32_t              rlc_buffer_occupancy_t;
-typedef signed int         rlc_op_status_t;
-
-typedef unsigned char      crc8_t;
-typedef unsigned short     crc16_t;
-typedef unsigned int       crc32_t;
-
+//-----------------------------------------------------------------------------
+// GENERIC TYPES
+//-----------------------------------------------------------------------------
 typedef signed char        boolean_t;
+
 #if !defined(TRUE)
 #define TRUE               (boolean_t)0x01
 #endif
+
 #if !defined(FALSE)
 #define FALSE              (boolean_t)0x00
 #endif
+
+//-----------------------------------------------------------------------------
+// GENERIC ACCESS STRATUM TYPES
+//-----------------------------------------------------------------------------
+typedef uint16_t              sdu_size_t;
+typedef int16_t               sdu_ssize_t;
+typedef uint32_t              frame_t;
+typedef int32_t               sframe_t;
+typedef uint32_t              sub_frame_t;
+typedef uint8_t               module_id_t;
+typedef int8_t                smodule_id_t;
+typedef uint16_t              rb_id_t;
+typedef uint16_t              srb_id_t;
 
 typedef enum link_direction_e {
     UNKNOWN_DIR          = 0,
     DIR_UPLINK           = 1,
     DIR_DOWNLINK         = 2
 } link_direction_t;
-
-typedef enum rb_type_e {
-    UNKNOWN_RADIO_BEARER        = 0,
-    SIGNALLING_RADIO_BEARER     = 1,
-    RADIO_ACCESS_BEARER         = 2
-} rb_type_t;
-
 
 typedef enum MBMS_flag_e {
     MBMS_FLAG_NO       = 0,
@@ -88,7 +57,71 @@ typedef enum eNB_flag_e {
     ENB_FLAG_YES      = 1,
 } eNB_flag_t;
 
-// just for integration
-extern frame_t    frame;
+typedef enum rb_type_e {
+    UNKNOWN_RADIO_BEARER        = 0,
+    SIGNALLING_RADIO_BEARER     = 1,
+    RADIO_ACCESS_BEARER         = 2
+} rb_type_t;
+
+//-----------------------------------------------------------------------------
+// PHY TYPES
+//-----------------------------------------------------------------------------
+typedef uint8_t            crc8_t;
+typedef uint16_t           crc16_t;
+typedef uint32_t           crc32_t;
+typedef unsigned int       crc_t;
+
+//-----------------------------------------------------------------------------
+// MAC TYPES
+//-----------------------------------------------------------------------------
+typedef unsigned int       tbs_size_t;
+typedef unsigned int       tb_size_t;
+typedef unsigned int       logical_chan_id_t;
+typedef unsigned int       num_tb_t;
+
+//-----------------------------------------------------------------------------
+// RLC TYPES
+//-----------------------------------------------------------------------------
+typedef unsigned int       mui_t;
+typedef unsigned int       confirm_t;
+typedef unsigned int       rlc_tx_status_t;
+typedef int16_t            rlc_sn_t;
+typedef uint16_t           rlc_usn_t;
+typedef uint32_t           rlc_buffer_occupancy_t;
+typedef signed int         rlc_op_status_t;
+
+//-----------------------------------------------------------------------------
+// PDCP TYPES
+//-----------------------------------------------------------------------------
+typedef uint16_t           pdcp_sn_t;
+typedef uint32_t           pdcp_hfn_t;
+
+typedef enum pdcp_transmission_mode_e {
+   PDCP_TRANSMISSION_MODE_UNKNOWN     = 0,
+   PDCP_TRANSMISSION_MODE_CONTROL     = 1,
+   PDCP_TRANSMISSION_MODE_DATA        = 2,
+   PDCP_TRANSMISSION_MODE_TRANSPARENT = 3
+} pdcp_transmission_mode_t;
+//-----------------------------------------------------------------------------
+// IP DRIVER / PDCP TYPES
+//-----------------------------------------------------------------------------
+typedef enum  ip_traffic_type_e {
+       TRAFFIC_IPVX_TYPE_UNKNOWN    =  0,
+       TRAFFIC_IPV6_TYPE_UNICAST    =  1,
+       TRAFFIC_IPV6_TYPE_MULTICAST  =  2,
+       TRAFFIC_IPV6_TYPE_UNKNOWN    =  3,
+       TRAFFIC_IPV4_TYPE_UNICAST    =  5,
+       TRAFFIC_IPV4_TYPE_MULTICAST  =  6,
+       TRAFFIC_IPV4_TYPE_BROADCAST  =  7,
+       TRAFFIC_IPV4_TYPE_UNKNOWN    =  8
+} ip_traffic_type_t;
+
+//-----------------------------------------------------------------------------
+// RRC TYPES
+//-----------------------------------------------------------------------------
+typedef uint32_t           mbms_session_id_t;
+typedef uint16_t           mbms_service_id_t;
+typedef uint16_t           rnti_t;
+typedef unsigned int       config_action_t;
 
 #endif

@@ -32,7 +32,7 @@ PHY_VARS_eNB *PHY_vars_eNb;
 PHY_VARS_UE *PHY_vars_UE;
 
 
-void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,u8 extended_prefix_flag) {
+void lte_param_init(unsigned char N_tx, unsigned char N_rx,unsigned char transmission_mode,uint8_t extended_prefix_flag) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms;
 
@@ -146,8 +146,8 @@ int main(int argc, char **argv) {
   double ricean_factor=0.0000005;
   double Td=0.8;
   double iqim=0.0;
-  u8 channel_length,nb_taps=8;
-  u8 extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
+  uint8_t channel_length,nb_taps=8;
+  uint8_t extended_prefix_flag=0,transmission_mode=1,n_tx=1,n_rx=1;
 
   int eNb_id = 0, eNb_id_i = 1;
   unsigned char mcs,dual_stream_UE = 0,awgn_flag=0,round,dci_flag=0;
@@ -177,8 +177,8 @@ int main(int argc, char **argv) {
 
   channel_desc_t *eNB2UE;
 
-  u8 num_pdcch_symbols=3,num_pdcch_symbols_dummy;
-  u8 pilot1,pilot2,pilot3;
+  uint8_t num_pdcch_symbols=3,num_pdcch_symbols_dummy;
+  uint8_t pilot1,pilot2,pilot3;
 
   dci_alloc[0].dci_length = sizeof_DCI0_5MHz_TDD_0_t;
 

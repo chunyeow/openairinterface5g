@@ -75,7 +75,7 @@
 #endif
 #endif //USER_MODE
 
-#include "openair_types.h"
+#include "platform_types.h"
 #include "openair_defs.h"
 
 #ifdef CELLULAR
@@ -87,32 +87,32 @@
 #include "openair_rrc_L2_interface.h"
  
 /********************************************************************************************************************/
-s8 mac_rrc_data_req(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP, u8 nb_tbP,u8 *buffer_pP, eNB_flag_t eNB_flagP, u8 eNB_indexP, u8 mbsfn_sync_areaP){
+int8_t mac_rrc_data_req(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP, uint8_t nb_tbP,uint8_t *buffer_pP, eNB_flag_t eNB_flagP, uint8_t eNB_indexP, uint8_t mbsfn_sync_areaP){
 /********************************************************************************************************************/
   return(mac_rrc_lite_data_req(module_idP,frameP,srb_idP,nb_tbP,buffer_pP,eNB_flagP,eNB_indexP,mbsfn_sync_areaP));
 }   
 
 /********************************************************************************************************************/
-s8 mac_rrc_data_ind(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP, u8 *sduP, sdu_size_t sdu_lenP, eNB_flag_t eNB_flagP, u8 eNB_indexP,u8 mbsfn_sync_area){
+int8_t mac_rrc_data_ind(module_id_t module_idP, frame_t frameP, rb_id_t srb_idP, uint8_t *sduP, sdu_size_t sdu_lenP, eNB_flag_t eNB_flagP, uint8_t eNB_indexP,uint8_t mbsfn_sync_area){
 /********************************************************************************************************************/
   return(mac_rrc_lite_data_ind(module_idP,frameP,srb_idP,sduP,sdu_lenP,eNB_flagP,eNB_indexP,mbsfn_sync_area));
 }
 
 /********************************************************************************************************************/
-void rlcrrc_data_ind(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t srb_idP, sdu_size_t sdu_lenP,u8 *buffer_pP){
+void rlcrrc_data_ind(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t srb_idP, sdu_size_t sdu_lenP,uint8_t *buffer_pP){
 /********************************************************************************************************************/
   rrc_lite_data_ind(enb_instP, ue_instP,frameP,eNB_flagP,srb_idP,sdu_lenP,buffer_pP);
 }
 
 /********************************************************************************************************************/
-u8 pdcp_rrc_data_req(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, boolean_t confirmP,
-      sdu_size_t sdu_buffer_sizeP, u8* sdu_buffer_pP, u8 modeP) {
+uint8_t pdcp_rrc_data_req(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t rb_idP, mui_t muiP, boolean_t confirmP,
+      sdu_size_t sdu_buffer_sizeP, uint8_t* sdu_buffer_pP, uint8_t modeP) {
   /********************************************************************************************************************/
   return rrc_lite_data_req (enb_instP, ue_instP, frameP, eNB_flagP, rb_idP, muiP, confirmP, sdu_buffer_sizeP, sdu_buffer_pP, modeP);
 }
 
 /********************************************************************************************************************/
-void pdcp_rrc_data_ind(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t srb_idP, sdu_size_t sdu_sizeP,u8 *buffer_pP){
+void pdcp_rrc_data_ind(module_id_t enb_instP, module_id_t ue_instP, frame_t frameP, eNB_flag_t eNB_flagP, rb_id_t srb_idP, sdu_size_t sdu_sizeP,uint8_t *buffer_pP){
 /********************************************************************************************************************/
   rrc_lite_data_ind(enb_instP, ue_instP,frameP,eNB_flagP,srb_idP,sdu_sizeP,buffer_pP);
 }
@@ -124,25 +124,25 @@ void mac_rrc_meas_ind(module_id_t module_idP,MAC_MEAS_REQ_ENTRY *Meas_entry_pP){
 }
 
 /********************************************************************************************************************/
-void mac_sync_ind(module_id_t module_idP,u8 Status){
+void mac_sync_ind(module_id_t module_idP,uint8_t Status){
 /********************************************************************************************************************/
   mac_lite_sync_ind(module_idP,Status);
 }
 
 /********************************************************************************************************************/
-void mac_in_sync_ind(module_id_t module_idP,frame_t frameP, u16 eNB_indexP){
+void mac_in_sync_ind(module_id_t module_idP,frame_t frameP, uint16_t eNB_indexP){
 /********************************************************************************************************************/
   rrc_lite_in_sync_ind(module_idP,frameP,eNB_indexP);
 }
 
 /********************************************************************************************************************/
-void mac_out_of_sync_ind(module_id_t module_idP,frame_t frameP, u16 eNB_indexP){
+void mac_out_of_sync_ind(module_id_t module_idP,frame_t frameP, uint16_t eNB_indexP){
 /********************************************************************************************************************/
   rrc_lite_out_of_sync_ind(module_idP,frameP,eNB_indexP);
 }
 
 /********************************************************************************************************************/
-int mac_get_rrc_status(module_id_t module_idP,eNB_flag_t eNB_flagP,u8 indexP) {
+int mac_get_rrc_status(module_id_t module_idP,eNB_flag_t eNB_flagP,uint8_t indexP) {
 /********************************************************************************************************************/
   return mac_get_rrc_lite_status(module_idP, eNB_flagP, indexP);
 }

@@ -150,52 +150,52 @@
 
 //---------------------------------------------------------------------------
 // Find the IP traffic type (UNICAST, MULTICAST, BROADCAST)
-traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb) {
+ip_traffic_type_t oai_nw_drv_find_traffic_type(struct sk_buff  *skb) {
   //---------------------------------------------------------------------------
-  traffic_type_t            traffic_type = OAI_NW_DRV_IPVX_ADDR_TYPE_UNKNOWN;
+  ip_traffic_type_t            traffic_type = TRAFFIC_IPVX_TYPE_UNKNOWN;
 
   if (skb!=NULL) {
     switch (ntohs(skb->protocol))  {
     case ETH_P_IPV6:
-      traffic_type = OAI_NW_DRV_IPV6_ADDR_TYPE_UNKNOWN;
+      traffic_type = TRAFFIC_IPV6_TYPE_UNKNOWN;
       #ifdef OAI_DRV_DEBUG_CLASS
       printk("SOURCE ADDR %X:%X:%X:%X:%X:%X:%X:%X",NIP6ADDR(&(ipv6_hdr(skb)->saddr)));
       printk("    DEST   ADDR %X:%X:%X:%X:%X:%X:%X:%X\n",NIP6ADDR(&(ipv6_hdr(skb)->daddr)));
       #endif
       if (IN6_IS_ADDR_MULTICAST(&ipv6_hdr(skb)->daddr.in6_u.u6_addr32[0])) {
-          traffic_type = OAI_NW_DRV_IPV6_ADDR_TYPE_MULTICAST;
+          traffic_type = TRAFFIC_IPV6_TYPE_MULTICAST;
 
       } else {
-          traffic_type = OAI_NW_DRV_IPV6_ADDR_TYPE_UNICAST;
+          traffic_type = TRAFFIC_IPV6_TYPE_UNICAST;
       }
       
       break;
       
       
     case ETH_P_IP:
-      traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_UNKNOWN;
+      traffic_type = TRAFFIC_IPV4_TYPE_UNKNOWN;
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
       //print_TOOL_pk_ipv4((struct iphdr *)skb->network_header);
       if (IN_MULTICAST(htonl(ip_hdr(skb)->daddr))) {
-          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST;
+          traffic_type = TRAFFIC_IPV4_TYPE_MULTICAST;
       } else {
-          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_UNICAST;
+          traffic_type = TRAFFIC_IPV4_TYPE_UNICAST;
       }
       // TO DO BROADCAST
       
 #else
       //print_TOOL_pk_ipv4(skb->nh.iph);
       if (IN_MULTICAST(htonl(ip_hdr(skb)->daddr))) {
-          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_MULTICAST;
+          traffic_type = TRAFFIC_IPV4_TYPE_MULTICAST;
       } else {
-          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_UNICAST;
+          traffic_type = TRAFFIC_IPV4_TYPE_UNICAST;
       }
       // TO DO BROADCAST
 #endif
       break;
       
       case ETH_P_ARP:
-          traffic_type = OAI_NW_DRV_IPV4_ADDR_TYPE_BROADCAST;
+          traffic_type = TRAFFIC_IPV4_TYPE_BROADCAST;
 	  break;
       
     default:;

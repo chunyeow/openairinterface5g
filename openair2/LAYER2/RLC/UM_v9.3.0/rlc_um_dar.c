@@ -44,7 +44,7 @@ Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis
 //#define TRACE_RLC_UM_RX  1
 //#define TRACE_DISPLAY_NVIDIA 1
 //-----------------------------------------------------------------------------
-signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, sdu_ssize_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, u8_t sn_lengthP)
+signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, sdu_ssize_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP)
 //-----------------------------------------------------------------------------
 {
     sdu_size_t         sum_li = 0;
@@ -57,7 +57,7 @@ signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, sd
     if (sn_lengthP == 10) {
         pdu_info_pP->fi           = (header_pP->b1 >> 3) & 0x03;
         pdu_info_pP->e            = (header_pP->b1 >> 2) & 0x01;
-        pdu_info_pP->sn           = header_pP->b2 + (((u16_t)(header_pP->b1 & 0x03)) << 8);
+        pdu_info_pP->sn           = header_pP->b2 + (((uint16_t)(header_pP->b1 & 0x03)) << 8);
         pdu_info_pP->header_size  = 2;
         pdu_info_pP->payload      = &header_pP->data[0];
     } else if (sn_lengthP == 5) {
@@ -83,14 +83,14 @@ signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, sd
             if (li_length_in_bytes  == 2) {
                 AssertFatal( total_sizeP >= ((uint64_t)(&e_li_p->b2) - (uint64_t)header_pP),
                         "DECODING PDU TOO FAR PDU size %d", total_sizeP);
-                pdu_info_pP->li_list[pdu_info_pP->num_li] = ((u16_t)(e_li_p->b1 << 4)) & 0x07F0;
-                pdu_info_pP->li_list[pdu_info_pP->num_li] |= (((u8_t)(e_li_p->b2 >> 4)) & 0x000F);
+                pdu_info_pP->li_list[pdu_info_pP->num_li] = ((uint16_t)(e_li_p->b1 << 4)) & 0x07F0;
+                pdu_info_pP->li_list[pdu_info_pP->num_li] |= (((uint8_t)(e_li_p->b2 >> 4)) & 0x000F);
                 li_to_read = e_li_p->b1 & 0x80;
                 pdu_info_pP->header_size  += 2;
             } else {
                 AssertFatal( total_sizeP >= ((uint64_t)(&e_li_p->b3) - (uint64_t)header_pP),
                         "DECODING PDU TOO FAR PDU size %d", total_sizeP);
-                pdu_info_pP->li_list[pdu_info_pP->num_li] = ((u16_t)(e_li_p->b2 << 8)) & 0x0700;
+                pdu_info_pP->li_list[pdu_info_pP->num_li] = ((uint16_t)(e_li_p->b2 << 8)) & 0x0700;
                 pdu_info_pP->li_list[pdu_info_pP->num_li] |=  e_li_p->b3;
                 li_to_read = e_li_p->b2 & 0x08;
                 e_li_p++;
@@ -618,7 +618,7 @@ void rlc_um_start_timer_reordering(rlc_um_entity_t *rlc_pP,frame_t frameP)
 #endif
 }
 //-----------------------------------------------------------------------------
-void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, u32_t time_outP)
+void rlc_um_init_timer_reordering(rlc_um_entity_t *rlc_pP, uint32_t time_outP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_reordering.running         = 0;
@@ -651,7 +651,7 @@ void rlc_um_check_timer_dar_time_out(rlc_um_entity_t *rlc_pP, frame_t frameP, eN
            (frameP < rlc_pP->t_reordering.frame_start) && (frameP >= rlc_pP->t_reordering.frame_time_out))
         ) {
 
-        //if ((u32_t)((u32_t)rlc_pP->timer_reordering  + (u32_t)rlc_pP->timer_reordering_init)   <= frameP) {
+        //if ((uint32_t)((uint32_t)rlc_pP->timer_reordering  + (uint32_t)rlc_pP->timer_reordering_init)   <= frameP) {
             // 5.1.2.2.4   Actions when t-Reordering expires
             //  When t-Reordering expires, the receiving UM RLC entity shall:
             //  -update VR(UR) to the SN of the first UMD PDU with SN >= VR(UX) that has not been received;

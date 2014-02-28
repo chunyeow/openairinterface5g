@@ -13,5 +13,5 @@
 #        include "platform_types.h"
 #        include "rlc_am_entity.h"
 //-----------------------------------------------------------------------------
-extern int      rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, u8_t eventP);
+extern int      rlc_am_fsm_notify_event (struct rlc_am_entity *rlcP, uint8_t eventP);
 #    endif

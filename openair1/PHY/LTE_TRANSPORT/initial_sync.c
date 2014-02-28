@@ -51,7 +51,7 @@
 
 int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
-  u8 l,pbch_decoded,frame_mod4,pbch_tx_ant,dummy;
+  uint8_t l,pbch_decoded,frame_mod4,pbch_tx_ant,dummy;
   LTE_DL_FRAME_PARMS *frame_parms=&phy_vars_ue->lte_frame_parms;
   char phich_resource[6];
 
@@ -231,13 +231,13 @@ int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
 int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
  
-  u32 sync_pos,sync_pos2,sync_pos_slot;
-  s32 metric_fdd_ncp=0,metric_fdd_ecp=0,metric_tdd_ncp=0,metric_tdd_ecp=0;
-  u8 phase_fdd_ncp,phase_fdd_ecp,phase_tdd_ncp,phase_tdd_ecp;
-  u8 flip_fdd_ncp,flip_fdd_ecp,flip_tdd_ncp,flip_tdd_ecp;
-  //  u16 Nid_cell_fdd_ncp=0,Nid_cell_fdd_ecp=0,Nid_cell_tdd_ncp=0,Nid_cell_tdd_ecp=0;
+  uint32_t sync_pos,sync_pos2,sync_pos_slot;
+  int32_t metric_fdd_ncp=0,metric_fdd_ecp=0,metric_tdd_ncp=0,metric_tdd_ecp=0;
+  uint8_t phase_fdd_ncp,phase_fdd_ecp,phase_tdd_ncp,phase_tdd_ecp;
+  uint8_t flip_fdd_ncp,flip_fdd_ecp,flip_tdd_ncp,flip_tdd_ecp;
+  //  uint16_t Nid_cell_fdd_ncp=0,Nid_cell_fdd_ecp=0,Nid_cell_tdd_ncp=0,Nid_cell_tdd_ecp=0;
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_ue->lte_frame_parms;
-  //  u8 i;
+  //  uint8_t i;
   int ret=-1;
   int aarx,rx_power=0;
 

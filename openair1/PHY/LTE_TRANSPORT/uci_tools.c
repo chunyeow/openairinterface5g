@@ -64,12 +64,12 @@ unsigned int cqi2hex(unsigned short cqi) {
           (((cqi>>8)&3)<<16) + (((cqi>>10)&3)<<20) + (((cqi>>12)&3)<<24));
 }
 
-//void do_diff_cqi(u8 N_RB_DL,
-//		 u8 *DL_subband_cqi,
-//		 u8 DL_cqi,
-//		 u32 diffcqi1) {
+//void do_diff_cqi(uint8_t N_RB_DL,
+//		 uint8_t *DL_subband_cqi,
+//		 uint8_t DL_cqi,
+//		 uint32_t diffcqi1) {
 //
-//  u8 nb_sb,i,offset;
+//  uint8_t nb_sb,i,offset;
 //
 //  // This is table 7.2.1-3 from 36.213 (with k replaced by the number of subbands, nb_sb)
 //  switch (N_RB_DL) {
@@ -107,12 +107,12 @@ unsigned int cqi2hex(unsigned short cqi) {
 //}
 
 
-void do_diff_cqi(u8 N_RB_DL,
-		 u8 *DL_subband_cqi,
-		 u8 DL_cqi,
-		 u32 diffcqi1) {
+void do_diff_cqi(uint8_t N_RB_DL,
+		 uint8_t *DL_subband_cqi,
+		 uint8_t DL_cqi,
+		 uint32_t diffcqi1) {
 
-  u8 nb_sb,i,offset;
+  uint8_t nb_sb,i,offset;
 
   // This is table 7.2.1-3 from 36.213 (with k replaced by the number of subbands, nb_sb)
   switch (N_RB_DL) {
@@ -153,7 +153,7 @@ void extract_CQI(void *o,UCI_format_t uci_format,LTE_eNB_UE_stats *stats, uint16
 
   //unsigned char rank;
   //UCI_format fmt;
-  u8 N_RB_DL = 25;
+  uint8_t N_RB_DL = 25;
   
   *access_mode=SCHEDULED_ACCESS;
   switch(uci_format){

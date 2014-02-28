@@ -21,16 +21,16 @@
 #include "UTIL/LOG/vcd_signal_dumper.h"
 //#define DEBUG_PHY
 
-extern u16 prach_root_sequence_map0_3[838];
-extern u16 prach_root_sequence_map4[138];
+extern uint16_t prach_root_sequence_map0_3[838];
+extern uint16_t prach_root_sequence_map4[138];
 uint8_t dmrs1_tab[8] = {0,2,3,4,6,8,9,10};
 
 void phy_config_mib(LTE_DL_FRAME_PARMS *lte_frame_parms,
-		    u8 N_RB_DL,
-		    u8 Nid_cell,
-		    u8 Ncp,
-		    u8 frame_type,
-		    u8 p_eNB,
+		    uint8_t N_RB_DL,
+		    uint8_t Nid_cell,
+		    uint8_t Ncp,
+		    uint8_t frame_type,
+		    uint8_t p_eNB,
 		    PHICH_CONFIG_COMMON *phich_config) {
 
   lte_frame_parms->N_RB_DL                            = N_RB_DL;
@@ -43,10 +43,10 @@ void phy_config_mib(LTE_DL_FRAME_PARMS *lte_frame_parms,
   lte_frame_parms->phich_config_common.phich_duration = phich_config->phich_duration;
 }
 
-void phy_config_sib1_eNB(u8 Mod_id,
+void phy_config_sib1_eNB(uint8_t Mod_id,
 			 TDD_Config_t *tdd_Config,
-			 u8 SIwindowsize,
-			 u16 SIPeriod) {
+			 uint8_t SIwindowsize,
+			 uint16_t SIPeriod) {
    
   LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id]->lte_frame_parms;
 
@@ -58,10 +58,10 @@ void phy_config_sib1_eNB(u8 Mod_id,
   lte_frame_parms->SIPeriod      = SIPeriod;
 }
 
-void phy_config_sib1_ue(u8 Mod_id,u8 CH_index,
+void phy_config_sib1_ue(uint8_t Mod_id,uint8_t CH_index,
 			 TDD_Config_t *tdd_Config,
-			 u8 SIwindowsize,
-			 u16 SIperiod) {
+			 uint8_t SIwindowsize,
+			 uint16_t SIperiod) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
   if (tdd_Config) {
@@ -72,7 +72,7 @@ void phy_config_sib1_ue(u8 Mod_id,u8 CH_index,
   lte_frame_parms->SIPeriod      = SIperiod;
 }
 
-void phy_config_sib2_eNB(u8 Mod_id,
+void phy_config_sib2_eNB(uint8_t Mod_id,
 			 RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 			 ARFCN_ValueEUTRA_t *ul_CArrierFreq,
 			 long *ul_Bandwidth,
@@ -196,7 +196,7 @@ void phy_config_sib2_eNB(u8 Mod_id,
 }
 
 
-void phy_config_sib2_ue(u8 Mod_id,u8 CH_index,
+void phy_config_sib2_ue(uint8_t Mod_id,uint8_t CH_index,
 			RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 			ARFCN_ValueEUTRA_t *ul_CarrierFreq,
 			long *ul_Bandwidth,
@@ -307,7 +307,7 @@ lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format1  = radioRes
 
 }
 
-void phy_config_sib13_ue(u8 Mod_id,u8 CH_index,int mbsfn_Area_idx,
+void phy_config_sib13_ue(uint8_t Mod_id,uint8_t CH_index,int mbsfn_Area_idx,
 			 long mbsfn_AreaId_r9) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
@@ -325,7 +325,7 @@ void phy_config_sib13_ue(u8 Mod_id,u8 CH_index,int mbsfn_Area_idx,
 }
 
 
-void phy_config_sib13_eNB(u8 Mod_id,int mbsfn_Area_idx,
+void phy_config_sib13_eNB(uint8_t Mod_id,int mbsfn_Area_idx,
 			  long mbsfn_AreaId_r9) {
 
   LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id]->lte_frame_parms;
@@ -344,7 +344,7 @@ void phy_config_sib13_eNB(u8 Mod_id,int mbsfn_Area_idx,
 
 void phy_config_dedicated_eNB_step2(PHY_VARS_eNB *phy_vars_eNB) {
 
-  u8 UE_id;
+  uint8_t UE_id;
   struct PhysicalConfigDedicated *physicalConfigDedicated;
 
   for (UE_id=0;UE_id<NUMBER_OF_UE_MAX;UE_id++) {
@@ -433,7 +433,7 @@ void phy_config_dedicated_eNB_step2(PHY_VARS_eNB *phy_vars_eNB) {
 /*
  * Configures UE MAC and PHY with radioResourceCommon received in mobilityControlInfo IE during Handover
  */
-void phy_config_afterHO_ue(u8 Mod_id,u8 eNB_id, MobilityControlInfo_t *mobilityControlInfo, u8 ho_failed) {
+void phy_config_afterHO_ue(uint8_t Mod_id,uint8_t eNB_id, MobilityControlInfo_t *mobilityControlInfo, uint8_t ho_failed) {
 
   if(mobilityControlInfo!=NULL) {
     RadioResourceConfigCommon_t *radioResourceConfigCommon = &mobilityControlInfo->radioResourceConfigCommon;
@@ -446,7 +446,7 @@ void phy_config_afterHO_ue(u8 Mod_id,u8 eNB_id, MobilityControlInfo_t *mobilityC
 
     LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
 //     int N_ZC;
-//     u8 prach_fmt;
+//     uint8_t prach_fmt;
 //     int u;
 
     LOG_I(PHY,"[UE%d] Frame %d: Handover triggered: Applying radioResourceConfigCommon from eNB %d\n",
@@ -543,7 +543,7 @@ void phy_config_afterHO_ue(u8 Mod_id,u8 eNB_id, MobilityControlInfo_t *mobilityC
   }
 }
 
-void phy_config_meas_ue(u8 Mod_id,u8 eNB_index,u8 n_adj_cells,unsigned int *adj_cell_id) {
+void phy_config_meas_ue(uint8_t Mod_id,uint8_t eNB_index,uint8_t n_adj_cells,unsigned int *adj_cell_id) {
   
   PHY_MEASUREMENTS *phy_meas = &PHY_vars_UE_g[Mod_id]->PHY_measurements;
   int i;
@@ -558,11 +558,11 @@ void phy_config_meas_ue(u8 Mod_id,u8 eNB_index,u8 n_adj_cells,unsigned int *adj_
 
 }
 
-void phy_config_dedicated_eNB(u8 Mod_id,u16 rnti,
+void phy_config_dedicated_eNB(uint8_t Mod_id,uint16_t rnti,
 			      struct PhysicalConfigDedicated *physicalConfigDedicated) {
 
   PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[Mod_id];
-  u8 UE_id = find_ue(rnti,phy_vars_eNB);
+  uint8_t UE_id = find_ue(rnti,phy_vars_eNB);
   
 
   
@@ -577,7 +577,7 @@ void phy_config_dedicated_eNB(u8 Mod_id,u16 rnti,
 
 }
 
-void phy_config_dedicated_ue(u8 Mod_id,u8 CH_index,
+void phy_config_dedicated_ue(uint8_t Mod_id,uint8_t CH_index,
 			     struct PhysicalConfigDedicated *physicalConfigDedicated ) {
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
@@ -671,8 +671,8 @@ void phy_config_dedicated_ue(u8 Mod_id,u8 CH_index,
       }
 #ifdef CBA
       if (physicalConfigDedicated->pusch_CBAConfigDedicated_vlola){
-	phy_vars_ue->pusch_ca_config_dedicated[CH_index].betaOffset_CA_Index = (u16) *physicalConfigDedicated->pusch_CBAConfigDedicated_vlola->betaOffset_CBA_Index;
-	phy_vars_ue->pusch_ca_config_dedicated[CH_index].cShift = (u16) *physicalConfigDedicated->pusch_CBAConfigDedicated_vlola->cShift_CBA;
+	phy_vars_ue->pusch_ca_config_dedicated[CH_index].betaOffset_CA_Index = (uint16_t) *physicalConfigDedicated->pusch_CBAConfigDedicated_vlola->betaOffset_CBA_Index;
+	phy_vars_ue->pusch_ca_config_dedicated[CH_index].cShift = (uint16_t) *physicalConfigDedicated->pusch_CBAConfigDedicated_vlola->cShift_CBA;
 	LOG_D(PHY,"[UE %d ] physicalConfigDedicated pusch CBA config dedicated: beta offset %d cshift %d \n",Mod_id, 
 	      phy_vars_ue->pusch_ca_config_dedicated[CH_index].betaOffset_CA_Index,
 	      phy_vars_ue->pusch_ca_config_dedicated[CH_index].cShift);
@@ -686,8 +686,8 @@ void phy_config_dedicated_ue(u8 Mod_id,u8 CH_index,
     
 }
 
-void  phy_config_cba_rnti (u8 Mod_id,u8 eNB_flag, u8 index, u16 cba_rnti, u8 cba_group_id, u8 num_active_cba_groups){
-//   u8 i;
+void  phy_config_cba_rnti (module_id_t Mod_id,eNB_flag_t eNB_flag, uint8_t index, rnti_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups){
+//   uint8_t i;
   
   if (eNB_flag == 0 ) {
     //LOG_D(PHY,"[UE %d] configure cba group %d with rnti %x, num active cba grp %d\n", index, index, cba_rnti, num_active_cba_groups);
@@ -740,7 +740,7 @@ void phy_init_lte_top(LTE_DL_FRAME_PARMS *lte_frame_parms) {
 
 int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
 		    int nb_connected_eNB,
-		    u8 abstraction_flag) {
+		    uint8_t abstraction_flag) {
 
   LTE_DL_FRAME_PARMS *frame_parms     = &phy_vars_ue->lte_frame_parms;
   LTE_UE_COMMON *ue_common_vars       = &phy_vars_ue->lte_ue_common_vars;
@@ -1244,7 +1244,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_pdcch_vars[eNB_id]->llr16 = (unsigned short *)malloc16(2*4*frame_parms->N_RB_DL*12*sizeof(unsigned short));
       ue_pdcch_vars[eNB_id]->wbar = (unsigned short *)malloc16(4*frame_parms->N_RB_DL*12*sizeof(unsigned short));
       
-      ue_pdcch_vars[eNB_id]->e_rx = (s8 *)malloc16(4*2*frame_parms->N_RB_DL*12*sizeof(unsigned char));
+      ue_pdcch_vars[eNB_id]->e_rx = (int8_t *)malloc16(4*2*frame_parms->N_RB_DL*12*sizeof(unsigned char));
       
       // PBCH
       ue_pbch_vars[eNB_id] = (LTE_UE_PBCH *)malloc16(sizeof(LTE_UE_PBCH));
@@ -1260,7 +1260,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
 	  ue_pbch_vars[eNB_id]->rxdataF_comp[(j<<1)+i]        = (int *)malloc16(sizeof(int)*(6*12*4));
 	  ue_pbch_vars[eNB_id]->dl_ch_estimates_ext[(j<<1)+i] = (int *)malloc16(sizeof(int)*6*12*4);
 	}    
-      ue_pbch_vars[eNB_id]->llr = (s8 *)malloc16(1920*sizeof(char));
+      ue_pbch_vars[eNB_id]->llr = (int8_t *)malloc16(1920*sizeof(char));
       
       //    ue_pbch_vars[eNB_id]->channel_output = (short *)malloc16(*sizeof(short));
       
@@ -1271,8 +1271,8 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
       ue_pbch_vars[eNB_id]->pdu_errors_last=0;
       ue_pbch_vars[eNB_id]->pdu_fer=0;
     
-      ue_prach_vars[eNB_id]->prachF = (s16 *)malloc16(sizeof(int)*(7*2*sizeof(int)*(frame_parms->ofdm_symbol_size*12)));
-      ue_prach_vars[eNB_id]->prach  = (s16 *)malloc16(sizeof(int)*(7*2*sizeof(int)*(frame_parms->ofdm_symbol_size*12)));
+      ue_prach_vars[eNB_id]->prachF = (int16_t *)malloc16(sizeof(int)*(7*2*sizeof(int)*(frame_parms->ofdm_symbol_size*12)));
+      ue_prach_vars[eNB_id]->prach  = (int16_t *)malloc16(sizeof(int)*(7*2*sizeof(int)*(frame_parms->ofdm_symbol_size*12)));
     }
     else {
       ue_pbch_vars[eNB_id] = (LTE_UE_PBCH *)malloc16(sizeof(LTE_UE_PBCH));
@@ -1397,7 +1397,7 @@ int phy_init_lte_ue(PHY_VARS_UE *phy_vars_ue,
 
 int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
 		     unsigned char is_secondary_eNB,
-		     u8 cooperation_flag,// 0 for no cooperation,1 for Delay Diversity and 2 for Distributed Alamouti
+		     uint8_t cooperation_flag,// 0 for no cooperation,1 for Delay Diversity and 2 for Distributed Alamouti
 		     unsigned char abstraction_flag)
 {
 
@@ -1676,11 +1676,11 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
     
     // ULSCH VARS
 
-  eNB_prach_vars->prachF = (s16*)malloc16(1024*4);
+  eNB_prach_vars->prachF = (int16_t*)malloc16(1024*4);
   memset(eNB_prach_vars->prachF,0,1024*4);
  
   for (i=0; i<frame_parms->nb_antennas_rx; i++) {
-    eNB_prach_vars->rxsigF[i] = (s16*)malloc16(frame_parms->ofdm_symbol_size*12*2*2);
+    eNB_prach_vars->rxsigF[i] = (int16_t*)malloc16(frame_parms->ofdm_symbol_size*12*2*2);
 #ifdef DEBUG_PHY
     msg("[openair][LTE_PHY][INIT] prach_vars->rxsigF[%d] = %p\n",i,eNB_prach_vars->rxsigF[i]);
 #endif
