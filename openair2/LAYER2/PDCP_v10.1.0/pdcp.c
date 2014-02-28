@@ -369,13 +369,13 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
 
       LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
           "and radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
-          ue_mod_idP, enb_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
+          enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
   } else {
       pdcp_p = &pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP];
 
       LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
           "and radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
-          enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+          ue_mod_idP, enb_mod_idP , rb_idP, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
   }
   sdu_list_p = &pdcp_sdu_list;
 
