@@ -280,6 +280,8 @@ int main(int argc, char **argv) {
   int print_perf=0;
   int llr8_flag=0;
 
+  opp_enabled=1; // to enable the time meas
+
   cpu_freq_GHz = (double)get_cpu_freq_GHz();
 
   printf("Detected cpu_freq %f GHz\n",cpu_freq_GHz);
@@ -479,7 +481,7 @@ int main(int argc, char **argv) {
 	break;
       case 'P':
 	print_perf=1;
-	opp_enabled=1; // to enable the time meas
+
 	break;
       case 'L':
 	llr8_flag=1;
