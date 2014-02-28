@@ -316,6 +316,17 @@ check_for_root_rights() {
     fi
 }
 
+rotate_log_file () {
+    if [ -f $1 ]; then
+        TIMESTAMP=`date +%Y-%m-%d.%Hh_%Mm_%Ss`
+        NEWLOGFILE=$1.$TIMESTAMP
+        mv $1 $NEWLOGFILE
+        cat /dev/null > $1
+        sync
+        nohup gzip -f -9 $NEWLOGFILE &
+    fi
+}
+
 ###########################################################
 declare -x OPENAIR_DIR=""
 declare -x OPENAIR_HOME=""
