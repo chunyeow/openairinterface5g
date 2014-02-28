@@ -538,8 +538,8 @@ int32_t rrc_ue_establish_srb1(module_id_t Mod_id, frame_t frameP,uint8_t eNB_ind
 
   LOG_I(RRC,"[UE %d], CONFIG_SRB1 %d corresponding to eNB_index %d\n", Mod_id,lchan_id,eNB_index);
 
-  //rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, ACTION_ADD, lchan_id,UNDEF_SECURITY_MODE);
-  //  rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,ACTION_ADD,lchan_id,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  //rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, CONFIG_ACTION_ADD, lchan_id,UNDEF_SECURITY_MODE);
+  //  rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,CONFIG_ACTION_ADD,lchan_id,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
   //  UE_rrc_inst[Mod_id].Srb1[eNB_index].Srb_info.Tx_buffer.payload_size=DEFAULT_MEAS_IND_SIZE+1;
 
@@ -563,8 +563,8 @@ int32_t rrc_ue_establish_srb2(module_id_t Mod_id, frame_t frameP,uint8_t eNB_ind
 
   LOG_I(RRC,"[UE %d], CONFIG_SRB2 %d corresponding to eNB_index %d\n",Mod_id,lchan_id,eNB_index);
 
-  //rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, ACTION_ADD, lchan_id, UNDEF_SECURITY_MODE);
-  //  rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,ACTION_ADD,lchan_id,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  //rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, CONFIG_ACTION_ADD, lchan_id, UNDEF_SECURITY_MODE);
+  //  rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,CONFIG_ACTION_ADD,lchan_id,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
   //  UE_rrc_inst[Mod_id].Srb1[eNB_index].Srb_info.Tx_buffer.payload_size=DEFAULT_MEAS_IND_SIZE+1;
 
@@ -581,10 +581,10 @@ int32_t rrc_ue_establish_drb(module_id_t Mod_id, frame_t frameP,uint8_t eNB_inde
   LOG_I(RRC,"[UE %d] Frame %d: processing RRCConnectionReconfiguration: reconfiguring DRB %ld/LCID %d\n",
       Mod_id, frameP, DRB_config->drb_Identity, (int)*DRB_config->logicalChannelIdentity);
   /*
-  rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, ACTION_ADD,
+  rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, CONFIG_ACTION_ADD,
                              (eNB_index * NB_RB_MAX) + *DRB_config->logicalChannelIdentity, UNDEF_SECURITY_MODE);
 
- rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,ACTION_ADD,
+ rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,CONFIG_ACTION_ADD,
                     (eNB_index * NB_RB_MAX) + *DRB_config->logicalChannelIdentity,
                     RADIO_ACCESS_BEARER,Rlc_info_um);
    */
@@ -1413,14 +1413,14 @@ void rrc_ue_process_mobilityControlInfo(uint8_t eNB_index, uint8_t UE_id, frame_
 
   //Removing SRB1 and SRB2 and DRB0
   LOG_N(RRC,"[UE %d] : Update needed for rrc_pdcp_config_req (deprecated) and rrc_rlc_config_req commands(deprecated)\n", UE_id);
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, 0, ACTION_REMOVE, DCCH,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, Mod_id,frameP,0,ACTION_REMOVE,Mod_id+DCCH,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  rrc_pdcp_config_req (eNB_index, UE_id, frameP, 0, CONFIG_ACTION_REMOVE, DCCH,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(eNB_index, Mod_id,frameP,0,CONFIG_ACTION_REMOVE,Mod_id+DCCH,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, 0, ACTION_REMOVE, DCCH1,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, Mod_id,frameP,0,ACTION_REMOVE,Mod_id+DCCH1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  rrc_pdcp_config_req (eNB_index, UE_id, frameP, 0, CONFIG_ACTION_REMOVE, DCCH1,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(eNB_index, Mod_id,frameP,0,CONFIG_ACTION_REMOVE,Mod_id+DCCH1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, 0, ACTION_REMOVE, DTCH,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, Mod_id,frameP,0,ACTION_REMOVE,Mod_id+DTCH,RADIO_ACCESS_BEARER,Rlc_info_um);
+  rrc_pdcp_config_req (eNB_index, UE_id, frameP, 0, CONFIG_ACTION_REMOVE, DTCH,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(eNB_index, Mod_id,frameP,0,CONFIG_ACTION_REMOVE,Mod_id+DTCH,RADIO_ACCESS_BEARER,Rlc_info_um);
   /*
   rrc_pdcp_config_asn1_req(NB_eNB_INST+Mod_id,frameP, 0,eNB_index,
 			   NULL, // SRB_ToAddModList
@@ -1496,15 +1496,15 @@ void rrc_ue_process_mobilityControlInfo(uint8_t eNB_index, uint8_t UE_id, frame_
   );
 
   // Re-establish PDCP for all RBs that are established
-  // rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, ACTION_ADD, Mod_id+DCCH);
-  // rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, ACTION_ADD, Mod_id+DCCH1);
-  // rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, ACTION_ADD, Mod_id+DTCH);
+  // rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, CONFIG_ACTION_ADD, Mod_id+DCCH);
+  // rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, CONFIG_ACTION_ADD, Mod_id+DCCH1);
+  // rrc_pdcp_config_req (Mod_id+NB_eNB_INST, frameP, 0, CONFIG_ACTION_ADD, Mod_id+DTCH);
 
 
   // Re-establish RLC for all RBs that are established
-  // rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,ACTION_ADD,Mod_id+DCCH,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
-  // rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,ACTION_ADD,Mod_id+DCCH1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
-  // rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,ACTION_ADD,Mod_id+DTCH,RADIO_ACCESS_BEARER,Rlc_info_um);
+  // rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,CONFIG_ACTION_ADD,Mod_id+DCCH,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  // rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,CONFIG_ACTION_ADD,Mod_id+DCCH1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  // rrc_rlc_config_req(Mod_id+NB_eNB_INST,frameP,0,CONFIG_ACTION_ADD,Mod_id+DTCH,RADIO_ACCESS_BEARER,Rlc_info_um);
 
   UE_rrc_inst[Mod_id].Info[eNB_index].State = RRC_SI_RECEIVED;
 

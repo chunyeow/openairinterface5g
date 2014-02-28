@@ -693,7 +693,7 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                           // is a broadcast packet, we have to send this packet on all default RABS of all connected UEs
 #warning CODE TO BE REVIEWED, ONLY WORK FOR SIMPLE TOPOLOGY CASES
                           for (ue_mod_idP = 0; ue_mod_idP < NB_UE_INST; ue_mod_idP++) {
-                              if (pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rab_id].instanciated_instance > 0) {
+                              if (pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rab_id].instanciated_instance == TRUE) {
                                   LOG_D(PDCP, "[FRAME %5u][eNB][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB DEFAULT_RAB_ID %u]\n",
                                       frameP,
                                       pdcp_read_header_g.inst,

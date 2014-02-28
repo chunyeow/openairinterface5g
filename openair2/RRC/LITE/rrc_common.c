@@ -304,9 +304,9 @@ void rrc_t310_expiration(frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
     if (UE_rrc_inst[Mod_id].Srb2[eNB_index].Active == 1) {
       msg ("[RRC Inst %d] eNB_index %d, Remove RB %d\n ", Mod_id, eNB_index,
            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
-      rrc_pdcp_config_req (eNB_index, Mod_id, frameP, 0, ACTION_REMOVE,
+      rrc_pdcp_config_req (eNB_index, Mod_id, frameP, 0, CONFIG_ACTION_REMOVE,
                            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, 0);
-      rrc_rlc_config_req (eNB_index, Mod_id, frameP, 0, ACTION_REMOVE,
+      rrc_rlc_config_req (eNB_index, Mod_id, frameP, 0, CONFIG_ACTION_REMOVE,
                           UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, SIGNALLING_RADIO_BEARER, Rlc_info_um);
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Active = 0;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Status = IDLE;

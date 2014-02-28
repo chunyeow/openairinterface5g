@@ -21,6 +21,7 @@
 #        define TRANSACTION_NULL 0
 
 // RRM action
+/*
 #        define ACTION_NULL    0
 #        define ACTION_ADD     1
 #        define ACTION_REMOVE  2
@@ -28,6 +29,7 @@
 #        define ACTION_SET_SECURITY_MODE 4
 #        define ACTION_MBMS_ADD 10
 #        define ACTION_MBMS_MODIFY 11
+*/
 
 #        define MOBILE    7
 

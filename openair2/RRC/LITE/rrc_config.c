@@ -223,7 +223,7 @@ void rrc_config_req(Instance_t Mod_id, void *smsg, unsigned char Action,Transact
 	//	msg("[RRC]Inst %d: Programing RADIO CONFIG of DCCH LCHAN %d\n",Mod_id,Idx);
 	//CH_rrc_inst[Mod_id].Nb_rb[UE_index]++;
 	//msg("[OPENAIR][RRC] CALLING RLC CONFIG RADIO BEARER %d\n",Idx);
-	Mac_rlc_xface->rrc_rlc_config_req(Mod_id,ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_um);
+	Mac_rlc_xface->rrc_rlc_config_req(Mod_id,CONFIG_ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_um);
 	/*
 	CH_rrc_inst[Mod_id].Srb2[UE_index].Srb_info.CH_ip_addr_type=p->L3_info_t;
 	if(p->L3_info_t == IPv4_ADDR){
@@ -287,7 +287,7 @@ void rrc_config_req(Instance_t Mod_id, void *smsg, unsigned char Action,Transact
 
 	if(p->Lchan_desc.Lchan_t==DTCH){
 	  CH_rrc_inst[Mod_id].Rab[In_idx][UE_index].Status = RADIO_CONFIG_OK;//RADIO CFG
-	  Mac_rlc_xface->rrc_rlc_config_req(Mod_id,ACTION_ADD,Idx,RADIO_ACCESS_BEARER,Rlc_info_um);
+	  Mac_rlc_xface->rrc_rlc_config_req(Mod_id,CONFIG_ACTION_ADD,Idx,RADIO_ACCESS_BEARER,Rlc_info_um);
 	  CH_rrc_inst[Mod_id].IP_addr_type = p->L3_info_t;
 	  if(CH_rrc_inst[Mod_id].IP_addr_type == IPv4_ADDR)
 	    memcpy(CH_rrc_inst[Mod_id].IP_addr,p->L3_info,4);
@@ -295,7 +295,7 @@ void rrc_config_req(Instance_t Mod_id, void *smsg, unsigned char Action,Transact
 	    memcpy(CH_rrc_inst[Mod_id].IP_addr,p->L3_info,16);
 	}
 	else
-	  Mac_rlc_xface->rrc_rlc_config_req(Mod_id,ACTION_ADD,Idx,RADIO_ACCESS_BEARER,Rlc_info_am_config);
+	  Mac_rlc_xface->rrc_rlc_config_req(Mod_id,CONFIG_ACTION_ADD,Idx,RADIO_ACCESS_BEARER,Rlc_info_am_config);
       }
       if(p->Lchan_desc.Lchan_t==DTCH)
 	send_msg(&S_rrc,msg_rrc_rb_establish_cfm(Mod_id,Idx,0,Trans_id));

@@ -2019,8 +2019,8 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover (module_id_t Mod_id,
     
     LOG_I (RRC,"[eNB %d] CALLING RLC CONFIG SRB1 (rbid %d) for UE %d\n",Mod_id, Idx, UE_index);
     
-    //      rrc_pdcp_config_req (Mod_id, frameP, 1, ACTION_ADD, idx, UNDEF_SECURITY_MODE);
-    //      rrc_rlc_config_req(Mod_id,frameP,1,ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+    //      rrc_pdcp_config_req (Mod_id, frameP, 1, CONFIG_ACTION_ADD, idx, UNDEF_SECURITY_MODE);
+    //      rrc_rlc_config_req(Mod_id,frameP,1,CONFIG_ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
     
     rrc_pdcp_config_asn1_req (Mod_id, UE_index, frameP, 1,
                               eNB_rrc_inst[Mod_id].SRB_configList[UE_index],
@@ -2253,9 +2253,9 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete (module_id_t Mod_id, f
               if (eNB_rrc_inst[Mod_id].DRB_active[UE_index][i] == 0)
                 {
                   /*
-                     rrc_pdcp_config_req (Mod_id, frameP, 1, ACTION_ADD,
+                     rrc_pdcp_config_req (Mod_id, frameP, 1, CONFIG_ACTION_ADD,
                      (UE_index * NB_RB_MAX) + *DRB_configList->list.array[i]->logicalChannelIdentity,UNDEF_SECURITY_MODE);
-                     rrc_rlc_config_req(Mod_id,frameP,1,ACTION_ADD,
+                     rrc_rlc_config_req(Mod_id,frameP,1,CONFIG_ACTION_ADD,
                      (UE_index * NB_RB_MAX) + (int)*eNB_rrc_inst[Mod_id].DRB_config[UE_index][i]->logicalChannelIdentity,
                      RADIO_ACCESS_BEARER,Rlc_info_um);
                    */
@@ -2348,10 +2348,10 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete (module_id_t Mod_id, f
                   if (eNB_rrc_inst[Mod_id].DRB_active[UE_index][i] == 1)
                     {
                       // DRB has just been removed so remove RLC + PDCP for DRB
-                      /*      rrc_pdcp_config_req (Mod_id, frameP, 1, ACTION_REMOVE,
+                      /*      rrc_pdcp_config_req (Mod_id, frameP, 1, CONFIG_ACTION_REMOVE,
                          (UE_index * NB_RB_MAX) + DRB2LCHAN[i],UNDEF_SECURITY_MODE);
                        */
-                      rrc_rlc_config_req (Mod_id, UE_index, frameP, 1, ACTION_REMOVE,
+                      rrc_rlc_config_req (Mod_id, UE_index, frameP, 1, CONFIG_ACTION_REMOVE,
                                           DRB2LCHAN[i],
                                           RADIO_ACCESS_BEARER,
                                           Rlc_info_um);
@@ -2745,9 +2745,9 @@ for (i = 0; i < 8; i++)
               //LOG_D(RRC,"[eNB %d] RLC AM allocation index@1 is %d\n",Mod_id,rlc[Mod_id].m_rlc_am_array[1].allocation);
               LOG_I (RRC,"[eNB %d] CALLING RLC CONFIG SRB1 (rbid %d) for UE %d\n",Mod_id, Idx, UE_index);
 
-              //      rrc_pdcp_config_req (Mod_id, frameP, 1, ACTION_ADD, idx, UNDEF_SECURITY_MODE);
+              //      rrc_pdcp_config_req (Mod_id, frameP, 1, CONFIG_ACTION_ADD, idx, UNDEF_SECURITY_MODE);
 
-              //      rrc_rlc_config_req(Mod_id,frameP,1,ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+              //      rrc_rlc_config_req(Mod_id,frameP,1,CONFIG_ACTION_ADD,Idx,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
 
               rrc_pdcp_config_asn1_req (Mod_id, UE_index, frameP, 1,
                                         eNB_rrc_inst[Mod_id].
@@ -2779,7 +2779,7 @@ for (i = 0; i < 8; i++)
 
                  LOG_D(RRC,"[eNB %d] CALLING RLC CONFIG SRB2 (rbid %d) for UE %d\n",
                  Mod_id,Idx+1,UE_index);
-                 Mac_rlc_xface->rrc_rlc_config_req(Mod_id,ACTION_ADD,Idx+1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+                 Mac_rlc_xface->rrc_rlc_config_req(Mod_id,CONFIG_ACTION_ADD,Idx+1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
                  LOG_D(RRC,"[eNB %d] RLC AM allocation index@0 is %d\n",Mod_id,rlc[Mod_id].m_rlc_am_array[0].allocation);
                  LOG_D(RRC,"[eNB %d] RLC AM allocation index@1 is %d\n",rlc[Mod_id].m_rlc_am_array[1].allocation);
                */
@@ -2989,7 +2989,7 @@ int rrc_eNB_decode_dcch (module_id_t Mod_id, frame_t frameP, uint8_t Srb_id, uin
           xer_fprint (stdout, &asn_DEF_UL_DCCH_Message, (void *) ul_dcch_msg);
 #endif
           // confirm with PDCP about the security mode for DCCH
-          //rrc_pdcp_config_req (Mod_id, frameP, 1,ACTION_SET_SECURITY_MODE, (UE_index * NB_RB_MAX) + DCCH, 0x77);
+          //rrc_pdcp_config_req (Mod_id, frameP, 1,CONFIG_ACTION_SET_SECURITY_MODE, (UE_index * NB_RB_MAX) + DCCH, 0x77);
           // continue the procedure
           rrc_eNB_generate_UECapabilityEnquiry (Mod_id, frameP, UE_index);
           break;

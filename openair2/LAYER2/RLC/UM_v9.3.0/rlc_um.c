@@ -314,7 +314,7 @@ rlc_um_rx (void *argP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind
                   message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
 #   if defined(ENABLE_ITTI)
-                  msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_IND, message_string_size + sizeof (IttiMsgText));
+                  msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_DATA_PDU_IND, message_string_size + sizeof (IttiMsgText));
                   msg_p->ittiMsg.rlc_um_data_pdu_ind.size = message_string_size;
                   memcpy(&msg_p->ittiMsg.rlc_um_data_pdu_ind.text, message_string, message_string_size);
 

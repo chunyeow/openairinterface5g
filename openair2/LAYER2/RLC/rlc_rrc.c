@@ -416,15 +416,15 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
                 rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id; // 1
                 // NO CHECK
                 /*if (rlc_mbms_array_eNB[enb_mod_idP][mbms_service_id][mbms_session_id].instanciated_instance == enb_mod_idP + 1)
-                  action = ACTION_MBMS_MODIFY;
+                  action = CONFIG_ACTION_MBMS_MODIFY;
                 else
-                  action = ACTION_MBMS_ADD;*/
+                  action = CONFIG_ACTION_MBMS_ADD;*/
               } else {
                 rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id + (maxDRB + 3); // 15
                 /*if (rlc_mbms_array_ue[ue_mod_idP][mbms_service_id][mbms_session_id].instanciated_instance == ue_mod_idP + 1)
-                  action = ACTION_MBMS_MODIFY;
+                  action = CONFIG_ACTION_MBMS_MODIFY;
                 else
-                  action = ACTION_MBMS_ADD;*/
+                  action = CONFIG_ACTION_MBMS_ADD;*/
               }
               dl_um_rlc.sn_FieldLength = SN_FieldLength_size5;
               dl_um_rlc.t_Reordering   = T_Reordering_ms0;
@@ -873,11 +873,11 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
 
     switch (actionP) {
 
-        case ACTION_ADD:
+        case CONFIG_ACTION_ADD:
             if ((status = rrc_rlc_add_rlc(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, rb_idP, rlc_infoP.rlc_mode)) != RLC_OP_STATUS_OK) {
               return status;
             }
-        case ACTION_MODIFY:
+        case CONFIG_ACTION_MODIFY:
             switch (rlc_infoP.rlc_mode) {
                 case RLC_MODE_AM:
                     LOG_I(RLC, "[Frame %05u][UE][RLC_RRC][INST %u/%u][RB %u] MODIFY RB AM\n",
@@ -930,7 +930,7 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
             }
             break;
 
-        case ACTION_REMOVE:
+        case CONFIG_ACTION_REMOVE:
             return rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, rb_idP, frameP, enb_flagP);
             break;
         default:

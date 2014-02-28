@@ -149,8 +149,8 @@ rlc_info_t Rlc_info_am_config1;
   Rlc_info_am_config1.rlc.rlc_am_info.last_transmission_pdu_poll_trigger   = 1;//boolean
   Rlc_info_am_config1.rlc.rlc_am_info.last_retransmission_pdu_poll_trigger = 1;//boolean
   Rlc_info_am_config1.rlc.rlc_am_info.send_mrw              = 1;//boolean*
-	  Mac_rlc_xface->rrc_rlc_config_req(0,ACTION_REMOVE,rlcP->rb_id,RADIO_ACCESS_BEARER,Rlc_info_am_config1);
-	  Mac_rlc_xface->rrc_rlc_config_req(0,ACTION_ADD,rlcP->rb_id,RADIO_ACCESS_BEARER,Rlc_info_am_config1);
+	  Mac_rlc_xface->rrc_rlc_config_req(0,CONFIG_ACTION_REMOVE,rlcP->rb_id,RADIO_ACCESS_BEARER,Rlc_info_am_config1);
+	  Mac_rlc_xface->rrc_rlc_config_req(0,CONFIG_ACTION_ADD,rlcP->rb_id,RADIO_ACCESS_BEARER,Rlc_info_am_config1);
 
 #endif
         }

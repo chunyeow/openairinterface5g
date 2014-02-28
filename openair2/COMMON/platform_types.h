@@ -41,21 +41,19 @@ typedef int8_t                smodule_id_t;
 typedef uint16_t              rb_id_t;
 typedef uint16_t              srb_id_t;
 
+typedef boolean_t             MBMS_flag_t;
+#define  MBMS_FLAG_NO         FALSE
+#define  MBMS_FLAG_YES        TRUE
+
+typedef boolean_t             eNB_flag_t;
+#define  ENB_FLAG_NO          FALSE
+#define  ENB_FLAG_YES         TRUE
+
 typedef enum link_direction_e {
     UNKNOWN_DIR          = 0,
     DIR_UPLINK           = 1,
     DIR_DOWNLINK         = 2
 } link_direction_t;
-
-typedef enum MBMS_flag_e {
-    MBMS_FLAG_NO       = 0,
-    MBMS_FLAG_YES      = 1,
-} MBMS_flag_t;
-
-typedef enum eNB_flag_e {
-    ENB_FLAG_NO       = 0,
-    ENB_FLAG_YES      = 1,
-} eNB_flag_t;
 
 typedef enum rb_type_e {
     UNKNOWN_RADIO_BEARER        = 0,
@@ -122,6 +120,13 @@ typedef enum  ip_traffic_type_e {
 typedef uint32_t           mbms_session_id_t;
 typedef uint16_t           mbms_service_id_t;
 typedef uint16_t           rnti_t;
-typedef unsigned int       config_action_t;
-
+typedef enum config_action_e {
+    CONFIG_ACTION_NULL              = 0,
+    CONFIG_ACTION_ADD               = 1,
+    CONFIG_ACTION_REMOVE            = 2,
+    CONFIG_ACTION_MODIFY            = 3,
+    CONFIG_ACTION_SET_SECURITY_MODE = 4,
+    CONFIG_ACTION_MBMS_ADD          = 10,
+    CONFIG_ACTION_MBMS_MODIFY       = 11
+} config_action_t;
 #endif

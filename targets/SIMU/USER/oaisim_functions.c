@@ -1081,19 +1081,19 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime) {
       // if (frame >= 50) {// only generate when UE can receive MTCH (need to control this value)
       for (service_id = 0; service_id < 2 ; service_id++) { //maxServiceCount
           for (session_id = 0; session_id < 2; session_id++) { // maxSessionPerPMCH
-              if (pdcp_mbms_array_eNB[enb_module_idP][service_id][session_id].instanciated_instance == enb_module_idP + 1){ // this service/session is configured
+              if (pdcp_mbms_array_eNB[enb_module_idP][service_id][session_id].instanciated_instance == TRUE){ // this service/session is configured
 
                   otg_pkt = malloc (sizeof(Packet_otg_elt_t));
                   // LOG_T(OTG,"multicast packet gen for (service/mch %d, session/lcid %d, rb_id %d)\n", service_id, session_id, service_id*maxSessionPerPMCH + session_id);
                   rb_id = pdcp_mbms_array_eNB[enb_module_idP][service_id][session_id].rb_id;
                   (otg_pkt->otg_pkt).sdu_buffer = (uint8_t*) packet_gen_multicast(enb_module_idP, session_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
                   if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
-                      (otg_pkt->otg_pkt).rb_id = rb_id;
-                      (otg_pkt->otg_pkt).module_id = enb_module_idP;
-                      (otg_pkt->otg_pkt).dst_id = session_id;
-                      (otg_pkt->otg_pkt).is_ue = 0;
+                      (otg_pkt->otg_pkt).rb_id      = rb_id;
+                      (otg_pkt->otg_pkt).module_id  = enb_module_idP;
+                      (otg_pkt->otg_pkt).dst_id     = session_id;
+                      (otg_pkt->otg_pkt).is_ue      = FALSE;
                       //Adding the packet to the OTG-PDCP buffer
-                      (otg_pkt->otg_pkt).mode = PDCP_TRANSMISSION_MODE_TRANSPARENT;
+                      (otg_pkt->otg_pkt).mode       = PDCP_TRANSMISSION_MODE_TRANSPARENT;
                       pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[enb_module_idP]));
                       LOG_I(EMU, "[eNB %d] ADD packet (%p) multicast to OTG buffer for dst %d on rb_id %d\n",
                           (otg_pkt->otg_pkt).module_id, otg_pkt, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id);
@@ -1146,10 +1146,10 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime) {
               (otg_pkt->otg_pkt).sdu_buffer = packet_gen(module_instP, dst_id, ctime, &pkt_size);
               if (otg_pkt != NULL) {
                   rb_id = dst_id * NB_RB_MAX + DTCH;
-                  (otg_pkt->otg_pkt).rb_id = rb_id;
+                  (otg_pkt->otg_pkt).rb_id     = rb_id;
                   (otg_pkt->otg_pkt).module_id = module_idP;
-                  (otg_pkt->otg_pkt).is_ue = 0;
-                  (otg_pkt->otg_pkt).mode = PDCP_TRANSMISSION_MODE_DATA;
+                  (otg_pkt->otg_pkt).is_ue     = FALSE;
+                  (otg_pkt->otg_pkt).mode      = PDCP_TRANSMISSION_MODE_DATA;
                   //Adding the packet to the OTG-PDCP buffer
                   pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[module_idP]));
                   LOG_I(EMU, "[eNB %d] ADD pkt to OTG buffer for dst %d on rb_id %d\n", (otg_pkt->otg_pkt).module_id, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id);
