@@ -19,9 +19,10 @@ declare -x IP_DEFAULT_MARK="3"
 #------------------------------------------------
 declare -x UE_MIHF_IP_ADDRESS="127.0.0.1"
 declare -x UE_RAL_IP_ADDRESS="127.0.0.1"
+LOG_FILE="/tmp/oai_sim_enb.log"
 
 #------------------------------------------------
-LOG_FILE="/tmp/oai_sim_ue.log"
+MIH_LOG_FILE="mih-f_ue.log"
 
 
 ###########################################################
@@ -54,6 +55,8 @@ cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
 echo "Bringup UE interface"
 pkill oaisim             > /dev/null 2>&1
 pkill oaisim             > /dev/null 2>&1
+pkill $MIH_F             > /dev/null 2>&1
+pkill $UE_MIH_USER       > /dev/null 2>&1
 rmmod -f $IP_DRIVER_NAME > /dev/null 2>&1
 
 bash_exec "insmod  $OPENAIR2_DIR/NAS/DRIVER/LITE/$IP_DRIVER_NAME.ko oai_nw_drv_IMEI=${NAS_IMEI[0]},${NAS_IMEI[1]},${NAS_IMEI[2]},${NAS_IMEI[3]},${NAS_IMEI[4]},${NAS_IMEI[5]},${NAS_IMEI[6]},${NAS_IMEI[7]},${NAS_IMEI[8]},${NAS_IMEI[9]},${NAS_IMEI[10]},${NAS_IMEI[11]},${NAS_IMEI[12]},${NAS_IMEI[13]}"
@@ -93,8 +96,11 @@ ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 /sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
 /sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
 
+rotate_log_file $MIH_LOG_FILE
+
 # start MIH-F
-xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE &
+#xterm -hold -e 
+$ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$UE_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
 wait_process_started $MIH_F
 sleep 3
 
@@ -121,7 +127,7 @@ $OPENAIR_TARGETS/SIMU/USER/oaisim -a -K $LOG_FILE -l9 -u1 -b0 -M1 -p2 -g1 -D $EM
              --ue-ral-ip-address       $UE_RAL_IP_ADDRESS \
              --ue-mihf-remote-port     $UE_MIHF_REMOTE_PORT \
              --ue-mihf-ip-address      $UE_MIHF_IP_ADDRESS \
-             --ue-mihf-id              $UE_MIHF_ID &
+             --ue-mihf-id              $UE_MIHF_ID  | grep  "RAL\|PDCP" &
              
 wait_process_started oaisim
 

@@ -23,6 +23,7 @@ declare -x IP_DEFAULT_MARK="3"
 #------------------------------------------------
 declare -x ENB_RAL_IP_ADDRESS="127.0.0.1"
 declare -x ENB_MIHF_IP_ADDRESS=127.0.0.1
+MIH_LOG_FILE="mih-f_enb.log"
 
 #------------------------------------------------
 LOG_FILE="/tmp/oai_sim_enb.log"
@@ -64,6 +65,8 @@ bash_exec "/sbin/ip6tables -t raw -F"
 echo "Bringup eNB interface"
 pkill oaisim             > /dev/null 2>&1
 pkill oaisim             > /dev/null 2>&1
+pkill $MIH_F             > /dev/null 2>&1
+pkill $ENB_MIH_USER      > /dev/null 2>&1
 rmmod -f $IP_DRIVER_NAME > /dev/null 2>&1
 
 bash_exec "insmod  $OPENAIR2_DIR/NAS/DRIVER/LITE/$IP_DRIVER_NAME.ko oai_nw_drv_IMEI=${NAS_IMEI[0]},${NAS_IMEI[1]},${NAS_IMEI[2]},${NAS_IMEI[3]},${NAS_IMEI[4]},${NAS_IMEI[5]},${NAS_IMEI[6]},${NAS_IMEI[7]},${NAS_IMEI[8]},${NAS_IMEI[9]},${NAS_IMEI[10]},${NAS_IMEI[11]},${NAS_IMEI[12]},${NAS_IMEI[13]}"
@@ -104,8 +107,12 @@ ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 /sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
 /sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $IP_DEFAULT_MARK
 
+rotate_log_file $MIH_LOG_FILE
+
+
 # start MIH-F
-xterm -hold -e $ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE &
+#xterm -hold -e 
+$ODTONE_MIH_EXE_DIR/$MIH_F --log 4 --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_F_CONF_FILE > $MIH_LOG_FILE 2>&1 &
 wait_process_started $MIH_F
 
 NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
@@ -133,15 +140,18 @@ $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -K $LOG_FILE -l9 -u0 -b1 -M0 -p2  -g1 -D $
              --enb-mihf-remote-port     $ENB_MIHF_REMOTE_PORT \
              --enb-mihf-ip-address      $ENB_MIHF_IP_ADDRESS \
              --enb-mihf-id              $ENB_MIHF_ID \
-             -O $ENB_CONFIG_FILE  | grep  "PDCP\|RLC" &
+             -O $ENB_CONFIG_FILE  | grep  "RAL\|PDCP" &
 
 wait_process_started oaisim
 
 # start MIH-USER
 #  wait for emulation start
 tshark -c 500 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1
-#xterm -hold -e $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER    --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER_CONF_FILE &
-#wait_process_started $ENB_MIH_USER
+
+# let UE mih user work (just to avoid too much mih enb traces interleaved with mih ue traces in ue mih-f)
+sleep 25
+xterm -hold -e $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER    --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER_CONF_FILE &
+wait_process_started $ENB_MIH_USER
 
 sleep 100000
 
