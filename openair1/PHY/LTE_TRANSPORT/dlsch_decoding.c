@@ -44,7 +44,7 @@
 #include "PHY/CODING/extern.h"
 #include "SCHED/extern.h"
 #include "SIMULATION/TOOLS/defs.h"
-#define DEBUG_DLSCH_DECODING
+//#define DEBUG_DLSCH_DECODING
 
 
 void free_ue_dlsch(LTE_UE_DLSCH_t *dlsch) {
