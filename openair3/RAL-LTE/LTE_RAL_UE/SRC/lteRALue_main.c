@@ -151,8 +151,8 @@ void mRAL_init_default_values(void)
 //---------------------------------------------------------------------------
 int mRAL_initialize(void) {
     //---------------------------------------------------------------------------
-    ral_ue_instance_t  instance = 0;
-    unsigned int       mod_id   = 0;
+    ral_ue_instance_t  instance  = 0;
+    module_id_t        mod_id    = 0;
     char               *char_tmp = NULL;
 
     MIH_C_init();
@@ -163,7 +163,7 @@ int mRAL_initialize(void) {
 
     g_ue_ral_fd2instance = hashtable_create (32, NULL, hash_free_int_func);
 
-    for (mod_id = 0; mod_id < oai_emulation.info.nb_ue_local; mod_id++) {
+    for (mod_id = oai_emulation.info.first_ue_local; mod_id < oai_emulation.info.first_ue_local+ oai_emulation.info.nb_ue_local; mod_id++) {
 
         instance = mod_id + NB_eNB_INST;
         char_tmp                                       = calloc(1, strlen(g_conf_ue_ral_listening_port) + 3); // 2 digits + \0 ->99 mod_ids

@@ -51,7 +51,7 @@
  **   indications and sends Link Event Subscribe confirmation              **
  **   to the MIH-F.                                                        **
  **                                                                        **
- ** Inputs:  msgP:  Pointer to the received MIH message                    **
+ ** Inputs:  msg_pP:  Pointer to the received MIH message                    **
  **     Others: None                                                       **
  **                                                                        **
  ** Outputs:  None                                                         **
@@ -59,28 +59,29 @@
  **     Others: ralpriv                                                    **
  **                                                                        **
  ***************************************************************************/
-void mRAL_subscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Event_Subscribe_request_t* msgP)
+void mRAL_subscribe_request(ral_ue_instance_t                             instanceP,
+                            MIH_C_Message_Link_Event_Subscribe_request_t *msg_pP)
 {
-    unsigned int   mod_id = instanceP - NB_eNB_INST;
+    module_id_t    mod_id = instanceP - NB_eNB_INST;
     MIH_C_STATUS_T status = MIH_C_STATUS_REJECTED;
     /* Check whether the action request is supported */
     if (g_ue_ral_obj[mod_id].mih_supported_link_command_list & MIH_C_BIT_LINK_EVENT_SUBSCRIBE)
     {
         MIH_C_LINK_EVENT_LIST_T mih_subscribed_req_event_list;
 
-        g_ue_ral_obj[mod_id].mih_subscribe_req_event_list |= (msgP->primitive.RequestedLinkEventList & g_ue_ral_obj[mod_id].mih_supported_link_event_list);
+        g_ue_ral_obj[mod_id].mih_subscribe_req_event_list |= (msg_pP->primitive.RequestedLinkEventList & g_ue_ral_obj[mod_id].mih_supported_link_event_list);
 
-        mih_subscribed_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list & msgP->primitive.RequestedLinkEventList;
+        mih_subscribed_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list & msg_pP->primitive.RequestedLinkEventList;
 
         status = MIH_C_STATUS_SUCCESS;
 
-        mRAL_send_event_subscribe_confirm(instanceP, &msgP->header.transaction_id,
+        mRAL_send_event_subscribe_confirm(instanceP, &msg_pP->header.transaction_id,
                 &status,
                 &mih_subscribed_req_event_list);
     }
     else
     {
-        mRAL_send_event_subscribe_confirm(instanceP, &msgP->header.transaction_id,
+        mRAL_send_event_subscribe_confirm(instanceP, &msg_pP->header.transaction_id,
                 &status,
                 NULL);
     }
@@ -94,7 +95,7 @@ void mRAL_subscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Even
  **   indications and sends Link Event Unsubscribe confirmation            **
  **   to the MIH-F.                                                        **
  **                                                                        **
- ** Inputs:  msgP:  Pointer to the received MIH message                    **
+ ** Inputs:  msg_pP:  Pointer to the received MIH message                    **
  **     Others: None                                                       **
  **                                                                        **
  ** Outputs:  None                                                         **
@@ -102,10 +103,11 @@ void mRAL_subscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Even
  **     Others: ralpriv                                                    **
  **                                                                        **
  ***************************************************************************/
-void mRAL_unsubscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Event_Unsubscribe_request_t* msgP)
+void mRAL_unsubscribe_request(ral_ue_instance_t                               instanceP,
+                              MIH_C_Message_Link_Event_Unsubscribe_request_t *msg_pP)
 {
     MIH_C_STATUS_T status = MIH_C_STATUS_REJECTED;
-    unsigned int   mod_id = instanceP - NB_eNB_INST;
+    module_id_t    mod_id = instanceP - NB_eNB_INST;
 
     /* Check whether the action request is supported */
     if (g_ue_ral_obj[mod_id].mih_supported_link_command_list & MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE)
@@ -115,18 +117,18 @@ void mRAL_unsubscribe_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Ev
 
         saved_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list;
 
-        g_ue_ral_obj[mod_id].mih_subscribe_req_event_list &= ~(msgP->primitive.RequestedLinkEventList & g_ue_ral_obj[mod_id].mih_supported_link_event_list);
+        g_ue_ral_obj[mod_id].mih_subscribe_req_event_list &= ~(msg_pP->primitive.RequestedLinkEventList & g_ue_ral_obj[mod_id].mih_supported_link_event_list);
         mih_unsubscribed_req_event_list = g_ue_ral_obj[mod_id].mih_subscribe_req_event_list ^ saved_req_event_list;
 
         status = MIH_C_STATUS_SUCCESS;
 
-        mRAL_send_event_unsubscribe_confirm(instanceP, &msgP->header.transaction_id,
+        mRAL_send_event_unsubscribe_confirm(instanceP, &msg_pP->header.transaction_id,
                 &status,
                 &mih_unsubscribed_req_event_list);
     }
     else
     {
-        mRAL_send_event_unsubscribe_confirm(instanceP, &msgP->header.transaction_id,
+        mRAL_send_event_unsubscribe_confirm(instanceP, &msg_pP->header.transaction_id,
                 &status,
                 NULL);
     }

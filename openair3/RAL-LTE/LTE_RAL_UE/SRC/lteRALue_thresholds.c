@@ -50,7 +50,7 @@ extern unsigned char NB_eNB_INST;
  ** Description: Forwards the Link_Configure_Thresholds.request message    **
  **   to the RRC layer.                                                    **
  **                                                                        **
- ** Inputs:  msgP:  Pointer to the received message                        **
+ ** Inputs:  msg_pP:  Pointer to the received message                        **
  **     Others:                                                            **
  **                                                                        **
  ** Outputs:  None                                                         **
@@ -58,7 +58,8 @@ extern unsigned char NB_eNB_INST;
  ** Others:   None                                                         **
  **                                                                        **
  ***************************************************************************/
-void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Configure_Thresholds_request_t* msgP)
+void mRAL_configure_thresholds_request(ral_ue_instance_t                                  instanceP,
+                                       MIH_C_Message_Link_Configure_Thresholds_request_t* msg_pP)
 {
     unsigned int                             index;
     unsigned int                             th_index;
@@ -76,31 +77,31 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
     memset(&configure_threshold_req, 0, sizeof(rrc_ral_configure_threshold_req_t));
 
     // copy transaction id
-    configure_threshold_req.transaction_id      = msgP->header.transaction_id;
+    configure_threshold_req.transaction_id      = msg_pP->header.transaction_id;
 
     global_status = MIH_C_STATUS_SUCCESS;
 
     // configure_threshold_req.num_link_cfg_params = 0; // done
-    for (index = 0; index < msgP->primitive.LinkConfigureParameterList_list.length; index++) {
+    for (index = 0; index < msg_pP->primitive.LinkConfigureParameterList_list.length; index++) {
 
         status = MIH_C_STATUS_SUCCESS;
 
         // copy link_param_type
-        configure_threshold_req.link_cfg_params[index].link_param_type.choice = msgP->primitive.LinkConfigureParameterList_list.val[index].link_param_type.choice;
+        configure_threshold_req.link_cfg_params[index].link_param_type.choice = msg_pP->primitive.LinkConfigureParameterList_list.val[index].link_param_type.choice;
         switch (configure_threshold_req.link_cfg_params[index].link_param_type.choice) {
             case  RAL_LINK_PARAM_TYPE_CHOICE_GEN:
                 memcpy(&configure_threshold_req.link_cfg_params[index].link_param_type._union.link_param_gen,
-                        &msgP->primitive.LinkConfigureParameterList_list.val[index].link_param_type._union.link_param_gen,
+                        &msg_pP->primitive.LinkConfigureParameterList_list.val[index].link_param_type._union.link_param_gen,
                         sizeof(ral_link_param_gen_t));
                 break;
             case  RAL_LINK_PARAM_TYPE_CHOICE_QOS:
                 memcpy(&configure_threshold_req.link_cfg_params[index].link_param_type._union.link_param_qos,
-                        &msgP->primitive.LinkConfigureParameterList_list.val[index].link_param_type._union.link_param_qos,
+                        &msg_pP->primitive.LinkConfigureParameterList_list.val[index].link_param_type._union.link_param_qos,
                         sizeof(ral_link_param_qos_t));
                 break;
             case  RAL_LINK_PARAM_TYPE_CHOICE_LTE:
                 memcpy(&configure_threshold_req.link_cfg_params[index].link_param_type._union.link_param_lte,
-                        &msgP->primitive.LinkConfigureParameterList_list.val[index].link_param_type._union.link_param_lte,
+                        &msg_pP->primitive.LinkConfigureParameterList_list.val[index].link_param_type._union.link_param_lte,
                         sizeof(ral_link_param_lte_t));
                 break;
             default:
@@ -113,7 +114,7 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
         configure_threshold_req.num_link_cfg_params += 1;
 
         // copy choice
-        configure_threshold_req.link_cfg_params[index].union_choice = msgP->primitive.LinkConfigureParameterList_list.val[index].choice;
+        configure_threshold_req.link_cfg_params[index].union_choice = msg_pP->primitive.LinkConfigureParameterList_list.val[index].choice;
 
         // copy _union
         switch (configure_threshold_req.link_cfg_params[index].union_choice) {
@@ -121,7 +122,7 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
                 configure_threshold_req.link_cfg_params[index]._union.null_attr = 0;
                 break;
             case RAL_LINK_CFG_PARAM_CHOICE_TIMER:
-                configure_threshold_req.link_cfg_params[index]._union.timer_interval = msgP->primitive.LinkConfigureParameterList_list.val[index]._union.timer_interval;
+                configure_threshold_req.link_cfg_params[index]._union.timer_interval = msg_pP->primitive.LinkConfigureParameterList_list.val[index]._union.timer_interval;
                 break;
             default:
                 printf("ERROR RAL_UE, : mRAL_configure_thresholds_request unknown configure_threshold_req.link_cfg_params[index].union_choice %d\n",
@@ -131,12 +132,12 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
         }
 
         // copy th_action
-        configure_threshold_req.link_cfg_params[index].th_action = msgP->primitive.LinkConfigureParameterList_list.val[index].th_action;
+        configure_threshold_req.link_cfg_params[index].th_action = msg_pP->primitive.LinkConfigureParameterList_list.val[index].th_action;
 
         // configure_threshold_req.link_cfg_params[index].num_thresholds = 0; // done
-        for (th_index = 0; th_index < msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.length;th_index++) {
-            configure_threshold_req.link_cfg_params[index].thresholds[th_index].threshold_val  = msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index].threshold_val;
-            configure_threshold_req.link_cfg_params[index].thresholds[th_index].threshold_xdir = msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index].threshold_xdir;
+        for (th_index = 0; th_index < msg_pP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.length;th_index++) {
+            configure_threshold_req.link_cfg_params[index].thresholds[th_index].threshold_val  = msg_pP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index].threshold_val;
+            configure_threshold_req.link_cfg_params[index].thresholds[th_index].threshold_xdir = msg_pP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index].threshold_xdir;
             configure_threshold_req.link_cfg_params[index].num_thresholds += 1;
 
             // Fill ConfigureThreshold_confirm
@@ -146,7 +147,7 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
                         sizeof(ral_link_param_type_t));
 
                 memcpy(&link_configure_status_list.val[link_configure_status_list.length].threshold,
-                        &msgP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index],
+                        &msg_pP->primitive.LinkConfigureParameterList_list.val[index].threshold_list.val[th_index],
                         sizeof(ral_link_param_type_t));
 
                 link_configure_status_list.val[link_configure_status_list.length].config_status = status;
@@ -164,12 +165,12 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
         itti_send_msg_to_task (TASK_RRC_UE, instanceP, message_p);
 
         mRAL_send_configure_thresholds_confirm(instanceP,
-                &msgP->header.transaction_id,
+                &msg_pP->header.transaction_id,
                 &global_status,
                 &link_configure_status_list);
     } else {
         mRAL_send_configure_thresholds_confirm(instanceP,
-                &msgP->header.transaction_id,
+                &msg_pP->header.transaction_id,
                 &global_status,
                 NULL);
 
@@ -179,7 +180,7 @@ void mRAL_configure_thresholds_request(ral_ue_instance_t instanceP, MIH_C_Messag
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void mRAL_rx_rrc_ral_configure_threshold_conf(ral_ue_instance_t instance, MessageDef *msg_p)
+void mRAL_rx_rrc_ral_configure_threshold_conf(ral_ue_instance_t instance, MessageDef *msg_pP)
 //---------------------------------------------------------------------------------------------------------------------
 {
     MIH_C_STATUS_T                      status;
@@ -187,46 +188,46 @@ void mRAL_rx_rrc_ral_configure_threshold_conf(ral_ue_instance_t instance, Messag
     MIH_C_LINK_CFG_STATUS_LIST_T        link_cfg_status_list;
     unsigned int                        i;
 
-    status = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).status;
+    status = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).status;
     if (status == RAL_STATUS_SUCCESS) {
         link_cfg_status_list.length = 0;
-        for (i = 0; i < RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).num_link_cfg_params; i++) {
-            link_cfg_status_list.val[i].link_param_type.choice = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].link_param_type.choice;
+        for (i = 0; i < RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).num_link_cfg_params; i++) {
+            link_cfg_status_list.val[i].link_param_type.choice = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].link_param_type.choice;
             switch (link_cfg_status_list.val[i].link_param_type.choice) {
                 case  RAL_LINK_PARAM_TYPE_CHOICE_GEN:
                     memcpy(&link_cfg_status_list.val[i].link_param_type._union.link_param_gen,
-                            &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].link_param_type._union.link_param_gen,
+                            &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].link_param_type._union.link_param_gen,
                             sizeof(ral_link_param_gen_t));
                     break;
                 case  RAL_LINK_PARAM_TYPE_CHOICE_QOS:
                     memcpy(&link_cfg_status_list.val[i].link_param_type._union.link_param_qos,
-                            &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].link_param_type._union.link_param_qos,
+                            &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].link_param_type._union.link_param_qos,
                             sizeof(ral_link_param_qos_t));
                     break;
                 case  RAL_LINK_PARAM_TYPE_CHOICE_LTE:
                     memcpy(&link_cfg_status_list.val[i].link_param_type._union.link_param_lte,
-                            &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].link_param_type._union.link_param_lte,
+                            &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].link_param_type._union.link_param_lte,
                             sizeof(ral_link_param_lte_t));
                     break;
                 default:
                     assert(1==0);
             }
-            link_cfg_status_list.val[i].threshold.threshold_val  = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].threshold.threshold_val;
-            link_cfg_status_list.val[i].threshold.threshold_xdir = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].threshold.threshold_xdir;
-            link_cfg_status_list.val[i].config_status            = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).cfg_status[i].config_status;
+            link_cfg_status_list.val[i].threshold.threshold_val  = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].threshold.threshold_val;
+            link_cfg_status_list.val[i].threshold.threshold_xdir = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].threshold.threshold_xdir;
+            link_cfg_status_list.val[i].config_status            = RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).cfg_status[i].config_status;
             link_cfg_status_list.length += 1;
         }
-        mRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).transaction_id, &status, &link_cfg_status_list);
+        mRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).transaction_id, &status, &link_cfg_status_list);
     } else {
-        mRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_p).transaction_id, &status, NULL);
+        mRAL_send_configure_thresholds_confirm(instance, &RRC_RAL_CONFIGURE_THRESHOLD_CONF(msg_pP).transaction_id, &status, NULL);
     }
 }
 //---------------------------------------------------------------------------------------------------------------------
-void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instanceP, MessageDef *msg_p)
+void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instanceP, MessageDef *msg_pP)
 //---------------------------------------------------------------------------------------------------------------------
 {
     MIH_C_TRANSACTION_ID_T           transaction_id;
-    unsigned int                     mod_id;
+    module_id_t                      mod_id;
     MIH_C_LINK_TUPLE_ID_T            link_tuple_id;
     LIST(MIH_C_LINK_PARAM_RPT,  link_parameters_report);
 
@@ -238,7 +239,7 @@ void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instanceP, 
     link_tuple_id.link_id.link_type     = MIH_C_WIRELESS_LTE;
 #ifdef USE_3GPP_ADDR_AS_LINK_ADDR
     link_tuple_id.link_id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
-    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(mod_id, &link_tuple_id.link_id.link_addr._union._3gpp_addr, (u_int8_t*)UE_DEFAULT_3GPP_ADDRESS);
 #else
     link_tuple_id.link_id.link_addr.choice                          = MIH_C_CHOICE_3GPP_3G_CELL_ID;
 
@@ -247,22 +248,22 @@ void mRAL_rx_rrc_ral_measurement_report_indication(ral_ue_instance_t instanceP, 
     link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[mod_id].cell_id;
 
     LOG_D(RAL_UE, "PLMN ID %d.%d.%d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[0],
-            ink_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
+            link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[1],
             link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.plmn_id.val[2]);
     LOG_D(RAL_UE, "CELL ID %d\n", link_tuple_id.link_id.link_addr._union._3gpp_3g_cell_id.cell_id);
 #endif
 
     MIH_C_LINK_PARAM_RPT_LIST_init(&link_parameters_report_list);
     memcpy(&link_parameters_report_list.val[0].link_param,
-            &RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).link_param,
+            &RRC_RAL_MEASUREMENT_REPORT_IND(msg_pP).link_param,
             sizeof(MIH_C_LINK_PARAM_T));
 
-    if (RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).threshold.threshold_xdir == RAL_NO_THRESHOLD) {
+    if (RRC_RAL_MEASUREMENT_REPORT_IND(msg_pP).threshold.threshold_xdir == RAL_NO_THRESHOLD) {
         link_parameters_report_list.val[0].choice = MIH_C_LINK_PARAM_RPT_CHOICE_NULL;
     } else {
         link_parameters_report_list.val[0].choice = MIH_C_LINK_PARAM_RPT_CHOICE_THRESHOLD;
-        link_parameters_report_list.val[0]._union.threshold.threshold_val  = RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).threshold.threshold_val;
-        link_parameters_report_list.val[0]._union.threshold.threshold_xdir = RRC_RAL_MEASUREMENT_REPORT_IND(msg_p).threshold.threshold_xdir;
+        link_parameters_report_list.val[0]._union.threshold.threshold_val  = RRC_RAL_MEASUREMENT_REPORT_IND(msg_pP).threshold.threshold_val;
+        link_parameters_report_list.val[0]._union.threshold.threshold_xdir = RRC_RAL_MEASUREMENT_REPORT_IND(msg_pP).threshold.threshold_xdir;
     }
     link_parameters_report_list.length += 1;
 

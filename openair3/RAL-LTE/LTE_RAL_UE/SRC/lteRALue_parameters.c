@@ -40,7 +40,8 @@
 #include "lteRALue.h"
 
 //-----------------------------------------------------------------------------
-void mRAL_get_parameters_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Get_Parameters_request_t* messageP) {
+void mRAL_get_parameters_request(ral_ue_instance_t                            instanceP,
+                                 MIH_C_Message_Link_Get_Parameters_request_t *messageP) {
 //-----------------------------------------------------------------------------
     MIH_C_STATUS_T                      status;
     MIH_C_LINK_PARAM_LIST_T             link_parameters_status_list;

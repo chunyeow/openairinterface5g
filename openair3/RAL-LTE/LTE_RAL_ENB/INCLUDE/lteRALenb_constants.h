@@ -35,7 +35,7 @@
 #define ENB_DEFAULT_LINK_ID_RAL       "enb_lte_link"
 #define ENB_DEFAULT_LINK_ADDRESS_RAL  "060080149150"
 #define ENB_DEFAULT_MIHF_ID           "mihf_enb"
-#define ENB_DEFAULT_ADDRESS_3GPP      "0335060080149150"
+#define ENB_DEFAULT_3GPP_ADDRESS      "0000000000000000"
 
 
 //-----------------------------------------------------------------------------

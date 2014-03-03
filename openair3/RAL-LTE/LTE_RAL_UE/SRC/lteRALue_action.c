@@ -50,7 +50,7 @@ void mRAL_action_request(ral_ue_instance_t instanceP, MIH_C_Message_Link_Action_
     MessageDef                            *message_p = NULL;
     rrc_ral_connection_release_req_t       release_req;
     rrc_ral_connection_establishment_req_t connection_establishment_req;
-    unsigned int                           mod_id = instanceP - NB_eNB_INST;
+    module_id_t                            mod_id = instanceP - NB_eNB_INST;
 
     status             = MIH_C_STATUS_SUCCESS;
     link_action_result = MIH_C_LINK_AC_RESULT_SUCCESS;

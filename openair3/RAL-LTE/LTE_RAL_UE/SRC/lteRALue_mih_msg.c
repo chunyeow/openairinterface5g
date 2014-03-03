@@ -57,8 +57,8 @@ static char g_msg_codec_print_buffer[8192] = {};
 //-----------------------------------------------------------------------------
 int mRAL_send_to_mih(ral_ue_instance_t instanceP, u_int8_t  *buffer_pP, size_t lenP) {
 //-----------------------------------------------------------------------------
-    int result;
-    unsigned int mod_id = instanceP - NB_eNB_INST;
+    int          result;
+    module_id_t  mod_id = instanceP - NB_eNB_INST;
     result = send(g_ue_ral_obj[mod_id].mih_sock_desc, (const void *)buffer_pP, lenP, 0);
     if (result != lenP) {
         LOG_E(RAL_UE, "send_to_mih %d bytes failed, returned %d: %s\n", lenP, result, strerror(errno));
@@ -73,7 +73,7 @@ int mRAL_mihf_connect(ral_ue_instance_t instanceP){
     struct addrinfo *addr, *rp; /* endpoint address  */
     int              rc;  /* returned error code  */
     int              optval;  /* socket option value  */
-    unsigned int     mod_id = instanceP - NB_eNB_INST;
+    module_id_t      mod_id = instanceP - NB_eNB_INST;
 
     unsigned char buf[sizeof(struct sockaddr_in6)];
 
@@ -195,7 +195,8 @@ void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3G
     u_int8_t      val_temp;
     unsigned char address_3gpp[32];
     unsigned char buf[3];
-    u_int8_t _3gpp_byte_address[8];
+    u_int8_t      _3gpp_byte_address[8];
+    module_id_t   mod_id = instanceP - NB_eNB_INST;
 
     strcpy((char *)address_3gpp, (char *)str_pP);
     for(l=0; l<8; l++)
@@ -208,7 +209,7 @@ void MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_ue_instance_t instanceP, MIH_C_3G
         sscanf((const char *)buf,"%hhx", &val_temp);
         _3gpp_byte_address[l] = val_temp;
     }
-    _3gpp_byte_address[7] += instanceP;
+    _3gpp_byte_address[7] += mod_id;
     MIH_C_3GPP_ADDR_set(_3gpp_addr_pP, _3gpp_byte_address, 8);
 }
 
@@ -224,7 +225,7 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     MIH_C_Message_Link_Register_indication_t  message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -246,13 +247,16 @@ void mRAL_send_link_register_indication(ral_ue_instance_t        instanceP,
     message.primitive.Link_Id.link_type        = MIH_C_WIRELESS_LTE; //MIH_C_WIRELESS_UMTS;
     #ifdef USE_3GPP_ADDR_AS_LINK_ADDR
     message.primitive.Link_Id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_ADDR;
-    MIH_C_3GPP_ADDR_load_3gpp_str_address(instanceP, &message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    MIH_C_3GPP_ADDR_load_3gpp_str_address(mod_id, &message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)UE_DEFAULT_3GPP_ADDRESS);
     #else
-    message.primitive.Link_Id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_LINK_TUPLE_ID_CHOICE_NULL;//MIH_C_CHOICE_3GPP_ADDR;
+    message.primitive.Link_Id.link_addr.choice = (MIH_C_CHOICE_T)MIH_C_CHOICE_3GPP_3G_CELL_ID;
+    memcpy(message.primitive.Link_Id.link_addr._union._3gpp_3g_cell_id.plmn_id.val, &g_ue_ral_obj[mod_id].plmn_id, 3);
+    message.primitive.Link_Id.link_addr._union._3gpp_3g_cell_id.cell_id = g_ue_ral_obj[mod_id].cell_id;
     #endif
-    //MIH_C_3GPP_ADDR_set(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)&(g_ue_ral_obj[instanceP].ipv6_l2id[0]), strlen(DEFAULT_ADDRESS_3GPP));
-    ////MIH_C_3GPP_ADDR_set(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP, strlen(DEFAULT_ADDRESS_3GPP));
-    ////MIH_C_3GPP_ADDR_load_3gpp_str_address(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)DEFAULT_ADDRESS_3GPP);
+    //MIH_C_3GPP_ADDR_set(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)&(g_ue_ral_obj[instanceP].ipv6_l2id[0]), strlen(UE_DEFAULT_3GPP_ADDRESS));
+    ////MIH_C_3GPP_ADDR_set(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)UE_DEFAULT_3GPP_ADDRESS, strlen(UE_DEFAULT_3GPP_ADDRESS));
+    ////MIH_C_3GPP_ADDR_load_3gpp_str_address(&message.primitive.Link_Id.link_addr._union._3gpp_addr, (u_int8_t*)UE_DEFAULT_3GPP_ADDRESS);
+
 
     message_total_length = MIH_C_Link_Message_Encode_Link_Register_indication(bb_p, &message);
 
@@ -279,7 +283,7 @@ void mRAL_send_link_detected_indication(ral_ue_instance_t        instanceP,
     MIH_C_Message_Link_Detected_indication_t  message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -321,7 +325,7 @@ void mRAL_send_link_up_indication(ral_ue_instance_t          instanceP,
     MIH_C_Message_Link_Up_indication_t  message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -365,10 +369,7 @@ void mRAL_send_link_parameters_report_indication(ral_ue_instance_t            in
     MIH_C_Message_Link_Parameters_Report_indication_t  message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
-    #ifdef MSCGEN_PYTOOL
-    unsigned int                              index;
-    #endif
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -410,7 +411,7 @@ void mRAL_send_link_going_down_indication(ral_ue_instance_t            instanceP
     MIH_C_Message_Link_Going_Down_indication_t  message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -454,7 +455,7 @@ void mRAL_send_link_down_indication(ral_ue_instance_t            instanceP,
     MIH_C_Message_Link_Down_indication_t      message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -498,7 +499,7 @@ void mRAL_send_link_action_confirm(ral_ue_instance_t           instanceP,
     MIH_C_Message_Link_Action_confirm_t       message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
 
     bb_p = new_BitBuffer_0();
@@ -534,7 +535,7 @@ void mRAL_send_link_action_confirm(ral_ue_instance_t           instanceP,
 }
 
 //-----------------------------------------------------------------------------
-void mRAL_send_capability_discover_confirm(ral_ue_instance_t        instanceP,
+void mRAL_send_capability_discover_confirm(ral_ue_instance_t          instanceP,
                                              MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
                                              MIH_C_STATUS_T          *status_pP,
                                              MIH_C_LINK_EVENT_LIST_T *supported_link_event_list_pP,
@@ -543,7 +544,7 @@ void mRAL_send_capability_discover_confirm(ral_ue_instance_t        instanceP,
     MIH_C_Message_Link_Capability_Discover_confirm_t  message;
     Bit_Buffer_t                             *bb_p;
     int                                       message_total_length;
-    unsigned int                              mod_id = instanceP - NB_eNB_INST;
+    module_id_t                               mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -575,7 +576,7 @@ void mRAL_send_capability_discover_confirm(ral_ue_instance_t        instanceP,
 }
 
 //-----------------------------------------------------------------------------
-void mRAL_send_event_subscribe_confirm(ral_ue_instance_t        instanceP,
+void mRAL_send_event_subscribe_confirm(ral_ue_instance_t          instanceP,
                                          MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
                                          MIH_C_STATUS_T          *status_pP,
                                          MIH_C_LINK_EVENT_LIST_T *response_link_event_list_pP) {
@@ -583,7 +584,7 @@ void mRAL_send_event_subscribe_confirm(ral_ue_instance_t        instanceP,
     MIH_C_Message_Link_Event_Subscribe_confirm_t  message;
     Bit_Buffer_t                                 *bb_p;
     int                                           message_total_length;
-    unsigned int                                  mod_id = instanceP - NB_eNB_INST;
+    module_id_t                                   mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -614,7 +615,7 @@ void mRAL_send_event_subscribe_confirm(ral_ue_instance_t        instanceP,
 }
 
 //-----------------------------------------------------------------------------
-void mRAL_send_event_unsubscribe_confirm(ral_ue_instance_t        instanceP,
+void mRAL_send_event_unsubscribe_confirm(ral_ue_instance_t          instanceP,
                                            MIH_C_TRANSACTION_ID_T  *transaction_id_pP,
                                            MIH_C_STATUS_T          *status_pP,
                                            MIH_C_LINK_EVENT_LIST_T *response_link_event_list_pP) {
@@ -622,7 +623,7 @@ void mRAL_send_event_unsubscribe_confirm(ral_ue_instance_t        instanceP,
     MIH_C_Message_Link_Event_Unsubscribe_confirm_t  message;
     Bit_Buffer_t                                   *bb_p;
     int                                             message_total_length;
-    unsigned int                                    mod_id = instanceP - NB_eNB_INST;
+    module_id_t                                     mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -653,7 +654,7 @@ void mRAL_send_event_unsubscribe_confirm(ral_ue_instance_t        instanceP,
 }
 
 //-----------------------------------------------------------------------------
-void mRAL_send_configure_thresholds_confirm(ral_ue_instance_t             instanceP,
+void mRAL_send_configure_thresholds_confirm(ral_ue_instance_t               instanceP,
                                               MIH_C_TRANSACTION_ID_T       *transaction_id_pP,
                                               MIH_C_STATUS_T               *status_pP,
                                               MIH_C_LINK_CFG_STATUS_LIST_T *link_configure_status_list_pP) {
@@ -661,7 +662,7 @@ void mRAL_send_configure_thresholds_confirm(ral_ue_instance_t             instan
     MIH_C_Message_Link_Configure_Thresholds_confirm_t  message;
     Bit_Buffer_t                                      *bb_p;
     int                                                message_total_length;
-    unsigned int                                       mod_id = instanceP - NB_eNB_INST;
+    module_id_t                                        mod_id = instanceP - NB_eNB_INST;
 
     bb_p = new_BitBuffer_0();
     BitBuffer_wrap(bb_p, g_msg_codec_send_buffer, (unsigned int)MSG_CODEC_SEND_BUFFER_SIZE);
@@ -692,7 +693,7 @@ void mRAL_send_configure_thresholds_confirm(ral_ue_instance_t             instan
 }
 
 //-----------------------------------------------------------------------------
-void mRAL_send_get_parameters_confirm     (ral_ue_instance_t             instanceP,
+void mRAL_send_get_parameters_confirm     (ral_ue_instance_t               instanceP,
                                              MIH_C_TRANSACTION_ID_T       *transaction_id_pP,
                                              MIH_C_STATUS_T               *status_pP,
                                              MIH_C_LINK_PARAM_LIST_T      *link_parameters_status_list_pP,
@@ -702,7 +703,7 @@ void mRAL_send_get_parameters_confirm     (ral_ue_instance_t             instanc
     MIH_C_Message_Link_Get_Parameters_confirm_t  message;
     Bit_Buffer_t                                *bb_p;
     int                                          message_total_length;
-    unsigned int                                 mod_id = instanceP - NB_eNB_INST;
+    module_id_t                                  mod_id = instanceP - NB_eNB_INST;
 
 
     bb_p = new_BitBuffer_0();
@@ -740,12 +741,14 @@ void mRAL_send_get_parameters_confirm     (ral_ue_instance_t             instanc
  ***************************************************************************/
 
 //-----------------------------------------------------------------------------
-int mRAL_mih_link_msg_decode(ral_ue_instance_t instanceP, Bit_Buffer_t* bbP, MIH_C_Message_Wrapper_t *message_wrapperP) {
+int mRAL_mih_link_msg_decode(ral_ue_instance_t        instanceP,
+                             Bit_Buffer_t            *bbP,
+                             MIH_C_Message_Wrapper_t *message_wrapperP) {
 //-----------------------------------------------------------------------------
     int                                      status = MIH_MESSAGE_DECODE_FAILURE;
     MIH_C_HEADER_T                           header;
     MIH_C_STATUS_T                           mih_status;
-    unsigned int                             mod_id = instanceP - NB_eNB_INST;
+    module_id_t                              mod_id = instanceP - NB_eNB_INST;
 
 
     if ((bbP != NULL) && (message_wrapperP != NULL)) {
@@ -860,7 +863,7 @@ int mRAL_mih_link_process_message(ral_ue_instance_t instanceP){
     Bit_Buffer_t            *bb_p;
     struct sockaddr_in       udp_socket;
     socklen_t                sockaddr_len;
-    unsigned int             mod_id = instanceP - NB_eNB_INST;
+    module_id_t              mod_id = instanceP - NB_eNB_INST;
 
     total_bytes_to_decode = 0;
     nb_bytes_received     = 0;

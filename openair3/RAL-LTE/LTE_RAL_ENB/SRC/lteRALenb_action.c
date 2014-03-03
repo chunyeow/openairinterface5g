@@ -485,11 +485,11 @@ MIH_C_LINK_AC_RESULT_T eRAL_action_link_flow_attr(ral_enb_instance_t instanceP)
 MIH_C_LINK_AC_RESULT_T eRAL_action_link_activate_resources(ral_enb_instance_t instanceP){
     //---------------------------------------------------------------------------
     MIH_C_RESOURCE_DESC_T *res = &g_link_action.link_ac_param._union.resource_desc;
-    MIH_C_COS_T classIdDL = 0;
-    MIH_C_COS_T classIdUL = 0;
+    MIH_C_COS_T            classIdDL = 0;
+    MIH_C_COS_T            classIdUL = 0;
     MIH_C_LINK_DATA_RATE_T resBitrateDL = 0;
     MIH_C_LINK_DATA_RATE_T resBitrateUL = 0;
-    MIH_C_BOOLEAN_T multicast = MIH_C_BOOLEAN_FALSE;
+    MIH_C_BOOLEAN_T        multicast = MIH_C_BOOLEAN_FALSE;
 
     /* TODO: To be initialized downlink/uplink */
     if (res->choice_qos) {
@@ -765,10 +765,10 @@ MIH_C_LINK_AC_RESULT_T eRAL_action_link_activate_resources(ral_enb_instance_t in
  ***************************************************************************/
 MIH_C_LINK_AC_RESULT_T eRAL_action_link_deactivate_resources(ral_enb_instance_t instanceP)
 {
-    MIH_C_RESOURCE_DESC_T *res = &g_link_action.link_ac_param._union.resource_desc;
+    MIH_C_RESOURCE_DESC_T  *res = &g_link_action.link_ac_param._union.resource_desc;
     struct ral_lte_channel *currChannel;
-    int mt_ix, ch_ix, f_ix;
-    int cnxid;
+    int                     mt_ix, ch_ix, f_ix;
+    int                     cnxid;
 
     /* Get the connection identifier */
     f_ix = eRAL_action_get_channel_id(instanceP, &res->flow_id, &cnxid);

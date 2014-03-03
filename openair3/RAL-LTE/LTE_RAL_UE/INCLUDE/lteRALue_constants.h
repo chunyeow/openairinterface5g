@@ -44,10 +44,9 @@
 #define UE_DEFAULT_LINK_ID_RAL       "ue_lte_link"
 #define UE_DEFAULT_LINK_ADDRESS_RAL  "060080149150"
 #define UE_DEFAULT_MIHF_ID           "mihf2_ue"
-#define DEFAULT_ADDRESS_3GPP      "0335060080149150"
-#define DEFAULT_ADDRESS_eNB       "0000000000000001"
+//#define UE_DEFAULT_3GPP_ADDRESS      "0335060080149150"
+#define UE_DEFAULT_3GPP_ADDRESS      "0000000000000000"
 
-#define USE_3GPP_ADDR_AS_LINK_ADDR 1
 //-----------------------------------------------------------------------------
 // Constants for scenario
 #define PREDEFINED_MIH_PLMN_ID    503

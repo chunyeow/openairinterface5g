@@ -69,6 +69,7 @@
 /****************************************************************************/
 /******************  E X P O R T E D    F U N C T I O N S  ******************/
 /****************************************************************************/
+protected_lteralenb_mih_msg(void eRAL_MIH_C_3GPP_ADDR_load_3gpp_str_address(ral_enb_instance_t instanceP, MIH_C_3GPP_ADDR_T* _3gpp_addr_pP, u_int8_t* str_pP));
 
 protected_lteralenb_mih_msg(int eRAL_mihf_connect(ral_enb_instance_t instanceP);)
 
