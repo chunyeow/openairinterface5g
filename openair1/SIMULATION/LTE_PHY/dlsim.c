@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 
   int s,Kr,Kr_bytes;
 
-  double sigma2, sigma2_dB=10,SNR,snr0=-2.0,snr1,rate,saving_bler=1;
+  double sigma2, sigma2_dB=10,SNR,snr0=-2.0,snr1,rate;
   double snr_step=1,input_snr_step=1, snr_int=30;
 
   LTE_DL_FRAME_PARMS *frame_parms;
@@ -1213,7 +1213,6 @@ int main(int argc, char **argv) {
   for (ch_realization=0;ch_realization<n_ch_rlz;ch_realization++){
     if(abstx){
       printf("**********************Channel Realization Index = %d **************************\n", ch_realization);
-       saving_bler=1;
     }
 
     for (SNR=snr0;SNR<snr1;SNR+=snr_step) {
@@ -1664,86 +1663,83 @@ int main(int argc, char **argv) {
 	
 	
 	if(abstx){
-	    if(saving_bler==0)
-	      if (trials==0 && round==0) {
-		// calculate freq domain representation to compute SINR
-		freq_channel(eNB2UE[0], NB_RB,2*NB_RB + 1);
-		// snr=pow(10.0,.1*SNR);
-		fprintf(csv_fd,"%f,",SNR);
-		
-		for (u=0;u<2*NB_RB;u++){
-		  for (aarx=0;aarx<eNB2UE[0]->nb_rx;aarx++) {
-		    for (aatx=0;aatx<eNB2UE[0]->nb_tx;aatx++) {
-		      channelx = eNB2UE[0]->chF[aarx+(aatx*eNB2UE[0]->nb_rx)][u].x;
-		      channely = eNB2UE[0]->chF[aarx+(aatx*eNB2UE[0]->nb_rx)][u].y;
-		      fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
-		    }
-		  }
+	  if (trials==0 && round==0) {
+	    // calculate freq domain representation to compute SINR
+	    freq_channel(eNB2UE[0], NB_RB,2*NB_RB + 1);
+	    // snr=pow(10.0,.1*SNR);
+	    fprintf(csv_fd,"%f,",SNR);
+	    
+	    for (u=0;u<2*NB_RB;u++){
+	      for (aarx=0;aarx<eNB2UE[0]->nb_rx;aarx++) {
+		for (aatx=0;aatx<eNB2UE[0]->nb_tx;aatx++) {
+		  channelx = eNB2UE[0]->chF[aarx+(aatx*eNB2UE[0]->nb_rx)][u].x;
+		  channely = eNB2UE[0]->chF[aarx+(aatx*eNB2UE[0]->nb_rx)][u].y;
+		  fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
 		}
+	      }
+	    }
+	    
+	    if(num_rounds>1){
+	      freq_channel(eNB2UE[1], NB_RB,2*NB_RB + 1);
 	      
-		if(num_rounds>1){
-		  freq_channel(eNB2UE[1], NB_RB,2*NB_RB + 1);
-		
-		  for (u=0;u<2*NB_RB;u++){
-		    for (aarx=0;aarx<eNB2UE[1]->nb_rx;aarx++) {
-		      for (aatx=0;aatx<eNB2UE[1]->nb_tx;aatx++) {
-			channelx = eNB2UE[1]->chF[aarx+(aatx*eNB2UE[1]->nb_rx)][u].x;
-			channely = eNB2UE[1]->chF[aarx+(aatx*eNB2UE[1]->nb_rx)][u].y;
-			fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
-		      }
-		    }
-		  }
-		  freq_channel(eNB2UE[2], NB_RB,2*NB_RB + 1);
-		
-		  for (u=0;u<2*NB_RB;u++){
-		    for (aarx=0;aarx<eNB2UE[2]->nb_rx;aarx++) {
-		      for (aatx=0;aatx<eNB2UE[2]->nb_tx;aatx++) {
-			channelx = eNB2UE[2]->chF[aarx+(aatx*eNB2UE[2]->nb_rx)][u].x;
-			channely = eNB2UE[2]->chF[aarx+(aatx*eNB2UE[2]->nb_rx)][u].y;
-			fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
-		      }
-		    }
-		  }
-		
-		  freq_channel(eNB2UE[3], NB_RB,2*NB_RB + 1);
-		
-		  for (u=0;u<2*NB_RB;u++){
-		    for (aarx=0;aarx<eNB2UE[3]->nb_rx;aarx++) {
-		      for (aatx=0;aatx<eNB2UE[3]->nb_tx;aatx++) {
-			channelx = eNB2UE[3]->chF[aarx+(aatx*eNB2UE[3]->nb_rx)][u].x;
-			channely = eNB2UE[3]->chF[aarx+(aatx*eNB2UE[3]->nb_rx)][u].y;
-			fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
-		      }
-		    }
+	      for (u=0;u<2*NB_RB;u++){
+		for (aarx=0;aarx<eNB2UE[1]->nb_rx;aarx++) {
+		  for (aatx=0;aatx<eNB2UE[1]->nb_tx;aatx++) {
+		    channelx = eNB2UE[1]->chF[aarx+(aatx*eNB2UE[1]->nb_rx)][u].x;
+		    channely = eNB2UE[1]->chF[aarx+(aatx*eNB2UE[1]->nb_rx)][u].y;
+		    fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
 		  }
 		}
 	      }
-	  }
-	  
-	  
-	  
-	  //AWGN
-	  // This is the SNR on the PDSCH for OFDM symbols without pilots -> rho_A
-	sigma2_dB = 10*log10((double)tx_lev) +10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(double)(NB_RB*12)) - SNR - get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated);
-	  sigma2 = pow(10,sigma2_dB/10);
-	  if (n_frames==1)
-	    printf("Sigma2 %f (sigma2_dB %f,%f,%f )\n",sigma2,sigma2_dB,10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(double)(NB_RB*12)),get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated));
-
-	  for (i=0; i<2*frame_parms->samples_per_tti; i++) {
-	    for (aa=0;aa<PHY_vars_eNB->lte_frame_parms.nb_antennas_rx;aa++) {
-	      //printf("s_re[0][%d]=> %f , r_re[0][%d]=> %f\n",i,s_re[aa][i],i,r_re[aa][i]);
-	      ((short*) PHY_vars_UE->lte_ue_common_vars.rxdata[aa])[(2*subframe*PHY_vars_UE->lte_frame_parms.samples_per_tti)+2*i] = 
-		(short) (r_re[aa][i] + sqrt(sigma2/2)*gaussdouble(0.0,1.0));
-	      ((short*) PHY_vars_UE->lte_ue_common_vars.rxdata[aa])[(2*subframe*PHY_vars_UE->lte_frame_parms.samples_per_tti)+2*i+1] = 
-		(short) (r_im[aa][i] + (iqim*r_re[aa][i]) + sqrt(sigma2/2)*gaussdouble(0.0,1.0));
+	      freq_channel(eNB2UE[2], NB_RB,2*NB_RB + 1);
+	      
+	      for (u=0;u<2*NB_RB;u++){
+		for (aarx=0;aarx<eNB2UE[2]->nb_rx;aarx++) {
+		  for (aatx=0;aatx<eNB2UE[2]->nb_tx;aatx++) {
+		    channelx = eNB2UE[2]->chF[aarx+(aatx*eNB2UE[2]->nb_rx)][u].x;
+		    channely = eNB2UE[2]->chF[aarx+(aatx*eNB2UE[2]->nb_rx)][u].y;
+		    fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
+		  }
+		}
+	      }
+	      
+	      freq_channel(eNB2UE[3], NB_RB,2*NB_RB + 1);
+	      
+	      for (u=0;u<2*NB_RB;u++){
+		for (aarx=0;aarx<eNB2UE[3]->nb_rx;aarx++) {
+		  for (aatx=0;aatx<eNB2UE[3]->nb_tx;aatx++) {
+		    channelx = eNB2UE[3]->chF[aarx+(aatx*eNB2UE[3]->nb_rx)][u].x;
+		    channely = eNB2UE[3]->chF[aarx+(aatx*eNB2UE[3]->nb_rx)][u].y;
+		    fprintf(csv_fd,"%e+i*(%e),",channelx,channely);
+		  }
+		}
+	      }
 	    }
-	  }   
-
-	  //    lte_sync_time_init(PHY_vars_eNB->lte_frame_parms,lte_ue_common_vars);
-	  //    lte_sync_time(lte_ue_common_vars->rxdata, PHY_vars_eNB->lte_frame_parms);
-	  //    lte_sync_time_free();
-	  
-	  /*
+	  }
+	}
+	
+	//AWGN
+	// This is the SNR on the PDSCH for OFDM symbols without pilots -> rho_A
+	sigma2_dB = 10*log10((double)tx_lev) +10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(double)(NB_RB*12)) - SNR - get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated);
+	sigma2 = pow(10,sigma2_dB/10);
+	if (n_frames==1)
+	  printf("Sigma2 %f (sigma2_dB %f,%f,%f )\n",sigma2,sigma2_dB,10*log10((double)PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size/(double)(NB_RB*12)),get_pa_dB(PHY_vars_eNB->pdsch_config_dedicated));
+	
+	for (i=0; i<2*frame_parms->samples_per_tti; i++) {
+	  for (aa=0;aa<PHY_vars_eNB->lte_frame_parms.nb_antennas_rx;aa++) {
+	    //printf("s_re[0][%d]=> %f , r_re[0][%d]=> %f\n",i,s_re[aa][i],i,r_re[aa][i]);
+	    ((short*) PHY_vars_UE->lte_ue_common_vars.rxdata[aa])[(2*subframe*PHY_vars_UE->lte_frame_parms.samples_per_tti)+2*i] = 
+	      (short) (r_re[aa][i] + sqrt(sigma2/2)*gaussdouble(0.0,1.0));
+	    ((short*) PHY_vars_UE->lte_ue_common_vars.rxdata[aa])[(2*subframe*PHY_vars_UE->lte_frame_parms.samples_per_tti)+2*i+1] = 
+	      (short) (r_im[aa][i] + (iqim*r_re[aa][i]) + sqrt(sigma2/2)*gaussdouble(0.0,1.0));
+	  }
+	}   
+	
+	//    lte_sync_time_init(PHY_vars_eNB->lte_frame_parms,lte_ue_common_vars);
+	//    lte_sync_time(lte_ue_common_vars->rxdata, PHY_vars_eNB->lte_frame_parms);
+	//    lte_sync_time_free();
+	
+	/*
 	  // optional: read rx_frame from file
 	  if ((rx_frame_file = fopen("rx_frame.dat","r")) == NULL)
 	  {
@@ -1757,27 +1753,27 @@ int main(int argc, char **argv) {
 	  printf("Read %d bytes\n",result);
 	    
 	  fclose(rx_frame_file);
-	  */
-	  
-	  if (n_frames==1) {
-	    printf("RX level in null symbol %d\n",dB_fixed(signal_energy(&PHY_vars_UE->lte_ue_common_vars.rxdata[0][160+OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES],OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2)));
-	    printf("RX level in data symbol %d\n",dB_fixed(signal_energy(&PHY_vars_UE->lte_ue_common_vars.rxdata[0][160+(2*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES)],OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2)));
-	    printf("rx_level Null symbol %f\n",10*log10(signal_energy_fp(r_re,r_im,1,OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2,256+(OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES))));
-	    printf("rx_level data symbol %f\n",10*log10(signal_energy_fp(r_re,r_im,1,OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2,256+(2*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES))));
-	  }
-	  
-	  if (PHY_vars_eNB->lte_frame_parms.Ncp == 0) {  // normal prefix
-	    pilot1 = 4;
-	    pilot2 = 7;
-	    pilot3 = 11;
-	  }
-	  else {  // extended prefix
-	    pilot1 = 3;
-	    pilot2 = 6;
-	    pilot3 = 9;
-	  }	  
-	  
-	  // Inner receiver scheduling for 3 slots
+	*/
+	
+	if (n_frames==1) {
+	  printf("RX level in null symbol %d\n",dB_fixed(signal_energy(&PHY_vars_UE->lte_ue_common_vars.rxdata[0][160+OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES],OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2)));
+	  printf("RX level in data symbol %d\n",dB_fixed(signal_energy(&PHY_vars_UE->lte_ue_common_vars.rxdata[0][160+(2*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES)],OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2)));
+	  printf("rx_level Null symbol %f\n",10*log10(signal_energy_fp(r_re,r_im,1,OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2,256+(OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES))));
+	  printf("rx_level data symbol %f\n",10*log10(signal_energy_fp(r_re,r_im,1,OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES/2,256+(2*OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES))));
+	}
+	
+	if (PHY_vars_eNB->lte_frame_parms.Ncp == 0) {  // normal prefix
+	  pilot1 = 4;
+	  pilot2 = 7;
+	  pilot3 = 11;
+	}
+	else {  // extended prefix
+	  pilot1 = 3;
+	  pilot2 = 6;
+	  pilot3 = 9;
+	}	  
+	
+	// Inner receiver scheduling for 3 slots
 	  for (Ns=(2*subframe);Ns<((2*subframe)+3);Ns++) {
 	    for (l=0;l<pilot2;l++) {
 	      if (n_frames==1)
@@ -2131,14 +2127,13 @@ int main(int argc, char **argv) {
 	  //saving PMI in case of Transmission Mode > 5
 
 	  if(abstx){
-	    if(saving_bler==0)
-	      if (trials==0 && round==0 && transmission_mode>=5){
-		for (iii=0; iii<NB_RB; iii++){
-		  //fprintf(csv_fd, "%d, %d", (PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]),(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id_i]->pmi_ext[iii]));
-		  fprintf(csv_fd,"%x,%x,",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]),(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
-		  msg(" %x",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
-		}
+	    if (trials==0 && round==0 && transmission_mode>=5){
+	      for (iii=0; iii<NB_RB; iii++){
+		//fprintf(csv_fd, "%d, %d", (PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]),(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id_i]->pmi_ext[iii]));
+		fprintf(csv_fd,"%x,%x,",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]),(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
+		msg(" %x",(PHY_vars_UE->lte_ue_pdsch_vars[eNB_id]->pmi_ext[iii]));
 	      }
+	    }
 	  }
 	  
 	  PHY_vars_UE->dlsch_ue[0][0]->rnti = (common_flag==0) ? n_rnti: SI_RNTI;
@@ -2395,22 +2390,11 @@ int main(int argc, char **argv) {
 	  blerr[3] = (double)errs[3]/(round_trials[3]);
 	  fprintf(csv_fd,"%e,%e,%e,%e;\n",blerr[0],blerr[1],blerr[2],blerr[3]);
 	}
-	else
-	  {
-	   
-	    if(saving_bler==0)
-	      fprintf(csv_fd,"%e;\n",blerr[0]);
-	    
-	  }
-	
+	else {
+	  fprintf(csv_fd,"%e;\n",blerr[0]);
+	}
       } //ABStraction
-      if(num_rounds==1){
-	bler= (double)errs[0]/(round_trials[0]);
-	if (bler<1)
-	  {snr_step = input_snr_step;     saving_bler = 0;}
-	else
-	  {snr_step = 1; saving_bler = 1;} 
-      }
+
       if (((double)errs[0]/(round_trials[0]))<1e-2) 
 	break;
     }// SNR
