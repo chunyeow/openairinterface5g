@@ -189,8 +189,8 @@ double compute_sinr(channel_desc_t *desc,
   return(10*log10(avg_sinr/(nb_rb*2)));
 }
 
-int pbch_polynomial_degree;
-double pbch_awgn_polynomial[7];
+int pbch_polynomial_degree=6;
+double pbch_awgn_polynomial[7]={-7.2926e-05, -2.8749e-03, -4.5064e-02, -3.5301e-01, -1.4655e+00, -3.6282e+00, -6.6907e+00};
 
 void load_pbch_desc(FILE *pbch_file_fd) {
 
@@ -228,10 +228,10 @@ double pbch_bler(double sinr) {
   double sinrpow=sinr;
   double bler=0.0;
   //  printf("log10bler %f\n",log10_bler);
-  if (sinr<-7.9)
+  if (sinr<-10.0)
     bler= 1.0;
   else if (sinr>=0.0)
-    bler=0.0001;
+    bler=0.0;
   else  {
     for (i=1;i<=pbch_polynomial_degree;i++) {
       //    printf("sinrpow %f\n",sinrpow);
