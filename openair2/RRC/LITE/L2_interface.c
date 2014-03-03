@@ -74,7 +74,7 @@ int8_t mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, uint16_t Srb_i
   LOG_D(RRC,"[eNB %d] mac_rrc_data_req to SRB ID=%d\n",Mod_idP,Srb_id);
 #endif
 
-  if( enb_flagP == 1){
+  if( enb_flagP == ENB_FLAG_YES){
 
     if((Srb_id & RAB_OFFSET) == BCCH){
       if(eNB_rrc_inst[Mod_idP].SI.Active==0) return 0;
@@ -298,14 +298,14 @@ int8_t mac_rrc_lite_data_req(module_id_t Mod_idP, frame_t frameP, uint16_t Srb_i
 }
 
 //-------------------------------------------------------------------------------------------//
-int8_t mac_rrc_lite_data_ind(module_id_t Mod_idP, frame_t frameP, uint16_t Srb_id, uint8_t *Sdu, uint16_t sdu_size,eNB_flag_t enb_flagP,uint8_t eNB_index,uint8_t mbsfn_sync_area){
+int8_t mac_rrc_lite_data_ind(module_id_t Mod_idP, frame_t frameP, rb_id_t Srb_id, uint8_t *Sdu, sdu_size_t sdu_size,eNB_flag_t enb_flagP,uint8_t eNB_index,uint8_t mbsfn_sync_area){
 //-------------------------------------------------------------------------------------------//
   SRB_INFO *Srb_info;
   /*
   int si_window;
   */
 
-  if(enb_flagP == 0){
+  if(enb_flagP == ENB_FLAG_NO){
 
     if(Srb_id == BCCH){
       
@@ -526,16 +526,16 @@ uint8_t rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
 //-------------------------------------------------------------------------------------------//
 void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP,rb_id_t Srb_id, sdu_size_t sdu_sizeP,uint8_t *buffer_pP){
 //-------------------------------------------------------------------------------------------//
-  uint8_t DCCH_index = Srb_id;
-  uint8_t Mod_id;
+  rb_id_t    DCCH_index = Srb_id;
+  instance_t instance;
 
-  if (enb_flagP == 0) {
-    Mod_id = ue_mod_idP + NB_eNB_INST;
-    LOG_N(RRC, "[UE %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from eNB %d\n",
+  if (enb_flagP == ENB_FLAG_NO) {
+      instance = ue_mod_idP + NB_eNB_INST;
+      LOG_N(RRC, "[UE %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from eNB %d\n",
           ue_mod_idP, frameP, DCCH_index,Srb_id-1,sdu_sizeP, enb_mod_idP);
   } else {
-    Mod_id = enb_mod_idP;
-    LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %d\n",
+      instance = enb_mod_idP;
+      LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %d\n",
           enb_mod_idP, frameP, DCCH_index,Srb_id-1,sdu_sizeP, ue_mod_idP);
   }
 
@@ -556,10 +556,10 @@ void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
     RRC_DCCH_DATA_IND (message_p).ue_index   = ue_mod_idP;
     RRC_DCCH_DATA_IND (message_p).eNB_index  = enb_mod_idP;
 
-    itti_send_msg_to_task (enb_flagP ? TASK_RRC_ENB : TASK_RRC_UE, Mod_id, message_p);
+    itti_send_msg_to_task (enb_flagP ? TASK_RRC_ENB : TASK_RRC_UE, instance, message_p);
   }
 #else
-  if (enb_flagP ==1) {
+  if (enb_flagP == ENB_FLAG_YES) {
     rrc_eNB_decode_dcch(enb_mod_idP,frameP,DCCH_index,ue_mod_idP,buffer_pP,sdu_sizeP);
   }
   else {
@@ -618,7 +618,7 @@ void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, uint16_t eNB_
 //-------------------------------------------------------------------------------------------//
 int mac_get_rrc_lite_status(module_id_t Mod_idP,eNB_flag_t enb_flagP,uint8_t index){
 //-------------------------------------------------------------------------------------------//
-  if(enb_flagP == 1)
+  if(enb_flagP == ENB_FLAG_YES)
     return(eNB_rrc_inst[Mod_idP].Info.UE[index].Status);
   else
     return(UE_rrc_inst[Mod_idP].Info[index].State);
