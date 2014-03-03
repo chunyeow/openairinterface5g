@@ -35,7 +35,7 @@
 * \company Eurecom
 * \email: raymond.knopp@eurecom.fr 
 */ 
-//#include "openair_types.h"
+#include "platform_types.h"
 //#include "openair_defs.h"
 //#include "openair_proto.h"
 #include "defs.h"
@@ -527,14 +527,20 @@ uint8_t rrc_lite_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame
 void rrc_lite_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP,rb_id_t Srb_id, sdu_size_t sdu_sizeP,uint8_t *buffer_pP){
 //-------------------------------------------------------------------------------------------//
   rb_id_t    DCCH_index = Srb_id;
+#if defined(ENABLE_ITTI)
   instance_t instance;
+#endif
 
   if (enb_flagP == ENB_FLAG_NO) {
+#if defined(ENABLE_ITTI)
       instance = ue_mod_idP + NB_eNB_INST;
+#endif
       LOG_N(RRC, "[UE %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from eNB %d\n",
           ue_mod_idP, frameP, DCCH_index,Srb_id-1,sdu_sizeP, enb_mod_idP);
   } else {
+#if defined(ENABLE_ITTI)
       instance = enb_mod_idP;
+#endif
       LOG_N(RRC, "[eNB %d] Frame %d: received a DCCH %d message on SRB %d with Size %d from UE %d\n",
           enb_mod_idP, frameP, DCCH_index,Srb_id-1,sdu_sizeP, ue_mod_idP);
   }
@@ -591,9 +597,6 @@ void rrc_lite_in_sync_ind(module_id_t Mod_idP, frame_t frameP, uint16_t eNB_inde
 //-------------------------------------------------------------------------------------------//
 void rrc_lite_out_of_sync_ind(module_id_t Mod_idP, frame_t frameP, uint16_t eNB_index){
 //-------------------------------------------------------------------------------------------//
-//  rlc_info_t rlc_infoP;
-//  rlc_infoP.rlc_mode=RLC_UM;
-
   LOG_I(RRC,"[UE %d] Frame %d: OUT OF SYNC FROM eNB %d (T310 %d, N310 %d, N311 %d)\n ",
       Mod_idP,frameP,eNB_index,
         UE_rrc_inst[Mod_idP].Info[eNB_index].T310_cnt,
