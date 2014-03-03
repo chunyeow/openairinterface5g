@@ -37,8 +37,8 @@ echo_success "\n###############################"
 echo_success "# COMPILE oaisim"
 echo_success "###############################"
 cd $OPENAIR_TARGETS/SIMU/USER
-echo_success "Executing: make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `"
-make --keep-going oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `
+echo_success "Executing: make oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1  USE_3GPP_ADDR_AS_LINK_ADDR=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `"
+make --keep-going oaisim NAS=1 OAI_NW_DRIVER_TYPE_ETHERNET=1 ENABLE_ITTI=1 USER_MODE=1 OPENAIR2=1 ENABLE_RAL=1 MIH_C_MEDIEVAL_EXTENSIONS=1 USE_3GPP_ADDR_AS_LINK_ADDR=1 RLC_STOP_ON_LOST_PDU=1 Rel10=1 -j`grep -c ^processor /proc/cpuinfo `
 if [[ $? -eq 2 ]] ; then
     exit 1
 fi
