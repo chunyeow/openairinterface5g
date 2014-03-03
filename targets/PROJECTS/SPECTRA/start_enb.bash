@@ -146,10 +146,7 @@ wait_process_started oaisim
 
 # start MIH-USER
 #  wait for emulation start
-tshark -c 500 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1
-
-# let UE mih user work (just to avoid too much mih enb traces interleaved with mih ue traces in ue mih-f)
-sleep 25
+tshark -c 150 -i $EMULATION_DEV_INTERFACE > /dev/null 2>&1
 xterm -hold -e $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER    --conf.file $ODTONE_MIH_EXE_DIR/$ENB_MIH_USER_CONF_FILE &
 wait_process_started $ENB_MIH_USER
 
