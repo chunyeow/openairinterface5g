@@ -296,7 +296,7 @@ int main(int argc, char **argv) {
   snr0 = 0;
   num_layers = 1;
 
-  while ((c = getopt (argc, argv, "hadpDe:m:n:o:s:f:t:c:g:r:F:x:y:z:M:N:I:i:R:S:C:T:b:u:v:w:B:PLl:")) != -1) {
+  while ((c = getopt (argc, argv, "hadpDe:m:n:o:s:f:t:c:g:r:F:x:y:z:MN:I:i:R:S:C:T:b:u:v:w:B:PLl:")) != -1) {
     switch (c)
       {
       case 'a':
@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
 	input_snr_step= atof(optarg);
 	break;
       case 'M':
-	abstx= atof(optarg);
+	abstx = 1;
 	break;
       case 'N':
 	n_ch_rlz= atof(optarg);
@@ -510,8 +510,8 @@ int main(int argc, char **argv) {
 	printf("-z Number of RX antennas used in UE\n");
 	printf("-t MCS of interfering UE\n");
 	printf("-R Number of HARQ rounds (fixed)\n");
-	printf("-M Determines whether the Absraction flag is on or Off. 1-->On and 0-->Off. Default status is Off. \n");
-	printf("-N Determines the number of Channel Realizations in Absraction mode. Default value is 1. \n");
+	printf("-M Turns on calibration mode for abstraction.\n");
+	printf("-N Determines the number of Channel Realizations in Abstraction mode. Default value is 1. \n");
 	printf("-I Input filename for TrCH data (binary)\n");
 	printf("-u Determines if the 2 streams at the UE are decoded or not. 0-->U2 is interference only and 1-->U2 is detected\n");
 	exit(1);
