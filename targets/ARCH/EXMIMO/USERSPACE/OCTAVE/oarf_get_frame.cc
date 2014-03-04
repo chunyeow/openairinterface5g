@@ -33,7 +33,7 @@ static bool any_bad_argument(const octave_value_list &args)
     if ((!v.is_real_scalar()) || (v.scalar_value() < -2) || (floor(v.scalar_value()) != v.scalar_value()) || (v.scalar_value() >= MAX_CARDS))
     {
         error(FCNNAME);
-        error("card must be 0-3 for a specific card, or -1 to get frame from all cards.\nSet framing.sync_mode =SYNCMODE_MASTER for one card and =SYNCMODE_SLAVE to obtain synchronized frames.\n");
+        error("card must be 0-19 for a specific card, or -1 to get frame from all cards.\nSet framing.sync_mode =SYNCMODE_MASTER for one card and =SYNCMODE_SLAVE to obtain synchronized frames.\n");
         return true;
     }
     return false;
@@ -82,10 +82,10 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
     int card = args(0).int_value();
     
     octave_value returnvalue;
-    int i,aa;
+    int i,aa,j;
     short *rx_sig[MAX_CARDS * MAX_ANTENNAS];
     int ret;
-    int frame_length_samples=0;
+    int frame_length_samples[MAX_CARDS];
 
     ret = openair0_open();
     if ( ret != 0 )
@@ -106,8 +106,10 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
         card = -1;
     }
     
-    if (card <-1 || card >= openair0_num_detected_cards)
+    if (card <-1 || card >= openair0_num_detected_cards) {
         error("card number must be between 0 and %d. Or -1 for all cards.", openair0_num_detected_cards-1);
+	return octave_value(-4);
+    }
 
     if (card == -1) {
         numant = openair0_num_detected_cards * openair0_num_antennas[0];
@@ -131,20 +133,22 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
         }
         printf("\n");
     }
-   
-    if (openair0_exmimo_pci[0].exmimo_config_ptr->framing.resampling_factor[0] == 2)
-      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES;
-    else if (openair0_exmimo_pci[0].exmimo_config_ptr->framing.resampling_factor[0] == 1)
-      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES*2;
-    else if (openair0_exmimo_pci[0].exmimo_config_ptr->framing.resampling_factor[0] == 0)
-      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES*4;
+  
+  for (i=0; i<openair0_num_detected_cards; i++)
+  { 
+    if (openair0_exmimo_pci[i].exmimo_config_ptr->framing.resampling_factor[0] == 2)
+      frame_length_samples[i] = FRAME_LENGTH_COMPLEX_SAMPLES;
+    else if (openair0_exmimo_pci[i].exmimo_config_ptr->framing.resampling_factor[0] == 1)
+      frame_length_samples[i] = FRAME_LENGTH_COMPLEX_SAMPLES*2;
+    else if (openair0_exmimo_pci[i].exmimo_config_ptr->framing.resampling_factor[0] == 0)
+      frame_length_samples[i] = FRAME_LENGTH_COMPLEX_SAMPLES*4;
     else
-      frame_length_samples = FRAME_LENGTH_COMPLEX_SAMPLES;
-
+      frame_length_samples[i] = FRAME_LENGTH_COMPLEX_SAMPLES;
+  }
     printf("Info : Only resampling_factor of channel 0 is taken into account for copying received frame for all the other chains\n");
 
-    ComplexMatrix dx (frame_length_samples, numant);
-
+    
+    ComplexMatrix dx (FRAME_LENGTH_COMPLEX_SAMPLES*4, numant*openair0_num_detected_cards);
     /*
     // set the tx buffer to 0x00010001 to put switch in rx mode
     for (aa=0; aa<numant; aa++) 
@@ -155,24 +159,28 @@ DEFUN_DLD (oarf_get_frame, args, nargout,"Get frame")
       printf("Warning: tdd_config is not set to TXRXSWITCH_TESTRX! You better know what you are doing! :)\n");
 
     // assign userspace pointers
-    for (i=0; i<numant; i++)
+  
+    for (j=0; j<openair0_num_detected_cards;j++)
     {
-        if ( numant == openair0_num_antennas[card] )
-            rx_sig[i] = (short*) openair0_exmimo_pci[ card ].adc_head[ i ];
-        else
-            rx_sig[i] = (short*) openair0_exmimo_pci[ i / (int)openair0_num_antennas[0] ].adc_head[i % openair0_num_antennas[0]];
+      for (i=0; i<numant; i++)
+      {
+          //if ( numant == openair0_num_antennas[j] )
+              rx_sig[i+(j*MAX_ANTENNAS)] = (short*) openair0_exmimo_pci[ j ].adc_head[ i ];
+          //else
+          //    rx_sig[i+(j*MAX_ANTENNAS)] = (short*) openair0_exmimo_pci[ i / (int)openair0_num_antennas[0] ].adc_head[i % openair0_num_antennas[0]];
             
-        //printf("adc_head[%i] = %p ", i, rx_sig[i]);
+         // printf("Card %i adc_head[%i] = %p \n",j, i, rx_sig[i+(j*MAX_ANTENNAS)]);
+      }
     }
-    printf("frame length samples : %d\n",frame_length_samples);
 
     //  msg("Getting buffer...\n");
     if ( no_getframe_ioctl == 0)
         openair0_get_frame(card);
 
-    for (i=0; i<frame_length_samples; i++)
+  for (j=0; j<openair0_num_detected_cards;j++)
+    for (i=0; i<frame_length_samples[j]; i++)
         for (aa=0; aa<numant; aa++)
-            dx(i, aa) = Complex( rx_sig[aa][i*2], rx_sig[aa][i*2+1] );
+            dx(i, aa+j*MAX_ANTENNAS) = Complex( rx_sig[aa+j*MAX_ANTENNAS][i*2], rx_sig[aa+j*MAX_ANTENNAS][i*2+1] );
     
     openair0_close();
 
