@@ -68,8 +68,8 @@
         ntohs((addr)->s6_addr16[7])
 
 
-#define OAI_DRV_DEBUG_SEND
-#define OAI_DRV_DEBUG_RECEIVE
+//#define OAI_DRV_DEBUG_SEND
+//#define OAI_DRV_DEBUG_RECEIVE
 void oai_nw_drv_common_class_wireless2ip(uint16_t dlen,
                         void *pdcp_sdu,
                         int inst,

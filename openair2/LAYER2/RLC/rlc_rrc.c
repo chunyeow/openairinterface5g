@@ -393,38 +393,34 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
       }
   }
   if (drb2release_listP != NULL) {
-    for (cnt=0;cnt<drb2release_listP->list.count;cnt++) {
-      pdrb_id = drb2release_listP->list.array[cnt];
-      rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, *pdrb_id);
-    }
+      for (cnt=0;cnt<drb2release_listP->list.count;cnt++) {
+          pdrb_id = drb2release_listP->list.array[cnt];
+          rrc_rlc_remove_rlc(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, *pdrb_id);
+      }
   }
 
 #if defined(Rel10)
 
   if (pmch_InfoList_r9_pP != NULL) {
       for (i=0;i<pmch_InfoList_r9_pP->list.count;i++) {
+#warning TO DO REMOVE MBMS RLC
           mbms_SessionInfoList_r9_p = &(pmch_InfoList_r9_pP->list.array[i]->mbms_SessionInfoList_r9);
           for (j=0;j<mbms_SessionInfoList_r9_p->list.count;j++) {
               MBMS_SessionInfo_p = mbms_SessionInfoList_r9_p->list.array[j];
-              mbms_session_id = MBMS_SessionInfo_p->sessionId_r9->buf[0];
-              lc_id           = mbms_session_id;
-              mbms_service_id = MBMS_SessionInfo_p->tmgi_r9.serviceId_r9.buf[2]; //serviceId is 3-octet string
-              mch_id          = mbms_service_id;
+              mbms_session_id    = MBMS_SessionInfo_p->sessionId_r9->buf[0];
+              lc_id              = mbms_session_id;
+              mbms_service_id    = MBMS_SessionInfo_p->tmgi_r9.serviceId_r9.buf[2]; //serviceId is 3-octet string
+              mch_id             = mbms_service_id;
 
               // can set the mch_id = i
               if (enb_flagP) {
                 rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id; // 1
-                // NO CHECK
-                /*if (rlc_mbms_array_eNB[enb_mod_idP][mbms_service_id][mbms_session_id].instanciated_instance == enb_mod_idP + 1)
-                  action = CONFIG_ACTION_MBMS_MODIFY;
-                else
-                  action = CONFIG_ACTION_MBMS_ADD;*/
+                rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].service_id = mbms_service_id;
+                rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].session_id = mbms_session_id;
               } else {
                 rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id + (maxDRB + 3); // 15
-                /*if (rlc_mbms_array_ue[ue_mod_idP][mbms_service_id][mbms_session_id].instanciated_instance == ue_mod_idP + 1)
-                  action = CONFIG_ACTION_MBMS_MODIFY;
-                else
-                  action = CONFIG_ACTION_MBMS_ADD;*/
+                rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lc_id].service_id = mbms_service_id;
+                rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lc_id].session_id = mbms_session_id;
               }
               dl_um_rlc.sn_FieldLength = SN_FieldLength_size5;
               dl_um_rlc.t_Reordering   = T_Reordering_ms0;
@@ -869,14 +865,13 @@ rlc_op_status_t rrc_rlc_config_req   (module_id_t enb_mod_idP, module_id_t ue_mo
     }
 #endif
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
-#warning TO DO rrc_rlc_config_req
-
     switch (actionP) {
 
         case CONFIG_ACTION_ADD:
             if ((status = rrc_rlc_add_rlc(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_idP, rb_idP, rlc_infoP.rlc_mode)) != RLC_OP_STATUS_OK) {
               return status;
             }
+            // no break, fall to next case
         case CONFIG_ACTION_MODIFY:
             switch (rlc_infoP.rlc_mode) {
                 case RLC_MODE_AM:

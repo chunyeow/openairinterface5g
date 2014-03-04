@@ -860,6 +860,10 @@ rlc_module_init (void)
               memset(&rlc_mbms_array_ue[module_id1][service_id][session_id], 0, sizeof(rlc_mbms_t));
           }
       }
+      for (k=0; k < RLC_MAX_MBMS_LC; k++) {
+          rlc_mbms_lcid2service_session_id_ue[module_id1][k].service_id = 0;
+          rlc_mbms_lcid2service_session_id_ue[module_id1][k].session_id = 0;
+      }
 #endif
        for (rb_id=0; rb_id < NB_RB_MAX; rb_id++) {
            memset(&rlc_array_ue[module_id1][rb_id], 0, sizeof(rlc_t));
@@ -872,6 +876,10 @@ rlc_module_init (void)
           for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
               memset(&rlc_mbms_array_eNB[module_id1][service_id][session_id], 0, sizeof(rlc_mbms_t));
           }
+      }
+      for (k=0; k < RLC_MAX_MBMS_LC; k++) {
+          rlc_mbms_lcid2service_session_id_eNB[module_id1][k].service_id = 0;
+          rlc_mbms_lcid2service_session_id_eNB[module_id1][k].session_id = 0;
       }
 #endif
        for (module_id2=0; module_id2 < NUMBER_OF_UE_MAX; module_id2++) {
