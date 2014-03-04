@@ -11,8 +11,6 @@
 
 #ifdef USER_MODE
 #include <stdint.h>
-//#else
-//#include <linux/types.h>
 #endif
 
 //-----------------------------------------------------------------------------
