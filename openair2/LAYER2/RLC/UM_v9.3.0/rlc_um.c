@@ -406,7 +406,7 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
   uint16_t  sdu_remaining_size = 0;
   int32_t diff_time=0;
   rlc_um_entity_t   *rlc_p = NULL;
-  
+
   status_resp.buffer_occupancy_in_pdus         = 0;
   status_resp.buffer_occupancy_in_bytes        = 0;
   status_resp.head_sdu_remaining_size_to_send  = 0;
@@ -422,25 +422,25 @@ rlc_um_mac_status_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP
 
       status_resp.buffer_occupancy_in_bytes = rlc_um_get_buffer_occupancy (rlc_p);
       if (status_resp.buffer_occupancy_in_bytes > 0) {
-          
+
 	  status_resp.buffer_occupancy_in_bytes += rlc_p->tx_header_min_length_in_bytes;
 	  status_resp.buffer_occupancy_in_pdus = rlc_p->nb_sdu;
-	 
+
 	  diff_time =   frameP - ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_creation_time;
 	  status_resp.head_sdu_creation_time = (diff_time > 0 ) ? (uint32_t) diff_time :  (uint32_t)(0xffffffff - diff_time + frameP) ;
 	  //msg("rlc_p status for frameP %d diff time %d resp %d\n", frameP, diff_time,status_resp.head_sdu_creation_time) ;
-	  
+
 	  sdu_size            = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_size;
 	  sdu_remaining_size  = ((struct rlc_um_tx_sdu_management *) (rlc_p->input_sdus[rlc_p->current_sdu_index])->data)->sdu_remaining_size;
-	  
-	  status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;	
+
+	  status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;
 	  if (sdu_size == sdu_remaining_size)  {
            status_resp.head_sdu_is_segmented = 0;
 	  }
 	  else {
 	   status_resp.head_sdu_is_segmented = 1;
 	  }
-	
+
       } else {
       }
       //msg("[FRAME %05d][%s][RLC_UM][MOD %02u/%02u][RB %02d] MAC_STATUS_INDICATION BO = %d\n", ((rlc_um_entity_t *) rlc_pP)->module_id, ((rlc_um_entity_t *) rlc_pP)->rb_id, status_resp.buffer_occupancy_in_bytes);
@@ -627,6 +627,10 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
      rlc_p->nb_sdu,
      rlc_p->current_sdu_index,
      rlc_p->next_sdu_index);
+  rlc_util_print_hex_octets(
+      RLC,
+      (uint8_t*)&sdu_pP->data[sizeof (struct rlc_um_data_req_alloc)],
+      ((struct rlc_um_data_req *) (sdu_pP->data))->data_size);
 
   /*#ifndef USER_MODE
   rlc_um_time_us = (unsigned long int)(rt_get_time_ns ()/(RTIME)1000);

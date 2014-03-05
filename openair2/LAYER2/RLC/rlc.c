@@ -53,8 +53,11 @@ void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, uns
   }
 
 
-  LOG_T(componentP, "      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
-  LOG_T(componentP, "------+-------------------------------------------------|\n");
+
+
+  LOG_T(componentP, "+-----+-------------------------------------------------+\n");
+  LOG_T(componentP, "|     |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
+  LOG_T(componentP, "+-----+-------------------------------------------------+\n");
   for (octet_index = 0; octet_index < sizeP; octet_index++) {
     if ((octet_index % 16) == 0){
       if (octet_index != 0) {
@@ -359,6 +362,8 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 #ifdef Rel10
   rb_id_t                mbms_rb_id = 0;
   rlc_um_entity_t       *rlc_um_p   = NULL;
+  rlc_mbms_id_t         *mbms_id_p  = NULL;
+  logical_chan_id_t      log_ch_id  = 0;
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
   LOG_D(RLC,"rlc_data_req: %s enb id  %u  ue id %u, rb_id %u (MAX %d), muip %d, confirmP %d, sud_sizeP %d, sdu_pP %p\n",
@@ -401,7 +406,11 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
           oai_emulation.info.first_ue_local);
   }
 #endif
-  AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
+  if (MBMS_flagP) {
+      AssertFatal (rb_idP < NB_RB_MBMS_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MBMS_MAX);
+  } else {
+      AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
+  }
   DevAssert(sdu_pP != NULL);
   DevCheck(sdu_sizeP > 0, sdu_sizeP, 0, 0);
 
@@ -409,44 +418,71 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
   DevCheck(MBMS_flagP == 0, MBMS_flagP, 0, 0);
 #endif
 
-  if (enb_flagP) {
-      rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-      switch (rlc_mode) {
-        case RLC_MODE_NONE:
-            AssertFatal (0 , "enB RLC not configured rb id %u module %u!\n", rb_idP, enb_mod_idP);
-            break;
-        case RLC_MODE_AM:
-            rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
-            break;
-        case RLC_MODE_UM:
-            rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
-            break;
-        case RLC_MODE_TM:
-            rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
-            break;
-        default:
-            AssertFatal (0 , "enB RLC internal memory error rb id %u module %u!\n", rb_idP, enb_mod_idP);
+#ifdef Rel10
+  if (MBMS_flagP == TRUE) {
+      if (enb_flagP) {
+            log_ch_id = rlc_mbms_enb_get_lcid_by_rb_id(enb_mod_idP,rb_idP);
+            mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][log_ch_id];
+            rlc_um_p  = &rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+            LOG_D(RLC,"eNB rlc_um_p : %p RB %u service %u session %u\n",
+                  rlc_um_p,
+                  rb_idP,
+                  mbms_id_p->service_id,
+                  mbms_id_p->session_id
+                 );
+
+      } else {
+            log_ch_id = rlc_mbms_ue_get_lcid_by_rb_id(ue_mod_idP,rb_idP);
+            mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][log_ch_id];
+            rlc_um_p  = &rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+            LOG_D(RLC,"UE rlc_um_p : %p RB %u service %u session %u\n",
+                  rlc_um_p,
+                  rb_idP,
+                  mbms_id_p->service_id,
+                  mbms_id_p->session_id
+                 );
       }
-  } else {
-      rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
-      switch (rlc_mode) {
-        case RLC_MODE_NONE:
-            AssertFatal (0 , "UE RLC not configured rb id %u module %u!\n", rb_idP, ue_mod_idP);
-            break;
-        case RLC_MODE_AM:
-            rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
-            break;
-        case RLC_MODE_UM:
-            rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
-            break;
-        case RLC_MODE_TM:
-            rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
-            break;
-        default:
-            AssertFatal (0 , "UE RLC internal memory error rb id %u module %u!\n", rb_idP, ue_mod_idP);
+  } else
+#endif
+  {
+      if (enb_flagP) {
+          rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
+          switch (rlc_mode) {
+            case RLC_MODE_NONE:
+                AssertFatal (0 , "enB RLC not configured rb id %u module %u!\n", rb_idP, enb_mod_idP);
+                break;
+            case RLC_MODE_AM:
+                rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
+                break;
+            case RLC_MODE_UM:
+                rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
+                break;
+            case RLC_MODE_TM:
+                rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
+                break;
+            default:
+                AssertFatal (0 , "enB RLC internal memory error rb id %u module %u!\n", rb_idP, enb_mod_idP);
+          }
+      } else {
+          rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
+          switch (rlc_mode) {
+            case RLC_MODE_NONE:
+                AssertFatal (0 , "UE RLC not configured rb id %u module %u!\n", rb_idP, ue_mod_idP);
+                break;
+            case RLC_MODE_AM:
+                rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
+                break;
+            case RLC_MODE_UM:
+                rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
+                break;
+            case RLC_MODE_TM:
+                rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
+                break;
+            default:
+                AssertFatal (0 , "UE RLC internal memory error rb id %u module %u!\n", rb_idP, ue_mod_idP);
+          }
       }
   }
-
 
   if (MBMS_flagP == 0) {
       LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_req:\n",
@@ -617,14 +653,6 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 
 #ifdef Rel10
   } else { /* MBMS_flag != 0 */
-      if (rb_idP < (maxSessionPerPMCH * maxServiceCount)) {
-          if (enb_flagP) {
-              mbms_rb_id = rb_idP + (maxDRB + 3) * MAX_MOBILES_PER_RG;
-              //rlc_um_p   = rlc_mbms_array_eNB[enb_mod_idP][mbms_rb_id].;
-          } else {
-              mbms_rb_id = rb_idP + (maxDRB + 3);
-              //rlc_um_p   = rlc_mbms_array_ue[ue_mod_idP][mbms_rb_id];
-          }
 	  //  LOG_I(RLC,"DUY rlc_data_req: mbms_rb_id in RLC instant is: %d\n", mbms_rb_id);
           if (sdu_pP != NULL) {
               if (sdu_sizeP > 0) {
@@ -644,15 +672,13 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                             enb_mod_idP,
                             ue_mod_idP,
                             rb_idP,
-                            mbms_rb_id,
                             sdu_sizeP,
                             enb_mod_idP,
                             ue_mod_idP,
-                            rb_idP,
-                            mbms_rb_id);
+                            rb_idP);
                       } else {
                           if (enb_flagP) {
-                              LOG_D(RLC, "[FRAME %5u][RRC_eNB][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
+                              LOG_D(RLC, "[FRAME %5u][RRC_eNB][INST %u/%u][%u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
                                  frameP,
                                  enb_mod_idP,
                                  ue_mod_idP,
@@ -660,10 +686,9 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                  sdu_sizeP,
                                  enb_mod_idP,
                                  ue_mod_idP,
-                                 rb_idP,
-                                 mbms_rb_id);
+                                 rb_idP);
                           } else {
-                              LOG_D(RLC, "[FRAME %5u][RRC_UE][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
+                              LOG_D(RLC, "[FRAME %5u][RRC_UE][INST %u/%u][%u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
                                  frameP,
                                  enb_mod_idP,
                                  ue_mod_idP,
@@ -671,8 +696,7 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                                  sdu_sizeP,
                                  enb_mod_idP,
                                  ue_mod_idP,
-                                 rb_idP,
-                                 mbms_rb_id);
+                                 rb_idP);
                           }
                       }
                       LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
@@ -689,9 +713,6 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
           } else {
               return RLC_OP_STATUS_BAD_PARAMETER;
           }
-      } else {
-	return RLC_OP_STATUS_BAD_PARAMETER;
-      }
   }
 #else
   } else {/* MBMS_flag != 0 */
@@ -708,10 +729,17 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
 //-----------------------------------------------------------------------------
   rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
-  if (enb_flagP) {
-      rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-  } else {
-      rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
+#ifdef Rel10
+  if (MBMS_flagP == TRUE) {
+      rlc_mode = RLC_MODE_UM;
+  } else
+#endif
+  {
+      if (enb_flagP) {
+          rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
+      } else {
+          rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
+      }
   }
 
   LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_ind: size %u\n",
@@ -743,12 +771,13 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
                    rb_idP);
           break;
       case RLC_MODE_UM:
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
+          LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_IND %s/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
                    frameP,
                    (enb_flagP) ? "eNB" : "UE",
                    enb_mod_idP,
                    ue_mod_idP,
                    rb_idP,
+                   (MBMS_flagP) ? "(e-MBMS)" : "",
                    sdu_sizeP,
                    enb_mod_idP,
                    ue_mod_idP,
@@ -767,7 +796,7 @@ void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t 
                  rb_idP);
           break;
   }
-  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_flagP, rb_idP % NB_RB_MAX, sdu_sizeP, sdu_pP, is_data_planeP);
+  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_flagP, rb_idP, sdu_sizeP, sdu_pP, is_data_planeP);
 }
 //-----------------------------------------------------------------------------
 void rlc_data_conf     (module_id_t     enb_mod_idP,
@@ -781,13 +810,23 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
 //-----------------------------------------------------------------------------
     rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
-    if (enb_flagP) {
-        rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-    } else {
-        rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
-    }
+//TO DO (check if we can add MBMS flag in prototype)#ifdef Rel10
+//  if (MBMS_flagP == TRUE) {
+//      rlc_mode = RLC_MODE_UM;
+//  } else
+//#endif
+#if !defined(Rel10)
+  {
+      if (enb_flagP) {
+          rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
+      } else {
+          rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
+      }
+  }
+#endif
     if (!(is_data_planeP)) {
         if (rlc_rrc_data_conf != NULL) {
+#if !defined(Rel10)
             LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
             switch (rlc_mode) {
                 case RLC_MODE_NONE:
@@ -798,6 +837,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                             (enb_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
+                            rb_idP,
                             muiP,
                             enb_mod_idP,
                             ue_mod_idP,
@@ -809,6 +849,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                             (enb_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
+                            rb_idP,
                             muiP,
                             enb_mod_idP,
                             ue_mod_idP,
@@ -820,6 +861,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                             (enb_flagP) ? "eNB" : "UE",
                             enb_mod_idP,
                             ue_mod_idP,
+                            rb_idP,
                             muiP,
                             enb_mod_idP,
                             ue_mod_idP,
@@ -827,6 +869,7 @@ void rlc_data_conf     (module_id_t     enb_mod_idP,
                     break;
             }
             LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
+#endif
             rlc_rrc_data_conf (enb_mod_idP , ue_mod_idP, enb_flagP, rb_idP , muiP, statusP);
         }
     }
@@ -864,6 +907,9 @@ rlc_module_init (void)
           rlc_mbms_lcid2service_session_id_ue[module_id1][k].service_id = 0;
           rlc_mbms_lcid2service_session_id_ue[module_id1][k].session_id = 0;
       }
+      for (k=0; k < NB_RB_MBMS_MAX; k++) {
+          rlc_mbms_rbid2lcid_eNB[module_id1][k] = RLC_LC_UNALLOCATED;
+      }
 #endif
        for (rb_id=0; rb_id < NB_RB_MAX; rb_id++) {
            memset(&rlc_array_ue[module_id1][rb_id], 0, sizeof(rlc_t));
@@ -880,6 +926,9 @@ rlc_module_init (void)
       for (k=0; k < RLC_MAX_MBMS_LC; k++) {
           rlc_mbms_lcid2service_session_id_eNB[module_id1][k].service_id = 0;
           rlc_mbms_lcid2service_session_id_eNB[module_id1][k].session_id = 0;
+      }
+      for (k=0; k < NB_RB_MBMS_MAX; k++) {
+          rlc_mbms_rbid2lcid_ue[module_id1][k] = RLC_LC_UNALLOCATED;
       }
 #endif
        for (module_id2=0; module_id2 < NUMBER_OF_UE_MAX; module_id2++) {

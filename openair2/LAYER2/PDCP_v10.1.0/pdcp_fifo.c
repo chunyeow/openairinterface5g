@@ -372,7 +372,7 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
                           RLC_SDU_CONFIRM_NO,
                           pdcp_input_header.data_size,
                           pdcp_input_sdu_buffer,
-                          PDCP_TRANSMISSION_MODE_DATA); //PDCP_TRANSMISSION_MODE_TRANSPARENT);
+                          PDCP_TRANSMISSION_MODE_TRANSPARENT);
                       AssertFatal (result == TRUE, "PDCP data request failed!\n");
                   }
 
@@ -504,7 +504,7 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                   (data->pdcp_read_header.traffic_type == TRAFFIC_IPV4_TYPE_MULTICAST) /*TRAFFIC_IPV4_TYPE_MULTICAST */ ||
                   (data->pdcp_read_header.traffic_type == TRAFFIC_IPV4_TYPE_BROADCAST) /*TRAFFIC_IPV4_TYPE_BROADCAST */ ) {
 #if defined (Rel10)
-                pdcp_mode = PDCP_TRANSMISSION_MODE_DATA; //PDCP_TRANSMISSION_MODE_TRANSPARENT;
+                PDCP_TRANSMISSION_MODE_TRANSPARENT;
 #else
                 pdcp_mode= PDCP_TRANSMISSION_MODE_DATA;
 #endif
@@ -515,9 +515,9 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                   pdcp_mode= PDCP_TRANSMISSION_MODE_DATA;
                   LOG_W(PDCP,"unknown IP traffic type \n");
               }
-#else // NASMESH driver does not curreenlty support multicast traffic 
+#else // NASMESH driver does not curreenlty support multicast traffic
               pdcp_mode = PDCP_TRANSMISSION_MODE_DATA;
-#endif 
+#endif
               pdcp_data_req(enb_mod_idP,
                   ue_mod_idP,
                   frameP,
@@ -829,6 +829,10 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
           pkt_size = (otg_pkt_info->otg_pkt).sdu_buffer_size;
           if (otg_pkt != NULL) {
               if (is_ue == 0 ) {
+                  rlc_util_print_hex_octets(PDCP,
+                                            (unsigned char*)otg_pkt,
+                                            pkt_size);
+
                   //rb_id = (/*NB_eNB_INST +*/ dst_id -1 ) * MAX_NUM_RB + DTCH;
                   LOG_D(OTG,"[eNB %d] Frame %d sending packet %d from module %d on rab id %d (src %d, dst %d) pkt size %d for pdcp mode %d\n",
                       enb_mod_idP, frameP, pkt_cnt++, module_id, rb_id, module_id, dst_id, pkt_size, pdcp_mode);
@@ -837,6 +841,8 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
               }
               else {
                   //rb_id= eNB_index * MAX_NUM_RB + DTCH;
+
+
                   LOG_D(OTG,"[UE %d] sending packet from module %d on rab id %d (src %d, dst %d) pkt size %d\n",
                       ue_mod_idP, src_id, rb_id, src_id, dst_id, pkt_size);
                   result = pdcp_data_req( enb_mod_idP,

@@ -33,9 +33,9 @@
 #else
 # if defined(OAI_NW_DRIVER_TYPE_ETHERNET)
 /* SR: When using ethernet network driver the packet size is 1512 :
- * 1500 bytes IP packet + 12 bytes ethernet header
+ * 1500 bytes IP packet + 14 bytes ethernet header
  */
-#   define MAX_IP_PACKET_SIZE          1512
+#   define MAX_IP_PACKET_SIZE          1514
 # else
 #   define MAX_IP_PACKET_SIZE          1500 // 3000
 # endif
@@ -45,17 +45,24 @@
 #    define MAX_MODULES                NB_MODULES_MAX
 
 #ifdef LARGE_SCALE
-#    define MAX_MOBILES_PER_RG         128
-#    define MAX_RG                     2
+#    define MAX_MOBILES_PER_ENB         128
+//#    define MAX_RG                      2
 #else
-#    define MAX_MOBILES_PER_RG         16
-#    define MAX_RG                     2
+#    define MAX_MOBILES_PER_ENB         16
+//#    define MAX_RG                      2
 #endif
 
-#define MAX_MANAGED_RG_PER_MOBILE  2
+#define MAX_MANAGED_ENB_PER_MOBILE  2
 
 #define DEFAULT_RAB_ID 3
+
 #define NB_RB_MAX      (maxDRB + 3) /* was 11, now 14, maxDRB comes from asn1_constants.h, + 3 because of 3 SRB, one invisible id 0, then id 1 and 2 */
+#if defined(Rel10)
+#define NB_RB_MBMS_MAX (maxSessionPerPMCH*maxServiceCount)
+#else
+// Do not allocate unused memory
+#define NB_RB_MBMS_MAX 1
+#endif
 #define NB_RAB_MAX     maxDRB       /* was 8, now 11 */
 #define RAB_SHIFT1     9
 #define RAB_SHIFT2     3

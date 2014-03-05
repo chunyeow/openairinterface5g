@@ -6,10 +6,14 @@ declare -x EMULATION_DEV_INTERFACE="eth0"
 declare -x IP_DRIVER_NAME="oai_nw_drv"
 declare -x LTEIF="oai0"
 declare -x ENB_IPv4="10.0.1.1"
+declare -x UE_IPv4="10.0.1.11"
 declare -x ENB_IPv6="9998::1"
+declare -x UE_IPv6="9998::11"
 declare -x ENB_IPv6_CIDR=$ENB_IPv6"/64"
 declare -x ENB_IPv4_CIDR=$ENB_IPv4"/24"
 declare -a NAS_IMEI=( 3 9 1 8 3 6 6 2 0 0 0 0 0 0 )
+declare -x DEFAULT_RB_ID=3
+declare -x MBMS_RB_ID=225
 #------------------------------------------------
 LOG_FILE="/tmp/oai_sim_enb.log"
 
@@ -72,33 +76,35 @@ fgrep lte /etc/iproute2/rt_tables > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "200 lte " >> /etc/iproute2/rt_tables
 fi
-ip rule add fwmark 3  table lte
-ip route add default dev $LTEIF table lte
+ip rule  add fwmark $DEFAULT_RB_ID  table lte
+ip rule  add fwmark $MBMS_RB_ID     table lte
+ip route add default dev $LTEIF     table lte
 ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
-/sbin/ebtables -t nat -A POSTROUTING -p arp  -j mark --mark-set 3
+/sbin/ebtables -t nat -A POSTROUTING -p arp  -j mark --mark-set $DEFAULT_RB_ID
 
-/sbin/ip6tables -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
-/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark 3
-/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+#/sbin/ip6tables -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/iptables  -A OUTPUT -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $DEFAULT_RB_ID
 
-/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
-/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark 3
-/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark 3
+#/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type broadcast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type multicast -j MARK --set-mark $DEFAULT_RB_ID
 
 #All other traffic is sent on the RAB you want (mark = RAB ID)
-/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
-/sbin/ip6tables -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
-/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
-/sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark 3
+/sbin/ip6tables -A POSTROUTING -t mangle -o oai0                               -j MARK --set-mark $MBMS_RB_ID
 
-NOW=$(date +"%Y-%m-%d.%Hh_%Mm_%Ss")
+#/sbin/ip6tables -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/ip6tables -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/iptables  -A POSTROUTING -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $DEFAULT_RB_ID
+#/sbin/iptables  -A OUTPUT      -t mangle -o oai0 -m pkttype --pkt-type unicast -j MARK --set-mark $DEFAULT_RB_ID
+
 rotate_log_file $LOG_FILE
 
 #xterm -hold -e gdb --args
 #$OPENAIR_TARGETS/SIMU/USER/oaisim -a  -Q3 -s15 -K $LOG_FILE -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE -O $THIS_SCRIPT_PATH/enb.conf &
 #$OPENAIR_TARGETS/SIMU/USER/oaisim -a -l3 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE -O $THIS_SCRIPT_PATH/enb.conf &
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a -l3 -u0 -b1 -M0 -p2  -g1 -D 192.168.55.51 -O $THIS_SCRIPT_PATH/enb.conf &
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a -Q3 -l7 -u0 -b1 -M0 -p2  -g1 -D 192.168.55.51 -O $THIS_SCRIPT_PATH/enb.conf | grep "PDCP\|RLC\|RRC" &
 
 
 wait_process_started oaisim

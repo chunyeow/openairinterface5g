@@ -26,10 +26,10 @@ ________________________________________________________________*/
 #endif
 //#include "rrm_config_structs.h"
 //#include "platform_types.h"
-/** @defgroup _mac_rrc_primitives_ MAC Layer Primitives for Communications with RRC 
+/** @defgroup _mac_rrc_primitives_ MAC Layer Primitives for Communications with RRC
  * @ingroup _openair_mac_layer_specs_
  * @{
-This subclause describes the primitives for communications between the RRC and MAC sub-layers.  
+This subclause describes the primitives for communications between the RRC and MAC sub-layers.
 
 
 This subclause describes the primitives for communications between the RRC and MAC sub-layers.
@@ -39,7 +39,7 @@ The primitives responsible for relaying of radio and traffic measurements to the
 RRC signaling are :
 -# MAC_MEAS_REQ: enables RRC to request a measurement process in the MAC (one-shot, periodic or event-driven). This configures
 a measurement process in the MAC.
--# MAC_MEAS_IND: indicates to RRC that a (periodic) measurement request is available. 
+-# MAC_MEAS_IND: indicates to RRC that a (periodic) measurement request is available.
 -# MAC_MEAS_CONFIRM: enables RRC to acknowledge a MAC-MEAS-Ind.
 
 These associate a set of measurements (described by the MAC_MEAS_t structure) to a particular logical channel.  Each measurement has
@@ -48,30 +48,30 @@ instantaneous measurement reports. The latter is typically used to signal events
 negotiated QoS values.  These consequently trigger reconfiguration of services by the network. The averaging parameters used by the
 MAC measurement process is described by the structure MAC_AVG_t. Note that it is the responsibility
 of the MAC-layer to relay PHY measurements which are directly available to the scheduling entity in the MAC-layer.
-RRC does not directly act on the PHY measurement sub-system. 
+RRC does not directly act on the PHY measurement sub-system.
 
 The primitives responsible for logical channel MAC configuration by the radio resource manager via RRC signaling are
 
 -# MAC_CONFIG_REQ: enables RRC to configure a new logical channel description at the MAC layer.  The associated QoS
-descriptor (MAC_LCHAN_DESC contains the parameters defining the logical channel resource scheduling. 
+descriptor (MAC_LCHAN_DESC contains the parameters defining the logical channel resource scheduling.
 -# MAC_CONFIG_CONFIRM: indicates to RRC that a given logical channel has or has not been configured.
 
 The primitives responsible for indicating data synchronization (or loss of) to RRC are
 -# MAC_SYNC : indicates to RRC that a physical link for a newly established logical channel has been used (reception) with
 success.  The parameter passed indicates the logical channel id.  This represents the event of successfully decoding a particular logical
-channel for the first time.  In the event that several logical channels share the same physical resources (e.g. BCCH and CCCH), it 
+channel for the first time.  In the event that several logical channels share the same physical resources (e.g. BCCH and CCCH), it
 shall only be sent for the logical channel with the lowest id.
 -# MAC_OUT_OF_SYNC : UE primitive indicating to RRC that a physical link for a particular Node-B has been lossed.  The parameter
 passed indicates the id of the Node-B.  This represents the event of detecting an unacceptable error rate on the CHBCH of the Node-B in question.
-and can be used in the case of handover between Node-B's.  Note that this message is redundant since an equivalent way of obtaining the same 
+and can be used in the case of handover between Node-B's.  Note that this message is redundant since an equivalent way of obtaining the same
 result could be based on an event-driven measurement report.
 */
 
 #        define NB_SIG_CNX_CH 1
-#        define NB_CNX_CH MAX_MOBILES_PER_RG  
+#        define NB_CNX_CH MAX_MOBILES_PER_ENB
 
 #        define NB_SIG_CNX_UE 2 //MAX_MANAGED_RG_PER_MOBILE
-#        define NB_CNX_UE 2//MAX_MANAGED_RG_PER_MOBILE  
+#        define NB_CNX_UE 2//MAX_MANAGED_RG_PER_MOBILE
 
 #define NUMBER_OF_MEASUREMENT_SUBBANDS 16
 
@@ -151,7 +151,7 @@ typedef struct {
 typedef struct {
   //LCHAN_ID  Lchan_id;           /*!< \brief Logical Channel ID*/
   //unsigned short       Process_id;         /*!< \brief Id of new MAC measurement process*/
-  char     Meas_status;           /*!< \brief Status (0-positive, 1-negative)*/       
+  char     Meas_status;           /*!< \brief Status (0-positive, 1-negative)*/
 }__attribute__ ((__packed__))  MAC_MEAS_CONFIRM;
 
 /*!\brief This primitive parametrizes a MAC measurement process
@@ -221,7 +221,7 @@ typedef struct {
   uint8_t  Lchan_t;                      /*!< \brief Logical Channel Type (BCCH,CCCH,DCCH,DTCH_B,DTCH,MRBCH)*/
 }__attribute__ ((__packed__))  LCHAN_DESC;
 
-#define LCHAN_DESC_SIZE sizeof(LCHAN_DESC) 
+#define LCHAN_DESC_SIZE sizeof(LCHAN_DESC)
 
 /*!\brief This primitive indicates to RRC that a particular logical channel has been established and that successful transmission has
 been received.  The parameter passed is the logical channel id.
@@ -240,7 +240,7 @@ typedef struct MAC_OUT_OF_SYNC {
 
 /*!\brief This primitive enables RRC to configure a new logical channel description at the MAC layer.
  */
-typedef struct{ 
+typedef struct{
   LCHAN_ID   Lchan_id;              /*!< \brief Logical Channel ID*/
   //   unsigned short UE_eNB_index; //ID of CH who configued the LC (Need this to identify LC in the UE side)
   uint8_t Lchan_type; // DCCH_LCHAN, DTCH_LCHAN
@@ -250,7 +250,7 @@ typedef struct{
 //#ifndef CELLULAR
    unsigned short UE_eNB_index;
 //#endif
-}__attribute__ ((__packed__))  MAC_CONFIG_REQ; 
+}__attribute__ ((__packed__))  MAC_CONFIG_REQ;
 #define MAC_CONFIG_REQ_SIZE sizeof(MAC_CONFIG_REQ)
 
 
@@ -279,7 +279,7 @@ typedef struct {
   uint8_t Forg_fact;
   unsigned short Rep_interval;
   uint8_t Status;
-  unsigned int Last_report_frame; 
+  unsigned int Last_report_frame;
   unsigned int Next_check_frame;
   uint8_t Active;
 }__attribute__ ((__packed__)) DEFAULT_UE_MEAS;
@@ -307,7 +307,7 @@ typedef struct {
   uint8_t Forg_fact;
   unsigned short Rep_interval;
   unsigned int Last_report_frame;
-  unsigned int Next_check_frame; 
+  unsigned int Next_check_frame;
   uint8_t Status; //IDLE,NEED_rADIO_CONFIG, RADIO_CONFIG_TX, RADIO_CONFIG_ok
   uint8_t Active;
 }__attribute__ ((__packed__)) DEFAULT_CH_MEAS;
@@ -329,7 +329,7 @@ typedef struct{   //RRC_INTERFACE_FUNCTIONS
   //  L2_ID UE_id[NB_MODULES_MAX][NB_CNX_CH];
   uint8_t UE_id[NB_MODULES_MAX][NB_CNX_CH][5];
 #endif
-  void (*openair_rrc_top_init)(void); 
+  void (*openair_rrc_top_init)(void);
   char (*openair_rrc_eNB_init)(uint8_t );
   char (*openair_rrc_UE_init)(uint8_t, uint8_t);
   RRC_status_t (*rrc_rx_tx)(uint8_t,uint32_t,uint8_t,uint8_t);
@@ -354,7 +354,7 @@ typedef struct{
   void (*mac_out_of_sync_ind)(uint8_t,uint32_t,unsigned short);
   //RLC_INTERFACE_FUNCTIONS
   void (*pdcp_run)(void);
-  void (*pdcp_data_req)(module_id_t, rb_id_t, sdu_size_t, char*);	
+  void (*pdcp_data_req)(module_id_t, rb_id_t, sdu_size_t, char*);
   signed int (*rrc_rlc_config_req)(unsigned int, unsigned int, unsigned int, unsigned int, rlc_info_t );
   int (*rrc_mac_config_req)(uint8_t Mod_id,uint8_t eNB_flag,uint8_t UE_id,uint8_t eNB_index,
 			    RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
@@ -362,7 +362,7 @@ typedef struct{
 			    MAC_MainConfig_t *mac_MainConfig,
 			    long logicalChannelIdentity,
 			    LogicalChannelConfig_t *logicalChannelConfig,
-			    MeasGapConfig_t *measGapConfig, 
+			    MeasGapConfig_t *measGapConfig,
 			    TDD_Config_t *tdd_Config,
 			    uint8_t *SIwindowsize,
 			    uint16_t *SIperiod
@@ -398,7 +398,7 @@ typedef struct{
 #define MEAS_OK 5
 #define MEAS_TRIGGER 6
 #define RRC_MEAS_REPORT_REQ 7
-#define MEAS_REPORT 8 
+#define MEAS_REPORT 8
 
 #define RAB_MEAS_IND 0
 #define DEF_MEAS_IND 1

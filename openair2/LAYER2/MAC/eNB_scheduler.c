@@ -382,7 +382,7 @@ uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, unsigned char gr
   }
   return(nb_ue_in_pusch);
 }
-#endif 
+#endif
 int8_t add_new_ue(module_id_t enb_mod_idP, rnti_t rntiP) {
   module_id_t ue_mod_id;
   int         j;
@@ -530,7 +530,7 @@ void rx_sdu(module_id_t enb_mod_idP,frame_t frameP,rnti_t rntiP,uint8_t *sdu, ui
   module_id_t         ue_mod_id = find_UE_id(enb_mod_idP,rntiP);
   int ii,j;
   start_meas(&eNB_mac_inst[enb_mod_idP].rx_ulsch_sdu);
-  
+
   for(ii=0; ii<NB_RB_MAX; ii++) rx_lengths[ii] = 0;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,1);
@@ -989,7 +989,7 @@ void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_si
 void schedule_SI(module_id_t module_idP,frame_t frameP, unsigned char *nprb,unsigned int *nCCE) {
 
   start_meas(&eNB_mac_inst[module_idP].schedule_si);
-  
+
   unsigned char bcch_sdu_length;
   int mcs = -1;
   void *BCCH_alloc_pdu=(void*)&eNB_mac_inst[module_idP].BCCH_alloc_pdu;
@@ -1451,6 +1451,19 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
        else { // only MTCH in this subframeP
        TBS = mac_xface->get_TBS(eNB_mac_inst[module_idP].pmch_Config[0]->dataMCS_r9, mac_xface->lte_frame_parms->N_RB_DL);
        }
+
+    // get MTCH data from RLC (like for DTCH)
+    LOG_D(MAC,"[eNB %d] Frame %d subframe %d: Schedule MTCH (area %d, sfAlloc %d)\n",Mod_id,frame,subframe,i,j);
+
+    header_len_mtch = 3;
+	  LOG_D(MAC,"[eNB %d], Frame %d, MTCH->MCH, Checking RLC status (rab %d, tbs %d, len %d)\n",
+	  Mod_id,frame,MTCH,TBS,
+	  TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
+
+    rlc_status = mac_rlc_status_ind(Mod_id,frame,1,RLC_MBMS_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
+				    TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
+    printf("frame %d, subframe %d,  rlc_status.bytes_in_buffer is %d\n",frame,subframe, rlc_status.bytes_in_buffer);
+
        */
 
       // get MTCH data from RLC (like for DTCH)
@@ -1461,16 +1474,22 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
           module_idP,frameP,MTCH,TBS,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
 
-      rlc_status = mac_rlc_status_ind(module_idP,0,frameP,ENB_FLAG_YES,MBMS_FLAG_YES,MTCH+ (maxDRB + 3) * MAX_MOBILES_PER_RG,
+      rlc_status = mac_rlc_status_ind(module_idP,0,frameP,ENB_FLAG_YES,MBMS_FLAG_YES,MTCH,
           TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch);
-      //printf("frameP %d, subframeP %d,  rlc_status.bytes_in_buffer is %d\n",frameP,subframeP, rlc_status.bytes_in_buffer);
+      LOG_D(MAC,"e-MBMS log channel %u frameP %d, subframeP %d,  rlc_status.bytes_in_buffer is %d\n",
+            MTCH,frameP,subframeP, rlc_status.bytes_in_buffer);
 
       if (rlc_status.bytes_in_buffer >0) {
           LOG_I(MAC,"[eNB %d][MBMS USER-PLANE], Frame %d, MTCH->MCH, Requesting %d bytes from RLC (header len mtch %d)\n",
               module_idP,frameP,TBS-header_len_mcch-header_len_msi-sdu_length_total-header_len_mtch,header_len_mtch);
 
-          sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP, 0, frameP, ENB_FLAG_YES, MBMS_FLAG_YES,
-              MTCH + (maxDRB + 3) * MAX_MOBILES_PER_RG,
+          sdu_lengths[num_sdus] = mac_rlc_data_req(
+              module_idP,
+              0,
+              frameP,
+              ENB_FLAG_YES,
+              MBMS_FLAG_YES,
+              MTCH,
               (char*)&mch_buffer[sdu_length_total]);
           //sdu_lengths[num_sdus] = mac_rlc_data_req(module_idP,frameP, MBMS_FLAG_NO,  MTCH+(MAX_NUM_RB*(NUMBER_OF_UE_MAX+1)), (char*)&mch_buffer[sdu_length_total]);
           LOG_I(MAC,"[eNB %d][MBMS USER-PLANE] Got %d bytes for MTCH %d\n",module_idP,sdu_lengths[num_sdus],MTCH);
@@ -2024,7 +2043,7 @@ void schedule_ulsch(module_id_t module_idP, frame_t frameP,unsigned char coopera
 #ifdef CBA
   if ((eNB_mac_inst[module_idP].num_active_cba_groups > 0) && (*nCCE == 0))
     schedule_ulsch_cba_rnti(module_idP, cooperation_flag, frameP, subframeP, sched_subframe, granted_UEs, nCCE, &nCCE_available, &first_rb);
-#endif   
+#endif
   stop_meas(&eNB_mac_inst[module_idP].schedule_ulsch);
 
 }
@@ -2224,7 +2243,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
             // if there is information on bsr of DCCH, DTCH or if there is UL_SR, or if there is a packet to retransmit, or we want to schedule a periodic feedback every 10 frames
 #else
             if (round==0)
-#endif	
+#endif
               {
                 LOG_D(MAC,"[eNB %d][PUSCH %x] Frame %d subframeP %d Scheduling UE %d (SR %d)\n",
                     module_idP,rnti,frameP,subframeP,ue_mod_id,
@@ -2238,7 +2257,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
                 status = mac_get_rrc_status(module_idP,1,next_ue);
 
-#ifndef EXMIMO_IOT  
+#ifndef EXMIMO_IOT
                 if (status < RRC_CONNECTED)
                   cqi_req = 0;
                 else
@@ -2669,7 +2688,7 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
 
 
 void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,uint32_t RBalloc,uint8_t RA_scheduled,int mbsfn_flag) {
-  
+
   // loop over all allocated UEs and compute frequency allocations for PDSCH
   module_id_t   ue_mod_id = -1;
   uint8_t            first_rb,nb_rb=3;
@@ -2689,9 +2708,9 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 
   if (mbsfn_flag>0)
     return;
-  
+
   start_meas(&eNB_mac_inst[module_idP].fill_DLSCH_dci);
-  
+
   // clear vrb_map
   memset(vrb_map,0,100);
 
@@ -3454,10 +3473,10 @@ void schedule_ue_spec(module_id_t   module_idP,
   int                   mcs;
   uint16_t                   min_rb_unit;
   short                 ta_update        = 0;
- 
+
   if (mbsfn_flag>0)
     return;
-  
+
   reset_meas(&eNB_mac_inst[module_idP].schedule_dlsch);
 
   switch (mac_xface->lte_frame_parms->N_RB_DL) {
@@ -3519,7 +3538,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 
 
   /// CALLING Pre_Processor for downlink scheduling (Returns estimation of RBs required by each UE and the allocation on sub-band)
-  start_meas(&eNB_mac_inst[module_idP].schedule_dlsch_preprocessor); 
+  start_meas(&eNB_mac_inst[module_idP].schedule_dlsch_preprocessor);
   dlsch_scheduler_pre_processor(module_idP,
 				frameP,
 				subframeP,
@@ -3527,7 +3546,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 				pre_nb_available_rbs,
 				mac_xface->lte_frame_parms->N_RBGS,
 				rballoc_sub_UE);
-  stop_meas(&eNB_mac_inst[module_idP].schedule_dlsch_preprocessor); 
+  stop_meas(&eNB_mac_inst[module_idP].schedule_dlsch_preprocessor);
 
   for (ue_mod_id=0;ue_mod_id<granted_UEs;ue_mod_id++) {
 
@@ -3615,9 +3634,9 @@ void schedule_ue_spec(module_id_t   module_idP,
 	eNB_UE_stats->dlsch_mcs1 = cqi_to_mcs[eNB_UE_stats->DL_cqi[0]];
 	LOG_T(MAC,"CQI %d\n",eNB_UE_stats->DL_cqi[0]);
       }
-      else 
+      else
 	eNB_UE_stats->dlsch_mcs1 = openair_daq_vars.target_ue_dl_mcs;
-      
+
 
       if(eNB_UE_stats->dlsch_mcs1>22)
         eNB_UE_stats->dlsch_mcs1=22;
@@ -4306,7 +4325,7 @@ void schedule_ue_spec(module_id_t   module_idP,
 }
 
 void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframeP) {//, int calibration_flag) {
- 
+
   start_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
   unsigned char nprb=0;
   unsigned int nCCE=0;
@@ -4391,7 +4410,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   eNB_mac_inst[module_idP].subframe = subframeP;
 
   //if (subframeP%5 == 0)
-#ifdef EXMIMO 
+#ifdef EXMIMO
   pdcp_run(frameP, 1, 0, module_idP);
   /*
   ret = pthread_mutex_trylock (&pdcp_mutex);
@@ -4709,5 +4728,5 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,0);
   stop_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
-  
+
 }

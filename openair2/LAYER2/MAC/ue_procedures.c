@@ -297,7 +297,7 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu
   LOG_T(MAC,"[eNB %d] First 32 bytes of DLSCH : \n");
   for (i=0;i<32;i++)
     LOG_T(MAC,"%x.",sdu[i]);
-  LOG_T(MAC,"\n");  
+  LOG_T(MAC,"\n");
 #endif
 
   for (i=0;i<num_ce;i++) {
@@ -356,7 +356,7 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu
           for (j=0;j<rx_lengths[i];j++)
             LOG_T(MAC,"%x.",(uint8_t)payload_ptr[j]);
           LOG_T(MAC,"\n");
-#endif      
+#endif
           mac_rrc_data_ind(module_idP,
               frameP,
               CCCH,
@@ -485,12 +485,12 @@ unsigned char *parse_mch_header(unsigned char *mac_header,
 void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, uint8_t *sdu, uint16_t sdu_len, uint8_t eNB_index, uint8_t sync_area) {
 
   unsigned char num_sdu, i, *payload_ptr;
-  unsigned char rx_lcids[NB_RB_MAX]; 
+  unsigned char rx_lcids[NB_RB_MAX];
   unsigned short rx_lengths[NB_RB_MAX];
 
-  start_meas(&UE_mac_inst[module_idP].rx_mch_sdu); 
+  start_meas(&UE_mac_inst[module_idP].rx_mch_sdu);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SEND_MCH_SDU, VCD_FUNCTION_IN);
-  
+
   LOG_D(MAC,"[UE %d] Frame %d : process the mch PDU for sync area %d \n",module_idP,frameP, sync_area);
   LOG_D(MAC,"[UE %d] sdu: %x.%x\n", module_idP,sdu[0], sdu[1]);
   LOG_D(MAC,"[UE %d] parse_mch_header, demultiplex\n",module_idP);
@@ -525,7 +525,7 @@ void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, uint8_t *sdu, uint1
                   frameP,
                   ENB_FLAG_NO,
                   MBMS_FLAG_YES,
-                  MTCH + (maxDRB + 3),
+                  MTCH, /*+ (maxDRB + 3),*/
                   (char *)payload_ptr,
                   rx_lengths[i],
                   1,
@@ -533,7 +533,12 @@ void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, uint8_t *sdu, uint1
 
           }
       } else {
-          LOG_W(MAC,"[UE %d] Frame %d : unknown sdu %d mcch status %d eNB %d \n",module_idP,frameP,rx_lengths[i],
+          LOG_W(MAC,"[UE %d] Frame %d : unknown sdu %d rx_lcids[%d]=%d mcch status %d eNB %d \n",
+              module_idP,
+              frameP,
+              rx_lengths[i],
+              i,
+              rx_lcids[i],
               UE_mac_inst[module_idP].mcch_status, eNB_index);
       }
 
@@ -541,7 +546,7 @@ void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, uint8_t *sdu, uint1
   }
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SEND_MCH_SDU, VCD_FUNCTION_OUT);
-  stop_meas(&UE_mac_inst[module_idP].rx_mch_sdu); 
+  stop_meas(&UE_mac_inst[module_idP].rx_mch_sdu);
 }
 
 int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_area, unsigned char eNB_index){
@@ -551,7 +556,7 @@ int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_are
       return -1;
   }
   else if (UE_mac_inst[module_idP].mbsfn_SubframeConfig[mbsfn_sync_area] != NULL)
-    return mbsfn_sync_area; 
+    return mbsfn_sync_area;
   else {
       LOG_W(MAC,"[UE %d] MBSFN Subframe Config pattern %d not found \n ", module_idP, mbsfn_sync_area);
       return -1;
@@ -565,13 +570,13 @@ int ue_query_mch(module_id_t module_idP, uint32_t frameP, uint32_t subframe, uin
   int mbsfn_period = 0;// 1<<(UE_mac_inst[module_idP].mbsfn_SubframeConfig[0]->radioframeAllocationPeriod);
   int mcch_period = 0;// 32<<(UE_mac_inst[module_idP].mbsfn_AreaInfo[0]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
   int mch_scheduling_period = -1;
- 
-  start_meas(&UE_mac_inst[module_idP].ue_query_mch); 
-  
+
+  start_meas(&UE_mac_inst[module_idP].ue_query_mch);
+
   if (UE_mac_inst[module_idP].pmch_Config[0])
     mch_scheduling_period = 8<<(UE_mac_inst[module_idP].pmch_Config[0]->mch_SchedulingPeriod_r9);
 
-  for (i=0; 
+  for (i=0;
       i< UE_mac_inst[module_idP].num_active_mbsfn_area;
       i++ ){
       // assume, that there is always a mapping
@@ -766,7 +771,7 @@ int ue_query_mch(module_id_t module_idP, uint32_t frameP, uint32_t subframe, uin
       }
   } // end of for
 
-  stop_meas(&UE_mac_inst[module_idP].ue_query_mch); 
+  stop_meas(&UE_mac_inst[module_idP].ue_query_mch);
 
   if ( (mcch_flag==1))// || (msi_flag==1))
     *mcch_active=1;
@@ -775,7 +780,7 @@ int ue_query_mch(module_id_t module_idP, uint32_t frameP, uint32_t subframe, uin
       return mcch_mcs;
   } else if ((mtch_flag==1) && (UE_mac_inst[module_idP].msi_status==1))
     return UE_mac_inst[module_idP].pmch_Config[0]->dataMCS_r9;
-  else 
+  else
     return -1;
 }
 
@@ -1028,7 +1033,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
   mac_rlc_status_resp_t rlc_status;
   uint8_t dcch_header_len=0,dcch1_header_len=0,dtch_header_len=0;
   uint8_t dcch_header_len_tmp=0, dtch_header_len_tmp=0;
-  uint8_t bsr_header_len=0, bsr_ce_len=0, bsr_len=0; 
+  uint8_t bsr_header_len=0, bsr_ce_len=0, bsr_len=0;
   uint8_t phr_header_len=0, phr_ce_len=0,phr_len=0;
   uint16_t sdu_lengths[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   uint8_t sdu_lcids[8]    = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -1149,7 +1154,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
 	((UE_mac_inst[module_idP].scheduling_info.BSR_bytes[DTCH]+bsr_len+phr_len+dcch_header_len+dcch1_header_len+dtch_header_len) > buflen)&&
 	 buflen >=128 ))
       dtch_header_len = 3;//sizeof(SCH_SUBHEADER_LONG);
-    else 
+    else
       dtch_header_len = 2;//sizeof(SCH_SUBHEADER_SHORT);
        */
       rlc_status = mac_rlc_status_ind(0, module_idP,frameP,ENB_FLAG_NO,MBMS_FLAG_NO,
@@ -1215,13 +1220,13 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
 
   LOG_T(MAC,"[UE %d] Frame %d: bsr s %p bsr_l %p, phr_p %p\n",  module_idP,frameP,bsr_s, bsr_l, phr_p);
 
-  // adjust the header length 
+  // adjust the header length
   dcch_header_len_tmp = dcch_header_len;
   dtch_header_len_tmp = dtch_header_len;
   if (dtch_header_len==0)
-    dcch_header_len = (dcch_header_len>0)? 1: dcch_header_len;  
-  else 
-    dtch_header_len= (dtch_header_len >0)? 1: dtch_header_len;   // for short and long, cut the length+F fields  
+    dcch_header_len = (dcch_header_len>0)? 1: dcch_header_len;
+  else
+    dtch_header_len= (dtch_header_len >0)? 1: dtch_header_len;   // for short and long, cut the length+F fields
 
   if ((buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-dtch_header_len-sdu_length_total) <= 2) {
       short_padding = buflen-bsr_len-phr_len-dcch_header_len-dcch1_header_len-dtch_header_len-sdu_length_total;
@@ -1266,7 +1271,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.opt_enabled)
     trace_pdu(0, ulsch_buffer, buflen, module_idP, 3, UE_mac_inst[module_idP].crnti, subframe, 0, 0);
-  LOG_D(OPT,"[UE %d][ULSCH] Frame %d trace pdu for rnti %x  with size %d\n", 
+  LOG_D(OPT,"[UE %d][ULSCH] Frame %d trace pdu for rnti %x  with size %d\n",
       module_idP, frameP, UE_mac_inst[module_idP].crnti, buflen);
 #endif
 
@@ -1295,7 +1300,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   // int8_t lcg_id;
   struct RACH_ConfigCommon *rach_ConfigCommon = (struct RACH_ConfigCommon *)NULL;
 #ifdef EXMIMO
-  int ret;  
+  int ret;
 #endif
 #if defined(ENABLE_ITTI)
   MessageDef   *msg_p;
@@ -1303,7 +1308,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   instance_t    instance;
   int           result;
 #endif
-  start_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+  start_meas(&UE_mac_inst[module_idP].ue_scheduler);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_IN);
 
 #if defined(ENABLE_ITTI)
@@ -1341,7 +1346,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   //if (subframe%5 == 0)
 #ifdef EXMIMO
   pdcp_run(frameP, 0, module_idP, eNB_indexP);
-#endif 
+#endif
   UE_mac_inst[module_idP].frame = frameP;
   UE_mac_inst[module_idP].subframe = subframeP;
 
@@ -1357,13 +1362,13 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   case RRC_ConnSetup_failed:
     LOG_E(MAC,"RRCConnectionSetup failed, returning to IDLE state\n");
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-    stop_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+    stop_meas(&UE_mac_inst[module_idP].ue_scheduler);
     return(CONNECTION_LOST);
     break;
   case RRC_PHY_RESYNCH:
     LOG_E(MAC,"RRC Loss of synch, returning PHY_RESYNCH\n");
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-    stop_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+    stop_meas(&UE_mac_inst[module_idP].ue_scheduler);
     return(PHY_RESYNCH);
   case RRC_Handover_failed:
     LOG_N(MAC,"Handover failure for UE %d eNB_index %d\n",module_idP,eNB_indexP);
@@ -1374,12 +1379,12 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   case RRC_HO_STARTED:
     LOG_I(MAC,"RRC handover, Instruct PHY to start the contention-free PRACH and synchronization\n");
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-    stop_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+    stop_meas(&UE_mac_inst[module_idP].ue_scheduler);
     return(PHY_HO_PRACH);
   default:
     break;
   }
-#endif 
+#endif
 
   // Check Contention resolution timer (put in a function later)
   if (UE_mac_inst[module_idP].RA_contention_resolution_timer_active == 1) {
@@ -1389,7 +1394,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
       else {
           LOG_E(MAC,"FATAL: radioResourceConfigCommon is NULL!!!\n");
 	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-	  stop_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+	  stop_meas(&UE_mac_inst[module_idP].ue_scheduler);
 	  mac_xface->macphy_exit("");
 	  //return(RRC_OK);
       }
@@ -1446,7 +1451,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
       UE_mac_inst[module_idP].ul_active=0;
       LOG_T(MAC,"[UE %d] Release all SRs \n", module_idP);
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-      stop_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+      stop_meas(&UE_mac_inst[module_idP].ue_scheduler);
       return(CONNECTION_OK);
   }
 
@@ -1462,7 +1467,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   }
 
   // Put this in a function
-  // Call PHR procedure as described in Section 5.4.6 in 36.321 
+  // Call PHR procedure as described in Section 5.4.6 in 36.321
   if (UE_mac_inst[module_idP].PHR_state == MAC_MainConfig__phr_Config_PR_setup){ // normal operation
       if (UE_mac_inst[module_idP].PHR_reconfigured == 1) { // upon (re)configuration of the power headroom reporting functionality by upper layers
           UE_mac_inst[module_idP].PHR_reporting_active = 1;
@@ -1487,13 +1492,13 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
   }
   //If the UE has UL resources allocated for new transmission for this TTI here:
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SCHEDULER, VCD_FUNCTION_OUT);
-  stop_meas(&UE_mac_inst[module_idP].ue_scheduler); 
+  stop_meas(&UE_mac_inst[module_idP].ue_scheduler);
   return(CONNECTION_OK);
 }
 
 // to be improved
 #ifdef CBA
-double uniform_rngen(int min, int max) {		
+double uniform_rngen(int min, int max) {
   double random = (double)taus()/((double)0xffffffff);
   return (max - min) * random + min;
 }
@@ -1550,7 +1555,7 @@ int get_bsr_lcgid (module_id_t module_idP){
       return -1;
   else if (num_active_lcgid == 1)
       return lcgid_tmp;
-  else 
+  else
       return MAX_NUM_LCGID;
 }
 
@@ -1560,7 +1565,7 @@ uint8_t get_bsr_len (module_id_t module_idP, uint16_t buflen) {
   uint8_t bsr_len=0,  num_lcgid=0;
   int pdu = 0;
 
-  for (lcgid=0; lcgid < MAX_NUM_LCGID; lcgid++ ) { 
+  for (lcgid=0; lcgid < MAX_NUM_LCGID; lcgid++ ) {
       if (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcgid] > 0 )
         pdu += (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcgid] +  bsr_len + 2); //2 = sizeof(SCH_SUBHEADER_SHORT)
       if (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcgid] > 128 ) // long header size: adjust the header size
@@ -1574,7 +1579,7 @@ uint8_t get_bsr_len (module_id_t module_idP, uint16_t buflen) {
       LOG_D(MAC,"BSR Bytes %d for lcgid %d bsr len %d num lcgid %d\n", UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcgid], lcgid, bsr_len, num_lcgid);
   }
   if ( bsr_len > 0 )
-    LOG_D(MAC,"[UE %d] Prepare a %s (Transport Block Size %d, MAC pdu Size %d) \n", 
+    LOG_D(MAC,"[UE %d] Prepare a %s (Transport Block Size %d, MAC pdu Size %d) \n",
         module_idP, map_int_to_str(BSR_names, bsr_len), buflen, pdu);
   return bsr_len;
 }
@@ -1586,7 +1591,7 @@ boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint
   boolean_t sr_pending = FALSE;
   if ((lcg_id < 0) || (lcg_id > MAX_NUM_LCGID) )
     return sr_pending;
-  // fixme: need a better way to reset 
+  // fixme: need a better way to reset
   if ((lcid == DCCH) || (lcid == DTCH)){
       UE_mac_inst[module_idP].scheduling_info.BSR[lcg_id]=0;
       UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcg_id]=0;

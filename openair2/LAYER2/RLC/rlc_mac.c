@@ -139,8 +139,9 @@ tbs_size_t mac_rlc_data_req(
     if (enb_flagP) {
         if (MBMS_flagP) {
             mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][channel_idP];
-            rb_id = rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
-            rlc_p = (void*)&rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+            rb_id     = rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
+            rlc_p     = (void*)&rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+            rlc_mode  = RLC_MODE_UM;
             AssertFatal (rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um.allocation == TRUE ,
                 "enB MBMS RLC UM not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
         } else {
@@ -295,10 +296,12 @@ void mac_rlc_data_ind     (
     } else {
         if (MBMS_flagP) {
             mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][channel_idP];
-            rb_id = rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
-            rlc_p = (void*)&rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+            rb_id     = rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
+            rlc_p     = (void*)&rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+            rlc_mode  = RLC_MODE_UM;
             AssertFatal (rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um.allocation == TRUE ,
-                "UE MBMS RLC UM not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, ue_mod_idP);
+                "UE MBMS RLC UM not configured rb id %u lcid %u service_id %u session_id %u module %u!\n",
+                rb_id, channel_idP,mbms_id_p->service_id, mbms_id_p->session_id, ue_mod_idP);
         } else {
             rb_id = lcid2rbid_ue[ue_mod_idP][channel_idP];
             AssertFatal (rb_id < NB_RB_MAX, "UE RB id is too high (%u/%d) lcid %u enb module %u ue module id %u!\n", rb_id, NB_RB_MAX, channel_idP, enb_mod_idP, ue_mod_idP);
@@ -417,10 +420,14 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
   if (enb_flagP) {
       if (MBMS_flagP) {
           mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][channel_idP];
-          rb_id = rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
-          rlc_p = (void*)&rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
-          AssertFatal (rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um.allocation == TRUE ,
-              "enB MBMS RLC UM not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
+          rb_id     = rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
+          rlc_p     = (void*)&rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+          rlc_mode  = RLC_MODE_UM;
+          if (rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um.allocation == FALSE) {
+              return mac_rlc_status_resp;
+          }
+          //AssertFatal (rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um.allocation == TRUE ,
+          //    "enB MBMS RLC UM not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
       } else {
           rb_id = lcid2rbid_eNB[enb_mod_idP][ue_mod_idP][channel_idP];
           if (rb_id >= NB_RB_MAX) {
@@ -454,8 +461,9 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
   } else {
       if (MBMS_flagP) {
           mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][channel_idP];
-          rb_id = rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
-          rlc_p = (void*)&rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+          rb_id     = rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].rb_id;
+          rlc_p     = (void*)&rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
+          rlc_mode  = RLC_MODE_UM;
           AssertFatal (rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um.allocation == TRUE ,
               "UE MBMS RLC UM not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, ue_mod_idP);
       } else {

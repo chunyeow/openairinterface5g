@@ -56,7 +56,7 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
   mbms_service_id_t          mch_id, mbms_service_id;
   DL_UM_RLC_t                dl_um_rlc;
 #endif
-  
+
   LOG_D(RLC, "[FRAME %5u][%s][RLC_RRC][MOD %u/%u] CONFIG REQ ASN1 \n",
           frameP,
           (enb_flagP) ? "eNB" : "UE",
@@ -112,12 +112,12 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
                               if (rlc_mode == RLC_MODE_NONE) {
                                   if (rrc_rlc_add_rlc (enb_mod_idP, ue_mod_idP, frameP, enb_flagP, rb_id, rb_id, RLC_MODE_AM) == RLC_OP_STATUS_OK) {
                                       config_req_rlc_am_asn1 (
-                                                 frameP, 
+                                                 frameP,
                                                  enb_flagP,
                                                  enb_mod_idP,
                                                  ue_mod_idP,
                                                  &srb_toaddmod_p->rlc_Config->choice.explicitValue.choice.am,
-                                                 rb_id, 
+                                                 rb_id,
                                                  SIGNALLING_RADIO_BEARER);
                                   } else {
                                       LOG_E(RLC, "[FRAME %5u][%s][RLC_RRC][MOD %u/%u] ERROR IN ALLOCATING SRB %d \n",
@@ -281,7 +281,7 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
               rlc_mode = rlc_array_ue[ue_mod_idP][drb_id].mode;
           }
           LOG_D(RLC, "Adding DRB %d, rb_id %d\n",*drb_toaddmod_p->logicalChannelIdentity,drb_id);
-          
+
 
           if (drb_toaddmod_p->rlc_Config) {
 
@@ -414,14 +414,30 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
 
               // can set the mch_id = i
               if (enb_flagP) {
-                rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id; // 1
-                rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].service_id = mbms_service_id;
-                rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].session_id = mbms_session_id;
+                rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id + (maxDRB + 3) * MAX_MOBILES_PER_ENB; // 1
+                rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].service_id                     = mbms_service_id;
+                rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].session_id                     = mbms_session_id;
+                rlc_mbms_array_eNB[enb_mod_idP][mbms_service_id][mbms_session_id].rb_id                 = rb_id;
+                rlc_mbms_array_eNB[enb_mod_idP][mbms_service_id][mbms_session_id].instanciated_instance = TRUE;
+                rlc_mbms_enb_set_lcid_by_rb_id(enb_mod_idP,rb_id,lc_id);
               } else {
                 rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id + (maxDRB + 3); // 15
-                rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lc_id].service_id = mbms_service_id;
-                rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lc_id].session_id = mbms_session_id;
+                rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][lc_id].service_id                    = mbms_service_id;
+                rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][lc_id].session_id                    = mbms_session_id;
+                rlc_mbms_array_ue[ue_mod_idP][mbms_service_id][mbms_session_id].rb_id                 = rb_id;
+                rlc_mbms_array_ue[ue_mod_idP][mbms_service_id][mbms_session_id].instanciated_instance = TRUE;
+                rlc_mbms_ue_set_lcid_by_rb_id(ue_mod_idP,rb_id,lc_id);
               }
+              LOG_D(RLC, "[FRAME %5u][%s][RLC_RRC][MOD %u/%u] CONFIG REQ MBMS ASN1 LC ID %u RB ID %u SESSION ID %u SERVICE ID %u\n",
+                    frameP,
+                    (enb_flagP) ? "eNB" : "UE",
+                    enb_mod_idP,
+                    ue_mod_idP,
+                    lc_id,
+                    rb_id,
+                    mbms_session_id,
+                    mbms_service_id
+                   );
               dl_um_rlc.sn_FieldLength = SN_FieldLength_size5;
               dl_um_rlc.t_Reordering   = T_Reordering_ms0;
 
@@ -441,7 +457,7 @@ rlc_op_status_t rrc_rlc_config_asn1_req (module_id_t           enb_mod_idP,
       }
   }
 #endif
-  
+
   LOG_D(RLC, "[FRAME %5u][%s][RLC_RRC][MOD %u/%u] CONFIG REQ ASN1 END \n",
          frameP,
          (enb_flagP) ? "eNB" : "UE",
@@ -621,7 +637,7 @@ rlc_op_status_t rrc_rlc_add_rlc   (module_id_t enb_mod_idP, module_id_t ue_mod_i
 //-----------------------------------------------------------------------------
     rlc_mode_t       rlc_mode = RLC_MODE_NONE;
     unsigned int     allocation;
-    
+
 #ifdef OAI_EMU
     if (enb_flagP) {
         AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),

@@ -100,12 +100,24 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
   uint32_t            dl_sn_FieldLength = 0;
   uint32_t            t_Reordering;
   rlc_um_entity_t *rlc_p               = NULL;
-#if defined(rel10)
+#if defined(Rel10)
   if (mbms_flagP) {
       if (eNB_flagP) {
           rlc_p = &rlc_mbms_array_eNB[enb_module_idP][mbms_service_idP][mbms_session_idP].um;
+            LOG_D(RLC,"eNB config_req_rlc_um_asn1 rlc_um_p : %p RB %u service %u session %u",
+                  rlc_p,
+                  rb_idP,
+                  mbms_service_idP,
+                  mbms_session_idP
+                 );
       } else {
           rlc_p = &rlc_mbms_array_ue[ue_module_idP][mbms_service_idP][mbms_session_idP].um;
+            LOG_D(RLC,"UE config_req_rlc_um_asn1 rlc_um_p : %p RB %u service %u session %u",
+                  rlc_p,
+                  rb_idP,
+                  mbms_service_idP,
+                  mbms_session_idP
+                 );
       }
   }
   else
@@ -122,12 +134,12 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
   LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%dms sn_field_length=  --->][RLC_UM][MOD %u/%u][RB %u]    \n",
       frameP,
       (eNB_flagP) ? "eNB" : "UE",
-          enb_module_idP,
-          ue_module_idP,
-          (dl_rlc_pP->t_Reordering<31)?t_Reordering_tab[dl_rlc_pP->t_Reordering]:-1,
-              enb_module_idP,
-              ue_module_idP,
-              rb_idP);
+      enb_module_idP,
+      ue_module_idP,
+      (dl_rlc_pP->t_Reordering<31)?t_Reordering_tab[dl_rlc_pP->t_Reordering]:-1,
+      enb_module_idP,
+      ue_module_idP,
+      rb_idP);
 
   rlc_um_init(rlc_p);
   if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
@@ -150,7 +162,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
                     ul_rlc_pP->sn_FieldLength);
             return;
           }
-      } 
+      }
 
       if (dl_rlc_pP != NULL) {
           switch (dl_rlc_pP->sn_FieldLength) {
@@ -197,6 +209,9 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
               dl_sn_FieldLength,
               ul_sn_FieldLength,
               mbms_flagP);
+      }
+      if (mbms_flagP == MBMS_FLAG_YES) {
+          rlc_p->allocation = TRUE;
       }
   }
 }
@@ -379,17 +394,16 @@ void rlc_um_set_debug_infos(rlc_um_entity_t *rlc_pP,
 {
   LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][SET DEBUG INFOS] enb_module_id %u ue_module_id %u rb_id %d rb_type %d\n",
       frameP,
-      (rlc_pP->is_enb) ? "eNB" : "UE",
-          eNB_flagP,
-          enb_module_idP,
-          ue_module_idP,
-          rb_idP,
-          rb_typeP);
+      (eNB_flagP) ? "eNB" : "UE",
+      enb_module_idP,
+      ue_module_idP,
+      rb_idP,
+      rb_typeP);
 
   rlc_pP->enb_module_id = enb_module_idP;
   rlc_pP->ue_module_id  = ue_module_idP;
-  rlc_pP->rb_id     = rb_idP;
-  if (rb_typeP != SIGNALLING_RADIO_BEARER) {
+  rlc_pP->rb_id         = rb_idP;
+  if (rb_typeP == RADIO_ACCESS_BEARER) {
       rlc_pP->is_data_plane = 1;
   } else {
       rlc_pP->is_data_plane = 0;

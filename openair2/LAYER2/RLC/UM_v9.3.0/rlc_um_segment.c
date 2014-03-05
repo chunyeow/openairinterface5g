@@ -89,7 +89,12 @@ rlc_um_segment_10 (rlc_um_entity_t *rlc_pP,frame_t frameP)
         return;
     }
 #if defined(TRACE_RLC_UM_SEGMENT)
-    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10\n", rlc_pP->module_id, rlc_pP->rb_id, frameP);
+    LOG_D(RLC, "[FRAME %05u][%s][RLC_UM][MOD %u/%u][RB %u] SEGMENT10\n",
+          frameP,
+          (rlc_pP->is_enb) ? "eNB" : "UE",
+          rlc_pP->enb_module_id,
+          rlc_pP->ue_module_id,
+          rlc_pP->rb_id);
 #endif
     list_init (&pdus, NULL);    // param string identifying the list is NULL
     pdu_mem_p = NULL;
@@ -766,8 +771,8 @@ rlc_um_segment_5 (rlc_um_entity_t *rlc_pP,frame_t frameP)
                         rlc_pP->ue_module_id,
                         rlc_pP->rb_id,
                         pdu_remaining_size);
-                memcpy(data, data_sdu_p, pdu_remaining_size);
 #endif
+                memcpy(data, data_sdu_p, pdu_remaining_size);
                 // free SDU
                 rlc_pP->buffer_occupancy -= sdu_mngt_p->sdu_remaining_size;
                 free_mem_block (rlc_pP->input_sdus[rlc_pP->current_sdu_index]);

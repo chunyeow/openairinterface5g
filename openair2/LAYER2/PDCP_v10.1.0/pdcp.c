@@ -76,8 +76,17 @@ extern int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned in
  * this mem_block_t to be dissected for testing purposes. For further details see test
  * code at targets/TEST/PDCP/test_pdcp.c:test_pdcp_data_req()
  */
-boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, rb_id_t rb_idP, mui_t muiP, confirm_t confirmP,
-    sdu_size_t sdu_buffer_sizeP, unsigned char* sdu_buffer_pP, pdcp_transmission_mode_t modeP)
+boolean_t pdcp_data_req(
+    module_id_t    enb_mod_idP,
+    module_id_t    ue_mod_idP,
+    frame_t        frameP,
+    eNB_flag_t     enb_flagP,
+    rb_id_t        rb_idP,
+    mui_t          muiP,
+    confirm_t      confirmP,
+    sdu_size_t     sdu_buffer_sizeP,
+    unsigned char *sdu_buffer_pP,
+    pdcp_transmission_mode_t modeP)
 {
   //-----------------------------------------------------------------------------
   pdcp_t            *pdcp_p          = NULL;
@@ -92,7 +101,11 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
 
   AssertError (enb_mod_idP < NUMBER_OF_eNB_MAX, return FALSE, "eNB id is too high (%u/%d) %u %u!\n", enb_mod_idP, NUMBER_OF_eNB_MAX, ue_mod_idP, rb_idP);
   AssertError (ue_mod_idP < NUMBER_OF_UE_MAX, return FALSE, "UE id is too high (%u/%d) %u %u!\n", ue_mod_idP, NUMBER_OF_UE_MAX, enb_mod_idP, rb_idP);
-  AssertError (rb_idP < NB_RB_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MAX, ue_mod_idP, enb_mod_idP);
+  if (modeP == PDCP_TRANSMISSION_MODE_TRANSPARENT) {
+      AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ue_mod_idP, enb_mod_idP);
+  } else {
+      AssertError (rb_idP < NB_RB_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MAX, ue_mod_idP, enb_mod_idP);
+  }
 
   if (enb_flagP == ENB_FLAG_NO) {
       pdcp_p = &pdcp_array_ue[ue_mod_idP][rb_idP];
@@ -124,19 +137,23 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
       // XXX What does following call do?
       mac_xface->macphy_exit("PDCP sdu buffer size > MAX_IP_PACKET_SIZE");
   }
- 
+
   if (enb_flagP == ENB_FLAG_NO)
     start_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-  else 
+  else
     start_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
- 
-  // PDCP transparent mode for MBMS traffic 
+
+  // PDCP transparent mode for MBMS traffic
 
   if (modeP == PDCP_TRANSMISSION_MODE_TRANSPARENT) {
       LOG_D(PDCP, " [TM] Asking for a new mem_block of size %d\n",sdu_buffer_sizeP);
       pdcp_pdu_p = get_free_mem_block(sdu_buffer_sizeP);
       if (pdcp_pdu_p != NULL) {
           memcpy(&pdcp_pdu_p->data[0], sdu_buffer_pP, sdu_buffer_sizeP);
+          rlc_util_print_hex_octets(PDCP,
+                                    (unsigned char*)&pdcp_pdu_p->data[0],
+                                    sdu_buffer_sizeP);
+
           rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_FLAG_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
       } else {
         rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
@@ -191,7 +208,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
 		  if (enb_flagP == ENB_FLAG_NO)
 		    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-		  else 
+		  else
 		    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
 		  return FALSE;
               }
@@ -204,7 +221,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
 		  if (enb_flagP == ENB_FLAG_NO)
 		    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-		  else 
+		  else
 		    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
 		  return FALSE;
               }
@@ -219,7 +236,7 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
               free_mem_block(pdcp_pdu_p);
 	      if (enb_flagP == ENB_FLAG_NO)
 		stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-	      else 
+	      else
 		stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
               return FALSE;
           }
@@ -252,10 +269,10 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           //util_flush_hex_octets(PDCP, (unsigned char*)pdcp_pdu->data, pdcp_pdu_size);
       } else {
           LOG_E(PDCP, "Cannot create a mem_block for a PDU!\n");
-	  if (enb_flagP == ENB_FLAG_NO)
-	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-	  else 
-	    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+          if (enb_flagP == ENB_FLAG_NO)
+              stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+          else
+              stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
         AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_REQ SDU DROPPED, OUT OF MEMORY \n",
             frameP,
@@ -299,13 +316,13 @@ boolean_t pdcp_data_req(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
   }
   if (enb_flagP == ENB_FLAG_NO)
     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-  else 
+  else
     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
   /*
    * Control arrives here only if rlc_data_req() returns RLC_OP_STATUS_OK
    * so we return TRUE afterwards
    */
-  /*  
+  /*
    if (rb_id>=DTCH) {
     if (enb_flagP == 1) {
       Pdcp_stats_tx[module_id][(rb_id & RAB_OFFSET2 )>> RAB_SHIFT2][(rb_id & RAB_OFFSET)-DTCH]++;
@@ -334,7 +351,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
 
   if (enb_flagP)
     start_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-  else 
+  else
     start_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
 
 #ifdef OAI_EMU
@@ -362,21 +379,35 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           oai_emulation.info.first_ue_local);
   }
 #endif
-  DevCheck4(rb_idP < NB_RB_MAX, rb_idP, NB_RB_MAX, enb_mod_idP, ue_mod_idP);
-
-  if (enb_flagP == ENB_FLAG_NO) {
-      pdcp_p = &pdcp_array_ue[ue_mod_idP][rb_idP];
-
-      LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
-          "and radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
-          enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
-  } else {
-      pdcp_p = &pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP];
-
-      LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
+  if (MBMS_flagP) {
+      AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ue_mod_idP, enb_mod_idP);
+      if (enb_flagP == ENB_FLAG_NO) {
+          LOG_I(PDCP, "e-MBMS Data indication notification for PDCP entity from eNB %u to UE %u "
+                "and radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
+                enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
+      } else {
+          LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
           "and radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
           ue_mod_idP, enb_mod_idP , rb_idP, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+      }
+  } else {
+      rb_idP = rb_idP % NB_RB_MAX;
+      AssertError (rb_idP < NB_RB_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MAX, ue_mod_idP, enb_mod_idP);
+      if (enb_flagP == ENB_FLAG_NO) {
+          pdcp_p = &pdcp_array_ue[ue_mod_idP][rb_idP];
+
+          LOG_I(PDCP, "Data indication notification for PDCP entity from eNB %u to UE %u "
+                "and radio bearer ID %d rlc sdu size %d enb_flagP %d\n",
+                enb_mod_idP, ue_mod_idP, rb_idP, sdu_buffer_sizeP, enb_flagP);
+      } else {
+          pdcp_p = &pdcp_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP];
+
+          LOG_I(PDCP, "Data indication notification for PDCP entity from UE %u to eNB %u "
+          "and radio bearer ID %d rlc sdu size %d enb_flagP %d eNB_id %d\n",
+          ue_mod_idP, enb_mod_idP , rb_idP, sdu_buffer_sizeP, enb_flagP, enb_mod_idP);
+      }
   }
+
   sdu_list_p = &pdcp_sdu_list;
 
 
@@ -384,7 +415,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
       LOG_W(PDCP, "SDU buffer size is zero! Ignoring this chunk!\n");
       if (enb_flagP)
 	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-      else 
+      else
 	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
       return FALSE;
   }
@@ -406,7 +437,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           free_mem_block(sdu_buffer_pP);
 	  if (enb_flagP)
 	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-	  else 
+	  else
 	    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
 	  return FALSE;
       }
@@ -463,7 +494,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           // free_mem_block(new_sdu);
           if (enb_flagP)
 	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-	  else 
+	  else
 	    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
 	  return TRUE;
       }
@@ -482,6 +513,9 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
   if (oai_emulation.info.otg_enabled == 1) {
       module_id_t src_id, dst_id;
       int    ctime;
+      rlc_util_print_hex_octets(PDCP,
+                                &sdu_buffer_pP->data[payload_offset],
+                                sdu_buffer_sizeP - payload_offset);
 
       src_id = (enb_flagP != 0) ? ue_mod_idP : enb_mod_idP;
       dst_id = (enb_flagP == ENB_FLAG_NO) ? ue_mod_idP : enb_mod_idP;
@@ -494,7 +528,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           free_mem_block(sdu_buffer_pP);
            if (enb_flagP)
 	     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-	   else 
+	   else
 	     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
 	  return TRUE;
       }
@@ -505,7 +539,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
       free_mem_block(sdu_buffer_pP);
       if (enb_flagP)
 	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-      else 
+      else
 	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
       return TRUE;
   }
@@ -581,7 +615,7 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
   free_mem_block(sdu_buffer_pP);
   if (enb_flagP)
     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-  else 
+  else
     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
   return TRUE;
 }
@@ -597,7 +631,7 @@ void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, mo
 #endif
   if (enb_flagP)
     start_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_run);
-  else 
+  else
     start_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_run);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_IN);
@@ -672,10 +706,10 @@ void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, mo
   // PDCP -> NAS/IP traffic: RX
   pdcp_fifo_flush_sdus(frameP, enb_flagP, enb_mod_idP, ue_mod_idP);
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT); 
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
   if (enb_flagP)
     stop_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_run);
-  else 
+  else
     stop_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_run);
 
 }
@@ -924,7 +958,7 @@ boolean_t rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
 
               // can set the mch_id = i
               if (enb_flagP) {
-                rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id; // 1
+                rb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3)*MAX_MOBILES_PER_ENB; // 1
                 if (pdcp_mbms_array_eNB[enb_mod_idP][mch_id][lc_id].instanciated_instance == TRUE)
                   action = CONFIG_ACTION_MBMS_MODIFY;
                 else
@@ -939,7 +973,8 @@ boolean_t rrc_pdcp_config_asn1_req (module_id_t               enb_mod_idP,
 
 
 
-              pdcp_config_req_asn1 (NULL,  // unused for MBMS
+              pdcp_config_req_asn1 (
+                  NULL,  // unused for MBMS
                   enb_mod_idP,
                   ue_mod_idP,
                   frameP,
@@ -1110,8 +1145,8 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
         pdcp_mbms_array_eNB[enb_mod_idP][mch_idP][lc_idP].instanciated_instance = TRUE ;
         pdcp_mbms_array_eNB[enb_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
     } else {
-        pdcp_mbms_array_eNB[ue_mod_idP][mch_idP][lc_idP].instanciated_instance = TRUE ;
-        pdcp_mbms_array_eNB[ue_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
+        pdcp_mbms_array_ue[ue_mod_idP][mch_idP][lc_idP].instanciated_instance = TRUE ;
+        pdcp_mbms_array_ue[ue_mod_idP][mch_idP][lc_idP].rb_id = rb_idP;
     }
     break;
 #endif
