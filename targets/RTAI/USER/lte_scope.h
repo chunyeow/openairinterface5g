@@ -17,16 +17,18 @@ typedef struct {
     void      * vdata;
     char      * cdata;
     long        ldata;
-    FL_OBJECT * channel_t_re;
+    FL_OBJECT * channel_t_re[4];
+    FL_OBJECT * channel_t_im[4];
+  /*
     FL_OBJECT * scatter_plot;
     FL_OBJECT * channel_f;
-    FL_OBJECT * channel_t_im;
     FL_OBJECT * decoder_input;
     FL_OBJECT * scatter_plot2;
     FL_OBJECT * scatter_plot1;
     FL_OBJECT * ia_receiver_button;
     FL_OBJECT * demod_out;
     FL_OBJECT * tput;
+  */
 } FD_lte_scope;
 
 extern FD_lte_scope * create_form_lte_scope( void );

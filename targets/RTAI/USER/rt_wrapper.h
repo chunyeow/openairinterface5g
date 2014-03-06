@@ -42,6 +42,7 @@
 #include <time.h>
 #include <errno.h>
 #include <stdio.h>
+#include <pthread.h>
 
 #define RTIME long long int
 

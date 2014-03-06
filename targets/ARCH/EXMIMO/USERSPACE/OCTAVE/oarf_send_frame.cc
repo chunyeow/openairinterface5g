@@ -24,7 +24,7 @@ static bool any_bad_argument(const octave_value_list &args)
     if (args.length()!=3)
     {
         error(FCNNAME);
-        error("syntax: oarf_send_frame(card,sig,nbits)\n      card (starting from 0), sig is a 2D or 4D vector (depending on no. of antennas), nbits is number of bits to quantize the signal to.");
+        error("syntax: oarf_send_frame(card,sig,nbits)\n      card (starting from 0), sig is a 2D array (size depends on no. of antennas and resampling factor), nbits is number of bits to quantize the signal to.");
         return true;
     }
 
@@ -38,15 +38,16 @@ static bool any_bad_argument(const octave_value_list &args)
 
     v=args(1);
     printf("signal: R %d, C %d\n",v.rows(),v.columns());
-    return false;
 
     v=args(2);
-    if ((!v.is_real_scalar()) || (v.scalar_value()!=8) || (v.scalar_value()!=16))
+    if ((!v.is_real_scalar()) && (v.scalar_value()!=8) && (v.scalar_value()!=16))
     {
         error(FCNNAME);
         error("nbits must be either 8 (CBMIMO) or 16 (ExpressMIMO)bits.");
         return true;
     }
+
+    return false;
 }
 
 
@@ -60,9 +61,8 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
 
     octave_value returnvalue;
     int i, ret;
-    unsigned int length,aa,nbits, numcols;
+    unsigned int length,aa,nbits,numcols;
     unsigned int resampling_factor[4];
-    int dummy=0;
 
     ret = openair0_open();
     if ( ret != 0 )
@@ -84,17 +84,19 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
     
     numcols = args(1).columns();
     
-    printf("colums = %d, rows = %d\n\n\n", numcols, args(1).rows());
+    //printf("colums = %d, rows = %d\n\n\n", numcols, args(1).rows());
 
     if ( numcols<1 || (numcols > openair0_num_antennas[card]))
     {
         error(FCNNAME);
-        error("input array must be of column size 1..%d.", openair0_num_antennas[card]);
+        error("input array must be of column size %d.", openair0_num_antennas[card]);
         return octave_value_list();
     }
     
-    for (i=0;i<4;i++)
+    for (i=0;i<4;i++) {
       resampling_factor[i] = (openair0_exmimo_pci[card].exmimo_config_ptr)->framing.resampling_factor[i];
+      printf("card %d, ant %d, resampling %d\n",card,i,resampling_factor[i]);
+    }
     
     for (i=0;i<numcols;i++){
     if (args(1).rows()<(76800*(1 << (2-resampling_factor[i]))))
@@ -117,8 +119,7 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
         {
             for (i=0;i<(76800*(1 << (2-resampling_factor[aa])));i++)
             {
-                if (i<64)
-                    printf("%d: %d,%d\n",i,(short)real(dx(i,aa)),(short)imag(dx(i,aa)));
+	      //if (i<64) printf("%d: %d,%d\n",i,(short)real(dx(i,aa)),(short)imag(dx(i,aa)));
                 ((short*) openair0_exmimo_pci[card].dac_head[aa])[2*i]     = (short)(real(dx(i,aa))); 
                 ((short*) openair0_exmimo_pci[card].dac_head[aa])[1+(2*i)] = (short)(imag(dx(i,aa)));
             }
@@ -127,8 +128,7 @@ DEFUN_DLD (oarf_send_frame, args, nargout,"Send frame")
         {
             for (i=0;i<(76800*(1 << (2-resampling_factor[aa])));i++)
             {
-                if (i<64)
-                    printf("%d: %d,%d\n",i,char(real(dx(i,aa))),char(imag(dx(i,aa))));
+	      //if (i<64) printf("%d: %d,%d\n",i,char(real(dx(i,aa))),char(imag(dx(i,aa))));
                 ((char*) openair0_exmimo_pci[card].dac_head[aa])[2*i]     = char(real(dx(i,aa))); 
                 ((char*) openair0_exmimo_pci[card].dac_head[aa])[1+(2*i)] = char(imag(dx(i,aa)));
             }

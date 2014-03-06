@@ -21,27 +21,38 @@ create_form_lte_scope( void )
     obj = fl_add_box( FL_ROUNDED_BOX, 0, 0, 780, 723, "" );
     fl_set_object_color( obj, FL_BLACK, FL_BLUE );
 
-    fdui->channel_t_re = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 20, 20, 280, 100, "Received Signal (Time-Domain, dB)" );
+    fdui->channel_t_re[0] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 20, 20, 280, 100, "Real(RX0)" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
     fl_set_object_color( obj, FL_BLACK, FL_BLUE );
     fl_set_object_lcolor( obj, FL_WHITE );
 
-    fdui->scatter_plot = obj = fl_add_xyplot( FL_POINTS_XYPLOT, 600, 230, 160, 190, "PBCH Scatter Plot" );
+    fdui->channel_t_im[0] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 310, 20, 280, 100, "Imag(RX0)" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
-    fl_set_object_color( obj, FL_BLACK, FL_GREEN );
+    fl_set_object_color( obj, FL_BLACK, FL_BLUE );
     fl_set_object_lcolor( obj, FL_WHITE );
 
-    fdui->channel_f = obj = fl_add_xyplot( FL_IMPULSE_XYPLOT, 20, 140, 570, 90, "Frequency Domain Channel Estimate" );
+    fdui->channel_t_re[1] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 20, 140, 280, 100, "Real(RX1)" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
     fl_set_object_color( obj, FL_BLACK, FL_RED );
     fl_set_object_lcolor( obj, FL_WHITE );
 
-    fdui->channel_t_im = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 310, 20, 280, 100, "Time-Domain Channel Estimate" );
+    fdui->channel_t_im[1] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 310, 140, 280, 100, "Imag(RX1)" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
-    fl_set_object_color( obj, FL_BLACK, FL_BLUE );
+    fl_set_object_color( obj, FL_BLACK, FL_RED );
     fl_set_object_lcolor( obj, FL_WHITE );
 
-    fdui->decoder_input = obj = fl_add_xyplot( FL_POINTS_XYPLOT, 20, 250, 570, 130, "PBCH Decoder Input" );
+    fdui->channel_t_re[2] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 20, 260, 280, 100, "Real(RX2)" );
+    fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
+    fl_set_object_color( obj, FL_BLACK, FL_GREEN );
+    fl_set_object_lcolor( obj, FL_WHITE );
+
+    fdui->channel_t_im[2] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 310, 260, 280, 100, "Imag(RX2)" );
+    fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
+    fl_set_object_color( obj, FL_BLACK, FL_GREEN );
+    fl_set_object_lcolor( obj, FL_WHITE );
+
+    /*
+    fdui->scatter_plot = obj = fl_add_xyplot( FL_POINTS_XYPLOT, 600, 230, 160, 190, "PBCH Scatter Plot" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
     fl_set_object_color( obj, FL_BLACK, FL_GREEN );
     fl_set_object_lcolor( obj, FL_WHITE );
@@ -61,15 +72,11 @@ create_form_lte_scope( void )
     fl_set_object_color( obj, FL_RED, FL_RED);
     fl_set_object_callback( obj, ia_receiver_on_off, 0 );
 
-    fdui->demod_out = obj = fl_add_xyplot( FL_POINTS_XYPLOT, 20, 400, 570, 140, "PDSCH/PUSCH Decoder Input" );
-    fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
-    fl_set_object_color( obj, FL_BLACK, FL_YELLOW );
-    fl_set_object_lcolor( obj, FL_WHITE );
-
     fdui->tput = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 20, 560, 570, 140, "Throughput [kbits/s]" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
     fl_set_object_color( obj, FL_BLACK, FL_WHITE );
     fl_set_object_lcolor( obj, FL_WHITE );
+    */
 
     fl_end_form( );
 

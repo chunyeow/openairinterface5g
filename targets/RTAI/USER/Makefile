@@ -17,7 +17,7 @@ ifeq "$(GCCVERSION)" "4.6.1"
     CFLAGS += -Wno-packed-bitfield-compat
 endif
 
-CFLAGS += -O2
+CFLAGS += -O2 
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 ifdef DEBUG
 CFLAGS += -g -ggdb
@@ -42,32 +42,22 @@ CFLAGS += -DCONFIG_RTAI_LXRT_INLINE  #remend the RTAI warning
 RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o 
 ifeq ($(USRP),1)
 RTAI_OBJ += lte-softmodem-usrp.o
-else
-# RTAI_OBJ += lte-softmodem.o
-# RTAI_OBJ += lte-enb.o
-# RTAI_OBJ += lte-softmodem-enb.o
-# RTAI_OBJ += lte-softmodem-ue.o
 endif
-else
+else #RTAI
+CFLAGS += -DENABLE_USE_CPU_EXECUTION_TIME
 OBJ += sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o
 ifeq ($(USRP),1)
 OBJ += lte-softmodem-usrp.o
-else
-# OBJ += lte-softmodem.o
-# OBJ += lte-enb.o
-# OBJ += lte-softmodem-enb.o
-# OBJ += lte-softmodem-ue.o
 endif
-CFLAGS += -DENABLE_USE_CPU_EXECUTION_TIME
 endif
 
-OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o #$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
+OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o #$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o 
 
 ifeq ($(USRP),1)
 include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
 endif
 
-OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o
+OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/gain_control.o
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 
 TOP_DIR = $(OPENAIR1_DIR)
@@ -156,7 +146,7 @@ CFLAGS += -DHARD_RT
 endif
 
 ifeq ($(EMOS),1)
-CFLAGS += -DEMOS #-DEMOS_CHANNEL
+CFLAGS += -D_FILE_OFFSET_BITS=64 -DEMOS #-DEMOS_CHANNEL
 LDFLAGS += -lgps
 endif
 
@@ -165,9 +155,9 @@ CFLAGS += -DNAS_NETLINK -DLINUX
 OBJ += $(NAS_OBJS)
 endif
 
-RTAI_CFLAGS += $(shell rtai-config --lxrt-cflags) -DRTAI
 LDFLAGS += -lpthread -lm -lforms -lconfig 
 ifeq ($(RTAI),1)
+RTAI_CFLAGS += $(shell rtai-config --lxrt-cflags) -DRTAI
 LDFLAGS += $(shell rtai-config --lxrt-ldflags)
 ifdef ENABLE_ITTI
 LDFLAGS += -lrt
@@ -221,6 +211,7 @@ $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
 else
 $(OBJ) $(ASN1_MSG_OBJS1) lte-enb.o lte-softmodem.o: %.o : %.c
 endif
+
 	@echo Compiling $< ...
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) -o $@ $<
 	@$(CC) -MM $(CFLAGS) $(EXTRA_CFLAGS) $< > $*.d
@@ -230,6 +221,11 @@ endif
 	sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
 	@rm -f $*.d.tmp
 
+OBJ_EMOS = $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/gain_control.o rt_wrapper.o $(OPENAIR2_DIR)/UTIL/LOG/log.o $(OPENAIR2_DIR)/UTIL/LOG/vcd_signal_dumper.o $(OPENAIR1_DIR)/PHY/TOOLS/signal_energy.o $(OPENAIR1_DIR)/PHY/TOOLS/dB_routines.o
+ifeq ($(XFORMS),1)
+OBJ_EMOS+=lte_scope.o
+endif
+
 $(USRP_OBJ):$(USRP_FILE_OBJ)
 	@echo Compiling openair_usrp.cpp
 	@$(CXX) -c $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
@@ -238,7 +234,10 @@ condtest: condtest.c
 	$(CC) $(CFLAGS) $(LDFLAGS) condtest.c -o condtest
 
 synctest: $(OBJ_SYNC) $(SHARED_DEPENDENCIES) synctest.c
-	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o synctest synctest.c $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_SYNC) -o synctest synctest.c $(LDFLAGS) $(LIBS)
+
+sleeptest: rt_wrapper.o sleeptest.c
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) rt_wrapper.o -o sleeptest sleeptest.c $(LDFLAGS) 
 
 lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
@@ -252,7 +251,6 @@ lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(SHARED_DE
 	@echo Linking $@
 	@$(CC) $(USRP_OBJ) $(CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem-usrp $(LDFLAGS) $(LIBS)
 
-OBJ_EMOS = $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o rt_wrapper.o $(OPENAIR2_DIR)/UTIL/LOG/log.o $(OPENAIR2_DIR)/UTIL/LOG/vcd_signal_dumper.o
 emos-raw: $(SHARED_DEPENDENCIES) $(OBJ_EMOS) emos-raw.c
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o emos-raw emos-raw.c $(LDFLAGS) $(LIBS)
 
@@ -336,10 +334,11 @@ run_eNB2:
 	rtai-load eNB2 --verbose
 
 clean: common-clean
-	@$(RM_F_V) $(OBJ) $(RTAI_OBJ)
-	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d)
+	@$(RM_F_V) $(OBJ) $(RTAI_OBJ) $(OBJ_EMOS) $(OBJ_SYNC)
+	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d) $(OBJ_EMOS:.o=.d) $(OBJ_SYNC:.o=.d)
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.o $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.d
 	@$(RM_F_V) lte-enb.o lte-enb.d lte-softmodem.o lte-softmodem.d
+	@$(RM_F_V) lte-enb.o lte-softmodem.o
 
 cleanasn1:
 	rm -f $(ASN1_MSG_OBJS1)

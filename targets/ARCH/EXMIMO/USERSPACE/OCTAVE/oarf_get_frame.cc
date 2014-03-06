@@ -19,6 +19,8 @@ extern "C" {
 
 #define TRACE 1
 
+#define FRAME_LENGTH_COMPLEX_SAMPLES   76800
+
 static bool any_bad_argument(const octave_value_list &args)
 {
     octave_value v;

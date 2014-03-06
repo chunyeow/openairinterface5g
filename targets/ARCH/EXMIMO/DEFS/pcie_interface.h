@@ -37,9 +37,9 @@
 #define MAX_FIRMWARE_BLOCK_SIZE_B     262144
 #define MAX_PRINTK_BUFFER_B             1024
 
-#define FRAME_LENGTH_COMPLEX_SAMPLES   76800
+// #define FRAME_LENGTH_COMPLEX_SAMPLES   76800
 // Buffer size per channel: FRAME_LENGTH_COMPLEX_SAMPLES+2048 smp/frame: LTE frame+tail, *4 (7.68*4 MsmpPS), *4 Bytes/smp
-#define ADAC_BUFFERSZ_PERCHAN_B  ((FRAME_LENGTH_COMPLEX_SAMPLES+2048)*4*4)
+#define ADAC_BUFFERSZ_PERCHAN_B  ((76800+2048)*4*4)
 
 #define BIGSHM_SIZE_PAGES ((( MAX_FIRMWARE_BLOCK_SIZE_B + \
                               MAX_PRINTK_BUFFER_B + \
@@ -304,6 +304,12 @@ typedef struct
 #define SWITCHSTATE_1     (1<<3)
 #define TEST_ADACLOOP_MASK  (1<<4)
 #define TEST_ADACLOOP_EN    (1<<4)
+
+typedef enum {
+  BW5,
+  BW10,
+  BW20
+} exmimo_bw_t;
 
 typedef struct
 {

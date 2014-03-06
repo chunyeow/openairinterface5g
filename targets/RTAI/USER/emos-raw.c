@@ -54,11 +54,13 @@
 #include "rt_wrapper.h"
 
 #include "PHY/types.h"
-//#include "PHY/defs.h"
+#include "PHY/TOOLS/defs.h"
 #include "openair0_lib.h"
 
 #include "UTIL/LOG/log.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
+
+#include "gain_control.h"
 
 #if defined(ENABLE_ITTI)
 # include "intertask_interface_init.h"
@@ -69,7 +71,11 @@
 # endif
 #endif
 
+#define OPENAIR_THREAD_PRIORITY       255
+#define OPENAIR_THREAD_STACK_SIZE    8192 
+
 #ifdef XFORMS
+/*
 #include "PHY/TOOLS/lte_phy_scope.h"
 #include "stats.h"
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
@@ -79,15 +85,22 @@ FD_lte_phy_scope_enb *form_enb[NUMBER_OF_UE_MAX];
 FD_stats_form *form_stats=NULL;
 char title[255];
 unsigned char scope_enb_num_ue = 1;
+*/
+#include "lte_scope.h"
+FD_lte_scope *form_lte;
+char title[255];
 #endif //XFORMS
 
 #ifdef EMOS
 #include <gps.h>
+#ifdef RTAI
 #include <rtai_fifos.h>
+#endif
 
-//#define CHANSOUNDER_FIFO_SIZE 10485760 // 10 Mbytes FIFO
-//#define CHANSOUNDER_FIFO_SIZE 20971520  // 20 Mbytes FIFO
-#define CHANSOUNDER_FIFO_SIZE 104857600 // 100 Mbytes FIFO
+//#define CHANSOUNDER_FIFO_SIZE 10485760  //  10 Mbytes FIFO
+#define CHANSOUNDER_FIFO_SIZE 20971520  //  20 Mbytes FIFO
+//#define CHANSOUNDER_FIFO_SIZE 52428800  //  50 Mbytes FIFO
+//#define CHANSOUNDER_FIFO_SIZE 104857600 // 100 Mbytes FIFO
 #define CHANSOUNDER_FIFO_MINOR 4               // minor of the FIFO device - this is /dev/rtf3
 #define CHANSOUNDER_FIFO_DEV "/dev/rtf4"
 #endif
@@ -95,17 +108,18 @@ unsigned char scope_enb_num_ue = 1;
 #define FRAME_PERIOD 100000000ULL
 #define DAQ_PERIOD 66667ULL
 #define LTE_SLOTS_PER_FRAME  20
-#define RESAMPLING_FACTOR 0
-#define SAMPLES_PER_SLOT (15360/(1<<RESAMPLING_FACTOR))
+//#define RESAMPLING_FACTOR 0
+#define SAMPLES_PER_SLOT 15360
+#define FRAME_LENGTH_COMPLEX_SAMPLES (SAMPLES_PER_SLOT*LTE_SLOTS_PER_FRAME)
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #ifdef RTAI
 static SEM *mutex;
 //static CND *cond;
 
-static int thread0;
-static int thread1;
-//static int sync_thread;
+static long int thread0;
+static long int thread1;
+//static long int sync_thread;
 #else
 pthread_t thread0;
 //pthread_t thread1;
@@ -115,6 +129,7 @@ struct sched_param sched_param_dlsch;
 
 pthread_t  thread2; //xforms
 pthread_t  thread3; //emos
+pthread_t  thread4; //GPS
 
 /*
 static int instance_cnt=-1; //0 means worker is busy, -1 means its free
@@ -124,7 +139,7 @@ int pci_interface_ptr_kern;
 //extern unsigned int bigphys_top;
 //extern unsigned int mem_base;
 
-int card = 0;
+int number_of_cards = 1;
 exmimo_config_t *p_exmimo_config;
 exmimo_id_t     *p_exmimo_id;
 volatile unsigned int *DAQ_MBOX;
@@ -139,10 +154,14 @@ int fs4_test=0;
 char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
-u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
+//u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
+u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{2605000000,2605000000,0,0},{0,0,0,0},{0,0,0,0}};
+exmimo_bw_t bandwidth[MAX_CARDS]    = {BW20,BW10,BW5,BW5};
 char *conf_config_file_name = NULL;
 
 unsigned int lost_bytes=0;
+int rssi_lin,rssi_lin_avg;
+u8 rssi_avg_dB; 
 
 struct timing_info_t {
   //unsigned int frame, hw_slot, last_slot, next_slot;
@@ -161,7 +180,6 @@ extern int otg_enabled;
 #else
 int otg_enabled;
 #endif
-int number_of_cards = 1;
 
 int mbox_bounds[20] = {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 //int mbox_bounds[20] = {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
@@ -219,12 +237,18 @@ void exit_fun(const char* s)
 }
 
 #ifdef XFORMS
+extern void ia_receiver_on_off( FL_OBJECT * form, long arg) {}
+
+
 void *scope_thread(void *arg) {
-    s16 prach_corr[1024], i;
+    s16 prach_corr[1024];
     char stats_buffer[16384];
     //FILE *UE_stats, *eNB_stats;
-    int len=0;
+    int i,len=0;
+    float rxsig_t_dB[4][FRAME_LENGTH_COMPLEX_SAMPLES];
+    float time[FRAME_LENGTH_COMPLEX_SAMPLES];
     struct sched_param sched_param;
+    int card,ant,idx;
 
     sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO)+1; 
     sched_setscheduler(0, SCHED_FIFO,&sched_param);
@@ -239,6 +263,7 @@ void *scope_thread(void *arg) {
     */
     
     while (!oai_exit) {
+      /*
         if (UE_flag==1) {
             len = dump_ue_stats (PHY_vars_UE_g[0], stats_buffer, 0, mode,rx_input_level_dBm);
             fl_set_object_label(form_stats->stats_text, stats_buffer);
@@ -262,8 +287,28 @@ void *scope_thread(void *arg) {
             }
               
         }
-        //printf("doing forms\n");
-        usleep(100000); // 100 ms
+      */
+
+      idx = 0;
+      for (card=0;card<number_of_cards;card++) {
+	for (ant=0;ant<4;ant++) {
+	  if (carrier_freq[card][ant] != 0) {
+	    len = FRAME_LENGTH_COMPLEX_SAMPLES/(1<<openair0_exmimo_pci[card].exmimo_config_ptr->framing.resampling_factor[ant]);
+	    for (i=0; i<len; i++) {
+	      //rxsig_t_dB[0][i] = 10*log10(1.0+(float) ((((s16*) openair0_exmimo_pci[card].adc_head[0])[2*i])*(((s16*) openair0_exmimo_pci[card].adc_head[0])[2*i])+(((s16*) openair0_exmimo_pci[card].adc_head[0])[2*i+1])*(((s16*) openair0_exmimo_pci[card].adc_head[0])[2*i+1])));
+	      rxsig_t_dB[0][i] = (float) ((((s16*) openair0_exmimo_pci[card].adc_head[ant])[2*i]));
+	      rxsig_t_dB[1][i] = (float) ((((s16*) openair0_exmimo_pci[card].adc_head[ant])[2*i+1]));
+	      time[i] = (float) i;
+	    }
+	    fl_set_xyplot_data(form_lte->channel_t_re[idx],time,rxsig_t_dB[0],len,"","","");
+	    fl_set_xyplot_data(form_lte->channel_t_im[idx],time,rxsig_t_dB[1],len,"","","");
+	    idx++;
+	  }
+	}
+      }
+      
+      //printf("doing forms\n");
+      usleep(100000);
     }
     
     //fclose (UE_stats);
@@ -279,6 +324,71 @@ int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
 #define NO_ESTIMATES_DISK 20 //No. of estimates that are aquired before dumped to disk
 int channel_buffer_size =  SAMPLES_PER_SLOT*4; //one slot, 4 byte per sample
 
+void* gps_thread (void *arg)
+{
+
+  struct gps_data_t *gps_data = NULL;
+  struct gps_fix_t dummy_gps_data;
+  struct sched_param sched_param;
+  int ret;
+
+  sched_param.sched_priority = sched_get_priority_min(SCHED_FIFO)+1; 
+  sched_setscheduler(0, SCHED_FIFO,&sched_param);
+  
+  printf("GPS thread has priority %d\n",sched_param.sched_priority);
+
+  memset(&dummy_gps_data,0,sizeof(struct gps_fix_t));
+  
+#if GPSD_API_MAJOR_VERSION>=5
+  ret = gps_open("127.0.0.1","2947",gps_data);
+  if (ret!=0)
+#else
+  gps_data = gps_open("127.0.0.1","2947");
+  if (gps_data == NULL) 
+#endif
+    {
+      printf("[EMOS] Could not open GPS\n");
+      pthread_exit((void*)arg);
+    }
+#if GPSD_API_MAJOR_VERSION>=4
+  else if (gps_stream(gps_data, WATCH_ENABLE,NULL) != 0)
+#else
+  else if (gps_query(gps_data, "w+x") != 0)
+#endif
+    {
+      printf("[EMOS] Error sending command to GPS\n");
+      pthread_exit((void*) arg);
+    }
+  else 
+    printf("[EMOS] Opened GPS, gps_data=%p\n", gps_data);
+  
+
+  while (!oai_exit)
+    {
+      printf("[EMOS] polling data from gps\n");
+#if GPSD_API_MAJOR_VERSION>=5
+      if (gps_waiting(gps_data,500)) {
+	if (gps_read(gps_data) != 0) {
+#else
+      if (gps_waiting(gps_data)) {
+	if (gps_poll(gps_data) != 0) {
+#endif
+	  printf("[EMOS] problem polling data from gps\n");
+	}
+	else {
+	  memcpy(&dummy_gps_data,gps_data,sizeof(struct gps_fix_t));
+	  printf("[EMOS] lat %g, lon %g\n",gps_data->fix.latitude,gps_data->fix.longitude);
+	}
+      } //gps_waiting
+      else {
+	printf("[EMOS] WARNING: No GPS data available, storing dummy packet\n");
+      }
+      rt_sleep_ns(1000000000LL);
+    } //oai_exit
+
+  pthread_exit((void*) arg);
+
+}
 
 void *emos_thread (void *arg)
 {
@@ -296,9 +406,6 @@ void *emos_thread (void *arg)
   time_t timer;
   struct tm *now;
 
-  struct gps_data_t *gps_data = NULL;
-  struct gps_fix_t dummy_gps_data;
-
   struct sched_param sched_param;
   int ret;
   
@@ -310,32 +417,6 @@ void *emos_thread (void *arg)
   timer = time(NULL);
   now = localtime(&timer);
 
-  memset(&dummy_gps_data,1,sizeof(struct gps_fix_t));
-  
-#if GPSD_API_MAJOR_VERSION>=5
-  ret = gps_open("127.0.0.1","2947",gps_data);
-  if (ret!=0)
-#else
-  gps_data = gps_open("127.0.0.1","2947");
-  if (gps_data == NULL) 
-#endif
-    {
-      printf("[EMOS] Could not open GPS\n");
-      //exit(-1);
-    }
-#if GPSD_API_MAJOR_VERSION>=4
-  else if (gps_stream(gps_data, WATCH_ENABLE,NULL) != 0)
-#else
-  else if (gps_query(gps_data, "w+x") != 0)
-#endif
-    {
-      //sprintf(tmptxt,"Error sending command to GPS, gps_data = %x", gps_data);
-      printf("[EMOS] Error sending command to GPS\n");
-      //exit(-1);
-    }
-  else 
-    printf("[EMOS] Opened GPS, gps_data=%p\n", gps_data);
-  
   /*
   if (UE_flag==0)
     channel_buffer_size = sizeof(fifo_dump_emos_eNB);
@@ -403,36 +484,15 @@ void *emos_thread (void *arg)
               fprintf(stderr, "[EMOS] Error writing to dumpfile\n");
               exit(EXIT_FAILURE);
             }
-	  /*
-	  if (gps_data)
-	    {
-	      if (gps_poll(gps_data) != 0) {
-		printf("[EMOS] problem polling data from gps\n");
-	      }
-	      else {
-		printf("[EMOS] lat %g, lon %g\n",gps_data->fix.latitude,gps_data->fix.longitude);
-	      }
-	      if (fwrite(&(gps_data->fix), sizeof(char), sizeof(struct gps_fix_t), dumpfile_id) != sizeof(struct gps_fix_t))
-		{
-		  printf("[EMOS] Error writing to dumpfile, stopping recording\n");
-		  exit(EXIT_FAILURE);
-		}
-	    }
-	  else
-	    {
-	      printf("[EMOS] WARNING: No GPS data available, storing dummy packet\n");
-	      if (fwrite(&(dummy_gps_data), sizeof(char), sizeof(struct gps_fix_t), dumpfile_id) != sizeof(struct gps_fix_t))
-		{
-		  printf("[EMOS] Error writing to dumpfile, stopping recording\n");
-		  exit(EXIT_FAILURE);
-		}
-	    } 
-	  */
+	  
         }
+
       if ((counter%2000)==0) {
 	time(&starttime_tmp);
 	localtime_r(&starttime_tmp,&starttime);
 	printf("[EMOS] %02d:%02d:%02d, frame %d, total bytes wrote %llu, bytes lost %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, total_bytes,lost_bytes);
+	printf("[EMOS] %02d:%02d:%02d, frame %d, rssi_lin %d, rssi_lin_avg %d, rssi_avg_dB %d, rx_gain %d, LNA %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, rssi_lin, rssi_lin_avg, rssi_avg_dB, p_exmimo_config->rf.rx_gain[0][0], (p_exmimo_config->rf.rf_mode[0] & LNAGAINMASK) >> 14);
+	//printf("[EMOS] %02d:%02d:%02d, frame %d, GPS time %e, GPS mode %d, lat %e, lon %e, alt %e, speed %e\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, dummy_gps_data.time, dummy_gps_data.mode, dummy_gps_data.latitude, dummy_gps_data.longitude, dummy_gps_data.altitude, dummy_gps_data.speed);
       }
     }
   
@@ -462,6 +522,9 @@ static void *eNB_thread(void *arg)
   int i,ret;
   int tx_offset;
   int bytes;
+  long long int k1=1000;
+  long long int k2=1024-k1;
+  int len,card = 0;
 
 #ifdef RTAI
   task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
@@ -557,7 +620,22 @@ static void *eNB_thread(void *arg)
 	  }
 	  
 	  timing_info.n_samples++;
-	  
+
+	  // do measurements for rssi
+	  if (last_slot==0) {
+	    for (card=0;card<number_of_cards;card++) {
+	      len = SAMPLES_PER_SLOT/(1<<openair0_exmimo_pci[card].exmimo_config_ptr->framing.resampling_factor[0]);
+	      rssi_lin = signal_energy(&(((s32*) openair0_exmimo_pci[card].adc_head[0])[last_slot*len]), len);
+	      rssi_lin_avg = (int) ((k1*((long long int)(rssi_lin_avg)) + (k2*((long long int)(rssi_lin))))>>10);
+	      rssi_avg_dB = dB_fixed(rssi_lin_avg);
+	      if (frame%100==0) {
+		gain_control_all(rssi_avg_dB,card);
+		printf("AGC for card %d: rx_power_fil_dB=%d, rx_gain=%d, LNA=%d (1=Byp,2=Med,3=Max)\n",card,rssi_avg_dB,openair0_exmimo_pci[card].exmimo_config_ptr->rf.rx_gain[0][0],(openair0_exmimo_pci[card].exmimo_config_ptr->rf.rf_mode[0]&LNAGAINMASK)>>14);
+	      }
+	    }
+	  }
+
+#ifdef EMOS	  
 	  // save raw samples here
 	  /*
 	  bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &(((s32*) openair0_exmimo_pci[card].adc_head[0])[last_slot*SAMPLES_PER_SLOT]), channel_buffer_size/2);
@@ -579,6 +657,7 @@ static void *eNB_thread(void *arg)
 		    frame, last_slot, bytes);
 	    }
 	  }
+#endif
 	}
 
       slot++;
@@ -613,8 +692,9 @@ int main(int argc, char **argv) {
 #endif
   int i,j,aa;
   void *status;
+  int card = 0;
 
-  u32 rf_mode_base   = TXLPFNORM + TXLPFEN + TXLPF10 + RXLPFNORM + RXLPFEN + RXLPF10 + LNA1ON +LNAMax + RFBBNORM;
+  u32 rf_mode_base   = TXLPFNORM + TXLPFEN  + RXLPFNORM + RXLPFEN + LNA1ON +LNAMax + RFBBNORM;
   u32 rf_local[4]    = {8255000,8255000,8255000,8255000}; // UE zepto
     //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
     //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
@@ -681,10 +761,12 @@ int main(int argc, char **argv) {
           UE_flag = 1;
           break;
         case 'C':
-          carrier_freq[0] = atoi(optarg);
-          carrier_freq[1] = atoi(optarg);
-          carrier_freq[2] = atoi(optarg);
-          carrier_freq[3] = atoi(optarg);
+	  for (card=0;card<MAX_CARDS;card++) {
+	    carrier_freq[card][0] = atof(optarg);
+	    carrier_freq[card][1] = atof(optarg);
+	    carrier_freq[card][2] = atof(optarg);
+	    carrier_freq[card][3] = atof(optarg);
+	  }
           break;
         case 'S':
           fs4_test=1;
@@ -875,111 +957,134 @@ int main(int argc, char **argv) {
           return(ret);
      }
 
-  printf ("Detected %d number of cards, %d number of antennas.\n", openair0_num_detected_cards, openair0_num_antennas[card]);
-  
-  p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
-  p_exmimo_id     = openair0_exmimo_pci[card].exmimo_id_ptr;
-  
-  printf("Card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d\n", card, p_exmimo_id->board_exmimoversion, p_exmimo_id->board_hwrev, p_exmimo_id->board_swrev);
+  number_of_cards = openair0_num_detected_cards;
 
-  if (p_exmimo_id->board_swrev>=BOARD_SWREV_CNTL2)
-    p_exmimo_config->framing.eNB_flag   = 0; 
-  else 
-    p_exmimo_config->framing.eNB_flag   = !UE_flag;
+  for (card=0; card<number_of_cards; card++) {
+    printf ("Configuring card %d of %d (number of antennas %d).\n", card, openair0_num_detected_cards, openair0_num_antennas[card]);
+  
+    p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
+    p_exmimo_id     = openair0_exmimo_pci[card].exmimo_id_ptr;
+  
+    printf("Card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d\n", card, p_exmimo_id->board_exmimoversion, p_exmimo_id->board_hwrev, p_exmimo_id->board_swrev);
 
-  p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
-  for (ant=0; ant<4; ant++) 
-    p_exmimo_config->framing.resampling_factor[ant] = RESAMPLING_FACTOR;
+    if (p_exmimo_id->board_swrev>=BOARD_SWREV_CNTL2)
+      p_exmimo_config->framing.eNB_flag   = 0; 
+    else 
+      p_exmimo_config->framing.eNB_flag   = !UE_flag;
+
+    //p_exmimo_config->framing.multicard_syncmode = SYNCMODE_FREE;
+    if (card==0) 
+      p_exmimo_config->framing.multicard_syncmode = SYNCMODE_MASTER;
+    else
+      p_exmimo_config->framing.multicard_syncmode = SYNCMODE_SLAVE;
+
+    p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTRX; //TXRXSWITCH_LSB;
  
-  /*
-  for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
-    p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
-  for (ant=0;ant<frame_parms->nb_antennas_tx;ant++)
-    p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
-  for (ant=0;ant<frame_parms->nb_antennas_rx;ant++)
-    p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
-  for (ant=max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant<4;ant++) {
-    p_exmimo_config->rf.rf_mode[ant] = 0;
-    carrier_freq[ant] = 0; //this turns off all other LIMEs
-  }
-  */
-
-  ant_offset = 0;
-  for (ant=0; ant<4; ant++) {
-    if (ant==ant_offset) {
-      //if (1) {
+    /*
+      for (ant=0;ant<max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant++) 
       p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
-      //p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+      for (ant=0;ant<frame_parms->nb_antennas_tx;ant++)
+      p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+      for (ant=0;ant<frame_parms->nb_antennas_rx;ant++)
       p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
-    }
-    else {
+      for (ant=max(frame_parms->nb_antennas_tx,frame_parms->nb_antennas_rx);ant<4;ant++) {
       p_exmimo_config->rf.rf_mode[ant] = 0;
       carrier_freq[ant] = 0; //this turns off all other LIMEs
-    }
-  }
-
-  for (ant = 0; ant<4; ant++) { 
-    p_exmimo_config->rf.do_autocal[ant] = 1;
-    p_exmimo_config->rf.rf_freq_rx[ant] = carrier_freq[ant];
-    p_exmimo_config->rf.rf_freq_tx[ant] = carrier_freq[ant];
-    p_exmimo_config->rf.rx_gain[ant][0] = rxgain[ant];
-    p_exmimo_config->rf.tx_gain[ant][0] = txgain[ant];
-    
-    p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
-    p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
-
-    if ((carrier_freq[ant] >= 850000000) && (carrier_freq[ant] <= 865000000)) {
-      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal_850[ant];
-      p_exmimo_config->rf.rffe_band_mode[ant] = DD_TDD;	    
-    }
-    else if ((carrier_freq[ant] >= 1900000000) && (carrier_freq[ant] <= 2000000000)) {
-      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
-      p_exmimo_config->rf.rffe_band_mode[ant] = B19G_TDD;	    
-    }
-    else {
-      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
-      p_exmimo_config->rf.rffe_band_mode[ant] = 0;	    
-    }
-
-    p_exmimo_config->rf.rffe_gain_txlow[ant] = 31;
-    p_exmimo_config->rf.rffe_gain_txhigh[ant] = 31;
-    p_exmimo_config->rf.rffe_gain_rxfinal[ant] = 52;
-    p_exmimo_config->rf.rffe_gain_rxlow[ant] = 31;
-  }
-
-
-    number_of_cards = openair0_num_detected_cards;
-    /*
-    if (p_exmimo_id->board_exmimoversion==1) //ExpressMIMO1
-      openair_daq_vars.timing_advance = 138;
-    else //ExpressMIMO2
-      openair_daq_vars.timing_advance = 0;
+      }
     */
 
-  openair0_dump_config(card);
+    for (ant=0; ant<4; ant++) {
+      if (carrier_freq[card][ant] != 0) {
+	p_exmimo_config->rf.rf_mode[ant] = rf_mode_base;
+	switch (bandwidth[card]) {
+	case BW20:
+	  p_exmimo_config->framing.resampling_factor[ant] = 0;
+	  p_exmimo_config->rf.rf_mode[ant] += RXLPF10 + TXLPF10;
+	  break;
+	case BW10:
+	  p_exmimo_config->framing.resampling_factor[ant] = 1;
+	  p_exmimo_config->rf.rf_mode[ant] += RXLPF5 + TXLPF5;
+	  break;
+	case BW5: 
+	  p_exmimo_config->framing.resampling_factor[ant] = 2;
+	  p_exmimo_config->rf.rf_mode[ant] += RXLPF25 + TXLPF25;
+	  break;
+	}
+	//p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+	p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
+      }
+      else {
+	p_exmimo_config->rf.rf_mode[ant] = 0;
+      }
+    }
 
-  printf("EXMIMO_CONFIG: rf_mode 0x %x %x %x %x, [0]: TXRXEn %d, TXLPFEn %d, TXLPF %d, RXLPFEn %d, RXLPF %d, RFBB %d, LNA %d, LNAGain %d, RXLPFMode %d, SWITCH %d, rf_rxdc %d, rf_local %d, rf_vcocal %d\n",  
-	 p_exmimo_config->rf.rf_mode[0],
-	 p_exmimo_config->rf.rf_mode[1],
-	 p_exmimo_config->rf.rf_mode[2],
-	 p_exmimo_config->rf.rf_mode[3],
-	 (p_exmimo_config->rf.rf_mode[0]&3),  // RXen+TXen
-	 (p_exmimo_config->rf.rf_mode[0]&4)>>2,         //TXLPFen
-	 (p_exmimo_config->rf.rf_mode[0]&TXLPFMASK)>>3, //TXLPF
-	 (p_exmimo_config->rf.rf_mode[0]&128)>>7,      //RXLPFen
-	 (p_exmimo_config->rf.rf_mode[0]&RXLPFMASK)>>8, //TXLPF
-	 (p_exmimo_config->rf.rf_mode[0]&RFBBMASK)>>16, // RFBB mode
-	 (p_exmimo_config->rf.rf_mode[0]&LNAMASK)>>12, // RFBB mode
-	 (p_exmimo_config->rf.rf_mode[0]&LNAGAINMASK)>>14, // RFBB mode
-	 (p_exmimo_config->rf.rf_mode[0]&RXLPFMODEMASK)>>19, // RXLPF mode
-	 (p_exmimo_config->framing.tdd_config&TXRXSWITCH_MASK)>>1, // Switch mode
-	 p_exmimo_config->rf.rf_rxdc[0],
-	 p_exmimo_config->rf.rf_local[0],
-	 p_exmimo_config->rf.rf_vcocal[0]);
-  
-  for (ant=0;ant<4;ant++)
-    p_exmimo_config->rf.do_autocal[ant] = 0;
+    for (ant = 0; ant<4; ant++) { 
+      p_exmimo_config->rf.do_autocal[ant] = 1;
+      p_exmimo_config->rf.rf_freq_rx[ant] = carrier_freq[card][ant];
+      p_exmimo_config->rf.rf_freq_tx[ant] = carrier_freq[card][ant];
+      p_exmimo_config->rf.rx_gain[ant][0] = rxgain[ant];
+      p_exmimo_config->rf.tx_gain[ant][0] = txgain[ant];
+      
+      p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
+      p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
+      
+      if ((carrier_freq[card][ant] >= 850000000) && (carrier_freq[card][ant] <= 865000000)) {
+	p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal_850[ant];
+	p_exmimo_config->rf.rffe_band_mode[ant] = DD_TDD;	    
+      }
+      else if ((carrier_freq[card][ant] >= 1900000000) && (carrier_freq[card][ant] <= 2000000000)) {
+	p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
+	p_exmimo_config->rf.rffe_band_mode[ant] = B19G_TDD;	    
+      }
+      else {
+	p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
+	p_exmimo_config->rf.rffe_band_mode[ant] = 0;	    
+      }
+      
+      p_exmimo_config->rf.rffe_gain_txlow[ant] = 31;
+      p_exmimo_config->rf.rffe_gain_txhigh[ant] = 31;
+      p_exmimo_config->rf.rffe_gain_rxfinal[ant] = 52;
+      p_exmimo_config->rf.rffe_gain_rxlow[ant] = 31;
+    }
+    
+    
+    openair0_dump_config(card);
 
+    printf("EXMIMO_CONFIG card %d: freq0..3 %u %u %u %u Hz, freqtx0..1 %u %u Hz, RX gain0..1 %d %d dB\n",  
+	   card,
+	   p_exmimo_config->rf.rf_freq_rx[0],
+	   p_exmimo_config->rf.rf_freq_rx[1],
+	   p_exmimo_config->rf.rf_freq_rx[2],
+	   p_exmimo_config->rf.rf_freq_rx[3],
+	   p_exmimo_config->rf.rf_freq_tx[0],
+	   p_exmimo_config->rf.rf_freq_tx[1],
+	   p_exmimo_config->rf.rx_gain[0][0],
+	   p_exmimo_config->rf.rx_gain[1][0]);
+    printf("EXMIMO_CONFIG card %d: rf_mode 0x %x %x %x %x, [0]: TXRXEn %d, TXLPFEn %d, TXLPF %d, RXLPFEn %d, RXLPF %d, RFBB %d, LNA %d, LNAGain %d, RXLPFMode %d, SWITCH %d, rf_rxdc %d, rf_local %d, rf_vcocal %d\n", 
+	   card,
+	   p_exmimo_config->rf.rf_mode[0],
+	   p_exmimo_config->rf.rf_mode[1],
+	   p_exmimo_config->rf.rf_mode[2],
+	   p_exmimo_config->rf.rf_mode[3],
+	   (p_exmimo_config->rf.rf_mode[0]&3),  // RXen+TXen
+	   (p_exmimo_config->rf.rf_mode[0]&4)>>2,         //TXLPFen
+	   (p_exmimo_config->rf.rf_mode[0]&TXLPFMASK)>>3, //TXLPF
+	   (p_exmimo_config->rf.rf_mode[0]&128)>>7,      //RXLPFen
+	   (p_exmimo_config->rf.rf_mode[0]&RXLPFMASK)>>8, //TXLPF
+	   (p_exmimo_config->rf.rf_mode[0]&RFBBMASK)>>16, // RFBB mode
+	   (p_exmimo_config->rf.rf_mode[0]&LNAMASK)>>12, // RFBB mode
+	   (p_exmimo_config->rf.rf_mode[0]&LNAGAINMASK)>>14, // RFBB mode
+	   (p_exmimo_config->rf.rf_mode[0]&RXLPFMODEMASK)>>19, // RXLPF mode
+	   (p_exmimo_config->framing.tdd_config&TXRXSWITCH_MASK)>>1, // Switch mode
+	   p_exmimo_config->rf.rf_rxdc[0],
+	   p_exmimo_config->rf.rf_local[0],
+	   p_exmimo_config->rf.rf_vcocal[0]);
+    
+    for (ant=0;ant<4;ant++)
+      p_exmimo_config->rf.do_autocal[ant] = 0;
+  } //card
+  card=0;
+ 
 #ifdef EMOS
   error_code = rtf_create(CHANSOUNDER_FIFO_MINOR,CHANSOUNDER_FIFO_SIZE);
   if (error_code==0)
@@ -1022,12 +1127,14 @@ int main(int argc, char **argv) {
 
   // this starts the DMA transfers
   if (UE_flag!=1)
+    for (card=0;card<number_of_cards;card++)
       openair0_start_rt_acquisition(card);
 
 
 #ifdef XFORMS
   if (do_forms==1) {
       fl_initialize (&argc, argv, NULL, 0, 0);
+      /*
       form_stats = create_form_stats_form();
       if (UE_flag==1) {
           form_ue[UE_id] = create_lte_phy_scope_ue();
@@ -1063,6 +1170,9 @@ int main(int argc, char **argv) {
               fl_set_object_label(form_ue[UE_id]->button_0, "IA Receiver OFF");
           }
       }
+      */
+      form_lte = create_form_lte_scope();
+      fl_show_form (form_lte->lte_scope, FL_PLACE_HOTSPOT, FL_FULLBORDER, "Scope");
 
       ret = pthread_create(&thread2, NULL, scope_thread, NULL);
       printf("Scope thread created, ret=%d\n",ret);
@@ -1072,6 +1182,8 @@ int main(int argc, char **argv) {
 #ifdef EMOS
   ret = pthread_create(&thread3, NULL, emos_thread, NULL);
   printf("EMOS thread created, ret=%d\n",ret);
+  ret = pthread_create(&thread4, NULL, gps_thread, NULL);
+  printf("GPS thread created, ret=%d\n",ret);
 #endif
 
   rt_sleep_ns(10*FRAME_PERIOD);
@@ -1140,6 +1252,7 @@ int main(int argc, char **argv) {
   if (do_forms==1)
     {
       pthread_join(thread2,&status);
+      /*
         fl_hide_form(form_stats->stats_form);
         fl_free_form(form_stats->stats_form);
         if (UE_flag==1) {
@@ -1151,6 +1264,9 @@ int main(int argc, char **argv) {
                 fl_free_form(form_enb[UE_id]->lte_phy_scope_enb);
             }
         }
+      */
+      fl_hide_form(form_lte->lte_scope);
+      fl_free_form(form_lte->lte_scope);
     }
 #endif
 
@@ -1189,7 +1305,8 @@ int main(int argc, char **argv) {
 #endif
 
   printf("stopping card\n");
-  openair0_stop(card);
+  for (card=0;card<number_of_cards;card++)
+    openair0_stop(card);
   printf("closing openair0_lib\n");
   openair0_close();
 
@@ -1197,6 +1314,9 @@ int main(int argc, char **argv) {
   printf("waiting for EMOS thread\n");
   pthread_cancel(thread3);
   pthread_join(thread3,&status);
+  printf("waiting for GPS thread\n");
+  pthread_cancel(thread4);
+  pthread_join(thread4,&status);
 #endif
 
 #ifdef EMOS
