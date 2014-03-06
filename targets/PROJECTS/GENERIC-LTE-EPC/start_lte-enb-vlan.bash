@@ -28,7 +28,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim ENABLE_ITTI=1 USE_MME=R10 NAS=1 Rel10=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="DISABLE_XER_PRINT=1 ENABLE_ITTI=1 USE_MME=R10 NAS=1 Rel10=1"
 declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
 declare IP_DRIVER_NAME="ue_ip"
 declare LTEIF="oip1"

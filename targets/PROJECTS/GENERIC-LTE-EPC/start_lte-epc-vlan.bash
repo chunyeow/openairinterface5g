@@ -30,13 +30,22 @@ THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
-test_command_install_package "gccxml"   "gccxml" "--force-yes"
-test_command_install_package "vconfig"  "vlan" "--force-yes"
+test_command_install_package "gccxml"   "gccxml"   "--force-yes"
+test_command_install_package "gcc"      "gcc"      "--force-yes"
+test_command_install_package "g++"      "g++"      "--force-yes"
+test_command_install_package "automake" "automake" "--force-yes"
+test_command_install_package "vconfig"  "vlan"     "--force-yes"
 test_command_install_package "iptables" "iptables"
-test_command_install_package "iperf"    "iperf" "--force-yes"
+test_command_install_package "iperf"    "iperf"    "--force-yes"
 test_command_install_package "ip"       "iproute"
-test_command_install_package  "tunctl"  "uml-utilities"
-test_command_install_lib      "/usr/lib/libconfig.so"  "libconfig-dev"  "--force-yes"
+test_command_install_package "tunctl"   "uml-utilities"
+test_command_install_package "bison"    "bison"     "--force-yes"
+test_command_install_package "flex"     "flex"      "--force-yes"
+test_command_install_package "libtool"  "libtool"   "--force-yes"
+test_command_install_lib     "/usr/lib/libconfig.so"      "libconfig-dev"  "--force-yes"
+#test_command_install_lib     "/usr/lib/libsctp-dev.so"    "libsctp-dev"    "--force-yes"
+test_command_install_lib     "/usr/lib/libsctp.so"        "libsctp1"       "--force-yes"
+#test_command_install_lib     "/usr/lib/libpthread-stubs0-dev.so" "libpthread-stubs0-dev"    "--force-yes"
 
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
@@ -82,9 +91,9 @@ then
     OBJ_DIR=`basename $OBJ_DIR`
     if [ ! -f $OBJ_DIR/Makefile ]
     then
+        autoreconf -i -f 
         cd ./$OBJ_DIR
         echo_success "Invoking configure"
-        rm -f Makefile
         ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
     else
         cd ./$OBJ_DIR
