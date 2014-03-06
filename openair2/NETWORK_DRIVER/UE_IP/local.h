@@ -63,33 +63,34 @@
 
 
 #include "constant.h"
+#include "platform_types.h"
 #include "sap.h"
 
 
-struct ue_ip_priv {
+typedef struct ue_ip_priv_s {
   int                        irq;
   int                        rx_flags;
   struct timer_list          timer;
   spinlock_t                 lock;
   struct net_device_stats    stats;
-  u8                         retry_limit;
-  u32                        timer_establishment;
-  u32                        timer_release;
+  uint8_t                    retry_limit;
+  uint32_t                   timer_establishment;
+  uint32_t                   timer_release;
   struct sock               *nl_sk;
-  u8                         nlmsg[UE_IP_PRIMITIVE_MAX_LENGTH+sizeof(struct nlmsghdr)];
-  u8                         xbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // transmition buffer
-  u8                         rbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // reception buffer
-};
+  uint8_t                    nlmsg[UE_IP_PRIMITIVE_MAX_LENGTH+sizeof(struct nlmsghdr)];
+  uint8_t                    xbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // transmition buffer
+  uint8_t                    rbuffer[UE_IP_PRIMITIVE_MAX_LENGTH]; // reception buffer
+} ue_ip_priv_t;
 
-struct ipversion {
+typedef struct ipversion_s {
 #if defined(__LITTLE_ENDIAN_BITFIELD)
-    u8    reserved:4,
+  uint8_t    reserved:4,
           version:4;
 #else
-    u8    version:4,
+  uint8_t    version:4,
           reserved:4;
 #endif
-};
+}ipversion_t;
 
 
 typedef struct pdcp_data_req_header_s {

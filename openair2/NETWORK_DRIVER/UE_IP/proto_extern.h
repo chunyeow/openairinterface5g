@@ -82,10 +82,10 @@ int ue_ip_find_inst(struct net_device *dev);
 @param inst Instance number
 @param rb_id Radio Bearer Id
  */
-void ue_ip_common_class_wireless2ip(unsigned short dlen,
-            void *pdcp_sdu,
-            int inst,
-            OaiNwDrvRadioBearerId_t rb_id);
+void ue_ip_common_class_wireless2ip(sdu_size_t dlen,
+            void    *pdcp_sdu,
+            int     inst,
+            rb_id_t rb_id);
 
 /**
 \fn void ue_ip_common_ip2wireless(struct sk_buff *skb, struct cx_entity *cx, struct classifier_entity *gc,int inst)
