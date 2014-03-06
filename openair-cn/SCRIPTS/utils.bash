@@ -219,7 +219,7 @@ test_command_install_lib() {
       echo_warning "$2 seems to be not installed, trying..."
       apt-get install $2 -y
       if [ ! -f $1 ]; then
-          echo_error "$1 unavailable"
+          echo_error "$2 unavailable"
           exit 1
       fi
   fi
