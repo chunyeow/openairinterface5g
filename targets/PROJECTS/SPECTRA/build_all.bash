@@ -75,7 +75,9 @@ cd  $OPENAIR_HOME/common/utils/itti_analyzer
 if [ ! -f $OPENAIR_HOME/common/utils/itti_analyzer/Makefile ]
     then
         autoreconf -i
-        ./configure
+        mkdir -m 777 objs
+        cd objs
+        ../configure
     fi
 make install -j`grep -c ^processor /proc/cpuinfo `
 
