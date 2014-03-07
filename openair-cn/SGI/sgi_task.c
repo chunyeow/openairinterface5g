@@ -124,14 +124,14 @@ static void* sgi_task_thread(void *args_p)
 static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointReq *req_p)
 //------------------------------------------------------
 {
-	SGICreateEndpointResp                     *sgi_create_endpoint_resp_p;
+    SGICreateEndpointResp                     *sgi_create_endpoint_resp_p;
     MessageDef                                *message_p;
     sgi_teid_mapping_t                        *mapping;
 
     SGI_IF_DEBUG("Rx IP_FW_CREATE_SGI_ENDPOINT_REQUEST, Context: S-GW S11 teid %u, S-GW S1U teid %u EPS bearer id %u\n",
-    		req_p->context_teid, req_p->sgw_S1u_teid, req_p->eps_bearer_id);
+        req_p->context_teid, req_p->sgw_S1u_teid, req_p->eps_bearer_id);
 
-  	message_p               = itti_alloc_new_message(TASK_FW_IP, SGI_CREATE_ENDPOINT_RESPONSE);
+    message_p               = itti_alloc_new_message(TASK_FW_IP, SGI_CREATE_ENDPOINT_RESPONSE);
     if (message_p == NULL) {
         return -1;
     }
@@ -148,10 +148,10 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
         SGI_IF_ERROR("SGI_STATUS_ERROR_CONTEXT_ALREADY_EXIST Context: S11 teid %u\n", req_p->context_teid);
         sgi_create_endpoint_resp_p->status       = SGI_STATUS_ERROR_CONTEXT_ALREADY_EXIST;
     } else {
-    	mapping = malloc(sizeof(sgi_teid_mapping_t));
-    	if (mapping == NULL) {
+        mapping = malloc(sizeof(sgi_teid_mapping_t));
+        if (mapping == NULL) {
             sgi_create_endpoint_resp_p->status       = SGI_STATUS_ERROR_NO_MEMORY_AVAILABLE;
-    	} else {
+        } else {
             memset(mapping, 0 , sizeof(sgi_teid_mapping_t));
 
             mapping->eps_bearer_id              = req_p->eps_bearer_id;
@@ -173,14 +173,14 @@ static int sgi_create_endpoint_request(sgi_data_t *sgi_dataP, SGICreateEndpointR
 static int sgi_update_endpoint_request(sgi_data_t *sgi_dataP, SGIUpdateEndpointReq *req_p)
 //------------------------------------------------------
 {
-	SGIUpdateEndpointResp                     *sgi_update_endpoint_resp_p = NULL;
+    SGIUpdateEndpointResp                     *sgi_update_endpoint_resp_p = NULL;
     MessageDef                                *message_p = NULL;
     sgi_teid_mapping_t                        *mapping   = NULL;
 
     SGI_IF_DEBUG("Rx IP_FW_UPDATE_SGI_ENDPOINT_REQUEST, Context: S-GW S11 teid %u, S-GW S1U teid %u EPS bearer id %u\n",
-    		req_p->context_teid, req_p->sgw_S1u_teid, req_p->eps_bearer_id);
+        req_p->context_teid, req_p->sgw_S1u_teid, req_p->eps_bearer_id);
 
-  	message_p               = itti_alloc_new_message(TASK_FW_IP, SGI_UPDATE_ENDPOINT_RESPONSE);
+    message_p               = itti_alloc_new_message(TASK_FW_IP, SGI_UPDATE_ENDPOINT_RESPONSE);
     if (message_p == NULL) {
         return -1;
     }
