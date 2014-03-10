@@ -58,6 +58,7 @@
 #define PGW_CONFIG_STRING_IP_ADDRESS_RANGE_DELIMITERS           " -<>"
 #define PGW_CONFIG_STRING_IPV6_PREFIX_DELIMITER                 " /"
 
+#define PGW_CONFIG_STRING_INTERFACE_DISABLED                    "none"
 
 #define IPV4_STR_ADDR_TO_INT_NWBO(AdDr_StR,NwBo,MeSsAgE ) do {\
             struct in_addr inp;\
