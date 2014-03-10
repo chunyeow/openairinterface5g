@@ -476,7 +476,7 @@ int config_parse_opt_line(int argc, char *argv[], mme_config_t *mme_config_p)
                 exit(0);
         }
     }
-    /* Parse the configuration file using bison */
+    /* Parse the configuration file using libconfig */
     if (config_parse_file(mme_config_p) != 0) {
         return -1;
     }
