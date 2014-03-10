@@ -246,13 +246,16 @@ int sgi_init(const pgw_config_t *pgw_config_p)
     sgi_data_p->interface_name[len] = '\0';
     sgi_data_p->ipv4_addr = pgw_config_p->ipv4.pgw_ipv4_address_for_SGI;
 
-    sgi_data_p->interface_index = if_nametoindex(sgi_data_p->interface_name);
+    if (strcmp(sgi_data_p->interface_name, PGW_CONFIG_STRING_INTERFACE_DISABLED) != 0) {
+        sgi_data_p->interface_index = if_nametoindex(sgi_data_p->interface_name);
 
-
-    if (sgi_create_sockets(sgi_data_p) < 0) {
-        SGI_IF_ERROR("Could not create socket, leaving thread %s\n", __FUNCTION__);
-        free(sgi_data_p);
-        return -1;
+        if (sgi_create_sockets(sgi_data_p) < 0) {
+            SGI_IF_ERROR("Could not create socket, leaving thread %s\n", __FUNCTION__);
+            free(sgi_data_p);
+            return -1;
+        }
+    } else {
+        SGI_IF_WARNING("SGI interface disabled by config file\n");
     }
 
     if (pthread_create(&fw_2_sgi_task_thread, NULL, &sgi_task_thread, (void *)sgi_data_p) < 0) {
@@ -260,29 +263,31 @@ int sgi_init(const pgw_config_t *pgw_config_p)
         return -1;
     }
 
+    if (strcmp(sgi_data_p->interface_name, PGW_CONFIG_STRING_INTERFACE_DISABLED) != 0) {
 #ifdef ENABLE_USE_PCAP_FOR_SGI
-    if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_pcap_fw_2_gtpv1u_thread, (void *)sgi_data_p) < 0) {
-        SGI_IF_ERROR("sgi_pcap_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
-        return -1;
-    }
-#endif
-#ifdef ENABLE_USE_NETFILTER_FOR_SGI
-    if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_nf_fw_2_gtpv1u_thread, (void *)sgi_data_p) < 0) {
-        SGI_IF_ERROR("sgi_nf_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
-        return -1;
-    }
-#endif
-#ifdef ENABLE_USE_RAW_SOCKET_FOR_SGI
-    for (i=0; i < SGI_MAX_EPS_BEARERS_PER_USER; i++) {
-        sgi_read_thread_args_t *args_p = malloc(sizeof(sgi_read_thread_args_t));
-        args_p->sgi_data      = sgi_data_p;
-        args_p->socket_index  = i;
-        if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_sock_raw_fw_2_gtpv1u_thread, (void *)args_p) < 0) {
-            SGI_IF_ERROR("sgi_sock_raw_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
+        if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_pcap_fw_2_gtpv1u_thread, (void *)sgi_data_p) < 0) {
+            SGI_IF_ERROR("sgi_pcap_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
             return -1;
         }
-    }
 #endif
+#ifdef ENABLE_USE_NETFILTER_FOR_SGI
+        if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_nf_fw_2_gtpv1u_thread, (void *)sgi_data_p) < 0) {
+            SGI_IF_ERROR("sgi_nf_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
+            return -1;
+        }
+#endif
+#ifdef ENABLE_USE_RAW_SOCKET_FOR_SGI
+        for (i=0; i < SGI_MAX_EPS_BEARERS_PER_USER; i++) {
+            sgi_read_thread_args_t *args_p = malloc(sizeof(sgi_read_thread_args_t));
+            args_p->sgi_data      = sgi_data_p;
+            args_p->socket_index  = i;
+            if (pthread_create(&sgi_data_p->capture_on_sgi_if_thread, NULL, &sgi_sock_raw_fw_2_gtpv1u_thread, (void *)args_p) < 0) {
+                SGI_IF_ERROR("sgi_sock_raw_fw_2_gtpv1u_thread pthread_create: %s", strerror(errno));
+                return -1;
+            }
+        }
+#endif
+    }
 
     while (sgi_data_p->thread_started != SGI_MAX_EPS_BEARERS_PER_USER ) {
         usleep(1000);
