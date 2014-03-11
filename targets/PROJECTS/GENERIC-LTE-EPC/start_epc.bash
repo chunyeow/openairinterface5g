@@ -122,11 +122,6 @@ then
     done
 fi
 
-# May we have booted on a new kernel, not the one when we build vswitch kernel module
-if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
-    $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
-fi
-
 
 ##################################
 # Get or set OBJ DIR and compile #
@@ -254,6 +249,10 @@ if [ $? -eq 1 ]; then
    ovs_setting=1
    vlan_setting=0
    echo_success "Found open-vswitch network configuration"
+   # May we have booted on a new kernel, not the one when we build vswitch kernel module
+   if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
+      $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
+   fi
    clean_epc_ovs_network
    build_epc_ovs_network
    test_epc_ovs_network
@@ -264,6 +263,16 @@ else
         echo_success "Found open VLAN network configuration"
         ovs_setting=0
         vlan_setting=1
+        
+        # may be openvswitch is needed for S11
+        is_openvswitch_interface $MME_IPV4_ADDRESS_FOR_S11_MME  \
+                               $SGW_IPV4_ADDRESS_FOR_S11
+        if [ $? -eq 1 ]; then
+            # May we have booted on a new kernel, not the one when we build vswitch kernel module
+            if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
+                $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
+            fi
+        fi
         clean_epc_vlan_network
         build_mme_spgw_vlan_network
     else
