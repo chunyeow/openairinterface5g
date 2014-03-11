@@ -154,8 +154,8 @@ int fs4_test=0;
 char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
-//u32 carrier_freq[4]= {1907600000,1907600000,1907600000,1907600000};
 u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{2605000000,2605000000,0,0},{0,0,0,0},{0,0,0,0}};
+//u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}};
 exmimo_bw_t bandwidth[MAX_CARDS]    = {BW20,BW10,BW5,BW5};
 char *conf_config_file_name = NULL;
 
@@ -173,7 +173,7 @@ struct timing_info_t {
 extern s16* sync_corr_ue0;
 extern s16 prach_ifft[4][1024*2];
 
-
+unsigned int frame;
 int rx_input_level_dBm;
 #ifdef XFORMS
 extern int otg_enabled;
@@ -321,8 +321,10 @@ void *scope_thread(void *arg) {
 int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
 
 #ifdef EMOS
-#define NO_ESTIMATES_DISK 20 //No. of estimates that are aquired before dumped to disk
-int channel_buffer_size =  SAMPLES_PER_SLOT*4; //one slot, 4 byte per sample
+#define AQU_LENGTH_FRAMES 100 //Aquisition time in frames
+#define AQU_PERIOD_FRAMES 200 //Repetition time of aquisition in frames
+#define AQU_LENGTH_SLOTS (AQU_LENGTH_FRAMES*LTE_SLOTS_PER_FRAME) //Aquisition time in slots
+#define AQU_PERIOD_SLOTS (AQU_PERIOD_FRAMES*LTE_SLOTS_PER_FRAME) //Repetition time of aquisition in slots
 
 void* gps_thread (void *arg)
 {
@@ -408,6 +410,10 @@ void *emos_thread (void *arg)
 
   struct sched_param sched_param;
   int ret;
+
+  int card, ant;
+  int channel_buffer_size=0; //in bytes
+
   
   sched_param.sched_priority = sched_get_priority_max(SCHED_FIFO)-1; 
   sched_setscheduler(0, SCHED_FIFO,&sched_param);
@@ -417,15 +423,16 @@ void *emos_thread (void *arg)
   timer = time(NULL);
   now = localtime(&timer);
 
-  /*
-  if (UE_flag==0)
-    channel_buffer_size = sizeof(fifo_dump_emos_eNB);
-  else
-    channel_buffer_size = sizeof(fifo_dump_emos_UE);
-  */
+  for (card=0; card<number_of_cards; card++) 
+    for (ant=0; ant<4; ant++) 
+      if (carrier_freq[card][ant] != 0) {
+	printf("card %d, ant %d\n",card,ant);
+	channel_buffer_size += SAMPLES_PER_SLOT/(1<<openair0_exmimo_pci[card].exmimo_config_ptr->framing.resampling_factor[ant]);
+      }
+  channel_buffer_size *= 4; //4 bytes per sample
 
   // allocate memory for NO_FRAMES_DISK channes estimations
-  fifo2file_buffer = malloc(NO_ESTIMATES_DISK*channel_buffer_size);
+  fifo2file_buffer = malloc(AQU_LENGTH_SLOTS*channel_buffer_size);
   fifo2file_ptr = fifo2file_buffer;
 
   if (fifo2file_buffer == NULL)
@@ -454,8 +461,8 @@ void *emos_thread (void *arg)
       exit(EXIT_FAILURE);
     }
 
-
   printf("[EMOS] starting dump, channel_buffer_size=%d ...\n",channel_buffer_size);
+
   while (!oai_exit)
     {
       bytes = rtf_read_timed(fifo, fifo2file_ptr, channel_buffer_size,100);
@@ -472,26 +479,28 @@ void *emos_thread (void *arg)
       counter ++;
       total_bytes += bytes;
 
-      if ((counter%NO_ESTIMATES_DISK)==0)
+      if ((counter%AQU_LENGTH_SLOTS)==0)
         {
           //reset stuff
           fifo2file_ptr = fifo2file_buffer;
           //counter = 0;
 
-          //flush buffer to disk
-          if (fwrite(fifo2file_buffer, sizeof(char), NO_ESTIMATES_DISK*channel_buffer_size, dumpfile_id) != NO_ESTIMATES_DISK*channel_buffer_size)
-            {
-              fprintf(stderr, "[EMOS] Error writing to dumpfile\n");
-              exit(EXIT_FAILURE);
-            }
-	  
-        }
+	  //flush buffer to disk
+	  if (fwrite(fifo2file_buffer, sizeof(char), AQU_LENGTH_SLOTS*channel_buffer_size, dumpfile_id) != AQU_LENGTH_SLOTS*channel_buffer_size)
+	    {
+	      fprintf(stderr, "[EMOS] Error writing to dumpfile\n");
+	      exit(EXIT_FAILURE);
+	    }
+	  else 
+	    printf("[EMOS] Frame %d: wrote %d bytes to disk\n",frame,AQU_LENGTH_SLOTS*channel_buffer_size);
+	    
+	}
 
-      if ((counter%2000)==0) {
+      if ((counter%AQU_LENGTH_SLOTS)==0) {
 	time(&starttime_tmp);
 	localtime_r(&starttime_tmp,&starttime);
-	printf("[EMOS] %02d:%02d:%02d, frame %d, total bytes wrote %llu, bytes lost %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, total_bytes,lost_bytes);
-	printf("[EMOS] %02d:%02d:%02d, frame %d, rssi_lin %d, rssi_lin_avg %d, rssi_avg_dB %d, rx_gain %d, LNA %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, rssi_lin, rssi_lin_avg, rssi_avg_dB, p_exmimo_config->rf.rx_gain[0][0], (p_exmimo_config->rf.rf_mode[0] & LNAGAINMASK) >> 14);
+	printf("[EMOS] %02d:%02d:%02d, frame %d, total bytes wrote %llu, bytes lost %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, frame, total_bytes,lost_bytes);
+	printf("[EMOS] %02d:%02d:%02d, frame %d, rssi_lin %d, rssi_lin_avg %d, rssi_avg_dB %d, rx_gain %d, LNA %d\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, frame, rssi_lin, rssi_lin_avg, rssi_avg_dB, p_exmimo_config->rf.rx_gain[0][0], (p_exmimo_config->rf.rf_mode[0] & LNAGAINMASK) >> 14);
 	//printf("[EMOS] %02d:%02d:%02d, frame %d, GPS time %e, GPS mode %d, lat %e, lon %e, alt %e, speed %e\n", starttime.tm_hour, starttime.tm_min, starttime.tm_sec, counter/20, dummy_gps_data.time, dummy_gps_data.mode, dummy_gps_data.latitude, dummy_gps_data.longitude, dummy_gps_data.altitude, dummy_gps_data.speed);
       }
     }
@@ -511,8 +520,7 @@ static void *eNB_thread(void *arg)
 #ifdef RTAI
   RT_TASK *task;
 #endif
-  unsigned char slot=0,last_slot, next_slot;
-  int hw_slot,frame=0;
+  unsigned char slot=0,last_slot, next_slot, hw_slot;
   unsigned int msg1;
   unsigned int aa,slot_offset, slot_offset_F;
   int diff;
@@ -521,10 +529,10 @@ static void *eNB_thread(void *arg)
   int mbox_target=0,mbox_current=0;
   int i,ret;
   int tx_offset;
-  int bytes;
+  int bytes, bytes_tot, bytes_len;
   long long int k1=1000;
   long long int k2=1024-k1;
-  int len,card = 0;
+  int ant,len,card = 0;
 
 #ifdef RTAI
   task = rt_task_init_schmod(nam2num("TASK0"), 0, 0, 0, SCHED_FIFO, 0xF);
@@ -605,7 +613,7 @@ static void *eNB_thread(void *arg)
         last_slot+=20;
       next_slot = (slot+3)%LTE_SLOTS_PER_FRAME;
 
-      if (frame>5)
+      if (frame>AQU_LENGTH_FRAMES)
         {
 	  timing_info.time_last = timing_info.time_now;
 	  timing_info.time_now = rt_get_time_ns();
@@ -630,32 +638,37 @@ static void *eNB_thread(void *arg)
 	      rssi_avg_dB = dB_fixed(rssi_lin_avg);
 	      if (frame%100==0) {
 		gain_control_all(rssi_avg_dB,card);
-		printf("AGC for card %d: rx_power_fil_dB=%d, rx_gain=%d, LNA=%d (1=Byp,2=Med,3=Max)\n",card,rssi_avg_dB,openair0_exmimo_pci[card].exmimo_config_ptr->rf.rx_gain[0][0],(openair0_exmimo_pci[card].exmimo_config_ptr->rf.rf_mode[0]&LNAGAINMASK)>>14);
+		//printf("AGC for card %d: rx_power_fil_dB=%d, rx_gain=%d, LNA=%d (1=Byp,2=Med,3=Max)\n",card,rssi_avg_dB,openair0_exmimo_pci[card].exmimo_config_ptr->rf.rx_gain[0][0],(openair0_exmimo_pci[card].exmimo_config_ptr->rf.rf_mode[0]&LNAGAINMASK)>>14);
 	      }
 	    }
 	  }
 
 #ifdef EMOS	  
 	  // save raw samples here
-	  /*
-	  bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &(((s32*) openair0_exmimo_pci[card].adc_head[0])[last_slot*SAMPLES_PER_SLOT]), channel_buffer_size/2);
-	  if (bytes!=channel_buffer_size/2) {
-	    lost_bytes += channel_buffer_size/2 - bytes;
-	    LOG_W(PHY,"Frame %d, slot %d: Problem writing EMOS data to FIFO (bytes=%d, size=%d)\n",
-		  frame, last_slot, bytes, channel_buffer_size/2);
+	  if ((last_slot==0) && ((frame%AQU_PERIOD_FRAMES)==0)) {
+	    printf("[EMOS] Frame %d: start writing to FIFO\n",frame);
+	    bytes_tot=0;
 	  }
-	  */
-	  bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &(((s32*) openair0_exmimo_pci[card].adc_head[0])[last_slot*SAMPLES_PER_SLOT]), channel_buffer_size);
-	  if (bytes!=channel_buffer_size) {
-	    lost_bytes += channel_buffer_size - bytes;
-	    LOG_W(PHY,"Frame %d, slot %d: Problem writing EMOS data to FIFO (bytes=%d, size=%d)\n",
-		  frame, last_slot, bytes, channel_buffer_size);
-	  }
-	  else {
-	    if (frame%100==0) {
-	      LOG_I(PHY,"Frame %d, slot %d: Writing %d bytes EMOS data to FIFO\n",
-		    frame, last_slot, bytes);
+
+	  if ((frame%AQU_PERIOD_FRAMES)<AQU_LENGTH_FRAMES) {
+	  for (card=0; card<number_of_cards; card++) {
+	    for (ant=0; ant<4; ant++) {
+	      if (carrier_freq[card][ant] != 0) {
+		len = SAMPLES_PER_SLOT/(1<<openair0_exmimo_pci[card].exmimo_config_ptr->framing.resampling_factor[ant]);
+		bytes_len = len*4;
+		bytes = rtf_put(CHANSOUNDER_FIFO_MINOR, &(((s32*) openair0_exmimo_pci[card].adc_head[ant])[last_slot*len]), bytes_len);
+		bytes_tot += bytes;
+		if (bytes!=bytes_len) {
+		  lost_bytes += bytes_len - bytes;
+		  LOG_W(PHY,"Frame %d, slot %d: Problem writing EMOS data to FIFO (bytes=%d, size=%d)\n",
+			frame, last_slot, bytes, bytes_len);
+		}
+	      }
 	    }
+	  }
+	  if ((last_slot==19) && ((frame%AQU_PERIOD_FRAMES)==99))
+	    printf("[EMOS] Frame %d: sent %d bytes to FIFO\n",frame,bytes_tot);
+
 	  }
 #endif
 	}
@@ -930,7 +943,7 @@ int main(int argc, char **argv) {
 #ifdef OPENAIR2
     g_log->log_component[PHY].level = LOG_INFO;
 #else
-    g_log->log_component[PHY].level = LOG_INFO;
+    g_log->log_component[PHY].level = LOG_DEBUG;
 #endif
     g_log->log_component[PHY].flag  = LOG_HIGH;
     g_log->log_component[MAC].level = LOG_INFO;
