@@ -94,7 +94,7 @@ then
         autoreconf -i -f 
         cd ./$OBJ_DIR
         echo_success "Invoking configure"
-        ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+        ../configure --enable-standalone-epc --enable-raw-socket-for-sgi --disable-s11 LDFLAGS=-L/usr/local/lib
     else
         cd ./$OBJ_DIR
     fi
@@ -106,14 +106,14 @@ else
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+    ../configure --enable-standalone-epc --enable-raw-socket-for-sgi --disable-s11  LDFLAGS=-L/usr/local/lib
 fi
 
 pkill oai_epc
 if [ -f Makefile ]
 then
     echo_success "Compiling..."
-    make -j `cat /proc/cpuinfo | grep processor | wc -l`
+    make CODE_PDN_WITHOUT_S11=1 -j `cat /proc/cpuinfo | grep processor | wc -l`
     if [ $? -ne 0 ]; then
         echo_error "Build failed, exiting"
         exit 1
