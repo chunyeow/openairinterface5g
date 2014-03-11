@@ -33,13 +33,22 @@ source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
 test_command_install_package "gccxml"   "gccxml" "--force-yes"
+test_command_install_package "gcc"      "gcc"      "--force-yes"
+test_command_install_package "g++"      "g++"      "--force-yes"
+test_command_install_package "automake" "automake" "--force-yes"
 test_command_install_package "vconfig"  "vlan" "--force-yes"
 test_command_install_package "iptables" "iptables"
 test_command_install_package "iperf"    "iperf" "--force-yes"
 test_command_install_package "ip"       "iproute"
-test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
 test_command_install_script   "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
 test_command_install_package  "tunctl"  "uml-utilities"
+test_command_install_package "bison"    "bison"     "--force-yes"
+test_command_install_package "flex"     "flex"      "--force-yes"
+test_command_install_package "libtool"  "libtool"   "--force-yes"
+test_command_install_lib     "/usr/lib/libconfig.so"      "libconfig-dev"  "--force-yes"
+#test_command_install_lib     "/usr/lib/libsctp-dev.so"    "libsctp-dev"    "--force-yes"
+test_command_install_lib     "/usr/lib/libsctp.so"        "libsctp1"       "--force-yes"
+#test_command_install_lib     "/usr/lib/libpthread-stubs0-dev.so" "libpthread-stubs0-dev"    "--force-yes"
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
         cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
@@ -84,9 +93,9 @@ then
     OBJ_DIR=`basename $OBJ_DIR`
     if [ ! -f $OBJ_DIR/Makefile ]
     then
+        autoreconf -i -f 
         cd ./$OBJ_DIR
         echo_success "Invoking configure"
-        rm -f Makefile
         ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
     else
         cd ./$OBJ_DIR
@@ -106,7 +115,11 @@ pkill oai_epc
 if [ -f Makefile ]
 then
     echo_success "Compiling..."
-    bash_exec "make"
+    make -j `cat /proc/cpuinfo | grep processor | wc -l`
+    if [ $? -ne 0 ]; then
+        echo_error "Build failed, exiting"
+        exit 1
+    fi
 else
     echo_error "Configure failed, exiting"
     exit 1
@@ -158,19 +171,16 @@ VARIABLES="
            ENB_IPV4_ADDRESS_FOR_S1_MME\|\
            ENB_INTERFACE_NAME_FOR_S1U\|\
            ENB_IPV4_ADDRESS_FOR_S1U\|\
-           ENB_BRIDGE\|\
            MME_INTERFACE_NAME_FOR_S1_MME\|\
            MME_IPV4_ADDRESS_FOR_S1_MME\|\
            MME_INTERFACE_NAME_FOR_S11_MME\|\
            MME_IPV4_ADDRESS_FOR_S11_MME\|\
-           MME_BRIDGE\|\
            SGW_INTERFACE_NAME_FOR_S11\|\
            SGW_IPV4_ADDRESS_FOR_S11\|\
            SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP\|\
            SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP\|\
            SGW_INTERFACE_NAME_FOR_S5_S8_UP\|\
            SGW_IPV4_ADDRESS_FOR_S5_S8_UP\|\
-           SGW_BRIDGE\|\
            PGW_INTERFACE_NAME_FOR_S5_S8\|\
            PGW_IPV4_ADDRESS_FOR_S5_S8\|\
            PGW_INTERFACE_NAME_FOR_SGI\|\
@@ -202,9 +212,29 @@ SGW_IPV4_ADDRESS_FOR_S5_S8_UP=$(             echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP
 PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f1 -d '/')
 PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
 
-clean_epc_ovs_network
-build_epc_ovs_network
-test_epc_ovs_network
+if [ `is_openvswitch_interface $ENB_INTERFACE_NAME_FOR_S1_MME` -eq 1 ] && \
+   [ `is_openvswitch_interface $ENB_INTERFACE_NAME_FOR_S1U` -eq 1 ] && \
+   [ `is_openvswitch_interface $MME_INTERFACE_NAME_FOR_S1_MME` -eq 1 ] && \
+   [ `is_openvswitch_interface $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP` -eq 1 ]; then 
+   ovs_setting=1
+   vlan_setting=0
+   echo_success "Found open-vswitch network configuration"
+   clean_epc_ovs_network
+   build_epc_ovs_network
+   test_epc_ovs_network
+else
+    if [ `is_vlan_interface $MME_INTERFACE_NAME_FOR_S1_MME` -eq 1 ] || \
+       [ `is_vlan_interface $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP` -eq 1 ]; then
+        echo_success "Found open vswitch network configuration"
+        ovs_setting=0
+        vlan_setting=1
+        clean_epc_vlan_network
+        build_mme_spgw_vlan_network
+    else
+        echo_error "Cannot find open-vswitch network configuration or VLAN network configuration"
+        exit 1
+    fi 
+fi
 
 ##################################################..
 
@@ -213,7 +243,9 @@ test_epc_ovs_network
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 
-ITTI_LOG_FILE=/tmp/itti_mme.log
+ITTI_LOG_FILE=./itti_mme.log
 rotate_log_file $ITTI_LOG_FILE
+STDOUT_LOG_FILE=./stdout_mme.log
+rotate_log_file $STDOUT_LOG_FILE
 
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $CONFIG_FILE
+$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $CONFIG_FILE | tee $STDOUT_LOG_FILE 2>&1
