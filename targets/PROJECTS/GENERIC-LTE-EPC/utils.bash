@@ -325,72 +325,75 @@ check_for_root_rights() {
 }
 
 is_openvswitch_interface() {
-   if [ "a$1" == "a" ]; then
-       return 0
-   fi
-   if [ "a${1:0:3}" == "aeth" ]; then
-       return 0;
-   else 
-       if [ "a${1:0:4}" == "awlan" ]; then
-           return 0;
-       else
-           if [ "a${1:0:4}" == "awifi" ]; then
-               return 0;
-           else
-               if [ "a${1:0:4}" == "anone" ]; then
-                   return 0;
-               fi
-           fi
-       fi
-   fi
-   return 1;
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+            return 0
+        fi
+        if [ "a${var:0:3}" == "aeth" ]; then
+            return 0;
+        else 
+            if [ "a${var:0:4}" == "awlan" ]; then
+                return 0;
+            else
+                if [ "a${var:0:4}" == "awifi" ]; then
+                    return 0;
+                else
+                    if [ "a${var:0:4}" == "anone" ]; then
+                        return 0;
+                    fi
+                fi
+            fi
+        fi
+    done
+    return 1;
 }
 
 is_real_interface() {
-   if [ "a$1" == "a" ]; then
-       return 0
-   fi
-   IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $1 | sed 's/^.*NAME=//' | tr -d '"'`
-   if [ "$IF" == "$1" ]; then
-       if [ "a${1:0:3}" == "aeth" ]; then
-           return 1;
-       else 
-           if [ "a${1:0:4}" == "awlan" ]; then
-               return 1;
-           else
-               if [ "a${1:0:4}" == "awifi" ]; then
-                   return 1;
-               fi
-           fi
-       fi
-   fi
-   return 0
+    my_bool=1
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+           return 0
+        fi
+        IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $var | sed 's/^.*NAME=//' | tr -d '"'`
+        if [ "$IF" == "$var" ]; then
+            if [ "a${var:0:3}" != "aeth" ]; then
+                if [ "a${var:0:4}" != "awlan" ]; then
+                    if [ "a${var:0:4}" != "awifi" ]; then
+                        my_bool=0;
+                    fi
+                fi
+            fi
+        fi
+    done
+    return $my_bool
 }
 
 is_vlan_interface() {
-   if [ "a$1" == "a" ]; then
-       return 0
-   fi
-   if [[ $1 == *.* ]]
-   then
-       interface_name=`echo $1 | cut -f1 -d '.'`
-       vlan=`echo $1 | cut -f2 -d '.'`
-       IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $interface_name | sed 's/^.*NAME=//' | tr -d '"'`
-       if [ "$IF" == "$interface_name" ]; then
-           if [ "a${interface_name:0:3}" == "aeth" ]; then
-               return 1;
-           else 
-               if [ "a${interface_name:0:4}" == "awlan" ]; then
-                   return 1;
-               else
-                   if [ "a${interface_name:0:4}" == "awifi" ]; then
-                       return 1;
-                   fi
-               fi
-           fi
-       fi
-   fi
-   return 0
+    my_bool=1
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+            my_bool=0
+        fi
+        if [[ $var == *.* ]]
+        then
+            interface_name=`echo $var | cut -f1 -d '.'`
+            vlan=`echo $var | cut -f2 -d '.'`
+            IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $interface_name | sed 's/^.*NAME=//' | tr -d '"'`
+            if [ "$IF" == "$interface_name" ]; then
+                if [ "a${interface_name:0:3}" != "aeth" ]; then
+                    if [ "a${interface_name:0:4}" != "awlan" ]; then
+                        if [ "a${interface_name:0:4}" != "awifi" ]; then
+                            my_bool=0;
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done
+    return $my_bool
 }
 
 
@@ -954,6 +957,8 @@ build_epc_ovs_network() {
             vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i      > /dev/null 2>&1
             sync
             bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
+            sync
+            bash_exec "ifconfig  $PGW_INTERFACE_NAME_FOR_SGI.$i up"
             sync
             # configure vlan interface
             #CIDR=$NETWORK'.'$i'/24'
