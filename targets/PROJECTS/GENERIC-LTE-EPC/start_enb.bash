@@ -93,6 +93,29 @@ test_command_install_script  "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvsw
 test_command_install_package "tunctl"  "uml-utilities"
 test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
 
+
+test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
+
+# One mor check about version of asn1c
+ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
+ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
+##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
+if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]
+then
+    diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
+    echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
+    echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
+    while read -r -n 1 -s answer; do
+        if [[ $answer = [YyNn] ]]; then
+            [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash
+            [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
+            break
+        fi
+    done
+fi
+
+
+
 cd $THIS_SCRIPT_PATH
 #######################################################
 # FIND CONFIG FILE

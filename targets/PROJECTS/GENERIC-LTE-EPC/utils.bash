@@ -375,7 +375,7 @@ is_vlan_interface() {
     for var in "$@"
     do
         if [ "a$var" == "a" ]; then
-            my_bool=0
+            return 0
         fi
         if [[ $var == *.* ]]
         then
@@ -386,11 +386,13 @@ is_vlan_interface() {
                 if [ "a${interface_name:0:3}" != "aeth" ]; then
                     if [ "a${interface_name:0:4}" != "awlan" ]; then
                         if [ "a${interface_name:0:4}" != "awifi" ]; then
-                            my_bool=0;
+                            return 0;
                         fi
                     fi
                 fi
             fi
+        else
+            return 0;
         fi
     done
     return $my_bool
@@ -451,17 +453,21 @@ build_enb_vlan_network() {
 clean_enb_vlan_network() {
     is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1_MME
     if [ $? -eq 1 ]; then
+        echo_success "Found VLAN interface $ENB_INTERFACE_NAME_FOR_S1_MME ... deleting"
         ifconfig    $ENB_INTERFACE_NAME_FOR_S1_MME down > /dev/null 2>&1
         vconfig rem $ENB_INTERFACE_NAME_FOR_S1_MME      > /dev/null 2>&1
     fi;
     
     is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1U
     if [ $? -eq 1 ]; then
+        echo_success "Found VLAN interface $ENB_INTERFACE_NAME_FOR_S1U ... deleting"
         ifconfig    $ENB_INTERFACE_NAME_FOR_S1U down > /dev/null 2>&1
         vconfig rem $ENB_INTERFACE_NAME_FOR_S1U > /dev/null 2>&1
     fi;
     sync;
+    clean_network
 }
+
 
 test_enb_vlan_network() {
     # TEST INTERFACES
@@ -712,6 +718,7 @@ clean_epc_vlan_network() {
         vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i      > /dev/null 2>&1
     done
     #ip link set $PGW_INTERFACE_NAME_FOR_SGI down > /dev/null 2>&1
+    clean_network
 }
 
 build_openvswitch_network() {
@@ -1041,9 +1048,28 @@ clean_epc_ovs_network() {
         vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i   > /dev/null 2>&1
     done
     
+    clean_network
     clean_openvswitch_network
 }
 
+clean_network() {
+  interfaces=`ifconfig | grep HWaddr | cut -d " " -f1-2 | tr -d '\n'`
+  for interface in $interfaces
+  do
+      is_openvswitch_interface $interface
+      if [ $? -eq 1 ]; then
+         echo_success "Found open-vswitch interface $interface ... deleting"
+         delete_openvswitch_interface $interface
+      fi
+      
+      is_vlan_interface $interface
+      if [ $? -eq 1 ]; then
+         echo_success "Found VLAN interface $interface ... deleting"
+         ifconfig    $interface down > /dev/null 2>&1
+         vconfig rem $interface      > /dev/null 2>&1
+      fi
+  done
+}
 
 ###########################################################
 IPTABLES=/sbin/iptables
