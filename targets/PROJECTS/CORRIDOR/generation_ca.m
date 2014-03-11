@@ -3,6 +3,8 @@
 %addpath('../../../openair1/PHY/LTE_REFSIG/')
 %addpath('../../../targets/ARCH/EXMIMO/USERSPACE/OCTAVE')
 
+rng(42); %make sure seed random numbers are alwyas the same
+
 % load the LTE sync sequence
 primary_synch;
 
@@ -44,8 +46,8 @@ pss0_up_cp = [pss0_up(num_carriers-prefix_length+1:end) pss0_up];
 s2(1:num_carriers+prefix_length) = pss0_up_cp;
 
 %% combine the two carriers
-f1_shift = -7.5e6;
-f2_shift = 7.5e6;
+f1_shift = -5e6;
+f2_shift = 10e6;
 sample_rate = 30.72e6*2;
 s1_up = interp(s1,2);
 s1_shift = s1_up .* exp(2*1i*pi*f1_shift*(0:length(s1_up)-1)/sample_rate);
@@ -53,8 +55,11 @@ s2_up = interp(s2,4);
 s2_shift = s2_up .* exp(2*1i*pi*f2_shift*(0:length(s2_up)-1)/sample_rate);
 s = s1_shift + s2_shift/sqrt(2);
 
-plot(abs(fftshift(fft(s))))
+%%
+figure(1)
+hold off
+plot(linspace(-sample_rate/2,sample_rate/2,length(s)),20*log10(abs(fftshift(fft(s)))))
 
 %% save for later use (channel estimation and transmission with the SMBV)
-save('ofdm_pilots_sync_30MHz.mat','-v7','s','f','num_carriers','num_zeros','prefix_length','num_symbols_frame','preamble_length');
-mat2wv(s1, 'ofdm_pilots_sync_30MHz.wv', sample_rate, 1);
+save('ofdm_pilots_sync_30MHz.mat','-v7','s','f1','f2','num_carriers','num_zeros','prefix_length','num_symbols_frame','preamble_length');
+mat2wv(s, 'ofdm_pilots_sync_30MHz.wv', sample_rate, 1);
