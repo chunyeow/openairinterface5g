@@ -4,6 +4,8 @@
 % card4 - card5: 10MHz, 2 channels each, s2, freq 2605 MHz
 % card6: 5MHz, 4 channels, s3, freq 771.5 MHz
 
+%load('ofdm_pilots_sync_30MHz.mat');
+
 addpath('../../../targets/ARCH/EXMIMO/USERSPACE/OCTAVE')
 limeparms;
 
@@ -86,9 +88,9 @@ for card=6:min(6,num_cards-1)
 end
 
 amp = pow2(14)-1;
-s1p = 2*floor(amp*(s1./max([real(s1) imag(s1)])));
-s2p = 2*floor(amp*(s2./max([real(s2) imag(s2)])));
-s3p = 2*floor(amp*(s3./max([real(s3) imag(s3)])));
+s1p = 2*floor(amp*(s1./max([real(s1(:)); imag(s1(:))])));
+s2p = 2*floor(amp*(s2./max([real(s2(:)); imag(s2(:))])));
+s3p = 2*floor(amp*(s3./max([real(s3(:)); imag(s3(:))])));
 
 for card=min(6,num_cards-1):-1:6
   oarf_send_frame(card,s3p.',16);

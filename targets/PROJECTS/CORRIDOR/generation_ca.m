@@ -1,11 +1,11 @@
 %% this script generates the signals for the CORRIDOR channel sounding campaing
 
-%addpath('../../../openair1/SIMULATION/LTE_PHY/')
+addpath('../../../openair1/SIMULATION/LTE_PHY/')
 %addpath('../../../openair1/PHY/LTE_ESTIMATION/')
-%addpath('../../../openair1/PHY/LTE_REFSIG/')
+addpath('../../../openair1/PHY/LTE_REFSIG/')
 %addpath('../../../targets/ARCH/EXMIMO/USERSPACE/OCTAVE')
 
-rng(42); %make sure seed random numbers are alwyas the same
+rand('seed',42); %make sure seed random numbers are alwyas the same
 
 % load the LTE sync sequence
 primary_synch;
@@ -84,5 +84,5 @@ hold off
 plot(linspace(-sample_rate/2,sample_rate/2,length(s)),20*log10(abs(fftshift(fft(s,[],2)))))
 
 %% save for later use (channel estimation and transmission with the SMBV)
-save('ofdm_pilots_sync_30MHz.mat','-v7','s','f1','f2','f3','num_carriers','num_zeros','prefix_length','num_symbols_frame','preamble_length');
+save('ofdm_pilots_sync_30MHz.mat','-v7','s1','s2','s3','f1','f2','f3','num_carriers','num_zeros','prefix_length','num_symbols_frame','preamble_length');
 mat2wv(s(1,:), 'ofdm_pilots_sync_30MHz.wv', sample_rate, 1);
