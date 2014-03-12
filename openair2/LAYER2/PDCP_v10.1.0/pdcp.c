@@ -157,6 +157,12 @@ boolean_t pdcp_data_req(
           rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_FLAG_YES, rb_idP, muiP, confirmP, sdu_buffer_sizeP, pdcp_pdu_p);
       } else {
         rlc_status = RLC_OP_STATUS_OUT_OF_RESSOURCES;
+	LOG_W(PDCP,"[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_REQ SDU DROPPED, OUT OF MEMORY \n",
+	      frameP,
+	      (enb_flagP) ? "eNB" : "UE",
+	      enb_mod_idP,
+	      ue_mod_idP,
+	      rb_idP);
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
         AssertFatal(0, "[FRAME %5u][%s][PDCP][MOD %u/%u][RB %u] PDCP_DATA_REQ SDU DROPPED, OUT OF MEMORY \n",
             frameP,

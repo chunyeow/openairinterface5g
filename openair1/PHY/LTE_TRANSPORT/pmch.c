@@ -233,7 +233,7 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
     memcpy(phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->b,
 	   a,
 	   phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3);
-    LOG_D(PHY, "eNB %d dlsch_encoding_emul pmch , tbs is %d \n", 
+    LOG_D(PHY, "[eNB %d] dlsch_encoding_emul pmch , tbs is %d \n", 
 	  phy_vars_eNB->Mod_id,
 	  phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3);
 

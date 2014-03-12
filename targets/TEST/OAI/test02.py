@@ -28,9 +28,9 @@
 #*****************************************************************************
 
 # \file test01.py
-# \brief test 01 for OAI
+# \brief test 02 for OAI: downlink and uplink performance and profiler
 # \author Navid Nikaein
-# \date 2013
+# \date 2014
 # \version 0.1
 # @ingroup _test
 
@@ -44,11 +44,9 @@ import getpass
 import math #from time import clock 
 
 import log
-import case01
-import case02
-import case03
-import case04
-import case05
+import case11
+import case12
+
 
 from  openair import *
 
@@ -56,8 +54,6 @@ debug = 0
 prompt = '$'
 pw =''
 i = 0
-dlsim=0
-
 for arg in sys.argv:
     if arg == '-d':
         debug = 1
@@ -67,8 +63,6 @@ for arg in sys.argv:
         prompt = sys.argv[i+1]
     elif arg == '-w' :
         pw = sys.argv[i+1]
-    elif arg == '-P' :
-        dlsim = 1
     elif arg == '-h' :
         print "-d:  low debug level"
         print "-dd: high debug level"
@@ -100,10 +94,10 @@ except :
     sys.exit(1)
 
 
-test = 'test01'
+test = 'test02'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
-logfile = user+'.'+test+'.'+ctime+'.txt'  
-logdir = os.getcwd() + '/pre-ci-logs';
+logdir = os.getcwd() + '/PERF';
+logfile = logdir+'/'+user+'.'+test+'.'+ctime+'.txt'  
 oai.send_nowait('mkdir -p -m 755' + logdir + ';')
   
 #print '=================start the ' + test + ' at ' + ctime + '=================\n'
@@ -112,18 +106,14 @@ log.writefile(logfile,'====================start'+test+' at ' + ctime + '=======
 log.set_debug_level(debug)
 
 oai.kill(user, pw)   
-oai.rm_driver(oai,user,pw)
+#oai.rm_driver(oai,user,pw)
 
 # start te test cases 
-case01.execute(oai, user, pw, logfile,logdir)
-case02.execute(oai, user, pw, logfile,logdir)
-case03.execute(oai, user, pw, logfile,logdir)
-if dlsim != 0 :
-    case04.execute(oai, user, pw, logfile,logdir)
-    case05.execute(oai, user, pw, logfile,logdir)
+case11.execute(oai, user, pw, logfile,logdir)
+case12.execute(oai, user, pw, logfile,logdir)
 
 oai.kill(user, pw) 
-oai.rm_driver(oai,user,pw)
+#oai.rm_driver(oai,user,pw)
 
 # perform the stats
 log.statistics(logfile)

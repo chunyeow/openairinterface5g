@@ -17,6 +17,7 @@ static inline void start_meas(time_stats_t *ts) __attribute__((always_inline));
 static inline void stop_meas(time_stats_t *ts) __attribute__((always_inline));
 
 void print_meas(time_stats_t *ts, const char* name, time_stats_t * total_exec_time, time_stats_t * sf_exec_time);
+double get_time_meas_us(time_stats_t *ts);
 
 #if defined(__i386__)
 static inline unsigned long long rdtsc_oai(void) __attribute__((always_inline));

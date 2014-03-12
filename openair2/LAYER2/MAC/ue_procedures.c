@@ -1053,7 +1053,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
 
   start_meas(&UE_mac_inst[module_idP].tx_ulsch_sdu);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GET_SDU, VCD_FUNCTION_IN);
-
+  
 #ifdef CBA
   if (*access_mode==CBA_ACCESS){
       LOG_D(MAC,"[UE %d] frameP %d subframe %d try CBA transmission\n",
@@ -1087,8 +1087,13 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
       bsr_len = bsr_ce_len + bsr_header_len;
       LOG_D(MAC,"[UE %d] header size info: dcch %d, dcch1 %d, dtch %d, bsr (ce%d,hdr%d) buff_len %d\n",
           module_idP, dcch_header_len,dcch1_header_len,dtch_header_len, bsr_ce_len, bsr_header_len, buflen);
-  } else
-    bsr_len = 0;
+  } else {
+    bsr_len=0;
+    //LOG_D(MAC,"[UE %d] Empty buffers, send a long BSR to reset the bsr at eNB \n ",Mod_id);
+    //    bsr_ce_len = sizeof(BSR_LONG);
+    //bsr_len = bsr_ce_len + bsr_header_len;
+  }
+    // check for UL bandwidth requests and add SR control element
 
   // check for UL bandwidth requests and add SR control element
 
@@ -1259,6 +1264,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
       bsr_s, // short bsr
       bsr_l,
       post_padding); // long_bsr
+  
   LOG_I(MAC,"[UE %d] Generate header :bufflen %d  sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,  dcch_header_len %d, dtch_header_len %d, padding %d,post_padding %d, bsr len %d, phr len %d, reminder %d \n",
       module_idP,buflen, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],payload_offset, dcch_header_len,  dtch_header_len,
       short_padding,post_padding, bsr_len, phr_len,buflen-sdu_length_total-payload_offset);

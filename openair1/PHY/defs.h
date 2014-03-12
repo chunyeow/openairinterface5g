@@ -512,6 +512,7 @@ typedef struct
   time_stats_t ulsch_multiplexing_stats;
 
   time_stats_t ofdm_demod_stats;
+  time_stats_t dlsch_rx_pdcch_stats;
   time_stats_t rx_dft_stats;
   time_stats_t dlsch_channel_estimation_stats;
   time_stats_t dlsch_freq_offset_estimation_stats;

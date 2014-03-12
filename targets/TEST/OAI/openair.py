@@ -50,6 +50,7 @@ class openair(core):
         self.error = '% '
         self.hostname = hostname
         self.address = address
+        self.localhost = None
         self.shell_prompt = '$'
         core.__init__(self)
 
@@ -66,6 +67,30 @@ class openair(core):
         except Exception, val:
             print "Error:", val
               
+    @property        
+    def localhost(self):
+        if self.localhost :
+            return self.localhost 
+        elif self.hostname in ['localhost', '127.0.0.7', '::1'] :
+            self.localhost = self.hostname
+        return self.localhost
+
+    @localhost.setter
+    def localhost(self,localhost):
+        self.localhost = localhost
+
+    def shcmd(self,cmd,sudo=False):
+        
+        if sudo:
+            cmd = "sudo %s" % command
+        
+        proc = subprocess.Popen(command, shell=True, 
+                             stdout = subprocess.PIPE, 
+                             stderr = subprocess.PIPE)
+                       
+        stdout, stderr = proc.communicate()
+        return (stdout, stderr)
+
     def connect(self, username, password, prompt):
         self.prompt1 = self.shell_prompt
         if not prompt :
@@ -78,12 +103,12 @@ class openair(core):
                     username = root 
                 if  not password:
                     password = username 
-                
+                    
                 self.oai = pexpect.spawn('ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o "ConnectionAttempts=1" ' \
                                              + username + '@' + self.address)
                 
-		index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=40)
-		if index == 0 :
+                index = self.oai.expect([re.escape(self.prompt1), re.escape(self.prompt2), pexpect.TIMEOUT], timeout=40)
+                if index == 0 :
                     return 'Ok'
                 else :
                     index = self.oai.expect(['password:', pexpect.TIMEOUT], timeout=40)
@@ -95,11 +120,11 @@ class openair(core):
                             print 'Expected ' + self.prompt1 + ', received >>>>' + self.oai.before + '<<<<'
                             sys.exit(1) 
                     return 'Ok'
-
+                        
             except Exception, val:
                 time.sleep(5)
                 print "Error:", val
-                  
+                
                     
     def disconnect(self):
         print 'disconnecting the ssh connection to ' + self.address + '\n'

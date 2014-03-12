@@ -32,3 +32,15 @@ void print_meas(time_stats_t *ts, const char* name, time_stats_t * total_exec_ti
   }
   
 }
+
+double get_time_meas_us(time_stats_t *ts){
+
+ static double cpu_freq_GHz = 0.0;
+    
+ if (cpu_freq_GHz == 0.0)
+   cpu_freq_GHz = get_cpu_freq_GHz();
+   
+ if (ts->trials>0) 
+   return  (ts->diff/ts->trials/cpu_freq_GHz/1000.0);
+ 
+}

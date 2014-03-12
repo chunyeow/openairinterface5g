@@ -201,17 +201,19 @@ class core:
     # **************************send_expect_re*************************    
     # 1) send a command, and optionally specify a the time to wait
     # 2) search for an expected pattern defined by a regular expression in the response
-    # 3) return a error if not found
+    # 3) return a error if raise_err flag is set and re not found, otherwise return 'Ok'
     # *****************************************************************
-    def send_expect_re(self, command, expect, delay = 5, rsp1=None, rsp2=None,debug=0):
+    def send_expect_re(self, command, expect, raise_err=1, delay = 50, rsp1=None, rsp2=None,debug=0):
         rsp = self.send_recv(command, delay, rsp1, rsp2)
 #        print rsp
         match = re.compile(expect).search(rsp)
         if match:
             return match
-
-        raise log.err(self.failed(command, expect,debug))
-
+        if raise_err:
+            raise log.err(self.failed(command, expect,debug))
+        else :
+            return None
+        
     # **************************send_expect*************************    
     # 1) send a command, and optionally specify a the time to wait
     # 2) search for an expected pattern defined by a re in the response
