@@ -29,13 +29,13 @@ sig_f = zeros(num_ant,num_symbols_frame,num_useful_carriers);
 for a=1:num_ant
 for k=(floor((a-1)/2)+1):t_dec:preamble_length
     QAM4_preamble = zeros(1,num_useful_carriers);
-    QAM4_preamble((mod(a-1,2)+1):f_dec:num_useful_carriers) = QAM_MOD(4,floor(256*abs(rand(1,num_useful_carriers/4/f_dec))));
+    QAM4_preamble((mod(a-1,2)+1):f_dec:num_useful_carriers) = QAM_MOD(4,floor(4*abs(rand(1,num_useful_carriers/f_dec))));
     sig(a,(k-1)*(num_carriers+prefix_length)+1:k*(num_carriers+prefix_length)) = OFDM_TX(num_carriers,num_zeros,prefix_length,QAM4_preamble);
     sig_f(a,k,:) = QAM4_preamble;
 end
 
 for k=preamble_length+1:num_symbols_frame
-     QAM_data = QAM_MOD(256,floor(256*abs(rand(1,num_useful_carriers))));
+     QAM_data = QAM_MOD(256,floor(4*abs(rand(1,num_useful_carriers))));
      sig(a,(k-1)*(num_carriers+prefix_length)+1:k*(num_carriers+prefix_length)) = OFDM_TX(num_carriers,num_zeros,prefix_length,QAM_data);
      sig_f(a,k,:) = QAM_data;
 end
