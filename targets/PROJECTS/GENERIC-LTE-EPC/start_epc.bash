@@ -284,6 +284,7 @@ fi
 ##################################################
 # LAUNCH MME + S+P-GW executable
 ##################################################
+check_s6a_certificate
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 

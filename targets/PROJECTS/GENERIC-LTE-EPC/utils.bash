@@ -1071,6 +1071,27 @@ clean_network() {
   done
 }
 
+check_s6a_certificate() {
+    if [ -d /usr/local/etc/freeDiameter ]
+    then
+        if [ -f /usr/local/etc/freeDiameter/user.cert.pem ]
+        then
+            full_hostname=`cat /usr/local/etc/freeDiameter/user.cert.pem | grep "Subject" | grep "CN" | cut -d '=' -f6`
+            if [ a$full_hostname == a`hostname`.eur ]
+            then
+                echo_success "S6A: Found valid certificate in /usr/local/etc/freeDiameter"
+                return 1
+            fi
+        fi
+    fi
+    echo_error "S6A: Did not find valid certificate in /usr/local/etc/freeDiameter"
+    echo_warning "S6A: generatting new certificate in /usr/local/etc/freeDiameter..."
+    cd $OPENAIRCN_DIR/S6A/freediameter
+    ./make_certs.sh
+    check_s6a_certificate
+    return 1
+}
+
 ###########################################################
 IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
