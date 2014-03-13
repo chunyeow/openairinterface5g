@@ -108,7 +108,7 @@ tbs_size_t mac_rlc_data_req(
         AssertFatal (channel_idP < RLC_MAX_MBMS_LC,        "channel id is too high (%u/%d)!\n",     channel_idP, RLC_MAX_MBMS_LC);
     else
         AssertFatal (channel_idP < NB_RB_MAX,        "channel id is too high (%u/%d)!\n",     channel_idP, NB_RB_MAX);
-
+#if defined(USER_MODE) && defined(OAI_EMU)
     if (enb_flagP) {
         AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
             "eNB module id is too low (%u/%d)!\n",
@@ -134,7 +134,7 @@ tbs_size_t mac_rlc_data_req(
             ue_mod_idP,
             oai_emulation.info.first_ue_local);
     }
-
+#endif 
 
     if (enb_flagP) {
         if (MBMS_flagP) {
@@ -149,7 +149,8 @@ tbs_size_t mac_rlc_data_req(
             rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
             switch (rlc_mode) {
                 case RLC_MODE_NONE:
-                    AssertFatal (0 , "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
+		  //AssertFatal (0 , "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
+		  AssertError (0 , 0, "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
                     return (tbs_size_t)0;
                     break;
                 case RLC_MODE_AM:
@@ -279,7 +280,8 @@ void mac_rlc_data_ind     (
         rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].mode;
         switch (rlc_mode) {
           case RLC_MODE_NONE:
-              AssertFatal (0 , "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
+	    //AssertFatal (0 , "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
+	    AssertError (0 , 0, "enB RLC not configured rb id %u lcid %u module %u!\n", rb_id, channel_idP, enb_mod_idP);
               break;
           case RLC_MODE_AM:
               rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_id].rlc.am;

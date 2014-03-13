@@ -2468,6 +2468,22 @@ int main(int argc, char **argv) {
       } //ABStraction
       
       if ( (test_perf != 0) && (100 * effective_rate > test_perf )) {
+	fprintf(bler_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err\n");
+  	fprintf(bler_fd,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
+	      SNR,
+	      mcs,
+	      PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->TBS,
+	      rate,
+	      errs[0],
+	      round_trials[0],
+	      errs[1],
+	      round_trials[1],
+	      errs[2],
+	      round_trials[2],
+	      errs[3],
+	      round_trials[3],
+	      dci_errors);
+
 	fprintf(time_meas_fd,"SNR; MCS; TBS; rate; DL_DECOD_ITER; err0; trials0; err1; trials1; err2; trials2; err3; trials3; PE; dci_err;PE;ND;\n");
 	fprintf(time_meas_fd,"%f;%d;%d;%f(%2.1f%%,%f);%f;%d;%d;%d;%d;%d;%d;%d;%d;(%e,%e,%e,%e);%d/%d;%e;%f(%f);\n",
 		SNR,
@@ -2495,7 +2511,7 @@ int main(int argc, char **argv) {
 		(1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0])/(double)PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->TBS,
 		(1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0]));
 
-	fprintf(time_meas_fd,"eNB_PROC_TX(%d); OFDM_MOD(%d); DL_MOD(%d); DL_SCR(%d); DL_ENC(%d); UE_PROC_RX(%d); OFDM_DEMOD_CH_EST(%d); RX_PDCCH(%d); CH_COMP_LLR(%d); DL_DECOD(%d);\n",
+	fprintf(time_meas_fd,"eNB_PROC_TX(%d); OFDM_MOD(%d); DL_MOD(%d); DL_SCR(%d); DL_ENC(%d); UE_PROC_RX(%d); OFDM_DEMOD_CH_EST(%d); RX_PDCCH(%d); CH_COMP_LLR(%d); DL_USCR; DL_DECOD(%d);\n",
 		PHY_vars_eNB->phy_proc_tx.trials,
 		PHY_vars_eNB->ofdm_mod_stats.trials,
 		PHY_vars_eNB->dlsch_modulation_stats.trials,
@@ -2508,7 +2524,7 @@ int main(int argc, char **argv) {
 		PHY_vars_UE->dlsch_unscrambling_stats.trials,
 		PHY_vars_UE->dlsch_decoding_stats.trials
 		);
-	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;",
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;%f;",
 		get_time_meas_us(&PHY_vars_eNB->phy_proc_tx),
 		get_time_meas_us(&PHY_vars_eNB->ofdm_mod_stats),
 		get_time_meas_us(&PHY_vars_eNB->dlsch_modulation_stats),

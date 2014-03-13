@@ -299,8 +299,9 @@ module_id_t find_UE_id(module_id_t module_idP, rnti_t rnti) {
   module_id_t ue_mod_id;
 
   for (ue_mod_id=0;ue_mod_id<NUMBER_OF_UE_MAX;ue_mod_id++) {
+    //   if (mac_get_rrc_status(module_idP,1,ue_mod_id) >= RRC_CONNECTED) {
       if (eNB_mac_inst[module_idP].UE_template[ue_mod_id].rnti==rnti) {
-          return(ue_mod_id);
+	return(ue_mod_id);
       }
   }
   return(module_id_t)(-1);
@@ -512,13 +513,14 @@ unsigned char *parse_ulsch_header(unsigned char *mac_header,
 void SR_indication(module_id_t enb_mod_idP, frame_t frameP, rnti_t rntiP, sub_frame_t subframeP) {
 
   smodule_id_t ue_mod_id = find_UE_id(enb_mod_idP, rntiP);
-
+  
   if (ue_mod_id >= 0) {
       LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d \n",enb_mod_idP,rntiP,frameP,subframeP, ue_mod_id);
       eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_SR = 1;
       eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = TRUE;
   } else {
-      AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
+    //     AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
+    AssertError(0, 0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
   }
 }
 

@@ -49,7 +49,7 @@
 #include "SCHED/phy_procedures_emos.h"
 #endif
 
-#define DEBUG_PHY_PROC
+//#define DEBUG_PHY_PROC
 //#define DEBUG_ULSCH
 
 #include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
@@ -78,7 +78,7 @@
 
 #define PUCCH 1
 
-#define PUCCH1_THRES 25
+#define PUCCH1_THRES 15
 #define PUCCH1a_THRES 15
 
 extern inline unsigned int taus(void);
@@ -1702,7 +1702,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
       if (abstraction_flag == 0) {
 #ifdef DEBUG_PHY_PROC
 	if (DCI_pdu->Num_ue_spec_dci+DCI_pdu->Num_common_dci > 0)
-	  LOG_I(PHY,"[eNB %d] Frame %d, subframe %d: Calling generate_dci_top (pdcch) (common %d,ue_spec %d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot>>1,DCI_pdu->Num_common_dci,DCI_pdu->Num_ue_spec_dci);
+	  LOG_D(PHY,"[eNB %d] Frame %d, subframe %d: Calling generate_dci_top (pdcch) (common %d,ue_spec %d)\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame, next_slot>>1,DCI_pdu->Num_common_dci,DCI_pdu->Num_ue_spec_dci);
 #endif
 
 	for (sect_id=0;sect_id<number_of_cards;sect_id++) 
@@ -2576,7 +2576,7 @@ void prach_procedures(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint8_t abstra
   }
 
 #ifdef DEBUG_PHY_PROC
-  LOG_I(PHY,"[RAPROC] Most likely preamble %d, energy %d dB delay %d\n",
+  LOG_D(PHY,"[RAPROC] Most likely preamble %d, energy %d dB delay %d\n",
       preamble_max,
       preamble_energy_list[preamble_max],
       preamble_delay_list[preamble_max]);
