@@ -708,8 +708,9 @@ void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, mo
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
 #if defined(LINK_PDCP_TO_GTPV1U)
-  if (enb_flagP == ENB_FLAG_NO) {
+  if (enb_flagP == ENB_FLAG_NO)
 #endif
+  {
       pdcp_fifo_read_input_sdus(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
   }
   // PDCP -> NAS/IP traffic: RX
