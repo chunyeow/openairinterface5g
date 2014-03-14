@@ -154,9 +154,22 @@ int fs4_test=0;
 char UE_flag=0;
 u8  eNB_id=0,UE_id=0;
 
-u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{2605000000,2605000000,0,0},{0,0,0,0},{0,0,0,0}};
-//u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}};
+// this array sets the bandwidth used for each card (and applies to all chains on one card). 
 exmimo_bw_t bandwidth[MAX_CARDS]    = {BW20,BW10,BW5,BW5};
+// the array  carrier_freq sets the frequency for each chain of each card. A 0 means that the chain is disabled. 
+// Please make sure that the total number of channels enabled per card is in accordance with the following rules:
+// BW20: one channel, BW10: 2 channels, BW5: 4 channels
+u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{2605000000,2605000000,0,0},{0,0,0,0},{0,0,0,0}}; 
+//u32      carrier_freq[MAX_CARDS][4] = {{2590000000,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}};
+
+// the following paramters set the aquisition time and period. These parameters have to be set in accordance with the write speed of your harddisk and the required throughput according to the setting above (see also channel_buffer_size which is computed later). 
+#define AQU_LENGTH_FRAMES 100 //Aquisition time in frames
+#define AQU_PERIOD_FRAMES 200 //Repetition time of aquisition in frames
+#define AQU_LENGTH_SLOTS (AQU_LENGTH_FRAMES*LTE_SLOTS_PER_FRAME) //Aquisition time in slots
+#define AQU_PERIOD_SLOTS (AQU_PERIOD_FRAMES*LTE_SLOTS_PER_FRAME) //Repetition time of aquisition in slots
+
+char dumpfile_dir[256] = "/mnt/emos";
+
 char *conf_config_file_name = NULL;
 
 unsigned int lost_bytes=0;
@@ -321,10 +334,6 @@ void *scope_thread(void *arg) {
 int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
 
 #ifdef EMOS
-#define AQU_LENGTH_FRAMES 100 //Aquisition time in frames
-#define AQU_PERIOD_FRAMES 200 //Repetition time of aquisition in frames
-#define AQU_LENGTH_SLOTS (AQU_LENGTH_FRAMES*LTE_SLOTS_PER_FRAME) //Aquisition time in slots
-#define AQU_PERIOD_SLOTS (AQU_PERIOD_FRAMES*LTE_SLOTS_PER_FRAME) //Repetition time of aquisition in slots
 
 void* gps_thread (void *arg)
 {
@@ -450,7 +459,8 @@ void *emos_thread (void *arg)
 
   time(&starttime_tmp);
   localtime_r(&starttime_tmp,&starttime);
-  snprintf(dumpfile_name,1024,"/mnt/emos/%s_data_%d%02d%02d_%02d%02d%02d.EMOS",
+  snprintf(dumpfile_name,1024,"%s/%s_data_%d%02d%02d_%02d%02d%02d.EMOS",
+       dumpfile_dir,
 	   (UE_flag==0) ? "eNB" : "UE",
 	   1900+starttime.tm_year, starttime.tm_mon+1, starttime.tm_mday, starttime.tm_hour, starttime.tm_min, starttime.tm_sec);
 
