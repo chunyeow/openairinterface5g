@@ -161,7 +161,7 @@ typedef enum SelectionMode_e {
 typedef enum PDNType_e {
     IPv4   = 1,
     IPv6   = 2,
-    Ipv4v6 = 3,
+    Ipv4v6 = 3
 } PDNType_t;
 
 typedef struct {
