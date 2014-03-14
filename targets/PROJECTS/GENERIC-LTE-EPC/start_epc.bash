@@ -1,7 +1,41 @@
 #!/bin/bash
-# Author Lionel GAUTHIER 03/11/2014 #
-#####################################
-
+################################################################################
+# Eurecom OpenAirInterface core network
+# Copyright(c) 1999 - 2014 Eurecom
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms and conditions of the GNU General Public License,
+# version 2, as published by the Free Software Foundation.
+#
+# This program is distributed in the hope it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# The full GNU General Public License is included in this distribution in
+# the file called "COPYING".
+#
+# Contact Information
+# Openair Admin: openair_admin@eurecom.fr
+# Openair Tech : openair_tech@eurecom.fr
+# Forums       : http://forums.eurecom.fsr/openairinterface
+# Address      : EURECOM,
+#                Campus SophiaTech,
+#                450 Route des Chappes,
+#                CS 50193
+#                06904 Biot Sophia Antipolis cedex,
+#                FRANCE
+################################################################################
+# file start_epc.bash
+# brief
+# author Lionel Gauthier
+# company Eurecom
+# email: lionel.gauthier@eurecom.fr
+#
 
 #########################################
 # INPUT OF THIS SCRIPT:
@@ -97,9 +131,11 @@ test_command_install_lib     "/usr/lib/libsctp.so"        "libsctp1"       "--fo
 #test_command_install_lib     "/usr/lib/libpthread-stubs0-dev.so" "libpthread-stubs0-dev"    "--force-yes"
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
+        # This script make certificates also
         cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
     else
         echo_success "freediameter is installed"
+        check_s6a_certificate
 fi
 
 test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
@@ -129,30 +165,27 @@ fi
 # TEST IF EXIST
 cd $OPENAIRCN_DIR
 OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
-if [ -n "$OBJ_DIR" ]
+if [ ! -n "$OBJ_DIR" ]
 then
-    OBJ_DIR=`basename $OBJ_DIR`
-    if [ ! -f $OBJ_DIR/Makefile ]
-    then
-        autoreconf -i -f 
-        cd ./$OBJ_DIR
-        echo_success "Invoking configure"
-        ../configure --enable-standalone-epc --enable-raw-socket-for-sgi --disable-s11 LDFLAGS=-L/usr/local/lib
-    else
-        cd ./$OBJ_DIR
-    fi
-else
     OBJ_DIR="objs"
     bash_exec "mkdir -m 777 ./$OBJ_DIR"
     echo_success "Created $OBJ_DIR directory"
+else
+    OBJ_DIR=`basename $OBJ_DIR`
+fi
+if [ ! -f $OBJ_DIR/Makefile ]
+then
     echo_success "Invoking autogen"
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure --enable-standalone-epc --enable-raw-socket-for-sgi --disable-s11 LDFLAGS=-L/usr/local/lib
+    ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+else
+    cd ./$OBJ_DIR
 fi
 
 pkill oai_epc
+
 if [ -f Makefile ]
 then
     echo_success "Compiling..."
@@ -284,7 +317,6 @@ fi
 ##################################################
 # LAUNCH MME + S+P-GW executable
 ##################################################
-check_s6a_certificate
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 
@@ -293,4 +325,4 @@ rotate_log_file $ITTI_LOG_FILE
 STDOUT_LOG_FILE=./stdout_mme.log
 rotate_log_file $STDOUT_LOG_FILE
 
-$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC | tee $STDOUT_LOG_FILE 2>&1
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $STDOUT_LOG_FILE 
