@@ -92,6 +92,10 @@ unsigned char pdcp_read_state_g = 0;
 
 extern Packet_OTG_List_t *otg_pdcp_buffer;
 
+#if defined(LINK_PDCP_TO_GTPV1U)
+#  include "gtpv1u_eNB_defs.h"
+#endif
+
 pdcp_data_req_header_t pdcp_read_header_g;
 
 //-----------------------------------------------------------------------------
@@ -102,7 +106,10 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
   mem_block_t     *sdu_p            = list_get_head (&pdcp_sdu_list);
   int              bytes_wrote      = 0;
   int              pdcp_nb_sdu_sent = 0;
-  uint8_t               cont             = 1;
+  uint8_t          cont             = 1;
+#if defined(LINK_PDCP_TO_GTPV1U)
+  MessageDef      *message_p        = NULL;
+#endif
 
 #if defined(NAS_NETLINK) && defined(LINUX)
   int ret = 0;
@@ -110,22 +117,40 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
 
   while (sdu_p && cont) {
 
-#if defined(OAI_EMU)
-      //LGmcs_inst = ((pdcp_data_ind_header_t *)(sdu->data))->inst;
-      // asjust the instance id when passing sdu to IP
-      //((pdcp_data_ind_header_t *)(sdu->data))->inst = (((pdcp_data_ind_header_t *)(sdu->data))->inst >= NB_eNB_INST) ?
-      //                                                ((pdcp_data_ind_header_t *)(sdu->data))->inst - NB_eNB_INST +oai_emulation.info.nb_enb_local - oai_emulation.info.first_ue_local :// UE
-      //                                                ((pdcp_data_ind_header_t *)(sdu->data))->inst - oai_emulation.info.first_ue_local; // ENB
-#else
+#if ! defined(OAI_EMU)
       ((pdcp_data_ind_header_t *)(sdu_p->data))->inst = 0;
 #endif
 
+#if defined(LINK_PDCP_TO_GTPV1U)
+      if (enb_flagP) {
+          LOG_I(PDCP,"Sending to GTPV1U\n");
+          /*message_p = itti_alloc_new_message(TASK_PDCP_ENB, GTPV1U_TUNNEL_DATA_REQ);
+          GTPV1U_TUNNEL_DATA_REQ(message_p).buffer       = &(((uint8_t *) sdu_p->data)[sizeof (pdcp_data_ind_header_t)]);
+          GTPV1U_TUNNEL_DATA_REQ(message_p).length       = ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size;
+          GTPV1U_TUNNEL_DATA_REQ(message_p).ue_module_id = ue_mod_idP;
+          GTPV1U_TUNNEL_DATA_REQ(message_p).rab_id;      = ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id;
+          */
+          gtpv1u_new_data_req(
+              enb_mod_idP, //gtpv1u_data_t *gtpv1u_data_p,
+              ue_mod_idP,//rb_id/NB_RB_MAX, TO DO UE ID
+              ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id, //was 0 default RAB ID
+              &(((uint8_t *) sdu_p->data)[sizeof (pdcp_data_ind_header_t)]),
+              ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size);
+
+          list_remove_head (&pdcp_sdu_list);
+          free_mem_block (sdu_p);
+          cont = 1;
+          pdcp_nb_sdu_sent += 1;
+          sdu_p = list_get_head (&pdcp_sdu_list);
+          LOG_I(OTG,"After  GTPV1U\n");
+          continue; // loop again
+       }
+#endif /* defined(ENABLE_USE_MME) */
 #ifdef PDCP_DEBUG
       LOG_I(PDCP, "PDCP->IP TTI %d INST %d: Preparing %d Bytes of data from rab %d to Nas_mesh\n",
           frameP, ((pdcp_data_ind_header_t *)(sdu_p->data))->inst,
           ((pdcp_data_ind_header_t *)(sdu_p->data))->data_size, ((pdcp_data_ind_header_t *)(sdu_p->data))->rb_id);
 #endif //PDCP_DEBUG
-
       cont = 0;
 
       if (!pdcp_output_sdu_bytes_to_write) {

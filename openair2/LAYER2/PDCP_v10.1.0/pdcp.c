@@ -212,11 +212,11 @@ boolean_t pdcp_data_req(
               memset(&pdu_header.mac_i[0],0,PDCP_CONTROL_PLANE_DATA_PDU_MAC_I_SIZE);
               if (pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer((unsigned char*)pdcp_pdu_p->data, &pdu_header) == FALSE) {
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
-		  if (enb_flagP == ENB_FLAG_NO)
-		    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-		  else
-		    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
-		  return FALSE;
+                  if (enb_flagP == ENB_FLAG_NO)
+                    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+                  else
+                    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+                  return FALSE;
               }
           } else {
               pdcp_user_plane_data_pdu_header_with_long_sn pdu_header;
@@ -225,11 +225,11 @@ boolean_t pdcp_data_req(
               current_sn = pdu_header.sn ;
               if (pdcp_serialize_user_plane_data_pdu_with_long_sn_buffer((unsigned char*)pdcp_pdu_p->data, &pdu_header) == FALSE) {
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
-		  if (enb_flagP == ENB_FLAG_NO)
-		    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-		  else
-		    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
-		  return FALSE;
+                  if (enb_flagP == ENB_FLAG_NO)
+                    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+                  else
+                    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+                  return FALSE;
               }
           }
           /*
@@ -240,10 +240,10 @@ boolean_t pdcp_data_req(
               LOG_E(PDCP, "There must be a problem with PDCP initialization, ignoring this PDU...\n");
 
               free_mem_block(pdcp_pdu_p);
-	      if (enb_flagP == ENB_FLAG_NO)
-		stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
-	      else
-		stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+              if (enb_flagP == ENB_FLAG_NO)
+                stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
+              else
+                stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
               return FALSE;
           }
 
@@ -441,11 +441,11 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
       if (sdu_buffer_sizeP < pdcp_header_len + pdcp_tailer_len ) {
           LOG_W(PDCP, "Incoming (from RLC) SDU is short of size (size:%d)! Ignoring...\n", sdu_buffer_sizeP);
           free_mem_block(sdu_buffer_pP);
-	  if (enb_flagP)
-	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-	  else
-	    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
-	  return FALSE;
+          if (enb_flagP)
+            stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+          else
+            stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+          return FALSE;
       }
 
       /*
@@ -499,10 +499,10 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           free_mem_block(sdu_buffer_pP);
           // free_mem_block(new_sdu);
           if (enb_flagP)
-	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-	  else
-	    stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
-	  return TRUE;
+            stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+          else
+            stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+          return TRUE;
       }
       payload_offset=PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
 #if defined(ENABLE_SECURITY)
@@ -533,10 +533,10 @@ boolean_t pdcp_data_ind(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t
           sdu_buffer_sizeP - payload_offset ) == 0 ) {
           free_mem_block(sdu_buffer_pP);
            if (enb_flagP)
-	     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-	   else
-	     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
-	  return TRUE;
+             stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+           else
+             stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+           return TRUE;
       }
   }
 #else
@@ -707,8 +707,11 @@ void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, mo
   pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
-  pdcp_fifo_read_input_sdus(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
-
+#if defined(LINK_PDCP_TO_GTPV1U)
+  if (enb_flagP == ENB_FLAG_NO) {
+#endif
+      pdcp_fifo_read_input_sdus(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+  }
   // PDCP -> NAS/IP traffic: RX
   pdcp_fifo_flush_sdus(frameP, enb_flagP, enb_mod_idP, ue_mod_idP);
 
