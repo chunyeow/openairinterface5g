@@ -1,6 +1,41 @@
 #!/bin/bash
-# Author Lionel GAUTHIER 01/20/2014
-##########################################
+################################################################################
+# Eurecom OpenAirInterface core network
+# Copyright(c) 1999 - 2014 Eurecom
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms and conditions of the GNU General Public License,
+# version 2, as published by the Free Software Foundation.
+#
+# This program is distributed in the hope it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# The full GNU General Public License is included in this distribution in
+# the file called "COPYING".
+#
+# Contact Information
+# Openair Admin: openair_admin@eurecom.fr
+# Openair Tech : openair_tech@eurecom.fr
+# Forums       : http://forums.eurecom.fsr/openairinterface
+# Address      : EURECOM,
+#                Campus SophiaTech,
+#                450 Route des Chappes,
+#                CS 50193
+#                06904 Biot Sophia Antipolis cedex,
+#                FRANCE
+################################################################################
+# file start_enb.bash
+# brief
+# author Lionel Gauthier
+# company Eurecom
+# email: lionel.gauthier@eurecom.fr
+###########################################
 # INPUT OF THIS SCRIPT:
 # THE DIRECTORY WHERE ARE LOCATED THE CONFIGURATION FILES
 #########################################
@@ -58,7 +93,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim ENABLE_ITTI=1 USE_MME=R10 NAS=1 Rel10=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1"
 declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
 declare IP_DRIVER_NAME="ue_ip"
 declare LTEIF="oip1"
@@ -235,9 +270,11 @@ ip route add default dev $LTEIF table lte
 
 ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
+STDOUT_LOG_FILE=./stdout_enb_ue.log
+rotate_log_file $STDOUT_LOG_FILE
 
 nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
 
 
