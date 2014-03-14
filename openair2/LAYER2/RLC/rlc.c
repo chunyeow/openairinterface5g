@@ -1,7 +1,6 @@
 /*******************************************************************************
-
 Eurecom OpenAirInterface 2
-Copyright(c) 1999 - 2010 Eurecom
+Copyright(c) 1999 - 2014 Eurecom
 
 This program is free software; you can redistribute it and/or modify it
 under the terms and conditions of the GNU General Public License,
@@ -23,10 +22,20 @@ Contact Information
 Openair Admin: openair_admin@eurecom.fr
 Openair Tech : openair_tech@eurecom.fr
 Forums       : http://forums.eurecom.fsr/openairinterface
-Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
-
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
 *******************************************************************************/
-
+/*
+                                rlc.c
+                             -------------------
+  AUTHOR  : Lionel GAUTHIER
+  COMPANY : EURECOM
+  EMAIL   : Lionel.Gauthier at eurecom dot fr
+*/
 #define RLC_C
 #include "rlc.h"
 #include "mem_block.h"
