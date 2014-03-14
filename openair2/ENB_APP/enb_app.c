@@ -47,6 +47,9 @@
 # if defined(ENABLE_USE_MME)
 #   include "s1ap_eNB.h"
 #   include "sctp_eNB_task.h"
+#   if defined(LINK_PDCP_TO_GTPV1U)
+#     include "gtpv1u_eNB_defs.h"
+#   endif
 # endif
 
 extern unsigned char NB_eNB_INST;
@@ -166,7 +169,7 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
 /*------------------------------------------------------------------------------*/
 void *eNB_app_task(void *args_p)
 {
-    const Enb_properties_array_t   *enb_properties;
+    const Enb_properties_array_t   *enb_properties  = NULL;
 #if defined(ENABLE_ITTI)
     uint32_t                        enb_nb = 1; /* Default number of eNB is 1 */
     uint32_t                        enb_id_start = 0;
@@ -177,8 +180,8 @@ void *eNB_app_task(void *args_p)
     long                            enb_register_retry_timer_id;
 # endif
     uint32_t                        enb_id;
-    MessageDef                     *msg_p;
-    const char                     *msg_name;
+    MessageDef                     *msg_p           = NULL;
+    const char                     *msg_name        = NULL;
     instance_t                      instance;
     int                             result;
 
@@ -209,6 +212,9 @@ void *eNB_app_task(void *args_p)
     }
 
 # if defined(ENABLE_USE_MME)
+#   if defined(LINK_PDCP_TO_GTPV1U)
+    gtpv1u_eNB_init(enb_properties->properties[0]);
+#   endif
     /* Try to register each eNB */
     registered_enb = 0;
     register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
