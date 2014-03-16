@@ -418,49 +418,49 @@ void *l2l1_task(void *args_p) {
 #ifdef XFORMS
   xargv[0] = xname;
   fl_initialize (&xargc, xargv, NULL, 0, 0);
-  eNB_id = 0;
-  for (UE_id = 0; UE_id < NB_UE_INST; UE_id++) {
+  eNB_inst = 0;
+  for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) {
       // DL scope at UEs
-      form_ue[UE_id] = create_lte_phy_scope_ue();
-      sprintf (title, "LTE DL SCOPE eNB %d to UE %d", eNB_id, UE_id);
-      fl_show_form (form_ue[UE_id]->lte_phy_scope_ue, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
+      form_ue[UE_inst] = create_lte_phy_scope_ue();
+      sprintf (title, "LTE DL SCOPE eNB %d to UE %d", eNB_inst, UE_inst);
+      fl_show_form (form_ue[UE_inst]->lte_phy_scope_ue, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
 
       // UL scope at eNB 0
-      form_enb[UE_id] = create_lte_phy_scope_enb();
-      sprintf (title, "LTE UL SCOPE UE %d to eNB %d", UE_id, eNB_id);
-      fl_show_form (form_enb[UE_id]->lte_phy_scope_enb, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
+      form_enb[UE_inst] = create_lte_phy_scope_enb();
+      sprintf (title, "LTE UL SCOPE UE %d to eNB %d", UE_inst, eNB_inst);
+      fl_show_form (form_enb[UE_inst]->lte_phy_scope_enb, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
 
       if (openair_daq_vars.use_ia_receiver == 1) {
-          fl_set_button(form_ue[UE_id]->button_0,1);
-          fl_set_object_label(form_ue[UE_id]->button_0, "IA Receiver ON");
-          fl_set_object_color(form_ue[UE_id]->button_0, FL_GREEN, FL_GREEN);
+          fl_set_button(form_ue[UE_inst]->button_0,1);
+          fl_set_object_label(form_ue[UE_inst]->button_0, "IA Receiver ON");
+          fl_set_object_color(form_ue[UE_inst]->button_0, FL_GREEN, FL_GREEN);
       }
 
   }
 #endif
 
 #ifdef PRINT_STATS
-  for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-      sprintf(UE_stats_filename,"UE_stats%d.txt",UE_id);
-      UE_stats[UE_id] = fopen (UE_stats_filename, "w");
+  for (UE_inst=0;UE_inst<NB_UE_INST;UE_inst++) {
+      sprintf(UE_stats_filename,"UE_stats%d.txt",UE_inst);
+      UE_stats[UE_inst] = fopen (UE_stats_filename, "w");
   }
-  for (eNB_id=0;eNB_id<NB_eNB_INST;eNB_id++) {
-      sprintf(eNB_stats_filename,"eNB_stats%d.txt",eNB_id);
-      eNB_stats[eNB_id] = fopen (eNB_stats_filename, "w");
+  for (eNB_inst=0;eNB_inst<NB_eNB_INST;eNB_inst++) {
+      sprintf(eNB_stats_filename,"eNB_stats%d.txt",eNB_inst);
+      eNB_stats[eNB_inst] = fopen (eNB_stats_filename, "w");
   }
 
   if(abstraction_flag==0) {
-      for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-          sprintf(UE_stats_th_filename,"UE_stats_th%d_tx%d.txt",UE_id,oai_emulation.info.transmission_mode);
-          UE_stats_th[UE_id] = fopen (UE_stats_th_filename, "w");
+      for (UE_inst=0;UE_inst<NB_UE_INST;UE_inst++) {
+          sprintf(UE_stats_th_filename,"UE_stats_th%d_tx%d.txt",UE_inst,oai_emulation.info.transmission_mode);
+          UE_stats_th[UE_inst] = fopen (UE_stats_th_filename, "w");
       }
       sprintf(eNB_stats_th_filename,"eNB_stats_th_tx%d.txt",oai_emulation.info.transmission_mode);
       eNB_avg_thr = fopen (eNB_stats_th_filename, "w");
   }
   else {
-      for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-          sprintf(UE_stats_th_filename,"UE_stats_abs_th%d_tx%d.txt",UE_id,oai_emulation.info.transmission_mode);
-          UE_stats_th[UE_id] = fopen (UE_stats_th_filename, "w");
+      for (UE_inst=0;UE_inst<NB_UE_INST;UE_inst++) {
+          sprintf(UE_stats_th_filename,"UE_stats_abs_th%d_tx%d.txt",UE_inst,oai_emulation.info.transmission_mode);
+          UE_stats_th[UE_inst] = fopen (UE_stats_th_filename, "w");
       }
       sprintf(eNB_stats_th_filename,"eNB_stats_abs_th_tx%d.txt",oai_emulation.info.transmission_mode);
       eNB_avg_thr = fopen (eNB_stats_th_filename, "w");
@@ -596,8 +596,8 @@ void *l2l1_task(void *args_p) {
 #endif
 #ifdef DEBUG_OMG
       if ((((int) oai_emulation.info.time_s) % 100) == 0) {
-          for (UE_id = oai_emulation.info.first_ue_local; UE_id < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local); UE_id++) {
-              get_node_position (UE, UE_id);
+          for (UE_inst = oai_emulation.info.first_ue_local; UE_inst < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local); UE_inst++) {
+              get_node_position (UE, UE_inst);
           }
       }
 #endif
@@ -921,17 +921,17 @@ void *l2l1_task(void *args_p) {
       }
 
 #ifdef XFORMS
-      eNB_id = 0;
-      for (UE_id = 0; UE_id < NB_UE_INST; UE_id++) {
-          phy_scope_UE(form_ue[UE_id],
-              PHY_vars_UE_g[UE_id],
-              eNB_id,
-              UE_id,
+      eNB_inst = 0;
+      for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) {
+          phy_scope_UE(form_ue[UE_inst],
+              PHY_vars_UE_g[UE_inst],
+              eNB_inst,
+              UE_inst,
               7);
 
-          phy_scope_eNB(form_enb[UE_id],
-              PHY_vars_eNB_g[eNB_id],
-              UE_id);
+          phy_scope_eNB(form_enb[UE_inst],
+              PHY_vars_eNB_g[eNB_inst],
+              UE_inst);
 
       }
 #endif
@@ -951,15 +951,15 @@ void *l2l1_task(void *args_p) {
 #endif
 
 #ifdef PRINT_STATS
-  for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-      if (UE_stats[UE_id])
-        fclose (UE_stats[UE_id]);
-      if(UE_stats_th[UE_id])
-        fclose (UE_stats_th[UE_id]);
+  for (UE_inst=0;UE_inst<NB_UE_INST;UE_inst++) {
+      if (UE_stats[UE_inst])
+        fclose (UE_stats[UE_inst]);
+      if(UE_stats_th[UE_inst])
+        fclose (UE_stats_th[UE_inst]);
   }
-  for (eNB_id=0;eNB_id<NB_eNB_INST;eNB_id++) {
-      if (eNB_stats[eNB_id])
-        fclose (eNB_stats[eNB_id]);
+  for (eNB_inst=0;eNB_inst<NB_eNB_INST;eNB_inst++) {
+      if (eNB_stats[eNB_inst])
+        fclose (eNB_stats[eNB_inst]);
   }
   if (eNB_avg_thr)
     fclose (eNB_avg_thr);
