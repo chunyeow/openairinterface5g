@@ -40,6 +40,7 @@ Address      : EURECOM,
 #include <string.h>
 #include <libconfig.h>
 
+#include "log.h"
 #include "assertions.h"
 #include "enb_config.h"
 #if defined(OAI_EMU)
@@ -132,6 +133,25 @@ static const eutra_band_t eutra_bands[] =
 };
 
 static Enb_properties_array_t enb_properties;
+
+static void enb_config_display(void) {
+    int i;
+
+    printf( "\n----------------------------------------------------------------------\n");
+    printf( " ENB CONFIG FILE CONTENT LOADED (TBC):\n");
+    printf( "----------------------------------------------------------------------\n");
+    for (i = 0; i < enb_properties.number; i++) {
+        printf( "ENB CONFIG no %u:\n\n", i);
+        printf( "\teNB name: \t%s:\n",enb_properties.properties[i]->eNB_name);
+        printf( "\teNB ID:   \t%u:\n",enb_properties.properties[i]->eNB_id);
+        printf( "\tCell type:\t%s:\n",enb_properties.properties[i]->cell_type == CELL_MACRO_ENB ? "CELL_MACRO_ENB":"CELL_HOME_ENB");
+        printf( "\tTAC:      \t%u:\n",enb_properties.properties[i]->tac);
+        printf( "\tMCC:      \t%u:\n",enb_properties.properties[i]->mcc);
+        printf( "\tMNC:      \t%u:\n",enb_properties.properties[i]->mnc);
+        printf( "\n--------------------------------------------------------\n");
+    }
+}
+
 
 static int enb_check_band_frequencies(char* lib_config_file_name_pP,
                                       int enb_properties_index,
@@ -475,7 +495,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   AssertFatal (parse_errors == 0,
                "Failed to parse eNB configuration file %s, found %d error%s !\n",
                lib_config_file_name_pP, parse_errors, parse_errors > 1 ? "s" : "");
-
+  enb_config_display();
   return &enb_properties;
 
 }
@@ -483,3 +503,4 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 const Enb_properties_array_t *enb_config_get(void) {
     return &enb_properties;
 }
+
