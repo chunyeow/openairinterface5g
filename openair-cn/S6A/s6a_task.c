@@ -141,7 +141,7 @@ int s6a_init(const mme_config_t *mme_config_p)
 
     ret = fd_core_parseconf(mme_config_p->s6a_config.conf_file);
     if (ret != 0) {
-        S6A_ERROR("An error occurred during fd_core_parseconf.\n");
+        S6A_ERROR("An error occurred during fd_core_parseconf file :%s.\n", mme_config_p->s6a_config.conf_file);
         return ret;
     }
 
