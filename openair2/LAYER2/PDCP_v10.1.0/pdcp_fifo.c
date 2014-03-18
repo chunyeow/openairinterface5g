@@ -93,7 +93,7 @@ unsigned char pdcp_read_state_g = 0;
 extern Packet_OTG_List_t *otg_pdcp_buffer;
 
 #if defined(LINK_PDCP_TO_GTPV1U)
-#  include "gtpv1u_eNB_defs.h"
+#  include "gtpv1u_eNB_task.h"
 #endif
 
 pdcp_data_req_header_t pdcp_read_header_g;
@@ -108,7 +108,7 @@ int pdcp_fifo_flush_sdus(frame_t frameP, eNB_flag_t enb_flagP, module_id_t enb_m
   int              pdcp_nb_sdu_sent = 0;
   uint8_t          cont             = 1;
 #if defined(LINK_PDCP_TO_GTPV1U)
-  MessageDef      *message_p        = NULL;
+  //MessageDef      *message_p        = NULL;
 #endif
 
 #if defined(NAS_NETLINK) && defined(LINUX)
