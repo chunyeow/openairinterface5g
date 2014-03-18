@@ -276,6 +276,22 @@ int logInit (void)
     g_log->log_component[OCM].filelog =  0;
     g_log->log_component[OCM].filelog_name = "/tmp/ocm.log";
 
+    g_log->log_component[UDP_].name = "UDP";
+    g_log->log_component[UDP_].level = LOG_EMERG;
+    g_log->log_component[UDP_].flag = LOG_FULL;
+    g_log->log_component[UDP_].interval = 1;
+    g_log->log_component[UDP_].fd = 0;
+    g_log->log_component[UDP_].filelog = 0;
+    g_log->log_component[UDP_].filelog_name = "";
+
+    g_log->log_component[GTPU].name = "GTPV1U";
+    g_log->log_component[GTPU].level = LOG_EMERG;
+    g_log->log_component[GTPU].flag = LOG_FULL;
+    g_log->log_component[GTPU].interval = 1;
+    g_log->log_component[GTPU].fd = 0;
+    g_log->log_component[GTPU].filelog = 0;
+    g_log->log_component[GTPU].filelog_name = "";
+
     g_log->log_component[S1AP].name = "S1AP";
     g_log->log_component[S1AP].level = LOG_EMERG;
     g_log->log_component[S1AP].flag = LOG_FULL;
