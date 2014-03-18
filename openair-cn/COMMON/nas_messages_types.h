@@ -180,9 +180,9 @@ typedef struct nas_bearer_param_s {
     pre_emp_capability_t    pre_emp_capability;
 
     /* S-GW TEID for user-plane */
-    uint32_t teid;
+    uint32_t     sgw_s1u_teid;
     /* S-GW IP address for User-Plane */
-    ip_address_t s_gw_address;
+    ip_address_t sgw_s1u_address;
 } nas_bearer_param_t;
 
 typedef struct nas_conn_rel_ind_s {

@@ -101,6 +101,7 @@ typedef enum pdcp_transmission_mode_e {
 //-----------------------------------------------------------------------------
 // IP DRIVER / PDCP TYPES
 //-----------------------------------------------------------------------------
+typedef uint16_t           tcp_udp_port_t;
 typedef enum  ip_traffic_type_e {
        TRAFFIC_IPVX_TYPE_UNKNOWN    =  0,
        TRAFFIC_IPV6_TYPE_UNICAST    =  1,
@@ -127,4 +128,10 @@ typedef enum config_action_e {
     CONFIG_ACTION_MBMS_ADD          = 10,
     CONFIG_ACTION_MBMS_MODIFY       = 11
 } config_action_t;
+
+//-----------------------------------------------------------------------------
+// GTPV1U TYPES
+//-----------------------------------------------------------------------------
+typedef uint32_t           teid_t; // tunnel endpoint identifier
+typedef uint8_t            ebi_t;  // eps bearer id
 #endif

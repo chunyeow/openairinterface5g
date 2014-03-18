@@ -334,8 +334,8 @@ int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p
         NAS_BEARER_PARAM(message_p).pre_emp_vulnerability = current_bearer_p->pre_emp_vulnerability;
         NAS_BEARER_PARAM(message_p).pre_emp_capability = current_bearer_p->pre_emp_capability;
 
-        NAS_BEARER_PARAM(message_p).teid = current_bearer_p->s_gw_teid;
-        memcpy(&NAS_BEARER_PARAM(message_p).s_gw_address,
+        NAS_BEARER_PARAM(message_p).sgw_s1u_teid = current_bearer_p->s_gw_teid;
+        memcpy(&NAS_BEARER_PARAM(message_p).sgw_s1u_address,
                &current_bearer_p->s_gw_address, sizeof(ip_address_t));
 
         memcpy(&NAS_BEARER_PARAM(message_p).ambr, &ue_context_p->subscribed_ambr,

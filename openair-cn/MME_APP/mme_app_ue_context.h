@@ -138,7 +138,7 @@ typedef struct ue_context_s {
 
     network_access_mode_t access_mode;
 
-    /* TODO: add ue radio cap, ms classmarks, cupported codecs */
+    /* TODO: add ue radio cap, ms classmarks, supported codecs */
 
     /* TODO: add ue network capability, ms network capability */
     /* TODO: add selected NAS algorithm */

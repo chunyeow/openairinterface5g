@@ -98,13 +98,21 @@ void *mme_app_thread(void *args)
                     mme_app_statistics_display();
                 }
             } break;
+
             case TERMINATE_MESSAGE: {
                 /* Termination message received TODO -> release any data allocated */
                 itti_exit_task();
             } break;
+
+            case S1AP_UE_CAPABILITIES_IND: {
+                // TO DO;
+            } break;
+
             default: {
                 MME_APP_DEBUG("Unkwnon message ID %d:%s\n",
                               ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
+                AssertFatal(0, "Unkwnon message ID %d:%s\n",
+                        ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
             } break;
         }
         itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);

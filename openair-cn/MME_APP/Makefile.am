@@ -1,6 +1,6 @@
 AM_CFLAGS =				\
 	@ADD_CFLAGS@ 			\
-	-I$(top_srcdir)/COMMON	\
+	-I$(top_srcdir)/COMMON								\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/network		\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/include			\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/ies				\
@@ -18,11 +18,11 @@ noinst_LTLIBRARIES = libmmeapp.la
 libmmeapp_la_LDFLAGS = -all-static
 
 libmmeapp_la_SOURCES = \
-	mme_app_context.c	\
-	mme_app_main.c	mme_app_defs.h	\
-	mme_app_bearer.c	\
-	mme_app_authentication.c	\
+	mme_app_context.c								\
+	mme_app_main.c	mme_app_defs.h					\
+	mme_app_bearer.c								\
+	mme_app_authentication.c						\
 	mme_app_statistics.c	mme_app_statistics.h	\
-	mme_app_defs.h	mme_app_extern.h	\
-	mme_app_itti_messaging.h	\
+	mme_app_defs.h	mme_app_extern.h				\
+	mme_app_itti_messaging.h						\
 	s6a_2_nas_cause.c

@@ -1,18 +1,52 @@
-#include "NwGtpv1u.h"
-#include "gtpv1u.h"
-#include "udp_eNB_task.h"
+/*******************************************************************************
+Eurecom OpenAirInterface Core Network
+Copyright(c) 1999 - 2014 Eurecom
+
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
+
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
+
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
+*******************************************************************************/
+/*! \file gtpv1u_eNB_defs.h
+ * \brief
+ * \author Sebastien ROUX, Lionel GAUTHIER
+ * \version 1.0
+ * \company Eurecom
+ * \email: lionel.gauthier@eurecom.fr
+ */
+
 #include "hashtable.h"
 
-//TEST LG #define GTPU_IN_KERNEL
-
-//#include "tree.h"
 
 #ifndef GTPV1U_ENB_DEFS_H_
 #define GTPV1U_ENB_DEFS_H_
 
 #define GTPV1U_UDP_PORT (2152)
+#define GTPV1U_BEARER_OFFSET 3
 
-#define MAX_BEARERS_PER_UE (11)
+#define GTPV1U_MAX_BEARERS_ID     (max_val_DRB_Identity - GTPV1U_BEARER_OFFSET)
 
 typedef enum {
     BEARER_DOWN = 0,
@@ -23,28 +57,37 @@ typedef enum {
     BEARER_MAX,
 } bearer_state_t;
 
+
+typedef struct gtpv1u_teid_data_s {
+    /* UE identifier for oaisim stack */
+    module_id_t  enb_id;
+    module_id_t  ue_id;
+    ebi_t        eps_bearer_id;
+} gtpv1u_teid_data_t;
+
+
 typedef struct gtpv1u_bearer_s {
     /* TEID used in dl and ul */
-    uint32_t teid_eNB;         ///< eNB TEID
-    uint32_t teid_sgw;         ///< Remote TEID
-    uint32_t sgw_ip_addr;
-    uint16_t port;
-    NwGtpv1uStackSessionHandleT stack_session;
+    teid_t         teid_eNB;         ///< eNB TEID
+    teid_t         teid_sgw;         ///< Remote TEID
+    uint32_t       sgw_ip_addr;
+    tcp_udp_port_t port;
+    //NwGtpv1uStackSessionHandleT stack_session;
     bearer_state_t state;
 } gtpv1u_bearer_t;
 
 typedef struct gtpv1u_ue_data_s {
     /* UE identifier for oaisim stack */
-    uint8_t  ue_id;
+    module_id_t  ue_id;
 
     /* Unique identifier used between PDCP and GTP-U to distinguish UEs */
     uint32_t instance_id;
-
+    int      num_bearers;
     /* Bearer related data.
      * Note that the first LCID available for data is 3 and we fixed the maximum
-     * number of e-rab per UE to be 11. The real rb id will 3 + rab_id (0..10).
+     * number of e-rab per UE to be (32 [id range]), max RB is 11. The real rb id will 3 + rab_id (3..32).
      */
-    gtpv1u_bearer_t bearers[MAX_BEARERS_PER_UE];
+    gtpv1u_bearer_t bearers[GTPV1U_MAX_BEARERS_ID];
 
     //RB_ENTRY(gtpv1u_ue_data_s) gtpv1u_ue_node;
 } gtpv1u_ue_data_t;
@@ -52,14 +95,18 @@ typedef struct gtpv1u_ue_data_s {
 typedef struct gtpv1u_data_s{
     /* nwgtpv1u stack internal data */
     NwGtpv1uStackHandleT  gtpv1u_stack;
+
     /* RB tree of UEs */
-	hash_table_t         *ue_mapping;
+    hash_table_t         *ue_mapping;   // PDCP->GTPV1U
+    hash_table_t         *teid_mapping; // GTPV1U -> PDCP
 
     //RB_HEAD(gtpv1u_ue_map, gtpv1u_ue_data_s) gtpv1u_ue_map_head;
     /* Local IP address to use */
+    uint32_t              enb_ip_address_for_S1u_S12_S4_up;
     char                 *ip_addr;
+    tcp_udp_port_t        enb_port_for_S1u_S12_S4_up;
     /* UDP internal data */
-    udp_data_t            udp_data;
+    //udp_data_t            udp_data;
 
     uint16_t              seq_num;
     uint8_t               restart_counter;
@@ -74,13 +121,19 @@ typedef struct gtpv1u_data_s{
 #endif
 } gtpv1u_data_t;
 
-int gtpv1u_new_data_req(gtpv1u_data_t *gtpv1u_data_p,
-                        uint8_t ue_id, uint8_t rab_id,
-                        uint8_t *buffer, uint32_t buf_len);
+int
+gtpv1u_new_data_req(
+    uint8_t enb_id,
+    uint8_t ue_id,
+    uint8_t rab_id,
+    uint8_t *buffer,
+    uint32_t buf_len);
 
-int gtpv1u_initial_req(gtpv1u_data_t *gtpv1u_data_p, uint32_t teid,
-                       uint16_t port, uint32_t address);
-
-int gtpv1u_eNB_init(gtpv1u_data_t *gtpv1u_data_p);
+int
+gtpv1u_initial_req(
+    gtpv1u_data_t *gtpv1u_data_p,
+    uint32_t teid,
+    uint16_t port,
+    uint32_t address);
 
 #endif /* GTPV1U_ENB_DEFS_H_ */

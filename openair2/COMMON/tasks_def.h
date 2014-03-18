@@ -26,7 +26,7 @@ TASK_DEF(TASK_RAL_ENB, TASK_PRIORITY_MED, 200)
     // UDP TASK
     TASK_DEF(TASK_UDP,      TASK_PRIORITY_MED,          200)
     // GTP_V1U task
-    TASK_DEF(TASK_GTPU,     TASK_PRIORITY_MED,          200)
+    TASK_DEF(TASK_GTPV1_U,  TASK_PRIORITY_MED,          200)
     TASK_DEF(TASK_S1AP,     TASK_PRIORITY_MED,          200)
     ///   X2ap task, acts as both source and target
     TASK_DEF(TASK_X2AP,     TASK_PRIORITY_MED,          200)

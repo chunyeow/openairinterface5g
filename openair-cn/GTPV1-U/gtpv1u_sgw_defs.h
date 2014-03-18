@@ -62,13 +62,11 @@ typedef struct {
     /* Local IP address to use */
     uint32_t  sgw_ip_address_for_S1u_S12_S4_up;
     char                 *ip_addr;
-    /* UDP internal data */
-    //udp_data_t            udp_data;
 
     uint16_t              seq_num;
     uint8_t               restart_counter;
     //gtpv1u_teid2enb_info_t* teid2enb_mapping[];
-	hash_table_t         *S1U_mapping;
+    hash_table_t         *S1U_mapping;
 
 } gtpv1u_data_t;
 
