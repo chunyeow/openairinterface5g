@@ -344,8 +344,8 @@ NwGtpv1uCreateTunnelEndPoint( NW_IN  NwGtpv1uStackT *thiz,
                                       &(thiz->teidMap), pTunnelEndPoint);
             NW_ASSERT(pTunnelEndPoint);
             NW_LOG(thiz, NW_LOG_LEVEL_DEBG,
-                   "Tunnel end-point 0x%x creation successful for teid 0x%x",
-                   (unsigned int)pTunnelEndPoint, teid);
+                   "Tunnel end-point 0x%x creation successful for teid 0x%x %u(dec)",
+                   (unsigned int)pTunnelEndPoint, teid, teid);
         }
 
     } else {
