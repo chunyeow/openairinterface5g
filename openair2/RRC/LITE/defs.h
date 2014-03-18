@@ -209,6 +209,12 @@ typedef struct eNB_RRC_UE_INFO_s {
     uint8_t nb_of_e_rabs;
     /* list of e_rab to be setup by RRC layers */
     e_rab_param_t e_rab[S1AP_MAX_E_RAB];
+
+    // LG: For GTPV1 TUNNELS
+    uint32_t                enb_gtp_teid[S1AP_MAX_E_RAB];
+    transport_layer_addr_t  enb_gtp_addrs[S1AP_MAX_E_RAB];
+    rb_id_t                 enb_gtp_ebi[S1AP_MAX_E_RAB];
+
 #endif
 } __attribute__ ((__packed__)) eNB_RRC_UE_INFO;
 
