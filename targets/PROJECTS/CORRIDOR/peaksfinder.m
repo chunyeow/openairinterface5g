@@ -2,7 +2,7 @@ function [m,ind]=peaksfinder(corr,frame_length)
 
 
 
-threshold=45000;
+threshold=max(abs(corr))*0.75;
 consecutivePos=[];
 highCorrVal=find(abs(corr)>threshold);
 num_peak=0;
