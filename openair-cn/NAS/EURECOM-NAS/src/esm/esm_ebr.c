@@ -175,11 +175,9 @@ int esm_ebr_assign(int ebi, int cid, int default_ebr)
 int esm_ebr_assign(emm_data_context_t *ctx, int ebi)
 #endif
 {
-    esm_ebr_context_t *ebr_ctx;
-
-    unsigned int ueid = 0;
-
-    int i;
+    esm_ebr_context_t *ebr_ctx = NULL;
+    unsigned int       ueid    = 0;
+    int                i;
 
     LOG_FUNC_IN;
 
