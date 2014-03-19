@@ -84,11 +84,10 @@ int esm_ebr_context_create(
     int pid, int ebi, int is_default,
     const network_qos_t *qos, const network_tft_t *tft)
 {
-    int bid;
-    esm_data_context_t *esm_ctx;
-    esm_pdn_t *pdn = NULL;
-
-    unsigned int ueid = 0;
+    int                 bid     = 0;
+    esm_data_context_t *esm_ctx = NULL;
+    esm_pdn_t          *pdn     = NULL;
+    unsigned int        ueid    = 0;
 
     LOG_FUNC_IN;
 
