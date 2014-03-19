@@ -82,6 +82,8 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
         default:
             S1AP_ERROR("Unknown procedure ID (%d) for initiating message\n",
                        (int)initiating_p->procedureCode);
+            AssertFatal( 0 , "Unknown procedure ID (%d) for initiating message\n",
+                       (int)initiating_p->procedureCode);
             return -1;
     }
 
