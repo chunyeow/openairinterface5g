@@ -223,35 +223,35 @@ int emm_proc_identification_request(emm_proc_identity_type_t type)
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_MME
-/****************************************************************************
- **                                                                        **
- ** Name:    emm_proc_identification()                                 **
- **                                                                        **
- ** Description: Initiates an identification procedure.                    **
- **                                                                        **
- **              3GPP TS 24.301, section 5.4.4.2                           **
+/********************************************************************
+ **                                                                **
+ ** Name:    emm_proc_identification()                             **
+ **                                                                **
+ ** Description: Initiates an identification procedure.            **
+ **                                                                **
+ **              3GPP TS 24.301, section 5.4.4.2                   **
  **      The network initiates the identification procedure by     **
  **      sending an IDENTITY REQUEST message to the UE and star-   **
  **      ting the timer T3470. The IDENTITY REQUEST message speci- **
  **      fies the requested identification parameters in the Iden- **
  **      tity type information element.                            **
- **                                                                        **
+ **                                                                **
  ** Inputs:  ueid:      UE lower layer identifier                  **
- **      type:      Type of the requested identity             **
- **      success:   Callback function executed when the identi-**
- **             fication procedure successfully completes  **
- **      reject:    Callback function executed when the identi-**
- **             fication procedure fails or is rejected    **
- **      failure:   Callback function executed whener a lower  **
- **             layer failure occured before the identifi- **
- **             cation procedure comnpletes                **
- **      Others:    None                                       **
- **                                                                        **
- ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    _emm_data                                  **
- **                                                                        **
- ***************************************************************************/
+ **      type:      Type of the requested identity                 **
+ **      success:   Callback function executed when the identi-    **
+ **             fication procedure successfully completes          **
+ **      reject:    Callback function executed when the identi-    **
+ **             fication procedure fails or is rejected            **
+ **      failure:   Callback function executed whener a lower      **
+ **             layer failure occured before the identifi-         **
+ **             cation procedure completes                         **
+ **      Others:    None                                           **
+ **                                                                **
+ ** Outputs:     None                                              **
+ **      Return:    RETURNok, RETURNerror                          **
+ **      Others:    _emm_data                                      **
+ **                                                                **
+ ********************************************************************/
 int emm_proc_identification(unsigned int                   ueid,
                             emm_data_context_t            *emm_ctx,
                             emm_proc_identity_type_t       type,
@@ -306,24 +306,24 @@ int emm_proc_identification(unsigned int                   ueid,
 
 /****************************************************************************
  **                                                                        **
- ** Name:    emm_proc_identification_complete()                        **
+ ** Name:    emm_proc_identification_complete()                            **
  **                                                                        **
  ** Description: Performs the identification completion procedure executed **
- **      by the network.                                           **
+ **      by the network.                                                   **
  **                                                                        **
  **              3GPP TS 24.301, section 5.4.4.4                           **
- **      Upon receiving the IDENTITY RESPONSE message, the MME     **
- **      shall stop timer T3470.                                   **
+ **      Upon receiving the IDENTITY RESPONSE message, the MME             **
+ **      shall stop timer T3470.                                           **
  **                                                                        **
- ** Inputs:  ueid:      UE lower layer identifier                  **
- **      imsi:      The IMSI received from the UE              **
- **      imei:      The IMEI received from the UE              **
- **      tmsi:      The TMSI received from the UE              **
- **      Others:    None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                          **
+ **      imsi:      The IMSI received from the UE                          **
+ **      imei:      The IMEI received from the UE                          **
+ **      tmsi:      The TMSI received from the UE                          **
+ **      Others:    None                                                   **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    _emm_data, T3470                           **
+ **      Return:    RETURNok, RETURNerror                                  **
+ **      Others:    _emm_data, T3470                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_identification_complete(unsigned int ueid, const imsi_t *imsi,
