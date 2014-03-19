@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "assertions.h"
 #include "s1ap_common.h"
 #include "s1ap_ies_defs.h"
 #include "s1ap_mme_decoder.h"
@@ -116,6 +117,8 @@ static int s1ap_mme_decode_initiating(
 
         default: {
             S1AP_ERROR("Unknown procedure ID (%d) for initiating message\n",
+                       (int)initiating_p->procedureCode);
+            AssertFatal(0, "Unknown procedure ID (%d) for initiating message\n",
                        (int)initiating_p->procedureCode);
         }
         break;
