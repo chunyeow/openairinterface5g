@@ -1489,6 +1489,17 @@ int nas_proc_deregister_ue(UInt32_t ue_id)
 
     LOG_FUNC_RETURN (rc);
 }
+
+int nas_proc_bearer_param(nas_bearer_param_t *nas_bearer_param_pP)
+{
+    int rc = RETURNerror;
+
+    LOG_FUNC_IN;
+
+    rc = RETURNok;
+    LOG_FUNC_RETURN (rc);
+}
+
 # endif
 #endif // NAS_MME
 
