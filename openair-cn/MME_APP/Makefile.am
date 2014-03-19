@@ -7,11 +7,12 @@ AM_CFLAGS =				\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/emm/msg			\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/esm/msg			\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/util			\
-	-I$(top_srcdir)/INTERTASK_INTERFACE	\
-	-I$(top_srcdir)/S1AP		\
-	-I$(top_srcdir)/S6A	\
-	-I$(top_srcdir)/SCTP	\
-	-I$(top_srcdir)/SECU	\
+	-I$(top_srcdir)/INTERTASK_INTERFACE					\
+	-I$(top_srcdir)/S1AP								\
+	-I$(top_srcdir)/SGW-LITE							\
+	-I$(top_srcdir)/S6A									\
+	-I$(top_srcdir)/SCTP								\
+	-I$(top_srcdir)/SECU								\
 	-I$(top_srcdir)/UTILS
 
 noinst_LTLIBRARIES = libmmeapp.la
