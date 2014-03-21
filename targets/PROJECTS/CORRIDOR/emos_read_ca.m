@@ -40,8 +40,8 @@ slots_per_frame = 20;
 
 d = dir(filename);
 nblocks = floor(d.bytes/(samples_slot_agg*slots_per_frame*nframes*4));
-PDP1_total = zeros(nblocks*nframes,useful_carriers1);
-PDP2_total = zeros(nblocks*nframes,useful_carriers2);
+PDP1_total = zeros(nblocks*nframes,useful_carriers1/2);
+PDP2_total = zeros(nblocks*nframes,useful_carriers2/2);
 
 %% main loop
 fid = fopen(filename,'r');
@@ -104,12 +104,12 @@ while ~feof(fid)
         received_f2 = OFDM_RX(v2(frame_start2:frame_start2+frame_length2,:),num_carriers2,useful_carriers2,prefix_length2,num_symbols_frame);
         
         % channel estimation (SISO)
-        H1=conj(squeeze(f1(1,:,:))).*received_f1(:,:,1);
-        H2=conj(squeeze(f2(1,:,:))).*received_f2(:,:,1);
+        H1=conj(squeeze(f1(1,3:2:end,1:2:end))).*received_f1(3:2:end,1:2:end,1);
+        H2=conj(squeeze(f2(1,3:2:end,1:2:end))).*received_f2(3:2:end,1:2:end,1);
         H1t = ifft(H1,[],2);
         H2t = ifft(H2,[],2);
-        PDP1 = mean(abs(H1t(2:end,:).^2),1);
-        PDP2 = mean(abs(H2t(2:end,:).^2),1);
+        PDP1 = mean(abs(H1t).^2,1);
+        PDP2 = mean(abs(H2t).^2,1);
         PDP1_total((block-1)*nframes+i+1,:) = PDP1;
         PDP2_total((block-1)*nframes+i+1,:) = PDP2;
         

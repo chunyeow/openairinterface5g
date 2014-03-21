@@ -89,3 +89,8 @@ save('ofdm_pilots_sync_30MHz.mat','-v7','s1','s2','s3','f1','f2','f3','num_carri
 s_all = sum(s,1);
 s_all(1:5120) = s(1,1:5120);
 mat2wv(s_all, 'ofdm_pilots_sync_30MHz.wv', sample_rate, 1);
+
+s_all = sum(s3,1);
+s_all(1:640) = s3(1,1:640);
+mat2wv(s_all, 'ofdm_pilots_sync_5MHz.wv', 7.68e6, 1);
+
