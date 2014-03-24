@@ -2468,8 +2468,8 @@ int main(int argc, char **argv) {
       } //ABStraction
       
       if ( (test_perf != 0) && (100 * effective_rate > test_perf )) {
-	fprintf(bler_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err\n");
-  	fprintf(bler_fd,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
+	fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3; dci_err\n");
+  	fprintf(time_meas_fd,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
 	      SNR,
 	      mcs,
 	      PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->TBS,

@@ -1,32 +1,41 @@
 /*******************************************************************************
+Eurecom OpenAirInterface 2
+Copyright(c) 1999 - 2014 Eurecom
 
- Eurecom OpenAirInterface
- Copyright(c) 1999 - 2012 Eurecom
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
 
- This program is free software; you can redistribute it and/or modify it
- under the terms and conditions of the GNU General Public License,
- version 2, as published by the Free Software Foundation.
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
 
- This program is distributed in the hope it will be useful, but WITHOUT
- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 
- You should have received a copy of the GNU General Public License along with
- this program; if not, write to the Free Software Foundation, Inc.,
- 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
 
- The full GNU General Public License is included in this distribution in
- the file called "COPYING".
-
- Contact Information
- Openair Admin: openair_admin@eurecom.fr
- Openair Tech : openair_tech@eurecom.fr
- Forums       : http://forums.eurecom.fr/openairinterface
- Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
- 06410 Biot FRANCE
-
- *******************************************************************************/
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
+*******************************************************************************/
+/*
+                                enb_app.c
+                             -------------------
+  AUTHOR  : Laurent Winckel, Sebastien ROUX, Lionel GAUTHIER
+  COMPANY : EURECOM
+  EMAIL   : Lionel.Gauthier@eurecom.fr
+*/
 
 #include <string.h>
 #include <stdio.h>
@@ -47,9 +56,7 @@
 # if defined(ENABLE_USE_MME)
 #   include "s1ap_eNB.h"
 #   include "sctp_eNB_task.h"
-#   if defined(LINK_PDCP_TO_GTPV1U)
-#     include "gtpv1u_eNB_defs.h"
-#   endif
+#   include "gtpv1u_eNB_task.h"
 # endif
 
 extern unsigned char NB_eNB_INST;
@@ -169,7 +176,7 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
 /*------------------------------------------------------------------------------*/
 void *eNB_app_task(void *args_p)
 {
-    const Enb_properties_array_t   *enb_properties  = NULL;
+    const Enb_properties_array_t   *enb_properties_p  = NULL;
 #if defined(ENABLE_ITTI)
     uint32_t                        enb_nb = 1; /* Default number of eNB is 1 */
     uint32_t                        enb_id_start = 0;
@@ -199,25 +206,22 @@ void *eNB_app_task(void *args_p)
 #   endif
 # endif
 
-    enb_properties = enb_config_get();
+    enb_properties_p = enb_config_get();
 
-    AssertFatal (enb_nb <= enb_properties->number,
+    AssertFatal (enb_nb <= enb_properties_p->number,
                  "Number of eNB is greater than eNB defined in configuration file (%d/%d)!",
-                 enb_nb, enb_properties->number);
+                 enb_nb, enb_properties_p->number);
 
     for (enb_id = enb_id_start; (enb_id < enb_id_end) ; enb_id++)
     {
-        configure_phy(enb_id, enb_properties);
-        configure_rrc(enb_id, enb_properties);
+        configure_phy(enb_id, enb_properties_p);
+        configure_rrc(enb_id, enb_properties_p);
     }
 
 # if defined(ENABLE_USE_MME)
-#   if defined(LINK_PDCP_TO_GTPV1U)
-    gtpv1u_eNB_init(enb_properties->properties[0]);
-#   endif
     /* Try to register each eNB */
     registered_enb = 0;
-    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
+    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties_p);
 # else
     /* Start L2L1 task */
     msg_p = itti_alloc_new_message(TASK_ENB_APP, INITIALIZE_MESSAGE);
@@ -293,7 +297,7 @@ void *eNB_app_task(void *args_p)
                             sleep(ENB_REGISTER_RETRY_DELAY);
                             /* Restart the registration process */
                             registered_enb = 0;
-                            register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
+                            register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties_p);
                         }
                     }
                 }
@@ -313,7 +317,7 @@ void *eNB_app_task(void *args_p)
                 {
                     /* Restart the registration process */
                     registered_enb = 0;
-                    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties);
+                    register_enb_pending = eNB_app_register (enb_id_start, enb_id_end, enb_properties_p);
                 }
                 break;
 # endif

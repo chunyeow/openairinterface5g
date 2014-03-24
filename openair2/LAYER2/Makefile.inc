@@ -77,6 +77,9 @@ endif
 
 RRC_OBJS += $(RRC_DIR)/rrc_eNB.o
 RRC_OBJS += $(RRC_DIR)/rrc_eNB_S1AP.o
+ifdef USE_MME
+RRC_OBJS += $(RRC_DIR)/rrc_eNB_GTPV1U.o
+endif
 RRC_OBJS += $(RRC_DIR)/rrc_common.o
 RRC_OBJS += $(RRC_DIR)/L2_interface.o
 

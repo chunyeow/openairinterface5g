@@ -1,31 +1,34 @@
 /*******************************************************************************
+Eurecom OpenAirInterface 2
+Copyright(c) 1999 - 2014 Eurecom
 
- Eurecom OpenAirInterface 2
- Copyright(c) 1999 - 2010 Eurecom
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
 
- This program is free software; you can redistribute it and/or modify it
- under the terms and conditions of the GNU General Public License,
- version 2, as published by the Free Software Foundation.
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
 
- This program is distributed in the hope it will be useful, but WITHOUT
- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 
- You should have received a copy of the GNU General Public License along with
- this program; if not, write to the Free Software Foundation, Inc.,
- 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
 
- The full GNU General Public License is included in this distribution in
- the file called "COPYING".
-
- Contact Information
- Openair Admin: openair_admin@eurecom.fr
- Openair Tech : openair_tech@eurecom.fr
- Forums       : http://forums.eurecom.fsr/openairinterface
- Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
-
- *******************************************************************************/
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
+*******************************************************************************/
 
 /*! \file rrc_eNB_S1AP.c
  * \brief rrc S1AP procedures for eNB
@@ -263,7 +266,7 @@ static void process_eNB_security_key (uint8_t mod_id, uint8_t ue_index, uint8_t 
 /*------------------------------------------------------------------------------*/
 void rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP(uint8_t mod_id, uint8_t ue_index) {
   eNB_RRC_UE_INFO *UE_info = &eNB_rrc_inst[mod_id].Info.UE[ue_index];
-  MessageDef *msg_p;
+  MessageDef      *msg_p         = NULL;
   int e_rab;
   int e_rabs_done = 0;
   int e_rabs_failed = 0;
@@ -275,6 +278,11 @@ void rrc_eNB_send_S1AP_INITIAL_CONTEXT_SETUP_RESP(uint8_t mod_id, uint8_t ue_ind
       e_rabs_done++;
       S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs[e_rab].e_rab_id = UE_info->e_rab[e_rab].param.e_rab_id;
       // TODO add other information from S1-U when it will be integrated
+          S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs[e_rab].gtp_teid = UE_info->enb_gtp_teid[e_rab];
+#warning "hardcoded address of S1U enb"
+          //S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs[e_rab].eNB_addr = UE_info->enb_gtp_addrs[e_rab];
+          inet_aton("192.168.13.10", S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs[e_rab].eNB_addr.buffer);
+          S1AP_INITIAL_CONTEXT_SETUP_RESP (msg_p).e_rabs[e_rab].eNB_addr.length = 4;
     }
     else {
       e_rabs_failed++;
@@ -497,72 +505,87 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
 
 /*------------------------------------------------------------------------------*/
 int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char *msg_name, instance_t instance) {
-  uint16_t ue_initial_id;
-  uint32_t eNB_ue_s1ap_id;
-  uint8_t ue_index;
+  uint16_t               ue_initial_id;
+  uint32_t               eNB_ue_s1ap_id;
+  uint8_t                ue_index;
+  MessageDef            *message_gtpv1u_p = NULL;
 
-  ue_initial_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id;
-  eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
-  ue_index = get_UE_index_from_s1ap_ids (instance, ue_initial_id, eNB_ue_s1ap_id);
+    ue_initial_id  = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).ue_initial_id;
+    eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+    ue_index       = get_UE_index_from_s1ap_ids (instance, ue_initial_id, eNB_ue_s1ap_id);
 
-  LOG_I(RRC, "[eNB %d] Received %s: ue_initial_id %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d, ue_index %d\n",
+    LOG_I(RRC, "[eNB %d] Received %s: ue_initial_id %d, eNB_ue_s1ap_id %d, nb_of_e_rabs %d, ue_index %d\n",
         instance, msg_name, ue_initial_id, eNB_ue_s1ap_id, S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs, ue_index);
 
-  if (ue_index == UE_INDEX_INVALID) {
-    /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
-    MessageDef *msg_fail_p;
+    if (ue_index == UE_INDEX_INVALID) {
+        /* Can not associate this message to an UE index, send a failure to S1AP and discard it! */
+        MessageDef *msg_fail_p = NULL;
 
-    LOG_W(RRC, "[eNB %d] In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE from S1AP ids (%d, %d)\n", instance, ue_initial_id, eNB_ue_s1ap_id);
+        LOG_W(RRC, "[eNB %d] In S1AP_INITIAL_CONTEXT_SETUP_REQ: unknown UE from S1AP ids (%d, %d)\n", instance, ue_initial_id, eNB_ue_s1ap_id);
 
-    msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL);
-    S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
+        msg_fail_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_INITIAL_CONTEXT_SETUP_FAIL);
+        S1AP_INITIAL_CONTEXT_SETUP_FAIL (msg_fail_p).eNB_ue_s1ap_id = eNB_ue_s1ap_id;
 
-    // TODO add failure cause when defined!
+        // TODO add failure cause when defined!
 
-    itti_send_msg_to_task (TASK_S1AP, instance, msg_fail_p);
+        itti_send_msg_to_task (TASK_S1AP, instance, msg_fail_p);
 
-    return (-1);
-  }
-  else {
-    eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
-
-    /* Save e RAB information for later */
-    {
-      int i;
-
-      eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs;
-      for (i = 0; i < eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs; i++) {
-        eNB_rrc_inst[instance].Info.UE[ue_index].e_rab[i].status = E_RAB_STATUS_NEW;
-        eNB_rrc_inst[instance].Info.UE[ue_index].e_rab[i].param = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i];
-      }
+        return (-1);
     }
+    else {
 
-    /* TODO parameters yet to process ... */
-    {
-      S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
+        eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).eNB_ue_s1ap_id;
+
+        /* Save e RAB information for later */
+        {
+            int i;
+
+            message_gtpv1u_p = itti_alloc_new_message(TASK_S1AP, GTPV1U_ENB_CREATE_TUNNEL_REQ);
+
+            eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).nb_of_e_rabs;
+            for (i = 0; i < eNB_rrc_inst[instance].Info.UE[ue_index].nb_of_e_rabs; i++) {
+                eNB_rrc_inst[instance].Info.UE[ue_index].e_rab[i].status = E_RAB_STATUS_NEW;
+                eNB_rrc_inst[instance].Info.UE[ue_index].e_rab[i].param = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i];
+
+
+                GTPV1U_ENB_CREATE_TUNNEL_REQ(message_gtpv1u_p).eps_bearer_id[i]       = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i].e_rab_id;
+                GTPV1U_ENB_CREATE_TUNNEL_REQ(message_gtpv1u_p).sgw_S1u_teid[i]        = S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i].gtp_teid;
+                memcpy(&GTPV1U_ENB_CREATE_TUNNEL_REQ(message_gtpv1u_p).sgw_addr[i],
+                    &S1AP_INITIAL_CONTEXT_SETUP_REQ (msg_p).e_rab_param[i].sgw_addr,
+                    sizeof(transport_layer_addr_t));
+            }
+            GTPV1U_ENB_CREATE_TUNNEL_REQ(message_gtpv1u_p).ue_index       = ue_index; // warning put zero above
+            GTPV1U_ENB_CREATE_TUNNEL_REQ(message_gtpv1u_p).num_tunnels    = i;
+
+            itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_gtpv1u_p);
+        }
+
+        /* TODO parameters yet to process ... */
+        {
+            S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).ue_ambr;
+        }
+
+        rrc_eNB_process_security (instance, ue_index, &S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities);
+
+        process_eNB_security_key (instance, ue_index, S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_key);
+
+        {
+            uint8_t send_security_mode_command = TRUE;
+
+            if ((eNB_rrc_inst[instance].ciphering_algorithm[ue_index] == SecurityAlgorithmConfig__cipheringAlgorithm_eea0)
+                && (eNB_rrc_inst[instance].integrity_algorithm[ue_index] == INTEGRITY_ALGORITHM_NONE)) {
+                send_security_mode_command = FALSE;
+            }
+
+            if (send_security_mode_command) {
+                rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
+            }
+            else {
+                rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
+            }
+        }
+        return (0);
     }
-
-    rrc_eNB_process_security (instance, ue_index, &S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_capabilities);
-
-    process_eNB_security_key (instance, ue_index, S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_key);
-
-    {
-      uint8_t send_security_mode_command = TRUE;
-
-      if ((eNB_rrc_inst[instance].ciphering_algorithm[ue_index] == SecurityAlgorithmConfig__cipheringAlgorithm_eea0)
-          && (eNB_rrc_inst[instance].integrity_algorithm[ue_index] == INTEGRITY_ALGORITHM_NONE)) {
-        send_security_mode_command = FALSE;
-      }
-
-      if (send_security_mode_command) {
-        rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
-      }
-      else {
-        rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
-      }
-    }
-    return (0);
-  }
 }
 
 /*------------------------------------------------------------------------------*/

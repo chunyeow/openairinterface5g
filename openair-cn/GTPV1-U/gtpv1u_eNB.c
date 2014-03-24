@@ -483,7 +483,7 @@ gtpv1u_new_data_req(
               bearer_p->state);
 #warning  LG: HACK WHILE WAITING FOR NAS, normally return -1
         if (bearer_p->state != BEARER_IN_CONFIG)
-        return -1;
+            return -1;
     }
 
     memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
@@ -492,6 +492,7 @@ gtpv1u_new_data_req(
     stack_req.apiInfo.sendtoInfo.teid   = bearer_p->teid_sgw;
     stack_req.apiInfo.sendtoInfo.ipAddr = bearer_p->sgw_ip_addr;
 
+    LOG_W(GTPU, "TX TO TEID %u addr 0x%x\n",bearer_p->teid_sgw, bearer_p->sgw_ip_addr);
     rc = nwGtpv1uGpduMsgNew(gtpv1u_data_p->gtpv1u_stack,
             bearer_p->teid_sgw,
             NW_FALSE,
@@ -533,6 +534,7 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
     hashtable_rc_t           hash_rc              = HASH_TABLE_KEY_NOT_EXISTS;
     int                      i;
     ebi_t                    eps_bearer_id        = 0;
+    int                      ipv4_addr            = 0;
 
     message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_ENB_CREATE_TUNNEL_RESP);
     GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).ue_index    = create_tunnel_req_pP->ue_index;
@@ -576,7 +578,8 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
         } else if (hash_rc == HASH_TABLE_OK) {
             gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
             gtpv1u_ue_data_p->instance_id = 0; // TO DO
-#warning "TO DO TO DO gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr"
+            ipv4_addr =
+#warning "TO DO TO DO gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = (uint32_t)(create_tunnel_req_pP->sgw_addr[i].buffer;"
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].state    = BEARER_IN_CONFIG;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB = s1u_teid;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw = create_tunnel_req_pP->sgw_S1u_teid[i];

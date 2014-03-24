@@ -1,32 +1,40 @@
 /*******************************************************************************
+Eurecom OpenAirInterface core network
+Copyright(c) 1999 - 2014 Eurecom
 
-  Eurecom OpenAirInterface
-  Copyright(c) 1999 - 2014 Eurecom
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
 
-  This program is free software; you can redistribute it and/or modify it
-  under the terms and conditions of the GNU General Public License,
-  version 2, as published by the Free Software Foundation.
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
 
-  This program is distributed in the hope it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-  more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 
-  You should have received a copy of the GNU General Public License along with
-  this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
 
-  The full GNU General Public License is included in this distribution in
-  the file called "COPYING".
-
-  Contact Information
-  Openair Admin: openair_admin@eurecom.fr
-  Openair Tech : openair_tech@eurecom.fr
-  Forums       : http://forums.eurecom.fr/openairinterface
-  Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
-                 06410 Biot FRANCE
-
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
 *******************************************************************************/
+/*! \file udp_eNB_task.c
+* \brief
+* \author Sebastien ROUX, Lionel Gauthier
+* \company Eurecom
+* \email: lionel.gauthier@eurecom.fr
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +61,6 @@
     (uint8_t)(((aDDRESS) & 0x00ff0000) >> 16),  \
     (uint8_t)(((aDDRESS) & 0xff000000) >> 24)
 
-static void *udp_receiver_thread(void *arg_p);
 
 struct udp_socket_desc_s {
     int       sd;              /* Socket descriptor to use */
@@ -72,10 +79,38 @@ static STAILQ_HEAD(udp_socket_list_s, udp_socket_desc_s) udp_socket_list;
 static pthread_mutex_t udp_socket_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
+static
+struct udp_socket_desc_s *
+udp_eNB_get_socket_desc(task_id_t task_id);
+
+void udp_eNB_process_file_descriptors(
+        struct epoll_event *events,
+        int nb_events);
+
+static
+int
+udp_eNB_create_socket(
+        int port,
+        char *ip_addr,
+        task_id_t task_id);
+
+int
+udp_eNB_send_to(
+    int sd,
+    uint16_t port,
+    uint32_t address,
+    const uint8_t *buffer,
+    uint32_t length);
+
+void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP);
+
+void *udp_eNB_task(void *args_p);
+
+int udp_enb_init(const Enb_properties_t *enb_config_p);
 /* @brief Retrieve the descriptor associated with the task_id
  */
 static
-struct udp_socket_desc_s *udp_get_socket_desc(task_id_t task_id)
+struct udp_socket_desc_s *udp_eNB_get_socket_desc(task_id_t task_id)
 {
     struct udp_socket_desc_s *udp_sock_p = NULL;
 
@@ -90,11 +125,31 @@ struct udp_socket_desc_s *udp_get_socket_desc(task_id_t task_id)
     return udp_sock_p;
 }
 
+void udp_eNB_process_file_descriptors(struct epoll_event *events, int nb_events)
+{
+    int                       i;
+    struct udp_socket_desc_s *udp_sock_p = NULL;
+
+    if (events == NULL) {
+        return;
+    }
+
+    for (i = 0; i < nb_events; i++) {
+        STAILQ_FOREACH(udp_sock_p, &udp_socket_list, entries) {
+            if (udp_sock_p->sd == events[i].data.fd) {
+                LOG_D(UDP_, "Found matching task desc\n");
+                udp_eNB_receiver(udp_sock_p);
+                break;
+            }
+        }
+    }
+}
+
 static
-int udp_create_socket(int port, char *ip_addr, task_id_t task_id)
+int udp_eNB_create_socket(int port, char *ip_addr, task_id_t task_id)
 {
 
-    struct udp_socket_desc_s  *thread_arg;
+    struct udp_socket_desc_s  *udp_socket_desc_p = NULL;
     int                       sd, rc;
     struct sockaddr_in        sin;
 
@@ -118,53 +173,83 @@ int udp_create_socket(int port, char *ip_addr, task_id_t task_id)
     }
 
     /* Create a new descriptor for this connection */
-    thread_arg = calloc(1, sizeof(struct udp_socket_desc_s));
+    udp_socket_desc_p = calloc(1, sizeof(struct udp_socket_desc_s));
 
-    DevAssert(thread_arg != NULL);
+    DevAssert(udp_socket_desc_p != NULL);
 
-    thread_arg->sd            = sd;
-    thread_arg->local_address = ip_addr;
-    thread_arg->local_port    = port;
-    thread_arg->task_id       = task_id;
+    udp_socket_desc_p->sd            = sd;
+    udp_socket_desc_p->local_address = ip_addr;
+    udp_socket_desc_p->local_port    = port;
+    udp_socket_desc_p->task_id       = task_id;
 
-    if (pthread_create(&thread_arg->listener_thread, NULL,
-        &udp_receiver_thread, (void *)thread_arg) < 0) {
-        LOG_E(UDP_, "Pthred_create failed (%s)\n", strerror(errno));
-        return -1;
-    }
+    LOG_I(UDP_, "Inserting new descriptor for task %d, sd %d\n", udp_socket_desc_p->task_id, udp_socket_desc_p->sd);
+    pthread_mutex_lock(&udp_socket_list_mutex);
+    STAILQ_INSERT_TAIL(&udp_socket_list, udp_socket_desc_p, entries);
+    pthread_mutex_unlock(&udp_socket_list_mutex);
+
+    itti_subscribe_event_fd(TASK_UDP, sd);
     LOG_I(UDP_, "Initializing UDP for local address %s with port %d: DONE\n", ip_addr, port);
     return sd;
 }
 
-static void *udp_receiver_thread(void *arg_p)
+int
+udp_eNB_send_to(
+    int sd,
+    uint16_t port,
+    uint32_t address,
+    const uint8_t *buffer,
+    uint32_t length)
 {
-    struct udp_socket_desc_s *udp_sock_p;
-    uint8_t                   buffer[2048];
+    struct sockaddr_in to;
+    socklen_t          to_length;
 
-    udp_sock_p = (struct udp_socket_desc_s *)arg_p;
-    LOG_D(UDP_, "Inserting new descriptor for task %d, sd %d\n", udp_sock_p->task_id, udp_sock_p->sd);
-    pthread_mutex_lock(&udp_socket_list_mutex);
-    STAILQ_INSERT_TAIL(&udp_socket_list, udp_sock_p, entries);
-    pthread_mutex_unlock(&udp_socket_list_mutex);
+    if (sd <= 0 || ((buffer == NULL) && (length > 0))) {
+        LOG_E(UDP_, "udp_send_to: bad param\n");
+        return -1;
+    }
 
-    while (1) {
+    memset(&to, 0, sizeof(struct sockaddr_in));
+    to_length = sizeof(to);
+
+    to.sin_family      = AF_INET;
+    to.sin_port        = htons(port);
+    to.sin_addr.s_addr = address;
+
+    if (sendto(sd, (void *)buffer, (size_t)length, 0, (struct sockaddr *)&to,
+               to_length) < 0) {
+        LOG_E(UDP_,
+              "[SD %d] Failed to send data to "IPV4_ADDR" on port %d, buffer size %u\n",
+              sd, IPV4_ADDR_FORMAT(address), port, length);
+        return -1;
+    }
+    LOG_I(UDP_, "[SD %d] Successfully sent to "IPV4_ADDR
+          " on port %d, buffer size %u, buffer address %x\n",
+          sd, IPV4_ADDR_FORMAT(address), port, length, buffer);
+    return 0;
+}
+
+
+void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP)
+{
+    uint8_t                   l_buffer[2048];
         int                n;
         socklen_t          from_len;
         struct sockaddr_in addr;
+    MessageDef               *message_p        = NULL;
+    udp_data_ind_t           *udp_data_ind_p   = NULL;
+    uint8_t                  *forwarded_buffer = NULL;
 
+    while (1) {
         from_len = (socklen_t)sizeof(struct sockaddr_in);
 
-        if ((n = recvfrom(udp_sock_p->sd, buffer, sizeof(buffer), 0,
+        LOG_I(UDP_, "before recvfrom sd %d\n", udp_sock_pP->sd);
+        if ((n = recvfrom(udp_sock_pP->sd, l_buffer, sizeof(l_buffer), 0,
                           (struct sockaddr *)&addr, &from_len)) < 0) {
             LOG_E(UDP_, "Recvfrom failed %s\n", strerror(errno));
             break;
         } else {
-            MessageDef     *message_p = NULL;
-            udp_data_ind_t *udp_data_ind_p;
-            uint8_t *forwarded_buffer = NULL;
-
             forwarded_buffer = calloc(n, sizeof(uint8_t));
-            memcpy(forwarded_buffer, buffer, n);
+            memcpy(forwarded_buffer, l_buffer, n);
             message_p = itti_alloc_new_message(TASK_UDP, UDP_DATA_IND);
             DevAssert(message_p != NULL);
             udp_data_ind_p = &message_p->ittiMsg.udp_data_ind;
@@ -173,42 +258,53 @@ static void *udp_receiver_thread(void *arg_p)
             udp_data_ind_p->peer_port     = htons(addr.sin_port);
             udp_data_ind_p->peer_address  = addr.sin_addr.s_addr;
 
-            LOG_D(UDP_, "Msg of length %d received from %s:%u\n",
+            LOG_I(UDP_, "Msg of length %d received from %s:%u\n",
                       n, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
-            if (itti_send_msg_to_task(udp_sock_p->task_id, INSTANCE_DEFAULT, message_p) < 0) {
-                LOG_D(UDP_, "Failed to send message %d to task %d\n",
-                          UDP_DATA_IND, udp_sock_p->task_id);
+            if (itti_send_msg_to_task(udp_sock_pP->task_id, INSTANCE_DEFAULT, message_p) < 0) {
+            	LOG_I(UDP_, "Failed to send message %d to task %d\n",
+                          UDP_DATA_IND,
+                          udp_sock_pP->task_id);
                 break;
             }
         }
     }
-    close(udp_sock_p->sd);
-    udp_sock_p->sd = -1;
+    //close(udp_sock_p->sd);
+    //udp_sock_p->sd = -1;
 
-    pthread_mutex_lock(&udp_socket_list_mutex);
-    STAILQ_REMOVE(&udp_socket_list, udp_sock_p, udp_socket_desc_s, entries);
-    pthread_mutex_unlock(&udp_socket_list_mutex);
-
-    return NULL;
+    //pthread_mutex_lock(&udp_socket_list_mutex);
+    //STAILQ_REMOVE(&udp_socket_list, udp_sock_p, udp_socket_desc_s, entries);
+    //pthread_mutex_unlock(&udp_socket_list_mutex);
 }
 
 
 void *udp_eNB_task(void *args_p)
 {
+    int                 nb_events;
+    struct epoll_event *events;
+    MessageDef         *received_message_p    = NULL;
+    const char         *msg_name = NULL;
+    instance_t          instance  = 0;
+    udp_enb_init(NULL);
+
     itti_mark_task_ready(TASK_UDP);
     while(1) {
-        MessageDef *received_message_p = NULL;
         itti_receive_msg(TASK_UDP, &received_message_p);
-        DevAssert(received_message_p != NULL);
+        if (received_message_p != NULL) {
+
+            msg_name = ITTI_MSG_NAME (received_message_p);
+            instance = ITTI_MSG_INSTANCE (received_message_p);
 
         switch (ITTI_MSG_ID(received_message_p))
         {
             case UDP_INIT: {
                 udp_init_t *udp_init_p;
                 udp_init_p = &received_message_p->ittiMsg.udp_init;
-                udp_create_socket(udp_init_p->port, udp_init_p->address,
-                                  ITTI_MSG_ORIGIN_ID(received_message_p));
+                    udp_eNB_create_socket(
+                    udp_init_p->port,
+                    udp_init_p->address,
+                    ITTI_MSG_ORIGIN_ID(received_message_p));
             } break;
+
             case UDP_DATA_REQ: {
                 int     udp_sd = -1;
                 ssize_t bytes_written;
@@ -226,11 +322,13 @@ void *udp_eNB_task(void *args_p)
                 peer_addr.sin_addr.s_addr  = udp_data_req_p->peer_address;
 
                 pthread_mutex_lock(&udp_socket_list_mutex);
-                udp_sock_p = udp_get_socket_desc(ITTI_MSG_ORIGIN_ID(received_message_p));
+                    udp_sock_p = udp_eNB_get_socket_desc(ITTI_MSG_ORIGIN_ID(received_message_p));
 
                 if (udp_sock_p == NULL) {
-                    LOG_E(UDP_, "Failed to retrieve the udp socket descriptor "
-                    "associated with task %d\n", ITTI_MSG_ORIGIN_ID(received_message_p));
+                        LOG_E(UDP_,
+                                "Failed to retrieve the udp socket descriptor "
+                                "associated with task %d\n",
+                                ITTI_MSG_ORIGIN_ID(received_message_p));
                     pthread_mutex_unlock(&udp_socket_list_mutex);
                     if (udp_data_req_p->buffer) {
                         free(udp_data_req_p->buffer);
@@ -240,13 +338,17 @@ void *udp_eNB_task(void *args_p)
                 udp_sd = udp_sock_p->sd;
                 pthread_mutex_unlock(&udp_socket_list_mutex);
 
-                LOG_D(UDP_, "[%d] Sending message of size %u to "IPV4_ADDR" and port %u\n",
-                          udp_sd, udp_data_req_p->buffer_length,
+                LOG_I(UDP_, "[%d] Sending message of size %u to "IPV4_ADDR" and port %u\n",
+                            udp_sd,
+                            udp_data_req_p->buffer_length,
                           IPV4_ADDR_FORMAT(udp_data_req_p->peer_address),
                           udp_data_req_p->peer_port);
 
-                bytes_written = sendto(udp_sd, udp_data_req_p->buffer,
-                                       udp_data_req_p->buffer_length, 0,
+                    bytes_written = sendto(
+                            udp_sd,
+                            udp_data_req_p->buffer,
+                            udp_data_req_p->buffer_length,
+                            0,
                                        (struct sockaddr *)&peer_addr,
                                        sizeof(struct sockaddr_in));
 
@@ -255,27 +357,37 @@ void *udp_eNB_task(void *args_p)
                     "(%d:%s)\n", errno, strerror(errno));
                 }
             } break;
+
             case TERMINATE_MESSAGE: {
                 itti_exit_task();
             } break;
+
             case MESSAGE_TEST: {
             } break;
+
             default: {
-                LOG_D(UDP_, "Unkwnon message ID %d:%s\n",
-                          ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
+                LOG_I(UDP_, "Unkwnon message ID %d:%s\n",
+                            ITTI_MSG_ID(received_message_p),
+                            ITTI_MSG_NAME(received_message_p));
             } break;
         }
 on_error:
-        free(received_message_p);
+            itti_free (ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
+        }
+        nb_events = itti_get_events(TASK_UDP, &events);
+        /* Now handle notifications for other sockets */
+        if (nb_events > 0) {
+            udp_eNB_process_file_descriptors(events, nb_events);
+        }
     }
     return NULL;
 }
 
 int udp_enb_init(const Enb_properties_t *enb_config_p)
 {
-    LOG_D(UDP_, "Initializing UDP task interface\n");
+    LOG_I(UDP_, "Initializing UDP task interface\n");
     STAILQ_INIT(&udp_socket_list);
-    LOG_D(UDP_, "Initializing UDP task interface: DONE\n");
+    LOG_I(UDP_, "Initializing UDP task interface: DONE\n");
     return 0;
 }

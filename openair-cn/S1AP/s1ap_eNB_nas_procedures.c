@@ -402,14 +402,14 @@ void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
 int s1ap_eNB_initial_ctxt_resp(
     instance_t instance, s1ap_initial_context_setup_resp_t *initial_ctxt_resp_p)
 {
-    s1ap_eNB_instance_t          *s1ap_eNB_instance_p;
-    struct s1ap_eNB_ue_context_s *ue_context_p;
+    s1ap_eNB_instance_t          *s1ap_eNB_instance_p = NULL;
+    struct s1ap_eNB_ue_context_s *ue_context_p        = NULL;
 
-    S1ap_InitialContextSetupResponseIEs_t *initial_ies_p;
+    S1ap_InitialContextSetupResponseIEs_t *initial_ies_p  = NULL;
 
     s1ap_message  message;
 
-    uint8_t  *buffer;
+    uint8_t  *buffer  = NULL;
     uint32_t length;
     int      ret = -1;
     int      i;

@@ -94,7 +94,8 @@ def execute(oai, user, pw, logfile,logdir):
         name = 'Run oai.dlsim.perf.70%'
         diag = 'no diagnostic is available, check the log file'
         for i in range(len(PRB)):
-            for j in range(len(MCS)):
+            #for j in range(len(MCS)):
+            for j in range(0,28):
                 for k in range(1,ANT_TX):
                     for m in range (1,ANT_RX):
                         for n in range(1,PDCCH):
@@ -103,8 +104,10 @@ def execute(oai, user, pw, logfile,logdir):
                                     for q in range(MIN_SNR,MAX_SNR): 
                                         #if  if PRB[i] :
                                             
-                                        conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -n500 -P -O80' #+ OPT  
-                                        trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
+                                        #conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -n500 -P -O80' #+ OPT  
+                                        #trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
+                                        conf = '-B' + str(PRB[i]) + ' -m'+str(j) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -n500 -P -O80' #+ OPT  
+                                        trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(j)+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                         tee = ' 2>&1 | tee ' + trace
                                         match = oai.send_expect_re('./dlsim.rel8 ' + conf + tee, 'passed', 0, 1000)
                                         #print conf

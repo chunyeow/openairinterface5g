@@ -2259,14 +2259,11 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
                 status = mac_get_rrc_status(module_idP,1,next_ue);
 
-#ifndef EXMIMO_IOT
                 if (status < RRC_CONNECTED)
                   cqi_req = 0;
                 else
                   cqi_req = 1;
-#else
-                cqi_req = 0;
-#endif
+
 
                 if (round > 0) {
                     ndi = eNB_mac_inst[module_idP].UE_template[ue_mod_id].oldNDI_UL[harq_pid];

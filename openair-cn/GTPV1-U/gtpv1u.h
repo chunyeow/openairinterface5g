@@ -42,8 +42,9 @@ Address      : EURECOM,
 /* When gtpv1u is compiled for eNB use MACRO from UTILS/log.h,
  * otherwise use standard fprintf as logger.
  */
-#if defined(ENB_MODE)
-# define GTPU_DEBUG(x, args...) LOG_D(GTPU, x, ##args)
+//#if defined(ENB_MODE)
+#if 0
+# define GTPU_DEBUG(x, args...) LOG_I(GTPU, x, ##args)
 # define GTPU_INFO(x, args...)  LOG_I(GTPU, x, ##args)
 # define GTPU_WARN(x, args...)  LOG_W(GTPU, x, ##args)
 # define GTPU_ERROR(x, args...) LOG_E(GTPU, x, ##args)

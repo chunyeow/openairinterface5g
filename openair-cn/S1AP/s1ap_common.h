@@ -406,9 +406,9 @@ extern int asn1_xer_print;
 # include "s1ap_eNB_default_values.h"
 # define S1AP_ERROR(x, args...) LOG_E(S1AP, x, ##args)
 # define S1AP_WARN(x, args...)  LOG_W(S1AP, x, ##args)
-# define S1AP_TRAF(x, args...)  LOG_T(S1AP, x, ##args)
+# define S1AP_TRAF(x, args...)  LOG_I(S1AP, x, ##args)
 # define S1AP_INFO(x, args...) LOG_I(S1AP, x, ##args)
-# define S1AP_DEBUG(x, args...) LOG_D(S1AP, x, ##args)
+# define S1AP_DEBUG(x, args...) LOG_I(S1AP, x, ##args)
 #else
 # include "mme_default_values.h"
 # define S1AP_ERROR(x, args...) do { fprintf(stdout, "[S1AP][E]"x, ##args); } while(0)

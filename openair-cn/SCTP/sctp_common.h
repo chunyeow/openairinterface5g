@@ -47,7 +47,7 @@
 # include "UTIL/LOG/log.h"
 # define SCTP_ERROR(x, args...) LOG_E(SCTP, x, ##args)
 # define SCTP_WARN(x, args...)  LOG_W(SCTP, x, ##args)
-# define SCTP_DEBUG(x, args...) LOG_D(SCTP, x, ##args)
+# define SCTP_DEBUG(x, args...) LOG_I(SCTP, x, ##args)
 #else
 # define SCTP_ERROR(x, args...) do { fprintf(stderr, "[SCTP][E]"x, ##args); } while(0)
 # define SCTP_DEBUG(x, args...) do { fprintf(stdout, "[SCTP][D]"x, ##args); } while(0)

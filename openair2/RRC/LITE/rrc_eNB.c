@@ -74,6 +74,7 @@
 
 #if defined(ENABLE_USE_MME)
 #   include "rrc_eNB_S1AP.h"
+#   include "rrc_eNB_GTPV1U.h"
 #   if defined(ENABLE_ITTI)
 #   else
 #      include "../../S1AP/s1ap_eNB.h"
@@ -709,7 +710,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     // NN: this is the 1st DRB for this ue, so set it to 1
     DRB_config->drb_Identity = (DRB_Identity_t) 1;  // (ue_mod_idP+1); //allowed values 1..32
     DRB_config->logicalChannelIdentity = CALLOC(1, sizeof(long));
-    *(DRB_config->logicalChannelIdentity) = (long)3;
+    *(DRB_config->logicalChannelIdentity) = (long)5;
     DRB_rlc_config = CALLOC(1, sizeof(*DRB_rlc_config));
     DRB_config->rlc_Config = DRB_rlc_config;
 
@@ -3094,6 +3095,11 @@ void                               *rrc_enb_task(
             case S1AP_UE_CONTEXT_RELEASE_REQ:
                 rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ(msg_p, msg_name_p, instance);
                 break;
+
+            case GTPV1U_ENB_CREATE_TUNNEL_RESP:
+              rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(msg_p, msg_name_p, instance);
+              break;
+
 #   endif
 
                 /* Messages from eNB app */
