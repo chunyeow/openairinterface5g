@@ -12,7 +12,8 @@ pss2_t = upsample(primary_synch0_time,4*2);
 %load('E:\EMOS\corridor\ofdm_pilots_sync_2048_v7.mat');
 load('ofdm_pilots_sync_30MHz.mat');
 
-filename = 'E:\EMOS\corridor\eNB_data_20140319_133327.EMOS';
+%filename = 'E:\EMOS\corridor\eNB_data_20140319_133327.EMOS';
+filename = 'D:\2.6GHz\eNB_data_20140324_171904.EMOS';
 
 nb_rb1 = 100; %this can be 25, 50, or 100
 num_carriers1 = 2048/100*nb_rb1;
@@ -40,8 +41,8 @@ slots_per_frame = 20;
 
 d = dir(filename);
 nblocks = floor(d.bytes/(samples_slot_agg*slots_per_frame*nframes*4));
-PDP1_total = zeros(nblocks*nframes,useful_carriers1/2);
-PDP2_total = zeros(nblocks*nframes,useful_carriers2/2);
+PDP1_total = zeros(nblocks*nframes,useful_carriers1/4);
+PDP2_total = zeros(nblocks*nframes,useful_carriers2/4);
 
 %% main loop
 fid = fopen(filename,'r');
@@ -51,6 +52,7 @@ while ~feof(fid)
     
     %%
     [v,c]=fread(fid, 2*samples_slot_agg*slots_per_frame*nframes, 'int16',0,'ieee-le');
+    block = block+1;   
     if (c==0)
         break
     end
@@ -73,39 +75,47 @@ while ~feof(fid)
     
     if enable_plots>=2
         figure(1)
-        plot(abs(fftshift(fft(v1))))
+        plot(20*log10(abs(fftshift(fft(v1)))))
         
         figure(2)
-        plot(abs(fftshift(fft(v2))))
+        plot(20*log10(abs(fftshift(fft(v2)))))
     end
     
     %% frame start detection
-    [corr,lag] = xcorr(v2(:,1),pss2_t);
+    [corr1,lag1] = xcorr(v1(:,1),pss1_t);
+    [corr2,lag2] = xcorr(v2(:,1),pss2_t);
     %[m,idx]=max(abs(corr));
-    [m,idx]=peaksfinder(corr,frame_length2);
+    [m1,idx1]=peaksfinder(corr1,frame_length1);
+    [m2,idx2]=peaksfinder(corr2,frame_length2);
 
     if (enable_plots>=2)
         figure(20);
         hold off
-        plot(lag,abs(corr));
+        plot(lag1,abs(corr1));
         hold on
-        plot(lag(idx),m,'ro')
+        plot(lag1(idx1),m1,'ro')
+        figure(21);
+        hold off
+        plot(lag2,abs(corr2));
+        hold on
+        plot(lag2(idx2),m2,'ro')
     end
     
     %%
-    for i=1:size(idx,2)-1; % the last frame is not complite
+    for i=1:size(idx1,2)-1; % the last frame is not complite
         fprintf(1,'.');
         %frame_start2 = lag(i) - prefix_length2;
-        frame_start2 = lag(idx(i))-prefix_length2;
-        frame_start1 = frame_start2*2;
+        frame_start1 = lag1(idx1(i))-prefix_length1;
+        frame_start2 = lag2(idx2(i))-prefix_length2;
+        %frame_start1 = frame_start2*2;
         
         % ofdm receiver
         received_f1 = OFDM_RX(v1(frame_start1:frame_start1+frame_length1,:),num_carriers1,useful_carriers1,prefix_length1,num_symbols_frame);
         received_f2 = OFDM_RX(v2(frame_start2:frame_start2+frame_length2,:),num_carriers2,useful_carriers2,prefix_length2,num_symbols_frame);
         
         % channel estimation (SISO)
-        H1=conj(squeeze(f1(1,3:2:end,1:2:end))).*received_f1(3:2:end,1:2:end,1);
-        H2=conj(squeeze(f2(1,3:2:end,1:2:end))).*received_f2(3:2:end,1:2:end,1);
+        H1=conj(squeeze(f1(1,3:2:end,1:4:end))).*received_f1(3:2:end,1:4:end,1);
+        H2=conj(squeeze(f2(1,3:2:end,1:4:end))).*received_f2(3:2:end,1:4:end,1);
         H1t = ifft(H1,[],2);
         H2t = ifft(H2,[],2);
         PDP1 = mean(abs(H1t).^2,1);
@@ -142,7 +152,6 @@ while ~feof(fid)
         
     end
     fprintf(1,'\n');
-    block = block+1;
 end
 
 fclose(fid);

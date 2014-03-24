@@ -15,7 +15,8 @@ ofdm_symbol_length = num_carriers + prefix_length;
 frame_length = ofdm_symbol_length*num_symbols_frame;
 useful_carriers = num_carriers-num_zeros-1;
 
-filename = 'E:\EMOS\corridor2\eNB_data_20140321_184441.EMOS';
+%filename = 'E:\EMOS\corridor2\eNB_data_20140321_184441.EMOS';
+filename = 'D:\711MHz\eNB_data_20140324_113931.EMOS';
 samples_slot = 7680/2;
 slots_per_frame = 20;
 nframes = 100;
@@ -48,7 +49,7 @@ while ~feof(fid)
 
     if enable_plots>=2
         figure(1)
-        plot(abs(fftshift(fft(v2))))
+        plot(20*log10(abs(fftshift(fft(v2)))))
     end
     
     %% frame start detection
