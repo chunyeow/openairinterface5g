@@ -1,9 +1,9 @@
-PROMGEN: Xilinx Prom Generator O.76xd
-Copyright (c) 1995-2011 Xilinx, Inc.  All rights reserved.
+PROMGEN: Xilinx Prom Generator P.49d
+Copyright (c) 1995-2012 Xilinx, Inc.  All rights reserved.
 
-promgen -w -p mcs -c FF -o /homes/ghaddab/riadh/openair4G/trunk/targets/ARCH/EXMIMO/BITSTREAM//exmimo2_prom -s 8192 -u 0000 express-mimo2.bit -spi 
+promgen -w -p mcs -c FF -o /homes/ghaddab/riadh/openair0/express-mimo2/grlib-gpl-1.1.0-b4113/designs/express-mimo2//exmimo2_prom -s 8192 -u 0000 express-mimo2.bit -spi 
 
-PROM /homes/ghaddab/riadh/openair4G/trunk/targets/ARCH/EXMIMO/BITSTREAM/exmimo2_prom.prm map: Fri Dec 13 16:16:51 2013
+PROM /homes/ghaddab/riadh/openair0/express-mimo2/grlib-gpl-1.1.0-b4113/designs/express-mimo2/exmimo2_prom.prm map: Fri Mar 21 17:31:05 2014
 
 Calculating PROM checksum with fill value ff
 
@@ -11,7 +11,7 @@ Format        Mcs86 (32-bit)
 Size          8192K
 PROM start    0000:0000
 PROM end      007f:ffff
-PROM checksum 41725c4b
+PROM checksum 41900d70
 
         Addr1        Addr2                     Date File(s)
-    0000:0000    0040:6577     Dec 13 15:28:20 2013 express-mimo2.bit
+    0000:0000    0040:6577     Mar 21 17:30:57 2014 express-mimo2.bit
