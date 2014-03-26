@@ -70,7 +70,7 @@ typedef struct gtpv1u_bearer_s {
     /* TEID used in dl and ul */
     teid_t         teid_eNB;         ///< eNB TEID
     teid_t         teid_sgw;         ///< Remote TEID
-    uint32_t       sgw_ip_addr;
+    in_addr_t      sgw_ip_addr;
     tcp_udp_port_t port;
     //NwGtpv1uStackSessionHandleT stack_session;
     bearer_state_t state;
@@ -102,7 +102,7 @@ typedef struct gtpv1u_data_s{
 
     //RB_HEAD(gtpv1u_ue_map, gtpv1u_ue_data_s) gtpv1u_ue_map_head;
     /* Local IP address to use */
-    uint32_t              enb_ip_address_for_S1u_S12_S4_up;
+    in_addr_t             enb_ip_address_for_S1u_S12_S4_up;
     char                 *ip_addr;
     tcp_udp_port_t        enb_port_for_S1u_S12_S4_up;
     /* UDP internal data */

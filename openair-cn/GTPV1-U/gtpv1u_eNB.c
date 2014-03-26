@@ -568,7 +568,13 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
             gtpv1u_ue_data_p = calloc (1, sizeof(gtpv1u_ue_data_t));
             gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
             gtpv1u_ue_data_p->instance_id = 0; // TO DO
-#warning "TO DO TO DO gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr"
+            memcpy(&GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.buffer,
+                &gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up,
+                sizeof (in_addr_t));
+            GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.length = sizeof (in_addr_t);
+            AssertFatal(create_tunnel_req_pP->sgw_addr[i].length == 4, "Bad transport layer address for next operation, TO DO");
+            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = *((in_addr_t*)create_tunnel_req_pP->sgw_addr[i].buffer);
+
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].state    = BEARER_IN_CONFIG;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB = s1u_teid;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw = create_tunnel_req_pP->sgw_S1u_teid[i];
@@ -578,8 +584,12 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
         } else if (hash_rc == HASH_TABLE_OK) {
             gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
             gtpv1u_ue_data_p->instance_id = 0; // TO DO
-            ipv4_addr =
-#warning "TO DO TO DO gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = (uint32_t)(create_tunnel_req_pP->sgw_addr[i].buffer;"
+            memcpy(&GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.buffer,
+                &gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up,
+                sizeof (in_addr_t));
+            GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.length = sizeof (in_addr_t);
+            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = *((in_addr_t*)create_tunnel_req_pP->sgw_addr[i].buffer);
+
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].state    = BEARER_IN_CONFIG;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB = s1u_teid;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw = create_tunnel_req_pP->sgw_S1u_teid[i];
@@ -651,10 +661,10 @@ static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP)
     //-----------------------
     hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, req_pP->ue_index, (void**)&gtpv1u_ue_data_p);
     if (hash_rc == HASH_TABLE_OK) {
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].state    = BEARER_DOWN;
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB = 0;
-        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw = 0;
-#warning "TO DO TO DO gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr"
+        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].state       = BEARER_DOWN;
+        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB    = 0;
+        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw    = 0;
+        gtpv1u_ue_data_p->bearers[req_pP->eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = 0;
         gtpv1u_ue_data_p->num_bearers -= 1;
 
         if (gtpv1u_ue_data_p->num_bearers == 0) {
