@@ -704,7 +704,18 @@ void pdcp_run (frame_t frameP, eNB_flag_t  enb_flagP, module_id_t ue_mod_idP, mo
 # endif
 #endif
 
-  pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+#if defined(USER_MODE) && defined(OAI_EMU)
+  pdcp_t            *pdcp_p          = NULL;
+  // add other rb_ids 
+  if (enb_flagP == ENB_FLAG_NO) {
+      pdcp_p = &pdcp_array_ue[ue_mod_idP][DTCH];
+  } else {
+      pdcp_p = &pdcp_array_eNB[enb_mod_idP][ue_mod_idP][DTCH];
+  }
+
+  if (pdcp_p->instanciated_instance  == TRUE )
+    pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+#endif 
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
 #if defined(LINK_PDCP_TO_GTPV1U)

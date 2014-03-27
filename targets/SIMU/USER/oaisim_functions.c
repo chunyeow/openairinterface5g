@@ -1055,7 +1055,7 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime) {
 
                   if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
                       otg_times += 1;
-                      (otg_pkt->otg_pkt).rb_id = dst_id * NB_RB_MAX + DTCH; // app could be binded to a given DRB
+                      (otg_pkt->otg_pkt).rb_id = DTCH; // app could be binded to a given DRB
                       (otg_pkt->otg_pkt).module_id = enb_module_idP;
                       (otg_pkt->otg_pkt).dst_id = dst_id;
                       (otg_pkt->otg_pkt).is_ue = 0;
@@ -1184,7 +1184,7 @@ void update_otg_UE(module_id_t ue_mod_idP, unsigned int ctime) {
               (otg_pkt->otg_pkt).sdu_buffer = (uint8_t*) packet_gen(src_id, dst_id, 0, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
 
               if ((otg_pkt->otg_pkt).sdu_buffer != NULL) {
-                  (otg_pkt->otg_pkt).rb_id     = dst_id * NB_RB_MAX + DTCH;
+                  (otg_pkt->otg_pkt).rb_id     = DTCH;
                   (otg_pkt->otg_pkt).module_id = module_id;
                   (otg_pkt->otg_pkt).dst_id    = dst_id;
                   (otg_pkt->otg_pkt).is_ue     = 1;

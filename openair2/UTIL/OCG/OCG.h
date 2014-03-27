@@ -757,7 +757,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
 
   int OCG_main (char is_local_server[FILENAME_LENGTH_MAX]);
 
-  void init_oai_emulation (void);
+  //  void init_oai_emulation (void);
   //#include "UTIL/LOG/log.h"
 
 #ifdef __cplusplus
