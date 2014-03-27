@@ -48,7 +48,7 @@ static hash_size_t def_hashfunc(const uint64_t keyP)
  * The user can also specify a hash function. If the hashfunc argument is NULL, a default hash function is used.
  * If an error occurred, NULL is returned. All other values in the returned hash_table_t pointer should be released with hashtable_destroy().
  */
-hash_table_t *hashtable_create(hash_size_t sizeP, hash_size_t (*hashfuncP)(const uint64_t ), void (*freefuncP)(void*))
+hash_table_t *hashtable_create(hash_size_t sizeP, hash_size_t (*hashfuncP)(const hash_key_t ), void (*freefuncP)(void*))
 {
     hash_table_t *hashtbl = NULL;
 
@@ -101,11 +101,11 @@ hashtable_rc_t hashtable_destroy(hash_table_t *hashtblP)
     return HASH_TABLE_OK;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
-hashtable_rc_t hashtable_is_key_exists (hash_table_t *hashtblP, const uint64_t keyP)
+hashtable_rc_t hashtable_is_key_exists (hash_table_t *hashtblP, const hash_key_t keyP)
 //-------------------------------------------------------------------------------------------------------------------------------
 {
-    hash_node_t *node;
-    hash_size_t  hash;
+    hash_node_t *node = NULL;
+    hash_size_t  hash = 0;
 
     if (hashtblP == NULL) {
         return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
@@ -122,7 +122,7 @@ hashtable_rc_t hashtable_is_key_exists (hash_table_t *hashtblP, const uint64_t k
     return HASH_TABLE_KEY_NOT_EXISTS;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
-hashtable_rc_t hashtable_apply_funct_on_elements (hash_table_t *hashtblP, void functP(uint64_t keyP, void* dataP, void* parameterP), void* parameterP)
+hashtable_rc_t hashtable_apply_funct_on_elements (hash_table_t *hashtblP, void functP(hash_key_t keyP, void* dataP, void* parameterP), void* parameterP)
 //-------------------------------------------------------------------------------------------------------------------------------
 {
     hash_node_t  *node         = NULL;
@@ -149,10 +149,10 @@ hashtable_rc_t hashtable_apply_funct_on_elements (hash_table_t *hashtblP, void f
  * Adding a new element
  * To make sure the hash value is not bigger than size, the result of the user provided hash function is used modulo size.
  */
-hashtable_rc_t hashtable_insert(hash_table_t *hashtblP, const uint64_t keyP, void *dataP)
+hashtable_rc_t hashtable_insert(hash_table_t *hashtblP, const hash_key_t keyP, void *dataP)
 {
-    hash_node_t *node;
-    hash_size_t hash;
+    hash_node_t *node = NULL;
+    hash_size_t  hash = 0;
     if (hashtblP == NULL) {
         return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
     }
@@ -186,10 +186,10 @@ hashtable_rc_t hashtable_insert(hash_table_t *hashtblP, const uint64_t keyP, voi
  * To remove an element from the hash table, we just search for it in the linked list for that hash value,
  * and remove it if it is found. If it was not found, it is an error and -1 is returned.
  */
-hashtable_rc_t hashtable_remove(hash_table_t *hashtblP, const uint64_t keyP)
+hashtable_rc_t hashtable_remove(hash_table_t *hashtblP, const hash_key_t keyP)
 {
     hash_node_t *node, *prevnode=NULL;
-    hash_size_t  hash;
+    hash_size_t  hash = 0;
 
     if (hashtblP == NULL) {
         return HASH_TABLE_BAD_PARAMETER_HASHTABLE;
@@ -217,10 +217,10 @@ hashtable_rc_t hashtable_remove(hash_table_t *hashtblP, const uint64_t keyP)
  * Searching for an element is easy. We just search through the linked list for the corresponding hash value.
  * NULL is returned if we didn't find it.
  */
-hashtable_rc_t hashtable_get(hash_table_t *hashtblP, const uint64_t keyP, void** dataP)
+hashtable_rc_t hashtable_get(hash_table_t *hashtblP, const hash_key_t keyP, void** dataP)
 {
-    hash_node_t *node;
-    hash_size_t  hash;
+    hash_node_t *node = NULL;
+    hash_size_t  hash = 0;
 
     if (hashtblP == NULL) {
         *dataP = NULL;
