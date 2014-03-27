@@ -120,7 +120,9 @@ typedef struct ue_context_s {
 #define SUBSCRIPTION_KNOWN      0x1
     unsigned subscription_known:1;
 
-    uint8_t msisdn[MSISDN_LENGTH];
+    uint8_t               msisdn[MSISDN_LENGTH+1];
+    uint8_t               msisdn_length;
+
     mm_state_t mm_state;
     /* Globally Unique Temporary Identity */
     GUTI_t        guti;

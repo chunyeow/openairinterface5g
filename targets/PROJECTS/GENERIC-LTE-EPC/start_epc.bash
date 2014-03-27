@@ -175,9 +175,9 @@ else
 fi
 if [ ! -f $OBJ_DIR/Makefile ]
 then
-    echo_success "Invoking autogen"
-    bash_exec "./autogen.sh"
-    cd ./$OBJ_DIR
+    #echo_success "Invoking autogen"
+    #bash_exec "./autogen.sh"
+    #cd ./$OBJ_DIR
     echo_success "Invoking configure"
     ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
 else

@@ -87,7 +87,7 @@ static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_pro
 /*------------------------------------------------------------------------------*/
 static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_properties)
 {
-    MessageDef *msg_p;
+    MessageDef *msg_p = NULL;
 
     msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
 
@@ -95,6 +95,7 @@ static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_pro
     RRC_CONFIGURATION_REQ (msg_p).tac =             enb_properties->properties[enb_id]->tac;
     RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties->properties[enb_id]->mcc;
     RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties->properties[enb_id]->mnc;
+    RRC_CONFIGURATION_REQ (msg_p).mnc_digit_length = enb_properties->properties[enb_id]->mnc_digit_length;
     RRC_CONFIGURATION_REQ (msg_p).default_drx =     enb_properties->properties[enb_id]->default_drx;
     RRC_CONFIGURATION_REQ (msg_p).frame_type =      enb_properties->properties[enb_id]->frame_type;
     RRC_CONFIGURATION_REQ (msg_p).tdd_config =      enb_properties->properties[enb_id]->tdd_config;
@@ -133,13 +134,14 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
             s1ap_register_eNB = &S1AP_REGISTER_ENB_REQ(msg_p);
 
             /* Some default/random parameters */
-            s1ap_register_eNB->eNB_id =         enb_properties->properties[enb_id]->eNB_id;
-            s1ap_register_eNB->cell_type =      enb_properties->properties[enb_id]->cell_type;
-            s1ap_register_eNB->eNB_name =       enb_properties->properties[enb_id]->eNB_name;
-            s1ap_register_eNB->tac =            enb_properties->properties[enb_id]->tac;
-            s1ap_register_eNB->mcc =            enb_properties->properties[enb_id]->mcc;
-            s1ap_register_eNB->mnc =            enb_properties->properties[enb_id]->mnc;
-            s1ap_register_eNB->default_drx =    enb_properties->properties[enb_id]->default_drx;
+            s1ap_register_eNB->eNB_id           = enb_properties->properties[enb_id]->eNB_id;
+            s1ap_register_eNB->cell_type        = enb_properties->properties[enb_id]->cell_type;
+            s1ap_register_eNB->eNB_name         = enb_properties->properties[enb_id]->eNB_name;
+            s1ap_register_eNB->tac              = enb_properties->properties[enb_id]->tac;
+            s1ap_register_eNB->mcc              = enb_properties->properties[enb_id]->mcc;
+            s1ap_register_eNB->mnc              = enb_properties->properties[enb_id]->mnc;
+            s1ap_register_eNB->mnc_digit_length = enb_properties->properties[enb_id]->mnc_digit_length;
+            s1ap_register_eNB->default_drx      = enb_properties->properties[enb_id]->default_drx;
 
             s1ap_register_eNB->nb_mme =         enb_properties->properties[enb_id]->nb_mme;
             AssertFatal (s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, "Too many MME for eNB %d (%d/%d)!", enb_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);

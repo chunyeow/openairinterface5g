@@ -81,24 +81,28 @@ static inline int ue_context_compare_identifiers(
     } else {
         uint16_t mcc1;
         uint16_t mnc1;
+        uint16_t mnc1_len;
         uint16_t mcc2;
         uint16_t mnc2;
+        uint16_t mnc2_len;
 
-        PLMN_T_TO_MCC_MNC(p1->guti.gummei.plmn, mcc1, mnc1);
-        PLMN_T_TO_MCC_MNC(p1->guti.gummei.plmn, mcc2, mnc2);
+        PLMN_T_TO_MCC_MNC(p1->guti.gummei.plmn, mcc1, mnc1, mnc1_len);
+        PLMN_T_TO_MCC_MNC(p1->guti.gummei.plmn, mcc2, mnc2, mnc2_len);
 
         /* else compare by GUTI */
         if ((p1->guti.m_tmsi < p2->guti.m_tmsi) &&
             (p1->guti.gummei.MMEcode < p2->guti.gummei.MMEcode) &&
             (p1->guti.gummei.MMEgid < p2->guti.gummei.MMEgid) &&
             (mcc1 < mcc2) &&
-            (mnc1 < mnc2))
+            (mnc1 < mnc2) &&
+            (mnc1_len < mnc2_len))
             return 1;
         if ((p1->guti.m_tmsi > p2->guti.m_tmsi) &&
             (p1->guti.gummei.MMEcode > p2->guti.gummei.MMEcode) &&
             (p1->guti.gummei.MMEgid > p2->guti.gummei.MMEgid) &&
             (mcc1 > mcc2) &&
-            (mnc1 > mnc2))
+            (mnc1 > mnc2) &&
+            (mnc1_len > mnc2_len))
             return -1;
     }
     /* Match -> return 0 */

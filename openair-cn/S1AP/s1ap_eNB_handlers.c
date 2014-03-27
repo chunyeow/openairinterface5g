@@ -301,7 +301,7 @@ int s1ap_eNB_handle_s1_setup_response(uint32_t               assoc_id,
             plmn_identity_p = gummei_item_p->servedPLMNs.list.array[i];
             new_plmn_identity_p = calloc(1, sizeof(struct plmn_identity_s));
             TBCD_TO_MCC_MNC(plmn_identity_p, new_plmn_identity_p->mcc,
-                            new_plmn_identity_p->mnc);
+                            new_plmn_identity_p->mnc, new_plmn_identity_p->mnc_digit_length);
             STAILQ_INSERT_TAIL(&new_gummei_p->served_plmns, new_plmn_identity_p, next);
             new_gummei_p->nb_served_plmns++;
         }
@@ -414,9 +414,9 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
 {
     int i;
 
-    s1ap_eNB_mme_data_t   *mme_desc_p;
-    s1ap_eNB_ue_context_t *ue_desc_p;
-    MessageDef            *message_p;
+    s1ap_eNB_mme_data_t   *mme_desc_p       = NULL;
+    s1ap_eNB_ue_context_t *ue_desc_p        = NULL;
+    MessageDef            *message_p        = NULL;
 
     S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
     DevAssert(s1ap_message_p != NULL);
@@ -445,7 +445,7 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
 
     ue_desc_p->mme_ue_s1ap_id = initialContextSetupRequest_p->mme_ue_s1ap_id;
 
-    message_p = itti_alloc_new_message(TASK_S1AP, S1AP_INITIAL_CONTEXT_SETUP_REQ);
+    message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_INITIAL_CONTEXT_SETUP_REQ);
 
     S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_initial_id  = ue_desc_p->ue_initial_id;
     ue_desc_p->ue_initial_id = 0;

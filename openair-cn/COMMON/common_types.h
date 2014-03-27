@@ -88,6 +88,7 @@ typedef uint32_t SequenceNumber_t;
 typedef uint32_t access_restriction_t;
 typedef uint32_t context_identifier_t;
 typedef uint32_t rau_tau_timer_t;
+//typedef uint32_t in_addr_t; is network byte order
 
 typedef uint32_t ard_t;
 #define ARD_UTRAN_NOT_ALLOWED               (1U)

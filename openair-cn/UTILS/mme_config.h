@@ -104,6 +104,7 @@ typedef struct mme_config_s {
         uint8_t   nb_plmns;
         uint16_t *plmn_mcc;
         uint16_t *plmn_mnc;
+        uint16_t *plmn_mnc_len;
         uint16_t *plmn_tac;
     } gummei;
 

@@ -141,6 +141,7 @@ typedef enum rrc_establishment_cause_e {
 typedef struct s1ap_gummei_s {
     uint16_t mcc;
     uint16_t mnc;
+    uint8_t  mnc_len;
     uint8_t  mme_code;
     uint16_t mme_group_id;
 } s1ap_gummei_t;
@@ -192,6 +193,13 @@ typedef struct transport_layer_addr_s {
     uint8_t length;
     uint8_t buffer[20];
 } transport_layer_addr_t;
+
+#define TRANSPORT_LAYER_ADDR_COPY(dEST,sOURCE)        \
+  do {                                                \
+      AssertFatal(sOURCE.len <= 20);                  \
+      memcpy(dEST.buffer, sOURCE.buffer, sOURCE.len); \
+      dEST.length = sOURCE.length;                    \
+  } while (0)
 
 typedef struct e_rab_level_qos_parameter_s {
     uint8_t qci;
@@ -266,6 +274,7 @@ typedef struct s1ap_register_enb_req_s {
      */
     uint16_t mcc;
     uint16_t mnc;
+    uint8_t  mnc_digit_length;
 
     /* Default Paging DRX of the eNB as defined in TS 36.304 */
     paging_drx_t default_drx;

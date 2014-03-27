@@ -704,13 +704,13 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_config = CALLOC(1, sizeof(*DRB_config));
 
     DRB_config->eps_BearerIdentity = CALLOC(1, sizeof(long));
-    *(DRB_config->eps_BearerIdentity) = 5L; // LW set to first value, allowed value 5..15
+    *(DRB_config->eps_BearerIdentity) = 5L; // LW set to first value, allowed value 5..15, value : x+4
     // DRB_config->drb_Identity = (DRB_Identity_t) 1; //allowed values 1..32
     // NN: this is the 1st DRB for this ue, so set it to 1
     // NN: this is the 1st DRB for this ue, so set it to 1
-    DRB_config->drb_Identity = (DRB_Identity_t) 1;  // (ue_mod_idP+1); //allowed values 1..32
+    DRB_config->drb_Identity = (DRB_Identity_t) 1;  // (ue_mod_idP+1); //allowed values 1..32, value: x
     DRB_config->logicalChannelIdentity = CALLOC(1, sizeof(long));
-    *(DRB_config->logicalChannelIdentity) = (long)5;
+    *(DRB_config->logicalChannelIdentity) = (long)3; // value : x+2
     DRB_rlc_config = CALLOC(1, sizeof(*DRB_rlc_config));
     DRB_config->rlc_Config = DRB_rlc_config;
 

@@ -262,6 +262,7 @@ assert() {
     fi
 }
 
+
 test_command_install_lib() {
   # usage: test_command_install_package searched_binary package_to_be_installed_if_binary_not_found optional_option_to_apt_get_install
   if [ ! -f $1 ]; then
@@ -391,6 +392,9 @@ is_real_interface() {
     for var in "$@"
     do
         if [ "a$var" == "a" ]; then
+           return 0
+        fi
+        if [ "a$var" == "anone" ]; then
            return 0
         fi
         IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $var | sed 's/^.*NAME=//' | tr -d '"'`

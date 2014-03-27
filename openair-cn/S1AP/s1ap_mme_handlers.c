@@ -290,6 +290,7 @@ int s1ap_mme_handle_s1_setup_request(uint32_t assoc_id, uint32_t stream,
 
         /* eNB and MME have no common PLMN */
         if (ta_ret != TA_LIST_RET_OK) {
+            S1AP_ERROR("No Common PLMN with eNB, generate_s1_setup_failure\n");
             return s1ap_mme_generate_s1_setup_failure(assoc_id, S1ap_Cause_PR_misc,
                                                       S1ap_CauseMisc_unknown_PLMN,
                                                       S1ap_TimeToWait_v20s);
@@ -374,9 +375,11 @@ int s1ap_generate_s1_setup_response(eNB_description_t *eNB_association)
 
         /* FIXME: free object from list once encoded */
         plmn = calloc(1, sizeof(*plmn));
-        MCC_MNC_TO_PLMNID(mme_config.gummei.plmn_mcc[i],
-                          mme_config.gummei.plmn_mnc[i],
-                          plmn);
+        MCC_MNC_TO_PLMNID(
+            mme_config.gummei.plmn_mcc[i],
+            mme_config.gummei.plmn_mnc[i],
+            mme_config.gummei.plmn_mnc_len[i],
+            plmn);
         ASN_SEQUENCE_ADD(&servedGUMMEI.servedPLMNs.list, plmn);
     }
     for (i = 0; i < mme_config.gummei.nb_mme_gid; i++) {

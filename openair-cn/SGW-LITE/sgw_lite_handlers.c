@@ -91,8 +91,13 @@ int sgw_lite_handle_create_session_request(SgwCreateSessionRequest *session_req_
         return -1;
     }
 
-    SPGW_APP_DEBUG("Rx CREATE-SESSION-REQUEST MME S11 teid %u S-GW S11 teid %u APN %s EPS bearer Id %d\n", new_endpoint->remote_teid, new_endpoint->local_teid, session_req_p->apn, session_req_p->bearer_to_create.eps_bearer_id);
-    SPGW_APP_DEBUG("                          IMSI %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",IMSI(&session_req_p->imsi));
+    SPGW_APP_DEBUG("Rx CREATE-SESSION-REQUEST MME S11 teid %u S-GW S11 teid %u APN %s EPS bearer Id %d\n",
+        new_endpoint->remote_teid,
+        new_endpoint->local_teid,
+        session_req_p->apn,
+        session_req_p->bearer_to_create.eps_bearer_id);
+    SPGW_APP_DEBUG("                          IMSI %c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",
+        IMSI(&session_req_p->imsi));
 
     s_plus_p_gw_eps_bearer_context_information = sgw_lite_cm_create_bearer_context_information_in_collection(new_endpoint->local_teid);
     if (s_plus_p_gw_eps_bearer_context_information != NULL) {
@@ -115,7 +120,9 @@ int sgw_lite_handle_create_session_request(SgwCreateSessionRequest *session_req_
         s_plus_p_gw_eps_bearer_context_information->sgw_eps_bearer_context_information.peer_ip                        = session_req_p->peer_ip;
         // may use ntohl or reverse, will see
 
-        FTEID_T_2_IP_ADDRESS_T((&session_req_p->sender_fteid_for_cp) , (&s_plus_p_gw_eps_bearer_context_information->sgw_eps_bearer_context_information.mme_ip_address_for_S11));
+        FTEID_T_2_IP_ADDRESS_T(
+            (&session_req_p->sender_fteid_for_cp) ,
+            (&s_plus_p_gw_eps_bearer_context_information->sgw_eps_bearer_context_information.mme_ip_address_for_S11));
 
         //--------------------------------------
         // PDN connection
@@ -252,11 +259,12 @@ int sgw_lite_handle_sgi_endpoint_created(SGICreateEndpointResp *resp_p)
         create_session_response_p->bearer_context_created.cause = CONTEXT_NOT_FOUND;
     }
 
-    SPGW_APP_DEBUG("Tx CREATE-SESSION-RESPONSE MME -> %s, teid %u S-GW teid %u S1U teid %u EPS bearer id %u status %d\n",
+    SPGW_APP_DEBUG("Tx CREATE-SESSION-RESPONSE MME -> %s, S11 MME teid %u S11 S-GW teid %u S1U teid %u S1U addr 0x%x EPS bearer id %u status %d\n",
                    to_task == TASK_MME_APP ? "TASK_MME_APP" : "TASK_S11",
                    create_session_response_p->teid,
                    create_session_response_p->s11_sgw_teid.teid,
                    create_session_response_p->bearer_context_created.s1u_sgw_fteid.teid,
+                   create_session_response_p->bearer_context_created.s1u_sgw_fteid.ipv4_address,
                    create_session_response_p->bearer_context_created.eps_bearer_id,
                    create_session_response_p->bearer_context_created.cause);
     return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
@@ -504,14 +512,19 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
     sgw_lite_display_s11teid2mme_mappings();
     sgw_lite_display_s11_bearer_context_information_mapping();
 
-    hash_rc = hashtable_get(sgw_app.s11_bearer_context_information_hashtable, modify_bearer_p->teid, (void**)&new_bearer_context_information_p);
+    hash_rc = hashtable_get(
+        sgw_app.s11_bearer_context_information_hashtable,
+        modify_bearer_p->teid,
+        (void**)&new_bearer_context_information_p);
 
     if (hash_rc == HASH_TABLE_OK) {
 
         new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.default_bearer = modify_bearer_p->bearer_context_to_modify.eps_bearer_id;
         new_bearer_context_information_p->sgw_eps_bearer_context_information.trxn = modify_bearer_p->trxn;
 
-        hash_rc = hashtable_is_key_exists (new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers, modify_bearer_p->bearer_context_to_modify.eps_bearer_id);
+        hash_rc = hashtable_is_key_exists (
+            new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers,
+            modify_bearer_p->bearer_context_to_modify.eps_bearer_id);
 
         if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
             message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_RESPONSE);
@@ -525,10 +538,16 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
             modify_response_p->choice.bearer_for_removal.cause              = CONTEXT_NOT_FOUND;
             modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
             modify_response_p->trxn                                         = modify_bearer_p->trxn;
+            SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, eps_bearer_id %u CONTEXT_NOT_FOUND\n",
+                modify_bearer_p->bearer_context_to_modify.eps_bearer_id);
             return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
         } else if (hash_rc == HASH_TABLE_OK) {
             // TO DO
-            hash_rc = hashtable_get (new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers, modify_bearer_p->bearer_context_to_modify.eps_bearer_id, (void**)&eps_bearer_entry_p);
+            hash_rc = hashtable_get (
+                new_bearer_context_information_p->sgw_eps_bearer_context_information.pdn_connection.sgw_eps_bearers,
+                modify_bearer_p->bearer_context_to_modify.eps_bearer_id,
+                (void**)&eps_bearer_entry_p);
+
             FTEID_T_2_IP_ADDRESS_T( (&modify_bearer_p->bearer_context_to_modify.s1_eNB_fteid) , (&eps_bearer_entry_p->enb_ip_address_for_S1u) );
             eps_bearer_entry_p->enb_teid_for_S1u = modify_bearer_p->bearer_context_to_modify.s1_eNB_fteid.teid;
 
@@ -564,6 +583,9 @@ int sgw_lite_handle_modify_bearer_request(SgwModifyBearerRequest *modify_bearer_
         modify_response_p->choice.bearer_for_removal.cause              = CONTEXT_NOT_FOUND;
         modify_response_p->cause                                        = CONTEXT_NOT_FOUND;
         modify_response_p->trxn                                         = modify_bearer_p->trxn;
+
+        SPGW_APP_DEBUG("Rx MODIFY_BEARER_REQUEST, teid %u CONTEXT_NOT_FOUND\n",
+            modify_bearer_p->teid);
         return itti_send_msg_to_task(to_task, INSTANCE_DEFAULT, message_p);
     }
     return -1;

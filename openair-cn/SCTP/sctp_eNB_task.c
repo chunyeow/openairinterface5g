@@ -549,12 +549,12 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
     } else {
         sctp_cnx->nb_messages++;
 
-        if (ntohl(sinfo.sinfo_ppid) != sctp_cnx->ppid) {
+        if (sinfo.sinfo_ppid != sctp_cnx->ppid) {
             /* Mismatch in Payload Protocol Identifier,
              * may be we received unsollicited traffic from stack other than S1AP.
              */
             SCTP_ERROR("Received data from peer with unsollicited PPID %d, expecting %d\n",
-                ntohl(sinfo.sinfo_ppid), sctp_cnx->ppid);
+                sinfo.sinfo_ppid, sctp_cnx->ppid);
         }
 
         SCTP_DEBUG("[%d][%d] Msg of length %d received from port %u, on stream %d, PPID %d\n",

@@ -26,7 +26,7 @@ typedef struct gtpv1u_enb_create_tunnel_resp_s {
     int                    num_tunnels;
     teid_t                 enb_S1u_teid[GTPV1U_MAX_BEARERS_PER_UE];  ///< Tunnel Endpoint Identifier
     ebi_t                  eps_bearer_id[GTPV1U_MAX_BEARERS_PER_UE];
-    transport_layer_addr_t enb_addr[GTPV1U_MAX_BEARERS_PER_UE];
+    transport_layer_addr_t enb_addr;
 } gtpv1u_enb_create_tunnel_resp_t;
 
 typedef struct gtpv1u_enb_update_tunnel_req_s {

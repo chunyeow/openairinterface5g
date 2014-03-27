@@ -153,6 +153,7 @@ void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_enb_req_t *
         DevCheck(new_instance->tac == s1ap_register_eNB->tac, new_instance->tac, s1ap_register_eNB->tac, 0);
         DevCheck(new_instance->mcc == s1ap_register_eNB->mcc, new_instance->mcc, s1ap_register_eNB->mcc, 0);
         DevCheck(new_instance->mnc == s1ap_register_eNB->mnc, new_instance->mnc, s1ap_register_eNB->mnc, 0);
+        DevCheck(new_instance->mnc_digit_length == s1ap_register_eNB->mnc_digit_length, new_instance->mnc_digit_length, s1ap_register_eNB->mnc_digit_length, 0);
         DevCheck(new_instance->default_drx == s1ap_register_eNB->default_drx, new_instance->default_drx, s1ap_register_eNB->default_drx, 0);
     } else {
         new_instance = calloc(1, sizeof(s1ap_eNB_instance_t));
@@ -162,14 +163,15 @@ void s1ap_eNB_handle_register_eNB(instance_t instance, s1ap_register_enb_req_t *
         RB_INIT(&new_instance->s1ap_mme_head);
 
         /* Copy usefull parameters */
-        new_instance->instance    = instance;
-        new_instance->eNB_name    = s1ap_register_eNB->eNB_name;
-        new_instance->eNB_id      = s1ap_register_eNB->eNB_id;
-        new_instance->cell_type   = s1ap_register_eNB->cell_type;
-        new_instance->tac         = s1ap_register_eNB->tac;
-        new_instance->mcc         = s1ap_register_eNB->mcc;
-        new_instance->mnc         = s1ap_register_eNB->mnc;
-        new_instance->default_drx = s1ap_register_eNB->default_drx;
+        new_instance->instance         = instance;
+        new_instance->eNB_name         = s1ap_register_eNB->eNB_name;
+        new_instance->eNB_id           = s1ap_register_eNB->eNB_id;
+        new_instance->cell_type        = s1ap_register_eNB->cell_type;
+        new_instance->tac              = s1ap_register_eNB->tac;
+        new_instance->mcc              = s1ap_register_eNB->mcc;
+        new_instance->mnc              = s1ap_register_eNB->mnc;
+        new_instance->mnc_digit_length = s1ap_register_eNB->mnc_digit_length;
+        new_instance->default_drx      = s1ap_register_eNB->default_drx;
 
         /* Add the new instance to the list of eNB (meaningfull in virtual mode) */
         s1ap_eNB_insert_new_instance(new_instance);
@@ -310,15 +312,15 @@ void *s1ap_eNB_task(void *arg)
 static int s1ap_eNB_generate_s1_setup_request(
     s1ap_eNB_instance_t *instance_p, s1ap_eNB_mme_data_t *s1ap_mme_data_p)
 {
-    s1ap_message message;
+    s1ap_message               message;
 
     S1ap_S1SetupRequestIEs_t *s1SetupRequest_p;
     S1ap_PLMNidentity_t       plmnIdentity;
     S1ap_SupportedTAs_Item_t  ta;
 
     uint8_t  *buffer;
-    uint32_t len;
-    int      ret = 0;
+    uint32_t  len;
+    int       ret = 0;
 
     DevAssert(instance_p != NULL);
     DevAssert(s1ap_mme_data_p != NULL);
@@ -339,13 +341,13 @@ static int s1ap_eNB_generate_s1_setup_request(
     s1SetupRequest_p->global_ENB_ID.eNB_ID.present = S1ap_ENB_ID_PR_macroENB_ID;
     MACRO_ENB_ID_TO_BIT_STRING(instance_p->eNB_id,
                                &s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID);
-    MCC_MNC_TO_PLMNID(instance_p->mcc, instance_p->mnc,
+    MCC_MNC_TO_PLMNID(instance_p->mcc, instance_p->mnc, instance_p->mnc_digit_length,
                       &s1SetupRequest_p->global_ENB_ID.pLMNidentity);
 
     S1AP_INFO("%d -> %02x%02x%02x\n", instance_p->eNB_id, s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID.buf[0], s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID.buf[1], s1SetupRequest_p->global_ENB_ID.eNB_ID.choice.macroENB_ID.buf[2]);
 
     INT16_TO_OCTET_STRING(instance_p->tac, &ta.tAC);
-    MCC_MNC_TO_TBCD(instance_p->mcc, instance_p->mnc, &plmnIdentity);
+    MCC_MNC_TO_TBCD(instance_p->mcc, instance_p->mnc, instance_p->mnc_digit_length, &plmnIdentity);
 
     ASN_SEQUENCE_ADD(&ta.broadcastPLMNs.list, &plmnIdentity);
     ASN_SEQUENCE_ADD(&s1SetupRequest_p->supportedTAs.list, &ta);

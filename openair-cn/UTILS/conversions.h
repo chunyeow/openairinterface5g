@@ -152,8 +152,8 @@ do {                                                                \
 #define MCC_HUNDREDS(vALUE) \
     ((vALUE) / 100)
 /* When MNC is only composed of 2 digits, set the hundreds unit to 0xf */
-#define MNC_HUNDREDS(vALUE) \
-    (((vALUE) / 100) == 0 ? 15 : (vALUE) / 100)
+#define MNC_HUNDREDS(vALUE, mNCdIGITlENGTH) \
+    ( mNCdIGITlENGTH == 2 ? 15 : (vALUE) / 100)
 #define MCC_MNC_DECIMAL(vALUE) \
     (((vALUE) / 10) % 10)
 #define MCC_MNC_DIGIT(vALUE) \
@@ -167,30 +167,36 @@ do {                                    \
     (bUFFER)[2] = MCC_MNC_DIGIT(mCC);   \
 } while(0)
 
-#define MCC_MNC_TO_PLMNID(mCC, mNC, oCTETsTRING)                               \
+#define MCC_MNC_TO_PLMNID(mCC, mNC, mNCdIGITlENGTH, oCTETsTRING)               \
 do {                                                                           \
     (oCTETsTRING)->buf = calloc(3, sizeof(uint8_t));                           \
     (oCTETsTRING)->buf[0] = (MCC_MNC_DECIMAL(mCC) << 4) | MCC_HUNDREDS(mCC);   \
-    (oCTETsTRING)->buf[1] = (MNC_HUNDREDS(mNC) << 4) | MCC_MNC_DIGIT(mCC);     \
+    (oCTETsTRING)->buf[1] = (MNC_HUNDREDS(mNC,mNCdIGITlENGTH) << 4) | MCC_MNC_DIGIT(mCC);     \
     (oCTETsTRING)->buf[2] = (MCC_MNC_DIGIT(mNC) << 4) | MCC_MNC_DECIMAL(mNC);  \
     (oCTETsTRING)->size = 3;                                                   \
 } while(0)
 
-#define MCC_MNC_TO_TBCD(mCC, mNC, tBCDsTRING)                        \
+#define MCC_MNC_TO_TBCD(mCC, mNC, mNCdIGITlENGTH, tBCDsTRING)        \
 do {                                                                 \
     char _buf[3];                                                    \
+     DevAssert((mNCdIGITlENGTH == 3) || (mNCdIGITlENGTH == 2));      \
     _buf[0] = (MCC_MNC_DECIMAL(mCC) << 4) | MCC_HUNDREDS(mCC);       \
-    _buf[1] = (MNC_HUNDREDS(mNC) << 4) | MCC_MNC_DIGIT(mCC);         \
+    _buf[1] = (MNC_HUNDREDS(mNC,mNCdIGITlENGTH) << 4) | MCC_MNC_DIGIT(mCC);\
     _buf[2] = (MCC_MNC_DIGIT(mNC) << 4) | MCC_MNC_DECIMAL(mNC);      \
     OCTET_STRING_fromBuf(tBCDsTRING, _buf, 3);                       \
 } while(0)
 
-#define TBCD_TO_MCC_MNC(tBCDsTRING, mCC, mNC)                    \
+#define TBCD_TO_MCC_MNC(tBCDsTRING, mCC, mNC, mNCdIGITlENGTH)    \
 do {                                                             \
     int mNC_hundred;                                             \
     DevAssert((tBCDsTRING)->size == 3);                          \
     mNC_hundred = (((tBCDsTRING)->buf[1] & 0xf0) >> 4);          \
-    if (mNC_hundred == 0xf) mNC_hundred = 0;                     \
+    if (mNC_hundred == 0xf) {                                    \
+        mNC_hundred = 0;                                         \
+        mNCdIGITlENGTH = 2;                                      \
+    } else {                                                     \
+            mNCdIGITlENGTH = 3;                                  \
+    }                                                            \
     mCC = (((((tBCDsTRING)->buf[0]) & 0xf0) >> 4) * 10) +        \
         ((((tBCDsTRING)->buf[0]) & 0x0f) * 100) +                \
         (((tBCDsTRING)->buf[1]) & 0x0f);                         \
@@ -219,11 +225,12 @@ do {                                                                \
     tBCDsTRING[2] = (pLMN.MNCdigit2 << 4) | pLMN.MNCdigit3;         \
 } while(0)
 
-#define PLMN_T_TO_MCC_MNC(pLMN, mCC, mNC)               \
-do {                                                    \
+#define PLMN_T_TO_MCC_MNC(pLMN, mCC, mNC, mNCdIGITlENGTH)               \
+do {                                                                    \
     mCC = pLMN.MCCdigit3 * 100 + pLMN.MCCdigit2 * 10 + pLMN.MCCdigit1;  \
-    mNC = (pLMN.MNCdigit3 == 0xF ? 0 : pLMN.MNCdigit3 * 100)            \
-    + pLMN.MNCdigit2 * 10 + pLMN.MNCdigit1;  \
+    mNCdIGITlENGTH = (pLMN.MNCdigit3 == 0xF ? 2 : 3);                   \
+    mNC = (mNCdIGITlENGTH == 2 ? 0 : pLMN.MNCdigit3 * 100)              \
+          + pLMN.MNCdigit2 * 10 + pLMN.MNCdigit1;                       \
 } while(0)
 
 #define MACRO_ENB_ID_TO_BIT_STRING(mACRO, bITsTRING)    \

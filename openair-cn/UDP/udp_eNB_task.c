@@ -242,7 +242,7 @@ void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP)
     while (1) {
         from_len = (socklen_t)sizeof(struct sockaddr_in);
 
-        LOG_I(UDP_, "before recvfrom sd %d\n", udp_sock_pP->sd);
+        LOG_D(UDP_, "before recvfrom sd %d\n", udp_sock_pP->sd);
         if ((n = recvfrom(udp_sock_pP->sd, l_buffer, sizeof(l_buffer), 0,
                           (struct sockaddr *)&addr, &from_len)) < 0) {
             LOG_E(UDP_, "Recvfrom failed %s\n", strerror(errno));
@@ -261,7 +261,7 @@ void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP)
             LOG_I(UDP_, "Msg of length %d received from %s:%u\n",
                       n, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
             if (itti_send_msg_to_task(udp_sock_pP->task_id, INSTANCE_DEFAULT, message_p) < 0) {
-            	LOG_I(UDP_, "Failed to send message %d to task %d\n",
+                LOG_D(UDP_, "Failed to send message %d to task %d\n",
                           UDP_DATA_IND,
                           udp_sock_pP->task_id);
                 break;
@@ -338,7 +338,7 @@ void *udp_eNB_task(void *args_p)
                 udp_sd = udp_sock_p->sd;
                 pthread_mutex_unlock(&udp_socket_list_mutex);
 
-                LOG_I(UDP_, "[%d] Sending message of size %u to "IPV4_ADDR" and port %u\n",
+                LOG_D(UDP_, "[%d] Sending message of size %u to "IPV4_ADDR" and port %u\n",
                             udp_sd,
                             udp_data_req_p->buffer_length,
                           IPV4_ADDR_FORMAT(udp_data_req_p->peer_address),
@@ -366,7 +366,7 @@ void *udp_eNB_task(void *args_p)
             } break;
 
             default: {
-                LOG_I(UDP_, "Unkwnon message ID %d:%s\n",
+                LOG_D(UDP_, "Unkwnon message ID %d:%s\n",
                             ITTI_MSG_ID(received_message_p),
                             ITTI_MSG_NAME(received_message_p));
             } break;

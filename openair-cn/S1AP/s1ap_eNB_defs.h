@@ -86,6 +86,7 @@ typedef enum {
 struct plmn_identity_s {
     uint16_t mcc;
     uint16_t mnc;
+    uint8_t  mnc_digit_length;
     STAILQ_ENTRY(plmn_identity_s) next;
 };
 
@@ -208,6 +209,7 @@ typedef struct s1ap_eNB_instance_s {
      */
     uint16_t  mcc;
     uint16_t  mnc;
+    uint8_t   mnc_digit_length;
 
     /* Default Paging DRX of the eNB as defined in TS 36.304 */
     paging_drx_t default_drx;

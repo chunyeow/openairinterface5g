@@ -70,7 +70,7 @@ int rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(MessageDef *msg_pP, const char *ms
               i,
               GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).eps_bearer_id[i]);
           eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_teid[i]  = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_S1u_teid[i];
-          eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_addrs[i] = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_addr[i];
+          eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_addrs[i] = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).enb_addr;
           eNB_rrc_inst[instanceP].Info.UE[ue_index].enb_gtp_ebi[i]   = GTPV1U_ENB_CREATE_TUNNEL_RESP(msg_pP).eps_bearer_id[i];
       }
       LOG_D(RRC, "[eNB] RX %s END\n");

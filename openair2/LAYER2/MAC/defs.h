@@ -85,11 +85,7 @@
 #define DCCH 1  // srb1
 #define DCCH1 2 // srb2
 
-#ifdef EXMIMO_IOT 
-#define DTCH  5 // DTCH + lcid < 11
-#else
-#define DTCH 3 
-#endif
+#define DTCH 3 // LCID
 
 #define MCCH 4 // MCCH
 #define MTCH 1 // MTCH

@@ -113,16 +113,20 @@ void mme_config_init(mme_config_t *mme_config_p)
 static int config_parse_file(mme_config_t *mme_config_p)
 {
     config_t          cfg;
-    config_setting_t *setting_mme = NULL;
-    config_setting_t *setting     = NULL;
-    config_setting_t *subsetting  = NULL;
-    config_setting_t *sub2setting = NULL;
+    config_setting_t *setting_mme                      = NULL;
+    config_setting_t *setting                          = NULL;
+    config_setting_t *subsetting                       = NULL;
+    config_setting_t *sub2setting                      = NULL;
 
     long int         alongint;
     int              i, num;
-    char             *astring = NULL;
-    char             *address = NULL;
-    char             *cidr    = NULL;
+    char             *astring                          = NULL;
+    char             *address                          = NULL;
+    char             *cidr                             = NULL;
+
+    const char*       tac                              = NULL;
+    const char*       mcc                              = NULL;
+    const char*       mnc                              = NULL;
 
     char             *sgw_ip_address_for_S1u_S12_S4_up = NULL;
     char             *mme_interface_name_for_S1_MME    = NULL;
@@ -258,26 +262,33 @@ static int config_parse_file(mme_config_t *mme_config_p)
             if (subsetting != NULL) {
                 num     = config_setting_length(subsetting);
                 if (mme_config_p->gummei.nb_plmns != num) {
-                    if (mme_config_p->gummei.plmn_mcc != NULL) free(mme_config_p->gummei.plmn_mcc);
-                    if (mme_config_p->gummei.plmn_mnc != NULL) free(mme_config_p->gummei.plmn_mnc);
-                    if (mme_config_p->gummei.plmn_tac != NULL) free(mme_config_p->gummei.plmn_tac);
+                    if (mme_config_p->gummei.plmn_mcc != NULL)     free(mme_config_p->gummei.plmn_mcc);
+                    if (mme_config_p->gummei.plmn_mnc != NULL)     free(mme_config_p->gummei.plmn_mnc);
+                    if (mme_config_p->gummei.plmn_mnc_len != NULL) free(mme_config_p->gummei.plmn_mnc_len);
+                    if (mme_config_p->gummei.plmn_tac != NULL)     free(mme_config_p->gummei.plmn_tac);
 
-                    mme_config_p->gummei.plmn_mcc = calloc(num, sizeof(*mme_config_p->gummei.plmn_mcc));
-                    mme_config_p->gummei.plmn_mnc = calloc(num, sizeof(*mme_config_p->gummei.plmn_mnc));
-                    mme_config_p->gummei.plmn_tac = calloc(num, sizeof(*mme_config_p->gummei.plmn_tac));
+                    mme_config_p->gummei.plmn_mcc     = calloc(num, sizeof(*mme_config_p->gummei.plmn_mcc));
+                    mme_config_p->gummei.plmn_mnc     = calloc(num, sizeof(*mme_config_p->gummei.plmn_mnc));
+                    mme_config_p->gummei.plmn_mnc_len = calloc(num, sizeof(*mme_config_p->gummei.plmn_mnc_len));
+                    mme_config_p->gummei.plmn_tac     = calloc(num, sizeof(*mme_config_p->gummei.plmn_tac));
                 }
                 mme_config_p->gummei.nb_plmns = num;
                 for (i = 0; i < num; i++) {
                     sub2setting =  config_setting_get_elem(subsetting, i);
                     if (sub2setting != NULL) {
-                        if(  (config_setting_lookup_int( sub2setting, MME_CONFIG_STRING_MCC, &alongint) )) {
-                            mme_config_p->gummei.plmn_mcc[i] = (uint16_t)alongint;
+                        if(  (config_setting_lookup_string( sub2setting, MME_CONFIG_STRING_MCC, &mcc) )) {
+                            mme_config_p->gummei.plmn_mcc[i] = (uint16_t)atoi(mcc);
                         }
-                        if(  (config_setting_lookup_int( sub2setting, MME_CONFIG_STRING_MNC, &alongint) )) {
-                            mme_config_p->gummei.plmn_mnc[i] = (uint16_t)alongint;
+                        if(  (config_setting_lookup_string( sub2setting, MME_CONFIG_STRING_MNC, &mnc) )) {
+                            mme_config_p->gummei.plmn_mnc[i] = (uint16_t)atoi(mnc);
+                            mme_config_p->gummei.plmn_mnc_len[i] = strlen(mnc);
+                            AssertFatal((mme_config_p->gummei.plmn_mnc_len[i] == 2) || (mme_config_p->gummei.plmn_mnc_len[i] == 3),
+                                "Bad MNC length %u, must be 2 or 3", mme_config_p->gummei.plmn_mnc_len[i]);
                         }
-                        if(  (config_setting_lookup_int( sub2setting, MME_CONFIG_STRING_TAC, &alongint) )) {
-                            mme_config_p->gummei.plmn_tac[i] = (uint16_t)alongint;
+                        if(  (config_setting_lookup_string( sub2setting, MME_CONFIG_STRING_TAC, &tac) )) {
+                            mme_config_p->gummei.plmn_tac[i] = (uint16_t)atoi(tac);
+                            AssertFatal(mme_config_p->gummei.plmn_tac[i] != 0,
+                                "TAC must not be 0");
                         }
                     }
                 }
@@ -355,6 +366,8 @@ do {                                                                \
 
 static void config_display(mme_config_t *mme_config_p)
 {
+    int j;
+
     fprintf(stdout, "==== EURECOM %s v%s ====\n", PACKAGE_NAME, PACKAGE_VERSION);
     fprintf(stdout, "Configuration:\n");
     fprintf(stdout, "- File ...............: %s\n", mme_config_p->config_file);
@@ -400,10 +413,20 @@ static void config_display(mme_config_t *mme_config_p)
     DISPLAY_ARRAY(mme_config_p->gummei.nb_mme_gid, "| %u ", mme_config_p->gummei.mme_gid[i]);
     fprintf(stdout, "    mme codes ........:\n        ");
     DISPLAY_ARRAY(mme_config_p->gummei.nb_mmec, "| %u ", mme_config_p->gummei.mmec[i]);
-    fprintf(stdout, "    plmns ............: (mcc.mnc:tac)\n        ");
-    DISPLAY_ARRAY(mme_config_p->gummei.nb_plmns, "| %3u.%3u:%u ",
-                  mme_config_p->gummei.plmn_mcc[i], mme_config_p->gummei.plmn_mnc[i],
-                  mme_config_p->gummei.plmn_tac[i]);
+    fprintf(stdout, "    plmns ............: (mcc.mnc:tac)\n");
+    for (j= 0; j < mme_config_p->gummei.nb_plmns; j++) {
+        if (mme_config_p->gummei.plmn_mnc_len[j] ==2 ) {
+            fprintf(stdout, "            %3u.%3u:%u\n",
+                mme_config_p->gummei.plmn_mcc[j],
+                mme_config_p->gummei.plmn_mnc[j],
+                mme_config_p->gummei.plmn_tac[j]);
+        } else {
+            fprintf(stdout, "            %3u.%03u:%u\n",
+                mme_config_p->gummei.plmn_mcc[j],
+                mme_config_p->gummei.plmn_mnc[j],
+                mme_config_p->gummei.plmn_tac[j]);
+        }
+    }
     fprintf(stdout, "- S6A:\n");
     fprintf(stdout, "    conf file ........: %s\n", mme_config_p->s6a_config.conf_file);
 }
