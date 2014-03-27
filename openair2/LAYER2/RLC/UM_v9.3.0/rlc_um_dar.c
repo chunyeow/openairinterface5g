@@ -47,7 +47,12 @@ Address      : EURECOM,
 //#define TRACE_RLC_UM_RX  1
 //#define TRACE_DISPLAY_NVIDIA 1
 //-----------------------------------------------------------------------------
-signed int rlc_um_get_pdu_infos(frame_t frameP,rlc_um_pdu_sn_10_t* header_pP, sdu_ssize_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP)
+signed int rlc_um_get_pdu_infos(
+    const frame_t               frameP,
+    rlc_um_pdu_sn_10_t  * const header_pP,
+    const sdu_size_t            total_sizeP,
+    rlc_um_pdu_info_t   * const pdu_info_pP,
+    const uint8_t               sn_lengthP)
 //-----------------------------------------------------------------------------
 {
     sdu_size_t         sum_li = 0;

@@ -93,15 +93,22 @@ protected_rlc_am_status_report(void        rlc_am_write8_bit_field(uint8_t** dat
 * \param[in]      bits_to_writeP  Number of bits to write (max 16).
 * \param[in]      valueP          Value to write.
 */
-protected_rlc_am_status_report(void        rlc_am_write16_bit_field(uint8_t** dataP, unsigned int* bit_posP, signed int bits_to_writeP, uint16_t valueP);)
+protected_rlc_am_status_report(void        rlc_am_write16_bit_field(
+    uint8_t** dataP,
+    unsigned int* bit_posP,
+    signed int bits_to_writeP,
+    uint16_t valueP);)
 
-/*! \fn signed int rlc_am_get_control_pdu_infos      (rlc_am_pdu_sn_10_t* headerP, int16_t total_sizeP, rlc_am_control_pdu_info_t* pdu_infoP)
+/*! \fn signed int rlc_am_get_control_pdu_infos      (rlc_am_pdu_sn_10_t* headerP, sdu_size_t *total_sizeP, rlc_am_control_pdu_info_t* pdu_infoP)
 * \brief      Retrieve control PDU informations from a serialized control PDU.
 * \param[in]  headerP           Pointer on the header of the RLC AM PDU.
 * \param[in]  total_size_pP     Pointer on PDU size in bytes.
 * \param[in,out]  pdu_infoP     Struct containing interpreted PDU control informations.
 */
-protected_rlc_am_status_report( signed int rlc_am_get_control_pdu_infos (rlc_am_pdu_sn_10_t* headerP, int16_t *total_size_pP, rlc_am_control_pdu_info_t* pdu_infoP);)
+protected_rlc_am_status_report( signed int rlc_am_get_control_pdu_infos (
+    rlc_am_pdu_sn_10_t* headerP,
+    sdu_size_t *total_size_pP,
+    rlc_am_control_pdu_info_t* pdu_infoP);)
 
 /*! \fn void rlc_am_display_control_pdu_infos(rlc_am_control_pdu_info_t* pdu_infoP)
 * \brief      Dump on LOG output the informations contained in the pdu_infoP structure.
@@ -117,7 +124,12 @@ protected_rlc_am_status_report( void rlc_am_display_control_pdu_infos(rlc_am_con
 * \param[in]  first_byte        Pointer on first byte of control PDU.
 * \param[in]  tb_size_in_bytes  Pointer on size of serialized control PDU in bytes.
 */
-protected_rlc_am_status_report( void       rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlcP, frame_t frameP, mem_block_t*  tbP, uint8_t** first_byte, int16_t *tb_size_in_bytes);)
+protected_rlc_am_status_report( void       rlc_am_receive_process_control_pdu(
+    rlc_am_entity_t* rlcP,
+    frame_t frameP,
+    mem_block_t*  tbP,
+    uint8_t** first_byte,
+    sdu_size_t *tb_size_in_bytes);)
 
 /*! \fn int  rlc_am_write_status_pdu(frame_t frameP,rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10P, rlc_am_control_pdu_info_t* pdu_infoP)
 * \brief      Remove all marked holes for PDU with sequence number "snP".

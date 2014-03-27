@@ -42,12 +42,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include "mobility_parser.h"
-#include "hashtable.h"
+#include "omg_hashtable.h"
 #include "omg.h"
 
 
 node_info* head_node_info =NULL;
-hash_table_t* table=NULL;
+omg_hash_table_t* table=NULL;
 
 //need to be removed , used only once (old code)
 struct Exnode* gen_list(){
@@ -186,7 +186,7 @@ void print_list(struct Exnode* head){
     head=head->next;
 }
 
-Exnode* get_next_position(hash_table_t *table,int node_id){
+Exnode* get_next_position(omg_hash_table_t *table,int node_id){
   node_info* head_node=head_node_info;
   while(head_node->next!=NULL){
     
@@ -233,7 +233,7 @@ Exnode* get_next_position(hash_table_t *table,int node_id){
 }
 
 
-void reset_visit_status(hash_table_t *table,float time, int node_id){
+void reset_visit_status(omg_hash_table_t *table,float time, int node_id){
   node_info* head_node=head_node_info;
   while(head_node->next!=NULL){
     
@@ -280,7 +280,7 @@ int get_num_nodes(){
   }
   return count;
 }
-void sort_veh_movement(hash_table_t *table){
+void sort_veh_movement(omg_hash_table_t *table){
   node_info* head_node=head_node_info;
   while(head_node->next!=NULL){
     int *value1 = NULL;
@@ -401,7 +401,7 @@ int main(){
 	Exnode* next_loc=NULL;
         //mobility_file = (char*) malloc(256);
 	//mobility_file=strtok("regular.tr");
-	hash_table_t *table=read_mobility_file();
+	omg_hash_table_t *table=read_mobility_file();
 	sort_veh_movement(table);
 	printf("Number of nodes --> %d \n",get_num_nodes());
 	next_loc=get_next_position(table,140392);

@@ -38,13 +38,18 @@ Address      : EURECOM,
 #define TRACE_RLC_AM_HOLE
 
 //-----------------------------------------------------------------------------
-void rlc_am_clear_holes (rlc_am_entity_t *rlc_pP, rlc_sn_t snP)
+void rlc_am_clear_holes (
+        rlc_am_entity_t * const rlc_pP,
+        const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->pdu_retrans_buffer[snP].num_holes         = 0;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_shift_down_holes (rlc_am_entity_t *rlc_pP, rlc_sn_t snP, int indexP)
+void rlc_am_shift_down_holes (
+        rlc_am_entity_t *const rlc_pP,
+        const rlc_sn_t snP,
+        const int indexP)
 //-----------------------------------------------------------------------------
 {
     int i;
@@ -55,7 +60,10 @@ void rlc_am_shift_down_holes (rlc_am_entity_t *rlc_pP, rlc_sn_t snP, int indexP)
     rlc_pP->pdu_retrans_buffer[snP].num_holes =  rlc_pP->pdu_retrans_buffer[snP].num_holes - 1;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_shift_up_holes (rlc_am_entity_t *rlc_pP, rlc_sn_t snP, int indexP)
+void rlc_am_shift_up_holes (
+        rlc_am_entity_t *const rlc_pP,
+        const rlc_sn_t snP,
+        const int indexP)
 //-----------------------------------------------------------------------------
 {
     // shift include indexP
@@ -68,7 +76,12 @@ void rlc_am_shift_up_holes (rlc_am_entity_t *rlc_pP, rlc_sn_t snP, int indexP)
     assert(rlc_pP->pdu_retrans_buffer[snP].num_holes < RLC_AM_MAX_HOLES_REPORT_PER_PDU);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_remove_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, uint16_t so_startP, uint16_t so_stopP)
+void rlc_am_remove_hole (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        const sdu_size_t so_startP,
+        const sdu_size_t so_stopP)
 //-----------------------------------------------------------------------------
 {
     int i;
@@ -174,7 +187,12 @@ void rlc_am_remove_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, 
     assert(rlc_pP->pdu_retrans_buffer[snP].nack_so_start < rlc_pP->pdu_retrans_buffer[snP].payload_size);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_get_next_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, int* so_startP, int* so_stopP)
+void rlc_am_get_next_hole (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        sdu_size_t* const so_startP,
+        sdu_size_t* const so_stopP)
 //-----------------------------------------------------------------------------
 {
     if (rlc_pP->pdu_retrans_buffer[snP].num_holes == 0) {
@@ -209,7 +227,12 @@ void rlc_am_get_next_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_add_hole (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, sdu_size_t so_startP, sdu_size_t so_stopP)
+void rlc_am_add_hole (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        sdu_size_t so_startP,
+        sdu_size_t so_stopP)
 //-----------------------------------------------------------------------------
 {
     int i, hole_index;

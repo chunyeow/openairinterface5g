@@ -110,21 +110,21 @@ typedef struct pdu_management_flags {
 */
 typedef struct rlc_am_tx_data_pdu_management {
     mem_block_t     *mem_block;                          /*!< \brief PDU embedded in a mem_block_t struct  */
-    uint8_t             *first_byte;                        /*!< \brief Pointer on the PDU  including header, LIs, data */
-    uint8_t             *payload;                           /*!< \brief Pointer on the PDU  payload */
-    int16_t             sdus_index[RLC_AM_MAX_SDU_IN_PDU]; /*!< \brief Index of SDU(s) having segments in this pdu (index in rlc_am_entity.input_sdus[]) */
-    frame_t           last_nack_time;                    /*!< \brief Last frame this PDU was negative acknowledged, for not nacking several times in the same frame */
-    sdu_size_t        hole_so_start  [RLC_AM_MAX_HOLES_REPORT_PER_PDU]; /*!< \brief Array containing the start segment offsets for marking a hole (negative acknowledged area) in the PDU. */
-    sdu_size_t        hole_so_stop   [RLC_AM_MAX_HOLES_REPORT_PER_PDU]; /*!< \brief Array containing the stop segment offsets for marking a hole (negative acknowledged area) in the PDU. */
-    uint8_t              num_holes;                         /*!< \brief Number of registereg holes in hole_so_start[], hole_so_stop[]. */
-    sdu_ssize_t       header_and_payload_size;           /*!< \brief Size of the PDU in bytes, including header and payload. */
-    sdu_ssize_t       payload_size;                      /*!< \brief Size of the PDU payload in bytes. */
-    rlc_sn_t          sn;                                /*!< \brief Sequence number of the PDU. */
-    sdu_ssize_t       nack_so_start; /*!< \brief Lowest NACK start segment offset, must be set to 0 if global NACK. */
-    sdu_ssize_t       nack_so_stop;  /*!< \brief Highest NACK stop segment offset, must be set to data_size if global NACK */
+    uint8_t         *first_byte;                        /*!< \brief Pointer on the PDU  including header, LIs, data */
+    uint8_t         *payload;                           /*!< \brief Pointer on the PDU  payload */
+    int16_t          sdus_index[RLC_AM_MAX_SDU_IN_PDU]; /*!< \brief Index of SDU(s) having segments in this pdu (index in rlc_am_entity.input_sdus[]) */
+    frame_t          last_nack_time;                    /*!< \brief Last frame this PDU was negative acknowledged, for not nacking several times in the same frame */
+    sdu_size_t       hole_so_start  [RLC_AM_MAX_HOLES_REPORT_PER_PDU]; /*!< \brief Array containing the start segment offsets for marking a hole (negative acknowledged area) in the PDU. */
+    sdu_size_t       hole_so_stop   [RLC_AM_MAX_HOLES_REPORT_PER_PDU]; /*!< \brief Array containing the stop segment offsets for marking a hole (negative acknowledged area) in the PDU. */
+    uint8_t          num_holes;                         /*!< \brief Number of registereg holes in hole_so_start[], hole_so_stop[]. */
+    sdu_size_t       header_and_payload_size;           /*!< \brief Size of the PDU in bytes, including header and payload. */
+    sdu_size_t       payload_size;                      /*!< \brief Size of the PDU payload in bytes. */
+    rlc_sn_t         sn;                                /*!< \brief Sequence number of the PDU. */
+    sdu_size_t       nack_so_start; /*!< \brief Lowest NACK start segment offset, must be set to 0 if global NACK. */
+    sdu_size_t       nack_so_stop;  /*!< \brief Highest NACK stop segment offset, must be set to data_size if global NACK */
 
-    int8_t              nb_sdus;       /*!< \brief Number of sdu having segments in this pdu. */
-    int8_t              retx_count;    /*!< \brief Counts the number of retransmissions of an AMD PDU (see subclause 5.2.1). There is one RETX_COUNT counter per PDU that needs to be retransmitted. there is one VT(DAT) for each PDU and it is incremented each time the PDU is transmitted. */
+    int8_t           nb_sdus;       /*!< \brief Number of sdu having segments in this pdu. */
+    int8_t           retx_count;    /*!< \brief Counts the number of retransmissions of an AMD PDU (see subclause 5.2.1). There is one RETX_COUNT counter per PDU that needs to be retransmitted. there is one VT(DAT) for each PDU and it is incremented each time the PDU is transmitted. */
 
     pdu_management_flags_t  flags; /*!< \brief PDU variables related to its retransmission. */
 } rlc_am_tx_data_pdu_management_t;

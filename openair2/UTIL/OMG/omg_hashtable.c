@@ -27,7 +27,7 @@
 
 *******************************************************************************/
 
-/*! \file hashtable.c
+/*! \file omg_hashtable.c
 * \brief A 'C' implementation of a hashtable
 * \author  S. Uppoor
 * \date 2011
@@ -39,7 +39,7 @@
 */
 
 
-#include "hashtable.h"
+#include "omg_hashtable.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -62,7 +62,7 @@ hash_table_element_t * hash_table_element_new()
  * @param table table from which element has to be deleted
  * @param element hash table element to be deleted
  */
-void hash_table_element_delete(hash_table_t * table, hash_table_element_t * element)
+void hash_table_element_delete(omg_hash_table_t * table, hash_table_element_t * element)
 {
     //INFO("Deleting an hash table element");
     if (table->mode == MODE_COPY)
@@ -81,13 +81,13 @@ void hash_table_element_delete(hash_table_t * table, hash_table_element_t * elem
 /**
  * Fuction to create a new hash table
  * @param mode hash_table_mode which the hash table should follow
- * @returns hash_table_t object which references the hash table
+ * @returns omg_hash_table_t object which references the hash table
  * @returns NULL when no memory
  */
-hash_table_t * hash_table_new(hash_table_mode_t mode)
+omg_hash_table_t * hash_table_new(hash_table_mode_t mode)
 {
     //INFO("Creating a new hash table");
-    hash_table_t *table = calloc(1, hash_table_s);
+    omg_hash_table_t *table = calloc(1, SIZEOF_HASH_TABLE);
     if (!table)
     {
         //INFO("No Memory while allocating hash_table");
@@ -110,7 +110,7 @@ hash_table_t * hash_table_new(hash_table_mode_t mode)
  * Function to delete the hash table
  * @param table hash table to be deleted
  */
-void hash_table_delete(hash_table_t * table)
+void hash_table_delete(omg_hash_table_t * table)
 {
     //INFO("Deleating a hash table");
     size_t i=0;
@@ -137,7 +137,7 @@ void hash_table_delete(hash_table_t * table)
  * @returns 0 on sucess
  * @returns -1 when no memory
  */
-int hash_table_add(hash_table_t * table, void * key, size_t key_len, void * value, size_t value_len)
+int hash_table_add(omg_hash_table_t * table, void * key, size_t key_len, void * value, size_t value_len)
 {
     if ((table->key_count / table->key_num) >= table->key_ratio)
     {
@@ -252,7 +252,7 @@ int hash_table_add(hash_table_t * table, void * key, size_t key_len, void * valu
  * @returns 0 on sucess
  * @returns -1 when key is not found
  */
-int hash_table_remove(hash_table_t * table, void * key, size_t key_len)
+int hash_table_remove(omg_hash_table_t * table, void * key, size_t key_len)
 {
     //INFO("Deleting a key-value pair from the hash table");
     if ((table->key_num/ table->key_count) >= table->key_ratio)
@@ -309,7 +309,7 @@ int hash_table_remove(hash_table_t * table, void * key, size_t key_len)
  * @returns NULL when key is not found in the hash table
  * @returns void* pointer to the value in the table
  */
-void * hash_table_lookup(hash_table_t * table, void * key, size_t key_len)
+void * hash_table_lookup(omg_hash_table_t * table, void * key, size_t key_len)
 {
     size_t hash = HASH(key, key_len);
     //LOG("Looking up a key-value pair for hash -> %d", (int)hash);
@@ -349,7 +349,7 @@ void * hash_table_lookup(hash_table_t * table, void * key, size_t key_len)
  * @returns 0 when key is not found
  * @returns 1 when key is found
  */
-int hash_table_has_key(hash_table_t * table, void * key, size_t key_len)
+int hash_table_has_key(omg_hash_table_t * table, void * key, size_t key_len)
 {
     size_t hash = HASH(key, key_len);
     //LOG("Searching for key with hash -> %d", (int)hash);
@@ -385,7 +385,7 @@ int hash_table_has_key(hash_table_t * table, void * key, size_t key_len)
  * @param keys a void** pointer where keys are filled in (memory allocated internally and must be freed)
  * @return total number of keys filled in keys
  */
-size_t hash_table_get_keys(hash_table_t * table, void ** keys)
+size_t hash_table_get_keys(omg_hash_table_t * table, void ** keys)
 {
     size_t i = 0;
     size_t count = 0;
@@ -422,7 +422,7 @@ size_t hash_table_get_keys(hash_table_t * table, void ** keys)
  * @returns 1 when no memory
  * @returns count of elements
  */
-size_t hash_table_get_elements(hash_table_t * table, hash_table_element_t *** elements)
+size_t hash_table_get_elements(omg_hash_table_t * table, hash_table_element_t *** elements)
 {
     size_t i = 0;
     size_t count = 0;
@@ -486,7 +486,7 @@ uint16_t hash_table_do_hash(void * key, size_t key_len, uint16_t max_key)
  * @returns -2 when no emmory for new store house
  * @returns 0 when sucess
  */
-int hash_table_resize(hash_table_t *table, size_t len)
+int hash_table_resize(omg_hash_table_t *table, size_t len)
 {
     //LOG("resizing hash table from %d to %d", table->key_num, len);
     hash_table_element_t ** elements;

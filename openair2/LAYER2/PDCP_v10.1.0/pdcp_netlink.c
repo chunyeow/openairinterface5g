@@ -204,7 +204,7 @@ void *pdcp_netlink_thread_fct(void *arg) {
            * NOTE: netlink messages can be assembled to form a multipart message
            */
           for (nas_nlh_rx = (struct nlmsghdr *) nl_rx_buf;
-              NLMSG_OK(nas_nlh_rx, len);
+              NLMSG_OK(nas_nlh_rx, (unsigned int)len);
               nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
 
               /* There is no need to check for nlmsg_type because

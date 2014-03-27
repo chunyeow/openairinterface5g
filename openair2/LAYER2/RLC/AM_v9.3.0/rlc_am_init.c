@@ -53,10 +53,8 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
     list_init(&rlc_pP->segmentation_pdu_list, "SEGMENTATION PDU LIST");
     //LOG_D(RLC,"RLC_AM_SDU_CONTROL_BUFFER_SIZE %d sizeof(rlc_am_tx_sdu_management_t) %d \n",  RLC_AM_SDU_CONTROL_BUFFER_SIZE, sizeof(rlc_am_tx_sdu_management_t));
     
-    rlc_pP->input_sdus_alloc         = get_free_mem_block(RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
-    rlc_pP->input_sdus               = (rlc_am_tx_sdu_management_t*)((rlc_pP->input_sdus_alloc)->data);
-    rlc_pP->pdu_retrans_buffer_alloc = get_free_mem_block((uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
-    rlc_pP->pdu_retrans_buffer       = (rlc_am_tx_data_pdu_management_t*)((rlc_pP->pdu_retrans_buffer_alloc)->data);
+    rlc_pP->input_sdus               = calloc(1, RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
+    rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
     LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", frameP, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
     LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", frameP, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
 
@@ -79,11 +77,10 @@ void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
     rlc_pP->first_retrans_pdu_sn         = -1;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_cleanup(rlc_am_entity_t *rlc_pP, frame_t frameP)
+void rlc_am_cleanup(rlc_am_entity_t *rlc_pP)
 //-----------------------------------------------------------------------------
 {
-    LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][CLEANUP]\n",
-          frameP,
+    LOG_I(RLC, "[FRAME ?????][%s][RLC_AM][MOD %u/%u][RB %u][CLEANUP]\n",
           (rlc_pP->is_enb) ? "eNB" : "UE",
           rlc_pP->enb_module_id,
           rlc_pP->ue_module_id,
@@ -100,26 +97,24 @@ void rlc_am_cleanup(rlc_am_entity_t *rlc_pP, frame_t frameP)
         rlc_pP->output_sdu_in_construction = NULL;
     }
     unsigned int i;
-    if (rlc_pP->input_sdus_alloc != NULL) {
+    if (rlc_pP->input_sdus != NULL) {
         for (i=0; i < RLC_AM_SDU_CONTROL_BUFFER_SIZE; i++) {
             if (rlc_pP->input_sdus[i].mem_block != NULL) {
                 free_mem_block(rlc_pP->input_sdus[i].mem_block);
                 rlc_pP->input_sdus[i].mem_block = NULL;
             }
         }
-        free_mem_block(rlc_pP->input_sdus_alloc);
-        rlc_pP->input_sdus_alloc = NULL;
+        free(rlc_pP->input_sdus);
         rlc_pP->input_sdus       = NULL;
     }
-    if (rlc_pP->pdu_retrans_buffer_alloc != NULL) {
+    if (rlc_pP->pdu_retrans_buffer != NULL) {
         for (i=0; i < RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE; i++) {
             if (rlc_pP->pdu_retrans_buffer[i].mem_block != NULL) {
                 free_mem_block(rlc_pP->pdu_retrans_buffer[i].mem_block);
                 rlc_pP->pdu_retrans_buffer[i].mem_block = NULL;
             }
         }
-        free_mem_block(rlc_pP->pdu_retrans_buffer_alloc);
-        rlc_pP->pdu_retrans_buffer_alloc = NULL;
+        free(rlc_pP->pdu_retrans_buffer);
         rlc_pP->pdu_retrans_buffer       = NULL;
     }
     memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
@@ -161,13 +156,13 @@ void rlc_am_configure(rlc_am_entity_t *rlc_pP,
 void rlc_am_set_debug_infos(rlc_am_entity_t *rlc_pP,
                             frame_t          frameP,
                             eNB_flag_t       eNB_flagP,
+                            srb_flag_t       srb_flagP,
                             module_id_t      enb_module_idP,
                             module_id_t      ue_module_idP,
-                            rb_id_t          rb_idP,
-                            rb_type_t        rb_typeP)
+                            rb_id_t          rb_idP)
 //-----------------------------------------------------------------------------
 {
-    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SET DEBUG INFOS] module_id %d rb_id %d rb_type %d\n",
+    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SET DEBUG INFOS] module_id %d rb_id %d is SRB %d\n",
           frameP,
           (rlc_pP->is_enb) ? "eNB" : "UE",
           rlc_pP->enb_module_id,
@@ -176,15 +171,15 @@ void rlc_am_set_debug_infos(rlc_am_entity_t *rlc_pP,
           enb_module_idP,
           ue_module_idP,
           rb_idP,
-          rb_typeP);
+          (srb_flagP) ? "TRUE" : "FALSE");
 
     rlc_pP->enb_module_id = enb_module_idP;
     rlc_pP->ue_module_id  = ue_module_idP;
     rlc_pP->rb_id         = rb_idP;
-    if (rb_typeP != SIGNALLING_RADIO_BEARER) {
-      rlc_pP->is_data_plane = 1;
-    } else {
+    if (srb_flagP) {
       rlc_pP->is_data_plane = 0;
+    } else {
+      rlc_pP->is_data_plane = 1;
     }
     rlc_pP->is_enb = eNB_flagP;
 }

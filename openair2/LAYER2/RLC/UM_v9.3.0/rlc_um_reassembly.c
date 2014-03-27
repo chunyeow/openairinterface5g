@@ -171,7 +171,16 @@ rlc_um_send_sdu (rlc_um_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_flagP)
         rlc_um_v9_3_0_test_data_ind (rlc_pP->module_id, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction);
 #else
         // msg("[RLC] DATA IND ON MOD_ID %d RB ID %d, size %d\n",rlc_pP->module_id, rlc_pP->rb_id, frameP,rlc_pP->output_sdu_size_to_write);
-        rlc_data_ind (rlc_pP->enb_module_id, rlc_pP->ue_module_id, frameP, eNB_flagP, rlc_pP->is_mxch, rlc_pP->rb_id, rlc_pP->output_sdu_size_to_write, rlc_pP->output_sdu_in_construction,rlc_pP->is_data_plane);
+        rlc_data_ind (
+            rlc_pP->enb_module_id,
+            rlc_pP->ue_module_id,
+            frameP,
+            eNB_flagP,
+            BOOL_NOT(rlc_pP->is_data_plane),
+            rlc_pP->is_mxch,
+            rlc_pP->rb_id,
+            rlc_pP->output_sdu_size_to_write,
+            rlc_pP->output_sdu_in_construction);
 #endif
         rlc_pP->output_sdu_in_construction = NULL;
     } else {

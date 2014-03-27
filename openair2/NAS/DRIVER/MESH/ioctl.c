@@ -248,7 +248,7 @@ void nas_set_msg_rb_establishment_reply(struct nas_msg_rb_establishment_reply *m
 					struct nas_priv *priv){
   //---------------------------------------------------------------------------
   //  if ((msgreq->rab_id<3)||(msgreq->rab_id>127))
-  if ((msgreq->rab_id<3)||(msgreq->rab_id>MAX_RABS)) // navid : increase the number 
+  if ((msgreq->rab_id<1)||(msgreq->rab_id>MAX_RABS)) // navid : increase the number
     msgrep->status=-NAS_ERROR_NOTCORRECTRABI;
   else
     {
@@ -319,8 +319,9 @@ void nas_set_msg_rb_release_reply(struct nas_msg_rb_release_reply *msgrep,
 }
 
 //---------------------------------------------------------------------------
-int nas_ioCTL_rb_release_request(struct nas_ioctl *gifr,
-				 struct nas_priv *priv){
+int nas_ioCTL_rb_release_request(
+    struct nas_ioctl *gifr,
+    struct nas_priv *priv){
   //---------------------------------------------------------------------------
   struct nas_msg_rb_release_request msgreq;
   struct nas_msg_rb_release_reply msgrep;
@@ -342,9 +343,10 @@ int nas_ioCTL_rb_release_request(struct nas_ioctl *gifr,
 ///////////////////////////////////////////////////////////////////////////////
 // Classifier List
 //---------------------------------------------------------------------------
-void nas_set_msg_class_list_reply(uint8_t *msgrep, 
-				  struct nas_msg_class_list_request *msgreq,
-				  struct nas_priv *priv){
+void nas_set_msg_class_list_reply(
+    uint8_t *msgrep,
+    struct nas_msg_class_list_request *msgreq,
+    struct nas_priv *priv) {
   //---------------------------------------------------------------------------
   struct cx_entity *cx;
   struct classifier_entity *gc;
@@ -401,8 +403,9 @@ void nas_set_msg_class_list_reply(uint8_t *msgrep,
 }
 
 //---------------------------------------------------------------------------
-int nas_ioCTL_class_list_request(struct nas_ioctl *gifr,
-				 struct nas_priv *priv){
+int nas_ioCTL_class_list_request(
+    struct nas_ioctl *gifr,
+    struct nas_priv *priv){
   //---------------------------------------------------------------------------
   uint8_t msgrep[NAS_LIST_CLASS_MAX*sizeof(struct nas_msg_class_list_reply)+1];
   struct nas_msg_class_list_request msgreq;
@@ -424,9 +427,10 @@ int nas_ioCTL_class_list_request(struct nas_ioctl *gifr,
 ///////////////////////////////////////////////////////////////////////////////
 // Request the addition of a classifier rule
 //---------------------------------------------------------------------------
-void nas_set_msg_class_add_reply(struct nas_msg_class_add_reply *msgrep, 
-				 struct nas_msg_class_add_request *msgreq,
-				 struct nas_priv *priv){
+void nas_set_msg_class_add_reply(
+    struct nas_msg_class_add_reply   *msgrep,
+    struct nas_msg_class_add_request *msgreq,
+    struct nas_priv                  *priv){
   //---------------------------------------------------------------------------
   struct classifier_entity *gc,*gc2;
   unsigned char *saddr,*daddr;

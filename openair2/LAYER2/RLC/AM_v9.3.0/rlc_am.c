@@ -38,7 +38,8 @@ Address      : EURECOM,
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 #endif
-# include "assertions.h"
+#include "assertions.h"
+#include "hashtable.h"
 #include "rlc_am.h"
 #include "rlc_am_segment.h"
 #include "rlc_am_timer_poll_retransmit.h"
@@ -107,47 +108,58 @@ void rlc_am_release (rlc_am_entity_t *rlc_pP)
 
 }
 //-----------------------------------------------------------------------------
-void config_req_rlc_am (frame_t         frameP,
-                        eNB_flag_t      eNB_flagP,
-                        module_id_t     enb_module_idP,
-                        module_id_t     ue_module_idP,
-                        rlc_am_info_t  *config_am_pP,
-                        rb_id_t         rb_idP,
-                        rb_type_t       rb_typeP)
+void config_req_rlc_am (
+    module_id_t     enb_module_idP,
+    module_id_t     ue_module_idP,
+    frame_t         frameP,
+    eNB_flag_t      eNB_flagP,
+    srb_flag_t      srb_flagP,
+    rlc_am_info_t  *config_am_pP,
+    rb_id_t         rb_idP)
 {
 //-----------------------------------------------------------------------------
-    rlc_am_entity_t *rlc = NULL;
+    rlc_union_t       *rlc_union_p = NULL;
+    rlc_am_entity_t *rlc_p         = NULL;
+    hash_key_t       key           = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
+    hashtable_rc_t   h_rc;
 
-    LOG_D(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
-                                                                                                       frameP,
-                                                                                                       ( eNB_flagP > 0) ? "eNB":"UE",
-                                                                                                       enb_module_idP,
-                                                                                                       ue_module_idP,
-                                                                                                       config_am_pP->max_retx_threshold,
-                                                                                                       config_am_pP->poll_pdu,
-                                                                                                       config_am_pP->poll_byte,
-                                                                                                       config_am_pP->t_poll_retransmit,
-                                                                                                       config_am_pP->t_reordering,
-                                                                                                       config_am_pP->t_status_prohibit,
-                                                                                                       enb_module_idP,
-                                                                                                       ue_module_idP,
-                                                                                                       rb_idP);
-
-    if (eNB_flagP) {
-        rlc = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.am;
+    h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+    if (h_rc == HASH_TABLE_OK) {
+        rlc_p = &rlc_union_p->rlc.am;
+        LOG_D(RLC,
+            "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
+            frameP,
+            ( eNB_flagP > 0) ? "eNB":"UE",
+            enb_module_idP,
+            ue_module_idP,
+            config_am_pP->max_retx_threshold,
+            config_am_pP->poll_pdu,
+            config_am_pP->poll_byte,
+            config_am_pP->t_poll_retransmit,
+            config_am_pP->t_reordering,
+            config_am_pP->t_status_prohibit,
+            enb_module_idP,
+            ue_module_idP,
+            rb_idP);
+        rlc_am_init(rlc_p,frameP);
+        rlc_am_set_debug_infos(rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, srb_flagP);
+        rlc_am_configure(rlc_p,frameP,
+               config_am_pP->max_retx_threshold,
+               config_am_pP->poll_pdu,
+               config_am_pP->poll_byte,
+               config_am_pP->t_poll_retransmit,
+               config_am_pP->t_reordering,
+               config_am_pP->t_status_prohibit);
     } else {
-        rlc = &rlc_array_ue[ue_module_idP][rb_idP].rlc.am;
+        LOG_E(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ  --->][RLC_AM][MOD %u/%u][RB %u] RLC NOT FOUND\n",
+            frameP,
+            (eNB_flagP) ? "eNB" : "UE",
+            enb_module_idP,
+            ue_module_idP,
+            enb_module_idP,
+            ue_module_idP,
+            rb_idP);
     }
-    rlc_am_init(rlc,frameP);
-    rlc_am_set_debug_infos(rlc, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
-    rlc_am_configure(rlc,frameP,
-           config_am_pP->max_retx_threshold,
-           config_am_pP->poll_pdu,
-           config_am_pP->poll_byte,
-           config_am_pP->t_poll_retransmit,
-           config_am_pP->t_reordering,
-           config_am_pP->t_status_prohibit);
-
 }
 uint32_t pollPDU_tab[PollPDU_pInfinity+1]={4,8,16,32,64,128,256,1024};  // What is PollPDU_pInfinity??? 1024 for now
 uint32_t maxRetxThreshold_tab[UL_AM_RLC__maxRetxThreshold_t32+1]={1,2,3,4,6,8,16,32};
@@ -157,70 +169,83 @@ uint32_t am_t_Reordering_tab[T_Reordering_spare1]={0,5,10,15,20,25,30,35,40,45,5
 uint32_t t_StatusProhibit_tab[T_StatusProhibit_spare8]={0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,205,210,215,220,225,230,235,240,245,250,300,350,400,450,500};
 
 //-----------------------------------------------------------------------------
-void config_req_rlc_am_asn1 (frame_t                 frameP,
-                             eNB_flag_t              eNB_flagP,
-                             module_id_t             enb_module_idP,
-                             module_id_t             ue_module_idP,
-                             struct RLC_Config__am  *config_am_pP,
-                             rb_id_t                 rb_idP,
-                             rb_type_t               rb_typeP)
+void config_req_rlc_am_asn1 (
+    const module_id_t             enb_module_idP,
+    const module_id_t             ue_module_idP,
+    const frame_t                 frameP,
+    const eNB_flag_t              eNB_flagP,
+    const srb_flag_t              srb_flagP,
+    const struct RLC_Config__am  * const config_am_pP,
+    const rb_id_t                 rb_idP)
 {
 //-----------------------------------------------------------------------------
-    rlc_am_entity_t *rlc = NULL;
+  rlc_union_t     *rlc_union_p   = NULL;
+  rlc_am_entity_t *rlc_p         = NULL;
+  hash_key_t       key           = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
+  hashtable_rc_t   h_rc;
 
-    if (eNB_flagP) {
-        rlc = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.am;
-    } else {
-        rlc = &rlc_array_ue[ue_module_idP][rb_idP].rlc.am;
-    }
-    if ((config_am_pP->ul_AM_RLC.maxRetxThreshold <= UL_AM_RLC__maxRetxThreshold_t32) &&
-        (config_am_pP->ul_AM_RLC.pollPDU<=PollPDU_pInfinity) &&
-        (config_am_pP->ul_AM_RLC.pollByte<PollByte_spare1) &&
-        (config_am_pP->ul_AM_RLC.t_PollRetransmit<T_PollRetransmit_spare9) &&
-        (config_am_pP->dl_AM_RLC.t_Reordering<T_Reordering_spare1) &&
-        (config_am_pP->dl_AM_RLC.t_StatusProhibit<T_StatusProhibit_spare8) ){
+  h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+  if (h_rc == HASH_TABLE_OK) {
+      rlc_p = &rlc_union_p->rlc.am;
+      if ((config_am_pP->ul_AM_RLC.maxRetxThreshold <= UL_AM_RLC__maxRetxThreshold_t32) &&
+          (config_am_pP->ul_AM_RLC.pollPDU<=PollPDU_pInfinity) &&
+          (config_am_pP->ul_AM_RLC.pollByte<PollByte_spare1) &&
+          (config_am_pP->ul_AM_RLC.t_PollRetransmit<T_PollRetransmit_spare9) &&
+          (config_am_pP->dl_AM_RLC.t_Reordering<T_Reordering_spare1) &&
+          (config_am_pP->dl_AM_RLC.t_StatusProhibit<T_StatusProhibit_spare8) ){
 
-            LOG_D(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
-                     frameP,
-                     (eNB_flagP) ? "eNB" : "UE",
-                      enb_module_idP,
-                      ue_module_idP,
-                      maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
-                      pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
-                      pollByte_tab[config_am_pP->ul_AM_RLC.pollByte],
-                      PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
-                      am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
-                      t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit],
-                      enb_module_idP,
-                      ue_module_idP,
-                      rb_idP);
-    
-            rlc_am_init(rlc,frameP);
-            rlc_am_set_debug_infos(rlc, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
-            rlc_am_configure(rlc,
-                         frameP,
-                         maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
-                         pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
-                         pollByte_tab[config_am_pP->ul_AM_RLC.pollByte],
-                         PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
-                         am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
-                         t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
-    } else {
-        LOG_D(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u], RLC-AM NOT CONFIGURED\n",
-                frameP,
-                (eNB_flagP) ? "eNB" : "UE",
-                enb_module_idP,
-                ue_module_idP,
-                config_am_pP->ul_AM_RLC.maxRetxThreshold,
-                config_am_pP->ul_AM_RLC.pollPDU,
-                config_am_pP->ul_AM_RLC.pollByte,
-                config_am_pP->ul_AM_RLC.t_PollRetransmit,
-                config_am_pP->dl_AM_RLC.t_Reordering,
-                config_am_pP->dl_AM_RLC.t_StatusProhibit,
-                enb_module_idP,
-                ue_module_idP,
-                rb_idP);
-    }
+          LOG_D(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
+              frameP,
+              (eNB_flagP) ? "eNB" : "UE",
+              enb_module_idP,
+              ue_module_idP,
+              maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
+              pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
+              pollByte_tab[config_am_pP->ul_AM_RLC.pollByte],
+              PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
+              am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
+              t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit],
+              enb_module_idP,
+              ue_module_idP,
+              rb_idP);
+
+          rlc_am_init(rlc_p,frameP);
+          rlc_am_set_debug_infos(rlc_p, frameP, eNB_flagP, srb_flagP, enb_module_idP, ue_module_idP, rb_idP);
+          rlc_am_configure(rlc_p,
+              frameP,
+              maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
+              pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
+              pollByte_tab[config_am_pP->ul_AM_RLC.pollByte],
+              PollRetransmit_tab[config_am_pP->ul_AM_RLC.t_PollRetransmit],
+              am_t_Reordering_tab[config_am_pP->dl_AM_RLC.t_Reordering],
+              t_StatusProhibit_tab[config_am_pP->dl_AM_RLC.t_StatusProhibit]);
+      } else {
+          LOG_D(RLC,
+              "[FRAME %5u][%s][RRC][MOD %u/%u][][--- ILLEGAL CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u], RLC-AM NOT CONFIGURED\n",
+              frameP,
+              (eNB_flagP) ? "eNB" : "UE",
+              enb_module_idP,
+              ue_module_idP,
+              config_am_pP->ul_AM_RLC.maxRetxThreshold,
+              config_am_pP->ul_AM_RLC.pollPDU,
+              config_am_pP->ul_AM_RLC.pollByte,
+              config_am_pP->ul_AM_RLC.t_PollRetransmit,
+              config_am_pP->dl_AM_RLC.t_Reordering,
+              config_am_pP->dl_AM_RLC.t_StatusProhibit,
+              enb_module_idP,
+              ue_module_idP,
+              rb_idP);
+      }
+  } else {
+      LOG_E(RLC, "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ  --->][RLC_AM][MOD %u/%u][RB %u] RLC NOT FOUND\n",
+          frameP,
+          (eNB_flagP) ? "eNB" : "UE",
+          enb_module_idP,
+          ue_module_idP,
+          enb_module_idP,
+          ue_module_idP,
+          rb_idP);
+  }
 }
 
   //-----------------------------------------------------------------------------
@@ -386,19 +411,23 @@ rlc_am_get_pdus (rlc_am_entity_t *rlc_pP, frame_t frameP)
                         return;
                     } else if ((tx_data_pdu_management->retx_count >= 0) && (rlc_pP->nb_bytes_requested_by_mac >= RLC_AM_MIN_SEGMENT_SIZE_REQUEST)) {
                         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] SEND SEGMENT OF DATA PDU SN %04d MAC BYTES %d SIZE %d RTX COUNT %d  nack_so_start %d nack_so_stop %04X(hex)\n",
-                        frameP,
-                        (rlc_pP->is_enb) ? "eNB" : "UE",
-                        rlc_pP->enb_module_id,
-                        rlc_pP->ue_module_id,
-                        rlc_pP->rb_id,
-                        rlc_pP->first_retrans_pdu_sn,
-                        rlc_pP->nb_bytes_requested_by_mac,
-                        tx_data_pdu_management->header_and_payload_size,
-                        tx_data_pdu_management->retx_count,
-                        tx_data_pdu_management->nack_so_start,
-                        tx_data_pdu_management->nack_so_stop);
+                                frameP,
+                                (rlc_pP->is_enb) ? "eNB" : "UE",
+                                rlc_pP->enb_module_id,
+                                rlc_pP->ue_module_id,
+                                rlc_pP->rb_id,
+                                rlc_pP->first_retrans_pdu_sn,
+                                rlc_pP->nb_bytes_requested_by_mac,
+                                tx_data_pdu_management->header_and_payload_size,
+                                tx_data_pdu_management->retx_count,
+                                tx_data_pdu_management->nack_so_start,
+                                tx_data_pdu_management->nack_so_stop);
 
-                        mem_block_t* copy = rlc_am_retransmit_get_subsegment(rlc_pP, frameP, rlc_pP->first_retrans_pdu_sn, &rlc_pP->nb_bytes_requested_by_mac);
+                        mem_block_t* copy = rlc_am_retransmit_get_subsegment(
+                                rlc_pP,
+                                frameP,
+                                rlc_pP->first_retrans_pdu_sn,
+                                &rlc_pP->nb_bytes_requested_by_mac);
                         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] SEND SEGMENT OF DATA PDU SN %04d (NEW SO %05d)\n",
                               frameP,
                               (rlc_pP->is_enb) ? "eNB" : "UE",
@@ -557,9 +586,9 @@ rlc_am_mac_status_indication (void *rlc_pP, frame_t frameP, uint16_t tb_sizeP, s
   rlc->nb_bytes_requested_by_mac = tb_sizeP;
 
   status_resp.buffer_occupancy_in_bytes = rlc_am_get_buffer_occupancy_in_bytes(rlc,frameP);
-  
+
   if ((rlc->input_sdus[rlc->current_sdu_index].mem_block != NULL) && (status_resp.buffer_occupancy_in_bytes)) {
-          
+
           //status_resp.buffer_occupancy_in_bytes += ((rlc_am_entity_t *) rlc)->tx_header_min_length_in_bytes;
           status_resp.buffer_occupancy_in_pdus = rlc->nb_sdu;
           diff_time =   frameP - ((rlc_am_tx_sdu_management_t *) (rlc->input_sdus[rlc->current_sdu_index].mem_block->data))->sdu_creation_time;
@@ -571,7 +600,7 @@ rlc_am_mac_status_indication (void *rlc_pP, frame_t frameP, uint16_t tb_sizeP, s
 
           status_resp.head_sdu_remaining_size_to_send = sdu_remaining_size;
           if (sdu_size == sdu_remaining_size)  {
-           status_resp.head_sdu_is_segmented = 0; 
+           status_resp.head_sdu_is_segmented = 0;
           }
           else {
               status_resp.head_sdu_is_segmented = 1;
@@ -579,8 +608,8 @@ rlc_am_mac_status_indication (void *rlc_pP, frame_t frameP, uint16_t tb_sizeP, s
 
   } else {
   }
-  
-  
+
+
 #ifdef TRACE_RLC_AM_TX_STATUS
   if (tb_sizeP > 0) {
       LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] MAC_STATUS_INDICATION (DATA) %d bytes -> %d bytes\n",
@@ -615,7 +644,7 @@ rlc_am_mac_data_request (void *rlc_pP, frame_t frameP)
   rlc_am_pdu_info_t   pdu_info;
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p;
   mem_block_t        *tb_p;
-  int16_t               tb_size_in_bytes;
+  tb_size_t           tb_size_in_bytes;
   int                 num_nack;
   char                message_string[9000];
   size_t              message_string_size = 0;
@@ -775,7 +804,7 @@ rlc_am_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, 
   rlc_am_pdu_info_t   pdu_info;
   rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p;
   mem_block_t        *tb_p;
-  int16_t               tb_size_in_bytes;
+  sdu_size_t          tb_size_in_bytes;
   int                 num_nack;
   char                message_string[7000];
   size_t              message_string_size = 0;

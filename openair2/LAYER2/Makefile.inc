@@ -6,10 +6,8 @@ EXTRA_CFLAGS += -DNO_RRM
 
 COMMON_DIR = $(OPENAIR2_TOP)/COMMON
 L2_INTERFACE_DIR = $(OPENAIR2_TOP)/RRC/L2_INTERFACE
-#RLC_UM_DIR = $(OPENAIR2_TOP)/LAYER2/RLC/UM_v6.1.0_LITE
 RLC_UM_DIR = $(OPENAIR2_TOP)/LAYER2/RLC/UM_v9.3.0
 RLC_AM_DIR = $(OPENAIR2_TOP)/LAYER2/RLC/AM_v9.3.0
-#RLC_TM_DIR = $(OPENAIR2_TOP)/LAYER2/RLC/TM
 RLC_TM_DIR = $(OPENAIR2_TOP)/LAYER2/RLC/TM_v9.3.0
 RLC_DIR = $(OPENAIR2_TOP)/LAYER2/RLC
 PDCP_DIR = $(OPENAIR2_TOP)/LAYER2/PDCP_v10.1.0
@@ -47,10 +45,6 @@ SOURCES_L2 +=  $(RLC_AM_DIR)/rlc_am_status_report.c
 
 SOURCES_L2 +=  $(RLC_TM_DIR)/rlc_tm.c
 SOURCES_L2 +=  $(RLC_TM_DIR)/rlc_tm_init.c
-#SOURCES_L2 +=  $(RLC_TM_DIR)/rlc_tm_control_primitives.c
-#SOURCES_L2 +=  $(RLC_TM_DIR)/rlc_tm_fsm.c
-#SOURCES_L2 +=  $(RLC_TM_DIR)/rlc_tm_segment.c
-#SOURCES_L2 +=  $(RLC_TM_DIR)/rlc_tm_reassembly.c
 
 SOURCES_L2 +=  $(RLC_UM_DIR)/rlc_um.c
 SOURCES_L2 +=  $(RLC_UM_DIR)/rlc_um_fsm.c
@@ -96,7 +90,6 @@ MAC_OBJS += $(MAC_DIR)/config.o
 L2_INTERFACE_OBJS = $(L2_INTERFACE_DIR)/openair_rrc_L2_interface.o
 
 L2_OBJS=$(addsuffix .o,$(basename $(SOURCES_L2))) $(PHY_INTERFACE_OBJS) $(MAC_OBJS) $(L2_INTERFACE_OBJS)
-#$(OPT_OBJS)
 
 L2_incl =  -I$(OPENAIR2_TOP)
 L2_incl += -I$(COMMON_DIR)

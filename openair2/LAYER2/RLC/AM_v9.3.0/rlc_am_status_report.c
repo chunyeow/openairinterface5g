@@ -115,7 +115,7 @@ void rlc_am_write16_bit_field(uint8_t** data_ppP, unsigned int* bit_pos_pP, sign
     }
 }
 //-----------------------------------------------------------------------------
-signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* header_pP, sdu_ssize_t *total_size_pP, rlc_am_control_pdu_info_t* pdu_info_pP)
+signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* header_pP, sdu_size_t *total_size_pP, rlc_am_control_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     memset(pdu_info_pP, 0, sizeof (rlc_am_control_pdu_info_t));
@@ -153,16 +153,16 @@ signed int rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_t* header_pP, sdu_ssize
 
                 if (!pdu_info_pP->nack_list[pdu_info_pP->num_nack - 1].e1) {
                     nack_to_read = 0;
-                    *total_size_pP = *total_size_pP - (sdu_ssize_t)((uint64_t)byte_pos_p + (uint64_t)((bit_pos + 7)/8) - (uint64_t)header_pP);
+                    *total_size_pP = *total_size_pP - (sdu_size_t)((uint64_t)byte_pos_p + (uint64_t)((bit_pos + 7)/8) - (uint64_t)header_pP);
                     return 0;
                 }
 
                 if (pdu_info_pP->num_nack == RLC_AM_MAX_NACK_IN_STATUS_PDU) {
-                    *total_size_pP = *total_size_pP - (sdu_ssize_t)((uint64_t)byte_pos_p + (uint64_t)((bit_pos + 7)/8) - (uint64_t)header_pP);
+                    *total_size_pP = *total_size_pP - (sdu_size_t)((uint64_t)byte_pos_p + (uint64_t)((bit_pos + 7)/8) - (uint64_t)header_pP);
                     return -2;
                 }
             }
-            *total_size_pP = *total_size_pP - (sdu_ssize_t)((uint64_t)byte_pos_p + (uint64_t)((bit_pos + 7)/8) - (uint64_t)header_pP);
+            *total_size_pP = *total_size_pP - (sdu_size_t)((uint64_t)byte_pos_p + (uint64_t)((bit_pos + 7)/8) - (uint64_t)header_pP);
         } else {
             *total_size_pP = *total_size_pP - 2;
         }
@@ -195,11 +195,11 @@ void rlc_am_display_control_pdu_infos(rlc_am_control_pdu_info_t* pdu_info_pP)
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t*  tb_pP, uint8_t** first_byte_ppP, sdu_ssize_t *tb_size_in_bytes_pP)
+void rlc_am_receive_process_control_pdu(rlc_am_entity_t* rlc_pP, frame_t frameP, mem_block_t*  tb_pP, uint8_t** first_byte_ppP, sdu_size_t *tb_size_in_bytes_pP)
 //-----------------------------------------------------------------------------
 {
-  rlc_am_pdu_sn_10_t* rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)*first_byte_ppP;
-  sdu_ssize_t         initial_pdu_size = *tb_size_in_bytes_pP;
+  rlc_am_pdu_sn_10_t *rlc_am_pdu_sn_10_p = (rlc_am_pdu_sn_10_t*)*first_byte_ppP;
+  sdu_size_t          initial_pdu_size   = *tb_size_in_bytes_pP;
 
   if (rlc_am_get_control_pdu_infos(rlc_am_pdu_sn_10_p, tb_size_in_bytes_pP, &g_rlc_am_control_pdu_info) >= 0) {
 

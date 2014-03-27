@@ -73,10 +73,10 @@ typedef struct rlc_um_entity_s {
   //-----------------------------
   // PROTOCOL VARIABLES
   //-----------------------------
-  rlc_usn_t         vt_us; /*!< \brief This state variable holds the value of the SN to be assigned for the next newly generated UMD PDU. It is initially set to 0, and is updated whenever the UM RLC entity delivers an UMD PDU with SN = VT(US). */
-  rlc_usn_t         vr_ur; /*!< \brief UM receive state variable. This state variable holds the value of the SN of the earliest UMD PDU that is still considered for reordering. It is initially set to 0. */
-  rlc_usn_t         vr_ux; /*!< \brief UM t-Reordering state variable. This state variable holds the value of the SN following the SN of the UMD PDU which triggered t-Reordering. */
-  rlc_usn_t         vr_uh; /*!< \brief UM highest received state variable. This state variable holds the value of the SN following the SN of the UMD PDU with the highest SN among received UMD PDUs, and it serves as the higher edge of the reordering window. It is initially set to 0. */
+  rlc_usn_t            vt_us; /*!< \brief This state variable holds the value of the SN to be assigned for the next newly generated UMD PDU. It is initially set to 0, and is updated whenever the UM RLC entity delivers an UMD PDU with SN = VT(US). */
+  rlc_usn_t            vr_ur; /*!< \brief UM receive state variable. This state variable holds the value of the SN of the earliest UMD PDU that is still considered for reordering. It is initially set to 0. */
+  rlc_usn_t            vr_ux; /*!< \brief UM t-Reordering state variable. This state variable holds the value of the SN following the SN of the UMD PDU which triggered t-Reordering. */
+  rlc_usn_t            vr_uh; /*!< \brief UM highest received state variable. This state variable holds the value of the SN following the SN of the UMD PDU with the highest SN among received UMD PDUs, and it serves as the higher edge of the reordering window. It is initially set to 0. */
   //-----------------------------
   // TIMERS
   //-----------------------------
@@ -88,23 +88,22 @@ typedef struct rlc_um_entity_s {
   uint8_t              rx_sn_length;                     /*!< \brief Length of sequence number in bits, can be 5 or 10. */
   uint8_t              tx_header_min_length_in_bytes;    /*!< \brief Length of PDU header, can be 1 or 2 bytes. */
   uint8_t              rx_header_min_length_in_bytes;    /*!< \brief Length of PDU header, can be 1 or 2 bytes. */
-  rlc_sn_t          tx_sn_modulo;                     /*!< \brief Module of the sequence number of PDU, can be RLC_UM_SN_5_BITS_MODULO or RLC_UM_SN_10_BITS_MODULO. */
-  rlc_sn_t          rx_sn_modulo;                     /*!< \brief Module of the sequence number of PDU, can be RLC_UM_SN_5_BITS_MODULO or RLC_UM_SN_10_BITS_MODULO. */
-  rlc_sn_t          rx_um_window_size;
-  rlc_sn_t          tx_um_window_size;
+  rlc_sn_t             tx_sn_modulo;                     /*!< \brief Module of the sequence number of PDU, can be RLC_UM_SN_5_BITS_MODULO or RLC_UM_SN_10_BITS_MODULO. */
+  rlc_sn_t             rx_sn_modulo;                     /*!< \brief Module of the sequence number of PDU, can be RLC_UM_SN_5_BITS_MODULO or RLC_UM_SN_10_BITS_MODULO. */
+  rlc_sn_t             rx_um_window_size;
+  rlc_sn_t             tx_um_window_size;
   //-----------------------------
   // tranmission
   //-----------------------------
   // sdu communication;
-  mem_block_t     **input_sdus;                /*!< \brief Input SDU buffer (for SDUs coming from upper layers). Should be accessed as an array. */
-  mem_block_t     * input_sdus_alloc;          /*!< \brief Allocated memory for the input SDU buffer (for SDUs coming from upper layers). */
+  mem_block_t        **input_sdus;                /*!< \brief Input SDU buffer (for SDUs coming from upper layers). Should be accessed as an array. */
   uint16_t             size_input_sdus_buffer;    /*!< \brief Size of the input SDU buffer. */
   uint16_t             nb_sdu;                    /*!< \brief Total number of SDUs in input_sdus[] */
   uint16_t             next_sdu_index;            /*!< \brief Next SDU index for a new incomin SDU in input_sdus[]. */
   uint16_t             current_sdu_index;         /*!< \brief Current SDU index in input_sdus array to be segmented. */
   rlc_buffer_occupancy_t buffer_occupancy;          /*!< \brief Number of bytes contained in input_sdus buffer.*/
   uint32_t             nb_bytes_requested_by_mac; /*!< \brief Number of bytes requested by lower layer for next transmission. */
-  list_t            pdus_to_mac_layer;         /*!< \brief PDUs buffered for transmission to MAC layer. */
+  list_t               pdus_to_mac_layer;         /*!< \brief PDUs buffered for transmission to MAC layer. */
   //*****************************************************************************
   // RECEIVER
   //*****************************************************************************
@@ -112,7 +111,6 @@ typedef struct rlc_um_entity_s {
   sdu_size_t        output_sdu_size_to_write;       /*!< \brief Size of the reassemblied SDU. */
 
   mem_block_t     **dar_buffer;                     /*!< \brief Array of rx PDUs. */
-  mem_block_t      *dar_buffer_alloc;               /*!< \brief Allocated memory for the DAR buffer. */
   list_t            pdus_from_mac_layer;            /*!< \brief Not Used. */
 
   logical_chan_id_t channel_id;                     /*!< \brief Transport channel identifier. */

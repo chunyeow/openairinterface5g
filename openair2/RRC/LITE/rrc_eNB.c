@@ -590,48 +590,48 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
 
     struct PhysicalConfigDedicated    **physicalConfigDedicated = &rrc_inst->physicalConfigDedicated[ue_mod_idP];
 
-    struct SRB_ToAddMod                *SRB2_config;
-    struct SRB_ToAddMod__rlc_Config    *SRB2_rlc_config;
-    struct SRB_ToAddMod__logicalChannelConfig *SRB2_lchan_config;
+    struct SRB_ToAddMod                *SRB2_config                      = NULL;
+    struct SRB_ToAddMod__rlc_Config    *SRB2_rlc_config                  = NULL;
+    struct SRB_ToAddMod__logicalChannelConfig *SRB2_lchan_config         = NULL;
     struct LogicalChannelConfig__ul_SpecificParameters
-                                       *SRB2_ul_SpecificParameters;
+                                       *SRB2_ul_SpecificParameters       = NULL;
     SRB_ToAddModList_t                 *SRB_configList = rrc_inst->SRB_configList[ue_mod_idP];
-    SRB_ToAddModList_t                 *SRB_configList2;
+    SRB_ToAddModList_t                 *SRB_configList2                  = NULL;
 
-    struct DRB_ToAddMod                *DRB_config;
-    struct RLC_Config                  *DRB_rlc_config;
-    struct PDCP_Config                 *DRB_pdcp_config;
-    struct PDCP_Config__rlc_AM         *PDCP_rlc_AM;
-    struct PDCP_Config__rlc_UM         *PDCP_rlc_UM;
-    struct LogicalChannelConfig        *DRB_lchan_config;
+    struct DRB_ToAddMod                *DRB_config                       = NULL;
+    struct RLC_Config                  *DRB_rlc_config                   = NULL;
+    struct PDCP_Config                 *DRB_pdcp_config                  = NULL;
+    struct PDCP_Config__rlc_AM         *PDCP_rlc_AM                      = NULL;
+    struct PDCP_Config__rlc_UM         *PDCP_rlc_UM                      = NULL;
+    struct LogicalChannelConfig        *DRB_lchan_config                 = NULL;
     struct LogicalChannelConfig__ul_SpecificParameters
-                                       *DRB_ul_SpecificParameters;
+                                       *DRB_ul_SpecificParameters        = NULL;
     DRB_ToAddModList_t                **DRB_configList = &rrc_inst->DRB_configList[ue_mod_idP];
 
-    MAC_MainConfig_t                   *mac_MainConfig;
-    MeasObjectToAddModList_t           *MeasObj_list;
-    MeasObjectToAddMod_t               *MeasObj;
-    ReportConfigToAddModList_t         *ReportConfig_list;
+    MAC_MainConfig_t                   *mac_MainConfig                   = NULL;
+    MeasObjectToAddModList_t           *MeasObj_list                     = NULL;
+    MeasObjectToAddMod_t               *MeasObj                          = NULL;
+    ReportConfigToAddModList_t         *ReportConfig_list                = NULL;
     ReportConfigToAddMod_t             *ReportConfig_per, *ReportConfig_A1,
         *ReportConfig_A2, *ReportConfig_A3, *ReportConfig_A4, *ReportConfig_A5;
-    MeasIdToAddModList_t               *MeasId_list;
+    MeasIdToAddModList_t               *MeasId_list                      = NULL;
     MeasIdToAddMod_t                   *MeasId0, *MeasId1, *MeasId2, *MeasId3, *MeasId4, *MeasId5;
 #if Rel10
-    long                               *sr_ProhibitTimer_r9;
+    long                               *sr_ProhibitTimer_r9              = NULL;
 #endif
 
     long                               *logicalchannelgroup, *logicalchannelgroup_drb;
     long                               *maxHARQ_Tx, *periodicBSR_Timer;
 
-    RSRP_Range_t                       *rsrp = NULL;
-    struct MeasConfig__speedStatePars  *Sparams = NULL;
-    QuantityConfig_t                   *quantityConfig = NULL;
-    CellsToAddMod_t                    *CellToAdd;
-    CellsToAddModList_t                *CellsToAddModList;
+    RSRP_Range_t                       *rsrp                             = NULL;
+    struct MeasConfig__speedStatePars  *Sparams                          = NULL;
+    QuantityConfig_t                   *quantityConfig                   = NULL;
+    CellsToAddMod_t                    *CellToAdd                        = NULL;
+    CellsToAddModList_t                *CellsToAddModList                = NULL;
     struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList *dedicatedInfoNASList = NULL;
-    DedicatedInfoNAS_t                 *dedicatedInfoNas;
+    DedicatedInfoNAS_t                 *dedicatedInfoNas                 = NULL;
 
-    C_RNTI_t                           *cba_RNTI = NULL;
+    C_RNTI_t                           *cba_RNTI                         = NULL;
 #ifdef CBA
     //struct PUSCH_CBAConfigDedicated_vlola  *pusch_CBAConfigDedicated_vlola;
     uint8_t                            *cba_RNTI_buf;
@@ -1299,9 +1299,9 @@ void check_handovers(
                       "[eNB %d] Frame %d: handover Command received for new UE_idx %d current eNB %d target eNB: %d \n",
                       enb_mod_idP, frameP, i, enb_mod_idP, eNB_rrc_inst[enb_mod_idP].handover_info[i]->modid_t);
                 //rrc_eNB_process_handoverPreparationInformation(enb_mod_idP,frameP,i);
-                result = pdcp_data_req(enb_mod_idP, i, frameP, 1,
+                result = pdcp_data_req(enb_mod_idP, i, frameP, ENB_FLAG_YES, SRB_FLAG_YES,
                                        DCCH,
-                                       rrc_eNB_mui++, 0,
+                                       rrc_eNB_mui++, FALSE,
                                        eNB_rrc_inst[enb_mod_idP].handover_info[i]->size,
                                        eNB_rrc_inst[enb_mod_idP].handover_info[i]->buf, 1);
                 AssertFatal(result == TRUE, "PDCP data request failed!\n");
@@ -2239,7 +2239,7 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
 #endif
 
     // Refresh SRBs/DRBs
-    rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, 1,
+    rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES,
                              SRB_configList,
                              DRB_configList, (DRB_ToReleaseList_t *) NULL,
                              eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
@@ -2283,9 +2283,10 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                     // can mean also IPV6 since ether -> ipv6 autoconf
 #   if !defined(OAI_NW_DRIVER_TYPE_ETHERNET) && !defined(EXMIMO)
                     LOG_I(OIP, "[eNB %d] trying to bring up the OAI interface oai%d\n", enb_mod_idP, enb_mod_idP);
-                    oip_ifup = nas_config(enb_mod_idP,   // interface index
-                                          enb_mod_idP + 1,   // thrid octet
-                                          enb_mod_idP + 1);  // fourth octet
+                    oip_ifup = nas_config(
+                        enb_mod_idP,   // interface index
+                        enb_mod_idP + 1,   // thrid octet
+                        enb_mod_idP + 1);  // fourth octet
 
                     if (oip_ifup == 0) {    // interface is up --> send a config the DRB
 #      ifdef OAI_EMU
@@ -2295,15 +2296,16 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         dest_ip_offset = 8;
 #      endif
                         LOG_I(OIP,
-                              "[eNB %d] Config the oai%d to send/receive pkt on DRB %d to/from the protocol stack\n",
-                              enb_mod_idP, enb_mod_idP,
-                              (ue_mod_idP * NB_RB_MAX) + *DRB_configList->list.array[i]->logicalChannelIdentity);
+                            "[eNB %d] Config the oai%d to send/receive pkt on DRB %d to/from the protocol stack\n",
+                            enb_mod_idP, enb_mod_idP,
+                            (ue_mod_idP * maxDRB) + DRB_configList->list.array[i]->drb_Identity);
                         rb_conf_ipv4(0, //add
-                                     ue_mod_idP,  //cx
-                                     enb_mod_idP,    //inst
-                                     (ue_mod_idP * NB_RB_MAX) + *DRB_configList->list.array[i]->logicalChannelIdentity, 0,    //dscp
-                                     ipv4_address(enb_mod_idP + 1, enb_mod_idP + 1),  //saddr
-                                     ipv4_address(enb_mod_idP + 1, dest_ip_offset + ue_mod_idP + 1));  //daddr
+                            ue_mod_idP,  //cx
+                            enb_mod_idP,    //inst
+                            (ue_mod_idP * maxDRB) + DRB_configList->list.array[i]->drb_Identity,
+                            0,    //dscp
+                            ipv4_address(enb_mod_idP + 1, enb_mod_idP + 1),  //saddr
+                            ipv4_address(enb_mod_idP + 1, dest_ip_offset + ue_mod_idP + 1));  //daddr
 
                         LOG_D(RRC, "[eNB %d] State = Attached (UE %d)\n", enb_mod_idP, ue_mod_idP);
                     }
@@ -2319,18 +2321,22 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                           frameP, enb_mod_idP, ue_mod_idP, enb_mod_idP);
                     if (DRB_configList->list.array[i]->logicalChannelIdentity)
                         DRB2LCHAN[i] = (uint8_t) * DRB_configList->list.array[i]->logicalChannelIdentity;
-                    rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, ue_mod_idP, 0,
-                                       (RadioResourceConfigCommonSIB_t *) NULL,
-                                       eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
-                                       (MeasObjectToAddMod_t **) NULL,
-                                       eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
-                                       DRB2LCHAN[i],
-                                       DRB_configList->list.array[i]->logicalChannelConfig,
-                                       eNB_rrc_inst[enb_mod_idP].measGapConfig[ue_mod_idP],
-                                       (TDD_Config_t *) NULL,
-                                       NULL,
-                                       (uint8_t *) NULL,
-                                       (uint16_t *) NULL, NULL, NULL, NULL, (MBSFN_SubframeConfigList_t *) NULL
+                    rrc_mac_config_req(
+                        enb_mod_idP,
+                        ENB_FLAG_YES,
+                        ue_mod_idP,
+                        0,
+                        (RadioResourceConfigCommonSIB_t *) NULL,
+                        eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
+                        (MeasObjectToAddMod_t **) NULL,
+                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
+                        DRB2LCHAN[i],
+                        DRB_configList->list.array[i]->logicalChannelConfig,
+                        eNB_rrc_inst[enb_mod_idP].measGapConfig[ue_mod_idP],
+                        (TDD_Config_t *) NULL,
+                        NULL,
+                        (uint8_t *) NULL,
+                        (uint16_t *) NULL, NULL, NULL, NULL, (MBSFN_SubframeConfigList_t *) NULL
 #ifdef Rel10
                                        , 0, (MBSFN_AreaInfoList_r9_t *) NULL, (PMCH_InfoList_r9_t *) NULL
 #endif
@@ -2346,8 +2352,8 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         /*      rrc_pdcp_config_req (enb_mod_idP, frameP, 1, CONFIG_ACTION_REMOVE,
                            (ue_mod_idP * NB_RB_MAX) + DRB2LCHAN[i],UNDEF_SECURITY_MODE);
                          */
-                        rrc_rlc_config_req(enb_mod_idP, ue_mod_idP, frameP, 1, CONFIG_ACTION_REMOVE,
-                                           DRB2LCHAN[i], RADIO_ACCESS_BEARER, Rlc_info_um);
+                        rrc_rlc_config_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES, SRB_FLAG_NO, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,
+                                           DRB2LCHAN[i], Rlc_info_um);
                     }
                     eNB_rrc_inst[enb_mod_idP].DRB_active[ue_mod_idP][i] = 0;
                     LOG_D(RRC,

@@ -74,7 +74,12 @@ Address      : EURECOM,
 * \param[in]  sn_lengthP         Sequence number length in bits in PDU header (5 or 10).
 * \return     0 if no error was encountered during the parsing of the PDU, else -1;
 */
-protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(frame_t frameP, rlc_um_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_um_pdu_info_t* pdu_info_pP, uint8_t sn_lengthP));
+protected_rlc_um_dar(  signed int rlc_um_get_pdu_infos(
+    const frame_t               frameP,
+    rlc_um_pdu_sn_10_t  * const header_pP,
+    const sdu_size_t            total_sizeP,
+    rlc_um_pdu_info_t   * const pdu_info_pP,
+    const uint8_t               sn_lengthP));
 
 /*! \fn int rlc_um_read_length_indicators(unsigned char**data_ppP, rlc_um_e_li_t* e_li_pP, unsigned int* li_array_pP, unsigned int *num_li_pP, sdu_size_t *data_size_pP)
 * \brief    Reset protocol variables and state variables to initial values.

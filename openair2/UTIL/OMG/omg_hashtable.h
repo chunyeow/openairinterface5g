@@ -27,7 +27,7 @@
 
 *******************************************************************************/
 
-/*! \file hashtable.h
+/*! \file omg_hashtable.h
 * \brief A 'C' implementation of a hashtable
 * \author  S. Uppoor
 * \date 2011
@@ -95,7 +95,7 @@ typedef enum hash_table_mode{
  * @struct hash_table "hashtable.h"
  * @brief identifies the hashtable for which operations are to be performed
  */
-typedef struct hash_table
+typedef struct omg_hash_table_s
 {
     /**
      * the hash table array where all values are stored
@@ -122,8 +122,8 @@ typedef struct hash_table
      */
     size_t key_ratio;
 
-} hash_table_t;
-#define hash_table_s sizeof(hash_table_t)
+} omg_hash_table_t;
+#define SIZEOF_HASH_TABLE sizeof(omg_hash_table_t)
 
 
 // element operations
@@ -139,7 +139,7 @@ hash_table_element_t * hash_table_element_new();
  * @param table table from which element has to be deleted
  * @param element hash table element to be deleted
  */
-void hash_table_element_delete(hash_table_t *, hash_table_element_t *);
+void hash_table_element_delete(omg_hash_table_t *, hash_table_element_t *);
 
 /**
  * Function that returns a hash value for a given key and key_len
@@ -154,16 +154,16 @@ uint16_t hash_table_do_hash(void * key, size_t key_len, uint16_t max_key);
 /**
  * Fuction to create a new hash table
  * @param mode hash_table_mode which the hash table should follow
- * @returns hash_table_t object which references the hash table
+ * @returns omg_hash_table_t object which references the hash table
  * @returns NULL when no memory
  */
-hash_table_t * hash_table_new(hash_table_mode_t);
+omg_hash_table_t * hash_table_new(hash_table_mode_t);
 
 /**
  * Function to delete the hash table
  * @param table hash table to be deleted
  */
-void hash_table_delete(hash_table_t *);
+void hash_table_delete(omg_hash_table_t *);
 
 /**
  * macro to add a key - value pair to the hash table
@@ -186,7 +186,7 @@ void hash_table_delete(hash_table_t *);
  * @returns 0 on sucess
  * @returns -1 when no memory
  */
-int hash_table_add(hash_table_t *, void *, size_t, void *, size_t);
+int hash_table_add(omg_hash_table_t *, void *, size_t, void *, size_t);
 
 /**
  * macro to remove an hash table element (for a given key) from a given hash table
@@ -206,7 +206,7 @@ int hash_table_add(hash_table_t *, void *, size_t, void *, size_t);
  * @returns 0 on sucess
  * @returns -1 when key is not found
  */
-int hash_table_remove(hash_table_t *, void *, size_t);
+int hash_table_remove(omg_hash_table_t *, void *, size_t);
 
 /**
  * macro to lookup a key in a particular table
@@ -226,7 +226,7 @@ int hash_table_remove(hash_table_t *, void *, size_t);
  * @returns NULL when key is not found in the hash table
  * @returns void* pointer to the value in the table
  */
-void * hash_table_lookup(hash_table_t *, void *, size_t);
+void * hash_table_lookup(omg_hash_table_t *, void *, size_t);
 
 /**
  * macro to look if the exists in the hash table
@@ -244,7 +244,7 @@ void * hash_table_lookup(hash_table_t *, void *, size_t);
  * @returns 0 when key is not found
  * @returns 1 when key is found
  */
-int hash_table_has_key(hash_table_t *, void *, size_t);
+int hash_table_has_key(omg_hash_table_t *, void *, size_t);
 
 /**
  * Function to return all the keys in a given hash table
@@ -252,7 +252,7 @@ int hash_table_has_key(hash_table_t *, void *, size_t);
  * @param keys a void** pointer where keys are filled in (memory allocated internally and must be freed)
  * @return total number of keys filled in keys 
  */
-size_t hash_table_get_keys(hash_table_t *, void **);
+size_t hash_table_get_keys(omg_hash_table_t *, void **);
 
 /**
  * Function to get all elements (key - value pairs) from the given hash table
@@ -261,7 +261,7 @@ size_t hash_table_get_keys(hash_table_t *, void **);
  * @returns 1 when no memory 
  * @returns count of elements 
  */
-size_t hash_table_get_elements(hash_table_t *, hash_table_element_t *** );
+size_t hash_table_get_elements(omg_hash_table_t *, hash_table_element_t *** );
 
 /**
  * Function to resize the hash table store house
@@ -271,5 +271,5 @@ size_t hash_table_get_elements(hash_table_t *, hash_table_element_t *** );
  * @returns -2 when no emmory for new store house
  * @returns 0 when sucess
  */
-int hash_table_resize(hash_table_t *, size_t);
+int hash_table_resize(omg_hash_table_t *, size_t);
 #endif

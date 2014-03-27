@@ -109,7 +109,7 @@ struct mac_tx_tb_management {
   unsigned char              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc.
   // Previously designed for interlayers optimizations, (avoid aligning on byte boundary)
   // but not used by L1 !, so extra cost for alignement in MAC.
-  unsigned short             tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
+  tb_size_t                  tb_size_in_bits;      // L1H does not care of the field first bit any more, so in order to byte
   // align the tb we have to know its size
 
   // for reporting tx status to upper layers
@@ -123,8 +123,8 @@ struct mac_tx_tb_management {
 
 struct mac_rx_tb_management {
   unsigned char             *data_ptr;
-  unsigned short             tb_size;      // in bits
-  unsigned char              valid_checksum;
+  tb_size_t                  tb_size;      // in bits
+  boolean_t                  valid_checksum;
   unsigned char              first_bit;    // 0 if data starts on byte boundary(b7), 1 if b6, 2 if b5, etc
 };
 
@@ -132,7 +132,7 @@ struct mac_tb_req {
   // BE CAREFULL TO KEEP THE SAME MAPPING FOR THE 6 FIELDS BELLOW AS FOR  struct mac_tx_tb_management
   unsigned char             *data_ptr;
   unsigned char              first_bit;
-  unsigned short             tb_size;
+  tb_size_t                  tb_size;
   // align the tb we have to know its size
 
   // for reporting tx status to upper layers

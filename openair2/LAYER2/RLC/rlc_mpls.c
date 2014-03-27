@@ -42,9 +42,15 @@ Address      : EURECOM,
 
 
 //-----------------------------------------------------------------------------
-rlc_op_status_t mpls_rlc_data_req     (module_id_t enb_module_idP, module_id_t ue_module_idP, uint32_t frame, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sduP) {
+rlc_op_status_t mpls_rlc_data_req     (
+    const module_id_t enb_module_idP,
+    const module_id_t ue_module_idP,
+    const frame_t frame,
+    const rb_id_t rb_idP,
+    const sdu_size_t sdu_sizeP,
+    mem_block_t* const sduP) {
 //-----------------------------------------------------------------------------
   // third arg should be set to 1 or 0
-  return rlc_data_req(enb_module_idP, ue_module_idP, frame, 0, 0,rb_idP, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, sdu_sizeP, sduP);
+  return rlc_data_req(enb_module_idP, ue_module_idP, frame, ENB_FLAG_NO, SRB_FLAG_NO, MBMS_FLAG_NO, rb_idP, RLC_MUI_UNDEFINED, RLC_SDU_CONFIRM_NO, sdu_sizeP, sduP);
 }
 

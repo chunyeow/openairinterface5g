@@ -68,59 +68,82 @@ Address      : EURECOM,
 #            endif
 #        endif
 
-typedef volatile struct {
+typedef volatile struct rlc_tm_info_s{
     uint8_t             is_uplink_downlink;
  } rlc_tm_info_t;
 
 
-/*! \fn void config_req_rlc_tm (uint32_t frame, uint8_t eNB_flagP,  module_id_t enb_module_idP, module_id_t ue_module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP)
+/*! \fn void config_req_rlc_tm (void config_req_rlc_tm (
+    const module_id_t enb_module_idP,
+    const module_id_t ue_module_idP,
+    const frame_t     frameP,
+    const eNB_flag_t  eNB_flagP,
+    const srb_flag_t  srb_flagP,
+    const rlc_tm_info_t * const config_tmP,
+    const rb_id_t     rb_idP,
+    const srb_flag_t  srb_flagP)
 * \brief    Allocate memory for RLC TM instance, reset protocol variables, and set protocol parameters.
-* \param[in]  frame                     Frame index.
+* \param[in]  frameP                     Frame index.
 * \param[in]  eNB_flag                  Flag to indicate eNB (1) or UE (0)
+* \param[in]  srb_flagP                 Flag to indicate SRB (1) or DRB (0)
 * \param[in]  enb_module_idP            eNB Virtualized module identifier.
 * \param[in]  ue_module_idP             UE Virtualized module identifier.
 * \param[in]  config_tmP                Configuration parameters for RLC TM instance.
 * \param[in]  rb_idP                    Radio bearer identifier.
-* \param[in]  rb_typeP                  Radio bearer type (Signalling or Data).
+* \param[in]  srb_flagP                 Flag to indicate signalling radio bearer (1) or data radio bearer (0).
 */
-public_rlc_tm_init(   void config_req_rlc_tm (uint32_t frame, uint8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rlc_tm_info_t * config_tmP, rb_id_t rb_idP, rb_type_t rb_typeP);)
+public_rlc_tm_init(   void config_req_rlc_tm (
+    const module_id_t enb_module_idP,
+    const module_id_t ue_module_idP,
+    const frame_t     frameP,
+    const eNB_flag_t  eNB_flagP,
+    const srb_flag_t  srb_flagP,
+    const rlc_tm_info_t * const config_tmP,
+    const rb_id_t     rb_idP);)
 
 /*! \fn void rlc_tm_init (rlc_tm_entity_t *rlcP)
 * \brief    Initialize a RLC TM protocol instance, initialize all variables, lists, allocate buffers for making this instance ready to be configured with protocol configuration parameters. After this initialization the RLC TM protocol instance will be in RLC_NULL_STATE state.
 * \param[in]  rlcP                      RLC TM protocol instance pointer.
 */
-protected_rlc_tm_init(void rlc_tm_init (rlc_tm_entity_t *rlcP);)
+protected_rlc_tm_init(void rlc_tm_init (rlc_tm_entity_t * const rlcP);)
 
 /*! \fn void rlc_tm_reset_state_variables (rlc_tm_entity_t *rlcP)
 * \brief    Reset protocol variables and state variables to initial values.
 * \param[in]  rlcP                      RLC TM protocol instance pointer.
 */
-protected_rlc_tm_init(void rlc_tm_reset_state_variables (rlc_tm_entity_t *rlcP);)
+protected_rlc_tm_init(void rlc_tm_reset_state_variables (rlc_tm_entity_t * const rlcP);)
 
 /*! \fn void rlc_tm_cleanup(rlc_tm_entity_t *rlcP)
 * \brief    Free all allocated memory (lists and buffers) previously allocated by this RLC TM instance.
 * \param[in]  rlcP                      RLC TM protocol instance pointer.
 */
-public_rlc_tm_init(   void rlc_tm_cleanup(rlc_tm_entity_t *rlcP);)
+public_rlc_tm_init(   void rlc_tm_cleanup(rlc_tm_entity_t * const rlcP);)
 
-/*! \fn void rlc_tm_configure(rlc_tm_entity_t *rlcP, uint32_t timer_reorderingP, uint32_t is_uplink_downlinkP)
+/*! \fn void rlc_tm_configure(rlc_tm_entity_t * const rlcP, const boolean_t is_uplink_downlinkP)
 * \brief    Configure RLC TM protocol parameters.
 * \param[in]  rlcP                      RLC TM protocol instance pointer.
 * \param[in]  is_uplink_downlinkP       Is this instance is TRANSMITTER_ONLY,
 RECEIVER_ONLY, or TRANSMITTER_AND_RECEIVER.
 */
-protected_rlc_tm_init(void rlc_tm_configure(rlc_tm_entity_t *rlcP, uint8_t is_uplink_downlinkP);)
+protected_rlc_tm_init(void rlc_tm_configure(rlc_tm_entity_t * const rlcP, const boolean_t is_uplink_downlinkP);)
 
-/*! \fn void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, uint32_t frame, uint8_t eNB_flagP,  module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP, rb_type_t rb_typeP)
+/*! \fn void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, const frame_t frameP, uint8_t eNB_flagP,  const module_id_t enb_module_idP, const module_id_t ue_module_idP, const rb_id_t rb_idP, const srb_flag_t srb_flagP)
 * \brief    Set debug informations for a RLC TM protocol instance, these informations are only for trace purpose.
 * \param[in]  rlcP                      RLC TM protocol instance pointer.
-* \param[in]  frame                     Frame index.
-* \param[in]  eNB_flag                  Flag to indicate eNB (1) or UE (0)
 * \param[in]  enb_module_idP            eNB Virtualized module identifier.
 * \param[in]  ue_module_idP             UE Virtualized module identifier.
+* \param[in]  frameP                     Frame index.
+* \param[in]  eNB_flag                  Flag to indicate eNB (1) or UE (0)
+* \param[in]  srb_flagP                 Flag to indicate signalling radio bearer (1) or data radio bearer (0).
 * \param[in]  rb_idP                    Radio bearer identifier.
-* \param[in]  rb_typeP                  Radio bearer type (Signalling or Data).
 */
-protected_rlc_tm_init(void rlc_tm_set_debug_infos(rlc_tm_entity_t *rlcP, uint32_t frame, uint8_t eNB_flagP, module_id_t enb_module_idP, module_id_t ue_module_idP, rb_id_t rb_idP, rb_type_t rb_typeP);)
+protected_rlc_tm_init(void rlc_tm_set_debug_infos(
+    rlc_tm_entity_t * const rlcP,
+    const module_id_t enb_module_idP,
+    const module_id_t ue_module_idP,
+    const frame_t frameP,
+    const eNB_flag_t eNB_flagP,
+    const srb_flag_t srb_flagP,
+    const rb_id_t rb_idP);)
 /** @} */
 #    endif

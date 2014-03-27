@@ -122,6 +122,7 @@ typedef struct pdcp_t {
    * mode can receive data on NETLINK for eNB while eNB_flag = 0 and for UE when eNB_flag = 1
    */
   boolean_t is_ue;
+  boolean_t is_srb;
 
   /* Configured security algorithms */
   uint8_t cipheringAlgorithm;
@@ -143,6 +144,7 @@ typedef struct pdcp_t {
   uint8_t seq_num_size;
 
   logical_chan_id_t lcid;
+  rb_id_t           rb_id;
   /*
    * Sequence number state variables
    *
@@ -188,7 +190,7 @@ typedef struct pdcp_mbms_t {
  * under targets/TEST/PDCP/
  */
 
-/*! \fn boolean_t pdcp_data_req(module_id_t, uint32_t, uint8_t, rb_id_t, sdu_size_t, unsigned char*)
+/*! \fn boolean_t pdcp_data_req(module_id_t , module_id_t , frame_t , eNB_flag_t , srb_flag_t , rb_id_t , mui_t , confirm_t ,sdu_size_t , unsigned char* , pdcp_transmission_mode_t )
 * \brief This functions handles data transfer requests coming either from RRC or from IP
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
@@ -204,15 +206,26 @@ typedef struct pdcp_mbms_t {
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(boolean_t pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, rb_id_t rb_id, mui_t muiP, confirm_t confirmP, \
-    sdu_size_t sdu_buffer_size, unsigned char* sdu_buffer, pdcp_transmission_mode_t mode));
+public_pdcp(boolean_t pdcp_data_req(
+        const module_id_t eNB_id,
+        const module_id_t UE_id,
+        const frame_t frame,
+        const eNB_flag_t eNB_flag,
+        const srb_flag_t srb_flagP,
+        const rb_id_t rb_id,
+        const mui_t muiP,
+        const confirm_t confirmP, \
+        const sdu_size_t sdu_buffer_size,
+        unsigned char* const sdu_buffer,
+        const pdcp_transmission_mode_t mode));
 
-/*! \fn boolean_t pdcp_data_ind(module_id_t, module_id_t, frame_t, eNB_flag_t, MBMS_flag_t, rb_id_t, sdu_size_t, mem_block_t*, boolean_t)
+/*! \fn boolean_t pdcp_data_ind(module_id_t, module_id_t, frame_t, eNB_flag_t, srb_flag_t, MBMS_flag_t, rb_id_t, sdu_size_t, mem_block_t*, boolean_t)
 * \brief This functions handles data transfer indications coming from RLC
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in] frame Frame number
 * \param[in] Shows if relevant PDCP entity is part of an eNB or a UE
+* \param[in] Shows if rb is SRB
 * \param[in] Tells if MBMS traffic
 * \param[in] rab_id Radio Bearer ID
 * \param[in] sdu_buffer_size Size of incoming SDU in bytes
@@ -222,8 +235,16 @@ public_pdcp(boolean_t pdcp_data_req(module_id_t eNB_id, module_id_t UE_id, frame
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(boolean_t pdcp_data_ind(module_id_t eNB_id, module_id_t UE_id, frame_t frame, eNB_flag_t eNB_flag, MBMS_flag_t MBMS_flagP, rb_id_t rb_id, sdu_size_t sdu_buffer_size,
-                   mem_block_t* sdu_buffer, boolean_t is_data_plane));
+public_pdcp(boolean_t pdcp_data_ind(
+        const module_id_t eNB_id,
+        const module_id_t UE_id,
+        const frame_t frame,
+        const eNB_flag_t eNB_flag,
+        const srb_flag_t srb_flagP,
+        const MBMS_flag_t MBMS_flagP,
+        const rb_id_t rb_id,
+        const sdu_size_t sdu_buffer_size,
+        mem_block_t* const sdu_buffer));
 
 /*! \fn void rrc_pdcp_config_req(module_id_t , module_id_t ,frame_t,eNB_flag_t,uint32_t,rb_id_t,uint8_t)
 * \brief This functions initializes relevant PDCP entity
@@ -238,13 +259,15 @@ public_pdcp(boolean_t pdcp_data_ind(module_id_t eNB_id, module_id_t UE_id, frame
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(void rrc_pdcp_config_req (module_id_t enb_idP,
-                                      module_id_t ue_idP,
-                                      frame_t     frameP,
-                                      eNB_flag_t  eNB_flagP,
-                                      uint32_t         actionP,
-                                      rb_id_t     rb_idP,
-                                      uint8_t          security_modeP);)
+public_pdcp(void rrc_pdcp_config_req (
+        const module_id_t enb_idP,
+        const module_id_t ue_idP,
+        const frame_t     frameP,
+        const eNB_flag_t  eNB_flagP,
+        const srb_flag_t  srb_flagP,
+        const uint32_t    actionP,
+        const rb_id_t     rb_idP,
+        const uint8_t     security_modeP);)
 
 /*! \fn bool rrc_pdcp_config_asn1_req (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, SRB_ToAddModList_t* srb2add_list, DRB_ToAddModList_t* drb2add_list, DRB_ToReleaseList_t*  drb2release_list)
 * \brief  Function for RRC to configure a Radio Bearer.
@@ -263,29 +286,31 @@ public_pdcp(void rrc_pdcp_config_req (module_id_t enb_idP,
 * \return     A status about the processing, OK or error code.
 */
 public_pdcp(
-boolean_t rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
-                               module_id_t          ue_idP,
-                               frame_t              frameP,
-                               eNB_flag_t           eNB_flagP,
-                               SRB_ToAddModList_t  *srb2add_list,
-                               DRB_ToAddModList_t  *drb2add_list,
-                               DRB_ToReleaseList_t *drb2release_list,
-                               uint8_t                   security_modeP,
-                               uint8_t                  *kRRCenc,
-                               uint8_t                  *kRRCint,
-                               uint8_t                  *kUPenc
+boolean_t rrc_pdcp_config_asn1_req (
+        const module_id_t          eNB_idP,
+        const module_id_t          ue_idP,
+        const frame_t              frameP,
+        const eNB_flag_t           eNB_flagP,
+        SRB_ToAddModList_t  *const srb2add_list,
+        DRB_ToAddModList_t  *const drb2add_list,
+        DRB_ToReleaseList_t *const drb2release_list,
+        const uint8_t                   security_modeP,
+        uint8_t                  *const kRRCenc,
+        uint8_t                  *const kRRCint,
+        uint8_t                  *const kUPenc
 #ifdef Rel10
-                              ,PMCH_InfoList_r9_t  *pmch_InfoList_r9
+        ,PMCH_InfoList_r9_t  *pmch_InfoList_r9
 #endif
                                ));
 
-/*! \fn boolean_t pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, uint32_t  action, rb_id_t rb_id, uint8_t rb_sn, uint8_t rb_report, uint16_t header_compression_profile, uint8_t security_mode)
+/*! \fn boolean_t pdcp_config_req_asn1 (module_id_t module_id, frame_t frame, eNB_flag_t eNB_flag, srb_flag_t srb_flagP, uint32_t  action, rb_id_t rb_id, uint8_t rb_sn, uint8_t rb_report, uint16_t header_compression_profile, uint8_t security_mode)
 * \brief  Function for RRC to configure a Radio Bearer.
 * \param[in]  pdcp_pP            Pointer on PDCP structure.
 * \param[in]  enb_mod_idP        Virtualized enb module identifier, Not used if eNB_flagP = 0.
 * \param[in]  ue_mod_idP         Virtualized ue module identifier.
 * \param[in]  frame              Frame index.
 * \param[in]  eNB_flag           Flag to indicate eNB (1) or UE (0)
+* \param[in]  srb_flagP          Flag to indicate SRB (1) or DRB (0)
 * \param[in]  action             add, remove, modify a RB
 * \param[in]  rb_id              radio bearer id
 * \param[in]  rb_sn              sequence number for this radio bearer
@@ -297,23 +322,25 @@ boolean_t rrc_pdcp_config_asn1_req (module_id_t          eNB_idP,
 * \param[in]  kUPenc             User-Plane encryption key
 * \return     A status about the processing, OK or error code.
 */
-public_pdcp(boolean_t pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
-                                       module_id_t enb_idP,
-                                       module_id_t ue_idP,
-                                       frame_t     frameP,
-                                       eNB_flag_t  eNB_flagP,
-                                       rlc_mode_t  rlc_mode,
-                                       uint32_t         action,
-                                       uint16_t         lc_id,
-                                       uint16_t         mch_id,
-                                       rb_id_t     rb_id,
-                                       uint8_t          rb_sn,
-                                       uint8_t          rb_report,
-                                       uint16_t         header_compression_profile,
-                                       uint8_t          security_mode,
-                                       uint8_t         *kRRCenc,
-                                       uint8_t         *kRRCint,
-                                       uint8_t         *kUPenc));
+public_pdcp(boolean_t pdcp_config_req_asn1 (
+        pdcp_t         *const pdcp_pP,
+        const module_id_t      enb_idP,
+        const module_id_t      ue_idP,
+        const frame_t          frameP,
+        const eNB_flag_t       eNB_flagP,
+        const srb_flag_t       srb_flagP,
+        const rlc_mode_t       rlc_mode,
+        const uint32_t         action,
+        const uint16_t         lc_id,
+        const uint16_t         mch_id,
+        const rb_id_t          rb_id,
+        const uint8_t          rb_sn,
+        const uint8_t          rb_report,
+        const uint16_t         header_compression_profile,
+        const uint8_t          security_mode,
+        uint8_t         *const kRRCenc,
+        uint8_t         *const kRRCint,
+        uint8_t         *const kUPenc));
 /*! \fn void rrc_pdcp_config_release(module_id_t, rb_id_t)
 * \brief This functions is unused
 * \param[in] module_id Module ID of relevant PDCP entity
@@ -334,7 +361,11 @@ public_pdcp(boolean_t pdcp_config_req_asn1 (pdcp_t      *pdcp_pP,
 * \note None
 * @ingroup _pdcp
 */
-public_pdcp(void pdcp_run            (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP);)
+public_pdcp(void pdcp_run            (
+        const frame_t frameP,
+        const eNB_flag_t eNB_flagP,
+        const module_id_t ue_mod_idP,
+        const module_id_t enb_mod_idP);)
 public_pdcp(int pdcp_module_init     (void);)
 public_pdcp(void pdcp_module_cleanup (void);)
 public_pdcp(void pdcp_layer_init     (void);)
@@ -344,10 +375,24 @@ public_pdcp(int pdcp_netlink_init    (void);)
 #define PDCP2NAS_FIFO 21
 #define NAS2PDCP_FIFO 22
 
-protected_pdcp_fifo(int pdcp_fifo_flush_sdus                      (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t enb_idP, module_id_t ue_mod_idP);)
-protected_pdcp_fifo(int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t eNB_flagP);)
-protected_pdcp_fifo(int pdcp_fifo_read_input_sdus                 (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP);)
-protected_pdcp_fifo(void pdcp_fifo_read_input_sdus_from_otg       (frame_t frameP, eNB_flag_t eNB_flagP, module_id_t ue_mod_idP, module_id_t enb_mod_idP);)
+protected_pdcp_fifo(int pdcp_fifo_flush_sdus                      (
+        const frame_t frameP,
+        const eNB_flag_t eNB_flagP,
+        const module_id_t enb_idP,
+        const module_id_t ue_mod_idP);)
+protected_pdcp_fifo(int pdcp_fifo_read_input_sdus_remaining_bytes (
+        const frame_t frameP,
+        const eNB_flag_t eNB_flagP);)
+protected_pdcp_fifo(int pdcp_fifo_read_input_sdus                 (
+        const frame_t frameP,
+        const eNB_flag_t eNB_flagP,
+        const module_id_t ue_mod_idP,
+        const module_id_t enb_mod_idP);)
+protected_pdcp_fifo(void pdcp_fifo_read_input_sdus_from_otg       (
+        const frame_t frameP,
+        const eNB_flag_t eNB_flagP,
+        const module_id_t ue_mod_idP,
+        const module_id_t enb_mod_idP);)
 
 //-----------------------------------------------------------------------------
 
@@ -396,10 +441,12 @@ typedef struct pdcp_missing_pdu_info_t {
 #define PDCP_MAX_SN_12BIT 4095 // 2^12-1
 
 protected_pdcp(signed int             pdcp_2_nas_irq;)
-public_pdcp(pdcp_stats_t           UE_pdcp_stats[NUMBER_OF_UE_MAX];)
-public_pdcp(pdcp_stats_t           eNB_pdcp_stats[NUMBER_OF_eNB_MAX];)
-protected_pdcp(pdcp_t                 pdcp_array_ue[NUMBER_OF_UE_MAX][NB_RB_MAX];)
-protected_pdcp(pdcp_t                 pdcp_array_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][NB_RB_MAX];)
+public_pdcp(pdcp_stats_t              UE_pdcp_stats[NUMBER_OF_UE_MAX];)
+public_pdcp(pdcp_stats_t              eNB_pdcp_stats[NUMBER_OF_eNB_MAX];)
+protected_pdcp(pdcp_t                 pdcp_array_srb_ue[NUMBER_OF_UE_MAX][2];)
+protected_pdcp(pdcp_t                 pdcp_array_drb_ue[NUMBER_OF_UE_MAX][maxDRB];)
+protected_pdcp(pdcp_t                 pdcp_array_srb_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][2];)
+protected_pdcp(pdcp_t                 pdcp_array_drb_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][maxDRB];)
 #if defined(Rel10)
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array_ue[NUMBER_OF_UE_MAX][maxServiceCount][maxSessionPerPMCH];)   // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
 public_pdcp(pdcp_mbms_t               pdcp_mbms_array_eNB[NUMBER_OF_eNB_MAX][maxServiceCount][maxSessionPerPMCH];) // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h

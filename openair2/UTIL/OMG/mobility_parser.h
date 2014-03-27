@@ -41,7 +41,7 @@
 #ifndef MOBILITY_PARSER_H_
 #define MOBILITY_PARSER_H_
 
-#include "hashtable.h"
+#include "omg_hashtable.h"
 
 /**
  * @struct Simple struct to hold only few information
@@ -120,7 +120,7 @@ int get_num_nodes();
  * @param ending pointer of the vehicles linked list
  */
 
-void sort_veh_movement(hash_table_t *table);
+void sort_veh_movement(omg_hash_table_t *table);
 void quicksortlist(Exnode *pLeft, Exnode *pRight);
 
 /**
@@ -129,9 +129,9 @@ void quicksortlist(Exnode *pLeft, Exnode *pRight);
  * @param hashtable from which the node is to be looked
  * @param node_id is the nodes whose next location need to be retrieved from the linked list
  */
-Exnode* get_next_position(hash_table_t *table,int node_id);
+Exnode* get_next_position(omg_hash_table_t *table,int node_id);
 
-void reset_visit_status(hash_table_t *table, float time, int node_id);
+void reset_visit_status(omg_hash_table_t *table, float time, int node_id);
 
 void clear_llist();
 

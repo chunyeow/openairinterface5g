@@ -66,9 +66,11 @@ Address      : EURECOM,
 * \param[in]  rlcP           RLC AM protocol instance pointer.
 * \param[in]  snP            Sequence number.
 */
-protected_rlc_am_segments_holes(void rlc_am_clear_holes (rlc_am_entity_t *rlcP, rlc_sn_t snP);)
+protected_rlc_am_segments_holes(void rlc_am_clear_holes (
+        rlc_am_entity_t *const rlcP,
+        const rlc_sn_t snP);)
 
-/*! \fn void rlc_am_remove_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, uint16_t so_startP, uint16_t so_stopP)
+/*! \fn void rlc_am_remove_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, sdu_size_t so_startP, sdu_size_t so_stopP)
 * \brief      Remove for PDU with sequence number "snP" a NACK for byte segment offset [so_startP, so_stopP].
 * \param[in]  rlcP           RLC AM protocol instance pointer.
 * \param[in[  frame          Frame index.
@@ -76,9 +78,14 @@ protected_rlc_am_segments_holes(void rlc_am_clear_holes (rlc_am_entity_t *rlcP, 
 * \param[in]  so_startP      Start of segment offset.
 * \param[in]  so_stopP       End of segment offset.
 */
-protected_rlc_am_segments_holes(void rlc_am_remove_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, uint16_t so_startP, uint16_t so_stopP);)
+protected_rlc_am_segments_holes(void rlc_am_remove_hole (
+        rlc_am_entity_t *const rlcP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        const sdu_size_t so_startP,
+        const sdu_size_t so_stopP);)
 
-/*! \fn void rlc_am_get_next_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, int* so_startP, int* so_stopP)
+/*! \fn void rlc_am_get_next_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, sdu_size_t* so_startP, sdu_size_t* so_stopP)
 * \brief      Get for PDU with sequence number "snP" the first hole start and stop parameters.
 * \param[in]  rlcP           RLC AM protocol instance pointer.
 * \param[in[  frame          Frame index.
@@ -86,9 +93,14 @@ protected_rlc_am_segments_holes(void rlc_am_remove_hole (rlc_am_entity_t *rlcP, 
 * \param[in,out]  so_startP  Start of segment offset.
 * \param[in,out]  so_stopP   End of segment offset.
 */
-protected_rlc_am_segments_holes(void rlc_am_get_next_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, int* so_startP, int* so_stopP);)
+protected_rlc_am_segments_holes(void rlc_am_get_next_hole (
+        rlc_am_entity_t *const rlcP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        sdu_size_t* const so_startP,
+        sdu_size_t* const so_stopP);)
 
-/*! \fn void rlc_am_add_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, uint16_t so_startP, uint16_t so_stopP)
+/*! \fn void rlc_am_add_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, sdu_size_t so_startP, sdu_size_t so_stopP)
 * \brief      Mark for PDU with sequence number "snP" a NACK for byte segment offset [so_startP, so_stopP].
 * \param[in]  rlcP           RLC AM protocol instance pointer.
 * \param[in[  frame          Frame index.
@@ -96,6 +108,11 @@ protected_rlc_am_segments_holes(void rlc_am_get_next_hole (rlc_am_entity_t *rlcP
 * \param[in,out]  so_startP  Start of segment offset.
 * \param[in,out]  so_stopP   End of segment offset.
 */
-protected_rlc_am_segments_holes(void rlc_am_add_hole (rlc_am_entity_t *rlcP, frame_t frameP, rlc_sn_t snP, uint16_t so_startP, uint16_t so_stopP);)
+protected_rlc_am_segments_holes(void rlc_am_add_hole (
+        rlc_am_entity_t *const rlcP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        sdu_size_t so_startP,
+        sdu_size_t so_stopP);)
 /** @} */
 #endif

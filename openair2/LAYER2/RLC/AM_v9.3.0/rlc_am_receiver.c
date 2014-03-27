@@ -45,7 +45,7 @@ Address      : EURECOM,
 //#define DEBUG_RLC_AM_DISPLAY_TB_DATA
 //#define RLC_AM_GENERATE_ERRORS
 //-----------------------------------------------------------------------------
-signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_am_pdu_info_t* pdu_info_pP)
+signed int rlc_am_get_data_pdu_infos(const const frame_t frameP, rlc_am_pdu_sn_10_t* header_pP, int16_t total_sizeP, rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     memset(pdu_info_pP, 0, sizeof (rlc_am_pdu_info_t));
@@ -124,7 +124,7 @@ signed int rlc_am_get_data_pdu_infos(frame_t frameP, rlc_am_pdu_sn_10_t* header_
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_display_data_pdu_infos(rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_am_pdu_info_t* pdu_info_pP)
+void rlc_am_display_data_pdu_infos(rlc_am_entity_t * const rlc_pP, const const frame_t frameP, rlc_am_pdu_info_t* pdu_info_pP)
 //-----------------------------------------------------------------------------
 {
     int num_li;
@@ -170,7 +170,7 @@ void rlc_am_display_data_pdu_infos(rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_
 }
 // assumed the sn of the tb_p is equal to VR(MS)
 //-----------------------------------------------------------------------------
-void rlc_am_rx_update_vr_ms(rlc_am_entity_t *rlc_pP, frame_t frameP, mem_block_t* tb_pP)
+void rlc_am_rx_update_vr_ms(rlc_am_entity_t * const rlc_pP, const const frame_t frameP, mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
     //rlc_am_pdu_info_t* pdu_info_p        = &((rlc_am_rx_pdu_management_t*)(tb_pP->data))->pdu_info;
@@ -211,7 +211,7 @@ void rlc_am_rx_update_vr_ms(rlc_am_entity_t *rlc_pP, frame_t frameP, mem_block_t
 }
 // assumed the sn of the tb_p is equal to VR(R)
 //-----------------------------------------------------------------------------
-void rlc_am_rx_update_vr_r(rlc_am_entity_t *rlc_pP,frame_t frameP,mem_block_t* tb_pP)
+void rlc_am_rx_update_vr_r(rlc_am_entity_t * const rlc_pP,const const frame_t frameP,mem_block_t* tb_pP)
 //-----------------------------------------------------------------------------
 {
     rlc_am_pdu_info_t* pdu_info_cursor_p = NULL;
@@ -249,12 +249,12 @@ void rlc_am_rx_update_vr_r(rlc_am_entity_t *rlc_pP,frame_t frameP,mem_block_t* t
 }
 //-----------------------------------------------------------------------------
 void
-rlc_am_receive_routing (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
+rlc_am_receive_routing (rlc_am_entity_t * const rlc_pP, const const frame_t frameP, const eNB_flag_t eNB_flagP, struct mac_data_ind data_indP)
 //-----------------------------------------------------------------------------
 {
-    mem_block_t        *tb_p             = NULL;
+    mem_block_t           *tb_p             = NULL;
     uint8_t               *first_byte_p     = NULL;
-    int16_t               tb_size_in_bytes;
+    sdu_size_t             tb_size_in_bytes;
 
     while ((tb_p = list_remove_head (&data_indP.data))) {
         first_byte_p = ((struct mac_tb_ind *) (tb_p->data))->data_ptr;
@@ -286,7 +286,7 @@ rlc_am_receive_routing (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_
     } // end while
 }
 //-----------------------------------------------------------------------------
-void rlc_am_receive_process_data_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, mem_block_t* tb_pP, uint8_t* first_byte_pP, uint16_t tb_size_in_bytesP)
+void rlc_am_receive_process_data_pdu (rlc_am_entity_t * const rlc_pP, const const frame_t frameP, const eNB_flag_t eNB_flagP, mem_block_t* tb_pP, uint8_t* first_byte_pP, uint16_t tb_size_in_bytesP)
 //-----------------------------------------------------------------------------
 {
   // 5.1.3.2 Receive operations

@@ -40,7 +40,9 @@ Address      : EURECOM,
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
-void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_check_timer_status_prohibit(
+        rlc_am_entity_t * const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
     if (rlc_pP->t_status_prohibit.time_out > 0) {
@@ -74,7 +76,7 @@ void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
                       rlc_pP->enb_module_id,
                       rlc_pP->ue_module_id,
                       rlc_pP->rb_id);
-#warning         TO DO rlc_am_check_timer_status_prohibit
+//#warning         TO DO rlc_am_check_timer_status_prohibit
                 rlc_am_stop_and_reset_timer_status_prohibit(rlc_pP, frameP);
                 //rlc_pP->t_status_prohibit.frame_time_out = frameP + rlc_pP->t_status_prohibit.time_out;
             }
@@ -82,7 +84,9 @@ void rlc_am_check_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_stop_and_reset_timer_status_prohibit(
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
 	if (rlc_pP->t_status_prohibit.time_out > 0) {
@@ -99,7 +103,9 @@ void rlc_am_stop_and_reset_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t
 	}
 }
 //-----------------------------------------------------------------------------
-void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_start_timer_status_prohibit(
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
 	if (rlc_pP->t_status_prohibit.time_out > 0) {
@@ -118,7 +124,9 @@ void rlc_am_start_timer_status_prohibit(rlc_am_entity_t *rlc_pP,frame_t frameP)
 	}
 }
 //-----------------------------------------------------------------------------
-void rlc_am_init_timer_status_prohibit(rlc_am_entity_t *rlc_pP, uint32_t time_outP)
+void rlc_am_init_timer_status_prohibit(
+        rlc_am_entity_t *const rlc_pP,
+        const uint32_t time_outP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_status_prohibit.running        = 0;

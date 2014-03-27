@@ -55,7 +55,7 @@ extern UE_MAC_INST *UE_mac_inst;
 extern mui_t rrc_eNB_mui;
 
 //configure  BCCH & CCCH Logical Channels and associated rrc_buffers, configure associated SRBs
-void openair_rrc_on(module_id_t Mod_id, eNB_flag_t eNB_flag) {
+void openair_rrc_on(module_id_t Mod_id, const eNB_flag_t eNB_flag) {
   unsigned short i;
 
   if (eNB_flag == 1) {
@@ -288,7 +288,7 @@ void rrc_top_cleanup(void) {
 }
 
 
-void rrc_t310_expiration(frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
+void rrc_t310_expiration(const frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
 
   if (UE_rrc_inst[Mod_id].Info[eNB_index].State != RRC_CONNECTED) {
     LOG_D(RRC, "Timer 310 expired, going to RRC_IDLE\n");
@@ -304,10 +304,10 @@ void rrc_t310_expiration(frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
     if (UE_rrc_inst[Mod_id].Srb2[eNB_index].Active == 1) {
       msg ("[RRC Inst %d] eNB_index %d, Remove RB %d\n ", Mod_id, eNB_index,
            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id);
-      rrc_pdcp_config_req (eNB_index, Mod_id, frameP, 0, CONFIG_ACTION_REMOVE,
+      rrc_pdcp_config_req (eNB_index, Mod_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, CONFIG_ACTION_REMOVE,
                            UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, 0);
-      rrc_rlc_config_req (eNB_index, Mod_id, frameP, 0, CONFIG_ACTION_REMOVE,
-                          UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, SIGNALLING_RADIO_BEARER, Rlc_info_um);
+      rrc_rlc_config_req (eNB_index, Mod_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,
+                          UE_rrc_inst[Mod_id].Srb2[eNB_index].Srb_info.Srb_id, Rlc_info_um);
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Active = 0;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Status = IDLE;
       UE_rrc_inst[Mod_id].Srb2[eNB_index].Next_check_frame = 0;
@@ -318,7 +318,7 @@ void rrc_t310_expiration(frame_t frameP, uint8_t Mod_id, uint8_t eNB_index) {
   }
 }
 
-RRC_status_t rrc_rx_tx(uint8_t Mod_id,frame_t frameP, eNB_flag_t eNB_flagP,uint8_t index){
+RRC_status_t rrc_rx_tx(uint8_t Mod_id, const frame_t frameP, const eNB_flag_t eNB_flagP,uint8_t index){
   
   if(eNB_flagP == 0) {
     // check timers

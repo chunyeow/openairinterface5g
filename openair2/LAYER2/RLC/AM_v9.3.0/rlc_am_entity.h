@@ -73,7 +73,6 @@ typedef struct rlc_am_entity_s {
   //---------------------------------------------------------------------
   // TX BUFFERS
   //---------------------------------------------------------------------
-  mem_block_t*                  input_sdus_alloc;      /*!< \brief Allocated memory for the input SDU buffer (for SDUs coming from upper layers). */
   rlc_am_tx_sdu_management_t   *input_sdus;           /*!< \brief Input SDU buffer (for SDUs coming from upper layers). */
   signed int      nb_sdu;                             /*!< \brief Total number of valid rlc_am_tx_sdu_management_t in input_sdus[]. */
   signed int      nb_sdu_no_segmented;                /*!< \brief Total number of SDUs not segmented and partially segmented. */
@@ -81,7 +80,6 @@ typedef struct rlc_am_entity_s {
   signed int      current_sdu_index;                  /*!< \brief Current SDU index in input_sdus array to be segmented. */
 
 
-  mem_block_t*                    pdu_retrans_buffer_alloc;  /*!< \brief Allocated memory for the retransmission buffer. */
   rlc_am_tx_data_pdu_management_t *pdu_retrans_buffer;       /*!< \brief Retransmission buffer. */
   signed int      retrans_num_pdus;                          /*!< \brief Number of PDUs in the retransmission buffer. */
   signed int      retrans_num_bytes;                         /*!< \brief Number of bytes in the retransmission buffer. */
@@ -175,7 +173,7 @@ typedef struct rlc_am_entity_s {
   //---------------------------------------------------------------------
   // OUTPUTS
   //---------------------------------------------------------------------
-  uint16_t             nb_bytes_requested_by_mac;  /*!< \brief Number of bytes requested by lower layer for next transmission. */
+  sdu_size_t        nb_bytes_requested_by_mac;  /*!< \brief Number of bytes requested by lower layer for next transmission. */
   list_t            pdus_to_mac_layer;          /*!< \brief PDUs buffered for transmission to MAC layer. */
   list_t            control_pdu_list;           /*!< \brief Control PDUs buffered for transmission to MAC layer. */
   rlc_sn_t          first_retrans_pdu_sn;       /*!< \brief Lowest sequence number of PDU to be retransmitted. */

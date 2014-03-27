@@ -45,14 +45,23 @@ Address      : EURECOM,
 
 #include "assertions.h"
 
-extern void pdcp_data_ind (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, MBMS_flag_t MBMS_flag, rb_id_t rab_idP, sdu_size_t data_sizeP, mem_block_t * sdu_pP, uint8_t is_data_plane);
+extern boolean_t pdcp_data_ind(
+    const module_id_t enb_mod_idP,
+    const module_id_t ue_mod_idP,
+    const frame_t frameP,
+    const eNB_flag_t enb_flagP,
+    const srb_flag_t srb_flagP,
+    const MBMS_flag_t MBMS_flagP,
+    const rb_id_t rb_idP,
+    const sdu_size_t sdu_buffer_sizeP,
+    mem_block_t* const sdu_buffer_pP);
 
 #define DEBUG_RLC_PDCP_INTERFACE
 
 #define DEBUG_RLC_DATA_REQ 1
 
 //-----------------------------------------------------------------------------
-void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, unsigned long sizeP)
+void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, const signed long sizeP)
 //-----------------------------------------------------------------------------
 {
   unsigned long octet_index = 0;
@@ -94,11 +103,12 @@ void rlc_util_print_hex_octets(comp_name_t componentP, unsigned char* dataP, uns
 
 //-----------------------------------------------------------------------------
 rlc_op_status_t rlc_stat_req     (
-                  module_id_t   enb_mod_idP,
-                  module_id_t   ue_mod_idP,
-                  frame_t       frameP,
-                  eNB_flag_t    enb_flagP,
-                  rb_id_t       rb_idP,
+                  const module_id_t   enb_module_idP,
+                  const module_id_t   ue_module_idP,
+                  const frame_t       frameP,
+                  const eNB_flag_t    enb_flagP,
+                  const srb_flag_t    srb_flagP,
+                  const rb_id_t       rb_idP,
                   unsigned int* stat_tx_pdcp_sdu,
                   unsigned int* stat_tx_pdcp_bytes,
                   unsigned int* stat_tx_pdcp_sdu_discarded,
@@ -127,71 +137,41 @@ rlc_op_status_t rlc_stat_req     (
                   unsigned int* stat_timer_poll_retransmit_timed_out,
                   unsigned int* stat_timer_status_prohibit_timed_out) {
 //-----------------------------------------------------------------------------
-    rlc_mode_t             rlc_mode = RLC_MODE_NONE;
-    void                  *rlc_p      = NULL;
+    rlc_mode_t             rlc_mode        = RLC_MODE_NONE;
+    rlc_union_t           *rlc_union_p     = NULL;
+    hash_key_t             key             = HASHTABLE_QUESTIONABLE_KEY_VALUE;
+    hashtable_rc_t         h_rc;
 
 #ifdef OAI_EMU
     if (enb_flagP) {
-        AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+        AssertFatal ((enb_module_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
             "eNB module id is too low (%u/%d)!\n",
-            enb_mod_idP,
+            enb_module_idP,
             oai_emulation.info.first_enb_local);
-        AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+        AssertFatal ((enb_module_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
             "eNB module id is too high (%u/%d)!\n",
-            enb_mod_idP,
+            enb_module_idP,
             oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-        AssertFatal (ue_mod_idP  < NB_UE_INST,
+        AssertFatal (ue_module_idP  < NB_UE_INST,
             "UE module id is too high (%u/%d)!\n",
-            ue_mod_idP,
+            ue_module_idP,
             oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
     } else {
-        AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+        AssertFatal (ue_module_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
             "UE module id is too high (%u/%d)!\n",
-            ue_mod_idP,
+            ue_module_idP,
             oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-        AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+        AssertFatal (ue_module_idP  >= oai_emulation.info.first_ue_local,
             "UE module id is too low (%u/%d)!\n",
-            ue_mod_idP,
+            ue_module_idP,
             oai_emulation.info.first_ue_local);
     }
 #endif
     AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
-    if (enb_flagP) {
-        rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-        switch (rlc_mode) {
-          case RLC_MODE_NONE:
-              AssertFatal (0 , "enB RLC not configured rb id %u  module eNB id %u!\n", rb_idP, enb_mod_idP);
-              break;
-          case RLC_MODE_AM:
-              rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
-              break;
-          case RLC_MODE_UM:
-              rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
-              break;
-          case RLC_MODE_TM:
-              rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
-              break;
-          default:
-              AssertFatal (0 , "enB RLC internal memory error rb id %u module eNB id %u!\n", rb_idP, enb_mod_idP);
-        }
-    } else {
-        rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
-        switch (rlc_mode) {
-          case RLC_MODE_NONE:
-              AssertFatal (0 , "UE RLC not configured rb id %u module ue id %u!\n", rb_idP, ue_mod_idP);
-              break;
-          case RLC_MODE_AM:
-              rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
-              break;
-          case RLC_MODE_UM:
-              rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
-              break;
-          case RLC_MODE_TM:
-              rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
-              break;
-          default:
-              AssertFatal (0 , "UE RLC internal memory error rb id %u module ue id %u!\n", rb_idP, ue_mod_idP);
-        }
+    key = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, enb_flagP, rb_idP, srb_flagP);
+    h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+    if (h_rc == HASH_TABLE_OK) {
+        rlc_mode = rlc_union_p->mode;
     }
     switch (rlc_mode) {
         case RLC_MODE_NONE:
@@ -226,7 +206,7 @@ rlc_op_status_t rlc_stat_req     (
             break;
 
         case RLC_MODE_AM:
-            rlc_am_stat_req((rlc_am_entity_t*)rlc_p,
+            rlc_am_stat_req(&rlc_union_p->rlc.am,
                             stat_tx_pdcp_sdu,
                             stat_tx_pdcp_bytes,
                             stat_tx_pdcp_sdu_discarded,
@@ -270,7 +250,7 @@ rlc_op_status_t rlc_stat_req     (
            *stat_rx_data_bytes_out_of_window     = 0;
            *stat_timer_poll_retransmit_timed_out = 0;
            *stat_timer_status_prohibit_timed_out = 0;
-           rlc_um_stat_req ((rlc_um_entity_t*)rlc_p,
+           rlc_um_stat_req (&rlc_union_p->rlc.um,
                               stat_tx_pdcp_sdu,
                               stat_tx_pdcp_bytes,
                               stat_tx_pdcp_sdu_discarded,
@@ -353,32 +333,35 @@ rlc_op_status_t rlc_stat_req     (
            return RLC_OP_STATUS_BAD_PARAMETER;
     }
 }
+
 //-----------------------------------------------------------------------------
-rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
-                                  module_id_t  ue_mod_idP,
-                                  frame_t      frameP,
-                                  eNB_flag_t   enb_flagP,
-                                  MBMS_flag_t  MBMS_flagP,
-                                  rb_id_t      rb_idP,
-                                  mui_t        muiP,
+rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
+                                  const module_id_t  ue_module_idP,
+                                  const frame_t      frameP,
+                                  const eNB_flag_t   enb_flagP,
+                                  const srb_flag_t   srb_flagP,
+                                  const MBMS_flag_t  MBMS_flagP,
+                                  const rb_id_t      rb_idP,
+                                  const mui_t        muiP,
                                   confirm_t    confirmP,
                                   sdu_size_t   sdu_sizeP,
                                   mem_block_t *sdu_pP) {
 //-----------------------------------------------------------------------------
   mem_block_t           *new_sdu_p    = NULL;
   rlc_mode_t             rlc_mode     = RLC_MODE_NONE;
-  void                  *rlc_p        = NULL;
+  rlc_union_t           *rlc_union_p = NULL;
+  hash_key_t             key         = HASHTABLE_QUESTIONABLE_KEY_VALUE;
+  hashtable_rc_t         h_rc;
+
 #ifdef Rel10
-  rb_id_t                mbms_rb_id = 0;
-  rlc_um_entity_t       *rlc_um_p   = NULL;
   rlc_mbms_id_t         *mbms_id_p  = NULL;
   logical_chan_id_t      log_ch_id  = 0;
 #endif
 #ifdef DEBUG_RLC_DATA_REQ
   LOG_D(RLC,"rlc_data_req: %s enb id  %u  ue id %u, rb_id %u (MAX %d), muip %d, confirmP %d, sud_sizeP %d, sdu_pP %p\n",
         (enb_flagP) ? "eNB" : "UE",
-        enb_mod_idP,
-        ue_mod_idP,
+        enb_module_idP,
+        ue_module_idP,
         rb_idP,
         NB_RAB_MAX,
         muiP,
@@ -392,26 +375,26 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 #endif
 #ifdef OAI_EMU
   if (enb_flagP) {
-      AssertFatal ((enb_mod_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
+      AssertFatal ((enb_module_idP >= oai_emulation.info.first_enb_local) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too low (%u/%d)!\n",
-          enb_mod_idP,
+          enb_module_idP,
           oai_emulation.info.first_enb_local);
-      AssertFatal ((enb_mod_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
+      AssertFatal ((enb_module_idP < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)) && (oai_emulation.info.nb_enb_local > 0),
           "eNB module id is too high (%u/%d)!\n",
-          enb_mod_idP,
+          enb_module_idP,
           oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local);
-      AssertFatal (ue_mod_idP  < NB_UE_INST,
+      AssertFatal (ue_module_idP  < NB_UE_INST,
           "UE module id is too high (%u/%d)!\n",
-          ue_mod_idP,
+          ue_module_idP,
           oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
   } else {
-      AssertFatal (ue_mod_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
+      AssertFatal (ue_module_idP  < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local),
           "UE module id is too high (%u/%d)!\n",
-          ue_mod_idP,
+          ue_module_idP,
           oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
-      AssertFatal (ue_mod_idP  >= oai_emulation.info.first_ue_local,
+      AssertFatal (ue_module_idP  >= oai_emulation.info.first_ue_local,
           "UE module id is too low (%u/%d)!\n",
-          ue_mod_idP,
+          ue_module_idP,
           oai_emulation.info.first_ue_local);
   }
 #endif
@@ -430,75 +413,33 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 #ifdef Rel10
   if (MBMS_flagP == TRUE) {
       if (enb_flagP) {
-            log_ch_id = rlc_mbms_enb_get_lcid_by_rb_id(enb_mod_idP,rb_idP);
-            mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][log_ch_id];
-            rlc_um_p  = &rlc_mbms_array_eNB[enb_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
-            LOG_D(RLC,"eNB rlc_um_p : %p RB %u service %u session %u\n",
-                  rlc_um_p,
-                  rb_idP,
-                  mbms_id_p->service_id,
-                  mbms_id_p->session_id
-                 );
-
+            log_ch_id = rlc_mbms_enb_get_lcid_by_rb_id(enb_module_idP,rb_idP);
+            mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_module_idP][log_ch_id];
       } else {
-            log_ch_id = rlc_mbms_ue_get_lcid_by_rb_id(ue_mod_idP,rb_idP);
-            mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][log_ch_id];
-            rlc_um_p  = &rlc_mbms_array_ue[ue_mod_idP][mbms_id_p->service_id][mbms_id_p->session_id].um;
-            LOG_D(RLC,"UE rlc_um_p : %p RB %u service %u session %u\n",
-                  rlc_um_p,
-                  rb_idP,
-                  mbms_id_p->service_id,
-                  mbms_id_p->session_id
-                 );
+            log_ch_id = rlc_mbms_ue_get_lcid_by_rb_id(ue_module_idP,rb_idP);
+            mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_module_idP][log_ch_id];
       }
+      key = RLC_COLL_KEY_MBMS_VALUE(enb_module_idP, ue_module_idP, enb_flagP, mbms_id_p->service_id, mbms_id_p->session_id);
   } else
 #endif
   {
-      if (enb_flagP) {
-          rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-          switch (rlc_mode) {
-            case RLC_MODE_NONE:
-                AssertFatal (0 , "enB RLC not configured rb id %u module %u!\n", rb_idP, enb_mod_idP);
-                break;
-            case RLC_MODE_AM:
-                rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.am;
-                break;
-            case RLC_MODE_UM:
-                rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.um;
-                break;
-            case RLC_MODE_TM:
-                rlc_p = (void*)&rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].rlc.tm;
-                break;
-            default:
-                AssertFatal (0 , "enB RLC internal memory error rb id %u module %u!\n", rb_idP, enb_mod_idP);
-          }
-      } else {
-          rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
-          switch (rlc_mode) {
-            case RLC_MODE_NONE:
-                AssertFatal (0 , "UE RLC not configured rb id %u module %u!\n", rb_idP, ue_mod_idP);
-                break;
-            case RLC_MODE_AM:
-                rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.am;
-                break;
-            case RLC_MODE_UM:
-                rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.um;
-                break;
-            case RLC_MODE_TM:
-                rlc_p = (void*)&rlc_array_ue[ue_mod_idP][rb_idP].rlc.tm;
-                break;
-            default:
-                AssertFatal (0 , "UE RLC internal memory error rb id %u module %u!\n", rb_idP, ue_mod_idP);
-          }
-      }
+      key = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, enb_flagP, rb_idP, srb_flagP);
+  }
+
+  h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+  if (h_rc == HASH_TABLE_OK) {
+      rlc_mode = rlc_union_p->mode;
+  } else {
+      rlc_mode = RLC_MODE_NONE;
+      AssertFatal (0 , "RLC not configured key %llu\n", key);
   }
 
   if (MBMS_flagP == 0) {
       LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_req:\n",
           frameP,
           (enb_flagP) ? "eNB" : "UE",
-          enb_mod_idP,
-          ue_mod_idP,
+          enb_module_idP,
+          ue_module_idP,
           rb_idP);
       rlc_util_print_hex_octets(RLC, (unsigned char*)sdu_pP->data, sdu_sizeP);
 
@@ -510,8 +451,8 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
               free_mem_block(sdu_pP);
               LOG_E(RLC, "Received RLC_MODE_NONE as rlc_type for %s eNB id  %u, ue id %u, rb_id %u\n",
                     (enb_flagP) ? "eNB" : "UE",
-                    enb_mod_idP,
-                    ue_mod_idP,
+                    enb_module_idP,
+                    ue_module_idP,
                     rb_idP);
               return RLC_OP_STATUS_BAD_PARAMETER;
 
@@ -533,31 +474,21 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   free_mem_block(sdu_pP);
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
 
-                  if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
-                      LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
+                  LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][%s %u]\n",
                           frameP,
                           (enb_flagP) ? "eNB" : "UE",
-                          enb_mod_idP,
-                          ue_mod_idP,
+                          (srb_flagP) ? "RRC" : "PDCP",
+                          enb_module_idP,
+                          ue_module_idP,
+                          (srb_flagP) ? "SRB" : "DRB",
                           rb_idP,
                           sdu_sizeP,
-                          ue_mod_idP,
-                          rb_idP,
+                          enb_module_idP,
+                          ue_module_idP,
+                          (srb_flagP) ? "SRB" : "DRB",
                           rb_idP);
-                  } else {
-                      LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_AM_DATA_REQ/%d Bytes --->][RLC_AM][INST %u/%u][RB %u]\n",
-                          frameP,
-                          (enb_flagP) ? "eNB" : "UE",
-                          enb_mod_idP,
-                          ue_mod_idP,
-                          rb_idP,
-                          sdu_sizeP,
-                          enb_mod_idP,
-                          ue_mod_idP,
-                          rb_idP);
-                  }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_am_data_req((rlc_am_entity_t*)rlc_p, frameP, new_sdu_p);
+                  rlc_am_data_req(&rlc_union_p->rlc.am, frameP, new_sdu_p);
                   return RLC_OP_STATUS_OK;
               } else {
                   return RLC_OP_STATUS_INTERNAL_ERROR;
@@ -577,31 +508,21 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   free_mem_block(sdu_pP);
 
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-                  if (((rlc_am_entity_t*)rlc_p)->is_data_plane) {
-                      LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
+                  LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][%s %u]\n",
                           frameP,
                           (enb_flagP) ? "eNB" : "UE",
-                          enb_mod_idP,
-                          ue_mod_idP,
+                          (srb_flagP) ? "RRC" : "PDCP",
+                          enb_module_idP,
+                          ue_module_idP,
+                          (srb_flagP) ? "SRB" : "DRB",
                           rb_idP,
                           sdu_sizeP,
-                          enb_mod_idP,
-                          ue_mod_idP,
+                          enb_module_idP,
+                          ue_module_idP,
+                          (srb_flagP) ? "SRB" : "DRB",
                           rb_idP);
-                  } else {
-                      LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][RB %u]\n",
-                                     frameP,
-                                     (enb_flagP) ? "eNB" : "UE",
-                                     enb_mod_idP,
-                                     ue_mod_idP,
-                                     rb_idP,
-                                     sdu_sizeP,
-                                     enb_mod_idP,
-                                     ue_mod_idP,
-                                     rb_idP);
-                  }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_um_data_req((rlc_um_entity_t*)rlc_p, frameP, new_sdu_p);
+                  rlc_um_data_req(&rlc_union_p->rlc.um, frameP, new_sdu_p);
 
                   //free_mem_block(new_sdu);
                   return RLC_OP_STATUS_OK;
@@ -622,31 +543,21 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                   ((struct rlc_tm_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_tm_data_req_alloc);
                   free_mem_block(sdu_pP);
                   LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-                  if (((rlc_tm_entity_t*)rlc_p)->is_data_plane) {
-                      LOG_D(RLC, "[FRAME %5u][%s][PDCP][INST %u/%u][RB %u][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
+                  LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][%s %u]\n",
                                  frameP,
                                  (enb_flagP) ? "eNB" : "UE",
-                                 enb_mod_idP,
-                                 ue_mod_idP,
+                                 (srb_flagP) ? "RRC" : "PDCP",
+                                 enb_module_idP,
+                                 ue_module_idP,
+                                 (srb_flagP) ? "SRB" : "DRB",
                                  rb_idP,
                                  sdu_sizeP,
-                                 enb_mod_idP,
-                                 ue_mod_idP,
+                                 enb_module_idP,
+                                 ue_module_idP,
+                                 (srb_flagP) ? "SRB" : "DRB",
                                  rb_idP);
-                  } else {
-                       LOG_D(RLC, "[FRAME %5u][%s][RRC][INST %u/%u][][--- RLC_TM_DATA_REQ/%d Bytes --->][RLC_TM][INST %u/%u][RB %u]\n",
-                                     frameP,
-                                     (enb_flagP) ? "eNB" : "UE",
-                                     enb_mod_idP,
-                                     ue_mod_idP,
-                                     rb_idP,
-                                     sdu_sizeP,
-                                     enb_mod_idP,
-                                     ue_mod_idP,
-                                     rb_idP);
-                  }
                   LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                  rlc_tm_data_req((rlc_tm_entity_t*)rlc_p, new_sdu_p);
+                  rlc_tm_data_req(&rlc_union_p->rlc.tm, new_sdu_p);
                   return RLC_OP_STATUS_OK;
               } else {
                   //handle_event(ERROR,"FILE %s FONCTION rlc_data_req() LINE %s : out of memory\n", __FILE__, __LINE__);
@@ -675,41 +586,19 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
                       ((struct rlc_um_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
                       free_mem_block(sdu_pP);
                       LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-                      if (rlc_um_p->is_data_plane) {
-                          LOG_D(RLC, "[FRAME %5u][PDCP][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
+                          LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][RB %u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
                             frameP,
-                            enb_mod_idP,
-                            ue_mod_idP,
+                            (enb_flagP) ? "eNB" : "UE",
+                            (srb_flagP) ? "RRC" : "PDCP",
+                            enb_module_idP,
+                            ue_module_idP,
                             rb_idP,
                             sdu_sizeP,
-                            enb_mod_idP,
-                            ue_mod_idP,
+                            enb_module_idP,
+                            ue_module_idP,
                             rb_idP);
-                      } else {
-                          if (enb_flagP) {
-                              LOG_D(RLC, "[FRAME %5u][RRC_eNB][INST %u/%u][%u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
-                                 frameP,
-                                 enb_mod_idP,
-                                 ue_mod_idP,
-                                 rb_idP,
-                                 sdu_sizeP,
-                                 enb_mod_idP,
-                                 ue_mod_idP,
-                                 rb_idP);
-                          } else {
-                              LOG_D(RLC, "[FRAME %5u][RRC_UE][INST %u/%u][%u][--- RLC_UM_DATA_REQ/%d Bytes (MBMS) --->][RLC_UM][INST %u/%u][RB %u]\n",
-                                 frameP,
-                                 enb_mod_idP,
-                                 ue_mod_idP,
-                                 rb_idP,
-                                 sdu_sizeP,
-                                 enb_mod_idP,
-                                 ue_mod_idP,
-                                 rb_idP);
-                          }
-                      }
                       LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-                      rlc_um_data_req(rlc_um_p, frameP, new_sdu_p);
+                      rlc_um_data_req(&rlc_union_p->rlc.um, frameP, new_sdu_p);
 
                       //free_mem_block(new_sdu);
                       return RLC_OP_STATUS_OK;
@@ -734,152 +623,83 @@ rlc_op_status_t rlc_data_req     (module_id_t  enb_mod_idP,
 }
 
 //-----------------------------------------------------------------------------
-void rlc_data_ind     (module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frameP, eNB_flag_t enb_flagP, MBMS_flag_t MBMS_flagP, rb_id_t rb_idP, sdu_size_t sdu_sizeP, mem_block_t* sdu_pP, boolean_t is_data_planeP) {
+void rlc_data_ind     (
+    const module_id_t enb_module_idP,
+    const module_id_t ue_module_idP,
+    const frame_t     frameP,
+    const eNB_flag_t  enb_flagP,
+    const srb_flag_t  srb_flagP,
+    const MBMS_flag_t MBMS_flagP,
+    const rb_id_t     rb_idP,
+    const sdu_size_t  sdu_sizeP,
+    mem_block_t      *sdu_pP) {
 //-----------------------------------------------------------------------------
-  rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
-#ifdef Rel10
-  if (MBMS_flagP == TRUE) {
-      rlc_mode = RLC_MODE_UM;
-  } else
-#endif
-  {
-      if (enb_flagP) {
-          rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-      } else {
-          rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
-      }
-  }
 
-  LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][RB %u] Display of rlc_data_ind: size %u\n",
+  LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][%s %u] Display of rlc_data_ind: size %u\n",
         frameP,
         (enb_flagP) ? "eNB" : "UE",
-        enb_mod_idP,
-        ue_mod_idP,
+        enb_module_idP,
+        ue_module_idP,
+        (srb_flagP) ? "SRB" : "DRB",
         rb_idP,
         sdu_sizeP);
 
   rlc_util_print_hex_octets(RLC, (unsigned char*)sdu_pP->data, sdu_sizeP);
-    // now demux is done at PDCP
-    //  if ((is_data_planeP)) {
 
+  LOG_D(RLC, "[FRAME %5u][%s][RLC][INST %u/%u][%s %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][%s %u]\n",
+      frameP,
+      (enb_flagP) ? "eNB" : "UE",
+      enb_module_idP,
+      ue_module_idP,
+      (srb_flagP) ? "SRB" : "DRB",
+      rb_idP,
+      sdu_sizeP,
+      enb_module_idP,
+      ue_module_idP,
+      (srb_flagP) ? "SRB" : "DRB",
+      rb_idP);
 
-  switch (rlc_mode) {
-      case RLC_MODE_NONE:
-        break;
-      case RLC_MODE_AM:
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
-                   frameP,
-                   (enb_flagP) ? "eNB" : "UE",
-                   enb_mod_idP,
-                   ue_mod_idP,
-                   rb_idP,
-                   sdu_sizeP,
-                   enb_mod_idP,
-                   ue_mod_idP,
-                   rb_idP);
-          break;
-      case RLC_MODE_UM:
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_IND %s/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
-                   frameP,
-                   (enb_flagP) ? "eNB" : "UE",
-                   enb_mod_idP,
-                   ue_mod_idP,
-                   rb_idP,
-                   (MBMS_flagP) ? "(e-MBMS)" : "",
-                   sdu_sizeP,
-                   enb_mod_idP,
-                   ue_mod_idP,
-                   rb_idP);
-          break;
-      case RLC_MODE_TM:
-          LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_IND/%d Bytes --->][PDCP][INST %u/%u][RB %u]\n",
-                 frameP,
-                 (enb_flagP) ? "eNB" : "UE",
-                 enb_mod_idP,
-                 ue_mod_idP,
-                 rb_idP,
-                 sdu_sizeP,
-                 enb_mod_idP,
-                 ue_mod_idP,
-                 rb_idP);
-          break;
-  }
-  pdcp_data_ind (enb_mod_idP, ue_mod_idP, frameP, enb_flagP, MBMS_flagP, rb_idP, sdu_sizeP, sdu_pP, is_data_planeP);
+  pdcp_data_ind (
+      enb_module_idP,
+      ue_module_idP,
+      frameP,
+      enb_flagP,
+      srb_flagP,
+      MBMS_flagP,
+      rb_idP,
+      sdu_sizeP,
+      sdu_pP);
 }
 //-----------------------------------------------------------------------------
-void rlc_data_conf     (module_id_t     enb_mod_idP,
-                        module_id_t     ue_mod_idP,
-                        frame_t         frameP,
-                        eNB_flag_t      enb_flagP,
-                        rb_id_t         rb_idP,
-                        mui_t           muiP,
-                        rlc_tx_status_t statusP,
-                        boolean_t       is_data_planeP) {
+void rlc_data_conf     (const module_id_t     enb_module_idP,
+                        const module_id_t     ue_module_idP,
+                        const frame_t         frameP,
+                        const eNB_flag_t      enb_flagP,
+                        const srb_flag_t      srb_flagP,
+                        const rb_id_t         rb_idP,
+                        const mui_t           muiP,
+                        const rlc_tx_status_t statusP) {
 //-----------------------------------------------------------------------------
-    rlc_mode_t             rlc_mode   = RLC_MODE_NONE;
 
-//TO DO (check if we can add MBMS flag in prototype)#ifdef Rel10
-//  if (MBMS_flagP == TRUE) {
-//      rlc_mode = RLC_MODE_UM;
-//  } else
-//#endif
-#if !defined(Rel10)
-  {
-      if (enb_flagP) {
-          rlc_mode = rlc_array_eNB[enb_mod_idP][ue_mod_idP][rb_idP].mode;
-      } else {
-          rlc_mode = rlc_array_ue[ue_mod_idP][rb_idP].mode;
-      }
-  }
-#endif
-    if (!(is_data_planeP)) {
+    if (srb_flagP) {
         if (rlc_rrc_data_conf != NULL) {
-#if !defined(Rel10)
             LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
-            switch (rlc_mode) {
-                case RLC_MODE_NONE:
-                    break;
-                case RLC_MODE_AM:
-                    LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                            frameP,
-                            (enb_flagP) ? "eNB" : "UE",
-                            enb_mod_idP,
-                            ue_mod_idP,
-                            rb_idP,
-                            muiP,
-                            enb_mod_idP,
-                            ue_mod_idP,
-                            muiP);
-                    break;
-                case RLC_MODE_UM:
-                    LOG_D(RLC, "[FRAME %5u][%s][RLC_UM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                            frameP,
-                            (enb_flagP) ? "eNB" : "UE",
-                            enb_mod_idP,
-                            ue_mod_idP,
-                            rb_idP,
-                            muiP,
-                            enb_mod_idP,
-                            ue_mod_idP,
-                            muiP);
-                    break;
-                case RLC_MODE_TM:
-                    LOG_D(RLC, "[FRAME %5u][%s][RLC_TM][INST %u/%u][RB %u][--- RLC_DATA_CONF /MUI %d --->][RRC][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
-                            frameP,
-                            (enb_flagP) ? "eNB" : "UE",
-                            enb_mod_idP,
-                            ue_mod_idP,
-                            rb_idP,
-                            muiP,
-                            enb_mod_idP,
-                            ue_mod_idP,
-                            muiP);
-                    break;
-            }
+            LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][INST %u/%u][%s %u][--- RLC_DATA_CONF /MUI %d --->][%s][INST %u/%u][][RLC_DATA_CONF/ MUI %d]\n",
+                frameP,
+                (enb_flagP) ? "eNB" : "UE",
+                enb_module_idP,
+                ue_module_idP,
+                (srb_flagP) ? "SRB" : "DRB",
+                rb_idP,
+                muiP,
+                (srb_flagP) ? "RRC" : "PDCP",
+                enb_module_idP,
+                ue_module_idP,
+                muiP);
+
             LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
-#endif
-            rlc_rrc_data_conf (enb_mod_idP , ue_mod_idP, enb_flagP, rb_idP , muiP, statusP);
+            rlc_rrc_data_conf (enb_module_idP , ue_module_idP, enb_flagP, rb_idP , muiP, statusP);
         }
     }
 }
@@ -890,28 +710,16 @@ rlc_module_init (void)
 //-----------------------------------------------------------------------------
    int          k;
    module_id_t  module_id1;
-   module_id_t  module_id2;
-   rb_id_t      rb_id;
-#if defined(Rel10)
-  mbms_session_id_t session_id;
-  mbms_service_id_t service_id;
-#endif
 
    LOG_D(RLC, "MODULE INIT\n");
    rlc_rrc_data_ind  = NULL;
    rlc_rrc_data_conf = NULL;
 
+   rlc_coll_p = hashtable_create ((maxDRB + 2) * 16, NULL, rb_free_rlc_union);
+   AssertFatal(rlc_coll_p != NULL, "UNRECOVERABLE error, RLC hashtable_create failed");
 
    for (module_id1=0; module_id1 < NUMBER_OF_UE_MAX; module_id1++) {
-       for (k=0; k < RLC_MAX_LC; k++) {
-           lcid2rbid_ue[module_id1][k] = RLC_RB_UNALLOCATED;
-       }
 #if defined(Rel10)
-      for (service_id = 0; service_id < maxServiceCount; service_id++) {
-          for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
-              memset(&rlc_mbms_array_ue[module_id1][service_id][session_id], 0, sizeof(rlc_mbms_t));
-          }
-      }
       for (k=0; k < RLC_MAX_MBMS_LC; k++) {
           rlc_mbms_lcid2service_session_id_ue[module_id1][k].service_id = 0;
           rlc_mbms_lcid2service_session_id_ue[module_id1][k].session_id = 0;
@@ -920,18 +728,10 @@ rlc_module_init (void)
           rlc_mbms_rbid2lcid_eNB[module_id1][k] = RLC_LC_UNALLOCATED;
       }
 #endif
-       for (rb_id=0; rb_id < NB_RB_MAX; rb_id++) {
-           memset(&rlc_array_ue[module_id1][rb_id], 0, sizeof(rlc_t));
-       }
    }
 
    for (module_id1=0; module_id1 < NUMBER_OF_eNB_MAX; module_id1++) {
 #if defined(Rel10)
-      for (service_id = 0; service_id < maxServiceCount; service_id++) {
-          for (session_id = 0; session_id < maxSessionPerPMCH; session_id++) {
-              memset(&rlc_mbms_array_eNB[module_id1][service_id][session_id], 0, sizeof(rlc_mbms_t));
-          }
-      }
       for (k=0; k < RLC_MAX_MBMS_LC; k++) {
           rlc_mbms_lcid2service_session_id_eNB[module_id1][k].service_id = 0;
           rlc_mbms_lcid2service_session_id_eNB[module_id1][k].session_id = 0;
@@ -940,14 +740,6 @@ rlc_module_init (void)
           rlc_mbms_rbid2lcid_ue[module_id1][k] = RLC_LC_UNALLOCATED;
       }
 #endif
-       for (module_id2=0; module_id2 < NUMBER_OF_UE_MAX; module_id2++) {
-           for (rb_id=0; rb_id < NB_RB_MAX; rb_id++) {
-               memset(&rlc_array_eNB[module_id1][module_id2][rb_id], 0, sizeof(rlc_t));
-           }
-           for (k=0; k < RLC_MAX_LC; k++) {
-               lcid2rbid_eNB[module_id1][module_id2][k] = RLC_RB_UNALLOCATED;
-           }
-       }
    }
 
    pool_buffer_init();
@@ -959,6 +751,7 @@ void
 rlc_module_cleanup (void)
 //-----------------------------------------------------------------------------
 {
+    hashtable_destroy(rlc_coll_p);
 }
 //-----------------------------------------------------------------------------
 void

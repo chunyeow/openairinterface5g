@@ -45,7 +45,11 @@ Address      : EURECOM,
 #include "UTIL/LOG/log.h"
 
 //-----------------------------------------------------------------------------
-void rlc_am_pdu_polling (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_am_pdu_sn_10_t *pdu_pP, int16_t payload_sizeP)
+void rlc_am_pdu_polling (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        rlc_am_pdu_sn_10_t *const pdu_pP,
+        const int16_t payload_sizeP)
 //-----------------------------------------------------------------------------
 {
     // 5.2.2 Polling
@@ -134,14 +138,16 @@ void rlc_am_pdu_polling (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_am_pdu_sn_
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_segment_10 (rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_segment_10 (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP)
 {
 //-----------------------------------------------------------------------------
     list_t              pdus;
-    signed int          pdu_remaining_size      = 0;
-    signed int          test_pdu_remaining_size = 0;
+    sdu_size_t          pdu_remaining_size      = 0;
+    sdu_size_t          test_pdu_remaining_size = 0;
 
-    int                      nb_bytes_to_transmit = rlc_pP->nb_bytes_requested_by_mac;
+    sdu_size_t                       nb_bytes_to_transmit = rlc_pP->nb_bytes_requested_by_mac;
     rlc_am_pdu_sn_10_t              *pdu_p        = NULL;
     struct mac_tb_req               *pdu_tb_req_p = NULL;
     mem_block_t                     *pdu_mem_p    = NULL;
@@ -151,21 +157,21 @@ void rlc_am_segment_10 (rlc_am_entity_t *rlc_pP,frame_t frameP)
     rlc_am_tx_sdu_management_t      *sdu_mngt_p   = NULL;
     rlc_am_tx_data_pdu_management_t *pdu_mngt_p   = NULL;
 
-    unsigned int       li_length_in_bytes         = 0;
-    unsigned int       test_li_length_in_bytes    = 0;
-    unsigned int       test_remaining_size_to_substract= 0;
+    sdu_size_t         li_length_in_bytes         = 0;
+    sdu_size_t         test_li_length_in_bytes    = 0;
+    sdu_size_t         test_remaining_size_to_substract= 0;
     unsigned int       test_remaining_num_li_to_substract = 0;
     unsigned int       continue_fill_pdu_with_sdu         = 0;
     unsigned int       num_fill_sdu                       = 0;
     unsigned int       test_num_li                        = 0;
     unsigned int       fill_num_li                        = 0;
     unsigned int       sdu_buffer_index                   = 0;
-    unsigned int       data_pdu_size                      = 0;
+    sdu_size_t         data_pdu_size                      = 0;
 
     unsigned int       fi_first_byte_pdu_is_first_byte_sdu = 0;
     unsigned int       fi_last_byte_pdu_is_last_byte_sdu   = 0;
     unsigned int       fi                                  = 0;
-    unsigned int       max_li_overhead                     = 0;
+    signed int         max_li_overhead                     = 0;
 
     LOG_T(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][SEGMENT] rlc_pP->current_sdu_index %d rlc_pP->next_sdu_index %d rlc_pP->input_sdus[rlc_pP->current_sdu_index].mem_block %p sdu_buffer_occupancy %d\n",
           frameP,

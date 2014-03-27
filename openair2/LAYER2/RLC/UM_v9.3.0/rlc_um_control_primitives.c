@@ -31,8 +31,8 @@ Address      : EURECOM,
 *******************************************************************************/
 #define RLC_UM_MODULE
 #define RLC_UM_CONTROL_PRIMITIVES_C
-//#include "rtos_header.h"
 #include "platform_types.h"
+#include "assertions.h"
 //-----------------------------------------------------------------------------
 #include "rlc_um.h"
 #include "rlc_primitives.h"
@@ -45,25 +45,27 @@ Address      : EURECOM,
 #include "T-Reordering.h"
 
 //-----------------------------------------------------------------------------
-void config_req_rlc_um (frame_t         frameP,
-                        eNB_flag_t      eNB_flagP,
-                        module_id_t     enb_module_idP,
-                        module_id_t     ue_module_idP,
-                        rlc_um_info_t  *config_um_pP,
-                        rb_id_t         rb_idP,
-                        rb_type_t       rb_typeP)
+void config_req_rlc_um (
+    const module_id_t     enb_module_idP,
+    const module_id_t     ue_module_idP,
+    const frame_t         frameP,
+    const eNB_flag_t      eNB_flagP,
+    const srb_flag_t      srb_flagP,
+    const rlc_um_info_t  * const config_um_pP,
+    const rb_id_t         rb_idP)
 {
   //-----------------------------------------------------------------------------
-  rlc_um_entity_t *rlc_p = NULL;
+  rlc_union_t     *rlc_union_p  = NULL;
+  rlc_um_entity_t *rlc_p        = NULL;
+  hash_key_t       key          = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
+  hashtable_rc_t   h_rc;
 
-  if (eNB_flagP) {
-      rlc_p = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.um;
-  } else {
-      rlc_p = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
-  }
-  LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%d sn_field_length=%d is_mXch=%d --->][RLC_UM][MOD %u/%u][RB %u]    \n",
-      frameP,
-      (eNB_flagP) ? "eNB" : "UE",
+  h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+  if (h_rc == HASH_TABLE_OK) {
+      rlc_p = &rlc_union_p->rlc.um;
+      LOG_D(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ timer_reordering=%d sn_field_length=%d is_mXch=%d --->][RLC_UM][MOD %u/%u][RB %u]    \n",
+          frameP,
+          (eNB_flagP) ? "eNB" : "UE",
           enb_module_idP,
           ue_module_idP,
           config_um_pP->timer_reordering,
@@ -73,64 +75,66 @@ void config_req_rlc_um (frame_t         frameP,
           ue_module_idP,
           rb_idP);
 
-  rlc_um_init(rlc_p);
-  if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-      rlc_um_set_debug_infos(rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
-      rlc_um_configure(rlc_p,
+      rlc_um_init(rlc_p);
+      if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
+          rlc_um_set_debug_infos(rlc_p, enb_module_idP, ue_module_idP, frameP, eNB_flagP, srb_flagP, rb_idP);
+          rlc_um_configure(rlc_p,
+              frameP,
+              config_um_pP->timer_reordering,
+              config_um_pP->sn_field_length,
+              config_um_pP->sn_field_length,
+              config_um_pP->is_mXch);
+      }
+  } else {
+      LOG_E(RLC, "[FRAME %05d][%s][RRC][MOD %u/%u][][--- CONFIG_REQ --->][RLC_UM][MOD %u/%u][RB %u]  RLC NOT FOUND\n",
           frameP,
-          config_um_pP->timer_reordering,
-          config_um_pP->sn_field_length,
-          config_um_pP->sn_field_length,
-          config_um_pP->is_mXch);
-  }
+          (eNB_flagP) ? "eNB" : "UE",
+          enb_module_idP,
+          ue_module_idP,
+          enb_module_idP,
+          ue_module_idP,
+          rb_idP);  }
 }
 //-----------------------------------------------------------------------------
-uint32_t t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
+const uint32_t const t_Reordering_tab[T_Reordering_spare1] = {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,110,120,130,140,150,160,170,180,190,200};
 
-void config_req_rlc_um_asn1 (frame_t            frameP,
-                             eNB_flag_t         eNB_flagP,
-                             MBMS_flag_t        mbms_flagP,
-                             module_id_t        enb_module_idP,
-                             module_id_t        ue_module_idP,
-                             mbms_session_id_t  mbms_session_idP,
-                             mbms_service_id_t  mbms_service_idP,
-                             UL_UM_RLC_t       *ul_rlc_pP,
-                             DL_UM_RLC_t       *dl_rlc_pP,
-                             rb_id_t            rb_idP,
-                             rb_type_t          rb_typeP)
+void config_req_rlc_um_asn1 (
+    const module_id_t         enb_module_idP,
+    const module_id_t         ue_module_idP,
+    const frame_t             frameP,
+    const eNB_flag_t          eNB_flagP,
+    const srb_flag_t          srb_flagP,
+    const MBMS_flag_t         mbms_flagP,
+    const mbms_session_id_t   mbms_session_idP,
+    const mbms_service_id_t   mbms_service_idP,
+    const UL_UM_RLC_t       * const ul_rlc_pP,
+    const DL_UM_RLC_t       * const dl_rlc_pP,
+    const rb_id_t             rb_idP)
 {
-  uint32_t            ul_sn_FieldLength = 0;
-  uint32_t            dl_sn_FieldLength = 0;
-  uint32_t            t_Reordering;
+  uint32_t         ul_sn_FieldLength   = 0;
+  uint32_t         dl_sn_FieldLength   = 0;
+  uint32_t         t_Reordering        = 0;
+  rlc_union_t     *rlc_union_p         = NULL;
   rlc_um_entity_t *rlc_p               = NULL;
+  hash_key_t       key                 = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
+  hashtable_rc_t   h_rc;
+
 #if defined(Rel10)
   if (mbms_flagP) {
-      if (eNB_flagP) {
-          rlc_p = &rlc_mbms_array_eNB[enb_module_idP][mbms_service_idP][mbms_session_idP].um;
-            LOG_D(RLC,"eNB config_req_rlc_um_asn1 rlc_um_p : %p RB %u service %u session %u",
-                  rlc_p,
-                  rb_idP,
-                  mbms_service_idP,
-                  mbms_session_idP
-                 );
-      } else {
-          rlc_p = &rlc_mbms_array_ue[ue_module_idP][mbms_service_idP][mbms_session_idP].um;
-            LOG_D(RLC,"UE config_req_rlc_um_asn1 rlc_um_p : %p RB %u service %u session %u",
-                  rlc_p,
-                  rb_idP,
-                  mbms_service_idP,
-                  mbms_session_idP
-                 );
-      }
+      key = RLC_COLL_KEY_MBMS_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, mbms_service_idP, mbms_session_idP);
   }
   else
 #endif
   {
-      if (eNB_flagP) {
-          rlc_p = &rlc_array_eNB[enb_module_idP][ue_module_idP][rb_idP].rlc.um;
-      } else {
-          rlc_p = &rlc_array_ue[ue_module_idP][rb_idP].rlc.um;
-      }
+      key  = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
+      h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+      AssertFatal (h_rc == HASH_TABLE_OK, "RLC NOT FOUND enb id %u ue id %i enb flag %u rb id %u, srb flag %u",
+          enb_module_idP,
+          ue_module_idP,
+          eNB_flagP,
+          rb_idP,
+          srb_flagP);
+      rlc_p = &rlc_union_p->rlc.um;
   }
 
   //-----------------------------------------------------------------------------
@@ -146,7 +150,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
 
   rlc_um_init(rlc_p);
   if (rlc_um_fsm_notify_event (rlc_p, RLC_UM_RECEIVE_CRLC_CONFIG_REQ_ENTER_DATA_TRANSFER_READY_STATE_EVENT)) {
-      rlc_um_set_debug_infos(rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, rb_typeP);
+      rlc_um_set_debug_infos(rlc_p, enb_module_idP, ue_module_idP, frameP, eNB_flagP, srb_flagP, rb_idP);
       if (ul_rlc_pP != NULL) {
           switch (ul_rlc_pP->sn_FieldLength) {
           case SN_FieldLength_size5:
@@ -220,7 +224,7 @@ void config_req_rlc_um_asn1 (frame_t            frameP,
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_init (rlc_um_entity_t *rlc_pP)
+rlc_um_init (rlc_um_entity_t * const rlc_pP)
 {
   //-----------------------------------------------------------------------------
 
@@ -253,22 +257,18 @@ rlc_um_init (rlc_um_entity_t *rlc_pP)
   // SPARE : not 3GPP
   rlc_pP->size_input_sdus_buffer =128;
 
-  if ((rlc_pP->input_sdus_alloc == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
-      rlc_pP->input_sdus_alloc = get_free_mem_block (rlc_pP->size_input_sdus_buffer * sizeof (void *));
-      rlc_pP->input_sdus = (mem_block_t **) (rlc_pP->input_sdus_alloc->data);
-      memset (rlc_pP->input_sdus, 0, rlc_pP->size_input_sdus_buffer * sizeof (void *));
+  if ((rlc_pP->input_sdus == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
+      rlc_pP->input_sdus = calloc(1 , rlc_pP->size_input_sdus_buffer * sizeof (void *));
   }
-  if (rlc_pP->dar_buffer_alloc == NULL) {
-      rlc_pP->dar_buffer_alloc = get_free_mem_block (1024 * sizeof (void *));
-      rlc_pP->dar_buffer = (mem_block_t **) (rlc_pP->dar_buffer_alloc->data);
-      memset (rlc_pP->dar_buffer, 0, 1024 * sizeof (void *));
+  if (rlc_pP->dar_buffer == NULL) {
+      rlc_pP->dar_buffer = calloc (1, 1024 * sizeof (void *));
   }
 
   rlc_pP->first_pdu = 1;
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_reset_state_variables (rlc_um_entity_t *rlc_pP)
+rlc_um_reset_state_variables (rlc_um_entity_t * const rlc_pP)
 {
   //-----------------------------------------------------------------------------
   rlc_pP->buffer_occupancy = 0;
@@ -285,46 +285,47 @@ rlc_um_reset_state_variables (rlc_um_entity_t *rlc_pP)
 }
 //-----------------------------------------------------------------------------
 void
-rlc_um_cleanup (rlc_um_entity_t *rlc_pP)
+rlc_um_cleanup (rlc_um_entity_t * const rlc_pP)
 {
   //-----------------------------------------------------------------------------
   int             index;
   // TX SIDE
   list_free (&rlc_pP->pdus_to_mac_layer);
 
-  if (rlc_pP->input_sdus_alloc) {
+  if (rlc_pP->input_sdus) {
       for (index = 0; index < rlc_pP->size_input_sdus_buffer; index++) {
           if (rlc_pP->input_sdus[index]) {
               free_mem_block (rlc_pP->input_sdus[index]);
           }
       }
-      free_mem_block (rlc_pP->input_sdus_alloc);
-      rlc_pP->input_sdus_alloc = NULL;
+      free (rlc_pP->input_sdus);
+      rlc_pP->input_sdus = NULL;
   }
   // RX SIDE
   list_free (&rlc_pP->pdus_from_mac_layer);
   if ((rlc_pP->output_sdu_in_construction)) {
       free_mem_block (rlc_pP->output_sdu_in_construction);
   }
-  if (rlc_pP->dar_buffer_alloc) {
+  if (rlc_pP->dar_buffer) {
       for (index = 0; index < 1024; index++) {
           if (rlc_pP->dar_buffer[index]) {
               free_mem_block (rlc_pP->dar_buffer[index]);
           }
       }
-      free_mem_block (rlc_pP->dar_buffer_alloc);
-      rlc_pP->dar_buffer_alloc = NULL;
+      free (rlc_pP->dar_buffer);
+      rlc_pP->dar_buffer = NULL;
   }
   memset(rlc_pP, 0, sizeof(rlc_um_entity_t));
 }
 
 //-----------------------------------------------------------------------------
-void rlc_um_configure(rlc_um_entity_t *rlc_pP,
-    frame_t          frameP,
-    uint32_t            timer_reorderingP,
-    uint32_t            rx_sn_field_lengthP,
-    uint32_t            tx_sn_field_lengthP,
-    uint32_t            is_mXchP)
+void rlc_um_configure(
+    rlc_um_entity_t * const rlc_pP,
+    const frame_t          frameP,
+    const uint32_t         timer_reorderingP,
+    const uint32_t         rx_sn_field_lengthP,
+    const uint32_t         tx_sn_field_lengthP,
+    const uint32_t         is_mXchP)
 //-----------------------------------------------------------------------------
 {
   if (rx_sn_field_lengthP == 10) {
@@ -386,30 +387,31 @@ void rlc_um_configure(rlc_um_entity_t *rlc_pP,
   rlc_um_reset_state_variables (rlc_pP);
 }
 //-----------------------------------------------------------------------------
-void rlc_um_set_debug_infos(rlc_um_entity_t *rlc_pP,
-    frame_t          frameP,
-    eNB_flag_t       eNB_flagP,
-    module_id_t      enb_module_idP,
-    module_id_t      ue_module_idP,
-    rb_id_t          rb_idP,
-    rb_type_t        rb_typeP)
+void rlc_um_set_debug_infos(
+    rlc_um_entity_t *rlc_pP,
+    const module_id_t      enb_module_idP,
+    const module_id_t      ue_module_idP,
+    const frame_t          frameP,
+    const eNB_flag_t       eNB_flagP,
+    const srb_flag_t       srb_flagP,
+    const rb_id_t          rb_idP)
 //-----------------------------------------------------------------------------
 {
-  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][SET DEBUG INFOS] enb_module_id %u ue_module_id %u rb_id %d rb_type %d\n",
+  LOG_D(RLC, "[FRAME %05d][%s][RLC_UM][SET DEBUG INFOS] enb_module_id %u ue_module_id %u rb_id %d srb_flag %d\n",
       frameP,
       (eNB_flagP) ? "eNB" : "UE",
       enb_module_idP,
       ue_module_idP,
       rb_idP,
-      rb_typeP);
+      srb_flagP);
 
   rlc_pP->enb_module_id = enb_module_idP;
   rlc_pP->ue_module_id  = ue_module_idP;
   rlc_pP->rb_id         = rb_idP;
-  if (rb_typeP == RADIO_ACCESS_BEARER) {
-      rlc_pP->is_data_plane = 1;
-  } else {
+  if (srb_flagP) {
       rlc_pP->is_data_plane = 0;
+  } else {
+      rlc_pP->is_data_plane = 1;
   }
   rlc_pP->is_enb = eNB_flagP;
 }

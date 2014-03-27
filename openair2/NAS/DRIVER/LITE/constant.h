@@ -157,7 +157,7 @@
 #define OAI_NW_DRV_PROTOCOL_UDP       IPPROTO_UDP
 #define OAI_NW_DRV_PROTOCOL_ICMP4     IPPROTO_ICMP
 #define OAI_NW_DRV_PROTOCOL_ICMP6     IPPROTO_ICMPV6
-#warning "OAI_NW_DRV_PROTOCOL_ARP value 200 may collide with new defined values in kernel"
+//#warning "OAI_NW_DRV_PROTOCOL_ARP value 200 may collide with new defined values in kernel"
 #define OAI_NW_DRV_PROTOCOL_ARP       200
 
 #define OAI_NW_DRV_PORT_DEFAULT       __constant_htons(65535)

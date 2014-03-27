@@ -38,6 +38,12 @@ include $(OPENAIR2_DIR)/NAS/Makefile.inc
 ifdef USE_MME
 COMMON_CFLAGS		+= -DENABLE_USE_MME
 ENABLE_ITTI = 1
+ifdef LINK_PDCP_TO_GTPV1U
+    COMMON_CFLAGS       += -DLINK_PDCP_TO_GTPV1U
+# COMMON_CFLAGS       += -I$(UDP_DIR)
+# COMMON_CFLAGS       += -I$(GTPV1U_DIR)
+# COMMON_CFLAGS       += -I$(GTPV1U_DIR)/nw-gtpv1u/shared
+endif
 endif
 
 ifdef ENABLE_ITTI
@@ -75,7 +81,7 @@ export UENAS_CFLAGS
 $(UE_NAS_OBJ_DIR)/libuenas.a: force_look
 	@$(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE $(UE_NAS_OBJ_DIR)/libuenas.a OUTDIR=$(UE_NAS_OBJ_DIR)
 
-COMMON_MME_CFLAGS	 = -I$(SCTP_DIR)
+COMMON_MME_CFLAGS    = -I$(SCTP_DIR)
 COMMON_MME_CFLAGS	+= -I$(S1AP_DIR)
 COMMON_MME_CFLAGS	+= -I$(UDP_DIR)
 COMMON_MME_CFLAGS	+= -I$(GTPV1U_DIR)
@@ -93,14 +99,27 @@ UDP_CFLAGS	 		+= $(UTIL_incl)
 UDP_CFLAGS	 		+= -I$(OPENAIR_HOME)/openair2/ENB_APP
 export UDP_CFLAGS
 
-GTPV1U_CFLAGS	 		 = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
-GTPV1U_CFLAGS	 		+= -DENB_MODE
-GTPV1U_CFLAGS	 		+= -I$(TOP_DIR)
-GTPV1U_CFLAGS	 		+= -I$(GTPV1U_DIR)/nw-gtpv1u/include
-GTPV1U_CFLAGS	 		+= -I$(GTPV1U_DIR)/nw-gtpv1u/shared
-GTPV1U_CFLAGS	 		+= -I$(OPENAIR_HOME)/openair2/ENB_APP
-GTPV1U_CFLAGS	 		+= $(UTIL_incl) -I$(OPENAIRCN_DIR)/UTILS
+GTPV1U_CFLAGS            = $(COMMON_CFLAGS) $(COMMON_MME_CFLAGS)
+GTPV1U_CFLAGS           += -DENB_MODE
+GTPV1U_CFLAGS           += -I$(TOP_DIR)
+GTPV1U_CFLAGS           += -I$(GTPV1U_DIR)/nw-gtpv1u/include
+GTPV1U_CFLAGS           += -I$(GTPV1U_DIR)/nw-gtpv1u/shared
+GTPV1U_CFLAGS           += -I$(OPENAIR_HOME)/openair2/ENB_APP
+GTPV1U_CFLAGS           += $(UTIL_incl) -I$(OPENAIRCN_DIR)/UTILS
 export GTPV1U_CFLAGS
+
+GTPV1U_ENB_CFLAGS            = $(COMMON_CFLAGS)
+GTPV1U_ENB_CFLAGS           +=  $(OPENAIR_HOME)/openair2/COMMON
+GTPV1U_ENB_CFLAGS           += -I$(S1AP_DIR)
+GTPV1U_ENB_CFLAGS           += -I$(UDP_DIR)
+GTPV1U_ENB_CFLAGS           += -I$(GTPV1U_DIR)
+GTPV1U_ENB_CFLAGS           += -DENB_MODE
+GTPV1U_ENB_CFLAGS           += -I$(TOP_DIR)
+GTPV1U_ENB_CFLAGS           += -I$(GTPV1U_DIR)/nw-gtpv1u/include
+GTPV1U_ENB_CFLAGS           += -I$(GTPV1U_DIR)/nw-gtpv1u/shared
+GTPV1U_ENB_CFLAGS           += -I$(OPENAIR_HOME)/openair2/ENB_APP
+GTPV1U_ENB_CFLAGS           += $(UTIL_incl) -I$(OPENAIRCN_DIR)/UTILS
+export GTPV1U_ENB_CFLAGS
 
 $(S1AP_OBJ_DIR)/libs1ap.a: force_look
 	@$(MAKE) -C $(S1AP_DIR) -f Makefile.eNB $(S1AP_OBJ_DIR)/libs1ap.a OUTDIR=$(S1AP_OBJ_DIR)

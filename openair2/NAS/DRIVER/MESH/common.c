@@ -588,11 +588,19 @@ struct rb_entity *nas_COMMON_search_rb(struct cx_entity *cx, nasRadioBearerId_t 
 #ifdef NAS_DEBUG_CLASS
   printk("NAS_COMMON_SEARCH_RB - rab_id %d\n", rab_id);
 #endif
-  for (rb=cx->rb; rb!=NULL; rb=rb->next)
-    {
-      if (rb->rab_id==rab_id)
-	return rb;
-    }
+  for (rb=cx->rb; rb!=NULL; rb=rb->next) {
+#ifdef NAS_DEBUG_CLASS
+      printk("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS\n");
+      printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.rab_id %u \n", rb->rab_id);
+      printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.sapi %u \n", rb->sapi;
+      printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.qos %u \n", rb->qos;
+      printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.state %u \n", rb->state;
+      printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.retry %u \n", rb->retry;
+      printk("NAS_COMMON_SEARCH_RB - rab_id %d Comparing  rb_entity.countimer %u \n\n", rb->countimer;);
+#endif
+        if (rb->rab_id==rab_id)
+            return rb;
+  }
   return NULL;
 }
 

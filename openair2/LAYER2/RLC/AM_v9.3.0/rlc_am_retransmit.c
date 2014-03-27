@@ -43,7 +43,12 @@ Address      : EURECOM,
 //#define TRACE_RLC_AM_NACK
 //#define TRACE_RLC_AM_ACK
 //-----------------------------------------------------------------------------
-void rlc_am_nack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, sdu_size_t so_startP, sdu_size_t so_endP)
+void rlc_am_nack_pdu (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        const sdu_size_t so_startP,
+        const sdu_size_t so_endP)
 //-----------------------------------------------------------------------------
 {
     // 5.2.1 Retransmission
@@ -59,11 +64,11 @@ void rlc_am_nack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, sdu
     //         - indicate to upper layers that max retransmission has been reached.
 
 
-    mem_block_t* mb_pP         = rlc_pP->pdu_retrans_buffer[snP].mem_block;
+    mem_block_t* mb_p         = rlc_pP->pdu_retrans_buffer[snP].mem_block;
     int          pdu_sdu_index;
     int          sdu_index;
 
-    if (mb_pP != NULL) {
+    if (mb_p != NULL) {
         rlc_pP->num_nack_sn += 1;
         assert(so_startP <= so_endP);
         //-----------------------------------------
@@ -134,18 +139,21 @@ void rlc_am_nack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, sdu
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_ack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP)
+void rlc_am_ack_pdu (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
-    mem_block_t* mb_pP         = rlc_pP->pdu_retrans_buffer[snP].mem_block;
+    mem_block_t* mb_p         = rlc_pP->pdu_retrans_buffer[snP].mem_block;
     int          pdu_sdu_index;
     int          sdu_index;
 
     rlc_pP->pdu_retrans_buffer[snP].flags.retransmit = 0;
 
-    if ((rlc_pP->pdu_retrans_buffer[snP].flags.ack == 0) && (mb_pP != NULL)) {
+    if ((rlc_pP->pdu_retrans_buffer[snP].flags.ack == 0) && (mb_p != NULL)) {
     //if (mb_pP != NULL) {
-        free_mem_block(mb_pP);
+        free_mem_block(mb_p);
         rlc_pP->pdu_retrans_buffer[snP].mem_block = NULL;
         LOG_D(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][ACK-PDU] ACK PDU SN %05d previous retx_count %d \n",
               frameP,
@@ -170,9 +178,21 @@ void rlc_am_ack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP)
             if ((rlc_pP->input_sdus[sdu_index].nb_pdus_ack == rlc_pP->input_sdus[sdu_index].nb_pdus) &&
                 (rlc_pP->input_sdus[sdu_index].sdu_remaining_size == 0)) {
 #ifdef TEST_RLC_AM
-                rlc_am_v9_3_0_test_data_conf (rlc_pP->module_id, rlc_pP->rb_id, rlc_pP->input_sdus[sdu_index].mui, RLC_SDU_CONFIRM_YES);
+                rlc_am_v9_3_0_test_data_conf (
+                        rlc_pP->module_id,
+                        rlc_pP->rb_id,
+                        rlc_pP->input_sdus[sdu_index].mui,
+                        RLC_SDU_CONFIRM_YES);
 #else
-                rlc_data_conf(rlc_pP->enb_module_id, rlc_pP->ue_module_id, frameP, rlc_pP->is_enb, rlc_pP->rb_id, rlc_pP->input_sdus[sdu_index].mui, RLC_SDU_CONFIRM_YES, rlc_pP->is_data_plane);
+                rlc_data_conf(
+                        rlc_pP->enb_module_id,
+                        rlc_pP->ue_module_id,
+                        frameP,
+                        rlc_pP->is_enb,
+                        rlc_pP->rb_id,
+                        rlc_pP->input_sdus[sdu_index].mui,
+                        RLC_SDU_CONFIRM_YES,
+                        rlc_pP->is_data_plane);
 #endif
                 rlc_am_free_in_sdu(rlc_pP, frameP, sdu_index);
             }
@@ -238,8 +258,8 @@ void rlc_am_ack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP)
               rlc_pP->ue_module_id,
               rlc_pP->rb_id,
               snP);
-        if (mb_pP != NULL) {
-            free_mem_block(mb_pP);
+        if (mb_p != NULL) {
+            free_mem_block(mb_p);
             rlc_pP->pdu_retrans_buffer[snP].mem_block = NULL;
         }
         if (rlc_pP->pdu_retrans_buffer[snP].flags.ack > 0) {
@@ -268,7 +288,10 @@ void rlc_am_ack_pdu (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP)
     }
 }
 //-----------------------------------------------------------------------------
-mem_block_t* rlc_am_retransmit_get_copy (rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP)
+mem_block_t* rlc_am_retransmit_get_copy (
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP)
 //-----------------------------------------------------------------------------
 {
     mem_block_t* mb_original_p = rlc_pP->pdu_retrans_buffer[snP].mem_block;
@@ -292,7 +315,11 @@ mem_block_t* rlc_am_retransmit_get_copy (rlc_am_entity_t *rlc_pP, frame_t frameP
     }
 }
 //-----------------------------------------------------------------------------
-mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t frameP, rlc_sn_t snP, sdu_size_t *sizeP)
+mem_block_t* rlc_am_retransmit_get_subsegment(
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP,
+        const rlc_sn_t snP,
+        sdu_size_t * const sizeP /* in-out*/)
 //-----------------------------------------------------------------------------
 {
 
@@ -773,7 +800,7 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
                    &rlc_pP->pdu_retrans_buffer[snP].payload[start_offset],
                    test_pdu_copy_size);
 
-            ((struct mac_tb_req*)(mb_sub_segment_p->data))->tb_size  = (((uint64_t)fill_payload_p)+ test_pdu_copy_size) - ((uint64_t)(&pdu_sub_segment_p->b1));
+            ((struct mac_tb_req*)(mb_sub_segment_p->data))->tb_size  = (tb_size_t)(((uint64_t)fill_payload_p)+ test_pdu_copy_size) - ((uint64_t)(&pdu_sub_segment_p->b1));
 
             // set LSF
             if ((test_pdu_copy_size + start_offset) == rlc_pP->pdu_retrans_buffer[snP].payload_size) {
@@ -852,7 +879,10 @@ mem_block_t* rlc_am_retransmit_get_subsegment(rlc_am_entity_t *rlc_pP, frame_t f
     }
 }
 //-----------------------------------------------------------------------------
-void rlc_am_tx_buffer_display (rlc_am_entity_t* rlc_pP, frame_t frameP, char* message_pP)
+void rlc_am_tx_buffer_display (
+        rlc_am_entity_t* const rlc_pP,
+        const frame_t frameP,
+        char* const message_pP)
 //-----------------------------------------------------------------------------
 {
     rlc_sn_t       sn = rlc_pP->vt_a;
@@ -904,7 +934,9 @@ void rlc_am_tx_buffer_display (rlc_am_entity_t* rlc_pP, frame_t frameP, char* me
    LOG_D(RLC, "\n");
 }
 //-----------------------------------------------------------------------------
-void rlc_am_retransmit_any_pdu(rlc_am_entity_t* rlc_pP,frame_t frameP)
+void rlc_am_retransmit_any_pdu(
+        rlc_am_entity_t* const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
     rlc_sn_t             sn           = (rlc_pP->vt_s - 1) & RLC_AM_SN_MASK;

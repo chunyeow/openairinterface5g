@@ -319,7 +319,7 @@ void rrc_ue_generate_RRCConnectionRequest(module_id_t ue_mod_idP, frame_t frameP
 mui_t rrc_mui=0;
 
 /* NAS Attach request with IMSI */
-static const char nas_attach_req_imsi[] =
+static const char const nas_attach_req_imsi[] =
     {
         0x07, 0x41,
         /* EPS Mobile identity = IMSI */
@@ -334,7 +334,7 @@ static const char nas_attach_req_imsi[] =
     };
 
 /* NAS Attach request with GUTI */
-static const char nas_attach_req_guti[] =
+static const char const nas_attach_req_guti[] =
     {
         0x07, 0x41,
         /* EPS Mobile identity = GUTI */
@@ -354,7 +354,7 @@ void rrc_ue_generate_RRCConnectionSetupComplete(module_id_t ue_mod_idP, frame_t 
 
   uint8_t    buffer[100];
   uint8_t    size;
-  char *nas_msg;
+  const char * nas_msg;
   int   nas_msg_length;
 
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
@@ -609,12 +609,12 @@ int32_t rrc_ue_establish_drb(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_
       LOG_I(OIP,"[UE %d] Config the oai%d to send/receive pkt on DRB %d to/from the protocol stack\n",
           ue_mod_idP,
           ip_addr_offset3+ue_mod_idP,
-          (eNB_index * NB_RB_MAX) + *DRB_config->logicalChannelIdentity);
+          (eNB_index * maxDRB) + DRB_config->drb_Identity);
 
       rb_conf_ipv4(0,//add
           ue_mod_idP,//cx align with the UE index
           ip_addr_offset3+ue_mod_idP,//inst num_enb+ue_index
-          (eNB_index * NB_RB_MAX) + *DRB_config->logicalChannelIdentity,//rb
+          (eNB_index * maxDRB) + DRB_config->drb_Identity,//rb
           0,//dscp
           ipv4_address(ip_addr_offset3+ue_mod_idP+1,ip_addr_offset4+ue_mod_idP+1),//saddr
           ipv4_address(ip_addr_offset3+ue_mod_idP+1,eNB_index+1));//daddr
@@ -1413,14 +1413,14 @@ void rrc_ue_process_mobilityControlInfo(uint8_t eNB_index, uint8_t UE_id, frame_
 
   //Removing SRB1 and SRB2 and DRB0
   LOG_N(RRC,"[UE %d] : Update needed for rrc_pdcp_config_req (deprecated) and rrc_rlc_config_req commands(deprecated)\n", UE_id);
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, CONFIG_ACTION_REMOVE, DCCH,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO,CONFIG_ACTION_REMOVE,ue_mod_idP+DCCH,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, CONFIG_ACTION_REMOVE, DCCH,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO, SRB_FLAG_YES, MBMS_FLAG_NO, CONFIG_ACTION_REMOVE,ue_mod_idP+DCCH,Rlc_info_am_config);
 
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, CONFIG_ACTION_REMOVE, DCCH1,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO,CONFIG_ACTION_REMOVE,ue_mod_idP+DCCH1,SIGNALLING_RADIO_BEARER,Rlc_info_am_config);
+  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, SRB_FLAG_YES, CONFIG_ACTION_REMOVE, DCCH1,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO, SRB_FLAG_YES,CONFIG_ACTION_REMOVE, MBMS_FLAG_NO,ue_mod_idP+DCCH1,Rlc_info_am_config);
 
-  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, CONFIG_ACTION_REMOVE, DTCH,UNDEF_SECURITY_MODE);
-  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO,CONFIG_ACTION_REMOVE,ue_mod_idP+DTCH,RADIO_ACCESS_BEARER,Rlc_info_um);
+  rrc_pdcp_config_req (eNB_index, UE_id, frameP, ENB_FLAG_NO, SRB_FLAG_NO, CONFIG_ACTION_REMOVE, DTCH,UNDEF_SECURITY_MODE);
+  rrc_rlc_config_req(eNB_index, ue_mod_idP,frameP,ENB_FLAG_NO, SRB_FLAG_NO,CONFIG_ACTION_REMOVE, MBMS_FLAG_NO,ue_mod_idP+DTCH,Rlc_info_um);
   /*
   rrc_pdcp_config_asn1_req(NB_eNB_INST+ue_mod_idP,frameP, 0,eNB_index,
 			   NULL, // SRB_ToAddModList
@@ -2457,7 +2457,7 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
               LOG_I(RRC, "[UE %d] Frame %d : Generating Measurement Report for eNB %d\n", UE_id, frameP, eNB_id);
               LOG_D(RLC, "[MSC_MSG][FRAME %05d][RRC_UE][UE %02d][][--- PDCP_DATA_REQ/%d Bytes (MeasurementReport to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
                   frameP, UE_id, size, eNB_id, rrc_mui, eNB_id, DCCH);
-              result = pdcp_data_req(eNB_id, UE_id, frameP, 0, DCCH, rrc_mui++, 0, size, buffer, PDCP_TRANSMISSION_MODE_DATA);
+              result = pdcp_data_req(eNB_id, UE_id, frameP, ENB_FLAG_NO,  SRB_FLAG_YES, DCCH, rrc_mui++, 0, size, buffer, PDCP_TRANSMISSION_MODE_DATA);
               AssertFatal (result == TRUE, "PDCP data request failed!\n");
               //LOG_D(RRC, "[UE %d] Frame %d Sending MeasReport (%d bytes) through DCCH%d to PDCP \n",ue_mod_idP,frameP, size, DCCH);
           }

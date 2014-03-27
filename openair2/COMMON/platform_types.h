@@ -26,11 +26,12 @@ typedef signed char        boolean_t;
 #define FALSE              (boolean_t)0x00
 #endif
 
+#define BOOL_NOT(b) (b^TRUE)
+
 //-----------------------------------------------------------------------------
 // GENERIC ACCESS STRATUM TYPES
 //-----------------------------------------------------------------------------
-typedef uint16_t              sdu_size_t;
-typedef int16_t               sdu_ssize_t;
+typedef int32_t               sdu_size_t;
 typedef uint32_t              frame_t;
 typedef int32_t               sframe_t;
 typedef uint32_t              sub_frame_t;
@@ -74,8 +75,8 @@ typedef unsigned int       crc_t;
 //-----------------------------------------------------------------------------
 // MAC TYPES
 //-----------------------------------------------------------------------------
-typedef unsigned int       tbs_size_t;
-typedef unsigned int       tb_size_t;
+typedef sdu_size_t         tbs_size_t;
+typedef sdu_size_t         tb_size_t;
 typedef unsigned int       logical_chan_id_t;
 typedef unsigned int       num_tb_t;
 
@@ -87,7 +88,7 @@ typedef unsigned int       confirm_t;
 typedef unsigned int       rlc_tx_status_t;
 typedef int16_t            rlc_sn_t;
 typedef uint16_t           rlc_usn_t;
-typedef uint32_t           rlc_buffer_occupancy_t;
+typedef int32_t            rlc_buffer_occupancy_t;
 typedef signed int         rlc_op_status_t;
 
 //-----------------------------------------------------------------------------

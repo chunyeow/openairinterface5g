@@ -40,7 +40,9 @@ Address      : EURECOM,
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 //-----------------------------------------------------------------------------
-void rlc_am_check_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_check_timer_poll_retransmit(
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
   // 5.2.2.3 Expiry of t-PollRetransmit
@@ -82,19 +84,21 @@ void rlc_am_check_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP)
                   rlc_pP->ue_module_id,
                   rlc_pP->rb_id);
 
-#warning         TO DO rlc_am_check_timer_poll_retransmit
+//#warning         TO DO rlc_am_check_timer_poll_retransmit
             rlc_pP->t_poll_retransmit.frame_time_out = frameP + rlc_pP->t_poll_retransmit.time_out;
         }
     }
 }
 //-----------------------------------------------------------------------------
-int rlc_am_is_timer_poll_retransmit_timed_out(rlc_am_entity_t *rlc_pP)
+int rlc_am_is_timer_poll_retransmit_timed_out(rlc_am_entity_t *const rlc_pP)
 //-----------------------------------------------------------------------------
 {
     return rlc_pP->t_poll_retransmit.timed_out;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_stop_and_reset_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_stop_and_reset_timer_poll_retransmit(
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
    LOG_D(RLC, "[FRAME %05d][%s][RLC_AM][MOD %u/%u][RB %u][T_POLL_RETRANSMIT] STOPPED AND RESET\n",
@@ -109,7 +113,9 @@ void rlc_am_stop_and_reset_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t
     rlc_pP->t_poll_retransmit.timed_out       = 0;
 }
 //-----------------------------------------------------------------------------
-void rlc_am_start_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP)
+void rlc_am_start_timer_poll_retransmit(
+        rlc_am_entity_t *const rlc_pP,
+        const frame_t frameP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_poll_retransmit.running         = 1;
@@ -125,7 +131,9 @@ void rlc_am_start_timer_poll_retransmit(rlc_am_entity_t *rlc_pP,frame_t frameP)
           rlc_pP->t_poll_retransmit.frame_time_out);
 }
 //-----------------------------------------------------------------------------
-void rlc_am_init_timer_poll_retransmit(rlc_am_entity_t *rlc_pP, uint32_t time_outP)
+void rlc_am_init_timer_poll_retransmit(
+        rlc_am_entity_t *const rlc_pP,
+        const uint32_t time_outP)
 //-----------------------------------------------------------------------------
 {
     rlc_pP->t_poll_retransmit.running         = 0;
