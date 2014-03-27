@@ -306,7 +306,7 @@ printvars:
 	@echo UE_flag is $(UE_flag)
 	@echo S1AP objs: $(S1AP_BUILT_OBJS)
 	@echo CFLAGS: $(CFLAGS)
-	@echo Enable PGM: $(ENABLE_PGM)
+	@echo Enable PGM: $(PGM_FOUND)
 
 ##UTIL_YAC_C = $(OPENAIR2_TOP)/UTIL/enb_parser.o
 ##$(UTIL_LEX_C) = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))

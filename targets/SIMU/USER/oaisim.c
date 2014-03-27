@@ -1376,7 +1376,7 @@ void print_opp_meas(void){
   for (eNB_id=0; eNB_id<NB_eNB_INST; eNB_id++) {
     print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc,"[eNB][total_phy_proc]",&oaisim_stats,&oaisim_stats_f);
 
-    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_rx,"[eNB][total_phy_proc_rx]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_tx,"[eNB][total_phy_proc_tx]",&oaisim_stats,&oaisim_stats_f);
     print_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_mod_stats,"[eNB][ofdm_mod]",&oaisim_stats,&oaisim_stats_f);
     print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_modulation_stats,"[eNB][modulation]",&oaisim_stats,&oaisim_stats_f);
     print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_scrambling_stats,"[eNB][scrambling]",&oaisim_stats,&oaisim_stats_f);
@@ -1386,7 +1386,7 @@ void print_opp_meas(void){
     print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_turbo_encoding_stats,"[eNB][|_turbo_encoding]",&oaisim_stats,&oaisim_stats_f);
     
     
-    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_tx,"[eNB][total_phy_proc_tx]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_rx,"[eNB][total_phy_proc_rx]",&oaisim_stats,&oaisim_stats_f);
     print_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_demod_stats,"[eNB][ofdm_demod]",&oaisim_stats,&oaisim_stats_f);
     //print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_channel_estimation_stats,"[eNB][channel_est]");
     //print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_freq_offset_estimation_stats,"[eNB][freq_offset]");
