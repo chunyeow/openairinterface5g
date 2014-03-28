@@ -188,11 +188,11 @@ endif
 
 ifdef SECU
 ifeq ($(NETTLE_FOUND), 0)
-@echo "Nettle library >= 2.5 is not installed on your system, continuing with security disabled"
+@echo "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled"
 SECU=0
 else
 ifeq ($(OPENSSL_FOUND), 0)
-@echo "openssl library is not installed on your system, continuing with security disabled"
+@echo "openssl library is not installed on your system, openssl lib needed, continuing with security disabled"
 SECU=0
 else
 CFLAGS += -DENABLE_SECURITY

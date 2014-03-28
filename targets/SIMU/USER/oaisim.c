@@ -1303,9 +1303,9 @@ void reset_opp_meas(void){
       reset_meas(&eNB_mac_inst[eNB_id].schedule_mch); // only embms 
       reset_meas(&eNB_mac_inst[eNB_id].rx_ulsch_sdu); // include rlc_data_ind + mac header parser
      
-      reset_meas(&eNB_pdcp_stats[UE_id].pdcp_run);
-      reset_meas(&eNB_pdcp_stats[UE_id].data_req);
-      reset_meas(&eNB_pdcp_stats[UE_id].data_ind);
+      reset_meas(&eNB_pdcp_stats[eNB_id].pdcp_run);
+      reset_meas(&eNB_pdcp_stats[eNB_id].data_req);
+      reset_meas(&eNB_pdcp_stats[eNB_id].data_ind);
       /*
       reset_meas(&eNB_pdcp_stats[UE_id].encrption);
       reset_meas(&eNB_pdcp_stats[UE_id].decrption);
@@ -1436,9 +1436,9 @@ void print_opp_meas(void){
     print_meas(&eNB_mac_inst[eNB_id].schedule_ulsch,"[eNB][UL][ULSCH]",&oaisim_stats,&oaisim_stats_f); 
     print_meas(&eNB_mac_inst[eNB_id].rx_ulsch_sdu,"[eNB][UL][rx_ulsch_sdu]",&oaisim_stats,&oaisim_stats_f); 
 
-    print_meas(&eNB_pdcp_stats[UE_id].pdcp_run,"[eNB][pdcp_run]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&eNB_pdcp_stats[UE_id].data_req,"[eNB][DL][pdcp_data_req]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&eNB_pdcp_stats[UE_id].data_ind,"[eNB][UL][pdcp_data_ind]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&eNB_pdcp_stats[eNB_id].pdcp_run,"[eNB][pdcp_run]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&eNB_pdcp_stats[eNB_id].data_req,"[eNB][DL][pdcp_data_req]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&eNB_pdcp_stats[eNB_id].data_ind,"[eNB][UL][pdcp_data_ind]",&oaisim_stats,&oaisim_stats_f);
   }
   
 }

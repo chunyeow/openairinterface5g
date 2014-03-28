@@ -19,6 +19,7 @@ First, you must have all four openair SW directories, openair1, openair2, openai
 	- libgtk-3-dev
         - libxml2 and libxml2-dev and gccxml
         - libforms-bin libforms-dev
+	- nettle-dev nettle-bin openssl
 	- libatlas-base-dev and libatlas-headers (for Ubuntu 11.04, libatlas-dev instead of libatlas-headers)
         - asn1c and the LTE ASN1 files (for more information on how to install this and generate the required files see the README file in openair2/RRC/LITE/MESSAGES) 
 
@@ -64,3 +65,17 @@ The 3 folders have the following structures
      + after the line: %admin ALL=(ALL) ALL,           add : user_name   ALL=(ALL) NOPASSWD: ALL
    - include this line: alias sudo='sudo -E', to the .bashrc 
    - run oai as follows: sudo ./oaisim arg1 arg2 ....
+
+
+----------------------------------------------------------------
+4)  Detail Instructions
+----------------------------------------------------------------
+
+	Please follow the instructions given in DOCS/oaisim_walkthrough.pdf
+
+
+----------------------------------------------------------------
+5) OAI on virtual machine  
+----------------------------------------------------------------
+	you may download the image using this URL: https://emu.openairinterface.org/openairlab/openairlab.zip
+	chekc that all the packges are there as some packages might be added later.
