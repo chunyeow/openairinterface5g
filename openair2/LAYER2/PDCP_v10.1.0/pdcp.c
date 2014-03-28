@@ -272,12 +272,12 @@ boolean_t pdcp_data_req(
             pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP + i] = 0x00;// pdu_header.mac_i[i];
 
 #if defined(ENABLE_SECURITY)
-          if ((pdcp->security_activated != 0) &&
-              ((pdcp->cipheringAlgorithm) != 0) &&
-              ((pdcp->integrityProtAlgorithm) != 0)) {
-              pdcp_apply_security(pdcp, rb_id % maxDRB,
-                  pdcp_header_len, current_sn, pdcp_pdu->data,
-                  sdu_buffer_size);
+          if ((pdcp_p->security_activated != 0) &&
+              ((pdcp_p->cipheringAlgorithm) != 0) &&
+              ((pdcp_p->integrityProtAlgorithm) != 0)) {
+              pdcp_apply_security(pdcp_p, rb_idP % maxDRB,
+                  pdcp_header_len, current_sn, pdcp_pdu_p->data,
+                  sdu_buffer_sizeP);
           }
 #endif
 
@@ -519,10 +519,10 @@ boolean_t pdcp_data_ind(
       // SRB1/2: control-plane data
       if (srb_flagP){
 #if defined(ENABLE_SECURITY)
-          if (pdcp->security_activated == 1) {
-              pdcp_validate_security(pdcp, rb_id, pdcp_header_len,
-                  sequence_number, sdu_buffer->data,
-                  sdu_buffer_size - pdcp_tailer_len);
+          if (pdcp_p->security_activated == 1) {
+              pdcp_validate_security(pdcp_p, rb_idP, pdcp_header_len,
+                  sequence_number, sdu_buffer_pP->data,
+                  sdu_buffer_sizeP - pdcp_tailer_len);
           }
 #endif
 //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
@@ -543,10 +543,10 @@ boolean_t pdcp_data_ind(
       }
       payload_offset=PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
 #if defined(ENABLE_SECURITY)
-      if (pdcp->security_activated == 1) {
+      if (pdcp_p->security_activated == 1) {
           pdcp_validate_security(pdcp_p, rb_idP % maxDRB, pdcp_header_len,
-              sequence_number, sdu_buffer->data,
-              sdu_buffer_size - pdcp_tailer_len);
+              sequence_number, sdu_buffer_pP->data,
+              sdu_buffer_sizeP - pdcp_tailer_len);
       }
 #endif
   } else {
