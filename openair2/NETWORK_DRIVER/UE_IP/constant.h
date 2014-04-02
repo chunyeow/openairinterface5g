@@ -42,7 +42,7 @@ Address      : EURECOM,
 #define UE_IP_ADDR_LEN               8
 #define UE_IP_INET6_ADDRSTRLEN       46
 #define UE_IP_INET_ADDRSTRLEN        16
-#define UE_IP_DEFAULT_RAB_ID         5
+#define UE_IP_DEFAULT_RAB_ID         1
 
 #define UE_IP_RESET_RX_FLAGS         0
 
