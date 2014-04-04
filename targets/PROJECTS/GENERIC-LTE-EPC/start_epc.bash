@@ -125,9 +125,9 @@ test_command_install_package  "tunctl"  "uml-utilities"
 test_command_install_package "bison"    "bison"     "--force-yes"
 test_command_install_package "flex"     "flex"      "--force-yes"
 test_command_install_package "libtool"  "libtool"   "--force-yes"
-test_command_install_lib     "/usr/lib/libconfig.so"      "libconfig-dev"  "--force-yes"
+#test_command_install_lib     "/usr/lib/libconfig.so"      "libconfig-dev"  "--force-yes"
 #test_command_install_lib     "/usr/lib/libsctp-dev.so"    "libsctp-dev"    "--force-yes"
-test_command_install_lib     "/usr/lib/libsctp.so"        "libsctp1"       "--force-yes"
+#test_command_install_lib     "/usr/lib/libsctp.so"        "libsctp1"       "--force-yes"
 #test_command_install_lib     "/usr/lib/libpthread-stubs0-dev.so" "libpthread-stubs0-dev"    "--force-yes"
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
@@ -175,9 +175,13 @@ else
 fi
 if [ ! -f $OBJ_DIR/Makefile ]
 then
-    #echo_success "Invoking autogen"
-    #bash_exec "./autogen.sh"
-    #cd ./$OBJ_DIR
+    if [ ! -n "m4" ]
+    then
+        mkdir -m 777 m4
+    fi
+    echo_success "Invoking autogen"
+    bash_exec "./autogen.sh"
+    cd ./$OBJ_DIR
     echo_success "Invoking configure"
     ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
 else

@@ -126,7 +126,7 @@ test_command_install_package "iperf"    "iperf"
 test_command_install_package "ip"       "iproute"
 test_command_install_script  "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
 test_command_install_package "tunctl"  "uml-utilities"
-test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
+#test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
 
 
 test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
@@ -208,23 +208,29 @@ fi
 #######################################################
 # USIM, NVRAM files
 #######################################################
+export NVRAM_DIR=$THIS_SCRIPT_PATH
+
 if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data ]; then
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
+    rm .ue.nvram
 fi
 if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data ]; then
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
+    rm .usim.nvram
 fi
 if [ ! -f .ue.nvram ]; then
     # generate .ue_emm.nvram .ue.nvram
-    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data -g
+    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --gen
 fi
 
 if [ ! -f .usim.nvram ]; then
     # generate .usim.nvram
-    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data -g
+    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --gen
 fi
+$OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --print
+$OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
 
 ##################################################
 # LAUNCH eNB + UE executable
@@ -233,12 +239,13 @@ echo "Bringup UE interface"
 pkill oaisim
 bash_exec "rmmod $IP_DRIVER_NAME" > /dev/null 2>&1
 
-#bash_exec "make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET "
-make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
-
 cecho "make $MAKE_IP_DRIVER_TARGET $MAKE_LTE_ACCESS_STRATUM_TARGET ....." $green
 #bash_exec "make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET "
 make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET || exit 1
+
+#bash_exec "make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET "
+make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+
 
 bash_exec "insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/$IP_DRIVER_NAME.ko"
 
@@ -274,8 +281,9 @@ rotate_log_file $ITTI_LOG_FILE
 STDOUT_LOG_FILE=./stdout_enb_ue.log
 rotate_log_file $STDOUT_LOG_FILE
 
+cd $THIS_SCRIPT_PATH
 nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l7 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
 
 
