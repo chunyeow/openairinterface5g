@@ -54,6 +54,36 @@ cidr2mask() {
   echo $mask
 }
 
+# example: netcalc 192.168.12.100 255.255.255.0
+netcalc(){
+    local IFS='.' ip i
+    local -a oct msk
+    
+    read -ra oct <<<"$1"
+    read -ra msk <<<"$2"
+
+    for i in ${!oct[@]}; do
+        ip+=( "$(( oct[i] & msk[i] ))" )
+    done
+    
+    echo "${ip[*]}"
+}
+
+# example: s
+bcastcalc(){
+
+    local IFS='.' ip i
+    local -a oct msk
+    
+    read -ra oct <<<"$1"
+    read -ra msk <<<"$2"
+
+    for i in ${!oct[@]}; do
+        ip+=( "$(( oct[i] + ( 255 - ( oct[i] | msk[i] ) ) ))" )
+    done
+
+    echo "${ip[*]}"
+}
 
 black='\E[30m'
 red='\E[31m'
@@ -194,7 +224,6 @@ set_openair() {
         #echo ${path%$token*}
         if [[ $index -lt $length_path  && index -gt 0 ]]
            then
-               declare -x OPENAIR_DIR
                index=`expr $index - 1`
                openair_path=`echo $path | cut -c1-$index`
                #openair_path=`echo ${path:0:$index}`
@@ -455,6 +484,21 @@ create_openvswitch_interface() {
   fi
 }
 
+# arg1 = interface name
+# arg2 = ipv4 addr cidr
+# arg3 = netmask cidr
+set_interface_up() {
+    interface=$1
+    address=$2
+    cidr_netmask=$3
+    bash_exec "ifconfig  $interface up"
+    sync
+    netmask=`cidr2mask $cidr_netmask`
+    broadcast=`bcastcalc $address $netmask`
+    bash_exec "ip -4 addr add  $address/$cidr_netmask broadcast $broadcast dev $interface"
+    sync
+}
+
 build_enb_vlan_network() {
     # create vlan interface
     is_vlan_interface $ENB_INTERFACE_NAME_FOR_S1_MME
@@ -466,9 +510,10 @@ build_enb_vlan_network() {
         sync
         bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1_MME up"
-        sync
-        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME/$ENB_IPV4_NETMASK_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME"
+        #bash_exec "ifconfig  $ENB_INTERFACE_NAME_FOR_S1_MME up"
+        #sync
+        #bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1_MME/$ENB_IPV4_NETMASK_FOR_S1_MME dev $ENB_INTERFACE_NAME_FOR_S1_MME"
+        set_interface_up $ENB_INTERFACE_NAME_FOR_S1_MME $ENB_IPV4_ADDRESS_FOR_S1_MME $ENB_IPV4_NETMASK_FOR_S1_MME
     else
         echo_fatal "BAD INTERFACE NAME FOR ENB S1-MME $ENB_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
@@ -482,9 +527,10 @@ build_enb_vlan_network() {
         sync
         bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U up"
-        sync
-        bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U/$ENB_IPV4_NETMASK_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U"
+        #bash_exec "ifconfig $ENB_INTERFACE_NAME_FOR_S1U up"
+        #sync
+        #bash_exec "ip -4 addr add  $ENB_IPV4_ADDRESS_FOR_S1U/$ENB_IPV4_NETMASK_FOR_S1U dev $ENB_INTERFACE_NAME_FOR_S1U"
+        set_interface_up $ENB_INTERFACE_NAME_FOR_S1U $ENB_IPV4_ADDRESS_FOR_S1U $ENB_IPV4_NETMASK_FOR_S1U
         sync
     else
         echo_fatal "BAD INTERFACE NAME FOR ENB S1U $ENB_INTERFACE_NAME_FOR_S1U"' (waiting for ethx.y, wlanx.y or wifix.y)'
@@ -569,9 +615,10 @@ build_mme_spgw_vlan_network() {
         sync
         bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $MME_INTERFACE_NAME_FOR_S1_MME up"
-        sync
-        bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME/$MME_IPV4_NETMASK_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME"
+        #bash_exec "ifconfig  $MME_INTERFACE_NAME_FOR_S1_MME up"
+        #sync
+        #"bash_exec "ip -4 addr add  $MME_IPV4_ADDRESS_FOR_S1_MME/$MME_IPV4_NETMASK_FOR_S1_MME dev $MME_INTERFACE_NAME_FOR_S1_MME"
+        set_interface_up $MME_INTERFACE_NAME_FOR_S1_MME $MME_IPV4_ADDRESS_FOR_S1_MME $MME_IPV4_NETMASK_FOR_S1_MME
     else
         echo_fatal "BAD INTERFACE NAME FOR SGW S1-MME $MME_INTERFACE_NAME_FOR_S1_MME"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
@@ -585,10 +632,11 @@ build_mme_spgw_vlan_network() {
         sync
         bash_exec "vconfig add $interface_name $vlan"
         sync
-        bash_exec "ifconfig  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP up"
-        sync
-        bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP/$SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
-        sync
+        #bash_exec "ifconfig  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP up"
+        #sync
+        #bash_exec "ip -4 addr add  $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP/$SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP dev $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"
+        #sync
+        set_interface_up $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP $SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP
     else
         echo_fatal "BAD INTERFACE NAME FOR SGW S1U $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP"' (waiting for ethx.y, wlanx.y or wifix.y)'
     fi;
@@ -1146,6 +1194,7 @@ declare -x OPENAIR_TARGETS=""
 
 set_openair
 cecho "OPENAIR_DIR     = $OPENAIR_DIR" $green
+cecho "OPENAIR_HOME    = $OPENAIR_HOME" $green
 cecho "OPENAIR1_DIR    = $OPENAIR1_DIR" $green
 cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
 cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
