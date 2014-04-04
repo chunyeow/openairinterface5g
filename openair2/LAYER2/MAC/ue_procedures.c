@@ -1509,7 +1509,7 @@ double uniform_rngen(int min, int max) {
   return (max - min) * random + min;
 }
 
-int use_cba_access(module_id_t module_idP,frame_t frameP,uint8_t subframe, uint8_t eNB_index){
+int use_cba_access(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index){
 
   if (( ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID1]<64))   ||
       ((UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]>0)&&(UE_mac_inst[module_idP].scheduling_info.BSR[LCGID2]<64))   ||

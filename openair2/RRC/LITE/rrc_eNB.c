@@ -2131,7 +2131,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
                        , 0, (MBSFN_AreaInfoList_r9_t *) NULL, (PMCH_InfoList_r9_t *) NULL
 #endif
 #ifdef CBA
-                       , 0, 0,
+                       , 0, 0
 #endif
         );
 
@@ -2302,7 +2302,7 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         rb_conf_ipv4(0, //add
                             ue_mod_idP,  //cx
                             enb_mod_idP,    //inst
-                            (ue_mod_idP * maxDRB) + DRB_configList->list.array[i]->drb_Identity,
+                            (ue_mod_idP * maxDRB) + DRB_configList->list.array[i]->drb_Identity, // RB
                             0,    //dscp
                             ipv4_address(enb_mod_idP + 1, enb_mod_idP + 1),  //saddr
                             ipv4_address(enb_mod_idP + 1, dest_ip_offset + ue_mod_idP + 1));  //daddr

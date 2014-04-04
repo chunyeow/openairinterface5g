@@ -256,7 +256,7 @@ void openair_rrc_top_init(int eMBMS_active, uint8_t cba_group_active,uint8_t HO_
 #endif 
 #ifdef CBA
     for (module_id=0;module_id<NB_eNB_INST;module_id++) {
-      eNB_rrc_inst[i].num_active_cba_groups = cba_group_active;
+      eNB_rrc_inst[module_id].num_active_cba_groups = cba_group_active;
     }
 #endif
     LOG_D(RRC,

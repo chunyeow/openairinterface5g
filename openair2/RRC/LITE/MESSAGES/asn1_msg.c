@@ -502,7 +502,8 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
 
   (*sib1)->cellSelectionInfo.q_RxLevMin=-65;
   (*sib1)->cellSelectionInfo.q_RxLevMinOffset=NULL;
-
+  //(*sib1)->p_Max = CALLOC(1, sizeof(P_Max_t));
+  //*((*sib1)->p_Max) = 23; 
   (*sib1)->freqBandIndicator =
 #if defined(ENABLE_ITTI)
           configuration->eutra_band;
@@ -738,7 +739,7 @@ uint8_t do_SIB2_AT4(uint8_t Mod_id,
   *((*sib2)->freqInfo.ul_CarrierFreq) = 38050;
   *((*sib2)->freqInfo.ul_Bandwidth) = SystemInformationBlockType2__freqInfo__ul_Bandwidth_n50;
   (*sib2)->mbsfn_SubframeConfigList = NULL;
-  (*sib2)->timeAlignmentTimerCommon=TimeAlignmentTimer_sf10240;
+  (*sib2)->timeAlignmentTimerCommon= TimeAlignmentTimer_infinity;//TimeAlignmentTimer_sf10240;
 
 
 #ifdef XER_PRINT

@@ -2050,7 +2050,7 @@ void schedule_ulsch(module_id_t module_idP, frame_t frameP,unsigned char coopera
 
 }
 #ifdef CBA
-void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_flag, frame_t frameP, unsigned char subframeP, unsigned char sched_subframe, uint8_t granted_UEs, unsigned int *nCCE, unsigned int *nCCE_available, uint16_t *first_rb){
+void schedule_ulsch_cba_rnti(module_id_t module_idP, unsigned char cooperation_flag, frame_t frameP, sub_frame_t subframeP, unsigned char sched_subframe, uint8_t granted_UEs, unsigned int *nCCE, unsigned int *nCCE_available, uint16_t *first_rb){
 
   DCI0_5MHz_TDD_1_6_t *ULSCH_dci_tdd16;
   DCI0_5MHz_FDD_t *ULSCH_dci_fdd;
