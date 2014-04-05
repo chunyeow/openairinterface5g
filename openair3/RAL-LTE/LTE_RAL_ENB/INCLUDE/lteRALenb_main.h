@@ -57,7 +57,9 @@
 //-----------------------------------------------------------------------------
 #include "lteRALenb.h"
 #include "commonDef.h"
-#include "collection/hashtable/hashtable.h"
+#include "hashtable.h"
+//#include "collection/hashtable/hashtable.h"
+
 public_lteralenb_main(char*   g_conf_enb_ral_listening_port;)
 public_lteralenb_main(char*   g_conf_enb_ral_ip_address;)
 public_lteralenb_main(char*   g_conf_enb_ral_link_id;)

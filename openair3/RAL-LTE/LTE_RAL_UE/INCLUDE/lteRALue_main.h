@@ -71,7 +71,9 @@
 //-----------------------------------------------------------------------------
 #include "lteRALue.h"
 #include "commonDef.h"
-#include "collection/hashtable/hashtable.h"
+#include "hashtable.h"
+//#include "collection/hashtable/hashtable.h"
+
 public_mrallte_main(char*   g_conf_ue_ral_listening_port;)
 public_mrallte_main(char*   g_conf_ue_ral_ip_address;)
 public_mrallte_main(char*   g_conf_ue_ral_link_id;)

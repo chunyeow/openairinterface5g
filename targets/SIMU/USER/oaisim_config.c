@@ -460,7 +460,7 @@ int olg_config() {
 	oai_emulation.info.g_log_verbosity,
 	oai_emulation.emulation_config.log_emu.interval );
   
-  
+  /*  
   // if perf eval then reset the otg log level
   set_comp_log(PHY,  LOG_EMERG, 0x15,1);
   set_comp_log(EMU,  LOG_EMERG, 0x15,1);
@@ -473,6 +473,7 @@ int olg_config() {
   set_comp_log(PDCP, LOG_DEBUG, LOG_MED,1);
   set_comp_log(RLC,  LOG_DEBUG, LOG_MED,1);
   set_comp_log(RRC,  LOG_DEBUG, LOG_MED,1);
+  */ 
 #if defined(ENABLE_RAL)
   set_comp_log(RAL_ENB, LOG_TRACE, LOG_MED,1);
   set_comp_log(RAL_UE,  LOG_TRACE, LOG_MED,1);

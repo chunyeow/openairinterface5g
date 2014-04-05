@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "collection/hashtable/hashtable.h"
+//#include "collection/hashtable/hashtable.h"
+#include "hashtable.h"
 
 typedef struct obj_hash_node_s {
     int                 key_size;

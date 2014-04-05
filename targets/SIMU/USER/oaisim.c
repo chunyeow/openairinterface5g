@@ -162,9 +162,10 @@ mapping small_scale_names[] = {
     {"AWGN", AWGN},
     {NULL, -1}
 };
-
-//static void *sigh(void *arg);
-void terminate(void);
+#if !defined(ENABLE_ITTI)
+static void *sigh(void *arg);
+#endif
+void oai_shutdown(void);
 
 void help(void) {
   printf ("Usage: oaisim -h -a -F -C tdd_config -K [log_file] -V [vcd_file] -R N_RB_DL -e -x transmission_mode -m target_dl_mcs -r(ate_adaptation) -n n_frames -s snr_dB -k ricean_factor -t max_delay -f forgetting factor -A channel_model -z cooperation_flag -u nb_local_ue -U UE mobility -b nb_local_enb -B eNB_mobility -M ethernet_flag -p nb_master -g multicast_group -l log_level -c ocg_enable -T traffic model -D multicast network device\n");
@@ -375,9 +376,11 @@ typedef enum l2l1_task_state_e
   L2L1_TERMINATED,
 } l2l1_task_state_t;
 
+l2l1_task_state_t     l2l1_state = L2L1_WAITTING;
+
 /*------------------------------------------------------------------------------*/
 void *l2l1_task(void *args_p) {
-  l2l1_task_state_t     l2l1_state = L2L1_WAITTING;
+  
   clock_t               t;
 
   // Framing variables
@@ -1019,19 +1022,28 @@ int main(int argc, char **argv) {
   // Initialize VCD LOG module
   vcd_signal_dumper_init (oai_emulation.info.vcd_file);
 
-  /*  pthread_t sigth;
-   sigset_t sigblock;
-   sigemptyset(&sigblock);
-   sigaddset(&sigblock, SIGHUP);
-   sigaddset(&sigblock, SIGINT);
-   sigaddset(&sigblock, SIGTERM);
-   pthread_sigmask(SIG_BLOCK, &sigblock, NULL);
-   if (pthread_create(&sigth, NULL, sigh, NULL)) {
-   msg("Pthread for tracing Signals is not created!\n");
-   return -1;
-   } else {
-   msg("Pthread for tracing Signals is created!\n");
-   }*/
+#if !defined(ENABLE_ITTI)
+  pthread_t tid;
+  int err;
+  sigset_t sigblock;
+  sigemptyset(&sigblock);
+  sigaddset(&sigblock, SIGHUP);
+  sigaddset(&sigblock, SIGINT);
+  sigaddset(&sigblock, SIGTERM);
+  sigaddset(&sigblock, SIGQUIT);
+  //sigaddset(&sigblock, SIGKILL);
+ 
+  if ((err= pthread_sigmask(SIG_BLOCK, &sigblock, NULL)) != 0){
+    printf("SIG_BLOCK error\n");
+    return -1;
+  }
+  if (pthread_create(&tid, NULL, sigh, NULL)) {
+    printf("Pthread for tracing Signals is not created!\n");
+    return -1;
+  } else {
+    printf("Pthread for tracing Signals is created!\n");
+  }
+#endif 
   // configure oaisim with OCG
   oaisim_config (); // config OMG and OCG, OPT, OTG, OLG
 
@@ -1094,92 +1106,9 @@ int main(int argc, char **argv) {
   //  fclose(SINRpost);
   LOG_N(EMU, ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU Ending <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 
-  free (otg_pdcp_buffer);
 
-#ifdef SMBV
-  if (config_smbv) {
-      smbv_send_config (smbv_fname,smbv_ip);
-  }
-#endif
-
-  //Perform KPI measurements
-  if (oai_emulation.info.otg_enabled == 1)
-    kpi_gen ();
-
-  if (oai_emulation.info.opp_enabled == 1)
-    print_opp_meas();
-  
-  // relase all rx state
-  if (ethernet_flag == 1) {
-      emu_transport_release ();
-  }
-
-#ifdef PROC
-  if (abstraction_flag == 0 && Channel_Flag==0 && Process_Flag==0)
-#else
-    if (abstraction_flag == 0)
-#endif
-      {
-        /*
-     #ifdef IFFT_FPGA
-     free(txdataF2[0]);
-     free(txdataF2[1]);
-     free(txdataF2);
-     free(txdata[0]);
-     free(txdata[1]);
-     free(txdata);
-     #endif
-         */
-
-        for (i = 0; i < 2; i++) {
-            free (s_re[i]);
-            free (s_im[i]);
-            free (r_re[i]);
-            free (r_im[i]);
-        }
-        free (s_re);
-        free (s_im);
-        free (r_re);
-        free (r_im);
-
-        lte_sync_time_free ();
-      }
-  //  pthread_join(sigth, NULL);
-
-  // added for PHY abstraction
-  if (oai_emulation.info.ocm_enabled == 1) {
-      for (eNB_inst = 0; eNB_inst < NUMBER_OF_eNB_MAX; eNB_inst++) {
-          free (enb_data[eNB_inst]);
-      }
-      for (UE_inst = 0; UE_inst < NUMBER_OF_UE_MAX; UE_inst++) {
-          free (ue_data[UE_inst]);
-      }
-  } //End of PHY abstraction changes
-
-#ifdef OPENAIR2
-  mac_top_cleanup ();
-#endif 
-
-  // stop OMG
-  stop_mobility_generator (oai_emulation.info.omg_model_ue); //omg_param_list.mobility_type
-#ifdef OPENAIR2
-  if (oai_emulation.info.omv_enabled == 1)
-    omv_end (pfd[1], omv_data);
-#endif
-  if ((oai_emulation.info.ocm_enabled == 1) && (ethernet_flag == 0) && (ShaF != NULL))
-    destroyMat (ShaF, map1, map2);
-
-  if ((oai_emulation.info.opt_enabled == 1))
-    terminate_opt ();
-
-  if (oai_emulation.info.cli_enabled)
-    cli_server_cleanup ();
-
-  //bring oai if down
-  terminate ();
-  log_thread_finalize ();
-  logClean ();
-  vcd_signal_dumper_close ();
+  raise(SIGINT);
+  oai_shutdown();
 
   return (0);
 }
@@ -1444,38 +1373,138 @@ void print_opp_meas(void){
 }
 
 
-/*
+
  static void *sigh(void *arg) {
 
- int signum;
- sigset_t sigcatch;
- sigemptyset(&sigcatch);
- sigaddset(&sigcatch, SIGHUP);
- sigaddset(&sigcatch, SIGINT);
- sigaddset(&sigcatch, SIGTERM);
+   int signum;
+   sigset_t sigcatch;
+   sigemptyset(&sigcatch);
+   sigaddset(&sigcatch, SIGHUP);
+   sigaddset(&sigcatch, SIGINT);
+   sigaddset(&sigcatch, SIGTERM);
+   sigaddset(&sigcatch, SIGQUIT);
+   
+   for (;;) {
+     sigwait(&sigcatch, &signum);
+     //sigwait(&sigblock, &signum);
+     switch (signum) {
+     case SIGHUP:
+     case SIGINT:
+     case SIGTERM:
+     case SIGQUIT:
+       fprintf(stderr,"received signal %d \n", signum);
+       // no need for mutx: when ITTI not used, this variable is only accessed by this function
+       l2l1_state = L2L1_TERMINATED;
+       break;
+     default:
+       fprintf(stderr,"Unexpected signal %d \n",signum);
+       exit(-1);
+       break;
+     }
+   }
+   pthread_exit(NULL);
+ }
 
- for (;;) {
- sigwait(&sigcatch, &signum);
- switch (signum) {
- case SIGHUP:
- case SIGINT:
- case SIGTERM:
- terminate();
- default:
- break;
- }
- }
- pthread_exit(NULL);
- }
- */
 
-void terminate(void) {
+void oai_shutdown(void) {
+  static int done=0;
   int i;
   char interfaceName[8];
+  
+  if (done)
+    return;
+
+  free (otg_pdcp_buffer);
+
+#ifdef SMBV
+  if (config_smbv) {
+    smbv_send_config (smbv_fname,smbv_ip);
+  }
+#endif
+
+  //Perform KPI measurements
+  if (oai_emulation.info.otg_enabled == 1)
+    kpi_gen ();
+
+  if (oai_emulation.info.opp_enabled == 1)
+    print_opp_meas();
+  
+  // relase all rx state
+  if (ethernet_flag == 1) {
+      emu_transport_release ();
+  }
+
+#ifdef PROC
+  if (abstraction_flag == 0 && Channel_Flag==0 && Process_Flag==0)
+#else
+  if (abstraction_flag == 0)
+#endif
+    {
+      /*
+	#ifdef IFFT_FPGA
+	free(txdataF2[0]);
+	free(txdataF2[1]);
+	free(txdataF2);
+	free(txdata[0]);
+	free(txdata[1]);
+	free(txdata);
+	#endif
+      */
+      
+      for (i = 0; i < 2; i++) {
+	free (s_re[i]);
+	free (s_im[i]);
+	free (r_re[i]);
+	free (r_im[i]);
+      }
+      free (s_re);
+      free (s_im);
+      free (r_re);
+      free (r_im);
+      
+      lte_sync_time_free ();
+    }
+  
+  // added for PHY abstraction
+  if (oai_emulation.info.ocm_enabled == 1) {
+    for (eNB_inst = 0; eNB_inst < NUMBER_OF_eNB_MAX; eNB_inst++) {
+      free (enb_data[eNB_inst]);
+    }
+    for (UE_inst = 0; UE_inst < NUMBER_OF_UE_MAX; UE_inst++) {
+      free (ue_data[UE_inst]);
+    }
+  } //End of PHY abstraction changes
+  
+#ifdef OPENAIR2
+  mac_top_cleanup ();
+#endif 
+
+  // stop OMG
+  stop_mobility_generator (oai_emulation.info.omg_model_ue); //omg_param_list.mobility_type
+#ifdef OPENAIR2
+  if (oai_emulation.info.omv_enabled == 1)
+    omv_end (pfd[1], omv_data);
+#endif
+  if ((oai_emulation.info.ocm_enabled == 1) && (ethernet_flag == 0) && (ShaF != NULL))
+    destroyMat (ShaF, map1, map2);
+  
+  if ((oai_emulation.info.opt_enabled == 1))
+    terminate_opt ();
+
+  if (oai_emulation.info.cli_enabled)
+    cli_server_cleanup ();
+
   for (i = 0; i < NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX; i++)
     if (oai_emulation.info.oai_ifup[i] == 1) {
-        sprintf (interfaceName, "oai%d", i);
-        bringInterfaceUp (interfaceName, 0);
+      sprintf (interfaceName, "oai%d", i);
+      bringInterfaceUp (interfaceName, 0);
     }
+  
+  log_thread_finalize ();
+  logClean ();
+  vcd_signal_dumper_close ();
+  done =1;
+  
+  LOG_N(EMU, ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU shutdown <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 }
 
