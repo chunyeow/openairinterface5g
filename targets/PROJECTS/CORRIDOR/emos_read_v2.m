@@ -15,8 +15,8 @@ ofdm_symbol_length = num_carriers + prefix_length;
 frame_length = ofdm_symbol_length*num_symbols_frame;
 useful_carriers = num_carriers-num_zeros-1;
 
-filename = 'E:\EMOS\corridor\lab tests\eNB_data_20140321_184441.EMOS';
-%filename = 'D:\711MHz\eNB_data_20140324_113931.EMOS';
+%filename = 'E:\EMOS\corridor\lab tests\eNB_data_20140321_184441.EMOS';
+filename = 'E:\EMOS\corridor\711MHz\eNB_data_20140324_113931.EMOS';
 %filename = 'D:\trials1 day 1 771.5MHz\eNB_data_20140327_153151.EMOS';
 destdir = 'E:\EMOS\corridor\trials1 day1\711.5MHz';
 
@@ -31,7 +31,12 @@ PDP_total = zeros(nblocks*nframes,useful_carriers/4);
 
 %% main loop
 fid = fopen(filename,'r');
+
+vStorage = [];  %%
+
 block = 1;
+start=2;
+
 while ~feof(fid)
     fprintf(1,'Processing block %d of %d',block,nblocks);
     
@@ -40,6 +45,8 @@ while ~feof(fid)
         break
     end
     v1 = double(v(1:2:end))+1j*double(v(2:2:end));
+    
+    nframes = 100;
     
     v2 = zeros(samples_slot*slots_per_frame*nframes,nant);
     for slot=1:slots_per_frame*nframes
@@ -50,13 +57,22 @@ while ~feof(fid)
         end
     end
 
+    
+    v2 = [vStorage; v2] ;%%
+    if size(v2,1) > frame_length*nframes ;
+        nframes = floor(size(v2,1) / frame_length) ;
+    vStorage = v2(frame_length*nframes+1:end,:) ;
+    v2(frame_length*nframes + 1 : end,:) = [] ;
+    start = 1 ;
+    end
+    
     if enable_plots>=2
         figure(1)
         plot(20*log10(abs(fftshift(fft(v2)))))
     end
     
     %% frame start detection
-    if block==1 
+    % if block==1 
         [corr,lag] = xcorr(v2(:,1),pss_t);
         %[m,idx]=max(abs(corr));
         %[m,idx]=peaksfinder(corr,frame_length);
@@ -74,20 +90,24 @@ while ~feof(fid)
             plot(frame_offset,m(1),'ro')
         end
     
-        start=2;
-    else
-        start=1;
-    end
+       
     
+    % end
+    
+    %%
     for i=start:nframes;
         fprintf(1,'.');
         frame_start = (slots_per_frame*samples_slot)*(i-1)+frame_offset+1;
         %frame_start = lag(idx(i))-prefix_length;
         % frame_start = lag(i) - prefix_length;
         
-        %% ofdm receiver
-        received_f = OFDM_RX(v2(frame_start:frame_start+frame_length,:),num_carriers,useful_carriers,prefix_length,num_symbols_frame);
         
+        if i<nframes
+            %% ofdm receiver
+            received_f = OFDM_RX(v2(frame_start:frame_start+frame_length,:),num_carriers,useful_carriers,prefix_length,num_symbols_frame);
+        else
+            vStorage = [v2(frame_start:end,:) ; vStorage];  %%
+        end
         %% channel estimation
         H=conj(squeeze(f3(1,3:2:end,1:4:end))).*received_f(3:2:end,1:4:end,1);
         Ht = ifft(H,[],2);
@@ -100,14 +120,14 @@ while ~feof(fid)
             offset = offset - num_carriers;
         end
         if abs(offset) > 5
-            frame_offset = frame_offset + offset;
+            frame_offset = frame_offset + round(offset/4);
         end
         
         if enable_plots>=1
             figure(3)
             surf(20*log10(abs(Ht)))
-            xlabel('time [OFDM symbol]')
-            ylabel('delay time [samples]')
+            xlabel('delay time [samples]')
+            ylabel('time [OFDM symbol]')
             zlabel('power [dB]')
             shading interp
             figure(4)
