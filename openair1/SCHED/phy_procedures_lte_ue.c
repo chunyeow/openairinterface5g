@@ -3230,8 +3230,8 @@ void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral
     MessageDef *message_p = NULL;
     if (
            (
-               ((threshold_phy_pP->threshold.threshold_val <  valP) && (threshold_phy_pP->threshold.threshold_xdir == RAL_ABOVE_THRESHOLD)) ||
-               ((threshold_phy_pP->threshold.threshold_val >  valP) && (threshold_phy_pP->threshold.threshold_xdir == RAL_BELOW_THRESHOLD))
+               (((short) threshold_phy_pP->threshold.threshold_val <  (short) valP) && (threshold_phy_pP->threshold.threshold_xdir == RAL_ABOVE_THRESHOLD)) ||
+               (((short)threshold_phy_pP->threshold.threshold_val >  (short)valP) && (threshold_phy_pP->threshold.threshold_xdir == RAL_BELOW_THRESHOLD))
            )  ||
            (threshold_phy_pP->threshold.threshold_xdir == RAL_NO_THRESHOLD)
        ){
@@ -3288,11 +3288,14 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
         case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
             switch (threshold_phy_pP->link_param.link_param_type._union.link_param_gen) {
                 case RAL_LINK_PARAM_LTE_UE_RSRP:
-                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rx_rssi_dBm[0]);
+//                     phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rx_rssi_dBm[0]);
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rsrp[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_UE_RSRQ:
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rsrq[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_UE_CQI:
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.wideband_cqi_avg[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_AVAILABLE_BW:
                     break;
