@@ -353,7 +353,7 @@ int dlsch_encoding(unsigned char *a,
     r_offset += lte_rate_matching_turbo(dlsch->harq_processes[harq_pid]->RTC[r],
 					G,  //G
 					dlsch->harq_processes[harq_pid]->w[r],
-					&dlsch->e[0],
+					&dlsch->e[r_offset],
 					dlsch->harq_processes[harq_pid]->C, // C
 					NSOFT,                    // Nsoft,
 					dlsch->Mdlharq,

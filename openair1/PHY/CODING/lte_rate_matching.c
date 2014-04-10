@@ -501,7 +501,8 @@ uint32_t lte_rate_matching_turbo(uint32_t RTC,
   printf("lte_rate_matching_turbo: E %d, k0 %d, Ncbmod %d, Ncb/(RTC<<3) %d\n",E,ind,Ncbmod,Ncb/(RTC<<3));
 #endif
 
-  e2=e+(r*E);
+  //e2=e+(r*E);
+  e2 = e;
   
   k=0;
 
