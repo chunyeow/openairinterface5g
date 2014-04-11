@@ -156,15 +156,10 @@ CFLAGS += -DNAS_NETLINK -DLINUX
 OBJ += $(NAS_OBJS)
 endif
 
-LDFLAGS += -lpthread -lm -lforms -lconfig 
+LDFLAGS += -lpthread -lm -lforms -lconfig -lrt
 ifeq ($(RTAI),1)
 RTAI_CFLAGS += $(shell rtai-config --lxrt-cflags) -DRTAI
 LDFLAGS += $(shell rtai-config --lxrt-ldflags)
-ifdef ENABLE_ITTI
-LDFLAGS += -lrt
-endif
-else
-LDFLAGS += -lrt
 endif
 
 ifeq ($(USRP),1)

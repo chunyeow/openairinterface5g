@@ -1,5 +1,6 @@
 #define DEBUG_DAC 1
 #include <math.h>
+#include <stdio.h>
 #include "PHY/TOOLS/defs.h"
 
 void dac(double **s_re,

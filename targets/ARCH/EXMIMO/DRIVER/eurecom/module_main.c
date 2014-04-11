@@ -49,6 +49,7 @@ static int __init openair_init_module( void )
     unsigned int readback;
     unsigned int card, j;
     unsigned int vid,did;
+    unsigned int val;
     unsigned short vendor, subid;
     exmimo_id_t exmimo_id_tmp[MAX_CARDS];
 
@@ -94,15 +95,16 @@ static int __init openair_init_module( void )
 
     // Now look for more cards on the same bus
     while (card<MAX_CARDS)
-    {
+      {
         pdev[card] = pci_get_device(vid,did, pdev[card-1]);
         if(pdev[card])
-        {
-          // This print does not work for 64 bit kernels
-          //  printk("[openair][INIT_MODULE][INFO]: openair card %d found, bus 0x%x, primary 0x%x, secondary 0x%x\n",card,
-          //          pdev[card]->bus->number,pdev[card]->bus->primary,pdev[card]->bus->secondary);
-
-            pci_read_config_word(pdev[card], PCI_SUBSYSTEM_ID, &subid);
+	  {
+	    // This print does not work for 64 bit kernels
+	    //  printk("[openair][INIT_MODULE][INFO]: openair card %d found, bus 0x%x, primary 0x%x, secondary 0x%x\n",card,
+	    //          pdev[card]->bus->number,pdev[card]->bus->primary,pdev[card]->bus->secondary);
+	    
+ 
+	    pci_read_config_word(pdev[card], PCI_SUBSYSTEM_ID, &subid);
             pci_read_config_word(pdev[card], PCI_SUBSYSTEM_VENDOR_ID, &vendor);
             exmimo_id_tmp[card].board_vendor = vendor;
             
@@ -194,7 +196,13 @@ static int __init openair_init_module( void )
         udelay(1000);
         readback = ioread32( bar[card] +PCIE_CONTROL0);
         printk("CONTROL0 readback %x\n",readback);
-    
+   
+            // This is for displaying the card number in the leds of the exmimo card
+            val = ioread32(bar[card]+PCIE_CONTROL0);
+            iowrite32(val| ((card & 0x1F) << 9),bar[card]+PCIE_CONTROL0);
+            //val = ioread32(bar[card]+PCIE_CONTROL0);
+            //printk("[openair][INIT_MODULE][INFO]: writing leds for card %d control0 %x\n",card,val);
+ 
         // allocating buffers
         if ( exmimo_memory_alloc( card ) ) {
             printk("[openair][MODULE][ERROR] exmimo_memory_alloc() failed!\n");

@@ -95,9 +95,9 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 #else
 #ifdef EXMIMO
 #ifdef DRIVER2013
-    len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (rf_mode %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, phy_vars_ue->rx_gain_mode[0],p_exmimo_config->rf.rx_gain[0][0]);
+    len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (LNA %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, (p_exmimo_config->rf.rf_mode[0]& LNAGAINMASK) >> 14,p_exmimo_config->rf.rx_gain[0][0]);
 #else
-    len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (rf_mode %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, phy_vars_ue->rx_gain_mode[0],exmimo_pci_interface->rf.rx_gain00);
+    len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (LNA %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, (p_exmimo_config->rf.rf_mode[0]& LNAGAINMASK) >> 14,exmimo_pci_interface->rf.rx_gain00);
 #endif
 #else
     len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB\n",phy_vars_ue->rx_total_gain_dB);
@@ -199,6 +199,11 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
       len += sprintf(&buffer[len],"[UE PROC] RSRP[0] %d, RSSI %d, RSRQ[0] %d\n",phy_vars_ue->PHY_measurements.rsrp[0], phy_vars_ue->PHY_measurements.rssi, phy_vars_ue->PHY_measurements.rsrq[0]);
     
     len += sprintf(&buffer[len], "[UE PROC] Transmission Mode %d (mode1_flag %d)\n",phy_vars_ue->transmission_mode[eNB],phy_vars_ue->lte_frame_parms.mode1_flag);
+    len += sprintf(&buffer[len], "[UE PROC] PBCH err conseq %d, PBCH error total %d, PBCH FER %d\n",
+		   phy_vars_ue->lte_ue_pbch_vars[eNB]->pdu_errors_conseq,
+		   phy_vars_ue->lte_ue_pbch_vars[eNB]->pdu_errors,
+		   phy_vars_ue->lte_ue_pbch_vars[eNB]->pdu_fer);
+
     if (phy_vars_ue->transmission_mode[eNB] == 6)
       len += sprintf(&buffer[len], "[UE PROC] Mode 6 Wideband CQI eNB %d : %d dB\n",eNB,phy_vars_ue->PHY_measurements.precoded_cqi_dB[eNB][0]);
     if (phy_vars_ue->dlsch_ue[0] && phy_vars_ue->dlsch_ue[0][0] && phy_vars_ue->dlsch_ue[0][1]) {

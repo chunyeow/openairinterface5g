@@ -541,7 +541,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
       BCCH_alloc_pdu.type              = 1;
       BCCH_alloc_pdu.vrb_type          = 0;
       BCCH_alloc_pdu.rballoc           = computeRIV(25,10,3);
-      BCCH_alloc_pdu.ndi               = 1;
+      BCCH_alloc_pdu.ndi               = phy_vars_eNB->frame&1;
       BCCH_alloc_pdu.rv                = 1;
       BCCH_alloc_pdu.mcs               = 1;
       BCCH_alloc_pdu.harq_pid          = 0;
@@ -586,7 +586,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
       DLSCH_alloc_pdu.harq_pid         = 0;
       DLSCH_alloc_pdu.mcs              = openair_daq_vars.target_ue_dl_mcs;
       //DLSCH_alloc_pdu.mcs              = (unsigned char) ((phy_vars_eNB->frame%1024)%28);      
-      DLSCH_alloc_pdu.ndi              = 1;
+      DLSCH_alloc_pdu.ndi              = phy_vars_eNB->frame&1;
       DLSCH_alloc_pdu.rv               = 0;
       memcpy((void*)&DCI_pdu->dci_alloc[0].dci_pdu[0],(void *)&DLSCH_alloc_pdu,sizeof(DCI1_5MHz_TDD_t));
 
@@ -620,7 +620,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
       
       DLSCH_alloc_pdu1E.tpmi             = 5; //5=use feedback
       DLSCH_alloc_pdu1E.rv               = 0;
-      DLSCH_alloc_pdu1E.ndi              = 1;
+      DLSCH_alloc_pdu1E.ndi              = phy_vars_eNB->frame&1;
       //DLSCH_alloc_pdu1E.mcs            = cqi_to_mcs[phy_vars_eNB->eNB_UE_stats->DL_cqi[0]];
       //DLSCH_alloc_pdu1E.mcs            = (unsigned char) (taus()%28);
       DLSCH_alloc_pdu1E.mcs              = openair_daq_vars.target_ue_dl_mcs;
@@ -687,7 +687,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
     UL_alloc_pdu.hopping = 0;
     UL_alloc_pdu.rballoc = computeRIV(25,2,openair_daq_vars.ue_ul_nb_rb);
     UL_alloc_pdu.mcs     = openair_daq_vars.target_ue_ul_mcs;
-    UL_alloc_pdu.ndi     = 1;
+    UL_alloc_pdu.ndi     = phy_vars_eNB->frame&1;
     UL_alloc_pdu.TPC     = 0;
     UL_alloc_pdu.cshift  = 0;
     UL_alloc_pdu.dai     = 0;
@@ -707,7 +707,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
     else 
       UL_alloc_pdu.rballoc = computeRIV(25,0,openair_daq_vars.ue_ul_nb_rb);
     UL_alloc_pdu.mcs     = openair_daq_vars.target_ue_ul_mcs;
-    UL_alloc_pdu.ndi     = 1;
+    UL_alloc_pdu.ndi     = phy_vars_eNB->frame&1;
     UL_alloc_pdu.TPC     = 0;
     if ((cooperation_flag==0) || (cooperation_flag==1))
       UL_alloc_pdu.cshift  = 0;
@@ -1377,11 +1377,13 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 #else
     DCI_pdu = &DCI_pdu_tmp;
 #ifdef EMOS
+    /*
     if (((phy_vars_eNB->frame%1024)%3 == 0) && (next_slot == 0)) {
       //openair_daq_vars.target_ue_dl_mcs = (openair_daq_vars.target_ue_dl_mcs+1)%28;
       openair_daq_vars.target_ue_dl_mcs = taus()%28;
       LOG_D(PHY,"[MYEMOS] frame %d, increasing MCS to %d\n",phy_vars_eNB->frame,openair_daq_vars.target_ue_dl_mcs);
     }
+    */
     /*
     if (phy_vars_eNB->frame > 28000) {
       LOG_E(PHY,"More that 28000 frames reached! Exiting!\n");

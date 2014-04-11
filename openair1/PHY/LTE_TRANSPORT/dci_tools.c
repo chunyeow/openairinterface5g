@@ -1582,7 +1582,7 @@ int dump_dci(LTE_DL_FRAME_PARMS *frame_parms, DCI_ALLOC_t *dci) {
     break;
   case format1E_2A_M10PRB:
 
-    msg("DCI format1E_2A_M10PRB, rnti %x (%8x): harq_pid %d, rah %d, rb_alloc %x, mcs %d, rv %d, tpmi %d, ndi %d, dl_power_offset %d\n",
+    LOG_D(PHY,"DCI format1E_2A_M10PRB, rnti %x (%8x): harq_pid %d, rah %d, rb_alloc %x, mcs %d, rv %d, tpmi %d, ndi %d, dl_power_offset %d\n",
 	dci->rnti,
 	((uint32_t *)&dci->dci_pdu)[0],
 	((DCI1E_5MHz_2A_M10PRB_TDD_t *)&dci->dci_pdu[0])->harq_pid,

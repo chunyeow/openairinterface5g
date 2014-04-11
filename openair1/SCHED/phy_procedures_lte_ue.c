@@ -54,6 +54,7 @@
 #ifdef EXMIMO
 #ifdef DRIVER2013
 #include "openair0_lib.h"
+#include "gain_control.h"
 extern int card;
 #else
 #include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
@@ -1480,11 +1481,13 @@ void lte_ue_measurement_procedures(uint8_t last_slot, uint16_t l, PHY_VARS_UE *p
   if ((last_slot==1) && (l==(4-frame_parms->Ncp))) {
     
     // AGC
-    
+#ifdef EXMIMO    
     if ((openair_daq_vars.rx_gain_mode == DAQ_AGC_ON) &&
 	(mode != rx_calib_ue) && (mode != rx_calib_ue_med) && (mode != rx_calib_ue_byp) )
-        phy_adjust_gain (phy_vars_ue,0);
-    
+      //phy_adjust_gain (phy_vars_ue,0);
+      gain_control_all(phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id],0);
+#endif
+
     eNB_id = 0;
     
     if (abstraction_flag == 0) 
@@ -2284,7 +2287,11 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
       openair_daq_vars.use_ia_receiver = 0;
     else
       openair_daq_vars.use_ia_receiver = (openair_daq_vars.use_ia_receiver+1)%3;
-    LOG_I(PHY,"[MYEMOS] frame %d, IA receiver %d, MCS %d, bitrate %d\n",phy_vars_ue->frame,openair_daq_vars.use_ia_receiver, phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,phy_vars_ue->bitrate[eNB_id]);
+    LOG_I(PHY,"[MYEMOS] frame %d, IA receiver %d, MCS %d, bitrate %d\n",
+	  phy_vars_ue->frame,
+	  openair_daq_vars.use_ia_receiver, 
+	  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid]->mcs,
+	  phy_vars_ue->bitrate[eNB_id]);
   } 
 #endif
 
@@ -2405,7 +2412,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
       if (phy_vars_ue->dlsch_ue[eNB_id][0]->active == 1) {
 #ifndef DLSCH_THREAD //USER_MODE
 	harq_pid = phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid;
-	//	printf("PDSCH active in subframe %d, harq_pid %d\n",(last_slot>>1)-1,harq_pid); 
+	//printf("PDSCH active in subframe %d, harq_pid %d\n",(last_slot>>1)-1,harq_pid); 
 	if ((phy_vars_ue->transmission_mode[eNB_id] == 5) && 
 	    (phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->dl_power_off==0) &&
 	    (openair_daq_vars.use_ia_receiver ==1)) {

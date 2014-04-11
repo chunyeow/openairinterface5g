@@ -7,13 +7,8 @@
 * @{
 
 */
- 
-#ifndef NO_OPENAIR1
-#include "PHY/defs.h"
-#else
+
 #include <stdint.h>
-#define msg printf
-#endif
 
 #ifdef __SSE2__
 #include <emmintrin.h>

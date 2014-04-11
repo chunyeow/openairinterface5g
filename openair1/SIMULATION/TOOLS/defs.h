@@ -1,6 +1,6 @@
 #ifndef __SIMULATION_TOOLS_DEFS_H__
 #define __SIMULATION_TOOLS_DEFS_H__
-#include "PHY/TOOLS/defs.h"
+#include "PHY/defs.h"
 
 /** @defgroup _numerical_ Useful Numerical Functions
  *@{

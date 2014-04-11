@@ -171,9 +171,9 @@
 
 
 #ifdef EXMIMO
-#define TARGET_RX_POWER 40		// Target digital power for the AGC
-#define TARGET_RX_POWER_MAX 65		// Maximum digital power, such that signal does not saturate (value found by simulation)
-#define TARGET_RX_POWER_MIN 30		// Minimum digital power, anything below will be discarded (value found by simulation)
+#define TARGET_RX_POWER 55		// Target digital power for the AGC
+#define TARGET_RX_POWER_MAX 55		// Maximum digital power, such that signal does not saturate (value found by simulation)
+#define TARGET_RX_POWER_MIN 50		// Minimum digital power, anything below will be discarded (value found by simulation)
 #else
 #define TARGET_RX_POWER 50		// Target digital power for the AGC
 #define TARGET_RX_POWER_MAX 65		// Maximum digital power, such that signal does not saturate (value found by simulation)

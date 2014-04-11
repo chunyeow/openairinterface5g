@@ -1,8 +1,6 @@
 #include "openair0_lib.h"
 #include "gain_control.h"
 //#define DEBUG_PHY
-#define min(a,b) (((a)<(b))?(a):(b))
-#define max(a,b) (((a)>(b))?(a):(b))
 
 void gain_control_all (unsigned int rx_power_fil_dB, unsigned int card) {
   unsigned int ant;
