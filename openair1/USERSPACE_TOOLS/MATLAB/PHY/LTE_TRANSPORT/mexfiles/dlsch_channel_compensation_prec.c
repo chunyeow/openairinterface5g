@@ -87,7 +87,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	}
 			
 	// Create a LTE_DL_FRAME_PARMS structure and assign required params
-	frame_parms = malloc(sizeof(LTE_DL_FRAME_PARMS));
+	frame_parms = calloc(1,sizeof(LTE_DL_FRAME_PARMS));
 	tmp = mxGetField(prhs[3],0,"nb_rb");
 	if (tmp == NULL) {
 		mexErrMsgTxt("Non-existing field 'nb_rb' in input argument 4.");
@@ -120,7 +120,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	}
 				
 	// Create PHY_MEASUREMENTS structure and assign required params
-	phy_measurements = malloc(sizeof(PHY_MEASUREMENTS));
+	phy_measurements = calloc(1,sizeof(PHY_MEASUREMENTS));
 	phy_measurements->n0_power[0] = 1; // dummy values
 	phy_measurements->n0_power[1] = 1;
 	phy_measurements->n0_power_tot = 1;

@@ -80,7 +80,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	}
 			
 	// Create a LTE_DL_FRAME_PARMS structure and assign required params
-	frame_parms = malloc(sizeof(LTE_DL_FRAME_PARMS));	
+	frame_parms = calloc(1,sizeof(LTE_DL_FRAME_PARMS));	
 
 	tmp = mxGetField(prhs[7],0,"nb_rb");
 	if (tmp == NULL) {

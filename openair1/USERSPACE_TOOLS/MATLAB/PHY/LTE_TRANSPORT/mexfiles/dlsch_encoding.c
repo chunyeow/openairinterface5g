@@ -105,12 +105,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	} else {
 		dlsch->harq_processes[harq_pid]->Nl = (unsigned char) mxGetScalar(tmp);
 	}
+	/*
 	tmp = mxGetField(prhs[2],0,"Ndi");
 	if (tmp == NULL) {
 		mexErrMsgTxt("Non-existing field 'Ndi' in input argument 3.");
 	} else {
 		dlsch->harq_processes[harq_pid]->Ndi = (unsigned char) mxGetScalar(tmp);
 	}
+	*/
 	tmp = mxGetField(prhs[1],0,"rb_alloc");	
 	if (tmp == NULL) {
 		mexErrMsgTxt("Non-existing field 'rb_alloc' in input argument 2.");
@@ -146,7 +148,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	}	
 	
 	// Create a LTE_DL_FRAME_PARMS structure and assign required params
-	frame_parms = malloc(sizeof(LTE_DL_FRAME_PARMS));	
+	frame_parms = calloc(1,sizeof(LTE_DL_FRAME_PARMS));	
 	frame_parms->N_RB_DL = (unsigned char) dlsch->nb_rb;
 	
 	tmp = mxGetField(prhs[1],0,"frame_type");

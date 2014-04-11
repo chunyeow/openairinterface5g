@@ -12,7 +12,7 @@
 *
 ===============================================================================*/
 
-// #define DEBUG_DLSCH_DECODING
+//#define DEBUG_DLSCH_DECODING
 
 void mexFunction( int mlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[]
@@ -85,7 +85,7 @@ void mexFunction( int mlhs, mxArray *plhs[],
 	dlsch->current_harq_pid = harq_pid;
 	dlsch->harq_processes[harq_pid]->rvidx = (unsigned char) mxGetScalar(mxGetField(prhs[2],0,"rvidx"));
 	dlsch->harq_processes[harq_pid]->Nl = (unsigned char) mxGetScalar(mxGetField(prhs[2],0,"Nl"));
-	dlsch->harq_processes[harq_pid]->Ndi = (unsigned char) mxGetScalar(mxGetField(prhs[2],0,"Ndi"));
+	//dlsch->harq_processes[harq_pid]->Ndi = (unsigned char) mxGetScalar(mxGetField(prhs[2],0,"Ndi"));
 	dlsch->harq_processes[harq_pid]->mcs = mcs;
 	dlsch->harq_processes[harq_pid]->rb_alloc[0] = (unsigned int) mxGetScalar(mxGetField(prhs[1],0,"rb_alloc"));
 	dlsch->harq_processes[harq_pid]->nb_rb = (unsigned short) mxGetScalar(mxGetField(prhs[1],0,"nb_rb"));
@@ -96,10 +96,10 @@ void mexFunction( int mlhs, mxArray *plhs[],
 	num_pdcch_symbols = (unsigned char) mxGetScalar(mxGetField(prhs[1],0,"num_pdcch_symbols"));
 	subframe = (unsigned char) mxGetScalar(mxGetField(prhs[1],0,"subframe"));
 	
-	phy_vars_ue = malloc16(sizeof(PHY_VARS_UE));	
+	phy_vars_ue = calloc(1,sizeof(PHY_VARS_UE));	
 	
 	// Create a LTE_DL_FRAME_PARMS structure and assign required params
-	frame_parms = malloc16(sizeof(LTE_DL_FRAME_PARMS));	
+	frame_parms = calloc(1,sizeof(LTE_DL_FRAME_PARMS));	
 	frame_parms->N_RB_DL = (unsigned char) mxGetScalar(mxGetField(prhs[1],0,"nb_rb"));
 	frame_parms->frame_type = (unsigned char) mxGetScalar(mxGetField(prhs[1],0,"frame_type"));
 	frame_parms->mode1_flag = (unsigned char) mxGetScalar(mxGetField(prhs[1],0,"mode1_flag"));
@@ -108,7 +108,16 @@ void mexFunction( int mlhs, mxArray *plhs[],
     
  	mod_order = get_Qm(dlsch->harq_processes[harq_pid]->mcs);
 	dlsch->harq_processes[harq_pid]->G = get_G(frame_parms,dlsch->harq_processes[harq_pid]->nb_rb,dlsch->harq_processes[harq_pid]->rb_alloc,mod_order,num_pdcch_symbols,0,subframe);
-	
+
+    #ifdef DEBUG_DLSCH_DECODING
+    mexPrintf("TBS %d\n",dlsch->harq_processes[harq_pid]->TBS);
+    mexPrintf("nb_rb %d\n",dlsch->harq_processes[harq_pid]->nb_rb);
+    mexPrintf("ncs %d\n",dlsch->harq_processes[harq_pid]->mcs);
+    mexPrintf("num_pdcch_symbols %d\n",num_pdcch_symbols);
+    mexPrintf("subframe %d\n",subframe);
+    mexPrintf("G %d\n",dlsch->harq_processes[harq_pid]->G);
+    #endif
+
 	if (dlsch->harq_processes[harq_pid]->G != mxGetM(prhs[0])) {
 		free_ue_dlsch(dlsch);
 		free(frame_parms);
