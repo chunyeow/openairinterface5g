@@ -275,9 +275,19 @@ boolean_t pdcp_data_req(
           if ((pdcp_p->security_activated != 0) &&
               ((pdcp_p->cipheringAlgorithm) != 0) &&
               ((pdcp_p->integrityProtAlgorithm) != 0)) {
-              pdcp_apply_security(pdcp_p, rb_idP % maxDRB,
-                  pdcp_header_len, current_sn, pdcp_pdu_p->data,
-                  sdu_buffer_sizeP);
+	    
+	    if (enb_flagP == ENB_FLAG_NO)
+	      start_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
+	    else
+	      start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
+	    
+	    pdcp_apply_security(pdcp_p, rb_idP % maxDRB,
+				pdcp_header_len, current_sn, pdcp_pdu_p->data,
+				sdu_buffer_sizeP);
+	    if (enb_flagP == ENB_FLAG_NO)
+	      stop_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
+	    else
+	      stop_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
           }
 #endif
 
@@ -519,11 +529,21 @@ boolean_t pdcp_data_ind(
       // SRB1/2: control-plane data
       if (srb_flagP){
 #if defined(ENABLE_SECURITY)
-          if (pdcp_p->security_activated == 1) {
-              pdcp_validate_security(pdcp_p, rb_idP, pdcp_header_len,
-                  sequence_number, sdu_buffer_pP->data,
-                  sdu_buffer_sizeP - pdcp_tailer_len);
-          }
+	if (pdcp_p->security_activated == 1) {
+	  if (enb_flagP == ENB_FLAG_NO)
+	    start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+	  else
+	    start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+	  
+	  pdcp_validate_security(pdcp_p, rb_idP, pdcp_header_len,
+				 sequence_number, sdu_buffer_pP->data,
+				 sdu_buffer_sizeP - pdcp_tailer_len);
+	  if (enb_flagP == ENB_FLAG_NO)
+	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+	  else
+	    stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+	   
+	}
 #endif
 //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
           pdcp_rrc_data_ind(enb_mod_idP,
@@ -774,7 +794,17 @@ void pdcp_run (
       pdcp_fifo_read_input_sdus(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
   }
   // PDCP -> NAS/IP traffic: RX
+  if (enb_flagP)
+    start_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_ip);
+  else
+    start_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_ip);
+  
   pdcp_fifo_flush_sdus(frameP, enb_flagP, enb_mod_idP, ue_mod_idP);
+
+  if (enb_flagP)
+    stop_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_ip);
+  else
+    stop_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_ip);
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
   if (enb_flagP)

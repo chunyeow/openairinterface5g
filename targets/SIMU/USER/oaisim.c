@@ -1172,11 +1172,11 @@ void reset_opp_meas(void){
     reset_meas(&UE_pdcp_stats[UE_id].pdcp_run);
     reset_meas(&UE_pdcp_stats[UE_id].data_req);
     reset_meas(&UE_pdcp_stats[UE_id].data_ind);
-    /* reset_meas(&UE_pdcp_stats[UE_id].encrption);
-    reset_meas(&UE_pdcp_stats[UE_id].decrption);
+    reset_meas(&UE_pdcp_stats[UE_id].apply_security);
+    reset_meas(&UE_pdcp_stats[UE_id].validate_security);
     reset_meas(&UE_pdcp_stats[UE_id].pdcp_ip);
     reset_meas(&UE_pdcp_stats[UE_id].ip_pdcp);
-    */
+    
     for (eNB_id=0; eNB_id<NB_eNB_INST; eNB_id++) {
       reset_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc);
       reset_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_rx);
@@ -1235,12 +1235,11 @@ void reset_opp_meas(void){
       reset_meas(&eNB_pdcp_stats[eNB_id].pdcp_run);
       reset_meas(&eNB_pdcp_stats[eNB_id].data_req);
       reset_meas(&eNB_pdcp_stats[eNB_id].data_ind);
-      /*
-      reset_meas(&eNB_pdcp_stats[UE_id].encrption);
-      reset_meas(&eNB_pdcp_stats[UE_id].decrption);
-      reset_meas(&eNB_pdcp_stats[UE_id].pdcp_ip);
-      reset_meas(&eNB_pdcp_stats[UE_id].ip_pdcp);
-      */
+      reset_meas(&eNB_pdcp_stats[eNB_id].apply_security);
+      reset_meas(&eNB_pdcp_stats[eNB_id].validate_security);
+      reset_meas(&eNB_pdcp_stats[eNB_id].pdcp_ip);
+      reset_meas(&eNB_pdcp_stats[eNB_id].ip_pdcp);
+      
     }
   }
 }
@@ -1351,6 +1350,11 @@ void print_opp_meas(void){
    print_meas(&UE_pdcp_stats[UE_id].data_req,"[UE][DL][pdcp_data_req]",&oaisim_stats,&oaisim_stats_f);
    print_meas(&UE_pdcp_stats[UE_id].data_ind,"[UE][UL][pdcp_data_ind]",&oaisim_stats,&oaisim_stats_f);
 
+   print_meas(&UE_pdcp_stats[UE_id].apply_security,"[UE][DL][apply_security]",&oaisim_stats,&oaisim_stats_f);
+   print_meas(&UE_pdcp_stats[UE_id].validate_security,"[UE][UL][validate_security]",&oaisim_stats,&oaisim_stats_f);
+   print_meas(&UE_pdcp_stats[UE_id].ip_pdcp,"[UE][DL][ip_pdcp]",&oaisim_stats,&oaisim_stats_f);
+   print_meas(&UE_pdcp_stats[UE_id].pdcp_ip,"[UE][UL][pdcp_ip]",&oaisim_stats,&oaisim_stats_f);
+  
   }
   
   for (eNB_id=0; eNB_id<NB_eNB_INST; eNB_id++) {
@@ -1368,6 +1372,12 @@ void print_opp_meas(void){
     print_meas(&eNB_pdcp_stats[eNB_id].pdcp_run,"[eNB][pdcp_run]",&oaisim_stats,&oaisim_stats_f);
     print_meas(&eNB_pdcp_stats[eNB_id].data_req,"[eNB][DL][pdcp_data_req]",&oaisim_stats,&oaisim_stats_f);
     print_meas(&eNB_pdcp_stats[eNB_id].data_ind,"[eNB][UL][pdcp_data_ind]",&oaisim_stats,&oaisim_stats_f);
+
+    print_meas(&eNB_pdcp_stats[eNB_id].apply_security,"[eNB][DL][apply_security]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&eNB_pdcp_stats[eNB_id].validate_security,"[eNB][UL][validate_security]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&eNB_pdcp_stats[eNB_id].ip_pdcp,"[eNB][DL][ip_pdcp]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&eNB_pdcp_stats[eNB_id].pdcp_ip,"[eNB][UL][pdcp_ip]",&oaisim_stats,&oaisim_stats_f);
+  
   }
   
 }

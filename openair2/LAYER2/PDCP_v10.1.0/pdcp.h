@@ -106,11 +106,10 @@ typedef struct pdcp_stats_t {
   time_stats_t pdcp_run;
   time_stats_t data_req;
   time_stats_t data_ind;
-  time_stats_t encrption;
-  time_stats_t decrption;
+  time_stats_t apply_security; // 
+  time_stats_t validate_security;
   time_stats_t pdcp_ip;
-  time_stats_t ip_pdcp;
-
+  time_stats_t ip_pdcp; // separte thread
 }pdcp_stats_t; // common to eNB and UE
 
 

@@ -86,6 +86,8 @@ static struct lfds611_queue_state **pdcp_netlink_queue_ue = NULL;
 static uint32_t *pdcp_netlink_nb_element_enb = NULL;
 static uint32_t *pdcp_netlink_nb_element_ue = NULL;
 
+time_stats_t ip_pdcp_stats_tmp; 
+
 static void *pdcp_netlink_thread_fct(void *arg);
 
 int pdcp_netlink_init(void) {
@@ -95,7 +97,8 @@ int pdcp_netlink_init(void) {
   int                nb_inst_ue;
   pthread_attr_t     attr;
   struct sched_param sched_param;
-
+  
+  reset_meas(&ip_pdcp_stats_tmp);
 #if defined(USER_MODE) && defined(OAI_EMU)
   nb_inst_enb = oai_emulation.info.nb_enb_local;
   nb_inst_ue  = oai_emulation.info.nb_ue_local;
@@ -103,7 +106,7 @@ int pdcp_netlink_init(void) {
   nb_inst_enb = 1;
   nb_inst_ue  = 1;
 #endif
-
+  
   pdcp_netlink_queue_enb      = calloc(nb_inst_enb, sizeof(struct lfds611_queue_state*));
   pdcp_netlink_nb_element_enb = malloc(nb_inst_enb * sizeof(uint32_t));
 
@@ -206,7 +209,7 @@ void *pdcp_netlink_thread_fct(void *arg) {
           for (nas_nlh_rx = (struct nlmsghdr *) nl_rx_buf;
               NLMSG_OK(nas_nlh_rx, (unsigned int)len);
               nas_nlh_rx = NLMSG_NEXT (nas_nlh_rx, len)) {
-
+	    start_meas(&ip_pdcp_stats_tmp);
               /* There is no need to check for nlmsg_type because
                * the header is not set in our drivers.
                */
@@ -259,6 +262,8 @@ void *pdcp_netlink_thread_fct(void *arg) {
 
                       /* Enqueue the element in the right queue */
                       lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_enb[new_data_p->pdcp_read_header.inst], new_data_p);
+		      stop_meas(&ip_pdcp_stats_tmp);
+		      copy_meas(&eNB_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
                   } else {
                       if (pdcp_netlink_nb_element_ue[new_data_p->pdcp_read_header.inst]
                                                   > PDCP_QUEUE_NB_ELEMENTS) {
@@ -270,6 +275,8 @@ void *pdcp_netlink_thread_fct(void *arg) {
 
                       /* Enqueue the element in the right queue */
                       lfds611_queue_guaranteed_enqueue(pdcp_netlink_queue_ue[new_data_p->pdcp_read_header.inst], new_data_p);
+		      stop_meas(&ip_pdcp_stats_tmp);
+		      copy_meas(&UE_pdcp_stats[new_data_p->pdcp_read_header.inst].pdcp_ip,&ip_pdcp_stats_tmp);
                   }
               }
           }

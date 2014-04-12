@@ -79,6 +79,14 @@ static inline void reset_meas(time_stats_t *ts) {
     ts->max=0;
   }
 }
+static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts) {
+  
+  if (opp_enabled){
+    dst_ts->trials=src_ts->trials;
+    dst_ts->diff=src_ts->diff;
+    dst_ts->max=src_ts->max;
+  }
+}
 
 /*static inline double get_mean_meas_us(time_stats_t *ts, double cpu_freq_GHz) {
 
