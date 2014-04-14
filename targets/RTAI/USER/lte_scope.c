@@ -51,6 +51,16 @@ create_form_lte_scope( void )
     fl_set_object_color( obj, FL_BLACK, FL_GREEN );
     fl_set_object_lcolor( obj, FL_WHITE );
 
+    fdui->channel_t_re[3] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 20, 380, 280, 100, "Real(RX3)" );
+    fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
+    fl_set_object_color( obj, FL_BLACK, FL_YELLOW );
+    fl_set_object_lcolor( obj, FL_WHITE );
+
+    fdui->channel_t_im[3] = obj = fl_add_xyplot( FL_NORMAL_XYPLOT, 310, 380, 280, 100, "Imag(RX3)" );
+    fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
+    fl_set_object_color( obj, FL_BLACK, FL_YELLOW );
+    fl_set_object_lcolor( obj, FL_WHITE );
+
     /*
     fdui->scatter_plot = obj = fl_add_xyplot( FL_POINTS_XYPLOT, 600, 230, 160, 190, "PBCH Scatter Plot" );
     fl_set_object_boxtype( obj, FL_EMBOSSED_BOX );
