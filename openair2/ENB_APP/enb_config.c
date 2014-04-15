@@ -90,6 +90,13 @@ Address      : EURECOM,
 #define ENB_CONFIG_STRING_ENB_INTERFACE_NAME_FOR_S1U    "ENB_INTERFACE_NAME_FOR_S1U"
 #define ENB_CONFIG_STRING_ENB_IPV4_ADDR_FOR_S1U         "ENB_IPV4_ADDRESS_FOR_S1U"
 
+
+#define ENB_CONFIG_STRING_ASN1_VERBOSITY                      "Asn1_verbosity"
+#define ENB_CONFIG_STRING_ASN1_VERBOSITY_NONE                 "none"
+#define ENB_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING             "annoying"
+#define ENB_CONFIG_STRING_ASN1_VERBOSITY_INFO                 "info"
+
+
 #define KHz (1000UL)
 #define MHz (1000 * KHz)
 
@@ -195,6 +202,11 @@ static int enb_check_band_frequencies(char* lib_config_file_name_pP,
     return errors;
 }
 
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+extern int asn_debug;
+extern int asn1_xer_print;
+#endif
+
 const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   config_t          cfg;
   config_setting_t *setting                       = NULL;
@@ -234,6 +246,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   char*             enb_ipv4_address_for_S1_MME   = NULL;
   char             *address                       = NULL;
   char             *cidr                          = NULL;
+  char             *astring                       = NULL;
 
   memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
   memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
@@ -255,6 +268,23 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
       AssertFatal (0, "No eNB configuration file provided!\n");
   }
 
+#if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
+  if(  (config_lookup_string( &cfg, ENB_CONFIG_STRING_ASN1_VERBOSITY, (const char **)&astring) )) {
+      if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_NONE) == 0) {
+          asn_debug      = 1;
+          asn1_xer_print = 0;
+      } else if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_INFO) == 0) {
+          asn_debug      = 1;
+          asn1_xer_print = 1;
+      } else if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING) == 0) {
+          asn_debug      = 1;
+          asn1_xer_print = 2;
+      } else {
+          asn_debug      = 0;
+          asn1_xer_print = 0;
+      }
+  }
+#endif
   // Get list of active eNBs, (only these will be configured)
   setting = config_lookup(&cfg, ENB_CONFIG_STRING_ACTIVE_ENBS);
   if(setting != NULL)
