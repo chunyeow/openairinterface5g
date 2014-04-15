@@ -93,7 +93,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 ASN_DEBUG=1 EMIT_ASN_DEBUG=1"
 declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
 declare IP_DRIVER_NAME="ue_ip"
 declare LTEIF="oip1"
@@ -119,12 +119,13 @@ else
 fi
 
 
+test_command_install_package "tshark"   "tshark" "--force-yes"
 test_command_install_package "gccxml"   "gccxml" "--force-yes"
 test_command_install_package "vconfig"  "vlan"
 test_command_install_package "iptables" "iptables"
 test_command_install_package "iperf"    "iperf"
 test_command_install_package "ip"       "iproute"
-test_command_install_script  "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
+#test_command_install_script  "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
 test_command_install_package "tunctl"  "uml-utilities"
 #test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
 
@@ -251,7 +252,7 @@ bash_exec "insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/$IP_DRIVER_NAME.ko"
 
 bash_exec "ip route flush cache"
 
-bash_exec "ip link set $LTEIF up"
+#bash_exec "ip link set $LTEIF up"
 sleep 1
 #bash_exec "ip addr add dev $LTEIF $UE_IPv4_CIDR"
 #bash_exec "ip addr add dev $LTEIF $UE_IPv6_CIDR"
@@ -279,11 +280,22 @@ ip route add default dev $LTEIF table lte
 ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
 STDOUT_LOG_FILE=./stdout_enb_ue.log
+
 rotate_log_file $STDOUT_LOG_FILE
+rotate_log_file $STDOUT_LOG_FILE.filtered
+rotate_log_file tshark.pcap
 
 cd $THIS_SCRIPT_PATH
+
+nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w tshark.pcap &
+
 nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
 gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
 
+pkill tshark
 
+cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
+                        grep -v '[OCM]' | grep -v '[OMG]' | \
+                        grep -v 'RLC not configured' | grep -v 'check if serving becomes' | \
+                        grep -v 'mac_rrc_data_req'   | grep -v 'BCCH request =>' > $STDOUT_LOG_FILE.filtered

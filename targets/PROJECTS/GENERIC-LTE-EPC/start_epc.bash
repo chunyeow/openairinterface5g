@@ -112,6 +112,7 @@ else
 fi
 
 
+test_command_install_package "tshark"   "tshark" "--force-yes"
 test_command_install_package "gccxml"   "gccxml" "--force-yes"
 test_command_install_package "gcc"      "gcc"      "--force-yes"
 test_command_install_package "g++"      "g++"      "--force-yes"

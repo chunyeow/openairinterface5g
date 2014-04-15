@@ -202,13 +202,23 @@ extract() {
 }
 
 rotate_log_file () {
-    if [ -f $1 ]; then
+    FULLPATH=$1
+    if [ -f $FULLPATH ]; then
+        FILENAME=${FULLPATH##*/}
+        FILEEXTENSION=${FILENAME##*.}
+        BASEDIRECTORY=${FULLPATH%$FILENAME}
+        if [ "a$BASEDIRECTORY" == "a" ]; then
+            BASEDIRECTORY='.'
+        fi
+        FILENAME_NO_EXT=$(echo "$FILENAME" | sed 's/\.[^\.]*$//')
+
         TIMESTAMP=`date +%Y-%m-%d.%Hh_%Mm_%Ss`
-        NEWLOGFILE=$1.$TIMESTAMP
-        mv $1 $NEWLOGFILE
-        cat /dev/null > $1
+        
+        NEWLOGFILE=$TIMESTAMP.$FILENAME_NO_EXT.$FILEEXTENSION
+        mv $FULLPATH /tmp/$NEWLOGFILE
+        cat /dev/null > $FULLPATH
         sync
-        nohup gzip -f -9 $NEWLOGFILE &
+        gzip -c --name -f -9 /tmp/$NEWLOGFILE > $BASEDIRECTORY/$NEWLOGFILE.gz &
     fi
 }
 
