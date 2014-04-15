@@ -275,12 +275,12 @@ boolean_t pdcp_data_req(
           if ((pdcp_p->security_activated != 0) &&
               ((pdcp_p->cipheringAlgorithm) != 0) &&
               ((pdcp_p->integrityProtAlgorithm) != 0)) {
-	    
+
 	    if (enb_flagP == ENB_FLAG_NO)
 	      start_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
 	    else
 	      start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
-	    
+
 	    pdcp_apply_security(pdcp_p, rb_idP % maxDRB,
 				pdcp_header_len, current_sn, pdcp_pdu_p->data,
 				sdu_buffer_sizeP);
@@ -534,7 +534,7 @@ boolean_t pdcp_data_ind(
 	    start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
 	  else
 	    start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-	  
+
 	  pdcp_validate_security(pdcp_p, rb_idP, pdcp_header_len,
 				 sequence_number, sdu_buffer_pP->data,
 				 sdu_buffer_sizeP - pdcp_tailer_len);
@@ -542,7 +542,7 @@ boolean_t pdcp_data_ind(
 	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
 	  else
 	    stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-	   
+
 	}
 #endif
 //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
@@ -775,7 +775,7 @@ void pdcp_run (
 
 #if defined(USER_MODE) && defined(OAI_EMU)
   pdcp_t            *pdcp_p          = NULL;
-  // add other rb_ids 
+  // add other rb_ids
   if (enb_flagP == ENB_FLAG_NO) {
       pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][DTCH-1];
   } else {
@@ -784,7 +784,7 @@ void pdcp_run (
 
   if (pdcp_p->instanciated_instance  == TRUE )
     pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
-#endif 
+#endif
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
 #if defined(LINK_PDCP_TO_GTPV1U)
@@ -798,7 +798,7 @@ void pdcp_run (
     start_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_ip);
   else
     start_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_ip);
-  
+
   pdcp_fifo_flush_sdus(frameP, enb_flagP, enb_mod_idP, ue_mod_idP);
 
   if (enb_flagP)
@@ -1058,14 +1058,14 @@ boolean_t rrc_pdcp_config_asn1_req (
 
               // can set the mch_id = i
               if (enb_flagP) {
-                  drb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3)*MAX_MOBILES_PER_ENB; // 1
+                  drb_id =  (mch_id * maxSessionPerPMCH ) + lc_id ;//+ (maxDRB + 3)*MAX_MOBILES_PER_ENB; // 1
                   if (pdcp_mbms_array_eNB[enb_mod_idP][mch_id][lc_id].instanciated_instance == TRUE) {
                       action = CONFIG_ACTION_MBMS_MODIFY;
                   }else {
                       action = CONFIG_ACTION_MBMS_ADD;
                   }
               } else {
-                  drb_id =  (mch_id * maxSessionPerPMCH ) + lc_id + (maxDRB + 3); // 15
+                  drb_id =  (mch_id * maxSessionPerPMCH ) + lc_id; // + (maxDRB + 3); // 15
                   if (pdcp_mbms_array_ue[ue_mod_idP][mch_id][lc_id].instanciated_instance == TRUE) {
                       action = CONFIG_ACTION_MBMS_MODIFY;
                   } else {

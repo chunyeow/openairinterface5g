@@ -121,7 +121,17 @@ void config_req_rlc_um_asn1 (
 
 #if defined(Rel10)
   if (mbms_flagP) {
+      AssertFatal(dl_rlc_pP, "No RLC UM DL config");
+      AssertFatal(ul_rlc_pP == NULL, "RLC UM UL config present");
       key = RLC_COLL_KEY_MBMS_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, mbms_service_idP, mbms_session_idP);
+      h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
+      AssertFatal (h_rc == HASH_TABLE_OK, "RLC NOT FOUND enb id %u ue id %i enb flag %u service id %u, session id %u",
+          enb_module_idP,
+          ue_module_idP,
+          eNB_flagP,
+          mbms_service_idP,
+          mbms_session_idP);
+      rlc_p = &rlc_union_p->rlc.um;
   }
   else
 #endif
@@ -228,6 +238,7 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
 {
   //-----------------------------------------------------------------------------
 
+  AssertFatal(rlc_pP, "Bad RLC UM pointer (NULL)");
   int saved_allocation = rlc_pP->allocation;
   memset (rlc_pP, 0, sizeof (rlc_um_entity_t));
   rlc_pP->allocation = saved_allocation;

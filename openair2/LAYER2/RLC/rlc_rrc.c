@@ -373,13 +373,13 @@ rlc_op_status_t rrc_rlc_config_asn1_req (const module_id_t           enb_mod_idP
 
               // can set the mch_id = i
               if (enb_flagP) {
-                rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id + (maxDRB + 3) * MAX_MOBILES_PER_ENB; // 1
+                rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id;//+ (maxDRB + 3) * MAX_MOBILES_PER_ENB; // 1
                 rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].service_id                     = mbms_service_id;
                 rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lc_id].session_id                     = mbms_session_id;
 
                 rlc_mbms_enb_set_lcid_by_rb_id(enb_mod_idP,rb_id,lc_id);
               } else {
-                rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id + (maxDRB + 3); // 15
+                rb_id =  (mbms_service_id * maxSessionPerPMCH ) + mbms_session_id; // + (maxDRB + 3); // 15
                 rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][lc_id].service_id                    = mbms_service_id;
                 rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][lc_id].session_id                    = mbms_session_id;
                 rlc_mbms_ue_set_lcid_by_rb_id(ue_mod_idP,rb_id,lc_id);
@@ -609,25 +609,31 @@ rlc_union_t* rrc_rlc_add_rlc   (
             oai_emulation.info.first_ue_local);
     }
 #endif
-    AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
-    AssertFatal (chan_idP < RLC_MAX_LC, "LC id is too high (%u/%d)!\n", chan_idP, RLC_MAX_LC);
+    if (MBMS_flagP == FALSE) {
+        AssertFatal (rb_idP < NB_RB_MAX, "RB id is too high (%u/%d)!\n", rb_idP, NB_RB_MAX);
+        AssertFatal (chan_idP < RLC_MAX_LC, "LC id is too high (%u/%d)!\n", chan_idP, RLC_MAX_LC);
+    }
 
 #ifdef Rel10
   if (MBMS_flagP == TRUE) {
       if (enb_flagP) {
           lcid = rlc_mbms_enb_get_lcid_by_rb_id(enb_mod_idP,rb_idP);
-            mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lcid];
+          LOG_I(RLC,
+                  "[Frame %05u] lcid %d = rlc_mbms_enb_get_lcid_by_rb_id(enb_mod_idP %u, rb_idP %u)\n",
+                  frameP,lcid, enb_mod_idP, rb_idP);
 
-            rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lcid].service_id = 0;
-            rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lcid].session_id = 0;
-            rlc_mbms_rbid2lcid_ue[enb_mod_idP][rb_idP] = RLC_LC_UNALLOCATED;
+          mbms_id_p = &rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lcid];
+
+          //LG 2014-04-15rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lcid].service_id = 0;
+          //LG 2014-04-15rlc_mbms_lcid2service_session_id_eNB[enb_mod_idP][lcid].session_id = 0;
+          //LG 2014-04-15rlc_mbms_rbid2lcid_eNB[enb_mod_idP][rb_idP] = RLC_LC_UNALLOCATED;
       } else {
           lcid = rlc_mbms_ue_get_lcid_by_rb_id(ue_mod_idP,rb_idP);
-            mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][lcid];
+          mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[ue_mod_idP][lcid];
 
-            rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lcid].service_id = 0;
-            rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lcid].session_id = 0;
-            rlc_mbms_rbid2lcid_ue[ue_mod_idP][rb_idP] = RLC_LC_UNALLOCATED;
+          //LG 2014-04-15rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lcid].service_id = 0;
+          //LG 2014-04-15rlc_mbms_lcid2service_session_id_eNB[ue_mod_idP][lcid].session_id = 0;
+          //LG 2014-04-15rlc_mbms_rbid2lcid_ue[ue_mod_idP][rb_idP] = RLC_LC_UNALLOCATED;
       }
       key = RLC_COLL_KEY_MBMS_VALUE(enb_mod_idP, ue_mod_idP, enb_flagP, mbms_id_p->service_id, mbms_id_p->session_id);
   } else
@@ -652,14 +658,27 @@ rlc_union_t* rrc_rlc_add_rlc   (
       rlc_union_p = calloc(1, sizeof(rlc_union_t));
       h_rc = hashtable_insert(rlc_coll_p, key, rlc_union_p);
       if (h_rc == HASH_TABLE_OK) {
-          LOG_I(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] rrc_rlc_add_rlc  %s\n",
-              frameP,
-              (enb_flagP) ? "eNB" : "UE",
-              enb_mod_idP,
-              ue_mod_idP,
-              (srb_flagP) ? "SRB" : "DRB",
-              rb_idP,
-              (srb_flagP) ? "SRB" : "DRB");
+#ifdef Rel10
+          if (MBMS_flagP == TRUE) {
+              LOG_I(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u] RLC service id %u session id %u rrc_rlc_add_rlc\n",
+                  frameP,
+                  (enb_flagP) ? "eNB" : "UE",
+                  enb_mod_idP,
+                  ue_mod_idP,
+                  mbms_id_p->service_id,
+                  mbms_id_p->session_id);
+          } else
+#endif
+          {
+              LOG_I(RLC, "[Frame %05u][%s][RLC_RRC][INST %u/%u][%s %u] rrc_rlc_add_rlc  %s\n",
+                  frameP,
+                  (enb_flagP) ? "eNB" : "UE",
+                  enb_mod_idP,
+                  ue_mod_idP,
+                  (srb_flagP) ? "SRB" : "DRB",
+                  rb_idP,
+                  (srb_flagP) ? "SRB" : "DRB");
+          }
           rlc_union_p->mode = rlc_modeP;
           return rlc_union_p;
       } else {
