@@ -144,12 +144,20 @@ void rlc_am_send_sdu (rlc_am_entity_t *rlc_pP,frame_t frameP, eNB_flag_t eNB_fla
           LOG_E(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u][SEND_SDU] ERROR SIZE <= 0 ... DO NOTHING, SET SDU SIZE TO 0\n",
               frameP,
               (rlc_pP->is_enb) ? "eNB" : "UE",
-                  rlc_pP->enb_module_id,
-                  rlc_pP->ue_module_id,
-                  rlc_pP->rb_id);
+              rlc_pP->enb_module_id,
+              rlc_pP->ue_module_id,
+              rlc_pP->rb_id);
           //msg("[RLC_AM][MOD %d] Freeing mem_block ...\n", rlc_pP->module_id);
           //free_mem_block (rlc_pP->output_sdu_in_construction);
-          assert(3==4);
+          AssertFatal(3==4,
+                  "[FRAME %5u][%s][RLC_AM][MOD %u/%u][%s %u] SEND SDU REQUESTED %d bytes",
+                  frameP,
+                  (rlc_pP->is_enb) ? "eNB" : "UE",
+                  rlc_pP->enb_module_id,
+                  rlc_pP->ue_module_id,
+                  (rlc_pP->is_data_plane) ? "DRB" : "SRB",
+                  rlc_pP->rb_id,
+                  rlc_pP->output_sdu_size_to_write);
       }
       rlc_pP->output_sdu_size_to_write = 0;
   }
