@@ -251,25 +251,15 @@ typedef struct rlc_mbms_id_s {
 public_rlc(rlc_mbms_id_t        rlc_mbms_lcid2service_session_id_ue[NUMBER_OF_UE_MAX][RLC_MAX_MBMS_LC];)    // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
 public_rlc(rlc_mbms_id_t        rlc_mbms_lcid2service_session_id_eNB[NUMBER_OF_eNB_MAX][RLC_MAX_MBMS_LC];)  // some constants from openair2/RRC/LITE/MESSAGES/asn1_constants.h
 
-//#define rlc_mbms_enb_get_lcid_by_rb_id(Enb_mOD,rB_iD) rlc_mbms_rbid2lcid_eNB[Enb_mOD][rB_iD - (NB_RB_MAX*MAX_MOBILES_PER_ENB)]
 #define rlc_mbms_enb_get_lcid_by_rb_id(Enb_mOD,rB_iD) rlc_mbms_rbid2lcid_eNB[Enb_mOD][rB_iD]
-
-//#define rlc_mbms_enb_set_lcid_by_rb_id(Enb_mOD,rB_iD,lOG_cH_iD) do { \
-//            AssertFatal(rB_iD>=(NB_RB_MAX*MAX_MOBILES_PER_ENB), "INVALID RB ID %u", rB_iD);
-//            rlc_mbms_rbid2lcid_eNB[Enb_mOD][rB_iD-(NB_RB_MAX*MAX_MOBILES_PER_ENB)] = lOG_cH_iD; \
-//        } while (0);
+;
 
 #define rlc_mbms_enb_set_lcid_by_rb_id(Enb_mOD,rB_iD,lOG_cH_iD) do { \
             rlc_mbms_rbid2lcid_eNB[Enb_mOD][rB_iD] = lOG_cH_iD; \
         } while (0);
 
-//#define rlc_mbms_ue_get_lcid_by_rb_id(uE_mOD,rB_iD) rlc_mbms_rbid2lcid_ue[uE_mOD][rB_iD - NB_RB_MAX]
 #define rlc_mbms_ue_get_lcid_by_rb_id(uE_mOD,rB_iD) rlc_mbms_rbid2lcid_ue[uE_mOD][rB_iD]
 
-//#define rlc_mbms_ue_set_lcid_by_rb_id(uE_mOD,rB_iD,lOG_cH_iD) do { \
-//            AssertFatal(rB_iD>=NB_RB_MAX, "INVALID RB ID %u", rB_iD); \
-//            rlc_mbms_rbid2lcid_ue[uE_mOD][rB_iD - NB_RB_MAX] = lOG_cH_iD; \
-//        } while (0);
 #define rlc_mbms_ue_set_lcid_by_rb_id(uE_mOD,rB_iD,lOG_cH_iD) do { \
             AssertFatal(rB_iD<NB_RB_MAX, "INVALID RB ID %u", rB_iD); \
             rlc_mbms_rbid2lcid_ue[uE_mOD][rB_iD] = lOG_cH_iD; \
@@ -278,9 +268,6 @@ public_rlc(rlc_mbms_id_t        rlc_mbms_lcid2service_session_id_eNB[NUMBER_OF_e
 public_rlc(logical_chan_id_t    rlc_mbms_rbid2lcid_ue [NUMBER_OF_UE_MAX][NB_RB_MBMS_MAX];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
 public_rlc(logical_chan_id_t    rlc_mbms_rbid2lcid_eNB[NUMBER_OF_eNB_MAX][NB_RB_MBMS_MAX];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
 
-
-//public_rlc(rb_id_t           lcid2rbid_ue [NUMBER_OF_UE_MAX][RLC_MAX_LC];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
-//public_rlc(rb_id_t           lcid2rbid_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][RLC_MAX_LC];)              /*!< \brief Pairing logical channel identifier with radio bearer identifer. */
 
 #define RLC_COLL_KEY_VALUE(eNB_iD, uE_iD, iS_eNB, rB_iD, iS_sRB) \
    ((hash_key_t)eNB_iD             | \
@@ -300,17 +287,6 @@ public_rlc(logical_chan_id_t    rlc_mbms_rbid2lcid_eNB[NUMBER_OF_eNB_MAX][NB_RB_
     (((hash_key_t)(0x0000000000000001))  << 63))
 
 public_rlc(hash_table_t  *rlc_coll_p;)
-
-/*! \var rlc_t rlc_array_ue[NUMBER_OF_UE_MAX][NB_RB_MAX]
-\brief Global var for RLC layer, allocate memory for RLC UE protocol instances.
-*/
-
-//public_rlc(rlc_t rlc_array_ue[NUMBER_OF_UE_MAX][NB_RB_MAX];)
-
-/*! \var rlc_t rlc_array_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][NB_RB_MAX]
-\brief Global var for RLC layer, allocate memory for RLC UE protocol instances.
-*/
-//public_rlc(rlc_t rlc_array_eNB[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][NB_RB_MAX];)
 
 /*! \fn tbs_size_t mac_rlc_serialize_tb (char* bufferP, list_t transport_blocksP)
 * \brief  Serialize a list of transport blocks coming from RLC in order to be processed by MAC.
