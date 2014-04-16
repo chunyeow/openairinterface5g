@@ -39,13 +39,14 @@
 # INPUT OF THIS SCRIPT:
 # THE DIRECTORY WHERE ARE LOCATED THE CONFIGURATION FILES
 #########################################
-# This script start  ENB+UE (all in one executable, on one host)
+# This script start  ENB  
 # Depending on configuration files, it can be instanciated a virtual switch 
-# setting or a VLAN setting.
+# setting or a VLAN setting for the networking between eNB and MME.
 # MME+SP-GW executable have to be launched on the same host by your own (start_epc.bash) before this script is invoked.
+# UE executable have to be launched on another host by your own (start_ue.bash) after this script is invoked.
 #
 ###########################################################################################################################
-#                                    VIRTUAL SWITCH SETTING
+#                                    VIRTUAL SWITCH SETTING (PROBLEM WHITH SCTP, USE VLAN, TBC)
 ###########################################################################################################################
 #
 #                                                                           hss.eur
@@ -93,15 +94,8 @@
 ###########################################################
 # Parameters
 ###########################################################
+declare EMULATION_DEV_INTERFACE="eth2"
 declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 ASN_DEBUG=1 EMIT_ASN_DEBUG=1"
-declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
-declare IP_DRIVER_NAME="ue_ip"
-declare LTEIF="oip1"
-declare UE_IPv4="10.0.0.8"
-declare UE_IPv6="2001:1::8"
-declare UE_IPv6_CIDR=$UE_IPv6"/64"
-declare UE_IPv4_CIDR=$UE_IPv4"/24"
-PACKAGE_LIST=
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -119,74 +113,7 @@ else
 fi
 
 
-test_install_package libxml2
-test_install_package libxml2-dev
-test_install_package libforms-bin
-test_install_package libforms-dev
-test_install_package openssl
-test_install_package libatlas-base-dev
-test_install_package libatlas-dev
-test_install_package autoconf
-test_install_package automake
-test_install_package gawk
-test_install_package cmake
-test_install_package make
-test_install_package gcc
-test_install_package flex
-test_install_package bison
-test_install_package libsctp1
-test_install_package libsctp-dev
-test_install_package libidn2-0-dev
-test_install_package libidn11-dev
-test_install_package libmysqlclient-dev
-test_install_package libxml2-dev
-test_install_package swig
-test_install_package python-dev
-test_install_package cmake-curses-gui
-test_install_package valgrind
-test_install_package guile-2.0-dev
-test_install_package libgmp-dev
-test_install_package libgcrypt11-dev
-test_install_package gdb 
-test_install_package unzip
-test_install_package libtasn1-3-dev
-test_install_package g++
-test_install_package linux-headers-`uname -r`
-test_install_package build-essential
-test_install_package libblas
-test_install_package libblas-dev
-test_install_package libgtk-3-dev
-test_install_package tshark
-test_install_package gccxml
-test_install_package vlan
-test_install_package iptables
-test_install_package iperf
-test_install_package iproute
-test_install_package uml-utilities
-test_install_package libconfig-dev
-test_install_package libsctp-dev
-test_install_package libsctp1
-test_install_package libpthread-stubs0-dev
-
-test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
-
-# One mor check about version of asn1c
-ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
-ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
-##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
-if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]
-then
-    diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
-    echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
-    echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
-    while read -r -n 1 -s answer; do
-        if [[ $answer = [YyNn] ]]; then
-            [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash
-            [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
-            break
-        fi
-    done
-fi
+#check_install_epc_software
 
 
 
@@ -244,76 +171,12 @@ else
 fi
 
 
-#######################################################
-# USIM, NVRAM files
-#######################################################
-export NVRAM_DIR=$THIS_SCRIPT_PATH
-
-if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data ]; then
-    make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
-    make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
-    rm .ue.nvram
-fi
-if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data ]; then
-    make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
-    make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
-    rm .usim.nvram
-fi
-if [ ! -f .ue.nvram ]; then
-    # generate .ue_emm.nvram .ue.nvram
-    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --gen
-fi
-
-if [ ! -f .usim.nvram ]; then
-    # generate .usim.nvram
-    $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --gen
-fi
-$OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --print
-$OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
-
 ##################################################
 # LAUNCH eNB + UE executable
 ##################################################
-echo "Bringup UE interface"
 pkill oaisim
-bash_exec "rmmod $IP_DRIVER_NAME" > /dev/null 2>&1
 
-cecho "make $MAKE_IP_DRIVER_TARGET $MAKE_LTE_ACCESS_STRATUM_TARGET ....." $green
-#bash_exec "make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET "
-make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET || exit 1
-
-#bash_exec "make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET "
 make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
-
-
-bash_exec "insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/$IP_DRIVER_NAME.ko"
-
-bash_exec "ip route flush cache"
-
-#bash_exec "ip link set $LTEIF up"
-sleep 1
-#bash_exec "ip addr add dev $LTEIF $UE_IPv4_CIDR"
-#bash_exec "ip addr add dev $LTEIF $UE_IPv6_CIDR"
-
-sleep 1
-
-bash_exec "sysctl -w net.ipv4.conf.all.log_martians=1"
-assert "  `sysctl -n net.ipv4.conf.all.log_martians` -eq 1" $LINENO
-
-echo "   Disabling reverse path filtering"
-bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
-assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
-
-
-bash_exec "ip route flush cache"
-
-# Check table 200 lte in /etc/iproute2/rt_tables
-fgrep lte /etc/iproute2/rt_tables  > /dev/null 
-if [ $? -ne 0 ]; then
-    echo "200 lte " >> /etc/iproute2/rt_tables
-fi
-ip rule add fwmark 5 table lte
-ip route add default dev $LTEIF table lte
 
 ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
@@ -327,9 +190,8 @@ cd $THIS_SCRIPT_PATH
 
 nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w tshark.pcap &
 
-nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
 
 pkill tshark
 
