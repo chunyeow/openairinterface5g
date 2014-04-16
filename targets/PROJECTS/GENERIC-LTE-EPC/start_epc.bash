@@ -112,24 +112,54 @@ else
 fi
 
 
-test_command_install_package "tshark"   "tshark" "--force-yes"
-test_command_install_package "gccxml"   "gccxml" "--force-yes"
-test_command_install_package "gcc"      "gcc"      "--force-yes"
-test_command_install_package "g++"      "g++"      "--force-yes"
-test_command_install_package "automake" "automake" "--force-yes"
-test_command_install_package "vconfig"  "vlan" "--force-yes"
-test_command_install_package "iptables" "iptables"
-test_command_install_package "iperf"    "iperf" "--force-yes"
-test_command_install_package "ip"       "iproute"
-test_command_install_script   "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
-test_command_install_package  "tunctl"  "uml-utilities"
-test_command_install_package "bison"    "bison"     "--force-yes"
-test_command_install_package "flex"     "flex"      "--force-yes"
-test_command_install_package "libtool"  "libtool"   "--force-yes"
-#test_command_install_lib     "/usr/lib/libconfig.so"      "libconfig-dev"  "--force-yes"
-#test_command_install_lib     "/usr/lib/libsctp-dev.so"    "libsctp-dev"    "--force-yes"
-#test_command_install_lib     "/usr/lib/libsctp.so"        "libsctp1"       "--force-yes"
-#test_command_install_lib     "/usr/lib/libpthread-stubs0-dev.so" "libpthread-stubs0-dev"    "--force-yes"
+test_install_package libxml2
+test_install_package libxml2-dev
+test_install_package libforms-bin
+test_install_package libforms-dev
+test_install_package openssl
+test_install_package libatlas-base-dev
+test_install_package libatlas-dev
+test_install_package autoconf
+test_install_package automake
+test_install_package gawk
+test_install_package cmake
+test_install_package make
+test_install_package gcc
+test_install_package flex
+test_install_package bison
+test_install_package libsctp1
+test_install_package libsctp-dev
+test_install_package libidn2-0-dev
+test_install_package libidn11-dev
+test_install_package libmysqlclient-dev
+test_install_package libxml2-dev
+test_install_package swig
+test_install_package python-dev
+test_install_package cmake-curses-gui
+test_install_package valgrind
+test_install_package guile-2.0-dev
+test_install_package libgmp-dev
+test_install_package libgcrypt11-dev
+test_install_package gdb 
+test_install_package unzip
+test_install_package libtasn1-3-dev
+test_install_package g++
+test_install_package linux-headers-`uname -r`
+test_install_package build-essential
+test_install_package libblas
+test_install_package libblas-dev
+test_install_package libgtk-3-dev
+test_install_package tshark
+test_install_package gccxml
+test_install_package vlan
+test_install_package iptables
+test_install_package iperf
+test_install_package iproute
+test_install_package uml-utilities
+test_install_package libconfig-dev
+test_install_package libsctp-dev
+test_install_package libsctp1
+test_install_package libpthread-stubs0-dev
 if [ ! -d /usr/local/etc/freeDiameter ]
     then
         # This script make certificates also

@@ -93,7 +93,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 ASN_DEBUG=1 EMIT_ASN_DEBUG=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 ASN_DEBUG=1 EMIT_ASN_DEBUG=1"
 declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
 declare IP_DRIVER_NAME="ue_ip"
 declare LTEIF="oip1"
@@ -101,7 +101,7 @@ declare UE_IPv4="10.0.0.8"
 declare UE_IPv6="2001:1::8"
 declare UE_IPv6_CIDR=$UE_IPv6"/64"
 declare UE_IPv4_CIDR=$UE_IPv4"/24"
-
+PACKAGE_LIST=
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -119,16 +119,54 @@ else
 fi
 
 
-test_command_install_package "tshark"   "tshark" "--force-yes"
-test_command_install_package "gccxml"   "gccxml" "--force-yes"
-test_command_install_package "vconfig"  "vlan"
-test_command_install_package "iptables" "iptables"
-test_command_install_package "iperf"    "iperf"
-test_command_install_package "ip"       "iproute"
-#test_command_install_script  "ovs-vsctl" "$OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash"
-test_command_install_package "tunctl"  "uml-utilities"
-#test_command_install_lib     "/usr/lib/libconfig.so"  "libconfig-dev"
-
+test_install_package libxml2
+test_install_package libxml2-dev
+test_install_package libforms-bin
+test_install_package libforms-dev
+test_install_package openssl
+test_install_package libatlas-base-dev
+test_install_package libatlas-dev
+test_install_package autoconf
+test_install_package automake
+test_install_package gawk
+test_install_package cmake
+test_install_package make
+test_install_package gcc
+test_install_package flex
+test_install_package bison
+test_install_package libsctp1
+test_install_package libsctp-dev
+test_install_package libidn2-0-dev
+test_install_package libidn11-dev
+test_install_package libmysqlclient-dev
+test_install_package libxml2-dev
+test_install_package swig
+test_install_package python-dev
+test_install_package cmake-curses-gui
+test_install_package valgrind
+test_install_package guile-2.0-dev
+test_install_package libgmp-dev
+test_install_package libgcrypt11-dev
+test_install_package gdb 
+test_install_package unzip
+test_install_package libtasn1-3-dev
+test_install_package g++
+test_install_package linux-headers-`uname -r`
+test_install_package build-essential
+test_install_package libblas
+test_install_package libblas-dev
+test_install_package libgtk-3-dev
+test_install_package tshark
+test_install_package gccxml
+test_install_package vlan
+test_install_package iptables
+test_install_package iperf
+test_install_package iproute
+test_install_package uml-utilities
+test_install_package libconfig-dev
+test_install_package libsctp-dev
+test_install_package libsctp1
+test_install_package libpthread-stubs0-dev
 
 test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
 

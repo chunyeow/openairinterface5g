@@ -302,31 +302,16 @@ assert() {
 }
 
 
-test_command_install_lib() {
-  # usage: test_command_install_package searched_binary package_to_be_installed_if_binary_not_found optional_option_to_apt_get_install
-  if [ ! -f $1 ]; then
-      echo_warning "$2 seems to be not installed, trying..."
-      apt-get install $3 $2 -y
-      if [ ! -f $1 ]; then
-          echo_fatal "$1 unavailable"
-      fi
+test_install_package() {
+  # usage: test_install_package package_name
+  if [ $# -eq 1 ]; then
+      dpkg -s "$1" > /dev/null 2>&1 && {
+          echo "$1 is installed."
+      } || {
+          echo "$1 is not installed."
+          apt-get install $1 --force-yes
+      }
   fi
-  echo_success "$1 available"
-}
-
-
-test_command_install_package() {
-  # usage: test_command_install_package searched_binary package_to_be_installed_if_binary_not_found optional_option_to_apt_get_install
-  if [ $# -eq 2 ]; then
-      command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it." >&2; apt-get install $2 -y; command -v $1 >/dev/null 2>&1 || { echo_fatal "Program $1 is not installed. Aborting." >&2;};}
-  else
-      if [ $# -eq 3 ]; then
-          command -v $1 >/dev/null 2>&1 || { echo_warning "Program $1 is not installed. Trying installing it (apt-get install $3 $2)." >&2; apt-get install $3 $2 -y; command -v $1 >/dev/null 2>&1 || { echo_fatal "Program $1 is not installed. Aborting." >&2; };}
-      else
-          echo_fatal "test_command_install_package: BAD PARAMETER"
-      fi
-  fi
-  echo_success "$1 available"
 }
 
 test_command_install_script() {
