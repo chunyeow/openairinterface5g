@@ -1458,10 +1458,10 @@ void pdcp_layer_init(void)
 
   for (instance = 0; instance < NUMBER_OF_UE_MAX; instance++) {
       for (rb_id = 0; rb_id < maxDRB; rb_id++) {
-          memset(&pdcp_array_drb_ue[instance][rb_id-1], 0, sizeof(pdcp_t));
+          memset(&pdcp_array_drb_ue[instance][rb_id], 0, sizeof(pdcp_t));
       }
       for (rb_id = 0; rb_id < 2; rb_id++) {
-          memset(&pdcp_array_srb_ue[instance][rb_id-1], 0, sizeof(pdcp_t));
+          memset(&pdcp_array_srb_ue[instance][rb_id], 0, sizeof(pdcp_t));
       }
 #if defined(Rel10)
       for (service_id = 0; service_id < maxServiceCount; service_id++) {
@@ -1474,10 +1474,10 @@ void pdcp_layer_init(void)
   for (instance = 0; instance < NUMBER_OF_eNB_MAX; instance++) {
       for (instance2 = 0; instance2 < NUMBER_OF_UE_MAX; instance2++) {
           for (rb_id = 0; rb_id < maxDRB; rb_id++) {
-              memset(&pdcp_array_drb_eNB[instance][instance2][rb_id-1], 0, sizeof(pdcp_t));
+              memset(&pdcp_array_drb_eNB[instance][instance2][rb_id], 0, sizeof(pdcp_t));
           }
           for (rb_id = 0; rb_id < 2; rb_id++) {
-              memset(&pdcp_array_srb_eNB[instance][instance2][rb_id-1], 0, sizeof(pdcp_t));
+              memset(&pdcp_array_srb_eNB[instance][instance2][rb_id], 0, sizeof(pdcp_t));
           }
       }
 #if defined(Rel10)
