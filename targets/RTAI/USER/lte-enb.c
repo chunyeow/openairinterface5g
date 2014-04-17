@@ -162,11 +162,11 @@ int oai_flag = 0;
 //int time_offset[4] = {-145,-145,-145,-145};
 int time_offset[4] = {0,0,0,0};
 
-u8 eNB_id=0;
+uint8_t eNB_id=0;
 
-u32 carrier_freq_fdd[4]= {2680e6,0,0,0};
-u32 carrier_freq_tdd[4]= {2590e6-4000,0,0,0};
-u32 carrier_freq[4];
+uint32_t carrier_freq_fdd[4]= {2680e6,0,0,0};
+uint32_t carrier_freq_tdd[4]= {2590e6-4000,0,0,0};
+uint32_t carrier_freq[4];
 static char *conf_config_file_name = NULL;
 
 struct timing_info_t {
@@ -192,7 +192,7 @@ int mbox_bounds[10] = {14, 28, 44, 58, 74, 88, 104, 118, 134, 148}; // mbox boun
 
 int init_dlsch_threads(void);
 void cleanup_dlsch_threads(void);
-s32 init_rx_pdsch_thread(void);
+int32_t init_rx_pdsch_thread(void);
 void cleanup_rx_pdsch_thread(void);
 int init_ulsch_threads(void);
 void cleanup_ulsch_threads(void);
@@ -274,7 +274,7 @@ void *scope_thread(void *arg)
 }
 #endif
 
-void do_OFDM_mod(mod_sym_t **txdataF, s32 **txdata, u16 next_slot,
+void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint16_t next_slot,
                  LTE_DL_FRAME_PARMS *frame_parms)
 {
   int aa, slot_offset, slot_offset_F;
@@ -645,43 +645,43 @@ int main(int argc, char **argv)
   void *status;
 
   /*
-    u32 rf_mode_max[4]     = {55759,55759,55759,55759};
-    u32 rf_mode_med[4]     = {39375,39375,39375,39375};
-    u32 rf_mode_byp[4]     = {22991,22991,22991,22991};
+    uint32_t rf_mode_max[4]     = {55759,55759,55759,55759};
+    uint32_t rf_mode_med[4]     = {39375,39375,39375,39375};
+    uint32_t rf_mode_byp[4]     = {22991,22991,22991,22991};
   */
-  u32 my_rf_mode = RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM +
+  uint32_t my_rf_mode = RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM +
                    RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX;
-  u32 rf_mode_base = TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN +
+  uint32_t rf_mode_base = TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN +
                      RXLPF25 + LNA1ON + /*LNAMax Antennas*/ LNAByp + RFBBNORM;
-  u32 rf_mode[4]     = {my_rf_mode,0,0,0};
-  u32 rf_local[4]    = {8255000,8255000,8255000,8255000}; // UE zepto
+  uint32_t rf_mode[4]     = {my_rf_mode,0,0,0};
+  uint32_t rf_local[4]    = {8255000,8255000,8255000,8255000}; // UE zepto
   //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
   //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
 
-  u32 rf_vcocal[4]   = {910,910,910,910};
-  u32 rf_vcocal_850[4] = {2015, 2015, 2015, 2015};
-  u32 rf_rxdc[4]     = {32896,32896,32896,32896};
+  uint32_t rf_vcocal[4]   = {910,910,910,910};
+  uint32_t rf_vcocal_850[4] = {2015, 2015, 2015, 2015};
+  uint32_t rf_rxdc[4]     = {32896,32896,32896,32896};
   // Gain for antennas connection
-  //u32 rxgain[4]      = {25,20,20,20};
-  //u32 txgain[4]      = {30,25,25,25};
+  //uint32_t rxgain[4]      = {25,20,20,20};
+  //uint32_t txgain[4]      = {30,25,25,25};
 
   // Gain for Cable connection
-  u32 rxgain[4]      = {20,20,20,20};
-  u32 txgain[4]      = {25,25,25,25};
+  uint32_t rxgain[4]      = {20,20,20,20};
+  uint32_t txgain[4]      = {25,25,25,25};
 
 
-  u8 frame_type = FDD;
-  u8 tdd_config = 3;
-  u8 tdd_config_S = 0;
-  u8 extended_prefix_flag = 0;
-  u16 Nid_cell = 0;
-  u8 N_RB_DL = 25;
-  u8  cooperation_flag = 0;
-  u8 transmission_mode = 1;
-  u8 abstraction_flag = 0;
-  u8 nb_antennas_rx = 1;
+  uint8_t frame_type = FDD;
+  uint8_t tdd_config = 3;
+  uint8_t tdd_config_S = 0;
+  uint8_t extended_prefix_flag = 0;
+  uint16_t Nid_cell = 0;
+  uint8_t N_RB_DL = 25;
+  uint8_t  cooperation_flag = 0;
+  uint8_t transmission_mode = 1;
+  uint8_t abstraction_flag = 0;
+  uint8_t nb_antennas_rx = 1;
 
-  u8 beta_ACK=0,beta_RI=0,beta_CQI=2;
+  uint8_t beta_ACK=0,beta_RI=0,beta_CQI=2;
 
   int c;
   char do_forms=0;
@@ -1167,7 +1167,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB,
 {
 
   int i,j;
-  u16 N_TA_offset = 0;
+  uint16_t N_TA_offset = 0;
 
   if (frame_parms->frame_type == TDD) {
     N_TA_offset = 624/4;
@@ -1187,7 +1187,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB,
     // replace RX signal buffers with mmaped HW versions
     for (i=0; i<frame_parms->nb_antennas_rx; i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-      phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = ((s32 *)
+      phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = ((int32_t *)
           openair0_exmimo_pci[card].adc_head[i+carrier]) -
           N_TA_offset; // N_TA offset for TDD
 
@@ -1201,7 +1201,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB,
     }
     for (i=0; i<frame_parms->nb_antennas_tx; i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-      phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (s32 *)
+      phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (int32_t *)
           openair0_exmimo_pci[card].dac_head[i+carrier];
 
       /*
