@@ -348,7 +348,8 @@ int pdcp_fifo_read_input_sdus_remaining_bytes (frame_t frameP, eNB_flag_t enb_fl
                            "UE module id is too high (%u/%d)!\n",
                            ue_inst,
                            NB_eNB_INST + NB_UE_INST);
-              AssertFatal (rab_id    < maxDRB,                       "RB id is too high (%u/%d)!\n", rab_id, maxDRB);
+              AssertFatal (rb_id    < maxDRB,                       "RB id is too high (%u/%d)!\n", rab_id, maxDRB);
+              AssertFatal (rb_id    > 0     ,                       "RB id is too low (%u/%d)!\n", rab_id, maxDRB);
 
               if (pdcp_input_header.rb_id != 0) {
                   LOG_D(PDCP, "[FRAME %5u][%s][IP][INSTANCE %u][RB %u][--- PDCP_DATA_REQ / %d Bytes --->][PDCP][MOD %u/%u][RB %u]\n",
