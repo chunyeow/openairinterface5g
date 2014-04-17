@@ -648,6 +648,7 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
 #endif
                   //memcpy(pdcp_read_payload, (unsigned char *)NLMSG_DATA(nas_nlh_rx), nas_nlh_rx->nlmsg_len - sizeof(struct nlmsghdr));
 
+#ifdef OAI_EMU
                   // overwrite function input parameters, because only one netlink socket for all instances
                   if (pdcp_read_header_g.inst < oai_emulation.info.nb_enb_local) {
                       enb_flagP  = 1;
@@ -677,12 +678,21 @@ int pdcp_fifo_read_input_sdus (frame_t frameP, eNB_flag_t enb_flagP, module_id_t
                                ue_mod_idP,
                                oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local);
                   AssertFatal (rab_id    < maxDRB,                       "RB id is too high (%u/%d)!\n", rab_id, maxDRB);
-#ifdef OAI_EMU
                   /*LGpdcp_read_header.inst = (pdcp_read_header_g.inst >= oai_emulation.info.nb_enb_local) ? \
                           pdcp_read_header_g.inst - oai_emulation.info.nb_enb_local+ NB_eNB_INST + oai_emulation.info.first_ue_local :
                           pdcp_read_header_g.inst +  oai_emulation.info.first_enb_local;*/
 #else
                   pdcp_read_header_g.inst = 0;
+#warning "TO DO CORRCT VALUES FOR ue mod id, enb mod id"
+                  if (enb_flagP) {
+		    ue_mod_idP  = 0;
+		    enb_mod_idP = 0;
+		    rab_id      = pdcp_read_header_g.rb_id % maxDRB;
+		  } else {
+		    ue_mod_idP  = 0;
+		    enb_mod_idP = 0;
+		    rab_id      = pdcp_read_header_g.rb_id % maxDRB;
+		  }
 #endif
 
                   if (enb_flagP) {
