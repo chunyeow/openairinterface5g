@@ -16,7 +16,8 @@ BEGIN
 IMPORTS
     X2ap-Criticality,
     X2ap-ProcedureCode
-    FROM X2AP-CommonDataTypes
+FROM X2AP-CommonDataTypes
+
     X2ap-CellActivationRequest,
     X2ap-CellActivationResponse,
     X2ap-CellActivationFailure,
@@ -45,7 +46,8 @@ IMPORTS
     X2ap-MobilityChangeRequest,
     X2ap-MobilityChangeAcknowledge,
     X2ap-MobilityChangeFailure
-    FROM X2AP-PDU-Contents
+FROM X2AP-PDU-Contents
+    
     id-cellActivation,
     id-eNBConfigurationUpdate,
     id-errorIndication,
@@ -62,7 +64,7 @@ IMPORTS
     id-uEContextRelease,
     id-x2Setup,
     id-mobilitySettingsChange
-    FROM X2AP-Constants;
+FROM X2AP-Constants;
 
 -- **************************************************************
 --

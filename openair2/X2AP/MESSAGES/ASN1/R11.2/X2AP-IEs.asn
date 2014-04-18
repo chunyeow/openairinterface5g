@@ -13,7 +13,6 @@ DEFINITIONS AUTOMATIC TAGS ::=
 BEGIN
 
 IMPORTS
-	hvdcdvdd,
 	id-E-RAB-Item,
 	id-Number-of-Antennaports,
 	id-MBSFN-Subframe-Info,
@@ -44,21 +43,23 @@ IMPORTS
 	x2ap-maxnoofTAforMDT,
 	x2ap-maxnoofCellIDforMDT,
 	x2ap-maxnoofMBMSServiceAreaIdentities
-
 FROM X2AP-Constants
 
 	X2ap-Criticality,
 	X2ap-ProcedureCode,
 	X2ap-ProtocolIE-ID,
 	X2ap-TriggeringMessage
-	
 FROM X2AP-CommonDataTypes
-	X2ap-ProtocolExtensionContainer{},
-	X2ap-ProtocolIE-Single-Container{},
+
+	ProtocolExtensionContainer{},
+	ProtocolIE-Single-Container{},
 	X2AP-PROTOCOL-EXTENSION,
-	X2AP-PROTOCOL-IES
-	
-FROM X2AP-Containers;
+	X2AP-PROTOCOL-IES		
+FROM X2AP-Containers
+
+	X2ap-IE
+FROM X2AP-PDU;
+
 
 -- A
 
@@ -73,7 +74,7 @@ X2ap-ABSInformationFDD ::= SEQUENCE {
 	abs-pattern-info					BIT STRING (SIZE(40)),
 	numberOfCellSpecificAntennaPorts	ENUMERATED {one, two, four, ...},
 	measurement-subset					BIT STRING (SIZE(40)),
-	iE-Extensions						ProtocolExtensionContainer { { AX2ap-BSInformationFDD-ExtIEs} } OPTIONAL,
+	iE-Extensions						ProtocolExtensionContainer { { X2ap-ABSInformationFDD-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -96,7 +97,7 @@ X2ap-ABSInformationTDD-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 X2ap-ABS-Status ::= SEQUENCE {
 	dL-ABS-status								X2ap-DL-ABS-status,
 	usableABSInformation						X2ap-UsableABSInformation,
-	iE-Extensions								ProtocolExtensionContainer { {ABS-Status-ExtIEs} } OPTIONAL,
+	iE-Extensions								ProtocolExtensionContainer { {X2ap-ABS-Status-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -109,7 +110,7 @@ X2ap-DL-ABS-status::= INTEGER (0..100)
 X2ap-AS-SecurityInformation ::= SEQUENCE {
 	key-eNodeB-star		X2ap-Key-eNodeB-Star,
 	nextHopChainingCount			X2ap-NextHopChainingCount,
-	iE-Extensions						ProtocolExtensionContainer { { AS-SecurityInformation-ExtIEs} } OPTIONAL,
+	iE-Extensions						ProtocolExtensionContainer { { X2ap-AS-SecurityInformation-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -122,7 +123,7 @@ X2ap-AllocationAndRetentionPriority ::= SEQUENCE {
 	priorityLevel				X2ap-PriorityLevel,
 	pre-emptionCapability		X2ap-Pre-emptionCapability,
 	pre-emptionVulnerability	X2ap-Pre-emptionVulnerability,
-	iE-Extensions				ProtocolExtensionContainer { {AllocationAndRetentionPriority-ExtIEs} } OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { {X2ap-AllocationAndRetentionPriority-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -220,7 +221,7 @@ X2ap-CauseTransport ::= ENUMERATED {
 
 X2ap-CellBasedMDT::= SEQUENCE {
 	cellIdListforMDT	X2ap-CellIdListforMDT,
-	iE-Extensions		ProtocolExtensionContainer { {CellBasedMDT-ExtIEs} } OPTIONAL,
+	iE-Extensions		ProtocolExtensionContainer { {X2ap-CellBasedMDT-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -228,14 +229,14 @@ X2ap-CellBasedMDT-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 	...
 }
 
-X2ap-CellIdListforMDT ::= SEQUENCE (SIZE(1..x2ap-maxnoofCellIDforMDT)) OF ECGI
+X2ap-CellIdListforMDT ::= SEQUENCE (SIZE(1..x2ap-maxnoofCellIDforMDT)) OF X2ap-ECGI
 
 X2ap-Cell-Size ::= ENUMERATED {verysmall, small, medium, large, ... }
 
 
 X2ap-CellType ::= SEQUENCE {
 	cell-Size						X2ap-Cell-Size,
-	iE-Extensions					ProtocolExtensionContainer { { CellType-ExtIEs}}	OPTIONAL,
+	iE-Extensions					ProtocolExtensionContainer { { X2ap-CellType-ExtIEs}}	OPTIONAL,
 	...
 }
 
@@ -246,7 +247,7 @@ X2ap-CellType-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 X2ap-CompositeAvailableCapacityGroup	::= SEQUENCE {
 	dL-CompositeAvailableCapacity					X2ap-CompositeAvailableCapacity,
 	uL-CompositeAvailableCapacity					X2ap-CompositeAvailableCapacity,
-	iE-Extensions									ProtocolExtensionContainer { { CompositeAvailableCapacityGroup-ExtIEs} } OPTIONAL,
+	iE-Extensions									ProtocolExtensionContainer { { X2ap-CompositeAvailableCapacityGroup-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -257,7 +258,7 @@ X2ap-CompositeAvailableCapacityGroup-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 X2ap-CompositeAvailableCapacity ::= SEQUENCE {
 	cellCapacityClassValue							X2ap-CellCapacityClassValue				OPTIONAL,
 	capacityValue									X2ap-CapacityValue,
-	iE-Extensions									ProtocolExtensionContainer { { CompositeAvailableCapacity-ExtIEs} } OPTIONAL,
+	iE-Extensions									ProtocolExtensionContainer { { X2ap-CompositeAvailableCapacity-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -268,7 +269,7 @@ X2ap-CompositeAvailableCapacity-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 X2ap-COUNTvalue ::= SEQUENCE {
 	pDCP-SN					X2ap-PDCP-SN,
 	hFN						X2ap-HFN,
-	iE-Extensions			ProtocolExtensionContainer { { COUNTvalue-ExtIEs} } OPTIONAL,
+	iE-Extensions			ProtocolExtensionContainer { { X2ap-COUNTvalue-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -282,7 +283,7 @@ X2ap-CriticalityDiagnostics ::= SEQUENCE {
 	triggeringMessage				X2ap-TriggeringMessage				OPTIONAL,
 	procedureCriticality			X2ap-Criticality						OPTIONAL,
 	iEsCriticalityDiagnostics		X2ap-CriticalityDiagnostics-IE-List	OPTIONAL,
-	iE-Extensions					ProtocolExtensionContainer { {CriticalityDiagnostics-ExtIEs} }	OPTIONAL,
+	iE-Extensions					ProtocolExtensionContainer { {X2ap-CriticalityDiagnostics-ExtIEs} }	OPTIONAL,
 	...
 }
 
@@ -291,12 +292,12 @@ X2ap-CriticalityDiagnostics-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 	...
 }
 
-X2ap-CriticalityDiagnostics-IE-List ::= SEQUENCE (SIZE (1..maxNrOfErrors)) OF
+X2ap-CriticalityDiagnostics-IE-List ::= SEQUENCE (SIZE (1..x2ap-maxNrOfErrors)) OF
 	SEQUENCE {
 		iECriticality			X2ap-Criticality,
 		iE-ID					X2ap-ProtocolIE-ID,
 		typeOfError				X2ap-TypeOfError,
-		iE-Extensions			ProtocolExtensionContainer { {CriticalityDiagnostics-IE-List-ExtIEs} } OPTIONAL,
+		iE-Extensions			ProtocolExtensionContainer { {X2ap-CriticalityDiagnostics-IE-List-ExtIEs} } OPTIONAL,
 		...
 }
 
@@ -346,14 +347,14 @@ X2ap-DL-Total-PRB-usage::= INTEGER (0..100)
 
 -- E
 
-X2ap-EARFCN ::= INTEGER (0..maxEARFCN)
+X2ap-EARFCN ::= INTEGER (0..x2ap-maxEARFCN)
 
 X2ap-FDD-Info ::= SEQUENCE {
 	uL-EARFCN						X2ap-EARFCN,
 	dL-EARFCN						X2ap-EARFCN,
 	uL-Transmission-Bandwidth		X2ap-Transmission-Bandwidth,
 	dL-Transmission-Bandwidth		X2ap-Transmission-Bandwidth,
-	iE-Extensions				ProtocolExtensionContainer { {FDD-Info-ExtIEs} } OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { {X2ap-FDD-Info-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -366,7 +367,7 @@ X2ap-TDD-Info ::= SEQUENCE {
 	transmission-Bandwidth			X2ap-Transmission-Bandwidth,
 	subframeAssignment				X2ap-SubframeAssignment,
 	specialSubframe-Info				X2ap-SpecialSubframe-Info,
-	iE-Extensions				ProtocolExtensionContainer { {TDD-Info-ExtIEs} } OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { {X2ap-TDD-Info-ExtIEs} } OPTIONAL,
 	...
 }
 X2ap-TDD-Info-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
@@ -374,15 +375,15 @@ X2ap-TDD-Info-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 }
 
 X2ap-EUTRA-Mode-Info ::= CHOICE {
-	fDD		FDD-Info,
-	tDD		TDD-Info,
+	fDD		X2ap-FDD-Info,
+	tDD		X2ap-TDD-Info,
 	...
 }
 
 X2ap-ECGI ::= SEQUENCE {
 	pLMN-Identity				X2ap-PLMN-Identity,
 	eUTRANcellIdentifier		X2ap-EUTRANCellIdentifier,
-	iE-Extensions				ProtocolExtensionContainer { {ECGI-ExtIEs} } OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { {X2ap-ECGI-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -406,7 +407,7 @@ X2ap-E-RAB-Level-QoS-Parameters ::= SEQUENCE {
 	qCI								X2ap-QCI,
 	allocationAndRetentionPriority	X2ap-AllocationAndRetentionPriority,
 	gbrQosInformation				X2ap-GBR-QosInformation													OPTIONAL,
-	iE-Extensions					ProtocolExtensionContainer { { E-RAB-Level-QoS-Parameters-ExtIEs} }	OPTIONAL,
+	iE-Extensions					ProtocolExtensionContainer { { X2ap-E-RAB-Level-QoS-Parameters-ExtIEs} }	OPTIONAL,
 	...
 }
 
@@ -414,17 +415,18 @@ X2ap-E-RAB-Level-QoS-Parameters-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 	...
 }
 
-X2ap-E-RAB-List ::= SEQUENCE (SIZE(1.. x2ap-maxnoofBearers)) OF ProtocolIE-Single-Container { {X2ap-E-RAB-ItemIEs} }
+--EURECOM X2ap-E-RAB-List ::= SEQUENCE (SIZE(1.. x2ap-maxnoofBearers)) OF ProtocolIE-Single-Container { {X2ap-E-RAB-ItemIEs} }
+X2ap-E-RAB-List	::= SEQUENCE (SIZE (1.. x2ap-maxnoofBearers)) OF X2ap-IE
 
-X2ap-E-RAB-ItemIEs 	X2AP-PROTOCOL-IES ::= {
-	{ ID id-E-RAB-Item	 CRITICALITY ignore 	TYPE X2ap-E-RAB-Item 	PRESENCE mandatory },
-	...
-}
+--EURECOMX2ap-E-RAB-ItemIEs 	X2AP-PROTOCOL-IES ::= {
+--EURECOM	{ ID id-E-RAB-Item	 CRITICALITY ignore 	TYPE X2ap-E-RAB-Item 	PRESENCE mandatory },
+--EURECOM	...
+--EURECOM}
 
 X2ap-E-RAB-Item ::= SEQUENCE {
 	e-RAB-ID				X2ap-E-RAB-ID,
 	cause						X2ap-Cause,
-	iE-Extensions				ProtocolExtensionContainer { {E-RAB-Item-ExtIEs} } OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { {X2ap-E-RAB-Item-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -461,7 +463,7 @@ X2ap-ForbiddenTAs ::= SEQUENCE (SIZE(1.. x2ap-maxnoofEPLMNsPlusOne)) OF X2ap-For
 X2ap-ForbiddenTAs-Item ::= SEQUENCE {
 	pLMN-Identity		X2ap-PLMN-Identity,
 	forbiddenTACs		X2ap-ForbiddenTACs,
-	iE-Extensions		ProtocolExtensionContainer { {ForbiddenTAs-Item-ExtIEs} } OPTIONAL,
+	iE-Extensions		ProtocolExtensionContainer { {X2ap-ForbiddenTAs-Item-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -469,14 +471,14 @@ X2ap-ForbiddenTAs-Item-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 	...
 }
 
-X2ap-ForbiddenTACs ::= SEQUENCE (SIZE(1..x2ap-maxnoofForbTACs)) OF TAC
+X2ap-ForbiddenTACs ::= SEQUENCE (SIZE(1..x2ap-maxnoofForbTACs)) OF X2ap-TAC
 
 X2ap-ForbiddenLAs ::= SEQUENCE (SIZE(1..x2ap-maxnoofEPLMNsPlusOne)) OF X2ap-ForbiddenLAs-Item
 
 X2ap-ForbiddenLAs-Item ::= SEQUENCE {	
 	pLMN-Identity		X2ap-PLMN-Identity,
 	forbiddenLACs		X2ap-ForbiddenLACs,
-	iE-Extensions		ProtocolExtensionContainer { {ForbiddenLAs-Item-ExtIEs} } OPTIONAL,
+	iE-Extensions		ProtocolExtensionContainer { {X2ap-ForbiddenLAs-Item-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -497,7 +499,7 @@ X2ap-GBR-QosInformation ::= SEQUENCE {
 	e-RAB-MaximumBitrateUL			X2ap-BitRate,
 	e-RAB-GuaranteedBitrateDL		X2ap-BitRate,
 	e-RAB-GuaranteedBitrateUL		X2ap-BitRate,
-	iE-Extensions					ProtocolExtensionContainer { { GBR-QosInformation-ExtIEs} } OPTIONAL,
+	iE-Extensions					ProtocolExtensionContainer { { X2ap-GBR-QosInformation-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -508,7 +510,7 @@ X2ap-GBR-QosInformation-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 X2ap-GlobalENB-ID ::= SEQUENCE {
 	pLMN-Identity			X2ap-PLMN-Identity,
 	eNB-ID					X2ap-ENB-ID,
-	iE-Extensions			ProtocolExtensionContainer { {GlobalENB-ID-ExtIEs} } OPTIONAL,
+	iE-Extensions			ProtocolExtensionContainer { {X2ap-GlobalENB-ID-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -519,7 +521,7 @@ X2ap-GlobalENB-ID-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 X2ap-GTPtunnelEndpoint ::= SEQUENCE {
 	transportLayerAddress			X2ap-TransportLayerAddress,
 	gTP-TEID						X2ap-GTP-TEI,
-	iE-Extensions					ProtocolExtensionContainer { {GTPtunnelEndpoint-ExtIEs} } OPTIONAL,
+	iE-Extensions					ProtocolExtensionContainer { {X2ap-GTPtunnelEndpoint-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -529,13 +531,13 @@ X2ap-GTPtunnelEndpoint-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 
 X2ap-GTP-TEI					::= OCTET STRING (SIZE (4))
 
-X2ap-GUGroupIDList		::= SEQUENCE (SIZE (1..maxPools)) OF GU-Group-ID
+X2ap-GUGroupIDList		::= SEQUENCE (SIZE (1..x2ap-maxPools)) OF X2ap-GU-Group-ID
 
 
 X2ap-GU-Group-ID			::= SEQUENCE {
 	pLMN-Identity		X2ap-PLMN-Identity,
 	mME-Group-ID		X2ap-MME-Group-ID,
-	iE-Extensions		ProtocolExtensionContainer { {GU-Group-ID-ExtIEs} } OPTIONAL,
+	iE-Extensions		ProtocolExtensionContainer { {X2ap-GU-Group-ID-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -548,7 +550,7 @@ X2ap-GUMMEI			::= SEQUENCE {
 	
 	gU-Group-ID		X2ap-GU-Group-ID,
 	mME-Code			X2ap-MME-Code,
-	iE-Extensions					ProtocolExtensionContainer { {GUMMEI-ExtIEs} } OPTIONAL,
+	iE-Extensions					ProtocolExtensionContainer { {X2ap-GUMMEI-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -573,7 +575,7 @@ X2ap-HandoverRestrictionList ::= SEQUENCE {
 	forbiddenTAs				X2ap-ForbiddenTAs			OPTIONAL,
 	forbiddenLAs				X2ap-ForbiddenLAs			OPTIONAL,
 	forbiddenInterRATs			X2ap-ForbiddenInterRATs		OPTIONAL,
-	iE-Extensions				X2ap-ProtocolExtensionContainer { {HandoverRestrictionList-ExtIEs} }	OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { {HandoverRestrictionList-ExtIEs} }	OPTIONAL,
 	...
 }
 
@@ -586,7 +588,7 @@ X2ap-HFN ::= INTEGER (0..1048575)
 X2ap-HWLoadIndicator ::= SEQUENCE {
 	dLHWLoadIndicator			X2ap-LoadIndicator,
 	uLHWLoadIndicator			X2ap-LoadIndicator,
-	iE-Extensions				ProtocolExtensionContainer { { HWLoadIndicator-ExtIEs} } OPTIONAL,
+	iE-Extensions				ProtocolExtensionContainer { { X2ap-HWLoadIndicator-ExtIEs} } OPTIONAL,
 	...
 }
 
@@ -633,8 +635,8 @@ X2ap-LastVisitedEUTRANCellInformation ::= SEQUENCE {
 
 X2ap-LastVisitedEUTRANCellInformation-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 -- Extension for Rel-11 to support enhanced granularity for time UE stayed in cell --
-	{ ID id-Time-UE-StayedInCell-EnhancedGranularity	CRITICALITY ignore	EXTENSION Time-UE-StayedInCell-EnhancedGranularity	PRESENCE optional}|
-	{ ID id-HO-cause									CRITICALITY ignore	EXTENSION X2ap-Cause							PRESENCE optional},
+--EURECOM	{ ID id-Time-UE-StayedInCell-EnhancedGranularity	CRITICALITY ignore	EXTENSION X2ap-Time-UE-StayedInCell-EnhancedGranularity	PRESENCE optional}|
+--EURECOM	{ ID id-HO-cause									CRITICALITY ignore	EXTENSION X2ap-Cause							PRESENCE optional},
 	...
 }
 
@@ -692,11 +694,11 @@ X2ap-MDT-Configuration-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 	...
 }
 
-MeasurementsToActivate::= BIT STRING (SIZE (8))
+X2ap-MeasurementsToActivate::= BIT STRING (SIZE (8))
 
 X2ap-MeasurementThresholdA2 ::= CHOICE { 
-	threshold-RSRP				Threshold-RSRP,
-	threshold-RSRQ				Threshold-RSRQ,
+	threshold-RSRP				X2ap-Threshold-RSRP,
+	threshold-RSRQ				X2ap-Threshold-RSRQ,
 	...
 }
 
@@ -737,7 +739,7 @@ X2ap-MobilityParametersInformation ::= SEQUENCE {
 	...
 }
 
-X2ap-MultibandInfoList ::= SEQUENCE (SIZE(1..maxnoofBands)) OF BandInfo 
+X2ap-MultibandInfoList ::= SEQUENCE (SIZE(1..x2ap-maxnoofBands)) OF X2ap-BandInfo 
 
 
 X2ap-BandInfo	::= SEQUENCE {
@@ -752,16 +754,16 @@ X2ap-BandInfo-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 
 -- N
 
-X2ap-Neighbour-Information ::= SEQUENCE (SIZE (0..maxnoofNeighbours)) OF SEQUENCE {
+X2ap-Neighbour-Information ::= SEQUENCE (SIZE (0..x2ap-maxnoofNeighbours)) OF SEQUENCE {
 	eCGI						X2ap-ECGI,
 	pCI					 	X2ap-PCI,
 	eARFCN						X2ap-EARFCN,
-	iE-Extensions		 ProtocolExtensionContainer { {Neighbour-Information-ExtIEs} } OPTIONAL,
+	iE-Extensions		 ProtocolExtensionContainer { {X2ap-Neighbour-Information-ExtIEs} } OPTIONAL,
 	...
 }
 
 X2ap-Neighbour-Information-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
-	{ ID id-NeighbourTAC		CRITICALITY ignore		EXTENSION TAC		PRESENCE optional},
+--LG	{ ID id-NeighbourTAC		CRITICALITY ignore		EXTENSION TAC		PRESENCE optional},
 	...
 }
 
@@ -945,7 +947,7 @@ X2ap-S1TNLLoadIndicator-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 
 
 
-X2ap-ServedCells ::= SEQUENCE (SIZE (1.. maxCellineNB)) OF SEQUENCE {
+X2ap-ServedCells ::= SEQUENCE (SIZE (1.. x2ap-maxCellineNB)) OF SEQUENCE {
 	servedCellInfo					X2ap-ServedCell-Information,
 	neighbour-Info					X2ap-Neighbour-Information			OPTIONAL,
 	iE-Extensions					ProtocolExtensionContainer { {ServedCell-ExtIEs} } OPTIONAL,
@@ -962,17 +964,17 @@ X2ap-ServedCell-Information ::= SEQUENCE {
 	tAC					X2ap-TAC,
 	broadcastPLMNs		X2ap-BroadcastPLMNs-Item,
 	eUTRA-Mode-Info		X2ap-EUTRA-Mode-Info,
-	iE-Extensions		ProtocolExtensionContainer { {ServedCell-Information-ExtIEs} } OPTIONAL,
+	iE-Extensions		ProtocolExtensionContainer { {X2ap-ServedCell-Information-ExtIEs} } OPTIONAL,
 	...
 }
 
 X2ap-ServedCell-Information-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
-	{ ID id-Number-of-Antennaports		CRITICALITY ignore	EXTENSION Number-of-Antennaports			PRESENCE optional }|
-	{ ID id-PRACH-Configuration			CRITICALITY ignore	EXTENSION PRACH-Configuration				PRESENCE optional }|
-	{ ID id-MBSFN-Subframe-Info			CRITICALITY ignore	EXTENSION MBSFN-Subframe-Infolist			PRESENCE optional }|
-	{ ID id-CSG-Id						CRITICALITY ignore	EXTENSION CSG-Id							PRESENCE optional }|
-	{ ID id-MBMS-Service-Area-List		CRITICALITY ignore	EXTENSION MBMS-Service-Area-Identity-List	PRESENCE optional }|
-	{ ID id-MultibandInfoList			CRITICALITY ignore	EXTENSION MultibandInfoList					PRESENCE optional },
+--EURECOM	{ ID id-Number-of-Antennaports		CRITICALITY ignore	EXTENSION X2ap-Number-of-Antennaports			PRESENCE optional }|
+--EURECOM	{ ID id-PRACH-Configuration			CRITICALITY ignore	EXTENSION X2ap-PRACH-Configuration				PRESENCE optional }|
+--EURECOM	{ ID id-MBSFN-Subframe-Info			CRITICALITY ignore	EXTENSION X2ap-MBSFN-Subframe-Infolist			PRESENCE optional }|
+--EURECOM	{ ID id-CSG-Id						CRITICALITY ignore	EXTENSION X2ap-CSG-Id							PRESENCE optional }|
+--EURECOM	{ ID id-MBMS-Service-Area-List		CRITICALITY ignore	EXTENSION X2ap-MBMS-Service-Area-Identity-List	PRESENCE optional }|
+--EURECOM	{ ID id-MultibandInfoList			CRITICALITY ignore	EXTENSION X2ap-MultibandInfoList					PRESENCE optional },
 	...
 }
 
@@ -995,9 +997,9 @@ X2ap-SubframeAssignment ::= ENUMERATED {
 }
 
 X2ap-SpecialSubframe-Info ::=    	SEQUENCE {
-	specialSubframePatterns		SpecialSubframePatterns,
-	cyclicPrefixDL				CyclicPrefixDL,
-	cyclicPrefixUL				CyclicPrefixUL,
+	specialSubframePatterns		X2ap-SpecialSubframePatterns,
+	cyclicPrefixDL				X2ap-CyclicPrefixDL,
+	cyclicPrefixUL				X2ap-CyclicPrefixUL,
 	iE-Extensions				ProtocolExtensionContainer { { SpecialSubframe-Info-ExtIEs} } OPTIONAL,
 	...
 }
@@ -1043,7 +1045,7 @@ X2ap-TABasedMDT-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 	...
 }
 
-X2ap-TAListforMDT ::= SEQUENCE (SIZE(1..maxnoofTAforMDT)) OF TAC
+X2ap-TAListforMDT ::= SEQUENCE (SIZE(1..x2ap-maxnoofTAforMDT)) OF X2ap-TAC
 
 X2ap-TargetCellInUTRAN ::= OCTET STRING -- This IE is to be encoded according to the UTRAN Cell ID in the Last Visited UTRAN Cell Information IE in TS 25.413 [24]
 
@@ -1088,7 +1090,7 @@ traceCollectionEntityIPAddress	X2ap-TraceCollectionEntityIPAddress,
 }
 
 X2ap-TraceActivation-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
-	{ ID id-MDTConfiguration	CRITICALITY ignore	EXTENSION MDT-Configuration		PRESENCE optional},
+--EURECOM	{ ID id-MDTConfiguration	CRITICALITY ignore	EXTENSION X2ap-MDT-Configuration		PRESENCE optional},
 	...
 }
 
@@ -1172,7 +1174,7 @@ X2ap-UL-InterferenceOverloadIndication-Item ::= ENUMERATED {
 	...
 }
 
-X2ap-UL-HighInterferenceIndicationInfo ::= SEQUENCE (SIZE(1..maxCellineNB)) OF UL-HighInterferenceIndicationInfo-Item
+X2ap-UL-HighInterferenceIndicationInfo ::= SEQUENCE (SIZE(1..x2ap-maxCellineNB)) OF X2ap-UL-HighInterferenceIndicationInfo-Item
 
 X2ap-UL-HighInterferenceIndicationInfo-Item ::= SEQUENCE {
 	target-Cell-ID					X2ap-ECGI,

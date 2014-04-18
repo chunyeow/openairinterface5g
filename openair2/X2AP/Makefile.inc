@@ -75,7 +75,7 @@ $(OUTDIR)/x2ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU-Contents.asn $(A
 
 	
 $(OUTDIR)/x2ap_asn1regen.stamp:  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-CommonDataTypes.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Constants.asn \
-	$(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn
+	$(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Containers.asn
 	(cd $(ASN1DIR)/$(ASN1RELDIR) && asn1c -fhave_native64 -gen-PER $^)
 	@echo Timestamp > $@
 
