@@ -38,6 +38,7 @@ Address      : EURECOM,
 
 #include "intertask_interface.h"
 
+#include "x2ap.h"
 
 #include "assertions.h"
 #include "conversions.h"
