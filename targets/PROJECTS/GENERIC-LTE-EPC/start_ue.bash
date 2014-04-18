@@ -108,9 +108,11 @@ THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
-check_install_epc_software
+#check_install_epc_software
 
 cd $THIS_SCRIPT_PATH
+
+EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
 
 #######################################################
 # USIM, NVRAM files
@@ -178,6 +180,9 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
+ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
+
+
 ITTI_LOG_FILE=./itti_ue.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
 STDOUT_LOG_FILE=./stdout_ue.log
@@ -189,7 +194,7 @@ cd $THIS_SCRIPT_PATH
 
 nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_INTERFACE -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE  2>&1 | tee $STDOUT_LOG_FILE 
 
 cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
                         grep -v '[OCM]' | grep -v '[OMG]' | \
