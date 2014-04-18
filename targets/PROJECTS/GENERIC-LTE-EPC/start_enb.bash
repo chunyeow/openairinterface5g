@@ -118,6 +118,9 @@ fi
 
 
 cd $THIS_SCRIPT_PATH
+
+EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $1}'`
+
 #######################################################
 # FIND CONFIG FILE
 #######################################################
@@ -178,20 +181,23 @@ pkill oaisim
 
 make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
 
-ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
+ITTI_LOG_FILE=./OUTPUT/itti_enb.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
-STDOUT_LOG_FILE=./stdout_enb_ue.log
+STDOUT_LOG_FILE=./OUTPUT/stdout_enb_ue.log
 
 rotate_log_file $STDOUT_LOG_FILE
 rotate_log_file $STDOUT_LOG_FILE.filtered
-rotate_log_file tshark.pcap
+rotate_log_file ./OUTPUT/tshark.pcap
 
 cd $THIS_SCRIPT_PATH
+
+bash_exec "ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE"
+
 
 nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w tshark.pcap &
 
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_INTERFACE -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
 
 pkill tshark
 
