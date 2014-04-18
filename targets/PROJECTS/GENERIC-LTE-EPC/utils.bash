@@ -309,7 +309,7 @@ test_install_package() {
           echo "$1 is installed."
       } || {
           echo "$1 is not installed."
-          apt-get install $1 --force-yes
+          apt-get install --assume-yes $1 
       }
   fi
 }
@@ -1174,6 +1174,88 @@ check_s6a_certificate() {
     ./make_certs.sh
     check_s6a_certificate
     return 1
+}
+
+check_install_epc_software() {
+    test_install_package autoconf
+    test_install_package automake
+    test_install_package bison
+    test_install_package build-essential
+    test_install_package cmake
+    test_install_package cmake-curses-gui
+    test_install_package flex
+    test_install_package g++
+    test_install_package gawk
+    test_install_package gcc
+    test_install_package gccxml
+    test_install_package gdb 
+    test_install_package guile-2.0-dev
+    test_install_package iperf
+    test_install_package iproute
+    test_install_package iptables
+    test_install_package libatlas-base-dev
+    test_install_package libatlas-dev
+    test_install_package libblas
+    test_install_package libblas-dev
+    test_install_package libconfig-dev
+    test_install_package libforms-bin
+    test_install_package libforms-dev
+    test_install_package libgcrypt11-dev
+    test_install_package libgmp-dev
+    test_install_package libgtk-3-dev
+    test_install_package libidn11-dev
+    test_install_package libidn2-0-dev
+    test_install_package libmysqlclient-dev
+    test_install_package libpgm-dev
+    test_install_package libpthread-stubs0-dev
+    test_install_package libsctp1
+    test_install_package libsctp1
+    test_install_package libsctp-dev
+    test_install_package libsctp-dev
+    test_install_package libtasn1-3-dev
+    test_install_package libxml2
+    test_install_package libxml2-dev
+    test_install_package libxml2-dev
+    test_install_package linux-headers-`uname -r`
+    test_install_package make
+    test_install_package openssl
+    test_install_package python-dev
+    test_install_package subversion
+    test_install_package swig
+    test_install_package tshark
+    test_install_package uml-utilities
+    test_install_package unzip
+    test_install_package valgrind
+    test_install_package vlan
+
+    if [ ! -d /usr/local/etc/freeDiameter ]
+        then
+           # This script make certificates also
+            cd $OPENAIRCN_DIR/S6A/freediameter && ./install_freediameter.sh
+        else
+            echo_success "freediameter is installed"
+            check_s6a_certificate
+    fi
+
+    test_command_install_script   "asn1c" "$OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash"
+
+    # One mor check about version of asn1c
+    ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE="ASN.1 Compiler, v0.9.24"
+    ASN1C_COMPILER_VERSION_MESSAGE=`asn1c -h 2>&1 | grep -i ASN\.1\ Compiler`
+    ##ASN1C_COMPILER_VERSION_MESSAGE=`trim $ASN1C_COMPILER_VERSION_MESSAGE`
+    if [ "$ASN1C_COMPILER_VERSION_MESSAGE" != "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE" ]
+    then
+        diff <(echo -n "$ASN1C_COMPILER_VERSION_MESSAGE") <(echo -n "$ASN1C_COMPILER_REQUIRED_VERSION_MESSAGE")
+        echo_error "Version of asn1c is not the required one, do you want to install the required one (overwrite installation) ? (Y/n)"
+        echo_error "$ASN1C_COMPILER_VERSION_MESSAGE"
+        while read -r -n 1 -s answer; do
+            if [[ $answer = [YyNn] ]]; then
+                [[ $answer = [Yy] ]] && $OPENAIRCN_DIR/SCRIPTS/install_asn1c_0.9.24.modified.bash
+                [[ $answer = [Nn] ]] && echo_error "Version of asn1c is not the required one, exiting." && exit 1
+                break
+            fi
+        done
+    fi
 }
 
 ###########################################################
