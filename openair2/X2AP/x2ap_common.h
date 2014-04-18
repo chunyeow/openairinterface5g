@@ -288,8 +288,8 @@ typedef int (*x2ap_message_decoded_callback)(
 ssize_t x2ap_generate_successfull_outcome(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_ProcedureCode         procedureCode,
-    Criticality_t           criticality,
+    e_X2ap_ProcedureCode         procedureCode,
+    X2ap_Criticality_t           criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr);
 
@@ -305,8 +305,8 @@ ssize_t x2ap_generate_successfull_outcome(
 ssize_t x2ap_generate_initiating_message(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_ProcedureCode         procedureCode,
-    Criticality_t           criticality,
+    e_X2ap_ProcedureCode    procedureCode,
+    X2ap_Criticality_t      criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr);
 
@@ -322,8 +322,8 @@ ssize_t x2ap_generate_initiating_message(
 ssize_t x2ap_generate_unsuccessfull_outcome(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_ProcedureCode         procedureCode,
-    Criticality_t           criticality,
+    e_X2ap_ProcedureCode         procedureCode,
+    X2ap_Criticality_t           criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr);
 
@@ -334,15 +334,16 @@ ssize_t x2ap_generate_unsuccessfull_outcome(
  \param sptr Structure to be encoded in the value field
  @returns a pointer to the newly created IE structure or NULL in case of failure
  **/
-IE_t *x2ap_new_ie(ProtocolIE_ID_t        id,
-                  Criticality_t          criticality,
-                  asn_TYPE_descriptor_t *type,
-                  void                  *sptr);
+X2ap_IE_t *x2ap_new_ie(
+    X2ap_ProtocolIE_ID_t   id,
+    X2ap_Criticality_t     criticality,
+    asn_TYPE_descriptor_t *type,
+    void                  *sptr);
 
 /** \brief Handle criticality
  \param criticality Criticality of the IE
  @returns void
  **/
-void x2ap_handle_criticality(e_Criticality criticality);
+void x2ap_handle_criticality(X2ap_Criticality_t criticality);
 
 #endif /* X2AP_COMMON_H_ */
