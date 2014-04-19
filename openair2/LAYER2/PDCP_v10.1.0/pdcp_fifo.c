@@ -857,7 +857,7 @@ void pdcp_fifo_read_input_sdus_from_otg (frame_t frameP, eNB_flag_t enb_flagP, m
   // we need to add conditions to avoid transmitting data when the UE is not RRC connected.
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled ==1 ){
-      module_id = (enb_flagP == 1) ?  enb_mod_idP : ue_mod_idP;
+      module_id = (enb_flagP == 1) ?  enb_mod_idP : ue_mod_idP+NB_eNB_INST;
       //rb_id    = (enb_flagP == 1) ? enb_mod_idP * MAX_NUM_RB + DTCH : (NB_eNB_INST + UE_index -1 ) * MAX_NUM_RB + DTCH ;
       src_id = module_id;
       while ((otg_pkt_info = pkt_list_remove_head(&(otg_pdcp_buffer[module_id]))) != NULL) {

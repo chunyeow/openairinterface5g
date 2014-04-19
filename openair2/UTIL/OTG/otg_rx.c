@@ -33,7 +33,7 @@
 * \date 2011
 * \version 0.1
 * \company Eurecom
-* \email:
+* \email: navid.nikaein@eurecom.fr
 * \note
 * \warning
 */
@@ -75,12 +75,15 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
   if (buffer_tx!=NULL) {
     otg_hdr_info_rx = (otg_hdr_info_t *) (&buffer_tx[bytes_read]);
     bytes_read += sizeof (otg_hdr_info_t);
+    
     LOG_D(OTG,"otg_rx_pkt functions: source %d, destination %d, size %d, otg_hdr_info_rx->flag %.4x, otg_hdr_info_rx->size %d \n",
           src,dst,size,otg_hdr_info_rx->flag,otg_hdr_info_rx->size);
 
 
-    if (((otg_hdr_info_rx->flag == 0xffff)||(otg_hdr_info_rx->flag == 0xbbbb) || (otg_hdr_info_rx->flag == 0x1000)) &&
-	(otg_hdr_info_rx->size ==size )){ //data traffic
+    if (((otg_hdr_info_rx->flag == 0xffff) ||
+	 (otg_hdr_info_rx->flag == 0xbbbb) || 
+	 (otg_hdr_info_rx->flag == 0x1000)) &&
+	(otg_hdr_info_rx->size == size )){ //data traffic
 
       LOG_I(OTG,"MAX_RX_INFO %d %d \n",NB_eNB_INST,  NB_UE_INST);
 
@@ -95,15 +98,16 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
 	LOG_W(OTG,"RX packet: application type out of range %d for the pair of (src %d, dst %d) \n",
 	      otg_hdr_rx->traffic_type, src, dst);
 	otg_hdr_rx->traffic_type=0;
-    }
-
+      }
+       
+      /** unicast traffic **/ 
       if (otg_hdr_info_rx->flag == 0xffff){
 	seq_num_rx=otg_info->seq_num_rx[src][dst][otg_hdr_rx->traffic_type];
 	if (src<NB_eNB_INST)
 	  nb_loss_pkts=otg_info->nb_loss_pkts_dl[src][dst][otg_hdr_rx->traffic_type];
 	else
 	  nb_loss_pkts=otg_info->nb_loss_pkts_ul[src][dst][otg_hdr_rx->traffic_type];
-      }
+      }  /** multicast  traffic **/ 
       else if (otg_hdr_info_rx->flag == 0x1000){
 	seq_num_rx = otg_multicast_info->rx_sn[src][dst][otg_hdr_rx->traffic_type];
 	nb_loss_pkts = otg_multicast_info->loss_pkts_dl[src][dst][otg_hdr_rx->traffic_type];
@@ -114,8 +118,7 @@ int otg_rx_pkt( int src, int dst, int ctime, char *buffer_tx, unsigned int size)
 	LOG_I(OTG,"received a multicast packet with size %d sn %d ran owd %d loss rate %d\n",
 	      otg_hdr_info_rx->size, seq_num_rx, ctime- otg_hdr_rx->time, nb_loss_pkts);
 	//return 0;
-
-      }
+      }  /** background traffic **/ 
       else{
 	seq_num_rx=otg_info->seq_num_rx_background[src][dst];
 	if (src<NB_eNB_INST)
@@ -159,6 +162,7 @@ float owd_const_application_v=owd_const_application()/2;
 
       otg_info->rx_pkt_owd[src][dst]=otg_info->owd_const[src][dst][otg_hdr_rx->flow_id]+ otg_info->radio_access_delay[src][dst];
       otg_multicast_info->rx_pkt_owd[src][dst]=otg_multicast_info->radio_access_delay[src][dst];
+      
       // compute the jitter by ignoring the packet loss
       if (lost_packet == 0){
 	otg_info->rx_pkt_owd_history[src][dst][1] = otg_info->rx_pkt_owd_history[src][dst][0]; // the previous owd
@@ -172,14 +176,14 @@ float owd_const_application_v=owd_const_application()/2;
 	      src, dst, ctime, otg_info->rx_pkt_jitter[src][dst],
 	      otg_info->rx_pkt_owd_history[src][dst][0], otg_info->rx_pkt_owd_history[src][dst][1]);
       }
-
+      
       if (otg_hdr_info_rx->flag == 0x1000){
 	LOG_I(OTG,"[SRC%d -> DST %d] Received a multicast packet at time %d with size %d, seq num %d, ran owd %d number loss packet %d\n",
 	      dst, src, ctime,otg_hdr_info_rx->size, otg_hdr_rx->seq_num, ctime - otg_hdr_rx->time, nb_loss_pkts);
 
 	LOG_I(OTG,"INFO LATENCY :: [SRC %d][DST %d] radio access %.2f (tx time %d, ctime %d), OWD:%.2f (ms):\n",
 	      src, dst, otg_multicast_info->radio_access_delay[src][dst], otg_hdr_rx->time, ctime , otg_multicast_info->rx_pkt_owd[src][dst]);
-
+	
 	if (otg_multicast_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]==0){
 	  otg_multicast_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]=otg_multicast_info->rx_pkt_owd[src][dst];
 	  otg_multicast_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type]=otg_multicast_info->rx_pkt_owd[src][dst];
@@ -188,12 +192,14 @@ float owd_const_application_v=owd_const_application()/2;
 	  otg_multicast_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type]=MAX(otg_multicast_info->rx_owd_max[src][dst][otg_hdr_rx->traffic_type],otg_multicast_info->rx_pkt_owd[src][dst] );
 	  otg_multicast_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type]=MIN(otg_multicast_info->rx_owd_min[src][dst][otg_hdr_rx->traffic_type],otg_multicast_info->rx_pkt_owd[src][dst] );
 	}
+	
 	if (g_otg->curve==1){
 	  if (g_otg->owd_radio_access==0)
 	    add_tab_metric(src, dst, otg_multicast_info->rx_pkt_owd[src][dst],  ((otg_hdr_info_rx->size*1000*8)/(otg_multicast_info->rx_pkt_owd[src][dst]*1024 )),  otg_hdr_rx->time);
 	  else
 	    add_tab_metric(src, dst, otg_multicast_info->radio_access_delay[src][dst],  ((otg_hdr_info_rx->size*1000*8)/(otg_multicast_info->rx_pkt_owd[src][dst]*1024 )),  otg_hdr_rx->time);
-	    }
+	}
+	
 	otg_multicast_info->rx_total_bytes_dl+=otg_hdr_info_rx->size;
       }
       else {
@@ -242,9 +248,10 @@ float owd_const_application_v=owd_const_application()/2;
       //LOG_I(OTG,"RX INFO :: RTT MIN(one way) ms: %.2f, RTT MAX(one way) ms: %.2f \n", otg_info->rx_owd_min[src][dst], otg_info->rx_owd_max[src][dst]);
 
       /* xforms part: add metrics  */
-
+      
       //printf("payload_size %d, header_size %d \n", otg_hdr_rx->pkts_size, otg_hdr_rx->hdr_type);
-      LOG_I(OTG,"[RX] OTG packet, PACKET SIZE [SRC %d][DST %d]: Flag (0x%x), time(%d), Seq num (%d), Total size (%d)\n", src, dst, otg_hdr_info_rx->flag, ctime, otg_hdr_rx->seq_num, size);
+      LOG_I(OTG,"[RX] OTG packet, PACKET SIZE [SRC %d][DST %d]: Flag (0x%x), Traffic %d, time(%d), Seq num (%d), Total size (%d)\n", 
+	    src, dst, otg_hdr_info_rx->flag, otg_hdr_rx->traffic_type, ctime, otg_hdr_rx->seq_num, size);
       /*LOG_I(OTG,"details::RX [SRC %d][DST %d]: Flag (0x%x), time(%d), Seq num (%d), Total size (%d), header(%d), payload (%d) \n",  src, dst, otg_hdr_info_rx->flag, ctime, otg_hdr_rx->seq_num, size, strlen(packet_rx->header), strlen(packet_rx->payload));*/
 
 

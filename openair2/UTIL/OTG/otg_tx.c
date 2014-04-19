@@ -253,8 +253,9 @@ Send Packets when:
   	if (size!=strlen(payload))
   	  LOG_E(OTG,"[%d][%d] [0x %x] The expected packet size does not match the payload size : size %d, strlen %d, seq_num %d packet: |%s|%s| \n", src, dst, flag, 	size, strlen(payload), seq_num, header, payload);
   	else 
-      LOG_D(OTG,"[%d][%d] [0x %x] [m2m Aggre %d] [Flow %d]TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d, state=%d : |%s|%s| \n", src, dst, flag, otg_info->m2m_aggregation[src][dst],otg_info->flow_id[src][dst], ctime,  size, header_size+strlen(payload), seq_num,state, header, payload);
-  LOG_D(OTG, "[%d]MY_SEQ %d \n", otg_info->traffic_type[src][dst], otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]] );  
+	  LOG_D(OTG,"[%d][%d] 0x %x][m2m Aggre %d][Flow %d][Type %d] TX INFO pkt at time %d Size= [payload %d] [Total %d] with seq num %d, state=%d : |%s|%s| \n", src, dst, flag, otg_info->m2m_aggregation[src][dst],otg_info->flow_id[src][dst], 
+		otg_info->traffic_type[src][dst], ctime,  size, header_size+strlen(payload), seq_num,state, header, payload);
+	LOG_D(OTG, "[%d]MY_SEQ %d \n", otg_info->traffic_type[src][dst], otg_info->seq_num[src][dst][otg_info->traffic_type[src][dst]] );  
 	 } 	
 	else {
 	  if ((g_otg->aggregation_level[src][dst][application]*otg_info->size_background[src][dst])<=PAYLOAD_MAX)

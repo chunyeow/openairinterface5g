@@ -29,11 +29,11 @@
 
 /*! \file otg_kpi.c main used funstions to compute KPIs
 * \brief define KPIs to compute for performance analysis 
-* \author A. Hafsaoui
+* \author A. Hafsaoui and Navid Nikaein
 * \date 2012
 * \version 0.1
 * \company Eurecom
-* \email: openair_tech@eurecom.fr
+* \email: navid.nikaein@eurecom.fr
 * \note
 * \warning
 
@@ -251,7 +251,7 @@ fc=fopen("/tmp/otg.log","w");;
 	rx_loss_rate_pkts(i,j,k);
 	average_pkt_jitter(i,j,k);
 
-	//LOG_I(OTG,"KPI: (src=%d, dst=%d) NB packet TX= %d,  NB packet RX= %d\n ",i, j,  otg_info->tx_num_pkt[i][j],  otg_info->rx_num_pkt[i][j]);
+	//	LOG_I(OTG,"KPI: (src=%d, dst=%d, traffic=%d) NB packet TX= %d,  NB packet RX= %d\n ", i, j,  k,otg_info->tx_num_pkt[i][j][k],  otg_info->rx_num_pkt[i][j][k]);
 	
 	if (otg_multicast_info->tx_throughput[i][j]>0)  { 
 	  //multicast

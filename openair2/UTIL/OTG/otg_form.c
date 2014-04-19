@@ -1,3 +1,43 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2011 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file otg_config.h main used structures
+* \brief otg structure 
+* \author A. Hafsaoui and Navid Nikaein
+* \date 2011
+* \version 0.1
+* \company Eurecom
+* \email: openair_tech@eurecom.fr
+* \note
+* \warning
+
+*/
 
 #include "otg_form.h"
 #include "otg_vars.h"
@@ -83,8 +123,7 @@ fl_initialize(&tArgc,tArgv,"OTG",0,0);
 
    fl_check_forms();
 }	
-
-																																																																																																																																																																																																		
+																
 void add_tab_metric(int src, int dst, float owd, float throughput, int ctime){
 
   if (otg_forms_info->init_forms==0){

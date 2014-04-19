@@ -205,7 +205,7 @@ void help(void) {
   printf ("-s snr_dB set a fixed (average) SNR, this deactivates the openair channel model generator (OCM)\n");
   printf ("-S snir_dB set a fixed (average) SNIR, this deactivates the openair channel model generator (OCM)\n");
   printf ("-t Gives a fixed UL mcs for eNB scheduler\n");
-  printf ("-T activate the traffic generator: cbr, mcbr, bcbr, mscbr\n");
+  printf ("-T activate the traffic generator: cbr, scbr, mcbr, bcbr, mscbr\n");
   printf ("-u Set the number of local UE\n");
   printf ("-U Set the mobility model for UE, options are: STATIC, RWP, RWALK\n");
   printf ("-V [vcd_file] Enable VCD dump into vcd_file\n");

@@ -29,11 +29,11 @@
 
 /*! \file otg_config.h main used structures
 * \brief otg structure 
-* \author A. Hafsaoui
+* \author A. Hafsaoui and Navid Nikaein
 * \date 2011
 * \version 0.1
 * \company Eurecom
-* \email: openair_tech@eurecom.fr
+* \email: navid.nikaein@eurecom.fr
 * \note
 * \warning
 
@@ -56,7 +56,7 @@
 #define NUMBER_OF_SERVICE_MAX 2 
 
 /*!\brief Define the max number of traffic runing in the  same time - using their ID in the customized traffic*/
-#define MAX_EMU_TRAFFIC 100
+#define MAX_EMU_TRAFFIC 10
 
 #define OTG_FLAG_SIZE 3
 #define OTG_FLAG "OTG"

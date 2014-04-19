@@ -581,8 +581,8 @@ boolean_t pdcp_data_ind(
                                 (unsigned char*)&sdu_buffer_pP->data[payload_offset],
                                 sdu_buffer_sizeP - payload_offset);
 
-      src_id = (enb_flagP != 0) ? ue_mod_idP : enb_mod_idP;
-      dst_id = (enb_flagP == ENB_FLAG_NO) ? ue_mod_idP : enb_mod_idP;
+      src_id = (enb_flagP == ENB_FLAG_NO) ?  enb_mod_idP : ue_mod_idP +   NB_eNB_INST;
+      dst_id = (enb_flagP == ENB_FLAG_NO) ? ue_mod_idP +  NB_eNB_INST: enb_mod_idP;
       ctime = oai_emulation.info.time_ms; // avg current simulation time in ms : we may get the exact time through OCG?
       LOG_D(PDCP, "Check received buffer : enb_flag %d  rab id %d (src %d, dst %d)\n",
           enb_flagP, rb_id, src_id, dst_id);
@@ -775,15 +775,17 @@ void pdcp_run (
 
 #if defined(USER_MODE) && defined(OAI_EMU)
   pdcp_t            *pdcp_p          = NULL;
-  // add other rb_ids
-  if (enb_flagP == ENB_FLAG_NO) {
-      pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][DTCH-1];
-  } else {
-      pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][DTCH-1];
-  }
-
-  if (pdcp_p->instanciated_instance  == TRUE )
-    pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+  int               drb_id=0 ;
+    // add other rb_ids
+    for (drb_id=0; drb_id < DTCH; drb_id++) {
+      if (enb_flagP == ENB_FLAG_NO) {
+	pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][drb_id];
+      } else {
+	pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][drb_id];
+      }
+      if (pdcp_p->instanciated_instance  == TRUE )
+	pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
+    }
 #endif
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer
@@ -927,7 +929,7 @@ boolean_t rrc_pdcp_config_asn1_req (
 
           drb_toaddmod_p = drb2add_list_pP->list.array[cnt];
 
-          drb_id = drb_toaddmod_p->drb_Identity ;// + drb_id_offset;
+          drb_id = drb_toaddmod_p->drb_Identity;// + drb_id_offset;
 
           lc_id = drb_id + 2;
 
