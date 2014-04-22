@@ -167,22 +167,24 @@ NwGtpv1uRcT gtpv1u_process_stack_req(
             data_ind_p->local_S1u_teid       = pUlpApi->apiInfo.recvMsgInfo.teid;
             if (data_ind_p->buffer == NULL) {
                 GTPU_ERROR("Failed to allocate new buffer\n");
-                free(message_p);
+                itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
+                message_p = NULL;
             } else {
                 memcpy(data_ind_p->buffer, buffer, buffer_len);
                 data_ind_p->length = buffer_len;
                 if (itti_send_msg_to_task(TASK_FW_IP, INSTANCE_DEFAULT, message_p) < 0) {
                     GTPU_ERROR("Failed to send message to task\n");
-                    free(message_p);
+                    itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
+                    message_p = NULL;
                 }
             }
         }
         break;
-        
+
         case NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT:{
         }
         break;
-            
+
         default: {
             GTPU_ERROR("Received undefined UlpApi (%02x) from gtpv1u stack!\n",
                        pUlpApi->apiType);
@@ -222,13 +224,12 @@ static int gtpv1u_create_s1u_tunnel(Gtpv1uCreateTunnelReq *create_tunnel_reqP)
     memset(gtpv1u_teid2enb_info, 0, sizeof(gtpv1u_teid2enb_info_t));
     gtpv1u_teid2enb_info->state       = BEARER_IN_CONFIG;
 
-#warning !!! hack because missing modify session request, so force enb address
-    gtpv1u_teid2enb_info->enb_ip_addr.pdn_type = IPv4;
-    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[0] = 192;
-    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[1] = 168;
-    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[2] = 1;
-    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[3] = 2;
-    gtpv1u_teid2enb_info->state       = BEARER_IN_CONFIG;
+//#warning !!! hack because missing modify session request, so force enb address
+//    gtpv1u_teid2enb_info->enb_ip_addr.pdn_type = IPv4;
+//    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[0] = 192;
+//    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[1] = 168;
+//    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[2] = 1;
+//    gtpv1u_teid2enb_info->enb_ip_addr.address.ipv4_address[3] = 2;
 
 
     message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_CREATE_TUNNEL_RESP);
@@ -384,7 +385,7 @@ static void *gtpv1u_thread(void *args)
             case UDP_DATA_IND: {
                 udp_data_ind_t *udp_data_ind_p;
                 udp_data_ind_p = &received_message_p->ittiMsg.udp_data_ind;
-                nwGtpv1uProcessUdpReq(gtpv1u_sgw_data.gtpv1u_stack, 
+                nwGtpv1uProcessUdpReq(gtpv1u_sgw_data.gtpv1u_stack,
                                       udp_data_ind_p->buffer,
                                       udp_data_ind_p->buffer_length,
                                       udp_data_ind_p->peer_port,
@@ -407,7 +408,7 @@ static void *gtpv1u_thread(void *args)
                 memset(&stack_req, 0, sizeof(NwGtpv1uUlpApiT));
 
                 /*
-                 * typedef struct 
+                 * typedef struct
                 {
                 NW_IN    NwU32T                       teid;
                 NW_IN    NwU32T                       ipAddr;
@@ -470,7 +471,7 @@ static void *gtpv1u_thread(void *args)
             }
             break;
         }
-        free(received_message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
     return NULL;

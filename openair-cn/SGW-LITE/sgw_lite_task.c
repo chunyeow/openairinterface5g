@@ -51,6 +51,7 @@ Address      : EURECOM,
 #include "sgw_lite.h"
 #include "hashtable.h"
 #include "spgw_config.h"
+#include "pgw_lite_paa.h"
 
 spgw_config_t spgw_config;
 sgw_app_t     sgw_app;
@@ -109,18 +110,24 @@ static void *sgw_lite_intertask_interface(void *args_p)
 
             default: {
                 SPGW_APP_DEBUG("Unkwnon message ID %d:%s\n",
-                               ITTI_MSG_ID(received_message_p), ITTI_MSG_NAME(received_message_p));
+                               ITTI_MSG_ID(received_message_p),
+                               ITTI_MSG_NAME(received_message_p));
             } break;
         }
-        free(received_message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
     return NULL;
 }
 
+
+
 int sgw_lite_init(char* config_file_name_pP)
 {
+    SPGW_APP_DEBUG("Initializing SPGW-APP  task interface\n");
     spgw_config_init(config_file_name_pP, &spgw_config);
+
+    pgw_lite_load_pool_ip_addresses();
 
     sgw_app.s11teid2mme_hashtable = hashtable_create (8192, NULL, NULL);
     if (sgw_app.s11teid2mme_hashtable == NULL) {
@@ -151,7 +158,6 @@ int sgw_lite_init(char* config_file_name_pP)
     //sgw_app.sgw_ip_address_for_S5_S8_cp          = spgw_config.sgw_config.ipv4.sgw_ip_address_for_S5_S8_cp;
     sgw_app.sgw_ip_address_for_S5_S8_up          = spgw_config.sgw_config.ipv4.sgw_ipv4_address_for_S5_S8_up;
 
-    SPGW_APP_DEBUG("Initializing SPGW-APP  task interface\n");
     if (itti_create_task(TASK_SPGW_APP,
                                         &sgw_lite_intertask_interface, NULL) < 0) {
         perror("pthread_create");

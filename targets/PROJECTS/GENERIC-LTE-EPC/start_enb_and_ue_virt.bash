@@ -215,7 +215,8 @@ cecho "make $MAKE_IP_DRIVER_TARGET $MAKE_LTE_ACCESS_STRATUM_TARGET ....." $green
 make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET || exit 1
 
 #bash_exec "make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET "
-make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+#make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+make --debug=b --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET || exit 1
 
 
 bash_exec "insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/$IP_DRIVER_NAME.ko"
@@ -247,13 +248,13 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
-ITTI_LOG_FILE=./itti_enb.$HOSTNAME.log
+ITTI_LOG_FILE=./OUTPUT/itti_enb_ue.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
-STDOUT_LOG_FILE=./stdout_enb_ue.log
+STDOUT_LOG_FILE=./OUTPUT/stdout_enb_ue.log
 
 rotate_log_file $STDOUT_LOG_FILE
 rotate_log_file $STDOUT_LOG_FILE.filtered
-rotate_log_file tshark.pcap
+rotate_log_file ./OUTPUT/tshark_enb_ue.pcap
 
 cd $THIS_SCRIPT_PATH
 

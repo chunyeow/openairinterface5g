@@ -1,31 +1,33 @@
 /*******************************************************************************
+Eurecom OpenAirInterface Core Network
+Copyright(c) 1999 - 2014 Eurecom
 
-  Eurecom OpenAirInterface
-  Copyright(c) 1999 - 2013 Eurecom
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
 
-  This program is free software; you can redistribute it and/or modify it
-  under the terms and conditions of the GNU General Public License,
-  version 2, as published by the Free Software Foundation.
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
 
-  This program is distributed in the hope it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-  more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 
-  You should have received a copy of the GNU General Public License along with
-  this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
 
-  The full GNU General Public License is included in this distribution in
-  the file called "COPYING".
-
-  Contact Information
-  Openair Admin: openair_admin@eurecom.fr
-  Openair Tech : openair_tech@eurecom.fr
-  Forums       : http://forums.eurecom.fr/openairinterface
-  Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
-                 06410 Biot FRANCE
-
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
 *******************************************************************************/
 
 #include <pthread.h>
@@ -62,6 +64,11 @@ RB_GENERATE(ue_context_map, ue_context_s, rb_entry,
 static inline int ue_context_compare_identifiers(
     struct ue_context_s *p1, struct ue_context_s *p2)
 {
+    MME_APP_DEBUG(" ue_context_compare_identifiers IMSI           %"SCNu64"\n", p1->imsi);
+    MME_APP_DEBUG(" ue_context_compare_identifiers mme_s11_teid   %08x\n"       , p1->mme_s11_teid);
+    MME_APP_DEBUG(" ue_context_compare_identifiers mme_ue_s1ap_id %08x\n"       , p1->mme_ue_s1ap_id);
+    MME_APP_DEBUG(" ue_context_compare_identifiers ue_id          %08x\n"       , p1->ue_id);
+
     if (p1->imsi > 0) {
         /* if IMSI provided */
         if (p1->imsi > p2->imsi) {
@@ -76,6 +83,23 @@ static inline int ue_context_compare_identifiers(
             return 1;
         }
         if (p1->mme_s11_teid < p2->mme_s11_teid) {
+            return -1;
+        }
+    } else if (p1->mme_ue_s1ap_id > 0) {
+        MME_APP_DEBUG(" with mme_ue_s1ap_id          %d\n"       , p2->mme_ue_s1ap_id);
+        /* if s1ap ue id provided */
+        if (p1->mme_ue_s1ap_id > p2->mme_ue_s1ap_id) {
+            return 1;
+        }
+        if (p1->mme_ue_s1ap_id < p2->mme_ue_s1ap_id) {
+            return -1;
+        }
+    }  else if (p1->ue_id > 0) {
+        /* if nas ue_id provided */
+        if (p1->ue_id > p2->ue_id) {
+            return 1;
+        }
+        if (p1->ue_id < p2->ue_id) {
             return -1;
         }
     } else {
@@ -144,14 +168,44 @@ struct ue_context_s *mme_ue_context_exists_s11_teid(mme_ue_context_t *mme_ue_con
     DevAssert(mme_ue_context != NULL);
 
     memset(&reference, 0, sizeof(struct ue_context_s));
-    reference.imsi = 0;
     reference.mme_s11_teid = teid;
     return RB_FIND(ue_context_map, &mme_ue_context->ue_context_tree,
                    &reference);
 }
 
 inline
-struct ue_context_s *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
+ue_context_t *mme_ue_context_exists_mme_ue_s1ap_id(
+        mme_ue_context_t *mme_ue_context,
+        uint32_t mme_ue_s1ap_id)
+{
+    struct ue_context_s  reference;
+
+    DevAssert(mme_ue_context != NULL);
+
+    memset(&reference, 0, sizeof(struct ue_context_s));
+    reference.mme_ue_s1ap_id = mme_ue_s1ap_id;
+    return RB_FIND(ue_context_map, &mme_ue_context->ue_context_tree,
+                   &reference);
+}
+
+inline
+ue_context_t *mme_ue_context_exists_nas_ue_id(
+        mme_ue_context_t *mme_ue_context,
+        uint32_t nas_ue_id)
+{
+    struct ue_context_s  reference;
+
+    DevAssert(mme_ue_context != NULL);
+
+    memset(&reference, 0, sizeof(struct ue_context_s));
+    reference.ue_id = nas_ue_id;
+    return RB_FIND(ue_context_map, &mme_ue_context->ue_context_tree,
+                   &reference);
+}
+
+
+inline
+ue_context_t *mme_ue_context_exists_guti(mme_ue_context_t *mme_ue_context,
                                                 GUTI_t guti)
 {
     struct ue_context_s  reference;

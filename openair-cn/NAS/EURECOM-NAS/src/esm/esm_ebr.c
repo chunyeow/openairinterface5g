@@ -358,6 +358,8 @@ int esm_ebr_start_timer(emm_data_context_t *ctx, int ebi, const OctetString *msg
     LOG_FUNC_IN;
 
     if ( (ebi < ESM_EBI_MIN) || (ebi > ESM_EBI_MAX) ) {
+        LOG_TRACE(ERROR, "ESM-FSM   - Retransmission timer bad ebi %d",
+            ebi);
         LOG_FUNC_RETURN (RETURNerror);
     }
 
@@ -365,6 +367,7 @@ int esm_ebr_start_timer(emm_data_context_t *ctx, int ebi, const OctetString *msg
     ebr_ctx = ctx->esm_data_ctx.ebr.context[ebi - ESM_EBI_MIN];
     if ( (ebr_ctx == NULL) || (ebr_ctx->ebi != ebi) ) {
         /* EPS bearer context not assigned */
+        LOG_TRACE(ERROR, "ESM-FSM   - EPS bearer context not assigned");
         LOG_FUNC_RETURN (RETURNerror);
     }
 
@@ -401,6 +404,10 @@ int esm_ebr_start_timer(emm_data_context_t *ctx, int ebi, const OctetString *msg
         LOG_TRACE(INFO, "ESM-FSM   - Retransmission timer %d expires in "
                   "%ld seconds", ebr_ctx->timer.id, ebr_ctx->timer.sec);
         LOG_FUNC_RETURN (RETURNok);
+    } else {
+        LOG_TRACE(ERROR, "ESM-FSM   - ebr_ctx->args == NULL(%p) or ebr_ctx->timer.id == NAS_TIMER_INACTIVE_ID == -1 (%d)" ,
+            ebr_ctx->args,
+            ebr_ctx->timer.id);
     }
     LOG_FUNC_RETURN (RETURNerror);
 }

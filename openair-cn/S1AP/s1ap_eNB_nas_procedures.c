@@ -52,16 +52,16 @@
 int s1ap_eNB_handle_nas_first_req(
     instance_t instance, s1ap_nas_first_req_t *s1ap_nas_first_req_p)
 {
-    s1ap_eNB_instance_t          *instance_p;
+    s1ap_eNB_instance_t          *instance_p = NULL;
     struct s1ap_eNB_mme_data_s   *mme_desc_p = NULL;
-    struct s1ap_eNB_ue_context_s *ue_desc_p;
+    struct s1ap_eNB_ue_context_s *ue_desc_p  = NULL;
 
     s1ap_message message;
 
-    S1ap_InitialUEMessageIEs_t *initial_ue_message_p;
+    S1ap_InitialUEMessageIEs_t *initial_ue_message_p = NULL;
 
-    uint8_t  *buffer;
-    uint32_t  length;
+    uint8_t  *buffer = NULL;
+    uint32_t  length = 0;
 
     DevAssert(s1ap_nas_first_req_p != NULL);
 
@@ -134,7 +134,9 @@ int s1ap_eNB_handle_nas_first_req(
         if ((collision_p = RB_INSERT(s1ap_ue_map, &instance_p->s1ap_ue_head, ue_desc_p))
                 == NULL)
         {
-            S1AP_DEBUG("Found usable eNB_ue_s1ap_id: 0x%06x\n", ue_desc_p->eNB_ue_s1ap_id);
+            S1AP_DEBUG("Found usable eNB_ue_s1ap_id: 0x%06x %d(10)\n",
+                    ue_desc_p->eNB_ue_s1ap_id,
+                    ue_desc_p->eNB_ue_s1ap_id);
             /* Break the loop as the id is not already used by another UE */
             break;
         }
@@ -151,6 +153,7 @@ int s1ap_eNB_handle_nas_first_req(
     initial_ue_message_p->rrC_Establishment_Cause = s1ap_nas_first_req_p->establishment_cause;
 
     if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_s_tmsi) {
+        S1AP_DEBUG("S_TMSI_PRESENT");
         initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_S_TMSI_PRESENT;
 
         MME_CODE_TO_OCTET_STRING(s1ap_nas_first_req_p->ue_identity.s_tmsi.mme_code,
@@ -159,6 +162,7 @@ int s1ap_eNB_handle_nas_first_req(
                                &initial_ue_message_p->s_tmsi.m_TMSI);
     }
     if (s1ap_nas_first_req_p->ue_identity.presenceMask & UE_IDENTITIES_gummei) {
+        S1AP_DEBUG("GUMMEI_ID_PRESENT");
         initial_ue_message_p->presenceMask |= S1AP_INITIALUEMESSAGEIES_GUMMEI_ID_PRESENT;
 
         MCC_MNC_TO_PLMNID(
@@ -210,15 +214,15 @@ int s1ap_eNB_handle_nas_first_req(
     return 0;
 }
 
-int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
-                                 uint32_t               stream,
-                                 struct s1ap_message_s *message_p)
+int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
+                                 const uint32_t               stream,
+                                 const struct s1ap_message_s *const message_p)
 {
-    S1ap_DownlinkNASTransportIEs_t *downlink_NAS_transport_p;
+    S1ap_DownlinkNASTransportIEs_t *downlink_NAS_transport_p = NULL;
 
-    s1ap_eNB_mme_data_t   *mme_desc_p;
-    s1ap_eNB_ue_context_t *ue_desc_p;
-    s1ap_eNB_instance_t   *s1ap_eNB_instance;
+    s1ap_eNB_mme_data_t   *mme_desc_p                        = NULL;
+    s1ap_eNB_ue_context_t *ue_desc_p                         = NULL;
+    s1ap_eNB_instance_t   *s1ap_eNB_instance                 = NULL;
 
     DevAssert(message_p != NULL);
 
@@ -232,8 +236,9 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
     }
 
     if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
-        S1AP_ERROR("[SCTP %d] Received NAS downlink message for non "
-                   "existing MME context\n", assoc_id);
+        S1AP_ERROR(
+                "[SCTP %d] Received NAS downlink message for non existing MME context\n",
+                assoc_id);
         return -1;
     }
 
@@ -242,9 +247,10 @@ int s1ap_eNB_handle_nas_downlink(uint32_t               assoc_id,
     if ((ue_desc_p = s1ap_eNB_get_ue_context(s1ap_eNB_instance,
          downlink_NAS_transport_p->eNB_UE_S1AP_ID)) == NULL)
     {
-        S1AP_ERROR("[SCTP %d] Received NAS downlink message for non "
-        "existing UE context: 0x%06x\n", assoc_id,
-        downlink_NAS_transport_p->eNB_UE_S1AP_ID);
+        S1AP_ERROR("[SCTP %d] Received NAS downlink message for non existing UE context: 0x%08x %l(10)\n",
+                assoc_id,
+                downlink_NAS_transport_p->eNB_UE_S1AP_ID,
+                downlink_NAS_transport_p->eNB_UE_S1AP_ID);
         return -1;
     }
 
@@ -358,7 +364,7 @@ int s1ap_eNB_nas_uplink(instance_t instance, s1ap_uplink_nas_t *s1ap_uplink_nas_
     return 0;
 }
 
-void s1ap_eNB_nas_non_delivery_ind(instance_t instance, 
+void s1ap_eNB_nas_non_delivery_ind(instance_t instance,
                                    s1ap_nas_non_delivery_ind_t *s1ap_nas_non_delivery_ind)
 {
     struct s1ap_eNB_ue_context_s *ue_context_p;

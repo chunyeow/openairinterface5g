@@ -237,6 +237,7 @@ sgw_pdn_connection_t * sgw_lite_cm_create_pdn_connection(void)
     if ( pdn_connection->sgw_eps_bearers == NULL) {
         SPGW_APP_ERROR("Failed to create eps bearers collection object\n");
         free(pdn_connection);
+        pdn_connection = NULL;
         return NULL;
     }
 
@@ -353,7 +354,7 @@ sgw_eps_bearer_entry_t * sgw_lite_cm_create_eps_bearer_entry_in_collection(hash_
         SPGW_APP_DEBUG("Invalid sgw_eps_bearers hashtable for display\n");
     }
     /* CHECK DUPLICATES IN HASH TABLES ? if (temp == 1) {
-        SPGW_APP_WARNING("This EPS bearer entry already exists: %u\n", eps_bearer_idP);
+        SPGW_APP_WARN("This EPS bearer entry already exists: %u\n", eps_bearer_idP);
         free(new_eps_bearer_entry);
         new_eps_bearer_entry = collision_p;
     }*/

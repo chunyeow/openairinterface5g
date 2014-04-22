@@ -29,41 +29,36 @@ Address      : EURECOM,
                06904 Biot Sophia Antipolis cedex,
                FRANCE
 *******************************************************************************/
+/*! \file mme_app_bearer.c
+* \brief
+* \author Lionel Gauthier
+* \company Eurecom
+* \email: lionel.gauthier@eurecom.fr
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#ifndef MME_APP_ITTI_MESSAGING_H_
-#define MME_APP_ITTI_MESSAGING_H_
+#include "intertask_interface.h"
+#include "mme_config.h"
 
-static inline void
-mme_app_itti_auth_fail(
-        const uint32_t ue_id,
-        const nas_cause_t cause)
+#include "mme_app_extern.h"
+#include "mme_app_ue_context.h"
+#include "mme_app_defs.h"
+
+#include "secu_defs.h"
+
+#include "assertions.h"
+#include "common_types.h"
+
+int
+mme_app_handle_s1ap_ue_capabilities_ind(
+        const s1ap_ue_cap_ind_t  const * s1ap_ue_cap_ind_pP)
 {
-    MessageDef *message_p;
-
-    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_FAIL);
-
-    NAS_AUTHENTICATION_PARAM_FAIL(message_p).ue_id = ue_id;
-    NAS_AUTHENTICATION_PARAM_FAIL(message_p).cause = cause;
-
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
+  DevAssert(s1ap_ue_cap_ind_pP != NULL);
+  //unsigned eNB_ue_s1ap_id:24;
+  //uint32_t mme_ue_s1ap_id;
+  //uint8_t  radio_capabilities[100];
+  //uint32_t radio_capabilities_length;
+  return 0;
 }
-
-
-
-static inline void mme_app_itti_auth_rsp(
-        const uint32_t                 ue_id,
-        const uint8_t                  nb_vectors,
-        const  eutran_vector_t * const vector)
-{
-    MessageDef *message_p;
-
-    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_RSP);
-
-    NAS_AUTHENTICATION_PARAM_RSP(message_p).ue_id       = ue_id;
-    NAS_AUTHENTICATION_PARAM_RSP(message_p).nb_vectors  = nb_vectors;
-    memcpy(&NAS_AUTHENTICATION_PARAM_RSP(message_p).vector, vector, sizeof(*vector));
-
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
-}
-
-#endif /* MME_APP_ITTI_MESSAGING_H_ */

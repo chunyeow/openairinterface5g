@@ -168,9 +168,9 @@ s1ap_eNB_nnsf_select_mme_by_gummei(s1ap_eNB_instance_t       *instance_p,
                                    rrc_establishment_cause_t  cause,
                                    s1ap_gummei_t                   gummei)
 {
-    struct s1ap_eNB_mme_data_s *mme_data_p = NULL;
+    struct s1ap_eNB_mme_data_s *mme_data_p             = NULL;
     struct s1ap_eNB_mme_data_s *mme_highest_capacity_p = NULL;
-    uint8_t current_capacity = 0;
+    uint8_t                     current_capacity       = 0;
 
     RB_FOREACH(mme_data_p, s1ap_mme_map, &instance_p->s1ap_mme_head) {
         struct served_gummei_s *gummei_p = NULL;

@@ -488,26 +488,27 @@ int s1ap_mme_handle_initial_context_setup_response(
     struct s1ap_message_s *message)
 {
 
-    S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs_p;
-    S1ap_E_RABSetupItemCtxtSURes_t        *eRABSetupItemCtxtSURes_p;
-
-    ue_description_t       *ue_ref;
-    SgwModifyBearerRequest *modify_request_p;
-    MessageDef             *message_p;
+    S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs_p = NULL;
+    S1ap_E_RABSetupItemCtxtSURes_t        *eRABSetupItemCtxtSURes_p         = NULL;
+    ue_description_t                      *ue_ref                           = NULL;
+    MessageDef                            *message_p                        = NULL;
 
     initialContextSetupResponseIEs_p = &message->msg.s1ap_InitialContextSetupResponseIEs;
 
     if ((ue_ref = s1ap_is_ue_mme_id_in_list(
         (uint32_t)initialContextSetupResponseIEs_p->mme_ue_s1ap_id)) == NULL) {
-        S1AP_DEBUG("No UE is attached to this mme UE s1ap id: 0x%08x\n",
+        S1AP_DEBUG("No UE is attached to this mme UE s1ap id: 0x%08x %u(10)\n",
+                   (uint32_t)initialContextSetupResponseIEs_p->mme_ue_s1ap_id,
                    (uint32_t)initialContextSetupResponseIEs_p->mme_ue_s1ap_id);
         return -1;
     }
     if (ue_ref->eNB_ue_s1ap_id !=
             initialContextSetupResponseIEs_p->eNB_UE_S1AP_ID) {
-        S1AP_DEBUG("Mismatch in eNB UE S1AP ID, known: 0x%06x, received: 0x%06x\n",
-                   ue_ref->eNB_ue_s1ap_id,
-                   (uint32_t)initialContextSetupResponseIEs_p->eNB_UE_S1AP_ID);
+        S1AP_DEBUG("Mismatch in eNB UE S1AP ID, known: 0x%06x %u(10), received: 0x%06x %u(10)\n",
+                ue_ref->eNB_ue_s1ap_id,
+                ue_ref->eNB_ue_s1ap_id,
+                (uint32_t)initialContextSetupResponseIEs_p->eNB_UE_S1AP_ID,
+                (uint32_t)initialContextSetupResponseIEs_p->eNB_UE_S1AP_ID);
         return -1;
     }
 
@@ -519,28 +520,31 @@ int s1ap_mme_handle_initial_context_setup_response(
 
     ue_ref->s1_ue_state = S1AP_UE_CONNECTED;
 
-    message_p = itti_alloc_new_message(TASK_SPGW_APP, SGW_MODIFY_BEARER_REQUEST);
+    message_p = itti_alloc_new_message(TASK_S1AP, MME_APP_INITIAL_CONTEXT_SETUP_RSP);
 
-    if (message_p == NULL) {
-        return -1;
-    }
+    AssertFatal(message_p != NULL,"itti_alloc_new_message Failed");
+    memset((void*)&message_p->ittiMsg.mme_app_initial_context_setup_rsp,
+            0,
+            sizeof(mme_app_initial_context_setup_rsp_t));
 
     /* Bad, very bad cast... */
     eRABSetupItemCtxtSURes_p = (S1ap_E_RABSetupItemCtxtSURes_t *)
     initialContextSetupResponseIEs_p->e_RABSetupListCtxtSURes.s1ap_E_RABSetupItemCtxtSURes.array[0];
 
-    modify_request_p = &message_p->ittiMsg.sgwModifyBearerRequest;
-//     modify_request_p->teid = ue_ref->teid;
-    modify_request_p->bearer_context_to_modify.eps_bearer_id =
-        eRABSetupItemCtxtSURes_p->e_RAB_ID;
-    modify_request_p->bearer_context_to_modify.s1_eNB_fteid.teid = *((
-                uint32_t *)eRABSetupItemCtxtSURes_p->gTP_TEID.buf);
-    modify_request_p->bearer_context_to_modify.s1_eNB_fteid.ipv4 = 1;
-    memcpy(&modify_request_p->bearer_context_to_modify.s1_eNB_fteid.ipv4_address,
-           eRABSetupItemCtxtSURes_p->transportLayerAddress.buf, 4);
 
-    return itti_send_msg_to_task(TASK_SPGW_APP, INSTANCE_DEFAULT, message_p);
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).mme_ue_s1ap_id                      = ue_ref->mme_ue_s1ap_id;
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).eps_bearer_id                       = eRABSetupItemCtxtSURes_p->e_RAB_ID ;
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv4           = 1; // TO DO
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv6           = 0; // TO DO
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.interface_type = S1_U_ENODEB_GTP_U;
+    MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.teid           = *((uint32_t *)eRABSetupItemCtxtSURes_p->gTP_TEID.buf);
+    memcpy(&MME_APP_INITIAL_CONTEXT_SETUP_RSP(message_p).bearer_s1u_enb_fteid.ipv4_address,
+            eRABSetupItemCtxtSURes_p->transportLayerAddress.buf,
+            4);
+    return itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
+
+
 
 int s1ap_mme_handle_ue_context_release_request(uint32_t assoc_id,
         uint32_t stream, struct s1ap_message_s *message)
@@ -802,6 +806,7 @@ int s1ap_handle_new_association(sctp_new_peer_t *sctp_new_peer_p)
 //************************* E-RAB management *********************************//
 ////////////////////////////////////////////////////////////////////////////////
 
+// NOT CALLED
 int s1ap_handle_create_session_response(SgwCreateSessionResponse
                                         *session_response_p)
 {
@@ -824,6 +829,7 @@ int s1ap_handle_create_session_response(SgwCreateSessionResponse
     S1ap_InitialContextSetupRequestIEs_t *initialContextSetupRequest_p;
     S1ap_E_RABToBeSetupItemCtxtSUReq_t    e_RABToBeSetup;
 
+    AssertFatal(0, "Not called anymore");
     DevAssert(session_response_p != NULL);
 
     DevCheck(session_response_p->bearer_context_created.cause == REQUEST_ACCEPTED,

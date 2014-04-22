@@ -6,6 +6,7 @@
 #include "assertions.h"
 #include "tree.h"
 #include "emmData.h"
+#include "nas_log.h"
 
 static inline
 int emm_data_ctxt_compare_ueid(struct emm_data_context_s *p1,
@@ -48,11 +49,13 @@ struct emm_data_context_s *emm_data_context_get(
 struct emm_data_context_s *emm_data_context_remove(
     emm_data_t *emm_data, struct emm_data_context_s *elm)
 {
+    LOG_TRACE(INFO, "EMM-CTX - Remove in context %p UE id %u", elm, elm->ueid);
     return RB_REMOVE(emm_data_context_map, &emm_data->ctx_map, elm);
 }
 
 void emm_data_context_add(emm_data_t *emm_data, struct emm_data_context_s *elm)
 {
+    LOG_TRACE(INFO, "EMM-CTX - Add in context %p UE id %u", elm, elm->ueid);
     RB_INSERT(emm_data_context_map, &emm_data->ctx_map, elm);
 }
 

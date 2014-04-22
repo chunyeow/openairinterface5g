@@ -617,10 +617,11 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
     LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "ESM-PROC  - PDN connectivity requested by the UE "
-              "(ueid=%u, pti=%d) PDN type = %s, APN = %s", ctx->ueid, pti,
+              "(ueid=%u, pti=%d) PDN type = %s, APN = %s pdn addr = %s", ctx->ueid, pti,
               (pdn_type == ESM_PDN_TYPE_IPV4)? "IPv4" :
               (pdn_type == ESM_PDN_TYPE_IPV6)? "IPv6" : "IPv4v6",
-              (apn) ? (char *)(apn->value) : "null");
+              (apn) ? (char *)(apn->value) : "null",
+              (pdn_addr) ? (char *)(pdn_addr->value) : "null");
 
 #if !defined(EPC_BUILD)
     /* UE identifier sanity check */
@@ -634,6 +635,9 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
      * Check network IP capabilities
      */
     *esm_cause = ESM_CAUSE_SUCCESS;
+    LOG_TRACE(INFO, "ESM-PROC  - _esm_data.conf.features %08x", _esm_data.conf.features);
+#warning "Uncomment code about _esm_data.conf.features & (MME_API_IPV4 | MME_API_IPV6) later"
+#if defined(ORIGINAL_CODE)
     switch (_esm_data.conf.features & (MME_API_IPV4 | MME_API_IPV6)) {
         case (MME_API_IPV4 | MME_API_IPV6):
             /* The network supports both IPv4 and IPv6 connection */
@@ -660,11 +664,19 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
                 rc = RETURNok;
             }
             break;
-    }
 
+        default:
+            LOG_TRACE(ERROR,
+                    "ESM-PROC  - _esm_data.conf.features incorrect value (no IPV4 or IPV6 ) %X",
+                    _esm_data.conf.features);
+    }
+#else
+    rc = RETURNok;
+#endif
     if (rc != RETURNerror) {
-        mme_api_ip_version_t mme_pdn_index;
         int is_emergency = (request_type == ESM_PDN_REQUEST_EMERGENCY);
+#if defined(ORIGINAL_CODE)
+        mme_api_ip_version_t mme_pdn_index;
         mme_api_qos_t qos;
 
         switch (pdn_type)
@@ -692,20 +704,21 @@ int esm_proc_pdn_connectivity_request(emm_data_context_t *ctx, int pti,
             *esm_cause = ESM_CAUSE_REQUEST_REJECTED_UNSPECIFIED;
             LOG_FUNC_RETURN (RETURNerror);
         }
-
+#endif
 
         /* Create new PDN connection */
         pid = _pdn_connectivity_create(ctx, pti, apn, pdn_type,
                 pdn_addr, is_emergency);
+#if defined(ORIGINAL_CODE)
         /* Setup ESM QoS parameters */
         if (esm_qos) {
             esm_qos->gbrUL = qos.gbr[MME_API_UPLINK];
             esm_qos->gbrDL = qos.gbr[MME_API_DOWNLINK];
             esm_qos->mbrUL = qos.mbr[MME_API_UPLINK];
             esm_qos->mbrDL = qos.mbr[MME_API_DOWNLINK];
-            esm_qos->qci = qos.qci;
+            esm_qos->qci   = qos.qci;
         }
-
+#endif
         if (pid < 0) {
             LOG_TRACE(WARNING, "ESM-PROC  - Failed to create PDN connection");
             *esm_cause = ESM_CAUSE_INSUFFICIENT_RESOURCES;

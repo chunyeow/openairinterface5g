@@ -43,25 +43,39 @@ Address      : EURECOM,
 #include <linux/netlink.h>
 #include <net/sock.h>
 #include <linux/kthread.h>
-
 #include <linux/mutex.h>
 
 #include "local.h"
 #include "proto_extern.h"
 
-//#define NETLINK_DEBUG 1
-
 
 #define NAS_NETLINK_ID 31
 #define NL_DEST_PID 1
 
+/*******************************************************************************
+Prototypes
+*******************************************************************************/
+static inline void nasmesh_lock(void);
+static inline void nasmesh_unlock(void);
+#ifdef KERNEL_VERSION_GREATER_THAN_2629
+static void nas_nl_data_ready (struct sk_buff *skb);
+#else
+static int nas_netlink_rx_thread(void *data);
+static void nas_nl_data_ready (struct sock *sk,int len);
+#endif
+int ue_ip_netlink_init(void);
 
 static struct sock *nas_nl_sk = NULL;
 static int exit_netlink_thread=0;
-static int nas_netlink_rx_thread(void *);
 
+#ifdef KERNEL_VERSION_GREATER_THAN_3800
+struct netlink_kernel_cfg cfg = {
+    .input = nas_nl_data_ready,
+};
+#endif
 
 static DEFINE_MUTEX(nasmesh_mutex);
+
 
 static inline void nasmesh_lock(void)
 {
@@ -137,7 +151,10 @@ static int nas_netlink_rx_thread(void *data) {
 
 }
 
-static void nas_nl_data_ready (struct sock *sk, int len)
+static
+void nas_nl_data_ready (
+    struct sock *sk,
+    int len)
 
 {
   wake_up_interruptible(sk->sk_sleep);
@@ -150,18 +167,23 @@ int ue_ip_netlink_init(void)
 
   printk("[UE_IP_DRV][NETLINK] Running init ...\n");
 
-
   nas_nl_sk = netlink_kernel_create(
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-				    &init_net,
+          &init_net,
 #endif
-				    NAS_NETLINK_ID,
-				    0,
-				    nas_nl_data_ready,
+#ifdef KERNEL_VERSION_GREATER_THAN_3800
+          NAS_NETLINK_ID,
+          &cfg
+#else
+          NAS_NETLINK_ID,
+          0,
+          nas_nl_data_ready,
 #ifdef KERNEL_VERSION_GREATER_THAN_2622
-				    &nasmesh_mutex, // NULL
+          &nasmesh_mutex, // NULL
 #endif
-				    THIS_MODULE);
+          THIS_MODULE
+#endif
+  );
 
 
   if (nas_nl_sk == NULL) {
@@ -221,7 +243,9 @@ int ue_ip_netlink_send(unsigned char *data,unsigned int len) {
 
   nlh->nlmsg_pid = 0;      /* from kernel */
 
+#if !defined(KERNEL_VERSION_GREATER_THAN_3800)
   NETLINK_CB(nl_skb).pid = 0;
+#endif
 
 #ifdef NETLINK_DEBUG
   printk("[UE_IP_DRV][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d\n",nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len);

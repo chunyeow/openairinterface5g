@@ -86,7 +86,7 @@ int main (int argc, const char* argv[])
     if (argc != 2) {
 	fprintf(stderr, "Invalid parameter\n");
 	_display_usage(argv[0]);
-	exit(EXIT_FAILURE);	
+	exit(EXIT_FAILURE);
     }
     else if ( (strcmp(argv[1], "--gen") == 0) ||
 	      (strcmp(argv[1], "-g") == 0) ) {
@@ -121,7 +121,8 @@ int main (int argc, const char* argv[])
 	usim_data.imsi.u.num.digit3 = 8;                // MCC digit 3
 	usim_data.imsi.u.num.digit4 = 1;                // MNC digit 1
 	usim_data.imsi.u.num.digit5 = 0;                // MNC digit 2
-	usim_data.imsi.u.num.digit6 = 0b1111;           // MNC digit 3
+	// LG usim_data.imsi.u.num.digit6 = 0b1111;     // MNC digit 3
+    usim_data.imsi.u.num.digit6 = 0;                // MNC digit 3
 	usim_data.imsi.u.num.digit7 = 0;
 	usim_data.imsi.u.num.digit8 = 0;
 	usim_data.imsi.u.num.digit9 = 0;
@@ -298,7 +299,12 @@ int main (int argc, const char* argv[])
 	usim_data.nasconfig.NMO_I_Behaviour.value[0] = 0x00;
 	usim_data.nasconfig.AttachWithImsi.type = USIM_ATTACH_WITH_IMSI_TAG;
 	usim_data.nasconfig.AttachWithImsi.length = 1;
+#undefine START_WITH_GUTI
+#if defined(START_WITH_GUTI)
 	usim_data.nasconfig.AttachWithImsi.value[0] = 0x00;
+#else
+    usim_data.nasconfig.AttachWithImsi.value[0] = 0x01;
+#endif
 	usim_data.nasconfig.MinimumPeriodicSearchTimer.type = USIM_MINIMUM_PERIODIC_SEARCH_TIMER_TAG;
 	usim_data.nasconfig.MinimumPeriodicSearchTimer.length = 1;
 	usim_data.nasconfig.MinimumPeriodicSearchTimer.value[0] = 0x00;
@@ -491,7 +497,7 @@ static void _display_usim_data(const usim_data_t* data)
     printf("\tLAI\t: PLMN = "); PRINT_PLMN(data->loci.lai.plmn);
     printf(", LAC = 0x%.2x\n", data->loci.lai.lac);
     printf("\tstatus\t= %d\n\n", data->loci.status);
-    
+
     printf("PSLOCI:\n");
     printf("\tP-TMSI = 0x%.4x\n", data->psloci.p_tmsi);
     printf("\tsignature = 0x%x 0x%x 0x%x\n",
@@ -502,7 +508,7 @@ static void _display_usim_data(const usim_data_t* data)
     printf(", LAC = 0x%.2x, RAC = 0x%.1x\n",
 	   data->psloci.rai.lac, data->psloci.rai.rac);
     printf("\tstatus\t= %d\n\n", data->psloci.status);
-    
+
     printf("EPSLOCI:\n");
     printf("\tGUTI\t: GUMMEI\t: (PLMN = ");
     PRINT_PLMN(data->epsloci.guti.gummei.plmn);
@@ -511,11 +517,11 @@ static void _display_usim_data(const usim_data_t* data)
 	   data->epsloci.guti.gummei.MMEcode);
     printf(", M-TMSI = 0x%.4x\n", data->epsloci.guti.m_tmsi);
     printf("\tTAI\t: PLMN = ");
-    PRINT_PLMN(data->epsloci.tai.plmn);    
+    PRINT_PLMN(data->epsloci.tai.plmn);
     printf(", TAC = 0x%.2x\n",
 	   data->epsloci.tai.tac);
     printf("\tstatus\t= %d\n\n", data->epsloci.status);
-    
+
     printf("NASCONFIG:\n");
     printf("\tNAS_SignallingPriority\t\t: 0x%.2x\n",
 	   data->nasconfig.NAS_SignallingPriority.value[0]);

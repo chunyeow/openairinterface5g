@@ -73,6 +73,11 @@
 #define MME_CONFIG_STRING_INTERFACE_NAME_FOR_S11_MME     "MME_INTERFACE_NAME_FOR_S11_MME"
 #define MME_CONFIG_STRING_IPV4_ADDRESS_FOR_S11_MME       "MME_IPV4_ADDRESS_FOR_S11_MME"
 
+#define MME_CONFIG_STRING_ASN1_VERBOSITY                      "VERBOSITY"
+#define MME_CONFIG_STRING_ASN1_VERBOSITY_NONE                 "none"
+#define MME_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING             "annoying"
+#define MME_CONFIG_STRING_ASN1_VERBOSITY_INFO                 "info"
+
 
 typedef struct mme_config_s {
     /* Reader/writer lock for this configuration */

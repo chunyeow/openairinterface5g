@@ -29,7 +29,9 @@ Description Defines functions executed at the ESM Service Access
 #include "esm_proc.h"
 
 #include "esm_cause.h"
-
+#ifdef NAS_MME
+#include "nas_itti_messaging.h"
+#endif
 #ifdef NAS_UE
 #include <stdlib.h> // malloc, free
 #include <string.h> // memset
@@ -729,6 +731,7 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
         request_type = ESM_PDN_REQUEST_EMERGENCY;
     } else {
         /* Unkown PDN request type */
+        LOG_TRACE(ERROR, "ESM-SAP   - Invalid PDN request type");
         LOG_FUNC_RETURN (ESM_CAUSE_INVALID_MANDATORY_INFO);
     }
     /* Get the value of the PDN type indicator */
@@ -740,6 +743,7 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
         esm_data->pdn_type = ESM_PDN_TYPE_IPV4V6;
     } else {
         /* Unkown PDN type */
+        LOG_TRACE(ERROR, "ESM-SAP   - Invalid PDN type");
         LOG_FUNC_RETURN (ESM_CAUSE_UNKNOWN_PDN_TYPE);
     }
 
@@ -765,7 +769,7 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
          */
         //TODO: rc = esm_proc_information_request();
     }
-
+#if defined(ORIGINAL_CODE)
     /* Execute the PDN connectivity procedure requested by the UE */
     int pid = esm_proc_pdn_connectivity_request(ctx, pti, request_type,
               &esm_data->apn,
@@ -773,6 +777,7 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
               &esm_data->pdn_addr,
               &esm_data->qos,
               &esm_cause);
+
     if (pid != RETURNerror) {
         /* Create local default EPS bearer context */
         int rc = esm_proc_default_eps_bearer_context(ctx, pid, new_ebi,
@@ -781,7 +786,17 @@ int esm_recv_pdn_connectivity_request(emm_data_context_t *ctx, int pti, int ebi,
             esm_cause = ESM_CAUSE_SUCCESS;
         }
     }
+#else
+    int is_emergency = (request_type == ESM_PDN_REQUEST_EMERGENCY);
 
+    nas_itti_pdn_connectivity_req(
+        pti,
+        ctx->ueid,
+        ctx->imsi,
+        esm_data,
+        request_type);
+    esm_cause = ESM_CAUSE_SUCCESS;
+#endif
     /* Return the ESM cause value */
     LOG_FUNC_RETURN (esm_cause);
 }

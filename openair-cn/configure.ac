@@ -191,6 +191,13 @@ AC_ARG_ENABLE([nas],
               [])
 AM_CONDITIONAL([DISABLE_USE_NAS], [test x$enable_nas == xno])
 
+AC_ARG_ENABLE([s11],
+              AS_HELP_STRING([--disable-s11], [Disable S11 layer]),
+              [CFLAGS="$CFLAGS -DDISABLE_S11"],
+              [])
+AM_CONDITIONAL([DISABLE_S11], [test x$enable_s11 == xno])
+
+
 dnl *** Enable PCAP for SGI ***
 AC_ARG_ENABLE([pcap_for_sgi],
               AS_HELP_STRING([--enable-pcap-for-sgi], [Enable PCAP for SGI layer]),
@@ -372,3 +379,5 @@ fi
 if test x$raw_socket_for_sgi == xtrue; then
     echo "SGI raw socket.: yes"
 fi
+
+

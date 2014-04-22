@@ -24,6 +24,8 @@
 #define NAS_DL_DATA_REQ(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_req
 #define NAS_DL_DATA_CNF(mSGpTR)                     (mSGpTR)->ittiMsg.nas_dl_data_cnf
 #define NAS_PDN_CONNECTIVITY_REQ(mSGpTR)            (mSGpTR)->ittiMsg.nas_pdn_connectivity_req
+#define NAS_PDN_CONNECTIVITY_RSP(mSGpTR)            (mSGpTR)->ittiMsg.nas_pdn_connectivity_rsp
+#define NAS_PDN_CONNECTIVITY_FAIL(mSGpTR)           (mSGpTR)->ittiMsg.nas_pdn_connectivity_fail
 #define NAS_CONN_EST_IND(mSGpTR)                    (mSGpTR)->ittiMsg.nas_conn_est_ind
 #define NAS_CONNECTION_ESTABLISHMENT_CNF(mSGpTR)    (mSGpTR)->ittiMsg.nas_conn_est_cnf
 #define NAS_BEARER_PARAM(mSGpTR)                    (mSGpTR)->ittiMsg.nas_bearer_param
@@ -33,6 +35,8 @@
 #define NAS_AUTHENTICATION_PARAM_FAIL(mSGpTR)       (mSGpTR)->ittiMsg.nas_auth_param_fail
 
 #define NAS_DATA_LENGHT_MAX     256
+
+
 
 typedef enum {
     EMM_MSG_HEADER = 1,
@@ -67,6 +71,8 @@ typedef enum {
     EMM_MSG_CS_SERVICE_NOTIFICATION,
 } emm_message_ids_t;
 
+
+
 typedef enum {
     ESM_MSG_HEADER = 1,
     ESM_MSG_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST,
@@ -93,10 +99,14 @@ typedef enum {
     ESM_MSG_ESM_STATUS,
 } esm_message_ids_t;
 
+
+
 typedef struct nas_raw_msg_s {
     uint32_t                        lenght;
     uint8_t                         data[NAS_DATA_LENGHT_MAX];
 } nas_raw_msg_t;
+
+
 
 typedef struct nas_emm_plain_msg_s {
     emm_message_ids_t               present;
@@ -104,11 +114,14 @@ typedef struct nas_emm_plain_msg_s {
 
 } nas_emm_plain_msg_t;
 
+
+
 typedef struct nas_emm_protected_msg_s {
     nas_message_security_header_t   header;
     emm_message_ids_t               present;
     EMM_msg                         choice;
 } nas_emm_protected_msg_t;
+
 
 typedef struct nas_esm_plain_msg_s {
     esm_message_ids_t               present;
@@ -116,25 +129,71 @@ typedef struct nas_esm_plain_msg_s {
 
 } nas_esm_plain_msg_t;
 
+
 typedef struct nas_esm_protected_msg_s {
     nas_message_security_header_t   header;
     esm_message_ids_t               present;
     ESM_msg                         choice;
 } nas_esm_protected_msg_t;
 
+
 typedef struct nas_paging_ind_s {
 
 } nas_paging_ind_t;
 
+
 typedef struct nas_pdn_connectivity_req_s {
-    char                  imsi[16];
-    uint8_t               imsi_length;
-    OctetString           apn;
-    OctetString           pdn_addr;
-    int                   mme_pdn_index;
-    network_qos_t         esm_qos;
-    int                   is_emergency;
+    int                    pti;   // nas ref  Identity of the procedure transaction executed to activate the PDN connection entry
+    unsigned               ue_id; // nas ref
+    char                   imsi[16];
+    uint8_t                imsi_length;
+    network_qos_t          qos;
+    OctetString            apn;
+    OctetString            pdn_addr;
+    int                    pdn_type;
+    void                  *proc_data;
+    int                    request_type;
 } nas_pdn_connectivity_req_t;
+
+
+typedef struct nas_pdn_connectivity_rsp_s {
+    int                     pti;   // nas ref  Identity of the procedure transaction executed to activate the PDN connection entry
+    unsigned                ue_id; // nas ref
+    network_qos_t           qos;
+    OctetString             apn;
+    OctetString             pdn_addr;
+    int                     pdn_type;
+    void                   *proc_data;
+    int                     request_type;
+
+    unsigned                eNB_ue_s1ap_id:24;
+    uint32_t                mme_ue_s1ap_id;
+
+    /* Key eNB */
+    uint8_t                 keNB[32];
+
+    ambr_t                  ambr;
+    ambr_t                  apn_ambr;
+
+    /* EPS bearer ID */
+    unsigned                ebi:4;
+
+    /* QoS */
+    qci_t                   qci;
+    priority_level_t        prio_level;
+    pre_emp_vulnerability_t pre_emp_vulnerability;
+    pre_emp_capability_t    pre_emp_capability;
+
+    /* S-GW TEID for user-plane */
+    Teid_t                  sgw_s1u_teid;
+    /* S-GW IP address for User-Plane */
+    ip_address_t            sgw_s1u_address;
+} nas_pdn_connectivity_rsp_t;
+
+
+typedef struct nas_pdn_connectivity_fail_s {
+    unsigned                ue_id; // nas ref
+} nas_pdn_connectivity_fail_t;
 
 
 typedef struct nas_conn_est_ind_s {
@@ -146,7 +205,9 @@ typedef struct nas_conn_est_ind_s {
     s1ap_initial_ue_message_t transparent;
 } nas_conn_est_ind_t;
 
+
 typedef nas_establish_rsp_t nas_conn_est_rej_t;
+
 
 #if defined(DISABLE_USE_NAS)
 typedef struct nas_conn_est_cnf_s {
@@ -160,55 +221,34 @@ typedef struct nas_conn_est_cnf_s {
 typedef nas_establish_cnf_t nas_conn_est_cnf_t;
 #endif
 
-typedef struct nas_bearer_param_s {
-    unsigned eNB_ue_s1ap_id:24;
-    uint32_t mme_ue_s1ap_id;
-
-    /* Key eNB */
-    uint8_t keNB[32];
-
-    ambr_t   ambr;
-    ambr_t   apn_ambr;
-
-    /* EPS bearer ID */
-    unsigned ebi:4;
-
-    /* QoS */
-    qci_t                   qci;
-    priority_level_t        prio_level;
-    pre_emp_vulnerability_t pre_emp_vulnerability;
-    pre_emp_capability_t    pre_emp_capability;
-
-    /* S-GW TEID for user-plane */
-    uint32_t     sgw_s1u_teid;
-    /* S-GW IP address for User-Plane */
-    ip_address_t sgw_s1u_address;
-} nas_bearer_param_t;
 
 typedef struct nas_conn_rel_ind_s {
-    
+
 } nas_conn_rel_ind_t;
 
 typedef ul_info_transfer_ind_t nas_ul_data_ind_t;
-
 typedef dl_info_transfer_req_t nas_dl_data_req_t;
 typedef dl_info_transfer_cnf_t nas_dl_data_cnf_t;
 
+
 typedef struct nas_non_del_ind_s {
-    
+
 } nas_non_del_ind_t;
 
 typedef struct nas_rab_est_req_s {
-    
+
 } nas_rab_est_req_t;
 
+
 typedef struct nas_rab_est_rsp_s {
-    
+
 } nas_rab_est_rsp_t;
 
+
 typedef struct nas_rab_rel_req_s {
-    
+
 } nas_rab_rel_req_t;
+
 
 typedef struct nas_attach_req_s {
     /* TODO: Set the correct size */
@@ -219,6 +259,7 @@ typedef struct nas_attach_req_s {
     s1ap_initial_ue_message_t transparent;
 } nas_attach_req_t;
 
+
 typedef struct nas_auth_req_s {
     /* UE imsi */
     char imsi[16];
@@ -228,6 +269,7 @@ typedef struct nas_auth_req_s {
     unsigned failure:1;
     int cause;
 } nas_auth_req_t;
+
 
 typedef struct nas_auth_resp_s {
     char imsi[16];
@@ -244,9 +286,10 @@ typedef struct nas_auth_param_req_s {
     /* Indicates whether the procedure corresponds to a new connection or not */
     uint8_t  initial_req:1;
 
-    uint8_t re_synchronization:1;
-    uint8_t auts[14];
+    uint8_t  re_synchronization:1;
+    uint8_t  auts[14];
 } nas_auth_param_req_t;
+
 
 typedef struct nas_auth_param_rsp_s {
     /* UE identifier */
@@ -266,6 +309,7 @@ typedef struct nas_auth_param_fail_s {
     /* S6A mapped to NAS cause */
     nas_cause_t cause;
 } nas_auth_param_fail_t;
+
 
 #if defined(DISABLE_USE_NAS)
 typedef struct nas_attach_accept_s {

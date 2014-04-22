@@ -215,7 +215,7 @@ static void *s11_mme_thread(void *args)
             }
             break;
         }
-        free(received_message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
     return NULL;

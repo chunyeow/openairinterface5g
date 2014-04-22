@@ -50,6 +50,28 @@
 # define hton_int16(x) (x)
 #endif
 
+#define IN_ADDR_TO_BUFFER(X,bUFF) INT32_TO_BUFFER((X).s_addr,(char*)bUFF)
+
+#define IN6_ADDR_TO_BUFFER(X,bUFF)                     \
+    do {                                               \
+        ((uint8_t*)(bUFF))[0]  = (X).s6_addr[0];  \
+        ((uint8_t*)(bUFF))[1]  = (X).s6_addr[1];  \
+        ((uint8_t*)(bUFF))[2]  = (X).s6_addr[2];  \
+        ((uint8_t*)(bUFF))[3]  = (X).s6_addr[3];  \
+        ((uint8_t*)(bUFF))[4]  = (X).s6_addr[4];  \
+        ((uint8_t*)(bUFF))[5]  = (X).s6_addr[5];  \
+        ((uint8_t*)(bUFF))[6]  = (X).s6_addr[6];  \
+        ((uint8_t*)(bUFF))[7]  = (X).s6_addr[7];  \
+        ((uint8_t*)(bUFF))[8]  = (X).s6_addr[8];  \
+        ((uint8_t*)(bUFF))[9]  = (X).s6_addr[9];  \
+        ((uint8_t*)(bUFF))[10] = (X).s6_addr[10]; \
+        ((uint8_t*)(bUFF))[11] = (X).s6_addr[11]; \
+        ((uint8_t*)(bUFF))[12] = (X).s6_addr[12]; \
+        ((uint8_t*)(bUFF))[13] = (X).s6_addr[13]; \
+        ((uint8_t*)(bUFF))[14] = (X).s6_addr[14]; \
+        ((uint8_t*)(bUFF))[15] = (X).s6_addr[15]; \
+    } while(0)
+
 #define BUFFER_TO_INT8(buf, x) (x = ((buf)[0]))
 
 #define INT8_TO_BUFFER(x, buf) ((buf)[0] = (x))

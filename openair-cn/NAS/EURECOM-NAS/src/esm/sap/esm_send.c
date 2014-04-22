@@ -541,6 +541,12 @@ int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
     /* Mandatory - EPS QoS */
     msg->epsqos = *qos;
 
+    if ((apn == NULL) || ((apn  != NULL) && (apn->value == NULL))) {
+        LOG_TRACE(WARNING, "ESM-SAP   - apn is NULL!");
+    }
+
+    LOG_TRACE(INFO, "ESM-SAP   - apn is %s", apn->value);
+
     /* Mandatory - Access Point Name */
     msg->accesspointname.accesspointnamevalue = *apn;
 

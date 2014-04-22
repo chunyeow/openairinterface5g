@@ -57,17 +57,17 @@ x2ap-maxNrOfErrors								INTEGER ::= 256
 x2ap-maxnoofPDCP-SN								INTEGER ::= 16
 x2ap-maxnoofEPLMNs								INTEGER ::= 15
 x2ap-maxnoofEPLMNsPlusOne						INTEGER ::= 16
-x2ap-maxnoofForbLACs								INTEGER ::= 4096
-x2ap-maxnoofForbTACs							    INTEGER ::= 4096
+x2ap-maxnoofForbLACs							INTEGER ::= 4096
+x2ap-maxnoofForbTACs							INTEGER ::= 4096
 x2ap-maxnoofBPLMNs								INTEGER ::= 6
 x2ap-maxnoofNeighbours							INTEGER ::= 512
-x2ap-maxnoofPRBs									INTEGER ::= 110
+x2ap-maxnoofPRBs								INTEGER ::= 110
 x2ap-maxPools									INTEGER ::= 16
 x2ap-maxnoofCells								INTEGER ::= 16
 x2ap-maxnoofMBSFN								INTEGER ::= 8
 x2ap-maxFailedMeasObjects						INTEGER ::= 32
-x2ap-maxnoofCellIDforMDT							INTEGER ::= 32
-x2ap-maxnoofTAforMDT								INTEGER ::= 8
+x2ap-maxnoofCellIDforMDT						INTEGER ::= 32
+x2ap-maxnoofTAforMDT							INTEGER ::= 8
 x2ap-maxnoofMBMSServiceAreaIdentities			INTEGER ::= 256
 
 

@@ -103,7 +103,7 @@ static void* sgi_task_thread(void *args_p)
                 req_p = &received_message_p->ittiMsg.sgiCreateEndpointReq;
                 sgi_create_endpoint_request(sgi_data_p, req_p);
 
-                
+
             }
             break;
 
@@ -121,7 +121,7 @@ static void* sgi_task_thread(void *args_p)
             }
             break;
         }
-        free(received_message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
     return NULL;

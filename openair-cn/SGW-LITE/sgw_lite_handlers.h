@@ -39,12 +39,12 @@ Address      : EURECOM,
 #ifndef SGW_LITE_HANDLERS_H_
 #define SGW_LITE_HANDLERS_H_
 
-int sgw_lite_handle_create_session_request(SgwCreateSessionRequest *session_req_p);
-int sgw_lite_handle_sgi_endpoint_created  (SGICreateEndpointResp   *resp_p);
-int sgw_lite_handle_sgi_endpoint_updated  (SGIUpdateEndpointResp   *resp_p);
-int sgw_lite_handle_gtpv1uCreateTunnelResp(Gtpv1uCreateTunnelResp  *endpoint_created_p);
-int sgw_lite_handle_gtpv1uUpdateTunnelResp(Gtpv1uUpdateTunnelResp  *endpoint_updated_p);
-int sgw_lite_handle_modify_bearer_request (SgwModifyBearerRequest  *modify_bearer_p);
-int sgw_lite_handle_delete_session_request(SgwDeleteSessionRequest *delete_session_p);
+int sgw_lite_handle_create_session_request(const SgwCreateSessionRequest * const session_req_p);
+int sgw_lite_handle_sgi_endpoint_created  (const SGICreateEndpointResp   * const resp_p);
+int sgw_lite_handle_sgi_endpoint_updated  (const SGIUpdateEndpointResp   * const resp_p);
+int sgw_lite_handle_gtpv1uCreateTunnelResp(const Gtpv1uCreateTunnelResp  * const endpoint_created_p);
+int sgw_lite_handle_gtpv1uUpdateTunnelResp(const Gtpv1uUpdateTunnelResp  * const endpoint_updated_p);
+int sgw_lite_handle_modify_bearer_request (const SgwModifyBearerRequest  * const modify_bearer_p);
+int sgw_lite_handle_delete_session_request(const SgwDeleteSessionRequest * const delete_session_p);
 
 #endif /* SGW_LITE_HANDLERS_H_ */

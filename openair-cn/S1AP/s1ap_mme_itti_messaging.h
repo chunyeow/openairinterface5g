@@ -45,6 +45,36 @@ int s1ap_mme_itti_nas_uplink_ind(const uint32_t ue_id, uint8_t *const buffer,
 int s1ap_mme_itti_nas_downlink_cnf(const uint32_t ue_id,
                                    nas_error_code_t error_code);
 
+
+static inline void s1ap_mme_itti_mme_app_establish_ind(
+    const uint32_t  ue_id,
+    const uint8_t * const nas_msg,
+    const uint32_t  nas_msg_length,
+    const long      cause,
+    const uint16_t  tac)
+{
+    MessageDef  *message_p = NULL;
+
+    message_p = itti_alloc_new_message(TASK_S1AP, MME_APP_CONNECTION_ESTABLISHMENT_IND);
+
+    MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).mme_ue_s1ap_id           = ue_id;
+
+    MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.UEid                 = ue_id;
+    /* Mapping between asn1 definition and NAS definition */
+    MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.asCause              = cause + 1;
+    MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.tac                  = tac;
+    MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.initialNasMsg.length = nas_msg_length;
+
+    MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.initialNasMsg.data   = malloc(sizeof(uint8_t) * nas_msg_length);
+    memcpy(MME_APP_CONNECTION_ESTABLISHMENT_IND(message_p).nas.initialNasMsg.data, nas_msg, nas_msg_length);
+
+    // should be sent to MME_APP, but this one would forward it to NAS_MME, so send it directly to NAS_MME
+    // but let's see
+    itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
+}
+
+
+
 static inline void s1ap_mme_itti_nas_establish_ind(
     const uint32_t ue_id, uint8_t * const nas_msg, const uint32_t nas_msg_length,
     const long cause, const uint16_t tac)
@@ -62,6 +92,8 @@ static inline void s1ap_mme_itti_nas_establish_ind(
     NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data = malloc(sizeof(uint8_t) * nas_msg_length);
     memcpy(NAS_CONN_EST_IND(message_p).nas.initialNasMsg.data, nas_msg, nas_msg_length);
 
+    // should be sent to MME_APP, but this one would forward it to NAS_MME, so send it directly to NAS_MME
+    // but let's see
     itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
 }
 

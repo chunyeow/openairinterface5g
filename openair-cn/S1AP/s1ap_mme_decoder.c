@@ -140,12 +140,11 @@ static int s1ap_mme_decode_initiating(
 static int s1ap_mme_decode_successfull_outcome(
     s1ap_message *message, S1ap_SuccessfulOutcome_t *successfullOutcome_p)
 {
-    int ret = -1;
-
-    MessageDef *message_p;
-    char       *message_string = NULL;
-    size_t      message_string_size;
-    MessagesIds message_id;
+    int ret                         = -1;
+    MessageDef *message_p           = NULL;
+    char       *message_string      = NULL;
+    size_t      message_string_size = 0;
+    MessagesIds message_id          = MESSAGES_ID_MAX;
 
     DevAssert(successfullOutcome_p != NULL);
 

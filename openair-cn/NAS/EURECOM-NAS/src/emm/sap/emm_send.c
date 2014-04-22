@@ -177,6 +177,7 @@ int emm_send_attach_request(const emm_as_establish_t *msg,
     /* Mandatory - EPS mobile identity */
     size += EPS_MOBILE_IDENTITY_MAXIMUM_LENGTH;
     if (msg->UEid.guti) {
+        LOG_TRACE(INFO, "EMMAS-SAP - Send Attach Request message with GUTI");
         /* Set GUTI mobile identity */
         GutiEpsMobileIdentity_t *guti = &emm_msg->oldgutiorimsi.guti;
         guti->typeofidentity = EPS_MOBILE_IDENTITY_GUTI;
@@ -191,6 +192,7 @@ int emm_send_attach_request(const emm_as_establish_t *msg,
         guti->mncdigit2 = msg->UEid.guti->gummei.plmn.MNCdigit2;
         guti->mncdigit3 = msg->UEid.guti->gummei.plmn.MNCdigit3;
     } else if (msg->UEid.imsi) {
+        LOG_TRACE(INFO, "EMMAS-SAP - Send Attach Request message with IMSI");
         /* Set IMSI mobile identity */
         ImsiEpsMobileIdentity_t *imsi = &emm_msg->oldgutiorimsi.imsi;
         imsi->typeofidentity = EPS_MOBILE_IDENTITY_IMSI;
@@ -211,6 +213,7 @@ int emm_send_attach_request(const emm_as_establish_t *msg,
         imsi->digit14 = msg->UEid.imsi->u.num.digit14;
         imsi->digit15 = msg->UEid.imsi->u.num.digit15;
     } else if (msg->UEid.imei) {
+        LOG_TRACE(INFO, "EMMAS-SAP - Send Attach Request message with IMEI");
         /* Set IMEI mobile identity */
         ImeiEpsMobileIdentity_t *imei = &emm_msg->oldgutiorimsi.imei;
         imei->typeofidentity = EPS_MOBILE_IDENTITY_IMEI;
@@ -897,6 +900,8 @@ int emm_send_attach_accept(const emm_as_establish_t *msg,
     int size = EMM_HEADER_MAXIMUM_LENGTH;
 
     LOG_TRACE(INFO, "EMMAS-SAP - Send Attach Accept message");
+    LOG_TRACE(INFO, "EMMAS-SAP - size = EMM_HEADER_MAXIMUM_LENGTH(%d)",
+            size);
 
     /* Mandatory - Message type */
     emm_msg->messagetype = ATTACH_ACCEPT;
@@ -908,6 +913,8 @@ int emm_send_attach_accept(const emm_as_establish_t *msg,
     /* Mandatory - T3412 value */
     size += GPRS_TIMER_MAXIMUM_LENGTH;
     emm_msg->t3412value.unit = GPRS_TIMER_UNIT_0S;
+    LOG_TRACE(INFO, "EMMAS-SAP - size += GPRS_TIMER_MAXIMUM_LENGTH(%d)  (%d)",
+            GPRS_TIMER_MAXIMUM_LENGTH, size);
 
     /* Mandatory - Tracking area identity list */
     size += TRACKING_AREA_IDENTITY_LIST_MINIMUM_LENGTH;
@@ -921,10 +928,20 @@ int emm_send_attach_accept(const emm_as_establish_t *msg,
     emm_msg->tailist.mncdigit2 = msg->UEid.guti->gummei.plmn.MNCdigit2;
     emm_msg->tailist.mncdigit3 = msg->UEid.guti->gummei.plmn.MNCdigit3;
     emm_msg->tailist.tac = msg->tac;
+    LOG_TRACE(INFO,
+            "EMMAS-SAP - size += "\
+            "TRACKING_AREA_IDENTITY_LIST_MINIMUM_LENGTH(%d)  (%d)",
+            TRACKING_AREA_IDENTITY_LIST_MINIMUM_LENGTH,
+            size);
 
     /* Mandatory - ESM message container */
     size += ESM_MESSAGE_CONTAINER_MINIMUM_LENGTH + msg->NASmsg.length;
     emm_msg->esmmessagecontainer.esmmessagecontainercontents = msg->NASmsg;
+    LOG_TRACE(INFO,
+            "EMMAS-SAP - size += "\
+            "ESM_MESSAGE_CONTAINER_MINIMUM_LENGTH(%d)  (%d)",
+            ESM_MESSAGE_CONTAINER_MINIMUM_LENGTH,
+            size);
 
     /* Optional - GUTI */
     if (msg->new_guti) {
@@ -941,6 +958,11 @@ int emm_send_attach_accept(const emm_as_establish_t *msg,
         emm_msg->guti.guti.mncdigit1 = msg->new_guti->gummei.plmn.MNCdigit1;
         emm_msg->guti.guti.mncdigit2 = msg->new_guti->gummei.plmn.MNCdigit2;
         emm_msg->guti.guti.mncdigit3 = msg->new_guti->gummei.plmn.MNCdigit3;
+        LOG_TRACE(INFO,
+                "EMMAS-SAP - size += "\
+                "EPS_MOBILE_IDENTITY_MAXIMUM_LENGTH(%d)  (%d)",
+                EPS_MOBILE_IDENTITY_MAXIMUM_LENGTH,
+                size);
     }
     LOG_FUNC_RETURN (size);
 }

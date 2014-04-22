@@ -1490,15 +1490,37 @@ int nas_proc_deregister_ue(UInt32_t ue_id)
     LOG_FUNC_RETURN (rc);
 }
 
-int nas_proc_bearer_param(nas_bearer_param_t *nas_bearer_param_pP)
+int nas_proc_pdn_connectivity_res(emm_cn_pdn_res_t *emm_cn_pdn_res)
 {
     int rc = RETURNerror;
+    emm_sap_t emm_sap;
 
     LOG_FUNC_IN;
 
-    rc = RETURNok;
+    emm_sap.primitive = EMMCN_PDN_CONNECTIVITY_RES;
+    emm_sap.u.emm_cn.u.emm_cn_pdn_res = emm_cn_pdn_res;
+
+    rc = emm_sap_send(&emm_sap);
+
     LOG_FUNC_RETURN (rc);
 }
+
+int nas_proc_pdn_connectivity_fail(emm_cn_pdn_fail_t *emm_cn_pdn_fail)
+{
+    int rc = RETURNerror;
+    emm_sap_t emm_sap;
+
+    LOG_FUNC_IN;
+
+    emm_sap.primitive = EMMCN_PDN_CONNECTIVITY_FAIL;
+    emm_sap.u.emm_cn.u.emm_cn_pdn_fail = emm_cn_pdn_fail;
+
+    rc = emm_sap_send(&emm_sap);
+
+    LOG_FUNC_RETURN (rc);
+}
+
+
 
 # endif
 #endif // NAS_MME

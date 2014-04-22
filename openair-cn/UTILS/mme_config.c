@@ -185,6 +185,16 @@ static int config_parse_file(mme_config_t *mme_config_p)
             else
                 mme_config_p->unauthenticated_imsi_supported = 0;
         }
+        if(  (config_setting_lookup_string( setting_mme, MME_CONFIG_STRING_ASN1_VERBOSITY, (const char **)&astring) )) {
+            if (strcasecmp(astring , MME_CONFIG_STRING_ASN1_VERBOSITY_NONE) == 0)
+                mme_config_p->verbosity_level = 0;
+            else if (strcasecmp(astring , MME_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING) == 0)
+                mme_config_p->verbosity_level = 2;
+            else if (strcasecmp(astring , MME_CONFIG_STRING_ASN1_VERBOSITY_INFO) == 0)
+                mme_config_p->verbosity_level = 1;
+            else
+                mme_config_p->verbosity_level = 0;
+        }
 
         // ITTI SETTING
         setting = config_setting_get_member (setting_mme, MME_CONFIG_STRING_INTERTASK_INTERFACE_CONFIG);

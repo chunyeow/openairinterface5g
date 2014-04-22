@@ -188,6 +188,7 @@ static int sctp_remove_assoc_from_list(int32_t assoc_id)
         }
     }
     free(assoc_desc);
+    assoc_desc = NULL;
     sctp_desc.number_of_connections --;
     return 0;
 }
@@ -535,6 +536,7 @@ void *sctp_receiver_thread(void *args_p)
             SCTP_ERROR("[%d] Select() error: %s",
                        sctp_arg_p->sd, strerror(errno));
             free(args_p);
+            args_p = NULL;
             pthread_exit(NULL);
         }
 
@@ -547,6 +549,7 @@ void *sctp_receiver_thread(void *args_p)
                     if ((clientsock = accept(sctp_arg_p->sd, NULL, NULL)) < 0) {
                         SCTP_ERROR("[%d] accept: %s:%d\n", sctp_arg_p->sd, strerror(errno), errno);
                         free(args_p);
+                        args_p = NULL;
                         pthread_exit(NULL);
                     } else {
                         FD_SET(clientsock, &master); /* add to master set */
@@ -578,6 +581,7 @@ void *sctp_receiver_thread(void *args_p)
         }
     }
     free(args_p);
+    args_p = NULL;
     return NULL;
 }
 
@@ -627,7 +631,7 @@ static void *sctp_intertask_interface(void *args_p)
                            ITTI_MSG_NAME(received_message_p));
             } break;
         }
-        free(received_message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
     return NULL;

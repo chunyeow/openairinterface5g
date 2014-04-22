@@ -1053,7 +1053,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
 
   start_meas(&UE_mac_inst[module_idP].tx_ulsch_sdu);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GET_SDU, VCD_FUNCTION_IN);
-  
+
 #ifdef CBA
   if (*access_mode==CBA_ACCESS){
       LOG_D(MAC,"[UE %d] frameP %d subframe %d try CBA transmission\n",
@@ -1264,7 +1264,7 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
       bsr_s, // short bsr
       bsr_l,
       post_padding); // long_bsr
-  
+
   LOG_I(MAC,"[UE %d] Generate header :bufflen %d  sdu_length_total %d, num_sdus %d, sdu_lengths[0] %d, sdu_lcids[0] %d => payload offset %d,  dcch_header_len %d, dtch_header_len %d, padding %d,post_padding %d, bsr len %d, phr len %d, reminder %d \n",
       module_idP,buflen, sdu_length_total,num_sdus,sdu_lengths[0],sdu_lcids[0],payload_offset, dcch_header_len,  dtch_header_len,
       short_padding,post_padding, bsr_len, phr_len,buflen-sdu_length_total-payload_offset);
@@ -1413,7 +1413,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
           ((1+rach_ConfigCommon->ra_SupervisionInfo.mac_ContentionResolutionTimer)<<3)) {
           UE_mac_inst[module_idP].RA_active = 0;
           // Signal PHY to quit RA procedure
-          LOG_E(MAC,"Contention resolution timer expired, RA failed\n");
+          LOG_E(MAC,"Module id %u Contention resolution timer expired, RA failed\n", module_idP);
           mac_xface->ra_failed(module_idP,eNB_indexP);
       }
   }

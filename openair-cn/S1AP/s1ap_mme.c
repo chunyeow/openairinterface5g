@@ -157,8 +157,13 @@ void *s1ap_mme_thread(void *args)
                 s1ap_handle_attach_accepted(&received_message_p->ittiMsg.nas_attach_accept);
             } break;
 #else
-            case NAS_CONNECTION_ESTABLISHMENT_CNF: {
-                s1ap_handle_conn_est_cnf(&NAS_CONNECTION_ESTABLISHMENT_CNF(received_message_p));
+            // handled by MME_APP know
+            //case NAS_CONNECTION_ESTABLISHMENT_CNF: {
+            //    s1ap_handle_conn_est_cnf(&NAS_CONNECTION_ESTABLISHMENT_CNF(received_message_p));
+            //} break;
+
+            case MME_APP_CONNECTION_ESTABLISHMENT_CNF: {
+                s1ap_handle_conn_est_cnf(&MME_APP_CONNECTION_ESTABLISHMENT_CNF(received_message_p));
             } break;
 #endif
 

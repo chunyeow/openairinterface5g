@@ -454,8 +454,8 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
     S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nb_of_e_rabs =
     initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.s1ap_E_RABToBeSetupItemCtxtSUReq.count;
 
-    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_ambr.br_ul = initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL;
-    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_ambr.br_dl = initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL;
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_ambr.br_ul = 64;// TO DO(bitrate_t)(initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL);
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_ambr.br_dl = 1024;//(bitrate_t)(initialContextSetupRequest_p->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL);
 
     S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).security_capabilities.encryption_algorithms =
     BIT_STRING_to_uint16(&initialContextSetupRequest_p->ueSecurityCapabilities.encryptionAlgorithms);
@@ -473,6 +473,7 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
         item_p = (S1ap_E_RABToBeSetupItemCtxtSUReq_t *)initialContextSetupRequest_p->e_RABToBeSetupListCtxtSUReq.s1ap_E_RABToBeSetupItemCtxtSUReq.array[i];
 
         S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].e_rab_id = item_p->e_RAB_ID;
+
         if (item_p->nAS_PDU != NULL) {
             /* Only copy NAS pdu if present */
             S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).e_rab_param[i].nas_pdu.length = item_p->nAS_PDU->size;

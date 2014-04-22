@@ -1708,6 +1708,8 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
     /* Setup the initial NAS information message */
     if (emm_msg != NULL) switch (msg->NASinfo) {
             case EMM_AS_NAS_INFO_ATTACH:
+                LOG_TRACE(WARNING, "EMMAS-SAP - emm_as_establish.nasMSG.length"\
+                          "=%d", msg->NASmsg.length);
                 size = emm_send_attach_accept(msg, &emm_msg->attach_accept);
                 break;
 

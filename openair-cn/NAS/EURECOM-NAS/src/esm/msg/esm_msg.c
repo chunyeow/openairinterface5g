@@ -219,10 +219,12 @@ int esm_msg_encode(ESM_msg *msg, uint8_t *buffer, uint32_t len)
     /* First encode the ESM message header */
     header_result = _esm_msg_encode_header(&msg->header, buffer, len);
     if (header_result < 0) {
-	LOG_TRACE(ERROR, "ESM-MSG   - Failed to encode ESM message header "
-		  "(%d)", header_result);
-	LOG_FUNC_RETURN(header_result);
+            LOG_TRACE(ERROR, "ESM-MSG   - Failed to encode ESM message header "
+                    "(%d)", header_result);
+            LOG_FUNC_RETURN(header_result);
     }
+    LOG_TRACE(INFO, "ESM-MSG   - Encoded ESM message header "
+          "(%d)", header_result);
 
     buffer += header_result;
     len -= header_result;
@@ -299,6 +301,7 @@ int esm_msg_encode(ESM_msg *msg, uint8_t *buffer, uint32_t len)
             LOG_TRACE(ERROR, "ESM-MSG   - Unexpected message type: 0x%x",
                       msg->header.message_type);
             encode_result = TLV_ENCODE_WRONG_MESSAGE_TYPE;
+            break;
     }
 
     if (encode_result < 0) {
@@ -390,13 +393,14 @@ static int _esm_msg_encode_header(const esm_msg_header_t *header,
 
     /* Check the buffer length */
     if (len < sizeof(esm_msg_header_t)) {
-	return (TLV_ENCODE_BUFFER_TOO_SHORT);
+        LOG_TRACE(ERROR, "ESM-MSG   - buffer too short");
+        return (TLV_ENCODE_BUFFER_TOO_SHORT);
     }
     /* Check the protocol discriminator */
     else if (header->protocol_discriminator != EPS_SESSION_MANAGEMENT_MESSAGE) {
-	LOG_TRACE(ERROR, "ESM-MSG   - Unexpected protocol discriminator: 0x%x",
-		  header->protocol_discriminator);
-	return (TLV_ENCODE_PROTOCOL_NOT_SUPPORTED);
+        LOG_TRACE(ERROR, "ESM-MSG   - Unexpected protocol discriminator: 0x%x",
+                header->protocol_discriminator);
+        return (TLV_ENCODE_PROTOCOL_NOT_SUPPORTED);
     }
 
     /* Encode the EPS bearer identity and the protocol discriminator */

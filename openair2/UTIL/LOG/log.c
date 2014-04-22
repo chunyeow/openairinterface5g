@@ -627,7 +627,10 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 
     // do not apply filtering for LOG_F
     // only log messages which are enabled and are below the global log level and component's level threshold
-    if ((level != LOG_FILE) && ((level > c->level) && (level > g_log->level))) {
+    if ((level != LOG_FILE) &&
+            ((level > c->level) ||
+             (level > g_log->level) ||
+             ( c->level > g_log->level))) {
         return;
     }
 

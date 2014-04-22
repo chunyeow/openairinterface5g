@@ -175,6 +175,7 @@ ProtocolExtensionField {X2AP-PROTOCOL-EXTENSION : ExtensionSetParam} ::= SEQUENC
 	extensionValue		X2AP-PROTOCOL-EXTENSION.&Extension		({ExtensionSetParam}{@id})
 }
 
+
 -- **************************************************************
 --
 -- Container for Private IEs

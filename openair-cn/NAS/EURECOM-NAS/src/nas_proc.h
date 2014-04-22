@@ -138,7 +138,8 @@ int nas_proc_ul_transfer_ind(UInt32_t ueid, const Byte_t *data, UInt32_t len);
 int nas_proc_auth_param_res(emm_cn_auth_res_t *emm_cn_auth_res);
 int nas_proc_auth_param_fail(emm_cn_auth_fail_t *emm_cn_auth_fail);
 int nas_proc_deregister_ue(UInt32_t ue_id);
-int nas_proc_bearer_param(nas_bearer_param_t *nas_bearer_param_pP);
+int nas_proc_pdn_connectivity_res(nas_pdn_connectivity_rsp_t *nas_pdn_connectivity_rsp);
+int nas_proc_pdn_connectivity_fail(nas_pdn_connectivity_fail_t *nas_pdn_connectivity_fail);
 #endif
 
 #endif /* __NAS_PROC_H__*/

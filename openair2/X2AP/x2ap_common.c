@@ -62,7 +62,7 @@ inline void ASN_DEBUG(const char *fmt, ...)
 ssize_t x2ap_generate_initiating_message(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_X2ap_ProcedureCode    procedureCode,
+    X2ap_ProcedureCode_t    procedureCode,
     X2ap_Criticality_t      criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr)
@@ -96,7 +96,7 @@ ssize_t x2ap_generate_initiating_message(
 ssize_t x2ap_generate_successfull_outcome(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_X2ap_ProcedureCode         procedureCode,
+    X2ap_ProcedureCode_t         procedureCode,
     X2ap_Criticality_t           criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr)
@@ -131,7 +131,7 @@ ssize_t x2ap_generate_successfull_outcome(
 ssize_t x2ap_generate_unsuccessfull_outcome(
     uint8_t               **buffer,
     uint32_t               *length,
-    e_X2ap_ProcedureCode         procedureCode,
+    X2ap_ProcedureCode_t         procedureCode,
     X2ap_Criticality_t           criticality,
     asn_TYPE_descriptor_t  *td,
     void                   *sptr)

@@ -134,6 +134,14 @@ next_message:
                 nas_proc_auth_param_fail(&NAS_AUTHENTICATION_PARAM_FAIL(received_message_p));
             } break;
 #endif
+            case NAS_PDN_CONNECTIVITY_RSP: {
+              nas_proc_pdn_connectivity_res(&NAS_PDN_CONNECTIVITY_RSP(received_message_p));
+            } break;
+
+            case NAS_PDN_CONNECTIVITY_FAIL: {
+              nas_proc_pdn_connectivity_fail(&NAS_PDN_CONNECTIVITY_FAIL(received_message_p));
+            } break;
+
 
             case TIMER_HAS_EXPIRED: {
 #if !defined(DISABLE_USE_NAS)
@@ -180,7 +188,7 @@ int nas_init(mme_config_t *mme_config_p)
     NAS_DEBUG("Initializing NAS task interface\n");
 
 #if !defined(DISABLE_USE_NAS)
-    nas_log_init(0x2F);
+    nas_log_init(0x3F);
     nas_network_initialize(mme_config_p);
 #endif
 

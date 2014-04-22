@@ -38,7 +38,7 @@ Address      : EURECOM,
 
 #ifndef SGW_LITE_H_
 #define SGW_LITE_H_
-
+#include <netinet/in.h>
 #include "hashtable.h"
 #include "tree.h"
 #include "commonDef.h"
@@ -46,7 +46,7 @@ Address      : EURECOM,
 #include "sgw_lite_context_manager.h"
 
 typedef struct sgw_app_s{
-	
+
     char     *sgw_interface_name_for_S1u_S12_S4_up;
     uint32_t  sgw_ip_address_for_S1u_S12_S4_up;
 
@@ -63,22 +63,33 @@ typedef struct sgw_app_s{
 
 	// the key of this hashtable is the S11 s-gw local teid.
 	hash_table_t *s11_bearer_context_information_hashtable;
-	
+
 
 } sgw_app_t;
 
-typedef struct ipv4_address_s {
 
-}ipv4_address_t;
-typedef struct ipv6_address_s {
+struct pgw_lite_ipv4_list_elm_s {
+    STAILQ_ENTRY(pgw_lite_ipv4_list_elm_s) ipv4_entries;
+    struct in_addr  addr;
+};
 
-}ipv6_address_t;
+
+struct pgw_lite_ipv6_list_elm_s {
+    STAILQ_ENTRY(pgw_lite_ipv6_list_elm_s) ipv6_entries;
+    struct in6_addr addr;
+    int             prefix_len;
+    int             num_allocated;
+    int             num_free;
+} ;
+
 
 typedef struct pgw_app_s{
-    STAILQ_HEAD(free_ipv4_addresses_head_s,      ipv4_address_s) free_ipv4_addresses_head;
-    STAILQ_HEAD(free_ipv6_addresses_head_s,      ipv6_address_s) free_ipv6_addresses_head;
-    STAILQ_HEAD(allocated_ipv4_addresses_head_s, ipv4_address_s) allocated_ipv4_addresses_head;
-    STAILQ_HEAD(allocated_ipv6_addresses_head_s, ipv6_address_s) allocated_ipv6_addresses_head;
+
+    STAILQ_HEAD(pgw_lite_ipv4_list_free_head_s,      pgw_lite_ipv4_list_elm_s) pgw_lite_ipv4_list_free;
+    STAILQ_HEAD(pgw_lite_ipv4_list_allocated_head_s, pgw_lite_ipv4_list_elm_s) pgw_lite_ipv4_list_allocated;
+
+    STAILQ_HEAD(pgw_lite_ipv6_list_free_head_s,      pgw_lite_ipv6_list_elm_s) pgw_lite_ipv6_list_free;
+    STAILQ_HEAD(pgw_lite_ipv6_list_allocated_head_s, pgw_lite_ipv6_list_elm_s) pgw_lite_ipv6_list_allocated;
 } pgw_app_t;
 
 #endif

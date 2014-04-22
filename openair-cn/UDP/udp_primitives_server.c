@@ -281,7 +281,7 @@ static void *udp_intertask_interface(void *args_p)
             } break;
         }
 on_error:
-        free(received_message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
         received_message_p = NULL;
     }
     return NULL;

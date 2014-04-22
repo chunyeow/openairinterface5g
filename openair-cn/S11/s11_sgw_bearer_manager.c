@@ -142,7 +142,8 @@ int s11_sgw_handle_modify_bearer_request(NwGtpv2cStackHandleT *stack_p,
         rc = nwGtpv2cProcessUlpReq(*stack_p, &ulp_req);
         DevAssert(NW_OK == rc);
 
-        free(message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
+        message_p = NULL;
 
         rc = nwGtpv2cMsgParserDelete(*stack_p, pMsgParser);
         DevAssert(NW_OK == rc);

@@ -156,7 +156,8 @@ int s11_mme_handle_create_session_response(NwGtpv2cStackHandleT *stack_p,
     if (rc != NW_OK)
     {
         /* TODO: handle this case */
-        free(message_p);
+        itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
+        message_p = NULL;
 
         rc = nwGtpv2cMsgParserDelete(*stack_p, pMsgParser);
         DevAssert(NW_OK == rc);

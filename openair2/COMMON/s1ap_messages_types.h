@@ -191,7 +191,7 @@ typedef struct transport_layer_addr_s {
      * silently forward it to S1-U.
      */
     uint8_t length;
-    uint8_t buffer[20];
+    uint8_t buffer[20]; // in network byte order
 } transport_layer_addr_t;
 
 #define TRANSPORT_LAYER_ADDR_COPY(dEST,sOURCE)        \

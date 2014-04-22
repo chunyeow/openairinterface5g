@@ -1,31 +1,33 @@
 /*******************************************************************************
+Eurecom OpenAirInterface Core Network
+Copyright(c) 1999 - 2014 Eurecom
 
-  Eurecom OpenAirInterface
-  Copyright(c) 1999 - 2013 Eurecom
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
 
-  This program is free software; you can redistribute it and/or modify it
-  under the terms and conditions of the GNU General Public License,
-  version 2, as published by the Free Software Foundation.
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
 
-  This program is distributed in the hope it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-  more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 
-  You should have received a copy of the GNU General Public License along with
-  this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
 
-  The full GNU General Public License is included in this distribution in
-  the file called "COPYING".
-
-  Contact Information
-  Openair Admin: openair_admin@eurecom.fr
-  Openair Tech : openair_tech@eurecom.fr
-  Forums       : http://forums.eurecom.fr/openairinterface
-  Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
-                 06410 Biot FRANCE
-
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
 *******************************************************************************/
 
 #include <stdio.h>
@@ -71,11 +73,16 @@ void *mme_app_thread(void *args)
 
             case S6A_UPDATE_LOCATION_ANS: {
                 /* We received the update location answer message from HSS -> Handle it */
-                mme_app_create_bearer(&received_message_p->ittiMsg.s6a_update_location_ans);
+                mme_app_handle_s6a_update_location_ans(&received_message_p->ittiMsg.s6a_update_location_ans);
             } break;
 
             case SGW_CREATE_SESSION_RESPONSE: {
                 mme_app_handle_create_sess_resp(&received_message_p->ittiMsg.sgwCreateSessionResponse);
+            } break;
+
+            case SGW_MODIFY_BEARER_RESPONSE: {
+            	MME_APP_DEBUG(" TO DO HANDLE SGW_MODIFY_BEARER_RESPONSE");
+                // TO DO
             } break;
 
 #if defined(DISABLE_USE_NAS)
@@ -91,6 +98,24 @@ void *mme_app_thread(void *args)
                 mme_app_handle_nas_auth_param_req(&received_message_p->ittiMsg.nas_auth_param_req);
             } break;
 #endif
+
+            case NAS_PDN_CONNECTIVITY_REQ: {
+                mme_app_handle_nas_pdn_connectivity_req(&received_message_p->ittiMsg.nas_pdn_connectivity_req);
+            } break;
+
+            //case NAS_CONNECTION_ESTABLISHMENT_CNF: {
+            case NAS_CONNECTION_ESTABLISHMENT_CNF: {
+                mme_app_handle_conn_est_cnf(&NAS_CONNECTION_ESTABLISHMENT_CNF(received_message_p));
+            } break;
+
+            case MME_APP_CONNECTION_ESTABLISHMENT_IND: {
+                mme_app_handle_conn_est_ind(&MME_APP_CONNECTION_ESTABLISHMENT_IND(received_message_p));
+            } break;
+
+            case MME_APP_INITIAL_CONTEXT_SETUP_RSP: {
+                mme_app_handle_initial_context_setup_rsp(&MME_APP_INITIAL_CONTEXT_SETUP_RSP(received_message_p));
+            } break;
+
             case TIMER_HAS_EXPIRED: {
                 /* Check if it is the statistic timer */
                 if (received_message_p->ittiMsg.timer_has_expired.timer_id ==
@@ -105,7 +130,7 @@ void *mme_app_thread(void *args)
             } break;
 
             case S1AP_UE_CAPABILITIES_IND: {
-                // TO DO;
+                mme_app_handle_s1ap_ue_capabilities_ind(&received_message_p->ittiMsg.s1ap_ue_cap_ind);
             } break;
 
             default: {

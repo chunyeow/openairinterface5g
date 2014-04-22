@@ -535,6 +535,9 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
     int                      i;
     ebi_t                    eps_bearer_id        = 0;
     int                      ipv4_addr            = 0;
+    int                      ip_offset            = 0;
+    in_addr_t                in_addr;
+    int                      addrs_length_in_bytes= 0;
 
     message_p = itti_alloc_new_message(TASK_GTPV1_U, GTPV1U_ENB_CREATE_TUNNEL_RESP);
     GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).ue_index    = create_tunnel_req_pP->ue_index;
@@ -542,6 +545,7 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
     GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).num_tunnels = 0;
 
     for (i = 0; i < create_tunnel_req_pP->num_tunnels; i++) {
+        ip_offset               = 0;
         eps_bearer_id = create_tunnel_req_pP->eps_bearer_id[i];
         GTPU_DEBUG("Rx GTPV1U_ENB_CREATE_TUNNEL_REQ ue_index %u eps bearer id %u\n",
             create_tunnel_req_pP->ue_index, eps_bearer_id);
@@ -564,36 +568,44 @@ static int gtpv1u_create_s1u_tunnel(gtpv1u_enb_create_tunnel_req_t *create_tunne
         // PDCP->GTPV1U mapping
         //-----------------------
         hash_rc = hashtable_get(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->ue_index, (void **)&gtpv1u_ue_data_p);
-        if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
-            gtpv1u_ue_data_p = calloc (1, sizeof(gtpv1u_ue_data_t));
-            gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
-            gtpv1u_ue_data_p->instance_id = 0; // TO DO
-            memcpy(&GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.buffer,
-                &gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up,
-                sizeof (in_addr_t));
-            GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.length = sizeof (in_addr_t);
-            AssertFatal(create_tunnel_req_pP->sgw_addr[i].length == 4, "Bad transport layer address for next operation, TO DO");
-            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = *((in_addr_t*)create_tunnel_req_pP->sgw_addr[i].buffer);
+        if ((hash_rc == HASH_TABLE_KEY_NOT_EXISTS) || (hash_rc == HASH_TABLE_OK)) {
 
+            if (hash_rc == HASH_TABLE_KEY_NOT_EXISTS) {
+                gtpv1u_ue_data_p = calloc (1, sizeof(gtpv1u_ue_data_t));
+                hash_rc = hashtable_insert(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->ue_index, gtpv1u_ue_data_p);
+                AssertFatal(hash_rc == HASH_TABLE_OK, "Error inserting ue_mapping in GTPV1U hashtable");
+            }
+            gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
+                gtpv1u_ue_data_p->instance_id = 0; // TO DO
+              memcpy(&GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.buffer,
+                      &gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up,
+                      sizeof (in_addr_t));
+              GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.length = sizeof (in_addr_t);
+
+              addrs_length_in_bytes = create_tunnel_req_pP->sgw_addr[i].length / 8;
+              AssertFatal((addrs_length_in_bytes == 4) ||
+                      (addrs_length_in_bytes == 16) ||
+                      (addrs_length_in_bytes == 20),
+                      "Bad transport layer address length %d (bits) %d (bytes)",
+                      create_tunnel_req_pP->sgw_addr[i].length, addrs_length_in_bytes);
+
+            if ((addrs_length_in_bytes == 4) ||
+                (addrs_length_in_bytes == 20)) {
+                in_addr = *((in_addr_t*)create_tunnel_req_pP->sgw_addr[i].buffer);
+                ip_offset = 4;
+                gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = in_addr;
+            }
+            if ((addrs_length_in_bytes == 16) ||
+                (addrs_length_in_bytes == 20)) {
+                memcpy(gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip6_addr.s6_addr,
+                        &create_tunnel_req_pP->sgw_addr[i].buffer[ip_offset],
+                        16);
+            }
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].state    = BEARER_IN_CONFIG;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB = s1u_teid;
             gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw = create_tunnel_req_pP->sgw_S1u_teid[i];
-            hash_rc = hashtable_insert(gtpv1u_data_g.ue_mapping, create_tunnel_req_pP->ue_index, gtpv1u_ue_data_p);
-            AssertFatal(hash_rc == HASH_TABLE_OK, "Error inserting ue_mapping in GTPV1U hashtable");
             GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_S1u_teid[i] = s1u_teid;
-        } else if (hash_rc == HASH_TABLE_OK) {
-            gtpv1u_ue_data_p->ue_id       = create_tunnel_req_pP->ue_index;
-            gtpv1u_ue_data_p->instance_id = 0; // TO DO
-            memcpy(&GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.buffer,
-                &gtpv1u_data_g.enb_ip_address_for_S1u_S12_S4_up,
-                sizeof (in_addr_t));
-            GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_addr.length = sizeof (in_addr_t);
-            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].sgw_ip_addr = *((in_addr_t*)create_tunnel_req_pP->sgw_addr[i].buffer);
 
-            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].state    = BEARER_IN_CONFIG;
-            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_eNB = s1u_teid;
-            gtpv1u_ue_data_p->bearers[eps_bearer_id - GTPV1U_BEARER_OFFSET].teid_sgw = create_tunnel_req_pP->sgw_S1u_teid[i];
-            GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_S1u_teid[i] = s1u_teid;
         } else {
             GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).enb_S1u_teid[i] = 0;
             GTPV1U_ENB_CREATE_TUNNEL_RESP(message_p).status         = 0xFF;

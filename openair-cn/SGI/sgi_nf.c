@@ -256,7 +256,8 @@ static int sgi_nfqueue_callback(struct nfq_q_handle *myQueue, struct nfgenmsg *m
   data_req_p->buffer = malloc(sizeof(uint8_t) * len);
   if (data_req_p->buffer == NULL) {
       SGI_IF_ERROR("Failed to allocate new buffer\n");
-      free(message_p);
+      itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
+      message_p = NULL;
       return -1;
   } else {
 	  // MAY BE TO BE CHANGED
@@ -272,7 +273,8 @@ static int sgi_nfqueue_callback(struct nfq_q_handle *myQueue, struct nfgenmsg *m
 
     	  if (itti_send_msg_to_task(TASK_GTPV1_U, INSTANCE_DEFAULT, message_p) < 0) {
     		  SGI_IF_ERROR("Failed to send message to task\n");
-    		  free(message_p);
+    	        itti_free(ITTI_MSG_ORIGIN_ID(message_p), message_p);
+    	        message_p = NULL;
     	  }
     	  verdict = NF_STOLEN;
     	  return nfq_set_verdict(myQueue, id, verdict, 0, NULL);

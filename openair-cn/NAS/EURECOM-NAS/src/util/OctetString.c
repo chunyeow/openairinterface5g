@@ -6,6 +6,32 @@
 #include "TLVDecoder.h"
 #include "OctetString.h"
 
+OctetString* dup_octet_string(OctetString *octetstring)
+{
+    OctetString *os_p = NULL;
+    if (octetstring) {
+        os_p = calloc(1,sizeof(OctetString));
+        os_p->length = octetstring->length;
+        os_p->value = malloc(octetstring->length+1);
+        memcpy(os_p->value, octetstring->value, octetstring->length);
+        os_p->value[octetstring->length] = '\0';
+    }
+
+    return os_p;
+}
+
+
+void free_octet_string(OctetString *octetstring)
+{
+    if (octetstring) {
+        if (octetstring->value) free(octetstring->value);
+        octetstring->value  = NULL;
+        octetstring->length = 0;
+        free(octetstring);
+    }
+}
+
+
 int encode_octet_string(OctetString *octetstring, uint8_t *buffer, uint32_t buflen)
 {
     CHECK_PDU_POINTER_AND_LENGTH_ENCODER(buffer, octetstring->length, buflen);

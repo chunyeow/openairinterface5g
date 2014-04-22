@@ -20,4 +20,5 @@ libsgw_lite_la_SOURCES=							\
 	sgw_lite_task.c								\
 	sgw_lite_handlers.c			sgw_lite_handlers.h	\
 	sgw_lite_context_manager.c	sgw_lite_context_manager.h \
-	sgw_lite.h	sgw_lite_defs.h	sgw_lite_ie_defs.h	
+	sgw_lite.h	sgw_lite_defs.h	sgw_lite_ie_defs.h	\
+	pgw_lite_paa.c              pgw_lite_paa.h

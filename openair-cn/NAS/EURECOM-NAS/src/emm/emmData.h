@@ -326,30 +326,30 @@ typedef struct emm_data_context_s {
     RB_ENTRY(emm_data_context_s) entries;
 #endif
 
-    unsigned int ueid;   /* UE identifier                    */
-    int is_dynamic;  /* Dynamically allocated context indicator      */
-    int is_attached;     /* Attachment indicator                 */
-    int is_emergency;    /* Emergency bearer services indicator          */
+    unsigned int ueid;        /* UE identifier                                   */
+    int          is_dynamic;  /* Dynamically allocated context indicator         */
+    int          is_attached; /* Attachment indicator                            */
+    int          is_emergency;/* Emergency bearer services indicator             */
 
-    imsi_t *imsi;    /* The IMSI provided by the UE or the MME       */
-    imei_t *imei;    /* The IMEI provided by the UE              */
-    int guti_is_new;     /* New GUTI indicator                   */
-    GUTI_t *guti;    /* The GUTI assigned to the UE              */
-    GUTI_t *old_guti;    /* The old GUTI                     */
-    int n_tacs;      /* Number of concecutive tracking areas the UE is
-              * registered to                    */
-    tac_t tac;       /* Code of the first tracking area the UE is
-              * registered to                    */
+    imsi_t      *imsi;        /* The IMSI provided by the UE or the MME          */
+    imei_t      *imei;        /* The IMEI provided by the UE                     */
+    int          guti_is_new; /* New GUTI indicator                              */
+    GUTI_t      *guti;        /* The GUTI assigned to the UE                     */
+    GUTI_t      *old_guti;    /* The old GUTI                                    */
+    int          n_tacs;      /* Number of consecutive tracking areas the UE is
+                               * registered to                                   */
+    tac_t       tac;          /* Code of the first tracking area the UE is
+                               * registered to                                   */
 
-    int ksi;         /* Security key set identifier provided by the UE   */
-    int eea;         /* EPS encryption algorithms supported by the UE    */
-    int eia;         /* EPS integrity algorithms supported by the UE     */
-    auth_vector_t vector;        /* EPS authentication vector        */
-    emm_security_context_t *security;    /* Current EPS NAS security context */
-    OctetString esm_msg; /* ESM message contained within the initial request */
-    int emm_cause;   /* EMM failure cause code               */
+    int         ksi;          /* Security key set identifier provided by the UE  */
+    int         eea;          /* EPS encryption algorithms supported by the UE   */
+    int         eia;          /* EPS integrity algorithms supported by the UE    */
+    auth_vector_t vector;/* EPS authentication vector                            */
+    emm_security_context_t *security;    /* Current EPS NAS security context     */
+    OctetString esm_msg;      /* ESM message contained within the initial request*/
+    int         emm_cause;    /* EMM failure cause code                          */
 
-    emm_fsm_state_t _emm_fsm_status;
+    emm_fsm_state_t    _emm_fsm_status;
 
     esm_data_context_t esm_data_ctx;
 } emm_data_context_t;

@@ -68,10 +68,11 @@ typedef struct gtpv1u_teid_data_s {
 
 typedef struct gtpv1u_bearer_s {
     /* TEID used in dl and ul */
-    teid_t         teid_eNB;         ///< eNB TEID
-    teid_t         teid_sgw;         ///< Remote TEID
-    in_addr_t      sgw_ip_addr;
-    tcp_udp_port_t port;
+    teid_t          teid_eNB;         ///< eNB TEID
+    teid_t          teid_sgw;         ///< Remote TEID
+    in_addr_t       sgw_ip_addr;
+    struct in6_addr sgw_ip6_addr;
+    tcp_udp_port_t  port;
     //NwGtpv1uStackSessionHandleT stack_session;
     bearer_state_t state;
 } gtpv1u_bearer_t;

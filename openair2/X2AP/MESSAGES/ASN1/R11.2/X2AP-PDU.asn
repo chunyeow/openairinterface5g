@@ -27,76 +27,76 @@ X2ap-IE ::= SEQUENCE {
 }
 
 X2AP-PDU ::= CHOICE {
-    initiatingMessage InitiatingMessage,
-    successfulOutcome SuccessfulOutcome,
-    unsuccessfulOutcome UnsuccessfulOutcome,
+    initiatingMessage X2ap-InitiatingMessage,
+    successfulOutcome X2ap-SuccessfulOutcome,
+    unsuccessfulOutcome X2ap-UnsuccessfulOutcome,
     ...
 }
 
-InitiatingMessage ::= SEQUENCE {
+X2ap-InitiatingMessage ::= SEQUENCE {
     procedureCode   X2ap-ProcedureCode,
     criticality     X2ap-Criticality,
     value           ANY
 }
 
-SuccessfulOutcome ::= SEQUENCE {
+X2ap-SuccessfulOutcome ::= SEQUENCE {
     procedureCode   X2ap-ProcedureCode,
     criticality     X2ap-Criticality,
     value           ANY
 }
 
-UnsuccessfulOutcome ::= SEQUENCE {
+X2ap-UnsuccessfulOutcome ::= SEQUENCE {
     procedureCode   X2ap-ProcedureCode,
     criticality     X2ap-Criticality,
     value           ANY
 }
 
-HandoverRequest ::= SEQUENCE {
+X2ap-HandoverRequest ::= SEQUENCE {
     handoverRequest-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-HandoverRequestAcknowledge ::= SEQUENCE {
+X2ap-HandoverRequestAcknowledge ::= SEQUENCE {
     handoverRequestAcknowledge-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-HandoverPreparationFailure ::= SEQUENCE {
+X2ap-HandoverPreparationFailure ::= SEQUENCE {
     handoverPreparationFailure-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-SNStatusTransfer ::= SEQUENCE {
+X2ap-SNStatusTransfer ::= SEQUENCE {
     snStatusTransfer-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-UEContextRelease ::= SEQUENCE {
+X2ap-UEContextRelease ::= SEQUENCE {
     ueContextRelease-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-HandoverCancel ::= SEQUENCE {
+X2ap-HandoverCancel ::= SEQUENCE {
     handoverCancel-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-HandoverReport ::= SEQUENCE {
+X2ap-HandoverReport ::= SEQUENCE {
     handoverReport-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ErrorIndication ::= SEQUENCE {
+X2ap-ErrorIndication ::= SEQUENCE {
     errorIndication-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ResetRequest ::= SEQUENCE {
+X2ap-ResetRequest ::= SEQUENCE {
     resetRequest-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ResetResponse ::= SEQUENCE {
+X2ap-ResetResponse ::= SEQUENCE {
     resetResponse-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
@@ -116,82 +116,82 @@ X2SetupFailure ::= SEQUENCE {
     ...
 }
 
-LoadInformation ::= SEQUENCE {
+X2ap-LoadInformation ::= SEQUENCE {
     loadInformation-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ENBConfigurationUpdate ::= SEQUENCE {
+X2ap-ENBConfigurationUpdate ::= SEQUENCE {
     eNBConfigurationUpdate-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ENBConfigurationUpdateAcknowledge ::= SEQUENCE {
+X2ap-ENBConfigurationUpdateAcknowledge ::= SEQUENCE {
     eNBConfigurationUpdateAcknowledge-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ENBConfigurationUpdateFailure ::= SEQUENCE {
+X2ap-ENBConfigurationUpdateFailure ::= SEQUENCE {
     eNBConfigurationUpdateFailure-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ResourceStatusRequest ::= SEQUENCE {
+X2ap-ResourceStatusRequest ::= SEQUENCE {
     resourceStatusRequest-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ResourceStatusResponse ::= SEQUENCE {
+X2ap-ResourceStatusResponse ::= SEQUENCE {
     resourceStatusResponse-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ResourceStatusFailure ::= SEQUENCE {
+X2ap-ResourceStatusFailure ::= SEQUENCE {
     resourceStatusFailure-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-ResourceStatusUpdate ::= SEQUENCE {
+X2ap-ResourceStatusUpdate ::= SEQUENCE {
     resourceStatusUpdate-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-RLFIndication ::= SEQUENCE {
+X2ap-RLFIndication ::= SEQUENCE {
     rlfIndication-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-PrivateMessage ::= SEQUENCE {
+X2ap-PrivateMessage ::= SEQUENCE {
     privateMessage-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-MobilityChangeRequest ::= SEQUENCE {
+X2ap-MobilityChangeRequest ::= SEQUENCE {
     mobilityChangeRequest-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-MobilityChangeAcknowledge ::= SEQUENCE {
+X2ap-MobilityChangeAcknowledge ::= SEQUENCE {
     mobilityChangeAcknowledge-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-MobilityChangeFailure ::= SEQUENCE {
+X2ap-MobilityChangeFailure ::= SEQUENCE {
     mobilityChangeFailure-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-CellActivationRequest ::= SEQUENCE {
+X2ap-CellActivationRequest ::= SEQUENCE {
     cellActivationRequest-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-CellActivationResponse ::= SEQUENCE {
+X2ap-CellActivationResponse ::= SEQUENCE {
     cellActivationResponse-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }
 
-CellActivationFailure ::= SEQUENCE {
+X2ap-CellActivationFailure ::= SEQUENCE {
     cellActivationFailure-ies SEQUENCE (SIZE (0..x2ap-maxProtocolIEs)) OF X2ap-IE,
     ...
 }

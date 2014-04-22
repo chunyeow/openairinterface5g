@@ -201,6 +201,7 @@ include $(OPENAIR2_DIR)/UTIL/Makefile.inc
 include $(OPENAIR3_DIR)/RAL-LTE/Makefile.inc
 include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
 
+
 INCLUDES += -I$(TOP_DIR)
 INCLUDES += $(L2_incl)
 INCLUDES += $(ENB_APP_incl)
@@ -219,7 +220,7 @@ SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/RF/rf.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/RF/adc.o
 SIMULATION_OBJS += $(TOP_DIR)/SIMULATION/RF/dac.o
 
-ASN1_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
+ASN1_RRC_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
 
 OAISIM_OBJS_COMMON  = $(OPENAIR_TARGETS)/SIMU/USER/channel_sim.o
 OAISIM_OBJS_COMMON += $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o
@@ -296,14 +297,15 @@ printvars:
 	@echo eNB_flag is $(eNB_flag)
 	@echo UE_flag is $(UE_flag)
 	@echo S1AP objs: $(S1AP_BUILT_OBJS)
+	@echo X2AP objs: $(X2AP_BUILT_OBJS)
 	@echo CFLAGS: $(CFLAGS)
 	@echo Enable PGM: $(PGM_FOUND)
 
 ##UTIL_YAC_C = $(OPENAIR2_TOP)/UTIL/enb_parser.o
-##$(UTIL_LEX_C) = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))
+##$(UTIL_LEX_C) = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_RRC_MSG_OBJS1))
 
 
-OAISIM_COMPILED_OBJECTS = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_MSG_OBJS1))
+OAISIM_COMPILED_OBJECTS = $(subst $(OPENAIR_HOME), $(OBJS_DIR), $(OBJ) $(OAISIM_OBJS) $(ASN1_RRC_MSG_OBJS1))
 
 -include $(ITTI_MESSAGES_XML:.xml=.d)
 -include $(OAISIM_PAD_OBJS:.o=.d)
@@ -334,14 +336,14 @@ $(LFDS_LIB):
 	@if [ ! -d $(LFDS_OBJ_DIR)/obj ]; then mkdir -p $(LFDS_OBJ_DIR)/obj; fi;
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux OUTDIR=$(LFDS_OBJ_DIR)
 
-oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1)
+oaisim_pad: $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_RRC_MSG_OBJS1)
 	@echo "Linking oaisim_pad ..."
-	@$(MPICC) $(INCLUDES) $(S1AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_MSG_OBJS1) \
+	@$(MPICC) $(INCLUDES) $(S1AP_Incl) $(X2AP_Incl) -o oaisim_pad $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(OAISIM_PAD_OBJS) $(ASN1_RRC_MSG_OBJS1) \
 	-lpthread -llapack_atlas -lforms -lrt -lconfig $(LIBS) $(DB_LDFLAGS)
 
 oaisim: $(OAISIM_COMPILED_OBJECTS) $(SHARED_DEPENDENCIES)
 	@echo "Linking oaisim ..."
-	@$(CC) $(INCLUDES) $(S1AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OAISIM_COMPILED_OBJECTS) \
+	@$(CC) $(INCLUDES) $(S1AP_Incl) $(X2AP_Incl) -o oaisim $(CFLAGS) $(EXTRA_CFLAGS) $(OAISIM_COMPILED_OBJECTS) \
 	-lpthread -llapack_atlas -lforms -lrt -lconfig $(LIBS) $(DB_LDFLAGS)
 
 ifeq ($(rrc_cellular_eNB),1)
@@ -351,9 +353,9 @@ ifeq ($(rrc_cellular_UE),1)
 	mv oaisim oaisim_UE
 endif
 
-oaisimCROWN: $(OBJ) $(ASN1_MSG_OBJS1) oaisimCROWN.c
+oaisimCROWN: $(OBJ) $(ASN1_RRC_MSG_OBJS1) oaisimCROWN.c
 	@echo "Compiling oaisimCROWN.c ..."
-	@$(CC) oaisimCROWN.c $(INCLUDES) $(S1AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt -lconfig 
+	@$(CC) oaisimCROWN.c $(INCLUDES) $(S1AP_Incl) $(X2AP_Incl) -o oaisimCROWN $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(ASN1_RRC_MSG_OBJS1) -lm -lblas -lpthread -llapack_atlas -lforms $(LIBXML2_LIBS) -lX11 -lXpm -lrt -lconfig 
 
 oai_nw_drv:
 	(cd $(OPENAIR2_DIR) && $(MAKE) oai_nw_drv.ko)
@@ -393,7 +395,7 @@ rrm_std_cellular:
 cleanall: common-cleanall clean cleanasn1
 
 cleanalmostall: clean
-	rm -f $(ASN1_MSG_OBJS1)
+	rm -f $(ASN1_RRC_MSG_OBJS1)
 
 clean: common-clean
 	@$(RM_F_V) oaisim
@@ -417,7 +419,7 @@ cleanl2:
 	@$(RM_F_V) $(ASN1_MSG_INC)/asn1_msg.o
 
 cleanasn1:
-	@$(RM_F_V) $(ASN1_MSG_OBJS1)
+	@$(RM_F_V) $(ASN1_RRC_MSG_OBJS1)
 	$(shell cd $(OPENAIR2_DIR)/RRC/LITE/MESSAGES ; rm -f $(ASN_MODULE_SOURCES) $(ASN_MODULE_HEADERS) *.o *.d)
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.am.sample
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc.generated
@@ -445,6 +447,7 @@ print:
 	@echo "L2 includes are"		$(L2_incl)
 	@echo "INCLUDES are"		$(INCLUDES)
 	@echo "S1AP Includes are"	$(S1AP_Incl)
+	@echo "X2AP Includes are"	$(X2AP_Incl)
 	@echo "TOP_DIR Include is"	I$(TOP_DIR)
 	@echo "UTIL includes are"	$(UTIL_incl)
 	@echo "UTILS includes are"	$(UTILS_incl)
@@ -456,6 +459,7 @@ print:
 showcflags:
 	@echo oaisim cflags: $(CFLAGS)
 	@if [ -d $(S1AP_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB showcflags; fi
+	@if [ -d $(X2AP_DIR) ]; then $(MAKE) -C $(X2AP_DIR) -f Makefile.inc showcflags; fi
 
 otg_all: otg_latency otg_gp
 

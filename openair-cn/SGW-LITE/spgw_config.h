@@ -42,7 +42,7 @@ Address      : EURECOM,
 #include <netinet/in.h> // inet_aton
 #include <arpa/inet.h>  // inet_aton
 
-
+#include "queue.h"
 
 #define SGW_CONFIG_STRING_SGW_CONFIG                            "S-GW"
 #define SGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG             "NETWORK_INTERFACES"
@@ -63,7 +63,7 @@ Address      : EURECOM,
 #define PGW_CONFIG_STRING_IP_ADDRESS_POOL                       "IP_ADDRESS_POOL"
 #define PGW_CONFIG_STRING_IPV4_ADDRESS_LIST                     "IPV4_LIST"
 #define PGW_CONFIG_STRING_IPV6_ADDRESS_LIST                     "IPV6_LIST"
-#define PGW_CONFIG_STRING_IP_ADDRESS_RANGE_DELIMITERS           " -<>"
+#define PGW_CONFIG_STRING_IPV4_PREFIX_DELIMITER                 " /"
 #define PGW_CONFIG_STRING_IPV6_PREFIX_DELIMITER                 " /"
 
 #define PGW_CONFIG_STRING_INTERFACE_DISABLED                    "none"
@@ -96,6 +96,20 @@ typedef struct sgw_config_s {
 // may be more
 #define PGW_MAX_ALLOCATED_PDN_ADDRESSES 1024
 
+
+typedef struct pgw_lite_conf_ipv4_list_elm_s {
+    STAILQ_ENTRY(pgw_lite_conf_ipv4_list_elm_s) ipv4_entries;
+    struct in_addr  addr;
+} pgw_lite_conf_ipv4_list_elm_t;
+
+
+typedef struct pgw_lite_conf_ipv6_list_elm_s {
+    STAILQ_ENTRY(pgw_lite_conf_ipv6_list_elm_s) ipv6_entries;
+    struct in6_addr addr;
+    int             prefix_len;
+} pgw_lite_conf_ipv6_list_elm_t;
+
+
 typedef struct pgw_config_s {
     struct {
         char     *pgw_interface_name_for_S5_S8;
@@ -107,12 +121,8 @@ typedef struct pgw_config_s {
         int       pgw_ip_netmask_for_SGI;
     } ipv4;
 
-    struct {
-        int              num_ipv4_addresses;
-        struct in_addr   ipv4_addresses[PGW_MAX_ALLOCATED_PDN_ADDRESSES];
-        int              num_ipv6_addresses;
-        struct in6_addr  ipv6_addresses[PGW_MAX_ALLOCATED_PDN_ADDRESSES];
-    } pool_pdn_addresses;
+    STAILQ_HEAD(pgw_lite_ipv4_pool_head_s,      pgw_lite_conf_ipv4_list_elm_s) pgw_lite_ipv4_pool_list;
+    STAILQ_HEAD(pgw_lite_ipv6_pool_head_s,      pgw_lite_conf_ipv6_list_elm_s) pgw_lite_ipv6_pool_list;
 } pgw_config_t;
 
 typedef struct spgw_config_s {

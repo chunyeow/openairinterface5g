@@ -509,7 +509,8 @@ int emm_proc_initialize(void)
          * When switched on, the UE will try to automatically register
          * to each previous PLMN within the ordered list of available
          * PLMNs regardless of the network selection mode of operation */
-        _emm_plmn_list.hplmn = _emm_plmn_list.n_plmns;
+         _emm_plmn_list.hplmn = _emm_plmn_list.n_plmns - 1;
+         // LG_emm_plmn_list.hplmn = _emm_plmn_list.n_plmns;
 
         /* Add the highest priority PLMN in the list of "equivalent HPLMNs"
            if present and not empty, or the HPLMN derived from the IMSI */
@@ -891,9 +892,11 @@ int emm_proc_plmn_selection_end(int found, tac_t tac, ci_t ci, AcT_t rat)
         if (_emm_plmn_list.splmn != -1) {
             if (_emm_plmn_list.splmn == _emm_plmn_list.rplmn) {
                 /* The selected PLMN is the registered PLMN */
+                LOG_TRACE(INFO, "EMM-IDLE  - The selected PLMN is the registered PLMN");
                 _emm_data.is_rplmn = TRUE;
             } else if (_emm_plmn_list.splmn < _emm_plmn_list.hplmn) {
                 /* The selected PLMN is in the list of equivalent PLMNs */
+                LOG_TRACE(INFO, "EMM-IDLE  - The selected PLMN is in the list of equivalent PLMNs");
                 _emm_data.is_eplmn = TRUE;
             }
             /*

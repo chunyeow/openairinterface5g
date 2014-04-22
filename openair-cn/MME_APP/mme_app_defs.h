@@ -1,31 +1,33 @@
 /*******************************************************************************
+Eurecom OpenAirInterface Core Network
+Copyright(c) 1999 - 2014 Eurecom
 
-  Eurecom OpenAirInterface
-  Copyright(c) 1999 - 2013 Eurecom
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
 
-  This program is free software; you can redistribute it and/or modify it
-  under the terms and conditions of the GNU General Public License,
-  version 2, as published by the Free Software Foundation.
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
 
-  This program is distributed in the hope it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-  more details.
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
 
-  You should have received a copy of the GNU General Public License along with
-  this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
 
-  The full GNU General Public License is included in this distribution in
-  the file called "COPYING".
-
-  Contact Information
-  Openair Admin: openair_admin@eurecom.fr
-  Openair Tech : openair_tech@eurecom.fr
-  Forums       : http://forums.eurecom.fr/openairinterface
-  Address      : EURECOM, Campus SophiaTech, 450 Route des Chappes
-                 06410 Biot FRANCE
-
+Contact Information
+Openair Admin: openair_admin@eurecom.fr
+Openair Tech : openair_tech@eurecom.fr
+Forums       : http://forums.eurecom.fsr/openairinterface
+Address      : EURECOM,
+               Campus SophiaTech,
+               450 Route des Chappes,
+               CS 50193
+               06904 Biot Sophia Antipolis cedex,
+               FRANCE
 *******************************************************************************/
 
 /* This file contains definitions related to mme applicative layer and should
@@ -56,22 +58,37 @@ typedef struct {
 
 extern mme_app_desc_t mme_app_desc;
 
-int mme_app_create_bearer(s6a_update_location_ans_t *ula_p);
 
 #if defined(DISABLE_USE_NAS)
 int mme_app_handle_attach_req(nas_attach_req_t *attach_req_p);
 #endif
 
-int mme_app_handle_create_sess_resp(SgwCreateSessionResponse *create_sess_resp_p);
+int mme_app_handle_s1ap_ue_capabilities_ind  (const s1ap_ue_cap_ind_t const * s1ap_ue_cap_ind_pP);
 
-int mme_app_handle_establish_ind(nas_establish_ind_t *nas_establish_ind_p);
+int mme_app_send_s11_create_session_req      (struct ue_context_s * const ue_context_pP);
 
-int mme_app_handle_authentication_info_answer(s6a_auth_info_ans_t *s6a_auth_info_ans_p);
+int mme_app_send_s6a_update_location_req     (struct ue_context_s * const ue_context_pP);
 
-int mme_app_handle_nas_auth_resp(nas_auth_resp_t *nas_auth_resp_p);
+int mme_app_handle_s6a_update_location_ans   (const s6a_update_location_ans_t * const ula_pP);
 
-nas_cause_t s6a_error_2_nas_cause(uint32_t s6a_error, int experimental);
+int mme_app_handle_nas_pdn_connectivity_req  ( nas_pdn_connectivity_req_t * const nas_pdn_connectivity_req_p);
 
-void mme_app_handle_nas_auth_param_req(nas_auth_param_req_t *nas_auth_param_req);
+void mme_app_handle_conn_est_cnf             (const nas_conn_est_cnf_t * const nas_conn_est_cnf_pP);
+
+void mme_app_handle_conn_est_ind             (const mme_app_connection_establishment_ind_t * const conn_est_ind_pP);
+
+int mme_app_handle_create_sess_resp          (const SgwCreateSessionResponse * const create_sess_resp_pP);
+
+int mme_app_handle_establish_ind             (const nas_establish_ind_t * const nas_establish_ind_pP);
+
+int mme_app_handle_authentication_info_answer(const s6a_auth_info_ans_t * const s6a_auth_info_ans_pP);
+
+int mme_app_handle_nas_auth_resp             (const nas_auth_resp_t * const nas_auth_resp_pP);
+
+nas_cause_t s6a_error_2_nas_cause            (const uint32_t s6a_errorP, const int experimentalP);
+
+void mme_app_handle_nas_auth_param_req       (const nas_auth_param_req_t * const nas_auth_param_req_pP);
+
+void mme_app_handle_initial_context_setup_rsp(const mme_app_initial_context_setup_rsp_t * const initial_ctxt_setup_rsp_pP);
 
 #endif /* MME_APP_DEFS_H_ */

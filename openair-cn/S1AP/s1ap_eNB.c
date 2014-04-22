@@ -72,9 +72,9 @@ void s1ap_eNB_handle_sctp_association_resp(instance_t instance, sctp_new_associa
 
 uint32_t s1ap_generate_eNB_id(void)
 {
-    char *out;
-    char  hostname[50];
-    int   ret;
+    char    *out;
+    char     hostname[50];
+    int      ret;
     uint32_t eNB_id;
 
     /* Retrieve the host name */
@@ -93,9 +93,9 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
                                   net_ip_address_t    *mme_ip_address,
                                   net_ip_address_t    *local_ip_addr)
 {
-    MessageDef                 *message_p;
-    sctp_new_association_req_t *sctp_new_association_req_p;
-    s1ap_eNB_mme_data_t        *s1ap_mme_data_p;
+    MessageDef                 *message_p                   = NULL;
+    sctp_new_association_req_t *sctp_new_association_req_p  = NULL;
+    s1ap_eNB_mme_data_t        *s1ap_mme_data_p             = NULL;
 
     DevAssert(instance_p != NULL);
     DevAssert(mme_ip_address != NULL);
@@ -107,10 +107,12 @@ static void s1ap_eNB_register_mme(s1ap_eNB_instance_t *instance_p,
     sctp_new_association_req_p->port = S1AP_PORT_NUMBER;
     sctp_new_association_req_p->ppid = S1AP_SCTP_PPID;
 
-    memcpy(&sctp_new_association_req_p->remote_address, mme_ip_address,
+    memcpy(&sctp_new_association_req_p->remote_address,
+            mme_ip_address,
            sizeof(*mme_ip_address));
 
-    memcpy(&sctp_new_association_req_p->local_address, local_ip_addr,
+    memcpy(&sctp_new_association_req_p->local_address,
+            local_ip_addr,
             sizeof(*local_ip_addr));
 
     /* Create new MME descriptor */

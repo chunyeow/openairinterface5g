@@ -220,14 +220,22 @@ int emm_proc_attach(emm_proc_attach_type_t type)
         /* Check whether the selected PLMN is neither the registered PLMN
          * nor in the list of equivalent PLMNs */
         if ( (!_emm_data.is_rplmn) && (!_emm_data.is_eplmn) ) {
+            LOG_TRACE(INFO, "EMM-PROC  - Initiate EPS attach with IMSI");
             /* Include the IMSI */
             emm_as->UEid.imsi = _emm_data.imsi;
+        } else {
+            LOG_TRACE(INFO,
+                    "EMM-PROC  - Initiate EPS attach with NO IMSI, is registered PLMN %d, is equivalent PLMN %d",
+                    _emm_data.is_rplmn,
+                    _emm_data.is_eplmn);
         }
     } else if (_emm_data.guti) {
+        LOG_TRACE(INFO, "EMM-PROC  - Initiate EPS attach with GUTI");
         /* Include a valid GUTI and the last visited registered TAI */
         emm_as->UEid.guti = _emm_data.guti;
         emm_as->UEid.tai = _emm_data.tai;
     } else if (!_emm_data.is_emergency) {
+        LOG_TRACE(INFO, "EMM-PROC  - Initiate EPS attach with IMSI cause is no emergency and no GUTI");
         /* Include the IMSI if no valid GUTI is available */
         emm_as->UEid.imsi = _emm_data.imsi;
     } else {
@@ -235,8 +243,10 @@ int emm_proc_attach(emm_proc_attach_type_t type)
          * does not hold a valid GUTI */
         if (_emm_data.imsi) {
             /* Include the IMSI if valid (USIM is present) */
+            LOG_TRACE(INFO, "EMM-PROC  - Initiate EPS attach with IMSI cause is emergency and no GUTI");
             emm_as->UEid.imsi = _emm_data.imsi;
         } else {
+            LOG_TRACE(INFO, "EMM-PROC  - Initiate EPS attach with IMSI cause is emergency and no GUTI and no IMSI");
             /* Include the IMEI if the IMSI is not valid */
             emm_as->UEid.imei = _emm_data.imei;
         }
@@ -2118,7 +2128,7 @@ static int _emm_attach(void *args)
         /* Assign the TAI list the UE is registered to */
 
         /* Allocate parameters of the retransmission timer callback */
-        attach_data_t *data = (attach_data_t *)malloc(sizeof(attach_data_t));
+        attach_data_t *data = (attach_data_t *)calloc(1,sizeof(attach_data_t));
 
         if (data != NULL) {
             /* Setup ongoing EMM procedure callback functions */
@@ -2134,6 +2144,7 @@ static int _emm_attach(void *args)
             data->ueid = emm_ctx->ueid;
             /* Reset the retransmission counter */
             data->retransmission_count = 0;
+#if defined(ORIGINAL_CODE)
             /* Setup the ESM message container */
             data->esm_msg.value = (uint8_t *)malloc(esm_sap.send.length);
             if (data->esm_msg.value) {
@@ -2156,6 +2167,9 @@ static int _emm_attach(void *args)
                     rc = emm_sap_send(&emm_sap);
                 }
             }
+#else
+            rc = RETURNok;
+#endif
         }
     } else if (esm_sap.err != ESM_SAP_DISCARDED) {
         /*
@@ -2196,6 +2210,10 @@ static int _emm_attach(void *args)
     LOG_FUNC_RETURN (rc);
 }
 
+int emm_cn_wrapper_attach_accept(emm_data_context_t *emm_ctx, void *data)
+{
+    return _emm_attach_accept(emm_ctx,(attach_data_t *)data);
+}
 /****************************************************************************
  **                                                                        **
  ** Name:    _emm_attach_accept()                                      **
@@ -2228,13 +2246,13 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
         /* Implicit GUTI reallocation;
          * include the new assigned GUTI in the Attach Accept message  */
         emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->old_guti;
-        emm_sap.u.emm_as.u.establish.new_guti = emm_ctx->guti;
+        emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
     } else {
         emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
-        emm_sap.u.emm_as.u.establish.new_guti = NULL;
+        emm_sap.u.emm_as.u.establish.new_guti  = NULL;
     }
-    emm_sap.u.emm_as.u.establish.n_tacs = emm_ctx->n_tacs;
-    emm_sap.u.emm_as.u.establish.tac = emm_ctx->tac;
+    emm_sap.u.emm_as.u.establish.n_tacs  = emm_ctx->n_tacs;
+    emm_sap.u.emm_as.u.establish.tac     = emm_ctx->tac;
     emm_sap.u.emm_as.u.establish.NASinfo = EMM_AS_NAS_INFO_ATTACH;
     /* Setup EPS NAS security data */
     emm_as_set_security_data(&emm_sap.u.emm_as.u.establish.sctx,
@@ -2242,6 +2260,9 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
     /* Get the activate default EPS bearer context request message to
      * transfer within the ESM container of the attach accept message */
     emm_sap.u.emm_as.u.establish.NASmsg = data->esm_msg;
+    LOG_TRACE(INFO,"EMM-PROC  - NASmsg  src size = %d NASmsg  dst size = %d ",
+            data->esm_msg.length, emm_sap.u.emm_as.u.establish.NASmsg.length);
+
     rc = emm_sap_send(&emm_sap);
 
     if (rc != RETURNerror) {

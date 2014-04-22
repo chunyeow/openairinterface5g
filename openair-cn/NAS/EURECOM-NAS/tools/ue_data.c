@@ -83,7 +83,7 @@ int main (int argc, const char* argv[])
     if (argc != 2) {
 	fprintf(stderr, "Invalid parameter\n");
 	_display_usage(argv[0]);
-	exit(EXIT_FAILURE);	
+	exit(EXIT_FAILURE);
     }
     else if ( (strcmp(argv[1], "--gen") == 0) ||
 	      (strcmp(argv[1], "-g") == 0) ) {
@@ -272,7 +272,8 @@ static void _gen_emm_data(emm_nvdata_t* data)
     data->imsi.u.num.digit3 = 8;	// MCC digit 3
     data->imsi.u.num.digit4 = 1;	// MNC digit 1
     data->imsi.u.num.digit5 = 0;	// MNC digit 2
-    data->imsi.u.num.digit6 = 0xF;	// MNC digit 3
+    data->imsi.u.num.digit6 = 0;  // MNC digit 3
+    //LG data->imsi.u.num.digit6 = 0xF;  // MNC digit 3
     data->imsi.u.num.digit7 = 0;
     data->imsi.u.num.digit8 = 0;
     data->imsi.u.num.digit9 = 0;

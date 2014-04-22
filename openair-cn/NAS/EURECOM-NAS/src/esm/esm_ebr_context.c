@@ -34,6 +34,14 @@ Description Defines functions used to handle EPS bearer contexts.
 # include "assertions.h"
 #endif
 
+
+#ifdef NAS_UE
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+#endif
+
+
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
 /****************************************************************************/
@@ -184,6 +192,88 @@ int esm_ebr_context_create(
                 if (pdn->is_emergency) {
                     esm_ctx->emergency = TRUE;
                 }
+#ifdef NAS_UE
+                // LG ADD TEMP
+                {
+                    char          *tmp          = NULL;
+                    char           ipv4_addr[INET_ADDRSTRLEN];
+                    char           ipv6_addr[INET6_ADDRSTRLEN];
+                    char          *netmask      = NULL;
+                    char           broadcast[INET_ADDRSTRLEN];
+                    struct in_addr in_addr;
+                    char           command_line[128];
+                    int            res;
+
+                    switch (pdn->type) {
+                        case NET_PDN_TYPE_IPV4V6:
+                            ipv6_addr[0] = pdn->ip_addr[4];
+                            // etc
+                        case NET_PDN_TYPE_IPV4:
+                            in_addr.s_addr  = pdn->ip_addr[0] << 24;
+                            in_addr.s_addr |= pdn->ip_addr[1] << 16;
+                            in_addr.s_addr |= pdn->ip_addr[2] << 8;
+                            in_addr.s_addr |= pdn->ip_addr[3] ;
+
+                            tmp = inet_ntoa(in_addr);
+//                            AssertFatal(tmp ,
+//                                    "error in PDN IPv4 address %x",
+//                                    in_addr.s_addr);
+                            strcpy(ipv4_addr, tmp);
+
+                            if (IN_CLASSA(in_addr.s_addr)) {
+                                netmask = "255.0.0.0";
+                                in_addr.s_addr = pdn->ip_addr[0] << 24;
+                                in_addr.s_addr |= 255 << 16;
+                                in_addr.s_addr |= 255 << 8;
+                                in_addr.s_addr |= 255 ;
+                                tmp = inet_ntoa(in_addr);
+//                                AssertFatal(tmp ,
+//                                        "error in PDN IPv4 address %x",
+//                                        in_addr.s_addr);
+                                strcpy(broadcast, tmp);
+                            } else if (IN_CLASSB(in_addr.s_addr)) {
+                                netmask = "255.255.0.0";
+                                in_addr.s_addr = pdn->ip_addr[0] << 24;
+                                in_addr.s_addr |= pdn->ip_addr[1] << 16;
+                                in_addr.s_addr |= 255 << 8;
+                                in_addr.s_addr |= 255 ;
+                                tmp = inet_ntoa(in_addr);
+//                                AssertFatal(tmp ,
+//                                        "error in PDN IPv4 address %x",
+//                                        in_addr.s_addr);
+                                strcpy(broadcast, tmp);
+                            } else if (IN_CLASSC(in_addr.s_addr)) {
+                                netmask = "255.255.255.0";
+                                in_addr.s_addr = pdn->ip_addr[0] << 24;
+                                in_addr.s_addr |= pdn->ip_addr[1] << 16;
+                                in_addr.s_addr |= pdn->ip_addr[2] << 8;
+                                in_addr.s_addr |= 255 ;
+                                tmp = inet_ntoa(in_addr);
+//                                AssertFatal(tmp ,
+//                                        "error in PDN IPv4 address %x",
+//                                        in_addr.s_addr);
+                                strcpy(broadcast, tmp);
+                             } else {
+                                netmask = "255.255.255.255";
+                                strcpy(broadcast, ipv4_addr);
+                            }
+                            res = sprintf(command_line,
+                                    "ifconfig oip1 %s netmask %s broadcast %s up",
+                                    ipv4_addr, netmask, broadcast);
+//                            AssertFatal((res > 0) && (res < 128),
+//                                    "error in system command line");
+                            LOG_TRACE(INFO, "ESM-PROC  - executing %s ",
+                                    command_line);
+                            system(command_line);
+                            break;
+                        case NET_PDN_TYPE_IPV6:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+//                AssertFatal(0, "Forced stop in NAS UE");
+#endif
             }
 
             /* Return the EPS bearer identity of the default EPS bearer

@@ -5,7 +5,6 @@
 // Messages files used between tasks
 #include "gtpv1_u_messages_def.h"
 #include "ip_forward_messages_def.h"
-#include "mme_app_messages_def.h"
 #include "nas_messages_def.h"
 #include "s11_messages_def.h"
 #include "s1ap_messages_def.h"
@@ -13,3 +12,4 @@
 #include "sctp_messages_def.h"
 #include "sgw_lite_def.h"
 #include "udp_messages_def.h"
+#include "mme_app_messages_def.h"

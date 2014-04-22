@@ -68,14 +68,17 @@ $(X2AP_GENERATED): %.o : %.c
 	sed -e 's/^ *//' -e 's/$$/:/' >> $(basename $@).d
 	@rm -f $(basename $@).d.tmp
 
+
 $(OUTDIR)/x2ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU-Contents.asn $(ASN1DIR)/asn1tostruct.py
 	@if [ ! -d $(OUTDIR) ]; then mkdir -p $(OUTDIR); fi;
 	@python $(ASN1DIR)/asn1tostruct.py -f$< -o$(OUTDIR)
 	@echo Timestamp > $@
 
-	
+#ProtocolExtensionContainer
+#$(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn 
+
 $(OUTDIR)/x2ap_asn1regen.stamp:  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-CommonDataTypes.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Constants.asn \
-	$(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Containers.asn
+	$(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn 
 	(cd $(ASN1DIR)/$(ASN1RELDIR) && asn1c -fhave_native64 -gen-PER $^)
 	@echo Timestamp > $@
 

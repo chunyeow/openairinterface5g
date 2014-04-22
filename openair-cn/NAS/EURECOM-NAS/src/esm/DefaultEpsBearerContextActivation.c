@@ -177,13 +177,16 @@ int esm_proc_default_eps_bearer_context_request(int is_standalone,
 
     LOG_FUNC_IN;
 
-    LOG_TRACE(INFO,"ESM-PROC  - Initiate default EPS bearer context activation "
-              "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
 
     if (is_standalone) {
         /* Send activate default EPS bearer context request message and
          * start timer T3485 */
+        LOG_TRACE(INFO,"ESM-PROC  - Initiate standalone default EPS bearer context activation "
+                  "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
         rc = _default_eps_bearer_activate(ctx, ebi, msg);
+    } else {
+        LOG_TRACE(INFO,"ESM-PROC  - Initiate non standalone default EPS bearer context activation "
+                  "(ueid=%u, ebi=%d)", ctx->ueid, ebi);
     }
 
     if (rc != RETURNerror) {

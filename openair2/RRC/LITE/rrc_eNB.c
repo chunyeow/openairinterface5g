@@ -401,7 +401,7 @@ static void init_MCCH(
 static void init_MBMS(
     module_id_t enb_mod_idP,
     frame_t frameP) {
-    // init the configuration for MTCH 
+    // init the configuration for MTCH
 
     if (eNB_rrc_inst[enb_mod_idP].MBMS_flag > 0) {
 
@@ -1428,7 +1428,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
 
     ASN_SEQUENCE_ADD(&SRB_configList2->list, SRB1_config);
 
-    //2nd: now reconfigure phy config dedicated 
+    //2nd: now reconfigure phy config dedicated
     physicalConfigDedicated2 = CALLOC(1, sizeof(*physicalConfigDedicated2));
     *physicalConfigDedicated = physicalConfigDedicated2;
 
@@ -1535,7 +1535,7 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     physicalConfigDedicated2->antennaInfo->present = PhysicalConfigDedicated__antennaInfo_PR_explicitValue;
     //assign_enum(&physicalConfigDedicated2->antennaInfo->choice.explicitValue.transmissionMode,
     //     AntennaInfoDedicated__transmissionMode_tm2);
-    /*  
+    /*
        switch (transmission_mode){
        case 1:
        physicalConfigDedicated2->antennaInfo->choice.explicitValue.transmissionMode=     AntennaInfoDedicated__transmissionMode_tm1;

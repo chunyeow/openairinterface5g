@@ -179,13 +179,13 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
                struct session *sess, void *opaque,
                enum disp_action *act)
 {
-    struct msg *ans;
-    struct msg *qry;
-    struct avp *avp;
-    struct avp_hdr *hdr;
+    struct msg           *ans                = NULL;
+    struct msg           *qry                = NULL;
+    struct avp           *avp                = NULL;
+    struct avp_hdr       *hdr                = NULL;
 
-    MessageDef          *message_p;
-    s6a_auth_info_ans_t *s6a_auth_info_ans_p;
+    MessageDef          *message_p           = NULL;
+    s6a_auth_info_ans_t *s6a_auth_info_ans_p = NULL;
 
     int skip_auth_res = 0;
 
@@ -223,6 +223,10 @@ int s6a_aia_cb(struct msg **msg, struct avp *paramavp,
             S6A_ERROR("Got error %u:%s\n", hdr->avp_value->u32,
                       retcode_2_string(hdr->avp_value->u32));
             goto err;
+        } else {
+            S6A_DEBUG("Received S6A Result code %u:%s\n",
+                s6a_auth_info_ans_p->result.choice.base,
+                retcode_2_string(s6a_auth_info_ans_p->result.choice.base));
         }
     } else {
         /* The result-code is not present, may be it is an experimental result
@@ -340,11 +344,11 @@ int s6a_generate_authentication_info_req(s6a_auth_info_req_t *air_p)
 
     /* Adding the visited plmn id */
     {
-        uint8_t plmn[3] = { 0x02, 0xF8, 0x29 };
+      uint8_t plmn[3] = { 0x00, 0x00, 0x00 }; //{ 0x02, 0xF8, 0x29 };
 
         CHECK_FCT(fd_msg_avp_new(s6a_fd_cnf.dataobj_s6a_visited_plmn_id, 0, &avp));
 
-
+        PLMN_T_TO_TBCD(air_p->visited_plmn, plmn);
         value.os.data = plmn;
         value.os.len  = 3;
         CHECK_FCT(fd_msg_avp_setvalue(avp, &value));

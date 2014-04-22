@@ -431,6 +431,7 @@ boolean_t pdcp_data_ind(
   } else {
       rb_id = rb_idP % maxDRB;
       AssertError (rb_id < maxDRB, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_id, maxDRB, ue_mod_idP, enb_mod_idP);
+      AssertError (rb_id > 0, return FALSE, "RB id is too low (%u/%d) %u %u!\n", rb_id, maxDRB, ue_mod_idP, enb_mod_idP);
 
       if (enb_flagP == ENB_FLAG_NO) {
           if (srb_flagP) {

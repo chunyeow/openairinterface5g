@@ -129,11 +129,11 @@ extern "C" {
 #define logIt(component, level, format, args...) logRecord_mt(__FILE__, __FUNCTION__, __LINE__, component, level, format, ##args)
 #else //default
 #define logIt(component, level, format, args...) logRecord(__FILE__, __FUNCTION__, __LINE__, component, level, format, ##args)
-#endif 
+#endif
 #else
 #ifdef LOG_NO_THREAD
 #define logIt(component, level, format, args...) logRecord_mt(NULL, __FUNCTION__, __LINE__, component, level, format, ##args)
-#else // default 
+#else // default
 #define logIt(component, level, format, args...) logRecord(NULL, __FUNCTION__, __LINE__, component, level, format, ##args)
 #endif
 #endif
@@ -256,6 +256,7 @@ typedef enum {
     OCM,
     UDP_,
     GTPU,
+    SPGW,
     S1AP,
     SCTP,
     HW,

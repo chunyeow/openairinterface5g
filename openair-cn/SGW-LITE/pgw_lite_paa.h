@@ -1,5 +1,5 @@
 /*******************************************************************************
-Eurecom OpenAirInterface Core Network
+Eurecom OpenAirInterface core network
 Copyright(c) 1999 - 2014 Eurecom
 
 This program is free software; you can redistribute it and/or modify it
@@ -29,41 +29,19 @@ Address      : EURECOM,
                06904 Biot Sophia Antipolis cedex,
                FRANCE
 *******************************************************************************/
+/*! \file pgw_lite_paa.h
+* \brief
+* \author Lionel Gauthier
+* \company Eurecom
+* \email: lionel.gauthier@eurecom.fr
+*/
+#ifndef PGW_LITE_PAA_H_
+#define PGW_LITE_PAA_H_
 
-#ifndef MME_APP_ITTI_MESSAGING_H_
-#define MME_APP_ITTI_MESSAGING_H_
+void pgw_lite_load_pool_ip_addresses       (void);
+int pgw_lite_get_free_ipv4_paa_address     (struct in_addr * const addr_P);
+int pgw_lite_release_free_ipv4_paa_address (const struct in_addr * const addr_P);
+int pgw_lite_get_free_ipv6_paa_prefix      (struct in6_addr * const addr_pP);
+int pgw_lite_release_free_ipv6_paa_prefix  (const struct in6_addr * const addr_pP);
 
-static inline void
-mme_app_itti_auth_fail(
-        const uint32_t ue_id,
-        const nas_cause_t cause)
-{
-    MessageDef *message_p;
-
-    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_FAIL);
-
-    NAS_AUTHENTICATION_PARAM_FAIL(message_p).ue_id = ue_id;
-    NAS_AUTHENTICATION_PARAM_FAIL(message_p).cause = cause;
-
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
-}
-
-
-
-static inline void mme_app_itti_auth_rsp(
-        const uint32_t                 ue_id,
-        const uint8_t                  nb_vectors,
-        const  eutran_vector_t * const vector)
-{
-    MessageDef *message_p;
-
-    message_p = itti_alloc_new_message(TASK_MME_APP, NAS_AUTHENTICATION_PARAM_RSP);
-
-    NAS_AUTHENTICATION_PARAM_RSP(message_p).ue_id       = ue_id;
-    NAS_AUTHENTICATION_PARAM_RSP(message_p).nb_vectors  = nb_vectors;
-    memcpy(&NAS_AUTHENTICATION_PARAM_RSP(message_p).vector, vector, sizeof(*vector));
-
-    itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
-}
-
-#endif /* MME_APP_ITTI_MESSAGING_H_ */
+#endif
