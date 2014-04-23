@@ -67,7 +67,8 @@ LIBS				+= $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
 #LG SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(X2AP_OBJ_DIR)/libx2ap.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
 SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
 
-COMMON_CFLAGS		+= -DLOG_NO_THREAD -DEMIT_ASN_DEBUG
+COMMON_CFLAGS		+= -DLOG_NO_THREAD 
+#-DEMIT_ASN_DEBUG
 
 openair_cn_available = $(shell if [ -d "$(UE_NAS_DIR)" ]; then echo "0" ; else  echo "1" ; fi )
 ifeq 	($(openair_cn_available), 0)

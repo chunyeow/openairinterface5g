@@ -153,7 +153,7 @@ int logInit (void)
     g_log->log_component[RRC].flag = LOG_MED;
     g_log->log_component[RRC].interval =  1;
     g_log->log_component[RRC].fd = 0;
-    g_log->log_component[RRC].filelog = 0;
+    g_log->log_component[RRC].filelog = 1;
     g_log->log_component[RRC].filelog_name = "/tmp/rrc.log";
 
     g_log->log_component[NAS].name = "NAS";
@@ -627,10 +627,12 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
 
     // do not apply filtering for LOG_F
     // only log messages which are enabled and are below the global log level and component's level threshold
-    if ((level != LOG_FILE) &&
+    if ((level != LOG_FILE) && ((level > c->level) && (level > g_log->level))) {
+      /* if ((level != LOG_FILE) &&
             ((level > c->level) ||
              (level > g_log->level) ||
              ( c->level > g_log->level))) {
+      */ 
         return;
     }
 

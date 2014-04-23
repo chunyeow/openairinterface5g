@@ -256,7 +256,7 @@ void terminate_ra_proc(module_id_t module_idP,frame_t frameP,rnti_t rnti,unsigne
           payload_ptr = parse_ulsch_header(msg3,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,msg3_len);
           LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
               module_idP,frameP,rx_lengths[0],payload_ptr-msg3);
-          if ((num_ce == 0) && (num_sdu==1) && (rx_lcids[0] == CCCH)) { // This is an RRCConnectionRequest/Restablishment
+          if (/*(num_ce == 0) &&*/ (num_sdu==1) && (rx_lcids[0] == CCCH)) { // This is an RRCConnectionRequest/Restablishment
               memcpy(&eNB_mac_inst[module_idP].RA_template[i].cont_res_id[0],payload_ptr,6);
               LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
                   module_idP,frameP,rx_lengths[0],payload_ptr-msg3);
@@ -496,11 +496,15 @@ unsigned char *parse_ulsch_header(unsigned char *mac_header,
               num_ces++;
               mac_header_ptr++;
               if (lcid==LONG_BSR)
-                ce_len+=4;
+                ce_len+=3;
               else if (lcid==CRNTI)
                 ce_len+=2;
               else if ((lcid==POWER_HEADROOM) || (lcid==TRUNCATED_BSR)|| (lcid== SHORT_BSR))
                 ce_len++;
+	      else {
+		LOG_E(MAC,"unknown CE %d \n", lcid);
+		exit(-1);
+	      }
           }
       }
   }

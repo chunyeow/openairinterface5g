@@ -103,7 +103,7 @@ endif
 
 EXTRA_CFLAGS += -I/usr/include -I/usr/realtime/include 
 EXTRA_CFLAGS += -I$(OPENAIR1_DIR) 
-EXTRA_CFLAGS += -DEMIT_ASN_DEBUG=0
+#EXTRA_CFLAGS += -DEMIT_ASN_DEBUG=0
 
 include $(OPENAIR1_DIR)/SCHED/Makefile.inc
 include $(OPENAIR1_DIR)/PHY/Makefile.inc

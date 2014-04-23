@@ -95,7 +95,7 @@
 # Parameters
 ###########################################################
 declare EMULATION_DEV_INTERFACE="eth2"
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 ASN_DEBUG=1 EMIT_ASN_DEBUG=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 "
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))

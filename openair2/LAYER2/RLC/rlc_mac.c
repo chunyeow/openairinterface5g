@@ -306,7 +306,7 @@ void mac_rlc_data_ind     (
         rlc_mode = rlc_union_p->mode;
     } else {
         rlc_mode = RLC_MODE_NONE;
-        AssertFatal (0 , "%s RLC not configured rb id %u lcid %u module %u!\n", __FUNCTION__, rb_id, channel_idP, ue_module_idP);
+        //AssertFatal (0 , "%s RLC not configured rb id %u lcid %u module %u!\n", __FUNCTION__, rb_id, channel_idP, ue_module_idP);
     }
     struct mac_data_ind data_ind = mac_rlc_deserialize_tb(buffer_pP, tb_sizeP, num_tbP, crcs_pP);
     switch (rlc_mode) {

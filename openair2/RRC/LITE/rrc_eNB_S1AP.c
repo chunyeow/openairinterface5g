@@ -32,7 +32,7 @@ Address      : EURECOM,
 
 /*! \file rrc_eNB_S1AP.c
  * \brief rrc S1AP procedures for eNB
- * \author Laurent Winckel
+ * \author Laurent Winckel and Navid Nikaein
  * \date 2013
  * \version 1.0
  * \company Eurecom
@@ -50,10 +50,15 @@ Address      : EURECOM,
 #   include "asn1_conversions.h"
 #   include "intertask_interface.h"
 #   include "pdcp.h"
+#   include "pdcp_primitives.h"
 #   include "s1ap_eNB.h"
 # else
 #   include "../../S1AP/s1ap_eNB.h"
 # endif
+
+#if defined(ENABLE_SECURITY)
+#   include "UTIL/OSA/osa_defs.h"
+#endif
 
 /* Value to indicate an invalid UE initial id */
 static const uint16_t UE_INITIAL_ID_INVALID = 0;
@@ -69,7 +74,11 @@ static const uint16_t S1AP_INTEGRITY_EIA2_MASK = 0x2;
 #ifdef Rel10
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia0_v920
 #else
+#ifdef EXMIMO_IOT
+# define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia2 
+#else
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_reserved
+#endif
 #endif
 
 # if defined(ENABLE_ITTI)
@@ -174,6 +183,7 @@ static uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id
  *\return the selected algorithm.
  */
 static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(uint16_t algorithms) {
+  
   if (algorithms & S1AP_ENCRYPTION_EEA2_MASK) {
     return SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
   }
@@ -193,6 +203,7 @@ static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(ui
  *\return the selected algorithm.
  */
 static e_SecurityAlgorithmConfig__integrityProtAlgorithm rrc_eNB_select_integrity(uint16_t algorithms) {
+  
   if (algorithms & S1AP_INTEGRITY_EIA2_MASK) {
     return SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
   }
@@ -234,8 +245,8 @@ static int rrc_eNB_process_security (uint8_t mod_id, uint8_t ue_index, security_
     changed = TRUE;
   }
 
-  LOG_I (RRC, "[eNB %d][UE %d] Selected security algorithms: %x, %x, %s",
-         mod_id, ue_index, cipheringAlgorithm, integrityProtAlgorithm, changed ? "changed" : "same");
+  LOG_I (RRC, "[eNB %d][UE %d] Selected security algorithms (%x): %x, %x, %s\n",
+         mod_id, ue_index, security_capabilities, cipheringAlgorithm, integrityProtAlgorithm, changed ? "changed" : "same");
 
   return changed;
 }
@@ -259,8 +270,76 @@ static void process_eNB_security_key (uint8_t mod_id, uint8_t ue_index, uint8_t 
   }
   ascii_buffer[2 * i] = '\0';
 
-  LOG_I (RRC, "[eNB %d][UE %d] Saved security key %s", mod_id, ue_index, ascii_buffer);
+  LOG_I (RRC, "[eNB %d][UE %d] Saved security key %s\n", mod_id, ue_index, ascii_buffer);
 #endif
+}
+
+
+static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, uint8_t send_security_mode_command ){
+
+#if defined(ENABLE_SECURITY)
+
+  
+  SRB_ToAddModList_t                 *SRB_configList = eNB_rrc_inst[enb_mod_idP].SRB_configList[ue_mod_idP];
+  uint8_t                            *kRRCenc = NULL;
+  uint8_t                            *kRRCint = NULL;
+  uint8_t                            *kUPenc = NULL;
+  pdcp_t                             *pdcp_p   = NULL;
+  static int                         print_keys= 1;
+  /* Derive the keys from kenb */
+  if (SRB_configList != NULL) {
+    derive_key_up_enc(eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
+		      eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kUPenc);
+  }
+  
+  derive_key_rrc_enc(eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
+		     eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kRRCenc);
+  derive_key_rrc_int(eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP],
+		     eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP], &kRRCint);
+  
+#define DEBUG_SECURITY 1 
+ 
+#if defined (DEBUG_SECURITY)
+#define msg printf
+  if (print_keys ==1 ) {
+      print_keys =0;
+      int i;
+      msg("\nKeNB:");
+      for(i = 0; i < 32; i++)
+	msg("%02x", eNB_rrc_inst[enb_mod_idP].kenb[ue_mod_idP][i]);
+      msg("\n");
+            
+      msg("\nKRRCenc:");
+      for(i = 0; i < 32; i++)
+	msg("%02x", kRRCenc[i]);
+      msg("\n");
+      
+      msg("\nKRRCint:");
+      for(i = 0; i < 32; i++)
+	msg("%02x", kRRCint[i]);
+      msg("\n");
+      
+    }
+#endif //DEBUG_SECURITY
+
+
+    pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][DCCH-1];
+    
+    pdcp_config_set_security(pdcp_p,
+			     enb_mod_idP,
+			     ue_mod_idP,
+			     0,
+			     ENB_FLAG_YES,
+			     DCCH,
+			     DCCH+2,
+			     (send_security_mode_command == TRUE)                                 ?
+			     0 | (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4) : 
+			     (eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] )         | 
+			     (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4),
+			     kRRCenc, 
+			     kRRCint, 
+			     kUPenc);
+#endif 			     
 }
 
 /*------------------------------------------------------------------------------*/
@@ -508,11 +587,18 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
     if (eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id == 0) {
       eNB_rrc_inst[instance].Info.UE[ue_index].eNB_ue_s1ap_id = S1AP_DOWNLINK_NAS (msg_p).eNB_ue_s1ap_id;
     }
-    /* Create message for PDCP (DLInformationTransfer_t) */
+ 
+   /* Create message for PDCP (DLInformationTransfer_t) */
     length = do_DLInformationTransfer (instance, &buffer, rrc_eNB_get_next_transaction_identifier (instance),
                                        S1AP_DOWNLINK_NAS (msg_p).nas_pdu.length,
                                        S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer);
 
+#ifdef RRC_MSG_PRINT
+    LOG_F(RRC,"RRC DL Information Transfer\n");
+    for (i = 0; i < length; i++)
+      LOG_F(RRC,"%02x ", ((uint8_t*)buffer)[i]);
+    LOG_F(RRC,"\n");
+#endif
     /* Transfer data to PDCP */
     pdcp_rrc_data_req (instance, ue_index, 0 /* TODO put frame number ! */, 1, DCCH, *rrc_eNB_mui++, 0,
                        length, buffer, 1);
@@ -590,15 +676,22 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
         process_eNB_security_key (instance, ue_index, S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_key);
 
         {
-            uint8_t send_security_mode_command = TRUE;
-
-            if ((eNB_rrc_inst[instance].ciphering_algorithm[ue_index] == SecurityAlgorithmConfig__cipheringAlgorithm_eea0)
+	  uint8_t send_security_mode_command = TRUE;  
+	  
+#ifndef EXMIMO_IOT
+	    if ((eNB_rrc_inst[instance].ciphering_algorithm[ue_index] == SecurityAlgorithmConfig__cipheringAlgorithm_eea0)
                 && (eNB_rrc_inst[instance].integrity_algorithm[ue_index] == INTEGRITY_ALGORITHM_NONE)) {
                 send_security_mode_command = FALSE;
             }
-
+#endif	    
+	    rrc_pdcp_config_security(instance, ue_index,send_security_mode_command);  
+	    
             if (send_security_mode_command) {
-                rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
+	      
+	      rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
+	      send_security_mode_command = FALSE;
+	      // apply ciphering after RRC security command mode
+	      rrc_pdcp_config_security(instance, ue_index,send_security_mode_command);  
             }
             else {
                 rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);

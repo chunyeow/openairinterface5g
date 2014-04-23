@@ -50,7 +50,6 @@ CFLAGS = 			\
 	-Wall			\
 	-DENB_MODE		\
 	-DENABLE_USE_MME	\
-	-DEMIT_ASN_DEBUG=1	\
 	-DUSER_MODE		\
 	-I./MESSAGES		\
 	-I$(OUTDIR)		\

@@ -1,9 +1,9 @@
 #ifndef S1AP_ENB_DEFAULT_VALUES_H_
 #define S1AP_ENB_DEFAULT_VALUES_H_
 
-#define ENB_TAC (0)
+#define ENB_TAC (1)
 #define ENB_MCC (208)
-#define ENB_MNC (34)
+#define ENB_MNC (92)
 
 #define ENB_NAME        "Eurecom ENB"
 #define ENB_NAME_FORMAT (ENB_NAME" %u")

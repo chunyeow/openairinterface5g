@@ -149,12 +149,16 @@ static void enb_config_display(void) {
     printf( "----------------------------------------------------------------------\n");
     for (i = 0; i < enb_properties.number; i++) {
         printf( "ENB CONFIG no %u:\n\n", i);
-        printf( "\teNB name: \t%s:\n",enb_properties.properties[i]->eNB_name);
-        printf( "\teNB ID:   \t%u:\n",enb_properties.properties[i]->eNB_id);
-        printf( "\tCell type:\t%s:\n",enb_properties.properties[i]->cell_type == CELL_MACRO_ENB ? "CELL_MACRO_ENB":"CELL_HOME_ENB");
-        printf( "\tTAC:      \t%u:\n",enb_properties.properties[i]->tac);
-        printf( "\tMCC:      \t%u:\n",enb_properties.properties[i]->mcc);
-        printf( "\tMNC:      \t%u:\n",enb_properties.properties[i]->mnc);
+        printf( "\teNB name:     \t%s:\n",enb_properties.properties[i]->eNB_name);
+        printf( "\teNB ID:       \t%u:\n",enb_properties.properties[i]->eNB_id);
+        printf( "\tCell type:    \t%s:\n",enb_properties.properties[i]->cell_type == CELL_MACRO_ENB ? "CELL_MACRO_ENB":"CELL_HOME_ENB");
+        printf( "\tTAC:          \t%u:\n",enb_properties.properties[i]->tac);
+        printf( "\tMCC:          \t%u:\n",enb_properties.properties[i]->mcc);
+        printf( "\tMNC:          \t%u:\n",enb_properties.properties[i]->mnc);
+	printf( "\teutra band:   \t%d:\n",enb_properties.properties[i]->eutra_band);
+        printf( "\tdownlink freq:\t%u:\n",enb_properties.properties[i]->downlink_frequency);
+        printf( "\tuplink freq:  \t%d:\n",enb_properties.properties[i]->uplink_frequency_offset);
+
         printf( "\n--------------------------------------------------------\n");
     }
 }
@@ -233,8 +237,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   long int          tdd_config_s;
   const char*       prefix_type;
   long int          eutra_band;
-  double            downlink_frequency;
-  double            uplink_frequency_offset;
+  long long         downlink_frequency;
+  long long         uplink_frequency_offset;
   char*             ipv4                          = NULL;
   char*             ipv6                          = NULL;
   char*             active                        = NULL;
@@ -271,7 +275,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
   if(  (config_lookup_string( &cfg, ENB_CONFIG_STRING_ASN1_VERBOSITY, (const char **)&astring) )) {
       if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_NONE) == 0) {
-          asn_debug      = 1;
+          asn_debug      = 0;
           asn1_xer_print = 0;
       } else if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_INFO) == 0) {
           asn_debug      = 1;
@@ -329,6 +333,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                      && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_MOBILE_COUNTRY_CODE, &mcc)
                      && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_MOBILE_NETWORK_CODE, &mnc)
                      && config_setting_lookup_string(setting_enb, ENB_CONFIG_STRING_DEFAULT_PAGING_DRX,  &default_drx)
+			
                 )
             ) {
               AssertError (0, parse_errors ++,
@@ -423,14 +428,13 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       enb_properties.properties[enb_properties_index]->eutra_band = 7; // Default band
                   }
 
-                  if(config_setting_lookup_float(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
-                      enb_properties.properties[enb_properties_index]->downlink_frequency = downlink_frequency;
+                  if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
+		    enb_properties.properties[enb_properties_index]->downlink_frequency = (unsigned int) downlink_frequency;
                   } else {
-                      enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
+		    enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
                   }
-
-                  if(config_setting_lookup_float(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
-                      enb_properties.properties[enb_properties_index]->uplink_frequency_offset = uplink_frequency_offset;
+		   if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
+                      enb_properties.properties[enb_properties_index]->uplink_frequency_offset = (unsigned int) uplink_frequency_offset;
                   } else {
                       // Default uplink frequency offset
                       if (enb_properties.properties[enb_properties_index]->frame_type == FDD) {
@@ -439,7 +443,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           enb_properties.properties[enb_properties_index]->uplink_frequency_offset = 0;
                       }
                   }
-
+		   
                   parse_errors += enb_check_band_frequencies(lib_config_file_name_pP,
                                              enb_properties_index,
                                              enb_properties.properties[enb_properties_index]->eutra_band,

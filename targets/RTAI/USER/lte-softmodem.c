@@ -201,7 +201,7 @@ static char                     UE_flag=0;
 static uint8_t                       eNB_id=0,UE_id=0;
 
 uint32_t                             carrier_freq[4] =           {1907600000,1907600000,1907600000,1907600000}; /* For UE! */
-static uint32_t                      downlink_frequency[4] =     {1907600000,1907600000,1907600000,1907600000};
+static uint32_t          downlink_frequency[4] =     {1907600000,1907600000,1907600000,1907600000};
 static int32_t                      uplink_frequency_offset[4]= {-120000000,-120000000,-120000000,-120000000};
 static char                    *conf_config_file_name = NULL;
 
@@ -569,6 +569,7 @@ void *l2l1_task(void *arg)
         switch (ITTI_MSG_ID(message_p)) {
           case INITIALIZE_MESSAGE:
             /* Start eNB thread */
+            LOG_D(EMU, "L2L1 TASK received %s\n", ITTI_MSG_NAME(message_p));
             start_eNB = 1;
             break;
 
@@ -1281,6 +1282,7 @@ static void get_options (int argc, char **argv)
     frame_parms->tdd_config_S =     enb_properties->properties[0]->tdd_config_s;
     for (i = 0 ; i < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); i++) {
       downlink_frequency[i] =       enb_properties->properties[0]->downlink_frequency;
+      printf("Downlink frequency set to %u\n", downlink_frequency[i]);
       uplink_frequency_offset[i] =  enb_properties->properties[0]->uplink_frequency_offset;
     }
   }
@@ -1367,15 +1369,18 @@ int main(int argc, char **argv) {
 #endif
     set_comp_log(MAC,     LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(RLC,     LOG_INFO,   LOG_HIGH, 1);
-    set_comp_log(PDCP,    LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(PDCP,    LOG_DEBUG,   LOG_HIGH, 1);
     set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
     set_comp_log(RRC,     LOG_INFO,   LOG_HIGH, 1);
 #if defined(ENABLE_ITTI)
     set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)
-    set_comp_log(S1AP,    LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(S1AP,    LOG_DEBUG,   LOG_HIGH, 1);
     set_comp_log(SCTP,    LOG_INFO,   LOG_HIGH, 1);
 # endif
+#if defined(ENABLE_SECURITY)
+    set_comp_log(OSA,    LOG_DEBUG,   LOG_HIGH, 1);
+#endif
 #endif
     set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);;
   }
@@ -1565,7 +1570,7 @@ int main(int argc, char **argv) {
     NB_INST=1;
 
     openair_daq_vars.ue_dl_rb_alloc=0x1fff;
-    openair_daq_vars.target_ue_dl_mcs=20;
+    openair_daq_vars.target_ue_dl_mcs=16;
     openair_daq_vars.ue_ul_nb_rb=6;
     openair_daq_vars.target_ue_ul_mcs=6;
 

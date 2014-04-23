@@ -61,7 +61,7 @@ int stream_compute_integrity_eia2(stream_cipher_t *stream_cipher, uint8_t out[4]
                        stream_cipher->blength, zero_bit);
         for (i = 0; i < sizeof(m); i++)
             index += sprintf(&payload[index], "0x%02x ", m[i]);
-        LOG_T(OSA, "Payload: %s\n", payload);
+        LOG_D(OSA, "Payload: %s\n", payload);
     }
     #endif
 
@@ -86,7 +86,8 @@ int stream_compute_integrity(uint8_t algorithm, stream_cipher_t *stream_cipher, 
         LOG_E(OSA, "SNOW-3G algorithms are currently not implemented for integrity\n");
         return -1;
     } else if (algorithm == EIA2_128_ALG_ID) {
-        return stream_compute_integrity_eia2(stream_cipher, out);
+      LOG_D(OSA, "EIA2 algorithm applied for integrity\n");
+      return stream_compute_integrity_eia2(stream_cipher, out);
     }
     LOG_E(OSA, "Provided integrity algorithm is currently not supported = %u\n", algorithm);
     return -1;

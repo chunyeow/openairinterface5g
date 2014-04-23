@@ -108,12 +108,12 @@ int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
         /* SRBs */
         uint8_t *mac_i;
 
-        LOG_D(PDCP, "[OSA][RB %d] %s Applying control-plane security\n",
-              rb_id, (pdcp_entity->is_ue != 0) ? "UE -> eNB" : "eNB -> UE");
+        LOG_D(PDCP, "[OSA][RB %d] %s Applying control-plane security %d \n",
+              rb_id, (pdcp_entity->is_ue != 0) ? "UE -> eNB" : "eNB -> UE", pdcp_entity->integrityProtAlgorithm);
 
         encrypt_params.message    = pdcp_pdu_buffer;
         encrypt_params.blength    = (pdcp_header_len + sdu_buffer_size) << 3;
-        encrypt_params.key        = pdcp_entity->kRRCint + 128;
+        encrypt_params.key        = pdcp_entity->kRRCint + 16; // + 128;
 
         mac_i = &pdcp_pdu_buffer[pdcp_header_len + sdu_buffer_size];
 
@@ -122,12 +122,12 @@ int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
         stream_compute_integrity(pdcp_entity->integrityProtAlgorithm, &encrypt_params,
                                  mac_i);
 
-        encrypt_params.key = pdcp_entity->kRRCenc + 128;
+        encrypt_params.key = pdcp_entity->kRRCenc;  // + 128  // bit key 
     } else {
         LOG_D(PDCP, "[OSA][RB %d] %s Applying user-plane security\n",
               rb_id, (pdcp_entity->is_ue != 0) ? "UE -> eNB" : "eNB -> UE");
 
-        encrypt_params.key = pdcp_entity->kUPenc + 128;
+        encrypt_params.key = pdcp_entity->kUPenc;//  + 128;
     }
 
     encrypt_params.message    = &pdcp_pdu_buffer[pdcp_header_len];
@@ -170,11 +170,11 @@ int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
     if (rb_id < DTCH) {
         LOG_D(PDCP, "[OSA][RB %d] %s Validating control-plane security\n",
               rb_id, (pdcp_entity->is_ue != 0) ? "eNB -> UE" : "UE -> eNB");
-        decrypt_params.key = pdcp_entity->kRRCenc + 128;
+        decrypt_params.key = pdcp_entity->kRRCenc;// + 128;
     } else {
         LOG_D(PDCP, "[OSA][RB %d] %s Validating user-plane security\n",
               rb_id, (pdcp_entity->is_ue != 0) ? "eNB -> UE" : "UE -> eNB");
-        decrypt_params.key = pdcp_entity->kUPenc + 128;
+        decrypt_params.key = pdcp_entity->kUPenc;// + 128;
     }
 
     /* Uncipher the block */
@@ -184,7 +184,7 @@ int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
         /* Now check the integrity of the complete PDU */
         decrypt_params.message    = pdcp_pdu_buffer;
         decrypt_params.blength    = sdu_buffer_size << 3;
-        decrypt_params.key        = pdcp_entity->kRRCint + 128;
+        decrypt_params.key        = pdcp_entity->kRRCint + 16;// 128;
 
         if (stream_check_integrity(pdcp_entity->integrityProtAlgorithm,
             &decrypt_params, &pdcp_pdu_buffer[sdu_buffer_size]) != 0)
