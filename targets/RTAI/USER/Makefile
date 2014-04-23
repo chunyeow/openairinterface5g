@@ -36,6 +36,22 @@ ifeq ($(ENABLE_RAL), 1)
 CFLAGS += -DENABLE_RAL
 endif
 
+ifdef SECU
+ifeq ($(NETTLE_FOUND), 0)
+@echo "Nettle library >= 2.5 is not installed on your system, nettle-dev lib needed, continuing with security disabled"
+SECU=0
+else
+ifeq ($(OPENSSL_FOUND), 0)
+@echo "openssl library is not installed on your system, openssl lib needed, continuing with security disabled"
+SECU=0
+else
+CFLAGS += -DENABLE_SECURITY
+LIBS += $(OPENSSL_LIBS) $(NETTLE_LIBS)
+endif
+endif
+endif
+
+
 ifeq ($(RTAI),1)
 CFLAGS += -DENABLE_RTAI_CLOCK
 CFLAGS += -DCONFIG_RTAI_LXRT_INLINE  #remend the RTAI warning
@@ -95,7 +111,7 @@ OPENAIR2=1
 endif
 ifeq ($(OPENAIR2),1)
 ASN1_MSG_OBJS1=$(addprefix $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/, $(ASN1_MSG_OBJS))
-OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS)
+OBJ += $(L2_OBJS) $(LIST_OBJ) $(TIMER_OBJ) $(MEM_OBJ) $(OTG_OBJS) $(MATH_OBJS)  $(OSA_OBJS)  
 OBJ += $(OPENAIR1_DIR)/SIMULATION/ETH_TRANSPORT/netlink_init.o
 #OBJ += $(PDCP_DIR)/pdcp_thread.o
 CFLAGS += -DOPENAIR2 -DNO_RRM -DPUCCH -DMAC_CONTEXT=1
@@ -105,6 +121,10 @@ RTAI_OBJ += $(UTILS_OBJS)
 
 ifdef ENABLE_ITTI
 CFLAGS += -DEXMIMO_IOT
+endif
+
+ifdef RRC_MSG_PRINT
+CFLAG += ENABLE_RRG_MSG
 endif
 
 CFLAGS += $(L2_incl) $(ENB_APP_incl) $(UTIL_incl) $(UTILS_incl)
@@ -368,6 +388,7 @@ show:
 	@echo $(USRP_OBJ)
 	@echo IS_REL8 is $(IS_REL8)
 	@echo IS_REL10 is $(IS_REL10)
-
+	@echo openssl $(OPENSSL_FOUND) 
+	@echo nettle $(NETTLE_FOUND)
 beautiful:
 	astyle --style=gnu -s2 $(SRC)
