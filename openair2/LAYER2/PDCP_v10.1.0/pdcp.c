@@ -223,6 +223,7 @@ boolean_t pdcp_data_req(
               pdu_header.sn = pdcp_get_next_tx_seq_number(pdcp_p);
               current_sn = pdu_header.sn;
               memset(&pdu_header.mac_i[0],0,PDCP_CONTROL_PLANE_DATA_PDU_MAC_I_SIZE);
+              memset(&pdcp_pdu_p->data[sdu_buffer_sizeP + pdcp_header_len],0,PDCP_CONTROL_PLANE_DATA_PDU_MAC_I_SIZE);
               if (pdcp_serialize_control_plane_data_pdu_with_SRB_sn_buffer((unsigned char*)pdcp_pdu_p->data, &pdu_header) == FALSE) {
                   LOG_E(PDCP, "Cannot fill PDU buffer with relevant header fields!\n");
                   if (enb_flagP == ENB_FLAG_NO)
