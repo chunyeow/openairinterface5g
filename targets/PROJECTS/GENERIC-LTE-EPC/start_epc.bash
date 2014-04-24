@@ -270,8 +270,14 @@ else
         clean_epc_vlan_network
         build_mme_spgw_vlan_network
     else
-        echo_error "Cannot find open-vswitch network configuration or VLAN network configuration"
-        exit 1
+        is_real_interface $MME_IPV4_ADDRESS_FOR_S11_MME  \
+                               $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
+        if [ $? -eq 1 ]; then
+            echo_success "Found standart network configuration"
+        else
+            echo_error "Cannot find open-vswitch network configuration or VLAN network configuration or standart network configuration"
+            exit 1
+        fi
     fi 
 fi
 
