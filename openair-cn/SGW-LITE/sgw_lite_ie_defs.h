@@ -120,7 +120,7 @@ typedef struct {
         (imsi)->digit[14]
 
 typedef struct {
-    uint8_t digit[IMSI_DIGITS_MAX];
+    uint8_t digit[IMSI_DIGITS_MAX+1]; // +1 for '\0` macro sprintf changed in snprintf
     uint8_t length;
 } Imsi_t;
 
