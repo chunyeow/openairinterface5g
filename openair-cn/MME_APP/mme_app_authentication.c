@@ -160,8 +160,10 @@ mme_app_handle_authentication_info_answer(
             DevAssert(ue_context->vector_list != NULL);
         } else {
             /* Some vector already exist */
-            ue_context->vector_list = realloc(ue_context->vector_list,
-                                              (ue_context->nb_of_vectors + 1) * sizeof(eutran_vector_t));
+            ue_context->vector_list = realloc(
+                ue_context->vector_list,
+                (ue_context->nb_of_vectors + s6a_auth_info_ans_pP->auth_info.nb_of_vectors) * sizeof(eutran_vector_t));
+
             DevAssert(ue_context->vector_list != NULL);
         }
         memcpy(&ue_context->vector_list[ue_context->nb_of_vectors],
@@ -171,10 +173,12 @@ mme_app_handle_authentication_info_answer(
 
         ue_context->nb_of_vectors += s6a_auth_info_ans_pP->auth_info.nb_of_vectors;
 
-        MME_APP_ERROR("INFORMING NAS ABOUT AUTH RESP SUCCESS\n");
+        MME_APP_DEBUG("INFORMING NAS ABOUT AUTH RESP SUCCESS got %u vector(s)\n",
+            s6a_auth_info_ans_pP->auth_info.nb_of_vectors);
 
-        mme_app_itti_auth_rsp(ue_context->ue_id, 1,
-                              &s6a_auth_info_ans_pP->auth_info.eutran_vector);
+        mme_app_itti_auth_rsp(ue_context->ue_id,
+            1,
+            &s6a_auth_info_ans_pP->auth_info.eutran_vector);
     } else {
         MME_APP_ERROR("INFORMING NAS ABOUT AUTH RESP ERROR CODE\n");
         /* Inform NAS layer with the right failure */
