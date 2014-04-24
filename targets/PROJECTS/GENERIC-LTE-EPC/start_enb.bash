@@ -95,7 +95,10 @@
 # Parameters
 ###########################################################
 declare EMULATION_DEV_INTERFACE="eth2"
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 "
+
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 SECU=1 RRC_MSG_PRINT=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
+
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -125,7 +128,7 @@ EMULATION_DEV_ADDRESS=`ifconfig $EMULATION_DEV_INTERFACE | grep 'inet addr:'| gr
 # FIND CONFIG FILE
 #######################################################
 SEARCHED_CONFIG_FILE_ENB="enb*.conf"
-CONFIG_FILE_ENB=`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_ENB`
+CONFIG_FILE_ENB=$THIS_SCRIPT_PATH/`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_ENB`
 if [ -f $CONFIG_FILE_ENB ]; then
     echo_warning "eNB config file found is now $CONFIG_FILE_ENB"
 else
@@ -141,7 +144,8 @@ VARIABLES="
            ENB_INTERFACE_NAME_FOR_S1_MME\|\
            ENB_IPV4_ADDRESS_FOR_S1_MME\|\
            ENB_INTERFACE_NAME_FOR_S1U\|\
-           ENB_IPV4_ADDRESS_FOR_S1U"
+           ENB_IPV4_ADDRESS_FOR_S1U\|\
+           hard_real_time"
 
 VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
 VARIABLES=$(echo $VARIABLES | tr -d ' ')
@@ -168,8 +172,14 @@ else
         build_enb_vlan_network
         test_enb_vlan_network
     else
-        echo_error "Cannot find open-vswitch network configuration or VLAN network configuration"
-        exit 1
+        is_real_interface  $ENB_INTERFACE_NAME_FOR_S1_MME \
+                      $ENB_INTERFACE_NAME_FOR_S1U
+        if [ $? -eq 1 ]; then
+            echo_success "Found standart network configuration"
+        else
+            echo_error "Cannot find open-vswitch network configuration or VLAN network configuration or standard network configuration"
+            exit 1
+        fi
     fi 
 fi
 
@@ -178,26 +188,64 @@ fi
 # LAUNCH eNB + UE executable
 ##################################################
 pkill oaisim
+pkill tshark
 
-make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
 
-ITTI_LOG_FILE=./OUTPUT/itti_enb.$HOSTNAME.log
-rotate_log_file $ITTI_LOG_FILE
-STDOUT_LOG_FILE=./OUTPUT/stdout_enb_ue.log
+if [ x$hard_real_time != "xyes" ]; then
+    ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/itti_enb_ue.$HOSTNAME.log
+    rotate_log_file $ITTI_LOG_FILE
+    
+    STDOUT_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/stdout_enb_ue.$HOSTNAME.log
+    rotate_log_file $STDOUT_LOG_FILE
+    rotate_log_file $STDOUT_LOG_FILE.filtered
+    
+    PCAP_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/tshark_enb_ue.$HOSTNAME.pcap
+    rotate_log_file $PCAP_LOG_FILE
+else 
+    ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/itti_enb_rf.$HOSTNAME.log
+    rotate_log_file $ITTI_LOG_FILE
+    
+    STDOUT_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/stdout_enb_rf.$HOSTNAME.log
+    rotate_log_file $STDOUT_LOG_FILE
+    rotate_log_file $STDOUT_LOG_FILE.filtered
+    
+    PCAP_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/tshark_enb_rf.$HOSTNAME.pcap
+    rotate_log_file $PCAP_LOG_FILE
+fi
 
-rotate_log_file $STDOUT_LOG_FILE
-rotate_log_file $STDOUT_LOG_FILE.filtered
-rotate_log_file ./OUTPUT/tshark.pcap
 
 cd $THIS_SCRIPT_PATH
 
-bash_exec "ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE"
+nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w $PCAP_LOG_FILE &
 
-
-nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w tshark.pcap &
-
-
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+if [ x$hard_real_time != "xyes" ]; then
+    echo_warning "USER MODE"
+    make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+    bash_exec "ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE"
+    gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g1 -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+else
+    echo_warning "HARD REAL TIME MODE"
+    PATH=$PATH:/usr/realtime/bin
+    make --directory=$OPENAIR_TARGETS/RTAI/USER drivers  || exit 1
+    make --directory=$OPENAIR_TARGETS/RTAI/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+    
+    if [ ! -f /tmp/init_rt_done.tmp ]; then
+        insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
+        echo "1" > /sys/bus/pci/rescan
+        touch /tmp/init_rt_done.tmp
+        chmod 666 /tmp/init_rt_done.tmp
+    fi
+    
+    cd $OPENAIR_TARGETS/RTAI/USER
+    ./init_exmimo2.sh
+    ./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB 2>&1
+    #cat /dev/rtf62 > $STDOUT_LOG_FILE
+    cd $THIS_SCRIPT_PATH
+fi
 
 pkill tshark
 
