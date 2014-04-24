@@ -216,7 +216,12 @@ fi
 
 cd $THIS_SCRIPT_PATH
 
-nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w $PCAP_LOG_FILE &
+if [ x$ENB_INTERFACE_NAME_FOR_S1_MME == x$ENB_INTERFACE_NAME_FOR_S1U ]; then 
+    nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -w $PCAP_LOG_FILE &
+else
+    nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w $PCAP_LOG_FILE &
+fi
+
 
 if [ x$hard_real_time != "xyes" ]; then
     echo_warning "USER MODE"
