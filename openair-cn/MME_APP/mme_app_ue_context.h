@@ -64,7 +64,7 @@ typedef uint64_t mme_app_imsi_t;
 
 /* Convert the IMSI contained by a char string NULL terminated to uint64_t */
 #define MME_APP_STRING_TO_IMSI(sTRING, iMSI) sscanf(sTRING, "%"IMSI_FORMAT, iMSI)
-#define MME_APP_IMSI_TO_STRING(iMSI, sTRING) sprintf(sTRING, "%"IMSI_FORMAT, iMSI)
+#define MME_APP_IMSI_TO_STRING(iMSI, sTRING) snprintf(sTRING, IMSI_DIGITS_MAX+1, "%"IMSI_FORMAT, iMSI)
 
 /** @struct bearer_context_t
  *  @brief Parameters that should be kept for an eps bearer.
