@@ -274,28 +274,30 @@ boolean_t pdcp_data_req(
 #if defined(ENABLE_SECURITY)
           if ((pdcp_p->security_activated != 0) &&
               (((pdcp_p->cipheringAlgorithm) != 0) ||
-	       ((pdcp_p->integrityProtAlgorithm) != 0))) {
+              ((pdcp_p->integrityProtAlgorithm) != 0))) {
 
-	    if (enb_flagP == ENB_FLAG_NO)
-	      start_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
-	    else
-	      start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
+              if (enb_flagP == ENB_FLAG_NO)
+                start_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
+              else
+                start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
 
-	    pdcp_apply_security(pdcp_p, rb_idP % maxDRB,
-				pdcp_header_len, current_sn, pdcp_pdu_p->data,
-				sdu_buffer_sizeP);
-	    if (enb_flagP == ENB_FLAG_NO)
-	      stop_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
-	    else
-	      stop_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
+              pdcp_apply_security(pdcp_p,
+                  rb_idP % maxDRB,
+                  pdcp_header_len,
+                  current_sn,
+                  pdcp_pdu_p->data,
+                  sdu_buffer_sizeP);
+
+              if (enb_flagP == ENB_FLAG_NO)
+                stop_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
+              else
+                stop_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
           }
-
-	  LOG_D(PDCP,"MAC_I is %02x.%02x.%02x.%02x\n", 
-		pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP ], 
-		pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +1], 
-		pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +2], 
-		pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +3]); 
-
+          LOG_D(PDCP,"MAC_I is %02x.%02x.%02x.%02x\n",
+              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP ],
+              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +1],
+              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +2],
+              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +3]);
 #endif
 
           /* Print octets of outgoing data in hexadecimal form */
