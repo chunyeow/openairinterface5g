@@ -811,7 +811,7 @@ nwGtpv1uProcessUlpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
     switch(pUlpReq->apiType) {
         case NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT: {
-            NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Received create session req from ulp");
+            NW_LOG(thiz, NW_LOG_LEVEL_DEBG, "Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp");
             rc = NwGtpv1uCreateTunnelEndPoint(thiz,
                                               pUlpReq->apiInfo.createTunnelEndPointInfo.teid,
                                               pUlpReq->apiInfo.createTunnelEndPointInfo.hUlpSession,
