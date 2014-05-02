@@ -1,3 +1,44 @@
+<?php
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2014 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file recep.php
+* \brief Process the POST of the OSD form.
+* \author Philippe Foubert & Navid Nikaein & Andre Gomes (One Source)
+* \date 2014
+* \version 0.1
+* \company Eurecom, 
+* \email: openair_tech@eurecom.fr
+* \note
+* \warning
+*/
+?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -39,6 +80,16 @@ if ( isset($_POST['lossrate'])   && $_POST['lossrate'] == '1' ) { $LOSS_RATE = 1
 if ( isset($_POST['pkttrace'])   && $_POST['pkttrace'] == '1' ) { $PKTTRACE = 1; } else { $PKTTRACE = 0; }
 if ( isset($_POST['bg_traffic']) &&  $_POST['bg_traffic'] == '1' ) { $BG_TRAFFIC = 1; } else { $BG_TRAFFIC = 0; }
 if ( isset($_POST['curves'])     && $_POST['curves'] == '1' ) { $CURVES = enabled; } else { $CURVES = disabled; }
+// More parameters
+if ( isset($_POST['phy_abstraction']) &&  $_POST['phy_abstraction'] == '1' ) { $PHY_ABSTRACTION = '-a'; } else { $PHY_ABSTRACTION = ''; }
+if ( isset($_POST['pcap_trace']) &&  $_POST['pcap_trace'] == '1' ) { $PCAP_TRACE = 1; } else { $PCAP_TRACE = 0; }
+if ( isset($_POST['profiling']) && $_POST['profiling'] == '1' ) { $PROFILING = 1; } else { $PROFILING = 0; }
+if ( isset($_POST['dl_mcs'])) { $DL_MCS = '-m' . $_POST['dl_mcs']; } else { $DL_MCS = ''; }
+if ( isset($_POST['ul_mcs'])) { $UL_MCS = '-t' . $_POST['ul_mcs']; } else { $UL_MCS = ''; }
+if ( isset($_POST['snr'])) { $SNR = '-s' . $_POST['snr']; } else { $SNR = ''; }
+if ( isset($_POST['transmission_mode'])) { $TRANSMISSION_MODE = $_POST['transmission_mode']; } else { $TRANSMISSION_MODE = ''; }
+if ( isset($_POST['frame_type'])) { $FRAME_TYPE = $_POST['frame_type']; } else { $FRAME_TYPE = ''; }
+if ( isset($_POST['tdd_config'])) { $TDD_CONFIG = '<TDD_CONFIG>'.$_POST['tdd_config'].'</TDD_CONFIG>'; } else { $TDD_CONFIG = ''; }
 
 // VARIABLES FOR BOTH WEBPORTAL AND PORTABLE VERSION
 $espace= array(" ");
@@ -47,6 +98,53 @@ $PERSON = str_replace($espace, "", $user);
 $ID = $PERSON.$date;
 $user = $_POST['username'];
 $XML_FILENAME = str_replace($espace, "", $user).'.'.$date.'.xml';
+
+// eNB Distribution
+if (isset($_POST['eNB_initial_distribution']) && $_POST['eNB_initial_distribution'] == 'fixed') {
+$eNB_INITIAL_DISTRIBUTION       =
+        '<eNB_INITIAL_DISTRIBUTION>fixed</eNB_INITIAL_DISTRIBUTION>
+                <eNB_INITIAL_COORDINATES>
+                        <POS_X>'.nospace($_POST['pos_x']).'</POS_X>
+                        <POS_Y>'.nospace($_POST['pos_y']).'</POS_Y>
+                </eNB_INITIAL_COORDINATES>';
+                }
+elseif (isset($_POST['eNB_initial_distribution']) && $_POST['eNB_initial_distribution'] == 'random') {
+$eNB_INITIAL_DISTRIBUTION       =
+        '<eNB_INITIAL_DISTRIBUTION>random</eNB_INITIAL_DISTRIBUTION>
+                <RANDOM_eNB_DISTRIBUTION>
+                        <NUMBER_OF_CELLS>'.nospace($_POST['random_eNB_distr']).'</NUMBER_OF_CELLS>
+                </RANDOM_eNB_DISTRIBUTION>';
+                }
+
+// RBs
+if (isset($_POST['num_rbs_dl'])) {
+	$NUMBER_OF_RBS = '<NUMBER_OF_RBS_DL>'.$_POST['num_rbs_dl'].'</NUMBER_OF_RBS_DL>';
+}
+else {
+	$NUM_RBS = '';
+}
+
+// PCAP
+if ($PCAP_TRACE == 1) {
+	$TRACE_FILE = '<TRACE_FILE>pcap</TRACE_FILE>';
+}
+else {
+	$TRACE_FILE = '';
+}
+
+// CLI
+if ( isset($_POST['cli_enabled']) && $_POST['cli_enabled'] == '1' ) {
+	if ( isset($_POST['cli_start_enb']) && $_POST['cli_start_enb'] == '1' ) { $CLI_START_ENB = 1; } else { $CLI_START_ENB = 0; }
+	if ( isset($_POST['cli_start_ue']) && $_POST['cli_start_ue'] == '1' ) { $CLI_START_UE = 1; } else { $CLI_START_UE = 0; }
+	$CLI =
+	'<CLI>
+		<START_ENB>'.$CLI_START_ENB.'</START_ENB>
+		<START_UE>'.$CLI_START_UE.'</START_UE>
+	</CLI>';
+}
+else {
+	$CLI = '';
+}
 
 // ICI TOUTES LES OPTIONS - ELLES SONT COMMENTEES EN BAS DU FICHIER
 
@@ -66,6 +164,12 @@ $data = '
 		<WALL_PENETRATION_LOSS_dB>'.nospace($_POST['wallpenetloss']).'</WALL_PENETRATION_LOSS_dB>
 		<SYSTEM_BANDWIDTH_MB>'.nospace($_POST['sysbw']).'</SYSTEM_BANDWIDTH_MB>
 		<SYSTEM_FREQUENCY_GHz>'.nospace($_POST['uefreq']).'</SYSTEM_FREQUENCY_GHz>
+		'.$NUMBER_OF_RBS.'
+		<TRANSMISSION_MODE>'.$TRANSMISSION_MODE.'</TRANSMISSION_MODE>
+		<FRAME_CONFIG>
+			<FRAME_TYPE>'.$FRAME_TYPE.'</FRAME_TYPE>
+			'.$TDD_CONFIG.'
+		</FRAME_CONFIG>
 		<ANTENNA>
 			<eNB_ANTENNA>
 				<RX_NOISE_LEVEL_dB>'.nospace($_POST['eNB_RX_noise_power']).'</RX_NOISE_LEVEL_dB>
@@ -106,11 +210,7 @@ $data = '
 				</UE_MOVING_DYNAMICS>
 			</UE_MOBILITY>
 			<eNB_MOBILITY>
-				<eNB_INITIAL_DISTRIBUTION>'.nospace($_POST['eNB_initial_distribution']).'</eNB_INITIAL_DISTRIBUTION>
-				<RANDOM_eNB_DISTRIBUTION>
-					<NUMBER_OF_CELLS>'.nospace($_POST['random_eNB_distr']).'</NUMBER_OF_CELLS>
-				</RANDOM_eNB_DISTRIBUTION>
-
+   				'.nospace($eNB_INITIAL_DISTRIBUTION).'
 				<eNB_MOBILITY_TYPE>'.nospace($_POST['enbmobility']).'</eNB_MOBILITY_TYPE> 
 			</eNB_MOBILITY>
 		</MOBILITY>
@@ -162,6 +262,8 @@ $data = '
 	<EMULATION_CONFIG>
 		<EMULATION_TIME_ms>'.nospace($_POST['emutime']).'</EMULATION_TIME_ms>
 		<CURVE>'.$CURVES.'</CURVE>
+		<PROFILING>'.$PROFILING.'</PROFILING>
+		'.$TRACE_FILE.'
 		<PERFORMANCE_METRICS>
 			    <THROUGHPUT>'.$THROUGHPUT.'</THROUGHPUT>
 			    <LATENCY>'.$LATENCY.'</LATENCY>
@@ -175,6 +277,7 @@ $data = '
 			</LOG>
 			<PACKET_TRACE>'.$PKTTRACE.'</PACKET_TRACE>
 			<SEED_VALUE>'.nospace($_POST['seedvalue']).'</SEED_VALUE>
+			'.$CLI.'
 	</EMULATION_CONFIG>
 	<PROFILE>'.$XML_FILENAME.'</PROFILE>	
 </OAI_EMULATION>
@@ -206,27 +309,82 @@ $RESULTS_PATH_EMULATION = $RESULTS_PATH."/".str_replace($espace, "", $user)."/".
 //$RESULTS_PATH_EMULATION_LOGS = $RESULTS_PATH_EMULATION."LOGS/";
 //$RESULTS_PATH_EMULATION_XML = $RESULTS_PATH_EMULATION."SCENARIO/XML/";
 
+// PROFILING and PCAP Copy
+if ($PROFILING == 1) {
+	$PROFILING_PARSE = '2>profiling.log';
+	$PROFILING_COPY = ' ; cp profiling.log '.$RESULTS_PATH_EMULATION;
+}
+else {
+	$PROFILING_PARSE = '';
+	$PROFILING_COPY = '';
+}
+if ($PCAP_TRACE == 1) {
+	$PCAP_COPY = ' ; cp oai_opt.pcap '.$RESULTS_PATH_EMULATION;
+}
+else {
+	$PCAP_COPY = '';
+}
+
 // -1 : portable, 0: web portal, # for templates  
 // 2 - STARTING OAISIM 
 // $OAISIM=shell_exec("set -x ; mkdir /tmp/$ID ; cd /tmp/$ID ; export OPENAIR1_DIR=$OPENAIR1_DIR ; export OPENAIR2_DIR=$OPENAIR2_DIR ; export OPENAIR3_DIR=$OPENAIR3_DIR ; export OPENAIR_TARGETS=$OPENAIR_TARGETS ; $OPENAIR_TARGETS/SIMU/USER/oaisim -a -c $XML_FILENAME >oaisim.log ; mv * $RESULTS_PATH_EMULATION_LOGS ; rmdir /tmp/$ID ");
 
-$OAISIM="set -x ; mkdir /tmp/$ID ; cd /tmp/$ID ; export OPENAIR1_DIR=$OPENAIR1_DIR ; export OPENAIR2_DIR=$OPENAIR2_DIR ; export OPENAIR3_DIR=$OPENAIR3_DIR ; export OPENAIR_TARGETS=$OPENAIR_TARGETS ; $OPENAIR_TARGETS/SIMU/USER/oaisim -a -c -1 >oaisim.log ; cp oaisim.log $RESULTS_PATH_EMULATION";
+$OAISIM="set -x ; mkdir /tmp/$ID ; cd /tmp/$ID ; export OPENAIR1_DIR=$OPENAIR1_DIR ; export OPENAIR2_DIR=$OPENAIR2_DIR ; export OPENAIR3_DIR=$OPENAIR3_DIR ; export OPENAIR_TARGETS=$OPENAIR_TARGETS ; $OPENAIR_TARGETS/SIMU/USER/oaisim $PHY_ABSTRACTION $SNR $DL_MCS $UL_MCS -c -1 >oaisim.log ".$PROFILING_PARSE." ; cp oaisim.log $RESULTS_PATH_EMULATION".$PROFILING_COPY.$PCAP_COPY;
 
 //echo $OAISIM; 
 
 shell_exec($OAISIM);
 
-// APACHE VARIABLES
-$RESULTS_PATH="http://localhost/results/";
-$XMLFILE_PATH="http://localhost/xmlfile/";
+// Get hostname
+if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
+	$hostname = gethostname();
+}
+elseif (version_compare(PHP_VERSION, '4.2.0') >= 0) {
+	$hostname = php_uname('n');
+}
+elseif (version_compare(PHP_VERSION, '4.2.0') < 0) {
+	$hostname = getenv('HOSTNAME'); 
+	if(!$hostname) $hostname = trim(`hostname`); 
+	if(!$hostname) $hostname = exec('echo $HOSTNAME');
+	if(!$hostname) $hostname = preg_replace('#^\w+\s+(\w+).*$#', '$1', exec('uname -a'));
+}
 
+// APACHE VARIABLES
+$RESULTS_PATH="http://".$hostname."/results/";
+$XMLFILE_PATH="http://".$hostname."/xmlfile/";
+
+// PROFILING and PCAP Results
+if ($PROFILING == 1) {
+	$PROFILING_OUTPUT = '
+	<div align="center" class="notice span-9">
+		<br>
+		<p>Here are the performance profiling statistics :
+		<br>
+		<a href="'.$RESULTS_PATH.str_replace($espace, "", $user).'/'.$date.'/profiling.log" target="_blank">profiling.log</a></p>
+	</div>';
+}
+else {
+	$PROFILING_OUTPUT = '';
+}
+if ($PCAP_TRACE == 1) {
+	$PCAP_OUTPUT = '
+	<div align="center" class="notice span-9">
+		<br>
+		<p>Here is the PCAP File :
+		<br>
+		<a href="'.$RESULTS_PATH.str_replace($espace, "", $user).'/'.$date.'/oai_opt.pcap" target="_blank">oai_opt.pcap</a></p>
+	</div>';
+}
+else {
+	$PCAP_OUTPUT = '';
+}
 
 //
 // 3 - DISPLAY RESULTS
-// 
+//
+
 // THE FIRST SQUARE  - XML FILE
 echo '
-
 <div class=" span-50">
       <br>
     </div>
@@ -237,33 +395,29 @@ echo '
     </div>
 
     <div align="center" class=" span-10">
-       <div class="success span-9">
-	  <br>
-	    <p>Here is the XML file of your OpenAirEmulation :
-	    <br>
-	    <a href="'.$RESULTS_PATH.str_replace($espace, "", $user).'/'.$date.'/'.$XML_FILENAME.'" target="_blank">'.$XML_FILENAME.'</a></p>
-	   </div>
+		<div class="success span-9">
+			<br>
+			<p>Here is the XML file of your OpenAirEmulation :
+			<br>
+			<a href="'.$RESULTS_PATH.str_replace($espace, "", $user).'/'.$date.'/'.$XML_FILENAME.'" target="_blank">'.$XML_FILENAME.'</a></p>
+		</div>
 
-       <div align="center" class="info span-9">
-	  <br>
-	    <p>Here is the output of your OpenAirEmulation :
-	    <br>
-	    <a href="'.$RESULTS_PATH.str_replace($espace, "", $user).'/'.$date.'/oaisim.log" target="_blank">oaisim.log</a></p>
-	</div>
+		<div align="center" class="info span-9">
+			<br>
+			<p>Here is the output of your OpenAirEmulation :
+			<br>
+			<a href="'.$RESULTS_PATH.str_replace($espace, "", $user).'/'.$date.'/oaisim.log" target="_blank">oaisim.log</a></p>
+		</div>
 
-	<div align="center" class="notice span-9">
-	  <br>
-	    <p>For the future:
-	    <br>
-	    </p>
-	</div>
-     </div>
+		'.$PROFILING_OUTPUT.'
 
-     <div class=" span-10">
-	  <br>
-     </div>
+		'.$PCAP_OUTPUT.'
+
+		<div class=" span-10">
+			<br>
+		</div>
 </div>
-    ';
+';
 
 
 /*

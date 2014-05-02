@@ -69,7 +69,7 @@ typedef struct
 
     // eNB functions
     /// Invoke dlsch/ulsch scheduling procedure for new subframe
-    void (*eNB_dlsch_ulsch_scheduler)(module_id_t Mod_id, uint8_t cooperation_flag, frame_t frameP, uint8_t subframe);//, int calibration_flag);
+    void (*eNB_dlsch_ulsch_scheduler)(module_id_t Mod_id, uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframeP);//, int calibration_flag);
 
     /// Fill random access response sdu, passing timing advance
     uint16_t (*fill_rar)(module_id_t Mod_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t N_RB_UL, uint8_t input_buffer_length);
@@ -84,7 +84,7 @@ typedef struct
     void (*cancel_ra_proc)(module_id_t Mod_id,frame_t frameP,uint16_t preamble);
 
     /// Get DCI for current subframe from MAC
-    DCI_PDU* (*get_dci_sdu)(module_id_t Mod_id,frame_t frameP,uint8_t subframe);
+    DCI_PDU* (*get_dci_sdu)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe);
 
     /// Get DLSCH sdu for particular RNTI and Transport block index
     uint8_t* (*get_dlsch_sdu)(module_id_t Mod_id,frame_t frameP,rnti_t rnti,uint8_t TB_index);
@@ -96,7 +96,7 @@ typedef struct
     void (*mrbch_phy_sync_failure) (module_id_t Mod_id,frame_t frameP, uint8_t free_eNB_index);
 
     /// Indicate Scheduling Request from UE
-    void (*SR_indication)(module_id_t Mod_id,frame_t frameP,rnti_t rnti,uint8_t subframe);
+    void (*SR_indication)(module_id_t Mod_id,frame_t frameP,rnti_t rnti,sub_frame_t subframe);
 
     /// Configure Common PHY parameters from SIB1
     void (*phy_config_sib1_eNB)(module_id_t Mod_id,
@@ -124,7 +124,7 @@ typedef struct
 
 #ifdef Rel10
     /// Get MCH sdu and corresponding MCS for particular MBSFN subframe
-    MCH_PDU* (*get_mch_sdu)(module_id_t Mod_id,frame_t frameP,uint32_t subframe);
+    MCH_PDU* (*get_mch_sdu)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe);
 #endif
     // configure the cba rnti at the physical layer 
     void (*phy_config_cba_rnti)(module_id_t Mod_id,eNB_flag_t eNB_flag, uint8_t index, uint16_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups);
@@ -149,26 +149,26 @@ typedef struct
 
     /// Function to check if UE PHY needs to decode MCH for MAC
     /// get the sync area id, and teturn MCS value if need to decode, otherwise -1
-    int (*ue_query_mch)(module_id_t Mod_id,frame_t frameP,uint32_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
+    int (*ue_query_mch)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
 #endif
 
   /// Retrieve ULSCH sdu from MAC
-    void (*ue_get_sdu)(module_id_t Mod_id,frame_t frameP,uint8_t subframe, uint8_t CH_index,uint8_t *ulsch_buffer,uint16_t buflen,uint8_t *access_mode);
+    void (*ue_get_sdu)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe, uint8_t CH_index,uint8_t *ulsch_buffer,uint16_t buflen,uint8_t *access_mode);
 
     /// Retrieve RRCConnectionReq from MAC
-    PRACH_RESOURCES_t* (*ue_get_rach)(module_id_t Mod_id,frame_t frameP,uint8_t Msg3_flag,uint8_t subframe);
+    PRACH_RESOURCES_t* (*ue_get_rach)(module_id_t Mod_id,frame_t frameP,uint8_t Msg3_flag,sub_frame_t subframe);
 
     /// Process Random-Access Response
     uint16_t (*ue_process_rar)(module_id_t Mod_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t *t_crnti,uint8_t preamble_index);
 
     /// Get SR payload (0,1) from UE MAC
-    uint32_t (*ue_get_SR)(module_id_t Mod_id,frame_t frameP,uint8_t eNB_id,rnti_t rnti,uint8_t subframe);
+    uint32_t (*ue_get_SR)(module_id_t Mod_id,frame_t frameP,uint8_t eNB_id,rnti_t rnti,sub_frame_t subframe);
 
     /// Indicate synchronization with valid PBCH
     void (*dl_phy_sync_success) (module_id_t Mod_id,frame_t frameP, uint8_t CH_index,uint8_t first_sync);
 
     /// Only calls the PDCP for now
-    UE_L2_STATE_t (*ue_scheduler)(module_id_t Mod_id, frame_t frameP,uint8_t subframe, lte_subframe_t direction,uint8_t eNB_id);
+    UE_L2_STATE_t (*ue_scheduler)(module_id_t Mod_id, frame_t frameP,sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_id);
 
     /// PHY-Config-Dedicated UE
     void (*phy_config_dedicated_ue)(module_id_t Mod_id,uint8_t CH_index,

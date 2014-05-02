@@ -3093,11 +3093,18 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 		phy_vars_eNB->Mod_id,
 		frame,harq_pid,i);
 #endif
+	  mac_xface->rx_sdu(phy_vars_eNB->Mod_id,
+			    frame,
+			    phy_vars_eNB->ulsch_eNB[i]->rnti,
+			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
+			    phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
+	  /*
 	  mac_xface->terminate_ra_proc(phy_vars_eNB->Mod_id,
 				       frame,
 				       phy_vars_eNB->ulsch_eNB[i]->rnti,
 				       phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->b,
 				       phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
+	  */
 #endif
 
 	  phy_vars_eNB->eNB_UE_stats[i].mode = PUSCH;

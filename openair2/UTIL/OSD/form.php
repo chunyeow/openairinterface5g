@@ -29,21 +29,29 @@
 					<input type="radio" name="smallscale" value="EVA">EVA<br>
 					<input type="radio" name="smallscale" value="ETU">ETU<br>
 					<input type="radio" name="smallscale" value="Rayleigh8">Rayleigh8<br>
-					<input type="radio" name="smallscale" value="Rayleigh1" checked>Rayleigh1<br>
+					<input type="radio" name="smallscale" value="Rayleigh1">Rayleigh1<br>
 					<input type="radio" name="smallscale" value="Rayleigh1_corr">Rayleigh1_corr<br>
 					<input type="radio" name="smallscale" value="Rayleigh1_anticorr">Rayleigh1_anticorr<br>
 					<input type="radio" name="smallscale" value="Rice8">Rice8<br>
 					<input type="radio" name="smallscale" value="Rice1">Rice1<br>
 					<input type="radio" name="smallscale" value="Rice1_corr">Rice1_corr<br>
 					<input type="radio" name="smallscale" value="Rice1_anticorr">Rice1_anticorr<br>
-					<input type="radio" name="smallscale" value="AWGN">AWGN<br>
+					<input type="radio" name="smallscale" value="AWGN" checked>AWGN<br>
 			</div>
 			
 			<div class="span-7">
 			<h4><u>Other parameters</u></h4>
 				<label>Wall penetration loss</label><input name="wallpenetloss" id="wallpenetloss" size="3" maxlength="4" value="5" class="required"> dB<span class="message"></span><br>
-				<label>System Bandwidth : </label><input name="sysbw" id="sysbw" size="3" maxlength="4" value="7.68" class="required"> MHz<span class="message"></span><br>
-				<label>UE Frequency : </label><input name="uefreq" id="uefreq" size="3" maxlength="4" value="1.9" class="required"> GHz<span class="message"></span><br>				
+				<label>System Bandwidth : </label><input name="sysbw" id="sysbw" size="3" maxlength="4" value="5" class="required"> MHz<span class="message"></span><br>
+				<label>UE Frequency : </label><input name="uefreq" id="uefreq" size="3" maxlength="4" value="1.9" class="required"> GHz<span class="message"></span><br>
+				<label>Number of RBs DL (6,15,25,50,75,100) : </label><input name="num_rbs_dl" id="num_rbs_dl" size="3" maxlength="4" value="25"><span class="message"></span><br>
+                <label>Target DL MCS : </label><input name="dl_mcs" id="dl_mcs" size="3" maxlength="4" value="20"><span class="message"></span><br>
+                <label>Target UL MCS : </label><input name="ul_mcs" id="ul_mcs" size="3" maxlength="4" value="16"><span class="message"></span><br>
+                <label>SNR : </label><input name="snr" id="snr" size="3" maxlength="4" value="15"><span class="message"></span><br>
+                <label>Transmission Mode (1,2,5,6) : </label><input name="transmission_mode" id="transmission_mode" size="3" maxlength="4" value="1"><span class="message"></span><br>
+                <br><label>Frame Type : </label><br>
+                <input type="radio" name="frame_type" value="1" checked>TDD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>Frame Config (0-6) : </label><input name="tdd_config" id="tdd_config" size="3" maxlength="4" value="1"><span class="message"></span><br>
+                <input type="radio" name="frame_type" value="0">FDD<br>			
 			</div>
 			
 			<div class="span-10">
@@ -161,10 +169,13 @@
 			
 			<div class="span-7">
 				<label>eNB Initial Distribution : </label><br>
-					<input type="radio" name="eNB_initial_distribution" value="random" checked> Random <!--<span id="random" style="display">-> Number of cells :<input name="nbenbs" id="nbenbs" size="1" maxlength="4" value="1" class="required"><span class="message"></span></span>--><br>
-					<input type="radio" name="eNB_initial_distribution" value="grid" class="disabled"> Grid <!-- <span id="grid" style="display:none">-> Grid X value :<input name="gridx" id="gridx" size="1" maxlength="4" value="1" class="required"><span class="message"></span>Grid Y value :<input name="gridy" id="gridy" size="1" maxlength="4" value="1" class="required"><span class="message"></span></span>--><br>
-					<input type="radio" name="eNB_initial_distribution" value="hexagonal" class="disabled"> Hexagonal <!--<span id="hexagonal" style="display:none">-> Number of Cells :<input name="hexanbcells" id="hexabncells" size="1" maxlength="4" value="1" class="required"><span class="message"></span> Inter eNB distance :<input name="interenbdist" id="interenbdist" size="1" maxlength="4" value="1" class="required"> km<span class="message"></span></span>--><br>
-					<br>
+					<input type="radio" name="eNB_initial_distribution" value="fixed" checked> Fixed <br>
+                    Pos X : <input name="pos_x" id="pos_x" size="4" maxlength="4" value="250" class="required"> m<span class="message"></span><br>
+                    Pos Y : <input name="pos_y" id="pos_y" size="4" maxlength="4" value="250" class="required"> m<span class="message"></span><br>
+                    <input type="radio" name="eNB_initial_distribution" value="random"> Random <!--<span id="random" style="display">-> Number of cells :<input name="nbenbs" id="nbenbs" size="1" maxlength="4" value="1" class="required"><span class="message"></span></span>--><br>
+                    <input type="radio" name="eNB_initial_distribution" value="grid" class="disabled"> Grid <!-- <span id="grid" style="display:none">-> Grid X value :<input name="gridx" id="gridx" size="1" maxlength="4" value="1" class="required"><span class="message"></span>Grid Y value :<input name="gridy" id="gridy" size="1" maxlength="4" value="1" class="required"><span class="message"></span></span>--><br>
+                    <input type="radio" name="eNB_initial_distribution" value="hexagonal" class="disabled"> Hexagonal <!--<span id="hexagonal" style="display:none">-> Number of Cells :<input name="hexanbcells" id="hexabncells" size="1" maxlength="4" value="1" class="required"><span class="message"></span> Inter eNB distance :<input name="interenbdist" id="interenbdist" size="1" maxlength="4" value="1" class="required"> km<span class="message"></span></span>--><br>
+                    <br>
 				
 				<label>Random eNB Distribution : </label><br>
 					Number of Cells : <input name="random_eNB_distr" id="random_eNB_distr" size="1" maxlength="4" value="1"><span class="message"></span><br><br>
@@ -310,7 +321,15 @@
 			<input name="throughput" value="1"  type="checkbox" class="required" > Throughput<span class="message"></span><br>
 			<input name="latency" value="1"  type="checkbox" class="required" > Latency<span class="message"></span><br>
 			<input name="lossrate" value="1" type="checkbox" class="required"> Loss Rate<span class="message"></span><br>
-			<br>	
+			<br>
+            <input name="phy_abstraction" value="1" type="checkbox" class="required"> PHY Abstraction<span class="message"></span><br>
+            <input name="profiling" value="1" type="checkbox" class="required" checked> Profiling Statistics<span class="message"></span><br>
+            <input name="pcap_trace" value="1" type="checkbox" class="required"> PCAP Trace<span class="message"></span><br>
+            <br>
+            <input name="cli_enabled" value="1" type="checkbox" class="required"> CLI Enabled<span class="message"></span><br>
+            <input name="cli_start_enb" value="1" type="checkbox" class="required"> CLI Start eNB<span class="message"></span><br>
+            <input name="cli_start_ue" value="1" type="checkbox" class="required"> CLI Start UE<span class="message"></span><br>
+            <br>
 			<input name="curves" value="1" type="checkbox" class="required"> Show Curves (not working)<span class="message"></span><br>
 		</div>	
 		<div class="span-6">

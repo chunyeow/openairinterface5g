@@ -357,8 +357,7 @@ RRC_status_t rrc_rx_tx(uint8_t Mod_id, const frame_t frameP, const eNB_flag_t eN
       }
       if ((UE_rrc_inst[Mod_id].Info[index].T310_cnt % 10) == 0)
         LOG_D(RRC, "[UE %d] Frame %d T310 Count %d ms\n", Mod_id, frameP, UE_rrc_inst[Mod_id].Info[index].T310_cnt);
-      if (UE_rrc_inst[Mod_id].Info[index].T310_cnt
-          == T310[UE_rrc_inst[Mod_id].sib2[index]->ue_TimersAndConstants.t310]) {
+      if (UE_rrc_inst[Mod_id].Info[index].T310_cnt    == T310[UE_rrc_inst[Mod_id].sib2[index]->ue_TimersAndConstants.t310]) {
         UE_rrc_inst[Mod_id].Info[index].T310_active = 0;
         rrc_t310_expiration (frameP, Mod_id, index);
         return (RRC_PHY_RESYNCH);

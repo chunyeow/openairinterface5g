@@ -30,11 +30,11 @@
 
 /*! \file oaisim_config.h
 * \brief configure an emulation
-* \author Lusheng Wang
+* \author navid nikaein & Lusheng Wang
 * \date 2006-2010
 * \version 4.0 
 * \company Eurecom
-* \email: wangl@eurecom.fr
+* \email: openair_tech@eurecom.fr
 * \note this a note 
 * \bug 	this is a bug
 * \warning  this is a warning
@@ -59,19 +59,20 @@ The current sturcture of oaisim is shown by the figure.
 #include "UTIL/OMG/omg.h"
 #include "UTIL/CLI/cli_if.h"
 #include "SIMULATION/ETH_TRANSPORT/defs.h"
+#include "PHY/defs.h"
 
 /** @defgroup _init_oai Initial oaisim
  *  @ingroup _fn
  *  @brief Initialize all the parameters before start an emulation
  * @{*/ 
-	void init_oai_emulation();
+	void init_oai_emulation(void);
 /* @}*/
 
 /** @defgroup _config_oaisim All the configurations for an emulation
  *  @ingroup _fn
  *  @brief This is the function that calls all the other configuration functions
  * @{*/ 
-void oaisim_config();
+void oaisim_config(void);
 /* @}*/
 
 
@@ -79,11 +80,11 @@ void oaisim_config();
  *  @ingroup _fn
  *  @brief There are the functions to configure different various modules in the emulator
  * @{*/ 
-int olg_config();
-int ocg_config_env();
-int ocg_config_omg();
-int ocg_config_topo();
-int ocg_config_app();
-int ocg_config_emu();
+int olg_config(void);
+int ocg_config_env(void);
+int ocg_config_omg(void);
+int ocg_config_topo(void);
+int ocg_config_app(void);
+int ocg_config_emu(void);
 /* @}*/
 

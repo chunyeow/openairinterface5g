@@ -29,11 +29,11 @@
 
 /*! \file OCG_parse_XML.c
 * \brief Parse the content of the XML configuration file
-* \author Lusheng Wang  & Navid Nikaein  & Aymen Hafsaoui
+* \author Lusheng Wang  & Navid Nikaein  & Aymen Hafsaoui & Andre Gomes(One Source)
 * \date 2011
 * \version 0.1
 * \company Eurecom
-* \email: lusheng.wang@eurecom.fr
+* \email: navid.nikaein@eurecom.fr
 * \note
 * \warning
 */
@@ -48,6 +48,7 @@
 #include "OCG_parse_XML.h"
 #include "UTIL/LOG/log.h"
 #include "UTIL/OTG/otg_defs.h"
+#include "UTIL/OPT/opt.h"
 /*----------------------------------------------------------------------------*/
 
 #ifndef HAVE_STRNDUP
@@ -72,7 +73,9 @@ static int inter_site_correlation_;
 static int wall_penetration_loss_dB_;
 static int system_bandwidth_MB_;
 static int system_frequency_GHz_;
+static int number_of_rbs_dl_;
 static int transmission_mode_;
+static int frame_config_;
 static int frame_type_;
 static int tdd_config_;
 static int antenna_;
@@ -123,6 +126,9 @@ static int max_journey_time_ms_;
 static int eNB_mobility_;
 static int eNB_mobility_type_;
 static int eNB_initial_distribution_;
+static int eNB_initial_coordinates_;
+static double eNB_pos_x_;
+static double eNB_pos_y_;
 static int random_eNB_distribution_;
 static int number_of_cells_;
 static int hexagonal_eNB_distribution_;
@@ -174,6 +180,8 @@ static int packet_gen_type_;
 static int emulation_config_;		/*!< \brief indicating that the parsing position is now within Emu_Config_*/
 static int emulation_time_ms_;
 static int curve_;
+static int profiling_;
+static int trace_file_;
 static int background_stats_;
 static int performance_metrics_;		/*!< \brief indicating that the parsing position is now within Performance_*/
 static int throughput_;
@@ -263,8 +271,12 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 		system_bandwidth_MB_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "SYSTEM_FREQUENCY_GHz")) {
 		system_frequency_GHz_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "NUMBER_OF_RBS_DL")) {
+		number_of_rbs_dl_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "TRANSMISSION_MODE")) {
 		transmission_mode_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "FRAME_CONFIG")) {
+		frame_config_ = 1;	
 	} else if (!xmlStrcmp(name,(unsigned char*) "FRAME_TYPE")) {
 		frame_type_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "TDD_CONFIG")) {
@@ -297,7 +309,6 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 		antenna_orientation_degree_2_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "ANTENNA_ORIENTATION_degree3")) {
 		antenna_orientation_degree_3_ = 1;
-
 	} else if (!xmlStrcmp(name,(unsigned char*) "TOPOLOGY_CONFIG")) {
 		topology_config_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "AREA")) {
@@ -364,6 +375,12 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 		eNB_mobility_type_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "eNB_INITIAL_DISTRIBUTION")) {
 		eNB_initial_distribution_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "eNB_INITIAL_COORDINATES")) {
+		eNB_initial_coordinates_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "POS_X")) {
+		eNB_pos_x_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "POS_Y")) {
+		eNB_pos_y_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "RANDOM_eNB_DISTRIBUTION")) {
 		random_eNB_distribution_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "NUMBER_OF_CELLS")) {
@@ -399,7 +416,6 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 	} else if (!xmlStrcmp(name,(unsigned char*) "OMV")) {
 		omv_ = 1;
 	}
-
 	else if (!xmlStrcmp(name, (unsigned char*) "APPLICATION_CONFIG")) {
 		application_config_ = 1;
 		oai_emulation.info.max_predefined_traffic_config_index = 0;
@@ -494,13 +510,16 @@ void start_element(void *user_data, const xmlChar *name, const xmlChar **attrs) 
 		stream_ = 1;
 	} else if (!xmlStrcmp(name, (unsigned char*) "DESTINATION_PORT")) {
 		destination_port_ = 1;
-
 	} else if (!xmlStrcmp(name,(unsigned char*) "EMULATION_CONFIG")) {
 		emulation_config_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "EMULATION_TIME_ms")) {
 		emulation_time_ms_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "CURVE")) {
 		curve_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "PROFILING")) {
+		profiling_ = 1;
+	} else if (!xmlStrcmp(name,(unsigned char*) "TRACE_FILE")) {
+		trace_file_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "BACKGROUND_STATS")) {
 		background_stats_ = 1;
 	} else if (!xmlStrcmp(name,(unsigned char*) "PERFORMANCE_METRICS")) {
@@ -593,8 +612,12 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		system_bandwidth_MB_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "SYSTEM_FREQUENCY_GHz")) {
 		system_frequency_GHz_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "NUMBER_OF_RBS_DL")) {
+		number_of_rbs_dl_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "TRANSMISSION_MODE")) {
 		transmission_mode_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "FRAME_CONFIG")) {
+		frame_config_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "FRAME_TYPE")) {
 		frame_type_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "TDD_CONFIG")) {
@@ -627,7 +650,6 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		antenna_orientation_degree_2_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "ANTENNA_ORIENTATION_degree3")) {
 		antenna_orientation_degree_3_ = 0;
-
 	} else if (!xmlStrcmp(name,(unsigned char*) "TOPOLOGY_CONFIG")) {
 		topology_config_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "AREA")) {
@@ -694,6 +716,12 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		eNB_mobility_type_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "eNB_INITIAL_DISTRIBUTION")) {
 		eNB_initial_distribution_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "eNB_INITIAL_COORDINATES")) {
+		eNB_initial_coordinates_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "POS_X")) {
+		eNB_pos_x_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "POS_Y")) {
+		eNB_pos_y_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "RANDOM_eNB_DISTRIBUTION")) {
 		random_eNB_distribution_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "NUMBER_OF_CELLS")) {
@@ -728,7 +756,6 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		sumo_hport_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "OMV")) {
 	        omv_ = 0;
-	
 	} else if (!xmlStrcmp(name, (unsigned char*) "APPLICATION_CONFIG")) {
 		application_config_ = 0;
 	} else if (!xmlStrcmp(name, (unsigned char*) "PREDEFINED_TRAFFIC")) {
@@ -815,13 +842,16 @@ void end_element(void *user_data, const xmlChar *name) { // called once at the e
 		stream_ = 0;
 	} else if (!xmlStrcmp(name, (unsigned char*) "DESTINATION_PORT")) {
 		destination_port_ = 0;
-
 	} else if (!xmlStrcmp(name,(unsigned char*) "EMULATION_CONFIG")) {
 		emulation_config_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "EMULATION_TIME_ms")) {
 		emulation_time_ms_ = 0;
 	}else if (!xmlStrcmp(name,(unsigned char*) "CURVE")) {
 		curve_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "PROFILING")) {
+		profiling_ = 0;
+	} else if (!xmlStrcmp(name,(unsigned char*) "TRACE_FILE")) {
+		trace_file_ = 0;
 	}else if (!xmlStrcmp(name,(unsigned char*) "BACKGROUND_STATS")) {
 		background_stats_ = 0;
 	} else if (!xmlStrcmp(name,(unsigned char*) "PERFORMANCE_METRICS")) {
@@ -911,12 +941,21 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 				oai_emulation.environment_system_config.system_bandwidth_MB = atof(ch);
 			} else if (system_frequency_GHz_) {
 				oai_emulation.environment_system_config.system_frequency_GHz = atof(ch);
+			} else if (number_of_rbs_dl_) {
+				oai_emulation.info.N_RB_DL = atoi(ch);
 			} else if (transmission_mode_) {
-				oai_emulation.info.transmission_mode = atof(ch);
-			} else if (frame_type_) {
-			  oai_emulation.info.frame_type_name =  strndup(ch, len);
-			} else if (tdd_config_) {
-				oai_emulation.info.tdd_config = atof(ch);
+				oai_emulation.info.transmission_mode = atoi(ch);
+			} else if (frame_config_) {
+				if (frame_type_) {
+					oai_emulation.info.frame_type = atoi(ch);
+					if (oai_emulation.info.frame_type) {
+						oai_emulation.info.frame_type_name = "TDD";
+					} else {
+						oai_emulation.info.frame_type_name = "FDD";
+					}
+				} else if (tdd_config_) {
+					oai_emulation.info.tdd_config = atoi(ch);
+				}
 			} else if (antenna_) {
 				if (eNB_antenna_) {
 					if (number_of_sectors_) {
@@ -1045,6 +1084,13 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 						oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = strndup(ch, len);
 					} else if (eNB_initial_distribution_) {
 						oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option = strndup(ch, len);
+					} else if (eNB_initial_coordinates_) {
+						if (eNB_pos_x_) {
+							oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_x = atof(ch);
+					    }
+						else if (eNB_pos_y_) {
+							oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_y = atof(ch);
+						}
 					} else if (random_eNB_distribution_) {
 						if (number_of_cells_) {
 							oai_emulation.topology_config.mobility.eNB_mobility.random_eNB_distribution.number_of_cells = atoi(ch);
@@ -1184,7 +1230,20 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 		    oai_emulation.emulation_config.emulation_time_ms = atof(ch);
 		  } else if (curve_) {
 		    oai_emulation.emulation_config.curve = strndup(ch, len);
- 			} else if (background_stats_) {
+		  } else if (profiling_) {
+			oai_emulation.info.opp_enabled = atoi(ch);
+		  } else if (trace_file_) {
+		  	oai_emulation.info.opt_enabled = 1;
+		  	if (strcmp(strndup(ch, len), "wireshark") == 0) {
+            	opt_type = OPT_WIRESHARK;
+        	} else if (strcmp(strndup(ch, len), "pcap") == 0) {
+            	opt_type = OPT_PCAP;
+        	} else {
+            	opt_type = OPT_NONE;
+            	oai_emulation.info.opt_enabled = 0;
+        	}
+        	oai_emulation.info.opt_mode = opt_type;
+ 		  } else if (background_stats_) {
 		    oai_emulation.emulation_config.background_stats = strndup(ch, len);
 		  }else if (performance_metrics_) {
 		    if (throughput_) {

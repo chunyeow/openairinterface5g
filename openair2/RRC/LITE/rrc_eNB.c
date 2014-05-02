@@ -48,6 +48,8 @@
 #include "COMMON/mac_rrc_primitives.h"
 #include "RRC/LITE/MESSAGES/asn1_msg.h"
 #include "RRCConnectionRequest.h"
+#include "RRCConnectionReestablishmentRequest.h"
+//#include "ReestablishmentCause.h"
 #include "UL-CCCH-Message.h"
 #include "DL-CCCH-Message.h"
 #include "UL-DCCH-Message.h"
@@ -461,6 +463,30 @@ uint8_t rrc_eNB_get_next_transaction_identifier(
 /*------------------------------------------------------------------------------*/
 /* Functions to handle UE index in eNB UE list */
 
+
+static module_id_t rrc_eNB_get_UE_index(
+    module_id_t enb_mod_idP,
+    uint64_t UE_identity) {
+
+    boolean_t      reg = FALSE;
+    module_id_t    i;
+
+    AssertFatal(enb_mod_idP < NB_eNB_INST, "eNB index invalid (%d/%d)!", enb_mod_idP, NB_eNB_INST);
+
+    for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
+      if (eNB_rrc_inst[enb_mod_idP].Info.UE_list[i] == UE_identity) {
+	// UE_identity already registered
+	reg = TRUE;
+	break;
+      }
+    }
+    
+    if (reg == FALSE) {
+      return (UE_MODULE_INVALID);
+    } else
+      return (i);
+}
+
 static module_id_t rrc_eNB_get_next_free_UE_index(
     module_id_t enb_mod_idP,
     uint64_t UE_identity) {
@@ -472,21 +498,20 @@ static module_id_t rrc_eNB_get_next_free_UE_index(
 
     for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
         if ((first_index == UE_MODULE_INVALID) && (eNB_rrc_inst[enb_mod_idP].Info.UE_list[i] == 0)) {
-            first_index = i;    // save first free position
+	  first_index = i;    // save first free position
         }
 
         if (eNB_rrc_inst[enb_mod_idP].Info.UE_list[i] == UE_identity) {
             // UE_identity already registered
-            reg = TRUE;
+	  reg = TRUE;
         }
     }
 
     if (reg == 0) {
-        LOG_I(RRC, "[eNB %d] Adding UE %d with identity " PRIu64 "\n", enb_mod_idP, first_index, UE_identity);
-        return (first_index);
-    } else {
-        return (UE_MODULE_INVALID);
-    }
+      LOG_I(RRC, "[eNB %d] Adding UE %d with identity " PRIu64 "\n", enb_mod_idP, first_index, UE_identity);
+      return (first_index);
+    } else
+      return (UE_MODULE_INVALID);
 }
 
 void rrc_eNB_free_UE_index(
@@ -2613,6 +2638,7 @@ int rrc_eNB_decode_ccch(
     asn_dec_rval_t                      dec_rval;
     UL_CCCH_Message_t                  *ul_ccch_msg = NULL;
     RRCConnectionRequest_r8_IEs_t      *rrcConnectionRequest;
+    RRCConnectionReestablishmentRequest_r8_IEs_t *rrcConnectionReestablishmentRequest;
     int                                 i, rval;
 
     //memset(ul_ccch_msg,0,sizeof(UL_CCCH_Message_t));
@@ -2672,13 +2698,40 @@ int rrc_eNB_decode_ccch(
                 break;
 
             case UL_CCCH_MessageType__c1_PR_rrcConnectionReestablishmentRequest:
+#ifdef RRC_MSG_PRINT
+	      LOG_F(RRC, "RRC Connection Reestablishement Request\n");
+	      for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
+		LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
+	      LOG_F(RRC,"\n");
+#endif
                 LOG_D(RRC,
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND (rrcConnectionReestablishmentRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
-                LOG_I(RRC, "[eNB %d] Frame %d : RRCConnectionReestablishmentRequest not supported yet\n", enb_mod_idP,
-                      frameP);
-                break;
 
+		rrcConnectionReestablishmentRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionReestablishmentRequest.criticalExtensions.choice.rrcConnectionReestablishmentRequest_r8;
+
+                LOG_I(RRC, "[eNB %d] Frame %d UE %d: RRCConnectionReestablishmentRequest cause %s\n", enb_mod_idP,
+                      frameP, 
+		      ((rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_otherFailure) ?    "Other Failure" :
+		       (rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_handoverFailure) ? "Handover Failure" : 
+		                                                                                                            "reconfigurationFailure"));
+		/*
+		{
+		  uint64_t                            c_rnti = 0;
+		  
+		  memcpy(((uint8_t *) & c_rnti) + 3, rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.buf,
+			 rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.size);
+		  ue_mod_id = rrc_eNB_get_UE_index(enb_mod_idP, c_rnti);
+                }
+		
+		if ((eNB_rrc_inst[enb_mod_idP].phyCellId == rrcConnectionReestablishmentRequest.UE_identity.physCellId) && 
+		    (ue_mod_id != UE_INDEX_INVALID)){
+		  rrc_eNB_generate_RRCConnectionReestablishement(enb_mod_idP, frameP, ue_mod_id);
+		}else {
+		  rrc_eNB_generate_RRCConnectionReestablishementReject(enb_mod_idP, frameP, ue_mod_id);
+		}
+                break;
+		*/
             case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
 #ifdef RRC_MSG_PRINT
 	      LOG_F(RRC, "RRC Connection Request\n");
@@ -2690,9 +2743,7 @@ int rrc_eNB_decode_ccch(
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND  (rrcConnectionRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
 
-                rrcConnectionRequest =
-                    &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.
-                    choice.rrcConnectionRequest_r8;
+	      rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
                 {
                     uint64_t                            random_value = 0;
 

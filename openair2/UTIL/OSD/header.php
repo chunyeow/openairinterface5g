@@ -1,4 +1,12 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<?php
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+?>
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<meta http-equiv="pragma" content="no-cache">
 
 <title>OpenAirEmulation Scenario Descriptor - Basic Scenario</title>
 <link type="text/css" rel="stylesheet" media="screen,projection" href="/OSD/css/screen.css?8" />
@@ -42,22 +50,31 @@ $(function(){
 	
 	// PART 2 - BUTTON eNB TOPOLOGY  
 	$(":radio[name='eNB_initial_distribution']").click(function(){ 
-		if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'random') {
-			$("#grid").hide(1);
-			$("#hexagonal").hide(1);
-			$("#random").show(1);
-		}
-		if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'grid') {
-			$("#grid").show(1);
-			$("#hexagonal").hide(1);
-			$("#random").hide(1);
-		}	
-		if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'hexagonal') {
-			$("#grid").hide(1);
-			$("#hexagonal").show(1);
-			$("#random").hide(1);
-		}
-	}); 
+	    if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'random') {
+            $("#grid").hide(1);
+            $("#hexagonal").hide(1);
+            $("#random").hide(1);
+            $("#fixed").show(1);
+	    }
+	    if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'random') {
+            $("#grid").hide(1);
+            $("#hexagonal").hide(1);
+            $("#random").show(1);
+            $("#fixed").hide(1);
+	    }
+	    if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'grid') {
+            $("#grid").show(1);
+            $("#hexagonal").hide(1);
+            $("#random").hide(1);
+            $("#fixed").hide(1);
+	    }       
+	    if ($(":radio[name='eNB_initial_distribution']:checked").val() == 'hexagonal') {
+            $("#grid").hide(1);
+            $("#hexagonal").show(1);
+            $("#random").hide(1);
+            $("#fixed").hide(1);
+	    }
+	});
 	
 	// PART 2 - BUTTON UE DISTRIBUTION
 	$(":radio[name='uedistr']").click(function(){ 

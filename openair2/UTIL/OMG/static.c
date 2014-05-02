@@ -29,11 +29,11 @@
 
 /*! \file rwalk.c
 * \brief static  mobility generator 
-* \author  M. Mahersi,  J. Harri, N. Nikaein,
+* \author  M. Mahersi,  J. Harri, N. Nikaein, Andre Gomes (One source)
 * \date 2011
 * \version 0.1
 * \company Eurecom
-* \email: 
+* \email: openair_tech@eurecom.fr
 * \note
 * \warning
 */
@@ -84,13 +84,28 @@ void start_static_generator(omg_global_param omg_param_list) {
 
 
 void place_static_node(NodePtr node) {
- 	
-  node->X_pos = (double) ((int) (randomGen(omg_param_list.min_X, omg_param_list.max_X)*100))/ 100;
-  node->mob->X_from = node->X_pos;
-  node->mob->X_to = node->X_pos;
-  node->Y_pos = (double) ((int) (randomGen(omg_param_list.min_Y,omg_param_list.max_Y)*100))/ 100;
-  node->mob->Y_from = node->Y_pos;
-  node->mob->Y_to = node->Y_pos;
+  if (omg_param_list.user_fixed && node->type == eNB) {
+    if (omg_param_list.fixed_X <= omg_param_list.max_X && omg_param_list.fixed_X >= omg_param_list.min_X)
+        node->X_pos = omg_param_list.fixed_X;
+    else
+        node->X_pos = (double) ((int) (randomGen(omg_param_list.min_X, omg_param_list.max_X)*100))/ 100;
+    node->mob->X_from = node->X_pos;
+    node->mob->X_to = node->X_pos;
+    if (omg_param_list.fixed_Y <= omg_param_list.max_Y && omg_param_list.fixed_Y >= omg_param_list.min_Y)
+        node->Y_pos = omg_param_list.fixed_Y;
+    else
+        node->Y_pos = (double) ((int) (randomGen(omg_param_list.min_Y,omg_param_list.max_Y)*100))/ 100;
+    node->mob->Y_from = node->Y_pos;
+    node->mob->Y_to = node->Y_pos;
+  }
+  else {
+    node->X_pos = (double) ((int) (randomGen(omg_param_list.min_X, omg_param_list.max_X)*100))/ 100;
+    node->mob->X_from = node->X_pos;
+    node->mob->X_to = node->X_pos;
+    node->Y_pos = (double) ((int) (randomGen(omg_param_list.min_Y,omg_param_list.max_Y)*100))/ 100;
+    node->mob->Y_from = node->Y_pos;
+    node->mob->Y_to = node->Y_pos;
+  }
   
   node->mob->speed = 0.0;
   node->mob->journey_time = 0.0;

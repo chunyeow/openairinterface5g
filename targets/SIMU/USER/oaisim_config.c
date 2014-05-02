@@ -1,3 +1,43 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2014 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
+/*! \file oaisim_config.c
+* \brief Configuration of oaisim
+* \author Navid Nikaein & Andre Gomes (One source)
+* \date 2014
+* \version 1.0
+* \company Eurecom
+* \email: openair_tech@eurecom.fr
+* \note
+* \warning
+*/
+
 #include <string.h>
 #include <math.h>
 #include <unistd.h>
@@ -165,7 +205,7 @@ mapping packet_gen_names[] =
     {NULL, -1}
 };
 
-void init_oai_emulation() {
+void init_oai_emulation(void) {
 
   int i;
 
@@ -195,7 +235,6 @@ void init_oai_emulation() {
 	oai_emulation.environment_system_config.system_bandwidth_MB = 7.68;
 	oai_emulation.environment_system_config.system_frequency_GHz = 1.9;
 
-
 	oai_emulation.topology_config.area.x_m = 500;
 	oai_emulation.topology_config.area.y_m = 500;
 	oai_emulation.topology_config.network_type.selected_option = "homogeneous";
@@ -218,6 +257,8 @@ void init_oai_emulation() {
 	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms = 10.0;
 	oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = "STATIC";
 	oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option = "random";
+  oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_x = 1;
+  oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_y = 1;
 	oai_emulation.topology_config.mobility.eNB_mobility.random_eNB_distribution.number_of_cells = 1;
 	oai_emulation.topology_config.mobility.eNB_mobility.hexagonal_eNB_distribution.number_of_cells = 1;
 	oai_emulation.topology_config.mobility.eNB_mobility.hexagonal_eNB_distribution.inter_eNB_distance_km = 1;
@@ -338,6 +379,7 @@ void init_oai_emulation() {
   oai_emulation.info.omv_enabled =0; // v flag
   oai_emulation.info.vcd_enabled=0;
   oai_emulation.info.opp_enabled=0;
+  oai_emulation.info.oeh_enabled=0;
 
   oai_emulation.info.cba_group_active=0;
   oai_emulation.info.eMBMS_active_state=0;
@@ -392,7 +434,7 @@ void init_oai_emulation() {
 }
 
 
-void oaisim_config() {
+void oaisim_config(void) {
 
   // init log gen first
  //initialize the log generator
@@ -436,7 +478,7 @@ void oaisim_config() {
   }
 }
 
-int olg_config() {
+int olg_config(void) {
   int comp;
   int ocg_log_level     = map_str_to_int(log_level_names,     oai_emulation.emulation_config.log_emu.level);
   int ocg_log_verbosity = map_str_to_int(log_verbosity_names, oai_emulation.emulation_config.log_emu.verbosity);
@@ -510,7 +552,7 @@ int olg_config() {
   return 1;
 }
 
-int ocg_config_env() {
+int ocg_config_env(void) {
 // int func related to channel desc from oaisim.c could be moved here
 
   if (oai_emulation.info.ocg_enabled){
@@ -531,7 +573,7 @@ int ocg_config_env() {
   }
   return 1;
 }
-int ocg_config_topo() {
+int ocg_config_topo(void) {
 
 	// omg
 	init_omg_global_params();
@@ -571,8 +613,13 @@ int ocg_config_topo() {
 	  LOG_I(OMG,"TRACE file at %s\n", omg_param_list.mobility_file);
 	}
 
-	omg_param_list.mobility_type = oai_emulation.info.omg_model_enb;
+	omg_param_list.mobility_type = oai_emulation.info.omg_model_enb; 
 	omg_param_list.nodes_type = eNB;  //eNB or eNB + RN
+  if (strcmp(oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option, "fixed") == 0) {
+    omg_param_list.user_fixed = true;
+    omg_param_list.fixed_X = (double)oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_x;
+    omg_param_list.fixed_Y = (double)oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_y;
+  }
 	omg_param_list.nodes = oai_emulation.info.nb_enb_local + oai_emulation.info.nb_rn_local;
  	omg_param_list.seed = oai_emulation.info.seed; // specific seed for enb and ue to avoid node overlapping
 
@@ -1057,7 +1104,7 @@ g_otg->application_idx[source_id_index][destination_id_index]+=1;
 
 
 
-int ocg_config_emu(){
+int ocg_config_emu(void){
 
   if (oai_emulation.emulation_config.emulation_time_ms != 0) {
     oai_emulation.info.n_frames  =  (int) oai_emulation.emulation_config.emulation_time_ms / 10; // configure the number of frame
@@ -1082,6 +1129,9 @@ int ocg_config_emu(){
 	  oai_emulation.info.cli_start_enb[0],
 	  oai_emulation.info.cli_start_ue[0]);
   }
+
+  if (oai_emulation.info.opp_enabled)
+    opp_enabled = 1;
 
   //bin/LOG_I(OCG, "OPT output file directory = %s\n", oai_emulation.info.output_path);
   oai_emulation.info.opt_enabled = ( oai_emulation.emulation_config.packet_trace.enabled == 0) ? oai_emulation.info.opt_enabled :  oai_emulation.emulation_config.packet_trace.enabled;

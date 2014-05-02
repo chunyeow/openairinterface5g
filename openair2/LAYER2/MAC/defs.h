@@ -1069,7 +1069,7 @@ can be scheduled.
 @param subframe Index of current subframe
 @param calibration_flag Flag to indicate that eNB scheduler should schedule TDD auto-calibration PUSCH.
 */
-void eNB_dlsch_ulsch_scheduler(module_id_t module_idP, uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframe);//, int calibration_flag);
+void eNB_dlsch_ulsch_scheduler(module_id_t module_idP, uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframeP);//, int calibration_flag);
 
 /* \brief Function to retrieve result of scheduling (DCI) in current subframe.  Can be called an arbitrary numeber of times after eNB_dlsch_ulsch_scheduler
 in a given subframe.

@@ -1,12 +1,54 @@
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2014 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+
 #ifndef __FIFO_TYPES_H__
 #define __FIFO_TYPES_H__
 #include "platform_types.h"
 
-/* Types of events triggering the end of the simulation */
-typedef enum End_Of_Sim_Event_Type_e {FRAME, TRAFFIC} End_Of_Sim_Event_Type_t;
-
 /* Types regrouping both user-defined and regular events */
-typedef enum Event_Type_e {ET_DL, ET_UL, ET_S, ET_OMG, ET_OTG} Event_Type_t;
+typedef enum  {
+  MIN_ET=0,
+  OAI_ET=MIN_ET, // config events 
+  SYS_ET,
+  TOPO_ET,
+  APP_ET,
+  EMU_ET,
+  DL_ET, // frame events
+  UL_ET, 
+  S_ET, 
+  PHY_ET, // protocol events 
+  MAC_ET,
+  RLC_ET,
+  PDCP_ET,
+  RRC_ET,
+  MAX_ET
+} Event_Type_t;
 
 /* decomposition of node functions into jobs for a given event */
 typedef enum Job_type_e { JT_OTG, JT_PDCP, JT_PHY_MAC, JT_INIT_SYNC, JT_DL, JT_UL, RN_DL, RN_UL, JT_END} Job_Type_t;
@@ -43,8 +85,8 @@ typedef struct Packet_otg_s {
   pdcp_transmission_mode_t  mode;
 } Packet_otg_t;
 
-typedef struct Event_s {
-    enum Event_Type_e type;
+typedef struct {
+    Event_Type_t type;
     char             *key;
     void             *value;
     frame_t           frame;
@@ -58,11 +100,6 @@ typedef struct Event_s {
   double time_s;
   double time_ms;
 };*/
-
-typedef struct End_Of_Sim_Event_s {
-    enum End_Of_Sim_Event_Type_e type;
-    int value;
-} End_Of_Sim_Event_t;
 
 typedef struct Packet_otg_elt_s {
     struct Packet_otg_elt_s *next;

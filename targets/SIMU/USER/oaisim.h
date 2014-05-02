@@ -26,7 +26,7 @@ void do_DL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
 void init_ue(node_desc_t  *ue_data, UE_Antenna ue_ant);//Abstraction changes
 void init_enb(node_desc_t  *enb_data, eNB_Antenna enb_ant);//Abstraction changes
 void extract_position(Node_list input_node_list, node_desc_t**, int nb_nodes);//Abstraction changes
-void get_beta_map();//Abstraction changes
+void get_beta_map(void);//Abstraction changes
 void get_MIESM_param(void);
 
 void init_snr(channel_desc_t *,  node_desc_t *, node_desc_t *, double*, double*, uint8_t, uint16_t, uint8_t);//Abstraction changes
@@ -42,13 +42,12 @@ void calc_path_loss(node_desc_t* node_tx, node_desc_t* node_rx, channel_desc_t *
 
 void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, frame_t frame, uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms);
 
-#ifdef OPENAIR2
-int omv_write (int pfd,  Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data);
-void omv_end (int pfd, Data_Flow_Unit omv_data);
-
 void reset_opp_meas(void);
 void print_opp_meas(void);
 
+#ifdef OPENAIR2
+int omv_write (int pfd,  Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data);
+void omv_end (int pfd, Data_Flow_Unit omv_data);
 #endif
 
 

@@ -65,6 +65,7 @@
 #include "RRCConnectionSetup.h"
 #include "RRCConnectionSetupComplete.h"
 #include "RRCConnectionRequest.h"
+#include "RRCConnectionReestablishmentRequest.h"
 #include "BCCH-DL-SCH-Message.h"
 #include "BCCH-BCH-Message.h"
 #ifdef Rel10
@@ -196,6 +197,11 @@ typedef struct eNB_RRC_UE_INFO_s {
     /* Information from UE RRC ConnectionRequest */
     UE_S_TMSI Initialue_identity_s_TMSI;
     EstablishmentCause_t establishment_cause;
+
+  /* Information from UE RRC ConnectionReestablishmentRequest */
+    
+    ReestablishmentCause_t reestablishment_cause;
+
 
     /* UE id for initial connection to S1AP */
     uint16_t ue_initial_id;

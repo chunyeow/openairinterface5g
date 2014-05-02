@@ -251,7 +251,7 @@ fc=fopen("/tmp/otg.log","w");;
 	rx_loss_rate_pkts(i,j,k);
 	average_pkt_jitter(i,j,k);
 
-	//	LOG_I(OTG,"KPI: (src=%d, dst=%d, traffic=%d) NB packet TX= %d,  NB packet RX= %d\n ", i, j,  k,otg_info->tx_num_pkt[i][j][k],  otg_info->rx_num_pkt[i][j][k]);
+	//	LOG_I(OTG,"KPI: (src=%d, dst=%d, traffic=%d) NB packet TX= %d,  NB packet RX= %d\n ",i, j,  k,otg_info->tx_num_pkt[i][j][k],  otg_info->rx_num_pkt[i][j][k]);
 	
 	if (otg_multicast_info->tx_throughput[i][j]>0)  { 
 	  //multicast

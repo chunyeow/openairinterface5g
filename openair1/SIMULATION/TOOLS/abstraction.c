@@ -241,7 +241,7 @@ double pbch_bler(double sinr) {
     }
     bler = pow(10.0,log10_bler);
   }
-  printf ("sinr %f bler %f\n",sinr,bler);
+  //printf ("sinr %f bler %f\n",sinr,bler);
   return(bler);
 
 }

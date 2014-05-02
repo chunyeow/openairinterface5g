@@ -1,7 +1,7 @@
 /*******************************************************************************
 
   Eurecom OpenAirInterface
-  Copyright(c) 1999 - 2011 Eurecom
+  Copyright(c) 1999 - 2014 Eurecom
 
   This program is free software; you can redistribute it and/or modify it
   under the terms and conditions of the GNU General Public License,
@@ -28,9 +28,16 @@
 *******************************************************************************/
 
 /**
- * \file defs.h
- * \brief Typedefs & Prototypes of OMG functions
- */
+* \file defs.h
+* \brief Typedefs & Prototypes of OMG functions
+* \author Navid Nikaein and Andre Gomes (one source)
+* \date 2014
+* \version 1.0
+* \company Eurecom
+* \email: navid.nikaein@eurecom.fr
+* \note
+* \warning
+*/
 
 #ifndef __DEFS_H__
 #define  __DEFS_H__
@@ -114,6 +121,9 @@ typedef struct omg_global_param{
 	double max_X; /*!< The maximum value that the X coordinate might take, i.e the maximum boundary of the simulation area according to the X axis*/
 	double min_Y; /*!< The minimum value that the Y coordinate might take, i.e the minimum boundary of the simulation area according to the Y axis */
 	double max_Y; /*!< The minimum value that the Y coordinate might take, i.e the maximum boundary of the simulation area according to the Y axis */
+	bool user_fixed; /*!< Sets if the coordinates are user defined*/
+	double fixed_X; /*!< The user defined x value*/
+	double fixed_Y; /*!< The user defined y value*/
 	double min_speed; /*!< The minimum speed. It should be different than 0.0 in order to avoid instability*/ 
 	double max_speed; /*!< The maximum allowed speed */ 
 	double min_journey_time; /*!< The minimum allowed trip duration. It should be different than 0.0 in order to avoid instability and properly reflect the mobility model behavior */ 

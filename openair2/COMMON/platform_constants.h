@@ -12,7 +12,11 @@
 #ifndef __PLATFORM_CONSTANTS_H__
 #    define __PLATFORM_CONSTANTS_H__
 
-#define NL_MAX_PAYLOAD 4096  /* this should cover the max mtu size*/
+#ifdef JUMBO_FRAME
+       #define NL_MAX_PAYLOAD 18000  /* this should cover the max mtu size*/
+#else
+       #define NL_MAX_PAYLOAD 9000  /* this should cover the max mtu size*/
+#endif
 
 #ifdef USER_MODE
 #ifdef LARGE_SCALE

@@ -124,19 +124,20 @@ char g_sid[MAX_SID];
 #define CLI_MAX_NODES 10
 
 /* The names of functions that actually do the manipulation. */
-int com_help (), com_exit ();
+int com_help (char * arg);
+int com_exit (char *arg);
 
-int prompt(),prompt_usage(), info();
+int prompt(char *arg),prompt_usage(void), info(char *arg);
 
-int start(), set();
-int start_usage(), set_usage();
+int start(char *arg), set(char *arg);
+int start_usage(void), set_usage(void);
 
 /* Forward declarations. */
-char *stripwhite ();
-command *find_command ();
+char *stripwhite (char *string);
+command *find_command (char* name);
 void abandon_input(int);
-char *command_generator ();
-char **fileman_completion ();
+//char *command_generator (void);
+//char **fileman_completion (void);
 int cli_login(const char *, int, int );
 int cli_loop(char* msg);
 int cli_set_prompt_char(void);

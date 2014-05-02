@@ -1,37 +1,75 @@
-#include "discrete_event_generator.h"
+/*******************************************************************************
+
+  Eurecom OpenAirInterface
+  Copyright(c) 1999 - 2014 Eurecom
+
+  This program is free software; you can redistribute it and/or modify it
+  under the terms and conditions of the GNU General Public License,
+  version 2, as published by the Free Software Foundation.
+
+  This program is distributed in the hope it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+  more details.
+
+  You should have received a copy of the GNU General Public License along with
+  this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+  The full GNU General Public License is included in this distribution in
+  the file called "COPYING".
+
+  Contact Information
+  Openair Admin: openair_admin@eurecom.fr
+  Openair Tech : openair_tech@eurecom.fr
+  Forums       : http://forums.eurecom.fsr/openairinterface
+  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+
+*******************************************************************************/
+/*! \file event_handler.c
+* \brief event handler primitives
+* \author Navid Nikaein and Mohamed Said MOSLI BOUKSIAA,
+* \date 2014
+* \version 0.5
+* @ingroup _oai
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
-extern frame_t frame;
-End_Of_Sim_Event end_event; //Could later be a list of condition_events (if the end condition is more complicated)
-Event_List event_list;
+#include "event_handler.h"
 
-void add_event(struct Event event) {
+//extern frame_t frame;
+//End_Of_Sim_Event end_event; //Could later be a list of condition_events (if the end condition is more complicated)
 
-    Event_elt * counter = event_list.head;
-    Event_elt * previous = counter;
-    Event_elt * elt = malloc(sizeof(Event_elt));
+Event_List_t event_list;
 
-    while (counter != NULL) {
-        if ((counter->event).frame > event.frame) break;
-        //else if ((counter->event).next_slot > event.next_slot) break;
-        else {
-            previous = counter;
-            counter = counter->next;
-        }
+void add_event(Event_t event) {
+
+  Event_elt_t * counter = event_list.head;
+  Event_elt_t * previous = counter;
+  Event_elt_t * elt = malloc(sizeof(Event_elt_t));
+  
+  while (counter != NULL) {
+    if ((counter->event).frame > event.frame) break;
+    //else if ((counter->event).next_slot > event.next_slot) break;
+    else {
+      previous = counter;
+      counter = counter->next;
     }
-
-    elt->event = event;
-
-    if (event_list.head != NULL)
-        event_list_add_element(elt, previous, &event_list);
-    else
-        event_list_add_head(elt, &event_list);
-
+  }
+  
+  elt->event = event;
+  
+  if (event_list.head != NULL)
+    event_list_add_element(elt, previous, &event_list);
+  else
+    event_list_add_head(elt, &event_list);
+  
 }
 
-void schedule(enum Event_Type type, int frame, char * key, void * value) {
-    Event event;
+void schedule(Event_Type_t type, int frame, char * key, void * value) {
+    Event_t event;
     event.frame = frame;
     if (key == NULL) { //Global model update
         event.key = NULL;
@@ -44,25 +82,130 @@ void schedule(enum Event_Type type, int frame, char * key, void * value) {
     add_event(event);
 }
 
-void schedule_end_of_simulation(End_Of_Sim_Event_Type type, int value) {
-    end_event.type = type;
-    end_event.value = value;
+/*
+ * this function can reschedule events in the future to build a desired (more dynamic) scenario 
+ * TODO: make sure that OCG OAI_Emulation is decoupled with the local vars
+ */
+void schedule_events(){
+  
+  /*
+   * Step 1: vars needed for future changes
+   */
+  
+  // overall config associated with OAI_ET
+  // OAI_Emulation * oai_frame_1000; 
+  
+  // specific config
+  /* 
+   * associated with SYS_ET
+   */
+  //Environment_System_Config * system_frame_200;
+  /*
+   * associated with TOPO_ET
+   */
+  //Topology_Config *topology_frame_10;
+  /* 
+   * associated with APP_ET
+   */
+  //Application_Config *application_frame_20;
+  /* 
+   * associated with EMU_ET
+   */
+  //Emulation_Config * emulation_frame_100;
+  
+  
+  /*
+   * Step 2: set the desired future changes in the vars 
+   */
+  // i.e. optionally provide an XML file and update OCG vars
+  
+  //mob_frame_10 -> ...
+  //application_frame_30 -> ...
+
+  /*
+   * Step 3: schedule the execution of changes 
+   */
+
+  // general OAI dynamic configuration
+
+  //schedule(OAI_ET, 1000, NULL, oai_frame_1000);
+  //schedule(SYS_ET, 200, NULL, system_frame_200);
+  //schedule(TOPO_ET, 10, NULL, topology_frame_10);
+  //schedule(APP_ET, 20, NULL, application_frame_20);
+  //schedule(EMU_ET, 100, NULL,emulation_frame_100);
+
+  // protocol dynamic configuration
+  //schedule(MAC_ET, 100, NULL,mac_frame_100);
+
+
+  //event_list_display(&event_list);
+
 }
 
-int end_of_simulation() {
-  switch (end_event.type) {
-    case FRAME:
-        if (frame == end_event.value)
-            return 1;
-        break;
-
-   /* default:
-      return 0;*/
+void execute_events(frame_t frame){
+  
+  Event_elt_t *user_defined_event;
+  Event_t event;
+ 
+  while ((user_defined_event = event_list_get_head(&event_list)) != NULL) {
+    
+    event = user_defined_event->event;
+    
+    if (event.frame == frame) {
+      switch (event.type) {
+      case OAI_ET:
+	update_oai_model(event.key, event.value); 
+	user_defined_event = event_list_remove_head(&event_list);
+	break;
+	
+      case SYS_ET:
+	update_sys_model(event.key, event.value); 
+	user_defined_event = event_list_remove_head(&event_list);
+	break;
+	    
+      case TOPO_ET:
+	update_topo_model(event.key, event.value); //implement it with assigning the new values to that of oai_emulation & second thing is to ensure mob model is always read from oai_emulation
+	user_defined_event = event_list_remove_head(&event_list);
+	break;
+	
+      case APP_ET:
+	update_app_model(event.key, event.value);
+	user_defined_event = event_list_remove_head(&event_list);
+	break;
+	
+      case EMU_ET:
+	update_emu_model(event.key, event.value); 
+	user_defined_event = event_list_remove_head(&event_list);
+	break;
+	
+      case MAC_ET:
+	update_mac(event.key, event.value); 
+	user_defined_event = event_list_remove_head(&event_list);
+	break;
+	
+      default :
+	break;
+      }
+    } else {
+      break;
     }
-  return 0;
+  }
+  
 }
 
-void update_omg_model(char * key, void * value) {
+void update_mac(char * key, void * value) {
+
+}
+
+void update_oai_model(char * key, void * value) {
+
+}
+
+void update_sys_model(char * key, void * value) {
+
+}
+
+void update_topo_model(char * key, void * value) {
     printf("\n\n\nA NEW MOB MODEL\n\n\n");
 /*
     if (key != NULL) { //Global model update
@@ -127,7 +270,7 @@ void update_omg_model(char * key, void * value) {
     */
 }
 
-void update_otg_model(char * key, void * value) {
+void update_app_model(char * key, void * value) {
     printf("\n\n\nA NEW APP MODEL\n\n\n");
     //int i;
 /*
@@ -329,3 +472,8 @@ void update_otg_model(char * key, void * value) {
     }
     */
 }
+
+void update_emu_model(char * key, void * value) {
+
+}
+

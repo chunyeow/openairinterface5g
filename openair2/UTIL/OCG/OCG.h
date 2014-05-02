@@ -29,7 +29,7 @@
 
 /*! \file OCG.h
 * \brief Data structure for OCG of OpenAir emulator
-* \author Lusheng Wang and Navid Nikaein
+* \author Lusheng Wang and Navid Nikaein and Andre Gomes(One source)
 * \date 2011
 * \version 1.0
 * \company Eurecom
@@ -404,6 +404,12 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     int grid;
   } eNB_Initial_Distribution;
 
+  typedef struct
+  {
+    double pos_x;
+    double pos_y;
+  } Fixed_eNB_Distribution;
+
   ////// options of eNB_Initial_Distribution
   typedef struct
   {
@@ -428,7 +434,8 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     eNB_Mobility_Type eNB_mobility_type;
 
     eNB_Initial_Distribution eNB_initial_distribution;
-    // ! Note: the following three options are for eNB_Initial_Distribution, we put them here for the sake of simplicity of the XML file
+    // ! Note: the following four options are for eNB_Initial_Distribution, we put them here for the sake of simplicity of the XML file
+    Fixed_eNB_Distribution fixed_eNB_distribution;
     Random_eNB_Distribution random_eNB_distribution;
     Hexagonal_eNB_Distribution hexagonal_eNB_distribution;
     Grid_eNB_Distribution grid_eNB_distribution;
@@ -664,6 +671,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char otg_enabled;  // openair traffic generator
     unsigned char omv_enabled; // openair mobility visulizer
     unsigned char opp_enabled; // openair performance profiler 
+    unsigned char oeh_enabled; // openair event handler, with CLI this could provide a remote event management 
     char *itti_dump_file;
     unsigned char vcd_enabled;
     char *vcd_file;
@@ -701,7 +709,6 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char extended_prefix_flag;
     unsigned char N_RB_DL;
     unsigned char transmission_mode;
- 
     int max_predefined_traffic_config_index;
     int max_customized_traffic_config_index;
 

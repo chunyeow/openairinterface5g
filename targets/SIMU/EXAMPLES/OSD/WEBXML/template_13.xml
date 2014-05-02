@@ -46,7 +46,7 @@
   
   <EMULATION_CONFIG>
     <EMULATION_TIME_ms>10000</EMULATION_TIME_ms> <!--if 0 set to infinity--> 
-    <CURVE>disable</CURVE> <!-- option: enabled, disabled. If CURVE is enabled, graphes are ploted in real time (UL and DL) of WOD and throughput measurement for each packet -->
+    <CURVE>enabled</CURVE> <!-- option: enabled, disabled. If CURVE is enabled, graphes are ploted in real time (UL and DL) of WOD and throughput measurement for each packet -->
    <BACKGROUND_STATS>enable</BACKGROUND_STATS> <!-- option: enable, disable. If enable, it allows to ptrint BACKGROUNS statistics: Nb packets, throughputs,etc-->
     <PERFORMANCE_METRICS>
       	<THROUGHPUT>enable</THROUGHPUT>	<!-- option: enable, disable. If enable, throughput measurements are plotted in real time-->
