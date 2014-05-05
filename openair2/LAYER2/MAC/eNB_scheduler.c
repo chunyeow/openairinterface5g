@@ -441,6 +441,7 @@ unsigned char *get_dlsch_sdu(module_id_t module_idP, frame_t frameP, rnti_t rnti
     return((unsigned char *)&eNB_mac_inst[module_idP].DLSCH_pdu[ue_mod_id][TBindex].payload[0]);
   } else {
     LOG_E(MAC,"[eNB %d] Frame %d: UE with RNTI %x does not exist\n", module_idP,frameP,rntiP);
+    return NULL;
   }
 
 }
