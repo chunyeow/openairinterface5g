@@ -231,10 +231,17 @@ if [ x$hard_real_time != "xyes" ]; then
 else
     echo_warning "HARD REAL TIME MODE"
     PATH=$PATH:/usr/realtime/bin
-    make --directory=$OPENAIR_TARGETS/RTAI/USER drivers  || exit 1
+    
+    #make --directory=$OPENAIR_TARGETS/RTAI/USER drivers  || exit 1
+    # 2 lines below replace the line above
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
+    cd $THIS_SCRIPT_PATH
+    
     make --directory=$OPENAIR_TARGETS/RTAI/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
     
     if [ ! -f /tmp/init_rt_done.tmp ]; then
+        echo_warning "STARTING REAL TIME (RTAI)"
         insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
         insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
         insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
@@ -243,10 +250,13 @@ else
         echo "1" > /sys/bus/pci/rescan
         touch /tmp/init_rt_done.tmp
         chmod 666 /tmp/init_rt_done.tmp
+    else
+        echo_warning "REAL TIME FOUND STARTED (RTAI)"
     fi
     
     cd $OPENAIR_TARGETS/RTAI/USER
-    ./init_exmimo2.sh
+    bash ./init_exmimo2.sh
+    echo_warning "STARTING SOFTMODEM..."
     ./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB 2>&1
     #cat /dev/rtf62 > $STDOUT_LOG_FILE
     cd $THIS_SCRIPT_PATH
