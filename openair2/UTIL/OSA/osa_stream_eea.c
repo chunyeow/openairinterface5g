@@ -30,7 +30,7 @@ int stream_encrypt_eea0(stream_cipher_t *stream_cipher, uint8_t **out)
     byte_length = (stream_cipher->blength + 7) >> 3;
 
     if (*out == NULL) {
-        /* User provided output buffer */
+        /* User did not provide output buffer */
         data = malloc(byte_length);
         *out = data;
     } else {
