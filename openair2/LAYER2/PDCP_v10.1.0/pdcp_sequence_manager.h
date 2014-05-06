@@ -71,7 +71,7 @@ boolean_t pdcp_advance_rx_window(pdcp_t* pdcp_entity);
  * Checks if incoming PDU has a sequence number in accordance with the RX window
  * @return TRUE if it is valid, FALSE otherwise
  */
-boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity);
+boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_flag_t srb_flagP);
 /**
 * Updates missing PDU bitmap with incoming sequence number
 * @return TRUE if successful, FALSE otherwise

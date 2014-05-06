@@ -245,14 +245,17 @@ int nas_netlink_send(unsigned char *data,unsigned int len) {
 #else
   NETLINK_CB(nl_skb).pid = 0;
 #endif
-
-#ifdef NETLINK_DEBUG
-  printk("[NAS][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d\n",nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len);
+  
+ #ifdef NETLINK_DEBUG
+  printk("[NAS][NETLINK] In nas_netlink_send, nl_skb %p, nl_sk %x, nlh %p, nlh->nlmsg_len %d (NAS_NETLINK_ID %d)\n",
+	 nl_skb,nas_nl_sk,nlh,nlh->nlmsg_len,
+	 NAS_NETLINK_ID);
 #endif //DEBUG_NETLINK
 
   if (nas_nl_sk) {
 
     //  nasmesh_lock();
+    
     status = netlink_unicast(nas_nl_sk, nl_skb, NL_DEST_PID, MSG_DONTWAIT);
     // mutex_unlock(&nasmesh_mutex);
 
@@ -271,4 +274,11 @@ int nas_netlink_send(unsigned char *data,unsigned int len) {
     printk("[NAS][SEND] socket is NULL\n");
     return(0);
   }
+
+  /*
+    nlmsg_failure:	// Used by NLMSG_PUT
+  if (nl_skb)
+    kfree_skb(nl_skb);
+*/
+
 }

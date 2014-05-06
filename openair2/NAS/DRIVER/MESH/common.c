@@ -432,7 +432,7 @@ void nas_COMMON_QOS_send(struct sk_buff *skb, struct cx_entity *cx, struct class
   
   if (bytes_wrote != NAS_PDCPH_SIZE)
     {
-      printk("NAS_COMMON_QOS_SEND: problem while writing PDCP's header (bytes wrote = %d to fifo %d)\n",bytes_wrote,NAS2PDCP_FIFO);
+      printk("NAS_COMMON_QOS_SEND: problem while writing PDCP's header (bytes wrote = %d )\n",bytes_wrote);
       printk("rb_id %d, Wrote %d, Header Size %lu\n", pdcph.rb_id , bytes_wrote, NAS_PDCPH_SIZE);
 #ifndef NAS_NETLINK
       rtf_reset(NAS2PDCP_FIFO);

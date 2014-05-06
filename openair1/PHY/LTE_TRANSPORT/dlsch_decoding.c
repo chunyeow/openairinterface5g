@@ -594,7 +594,7 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
   
 #ifdef USER_MODE // need to be adapted for the emulation in the kernel space 
   if (uniformrandom() < bler) {
-    LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
+    LOG_N(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
     return(0);
   }
   else {
@@ -671,7 +671,11 @@ uint32_t dlsch_decoding_emul(PHY_VARS_UE *phy_vars_ue,
     LOG_T(PHY,"\n current harq pid is %d ue id %d \n", harq_pid, ue_id);
 #endif
 
-    if (dlsch_abstraction_MIESM(phy_vars_ue->sinr_dB, phy_vars_ue->transmission_mode[eNB_id], dlsch_eNB->rb_alloc, dlsch_eNB->harq_processes[harq_pid]->mcs,PHY_vars_eNB_g[eNB_id]->mu_mimo_mode[ue_id].dl_pow_off) == 1) {
+    if (dlsch_abstraction_MIESM(phy_vars_ue->sinr_dB, 
+				phy_vars_ue->transmission_mode[eNB_id], 
+				dlsch_eNB->rb_alloc, 
+				dlsch_eNB->harq_processes[harq_pid]->mcs,
+				PHY_vars_eNB_g[eNB_id]->mu_mimo_mode[ue_id].dl_pow_off) == 1) {
       // reset HARQ 
       dlsch_ue->harq_processes[harq_pid]->status = SCH_IDLE;
       dlsch_ue->harq_processes[harq_pid]->round  = 0;

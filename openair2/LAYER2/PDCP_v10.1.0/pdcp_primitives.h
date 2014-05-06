@@ -153,11 +153,15 @@ void pdcp_config_set_security(pdcp_t *pdcp_pP, module_id_t enb_mod_idP, module_i
                               uint16_t lc_idP, uint8_t security_modeP, uint8_t *kRRCenc_pP, uint8_t *kRRCint_pP, uint8_t *kUPenc_pP);
 
 #if defined(ENABLE_SECURITY)
-int pdcp_apply_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
+int pdcp_apply_security(pdcp_t *pdcp_entity, 
+			srb_flag_t srb_flagP,
+			rb_id_t rb_id,
                         uint8_t pdcp_header_len, uint16_t current_sn, uint8_t *pdcp_pdu_buffer,
                         uint16_t sdu_buffer_size);
 
-int pdcp_validate_security(pdcp_t *pdcp_entity, rb_id_t rb_id,
+int pdcp_validate_security(pdcp_t *pdcp_entity, 
+			   srb_flag_t srb_flagP,
+			   rb_id_t rb_id,
                            uint8_t pdcp_header_len, uint16_t current_sn, uint8_t *pdcp_pdu_buffer,
                            uint16_t sdu_buffer_size);
 #endif /* defined(ENABLE_SECURITY) */

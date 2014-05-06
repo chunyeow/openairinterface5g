@@ -4472,30 +4472,6 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   //if (subframeP%5 == 0)
 #ifdef EXMIMO
   pdcp_run(frameP, 1, 0, module_idP);
-  /*
-  ret = pthread_mutex_trylock (&pdcp_mutex);
-  if (ret != 0) {
-    if (ret==EBUSY)
-      LOG_E(PDCP,"Mutex busy\n");
-    else
-      LOG_E(PDCP,"Cannot lock mutex\n");
-    //return(-1);
-  }
-  else {
-    pdcp_instance_cnt++;
-    pthread_mutex_unlock(&pdcp_mutex);
-
-    if (pdcp_instance_cnt == 0) {
-      if (pthread_cond_signal(&pdcp_cond) != 0) {
-	LOG_E(PDCP,"pthread_cond_signal unsuccessfull\n");
-	//return(-1);
-      }
-    }
-    else {
-      LOG_W(PDCP,"PDCP thread busy!!! inst_cnt=%d\n",pdcp_instance_cnt);
-    }
-  }
-   */
 #endif
 #ifdef CELLULAR
   rrc_rx_tx(module_idP, frameP, 0, 0);

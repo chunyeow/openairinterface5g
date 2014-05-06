@@ -283,11 +283,12 @@ boolean_t pdcp_data_req(
                 start_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
 
               pdcp_apply_security(pdcp_p,
-                  rb_idP % maxDRB,
-                  pdcp_header_len,
-                  current_sn,
-                  pdcp_pdu_p->data,
-                  sdu_buffer_sizeP);
+				  srb_flagP,
+				  rb_idP % maxDRB,
+				  pdcp_header_len,
+				  current_sn,
+				  pdcp_pdu_p->data,
+				  sdu_buffer_sizeP);
 
               if (enb_flagP == ENB_FLAG_NO)
                 stop_meas(&eNB_pdcp_stats[enb_mod_idP].apply_security);
@@ -510,14 +511,22 @@ boolean_t pdcp_data_ind(
        * Parse the PDU placed at the beginning of SDU to check
        * if incoming SN is in line with RX window
        */
-
-      if (pdcp_header_len == PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE) { // DRB
-          sequence_number =     pdcp_get_sequence_number_of_pdu_with_long_sn((unsigned char*)sdu_buffer_pP->data);
-          //       uint8_t dc = pdcp_get_dc_filed((unsigned char*)sdu_buffer->data);
-      } else { //SRB1/2
-          sequence_number =   pdcp_get_sequence_number_of_pdu_with_SRB_sn((unsigned char*)sdu_buffer_pP->data);
+      if (MBMS_flagP == 0 ) {
+	if (srb_flagP) { //SRB1/2
+	  sequence_number =   pdcp_get_sequence_number_of_pdu_with_SRB_sn((unsigned char*)sdu_buffer_pP->data);
+	} else { // DRB
+	   if (pdcp_p->seq_num_size == PDCP_SN_7BIT){
+	    sequence_number =     pdcp_get_sequence_number_of_pdu_with_short_sn((unsigned char*)sdu_buffer_pP->data);
+	   }else if (pdcp_p->seq_num_size == PDCP_SN_12BIT){
+	    sequence_number =     pdcp_get_sequence_number_of_pdu_with_long_sn((unsigned char*)sdu_buffer_pP->data);
+	  } else {
+	    //sequence_number = 4095;
+	    LOG_E(PDCP,"wrong sequence number  (%d) for this pdcp entity \n", pdcp_p->seq_num_size);
+	  }
+	  //uint8_t dc = pdcp_get_dc_filed((unsigned char*)sdu_buffer_pP->data);
+	}
       }
-      if (pdcp_is_rx_seq_number_valid(sequence_number, pdcp_p) == TRUE) {
+      if (pdcp_is_rx_seq_number_valid(sequence_number, pdcp_p, srb_flagP) == TRUE) {
           LOG_D(PDCP, "Incoming PDU has a sequence number (%d) in accordance with RX window\n", sequence_number);
           /* if (dc == PDCP_DATA_PDU )
 	   LOG_D(PDCP, "Passing piggybacked SDU to NAS driver...\n");
@@ -546,19 +555,19 @@ boolean_t pdcp_data_ind(
               else
                 start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
 
-              pdcp_validate_security(pdcp_p,
-                  rb_idP,
-                  pdcp_header_len,
-                  sequence_number,
-                  sdu_buffer_pP->data,
-                  sdu_buffer_sizeP - pdcp_tailer_len);
+	  pdcp_validate_security(pdcp_p, 
+				 srb_flagP,
+				 rb_idP, 
+				 pdcp_header_len,
+				 sequence_number, 
+				 sdu_buffer_pP->data,
+				 sdu_buffer_sizeP - pdcp_tailer_len);
+	  if (enb_flagP == ENB_FLAG_NO)
+	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+	  else
+	    stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
 
-              if (enb_flagP == ENB_FLAG_NO)
-                stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-              else
-                stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-
-	}
+	  }
 #endif
 //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
           pdcp_rrc_data_ind(enb_mod_idP,
@@ -591,7 +600,11 @@ boolean_t pdcp_data_ind(
   if (oai_emulation.info.otg_enabled == 1) {
       module_id_t src_id, dst_id;
       int    ctime;
-
+   
+      if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
+	pdcp_p->last_submitted_pdcp_rx_sn = sequence_number; 
+      }
+   
       rlc_util_print_hex_octets(PDCP,
                                 (unsigned char*)&sdu_buffer_pP->data[payload_offset],
                                 sdu_buffer_sizeP - payload_offset);
@@ -626,6 +639,9 @@ boolean_t pdcp_data_ind(
   new_sdu_p = get_free_mem_block(sdu_buffer_sizeP - payload_offset + sizeof (pdcp_data_ind_header_t));
 
   if (new_sdu_p) {
+    if (pdcp_p->rlc_mode == RLC_MODE_AM ) {
+      pdcp_p->last_submitted_pdcp_rx_sn = sequence_number; 
+    }
       /*
        * Prepend PDCP indication header which is going to be removed at pdcp_fifo_flush_sdus()
        */
@@ -854,7 +870,7 @@ boolean_t rrc_pdcp_config_asn1_req (
   rlc_mode_t      rlc_type       = RLC_MODE_NONE;
   DRB_Identity_t  drb_id         = 0;
   DRB_Identity_t *pdrb_id_p      = NULL;
-  uint8_t         drb_sn         = 0;
+  uint8_t         drb_sn         = 12;
   uint8_t         srb_sn         = 5; // fixed sn for SRBs
   uint8_t         drb_report     = 0;
   long int        cnt            = 0;
@@ -968,7 +984,8 @@ boolean_t rrc_pdcp_config_asn1_req (
               }
               if (drb_toaddmod_p->pdcp_Config->rlc_AM) {
                   drb_report = drb_toaddmod_p->pdcp_Config->rlc_AM->statusReportRequired;
-                  rlc_type =RLC_MODE_AM;
+		  drb_sn = PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits; // default SN size 
+                  rlc_type = RLC_MODE_AM;
               }
               if (drb_toaddmod_p->pdcp_Config->rlc_UM){
                   drb_sn = drb_toaddmod_p->pdcp_Config->rlc_UM->pdcp_SN_Size;
@@ -1149,32 +1166,35 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
     pdcp_pP->header_compression_profile = header_compression_profileP;
     pdcp_pP->status_report              = rb_reportP;
 
-    if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
-        pdcp_pP->seq_num_size = 7;
-    } else if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits) {
-        pdcp_pP->seq_num_size = 12;
+    if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len12bits) {
+        pdcp_pP->seq_num_size = PDCP_SN_12BIT;
+    } else if (rb_snP == PDCP_Config__rlc_UM__pdcp_SN_Size_len7bits) {
+        pdcp_pP->seq_num_size = PDCP_SN_7BIT;
     } else {
-        pdcp_pP->seq_num_size = 5;
+        pdcp_pP->seq_num_size = PDCP_SN_5BIT;
     }
 
-    pdcp_pP->rlc_mode                  = rlc_modeP;
-    pdcp_pP->next_pdcp_tx_sn           = 0;
-    pdcp_pP->next_pdcp_rx_sn           = 0;
-    pdcp_pP->tx_hfn                    = 0;
-    pdcp_pP->rx_hfn                    = 0;
-    pdcp_pP->last_submitted_pdcp_rx_sn = 4095;
-    pdcp_pP->first_missing_pdu         = -1;
 
+    pdcp_pP->rlc_mode                         = rlc_modeP;
+    pdcp_pP->next_pdcp_tx_sn                  = 0;
+    pdcp_pP->next_pdcp_rx_sn                  = 0;
+    pdcp_pP->next_pdcp_rx_sn_before_integrity = 0;
+    pdcp_pP->tx_hfn                           = 0;
+    pdcp_pP->rx_hfn                           = 0;
+    pdcp_pP->last_submitted_pdcp_rx_sn        = 4095;
+    pdcp_pP->first_missing_pdu                = -1;
+    pdcp_pP->rx_hfn_offset                    = 0;
+    
     if (enb_flagP == ENB_FLAG_NO) {
         LOG_I(PDCP, "[UE %d] Config request : Action ADD for eNB %d: Frame %d LCID %d (rb id %d) "
             "configured with SN size %d bits and RLC %s\n",
             ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP, pdcp_pP->seq_num_size,
-            (rlc_modeP == 1) ? "AM" : (rlc_modeP == 2) ? "TM" : "UM");
+            (rlc_modeP == RLC_MODE_AM ) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     } else {
         LOG_I(PDCP, "[eNB %d] Config request : Action ADD for UE %d: Frame %d LCID %d (rb id %d) "
             "configured with SN size %d bits and RLC %s\n",
             enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP, pdcp_pP->seq_num_size,
-            (rlc_modeP == 1) ? "AM" : (rlc_modeP == 2) ? "TM" : "UM");
+            (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     }
 
     /* Setup security */
@@ -1208,12 +1228,12 @@ boolean_t pdcp_config_req_asn1 (pdcp_t   *pdcp_pP,
         LOG_I(PDCP,"[UE %d] Config request : Action MODIFY for eNB %d: Frame %d LCID %d "
             "RB id %d configured with SN size %d and RLC %s \n",
             ue_mod_idP, enb_mod_idP, frameP, lc_idP, rb_idP, rb_snP,
-            (rlc_modeP == 1) ? "AM" : (rlc_modeP == 2) ? "TM" : "UM");
+            (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     } else {
         LOG_I(PDCP,"[eNB %d] Config request : Action MODIFY for UE %d: Frame %d LCID %d "
             "RB id %d configured with SN size %d and RLC %s \n",
             enb_mod_idP, ue_mod_idP, frameP, lc_idP, rb_idP, rb_snP,
-            (rlc_modeP == 1) ? "AM" : (rlc_modeP == 2) ? "TM" : "UM");
+            (rlc_modeP == RLC_MODE_AM) ? "AM" : (rlc_modeP == RLC_MODE_TM) ? "TM" : "UM");
     }
     break;
   case CONFIG_ACTION_REMOVE:

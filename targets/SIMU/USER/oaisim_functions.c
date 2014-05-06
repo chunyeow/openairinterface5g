@@ -1097,9 +1097,9 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime) {
                       (otg_pkt->otg_pkt).is_ue = 0;
                       (otg_pkt->otg_pkt).mode = PDCP_TRANSMISSION_MODE_DATA;
                       //Adding the packet to the OTG-PDCP buffer
-#warning "Strange code"
+#warning "Strange code: To be verifed"
                       pkt_list_add_tail_eurecom(otg_pkt, &(otg_pdcp_buffer[enb_module_idP]));
-                      LOG_I(EMU, "[eNB %d] ADD pkt to OTG buffer with size %d for dst %d on rb_id %d for app id %d \n",
+                      LOG_I(EMU,"[eNB %d] ADD pkt to OTG buffer with size %d for dst %d on rb_id %d for app id %d \n",
                           (otg_pkt->otg_pkt).module_id, otg_pkt->otg_pkt.sdu_buffer_size, (otg_pkt->otg_pkt).dst_id,(otg_pkt->otg_pkt).rb_id, app_id);
                   } else {
                       free(otg_pkt);

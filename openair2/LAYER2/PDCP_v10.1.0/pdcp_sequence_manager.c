@@ -29,8 +29,9 @@
 
 /*! \file pdcp_sequence_manager.c
 * \brief PDCP Sequence Numbering Methods
-* \author Baris Demiray
-* \date 2011
+* \author Baris Demiray and Navid Nikaein
+* \email navid.nikaein@eurecom.fr
+* \date 2014
 */
 
 #include "pdcp_sequence_manager.h"
@@ -146,9 +147,11 @@ boolean_t pdcp_advance_rx_window(pdcp_t* pdcp_entity)
  * @return 1 if SN is okay, 0 otherwise
  * XXX Reordering window should also be handled here
  */
-boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity)
-{
-  LOG_D(PDCP, "Incoming RX Seq # is %04d\n", seq_num);
+boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity,srb_flag_t srb_flagP)  {
+  
+  uint16_t  reordering_window = 0;
+  
+  LOG_D(PDCP, "Incoming RX Sequence number is %04d\n", seq_num);
 
   if (pdcp_is_seq_num_size_valid(pdcp_entity) == FALSE || pdcp_is_seq_num_valid(seq_num, pdcp_entity->seq_num_size) == FALSE)
     return FALSE;
@@ -164,27 +167,117 @@ boolean_t pdcp_is_rx_seq_number_valid(uint16_t seq_num, pdcp_t* pdcp_entity)
   }
 
   /*
-   * XXX Since we do not implement reordering window yet we expect to receive
-   * exactly the next SN from lower layer. When reordering window is implemented
-   * the operator utilized here should be >= as stated in 5.1.2.1.2
+   * RX Procedures for SRB and DRBs as described in sec 5.1.2 of 36.323
    */
+ 
+  if (srb_flagP) { // SRB
+    
+    if (seq_num < pdcp_entity->next_pdcp_rx_sn) {
+      // decipher and verify the integrity of the PDU (if applicable) using COUNT based on RX_HFN + 1 and the received PDCP SN 
+      pdcp_entity->rx_hfn++;
+      pdcp_entity->rx_hfn_offset   = 0;
+    } else{ 
+      // decipher and verify the integrity of the PDU (if applicable) using COUNT based using COUNT based on RX_HFN and the received PDCP SN
+      pdcp_entity->rx_hfn_offset   = 0;
+    }
+
+    // Assume  that integrity verification is applicable and the integrity verification is passed successfully; 
+    // or assume that  integrity verification is not applicable:
+    
+    // same the old next_pdcp_rx_sn to revert otherwise
+    pdcp_entity->next_pdcp_rx_sn_before_integrity = pdcp_entity->next_pdcp_rx_sn;
+    if (seq_num != pdcp_entity->next_pdcp_rx_sn)
+      LOG_D(PDCP,"Re-adjusting the sequence number to %d\n", seq_num); 
+    //set Next_PDCP_RX_SN to the received PDCP SN +1 ;
+    pdcp_entity->next_pdcp_rx_sn = seq_num;
+    pdcp_advance_rx_window(pdcp_entity);  // + 1, and check if it is larger than Maximum_PDCP_SN:
+    
+  } else { // DRB
+
+    if (pdcp_entity->seq_num_size == PDCP_SN_7BIT)
+      reordering_window = REORDERING_WINDOW_SN_7BIT;
+    else 
+      reordering_window = REORDERING_WINDOW_SN_12BIT;
+
+    switch (pdcp_entity->rlc_mode) {
+    case RLC_MODE_AM: 
+      if ((seq_num - pdcp_entity->last_submitted_pdcp_rx_sn > reordering_window)  || 
+	  ((0 <= pdcp_entity->last_submitted_pdcp_rx_sn - seq_num) &&  
+	   (pdcp_entity->last_submitted_pdcp_rx_sn - seq_num < reordering_window)  )) {
+	
+	if (seq_num  > pdcp_entity->next_pdcp_rx_sn) {
+	  /* 
+	   * decipher the PDCP PDU as specified in the subclause 5.6, using COUNT based on RX_HFN - 1 and the received PDCP SN;
+	   */
+	  pdcp_entity->rx_hfn_offset   =  -1;
+	} else  {
+	  /*
+	   *  decipher the PDCP PDU as specified in the subclause 5.6, using COUNT based on RX_HFN and the received PDCP SN;
+	   */
+	  pdcp_entity->rx_hfn_offset   = 0;
+	}
+	
+	// discard this PDCP SDU;
+	LOG_W(PDCP, "Out of the reordering window (Incoming SN:%d, Expected SN:%d): discard this PDCP SDU\n", 
+	      seq_num, pdcp_entity->next_pdcp_rx_sn);
+	
+	return FALSE;
+      } else if (pdcp_entity->next_pdcp_rx_sn - seq_num > reordering_window) {
+	pdcp_entity->rx_hfn++;
+	// use COUNT based on RX_HFN and the received PDCP SN for deciphering the PDCP PDU;
+	pdcp_entity->rx_hfn_offset   = 0;
+      	pdcp_entity->next_pdcp_rx_sn++;
+      }
+      else if (seq_num - pdcp_entity->next_pdcp_rx_sn  >= reordering_window ){
+	//  use COUNT based on RX_HFN – 1 and the received PDCP SN for deciphering the PDCP PDU;
+	pdcp_entity->rx_hfn_offset   = -1;
+      }
+      else if (seq_num  >= pdcp_entity->next_pdcp_rx_sn ) {
+	// use COUNT based on RX_HFN and the received PDCP SN for deciphering the PDCP PDU;
+	pdcp_entity->rx_hfn_offset = 0; 
+	//set Next_PDCP_RX_SN to the received PDCP SN +1 ;
+	pdcp_entity->next_pdcp_rx_sn = seq_num;
+	pdcp_advance_rx_window(pdcp_entity);  // + 1, anc check if it is larger than Maximum_PDCP_SN:
+	LOG_D(PDCP,"Re-adjusting the sequence number to %d\n", seq_num);
+      } else if (seq_num < pdcp_entity->next_pdcp_rx_sn){
+	// use COUNT based on RX_HFN and the received PDCP SN for deciphering the PDCP PDU;
+	pdcp_entity->rx_hfn_offset = 0;
+      }
+      break;
+    case RLC_MODE_UM :
+      if (seq_num <  pdcp_entity->next_pdcp_rx_sn)
+	pdcp_entity->rx_hfn++;
+      // decipher the PDCP Data PDU using COUNT based on RX_HFN and the received PDCP SN as specified in the subclause 5.6;
+      //set Next_PDCP_RX_SN to the received PDCP SN +1 ;
+      pdcp_entity->next_pdcp_rx_sn = seq_num;
+      pdcp_advance_rx_window(pdcp_entity);  // + 1, and check if it is larger than Maximum_PDCP_SN:
+    
+      break;
+    case RLC_MODE_TM : 
+    default:
+      LOG_W(PDCP,"RLC mode %d not supported\n",pdcp_entity->rlc_mode);
+      return FALSE;
+    }
+  }
+
+  /*   
   if (seq_num == pdcp_entity->next_pdcp_rx_sn) {
     LOG_I(PDCP, "Next expected SN (%d) arrived, advancing RX window\n", seq_num);
 
     return pdcp_advance_rx_window(pdcp_entity);
   } else {
-    LOG_E(PDCP, "D'oh! Incoming SN is not the one we expected to receive! (Incoming:%d, Expected:%d)\n", \
+    LOG_E(PDCP, "Incoming SN is not the one we expected to receive! (Incoming:%d, Expected:%d)\n", \
         seq_num, pdcp_entity->next_pdcp_rx_sn);
+  
 
-    /*
-     * Update first missing PDU (used in PDCP Control PDU for 
-     * PDCP status report, see 6.2.6)
-     */
+    // Update first missing PDU (used in PDCP Control PDU for PDCP status report, see 6.2.6)
     if (pdcp_entity->first_missing_pdu != -1)
       pdcp_entity->first_missing_pdu = pdcp_entity->next_pdcp_rx_sn;
 
     return FALSE;
   }
+  */ 
+  return TRUE;
 }
 
 boolean_t pdcp_mark_current_pdu_as_received(uint16_t seq_num, pdcp_t* pdcp_entity)

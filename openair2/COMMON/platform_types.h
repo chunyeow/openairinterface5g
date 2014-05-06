@@ -96,6 +96,7 @@ typedef signed int         rlc_op_status_t;
 //-----------------------------------------------------------------------------
 typedef uint16_t           pdcp_sn_t;
 typedef uint32_t           pdcp_hfn_t;
+typedef int16_t            pdcp_hfn_offset_t;
 
 typedef enum pdcp_transmission_mode_e {
    PDCP_TRANSMISSION_MODE_UNKNOWN     = 0,

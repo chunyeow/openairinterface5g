@@ -364,14 +364,15 @@ oai_nw_drv:
 oai_nw_drv_clean:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/LITE && $(MAKE) clean)
 nasmesh_fix:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
-	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink_address_fix.ko)
-	(cp $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko . )
-nasmesh_fix_install:
-	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
-	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink_address_fix.ko)
+	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE) clean && $(MAKE))
+	(cd $(OPENAIR2_DIR) && $(MAKE) clean && $(MAKE) nasmesh_netlink_address_fix.ko)
+nasmesh_fix_uninstall:	
+	(sudo rmmod nasmesh.ko)
+nasmesh_fix_install:	
+	(sudo insmod $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko)	
+nasmesh_fix_reinstall:
+	(sudo rmmod nasmesh.ko)	
 	(sudo insmod $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko)
-	(cp $(OPENAIR2_DIR)/NAS/DRIVER/MESH/nasmesh.ko . )
 nasmesh_nl:
 	(cd $(OPENAIR2_DIR)/NAS/DRIVER/MESH/RB_TOOL && $(MAKE))
 	(cd $(OPENAIR2_DIR) && $(MAKE) nasmesh_netlink.ko)

@@ -113,8 +113,8 @@ int pdcp_netlink_init(void) {
   pdcp_netlink_queue_ue       = calloc(nb_inst_ue, sizeof(struct lfds611_queue_state*));
   pdcp_netlink_nb_element_ue  = malloc(nb_inst_ue * sizeof(uint32_t));
 
-  LOG_I(PDCP, "Creating %d queues for eNB Netlink -> PDCP communication\n", nb_inst_enb);
-  LOG_I(PDCP, "Creating %d queues for UE Netlink -> PDCP communication\n", nb_inst_ue);
+  LOG_I(PDCP, "[NETLINK] Creating %d queues for eNB Netlink -> PDCP communication\n", nb_inst_enb);
+  LOG_I(PDCP, "[NETLINK] Creating %d queues for UE Netlink -> PDCP communication\n", nb_inst_ue);
 
   for (i = 0; i < nb_inst_enb; i++) {
       pdcp_netlink_nb_element_enb[i] = 0;
@@ -132,7 +132,7 @@ int pdcp_netlink_init(void) {
   }
 
   if (pthread_attr_init(&attr) != 0) {
-      LOG_E(PDCP, "Failed to initialize pthread attribute for Netlink -> PDCP communication (%d:%s)\n",
+      LOG_E(PDCP, "[NETLINK]Failed to initialize pthread attribute for Netlink -> PDCP communication (%d:%s)\n",
           errno, strerror(errno));
       exit(EXIT_FAILURE);
   }
@@ -147,7 +147,7 @@ int pdcp_netlink_init(void) {
    * should be avoided if we want a reliable link.
    */
   if (pthread_create(&pdcp_netlink_thread, &attr, pdcp_netlink_thread_fct, NULL) != 0) {
-      LOG_E(PDCP, "Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
+      LOG_E(PDCP, "[NETLINK]Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
           errno, strerror(errno));
       exit(EXIT_FAILURE);
   }
@@ -166,12 +166,12 @@ int pdcp_netlink_dequeue_element(
   if (eNB_flagP) {
       ret = lfds611_queue_dequeue(pdcp_netlink_queue_enb[enb_mod_idP], (void **)data_ppP);
       if (ret != 0) {
-          LOG_D(PDCP, "De-queueing packet for eNB instance %d\n", enb_mod_idP);
+          LOG_D(PDCP,"[NETLINK]De-queueing packet for eNB instance %d\n", enb_mod_idP);
       }
   } else {
       ret = lfds611_queue_dequeue(pdcp_netlink_queue_ue[ue_mod_idP], (void **)data_ppP);
       if (ret != 0) {
-          LOG_D(PDCP, "De-queueing packet for UE instance %d\n", ue_mod_idP);
+          LOG_D(PDCP, "[NETLINK]De-queueing packet for UE instance %d\n", ue_mod_idP);
       }
   }
 
@@ -187,6 +187,7 @@ void *pdcp_netlink_thread_fct(void *arg) {
 
   pdcp_thread_read_state = 0;
   memset(nl_rx_buf, 0, NL_MAX_PAYLOAD);
+  LOG_I(PDCP, "[NETLINK_THREAD] binding to fd  %d\n",nas_sock_fd);
 
   while (1) {
 
