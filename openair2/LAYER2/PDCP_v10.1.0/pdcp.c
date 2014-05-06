@@ -540,19 +540,23 @@ boolean_t pdcp_data_ind(
       // SRB1/2: control-plane data
       if (srb_flagP){
 #if defined(ENABLE_SECURITY)
-	if (pdcp_p->security_activated == 1) {
-	  if (enb_flagP == ENB_FLAG_NO)
-	    start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-	  else
-	    start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+          if (pdcp_p->security_activated == 1) {
+              if (enb_flagP == ENB_FLAG_NO)
+                start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+              else
+                start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
 
-	  pdcp_validate_security(pdcp_p, rb_idP, pdcp_header_len,
-				 sequence_number, sdu_buffer_pP->data,
-				 sdu_buffer_sizeP - pdcp_tailer_len);
-	  if (enb_flagP == ENB_FLAG_NO)
-	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-	  else
-	    stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+              pdcp_validate_security(pdcp_p,
+                  rb_idP,
+                  pdcp_header_len,
+                  sequence_number,
+                  sdu_buffer_pP->data,
+                  sdu_buffer_sizeP - pdcp_tailer_len);
+
+              if (enb_flagP == ENB_FLAG_NO)
+                stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+              else
+                stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
 
 	}
 #endif
