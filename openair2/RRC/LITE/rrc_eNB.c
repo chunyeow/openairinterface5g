@@ -2283,11 +2283,11 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                              DRB_configList, (DRB_ToReleaseList_t *) NULL,
                              /*eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
                              (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4), 
-			     */
-			     0xff, // already configured during the securitymodecommand
-			     kRRCenc, 
-			     kRRCint, 
-			     kUPenc
+                              */
+                             0xff, // already configured during the securitymodecommand
+                             kRRCenc,
+                             kRRCint,
+                             kUPenc
 #ifdef Rel10
                              , (PMCH_InfoList_r9_t *) NULL
 #endif
@@ -2522,6 +2522,9 @@ char openair_rrc_lite_eNB_init(
     /* Dummy function, initialization will be done through ITTI messaging */
     return 0;
 }
+#endif
+
+#if defined(ENABLE_ITTI)
 char openair_rrc_lite_eNB_configuration(
     uint8_t enb_mod_idP,
     RrcConfigurationReq * configuration)
