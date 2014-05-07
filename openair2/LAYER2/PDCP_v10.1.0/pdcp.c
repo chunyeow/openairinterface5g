@@ -475,7 +475,6 @@ boolean_t pdcp_data_ind(
 
   sdu_list_p = &pdcp_sdu_list;
 
-
   if (sdu_buffer_sizeP == 0) {
       LOG_W(PDCP, "SDU buffer size is zero! Ignoring this chunk!\n");
       if (enb_flagP)
@@ -486,18 +485,34 @@ boolean_t pdcp_data_ind(
   }
 
   /*
-   * Check if incoming SDU is long enough to carry a PDU header
+   * Parse the PDU placed at the beginning of SDU to check
+   * if incoming SN is in line with RX window
    */
+  
   if (MBMS_flagP == 0 ) {
-      if (srb_flagP) {
-          pdcp_header_len = PDCP_CONTROL_PLANE_DATA_PDU_SN_SIZE;
-          pdcp_tailer_len = PDCP_CONTROL_PLANE_DATA_PDU_MAC_I_SIZE;
+    if (srb_flagP) { //SRB1/2
+      pdcp_header_len = PDCP_CONTROL_PLANE_DATA_PDU_SN_SIZE;
+      pdcp_tailer_len = PDCP_CONTROL_PLANE_DATA_PDU_MAC_I_SIZE;
+      sequence_number =   pdcp_get_sequence_number_of_pdu_with_SRB_sn((unsigned char*)sdu_buffer_pP->data);
+    } else { // DRB
+      pdcp_tailer_len = 0;
+      if (pdcp_p->seq_num_size == PDCP_SN_7BIT){
+	pdcp_header_len = PDCP_USER_PLANE_DATA_PDU_SHORT_SN_HEADER_SIZE;
+	sequence_number =     pdcp_get_sequence_number_of_pdu_with_short_sn((unsigned char*)sdu_buffer_pP->data);
+      }else if (pdcp_p->seq_num_size == PDCP_SN_12BIT){
+	pdcp_header_len = PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
+	sequence_number =     pdcp_get_sequence_number_of_pdu_with_long_sn((unsigned char*)sdu_buffer_pP->data);
       } else {
-          pdcp_header_len = PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
-          pdcp_tailer_len = 0;
+	//sequence_number = 4095;
+	LOG_E(PDCP,"wrong sequence number  (%d) for this pdcp entity \n", pdcp_p->seq_num_size);
       }
-
-      if (sdu_buffer_sizeP < pdcp_header_len + pdcp_tailer_len ) {
+      //uint8_t dc = pdcp_get_dc_filed((unsigned char*)sdu_buffer_pP->data);
+    }
+    
+    /*
+     * Check if incoming SDU is long enough to carry a PDU header
+     */
+    if (sdu_buffer_sizeP < pdcp_header_len + pdcp_tailer_len ) {
           LOG_W(PDCP, "Incoming (from RLC) SDU is short of size (size:%d)! Ignoring...\n", sdu_buffer_sizeP);
           free_mem_block(sdu_buffer_pP);
           if (enb_flagP)
@@ -506,96 +521,96 @@ boolean_t pdcp_data_ind(
             stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
           return FALSE;
       }
-
+  
+    if (pdcp_is_rx_seq_number_valid(sequence_number, pdcp_p, srb_flagP) == TRUE) {
+      LOG_D(PDCP, "Incoming PDU has a sequence number (%d) in accordance with RX window\n", sequence_number);
+      /* if (dc == PDCP_DATA_PDU )
+	 LOG_D(PDCP, "Passing piggybacked SDU to NAS driver...\n");
+	 else
+	 LOG_D(PDCP, "Passing piggybacked SDU to RRC ...\n");*/
+    } else {
+      LOG_W(PDCP, "Incoming PDU has an unexpected sequence number (%d), RX window snychronisation have probably been lost!\n", sequence_number);
       /*
-       * Parse the PDU placed at the beginning of SDU to check
-       * if incoming SN is in line with RX window
+       * XXX Till we implement in-sequence delivery and duplicate discarding
+       * mechanism all out-of-order packets will be delivered to RRC/IP
        */
-      if (MBMS_flagP == 0 ) {
-	if (srb_flagP) { //SRB1/2
-	  sequence_number =   pdcp_get_sequence_number_of_pdu_with_SRB_sn((unsigned char*)sdu_buffer_pP->data);
-	} else { // DRB
-	   if (pdcp_p->seq_num_size == PDCP_SN_7BIT){
-	    sequence_number =     pdcp_get_sequence_number_of_pdu_with_short_sn((unsigned char*)sdu_buffer_pP->data);
-	   }else if (pdcp_p->seq_num_size == PDCP_SN_12BIT){
-	    sequence_number =     pdcp_get_sequence_number_of_pdu_with_long_sn((unsigned char*)sdu_buffer_pP->data);
-	  } else {
-	    //sequence_number = 4095;
-	    LOG_E(PDCP,"wrong sequence number  (%d) for this pdcp entity \n", pdcp_p->seq_num_size);
-	  }
-	  //uint8_t dc = pdcp_get_dc_filed((unsigned char*)sdu_buffer_pP->data);
-	}
-      }
-      if (pdcp_is_rx_seq_number_valid(sequence_number, pdcp_p, srb_flagP) == TRUE) {
-          LOG_D(PDCP, "Incoming PDU has a sequence number (%d) in accordance with RX window\n", sequence_number);
-          /* if (dc == PDCP_DATA_PDU )
-	   LOG_D(PDCP, "Passing piggybacked SDU to NAS driver...\n");
-	   else
-	   LOG_D(PDCP, "Passing piggybacked SDU to RRC ...\n");*/
-      } else {
-          LOG_W(PDCP, "Incoming PDU has an unexpected sequence number (%d), RX window snychronisation have probably been lost!\n", sequence_number);
-          /*
-           * XXX Till we implement in-sequence delivery and duplicate discarding
-           * mechanism all out-of-order packets will be delivered to RRC/IP
-           */
 #if 0
-          LOG_D(PDCP, "Ignoring PDU...\n");
-          free_mem_block(sdu_buffer);
-          return FALSE;
+      LOG_D(PDCP, "Ignoring PDU...\n");
+      free_mem_block(sdu_buffer);
+      return FALSE;
 #else
-          LOG_W(PDCP, "Delivering out-of-order SDU to upper layer...\n");
+      LOG_W(PDCP, "Delivering out-of-order SDU to upper layer...\n");
 #endif
-      }
+    }
       // SRB1/2: control-plane data
-      if (srb_flagP){
-#if defined(ENABLE_SECURITY)
-          if (pdcp_p->security_activated == 1) {
-              if (enb_flagP == ENB_FLAG_NO)
-                start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-              else
-                start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-
-	  pdcp_validate_security(pdcp_p, 
-				 srb_flagP,
-				 rb_idP, 
-				 pdcp_header_len,
-				 sequence_number, 
-				 sdu_buffer_pP->data,
-				 sdu_buffer_sizeP - pdcp_tailer_len);
-	  if (enb_flagP == ENB_FLAG_NO)
-	    stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
-	  else
-	    stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
-
-	  }
-#endif
-//rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
-          pdcp_rrc_data_ind(enb_mod_idP,
-              ue_mod_idP,
-              frameP,
-              enb_flagP,
-              rb_id,
-              sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
-              (uint8_t*)&sdu_buffer_pP->data[pdcp_header_len]);
-          free_mem_block(sdu_buffer_pP);
-          // free_mem_block(new_sdu);
-          if (enb_flagP)
-            stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-          else
-            stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
-          return TRUE;
-      }
-      payload_offset=PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
+    if (srb_flagP){
 #if defined(ENABLE_SECURITY)
       if (pdcp_p->security_activated == 1) {
-          pdcp_validate_security(pdcp_p, rb_idP % maxDRB, pdcp_header_len,
-              sequence_number, sdu_buffer_pP->data,
-              sdu_buffer_sizeP - pdcp_tailer_len);
+	if (enb_flagP == ENB_FLAG_NO)
+	  start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+	else
+	  start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+	
+	pdcp_validate_security(pdcp_p, 
+			       srb_flagP,
+			       rb_idP, 
+			       pdcp_header_len,
+			       sequence_number, 
+			       sdu_buffer_pP->data,
+			       sdu_buffer_sizeP - pdcp_tailer_len);
+	if (enb_flagP == ENB_FLAG_NO)
+	  stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+	else
+	  stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+	
       }
+#endif
+      //rrc_lite_data_ind(module_id, //Modified MW - L2 Interface
+      pdcp_rrc_data_ind(enb_mod_idP,
+			ue_mod_idP,
+			frameP,
+			enb_flagP,
+			rb_id,
+			sdu_buffer_sizeP - pdcp_header_len - pdcp_tailer_len,
+			(uint8_t*)&sdu_buffer_pP->data[pdcp_header_len]);
+      free_mem_block(sdu_buffer_pP);
+      // free_mem_block(new_sdu);
+      if (enb_flagP)
+	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+      else
+	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+      return TRUE;
+    }
+  /*
+   * DRBs 
+   */
+    payload_offset=pdcp_header_len;// PDCP_USER_PLANE_DATA_PDU_LONG_SN_HEADER_SIZE;
+#if defined(ENABLE_SECURITY)
+    if (pdcp_p->security_activated == 1) {
+      if (enb_flagP == ENB_FLAG_NO)
+	start_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+      else
+	start_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+      
+      pdcp_validate_security(pdcp_p, 
+			     srb_flagP,
+			     rb_idP, 
+			     pdcp_header_len,
+			     sequence_number, 
+			     sdu_buffer_pP->data,
+			     sdu_buffer_sizeP - pdcp_tailer_len);
+      if (enb_flagP == ENB_FLAG_NO)
+	stop_meas(&eNB_pdcp_stats[enb_mod_idP].validate_security);
+      else
+	stop_meas(&UE_pdcp_stats[ue_mod_idP].validate_security);
+      
+    }
+    
 #endif
   } else {
       payload_offset=0;
   }
+  
 #if defined(USER_MODE) && defined(OAI_EMU)
   if (oai_emulation.info.otg_enabled == 1) {
       module_id_t src_id, dst_id;

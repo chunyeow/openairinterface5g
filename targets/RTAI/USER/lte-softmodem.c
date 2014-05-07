@@ -238,6 +238,7 @@ static uint32_t                      txgain[4] =         {20,20,20,20};
 
 static runmode_t                mode;
 static int                      rx_input_level_dBm;
+static int                      log_messages=0;
 #ifdef XFORMS
 extern int                      otg_enabled;
 static char                     do_forms=0;
@@ -1119,7 +1120,7 @@ static void get_options (int argc, char **argv)
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
 
-  while ((c = getopt_long (argc, argv, "C:dF:K:qO:ST:UV",long_options,NULL)) != -1)
+  while ((c = getopt_long (argc, argv, "C:dF:K:qO:ST:UVR",long_options,NULL)) != -1)
     {
       switch (c)
         {
@@ -1255,10 +1256,12 @@ static void get_options (int argc, char **argv)
         case 'V':
           ouput_vcd = 1;
           break;
-	  /*	case  'q': 
+	case  'q': 
 	  opp_enabled = 1;
 	  break;
-	  */
+	case  'R' :
+	  log_messages =1;
+	  break;
         default:
           break;
         }
@@ -1382,7 +1385,9 @@ int main(int argc, char **argv) {
     set_comp_log(OSA,    LOG_DEBUG,   LOG_HIGH, 1);
 #endif
 #endif
-    set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);;
+    set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);
+    if (log_messages == 1) 
+      set_component_filelog(RRC);
   }
 
   if (ouput_vcd) {
