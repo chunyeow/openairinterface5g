@@ -286,7 +286,13 @@ fi
 # LAUNCH MME + S+P-GW executable
 ##################################################
 
-cd $OPENAIRCN_DIR/$OBJ_DIR
+cd $THIS_SCRIPT_PATH
+if [ ! -d "OUTPUT/"$HOSTNAME ]
+then
+    bash_exec "mkdir -m 777 ./OUTPUT/$HOSTNAME"
+    echo_success "Created OUTPUT/$HOSTNAME directory"
+fi
+
 
 ITTI_LOG_FILE=./itti_mme.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
@@ -297,8 +303,9 @@ rotate_log_file $STDOUT_LOG_FILE
 PCAP_LOG_FILE=./tshark_mme.$HOSTNAME.pcap
 rotate_log_file $PCAP_LOG_FILE
 
+cd $OPENAIRCN_DIR/$OBJ_DIR
 
-nohup tshark -i MME_INTERFACE_NAME_FOR_S1_MME -w $PCAP_LOG_FILE &
+nohup tshark -i MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_LOG_FILE &
 
 
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $STDOUT_LOG_FILE 
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
