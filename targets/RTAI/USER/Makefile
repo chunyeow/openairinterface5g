@@ -123,8 +123,9 @@ ifdef ENABLE_ITTI
 CFLAGS += -DEXMIMO_IOT
 endif
 
-ifdef RRC_MSG_PRINT
-CFLAG += -DRRC_MSG_PRINT
+ifdef MSG_PRINT
+CFLAGS += -DRRC_MSG_PRINT
+CFLAGS += -DPDCP_MSG_PRINT
 endif
 
 CFLAGS += $(L2_incl) $(ENB_APP_incl) $(UTIL_incl) $(UTILS_incl)

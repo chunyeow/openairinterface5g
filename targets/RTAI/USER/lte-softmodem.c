@@ -238,7 +238,7 @@ static uint32_t                      txgain[4] =         {20,20,20,20};
 
 static runmode_t                mode;
 static int                      rx_input_level_dBm;
-static int                      log_messages=0;
+static int                      online_log_messages=0;
 #ifdef XFORMS
 extern int                      otg_enabled;
 static char                     do_forms=0;
@@ -1260,7 +1260,7 @@ static void get_options (int argc, char **argv)
 	  opp_enabled = 1;
 	  break;
 	case  'R' :
-	  log_messages =1;
+	  online_log_messages =1;
 	  break;
         default:
           break;
@@ -1386,8 +1386,10 @@ int main(int argc, char **argv) {
 #endif
 #endif
     set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);
-    if (log_messages == 1) 
+    if (online_log_messages == 1) { 
       set_component_filelog(RRC);
+      set_component_filelog(PDCP);
+    }
   }
 
   if (ouput_vcd) {

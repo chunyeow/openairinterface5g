@@ -563,7 +563,8 @@ void rrc_eNB_generate_SecurityModeCommand(
                                   eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP]);
 
 #ifdef RRC_MSG_PRINT
-    LOG_F(RRC,"RRC Security Mode Command\n");
+    uint16_t i=0;
+    LOG_F(RRC,"[MSG] RRC Security Mode Command\n");
     for (i = 0; i < size; i++)
       LOG_F(RRC,"%02x ", ((uint8_t*)buffer)[i]);
     LOG_F(RRC,"\n");
@@ -1144,7 +1145,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
                                            mac_MainConfig, NULL, NULL, Sparams, rsrp, cba_RNTI, dedicatedInfoNASList);
 
 #ifdef RRC_MSG_PRINT
-    LOG_F(RRC,"RRC Connection Reconfiguration\n");
+    LOG_F(RRC,"[MSG] RRC Connection Reconfiguration\n");
   for (i = 0; i < size; i++)
     LOG_F(RRC,"%02x ", ((uint8_t*)buffer)[i]);
   LOG_F(RRC,"\n");
@@ -2459,9 +2460,9 @@ void rrc_eNB_generate_RRCConnectionSetup(
                               SRB_configList, &eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP]);
 
 #ifdef RRC_MSG_PRINT
-    LOG_F(RRC,"RRC Connection Setup\n");
-    for (cnt = 0; cnt < eNB_rrc_inst[Mod_id].Srb0.Tx_buffer.payload_size; cnt++)
-      LOG_F(RRC,"%02x ", ((uint8_t*)eNB_rrc_inst[Mod_id].Srb0.Tx_buffer.Payload)[cnt]);
+    LOG_F(RRC,"[MSG] RRC Connection Setup\n");
+    for (cnt = 0; cnt < eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.payload_size; cnt++)
+      LOG_F(RRC,"%02x ", ((uint8_t*)eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.Payload)[cnt]);
     LOG_F(RRC,"\n");
   //////////////////////////////////
 #endif
@@ -2702,7 +2703,7 @@ int rrc_eNB_decode_ccch(
 
             case UL_CCCH_MessageType__c1_PR_rrcConnectionReestablishmentRequest:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC, "RRC Connection Reestablishement Request\n");
+	      LOG_F(RRC,"[MSG] RRC Connection Reestablishement Request\n");
 	      for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
 	      LOG_F(RRC,"\n");
@@ -2737,7 +2738,7 @@ int rrc_eNB_decode_ccch(
 		*/
             case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC, "RRC Connection Request\n");
+	      LOG_F(RRC,"[MSG] RRC Connection Request\n");
 	      for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
 	      LOG_F(RRC,"\n");
@@ -2879,7 +2880,8 @@ int rrc_eNB_decode_dcch(
     //UL_DCCH_Message_t uldcchmsg;
     UL_DCCH_Message_t                  *ul_dcch_msg = NULL; //&uldcchmsg;
     UE_EUTRA_Capability_t              *UE_EUTRA_Capability = NULL;
-
+    int i;
+    
     if ((Srb_id != 1) && (Srb_id != 2)) {
         LOG_E(RRC, "[eNB %d] Frame %d: Received message on SRB%d, should not have ...\n", enb_mod_idP, frameP, Srb_id);
     }
@@ -2917,9 +2919,7 @@ int rrc_eNB_decode_dcch(
 #   endif
 #endif
 
-    {
-        int                                 i;
-
+    {  
         for (i = 0; i < sdu_sizeP; i++)
             LOG_T(RRC, "%x.", Rx_sdu[i]);
         LOG_T(RRC, "\n");
@@ -2951,9 +2951,9 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionReconfigurationComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC," RRC Connection Reconfiguration Complete\n");
-	      for (i = 0; i < sdu_size; i++)
-		LOF_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+	      LOG_F(RRC,"[MSG] RRC Connection Reconfiguration Complete\n");
+	      for (i = 0; i < sdu_sizeP; i++)
+		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
 	      LOG_D(RRC,
@@ -2984,8 +2984,8 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionReestablishmentComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"RRC Connection Reestablishment Complete\n");
-	      for (i = 0; i < sdu_size; i++)
+	      LOG_F(RRC,"[MSG] RRC Connection Reestablishment Complete\n");
+	      for (i = 0; i < sdu_sizeP; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
@@ -2997,8 +2997,8 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionSetupComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"RRC Connection SetupComplete\n");
-	      for (i = 0; i < sdu_size; i++)
+	      LOG_F(RRC,"[MSG] RRC Connection SetupComplete\n");
+	      for (i = 0; i < sdu_sizeP; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
@@ -3027,8 +3027,8 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_securityModeComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"RRC Security Mode Complete\n");
-	      for (i = 0; i < sdu_size; i++)
+	      LOG_F(RRC,"[MSG] RRC Security Mode Complete\n");
+	      for (i = 0; i < sdu_sizeP; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
@@ -3049,8 +3049,8 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_securityModeFailure:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"RRC Security Mode Failure\n");
-	      for (i = 0; i < sdu_size; i++)
+	      LOG_F(RRC,"[MSG] RRC Security Mode Failure\n");
+	      for (i = 0; i < sdu_sizeP; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
@@ -3068,8 +3068,8 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_ueCapabilityInformation:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"RRC UECapablility Information \n");
-	      for (i = 0; i < sdu_size; i++)
+	      LOG_F(RRC,"[MSG] RRC UECapablility Information \n");
+	      for (i = 0; i < sdu_sizeP; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
@@ -3110,8 +3110,8 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_ulInformationTransfer:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"RRC UL Information Transfer \n");
-	      for (i = 0; i < sdu_size; i++)
+	      LOG_F(RRC,"[MSG] RRC UL Information Transfer \n");
+	      for (i = 0; i < sdu_sizeP; i++)
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif

@@ -153,7 +153,7 @@ int logInit (void)
     g_log->log_component[RRC].flag = LOG_MED;
     g_log->log_component[RRC].interval =  1;
     g_log->log_component[RRC].fd = 0;
-    g_log->log_component[RRC].filelog = 1;
+    g_log->log_component[RRC].filelog = 0;
     g_log->log_component[RRC].filelog_name = "/tmp/rrc.log";
 
     g_log->log_component[NAS].name = "NAS";
@@ -694,14 +694,14 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
     // OAI printf compatibility
     if ((g_log->onlinelog == 1) && (level != LOG_FILE))
 #ifdef RTAI
-        if (len > MAX_LOG_TOTAL) {
-            rt_printk ("[OPENAIR] FIFO_PRINTF WROTE OUTSIDE ITS MEMORY BOUNDARY : ERRORS WILL OCCUR\n");
-        }
+      if (len > MAX_LOG_TOTAL) {
+	rt_printk ("[OPENAIR] FIFO_PRINTF WROTE OUTSIDE ITS MEMORY BOUNDARY : ERRORS WILL OCCUR\n");
+      }
     if (len > 0) {
-        rtf_put (FIFO_PRINTF_NO, c->log_buffer, len);
+      rtf_put (FIFO_PRINTF_NO, c->log_buffer, len);
     }
 #else
-        fwrite(c->log_buffer, len, 1, stdout);
+    fwrite(c->log_buffer, len, 1, stdout);
 #endif
 
 #ifndef RTAI
@@ -717,6 +717,11 @@ void logRecord_mt(const char *file, const char *func, int line, int comp,
       if (write(g_log->log_component[comp].fd, c->log_buffer, len) < len) {
         // TODO assert ?
       }
+    }
+#else
+    // online print messges
+    if ((g_log->log_component[comp].filelog) && (level == LOG_FILE)) {
+      printf(c->log_buffer);
     }
 #endif
 
@@ -934,14 +939,19 @@ void set_glog_filelog(int enable)
 
 void set_component_filelog(int comp)
 {
-
-    if (g_log->log_component[comp].filelog ==  0) {
-        g_log->log_component[comp].filelog =  1;
-        if (g_log->log_component[comp].fd == 0) {
-            g_log->log_component[comp].fd = open(g_log->log_component[comp].filelog_name,
-                                                 O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        }
+  if (g_log->log_component[comp].filelog ==  0) {
+    g_log->log_component[comp].filelog =  1;
+#ifndef RTAI
+ 
+    if (g_log->log_component[comp].fd == 0) {
+      g_log->log_component[comp].fd = open(g_log->log_component[comp].filelog_name,
+					   O_WRONLY | O_CREAT | O_TRUNC, 0666);
     }
+  
+#else 
+  
+#endif    
+  }
 }
 
 /*

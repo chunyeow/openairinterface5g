@@ -594,7 +594,8 @@ int rrc_eNB_process_S1AP_DOWNLINK_NAS(MessageDef *msg_p, const char *msg_name, i
                                        S1AP_DOWNLINK_NAS (msg_p).nas_pdu.buffer);
 
 #ifdef RRC_MSG_PRINT
-    LOG_F(RRC,"RRC DL Information Transfer\n");
+    int i=0;
+    LOG_F(RRC,"[MSG] RRC DL Information Transfer\n");
     for (i = 0; i < length; i++)
       LOG_F(RRC,"%02x ", ((uint8_t*)buffer)[i]);
     LOG_F(RRC,"\n");

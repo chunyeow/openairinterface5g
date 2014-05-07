@@ -295,11 +295,7 @@ boolean_t pdcp_data_req(
               else
                 stop_meas(&UE_pdcp_stats[ue_mod_idP].apply_security);
           }
-          LOG_D(PDCP,"MAC_I is %02x.%02x.%02x.%02x\n",
-              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP ],
-              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +1],
-              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +2],
-              pdcp_pdu_p->data[pdcp_header_len + sdu_buffer_sizeP +3]);
+
 #endif
 
           /* Print octets of outgoing data in hexadecimal form */
@@ -327,7 +323,15 @@ boolean_t pdcp_data_req(
        * Ask sublayer to transmit data and check return value
        * to see if RLC succeeded
        */
+#ifdef PDCP_MSG_PRINT
+      int i=0;
+      LOG_F(PDCP,"[MSG] PDCP DL %s PDU on rb_id %d\n", (srb_flagP)? "CONTROL" : "DATA", rb_idP);
+      for (i = 0; i < pdcp_pdu_size; i++)
+	LOG_F(PDCP,"%02x ", ((uint8_t*)pdcp_pdu_p->data)[i]);
+      LOG_F(PDCP,"\n");
+#endif 
       rlc_status = rlc_data_req(enb_mod_idP, ue_mod_idP, frameP, enb_flagP, srb_flagP, MBMS_FLAG_NO, rb_idP, muiP, confirmP, pdcp_pdu_size, pdcp_pdu_p);
+
   }
   switch (rlc_status) {
   case RLC_OP_STATUS_OK:
@@ -428,6 +432,14 @@ boolean_t pdcp_data_ind(
           oai_emulation.info.first_ue_local);
   }
 #endif
+#ifdef PDCP_MSG_PRINT
+      int i=0;
+      LOG_F(PDCP,"[MSG] PDCP UL %s PDU on rb_id %d\n", (srb_flagP)? "CONTROL" : "DATA", rb_idP);
+      for (i = 0; i < sdu_buffer_sizeP; i++)
+	LOG_F(PDCP,"%02x ", ((uint8_t*)sdu_buffer_pP->data)[i]);
+      LOG_F(PDCP,"\n");
+#endif 
+
   if (MBMS_flagP) {
       AssertError (rb_idP < NB_RB_MBMS_MAX, return FALSE, "RB id is too high (%u/%d) %u %u!\n", rb_idP, NB_RB_MBMS_MAX, ue_mod_idP, enb_mod_idP);
       if (enb_flagP == ENB_FLAG_NO) {

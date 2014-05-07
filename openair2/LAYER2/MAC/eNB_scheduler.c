@@ -524,7 +524,7 @@ void SR_indication(module_id_t enb_mod_idP, frame_t frameP, rnti_t rntiP, sub_fr
       eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = TRUE;
   } else {
     //     AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
-    AssertError(0, 0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
+    AssertError(0, 0, "find_UE_id(%u,rnti %d) not found\n", enb_mod_idP, rntiP);
   }
 }
 
