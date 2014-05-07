@@ -9,10 +9,15 @@
 #include <openssl/cmac.h>
 #include <openssl/evp.h>
 
+// test
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/bio.h>
+
 #include "assertions.h"
 #include "conversions.h"
 
-// #define SECU_DEBUG
+#define SECU_DEBUG
 
 /*!
  * @brief Create integrity cmac t for a given message.
@@ -21,19 +26,19 @@
  */
 int nas_stream_encrypt_eia2(nas_stream_cipher_t *stream_cipher, uint8_t out[4])
 {
-    uint8_t  *m;
-    uint32_t local_count;
-    size_t size = 4;
-
-    uint8_t  data[16];
-
-    CMAC_CTX *cmac_ctx;
-
-    uint32_t zero_bit = 0;
-    uint32_t m_length;
+    uint8_t          *m            = NULL;
+    uint32_t          local_count;
+    size_t            size         = 4;
+    uint8_t           data[16];
+    CMAC_CTX         *cmac_ctx     = NULL;
+    const EVP_CIPHER *cipher       = EVP_aes_128_cbc();
+    uint32_t          zero_bit     = 0;
+    uint32_t          m_length;
+    int               ret;
 
     DevAssert(stream_cipher != NULL);
     DevAssert(stream_cipher->key != NULL);
+    DevAssert(stream_cipher->key_length > 0);
     DevAssert(out != NULL);
 
     memset(data, 0, 16);
@@ -59,24 +64,36 @@ int nas_stream_encrypt_eia2(nas_stream_cipher_t *stream_cipher, uint8_t out[4])
         printf("Byte length: %u, Zero bits: %u\nm: ", m_length + 8, zero_bit);
         for (i = 0; i < m_length + 8; i++)
             printf("%02x", m[i]);
+        printf("\nKey:");
+        for (i = 0; i < stream_cipher->key_length; i++)
+            printf("%02x", stream_cipher->key[i]);
+        printf("\nMessage:");
+        for (i = 0; i < m_length; i++)
+            printf("%02x", stream_cipher->message[i]);
         printf("\n");
     }
 #endif
 
     cmac_ctx = CMAC_CTX_new();
-
-    CMAC_Init(cmac_ctx, stream_cipher->key, stream_cipher->key_length, EVP_aes_128_cbc(), NULL);
-    CMAC_Update(cmac_ctx, m, m_length + 8);
-
+    ret = CMAC_Init(cmac_ctx, stream_cipher->key, stream_cipher->key_length, cipher, NULL);
+#if defined(SECU_DEBUG)
+    printf("CMAC_Init returned %d\n", ret);
+#endif
+    ret = CMAC_Update(cmac_ctx, m, m_length + 8);
+#if defined(SECU_DEBUG)
+    printf("CMAC_Update returned %d\n", ret);
+#endif
     CMAC_Final(cmac_ctx, data, &size);
-
+#if defined(SECU_DEBUG)
+    printf("CMAC_Final returned %d, size = %u\n", ret, size);
+#endif
     CMAC_CTX_free(cmac_ctx);
 
 #if defined(SECU_DEBUG)
     {
         int i;
         printf("out: ");
-        for (i = 0; i < 16; i++)
+        for (i = 0; i < size; i++)
             printf("%02x", data[i]);
         printf("\n");
     }

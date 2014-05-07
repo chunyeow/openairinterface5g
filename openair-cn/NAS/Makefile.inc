@@ -1,7 +1,7 @@
 libnas_api_SRCS =								\
     EURECOM-NAS/src/api/mme/mme_api.c			\
     EURECOM-NAS/src/api/mme/mme_api.h			\
-    EURECOM-NAS/src/api/network/nas_message.c	\
+    EURECOM-NAS/src/api/network/nas_message.c   \
     EURECOM-NAS/src/api/network/nas_message.h
 
 libnas_emm_SRCS =								\

@@ -46,6 +46,7 @@ Description Defines the security mode control EMM procedure executed by the
 #if defined(ENABLE_ITTI)
 # include "assertions.h"
 #endif
+#include "secu_defs.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -98,20 +99,26 @@ static void *_security_t3460_handler(void *);
  * retransmission timer counter is exceed
  */
 static int _security_abort(void *);
-
+static int _security_select_algorithms(
+    const int   ue_eiaP,
+    const int   ue_eeaP,
+    int * const mme_eiaP,
+    int * const mme_eeaP);
 /*
  * Internal data used for security mode control procedure
  */
 typedef struct {
-    unsigned int ueid;          /* UE identifier        */
+    unsigned int ueid;      /* UE identifier                       */
 #define SECURITY_COUNTER_MAX    5
     unsigned int retransmission_count;  /* Retransmission counter   */
-    int ksi;                /* NAS key set identifier   */
-    int eea;            /* Replayed EPS encryption algorithms   */
-    int eia;            /* Replayed EPS integrity algorithms    */
+    int ksi;                /* NAS key set identifier               */
+    int eea;                /* Replayed EPS encryption algorithms   */
+    int eia;                /* Replayed EPS integrity algorithms    */
+    int selected_eea;       /* Replayed EPS encryption algorithms   */
+    int selected_eia;       /* Replayed EPS integrity algorithms    */
     int notify_failure;     /* Indicates whether the security mode control
-                 * procedure failure shall be notified to the
-                 * ongoing EMM procedure        */
+                             * procedure failure shall be notified to the
+                             * ongoing EMM procedure        */
 } security_data_t;
 
 static int _security_request(security_data_t *data, int is_new);
@@ -332,6 +339,8 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
  * --------------------------------------------------------------------------
  */
 #ifdef NAS_MME
+
+
 /****************************************************************************
  **                                                                        **
  ** Name:    emm_proc_security_mode_control()                          **
@@ -372,14 +381,16 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
 {
     int rc = RETURNerror;
     int security_context_is_new = FALSE;
-
+    int mme_eea                 = NAS_SECURITY_ALGORITHMS_EEA0;
+    int mme_eia                 = NAS_SECURITY_ALGORITHMS_EIA0;
     /* Get the UE context */
     emm_data_context_t *emm_ctx = NULL;
 
     LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "EMM-PROC  - Initiate security mode control procedure "
-              "KSI = %d", ksi);
+              "KSI = %d EEA = %d EIA = %d",
+              ksi, eea, eia);
 
 #if defined(EPC_BUILD)
     if (ueid > 0) {
@@ -402,6 +413,52 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
             emm_ctx->security->dl_count.seq_num = 0;
 
             /* TODO !!! Compute Kasme, and NAS cyphering and integrity keys */
+            // LG: Kasme should have been received from authentication
+            //     information request (S6A)
+            // Kasme is located in emm_ctx->vector.kasme
+
+            rc = _security_select_algorithms(
+                eia,
+                eea,
+                &mme_eia,
+                &mme_eea);
+
+            emm_ctx->security->selected_algorithms.encryption = mme_eea;
+            emm_ctx->security->selected_algorithms.integrity  = mme_eia;
+
+            if (rc == RETURNerror) {
+                LOG_TRACE(WARNING,
+                    "EMM-PROC  - Failed to select security algorithms");
+                LOG_FUNC_RETURN (RETURNerror);
+            }
+
+            if ( ! emm_ctx->security->knas_int.value) {
+                emm_ctx->security->knas_int.value = malloc(AUTH_KNAS_INT_SIZE);
+            } else {
+                AssertFatal(
+                    emm_ctx->security->knas_int.length >= AUTH_KNAS_INT_SIZE,
+                    " TODO realloc emm_ctx->security->knas_int OctetString");
+            }
+            emm_ctx->security->knas_int.length = AUTH_KNAS_INT_SIZE;
+            derive_key_nas(
+                NAS_INT_ALG,
+                emm_ctx->security->selected_algorithms.integrity,
+                emm_ctx->vector.kasme,
+                &emm_ctx->security->knas_int.value);
+
+            if ( ! emm_ctx->security->knas_enc.value) {
+                emm_ctx->security->knas_enc.value = malloc(AUTH_KNAS_ENC_SIZE);
+            } else {
+                AssertFatal(
+                    emm_ctx->security->knas_enc.length >= AUTH_KNAS_ENC_SIZE,
+                    " TODO realloc emm_ctx->security->knas_enc OctetString");
+            }
+            emm_ctx->security->knas_enc.length = AUTH_KNAS_ENC_SIZE;
+            derive_key_nas(
+                NAS_ENC_ALG,
+                emm_ctx->security->selected_algorithms.encryption,
+                emm_ctx->vector.kasme,
+                &emm_ctx->security->knas_enc.value);
 
             /* Set new security context indicator */
             security_context_is_new = TRUE;
@@ -434,6 +491,10 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
         data->eea = eea;
         /* Set the EPS integrity algorithms to be replayed to the UE */
         data->eia = eia;
+        /* Set the EPS encryption algorithms to be replayed to the UE */
+        data->selected_eea = emm_ctx->security->selected_algorithms.encryption;
+        /* Set the EPS integrity algorithms to be replayed to the UE */
+        data->selected_eia = emm_ctx->security->selected_algorithms.integrity;
         /* Set the failure notification indicator */
         data->notify_failure = FALSE;
         /* Send security mode command message to the UE */
@@ -885,12 +946,14 @@ int _security_request(security_data_t *data, int is_new)
      * to the UE
      */
     emm_sap.primitive = EMMAS_SECURITY_REQ;
-    emm_sap.u.emm_as.u.security.guti = NULL;
-    emm_sap.u.emm_as.u.security.ueid = data->ueid;
-    emm_sap.u.emm_as.u.security.msgType = EMM_AS_MSG_TYPE_SMC;
-    emm_sap.u.emm_as.u.security.ksi = data->ksi;
-    emm_sap.u.emm_as.u.security.eea = data->eea;
-    emm_sap.u.emm_as.u.security.eia = data->eia;
+    emm_sap.u.emm_as.u.security.guti         = NULL;
+    emm_sap.u.emm_as.u.security.ueid         = data->ueid;
+    emm_sap.u.emm_as.u.security.msgType      = EMM_AS_MSG_TYPE_SMC;
+    emm_sap.u.emm_as.u.security.ksi          = data->ksi;
+    emm_sap.u.emm_as.u.security.eea          = data->eea;
+    emm_sap.u.emm_as.u.security.eia          = data->eia;
+    emm_sap.u.emm_as.u.security.selected_eea = data->selected_eea;
+    emm_sap.u.emm_as.u.security.selected_eia = data->selected_eia;
 
 #if defined(EPC_BUILD)
     if (data->ueid > 0) {
@@ -974,6 +1037,65 @@ static int _security_abort(void *args)
     }
 
     LOG_FUNC_RETURN (rc);
+}
+
+
+/****************************************************************************
+ **                                                                        **
+ ** Name:    _security_select_algorithms()                                 **
+ **                                                                        **
+ ** Description: Select int and enc algorithms based on UE capabilities and**
+ **      MME capabilities and MME preferences                              **
+ **                                                                        **
+ ** Inputs:  ue_eia:      integrity algorithms supported by UE             **
+ **          ue_eea:      ciphering algorithms supported by UE             **
+ **                                                                        **
+ ** Outputs: mme_eia:     integrity algorithms supported by MME            **
+ **          mme_eea:     ciphering algorithms supported by MME            **
+ **                                                                        **
+ **      Return:    RETURNok, RETURNerror                                  **
+ **      Others:    None                                                   **
+ **                                                                        **
+ ***************************************************************************/
+static int _security_select_algorithms(
+    const int   ue_eiaP,
+    const int   ue_eeaP,
+    int * const mme_eiaP,
+    int * const mme_eeaP)
+{
+    LOG_FUNC_IN;
+
+    int rc            = RETURNerror;
+
+    /* TODO work with loaded preferences from config file */
+
+    if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA2)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA0");
+        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA0;
+    } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA1)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA1");
+        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA1;
+    } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA0)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA0");
+        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA0;
+    } else {
+        LOG_FUNC_RETURN (rc);
+    }
+
+    if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA0)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA0");
+        *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA0;
+    } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA2)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA2");
+        *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA2;
+    } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA1)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA1");
+        *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA1;
+    } else {
+        LOG_FUNC_RETURN (rc);
+    }
+
+    LOG_FUNC_RETURN (RETURNok);
 }
 
 #endif // NAS_MME

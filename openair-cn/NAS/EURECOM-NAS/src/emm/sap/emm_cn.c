@@ -101,11 +101,14 @@ static int _emm_cn_authentication_res(const emm_cn_auth_res_t *msg)
      * and NAS security setup to activate integrity protection and NAS
      * ciphering are mandatory.
      */
-    rc = emm_proc_authentication(emm_ctx, emm_ctx->ueid, 0, // TODO: eksi != 0
-                                 &loc_rand, &autn,
-                                 emm_attach_security,
-                                 NULL,
-                                 NULL);
+    rc = emm_proc_authentication(emm_ctx,
+        emm_ctx->ueid,
+        0, // TODO: eksi != 0
+        &loc_rand,
+        &autn,
+        emm_attach_security,
+        NULL,
+        NULL);
     if (rc != RETURNok) {
         /* Failed to initiate the authentication procedure */
         LOG_TRACE(WARNING, "EMM-PROC  - "

@@ -26,6 +26,9 @@ typedef struct mme_app_connection_establishment_cnf_s {
     pre_emp_capability_t    bearer_qos_pre_emp_capability;
     ambr_t                  ambr;
 
+    /* Key eNB */
+    uint8_t                 keNB[32];
+
     nas_conn_est_cnf_t       nas_conn_est_cnf;
 } mme_app_connection_establishment_cnf_t;
 

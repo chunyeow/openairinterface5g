@@ -7,6 +7,13 @@
 #define EIA1_128_ALG_ID 0x01
 #define EIA2_128_ALG_ID 0x02
 
+#define EEA0_ALG_ID     0x00
+#define EEA1_128_ALG_ID 0x01
+#define EEA2_128_ALG_ID 0x02
+
+#define SECU_DIRECTION_UPLINK   0
+#define SECU_DIRECTION_DOWNLINK 1
+
 inline
 void kdf(const uint8_t *s, const uint32_t s_length, const uint8_t *key,
          const uint32_t key_length, uint8_t **out, uint32_t out_length);

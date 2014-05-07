@@ -8,6 +8,7 @@ AM_CFLAGS =											\
 	-DEPC_BUILD										\
 	-DENABLE_ITTI									\
 	-I$(top_srcdir)/COMMON							\
+	-I$(top_srcdir)/SECU							\
 	-I$(top_srcdir)/INTERTASK_INTERFACE				\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/user	\
 	-I$(top_srcdir)/NAS/EURECOM-NAS/src/api/mme		\

@@ -170,7 +170,7 @@ typedef struct nas_pdn_connectivity_rsp_s {
     uint32_t                mme_ue_s1ap_id;
 
     /* Key eNB */
-    uint8_t                 keNB[32];
+    //uint8_t                 keNB[32];
 
     ambr_t                  ambr;
     ambr_t                  apn_ambr;

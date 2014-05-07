@@ -113,6 +113,10 @@ typedef struct {
         UInt8_t encryption:4;   /* algorithm used for ciphering        */
         UInt8_t integrity:4;    /* algorithm used for integrity protection */
     } capability;       /* UE network capability           */
+    struct {
+        UInt8_t encryption:4;   /* algorithm used for ciphering           */
+        UInt8_t integrity:4;    /* algorithm used for integrity protection */
+    } selected_algorithms;       /* MME selected algorithms                */
 } emm_security_context_t;
 
 /*

@@ -30,6 +30,7 @@ Description Defines EMM procedures executed by the Non-Access Stratum
 
 #include "emm_sap.h"
 #include "esm_sap.h"
+#include "nas_log.h"
 
 #include <string.h> // memset
 
@@ -457,6 +458,14 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
          * into use, UE and MME shall cipher and integrity protect all
          * NAS signalling messages with the selected NAS ciphering and
          * NAS integrity algorithms */
+        LOG_TRACE(WARNING,
+            "EPS security context exists is new %u KSI %u SQN %u count %u knas_int %s",
+            is_new,
+            context->eksi,
+            context->ul_count.seq_num,
+            *(UInt32_t *)(&context->ul_count),
+            context->knas_int.value
+            );
         data->is_new = is_new;
         data->ksi = context->eksi;
         data->sqn = context->ul_count.seq_num;
@@ -473,9 +482,14 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
             /* 3GPP TS 24.301, section 5.4.3.2
              * The MME shall send the SECURITY MODE COMMAND message integrity
              * protected and unciphered */
+            LOG_TRACE(WARNING,
+                "EPS security context exists knas_enc %s",
+                context->knas_enc.value
+                );
             data->k_enc = &context->knas_enc;
         }
     } else {
+        LOG_TRACE(WARNING, "EMM_AS_NO_KEY_AVAILABLE");
         /* No valid EPS security context exists */
         data->ksi = EMM_AS_NO_KEY_AVAILABLE;
     }

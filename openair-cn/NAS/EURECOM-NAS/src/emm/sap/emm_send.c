@@ -1205,9 +1205,9 @@ int emm_send_security_mode_command(const emm_as_security_t *msg,
     /* Selected NAS security algorithms */
     size += NAS_SECURITY_ALGORITHMS_MAXIMUM_LENGTH;
     emm_msg->selectednassecurityalgorithms.typeofcipheringalgorithm =
-        NAS_SECURITY_ALGORITHMS_EEA0;
+        msg->selected_eea;
     emm_msg->selectednassecurityalgorithms.typeofintegrityalgorithm =
-        NAS_SECURITY_ALGORITHMS_EIA0;
+        msg->selected_eia;
 
     /* NAS key set identifier */
     size += NAS_KEY_SET_IDENTIFIER_MAXIMUM_LENGTH;

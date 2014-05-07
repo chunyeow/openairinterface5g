@@ -670,6 +670,8 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
             /* RES does not match the XRES parameter */
             LOG_TRACE(WARNING, "EMM-PROC  - Failed to authentify the UE");
             emm_cause = EMM_CAUSE_ILLEGAL_UE;
+        } else {
+            LOG_TRACE(DEBUG, "EMM-PROC  - Success to authentify the UE  RESP XRES == XRES UE CONTEXT");
         }
     }
 
@@ -1151,10 +1153,10 @@ static int _authentication_kasme(const OctetString *autn,
     /* Compute the KDF input parameter
      * S = FC(0x10) || SNid || 0x00 0x03 || SQN ⊕ AK || 0x00 0x06
      */
-    UInt8_t input[kasme->length];
+    UInt8_t  input[kasme->length];
     UInt16_t length;
-    int offset = 0;
-    int size_of_length = sizeof(length);
+    int      offset         = 0;
+    int      size_of_length = sizeof(length);
     input[offset] = 0x10;
     offset += 1;
     length = AUTH_SNID_SIZE;

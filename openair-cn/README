@@ -11,7 +11,7 @@ MME + P-GW + S-GW implementation of 3GPP standard.
 Controle plane:
 
               eNB                                    MME                                     HSS
- 
+
                                        |----------------------------|
                                        |    MME Application layer   |
                                        |----------------------------|
@@ -88,7 +88,7 @@ Current options supported for configure:
 code build switch: UPDATE_RELEASE_9 and UPDATE_RELEASE_10
 NOTE: Release 10 is enabled by default
 --enable-standalone-epc: all-in-one package, MME, S-GW and P-GW are compiled in a single
-executable and S11 interface is not used; messages are exchanged internally, 
+executable and S11 interface is not used; messages are exchanged internally,
 linking MME applicative layer to S+P-GW applicative layer
 
 How to run EPC environnement ?

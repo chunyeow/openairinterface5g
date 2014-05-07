@@ -45,6 +45,8 @@ Description Defines the attach related EMM procedure executed by the
 #include "esm_sap.h"
 #include "emm_cause.h"
 
+#include "NasSecurityAlgorithms.h"
+
 #ifdef NAS_MME
 #include "mme_api.h"
 # if defined(EPC_BUILD)
@@ -1133,6 +1135,17 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
 #if defined(EPC_BUILD)
         emm_data_context_add(&_emm_data, *(emm_ctx));
 #endif
+
+#warning "TRICK TO SET TAC, BUT LOOK AT SPEC"
+        if (tai){
+            LOG_TRACE(WARNING,
+                "EMM-PROC  - Set tac %u in context %u ",
+                tai->tac);
+            (*emm_ctx)->tac = tai->tac;
+        } else {
+            LOG_TRACE(WARNING,
+                "EMM-PROC  - Could not set tac in context, cause tai is NULL ");
+        }
     }
 
     /* Update the EMM context with the current attach procedure parameters */
@@ -2040,6 +2053,8 @@ static int _emm_attach_security(void *args)
     if (emm_ctx->security) {
         memset(emm_ctx->security, 0, sizeof(emm_security_context_t));
         emm_ctx->security->type = EMM_KSI_NOT_AVAILABLE;
+        emm_ctx->security->selected_algorithms.encryption = NAS_SECURITY_ALGORITHMS_EEA0;
+        emm_ctx->security->selected_algorithms.integrity  = NAS_SECURITY_ALGORITHMS_EIA0;
     } else {
         LOG_TRACE(WARNING, "EMM-PROC  - Failed to create security context");
         emm_ctx->emm_cause = EMM_CAUSE_ILLEGAL_UE;
@@ -2309,62 +2324,63 @@ static int _emm_attach_have_changed(const emm_data_context_t *ctx,
                                     GUTI_t *guti, imsi_t *imsi, imei_t *imei,
                                     int eea, int eia)
 {
+    LOG_FUNC_IN;
     /* Emergency bearer services indicator */
     if ( (type == EMM_ATTACH_TYPE_EMERGENCY) != ctx->is_emergency) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     /* Security key set identifier */
     if (ksi != ctx->ksi) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     /* Supported EPS encryption algorithms */
     if (eea != ctx->eea) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     /* Supported EPS integrity algorithms */
     if (eia != ctx->eia) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     /* The GUTI if provided by the UE */
     if ( (guti) && (ctx->guti == NULL) ) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     if ( (guti == NULL) && (ctx->guti) ) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     if ( (guti) && (ctx->guti) ) {
         if (guti->m_tmsi != ctx->guti->m_tmsi) {
-            return (TRUE);
+            LOG_FUNC_RETURN (TRUE);
         }
         if ( memcmp(&guti->gummei, &ctx->guti->gummei, sizeof(gummei_t)) != 0 ) {
-            return (TRUE);
+            LOG_FUNC_RETURN (TRUE);
         }
     }
     /* The IMSI if provided by the UE */
     if ( (imsi) && (ctx->imsi == NULL) ) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     if ( (imsi == NULL) && (ctx->imsi) ) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     if ( (imsi) && (ctx->imsi) ) {
         if ( memcmp(imsi, ctx->imsi, sizeof(imsi_t)) != 0 ) {
-            return (TRUE);
+            LOG_FUNC_RETURN (TRUE);
         }
     }
     /* The IMEI if provided by the UE */
     if ( (imei) && (ctx->imei == NULL) ) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     if ( (imei == NULL) && (ctx->imei) ) {
-        return (TRUE);
+        LOG_FUNC_RETURN (TRUE);
     }
     if ( (imei) && (ctx->imei) ) {
         if ( memcmp(imei, ctx->imei, sizeof(imei_t)) != 0 ) {
-            return (TRUE);
+            LOG_FUNC_RETURN (TRUE);
         }
     }
-    return (FALSE);
+    LOG_FUNC_RETURN (FALSE);
 }
 
 /****************************************************************************
@@ -2396,6 +2412,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                               GUTI_t *guti, imsi_t *imsi, imei_t *imei,
                               int eea, int eia, const OctetString *esm_msg)
 {
+    LOG_FUNC_IN;
     /* UE identifier */
     ctx->ueid = ueid;
     /* Emergency bearer services indicator */
@@ -2414,7 +2431,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         if (ctx->guti != NULL) {
             memcpy(ctx->guti, guti, sizeof(GUTI_t));
         } else {
-            return (RETURNerror);
+            LOG_FUNC_RETURN (RETURNerror);
         }
     } else {
         if (ctx->guti == NULL) {
@@ -2422,6 +2439,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         }
         if (ctx->guti != NULL) {
             /* TODO: FIXME */
+            LOG_TRACE(WARNING, "EMM-PROC  - Assign hardcoded PLMN 208.92 and tac 0001 to emm_data_context");
             ctx->guti->gummei.plmn.MCCdigit1 = 2;
             ctx->guti->gummei.plmn.MCCdigit2 = 0;
             ctx->guti->gummei.plmn.MCCdigit3 = 8;
@@ -2433,8 +2451,10 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
             ctx->guti->gummei.MMEgid  = 0;
 
             ctx->guti->m_tmsi = (uint32_t) ctx;
+
+            ctx->tac          = 1;
         } else {
-            return (RETURNerror);
+            LOG_FUNC_RETURN (RETURNerror);
         }
     }
     /* The IMSI if provided by the UE */
@@ -2445,7 +2465,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         if (ctx->imsi != NULL) {
             memcpy(ctx->imsi, imsi, sizeof(imsi_t));
         } else {
-            return (RETURNerror);
+            LOG_FUNC_RETURN (RETURNerror);
         }
     }
     /* The IMEI if provided by the UE */
@@ -2456,7 +2476,7 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         if (ctx->imei != NULL) {
             memcpy(ctx->imei, imei, sizeof(imei_t));
         } else {
-            return (RETURNerror);
+            LOG_FUNC_RETURN (RETURNerror);
         }
     }
     /* The ESM message contained within the attach request */
@@ -2468,14 +2488,14 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
             strncpy((char *)ctx->esm_msg.value,
                     (char *)esm_msg->value, esm_msg->length);
         } else {
-            return (RETURNerror);
+            LOG_FUNC_RETURN (RETURNerror);
         }
     }
     ctx->esm_msg.length = esm_msg->length;
     /* Attachment indicator */
     ctx->is_attached = FALSE;
 
-    return (RETURNok);
+    LOG_FUNC_RETURN (RETURNok);
 }
 
 #endif // NAS_MME

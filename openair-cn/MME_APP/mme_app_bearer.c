@@ -289,6 +289,7 @@ mme_app_handle_conn_est_cnf(
     mme_app_connection_establishment_cnf_t *establishment_cnf_p = NULL;
     bearer_context_t                       *current_bearer_p    = NULL;
     ebi_t                                   bearer_id           = 0;
+    uint8_t                                *keNB                = NULL;
 
     MME_APP_DEBUG("Received NAS_CONNECTION_ESTABLISHMENT_CNF from NAS\n");
 
@@ -331,6 +332,11 @@ mme_app_handle_conn_est_cnf(
     establishment_cnf_p->bearer_qos_pre_emp_vulnerability  = current_bearer_p->pre_emp_vulnerability;
     establishment_cnf_p->bearer_qos_pre_emp_capability     = current_bearer_p->pre_emp_capability;
     establishment_cnf_p->ambr                              = ue_context_p->used_ambr;
+
+    MME_APP_DEBUG("Derive keNB with UL NAS COUNT %x\n", nas_conn_est_cnf_pP->ul_nas_count);
+    derive_keNB(ue_context_p->vector_in_use->kasme, nas_conn_est_cnf_pP->ul_nas_count, &keNB); //156
+    memcpy(establishment_cnf_p->keNB, keNB, 32);
+    free(keNB);
 
     itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
@@ -471,17 +477,18 @@ mme_app_handle_create_sess_resp(
     mme_app_dump_ue_contexts(&mme_app_desc.mme_ue_contexts);
 
     {
-        uint8_t *keNB = NULL;
+        //uint8_t *keNB = NULL;
 
         message_p = itti_alloc_new_message(TASK_MME_APP, NAS_PDN_CONNECTIVITY_RSP);
         memset((void*)&message_p->ittiMsg.nas_pdn_connectivity_rsp,
                 0,
                 sizeof(nas_pdn_connectivity_rsp_t));
 
-        derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
-        memcpy(NAS_PDN_CONNECTIVITY_RSP(message_p).keNB, keNB, 32);
+        // moved to NAS_CONNECTION_ESTABLISHMENT_CONF, keNB not handled in NAS MME
+        //derive_keNB(ue_context_p->vector_in_use->kasme, 156, &keNB);
+        //memcpy(NAS_PDN_CONNECTIVITY_RSP(message_p).keNB, keNB, 32);
 
-        free(keNB);
+        //free(keNB);
 
         NAS_PDN_CONNECTIVITY_RSP(message_p).pti            = ue_context_p->pending_pdn_connectivity_req_pti;   // NAS internal ref
         NAS_PDN_CONNECTIVITY_RSP(message_p).ue_id          = ue_context_p->pending_pdn_connectivity_req_ue_id; // NAS internal ref

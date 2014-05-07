@@ -653,12 +653,18 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
     initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused
         = 0;
 
-//    initialContextSetupRequest_p->securityKey.buf  = initial_p->keNB; /* 256 bits length */
-    uint8_t keNB[32];
-    memset(keNB, 0, sizeof(keNB));
+    if (conn_est_cnf_pP->keNB) {
+        initialContextSetupRequest_p->securityKey.buf = malloc(32);
+        memcpy(initialContextSetupRequest_p->securityKey.buf,
+            conn_est_cnf_pP->keNB,
+            32);
 
-    initialContextSetupRequest_p->securityKey.buf = keNB;
-    initialContextSetupRequest_p->securityKey.size = 32;
+        initialContextSetupRequest_p->securityKey.size = 32;
+    } else {
+        S1AP_DEBUG("No keNB\n");
+        initialContextSetupRequest_p->securityKey.buf = NULL;
+        initialContextSetupRequest_p->securityKey.size = 0;
+    }
     initialContextSetupRequest_p->securityKey.bits_unused = 0;
 
     if (s1ap_mme_encode_pdu(&message, &buffer_p, &length) < 0) {

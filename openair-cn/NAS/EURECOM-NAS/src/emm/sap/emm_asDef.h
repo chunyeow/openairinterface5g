@@ -98,6 +98,10 @@ typedef struct {
     UInt8_t eea;        /* Replayed EPS encryption algorithms   */
     UInt8_t eia;        /* Replayed EPS integrity algorithms    */
 
+    // Added by LG
+    UInt8_t selected_eea; /* Selected EPS encryption algorithms   */
+    UInt8_t selected_eia; /* Selected EPS integrity algorithms    */
+
 #define EMM_AS_MSG_TYPE_IDENT   0x01    /* Identification message   */
 #define EMM_AS_MSG_TYPE_AUTH    0x02    /* Authentication message   */
 #define EMM_AS_MSG_TYPE_SMC 0x03    /* Security Mode Command    */
