@@ -15,7 +15,7 @@ ofdm_symbol_length = num_carriers + prefix_length;
 frame_length = ofdm_symbol_length*num_symbols_frame;
 useful_carriers = num_carriers-num_zeros-1;
 
-%filename = 'E:\EMOS\corridor\lab tests\eNB_data_20140321_184441.EMOS';
+%filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
 filename = 'D:\trials1 train extracted\eNB_data_20140331_UHF_run1.EMOS';
 destdir = 'E:\EMOS\corridor\trials1 train';
 
@@ -31,12 +31,18 @@ PDP_total = zeros(nblocks*nframes,useful_carriers/4,nant_tx,nant_rx);
 
 %% main loop
 fid = fopen(filename,'r');
-% advance 1 minute of measurements (the synchronization algorithm does not
-% work so well for low SNR yet)
-fseek(fid,samples_slot*slots_per_frame*nframes*nant_rx*60*2,'bof'); 
 
-vStorage = []; 
-block = 1;
+vStorage = [];  %%
+
+
+block = 1; %
+flag1 = 1;
+start=2;
+
+threshold = 3e+4 ; % maybe should change that !!!!
+
+%  fseek(fid,samples_slot*slots_per_frame*nframes*nant*102*2,'bof');
+%  %advance 102 sec
 
 while ~feof(fid)
     fprintf(1,'Processing block %d of %d',block,nblocks);
@@ -47,6 +53,8 @@ while ~feof(fid)
     end
     v1 = double(v(1:2:end))+1j*double(v(2:2:end));
     
+    nframes = 100;
+    
     v2 = zeros(samples_slot*slots_per_frame*nframes,nant_rx);
     for slot=1:slots_per_frame*nframes
         for a=1:nant_rx
@@ -55,14 +63,14 @@ while ~feof(fid)
                    (slot-1)*samples_slot*nant_rx+ a   *samples_slot,1);
         end
     end
-
     
-    v2 = [vStorage; v2] ; %handle boundaries between blocks
+    
+    v2 = [vStorage; v2] ;%%
     if size(v2,1) > frame_length*nframes ;
         nframes = floor(size(v2,1) / frame_length) ;
-    vStorage = v2(frame_length*nframes+1:end,:) ;
-    v2(frame_length*nframes + 1 : end,:) = [] ;
-    start = 1 ;
+        vStorage = v2(frame_length*nframes+1:end,:) ;
+        v2(frame_length*nframes + 1 : end,:) = [] ;
+        start = 1 ;
     end
     
     if enable_plots>=2
@@ -70,16 +78,36 @@ while ~feof(fid)
         plot(20*log10(abs(fftshift(fft(v2)))))
     end
     
-    %% frame start detection 
-    if block==1 
+    %% frame start detection
+    if flag1==1
         [corr,lag] = xcorr(v2(:,1),pss_t);
         %[m,idx]=max(abs(corr));
         %[m,idx]=peaksfinder(corr,frame_length);
-
+        
         tmp   = corr(nframes*slots_per_frame*samples_slot:end);
         tmp2  = reshape(tmp,slots_per_frame*samples_slot,nframes);
         [m,idx] = max(abs(tmp2),[],1);
-        frame_offset = round(mean(idx(1:10))) - prefix_length;
+       
+%         meanCorr = mean(abs(tmp2));
+%         [mm,where] = max(m./meanCorr)
+        
+        idx(m < threshold) = [];
+        if size(idx,2) <= 1
+            flag1 = 1 ;
+            flag2 = 0 ;
+            
+            vStorage = [];
+%         elseif size(idx,2) == nframes
+%             
+%             flag1 = 0;
+%             flag2 = 1;
+        else
+            flag1 = 0 ;
+            flag2 = 1 ;
+        end
+        
+        frame_offset = round(median(idx)) - prefix_length;
+        
 
         if enable_plots>=2
             figure(2);
@@ -89,23 +117,22 @@ while ~feof(fid)
             plot(frame_offset,m(1),'ro')
         end
     else
-        % after the first block we are synchronized
-        frame_offset = prefix_length/8;
+        frame_offset = 0; %%%%% line 93 florian's 
     end
     
-    %%
-    for i=1:nframes;
-        fprintf(1,'.');
-        frame_start = (slots_per_frame*samples_slot)*(i-1)+frame_offset+1;
-        %frame_start = lag(idx(i))-prefix_length;
-        % frame_start = lag(i) - prefix_length;
-        
-        if i<nframes
-            %% ofdm receiver
-            received_f = OFDM_RX(v2(frame_start:frame_start+frame_length,:),num_carriers,useful_carriers,prefix_length,num_symbols_frame);
-        else
-            vStorage = [v2(frame_start:end,:) ; vStorage];  % handle block boundaries
-        end
+    if flag2 == 1
+        for i=start:nframes;
+            fprintf(1,'.');
+            frame_start = (slots_per_frame*samples_slot)*(i-1)+frame_offset+1;
+            %frame_start = lag(idx(i))-prefix_length;
+            % frame_start = lag(i) - prefix_length;
+            
+            if i<nframes
+                %% ofdm receiver
+                received_f = OFDM_RX(v2(frame_start:frame_start+frame_length,:),num_carriers,useful_carriers,prefix_length,num_symbols_frame);
+            else
+                vStorage = [v2(frame_start:end,:) ; vStorage];  %%
+            end
         %% MIMO channel estimation
         H = zeros(num_symbols_frame/2,useful_carriers/4,nant_tx,nant_rx);
         for itx=1:nant_tx
@@ -160,7 +187,7 @@ while ~feof(fid)
             end
             drawnow
         end
-        
+        end
     end
     fprintf(1,'\n');
     block = block+1;
