@@ -6,6 +6,7 @@ X2AP_DIR            = $(OPENAIR_HOME)/openair2/X2AP
 SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
 UDP_DIR             = $(OPENAIR_HOME)/openair-cn/UDP
 GTPV1U_DIR          = $(OPENAIR_HOME)/openair-cn/GTPV1-U
+CN_SECU_DIR         = $(OPENAIR_HOME)/openair-cn/SECU
 
 UE_NAS_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UE_NAS_DIR))
 S1AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
@@ -21,6 +22,7 @@ export X2AP_DIR
 export SCTP_DIR
 export UDP_DIR
 export GTPV1U_DIR
+export CN_SECU_DIR
 
 #Export common cflags (between softmodem and oaisim)
 COMMON_CFLAGS		= \
