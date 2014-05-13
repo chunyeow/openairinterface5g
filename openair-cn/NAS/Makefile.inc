@@ -62,7 +62,7 @@ libnas_emm_msg_SRCS =										\
     EURECOM-NAS/src/emm/msg/DetachRequest.c					\
     EURECOM-NAS/src/emm/msg/emm_msgDef.h					\
     EURECOM-NAS/src/emm/msg/GutiReallocationComplete.c		\
-    EURECOM-NAS/src/emm/msg/SecurityModeCommand.h			\
+    EURECOM-NAS/src/emm/msg/NASSecurityModeCommand.h		\
     EURECOM-NAS/src/emm/msg/ServiceRequest.h				\
     EURECOM-NAS/src/emm/msg/TrackingAreaUpdateRequest.h		\
     EURECOM-NAS/src/emm/msg/AttachReject.h					\
@@ -78,7 +78,7 @@ libnas_emm_msg_SRCS =										\
     EURECOM-NAS/src/emm/msg/DownlinkNasTransport.c			\
     EURECOM-NAS/src/emm/msg/EmmStatus.c						\
     EURECOM-NAS/src/emm/msg/IdentityRequest.c				\
-    EURECOM-NAS/src/emm/msg/SecurityModeComplete.h			\
+    EURECOM-NAS/src/emm/msg/NASSecurityModeComplete.h			\
     EURECOM-NAS/src/emm/msg/TrackingAreaUpdateAccept.h		\
     EURECOM-NAS/src/emm/msg/UplinkNasTransport.h			\
     EURECOM-NAS/src/emm/msg/AttachRequest.h					\

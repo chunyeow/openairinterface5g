@@ -1,7 +1,8 @@
-#include "security_types.h"
 
 #ifndef SECU_DEFS_H_
 #define SECU_DEFS_H_
+
+#include "security_types.h"
 
 #define EIA0_ALG_ID     0x00
 #define EIA1_128_ALG_ID 0x01

@@ -188,17 +188,17 @@ typedef struct {
  * -------------------------
  */
 typedef struct {
-    int usim_is_valid;  /* Indication of USIM data validity     */
+    int                 usim_is_valid;  /* Indication of USIM data validity   */
 
-    imei_t *imei;   /* IMEI read from the UE's non-volatile memory  */
-    const imsi_t *imsi; /* The valid IMSI read from the USIM        */
-    GUTI_t *guti;   /* The valid GUTI read from the USIM        */
-    tai_t  *tai;    /* Last visited registered Tracking Area Id */
+    imei_t             *imei;   /* IMEI read from the UE's non-volatile memory*/
+    const imsi_t       *imsi; /* The valid IMSI read from the USIM            */
+    GUTI_t             *guti;   /* The valid GUTI read from the USIM          */
+    tai_t              *tai;    /* Last visited registered Tracking Area Id   */
 
-    emm_eps_update_t status;    /* The current EPS update status    */
-    emm_ecm_state_t ecm_status; /* The EPS Connection Management status */
-    int is_attached;    /* Network attachment indicator         */
-    int is_emergency;   /* Emergency bearer services indicator      */
+    emm_eps_update_t    status;    /* The current EPS update status           */
+    emm_ecm_state_t     ecm_status; /* The EPS Connection Management status   */
+    int                 is_attached;    /* Network attachment indicator       */
+    int                 is_emergency;   /* Emergency bearer services indicator*/
 
     /* Tracking Areas list the UE is registered to
      * Contains the list of TAIs that identify the tracking areas that
@@ -209,17 +209,17 @@ typedef struct {
 #define EMM_DATA_TAI_MAX        16
     TAI_LIST_T(EMM_DATA_TAI_MAX) ltai;
 
-    int plmn_mode;  /* Network selection operating mode       */
-    int plmn_index; /* Manually selected PLMN             */
-    int plmn_rat;   /* Manually selected Radio Access Technology      */
+    int                 plmn_mode;  /* Network selection operating mode       */
+    int                 plmn_index; /* Manually selected PLMN                 */
+    int                 plmn_rat; /* Manually selected Radio Access Technology*/
 
-    plmn_t splmn;   /* The currently selected PLMN            */
-    int is_rplmn;   /* splmn is the registered PLMN           */
-    int is_eplmn;   /* splmn is in the list of equivalent PLMNs   */
-    Stat_t stat;    /* Current network registration status        */
-    tac_t tac;      /* Tracking area code                 */
-    ci_t ci;        /* GERAN/UTRAN/E-UTRAN serving cell identifier    */
-    AcT_t rat;      /* Radio Access Technology of the serving cell    */
+    plmn_t              splmn;      /* The currently selected PLMN            */
+    int                 is_rplmn;   /* splmn is the registered PLMN           */
+    int                 is_eplmn; /* splmn is in the list of equivalent PLMNs */
+    Stat_t              stat;    /* Current network registration status       */
+    tac_t               tac;   /* Tracking area code                          */
+    ci_t                ci;    /* GERAN/UTRAN/E-UTRAN serving cell identifier */
+    AcT_t               rat; /* Radio Access Technology of the serving cell   */
 
     /* An octet string representation of operators present in the network */
     struct {

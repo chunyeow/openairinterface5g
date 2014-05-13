@@ -23,6 +23,7 @@ Description Defines the EMMAS Service Access Point that provides
 #include "emm_as.h"
 #include "emm_recv.h"
 #include "emm_send.h"
+#include "emmData.h"
 #include "commonDef.h"
 #include "nas_log.h"
 
@@ -321,8 +322,11 @@ static int _emm_as_recv(unsigned int ueid, const char *msg, int len,
     nas_message_t nas_msg;
     memset(&nas_msg, 0 , sizeof(nas_message_t));
 
-    emm_data_context_t           *emm_ctx  = NULL;
     emm_security_context_t       *security = NULL;    /* Current EPS NAS security context     */
+#if defined(NAS_MME)
+#if defined(EPC_BUILD)
+    emm_data_context_t           *emm_ctx  = NULL;
+#endif
 
 #if defined(EPC_BUILD)
     emm_ctx = emm_data_context_get(&_emm_data, ueid);
@@ -332,7 +336,13 @@ static int _emm_as_recv(unsigned int ueid, const char *msg, int len,
 #else
     if (ueid < EMM_DATA_NB_UE_MAX) {
         emm_ctx = _emm_data.ctx[ueid];
+        if (emm_ctx) {
+            security = emm_ctx->security;
+        }
     }
+#endif
+#else /* NAS_MME */
+    security = _emm_data.security;
 #endif
 
     /* Decode the received message */
@@ -494,11 +504,12 @@ static int _emm_as_data_ind(const emm_as_data_t *msg, int *emm_cause)
             char *plain_msg = (char *)malloc(msg->NASmsg.length);
             if (plain_msg) {
                 nas_message_security_header_t header;
-                emm_data_context_t           *emm_ctx  = NULL;
                 emm_security_context_t       *security = NULL;    /* Current EPS NAS security context     */
 
                 memset(&header, 0, sizeof(header));
                 /* Decrypt the received security protected message */
+#if defined(NAS_MME)
+                emm_data_context_t           *emm_ctx  = NULL;
 #if defined(EPC_BUILD)
                 if (msg->ueid > 0) {
                     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
@@ -513,6 +524,9 @@ static int _emm_as_data_ind(const emm_as_data_t *msg, int *emm_cause)
                         security = emm_ctx->security;
                     }
                 }
+#endif
+#else
+                security = _emm_data.security;
 #endif
                 int bytes = nas_message_decrypt((char *)(msg->NASmsg.value),
                                                 plain_msg,
@@ -590,8 +604,11 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
     memset(&nas_msg, 0 , sizeof(nas_message_t));
 
     /* Decode initial NAS message */
-    decoder_rc = nas_message_decode((char *)(msg->NASmsg.value), &nas_msg,
-                                    msg->NASmsg.length);
+    decoder_rc = nas_message_decode((char *)(msg->NASmsg.value),
+        &nas_msg,
+        msg->NASmsg.length,
+        _emm_data.security);
+
     if (decoder_rc < 0) {
         LOG_TRACE(WARNING, "EMMAS-SAP - Failed to decode initial NAS message"
                   "(err=%d)", decoder_rc);
@@ -756,6 +773,7 @@ static int _emm_as_establish_req(const emm_as_establish_t *msg, int *emm_cause)
     nas_message_t nas_msg;
     memset(&nas_msg, 0 , sizeof(nas_message_t));
 
+#if defined(NAS_MME)
 #if defined(EPC_BUILD)
     emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
@@ -766,6 +784,10 @@ static int _emm_as_establish_req(const emm_as_establish_t *msg, int *emm_cause)
     if (emm_ctx) {
         emm_security_context = emm_ctx->security;
     }
+#else /* NAS_MME */
+    security = _emm_data.security;
+#endif
+
 
     /* Decode initial NAS message */
     decoder_rc = nas_message_decode(
@@ -1353,8 +1375,9 @@ static int _emm_as_data_req(const emm_as_data_t *msg,
 
     if (size > 0) {
         int bytes;
-        struct emm_data_context_s *emm_ctx                = NULL;
         emm_security_context_t    *emm_security_context   = NULL;
+#if defined(NAS_MME)
+        struct emm_data_context_s *emm_ctx                = NULL;
 #if defined(EPC_BUILD)
         emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
@@ -1365,6 +1388,9 @@ static int _emm_as_data_req(const emm_as_data_t *msg,
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
         }
+#else
+        emm_security_context = _emm_data.security;
+#endif
 
         if (!is_encoded) {
             /* Encode the NAS information message */
@@ -1438,8 +1464,9 @@ static int _emm_as_status_ind(const emm_as_status_t *msg,
     }
 
     if (size > 0) {
-        struct emm_data_context_s *emm_ctx                = NULL;
         emm_security_context_t    *emm_security_context   = NULL;
+#if defined(NAS_MME)
+        struct emm_data_context_s *emm_ctx                = NULL;
 #if defined(EPC_BUILD)
         emm_ctx = emm_data_context_get(&_emm_data, msg->ueid);
 #else
@@ -1450,6 +1477,9 @@ static int _emm_as_status_ind(const emm_as_status_t *msg,
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
         }
+#else
+        emm_security_context = _emm_data.security;
+#endif
         /* Encode the NAS information message */
         int bytes = _emm_as_encode(
             &as_msg->nasMsg,
@@ -1587,7 +1617,11 @@ static int _emm_as_security_res(const emm_as_security_t *msg,
 
     if (size > 0) {
         /* Encode the NAS security message */
-        int bytes = _emm_as_encode(&as_msg->nasMsg, &nas_msg, size);
+        int bytes = _emm_as_encode(&as_msg->nasMsg,
+            &nas_msg,
+            size,
+            _emm_data.security);
+
         if (bytes > 0) {
             LOG_FUNC_RETURN (AS_UL_INFO_TRANSFER_REQ);
         }
@@ -1673,7 +1707,12 @@ static int _emm_as_establish_req(const emm_as_establish_t *msg,
 
     if (size > 0) {
         /* Encode the initial NAS information message */
-        int bytes = _emm_as_encode(&as_msg->initialNasMsg, &nas_msg, size);
+        int bytes = _emm_as_encode(
+            &as_msg->initialNasMsg,
+            &nas_msg,
+            size,
+            _emm_data.security);
+
         if (bytes > 0) {
             LOG_FUNC_RETURN (AS_NAS_ESTABLISH_REQ);
         }
@@ -1757,6 +1796,7 @@ static int _emm_as_security_req(const emm_as_security_t *msg,
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
         }
+
         /* Encode the NAS security message */
         int bytes = _emm_as_encode(
             &as_msg->nasMsg,
@@ -1835,6 +1875,7 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
         }
+
         /* Encode the NAS security message */
         int bytes = _emm_as_encode(
             &as_msg->nasMsg,
@@ -1926,6 +1967,7 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
                     as_msg->nas_ul_count);
             }
         }
+
         /* Encode the initial NAS information message */
         int bytes = _emm_as_encode(
             &as_msg->nasMsg,

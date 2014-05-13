@@ -10,7 +10,9 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#if 0
 #include "queue.h"
+#endif
 
 #ifndef SECURITY_TYPES_H_
 #define SECURITY_TYPES_H_

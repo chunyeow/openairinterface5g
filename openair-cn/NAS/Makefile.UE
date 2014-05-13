@@ -18,7 +18,10 @@ libnas_INCLUDES =								\
 	-I$(ESMSAPDIR)								\
 	-I$(MMEAPIDIR)								\
 	-I$(USIMAPIDIR)								\
-	-I$(IESDIR)
+	-I$(IESDIR)                                 \
+    -I$(SECU_DIR)                               \
+    -I$(OPENAIRCN_DIR)/COMMON                   \
+    -I$(OPENAIRCN_DIR)/UTILS
 
 OUTDIR = $(UE_NAS_DIR)/ue_objs
 
@@ -277,8 +280,8 @@ CFLAGS =										\
 	-DUE_BUILD									\
 	-Wuninitialized								\
 	-Werror=implicit-function-declaration		\
-	$(libnas_INCLUDES)							\
-	$(UENAS_CFLAGS)
+	$(UENAS_CFLAGS)							\
+	$(libnas_INCLUDES)
 
 .SECONDEXPANSION:
 $(NAS_UE_COMPILED_OBJS): %.o : $$(subst $(OUTDIR), $(UE_NAS_DIR), $$*.c)

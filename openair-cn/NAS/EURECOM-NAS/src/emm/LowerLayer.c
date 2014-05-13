@@ -206,7 +206,7 @@ int lowerlayer_data_ind(unsigned int ueid, const OctetString *data)
     esm_sap_t esm_sap;
     int rc;
 #if defined(NAS_MME)
-    emm_data_context_t *emm_ctx;
+    emm_data_context_t *emm_ctx = NULL;
 #endif
 
     LOG_FUNC_IN;

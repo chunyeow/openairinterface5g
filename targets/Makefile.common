@@ -6,9 +6,10 @@ X2AP_DIR            = $(OPENAIR_HOME)/openair2/X2AP
 SCTP_DIR            = $(OPENAIR_HOME)/openair-cn/SCTP
 UDP_DIR             = $(OPENAIR_HOME)/openair-cn/UDP
 GTPV1U_DIR          = $(OPENAIR_HOME)/openair-cn/GTPV1-U
-CN_SECU_DIR         = $(OPENAIR_HOME)/openair-cn/SECU
+SECU_DIR            = $(OPENAIR_HOME)/openair-cn/SECU
 
 UE_NAS_OBJ_DIR      = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(UE_NAS_DIR))
+SECU_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SECU_DIR))
 S1AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(S1AP_DIR))
 X2AP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(X2AP_DIR))
 SCTP_OBJ_DIR        = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(SCTP_DIR))
@@ -22,15 +23,15 @@ export X2AP_DIR
 export SCTP_DIR
 export UDP_DIR
 export GTPV1U_DIR
-export CN_SECU_DIR
+export SECU_DIR
 
 #Export common cflags (between softmodem and oaisim)
 COMMON_CFLAGS		= \
-    -D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"' \
-    -Wall                       \
-    -fno-strict-aliasing        \
-    -O2                         \
-    -Werror=implicit-function-declaration
+	-D'FIRMWARE_VERSION="$(SVN_REV) - $(DATE_REV)"' \
+	-Wall                       \
+	-fno-strict-aliasing        \
+	-O2                         \
+	-Werror=implicit-function-declaration
 
 ITTI_MESSAGES_H		= messages_xml.h
 ITTI_MESSAGES_XML	= messages.xml
@@ -62,12 +63,12 @@ SHARED_DEPENDENCIES += $(ITTI_MESSAGES_H)
 endif
 
 ifdef USE_MME
-#LGLIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a  $(X2AP_OBJ_DIR)/libx2ap.a
-LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a 
+#LGLIBS				+= $(X2AP_OBJ_DIR)/libx2ap.a
+LIBS				+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a 
 LIBS				+= $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a -lsctp -lcrypt
 LIBS				+= $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a 
-#LG SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(X2AP_OBJ_DIR)/libx2ap.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
-SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
+#LG SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a $(X2AP_OBJ_DIR)/libx2ap.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
+SHARED_DEPENDENCIES	+= $(UE_NAS_OBJ_DIR)/libuenas.a $(SECU_OBJ_DIR)/libsecu.a $(S1AP_OBJ_DIR)/libs1ap.a $(SCTP_OBJ_DIR)/libsctp.a  $(UDP_OBJ_DIR)/libudp.a $(GTPV1U_OBJ_DIR)/libgtpv1u.a
 
 COMMON_CFLAGS		+= -DLOG_NO_THREAD 
 #-DEMIT_ASN_DEBUG
@@ -83,13 +84,18 @@ COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/esm/msg
 COMMON_CFLAGS		+= -I$(OPENAIR_HOME)/openair-cn/NAS/EURECOM-NAS/src/util
 endif
 
-UENAS_CFLAGS		 = $(COMMON_CFLAGS)
+UENAS_CFLAGS		= $(COMMON_CFLAGS)
+UENAS_CFLAGS		+= -I$(SECU_DIR)
 export UENAS_CFLAGS
 
-$(UE_NAS_OBJ_DIR)/libuenas.a: force_look
-	@$(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE $(UE_NAS_OBJ_DIR)/libuenas.a OUTDIR=$(UE_NAS_OBJ_DIR)
+SECU_CFLAGS			= $(COMMON_CFLAGS)
+SECU_CFLAGS			+= -I$(OPENAIR_HOME)/openair-cn/COMMON
+SECU_CFLAGS			+= -I$(OPENAIR_HOME)/openair-cn/UTILS
+SECU_CFLAGS			+= -I$(SECU_DIR)
+export SECU_CFLAGS
 
-COMMON_MME_CFLAGS    = -I$(SCTP_DIR)
+COMMON_MME_CFLAGS	= -I$(SECU_DIR)
+COMMON_MME_CFLAGS   += -I$(SCTP_DIR)
 COMMON_MME_CFLAGS	+= -I$(X2AP_DIR)
 COMMON_MME_CFLAGS	+= -I$(S1AP_DIR)
 COMMON_MME_CFLAGS	+= -I$(UDP_DIR)
@@ -137,6 +143,11 @@ GTPV1U_ENB_CFLAGS           += -I$(OPENAIR_HOME)/openair2/ENB_APP
 GTPV1U_ENB_CFLAGS           += $(UTIL_incl) -I$(OPENAIRCN_DIR)/UTILS
 export GTPV1U_ENB_CFLAGS
 
+
+$(UE_NAS_OBJ_DIR)/libuenas.a: force_look
+	@$(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE $(UE_NAS_OBJ_DIR)/libuenas.a OUTDIR=$(UE_NAS_OBJ_DIR)
+$(SECU_OBJ_DIR)/libsecu.a: force_look
+	@$(MAKE) -C $(SECU_DIR) -f Makefile.eNB $(SECU_OBJ_DIR)/libsecu.a OUTDIR=$(SECU_OBJ_DIR)
 $(X2AP_OBJ_DIR)/libx2ap.a: force_look
 	@$(MAKE) -C $(X2AP_DIR) -f Makefile.inc $(X2AP_OBJ_DIR)/libx2ap.a OUTDIR=$(X2AP_OBJ_DIR)
 $(S1AP_OBJ_DIR)/libs1ap.a: force_look
@@ -148,7 +159,7 @@ $(UDP_OBJ_DIR)/libudp.a: force_look
 $(GTPV1U_OBJ_DIR)/libgtpv1u.a: force_look
 	@$(MAKE) -C $(GTPV1U_DIR) -f Makefile.eNB $(GTPV1U_OBJ_DIR)/libgtpv1u.a OUTDIR=$(GTPV1U_OBJ_DIR)
 
-OBJ = $(NAS_UE_OBJS)
+OBJ = $(NAS_UE_OBJS) $(SECU_OBJS)
 endif
 
 export COMMON_CFLAGS
@@ -188,6 +199,7 @@ common-clean:
 	@$(RM_F_V) $(ITTI_MESSAGES_H) $(ITTI_MESSAGES_XML) $(ITTI_MESSAGES_XML:.xml=.d)
 	@$(MAKE) -C $(LFDS_DIR) -f makefile.linux clean OUTDIR=$(LFDS_OBJ_DIR)
 	@if [ -d $(UE_NAS_OBJ_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE clean OUTDIR=$(UE_NAS_OBJ_DIR); fi
+	@if [ -d $(SECU_OBJ_DIR) ]; then $(MAKE) -C $(SECU_DIR) -f Makefile.eNB clean OUTDIR=$(SECU_OBJ_DIR); fi
 	@if [ -d $(X2AP_OBJ_DIR) ]; then $(MAKE) -C $(X2AP_DIR) -f Makefile.inc clean OUTDIR=$(X2AP_OBJ_DIR); fi
 	@if [ -d $(S1AP_OBJ_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB clean OUTDIR=$(S1AP_OBJ_DIR); fi
 	@if [ -d $(SCTP_OBJ_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB clean OUTDIR=$(SCTP_OBJ_DIR); fi
@@ -196,6 +208,7 @@ common-clean:
 
 common-cleanall:
 	@if [ -d $(UE_NAS_OBJ_DIR) ]; then $(MAKE) -C $(UE_NAS_DIR) -f Makefile.UE cleanall OUTDIR=$(UE_NAS_OBJ_DIR); fi
+	@if [ -d $(SECU_OBJ_DIR) ]; then $(MAKE) -C $(SECU_DIR) -f Makefile.eNB cleanall OUTDIR=$(SECU_OBJ_DIR); fi
 	@if [ -d $(X2AP_OBJ_DIR) ]; then $(MAKE) -C $(X2AP_DIR) -f Makefile.inc cleanall OUTDIR=$(X2AP_OBJ_DIR); fi
 	@if [ -d $(S1AP_OBJ_DIR) ]; then $(MAKE) -C $(S1AP_DIR) -f Makefile.eNB cleanall OUTDIR=$(S1AP_OBJ_DIR); fi
 	@if [ -d $(SCTP_OBJ_DIR) ]; then $(MAKE) -C $(SCTP_DIR) -f Makefile.eNB cleanall OUTDIR=$(SCTP_OBJ_DIR); fi

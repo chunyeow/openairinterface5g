@@ -2551,9 +2551,9 @@ char openair_rrc_lite_eNB_init(
     {
         /* Init security parameters */
         for (j = 0; j < NUMBER_OF_UE_MAX; j++) {
-	  eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
-	  eNB_rrc_inst[enb_mod_idP].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
-	  rrc_lite_eNB_init_security(enb_mod_idP, j);
+            eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[j] = SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
+            eNB_rrc_inst[enb_mod_idP].integrity_algorithm[j] = SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
+            rrc_lite_eNB_init_security(enb_mod_idP, j);
         }
     }
 
@@ -2743,7 +2743,7 @@ int rrc_eNB_decode_ccch(
 		LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
 	      LOG_F(RRC,"\n");
 #endif
-              LOG_D(RRC,
+                LOG_D(RRC,
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND  (rrcConnectionRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
 
@@ -2990,10 +2990,10 @@ int rrc_eNB_decode_dcch(
 	      LOG_F(RRC,"\n");
 #endif
 	      LOG_I(RRC,
-		    "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
-		    "(rrcConnectionReestablishmentComplete) --->][RRC_eNB][MOD %02d][]\n",
-		    frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
-	      break;
+                      "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
+                      "(rrcConnectionReestablishmentComplete) --->][RRC_eNB][MOD %02d][]\n",
+                      frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
+                break;
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionSetupComplete:
 #ifdef RRC_MSG_PRINT
@@ -3002,7 +3002,7 @@ int rrc_eNB_decode_dcch(
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
-	  LOG_D(RRC,
+                LOG_D(RRC,
                       "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
                       "(RRCConnectionSetupComplete) --->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
@@ -3032,7 +3032,7 @@ int rrc_eNB_decode_dcch(
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
-               LOG_I(RRC,
+                LOG_I(RRC,
                       "[eNB %d] Frame %d received securityModeComplete on UL-DCCH %d from UE %d\n",
                       enb_mod_idP, frameP, DCCH, ue_mod_idP);
                 LOG_D(RRC,
@@ -3054,7 +3054,7 @@ int rrc_eNB_decode_dcch(
 		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
 	      LOG_F(RRC,"\n");
 #endif
-               LOG_D(RRC,
+                LOG_D(RRC,
                       "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
                       "(securityModeFailure) --->][RRC_eNB][MOD %02d][]\n", frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
 #ifdef XER_PRINT

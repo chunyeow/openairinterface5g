@@ -339,7 +339,7 @@ static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, ui
 			     kRRCenc, 
 			     kRRCint, 
 			     kUPenc);
-#endif 			     
+#endif
 }
 
 /*------------------------------------------------------------------------------*/

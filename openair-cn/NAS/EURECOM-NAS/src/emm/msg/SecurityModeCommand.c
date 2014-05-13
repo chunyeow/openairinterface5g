@@ -6,7 +6,7 @@
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
-#include "SecurityModeCommand.h"
+#include "NASSecurityModeCommand.h"
 
 int decode_security_mode_command(security_mode_command_msg *security_mode_command, uint8_t *buffer, uint32_t len)
 {

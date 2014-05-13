@@ -6,7 +6,7 @@
 
 #include "TLVEncoder.h"
 #include "TLVDecoder.h"
-#include "SecurityModeComplete.h"
+#include "NASSecurityModeComplete.h"
 
 int decode_security_mode_complete(security_mode_complete_msg *security_mode_complete, uint8_t *buffer, uint32_t len)
 {
