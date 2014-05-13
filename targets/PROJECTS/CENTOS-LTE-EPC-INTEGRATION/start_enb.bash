@@ -121,7 +121,7 @@ fi
 pkill oaisim
 pkill tshark
 
-if [ -d $THIS_SCRIPT_PATH/OUTPUT ]; then
+if [ ! -d $THIS_SCRIPT_PATH/OUTPUT ]; then
     mkdir -m 777 -p $THIS_SCRIPT_PATH/OUTPUT
 fi
 
