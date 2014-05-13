@@ -1209,12 +1209,9 @@ check_install_epc_software() {
     test_install_package libpgm-dev
     test_install_package libpthread-stubs0-dev
     test_install_package libsctp1
-    test_install_package libsctp1
-    test_install_package libsctp-dev
     test_install_package libsctp-dev
     test_install_package libtasn1-3-dev
     test_install_package libxml2
-    test_install_package libxml2-dev
     test_install_package libxml2-dev
     test_install_package linux-headers-`uname -r`
     test_install_package make
