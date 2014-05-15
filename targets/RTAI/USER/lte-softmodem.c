@@ -1103,6 +1103,7 @@ static void get_options (int argc, char **argv)
   enum long_option_e {
     LONG_OPTION_START = 0x100, /* Start after regular single char options */
 
+    LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS,
     LONG_OPTION_CALIB_UE_RX,
     LONG_OPTION_CALIB_UE_RX_MED,
     LONG_OPTION_CALIB_UE_RX_BYP,
@@ -1113,17 +1114,23 @@ static void get_options (int argc, char **argv)
   };
 
   static const struct option long_options[] = {
-    {"calib-ue-rx",     required_argument,  NULL, LONG_OPTION_CALIB_UE_RX},
-    {"calib-ue-rx-med", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_MED},
-    {"calib-ue-rx-byp", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_BYP},
-    {"debug-ue-prach",  no_argument,        NULL, LONG_OPTION_DEBUG_UE_PRACH},
-    {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
-    {NULL, 0, NULL, 0}};
+      {"ulsch-max-errors",required_argument,  NULL, LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS},
+      {"calib-ue-rx",     required_argument,  NULL, LONG_OPTION_CALIB_UE_RX},
+      {"calib-ue-rx-med", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_MED},
+      {"calib-ue-rx-byp", required_argument,  NULL, LONG_OPTION_CALIB_UE_RX_BYP},
+      {"debug-ue-prach",  no_argument,        NULL, LONG_OPTION_DEBUG_UE_PRACH},
+      {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
+          {NULL, 0, NULL, 0}};
 
   while ((c = getopt_long (argc, argv, "C:dF:K:qO:ST:UVR",long_options,NULL)) != -1)
     {
       switch (c)
         {
+        case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
+          ULSCH_max_consecutive_errors = atoi(optarg);
+          printf("Set ULSCH_max_consecutive_errors = %d\n",ULSCH_max_consecutive_errors);
+          break;
+
         case LONG_OPTION_CALIB_UE_RX:
           mode = rx_calib_ue;
           rx_input_level_dBm = atoi(optarg);
@@ -1371,10 +1378,10 @@ int main(int argc, char **argv) {
     set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
 #endif
     set_comp_log(MAC,     LOG_INFO,   LOG_HIGH, 1);
-    set_comp_log(RLC,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(RLC,     LOG_TRACE,   LOG_HIGH, 1);
     set_comp_log(PDCP,    LOG_DEBUG,   LOG_HIGH, 1);
     set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
-    set_comp_log(RRC,     LOG_INFO,   LOG_HIGH, 1);
+    set_comp_log(RRC,     LOG_DEBUG,   LOG_HIGH, 1);
 #if defined(ENABLE_ITTI)
     set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)

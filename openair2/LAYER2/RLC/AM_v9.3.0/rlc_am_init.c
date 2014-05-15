@@ -42,39 +42,42 @@ Address      : EURECOM,
 void rlc_am_init(rlc_am_entity_t *rlc_pP, frame_t frameP)
 //-----------------------------------------------------------------------------
 {
-    int saved_allocation = rlc_pP->allocation;
-    LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] STATE VARIABLES, BUFFERS, LISTS\n", frameP);
-    memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
-    rlc_pP->allocation = saved_allocation;
+    if (rlc_pP->initialized == TRUE) {
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] ALREADY DONE, DOING NOTHING\n", frameP);
+    } else {
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] STATE VARIABLES, BUFFERS, LISTS\n", frameP);
+        memset(rlc_pP, 0, sizeof(rlc_am_entity_t));
 
-    list2_init(&rlc_pP->receiver_buffer,      "RX BUFFER");
-    list_init(&rlc_pP->pdus_to_mac_layer,     "PDUS TO MAC");
-    list_init(&rlc_pP->control_pdu_list,      "CONTROL PDU LIST");
-    list_init(&rlc_pP->segmentation_pdu_list, "SEGMENTATION PDU LIST");
-    //LOG_D(RLC,"RLC_AM_SDU_CONTROL_BUFFER_SIZE %d sizeof(rlc_am_tx_sdu_management_t) %d \n",  RLC_AM_SDU_CONTROL_BUFFER_SIZE, sizeof(rlc_am_tx_sdu_management_t));
-    
-    rlc_pP->input_sdus               = calloc(1, RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
-    rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
-    LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", frameP, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
-    LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", frameP, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
+        list2_init(&rlc_pP->receiver_buffer,      "RX BUFFER");
+        list_init(&rlc_pP->pdus_to_mac_layer,     "PDUS TO MAC");
+        list_init(&rlc_pP->control_pdu_list,      "CONTROL PDU LIST");
+        list_init(&rlc_pP->segmentation_pdu_list, "SEGMENTATION PDU LIST");
+        //LOG_D(RLC,"RLC_AM_SDU_CONTROL_BUFFER_SIZE %d sizeof(rlc_am_tx_sdu_management_t) %d \n",  RLC_AM_SDU_CONTROL_BUFFER_SIZE, sizeof(rlc_am_tx_sdu_management_t));
 
-    // TX state variables
-    //rlc_pP->vt_a    = 0;
-    rlc_pP->vt_ms   = rlc_pP->vt_a + RLC_AM_WINDOW_SIZE;
-    //rlc_pP->vt_s    = 0;
-    //rlc_pP->poll_sn = 0;
-    // TX counters
-    //rlc_pP->c_pdu_without_poll  = 0;
-    //rlc_pP->c_byte_without_poll = 0;
-    // RX state variables
-    //rlc_pP->vr_r    = 0;
-    rlc_pP->vr_mr   = rlc_pP->vr_r + RLC_AM_WINDOW_SIZE;
-    //rlc_pP->vr_x    = 0;
-    //rlc_pP->vr_ms   = 0;
-    //rlc_pP->vr_h    = 0;
+        rlc_pP->input_sdus               = calloc(1, RLC_AM_SDU_CONTROL_BUFFER_SIZE*sizeof(rlc_am_tx_sdu_management_t));
+        rlc_pP->pdu_retrans_buffer       = calloc(1, (uint16_t)((unsigned int)RLC_AM_PDU_RETRANSMISSION_BUFFER_SIZE*(unsigned int)sizeof(rlc_am_tx_data_pdu_management_t)));
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] input_sdus[] = %p  element size=%d\n", frameP, rlc_pP->input_sdus,sizeof(rlc_am_tx_sdu_management_t));
+        LOG_D(RLC, "[FRAME %5u][RLC_AM][MOD XX][RB XX][INIT] pdu_retrans_buffer[] = %p element size=%d\n", frameP, rlc_pP->pdu_retrans_buffer,sizeof(rlc_am_tx_data_pdu_management_t));
 
-    rlc_pP->last_frame_status_indication = 123456; // any value > 1
-    rlc_pP->first_retrans_pdu_sn         = -1;
+        // TX state variables
+        //rlc_pP->vt_a    = 0;
+        rlc_pP->vt_ms   = rlc_pP->vt_a + RLC_AM_WINDOW_SIZE;
+        //rlc_pP->vt_s    = 0;
+        //rlc_pP->poll_sn = 0;
+        // TX counters
+        //rlc_pP->c_pdu_without_poll  = 0;
+        //rlc_pP->c_byte_without_poll = 0;
+        // RX state variables
+        //rlc_pP->vr_r    = 0;
+        rlc_pP->vr_mr   = rlc_pP->vr_r + RLC_AM_WINDOW_SIZE;
+        //rlc_pP->vr_x    = 0;
+        //rlc_pP->vr_ms   = 0;
+        //rlc_pP->vr_h    = 0;
+
+        rlc_pP->last_frame_status_indication = 123456; // any value > 1
+        rlc_pP->first_retrans_pdu_sn         = -1;
+        rlc_pP->initialized                  = TRUE;
+    }
 }
 //-----------------------------------------------------------------------------
 void rlc_am_cleanup(rlc_am_entity_t *rlc_pP)

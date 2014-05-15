@@ -521,7 +521,7 @@ void rrc_eNB_free_UE_index(
     AssertFatal(ue_mod_idP < NUMBER_OF_UE_MAX, "UE inst invalid (%d/%d) for eNB %d!", ue_mod_idP, NUMBER_OF_UE_MAX,
                 enb_mod_idP);
 
-    LOG_I(RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", enb_mod_idP, ue_mod_idP,
+    LOG_W(RRC, "[eNB %d] Removing UE %d rv 0x%" PRIx64 "\n", enb_mod_idP, ue_mod_idP,
           eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP]);
     eNB_rrc_inst[enb_mod_idP].Info.UE[ue_mod_idP].Status = RRC_IDLE;
     eNB_rrc_inst[enb_mod_idP].Info.UE_list[ue_mod_idP] = 0;

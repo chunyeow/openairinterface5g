@@ -74,8 +74,8 @@ static const uint16_t S1AP_INTEGRITY_EIA2_MASK = 0x2;
 #ifdef Rel10
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia0_v920
 #else
-#ifdef EXMIMO_IOT
-# define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia2 
+#ifndef EXMIMO_IOT
+# define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia2
 #else
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_reserved
 #endif
@@ -151,6 +151,10 @@ static uint8_t get_UE_index_from_eNB_ue_s1ap_id(uint8_t mod_id, uint32_t eNB_ue_
       }
     }
   }
+  LOG_D(RRC,
+      "[eNB %d] return UE_INDEX_INVALID for eNB_ue_s1ap_id %u\n",
+      mod_id,
+      eNB_ue_s1ap_id);
   return UE_INDEX_INVALID;
 }
 

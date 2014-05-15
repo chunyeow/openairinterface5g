@@ -179,7 +179,7 @@ enum transmission_access_mode{
 #endif
 
 /// Top-level PHY Data Structure for eNB 
-typedef struct {
+typedef struct PHY_VARS_eNB_s{
   /// Module ID indicator for this instance
   module_id_t               Mod_id;
   uint8_t                   local_flag;

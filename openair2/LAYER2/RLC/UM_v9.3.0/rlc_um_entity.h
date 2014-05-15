@@ -64,7 +64,7 @@ typedef struct rlc_um_timer_s {
 typedef struct rlc_um_entity_s {
   module_id_t          enb_module_id;      /*!< \brief eNB Virtualization index for this protocol instance. */
   module_id_t          ue_module_id;       /*!< \brief UE Virtualization index for this protocol instance. */
-  boolean_t            allocation;         /*!< \brief Boolean for rlc_am_entity_t struct allocation. */
+  boolean_t            initialized;        /*!< \brief Boolean for rlc_am_entity_t struct initialization. */
   boolean_t            is_uplink_downlink; /*!< \brief Is this instance is a transmitter, a receiver or both? */
   rlc_protocol_state_t protocol_state;     /*!< \brief Protocol state, can be RLC_NULL_STATE, RLC_DATA_TRANSFER_READY_STATE, RLC_LOCAL_SUSPEND_STATE. */
   boolean_t            is_data_plane;      /*!< \brief To know if the RLC belongs to a data radio bearer or a signalling radio bearer, for statistics and trace purpose. */

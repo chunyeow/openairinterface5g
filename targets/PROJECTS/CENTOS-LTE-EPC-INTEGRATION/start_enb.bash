@@ -36,7 +36,7 @@
 # company Eurecom
 # email: lionel.gauthier@eurecom.fr
 ###########################################
-# NO INPUT PARAMETER FOR THIS SCRIPT
+# INPUT PARAMETER FOR THIS SCRIPT: 'rebuild', 'build' or implicit 'start'
 #########################################
 # This script start a ENB  
 # The MME is provided to EURECOM by external partner, and should be started by your own.
@@ -114,6 +114,40 @@ else
     fi 
 fi
 
+clean() {
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean           || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean    || exit 1
+    make --directory=$OPENAIR_TARGETS/RTAI/USER clean                      || exit 1
+    find $OPENAIR_TARGETS/RTAI/USER -name *.a -delete
+    find $OPENAIR_TARGETS/RTAI/USER -name *.d -delete
+    find $OPENAIR_TARGETS/RTAI/USER -name *.o -delete
+    find $OPENAIR_TARGETS/RTAI/USER -name *.ko -delete
+}
+
+build() {
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make          || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make   || exit 1
+    make --directory=$OPENAIR_TARGETS/RTAI/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+}
+
+##################################################
+# process script parameters
+##################################################
+for arg in "$@"
+do
+    case "$arg" in
+    rebuild)  clean;build;build;build;build
+            ;;
+
+    build)   build
+            ;;
+            
+    *)      
+            ;;
+    esac
+done
+
+
 
 ##################################################
 # LAUNCH eNB 
@@ -149,13 +183,8 @@ fi
 echo_warning "HARD REAL TIME MODE"
 PATH=$PATH:/usr/realtime/bin
     
-#make --directory=$OPENAIR_TARGETS/RTAI/USER drivers  || exit 1
-# 2 lines below replace the line above
-cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
-cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
 cd $THIS_SCRIPT_PATH
 
-make --directory=$OPENAIR_TARGETS/RTAI/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
 
 if [ ! -f /tmp/init_rt_done.tmp ]; then
     echo_warning "STARTING REAL TIME (RTAI)"
@@ -174,12 +203,13 @@ fi
 cd $OPENAIR_TARGETS/RTAI/USER
 bash ./init_exmimo2.sh
 echo_warning "STARTING SOFTMODEM..."
-./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB 2>&1
-#cat /dev/rtf62 > $STDOUT_LOG_FILE
+cat /dev/rtf62 > $STDOUT_LOG_FILE &
+./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB --ulsch-max-errors=40 2>&1
 cd $THIS_SCRIPT_PATH
-
+sync
 pkill tshark
-
+pkill cat
+sync
 cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
                         grep -v '[OCM]' | grep -v '[OMG]' | \
                         grep -v 'RLC not configured' | grep -v 'check if serving becomes' | \

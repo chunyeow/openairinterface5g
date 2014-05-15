@@ -227,9 +227,6 @@ void config_req_rlc_um_asn1 (
               ul_sn_FieldLength,
               mbms_flagP);
       }
-      if (mbms_flagP == MBMS_FLAG_YES) {
-          rlc_p->allocation = TRUE;
-      }
   }
 }
 //-----------------------------------------------------------------------------
@@ -239,43 +236,47 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
   //-----------------------------------------------------------------------------
 
   AssertFatal(rlc_pP, "Bad RLC UM pointer (NULL)");
-  int saved_allocation = rlc_pP->allocation;
-  memset (rlc_pP, 0, sizeof (rlc_um_entity_t));
-  rlc_pP->allocation = saved_allocation;
-  // TX SIDE
-  list_init (&rlc_pP->pdus_to_mac_layer, NULL);
+  if (rlc_pP->initialized) {
+      LOG_D(RLC, "[FRAME XXXXX][RLC_UM][MOD XX][RB XX][INIT] ALREADY DONE, DOING NOTHING\n");
+  } else {
+      LOG_D(RLC, "[FRAME XXXXX][RLC_UM][MOD XX][RB XX][INIT] STATE VARIABLES, BUFFERS, LISTS\n");
+      memset (rlc_pP, 0, sizeof (rlc_um_entity_t));
+      // TX SIDE
+      list_init (&rlc_pP->pdus_to_mac_layer, NULL);
 
-  rlc_pP->protocol_state = RLC_NULL_STATE;
-  //rlc_pP->nb_sdu           = 0;
-  //rlc_pP->next_sdu_index   = 0;
-  //rlc_pP->current_sdu_index = 0;
+      rlc_pP->protocol_state = RLC_NULL_STATE;
+      //rlc_pP->nb_sdu           = 0;
+      //rlc_pP->next_sdu_index   = 0;
+      //rlc_pP->current_sdu_index = 0;
 
-  //rlc_pP->vt_us = 0;
+      //rlc_pP->vt_us = 0;
 
-  // RX SIDE
-  list_init (&rlc_pP->pdus_from_mac_layer, NULL);
-  //rlc_pP->vr_ur = 0;
-  //rlc_pP->vr_ux = 0;
-  //rlc_pP->vr_uh = 0;
-  //rlc_pP->output_sdu_size_to_write = 0;
-  //rlc_pP->output_sdu_in_construction = NULL;
+      // RX SIDE
+      list_init (&rlc_pP->pdus_from_mac_layer, NULL);
+      //rlc_pP->vr_ur = 0;
+      //rlc_pP->vr_ux = 0;
+      //rlc_pP->vr_uh = 0;
+      //rlc_pP->output_sdu_size_to_write = 0;
+      //rlc_pP->output_sdu_in_construction = NULL;
 
-  rlc_pP->rx_sn_length          = 10;
-  rlc_pP->rx_header_min_length_in_bytes = 2;
-  rlc_pP->tx_sn_length          = 10;
-  rlc_pP->tx_header_min_length_in_bytes = 2;
+      rlc_pP->rx_sn_length          = 10;
+      rlc_pP->rx_header_min_length_in_bytes = 2;
+      rlc_pP->tx_sn_length          = 10;
+      rlc_pP->tx_header_min_length_in_bytes = 2;
 
-  // SPARE : not 3GPP
-  rlc_pP->size_input_sdus_buffer =128;
+      // SPARE : not 3GPP
+      rlc_pP->size_input_sdus_buffer =128;
 
-  if ((rlc_pP->input_sdus == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
-      rlc_pP->input_sdus = calloc(1 , rlc_pP->size_input_sdus_buffer * sizeof (void *));
+      if ((rlc_pP->input_sdus == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
+          rlc_pP->input_sdus = calloc(1 , rlc_pP->size_input_sdus_buffer * sizeof (void *));
+      }
+      if (rlc_pP->dar_buffer == NULL) {
+          rlc_pP->dar_buffer = calloc (1, 1024 * sizeof (void *));
+      }
+
+      rlc_pP->first_pdu = 1;
+      rlc_pP->initialized = TRUE;
   }
-  if (rlc_pP->dar_buffer == NULL) {
-      rlc_pP->dar_buffer = calloc (1, 1024 * sizeof (void *));
-  }
-
-  rlc_pP->first_pdu = 1;
 }
 //-----------------------------------------------------------------------------
 void
