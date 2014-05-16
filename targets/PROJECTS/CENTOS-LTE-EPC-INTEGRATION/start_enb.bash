@@ -45,7 +45,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
+declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem DEBUG=1 HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -125,9 +125,10 @@ clean() {
 }
 
 build() {
-    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make          || exit 1
-    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make   || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make -j`grep -c ^processor /proc/cpuinfo ` || exit 1
     make --directory=$OPENAIR_TARGETS/RTAI/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+    make --directory=$OPENAIR_TARGETS/RTAI/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT  || exit 1
 }
 
 ##################################################
@@ -136,10 +137,16 @@ build() {
 for arg in "$@"
 do
     case "$arg" in
-    rebuild)  clean;build;build;build;build
+    rebuild)  clean;build
+            ;;
+
+    rebuildonly)  clean;build; exit 0
             ;;
 
     build)   build
+            ;;
+            
+    buildonly)   build; exit 0 
             ;;
             
     *)      
@@ -203,8 +210,8 @@ fi
 cd $OPENAIR_TARGETS/RTAI/USER
 bash ./init_exmimo2.sh
 echo_warning "STARTING SOFTMODEM..."
-cat /dev/rtf62 > $STDOUT_LOG_FILE &
-./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB --ulsch-max-errors=40 2>&1
+#cat /dev/rtf62 > $STDOUT_LOG_FILE &
+gdb --args ./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB --ulsch-max-errors=20 2>&1
 cd $THIS_SCRIPT_PATH
 sync
 pkill tshark
