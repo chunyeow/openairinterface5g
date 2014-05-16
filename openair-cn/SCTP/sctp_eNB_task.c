@@ -549,7 +549,7 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
     } else {
         sctp_cnx->nb_messages++;
 
-        if (sinfo.sinfo_ppid != sctp_cnx->ppid) {
+        if (ntohl(sinfo.sinfo_ppid) != sctp_cnx->ppid) {
             /* Mismatch in Payload Protocol Identifier,
              * may be we received unsollicited traffic from stack other than S1AP.
              */

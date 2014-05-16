@@ -114,8 +114,8 @@ typedef struct {
     int ksi;                /* NAS key set identifier               */
     int eea;                /* Replayed EPS encryption algorithms   */
     int eia;                /* Replayed EPS integrity algorithms    */
-    int selected_eea;       /* Replayed EPS encryption algorithms   */
-    int selected_eia;       /* Replayed EPS integrity algorithms    */
+    int selected_eea;       /* Selected EPS encryption algorithms   */
+    int selected_eia;       /* Selected EPS integrity algorithms    */
     int notify_failure;     /* Indicates whether the security mode control
                              * procedure failure shall be notified to the
                              * ongoing EMM procedure        */

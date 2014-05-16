@@ -2280,7 +2280,7 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
 #endif
     // Refresh SRBs/DRBs
     rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES,
-                             SRB_configList,
+                            NULL,  //LG-RK 14/05/2014 SRB_configList,
                              DRB_configList, (DRB_ToReleaseList_t *) NULL,
                              /*eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
                              (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4), 
@@ -2294,7 +2294,13 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
 #endif
         );
     // Refresh SRBs/DRBs
-    rrc_rlc_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, 1, SRB_configList, DRB_configList, (DRB_ToReleaseList_t *) NULL
+    rrc_rlc_config_asn1_req(enb_mod_idP,
+        ue_mod_idP,
+        frameP,
+        1,
+        NULL,  //LG-RK 14/05/2014 SRB_configList,
+        DRB_configList,
+        (DRB_ToReleaseList_t *) NULL
 #ifdef Rel10
                             , (PMCH_InfoList_r9_t *) NULL
 #endif

@@ -2909,7 +2909,7 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 #endif
       stop_meas(&phy_vars_eNB->ulsch_decoding_stats);
 
-#ifdef DEBUG_PHY_PROC
+//#ifdef DEBUG_PHY_PROC
       LOG_I(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d RNTI %x RX power (%d,%d) N0 (%d,%d) dB ACK (%d,%d), decoding iter %d\n",
 	  phy_vars_eNB->Mod_id,harq_pid,
 	  frame,last_slot>>1,
@@ -2921,7 +2921,7 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 	  phy_vars_eNB->ulsch_eNB[i]->o_ACK[0],
 	  phy_vars_eNB->ulsch_eNB[i]->o_ACK[1],
 	  ret);
-#endif //DEBUG_PHY_PROC
+//#endif //DEBUG_PHY_PROC
       /*
 	if ((two_ues_connected==1) && (phy_vars_eNB->cooperation_flag==2)) {
 	for (j=0;j<phy_vars_eNB->lte_frame_parms.nb_antennas_rx;j++) {

@@ -187,8 +187,8 @@ typedef struct rlc_am_entity_s {
   // note occupancy of other buffers is deducted from nb elements in lists
   rlc_buffer_occupancy_t  buffer_occupancy_retransmission_buffer;   /*!< \brief Number of PDUs. */
 
-  //boolean_t               allocation;                              /*!< \brief Boolean for rlc_am_entity_t struct allocation. */
   boolean_t               initialized;                               /*!< \brief Boolean for rlc_am_entity_t struct initialization. */
+  boolean_t               configured;                               /*!< \brief Boolean for rlc_am_entity_t struct  configuration. */
 } rlc_am_entity_t;
 /** @} */
 #    endif

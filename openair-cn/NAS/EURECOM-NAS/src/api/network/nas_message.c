@@ -401,20 +401,25 @@ int nas_message_encode(
 
             if (emm_security_context) {
 #ifdef NAS_MME
+                /* TS 124.301, section 4.4.3.1
+                 * The NAS sequence number part of the NAS COUNT shall be
+                 * exchanged between the UE and the MME as part of the
+                 * NAS signalling. After each new or retransmitted outbound
+                 * security protected NAS message, the sender shall increase
+                 * the NAS COUNT number by one. Specifically, on the sender
+                 * side, the NAS sequence number shall be increased by one,
+                 * and if the result is zero (due to wrap around), the NAS
+                 * overflow counter shall also be incremented by one (see
+                 * subclause 4.4.3.5).
+                 */
                 emm_security_context->dl_count.seq_num += 1;
                 if ( ! emm_security_context->dl_count.seq_num) {
                     emm_security_context->dl_count.overflow += 1;
-                    if ( ! emm_security_context->dl_count.overflow) {
-                        // TODO
-                    }
                 }
 #else
                 emm_security_context->ul_count.seq_num += 1;
                 if ( ! emm_security_context->ul_count.seq_num) {
                     emm_security_context->ul_count.overflow += 1;
-                    if ( ! emm_security_context->ul_count.overflow) {
-                        // TODO
-                    }
                 }
 #endif
             }

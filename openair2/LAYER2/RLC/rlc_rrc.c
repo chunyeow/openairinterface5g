@@ -458,8 +458,16 @@ rb_free_rlc_union (void *rlcu_pP)
               rlc_tm_cleanup(&rlcu_p->rlc.tm);
               break;
           default:
+            LOG_W(RLC,
+                "%s %p unknown RLC type\n",
+                __FUNCTION__,
+                rlcu_pP);
             break;
         }
+        LOG_D(RLC,
+            "%s %p \n",
+            __FUNCTION__,
+            rlcu_pP);
         free(rlcu_p);
     }
 }
