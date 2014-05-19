@@ -194,25 +194,28 @@ int main(int argc, char **argv) {
   unsigned int coded_bits_per_codeword,nsymb;
   int subframe=3;
   unsigned int tx_lev=0,tx_lev_dB,trials,errs[4]={0,0,0,0},round_trials[4]={0,0,0,0};
-  uint8_t transmission_mode=1,n_rx=1;
+  uint8_t transmission_mode=1,n_rx=1,n_tx=1;
  
-  FILE *bler_fd;
+  FILE *bler_fd=NULL;
   char bler_fname[512];
 
+  FILE *time_meas_fd=NULL;
+  char time_meas_fname[256];
+ 
   FILE *input_fdUL=NULL,*trch_out_fdUL=NULL;
   //  unsigned char input_file=0;
   char input_val_str[50],input_val_str2[50];
  
   //  FILE *rx_frame_file;
-  FILE *csv_fdUL;
+  FILE *csv_fdUL=NULL;
 
-  FILE *fperen;
+  FILE *fperen=NULL;
   char fperen_name[512];  
   
-  FILE *fmageren;
+  FILE *fmageren=NULL;
   char fmageren_name[512];
   
-  FILE *flogeren;
+  FILE *flogeren=NULL;
   char flogeren_name[512];
 
   /* FILE *ftxlev;
@@ -246,7 +249,11 @@ int main(int argc, char **argv) {
   uint32_t UL_alloc_pdu;
   int s,Kr,Kr_bytes;
   int dump_perf=0;
-
+  int test_perf=0;
+  
+  double effective_rate=0.0;
+  char channel_model_input[10];
+  
   uint8_t max_turbo_iterations=4;
   uint8_t llr8_flag=0;
   int nb_rb_set = 0;
@@ -260,7 +267,7 @@ int main(int argc, char **argv) {
 
   logInit();
 
-  while ((c = getopt (argc, argv, "hapbm:n:Y:X:s:w:e:q:d:D:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
+  while ((c = getopt (argc, argv, "hapbm:n:Y:X:x:s:w:e:q:d:D:O:c:r:i:f:y:c:oA:C:R:g:N:l:S:T:QB:PI:L")) != -1) {
     switch (c) {
     case 'a':
       channel_model = AWGN;
@@ -288,6 +295,7 @@ int main(int argc, char **argv) {
       abstx= atoi(optarg);
       break;  
     case 'g':
+      sprintf(channel_model_input,optarg,10);
       switch((char)*optarg) {
       case 'A': 
 	channel_model=SCM_A;
@@ -341,6 +349,10 @@ int main(int argc, char **argv) {
 	channel_model=Rice1;
 	chMod = 14;
 	break;
+      case 'N':
+	channel_model=AWGN;
+	chMod = 1;
+	break;
       default:
 	msg("Unsupported channel model!\n");
 	exit(-1);
@@ -355,6 +367,17 @@ int main(int argc, char **argv) {
       break;
     case 'e':
       input_snr_step= atof(optarg);
+      break;
+    case 'x':
+      transmission_mode=atoi(optarg);
+      if ((transmission_mode!=1) &&
+	  (transmission_mode!=2)) {
+	msg("Unsupported transmission mode %d\n",transmission_mode);
+	exit(-1);
+      }
+      if (transmission_mode>1) {
+	n_tx = 1;
+      }
       break;
     case 'y':
       n_rx = atoi(optarg);
@@ -428,6 +451,10 @@ int main(int argc, char **argv) {
       dump_perf=1;
       opp_enabled=1;
       break;
+    case 'O':
+      test_perf=atoi(optarg);
+      //print_perf =1;
+      break;
     case 'L':
       llr8_flag=1;
       break;
@@ -487,6 +514,13 @@ int main(int argc, char **argv) {
   bler_fd = fopen(bler_fname,"w");
  
   fprintf(bler_fd,"#SNR;mcs;nb_rb;TBS;rate;errors[0];trials[0];errors[1];trials[1];errors[2];trials[2];errors[3];trials[3]\n");
+
+  if (test_perf != 0) {
+    sprintf(time_meas_fname,"%s/TEST/OAI/PERF/time_meas_prb%d_mcs%d_antrx%d_channel%s_tx%d.csv",
+	    getenv("OPENAIR_TARGETS"),
+	    N_RB_DL,mcs,n_rx,channel_model_input,transmission_mode);
+    time_meas_fd = fopen(time_meas_fname,"w");
+  }
 	
   if(abstx){
     sprintf(fperen_name,"ULchan_estims_F_mcs%d_rb%d_chanMod%d_nframes%d_chanReal%d.m",mcs,nb_rb,chMod,n_frames,n_ch_rlz);
@@ -807,6 +841,7 @@ int main(int argc, char **argv) {
       }
 
       avg_iter = 0; iter_trials=0;
+      reset_meas(&PHY_vars_UE->phy_proc_tx);
       reset_meas(&PHY_vars_UE->ofdm_mod_stats);
       reset_meas(&PHY_vars_UE->ulsch_modulation_stats);
       reset_meas(&PHY_vars_UE->ulsch_encoding_stats);
@@ -815,6 +850,8 @@ int main(int argc, char **argv) {
       reset_meas(&PHY_vars_UE->ulsch_turbo_encoding_stats);
       reset_meas(&PHY_vars_UE->ulsch_segmentation_stats);
       reset_meas(&PHY_vars_UE->ulsch_multiplexing_stats);
+      
+      reset_meas(&PHY_vars_eNB->phy_proc_rx);
       reset_meas(&PHY_vars_eNB->ofdm_demod_stats);
       reset_meas(&PHY_vars_eNB->ulsch_channel_estimation_stats);
       reset_meas(&PHY_vars_eNB->ulsch_freq_offset_estimation_stats);
@@ -877,6 +914,9 @@ int main(int argc, char **argv) {
 	  ///////////////////////////////////////
 	
 	  if (input_fdUL == NULL) {
+
+	    start_meas(&PHY_vars_UE->phy_proc_tx);
+
 #ifdef OFDMA_ULSCH
 	    if (srs_flag)
 	      generate_srs_tx(PHY_vars_UE,0,AMP,subframe);
@@ -925,7 +965,7 @@ int main(int argc, char **argv) {
 			     PHY_vars_UE->ulsch_ue[0]);
 #endif
 	    stop_meas(&PHY_vars_UE->ulsch_modulation_stats);	      	      	  
-
+	    
 	    if (n_frames==1) {
 	      write_output("txsigF0UL.m","txsF0", &PHY_vars_UE->lte_ue_common_vars.txdataF[0][PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb*subframe],PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
 	      //write_output("txsigF1.m","txsF1", PHY_vars_UE->lte_ue_common_vars.txdataF[0],FRAME_LENGTH_COMPLEX_SAMPLES_NO_PREFIX,1,1);          
@@ -954,7 +994,7 @@ int main(int argc, char **argv) {
 #endif
 	    
 	      stop_meas(&PHY_vars_UE->ofdm_mod_stats);	      	      
-	  
+	      stop_meas(&PHY_vars_UE->phy_proc_tx); 
 	      tx_lev += signal_energy(&txdata[aa][PHY_vars_eNB->lte_frame_parms.samples_per_tti*subframe],
 				      PHY_vars_eNB->lte_frame_parms.samples_per_tti);
 	
@@ -1067,7 +1107,7 @@ int main(int argc, char **argv) {
 
 #endif      
 
-
+	  start_meas(&PHY_vars_eNB->phy_proc_rx);
 	  start_meas(&PHY_vars_eNB->ofdm_demod_stats);	      	      	  
 	  lte_eNB_I0_measurements(PHY_vars_eNB,
 				  0,
@@ -1123,7 +1163,7 @@ int main(int argc, char **argv) {
 			      1,  // Nbundled 
 			      llr8_flag);
 	  stop_meas(&PHY_vars_eNB->ulsch_decoding_stats);
-
+	  stop_meas(&PHY_vars_eNB->phy_proc_rx);
 	  if (cqi_flag > 0) {
 	    cqi_error = 0;
 	    if (PHY_vars_eNB->ulsch_eNB[0]->Or1 < 32) {
@@ -1215,22 +1255,24 @@ int main(int argc, char **argv) {
 	     dB_fixed(PHY_vars_eNB->lte_eNB_pusch_vars[0]->ulsch_power[1]),
 	     PHY_vars_eNB->PHY_measurements_eNB->n0_power_dB[0],
 	     PHY_vars_eNB->PHY_measurements_eNB->n0_power_dB[1]);
-    
+
+      effective_rate = ((double)(round_trials[0])/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3]));
+  
       printf("Errors (%d/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e) => effective rate %f (%3.1f%%,%f), normalized delay %f (%f)\n",
 	     errs[0],
 	     round_trials[0],
 	     errs[1],
-	     round_trials[0],
+	     round_trials[1],
 	     errs[2],
-	     round_trials[0],
+	     round_trials[2],
 	     errs[3],
-	     round_trials[0],
+	     round_trials[3],
 	     (double)errs[0]/(round_trials[0]),
 	     (double)errs[1]/(round_trials[0]),
 	     (double)errs[2]/(round_trials[0]),
 	     (double)errs[3]/(round_trials[0]),
-	     rate*((double)(round_trials[0])/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3])),
-	     100*((double)(round_trials[0])/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3])),
+	     rate*effective_rate,
+	     100*effective_rate,
 	     rate,
 	     (1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0])/(double)PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS,
 	     (1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0]));
@@ -1263,6 +1305,7 @@ int main(int argc, char **argv) {
 
       if (dump_perf==1) {
 	printf("UE TX function statistics (per 1ms subframe)\n\n");
+	printf("Total PHY proc tx                 :%f us (%d trials)\n",(double)PHY_vars_UE->phy_proc_tx.diff/PHY_vars_UE->phy_proc_tx.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->phy_proc_tx.trials);
 	printf("OFDM_mod time                     :%f us (%d trials)\n",(double)PHY_vars_UE->ofdm_mod_stats.diff/PHY_vars_UE->ofdm_mod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ofdm_mod_stats.trials);
 	printf("ULSCH modulation time             :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_modulation_stats.diff/PHY_vars_UE->ulsch_modulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_modulation_stats.trials);
 	printf("ULSCH encoding time               :%f us (%d trials)\n",(double)PHY_vars_UE->ulsch_encoding_stats.diff/PHY_vars_UE->ulsch_encoding_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_encoding_stats.trials);
@@ -1273,6 +1316,7 @@ int main(int argc, char **argv) {
 	printf("|__ ULSCH multiplexing time           :%f us (%d trials)\n",((double)PHY_vars_UE->ulsch_multiplexing_stats.trials/PHY_vars_UE->ulsch_encoding_stats.trials)*(double)PHY_vars_UE->ulsch_multiplexing_stats.diff/PHY_vars_UE->ulsch_multiplexing_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_UE->ulsch_multiplexing_stats.trials);
 
 	printf("\n\neNB RX function statistics (per 1ms subframe)\n\n");
+	printf("Total PHY proc rx                                   :%f us (%d trials)\n",(double)PHY_vars_eNB->phy_proc_rx.diff/PHY_vars_eNB->phy_proc_rx.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->phy_proc_rx.trials);
 	printf("OFDM_demod time                   :%f us (%d trials)\n",(double)PHY_vars_eNB->ofdm_demod_stats.diff/PHY_vars_eNB->ofdm_demod_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ofdm_demod_stats.trials);
 	printf("ULSCH demodulation time           :%f us (%d trials)\n",(double)PHY_vars_eNB->ulsch_demodulation_stats.diff/PHY_vars_eNB->ulsch_demodulation_stats.trials/cpu_freq_GHz/1000.0,PHY_vars_eNB->ulsch_demodulation_stats.trials);
 	printf("ULSCH Decoding time (%.2f Mbit/s, avg iter %f)      :%f us (%d trials, max %f)\n",
@@ -1338,7 +1382,73 @@ int main(int argc, char **argv) {
 	 
       } //ABStraction
       
-     
+      if ( (test_perf != 0) && (100 * effective_rate > test_perf )) {
+	fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3\n");
+  	fprintf(time_meas_fd,"%f;%d;%d;%f;%d;%d;%d;%d;%d;%d;%d;%d\n",
+		SNR,
+		mcs,
+		PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS, 
+		rate,
+		errs[0],
+		round_trials[0],
+		errs[1],
+		round_trials[1],
+		errs[2],
+		round_trials[2],
+		errs[3],
+		round_trials[3]);
+	
+	fprintf(time_meas_fd,"SNR; MCS; TBS; rate; err0; trials0; err1; trials1; err2; trials2; err3; trials3;ND;\n");
+	fprintf(time_meas_fd,"%f;%d;%d;%f(%2.1f%%,%f);%d;%d;%d;%d;%d;%d;%d;%d;(%e,%e,%e,%e);%f(%f);\n",
+		SNR,
+		mcs,
+		PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS, 
+		rate*effective_rate,
+		100*effective_rate,
+		rate,
+		errs[0],
+		round_trials[0],
+		errs[1],
+		round_trials[1],
+		errs[2],
+		round_trials[2],
+		errs[3],
+		round_trials[3],
+		(double)errs[0]/(round_trials[0]),
+		(double)errs[1]/(round_trials[0]),
+		(double)errs[2]/(round_trials[0]),
+		(double)errs[3]/(round_trials[0]),
+		(1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0])/(double)PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS, 
+		(1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0]));
+
+	fprintf(time_meas_fd,"UE_PROC_TX(%d); OFDM_MOD(%d); UL_MOD(%d); UL_ENC(%d); eNB_PROC_RX(%d); OFDM_DEMOD(%d); UL_DEMOD(%d); UL_DECOD(%d);\n",
+		PHY_vars_UE->phy_proc_tx.trials,
+		PHY_vars_UE->ofdm_mod_stats.trials,
+		PHY_vars_UE->ulsch_modulation_stats.trials,
+		PHY_vars_UE->ulsch_encoding_stats.trials,
+		PHY_vars_eNB->phy_proc_rx.trials,
+		PHY_vars_eNB->ofdm_demod_stats.trials,
+		PHY_vars_eNB->ulsch_demodulation_stats.trials,
+		PHY_vars_eNB->ulsch_decoding_stats.trials
+		);
+	fprintf(time_meas_fd,"%f;%f;%f;%f;%f;%f;%f;%f",
+		get_time_meas_us(&PHY_vars_UE->phy_proc_tx),
+		get_time_meas_us(&PHY_vars_UE->ofdm_mod_stats),
+		get_time_meas_us(&PHY_vars_UE->ulsch_modulation_stats),
+		get_time_meas_us(&PHY_vars_UE->ulsch_encoding_stats),
+		get_time_meas_us(&PHY_vars_eNB->phy_proc_rx),
+		get_time_meas_us(&PHY_vars_eNB->ofdm_demod_stats),
+		get_time_meas_us(&PHY_vars_eNB->ulsch_demodulation_stats),
+		get_time_meas_us(&PHY_vars_eNB->ulsch_decoding_stats)
+		);
+	
+      	printf("[passed] effective rate : %f  (%2.1f%%,%f)): log and break \n",rate*effective_rate, 100*effective_rate, rate );
+	break;
+      } else if (test_perf !=0 ){
+	printf("[continue] effective rate : %f  (%2.1f%%,%f)): increase snr \n",rate*effective_rate, 100*effective_rate, rate);
+      }
+
+
       if (((double)errs[0]/(round_trials[0]))<1e-2) 
 	break;
     } // SNR	
@@ -1377,6 +1487,8 @@ int main(int argc, char **argv) {
     fclose(csv_fdUL);
   }
   fclose(bler_fd);
+  if (test_perf !=0)
+    fclose (time_meas_fd);
   
   printf("Freeing channel I/O\n");
   for (i=0;i<2;i++) {

@@ -46,6 +46,7 @@ import math #from time import clock
 import log
 import case11
 import case12
+import case13
 
 
 from  openair import *
@@ -109,8 +110,10 @@ oai.kill(user, pw)
 #oai.rm_driver(oai,user,pw)
 
 # start te test cases 
-case11.execute(oai, user, pw, logfile,logdir)
-case12.execute(oai, user, pw, logfile,logdir)
+#case11.execute(oai, user, pw, logfile,logdir,debug)
+#case12.execute(oai, user, pw, logfile,logdir,debug)
+case13.execute(oai, user, pw, logfile,logdir,debug)
+
 
 oai.kill(user, pw) 
 #oai.rm_driver(oai,user,pw)

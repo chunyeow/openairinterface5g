@@ -42,7 +42,7 @@ makerr1 = '***'
 makerr2 = 'Error 1'
 
 
-def execute(oai, user, pw, logfile,logdir):
+def execute(oai, user, pw, logfile,logdir,debug):
     
     case = '101'
      

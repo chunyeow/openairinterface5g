@@ -48,8 +48,8 @@ NUM_UE=2
 NUM_eNB=1
 NUM_TRIALS=3
 
-PRB=[25,50,75,100]
-MCS=[4,5,7,9,12,15,18,21,24,27]
+PRB=[25]#,50,75,100]
+MCS=[4,5]#,7,9,12,15,18,21,24,27]
 ANT_TX=2  # 2 
 ANT_RX=2  # 2 
 PDCCH=2 #, 2, 3, 4
@@ -57,12 +57,15 @@ CHANNEL=["N"] # A,B,C,D,E,F,
 TX_MODE=2 # 2, 
 MIN_SNR=2
 MAX_SNR=18
+PERF=80
+OPT="-L"
+FRAME=500
 
 #OPT="-L -d" # 8bit decoder , activate dci decoding at UE
 
 
 
-def execute(oai, user, pw, logfile,logdir):
+def execute(oai, user, pw, logfile,logdir,debug):
     
     case = '102'
     oai.send('cd $OPENAIR1_DIR;')     
@@ -94,8 +97,7 @@ def execute(oai, user, pw, logfile,logdir):
         name = 'Run oai.dlsim.perf.70%'
         diag = 'no diagnostic is available, check the log file'
         for i in range(len(PRB)):
-            #for j in range(len(MCS)):
-            for j in range(0,28):
+            for j in range(len(MCS)):
                 for k in range(1,ANT_TX):
                     for m in range (1,ANT_RX):
                         for n in range(1,PDCCH):
@@ -106,16 +108,17 @@ def execute(oai, user, pw, logfile,logdir):
                                             
                                         #conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -n500 -P -O80' #+ OPT  
                                         #trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
-                                        conf = '-B' + str(PRB[i]) + ' -m'+str(j) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -n500 -P -O80' #+ OPT  
-                                        trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(j)+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
+                                        conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -P -n'+str(FRAME)+' -O'+str(PERF)+' '+ OPT    
+                                        trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                         tee = ' 2>&1 | tee ' + trace
                                         match = oai.send_expect_re('./dlsim.rel8 ' + conf + tee, 'passed', 0, 1000)
-                                        #print conf
+                                        if debug : 
+                                            print conf
                                         if match :
                                             log.ok(case, str(test), name, conf, '', logfile)
                                             MIN_SNR = q # just to speed up the test
                                             test+=1
-                                            break; # found smallest snr
+                                            break; # found the smallest snr
                                         else :
                                             try:  
                                                 if os.path.isfile(trace) :
