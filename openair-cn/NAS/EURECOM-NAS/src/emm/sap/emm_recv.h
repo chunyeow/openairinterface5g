@@ -54,7 +54,7 @@ Description Defines functions executed at the EMMAS Service Access
 #include "AuthenticationResponse.h"
 #include "AuthenticationFailure.h"
 #include "IdentityResponse.h"
-#include "SecurityModeComplete.h"
+#include "NASSecurityModeComplete.h"
 #include "SecurityModeReject.h"
 #include "UplinkNasTransport.h"
 #endif
