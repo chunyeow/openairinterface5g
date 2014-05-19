@@ -45,7 +45,7 @@ makerr2 = 'Error 1'
 def execute(oai, user, pw, logfile,logdir,debug):
     
     case = '101'
-     
+    rv  = 1; 
     oai.send('cd $OPENAIR1_DIR;')     
     oai.send('cd SIMULATION/LTE_PHY;')   
 
@@ -62,6 +62,7 @@ def execute(oai, user, pw, logfile,logdir,debug):
         oai.send('cp ./dlsim ./dlsim.rel8;')
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+        rv =0
     else:
         log.ok(case, test, name, conf, '', logfile)
 
@@ -78,7 +79,8 @@ def execute(oai, user, pw, logfile,logdir,debug):
         oai.send('cp ./ulsim ./ulsim.rel8;')
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+        rv = 0
     else:
         log.ok(case, test, name, conf, '', logfile)
     
-
+    return rv

@@ -55,6 +55,8 @@ debug = 0
 prompt = '$'
 pw =''
 i = 0
+clean = 0 
+start_case  = 0
 for arg in sys.argv:
     if arg == '-d':
         debug = 1
@@ -64,11 +66,16 @@ for arg in sys.argv:
         prompt = sys.argv[i+1]
     elif arg == '-w' :
         pw = sys.argv[i+1]
+    elif arg == '-c' :
+        clean = 1
+    elif arg == '-s' :
+        start_case = sys.argv[i+1]
     elif arg == '-h' :
         print "-d:  low debug level"
         print "-dd: high debug level"
         print "-p:  set the prompt"
         print "-w:  set the password for ssh to localhost"
+        print "-c: clean the log directory "
         sys.exit()
     i= i + 1     
 
@@ -106,14 +113,20 @@ oai.send_nowait('mkdir -p -m 755' + logdir + ';')
 log.writefile(logfile,'====================start'+test+' at ' + ctime + '=======================\n')
 log.set_debug_level(debug)
 
-oai.kill(user, pw)   
+oai.kill(user, pw)
+if clean == 1 :
+    oai.cleandir(logdir,debug)   
+
 #oai.rm_driver(oai,user,pw)
 
 # start te test cases 
-#case11.execute(oai, user, pw, logfile,logdir,debug)
-#case12.execute(oai, user, pw, logfile,logdir,debug)
-case13.execute(oai, user, pw, logfile,logdir,debug)
-
+#compile 
+rv=case11.execute(oai, user, pw, logfile,logdir,debug)
+if rv != 0 :
+    case12.execute(oai, user, pw, logfile,logdir,debug)
+    case13.execute(oai, user, pw, logfile,logdir,debug)
+else :
+    print 'Compilation error: skip case 12 and 13'
 
 oai.kill(user, pw) 
 #oai.rm_driver(oai,user,pw)

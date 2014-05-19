@@ -56,7 +56,7 @@ CHANNEL=["N"] # A,B,C,D,E,F,
 TX_MODE=2 # 2, 
 MIN_SNR=2
 MAX_SNR=34
-PERF=80
+PERF=75
 OPT="-L"
 FRAME=500
 #OPT="-L -d" # 8bit decoder , activate dci decoding at UE
@@ -102,26 +102,30 @@ def execute(oai, user, pw, logfile,logdir,debug):
                             for q in range(MIN_SNR,MAX_SNR): 
                                         #if  if PRB[i] :
                                 
-                                conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(m) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -e.1 -P -n'+str(FRAME)+' -O'+str(PERF)+' '+ OPT  
+                                conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(m) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -e.1 -P -n'+str(FRAME)+' -O'+str(PERF) #+' '+ OPT  
                                 trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_antrx' + str(m)  + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                 tee = ' 2>&1 | tee ' + trace
                                 match = oai.send_expect_re('./ulsim.rel8 ' + conf + tee, 'passed', 0, 1000)
                                 if debug :
                                     print conf
-                                if q == MAX_SNR :
-                                    log.skip(case,str(test), name, conf,'','',logfile)
-                                    
+                               
                                 if match :
                                     log.ok(case, str(test), name, conf, '', logfile)
-                                    MIN_SNR = q # just to speed up the test
+                                    MIN_SNR = q - 1 # just to speed up the test
                                     test+=1
-                                    break; # found the smallest snr
+                                    break # found the smallest snr
                                 else :
+                                    if q == MAX_SNR -1 :
+                                        log.skip(case,str(test), name, conf,'','',logfile) 
+                                        test+=1
+                                        break
                                     try:  
                                         if os.path.isfile(trace) :
                                             os.remove(trace)
                                     except OSError, e:  ## if failed, report it back to the user ##
                                         print ("Error: %s - %s." % (e.filename,e.strerror))
+                                
+                                
                                             
     except log.err, e:
         log.fail(case, str(test), name, conf, e.value, diag, logfile,trace)

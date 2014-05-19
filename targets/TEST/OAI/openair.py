@@ -170,3 +170,17 @@ class openair(core):
             oai.send_nowait('cd '+ pwd)  
         except Error, val:
             print "Error inserting oai network driver module:", val
+    
+    def cleandir (self, logdir,debug) :
+        
+        for filename in os.listdir(logdir):
+            filepath = os.path.join(logdir, filename)
+            if debug == 2 :
+                print 'logdir is ' + logdir
+                print 'filepath is ' + filepath 
+            try:
+                shutil.rmtree(filepath)
+            except OSError:
+                os.remove(filepath)
+                #print 'Could not remove the filepath'+ filepath + ' with error ' + OSError
+    

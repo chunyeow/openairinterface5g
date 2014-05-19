@@ -49,15 +49,15 @@ NUM_eNB=1
 NUM_TRIALS=3
 
 PRB=[25]#,50,75,100]
-MCS=[4,5]#,7,9,12,15,18,21,24,27]
+MCS=[4,5,7,9,12,15,18,21,24,27]
 ANT_TX=2  # 2 
 ANT_RX=2  # 2 
 PDCCH=2 #, 2, 3, 4
 CHANNEL=["N"] # A,B,C,D,E,F,
 TX_MODE=2 # 2, 
 MIN_SNR=2
-MAX_SNR=18
-PERF=80
+MAX_SNR=34
+PERF=75
 OPT="-L"
 FRAME=500
 
@@ -94,7 +94,7 @@ def execute(oai, user, pw, logfile,logdir,debug):
     try:
         test = 1
         MIN_SNR = 2
-        name = 'Run oai.dlsim.perf.70%'
+        name = 'Run oai.dlsim.perf.'+str(PERF)+'%'
         diag = 'no diagnostic is available, check the log file'
         for i in range(len(PRB)):
             for j in range(len(MCS)):
@@ -105,27 +105,33 @@ def execute(oai, user, pw, logfile,logdir,debug):
                                 for p in range(1,TX_MODE):
                                     for q in range(MIN_SNR,MAX_SNR): 
                                         #if  if PRB[i] :
-                                            
-                                        #conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -n500 -P -O80' #+ OPT  
-                                        #trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
-                                        conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -P -n'+str(FRAME)+' -O'+str(PERF)+' '+ OPT    
+                                                                          
+                                        conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -P -n'+str(FRAME)+' -O'+str(PERF) #+' '+ OPT    
                                         trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                         tee = ' 2>&1 | tee ' + trace
                                         match = oai.send_expect_re('./dlsim.rel8 ' + conf + tee, 'passed', 0, 1000)
                                         if debug : 
                                             print conf
+                                                                              
                                         if match :
                                             log.ok(case, str(test), name, conf, '', logfile)
-                                            MIN_SNR = q # just to speed up the test
+                                            MIN_SNR = q -1 # just to speed up the test
                                             test+=1
-                                            break; # found the smallest snr
+                                            break # found the smallest snr
                                         else :
+                                            if q == MAX_SNR -1 :
+                                                log.skip(case,str(test), name, conf,'','',logfile) 
+                                                test+=1
+                                                break # do not remove the last log file
                                             try:  
                                                 if os.path.isfile(trace) :
                                                     os.remove(trace)
                                              
                                             except OSError, e:  ## if failed, report it back to the user ##
                                                 print ("Error: %s - %s." % (e.filename,e.strerror))
+                                        
+                                       
+                                     
                                         
     except log.err, e:
         log.fail(case, str(test), name, conf, e.value, diag, logfile,trace)
