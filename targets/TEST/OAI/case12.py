@@ -93,7 +93,7 @@ def execute(oai, user, pw, logfile,logdir,debug):
     
     try:
         test = 1
-        MIN_SNR = 2
+        MIN_SNR = 0
         name = 'Run oai.dlsim.perf.'+str(PERF)+'%'
         diag = 'no diagnostic is available, check the log file'
         for i in range(len(PRB)):

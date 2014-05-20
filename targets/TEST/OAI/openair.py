@@ -184,3 +184,10 @@ class openair(core):
                 os.remove(filepath)
                 #print 'Could not remove the filepath'+ filepath + ' with error ' + OSError
     
+    def create_dir(self,dirname,debug) :
+        if not os.path.exists(dirname) :
+            try:
+                os.makedirs(dirname)
+            except OSError:
+                # There was an error on creation, so make sure we know about it
+                raise            

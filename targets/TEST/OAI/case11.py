@@ -56,7 +56,7 @@ def execute(oai, user, pw, logfile,logdir,debug):
         trace = logdir + '/log_' + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'check the compilation errors for dlsim in $OPENAIR1_DIR/SIMULATION/LTE_PHY'
-        oai.send('make clean;')
+        oai.send('make cleanall;')
         oai.send('rm -f ./dlsim.rel8;')
         oai.send_expect_false('make dlsim -j4' + tee, makerr1,  1500)
         oai.send('cp ./dlsim ./dlsim.rel8;')
@@ -73,7 +73,7 @@ def execute(oai, user, pw, logfile,logdir,debug):
         trace = logdir + '/log_' + case + test + '.txt;'
         tee = ' 2>&1 | tee ' + trace
         diag = 'check the compilation errors for ulsim in $OPENAIR1_DIR/SIMULATION/LTE_PHY'
-        oai.send('make clean;')
+        oai.send('make cleanall;')
         oai.send('rm -f ./ulsim.rel8;')
         oai.send_expect_false('make ulsim -j4' + tee, makerr1,  1500)
         oai.send('cp ./ulsim ./ulsim.rel8;')
