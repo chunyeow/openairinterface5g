@@ -1131,23 +1131,23 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
 
     size = do_RRCConnectionReconfiguration(enb_mod_idP, buffer, ue_mod_idP, rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
 #ifdef EXMIMO_IOT
-					   NULL,
-#else					   
-                                           SRB_configList2, 
-#endif 
-					   *DRB_configList, NULL,  // DRB2_list,
-                                           NULL,    // *sps_Config,
-#ifdef EXMIMO_IOT
-					   NULL, NULL, NULL, NULL,NULL,
+        NULL,
 #else
-                                           physicalConfigDedicated[ue_mod_idP], MeasObj_list, ReportConfig_list, quantityConfig, MeasId_list,
+        SRB_configList2,
+#endif 
+        *DRB_configList, NULL,  // DRB2_list,
+        NULL,    // *sps_Config,
+#ifdef EXMIMO_IOT
+        NULL, NULL, NULL, NULL,NULL,
+#else
+        physicalConfigDedicated[ue_mod_idP], MeasObj_list, ReportConfig_list, quantityConfig, MeasId_list,
 #endif
-                                           mac_MainConfig, NULL, NULL, Sparams, rsrp, cba_RNTI, dedicatedInfoNASList);
+        mac_MainConfig, NULL, NULL, Sparams, rsrp, cba_RNTI, dedicatedInfoNASList);
 
 #ifdef RRC_MSG_PRINT
     LOG_F(RRC,"[MSG] RRC Connection Reconfiguration\n");
   for (i = 0; i < size; i++)
-    LOG_F(RRC,"%02x ", ((uint8_t*)buffer)[i]);
+      LOG_F(RRC,"%02x ", ((uint8_t*)buffer)[i]);
   LOG_F(RRC,"\n");
   ////////////////////////////////////////
 #endif

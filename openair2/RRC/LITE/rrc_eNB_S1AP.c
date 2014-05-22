@@ -64,17 +64,17 @@ Address      : EURECOM,
 static const uint16_t UE_INITIAL_ID_INVALID = 0;
 
 /* Masks for S1AP Encryption algorithms, EEA0 is always supported (not coded) */
-static const uint16_t S1AP_ENCRYPTION_EEA1_MASK = 0x1;
-static const uint16_t S1AP_ENCRYPTION_EEA2_MASK = 0x2;
+static const uint16_t S1AP_ENCRYPTION_EEA1_MASK = 0x8000;
+static const uint16_t S1AP_ENCRYPTION_EEA2_MASK = 0x4000;
 
 /* Masks for S1AP Integrity algorithms, EIA0 is always supported (not coded) */
-static const uint16_t S1AP_INTEGRITY_EIA1_MASK = 0x1;
-static const uint16_t S1AP_INTEGRITY_EIA2_MASK = 0x2;
+static const uint16_t S1AP_INTEGRITY_EIA1_MASK = 0x8000;
+static const uint16_t S1AP_INTEGRITY_EIA2_MASK = 0x4000;
 
 #ifdef Rel10
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia0_v920
 #else
-#ifndef EXMIMO_IOT
+#ifdef EXMIMO_IOT
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_eia2
 #else
 # define INTEGRITY_ALGORITHM_NONE SecurityAlgorithmConfig__integrityProtAlgorithm_reserved
@@ -188,6 +188,9 @@ static uint8_t get_UE_index_from_s1ap_ids(uint8_t mod_id, uint16_t ue_initial_id
  */
 static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(uint16_t algorithms) {
   
+#warning "Forced   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0, to be deleted in future"
+  return SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
+
   if (algorithms & S1AP_ENCRYPTION_EEA2_MASK) {
     return SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
   }
@@ -236,6 +239,14 @@ static int rrc_eNB_process_security (uint8_t mod_id, uint8_t ue_index, security_
   /* Save security parameters */
   eNB_rrc_inst[mod_id].Info.UE[ue_index].security_capabilities = *security_capabilities;
 
+  // translation
+  LOG_D(RRC,
+      "[eNB %d] NAS security_capabilities.encryption_algorithms %u AS ciphering_algorithm %u NAS security_capabilities.integrity_algorithms %u AS integrity_algorithm %u\n",
+      mod_id,
+      eNB_rrc_inst[mod_id].Info.UE[ue_index].security_capabilities.encryption_algorithms,
+      eNB_rrc_inst[mod_id].ciphering_algorithm[ue_index],
+      eNB_rrc_inst[mod_id].Info.UE[ue_index].security_capabilities.integrity_algorithms,
+      eNB_rrc_inst[mod_id].integrity_algorithm[ue_index]);
   /* Select relevant algorithms */
   cipheringAlgorithm = rrc_eNB_select_ciphering (eNB_rrc_inst[mod_id].Info.UE[ue_index].security_capabilities.encryption_algorithms);
   if (eNB_rrc_inst[mod_id].ciphering_algorithm[ue_index] != cipheringAlgorithm) {
@@ -330,19 +341,19 @@ static void rrc_pdcp_config_security(uint8_t enb_mod_idP, uint8_t ue_mod_idP, ui
     pdcp_p = &pdcp_array_srb_eNB[enb_mod_idP][ue_mod_idP][DCCH-1];
     
     pdcp_config_set_security(pdcp_p,
-			     enb_mod_idP,
-			     ue_mod_idP,
-			     0,
-			     ENB_FLAG_YES,
-			     DCCH,
-			     DCCH+2,
-			     (send_security_mode_command == TRUE)                                 ?
-			     0 | (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4) : 
-			     (eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] )         | 
-			     (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4),
-			     kRRCenc, 
-			     kRRCint, 
-			     kUPenc);
+        enb_mod_idP,
+        ue_mod_idP,
+        0,
+        ENB_FLAG_YES,
+        DCCH,
+        DCCH+2,
+        (send_security_mode_command == TRUE)  ?
+            0 | (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4) :
+            (eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] )         |
+            (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4),
+        kRRCenc,
+        kRRCint,
+        kUPenc);
 #endif
 }
 
@@ -681,26 +692,26 @@ int rrc_eNB_process_S1AP_INITIAL_CONTEXT_SETUP_REQ(MessageDef *msg_p, const char
         process_eNB_security_key (instance, ue_index, S1AP_INITIAL_CONTEXT_SETUP_REQ(msg_p).security_key);
 
         {
-	  uint8_t send_security_mode_command = TRUE;  
-	  
+          uint8_t send_security_mode_command = TRUE;
+
 #ifndef EXMIMO_IOT
-	    if ((eNB_rrc_inst[instance].ciphering_algorithm[ue_index] == SecurityAlgorithmConfig__cipheringAlgorithm_eea0)
+          if ((eNB_rrc_inst[instance].ciphering_algorithm[ue_index] == SecurityAlgorithmConfig__cipheringAlgorithm_eea0)
                 && (eNB_rrc_inst[instance].integrity_algorithm[ue_index] == INTEGRITY_ALGORITHM_NONE)) {
                 send_security_mode_command = FALSE;
-            }
-#endif	    
-	    rrc_pdcp_config_security(instance, ue_index,send_security_mode_command);  
-	    
-            if (send_security_mode_command) {
-	      
-	      rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
-	      send_security_mode_command = FALSE;
-	      // apply ciphering after RRC security command mode
-	      rrc_pdcp_config_security(instance, ue_index,send_security_mode_command);  
-            }
-            else {
-                rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
-            }
+          }
+#endif
+          rrc_pdcp_config_security(instance, ue_index,send_security_mode_command);
+
+          if (send_security_mode_command) {
+
+              rrc_eNB_generate_SecurityModeCommand (instance, 0 /* TODO put frame number ! */, ue_index);
+              send_security_mode_command = FALSE;
+              // apply ciphering after RRC security command mode
+              rrc_pdcp_config_security(instance, ue_index,send_security_mode_command);
+          }
+          else {
+              rrc_eNB_generate_UECapabilityEnquiry (instance, 0 /* TODO put frame number ! */, ue_index);
+          }
         }
         return (0);
     }
