@@ -375,7 +375,7 @@ void sctp_send_data(instance_t instance, task_id_t task_id, sctp_data_req_t *sct
                      sctp_data_req_p->buffer_length, NULL, 0,
                      htonl(sctp_cnx->ppid), 0, sctp_data_req_p->stream, 0, 0) < 0) {
         SCTP_ERROR("Sctp_sendmsg failed: %s\n", strerror(errno));
-        /* TODO: notify upper lkayer */
+        /* TODO: notify upper layer */
         return;
     }
 
