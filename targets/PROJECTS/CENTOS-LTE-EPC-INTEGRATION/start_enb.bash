@@ -45,7 +45,7 @@
 ###########################################################
 # Parameters
 ###########################################################
-declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem DEBUG=1 HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
+declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -211,13 +211,13 @@ cd $OPENAIR_TARGETS/RTAI/USER
 bash ./init_exmimo2.sh
 echo_warning "STARTING SOFTMODEM..."
 #cat /dev/rtf62 > $STDOUT_LOG_FILE &
-gdb --args ./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB --ulsch-max-errors=20 2>&1
+./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB --ulsch-max-errors=20 2>&1
 cd $THIS_SCRIPT_PATH
 sync
 pkill tshark
 pkill cat
 sync
-cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
-                        grep -v '[OCM]' | grep -v '[OMG]' | \
-                        grep -v 'RLC not configured' | grep -v 'check if serving becomes' | \
-                        grep -v 'mac_rrc_data_req'   | grep -v 'BCCH request =>' > $STDOUT_LOG_FILE.filtered
+#cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
+#                        grep -v '[OCM]' | grep -v '[OMG]' | \
+#                        grep -v 'RLC not configured' | grep -v 'check if serving becomes' | \
+#                        grep -v 'mac_rrc_data_req'   | grep -v 'BCCH request =>' > $STDOUT_LOG_FILE.filtered
