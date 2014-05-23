@@ -468,8 +468,15 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
             );
         data->is_new = is_new;
         data->ksi = context->eksi;
+#if defined (NAS_UE)
         data->sqn = context->ul_count.seq_num;
-        data->count = *(UInt32_t *)(&context->ul_count);
+        // LG data->count = *(UInt32_t *)(&context->ul_count);
+        data->count = 0x00000000 | (context->ul_count.overflow << 8 ) | context->ul_count.seq_num;
+#else
+        data->sqn = context->dl_count.seq_num;
+        // LG data->count = *(UInt32_t *)(&context->ul_count);
+        data->count = 0x00000000 | (context->dl_count.overflow << 8 ) | context->dl_count.seq_num;
+#endif
         /* NAS integrity and cyphering keys may not be available if the
          * current security context is a partial EPS security context
          * and not a full native EPS security context */
