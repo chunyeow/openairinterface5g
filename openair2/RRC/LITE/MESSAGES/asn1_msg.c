@@ -1020,7 +1020,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
     (*sib2)->mbsfn_SubframeConfigList = NULL;
 #endif
     
-  (*sib2)->timeAlignmentTimerCommon=TimeAlignmentTimer_sf5120;
+  (*sib2)->timeAlignmentTimerCommon=TimeAlignmentTimer_infinity;//TimeAlignmentTimer_sf5120;
 
   /// (*SIB3)
 #ifdef Rel10
