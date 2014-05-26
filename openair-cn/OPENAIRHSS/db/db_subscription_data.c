@@ -15,10 +15,10 @@ int hss_mysql_query_pdns(const char   *imsi,
                          mysql_pdn_t **pdns_p,
                          uint8_t      *nb_pdns)
 {
-    int ret;
-    MYSQL_RES *res;
-    MYSQL_ROW row;
-    char query[255];
+    int          ret;
+    MYSQL_RES   *res = NULL;
+    MYSQL_ROW    row;
+    char         query[255];
     mysql_pdn_t *pdn_array = NULL;
 
     if (db_desc->db_conn == NULL) {
