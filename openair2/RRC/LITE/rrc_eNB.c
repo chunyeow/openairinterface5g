@@ -747,7 +747,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_rlc_config = CALLOC(1, sizeof(*DRB_rlc_config));
     DRB_config->rlc_Config = DRB_rlc_config;
 
-#ifndef EXMIMO_IOT
+#ifdef EXMIMO_IOT
     DRB_rlc_config->present = RLC_Config_PR_am;
     DRB_rlc_config->choice.am.ul_AM_RLC.t_PollRetransmit = T_PollRetransmit_ms50;
     DRB_rlc_config->choice.am.ul_AM_RLC.pollPDU = PollPDU_p16;
@@ -769,7 +769,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_pdcp_config->rlc_AM = NULL;
     DRB_pdcp_config->rlc_UM = NULL;
 
-#ifndef EXMIMO_IOT
+#ifdef EXMIMO_IOT
     PDCP_rlc_AM = CALLOC(1, sizeof(*PDCP_rlc_AM));
     DRB_pdcp_config->rlc_AM = PDCP_rlc_AM;
     PDCP_rlc_AM->statusReportRequired = FALSE;
@@ -1130,11 +1130,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     memset(buffer, 0, RRC_BUF_SIZE);
 
     size = do_RRCConnectionReconfiguration(enb_mod_idP, buffer, ue_mod_idP, rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
-#ifdef EXMIMO_IOT
-        NULL,
-#else
-        SRB_configList2,
-#endif 
+	NULL, /// NN: do not reconfig srb1: SRB_configList2,
         *DRB_configList, NULL,  // DRB2_list,
         NULL,    // *sps_Config,
 #ifdef EXMIMO_IOT
@@ -2280,7 +2276,7 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
 #endif
     // Refresh SRBs/DRBs
     rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES,
-                            NULL,  //LG-RK 14/05/2014 SRB_configList,
+			     NULL,  //LG-RK 14/05/2014 SRB_configList,
                              DRB_configList, (DRB_ToReleaseList_t *) NULL,
                              /*eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
                              (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4), 
