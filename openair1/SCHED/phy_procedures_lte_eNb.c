@@ -1387,7 +1387,6 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
     /*
     if (phy_vars_eNB->frame > 28000) {
       LOG_E(PHY,"More that 28000 frames reached! Exiting!\n");
-      mac_xface->macphy_exit("");
     } 
     */     
 #endif
@@ -3043,7 +3042,6 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 	  
 
 //	  dump_ulsch(phy_vars_eNB,last_slot>>1,i);
-//	  mac_xface->macphy_exit("");
 	  
 	  if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round== phy_vars_eNB->ulsch_eNB[i]->Mdlharq) {
 	    LOG_I(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d ULSCH Mdlharq %d reached\n",
@@ -3056,7 +3054,6 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_errors[harq_pid]++;
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]++;
 	    //dump_ulsch(phy_vars_eNB, last_slot>>1, i);
-	    //mac_xface->macphy_exit("");
 	  }
 	
 	  // If we've dropped the UE, go back to PRACH mode for this UE
@@ -3133,7 +3130,6 @@ void phy_procedures_eNB_RX(unsigned char last_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 #endif
 #endif
 	  //dump_ulsch(phy_vars_eNB,last_slot>>1,i);
-          //mac_xface->macphy_exit("");
  
 
 #ifdef OPENAIR2

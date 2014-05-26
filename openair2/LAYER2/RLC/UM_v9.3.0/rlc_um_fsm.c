@@ -68,7 +68,7 @@ rlc_um_fsm_notify_event (rlc_um_entity_t *rlc_pP, uint8_t eventP)
                       rlc_pP->ue_module_id,
                       rlc_pP->rb_id,
                       eventP);
-	      mac_xface->macphy_exit("");
+	      mac_xface->macphy_exit("RLC-UM FSM WARNING PROTOCOL ERROR - EVENT NOT EXPECTED FROM NULL_STATE");
               return 0;
         }
         break;

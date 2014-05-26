@@ -341,7 +341,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 	ulsch->harq_processes[harq_pid]->O_ACK,
 	G,
 	subframe);
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("ulsch_decoding.c: FATAL sumKr is 0!");
     return(-1);
   }
     

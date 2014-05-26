@@ -313,13 +313,11 @@ int is_prach_subframe(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame, uint8_t su
 
     if (prach_ConfigIndex>=64) {
       LOG_E(PHY,"[PHY] Illegal prach_ConfigIndex %d for ",prach_ConfigIndex);
-      //mac_xface->macphy_exit("");
       return(0);
     }
 
     if (tdd_preamble_map[prach_ConfigIndex][tdd_config].num_prach==0) {
       LOG_E(PHY,"[PHY] Illegal prach_ConfigIndex %d for ",prach_ConfigIndex);
-      //mac_xface->macphy_exit("");
       return(0);
     } 
 
@@ -411,14 +409,14 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   if (restricted_set == 0) {
     if (Ncs_config>15) {
       LOG_E(PHY,"[PHY] FATAL, Illegal Ncs_config for unrestricted format %d\n",Ncs_config);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("PRACH: Illegal Ncs_config for unrestricted format");
     }
     NCS = NCS_unrestricted[Ncs_config];      
   }
   else {
     if (Ncs_config>14) {
       LOG_E(PHY,"[PHY] FATAL, Illegal Ncs_config for restricted format %d\n",Ncs_config);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("PRACH: Illegal Ncs_config for restricted format");
     }
     NCS = NCS_restricted[Ncs_config];
   }
@@ -726,7 +724,7 @@ int32_t generate_prach(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe,
   if (prach_fmt==4) {
     //TODO: account for repeated format in fft output
     LOG_E(PHY,"prach_fmt4 not fully implemented");
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("prach_fmt4 not fully implemented");
   }
   else {
 #ifdef BIT8_TX
@@ -815,14 +813,14 @@ void rx_prach(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint16_t *preamble_ene
   if (restricted_set == 0) {
     if (Ncs_config>15) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for unrestricted format %d\n",Ncs_config);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("PRACH Illegal Ncs_config for unrestricted format");
     }
     NCS = NCS_unrestricted[Ncs_config];      
   }
   else {
     if (Ncs_config>14) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for restricted format %d\n",Ncs_config);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("PRACH Illegal Ncs_config for restricted format");
     }
     NCS = NCS_restricted[Ncs_config];
   }
@@ -1190,7 +1188,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 
   if (prach_fmt>=4) {
     LOG_E(PHY, "PRACH sequence is only precomputed for prach_fmt<4 (have %d)\n");
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("PRACH sequence is only precomputed for prach_fmt<4");
   }
 
   N_ZC = (prach_fmt < 4) ? 839 : 139;
@@ -1210,7 +1208,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 #endif
     if (prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig>15) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for unrestricted format %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("PRACH Illegal Ncs_config for unrestricted format");
     }
     else {
       NCS = NCS_unrestricted[prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig];
@@ -1226,7 +1224,7 @@ void compute_prach_seq(PRACH_CONFIG_COMMON *prach_config_common,
 #endif
     if (prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig>14) {
       LOG_E(PHY,"FATAL, Illegal Ncs_config for restricted format %d\n",prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("PRACH Illegal Ncs_config for restricted format");
     }
     else {
       NCS = NCS_restricted[prach_config_common->prach_ConfigInfo.zeroCorrelationZoneConfig];

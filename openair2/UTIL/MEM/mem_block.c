@@ -180,7 +180,7 @@ get_free_mem_block (uint16_t sizeP)
   if (sizeP > MEM_MNGT_MB12_BLOCK_SIZE) {
     msg ("[MEM_MNGT][ERROR][FATAL] size requested %d out of bounds\n", sizeP);
     display_mem_load ();
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block size requested out of bounds");
     return NULL;
   }
   size = sizeP >> 6;
@@ -212,7 +212,7 @@ get_free_mem_block (uint16_t sizeP)
     #endif
   } while (pool_selected++ < 12);
 
-  mac_xface->macphy_exit("");
+  mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_mem_block failed");
   return NULL;
 };
 
@@ -235,7 +235,7 @@ get_free_copy_mem_block (void)
     //    break_point ();
     //#endif
 
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("[MEM_MNGT][ERROR][FATAL] get_free_copy_mem_block failed");
     return NULL;
   }
 }

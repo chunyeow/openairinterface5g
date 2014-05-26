@@ -2416,7 +2416,6 @@ uint8_t subframe2harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t
 	  break;
 	default:
 	  LOG_E(PHY,"subframe2_harq_pid, Illegal subframe %d for TDD mode %d\n",subframe,frame_parms->tdd_config);
-	  //	  mac_xface->macphy_exit("");
 	  return(255);
 	  break;
 	}
@@ -2424,7 +2423,7 @@ uint8_t subframe2harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t
     case 2:
       if ((subframe!=2) && (subframe!=7)) {
 	LOG_E(PHY,"subframe2_harq_pid, Illegal subframe %d for TDD mode %d\n",subframe,frame_parms->tdd_config);
-	mac_xface->macphy_exit("");
+	mac_xface->macphy_exit("subframe2_harq_pid, Illegal subframe");
 	return(255);
       }
       return(subframe/7);
@@ -2432,7 +2431,6 @@ uint8_t subframe2harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t
     case 3:
       if ((subframe<2) || (subframe>4)) {
 	LOG_E(PHY,"subframe2_harq_pid, Illegal subframe %d for TDD mode %d\n",subframe,frame_parms->tdd_config);
-	//	mac_xface->macphy_exit("");
 	return(255);
       }
       return(subframe-2);
@@ -2440,7 +2438,6 @@ uint8_t subframe2harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t
     case 4:
       if ((subframe<2) || (subframe>3)) {
 	LOG_E(PHY,"subframe2_harq_pid, Illegal subframe %d for TDD mode %d\n",subframe,frame_parms->tdd_config);
-	//	mac_xface->macphy_exit("");
 	return(255);
       }
       return(subframe-2);
@@ -2448,14 +2445,12 @@ uint8_t subframe2harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t
     case 5:
       if (subframe!=2) {
 	LOG_E(PHY,"subframe2_harq_pid, Illegal subframe %d for TDD mode %d\n",subframe,frame_parms->tdd_config);
-	//	mac_xface->macphy_exit("");
 	return(255);
       }
       return(subframe-2);
       break;
     default:
       LOG_E(PHY,"subframe2_harq_pid, Unsupported TDD mode %d\n",frame_parms->tdd_config);
-      //      mac_xface->macphy_exit("");
       return(255);
 
     }
@@ -2790,11 +2785,11 @@ void fill_CQI(void *o,UCI_format_t uci_format,PHY_MEASUREMENTS *meas,uint8_t eNB
     break;
   case ue_selected:
     LOG_E(PHY,"fill_CQI ue_selected CQI not supported yet!!!\n");
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("fill_CQI ue_selected CQI not supported yet!!!");
     break;
   default:
     LOG_E(PHY,"unsupported CQI mode (%d)!!!\n",uci_format);
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("unsupported CQI mode !!!");
     break;
 
   }

@@ -210,7 +210,7 @@ uint8_t get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,
       break;
     default:
       LOG_E(PHY,"get_Msg3_harq_pid: Unsupported TDD configuration %d\n",frame_parms->tdd_config);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("get_Msg3_harq_pid: Unsupported TDD configuration");
       break;
     }
   }
@@ -492,7 +492,7 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
     break;
   default:
     LOG_E(PHY,"subframe %d Unsupported TDD configuration %d\n",subframe,frame_parms->tdd_config);
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("subframe x Unsupported TDD configuration");
     return(255);
     
   }

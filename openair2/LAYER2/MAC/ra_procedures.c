@@ -88,7 +88,7 @@ int8_t get_DELTA_PREAMBLE(module_id_t module_idP) {
     LOG_E(MAC,"[UE %d] ue_procedures.c: FATAL, Illegal preambleformat %d, prachConfigIndex %d\n",
         module_idP,
         preambleformat,prachConfigIndex);
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("MAC get_DELTA_PREAMBLE Illegal preamble format");
     return(0);
   }
 
@@ -111,7 +111,7 @@ void get_prach_resources(module_id_t module_idP,
     rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
   else {
       LOG_E(MAC,"[UE %d] FATAL  radioResourceConfigCommon is NULL !!!\n",module_idP);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("MAC FATAL  radioResourceConfigCommon is NULL");
   }
 
   if (rach_ConfigDedicated) {   // This is for network controlled Mobility, later
@@ -270,7 +270,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, uint8_t eN
                   }
                   else {
                       LOG_D(MAC,"[UE %d] FATAL Frame %d: rach_ConfigCommon is NULL !!!\n",module_idP,frameP);
-                      mac_xface->macphy_exit("");
+                      mac_xface->macphy_exit("MAC rach_ConfigCommon is NULL");
                   }
                   UE_mac_inst[module_idP].RA_tx_frame         = frameP;
                   UE_mac_inst[module_idP].RA_tx_subframe      = subframeP;
@@ -326,7 +326,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, uint8_t eN
                   }
                   else {
                       LOG_D(MAC,"[UE %d] FATAL Frame %d: rach_ConfigCommon is NULL !!!\n",module_idP,frameP);
-                      mac_xface->macphy_exit("");
+                      mac_xface->macphy_exit("MAC rach_ConfigCommon is NULL");
                   }
                   UE_mac_inst[module_idP].RA_tx_frame         = frameP;
                   UE_mac_inst[module_idP].RA_tx_subframe      = subframeP;
@@ -397,7 +397,7 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, uint8_t eN
   }
   else if (UE_mode == PUSCH) {
       LOG_D(MAC,"[UE %d] FATAL: Should not have checked for RACH in PUSCH yet ...",module_idP);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("MAC FATAL: Should not have checked for RACH in PUSCH yet");
   }
   return(NULL);
 }

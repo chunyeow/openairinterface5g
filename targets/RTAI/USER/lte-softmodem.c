@@ -285,7 +285,7 @@ void signal_handler(int sig)
 void exit_fun(const char* s)
 {
   if (s != NULL) {
-    printf("Exiting: %s\n",s);
+    printf("%s %s() Exiting: %s\n",__FILE__, __FUNCTION__, s);
   }
 
   oai_exit = 1;
@@ -1050,7 +1050,7 @@ static void *UE_thread(void *arg)
             }
             if (abs(openair_daq_vars.freq_offset) > 7500) {
               LOG_I(PHY,"[initial_sync] No cell synchronization found, abondoning\n");
-              mac_xface->macphy_exit("");
+              mac_xface->macphy_exit("No cell synchronization found, abondoning");
             }
             else {
               LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",openair_daq_vars.freq_offset);
