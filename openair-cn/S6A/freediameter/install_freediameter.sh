@@ -95,7 +95,7 @@ if [ -d freeDiameter-1.1.5/ ]
 fi
 
 wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.5.tar.gz > install_log.txt
-tar -xf 1.1.5.tar.gz > install_log.txt
+tar -xzf 1.1.5.tar.gz > install_log.txt
 echo "Uncompressing freeDiameter archive"
 cd freeDiameter-1.1.5
 patch -p1 < $CURRENT_PATH/freediameter-1.1.5.patch > install_log.txt

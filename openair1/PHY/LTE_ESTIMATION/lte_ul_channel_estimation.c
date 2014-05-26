@@ -94,7 +94,7 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 		  phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->n_DMRS2 +
 		  frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.nPRS[(subframe<<1)+Ns]) % 12;
 
-#ifdef USER_MODE
+#if defined(USER_MODE) 
   Msc_idx_ptr = (uint16_t*) bsearch(&Msc_RS, dftsizes, 33, sizeof(uint16_t), compareints);
   if (Msc_idx_ptr)
     Msc_RS_idx = Msc_idx_ptr - dftsizes;
@@ -436,6 +436,7 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 	  // we scale alpha and beta by SCALE (instead of 0x7FFF) to avoid overflows 
 	  alpha = (int16_t) (((int32_t) SCALE * (int32_t) (pilot_pos2-k))/(pilot_pos2-pilot_pos1));
 	  beta  = (int16_t) (((int32_t) SCALE * (int32_t) (k-pilot_pos1))/(pilot_pos2-pilot_pos1));
+	  
 	  
 #ifdef DEBUG_CH
 	  msg("lte_ul_channel_estimation: k=%d, alpha = %d, beta = %d\n",k,alpha,beta); 

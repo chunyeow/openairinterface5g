@@ -516,8 +516,12 @@ int main(int argc, char **argv) {
   fprintf(bler_fd,"#SNR;mcs;nb_rb;TBS;rate;errors[0];trials[0];errors[1];trials[1];errors[2];trials[2];errors[3];trials[3]\n");
 
   if (test_perf != 0) {
-    sprintf(time_meas_fname,"%s/TEST/OAI/PERF/time_meas_prb%d_mcs%d_antrx%d_channel%s_tx%d.csv",
-	    getenv("OPENAIR_TARGETS"),
+    char hostname[1024];
+    hostname[1023] = '\0';
+    gethostname(hostname, 1023);
+    printf("Hostname: %s\n", hostname);
+    sprintf(time_meas_fname,"%s/TEST/OAI/PERF_%s/time_meas_prb%d_mcs%d_antrx%d_channel%s_tx%d.csv",
+	    getenv("OPENAIR_TARGETS"),hostname,
 	    N_RB_DL,mcs,n_rx,channel_model_input,transmission_mode);
     time_meas_fd = fopen(time_meas_fname,"w");
   }

@@ -62,11 +62,11 @@ The MME needs some libraries and tools:
 S1AP/MESSAGES/ASN1)
 - flex
 - bison
-
 To install the dependencies:
 sudo apt-get install libsctp-dev libpthread-dev flex bison g++ gcc make -y
+
 A script is present in S6A/freediameter to install required packages for
-S6A interface over diameter
+S6A interface over diameter. Run it as a sudoer.   
 
 install_openvswitch1.9.0.bash
 cd S6A/freediameter/README

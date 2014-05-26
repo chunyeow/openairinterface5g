@@ -263,9 +263,10 @@ int s1ap_eNB_handle_nas_downlink(const uint32_t               assoc_id,
         /* We already have a mme ue s1ap id check the received is the same */
         if (ue_desc_p->mme_ue_s1ap_id != downlink_NAS_transport_p->mme_ue_s1ap_id) {
             S1AP_ERROR("[SCTP %d] Mismatch in MME UE S1AP ID (0x%08x != 0x%08x)\n",
-                       downlink_NAS_transport_p->mme_ue_s1ap_id,
-                       ue_desc_p->mme_ue_s1ap_id,
-                       assoc_id);
+                       assoc_id,
+		       downlink_NAS_transport_p->mme_ue_s1ap_id,
+                       ue_desc_p->mme_ue_s1ap_id
+                       );
         }
     }
 

@@ -187,7 +187,7 @@ class openair(core):
     def create_dir(self,dirname,debug) :
         if not os.path.exists(dirname) :
             try:
-                os.makedirs(dirname)
+                os.makedirs(dirname,0755)
             except OSError:
                 # There was an error on creation, so make sure we know about it
                 raise            

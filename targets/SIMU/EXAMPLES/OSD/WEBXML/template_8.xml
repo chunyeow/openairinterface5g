@@ -30,7 +30,7 @@
     <PREDEFINED_TRAFFIC>
       <SOURCE_ID>1:3</SOURCE_ID> <!-- valid formats are: -->					
       <APPLICATION_TYPE>scbr</APPLICATION_TYPE> <!-- OPTIONS: scbr,mcbr,bcbr, gaming_OA, gaming_TF,  m2m_AP, m2m_BR, , random, ,full_buffer -->
-      <DESTINATION_ID>0</DESTINATION_ID> <!-- valid formats are: -->
+      <DESTINATION_ID>1:3</DESTINATION_ID> <!-- valid formats are: -->
     </PREDEFINED_TRAFFIC>
   </APPLICATION_CONFIG>
 

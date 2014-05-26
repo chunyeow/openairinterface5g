@@ -48,8 +48,8 @@ NUM_UE=2
 NUM_eNB=1
 NUM_TRIALS=3
 
-PRB=[25]#,50,75,100]
-MCS=[4,5,7,9,12,15,18,21,24,27]
+PRB=[25,50,100]
+MCS=[0,4,9,10,13,16,17,22,27]
 ANT_TX=2  # 2 
 ANT_RX=2  # 2 
 PDCCH=2 #, 2, 3, 4
@@ -65,26 +65,26 @@ FRAME=500
 
 
 
-def execute(oai, user, pw, logfile,logdir,debug):
+def execute(oai, user, pw, host, logfile,logdir,debug):
     
-    case = '102'
+    case = '10'
     oai.send('cd $OPENAIR1_DIR;')     
     oai.send('cd SIMULATION/LTE_PHY;')   
     
     try:
-        test = '0'
+        test = '200'
         name = 'Run oai.dlsim.sanity'
         conf = '-a -n 100'
         diag = 'dlsim is not running normally (Segmentation fault / Exiting / FATAL), debugging might be needed'
-        trace = logdir + '/log_' + case + test + '_1.txt;'
+        trace = logdir + '/log_' + host + case + test + '_1.txt;'
         tee = ' 2>&1 | tee ' + trace
-        oai.send_expect_false('./dlsim.rel8 ' + conf + tee, 'Segmentation fault', 30)
-        trace = logdir + '/log_' + case + test + '_2.txt;'
+        oai.send_expect_false('./dlsim.rel8.'+ host + ' ' + conf + tee, 'Segmentation fault', 30)
+        trace = logdir + '/log_'  + host + case + test + '_2.txt;'
         tee = ' 2>&1 | tee ' + trace
-        oai.send_expect_false('./dlsim.rel8 ' + conf + tee, 'Exiting', 30)
-        trace = logdir + '/log_' + case + test + '_3.txt;'
+        oai.send_expect_false('./dlsim.rel8.'+ host + ' ' + conf + tee, 'Exiting', 30)
+        trace = logdir + '/log_'  + host + case + test + '_3.txt;'
         tee = ' 2>&1 | tee ' + trace
-        oai.send_expect_false('./dlsim.rel8 ' + conf + tee, 'FATAL', 30)
+        oai.send_expect_false('./dlsim.rel8.'+ host + ' ' + conf + tee, 'FATAL', 30)
 
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -92,11 +92,12 @@ def execute(oai, user, pw, logfile,logdir,debug):
         log.ok(case, test, name, conf, '', logfile)
     
     try:
-        test = 1
-        MIN_SNR = 0
+        test = 210
+       
         name = 'Run oai.dlsim.perf.'+str(PERF)+'%'
         diag = 'no diagnostic is available, check the log file'
         for i in range(len(PRB)):
+            MIN_SNR = 0
             for j in range(len(MCS)):
                 for k in range(1,ANT_TX):
                     for m in range (1,ANT_RX):
@@ -106,13 +107,15 @@ def execute(oai, user, pw, logfile,logdir,debug):
                                     for q in range(MIN_SNR,MAX_SNR): 
                                         #if  if PRB[i] :
                                                                           
-                                        conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -P -n'+str(FRAME)+' -O'+str(PERF) #+' '+ OPT    
+                                        conf = '-B' + str(PRB[i]) + ' -m'+str(MCS[j]) + ' -y'+str(k) + ' -z'+str(m) +' -c'+str(n) + ' -g'+str(CHANNEL[o]) + ' -x'+str(p) + ' -s'+str(q) + ' -w1.0 -f.1 -P -n'+str(FRAME)+' -O'+str(PERF) +' '+ OPT    
                                         trace = logdir + '/time_meas' + '_prb'+str(PRB[i])+'_mcs'+ str(MCS[j])+ '_anttx' + str(k)+ '_antrx' + str(m)  + '_pdcch' + str(n) + '_channel' +str(CHANNEL[o]) + '_tx' +str(p) + '_snr' +str(q)+'.'+case+str(test)+ '.log'
                                         tee = ' 2>&1 | tee ' + trace
-                                        match = oai.send_expect_re('./dlsim.rel8 ' + conf + tee, 'passed', 0, 1000)
+                                        cmd = 'taskset -c 0 ./dlsim.rel8.'+ host + ' ' + conf + tee
                                         if debug : 
-                                            print conf
-                                                                              
+                                            print cmd
+
+                                        match = oai.send_expect_re(cmd, 'passed', 0, 1000)
+                                      
                                         if match :
                                             log.ok(case, str(test), name, conf, '', logfile)
                                             MIN_SNR = q -1 # just to speed up the test
@@ -131,8 +134,7 @@ def execute(oai, user, pw, logfile,logdir,debug):
                                                 print ("Error: %s - %s." % (e.filename,e.strerror))
                                         
                                        
-                                     
-                                        
+                                                
     except log.err, e:
         log.fail(case, str(test), name, conf, e.value, diag, logfile,trace)
     #else:

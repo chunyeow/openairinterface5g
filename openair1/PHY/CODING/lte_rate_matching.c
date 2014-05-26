@@ -691,7 +691,8 @@ int lte_rate_matching_turbo_rx(uint32_t RTC,
   if (clear==1)
     memset(w,0,Ncb*sizeof(int16_t));
  
-  soft_input2 = soft_input + (r*E);
+  //soft_input2 = soft_input + (r*E);
+  soft_input2 = soft_input; // navid
   k=0;
 
   for (;(ind<Ncb)&&(k<E);ind++) {

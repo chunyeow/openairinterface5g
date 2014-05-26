@@ -79,13 +79,14 @@ for arg in sys.argv:
         sys.exit()
     i= i + 1     
 
+host = os.uname()[1]
 # get the oai object
 oai = openair('localdomain','localhost')
 #start_time = time.time()  # datetime.datetime.now()
 try: 
     user = getpass.getuser()
     print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
-    print '******* Connecting to the localhost to perform the test *******\n'
+    print '******* Connecting to the localhost <'+host+'> to perform the test *******\n'
    
     if not pw :
         print "username: " + user 
@@ -104,10 +105,10 @@ except :
 
 test = 'test02'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
-logdir = os.getcwd() + '/PERF';
+logdir = os.getcwd() + '/PERF_'+host;
 logfile = logdir+'/'+user+'.'+test+'.'+ctime+'.txt'  
-oai.send_nowait('mkdir -p -m 755' + logdir + ';')
-  
+#oai.send_nowait('mkdir -p -m 755' + logdir + ';')
+oai.create_dir(logdir,debug)  
 #print '=================start the ' + test + ' at ' + ctime + '=================\n'
 #print 'Results will be reported in log file : ' + logfile
 log.writefile(logfile,'====================start'+test+' at ' + ctime + '=======================\n')
@@ -121,10 +122,11 @@ if clean == 1 :
 
 # start te test cases 
 #compile 
-rv=case11.execute(oai, user, pw, logfile,logdir,debug)
+
+rv=case11.execute(oai, user, pw, host,logfile,logdir,debug)
 if rv != 0 :
-    case12.execute(oai, user, pw, logfile,logdir,debug)
-    case13.execute(oai, user, pw, logfile,logdir,debug)
+    case12.execute(oai, user, pw, host,logfile,logdir,debug)
+    case13.execute(oai, user, pw, host,logfile,logdir,debug)
 else :
     print 'Compilation error: skip case 12 and 13'
 

@@ -350,6 +350,8 @@ typedef struct {
   uint32_t B; 
   /// Length of ACK information (bits)
   uint8_t O_ACK;
+  /// The value of DAI in DCI format 0 
+  uint8_t V_UL_DAI;
   /// Pointer to the payload
   uint8_t *b;  
   /// Pointers to transport block segments

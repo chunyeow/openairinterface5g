@@ -366,11 +366,15 @@ void phy_config_dedicated_eNB_step2(PHY_VARS_eNB *phy_vars_eNB) {
 	  phy_vars_eNB->pucch_config_dedicated[UE_id].ackNackRepetition=1;
 	}
 	
-	if (physicalConfigDedicated->pucch_ConfigDedicated->tdd_AckNackFeedbackMode)
-	  phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode = *physicalConfigDedicated->pucch_ConfigDedicated->tdd_AckNackFeedbackMode;
-	else
-	  phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode = bundling;
-	
+        if (phy_vars_eNB->lte_frame_parms.frame_type == FDD) {
+          phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode = multiplexing;
+        } 
+        else {
+          if (physicalConfigDedicated->pucch_ConfigDedicated->tdd_AckNackFeedbackMode)
+            phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode = *physicalConfigDedicated->pucch_ConfigDedicated->tdd_AckNackFeedbackMode;
+          else
+            phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode = bundling;
+        }
 	if ( phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode == multiplexing)
 	  LOG_D(PHY,"pucch_config_dedicated.tdd_AckNackFeedbackMode = multiplexing\n");
 	else
@@ -1433,7 +1437,7 @@ int phy_init_lte_eNB(PHY_VARS_eNB *phy_vars_eNB,
 
     phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS = 0;
     phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS_last = 0;
-    phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS_MAC = 0;
+    //    phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS_MAC = 0;
     phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_bitrate = 0;
 
     phy_vars_eNB->physicalConfigDedicated[UE_id] = NULL;
