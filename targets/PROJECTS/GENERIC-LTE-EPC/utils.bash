@@ -212,7 +212,8 @@ rotate_log_file () {
         fi
         FILENAME_NO_EXT=$(echo "$FILENAME" | sed 's/\.[^\.]*$//')
 
-        TIMESTAMP=`date +%Y-%m-%d.%Hh_%Mm_%Ss`
+        # use file last modification time
+        TIMESTAMP=`date -r $FULLPATH +%Y-%m-%d.%Hh_%Mm_%Ss`
         
         NEWLOGFILE=$TIMESTAMP.$FILENAME_NO_EXT.$FILEEXTENSION
         mv $FULLPATH /tmp/$NEWLOGFILE
