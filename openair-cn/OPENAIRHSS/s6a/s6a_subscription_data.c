@@ -41,10 +41,10 @@
 
 int s6a_add_subscription_data_avp(struct msg *message, mysql_ul_ans_t *mysql_ans)
 {
-    int ret = -1, i;
-    mysql_pdn_t *pdns;
-    uint8_t      nb_pdns;
-    struct avp *avp, *child_avp;
+    int             ret = -1, i = 0;
+    mysql_pdn_t    *pdns = NULL;
+    uint8_t         nb_pdns = 0;
+    struct avp     *avp = NULL, *child_avp = NULL;
     union avp_value value;
 
     if (mysql_ans == NULL) {
