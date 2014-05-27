@@ -59,16 +59,17 @@ Address      : EURECOM,
 
 extern boolean_t
     pdcp_data_req(
-        module_id_t     enb_idP,
-        module_id_t     UE_id,
-        frame_t         frame,
-        eNB_flag_t      eNB_flag,
-        rb_id_t         rb_id,
-        mui_t           muiP,
-        confirm_t       confirmP,
-        sdu_size_t      sdu_buffer_size,
-        unsigned char*  sdu_buffer,
-        pdcp_transmission_mode_t mode);
+            const module_id_t    enb_mod_idP,
+            const module_id_t    ue_mod_idP,
+            const frame_t        frameP,
+            const eNB_flag_t     enb_flagP,
+            const srb_flag_t     srb_flagP,
+            const rb_id_t        rb_idP,
+            const mui_t          muiP,
+            const confirm_t      confirmP,
+            const sdu_size_t     sdu_buffer_sizeP,
+            unsigned char *const sdu_buffer_pP,
+            const pdcp_transmission_mode_t modeP);
 
 
 static int
@@ -248,14 +249,17 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
                     gtpv1u_teid_data_p->ue_id,
                     gtpv1u_teid_data_p->eps_bearer_id);
 
+#warning "LG eps bearer mapping to DRB id to do (offset -4)"
+
                 result = pdcp_data_req(
                     gtpv1u_teid_data_p->enb_id,
                     gtpv1u_teid_data_p->ue_id,
                     0, // frame TO DO
                     ENB_FLAG_YES,
-                    gtpv1u_teid_data_p->eps_bearer_id,
+                    SRB_FLAG_NO,
+                    (gtpv1u_teid_data_p->eps_bearer_id) ? gtpv1u_teid_data_p->eps_bearer_id - 4: 5-4,
                     0, // mui
-                    0, // confirm
+                    FALSE, // confirm
                     buffer_len,
                     buffer,
                     PDCP_TRANSMISSION_MODE_DATA);

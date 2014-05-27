@@ -42,17 +42,16 @@ Address      : EURECOM,
 /* When gtpv1u is compiled for eNB use MACRO from UTILS/log.h,
  * otherwise use standard fprintf as logger.
  */
-//#if defined(ENB_MODE)
-#if 0
-# define GTPU_DEBUG(x, args...) LOG_I(GTPU, x, ##args)
-# define GTPU_INFO(x, args...)  LOG_I(GTPU, x, ##args)
-# define GTPU_WARN(x, args...)  LOG_W(GTPU, x, ##args)
-# define GTPU_ERROR(x, args...) LOG_E(GTPU, x, ##args)
+#if defined(ENB_MODE)
+# define GTPU_DEBUG(x, args...)   LOG_I(GTPU, x, ##args)
+# define GTPU_INFO(x, args...)    LOG_I(GTPU, x, ##args)
+# define GTPU_WARNING(x, args...) LOG_W(GTPU, x, ##args)
+# define GTPU_ERROR(x, args...)   LOG_E(GTPU, x, ##args)
 #else
-# define GTPU_DEBUG(x, args...) fprintf(stdout, "[GTPU][D]"x, ##args)
-# define GTPU_INFO(x, args...)  fprintf(stdout, "[GTPU][I]"x, ##args)
-# define GTPU_WARN(x, args...)  fprintf(stdout, "[GTPU][W]"x, ##args)
-# define GTPU_ERROR(x, args...) fprintf(stderr, "[GTPU][E]"x, ##args)
+# define GTPU_DEBUG(x, args...)   fprintf(stdout, "[GTPU][D]"x, ##args)
+# define GTPU_INFO(x, args...)    fprintf(stdout, "[GTPU][I]"x, ##args)
+# define GTPU_WARNING(x, args...) fprintf(stdout, "[GTPU][W]"x, ##args)
+# define GTPU_ERROR(x, args...)   fprintf(stderr, "[GTPU][E]"x, ##args)
 #endif
 
 uint32_t gtpv1u_new_teid(void);

@@ -45,6 +45,7 @@
 #include "NwGtpv1uIe.h"
 #include "NwGtpv1uLog.h"
 
+#include "gtpv1u.h"
 #include "UTIL/LOG/log.h"
 
 #ifdef __cplusplus
@@ -204,7 +205,7 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
 
     *((NwU32T *) msgHdr) = htonl(pMsg->teid);
     msgHdr += 4;
-    NW_LOG(thiz, NW_LOG_LEVEL_ERRO, "nwGtpv1uCreateAndSendMsg to teid %u\n", pMsg->teid);
+    GTPU_ERROR("nwGtpv1uCreateAndSendMsg to teid %u\n", pMsg->teid);
 
     if(pMsg->seqNumFlag || pMsg->extHdrFlag || pMsg->npduNumFlag) {
         *((NwU16T *) msgHdr) = (pMsg->seqNumFlag ? htons(pMsg->seqNum) : 0x0000);
@@ -276,7 +277,7 @@ nwGtpv1uPeerRspTimeout(void *arg)
     NwGtpv1uTrxnT *thiz;
     NwGtpv1uTimeoutInfoT *timeoutInfo = arg;
 
-    LOG_W(GTPU, "Retransmission timer expired\n");
+    GTPU_WARNING( "Retransmission timer expired\n");
 
     thiz = ((NwGtpv1uTrxnT *)timeoutInfo->timeoutArg);
     rc = thiz->pStack->udp.udpDataReqCallback(thiz->pStack->udp.hUdp,
@@ -291,7 +292,7 @@ nwGtpv1uPeerRspTimeout(void *arg)
         thiz->maxRetries--;
     } else {
         /* Inform session layer about path fialure */
-        printf("Max retries over!\n");
+        GTPU_WARNING("Max retries over!\n");
     }
     return rc;
 }
@@ -332,8 +333,7 @@ NwGtpv1uCreateTunnelEndPoint( NW_IN  NwGtpv1uStackT *thiz,
                                pTunnelEndPoint);
 
         if(pCollision) {
-            LOG_E(GTPU,
-                   "Tunnel end-point cannot be created for teid 0x%x. "
+            GTPU_ERROR("Tunnel end-point cannot be created for teid 0x%x. "
                    "Tunnel already exists", teid);
             rc = nwGtpTunnelEndPointDestroy(thiz, pTunnelEndPoint);
             NW_ASSERT(rc == NW_GTPV1U_OK);
@@ -345,8 +345,7 @@ NwGtpv1uCreateTunnelEndPoint( NW_IN  NwGtpv1uStackT *thiz,
             pTunnelEndPoint = RB_FIND(NwGtpv1uTunnelEndPointIdentifierMap,
                                       &(thiz->teidMap), pTunnelEndPoint);
             NW_ASSERT(pTunnelEndPoint);
-            LOG_D(GTPU,
-                   "Tunnel end-point 0x%x creation successful for teid 0x%x %u(dec)",
+            GTPU_DEBUG("Tunnel end-point 0x%x creation successful for teid 0x%x %u(dec)",
                    (unsigned int)pTunnelEndPoint, teid, teid);
         }
 
@@ -388,7 +387,7 @@ nwGtpv1uDestroyTunnelEndPoint( NwGtpv1uStackT *thiz,
                                         (NwGtpv1uTunnelEndPointT *)
                                         pUlpReq->apiInfo.destroyTunnelEndPointInfo.hStackSessionHandle);
     } else {
-        LOG_W(GTPU,  "Non-existent Tunnel end-point handle '%x'",
+        GTPU_WARNING("Non-existent Tunnel end-point handle '%x'",
                pUlpReq->apiInfo.destroyTunnelEndPointInfo.hStackSessionHandle);
     }
 
@@ -502,14 +501,12 @@ nwGtpv1uProcessGpdu( NwGtpv1uStackT *thiz,
 
         if(NW_GTPV1U_OK == rc) {
             NwGtpv1uMsgT *pMsg = (NwGtpv1uMsgT *) hMsg;
-            LOG_D(GTPU,
-                   "Received T-PDU over tunnel end-point '%x' of size %u from "NW_IPV4_ADDR,
+            GTPU_DEBUG("Received T-PDU over tunnel end-point '%x' of size %u from "NW_IPV4_ADDR,
                    ntohl(msgHdr->teid), pMsg->msgLen, NW_IPV4_ADDR_FORMAT((peerIp)));
             rc = nwGtpSessionSendMsgApiToUlpEntity(pTunnelEndPoint, pMsg);
         }
     } else {
-        LOG_E(GTPU,
-               "Received T-PDU over non-existent tunnel end-point '%x' from "NW_IPV4_ADDR,
+        GTPU_ERROR("Received T-PDU over non-existent tunnel end-point '%x' from "NW_IPV4_ADDR,
                ntohl(msgHdr->teid), NW_IPV4_ADDR_FORMAT((peerIp)));
     }
     NW_LEAVE(thiz);
@@ -559,14 +556,16 @@ nwGtpv1uHandleEchoReq(NW_IN NwGtpv1uStackT *thiz,
      */
     rc = nwGtpv1uMsgAddIeTV1(hMsg, NW_GTPV1U_IE_RECOVERY, 0x00);
 
-    LOG_I(GTPU,
-           "Sending NW_GTP_ECHO_RSP message to %x:%x with seq %u", peerIp, peerPort,
-           seqNum);
+    GTPU_INFO("Sending NW_GTP_ECHO_RSP message to %x:%x with seq %u",
+        peerIp,
+        peerPort,
+        seqNum);
 
-    rc = nwGtpv1uCreateAndSendMsg(thiz,
-                                  peerIp,
-                                  peerPort,
-                                  (NwGtpv1uMsgT *) hMsg);
+    rc = nwGtpv1uCreateAndSendMsg(
+        thiz,
+        peerIp,
+        peerPort,
+        (NwGtpv1uMsgT *) hMsg);
 
     rc = nwGtpv1uMsgDelete((NwGtpv1uStackHandleT)thiz, hMsg);
     NW_ASSERT(NW_GTPV1U_OK == rc);
@@ -754,12 +753,12 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
     switch(msgType) {
         case NW_GTP_ECHO_REQ:
-            LOG_D(GTPU,  "NW_GTP_ECHO_REQ");
+            GTPU_DEBUG("NW_GTP_ECHO_REQ");
             ret = nwGtpv1uHandleEchoReq( thiz, udpData, udpDataLen, peerPort, peerIp);
             break;
 
         case NW_GTP_ERROR_INDICATION:
-            LOG_D(GTPU,  "NW_GTP_ERROR_INDICATION");
+            GTPU_DEBUG("NW_GTP_ERROR_INDICATION");
             ret = nwGtpv1uSendUlpMessageIndication( thiz,
                                                     0,
                                                     NW_GTPV1U_ULP_API_RECV_MSG,
@@ -773,12 +772,12 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
             break;
 
         case NW_GTP_ECHO_RSP:
-            LOG_D(GTPU, "NW_GTP_ECHO_RSP");
+            GTPU_DEBUG("NW_GTP_ECHO_RSP");
             ret = NW_GTPV1U_OK;
             break;
 
         case NW_GTP_GPDU:
-            LOG_D(GTPU,  "NW_GTP_GPDU");
+            GTPU_DEBUG("NW_GTP_GPDU");
             ret = nwGtpv1uProcessGpdu(thiz, udpData, udpDataLen, peerIp);
             break;
 
@@ -811,7 +810,7 @@ nwGtpv1uProcessUlpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
     switch(pUlpReq->apiType) {
         case NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT: {
-            LOG_D(GTPU,  "Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp");
+            GTPU_DEBUG("Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp");
             rc = NwGtpv1uCreateTunnelEndPoint(thiz,
                                               pUlpReq->apiInfo.createTunnelEndPointInfo.teid,
                                               pUlpReq->apiInfo.createTunnelEndPointInfo.hUlpSession,
@@ -820,25 +819,25 @@ nwGtpv1uProcessUlpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
         break;
 
         case NW_GTPV1U_ULP_API_DESTROY_TUNNEL_ENDPOINT: {
-            LOG_D(GTPU,  "Received destroy session req from ulp");
+            GTPU_DEBUG("Received destroy session req from ulp");
             rc = nwGtpv1uDestroyTunnelEndPoint(thiz,  pUlpReq);
         }
         break;
 
         case NW_GTPV1U_ULP_API_INITIAL_REQ: {
-            LOG_D(GTPU,  "Received initial req from ulp");
+            GTPU_DEBUG("Received initial req from ulp");
             rc = nwGtpv1uInitialReq(thiz, pUlpReq);
         }
         break;
 
         case NW_GTPV1U_ULP_API_SEND_TPDU: {
-            LOG_D(GTPU,  "Received send tpdu req from ulp");
+            GTPU_DEBUG("Received send tpdu req from ulp");
             rc = nwGtpv1uSendto(thiz,  pUlpReq);
         }
         break;
 
         default:
-            LOG_D(GTPU,  "Unsupported API received from ulp");
+            GTPU_DEBUG("Unsupported API received from ulp");
             rc = NW_GTPV1U_FAILURE;
             break;
     }
@@ -865,8 +864,7 @@ nwGtpv1uProcessTimeout(void *timeoutInfo)
     NW_ASSERT(thiz != NULL);
 
     NW_ENTER(thiz);
-    LOG_D(GTPU,
-           "Received timeout event from ULP with timeoutInfo %x!",
+    GTPU_DEBUG("Received timeout event from ULP with timeoutInfo %x!",
            (unsigned int)timeoutInfo);
 
     rc = (((NwGtpv1uTimeoutInfoT *) timeoutInfo)->timeoutCallbackFunc) (timeoutInfo);
