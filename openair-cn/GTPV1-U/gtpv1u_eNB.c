@@ -57,37 +57,47 @@ Address      : EURECOM,
 #include "COMMON/platform_constants.h"
 
 
-extern boolean_t pdcp_data_req(
-    module_id_t enb_idP,
-    module_id_t UE_id,
-    frame_t frame,
-    eNB_flag_t eNB_flag,
-    rb_id_t rb_id,
-    mui_t muiP,
-    confirm_t confirmP, \
-    sdu_size_t sdu_buffer_size,
-    unsigned char* sdu_buffer,
-    pdcp_transmission_mode_t mode);
+extern boolean_t
+    pdcp_data_req(
+        module_id_t     enb_idP,
+        module_id_t     UE_id,
+        frame_t         frame,
+        eNB_flag_t      eNB_flag,
+        rb_id_t         rb_id,
+        mui_t           muiP,
+        confirm_t       confirmP,
+        sdu_size_t      sdu_buffer_size,
+        unsigned char*  sdu_buffer,
+        pdcp_transmission_mode_t mode);
 
 
-static int gtpv1u_eNB_send_init_udp(
+static int
+    gtpv1u_eNB_send_init_udp(
         uint16_t port_number);
-NwGtpv1uRcT gtpv1u_eNB_log_request(
-        NwGtpv1uLogMgrHandleT hLogMgr,
-        NwU32T logLevel,
-        NwCharT *file,
-        NwU32T line,
-        NwCharT *logStr);
-NwGtpv1uRcT gtpv1u_eNB_send_udp_msg(
-    NwGtpv1uUdpHandleT udpHandle,
-    NwU8T *buffer,
-    NwU32T buffer_len,
-    NwU32T peerIpAddr,
-    NwU16T peerPort);
-NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
-    NwGtpv1uUlpHandleT hUlp,
-    NwGtpv1uUlpApiT   *pUlpApi);
-int data_recv_callback(
+
+NwGtpv1uRcT
+    gtpv1u_eNB_log_request(
+        NwGtpv1uLogMgrHandleT   hLogMgr,
+        NwU32T                  logLevel,
+        NwCharT                *file,
+        NwU32T                  line,
+        NwCharT                *logStr);
+
+NwGtpv1uRcT
+    gtpv1u_eNB_send_udp_msg(
+        NwGtpv1uUdpHandleT      udpHandle,
+        NwU8T                  *buffer,
+        NwU32T                  buffer_len,
+        NwU32T                  peerIpAddr,
+        NwU16T                  peerPort);
+
+NwGtpv1uRcT
+    gtpv1u_eNB_process_stack_req(
+        NwGtpv1uUlpHandleT hUlp,
+        NwGtpv1uUlpApiT   *pUlpApi);
+
+int
+    data_recv_callback(
         uint16_t  portP,
         uint32_t  address,
         uint8_t  *buffer,
@@ -100,22 +110,27 @@ int data_recv_callback(
 //    uint8_t        rab_idP,
 //    char          *sgw_ip_addr_pP,
 //    uint16_t       portP);
-static NwGtpv1uRcT gtpv1u_start_timer_wrapper(
+static NwGtpv1uRcT
+    gtpv1u_start_timer_wrapper(
     NwGtpv1uTimerMgrHandleT tmrMgrHandle,
     NwU32T                  timeoutSec,
     NwU32T                  timeoutUsec,
     NwU32T                  tmrType,
     void                   *timeoutArg,
     NwGtpv1uTimerHandleT   *hTmr);
-static NwGtpv1uRcT gtpv1u_stop_timer_wrapper(
-    NwGtpv1uTimerMgrHandleT tmrMgrHandle,
-    NwGtpv1uTimerHandleT hTmr);
+
+static NwGtpv1uRcT
+    gtpv1u_stop_timer_wrapper(
+    NwGtpv1uTimerMgrHandleT     tmrMgrHandle,
+    NwGtpv1uTimerHandleT         hTmr);
+
 int
 gtpv1u_initial_req(
     gtpv1u_data_t *gtpv1u_data_pP,
     teid_t         teidP,
     tcp_udp_port_t portP,
     uint32_t       address);
+
 int
 gtpv1u_new_data_req(
     uint8_t  enb_idP,
@@ -123,12 +138,20 @@ gtpv1u_new_data_req(
     uint8_t  rab_idP,
     uint8_t *buffer_pP,
     uint32_t buf_lenP);
+
 static int
 gtpv1u_create_s1u_tunnel(
         gtpv1u_enb_create_tunnel_req_t *create_tunnel_req_pP);
-static int gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP);
-static int gtpv1u_eNB_init(void);
-void *gtpv1u_eNB_task(void *args);
+
+static int
+    gtpv1u_delete_s1u_tunnel(gtpv1u_enb_delete_tunnel_req_t *req_pP);
+
+static int
+    gtpv1u_eNB_init(void);
+
+void *
+    gtpv1u_eNB_task(void *args);
+
 static gtpv1u_data_t gtpv1u_data_g;
 
 static int gtpv1u_eNB_send_init_udp(uint16_t port_number)
@@ -219,26 +242,26 @@ NwGtpv1uRcT gtpv1u_eNB_process_stack_req(
             hash_rc = hashtable_get(gtpv1u_data_g.teid_mapping, teid, (void**)&gtpv1u_teid_data_p);
             if (hash_rc == HASH_TABLE_OK) {
                 GTPU_DEBUG("Received T-PDU from gtpv1u stack teid  %u size %d -> enb module id %u ue module id %u rab id %u\n",
-                		teid,
-                		buffer_len,
-                		gtpv1u_teid_data_p->enb_id,
-                		gtpv1u_teid_data_p->ue_id,
-                		gtpv1u_teid_data_p->eps_bearer_id);
+                    teid,
+                    buffer_len,
+                    gtpv1u_teid_data_p->enb_id,
+                    gtpv1u_teid_data_p->ue_id,
+                    gtpv1u_teid_data_p->eps_bearer_id);
 
                 result = pdcp_data_req(
-                		gtpv1u_teid_data_p->enb_id,
-                		gtpv1u_teid_data_p->ue_id,
-                        0, // frame TO DO
-                        ENB_FLAG_YES,
-                        gtpv1u_teid_data_p->eps_bearer_id,
-                                   0, // mui
-                                   0, // confirm
-                                   buffer_len,
-                                   buffer,
-                                   PDCP_TRANSMISSION_MODE_DATA);
+                    gtpv1u_teid_data_p->enb_id,
+                    gtpv1u_teid_data_p->ue_id,
+                    0, // frame TO DO
+                    ENB_FLAG_YES,
+                    gtpv1u_teid_data_p->eps_bearer_id,
+                    0, // mui
+                    0, // confirm
+                    buffer_len,
+                    buffer,
+                    PDCP_TRANSMISSION_MODE_DATA);
                 AssertError (result == TRUE, return NW_GTPV1U_FAILURE ,"PDCP data request failed!\n");
             } else {
-                GTPU_ERROR("Received T-PDU from gtpv1u stack teid %u unknown", teid, buffer_len);
+                GTPU_ERROR("Received T-PDU from gtpv1u stack teid %u unknown size %u", teid, buffer_len);
             }
         }
         break;
