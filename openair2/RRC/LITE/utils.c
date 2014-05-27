@@ -40,7 +40,7 @@ uint16_t find_free_dtch_position(uint8_t Mod_id, uint16_t UE_CH_index){
   }  
   msg("NO FREE DTCH LCHAN, exit... \n");
 
-    Mac_rlc_xface->macphy_exit("");
+    Mac_rlc_xface->macphy_exit("NO FREE DTCH LCHAN, exit");
 
   return 0;
 }
