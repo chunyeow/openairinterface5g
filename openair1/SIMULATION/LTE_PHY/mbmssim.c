@@ -498,7 +498,7 @@ int main(int argc, char **argv) {
 								 PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->nb_rb,
 								 PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->rb_alloc,
 								 get_Qm(PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->mcs),
-								 2,
+								 1,2,
 								 PHY_vars_UE->frame,subframe);
       dlsch_unscrambling(&PHY_vars_UE->lte_frame_parms,1,PHY_vars_UE->dlsch_ue_MCH[0],
 			 PHY_vars_UE->dlsch_ue_MCH[0]->harq_processes[0]->G,

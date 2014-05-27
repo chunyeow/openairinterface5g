@@ -1264,6 +1264,7 @@ int main(int argc, char **argv) {
 				  PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
 				  PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
 				  get_Qm(PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs),
+				  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Nl,
 				  num_pdcch_symbols,
 				  0,subframe);
   
@@ -1528,6 +1529,7 @@ int main(int argc, char **argv) {
 					      PHY_vars_eNB->dlsch_eNB[k][0]->nb_rb,
 					      PHY_vars_eNB->dlsch_eNB[k][0]->rb_alloc,
 					      get_Qm(PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->mcs),
+					      PHY_vars_eNB->dlsch_eNB[k][0]->harq_processes[0]->Nl,
 					      num_pdcch_symbols,
 					      0,subframe);
 
@@ -1995,7 +1997,8 @@ int main(int argc, char **argv) {
 						      PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->nb_rb,
 						      PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->rb_alloc,
 						      get_Qm(PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->mcs),
-						      PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
+						      PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->Nl,
+PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 						      0,subframe);
 		      /*
 			rate = (double)dlsch_tbs25[get_I_TBS(PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->mcs)][PHY_vars_UE->dlsch_ue[0][0]->nb_rb-1]/(coded_bits_per_codeword);
@@ -2210,6 +2213,7 @@ int main(int argc, char **argv) {
 					  PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
 					  PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
 					  get_Qm(PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->mcs),
+					  PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->Nl,
 					  num_pdcch_symbols,
 					  0,subframe);
 

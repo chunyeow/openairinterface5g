@@ -510,7 +510,7 @@ uint32_t ulsch_encoding(uint8_t *a,
       r_offset += lte_rate_matching_turbo(ulsch->harq_processes[harq_pid]->RTC[r],
 					  G,
 					  ulsch->harq_processes[harq_pid]->w[r],
-					  &ulsch->e[0],
+					  ulsch->e+r_offset,
 					  ulsch->harq_processes[harq_pid]->C, // C
 					  NSOFT,                    // Nsoft,
 					  ulsch->Mdlharq,

@@ -150,7 +150,7 @@ int adjust_G2(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_ord
   int rb,re_pbch_sss=0;
   int rb_alloc_ind,nsymb;
 
-  nsymb = (frame_parms->Ncp==0) ? 14 : 12;
+  nsymb = (frame_parms->Ncp==NORMAL) ? 14 : 12;
 
   //      printf("adjust_G2 : symbol %d, subframe %d\n",symbol,subframe);
   if ((subframe!=0) && (subframe!=5) && (subframe!=6))  // if not PBCH/SSS or SSS
@@ -296,7 +296,7 @@ int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_orde
   }
   //    printf("re_pbch_sss %d\n",re_pbch_sss);
   if (subframe==0) {  //PBCH+SSS+PSS
-    if (frame_parms->frame_type == 1) { // TDD
+    if (frame_parms->frame_type == TDD) { // TDD
       if (frame_parms->mode1_flag==0)
 	//2ant so PBCH 3+2/3 symbols, SSS 1 symbol * REs => (14/3)*re_pbch_sss for normal CP,  
 	// 2+4/3 symbols, SSS 1 symbol => (13/3)*re_pbch_sss for ext. CP
@@ -319,14 +319,14 @@ int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_orde
     }
   }
   else if (subframe == 5)  // SSS+PSS for FDD, SSS for TDD
-    return(((frame_parms->frame_type==0)?2:1)*re_pbch_sss * 1 * mod_order);
-  else if ((subframe == 6)&&(frame_parms->frame_type == 1)) // PSS for TDD
+    return(((frame_parms->frame_type==FDD)?2:1)*re_pbch_sss * 1 * mod_order);
+  else if ((subframe == 6)&&(frame_parms->frame_type == TDD)) // PSS for TDD
     return(re_pbch_sss * 1 * mod_order);
 
   return(0);
 }
 
-int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint8_t mod_order,uint8_t num_pdcch_symbols,int frame,uint8_t subframe) {
+int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint8_t mod_order,uint8_t Nl,uint8_t num_pdcch_symbols,int frame,uint8_t subframe) {
 
   
 
@@ -336,12 +336,12 @@ int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint
     G_adj= adjust_G(frame_parms,rb_alloc,mod_order,subframe);
     
     //    printf("get_G subframe %d mod_order %d, nb_rb %d: rb_alloc %x,%x,%x,%x, G_adj %d\n",subframe,mod_order,nb_rb,rb_alloc[3],rb_alloc[2],rb_alloc[1],rb_alloc[0], G_adj);
-    if (frame_parms->Ncp==0) { // normal prefix
+    if (frame_parms->Ncp==NORMAL) { // normal prefix
       // PDDDPDD PDDDPDD - 13 PDSCH symbols, 10 full, 3 w/ pilots = 10*12 + 3*8
       // PCDDPDD PDDDPDD - 12 PDSCH symbols, 9 full, 3 w/ pilots = 9*12 + 3*8
       // PCCDPDD PDDDPDD - 11 PDSCH symbols, 8 full, 3 w/pilots = 8*12 + 3*8
       if (frame_parms->mode1_flag==0) // SISO 
-	return(((int)nb_rb * mod_order * ((11-num_pdcch_symbols)*12 + 3*8)) - G_adj);
+	return((((int)nb_rb * mod_order * ((11-num_pdcch_symbols)*12 + 3*8)) - G_adj)*Nl);
       else
 	return(((int)nb_rb * mod_order * ((11-num_pdcch_symbols)*12 + 3*10)) - G_adj);
     }
@@ -350,7 +350,7 @@ int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint
       // PCDPDD PDDPDD - 10 PDSCH symbols, 7 full, 3 w/ pilots = 7*12 + 3*8
       // PCCPDD PDDPDD - 9 PDSCH symbols, 6 full, 3 w/pilots = 6*12 + 3*8
       if (frame_parms->mode1_flag==0)
-	return(((int)nb_rb * mod_order * ((9-num_pdcch_symbols)*12 + 3*8)) - G_adj);
+	return((((int)nb_rb * mod_order * ((9-num_pdcch_symbols)*12 + 3*8)) - G_adj)*Nl);
       else
 	return(((int)nb_rb * mod_order * ((9-num_pdcch_symbols)*12 + 3*10)) - G_adj);
     }

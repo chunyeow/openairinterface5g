@@ -142,6 +142,8 @@ void dlsch_encoding_emul(PHY_VARS_eNB *phy_vars_eNB,
     uint8_t skip_dc,
     uint8_t skip_half,
     uint8_t use2ndpilots,
+    uint8_t Nlayers,
+    uint8_t firstlayer,
     LTE_DL_FRAME_PARMS *frame_parms);
 
     \brief Fills RB with data
@@ -161,26 +163,30 @@ void dlsch_encoding_emul(PHY_VARS_eNB *phy_vars_eNB,
     \param skip_dc offset for positive RBs
     \param skip_half indicate that first or second half of RB must be skipped for PBCH/PSS/SSS
     \param use2ndpilots Set to use the pilots from antenna port 1 for PDSCH
+    \param Nlayers Number of layers for this codeword
+    \param firstlayer Index of first layer (minus 7, i.e. 0..7 <-> p=7,...,14
     \param frame_parms Frame parameter descriptor
 */
 
 int32_t allocate_REs_in_RB(mod_sym_t **txdataF,
-		       uint32_t *jj,
-		       uint16_t re_offset,
-		       uint32_t symbol_offset,
-		       uint8_t *output,
-		       MIMO_mode_t mimo_mode,
-		       uint8_t nu,
-		       uint8_t pilots,
-		       uint8_t mod_order,
-		       uint8_t precoder_index,
-		       int16_t amp,
-		       int16_t *qam_table_s,
-		       uint32_t *re_allocated,
-		       uint8_t skip_dc,
-		       uint8_t skip_half,
-		       uint8_t use2ndpilots,
-		       LTE_DL_FRAME_PARMS *frame_parms);
+			   uint32_t *jj,
+			   uint16_t re_offset,
+			   uint32_t symbol_offset,
+			   uint8_t *output,
+			   MIMO_mode_t mimo_mode,
+			   uint8_t nu,
+			   uint8_t pilots,
+			   uint8_t mod_order,
+			   uint8_t precoder_index,
+			   int16_t amp,
+			   int16_t *qam_table_s,
+			   uint32_t *re_allocated,
+			   uint8_t skip_dc,
+			   uint8_t skip_half,
+			   uint8_t use2ndpilots,
+			   uint8_t Nlayers,
+			   uint8_t firstlayer,
+			   LTE_DL_FRAME_PARMS *frame_parms);
 
 /** \fn int32_t dlsch_modulation(mod_sym_t **txdataF,
     int16_t amp,
@@ -1225,7 +1231,7 @@ uint8_t get_transmission_mode(uint16_t Mod_id, uint16_t rnti);
 */
 uint32_t conv_nprb(uint8_t ra_header,uint32_t rb_alloc,int N_RB_DL);
 
-int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint8_t mod_order,uint8_t num_pdcch_symbols,int frame,uint8_t subframe);
+int get_G(LTE_DL_FRAME_PARMS *frame_parms,uint16_t nb_rb,uint32_t *rb_alloc,uint8_t mod_order,uint8_t Nl,uint8_t num_pdcch_symbols,int frame,uint8_t subframe);
 
 int adjust_G(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_order,uint8_t subframe);
 int adjust_G2(LTE_DL_FRAME_PARMS *frame_parms,uint32_t *rb_alloc,uint8_t mod_order,uint8_t subframe,uint8_t symbol);

@@ -143,8 +143,6 @@ char quantize(double D,double x,unsigned char B) {
 }
 
 #define MAX_BLOCK_LENGTH 6000
-static char channel_output[2*MAX_BLOCK_LENGTH]__attribute__ ((aligned(16)));
-static unsigned char decoded_output[MAX_BLOCK_LENGTH/8];
 
 int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 		 LTE_UE_DLSCH_t *dlsch_ue,
@@ -163,8 +161,6 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 		 unsigned int subframe) {
 
   unsigned char test_input[block_length+1];
-  //_declspec(align(16))  char channel_output[512];
-  //_declspec(align(16))  unsigned char output[512],decoded_output[16], *inPtr, *outPtr;
 
   short *channel_output;
 
@@ -186,7 +182,7 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 
 
 
-  //  printf("dlsch_eNB->TBS= %d\n",dlsch_eNB->harq_processes[0]->TBS);
+  //  printf("dlsch_eNB->TBS= %d, block_length %d\n",dlsch_eNB->harq_processes[0]->TBS,block_length);
 
   while (trial++ < ntrials) {
 
@@ -201,6 +197,7 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 		   &PHY_vars_eNB->lte_frame_parms,
 		   num_pdcch_symbols,
 		   PHY_vars_eNB->dlsch_eNB[0][0],
+		   0,
 		   subframe,
 		   &PHY_vars_eNB->dlsch_rate_matching_stats,
 		   &PHY_vars_eNB->dlsch_turbo_encoding_stats,
@@ -216,6 +213,8 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
       printf("%d.",PHY_vars_eNB->dlsch_eNB[0][0]->e[i]);
 #endif
       channel_output[i] = (short)quantize(sigma/4.0,(2.0*PHY_vars_eNB->dlsch_eNB[0][0]->e[i]) - 1.0 + sigma*gaussdouble(0.0,1.0),qbits);
+      //            printf("input %d, output %f\n",(2*PHY_vars_eNB->dlsch_eNB[0][0]->e[i]) - 1,
+      //      	     (2.0*PHY_vars_eNB->dlsch_eNB[0][0]->e[i]) - 1.0 + sigma*gaussdouble(0.0,1.0));
     }
 #ifdef DEBUG_CODER
     printf("\n");
@@ -223,13 +222,15 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 #endif
   
     
-    //    memset(decoded_output,0,16);
-    //    printf("decoding %d\n",trial);
+
+    PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->G = coded_bits;
     ret = dlsch_decoding(PHY_vars_UE,
 			 channel_output,
 			 &PHY_vars_UE->lte_frame_parms,
 			 PHY_vars_UE->dlsch_ue[0][0],
+			 PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid],
 			 subframe,
+			 PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid,
 			 num_pdcch_symbols,1);
 
     /*    int diffs = 0,puncts=0;
@@ -246,15 +247,15 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 	printf("%d same (%d,%d)\n",i,dlsch_ue->harq_processes[0]->d[0][96+i],dlsch_eNb->harq_processes[0]->d[0][96+i]);
     }
     printf("diffs %d puncts %d(%d,%d,%d,%d,%d)\n",diffs,puncts,dlsch_ue->harq_processes[0]->F,coded_bits,3*(block_length<<3),3*dlsch_ue->harq_processes[0]->Kplus,3*dlsch_ue->harq_processes[0]->F+3*(block_length<<3)-coded_bits);
+    
+        
+    printf("ret %d (max %d)\n",ret,dlsch_ue->max_turbo_iterations);
+        printf("trial %d : i %d/%d : Input %x, Output %x (%x, F %d)\n",trial,0,block_length,test_input[0],
+    	   dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->b[0],
+    	   dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->c[0][0],
+    	   (dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->F>>3));
     */
-    
-    //    printf("ret %d\n",ret);
-    //    printf("trial %d : i %d/%d : Input %x, Output %x (%x, F %d)\n",trial,0,block_length,test_input[0],
-    //	   dlsch_ue->harq_processes[0]->b[0],
-    //	   dlsch_ue->harq_processes[0]->c[0][0],
-    //	   (dlsch_ue->harq_processes[0]->F>>3));
-    
-    if (ret < MAX_TURBO_ITERATIONS+1) {
+    if (ret < dlsch_ue->max_turbo_iterations+1) {
       *iterations = (*iterations) + ret;
       //      if (ret>1)
       //	printf("ret %d\n",ret);
@@ -267,20 +268,21 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
     
     for (i=0;i<block_length;i++) {
             
-      if (dlsch_ue->harq_processes[0]->b[i] != test_input[i]) {
-/*		
+      if (dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->c[0][i] != test_input[i]) {
+	/*			
 		printf("i %d/%d : Input %x, Output %x (%x, F %d)\n",i,block_length,test_input[i],
-		       dlsch_ue->harq_processes[0]->b[i],
-		       dlsch_ue->harq_processes[0]->c[0][i],
-		       (dlsch_ue->harq_processes[0]->F>>3));
-*/	
+		       dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->b[i],
+		       dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->c[0][i],
+		       (dlsch_ue->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->F>>3));
+	*/
 	*errors = (*errors) + 1;
 	//	printf("*%d, ret %d\n",*errors,ret);	
 
 	
 	
-	if (ret < MAX_TURBO_ITERATIONS+1)
+	if (ret < dlsch_ue->max_turbo_iterations+1)
 	  *crc_misses = (*crc_misses)+1;
+
 	break;
 
       }
@@ -288,10 +290,12 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
     
     }
     
-    if (ret == MAX_TURBO_ITERATIONS+1) {
+    if (ret == dlsch_ue->max_turbo_iterations+1) {
       //      exit(-1);
     }
-      /*
+    /*
+    else {  
+    
       for (i=0;i<block_length;i++) {
 	
 	if (dlsch_ue->harq_processes[0]->b[i] != test_input[i]) {
@@ -303,10 +307,10 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
 	}
 	
       }
-    }
-    */
+      }*/
+    
     if (*errors == 100) {
-      //printf("\n");
+      printf("trials %d\n",trial);
       break;
     }
   }
@@ -316,7 +320,7 @@ int test_logmap8(LTE_eNB_DLSCH_t *dlsch_eNB,
   return(0);
 }
 
-#define NTRIALS 1000
+#define NTRIALS 10000
 #define DLSCH_RB_ALLOC 0x1fff//0x1fbf // igore DC component,RB13
 
 int main(int argc, char *argv[]) {
@@ -340,10 +344,10 @@ int main(int argc, char *argv[]) {
   logInit();
   lte_param_init(1,1,1,0,0,3);
 
-  PHY_vars_eNB->dlsch_eNB[0][0] = new_eNB_dlsch(1,8,0);
-  PHY_vars_UE->dlsch_ue[0][0]  = new_ue_dlsch(1,8,0);
-  PHY_vars_eNB->dlsch_eNB[0][1] = new_eNB_dlsch(1,8,0);
-  PHY_vars_UE->dlsch_ue[0][1]  = new_ue_dlsch(1,8,0);
+  PHY_vars_eNB->dlsch_eNB[0][0] = new_eNB_dlsch(1,8,NB_RB,0);
+  PHY_vars_UE->dlsch_ue[0][0]  = new_ue_dlsch(1,8,4,NB_RB,0);
+  PHY_vars_eNB->dlsch_eNB[0][1] = new_eNB_dlsch(1,8,NB_RB,0);
+  PHY_vars_UE->dlsch_ue[0][1]  = new_ue_dlsch(1,8,4,NB_RB,0);
 
   if (argc>1)
     mcs = atoi(argv[1]);
@@ -390,8 +394,14 @@ int main(int argc, char *argv[]) {
 				    0,
 				    P_RNTI);
   
-  coded_bits = 	get_G(&PHY_vars_eNB->lte_frame_parms,NB_RB,PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
-		      get_Qm(mcs),num_pdcch_symbols,subframe);
+  coded_bits = 	get_G(&PHY_vars_eNB->lte_frame_parms,
+		      PHY_vars_eNB->dlsch_eNB[0][0]->nb_rb,
+		      PHY_vars_eNB->dlsch_eNB[0][0]->rb_alloc,
+		      get_Qm(mcs),
+		      1,
+		      num_pdcch_symbols,
+		      0,
+		      subframe);
 
   printf("Coded_bits (G) = %d\n",coded_bits);
 
@@ -400,22 +410,13 @@ int main(int argc, char *argv[]) {
 	 dlsch_tbs25[get_I_TBS(mcs)][NB_RB-1],(double)dlsch_tbs25[get_I_TBS(mcs)][NB_RB-1]/coded_bits,
 	 mcs,get_I_TBS(mcs),PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->F,NB_RB);
 
-  // Test Openair0 3GPP encoder
-/*
-  test_encoder(block_length,
-	       f1f2mat[(block_length-5)*2],   // f1 (see 36121-820, page 14)
-	       f1f2mat[((block_length-5)*2)+1],  // f2 (see 36121-820, page 14)
-	       3);
- */ //  exit(0);
-
-
-
   for (SNR=-5;SNR<5;SNR+=.1) {
 
 
-    //    printf("\n\nSNR %f dB\n",SNR);
+    
 
     sigma = pow(10.0,-.05*SNR);
+    printf("\n\nSNR %f dB => sigma %f\n",SNR,sigma);
 
     errors=0;
     crc_misses=0;
@@ -445,49 +446,11 @@ int main(int argc, char *argv[]) {
 		       subframe);
 
     if (ret>=0)
-      //      printf("ref: Errors %d (%f), Uerrors %d (%f), CRC Misses %d (%f), Avg iterations %f\n",errors,(double)errors/trials,uerrors,(double)uerrors/trials,crc_misses,(double)crc_misses/trials,(double)iterations/trials);
       printf("%f,%f,%f,%f\n",SNR,(double)errors/trials,(double)crc_misses/trials,(double)iterations/trials);
     if (((double)errors/trials) < 1e-2)
       done0=1;
     } 
-    /*    
-    if (done1 == 0) { 
 
-      printf("exmimo\n");
-      ret = test_logmapexmimo(rate,    // code rate
-			      sigma,   // noise standard deviation
-			      qbits,
-			      block_length,   // block length bytes
-			      f1f2mat[iind*2],   // f1 (see 36121-820, page 14)
-			      f1f2mat[(iind*2)+1],  // f2 (see 36121-820, page 14)
-			      3,
-			      NTRIALS,
-			      &errors3,
-			      &trials3);
-
-      if (ret>=0)
-	printf("exmimo : Errors %d (%f)\n",errors3,(double)errors3/trials3);
-      if (((double)errors3/trials3) < 1e-3)
-	done1=1;
-    }
-    
-
-    if (done2 == 0) {  
-    
-      printf("Viterbi ...\n");
-      ret2 = test_viterbi(sigma,
-			  8*block_length,
-			  NTRIALS,
-			  &errors2,
-			  &trials2,
-			  rate);
-      
-      if (ret2>=0)
-	printf("viterbi : Errors %d (%f)\n",errors2,(double)errors2/trials2);
-      if (((double)errors2/trials2) < 1e-3)
-	done2=1;
-    } 
-    */
     if ((done0==1) && (done1==1) && (done2==1)) {
       printf("done\n");
       break;

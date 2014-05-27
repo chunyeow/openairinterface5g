@@ -245,7 +245,7 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
     G = get_G(&phy_vars_eNB->lte_frame_parms,
 	      phy_vars_eNB->lte_frame_parms.N_RB_DL,
 	      phy_vars_eNB->dlsch_eNB_MCH->rb_alloc,
-	      get_Qm(phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->mcs),
+	      get_Qm(phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->mcs),1,
 	      2,phy_vars_eNB->frame,subframe);
     
     generate_mbsfn_pilot(phy_vars_eNB,

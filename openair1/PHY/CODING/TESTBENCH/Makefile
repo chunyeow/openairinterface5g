@@ -6,7 +6,7 @@ CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4
 #CPUFLAGS += $(shell if [ -z $(SSE3PROC)]; then echo "" ; else echo "-mssse3"; fi)
 #CPUFLAGS += $(shell if [ -z $(SSE4PROC)]; then echo "" ; else echo "-msse4"; fi)
 
-
+COMMON_UTILS_DIR = $(OPENAIR_HOME)/common/utils
 TOP_DIR = $(OPENAIR1_DIR)
 OPENAIR1_TOP = $(OPENAIR1_DIR)
 OPENAIR2_TOP = $(OPENAIR2_DIR)
@@ -40,6 +40,7 @@ ifeq "$(GCCVERSION)" "4.6.1"
     CFLAGS += -Wno-packed-bitfield-compat
 endif
 
+include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(TOP_DIR)/PHY/Makefile.inc
 #include $(TOP_DIR)/SCHED/Makefile.inc
 SCHED_OBJS = $(TOP_DIR)/SCHED/phy_procedures_lte_common.o
@@ -53,7 +54,7 @@ LAYER2_OBJ = $(OPENAIR2_DIR)/LAYER2/MAC/lte_transport_init.o
 
 OBJ = $(PHY_OBJS) $(SIMULATION_OBJS) $(TOOLS_OBJS) $(SCHED_OBJS) $(LAYER2_OBJ) $(LOG_OBJS) #$(ASN1_MSG_OBJS) 
 
-CFLAGS += -I$(TOP_DIR) $(L2_incl) -I$(ASN1_MSG_INC) -I$(OPENAIR3) $(UTIL_incl)
+CFLAGS += -I$(TOP_DIR) $(L2_incl) -I$(ASN1_MSG_INC) -I$(OPENAIR3) $(UTIL_incl) $(UTILS_incl)
 CFLAGS += -DNO_RRM
 
 all: ltetest

@@ -247,14 +247,14 @@ int rx_pdsch(PHY_VARS_UE *phy_vars_ue,
     msg("dlsch_demodulation.c: nb_rb=0\n");
     return(-1);
   }
-
+  /*
   // DL power control: Scaling of Channel estimates for PDSCH
   dlsch_scale_channel(lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext,
 		      frame_parms,
 		      dlsch_ue,
 		      symbol,
 		      nb_rb);
-
+  */
   if (first_symbol_flag==1) {
     dlsch_channel_level(lte_ue_pdsch_vars[eNB_id]->dl_ch_estimates_ext,
 			frame_parms,
@@ -1353,7 +1353,7 @@ void dlsch_scale_channel(int **dl_ch_estimates_ext,
   // Determine scaling amplitude based the symbol
   ch_amp = ((pilots) ? (dlsch_ue[0]->sqrt_rho_b) : (dlsch_ue[0]->sqrt_rho_a));
 
-  //    msg("Scaling PDSCH Chest in OFDM symbol %d by %d\n",symbol_mod,ch_amp);
+  //  msg("Scaling PDSCH Chest in OFDM symbol %d by %d\n",symbol_mod,ch_amp);
 
   ch_amp128 = _mm_set1_epi16(ch_amp); // Q3.13
 
@@ -1657,9 +1657,9 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
   symbol_mod = (symbol>=(7-frame_parms->Ncp)) ? symbol-(7-frame_parms->Ncp) : symbol;
   pilots = ((symbol_mod==0)||(symbol_mod==(4-frame_parms->Ncp))) ? 1 : 0;
   l=symbol;
-  nsymb = (frame_parms->Ncp==0) ? 14:12;
+  nsymb = (frame_parms->Ncp==NORMAL) ? 14:12;
 
-  if (frame_parms->frame_type == 1) {  // TDD
+  if (frame_parms->frame_type == TDD) {  // TDD
     sss_symb = nsymb-1;
     pss_symb = 2;
   }
@@ -1803,7 +1803,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	  skip_half=2;
 
 	//PSS in subframe 0/5 if FDD
-	if (frame_parms->frame_type == 0) {  //FDD
+	if (frame_parms->frame_type == FDD) {  //FDD
 	  if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
 	  }
@@ -1813,7 +1813,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	    skip_half=2;
 	}
 	
-	if ((frame_parms->frame_type == 1) &&
+	if ((frame_parms->frame_type == TDD) &&
 	    (subframe==6)){  //TDD Subframe 6
 	  if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
@@ -1951,14 +1951,14 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
       if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==sss_symb) ) {
 	rb_alloc_ind = 0;
       }
-      if (frame_parms->frame_type == 0) {
+      if (frame_parms->frame_type == FDD) {
 	//PSS
 	if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	  rb_alloc_ind = 0;
 	}
       }
 
-      if ((frame_parms->frame_type == 1) &&
+      if ((frame_parms->frame_type == TDD) &&
 	  (subframe==6)){
 	//PSS
 	if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
@@ -2078,7 +2078,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	else if (((subframe==0)||(subframe==5)) && (rb==((frame_parms->N_RB_DL>>1)+3)) && (l==sss_symb))
 	  skip_half=2;
       
-	if (frame_parms->frame_type == 0) {
+	if (frame_parms->frame_type == FDD) {
 	  //PSS
 	  if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
@@ -2090,7 +2090,7 @@ unsigned short dlsch_extract_rbs_single(int **rxdataF,
 	    skip_half=2;
 	}
 
-	if ((frame_parms->frame_type == 1) &&
+	if ((frame_parms->frame_type == TDD) &&
 	    (subframe==6)){  //TDD Subframe 6
 	  if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
@@ -2238,10 +2238,10 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 
   if ((symbol_mod == 0) || (symbol_mod == (4-frame_parms->Ncp)))
     pilots=1;
-  nsymb = (frame_parms->Ncp==0) ? 14:12;
+  nsymb = (frame_parms->Ncp==NORMAL) ? 14:12;
   l=symbol;
 
-  if (frame_parms->frame_type == 1) {  // TDD
+  if (frame_parms->frame_type == TDD) {  // TDD
     sss_symb = nsymb-1;
     pss_symb = 2;
   }
@@ -2320,7 +2320,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	  skip_half=2;
 
 	//PSS in subframe 0/5 if FDD
-	if (frame_parms->frame_type == 0) {  //FDD
+	if (frame_parms->frame_type == FDD) {  //FDD
 	  if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
 	  }
@@ -2330,7 +2330,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	    skip_half=2;
 	}
 	
-	if ((frame_parms->frame_type == 1) &&
+	if ((frame_parms->frame_type == TDD) &&
 	    (subframe==6)){  //TDD Subframe 6
 	  if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
@@ -2451,7 +2451,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	  skip_half=2;
 	
 	//PSS in subframe 0/5 if FDD
-	if (frame_parms->frame_type == 0) {  //FDD
+	if (frame_parms->frame_type == FDD) {  //FDD
 	  if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
 	  }
@@ -2461,7 +2461,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	    skip_half=2;
 	}
 	
-	if ((frame_parms->frame_type == 1) &&
+	if ((frame_parms->frame_type == TDD) &&
 	    (subframe==6)){  //TDD Subframe 6
 	  if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
@@ -2621,14 +2621,14 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
       if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==sss_symb) ) {
 	rb_alloc_ind = 0;
       }
-      if (frame_parms->frame_type == 0) {
+      if (frame_parms->frame_type == FDD) {
 	//PSS
 	if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	  rb_alloc_ind = 0;
 	}
       }
       
-      if ((frame_parms->frame_type == 1) &&
+      if ((frame_parms->frame_type == TDD) &&
 	  (subframe==6)){
 	//PSS
 	if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
@@ -2770,7 +2770,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 		 (l==sss_symb))
 	  skip_half=2;
 
-	if (frame_parms->frame_type == 0) {
+	if (frame_parms->frame_type == FDD) {
 	  //PSS
 	  if (((subframe==0)||(subframe==5)) && (rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {
 	    rb_alloc_ind = 0;
@@ -2782,7 +2782,7 @@ unsigned short dlsch_extract_rbs_dual(int **rxdataF,
 	    skip_half=2;
 	}
 	
-	if ((frame_parms->frame_type == 1) &&
+	if ((frame_parms->frame_type == TDD) &&
 	    (subframe==6)){
 	  //PSS
 	  if ((rb>((frame_parms->N_RB_DL>>1)-3)) && (rb<((frame_parms->N_RB_DL>>1)+3)) && (l==pss_symb) ) {

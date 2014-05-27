@@ -244,8 +244,8 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
   //  LOG_I(PHY,"**************************************************************\n");
   // First try FDD normal prefix
-  frame_parms->Ncp=0;
-  frame_parms->frame_type=0;
+  frame_parms->Ncp=NORMAL;
+  frame_parms->frame_type=FDD;
   init_frame_parms(frame_parms,1);
 
   sync_pos = lte_sync_time(phy_vars_ue->lte_ue_common_vars.rxdata, 
@@ -316,8 +316,8 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
   if (ret==-1) {
 
     // Now FDD extended prefix
-    frame_parms->Ncp=1;
-    frame_parms->frame_type=0;
+    frame_parms->Ncp=EXTENDED;
+    frame_parms->frame_type=FDD;
     init_frame_parms(frame_parms,1);
     if (sync_pos < frame_parms->nb_prefix_samples)
       sync_pos2 = sync_pos + FRAME_LENGTH_COMPLEX_SAMPLES - frame_parms->nb_prefix_samples;
@@ -357,8 +357,8 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
     if (ret==-1) {
       // Now TDD normal prefix
-      frame_parms->Ncp=0;
-      frame_parms->frame_type=1;
+      frame_parms->Ncp=NORMAL;
+      frame_parms->frame_type=TDD;
       init_frame_parms(frame_parms,1);
 
       if (sync_pos >= frame_parms->nb_prefix_samples)
@@ -405,8 +405,8 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 
       if (ret==-1) {
 	// Now TDD extended prefix
-	frame_parms->Ncp=1;
-	frame_parms->frame_type=1;
+	frame_parms->Ncp=EXTENDED;
+	frame_parms->frame_type=TDD;
 	init_frame_parms(frame_parms,1);
 	sync_pos2 = sync_pos - frame_parms->nb_prefix_samples;
 	if (sync_pos >= frame_parms->nb_prefix_samples)

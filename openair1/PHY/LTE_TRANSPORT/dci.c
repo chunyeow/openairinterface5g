@@ -1954,7 +1954,7 @@ uint8_t get_num_pdcch_symbols(uint8_t num_dci,
 
   // check pdcch duration imposed by PHICH duration (Section 6.9 of 36-211)
   if (frame_parms->Ncp==1) { // extended prefix
-    if ((frame_parms->frame_type == 1) && 
+    if ((frame_parms->frame_type == TDD) && 
 	((frame_parms->tdd_config<3)||(frame_parms->tdd_config==6)) &&
 	((subframe==1) || (subframe==6))) // subframes 1 and 6 (S-subframes) for 5ms switching periodicity are 2 symbols
       nCCEmin = 2;
@@ -2726,6 +2726,7 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
     }
     break;
   case 25:
+  default:
     if (frame_type == TDD) {
       format1A_size_bits  = sizeof_DCI1A_5MHz_TDD_1_6_t;
       format1A_size_bytes = sizeof(DCI1A_5MHz_TDD_1_6_t);
@@ -2779,11 +2780,6 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format1_size_bits  = sizeof_DCI1_20MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_20MHz_FDD_t);
     }
-    break;
-  default:
-    format1_size_bits = 0;
-    format1_size_bytes = 0;
-    DevParam(frame_parms->N_RB_DL, frame_type, 0);
     break;
   }
 

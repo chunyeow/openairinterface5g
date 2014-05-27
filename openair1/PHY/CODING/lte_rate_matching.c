@@ -691,8 +691,7 @@ int lte_rate_matching_turbo_rx(uint32_t RTC,
   if (clear==1)
     memset(w,0,Ncb*sizeof(int16_t));
  
-  //soft_input2 = soft_input + (r*E);
-  soft_input2 = soft_input; // navid
+  soft_input2 = soft_input;// + (r*E);
   k=0;
 
   for (;(ind<Ncb)&&(k<E);ind++) {
@@ -719,7 +718,7 @@ int lte_rate_matching_turbo_rx(uint32_t RTC,
       else {
 	printf("RM_RX Ind: %d NULL %d\n",ind,nulled);
 	nulled++;
-      }
+      } 
 #endif
     }
   }

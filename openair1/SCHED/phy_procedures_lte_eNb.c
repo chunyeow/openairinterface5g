@@ -1791,6 +1791,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 				 phy_vars_eNB->dlsch_eNB_SI->nb_rb,
 				 phy_vars_eNB->dlsch_eNB_SI->rb_alloc,
 				 get_Qm(phy_vars_eNB->dlsch_eNB_SI->harq_processes[0]->mcs),
+				 1,
 				 num_pdcch_symbols,phy_vars_eNB->frame,next_slot>>1),
 			   0,
 			   next_slot);      
@@ -1909,6 +1910,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 				   phy_vars_eNB->dlsch_eNB_ra->nb_rb,
 				   phy_vars_eNB->dlsch_eNB_ra->rb_alloc,
 				   get_Qm(phy_vars_eNB->dlsch_eNB_ra->harq_processes[0]->mcs),
+				   1,
 				   num_pdcch_symbols,phy_vars_eNB->frame,next_slot>>1),
 			     0,
 			     next_slot);
@@ -1958,6 +1960,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 		    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->nb_rb,
 		    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rb_alloc,
 		    get_Qm(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs),
+		    phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->Nl,
 		    num_pdcch_symbols,phy_vars_eNB->frame,next_slot>>1),
 	      phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->nb_rb,
 	      phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs,
@@ -2031,6 +2034,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 				   phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->nb_rb,
 				   phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rb_alloc,
 				   get_Qm(phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->mcs),
+				   phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid]->Nl,
 				   num_pdcch_symbols,phy_vars_eNB->frame,next_slot>>1),
 			     0,
 			     next_slot);      

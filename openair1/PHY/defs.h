@@ -118,9 +118,9 @@
 
 
 #ifdef CBMIMO1
-#define openair_get_mbox() (*(unsigned int *)mbox)
+#define openair_get_mbox() (*(uint32_t *)mbox)
 #else //CBMIMO1
-#define openair_get_mbox() (*(unsigned int *)PHY_vars->mbox>>1)
+#define openair_get_mbox() (*(uint32_t *)PHY_vars->mbox>>1)
 #endif //CBMIMO1
 
 #endif // USERMODE
@@ -183,7 +183,7 @@ typedef struct PHY_VARS_eNB_s{
   /// Module ID indicator for this instance
   module_id_t               Mod_id;
   uint8_t                   local_flag;
-  unsigned int         rx_total_gain_eNB_dB;
+  uint32_t         rx_total_gain_eNB_dB;
   frame_t              frame;
   LTE_DL_FRAME_PARMS   lte_frame_parms;
   PHY_MEASUREMENTS_eNB PHY_measurements_eNB[NUMBER_OF_eNB_SECTORS_MAX]; /// Measurement variables 
@@ -201,10 +201,13 @@ typedef struct PHY_VARS_eNB_s{
   LTE_eNB_UE_stats    *eNB_UE_stats_ptr[NUMBER_OF_UE_MAX];
 
   /// cell-specific reference symbols
-  unsigned int         lte_gold_table[20][2][14];
+  uint32_t         lte_gold_table[20][2][14];
+
+  /// UE-specific reference symbols (p=7...14), TM 8/9/10
+  uint32_t         lte_gold_uespec_table[2][20][2][21];
   
   /// mbsfn reference symbols
-  unsigned int         lte_gold_mbsfn_table[10][3][42];
+  uint32_t         lte_gold_mbsfn_table[10][3][42];
   
   uint32_t X_u[64][839];
 
@@ -214,7 +217,7 @@ typedef struct PHY_VARS_eNB_s{
   /// Indicator set to 0 after first SR
   uint8_t first_sr[NUMBER_OF_UE_MAX];
 
-  unsigned int max_peak_val; 
+  uint32_t max_peak_val; 
   int max_eNB_id, max_sync_pos;
 
 
@@ -286,21 +289,21 @@ typedef struct PHY_VARS_eNB_s{
 
 
   ///check for Total Transmissions
-  unsigned int check_for_total_transmissions;
+  uint32_t check_for_total_transmissions;
 
   ///check for MU-MIMO Transmissions
-  unsigned int check_for_MUMIMO_transmissions;
+  uint32_t check_for_MUMIMO_transmissions;
 
   ///check for SU-MIMO Transmissions
-  unsigned int check_for_SUMIMO_transmissions;
+  uint32_t check_for_SUMIMO_transmissions;
 
   ///check for FULL MU-MIMO Transmissions
-  unsigned int  FULL_MUMIMO_transmissions;
+  uint32_t  FULL_MUMIMO_transmissions;
 
   /// Counter for total bitrate, bits and throughput in downlink
-  unsigned int total_dlsch_bitrate;
-  unsigned int total_transmitted_bits;
-  unsigned int total_system_throughput;
+  uint32_t total_dlsch_bitrate;
+  uint32_t total_transmitted_bits;
+  uint32_t total_system_throughput;
   
   time_stats_t phy_proc;
   time_stats_t phy_proc_tx;
@@ -356,12 +359,12 @@ typedef struct
   /// Module ID indicator for this instance
   uint8_t Mod_id;
   uint8_t local_flag;
-  unsigned int tx_total_gain_dB;
-  unsigned int rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card
+  uint32_t tx_total_gain_dB;
+  uint32_t rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card
   rx_gain_t rx_gain_mode[4];
-  unsigned int rx_gain_max[4];
-  unsigned int rx_gain_med[4];
-  unsigned int rx_gain_byp[4];
+  uint32_t rx_gain_max[4];
+  uint32_t rx_gain_med[4];
+  uint32_t rx_gain_byp[4];
   int8_t tx_power_dBm;
   int8_t tx_power_max_dBm;
   uint32_t frame;
@@ -395,26 +398,29 @@ typedef struct
   UE_MODE_t        UE_mode[NUMBER_OF_CONNECTED_eNB_MAX];
   int8_t               g_pucch[NUMBER_OF_CONNECTED_eNB_MAX];
   /// cell-specific reference symbols
-  unsigned int lte_gold_table[7][20][2][14];
+  uint32_t lte_gold_table[7][20][2][14];
 
-/// mbsfn reference symbols
-  unsigned int lte_gold_mbsfn_table[10][3][42];
+  /// ue-specific reference symbols
+  uint32_t         lte_gold_uespec_table[2][20][2][21];
+
+  /// mbsfn reference symbols
+  uint32_t lte_gold_mbsfn_table[10][3][42];
   
   uint32_t X_u[64][839];
 
   char ulsch_no_allocation_counter[NUMBER_OF_CONNECTED_eNB_MAX];
 
   unsigned char ulsch_ue_Msg3_active[NUMBER_OF_CONNECTED_eNB_MAX];
-  unsigned int  ulsch_ue_Msg3_frame[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint32_t  ulsch_ue_Msg3_frame[NUMBER_OF_CONNECTED_eNB_MAX];
   unsigned char ulsch_ue_Msg3_subframe[NUMBER_OF_CONNECTED_eNB_MAX];
   //  unsigned char Msg3_timer[NUMBER_OF_CONNECTED_eNB_MAX];
   //unsigned char *Msg3_ptr[NUMBER_OF_CONNECTED_eNB_MAX];
   PRACH_RESOURCES_t *prach_resources[NUMBER_OF_CONNECTED_eNB_MAX];
   int turbo_iterations, turbo_cntl_iterations;
-  unsigned int total_TBS[NUMBER_OF_CONNECTED_eNB_MAX];
-  unsigned int total_TBS_last[NUMBER_OF_CONNECTED_eNB_MAX];
-  unsigned int bitrate[NUMBER_OF_CONNECTED_eNB_MAX];
-  unsigned int total_received_bits[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint32_t total_TBS[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint32_t total_TBS_last[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint32_t bitrate[NUMBER_OF_CONNECTED_eNB_MAX];
+  uint32_t total_received_bits[NUMBER_OF_CONNECTED_eNB_MAX];
   int dlsch_errors[NUMBER_OF_CONNECTED_eNB_MAX];
   int dlsch_errors_last[NUMBER_OF_CONNECTED_eNB_MAX];
   int dlsch_received[NUMBER_OF_CONNECTED_eNB_MAX];

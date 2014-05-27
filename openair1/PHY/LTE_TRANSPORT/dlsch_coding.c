@@ -243,7 +243,7 @@ int dlsch_encoding(unsigned char *a,
   // printf("Encoder: A: %d\n",A);
   mod_order = get_Qm(dlsch->harq_processes[harq_pid]->mcs);
 
-  G = get_G(frame_parms,nb_rb,dlsch->rb_alloc,mod_order,num_pdcch_symbols,frame,subframe);
+  G = get_G(frame_parms,nb_rb,dlsch->rb_alloc,mod_order,dlsch->harq_processes[harq_pid]->Nl,num_pdcch_symbols,frame,subframe);
 
    
   //  if (dlsch->harq_processes[harq_pid]->Ndi == 1) {  // this is a new packet
@@ -353,7 +353,7 @@ int dlsch_encoding(unsigned char *a,
     r_offset += lte_rate_matching_turbo(dlsch->harq_processes[harq_pid]->RTC[r],
 					G,  //G
 					dlsch->harq_processes[harq_pid]->w[r],
-					&dlsch->e[r_offset],
+					dlsch->e+r_offset,
 					dlsch->harq_processes[harq_pid]->C, // C
 					NSOFT,                    // Nsoft,
 					dlsch->Mdlharq,

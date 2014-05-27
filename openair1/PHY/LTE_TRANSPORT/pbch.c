@@ -293,6 +293,8 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
 			 0,
 			 0,
 			 0,
+			 1,
+			 0,
 			 frame_parms);
       
       re_offset+=12; // go to next RB

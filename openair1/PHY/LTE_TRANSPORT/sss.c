@@ -64,7 +64,7 @@ int generate_sss(mod_sym_t **txdataF,
   else
     d = &d5_sss[62*(Nid2 + (Nid1*3))];
 
-  Nsymb = (frame_parms->Ncp==0)?14:12;
+  Nsymb = (frame_parms->Ncp==NORMAL)?14:12;
   k = frame_parms->ofdm_symbol_size-3*12+5;
   for (i=0;i<62;i++) {
     //for (aa=0;aa<frame_parms->nb_antennas_tx;aa++) {
@@ -166,7 +166,7 @@ int pss_sss_extract(PHY_VARS_UE *phy_vars_ue,
 
   int32_t **rxdataF =  phy_vars_ue->lte_ue_common_vars.rxdataF;
 
-  if (frame_parms->frame_type == 0) {
+  if (frame_parms->frame_type == FDD) {
     pss_symb = 6-frame_parms->Ncp;
     sss_symb = pss_symb-1;
   }
@@ -247,9 +247,9 @@ int rx_sss(PHY_VARS_UE *phy_vars_ue,int32_t *tot_metric,uint8_t *flip_max,uint8_
   int32_t metric;
   int16_t *d0,*d5;
 
-  if (phy_vars_ue->lte_frame_parms.frame_type == 0) { // FDD 
+  if (phy_vars_ue->lte_frame_parms.frame_type == FDD) { 
 #ifdef DEBUG_SSS
-    if (phy_vars_ue->lte_frame_parms.Ncp == 0)
+    if (phy_vars_ue->lte_frame_parms.Ncp == NORMAL)
       msg("[PHY][UE%d] Doing SSS for FDD Normal Prefix\n",phy_vars_ue->Mod_id);
     else
       msg("[PHY][UE%d] Doing SSS for FDD Extended Prefix\n",phy_vars_ue->Mod_id);
@@ -270,7 +270,7 @@ int rx_sss(PHY_VARS_UE *phy_vars_ue,int32_t *tot_metric,uint8_t *flip_max,uint8_
   }
   else {   // TDD
 #ifdef DEBUG_SSS
-    if (phy_vars_ue->lte_frame_parms.Ncp == 0)
+    if (phy_vars_ue->lte_frame_parms.Ncp == NORMAL)
       msg("[PHY][UE%d] Doing SSS for TDD Normal Prefix\n",phy_vars_ue->Mod_id);
     else
       msg("[PHY][UE%d] Doing SSS for TDD Extended Prefix\n",phy_vars_ue->Mod_id);
@@ -308,7 +308,7 @@ int rx_sss(PHY_VARS_UE *phy_vars_ue,int32_t *tot_metric,uint8_t *flip_max,uint8_
   
   //  write_output("sss0_comp0.m","sss0comp0",sss0_ext,72,1,1);
 
-  if (phy_vars_ue->lte_frame_parms.frame_type == 0) { // FDD 
+  if (phy_vars_ue->lte_frame_parms.frame_type == FDD) { // FDD 
 
     // SSS
     slot_fep(phy_vars_ue,

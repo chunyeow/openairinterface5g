@@ -588,53 +588,30 @@ void ulsch_extract_rbs_single(int32_t **rxdataF,
     msg("ulsch_extract_rbs_single: 2*nb_rb1 = %d, 2*nb_rb2 = %d\n",nb_rb1,nb_rb2);
 #endif
 
-#ifndef NEW_FFT
-    rxF_ext   = &rxdataF_ext[aarx][(symbol*frame_parms->N_RB_UL*12)*2];
-#else
     rxF_ext   = &rxdataF_ext[aarx][(symbol*frame_parms->N_RB_UL*12)];
-#endif    
     if (nb_rb1) {
-#ifndef NEW_FFT
-      rxF = &rxdataF[aarx][(first_rb*12 + frame_parms->first_carrier_offset + symbol*frame_parms->ofdm_symbol_size)*2];
-      memcpy(rxF_ext, rxF, nb_rb1*12*sizeof(int));
-      rxF_ext += nb_rb1*12;
-#else
       rxF = &rxdataF[aarx][(first_rb*12 + frame_parms->first_carrier_offset + symbol*frame_parms->ofdm_symbol_size)];
       memcpy(rxF_ext, rxF, nb_rb1*6*sizeof(int));
       rxF_ext += nb_rb1*6;
-#endif    
+
       if (nb_rb2)  {
 	//#ifdef OFDMA_ULSCH
 	//	rxF = &rxdataF[aarx][(1 + symbol*frame_parms->ofdm_symbol_size)*2];
 	//#else
-#ifndef NEW_FFT
-	rxF = &rxdataF[aarx][(symbol*frame_parms->ofdm_symbol_size)*2];
-	//#endif
-	memcpy(rxF_ext, rxF, nb_rb2*12*sizeof(int));
-	rxF_ext += nb_rb2*12;
-#else
 	rxF = &rxdataF[aarx][(symbol*frame_parms->ofdm_symbol_size)];
 	//#endif
 	memcpy(rxF_ext, rxF, nb_rb2*6*sizeof(int));
 	rxF_ext += nb_rb2*6;
-#endif
       } 
     }
     else { //there is only data in the second half
       //#ifdef OFDMA_ULSCH
       //      rxF = &rxdataF[aarx][(1 + 6*(2*first_rb - frame_parms->N_RB_UL) + symbol*frame_parms->ofdm_symbol_size)*2];
       //#else
-#ifndef NEW_FFT
-      rxF = &rxdataF[aarx][(6*(2*first_rb - frame_parms->N_RB_UL) + symbol*frame_parms->ofdm_symbol_size)*2];
-      //#endif
-      memcpy(rxF_ext, rxF, nb_rb2*12*sizeof(int));
-      rxF_ext += nb_rb2*12;
-#else
       rxF = &rxdataF[aarx][(6*(2*first_rb - frame_parms->N_RB_UL) + symbol*frame_parms->ofdm_symbol_size)];
       //#endif
       memcpy(rxF_ext, rxF, nb_rb2*6*sizeof(int));
       rxF_ext += nb_rb2*6;
-#endif
     }
   }
 
@@ -773,7 +750,7 @@ void ulsch_channel_compensation(int32_t **rxdataF_ext,
 	mmtmpU1 = _mm_packs_epi32(mmtmpU0,mmtmpU0);
 	ul_ch_mag128[2] = _mm_unpacklo_epi16(mmtmpU1,mmtmpU1);
 
-	//	printf("comp: symbol %d rb %d => %d,%d,%d (output_shift %d)\n",symbol,rb,*((int16_t*)&ul_ch_mag128[0]),*((int16_t*)&ul_ch_mag128[1]),*((int16_t*)&ul_ch_mag128[2]),output_shift);	
+	// printf("comp: symbol %d rb %d => %d,%d,%d (output_shift %d)\n",symbol,rb,*((int16_t*)&ul_ch_mag128[0]),*((int16_t*)&ul_ch_mag128[1]),*((int16_t*)&ul_ch_mag128[2]),output_shift);	
 #endif  
               
       // multiply by conjugated channel
@@ -1311,15 +1288,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
   msg("rx_ulsch: eNB_id %d, harq_pid %d, nb_rb %d first_rb %d, cooperation %d\n",eNB_id,harq_pid,ulsch[UE_id]->harq_processes[harq_pid]->nb_rb,ulsch[UE_id]->harq_processes[harq_pid]->first_rb, cooperation_flag);
 #endif //DEBUG_ULSCH
 
-#ifndef NEW_FFT 
-  if ( (frame_parms->ofdm_symbol_size == 128) ||
-       (frame_parms->ofdm_symbol_size == 512) )
-    rx_power_correction = 2;
-  else
-    rx_power_correction = 1;
-#else
-    rx_power_correction = 1;
-#endif
+  rx_power_correction = 1;
 
   for (l=0;l<(frame_parms->symbols_per_tti-ulsch[UE_id]->srs_active);l++) {
           
@@ -1346,14 +1315,6 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 			      l%(frame_parms->symbols_per_tti/2),
 			      l/(frame_parms->symbols_per_tti/2),
 			      cooperation_flag);
-
-#ifndef NEW_FFT
-    ulsch_correct_ext(eNB_pusch_vars->rxdataF_ext[eNB_id],
-		      eNB_pusch_vars->rxdataF_ext2[eNB_id],
-		      l,
-		      frame_parms,
-		      ulsch[UE_id]->harq_processes[harq_pid]->nb_rb);  
-#endif
 
     if(cooperation_flag == 2)
       {
@@ -1425,11 +1386,9 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
 	avgs = cmax(avgs,avgU[(aarx<<1)]);
   
       //      log2_maxh = 4+(log2_approx(avgs)/2);
-#ifdef NEW_FFT
+
       log2_maxh = (log2_approx(avgs)/2)+ log2_approx(frame_parms->nb_antennas_rx-1)+4;
-#else
-      log2_maxh = (log2_approx(avgs)/2)+ log2_approx(frame_parms->nb_antennas_rx-1)+3;
-#endif
+
 #ifdef DEBUG_ULSCH
       msg("[ULSCH] log2_maxh = %d (%d,%d)\n",log2_maxh,avgU[0],avgs);
 #endif
@@ -1446,11 +1405,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
       {
 
 	ulsch_channel_compensation_alamouti(
-#ifndef NEW_FFT
-					    eNB_pusch_vars->rxdataF_ext2[eNB_id],
-#else
 					    eNB_pusch_vars->rxdataF_ext[eNB_id],
-#endif
 					    eNB_pusch_vars->drs_ch_estimates_0[eNB_id],
 					    eNB_pusch_vars->drs_ch_estimates_1[eNB_id],
 					    eNB_pusch_vars->ul_ch_mag_0[eNB_id],
@@ -1481,11 +1436,7 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
     else
       {
 	ulsch_channel_compensation(
-#ifndef NEW_FFT
-				   eNB_pusch_vars->rxdataF_ext2[eNB_id],
-#else
 				   eNB_pusch_vars->rxdataF_ext[eNB_id],
-#endif				   
 				   eNB_pusch_vars->drs_ch_estimates[eNB_id],
 				   eNB_pusch_vars->ul_ch_mag[eNB_id],
 				   eNB_pusch_vars->ul_ch_magb[eNB_id],
@@ -1613,14 +1564,6 @@ void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t subframe, uint8_t UE_id) {
   write_output("/tmp/rxsig0.m","rxs0", &PHY_vars_eNB->lte_eNB_common_vars.rxdata[0][0][0],PHY_vars_eNB->lte_frame_parms.samples_per_tti*10,1,1);
   if (PHY_vars_eNB->lte_frame_parms.nb_antennas_rx>1)
     write_output("/tmp/rxsig1.m","rxs1", &PHY_vars_eNB->lte_eNB_common_vars.rxdata[0][1][0],PHY_vars_eNB->lte_frame_parms.samples_per_tti*10,1,1);
-#ifndef NEW_FFT
-  write_output("/tmp/rxsigF0.m","rxsF0", &PHY_vars_eNB->lte_eNB_common_vars.rxdataF[0][0][0],PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb*2,2,1);
-  if (PHY_vars_eNB->lte_frame_parms.nb_antennas_rx>1)
-    write_output("/tmp/rxsigF1.m","rxsF1", &PHY_vars_eNB->lte_eNB_common_vars.rxdataF[0][1][0],PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb*2,2,1);
-  write_output("/tmp/rxsigF0_ext.m","rxsF0_ext", &PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->rxdataF_ext[0][0][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb*2,2,1);
-  if (PHY_vars_eNB->lte_frame_parms.nb_antennas_rx>1)
-    write_output("/tmp/rxsigF1_ext.m","rxsF1_ext", &PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->rxdataF_ext[1][0][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb*2,2,1);
-#else
   write_output("/tmp/rxsigF0.m","rxsF0", &PHY_vars_eNB->lte_eNB_common_vars.rxdataF[0][0][0],PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
   if (PHY_vars_eNB->lte_frame_parms.nb_antennas_rx>1)
     write_output("/tmp/rxsigF1.m","rxsF1", &PHY_vars_eNB->lte_eNB_common_vars.rxdataF[0][1][0],PHY_vars_eNB->lte_frame_parms.ofdm_symbol_size*nsymb,1,1);
@@ -1641,6 +1584,5 @@ void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t subframe, uint8_t UE_id) {
   write_output("/tmp/ulsch_ch_mag.m","ulsch_ch_mag",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->ul_ch_mag[0][0][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);	  
   //  write_output("ulsch_ch_mag1.m","ulsch_ch_mag1",&PHY_vars_eNB->lte_eNB_pusch_vars[UE_id]->ul_ch_mag[0][1][0],PHY_vars_eNB->lte_frame_parms.N_RB_UL*12*nsymb,1,1);	  
 #endif	 
-#endif 
 }
 

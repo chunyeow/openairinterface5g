@@ -94,7 +94,7 @@ int generate_pss(mod_sym_t **txdataF,
   //a = (amp*ONE_OVER_SQRT2_Q15)>>15;
   //printf("[PSS] amp=%d, a=%d\n",amp,a);
 
-  Nsymb = (frame_parms->Ncp==0)?14:12;
+  Nsymb = (frame_parms->Ncp==NORMAL)?14:12;
 
   //for (aa=0;aa<frame_parms->nb_antennas_tx;aa++) {
   aa = 0;

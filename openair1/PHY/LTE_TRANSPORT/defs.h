@@ -109,6 +109,10 @@ typedef struct {
   uint8_t rvidx;
   /// MIMO mode for this DLSCH
   MIMO_mode_t mimo_mode;
+  /// Number of layers for this PDSCH transmission
+  uint8_t Nlayers;
+  /// First layer for this PSCH transmission
+  uint8_t first_layer;
   /// Turbo-code outputs (36-212 V8.6 2009-03, p.12 
   uint8_t d[MAX_NUM_DLSCH_SEGMENTS][(96+3+(3*6144))];  
   /// Sub-block interleaver outputs (36-212 V8.6 2009-03, p.16-17)
@@ -199,6 +203,8 @@ typedef struct {
 } LTE_UL_UE_HARQ_t;
 
 typedef struct {
+  /// TX buffers for UE-spec transmission (antenna ports 5 or 7..14, prior to precoding)
+  uint32_t *txdataF[8]; 
   /// Allocated RNTI (0 means DLSCH_t is not currently used)
   uint16_t rnti; 
   /// Active flag for baseband transmitter processing
@@ -247,6 +253,7 @@ typedef struct {
   int16_t sqrt_rho_a;
   /// amplitude of PDSCH (compared to RS) in symbols containing pilots
   int16_t sqrt_rho_b;
+
 } LTE_eNB_DLSCH_t;
 
 #define PUSCH_x 2

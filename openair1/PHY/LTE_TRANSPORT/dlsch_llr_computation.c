@@ -56,7 +56,7 @@
 
 #ifndef __SSE3__
 //#define _mm_abs_epi16(xmmx) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmx)))
-#define _mm_abs_epi16(xmmx) _mm_add_epi16(_mm_xor_si128((xmmx),_mm_cmpgt_epi16((*(__m128i*)&zero[0]),(xmmx))),_mm_srli_epi16(_mm_cmpgt_epi16((*(__m128i*)&zero[0]),(xmmx)),15))
+//abs_#define _mm_abs_epi16(xmmx) _mm_add_epi16(_mm_xor_si128((xmmx),_mm_cmpgt_epi16((*(__m128i*)&zero[0]),(xmmx))),_mm_srli_epi16(_mm_cmpgt_epi16((*(__m128i*)&zero[0]),(xmmx)),15))
 //#define _mm_sign_epi16(xmmx,xmmy) _mm_xor_si128((xmmx),_mm_cmpgt_epi16(zero,(xmmy)))
 #endif
 
@@ -720,7 +720,8 @@ void dlsch_16qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
     int i,len;
     unsigned char symbol_mod,len_mod4=0;
     uint32_t *llr32;
-    
+
+
     if (first_symbol_flag==1) {
         llr32 = (uint32_t*)dlsch_llr;
     }
@@ -826,7 +827,7 @@ void dlsch_64qam_llr(LTE_DL_FRAME_PARMS *frame_parms,
     for (i=0;i<len2;i++) {
         
         xmm1 = _mm_abs_epi16(rxF[i]);
-        xmm1  = _mm_subs_epi16(ch_mag[i],xmm1);
+        xmm1 = _mm_subs_epi16(ch_mag[i],xmm1);
         xmm2 = _mm_abs_epi16(xmm1);
         xmm2 = _mm_subs_epi16(ch_magb[i],xmm2);
         
