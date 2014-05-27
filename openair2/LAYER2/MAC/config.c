@@ -165,7 +165,7 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
               LOG_D(MAC,"[CONFIG][UE %d] LCID %d is attached to the LCGID %d\n",Mod_id,logicalChannelIdentity,*logicalChannelConfig->ul_SpecificParameters->logicalChannelGroup);
           } else {
               LOG_E(MAC,"[CONFIG][UE %d] LCID %d NULL ul_SpecificParameters\n",Mod_id,logicalChannelIdentity);
-              mac_xface->macphy_exit("");
+              mac_xface->macphy_exit("NULL ul_SpecificParameters");
           }
       }
   }

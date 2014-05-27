@@ -46,7 +46,7 @@ int8_t get_Po_NOMINAL_PUSCH(module_id_t module_idP) {
     rach_ConfigCommon = &UE_mac_inst[module_idP].radioResourceConfigCommon->rach_ConfigCommon;
   else {
     LOG_E(MAC,"[UE %d] FATAL radioResourceConfigCommon is NULL !!!\n",module_idP);
-    mac_xface->macphy_exit("");
+    mac_xface->macphy_exit("FATAL radioResourceConfigCommon is NULL");
   }
 
   return(-120 + (rach_ConfigCommon->powerRampingParameters.preambleInitialReceivedTargetPower<<1) + 

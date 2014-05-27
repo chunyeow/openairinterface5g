@@ -524,7 +524,7 @@ void SR_indication(module_id_t enb_mod_idP, frame_t frameP, rnti_t rntiP, sub_fr
       eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = TRUE;
   } else {
     //     AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
-    AssertError(0, 0, "find_UE_id(%u,rnti %d) not found\n", enb_mod_idP, rntiP);
+    AssertError(0, 0, "Frame %d: find_UE_id(%u,rnti %d) not found\n", frameP, enb_mod_idP, rntiP);
   }
 }
 
@@ -3616,7 +3616,7 @@ void schedule_ue_spec(module_id_t   module_idP,
       eNB_mac_inst[module_idP].eNB_UE_stats[ue_mod_id].rrc_status=mac_get_rrc_status(module_idP,1,ue_mod_id);
       if (rnti==0) {
           LOG_E(MAC,"Cannot find rnti for UE_id %d (granted UEs %d)\n",ue_mod_id,granted_UEs);
-          mac_xface->macphy_exit("");//continue;
+          mac_xface->macphy_exit("Cannot find rnti for UE_id");//continue;
       }
 
       eNB_UE_stats = mac_xface->get_eNB_UE_stats(module_idP,rnti);
