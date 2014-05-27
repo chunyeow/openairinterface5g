@@ -165,7 +165,8 @@ static void * rx_pdsch_thread(void *param) {
                                                                             phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->nb_rb,
                                                                             phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rb_alloc,
                                                                             get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs),  
-                                                                            phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
+									    phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Nl,
+									    phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->num_pdcch_symbols,
                                                                             phy_vars_ue->frame,subframe);
 
       if ((phy_vars_ue->transmission_mode[eNB_id] == 5) && 
