@@ -812,6 +812,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     mac_MainConfig->ul_SCH_Config->retxBSR_Timer = MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf320;
     mac_MainConfig->ul_SCH_Config->ttiBundling = 0; // FALSE
 
+    mac_MainConfig->timeAlignmentTimerDedicated = TimeAlignmentTimer_infinity;
+
     mac_MainConfig->drx_Config = NULL;
 
     mac_MainConfig->phr_Config = CALLOC(1, sizeof(*mac_MainConfig->phr_Config));
