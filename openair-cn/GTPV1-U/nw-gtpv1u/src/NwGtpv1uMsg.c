@@ -43,6 +43,9 @@
 #include "NwGtpv1uPrivate.h"
 #include "NwGtpv1uMsg.h"
 
+#include "gtpv1u.h"
+#include "UTIL/LOG/log.h"
+
 #define NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE                             (12)   /**< Size of GTPv1u EPC specific header */
 
 #ifdef __cplusplus
@@ -240,7 +243,7 @@ nwGtpv1uMsgSetTeid(NW_IN NwGtpv1uMsgHandleT hMsg, NwU32T teid)
 {
     NwGtpv1uMsgT *thiz = (NwGtpv1uMsgT *) hMsg;
     thiz->teid = teid;
-    printf("nwGtpv1uMsgSetTeid() teid %u", teid);
+    GTPU_DEBUG("nwGtpv1uMsgSetTeid() teid %u", teid);
     return NW_GTPV1U_OK;
 }
 
