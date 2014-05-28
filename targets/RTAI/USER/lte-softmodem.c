@@ -1385,6 +1385,8 @@ int main(int argc, char **argv) {
 #if defined(ENABLE_ITTI)
     set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)
+    set_comp_log(UDP_,    LOG_DEBUG,   LOG_HIGH, 1);
+    set_comp_log(GTPU,    LOG_DEBUG,   LOG_HIGH, 1);
     set_comp_log(S1AP,    LOG_DEBUG,   LOG_HIGH, 1);
     set_comp_log(SCTP,    LOG_INFO,   LOG_HIGH, 1);
 # endif
