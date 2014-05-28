@@ -118,7 +118,7 @@ struct udp_socket_desc_s *udp_eNB_get_socket_desc(task_id_t task_id)
 
     STAILQ_FOREACH(udp_sock_p, &udp_socket_list, entries) {
         if (udp_sock_p->task_id == task_id) {
-            LOG_D(UDP_, "Found matching task desc\n");
+            LOG_I(UDP_, "Found matching task desc\n");
             break;
         }
     }
@@ -137,7 +137,7 @@ void udp_eNB_process_file_descriptors(struct epoll_event *events, int nb_events)
     for (i = 0; i < nb_events; i++) {
         STAILQ_FOREACH(udp_sock_p, &udp_socket_list, entries) {
             if (udp_sock_p->sd == events[i].data.fd) {
-                LOG_D(UDP_, "Found matching task desc\n");
+                LOG_I(UDP_, "Found matching task desc\n");
                 udp_eNB_receiver(udp_sock_p);
                 break;
             }
@@ -239,15 +239,18 @@ void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP)
     udp_data_ind_t           *udp_data_ind_p   = NULL;
     uint8_t                  *forwarded_buffer = NULL;
 
-    while (1) {
+    if (1) {
         from_len = (socklen_t)sizeof(struct sockaddr_in);
 
-        LOG_D(UDP_, "before recvfrom sd %d\n", udp_sock_pP->sd);
+        LOG_I(UDP_, "before recvfrom sd %d\n", udp_sock_pP->sd);
         if ((n = recvfrom(udp_sock_pP->sd, l_buffer, sizeof(l_buffer), 0,
                           (struct sockaddr *)&addr, &from_len)) < 0) {
             LOG_E(UDP_, "Recvfrom failed %s\n", strerror(errno));
-            break;
-        } else {
+            return;
+        } else if (n == 0){
+            LOG_I(UDP_, "Recvfrom returned 0\n");
+        	return;
+        } else{
             forwarded_buffer = calloc(n, sizeof(uint8_t));
             memcpy(forwarded_buffer, l_buffer, n);
             message_p = itti_alloc_new_message(TASK_UDP, UDP_DATA_IND);
@@ -261,10 +264,10 @@ void udp_eNB_receiver(struct udp_socket_desc_s *udp_sock_pP)
             LOG_I(UDP_, "Msg of length %d received from %s:%u\n",
                       n, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
             if (itti_send_msg_to_task(udp_sock_pP->task_id, INSTANCE_DEFAULT, message_p) < 0) {
-                LOG_D(UDP_, "Failed to send message %d to task %d\n",
+                LOG_I(UDP_, "Failed to send message %d to task %d\n",
                           UDP_DATA_IND,
                           udp_sock_pP->task_id);
-                break;
+                return;
             }
         }
     }
@@ -289,98 +292,103 @@ void *udp_eNB_task(void *args_p)
     itti_mark_task_ready(TASK_UDP);
     while(1) {
         itti_receive_msg(TASK_UDP, &received_message_p);
+        LOG_W(UDP_, "Got message %p\n", received_message_p);
         if (received_message_p != NULL) {
 
             msg_name = ITTI_MSG_NAME (received_message_p);
             instance = ITTI_MSG_INSTANCE (received_message_p);
 
-        switch (ITTI_MSG_ID(received_message_p))
-        {
-            case UDP_INIT: {
-                udp_init_t *udp_init_p;
-                udp_init_p = &received_message_p->ittiMsg.udp_init;
+            switch (ITTI_MSG_ID(received_message_p))
+            {
+                case UDP_INIT: {
+                    LOG_W(UDP_, "Received UDP_INIT\n");
+                    udp_init_t *udp_init_p;
+                    udp_init_p = &received_message_p->ittiMsg.udp_init;
                     udp_eNB_create_socket(
                     udp_init_p->port,
                     udp_init_p->address,
                     ITTI_MSG_ORIGIN_ID(received_message_p));
-            } break;
+                } break;
 
-            case UDP_DATA_REQ: {
-                int     udp_sd = -1;
-                ssize_t bytes_written;
+                case UDP_DATA_REQ: {
+                	LOG_W(UDP_, "Received UDP_DATA_REQ\n");
+                    int     udp_sd = -1;
+                    ssize_t bytes_written;
 
-                struct udp_socket_desc_s *udp_sock_p = NULL;
-                udp_data_req_t           *udp_data_req_p;
-                struct sockaddr_in        peer_addr;
+                    struct udp_socket_desc_s *udp_sock_p = NULL;
+                    udp_data_req_t           *udp_data_req_p;
+                    struct sockaddr_in        peer_addr;
 
-                udp_data_req_p = &received_message_p->ittiMsg.udp_data_req;
+                    udp_data_req_p = &received_message_p->ittiMsg.udp_data_req;
 
-                memset(&peer_addr, 0, sizeof(struct sockaddr_in));
+                    memset(&peer_addr, 0, sizeof(struct sockaddr_in));
 
-                peer_addr.sin_family       = AF_INET;
-                peer_addr.sin_port         = htons(udp_data_req_p->peer_port);
-                peer_addr.sin_addr.s_addr  = udp_data_req_p->peer_address;
+                    peer_addr.sin_family       = AF_INET;
+                    peer_addr.sin_port         = htons(udp_data_req_p->peer_port);
+                    peer_addr.sin_addr.s_addr  = udp_data_req_p->peer_address;
 
-                pthread_mutex_lock(&udp_socket_list_mutex);
+                    pthread_mutex_lock(&udp_socket_list_mutex);
                     udp_sock_p = udp_eNB_get_socket_desc(ITTI_MSG_ORIGIN_ID(received_message_p));
 
-                if (udp_sock_p == NULL) {
+                    if (udp_sock_p == NULL) {
                         LOG_E(UDP_,
                                 "Failed to retrieve the udp socket descriptor "
                                 "associated with task %d\n",
                                 ITTI_MSG_ORIGIN_ID(received_message_p));
-                    pthread_mutex_unlock(&udp_socket_list_mutex);
-                    if (udp_data_req_p->buffer) {
-                        free(udp_data_req_p->buffer);
+                        pthread_mutex_unlock(&udp_socket_list_mutex);
+                        if (udp_data_req_p->buffer) {
+                            free(udp_data_req_p->buffer);
+                        }
+                        goto on_error;
                     }
-                    goto on_error;
-                }
-                udp_sd = udp_sock_p->sd;
-                pthread_mutex_unlock(&udp_socket_list_mutex);
+                    udp_sd = udp_sock_p->sd;
+                    pthread_mutex_unlock(&udp_socket_list_mutex);
 
-                LOG_D(UDP_, "[%d] Sending message of size %u to "IPV4_ADDR" and port %u\n",
+                    LOG_W(UDP_, "[%d] Sending message of size %u to "IPV4_ADDR" and port %u\n",
                             udp_sd,
                             udp_data_req_p->buffer_length,
                           IPV4_ADDR_FORMAT(udp_data_req_p->peer_address),
                           udp_data_req_p->peer_port);
 
                     bytes_written = sendto(
-                            udp_sd,
-                            udp_data_req_p->buffer,
-                            udp_data_req_p->buffer_length,
-                            0,
-                                       (struct sockaddr *)&peer_addr,
-                                       sizeof(struct sockaddr_in));
+                        udp_sd,
+                        udp_data_req_p->buffer,
+                        udp_data_req_p->buffer_length,
+                        0,
+                        (struct sockaddr *)&peer_addr,
+                        sizeof(struct sockaddr_in));
 
-                if (bytes_written != udp_data_req_p->buffer_length) {
-                    LOG_E(UDP_, "There was an error while writing to socket "
-                    "(%d:%s)\n", errno, strerror(errno));
-                }
-            } break;
+                    if (bytes_written != udp_data_req_p->buffer_length) {
+                        LOG_E(UDP_, "There was an error while writing to socket "
+                            "(%d:%s)\n", errno, strerror(errno));
+                    }
+                } break;
 
-            case TERMINATE_MESSAGE: {
-                itti_exit_task();
-            } break;
+                case TERMINATE_MESSAGE: {
+                    itti_exit_task();
+                } break;
 
-            case MESSAGE_TEST: {
-            } break;
+                case MESSAGE_TEST: {
+                } break;
 
-            default: {
-                LOG_D(UDP_, "Unkwnon message ID %d:%s\n",
+                default: {
+                	LOG_W(UDP_, "Unkwnon message ID %d:%s\n",
                             ITTI_MSG_ID(received_message_p),
                             ITTI_MSG_NAME(received_message_p));
-            } break;
-        }
+                } break;
+            }
 on_error:
             itti_free (ITTI_MSG_ORIGIN_ID(received_message_p), received_message_p);
-        received_message_p = NULL;
+            received_message_p = NULL;
         }
         nb_events = itti_get_events(TASK_UDP, &events);
         /* Now handle notifications for other sockets */
         if (nb_events > 0) {
+        	LOG_W(UDP_, "UDP task Process %d events\n",nb_events);
             udp_eNB_process_file_descriptors(events, nb_events);
         }
     }
+    LOG_W(UDP_, "Task UDP eNB exiting\n");
     return NULL;
 }
 
