@@ -97,7 +97,8 @@ nwGtpv1uMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
         pMsg->msgLen        = ((pMsg->seqNumFlag || pMsg->npduNumFlag
                                 || pMsg->extHdrFlag) ?
-                               NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - 4));
+                                4 : 0);
+        //NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - 4));
 
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
@@ -142,6 +143,7 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
         memcpy(pMsg->msgBuf + pMsg->msgLen, tpdu, tpduLength);
         pMsg->msgLen        += tpduLength;
+        pMsg->msgLen        -= 8;
 
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
