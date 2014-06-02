@@ -220,7 +220,7 @@ nwGtpv1uCreateAndSendMsg( NwGtpv1uStackT *thiz, NwU32T peerIp, NwU16T peerPort,
 
     rc = thiz->udp.udpDataReqCallback(thiz->udp.hUdp,
                                       pMsg->msgBuf,
-                                      pMsg->msgLen,
+                                      pMsg->msgLen + NW_GTPV1U_EPC_MIN_HEADER_SIZE,
                                       peerIp,
                                       peerPort);
 

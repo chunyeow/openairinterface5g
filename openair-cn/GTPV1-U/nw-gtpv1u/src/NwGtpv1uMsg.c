@@ -47,6 +47,7 @@
 #include "UTIL/LOG/log.h"
 
 #define NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE                             (12)   /**< Size of GTPv1u EPC specific header */
+#define NW_GTPV1U_EPC_MIN_HEADER_SIZE                                  (8)
 
 #ifdef __cplusplus
 extern "C" {
@@ -143,7 +144,9 @@ nwGtpv1uGpduMsgNew( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
 
         memcpy(pMsg->msgBuf + pMsg->msgLen, tpdu, tpduLength);
         pMsg->msgLen        += tpduLength;
-        pMsg->msgLen        -= 8;
+        pMsg->msgLen        = pMsg->msgLen - ((pMsg->seqNumFlag || pMsg->npduNumFlag
+            || pMsg->extHdrFlag ) ?
+           NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE : (NW_GTPV1U_EPC_SPECIFIC_HEADER_SIZE - 4));
 
         *phMsg = (NwGtpv1uMsgHandleT) pMsg;
         return NW_GTPV1U_OK;
