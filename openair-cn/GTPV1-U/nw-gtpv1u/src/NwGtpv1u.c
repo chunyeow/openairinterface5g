@@ -56,6 +56,9 @@ extern "C" {
  *                    P R I V A T E    F U N C T I O N S                    *
  *--------------------------------------------------------------------------*/
 
+#define NW_GTPV1U_EPC_MIN_HEADER_SIZE                                  (8)
+
+
 void
 nwGtpv1uDisplayBanner(void)
 {
