@@ -46,7 +46,9 @@
 #include "NwGtpv1uLog.h"
 
 #include "gtpv1u.h"
+#if defined(ENB_MODE)
 #include "UTIL/LOG/log.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -377,7 +379,7 @@ nwGtpv1uDestroyTunnelEndPoint( NwGtpv1uStackT *thiz,
     NwGtpv1uTunnelEndPointT *pRemovedTeid;
 
     if(pUlpReq->apiInfo.destroyTunnelEndPointInfo.hStackSessionHandle) {
-        LOG_D(GTPU,  "Destroying Tunnel end-point '%x'",
+        GTPU_DEBUG(  "Destroying Tunnel end-point '%x'",
                pUlpReq->apiInfo.destroyTunnelEndPointInfo.hStackSessionHandle);
         pRemovedTeid = RB_REMOVE(NwGtpv1uTunnelEndPointIdentifierMap, &(thiz->teidMap),
                                  (NwGtpv1uTunnelEndPointT *)(
