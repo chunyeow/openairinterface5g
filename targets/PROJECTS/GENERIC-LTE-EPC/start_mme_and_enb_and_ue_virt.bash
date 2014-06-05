@@ -101,7 +101,7 @@ fi
 #######################################################
 # CHECK MISC SOFTWARES AND LIBS
 #######################################################
-check_install_epc_software
+#check_install_epc_software
 
 ######################################
 # compile EPC #
@@ -149,24 +149,36 @@ cd $THIS_SCRIPT_PATH
 #######################################################
 SEARCHED_CONFIG_FILE_ENB="enb*.conf"
 CONFIG_FILE_ENB=`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_ENB`
-if [ -f $CONFIG_FILE_ENB ]; then
-    echo_warning "eNB config file found is now $CONFIG_FILE_ENB"
+if [ a$CONFIG_FILE_ENB != a ]; then
+    if [ -f $CONFIG_FILE_ENB ]; then
+        echo_warning "eNB config file found is now $CONFIG_FILE_ENB"
+    else
+        echo_error "eNB config file not found, exiting (searched for $SEARCHED_CONFIG_FILE_ENB in $CONFIG_FILE_DIR)"
+        exit 1
+    fi
 else
-    echo_error "eNB config file not found, exiting"
+    echo_error "eNB config file not found, exiting (searched for $SEARCHED_CONFIG_FILE_ENB in $CONFIG_FILE_DIR)"
     exit 1
 fi
 
-SEARCHED_CONFIG_FILE_EPC="epc*.conf"
+SEARCHED_CONFIG_FILE_EPC="epc.*.*.conf"
 CONFIG_FILE_EPC=`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_EPC`
-if [ -f $CONFIG_FILE_EPC ]; then
-    echo_warning "EPC config file found is now $CONFIG_FILE_EPC"
+if [ a$CONFIG_FILE_EPC != a ]; then
+    if [ -f $CONFIG_FILE_EPC ]; then
+        echo_warning "EPC config file found is now $CONFIG_FILE_EPC"
+    else
+        echo_error "EPC config file not found, exiting (searched for $SEARCHED_CONFIG_FILE_EPC in $CONFIG_FILE_DIR)"
+        exit 1
+    fi
 else
-    echo_error "EPC config file not found, exiting (searched for $SEARCHED_CONFIG_FILE_EPC)"
+    echo_error "EPC config file not found, exiting (searched for $SEARCHED_CONFIG_FILE_EPC in $CONFIG_FILE_DIR)"
     exit 1
 fi
 #######################################################
 # SOURCE CONFIG FILES for MME AND eNB
 #######################################################
+echo_success "PARSING CONFIG FILES..."
+
 rm -f /tmp/source.txt
 VARIABLES="
            ENB_INTERFACE_NAME_FOR_S1_MME\|\
@@ -188,9 +200,9 @@ VARIABLES="
            PGW_INTERFACE_NAME_FOR_S5_S8\|\
            PGW_IPV4_ADDRESS_FOR_S5_S8\|\
            PGW_INTERFACE_NAME_FOR_SGI\|\
-           PGW_IPV4_ADDR_FOR_SGI\|\
+           PGW_IPV4_ADDRESS_FOR_SGI\|\
            HSS_INTERFACE_NAME_FOR_S6A\|\
-           HSS_IPV4_ADDR_FOR_S6A"
+           HSS_IPV4_ADDRESS_FOR_S6A"
 
 VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
 VARIABLES=$(echo $VARIABLES | tr -d ' ')
@@ -207,8 +219,8 @@ declare SGW_IPV4_NETMASK_FOR_S11=$(          echo $SGW_IPV4_ADDRESS_FOR_S11     
 declare SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP=$(echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP | cut -f2 -d '/')
 declare SGW_IPV4_NETMASK_FOR_S5_S8_UP=$(     echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP      | cut -f2 -d '/')
 declare PGW_IPV4_NETMASK_FOR_S5_S8=$(        echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f2 -d '/')
-declare PGW_IPV4_NETMASK_FOR_SGI=$(          echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f2 -d '/')
-declare HSS_IPV4_NETMASK_FOR_S6A=$(          echo $HSS_IPV4_ADDR_FOR_S6A              | cut -f2 -d '/')
+declare PGW_IPV4_NETMASK_FOR_SGI=$(          echo $PGW_IPV4_ADDRESS_FOR_SGI           | cut -f2 -d '/')
+declare HSS_IPV4_NETMASK_FOR_S6A=$(          echo $HSS_IPV4_ADDRESS_FOR_S6A           | cut -f2 -d '/')
 
 ENB_IPV4_ADDRESS_FOR_S1_MME=$(               echo $ENB_IPV4_ADDRESS_FOR_S1_MME        | cut -f1 -d '/')
 ENB_IPV4_ADDRESS_FOR_S1U=$(                  echo $ENB_IPV4_ADDRESS_FOR_S1U           | cut -f1 -d '/')
@@ -219,15 +231,15 @@ SGW_IPV4_ADDRESS_FOR_S11=$(                  echo $SGW_IPV4_ADDRESS_FOR_S11     
 SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP=$(        echo $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP | cut -f1 -d '/')
 SGW_IPV4_ADDRESS_FOR_S5_S8_UP=$(             echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP      | cut -f1 -d '/')
 PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f1 -d '/')
-PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
-HSS_IPV4_ADDR_FOR_S6A=$(                     echo $HSS_IPV4_ADDR_FOR_S6A              | cut -f1 -d '/')
+PGW_IPV4_ADDRESS_FOR_SGI=$(                  echo $PGW_IPV4_ADDRESS_FOR_SGI           | cut -f1 -d '/')
+HSS_IPV4_ADDRESS_FOR_S6A=$(                  echo $HSS_IPV4_ADDRESS_FOR_S6A           | cut -f1 -d '/')
 
 
 #######################################################
 # BUILD NETWORK
 #######################################################
 clean_tun_network
-build_tun_network
+build_epc_tun_network
 test_tun_network
 
 ##################################################
@@ -253,7 +265,8 @@ cd $OPENAIRCN_DIR/$OBJ_DIR
 
 nohup tshark -i MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_PCAP_LOG_FILE &
 
-nohup xterm -e $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
+$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
+#nohup xterm -e $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
 
 
 ##################################################

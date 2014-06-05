@@ -541,21 +541,6 @@ build_mme_spgw_vlan_network() {
     #                                              +------+           +-------+     +----+              +----+
     #                                                     |           |      11 VLANS    |              |
     #                                                     +-----------+   ids=[5..15]    +--------------+
-    cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_NETFILTER_FOR_SGI
-    if [ $? -ne 0 ]
-    then
-        export ENABLE_USE_NETFILTER_FOR_SGI=0
-    else
-        export ENABLE_USE_NETFILTER_FOR_SGI=1
-    fi
-
-    cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_RAW_FOR_SGI
-    if [ $? -ne 0 ]
-    then
-        export ENABLE_USE_RAW_FOR_SGI=0
-    else
-        export ENABLE_USE_RAW_FOR_SGI=1
-    fi
     
     bash_exec "modprobe 8021q"
     
@@ -728,7 +713,7 @@ build_tun_network() {
     set_interface_up $MME_INTERFACE_NAME_FOR_S1_MME        $MME_IPV4_ADDRESS_FOR_S1_MME        $MME_IPV4_NETMASK_FOR_S1_MME
     set_interface_up $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP $SGW_IPV4_NETMASK_FOR_S1U_S12_S4_UP
 
-    set_interface_up $MME_INTERFACE_NAME_FOR_S1_MME        $MME_IPV4_ADDRESS_FOR_S1_MME        $MME_IPV4_NETMASK_FOR_S1_MME
+    set_interface_up $ENB_INTERFACE_NAME_FOR_S1_MME        $ENB_IPV4_ADDRESS_FOR_S1_MME        $ENB_IPV4_NETMASK_FOR_S1_MME
     set_interface_up $ENB_INTERFACE_NAME_FOR_S1U           $ENB_IPV4_ADDRESS_FOR_S1U           $ENB_IPV4_NETMASK_FOR_S1U
 
     set_interface_up $MME_INTERFACE_NAME_FOR_S11_MME       $MME_IPV4_ADDRESS_FOR_S11_MME       $MME_IPV4_NETMASK_FOR_S11_MME
@@ -807,11 +792,12 @@ test_tun_network() {
 
     # Get MAC address of router.eur
     ping -c 1 hss.eur > /dev/null || { echo_fatal "hss.eur does not respond to ping" >&2 ; }
-    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
+#TEMP    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
     return 0
 }
 
 clean_tun_network() {
+    bash_exec "modprobe tun"
     ##################################################
     # del interfaces eNB and MME/SPGW and HSS
     ##################################################
@@ -827,28 +813,12 @@ clean_tun_network() {
 
 build_epc_tun_network() {
 
-    cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_NETFILTER_FOR_SGI
-    if [ $? -ne 0 ]
-    then
-        export ENABLE_USE_NETFILTER_FOR_SGI=0
-    else
-        export ENABLE_USE_NETFILTER_FOR_SGI=1
-    fi
-
-    cat $OPENAIRCN_DIR/$OBJ_DIR/Makefile | grep CFLAGS\ \=\  | grep DENABLE_USE_RAW_FOR_SGI
-    if [ $? -ne 0 ]
-    then
-        export ENABLE_USE_RAW_FOR_SGI=0
-    else
-        export ENABLE_USE_RAW_FOR_SGI=1
-    fi
-
     build_tun_network
 
-    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
-    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
-    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
-    echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
+#TEMP    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
+#TEMP    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
+#TEMP    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
+#TEMP    echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
 
     bash_exec "modprobe 8021q"
 
