@@ -22,7 +22,7 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4);
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'D:\trials1 train extracted\eNB_data_20140331_UHF_run1.EMOS';
+        filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
         
         nframes = 100; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
@@ -32,10 +32,11 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the first carrier, which is 10MHz
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'D:\trials1 train extracted\eNB_data_20140331_2.6GHz_run1.EMOS';
+        %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_2.6GHz_run1.EMOS';
+        filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
         
         nframes = 50; % frames in one block
-        threshold = 1e+4 ; % maybe should change that !!!!
+        threshold = 3e+4 ; % maybe should change that !!!!
 end
 
 destdir = 'E:\EMOS\corridor\trials1 train';
@@ -126,7 +127,7 @@ while ~feof(fid)
         %         [mm,where] = max(m./meanCorr)
         
         idx(m < threshold) = [];
-        if size(idx,2) <= 1
+        if size(idx,2) <= 2
             flag1 = 1 ;
             flag2 = 0 ;
             
@@ -241,7 +242,7 @@ while ~feof(fid)
                     % timing drift. We try to keep the peak of the impulse response at
                     % sample prefix_length/8.
                     [m,idx] = max(fft(ifft(PDP_all),p(carrier).num_carriers));
-                    offset = idx - p(carrier).prefix_length/8;
+                    offset = idx - p(carrier).prefix_length/8
                     if offset > p(carrier).prefix_length
                         offset = offset - p(carrier).num_carriers;
                     end
