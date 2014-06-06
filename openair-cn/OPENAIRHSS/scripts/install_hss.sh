@@ -101,6 +101,7 @@ cd freeDiameter-1.1.5
 patch -p1 < $CURRENT_PATH/freediameter-1.1.5.patch > install_log.txt
 mkdir build
 cd build
+# optionaly if needed add -DCMAKE_BUILD_TYPE=debug
 cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr ../ > install_log.txt
 if [ $? -ne 0 ]
 then
