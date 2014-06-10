@@ -237,8 +237,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   long int          tdd_config_s;
   const char*       prefix_type;
   long int          eutra_band;
-  long long         downlink_frequency;
-  long long         uplink_frequency_offset;
+  long int          downlink_frequency;
+  long int          uplink_frequency_offset;
   char*             ipv4                          = NULL;
   char*             ipv6                          = NULL;
   char*             active                        = NULL;
@@ -428,12 +428,12 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       enb_properties.properties[enb_properties_index]->eutra_band = 7; // Default band
                   }
 
-                  if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
-		    enb_properties.properties[enb_properties_index]->downlink_frequency = (unsigned int) downlink_frequency;
+                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
+                      enb_properties.properties[enb_properties_index]->downlink_frequency = (unsigned int) downlink_frequency;
                   } else {
-		    enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
+                      enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
                   }
-		   if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
+                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
                       enb_properties.properties[enb_properties_index]->uplink_frequency_offset = (unsigned int) uplink_frequency_offset;
                   } else {
                       // Default uplink frequency offset
@@ -443,7 +443,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           enb_properties.properties[enb_properties_index]->uplink_frequency_offset = 0;
                       }
                   }
-		   
+
                   parse_errors += enb_check_band_frequencies(lib_config_file_name_pP,
                                              enb_properties_index,
                                              enb_properties.properties[enb_properties_index]->eutra_band,
