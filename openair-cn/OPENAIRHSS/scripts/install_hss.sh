@@ -98,7 +98,8 @@ wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.5.tar.gz > install_
 tar -xzf 1.1.5.tar.gz > install_log.txt
 echo "Uncompressing freeDiameter archive"
 cd freeDiameter-1.1.5
-patch -p1 < $CURRENT_PATH/freediameter-1.1.5.patch > install_log.txt
+echo "Patching freeDiameter"
+patch -p1 < $OPENAIRCN_DIR/S6A/freediameter/freediameter-1.1.5.patch > install_log.txt
 mkdir build
 cd build
 # optionaly if needed add -DCMAKE_BUILD_TYPE=debug
@@ -113,5 +114,5 @@ make -j2 > install_log.txt 2>&1
 make test > install_log.txt
 sudo make install > install_log.txt
 
-cd $CURRENT_PATH
+cd $OPENAIRCN_DIR/OPENAIRHSS/conf
 ./make_certs.sh
