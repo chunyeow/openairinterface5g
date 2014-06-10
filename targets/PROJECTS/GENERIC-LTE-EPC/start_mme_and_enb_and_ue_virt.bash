@@ -147,7 +147,7 @@ cd $THIS_SCRIPT_PATH
 #######################################################
 # FIND CONFIG FILES
 #######################################################
-SEARCHED_CONFIG_FILE_ENB="enb*.conf"
+SEARCHED_CONFIG_FILE_ENB="enb*_$HOSTNAME.conf"
 CONFIG_FILE_ENB=`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_ENB`
 if [ a$CONFIG_FILE_ENB != a ]; then
     if [ -f $CONFIG_FILE_ENB ]; then
@@ -161,7 +161,7 @@ else
     exit 1
 fi
 
-SEARCHED_CONFIG_FILE_EPC="epc.*.*.conf"
+SEARCHED_CONFIG_FILE_EPC="epc*_$HOSTNAME.conf"
 CONFIG_FILE_EPC=`find $CONFIG_FILE_DIR -iname $SEARCHED_CONFIG_FILE_EPC`
 if [ a$CONFIG_FILE_EPC != a ]; then
     if [ -f $CONFIG_FILE_EPC ]; then
@@ -253,7 +253,7 @@ test_tun_network
 cd $THIS_SCRIPT_PATH
 if [ ! -d "OUTPUT/"$HOSTNAME ]
 then
-    bash_exec "mkdir -m 777 ./OUTPUT/$HOSTNAME"
+    bash_exec "mkdir -p -m 777 ./OUTPUT/$HOSTNAME"
     echo_success "Created OUTPUT/$HOSTNAME directory"
 fi
 
