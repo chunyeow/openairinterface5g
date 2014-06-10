@@ -273,18 +273,20 @@ int s6a_init(hss_config_t *hss_config_p)
         goto err;
     }
 
-    ret = fd_core_start();
-    if (ret != 0) {
-        strcpy(why, "fd_core_start");
-        goto err;
-    }
-
     /* Parse the external configuration file */
     ret = fd_core_parseconf(hss_config_p->freediameter_config);
     if (ret != 0) {
         strcpy(why, "fd_core_parseconf");
         goto err;
     }
+
+
+    ret = fd_core_start();
+    if (ret != 0) {
+        strcpy(why, "fd_core_start");
+        goto err;
+    }
+
 
     /* We wait till freediameter has completed loading extensions */
     fd_core_waitstartcomplete();
