@@ -21,6 +21,8 @@ NoRelay;
 TLS_old_method;
 AppServThreads = 1;
 
+ListenOn = "192.168.60.145";
+
 # -------- Extensions ---------
 
 # Uncomment (and create rtd.conf) to specify routing table for this peer.
