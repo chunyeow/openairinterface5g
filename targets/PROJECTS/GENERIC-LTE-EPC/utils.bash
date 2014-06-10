@@ -701,6 +701,15 @@ build_tun_network() {
     ##################################################
     # build network between eNB and MME/SPGW and HSS
     ##################################################
+    echo_success  "ENB_INTERFACE_NAME_FOR_S1_MME is "$ENB_INTERFACE_NAME_FOR_S1_MME" addr is "$ENB_IPV4_ADDRESS_FOR_S1_MME
+    echo_success  "ENB_INTERFACE_NAME_FOR_S1U is "$ENB_INTERFACE_NAME_FOR_S1U" addr is "$ENB_IPV4_ADDRESS_FOR_S1U
+    echo_success  "MME_INTERFACE_NAME_FOR_S1_MME is "$MME_INTERFACE_NAME_FOR_S1_MME" addr is "$MME_IPV4_ADDRESS_FOR_S1_MME
+    echo_success  "SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP is "$SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP" addr is "$SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP
+    echo_success  "MME_INTERFACE_NAME_FOR_S11_MME is "$MME_INTERFACE_NAME_FOR_S11_MME" addr is "$MME_IPV4_ADDRESS_FOR_S11_MME
+    echo_success  "SGW_INTERFACE_NAME_FOR_S11 is "$SGW_INTERFACE_NAME_FOR_S11" addr is "$SGW_IPV4_ADDRESS_FOR_S11
+    echo_success  "MME_INTERFACE_NAME_FOR_S6A is "$MME_INTERFACE_NAME_FOR_S6A" addr is "$MME_IPV4_ADDRESS_FOR_S6A
+    echo_success  "HSS_INTERFACE_NAME_FOR_S6A is "$HSS_INTERFACE_NAME_FOR_S6A" addr is "$HSS_IPV4_ADDRESS_FOR_S6A
+    
     create_tun_interface $ENB_INTERFACE_NAME_FOR_S1_MME
     create_tun_interface $ENB_INTERFACE_NAME_FOR_S1U
     create_tun_interface $MME_INTERFACE_NAME_FOR_S1_MME
