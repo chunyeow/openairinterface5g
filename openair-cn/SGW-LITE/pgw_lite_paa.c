@@ -75,8 +75,8 @@ void pgw_lite_load_pool_ip_addresses(void) {
         ipv4_p = calloc(1, sizeof(struct pgw_lite_ipv4_list_elm_s));
         ipv4_p->addr.s_addr = ntohl(conf_ipv4_p->addr.s_addr);
         STAILQ_INSERT_TAIL(&pgw_app.pgw_lite_ipv4_list_free, ipv4_p, ipv4_entries);
-        SPGW_APP_DEBUG("Loaded IPv4 PAA address in pool: %s\n",
-                inet_ntoa(conf_ipv4_p->addr));
+        //SPGW_APP_DEBUG("Loaded IPv4 PAA address in pool: %s\n",
+        //        inet_ntoa(conf_ipv4_p->addr));
     }
     STAILQ_FOREACH(conf_ipv6_p, &spgw_config.pgw_config.pgw_lite_ipv6_pool_list, ipv6_entries) {
         ipv6_p = calloc(1, sizeof(struct pgw_lite_ipv6_list_elm_s));
@@ -86,9 +86,9 @@ void pgw_lite_load_pool_ip_addresses(void) {
         STAILQ_INSERT_TAIL(&pgw_app.pgw_lite_ipv6_list_free, ipv6_p, ipv6_entries);
         if (inet_ntop(AF_INET6, &ipv6_p->addr, print_buffer, INET6_ADDRSTRLEN) == NULL) {
             SPGW_APP_ERROR("Could not Load IPv6 PAA address in pool: %s\n", strerror(errno));
-        } else {
+        } /*else {
             SPGW_APP_DEBUG("Loaded IPv6 PAA prefix in pool: %s\n",print_buffer);
-        }
+        }*/
     }
 #if defined(PGW_LITE_FREE_ADDR_POOL_CONFIG)
 

@@ -728,11 +728,30 @@ build_tun_network() {
     set_interface_up $MME_INTERFACE_NAME_FOR_S11_MME       $MME_IPV4_ADDRESS_FOR_S11_MME       $MME_IPV4_NETMASK_FOR_S11_MME
     set_interface_up $SGW_INTERFACE_NAME_FOR_S11           $SGW_IPV4_ADDRESS_FOR_S11           $SGW_IPV4_NETMASK_FOR_S11
 
-    set_interface_up $MME_INTERFACE_NAME_FOR_S11_MME       $MME_IPV4_ADDRESS_FOR_S11_MME       $MME_IPV4_NETMASK_FOR_S11_MME
-    set_interface_up $SGW_INTERFACE_NAME_FOR_S11           $SGW_IPV4_ADDRESS_FOR_S11           $SGW_IPV4_NETMASK_FOR_S11
-
     set_interface_up $MME_INTERFACE_NAME_FOR_S6A           $MME_IPV4_ADDRESS_FOR_S6A           $MME_IPV4_NETMASK_FOR_S6A
     set_interface_up $HSS_INTERFACE_NAME_FOR_S6A           $HSS_IPV4_ADDRESS_FOR_S6A           $HSS_IPV4_NETMASK_FOR_S6A
+}
+
+# arg1 is IF1 IP addr
+# arg2 is IF2 IP addr
+test_local_iperf() {
+    TRY_NO=3
+
+    until [  $TRY_NO -lt 1 ]; do
+        iperf  --bind $1 -u -s 2>&1  > /dev/null &
+        iperf  --bind $2 -u --num 1K -c $1 2>&1 | grep -i WARNING > /dev/null
+        if [ $? -eq 0 ]; then
+            pkill iperf 2>&1 > /dev/null
+            echo_warning "NETWORK TEST FAILED between $1 and $2"
+        else
+            echo_success "NETWORK TEST SUCCESS between $1 and $2"
+            pkill iperf 2>&1 > /dev/null
+            return
+        fi 
+        let TRY_NO-=1
+        pkill iperf 2>&1 > /dev/null
+    done
+    echo_fatal "FATAL: NETWORK TEST FAILED between $1 and $2"
 }
 
 test_tun_network() {
@@ -757,51 +776,14 @@ test_tun_network() {
     
     
     ## TEST NETWORK BETWEEN ENB-MME-SP-GW
-    iperf  --bind $MME_IPV4_ADDRESS_FOR_S1_MME -u -s 2>&1  > /dev/null &
-    iperf  --bind $ENB_IPV4_ADDRESS_FOR_S1_MME -u --num 1K -c $MME_IPV4_ADDRESS_FOR_S1_MME 2>&1 | grep -i WARNING > /dev/null
-    if [ $? -eq 0 ]; then
-        pkill iperf 2>&1 > /dev/null
-        echo_fatal 'NETWORK ERROR CONFIGURATION (tun) between ENB and MME S1'
-    else
-        echo_success 'NETWORK TEST SUCCESS (tun) between ENB and MME S1'
-
-    fi
-    pkill iperf 2>&1 > /dev/null
-
-    iperf  --bind $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP -u -s 2>&1  > /dev/null &
-    iperf  --bind $ENB_IPV4_ADDRESS_FOR_S1U -u --num 1K -c $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP 2>&1 | grep -i WARNING > /dev/null
-    if [ $? -eq 0 ]; then
-        pkill iperf 2>&1 > /dev/null
-        echo_fatal 'NETWORK ERROR CONFIGURATION (tun) between ENB and S-GW S1-U'
-    else
-        echo_success 'NETWORK TEST SUCCESS (tun) between ENB and S-GW S1-U'
-    fi
-    pkill iperf 2>&1 > /dev/null
-
-    iperf  --bind $SGW_IPV4_ADDRESS_FOR_S11 -u -s 2>&1  > /dev/null &
-    iperf  --bind $MME_IPV4_ADDRESS_FOR_S11_MME -u --num 1K -c $SGW_IPV4_ADDRESS_FOR_S11 2>&1 | grep -i WARNING > /dev/null
-    if [ $? -eq 0 ]; then
-        pkill iperf 2>&1 > /dev/null
-        echo_fatal 'NETWORK ERROR CONFIGURATION (tun) between MME and S-GW S11'
-    else
-        echo_success 'NETWORK TEST SUCCESS (tun) between MME and S-GW S11'
-    fi
-    pkill iperf 2>&1 > /dev/null
-    
-    iperf  --bind $HSS_IPV4_ADDRESS_FOR_S6A -u -s 2>&1  > /dev/null &
-    iperf  --bind $MME_IPV4_ADDRESS_FOR_S6A -u --num 1K -c $HSS_IPV4_ADDRESS_FOR_S6A 2>&1 | grep -i WARNING > /dev/null
-    if [ $? -eq 0 ]; then
-        pkill iperf 2>&1 > /dev/null
-        echo_fatal 'NETWORK ERROR CONFIGURATION (tun) between MME and HSS S6A'
-    else
-        echo_success 'NETWORK TEST SUCCESS (openvswitch) between MME and S-GW S11'
-    fi
-    pkill iperf 2>&1 > /dev/null
-
+    test_local_iperf $ENB_IPV4_ADDRESS_FOR_S1_MME  $MME_IPV4_ADDRESS_FOR_S1_MME 
+    test_local_iperf $ENB_IPV4_ADDRESS_FOR_S1U     $SGW_IPV4_ADDRESS_FOR_S1U_S12_S4_UP
+    test_local_iperf $MME_IPV4_ADDRESS_FOR_S11_MME $SGW_IPV4_ADDRESS_FOR_S11
+    test_local_iperf $MME_IPV4_ADDRESS_FOR_S6A     $HSS_IPV4_ADDRESS_FOR_S6A
 
     # Get MAC address of router.eur
     ping -c 1 hss.eur > /dev/null || { echo_fatal "hss.eur does not respond to ping" >&2 ; }
-#TEMP    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
+    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
     return 0
 }
 
@@ -824,10 +806,10 @@ build_epc_tun_network() {
 
     build_tun_network
 
-#TEMP    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
-#TEMP    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
-#TEMP    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
-#TEMP    echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
+    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
+    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
+    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
+    echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
 
     bash_exec "modprobe 8021q"
 

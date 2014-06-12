@@ -79,8 +79,8 @@ declare UE_IPv4_CIDR=$UE_IPv4"/24"
 declare MME_ITTI_LOG_FILE=./itti_mme.$HOSTNAME.log
 declare MME_STDOUT_LOG_FILE=./stdout_mme.$HOSTNAME.log
 declare MME_PCAP_LOG_FILE=./tshark_s1_mme.$HOSTNAME.pcap
-declare ITTI_LOG_FILE=./OUTPUT/itti_enb_ue.$HOSTNAME.log
-declare STDOUT_LOG_FILE=./OUTPUT/stdout_enb_ue.$HOSTNAME.log
+declare ITTI_LOG_FILE=./itti_enb_ue.$HOSTNAME.log
+declare STDOUT_LOG_FILE=./stdout_enb_ue.$HOSTNAME.log
 declare PCAP_LOG_FILE=./tshark_enb.$HOSTNAME.pcap
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
@@ -257,6 +257,7 @@ then
     echo_success "Created OUTPUT/$HOSTNAME directory"
 fi
 
+cd OUTPUT/$HOSTNAME
 rotate_log_file $MME_ITTI_LOG_FILE
 rotate_log_file $MME_STDOUT_LOG_FILE
 rotate_log_file $MME_PCAP_LOG_FILE
@@ -265,8 +266,8 @@ cd $OPENAIRCN_DIR/$OBJ_DIR
 
 nohup tshark -i MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_PCAP_LOG_FILE &
 
-$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
-#nohup xterm -e $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
+#gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE 
+nohup xterm -hold -e gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
 
 
 ##################################################
@@ -304,6 +305,8 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
+
+cd OUTPUT/$HOSTNAME
 rotate_log_file $ITTI_LOG_FILE
 rotate_log_file $STDOUT_LOG_FILE
 rotate_log_file $STDOUT_LOG_FILE.filtered
@@ -311,15 +314,15 @@ rotate_log_file $PCAP_LOG_FILE
 
 cd $THIS_SCRIPT_PATH
 
-nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w $PCAP_LOG_FILE &
+nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w OUTPUT/$HOSTNAME/$PCAP_LOG_FILE &
 
 nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
 pkill tshark
 
-cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
+cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
                         grep -v '[OCM]' | grep -v '[OMG]' | \
                         grep -v 'RLC not configured' | grep -v 'check if serving becomes' | \
-                        grep -v 'mac_rrc_data_req'   | grep -v 'BCCH request =>' > $STDOUT_LOG_FILE.filtered
+                        grep -v 'mac_rrc_data_req'   | grep -v 'BCCH request =>' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered

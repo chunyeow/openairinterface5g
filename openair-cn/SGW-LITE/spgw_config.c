@@ -201,7 +201,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   int               prefix_mask = 0;
   uint64_t          counter64   = 0;
   unsigned char     buf_in_addr[sizeof(struct in_addr)];
-  struct in_addr    addr_start;
+  struct in_addr    addr_start,in_addr_var;
   struct in_addr    addr_mask;
   pgw_lite_conf_ipv4_list_elm_t *ip4_ref = NULL;
   pgw_lite_conf_ipv6_list_elm_t *ip6_ref = NULL;
@@ -220,7 +220,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
       {
           SPGW_APP_ERROR("%s:%d - %s\n", lib_config_file_name_pP, config_error_line(&cfg), config_error_text(&cfg));
           config_destroy(&cfg);
-          AssertFatal (1 == 0, "Failed to parse eNB configuration file %s!\n", lib_config_file_name_pP);
+          AssertFatal (1 == 0, "Failed to parse SP-GW configuration file %s!\n", lib_config_file_name_pP);
       }
   }
   else
@@ -252,6 +252,13 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up = atoi(mask);
               free(cidr);
 
+              in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S1u_S12_S4_up;
+              SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S1u_S12_S4_up: %s/%d on %s\n",
+            		  inet_ntoa(in_addr_var),
+            		  config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S1u_S12_S4_up,
+            		  config_pP->sgw_config.ipv4.sgw_interface_name_for_S1u_S12_S4_up);
+
+
               config_pP->sgw_config.ipv4.sgw_interface_name_for_S5_S8_up = strdup(sgw_interface_name_for_S5_S8_up);
               cidr = strdup(sgw_ipv4_address_for_S5_S8_up);
               address = strtok(cidr, "/");
@@ -259,6 +266,11 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               IPV4_STR_ADDR_TO_INT_NWBO ( address, config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S5_S8_up, "BAD IP ADDRESS FORMAT FOR S5_S8 !\n" )
               config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S5_S8_up = atoi(mask);
               free(cidr);
+              in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S5_S8_up;
+              SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S5_S8_up: %s/%d on %s\n",
+            		  inet_ntoa(in_addr_var),
+            		  config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S5_S8_up,
+            		  config_pP->sgw_config.ipv4.sgw_interface_name_for_S5_S8_up);
 
               config_pP->sgw_config.ipv4.sgw_interface_name_for_S11 = strdup(sgw_interface_name_for_S11);
               cidr = strdup(sgw_ipv4_address_for_S11);
@@ -267,6 +279,11 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               IPV4_STR_ADDR_TO_INT_NWBO ( address, config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S11, "BAD IP ADDRESS FORMAT FOR S11 !\n" )
               config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S11 = atoi(mask);
               free(cidr);
+              in_addr_var.s_addr = config_pP->sgw_config.ipv4.sgw_ipv4_address_for_S11;
+              SPGW_APP_INFO("Parsing configuration file found sgw_ipv4_address_for_S11: %s/%d on %s\n",
+            		  inet_ntoa(in_addr_var),
+            		  config_pP->sgw_config.ipv4.sgw_ip_netmask_for_S11,
+            		  config_pP->sgw_config.ipv4.sgw_interface_name_for_S11);
           }
       }
   }
@@ -274,7 +291,7 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
   setting_pgw = config_lookup(&cfg, PGW_CONFIG_STRING_PGW_CONFIG);
   if(setting_pgw != NULL)
   {
-      subsetting = config_setting_get_member (setting_pgw, SGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG);
+      subsetting = config_setting_get_member (setting_pgw, PGW_CONFIG_STRING_NETWORK_INTERFACES_CONFIG);
       if(subsetting != NULL) {
           if(  (
                   config_setting_lookup_string(subsetting,
@@ -298,6 +315,11 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               IPV4_STR_ADDR_TO_INT_NWBO ( address, config_pP->pgw_config.ipv4.pgw_ipv4_address_for_S5_S8, "BAD IP ADDRESS FORMAT FOR S5_S8 !\n" )
               config_pP->pgw_config.ipv4.pgw_ip_netmask_for_S5_S8 = atoi(mask);
               free(cidr);
+              in_addr_var.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_S5_S8;
+              SPGW_APP_INFO("Parsing configuration file found pgw_ipv4_address_for_S5_S8: %s/%d on %s\n",
+            		  inet_ntoa(in_addr_var),
+            		  config_pP->pgw_config.ipv4.pgw_ip_netmask_for_S5_S8,
+            		  config_pP->pgw_config.ipv4.pgw_interface_name_for_S5_S8);
 
               config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI = strdup(pgw_interface_name_for_SGI);
               cidr = strdup(pgw_ipv4_address_for_SGI);
@@ -306,7 +328,16 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               IPV4_STR_ADDR_TO_INT_NWBO ( address, config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI, "BAD IP ADDRESS FORMAT FOR SGI !\n" )
               config_pP->pgw_config.ipv4.pgw_ip_netmask_for_SGI = atoi(mask);
               free(cidr);
+              in_addr_var.s_addr = config_pP->pgw_config.ipv4.pgw_ipv4_address_for_SGI;
+              SPGW_APP_INFO("Parsing configuration file found pgw_ipv4_address_for_SGI: %s/%d on %s\n",
+            		  inet_ntoa(in_addr_var),
+            		  config_pP->pgw_config.ipv4.pgw_ip_netmask_for_SGI,
+            		  config_pP->pgw_config.ipv4.pgw_interface_name_for_SGI);
+          } else {
+              SPGW_APP_WARN("CONFIG P-GW / NETWORK INTERFACES parsing failed\n");
           }
+      } else {
+          SPGW_APP_WARN("CONFIG P-GW / NETWORK INTERFACES not found\n");
       }
       subsetting = config_setting_get_member (setting_pgw, PGW_CONFIG_STRING_IP_ADDRESS_POOL);
       if(subsetting != NULL) {
@@ -401,6 +432,8 @@ int spgw_config_init(char* lib_config_file_name_pP, spgw_config_t* config_pP) {
               }
           }
       }
+  } else {
+      SPGW_APP_WARN("CONFIG P-GW not found\n");
   }
   return 0;
 }
