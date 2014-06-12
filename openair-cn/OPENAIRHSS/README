@@ -9,7 +9,7 @@ Please follow the steps below to install hss:
 7) sudo apt-get install mysql-client-core-5.5 mysql-server-core-5.5 mysql-server-5.5 phpmyadmin
    set the password for mysql server
    open a browser and connet to the phpmyadmin: localhost/phpmyadmin
-   create the oai_db table using database menu
+   create the oai_db database using database menu
    select the oai_db and import db/oai_db.sql
    select the users, and insert the data
    or mannully use the cmd: sudo mysql -u root -p
