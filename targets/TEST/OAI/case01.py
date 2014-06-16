@@ -106,7 +106,7 @@ def execute(oai, user, pw, logfile,logdir):
         log.ok(case, test, name, conf, '', logfile)
     
     oai.send('cd $OPENAIR_TARGETS;')     
-    oai.send('cd RTAI/USER;')   
+    oai.send('cd RT/USER;')   
 
     try:
         test = '03'

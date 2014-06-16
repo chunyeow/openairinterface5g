@@ -1262,7 +1262,7 @@ int main(int argc, char **argv) {
 
       effective_rate = ((double)(round_trials[0])/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3]));
   
-      printf("Errors (%d/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e) => effective rate %f (%3.1f%%,%f), normalized delay %f (%f)\n",
+      printf("Errors (%d/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e) => effective rate %f (%3.1f%%,%f,%f), normalized delay %f (%f)\n",
 	     errs[0],
 	     round_trials[0],
 	     errs[1],
@@ -1278,6 +1278,7 @@ int main(int argc, char **argv) {
 	     rate*effective_rate,
 	     100*effective_rate,
 	     rate,
+	     rate*get_Qm(mcs),
 	     (1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0])/(double)PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->TBS,
 	     (1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0]));
     

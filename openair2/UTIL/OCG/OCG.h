@@ -475,7 +475,8 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     char *destination_id[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
     char *background[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
     unsigned int aggregation_level[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-    int duration[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    int flow_start[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    int flow_duration[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
     
   } Predefined_Traffic;
 /* @}*/
@@ -529,23 +530,24 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     int stream[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
     int destination_port[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
     unsigned int aggregation_level[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-    int duration[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-
-		char *m2m[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];  
+    int flow_start[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    int flow_duration[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+   
+    char *m2m[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];  
     //M2M_Traffic m2m_traffic;
-		double prob_off_pu[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		double prob_off_ed[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-  	double prob_off_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		double prob_pu_ed[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		double prob_pu_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		double prob_ed_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		double prob_ed_pu[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		unsigned int holding_time_off_ed[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		unsigned int holding_time_off_pu[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		unsigned int holding_time_off_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];	
-		unsigned int holding_time_pe_off[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		unsigned int pu_size_pkts[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
-		unsigned int ed_size_pkts[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_off_pu[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_off_ed[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_off_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_pu_ed[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_pu_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_ed_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    double prob_ed_pu[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    unsigned int holding_time_off_ed[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    unsigned int holding_time_off_pu[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    unsigned int holding_time_off_pe[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];	
+    unsigned int holding_time_pe_off[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    unsigned int pu_size_pkts[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
+    unsigned int ed_size_pkts[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX];
   } Customized_Traffic;
 /* @}*/
 

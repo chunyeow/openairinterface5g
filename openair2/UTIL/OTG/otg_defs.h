@@ -323,7 +323,8 @@ typedef struct {
   int trans_proto[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION];
   int ip_v[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION];
    
-  int duration[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief Duration of traffic generation or use the emuulation time instead */
+  int flow_start[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief Duration of traffic generation or use the emuulation time instead */
+  int flow_duration[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief Duration of traffic generation or use the emuulation time instead */
  
   int idt_dist[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION];	/*!\brief Inter Departure Time distribution */	
   int idt_min[NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_SERVICE_MAX][MAX_NUM_APPLICATION]; 	/*!\brief Min Inter Departure Time, for uniform distrib  */
@@ -380,7 +381,9 @@ typedef struct {
   // num stream for each src
   // int stream [NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX]; // this requires multi thread for parallel stream for a givcen src	
   // emu info
-  int duration[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief Duration of traffic generation or use the emuulation time instead */
+  int flow_start_flag[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief flow start time flag for traffic generation or use the emuulation time instead */
+  int flow_start[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief flow start time of traffic generation or use the emuulation time instead */
+  int flow_duration[NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX][MAX_NUM_APPLICATION]; /*!\brief flow duration of traffic generation or use the emuulation time instead */
   int seed; /*!\brief The seed used to generate the random positions*/
 
 
@@ -427,7 +430,7 @@ typedef struct{
 	unsigned char state; 	/*!< \brief state of node : on, off, or active */
 	unsigned char hdr_type; 	/*!< \brief Header type: tcp/udp vs ipv4/ipv6 */
 	unsigned short pkts_size;		/*!< \brief the size of payload + header */
-  unsigned short aggregation_level;		/*!< \brief packet aggregation level */
+	unsigned short aggregation_level;		/*!< \brief packet aggregation level */
 	unsigned int traffic_type; 		/*!< \brief to specify if it corresponds to an m2m traffic */
 	//int payload_size;	/*!< \brief the size of the payload to transmit */
 	//int header_size; 	/*!< \brief Header type: tcp/udp vs ipv4/ipv6 */

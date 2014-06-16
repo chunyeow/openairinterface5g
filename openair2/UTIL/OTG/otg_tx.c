@@ -398,17 +398,21 @@ void check_ctime(int ctime){
 int check_data_transmit(int src,int dst, int app, int ctime){
 
   unsigned int size=0;
-
-
+  
   // for (application=0; application<g_otg->application_idx[src][dst]; application++){  
 	otg_info->gen_pkts=0;
 
 	LOG_T(OTG,"FLOW_INFO [src %d][dst %d] [IDX %d] [APPLICATION TYPE %d] MAX %d [M2M %d ]\n", src, dst, app, g_otg->application_type[src][dst][app],g_otg->application_idx[src][dst], g_otg->m2m[src][dst][app]);
 	
 	// do not generate packet for this pair of src, dst : no app type and/or no idt are defined	
-	
-	if (g_otg->duration[src][dst][app] > ctime){
-	  LOG_T(OTG,"Do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d \n", src, dst,g_otg->duration[src][dst][app], ctime); 
+	if (g_otg->flow_start[src][dst][app] > ctime ){
+	  //g_ otg->flow_start_flag[src][dst][app]=1;
+	  LOG_D(OTG,"Flow start time not reached : do not generate packet for this pair of src=%d, dst =%d, start %d < ctime %d \n", 
+		src, dst,g_otg->flow_start[src][dst][app], ctime); 
+	  size+=0;	
+	}else if (g_otg->flow_duration[src][dst][app] + g_otg->flow_start[src][dst][app] < ctime ){
+	  LOG_D(OTG,"Flow duration reached: do not generate packet for this pair of src=%d, dst =%d, duration %d < ctime %d + start %d\n", 
+		src, dst,g_otg->flow_duration[src][dst][app], ctime, g_otg->flow_start[src][dst][app]); 
 	  size+=0;	
 	}else if ((g_otg->application_type[src][dst][app]==0)&&(g_otg->idt_dist[src][dst][app][PE_STATE]==0)){  
 	  LOG_D(OTG,"Do not generate packet for this pair of src=%d, dst =%d, IDT zero and app %d not specificed\n", src, dst, app); 
@@ -679,7 +683,7 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	 g_otg_multicast->size_max[i][j][k]=  256;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
 	 
 	 
-	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 g_otg_multicast->flow_duration[i][j][k] = 1000; // the packet will be generated after duration 
 	 header_size_gen_multicast(i,j,k);
 	 break;
        case  MMCBR :
@@ -696,7 +700,7 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	 g_otg_multicast->size_max[i][j][k]= 768 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
 	 
 	 
-	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 g_otg_multicast->flow_duration[i][j][k] = 1000; // the packet will be generated after duration 
 	 header_size_gen_multicast(i,j,k);
 	 break;
        case  MBCBR : 
@@ -713,7 +717,7 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	 g_otg_multicast->size_max[i][j][k]= 1400 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
 	 
 	 
-	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 g_otg_multicast->flow_duration[i][j][k] = 1000; // the packet will be generated after duration 
 	 header_size_gen_multicast(i,j,k);
 	 break;
 	 
@@ -731,7 +735,7 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	 g_otg_multicast->size_max[i][j][k]= 512 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
 	 
 	 
-	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 g_otg_multicast->flow_duration[i][j][k] = 1000; // the packet will be generated after duration 
 	 header_size_gen_multicast(i,j,k);
 	 break;
 
@@ -749,7 +753,7 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	 g_otg_multicast->size_max[i][j][k]= 1024 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
 	 
 	 
-	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 g_otg_multicast->flow_duration[i][j][k] = 1000; // the packet will be generated after duration 
 	 header_size_gen_multicast(i,j,k);
 	 break;
 
@@ -767,7 +771,7 @@ for (i=0; i<2; i++){ // src //maxServiceCount
 	 g_otg_multicast->size_max[i][j][k]= 1400 ;//can not be greater than 1500 which is max_ip_packet_size in pdcp.c
 	 
 	 
-	 g_otg_multicast->duration[i][j][k] = 1000; // the packet will be generated after duration 
+	 g_otg_multicast->flow_duration[i][j][k] = 1000; // the packet will be generated after duration 
 	 header_size_gen_multicast(i,j,k);
 	 break;
 
@@ -823,7 +827,7 @@ int k;
        g_otg->size_max[i][j][k][PE_STATE] = 0;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;
 
@@ -840,7 +844,7 @@ int k;
 	     g_otg->idt_min[i][j][k][PE_STATE], g_otg->size_min[i][j][k][PE_STATE]);
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;
      case MCBR :
@@ -855,7 +859,7 @@ int k;
        LOG_I(OTG,"OTG_CONFIG MCBR, src = %d, dst = %d,  traffic id %d, dist type for size = %d\n", i, j,k , g_otg->size_dist[i][j][k][PE_STATE]);
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;
      case BCBR :
@@ -870,7 +874,7 @@ int k;
        LOG_I(OTG,"OTG_CONFIG BCBR, src = %d, dst = %d, dist type for size = %d\n", i, j, g_otg->size_dist[i][j][k][PE_STATE]);
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif  
        break;
      case AUTO_PILOT : 
@@ -889,7 +893,7 @@ int k;
        g_otg->size_lambda[i][j][k][PE_STATE] = 0;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;
      case BICYCLE_RACE :  
@@ -909,7 +913,7 @@ int k;
 
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;
     /* case OPENARENA : 
@@ -929,7 +933,7 @@ int k;
 
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;  */
      case TEAM_FORTRESS : 
@@ -949,7 +953,7 @@ int k;
 
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
        break;
     
@@ -979,7 +983,7 @@ int k;
 			 g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
 case AUTO_PILOT_L : 
 /* Measurements from: 
@@ -1017,9 +1021,9 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j]= 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
+       break; 
 case AUTO_PILOT_M :
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
@@ -1056,9 +1060,9 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
 			 g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
+       break; 
 case AUTO_PILOT_H : 
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
@@ -1095,9 +1099,9 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
 			 g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
+       break; 
 case AUTO_PILOT_E : 
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
@@ -1135,29 +1139,29 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
 			 g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
-case VIRTUAL_GAME_L : 
+       break; 
+     case VIRTUAL_GAME_L : 
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
        LOG_I(OTG,"VIRTUAL GAME LOW SPEEDS, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
+       g_otg->pu_size_pkts[i][j][k]=1000;
        g_otg->prob_off_pu[i][j][k]=1;
-			 if (i<nb_enb_local)/*DL*/
-       g_otg->holding_time_off_pu[i][j][k]=1000;
-			 else /*UL*/
-			 g_otg->holding_time_off_pu[j][i][k]=500;
-			 g_otg->m2m[i][j][k]=1;
+       if (i<nb_enb_local)/*DL*/
+	 g_otg->holding_time_off_pu[i][j][k]=1000;
+       else /*UL*/
+	 g_otg->holding_time_off_pu[j][i][k]=500;
+       g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j][k] = 302;
-       g_otg->duration[i][j][k] = 1000;
+       g_otg->flow_duration[i][j][k] = 1000;
 #endif 
- 			break; 
-case VIRTUAL_GAME_M : 
+       break; 
+     case VIRTUAL_GAME_M : 
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
@@ -1174,28 +1178,28 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
 			 g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
-case VIRTUAL_GAME_H : 
-/* Measurements from: 
-Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
-*/
+       break; 
+     case VIRTUAL_GAME_H : 
+       /* Measurements from: 
+	  Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
+       */
        LOG_I(OTG,"VIRTUAL GAME HIGH SPEEDS, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
-			 if (i<nb_enb_local)/*DL*/
-       g_otg->holding_time_off_pu[i][j][k]=1000;
-			 else /*UL*/
-       g_otg->holding_time_off_pu[j][i][k]=100;
-			 g_otg->m2m[i][j][k]=1;
+       g_otg->pu_size_pkts[i][j][k]=1000;
+       if (i<nb_enb_local)/*DL*/
+	 g_otg->holding_time_off_pu[i][j][k]=1000;
+       else /*UL*/
+	 g_otg->holding_time_off_pu[j][i][k]=100;
+       g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
-case VIRTUAL_GAME_F : 
+       break; 
+     case VIRTUAL_GAME_F : 
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
@@ -1212,30 +1216,30 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
 			 g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
-case ALARM_HUMIDITY :
-/* Measurements from: 
-Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
-*/
+       break; 
+     case ALARM_HUMIDITY :
+       /* Measurements from: 
+	*  Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
+       */
        LOG_I(OTG,"ALARM HUMIDITY, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
-			 g_otg->ed_size_pkts[i][j][k]=2000;
+       g_otg->pu_size_pkts[i][j][k]=1000;
+       g_otg->ed_size_pkts[i][j][k]=2000;
        g_otg->prob_off_pu[i][j][k]=0.5;
        g_otg->prob_off_ed[i][j][k]=0.5;
        g_otg->prob_pu_ed[i][j][k]=0.5;
        g_otg->holding_time_off_pu[i][j][k]=1680000;		/* 28 minutes*/
        g_otg->holding_time_off_ed[i][j][k]=32400000;  	/* 9 hours*/
-			 g_otg->m2m[i][j][k]=1;
+       g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
-case ALARM_SMOKE : 
+       break; 
+     case ALARM_SMOKE : 
 /* Measurements from: 
 Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
 */
@@ -1252,29 +1256,29 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
        g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
- 			break; 
-case ALARM_TEMPERATURE : 
-/* Measurements from: 
-Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
-*/
+       break; 
+     case ALARM_TEMPERATURE : 
+       /* Measurements from: 
+	*  Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Markus Laner, Kajie Zhou, Philippe Svoboda, Dejan Drajic, Serjan Krco and Milica Popovic) 
+	*/
        LOG_I(OTG,"ALARM TEMPERATURE, src = %d, dst = %d, application type = %d\n", i, j, g_otg->application_type[i][j][k]);
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
-			 g_otg->pu_size_pkts[i][j][k]=1000;
-			 g_otg->ed_size_pkts[i][j][k]=4000;
+       g_otg->pu_size_pkts[i][j][k]=1000;
+       g_otg->ed_size_pkts[i][j][k]=4000;
        g_otg->prob_off_pu[i][j][k]=0.5;
        g_otg->prob_off_ed[i][j][k]=0.5;
        g_otg->prob_pu_ed[i][j][k]=0.5;
        g_otg->holding_time_off_pu[i][j][k]=1680000;		/* 28 minute*/
        g_otg->holding_time_off_ed[i][j][k]=18000000;  	/* 5 hours*/
-			 g_otg->m2m[i][j][k]=1;
+       g_otg->m2m[i][j][k]=1;
 #ifdef STANDALONE
        g_otg->dst_port[i][j]= 303;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
-	   break;
+       break;
      case OPENARENA_DL : 
      case OPENARENA_UL : 
        g_otg->trans_proto[i][j][k] = TCP;
@@ -1297,155 +1301,155 @@ Traffic Modeling Framework for Machine Type Communincation (Navid NiKaein, Marku
 			}
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
 break;
-
-	   case OPENARENA_DL_TARMA :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->m2m[i][j][k]=1;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = TARMA;
-		 /*the tarma initialization*/
-		 otg_info->tarma_stream[i][j][k]=tarmaInitStream (0);
-		 tarmaSetupOpenarenaDownlink(otg_info->tarma_stream[i][j][k]);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break; 
-
-
-	 case VIDEO_VBR_10MBPS :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-		 tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],1);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break;
-
-	case VIDEO_VBR_4MBPS :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-		 tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],2.5);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break;
-
-	case VIDEO_VBR_2MBPS :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-		 tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],5);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break;
-
-	case VIDEO_VBR_768KBPS :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-		 tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],13);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break;
-
+ 
+     case OPENARENA_DL_TARMA :
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->m2m[i][j][k]=1;
+       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = TARMA;
+       /*the tarma initialization*/
+       otg_info->tarma_stream[i][j][k]=tarmaInitStream (0);
+       tarmaSetupOpenarenaDownlink(otg_info->tarma_stream[i][j][k]);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break; 
+       
+       
+     case VIDEO_VBR_10MBPS :
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+       /*the tarma initialization*/
+       otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+       tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],1);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break;
+       
+     case VIDEO_VBR_4MBPS :
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+       /*the tarma initialization*/
+       otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+       tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],2.5);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break;
+       
+     case VIDEO_VBR_2MBPS :
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+       /*the tarma initialization*/
+       otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+       tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],5);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break;
+       
+     case VIDEO_VBR_768KBPS :
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+       /*the tarma initialization*/
+       otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+       tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],13);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break;
+       
 	case VIDEO_VBR_384KBPS :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-		 tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],26);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break;
-
-	case VIDEO_VBR_192KBPS :
-		 g_otg->trans_proto[i][j][k] = TCP;
-		 g_otg->ip_v[i][j][k] = IPV4;
-		 g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
-		 g_otg->idt_min[i][j][k][PE_STATE] =  40;
-		 g_otg->idt_max[i][j][k][PE_STATE] =  40;
-		 g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-		 tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],52);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-		 break;
-
-	case BACKGROUND_USERS:
 	  g_otg->trans_proto[i][j][k] = TCP;
-    g_otg->ip_v[i][j][k] = IPV4;
-	  g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM; 
-	  g_otg->idt_lambda[i][j][k][PE_STATE] = 1/40;
-    g_otg->idt_min[i][j][k][PE_STATE] =  40;
-    g_otg->idt_max[i][j][k][PE_STATE] =  80;
-    g_otg->size_dist[i][j][k][PE_STATE] = BACKGROUND_DIST;
-		/*the background initialization*/
-    //  otg_info->background_stream[i][j][k]=backgroundStreamInit(0,2);
+	  g_otg->ip_v[i][j][k] = IPV4;
+	  g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+	  g_otg->idt_min[i][j][k][PE_STATE] =  40;
+	  g_otg->idt_max[i][j][k][PE_STATE] =  40;
+	  g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+	  /*the tarma initialization*/
+	  otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+	  tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],26);
+	  LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
 	  break;
+	  
+     case VIDEO_VBR_192KBPS :
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->idt_dist[i][j][k][PE_STATE] = FIXED;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+       /*the tarma initialization*/
+       otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+       tarmaSetupVideoGop12(otg_info->tarma_video[i][j][k],52);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break;
+       
+     case BACKGROUND_USERS:
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       g_otg->idt_dist[i][j][k][PE_STATE] = UNIFORM; 
+       g_otg->idt_lambda[i][j][k][PE_STATE] = 1/40;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  80;
+       g_otg->size_dist[i][j][k][PE_STATE] = BACKGROUND_DIST;
+       /*the background initialization*/
+       //  otg_info->background_stream[i][j][k]=backgroundStreamInit(0,2);
+       break;
 
-	case DUMMY : 
-     g_otg->trans_proto[i][j][k] = TCP;
-     g_otg->ip_v[i][j][k] = IPV4;
-		 /*the tarma initialization*/
-		 otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
-     g_otg->idt_dist[i][j][k][PE_STATE] = VIDEO;
-     g_otg->idt_min[i][j][k][PE_STATE] =  40;
-     g_otg->idt_max[i][j][k][PE_STATE] =  40;
-     g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
-		 otg_info->tarma_video[i][j][k]->tarma_size.inputWeight[0]=1;
-		 otg_info->tarma_video[i][j][k]->tarma_size.maWeight[0]=0.6;
-		 otg_info->tarma_video[i][j][k]->tarma_size.maWeight[1]=-1.04;
-		 otg_info->tarma_video[i][j][k]->tarma_size.maWeight[2]=0.44;
-		 otg_info->tarma_video[i][j][k]->tarma_size.arWeight[0]=1;
-		 otg_info->tarma_video[i][j][k]->tarma_size.arWeight[1]=-1.971;
-		 otg_info->tarma_video[i][j][k]->tarma_size.arWeight[2]=0.971;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[0]=0;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[1]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[2]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[3]=1;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[4]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[5]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[6]=1;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[7]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[8]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[9]=1;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[10]=2;
-		 otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[11]=2;
-		 otg_info->tarma_video[i][j][k]->polyWeightFrame[0][0]=300;
-		 otg_info->tarma_video[i][j][k]->polyWeightFrame[0][1]=30;
-		 otg_info->tarma_video[i][j][k]->polyWeightFrame[1][0]=200;
-		 otg_info->tarma_video[i][j][k]->polyWeightFrame[1][1]=20;
-		 otg_info->tarma_video[i][j][k]->polyWeightFrame[2][0]=100;
-		 otg_info->tarma_video[i][j][k]->polyWeightFrame[2][1]=10;
-		   tarmaPrintVideoInit(otg_info->tarma_video[i][j][k]);
-		 LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
- 			break; 
+     case DUMMY : 
+       g_otg->trans_proto[i][j][k] = TCP;
+       g_otg->ip_v[i][j][k] = IPV4;
+       /*the tarma initialization*/
+       otg_info->tarma_video[i][j][k]=tarmaInitVideo(0);
+       g_otg->idt_dist[i][j][k][PE_STATE] = VIDEO;
+       g_otg->idt_min[i][j][k][PE_STATE] =  40;
+       g_otg->idt_max[i][j][k][PE_STATE] =  40;
+       g_otg->size_dist[i][j][k][PE_STATE] = VIDEO;
+       otg_info->tarma_video[i][j][k]->tarma_size.inputWeight[0]=1;
+       otg_info->tarma_video[i][j][k]->tarma_size.maWeight[0]=0.6;
+       otg_info->tarma_video[i][j][k]->tarma_size.maWeight[1]=-1.04;
+       otg_info->tarma_video[i][j][k]->tarma_size.maWeight[2]=0.44;
+       otg_info->tarma_video[i][j][k]->tarma_size.arWeight[0]=1;
+       otg_info->tarma_video[i][j][k]->tarma_size.arWeight[1]=-1.971;
+       otg_info->tarma_video[i][j][k]->tarma_size.arWeight[2]=0.971;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[0]=0;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[1]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[2]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[3]=1;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[4]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[5]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[6]=1;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[7]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[8]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[9]=1;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[10]=2;
+       otg_info->tarma_video[i][j][k]->tarmaVideoGopStructure[11]=2;
+       otg_info->tarma_video[i][j][k]->polyWeightFrame[0][0]=300;
+       otg_info->tarma_video[i][j][k]->polyWeightFrame[0][1]=30;
+       otg_info->tarma_video[i][j][k]->polyWeightFrame[1][0]=200;
+       otg_info->tarma_video[i][j][k]->polyWeightFrame[1][1]=20;
+       otg_info->tarma_video[i][j][k]->polyWeightFrame[2][0]=100;
+       otg_info->tarma_video[i][j][k]->polyWeightFrame[2][1]=10;
+       tarmaPrintVideoInit(otg_info->tarma_video[i][j][k]);
+       LOG_I(OTG,"OTG_CONFIG OPENARENA_DL_TARMA, src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+       break; 
 		 
      case VOIP_G711 :  /*http://www.computerweekly.com/feature/VoIP-bandwidth-fundamentals */
-											/* Voice bit rate= 64 Kbps |	Sample time= 20 msec |	Voice payload=160 bytes */
+       /* Voice bit rate= 64 Kbps |	Sample time= 20 msec |	Voice payload=160 bytes */
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][SIMPLE_TALK] = FIXED;
@@ -1455,14 +1459,14 @@ break;
        g_otg->size_dist[i][j][k][SIMPLE_TALK] = FIXED;
        g_otg->size_min[i][j][k][SIMPLE_TALK] =  160;
        g_otg->size_max[i][j][k][SIMPLE_TALK] =  160;
-
+       
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
-			break;
+       break;
      case VOIP_G729 :  /*http://www.computerweekly.com/feature/VoIP-bandwidth-fundamentals */  
-											/* Voice bit rate= 8 Kbps |	Sample time= 30 msec |	Voice payload=30 bytes */
+       /* Voice bit rate= 8 Kbps |	Sample time= 30 msec |	Voice payload=30 bytes */
        g_otg->trans_proto[i][j][k] = UDP;
        g_otg->ip_v[i][j][k] = IPV4;
        g_otg->idt_dist[i][j][k][SIMPLE_TALK] = FIXED;
@@ -1475,9 +1479,9 @@ break;
 
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
-			break;
+       break;
      case IQSIM_MANGO : /*Realistic measurements: Eurecom with iQsim Gateway*/
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
@@ -1485,24 +1489,24 @@ break;
        g_otg->idt_min[i][j][k][PE_STATE] =  5000;
        g_otg->idt_max[i][j][k][PE_STATE] = 10000;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-			 if (i<nb_enb_local){ 
-       LOG_I(OTG,"IQSIM_MANGO [DL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-       g_otg->size_min[i][j][k][PE_STATE] =  141;
-       g_otg->size_max[i][j][k][PE_STATE] =  141; 
-			}
-			else {
-			LOG_I(OTG,"IQSIM_MANGO [UL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-       g_otg->size_min[i][j][k][PE_STATE] =  144;
-       g_otg->size_max[i][j][k][PE_STATE] =  144; 
-			}
-			 g_otg->m2m[i][j][k]=1;
-
+       if (i<nb_enb_local){ 
+	 LOG_I(OTG,"IQSIM_MANGO [DL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+	 g_otg->size_min[i][j][k][PE_STATE] =  141;
+	 g_otg->size_max[i][j][k][PE_STATE] =  141; 
+       }
+       else {
+	 LOG_I(OTG,"IQSIM_MANGO [UL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+	 g_otg->size_min[i][j][k][PE_STATE] =  144;
+	 g_otg->size_max[i][j][k][PE_STATE] =  144; 
+       }
+       g_otg->m2m[i][j][k]=1;
+       
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
 
-			break;
+       break;
      case IQSIM_NEWSTEO :  /*Realistic measurements: Eurecom with iQsim Gateway*/
        g_otg->trans_proto[i][j][k] = TCP;
        g_otg->ip_v[i][j][k] = IPV4;
@@ -1510,30 +1514,30 @@ break;
        g_otg->idt_min[i][j][k][PE_STATE] =  5000;
        g_otg->idt_max[i][j][k][PE_STATE] = 10000;
        g_otg->size_dist[i][j][k][PE_STATE] = FIXED;
-			 if (i<nb_enb_local){ /*DL*/
-       LOG_I(OTG,"IQSIM_NEWSTEO [DL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-       g_otg->size_min[i][j][k][PE_STATE] =  467;
-       g_otg->size_max[i][j][k][PE_STATE] =  467; 
-			 }else { /*UL*/
-			LOG_I(OTG,"IQSIM_NEWSTEO [UL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
-       g_otg->size_min[i][j][k][PE_STATE] =  251;
-       g_otg->size_max[i][j][k][PE_STATE] =  251; 
-			}
-			 g_otg->m2m[i][j][k]=1;
+       if (i<nb_enb_local){ /*DL*/
+	 LOG_I(OTG,"IQSIM_NEWSTEO [DL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+	 g_otg->size_min[i][j][k][PE_STATE] =  467;
+	 g_otg->size_max[i][j][k][PE_STATE] =  467; 
+       }else { /*UL*/
+	 LOG_I(OTG,"IQSIM_NEWSTEO [UL], src = %d, dst = %d, dist IDT = %d\n", i, j, g_otg->idt_dist[i][j][k][PE_STATE]);
+	 g_otg->size_min[i][j][k][PE_STATE] =  251;
+	 g_otg->size_max[i][j][k][PE_STATE] =  251; 
+       }
+       g_otg->m2m[i][j][k]=1;
 
 #ifdef STANDALONE
        g_otg->dst_port[i][j] = 302;
-       g_otg->duration[i][j] = 1000;
+       g_otg->flow_duration[i][j] = 1000;
 #endif 
-
-			break;
+       
+       break;
      default:
        LOG_D(OTG, "[SRC %d][DST %d] Unknown traffic type\n", i, j);
- /* TO ADD: 3GPP TSG-RAN WG1 Meeting #71: Low-cost MTC Traffic Models and Characteristics */
-
-
+       /* TO ADD: 3GPP TSG-RAN WG1 Meeting #71: Low-cost MTC Traffic Models and Characteristics */
+       
+       
      }
-	 }
+     }
    }
  }
 }

@@ -39,7 +39,7 @@
 # include "nas_parser.h"
 # include "nas_proc.h"
 
-# define NAS_UE_AUTOSTART 0
+# define NAS_UE_AUTOSTART 1
 
 extern unsigned char NB_eNB_INST;
 extern unsigned char NB_UE_INST;

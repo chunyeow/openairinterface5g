@@ -10,7 +10,7 @@
 		</FADING>
 		<WALL_PENETRATION_LOSS_dB>5</WALL_PENETRATION_LOSS_dB>
 		<SYSTEM_BANDWIDTH_MB>7.68</SYSTEM_BANDWIDTH_MB>
-		<UE_FREQUENCY_GHz>1.9</UE_FREQUENCY_GHz>
+		<SYSTEM_FREQUENCY_GHz>1.9</SYSTEM_FREQUENCY_GHz>
 		<ANTENNA>
 			<eNB_ANTENNA>
 				<RX_NOISE_LEVEL_dB>5</RX_NOISE_LEVEL_dB>
@@ -76,6 +76,9 @@
 			<SOURCE_ID>0</SOURCE_ID>					
 			<APPLICATION_TYPE>gaming_OA</APPLICATION_TYPE> <!-- OPTIONS: scbr, mcbr, bcbr, m2m_AP, m2m_BR, gaming_OA, gaming_TF, full_buffer -->
 			<DESTINATION_ID>1</DESTINATION_ID>
+			<FLOW_START_ms>400</FLOW_START_ms> <!-- not less than 310 --> 
+			<FLOW_DURATION_ms>2000</FLOW_DURATION_ms>  <!-- less than simu time - FLOW_START_ms  -->
+     
 		</PREDEFINED_TRAFFIC>
 
 		<CUSTOMIZED_TRAFFIC>
@@ -96,7 +99,9 @@
 			<TRANSPORT_PROTOCOL>udp</TRANSPORT_PROTOCOL> <!-- OPTIONS: tcp (default), udp -->
 			<IP_VERSION>ipv6</IP_VERSION> <!-- OPTIONS: ipv4 (default), ipv6 -->
 			<DESTINATION_ID>0</DESTINATION_ID>
-
+			<FLOW_START_ms>400</FLOW_START_ms> <!-- not less than 310 --> 
+			<FLOW_DURATION_ms>2000</FLOW_DURATION_ms>  <!-- less than simu time - FLOW_START_ms  -->
+     
 			<IDT_DIST>uniform</IDT_DIST> <!-- OPTIONS: no_customized_traffic (default), uniform, poission, gaussian, exponential, fixed, weibull, pareto, gamma, cauchy -->
 			<IDT_MIN_ms>100</IDT_MIN_ms>
 			<IDT_MAX_ms>1000</IDT_MAX_ms>
@@ -121,9 +126,10 @@
 		<PERFORMANCE>
 			<METRICS>
 				<THROUGHPUT>1</THROUGHPUT>
-				<LATENCY></LATENCY>
-				<SIGNALLING_OVERHEAD></SIGNALLING_OVERHEAD>
-			</METRICS>
+				<LATENCY>1</LATENCY>
+				<JITTER>1</JITTER>
+				<SIGNALLING_OVERHEAD>1</SIGNALLING_OVERHEAD>
+			      </METRICS>
 
 			<LAYER>
 				<MAC>1</MAC>

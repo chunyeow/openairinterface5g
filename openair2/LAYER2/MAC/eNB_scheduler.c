@@ -1589,7 +1589,11 @@ int schedule_MBMS(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP)
         header_len_mcch=1;
       else header_len_msi=1;
       // Calculate the padding
-      if ((TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total) <= 2) {
+      if ((TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total) < 0) {
+	LOG_E(MAC,"Error in building MAC PDU, TBS %d < PDU %d \n", 
+	      TBS, header_len_mtch + header_len_mcch + header_len_msi + sdu_length_total);
+	return;
+      }else if ((TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total) <= 2) {
           padding = (TBS - header_len_mtch - header_len_mcch - header_len_msi - sdu_length_total);
           post_padding = 0;
       }
@@ -4196,7 +4200,7 @@ void schedule_ue_spec(module_id_t   module_idP,
               if (mac_xface->lte_frame_parms->frame_type == TDD) {
                   eNB_mac_inst[module_idP].UE_template[next_ue].DAI++;
                   //	printf("DAI update: subframeP %d: UE %d, DAI %d\n",subframeP,next_ue,eNB_mac_inst[module_idP].UE_template[next_ue].DAI);
-
+#warning only for 5MHz channel 
                   update_ul_dci(module_idP,rnti,eNB_mac_inst[module_idP].UE_template[next_ue].DAI);
               }
 

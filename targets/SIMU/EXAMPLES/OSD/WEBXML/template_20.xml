@@ -6,7 +6,7 @@
       </FREE_SPACE_MODEL_PARAMETERS>
       <SMALL_SCALE>AWGN</SMALL_SCALE>
     </FADING>
-    <UE_FREQUENCY_GHz>1.9</UE_FREQUENCY_GHz>
+    <SYSTEM_FREQUENCY_GHz>1.9</SYSTEM_FREQUENCY_GHz>
   </ENVIRONMENT_SYSTEM_CONFIG>
 
   <TOPOLOGY_CONFIG>	
@@ -52,7 +52,8 @@
       <TRANSPORT_PROTOCOL>udp</TRANSPORT_PROTOCOL> <!-- OPTIONS: tcp (default), udp -->
       <IP_VERSION>ipv6</IP_VERSION> <!-- OPTIONS: ipv4 (default), ipv6 -->
       <DESTINATION_ID>0</DESTINATION_ID>
-      <DURATION_ms>7000</DURATION_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
+      <FLOW_START_ms>200</FLOW_START_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
+      <FLOW_DURATION_ms>7000</FLOW_DURATION_ms> <!-- indicates the duration of the app or the actual duration of the traffic-->
       <BACKGROUND_TRAFFIC>disable</BACKGROUND_TRAFFIC> <!-- options: enable, disable. If enable, it generates a background traffic corresponding to the traffic direction-->
       <IDT_DIST>fixed</IDT_DIST>  <!-- available distributions: none (default), uniform, poission, gaussian, exponential,pareto, cauchy,fixed, weibull, gammav-->
       <IDT_MIN_ms>40</IDT_MIN_ms>  <!--Minimum IDT values in milliseconds-->

@@ -2665,7 +2665,8 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
     
 	PHY_vars_UE->frame++;
       }   //trials
-      
+      // round_trials[0]: number of code word : goodput the protocol
+
       effective_rate = ((double)(round_trials[0]-dci_errors)/((double)round_trials[0] + round_trials[1] + round_trials[2] + round_trials[3]));
 
       printf("\n**********************SNR = %f dB (tx_lev %f, sigma2_dB %f)**************************\n",
@@ -2673,7 +2674,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	     (double)tx_lev_dB+10*log10(PHY_vars_UE->lte_frame_parms.ofdm_symbol_size/(NB_RB*12)),
 	     sigma2_dB);
       
-      printf("Errors (%d/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e), dci_errors %d/%d, Pe = %e => effective rate %f  (%2.1f%%,%f), normalized delay %f (%f)\n",
+      printf("Errors (%d/%d %d/%d %d/%d %d/%d), Pe = (%e,%e,%e,%e), dci_errors %d/%d, Pe = %e => effective rate %f  (%2.1f%%,%f, %f), normalized delay %f (%f)\n",
 	     errs[0],
 	     round_trials[0],
 	     errs[1],
@@ -2692,6 +2693,7 @@ PHY_vars_UE->lte_ue_pdcch_vars[0]->num_pdcch_symbols,
 	     rate*effective_rate,
 	     100*effective_rate,
 	     rate,
+	     rate*get_Qm(PHY_vars_UE->dlsch_ue[0][0]->harq_processes[PHY_vars_UE->dlsch_ue[0][0]->current_harq_pid]->mcs),
 	     (1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0])/(double)PHY_vars_eNB->dlsch_eNB[0][0]->harq_processes[0]->TBS,
 	     (1.0*(round_trials[0]-errs[0])+2.0*(round_trials[1]-errs[1])+3.0*(round_trials[2]-errs[2])+4.0*(round_trials[3]-errs[3]))/((double)round_trials[0]));
       

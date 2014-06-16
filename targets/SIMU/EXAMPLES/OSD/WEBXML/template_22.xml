@@ -10,7 +10,7 @@
     </FADING>
     <WALL_PENETRATION_LOSS_dB>5</WALL_PENETRATION_LOSS_dB>
     <SYSTEM_BANDWIDTH_MB>7.68</SYSTEM_BANDWIDTH_MB>
-    <UE_FREQUENCY_GHz>1.9</UE_FREQUENCY_GHz>
+    <SYSTEM_FREQUENCY_GHz>1.9</SYSTEM_FREQUENCY_GHz>
     <ANTENNA>
       <eNB_ANTENNA>
 	<RX_NOISE_LEVEL_dB>5</RX_NOISE_LEVEL_dB>
@@ -61,7 +61,8 @@
     <!-- UL --> 
     <PREDEFINED_TRAFFIC>
       <SOURCE_ID>1:9</SOURCE_ID> <!-- valid formats are "n:m" and "n,m" and "n" -->
-      <DURATION_ms>5000</DURATION_ms>
+      <FLOW_START_ms>200</FLOW_START_ms> <!-- indicates the start time of the app or the actual duration of the traffic-->
+      <FLOW_DURATION_ms>5000</FLOW_DURATION_ms>
       <APPLICATION_TYPE>scbr</APPLICATION_TYPE> 
       <DESTINATION_ID>0</DESTINATION_ID> <!-- valid formats are "n:m" and "n,m" and "n"  -->
     </PREDEFINED_TRAFFIC>

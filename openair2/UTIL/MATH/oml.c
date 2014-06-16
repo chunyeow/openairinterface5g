@@ -58,7 +58,7 @@ void init_seeds(int seed){
 
 double uniform_rng() {		
   double random;
-  random = (double)taus(OTG)/((double)0xffffffff);
+  random = (double)(taus(OTG)%0xffffffff)/((double)0xffffffff);
   //LOG_D(OTG,"Uniform taus random number= %lf\n", random);
 return random;
 }
