@@ -1,0 +1,246 @@
+################################################################################
+# Eurecom OpenAirInterface core network
+# Copyright(c) 1999 - 2014 Eurecom
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms and conditions of the GNU General Public License,
+# version 2, as published by the Free Software Foundation.
+#
+# This program is distributed in the hope it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# The full GNU General Public License is included in this distribution in
+# the file called "COPYING".
+#
+# Contact Information
+# Openair Admin: openair_admin@eurecom.fr
+# Openair Tech : openair_tech@eurecom.fr
+# Forums       : http://forums.eurecom.fsr/openairinterface
+# Address      : EURECOM,
+#                Campus SophiaTech,
+#                450 Route des Chappes,
+#                CS 50193
+#                06904 Biot Sophia Antipolis cedex,
+#                FRANCE
+################################################################################
+# file interfaces.bash
+# brief
+# author Lionel Gauthier
+# company Eurecom
+# email: lionel.gauthier@eurecom.fr
+#
+cidr2mask() {
+  local i mask=""
+  local full_octets=$(($1/8))
+  local partial_octet=$(($1%8))
+
+  for ((i=0;i<4;i+=1)); do
+    if [ $i -lt $full_octets ]; then
+      mask+=255
+    elif [ $i -eq $full_octets ]; then
+      mask+=$((256 - 2**(8-$partial_octet)))
+    else
+      mask+=0
+    fi
+    test $i -lt 3 && mask+=.
+  done
+
+  echo $mask
+}
+
+# example: netcalc 192.168.12.100 255.255.255.0
+netcalc(){
+    local IFS='.' ip i
+    local -a oct msk
+    
+    read -ra oct <<<"$1"
+    read -ra msk <<<"$2"
+
+    for i in ${!oct[@]}; do
+        ip+=( "$(( oct[i] & msk[i] ))" )
+    done
+    
+    echo "${ip[*]}"
+}
+
+# example: s
+bcastcalc(){
+
+    local IFS='.' ip i
+    local -a oct msk
+    
+    read -ra oct <<<"$1"
+    read -ra msk <<<"$2"
+
+    for i in ${!oct[@]}; do
+        ip+=( "$(( oct[i] + ( 255 - ( oct[i] | msk[i] ) ) ))" )
+    done
+
+    echo "${ip[*]}"
+}
+
+
+is_real_interface() {
+    my_bool=1
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+           return 0
+        fi
+        if [ "a$var" == "anone" ]; then
+           return 0
+        fi
+        IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $var | sed 's/^.*NAME=//' | tr -d '"'`
+        if [ "$IF" == "$var" ]; then
+            if [ "a${var:0:3}" != "aeth" ]; then
+                if [ "a${var:0:4}" != "awlan" ]; then
+                    if [ "a${var:0:4}" != "awifi" ]; then
+                        my_bool=0;
+                    fi
+                fi
+            fi
+        fi
+    done
+    return $my_bool
+}
+
+is_vlan_interface() {
+    my_bool=1
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+            return 0
+        fi
+        if [[ $var == *.* ]]
+        then
+            interface_name=`echo $var | cut -f1 -d '.'`
+            vlan=`echo $var | cut -f2 -d '.'`
+            IF=`cat /etc/udev/rules.d/70-persistent-net.rules | grep $interface_name | sed 's/^.*NAME=//' | tr -d '"'`
+            if [ "$IF" == "$interface_name" ]; then
+                if [ "a${interface_name:0:3}" != "aeth" ]; then
+                    if [ "a${interface_name:0:4}" != "awlan" ]; then
+                        if [ "a${interface_name:0:4}" != "awifi" ]; then
+                            return 0;
+                        fi
+                    fi
+                fi
+            fi
+        else
+            return 0;
+        fi
+    done
+    return $my_bool
+}
+
+is_tun_interface() {
+    my_bool=1
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+            return 0
+        fi
+        if [[ "$IF" != *tun* ]]; then
+            return 0;
+        fi
+        bus_info=`ethtool -i $var | grep bus-info | cut -d: -f2`
+        bus_info=trim2 $bus_info
+        if [[ "$bus_info" != *tun* ]]; then
+            return 0;
+        fi
+    done
+    return $my_bool
+}
+
+is_openvswitch_interface() {
+    for var in "$@"
+    do
+        if [ "a$var" == "a" ]; then
+            return 0
+        fi
+        if [ "a${var:0:3}" == "aeth" ]; then
+            return 0;
+        else 
+            if [ "a${var:0:4}" == "awlan" ]; then
+                return 0;
+            else
+                if [ "a${var:0:4}" == "awifi" ]; then
+                    return 0;
+                else
+                    if [ "a${var:0:4}" == "anone" ]; then
+                        return 0;
+                    else
+                        if [ "a${var:0:3}" == "atun" ]; then
+                            return 0;
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done
+    return 1;
+}
+
+delete_tun_interface() {
+  is_tun_interface $1 
+  if [ $? -eq 1 ]; then
+      ip link set $1 down  > /dev/null 2>&1
+      openvpn --rmtun --dev $1  > /dev/null 2>&1
+  fi
+}
+
+
+create_tun_interface() {
+  is_tun_interface $1 
+  if [ $? -eq 1 ]; then
+      openvpn --mktun --dev $1
+  fi
+  #ip link set $1 up
+}
+
+
+delete_openvswitch_interface() {
+  is_openvswitch_interface $1 
+  if [ $? -eq 1 ]; then
+      ifconfig $1 down  > /dev/null 2>&1
+      tunctl -d $1      > /dev/null 2>&1
+  fi
+}
+
+create_openvswitch_interface() {
+  is_openvswitch_interface $1
+  if [ $? -eq 1 ]; then
+      bash_exec "tunctl -t $1"
+  fi
+}
+
+# arg1 = interface name
+# arg2 = ipv4 addr cidr
+# arg3 = netmask cidr
+set_interface_up() {
+    interface=$1
+    address=$2
+    cidr_netmask=$3
+    if [ "a${interface:0:4}" == "anone" ]; then
+        return;
+    fi
+    bash_exec "ifconfig  $interface up"
+    sync
+    netmask=`cidr2mask $cidr_netmask`
+    broadcast=`bcastcalc $address $netmask`
+    bash_exec "ip -4 addr add  $address/$cidr_netmask broadcast $broadcast dev $interface"
+    sync
+}
+
+get_mac_router() {
+    ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
+    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
+    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
+    echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
+}
+
