@@ -827,14 +827,39 @@ int allocate_REs_in_RB_MCH(mod_sym_t **txdataF,
   return(0);
 }
 
-uint8_t get_pmi_5MHz(MIMO_mode_t mode,uint32_t pmi_alloc,uint16_t rb) {
+uint8_t get_pmi(uint8_t N_RB_DL,MIMO_mode_t mode,uint32_t pmi_alloc,uint16_t rb) {
 
   //  printf("Getting pmi for RB %d => %d\n",rb,(pmi_alloc>>((rb>>2)<<1))&3);
-  if (mode <= PUSCH_PRECODING1)
-    return((pmi_alloc>>((rb>>2)<<1))&3);
-  else
-    return((pmi_alloc>>(rb>>2))&1);
+  switch (N_RB_DL) {
+  case 6:   // 1 PRB per subband
+    if (mode <= PUSCH_PRECODING1)
+      return((pmi_alloc>>(rb<<1))&3);
+    else
+      return((pmi_alloc>>rb)&1);    
+    break;
+  case 25:  // 4 PRBs per subband
+    if (mode <= PUSCH_PRECODING1)
+      return((pmi_alloc>>((rb>>2)<<1))&3);
+    else
+      return((pmi_alloc>>(rb>>2))&1);
+    break;
+  case 50: // 6 PRBs per subband
+    if (mode <= PUSCH_PRECODING1)
+      return((pmi_alloc>>((rb/6)<<1))&3);
+    else
+      return((pmi_alloc>>(rb/6))&1);
+    break;
+  case 100: // 8 PRBs per subband
+    if (mode <= PUSCH_PRECODING1)
+      return((pmi_alloc>>((rb>>3)<<1))&3);
+    else
+      return((pmi_alloc>>(rb>>3))&1);    
+    break;
+  default:
+    break;
+  }
 }
+
 
 int dlsch_modulation(mod_sym_t **txdataF,
 		     int16_t amp,
@@ -1057,7 +1082,7 @@ int dlsch_modulation(mod_sym_t **txdataF,
 			     dlsch->layer_index,
 			     pilots,
 			     mod_order,
-			     get_pmi_5MHz(dlsch->harq_processes[harq_pid]->mimo_mode,dlsch->pmi_alloc,rb),
+			     get_pmi(frame_parms->N_RB_DL,dlsch->harq_processes[harq_pid]->mimo_mode,dlsch->pmi_alloc,rb),
 			     ((pilots) ? amp_rho_b : amp_rho_a),
 			     qam_table_s,
 			     &re_allocated,

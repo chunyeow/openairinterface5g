@@ -2705,6 +2705,7 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
   uint8_t format1A_size_bits,format1A_size_bytes;
   uint8_t format0_size_bits,format0_size_bytes;
   uint8_t format1_size_bits,format1_size_bytes;
+  uint8_t format2_size_bits,format2_size_bytes;
 
   switch (frame_parms->N_RB_DL) {
   case 6:
@@ -2715,6 +2716,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_1_5MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_1_5MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_1_5MHz_TDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_1_5MHz_2A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_1_5MHz_2A_TDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_1_5MHz_4A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_1_5MHz_4A_TDD_t);
+      }
     }
     else {
       format1A_size_bits  = sizeof_DCI1A_1_5MHz_FDD_t;
@@ -2723,6 +2732,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_1_5MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_1_5MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_1_5MHz_FDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_1_5MHz_2A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_1_5MHz_2A_FDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_1_5MHz_4A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_1_5MHz_4A_FDD_t);
+      }
     }
     break;
   case 25:
@@ -2734,6 +2751,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_5MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_5MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_5MHz_TDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_5MHz_2A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_5MHz_2A_TDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_5MHz_4A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_5MHz_4A_TDD_t);
+      }
     }
     else {
       format1A_size_bits  = sizeof_DCI1A_5MHz_FDD_t;
@@ -2742,6 +2767,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_5MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_5MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_5MHz_FDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_5MHz_2A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_5MHz_2A_FDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_5MHz_4A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_5MHz_4A_FDD_t);
+      }
     }
     break;
   case 50:
@@ -2752,6 +2785,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_10MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_10MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_10MHz_TDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_10MHz_2A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_10MHz_2A_TDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_10MHz_4A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_10MHz_4A_TDD_t);
+      }
     }
     else {
       format1A_size_bits  = sizeof_DCI1A_10MHz_FDD_t;
@@ -2760,6 +2801,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_10MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_10MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_10MHz_FDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_10MHz_2A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_10MHz_2A_FDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_10MHz_4A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_10MHz_4A_FDD_t);
+      }
     }
     break;
 
@@ -2771,6 +2820,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_20MHz_TDD_1_6_t);
       format1_size_bits  = sizeof_DCI1_20MHz_TDD_t;
       format1_size_bytes = sizeof(DCI1_20MHz_TDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_20MHz_2A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_20MHz_2A_TDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_20MHz_4A_TDD_t;
+	format2_size_bytes = sizeof(DCI2_20MHz_4A_TDD_t);
+      }
     }
     else {
       format1A_size_bits  = sizeof_DCI1A_20MHz_FDD_t;
@@ -2779,6 +2836,14 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
       format0_size_bytes = sizeof(DCI0_20MHz_FDD_t);
       format1_size_bits  = sizeof_DCI1_20MHz_FDD_t;
       format1_size_bytes = sizeof(DCI1_20MHz_FDD_t);
+      if (frame_parms->nb_antennas_tx == 2) {
+	format2_size_bits  = sizeof_DCI2_20MHz_2A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_20MHz_2A_FDD_t);
+      }
+      else if (frame_parms->nb_antennas_tx == 4) {
+	format2_size_bits  = sizeof_DCI2_20MHz_4A_FDD_t;
+	format2_size_bytes = sizeof(DCI2_20MHz_4A_FDD_t);
+      }
     }
     break;
   }
@@ -3096,9 +3161,9 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
 			    0,
 			    format1A,
 			    format1A,
-			    format2_2A_M10PRB,
-			    sizeof_DCI2_5MHz_2A_M10PRB_TDD_t,
-			    sizeof(DCI2_5MHz_2A_M10PRB_TDD_t),
+			    format2,
+			    format2_size_bits,
+			    format2_size_bytes,
 			    &dci_cnt,
 			    &format0_found,
 			    &format_c_found,
@@ -3111,7 +3176,7 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
     if (dci_cnt>old_dci_cnt)
       return(dci_cnt);
 
-    // Now check UE_SPEC format 2_2A_M10PRB search spaces at aggregation 2 
+    // Now check UE_SPEC format 2 search spaces at aggregation 2 
     dci_decoding_procedure0(lte_ue_pdcch_vars,0,
 			    subframe,
 			    dci_alloc,
@@ -3123,9 +3188,9 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
 			    1,
 			    format1A,
 			    format1A,
-			    format2_2A_M10PRB,
-			    sizeof_DCI2_5MHz_2A_M10PRB_TDD_t,
-			    sizeof(DCI2_5MHz_2A_M10PRB_TDD_t),
+			    format2,
+			    format2_size_bits,
+			    format2_size_bytes,
 			    &dci_cnt,
 			    &format0_found,
 			    &format_c_found,
@@ -3150,9 +3215,9 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
 			    2,
 			    format1A,
 			    format1A,
-			    format2_2A_M10PRB,
-			    sizeof_DCI2_5MHz_2A_M10PRB_TDD_t,
-			    sizeof(DCI2_5MHz_2A_M10PRB_TDD_t),
+			    format2,
+			    format2_size_bits,
+			    format2_size_bytes,
 			    &dci_cnt,
 			    &format0_found,
 			    &format_c_found,
@@ -3178,9 +3243,9 @@ uint16_t dci_decoding_procedure(PHY_VARS_UE *phy_vars_ue,
 			    3,
 			    format1A,
 			    format1A,
-			    format2_2A_M10PRB,
-			    sizeof_DCI2_5MHz_2A_M10PRB_TDD_t,
-			    sizeof(DCI2_5MHz_2A_M10PRB_TDD_t),
+			    format2,
+			    format2_size_bits,
+			    format2_size_bytes,
 			    &dci_cnt,
 			    &format0_found,
 			    &format_c_found,
