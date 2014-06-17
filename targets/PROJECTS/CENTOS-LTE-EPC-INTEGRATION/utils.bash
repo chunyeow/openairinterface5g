@@ -403,6 +403,10 @@ is_openvswitch_interface() {
                 else
                     if [ "a${var:0:4}" == "anone" ]; then
                         return 0;
+                    else
+                        if [ "a${var:0:3}" == "atun" ]; then
+                            return 0;
+                        fi
                     fi
                 fi
             fi
@@ -451,7 +455,9 @@ is_vlan_interface() {
                 if [ "a${interface_name:0:3}" != "aeth" ]; then
                     if [ "a${interface_name:0:4}" != "awlan" ]; then
                         if [ "a${interface_name:0:4}" != "awifi" ]; then
-                            return 0;
+                            #if [ "a${interface_name:0:3}" != "atun" ]; then
+                                return 0;
+                            #fi
                         fi
                     fi
                 fi
