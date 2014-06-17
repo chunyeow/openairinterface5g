@@ -7,16 +7,41 @@ export OS_TYPE="Ubuntu"
 
 export HOST_BRIDGED_IF_NAME="eth1"
 export DEFAULT_VIRTUAL_BOX_VM_PATH='/root/VirtualBox VMs'
-export TRUNK_SHARED_FOLDER_NAME="shared_trunk"
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/utils.bash
 ###########################################################
 
+#   NETWORK SETTING AT EURECOM IN EXPERIMENTAL NETWORK (192.168.12.X)
 #
-# +-----------+----------------+------+---------------------------------------+
-# | COMPUTER 1|                | eth1 | Physical                              |
-# +-----------+       (nic1)   +-+--+-+ Interface                             |
+#
+#             INTERNET GW 192.168.12.100      
+#                                  |
+#                                  |
+#                 192.168.12.X/24  | 
+# +-----------+----------------+---+--+---------------------------------------+
+# | COMPUTER 1|                | eth0 |                                       |
+# +-----------+                +---+--+                                       |
+# |                                |                                          |
+# |                                |                                          |
+# |                          +-----+------+                                   |
+# |                          |MASQUERADING|                                   |
+# |                          +-----+------+                                   |
+# |                                |                                          |
+# |                                |                                          |
+# |                                |                                          |
+# |                                |                                          |
+# |                                |                                          |
+# |                            +---+--+                                       |
+# |                            | eth1 |                                       |
+# +----------------------------+---+--+---------------------------------------+
+#                                  |
+#                                  |                 INTERNET GW 192.168.12.100
+#                                  |                            |
+#                  192.168.13.X/24 |                            |
+# +-----------+----------------+---+--+---------------------+---+--+----------+
+# | COMPUTER 2|                | eth1 | Physical            | eth0 |          |
+# +-----------+                +-+--+-+ Interface           +------+          |
 # |                              |  |  'HOST_BRIDGED_IF_NAME'                 |
 # |                              |  |                                         |
 # |                              |  |                 +-----------+           |   
@@ -91,6 +116,8 @@ build_vbox_vm_enb() {
                                           --nic1 bridged        --nic2 hostonly      --nic3 hostonly      --nic4 hostonly \
                                           --nictype1 82545EM    --nictype2 82545EM   --nictype3 82545EM   --nictype4 82545EM \
                                           --cableconnected1 on  --cableconnected2 on --cableconnected3 off --cableconnected4 off \
+                                          --macaddress1 c8d3a3020301 --macaddress2 c8d3a3020302 \
+                                          --macaddress3 c8d3a3020303 --macaddress4 c8d3a3020304 \
                                           --bridgeadapter1 $HOST_BRIDGED_IF_NAME \
                                           --hostonlyadapter2 vboxnet0 \
                                           --audio none \
@@ -121,11 +148,11 @@ build_vbox_vm_enb() {
 build_vbox_vm_hss() {
 
     
-    UUID=`VBoxManage clonevm --mode all --name $HSS_VM_NAME --register
+    UUID=`VBoxManage clonevm $ENB_VM_NAME --mode all --name $HSS_VM_NAME --register
     
     
     
-` 
+ 
     HSS_UUID=`VBoxManage showvminfo  $HSS_VM_NAME | grep Hardware\ UUID | cut -d: -f2 | tr -d ' '` 
     echo HSS_UUID=$HSS_UUID
 
@@ -136,6 +163,8 @@ build_vbox_vm_hss() {
                                           --nic1 bridged        --nic2 hostonly      --nic3 none      --nic4 none \
                                           --nictype1 82545EM    --nictype2 virtio   --nictype3 82545EM   --nictype4 82545EM \
                                           --cableconnected1 on  --cableconnected2 on --cableconnected3 off --cableconnected4 off \
+                                          --macaddress1 c8d3a3020101 --macaddress2 c8d3a3020102 \
+                                          --macaddress3 c8d3a3020103 --macaddress4 c8d3a3020104 \
                                           --bridgeadapter1 $HOST_BRIDGED_IF_NAME \
                                           --hostonlyadapter2 vboxnet1 \
                                           --audio none \
@@ -145,14 +174,21 @@ build_vbox_vm_hss() {
 build_vms() {
     build_vbox_vm_enb
     build_vbox_vm_hss
+    echo_warning "!!!!!!! once VM are created, you have to harmonize IP addresses and MAC addresses !!!!!!!" 
+    echo_warning "!!!!!!! /etc/network/interfaces and /etc/udev/rules.d/70-persistent-net.rules     !!!!!!!" 
+    echo_warning "!!!!!!!                                                                           !!!!!!!" 
+    echo_warning "!!!!!!! to share open air source code: use sshfs (you can use vbox shared folders,!!!!!!!"
+    echo_warning "!!!!!!! in this case, help yourself...)                                           !!!!!!!"
+    echo_warning "!!!!!!! exchange ssh keys between host and guests                                 !!!!!!!"
+    echo_warning "!!!!!!! in /etc/fstab on guests: add following line:                              !!!!!!!"
+    echo_warning "!!!!!!! sshfs#root@192.168.13.175:/root/trunk  /mnt/sshfs/trunk fuse comment=sshfs!!!!!!!"
+    echo_warning "!!!!!!! ,noauto,users,exec,uid=0,gid=0,allow_other,reconnect,transform_symlinks,  !!!!!!!"
+    echo_warning "!!!!!!! BatchMode=yes 0 0                                                         !!!!!!!"
+    echo_warning "!!!!!!! on guest: create a mount point: /mnt/sshfs/trunk for example, then mount: !!!!!!!"
+    echo_warning "!!!!!!! mount /mnt/sshfs/trunk                                                    !!!!!!!"
+    
 }
+
+
+build_vms
   
-
-create_shared_folder_openair_trunk() {
-    VBoxManage sharedfolder add "$ENB_VM_NAME" --transient --name "$TRUNK_SHARED_FOLDER_NAME" --hostpath "$OPENAIR_HOME"
-
-    #bash_exec "mount -t vboxsf $TRUNK_SHARED_FOLDER_NAME $OPENAIR_HOME"
-}                                        
-
-build_vbox_vm_enb
-create_shared_folder_openair_trunk
