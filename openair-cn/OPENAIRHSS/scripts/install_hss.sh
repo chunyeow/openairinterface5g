@@ -7,7 +7,6 @@ libidn11-dev libmysqlclient-dev libxml2-dev swig python-dev cmake-curses-gui \
 valgrind guile-2.0-dev libgmp-dev libgcrypt11-dev gdb unzip libtasn1-3-dev g++ \
 linux-headers-`uname -r` build-essential -y
 
-source ./utils.bash
 
 if [ -f install_log.txt ]
     then
