@@ -257,33 +257,7 @@ build_mme_spgw_vlan_network() {
     #
     is_real_interface $PGW_INTERFACE_NAME_FOR_SGI
     if [ $? -eq 1 ]; then
-        get_mac_router
-        # # get ipv4 address from PGW_INTERFACE_NAME_FOR_SGI
-        #IP_ADDR=`ifconfig $PGW_INTERFACE_NAME_FOR_SGI | awk '/inet addr/ {split ($2,A,":"); print A[2]}' | tr '\n' ' ' | sed -n '1h;1!H;${;g;s/^[ \t]*//g;s/[ \t]*$//g;p;}'`
-
-        #NETWORK=`echo $IP_ADDR | cut -d . -f 1,2,3`
-
-        bash_exec "modprobe 8021q"
-
-        for i in 5 6 7 8 9 10 11 12 13 14 15
-        do
-            # create vlan interface
-            ifconfig    $PGW_INTERFACE_NAME_FOR_SGI.$i down > /dev/null 2>&1
-            vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i > /dev/null 2>&1
-            sync
-            bash_exec "vconfig add $PGW_INTERFACE_NAME_FOR_SGI $i"
-            sync
-            bash_exec "ifconfig  $PGW_INTERFACE_NAME_FOR_SGI.$i up"
-            sync
-            # configure vlan interface
-            #CIDR=$NETWORK'.'$i'/24'
-            base=200
-            NET=$(( $i + $base ))
-            CIDR='10.0.'$NET'.2/8'
-            bash_exec "ip -4 addr add  $CIDR dev $PGW_INTERFACE_NAME_FOR_SGI.$i"
-        done
-
-        bash_exec "ip link set $PGW_INTERFACE_NAME_FOR_SGI promisc on"
+        create_sgi_vlans
     else
         echo_warning "SGI interface disabled by config file"
     fi
@@ -326,20 +300,15 @@ clean_epc_vlan_network() {
 
     bash_exec "modprobe 8021q"
 
-    ifconfig    $MME_INTERFACE_NAME_FOR_S1_MME down > /dev/null 2>&1
-    vconfig rem $MME_INTERFACE_NAME_FOR_S1_MME      > /dev/null 2>&1
-
-    ifconfig    $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP down > /dev/null 2>&1
-    vconfig rem $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP      > /dev/null 2>&1
+    delete_vlan_interface  $MME_INTERFACE_NAME_FOR_S1_MME  
+    delete_vlan_interface  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP  
 
 
     for i in 5 6 7 8 9 10 11 12 13 14 15
     do
         # delete vlan interface
-        ifconfig    $PGW_INTERFACE_NAME_FOR_SGI.$i down > /dev/null 2>&1
-        vconfig rem $PGW_INTERFACE_NAME_FOR_SGI.$i      > /dev/null 2>&1
+        delete_vlan_interface   $PGW_INTERFACE_NAME_FOR_SGI.$i down 
     done
-    #ip link set $PGW_INTERFACE_NAME_FOR_SGI down > /dev/null 2>&1
     clean_network
 }
 
@@ -509,6 +478,10 @@ clean_tun_network() {
 build_epc_tun_network() {
 
     build_tun_network
+    create_sgi_vlans
+}
+
+create_sgi_vlans() {
 
     get_mac_router
 
@@ -528,10 +501,9 @@ build_epc_tun_network() {
         #CIDR=$NETWORK'.'$i'/24'
         base=200
         NET=$(( $i + $base ))
-        CIDR='10.0.'$NET'.2/8'
+        CIDR='10.0.'$NET'.2/24'
         bash_exec "ip -4 addr add  $CIDR dev $PGW_INTERFACE_NAME_FOR_SGI.$i"
     done
-
 
     bash_exec "ip link set $PGW_INTERFACE_NAME_FOR_SGI promisc on"
 

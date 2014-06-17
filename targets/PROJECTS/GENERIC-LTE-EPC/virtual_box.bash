@@ -18,7 +18,7 @@ source $THIS_SCRIPT_PATH/utils.bash
 #             INTERNET GW 192.168.12.100      
 #                                  |
 #                                  |
-#                 192.168.12.X/24  | 
+#                 192.168.12.17/24 | 
 # +-----------+----------------+---+--+---------------------------------------+
 # | COMPUTER 1|                | eth0 |                                       |
 # +-----------+                +---+--+                                       |
@@ -35,10 +35,10 @@ source $THIS_SCRIPT_PATH/utils.bash
 # |                            +---+--+                                       |
 # |                            | eth1 |                                       |
 # +----------------------------+---+--+---------------------------------------+
-#                                  |
+#                192.168.13.17/24  |
 #                                  |                 INTERNET GW 192.168.12.100
 #                                  |                            |
-#                  192.168.13.X/24 |                            |
+#                192.168.13.175/24 |          192.168.12.175/24 |
 # +-----------+----------------+---+--+---------------------+---+--+----------+
 # | COMPUTER 2|                | eth1 | Physical            | eth0 |          |
 # +-----------+                +-+--+-+ Interface           +------+          |
@@ -48,15 +48,15 @@ source $THIS_SCRIPT_PATH/utils.bash
 # |                              |  |          +------+    HSS    |           |   
 # |                              |  +----------+ eth0 |   (VM)    |           |   
 # |                              |             +------+           |           |
-# |                              |                    |           |           |
+# |                              |   192.168.13.177   |           |           |
 # |                              |                    +-+------+--+           |
-# |                              |                      |eth1  |              |
+# |                              |                      |eth1  |192.168.57.101|
 # |                              |                      +--+---+              |
 # |           +------------------+                         |                  |
 # |           |    bridged network                         | host-only        |
 # |           |                                            | network          |
 # |           |                                            | 192.168.57/24    |
-# |           |                                            |                  |
+# |           |92.168.13.176                               |192.168.57.1      |
 # |        +--+---+                                     +--+-----+            |
 # |        |eth0  |                                     |vboxnet1|            |
 # |      +-+------+--+192.168.56.101      192.168.56.1+-+--------++           |
@@ -181,7 +181,7 @@ build_vms() {
     echo_warning "!!!!!!! in this case, help yourself...)                                           !!!!!!!"
     echo_warning "!!!!!!! exchange ssh keys between host and guests                                 !!!!!!!"
     echo_warning "!!!!!!! in /etc/fstab on guests: add following line:                              !!!!!!!"
-    echo_warning "!!!!!!! sshfs#root@192.168.13.175:/root/trunk  /mnt/sshfs/trunk fuse comment=sshfs!!!!!!!"
+    echo_warning "!!!!!!! sshfs#root@<IP@ of host>:/root/trunk  /mnt/sshfs/trunk fuse comment=sshfs !!!!!!!"
     echo_warning "!!!!!!! ,noauto,users,exec,uid=0,gid=0,allow_other,reconnect,transform_symlinks,  !!!!!!!"
     echo_warning "!!!!!!! BatchMode=yes 0 0                                                         !!!!!!!"
     echo_warning "!!!!!!! on guest: create a mount point: /mnt/sshfs/trunk for example, then mount: !!!!!!!"

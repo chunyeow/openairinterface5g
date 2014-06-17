@@ -592,6 +592,46 @@ function svn_find_str_in_file_history()
     done
 }
 
+compile_hss() {
+    cd $OPENAIRCN_DIR/OPENAIRHSS
+    OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`
+    if [ ! -n "$OBJ_DIR" ]
+    then
+        OBJ_DIR="objs"
+        bash_exec "mkdir -m 777 ./$OBJ_DIR"
+        echo_success "Created $OBJ_DIR directory"
+    else
+        OBJ_DIR=`basename $OBJ_DIR`
+    fi
+    if [ ! -f $OBJ_DIR/Makefile ]
+    then
+        if [ ! -n "m4" ]
+        then
+            mkdir -m 777 m4
+        fi
+        echo_success "Invoking autogen"
+        bash_exec "./autogen.sh"
+        cd ./$OBJ_DIR
+        echo_success "Invoking configure"
+        ../configure 
+    else
+        cd ./$OBJ_DIR
+    fi
+    if [ -f Makefile ]
+    then
+        echo_success "Compiling..."
+        make -j `cat /proc/cpuinfo | grep processor | wc -l`
+        if [ $? -ne 0 ]; then
+            echo_error "Build failed, exiting"
+            exit 1
+        fi
+    else
+        echo_error "Configure failed, exiting"
+        exit 1
+    fi
+}
+
+
 compile_epc() {
     cd $OPENAIRCN_DIR
     OBJ_DIR=`find . -maxdepth 1 -type d -iname obj*`

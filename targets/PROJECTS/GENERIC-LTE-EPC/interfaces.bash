@@ -177,6 +177,10 @@ is_openvswitch_interface() {
                     else
                         if [ "a${var:0:3}" == "atun" ]; then
                             return 0;
+                        else
+                            if [ "a${var:0:4}" == "avbox" ]; then
+                                return 0;
+                            fi
                         fi
                     fi
                 fi
@@ -191,6 +195,14 @@ delete_tun_interface() {
   if [ $? -eq 1 ]; then
       ip link set $1 down  > /dev/null 2>&1
       openvpn --rmtun --dev $1  > /dev/null 2>&1
+  fi
+}
+
+delete_vlan_interface() {
+  is_vlan_interface $1 
+  if [ $? -eq 0 ]; then
+    ifconfig    $1 down > /dev/null 2>&1
+    vconfig rem $1      > /dev/null 2>&1
   fi
 }
 

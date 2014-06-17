@@ -46,33 +46,73 @@
 # setting or a VLAN setting.
 #
 ###########################################################################################################################
-#                                    VIRTUAL SWITCH SETTING
+#                                    VIRTUAL BOX SETTING
 ###########################################################################################################################
-#                                                                           hss.eur
-#                                                                             |
-#        +-----------+          +------+              +-----------+           v   +----------+
-#        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    +----+      +---+   HSS    |
-#        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
-#        |           +------+   |bridge|       +------+           +----+      +---+          |
-#        |           |upenb0+-------+  |              |           |               +----------+
-#        +-----------+------+   |   |  |              +-+-------+-+
-#                               |   |  +----------------| s11mme|---+
-#                               |   |                   +---+---+   |
-#                               |   |             (optional)|       |
-#                               |   |                   +---+---+   |
-#                               +---|------------------ | s11sgw|---+        router.eur
-#                                   |                 +-+-------+-+              |   +--------------+
-#                                   |                 |  S+P-GW   |              v   |   ROUTER     |
-#                                   |  VLAN2   +------+           +-------+     +----+              +----+
-#                                   +----------+upsgw0|           |sgi    +-...-+    |              |    +---...Internet
-#                                              +------+           +-------+     +----+              +----+
-#                                                     |           |      11 VLANS    |              |
-#                                                     +-----------+   ids=[5..15]    +--------------+
+#   NETWORK SETTING AT EURECOM IN EXPERIMENTAL NETWORK (192.168.12.X)
+#
+#
+#             INTERNET GW 192.168.12.100      
+#                                  |
+#                                  |
+#                 192.168.12.X/24  | 
+# +-----------+----------------+---+--+---------------------------------------+
+# | COMPUTER 1|                | eth0 |                                       |
+# +-----------+                +---+--+                                       |
+# |                                |                                          |
+# |                                |                                          |
+# |    ROUTER                +-----+------+                                   |
+# |                          |MASQUERADING|                                   |
+# |                          |FORWARDING  |                                   |
+# |                          +-----+------+                                   |
+# |                                |                                          |
+# |                                |                                          |
+# |                                |                                          |
+# |                                |                                          |
+# |                                |                                          |
+# |                            +---+--+                                       |
+# |                            | eth1 |                                       |
+# +----------------------------+---+--+---------------------------------------+
+#                                  |router.eur
+#                   11 VLANS       |                 INTERNET GW 192.168.12.100
+#                  ids=[5..15]     |                            |
+#                  192.168.13.X/24 |                            |
+# +-----------+----------------+---+--+---------------------+---+--+----------+
+# | COMPUTER 2|          SGI   | eth1 | Physical            | eth0 |          |
+# +-----------+                +-+--+-+ Interface           +------+          |
+# |                              |  |  'HOST_BRIDGED_IF_NAME'                 |
+# |                              |  |                                         |
+# |                              |  |                 +-----------+           |   
+# |                              |  |          +------+    HSS    |           |   
+# |                              |  +----------+ eth0 |   (VM)    |           |   
+# |                              |             +------+           |           |
+# |                              |                    |           |           |
+# |                              |                    +-+------+--+           |
+# |                              |                      |eth1  | hss.eur      |
+# |                virtual box   |                      +--+---+              |
+# |           +------------------+                         | virtual box      |
+# |           |    bridged network                         | host-only        |
+# |           |                                            | network          |
+# |           |                                            | 192.168.57/24    |
+# |           |                                            |                  |
+# |        +--+---+                                     +--+-----+            |
+# |        |eth0  |                                     |vboxnet1|            |
+# |      +-+------+--+192.168.56.101      192.168.56.1+-+--------++           |
+# |      |  eNB 0    +------+   virtual box  +--------+  MME      |           |
+# |      |  (VM)     |eth1  +----------------+vboxnet0|  S+P/GW   |           |
+# |      |           +------+   host-only    +--------+(execu. on |           |
+# |      |           |          network               |COMPUTER2) |           |
+# |      |           |       192.168.56/24            |           |           |
+# |      | LTE eNB 1 |                                |           |           |
+# |      | LTE UEs   |                                |           |           |
+# |      +-----------+                                +-----------+           |
+# |                                                                           |
+# |                                                                           |
+# +---------------------------------------------------------------------------+
 #
 ###########################################################################################################################
 #                                    VLAN SETTING
 ###########################################################################################################################
-#                                                                           hss.eur
+#   each box is a host                                                        hss.eur
 #                                                                             |
 #        +-----------+                                +-----------+           v   +----------+
 #        |  eNB      +------+            VLAN 1+------+    MME    +----+      +---+   HSS    |
@@ -113,7 +153,7 @@ fi
 
 
 
-#check_install_epc_software
+check_install_epc_software
 
 
 ##################################
@@ -236,50 +276,19 @@ SGW_IPV4_ADDRESS_FOR_S5_S8_UP=$(             echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP
 PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f1 -d '/')
 PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
 
-is_openvswitch_interface $ENB_INTERFACE_NAME_FOR_S1_MME  \
-                               $ENB_INTERFACE_NAME_FOR_S1U     \
-                               $MME_INTERFACE_NAME_FOR_S1_MME  \
-                               $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
+is_vlan_interface $MME_INTERFACE_NAME_FOR_S1_MME  \
+                  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
+                  
+
 if [ $? -eq 1 ]; then
-   ovs_setting=1
-   vlan_setting=0
-   echo_success "Found open-vswitch network configuration"
-   # May we have booted on a new kernel, not the one when we build vswitch kernel module
-   if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
-      $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
-   fi
-   clean_epc_ovs_network
-   build_epc_ovs_network
-   test_epc_ovs_network
-else
-    is_vlan_interface $MME_INTERFACE_NAME_FOR_S1_MME \
-                      $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
-    if [ $? -eq 1 ]; then
         echo_success "Found open VLAN network configuration"
-        ovs_setting=0
-        vlan_setting=1
-        
-        # may be openvswitch is needed for S11
-        is_openvswitch_interface $MME_IPV4_ADDRESS_FOR_S11_MME  \
-                               $SGW_IPV4_ADDRESS_FOR_S11
-        if [ $? -eq 1 ]; then
-            # May we have booted on a new kernel, not the one when we build vswitch kernel module
-            if [ ! -f /lib/modules/`uname -r`/extra/openvswitch.ko ]; then
-                $OPENAIRCN_DIR/SCRIPTS/install_openvswitch1.9.0.bash
-            fi
-        fi
         clean_epc_vlan_network
         build_mme_spgw_vlan_network
-    else
-        is_real_interface $MME_IPV4_ADDRESS_FOR_S11_MME  \
-                               $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
-        if [ $? -eq 1 ]; then
-            echo_success "Found standart network configuration"
-        else
-            echo_error "Cannot find open-vswitch network configuration or VLAN network configuration or standart network configuration"
-            exit 1
-        fi
-    fi 
+else
+   ovs_setting=0
+   vlan_setting=0
+   clean_epc_vlan_network
+   create_sgi_vlans
 fi
 
 ##################################################
