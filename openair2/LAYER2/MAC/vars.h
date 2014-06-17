@@ -106,8 +106,8 @@ DCI1A_5MHz_FDD_t      BCCH_alloc_pdu_fdd;
 DCI1A_5MHz_FDD_t      CCCH_alloc_pdu_fdd;
 DCI1_5MHz_FDD_t       DLSCH_alloc_pdu_fdd;
 
-DCI2_5MHz_2A_L10PRB_TDD_t DLSCH_alloc_pdu1;
-DCI2_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu2;
+DCI2_5MHz_2A_TDD_t DLSCH_alloc_pdu1;
+DCI2_5MHz_2A_TDD_t DLSCH_alloc_pdu2;
 
 DCI1E_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu1E;
 
