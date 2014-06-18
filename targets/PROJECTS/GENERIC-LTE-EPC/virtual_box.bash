@@ -2,6 +2,7 @@
 
 export ENB_VM_NAME='enb-vm-ubuntu-12.04.4-server-amd64'
 export HSS_VM_NAME='hss-vm-ubuntu-12.04.4-server-amd64'
+export MME_VM_NAME='mme-vm-ubuntu-12.04.4-server-amd64'
 export OS_INSTALL_IMAGE="/root/ubuntu-12.04.4-server-amd64.iso"
 export OS_TYPE="Ubuntu"
 
@@ -9,7 +10,7 @@ export HOST_BRIDGED_IF_NAME="eth1"
 export DEFAULT_VIRTUAL_BOX_VM_PATH='/root/VirtualBox VMs'
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
-source $THIS_SCRIPT_PATH/utils.bash
+. ./utils.bash
 ###########################################################
 
 #   NETWORK SETTING AT EURECOM IN EXPERIMENTAL NETWORK (192.168.12.X)
@@ -53,23 +54,23 @@ source $THIS_SCRIPT_PATH/utils.bash
 # |                              |                      |eth1  |192.168.57.101|
 # |                              |                      +--+---+              |
 # |           +------------------+                         |                  |
-# |           |    bridged network                         | host-only        |
-# |           |                                            | network          |
-# |           |                                            | 192.168.57/24    |
-# |           |92.168.13.176                               |192.168.57.1      |
-# |        +--+---+                                     +--+-----+            |
-# |        |eth0  |                                     |vboxnet1|            |
-# |      +-+------+--+192.168.56.101      192.168.56.1+-+--------++           |
+# |           |    bridged network                         | intnet           |
+# |           |                                            | network intnets6a|
+# |           |                                            | 192.168.57.0/24  |
+# |           |192.168.13.176                              |192.168.57.1      |
+# |        +--+---+                                     +--+--+               |
+# |        |eth0  |                                     |eth1 |               |
+# |      +-+------+--+192.168.56.101      192.168.56.1+-+-----+---+           |
 # |      |  eNB 0    +------+                +--------+  MME      |           |
-# |      |  (VM)     |eth1  +----------------+vboxnet0|  S+P/GW   |           |
-# |      |           +------+   host-only    +--------+           |           |
-# |      |           |          network               |           |           |
-# |      |           |       192.168.56/24            |           |           |
-# |      | LTE eNB 1 |                                |           |           |
-# |      | LTE UEs   |                                |           |           |
-# |      +-----------+                                +-----------+           |
-# |                                                                           |
-# |                                                                           |
+# |      |  (VM)     |eth1  +----------------+ eth2   |  S+P/GW   |           |
+# |      |           +------+   intnet       +--------+  (VM)     |           |
+# |      |           |          network ints1c        |           |           |
+# |      |           |       192.168.56.0/24          |           |           |
+# |      | LTE eNB 1 +------+                +--------+           |           |
+# |      | LTE UEs   |eth2  +----------------+ eth3   |           |           |
+# |      +-----------+------+   intnet       +--------+-----------+           |
+# |             192.168.58.101  network ints1u 192.168.58.1                   |
+# |                          192.168.58.0/24                                  |
 # +---------------------------------------------------------------------------+
 #
 
@@ -113,13 +114,14 @@ build_vbox_vm_enb() {
                                           --rtcuseutc on --cpuhotplug off --cpuexecutioncap 100 --pae on --hpet on \
                                           --hwvirtex on --nestedpaging on \
                                           --firmware bios --biosbootmenu messageandmenu --boot1 dvd --boot2 disk \
-                                          --nic1 bridged        --nic2 hostonly      --nic3 hostonly      --nic4 hostonly \
+                                          --nic1 bridged        --nic2 intnet      --nic3 intnet      --nic4 hostonly \
                                           --nictype1 82545EM    --nictype2 82545EM   --nictype3 82545EM   --nictype4 82545EM \
-                                          --cableconnected1 on  --cableconnected2 on --cableconnected3 off --cableconnected4 off \
+                                          --cableconnected1 on  --cableconnected2 on --cableconnected3 on --cableconnected4 off \
                                           --macaddress1 c8d3a3020301 --macaddress2 c8d3a3020302 \
                                           --macaddress3 c8d3a3020303 --macaddress4 c8d3a3020304 \
                                           --bridgeadapter1 $HOST_BRIDGED_IF_NAME \
-                                          --hostonlyadapter2 vboxnet0 \
+                                          --intnet2 intnets1c \
+                                          --intnet3 intnets1u \
                                           --audio none \
                                           --usb off --usbehci off"
                                           
@@ -147,12 +149,7 @@ build_vbox_vm_enb() {
 
 build_vbox_vm_hss() {
 
-    
-    UUID=`VBoxManage clonevm $ENB_VM_NAME --mode all --name $HSS_VM_NAME --register
-    
-    
-    
- 
+    UUID=`VBoxManage clonevm $ENB_VM_NAME --mode all --name $HSS_VM_NAME --register`
     HSS_UUID=`VBoxManage showvminfo  $HSS_VM_NAME | grep Hardware\ UUID | cut -d: -f2 | tr -d ' '` 
     echo HSS_UUID=$HSS_UUID
 
@@ -160,13 +157,37 @@ build_vbox_vm_hss() {
                                           --rtcuseutc on --cpuhotplug off --cpuexecutioncap 100 --pae on --hpet on \
                                           --hwvirtex on --nestedpaging on \
                                           --firmware bios --biosbootmenu messageandmenu --boot1 disk \
-                                          --nic1 bridged        --nic2 hostonly      --nic3 none      --nic4 none \
-                                          --nictype1 82545EM    --nictype2 virtio   --nictype3 82545EM   --nictype4 82545EM \
+                                          --nic1 bridged        --nic2 intnet      --nic3 none      --nic4 none \
+                                          --nictype1 82545EM    --nictype2 82545EM   --nictype3 82545EM   --nictype4 82545EM \
                                           --cableconnected1 on  --cableconnected2 on --cableconnected3 off --cableconnected4 off \
                                           --macaddress1 c8d3a3020101 --macaddress2 c8d3a3020102 \
                                           --macaddress3 c8d3a3020103 --macaddress4 c8d3a3020104 \
                                           --bridgeadapter1 $HOST_BRIDGED_IF_NAME \
-                                          --hostonlyadapter2 vboxnet1 \
+                                          --intnet2 intnets6a \
+                                          --audio none \
+                                          --usb off --usbehci off"
+}
+
+
+build_vbox_vm_mme() {    
+
+    UUID=`VBoxManage clonevm $ENB_VM_NAME --mode all --name $MME_VM_NAME --register`
+    HSS_UUID=`VBoxManage showvminfo  $MME_VM_NAME | grep Hardware\ UUID | cut -d: -f2 | tr -d ' '` 
+    echo HSS_UUID=$HSS_UUID
+
+    bash_exec "VBoxManage modifyvm  $MME_VM_NAME --ostype $OS_TYPE --memory 512 --vram 12 --cpus 1 \
+                                          --rtcuseutc on --cpuhotplug off --cpuexecutioncap 100 --pae on --hpet on \
+                                          --hwvirtex on --nestedpaging on \
+                                          --firmware bios --biosbootmenu messageandmenu --boot1 disk \
+                                          --nic1 bridged        --nic2 intnet      --nic3 none      --nic4 none \
+                                          --nictype1 82545EM    --nictype2 82545EM   --nictype3 82545EM   --nictype4 82545EM \
+                                          --cableconnected1 on  --cableconnected2 on --cableconnected3 on --cableconnected4 on \
+                                          --macaddress1 c8d3a3020201 --macaddress2 c8d3a3020202 \
+                                          --macaddress3 c8d3a3020203 --macaddress4 c8d3a3020204 \
+                                          --bridgeadapter1 $HOST_BRIDGED_IF_NAME \
+                                          --intnet2 intnets1c \
+                                          --intnet3 intnets6a \
+                                          --intnet4 intnets1u \
                                           --audio none \
                                           --usb off --usbehci off"
 }
@@ -174,6 +195,7 @@ build_vbox_vm_hss() {
 build_vms() {
     build_vbox_vm_enb
     build_vbox_vm_hss
+    build_vbox_vm_mme
     echo_warning "!!!!!!! once VM are created, you have to harmonize IP addresses and MAC addresses !!!!!!!" 
     echo_warning "!!!!!!! /etc/network/interfaces and /etc/udev/rules.d/70-persistent-net.rules     !!!!!!!" 
     echo_warning "!!!!!!!                                                                           !!!!!!!" 
@@ -190,5 +212,4 @@ build_vms() {
 }
 
 
-build_vms
-  
+
