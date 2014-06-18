@@ -133,11 +133,11 @@
 #                                                     |           |      11 VLANS    |              |
 #                                                     +-----------+   ids=[5..15]    +--------------+
 
-BRIDGE="vswitch"
-
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
-source $THIS_SCRIPT_PATH/utils.bash
+. $THIS_SCRIPT_PATH/utils.bash
+. $THIS_SCRIPT_PATH/interfaces.bash
+. $THIS_SCRIPT_PATH/networks.bash
 ###########################################################
 
 if [ $# -eq 1 ]; then
@@ -285,8 +285,6 @@ if [ $? -eq 1 ]; then
         clean_epc_vlan_network
         build_mme_spgw_vlan_network
 else
-   ovs_setting=0
-   vlan_setting=0
    clean_epc_vlan_network
    create_sgi_vlans
 fi

@@ -163,23 +163,13 @@ is_openvswitch_interface() {
         if [ "a$var" == "a" ]; then
             return 0
         fi
-        if [ "a${var:0:3}" == "aeth" ]; then
-            return 0;
-        else 
-            if [ "a${var:0:4}" == "awlan" ]; then
-                return 0;
-            else
-                if [ "a${var:0:4}" == "awifi" ]; then
-                    return 0;
-                else
-                    if [ "a${var:0:4}" == "anone" ]; then
-                        return 0;
-                    else
-                        if [ "a${var:0:3}" == "atun" ]; then
-                            return 0;
-                        else
-                            if [ "a${var:0:4}" == "avbox" ]; then
-                                return 0;
+        if [ "a${var:0:3}" != "aeth" ]; then
+            if [ "a${var:0:4}" != "awlan" ]; then
+                if [ "a${var:0:4}" != "awifi" ]; then
+                    if [ "a${var:0:4}" != "anone" ]; then
+                        if [ "a${var:0:3}" != "atun" ]; then
+                            if [ "a${var:0:4}" != "avbox" ]; then
+                                return 1;
                             fi
                         fi
                     fi
@@ -187,7 +177,7 @@ is_openvswitch_interface() {
             fi
         fi
     done
-    return 1;
+    return 0;
 }
 
 delete_tun_interface() {
@@ -200,9 +190,17 @@ delete_tun_interface() {
 
 delete_vlan_interface() {
   is_vlan_interface $1 
-  if [ $? -eq 0 ]; then
-    ifconfig    $1 down > /dev/null 2>&1
-    vconfig rem $1      > /dev/null 2>&1
+  if [ $? -eq 1 ]; then
+    bash_exec "ifconfig    $1 down "
+    bash_exec "vconfig rem $1      "
+  fi
+}
+
+delete_openvswitch_interface() {
+  is_openvswitch_interface $1 
+  if [ $? -eq 1 ]; then
+      bash_exec "ifconfig $1 down  "
+      bash_exec "tunctl -d $1 "
   fi
 }
 
@@ -210,19 +208,20 @@ delete_vlan_interface() {
 create_tun_interface() {
   is_tun_interface $1 
   if [ $? -eq 1 ]; then
-      openvpn --mktun --dev $1
+      bash_exec "openvpn --mktun --dev $1"
   fi
-  #ip link set $1 up
 }
 
 
-delete_openvswitch_interface() {
-  is_openvswitch_interface $1 
+create_vlan_interface() {
+  is_vlan_interface $1 
   if [ $? -eq 1 ]; then
-      ifconfig $1 down  > /dev/null 2>&1
-      tunctl -d $1      > /dev/null 2>&1
+        interface_name=`echo $1 | cut -f1 -d '.'`
+        vlan=`echo $1 | cut -f2 -d '.'`
+        bash_exec "vconfig add $interface_name $vlan"
   fi
 }
+
 
 create_openvswitch_interface() {
   is_openvswitch_interface $1

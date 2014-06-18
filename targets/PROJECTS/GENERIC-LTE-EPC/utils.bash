@@ -674,10 +674,7 @@ compile_epc() {
         exit 1
     fi
 }
-###########################################################
-THIS_UTILS_SCRIPT_PATH=$(dirname $(readlink -f $0))
-source $THIS_UTILS_SCRIPT_PATH/networks.bash
-###########################################################
+
 ###########################################################
 IPTABLES=/sbin/iptables
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
