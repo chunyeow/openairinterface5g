@@ -183,7 +183,7 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
 #endif
 #endif
 
-  init_transport_channels(2);
+  //init_transport_channels(2);
 
   // Set up DCIs for TDD 5MHz Config 1..6
 

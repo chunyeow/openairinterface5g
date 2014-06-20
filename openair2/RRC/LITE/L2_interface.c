@@ -58,7 +58,7 @@ extern UE_MAC_INST *UE_mac_inst;
 #endif
 
 //#define RRC_DATA_REQ_DEBUG
-#define DEBUG_RRC
+//#define DEBUG_RRC
 
 mui_t mui=0;
 

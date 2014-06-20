@@ -752,15 +752,15 @@ void dlsch_scheduler_pre_processor (module_id_t        Mod_id,
 
   for(UE_id=0;UE_id<granted_UEs;UE_id++){
       //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].dl_pow_off = dl_pow_off[UE_id];
-      LOG_D(PHY,"******************Scheduling Information for UE%d ************************\n",UE_id);
-      LOG_D(PHY,"dl power offset UE%d = %d \n",UE_id,dl_pow_off[UE_id]);
-      LOG_D(PHY,"***********RB Alloc for every subband for UE%d ***********\n",UE_id);
+      LOG_D(MAC,"******************Scheduling Information for UE%d ************************\n",UE_id);
+      LOG_D(MAC,"dl power offset UE%d = %d \n",UE_id,dl_pow_off[UE_id]);
+      LOG_D(MAC,"***********RB Alloc for every subband for UE%d ***********\n",UE_id);
       for(j=0;j<N_RBGS;j++){
           //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].rballoc_sub[i] = rballoc_sub_UE[UE_id][i];
-          LOG_D(PHY,"RB Alloc for UE%d and Subband%d = %d\n",UE_id,j,rballoc_sub_UE[UE_id][j]);
+          LOG_D(MAC,"RB Alloc for UE%d and Subband%d = %d\n",UE_id,j,rballoc_sub_UE[UE_id][j]);
       }
       //PHY_vars_eNB_g[Mod_id]->mu_mimo_mode[UE_id].pre_nb_available_rbs = pre_nb_available_rbs[UE_id];
-      LOG_D(PHY,"Total RBs allocated for UE%d = %d\n",UE_id,pre_nb_available_rbs[UE_id]);
+      LOG_D(MAC,"Total RBs allocated for UE%d = %d\n",UE_id,pre_nb_available_rbs[UE_id]);
   }
 }
 

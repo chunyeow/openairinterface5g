@@ -1425,7 +1425,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
       DCI_pdu->nCCE = get_nCCE(num_pdcch_symbols,
 			       &phy_vars_eNB->lte_frame_parms,
 			       get_mi(&phy_vars_eNB->lte_frame_parms,next_slot>>1));
-      LOG_D(PHY,"num_pdcch_symbols %d, nCCE %d\n",num_pdcch_symbols,DCI_pdu->nCCE);
+      LOG_T(PHY,"num_pdcch_symbols %d, nCCE %d\n",num_pdcch_symbols,DCI_pdu->nCCE);
       
 #if defined(SMBV) && !defined(EXMIMO)
       // Sets up PDCCH and DCI table
@@ -1468,7 +1468,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 	    LOG_E(PHY,"[eNB %d] Frame %d subframe %d : No available CCE resources for common DCI (SI)!!!\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1);
 	  } 
 	  else {
-	    LOG_D(PHY,"[eNB %d] Frame %d subframe %d : CCE resource for common DCI (SI)  => %d/%d\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,
+	    LOG_T(PHY,"[eNB %d] Frame %d subframe %d : CCE resource for common DCI (SI)  => %d/%d\n",phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,
 		  phy_vars_eNB->dlsch_eNB_SI->nCCE[next_slot>>1],DCI_pdu->nCCE);
 
 #if defined(SMBV) && !defined(EXMIMO)
@@ -1653,7 +1653,7 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
 		  phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,DCI_pdu->nCCE,DCI_pdu->dci_alloc[i].rnti);
 	  }
 	  else {
-	    LOG_D(PHY,"[eNB %d] Frame %d subframe %d : CCE resources for UE spec DCI (PUSCH %x) => %d/%d\n",
+	    LOG_T(PHY,"[eNB %d] Frame %d subframe %d : CCE resources for UE spec DCI (PUSCH %x) => %d/%d\n",
 		  phy_vars_eNB->Mod_id,phy_vars_eNB->frame,next_slot>>1,DCI_pdu->dci_alloc[i].rnti,
 		  DCI_pdu->dci_alloc[i].nCCE,DCI_pdu->nCCE);
 

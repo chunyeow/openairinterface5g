@@ -2714,7 +2714,7 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
   uint32_t rballoc_dci=0;
   //uint8_t number_of_subbands=13;
 
-  LOG_D(MAC,"*****Check1RBALLOC****: %d%d%d%d (nb_rb %d,N_RBGS %d)\n",
+  LOG_T(MAC,"*****Check1RBALLOC****: %d%d%d%d (nb_rb %d,N_RBGS %d)\n",
       rballoc[3],rballoc[2],rballoc[1],rballoc[0],nb_rb,mac_xface->lte_frame_parms->N_RBGS);
   while((nb_rb >0) && (check < mac_xface->lte_frame_parms->N_RBGS)){
       //printf("rballoc[%d] %d\n",check,rballoc[check]);
@@ -2745,7 +2745,7 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
       //    check1 = check1+2;
   }
   // rballoc_dci = (rballoc_dci)&(0x1fff);
-  LOG_D(MAC,"*********RBALLOC : %x\n",rballoc_dci);
+  LOG_T(MAC,"*********RBALLOC : %x\n",rballoc_dci);
   // exit(-1);
   return (rballoc_dci);
 }

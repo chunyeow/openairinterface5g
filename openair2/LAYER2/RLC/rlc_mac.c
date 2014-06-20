@@ -425,7 +425,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
     } else {
         rlc_mode = RLC_MODE_NONE;
         //LOG_W(RLC , "[%s] RLC not configured rb id %u lcid %u module %u!\n", __FUNCTION__, rb_id, channel_idP, ue_module_idP);
-	LOG_D(RLC , "[%s] RLC not configured rb id %u lcid %u module %u!\n", __FUNCTION__, rb_id, channel_idP, ue_module_idP);
+	//LOG_D(RLC , "[%s] RLC not configured rb id %u lcid %u module %u!\n", __FUNCTION__, rb_id, channel_idP, ue_module_idP);
     }
 
     switch (rlc_mode) {
