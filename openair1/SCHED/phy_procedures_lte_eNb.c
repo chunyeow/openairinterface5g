@@ -1010,6 +1010,8 @@ void phy_eNB_lte_check_measurement_thresholds(instance_t instanceP, ral_threshol
 #   endif
 #endif
 
+
+
 void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,
 			   relaying_type_t r_type,PHY_VARS_RN *phy_vars_rn) {
   uint8_t *pbch_pdu=&phy_vars_eNB->pbch_pdu[0];
@@ -1062,14 +1064,8 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
       if (next_slot%2 == 0) {
 	for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx_eNB;aa++) {
 	 
-#ifdef IFFT_FPGA
-	  memset(&phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id][aa][next_slot*(phy_vars_eNB->lte_frame_parms.N_RB_DL*12)*(phy_vars_eNB->lte_frame_parms.symbols_per_tti>>1)],
-		 0,(phy_vars_eNB->lte_frame_parms.N_RB_DL*12)*(phy_vars_eNB->lte_frame_parms.symbols_per_tti)*sizeof(mod_sym_t));
-#else
 	  memset(&phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id][aa][next_slot*phy_vars_eNB->lte_frame_parms.ofdm_symbol_size*(phy_vars_eNB->lte_frame_parms.symbols_per_tti>>1)],
 		 0,phy_vars_eNB->lte_frame_parms.ofdm_symbol_size*(phy_vars_eNB->lte_frame_parms.symbols_per_tti)*sizeof(mod_sym_t));
-
-#endif
 	}
       }
     }
@@ -1149,9 +1145,10 @@ void phy_procedures_eNB_TX(unsigned char next_slot,PHY_VARS_eNB *phy_vars_eNB,ui
     }
     
     else {
-	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,1);
+
 	
 	if (abstraction_flag==0){
+	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,1);
 	  generate_pilots_slot(phy_vars_eNB,
 			       phy_vars_eNB->lte_eNB_common_vars.txdataF[sect_id],
 			       AMP,
@@ -3820,22 +3817,22 @@ void phy_procedures_eNB_lte(unsigned char last_slot, unsigned char next_slot,PHY
 #endif
 
   if ((((phy_vars_eNB->lte_frame_parms.frame_type == TDD)&&(subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_DL))||
-      (phy_vars_eNB->lte_frame_parms.frame_type == FDD)) && ((next_slot&1)==0)) {
+      (phy_vars_eNB->lte_frame_parms.frame_type == FDD)) && ((next_slot&1)==1)) {
 #ifdef Rel10 
-    if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 ) 
+    if (phy_procedures_RN_eNB_TX(last_slot, (next_slot+1)%20, r_type) != 0 ) 
 #endif 
-      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
+      phy_procedures_eNB_TX((next_slot+1)%20,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
   }
   if ((((phy_vars_eNB->lte_frame_parms.frame_type == TDD )&&(subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_UL)) ||
       (phy_vars_eNB->lte_frame_parms.frame_type == FDD)) && ((last_slot&1)==1)){
     phy_procedures_eNB_RX(last_slot,phy_vars_eNB,abstraction_flag,r_type);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,next_slot>>1)==SF_S) &&
-      ((next_slot&1)==0)) {
+      ((next_slot&1)==1)) {
 #ifdef Rel10 
-    if (phy_procedures_RN_eNB_TX(last_slot, next_slot, r_type) != 0 )
+    if (phy_procedures_RN_eNB_TX(last_slot, (next_slot+1)%20, r_type) != 0 )
 #endif 
-      phy_procedures_eNB_TX(next_slot,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
+      phy_procedures_eNB_TX((next_slot+1)%20,phy_vars_eNB,abstraction_flag,r_type,phy_vars_rn);
   }
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,last_slot>>1)==SF_S) &&
       ((last_slot&1)==0)){

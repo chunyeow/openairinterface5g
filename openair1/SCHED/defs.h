@@ -9,6 +9,7 @@
 
 #include "PHY/defs.h"
 
+
 enum THREAD_INDEX { OPENAIR_THREAD_INDEX = 0,
 		    TOP_LEVEL_SCHEDULER_THREAD_INDEX,
                     DLC_SCHED_THREAD_INDEX,
@@ -55,6 +56,7 @@ enum openair_SYNCH_STATUS {
 
 #define DAQ_AGC_ON 1
 #define DAQ_AGC_OFF 0
+
 
 
 typedef struct {

@@ -151,7 +151,7 @@
 //#include "PHY/LTE_ESTIMATION/defs.h"
 
 #include "PHY/LTE_TRANSPORT/defs.h"
-
+#include <pthread.h>
 
 #define NUM_DCI_MAX 32
 
@@ -178,10 +178,19 @@ enum transmission_access_mode{
   }ral_threshold_phy_t;
 #endif
 
+typedef struct {
+  uint8_t instance_cnt;
+  pthread_t pthread;
+  pthread_cond_t cond;
+  pthread_mutex_t mutex;
+  uint8_t subframe;
+} eNB_proc_t;
+
 /// Top-level PHY Data Structure for eNB 
 typedef struct PHY_VARS_eNB_s{
   /// Module ID indicator for this instance
   module_id_t               Mod_id;
+  eNB_proc_t       proc[10];
   uint8_t                   local_flag;
   uint32_t         rx_total_gain_eNB_dB;
   frame_t              frame;
