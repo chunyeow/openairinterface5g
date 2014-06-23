@@ -116,6 +116,7 @@ int s6a_init(const mme_config_t *mme_config_p)
         S6A_DEBUG("Freediameter version %s\n", fd_core_version());
     }
 
+
     /* Initializing freeDiameter core */
     S6A_DEBUG("Initializing freeDiameter core...\n");
     ret = fd_core_initialize();
@@ -126,6 +127,16 @@ int s6a_init(const mme_config_t *mme_config_p)
         S6A_DEBUG("Initializing freeDiameter core done\n");
     }
 
+
+
+    S6A_DEBUG("Default ext path: %s\n", DEFAULT_EXTENSIONS_PATH);
+
+    ret = fd_core_parseconf(mme_config_p->s6a_config.conf_file);
+    if (ret != 0) {
+        S6A_ERROR("An error occurred during fd_core_parseconf file :%s.\n", mme_config_p->s6a_config.conf_file);
+        return ret;
+    }
+    
     /* Set gnutls debug level ? */
     if (gnutls_debug) {
         gnutls_global_set_log_function((gnutls_log_func)fd_gnutls_debug);
@@ -140,13 +151,7 @@ int s6a_init(const mme_config_t *mme_config_p)
         return ret;
     }
 
-    S6A_DEBUG("Default ext path: %s\n", DEFAULT_EXTENSIONS_PATH);
 
-    ret = fd_core_parseconf(mme_config_p->s6a_config.conf_file);
-    if (ret != 0) {
-        S6A_ERROR("An error occurred during fd_core_parseconf file :%s.\n", mme_config_p->s6a_config.conf_file);
-        return ret;
-    }
 
     ret = fd_core_waitstartcomplete();
     if (ret != 0) {
