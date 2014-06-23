@@ -57,6 +57,8 @@ int sctp_handle_notifications(union sctp_notification *snp)
     } else if (SCTP_ASSOC_CHANGE == snp->sn_header.sn_type) {
         /* Association has changed */
         SCTP_DEBUG("Notification received: server association changed\n");
+    } else {
+        SCTP_DEBUG("Notification received: %d TODO\n", snp->sn_header.sn_type);
     }
     /* TODO: handle more notif here */
     return 0;
