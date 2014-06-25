@@ -82,6 +82,9 @@ declare MME_PCAP_LOG_FILE=./tshark_s1_mme.$HOSTNAME.pcap
 declare ITTI_LOG_FILE=./itti_enb_ue.$HOSTNAME.log
 declare STDOUT_LOG_FILE=./stdout_enb_ue.$HOSTNAME.log
 declare PCAP_LOG_FILE=./tshark_enb.$HOSTNAME.pcap
+
+declare BRIDGE="epitch"
+
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 source $THIS_SCRIPT_PATH/utils.bash
@@ -238,9 +241,9 @@ HSS_IPV4_ADDRESS_FOR_S6A=$(                  echo $HSS_IPV4_ADDRESS_FOR_S6A     
 #######################################################
 # BUILD NETWORK
 #######################################################
-clean_tun_network
-build_epc_tun_network
-test_tun_network
+clean_network
+build_network
+test_network
 
 ##################################################
 # LAUNCH HSS
@@ -267,7 +270,7 @@ cd $OPENAIRCN_DIR/$OBJ_DIR
 nohup tshark -i MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_PCAP_LOG_FILE &
 
 #gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE 
-nohup xterm -hold -e gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE & 
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$MME_STDOUT_LOG_FILE  
 
 
 ##################################################
@@ -306,7 +309,7 @@ ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
 
-cd OUTPUT/$HOSTNAME
+cd $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME
 rotate_log_file $ITTI_LOG_FILE
 rotate_log_file $STDOUT_LOG_FILE
 rotate_log_file $STDOUT_LOG_FILE.filtered
@@ -318,7 +321,7 @@ nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w
 
 nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+xterm -e gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
 
 pkill tshark
 
