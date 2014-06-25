@@ -251,7 +251,8 @@ set_interface_up() {
 get_mac_router() {
     ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
     IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
-    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER | cut -d ' '  -f5 | tr -d ':'`
+    export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER' ' | cut -d ' '  -f5 | tr -d ':'`
+    echo_success "ROUTER IP  ADDRESS= $IP_ROUTER"
     echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
 }
 
