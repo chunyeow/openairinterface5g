@@ -140,6 +140,21 @@ THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 . $THIS_SCRIPT_PATH/networks.bash
 ###########################################################
 
+control_c()
+# run if user hits control-c
+{
+  pkill -9 tshark
+  pkill -9 oai_epc
+  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE
+  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
+  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE
+  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE  echo -en "\n*** Exiting ***\n"
+
+  exit $?
+}
+
+
+
 if [ $# -eq 1 ]; then
     declare -x CONFIG_FILE_DIR=$1
     if [ ! -d $CONFIG_FILE_DIR ]; then
@@ -276,18 +291,19 @@ SGW_IPV4_ADDRESS_FOR_S5_S8_UP=$(             echo $SGW_IPV4_ADDRESS_FOR_S5_S8_UP
 PGW_IPV4_ADDRESS_FOR_S5_S8=$(                echo $PGW_IPV4_ADDRESS_FOR_S5_S8         | cut -f1 -d '/')
 PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
 
-is_vlan_interface $MME_INTERFACE_NAME_FOR_S1_MME  \
-                  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
+#is_vlan_interface $MME_INTERFACE_NAME_FOR_S1_MME  \
+#                  $SGW_INTERFACE_NAME_FOR_S1U_S12_S4_UP
                   
 
-if [ $? -eq 1 ]; then
-        echo_success "Found open VLAN network configuration"
-        clean_epc_vlan_network
-        build_mme_spgw_vlan_network
-else
-   clean_epc_vlan_network
-   create_sgi_vlans
-fi
+#if [ $? -eq 1 ]; then
+#        echo_success "Found open VLAN network configuration"
+#        clean_epc_vlan_network
+#        build_mme_spgw_vlan_network
+#else
+#   clean_epc_vlan_network
+#   create_sgi_vlans
+#fi
+get_mac_router
 
 ##################################################
 # LAUNCH MME + S+P-GW executable
@@ -301,18 +317,25 @@ then
 fi
 
 
-ITTI_LOG_FILE=./itti_mme.$HOSTNAME.log
-rotate_log_file $ITTI_LOG_FILE
+ITTI_LOG_FILE=itti_mme.$HOSTNAME.log
+rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE
 
-STDOUT_LOG_FILE=./stdout_mme.$HOSTNAME.log
-rotate_log_file $STDOUT_LOG_FILE
+STDOUT_LOG_FILE=stdout_mme.$HOSTNAME.log
+rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
 
-PCAP_LOG_FILE=./tshark_mme.$HOSTNAME.pcap
-rotate_log_file $PCAP_LOG_FILE
+PCAP_S1C_LOG_FILE=tshark_mme_s1c.$HOSTNAME.pcap
+rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE
+
+PCAP_S6A_LOG_FILE=tshark_mme_s6a.$HOSTNAME.pcap
+rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 
-nohup tshark -i MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_LOG_FILE &
+trap control_c SIGINT
+
+#nohup tshark -i $MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE &
+#nohup tshark -i $MME_INTERFACE_NAME_FOR_S6A -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE &
 
 
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+

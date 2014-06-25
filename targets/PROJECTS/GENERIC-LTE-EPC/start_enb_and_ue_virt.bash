@@ -241,12 +241,12 @@ rotate_log_file tshark_enb_ue.$HOSTNAME.pcap
 
 cd $THIS_SCRIPT_PATH
 
-nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w OUTPUT/$HOSTNAME/tshark_enb_ue.$HOSTNAME.pcap &
+#nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w OUTPUT/$HOSTNAME/tshark_enb_ue.$HOSTNAME.pcap &
 
 #nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
 gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
-pkill tshark
+#pkill tshark
 
-cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE |  |grep 'RRC\|S1AP\|SCTP\|PDCP' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
+cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE |grep 'RRC\|S1AP\|SCTP\|PDCP' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered

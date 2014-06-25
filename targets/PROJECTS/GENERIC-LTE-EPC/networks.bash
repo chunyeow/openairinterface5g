@@ -290,11 +290,10 @@ create_sgi_vlans() {
         create_vlan_interface  $PGW_INTERFACE_NAME_FOR_SGI.$i
         sync
         # configure vlan interface
-        #CIDR=$NETWORK'.'$i'/24'
         base=200
         NET=$(( $i + $base ))
-        CIDR='10.0.'$NET'.2/24'
-        bash_exec "ip -4 addr add  $CIDR dev $PGW_INTERFACE_NAME_FOR_SGI.$i"
+        set_interface_up $PGW_INTERFACE_NAME_FOR_SGI.$i "10.0."$NET".2" 24
+        
     done
 
 
