@@ -111,8 +111,8 @@
     <S1AP_UE_CTXT_MODIFICATION_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
     <S1AP_PAGING_IND enabled="1" foreground_color="#585858" background_color="#cbffb1"/>
     <S1AP_UE_CONTEXT_RELEASE_REQ enabled="1" foreground_color="#000000" background_color="#cbffb1"/>
-    <SCTP_NEW_ASSOCIATION_REQ enabled="0" foreground_color="#000000" background_color="#aefeff"/>
-    <SCTP_NEW_ASSOCIATION_RESP enabled="0" foreground_color="#585858" background_color="#aefeff"/>
+    <SCTP_NEW_ASSOCIATION_REQ enabled="1" foreground_color="#000000" background_color="#aefeff"/>
+    <SCTP_NEW_ASSOCIATION_RESP enabled="1" foreground_color="#585858" background_color="#aefeff"/>
     <SCTP_NEW_ASSOCIATION_IND enabled="1" foreground_color="#585858" background_color="#aefeff"/>
     <SCTP_REGISTER_UPPER_LAYER enabled="1" foreground_color="#585858" background_color="#aefeff"/>
     <SCTP_DATA_REQ enabled="1" foreground_color="#000000" background_color="#aefeff"/>
