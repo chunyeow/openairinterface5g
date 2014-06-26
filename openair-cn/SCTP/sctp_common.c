@@ -74,11 +74,11 @@ int sctp_set_init_opt(int sd, uint16_t instreams, uint16_t outstreams,
     }
 
     /* Allow socket reuse */
-     if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+    if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
          SCTP_ERROR("setsockopt SO_REUSEADDR failed (%d:%s)\n", errno, strerror(errno));
          close(sd);
          return -1;
-     }
+    }
 
     return 0;
 }
