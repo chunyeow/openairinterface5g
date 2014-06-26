@@ -13,6 +13,7 @@ TLS_CA   = "/usr/local/etc/freeDiameter/cacert.pem";
 # Default : TCP enabled
 No_TCP;
 #No_SCTP;
+No_IPv6;
 
 # Limit the number of SCTP streams
 SCTP_streams = 15;
@@ -21,7 +22,7 @@ NoRelay;
 TLS_old_method;
 AppServThreads = 1;
 
-ListenOn = "192.168.60.145";
+#ListenOn = "192.168.57.100";
 
 # -------- Extensions ---------
 
@@ -60,4 +61,4 @@ LoadExtension = "dict_s6a.fdx";
 # For only accepting incoming connections, see the acl_wl.fx extension.
 
 # ConnectPeer = "hss.test.fr" { ConnectTo = "192.168.56.101"; No_IPv6; No_TCP; Port = 3868; Realm = "test.fr"; };
-# ConnectPeer = "hss.test.fr" { ConnectTo = "192.168.56.1"; No_TLS; };
+# ConnectPeer = "hss.eur" { ConnectTo = "192.168.12.190"; No_IPv6; Port = 3868; };
