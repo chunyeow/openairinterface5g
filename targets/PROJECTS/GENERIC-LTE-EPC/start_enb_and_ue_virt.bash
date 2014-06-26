@@ -229,6 +229,21 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
+echo_warning "Be careful of the lines below, for a specific virtual box setting" 
+bash_exec "/sbin/iptables  -t mangle -F"
+bash_exec "/sbin/iptables  -t nat -F"
+bash_exec "/sbin/iptables  -t raw -F"
+bash_exec "/sbin/iptables  -t filter -F"
+bash_exec "/sbin/ip6tables -t mangle -F"
+bash_exec "/sbin/ip6tables -t filter -F"
+bash_exec "/sbin/ip6tables -t raw -F"
+bash_exec "iptables -A OUTPUT -o eth0 -p sctp  -j DROP"
+bash_exec "iptables -A INPUT -i eth0 -p sctp  -j DROP"
+bash_exec "iptables -A FORWARD -i eth0 -p sctp  -j DROP"
+bash_exec "iptables -A OUTPUT -o eth1 -p sctp  -j DROP"
+bash_exec "iptables -A INPUT -i eth1 -p sctp  -j DROP"
+bash_exec "iptables -A FORWARD -i eth1 -p sctp  -j DROP"
+
 cd $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME
 ITTI_LOG_FILE=itti_enb_ue.$HOSTNAME.log
 rotate_log_file $ITTI_LOG_FILE
@@ -249,4 +264,4 @@ gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITT
 
 #pkill tshark
 
-cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE |grep 'RRC\|S1AP\|SCTP\|PDCP' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
+cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE |grep 'RRC\|S1AP\|SCTP\|PDCP' | grep -V 'RRC_MAC_IN_SYNC_IND' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
