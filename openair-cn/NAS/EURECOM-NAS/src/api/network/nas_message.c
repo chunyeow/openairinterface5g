@@ -32,6 +32,7 @@ Description	Defines the layer 3 messages supported by the NAS sublayer
 # include "nas_itti_messaging.h"
 #endif
 #include "secu_defs.h"
+#include "emmData.h"
 
 /****************************************************************************/
 /****************  E X T E R N A L    D E F I N I T I O N S  ****************/
@@ -895,7 +896,7 @@ static UInt32_t _nas_message_get_mac(
     switch (emm_security_context->selected_algorithms.integrity) {
 
         case NAS_SECURITY_ALGORITHMS_EIA1:
-            AssertFatal(0 ,
+        	LOG_TRACE(ERROR,
                 "EIA1_128_ALG_ID not implemented");
             break;
 
@@ -942,7 +943,7 @@ static UInt32_t _nas_message_get_mac(
             break;
 
         default:
-          AssertFatal(0 ,
+        	LOG_TRACE(ERROR,
               "Unknown integrity protection algorithm %d",
               emm_security_context->selected_algorithms.integrity);
     }

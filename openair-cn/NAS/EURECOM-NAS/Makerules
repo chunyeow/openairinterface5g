@@ -2,7 +2,7 @@ CC		= gcc
 RM		= rm -f
 CP		= cp -p
 LD		= /usr/bin/ld
-AR		= /usr/bin/ar
+AR      = /usr/bin/ar
 CD		= cd
 MAKE		= make
 

@@ -19,11 +19,11 @@ ifeq ($(TARGET), UEprocess)
   SRCS = UEprocess.c nas_network.c nas_parser.c nas_proc.c nas_user.c
 endif
 
-LIBS		= -lutil -lapi -lEMMmsg -lESMmsg -lEMMsap -lESMsap -lies -lrt
+LIBS		= -lutil -lapi -lEMMmsg -lESMmsg -lEMMsap -lESMsap -lies -lrt -lnettle -lcrypto
 INCLUDES	= -I. -I$(INCDIR) -I$(UTILDIR) -I$(USERAPIDIR) -I$(NETAPIDIR) \
 		-I$(EMMDIR) -I$(EMMMSGDIR) -I$(EMMSAPDIR) \
 		-I$(ESMDIR) -I$(ESMMSGDIR) -I$(ESMSAPDIR) \
-		-I$(IESDIR) -I$(MMEAPIDIR)
+		-I$(IESDIR) -I$(MMEAPIDIR) 
 
 .PHONY: $(TARGET)
 
@@ -32,7 +32,7 @@ INCLUDES	= -I. -I$(INCDIR) -I$(UTILDIR) -I$(USERAPIDIR) -I$(NETAPIDIR) \
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(EMMDIR)/*.o $(ESMDIR)/*.o $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(EMMDIR)/*.o $(ESMDIR)/*.o $(SECUDIR)/*.o $(LIBS)
 	@echo Replacing $@ to $(BINDIR)
 	@$(RM) $(BINDIR)/$@
 	@$(CP) $@ $(BINDIR)

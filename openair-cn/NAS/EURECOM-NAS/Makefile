@@ -8,6 +8,9 @@ include Makefile.inc
 export PROJDIR	= $(CURDIR)
 
 all:
+ifeq ($(PROCESS), UE)
+	@$(CD) $(SECUDIR)  && $(MAKE)
+endif
 	@$(CD) $(UTILDIR) && $(MAKE)
 	@$(CD) $(APIDIR)  && $(MAKE)
 	@$(CD) $(IESDIR)  && $(MAKE)
@@ -23,7 +26,7 @@ ifeq ($(PROCESS), MME)
 	@$(CD) $(ASSIMUDIR) && $(MAKE)
 endif
 # SR include all objects in a single archive
-	$(AR) rcs libUE/libNasUE.a `find . -name *.o`
+	$(AR) rcs libUE/libNasUE.a `find . -name *.o` `find $(OPENAIRCN_DIR)/SECU -name *.o`
 
 clean:
 	@$(CD) $(SRCDIR)  && $(MAKE) $@

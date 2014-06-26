@@ -299,7 +299,6 @@ int main (int argc, const char* argv[])
 	usim_data.nasconfig.NMO_I_Behaviour.value[0] = 0x00;
 	usim_data.nasconfig.AttachWithImsi.type = USIM_ATTACH_WITH_IMSI_TAG;
 	usim_data.nasconfig.AttachWithImsi.length = 1;
-#undefine START_WITH_GUTI
 #if defined(START_WITH_GUTI)
 	usim_data.nasconfig.AttachWithImsi.value[0] = 0x00;
 #else

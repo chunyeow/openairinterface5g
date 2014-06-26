@@ -1,6 +1,6 @@
 ifndef PROJDIR
 PROJDIR  = $(PWD)/../../..
-INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(IESDIR) -I$(EMMMSGDIR) -I$(ESMMSGDIR)
+INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(IESDIR) -I$(EMMMSGDIR) -I$(ESMMSGDIR) 
 endif
 
 include $(PROJDIR)/Makerules
@@ -10,7 +10,7 @@ all: $(OBJS)
 
 %.o: %.c Makefile
 	@echo Compiling $<
-	@$(CC) $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLUDES)   -c $< -o $@
 
 clean:
 	$(RM) $(OBJS) *.bak *~

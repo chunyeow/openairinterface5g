@@ -13,7 +13,8 @@ LIBDIR		= $(PROJDIR)/lib
 LIBPROCESS	= $(LIBDIR)$(PROCESS)
 
 # Source directories
-SRCDIR		= $(PROJDIR)/src
+SECUDIR     = $(OPENAIRCN_DIR)/SECU
+SRCDIR      = $(PROJDIR)/src
 INCDIR		= $(SRCDIR)/include
 UTILDIR		= $(SRCDIR)/util
 APIDIR		= $(SRCDIR)/api
