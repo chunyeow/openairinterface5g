@@ -237,11 +237,11 @@ bash_exec "/sbin/iptables  -t filter -F"
 bash_exec "/sbin/ip6tables -t mangle -F"
 bash_exec "/sbin/ip6tables -t filter -F"
 bash_exec "/sbin/ip6tables -t raw -F"
-bash_exec "iptables -A OUTPUT -o eth0 -p sctp  -j DROP"
-bash_exec "iptables -A INPUT -i eth0 -p sctp  -j DROP"
+bash_exec "iptables -A OUTPUT  -o eth0 -p sctp  -j DROP"
+bash_exec "iptables -A INPUT   -i eth0 -p sctp  -j DROP"
 bash_exec "iptables -A FORWARD -i eth0 -p sctp  -j DROP"
-bash_exec "iptables -A OUTPUT -o eth1 -p sctp  -j DROP"
-bash_exec "iptables -A INPUT -i eth1 -p sctp  -j DROP"
+bash_exec "iptables -A OUTPUT  -o eth1 -p sctp  -j DROP"
+bash_exec "iptables -A INPUT   -i eth1 -p sctp  -j DROP"
 bash_exec "iptables -A FORWARD -i eth1 -p sctp  -j DROP"
 
 cd $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME
@@ -258,10 +258,12 @@ cd $THIS_SCRIPT_PATH
 
 #nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w OUTPUT/$HOSTNAME/tshark_enb_ue.$HOSTNAME.pcap &
 
-#nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
+# To start NAS connectivity: AT+CFUN=1
+nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+# | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
 #pkill tshark
 
-cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE |grep 'RRC\|S1AP\|SCTP\|PDCP' | grep -V 'RRC_MAC_IN_SYNC_IND' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
+cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE | grep 'RRC\|S1AP\|SCTP\|PDCP\|NAS\|RLC' | grep -v 'RRC_MAC_IN_SYNC_IND' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
