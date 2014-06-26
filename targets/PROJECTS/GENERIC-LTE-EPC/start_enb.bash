@@ -247,7 +247,6 @@ else
         insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
         insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
         insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
-        echo "1" > /sys/bus/pci/rescan
         touch /tmp/init_rt_done.tmp
         chmod 666 /tmp/init_rt_done.tmp
     else
