@@ -435,9 +435,9 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
             if ( ! emm_ctx->security->knas_int.value) {
                 emm_ctx->security->knas_int.value = malloc(AUTH_KNAS_INT_SIZE);
             } else {
-                AssertFatal(
-                    emm_ctx->security->knas_int.length >= AUTH_KNAS_INT_SIZE,
+            	LOG_TRACE(ERROR,
                     " TODO realloc emm_ctx->security->knas_int OctetString");
+                LOG_FUNC_RETURN (RETURNerror);
             }
             emm_ctx->security->knas_int.length = AUTH_KNAS_INT_SIZE;
             derive_key_nas(
@@ -449,9 +449,9 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
             if ( ! emm_ctx->security->knas_enc.value) {
                 emm_ctx->security->knas_enc.value = malloc(AUTH_KNAS_ENC_SIZE);
             } else {
-                AssertFatal(
-                    emm_ctx->security->knas_enc.length >= AUTH_KNAS_ENC_SIZE,
+            	LOG_TRACE(ERROR,
                     " TODO realloc emm_ctx->security->knas_enc OctetString");
+                LOG_FUNC_RETURN (RETURNerror);
             }
             emm_ctx->security->knas_enc.length = AUTH_KNAS_ENC_SIZE;
             derive_key_nas(

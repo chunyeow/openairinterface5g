@@ -5,8 +5,20 @@ endif
 include $(PROJDIR)/Makerules
 include $(PROJDIR)/Makefile.inc
 
-INCLUDES = -I. -I$(INCDIR) -I$(UTILDIR) -I$(USIMAPIDIR) -I$(MMEAPIDIR) \
-	-I$(ESMDIR) -I$(EMMSAPDIR) -I$(ESMDIR) -I$(ESMSAPDIR) -I$(EMMMSGDIR) -I$(IESDIR)
+INCLUDES = -I. \
+    -I$(INCDIR) \
+    -I$(UTILDIR) \
+    -I$(USIMAPIDIR) \
+    -I$(MMEAPIDIR) \
+	-I$(ESMDIR) \
+	-I$(EMMSAPDIR) \
+	-I$(ESMDIR) \
+	-I$(ESMSAPDIR) \
+	-I$(EMMMSGDIR) \
+	-I$(IESDIR) \
+    -I$(OPENAIRCN_DIR)/COMMON \
+    -I$(OPENAIRCN_DIR)/SECU
+	
 
 all: $(OBJS)
 	@$(CD) $(EMMMSGDIR) && $(MAKE)
