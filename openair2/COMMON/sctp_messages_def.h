@@ -4,3 +4,5 @@ MESSAGE_DEF(SCTP_NEW_ASSOCIATION_IND , MESSAGE_PRIORITY_MED, sctp_new_associatio
 MESSAGE_DEF(SCTP_REGISTER_UPPER_LAYER, MESSAGE_PRIORITY_MED, sctp_listener_register_upper_layer_t, sctp_listener_register_upper_layer)
 MESSAGE_DEF(SCTP_DATA_REQ,             MESSAGE_PRIORITY_MED, sctp_data_req_t                     , sctp_data_req)
 MESSAGE_DEF(SCTP_DATA_IND,             MESSAGE_PRIORITY_MED, sctp_data_ind_t                     , sctp_data_ind)
+MESSAGE_DEF(SCTP_INIT_MSG,             MESSAGE_PRIORITY_MED, sctp_init_t                         , sctp_init)
+MESSAGE_DEF(SCTP_CLOSE_ASSOCIATION,    MESSAGE_PRIORITY_MAX, sctp_close_association_t            , sctp_close_association)
