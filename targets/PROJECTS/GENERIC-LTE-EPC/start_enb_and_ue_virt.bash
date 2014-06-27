@@ -40,32 +40,9 @@
 # THE DIRECTORY WHERE ARE LOCATED THE CONFIGURATION FILES
 #########################################
 # This script start  ENB+UE (all in one executable, on one host)
-# Depending on configuration files a VLAN setting.
 # MME+SP-GW executable have to be launched by your own (start_epc.bash) before this script is invoked.
 #
-###########################################################################################################################
-#                                    VLAN SETTING
-###########################################################################################################################
-#                                                                           hss.eur
-#                                                                             |
-#        +-----------+                                +-----------+           v   +----------+
-#        |  eNB      +------+            VLAN 1+------+    MME    +----+      +---+   HSS    |
-#        |           |ethx.1+------------------+ethy.1|           |    +------+   |          |
-#        |           +------+                  +------+           +----+      +---+          |
-#        |           |ethx.2+-------+                 |           |               +----------+
-#        |           +------+       |                 +-+-------+-+
-#        |           |              |                   | s11mme|    
-#        |           |              |                   +---+---+    
-#        |           |              |             (optional)|   VLAN 3
-#        +-----------+              |                   +---+---+    
-#                                   |                   | s11sgw|            router.eur
-#                                   |                 +-+-------+-+              |   +--------------+
-#                                   |                 |  S+P-GW   |              v   |   ROUTER     |
-#                                   |  VLAN2   +------+           +-------+     +----+              +----+
-#                                   +----------+ethy.2|           |sgi    +-...-+    |              |    +---...Internet
-#                                              +------+           +-------+     +----+              +----+
-#                                                     |           |      11 VLANS    |              |
-#                                                     +-----------+   ids=[5..15]    +--------------+
+
 
 ###########################################################
 # Parameters
@@ -246,13 +223,13 @@ bash_exec "iptables -A FORWARD -i eth1 -p sctp  -j DROP"
 
 cd $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME
 ITTI_LOG_FILE=itti_enb_ue.$HOSTNAME.log
-rotate_log_file $ITTI_LOG_FILE
+#rotate_log_file $ITTI_LOG_FILE
 
 STDOUT_LOG_FILE=stdout_enb_ue.$HOSTNAME.log
-rotate_log_file $STDOUT_LOG_FILE
+#rotate_log_file $STDOUT_LOG_FILE
 
 rotate_log_file $STDOUT_LOG_FILE.filtered
-rotate_log_file tshark_enb_ue.$HOSTNAME.pcap
+#rotate_log_file tshark_enb_ue.$HOSTNAME.pcap
 
 cd $THIS_SCRIPT_PATH
 
