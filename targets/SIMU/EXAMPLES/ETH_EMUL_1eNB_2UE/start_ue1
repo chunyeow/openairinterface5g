@@ -11,7 +11,7 @@ sudo ip route add 239.0.0.160/28 dev eth0
 
 sudo ifconfig oai0 10.0.1.2 netmask 255.255.255.0 broadcast 10.0.1.255
 
-$OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s 10.0.1.2 -t 10.0.1.1 -r 3
+$OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s 10.0.1.2 -t 10.0.1.1 -r 1
 
 #xterm -T UE1 -hold -e ping 10.0.1.1& 
 

@@ -71,14 +71,14 @@ ip addr add dev oai0 2001:1::1/64
 # -x    -> source ipv6 address
 # -y    -> destination ipv6 address
 # -r    -> radio bearer id
-echo "rb_tool -a -c0 -i0 -f0 -z0 -x 2001:1::1/128  -y 2001:1::2/128 -r 3"
-$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -f0 -z0 -x 2001:1::1/128  -y 2001:1::2/128 -r 3
+echo "rb_tool -a -c0 -i0 -f0 -z0 -x 2001:1::1/128  -y 2001:1::2/128 -r 1"
+$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -f0 -z0 -x 2001:1::1/128  -y 2001:1::2/128 -r 1
 
-echo "rb_tool -a -c0 -i0 -f2 -z63 -s 10.0.1.1/32   -t 10.0.1.2/32   -r 3"
-$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -f2 -z64 -s 10.0.1.1/32   -t 10.0.1.2/32   -r 3
+echo "rb_tool -a -c0 -i0 -f2 -z63 -s 10.0.1.1/32   -t 10.0.1.2/32   -r 1"
+$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -f2 -z64 -s 10.0.1.1/32   -t 10.0.1.2/32   -r 1
 
-echo "rb_tool -a -c0 -i0 -f2 -z63 -s 10.0.1.1/32   -t 10.0.1.2/32   -r 3"
-$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -f4 -z64 -s 0.0.0.0/32   -t 0.0.0.0/32   -r 3
+echo "rb_tool -a -c0 -i0 -f2 -z63 -s 10.0.1.1/32   -t 10.0.1.2/32   -r 1"
+$OPENAIR2_DIR/NAS/DRIVER/LITE/RB_TOOL/rb_tool -a -c0 -i0 -f4 -z64 -s 0.0.0.0/32   -t 0.0.0.0/32   -r 1
 
 echo "to see eNB stats, please run : watch_enb script"
 echo "$OPENAIR_TARGETS/SIMU/USER/oaisim  -u0 -M0 -p2  -g3 -l3  > /dev/null"
