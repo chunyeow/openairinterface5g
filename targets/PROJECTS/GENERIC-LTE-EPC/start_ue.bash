@@ -30,7 +30,7 @@
 #                06904 Biot Sophia Antipolis cedex,
 #                FRANCE
 ################################################################################
-# file start_enb.bash
+# file start_ue.bash
 # brief
 # author Lionel Gauthier
 # company Eurecom
@@ -39,62 +39,16 @@
 # INPUT OF THIS SCRIPT:
 # THE DIRECTORY WHERE ARE LOCATED THE CONFIGURATION FILES
 #########################################
-# This script start  ENB+UE (all in one executable, on one host)
-# Depending on configuration files, it can be instanciated a virtual switch 
-# setting or a VLAN setting.
-# MME+SP-GW executable have to be launched on the same host by your own (start_epc.bash) before this script is invoked.
-#
-###########################################################################################################################
-#                                    VIRTUAL SWITCH SETTING
-###########################################################################################################################
-#
-#                                                                           hss.eur
-#                                                                             |
-#        +-----------+          +------+              +-----------+           v   +----------+
-#        |  eNB      +------+   |  ovs | VLAN 1+------+    MME    +----+      +---+   HSS    |
-#        |           |cpenb0+------------------+cpmme0|           |    +------+   |          |
-#        |           +------+   |bridge|       +------+           +----+      +---+          |
-#        |           |upenb0+-------+  |              |           |               +----------+
-#        +-----------+------+   |   |  |              +-----------+
-#                               +---|--+                    |                   router.eur
-#                                   |                 +-----------+              |   +--------------+
-#                                   |                 |  S+P-GW   |              v   |   ROUTER     |
-#                                   |  VLAN2   +------+           +-------+     +----+              +----+
-#                                   +----------+upsgw0|           |sgi    +-...-+    |              |    +---...Internet
-#                                              +------+           +-------+     +----+              +----+
-#                                                     |           |      11 VLANS    |              |
-#                                                     +-----------+   ids=[5..15]    +--------------+
-#
-#
-###########################################################################################################################
-#                                    VLAN SETTING
-###########################################################################################################################
-#                                                                           hss.eur
-#                                                                             |
-#        +-----------+                                +-----------+           v   +----------+
-#        |  eNB      +------+            VLAN 1+------+    MME    +----+      +---+   HSS    |
-#        |           |ethx.1+------------------+ethy.1|           |    +------+   |          |
-#        |           +------+                  +------+           +----+      +---+          |
-#        |           |ethx.2+-------+                 |           |               +----------+
-#        |           +------+       |                 +-+-------+-+
-#        |           |              |                   | s11mme|    
-#        |           |              |                   +---+---+    
-#        |           |              |             (optional)|   VLAN 3
-#        +-----------+              |                   +---+---+    
-#                                   |                   | s11sgw|            router.eur
-#                                   |                 +-+-------+-+              |   +--------------+
-#                                   |                 |  S+P-GW   |              v   |   ROUTER     |
-#                                   |  VLAN2   +------+           +-------+     +----+              +----+
-#                                   +----------+ethy.2|           |sgi    +-...-+    |              |    +---...Internet
-#                                              +------+           +-------+     +----+              +----+
-#                                                     |           |      11 VLANS    |              |
-#                                                     +-----------+   ids=[5..15]    +--------------+
-
+# This script start  UE 
 ###########################################################
 # Parameters
 ###########################################################
-declare -x EMULATION_DEV_INTERFACE="eth1"
-declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 NAS=1 Rel10=1"
+declare -x hard_real_time= "no"
+declare -x EMULATION_DEV_INTERFACE="eth2"
+declare EMULATION_MULTICAST_GROUP=1
+declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 NAS=1 Rel10=1 SECU=1 RRC_MSG_PRINT=1"
+declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
+
 declare MAKE_IP_DRIVER_TARGET="ue_ip.ko"
 declare IP_DRIVER_NAME="ue_ip"
 declare LTEIF="oip1"
@@ -105,10 +59,12 @@ declare UE_IPv4_CIDR=$UE_IPv4"/24"
 
 ###########################################################
 THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
-source $THIS_SCRIPT_PATH/utils.bash
+. $THIS_SCRIPT_PATH/utils.bash
+. $THIS_SCRIPT_PATH/interfaces.bash
+. $THIS_SCRIPT_PATH/networks.bash
 ###########################################################
 
-#check_install_epc_software
+check_install_epc_software
 
 cd $THIS_SCRIPT_PATH
 
@@ -142,34 +98,27 @@ $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --print
 $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data --print
 
 ##################################################
-# LAUNCH eNB + UE executable
+# LAUNCH UE executable
 ##################################################
 echo "Bringup UE interface"
 pkill oaisim
 bash_exec "rmmod $IP_DRIVER_NAME" > /dev/null 2>&1
 
-cecho "make $MAKE_IP_DRIVER_TARGET $MAKE_LTE_ACCESS_STRATUM_TARGET ....." $green
-#bash_exec "make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET "
+if [ ! -d $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME ]; then 
+    mkdir -m 777 -p $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME
+fi
+
 make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET || exit 1
-
-#bash_exec "make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET "
-make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
-
-
 bash_exec "insmod  $OPENAIR2_DIR/NETWORK_DRIVER/UE_IP/$IP_DRIVER_NAME.ko"
 
+
 bash_exec "ip route flush cache"
-
 sleep 1
-
 bash_exec "sysctl -w net.ipv4.conf.all.log_martians=1"
 assert "  `sysctl -n net.ipv4.conf.all.log_martians` -eq 1" $LINENO
-
 echo "   Disabling reverse path filtering"
 bash_exec "sysctl -w net.ipv4.conf.all.rp_filter=0"
 assert "  `sysctl -n net.ipv4.conf.all.rp_filter` -eq 0" $LINENO
-
-
 bash_exec "ip route flush cache"
 
 # Check table 200 lte in /etc/iproute2/rt_tables
@@ -180,21 +129,70 @@ fi
 ip rule add fwmark 5 table lte
 ip route add default dev $LTEIF table lte
 
-ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
 
-ITTI_LOG_FILE=./itti_ue.$HOSTNAME.log
-rotate_log_file $ITTI_LOG_FILE
-STDOUT_LOG_FILE=./stdout_ue.log
+if [ x$hard_real_time != "xyes" ]; then
 
-rotate_log_file $STDOUT_LOG_FILE
-rotate_log_file $STDOUT_LOG_FILE.filtered
+    make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+    ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
 
-cd $THIS_SCRIPT_PATH
+    ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/itti_ue.$HOSTNAME.log
+    #rotate_log_file $ITTI_LOG_FILE
+    
+    STDOUT_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/stdout_ue.$HOSTNAME.log
+    #rotate_log_file $STDOUT_LOG_FILE
+    #rotate_log_file $STDOUT_LOG_FILE.filtered
+    
+    PCAP_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/tshark_ue.$HOSTNAME.pcap
+    #rotate_log_file $PCAP_LOG_FILE
+    
+    cd $THIS_SCRIPT_PATH
 
-nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
+    nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -l9 -u1 -b0 -M1 -p2 -g1 -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE  2>&1 | tee $STDOUT_LOG_FILE 
+    cp $OPENAIR_TARGETS/SIMU/USER/oaisim  $OPENAIR_TARGETS/SIMU/USER/oaisim_ue
+    gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim_ue -a -l9 -u1 -b0 -M1 -p2 -g$EMULATION_MULTICAST_GROUP -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE  2>&1 | tee $STDOUT_LOG_FILE 
+    
+else 
+    #make --directory=$OPENAIR_TARGETS/RTAI/USER drivers  || exit 1
+    # 2 lines below replace the line above
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
+    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
+    cd $THIS_SCRIPT_PATH
+
+    make --directory=$OPENAIR_TARGETS/RT/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+
+    ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/itti_ue_rf.$HOSTNAME.log
+    #rotate_log_file $ITTI_LOG_FILE
+    
+    STDOUT_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/stdout_ue_rf.$HOSTNAME.log
+    #rotate_log_file $STDOUT_LOG_FILE
+    #rotate_log_file $STDOUT_LOG_FILE.filtered
+    
+    PCAP_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/tshark_ue_rf.$HOSTNAME.pcap
+    #rotate_log_file $PCAP_LOG_FILE
+    
+    if [ ! -f /tmp/init_rt_done.tmp ]; then
+        echo_warning "STARTING REAL TIME (RTAI)"
+        insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
+        insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
+        touch /tmp/init_rt_done.tmp
+        chmod 666 /tmp/init_rt_done.tmp
+    else
+        echo_warning "REAL TIME FOUND STARTED (RTAI)"
+    fi
+    
+    cd $OPENAIR_TARGETS/RT/USER
+    bash ./init_exmimo2.sh
+    echo_warning "STARTING SOFTMODEM..."
+    ./lte-softmodem -K $ITTI_LOG_FILE -O $CONFIG_FILE_ENB 2>&1
+    #cat /dev/rtf62 > $STDOUT_LOG_FILE
+    cd $THIS_SCRIPT_PATH
+fi
+
 
 cat $STDOUT_LOG_FILE |  grep -v '[PHY]' | grep -v '[MAC]' | grep -v '[EMU]' | \
                         grep -v '[OCM]' | grep -v '[OMG]' | \
