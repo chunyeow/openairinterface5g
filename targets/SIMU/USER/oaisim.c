@@ -507,6 +507,7 @@ void *l2l1_task(void *args_p) {
 
 #if defined(ENABLE_ITTI)
   MessageDef   *message_p = NULL;
+  const char   *msg_name  = NULL;
   int           result;
 
   itti_mark_task_ready (TASK_L2L1);
@@ -520,6 +521,8 @@ void *l2l1_task(void *args_p) {
               AssertFatal (result == EXIT_SUCCESS, "Failed to free memory (%d)!\n", result);
           }
           itti_receive_msg (TASK_L2L1, &message_p);
+          msg_name = ITTI_MSG_NAME (message_p);
+          LOG_I(EMU, "TASK_L2L1 received %s in state L2L1_WAITTING\n", msg_name);
 
           switch (ITTI_MSG_ID(message_p)) {
           case INITIALIZE_MESSAGE:
@@ -558,6 +561,8 @@ void *l2l1_task(void *args_p) {
           itti_poll_msg (TASK_L2L1, &message_p);
 
           if (message_p != NULL) {
+              msg_name = ITTI_MSG_NAME (message_p);
+              LOG_I(EMU, "TASK_L2L1 received %s\n", msg_name);
               switch (ITTI_MSG_ID(message_p)) {
               case ACTIVATE_MESSAGE:
                 set_cli_start(ITTI_MSG_INSTANCE (message_p), 1);
@@ -572,7 +577,6 @@ void *l2l1_task(void *args_p) {
                 break;
 
               case MESSAGE_TEST:
-                LOG_I(EMU, "Received %s\n", ITTI_MSG_NAME(message_p));
                 break;
 
 
