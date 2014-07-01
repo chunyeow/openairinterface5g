@@ -158,7 +158,7 @@ static void * ulsch_thread(void *param) {
 
     if (oai_exit) break;
 
-    LOG_D(PHY,"[SCHED][ULSCH] Frame %d: Calling ulsch_decoding with ulsch_thread_index = %d\n",phy_vars_eNB->frame,ulsch_thread_index);
+    LOG_D(PHY,"[SCHED][ULSCH] Frame %d: Calling ulsch_decoding with ulsch_thread_index = %d\n",phy_vars_eNB->proc[0].frame_tx,ulsch_thread_index);
 
     time_in = rt_get_time_ns();
 

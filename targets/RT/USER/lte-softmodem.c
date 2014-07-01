@@ -943,7 +943,7 @@ static void *eNB_thread(void *arg)
             if (fs4_test==0)
               {
 		if (multi_thread == 0) {
-		  phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[0], 0, no_relay,NULL);
+		  phy_procedures_eNB_lte ((slot+1)>>1, PHY_vars_eNB_g[0], 0, no_relay,NULL);
 		  slot_offset_F = (next_slot)*
 		    (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
 		    ((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7);
@@ -1009,7 +1009,7 @@ static void *eNB_thread(void *arg)
 		      }
 		    }
 		    else {
-		      LOG_W(PHY,"[eNB] Frame %d, eNB proc %d busy!!\n",PHY_vars_eNB_g[0]->frame,sf);
+		      LOG_W(PHY,"[eNB] Frame %d, eNB proc %d busy!!\n",PHY_vars_eNB_g[0]->proc[sf].frame_tx,sf);
 		    }
 		  }
 		}

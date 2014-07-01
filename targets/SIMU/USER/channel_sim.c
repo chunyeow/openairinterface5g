@@ -132,6 +132,9 @@ void do_DL_sig(double **r_re0,double **r_im0,
   uint8_t nb_antennas_rx = eNB2UE[0][0]->nb_rx; // number of rx antennas at UE
   uint8_t nb_antennas_tx = eNB2UE[0][0]->nb_tx; // number of tx antennas at eNB
 
+  int subframe_sched = ((next_slot>>1) == 0) ? 9 : ((next_slot>>1)-1);
+
+  
   if (next_slot==0)
     hold_channel = 0;
   else
@@ -248,7 +251,7 @@ void do_DL_sig(double **r_re0,double **r_im0,
       start_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_mod_stats);
       do_OFDM_mod(PHY_vars_eNB_g[eNB_id]->lte_eNB_common_vars.txdataF[0],
 		  PHY_vars_eNB_g[eNB_id]->lte_eNB_common_vars.txdata[0],
-		  ((next_slot==19) ? -1 : 0 ) + PHY_vars_eNB_g[eNB_id]->frame,next_slot,
+		  PHY_vars_eNB_g[eNB_id]->proc[subframe_sched].frame_tx,next_slot,
 		  &PHY_vars_eNB_g[eNB_id]->lte_frame_parms);
       stop_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_mod_stats);
     }

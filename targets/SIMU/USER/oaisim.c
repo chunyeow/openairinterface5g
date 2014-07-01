@@ -423,6 +423,7 @@ void *l2l1_task(void *args_p) {
   lte_subframe_t        direction;
 
   char                  fname[64], vname[64];
+  int sf;
 
 #ifdef XFORMS
   // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
@@ -448,6 +449,14 @@ void *l2l1_task(void *args_p) {
   char                  eNB_stats_th_filename[255];
 #endif
 
+  for (eNB_inst=0;eNB_inst<NB_eNB_INST;eNB_inst++) {
+    for (sf=0;sf<10;sf++) {
+      PHY_vars_eNB_g[eNB_inst]->proc[sf].frame_tx = 0;
+      PHY_vars_eNB_g[eNB_inst]->proc[sf].frame_rx = 0;
+    }
+    PHY_vars_eNB_g[eNB_inst]->proc[0].frame_rx = 1023;
+    PHY_vars_eNB_g[eNB_inst]->proc[9].frame_tx = 1;
+  }
 #ifdef XFORMS
   xargv[0] = xname;
   fl_initialize (&xargc, xargv, NULL, 0, 0);
@@ -699,7 +708,8 @@ void *l2l1_task(void *args_p) {
 #endif
 
                       // PHY_vars_eNB_g[eNB_id]->frame = frame;
-                      phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_inst], abstraction_flag, no_relay, NULL);
+                      if ((slot&1) == 0) 
+			phy_procedures_eNB_lte (slot>>1,PHY_vars_eNB_g[eNB_inst], abstraction_flag, no_relay, NULL);
 
 #ifdef PRINT_STATS
                       if(last_slot==9 && frame%10==0)
@@ -839,7 +849,7 @@ void *l2l1_task(void *args_p) {
                       // RN == eNB
                       LOG_D(EMU,"[RN %d] PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
                           RN_id, eNB_inst, frame, slot, next_slot >> 1,last_slot>>1);
-                      phy_procedures_eNB_lte (last_slot, next_slot, PHY_vars_eNB_g[eNB_inst], abstraction_flag,
+                      phy_procedures_eNB_lte(slot>>1, PHY_vars_eNB_g[eNB_inst], abstraction_flag,
                           r_type, PHY_vars_RN_g[RN_id]);
                   }
                   else {
