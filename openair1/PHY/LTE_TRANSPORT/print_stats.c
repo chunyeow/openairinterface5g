@@ -286,7 +286,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
   for (eNB=0;eNB<number_of_cards_l;eNB++) {
     len += sprintf(&buffer[len],"[eNB PROC] eNB %d/%d Frame %d: RX Gain %d dB, I0 %d dBm (%d,%d) dB \n",
 		   eNB,number_of_cards_l,
-		   phy_vars_eNB->frame,
+		   phy_vars_eNB->proc[0].frame_tx,
 		   phy_vars_eNB->rx_total_gain_eNB_dB,
 		   phy_vars_eNB->PHY_measurements_eNB[eNB].n0_power_tot_dBm,
 		   phy_vars_eNB->PHY_measurements_eNB[eNB].n0_power_dB[0],
@@ -321,9 +321,9 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 #endif
     }
 
-    len += sprintf(&buffer[len],"[eNB PROC] Total DLSCH bits successfully transmitted %d kbits in %d frame(s)\n",(phy_vars_eNB->total_transmitted_bits/1000),phy_vars_eNB->frame+1);
+    len += sprintf(&buffer[len],"[eNB PROC] Total DLSCH bits successfully transmitted %d kbits in %d frame(s)\n",(phy_vars_eNB->total_transmitted_bits/1000),phy_vars_eNB->proc[0].frame_tx+1);
     len += sprintf(&buffer[len],"[eNB PROC] Total DLSCH average system throughput %d kbps\n",(phy_vars_eNB->total_dlsch_bitrate/1000));
-    len += sprintf(&buffer[len],"[eNB PROC] Total DLSCH successful transmissions %d in %d frame(s)\n",success,phy_vars_eNB->frame+1);
+    len += sprintf(&buffer[len],"[eNB PROC] Total DLSCH successful transmissions %d in %d frame(s)\n",success,phy_vars_eNB->proc[0].frame_tx+1);
     //len += sprintf(&buffer[len],"[eNB PROC] FULL MU-MIMO Transmissions/Total Transmissions = %d/%d\n",phy_vars_eNB->FULL_MUMIMO_transmissions,phy_vars_eNB->check_for_total_transmissions);
     //len += sprintf(&buffer[len],"[eNB PROC] MU-MIMO Transmissions/Total Transmissions = %d/%d\n",phy_vars_eNB->check_for_MUMIMO_transmissions,phy_vars_eNB->check_for_total_transmissions);
     //len += sprintf(&buffer[len],"[eNB PROC] SU-MIMO Transmissions/Total Transmissions = %d/%d\n",phy_vars_eNB->check_for_SUMIMO_transmissions,phy_vars_eNB->check_for_total_transmissions);

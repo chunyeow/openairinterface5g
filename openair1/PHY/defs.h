@@ -179,11 +179,13 @@ enum transmission_access_mode{
 #endif
 
 typedef struct {
-  uint8_t instance_cnt;
+  int instance_cnt;
   pthread_t pthread;
   pthread_cond_t cond;
   pthread_mutex_t mutex;
-  uint8_t subframe;
+  int subframe;
+  int frame_rx;
+  int frame_tx;
 } eNB_proc_t;
 
 /// Top-level PHY Data Structure for eNB 
@@ -193,7 +195,6 @@ typedef struct PHY_VARS_eNB_s{
   eNB_proc_t       proc[10];
   uint8_t                   local_flag;
   uint32_t         rx_total_gain_eNB_dB;
-  frame_t              frame;
   LTE_DL_FRAME_PARMS   lte_frame_parms;
   PHY_MEASUREMENTS_eNB PHY_measurements_eNB[NUMBER_OF_eNB_SECTORS_MAX]; /// Measurement variables 
   LTE_eNB_COMMON       lte_eNB_common_vars;

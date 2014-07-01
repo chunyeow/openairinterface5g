@@ -46,7 +46,8 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
   int32_t **ul_ch_estimates_0=  eNB_pusch_vars->drs_ch_estimates_0[eNB_id];
   int32_t **ul_ch_estimates_1=  eNB_pusch_vars->drs_ch_estimates_1[eNB_id];
   int32_t **rxdataF_ext=  eNB_pusch_vars->rxdataF_ext[eNB_id];
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe==9)?-1:0)+phy_vars_eNB->frame,subframe);
+  int subframe_sched = (subframe == 9) ? 0 : (subframe+1);
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[subframe_sched].frame_rx,subframe);
   int16_t delta_phase = 0;
   int16_t *ru1 = ru_90;
   int16_t *ru2 = ru_90;

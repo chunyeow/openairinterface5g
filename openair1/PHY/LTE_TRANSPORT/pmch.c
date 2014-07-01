@@ -226,6 +226,8 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
  void generate_mch(PHY_VARS_eNB *phy_vars_eNB,int subframe,uint8_t *a,int abstraction_flag) {
 
   int G;
+  int subframe_sched = (subframe==0) ? 9 : (subframe-1);
+
   if (abstraction_flag != 0) {
     if (eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]!=0)
       printf("[PHY][EMU] PMCH transport block position is different than zero %d \n", eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]);
@@ -246,7 +248,7 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
 	      phy_vars_eNB->lte_frame_parms.N_RB_DL,
 	      phy_vars_eNB->dlsch_eNB_MCH->rb_alloc,
 	      get_Qm(phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->mcs),1,
-	      2,phy_vars_eNB->frame,subframe);
+	      2,phy_vars_eNB->proc[subframe_sched].frame_tx,subframe);
     
     generate_mbsfn_pilot(phy_vars_eNB,
 			 phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
@@ -257,7 +259,7 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
 		       &phy_vars_eNB->lte_frame_parms,
 		       1,
 		       phy_vars_eNB->dlsch_eNB_MCH,
-		       phy_vars_eNB->frame,
+		       phy_vars_eNB->proc[subframe_sched].frame_tx,
 		       subframe,
 		       &phy_vars_eNB->dlsch_rate_matching_stats,
 		       &phy_vars_eNB->dlsch_turbo_encoding_stats,

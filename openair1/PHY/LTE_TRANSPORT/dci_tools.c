@@ -4005,6 +4005,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
 				      uint8_t eNB_id,
 				      uint8_t use_srs) {
 
+  int subframe_sched = (subframe==9)?0:(subframe+1);
   uint8_t harq_pid;
   uint8_t transmission_mode = phy_vars_ue->transmission_mode[eNB_id];
   ANFBmode_t AckNackFBMode = phy_vars_ue->pucch_config_dedicated[eNB_id].tdd_AckNackFeedbackMode;
@@ -4446,7 +4447,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
     }
     else {
       //      printf("Ndi = 0 : Setting RVidx from mcs %d\n",((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->mcs);
-      ulsch->harq_processes[harq_pid]->rvidx = mcs - 28;
+      if (mcs>28) ulsch->harq_processes[harq_pid]->rvidx = mcs - 28;
       //      ulsch->harq_processes[harq_pid]->round++;
     }
 
@@ -4498,6 +4499,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   ANFBmode_t AckNackFBMode = phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode;
   LTE_eNB_ULSCH_t *ulsch=phy_vars_eNB->ulsch_eNB[UE_id];
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;
+  int subframe_sched = (subframe == 9) ? 0 : (subframe+1);
 
   uint32_t cqi_req = 0;
   uint32_t dai = 0;
@@ -4519,7 +4521,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 
     harq_pid = subframe2harq_pid(frame_parms,			      
 				 pdcch_alloc2ul_frame(frame_parms,
-						      phy_vars_eNB->frame,
+						      phy_vars_eNB->proc[subframe_sched].frame_tx,
 						      subframe),
 				 pdcch_alloc2ul_subframe(frame_parms,subframe));
 
@@ -4784,7 +4786,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 
 
     LOG_D(PHY,"[eNB %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d)\n",
-	  phy_vars_eNB->Mod_id,harq_pid,phy_vars_eNB->frame,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
+	  phy_vars_eNB->Mod_id,harq_pid,phy_vars_eNB->proc[subframe_sched].frame_tx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
 
 
 

@@ -1279,11 +1279,14 @@ void rx_ulsch(PHY_VARS_eNB *phy_vars_eNB,
   
 
   //  uint8_t harq_pid = ( ulsch->RRCConnRequest_flag== 0) ? subframe2harq_pid_tdd(frame_parms->tdd_config,subframe) : 0;
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,((subframe>=8)?-1:0)+phy_vars_eNB->frame,subframe);
-  uint8_t Qm = get_Qm_ul(ulsch[UE_id]->harq_processes[harq_pid]->mcs);
+  uint8_t harq_pid; 
+  uint8_t Qm;
   uint16_t rx_power_correction;
   int16_t *llrp;
-    
+  int subframe_sched = (subframe == 9) ? 0 : (subframe+1);
+
+  harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[subframe_sched].frame_rx,subframe);
+  Qm = get_Qm_ul(ulsch[UE_id]->harq_processes[harq_pid]->mcs);
 #ifdef DEBUG_ULSCH
   msg("rx_ulsch: eNB_id %d, harq_pid %d, nb_rb %d first_rb %d, cooperation %d\n",eNB_id,harq_pid,ulsch[UE_id]->harq_processes[harq_pid]->nb_rb,ulsch[UE_id]->harq_processes[harq_pid]->first_rb, cooperation_flag);
 #endif //DEBUG_ULSCH
@@ -1556,7 +1559,11 @@ void rx_ulsch_emul(PHY_VARS_eNB *phy_vars_eNB,
 void dump_ulsch(PHY_VARS_eNB *PHY_vars_eNB,uint8_t subframe, uint8_t UE_id) {
 
   uint32_t nsymb = (PHY_vars_eNB->lte_frame_parms.Ncp == 0) ? 14 : 12;
-  uint8_t harq_pid = subframe2harq_pid(&PHY_vars_eNB->lte_frame_parms,PHY_vars_eNB->frame,subframe);
+  uint8_t harq_pid;
+  int subframe_sched = (subframe==9)?0 : (subframe+1);
+
+  harq_pid = subframe2harq_pid(&PHY_vars_eNB->lte_frame_parms,PHY_vars_eNB->proc[subframe_sched].frame_rx,subframe);
+
   printf("Dumping ULSCH in subframe %d with harq_pid %d, for NB_rb %d, mcs %d, Qm %d, N_symb %d\n", subframe,harq_pid,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->nb_rb,PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs,get_Qm_ul(PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->mcs),PHY_vars_eNB->ulsch_eNB[UE_id]->Nsymb_pusch);
 #ifndef OAI_EMU 
   write_output("/tmp/ulsch_d.m","ulsch_dseq",&PHY_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->d[0][96], 

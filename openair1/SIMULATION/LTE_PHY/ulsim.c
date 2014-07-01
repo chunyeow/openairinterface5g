@@ -257,6 +257,7 @@ int main(int argc, char **argv) {
   uint8_t max_turbo_iterations=4;
   uint8_t llr8_flag=0;
   int nb_rb_set = 0;
+  int sf;
 
   opp_enabled=1; // to enable the time meas
 
@@ -725,7 +726,13 @@ int main(int argc, char **argv) {
   PHY_vars_eNB->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = 0;
   PHY_vars_UE->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
   PHY_vars_eNB->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
-  PHY_vars_UE->frame=1;PHY_vars_eNB->frame=1;
+  PHY_vars_UE->frame=1;
+
+  for (sf=0;sf<10;sf++) PHY_vars_eNB->proc[sf].frame_tx=1;
+  for (sf=0;sf<10;sf++) PHY_vars_eNB->proc[sf].frame_rx=1;
+  PHY_vars_eNB->proc[0].frame_rx = 0;
+  PHY_vars_eNB->proc[9].frame_tx = 2;
+
   msg("Init UL hopping UE\n");
   init_ul_hopping(&PHY_vars_UE->lte_frame_parms);
   msg("Init UL hopping eNB\n");
@@ -798,8 +805,12 @@ int main(int argc, char **argv) {
 	
       //randominit(0);
 
-      PHY_vars_eNB->frame = PHY_vars_UE->frame;
-      harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame,subframe);
+      if (subframe==0)
+	PHY_vars_eNB->proc[9].frame_rx = PHY_vars_UE->frame;
+      else
+	PHY_vars_eNB->proc[subframe-1].frame_rx = PHY_vars_UE->frame;
+
+     harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame,subframe);
       printf("UL frame %d/subframe %d, harq_pid %d\n",PHY_vars_UE->frame,subframe,harq_pid);
       if (input_fdUL == NULL) {
 	input_buffer_length = PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->TBS/8;
