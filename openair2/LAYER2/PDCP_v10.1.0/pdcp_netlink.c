@@ -107,14 +107,13 @@ int pdcp_netlink_init(void) {
   nb_inst_ue  = 1;
 #endif
   
+#if defined(LINK_PDCP_TO_GTPV1U)
+  nb_inst_enb = 0;
+  LOG_I(PDCP, "[NETLINK] Creating 0 queues for eNB Netlink -> PDCP communication\n");
+#else
   pdcp_netlink_queue_enb      = calloc(nb_inst_enb, sizeof(struct lfds611_queue_state*));
   pdcp_netlink_nb_element_enb = malloc(nb_inst_enb * sizeof(uint32_t));
-
-  pdcp_netlink_queue_ue       = calloc(nb_inst_ue, sizeof(struct lfds611_queue_state*));
-  pdcp_netlink_nb_element_ue  = malloc(nb_inst_ue * sizeof(uint32_t));
-
   LOG_I(PDCP, "[NETLINK] Creating %d queues for eNB Netlink -> PDCP communication\n", nb_inst_enb);
-  LOG_I(PDCP, "[NETLINK] Creating %d queues for UE Netlink -> PDCP communication\n", nb_inst_ue);
 
   for (i = 0; i < nb_inst_enb; i++) {
       pdcp_netlink_nb_element_enb[i] = 0;
@@ -123,35 +122,45 @@ int pdcp_netlink_init(void) {
           exit(EXIT_FAILURE);
       }
   }
-  for (i = 0; i < nb_inst_ue; i++) {
-      pdcp_netlink_nb_element_ue[i] = 0;
-      if (lfds611_queue_new(&pdcp_netlink_queue_ue[i], PDCP_QUEUE_NB_ELEMENTS) < 0) {
-          LOG_E(PDCP, "Failed to create new FIFO for UE Netlink -> PDCP communcation instance %d\n", i);
-          exit(EXIT_FAILURE);
+#endif
+
+  if (nb_inst_ue  > 0) {
+      pdcp_netlink_queue_ue       = calloc(nb_inst_ue, sizeof(struct lfds611_queue_state*));
+      pdcp_netlink_nb_element_ue  = malloc(nb_inst_ue * sizeof(uint32_t));
+
+      LOG_I(PDCP, "[NETLINK] Creating %d queues for UE Netlink -> PDCP communication\n", nb_inst_ue);
+
+      for (i = 0; i < nb_inst_ue; i++) {
+          pdcp_netlink_nb_element_ue[i] = 0;
+          if (lfds611_queue_new(&pdcp_netlink_queue_ue[i], PDCP_QUEUE_NB_ELEMENTS) < 0) {
+              LOG_E(PDCP, "Failed to create new FIFO for UE Netlink -> PDCP communcation instance %d\n", i);
+              exit(EXIT_FAILURE);
+          }
       }
   }
 
-  if (pthread_attr_init(&attr) != 0) {
-      LOG_E(PDCP, "[NETLINK]Failed to initialize pthread attribute for Netlink -> PDCP communication (%d:%s)\n",
-          errno, strerror(errno));
-      exit(EXIT_FAILURE);
+  if ((nb_inst_ue + nb_inst_enb) > 0) {
+      if (pthread_attr_init(&attr) != 0) {
+          LOG_E(PDCP, "[NETLINK]Failed to initialize pthread attribute for Netlink -> PDCP communication (%d:%s)\n",
+              errno, strerror(errno));
+          exit(EXIT_FAILURE);
+      }
+
+      sched_param.sched_priority = 10;
+
+      pthread_attr_setschedpolicy(&attr, SCHED_RR);
+      pthread_attr_setschedparam(&attr, &sched_param);
+
+      /* Create one thread that fetchs packets from the netlink.
+       * When the netlink fifo is full, packets are silently dropped, this behaviour
+       * should be avoided if we want a reliable link.
+       */
+      if (pthread_create(&pdcp_netlink_thread, &attr, pdcp_netlink_thread_fct, NULL) != 0) {
+          LOG_E(PDCP, "[NETLINK]Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
+              errno, strerror(errno));
+          exit(EXIT_FAILURE);
+      }
   }
-
-  sched_param.sched_priority = 10;
-
-  pthread_attr_setschedpolicy(&attr, SCHED_RR);
-  pthread_attr_setschedparam(&attr, &sched_param);
-
-  /* Create one thread that fetchs packets from the netlink.
-   * When the netlink fifo is full, packets are silently dropped, this behaviour
-   * should be avoided if we want a reliable link.
-   */
-  if (pthread_create(&pdcp_netlink_thread, &attr, pdcp_netlink_thread_fct, NULL) != 0) {
-      LOG_E(PDCP, "[NETLINK]Failed to create new thread for Netlink/PDCP communcation (%d:%s)\n",
-          errno, strerror(errno));
-      exit(EXIT_FAILURE);
-  }
-
   return 0;
 }
 
