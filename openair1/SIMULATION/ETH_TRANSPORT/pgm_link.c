@@ -47,7 +47,7 @@ log_handler (
 }
 #endif
 
-int pgm_oai_init(char *if_name)
+int pgm_oai_init(char *if_addr)
 {
     pgm_error_t* pgm_err = NULL;
 
@@ -68,19 +68,19 @@ int pgm_oai_init(char *if_name)
         exit(EXIT_FAILURE);
     }
 
-    return pgm_create_socket(oai_emulation.info.multicast_group, if_name);
+    return pgm_create_socket(oai_emulation.info.multicast_group, if_addr);
 }
 
 int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length,
                  unsigned int frame, unsigned int next_slot)
 {
-    size_t num_bytes = 0;
-    int status = 0;
-    pgm_error_t* pgm_err = NULL;
+    size_t                num_bytes = 0;
+    int                   status    = 0;
+    pgm_error_t*          pgm_err   = NULL;
     struct pgm_sockaddr_t from;
-    socklen_t fromlen = sizeof(from);
-    uint32_t timeout = 0;
-    int flags = 0;
+    socklen_t             fromlen   = sizeof(from);
+    uint32_t              timeout   = 0;
+    int                   flags     = 0;
 
     if (pgm_would_block == 0) {
         flags = MSG_DONTWAIT;
@@ -89,8 +89,9 @@ int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length,
     DevCheck((group <= MULTICAST_LINK_NUM_GROUPS) && (group >= 0),
              group, MULTICAST_LINK_NUM_GROUPS, 0);
 
+#ifdef DEBUG_EMU
     LOG_I(EMU, "[PGM] Entering recv function for group %d\n", group);
-
+#endif
     do {
         status = pgm_recvfrom(pgm_multicast_group[group].sock,
                             buffer,
@@ -102,7 +103,9 @@ int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length,
                             &pgm_err);
 
         if (PGM_IO_STATUS_NORMAL == status) {
+#ifdef DEBUG_EMU
             LOG_D(EMU, "[PGM] Received %d bytes for group %d\n", num_bytes, group);
+#endif
             return num_bytes;
         } else if (PGM_IO_STATUS_TIMER_PENDING == status) {
             if (pgm_would_block == 0) {
@@ -123,7 +126,9 @@ int pgm_recv_msg(int group, uint8_t *buffer, uint32_t length,
         } else if (PGM_IO_STATUS_RESET == status) {
             LOG_W(EMU, "[PGM] Got session reset\n");
         } else {
+#ifdef DEBUG_EMU
             LOG_D(EMU, "[PGM] Got status %d\n", status);
+#endif
             if (pgm_err) {
                 LOG_E(EMU, "[PGM] recvform failed: %s", pgm_err->message);
                 pgm_error_free (pgm_err);
@@ -153,17 +158,17 @@ static
 int pgm_create_socket(int index, const char *if_addr)
 {
     struct pgm_addrinfo_t* res = NULL;
-    pgm_error_t* pgm_err = NULL;
-    sa_family_t sa_family = AF_INET;
-    int udp_encap_port = 46014 + index;
-    int max_tpdu = 1500;
-    int sqns = 100;
-    int port;
+    pgm_error_t*          pgm_err        = NULL;
+    sa_family_t           sa_family      = AF_INET;
+    int                   udp_encap_port = 46014 + index;
+    int                   max_tpdu       = 1500;
+    int                   sqns           = 100;
+    int                   port           = 0;
     struct pgm_sockaddr_t addr;
-    int blocking = 1;
-    int multicast_loop = 0;
-    int multicast_hops = 0;
-    int dscp, i;
+    int                   blocking       = 1;
+    int                   multicast_loop = 0;
+    int                   multicast_hops = 0;
+    int                   dscp, i;
 
     port = udp_encap_port;
 
