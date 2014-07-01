@@ -488,7 +488,13 @@ check_install_epc_software() {
     test_install_package libatlas-dev
     test_install_package libblas
     test_install_package libblas-dev
-    test_install_package libconfig-dev
+    if [ x$DISTRIB_RELEASE == x12.04 ]; then
+        if [ x$ARCH == x64 ]; then
+            test_install_package libconfig8-dev
+        else
+            test_install_package libconfig-dev
+        fi
+    fi
     test_install_package libforms-bin
     test_install_package libforms-dev
     test_install_package libgcrypt11-dev
@@ -692,3 +698,19 @@ cecho "OPENAIR2_DIR    = $OPENAIR2_DIR" $green
 cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
 cecho "OPENAIRCN_DIR   = $OPENAIRCN_DIR" $green
 cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
+
+export ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
+if [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    export OS=$DISTRIB_ID
+    export VER=$DISTRIB_RELEASE
+elif [ -f /etc/debian_version ]; then
+    export OS=Debian  # XXX or Ubuntu??
+    export VER=$(cat /etc/debian_version)
+elif [ -f /etc/redhat-release ]; then
+    # TODO add code for Red Hat and CentOS here
+    ...
+else
+    export OS=$(uname -s)
+    export VER=$(uname -r)
+fi
