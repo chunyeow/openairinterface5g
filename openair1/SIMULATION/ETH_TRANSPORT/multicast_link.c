@@ -255,7 +255,9 @@ int multicast_link_read_data_from_sock(uint8_t is_master)
         LOG_E(EMU, "Multicast select failed (%d:%s)\n", errno, strerror(errno));
         exit(EXIT_FAILURE);
     } else if (readsocks > 0) {
+#ifdef DEBUG_EMU
         LOG_D(EMU, "Multicast Normal read\n");
+#endif
         multicast_link_read();
     } else {
         /* Timeout */
