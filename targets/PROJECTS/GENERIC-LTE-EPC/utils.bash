@@ -489,7 +489,7 @@ check_install_epc_software() {
     test_install_package libblas
     test_install_package libblas-dev
     if [ x$DISTRIB_RELEASE == x12.04 ]; then
-        if [ x$ARCH == x64 ]; then
+        if [ x$UTILS_ARCH == x64 ]; then
             test_install_package libconfig8-dev
         else
             test_install_package libconfig-dev
@@ -699,7 +699,7 @@ cecho "OPENAIR3_DIR    = $OPENAIR3_DIR" $green
 cecho "OPENAIRCN_DIR   = $OPENAIRCN_DIR" $green
 cecho "OPENAIR_TARGETS = $OPENAIR_TARGETS" $green
 
-export ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
+export UTILS_ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 if [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
     export OS=$DISTRIB_ID
