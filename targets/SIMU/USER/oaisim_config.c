@@ -521,6 +521,13 @@ int olg_config(void) {
   set_comp_log(RLC,  LOG_DEBUG, LOG_MED,1);
   set_comp_log(RRC,  LOG_DEBUG, LOG_MED,1);
   */ 
+#if defined(ENABLE_USE_MME)
+  set_comp_log(UDP_,  LOG_DEBUG, LOG_MED,1);
+  set_comp_log(GTPU,  LOG_DEBUG, LOG_MED,1);
+  set_comp_log(SPGW,  LOG_DEBUG, LOG_MED,1);
+  set_comp_log(S1AP,  LOG_DEBUG, LOG_MED,1);
+  set_comp_log(SCTP,  LOG_DEBUG, LOG_MED,1);
+#endif
 
 #if defined(ENABLE_RAL)
   set_comp_log(RAL_ENB, LOG_TRACE, LOG_MED,1);
