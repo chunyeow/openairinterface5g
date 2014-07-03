@@ -88,6 +88,14 @@ static int _emm_cn_authentication_res(const emm_cn_auth_res_t *msg)
     memcpy(emm_ctx->vector.rand,  msg->vector.rand,      AUTH_RAND_SIZE);
     memcpy(emm_ctx->vector.xres,  msg->vector.xres.data, msg->vector.xres.size);
 
+    LOG_TRACE(INFO, "EMM-PROC  - Received RAND ..: "RAND_FORMAT"\n",
+                RAND_DISPLAY(msg->vector.rand));
+    LOG_TRACE(INFO, "EMM-PROC  - Received AUTN ..: "AUTN_FORMAT"\n",
+                AUTN_DISPLAY(msg->vector.autn));
+    LOG_TRACE(INFO, "EMM-PROC  - Received KASME .: "KASME_FORMAT" "KASME_FORMAT"\n",
+                KASME_DISPLAY_1(msg->vector.kasme),
+                KASME_DISPLAY_2(msg->vector.kasme));
+
     loc_rand.value  = emm_ctx->vector.rand;
     loc_rand.length = AUTH_RAND_SIZE;
 
