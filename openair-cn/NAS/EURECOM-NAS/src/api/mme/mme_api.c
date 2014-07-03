@@ -71,8 +71,6 @@ static const plmn_t mme_api_plmn = {0, 2, 0xf, 8, 0, 1};    // 20810
 /* Code of the first tracking area belonging to the PLMN */
 #define MME_API_FIRST_TAC   0x0001
 
-/* NAS security key */
-#define MME_API_KASME   "CAFECAFECAFECAFECAFECAFECAFECAFE"
 
 /* Authentication parameter RAND */
 static const UInt8_t _mme_api_rand[AUTH_RAND_SIZE] = {
