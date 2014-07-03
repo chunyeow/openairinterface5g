@@ -147,6 +147,7 @@ if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data ]; then
     echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE"
     make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
     rm .usim.nvram
+    rm /tmp/nas_cleaned
 fi
 if [ ! -f .ue.nvram ]; then
     echo_success "generate .ue_emm.nvram .ue.nvram"
@@ -236,9 +237,10 @@ cd $THIS_SCRIPT_PATH
 #nohup tshark -i $ENB_INTERFACE_NAME_FOR_S1_MME -i $ENB_INTERFACE_NAME_FOR_S1U -w OUTPUT/$HOSTNAME/tshark_enb_ue.$HOSTNAME.pcap &
 
 # To start NAS connectivity: AT+CFUN=1
-nohup xterm -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
+# nohup xterm -hold -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+# > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
 #pkill tshark
