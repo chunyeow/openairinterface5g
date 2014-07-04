@@ -1230,6 +1230,8 @@ check_install_epc_software() {
     test_install_package unzip
     test_install_package valgrind
     test_install_package vlan
+    test_install_package libssl-dev
+
 
     if [ ! -d /usr/local/etc/freeDiameter ]
         then
