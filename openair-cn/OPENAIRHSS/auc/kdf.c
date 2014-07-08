@@ -9,6 +9,8 @@
 
 #include "auc.h"
 
+#define DEBUG_AUC_KDF 1
+
 uint8_t opc[16] = {
     0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
     0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11
@@ -121,16 +123,19 @@ int generate_vector(uint64_t imsi, uint8_t key[16], uint8_t plmn[3],
 
     print_buffer("MAC_A   : ", mac_a, 8);
     print_buffer("SQN     : ", sqn, 6);
-    print_buffer("AK      : ", ak, 6);
     print_buffer("RAND    : ", vector->rand, 16);
 
     /* Compute XRES, CK, IK, AK */
     f2345(key, vector->rand, vector->xres, ck, ik, ak);
+    print_buffer("AK      : ", ak, 6);
+    print_buffer("CK      : ", ck, 16);
+    print_buffer("IK      : ", ik, 16);
+    print_buffer("XRES    : ", vector->xres, 8);
 
     /* AUTN = SQN ^ AK || AMF || MAC */
     generate_autn(sqn, ak, amf, mac_a, vector->autn);
 
-    print_buffer("XRES    : ", vector->xres, 8);
+    print_buffer("AUTN    : ", vector->autn, 16);
 
     derive_kasme(ck, ik, plmn, sqn, ak, vector->kasme);
     print_buffer("KASME   : ", vector->kasme, 32);
