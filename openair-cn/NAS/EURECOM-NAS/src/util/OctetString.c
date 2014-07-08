@@ -59,3 +59,11 @@ void dump_octet_string_xml(OctetString *octetstring)
     printf("</values>\n");
 }
 
+void dump_octet_string(OctetString *octetstring)
+{
+    int i;
+    printf("    <Length=%u><values>", octetstring->length);
+    for (i = 0; i < octetstring->length; i++)
+        printf("0x%x ", octetstring->value[i]);
+    printf("</values>\n");
+}
