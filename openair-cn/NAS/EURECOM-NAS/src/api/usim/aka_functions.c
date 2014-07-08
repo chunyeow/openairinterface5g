@@ -12,10 +12,11 @@
  * The functions f2, f3, f4 and f5 share the same inputs and have
  * been coded together as a single function. f1, f1* and f5* are
  * all coded separately.
- *
+ * From 3GPP 35.206-900
  *-----------------------------------------------------------------*/
 
 #include "aka_functions.h"
+#include "nas_log.h"
 
 /*--------- Operator Variant Algorithm Configuration Field --------*/
             /*------- Insert your value of OP here -------*/
@@ -33,8 +34,8 @@ u8 OP[16] = {0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
  * field AMF.
  *
  *-----------------------------------------------------------------*/
-void f1    ( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
-             u8 mac_a[8] )
+void f1    ( u8 k_pP[16], u8 rand_pP[16], u8 sqn_pP[6], u8 amf_pP[2],
+             u8 mac_a_pP[8] )
 {
   u8 op_c[16];
   u8 temp[16];
@@ -42,20 +43,20 @@ void f1    ( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
   u8 out1[16];
   u8 rijndaelInput[16];
   u8 i;
-  RijndaelKeySchedule( k );
+  RijndaelKeySchedule( k_pP );
   ComputeOPc( op_c );
   for (i=0; i<16; i++)
-    rijndaelInput[i] = rand[i] ^ op_c[i];
+    rijndaelInput[i] = rand_pP[i] ^ op_c[i];
   RijndaelEncrypt( rijndaelInput, temp );
   for (i=0; i<6; i++)
   {
-    in1[i]    = sqn[i];
-    in1[i+8] = sqn[i];
+    in1[i]    = sqn_pP[i];
+    in1[i+8] = sqn_pP[i];
   }
   for (i=0; i<2; i++)
   {
-    in1[i+6] = amf[i];
-    in1[i+14] = amf[i];
+    in1[i+6] = amf_pP[i];
+    in1[i+14] = amf_pP[i];
   }
   /* XOR op_c and in1, rotate by r1=64, and XOR *
    * on the constant c1 (which is all zeroes)   */
@@ -68,7 +69,7 @@ void f1    ( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
   for (i=0; i<16; i++)
     out1[i] ^= op_c[i];
   for (i=0; i<8; i++)
-    mac_a[i] = out1[i];
+    mac_a_pP[i] = out1[i];
   return;
 } /* end of function f1 */
 
@@ -80,18 +81,28 @@ void f1    ( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
  * confidentiality key CK, integrity key IK and anonymity key AK.
  *
  *-----------------------------------------------------------------*/
-void f2345 ( u8 k[16], u8 rand[16],
-             u8 res[8], u8 ck[16], u8 ik[16], u8 ak[6] )
+void f2345 ( u8 k_pP[16], u8 rand_pP[16],
+             u8 res_pP[8], u8 ck_pP[16], u8 ik_pP[16], u8 ak_pP[6] )
 {
   u8 op_c[16];
   u8 temp[16];
   u8 out[16];
   u8 rijndaelInput[16];
   u8 i;
-  RijndaelKeySchedule( k );
+
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - f2345 : in k[0..15]=%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+		  k_pP[0],k_pP[1],k_pP[2], k_pP[3], k_pP[4], k_pP[5], k_pP[6], k_pP[7],
+		  k_pP[8],k_pP[9],k_pP[10],k_pP[11],k_pP[12],k_pP[13],k_pP[14],k_pP[15]);
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - f2345 : in rand[0..15]=%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+		  rand_pP[0],rand_pP[1],rand_pP[2], rand_pP[3], rand_pP[4], rand_pP[5], rand_pP[6], rand_pP[7],
+		  rand_pP[8],rand_pP[9],rand_pP[10],rand_pP[11],rand_pP[12],rand_pP[13],rand_pP[14],rand_pP[15]);
+
+  RijndaelKeySchedule( k_pP );
   ComputeOPc( op_c );
   for (i=0; i<16; i++)
-    rijndaelInput[i] = rand[i] ^ op_c[i];
+    rijndaelInput[i] = rand_pP[i] ^ op_c[i];
   RijndaelEncrypt( rijndaelInput, temp );
   /* To obtain output block OUT2: XOR OPc and TEMP,    *
    * rotate by r2=0, and XOR on the constant c2 (which *
@@ -103,9 +114,16 @@ void f2345 ( u8 k[16], u8 rand[16],
   for (i=0; i<16; i++)
     out[i] ^= op_c[i];
   for (i=0; i<8; i++)
-    res[i] = out[i+8];
+    res_pP[i] = out[i+8];
   for (i=0; i<6; i++)
-    ak[i] = out[i];
+    ak_pP[i] = out[i];
+
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - f2345 : out f2 res[0..7]=%02X%02X%02X%02X%02X%02X%02X%02X",
+		  res_pP[0],res_pP[1],res_pP[2], res_pP[3], res_pP[4], res_pP[5], res_pP[6], res_pP[7]);
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - f2345 : out f5 ak[0..5]=%02X%02X%02X%02X%02X%02X",
+		  ak_pP[0],ak_pP[1],ak_pP[2], ak_pP[3], ak_pP[4], ak_pP[5]);
 
 /* To obtain output block OUT3: XOR OPc and TEMP,        *
  * rotate by r3=32, and XOR on the constant c3 (which    *
@@ -117,7 +135,10 @@ void f2345 ( u8 k[16], u8 rand[16],
   for (i=0; i<16; i++)
     out[i] ^= op_c[i];
   for (i=0; i<16; i++)
-    ck[i] = out[i];
+    ck_pP[i] = out[i];
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - f2345 : out f3 ik_pP[0..7]=%02X%02X%02X%02X%02X%02X%02X%02",
+		  ck_pP[0],ck_pP[1],ck_pP[2], ck_pP[3], ck_pP[4], ck_pP[5], ck_pP[6], ck_pP[7]);
   /* To obtain output block OUT4: XOR OPc and TEMP,         *
    * rotate by r4=64, and XOR on the constant c4 (which     *
    * is all zeroes except that the 2nd from last bit is 1). */
@@ -128,7 +149,11 @@ void f2345 ( u8 k[16], u8 rand[16],
   for (i=0; i<16; i++)
     out[i] ^= op_c[i];
   for (i=0; i<16; i++)
-    ik[i] = out[i];
+    ik_pP[i] = out[i];
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - f2345 : out f4 ik_pP[0..15]=%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+		  ik_pP[0],ik_pP[1],ik_pP[2], ik_pP[3], ik_pP[4], ik_pP[5], ik_pP[6], ik_pP[7],
+		  ik_pP[8],ik_pP[9],ik_pP[10],ik_pP[11],ik_pP[12],ik_pP[13],ik_pP[14],ik_pP[15]);
   return;
 } /* end of function f2345 */
 
@@ -141,8 +166,8 @@ void f2345 ( u8 k[16], u8 rand[16],
  * field AMF.
  *
  *-----------------------------------------------------------------*/
-void f1star( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
-             u8 mac_s[8] )
+void f1star( u8 k_pP[16], u8 rand_pP[16], u8 sqn_pP[6], u8 amf_pP[2],
+             u8 mac_s_pP[8] )
 {
   u8 op_c[16];
   u8 temp[16];
@@ -150,20 +175,20 @@ void f1star( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
   u8 out1[16];
   u8 rijndaelInput[16];
   u8 i;
-  RijndaelKeySchedule( k );
+  RijndaelKeySchedule( k_pP );
   ComputeOPc( op_c );
   for (i=0; i<16; i++)
-    rijndaelInput[i] = rand[i] ^ op_c[i];
+    rijndaelInput[i] = rand_pP[i] ^ op_c[i];
   RijndaelEncrypt( rijndaelInput, temp );
   for (i=0; i<6; i++)
   {
-    in1[i]    = sqn[i];
-    in1[i+8] = sqn[i];
+    in1[i]    = sqn_pP[i];
+    in1[i+8] = sqn_pP[i];
   }
   for (i=0; i<2; i++)
   {
-    in1[i+6] = amf[i];
-    in1[i+14] = amf[i];
+    in1[i+6] = amf_pP[i];
+    in1[i+14] = amf_pP[i];
   }
   /* XOR op_c and in1, rotate by r1=64, and XOR *
    * on the constant c1 (which is all zeroes)   */
@@ -176,7 +201,7 @@ void f1star( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
   for (i=0; i<16; i++)
     out1[i] ^= op_c[i];
   for (i=0; i<8; i++)
-    mac_s[i] = out1[i+8];
+    mac_s_pP[i] = out1[i+8];
   return;
 } /* end of function f1star */
 
@@ -188,18 +213,18 @@ void f1star( u8 k[16], u8 rand[16], u8 sqn[6], u8 amf[2],
  * anonymity key AK.
  *
  *-----------------------------------------------------------------*/
-void f5star( u8 k[16], u8 rand[16],
-             u8 ak[6] )
+void f5star( u8 k_pP[16], u8 rand_pP[16],
+             u8 ak_pP[6] )
 {
   u8 op_c[16];
   u8 temp[16];
   u8 out[16];
   u8 rijndaelInput[16];
   u8 i;
-  RijndaelKeySchedule( k );
+  RijndaelKeySchedule( k_pP );
   ComputeOPc( op_c );
   for (i=0; i<16; i++)
-    rijndaelInput[i] = rand[i] ^ op_c[i];
+    rijndaelInput[i] = rand_pP[i] ^ op_c[i];
   RijndaelEncrypt( rijndaelInput, temp );
   /* To obtain output block OUT5: XOR OPc and TEMP,         *
    * rotate by r5=96, and XOR on the constant c5 (which     *
@@ -211,19 +236,23 @@ void f5star( u8 k[16], u8 rand[16],
   for (i=0; i<16; i++)
     out[i] ^= op_c[i];
   for (i=0; i<6; i++)
-    ak[i] = out[i];
+    ak_pP[i] = out[i];
   return;
 } /* end of function f5star */
 /*-------------------------------------------------------------------
  * Function to compute OPc from OP and K. Assumes key schedule has
     already been performed.
  *-----------------------------------------------------------------*/
-void ComputeOPc( u8 op_c[16] )
+void ComputeOPc( u8 op_c_pP[16] )
 {
   u8 i;
-  RijndaelEncrypt( OP, op_c );
+  LOG_TRACE(DEBUG,
+		  "USIM-API  - ComputeOPc : OP[0..15]=%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+		  OP[0],OP[1],OP[2], OP[3], OP[4], OP[5], OP[6], OP[7],
+		  OP[8],OP[9],OP[10],OP[11],OP[12],OP[13],OP[14],OP[15]);
+  RijndaelEncrypt( OP, op_c_pP );
   for (i=0; i<16; i++)
-    op_c[i] ^= OP[i];
+    op_c_pP[i] ^= OP[i];
   return;
 } /* end of function ComputeOPc */
 /*-------------------- Rijndael round subkeys ---------------------*/
@@ -247,6 +276,7 @@ u8 S[256] = {
 225,248,152, 17,105,217,142,148,155, 30,135,233,206, 85, 40,223,
 140,161,137, 13,191,230, 66,104, 65,153, 45, 15,176, 84,187, 22,
 };
+
 /*------- This array does the multiplication by x in GF(2^8) ------*/
 u8 Xtime[256] = {
   0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30,
