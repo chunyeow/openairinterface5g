@@ -24,7 +24,10 @@
 
 /*--------- Operator Variant Algorithm Configuration Field --------*/
 /*------- Insert your value of OP here -------*/
-u8 OP[16];
+u8 OP[16]= {
+	    0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11,
+	    0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11
+	};
 
 /*--------------------------- prototypes --------------------------*/
 void ComputeOPc( u8 op_c[16] );
@@ -237,11 +240,15 @@ void f5star( u8 k[16], u8 _rand[16],
 
 /*-------------------------------------------------------------------
  * Function to compute OPc from OP and K. Assumes key schedule has
- a lready been performed.           *
+ * already been performed.
  *-----------------------------------------------------------------*/
 void ComputeOPc( u8 op_c[16] )
 {
     u8 i;
+    printf("ComputeOPc: OP : %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X ",
+    		OP[0],OP[1],OP[2],OP[3],OP[4],OP[5],OP[6],OP[7],
+    		OP[8],OP[9],OP[10],OP[11],OP[12],OP[13],OP[14],OP[15]);
+
     RijndaelEncrypt( OP, op_c );
     for (i=0; i<16; i++)
         op_c[i] ^= OP[i];
