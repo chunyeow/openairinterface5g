@@ -37,6 +37,7 @@
  * \note
  * \warning
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -118,6 +119,8 @@ unsigned short config_frames[4] = {2,9,11,13};
 #define FRAME_PERIOD    100000000ULL
 #define DAQ_PERIOD      66667ULL
 
+#define DEBUG_THREADS 1
+
 #define MY_RF_MODE      (RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX)
 #define RF_MODE_BASE    (TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM)
 
@@ -165,6 +168,11 @@ pthread_t                       thread1;
 pthread_attr_t                  attr_dlsch_threads;
 struct sched_param              sched_param_dlsch;
 #endif
+
+pthread_attr_t                  attr_eNB_proc_tx[10];
+pthread_attr_t                  attr_eNB_proc_rx[10];
+struct sched_param              sched_param_eNB_proc_tx[10];
+struct sched_param              sched_param_eNB_proc_rx[10];
 
 #ifdef XFORMS
 static pthread_t                thread2; //xforms
@@ -625,13 +633,65 @@ void *l2l1_task(void *arg)
 }
 #endif
 
-static void * eNB_proc_thread(void *param) {
+
+void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
+
+  unsigned int aa,slot_offset, slot_offset_F;
+  int dummy_tx_b[7680*4] __attribute__((aligned(16)));
+  int i, tx_offset;
+
+  slot_offset_F = (subframe<<1)*
+    (phy_vars_eNB->lte_frame_parms.ofdm_symbol_size)*
+    ((phy_vars_eNB->lte_frame_parms.Ncp==1) ? 6 : 7);
+  slot_offset = (subframe<<1)*
+    (phy_vars_eNB->lte_frame_parms.samples_per_tti>>1);
+  if ((subframe_select(&phy_vars_eNB->lte_frame_parms,subframe)==SF_DL)||
+      ((subframe_select(&phy_vars_eNB->lte_frame_parms,subframe)==SF_S))) {
+      //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
+      
+    for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx; aa++) {
+      if (phy_vars_eNB->lte_frame_parms.Ncp == EXTENDED){ 
+	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
+		     dummy_tx_b,
+		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
+		     6,
+		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
+		     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
+		     phy_vars_eNB->lte_frame_parms.rev,
+		     CYCLIC_PREFIX);
+      }
+      else {
+	normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
+			  dummy_tx_b,
+			  7,
+			  &(phy_vars_eNB->lte_frame_parms));
+      }
+#ifdef EXMIMO
+      for (i=0; i<phy_vars_eNB->lte_frame_parms.samples_per_tti/2; i++) {
+	tx_offset = (int)slot_offset+time_offset[aa]+i;
+	if (tx_offset<0)
+	  tx_offset += LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_eNB->lte_frame_parms.samples_per_tti;
+	if (tx_offset>=(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_eNB->lte_frame_parms.samples_per_tti))
+	  tx_offset -= LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_eNB->lte_frame_parms.samples_per_tti;
+	((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
+	  ((short*)dummy_tx_b)[2*i]<<4;
+	((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
+	  ((short*)dummy_tx_b)[2*i+1]<<4;
+      }
+#endif //EXMIMO
+    }
+  }
+}
+
+
+int eNB_thread_tx_status[10];
+static void * eNB_thread_tx(void *param) {
 
   //unsigned long cpuid;
   eNB_proc_t *proc = (eNB_proc_t*)param;
-  int i,tx_offset;
-  int next_slot,last_slot;
-  RTIME time_in,time_out;
+  int i;
+  int subframe_tx;
+  //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
   char task_name[8];
@@ -639,19 +699,27 @@ static void * eNB_proc_thread(void *param) {
   int dummy_tx_b[7680*4] __attribute__((aligned(16)));
   unsigned int aa,slot_offset,slot_offset_F,slot_offset_F2;
 
+#if defined(ENABLE_ITTI)
+  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+  wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
+#endif
+
 #ifdef RTAI
-  sprintf(task_name,"eNB_proc %d",proc->subframe);
+  sprintf(task_name,"eNB_proc_TX %d",proc->subframe);
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
-    LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc thread_index %d (%s)!!!!\n",proc->subframe,task_name);
+    LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc_TX thread_index %d (%s)!!!!\n",proc->subframe,task_name);
     return 0;
   }
   else {
-    LOG_I(PHY,"[SCHED][eNB] dlsch_thread for process %d started with id %p\n",
+    LOG_I(PHY,"[SCHED][eNB] eNB TX thread %d started with id %p on CPU %d\n",
 	  proc->subframe,
-	  task);
+	  task,rtai_cpuid());
   }
+#else
+  LOG_I(PHY,"[SCHED][eNB] eNB TX thread %d started on CPU %d\n",
+	proc->subframe,sched_getcpu());
 #endif
 
   mlockall(MCL_CURRENT | MCL_FUTURE);
@@ -664,113 +732,196 @@ static void * eNB_proc_thread(void *param) {
 #endif
 
 
-  last_slot = ((proc->subframe<<1)-1)%20;
-  next_slot = ((proc->subframe<<1)+1)%20;
+  subframe_tx = (proc->subframe+1)%10;
 
   while (!oai_exit){
 
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC0+proc->subframe,0);
-    if (pthread_mutex_lock(&proc->mutex) != 0) {
-      LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB proc %d\n",proc->subframe);
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
+
+
+    //    LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
+    if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
+      LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
     }
     else {
         
-      while (proc->instance_cnt < 0) {
-	pthread_cond_wait(&proc->cond,&proc->mutex);
+      while (proc->instance_cnt_tx < 0) {
+	//	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt,pthread_mutex_trylock(&proc->mutex));
+
+	pthread_cond_wait(&proc->cond_tx,&proc->mutex_tx);
       }
-      
-      if (pthread_mutex_unlock(&proc->mutex) != 0) {	
-	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for eNB proc %d\n",proc->subframe);
+      //      LOG_I(PHY,"Waking up and unlocking mutex for eNB proc %d\n",proc->subframe);
+      if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {	
+	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
       }
     }
-    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC0+proc->subframe,1);    
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),1);    
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_FRAME_NUMBER_ENB, proc->frame_tx);
+    vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER_ENB, proc->subframe*2);
+
     if (oai_exit) break;
     
-    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD)&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_DL))||
+    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD)&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_tx)==SF_DL))||
 	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))) {
-#ifdef Rel10 
-      if (phy_procedures_RN_eNB_TX(last_slot, next_slot, no_relay) != 0 ) 
-#endif 
-	phy_procedures_eNB_TX(next_slot,PHY_vars_eNB_g[0],0,no_relay,NULL);
+      phy_procedures_eNB_TX(subframe_tx,PHY_vars_eNB_g[0],0,no_relay,NULL);
     }
-    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,last_slot>>1)==SF_UL)) ||
-	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))){
-      phy_procedures_eNB_RX(last_slot,PHY_vars_eNB_g[0],0,no_relay);
+    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_tx)==SF_S)) {
+      phy_procedures_eNB_TX(subframe_tx,PHY_vars_eNB_g[0],0,no_relay,NULL);
     }
-    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_S)) {
-#ifdef Rel10 
-      if (phy_procedures_RN_eNB_TX(last_slot, next_slot, no_relay) != 0 )
-#endif 
-	phy_procedures_eNB_TX(next_slot,PHY_vars_eNB_g[0],0,no_relay,NULL);
-    }
-    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,last_slot>>1)==SF_S)){
-      phy_procedures_eNB_S_RX(last_slot,PHY_vars_eNB_g[0],0,no_relay);
-    }
-      
-  }
+    do_OFDM_mod(subframe_tx,PHY_vars_eNB_g[0]);  
 
-  slot_offset_F = (next_slot)*
-    (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
-    ((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7);
-  slot_offset = (next_slot)*
-    (PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti>>1);
-  slot_offset_F2 = (next_slot+1)*
-    (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
-    ((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7);
-
-  if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_DL)||
-      ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_S))) {
-    //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
-    
-    for (aa=0; aa<PHY_vars_eNB_g[0]->lte_frame_parms.nb_antennas_tx; aa++) {
-      if (PHY_vars_eNB_g[0]->lte_frame_parms.Ncp == 1) {
-	PHY_ofdm_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-		     dummy_tx_b,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.log2_symbol_size,
-		     6,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.nb_prefix_samples,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.twiddle_ifft,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.rev,
-		     CYCLIC_PREFIX);
-	PHY_ofdm_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F2],
-		     dummy_tx_b+(PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti>>1),
-		     PHY_vars_eNB_g[0]->lte_frame_parms.log2_symbol_size,
-		     6,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.nb_prefix_samples,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.twiddle_ifft,
-		     PHY_vars_eNB_g[0]->lte_frame_parms.rev,
-		     CYCLIC_PREFIX);
-      }
-#ifdef EXMIMO
-      for (i=0; i<PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti; i++)  {
-	tx_offset = (int)slot_offset+time_offset[aa]+i;
-	if (tx_offset<0)
-	  tx_offset += LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
-	if (tx_offset>=(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti))
-	  tx_offset -= LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
-	((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
-	  ((short*)dummy_tx_b)[2*i]<<4;
-	((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
-	  ((short*)dummy_tx_b)[2*i+1]<<4;
-      }
-#endif //EXMIMO
-    }
-  }
-    if (pthread_mutex_lock(&proc->mutex) != 0) {
-      msg("[openair][SCHED][eNB] error locking mutex for eNB proc %d\n",proc->subframe);
+    if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
+      printf("[openair][SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
     }
     else {
-      proc->instance_cnt--;
+      proc->instance_cnt_tx--;
       
-      if (pthread_mutex_unlock(&proc->mutex) != 0) {	
-	msg("[openair][SCHED][eNB] error unlocking mutex for eNB proc %d\n",proc->subframe);
+      if (pthread_mutex_unlock(&proc->mutex_tx) != 0) {	
+	printf("[openair][SCHED][eNB] error unlocking mutex for eNB TX proc %d\n",proc->subframe);
       }
     }
-    
+
+    proc->frame_tx++;
+    if (proc->frame_tx==1024)
+      proc->frame_tx=0;
+  }
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);        
 #ifdef HARD_RT
-    rt_make_soft_real_time();
+  rt_make_soft_real_time();
 #endif
 
+#ifdef DEBUG_THREADS
+  printf("Exiting eNB thread TX %d\n",proc->subframe);
+#endif
+  // clean task
+#ifdef RTAI
+  rt_task_delete(task);
+#else
+  eNB_thread_tx_status[proc->subframe]=0;
+  pthread_exit(&eNB_thread_tx_status[proc->subframe]);
+#endif
+
+#ifdef DEBUG_THREADS
+  printf("Exiting eNB TX thread %d\n",proc->subframe);
+#endif
+}
+
+int eNB_thread_rx_status[10];
+static void * eNB_thread_rx(void *param) {
+
+  //unsigned long cpuid;
+  eNB_proc_t *proc = (eNB_proc_t*)param;
+  int i;
+  int subframe_rx;
+  //  RTIME time_in,time_out;
+#ifdef RTAI
+  RT_TASK *task;
+  char task_name[8];
+#endif
+
+#if defined(ENABLE_ITTI)
+  /* Wait for eNB application initialization to be complete (eNB registration to MME) */
+  wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
+#endif
+
+#ifdef RTAI
+  sprintf(task_name,"eNB_proc_RX %d",proc->subframe);
+  task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
+
+  if (task==NULL) {
+    LOG_E(PHY,"[SCHED][eNB] Problem starting eNB_proc_RX thread_index %d (%s)!!!!\n",proc->subframe,task_name);
+    return 0;
+  }
+  else {
+    LOG_I(PHY,"[SCHED][eNB] eNB RX thread %d started with id %p on CPU %d\n",
+	  proc->subframe,
+	  task,rtai_cpuid());
+  }
+#else
+  LOG_I(PHY,"[SCHED][eNB] eNB RX thread %d started on CPU %d\n",
+	proc->subframe,sched_getcpu());
+#endif
+
+  mlockall(MCL_CURRENT | MCL_FUTURE);
+
+  //rt_set_runnable_on_cpuid(task,1);
+  //cpuid = rtai_cpuid();
+
+#ifdef HARD_RT
+  rt_make_hard_real_time();
+#endif
+
+
+  subframe_rx = (proc->subframe+9)%10;
+
+  while (!oai_exit){
+
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe),0);
+
+
+    //    LOG_I(PHY,"Locking mutex for eNB proc %d (IC %d,mutex %p)\n",proc->subframe,proc->instance_cnt,&proc->mutex);
+    if (pthread_mutex_lock(&proc->mutex_rx) != 0) {
+      LOG_E(PHY,"[SCHED][eNB] error locking mutex for eNB RX proc %d\n",proc->subframe);
+    }
+    else {
+        
+      while (proc->instance_cnt_rx < 0) {
+	//	LOG_I(PHY,"Waiting and unlocking mutex for eNB proc %d (IC %d,lock %d)\n",proc->subframe,proc->instance_cnt,pthread_mutex_trylock(&proc->mutex));
+
+	pthread_cond_wait(&proc->cond_rx,&proc->mutex_rx);
+      }
+      //      LOG_I(PHY,"Waking up and unlocking mutex for eNB proc %d\n",proc->subframe);
+      if (pthread_mutex_unlock(&proc->mutex_rx) != 0) {	
+	LOG_E(PHY,"[SCHED][eNB] error unlocking mutex for eNB RX proc %d\n",proc->subframe);
+      }
+    }
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe),1);    
+
+    if (oai_exit) break;
+    
+    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_rx)==SF_UL)) ||
+	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))){
+      phy_procedures_eNB_RX(subframe_rx,PHY_vars_eNB_g[0],0,no_relay);
+    }
+    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_rx)==SF_S)){
+      phy_procedures_eNB_S_RX(subframe_rx,PHY_vars_eNB_g[0],0,no_relay);
+    }
+      
+    if (pthread_mutex_lock(&proc->mutex_rx) != 0) {
+      printf("[openair][SCHED][eNB] error locking mutex for eNB RX proc %d\n",proc->subframe);
+    }
+    else {
+      proc->instance_cnt_rx--;
+      
+      if (pthread_mutex_unlock(&proc->mutex_rx) != 0) {	
+	printf("[openair][SCHED][eNB] error unlocking mutex for eNB RX proc %d\n",proc->subframe);
+      }
+    }
+
+    proc->frame_rx++;
+    if (proc->frame_rx==1024)
+      proc->frame_rx=0;
+    
+  }
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe),0);        
+#ifdef HARD_RT
+  rt_make_soft_real_time();
+#endif
+
+#ifdef DEBUG_THREADS
+  printf("Exiting eNB thread RX %d\n",proc->subframe);
+#endif
+  // clean task
+#ifdef RTAI
+  rt_task_delete(task);
+#else
+  eNB_thread_rx_status[proc->subframe]=0;
+  pthread_exit(&eNB_thread_rx_status[proc->subframe]);
+#endif
+
+#ifdef DEBUG_THREADS
+  printf("Exiting eNB RX thread %d\n",proc->subframe);
+#endif
 }
 
 
@@ -779,29 +930,80 @@ void init_eNB_proc() {
 
   int i;
 
+
+
   for (i=0;i<10;i++) {
-    PHY_vars_eNB_g[0]->proc[i].instance_cnt=0;
+    pthread_attr_init (&attr_eNB_proc_tx[i]);
+    pthread_attr_setstacksize(&attr_eNB_proc_tx[i],OPENAIR_THREAD_STACK_SIZE);
+    //attr_dlsch_threads.priority = 1;
+    sched_param_eNB_proc_tx[i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
+    pthread_attr_setschedparam  (&attr_eNB_proc_tx[i], &sched_param_eNB_proc_tx);
+    pthread_attr_setschedpolicy (&attr_eNB_proc_tx[i], SCHED_FIFO);
+
+    pthread_attr_init (&attr_eNB_proc_rx[i]);
+    pthread_attr_setstacksize(&attr_eNB_proc_rx[i],OPENAIR_THREAD_STACK_SIZE);
+    //attr_dlsch_threads.priority = 1;
+    sched_param_eNB_proc_rx[i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
+    pthread_attr_setschedparam  (&attr_eNB_proc_rx[i], &sched_param_eNB_proc_rx);
+    pthread_attr_setschedpolicy (&attr_eNB_proc_rx[i], SCHED_FIFO);
+
+    PHY_vars_eNB_g[0]->proc[i].instance_cnt_tx=-1;
+    PHY_vars_eNB_g[0]->proc[i].instance_cnt_rx=-1;
     PHY_vars_eNB_g[0]->proc[i].subframe=i;
-    pthread_mutex_init(&PHY_vars_eNB_g[0]->proc[i].mutex,NULL);
-    pthread_cond_init(&PHY_vars_eNB_g[0]->proc[i].cond,NULL);
-    pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread,NULL,eNB_proc_thread,(void*)&PHY_vars_eNB_g[0]->proc[i]);
+    pthread_mutex_init(&PHY_vars_eNB_g[0]->proc[i].mutex_tx,NULL);
+    pthread_mutex_init(&PHY_vars_eNB_g[0]->proc[i].mutex_rx,NULL);
+    pthread_cond_init(&PHY_vars_eNB_g[0]->proc[i].cond_tx,NULL);
+    pthread_cond_init(&PHY_vars_eNB_g[0]->proc[i].cond_rx,NULL);
+    pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_tx,NULL,eNB_thread_tx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
+    pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_rx,NULL,eNB_thread_rx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
   }
 }
 
 void kill_eNB_proc() {
 
   int i;
+  int *status_tx,*status_rx;
 
   for (i=0;i<10;i++) {
-    pthread_join(PHY_vars_eNB_g[0]->proc[i].pthread,NULL);
-    pthread_mutex_destroy(&PHY_vars_eNB_g[0]->proc[i].mutex);
-    pthread_cond_destroy(&PHY_vars_eNB_g[0]->proc[i].cond);
+
+#ifdef DEBUG_THREADS
+    printf("Killing TX thread %d\n",i);
+#endif
+    PHY_vars_eNB_g[0]->proc[i].instance_cnt_tx=0; 
+    pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[i].cond_tx);
+#ifdef DEBUG_THREADS
+    printf("Joining eNB TX thread %d...",i);
+#endif
+    pthread_join(PHY_vars_eNB_g[0]->proc[i].pthread_tx,(void**)status_tx);
+#ifdef DEBUG_THREADS
+    if (status_tx) printf("status %d...",*status_tx);
+#endif
+#ifdef DEBUG_THREADS
+    printf("Killing RX thread %d\n",i);
+#endif
+    PHY_vars_eNB_g[0]->proc[i].instance_cnt_rx=0; 
+    pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[i].cond_rx);
+#ifdef DEBUG_THREADS
+    printf("Joining eNB RX thread %d...",i);
+#endif
+    pthread_join(PHY_vars_eNB_g[0]->proc[i].pthread_rx,(void**)status_rx);
+#ifdef DEBUG_THREADS 
+   if (status_rx) printf("status %d...",*status_rx);
+#endif
+    pthread_mutex_destroy(&PHY_vars_eNB_g[0]->proc[i].mutex_tx);
+    pthread_mutex_destroy(&PHY_vars_eNB_g[0]->proc[i].mutex_rx);
+    pthread_cond_destroy(&PHY_vars_eNB_g[0]->proc[i].cond_tx);
+    pthread_cond_destroy(&PHY_vars_eNB_g[0]->proc[i].cond_rx);
   }
 }
 
 
+
+
   
 /* This is the main eNB thread. */
+int eNB_thread_status;
+
 static void *eNB_thread(void *arg)
 {
 #ifdef RTAI
@@ -809,7 +1011,6 @@ static void *eNB_thread(void *arg)
 #endif
   unsigned char slot=0,last_slot, next_slot;
   int hw_slot,frame=0;
-  unsigned int aa,slot_offset, slot_offset_F;
   int diff;
   int delay_cnt;
   RTIME time_in, time_diff;
@@ -829,7 +1030,10 @@ static void *eNB_thread(void *arg)
 
   if (!oai_exit) {
 #ifdef RTAI
-    LOG_D(HW,"Started eNB thread (id %p)\n",task);
+    LOG_D(HW,"[SCHED][eNB] Started eNB thread (id %p) on CPU %d\n",task,rtai_cpuid());
+#else
+    LOG_I(HW,"[SCHED][eNB] Started eNB thread on CPU %d\n",
+	  sched_getcpu());
 #endif
 
 #ifdef HARD_RT
@@ -843,211 +1047,191 @@ static void *eNB_thread(void *arg)
     timing_info.time_avg = 0;
     timing_info.n_samples = 0;
 
-    while (!oai_exit)
-      {
-        hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-        //LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
-        //this is the mbox counter where we should be
-        //mbox_target = ((((slot+1)%20)*15+1)>>1)%150;
-        mbox_target = mbox_bounds[slot];
-        //this is the mbox counter where we are
-        mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-        //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
-        if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+    while (!oai_exit) {
+      hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+      //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
+      //this is the mbox counter where we should be
+      //mbox_target = ((((slot+1)%20)*15+1)>>1)%150;
+      mbox_target = mbox_bounds[slot];
+      //this is the mbox counter where we are
+      mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+      //this is the time we need to sleep in order to synchronize with the hw (in multiples of DAQ_PERIOD)
+      if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
+	diff = 150-mbox_current+mbox_target;
+      else if ((mbox_current<15) && (mbox_target>=135))
+	diff = -150+mbox_target-mbox_current;
+      else
+	diff = mbox_target - mbox_current;
+      
+      if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
+	// at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
+	LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
+	slot++;
+	if (frame > 0) {
+	  exit_fun("[HW][eNB] missed slot");
+	}
+	if (slot==20){
+	  slot=0;
+	  frame++;
+	}
+	continue;
+      }
+      if (diff>8)
+	LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
+      
+      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
+      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff);
+      
+      delay_cnt = 0;
+      while ((diff>0) && (!oai_exit)) {
+	time_in = rt_get_time_ns();
+	//LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
+	//LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
+	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
+	ret = rt_sleep_ns(diff*DAQ_PERIOD);
+	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
+	vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
+	if (ret)
+	  LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
+	hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
+	//LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
+	delay_cnt++;
+	if (delay_cnt == 10) {
+	  LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
+	  exit_fun("[HW][eNB] HW stopped");
+	}
+	mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
+	if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
 	  diff = 150-mbox_current+mbox_target;
-        else if ((mbox_current<15) && (mbox_target>=135))
+	else if ((mbox_current<15) && (mbox_target>=135))
 	  diff = -150+mbox_target-mbox_current;
-        else
+	else
 	  diff = mbox_target - mbox_current;
+      }
+      
+      if (oai_exit) break;
 
-        if (((slot%2==0) && (diff < (-14))) || ((slot%2==1) && (diff < (-7)))) {
-          // at the eNB, even slots have double as much time since most of the processing is done here and almost nothing in odd slots
-          LOG_D(HW,"eNB Frame %d, time %llu: missed slot, proceeding with next one (slot %d, hw_slot %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, diff);
-          slot++;
-          if (frame > 0) {
-            exit_fun("[HW][eNB] missed slot");
-          }
-          if (slot==20){
-            slot=0;
-            frame++;
-          }
-          continue;
-        }
-        if (diff>8)
-	  LOG_D(HW,"eNB Frame %d, time %llu: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, rt_get_time_ns(), slot, hw_slot, mbox_current, mbox_target, diff);
-
-        delay_cnt = 0;
-        while ((diff>0) && (!oai_exit))
-          {
-            time_in = rt_get_time_ns();
-            //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d, (slot+1)*15=%d, diff %d, time %llu\n",frame,delay_cnt,hw_slot,((unsigned int *)DAQ_MBOX)[0],slot,(((slot+1)*15)>>1),diff,time_in);
-            //LOG_D(HW,"eNB Frame %d, time %llu: sleeping for %llu (slot %d, hw_slot %d, diff %d, mbox %d, delay_cnt %d)\n", frame, time_in, diff*DAQ_PERIOD,slot,hw_slot,diff,((volatile unsigned int *)DAQ_MBOX)[0],delay_cnt);
-            ret = rt_sleep_ns(diff*DAQ_PERIOD);
-            if (ret)
-              LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
-            hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
-            //LOG_D(HW,"eNB Frame %d : hw_slot %d, time %llu\n",frame,hw_slot,rt_get_time_ns());
-            delay_cnt++;
-            if (delay_cnt == 10)
-              {
-                LOG_D(HW,"eNB Frame %d: HW stopped ... \n",frame);
-                exit_fun("[HW][eNB] HW stopped");
-              }
-            mbox_current = ((volatile unsigned int *)DAQ_MBOX)[0];
-            if ((mbox_current>=135) && (mbox_target<15)) //handle the frame wrap-arround
-              diff = 150-mbox_current+mbox_target;
-            else if ((mbox_current<15) && (mbox_target>=135))
-              diff = -150+mbox_target-mbox_current;
-            else
-              diff = mbox_target - mbox_current;
-          }
-
-        last_slot = (slot)%LTE_SLOTS_PER_FRAME;
-        if (last_slot <0)
-          last_slot+=20;
-        next_slot = (slot+2)%LTE_SLOTS_PER_FRAME;
-
-        //PHY_vars_eNB_g[0]->frame = frame;
-        if (frame>5)
-          {
-            /*
-	      if (frame%100==0)
-              LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, next_slot %d (before): DAQ_MBOX %d\n",frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,next_slot,DAQ_MBOX[0]);
-            */
-
-            //if (PHY_vars_eNB_g[0]->frame>5) {
-	    timing_info.time_last = timing_info.time_now;
-	    timing_info.time_now = rt_get_time_ns();
-
-	    if (timing_info.n_samples>0) {
-	      time_diff = timing_info.time_now - timing_info.time_last;
-	      if (time_diff < timing_info.time_min)
-		timing_info.time_min = time_diff;
-	      if (time_diff > timing_info.time_max)
-		timing_info.time_max = time_diff;
-	      timing_info.time_avg += time_diff;
+      last_slot = (slot)%LTE_SLOTS_PER_FRAME;
+      if (last_slot <0)
+	last_slot+=20;
+      next_slot = (slot+2)%LTE_SLOTS_PER_FRAME;
+      
+      //PHY_vars_eNB_g[0]->frame = frame;
+      if (frame>5)  {
+	/*
+	  if (frame%100==0)
+	  LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, next_slot %d (before): DAQ_MBOX %d\n",frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,next_slot,DAQ_MBOX[0]);
+	*/
+	
+	//if (PHY_vars_eNB_g[0]->frame>5) {
+	timing_info.time_last = timing_info.time_now;
+	timing_info.time_now = rt_get_time_ns();
+	
+	if (timing_info.n_samples>0) {
+	  time_diff = timing_info.time_now - timing_info.time_last;
+	  if (time_diff < timing_info.time_min)
+	    timing_info.time_min = time_diff;
+	  if (time_diff > timing_info.time_max)
+	    timing_info.time_max = time_diff;
+	  timing_info.time_avg += time_diff;
+	}
+	
+	timing_info.n_samples++;
+	/*
+	  if ((timing_info.n_samples%2000)==0) {
+	  LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
+	  frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
+	  timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
+	  timing_info.n_samples = 0;
+	  timing_info.time_avg = 0;
+	  }
+	*/
+	//}
+	
+	if (multi_thread == 0) {
+	  phy_procedures_eNB_lte (((slot+1)%20)>>1, PHY_vars_eNB_g[0], 0, no_relay,NULL);
+	  do_OFDM_mod(((slot+1)%20)>>1,PHY_vars_eNB_g[0]);
+	}
+	else { // multi-thread > 0
+	  if ((slot&1) == 0) {
+	    sf = ((slot>>1)+1)%10;
+	    //		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0]->proc[sf].instance_cnt);
+	    
+	    if (pthread_mutex_lock(&PHY_vars_eNB_g[0]->proc[sf].mutex_tx) != 0) {
+	      LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt_tx);   
 	    }
-
-	    timing_info.n_samples++;
-	    /*
-              if ((timing_info.n_samples%2000)==0) {
-	      LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d: diff=%llu, min=%llu, max=%llu, avg=%llu (n_samples %d)\n",
-	      frame, PHY_vars_eNB_g[0]->frame, slot, hw_slot,time_diff,
-	      timing_info.time_min,timing_info.time_max,timing_info.time_avg/timing_info.n_samples,timing_info.n_samples);
-	      timing_info.n_samples = 0;
-	      timing_info.time_avg = 0;
-              }
-	    */
-	    //}
-
-            if (fs4_test==0)
-              {
-		if (multi_thread == 0) {
-		  phy_procedures_eNB_lte ((slot+1)>>1, PHY_vars_eNB_g[0], 0, no_relay,NULL);
-		  slot_offset_F = (next_slot)*
-		    (PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size)*
-		    ((PHY_vars_eNB_g[0]->lte_frame_parms.Ncp==1) ? 6 : 7);
-		  slot_offset = (next_slot)*
-		    (PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti>>1);
-		  if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_DL)||
-		      ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,next_slot>>1)==SF_S)))
-		    {
-		      //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
-		      
-		      for (aa=0; aa<PHY_vars_eNB_g[0]->lte_frame_parms.nb_antennas_tx; aa++)
-			{
-			  if (PHY_vars_eNB_g[0]->lte_frame_parms.Ncp == 1)
-			    {
-			      PHY_ofdm_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-#ifdef BIT8_TX
-					   &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset>>1],
-#else
-					   dummy_tx_buffer,//&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
-#endif
-					   PHY_vars_eNB_g[0]->lte_frame_parms.log2_symbol_size,
-					   6,
-					   PHY_vars_eNB_g[0]->lte_frame_parms.nb_prefix_samples,
-					   PHY_vars_eNB_g[0]->lte_frame_parms.twiddle_ifft,
-					   PHY_vars_eNB_g[0]->lte_frame_parms.rev,
-					   CYCLIC_PREFIX);
-			    }
-			  else
-			    {
-			      normal_prefix_mod(&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-#ifdef BIT8_TX
-						&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset>>1],
-#else
-						dummy_tx_buffer,//&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
-#endif
-						7,
-						&(PHY_vars_eNB_g[0]->lte_frame_parms));
-			    }
-#ifdef EXMIMO
-			  for (i=0; i<PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti/2; i++)
-			    {
-			      tx_offset = (int)slot_offset+time_offset[aa]+i;
-			      if (tx_offset<0)
-				tx_offset += LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
-			      if (tx_offset>=(LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti))
-				tx_offset -= LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*PHY_vars_eNB_g[0]->lte_frame_parms.samples_per_tti;
-			      ((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[0]=
-				((short*)dummy_tx_buffer)[2*i]<<4;
-			      ((short*)&PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
-				((short*)dummy_tx_buffer)[2*i+1]<<4;
-			    }
-#endif //EXMIMO
-			}
-		    }
-		}
-		else { // multi-thread > 0
-
-		  if ((slot&1) == 0) {
-		    sf = (slot<<1)+1;
-		    if (PHY_vars_eNB_g[0]->proc[sf].instance_cnt == 0) {
-		      if (pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[sf].cond) != 0) {
-			LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB proc %d\n",sf);
-		      }
-		    }
-		    else {
-		      LOG_W(PHY,"[eNB] Frame %d, eNB proc %d busy!!\n",PHY_vars_eNB_g[0]->proc[sf].frame_tx,sf);
-		    }
-		  }
+	    else {
+	      //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt); 
+	      PHY_vars_eNB_g[0]->proc[sf].instance_cnt_tx++;
+	      pthread_mutex_unlock(&PHY_vars_eNB_g[0]->proc[sf].mutex_tx);
+	      if (PHY_vars_eNB_g[0]->proc[sf].instance_cnt_tx == 0) {
+		if (pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[sf].cond_tx) != 0) {
+		  LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n",sf);
 		}
 	      }
-	  }
-	    /*
-	      if ((slot%2000)<10)
-	      LOG_D(HW,"fun0: doing very hard work\n");
-	    */
-
-	    slot++;
-	    if (slot==20) {
-	      slot=0;
-	      frame++;
+	      else {
+		LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0]->proc[sf].frame_tx,sf);
+	      }
 	    }
-#if defined(ENABLE_ITTI)
-	    itti_update_lte_time(frame, slot);
-#endif
+	    
+	    if (pthread_mutex_lock(&PHY_vars_eNB_g[0]->proc[sf].mutex_rx) != 0) {
+	      LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB RX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt_rx);   
+	    }
+	    else {
+	      //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt); 
+	      PHY_vars_eNB_g[0]->proc[sf].instance_cnt_rx++;
+	      pthread_mutex_unlock(&PHY_vars_eNB_g[0]->proc[sf].mutex_rx);
+	      if (PHY_vars_eNB_g[0]->proc[sf].instance_cnt_rx == 0) {
+		if (pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[sf].cond_rx) != 0) {
+		  LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB RX thread %d\n",sf);
+		}
+	      }
+	      else {
+		LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!!\n",PHY_vars_eNB_g[0]->proc[sf].frame_rx,sf);
+	      }
+	    }
+	    
 	  }
-
-	LOG_D(HW,"eNB_thread: finished, ran %d times.\n",frame);
-
-#ifdef HARD_RT
-	rt_make_soft_real_time();
-#endif
+	}
       }
-
-    // clean task
-#ifdef RTAI
-    rt_task_delete(task);
+      
+      slot++;
+      if (slot==20) {
+	slot=0;
+	frame++;
+      }
+#if defined(ENABLE_ITTI)
+      itti_update_lte_time(frame, slot);
 #endif
-    LOG_D(HW,"Task deleted. returning\n");
-    return 0;
+    }
   }
+#ifdef DEBUG_THREADS
+  printf("eNB_thread: finished, ran %d times.\n",frame);
+#endif
+  
+#ifdef HARD_RT
+  rt_make_soft_real_time();
+#endif
 
-  /* This is the main UE thread. Initially it is doing a periodic get_frame. One synchronized it gets woken up by the kernel driver using the RTAI message mechanism (rt_send and rt_receive). */
-  static void *UE_thread(void *arg)
-  {
+
+#ifdef DEBUG_THREADS
+  printf("Exiting eNB_thread ...");
+#endif
+  // clean task
+#ifdef RTAI
+  rt_task_delete(task);
+#else
+  eNB_thread_status = 0;
+  pthread_exit(&eNB_thread_status);
+#endif
+#ifdef DEBUG_THREADS
+  printf("eNB_thread deleted. returning\n");
+#endif
+  return 0;
+}
+
+/* This is the main UE thread. Initially it is doing a periodic get_frame. One synchronized it gets woken up by the kernel driver using the RTAI message mechanism (rt_send and rt_receive). */
+static void *UE_thread(void *arg) {
 #ifdef RTAI
     RT_TASK *task;
 #endif
@@ -1124,9 +1308,10 @@ static void *eNB_thread(void *arg)
 	    LOG_D(HW,"UE Frame %d: skipped slot, waiting for hw to catch up (slot %d, hw_slot %d, mbox_current %d, mbox_target %d, diff %d)\n",frame, slot, hw_slot, mbox_current, mbox_target, diff2);
 
 	  /*
-	    if (frame%100==0)
+	  if (frame%100==0)
 	    LOG_D(HW,"frame %d (%d), slot %d, hw_slot %d, rx_offset_mbox %d, mbox_target %d, mbox_current %d, diff %d\n",frame, PHY_vars_UE_g[0]->frame, slot,hw_slot,rx_offset_mbox,mbox_target,mbox_current,diff2);
 	  */
+
 	  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
 	  vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DIFF, diff2);
 
@@ -1135,9 +1320,11 @@ static void *eNB_thread(void *arg)
 	    {
 	      time_in = rt_get_time_ns();
 	      //LOG_D(HW,"eNB Frame %d delaycnt %d : hw_slot %d (%d), slot %d (%d), diff %d, time %llu\n",frame,delay_cnt,hw_slot,((volatile unsigned int *)DAQ_MBOX)[0],slot,mbox_target,diff2,time_in);
+	      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
 	      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,1);
 	      ret = rt_sleep_ns(diff2*DAQ_PERIOD);
 	      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RT_SLEEP,0);
+	      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_DAQ_MBOX, *((volatile unsigned int *) openair0_exmimo_pci[card].rxcnt_ptr[0]));
 	      if (ret)
 		LOG_D(HW,"eNB Frame %d, time %llu: rt_sleep_ns returned %d\n",frame, time_in);
 
@@ -1490,11 +1677,15 @@ static void *eNB_thread(void *arg)
   int main(int argc, char **argv) {
 #ifdef RTAI
     // RT_TASK *task;
+#else
+    int *eNB_thread_status_p;
+	int *eNB_thread_status_rx[10],*eNB_thread_status_tx[10];
 #endif
     int i,j,aa;
 #if defined (XFORMS) || defined (EMOS) || (! defined (RTAI))
     void *status;
 #endif
+
 
     uint16_t Nid_cell = 0;
     uint8_t  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
@@ -2130,7 +2321,7 @@ static void *eNB_thread(void *arg)
     pthread_attr_init (&attr_dlsch_threads);
     pthread_attr_setstacksize(&attr_dlsch_threads,OPENAIR_THREAD_STACK_SIZE);
     //attr_dlsch_threads.priority = 1;
-    sched_param_dlsch.sched_priority = sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
+    sched_param_dlsch.sched_priority = 90;//sched_get_priority_max(SCHED_FIFO); //OPENAIR_THREAD_PRIORITY;
     pthread_attr_setschedparam  (&attr_dlsch_threads, &sched_param_dlsch);
     pthread_attr_setschedpolicy (&attr_dlsch_threads, SCHED_FIFO);
 #endif
@@ -2157,6 +2348,11 @@ static void *eNB_thread(void *arg)
       printf("UE threads created\n");
     }
     else {
+
+      if (multi_thread>0) {
+	init_eNB_proc();
+	LOG_D(HW,"[lte-softmodem.c] eNB threads created\n");
+      }
 #ifdef RTAI
       thread0 = rt_thread_create(eNB_thread, NULL, 100000000);
 #else
@@ -2173,9 +2369,9 @@ static void *eNB_thread(void *arg)
       init_ulsch_threads();
 #endif
 
-      init_eNB_proc();
 
-      printf("eNB threads created\n");
+
+
     }
 
 
@@ -2228,11 +2424,23 @@ static void *eNB_thread(void *arg)
 #ifdef RTAI
       rt_thread_join(thread0); 
 #else
-      pthread_join(thread0,&status); 
+#ifdef DEBUG_THREADS
+      printf("Joining eNB_thread ...");
+#endif
+      pthread_join(thread0,(void**)&eNB_thread_status_p); 
+#ifdef DEBUG_THREADS
+      printf("status %d\n",*eNB_thread_status_p);
+#endif
 #endif
 #ifdef ULSCH_THREAD
       cleanup_ulsch_threads();
 #endif
+
+      if (multi_thread>0) {
+   	    printf("Killing eNB processing threads\n");
+	    kill_eNB_proc();
+
+      }
     }
 
 #ifdef OPENAIR2
