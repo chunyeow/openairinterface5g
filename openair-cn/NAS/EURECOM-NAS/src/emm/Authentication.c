@@ -46,6 +46,7 @@ Description Defines the authentication EMM procedure executed by the
 
 #ifdef NAS_UE
 #include "usim_api.h"
+#include "secu_defs.h"
 #endif
 
 #ifdef NAS_MME
@@ -1151,26 +1152,62 @@ static int _authentication_kasme(const OctetString *autn,
     memcpy(key + ck->length, ik->value, ik->length);
 
     /* Compute the KDF input parameter
-     * S = FC(0x10) || SNid || 0x00 0x03 || SQN ⊕ AK || 0x00 0x06
+     * S = FC(0x10) || SNid(MCC, MNC) || 0x00 0x03 || SQN ⊕ AK || 0x00 0x06
      */
     UInt8_t  input[kasme->length];
     UInt16_t length;
     int      offset         = 0;
     int      size_of_length = sizeof(length);
+
+    // FC
     input[offset] = 0x10;
-    offset += 1;
-    length = AUTH_SNID_SIZE;
+    offset       += 1;
+
+    // P0=SN id
+    length        = AUTH_SNID_SIZE;
     memcpy(input + offset, plmn, length);
+    LOG_TRACE(INFO,"EMM-PROC  _authentication_kasme P0 MCC,MNC %02X %02X %02X",
+    		input[offset],
+    		input[offset+1],
+    		input[offset+2]);
     offset += length;
+    // L0=SN id length
     memcpy(input + offset, &length, size_of_length);
     offset += size_of_length;
+
+    // P1=Authentication token
     length = AUTH_SQN_SIZE;
     memcpy(input + offset, autn, length);
     offset += length;
+    // L1
     memcpy(input + offset, &length, size_of_length);
+    offset += size_of_length;
 
     /* TODO !!! Compute the Kasme key */
     // todo_hmac_256(key, input, kasme->value);
+    kdf(input,
+    		offset,
+    		key,
+    		ck->length + ik->length , /*key_length*/
+    		&kasme->value,
+    		kasme->length);
+
+    LOG_TRACE(INFO,"EMM-PROC  CK (l=%d)", ck->length);
+    LOG_TRACE(INFO,"EMM-PROC  IK (l=%d)", ik->length);
+
+    LOG_TRACE(INFO,"EMM-PROC  KASME (l=%d)%02X%02X%02X%02X%02X%02X%02X%02X",
+    		"%02X%02X%02X%02X%02X%02X%02X%02X",
+    		"%02X%02X%02X%02X%02X%02X%02X%02X",
+    		"%02X%02X%02X%02X%02X%02X%02X%02X",
+    		kasme->length,
+    		kasme->value[0],kasme->value[1],kasme->value[2],kasme->value[3],
+    		kasme->value[4],kasme->value[5],kasme->value[6],kasme->value[7],
+    		kasme->value[8],kasme->value[9],kasme->value[10],kasme->value[11],
+    		kasme->value[12],kasme->value[13],kasme->value[14],kasme->value[15],
+    		kasme->value[16],kasme->value[17],kasme->value[18],kasme->value[19],
+    		kasme->value[20],kasme->value[21],kasme->value[22],kasme->value[23],
+    		kasme->value[24],kasme->value[25],kasme->value[26],kasme->value[27],
+    		kasme->value[28],kasme->value[29],kasme->value[30],kasme->value[31]);
 
     LOG_FUNC_RETURN (RETURNok);
 }
