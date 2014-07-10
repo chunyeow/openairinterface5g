@@ -274,13 +274,14 @@ NAS_UE_COMPILED_OBJS = $(addprefix $(OUTDIR)/,$(libnas_OBJS))
 # pull in dependency info for *existing* .o files
 -include $(NAS_UE_COMPILED_OBJS:.o=.d)
 
-CFLAGS =										\
-	-Wall										\
-	-DNAS_UE									\
-	-DUE_BUILD									\
-	-Wuninitialized								\
-	-Werror=implicit-function-declaration		\
-	$(UENAS_CFLAGS)							\
+CFLAGS =                                       \
+    -g                                         \
+    -Wall                                      \
+	-DNAS_UE                                   \
+	-DUE_BUILD                                 \
+	-Wuninitialized                            \
+	-Werror=implicit-function-declaration      \
+	$(UENAS_CFLAGS)                            \
 	$(libnas_INCLUDES)
 
 .SECONDEXPANSION:
