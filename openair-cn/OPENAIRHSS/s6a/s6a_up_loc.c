@@ -83,6 +83,16 @@ int s6a_up_loc_cb(struct msg **msg, struct avp *paramavp,
             result_code = ER_DIAMETER_INVALID_AVP_VALUE;
             goto out;
         }
+        // 3GPP TS 29.272-910 / 5.2.1.1.3	Detailed behaviour of the HSS
+        // When receiving an Update Location request the HSS shall check whether the IMSI is known.
+        // If it is not known, a Result Code of DIAMETER_ERROR_USER_UNKNOWN shall be returned.
+        // If it is known, but the subscriber has no EPS subscription, the HSS may (as an operator option)
+        //     return a Result Code of DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION.
+        // If the Update Location Request is received over the S6a interface, and the subscriber has not
+        //     any APN configuration, the HSS shall return a Result Code of DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION.
+        // The HSS shall check whether the RAT type the UE is using  is allowed. If it is not,
+        //     a Result Code of DIAMETER_ERROR_RAT_NOT_ALLOWED shall be returned.
+        // ...
         sprintf(mysql_push.imsi, "%*s", (int)hdr->avp_value->os.len,
                 (char*)hdr->avp_value->os.data);
         if ((ret = hss_mysql_update_loc(mysql_push.imsi, &mysql_ans)) != 0) {
