@@ -480,7 +480,7 @@ void phy_procedures_emos_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eN
 
   if (subframe==4) {
     emos_dump_eNB.timestamp = rt_get_time_ns();
-    emos_dump_eNB.frame_tx = phy_vars_eNB->frame;
+    emos_dump_eNB.frame_tx = phy_vars_eNB->proc[subframe].frame;
     emos_dump_eNB.rx_total_gain_dB = phy_vars_eNB->rx_total_gain_eNB_dB;
     emos_dump_eNB.mimo_mode = phy_vars_eNB->transmission_mode[0];
     memcpy(&emos_dump_eNB.PHY_measurements_eNB,
@@ -598,7 +598,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
       DLSCH_alloc_pdu.TPC              = 0;
       DLSCH_alloc_pdu.dai              = 0;
       DLSCH_alloc_pdu.harq_pid         = 1;
-      //DLSCH_alloc_pdu.mcs              = (unsigned char) ((phy_vars_eNB->frame%1024)%28);      
+      //DLSCH_alloc_pdu.mcs              = (unsigned char) ((phy_vars_eNB->proc[subframe].frame%1024)%28);      
       DLSCH_alloc_pdu.mcs              = openair_daq_vars.target_ue_dl_mcs;
       DLSCH_alloc_pdu.ndi              = 1;
       DLSCH_alloc_pdu.rv               = 0;
@@ -620,7 +620,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t subframe, PHY_VARS_eNB *phy_vars_eNB) {
       //DLSCH_alloc_pdu1E.mcs            = cqi_to_mcs[phy_vars_eNB->eNB_UE_stats->DL_cqi[0]];
       //DLSCH_alloc_pdu1E.mcs            = (unsigned char) (taus()%28);
       DLSCH_alloc_pdu1E.mcs              = openair_daq_vars.target_ue_dl_mcs;
-      //DLSCH_alloc_pdu1E.mcs            = (unsigned char) ((phy_vars_eNB->frame%1024)%28);      
+      //DLSCH_alloc_pdu1E.mcs            = (unsigned char) ((phy_vars_eNB->proc[subframe].frame%1024)%28);      
       phy_vars_eNB->eNB_UE_stats[0].dlsch_mcs1 = DLSCH_alloc_pdu1E.mcs;
       DLSCH_alloc_pdu1E.harq_pid         = 0;
       DLSCH_alloc_pdu1E.dai              = 0;
@@ -2752,7 +2752,7 @@ void phy_procedures_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 #ifdef DEBUG_PHY_PROC
     if (phy_vars_eNB->ulsch_eNB[i]) {
       
-      LOG_I(PHY,"[eNB %d][PUSCH %d] frame %d, subframe %d rnti %x, alloc %d, Msg3 %d\n",phy_vars_eNB->Mod_id,
+      LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d, subframe %d rnti %x, alloc %d, Msg3 %d\n",phy_vars_eNB->Mod_id,
 	    harq_pid,frame,subframe,
 	    (phy_vars_eNB->ulsch_eNB[i]->rnti),
 	    (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->subframe_scheduling_flag),
