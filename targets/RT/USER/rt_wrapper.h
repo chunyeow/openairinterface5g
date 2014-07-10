@@ -55,6 +55,7 @@ int rt_sleep_ns (RTIME x);
 void check_clock(void);
 
 #else
+#include <rtai_hal.h>
 #include <rtai_lxrt.h>
 #include <rtai_sem.h>
 #include <rtai_msg.h>
