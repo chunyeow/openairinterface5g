@@ -60,7 +60,8 @@ INSERT INTO `mmeidentity` (`idmmeidentity`, `mmehost`, `mmerealm`, `UE-Reachabil
 (33, 'orcus.eur', 'eur', 0),
 (36, 'caviar.eur', 'eur', 0),
 (37, 'sud.eur', 'eur', 0),
-(38, 'tapenade.eur', 'eur', 1);
+(38, 'tapenade.eur', 'eur', 1),
+(39, 'mme0.eur', 'eur', 0);
 
 -- --------------------------------------------------------
 
@@ -97,8 +98,10 @@ INSERT INTO `pdn` (`id`, `apn`, `pdn_type`, `pdn_ipv4`, `pdn_ipv6`, `aggregate_a
 (3, 'toto.eurecom.fr', 'IPv4v6', '0.0.0.0', '2001:0db8:85a3:0042:1000:8a2e:0370:7334', 50000, 100000, 2, '20834123456710', 1, 3, 'DISABLED', 'DISABLED', 'LIPA-only'),
 (4, 'edge.eurecom.fr', 'IPv4_or_IPv6', '0.0.0.0', '2001:0db8:85a3:0042:1000:8a2e:0370:7356', 50000000, 100000000, 1, '20834123456789', 3, 4, 'ENABLED', 'DISABLED', 'LIPA-only'),
 (7, 'internet.v6.eur', 'IPv6', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 4, '20834123456789', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
-(1, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '20834123456789', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only');
-
+(1, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '20834123456789', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(8, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000008', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(9, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '208920000000009', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only'),
+(10, 'internet.v4.eur', 'IPv4', '0.0.0.0', '0:0:0:0:0:0:0:0', 50000000, 100000000, 3, '20810000001234', 9, 15, 'DISABLED', 'ENABLED', 'LIPA-only');
 -- --------------------------------------------------------
 
 --
@@ -142,22 +145,22 @@ CREATE TABLE IF NOT EXISTS `terminal-info` (
 --
 
 CREATE TABLE IF NOT EXISTS `users` (
-  `imsi` varchar(15) NOT NULL,
-  `msisdn` varchar(46) DEFAULT NULL,
-  `imei` varchar(15) DEFAULT NULL,
-  `imei_sv` varchar(2) DEFAULT NULL,
+  `imsi` varchar(15) NOT NULL COMMENT 'IMSI is the main reference key.',
+  `msisdn` varchar(46) DEFAULT NULL COMMENT 'The basic MSISDN of the UE (Presence of MSISDN is optional).',
+  `imei` varchar(15) DEFAULT NULL COMMENT 'International Mobile Equipment Identity',
+  `imei_sv` varchar(2) DEFAULT NULL COMMENT 'International Mobile Equipment Identity Software Version Number',
   `ms_ps_status` enum('PURGED','NOT_PURGED') DEFAULT 'PURGED' COMMENT 'Indicates that ESM and EMM status are purged from MME',
-  `rau_tau_timer` int(10) unsigned DEFAULT '120',
-  `ue_ambr_ul` bigint(20) unsigned DEFAULT '50000000' COMMENT 'Subscribed UE AMBR in uplink',
-  `ue_ambr_dl` bigint(20) unsigned DEFAULT '100000000' COMMENT 'Subscribed UE AMBR in downlink',
-  `access_restriction` int(10) unsigned DEFAULT '60' COMMENT '3GPP TS.29272 #7.3.31',
-  `mme_cap` int(10) unsigned zerofill DEFAULT NULL,
-  `mmeidentity_idmmeidentity` int(11) NOT NULL DEFAULT '0',
+  `rau_tau_timer` int(10) unsigned DEFAULT '120' COMMENT '',
+  `ue_ambr_ul` bigint(20) unsigned DEFAULT '50000000' COMMENT 'The Maximum Aggregated uplink MBRs to be shared across all Non-GBR bearers according to the subscription of the user.',
+  `ue_ambr_dl` bigint(20) unsigned DEFAULT '100000000' COMMENT 'The Maximum Aggregated downlink MBRs to be shared across all Non-GBR bearers according to the subscription of the user.',
+  `access_restriction` int(10) unsigned DEFAULT '60' COMMENT 'Indicates the access restriction subscription information. 3GPP TS.29272 #7.3.31',
+  `mme_cap` int(10) unsigned zerofill DEFAULT NULL COMMENT 'Indicates the capabilities of the MME with respect to core functionality e.g. regional access restrictions.',
+  `mmeidentity_idmmeidentity` int(11) NOT NULL DEFAULT '0' COMMENT '',
   `key` varbinary(16) NOT NULL DEFAULT '0' COMMENT 'UE security key',
-  `RFSP-Index` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'Index to RRM configuration. Possible values from 1 to 256',
-  `urrp_mme` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'UE reachability request requested by HSS',
-  `sqn` int(10) unsigned zerofill NOT NULL,
-  `rand` varbinary(16) NOT NULL,
+  `RFSP-Index` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'An index to specific RRM configuration in the E-UTRAN. Possible values from 1 to 256',
+  `urrp_mme` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'UE Reachability Request Parameter indicating that UE activity notification from MME has been requested by the HSS.',
+  `sqn` int(10) unsigned zerofill NOT NULL COMMENT '',
+  `rand` varbinary(16) NOT NULL COMMENT '',
   PRIMARY KEY (`imsi`,`mmeidentity_idmmeidentity`),
   KEY `fk_users_mmeidentity_idx1` (`mmeidentity_idmmeidentity`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -167,8 +170,10 @@ CREATE TABLE IF NOT EXISTS `users` (
 --
 
 INSERT INTO `users` (`imsi`, `msisdn`, `imei`, `imei_sv`, `ms_ps_status`, `rau_tau_timer`, `ue_ambr_ul`, `ue_ambr_dl`, `access_restriction`, `mme_cap`, `mmeidentity_idmmeidentity`, `key`, `RFSP-Index`, `urrp_mme`, `sqn`, `rand`) VALUES
-('20834123456789', '380561234567', '12345678', '23', 'NOT_PURGED', 50, 50000000, 100000000, 47, 0000000000, 36, '+ÖEŸ‚Å³\0•,IHÿH', 0, 0, 0000000096, 'Px¼X \Z1¡Éx™ß'),
-('208920000000008', NULL, NULL, NULL, 'PURGED', 120, 50000000, 100000000, 60, 0000000000, 0, '‹¯G?/Ð”‡ÌË×	|hb', 1, 0, 0000027276, '''©$Ìy2¨dËêmù');
+('20834123456789', '380561234567', '12345678', '23', 'PURGED', 50, 50000000, 100000000, 47, 0000000000, 36, '+ÖEŸ‚Å³\0•,IHÿH', 0, 0, 0000000096, 'Px¼X \Z1¡Éx™ß'),
+('208920000000008', '33638060008', NULL, NULL, 'PURGED', 120, 50000000, 100000000, 60, 0000000000, 0, '‹¯G?/Ð”‡ÌË×	|hb', 1, 0, 0000027276, '''©$Ìy2¨dËêmù'),
+('208920000000009', '33638060009', NULL, NULL, 'PURGED', 120, 50000000, 100000000, 47, 0000000000, 0, '‹¯G?/Ð”WdiHC×¾½', 1, 0, 0000027276, '\r¨`ËdŽ¶_íŽÃdÀ'),
+('20810000001234', '33611123456', NULL, NULL, 'PURGED', 120, 50000000, 100000000, 47, 0000000000, 39, '‹¯G?/Ð”‡ÌË×	|hb', 1, 0, 0000009600, 'LyV€³L¾uz†Ã>m¯¹');
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
