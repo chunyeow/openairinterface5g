@@ -179,10 +179,14 @@ enum transmission_access_mode{
 #endif
 
 typedef struct {
-  int instance_cnt;
-  pthread_t pthread;
-  pthread_cond_t cond;
-  pthread_mutex_t mutex;
+  int instance_cnt_tx;
+  int instance_cnt_rx;
+  pthread_t pthread_tx;
+  pthread_t pthread_rx;
+  pthread_cond_t cond_tx;
+  pthread_cond_t cond_rx;
+  pthread_mutex_t mutex_tx;
+  pthread_mutex_t mutex_rx;
   int subframe;
   int frame_rx;
   int frame_tx;
