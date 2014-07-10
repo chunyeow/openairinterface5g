@@ -104,18 +104,19 @@ mme_app_handle_s6a_update_location_ans(
 
     DevAssert(ula_pP != NULL);
 
-
     if (ula_pP->result.present == S6A_RESULT_BASE) {
         if (ula_pP->result.choice.base != DIAMETER_SUCCESS) {
             /* The update location procedure has failed. Notify the NAS layer
              * and don't initiate the bearer creation on S-GW side.
              */
-            DevMessage("ULR/ULA procedure returned non success\n");
+        	MME_APP_DEBUG("ULR/ULA procedure returned non success (ULA.result.choice.base=%d)\n", ula_pP->result.choice.base);
+        	DevMessage("ULR/ULA procedure returned non success\n");
         }
     } else {
         /* The update location procedure has failed. Notify the NAS layer
          * and don't initiate the bearer creation on S-GW side.
          */
+    	MME_APP_DEBUG("ULR/ULA procedure returned non success (ULA.result.present=%d)\n", ula_pP->result.present);
         DevMessage("ULR/ULA procedure returned non success\n");
     }
 
