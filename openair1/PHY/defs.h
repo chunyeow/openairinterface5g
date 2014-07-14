@@ -40,7 +40,6 @@
 #ifndef __PHY_DEFS__H__
 #define __PHY_DEFS__H__
 
-#ifdef USER_MODE
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
@@ -85,45 +84,6 @@
 #define max(a,b)  ((a)>(b) ? (a) : (b))
 #define min(a,b)  ((a)<(b) ? (a) : (b))
 
-
-#else // USER_MODE
-
-#include "ARCH/COMMON/defs.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/defs.h"
-
-#define msg fifo_printf
-//#define msg(x...) rt_printk(KERN_ALERT x)
-
-#define msg_nrt printk(KERN_ALERT x)
-
-#ifdef BIGPHYSAREA
-
-#define bigmalloc(x) (bigphys_malloc(x))
-#define bigmalloc16(x) (bigphys_malloc(x))
-
-#define malloc16(x) (bigphys_malloc(x))
-#define free16(y,x) 
-
-#define bigfree(y,x) 
-
-#else // BIGPHYSAREA
- 
-#define bigmalloc(x) (dma_alloc_coherent(pdev[0],(x),&dummy_dma_ptr,0))
-#define bigmalloc16(x) (dma_alloc_coherent(pdev[0],(x),&dummy_dma_ptr,0))
-#define bigfree(y,x) (dma_free_coherent(pdev[0],(x),(void *)(y),dummy_dma_ptr))
-#define malloc16(x) (kmalloc(x,GFP_KERNEL))
-#define free16(y,x) (kfree(y))
-
-#endif // BIGPHYSAREA
-
-
-#ifdef CBMIMO1
-#define openair_get_mbox() (*(uint32_t *)mbox)
-#else //CBMIMO1
-#define openair_get_mbox() (*(uint32_t *)PHY_vars->mbox>>1)
-#endif //CBMIMO1
-
-#endif // USERMODE
 
 #define bzero(s,n) (memset((s),0,(n)))
 
@@ -362,10 +322,11 @@ typedef struct PHY_VARS_eNB_s{
 #define debug_msg if (((mac_xface->frame%100) == 0) || (mac_xface->frame < 50)) msg
 //#define debug_msg msg
 
+/*
 typedef enum {
   max_gain=0,med_gain,byp_gain
 } rx_gain_t;
-
+*/
 
 /// Top-level PHY Data Structure for UE 
 typedef struct
@@ -375,8 +336,9 @@ typedef struct
   uint8_t local_flag;
   uint32_t tx_total_gain_dB;
   uint32_t rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card
-  rx_gain_t rx_gain_mode[4];
   uint32_t rx_gain_max[4];
+  /*
+    rx_gain_t rx_gain_mode[4];*/
   uint32_t rx_gain_med[4];
   uint32_t rx_gain_byp[4];
   int8_t tx_power_dBm;

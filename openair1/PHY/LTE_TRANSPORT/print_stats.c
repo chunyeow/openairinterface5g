@@ -90,9 +90,6 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 		 phy_vars_ue->PHY_measurements.n0_power_tot_dBm,
 		 phy_vars_ue->PHY_measurements.n0_power_dB[0],
 		 phy_vars_ue->PHY_measurements.n0_power_dB[1]);
-#ifdef CBMIMO1
-    len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (rf_mode %d)\n",phy_vars_ue->rx_total_gain_dB, openair_daq_vars.rx_rf_mode);
-#else
 #ifdef EXMIMO
 #ifdef DRIVER2013
     len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB (LNA %d, vga %d dB)\n",phy_vars_ue->rx_total_gain_dB, (p_exmimo_config->rf.rf_mode[0]& LNAGAINMASK) >> 14,p_exmimo_config->rf.rx_gain[0][0]);
@@ -102,7 +99,7 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 #else
     len += sprintf(&buffer[len], "[UE PROC] RX Gain %d dB\n",phy_vars_ue->rx_total_gain_dB);
 #endif
-#endif
+
   len += sprintf(&buffer[len], "[UE_PROC] Frequency offset %d Hz (%d)\n",phy_vars_ue->lte_ue_common_vars.freq_offset,openair_daq_vars.freq_offset);
   len += sprintf(&buffer[len], "[UE PROC] UE mode = %s (%d)\n",mode_string[phy_vars_ue->UE_mode[0]],phy_vars_ue->UE_mode[0]);
   len += sprintf(&buffer[len], "[UE PROC] timing_advance = %d\n",phy_vars_ue->timing_advance);
@@ -246,13 +243,9 @@ int dump_ue_stats(PHY_VARS_UE *phy_vars_ue, char* buffer, int length, runmode_t 
 #ifdef EXMIMO
     phy_vars_ue->rx_total_gain_dB = ((int)(10*log10(phy_vars_ue->PHY_measurements.rssi)))-input_level_dBm;
     len += sprintf(&buffer[len], "[UE PROC] rf_mode %d, input level (set by user) %d dBm, VGA gain %d dB ==> total gain %3.2f dB, noise figure %3.2f dB\n",
-		   phy_vars_ue->rx_gain_mode[0],
+		   p_exmimo_config->rf.rf_mode[0],
 		   input_level_dBm, 
-#ifdef DRIVER2013
 		   p_exmimo_config->rf.rx_gain[0][0],
-#else
-		   exmimo_pci_interface->rf.rx_gain00,
-#endif
 		   10*log10(phy_vars_ue->PHY_measurements.rssi)-input_level_dBm,
 		   10*log10(phy_vars_ue->PHY_measurements.n0_power_tot)-phy_vars_ue->rx_total_gain_dB+105);
 #endif
