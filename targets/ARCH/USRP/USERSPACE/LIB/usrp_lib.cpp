@@ -16,7 +16,7 @@
 #include <complex>
 #include <fstream>
 #include <cmath>
-#include "usrp_lib.h"
+#include "common_lib.h"
 
 typedef struct
 {

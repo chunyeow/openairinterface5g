@@ -1,14 +1,21 @@
-/** usrp_lib.h
+/** common_lib.h
  *
  * Author: HongliangXU : hong-liang-xu@agilent.com
  */
-#ifndef USRP_LIB_H
-#define USRP_LIB_H
+#ifndef COMMON_LIB_H
+#define COMMON_LIB_H
+#include <stdint.h>
 
 typedef int64_t openair0_timestamp;
 typedef struct openair0_device_t openair0_device;
 /* structrue holds the parameters to configure USRP devices
  */
+
+typedef enum {
+  max_gain=0,med_gain,byp_gain
+} rx_gain_t;
+
+
 typedef struct {
   /* the sample rate for both transmit and receive. */
   double sample_rate;
@@ -17,13 +24,15 @@ typedef struct {
   /* number of TX channels (=TX antennas) */
   int tx_num_channels;
   /* center frequency in Hz for RX */
-  double rx_freq;
+  double rx_freq[4];
   /* center frequency in Hz for TX */
-  double tx_freq;
+  double tx_freq[4];
+  /* mode for rxgain (ExpressMIMO2)*/
+  rx_gain_t rxg_mode[4];
   /* gain for RX in dB */
-  double rx_gain;
+  double rx_gain[4];
   /* gain for TX in dB */
-  double tx_gain;
+  double tx_gain[4];
   /* RX bandwidth in Hz */
   double rx_bw;
   /* TX bandwidth in Hz */
@@ -65,6 +74,8 @@ extern "C"
 /* return 0 if OK, < 0 if error */
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
 }
+#else
+int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg);
 #endif
 
-#endif // USRP_LIB_H
+#endif // COMMON_LIB_H

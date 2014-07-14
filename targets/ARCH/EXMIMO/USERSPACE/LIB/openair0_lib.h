@@ -12,6 +12,7 @@
 
 #include "pcie_interface.h"
 #include "openair_device.h"
+#include "common_lib.h"
 
 // Use this to access shared memory (configuration structures, adc/dac data buffers, ...)
 // contains userspace pointers
@@ -53,5 +54,7 @@ int openair0_stop(int card);
 // return 0 on success
 int openair0_stop_without_reset(int card);
 
+// return the DAQ block counter
+unsigned int *openair0_daq_cnt();
 
 #endif

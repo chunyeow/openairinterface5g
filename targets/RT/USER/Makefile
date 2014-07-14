@@ -18,11 +18,12 @@ ifeq "$(GCCVERSION)" "4.6.1"
 endif
 
 CFLAGS += -O2 
-CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 ifdef DEBUG
 CFLAGS += -g -ggdb
 endif
 SRC = synctest.c condtest.c #lte-softmodem.c
+
 
 ifndef RTAI
 RTAI=1
@@ -55,23 +56,13 @@ endif
 ifeq ($(RTAI),1)
 CFLAGS += -DENABLE_RTAI_CLOCK
 CFLAGS += -DCONFIG_RTAI_LXRT_INLINE  #remend the RTAI warning
-RTAI_OBJ = sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o 
-ifeq ($(USRP),1)
-RTAI_OBJ += lte-softmodem-usrp.o
-endif
+RTAI_OBJ = sched_dlsch.o sched_rx_pdsch.o rt_wrapper.o 
 else #RTAI
 CFLAGS += -DENABLE_USE_CPU_EXECUTION_TIME
-OBJ += sched_dlsch.o sched_ulsch.o sched_rx_pdsch.o rt_wrapper.o
-ifeq ($(USRP),1)
-OBJ += lte-softmodem-usrp.o
-endif
+OBJ += sched_dlsch.o sched_rx_pdsch.o rt_wrapper.o
 endif
 
 OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o #$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o 
-
-ifeq ($(USRP),1)
-include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
-endif
 
 OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/gain_control.o
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
@@ -93,6 +84,14 @@ include $(OPENAIR2_DIR)/UTIL/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/NAS/Makefile.inc
 include $(OPENAIR2_DIR)/ENB_APP/Makefile.inc
 include $(OPENAIR3_DIR)/RAL-LTE/Makefile.inc
+
+ifeq ($(USRP),1)
+
+include $(OPENAIR_TARGETS)/ARCH/USRP/USERSPACE/LIB/Makefile.inc
+CFLAGS += -I/opt/uhd/include -L/opt/uhd/lib -luhd -lpthread -lstdc++
+CFLAGS += -DUSRP
+LDFLAGS += -L/opt/uhd/lib -luhd -lpthread -lstdc++ 
+endif
 
 OBJ +=  $(ENB_APP_OBJS)
 
@@ -118,6 +117,8 @@ CFLAGS += -DOPENAIR2 -DNO_RRM -DPUCCH -DMAC_CONTEXT=1
 endif
 
 RTAI_OBJ += $(UTILS_OBJS)
+
+
 
 ifdef ENABLE_ITTI
 CFLAGS += -DEXMIMO_IOT
@@ -205,8 +206,12 @@ $(LFDS_LIB):
 	@if [ ! -d $(LFDS_OBJ_DIR)/obj ]; then mkdir -p $(LFDS_OBJ_DIR)/obj; fi;
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux OUTDIR=$(LFDS_OBJ_DIR)
 
+$(USRP_OBJ):$(USRP_FILE_OBJ)
+	@echo Compiling $<
+	@$(CXX) -c  $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
+
 ifeq ($(RTAI),1)
-$(RTAI_OBJ) lte-enb.o lte-softmodem.o: %.o : %.c
+$(RTAI_OBJ) lte-softmodem.o: %.o : %.c
 else
 $(RTAI_OBJ): %.o : %.c
 endif
@@ -256,17 +261,9 @@ synctest: $(OBJ_SYNC) $(SHARED_DEPENDENCIES) synctest.c
 sleeptest: rt_wrapper.o sleeptest.c
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) rt_wrapper.o -o sleeptest sleeptest.c $(LDFLAGS) 
 
-lte-softmodem: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
+lte-softmodem: $(OBJ) $(USRP_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
-
-lte-enb: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-enb.o $(SHARED_DEPENDENCIES)
-	@echo Linking $@
-	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-enb.o -o lte-enb $(LDFLAGS) $(LIBS)
-
-lte-softmodem-usrp: $(OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) $(USRP_OBJ) $(SHARED_DEPENDENCIES)
-	@echo Linking $@
-	@$(CC) $(USRP_OBJ) $(CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) -o lte-softmodem-usrp $(LDFLAGS) $(LIBS)
 
 emos-raw: $(SHARED_DEPENDENCIES) $(OBJ_EMOS) emos-raw.c
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o emos-raw emos-raw.c $(LDFLAGS) $(LIBS)

@@ -16,7 +16,8 @@
 
 #include "openair0_lib.h"
 #include "openair_device.h"
-
+#include "common_lib.h"
+#define max(a,b) ((a)>(b) ? (a) : (b))
 exmimo_pci_interface_bot_virtual_t openair0_exmimo_pci[MAX_CARDS]; // contains userspace pointers for each card
 
 char *bigshm_top[MAX_CARDS] = INIT_ZEROS;
@@ -42,7 +43,8 @@ int openair0_open(void)
     
     int card;
     int ant;
-    
+    int openair0_num_antennas[4];
+
     PAGE_SHIFT = log2_int( sysconf( _SC_PAGESIZE ) );
     
     if ((openair0_fd = open("/dev/openair0", O_RDWR,0)) <0)
@@ -186,4 +188,94 @@ int openair0_stop(int card)
 int openair0_stop_without_reset(int card)
 {
     return ioctl(openair0_fd, openair_STOP_WITHOUT_RESET, card);
+}
+
+static exmimo_config_t         *p_exmimo_config;
+static exmimo_id_t             *p_exmimo_id;
+#define MY_RF_MODE      (RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX)
+#define RF_MODE_BASE    (TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM)
+
+int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cfg) {
+
+  // Initialize card
+  int ret;
+  int ant;
+
+  ret = openair0_open();
+  if ( ret != 0 ) {
+    if (ret == -1)
+      printf("Error opening /dev/openair0");
+    if (ret == -2)
+      printf("Error mapping bigshm");
+    if (ret == -3)
+      printf("Error mapping RX or TX buffer");
+    return(ret);
+  }
+
+  printf ("Detected %d number of cards, %d number of antennas.\n", openair0_num_detected_cards, openair0_num_antennas[0]);
+  
+  p_exmimo_config = openair0_exmimo_pci[0].exmimo_config_ptr;
+  p_exmimo_id     = openair0_exmimo_pci[0].exmimo_id_ptr;
+  
+  printf("Card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d\n", 0, p_exmimo_id->board_exmimoversion, p_exmimo_id->board_hwrev, p_exmimo_id->board_swrev);
+
+  // check if the software matches firmware
+  if (p_exmimo_id->board_swrev!=BOARD_SWREV_CNTL2) {
+    printf("Software revision %d and firmware revision %d do not match. Please update either the firmware or the software!\n",BOARD_SWREV_CNTL2,p_exmimo_id->board_swrev);
+    exit(-1);
+  }
+
+  if (p_exmimo_id->board_swrev>=9)
+    p_exmimo_config->framing.eNB_flag   = 0; 
+  else 
+    p_exmimo_config->framing.eNB_flag   = 1;//!UE_flag;
+
+  p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+#if (BOARD_SWREV_CNTL2>=0x0A)
+  for (ant=0; ant<4; ant++)
+    p_exmimo_config->framing.resampling_factor[ant] = 2;
+#else
+    p_exmimo_config->framing.resampling_factor = 2;
+#endif
+
+  for (ant=0;ant<max(openair0_cfg->tx_num_channels,openair0_cfg->rx_num_channels);ant++) 
+    p_exmimo_config->rf.rf_mode[ant] = RF_MODE_BASE;
+  for (ant=0;ant<openair0_cfg->tx_num_channels;ant++)
+    p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+  for (ant=0;ant<openair0_cfg->rx_num_channels;ant++) {
+    p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
+    switch (openair0_cfg->rxg_mode[ant]) {
+    default:
+    case max_gain:
+      p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
+      break;
+    case med_gain:
+      p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
+      break;
+    case byp_gain:
+      p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
+      break;
+    }
+  }
+  for (ant=max(openair0_cfg->tx_num_channels,openair0_cfg->rx_num_channels);ant<4;ant++) {
+    p_exmimo_config->rf.rf_mode[ant] = 0;
+  }
+  
+  for (ant = 0; ant<openair0_cfg->rx_num_channels; ant++) { 
+    p_exmimo_config->rf.do_autocal[ant] = 1;
+    p_exmimo_config->rf.rf_freq_rx[ant] = (unsigned int)openair0_cfg->rx_freq[ant];
+    p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg->rx_gain;
+  }
+  for (ant = 0; ant<openair0_cfg->tx_num_channels; ant++) { 
+    p_exmimo_config->rf.do_autocal[ant] = 1;
+    p_exmimo_config->rf.rf_freq_tx[ant] = (unsigned int)openair0_cfg->tx_freq[ant];
+    p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg->tx_gain;
+  }
+
+}
+
+unsigned int *openair0_daq_cnt() {
+
+  return((unsigned int *)openair0_exmimo_pci[0].rxcnt_ptr[0]);
+
 }
