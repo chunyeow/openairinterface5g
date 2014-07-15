@@ -216,7 +216,7 @@ static char                    *itti_dump_file = NULL;
 
 double tx_gain = 50;
 double rx_gain = 30;
-double bw = 14e6;
+
 
 #ifndef USRP
 static unsigned int             rxg_max[4] =    {133,133,133,133};
@@ -226,8 +226,10 @@ static int                      tx_max_power =  0;
 
 double sample_rate=30.72e6;
 #else
-double tx_gain = 50;
-double rx_gain = 30;
+static unsigned int             rxg_max[4] =    {133,133,133,133};
+static unsigned int             rxg_med[4] =    {127,127,127,127};
+static unsigned int             rxg_byp[4] =    {120,120,120,120};
+static int                      tx_max_power =  0;
 double bw = 14e6;
 char ref[128] = "internal";
 char channels[128] = "0";
