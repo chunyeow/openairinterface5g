@@ -231,8 +231,8 @@ static int                      tx_max_power =  0;
 #else
 double sample_rate=30.72e6;
 static unsigned int             rxg_max[4] =    {133,133,133,133};
-static unsigned int             rxg_med[4] =    {127,127,127,127};
-static unsigned int             rxg_byp[4] =    {120,120,120,120};
+//static unsigned int             rxg_med[4] =    {127,127,127,127};
+//static unsigned int             rxg_byp[4] =    {120,120,120,120};
 static int                      tx_max_power =  0;
 double bw = 14e6;
 char ref[128] = "internal";
@@ -276,9 +276,10 @@ static char                     do_forms=0;
 int                             otg_enabled;
 #endif
 //int                             number_of_cards =   1;
-
+#ifndef USRP
 static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,76,84,90,98,106,114,120,128,136,144, 0}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 //static int                      mbox_bounds[20] =   {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
+#endif
 
 static LTE_DL_FRAME_PARMS      *frame_parms;
 
@@ -1034,20 +1035,22 @@ static void *eNB_thread(void *arg)
   RT_TASK *task;
 #endif
   unsigned char slot=0;//,last_slot, next_slot;
-  int hw_slot,frame=0;
+  int frame=0;
   int diff;
-  int delay_cnt;
   RTIME time_in, time_diff;
-  int mbox_target=0,mbox_current=0;
-  int i;//
-  int ret;
-  //  int tx_offset;
+
   int sf;
 #ifndef USRP
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
+  int mbox_target=0,mbox_current=0;
+  int hw_slot,delay_cnt;
 #else
   int rx_cnt = 0;
   int tx_cnt = tx_delay;
+  int i;//
+  int ret;
+  //  int tx_offset;
+
   hw_subframe = 0;
 #endif
 #if defined(ENABLE_ITTI)
@@ -1510,8 +1513,8 @@ static void *UE_thread(void *arg) {
 
 static void get_options (int argc, char **argv) {
   int                           c;
-  char                          line[1000];
-  int                           l;
+  //  char                          line[1000];
+  //  int                           l;
   const Enb_properties_array_t *enb_properties;
   
   enum long_option_e {
@@ -1666,7 +1669,7 @@ int main(int argc, char **argv) {
   // RT_TASK *task;
 #else
   int *eNB_thread_status_p;
-  int *eNB_thread_status_rx[10],*eNB_thread_status_tx[10];
+  //  int *eNB_thread_status_rx[10],*eNB_thread_status_tx[10];
 #endif
   int i,j,aa;
 #if defined (XFORMS) || defined (EMOS) || (! defined (RTAI))
@@ -1684,11 +1687,11 @@ int main(int argc, char **argv) {
   unsigned int tcxo = 114;
 #endif
 
-  int amp;
+  //  int amp;
   // uint8_t prach_fmt;
   // int N_ZC;
 
-  int ret, ant;
+  //  int ret, ant;
   int ant_offset=0;
 
 #if defined (EMOS) || (! defined (RTAI))
@@ -2367,10 +2370,11 @@ void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms,
 
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
 
-  int i,j;
+  int i;
 #ifdef USRP
   uint16_t N_TA_offset = 0;
-
+#else
+  int j;
 #endif
 
   if (phy_vars_eNB) {
