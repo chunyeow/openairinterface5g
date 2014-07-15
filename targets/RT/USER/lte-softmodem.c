@@ -1040,8 +1040,9 @@ static void *eNB_thread(void *arg)
   int ret;
   //  int tx_offset;
   int sf;
+#ifndef USRP
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
-
+#endif
 #if defined(ENABLE_ITTI)
   /* Wait for eNB application initialization to be complete (eNB registration to MME) */
   wait_system_ready ("Waiting for eNB application to be ready %s\r", &start_eNB);
@@ -1071,6 +1072,8 @@ static void *eNB_thread(void *arg)
     timing_info.n_samples = 0;
 
     while (!oai_exit) {
+
+#ifndef USRP
       hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
       //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
       //this is the mbox counter where we should be
@@ -1131,7 +1134,27 @@ static void *eNB_thread(void *arg)
 	else
 	  diff = mbox_target - mbox_current;
       }
-      
+
+#else  // USRP
+      while (rx_cnt < sf_bounds[hw_subframe]) {
+	openair0.trx_read_func(&openair0, &timestamp, &rxdata[rx_cnt*samples_per_packets], samples_per_packets);
+
+	openair0.trx_write_func(&openair0, (timestamp+samples_per_packets*tx_delay-tx_forward_nsamps), &txdata[tx_cnt*samples_per_packets], samples_per_packets, 1);
+
+	rx_cnt++;
+	tx_cnt++;
+      }
+
+#ifndef RTAI
+      //pthread_mutex_lock(&tti_mutex);
+#endif
+      hw_subframe++;
+      slot+=2;
+      if(hw_subframe==10)
+        hw_subframe = 0;
+
+#endif // USRP
+     
       if (oai_exit) break;
 
       if (frame>5)  {
@@ -1206,8 +1229,14 @@ static void *eNB_thread(void *arg)
 	  }
 	}
       }
-      
+#ifndef USRP
       slot++;
+#else
+      if(rx_cnt == max_cnt) {
+	rx_cnt = 0;
+      } 
+#endif     
+
       if (slot==20) {
 	slot=0;
 	frame++;
@@ -2045,8 +2074,8 @@ int main(int argc, char **argv) {
 
   openair0_dump_config(card);
   /*  
-  for (ant=0;ant<4;ant++)
-    p_exmimo_config->rf.do_autocal[ant] = 0;
+      for (ant=0;ant<4;ant++)
+      p_exmimo_config->rf.do_autocal[ant] = 0;
   */
 
 #ifdef EMOS
