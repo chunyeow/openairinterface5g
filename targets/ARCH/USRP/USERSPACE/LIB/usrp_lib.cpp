@@ -162,10 +162,10 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   s->usrp->set_rx_rate(openair0_cfg->sample_rate);
   s->usrp->set_tx_rate(openair0_cfg->sample_rate);
 
-  s->usrp->set_tx_freq(openair0_cfg->tx_freq);
-  s->usrp->set_rx_freq(openair0_cfg->rx_freq);
-  s->usrp->set_tx_gain(openair0_cfg->tx_gain);
-  s->usrp->set_rx_gain(openair0_cfg->rx_gain);
+  s->usrp->set_tx_freq(openair0_cfg->tx_freq[0]);
+  s->usrp->set_rx_freq(openair0_cfg->rx_freq[0]);
+  s->usrp->set_tx_gain(openair0_cfg->tx_gain[0]);
+  s->usrp->set_rx_gain(openair0_cfg->rx_gain[0]);
   s->usrp->set_tx_bandwidth(openair0_cfg->tx_bw);
   s->usrp->set_rx_bandwidth(openair0_cfg->rx_bw);
 
