@@ -1036,7 +1036,7 @@ static void *eNB_thread(void *arg)
 #endif
   unsigned char slot=0;//,last_slot, next_slot;
   int frame=0;
-  int diff;
+
   RTIME time_in, time_diff;
 
   int sf;
@@ -1044,11 +1044,13 @@ static void *eNB_thread(void *arg)
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
   int mbox_target=0,mbox_current=0;
   int hw_slot,delay_cnt;
+  int diff;
+  int i;
+  int ret;
+
 #else
   int rx_cnt = 0;
   int tx_cnt = tx_delay;
-  int i;//
-  int ret;
   //  int tx_offset;
 
   hw_subframe = 0;
