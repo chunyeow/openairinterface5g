@@ -224,8 +224,9 @@ static unsigned int             rxg_med[4] =    {127,127,127,127};
 static unsigned int             rxg_byp[4] =    {120,120,120,120};
 static int                      tx_max_power =  0;
 
-double sample_rate=30.72e6;
+
 #else
+double sample_rate=30.72e6;
 static unsigned int             rxg_max[4] =    {133,133,133,133};
 static unsigned int             rxg_med[4] =    {127,127,127,127};
 static unsigned int             rxg_byp[4] =    {120,120,120,120};
