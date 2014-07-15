@@ -206,9 +206,11 @@ $(LFDS_LIB):
 	@if [ ! -d $(LFDS_OBJ_DIR)/obj ]; then mkdir -p $(LFDS_OBJ_DIR)/obj; fi;
 	$(MAKE) -C $(LFDS_DIR) -f makefile.linux OUTDIR=$(LFDS_OBJ_DIR)
 
+ifeq ($(USRP),1)
 $(USRP_OBJ):$(USRP_FILE_OBJ)
-	@echo Compiling $<
+#	@echo Compiling $<
 	@$(CXX) -c  $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
+endif
 
 ifeq ($(RTAI),1)
 $(RTAI_OBJ) lte-softmodem.o: %.o : %.c
@@ -231,7 +233,7 @@ endif
 ifeq ($(RTAI),1)
 $(OBJ) $(ASN1_MSG_OBJS1): %.o : %.c
 else
-$(OBJ) $(ASN1_MSG_OBJS1) lte-enb.o lte-softmodem.o: %.o : %.c
+$(OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o: %.o : %.c
 endif
 
 	@echo Compiling $< ...
@@ -247,10 +249,6 @@ OBJ_EMOS = $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o $(OPENAIR
 ifeq ($(XFORMS),1)
 OBJ_EMOS+=lte_scope.o
 endif
-
-$(USRP_OBJ):$(USRP_FILE_OBJ)
-	@echo Compiling openair_usrp.cpp
-	@$(CXX) -c $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
 
 condtest: condtest.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) condtest.c -o condtest
@@ -348,7 +346,7 @@ run_eNB2:
 	rtai-load eNB2 --verbose
 
 clean: common-clean
-	@$(RM_F_V) $(OBJ) $(RTAI_OBJ) $(OBJ_EMOS) $(OBJ_SYNC)
+	@$(RM_F_V) $(OBJ) $(RTAI_OBJ) $(OBJ_EMOS) $(OBJ_SYNC) $(USRP_OBJ)
 	@$(RM_F_V) $(OBJ:.o=.d) $(RTAI_OBJ:.o=.d) $(OBJ_EMOS:.o=.d) $(OBJ_SYNC:.o=.d)
 	@$(RM_F_V) $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.o $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/asn1_msg.d
 	@$(RM_F_V) lte-enb.o lte-enb.d lte-softmodem.o lte-softmodem.d
