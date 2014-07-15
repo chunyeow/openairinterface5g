@@ -3,7 +3,7 @@ clear all
 
 global symbols_per_slot slots_per_frame;
 
-enable_plots=2; %enables figures
+enable_plots=0; %enables figures
 
 %% preload and init data
 addpath('../../../openair1/PHY/LTE_REFSIG');
@@ -13,6 +13,7 @@ primary_synch; %loads the primary sync signal
 load('ofdm_pilots_sync_30MHz.mat');
 
 n_carriers = 2; % use 1 for UHF and 2 for 2.6GHz
+n_trials=2;%use 1 for trial1 and 2 for trial2
 symbols_per_slot = 6;
 slots_per_frame = 20;
 
@@ -22,7 +23,10 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4);
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run1.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run1.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
         
         nframes = 100; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
@@ -32,14 +36,15 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the first carrier, which is 10MHz
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_2.6GHz_run1.EMOS';
-        filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run2.EMOS';
+        %filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run1.EMOS';
         
         nframes = 50; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
 end
 
-destdir = 'E:\EMOS\corridor\trials1 train';
+destdir = '/home/byiringi/';
 
 % derived parameters
 samples_slot_agg = sum([p.nant_rx].*[p.samples_slot]);
@@ -47,7 +52,51 @@ num_symbols_frame = symbols_per_slot*slots_per_frame;
 
 d = dir(filename);
 nblocks = floor(d.bytes/(samples_slot_agg*slots_per_frame*nframes*4));
-PDP_total = zeros(nblocks*nframes,p(1).useful_carriers/4,p(1).nant_tx,p(1).nant_rx);
+
+%frequency offset
+if(n_carriers==1)
+    if(n_trials==1)
+        f_offset=840;
+    end
+    if(n_trials==2)
+        %f_offset=;
+    end
+end
+if(n_carriers==2)
+    if(n_trials==1)
+        %f_offset=;
+    end
+    if(n_trials==2)
+        %f_offset=;
+    end
+end
+
+
+doppler_freq_of_max_a=zeros(1,nblocks);
+doppler_freq_of_max_b=zeros(1,nblocks);
+if(n_carriers==1)
+    
+    fm_total=zeros(1,nblocks);%vector containing the mean Doppler Shift for each block
+    freqOffset_total=zeros(1,nblocks);%vector containing the mean frequency offset for each block
+    TGVspeed_total=zeros(1,nblocks);%vector containing the TGV speed for each block
+end
+
+PDP_totala = zeros(nblocks*nframes,p(1).useful_carriers/4,p(1).nant_tx,p(1).nant_rx);
+PDD_totala = zeros(nframes*num_symbols_frame/2,nblocks,p(1).nant_tx,p(1).nant_rx);
+
+
+if(n_carriers==2)
+    PDP_totalb = zeros(nblocks*nframes,p(2).useful_carriers/4,p(2).nant_tx,p(2).nant_rx);
+    PDD_totalb=zeros(nframes*num_symbols_frame/2,nblocks,p(2).nant_tx,p(2).nant_rx);
+    
+end
+
+
+syncblock=0;%variable containing the number of the synchronization block
+
+
+
+
 
 %% main loop
 fid = fopen(filename,'r');
@@ -55,17 +104,31 @@ fid = fopen(filename,'r');
 vStorage1 = [];
 vStorage2 = [];
 
+
+
 block = 1;
 flag1 = 1;
-start=2;
+start = 1; % Maybe 2; if it works with 1, then the variable is useless
+
 
 %fseek(fid,samples_slot_agg*slots_per_frame*nframes*120*2,'bof'); %advance 30 sec
+NFRAMES = 100;
+if(n_carriers==2)
+    NFRAMES=50;
+end
+nframes = NFRAMES;
 
 while ~feof(fid)
+    
+    
+    
     fprintf(1,'Processing block %d of %d',block,nblocks);
     
+    
+    
     [v,c]=fread(fid, 2*samples_slot_agg*slots_per_frame*nframes, 'int16',0,'ieee-le');
-    if (c==0)
+    
+    if (c<2*samples_slot_agg*slots_per_frame*nframes)
         break
     end
     v0 = double(v(1:2:end))+1j*double(v(2:2:end));
@@ -74,6 +137,7 @@ while ~feof(fid)
     if n_carriers==2
         v2 = zeros(p(2).samples_slot*slots_per_frame*nframes,p(2).nant_rx);
     end
+    
     for slot=1:slots_per_frame*nframes
         for a=1:p(1).nant_rx
             v1((slot-1)*p(1).samples_slot+1:slot*p(1).samples_slot,a) = ...
@@ -90,7 +154,10 @@ while ~feof(fid)
         end
     end
     
+    
     v1 = [vStorage1; v1] ;
+    
+    
     if size(v1,1) > p(1).frame_length*nframes ;
         nframes = floor(size(v1,1) / p(1).frame_length) ;
         vStorage1 = v1(p(1).frame_length*nframes+1:end,:) ;
@@ -109,11 +176,23 @@ while ~feof(fid)
     end
     
     if enable_plots>=2
-        figure(1)
-        plot(20*log10(abs(fftshift(fft(v1)))))
+        if(n_carriers==1)
+            figure(1)
+            title('');
+            plot(20*log10(abs(fftshift(fft(v1)))))
+        end
+        if(n_carriers==2)
+            figure(1)
+            subplot(1,2,1);
+            plot(20*log10(abs(fftshift(fft(v1)))))
+            subplot(1,2,2);
+            plot(20*log10(abs(fftshift(fft(v2)))))
+        end
     end
     
     %% frame start detection
+    
+    
     if flag1==1
         [corr,lag] = xcorr(v1(:,1),pss_t);
         %[m,idx]=max(abs(corr));
@@ -123,11 +202,8 @@ while ~feof(fid)
         tmp2  = reshape(tmp,slots_per_frame*p(1).samples_slot,nframes);
         [m,idx] = max(abs(tmp2),[],1);
         
-        %         meanCorr = mean(abs(tmp2));
-        %         [mm,where] = max(m./meanCorr)
-        
         idx(m < threshold) = [];
-        if size(idx,2) <= 2
+        if size(idx,2) <= 3
             flag1 = 1 ;
             flag2 = 0 ;
             
@@ -139,13 +215,15 @@ while ~feof(fid)
         else
             flag1 = 0 ;
             flag2 = 1 ;
+            syncblock=block;
         end
         
         frame_offset = round(median(idx)) - p(1).prefix_length;
         
         
         if enable_plots>=2
-            figure(2);
+            
+            figure(2)
             hold off
             plot(lag,abs(corr));
             hold on
@@ -156,8 +234,32 @@ while ~feof(fid)
     end
     
     %%
+    
     if flag2 == 1
+        
+        H1a=[];
+        if(n_carriers==2)
+            H1b=[];
+        end
+        fma=0;%maximum of the doppler spectrum
+        sa=0;
+        if(n_carriers==2)
+            fmb=0;%maximum of the doppler spectrum
+            sb=0;
+        end
+        max2=0;
+        if(n_carriers==1)
+            fm1=0;%First maximum of the doppler spectrum
+            s1=0;
+            fm2=0;%Second maximum of the doppler spectrum
+            s2=0;
+            max1=0;%variable containing a maximum
+        end
+        
+        disp(nframes);
+        disp(start);
         for i=start:nframes;
+            
             fprintf(1,'.');
             frame_start1 = (slots_per_frame*p(1).samples_slot)*(i-1)+frame_offset+1;
             if n_carriers==2
@@ -172,12 +274,13 @@ while ~feof(fid)
                 end
             else
                 vStorage1 = [v1(frame_start1:end,:) ; vStorage1];  %%
+                
                 if n_carriers==2
                     vStorage2 = [v2(frame_start2:end,:) ; vStorage2];  %%
                 end
-                break
+                %break
             end
-            
+            %disp(i);
             %% MIMO channel estimation
             if (n_carriers==1)
                 transmit_f1 = f3;
@@ -206,32 +309,80 @@ while ~feof(fid)
                         H(:,:,itx,irx)=conj(squeeze(transmit_f(itx,t_start:2:end,f_start:4:end))).*received_f(t_start:2:end,f_start:4:end,irx);
                     end
                 end
-                Ht = ifft(H,[],2);
+                Ht = ifft(H,[],2); %impulse response
                 PDP = mean(abs(Ht).^2,1);
                 PDP_all = squeeze(mean(mean(PDP,3),4));
-                %PDP_total((block-1)*nframes+i+1,:,:,:) = PDP;
+                PDD=sum(abs(fftshift(fft(Ht,[],1))).^2,2);
+                if(carrier==1)
+                    PDP_totala((block-1)*NFRAMES+i,:,:,:) = PDP;
+                    Ha=H;
+                end
+                
+                if(carrier==2)
+                    PDP_totalb((block-1)*NFRAMES+i,:,:,:) = PDP;
+                    Hb=H;
+                end
+%                 
+%                 Hprime=H*exp(2*i*pi*167E-6*f_offset);
+%                 Htprime = ifft(Hprime,[],2); %impulse response
+%                 PDPprime = mean(abs(Htprime).^2,1);
+%                 
+%                 PDDprime=sum(abs(fftshift(fft(Htprime,[],1))).^2,2);
+%                 if(carrier==1)
+%                     PDP_totala((block-1)*NFRAMES+i,:,:,:) = PDP;
+%                     Ha=H;
+%                 end
+%                 
+%                 if(carrier==2)
+%                     PDP_totalb((block-1)*NFRAMES+i,:,:,:) = PDP;
+%                     Hb=H;
+%                 end
                 
                 if enable_plots>=1
-                    figure(3+2*(carrier-1))
-                    for itx=1:p(carrier).nant_tx
-                        for irx=1:p(1).nant_rx
-                            subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
-                            surf(20*log10(abs(Ht(:,:,itx,irx))))
-                            %xlabel('time [OFDM symbol]')
-                            %ylabel('delay time [samples]')
-                            %zlabel('power [dB]')
-                            shading interp
-                        end
-                    end
-                    figure(4+2*(carrier-1))
+                                        figure(3+3*(carrier-1))
+                                        for itx=1:p(carrier).nant_tx
+                                            for irx=1:p(1).nant_rx
+                                                subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+                                                surf(20*log10(abs(Ht(:,:,itx,irx))))
+                                                ylabel('time [OFDM symbol]')
+                                                xlabel('delay time [samples]')
+                                                zlabel('power [dB]')
+                                                shading interp
+                                            end
+                                        end
+                                        figure(4+3*(carrier-1))
+                                        for itx=1:p(1).nant_tx
+                                            for irx=1:p(1).nant_rx
+                                                subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+                                                plot(10*log10(PDP(:,:,itx,irx)))
+                                                ylim([50 80])
+                                                xlim([0 75])
+                                                %xlabel('delay time [samples]')
+                                                ylabel('power [dB]')
+                                            end
+                                        end
+                    figure(5+3*(carrier-1))
                     for itx=1:p(1).nant_tx
                         for irx=1:p(1).nant_rx
+                            if(n_carriers==1)
+                                F=-(num_symbols_frame/2-1)*7.68E6/(2*num_symbols_frame/2)/1280:7.68E6/(num_symbols_frame/2)/1280:(num_symbols_frame/2)*7.68E6/(2*num_symbols_frame/2)/1280;
+                            end
+                            
+                            if(n_carriers==2)
+                                if(carrier==1)
+                                    F=-(num_symbols_frame/2-1)*30.72E6/(2*num_symbols_frame/2)/5120:30.72E6/(num_symbols_frame/2)/5120:(num_symbols_frame/2)*30.72E6/(2*num_symbols_frame/2)/5120;
+                                end
+                                if(carrier==2)
+                                    F=-(num_symbols_frame/2-1)*15.36E6/(2*num_symbols_frame/2)/2560:15.36E6/(num_symbols_frame/2)/2560:(num_symbols_frame/2)*15.36E6/(2*num_symbols_frame/2)/2560;
+                                end
+                                
+                            end
                             subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
-                            plot(10*log10(PDP(:,:,itx,irx)))
-                            ylim([50 80])
-                            xlim([0 75])
-                            %xlabel('delay time [samples]')
-                            %ylabel('power [dB]')
+                            plot(F,10*log10(PDD(:,:,itx,irx)))
+                            %ylim([])
+                            %xlim([])
+                            %xlabel('')
+                            %ylabel('')
                         end
                     end
                     drawnow
@@ -242,7 +393,7 @@ while ~feof(fid)
                     % timing drift. We try to keep the peak of the impulse response at
                     % sample prefix_length/8.
                     [m,idx] = max(fft(ifft(PDP_all),p(carrier).num_carriers));
-                    offset = idx - p(carrier).prefix_length/8
+                    offset = idx - p(carrier).prefix_length/8;
                     if offset > p(carrier).prefix_length
                         offset = offset - p(carrier).num_carriers;
                     end
@@ -250,16 +401,359 @@ while ~feof(fid)
                         frame_offset = frame_offset + round(offset/4);
                     end
                 end
+                
             end
+            H1a=cat(1,H1a,Ha);
+            
+            if(n_carriers==2)
+                H1b=cat(1,H1b,Hb);
+            end
+        end
+        
+        %
+        
+        Ht1a=ifft(H1a,[],2);
+        
+        PDD1a=sum(abs(fftshift(fft(Ht1a,[],1))).^2,2);
+        
+        if(n_carriers==2)
+            Ht1b=ifft(H1b,[],2);
+            PDD1b=sum(abs(fftshift(fft(Ht1b,[],1))).^2,2);
+        end
+        
+        if(enable_plots>=2)
+            figure(9)
+            for itx=1:p(1).nant_tx
+                for irx=1:p(1).nant_rx
+                    F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
+                    if(n_carriers==2)
+                        F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
+                    end
+                    
+                    subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+                    plot(F,10*log10(PDD1a(:,:,itx,irx)))
+                    
+                    %ylim([])
+                    %xlim([])
+                    %xlabel('')
+                    %ylabel('')
+                end
+            end
+            
+            if(n_carriers==2)
+                figure(10)
+                for itx=1:p(1).nant_tx
+                    for irx=1:p(1).nant_rx
+                        F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
+                        
+                        subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+                        plot(F,10*log10(PDD1b(:,:,itx,irx)))
+                        
+                        %ylim([])
+                        %xlim([])
+                        %xlabel('')
+                        %ylabel('')
+                    end
+                end
+            end
+        end
+        
+        
+        
+        PDD_totala(:,block,:,:)=PDD1a;
+        if(n_carriers==2)
+            PDD_totalb(:,block,:,:)=PDD1b;
+        end
+        
+        
+        
+        
+        %%
+        
+        for itx=1:p(1).nant_tx
+            for irx=1:p(1).nant_rx
+                for i=1:NFRAMES*num_symbols_frame/2
+                    if(10*log10(PDD1a(i,:,itx,irx))>max2)
+                        max2=10*log10(PDD1a(i,:,itx,irx));
+                        fma=i;
+                    end
+                end
+                sa=sa+fma;
+            end
+        end
+        sa=sa/(p(1).nant_tx*p(1).nant_rx)-2999.5;
+        doppler_freq_of_max_a(block)=sa;
+        max2=0;
+        if(n_carriers==2)
+            for itx=1:p(2).nant_tx
+                for irx=1:p(2).nant_rx
+                    for i=1:NFRAMES*num_symbols_frame/2
+                        if(10*log10(PDD1a(i,:,itx,irx))>max2)
+                            max2=10*log10(PDD1a(i,:,itx,irx));
+                            fmb=i;
+                        end
+                    end
+                    sb=sb+fmb;
+                end
+            end
+            sb=sb/(p(2).nant_tx*p(2).nant_rx)-2999.5;
+            doppler_freq_of_max_b(block)=sb;
+            
+        end
+        
+        
+        %% Doppler shift for trial1 UHF run1
+        if(n_carriers==1)
+            if(n_trials==1)
+                for itx=1:p(1).nant_tx
+                    for irx=1:p(1).nant_rx
+                        for i=1940:1960
+                            if(10*log10(PDD1a(i,:,itx,irx))>max1)
+                                max1=10*log10(PDD1a(i,:,itx,irx));
+                                fm1=i;
+                            end
+                        end
+                        s1=s1+fm1;
+                    end
+                end
+                s1=s1/(p(1).nant_tx*p(1).nant_rx);
+                
+                for itx=1:p(1).nant_tx
+                    for irx=1:p(1).nant_rx
+                        for i=2340:2370
+                            if(10*log10(PDD1a(i,:,itx,irx))>max1)
+                                max1=10*log10(PDD1a(i,:,itx,irx));
+                                fm2=i;
+                            end
+                        end
+                        s2=s2+fm2;
+                    end
+                end
+                s2=s2/(p(1).nant_tx*p(1).nant_rx);
+                
+                fm=(s2-s1)/2;
+                if(abs(300-fm*3/7.7715*3.6)<50)
+                    fm_total(block)=fm;
+                    TGVspeed_total(block)=fm*3/7.7715*3.6;
+                    freqOffset_total(block)=abs((s1+fm)-3000.5);
+                end
+                %            disp(fm);
+                %            disp(fm*3/7.7715*3.6);
+                
+            end
+        end
+        
+        
+        
+        
+        
+        
+        
+    end
+    
+    
+    
+    fprintf(1,'\n');
+    
+    block = block+1;
+    
+    if (size(vStorage1,1)>=p(1).frame_length)
+        
+        nframes=NFRAMES-floor((size(vStorage1,1))/(p(1).frame_length));
+        
+    else
+        nframes=NFRAMES;
+    end
+    
+end
+
+%%
+
+%if(enable_plots>=2)
+figure(11)
+for itx=1:p(1).nant_tx
+    for irx=1:p(1).nant_rx
+        T=1:1:block-1;
+        F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
+        if(n_carriers==2)
+            F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
+        end
+        subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+        pcolor(T,F,10*log10( PDD_totala(:,:,itx,irx)));
+        shading flat
+        bara=colorbar;
+        %ylim([])
+        %xlim([])
+        %xlabel('')
+        %ylabel('')
+    end
+end
+
+if(n_carriers==2)
+    figure(12)
+    for itx=1:p(2).nant_tx
+        for irx=1:p(2).nant_rx
+            T=1:1:block-1;
+            F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
+            subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+            pcolor(T,F,10*log10( PDD_totalb(:,:,itx,irx)));
+            shading flat
+            barb=colorbar;
+            %ylim([])
+            %xlim([])
+            %xlabel('')
+            %ylabel('')
+        end
+    end
+end
+%end
+
+%% Mean Delay
+
+Pma=zeros((block-1)*NFRAMES,1,p(1).nant_tx,p(1).nant_rx);% zeroth-order moment
+Pma1=zeros((block-1)*NFRAMES,1,p(1).nant_tx,p(1).nant_rx);
+atau=linspace(0,p(1).useful_carriers/4/4.5E6,p(1).useful_carriers/4);
+if(n_carriers==2)
+    atau=linspace(0,p(1).useful_carriers/4/9E6,p(1).useful_carriers/4);
+end
+for i=1:p(1).useful_carriers/4
+    Pma(:,1,:,:)=Pma(:,1,:,:)+PDP_totala(:,i,:,:);
+    Pma1(:,1,:,:)=Pma1(:,1,:,:)+atau(i)*PDP_totala(:,i,:,:);
+end
+
+mean_delay_a=Pma1./Pma;% mean delay: first-order moment
+
+
+if(n_carriers==2)
+    Pmb=zeros((block-1)*NFRAMES,1,p(2).nant_tx,p(2).nant_rx);
+    Pmb1=zeros((block-1)*NFRAMES,1,p(2).nant_tx,p(2).nant_rx);
+    btau=linspace(0,p(2).useful_carriers/4/18E6,p(2).useful_carriers/4);
+    for i=1:p(2).useful_carriers/4
+        Pmb(:,1,:,:)=Pmb(:,1,:,:)+PDP_totalb(:,i,:,:);
+        Pmb1(:,1,:,:)=Pmb1(:,1,:,:)+btau(i)*PDP_totalb(:,i,:,:);
+    end
+    mean_delay_b=Pmb1./Pmb;
+end
+
+figure(13)
+for itx=1:p(1).nant_tx
+    for irx=1:p(1).nant_rx
+        
+        subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+        plot(mean_delay_a(:,:,itx,irx));
+        
+    end
+end
+
+if (n_carriers==2)
+    figure(14)
+    for itx=1:p(2).nant_tx
+        for irx=1:p(2).nant_rx
+            
+            subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+            plot(mean_delay_b(:,:,itx,irx));
             
         end
     end
-    fprintf(1,'\n');
-    block = block+1;
 end
+
+%% Mean Doppler Shift
+
+PDma=zeros(block-1,1,p(1).nant_tx,p(1).nant_rx);
+PDma1=zeros(block-1,1,p(1).nant_tx,p(1).nant_rx);
+theta=linspace(-NFRAMES*num_symbols_frame/2/2,NFRAMES*num_symbols_frame/2/2,NFRAMES*num_symbols_frame/2);
+
+for j=1:block-1
+    
+    for i=1:NFRAMES*num_symbols_frame/2
+        PDma(j,1,:,:)=PDma(j,1,:,:)+PDD_totala(i,j,:,:);
+        PDma1(j,1,:,:)=PDma1(j,1,:,:)+theta(i)*PDD_totala(i,j,:,:);
+    end
+end
+
+mean_doppler_shift_a=PDma1./PDma; % mean doppler shift
+
+
+if(n_carriers==2)
+    PDmb=zeros(block-1,1,p(2).nant_tx,p(2).nant_rx);
+    PDmb1=zeros(block-1,1,p(2).nant_tx,p(2).nant_rx);
+    for j=1:block-1
+        for i=1:NFRAMES*num_symbols_frame/2
+            PDmb(j,1,:,:)=PDmb(j,1,:,:)+PDD_totalb(i,j,:,:);
+            PDmb1(j,1,:,:)=PDmb1(j,1,:,:)+theta(i)*PDD_totalb(i,j,:,:);
+        end
+    end
+    mean_doppler_shift_b=PDmb1./PDmb;
+end
+
+figure(15)
+for itx=1:p(1).nant_tx
+    for irx=1:p(1).nant_rx
+        
+        subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+        plot(mean_doppler_shift_a(:,:,itx,irx));
+        
+    end
+end
+
+if (n_carriers==2)
+    figure(16)
+    for itx=1:p(2).nant_tx
+        for irx=1:p(2).nant_rx
+            
+            subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+            plot(mean_doppler_shift_b(:,:,itx,irx));
+            
+        end
+    end
+end
+%%
+figure(17)
+title('');
+plot(doppler_freq_of_max_a);
+xlabel('Time in sec');
+ylabel('Doppler frequency (Hz)');
+
+if(n_carriers==2)
+    figure(18)
+    title('');
+    plot(doppler_freq_of_max_b);
+    xlabel('Time in sec');
+    ylabel('Doppler frequency (Hz)');
+end
+
+%%
+
+if(n_carriers==1)
+    if(n_trials==1)
+        subplot(2,2,1);
+        title('variation of the mean maximum Doppler shift');
+        plot(fm_total);
+        xlabel('Time in sec');
+        ylabel('maximum Doppler shift (Hz)');
+        
+        subplot(2,2,2);
+        title('variation of the TGV speed');
+        plot(TGVspeed_total);
+        xlabel('Time (sec)');
+        ylabel('TGV speed (km/h)');
+        
+        subplot(2,2,3);
+        title('variation of the mean frequency offset');
+        plot(freqOffset_total);
+        xlabel('Time (sec)');
+        ylabel('frequency Offset (Hz)');
+    end
+end
+
 
 fclose(fid);
 
 %% save processed data
 [path,name,ext]=fileparts(filename);
-save([destdir filesep name '.mat'],'PDP_total');
+if(n_carriers==1)
+    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a');
+end
+if(n_carriers==2)
+    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b');
+end
