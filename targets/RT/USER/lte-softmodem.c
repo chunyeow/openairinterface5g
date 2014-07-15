@@ -2418,16 +2418,16 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
 #else // USRP
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
         free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-        rxdata = (s32*)malloc16(samples_per_frame*sizeof(s32));
+        rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
         phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
-        memset(rxdata, 0, samples_per_frame*sizeof(s32));
+        memset(rxdata, 0, samples_per_frame*sizeof(int32_t));
         printf("rxdata[%d] @ %p\n", i, phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
     }
     for (i=0;i<frame_parms->nb_antennas_tx;i++) {
         free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-        txdata = (s32*)malloc16(samples_per_frame*sizeof(s32));
+        txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
         phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = txdata;
-        memset(txdata, 0, samples_per_frame*sizeof(s32));
+        memset(txdata, 0, samples_per_frame*sizeof(int32_t));
         printf("txdata[%d] @ %p\n", i, phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
     }
 #endif
