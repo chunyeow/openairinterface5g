@@ -1024,7 +1024,7 @@ void kill_eNB_proc() {
 /* This is the main eNB thread. */
 int eNB_thread_status;
 
-#ifndef USRP
+
 static void *eNB_thread(void *arg)
 {
 #ifdef RTAI
@@ -1244,7 +1244,7 @@ static void *eNB_thread(void *arg)
 
 
 
-
+#ifndef USRP
 /* This is the main UE thread. Initially it is doing a periodic get_frame. One synchronized it gets woken up by the kernel driver using the RTAI message mechanism (rt_send and rt_receive). */
 static void *UE_thread(void *arg) {
 #ifdef RTAI
