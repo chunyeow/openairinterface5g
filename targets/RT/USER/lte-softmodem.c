@@ -160,12 +160,19 @@ static SEM                     *mutex;
 
 static int                      thread0;
 static int                      thread1;
+#ifdef USRP
+static SEM *sync_sem; // to sync rx & tx streaming
+#endif
 //static int sync_thread;
 #else
 pthread_t                       thread0;
 pthread_t                       thread1;
 pthread_attr_t                  attr_dlsch_threads;
 struct sched_param              sched_param_dlsch;
+#ifdef USRP
+pthread_cond_t sync_cond;
+pthread_mutex_t sync_mutex;
+#endif
 #endif
 
 pthread_attr_t                  attr_eNB_proc_tx[10];
@@ -713,15 +720,14 @@ static void * eNB_thread_tx(void *param) {
 
   //unsigned long cpuid;
   eNB_proc_t *proc = (eNB_proc_t*)param;
-  int i;
   int subframe_tx;
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
   char task_name[8];
 #endif
-  int dummy_tx_b[7680*4] __attribute__((aligned(16)));
-  unsigned int aa,slot_offset,slot_offset_F,slot_offset_F2;
+
+ 
 
 #if defined(ENABLE_ITTI)
   /* Wait for eNB application initialization to be complete (eNB registration to MME) */
@@ -1541,7 +1547,7 @@ static void get_options (int argc, char **argv) {
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
   
-  while ((c = getopt_long (argc, argv, "C:dK:qO:SUVRMr:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:qO:SUVRMr:s:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -1637,6 +1643,23 @@ static void get_options (int argc, char **argv) {
 	printf("Unknown N_RB_DL %d, switching to 25\n",atoi(optarg));
 	break;
       }
+    case 's':
+      {
+#ifdef USRP
+        int clock_src = atoi(optarg);
+        if (clock_src == 0) {
+          char ref[128] = "internal";
+          //strncpy(uhd_ref, ref, strlen(ref)+1);
+        }
+        else if (clock_src == 1) {
+          char ref[128] = "external";
+          //strncpy(uhd_ref, ref, strlen(ref)+1);
+        }
+      }
+#else
+      printf("Note: -s not defined for ExpressMIMO2\n");
+#endif
+      break;
     default:
       break;
     }
@@ -2126,6 +2149,16 @@ int main(int argc, char **argv) {
     }
   else
     printf("mutex=%p\n",mutex);
+#ifdef USRP
+  sync_sem = rt_typed_sem_init(nam2num("syncsem"), 0, BIN_SEM|FIFO_Q);
+  if(sync_sem == 0)
+    printf("error init sync semphore\n");
+#endif
+#else
+#ifdef USRP
+  pthread_cond_init(&sync_cond,NULL);
+  pthread_mutex_init(&sync_mutex, NULL);
+#endif
 #endif
 
 
@@ -2239,7 +2272,17 @@ int main(int argc, char **argv) {
 #endif
   }
 
+#ifdef USRP
+  openair0.trx_start_func(&openair0);
 
+#ifdef RTAI
+  rt_sem_signal(sync_sem);
+#else
+  //pthread_mutex_lock(&sync_mutex);
+  pthread_cond_signal(&sync_cond);
+  //pthread_mutex_unlock(&sync_mutex);
+#endif
+#endif
   // wait for end of program
   printf("TYPE <CTRL-C> TO TERMINATE\n");
   //getchar();
@@ -2312,7 +2355,13 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef RTAI
+#ifdef USRP
+  rt_sem_delete(sync_sem);
+#endif
   stop_rt_timer();
+#else
+  pthread_cond_destroy(&sync_cond);
+  pthread_mutex_destroy(&sync_mutex);
 #endif
 
   printf("stopping card\n");
