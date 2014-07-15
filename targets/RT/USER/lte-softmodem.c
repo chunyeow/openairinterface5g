@@ -137,7 +137,8 @@ int32_t init_rx_pdsch_thread(void);
 void cleanup_rx_pdsch_thread(void);
 
 
-
+s32 *rxdata;
+s32 *txdata;
 void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 
@@ -1042,6 +1043,10 @@ static void *eNB_thread(void *arg)
   int sf;
 #ifndef USRP
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
+#else
+  int rx_cnt = 0;
+  int tx_cnt = tx_delay;
+  hw_subframe = 0;
 #endif
 #if defined(ENABLE_ITTI)
   /* Wait for eNB application initialization to be complete (eNB registration to MME) */
@@ -2361,6 +2366,10 @@ void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms,
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
 
   int i,j;
+#ifdef USRP
+  uint16_t N_TA_offset = 0;
+
+#endif
 
   if (phy_vars_eNB) {
     if ((frame_parms->nb_antennas_rx>1) && (carrier>0)) {
@@ -2372,8 +2381,18 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
       printf("TX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
+
+    if (frame_parms->frame_type == TDD) {
+      if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 100)
+	N_TA_offset = 624;
+      else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 50)
+	N_TA_offset = 624/2;
+      else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 25)
+	N_TA_offset = 624/4;
+    }
     
     // replace RX signal buffers with mmaped HW versions
+#ifndef USRP
     for (i=0;i<frame_parms->nb_antennas_rx;i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
       phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (int32_t*) openair0_exmimo_pci[card].adc_head[i+carrier];
@@ -2394,5 +2413,21 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
 	phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
       }
     }
+#else // USRP
+    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+        free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
+        rxdata = (s32*)malloc16(samples_per_frame*sizeof(s32));
+        phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
+        memset(rxdata, 0, samples_per_frame*sizeof(s32));
+        printf("rxdata[%d] @ %p\n", i, phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
+    }
+    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+        free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
+        txdata = (s32*)malloc16(samples_per_frame*sizeof(s32));
+        phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = txdata;
+        memset(txdata, 0, samples_per_frame*sizeof(s32));
+        printf("txdata[%d] @ %p\n", i, phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
+    }
+#endif
   }
 }
