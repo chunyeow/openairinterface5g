@@ -55,6 +55,8 @@
 #include "rt_wrapper.h"
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
+static int hw_subframe;
+
 #include "assertions.h"
 
 #ifdef EMOS
@@ -137,8 +139,8 @@ int32_t init_rx_pdsch_thread(void);
 void cleanup_rx_pdsch_thread(void);
 
 
-s32 *rxdata;
-s32 *txdata;
+int32_t *rxdata;
+int32_t *txdata;
 void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
 
