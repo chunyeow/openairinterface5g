@@ -5,8 +5,12 @@ OUTDIR = .
 
 libsecu_OBJECTS = \
 	kdf.o				\
-	key_nas_deriver.o	\
-	nas_stream_eea2.o	\
+    rijndael.o   \
+    snow3g.o   \
+    key_nas_deriver.o   \
+    nas_stream_eea1.o   \
+    nas_stream_eia1.o   \
+    nas_stream_eea2.o   \
 	nas_stream_eia2.o
 
 # pull in dependency info for *existing* .o files
