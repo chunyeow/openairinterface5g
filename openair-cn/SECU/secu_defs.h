@@ -15,7 +15,6 @@
 #define SECU_DIRECTION_UPLINK   0
 #define SECU_DIRECTION_DOWNLINK 1
 
-inline
 void kdf(const uint8_t *s, const uint32_t s_length, const uint8_t *key,
          const uint32_t key_length, uint8_t **out, uint32_t out_length);
 
@@ -55,6 +54,10 @@ typedef struct {
     /* length in bits */
     uint32_t  blength;
 } nas_stream_cipher_t;
+
+int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t **out);
+
+int nas_stream_encrypt_eia1(nas_stream_cipher_t *stream_cipher, uint8_t out[4]);
 
 int nas_stream_encrypt_eea2(nas_stream_cipher_t *stream_cipher, uint8_t **out);
 

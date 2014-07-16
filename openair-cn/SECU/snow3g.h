@@ -81,6 +81,6 @@ void snow3g_initialize(uint32_t k[4], uint32_t IV[4], snow_3g_context_t *snow_3g
 * output: generated keystream which is filled in z
 */
 
-void snow3g_generate_keystream(uint32_t n, uint32_t *z, snow_3g_context_t *snow_3g_context_pP);
+void snow3g_generate_key_stream(uint32_t n, uint32_t *z, snow_3g_context_t *snow_3g_context_pP);
 
 #endif
