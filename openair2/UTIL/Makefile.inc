@@ -38,6 +38,8 @@ ifdef SECU
 OSA_OBJS  = $(OSA_DIR)/osa_key_deriver.o
 OSA_OBJS += $(OSA_DIR)/osa_stream_eia.o
 OSA_OBJS += $(OSA_DIR)/osa_stream_eea.o
+OSA_OBJS += $(OSA_DIR)/osa_snow3g.o
+OSA_OBJS += $(OSA_DIR)/osa_rijndael.o
 endif
 
 OPT_OBJS =  $(OPT_DIR)/probe.o
