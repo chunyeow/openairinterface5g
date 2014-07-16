@@ -6,7 +6,6 @@
 #include "security_types.h"
 #include "secu_defs.h"
 
-inline
 void kdf(const uint8_t *s, const uint32_t s_length, const uint8_t *key,
          const uint32_t key_length, uint8_t **out, uint32_t out_length)
 {
@@ -22,20 +21,20 @@ void kdf(const uint8_t *s, const uint32_t s_length, const uint8_t *key,
 
     *out = buffer;
 }
-
+#ifndef NAS_UE
 int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t **keNB)
 {
     uint8_t string[7];
 
-    /* FC */
+    // FC
     string[0] = FC_KENB;
-    /* P0 = Uplink NAS count */
+    // P0 = Uplink NAS count
     string[1] = (nas_count & 0xff000000) >> 24;
     string[2] = (nas_count & 0x00ff0000) >> 16;
     string[3] = (nas_count & 0x0000ff00) >> 8;
     string[4] = (nas_count & 0x000000ff);
 
-    /* Length of NAS count */
+    // Length of NAS count
     string[5] = 0x00;
     string[6] = 0x04;
 
@@ -43,3 +42,5 @@ int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t **keN
 
     return 0;
 }
+#endif
+
