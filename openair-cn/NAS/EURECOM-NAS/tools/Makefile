@@ -28,13 +28,13 @@ all: $(TARGETS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(USIM_TARGET): $(USIM_OBJ) $(LIBSUTIL)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto -lm
 	@echo Replacing $@ to $(BINDIR)
 	@$(RM) $(BINDIR)/$@
 	@$(CP) $@ $(BINDIR)
 
 $(UE_TARGET): $(UE_OBJ) $(LIBSUTIL)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto
+	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS) $(SECUDIR)/*.o -lnettle -lcrypto -lm
 	@echo Replacing $@ to $(BINDIR)
 	@$(RM) $(BINDIR)/$@
 	@$(CP) $@ $(BINDIR)

@@ -19,7 +19,7 @@ ifeq ($(TARGET), UEprocess)
   SRCS = UEprocess.c nas_network.c nas_parser.c nas_proc.c nas_user.c
 endif
 
-LIBS		= -lutil -lapi -lEMMmsg -lESMmsg -lEMMsap -lESMsap -lies -lrt -lnettle -lcrypto
+LIBS		= -lutil -lapi -lEMMmsg -lESMmsg -lEMMsap -lESMsap -lies -lrt -lnettle -lcrypto -lm
 INCLUDES	= -I. -I$(INCDIR) -I$(UTILDIR) -I$(USERAPIDIR) -I$(NETAPIDIR) \
 		-I$(EMMDIR) -I$(EMMMSGDIR) -I$(EMMSAPDIR) \
 		-I$(ESMDIR) -I$(ESMMSGDIR) -I$(ESMSAPDIR) \

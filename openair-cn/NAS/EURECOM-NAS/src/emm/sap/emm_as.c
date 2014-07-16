@@ -1391,7 +1391,16 @@ static int _emm_as_data_req(const emm_as_data_t *msg,
 #else
         emm_security_context = _emm_data.security;
 #endif
-
+        if (emm_security_context) {
+#ifdef NAS_MME
+            nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+#else
+            nas_msg.header.sequence_number = emm_security_context->ul_count.seq_num;
+#endif
+            LOG_TRACE(DEBUG,
+                "Set nas_msg.header.sequence_number -> %u",
+                nas_msg.header.sequence_number);
+        }
         if (!is_encoded) {
             /* Encode the NAS information message */
             bytes = _emm_as_encode(&as_msg->nasMsg,
@@ -1480,6 +1489,16 @@ static int _emm_as_status_ind(const emm_as_status_t *msg,
 #else
         emm_security_context = _emm_data.security;
 #endif
+        if (emm_security_context) {
+#ifdef NAS_MME
+            nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+#else
+            nas_msg.header.sequence_number = emm_security_context->ul_count.seq_num;
+#endif
+            LOG_TRACE(DEBUG,
+                "Set nas_msg.header.sequence_number -> %u",
+                nas_msg.header.sequence_number);
+        }
         /* Encode the NAS information message */
         int bytes = _emm_as_encode(
             &as_msg->nasMsg,
@@ -1795,6 +1814,12 @@ static int _emm_as_security_req(const emm_as_security_t *msg,
 #endif
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
+            if (emm_security_context) {
+                nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+                LOG_TRACE(DEBUG,
+                    "Set nas_msg.header.sequence_number -> %u",
+                    nas_msg.header.sequence_number);
+            }
         }
 
         /* Encode the NAS security message */
@@ -1874,6 +1899,10 @@ static int _emm_as_security_rej(const emm_as_security_t *msg,
 #endif
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
+            nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+            LOG_TRACE(DEBUG,
+                "Set nas_msg.header.sequence_number -> %u",
+                nas_msg.header.sequence_number);
         }
 
         /* Encode the NAS security message */
@@ -1966,6 +1995,10 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
                 LOG_TRACE(DEBUG, "EMMAS-SAP - NAS UL COUNT %8x",
                     as_msg->nas_ul_count);
             }
+            nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+            LOG_TRACE(DEBUG,
+                "Set nas_msg.header.sequence_number -> %u",
+                nas_msg.header.sequence_number);
         }
 
         /* Encode the initial NAS information message */
@@ -2055,6 +2088,10 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
 #endif
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
+            nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+            LOG_TRACE(DEBUG,
+                "Set nas_msg.header.sequence_number -> %u",
+                nas_msg.header.sequence_number);
         }
         /* Encode the initial NAS information message */
         int bytes = _emm_as_encode(

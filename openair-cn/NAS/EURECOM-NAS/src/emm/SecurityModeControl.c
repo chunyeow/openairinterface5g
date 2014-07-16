@@ -1069,12 +1069,12 @@ static int _security_select_algorithms(
 
     /* TODO work with loaded preferences from config file */
 
-    if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA2)) {
-        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA0");
-        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA0;
-    } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA1)) {
+    if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA1)) {
         LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA1");
         *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA1;
+    } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA2)) {
+        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA2");
+        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA2;
     } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA0)) {
         LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA0");
         *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA0;

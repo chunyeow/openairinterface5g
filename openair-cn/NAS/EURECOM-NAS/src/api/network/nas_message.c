@@ -165,6 +165,35 @@ nas_message_encrypt(
         memcpy(outbuf, inbuf, length);
     }
 
+#ifdef NAS_MME
+	/* TS 124.301, section 4.4.3.1
+	 * The NAS sequence number part of the NAS COUNT shall be
+	 * exchanged between the UE and the MME as part of the
+	 * NAS signalling. After each new or retransmitted outbound
+	 * security protected NAS message, the sender shall increase
+	 * the NAS COUNT number by one. Specifically, on the sender
+	 * side, the NAS sequence number shall be increased by one,
+	 * and if the result is zero (due to wrap around), the NAS
+	 * overflow counter shall also be incremented by one (see
+	 * subclause 4.4.3.5).
+	 */
+	emm_security_context->dl_count.seq_num += 1;
+	if ( ! emm_security_context->dl_count.seq_num) {
+		emm_security_context->dl_count.overflow += 1;
+	}
+    LOG_TRACE(DEBUG,
+        "Incremented emm_security_context.dl_count.seq_num -> %u",
+        emm_security_context->dl_count.seq_num);
+#else
+	emm_security_context->ul_count.seq_num += 1;
+	if ( ! emm_security_context->ul_count.seq_num) {
+		emm_security_context->ul_count.overflow += 1;
+	}
+    LOG_TRACE(DEBUG,
+        "Incremented emm_security_context.ul_count.seq_num -> %u",
+        emm_security_context->ul_count.seq_num);
+#endif
+
     if (bytes < 0) {
         LOG_FUNC_RETURN (bytes);
     }
@@ -413,16 +442,26 @@ int nas_message_encode(
                  * overflow counter shall also be incremented by one (see
                  * subclause 4.4.3.5).
                  */
+
                 emm_security_context->dl_count.seq_num += 1;
                 if ( ! emm_security_context->dl_count.seq_num) {
                     emm_security_context->dl_count.overflow += 1;
                 }
+                LOG_TRACE(DEBUG,
+                    "Incremented emm_security_context.dl_count.seq_num -> %u",
+                    emm_security_context->dl_count.seq_num);
 #else
                 emm_security_context->ul_count.seq_num += 1;
                 if ( ! emm_security_context->ul_count.seq_num) {
                     emm_security_context->ul_count.overflow += 1;
                 }
+                LOG_TRACE(DEBUG,
+                    "Incremented emm_security_context.ul_count.seq_num -> %u",
+                    emm_security_context->ul_count.seq_num);
 #endif
+            } else {
+                LOG_TRACE(DEBUG,
+                    "Did not increment emm_security_context.dl_count.seq_num because no security context");
             }
         }
 #if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
@@ -895,10 +934,39 @@ static UInt32_t _nas_message_get_mac(
 
     switch (emm_security_context->selected_algorithms.integrity) {
 
-        case NAS_SECURITY_ALGORITHMS_EIA1:
-        	LOG_TRACE(ERROR,
-                "EIA1_128_ALG_ID not implemented");
-            break;
+        case NAS_SECURITY_ALGORITHMS_EIA1: {
+            UInt8_t             mac[4];
+            nas_stream_cipher_t stream_cipher;
+            UInt32_t            count;
+            UInt32_t           *mac32;
+
+            if (direction == SECU_DIRECTION_UPLINK) {
+                count = 0x00000000 ||
+                    ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
+                    (emm_security_context->ul_count.seq_num & 0x000000FF);
+            } else {
+                count = 0x00000000 ||
+                    ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
+                    (emm_security_context->dl_count.seq_num & 0x000000FF);
+            }
+            stream_cipher.key        = emm_security_context->knas_int.value;
+            stream_cipher.key_length = AUTH_KNAS_INT_SIZE;
+            stream_cipher.count      = count;
+            stream_cipher.bearer     = 0x00; //33.401 section 8.1.1
+            stream_cipher.direction  = direction;
+            stream_cipher.message    = buffer;
+                /* length in bits */
+            stream_cipher.blength    = length << 3;
+
+            nas_stream_encrypt_eia1(
+                &stream_cipher,
+                mac);
+            LOG_TRACE(DEBUG,
+                "NAS_SECURITY_ALGORITHMS_EIA1 returned MAC %x.%x.%x.%x for length %d direction %d, count %d",
+                mac[0], mac[1], mac[2],mac[3], length, direction, count);
+            mac32 = (UInt32_t*)&mac;
+            LOG_FUNC_RETURN (*mac32);
+        }break;
 
         case NAS_SECURITY_ALGORITHMS_EIA2: {
                 UInt8_t             mac[4];

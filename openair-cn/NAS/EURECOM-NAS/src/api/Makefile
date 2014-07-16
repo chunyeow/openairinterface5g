@@ -26,6 +26,7 @@ all:
 	@$(MAKE) $(TARGETS)
 
 $(TARGET).a: $(OBJS)
+	@echo target.a
 	@$(RM) $@
 	@$(AR) $(ARFLAGS) $@ $^
 	@echo Replacing $@ to $(LIBPROCESS)
