@@ -26,8 +26,10 @@ TESTS =	\
 	test_aes128_ctr_decrypt	\
 	test_secu_kenb	\
 	test_secu_knas	\
-	test_secu_knas_encrypt_eea2	\
-	test_secu_knas_encrypt_eia2
+    test_secu_knas_encrypt_eea1 \
+    test_secu_knas_encrypt_eia1 \
+    test_secu_knas_encrypt_eea2 \
+    test_secu_knas_encrypt_eia2
 else
 TESTS =
 endif
@@ -49,8 +51,10 @@ check_PROGRAMS =	\
 	test_aes128_ctr_decrypt	\
 	test_secu_kenb	\
 	test_secu_knas	\
-	test_secu_knas_encrypt_eea2	\
-	test_secu_knas_encrypt_eia2
+    test_secu_knas_encrypt_eea1 \
+    test_secu_knas_encrypt_eia1 \
+    test_secu_knas_encrypt_eea2 \
+    test_secu_knas_encrypt_eia2
 
 test_kdf_LDADD =	\
 	$(common_ldadd)
@@ -61,11 +65,17 @@ test_secu_knas_LDADD =	\
 test_secu_kenb_LDADD =	\
 	$(common_ldadd)
 
-test_secu_knas_encrypt_eea2_LDADD =	\
-	$(common_ldadd)
+test_secu_knas_encrypt_eea1_LDADD = \
+    $(common_ldadd)
 
-test_secu_knas_encrypt_eia2_LDADD =	\
-	$(common_ldadd)
+test_secu_knas_encrypt_eia1_LDADD = \
+    $(common_ldadd)
+
+test_secu_knas_encrypt_eea2_LDADD = \
+    $(common_ldadd)
+
+test_secu_knas_encrypt_eia2_LDADD = \
+    $(common_ldadd)
 
 test_aes128_ctr_encrypt_LDADD =	\
 	$(common_ldadd)
@@ -76,14 +86,14 @@ test_aes128_ctr_decrypt_LDADD =	\
 test_aes128_cmac_encrypt_LDADD =	\
 	$(common_ldadd)
 
-# test_s1ap_LDADD = libtest_util.la	\
-# 	$(top_builddir)/S1AP/libs1ap.la
+test_s1ap_LDADD = libtest_util.la	\
+ 	$(top_builddir)/S1AP/libs1ap.la
 # 
-# test_s1ap_SOURCES = test_s1ap.c	\
-# 	$(top_srcdir)/S1AP/s1ap_eNB_decoder.c \
-# 	$(top_srcdir)/S1AP/s1ap_eNB_decoder.h \
-# 	$(top_srcdir)/S1AP/s1ap_eNB_encoder.c \
-# 	$(top_srcdir)/S1AP/s1ap_eNB_encoder.h
-# 
-# test_secu_kenb_SOURCES = test_secu_kenb.c
-# test_secu_knas_SOURCES = test_secu_knas.c
+ test_s1ap_SOURCES = test_s1ap.c	\
+ 	$(top_srcdir)/S1AP/s1ap_eNB_decoder.c \
+ 	$(top_srcdir)/S1AP/s1ap_eNB_decoder.h \
+ 	$(top_srcdir)/S1AP/s1ap_eNB_encoder.c \
+ 	$(top_srcdir)/S1AP/s1ap_eNB_encoder.h
+ 
+ test_secu_kenb_SOURCES = test_secu_kenb.c
+ test_secu_knas_SOURCES = test_secu_knas.c
