@@ -12,8 +12,8 @@ primary_synch; %loads the primary sync signal
 %load('E:\EMOS\corridor\ofdm_pilots_sync_2048_v7.mat');
 load('ofdm_pilots_sync_30MHz.mat');
 
-n_carriers = 2; % use 1 for UHF and 2 for 2.6GHz
-n_trials=2;%use 1 for trial1 and 2 for trial2
+n_carriers = 1; % use 1 for UHF and 2 for 2.6GHz
+n_trials=1;%use 1 for trial1 and 2 for trial2
 symbols_per_slot = 6;
 slots_per_frame = 20;
 
@@ -23,7 +23,7 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4);
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run1.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run1.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
@@ -342,6 +342,7 @@ while ~feof(fid)
                                         figure(3+3*(carrier-1))
                                         for itx=1:p(carrier).nant_tx
                                             for irx=1:p(1).nant_rx
+                                                
                                                 subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
                                                 surf(20*log10(abs(Ht(:,:,itx,irx))))
                                                 ylabel('time [OFDM symbol]')
@@ -357,7 +358,7 @@ while ~feof(fid)
                                                 plot(10*log10(PDP(:,:,itx,irx)))
                                                 ylim([50 80])
                                                 xlim([0 75])
-                                                %xlabel('delay time [samples]')
+                                                xlabel('delay time [samples]')
                                                 ylabel('power [dB]')
                                             end
                                         end
@@ -381,8 +382,8 @@ while ~feof(fid)
                             plot(F,10*log10(PDD(:,:,itx,irx)))
                             %ylim([])
                             %xlim([])
-                            %xlabel('')
-                            %ylabel('')
+                            xlabel('F=f-ftx [Hz]')
+                            ylabel('power [dB]')
                         end
                     end
                     drawnow
@@ -435,8 +436,8 @@ while ~feof(fid)
                     
                     %ylim([])
                     %xlim([])
-                    %xlabel('')
-                    %ylabel('')
+                    xlabel('F=f-ftx [Hz]')
+                            ylabel('power [dB]')
                 end
             end
             
@@ -451,8 +452,8 @@ while ~feof(fid)
                         
                         %ylim([])
                         %xlim([])
-                        %xlabel('')
-                        %ylabel('')
+                        xlabel('F=f-ftx [Hz]')
+                            ylabel('power [dB]')
                     end
                 end
             end
@@ -502,7 +503,7 @@ while ~feof(fid)
         end
         
         
-        %% Doppler shift for trial1 UHF run1
+        %% Doppler shift, tgv speed and frequency offset for trial1 UHF run1
         if(n_carriers==1)
             if(n_trials==1)
                 for itx=1:p(1).nant_tx
@@ -537,8 +538,7 @@ while ~feof(fid)
                     TGVspeed_total(block)=fm*3/7.7715*3.6;
                     freqOffset_total(block)=abs((s1+fm)-3000.5);
                 end
-                %            disp(fm);
-                %            disp(fm*3/7.7715*3.6);
+              
                 
             end
         end
@@ -569,7 +569,7 @@ end
 
 %%
 
-%if(enable_plots>=2)
+if(enable_plots>=2)
 figure(11)
 for itx=1:p(1).nant_tx
     for irx=1:p(1).nant_rx
@@ -584,8 +584,8 @@ for itx=1:p(1).nant_tx
         bara=colorbar;
         %ylim([])
         %xlim([])
-        %xlabel('')
-        %ylabel('')
+        ylabel('F=f-ftx [Hz]')
+                            xlabel('time [s]')
     end
 end
 
@@ -601,12 +601,12 @@ if(n_carriers==2)
             barb=colorbar;
             %ylim([])
             %xlim([])
-            %xlabel('')
-            %ylabel('')
+            ylabel('F=f-ftx [Hz]')
+                            xlabel('time [s]')
         end
     end
 end
-%end
+end
 
 %% Mean Delay
 
@@ -641,6 +641,8 @@ for itx=1:p(1).nant_tx
         
         subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
         plot(mean_delay_a(:,:,itx,irx));
+        ylabel('delay [s]')
+                            xlabel('time [s]')
         
     end
 end
@@ -652,7 +654,8 @@ if (n_carriers==2)
             
             subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
             plot(mean_delay_b(:,:,itx,irx));
-            
+            ylabel('delay [s]')
+                            xlabel('time [s]')
         end
     end
 end
@@ -692,7 +695,8 @@ for itx=1:p(1).nant_tx
         
         subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
         plot(mean_doppler_shift_a(:,:,itx,irx));
-        
+        ylabel('f-ftx [Hz]')
+                            xlabel('time [s]')
     end
 end
 
@@ -703,7 +707,8 @@ if (n_carriers==2)
             
             subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
             plot(mean_doppler_shift_b(:,:,itx,irx));
-            
+            ylabel('f-ftx [Hz]')
+                            xlabel('time [s]')
         end
     end
 end
@@ -711,15 +716,15 @@ end
 figure(17)
 title('');
 plot(doppler_freq_of_max_a);
-xlabel('Time in sec');
-ylabel('Doppler frequency (Hz)');
+xlabel('time [s]');
+    ylabel('f-ftx [Hz]');
 
 if(n_carriers==2)
     figure(18)
     title('');
     plot(doppler_freq_of_max_b);
-    xlabel('Time in sec');
-    ylabel('Doppler frequency (Hz)');
+    xlabel('time [s]');
+    ylabel('f-ftx [Hz]');
 end
 
 %%
@@ -727,22 +732,22 @@ end
 if(n_carriers==1)
     if(n_trials==1)
         subplot(2,2,1);
-        title('variation of the mean maximum Doppler shift');
+        title('variation of the mean fdop');
         plot(fm_total);
-        xlabel('Time in sec');
-        ylabel('maximum Doppler shift (Hz)');
+        xlabel('time [s]');
+        ylabel('fdop [Hz]');
         
         subplot(2,2,2);
         title('variation of the TGV speed');
         plot(TGVspeed_total);
-        xlabel('Time (sec)');
-        ylabel('TGV speed (km/h)');
+        xlabel('time [s]');
+        ylabel('TGV speed [km/h]');
         
         subplot(2,2,3);
         title('variation of the mean frequency offset');
         plot(freqOffset_total);
-        xlabel('Time (sec)');
-        ylabel('frequency Offset (Hz)');
+        xlabel('time [s]');
+        ylabel('frequency Offset [Hz]');
     end
 end
 
