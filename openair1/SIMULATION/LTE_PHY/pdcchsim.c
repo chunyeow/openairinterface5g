@@ -947,7 +947,7 @@ int main(int argc, char **argv) {
         if (n_frames==1) 
 	  printf("generating PHICH\n");
 
-        harq_pid = phich_subframe_to_harq_pid(&PHY_vars_eNB->lte_frame_parms, PHY_vars_eNB->frame, subframe);
+        harq_pid = phich_subframe_to_harq_pid(&PHY_vars_eNB->lte_frame_parms, PHY_vars_eNB->proc[(subframe+9)%10].frame_tx, subframe);
             
         phich_ACK = taus()&1;
         PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->phich_active = 1;
