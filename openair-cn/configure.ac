@@ -286,7 +286,7 @@ AC_CHECK_PROG(HAVE_GCCXML,gccxml,yes,no)
 AM_CONDITIONAL(HAVE_GCCXML, test x$HAVE_GCCXML = xyes)
 
 dnl Add these flags
-CFLAGS="$CFLAGS -Wall"
+CFLAGS="$CFLAGS -Wall -g -O"
 CFLAGS="$CFLAGS -Wcast-align"
 CFLAGS="$CFLAGS -Wchar-subscripts"
 CFLAGS="$CFLAGS -Wmissing-prototypes"
