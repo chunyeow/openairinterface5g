@@ -76,17 +76,8 @@ int nas_stream_encrypt_eia2(nas_stream_cipher_t *stream_cipher, uint8_t out[4])
 
     cmac_ctx = CMAC_CTX_new();
     ret = CMAC_Init(cmac_ctx, stream_cipher->key, stream_cipher->key_length, cipher, NULL);
-#if defined(SECU_DEBUG)
-    printf("CMAC_Init returned %d\n", ret);
-#endif
     ret = CMAC_Update(cmac_ctx, m, m_length + 8);
-#if defined(SECU_DEBUG)
-    printf("CMAC_Update returned %d\n", ret);
-#endif
     CMAC_Final(cmac_ctx, data, &size);
-#if defined(SECU_DEBUG)
-    printf("CMAC_Final returned %d, size = %u\n", ret, size);
-#endif
     CMAC_CTX_free(cmac_ctx);
 
 #if defined(SECU_DEBUG)
