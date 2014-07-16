@@ -471,6 +471,7 @@ check_install_epc_software() {
     test_install_package automake
     test_install_package bison
     test_install_package build-essential
+    test_install_package check
     test_install_package cmake
     test_install_package cmake-curses-gui
     test_install_package ethtool

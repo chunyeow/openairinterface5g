@@ -123,32 +123,23 @@ if [ $? -eq 1 ]; then
 fi 
 
 
-
 #######################################################
 # USIM, NVRAM files
 #######################################################
 export NVRAM_DIR=$THIS_SCRIPT_PATH
 
-if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data ]; then
+if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data ] || [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data ]; then
     if [ ! -f /tmp/nas_cleaned ]; then
         echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean"
         make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
     fi
-    echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE"
-    make -v --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS -f Makefile PROCESS=UE
+    echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS -f Makefile PROCESS=UE all"
+    make  -f Makefile --debug=b --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE all
     rm .ue.nvram
+    rm .usim.nvram
     touch /tmp/nas_cleaned
 fi
-if [ ! -f $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/usim_data ]; then
-    if [ ! -f /tmp/nas_cleaned ]; then
-        echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean"
-        make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS veryveryclean
-    fi
-    echo_success "make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE"
-    make --directory=$OPENAIRCN_DIR/NAS/EURECOM-NAS PROCESS=UE
-    rm .usim.nvram
-    rm /tmp/nas_cleaned
-fi
+
 if [ ! -f .ue.nvram ]; then
     echo_success "generate .ue_emm.nvram .ue.nvram"
     $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/ue_data --gen
@@ -171,10 +162,11 @@ echo_success "make $MAKE_IP_DRIVER_TARGET $MAKE_LTE_ACCESS_STRATUM_TARGET ....."
 #bash_exec "make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET "
 make --directory=$OPENAIR2_DIR $MAKE_IP_DRIVER_TARGET || exit 1
 
+
 echo_success "make --debug=b --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET || exit 1" 
-#bash_exec "make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET "
 #make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
 make --debug=b --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET || exit 1
+
 
 
 echo_success "Bringup UE interface..."
@@ -239,10 +231,10 @@ cd $THIS_SCRIPT_PATH
 # To start NAS connectivity: AT+CFUN=1
 # nohup xterm -hold -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
-$OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
 #pkill tshark
-
+echo_warning "oaisim ended, filtering stdout form oaisim"
 cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE | grep 'RRC\|S1AP\|SCTP\|PDCP\|NAS\|RLC' | grep -v 'RRC_MAC_IN_SYNC_IND' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered

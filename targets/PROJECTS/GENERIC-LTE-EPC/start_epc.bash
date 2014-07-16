@@ -195,7 +195,7 @@ then
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
     echo_success "Invoking configure"
-    ../configure --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
+    ../configure HAVE_CHECK=true --enable-standalone-epc --enable-raw-socket-for-sgi  LDFLAGS=-L/usr/local/lib
 else
     cd ./$OBJ_DIR
 fi
@@ -339,5 +339,5 @@ nohup tshark -i $MME_INTERFACE_NAME_FOR_S6A    -w $THIS_SCRIPT_PATH/OUTPUT/$HOST
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 
-$OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
