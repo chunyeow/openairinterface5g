@@ -1672,7 +1672,6 @@ static void get_options (int argc, char **argv) {
 	break;
       }
     case 's':
-      {
 #ifdef USRP
         int clock_src = atoi(optarg);
         if (clock_src == 0) {
@@ -1683,7 +1682,6 @@ static void get_options (int argc, char **argv) {
           char ref[128] = "external";
           //strncpy(uhd_ref, ref, strlen(ref)+1);
         }
-      }
 #else
       printf("Note: -s not defined for ExpressMIMO2\n");
 #endif
