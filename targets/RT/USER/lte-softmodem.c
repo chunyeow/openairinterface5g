@@ -55,7 +55,9 @@
 #include "rt_wrapper.h"
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 
+#ifdef USRP
 static int hw_subframe;
+#endif
 
 #include "assertions.h"
 
