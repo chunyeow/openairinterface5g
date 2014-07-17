@@ -1752,6 +1752,7 @@ int main(int argc, char **argv) {
 #endif
   openair0_config_t openair0_cfg;
 
+  set_latency_target();
 
   mode = normal_txrx;
 
