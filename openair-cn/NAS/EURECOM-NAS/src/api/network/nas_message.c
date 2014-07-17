@@ -254,9 +254,21 @@ int nas_message_decrypt(
             SECU_DIRECTION_DOWNLINK,
 #endif
             emm_security_context);
+
         /* Check NAS message integrity */
         if (mac != header->message_authentication_code) {
+#if defined(NAS_MME)
             LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
+#else
+#warning "added test on integrity algorithm because of SECURITY_MODE_COMMAND not correctly handled in UE (check integrity)"
+            if (emm_security_context->selected_algorithms.integrity !=
+        		    NAS_SECURITY_ALGORITHMS_EIA0) {
+                LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
+            } else {
+                LOG_TRACE(WARNING,
+                		"MAC failure but continue due to EIA0 selected");
+            }
+#endif
         }
 
         /* Decrypt the security protected NAS message */
@@ -336,6 +348,10 @@ int nas_message_decode(
 
         /* Check NAS message integrity */
         if (mac != msg->header.message_authentication_code) {
+            LOG_TRACE(DEBUG,
+                "msg->header.message_authentication_code = %04X computed = %04X",
+                msg->header.message_authentication_code,
+                mac);
             LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
         }
 
@@ -940,6 +956,11 @@ static UInt32_t _nas_message_get_mac(
             UInt32_t            count;
             UInt32_t           *mac32;
 
+            LOG_TRACE(DEBUG,
+                "NAS_SECURITY_ALGORITHMS_EIA1 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                direction,
+                emm_security_context->ul_count.seq_num,
+                emm_security_context->dl_count.seq_num);
             if (direction == SECU_DIRECTION_UPLINK) {
                 count = 0x00000000 ||
                     ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
@@ -974,6 +995,11 @@ static UInt32_t _nas_message_get_mac(
                 UInt32_t            count;
                 UInt32_t           *mac32;
 
+                LOG_TRACE(DEBUG,
+                    "NAS_SECURITY_ALGORITHMS_EIA2 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                    direction,
+                    emm_security_context->ul_count.seq_num,
+                    emm_security_context->dl_count.seq_num);
                 if (direction == SECU_DIRECTION_UPLINK) {
                     count = 0x00000000 ||
                         ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
@@ -1003,6 +1029,11 @@ static UInt32_t _nas_message_get_mac(
             }break;
 
         case NAS_SECURITY_ALGORITHMS_EIA0:
+            LOG_TRACE(DEBUG,
+                "NAS_SECURITY_ALGORITHMS_EIA0 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                direction,
+                emm_security_context->ul_count.seq_num,
+                emm_security_context->dl_count.seq_num);
 #if defined(EPC_BUILD) || defined(UE_BUILD)
             LOG_FUNC_RETURN (0);
 #else

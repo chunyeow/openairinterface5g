@@ -137,7 +137,7 @@ void f2345 ( u8 k_pP[16], u8 rand_pP[16],
   for (i=0; i<16; i++)
     ck_pP[i] = out[i];
   LOG_TRACE(DEBUG,
-		  "USIM-API  - f2345 : out f3 ik_pP[0..7]=%02X%02X%02X%02X%02X%02X%02X%02",
+		  "USIM-API  - f2345 : out f3 ck_pP[0..7]=%02X%02X%02X%02X%02X%02X%02X%02X",
 		  ck_pP[0],ck_pP[1],ck_pP[2], ck_pP[3], ck_pP[4], ck_pP[5], ck_pP[6], ck_pP[7]);
   /* To obtain output block OUT4: XOR OPc and TEMP,         *
    * rotate by r4=64, and XOR on the constant c4 (which     *

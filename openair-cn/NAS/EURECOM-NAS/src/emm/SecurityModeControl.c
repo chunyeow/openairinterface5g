@@ -1,7 +1,32 @@
-/*****************************************************************************
-            Eurecom OpenAirInterface 3
-            Copyright(c) 2012 Eurecom
+/*******************************************************************************
+    OpenAirInterface
+    Copyright(c) 1999 - 2014 Eurecom
 
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
+   see <http://www.gnu.org/licenses/>.
+
+  Contact Information
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+
+  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
+
+ *******************************************************************************/
+/*****************************************************************************
 Source      SecurityModeControl.c
 
 Version     0.1
@@ -136,31 +161,31 @@ static int _security_request(security_data_t *data, int is_new);
 #ifdef NAS_UE
 /****************************************************************************
  **                                                                        **
- ** Name:    emm_proc_security_mode_command()                          **
+ ** Name:    emm_proc_security_mode_command()                              **
  **                                                                        **
  ** Description: Performs the MME requested security mode control proce-   **
- **      dure.                                                     **
+ **      dure.                                                             **
  **                                                                        **
  **              3GPP TS 24.301, section 5.4.3.3                           **
- **      Upon receiving the SECURITY MODE COMMAND message, the UE  **
- **      shall check whether the message can be accepted or not.   **
- **      If accepted the UE shall send a SECURITY MODE COMPLETE    **
- **      message integrity protected with the selected NAS inte-   **
- **      grity algorithm and ciphered with the selected NAS ciphe- **
- **      ring algorithm.                                           **
+ **      Upon receiving the SECURITY MODE COMMAND message, the UE          **
+ **      shall check whether the message can be accepted or not.           **
+ **      If accepted the UE shall send a SECURITY MODE COMPLETE            **
+ **      message integrity protected with the selected NAS inte-           **
+ **      grity algorithm and ciphered with the selected NAS ciphe-         **
+ **      ring algorithm.                                                   **
  **                                                                        **
- ** Inputs:  native_ksi:    TRUE if the security context is of type    **
- **             native (for KSIASME)                       **
- **      ksi:       The NAS ket sey identifier                 **
- **      seea:      Selected EPS cyphering algorithm           **
- **      seia:      Selected EPS integrity algorithm           **
- **      reea:      Replayed EPS cyphering algorithm           **
- **      reia:      Replayed EPS integrity algorithm           **
- **      Others:    None                                       **
+ ** Inputs:  native_ksi:    TRUE if the security context is of type        **
+ **             native (for KSIASME)                                       **
+ **      ksi:       The NAS ket sey identifier                             **
+ **      seea:      Selected EPS cyphering algorithm                       **
+ **      seia:      Selected EPS integrity algorithm                       **
+ **      reea:      Replayed EPS cyphering algorithm                       **
+ **      reia:      Replayed EPS integrity algorithm                       **
+ **      Others:    None                                                   **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    None                                       **
+ **      Return:    RETURNok, RETURNerror                                  **
+ **      Others:    None                                                   **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_security_mode_command(int native_ksi, int ksi,
@@ -206,6 +231,7 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
      * Update the non-current EPS security context
      */
     else {
+        LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context seea=%u seia=%u", seea, seia);
         /* Update selected cyphering and integrity algorithms */
         _emm_data.non_current->capability.encryption = seea;
         _emm_data.non_current->capability.integrity = seia;
@@ -217,6 +243,7 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
             _emm_data.non_current->knas_enc.length = AUTH_KNAS_ENC_SIZE;
         }
         if (_emm_data.non_current->knas_enc.value != NULL) {
+            LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context knas_enc");
             rc = _security_knas_enc(&_emm_data.non_current->kasme,
                                     &_emm_data.non_current->knas_enc, seea);
         }
@@ -228,6 +255,7 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
         }
         if (_emm_data.non_current->knas_int.value != NULL) {
             if (rc != RETURNerror) {
+                LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context knas_int");
                 rc = _security_knas_int(&_emm_data.non_current->kasme,
                                         &_emm_data.non_current->knas_int, seea);
             }
@@ -239,6 +267,7 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
         }
         if (_security_data.kenb.value != NULL) {
             if (rc != RETURNerror) {
+                LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context kenb");
                 rc = _security_kenb(&_security_data.kenb,
                                     &_emm_data.security->kasme,
                                     *(UInt32_t *)(&_emm_data.non_current->ul_count));
@@ -249,6 +278,7 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
          * NAS security mode command accepted by the UE
          */
         if (rc != RETURNerror) {
+            LOG_TRACE(INFO, "EMM-PROC  - NAS security mode command accepted by the UE");
             /* Update the current EPS security context */
             if ( native_ksi && (_emm_data.security->type != EMM_KSI_NATIVE) ) {
                 /* The type of security context flag included in the SECURITY
@@ -852,6 +882,7 @@ static int _security_kdf(const OctetString *kasme, OctetString *key,
 
     /* TODO !!! Compute the derived key */
     // todo_hmac_256(key, input, kasme->value);
+
     return (RETURNok);
 }
 #endif // NAS_UE

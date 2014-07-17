@@ -82,10 +82,10 @@ typedef enum
 # define LOG_TRACE(s, x, args...)                               \
 do {                                                            \
     switch (s) {                                                \
-        case ERROR:     LOG_E(NAS, " " x "\n", ##args); break;  \
-        case WARNING:   LOG_W(NAS, " " x "\n", ##args); break;  \
-        case INFO:      LOG_I(NAS, " " x "\n", ##args); break;  \
-        default:        LOG_D(NAS, " " x "\n", ##args); break;  \
+        case ERROR:     LOG_E(NAS, " %s:%d  " x "\n", __FILE__, __LINE__, ##args); break;  \
+        case WARNING:   LOG_W(NAS, " %s:%d  " x "\n", __FILE__, __LINE__, ##args); break;  \
+        case INFO:      LOG_I(NAS, " %s:%d  " x "\n", __FILE__, __LINE__, ##args); break;  \
+        default:        LOG_D(NAS, " %s:%d  " x "\n", __FILE__, __LINE__, ##args); break;  \
     }                                                           \
 } while (0)
 
@@ -100,20 +100,20 @@ do {                                                                            
 
 # define LOG_FUNC_IN                                                            \
 do {                                                                            \
-    LOG_D(NAS, " %*sEntering %s()\n", nas_log_func_indent, "", __FUNCTION__);   \
+    LOG_D(NAS, " %s:%d %*sEntering %s()\n", __FILE__, __LINE__, nas_log_func_indent, "", __FUNCTION__);   \
     nas_log_func_indent += 4;                                                   \
 } while (0)
 
 # define LOG_FUNC_OUT                                                           \
 do {                                                                            \
     nas_log_func_indent -= 4;                                                   \
-    LOG_D(NAS, " %*sLeaving %s()\n", nas_log_func_indent, "", __FUNCTION__);    \
+    LOG_D(NAS, " %s:%d %*sLeaving %s()\n", __FILE__, __LINE__, nas_log_func_indent, "", __FUNCTION__);    \
 } while (0)
 
 # define LOG_FUNC_RETURN(rETURNcODE)                                            \
 do {                                                                            \
     nas_log_func_indent -= 4;                                                   \
-    LOG_D(NAS, " %*sLeaving %s(rc = %ld)\n", nas_log_func_indent, "",           \
+    LOG_D(NAS, " %s:%d %*sLeaving %s(rc = %ld)\n", __FILE__, __LINE__, nas_log_func_indent, "",           \
           __FUNCTION__, (long) rETURNcODE);                                     \
     return (rETURNcODE);                                                        \
 } while (0)
