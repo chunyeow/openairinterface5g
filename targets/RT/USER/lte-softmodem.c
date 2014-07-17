@@ -239,8 +239,8 @@ static int                      tx_max_power =  0;
 
 #else
 static unsigned int             rxg_max[4] =    {133,133,133,133};
-//static unsigned int             rxg_med[4] =    {127,127,127,127};
-//static unsigned int             rxg_byp[4] =    {120,120,120,120};
+//static unsigned int            rxg_med[4] =    {127,127,127,127};
+//static unsigned int            rxg_byp[4] =    {120,120,120,120};
 static int                      tx_max_power =  0;
 char ref[128] = "internal";
 char channels[128] = "0";
@@ -2468,6 +2468,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
       exit(-1);
     }
 
+#ifdef USRP
     if (frame_parms->frame_type == TDD) {
       if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 100)
 	N_TA_offset = 624;
@@ -2476,6 +2477,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
       else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 25)
 	N_TA_offset = 624/4;
     }
+#endif
     
     // replace RX signal buffers with mmaped HW versions
 #ifndef USRP
