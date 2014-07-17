@@ -226,7 +226,7 @@ static char                    *conf_config_file_name = NULL;
 static char                    *itti_dump_file = NULL;
 #endif
 
-double tx_gain = 50;
+double tx_gain = 20;
 double rx_gain = 30;
 
 double sample_rate=30.72e6;
@@ -700,20 +700,30 @@ void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
   unsigned int aa,slot_offset, slot_offset_F;
   int dummy_tx_b[7680*4] __attribute__((aligned(16)));
   int i, tx_offset;
-
-  slot_offset_F = (subframe<<1)*
-    (phy_vars_eNB->lte_frame_parms.ofdm_symbol_size)*
+  int slot_sizeF = (phy_vars_eNB->lte_frame_parms.ofdm_symbol_size)*
     ((phy_vars_eNB->lte_frame_parms.Ncp==1) ? 6 : 7);
+
+  slot_offset_F = (subframe<<1)*slot_sizeF;
+    
   slot_offset = (subframe<<1)*
     (phy_vars_eNB->lte_frame_parms.samples_per_tti>>1);
   if ((subframe_select(&phy_vars_eNB->lte_frame_parms,subframe)==SF_DL)||
       ((subframe_select(&phy_vars_eNB->lte_frame_parms,subframe)==SF_S))) {
     //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
-      
+
+#ifdef EXMIMO      
     for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx; aa++) {
       if (phy_vars_eNB->lte_frame_parms.Ncp == EXTENDED){ 
 	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
 		     dummy_tx_b,
+		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
+		     6,
+		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
+		     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
+		     phy_vars_eNB->lte_frame_parms.rev,
+		     CYCLIC_PREFIX);
+	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
+		     dummy_tx_b+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1),
 		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
 		     6,
 		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
@@ -726,9 +736,13 @@ void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 			  dummy_tx_b,
 			  7,
 			  &(phy_vars_eNB->lte_frame_parms));
+	normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
+			  dummy_tx_b+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1),
+			  7,
+			  &(phy_vars_eNB->lte_frame_parms));
       }
-#ifdef EXMIMO
-      for (i=0; i<phy_vars_eNB->lte_frame_parms.samples_per_tti/2; i++) {
+
+      for (i=0; i<phy_vars_eNB->lte_frame_parms.samples_per_tti; i++) {
 	tx_offset = (int)slot_offset+time_offset[aa]+i;
 	if (tx_offset<0)
 	  tx_offset += LTE_NUMBER_OF_SUBFRAMES_PER_FRAME*phy_vars_eNB->lte_frame_parms.samples_per_tti;
@@ -1232,8 +1246,11 @@ static void *eNB_thread(void *arg)
 	//}
 	
 	if (multi_thread == 0) {
-	  phy_procedures_eNB_lte (((slot+1)%20)>>1, PHY_vars_eNB_g[0], 0, no_relay,NULL);
-	  do_OFDM_mod(((slot+1)%20)>>1,PHY_vars_eNB_g[0]);
+	  if ((slot&1) == 0) {
+	    LOG_I(PHY,"[eNB] Single thread slot %d\n",slot);
+	    phy_procedures_eNB_lte ((1+(slot>>1))%10, PHY_vars_eNB_g[0], 0, no_relay,NULL);
+	    do_OFDM_mod((1+(slot>>1))%10,PHY_vars_eNB_g[0]);
+	  }
 	}
 	else { // multi-thread > 0
 	  if ((slot&1) == 0) {
@@ -2055,7 +2072,7 @@ int main(int argc, char **argv) {
   openair0_cfg.rx_num_channels = frame_parms->nb_antennas_rx;
   
   for (i=0;i<4;i++) {
-    if (UE_flag==0) {
+    if (UE_flag==1) {
       openair0_cfg.tx_freq[i] = downlink_frequency[i]+uplink_frequency_offset[i];
       openair0_cfg.rx_freq[i] = downlink_frequency[i];
     }
@@ -2071,8 +2088,10 @@ int main(int argc, char **argv) {
     openair0_cfg.rx_gain[i] = rx_gain;
   }
   
-  openair0_device_init(&openair0, &openair0_cfg);
-  
+  if (openair0_device_init(&openair0, &openair0_cfg) <0) {
+    printf("Exiting, cannot initialize device\n");
+    exit(-1);
+  }
 #ifdef OPENAIR2
   int eMBMS_active=0;
 
