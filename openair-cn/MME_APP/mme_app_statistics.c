@@ -26,7 +26,7 @@
   Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
 
  *******************************************************************************/
-s
+
 #include <stdlib.h>
 #include <stdio.h>
 
