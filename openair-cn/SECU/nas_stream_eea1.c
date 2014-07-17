@@ -1,3 +1,31 @@
+/*******************************************************************************
+    OpenAirInterface
+    Copyright(c) 1999 - 2014 Eurecom
+
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
+   see <http://www.gnu.org/licenses/>.
+
+  Contact Information
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+
+  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
+
+ *******************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -76,11 +104,6 @@ int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t **out)
 	}
     if (zero_bit > 0) {
     	int ceil_index = (stream_cipher->blength+7) >> 3;
-		printf ("changing stream_cipher->message[%u]: %08X to %08X remove %d bits\n",
-				ceil_index - 1,
-				stream_cipher->message[ceil_index - 1],
-				stream_cipher->message[ceil_index - 1] & (uint8_t)(0xFF << (8 - zero_bit)),
-				8 - zero_bit);
     	stream_cipher->message[ceil_index - 1] = stream_cipher->message[ceil_index - 1] & (uint8_t)(0xFF << (8 - zero_bit));
     }
     free(KS);
