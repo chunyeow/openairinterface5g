@@ -340,6 +340,36 @@ void exit_fun(const char* s)
   //exit (-1);
 }
 
+static int latency_target_fd = -1;
+static int32_t latency_target_value = 0;
+/* Latency trick - taken from cyclictest.c 
+* if the file /dev/cpu_dma_latency exists,
+* open it and write a zero into it. This will tell
+* the power management system not to transition to
+* a high cstate (in fact, the system acts like idle=poll)
+* When the fd to /dev/cpu_dma_latency is closed, the behavior
+* goes back to the system default.
+*
+* Documentation/power/pm_qos_interface.txt
+*/
+static void set_latency_target(void)
+{
+  struct stat s;
+  int ret;
+  if (stat("/dev/cpu_dma_latency", &s) == 0) {
+    latency_target_fd = open("/dev/cpu_dma_latency", O_RDWR);
+    if (latency_target_fd == -1)
+      return;
+    ret = write(latency_target_fd, &latency_target_value, 4);
+    if (ret == 0) {
+      printf("# error setting cpu_dma_latency to %d!: %s\n", latency_target_value, strerror(errno));
+      close(latency_target_fd);
+      return;
+    }
+    printf("# /dev/cpu_dma_latency set to %dus\n", latency_target_value);
+  }
+}
+
 #ifdef XFORMS
 static void *scope_thread(void *arg) {
   char stats_buffer[16384];
@@ -406,8 +436,6 @@ static void *scope_thread(void *arg) {
   pthread_exit((void*)arg);
 }
 #endif
-
-int dummy_tx_buffer[3840*4] __attribute__((aligned(16)));
 
 #ifdef EMOS
 #define NO_ESTIMATES_DISK 100 //No. of estimates that are aquired before dumped to disk
