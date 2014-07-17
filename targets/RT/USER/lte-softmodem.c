@@ -227,6 +227,8 @@ static char                    *itti_dump_file = NULL;
 double tx_gain = 50;
 double rx_gain = 30;
 
+double sample_rate=30.72e6;
+double bw = 14e6;
 
 #ifndef USRP
 static unsigned int             rxg_max[4] =    {133,133,133,133};
@@ -236,12 +238,10 @@ static int                      tx_max_power =  0;
 
 
 #else
-double sample_rate=30.72e6;
 static unsigned int             rxg_max[4] =    {133,133,133,133};
 //static unsigned int             rxg_med[4] =    {127,127,127,127};
 //static unsigned int             rxg_byp[4] =    {120,120,120,120};
 static int                      tx_max_power =  0;
-double bw = 14e6;
 char ref[128] = "internal";
 char channels[128] = "0";
 
@@ -2386,11 +2386,11 @@ int main(int argc, char **argv) {
 #ifdef RTAI
 #ifdef USRP
   rt_sem_delete(sync_sem);
-#endif
   stop_rt_timer();
 #else
   pthread_cond_destroy(&sync_cond);
   pthread_mutex_destroy(&sync_mutex);
+#endif
 #endif
 
   printf("stopping card\n");
