@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "openair0_lib.h"
 #include "openair_device.h"
@@ -28,6 +29,13 @@ int openair0_num_detected_cards = 0;
 
 unsigned int PAGE_SHIFT;
 
+static uint32_t                      rf_local[4] =       {8255000,8255000,8255000,8255000}; // UE zepto
+  //{8254617, 8254617, 8254617, 8254617}; //eNB khalifa
+  //{8255067,8254810,8257340,8257340}; // eNB PETRONAS
+
+static uint32_t                      rf_vcocal[4] =      {910,910,910,910};
+static uint32_t                      rf_vcocal_850[4] =  {2015, 2015, 2015, 2015};
+static uint32_t                      rf_rxdc[4] =        {32896,32896,32896,32896};
 
 unsigned int log2_int( unsigned int x )
 {
@@ -39,20 +47,23 @@ unsigned int log2_int( unsigned int x )
 int openair0_open(void)
 {
     exmimo_pci_interface_bot_virtual_t exmimo_pci_kvirt[MAX_CARDS];
-    unsigned int bigshm_top_kvirtptr[MAX_CARDS];
+    void *bigshm_top_kvirtptr[MAX_CARDS];
     
     int card;
     int ant;
     int openair0_num_antennas[4];
 
     PAGE_SHIFT = log2_int( sysconf( _SC_PAGESIZE ) );
-    
+
+
     if ((openair0_fd = open("/dev/openair0", O_RDWR,0)) <0)
     {
         return -1;
     }
 
     ioctl(openair0_fd, openair_GET_NUM_DETECTED_CARDS, &openair0_num_detected_cards);
+
+
     
     if ( openair0_num_detected_cards == 0 )
     {
@@ -63,8 +74,10 @@ int openair0_open(void)
     ioctl(openair0_fd, openair_GET_BIGSHMTOPS_KVIRT, &bigshm_top_kvirtptr[0]);
     ioctl(openair0_fd, openair_GET_PCI_INTERFACE_BOTS_KVIRT, &exmimo_pci_kvirt[0]);
     
-    //printf("bigshm_top_kvirtptr: %08x  %08x  %08x  %08x\n", bigshm_top_kvirtptr[0], bigshm_top_kvirtptr[1], bigshm_top_kvirtptr[2], bigshm_top_kvirtptr[3]);
-    
+    printf("bigshm_top_kvirtptr (MAX_CARDS %d): %p  %p  %p  %p\n", MAX_CARDS,bigshm_top_kvirtptr[0], bigshm_top_kvirtptr[1], bigshm_top_kvirtptr[2], bigshm_top_kvirtptr[3]);
+
+
+ 
     for( card=0; card < openair0_num_detected_cards; card++)
     {
         bigshm_top[card] = (char *)mmap( NULL,
@@ -80,22 +93,30 @@ int openair0_open(void)
         }
 
         // calculate userspace addresses
-        openair0_exmimo_pci[card].firmware_block_ptr = (char*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].firmware_block_ptr - bigshm_top_kvirtptr[0]);
-        openair0_exmimo_pci[card].printk_buffer_ptr  = (char*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].printk_buffer_ptr  - bigshm_top_kvirtptr[0]);
-        openair0_exmimo_pci[card].exmimo_config_ptr  = (exmimo_config_t*) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].exmimo_config_ptr  - bigshm_top_kvirtptr[0]);
-        openair0_exmimo_pci[card].exmimo_id_ptr      = (exmimo_id_t*)     (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[0].exmimo_id_ptr      - bigshm_top_kvirtptr[0]);
+#if __x86_64
+        openair0_exmimo_pci[card].firmware_block_ptr = (bigshm_top[card] +  (int64_t)exmimo_pci_kvirt[0].firmware_block_ptr - (int64_t)bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].printk_buffer_ptr  = (bigshm_top[card] +  (int64_t)exmimo_pci_kvirt[0].printk_buffer_ptr  - (int64_t)bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].exmimo_config_ptr  = (exmimo_config_t*) (bigshm_top[card] +  (int64_t)exmimo_pci_kvirt[0].exmimo_config_ptr  - (int64_t)bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].exmimo_id_ptr      = (exmimo_id_t*)     (bigshm_top[card] +  (int64_t)exmimo_pci_kvirt[0].exmimo_id_ptr      - (int64_t)bigshm_top_kvirtptr[0]);
+#else
+        openair0_exmimo_pci[card].firmware_block_ptr = (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[0].firmware_block_ptr - (int32_t)bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].printk_buffer_ptr  = (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[0].printk_buffer_ptr  - (int32_t)bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].exmimo_config_ptr  = (exmimo_config_t*) (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[0].exmimo_config_ptr  - (int32_t)bigshm_top_kvirtptr[0]);
+        openair0_exmimo_pci[card].exmimo_id_ptr      = (exmimo_id_t*)     (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[0].exmimo_id_ptr      - (int32_t)bigshm_top_kvirtptr[0]);
+#endif
 
-        //printf("openair0_exmimo_pci.firmware_block_ptr (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.firmware_block_ptr(%p) - bigshm_top_kvirtptr(%x)\n",
-        //    openair0_exmimo_pci[card].firmware_block_ptr, bigshm_top, exmimo_pci_kvirt[card].firmware_block_ptr, bigshm_top_kvirtptr[card]);
-        //printf("card%d, openair0_exmimo_pci.exmimo_id_ptr      (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.exmimo_id_ptr     (%p) - bigshm_top_kvirtptr(%x)\n",
-        //    card, openair0_exmimo_pci[card].exmimo_id_ptr, bigshm_top[card], exmimo_pci_kvirt[card].exmimo_id_ptr, bigshm_top_kvirtptr[card]);
+        printf("openair0_exmimo_pci.firmware_block_ptr (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.firmware_block_ptr(%p) - bigshm_top_kvirtptr(%p)\n",
+            openair0_exmimo_pci[card].firmware_block_ptr, bigshm_top, exmimo_pci_kvirt[card].firmware_block_ptr, bigshm_top_kvirtptr[card]);
+        printf("card%d, openair0_exmimo_pci.exmimo_id_ptr      (%p) =  bigshm_top(%p) + exmimo_pci_kvirt.exmimo_id_ptr     (%p) - bigshm_top_kvirtptr(%p)\n",
+            card, openair0_exmimo_pci[card].exmimo_id_ptr, bigshm_top[card], exmimo_pci_kvirt[card].exmimo_id_ptr, bigshm_top_kvirtptr[card]);
         
   //if (openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev != BOARD_SWREV_CNTL2)
  //    {
 //       error("Software revision %d and firmware revision %d do not match, Please update either Software or Firmware",BOARD_SWREV_CNTL2,openair0_exmimo_pci[card].exmimo_id_ptr->board_swrev);
 //       return -5; 
  //    }
-    
+
+
         if ( openair0_exmimo_pci[card].exmimo_id_ptr->board_exmimoversion == 1)
             openair0_num_antennas[card] = 2;
 
@@ -105,8 +126,13 @@ int openair0_open(void)
 
         for (ant=0; ant<openair0_num_antennas[card]; ant++)
         {
-            openair0_exmimo_pci[card].rxcnt_ptr[ant] = (unsigned int *) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[card].rxcnt_ptr[ant] - bigshm_top_kvirtptr[card]);
-            openair0_exmimo_pci[card].txcnt_ptr[ant] = (unsigned int *) (bigshm_top[card] +  (unsigned int)exmimo_pci_kvirt[card].txcnt_ptr[ant] - bigshm_top_kvirtptr[card]);
+#if __x86_64__
+	  openair0_exmimo_pci[card].rxcnt_ptr[ant] = (unsigned int *) (bigshm_top[card] +  (int64_t)exmimo_pci_kvirt[card].rxcnt_ptr[ant] - (int64_t)bigshm_top_kvirtptr[card]);
+	  openair0_exmimo_pci[card].txcnt_ptr[ant] = (unsigned int *) (bigshm_top[card] +  (int64_t)exmimo_pci_kvirt[card].txcnt_ptr[ant] - (int64_t)bigshm_top_kvirtptr[card]);
+#else
+	  openair0_exmimo_pci[card].rxcnt_ptr[ant] = (unsigned int *) (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[card].rxcnt_ptr[ant] - (int32_t)bigshm_top_kvirtptr[card]);
+	  openair0_exmimo_pci[card].txcnt_ptr[ant] = (unsigned int *) (bigshm_top[card] +  (int32_t)exmimo_pci_kvirt[card].txcnt_ptr[ant] - (int32_t)bigshm_top_kvirtptr[card]);
+#endif
         }
 
         for (ant=0; ant<openair0_num_antennas[card]; ant++)
@@ -201,7 +227,11 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
   int ret;
   int ant;
 
+
+
   ret = openair0_open();
+
+
   if ( ret != 0 ) {
     if (ret == -1)
       printf("Error opening /dev/openair0");
@@ -225,6 +255,8 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
     exit(-1);
   }
 
+
+
   if (p_exmimo_id->board_swrev>=9)
     p_exmimo_config->framing.eNB_flag   = 0; 
   else 
@@ -238,6 +270,10 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
     p_exmimo_config->framing.resampling_factor = 2;
 #endif
 
+  if (!openair0_cfg) {
+    printf("Error, openair0_cfg is null!!\n");
+    return(-1);
+  }
   for (ant=0;ant<max(openair0_cfg->tx_num_channels,openair0_cfg->rx_num_channels);ant++) 
     p_exmimo_config->rf.rf_mode[ant] = RF_MODE_BASE;
   for (ant=0;ant<openair0_cfg->tx_num_channels;ant++)
@@ -264,14 +300,37 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
   for (ant = 0; ant<openair0_cfg->rx_num_channels; ant++) { 
     p_exmimo_config->rf.do_autocal[ant] = 1;
     p_exmimo_config->rf.rf_freq_rx[ant] = (unsigned int)openair0_cfg->rx_freq[ant];
-    p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg->rx_gain;
+    p_exmimo_config->rf.rx_gain[ant][0] = (unsigned int)openair0_cfg->rx_gain[ant];
+    printf("openair0 : programming RX antenna %d (freq %d, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_rx[ant],p_exmimo_config->rf.rx_gain[ant][0]);
   }
   for (ant = 0; ant<openair0_cfg->tx_num_channels; ant++) { 
-    p_exmimo_config->rf.do_autocal[ant] = 1;
     p_exmimo_config->rf.rf_freq_tx[ant] = (unsigned int)openair0_cfg->tx_freq[ant];
-    p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg->tx_gain;
+    p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg->tx_gain[ant];
+    printf("openair0 : programming TX antenna %d (freq %d, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_tx[ant],p_exmimo_config->rf.tx_gain[ant][0]);
   }
 
+  p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
+  p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
+  
+  for (ant=0;ant<4;ant++) {
+    p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
+    p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
+
+    if (( p_exmimo_config->rf.rf_freq_tx[ant] >= 850000000) && ( p_exmimo_config->rf.rf_freq_tx[ant] <= 865000000)) {
+      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal_850[ant];
+      p_exmimo_config->rf.rffe_band_mode[ant] = DD_TDD;	    
+    }
+    else if (( p_exmimo_config->rf.rf_freq_tx[ant] >= 1900000000) && ( p_exmimo_config->rf.rf_freq_tx[ant] <= 2000000000)) {
+      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
+      p_exmimo_config->rf.rffe_band_mode[ant] = B19G_TDD;	    
+    }
+    else {
+      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
+      p_exmimo_config->rf.rffe_band_mode[ant] = 0;	    
+    }
+  }
+  
+  return(0);
 }
 
 unsigned int *openair0_daq_cnt() {

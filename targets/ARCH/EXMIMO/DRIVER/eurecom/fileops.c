@@ -214,7 +214,7 @@ int openair_device_ioctl(struct inode *inode,struct file *filp, unsigned int cmd
 
     case openair_GET_BIGSHMTOPS_KVIRT:
     
-        //printk("[openair][IOCTL] : openair_GET_BIGSHMTOPS_KVIRT  (0x%p)[0] = %p[0] (bigshm_head) for 0..3 (sizeof %d) \n", (void *)arg, bigshm_head[0], sizeof(bigshm_head));
+      //printk("[openair][IOCTL] : openair_GET_BIGSHMTOPS_KVIRT  (0x%p)[0] = %p[0] (bigshm_head) for 0..3 (sizeof %d) \n", (void *)arg, bigshm_head[0], sizeof(bigshm_head));
         copy_to_user((void *)arg, bigshm_head, sizeof(bigshm_head));
 
         break;
@@ -222,7 +222,7 @@ int openair_device_ioctl(struct inode *inode,struct file *filp, unsigned int cmd
         
     case openair_GET_PCI_INTERFACE_BOTS_KVIRT:
         
-        //printk("[openair][IOCTL] : openair_GET_PCI_INTERFACE_BOTS_KVIRT: copying exmimo_pci_kvirt(@%8p) to %lx (sizeof %d)\n", &exmimo_pci_kvirt[0], arg, sizeof(exmimo_pci_kvirt));
+      //printk("[openair][IOCTL] : openair_GET_PCI_INTERFACE_BOTS_KVIRT: copying exmimo_pci_kvirt(@%8p) to %lx (sizeof %d)\n", &exmimo_pci_kvirt[0], arg, sizeof(exmimo_pci_kvirt));
         copy_to_user((void *)arg, exmimo_pci_kvirt, sizeof(exmimo_pci_kvirt));
    
         break;

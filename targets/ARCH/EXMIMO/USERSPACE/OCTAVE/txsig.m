@@ -1,9 +1,10 @@
 %fc  = 2660000000;
-fc  = 1907600000;
+%fc  = 1907600000;
 %fc = 859.5e6;
+fc  = [2051800000 2051800000 1551800000 2000000000];
 
 rxgain=0;
-txgain=25;
+txgain=20;
 eNB_flag = 0;
 card = 0;
 active_rf = [1 1 1 0];
@@ -23,8 +24,8 @@ rf_rxdc = rf_rxdc * active_rf;
 rf_vcocal = rf_vcocal_19G * active_rf;
 %rf_vcocal = rf_vcocal_26G_eNB * chan_sel;
 rxgain = rxgain*active_rf;
-txgain = txgain*active_rf;
-freq_tx = fc*active_rf;
+txgain = txgain*[2 2 1 1];
+freq_tx = fc.*active_rf;
 freq_rx = freq_tx;
 %freq_rx = freq_tx-120000000*chan_sel;
 %freq_tx = freq_rx+1920000;
@@ -38,17 +39,23 @@ oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_f
 amp = pow2(14)-1;
 n_bit = 16;
 
-s = zeros(76800*4,4);
+s = zeros(76800,4);
 
-select = 1;
+select = 0;
 
 switch(select)
 
+case 0
+  s(:,1) = amp * ones(1,76800);
+  s(:,2) = amp * ones(1,76800);
+  s(:,3) = amp*OFDM_TX_FRAME(512,199,128,120,1).';
+  s(:,4) = amp * ones(1,76800);
+
 case 1
-  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
-  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
-  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
-  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/7680)));
+  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
+  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
+  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
+  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
 
 case 2
   s(38400+128,1)= 80-1j*40;
