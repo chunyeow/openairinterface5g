@@ -138,7 +138,7 @@ static bool is_equal(double a, double b)
 {
   return std::fabs(a-b) < std::numeric_limits<double>::epsilon();
 }
-
+ 
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg)
 {
   usrp_state_t *s = (usrp_state_t*)malloc(sizeof(usrp_state_t));
