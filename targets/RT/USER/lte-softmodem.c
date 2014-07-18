@@ -71,7 +71,12 @@ static int hw_subframe;
 #undef MALLOC //there are two conflicting definitions, so we better make sure we don't use it at all
 #undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
 
+#ifndef USRP
 #include "openair0_lib.h"
+#else
+#include "../../ARCH/COMMON/common_lib.h"
+#endif
+
 #undef FRAME_LENGTH_COMPLEX_SAMPLES //there are two conflicting definitions, so we better make sure we don't use it at all
 
 #include "PHY/vars.h"
@@ -227,7 +232,7 @@ static char                    *itti_dump_file = NULL;
 #endif
 
 double tx_gain = 20;
-double rx_gain = 30;
+double rx_gain = 20;
 
 double sample_rate=30.72e6;
 double bw = 14e6;
@@ -292,7 +297,7 @@ static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,7
 
 static LTE_DL_FRAME_PARMS      *frame_parms;
 
-int multi_thread=0;
+int multi_thread=1;
 int N_RB_DL=25;
 
 unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
@@ -698,7 +703,9 @@ void *l2l1_task(void *arg)
 void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 
   unsigned int aa,slot_offset, slot_offset_F;
+#ifndef USRP
   int dummy_tx_b[7680*4] __attribute__((aligned(16)));
+#endif
   int i, tx_offset;
   int slot_sizeF = (phy_vars_eNB->lte_frame_parms.ofdm_symbol_size)*
     ((phy_vars_eNB->lte_frame_parms.Ncp==1) ? 6 : 7);
@@ -753,8 +760,42 @@ void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 	((short*)&phy_vars_eNB->lte_eNB_common_vars.txdata[0][aa][tx_offset])[1]=
 	  ((short*)dummy_tx_b)[2*i+1]<<4;
       }
-#endif //EXMIMO
     }
+  
+#else
+
+    for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx; aa++) {
+      if (phy_vars_eNB->lte_frame_parms.Ncp == EXTENDED){ 
+	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
+		     &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
+		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
+		     6,
+		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
+		     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
+		     phy_vars_eNB->lte_frame_parms.rev,
+		     CYCLIC_PREFIX);
+	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
+		     &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1)],
+		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
+		     6,
+		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
+		     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
+		     phy_vars_eNB->lte_frame_parms.rev,
+		     CYCLIC_PREFIX);
+      }
+      else {
+	normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
+			  &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[aa][slot_offset],
+			  7,
+			  &(phy_vars_eNB->lte_frame_parms));
+	normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
+			  &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1)],
+			  7,
+			  &(phy_vars_eNB->lte_frame_parms));
+      }
+
+    }
+#endif //EXMIMO
   }
 }
 
@@ -1248,8 +1289,8 @@ static void *eNB_thread(void *arg)
 	if (multi_thread == 0) {
 	  if ((slot&1) == 0) {
 	    LOG_I(PHY,"[eNB] Single thread slot %d\n",slot);
-	    phy_procedures_eNB_lte ((1+(slot>>1))%10, PHY_vars_eNB_g[0], 0, no_relay,NULL);
-	    do_OFDM_mod((1+(slot>>1))%10,PHY_vars_eNB_g[0]);
+	    phy_procedures_eNB_lte ((2+(slot>>1))%10, PHY_vars_eNB_g[0], 0, no_relay,NULL);
+	    do_OFDM_mod((2+(slot>>1))%10,PHY_vars_eNB_g[0]);
 	  }
 	}
 	else { // multi-thread > 0
@@ -1570,6 +1611,9 @@ static void get_options (int argc, char **argv) {
   int                           c;
   //  char                          line[1000];
   //  int                           l;
+#ifdef USRP
+  int clock_src;
+#endif
   const Enb_properties_array_t *enb_properties;
   
   enum long_option_e {
@@ -1627,7 +1671,7 @@ static void get_options (int argc, char **argv) {
       mode = no_L2_connect;
       break;
     case 'M':
-      multi_thread=1;
+      multi_thread=0;
       break;
     case 'C':
       downlink_frequency[0] = atof(optarg); // Use float to avoid issue with frequency over 2^31.
@@ -1692,15 +1736,16 @@ static void get_options (int argc, char **argv) {
       }
     case 's':
 #ifdef USRP
-        int clock_src = atoi(optarg);
-        if (clock_src == 0) {
-          char ref[128] = "internal";
-          //strncpy(uhd_ref, ref, strlen(ref)+1);
-        }
-        else if (clock_src == 1) {
-          char ref[128] = "external";
-          //strncpy(uhd_ref, ref, strlen(ref)+1);
-        }
+
+      clock_src = atoi(optarg);
+      if (clock_src == 0) {
+	char ref[128] = "internal";
+	//strncpy(uhd_ref, ref, strlen(ref)+1);
+      }
+      else if (clock_src == 1) {
+	char ref[128] = "external";
+	//strncpy(uhd_ref, ref, strlen(ref)+1);
+      }
 #else
       printf("Note: -s not defined for ExpressMIMO2\n");
 #endif
@@ -2155,7 +2200,10 @@ int main(int argc, char **argv) {
 	PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
   }
 
+#ifndef USRP
   openair0_dump_config(card);
+#endif
+
   /*  
       for (ant=0;ant<4;ant++)
       p_exmimo_config->rf.do_autocal[ant] = 0;
@@ -2212,8 +2260,10 @@ int main(int argc, char **argv) {
 
 
   // this starts the DMA transfers
+#ifndef USRP
   if (UE_flag!=1)
     openair0_start_rt_acquisition(card);
+#endif
 
 #ifdef XFORMS
   if (do_forms==1) {
@@ -2412,10 +2462,12 @@ int main(int argc, char **argv) {
 #endif
 #endif
 
+#ifndef USRP
   printf("stopping card\n");
   openair0_stop(card);
   printf("closing openair0_lib\n");
   openair0_close();
+#endif
 
 #ifdef EMOS
   printf("waiting for EMOS thread\n");
@@ -2439,6 +2491,7 @@ int main(int argc, char **argv) {
 void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
 
   int i;
+#ifndef USRP
   if (phy_vars_ue) {
     if ((frame_parms->nb_antennas_rx>1) && (carrier>0)) {
       printf("RX antennas > 1 and carrier > 0 not possible\n");
@@ -2465,6 +2518,9 @@ void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms,
       printf("txdata[%d] @ %p\n",i,phy_vars_ue->lte_ue_common_vars.txdata[i]);
     }
   }
+#else
+  printf("USRP not supported for UE yet!");
+#endif
 }
 
 void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {

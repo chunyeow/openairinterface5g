@@ -17,8 +17,17 @@ ifeq "$(GCCVERSION)" "4.6.1"
     CFLAGS += -Wno-packed-bitfield-compat
 endif
 
+ifndef USRP
+USRP=0
+endif
+
 CFLAGS += -O2 
-CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON 
+
+ifeq ($(USRP),0)
+  CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+endif
+
 ifdef DEBUG
 CFLAGS += -g -ggdb
 endif
@@ -29,9 +38,7 @@ ifndef RTAI
 RTAI=1
 endif
 
-ifndef USRP
-USRP=0
-endif
+
 
 ifeq ($(ENABLE_RAL), 1)
 CFLAGS += -DENABLE_RAL
@@ -62,10 +69,14 @@ CFLAGS += -DENABLE_USE_CPU_EXECUTION_TIME
 OBJ += sched_dlsch.o sched_rx_pdsch.o rt_wrapper.o
 endif
 
-OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o #$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o 
+OBJ += $(OPENAIR1_DIR)/SIMULATION/TOOLS/taus.o $(OPENAIR_TARGETS)/SIMU/USER/init_lte.o 
 
+ifeq ($(USRP),0)
 OBJ += $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/openair0_lib.o $(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/gain_control.o
-CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
+CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS 
+endif
+
+CFLAGS += -DENABLE_VCD_FIFO
 
 TOP_DIR = $(OPENAIR1_DIR)
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
@@ -154,11 +165,8 @@ CPUFLAGS = -mmmx -msse -msse2 -mssse3 -msse4.1
 CFLAGS += -Wall -fno-strict-aliasing -DPHYSIM -DUSER_MODE -DPC_TARGET -DPC_DSP -DNB_ANTENNAS_RX=2 -DNB_ANTENNAS_TXRX=2 -DNB_ANTENNAS_TX=2 -DPHY_CONTEXT=1 -rdynamic $(CPUFLAGS) # -Wno-packed-bitfield-compat
 CFLAGS += -DOPENAIR_LTE -DENABLE_FXP -DOPENAIR1 -DDLSCH_THREAD #-DULSCH_THREAD
 
-#only for CBMIMO1
-ifdef CBMIMO1
-CFLAGS += -DFW2011 -DBIT8_TX -DCBMIMO1
-else
-#only for EXPRESS MIMO
+
+ifeq ($(USRP),0)
 CFLAGS += -DEXMIMO
 #CFLAGS += -DEXMIMO -DTIMING_ADVANCE_HW=138 #this is for ExpressMIMO 1
 #CFLAGS += -DEXMIMO -DTIMING_ADVANCE_HW=45 #this is for ExpressMIMO 2
@@ -184,10 +192,10 @@ RTAI_CFLAGS += $(shell rtai-config --lxrt-cflags) -DRTAI
 LDFLAGS += $(shell rtai-config --lxrt-ldflags)
 endif
 
-ifeq ($(USRP),1)
-CFLAGS += -I/opt/uhd/include -L/opt/uhd/lib -luhd -lpthread -lstdc++
-CFLAGS += -DUSRP
-endif
+#ifeq ($(USRP),1)
+#CFLAGS += -I/opt/uhd/include -L/opt/uhd/lib -luhd -lpthread -lstdc++
+#CFLAGS += -DUSRP
+#endif
 #CFLAGS += -I/usr/include/c++/4.6 -I/usr/include/c++/4.6/x86_64-linux-gnu -I/usr/include/rtai/
 
 LFDS_OBJ_DIR		 = $(subst $(OPENAIR_HOME),$(OBJS_DIR),$(LFDS_DIR))
@@ -208,7 +216,7 @@ $(LFDS_LIB):
 
 ifeq ($(USRP),1)
 $(USRP_OBJ):$(USRP_FILE_OBJ)
-#	@echo Compiling $<
+	@echo Compiling $<
 	@$(CXX) -c  $(USRP_CFLAGS) $(USRP_FILE_OBJ) -o $(USRP_OBJ)
 endif
 
@@ -261,7 +269,7 @@ sleeptest: rt_wrapper.o sleeptest.c
 
 lte-softmodem: $(OBJ) $(USRP_OBJ) $(ASN1_MSG_OBJS1) $(RTAI_OBJ) lte-softmodem.o $(SHARED_DEPENDENCIES)
 	@echo Linking $@
-	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
+	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJ) $(USRP_OBJ) $(RTAI_OBJ) $(ASN1_MSG_OBJS1) lte-softmodem.o -o lte-softmodem $(LDFLAGS) $(LIBS)
 
 emos-raw: $(SHARED_DEPENDENCIES) $(OBJ_EMOS) emos-raw.c
 	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(RTAI_CFLAGS) $(OBJ_EMOS) -o emos-raw emos-raw.c $(LDFLAGS) $(LIBS)
