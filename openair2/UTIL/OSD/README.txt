@@ -13,3 +13,5 @@ Please follow the steps described below:
 - if does not exist, create a symbolic link pointing at $(OPENAIR_TARGETS)/SIMU/EXAMPLES/OSD/ in /opt/lampp/htdocs/OSD/ (e.g. ln -s $(OPENAIR_TARGETS)/SIMU/EXAMPLES/OSD OSD )
 - restart the lampp (e.g. sudo /opt/lampp/lampp restart)
 - open the browser, and goto http://localhost/OSD
+
+For the license, see the file COPYING

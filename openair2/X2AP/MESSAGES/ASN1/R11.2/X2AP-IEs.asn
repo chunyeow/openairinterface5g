@@ -77,7 +77,7 @@ X2ap-ABSInformationFDD ::= SEQUENCE {
 	abs-pattern-info					BIT STRING (SIZE(40)),
 	numberOfCellSpecificAntennaPorts	ENUMERATED {one, two, four, ...},
 	measurement-subset					BIT STRING (SIZE(40)),
---EURECOM COMMENT, ADDED NEXT LINE 	iE-Extensions						ProtocolExtensionContainer { { X2ap-ABSInformationFDD-ExtIEs} } OPTIONAL,
+-- iE-Extensions						ProtocolExtensionContainer { { X2ap-ABSInformationFDD-ExtIEs} } OPTIONAL,
 	iE-Extensions               X2ap-IE-Extensions OPTIONAL,
     	...
 }
@@ -789,7 +789,9 @@ X2ap-BandInfo-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 
 -- N
 
-X2ap-Neighbour-Information ::= SEQUENCE (SIZE (0..x2ap-maxnoofNeighbours)) OF SEQUENCE {
+X2ap-Neighbour-Information ::= SEQUENCE (SIZE (0..x2ap-maxnoofNeighbours)) OF X2ap-Neighbour-Information-Elm
+
+X2ap-Neighbour-Information-Elm ::= SEQUENCE {
 	eCGI						X2ap-ECGI,
 	pCI					 	X2ap-PCI,
 	eARFCN						X2ap-EARFCN,
@@ -989,7 +991,10 @@ X2ap-S1TNLLoadIndicator-ExtIEs X2AP-PROTOCOL-EXTENSION ::= {
 
 
 
-X2ap-ServedCells ::= SEQUENCE (SIZE (1.. x2ap-maxCellineNB)) OF SEQUENCE {
+X2ap-ServedCells ::= SEQUENCE (SIZE (1.. x2ap-maxCellineNB)) OF ServedCellItem
+
+
+ServedCellItem ::= SEQUENCE {
 	servedCellInfo					X2ap-ServedCell-Information,
 	neighbour-Info					X2ap-Neighbour-Information			OPTIONAL,
 --EURECOM COMMENT, ADDED NEXT LINE 	iE-Extensions					ProtocolExtensionContainer { {ServedCell-ExtIEs} } OPTIONAL,

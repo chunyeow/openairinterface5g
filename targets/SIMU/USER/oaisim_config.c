@@ -246,8 +246,8 @@ void init_oai_emulation(void) {
 	oai_emulation.environment_system_config.system_bandwidth_MB = 7.68;
 	oai_emulation.environment_system_config.system_frequency_GHz = 1.9;
 
-	oai_emulation.topology_config.area.x_m = 500;
-	oai_emulation.topology_config.area.y_m = 500;
+	oai_emulation.topology_config.area.x_m = 1000;
+	oai_emulation.topology_config.area.y_m = 1000;
 	oai_emulation.topology_config.network_type.selected_option = "homogeneous";
 	oai_emulation.topology_config.cell_type.selected_option = "macrocell";
 	oai_emulation.topology_config.relay.number_of_relays = 0;

@@ -14,6 +14,7 @@ First, you must have all four openair SW directories, openair1, openair2, openai
 
 1. The following packages must be available on your system:
 
+        - ssh, python, python pexpect 
         - libblas and libblas-dev
 	- libconfig++8-dev
 	- libgtk-3-dev

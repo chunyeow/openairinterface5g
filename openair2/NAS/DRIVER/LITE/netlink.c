@@ -1,36 +1,37 @@
 /*******************************************************************************
+    OpenAirInterface
+    Copyright(c) 1999 - 2014 Eurecom
 
-  Eurecom OpenAirInterface 2
-  Copyright(c) 1999 - 2010 Eurecom
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-  This program is free software; you can redistribute it and/or modify it
-  under the terms and conditions of the GNU General Public License,
-  version 2, as published by the Free Software Foundation.
 
-  This program is distributed in the hope it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-  more details.
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License along with
-  this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-
-  The full GNU General Public License is included in this distribution in
-  the file called "COPYING".
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is
+    included in this distribution in the file called "COPYING". If not,
+    see <http://www.gnu.org/licenses/>.
 
   Contact Information
-  Openair Admin: openair_admin@eurecom.fr
-  Openair Tech : openair_tech@eurecom.fr
-  Forums       : http://forums.eurecom.fsr/openairinterface
-  Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+
+  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
 
 *******************************************************************************/
+
 /*! \file netlink.c
 * \brief establish a netlink
-* \author Raymond knopp, and Navid Nikaein, Lionel Gauthier
+* \author Navid Nikaein, Lionel Gauthier, and Raymond knopp
 * \company Eurecom
-* \email: knopp@eurecom.fr, and navid.nikaein@eurecom.fr, lionel.gauthier@eurecom.fr
+* \email:navid.nikaein@eurecom.fr, lionel.gauthier@eurecom.fr, knopp@eurecom.fr
 */
 
 #include <linux/version.h>

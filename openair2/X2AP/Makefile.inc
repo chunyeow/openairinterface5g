@@ -30,7 +30,7 @@ CFLAGS =            \
 	-DENABLE_USE_MME    \
 	-DUSER_MODE     \
 	-I.        \
-	-I./MESSAGES/ASN1/$(ASN1RELDIR) \
+	-I$(ASN1MESSAGESDIR)/ASN1/$(ASN1RELDIR) \
 	-I$(OUTDIR)     \
 	-I../UTILS      \
 	$(ADD_CFLAGS)       \
@@ -70,16 +70,17 @@ $(X2AP_GENERATED): %.o : %.c
 
 $(OUTDIR)/x2ap_ieregen.stamp: $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU-Contents.asn $(ASN1DIR)/asn1tostruct.py
 	@if [ ! -d $(OUTDIR) ]; then mkdir -p $(OUTDIR); fi;
-	@python $(ASN1DIR)/asn1tostruct.py -f$< -o$(OUTDIR)
+	@python $(ASN1DIR)/asn1tostruct.py -f$< -o$(OUTDIR) 
 	@echo Timestamp > $@
 
 #ProtocolExtensionContainer
 #$(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn 
 
-$(OUTDIR)/x2ap_asn1regen.stamp:  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-CommonDataTypes.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Constants.asn \
-	$(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn 
+$(OUTDIR)/x2ap_asn1regen.stamp:  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-CommonDataTypes.asn  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-Constants.asn $(ASN1DIR)/$(ASN1RELDIR)/X2AP-IEs.asn  $(ASN1DIR)/$(ASN1RELDIR)/X2AP-PDU.asn   
+	@echo "Timestamp DIR " $(ASN1DIR) " DIRREL " $(ASN1RELDIR)
 	(cd $(ASN1DIR)/$(ASN1RELDIR) && asn1c -fhave_native64 -gen-PER $^)
-	@echo Timestamp > $@
+	@echo "Timestamp" $(X2AP_CFLAGS)
+	@echo Timestamp > $@	
 
 $(OUTDIR)/libx2ap.a: $(OUTDIR)/x2ap_ieregen.stamp $(OUTDIR)/x2ap_asn1regen.stamp $(X2AP_GENERATED) $(addprefix $(OUTDIR)/,$(libx2ap_OBJECTS))
 	@echo Creating X2AP archive

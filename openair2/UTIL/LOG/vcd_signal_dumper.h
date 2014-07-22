@@ -1,39 +1,42 @@
 /*******************************************************************************
- * 
- * Eurecom OpenAirInterface 1
- * Copyright(c) 1999 - 2012 Eurecom
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
- *
- * The full GNU General Public License is included in this distribution in
- * the file called "COPYING".
- *
- * Contact Information
- * Openair Admin: openair_admin@eurecom.fr
- * Openair Tech : openair_tech@eurecom.fr
- * Forums       : http://forums.eurecom.fsr/openairinterface
- * Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
- *
- *******************************************************************************/
+    OpenAirInterface
+    Copyright(c) 1999 - 2014 Eurecom
+
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is
+    included in this distribution in the file called "COPYING". If not,
+    see <http://www.gnu.org/licenses/>.
+
+  Contact Information
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+
+  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
+
+*******************************************************************************/
 
 /*! \file vcd_signal_dumper.h
  * \brief Output functions call to VCD file which is readable by gtkwave.
  * \author ROUX Sebastien
- * \date 2012
+ * \author S. Roux
+ * \maintainer: navid nikaein
+ * \date 2012 - 2104 
  * \version 0.1
+ * \company Eurecom
+ * \email: navid.nikaein@eurecom.fr
  * \note
- * \bug
  * \warning
  */
 
