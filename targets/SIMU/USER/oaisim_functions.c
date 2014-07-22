@@ -34,7 +34,7 @@
 #include <signal.h>
 #include <execinfo.h>
 #include <time.h>
-
+#include <mcheck.h>
 #include <sys/timerfd.h>
 
 #include "assertions.h"
@@ -188,6 +188,8 @@ void get_simulation_options(int argc, char *argv[]) {
     LONG_OPTION_UE_MIHF_REMOTE_PORT,
     LONG_OPTION_UE_MIHF_IP_ADDRESS,
     LONG_OPTION_UE_MIHF_ID,
+
+    LONG_OPTION_MALLOC_TRACE_ENABLED,
   };
 
   static struct option long_options[] = {
@@ -215,6 +217,7 @@ void get_simulation_options(int argc, char *argv[]) {
       {"ue-mihf-ip-address",     required_argument, 0, LONG_OPTION_UE_MIHF_IP_ADDRESS},
       {"ue-mihf-id",             required_argument, 0, LONG_OPTION_UE_MIHF_ID},
 
+      {"malloc-trace-enabled",   no_argument,       0, LONG_OPTION_MALLOC_TRACE_ENABLED},
       {NULL, 0, NULL, 0}
   };
 
@@ -242,8 +245,13 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
       
       case LONG_OPTION_OEH_ENABLED:
-	oai_emulation.info.oeh_enabled = 1;
-	break;
+	      oai_emulation.info.oeh_enabled = 1;
+	    break;
+
+      case LONG_OPTION_MALLOC_TRACE_ENABLED:
+    	 mtrace();
+	     break;
+
 #if defined(ENABLE_RAL)
       case LONG_OPTION_ENB_RAL_LISTENING_PORT:
         if (optarg) {
