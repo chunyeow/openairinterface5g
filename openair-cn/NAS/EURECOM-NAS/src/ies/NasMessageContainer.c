@@ -88,7 +88,7 @@ void dump_nas_message_container_xml(NasMessageContainer *nasmessagecontainer, ui
     if (iei > 0)
         /* Don't display IEI if = 0 */
         printf("    <IEI>0x%X</IEI>\n", iei);
-    dump_octet_string_xml(&nasmessagecontainer->nasmessagecontainercontents);
+    printf("%s", dump_octet_string_xml(&nasmessagecontainer->nasmessagecontainercontents));
     printf("</Nas Message Container>\n");
 }
 

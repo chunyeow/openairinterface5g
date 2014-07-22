@@ -1672,29 +1672,40 @@ static int _emm_attach_release(void *args)
 
         if (emm_ctx->guti) {
             free(emm_ctx->guti);
+            emm_ctx->guti = NULL;
         }
         if (emm_ctx->imsi) {
             free(emm_ctx->imsi);
+            emm_ctx->imsi = NULL;
         }
         if (emm_ctx->imei) {
             free(emm_ctx->imei);
+            emm_ctx->imei = NULL;
         }
         if (emm_ctx->esm_msg.length > 0) {
             free(emm_ctx->esm_msg.value);
+            emm_ctx->esm_msg.value = NULL;
         }
         /* Release NAS security context */
         if (emm_ctx->security) {
             emm_security_context_t *security = emm_ctx->security;
             if (security->kasme.value) {
                 free(security->kasme.value);
+                security->kasme.value  = NULL;
+                security->kasme.length = 0;
             }
             if (security->knas_enc.value) {
                 free(security->knas_enc.value);
+                security->knas_enc.value  = NULL;
+                security->knas_enc.length = 0;
             }
             if (security->knas_int.value) {
                 free(security->knas_int.value);
+                security->knas_int.value  = NULL;
+                security->knas_int.length = 0;
             }
             free(emm_ctx->security);
+            emm_ctx->security = NULL;
         }
         /* Release the EMM context */
 #if defined(EPC_BUILD)

@@ -534,12 +534,18 @@ void emm_main_cleanup(void)
         emm_security_context_t *security = _emm_data.security;
         if (security->kasme.value) {
             free(security->kasme.value);
+            security->kasme.value  = NULL;
+            security->kasme.length = 0;
         }
         if (security->knas_enc.value) {
             free(security->knas_enc.value);
+            security->knas_enc.value  = NULL;
+            security->knas_enc.length = 0;
         }
         if (security->knas_int.value) {
             free(security->knas_int.value);
+            security->knas_int.value  = NULL;
+            security->knas_int.length = 0;
         }
         free(_emm_data.security);
         _emm_data.security = NULL;

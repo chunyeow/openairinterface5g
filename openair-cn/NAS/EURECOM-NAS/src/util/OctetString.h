@@ -55,11 +55,10 @@ typedef struct OctetString_tag {
         }                                                                     \
         (oCTETsTRINGcOPY).length = strlen((const char*)(oCTETsTRINGoRIG).value);\
         assert((oCTETsTRINGoRIG).length == (oCTETsTRINGcOPY).length);         \
-        (oCTETsTRINGcOPY).value  = malloc((oCTETsTRINGoRIG).length+1);        \
+        (oCTETsTRINGcOPY).value  = malloc((oCTETsTRINGoRIG).length);        \
         memcpy((oCTETsTRINGcOPY).value,                                       \
             (oCTETsTRINGoRIG).value,                                          \
             (oCTETsTRINGoRIG).length);                                        \
-        (oCTETsTRINGcOPY).value[(oCTETsTRINGoRIG).length] = '\0';             \
     } while (0);
 
 OctetString* dup_octet_string(OctetString*octetstring);
@@ -70,9 +69,9 @@ int encode_octet_string(OctetString *octetstring, uint8_t *buffer, uint32_t len)
 
 int decode_octet_string(OctetString *octetstring, uint16_t pdulen, uint8_t *buffer, uint32_t buflen);
 
-void dump_octet_string_xml(OctetString *octetstring);
+char* dump_octet_string_xml(const OctetString * const octetstring);
 
-void dump_octet_string(OctetString *octetstring);
+char* dump_octet_string(const OctetString * const octetstring);
 
 #endif /* OCTET_STRING_H_ */
 

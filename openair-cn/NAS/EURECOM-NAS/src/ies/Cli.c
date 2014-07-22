@@ -88,7 +88,7 @@ void dump_cli_xml(Cli *cli, uint8_t iei)
     if (iei > 0)
         /* Don't display IEI if = 0 */
         printf("    <IEI>0x%X</IEI>\n", iei);
-    dump_octet_string_xml(&cli->clivalue);
+    printf("%s", dump_octet_string_xml(&cli->clivalue));
     printf("</Cli>\n");
 }
 

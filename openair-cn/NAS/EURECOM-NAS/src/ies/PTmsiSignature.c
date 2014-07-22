@@ -82,7 +82,7 @@ void dump_p_tmsi_signature_xml(PTmsiSignature *ptmsisignature, uint8_t iei)
     if (iei > 0)
         /* Don't display IEI if = 0 */
         printf("    <IEI>0x%X</IEI>\n", iei);
-    dump_octet_string_xml(&ptmsisignature->ptmsisignaturevalue);
+    printf("%s",dump_octet_string_xml(&ptmsisignature->ptmsisignaturevalue));
     printf("</P Tmsi Signature>\n");
 }
 

@@ -88,7 +88,7 @@ void dump_access_point_name_xml(AccessPointName *accesspointname, uint8_t iei)
     if (iei > 0)
         /* Don't display IEI if = 0 */
         printf("    <IEI>0x%X</IEI>\n", iei);
-    dump_octet_string_xml(&accesspointname->accesspointnamevalue);
-    printf("</Access Point Name>\n");
+    printf("%s</Access Point Name>\n",
+    		dump_octet_string_xml(&accesspointname->accesspointnamevalue));
 }
 

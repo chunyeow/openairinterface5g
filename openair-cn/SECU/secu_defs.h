@@ -42,13 +42,17 @@
 #define SECU_DIRECTION_UPLINK   0
 #define SECU_DIRECTION_DOWNLINK 1
 
-void kdf(const uint8_t *s, const uint32_t s_length, const uint8_t *key,
-         const uint32_t key_length, uint8_t **out, uint32_t out_length);
+void kdf(uint8_t *key,
+		uint16_t key_len,
+		uint8_t *s,
+		uint16_t s_len,
+		uint8_t *out,
+		uint16_t out_len);
 
-int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t **keNB);
+int derive_keNB(const uint8_t kasme[32], const uint32_t nas_count, uint8_t *keNB);
 
 int derive_key_nas(algorithm_type_dist_t nas_alg_type, uint8_t nas_enc_alg_id,
-                   const uint8_t kasme[32], uint8_t **knas);
+                   const uint8_t kasme[32], uint8_t *knas);
 
 #define derive_key_nas_enc(aLGiD, kASME, kNAS)  \
     derive_key_nas(NAS_ENC_ALG, aLGiD, kASME, kNAS)
@@ -82,11 +86,11 @@ typedef struct {
     uint32_t  blength;
 } nas_stream_cipher_t;
 
-int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t **out);
+int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t *out);
 
 int nas_stream_encrypt_eia1(nas_stream_cipher_t *stream_cipher, uint8_t out[4]);
 
-int nas_stream_encrypt_eea2(nas_stream_cipher_t *stream_cipher, uint8_t **out);
+int nas_stream_encrypt_eea2(nas_stream_cipher_t *stream_cipher, uint8_t *out);
 
 int nas_stream_encrypt_eia2(nas_stream_cipher_t *stream_cipher, uint8_t out[4]);
 

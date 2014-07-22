@@ -82,7 +82,7 @@ void dump_authentication_parameter_rand_xml(AuthenticationParameterRand *authent
     if (iei > 0)
         /* Don't display IEI if = 0 */
         printf("    <IEI>0x%X</IEI>\n", iei);
-    dump_octet_string_xml(&authenticationparameterrand->rand);
+    printf("%s",dump_octet_string_xml(&authenticationparameterrand->rand));
     printf("</Authentication Parameter Rand>\n");
 }
 

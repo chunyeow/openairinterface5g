@@ -66,7 +66,7 @@
     s[5] = 0x00;
     s[6] = 0x01;
 
-    kdf(s, 7, (uint8_t*)kasme, 32, (uint8_t**)&knas_temp, 32);
+    kdf((uint8_t*)kasme, 32, s, 7, (uint8_t**)&knas_temp, 32);
 
     // Truncate the generate key to 128 bits
     memcpy(knas, knas_temp, 16);

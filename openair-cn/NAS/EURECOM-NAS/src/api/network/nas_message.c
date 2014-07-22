@@ -108,6 +108,7 @@ _nas_message_encrypt(
     UInt8_t     type,
     UInt32_t    code,
     UInt8_t     seq,
+    int         const direction,
     int         length,
     const emm_security_context_t * const emm_security_context);
 
@@ -166,6 +167,11 @@ nas_message_encrypt(
             header->security_header_type,
             header->message_authentication_code,
             header->sequence_number,
+#ifdef NAS_MME
+                SECU_DIRECTION_DOWNLINK,
+#else
+                SECU_DIRECTION_UPLINK,
+#endif
             length - size,
             emm_security_context);
         /* Integrity protected the NAS message */
@@ -183,7 +189,7 @@ nas_message_encrypt(
 #endif
                 emm_security_context);
             /* Set the message authentication code of the NAS message */
-            *(UInt32_t*)(outbuf + sizeof(UInt8_t)) = mac;
+            *(UInt32_t*)(outbuf + sizeof(UInt8_t)) = htonl(mac);
         }
     }
     else {
@@ -265,9 +271,22 @@ int nas_message_decrypt(
     int size = _nas_message_header_decode(inbuf, header, length);
 
     if (size < 0) {
+    	LOG_TRACE(DEBUG, "MESSAGE TOO SHORT");
         LOG_FUNC_RETURN (TLV_DECODE_BUFFER_TOO_SHORT);
     }
     else if (size > 1) {
+#if defined(NAS_MME)
+    	if (emm_security_context->ul_count.seq_num > header->sequence_number) {
+    	    emm_security_context->ul_count.overflow += 1;
+    	}
+    	emm_security_context->ul_count.seq_num = header->sequence_number;
+
+#else
+    	if (emm_security_context->dl_count.seq_num > header->sequence_number) {
+    		emm_security_context->dl_count.overflow += 1;
+    	}
+    	emm_security_context->dl_count.seq_num = header->sequence_number;
+#endif
         /* Compute offset of the sequence number field */
         int offset = size - sizeof(UInt8_t);
         /* Compute the NAS message authentication code */
@@ -281,20 +300,29 @@ int nas_message_decrypt(
 #endif
             emm_security_context);
 
+
         /* Check NAS message integrity */
         if (mac != header->message_authentication_code) {
+        	LOG_TRACE(DEBUG,
+        	        "MAC Failure MSG:%08X(%u) <> INT ALGO:%08X(%u)",
+        	        header->message_authentication_code,
+        	        header->message_authentication_code,
+        	        mac,
+        	        mac);
 #if defined(NAS_MME)
             LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
 #else
 #warning "added test on integrity algorithm because of SECURITY_MODE_COMMAND not correctly handled in UE (check integrity)"
             if (emm_security_context->selected_algorithms.integrity !=
         		    NAS_SECURITY_ALGORITHMS_EIA0) {
-                LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
+            	LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
             } else {
                 LOG_TRACE(WARNING,
                 		"MAC failure but continue due to EIA0 selected");
             }
 #endif
+        } else {
+        	LOG_TRACE(DEBUG, "Integrity: MAC Success");
         }
 
         /* Decrypt the security protected NAS message */
@@ -307,6 +335,7 @@ int nas_message_decrypt(
         bytes = length - size;
     }
     else {
+    	LOG_TRACE(DEBUG, "Plain NAS message found");
         /* The input buffer contains a plain NAS message */
         memcpy(outbuf, inbuf, length);
     }
@@ -341,15 +370,6 @@ int nas_message_decode(
     LOG_FUNC_IN;
     emm_security_context_t *emm_security_context   = (emm_security_context_t*)security;
     int bytes;
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-    int down_link;
-
-# if ((defined(EPC_BUILD) && defined(NAS_MME)))
-    down_link = 0;
-# else
-    down_link = 1;
-# endif
-#endif
 
     /* Decode the header */
     int size = _nas_message_header_decode(buffer, &msg->header, length);
@@ -358,6 +378,18 @@ int nas_message_decode(
         LOG_FUNC_RETURN (TLV_DECODE_BUFFER_TOO_SHORT);
     }
     else if (size > 1) {
+#if defined(NAS_MME)
+    	if (emm_security_context->ul_count.seq_num > msg->header.sequence_number) {
+    	    emm_security_context->ul_count.overflow += 1;
+    	}
+    	emm_security_context->ul_count.seq_num = msg->header.sequence_number;
+
+#else
+    	if (emm_security_context->dl_count.seq_num > msg->header.sequence_number) {
+    		emm_security_context->dl_count.overflow += 1;
+    	}
+    	emm_security_context->dl_count.seq_num = msg->header.sequence_number;
+#endif
         /* Compute offset of the sequence number field */
         int offset = size - sizeof(UInt8_t);
         /* Compute the NAS message authentication code */
@@ -431,15 +463,7 @@ int nas_message_encode(
 
     emm_security_context_t *emm_security_context   = (emm_security_context_t*)security;
     int bytes;
-#if ((defined(EPC_BUILD) && defined(NAS_MME)) || (defined(ENABLE_NAS_UE_LOGGING) && defined(UE_BUILD) && defined(NAS_UE)))
-    int down_link;
 
-# if ((defined(EPC_BUILD) && defined(NAS_MME)))
-    down_link = 1;
-# else
-    down_link = 0;
-# endif
-#endif
 
     /* Encode the header */
     int size = _nas_message_header_encode(buffer, &msg->header, length);
@@ -459,9 +483,13 @@ int nas_message_encode(
             /* Compute offset of the sequence number field */
             int offset = size - sizeof(UInt8_t);
             /* Compute the NAS message authentication code */
+            LOG_TRACE(DEBUG,
+                "offset %d = %d - %d, hdr encode = %d, length = %d bytes = %d",
+                offset, size, sizeof(UInt8_t),
+                size, length, bytes);
             UInt32_t mac = _nas_message_get_mac(
                 buffer + offset,
-                length - offset,
+                bytes + size - offset,
 #ifdef NAS_MME
                 SECU_DIRECTION_DOWNLINK,
 #else
@@ -469,7 +497,7 @@ int nas_message_encode(
 #endif
                 emm_security_context);
             /* Set the message authentication code of the NAS message */
-            *(UInt32_t*)(buffer + sizeof(UInt8_t)) = mac;
+            *(UInt32_t*)(buffer + sizeof(UInt8_t)) = htonl(mac);
 
             if (emm_security_context) {
 #ifdef NAS_MME
@@ -832,6 +860,11 @@ static int _nas_message_protected_encode(
                 msg->header.security_header_type,
                 msg->header.message_authentication_code,
                 msg->header.sequence_number,
+#ifdef NAS_MME
+                SECU_DIRECTION_DOWNLINK,
+#else
+                SECU_DIRECTION_UPLINK,
+#endif
                 size,
                 emm_security_context);
             //seq, size);
@@ -901,6 +934,7 @@ static int _nas_message_decrypt(
  **		 type:		The security header type                   **
  **		 code:		The message authentication code            **
  **		 seq:		The sequence number                        **
+ **		 direction:	The sequence number                        **
  **		 length:	Maximal capacity of the output buffer      **
  **		 Others:	None                                       **
  **                                                                        **
@@ -917,17 +951,60 @@ static int _nas_message_encrypt(
     UInt8_t     type,
     UInt32_t    code,
     UInt8_t     seq,
+    int         const direction,
     int         length,
     const emm_security_context_t * const emm_security_context)
 {
     LOG_FUNC_IN;
 
-    int size = length;
+    if (!emm_security_context) {
+        LOG_TRACE(ERROR,
+            "No security context set for encryption protection algorithm");
+        LOG_FUNC_RETURN (0);
+    }
 
-    /* TODO: run the cyphering algorithm */
-    memcpy(dest, src, length);
+    switch (emm_security_context->selected_algorithms.encryption) {
 
-    LOG_FUNC_RETURN (size);
+        case NAS_SECURITY_ALGORITHMS_EEA1: {
+            LOG_TRACE(WARNING,
+                "TODO NAS_SECURITY_ALGORITHMS_EEA1 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                direction,
+                emm_security_context->ul_count.seq_num,
+                emm_security_context->dl_count.seq_num);
+            memcpy(dest, src, length);
+            LOG_FUNC_RETURN (length);
+
+        }break;
+
+        case NAS_SECURITY_ALGORITHMS_EEA2: {
+            LOG_TRACE(WARNING,
+                "TODO NAS_SECURITY_ALGORITHMS_EEA2 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                direction,
+                emm_security_context->ul_count.seq_num,
+                emm_security_context->dl_count.seq_num);
+            memcpy(dest, src, length);
+            LOG_FUNC_RETURN (length);
+
+            }break;
+
+        case NAS_SECURITY_ALGORITHMS_EEA0:
+            LOG_TRACE(DEBUG,
+                "NAS_SECURITY_ALGORITHMS_EEA0 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                direction,
+                emm_security_context->ul_count.seq_num,
+                emm_security_context->dl_count.seq_num);
+            memcpy(dest, src, length);
+            LOG_FUNC_RETURN (length);
+
+            break;
+
+        default:
+        	LOG_TRACE(ERROR,
+              "Unknown Cyphering protection algorithm %d",
+              emm_security_context->selected_algorithms.encryption);
+        	break;
+    }
+    LOG_FUNC_RETURN (length);
 }
 
 /*
@@ -938,21 +1015,22 @@ static int _nas_message_encrypt(
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_message_get_mac()                                    **
+ ** Name:	 _nas_message_get_mac()                                        **
  **                                                                        **
  ** Description: Run integrity algorithm onto cyphered or uncyphered NAS   **
- **		 message encoded in the input buffer and return the compu- **
- **		 ted message authentication code                           **
+ **		 message encoded in the input buffer and return the compu-         **
+ **		 ted message authentication code                                   **
  **                                                                        **
- ** Inputs	 buffer:	Pointer to the integrity protected data    **
- **				buffer                                     **
- **		 count:		Value of the uplink NAS counter            **
- **		 length:	Length of the input buffer                 **
- **		 Others:	None                                       **
+ ** Inputs	 buffer:	Pointer to the integrity protected data            **
+ **				buffer                                                     **
+ **		 count:		Value of the uplink NAS counter                        **
+ **		 length:	Length of the input buffer                             **
+ **	     direction                                                         **
+ **		 Others:	None                                                   **
  **                                                                        **
  ** Outputs:	 None                                                      **
- ** 		 Return:	The message authentication code            **
- **		 Others:	None                                       **
+ ** 		 Return:	The message authentication code                    **
+ **		 Others:	None                                                   **
  **                                                                        **
  ***************************************************************************/
 static UInt32_t _nas_message_get_mac(
@@ -982,11 +1060,8 @@ static UInt32_t _nas_message_get_mac(
             UInt32_t            count;
             UInt32_t           *mac32;
 
-            LOG_TRACE(DEBUG,
-                "NAS_SECURITY_ALGORITHMS_EIA1 dir %d ul_count.seq_num %d dl_count.seq_num %d",
-                direction,
-                emm_security_context->ul_count.seq_num,
-                emm_security_context->dl_count.seq_num);
+            int i,bytes = 0;
+
             if (direction == SECU_DIRECTION_UPLINK) {
                 count = 0x00000000 ||
                     ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
@@ -996,7 +1071,31 @@ static UInt32_t _nas_message_get_mac(
                     ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
                     (emm_security_context->dl_count.seq_num & 0x000000FF);
             }
-            stream_cipher.key        = emm_security_context->knas_int.value;
+            LOG_TRACE(DEBUG,
+                "NAS_SECURITY_ALGORITHMS_EIA1 dir %s count.seq_num %u count %u",
+                (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num,
+                count);
+
+        	fprintf(stderr, "\n[NAS]\t");
+
+        	for (i=0; i < length; i++)
+        	{
+        	    fprintf(stderr, "%.2hx ", (const unsigned char) buffer[i]);
+        	    /* Add new line when the number of displayed bytes exceeds
+        	     * the line's size */
+        	    if ( ++bytes > (16 - 1) ) {
+        		bytes = 0;
+        		fprintf(stderr, "\n[NAS]\t");
+        	    }
+        	}
+        	if (bytes % 16) {
+        	    fprintf(stderr, "\n");
+        	}
+        	fprintf(stderr, "\n");
+        	fflush(stderr);
+
+        	stream_cipher.key        = emm_security_context->knas_int.value;
             stream_cipher.key_length = AUTH_KNAS_INT_SIZE;
             stream_cipher.count      = count;
             stream_cipher.bearer     = 0x00; //33.401 section 8.1.1
@@ -1009,10 +1108,14 @@ static UInt32_t _nas_message_get_mac(
                 &stream_cipher,
                 mac);
             LOG_TRACE(DEBUG,
-                "NAS_SECURITY_ALGORITHMS_EIA1 returned MAC %x.%x.%x.%x for length %d direction %d, count %d",
-                mac[0], mac[1], mac[2],mac[3], length, direction, count);
+                "NAS_SECURITY_ALGORITHMS_EIA1 returned MAC %x.%x.%x.%x(%u) for length %d direction %d, count %d",
+                mac[0], mac[1], mac[2],mac[3],
+                *((UInt32_t*)&mac),
+                length,
+                direction,
+                count);
             mac32 = (UInt32_t*)&mac;
-            LOG_FUNC_RETURN (*mac32);
+            LOG_FUNC_RETURN (ntohl(*mac32));
         }break;
 
         case NAS_SECURITY_ALGORITHMS_EIA2: {
@@ -1021,11 +1124,6 @@ static UInt32_t _nas_message_get_mac(
                 UInt32_t            count;
                 UInt32_t           *mac32;
 
-                LOG_TRACE(DEBUG,
-                    "NAS_SECURITY_ALGORITHMS_EIA2 dir %d ul_count.seq_num %d dl_count.seq_num %d",
-                    direction,
-                    emm_security_context->ul_count.seq_num,
-                    emm_security_context->dl_count.seq_num);
                 if (direction == SECU_DIRECTION_UPLINK) {
                     count = 0x00000000 ||
                         ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
@@ -1035,6 +1133,12 @@ static UInt32_t _nas_message_get_mac(
                         ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
                         (emm_security_context->dl_count.seq_num & 0x000000FF);
                 }
+                LOG_TRACE(DEBUG,
+                    "NAS_SECURITY_ALGORITHMS_EIA2 dir %s count.seq_num %u count %u",
+                    (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                    (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num,
+                    count);
+
                 stream_cipher.key        = emm_security_context->knas_int.value;
                 stream_cipher.key_length = AUTH_KNAS_INT_SIZE;
                 stream_cipher.count      = count;
@@ -1048,18 +1152,23 @@ static UInt32_t _nas_message_get_mac(
                     &stream_cipher,
                     mac);
                 LOG_TRACE(DEBUG,
-                    "NAS_SECURITY_ALGORITHMS_EIA2 returned MAC %x.%x.%x.%x for length %d direction %d, count %d",
-                    mac[0], mac[1], mac[2],mac[3], length, direction, count);
+                    "NAS_SECURITY_ALGORITHMS_EIA2 returned MAC %x.%x.%x.%x(%u) for length %d direction %d, count %d",
+                    mac[0], mac[1], mac[2],mac[3],
+                    *((UInt32_t*)&mac),
+                    length,
+                    direction,
+                    count);
                 mac32 = (UInt32_t*)&mac;
-                LOG_FUNC_RETURN (*mac32);
+                LOG_FUNC_RETURN (ntohl(*mac32));
             }break;
 
         case NAS_SECURITY_ALGORITHMS_EIA0:
             LOG_TRACE(DEBUG,
-                "NAS_SECURITY_ALGORITHMS_EIA0 dir %d ul_count.seq_num %d dl_count.seq_num %d",
-                direction,
-                emm_security_context->ul_count.seq_num,
-                emm_security_context->dl_count.seq_num);
+                "NAS_SECURITY_ALGORITHMS_EIA0 dir %s count.seq_num %u",
+                (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num
+           );
+
 #if defined(EPC_BUILD) || defined(UE_BUILD)
             LOG_FUNC_RETURN (0);
 #else
@@ -1071,6 +1180,7 @@ static UInt32_t _nas_message_get_mac(
         	LOG_TRACE(ERROR,
               "Unknown integrity protection algorithm %d",
               emm_security_context->selected_algorithms.integrity);
+        	break;
     }
     LOG_FUNC_RETURN (0);
 }

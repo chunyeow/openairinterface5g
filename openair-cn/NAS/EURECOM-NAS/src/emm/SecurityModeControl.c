@@ -234,12 +234,12 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
         LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context seea=%u seia=%u", seea, seia);
         /* Update selected cyphering and integrity algorithms */
         _emm_data.non_current->capability.encryption = seea;
-        _emm_data.non_current->capability.integrity = seia;
+        _emm_data.non_current->capability.integrity  = seia;
 
         /* Derive the NAS cyphering key */
         if (_emm_data.non_current->knas_enc.value == NULL) {
             _emm_data.non_current->knas_enc.value =
-                (uint8_t *)malloc(AUTH_KNAS_ENC_SIZE);
+                (uint8_t *)calloc(1,AUTH_KNAS_ENC_SIZE);
             _emm_data.non_current->knas_enc.length = AUTH_KNAS_ENC_SIZE;
         }
         if (_emm_data.non_current->knas_enc.value != NULL) {
@@ -250,26 +250,27 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
         /* Derive the NAS integrity key */
         if (_emm_data.non_current->knas_int.value == NULL) {
             _emm_data.non_current->knas_int.value =
-                (uint8_t *)malloc(AUTH_KNAS_INT_SIZE);
+                (uint8_t *)calloc(1,AUTH_KNAS_INT_SIZE);
             _emm_data.non_current->knas_int.length = AUTH_KNAS_INT_SIZE;
         }
         if (_emm_data.non_current->knas_int.value != NULL) {
             if (rc != RETURNerror) {
                 LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context knas_int");
                 rc = _security_knas_int(&_emm_data.non_current->kasme,
-                                        &_emm_data.non_current->knas_int, seea);
+                                        &_emm_data.non_current->knas_int, seia);
             }
         }
         /* Derive the eNodeB key */
         if (_security_data.kenb.value == NULL) {
-            _security_data.kenb.value = (uint8_t *)malloc(AUTH_KENB_SIZE);
+            _security_data.kenb.value = (uint8_t *)calloc(1,AUTH_KENB_SIZE);
             _security_data.kenb.length = AUTH_KENB_SIZE;
         }
         if (_security_data.kenb.value != NULL) {
             if (rc != RETURNerror) {
                 LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context kenb");
-                rc = _security_kenb(&_security_data.kenb,
-                                    &_emm_data.security->kasme,
+                // LG COMMENT rc = _security_kenb(&_emm_data.security->kasme,
+                rc = _security_kenb(&_emm_data.non_current->kasme,
+                					&_security_data.kenb,
                                     *(UInt32_t *)(&_emm_data.non_current->ul_count));
             }
         }
@@ -319,6 +320,10 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
                     _emm_data.security->ul_count.seq_num = 0;
                 }
             }
+
+            _emm_data.security->selected_algorithms.encryption = seea;
+            _emm_data.security->selected_algorithms.integrity  = seia;
+
         }
         /*
          * NAS security mode command not accepted by the UE
@@ -446,6 +451,13 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
             // LG: Kasme should have been received from authentication
             //     information request (S6A)
             // Kasme is located in emm_ctx->vector.kasme
+            FREE_OCTET_STRING(emm_ctx->security->kasme);
+
+            emm_ctx->security->kasme.value = malloc(32);
+            memcpy(emm_ctx->security->kasme.value,
+            	emm_ctx->vector.kasme,
+            	32);
+            emm_ctx->security->kasme.length = 32;
 
             rc = _security_select_algorithms(
                 eia,
@@ -474,7 +486,7 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
                 NAS_INT_ALG,
                 emm_ctx->security->selected_algorithms.integrity,
                 emm_ctx->vector.kasme,
-                &emm_ctx->security->knas_int.value);
+                emm_ctx->security->knas_int.value);
 
             if ( ! emm_ctx->security->knas_enc.value) {
                 emm_ctx->security->knas_enc.value = malloc(AUTH_KNAS_ENC_SIZE);
@@ -488,7 +500,7 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
                 NAS_ENC_ALG,
                 emm_ctx->security->selected_algorithms.encryption,
                 emm_ctx->vector.kasme,
-                &emm_ctx->security->knas_enc.value);
+                emm_ctx->security->knas_enc.value);
 
             /* Set new security context indicator */
             security_context_is_new = TRUE;
@@ -733,14 +745,20 @@ static void _security_release(emm_security_context_t *ctx)
         /* Release Kasme security key */
         if (ctx->kasme.value) {
             free(ctx->kasme.value);
+            ctx->kasme.value  = NULL;
+            ctx->kasme.length = 0;
         }
         /* Release NAS cyphering key */
         if (ctx->knas_enc.value) {
             free(ctx->knas_enc.value);
+            ctx->knas_enc.value  = NULL;
+            ctx->knas_enc.length = 0;
         }
         /* Release NAS integrity key */
         if (ctx->knas_int.value) {
             free(ctx->knas_int.value);
+            ctx->knas_int.value  = NULL;
+            ctx->knas_int.length = 0;
         }
         /* Release the NAS security context */
         free(ctx);
@@ -771,6 +789,7 @@ static int _security_knas_enc(const OctetString *kasme, OctetString *knas_enc,
                               UInt8_t eea)
 {
     LOG_FUNC_IN;
+    LOG_TRACE(INFO, "%s  with algo dist %d algo id %d", __FUNCTION__,0x01, eea);
     LOG_FUNC_RETURN (_security_kdf(kasme, knas_enc, 0x01, eea));
 }
 
@@ -796,6 +815,7 @@ static int _security_knas_int(const OctetString *kasme, OctetString *knas_int,
                               UInt8_t eia)
 {
     LOG_FUNC_IN;
+    LOG_TRACE(INFO, "%s  with algo dist %d algo id %d", __FUNCTION__,0x02, eia);
     LOG_FUNC_RETURN (_security_kdf(kasme, knas_int, 0x02, eia));
 }
 
@@ -823,18 +843,24 @@ static int _security_kenb(const OctetString *kasme, OctetString *kenb,
     /* Compute the KDF input parameter
      * S = FC(0x11) || UL NAS Count || 0x00 0x04
      */
-    UInt8_t input[kasme->length];
-    UInt16_t length = 4;
-    int offset = 0;
+    UInt8_t  input[32];
+    UInt16_t length    = 4;
+    int      offset    = 0;
 
-    input[offset] = 0x11;
-    offset += 1;
-    input[offset] = count;
-    offset += length;
-    input[offset] = length;
+    LOG_TRACE(INFO, "%s  with count= %d", __FUNCTION__, count);
+    memset(input, 0, 32);
+    input[0] = 0x11;
+    // P0
+    input[1] = count >> 24;
+    input[2] = (UInt8_t)(count >> 16);
+    input[3] = (UInt8_t)(count >> 8);
+    input[4] = (UInt8_t)count;
+    // L0
+    input[5] = 0;
+    input[6] = 4;
 
-    /* TODO !!! Compute the derived key */
-    // todo_hmac_256(key, input, kasme->value);
+    kdf(kasme->value, 32, input, 7, kenb->value, 32);
+    kenb->length = 32;
     return (RETURNok);
 }
 
@@ -865,24 +891,29 @@ static int _security_kdf(const OctetString *kasme, OctetString *key,
      * S = FC(0x15) || Algorithm distinguisher || 0x00 0x01
             || Algorithm identity || 0x00 0x01
     */
-    UInt8_t input[kasme->length];
-    UInt16_t length = 1;
-    int offset = 0;
-    int size_of_length = sizeof(length);
+    UInt8_t input[32];
+    UInt8_t output[32];
+    LOG_TRACE(DEBUG, "%s:%u output key mem %p lenth %u",
+    		__FUNCTION__, __LINE__,
+    		key->value,
+    		key->length);
+    memset(input, 0, 32);
+    // FC
+    input[0] = 0x15;
+    // P0 = Algorithm distinguisher
+    input[1] = algo_dist;
+    // L0 = 0x00 01
+    input[2] = 0x00;
+    input[3] = 0x01;
+    // P1 = Algorithm identity
+    input[4] = algo_id;
+    // L1 = length of Algorithm identity 0x00 0x01
+    input[5] = 0x00;
+    input[6] = 0x01;
 
-    input[offset] = 0x15;
-    offset += 1;
-    input[offset] = algo_dist;
-    offset += length;
-    input[offset] = length;
-    offset += size_of_length;
-    input[offset] = algo_id;
-    offset += length;
-    input[offset] = length;
-
-    /* TODO !!! Compute the derived key */
-    // todo_hmac_256(key, input, kasme->value);
-
+    /* Compute the derived key */
+    kdf(kasme->value, kasme->length, input, 7, output, 32);
+    memcpy(key->value, &output[31 - key->length + 1], key->length);
     return (RETURNok);
 }
 #endif // NAS_UE

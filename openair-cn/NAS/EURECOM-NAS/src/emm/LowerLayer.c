@@ -483,24 +483,29 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
          * into use, UE and MME shall cipher and integrity protect all
          * NAS signalling messages with the selected NAS ciphering and
          * NAS integrity algorithms */
-        LOG_TRACE(WARNING,
-            "EPS security context exists is new %u KSI %u SQN %u count %u knas_int %s",
+        LOG_TRACE(INFO,
+            "EPS security context exists is new %u KSI %u SQN %u count %u",
             is_new,
             context->eksi,
             context->ul_count.seq_num,
-            *(UInt32_t *)(&context->ul_count),
-            context->knas_int.value
-            );
+            *(UInt32_t *)(&context->ul_count));
+        LOG_TRACE(INFO,
+                "knas_int %s",dump_octet_string(&context->knas_int));
+        LOG_TRACE(INFO,
+                "knas_enc %s",dump_octet_string(&context->knas_enc));
+        LOG_TRACE(INFO,
+                "kasme %s",dump_octet_string(&context->kasme));
+
         data->is_new = is_new;
-        data->ksi = context->eksi;
+        data->ksi    = context->eksi;
 #if defined (NAS_UE)
-        data->sqn = context->ul_count.seq_num;
+        data->sqn    = context->ul_count.seq_num;
         // LG data->count = *(UInt32_t *)(&context->ul_count);
-        data->count = 0x00000000 | (context->ul_count.overflow << 8 ) | context->ul_count.seq_num;
+        data->count  = 0x00000000 | (context->ul_count.overflow << 8 ) | context->ul_count.seq_num;
 #else
-        data->sqn = context->dl_count.seq_num;
+        data->sqn    = context->dl_count.seq_num;
         // LG data->count = *(UInt32_t *)(&context->ul_count);
-        data->count = 0x00000000 | (context->dl_count.overflow << 8 ) | context->dl_count.seq_num;
+        data->count  = 0x00000000 | (context->dl_count.overflow << 8 ) | context->dl_count.seq_num;
 #endif
         /* NAS integrity and cyphering keys may not be available if the
          * current security context is a partial EPS security context
@@ -515,9 +520,7 @@ void emm_as_set_security_data(emm_as_security_data_t *data, const void *args,
              * The MME shall send the SECURITY MODE COMMAND message integrity
              * protected and unciphered */
             LOG_TRACE(WARNING,
-                "EPS security context exists knas_enc %s",
-                context->knas_enc.value
-                );
+                "EPS security context exists knas_enc");
             data->k_enc = &context->knas_enc;
         }
     } else {

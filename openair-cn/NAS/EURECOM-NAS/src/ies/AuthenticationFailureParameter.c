@@ -88,7 +88,7 @@ void dump_authentication_failure_parameter_xml(AuthenticationFailureParameter *a
     if (iei > 0)
         /* Don't display IEI if = 0 */
         printf("    <IEI>0x%X</IEI>\n", iei);
-    dump_octet_string_xml(&authenticationfailureparameter->auts);
+    printf("%s",dump_octet_string_xml(&authenticationfailureparameter->auts));
     printf("</Authentication Failure Parameter>\n");
 }
 

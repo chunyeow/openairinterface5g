@@ -65,6 +65,21 @@ int mme_app_request_authentication_info(const mme_app_imsi_t imsi,
     auth_info_req = &message_p->ittiMsg.s6a_auth_info_req;
     MME_APP_IMSI_TO_STRING(imsi, auth_info_req->imsi);
     memcpy(&auth_info_req->visited_plmn, plmn, sizeof(plmn_t));
+    MME_APP_DEBUG("%s visited_plmn MCC %X%X%X MNC %X%X%X\n",
+    		__FUNCTION__,
+    		auth_info_req->visited_plmn.MCCdigit1,
+    		auth_info_req->visited_plmn.MCCdigit2,
+    		auth_info_req->visited_plmn.MCCdigit3,
+    		auth_info_req->visited_plmn.MNCdigit1,
+    		auth_info_req->visited_plmn.MNCdigit2,
+    		auth_info_req->visited_plmn.MNCdigit3);
+    uint8_t *ptr = (uint8_t *)&auth_info_req->visited_plmn;
+    MME_APP_DEBUG("%s visited_plmn %X%X%X%X%X%X\n",
+    		__FUNCTION__,
+    		ptr[0],
+    		ptr[1],
+    		ptr[2]);
+
     auth_info_req->nb_of_vectors = nb_of_vectors;
     if (auts != NULL) {
         auth_info_req->re_synchronization = 1;

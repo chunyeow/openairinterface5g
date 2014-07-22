@@ -117,7 +117,7 @@ void dump_protocol_configuration_options_xml(ProtocolConfigurationOptions *proto
     printf("    <Configuration protol>%u</Configuration protol>\n", protocolconfigurationoptions->configurationprotol);
     printf("    <Protocol ID>%u</Protocol ID>\n", protocolconfigurationoptions->protocolid);
     printf("    <Length of protocol ID>%u</Length of protocol ID>\n", protocolconfigurationoptions->lengthofprotocolid);
-    dump_octet_string_xml(&protocolconfigurationoptions->protocolidcontents);
+    printf("%s",dump_octet_string_xml(&protocolconfigurationoptions->protocolidcontents));
     printf("</Protocol Configuration Options>\n");
 }
 

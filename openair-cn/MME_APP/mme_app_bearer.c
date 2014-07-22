@@ -287,13 +287,15 @@ mme_app_handle_conn_est_cnf(
     mme_app_connection_establishment_cnf_t *establishment_cnf_p = NULL;
     bearer_context_t                       *current_bearer_p    = NULL;
     ebi_t                                   bearer_id           = 0;
-    uint8_t                                *keNB                = NULL;
+    uint8_t                                 keNB[32];
 
     MME_APP_DEBUG("Received NAS_CONNECTION_ESTABLISHMENT_CNF from NAS\n");
 
     ue_context_p = mme_ue_context_exists_nas_ue_id(&mme_app_desc.mme_ue_contexts, nas_conn_est_cnf_pP->UEid);
     if (ue_context_p == NULL) {
-        MME_APP_ERROR("UE context doesn't exist\n");
+        MME_APP_ERROR("UE context doesn't exist for UE ox%08X/dec%u\n",
+        		nas_conn_est_cnf_pP->UEid,
+        		nas_conn_est_cnf_pP->UEid);
         return;
     }
 
@@ -332,9 +334,8 @@ mme_app_handle_conn_est_cnf(
     establishment_cnf_p->ambr                              = ue_context_p->used_ambr;
 
     MME_APP_DEBUG("Derive keNB with UL NAS COUNT %x\n", nas_conn_est_cnf_pP->ul_nas_count);
-    derive_keNB(ue_context_p->vector_in_use->kasme, nas_conn_est_cnf_pP->ul_nas_count, &keNB); //156
+    derive_keNB(ue_context_p->vector_in_use->kasme, nas_conn_est_cnf_pP->ul_nas_count, keNB); //156
     memcpy(establishment_cnf_p->keNB, keNB, 32);
-    free(keNB);
 
     itti_send_msg_to_task(TASK_S1AP, INSTANCE_DEFAULT, message_p);
 }
@@ -355,8 +356,9 @@ mme_app_handle_conn_est_ind(
             &mme_app_desc.mme_ue_contexts,
             conn_est_ind_pP->mme_ue_s1ap_id);
     if (ue_context_p == NULL) {
-        MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: %08x\n",
-                conn_est_ind_pP->mme_ue_s1ap_id);
+        MME_APP_DEBUG("We didn't find this mme_ue_s1ap_id in list of UE: 0x%08x/dec%u\n",
+        		conn_est_ind_pP->mme_ue_s1ap_id,
+        		conn_est_ind_pP->mme_ue_s1ap_id);
         MME_APP_DEBUG("UE context doesn't exist -> create one\n");
         if ((ue_context_p = mme_create_new_ue_context()) == NULL) {
             /* Error during ue context malloc */
@@ -369,11 +371,15 @@ mme_app_handle_conn_est_ind(
         ue_context_p->ue_id          = conn_est_ind_pP->mme_ue_s1ap_id;
         DevAssert(mme_insert_ue_context(&mme_app_desc.mme_ue_contexts, ue_context_p) == 0);
 
-        // test
+        // tests
         ue_context_p = mme_ue_context_exists_mme_ue_s1ap_id(
                     &mme_app_desc.mme_ue_contexts,
                     conn_est_ind_pP->mme_ue_s1ap_id);
         AssertFatal(ue_context_p != NULL, "mme_ue_context_exists_mme_ue_s1ap_id Failed");
+        ue_context_p = mme_ue_context_exists_nas_ue_id(
+                    &mme_app_desc.mme_ue_contexts,
+                    conn_est_ind_pP->mme_ue_s1ap_id);
+        AssertFatal(ue_context_p != NULL, "mme_ue_context_exists_nas_ue_id Failed");
     }
 
     message_p  = itti_alloc_new_message(TASK_MME_APP, NAS_CONNECTION_ESTABLISHMENT_IND);

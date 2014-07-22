@@ -41,7 +41,7 @@
 
 // #define SECU_DEBUG
 
-int nas_stream_encrypt_eea2(nas_stream_cipher_t *stream_cipher, uint8_t **out)
+int nas_stream_encrypt_eea2(nas_stream_cipher_t *stream_cipher, uint8_t *out)
 {
     uint8_t m[16];
     uint32_t local_count;
@@ -92,8 +92,9 @@ int nas_stream_encrypt_eea2(nas_stream_cipher_t *stream_cipher, uint8_t **out)
     if (zero_bit > 0)
         data[byte_length - 1] = data[byte_length - 1] & (uint8_t)(0xFF << (8 - zero_bit));
 
-    *out = data;
 
+    memcpy(out, data, byte_length);
+    free(data);
     free(ctx);
 
     return 0;

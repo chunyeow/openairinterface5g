@@ -34,6 +34,7 @@
 #include "security_types.h"
 #include "secu_defs.h"
 
+#define SECU_DEBUG 1
 /*!
  * @brief Derive the kNASenc from kasme and perform truncate on the generated key to
  * reduce his size to 128 bits. Definition of the derivation function can
@@ -49,9 +50,10 @@
  * NOTE: knas is dynamically allocated by the KDF function
  */
 int derive_key_nas(algorithm_type_dist_t nas_alg_type, uint8_t nas_enc_alg_id,
-                   const uint8_t kasme[32], uint8_t **knas)
+                   const uint8_t kasme[32], uint8_t *knas)
 {
     uint8_t s[7];
+    uint8_t out[32];
 #if defined(SECU_DEBUG)
     int i;
 #endif
@@ -74,13 +76,17 @@ int derive_key_nas(algorithm_type_dist_t nas_alg_type, uint8_t nas_enc_alg_id,
     s[6] = 0x01;
 
 #if defined(SECU_DEBUG)
+    printf("%s FC %d nas_alg_type distinguisher %d nas_enc_alg_identity %d\n",
+    		__FUNCTION__, FC_ALG_KEY_DER, nas_alg_type, nas_enc_alg_id);
     for (i = 0; i < 7; i ++) {
         printf("0x%02x ", s[i]);
     }
     printf("\n");
 #endif
 
-    kdf(s, 7, kasme, 32, knas, 32);
+    kdf(kasme, 32, s, 7, out, 32);
+
+    memcpy(knas, &out[31-16+1], 16);
 
     return 0;
 }

@@ -101,11 +101,11 @@ void *mme_app_thread(void *args)
                 mme_app_handle_nas_pdn_connectivity_req(&received_message_p->ittiMsg.nas_pdn_connectivity_req);
             } break;
 
-            //case NAS_CONNECTION_ESTABLISHMENT_CNF: {
             case NAS_CONNECTION_ESTABLISHMENT_CNF: {
                 mme_app_handle_conn_est_cnf(&NAS_CONNECTION_ESTABLISHMENT_CNF(received_message_p));
             } break;
 
+            // From S1AP Initiating Message/EMM Attach Request
             case MME_APP_CONNECTION_ESTABLISHMENT_IND: {
                 mme_app_handle_conn_est_ind(&MME_APP_CONNECTION_ESTABLISHMENT_IND(received_message_p));
             } break;

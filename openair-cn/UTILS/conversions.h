@@ -241,9 +241,14 @@ do {                                                                \
 #define PLMN_T_TO_TBCD(pLMN, tBCDsTRING)                            \
 do {                                                                \
     tBCDsTRING[0] = (pLMN.MCCdigit2 << 4) | pLMN.MCCdigit3;         \
-    tBCDsTRING[1] = ((pLMN.MNCdigit1 == 0 ? 0xF : pLMN.MNCdigit1) << 4) \
-    | pLMN.MCCdigit1;                                               \
-    tBCDsTRING[2] = (pLMN.MNCdigit2 << 4) | pLMN.MNCdigit3;         \
+    /* ambiguous (think about len 2) */                             \
+    if (pLMN.MNCdigit1 == 0) {                                      \
+        tBCDsTRING[1] = (0x0F << 4) | pLMN.MCCdigit1;               \
+        tBCDsTRING[2] = (pLMN.MNCdigit3 << 4) | pLMN.MNCdigit2;     \
+    } else {                                                        \
+        tBCDsTRING[1] = (pLMN.MNCdigit3 << 4) | pLMN.MCCdigit1;     \
+        tBCDsTRING[2] = (pLMN.MNCdigit2 << 4) | pLMN.MNCdigit1;     \
+    }                                                               \
 } while(0)
 
 #define PLMN_T_TO_MCC_MNC(pLMN, mCC, mNC, mNCdIGITlENGTH)               \

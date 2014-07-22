@@ -222,8 +222,8 @@ int usim_api_authenticate(const OctetString* rand_pP, const OctetString* autn_pP
     int rc;
     int i;
 
-	LOG_TRACE(DEBUG, "USIM-API  - rand :");dump_octet_string(rand_pP);
-	LOG_TRACE(DEBUG, "USIM-API  - autn :");dump_octet_string(autn_pP);
+	LOG_TRACE(DEBUG, "USIM-API  - rand :%s",dump_octet_string(rand_pP));
+	LOG_TRACE(DEBUG, "USIM-API  - autn :%s",dump_octet_string(autn_pP));
 
     /* Compute the authentication response RES = f2K (RAND) */
     /* Compute the cipher key CK = f3K (RAND) */
@@ -233,9 +233,9 @@ int usim_api_authenticate(const OctetString* rand_pP, const OctetString* autn_pP
     u8 ak[USIM_API_AK_SIZE];
     f2345(_usim_api_k, rand_pP->value,
           res_pP->value, ck_pP->value, ik_pP->value, ak);
-	LOG_TRACE(DEBUG, "USIM-API  - res(f2)  :");dump_octet_string(res_pP);
-	LOG_TRACE(DEBUG, "USIM-API  - ck(f3)   :");dump_octet_string(ck_pP);
-	LOG_TRACE(DEBUG, "USIM-API  - ik(f4)   :");dump_octet_string(ik_pP);
+	LOG_TRACE(DEBUG, "USIM-API  - res(f2)  :%s",dump_octet_string(res_pP));
+	LOG_TRACE(DEBUG, "USIM-API  - ck(f3)   :%s",dump_octet_string(ck_pP));
+	LOG_TRACE(DEBUG, "USIM-API  - ik(f4)   :%s",dump_octet_string(ik_pP));
 	LOG_TRACE(DEBUG, "USIM-API  - ak(f5)   : %02X%02X%02X%02X%02X%02X",
 			ak[0],ak[1],ak[2],ak[3],ak[4],ak[5]);
 

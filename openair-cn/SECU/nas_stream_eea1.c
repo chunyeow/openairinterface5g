@@ -43,7 +43,7 @@
 // #define SECU_DEBUG
 
 
-int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t **out)
+int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t *out)
 {
     snow_3g_context_t snow_3g_context;
 	int       n ;
@@ -102,11 +102,17 @@ int nas_stream_encrypt_eea1(nas_stream_cipher_t *stream_cipher, uint8_t **out)
 	for (i=0;i<n*4;i++) {
 		stream_cipher->message[i] ^= *(((uint8_t*)KS)+i);
 	}
+	int ceil_index = 0;
     if (zero_bit > 0) {
-    	int ceil_index = (stream_cipher->blength+7) >> 3;
+    	ceil_index = (stream_cipher->blength+7) >> 3;
     	stream_cipher->message[ceil_index - 1] = stream_cipher->message[ceil_index - 1] & (uint8_t)(0xFF << (8 - zero_bit));
     }
     free(KS);
     *out = stream_cipher->message;
+    memcpy(out, stream_cipher->message, n*4);
+    if (zero_bit > 0) {
+    	out[ceil_index - 1] = stream_cipher->message[ceil_index - 1];
+    }
+
     return 0;
 }

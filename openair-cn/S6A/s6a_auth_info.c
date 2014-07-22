@@ -347,12 +347,23 @@ int s6a_generate_authentication_info_req(s6a_auth_info_req_t *air_p)
 
         CHECK_FCT(fd_msg_avp_new(s6a_fd_cnf.dataobj_s6a_visited_plmn_id, 0, &avp));
 
+
         PLMN_T_TO_TBCD(air_p->visited_plmn, plmn);
         value.os.data = plmn;
         value.os.len  = 3;
         CHECK_FCT(fd_msg_avp_setvalue(avp, &value));
 
         CHECK_FCT(fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp));
+        S6A_DEBUG("%s plmn: %02X%02X%02X\n",
+            __FUNCTION__,
+            plmn[0],
+            plmn[1],
+            plmn[2]);
+        S6A_DEBUG("%s visited_plmn: %02X%02X%02X\n",
+            __FUNCTION__,
+            value.os.data[0],
+            value.os.data[1],
+            value.os.data[2]);
     }
     /* Adding the requested E-UTRAN authentication info AVP */
     {

@@ -104,7 +104,7 @@ void dump_network_name_xml(NetworkName *networkname, uint8_t iei)
     printf("    <Coding scheme>%u</Coding scheme>\n", networkname->codingscheme);
     printf("    <Add CI>%u</Add CI>\n", networkname->addci);
     printf("    <Number of spare bits in last octet>%u</Number of spare bits in last octet>\n", networkname->numberofsparebitsinlastoctet);
-    dump_octet_string_xml(&networkname->textstring);
+    printf("%s", dump_octet_string_xml(&networkname->textstring));
     printf("</Network Name>\n");
 }
 

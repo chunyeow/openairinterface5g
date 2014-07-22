@@ -59,6 +59,7 @@ Description Defines the authentication EMM procedure executed by the
 
 #include <stdlib.h> // malloc, free
 #include <string.h> // memcpy, memcmp, memset
+#include <arpa/inet.h> // htons
 
 #include "emm_proc.h"
 #include "nas_log.h"
@@ -389,8 +390,7 @@ int emm_proc_authentication_request(int native_ksi, int ksi,
             /* Derive the Kasme from the authentication challenge using
              * the PLMN identity of the selected PLMN */
             _emm_data.non_current->kasme.length = AUTH_KASME_SIZE;
-            _emm_data.non_current->kasme.value =
-                (uint8_t *)malloc(sizeof(AUTH_KASME_SIZE));
+            _emm_data.non_current->kasme.value  = malloc(32);
             _authentication_kasme(autn, &ck, &ik, &_emm_data.splmn,
                                   &_emm_data.non_current->kasme);
             /* NAS integrity and cyphering keys are not yet available */
@@ -1171,68 +1171,78 @@ static int _authentication_kasme(const OctetString *autn,
 {
     LOG_FUNC_IN;
 
+    LOG_TRACE(INFO,"EMM-PROC  _authentication_kasme INPUT CK %s",
+    		dump_octet_string(ck));
+    LOG_TRACE(INFO,"EMM-PROC  _authentication_kasme INPUT IK %s",
+    		dump_octet_string(ik));
+    LOG_TRACE(INFO,"EMM-PROC  _authentication_kasme INPUT AUTN %s",
+    		dump_octet_string(autn));
+    LOG_TRACE(INFO,"EMM-PROC  _authentication_kasme INPUT KASME LENGTH %u",
+    		kasme->length);
+
     /* Compute the derivation key KEY = CK || IK */
     UInt8_t key[ck->length + ik->length];
     memcpy(key, ck->value, ck->length);
     memcpy(key + ck->length, ik->value, ik->length);
 
-    /* Compute the KDF input parameter
+    /* Compute the KDF input_s parameter
      * S = FC(0x10) || SNid(MCC, MNC) || 0x00 0x03 || SQN ⊕ AK || 0x00 0x06
      */
-    UInt8_t  input[kasme->length];
+    UInt8_t  input_s[16]; // less than 16
+    UInt8_t  sn_id[AUTH_SNID_SIZE]; // less than 16
     UInt16_t length;
     int      offset         = 0;
     int      size_of_length = sizeof(length);
 
     // FC
-    input[offset] = 0x10;
+    input_s[offset] = 0x10;
     offset       += 1;
 
     // P0=SN id
     length        = AUTH_SNID_SIZE;
-    memcpy(input + offset, plmn, length);
+    sn_id[0] = (plmn->MCCdigit2 << 4) | plmn->MCCdigit1;
+    sn_id[1] = (plmn->MNCdigit3 << 4) | plmn->MCCdigit3;
+    sn_id[2] = (plmn->MNCdigit2 << 4) | plmn->MNCdigit1;
+
+    memcpy(input_s + offset, sn_id, length);
     LOG_TRACE(INFO,"EMM-PROC  _authentication_kasme P0 MCC,MNC %02X %02X %02X",
-    		input[offset],
-    		input[offset+1],
-    		input[offset+2]);
+    		input_s[offset],
+    		input_s[offset+1],
+    		input_s[offset+2]);
     offset += length;
     // L0=SN id length
-    memcpy(input + offset, &length, size_of_length);
+    length = htons(length);
+    memcpy(input_s + offset, &length, size_of_length);
     offset += size_of_length;
 
     // P1=Authentication token
     length = AUTH_SQN_SIZE;
-    memcpy(input + offset, autn, length);
+    memcpy(input_s + offset, autn->value, length);
     offset += length;
     // L1
-    memcpy(input + offset, &length, size_of_length);
+    length = htons(length);
+    memcpy(input_s + offset, &length, size_of_length);
     offset += size_of_length;
 
-    /* TODO !!! Compute the Kasme key */
-    // todo_hmac_256(key, input, kasme->value);
-    kdf(input,
+    LOG_TRACE(INFO,
+    		"EMM-PROC  _authentication_kasme input S to KFD (length %u)%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
     		offset,
-    		key,
-    		ck->length + ik->length , /*key_length*/
-    		&kasme->value,
-    		kasme->length);
+    		input_s[0],input_s[1],input_s[2],input_s[3],
+    		input_s[4],input_s[5],input_s[6],input_s[7],
+    		input_s[8],input_s[9],input_s[10],input_s[11],
+    		input_s[12],input_s[13]);
+    /* TODO !!! Compute the Kasme key */
+    // todo_hmac_256(key, input_s, kasme->value);
+    kdf(key,
+    	ck->length + ik->length , /*key_length*/
+    	input_s,
+  		offset,
+  		kasme->value,
+  		kasme->length);
 
-    LOG_TRACE(INFO,"EMM-PROC  CK (l=%d)", ck->length);
-    LOG_TRACE(INFO,"EMM-PROC  IK (l=%d)", ik->length);
-
-    LOG_TRACE(INFO,"EMM-PROC  KASME (l=%d)%02X%02X%02X%02X%02X%02X%02X%02X",
-    		"%02X%02X%02X%02X%02X%02X%02X%02X",
-    		"%02X%02X%02X%02X%02X%02X%02X%02X",
-    		"%02X%02X%02X%02X%02X%02X%02X%02X",
+    LOG_TRACE(INFO,"EMM-PROC  KASME (l=%d)%s",
     		kasme->length,
-    		kasme->value[0],kasme->value[1],kasme->value[2],kasme->value[3],
-    		kasme->value[4],kasme->value[5],kasme->value[6],kasme->value[7],
-    		kasme->value[8],kasme->value[9],kasme->value[10],kasme->value[11],
-    		kasme->value[12],kasme->value[13],kasme->value[14],kasme->value[15],
-    		kasme->value[16],kasme->value[17],kasme->value[18],kasme->value[19],
-    		kasme->value[20],kasme->value[21],kasme->value[22],kasme->value[23],
-    		kasme->value[24],kasme->value[25],kasme->value[26],kasme->value[27],
-    		kasme->value[28],kasme->value[29],kasme->value[30],kasme->value[31]);
+    		dump_octet_string(kasme));
 
     LOG_FUNC_RETURN (RETURNok);
 }

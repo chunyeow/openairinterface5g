@@ -34,6 +34,9 @@
 #include "TLVDecoder.h"
 #include "OctetString.h"
 
+#define DUMP_OUTPUT_SIZE 1024
+static  char _dump_output[DUMP_OUTPUT_SIZE];
+
 OctetString* dup_octet_string(OctetString *octetstring)
 {
     OctetString *os_p = NULL;
@@ -78,20 +81,29 @@ int decode_octet_string(OctetString *octetstring, uint16_t pdulen, uint8_t *buff
     return octetstring->length;
 }
 
-void dump_octet_string_xml(OctetString *octetstring)
+char* dump_octet_string_xml( const OctetString * const octetstring)
 {
     int i;
-    printf("    <Length>%u</Length>\n    <values>", octetstring->length);
-    for (i = 0; i < octetstring->length; i++)
-        printf("0x%x ", octetstring->value[i]);
-    printf("</values>\n");
+    int remaining_size = DUMP_OUTPUT_SIZE;
+    int size           = 0;
+    size = snprintf(_dump_output, remaining_size, "<Length>%u</Length>\n\t<values>", octetstring->length);
+    remaining_size -= size;
+    for (i = 0; i < octetstring->length; i++) {
+    	size +=snprintf(&_dump_output[size], remaining_size, "0x%x ", octetstring->value[i]);
+        remaining_size -= size;
+    }
+    size +=snprintf(&_dump_output[size], remaining_size, "</values>\n");
+    return _dump_output;
 }
 
-void dump_octet_string(OctetString *octetstring)
+char* dump_octet_string( const OctetString * const octetstring)
 {
     int i;
-    printf("    <Length=%u><values>", octetstring->length);
-    for (i = 0; i < octetstring->length; i++)
-        printf("0x%x ", octetstring->value[i]);
-    printf("</values>\n");
+    int remaining_size = DUMP_OUTPUT_SIZE;
+    int size           = 0;
+    for (i = 0; i < octetstring->length; i++) {
+    	size +=snprintf(&_dump_output[size], remaining_size, "0x%x ", octetstring->value[i]);
+        remaining_size -= size;
+    }
+    return _dump_output;
 }

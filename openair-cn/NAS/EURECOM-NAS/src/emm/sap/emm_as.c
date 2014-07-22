@@ -1263,6 +1263,9 @@ static int _emm_as_send(const emm_as_t *msg)
                         as_msg.msg.nas_establish_rsp.nasMsg.length);
                     LOG_FUNC_RETURN (RETURNok);
                 } else {
+                    LOG_TRACE(DEBUG, "EMMAS-SAP - "
+                              "Sending nas_itti_establish_cnf to S1AP UE ID %d",
+                              as_msg.msg.nas_establish_rsp.UEid);
                     /* Handle success case */
                     nas_itti_establish_cnf(
                         as_msg.msg.nas_establish_rsp.UEid,
