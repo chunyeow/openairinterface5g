@@ -50,11 +50,11 @@
 /*! A global variable used to store the SUMO process ID to later kill it smoothly when OAI askes OMG to stop SUMO*/
 pid_t pid;
 
-/*! A sumo global variable representing the OMG-SUMO ID manager. It is created at the start_sumo_generator() and keep a mapping between SUMO and OAI IDs.  */
+/*! A sumo global variable representing the OMG-SUMO ID manager. It is created at the start_sumo_generator(void) and keep a mapping between SUMO and OAI IDs.  */
 IDManagerPtr id_manager;
 
 /*! A Node_list intended to contain the list of OAI 'active' nodes in SUMO. replaces the return of the full Node_Vector when OAI requests the new positions of its nodes. The list is reset at each use, but the pointer to the respective nodes is just set to NULL*/
-Node_list active_nodes;
+node_list* active_nodes;
 
 /*! A global variable keeping track of the last update time of SUMO, to be used to get the update interval when update_sumo_nodes(cur_time) is called */
 double last_update_time; 
@@ -79,7 +79,7 @@ void update_sumo_nodes(double cur_time) ;
  * \brief Get the current position and speed of a node from SUMO. Invokes TraCI
  * \param node the pointer to a node we want to synch with SUMO.
  */
-void update_sumo_positions(NodePtr node);
+void update_sumo_positions(node_struct* node);
 
 /**
  * \fn Node_list get_sumo_positions_updated(double cur_time);
@@ -87,7 +87,7 @@ void update_sumo_positions(NodePtr node);
  * \param cur_time a variable of type double that represents the current time
  * \return the list of ACTIVE OAI nodes, which positions have been updated by SUMO
  */
-Node_list get_sumo_positions_updated(double cur_time);
+node_list* get_sumo_positions_updated(double cur_time);
 
 /**
  * \fn NodePtr get_first_inactive_OAI_node(Node_list list, int node_type)
@@ -96,13 +96,13 @@ Node_list get_sumo_positions_updated(double cur_time);
  * \param node_type the type of node we would like to locate (here: SUMO)
  * \return the reference to the first inactive OAI node; returns NULL is none could be found (all OAI nodes are currently active)
  */
-NodePtr get_first_inactive_OAI_node(Node_list list, int node_type);
+node_struct* get_first_inactive_OAI_node(node_list* list, int node_type);
 
 /**
  * \fn void update_IDs(String_list *departed, String_list *arrived)
  * \brief Updates the mapping between SUMO and OAI nodes; Once a node departs in SUMO, it is mapped to a inactive OAI node. If none are found, the SUMO node will not have any mapping. Once a node arrives, the mapping is removed and the OAI node becomes inactive again. When an OAI node is inactive, it mobility parameters are invalid and MUST NOT be used/requested by OAI.
  */
-void update_IDs();
+void update_IDs(void);
 
 /**
  * \fn bool desactive_and_unmap(char *sumo_id)
@@ -122,10 +122,10 @@ bool desactivate_and_unmap(char *sumo_id);
 bool activate_and_map(char *sumo_id);
 
 /**
- * \fn int stop_sumo_generator()
+ * \fn int stop_sumo_generator(void)
  * \brief stops SUMO, stop the socket and kills SUMO process in the child domain.
  * \return true in case of success; false otherwise
  */
-bool stop_sumo_generator();
+bool stop_sumo_generator(void);
 
 #endif /* SUMO_H_ */

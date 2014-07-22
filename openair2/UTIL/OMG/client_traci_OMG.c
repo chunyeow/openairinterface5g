@@ -105,12 +105,12 @@ void init(int max_sim_time) {
   sendExact(storageLength(storageStart));
   extractCommandStatus(receiveExact(), CMD_SUBSCRIBE_SIM_VARIABLE, description);
   if (departed == NULL) {
-    departed = (String_list)malloc(sizeof(String_list)); // departed MUST point to HEAD
+    departed = (string_list*) malloc(sizeof(string_list)); // departed MUST point to HEAD
     departed->string = NULL;
     departed->next = NULL;
   }
   if (arrived == NULL) {
-    arrived = (String_list)malloc(sizeof(String_list));  // arrived MUST point to HEAD
+    arrived = (string_list*) malloc(sizeof(string_list));  // arrived MUST point to HEAD
     arrived->string = NULL;
     arrived->next = NULL;
   } 
@@ -123,8 +123,8 @@ void init(int max_sim_time) {
 void processSubscriptions() {
    int noSubscriptions = readInt();
 
-   String_list tmp_departed = departed;
-   String_list tmp_arrived = arrived;
+   string_list* tmp_departed = departed;
+   string_list* tmp_arrived = arrived;
    int s;
    for (s = 0; s<noSubscriptions; ++s) {
     
@@ -240,12 +240,12 @@ void commandSimulationStep(double time)
         extractCommandStatus(receiveExact(), CMD_SIMSTEP2, description);
 
         if (departed == NULL) {
-    		departed = (String_list)malloc(sizeof(String_list)); // departed MUST point to HEAD
+    		departed = (string_list*) malloc(sizeof(string_list)); // departed MUST point to HEAD
     		departed->string = NULL;
     		departed->next = NULL;
   	}
   	if (arrived == NULL) {
-    		arrived = (String_list)malloc(sizeof(String_list));  // arrived MUST point to HEAD
+    		arrived = (string_list*) malloc(sizeof(string_list));  // arrived MUST point to HEAD
     		arrived->string = NULL;
     		arrived->next = NULL;
   	}	
@@ -402,14 +402,14 @@ int commandGetMaxSUMONodesVariable()
 
 
 
-void GetSpeed(NodePtr node, char * sumo_id)
+void GetSpeed(node_struct* node, char * sumo_id)
 {
     commandGetVehicleVariable(sumo_id, VAR_SPEED);
     double speed_double = readDouble();
     node->mob->speed = speed_double;
 }
 
-void GetPosition(NodePtr node, char * sumo_id)
+void GetPosition(node_struct* node, char * sumo_id)
 {    
     commandGetVehicleVariable(sumo_id, VAR_POSITION);
     double x_double = readDouble();
@@ -420,6 +420,6 @@ void GetPosition(NodePtr node, char * sumo_id)
     if (y_double < 0.0)
       y_double = 0.0;
 
-    node->X_pos = x_double;
-    node->Y_pos = y_double;
+    node->x_pos = x_double;
+    node->y_pos = y_double;
 }

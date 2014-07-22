@@ -1015,14 +1015,18 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 			} else if (mobility_) {
 				if (UE_mobility_) {
 					if (UE_mobility_type_) {
-						oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = strndup(ch, len);
-					} else if (grid_walk_) {
+						oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = strndup(ch, len);	
+				 
+				  }else if (grid_walk_) {
 						if (grid_map_) {
+							 oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.selected_option = strndup(ch, len);
+	/*
 							if (horizontal_grid_) {
 								oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.horizontal_grid = atoi(ch);
 							} else if (vertical_grid_) {
 								oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.vertical_grid = atoi(ch);
 							}
+*/
 						} else if (grid_trip_type_) {
 							oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_trip_type.selected_option = strndup(ch, len);
 						}	
@@ -1087,6 +1091,7 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 				} else if (eNB_mobility_) {
 					if (eNB_mobility_type_) {
 						oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = strndup(ch, len);
+						
 					} else if (eNB_initial_distribution_) {
 						oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option = strndup(ch, len);
 					} else if (eNB_initial_coordinates_) {

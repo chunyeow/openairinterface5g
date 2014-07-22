@@ -29,11 +29,11 @@
 
 /*! \file mobility_parser.c
 * \brief A parser for trace-based mobility information (parsed from a file)
-* \author  S. Uppoor
-* \date 2011
+* \author  S. Gashaw, N. Nikaein,  J. Harri
+* \date 2014
 * \version 0.1
-* \company INRIA
-* \email: sandesh.uppoor@inria.fr
+* \company EURECOM
+* \email: 
 * \note
 * \warning
 */
@@ -42,442 +42,226 @@
 #include <string.h>
 #include <stdlib.h>
 #include "mobility_parser.h"
-#include "omg_hashtable.h"
 #include "omg.h"
+#include <math.h>
 
+extern hash_table_t **table;
+extern node_info **list_head;
 
-node_info* head_node_info =NULL;
-omg_hash_table_t* table=NULL;
-
-//need to be removed , used only once (old code)
-struct Exnode* gen_list(){
-  struct Exnode* head = NULL;
-  return head;
-}
-
-
-//read the mobility file and generates a hashtable of linked list with key pointing to vehicle id
-void read_mobility_file(char* mobility_file[]){
+//read the mobility file and generates a hashtable of linked list
+void
+parse_data (char *trace_file, int node_type)
+{
   FILE *fp;
-  char str[128],*p;
-  if (table == NULL){
-    table = hash_table_new(MODE_ALLREF);
-  }
-  
-  if((fp=fopen(mobility_file, "r"))==NULL) {
-    LOG_D(OMG,"Cannot open file %s\n", mobility_file);
-    exit(1);
-  }
-  Exnode* headRef;
-  static node_info* Node_info=NULL;
-  
-  int *keyholder[10];
-  int i=0;
-  
-  while(!feof(fp)) {
-    if(fgets(str, 126, fp)) { // happy go for small mobility file :-)
-      char * pch;
-      int fmt=0;
-      p=str;
-      while(*p==' ' || *p=='\t') p++; // skip whitespaces
-      if(*p=='\r') p++;
-      if (*p!='\n') {
-	pch = strtok (p," "); // the separator between the items in the list is a space
-	Exnode* node = malloc(sizeof(Exnode));
-	
-	while (pch != NULL){
-	  node->visit=0;
-	  switch(fmt){
-	  case 0:
-	    node->time=(atof(pch));
-	    break;
-	  case 1:
-	    node->vid =atoi(pch);
-	    break;
-	  case 2:
-	    node->x=atof(pch);
-	    break;
-	  case 3:
-	    node->y=atof(pch);
-	    break;
-	  case 4:
-	    node->speed=atof(pch);
-	    break;
-	  default:
-	    //need a log statement here
-	    break;
-	  }
-	  fmt +=1;
-	  pch = strtok (NULL, " ");
-	}
-	node->next=NULL;
-	
-	//check in the hash table if the key exist node->vid if exist ? initialize headRef
-	int *value = NULL;
-	value = (int *)HT_LOOKUP(table, &(node->vid));
-        
-	if (value==NULL){
-	  if (Node_info==NULL){
-	    Node_info=build_node_info(Node_info,node->vid,&(node->vid));
-	    head_node_info=Node_info;
-	  }
-	  else{
-	    Node_info=build_node_info(Node_info,node->vid,&(node->vid));
-	  }
-	  Node_info->next=NULL;
-	  //LOG_D(OMG,"[TRACE] build info for node %d %d head %p node %p next %p\n", 
-	  //      Node_info->vid, node->vid, head_node_info,  Node_info, Node_info->next);
-	  keyholder[i]=&node->vid;
-	  i++;
-	  hash_table_add(table, &(node->vid), sizeof(node->vid), node, sizeof(node));
-	  headRef=gen_list();
-	  
-	}
-	else{
-	  //puts("Yes node exist");
-	  headRef = (Exnode *)value;
-	  //printf("value returned %f\n",headRef->time);
-	  //printf("After from hash %p %d\n",headRef, headRef->vid );
-	}
-	if (headRef!=NULL){
-	  AppendNode(headRef, node);
-	}
-      }
+  char *pch, *p;
+  char str[128];
+  int fmt, id = 0, gid;
+  node_container *value;
+
+ //if(table==NULL)
+  create_new_table (node_type);
+
+  if(list_head ==NULL)
+      list_head = (node_info **) calloc (MAX_NUM_NODE_TYPES, sizeof (node_info*));
+
+   if (list_head == NULL )
+    {
+      LOG_E (OMG, "-------node list table creation failed--------\n");
+      exit (-1);
     }
-  }
-  fclose(fp);
-  //return table;
-}
 
-//builds linked list with each node holding vehicle is and linked list pointer on the hastable
-node_info*  build_node_info(node_info* headRef, int vid, int *vid_addr){
 
-  node_info* newNode=malloc(sizeof(node_info));
-  newNode->vid=vid;
-  newNode->vid_addr=vid_addr;
-  if (headRef==NULL){
-    headRef=newNode;
-    return headRef;
-  }
-  while(headRef->next!=NULL){
-    headRef = headRef->next;
-  }
-  if (headRef->next==NULL ){
-    headRef->next = newNode;
-    
-  }
-  return headRef->next;
-}
-
-void AppendNode(struct Exnode* headRef, struct Exnode* newNode) {
-  
-  while(headRef->next!=NULL){
-    headRef = headRef->next;
-  }
-  if (headRef->next==NULL ){
-    headRef->next = newNode;
-  }
-}
-
-//Just used for testing, it prints a linked list given the head pointer
-void print_list(struct Exnode* head){
-    
-  while(head->next !=NULL)
-    head=head->next;
-}
-
-Exnode* get_next_position(omg_hash_table_t *table,int node_id){
-  node_info* head_node=head_node_info;
-  while(head_node->next!=NULL){
-    
-    if(head_node->vid==node_id){
-      int *value1 = NULL;
-      value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-      if (value1!=NULL){
-	Exnode* value2=(Exnode *)value1;
-	while(value2->next!=NULL){
-	  if (value2->visit==1) value2=value2->next;
-	  else {
-	    value2->visit=1;
-	    return value2;
-	  }
-	}
-	if (value2->visit!=1){
-	  value2->visit=1;
-	  return value2;
-	}
-      }
+  if ((fp = fopen (trace_file, "r")) == NULL)
+    {
+      LOG_E (OMG, "[OMG]:Cannot open file %s\n", trace_file);
+      exit (1);
     }
-    head_node=head_node->next;
-  }
-  // not to leave the last node with ->next=NULL
-  if(head_node->vid==node_id){
-    int *value1 = NULL;
-    value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-    if (value1!=NULL){
-      Exnode* value2=(Exnode *)value1;
-      while(value2->next!=NULL){
-	if (value2->visit==1) value2=value2->next;
-	else {
-	  value2->visit=1;
-	  return value2;
-	}
-      }
-      if (value2->visit!=1){
-	value2->visit=1;
-	return value2;
-      }
-    }
-  }
-  return NULL;
-}
 
 
-void reset_visit_status(omg_hash_table_t *table,float time, int node_id){
-  node_info* head_node=head_node_info;
-  while(head_node->next!=NULL){
-    
-    if(head_node->vid==node_id){
-      int *value1 = NULL;
-      value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-      if (value1!=NULL){
-	Exnode* value2=(Exnode *)value1;
-	while(value2->next!=NULL){
-	  if (value2->time == time) {
-	    value2->visit=0;
-	  }
-	  value2=value2->next;
-	}
-	if (value2->time == time){
-	  value2->visit=0;
-	}
-      }
-    }
-    head_node=head_node->next;
-  }
-  // not to leave the last node with ->next=NULL
-  if(head_node->vid==node_id){
-    int *value1 = NULL;
-    value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-    if (value1!=NULL){
-      Exnode* value2=(Exnode *)value1;
-      while(value2->next!=NULL){
-	if (value2->time==time) value2->visit=0;
-	value2=value2->next;
-      }
-      if (value2->time==time) value2->visit=0;
-    }
-  }
-  
-}
+  while (!feof (fp))
+    {
+      if (fgets (str, 126, fp))
+	{
+	  fmt = 0;
+	  p = str;
 
-int get_num_nodes(){
-  int count=1; //Last node also need to be counted
-  node_info * head_node=head_node_info;
-  while (head_node->next!=NULL){
-    count += 1;
-    head_node=head_node->next;
-  }
-  return count;
-}
-void sort_veh_movement(omg_hash_table_t *table){
-  node_info* head_node=head_node_info;
-  while(head_node->next!=NULL){
-    int *value1 = NULL;
-    value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-    Exnode* head_veh_node = (Exnode *)value1;
-    Exnode* value2 = (Exnode *)value1;
-    while (value2->next!=NULL){
-      value2 = value2->next;
-    }
-    Exnode* tail_veh_node = (Exnode *)value2;
-    quicksortlist(head_veh_node, tail_veh_node);
-    head_node=head_node->next;
-  }
-  // come on !! use functions :-)
-  // last node with ->next == NULL
-  int *value1 = NULL;
-  value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-  Exnode* head_veh_node = (Exnode *)value1;
-  Exnode* value2 = (Exnode *)value1;
-  while (value2->next!=NULL){
-    value2 = value2->next;
-  }
-  Exnode* tail_veh_node = (Exnode *)value2;
-  quicksortlist(head_veh_node, tail_veh_node);
-}
+	  while (*p == ' ' || *p == '\t' || *p == '\r')
+	    p++;		// skip whitespaces
 
-// quick sort list
-void quicksortlist(Exnode *pLeft, Exnode *pRight){
-  Exnode *pStart;
-  Exnode *pCurrent;
-  double swp_time;
-  int swp_vid;
-  double swp_x;
-  double swp_y;
-  double swp_speed;
-  int swp_visit;
-  
-  // If the left and right pointers are the same, then return
-  if (pLeft == pRight) return;
-  
-  // Set the Start and the Current item pointers
-  pStart = pLeft;
-  pCurrent = pStart->next;
-  // Loop forever (well until we get to the right)
-  while (1){
-    if (pStart->time > pCurrent->time){
-      // Swap the items,swapping address could be critical, head pointer change will disrupt
-      // so swapping values
-      swp_time = pCurrent->time;
-      swp_vid = pCurrent->vid;
-      swp_x = pCurrent->x;
-      swp_y = pCurrent->y;
-      swp_speed = pCurrent->speed;
-      swp_visit = pCurrent->visit;
-      
-      pCurrent->time = pStart->time;
-      pCurrent->vid = pStart->vid;
-      pCurrent->x = pStart->x;
-      pCurrent->y = pStart->y;
-      pCurrent->speed = pStart->speed;
-      pCurrent->visit = pStart->visit;
-      
-      pStart->time = swp_time;
-      pStart->vid = swp_vid;
-      pStart->x = swp_x;
-      pStart->y = swp_y;
-      pStart->speed = swp_speed;
-      pStart->visit = swp_visit;
-    }
-    
-    // Check if we have reached the end
-    if (pCurrent == pRight) break;
-    
-    // Move to the next item in the list
-    pCurrent = pCurrent->next;
-  }
-  quicksortlist(pStart->next,pCurrent);
-  
-}
+	  if (*p != '\n')	//escape empty line
+	    {
+	      pch = strtok (p, " ");	// the separator between the items in the list is a space
+	      node_data *node = (node_data *) calloc (1, sizeof (node_data));
+				node->type=-1;    
 
-void clear_llist(){
-  
-  node_info* TempNode=NULL;
-  node_info* tmp=NULL;
-  TempNode=head_node_info;
-  
-  while(TempNode->next!=NULL){
-    int *value1 = NULL;
-    value1 = (int *) HT_LOOKUP(table, TempNode->vid_addr);
-    Exnode* TempMob = (Exnode *)value1;
-    
-    while (TempMob->next!=NULL){
-      Exnode* tmp=NULL;
-      tmp=TempMob;
-      TempMob=TempMob->next;
-      free(tmp);
-      tmp=NULL;
-    }
-    if (TempMob->next == NULL){
-      free(TempMob);
-      TempMob=NULL;
-    }
-    tmp=TempNode;
-    TempNode=TempNode->next;
-    free(tmp);
-    tmp=NULL;
-  }
-  if (TempNode->next==NULL ){
-    free(TempNode);
-    TempNode=NULL;
-  }
-  hash_table_delete(table);
-}
-/*     
+	  while (pch != NULL)
+		{
 
-int main(){
-        //char *mobility_file[50];
-	Exnode* next_loc=NULL;
-        //mobility_file = (char*) malloc(256);
-	//mobility_file=strtok("regular.tr");
-	omg_hash_table_t *table=read_mobility_file();
-	sort_veh_movement(table);
-	printf("Number of nodes --> %d \n",get_num_nodes());
-	next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	//next_loc=NULL;
-	next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	//next_loc=NULL;
-	next_loc=get_next_position(table,140392);
-	if (next_loc!=NULL){
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	//next_loc=NULL;
-	}next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	next_loc=get_next_position(table,140392);
-	//if (next_loc!=NULL){
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140392);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140396);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140396);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140396);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140396);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140396);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-        next_loc=get_next_position(table,140396);
-	printf("node details %d\n %lf %lf %lf %lf %d\n",next_loc->vid,next_loc->time,next_loc->x,next_loc->y,next_loc->speed,next_loc->vid);
-	//reset_visit_status(table,20.0,11);
-	node_info* head_node=head_node_info;
+		  switch (fmt)
+		    {
+		    case 0:
+		      if (atof (pch) < 0)
+					LOG_E (OMG, "error: negative time input \n");
+		      node->time = fabs (atof (pch));
+          LOG_D (OMG, "%.2f \n",node->time);
+		      break;
+		    case 1:
+		      node->vid = atoi (pch);
+          LOG_D (OMG, "%d \n",node->vid);
+		      break;
+		    case 2:
+		      node->x_pos = atof (pch);
+          LOG_D (OMG, "%.2f \n",node->x_pos);
+		      break;
+		    case 3:
+		      node->y_pos = atof (pch);
+           LOG_D (OMG, "%.2f \n",node->y_pos);
+		      break;
+		    case 4:
+		      if (atof (pch) < 0)
+					LOG_D (OMG, "error: negative speed input");
+		      node->speed = fabs (atof (pch));
+          LOG_D (OMG, "speed %.2f \n",node->speed);
+		      break;
+       /*case 5:
+		      node->type = atof (pch);
+		      break;*/
+		    default:
+           LOG_E (OMG,
+			      "[Error in trance file]:incorrect data format \n");
+		      break;
+		    }
 
-	while(head_node->next!=NULL){
-
-		if(head_node->vid==140392){
-			int *value1 = NULL;
-			value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-			Exnode *value=(Exnode *)value1;
-			while(value->next!=NULL){
-					printf("checking reset %d\n",value->visit);
-					value=value->next;
-				}
-			printf("checking reset %d\n",value->visit);
-
+		  fmt += 1;
+		  pch = strtok (NULL, " ");
 		}
-		head_node=head_node->next;
+
+	      node->next = NULL;
+	      node->visit = 0;
+
+	      // look for node in node info
+	      gid = find_node_info (node->vid, node_type);
+       
+	  if (gid == -1)
+		{
+		  node->gid = id;
+		  add_node_info (node->vid, node->gid, node_type);
+		  //store node data in the table
+		  hash_table_add (table[node_type], node, NULL);
+		  id++;
+		}
+	  else
+		{
+		  node->gid = gid;
+		  value = hash_table_lookup (table[node_type], node->gid);
+		  hash_table_add (table[node_type], node, value);
+		}
+
+
+
+	   }
+	 }
+ }
+
+  fclose (fp);
+
+}
+
+//search for node given id if exist 
+
+int
+find_node_info (int vid, int node_type)
+{
+  node_info *search;
+  if (list_head[node_type] != NULL)
+    {
+      search = list_head[node_type];
+      while (search != NULL)
+	{
+	  if (search->vid == vid)
+	    return search->g_id;
+	  search = search->next;
 	}
-	int *value1 = NULL;
-	value1 = (int *) HT_LOOKUP(table, head_node->vid_addr);
-				Exnode *value=(Exnode *)value1;
-				while(value->next!=NULL){
-						printf("checking reset %d %d\n",value->visit,value->vid);
-						value=value->next;
-					}
-				printf("checking reset %d %d\n",value->visit,value->vid);
-	return 0;
-}*/
+    }
+
+  return -1;
+}
+
+//builds linked list with each node holding vehicle id read from file & given id
+void
+add_node_info (int nid, int n_gid, int node_type)
+{
+  node_info *new = (node_info *) malloc (sizeof (node_info));
+  if (new != NULL)
+    {
+      new->vid = nid;
+      new->g_id = n_gid;
+      new->next = NULL;
+
+      if (list_head[node_type] == NULL)
+	      list_head[node_type] = new;
+      else
+	{
+	  node_info *temp, *save;
+	  temp = list_head[node_type];
+	  while (temp != NULL)
+	    {
+	      save = temp;
+	      temp = temp->next;
+	    }
+
+	  save->next = new;
+	}
+    }
+  else
+    {
+      LOG_E (OMG, "node info  list creation failed\n");
+      exit (-1);
+    }
+}
+
+
+
+int
+get_number_of_nodes (int node_type)
+{
+  return table[node_type]->key_count;
+}
+
+node_data *
+get_next_data (hash_table_t * table, int vid, int flag)
+{
+  node_container *block = hash_table_lookup (table, vid);
+  node_data *links = NULL, *save = NULL;
+
+  if (block != NULL)
+    links = block->next;
+
+  if (links == NULL)
+    LOG_E (OMG, "ERROR in reading-: NO data for node %d in this block \n",
+	   vid);
+
+  while (links != NULL)
+    {
+      if (links->visit == 0)
+	break;
+      save = links;
+      links = links->next;
+    }
+
+  if (links != NULL)
+    {
+      if (flag == DATA_AND_STATUS_CHANGE)
+	{
+	  if (block->next != block->end)
+	    links->visit = 1;
+	  return links;
+	}
+      else if (flag == DATA_ONLY)
+	{
+	  return save;
+	}
+    }
+  else
+    return links;
+}

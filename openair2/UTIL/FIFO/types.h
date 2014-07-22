@@ -53,6 +53,8 @@ typedef enum  {
 /* decomposition of node functions into jobs for a given event */
 typedef enum Job_type_e { JT_OTG, JT_PDCP, JT_PHY_MAC, JT_INIT_SYNC, JT_DL, JT_UL, RN_DL, RN_UL, JT_END} Job_Type_t;
 
+typedef enum Operation_Type_e { READ, WRITE, RESET} Operation_Type_t;
+
 typedef struct Job_s {
     enum Job_type_e type;
     int             exe_time; /* execution time at the worker*/
@@ -87,9 +89,12 @@ typedef struct Packet_otg_s {
 
 typedef struct {
     Event_Type_t type;
+		enum Operation_Type_e optype; //op
     char             *key;
     void             *value;
     frame_t           frame;
+		int ue;
+		int lcid;
 } Event_t;
 
 /*typedef struct Global_Time {
@@ -100,6 +105,8 @@ typedef struct {
   double time_s;
   double time_ms;
 };*/
+
+
 
 typedef struct Packet_otg_elt_s {
     struct Packet_otg_elt_s *next;

@@ -30,7 +30,7 @@
 /*! \file OMG.h
 * \brief Prototypes of OMG functions that may be called by OCG
 * \author  M. Mahersi, N. Nikaein, J. Harri
-* \date 2011
+* \date 2011 - 2014
 * \version 0.1
 * \company Eurecom
 * \email: 
@@ -43,6 +43,7 @@
 #include "omg_constants.h"
 #include "defs.h"
 #include "omg_vars.h"
+
 #if STANDALONE
 	#define LOG_G(c, x...) printf(x)
 	#define LOG_A(c, x...) printf(x)
@@ -57,6 +58,8 @@
 
 #else
 	#include "UTIL/LOG/log.h"
+
+
 #endif 
 
 /** @defgroup _omg OpenAir Mobility Generation (OMG)
@@ -195,14 +198,14 @@ void init_omg_global_params(void);
  * \brief Assign initial positions to all the nodes. To do so, call the start_generator..... function corresponding to each requested mobility generator
  * \param omg_param_list a structure that contains the main parameters needed to establish the random positions distribution
  */
-void init_mobility_generator(omg_global_param omg_param_list);
+void init_mobility_generator(omg_global_param omg_param_list[]);
 
 /**
  * \fn void stop_mobility_generator(int mobility_type)
  * \brief Call the destructor for the respective mobility type.
  * \param int mobility_type to stop and call destructor
  */
-void stop_mobility_generator(int mobility_type);
+void stop_mobility_generator(omg_global_param* omg_param_list);
 
 /**
  * \fn void update_nodes(double cur_time)
@@ -220,9 +223,9 @@ void update_nodes(double cur_time);
  * \param cur_time a variable of type double that represents the current time
  * \return a Node_list structure that stores the basic information about the all the nodes of a given mobility model
  */
-Node_list get_current_positions(int mobility_type, int node_type, double cur_time);
+node_list* get_current_positions(int mobility_type, int node_type, double cur_time);
 
-
+void get_nodes_positions (int mobility_type, double cur_time);
 
 /**
  * \fn void set_new_mob_type(int nID, int node_type, int new_mob, double cur_time)

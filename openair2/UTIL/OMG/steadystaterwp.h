@@ -26,31 +26,48 @@
   Address      : Eurecom, 2229, route des crêtes, 06560 Valbonne Sophia Antipolis, France
 
 *******************************************************************************/
-/**
- * \file static.h
- * \brief Prototypes of the functions used for the STATIC model
- * \date 22 May 2011
- * 
- */
 
-#ifndef STATIC_H_
-#define STATIC_H_
-
-#include "omg.h"
-
-/**
- * \fn void start_static_generator(omg_global_param omg_param_list)
- * \brief Start the STATIC model by setting the initial position of each node 
- * \param omg_param_list a structure that contains the main parameters needed to establish the random positions distribution
- */
-void start_static_generator(omg_global_param omg_param_list);
+/*! \file steadystaterwp.h
+* \brief random waypoint mobility generator 
+* \date 2014
+* \version 0.1
+* \company Eurecom
+* \email: 
+* \note
+* \warning
+*/
+#ifndef STEADYSTATERWP_H_
+#define STEADYSTATERWP_H_
 
 
-/**
- \fn void place_static_node(NodePtr node)
- * \brief Generates a random position ((X,Y) coordinates) and assign it to the node passed as argument. This latter node is then added to the Node_Vector[STATIC] 
- * \param node a pointer of type NodePtr that represents the node to which the random position is assigned
- */
-void place_static_node(node_struct* node);
+int start_steadystaterwp_generator (omg_global_param omg_param_list);
 
-#endif /* STATIC_H_ */
+void place_steadystaterwp_node (node_struct* node);
+
+void sleep_steadystaterwp_node (pair_struct* pair, double cur_time);
+
+void move_steadystaterwp_node (pair_struct* pair, double cur_time);
+
+double pause_probability(omg_global_param omg_param);
+
+
+double initial_pause(omg_global_param omg_param);
+
+double initial_speed(omg_global_param omg_param);
+
+void update_steadystaterwp_nodes (double cur_time);
+
+void get_steadystaterwp_positions_updated (double cur_time);
+
+#endif 
+
+
+
+
+
+
+
+
+
+
+

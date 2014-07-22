@@ -58,7 +58,7 @@ union n{
      } un ;
 
 
-void check_endianness();
+void check_endianness(void);
 
 //----------------STORAGE------------------------------------
 struct Storage {
@@ -78,36 +78,36 @@ int descLen;
 
 extern int msgLength;
 
-	void reset();
+	void reset(void);
         int storageLength(storage *);
         
-        void rearange();
-        unsigned char readChar(); 
+        void rearange(void);
+        unsigned char readChar(void); 
 	void writeChar(unsigned char); 
 
-	int readByte() ;
+	int readByte(void) ;
 	void writeByte(int) ;
 
 
-	int readUnsignedByte(); 
+	int readUnsignedByte(void); 
 	void writeUnsignedByte(int); 
 
-	char * readString() ;
+	char * readString(void) ;
 	void writeString(char *);
 
-        String_list readStringList(String_list) ;
-	void writeStringList(String_list); 
+        string_list* readStringList(string_list*) ;
+	void writeStringList(string_list*); 
 
-	int readShort() ;
+	int readShort(void) ;
 	void writeShort(int); 
 
-	int readInt() ;
+	int readInt(void) ;
 	void writeInt(int); 
 
-	float readFloat() ;
+	float readFloat(void) ;
 	void writeFloat( float ); 
 
-        double readDouble() ;
+        double readDouble(void) ;
         void writeDouble( double ); 
 
 	storage* writePacket(unsigned char*, int);

@@ -56,8 +56,8 @@ int targetTime;
 
 char *description;
 
-String_list departed;  // string list of all vehicles appearing in SUMO at the current time step
-String_list arrived;  // string list of all vehicles leaving SUMO at the current time step
+string_list* departed;  // string list of all vehicles appearing in SUMO at the current time step
+string_list* arrived;  // string list of all vehicles leaving SUMO at the current time step
 
 /**
  * Global parameters defined in storage_traci_OMG.h
@@ -89,10 +89,10 @@ int extractCommandStatus(storage *, unsigned char , char *);
 void commandSimulationStep(double);
 
 /**
- * \fn commandClose();
+ * \fn commandClose(void);
  * \brief Send termination command to SUMO
  */
-void commandClose();
+void commandClose(void);
 
 /**
  * \fn commandGetVehicleVariable(char *vehID, int varID)
@@ -103,10 +103,10 @@ void commandGetVehicleVariable(char *vehID, int varID);
 
 
 /**
- * \fn get_num_sumo_nodes()
+ * \fn get_num_sumo_nodes(void)
  * \brief Return the total number of nodes to be simulated in SUMO
  */
-int commandGetMaxSUMONodesVariable();
+int commandGetMaxSUMONodesVariable(void);
 
 /**
  * \fn init(int max_sim_time)
@@ -126,7 +126,7 @@ void processSubscriptions(void);
  * \param NodePtr node the pointer to the OAISim node
  * \param char *sumo_id the SUMO ID of the target node
  */
-void GetSpeed(NodePtr node, char * sumo_id);
+void GetSpeed(node_struct* node, char * sumo_id);
 
 /**
  * \fn void Position(NodePtr node, char * sumo_id);
@@ -134,7 +134,7 @@ void GetSpeed(NodePtr node, char * sumo_id);
  * \param NodePtr node the pointer to the OAISim node
  * \param char *sumo_id the SUMO ID of the target node
  */
-void GetPosition(NodePtr node, char * sumo_id);
+void GetPosition(node_struct* node, char * sumo_id);
 
 
 #endif 

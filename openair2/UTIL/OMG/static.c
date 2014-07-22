@@ -29,11 +29,11 @@
 
 /*! \file rwalk.c
 * \brief static  mobility generator 
-* \author  M. Mahersi,  J. Harri, N. Nikaein, Andre Gomes (One source)
+* \author  M. Mahersi, N. Nikaein, J. Harri
 * \date 2011
 * \version 0.1
 * \company Eurecom
-* \email: openair_tech@eurecom.fr
+* \email: 
 * \note
 * \warning
 */
@@ -41,79 +41,103 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "static.h"
 
-#include "omg.h"
-void place_static_node(NodePtr node);
 
-void start_static_generator(omg_global_param omg_param_list) {
-  
-  int n_id=0;
-  //  double cur_time = 1.0; 
-  NodePtr node = NULL;
-  MobilityPtr mobility = NULL;
-  
-  
-  if (omg_param_list.nodes <= 0){
-    LOG_W(OMG, "Number of static nodes has not been set\n");
-    return;
-  }
-  
-  srand(omg_param_list.seed + STATIC); 
-  // for (n_id = omg_param_list.first_ix; n_id< omg_param_list.first_ix + omg_param_list.nodes; n_id++){
+void
+start_static_generator (omg_global_param omg_param_list)
+{
 
-  if (omg_param_list.nodes_type == eNB) {
-    LOG_I(OMG, "Static mobility model for %d eNBs \n", omg_param_list.nodes);
-  } else if (omg_param_list.nodes_type == UE) {
-    LOG_I(OMG, "Static mobility model for %d UE\n",omg_param_list.nodes);
-  }
-    
-  for (n_id = 0; n_id< omg_param_list.nodes; n_id++) {
-    
-    node = (NodePtr) create_node();
-    mobility = (MobilityPtr) create_mobility();
-    
-    node->ID = n_id; 
-    node->generator = omg_param_list.mobility_type;
-    node->type =  omg_param_list.nodes_type;
-    node->mob = mobility;
-    node->generator = STATIC;
+  int id;
+  static int n_id = 0;
+  node_struct *node = NULL;
+  mobility_struct *mobility = NULL;
 
-    place_static_node(node);	//initial positions
-  }
+  srand (omg_param_list.seed + STATIC);
+
+  LOG_I (OMG, "Static mobility model for %d %d nodes\n", omg_param_list.nodes,
+	 omg_param_list.nodes_type);
+  for (id = n_id; id < (omg_param_list.nodes + n_id); id++)
+    {
+
+      node = create_node ();
+      mobility = create_mobility ();
+
+      node->id = id;
+      node->type = omg_param_list.nodes_type;
+      node->mob = mobility;
+      node->generator = STATIC;
+      place_static_node (node);	//initial positions
+    }
+  n_id += omg_param_list.nodes;
+
+
 }
 
 
-void place_static_node(NodePtr node) {
-  if (omg_param_list.user_fixed && node->type == eNB) {
-    if (omg_param_list.fixed_X <= omg_param_list.max_X && omg_param_list.fixed_X >= omg_param_list.min_X)
-        node->X_pos = omg_param_list.fixed_X;
-    else
-        node->X_pos = (double) ((int) (randomGen(omg_param_list.min_X, omg_param_list.max_X)*100))/ 100;
-    node->mob->X_from = node->X_pos;
-    node->mob->X_to = node->X_pos;
-    if (omg_param_list.fixed_Y <= omg_param_list.max_Y && omg_param_list.fixed_Y >= omg_param_list.min_Y)
-        node->Y_pos = omg_param_list.fixed_Y;
-    else
-        node->Y_pos = (double) ((int) (randomGen(omg_param_list.min_Y,omg_param_list.max_Y)*100))/ 100;
-    node->mob->Y_from = node->Y_pos;
-    node->mob->Y_to = node->Y_pos;
-  }
-  else {
-    node->X_pos = (double) ((int) (randomGen(omg_param_list.min_X, omg_param_list.max_X)*100))/ 100;
-    node->mob->X_from = node->X_pos;
-    node->mob->X_to = node->X_pos;
-    node->Y_pos = (double) ((int) (randomGen(omg_param_list.min_Y,omg_param_list.max_Y)*100))/ 100;
-    node->mob->Y_from = node->Y_pos;
-    node->mob->Y_to = node->Y_pos;
-  }
-  
+
+void
+place_static_node (node_struct * node)
+{
+  if (omg_param_list[node->type].user_fixed && node->type == eNB)
+    {
+      if (omg_param_list[node->type].fixed_x <=
+	  omg_param_list[node->type].max_x
+	  && omg_param_list[node->type].fixed_x >=
+	  omg_param_list[node->type].min_x)
+	node->x_pos = omg_param_list[node->type].fixed_x;
+      else
+	node->x_pos =
+	  (double) ((int)
+		    (randomgen
+		     (omg_param_list[node->type].min_x,
+		      omg_param_list[node->type].max_x) * 100)) / 100;
+      node->mob->x_from = node->x_pos;
+      node->mob->x_to = node->x_pos;
+      if (omg_param_list[node->type].fixed_y <=
+	  omg_param_list[node->type].max_y
+	  && omg_param_list[node->type].fixed_y >=
+	  omg_param_list[node->type].min_y)
+	node->y_pos = omg_param_list[node->type].fixed_y;
+      else
+	node->y_pos =
+	  (double) ((int)
+		    (randomgen
+		     (omg_param_list[node->type].min_y,
+		      omg_param_list[node->type].max_y) * 100)) / 100;
+      node->mob->y_from = node->y_pos;
+      node->mob->y_to = node->y_pos;
+    }
+  else
+    {
+
+      node->x_pos =
+	(double) ((int)
+		  (randomgen
+		   (omg_param_list[node->type].min_x,
+		    omg_param_list[node->type].max_x) * 100)) / 100;
+      node->mob->x_from = node->x_pos;
+      node->mob->x_to = node->x_pos;
+      node->y_pos =
+	(double) ((int)
+		  (randomgen
+		   (omg_param_list[node->type].min_y,
+		    omg_param_list[node->type].max_y) * 100)) / 100;
+      node->mob->y_from = node->y_pos;
+      node->mob->y_to = node->y_pos;
+    }
+
   node->mob->speed = 0.0;
   node->mob->journey_time = 0.0;
-  
-  LOG_I(OMG, "[STATIC] Initial position of node ID: %d type(UE, eNB): %d (X = %.2f, Y = %.2f) speed = 0.0\n", node->ID, node->type, node->X_pos, node->Y_pos);  
-  Node_Vector[STATIC] = (Node_list) add_entry(node, Node_Vector[STATIC]);
-  Node_Vector_len[STATIC]++;
-  //Initial_Node_Vector_len[STATIC]++;
-  
-}
 
+  LOG_I (OMG,
+	 "[STATIC] Initial position of node ID: %d type(%d):  (X = %.2f, Y = %.2f) speed = 0.0\n",
+	 node->id, node->type, node->x_pos, node->y_pos);
+  node_vector_end[node->type] =
+    (node_list *) add_entry (node, node_vector_end[node->type]);
+
+  if (node_vector[node->type] == NULL)
+    node_vector[node->type] = node_vector_end[node->type];
+
+  node_vector_len[node->type]++;
+}

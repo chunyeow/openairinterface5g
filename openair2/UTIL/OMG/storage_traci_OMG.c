@@ -204,12 +204,12 @@ void writeString(char *s){
 
 }
 
-String_list readStringList(String_list vector){
+string_list* readStringList(string_list* vector){
 
    int i=0;
    int len = readInt();
    descLen = len;
-   String_list entry = NULL;
+   string_list* entry = NULL;
    
    for (; i < len; i++) {
       if (vector->string == NULL) {
@@ -218,14 +218,14 @@ String_list readStringList(String_list vector){
          vector->string = tmp;//readString();
       }
       else {
-        entry = (String_list)malloc(sizeof(String_list));
+        entry = (string_list*) malloc(sizeof(string_list));
         char *tmp = readString();
         //printf("OMG - SUMO ID: %s \n",tmp);
         entry->string = tmp;//readString();
         entry->next = NULL;
 
         if(vector !=NULL) {
-          String_list tmp = vector;
+          string_list* tmp = vector;
           while (tmp->next != NULL){
        	    tmp = tmp->next;
           }
@@ -238,11 +238,11 @@ String_list readStringList(String_list vector){
 }
 
 
-void writeStringList(String_list vector){
+void writeStringList(string_list* vector){
 	
 
         int count=0;
-        String_list tmp = vector;
+        string_list* tmp = vector;
         // JHNote: a better solution would be to save the pointer to the reference of this Int and replace the value with count at the end....
 	if (tmp->string !=NULL) 
 	   count++;
@@ -463,9 +463,9 @@ void freeStorage(storage * freePtr){
         freePtr = NULL;             // finally, mark as empty list.
 }
 
-void reset_String_list(String_list vector) {
-  String_list entry = vector;
-  String_list tmp;
+void reset_String_list(string_list* vector) {
+  string_list* entry = vector;
+  string_list* tmp;
 
   while (entry->next != NULL) {
      tmp = entry;     

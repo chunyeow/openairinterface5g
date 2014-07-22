@@ -37,7 +37,7 @@
 #define RWP_H_
 
 #include "omg.h"
-
+#include "grid.h"
 
 /**
  * \fn void start_rwp_generator(omg_global_param omg_param_list)
@@ -51,7 +51,7 @@ int start_rwp_generator(omg_global_param omg_param_list) ;
  * \brief Called by the function start_rwp_generator(), it generates a random position ((X,Y) coordinates)  for a node and add it to the Node_Vector_Rwp 
  * \param node a pointer of type NodePtr that represents the node to which the random position is assigned
  */
-void place_rwp_node(NodePtr node);
+void place_rwp_node(node_struct* node);
 
 /**
  * \fn Pair sleep_rwp_node(NodePtr node, double cur_time)
@@ -61,7 +61,7 @@ void place_rwp_node(NodePtr node);
  * \param cur_time a variable of type double that represents the current time
  * \return A Pair structure containing the node and the time when it is reaching the destination
  */
-Pair sleep_rwp_node(NodePtr node, double cur_time) ;
+void sleep_rwp_node(pair_struct* pair, double cur_time) ;
 
 /**
  * \fn Pair move_rwp_node(NodePtr node, double cur_time)
@@ -71,7 +71,7 @@ Pair sleep_rwp_node(NodePtr node, double cur_time) ;
  * \param cur_time a variable of type double that represents the current time
  * \return A Pair structure containing the node structure and the arrival time at the destination
  */
-Pair move_rwp_node(NodePtr node, double cur_time) ;
+void move_rwp_node(pair_struct* pair, double cur_time);
 
 /**
  * \fn void update_rwp_nodes(double cur_time)

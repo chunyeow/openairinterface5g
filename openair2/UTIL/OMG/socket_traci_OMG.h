@@ -77,17 +77,17 @@ int connection_(char *, int);
 void sendExact(int);
 
 /**
- * \fn  recieveExact();
+ * \fn  recieveExact(void);
  * \brief Pack the data to storage from buf after reading from socket
  * Returns storage pointer
  */     
-storage* receiveExact();
+storage* receiveExact(void);
 
 
 /**
- * \fn  close_connection();
+ * \fn  close_connection(void);
  * \brief close socket connection 
  */       
-void close_connection();
+void close_connection(void);
 
 #endif 

@@ -295,6 +295,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
   ////// options of UE_Mobility_Type
   typedef struct
   {
+    char *selected_option; 
     int horizontal_grid;
     int vertical_grid;
   } Grid_Map;
@@ -463,6 +464,32 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
   } Topology_Config;
 /* @}*/
 
+
+  typedef struct
+  {
+	uint16_t priority[11];//pas possible d'acceder au MAX_NUM_LCID
+	//
+	uint8_t DCI_aggregation_min;
+	uint8_t DLSCH_dci_size_bits;
+	//UL transmission bandwidth in RBs
+	uint8_t ul_bandwidth[11];
+	//DL transmission bandwidth in RBs
+	uint8_t dl_bandwidth[11];
+	//UL transmission bandwidth in RBs
+	uint8_t min_ul_bandwidth[11];
+	//DL transmission bandwidth in RBs
+	uint8_t min_dl_bandwidth[11];
+	//aggregated bit rate of non-gbr bearer per UE
+	uint64_t ue_AggregatedMaximumBitrateDL;
+	//aggregated bit rate of non-gbr bearer per UE
+	uint64_t ue_AggregatedMaximumBitrateUL;
+	//CQI scheduling interval in subframes.
+	uint16_t cqiSchedInterval;
+	//Contention resolution timer used during random access
+	uint8_t mac_ContentionResolutionTimer;		
+	uint16_t max_allowed_rbs[11];
+	uint8_t max_mcs[11];	
+  } Mac_config;
 
 /** @defgroup _Predefined_traffic Configuration
  *  @ingroup _OSD_basic
@@ -684,7 +711,8 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
     unsigned char otg_bg_traffic_enabled;
     unsigned char omg_model_rn;
     unsigned char omg_model_enb;
-    unsigned char omg_model_ue;
+    unsigned char omg_model_ue; 
+    unsigned char omg_rwp_type;
     unsigned char omg_model_ue_current;	// when mixed mbility is used 
     // control eNB/UE instance through CLI
     unsigned char cli_enabled;
@@ -733,6 +761,7 @@ The following diagram is based on graphviz (http://www.graphviz.org/), you need 
  * @{*/
   typedef struct
   {
+    		Mac_config mac_config[NUMBER_OF_UE_MAX];		
     Environment_System_Config environment_system_config;	/*!< \brief Evironment configuration */
     Topology_Config topology_config;	/*!< \brief Topology configuration */
     Application_Config application_config;	/*!< \brief Applications configuration */

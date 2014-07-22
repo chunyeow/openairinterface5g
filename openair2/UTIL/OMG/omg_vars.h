@@ -39,21 +39,29 @@
 #include "omg.h"
 
 /*!A global variable used to store all the nodes information. It is an array in which every cell stocks the nodes information for a given mobility type. Its length is equal to the maximum number of mobility models that can exist in a single simulation scenario */
-Node_list Node_Vector[MAX_NUM_MOB_TYPES];
+node_list* node_vector[MAX_NUM_NODE_TYPES];
+node_list* node_vector_end[MAX_NUM_NODE_TYPES];
 
 /*! A global variable which represents the length of the Node_Vector */
-int Node_Vector_len[MAX_NUM_MOB_TYPES];
+int node_vector_len[MAX_NUM_NODE_TYPES];
+/*!a global veriable used for event average computation*/
+int event_sum[100];
+int events[100];
 
 /*!A global variable used to store the scheduled jobs, i.e (node, job_time) peers   */
-Job_list Job_Vector;
+job_list* job_vector[MAX_NUM_MOB_TYPES];
+job_list* job_vector_end[MAX_NUM_MOB_TYPES];
 
 /*! A global variable which represents the length of the Job_Vector */
-int Job_Vector_len;
+int job_vector_len[MAX_NUM_MOB_TYPES];
 
 /*! A global variable used gather the fondamental parameters needed to launch a simulation scenario*/
-omg_global_param omg_param_list;
+omg_global_param omg_param_list[MAX_NUM_NODE_TYPES];
 
 //double m_time;
 
-
+/*!A global variable used to store selected node position generation way*/
+int grid;
+double xloc_div;
+double yloc_div;
 #endif /*  __OMG_VARS_H__ */

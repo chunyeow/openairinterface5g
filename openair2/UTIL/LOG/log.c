@@ -178,7 +178,7 @@ int logInit (void)
     g_log->log_component[OMG].interval =  1;
     g_log->log_component[OMG].fd = 0;
     g_log->log_component[OMG].filelog = 0;
-    g_log->log_component[OMG].filelog_name = "";
+    g_log->log_component[OMG].filelog_name = "/tmp/omg.csv";
 
     g_log->log_component[OTG].name = "OTG";
     g_log->log_component[OTG].level = LOG_EMERG;

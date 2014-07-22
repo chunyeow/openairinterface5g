@@ -49,7 +49,7 @@ int start_rwalk_generator(omg_global_param omg_param_list) ;
  * \brief Called by the function start_rwalk_generator(), it generates a random position ((X,Y) coordinates)  for a node and add it to the corresponding Node_Vector_Rwp 
  * \param node a pointer of type NodePtr that represents the node to which the random position is assigned
  */
-void place_rwalk_node(NodePtr node) ;
+void place_rwalk_node(node_struct* node) ;
 
 /**
  * \fn Pair sleep_rwalk_node(NodePtr node, double cur_time)
@@ -58,7 +58,7 @@ void place_rwalk_node(NodePtr node) ;
  * \param cur_time a variable of type double that represents the current time
  * \return A Pair structure containing the node and the time when it is reaching the destination
  */
-Pair sleep_rwalk_node(NodePtr node, double cur_time) ;
+void sleep_rwalk_node(pair_struct* pair, double cur_time) ;
 
 
 /**
@@ -68,7 +68,7 @@ Pair sleep_rwalk_node(NodePtr node, double cur_time) ;
  * \param cur_time a variable of type double that represents the current time
  * \return A Pair structure containing the node structure and the arrival time at the destination
  */
-Pair move_rwalk_node(NodePtr node, double cur_time) ;
+void move_rwalk_node(pair_struct* pair, double cur_time) ;
 
 /**
  * \fn void update_rwalk_nodes(double cur_time)
@@ -86,5 +86,8 @@ void update_rwalk_nodes(double cur_time) ; // need to implement an out-of-area c
  * \param cur_time a variable of type double that represents the current time
  */
 void get_rwalk_positions_updated(double cur_time) ;
+
+/*for perfect simulation of random walk*/
+double residualtime(omg_global_param omg_param);
 
 #endif /* RWALK_H_ */
