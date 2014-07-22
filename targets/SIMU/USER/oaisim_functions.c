@@ -43,6 +43,9 @@
 #include "PHY/extern.h"
 #include "MAC_INTERFACE/extern.h"
 #include "LAYER2/MAC/extern.h"
+#ifdef OPENAIR2
+#include "LAYER2/MAC/proto.h"
+#endif 
 #include "LAYER2/PDCP_v10.1.0/pdcp.h"
 #include "LAYER2/PDCP_v10.1.0/pdcp_primitives.h"
 #include "RRC/LITE/extern.h"
@@ -108,11 +111,10 @@ int           map1,map2;
 double      **ShaF                  = NULL;
 // pointers signal buffers (s = transmit, r,r0 = receive)
 double      **s_re, **s_im, **r_re, **r_im, **r_re0, **r_im0;
-Node_list     ue_node_list          = NULL;
-Node_list     enb_node_list         = NULL;
-int           pdcp_period           = 0;
+node_list*     ue_node_list          = NULL;
+node_list*     enb_node_list         = NULL;
 int           omg_period            = 0;
-
+int           pdcp_period           = 0;
 
 // time calibration for soft realtime mode
 struct timespec time_spec;
@@ -990,11 +992,11 @@ void update_omg (frame_t frameP) {
 
   if ((frameP % omg_period) == 0 ) { // call OMG every 10ms
       update_nodes(oai_emulation.info.time_s);
-      display_node_list(enb_node_list);
-      display_node_list(ue_node_list);
+      //display_node_list(enb_node_list);
+      //display_node_list(ue_node_list);
       if (oai_emulation.info.omg_model_ue >= MAX_NUM_MOB_TYPES){ // mix mobility model
           for(UE_id=oai_emulation.info.first_ue_local; UE_id<(oai_emulation.info.first_ue_local+oai_emulation.info.nb_ue_local);UE_id++){
-              new_omg_model = randomGen(STATIC,RWALK);
+              new_omg_model = randomgen(STATIC,RWALK);
               LOG_D(OMG, "[UE] Node of ID %d is changing mobility generator ->%d \n", UE_id, new_omg_model);
               // reset the mobility model for a specific node
               set_new_mob_type (UE_id, UE, new_omg_model, oai_emulation.info.time_s);
@@ -1003,7 +1005,7 @@ void update_omg (frame_t frameP) {
 
       if (oai_emulation.info.omg_model_enb >= MAX_NUM_MOB_TYPES) {      // mix mobility model
           for (eNB_id = oai_emulation.info.first_enb_local; eNB_id < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local); eNB_id++) {
-              new_omg_model = randomGen (STATIC, RWALK);
+              new_omg_model = randomgen (STATIC, RWALK);
               LOG_D (OMG,"[eNB] Node of ID %d is changing mobility generator ->%d \n", eNB_id, new_omg_model);
               // reset the mobility model for a specific node
               set_new_mob_type (eNB_id, eNB, new_omg_model, oai_emulation.info.time_s);
@@ -1013,8 +1015,10 @@ void update_omg (frame_t frameP) {
 }
 
 void update_omg_ocm() {
-  enb_node_list = get_current_positions(oai_emulation.info.omg_model_enb, eNB, oai_emulation.info.time_s);
-  ue_node_list = get_current_positions(oai_emulation.info.omg_model_ue, UE, oai_emulation.info.time_s);
+ 
+ enb_node_list=get_current_positions(oai_emulation.info.omg_model_enb, eNB, oai_emulation.info.time_s);
+ ue_node_list=get_current_positions(oai_emulation.info.omg_model_ue, UE, oai_emulation.info.time_s);
+
 }
 
 void update_ocm() {
@@ -1027,6 +1031,8 @@ void update_ocm() {
   /* check if the openair channel model is activated used for PHY abstraction : path loss*/
   if ((oai_emulation.info.ocm_enabled == 1)&& (ethernet_flag == 0 )) {
       //LOG_D(OMG," extracting position of eNb...\n");
+       display_node_list(enb_node_list);
+       display_node_list(ue_node_list);
       extract_position(enb_node_list, enb_data, NB_eNB_INST);
       //extract_position_fixed_enb(enb_data, NB_eNB_INST,frame);
       //LOG_D(OMG," extracting position of UE...\n");

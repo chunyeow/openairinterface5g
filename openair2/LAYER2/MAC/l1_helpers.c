@@ -28,9 +28,10 @@
 *******************************************************************************/
 /*! \file l1_helper.c
 * \brief phy helper function
-* \author Raymond Knopp
-* \date 2012
+* \author Navid Nikaein, Raymond Knopp
+* \date 2012 - 2014
 * \version 0.5
+* \email navid.nikaein@eurecom.fr
 * @ingroup _mac
 
 */
@@ -38,6 +39,7 @@
 #include "defs.h"
 #include "extern.h"
 #include "UTIL/LOG/log.h"
+#include "proto.h"
 
 int8_t get_Po_NOMINAL_PUSCH(module_id_t module_idP) {
   RACH_ConfigCommon_t *rach_ConfigCommon = NULL;

@@ -49,6 +49,7 @@
 #include "OCG.h"
 #include "OCG_extern.h"
 #include "UTIL/OMG/omg.h"
+#include "UTIL/OMG/grid.h"
 #include "UTIL/OTG/otg_tx.h"
 #include "UTIL/OTG/otg.h"
 #include "UTIL/OTG/otg_vars.h"
@@ -92,8 +93,18 @@ mapping omg_model_names[] =
     {"RWALK", RWALK},
     {"TRACE", TRACE},
     {"SUMO", SUMO},
+    {"STEADY_RWP", STEADY_RWP},
     {"MAX_NUM_MOB_TYPES", MAX_NUM_MOB_TYPES},
     {NULL, -1}
+};
+// subtypes for RWP in grid map
+mapping omg_rwp_names[] =
+{
+  {"MIN_RWP_TYPES", MIN_RWP_TYPES},
+  {"RESTRICTED_RWP",RESTIRICTED_RWP},
+  {"CONNECTED_DOMAIN", CONNECTED_DOMAIN},
+  {"MAX_RWP_TYPES", MAX_RWP_TYPES},
+  {NULL, -1}
 };
 mapping otg_multicast_app_type_names[] = {
   {"no_predefined_multicast_traffic", 0},
@@ -241,8 +252,9 @@ void init_oai_emulation(void) {
 	oai_emulation.topology_config.cell_type.selected_option = "macrocell";
 	oai_emulation.topology_config.relay.number_of_relays = 0;
 	oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = "STATIC";
-	oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.horizontal_grid = 1;
-	oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.vertical_grid = 1;
+  oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.selected_option="MAX_RWP_TYPES";
+	//oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.horizontal_grid = 1;
+	//oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.vertical_grid = 1;
 	oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_trip_type.selected_option = "random_destination";
 	oai_emulation.topology_config.mobility.UE_mobility.UE_initial_distribution.selected_option = "random";
 	oai_emulation.topology_config.mobility.UE_mobility.random_UE_distribution.number_of_nodes = 1;
@@ -286,7 +298,7 @@ void init_oai_emulation(void) {
 		oai_emulation.application_config.predefined_traffic.background[i] = "disable";
 		oai_emulation.application_config.predefined_traffic.aggregation_level[i] = 1;
 		oai_emulation.application_config.predefined_traffic.flow_start[i] = (i+1)*25;
-		oai_emulation.application_config.predefined_traffic.flow_duration[i] = 100;
+		oai_emulation.application_config.predefined_traffic.flow_duration[i] = 0xffff;
 
 		oai_emulation.application_config.predefined_traffic.destination_id[i] = 0;
 
@@ -389,6 +401,7 @@ void init_oai_emulation(void) {
   oai_emulation.info.omg_model_enb=STATIC; //default to static mobility model
   oai_emulation.info.omg_model_rn=STATIC; //default to static mobility model
   oai_emulation.info.omg_model_ue=STATIC; //default to static mobility model
+  oai_emulation.info.omg_rwp_type	= RESTIRICTED_RWP;
   oai_emulation.info.omg_model_ue_current=STATIC; //default to static mobility model
   oai_emulation.info.otg_traffic="no_predefined_traffic";
   oai_emulation.info.otg_bg_traffic_enabled = 0; // G flag
@@ -478,6 +491,10 @@ void oaisim_config(void) {
     g_log->log_component[OTG_OWD].filelog = 1;*/
     ocg_config_app(); // packet generator
   }
+	// add a var to control this, and pass this var to OMG
+	set_component_filelog(OMG);
+	LOG_I(OMG,"setting OMG file log \n");
+
 }
 
 int olg_config(void) {
@@ -584,121 +601,161 @@ int ocg_config_env(void) {
 }
 int ocg_config_topo(void) {
 
-	// omg
-	init_omg_global_params();
-
-	// setup params for openair mobility generator
-	//common params
-
-	omg_param_list.min_X = 0;
-	omg_param_list.max_X = oai_emulation.topology_config.area.x_m;
-	omg_param_list.min_Y = 0;
-	omg_param_list.max_Y = oai_emulation.topology_config.area.y_m;
-	// init values
-	omg_param_list.min_speed = 0.1;
-	omg_param_list.max_speed = 20.0;
-	omg_param_list.min_journey_time = 0.1;
-	omg_param_list.max_journey_time = 10.0;
-	omg_param_list.min_azimuth = 0; // ???
-	omg_param_list.max_azimuth = 360; // ???
-	omg_param_list.min_sleep = 0.1;
-	omg_param_list.max_sleep = 8.0;
-
-
-	// init OMG for eNBs
-	if ((oai_emulation.info.omg_model_enb = map_str_to_int(omg_model_names, oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option))== -1)
-	  oai_emulation.info.omg_model_enb = STATIC;
-	LOG_I(OMG,"eNB mobility model is (%s, %d)\n",
-	      oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option,
-	      oai_emulation.info.omg_model_enb);
-
-	if (oai_emulation.info.omg_model_enb == TRACE) {
-	  omg_param_list.mobility_file = (char*) malloc(256);// user-specific trace file "%s/UTIL/OMG/mobility.txt",getenv("OPENAIR2_DIR")
-	  //memset(oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file,0,256);
-	  //sprintf(omg_param_list.mobility_file,"%s",oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file);
-	  sprintf(omg_param_list.mobility_file,"%s/UTIL/OMG/TRACE/%s",
-		  getenv("OPENAIR2_DIR"),
-		  oai_emulation.topology_config.mobility.eNB_mobility.trace_config.trace_mobility_file);
-	  LOG_I(OMG,"TRACE file at %s\n", omg_param_list.mobility_file);
-	}
-
-	omg_param_list.mobility_type = oai_emulation.info.omg_model_enb; 
-	omg_param_list.nodes_type = eNB;  //eNB or eNB + RN
-  if (strcmp(oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option, "fixed") == 0) {
-    omg_param_list.user_fixed = true;
-    omg_param_list.fixed_X = (double)oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_x;
-    omg_param_list.fixed_Y = (double)oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_y;
-  }
-	omg_param_list.nodes = oai_emulation.info.nb_enb_local + oai_emulation.info.nb_rn_local;
- 	omg_param_list.seed = oai_emulation.info.seed; // specific seed for enb and ue to avoid node overlapping
-
-	// at this moment, we use the above moving dynamics for mobile eNB
+  int i;
+  // omg
+  init_omg_global_params();
+  
+  // setup params for openair mobility generator
+  //common params
+  for(i=0; i < MAX_NUM_NODE_TYPES; i++) {
+   
+    omg_param_list[i].min_x = 0;
+    omg_param_list[i].max_x = oai_emulation.topology_config.area.x_m;
+    omg_param_list[i].min_y = 0;
+    omg_param_list[i].max_y= oai_emulation.topology_config.area.y_m;
+    // init values
+    omg_param_list[i].min_speed = 0.1;
+    omg_param_list[i].max_speed = 20.0;
+    omg_param_list[i].min_journey_time = 0.1;
+    omg_param_list[i].max_journey_time = 10.0;
+    omg_param_list[i].min_azimuth = 0; // ???
+    omg_param_list[i].max_azimuth = 360; // ???
+    omg_param_list[i].min_sleep = 0.1;
+    omg_param_list[i].max_sleep = 8.0;
+    omg_param_list[i].nodes_type = i; 
+    omg_param_list[i].nodes=0;
+    omg_param_list[i].mobility_type=STATIC;
+    
+    // init OMG for eNBs
+    
+    if(i==eNB) {
+      if ((oai_emulation.info.omg_model_enb = map_str_to_int(omg_model_names, oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option))== -1)
+	oai_emulation.info.omg_model_enb = STATIC;
+      
+      LOG_I(OMG,"eNB mobility model is (%s, %d)\n",
+	    oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option,
+	    oai_emulation.info.omg_model_enb);
+      
+      omg_param_list[i].mobility_type = oai_emulation.info.omg_model_enb; 
+      omg_param_list[i].nodes = oai_emulation.info.nb_enb_local + oai_emulation.info.nb_rn_local;
+      omg_param_list[i].seed = oai_emulation.info.seed; // specific seed for enb and ue to avoid node overlapping
+      
+      
+      if (oai_emulation.info.omg_model_enb == TRACE) {
+	omg_param_list[i].mobility_file = (char*) malloc(256);// user-specific trace file "%s/UTIL/OMG/mobility.txt",getenv("OPENAIR2_DIR")
+	//memset(oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file,0,256);
+	//sprintf(omg_param_list.mobility_file,"%s",oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file);
+	sprintf(omg_param_list[i].mobility_file,"%s/UTIL/OMG/TRACE/%s",
+		getenv("OPENAIR2_DIR"),
+		oai_emulation.topology_config.mobility.eNB_mobility.trace_config.trace_mobility_file);
+	LOG_I(OMG,"TRACE file at %s\n", omg_param_list[i].mobility_file);
+	// notify the user if the file is not found 
+      } 
+      
+      
+      
+      if (strcmp(oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option, "fixed") == 0) {
+	omg_param_list[i].user_fixed = true;
+	omg_param_list[i].fixed_x = (double)oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_x;
+	omg_param_list[i].fixed_y = (double)oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_y;
+      }
+      
+      /*// at this moment, we use the above moving dynamics for mobile eNB
 	if (omg_param_list.nodes >0 )
-	  init_mobility_generator(omg_param_list);
+	init_mobility_generator(omg_param_list);*/
+      
+    }
+    else if (i== UE) {        // init OMG for UE
+      
+      
+      // input of OMG: STATIC: 0, RWP: 1, RWALK 2, or TRACE 3, or SUMO or STEADY_RWP
+      if ((oai_emulation.info.omg_model_ue = map_str_to_int(omg_model_names, oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option))== -1)
+	oai_emulation.info.omg_model_ue = STATIC;
+      
+      LOG_I(OMG,"UE mobility model is (%s, %d)\n",
+	    oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option,
+	    oai_emulation.info.omg_model_ue);
+      
+      if (oai_emulation.info.omg_model_ue == RWP) {
+				oai_emulation.info.omg_rwp_type = map_str_to_int(omg_rwp_names,oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.selected_option);
+				if (oai_emulation.info.omg_rwp_type == -1){
+	  			LOG_I(OMG,"Apply standard RWP model \n");
+	}else {
+	  LOG_I(OMG,"Apply %s mobility model (%d) \n", oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.selected_option,
+	oai_emulation.info.omg_rwp_type);	
+	  omg_param_list[i].rwp_type=  oai_emulation.info.omg_rwp_type;
+    omg_param_list[i].max_vertices =
+	             max_vertices_ongrid (omg_param_list[i]);
 
+      omg_param_list[i].max_block_num =
+	             max_connecteddomains_ongrid (omg_param_list[i]);
+	}
+      }
+      
+      omg_param_list[i].mobility_type    = oai_emulation.info.omg_model_ue;
+	      omg_param_list[i].nodes = oai_emulation.info.nb_ue_local+ oai_emulation.info.nb_rn_local;
+	      omg_param_list[i].seed = oai_emulation.info.seed + oai_emulation.info.nb_ue_local; //fixme: specific seed for enb and ue to avoid node overlapping
 
-	// init OMG for UE
-	// input of OMG: STATIC: 0, RWP: 1, RWALK 2, or TRACE 3, or SUMO
-	if ((oai_emulation.info.omg_model_ue = map_str_to_int(omg_model_names, oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option))== -1)
-	  oai_emulation.info.omg_model_ue = STATIC;
-	LOG_I(OMG,"UE mobility model is (%s, %d)\n",
-	      oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option,
-	      oai_emulation.info.omg_model_ue);
-	omg_param_list.mobility_type    = oai_emulation.info.omg_model_ue;
-	omg_param_list.nodes_type = UE;//UE
-	omg_param_list.nodes = oai_emulation.info.nb_ue_local+ oai_emulation.info.nb_rn_local;
-	omg_param_list.seed = oai_emulation.info.seed + oai_emulation.info.nb_ue_local; //fixme: specific seed for enb and ue to avoid node overlapping
+	      omg_param_list[i].min_speed = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_speed_mps == 0) ? 0.1 :      oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_speed_mps;
 
-	omg_param_list.min_speed = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_speed_mps == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_speed_mps;
-	omg_param_list.max_speed = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_speed_mps == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_speed_mps;
+	      omg_param_list[i].max_speed = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_speed_mps == 0) ? 0.1 :  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_speed_mps;
 
-	omg_param_list.min_journey_time = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_journey_time_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_journey_time_ms;
-	omg_param_list.max_journey_time = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms;
+	      omg_param_list[i].min_journey_time = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_journey_time_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_journey_time_ms;
 
-	omg_param_list.min_azimuth = 0.1; // wait for advanced OSD
-	omg_param_list.max_azimuth = 360;
+	      omg_param_list[i].max_journey_time = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms;
 
-	omg_param_list.min_sleep = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_sleep_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_sleep_ms;
-	omg_param_list.max_sleep = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_sleep_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_sleep_ms;
+	     omg_param_list[i].min_azimuth = 0.1; // wait for advanced OSD
+	     omg_param_list[i].max_azimuth = 360;
 
+	     omg_param_list[i].min_sleep = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_sleep_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_sleep_ms;
+
+	     omg_param_list[i].max_sleep = (oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_sleep_ms == 0) ? 0.1 : oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_sleep_ms;
+
+	   
 	if (oai_emulation.info.omg_model_ue == TRACE) {
-	  omg_param_list.mobility_file = (char*) malloc(256);// user-specific trace file "%s/UTIL/OMG/mobility.txt",getenv("OPENAIR2_DIR")
+	  omg_param_list[i].mobility_file = (char*) malloc(256);// user-specific trace file "%s/UTIL/OMG/mobility.txt",getenv("OPENAIR2_DIR")
 	  //memset(oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file,0,256);
 	  //sprintf(omg_param_list.mobility_file,"%s",oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file);
-	  sprintf(omg_param_list.mobility_file,"%s/UTIL/OMG/TRACE/%s",
+	  sprintf(omg_param_list[i].mobility_file,"%s/UTIL/OMG/TRACE/%s",
 		  getenv("OPENAIR2_DIR"),
 		  oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file);
-	  LOG_I(OMG,"TRACE file at %s\n", omg_param_list.mobility_file);
+	  LOG_I(OMG,"TRACE file at %s\n", omg_param_list[i].mobility_file);
 
-	} else if (oai_emulation.info.omg_model_ue == SUMO){
-	  omg_param_list.sumo_command = (char*) malloc(20);
-	  sprintf(omg_param_list.sumo_command, "%s", oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command);
-	  omg_param_list.sumo_config = (char*) malloc(256);
-	  sprintf(omg_param_list.sumo_config, "%s", oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file);
-	  omg_param_list.sumo_start = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.start;
+	} 
+	else if (oai_emulation.info.omg_model_ue == SUMO) {
+	  omg_param_list[i].sumo_command = (char*) malloc(20);
+	  sprintf(omg_param_list[i].sumo_command, "%s", oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command);
+	  omg_param_list[i].sumo_config = (char*) malloc(256);
+	  sprintf(omg_param_list[i].sumo_config, "%s", oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file);
+	  omg_param_list[i].sumo_start = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.start;
 
 	  if (oai_emulation.topology_config.mobility.UE_mobility.sumo_config.end > 0 )
-	    omg_param_list.sumo_end = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.end;
+	    omg_param_list[i].sumo_end = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.end;
 	  else
-	    omg_param_list.sumo_end = (oai_emulation.info.n_frames_flag == 1 ) ?  oai_emulation.info.n_frames : 1024 ; // fixme: the else case is infinity
+	    omg_param_list[i].sumo_end = (oai_emulation.info.n_frames_flag == 1 ) ?  oai_emulation.info.n_frames : 1024 ; // fixme: the else case is infinity
 
-	  omg_param_list.sumo_step = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.step=1; //  1000ms
-	  omg_param_list.sumo_host = (char*) malloc(40);
-	  sprintf(omg_param_list.sumo_host,"%s",oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip);
-	  omg_param_list.sumo_port = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hport ;
+	  omg_param_list[i].sumo_step = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.step=1; //  1000ms
+	  omg_param_list[i].sumo_host = (char*) malloc(40);
+	  sprintf(omg_param_list[i].sumo_host,"%s",oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip);
+	  omg_param_list[i].sumo_port = oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hport ;
 	  LOG_D(OMG, "opt (%s,%d) cmd (%s,%s) config_file (%s,%s) hip (%s,%s) \n",
 		oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option,oai_emulation.info.omg_model_ue,
-		omg_param_list.sumo_command, oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command,
-		omg_param_list.sumo_config, oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file,
-		omg_param_list.sumo_host, oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip);
+		omg_param_list[i].sumo_command, oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command,
+		omg_param_list[i].sumo_config, oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file,
+		omg_param_list[i].sumo_host, oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip);
 	}
-	if (omg_param_list.nodes >0 )
-	    init_mobility_generator(omg_param_list);
-
-	if (oai_emulation.topology_config.omv == 1 )
-	  oai_emulation.info.omv_enabled =  1;
-
-	return 1;
+	
+    }
+    
+    if (oai_emulation.topology_config.omv == 1 )
+      oai_emulation.info.omv_enabled =  1;
+    
+  }//for
+  
+  
+  init_mobility_generator(omg_param_list);
+  
+  return 1;
 }
 
 

@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 
   Eurecom OpenAirInterface
@@ -29,12 +28,14 @@
  *******************************************************************************/
 /*! \file pre_processor.c
  * \brief procedures related to UE
- * \author Ankit Bhamri
+ * \author Navid Nikaein and Ankit Bhamri
  * \date 2013
+ * \email navid.nikaein@eurecom.fr
  * \version 0.1
  * @ingroup _mac
 
  */
+
 
 #include "PHY/defs.h"
 #include "PHY/extern.h"
@@ -43,6 +44,7 @@
 #include "SCHED/extern.h"
 
 #include "LAYER2/MAC/defs.h"
+#include "LAYER2/MAC/proto.h"
 #include "LAYER2/MAC/extern.h"
 #include "UTIL/LOG/log.h"
 #include "UTIL/OPT/opt.h"
@@ -325,10 +327,22 @@ void sort_UEs (module_id_t      Mod_id,
                   }
                   else if((j == MAX_NUM_LCID-1))
                     {
-                      if(eNB_UE_stats1->DL_cqi[0] < eNB_UE_stats2->DL_cqi[0]){
+												/* The goal is to sort by priority.
+												* We use the priority of DTCH logical
+												* channel.
+												*/
+												/*if(eNB_mac_inst[Mod_id].UE_sched_ctrl[next_ue1].priority[3]<eNB_mac_inst[Mod_id].UE_sched_ctrl[next_ue2].priority[3])
+												{
+													UE_id_sorted[i] = next_ue2;
+                          UE_id_sorted[ii] = next_ue1;
+												} //if the priority is the same then sort by CQI
+												else if(eNB_mac_inst[Mod_id].UE_sched_ctrl[next_ue1].priority[3]==eNB_mac_inst[Mod_id].UE_sched_ctrl[next_ue2].priority[3]){*/                     
+
+												if(eNB_UE_stats1->DL_cqi[0] < eNB_UE_stats2->DL_cqi[0]){
                           UE_id_sorted[i] = next_ue2;
                           UE_id_sorted[ii] = next_ue1;
                       }
+										//}
                     }
               }
           }
@@ -423,6 +437,14 @@ void dlsch_scheduler_pre_processor (module_id_t        Mod_id,
         total_ue_count = total_ue_count + 1;
   }
   // hypotetical assignement
+	/*
+	* If schedule is enabled and if the priority of the UEs is modified
+	* The average rbs per logical channel per user will depend on the level of  
+	* priority. Concerning the hypothetical assignement, we should assign more 
+	* rbs to prioritized users. Maybe, we can do a mapping between the
+	* average rbs per user and the level of priority or multiply the average rbs 
+	* per user by a coefficient which represents the degree of priority.
+	*/
   if((total_ue_count > 0) && ( min_rb_unit * total_ue_count <= mac_xface->lte_frame_parms->N_RB_DL ) )
     average_rbs_per_user = (uint16_t) ceil(mac_xface->lte_frame_parms->N_RB_DL/total_ue_count);
   else 

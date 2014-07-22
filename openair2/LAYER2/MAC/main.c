@@ -28,8 +28,8 @@
  *******************************************************************************/
 /*! \file main.c
  * \brief top init of Layer 2
- * \author Raymond Knopp and Navid Nikaein
- * \date 2011
+ * \author  Navid Nikaein and Raymond Knopp 
+ * \date 2010 - 2014
  * \version 0.5
  * \email: navid.nikaein@eurecom.fr
  * @ingroup _mac
@@ -53,6 +53,7 @@
 #endif //USER_MODE
 
 #include "defs.h"
+#include "proto.h"
 #include "extern.h"
 #include "assertions.h"
 #include "PHY_INTERFACE/extern.h"
@@ -69,12 +70,10 @@
 
 #include "SCHED/defs.h"
 
-/***********************************************************************/
 void dl_phy_sync_success(module_id_t   module_idP,
     frame_t       frameP,
     unsigned char eNB_index,
     uint8_t            first_sync){  //init as MR
-  /***********************************************************************/
   LOG_D(MAC,"[UE %d] Frame %d: PHY Sync to eNB_index %d successful \n", module_idP, frameP, eNB_index);
   if (first_sync==1) {
       layer2_init_UE(module_idP);
@@ -86,9 +85,8 @@ void dl_phy_sync_success(module_id_t   module_idP,
 
 }
 
-/***********************************************************************/
 void mrbch_phy_sync_failure(module_id_t module_idP, frame_t frameP, uint8_t free_eNB_index){//init as CH
-  /***********************************************************************/
+
   LOG_I(MAC,"[eNB %d] Frame %d: PHY Sync failure \n",module_idP,frameP);
   layer2_init_eNB(module_idP, free_eNB_index);
   openair_rrc_eNB_init(module_idP);
@@ -100,23 +98,19 @@ char layer2_init_eNB(module_id_t module_idP, unsigned char eNB_index){
 
 }
 
-/***********************************************************************/
 char layer2_init_UE(module_id_t module_idP){
 
   return 0;
 }
 
-/***********************************************************************/
 void mac_UE_out_of_sync_ind(module_id_t module_idP, frame_t frameP, uint16_t eNB_index){
-  /***********************************************************************/
 
   //  Mac_rlc_xface->mac_out_of_sync_ind(Mod_id, frameP, eNB_index);
 }
 
 
-/***********************************************************************/
 int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
-  /***********************************************************************/
+
   module_id_t    Mod_id,i,j;
   RA_TEMPLATE *RA_template;
   UE_TEMPLATE *UE_template;
@@ -311,9 +305,7 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
 }
 
 
-/***********************************************************************/
 int mac_init_global_param(void){
-  /***********************************************************************/
 
 
   Mac_rlc_xface = NULL;
@@ -374,9 +366,8 @@ int mac_init_global_param(void){
 }
 
 
-/***********************************************************************/
 void mac_top_cleanup(void){
-  /***********************************************************************/
+
 #ifndef USER_MODE
   pdcp_module_cleanup ();
 #endif

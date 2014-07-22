@@ -17,6 +17,8 @@
 #include "UTIL/OMV/structures.h"
 #endif
 
+eNB_MAC_INST* get_eNB_mac_inst(void);
+OAI_Emulation* get_OAI_emulation(void);
 void init_channel_vars(LTE_DL_FRAME_PARMS *frame_parms, double ***s_re,double ***s_im,double ***r_re,double ***r_im,double ***r_re0,double ***r_im0);
 
 void do_UL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double **s_re,double **s_im,channel_desc_t *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX],node_desc_t *enb_data[NUMBER_OF_eNB_MAX],node_desc_t *ue_data[NUMBER_OF_UE_MAX],uint16_t next_slot,uint8_t abstraction_flag,LTE_DL_FRAME_PARMS *frame_parms, uint32_t);
@@ -25,7 +27,7 @@ void do_DL_sig(double **r_re0,double **r_im0,double **r_re,double **r_im,double 
 
 void init_ue(node_desc_t  *ue_data, UE_Antenna ue_ant);//Abstraction changes
 void init_enb(node_desc_t  *enb_data, eNB_Antenna enb_ant);//Abstraction changes
-void extract_position(Node_list input_node_list, node_desc_t**, int nb_nodes);//Abstraction changes
+void extract_position(node_list* input_node_list, node_desc_t**, int nb_nodes);//Abstraction changes
 void get_beta_map(void);//Abstraction changes
 void get_MIESM_param(void);
 
@@ -46,7 +48,7 @@ void reset_opp_meas(void);
 void print_opp_meas(void);
 
 #ifdef OPENAIR2
-int omv_write (int pfd,  Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data);
+int omv_write (int pfd,  node_list* enb_node_list, node_list* ue_node_list, Data_Flow_Unit omv_data);
 void omv_end (int pfd, Data_Flow_Unit omv_data);
 #endif
 

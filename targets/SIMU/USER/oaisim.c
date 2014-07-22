@@ -49,6 +49,7 @@
 
 //#ifdef OPENAIR2
 #include "LAYER2/MAC/defs.h"
+#include "LAYER2/MAC/proto.h"
 #include "LAYER2/MAC/vars.h"
 #include "pdcp.h"
 #ifndef CELLULAR
@@ -138,8 +139,8 @@ channel_desc_t        *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
 node_desc_t           *enb_data[NUMBER_OF_eNB_MAX];
 node_desc_t           *ue_data[NUMBER_OF_UE_MAX];
 // Added for PHY abstraction
-extern Node_list       ue_node_list;
-extern Node_list       enb_node_list;
+extern node_list*       ue_node_list;
+extern node_list*       enb_node_list;
 extern int             pdcp_period, omg_period;
 
 extern double        **s_re, **s_im, **r_re, **r_im, **r_re0, **r_im0;
@@ -313,14 +314,14 @@ static void set_cli_start(module_id_t module_idP, uint8_t start) {
 #endif
 
 #ifdef OPENAIR2
-int omv_write(int pfd, Node_list enb_node_list, Node_list ue_node_list, Data_Flow_Unit omv_data) {
+int omv_write(int pfd, node_list* enb_node_list, node_list* ue_node_list, Data_Flow_Unit omv_data) {
   module_id_t i, j;
   omv_data.end = 0;
   //omv_data.total_num_nodes = NB_UE_INST + NB_eNB_INST;
   for (i = 0; i < NB_eNB_INST; i++) {
       if (enb_node_list != NULL) {
-          omv_data.geo[i].x = (enb_node_list->node->X_pos < 0.0) ? 0.0 : enb_node_list->node->X_pos;
-          omv_data.geo[i].y = (enb_node_list->node->Y_pos < 0.0) ? 0.0 : enb_node_list->node->Y_pos;
+          omv_data.geo[i].x = (enb_node_list->node->x_pos < 0.0) ? 0.0 : enb_node_list->node->x_pos;
+          omv_data.geo[i].y = (enb_node_list->node->y_pos < 0.0) ? 0.0 : enb_node_list->node->y_pos;
           omv_data.geo[i].z = 1.0;
           omv_data.geo[i].mobility_type = oai_emulation.info.omg_model_enb;
           omv_data.geo[i].node_type = 0; //eNB
@@ -339,8 +340,8 @@ int omv_write(int pfd, Node_list enb_node_list, Node_list ue_node_list, Data_Flo
   }
   for (i = NB_eNB_INST; i < NB_UE_INST + NB_eNB_INST; i++) {
       if (ue_node_list != NULL) {
-          omv_data.geo[i].x = (ue_node_list->node->X_pos < 0.0) ? 0.0 : ue_node_list->node->X_pos;
-          omv_data.geo[i].y = (ue_node_list->node->Y_pos < 0.0) ? 0.0 : ue_node_list->node->Y_pos;
+          omv_data.geo[i].x = (ue_node_list->node->x_pos < 0.0) ? 0.0 : ue_node_list->node->x_pos;
+          omv_data.geo[i].y = (ue_node_list->node->y_pos < 0.0) ? 0.0 : ue_node_list->node->y_pos;
           omv_data.geo[i].z = 1.0;
           omv_data.geo[i].mobility_type = oai_emulation.info.omg_model_ue;
           omv_data.geo[i].node_type = 1; //UE
@@ -645,11 +646,13 @@ void *l2l1_task(void *args_p) {
       }
 #endif
 #ifdef DEBUG_OMG
+/*
       if ((((int) oai_emulation.info.time_s) % 100) == 0) {
           for (UE_inst = oai_emulation.info.first_ue_local; UE_inst < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local); UE_inst++) {
               get_node_position (UE, UE_inst);
           }
       }
+*/
 #endif
 
       update_ocm ();
@@ -1124,6 +1127,7 @@ int main(int argc, char **argv) {
   smbv_write_config_from_frame_parms(smbv_fname, &PHY_vars_eNB_g[0]->lte_frame_parms);
 #endif
   // add events to future event list: Currently not used
+	//oai_emulation.info.oeh_enabled = 1;
   if (oai_emulation.info.oeh_enabled == 1)
     schedule_events();
 
@@ -1569,4 +1573,12 @@ void oai_shutdown(void) {
   
   LOG_N(EMU, ">>>>>>>>>>>>>>>>>>>>>>>>>>> OAIEMU shutdown <<<<<<<<<<<<<<<<<<<<<<<<<<\n\n");
 }
+eNB_MAC_INST* get_eNB_mac_inst()
+{
+	return eNB_mac_inst;
+}
 
+OAI_Emulation* get_OAI_emulation()
+{
+	return &oai_emulation;
+}

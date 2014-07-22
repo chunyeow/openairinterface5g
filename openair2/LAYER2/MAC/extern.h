@@ -28,8 +28,8 @@
 *******************************************************************************/
 /*! \file extern.h
 * \brief mac externs
-* \author Raymond Knopp, Navid Nikaein
-* \date 2012
+* \author  Navid Nikaein and Raymond Knopp
+* \date 2010 - 2014
 * \version 1.0
 * \email navid.nikaein@eurecom.fr
 * @ingroup _mac

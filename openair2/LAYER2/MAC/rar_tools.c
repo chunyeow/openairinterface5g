@@ -28,14 +28,15 @@
  *******************************************************************************/
 /*! \file rar_tools.c
  * \brief random access tools
- * \author Raymond Knopp
- * \date 2011
+ * \author Raymond Knopp and navid nikaein
+ * \date 2011 - 2014
  * \version 0.5
  * @ingroup _mac
 
  */
 
 #include "defs.h"
+#include "proto.h"
 #include "extern.h"
 #include "MAC_INTERFACE/defs.h"
 #include "MAC_INTERFACE/extern.h"

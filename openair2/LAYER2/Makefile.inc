@@ -84,6 +84,11 @@ MAC_OBJS += $(MAC_DIR)/ra_procedures.o
 MAC_OBJS += $(MAC_DIR)/l1_helpers.o
 MAC_OBJS += $(MAC_DIR)/rar_tools.o
 MAC_OBJS += $(MAC_DIR)/eNB_scheduler.o
+MAC_OBJS += $(MAC_DIR)/eNB_scheduler_dlsch.o
+MAC_OBJS += $(MAC_DIR)/eNB_scheduler_ulsch.o
+MAC_OBJS += $(MAC_DIR)/eNB_scheduler_mch.o
+MAC_OBJS += $(MAC_DIR)/eNB_scheduler_bch.o
+MAC_OBJS += $(MAC_DIR)/eNB_scheduler_primitives.o
 MAC_OBJS += $(MAC_DIR)/pre_processor.o
 MAC_OBJS += $(MAC_DIR)/config.o
 

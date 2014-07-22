@@ -28,9 +28,9 @@
  *******************************************************************************/
 /*! \file ue_procedures.c
  * \brief procedures related to UE
- * \author Raymond Knopp, Navid Nikaein
- * \date 2011
- * \version 0.5
+ * \author  Navid Nikaein and Raymond Knopp
+ * \date 2010 - 2014
+ * \version 1
  * \email: navid.nikaein@eurecom.fr
  * @ingroup _mac
 
@@ -42,6 +42,7 @@
 
 #include "extern.h"
 #include "defs.h"
+#include "proto.h"
 #ifdef PHY_EMUL
 # include "SIMULATION/PHY_EMULATION/impl_defs.h"
 #else

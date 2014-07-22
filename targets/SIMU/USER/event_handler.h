@@ -41,7 +41,9 @@
 
 void add_event(Event_t event);
 
-void schedule(Event_Type_t type, int frame, char * key, void* value);
+void schedule(Operation_Type_t op, Event_Type_t type, int frame, char * key, void* value, int ue, int lcid);
+
+void schedule_delayed(Operation_Type_t op, Event_Type_t type, char * key, void* value, char * time, int ue, int lcid);
 
 void schedule_events(void);
 
@@ -50,15 +52,18 @@ void execute_events(frame_t frame);
 
 void update_oai_model(char * key, void * value);
 
-void update_sys_model(char * key, void * value);
+void update_sys_model(Event_t event);
 
-void update_topo_model(char * key, void * value);
+void update_topo_model(Event_t event);
 
-void update_app_model(char * key, void * value);
+void update_app_model(Event_t event);
 
-void update_emu_model(char * key, void * value);
+void update_emu_model(Event_t event);
 
-void update_mac(char * key, void * value);
+void update_mac(Event_t event);
+
+int validate_mac(Event_t event);
+
 
 /*
 void schedule_end_of_simulation(End_Of_Sim_Event_Type type, int value);

@@ -27,8 +27,8 @@ static inline unsigned long long rdtsc_oai(void) {
     return x;
 }
 #elif defined(__x86_64__)
-static inline unsigned long long rdtsc_oai() __attribute__((always_inline));
-static inline unsigned long long rdtsc_oai() { 
+static inline unsigned long long rdtsc_oai(void) __attribute__((always_inline));
+static inline unsigned long long rdtsc_oai(void) { 
   unsigned long long a, d;
   __asm__ volatile ("rdtsc" : "=a" (a), "=d" (d));
   return (d<<32) | a;

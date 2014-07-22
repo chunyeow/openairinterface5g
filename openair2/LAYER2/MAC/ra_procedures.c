@@ -29,17 +29,19 @@
 
 /*! \file openair2/LAYER2/MAC/ra_procedures.c
  * \brief Routines for UE MAC-layer Random-access procedures (36.321) V8.6 2009-03
- * \author R. Knopp
+ * \author R. Knopp and navid nikaein
  * \date 2011
  * \version 0.1
  * \company Eurecom
- * \email: knopp@eurecom.fr
+ * \email: knopp@eurecom.fr and navid nikaein
  * \note
  * \warning
  */
 
 #include "extern.h"
 #include "defs.h"
+#include "proto.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 #include "PHY_INTERFACE/defs.h"
 #include "PHY_INTERFACE/extern.h"
 #include "COMMON/mac_rrc_primitives.h"
@@ -400,4 +402,649 @@ PRACH_RESOURCES_t *ue_get_rach(module_id_t module_idP,frame_t frameP, uint8_t eN
       mac_xface->macphy_exit("MAC FATAL: Should not have checked for RACH in PUSCH yet");
   }
   return(NULL);
+}
+
+void cancel_ra_proc(module_id_t module_idP, frame_t frameP, rnti_t rnti) {
+  unsigned char i;
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Cancelling RA procedure for UE rnti %x\n",module_idP,frameP,rnti);
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+      if (rnti == eNB_mac_inst[module_idP].RA_template[i].rnti) {
+          eNB_mac_inst[module_idP].RA_template[i].RA_active=FALSE;
+          eNB_mac_inst[module_idP].RA_template[i].generate_rar=0;
+          eNB_mac_inst[module_idP].RA_template[i].generate_Msg4=0;
+          eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4=0;
+          eNB_mac_inst[module_idP].RA_template[i].timing_offset=0;
+          eNB_mac_inst[module_idP].RA_template[i].RRC_timer=20;
+          eNB_mac_inst[module_idP].RA_template[i].rnti = 0;
+      }
+  }
+}
+
+void terminate_ra_proc(module_id_t module_idP,frame_t frameP,rnti_t rnti,unsigned char *msg3, uint16_t msg3_len) {
+
+  unsigned char rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
+  unsigned char rx_lcids[NB_RB_MAX];
+  uint16_t rx_lengths[NB_RB_MAX];
+  int8_t UE_id;
+
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, Received msg3 %x.%x.%x.%x.%x.%x, Terminating RA procedure for UE rnti %x\n",
+      module_idP,frameP,
+      msg3[3],msg3[4],msg3[5],msg3[6],msg3[7], msg3[8], rnti);
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+      LOG_D(MAC,"[RAPROC] Checking proc %d : rnti (%x, %x), active %d\n",i,
+          eNB_mac_inst[module_idP].RA_template[i].rnti, rnti,
+          eNB_mac_inst[module_idP].RA_template[i].RA_active);
+      if ((eNB_mac_inst[module_idP].RA_template[i].rnti==rnti) &&
+          (eNB_mac_inst[module_idP].RA_template[i].RA_active==TRUE)) {
+
+          payload_ptr = parse_ulsch_header(msg3,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,msg3_len);
+          LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
+              module_idP,frameP,rx_lengths[0],payload_ptr-msg3);
+          if (/*(num_ce == 0) &&*/ (num_sdu==1) && (rx_lcids[0] == CCCH)) { // This is an RRCConnectionRequest/Restablishment
+              memcpy(&eNB_mac_inst[module_idP].RA_template[i].cont_res_id[0],payload_ptr,6);
+              LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
+                  module_idP,frameP,rx_lengths[0],payload_ptr-msg3);
+              UE_id=add_new_ue(module_idP,eNB_mac_inst[module_idP].RA_template[i].rnti);
+              if (UE_id==-1) {
+                  mac_xface->macphy_exit("[MAC][eNB] Max user count reached\n");
+              }
+              else {
+                  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Added user with rnti %x => UE %d\n",
+                      module_idP,frameP,eNB_mac_inst[module_idP].RA_template[i].rnti,UE_id);
+              }
+
+              if (Is_rrc_registered == 1)
+                mac_rrc_data_ind(module_idP,frameP,CCCH,(uint8_t *)payload_ptr,rx_lengths[0],1,module_idP,0);
+              // add_user.  This is needed to have the rnti for configuring UE (PHY). The UE is removed if RRC
+              // doesn't provide a CCCH SDU
+
+          }
+          else if (num_ce >0) {  // handle msg3 which is not RRCConnectionRequest
+              //	process_ra_message(msg3,num_ce,rx_lcids,rx_ces);
+          }
+
+          eNB_mac_inst[module_idP].RA_template[i].generate_Msg4 = 1;
+          eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4 = 0;
+
+          return;
+      } // if process is active
+
+  } // loop on RA processes
+}
+
+void rx_sdu(module_id_t enb_mod_idP,frame_t frameP,rnti_t rntiP,uint8_t *sdu, uint16_t sdu_len) {
+
+  unsigned char  rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
+  unsigned char  rx_lcids[NB_RB_MAX];
+  unsigned short rx_lengths[NB_RB_MAX];
+  module_id_t    ue_mod_id = find_UE_id(enb_mod_idP,rntiP);
+  int ii,j;
+  start_meas(&eNB_mac_inst[enb_mod_idP].rx_ulsch_sdu);
+  
+  if ((ue_mod_id >  NUMBER_OF_UE_MAX) || (ue_mod_id == -1) || (ue_mod_id == 255) )
+  
+  for(ii=0; ii<NB_RB_MAX; ii++) rx_lengths[ii] = 0;
+
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,1);
+
+  LOG_D(MAC,"[eNB %d] Received ULSCH sdu from PHY (rnti %x, UE_id %d), parsing header\n",enb_mod_idP,rntiP,ue_mod_id);
+  payload_ptr = parse_ulsch_header(sdu,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,sdu_len);
+
+  // control element
+  for (i=0;i<num_ce;i++) {
+
+    switch (rx_ces[i]) { // implement and process BSR + CRNTI +
+    case POWER_HEADROOM:
+      if (ue_mod_id != UE_INDEX_INVALID ){
+	eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].phr_info =  (payload_ptr[0] & 0x3f);// - PHR_MAPPING_OFFSET;
+	LOG_D(MAC, "[eNB] MAC CE_LCID %d : Received PHR PH = %d (db)\n", rx_ces[i], eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].phr_info);
+      }
+      payload_ptr+=sizeof(POWER_HEADROOM_CMD);
+      break;
+      case CRNTI:
+        LOG_D(MAC, "[eNB] MAC CE_LCID %d : Received CRNTI %d \n", rx_ces[i], payload_ptr[0]);
+        payload_ptr+=1;
+        break;
+    case TRUNCATED_BSR:
+    case SHORT_BSR: {
+      if (ue_mod_id  != UE_INDEX_INVALID ){
+	uint8_t lcgid;
+	lcgid = (payload_ptr[0] >> 6);
+	LOG_D(MAC, "[eNB] MAC CE_LCID %d : Received short BSR LCGID = %u bsr = %d\n",
+	      rx_ces[i], lcgid, payload_ptr[0] & 0x3f);
+	eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[lcgid] = (payload_ptr[0] & 0x3f);
+      }
+      payload_ptr += 1;//sizeof(SHORT_BSR); // fixme
+    } break;
+    case LONG_BSR:
+      if (ue_mod_id  != UE_INDEX_INVALID ){
+	eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID0] = ((payload_ptr[0] & 0xFC) >> 2);
+	eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID1] =
+	  ((payload_ptr[0] & 0x03) << 4) | ((payload_ptr[1] & 0xF0) >> 4);
+	eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID2] =
+	  ((payload_ptr[1] & 0x0F) << 2) | ((payload_ptr[2] & 0xC0) >> 6);
+	eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID3] = (payload_ptr[2] & 0x3F);
+	LOG_D(MAC, "[eNB] MAC CE_LCID %d: Received long BSR LCGID0 = %u LCGID1 = "
+	      "%u LCGID2 = %u LCGID3 = %u\n",
+	      rx_ces[i],
+	      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID0],
+	      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID1],
+	      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID2],
+	      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].bsr_info[LCGID3]);
+      }
+      payload_ptr += 3;////sizeof(LONG_BSR);
+      break;
+    default:
+      LOG_E(MAC, "[eNB] Received unknown MAC header (0x%02x)\n", rx_ces[i]);
+      break;
+    }
+  }
+  
+  for (i=0;i<num_sdu;i++) {
+    LOG_D(MAC,"SDU Number %d MAC Subheader SDU_LCID %d, length %d\n",i,rx_lcids[i],rx_lengths[i]);
+    
+    switch (rx_lcids[i]) {
+    case CCCH : 
+      LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, Received CCCH:  %x.%x.%x.%x.%x.%x, Terminating RA procedure for UE rnti %x\n",
+	    enb_mod_idP,frameP,
+	    payload_ptr[0],payload_ptr[1],payload_ptr[2],payload_ptr[3],payload_ptr[4], payload_ptr[5], rntiP);
+
+      for (ii=0;ii<NB_RA_PROC_MAX;ii++) {
+	LOG_D(MAC,"[RAPROC] Checking proc %d : rnti (%x, %x), active %d\n",ii,
+	      eNB_mac_inst[enb_mod_idP].RA_template[ii].rnti, rntiP,
+	      eNB_mac_inst[enb_mod_idP].RA_template[ii].RA_active);
+	
+	if ((eNB_mac_inst[enb_mod_idP].RA_template[ii].rnti==rntiP) &&
+	    (eNB_mac_inst[enb_mod_idP].RA_template[ii].RA_active==TRUE)) {
+	  
+          //payload_ptr = parse_ulsch_header(msg3,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,msg3_len);
+	  
+	  if (ue_mod_id == UE_INDEX_INVALID) {
+	    memcpy(&eNB_mac_inst[enb_mod_idP].RA_template[ii].cont_res_id[0],payload_ptr,6);
+	    LOG_I(MAC,"[eNB %d][RAPROC] Frame %d CCCH: Received RRCConnectionRequest: length %d, offset %d\n",
+                  enb_mod_idP,frameP,rx_lengths[ii],payload_ptr-sdu);
+	    if ((ue_mod_id=add_new_ue(enb_mod_idP,eNB_mac_inst[enb_mod_idP].RA_template[ii].rnti)) == -1 )
+	      mac_xface->macphy_exit("[MAC][eNB] Max user count reached\n");
+	    else 
+	      LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Added user with rnti %x => UE %d\n",
+		    enb_mod_idP,frameP,eNB_mac_inst[enb_mod_idP].RA_template[ii].rnti,ue_mod_id);
+	  } else {
+	     LOG_I(MAC,"[eNB %d][RAPROC] Frame %d CCCH: Received RRCConnectionReestablishment from UE %d: length %d, offset %d\n",
+		   enb_mod_idP,frameP,ue_mod_id,rx_lengths[ii],payload_ptr-sdu);
+	  }
+	  
+	  if (Is_rrc_registered == 1)
+	    mac_rrc_data_ind(enb_mod_idP,frameP,CCCH,(uint8_t *)payload_ptr,rx_lengths[ii],1,enb_mod_idP,0);
+	  
+	  
+          if (num_ce >0) {  // handle msg3 which is not RRCConnectionRequest
+	    //	process_ra_message(msg3,num_ce,rx_lcids,rx_ces);
+	  }
+	  
+	  eNB_mac_inst[enb_mod_idP].RA_template[ii].generate_Msg4 = 1;
+	  eNB_mac_inst[enb_mod_idP].RA_template[ii].wait_ack_Msg4 = 0;
+	  
+	  
+	} // if process is active
+	
+      } // loop on RA processes
+      
+      break;
+    case  DCCH : 
+    case DCCH1 :
+      //      if(eNB_mac_inst[module_idP].Dcch_lchan[UE_id].Active==1){
+      
+#if defined(ENABLE_MAC_PAYLOAD_DEBUG)
+      LOG_T(MAC,"offset: %d\n",(unsigned char)((unsigned char*)payload_ptr-sdu));
+      for (j=0;j<32;j++)
+	LOG_T(MAC,"%x ",payload_ptr[j]);
+      LOG_T(MAC,"\n");
+#endif
+      
+      //  This check is just to make sure we didn't get a bogus SDU length, to be removed ...
+      if (rx_lengths[i]<CCCH_PAYLOAD_SIZE_MAX) {
+	LOG_D(MAC,"[eNB %d] Frame %d : ULSCH -> UL-DCCH, received %d bytes form UE %d on LCID %d(%d) \n",
+	      enb_mod_idP,frameP, rx_lengths[i], ue_mod_id, rx_lcids[i], rx_lcids[i]);
+	
+	mac_rlc_data_ind(enb_mod_idP,ue_mod_id, frameP,ENB_FLAG_YES,MBMS_FLAG_NO,
+			 rx_lcids[i],
+			 (char *)payload_ptr,
+			 rx_lengths[i],
+			 1,
+			 NULL);//(unsigned int*)crc_status);
+	eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].num_pdu_rx[rx_lcids[i]]+=1;
+	eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].num_bytes_rx[rx_lcids[i]]+=rx_lengths[i];
+	
+      }
+      //      }
+      break;
+    case DTCH: // default DRB 
+      //      if(eNB_mac_inst[module_idP].Dcch_lchan[UE_id].Active==1){
+	
+#if defined(ENABLE_MAC_PAYLOAD_DEBUG)
+      LOG_T(MAC,"offset: %d\n",(unsigned char)((unsigned char*)payload_ptr-sdu));
+      for (j=0;j<32;j++)
+	LOG_T(MAC,"%x ",payload_ptr[j]);
+      LOG_T(MAC,"\n");
+#endif
+      
+      LOG_D(MAC,"[eNB %d] Frame %d : ULSCH -> UL-DTCH, received %d bytes from UE %d for lcid %d (%d)\n",
+	    enb_mod_idP,frameP, rx_lengths[i], ue_mod_id,rx_lcids[i],rx_lcids[i]);
+      
+      if ((rx_lengths[i] <SCH_PAYLOAD_SIZE_MAX) &&  (rx_lengths[i] > 0) ) {   // MAX SIZE OF transport block
+	mac_rlc_data_ind(enb_mod_idP,ue_mod_id, frameP,ENB_FLAG_YES,MBMS_FLAG_NO,
+			 DTCH,
+			 (char *)payload_ptr,
+			   rx_lengths[i],
+			 1,
+			 NULL);//(unsigned int*)crc_status);
+	eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].num_pdu_rx[rx_lcids[i]]+=1;
+	eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].num_bytes_rx[rx_lcids[i]]+=rx_lengths[i];
+	  
+      }
+	//      }
+      break;
+    default :  //if (rx_lcids[i] >= DTCH) {
+      eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].num_errors_rx+=1;
+      LOG_E(MAC,"[eNB %d] received unsupported or unknown LCID %d from UE %d ", rx_lcids[i], ue_mod_id);
+      break;
+    }
+    payload_ptr+=rx_lengths[i];
+    
+  }
+
+  eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].total_pdu_bytes_rx+=sdu_len;
+  eNB_mac_inst[enb_mod_idP].eNB_UE_stats[ue_mod_id].total_num_pdus_rx+=1;
+  
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RX_SDU,0);
+  stop_meas(&eNB_mac_inst[enb_mod_idP].rx_ulsch_sdu);
+}
+
+// First stage of Random-Access Scheduling
+void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,unsigned char Msg3_subframe,unsigned char *nprb,unsigned int *nCCE) {
+
+  start_meas(&eNB_mac_inst[module_idP].schedule_ra);
+  RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].RA_template[0];
+  unsigned char i;//,harq_pid,round;
+  uint16_t rrc_sdu_length;
+  unsigned char lcid,offset;
+  module_id_t UE_id= UE_INDEX_INVALID;
+  unsigned short TBsize = -1;
+  unsigned short msg4_padding,msg4_post_padding,msg4_header;
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+
+      if (RA_template[i].RA_active == TRUE) {
+
+          LOG_I(MAC,"[eNB %d][RAPROC] RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
+              module_idP,i,RA_template[i].generate_rar,RA_template[i].generate_Msg4,RA_template[i].wait_ack_Msg4, RA_template[i].rnti);
+
+          if (RA_template[i].generate_rar == 1) {
+              *nprb= (*nprb) + 3;
+              *nCCE = (*nCCE) + 4;
+              RA_template[i].Msg3_subframe=Msg3_subframe;
+          }
+          else if (RA_template[i].generate_Msg4 == 1) {
+
+              // check for Msg4 Message
+              UE_id = find_UE_id(module_idP,RA_template[i].rnti);
+              if (Is_rrc_registered == 1) {
+
+                  // Get RRCConnectionSetup for Piggyback
+                  rrc_sdu_length = mac_rrc_data_req(module_idP,
+                      frameP,
+                      CCCH,1,
+                      &eNB_mac_inst[module_idP].CCCH_pdu.payload[0],
+                      1,
+                      module_idP,
+                      0); // not used in this case
+                  if (rrc_sdu_length == -1)
+                    mac_xface->macphy_exit("[MAC][eNB Scheduler] CCCH not allocated\n");
+                  else {
+                      //msg("[MAC][eNB %d] Frame %d, subframeP %d: got %d bytes from RRC\n",module_idP,frameP, subframeP,rrc_sdu_length);
+                  }
+              }
+
+              LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: UE_id %d, Is_rrc_registered %d, rrc_sdu_length %d\n",
+                  module_idP,frameP, subframeP,UE_id, Is_rrc_registered,rrc_sdu_length);
+
+              if (rrc_sdu_length>0) {
+                  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: Generating Msg4 with RRC Piggyback (RA proc %d, RNTI %x)\n",
+                      module_idP,frameP, subframeP,i,RA_template[i].rnti);
+
+                  //msg("[MAC][eNB %d][RAPROC] Frame %d, subframeP %d: Received %d bytes for Msg4: \n",module_idP,frameP,subframeP,rrc_sdu_length);
+                  //	  for (j=0;j<rrc_sdu_length;j++)
+                  //	    msg("%x ",(unsigned char)eNB_mac_inst[module_idP].CCCH_pdu.payload[j]);
+                  //	  msg("\n");
+                  //	  msg("[MAC][eNB] Frame %d, subframeP %d: Generated DLSCH (Msg4) DCI, format 1A, for UE %d\n",frameP, subframeP,UE_id);
+                  // Schedule Reflection of Connection request
+
+
+
+                  // Compute MCS for 3 PRB
+                  msg4_header = 1+6+1;  // CR header, CR CE, SDU header
+
+                  if (mac_xface->lte_frame_parms->frame_type == TDD) {
+
+                      switch (mac_xface->lte_frame_parms->N_RB_DL) {
+                      case 6:
+                        ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      case 25:
+
+                        ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      case 50:
+
+                        ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      case 100:
+
+                        ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      }
+                  }
+                  else { // FDD DCI
+                      switch (mac_xface->lte_frame_parms->N_RB_DL) {
+                      case 6:
+                        ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      case 25:
+                        ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      case 50:
+                        ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      case 100:
+                        ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+                        if ((rrc_sdu_length+msg4_header) <= 22) {
+                            ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+                            TBsize = 22;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 28) {
+                            ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+                            TBsize = 28;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 32) {
+                            ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+                            TBsize = 32;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 41) {
+                            ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+                            TBsize = 41;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 49) {
+                            ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+                            TBsize = 49;
+                        }
+                        else if ((rrc_sdu_length+msg4_header) <= 57) {
+                            ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+                            TBsize = 57;
+                        }
+                        break;
+                      }
+                  }
+                  RA_template[i].generate_Msg4=0;
+                  RA_template[i].generate_Msg4_dci=1;
+                  RA_template[i].wait_ack_Msg4=1;
+                  RA_template[i].RA_active = FALSE;
+                  lcid=0;
+
+                  if ((TBsize - rrc_sdu_length - msg4_header) <= 2) {
+                      msg4_padding = TBsize - rrc_sdu_length - msg4_header;
+                      msg4_post_padding = 0;
+                  }
+                  else {
+                      msg4_padding = 0;
+                      msg4_post_padding = TBsize - rrc_sdu_length - msg4_header -1;
+                  }
+                  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d subframeP %d Msg4 : TBS %d, sdu_len %d, msg4_header %d, msg4_padding %d, msg4_post_padding %d\n",
+                      module_idP,frameP,subframeP,TBsize,rrc_sdu_length,msg4_header,msg4_padding,msg4_post_padding);
+                  offset = generate_dlsch_header((unsigned char*)eNB_mac_inst[module_idP].DLSCH_pdu[(unsigned char)UE_id][0].payload[0],
+                      1,                           //num_sdus
+                      &rrc_sdu_length,             //
+                      &lcid,                       // sdu_lcid
+                      255,                         // no drx
+                      0,                           // no timing advance
+                      RA_template[i].cont_res_id,  // contention res id
+                      msg4_padding,                // no padding
+                      msg4_post_padding);
+
+                  memcpy((void*)&eNB_mac_inst[module_idP].DLSCH_pdu[(unsigned char)UE_id][0].payload[0][(unsigned char)offset],
+                      &eNB_mac_inst[module_idP].CCCH_pdu.payload[0],
+                      rrc_sdu_length);
+
+#if defined(USER_MODE) && defined(OAI_EMU)
+                  if (oai_emulation.info.opt_enabled){
+                      trace_pdu(1, (uint8_t *)eNB_mac_inst[module_idP].DLSCH_pdu[(unsigned char)UE_id][0].payload[0],
+                          rrc_sdu_length, UE_id, 3, find_UE_RNTI(module_idP, UE_id),
+                          eNB_mac_inst[module_idP].subframe,0,0);
+                      LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
+                          module_idP, frameP, find_UE_RNTI(module_idP,UE_id), rrc_sdu_length);
+                  }
+#endif
+                  *nprb= (*nprb) + 3;
+                  *nCCE = (*nCCE) + 4;
+              }
+              //try here
+          }
+          /*
+	else if (eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4==1) {
+	// check HARQ status and retransmit if necessary
+	LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: Checking if Msg4 was acknowledged :\n",module_idP,frameP,subframeP);
+	// Get candidate harq_pid from PHY
+	mac_xface->get_ue_active_harq_pid(module_idP,eNB_mac_inst[module_idP].RA_template[i].rnti,subframeP,&harq_pid,&round,0);
+	if (round>0) {
+           *nprb= (*nprb) + 3;
+           *nCCE = (*nCCE) + 4;
+	}
+	}
+           */
+      }
+  }
+  stop_meas(&eNB_mac_inst[module_idP].schedule_ra);
+}
+
+void initiate_ra_proc(module_id_t module_idP, frame_t frameP, uint16_t preamble_index,int16_t timing_offset,uint8_t sect_id,sub_frame_t subframeP,uint8_t f_id) {
+
+  uint8_t i;
+
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Initiating RA procedure for preamble index %d\n",module_idP,frameP,preamble_index);
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+      if (eNB_mac_inst[module_idP].RA_template[i].RA_active==FALSE) {
+          eNB_mac_inst[module_idP].RA_template[i].RA_active=TRUE;
+          eNB_mac_inst[module_idP].RA_template[i].generate_rar=1;
+          eNB_mac_inst[module_idP].RA_template[i].generate_Msg4=0;
+          eNB_mac_inst[module_idP].RA_template[i].wait_ack_Msg4=0;
+          eNB_mac_inst[module_idP].RA_template[i].timing_offset=timing_offset;
+          // Put in random rnti (to be replaced with proper procedure!!)
+          eNB_mac_inst[module_idP].RA_template[i].rnti = taus();
+          eNB_mac_inst[module_idP].RA_template[i].RA_rnti = 1+subframeP+(10*f_id);
+          eNB_mac_inst[module_idP].RA_template[i].preamble_index = preamble_index;
+          LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Activating RAR generation for process %d, rnti %x, RA_active %d\n",
+              module_idP,frameP,i,eNB_mac_inst[module_idP].RA_template[i].rnti,
+              eNB_mac_inst[module_idP].RA_template[i].RA_active);
+
+          return;
+      }
+  }
 }

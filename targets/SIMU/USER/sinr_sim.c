@@ -48,19 +48,19 @@ extern double MI_map_64qam[3][227];
 */
 // Extract the positions of UE and ENB from the mobility model 
 
-void extract_position (Node_list input_node_list, node_desc_t **node_data, int nb_nodes) {    
+void extract_position (node_list* input_node_list, node_desc_t **node_data, int nb_nodes) {    
     
   int i;
   for (i=0;i<nb_nodes;i++) {
     if ((input_node_list != NULL) &&  (node_data[i] != NULL)) {
       
-      node_data[i]->x = input_node_list->node->X_pos;
+      node_data[i]->x = input_node_list->node->x_pos;
       if (node_data[i]->x <0.0)
         node_data[i]->x = 0.0;
-      node_data[i]->y = input_node_list->node->Y_pos;
+      node_data[i]->y = input_node_list->node->y_pos;
       if (node_data[i]->y <0.0)
         node_data[i]->y = 0.0;
-      LOG_D(OCM, "extract_position: added node_data %d with position X: %f and Y: %f \n", i,input_node_list->node->X_pos, input_node_list->node->Y_pos );
+      LOG_D(OCM, "extract_position: added node_data %d with position X: %f and Y: %f \n", i,input_node_list->node->x_pos, input_node_list->node->y_pos );
       input_node_list = input_node_list->next;
     }
     else {

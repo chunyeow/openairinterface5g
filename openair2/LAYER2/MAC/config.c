@@ -28,8 +28,8 @@
  *******************************************************************************/
 /*! \file config.c
  * \brief UE and eNB configuration
- * \author Raymond Knopp, Navid Nikaein
- * \date 2013
+ * \author  Navid Nikaein and Raymond Knopp
+ * \date 2010 - 2014
  * \version 0.1
  * \email: navid.nikaein@eurecom.fr
  * @ingroup _mac
@@ -45,6 +45,7 @@
 #include "MeasObjectToAddModList.h"
 #include "TDD-Config.h"
 #include "defs.h"
+#include "proto.h"
 #include "extern.h"
 #include "UTIL/LOG/log.h"
 #include "UTIL/LOG/vcd_signal_dumper.h"
