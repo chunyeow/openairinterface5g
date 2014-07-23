@@ -211,11 +211,9 @@ static e_SecurityAlgorithmConfig__integrityProtAlgorithm rrc_eNB_select_integrit
     return SecurityAlgorithmConfig__integrityProtAlgorithm_eia2;
   }
 
-#if defined (ENABLE_SNOW_3G)
   if (algorithms & S1AP_INTEGRITY_EIA1_MASK) {
     return SecurityAlgorithmConfig__integrityProtAlgorithm_eia1;
   }
-#endif
 
   return INTEGRITY_ALGORITHM_NONE;
 }
