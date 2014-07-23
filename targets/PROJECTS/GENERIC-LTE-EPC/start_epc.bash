@@ -140,13 +140,10 @@ THIS_SCRIPT_PATH=$(dirname $(readlink -f $0))
 control_c()
 # run if user hits control-c
 {
+  echo -en "\n*** Exiting... ***\n"
   pkill -9 tshark
   pkill -9 oai_epc
-  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE
-  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
-  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE
-  rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE 
-  echo -en "\n*** Exiting ***\n"
+  echo -en "\n*** Exit ***\n"
   exit $?
 }
 
