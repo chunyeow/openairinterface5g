@@ -228,10 +228,13 @@ cd $THIS_SCRIPT_PATH
 # To start NAS connectivity: AT+CFUN=1
 # nohup xterm -hold -e $OPENAIRCN_DIR/NAS/EURECOM-NAS/bin/UserProcess &
 
+export MALLOC_TRACE=/tmp/malloc_trace.txt
+touch /tmp/malloc_trace.txt
+#--malloc-trace-enabled 
 gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a -u1 -l9 -K OUTPUT/$HOSTNAME/$ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 # | tee OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
 
 #pkill tshark
 echo_warning "oaisim ended, filtering stdout form oaisim"
-cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE | grep 'RRC\|S1AP\|SCTP\|PDCP\|NAS' | grep -v 'RRC_MAC_IN_SYNC_IND' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
+cat OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE | grep 'RRC\|S1AP\|SCTP\|NAS' | grep -v 'RRC_MAC_IN_SYNC_IND' | grep -v 'serving becomes better than threshold' > OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE.filtered
