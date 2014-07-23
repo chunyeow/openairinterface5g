@@ -69,6 +69,8 @@
 #define ENABLE_MAC_PAYLOAD_DEBUG
 #define DEBUG_eNB_SCHEDULER 1
 
+extern inline unsigned int taus(void);
+
 
 // function for determining which active ue should be granted resources in downlink based on CQI, SI, and BSR
 uint8_t find_dlgranted_UEs(module_id_t module_idP){
