@@ -50,7 +50,7 @@ declare EMULATION_DEV_INTERFACE="eth1"
 declare EMULATION_MULTICAST_GROUP=1
 
 declare MAKE_LTE_ACCESS_STRATUM_TARGET="oaisim DEBUG=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 NAS=1 Rel10=1 SECU=1 RRC_MSG_PRINT=1"
-declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
+declare MAKE_LTE_ACCESS_STRATUM_TARGET_RT="lte-softmodem RTAI=1 HARD_RT=1 ENABLE_ITTI=1 USE_MME=R10 LINK_PDCP_TO_GTPV1U=1 DISABLE_XER_PRINT=1 SECU=1 RRC_MSG_PRINT=1 "
 
 
 ###########################################################
@@ -66,7 +66,7 @@ if [ $# -eq 1 ]; then
         exit 1
     fi
 else
-    echo_error "ERROR while invoking this script, as first argument to this script  you have to provide the path to a directory  (./CONF/VLAN.VIRTUAL.$HOSTNAME for example) containing valid epc and enb config files"
+    echo_error "ERROR while invoking this script, as first argument to this script you have to provide the path to a directory  (./CONF/VLAN.VIRTUAL.$HOSTNAME for example) containing valid epc and enb config files"
     exit 1
 fi
 
