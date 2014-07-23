@@ -12,8 +12,8 @@ primary_synch; %loads the primary sync signal
 %load('E:\EMOS\corridor\ofdm_pilots_sync_2048_v7.mat');
 load('ofdm_pilots_sync_30MHz.mat');
 
-n_carriers = 1; % use 1 for UHF and 2 for 2.6GHz
-n_trials=1;%use 1 for trial1 and 2 for trial2
+n_carriers = 2; % use 1 for UHF and 2 for 2.6GHz
+n_trials=2;%use 1 for trial1 and 2 for trial2
 symbols_per_slot = 6;
 slots_per_frame = 20;
 
@@ -36,9 +36,9 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the first carrier, which is 10MHz
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run2.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run1.EMOS';
         %filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run1.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run2.EMOS';
         
         nframes = 50; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
@@ -195,12 +195,21 @@ while ~feof(fid)
     
     if flag1==1
         [corr,lag] = xcorr(v1(:,1),pss_t);
+        if(n_carriers==2)
+            [corrb,lag] = xcorr(v2(:,1),pss_t);
+        end
+        
         %[m,idx]=max(abs(corr));
         %[m,idx]=peaksfinder(corr,frame_length);
         
         tmp   = corr(nframes*slots_per_frame*p(1).samples_slot:end);
         tmp2  = reshape(tmp,slots_per_frame*p(1).samples_slot,nframes);
         [m,idx] = max(abs(tmp2),[],1);
+        if(n_carriers==2)
+            tmp   = corrb(nframes*slots_per_frame*p(2).samples_slot:end);
+            tmp2  = reshape(tmp,slots_per_frame*p(2).samples_slot,nframes);
+            [m,idx] = max(abs(tmp2),[],1);
+        end
         
         idx(m < threshold) = [];
         if size(idx,2) <= 3
@@ -208,6 +217,7 @@ while ~feof(fid)
             flag2 = 0 ;
             
             vStorage1 = [];
+            vStorage2 = [];
             %         elseif size(idx,2) == nframes
             %
             %             flag1 = 0;
@@ -219,6 +229,9 @@ while ~feof(fid)
         end
         
         frame_offset = round(median(idx)) - p(1).prefix_length;
+        if(n_carriers==2)
+            frame_offset = round(median(idx)) - p(2).prefix_length;
+        end
         
         
         if enable_plots>=2
@@ -262,8 +275,11 @@ while ~feof(fid)
             
             fprintf(1,'.');
             frame_start1 = (slots_per_frame*p(1).samples_slot)*(i-1)+frame_offset+1;
+            
             if n_carriers==2
-                frame_start2 = (slots_per_frame*p(2).samples_slot)*(i-1)+round(frame_offset/2)+1;
+                %                 frame_start2 = (slots_per_frame*p(2).samples_slot)*(i-1)+round(frame_offset/2)+1;
+                frame_start1 = (slots_per_frame*p(1).samples_slot)*(i-1)+2*frame_offset+1;
+                frame_start2 = (slots_per_frame*p(2).samples_slot)*(i-1)+frame_offset+1;
             end
             
             if i<nframes
@@ -313,6 +329,7 @@ while ~feof(fid)
                 PDP = mean(abs(Ht).^2,1);
                 PDP_all = squeeze(mean(mean(PDP,3),4));
                 PDD=sum(abs(fftshift(fft(Ht,[],1))).^2,2);
+                
                 if(carrier==1)
                     PDP_totala((block-1)*NFRAMES+i,:,:,:) = PDP;
                     Ha=H;
@@ -322,46 +339,46 @@ while ~feof(fid)
                     PDP_totalb((block-1)*NFRAMES+i,:,:,:) = PDP;
                     Hb=H;
                 end
-%                 
-%                 Hprime=H*exp(2*i*pi*167E-6*f_offset);
-%                 Htprime = ifft(Hprime,[],2); %impulse response
-%                 PDPprime = mean(abs(Htprime).^2,1);
-%                 
-%                 PDDprime=sum(abs(fftshift(fft(Htprime,[],1))).^2,2);
-%                 if(carrier==1)
-%                     PDP_totala((block-1)*NFRAMES+i,:,:,:) = PDP;
-%                     Ha=H;
-%                 end
-%                 
-%                 if(carrier==2)
-%                     PDP_totalb((block-1)*NFRAMES+i,:,:,:) = PDP;
-%                     Hb=H;
-%                 end
+                %
+                %                 Hprime=H*exp(2*i*pi*167E-6*f_offset);
+                %                 Htprime = ifft(Hprime,[],2); %impulse response
+                %                 PDPprime = mean(abs(Htprime).^2,1);
+                %
+                %                 PDDprime=sum(abs(fftshift(fft(Htprime,[],1))).^2,2);
+                %                 if(carrier==1)
+                %                     PDP_totala((block-1)*NFRAMES+i,:,:,:) = PDP;
+                %                     Ha=H;
+                %                 end
+                %
+                %                 if(carrier==2)
+                %                     PDP_totalb((block-1)*NFRAMES+i,:,:,:) = PDP;
+                %                     Hb=H;
+                %                 end
                 
                 if enable_plots>=1
-                                        figure(3+3*(carrier-1))
-                                        for itx=1:p(carrier).nant_tx
-                                            for irx=1:p(1).nant_rx
-                                                
-                                                subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
-                                                surf(20*log10(abs(Ht(:,:,itx,irx))))
-                                                ylabel('time [OFDM symbol]')
-                                                xlabel('delay time [samples]')
-                                                zlabel('power [dB]')
-                                                shading interp
-                                            end
-                                        end
-                                        figure(4+3*(carrier-1))
-                                        for itx=1:p(1).nant_tx
-                                            for irx=1:p(1).nant_rx
-                                                subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
-                                                plot(10*log10(PDP(:,:,itx,irx)))
-                                                ylim([50 80])
-                                                xlim([0 75])
-                                                xlabel('delay time [samples]')
-                                                ylabel('power [dB]')
-                                            end
-                                        end
+                    figure(3+3*(carrier-1))
+                    for itx=1:p(carrier).nant_tx
+                        for irx=1:p(1).nant_rx
+                            
+                            subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+                            surf(20*log10(abs(Ht(:,:,itx,irx))))
+                            ylabel('time [OFDM symbol]')
+                            xlabel('delay time [samples]')
+                            zlabel('power [dB]')
+                            shading interp
+                        end
+                    end
+                    figure(4+3*(carrier-1))
+                    for itx=1:p(1).nant_tx
+                        for irx=1:p(1).nant_rx
+                            subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+                            plot(10*log10(PDP(:,:,itx,irx)))
+                            ylim([50 80])
+                            xlim([0 75])
+                            xlabel('delay time [samples]')
+                            ylabel('power [dB]')
+                        end
+                    end
                     figure(5+3*(carrier-1))
                     for itx=1:p(1).nant_tx
                         for irx=1:p(1).nant_rx
@@ -389,19 +406,41 @@ while ~feof(fid)
                     drawnow
                 end
                 
-                if carrier==1
-                    % adjust frame offset base on channel estimate to compensate for
-                    % timing drift. We try to keep the peak of the impulse response at
-                    % sample prefix_length/8.
-                    [m,idx] = max(fft(ifft(PDP_all),p(carrier).num_carriers));
-                    offset = idx - p(carrier).prefix_length/8;
-                    if offset > p(carrier).prefix_length
-                        offset = offset - p(carrier).num_carriers;
-                    end
-                    if abs(offset) > 5
-                        frame_offset = frame_offset + round(offset/4);
+                
+                if(n_carriers==1)
+                    if carrier==1
+                        % adjust frame offset base on channel estimate to compensate for
+                        % timing drift. We try to keep the peak of the impulse response at
+                        % sample prefix_length/8.
+                        [m,idx] = max(fft(ifft(PDP_all),p(carrier).num_carriers));
+                        offset = idx - p(carrier).prefix_length/8;
+                        if offset > p(carrier).prefix_length
+                            offset = offset - p(carrier).num_carriers;
+                        end
+                        if abs(offset) > 5
+                            frame_offset = frame_offset + round(offset/4);
+                        end
                     end
                 end
+                
+                if(n_carriers==2)
+                    
+                     if carrier==2
+                        % adjust frame offset base on channel estimate to compensate for
+                        % timing drift. We try to keep the peak of the impulse response at
+                        % sample prefix_length/8.
+                        [m,idx] = max(fft(ifft(PDP_all),p(carrier).num_carriers));
+                        offset = idx - p(carrier).prefix_length/8;
+                        if offset > p(carrier).prefix_length
+                            offset = offset - p(carrier).num_carriers;
+                        end
+                        if abs(offset) > 5
+                            frame_offset = frame_offset + round(offset/4);
+                        end
+                    end
+                    
+                end
+                
                 
             end
             H1a=cat(1,H1a,Ha);
@@ -416,10 +455,11 @@ while ~feof(fid)
         Ht1a=ifft(H1a,[],2);
         
         PDD1a=sum(abs(fftshift(fft(Ht1a,[],1))).^2,2);
-        
+        delayPDD1a=abs(fftshift(fft(Ht1a,[],1))).^2;
         if(n_carriers==2)
             Ht1b=ifft(H1b,[],2);
             PDD1b=sum(abs(fftshift(fft(Ht1b,[],1))).^2,2);
+            delayPDD1b=abs(fftshift(fft(Ht1b,[],1))).^2;
         end
         
         if(enable_plots>=2)
@@ -437,7 +477,7 @@ while ~feof(fid)
                     %ylim([])
                     %xlim([])
                     xlabel('F=f-ftx [Hz]')
-                            ylabel('power [dB]')
+                    ylabel('power [dB]')
                 end
             end
             
@@ -453,17 +493,56 @@ while ~feof(fid)
                         %ylim([])
                         %xlim([])
                         xlabel('F=f-ftx [Hz]')
-                            ylabel('power [dB]')
+                        ylabel('power [dB]')
                     end
                 end
             end
         end
         
         
+%         figure(20)
+%             for itx=1:p(1).nant_tx
+%                 for irx=1:p(1).nant_rx
+%                     D=1:300;
+%                     F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
+%                     if(n_carriers==2)
+%                         F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
+%                     end
+%                     
+%                     subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+% %                    plot(F,10*log10(delayPDD1a(:,180,itx,irx)),F,10*log10(delayPDD1a(:,250,itx,irx)))
+%                     waterfall(plot(10*log10(delayPDD1a(:,:,itx,irx))))
+%                     %ylim([])
+%                     %xlim([])
+% %                     xlabel('F=f-ftx [Hz]')
+% %                     ylabel('power [dB]')
+%                 end
+%             end
+%             
+%             if(n_carriers==2)
+%                 figure(21)
+%                 for itx=1:p(1).nant_tx
+%                     for irx=1:p(1).nant_rx
+%                         D=1:300;
+%                         F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
+%                         
+%                         subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+% %                         plot(F,10*log10(delayPDD1b(:,90,itx,irx)),F,10*log10(delayPDD1b(:,120,itx,irx)))
+%                         waterfall(plot(10*log10(delayPDD1b(:,:,itx,irx))))
+%                         %ylim([])
+%                         %xlim([])
+% %                         xlabel('F=f-ftx [Hz]')
+% %                         ylabel('power [dB]')
+%                     end
+%                 end
+%             end
+        
         
         PDD_totala(:,block,:,:)=PDD1a;
+        
         if(n_carriers==2)
             PDD_totalb(:,block,:,:)=PDD1b;
+           
         end
         
         
@@ -538,7 +617,7 @@ while ~feof(fid)
                     TGVspeed_total(block)=fm*3/7.7715*3.6;
                     freqOffset_total(block)=abs((s1+fm)-3000.5);
                 end
-              
+                
                 
             end
         end
@@ -570,42 +649,42 @@ end
 %%
 
 if(enable_plots>=2)
-figure(11)
-for itx=1:p(1).nant_tx
-    for irx=1:p(1).nant_rx
-        T=1:1:block-1;
-        F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
-        if(n_carriers==2)
-            F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
-        end
-        subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
-        pcolor(T,F,10*log10( PDD_totala(:,:,itx,irx)));
-        shading flat
-        bara=colorbar;
-        %ylim([])
-        %xlim([])
-        ylabel('F=f-ftx [Hz]')
-                            xlabel('time [s]')
-    end
-end
-
-if(n_carriers==2)
-    figure(12)
-    for itx=1:p(2).nant_tx
-        for irx=1:p(2).nant_rx
+    figure(11)
+    for itx=1:p(1).nant_tx
+        for irx=1:p(1).nant_rx
             T=1:1:block-1;
-            F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
-            subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
-            pcolor(T,F,10*log10( PDD_totalb(:,:,itx,irx)));
+            F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
+            if(n_carriers==2)
+                F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
+            end
+            subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+            pcolor(T,F,10*log10( PDD_totala(:,:,itx,irx)));
             shading flat
-            barb=colorbar;
+            bara=colorbar;
             %ylim([])
             %xlim([])
             ylabel('F=f-ftx [Hz]')
-                            xlabel('time [s]')
+            xlabel('time [s]')
         end
     end
-end
+    
+    if(n_carriers==2)
+        figure(12)
+        for itx=1:p(2).nant_tx
+            for irx=1:p(2).nant_rx
+                T=1:1:block-1;
+                F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
+                subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+                pcolor(T,F,10*log10( PDD_totalb(:,:,itx,irx)));
+                shading flat
+                barb=colorbar;
+                %ylim([])
+                %xlim([])
+                ylabel('F=f-ftx [Hz]')
+                xlabel('time [s]')
+            end
+        end
+    end
 end
 
 %% Mean Delay
@@ -642,7 +721,7 @@ for itx=1:p(1).nant_tx
         subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
         plot(mean_delay_a(:,:,itx,irx));
         ylabel('delay [s]')
-                            xlabel('time [s]')
+        xlabel('time [s]')
         
     end
 end
@@ -655,7 +734,7 @@ if (n_carriers==2)
             subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
             plot(mean_delay_b(:,:,itx,irx));
             ylabel('delay [s]')
-                            xlabel('time [s]')
+            xlabel('time [s]')
         end
     end
 end
@@ -696,7 +775,7 @@ for itx=1:p(1).nant_tx
         subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
         plot(mean_doppler_shift_a(:,:,itx,irx));
         ylabel('f-ftx [Hz]')
-                            xlabel('time [s]')
+        xlabel('time [s]')
     end
 end
 
@@ -708,7 +787,7 @@ if (n_carriers==2)
             subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
             plot(mean_doppler_shift_b(:,:,itx,irx));
             ylabel('f-ftx [Hz]')
-                            xlabel('time [s]')
+            xlabel('time [s]')
         end
     end
 end
@@ -717,7 +796,7 @@ figure(17)
 title('');
 plot(doppler_freq_of_max_a);
 xlabel('time [s]');
-    ylabel('f-ftx [Hz]');
+ylabel('f-ftx [Hz]');
 
 if(n_carriers==2)
     figure(18)
