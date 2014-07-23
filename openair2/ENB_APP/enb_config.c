@@ -37,6 +37,7 @@
 
 #include <string.h>
 #include <libconfig.h>
+#include <inttypes.h>
 
 #include "log.h"
 #include "assertions.h"
@@ -235,7 +236,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   long int          tdd_config_s;
   const char*       prefix_type;
   long int          eutra_band;
-  long int          downlink_frequency;
+  long long int     downlink_frequency;
   long int          uplink_frequency_offset;
   char*             ipv4                          = NULL;
   char*             ipv6                          = NULL;
@@ -422,17 +423,22 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 
                   if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_EUTRA_BAND, &eutra_band)) {
                       enb_properties.properties[enb_properties_index]->eutra_band = eutra_band;
+                      printf( "\teutra band:\t%d\n",enb_properties.properties[enb_properties_index]->eutra_band);
                   } else {
                       enb_properties.properties[enb_properties_index]->eutra_band = 7; // Default band
+                      printf( "\teutra band:\t%d (default)\n",enb_properties.properties[enb_properties_index]->eutra_band);
                   }
 
-                  if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
-                      enb_properties.properties[enb_properties_index]->downlink_frequency = (unsigned int) downlink_frequency;
+                  if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
+                      enb_properties.properties[enb_properties_index]->downlink_frequency = (uint32_t) downlink_frequency;
+                      printf( "\tdownlink freq:\t%u\n",enb_properties.properties[enb_properties_index]->downlink_frequency);
                   } else {
                       enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
+                      printf( "\tdownlink freq:\t%u (default)\n",enb_properties.properties[enb_properties_index]->downlink_frequency);
                   }
                   if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
                       enb_properties.properties[enb_properties_index]->uplink_frequency_offset = (unsigned int) uplink_frequency_offset;
+                      printf( "\tuplink freq offset:\t%ld\n",enb_properties.properties[enb_properties_index]->uplink_frequency_offset);
                   } else {
                       // Default uplink frequency offset
                       if (enb_properties.properties[enb_properties_index]->frame_type == FDD) {
@@ -440,6 +446,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       } else {
                           enb_properties.properties[enb_properties_index]->uplink_frequency_offset = 0;
                       }
+                      printf( "\tuplink freq offset:\t%ld (default)\n",enb_properties.properties[enb_properties_index]->uplink_frequency_offset);
                   }
 
                   parse_errors += enb_check_band_frequencies(lib_config_file_name_pP,
