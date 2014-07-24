@@ -69,6 +69,7 @@
 #define ENABLE_MAC_PAYLOAD_DEBUG
 #define DEBUG_eNB_SCHEDULER 1
 
+ extern inline unsigned int taus(void);
 
 #ifdef Rel10
 int8_t get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_area){
