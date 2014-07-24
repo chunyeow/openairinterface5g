@@ -1144,15 +1144,15 @@ static int _security_select_algorithms(
         LOG_FUNC_RETURN (rc);
     }
 
-    if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA0)) {
+    if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA1)) {
+            LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA1");
+            *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA1;
+    } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA0)) {
         LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA0");
         *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA0;
     } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA2)) {
         LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA2");
         *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA2;
-    } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA1)) {
-        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA1");
-        *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA1;
     } else {
         LOG_FUNC_RETURN (rc);
     }

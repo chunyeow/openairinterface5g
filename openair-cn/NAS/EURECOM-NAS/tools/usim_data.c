@@ -60,7 +60,7 @@ Description	Implements the utility used to generate data stored in the
 #define KSI			USIM_KSI_NOT_AVAILABLE
 #define KSI_ASME		USIM_KSI_NOT_AVAILABLE
 #define INT_ALGO		USIM_INT_EIA1
-#define ENC_ALGO		USIM_ENC_EEA0
+#define ENC_ALGO		USIM_ENC_EEA1
 #define SECURITY_ALGORITHMS	(ENC_ALGO | INT_ALGO)
 
 #define MIN_TAC			0x0000

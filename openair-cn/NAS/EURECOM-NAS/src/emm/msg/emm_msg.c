@@ -120,7 +120,7 @@ int emm_msg_decode(EMM_msg *msg, uint8_t *buffer, uint32_t len)
     buffer += header_result;
     len -= header_result;
 
-    LOG_TRACE(INFO, "EMM-MSG   - Message Type %02x", msg->header.message_type);
+    LOG_TRACE(INFO, "EMM-MSG   - Message Type 0x%02x", msg->header.message_type);
 
     switch(msg->header.message_type) {
         case EMM_INFORMATION:

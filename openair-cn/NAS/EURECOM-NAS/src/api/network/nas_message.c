@@ -77,7 +77,8 @@ static int _nas_message_plain_decode(const char* buffer,
     nas_message_plain_t* msg, int length);
 static int _nas_message_protected_decode(const char* buffer,
     nas_message_security_header_t* header,
-    nas_message_plain_t* msg, int length);
+    nas_message_plain_t* msg, int length,
+    const emm_security_context_t * const emm_security_context);
 
 /* Functions used to encode layer 3 NAS messages */
 static int _nas_message_header_encode(char* buffer,
@@ -99,7 +100,9 @@ static int _nas_message_decrypt(
     UInt8_t type,
     UInt32_t code,
     UInt8_t seq,
-    int length);
+    int length,
+    const emm_security_context_t * const emm_security_context);
+
 
 static int
 _nas_message_encrypt(
@@ -181,7 +184,7 @@ nas_message_encrypt(
             /* Compute the NAS message authentication code */
             UInt32_t mac = _nas_message_get_mac(
                 outbuf + offset,
-                length - offset,
+                bytes + size - offset,
 #ifdef NAS_MME
                 SECU_DIRECTION_DOWNLINK,
 #else
@@ -331,7 +334,8 @@ int nas_message_decrypt(
                 header->security_header_type,
                 header->message_authentication_code,
                 header->sequence_number,
-                length - size);
+                length - size,
+                emm_security_context);
         bytes = length - size;
     }
     else {
@@ -418,13 +422,18 @@ int nas_message_decode(
 #endif
 
         /* Decode security protected NAS message */
-        bytes = _nas_message_protected_decode(buffer + size, &msg->header,
-                                              &msg->plain, length - size);
+        bytes = _nas_message_protected_decode(buffer + size,
+                &msg->header,
+                &msg->plain,
+                length - size,
+                emm_security_context);
     }
     else {
         /* Decode plain NAS message */
-        bytes = _nas_message_plain_decode(buffer, &msg->header,
-                                          &msg->plain, length);
+        bytes = _nas_message_plain_decode(buffer,
+                &msg->header,
+                &msg->plain,
+                length);
     }
 
     if (bytes < 0) {
@@ -666,15 +675,15 @@ _nas_message_plain_decode(
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_message_protected_decode()                           **
+ ** Name:	 _nas_message_protected_decode()                               **
  **                                                                        **
  ** Description: Decode security protected NAS message                     **
  **                                                                        **
- ** Inputs:	 buffer:	Pointer to the buffer containing the secu- **
- **				rity protected NAS message data            **
- **		 header:	Header of the security protected NAS mes-  **
- **				sage                                       **
- ** 		 length:	Number of bytes that should be decoded     **
+ ** Inputs:  buffer:  Pointer to the buffer containing the secu-           **
+ **                     rity protected NAS message data                    **
+ **          header:	Header of the security protected NAS message       **
+ ** 		 length:	Number of bytes that should be decoded             **
+ ** 		 emm_security_context: security context                       **
  **		 Others:	None                                       **
  **                                                                        **
  ** Outputs:	 msg:		Decoded NAS message                        **
@@ -688,7 +697,8 @@ static int _nas_message_protected_decode(
     const char                         *buffer,
     nas_message_security_header_t      *header,
     nas_message_plain_t                *msg,
-    int                                 length)
+    int                                 length,
+    const emm_security_context_t * const emm_security_context)
 {
     LOG_FUNC_IN;
 
@@ -699,10 +709,13 @@ static int _nas_message_protected_decode(
     {
         /* Decrypt the security protected NAS message */
         header->protocol_discriminator =
-            _nas_message_decrypt(plain_msg, buffer,
+            _nas_message_decrypt(plain_msg,
+                buffer,
                 header->security_header_type,
                 header->message_authentication_code,
-                header->sequence_number, length);
+                header->sequence_number,
+                length,
+                emm_security_context);
         /* Decode the decrypted message as plain NAS message */
         bytes = _nas_message_plain_decode(plain_msg, header, msg, length);
         free(plain_msg);
@@ -820,20 +833,20 @@ static int _nas_message_plain_encode(
 
 /****************************************************************************
  **                                                                        **
- ** Name:	 _nas_message_protected_encode()                           **
+ ** Name:	 _nas_message_protected_encode()                               **
  **                                                                        **
  ** Description: Encode security protected NAS message                     **
  **                                                                        **
- ** Inputs	 msg:		Security protected NAS message structure   **
- **				to encode                                  **
- **		 length:	Maximal capacity of the output buffer      **
- **		 Others:	None                                       **
+ ** Inputs    msg:     Security protected NAS message structure            **
+ **                    to encode                                           **
+ **           length:  Maximal capacity of the output buffer               **
+ **           Others:  None                                                **
  **                                                                        **
- ** Outputs:	 buffer:	Pointer to the encoded data buffer         **
- ** 		 Return:	The number of bytes in the buffer if the   **
- **				data have been successfully encoded;       **
- **				A negative error code otherwise.           **
- **		 Others:	None                                       **
+ ** Outputs:  buffer:  Pointer to the encoded data buffer                  **
+ ** Return:   The number of bytes in the buffer if the                     **
+ **           data have been successfully encoded;                         **
+ **           A negative error code otherwise.                             **
+ ** Others:   None                                                         **
  **                                                                        **
  ***************************************************************************/
 static int _nas_message_protected_encode(
@@ -889,7 +902,7 @@ static int _nas_message_protected_encode(
  ** Description: Decrypt security protected NAS message                    **
  **                                                                        **
  ** Inputs	 src:		Pointer to the encrypted data buffer       **
- **		 type:		The security header type                   **
+ **		 security_header_type:		The security header type                   **
  **		 code:		The message authentication code            **
  **		 seq:		The sequence number                        **
  **		 length:	Maximal capacity of the output buffer      **
@@ -904,24 +917,140 @@ static int _nas_message_protected_encode(
 static int _nas_message_decrypt(
     char               *dest,
     const char         *src,
-    UInt8_t             type,
+    UInt8_t             security_header_type,
     UInt32_t            code,
     UInt8_t             seq,
-    int                 length)
+    int                 length,
+    const emm_security_context_t * const emm_security_context)
 {
+    nas_stream_cipher_t stream_cipher;
+    uint32_t            count;
+    uint8_t             direction;
+
     LOG_FUNC_IN;
 
     int size = 0;
     nas_message_security_header_t header;
 
-    /* TODO: run the uncyphering algorithm */
-    memcpy(dest, src, length);
+#ifdef NAS_MME
+    direction = SECU_DIRECTION_UPLINK;
+#else
+    direction = SECU_DIRECTION_DOWNLINK;
+#endif
 
-    /* Decode the first octet (security header type or EPS bearer identity,
-     * and protocol discriminator) */
-    DECODE_U8(src, *(UInt8_t*)(&header), size);
+    switch (security_header_type) {
+    case SECURITY_HEADER_TYPE_NOT_PROTECTED:
+    case SECURITY_HEADER_TYPE_SERVICE_REQUEST:
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED:
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_NEW:
+        LOG_TRACE(DEBUG,
+                "No decryption of message according to security header type 0x%02x",
+                security_header_type);
+        memcpy(dest, src, length);
+        LOG_FUNC_RETURN (length);
+        break;
 
-    LOG_FUNC_RETURN (header.protocol_discriminator);
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED:
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED_NEW:
+        switch (emm_security_context->selected_algorithms.encryption) {
+
+            case NAS_SECURITY_ALGORITHMS_EEA1: {
+                if (direction == SECU_DIRECTION_UPLINK) {
+                    count = 0x00000000 ||
+                            ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->ul_count.seq_num & 0x000000FF);
+                } else {
+                    count = 0x00000000 ||
+                            ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->dl_count.seq_num & 0x000000FF);
+                }
+                LOG_TRACE(DEBUG,
+                        "NAS_SECURITY_ALGORITHMS_EEA1 dir %s count.seq_num %u count %u",
+                        (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                                (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num,
+                                        count);
+                stream_cipher.key        = emm_security_context->knas_enc.value;
+                stream_cipher.key_length = AUTH_KNAS_ENC_SIZE;
+                stream_cipher.count      = count;
+                stream_cipher.bearer     = 0x00; //33.401 section 8.1.1
+                stream_cipher.direction  = direction;
+                stream_cipher.message    = src;
+                /* length in bits */
+                stream_cipher.blength    = length << 3;
+                nas_stream_encrypt_eea1(&stream_cipher, dest);
+                /* Decode the first octet (security header type or EPS bearer identity,
+                 * and protocol discriminator) */
+                DECODE_U8(dest, *(UInt8_t*)(&header), size);
+
+                LOG_FUNC_RETURN (header.protocol_discriminator);
+
+            }break;
+
+            case NAS_SECURITY_ALGORITHMS_EEA2: {
+                if (direction == SECU_DIRECTION_UPLINK) {
+                    count = 0x00000000 ||
+                            ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->ul_count.seq_num & 0x000000FF);
+                } else {
+                    count = 0x00000000 ||
+                            ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->dl_count.seq_num & 0x000000FF);
+                }
+                LOG_TRACE(DEBUG,
+                        "NAS_SECURITY_ALGORITHMS_EEA2 dir %s count.seq_num %u count %u",
+                        (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                                (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num,
+                                        count);
+                stream_cipher.key        = emm_security_context->knas_enc.value;
+                stream_cipher.key_length = AUTH_KNAS_ENC_SIZE;
+                stream_cipher.count      = count;
+                stream_cipher.bearer     = 0x00; //33.401 section 8.1.1
+                stream_cipher.direction  = direction;
+                stream_cipher.message    = src;
+                /* length in bits */
+                stream_cipher.blength    = length << 3;
+                nas_stream_encrypt_eea1(&stream_cipher, dest);
+                /* Decode the first octet (security header type or EPS bearer identity,
+                 * and protocol discriminator) */
+                DECODE_U8(dest, *(UInt8_t*)(&header), size);
+
+                LOG_FUNC_RETURN (header.protocol_discriminator);
+            }break;
+
+            case NAS_SECURITY_ALGORITHMS_EEA0:
+                LOG_TRACE(DEBUG,
+                        "NAS_SECURITY_ALGORITHMS_EEA0 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                        direction,
+                        emm_security_context->ul_count.seq_num,
+                        emm_security_context->dl_count.seq_num);
+                memcpy(dest, src, length);
+                /* Decode the first octet (security header type or EPS bearer identity,
+                 * and protocol discriminator) */
+                DECODE_U8(dest, *(UInt8_t*)(&header), size);
+
+                LOG_FUNC_RETURN (header.protocol_discriminator);
+
+                break;
+
+            default:
+                LOG_TRACE(ERROR,
+                        "Unknown Cyphering protection algorithm %d",
+                        emm_security_context->selected_algorithms.encryption);
+                memcpy(dest, src, length);
+                /* Decode the first octet (security header type or EPS bearer identity,
+                 * and protocol discriminator) */
+                DECODE_U8(dest, *(UInt8_t*)(&header), size);
+
+                LOG_FUNC_RETURN (header.protocol_discriminator);
+                break;
+        }
+        break;
+    default:
+        LOG_TRACE(ERROR,
+            "Unknown security header type %u", security_header_type);
+        LOG_FUNC_RETURN (0);
+    };
+
 }
 
 /****************************************************************************
@@ -931,7 +1060,7 @@ static int _nas_message_decrypt(
  ** Description: Encrypt plain NAS message                                 **
  **                                                                        **
  ** Inputs	 src:		Pointer to the decrypted data buffer       **
- **		 type:		The security header type                   **
+ **		 security_header_type:		The security header type                   **
  **		 code:		The message authentication code            **
  **		 seq:		The sequence number                        **
  **		 direction:	The sequence number                        **
@@ -948,13 +1077,15 @@ static int _nas_message_decrypt(
 static int _nas_message_encrypt(
     char        *dest,
     const char  *src,
-    UInt8_t     type,
+    UInt8_t     security_header_type,
     UInt32_t    code,
     UInt8_t     seq,
     int         const direction,
     int         length,
     const emm_security_context_t * const emm_security_context)
 {
+    nas_stream_cipher_t stream_cipher;
+    uint32_t            count;
     LOG_FUNC_IN;
 
     if (!emm_security_context) {
@@ -963,46 +1094,103 @@ static int _nas_message_encrypt(
         LOG_FUNC_RETURN (0);
     }
 
-    switch (emm_security_context->selected_algorithms.encryption) {
+    switch (security_header_type) {
+    case SECURITY_HEADER_TYPE_NOT_PROTECTED:
+    case SECURITY_HEADER_TYPE_SERVICE_REQUEST:
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED:
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_NEW:
+        LOG_TRACE(DEBUG,
+                "No encryption of message according to security header type 0x%02x",
+                security_header_type);
+        memcpy(dest, src, length);
+        LOG_FUNC_RETURN (length);
+        break;
 
-        case NAS_SECURITY_ALGORITHMS_EEA1: {
-            LOG_TRACE(WARNING,
-                "TODO NAS_SECURITY_ALGORITHMS_EEA1 dir %d ul_count.seq_num %d dl_count.seq_num %d",
-                direction,
-                emm_security_context->ul_count.seq_num,
-                emm_security_context->dl_count.seq_num);
-            memcpy(dest, src, length);
-            LOG_FUNC_RETURN (length);
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED:
+    case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_CYPHERED_NEW:
+        switch (emm_security_context->selected_algorithms.encryption) {
 
-        }break;
+            case NAS_SECURITY_ALGORITHMS_EEA1: {
+                if (direction == SECU_DIRECTION_UPLINK) {
+                    count = 0x00000000 ||
+                            ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->ul_count.seq_num & 0x000000FF);
+                } else {
+                    count = 0x00000000 ||
+                            ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->dl_count.seq_num & 0x000000FF);
+                }
+                LOG_TRACE(DEBUG,
+                        "NAS_SECURITY_ALGORITHMS_EEA1 dir %s count.seq_num %u count %u",
+                        (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                                (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num,
+                                        count);
+                stream_cipher.key        = emm_security_context->knas_enc.value;
+                stream_cipher.key_length = AUTH_KNAS_ENC_SIZE;
+                stream_cipher.count      = count;
+                stream_cipher.bearer     = 0x00; //33.401 section 8.1.1
+                stream_cipher.direction  = direction;
+                stream_cipher.message    = src;
+                /* length in bits */
+                stream_cipher.blength    = length << 3;
+                nas_stream_encrypt_eea1(&stream_cipher, dest);
 
-        case NAS_SECURITY_ALGORITHMS_EEA2: {
-            LOG_TRACE(WARNING,
-                "TODO NAS_SECURITY_ALGORITHMS_EEA2 dir %d ul_count.seq_num %d dl_count.seq_num %d",
-                direction,
-                emm_security_context->ul_count.seq_num,
-                emm_security_context->dl_count.seq_num);
-            memcpy(dest, src, length);
-            LOG_FUNC_RETURN (length);
+                LOG_FUNC_RETURN (length);
 
             }break;
 
-        case NAS_SECURITY_ALGORITHMS_EEA0:
-            LOG_TRACE(DEBUG,
-                "NAS_SECURITY_ALGORITHMS_EEA0 dir %d ul_count.seq_num %d dl_count.seq_num %d",
-                direction,
-                emm_security_context->ul_count.seq_num,
-                emm_security_context->dl_count.seq_num);
-            memcpy(dest, src, length);
-            LOG_FUNC_RETURN (length);
+            case NAS_SECURITY_ALGORITHMS_EEA2: {
+                if (direction == SECU_DIRECTION_UPLINK) {
+                    count = 0x00000000 ||
+                            ((emm_security_context->ul_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->ul_count.seq_num & 0x000000FF);
+                } else {
+                    count = 0x00000000 ||
+                            ((emm_security_context->dl_count.overflow && 0x0000FFFF) << 8) ||
+                            (emm_security_context->dl_count.seq_num & 0x000000FF);
+                }
+                LOG_TRACE(DEBUG,
+                        "NAS_SECURITY_ALGORITHMS_EEA2 dir %s count.seq_num %u count %u",
+                        (direction == SECU_DIRECTION_UPLINK) ? "UPLINK":"DOWNLINK",
+                                (direction == SECU_DIRECTION_UPLINK) ? emm_security_context->ul_count.seq_num:emm_security_context->dl_count.seq_num,
+                                        count);
+                stream_cipher.key        = emm_security_context->knas_enc.value;
+                stream_cipher.key_length = AUTH_KNAS_ENC_SIZE;
+                stream_cipher.count      = count;
+                stream_cipher.bearer     = 0x00; //33.401 section 8.1.1
+                stream_cipher.direction  = direction;
+                stream_cipher.message    = src;
+                /* length in bits */
+                stream_cipher.blength    = length << 3;
+                nas_stream_encrypt_eea2(&stream_cipher, dest);
 
-            break;
+                LOG_FUNC_RETURN (length);
 
-        default:
-        	LOG_TRACE(ERROR,
-              "Unknown Cyphering protection algorithm %d",
-              emm_security_context->selected_algorithms.encryption);
-        	break;
+            }break;
+
+            case NAS_SECURITY_ALGORITHMS_EEA0:
+                LOG_TRACE(DEBUG,
+                        "NAS_SECURITY_ALGORITHMS_EEA0 dir %d ul_count.seq_num %d dl_count.seq_num %d",
+                        direction,
+                        emm_security_context->ul_count.seq_num,
+                        emm_security_context->dl_count.seq_num);
+                memcpy(dest, src, length);
+                LOG_FUNC_RETURN (length);
+
+                break;
+
+            default:
+                LOG_TRACE(ERROR,
+                        "Unknown Cyphering protection algorithm %d",
+                        emm_security_context->selected_algorithms.encryption);
+                break;
+        }
+        break;
+
+    default:
+        LOG_TRACE(ERROR,
+            "Unknown security header type %u", security_header_type);
+        LOG_FUNC_RETURN (0);
     }
     LOG_FUNC_RETURN (length);
 }
