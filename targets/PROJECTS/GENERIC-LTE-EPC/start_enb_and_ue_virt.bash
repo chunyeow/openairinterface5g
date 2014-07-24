@@ -27,7 +27,7 @@
 #  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
 #
 ################################################################################
-# file start_enb.bash
+# file start_enb_and_ue.bash
 # brief
 # author Lionel Gauthier
 # company Eurecom
