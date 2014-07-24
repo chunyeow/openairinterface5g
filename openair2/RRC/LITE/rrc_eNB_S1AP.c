@@ -191,11 +191,9 @@ static e_SecurityAlgorithmConfig__cipheringAlgorithm rrc_eNB_select_ciphering(ui
     return SecurityAlgorithmConfig__cipheringAlgorithm_eea2;
   }
 
-#if defined (ENABLE_SNOW_3G)
   if (algorithms & S1AP_ENCRYPTION_EEA1_MASK) {
     return SecurityAlgorithmConfig__cipheringAlgorithm_eea1;
   }
-#endif
 
   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0;
 }
@@ -536,7 +534,7 @@ void rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t mod_id, uint8_t ue_index,
                     ue_index);
           }
         }
-        S1AP_NAS_FIRST_REQ (message_p).ue_identity.gummei.mme_code = BIT_STRING_to_uint8 (&r_mme->mmec);
+        S1AP_NAS_FIRST_REQ (message_p).ue_identity.gummei.mme_code     = BIT_STRING_to_uint8 (&r_mme->mmec);
         S1AP_NAS_FIRST_REQ (message_p).ue_identity.gummei.mme_group_id = BIT_STRING_to_uint16 (&r_mme->mmegi);
         LOG_I(S1AP, "[eNB %d] Build S1AP_NAS_FIRST_REQ adding in s_TMSI: GUMMEI mme_code %u mme_group_id %u ue_index %d\n",
                 mod_id,
@@ -545,7 +543,6 @@ void rrc_eNB_send_S1AP_NAS_FIRST_REQ(uint8_t mod_id, uint8_t ue_index,
                 ue_index);
       }
     }
-
     itti_send_msg_to_task (TASK_S1AP, mod_id, message_p);
   }
 #else
