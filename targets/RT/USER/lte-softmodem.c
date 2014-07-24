@@ -810,7 +810,7 @@ static void * eNB_thread_tx(void *param) {
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
-  char task_name[32];
+  char task_name[8];
 #endif
 
  
@@ -821,7 +821,7 @@ static void * eNB_thread_tx(void *param) {
 #endif
 
 #ifdef RTAI
-  sprintf(task_name,"eNB_proc_TX %d",proc->subframe);
+  sprintf(task_name,"eNTX%d",proc->subframe);
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
@@ -932,7 +932,7 @@ static void * eNB_thread_rx(void *param) {
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
-  char task_name[32];
+  char task_name[8];
 #endif
 
 #if defined(ENABLE_ITTI)
@@ -941,7 +941,7 @@ static void * eNB_thread_rx(void *param) {
 #endif
 
 #ifdef RTAI
-  sprintf(task_name,"eNB_proc_RX %d",proc->subframe);
+  sprintf(task_name,"eNRX%d",proc->subframe);
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
