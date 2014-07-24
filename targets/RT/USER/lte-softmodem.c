@@ -95,6 +95,7 @@ static int hw_subframe;
 #include "otg_tx.h"
 #include "LAYER2/MAC/defs.h"
 #include "LAYER2/MAC/vars.h"
+#include "LAYER2/MAC/proto.h"
 #ifndef CELLULAR
 #include "RRC/LITE/vars.h"
 #endif
@@ -227,7 +228,7 @@ static uint32_t          downlink_frequency[4] =     {1907600000,1907600000,1907
 static int32_t                      uplink_frequency_offset[4]= {-120000000,-120000000,-120000000,-120000000};
 static char                    *conf_config_file_name = NULL;
 
-#ifdef ITTI_ENABLED
+#if defined(ENABLE_ITTI)
 static char                    *itti_dump_file = NULL;
 #endif
 
@@ -809,7 +810,7 @@ static void * eNB_thread_tx(void *param) {
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
-  char task_name[8];
+  char task_name[32];
 #endif
 
  
@@ -828,9 +829,9 @@ static void * eNB_thread_tx(void *param) {
     return 0;
   }
   else {
-    LOG_I(PHY,"[SCHED][eNB] eNB TX thread %d started with id %p on CPU %d\n",
+    LOG_I(PHY,"[SCHED][eNB] eNB TX thread %d started with id %p\n",
 	  proc->subframe,
-	  task,rtai_cpuid());
+	  task);
   }
 #else
   LOG_I(PHY,"[SCHED][eNB] eNB TX thread %d started on CPU %d\n",
@@ -931,7 +932,7 @@ static void * eNB_thread_rx(void *param) {
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
-  char task_name[8];
+  char task_name[32];
 #endif
 
 #if defined(ENABLE_ITTI)
@@ -948,9 +949,9 @@ static void * eNB_thread_rx(void *param) {
     return 0;
   }
   else {
-    LOG_I(PHY,"[SCHED][eNB] eNB RX thread %d started with id %p on CPU %d\n",
+    LOG_I(PHY,"[SCHED][eNB] eNB RX thread %d started with id %p\n", /*  on CPU %d*/
 	  proc->subframe,
-	  task,rtai_cpuid());
+	  task); /*,rtai_cpuid()*/
   }
 #else
   LOG_I(PHY,"[SCHED][eNB] eNB RX thread %d started on CPU %d\n",
@@ -1157,7 +1158,7 @@ static void *eNB_thread(void *arg)
 
   if (!oai_exit) {
 #ifdef RTAI
-    LOG_D(HW,"[SCHED][eNB] Started eNB thread (id %p) on CPU %d\n",task,rtai_cpuid());
+    LOG_D(HW,"[SCHED][eNB] Started eNB thread (id %p)\n",task/*" on CPU %d",rtai_cpuid()*/);
 #else
     LOG_I(HW,"[SCHED][eNB] Started eNB thread on CPU %d\n",
 	  sched_getcpu());
@@ -2452,8 +2453,8 @@ int main(int argc, char **argv) {
   //cleanup_pdcp_thread();
 #endif
 
-#ifdef RTAI
 #ifdef USRP
+#ifdef RTAI
   rt_sem_delete(sync_sem);
   stop_rt_timer();
 #else
