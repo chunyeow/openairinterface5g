@@ -65,7 +65,7 @@ static int trx_usrp_start(openair0_device *device)
 
   // init recv and send streaming
   uhd::stream_cmd_t cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
-  cmd.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(0.01);
+  cmd.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(0.001);
   cmd.stream_now = false; // start at constant delay
   s->rx_stream->issue_stream_cmd(cmd);
 
@@ -134,6 +134,14 @@ static int trx_usrp_read(openair0_device *device, openair0_timestamp *ptimestamp
   return samples_received;
 }
 
+openair0_timestamp get_usrp_time(openair0_device *device) 
+{
+ 
+  usrp_state_t *s = (usrp_state_t*)device->priv;
+  
+  return s->usrp->get_time_now().to_ticks(s->sample_rate);
+} 
+
 static bool is_equal(double a, double b)
 {
   return std::fabs(a-b) < std::numeric_limits<double>::epsilon();
@@ -141,11 +149,12 @@ static bool is_equal(double a, double b)
  
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg)
 {
+  //  uhd::set_thread_priority_safe(1.0);
   usrp_state_t *s = (usrp_state_t*)malloc(sizeof(usrp_state_t));
   memset(s, 0, sizeof(usrp_state_t));
 
   // Initialize USRP device
-  std::string args = "";
+  std::string args = "type=b200";
   uhd::device_addrs_t device_adds = uhd::device::find(args);
   if(device_adds.size() == 0)
   {
