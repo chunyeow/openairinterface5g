@@ -234,7 +234,7 @@ static char                    *itti_dump_file = NULL;
 
 #ifndef USRP
 double tx_gain = 20;
-double rx_gain = 30;
+double rx_gain = 10;
 #else
 double tx_gain = 120;
 double rx_gain = 30;
@@ -1088,8 +1088,12 @@ void init_eNB_proc() {
     pthread_cond_init(&PHY_vars_eNB_g[0]->proc[i].cond_rx,NULL);
     pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_tx,NULL,eNB_thread_tx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
     pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_rx,NULL,eNB_thread_rx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
+    PHY_vars_eNB_g[0]->proc[i].frame_tx = 0;
+    PHY_vars_eNB_g[0]->proc[i].frame_rx = 0;  
   }
-}
+  PHY_vars_eNB_g[0]->proc[0].frame_rx = 1023;
+  PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
+ }
 
 void kill_eNB_proc() {
 
@@ -1214,6 +1218,8 @@ static void *eNB_thread(void *arg)
 #ifndef USRP
       hw_slot = (((((volatile unsigned int *)DAQ_MBOX)[0]+1)%150)<<1)/15;
       //        LOG_D(HW,"eNB frame %d, time %llu: slot %d, hw_slot %d (mbox %d)\n",frame,rt_get_time_ns(),slot,hw_slot,((unsigned int *)DAQ_MBOX)[0]);
+      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_SUBFRAME, hw_slot>>1);
+      vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_HW_FRAME, frame);
       //this is the mbox counter where we should be
       mbox_target = mbox_bounds[slot];
       //this is the mbox counter where we are
@@ -1280,15 +1286,35 @@ static void *eNB_thread(void *arg)
 	openair0_timestamp time0,time1;
 	unsigned int rxs;
 
+	// Grab 1/4 of RX buffer and get timestamp
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
-	rxs = openair0.trx_read_func(&openair0, &timestamp, &rxdata[rx_cnt*samples_per_packets], samples_per_packets);
-	if (rxs != samples_per_packets)
+	rxs = openair0.trx_read_func(&openair0, 
+				     &timestamp, 
+				     &rxdata[rx_cnt*samples_per_packets], 
+				     (samples_per_packets>>2));
+	if (rxs != (samples_per_packets>>2))
 	  oai_exit=1;
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
 
+	// Transmit TX buffer based on timestamp from RX
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,1);
-	openair0.trx_write_func(&openair0, (timestamp+samples_per_packets*tx_delay-tx_forward_nsamps), &txdata[tx_cnt*samples_per_packets], samples_per_packets, 1);
+	openair0.trx_write_func(&openair0, 
+				(timestamp+samples_per_packets*tx_delay-tx_forward_nsamps), 
+				&txdata[tx_cnt*samples_per_packets], 
+				samples_per_packets, 
+				1);
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
+
+	// Grab remaining 3/4 of RX buffer
+	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
+	rxs = openair0.trx_read_func(&openair0, 
+				     &timestamp, 
+				     &rxdata[(rx_cnt*samples_per_packets)+(samples_per_packets>>2)], 
+				     3*((samples_per_packets>>2)));
+	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
+	if (rxs != (3*(samples_per_packets>>2)))
+	  oai_exit=1;
+
 
 	rx_cnt++;
 	tx_cnt++;
@@ -1338,7 +1364,7 @@ static void *eNB_thread(void *arg)
 	  }
 	}
 	else { // multi-thread > 0
-	  if ((slot&1) == 0) {
+	  if ((slot&1) == 1) {
 	    sf = ((slot>>1)+1)%10;
 	    //		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0]->proc[sf].instance_cnt);
 
@@ -1917,7 +1943,7 @@ int main(int argc, char **argv) {
 
       set_comp_log(HW,      LOG_DEBUG,  LOG_HIGH, 1);
 #ifdef OPENAIR2
-      set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
+      set_comp_log(PHY,     LOG_DEBUG,   LOG_HIGH, 1);
 #else
       set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
 #endif
