@@ -43,7 +43,7 @@
 #ifndef RTAI
 
 struct timespec interval, next, now, res;
-clockid_t clock_id = CLOCK_REALTIME; //other options are CLOCK_MONOTONIC, CLOCK_REALTIME, CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID 
+clockid_t clock_id = CLOCK_MONOTONIC; //other options are CLOCK_MONOTONIC, CLOCK_REALTIME, CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID 
 RTIME rt_get_time_ns (void) {
   clock_gettime(clock_id, &now);
   return(now.tv_sec*1e9+now.tv_nsec); 
