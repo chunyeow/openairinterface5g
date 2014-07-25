@@ -185,6 +185,7 @@ then
     then
         mkdir -m 777 m4
     fi
+    autoreconf -i
     echo_success "Invoking autogen"
     bash_exec "./autogen.sh"
     cd ./$OBJ_DIR
@@ -308,7 +309,7 @@ get_mac_router
 cd $THIS_SCRIPT_PATH
 if [ ! -d "OUTPUT/"$HOSTNAME ]
 then
-    bash_exec "mkdir -m 777 ./OUTPUT/$HOSTNAME"
+    bash_exec "mkdir -p -m 777 ./OUTPUT/$HOSTNAME"
     echo_success "Created OUTPUT/$HOSTNAME directory"
 fi
 
