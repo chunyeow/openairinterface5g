@@ -1056,6 +1056,7 @@ void phy_procedures_eNB_TX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
   
   //  for (sect_id = 0 ; sect_id < number_of_cards; sect_id++) {
     
+
   if (abstraction_flag==0) {
     for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx_eNB;aa++) {
       
@@ -1063,8 +1064,10 @@ void phy_procedures_eNB_TX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 	     0,phy_vars_eNB->lte_frame_parms.ofdm_symbol_size*(phy_vars_eNB->lte_frame_parms.symbols_per_tti)*sizeof(mod_sym_t));
     }
   }
+
+
   if (is_pmch_subframe(phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,&phy_vars_eNB->lte_frame_parms)) {
-    
+
     if (abstraction_flag==0){
       // This is DL-Cell spec pilots in Control region
       generate_pilots_slot(phy_vars_eNB,
@@ -1072,6 +1075,7 @@ void phy_procedures_eNB_TX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 			   AMP,
 			   subframe<<1,1);
     }
+
 #ifdef Rel10
     // if mcch is active, send regardless of the node type: eNB or RN
     // when mcch is active, MAC sched does not allow MCCH and MTCH multiplexing 
@@ -1138,7 +1142,7 @@ void phy_procedures_eNB_TX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
     
   else {
       
-      
+    
     if (abstraction_flag==0){
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,1);
       generate_pilots_slot(phy_vars_eNB,
@@ -1149,7 +1153,6 @@ void phy_procedures_eNB_TX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 			   phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
 			   AMP,
 			   (subframe<<1)+1,0);
-	
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_ENB_RS_TX,0);
 	
       // First half of PSS/SSS (FDD)

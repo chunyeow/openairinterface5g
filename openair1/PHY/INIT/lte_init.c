@@ -193,6 +193,8 @@ void phy_config_sib2_eNB(uint8_t Mod_id,
     }
 
   }
+  else
+    lte_frame_parms->num_MBSFN_config = 0;
 }
 
 

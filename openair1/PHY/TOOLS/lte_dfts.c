@@ -14862,6 +14862,7 @@ void dft1200(int16_t *x,int16_t *y,unsigned char scale_flag){
 
 
 #ifdef MR_MAIN
+int opp_enabled=1;
 
 int opp_enabled=1;
 int main(int argc, char**argv) {

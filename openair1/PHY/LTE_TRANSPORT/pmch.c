@@ -76,6 +76,7 @@ int is_pmch_subframe(uint32_t frame, int subframe, LTE_DL_FRAME_PARMS *frame_par
   uint32_t period;
   uint8_t i;
 
+
   for (i=0; i<frame_parms->num_MBSFN_config; i++) {  // we have at least one MBSFN configuration
     period = 1<<frame_parms->MBSFN_config[i].radioframeAllocationPeriod;
     if ((frame % period) == frame_parms->MBSFN_config[i].radioframeAllocationOffset) {

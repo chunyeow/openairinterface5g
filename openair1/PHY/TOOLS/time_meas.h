@@ -92,8 +92,8 @@ static inline void copy_meas(time_stats_t *dst_ts,time_stats_t *src_ts) {
 
   return (double) ts->diff/ts->trials/cpu_freq_GHz/1000.0;
 
-  }*/
-
+  }
+*/
 static inline double get_cpu_freq_GHz(void) {
 
   time_stats_t ts;
@@ -102,5 +102,5 @@ static inline double get_cpu_freq_GHz(void) {
   sleep(1);
   stop_meas(&ts);
   return (double)ts.diff/1000000000;
-}
+} 
 
