@@ -1649,14 +1649,14 @@ void phy_procedures_eNB_TX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 #endif
 
       }
-      /*
-	#ifdef DEBUG_PHY_PROC
-	LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d Setting sched_subframeuling_flag for UE %d harq_pid %d (ul subframe %d)\n",
-	phy_vars_eNB->Mod_id,harq_pid,
-	phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,i,harq_pid,
-	pdcch_alloc2ul_subframe(&phy_vars_eNB->lte_frame_parms,subframe));
-	#endif
-      */
+      
+#ifdef DEBUG_PHY_PROC
+      LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d Setting subframe_scheduling_flag for UE %d harq_pid %d (ul subframe %d)\n",
+	    phy_vars_eNB->Mod_id,harq_pid,
+	    phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,i,harq_pid,
+	    pdcch_alloc2ul_subframe(&phy_vars_eNB->lte_frame_parms,subframe));
+#endif
+      
       if ((DCI_pdu->dci_alloc[i].rnti  >= CBA_RNTI) && (DCI_pdu->dci_alloc[i].rnti < P_RNTI))
 	phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->harq_processes[harq_pid]->subframe_cba_scheduling_flag = 1;
       else 
@@ -2116,7 +2116,7 @@ void process_Msg3(PHY_VARS_eNB *phy_vars_eNB,uint8_t subframe,uint8_t UE_id, uin
     phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->Msg3_active = 0;
     phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->Msg3_flag = 1;
     phy_vars_eNB->ulsch_eNB[(uint32_t)UE_id]->harq_processes[harq_pid]->subframe_scheduling_flag=1;
-    LOG_D(PHY,"[eNB %d][RAPROC] frame %d, subframe %d: Setting sched_subframeuling_flag (Msg3) for UE %d\n",
+    LOG_D(PHY,"[eNB %d][RAPROC] frame %d, subframe %d: Setting subframe_scheduling_flag (Msg3) for UE %d\n",
 	  phy_vars_eNB->Mod_id,
 	  frame,subframe,UE_id);
   }

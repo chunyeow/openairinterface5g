@@ -4005,7 +4005,6 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
 				      uint8_t eNB_id,
 				      uint8_t use_srs) {
 
-  int subframe_sched = (subframe==9)?0:(subframe+1);
   uint8_t harq_pid;
   uint8_t transmission_mode = phy_vars_ue->transmission_mode[eNB_id];
   ANFBmode_t AckNackFBMode = phy_vars_ue->pucch_config_dedicated[eNB_id].tdd_AckNackFeedbackMode;
@@ -4499,7 +4498,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   ANFBmode_t AckNackFBMode = phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode;
   LTE_eNB_ULSCH_t *ulsch=phy_vars_eNB->ulsch_eNB[UE_id];
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;
-  int subframe_sched = (subframe == 9) ? 0 : (subframe+1);
+  int subframe_sched = (subframe == 0) ? 9 : (subframe-1);
 
   uint32_t cqi_req = 0;
   uint32_t dai = 0;
