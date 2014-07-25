@@ -232,8 +232,13 @@ static char                    *conf_config_file_name = NULL;
 static char                    *itti_dump_file = NULL;
 #endif
 
+#ifndef USRP
+double tx_gain = 20;
+double rx_gain = 30;
+#else
 double tx_gain = 120;
 double rx_gain = 30;
+#endif
 
 double sample_rate=30.72e6;
 double bw = 14e6;
@@ -849,9 +854,11 @@ static void * eNB_thread_tx(void *param) {
   rt_make_hard_real_time();
 #endif
 
-
+#ifndef USRP
+  subframe_tx = (proc->subframe+1)%10;
+#else
   subframe_tx = (proc->subframe+2)%10;
-  
+#endif
   while (!oai_exit){
     
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
@@ -1881,7 +1888,7 @@ int main(int argc, char **argv) {
   // initialize the log (see log.h for details)
   logInit();
 
-  set_glog(LOG_WARNING, LOG_MED);
+  set_glog(LOG_DEBUG, LOG_MED);
   if (UE_flag==1)
     {
       printf("configuring for UE\n");

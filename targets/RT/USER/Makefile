@@ -107,6 +107,7 @@ endif
 OBJ +=  $(ENB_APP_OBJS)
 
 ifeq ($(RTAI),1)
+CFLAGS += -I/usr/realtime/include -I/usr/realtime/include/asm
 LOG_OBJS=
 RTAI_OBJ+=$(LOG_DIR)/vcd_signal_dumper.o
 RTAI_OBJ+=$(LOG_DIR)/log.o
