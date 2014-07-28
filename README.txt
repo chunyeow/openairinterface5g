@@ -4,7 +4,7 @@ The OpenAirInterface (OAI) software is composed of six different parts:
 
 openair1: 3GPP LTE Rel-8 PHY layer + PHY RF simulation
 
-openair2: 3GPP LTE Rel-9 RLC/MAC/PDCP/RRC implementations, eNB application, X2AP
+openair2: 3GPP LTE Rel-9 RLC/MAC/PDCP/RRC implementations, eNB application, X2AP. Note that for RLC, the following versions are userL UM_v9.3.0, TM_v9.3.0, and AM_v9.3.0. For PDCP, PDCP_v10.1.0 is used. For RRC, only LITE is used.
 
 openair3: additional networking protocols (PMIP, MIH, Multicasting) and scripts 
 

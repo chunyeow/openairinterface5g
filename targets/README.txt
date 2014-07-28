@@ -24,8 +24,6 @@ First, you must have all four openair SW directories, openair1, openair2, openai
 	- libatlas-base-dev and libatlas-headers (for Ubuntu 11.04, libatlas-dev instead of libatlas-headers)
         - asn1c and the LTE ASN1 files (for more information on how to install this and generate the required files see the README file in openair2/RRC/LITE/MESSAGES) 
 
-Makefile - This Makefile does basic checks of the code to verify that everything is properly installed, just run make to see what your options are.
-
 ----------------------------------------------------
 2) Organization of the folders and their dependancies
 ----------------------------------------------------
