@@ -162,7 +162,7 @@ fi
 
 
 
-check_install_epc_software
+#check_install_epc_software
 
 
 ##################################
@@ -329,8 +329,14 @@ PCAP_S6A_LOG_FILE=tshark_mme_s6a.$HOSTNAME.pcap
 
 trap control_c SIGINT
 
-nohup tshark -i $MME_INTERFACE_NAME_FOR_S1_MME -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE &
-nohup tshark -i $MME_INTERFACE_NAME_FOR_S6A    -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE &
+HSS_IP=$(get_ip hss.eur)
+echo_success "HSS_IP: $HSS_IP"
+MME_INTERFACE_NAME_FOR_S6A=`ip route get $HSS_IP | grep $HSS_IP | cut -d ' ' -f 3`
+
+echo_success "MME_INTERFACE_NAME_FOR_S1_MME : $MME_INTERFACE_NAME_FOR_S1_MME"
+echo_success "MME_INTERFACE_NAME_FOR_S6A    : $MME_INTERFACE_NAME_FOR_S6A"
+nohup tshark -i $MME_INTERFACE_NAME_FOR_S1_MME -f "not port 22" -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S1C_LOG_FILE &
+nohup tshark -i $MME_INTERFACE_NAME_FOR_S6A    -f "not port 22" -w $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE &
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
 

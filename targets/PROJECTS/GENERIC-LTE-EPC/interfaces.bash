@@ -245,9 +245,17 @@ set_interface_up() {
     sync
 }
 
+# input is hostname, you should have checked it is reachable by
+# ping -c 1 $the_hostname > /dev/null || { echo_fatal "the_hostname does not respond to ping" >&2 ; }
+get_ip() {
+    IP=$(python -c 'import socket; print socket.gethostbyname("'$1'")')
+    echo "$IP"
+}
+
 get_mac_router() {
     ping -c 1 router.eur > /dev/null || { echo_fatal "router.eur does not respond to ping" >&2 ; }
-    IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
+    IP_ROUTER=$(get_ip router.eur)
+    #IP_ROUTER=`python -c 'import socket; print socket.gethostbyname("router.eur")'`
     export MAC_ROUTER=`ip neigh show | grep $IP_ROUTER' ' | cut -d ' '  -f5 | tr -d ':'`
     echo_success "ROUTER IP  ADDRESS= $IP_ROUTER"
     echo_success "ROUTER MAC ADDRESS= $MAC_ROUTER"
