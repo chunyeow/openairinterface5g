@@ -331,6 +331,52 @@ static int config_parse_file(mme_config_t *mme_config_p)
                 free(cidr);
             }
         }
+
+        // NAS SETTING
+        setting = config_setting_get_member (setting_mme, MME_CONFIG_STRING_NAS_CONFIG);
+        if (setting != NULL) {
+            subsetting = config_setting_get_member (setting, MME_CONFIG_STRING_NAS_SUPPORTED_INTEGRITY_ALGORITHM_LIST);
+            if (subsetting != NULL) {
+                num     = config_setting_length(subsetting);
+                if (num <= 8) {
+                    for (i = 0; i < num; i++) {
+                        astring = config_setting_get_string_elem(subsetting, i);
+                        if (strcmp("EIA0", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                        else if (strcmp("EIA1", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA1;
+                        else if (strcmp("EIA2", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA2;
+                        else if (strcmp("EIA3", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                        else if (strcmp("EIA4", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                        else if (strcmp("EIA5", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                        else if (strcmp("EIA6", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                        else if (strcmp("EIA7", astring) == 0) mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                    }
+                    for (i = num; i < 8; i++) {
+                        mme_config_p->nas_config.prefered_integrity_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EIA0;
+                    }
+                }
+            }
+            subsetting = config_setting_get_member (setting, MME_CONFIG_STRING_NAS_SUPPORTED_CIPHERING_ALGORITHM_LIST);
+            if (subsetting != NULL) {
+                num     = config_setting_length(subsetting);
+                if (num <= 8) {
+                    for (i = 0; i < num; i++) {
+                        astring = config_setting_get_string_elem(subsetting, i);
+                        if (strcmp("EEA0", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                        else if (strcmp("EEA1", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA1;
+                        else if (strcmp("EEA2", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA2;
+                        else if (strcmp("EEA3", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                        else if (strcmp("EEA4", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                        else if (strcmp("EEA5", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                        else if (strcmp("EEA6", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                        else if (strcmp("EEA7", astring) == 0) mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                    }
+                    for (i = num; i < 8; i++) {
+                        mme_config_p->nas_config.prefered_ciphering_algorithm[i] = NAS_CONFIG_SECURITY_ALGORITHMS_EEA0;
+                    }
+                }
+            }
+
+        }
     }
 
     setting = config_lookup(&cfg, SGW_CONFIG_STRING_SGW_CONFIG);

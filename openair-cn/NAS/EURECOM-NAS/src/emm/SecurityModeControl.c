@@ -1127,36 +1127,33 @@ static int _security_select_algorithms(
 {
     LOG_FUNC_IN;
 
-    int rc            = RETURNerror;
+    int rc                = RETURNerror;
+    int preference_index;
 
-    /* TODO work with loaded preferences from config file */
+    *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA0;
+    *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA0;
 
-    if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA1)) {
-        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA1");
-        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA1;
-    } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA2)) {
-        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA2");
-        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA2;
-    } else if (ue_eiaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EIA0)) {
-        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EIA0");
-        *mme_eiaP = NAS_SECURITY_ALGORITHMS_EIA0;
-    } else {
-        LOG_FUNC_RETURN (rc);
+    for (preference_index = 0; preference_index < 8; preference_index++) {
+        if (ue_eiaP & (0x80 >> _emm_data.conf.prefered_integrity_algorithm[preference_index])) {
+            LOG_TRACE(DEBUG,
+                    "Selected  NAS_SECURITY_ALGORITHMS_EIA%d (choice num %d)",
+                    _emm_data.conf.prefered_integrity_algorithm[preference_index],
+                    preference_index);
+            *mme_eiaP = _emm_data.conf.prefered_integrity_algorithm[preference_index];
+            break;
+        }
     }
 
-    if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA0)) {
-            LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA0");
-            *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA0;
-    } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA1)) {
-            LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA1");
-            *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA1;
-    } else if (ue_eeaP & (0x80 >> NAS_SECURITY_ALGORITHMS_EEA2)) {
-        LOG_TRACE(DEBUG,"Selected  NAS_SECURITY_ALGORITHMS_EEA2");
-        *mme_eeaP = NAS_SECURITY_ALGORITHMS_EEA2;
-    } else {
-        LOG_FUNC_RETURN (rc);
+    for (preference_index = 0; preference_index < 8; preference_index++) {
+        if (ue_eeaP & (0x80 >> _emm_data.conf.prefered_ciphering_algorithm[preference_index])) {
+            LOG_TRACE(DEBUG,
+                    "Selected  NAS_SECURITY_ALGORITHMS_EEA%d (choice num %d)",
+                    _emm_data.conf.prefered_ciphering_algorithm[preference_index],
+                    preference_index);
+            *mme_eeaP = _emm_data.conf.prefered_ciphering_algorithm[preference_index];
+            break;
+        }
     }
-
     LOG_FUNC_RETURN (RETURNok);
 }
 

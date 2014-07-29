@@ -257,6 +257,9 @@ int mme_api_get_emm_config(mme_api_emm_config_t *config,
 int mme_api_get_emm_config(mme_api_emm_config_t *config)
 #endif
 {
+#if defined(EPC_BUILD)
+    int i;
+#endif
     LOG_FUNC_IN;
 
     config->gummei.plmn.MCCdigit1 = 2;
@@ -274,6 +277,10 @@ int mme_api_get_emm_config(mme_api_emm_config_t *config)
     }
     if (mme_config_p->unauthenticated_imsi_supported != 0) {
         config->features |= MME_API_UNAUTHENTICATED_IMSI;
+    }
+    for (i = 0 ; i < 8; i++) {
+        config->prefered_integrity_algorithm[i] = mme_config_p->nas_config.prefered_integrity_algorithm[i];
+        config->prefered_ciphering_algorithm[i] = mme_config_p->nas_config.prefered_ciphering_algorithm[i];
     }
 #else
     config->features = MME_API_EMERGENCY_ATTACH | MME_API_UNAUTHENTICATED_IMSI;

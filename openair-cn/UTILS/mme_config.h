@@ -76,6 +76,25 @@
 #define MME_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING             "annoying"
 #define MME_CONFIG_STRING_ASN1_VERBOSITY_INFO                 "info"
 
+#define MME_CONFIG_STRING_NAS_CONFIG                    "NAS"
+#define MME_CONFIG_STRING_NAS_SUPPORTED_INTEGRITY_ALGORITHM_LIST  "ORDERED_SUPPORTED_INTEGRITY_ALGORITHM_LIST"
+#define MME_CONFIG_STRING_NAS_SUPPORTED_CIPHERING_ALGORITHM_LIST  "ORDERED_SUPPORTED_CIPHERING_ALGORITHM_LIST"
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA0    0b000
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA1    0b001
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA2    0b010
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA3    0b011
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA4    0b100
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA5    0b101
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA6    0b110
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EEA7    0b111
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA0    0b000
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA1    0b001
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA2    0b010
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA3    0b011
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA4    0b100
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA5    0b101
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA6    0b110
+#define NAS_CONFIG_SECURITY_ALGORITHMS_EIA7    0b111
 
 typedef struct mme_config_s {
     /* Reader/writer lock for this configuration */
@@ -140,6 +159,12 @@ typedef struct mme_config_s {
         uint32_t  queue_size;
         char     *log_file;
     } itti_config;
+
+    struct {
+        uint8_t prefered_integrity_algorithm[8];
+        uint8_t prefered_ciphering_algorithm[8];
+    } nas_config;
+
 } mme_config_t;
 
 extern mme_config_t mme_config;

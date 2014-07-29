@@ -89,6 +89,8 @@ typedef enum mme_api_ip_version_e {
 typedef struct mme_api_emm_config_s {
     mme_api_feature_t features; /* Supported features           */
     gummei_t          gummei;   /* EPS Globally Unique MME Identity */
+    uint8_t           prefered_integrity_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EIA0, etc
+    uint8_t           prefered_ciphering_algorithm[8];// choice in NAS_SECURITY_ALGORITHMS_EEA0, etc
 } mme_api_emm_config_t;
 
 /*

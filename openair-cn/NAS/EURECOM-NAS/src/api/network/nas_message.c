@@ -382,18 +382,20 @@ int nas_message_decode(
         LOG_FUNC_RETURN (TLV_DECODE_BUFFER_TOO_SHORT);
     }
     else if (size > 1) {
+        if (emm_security_context) {
 #if defined(NAS_MME)
-    	if (emm_security_context->ul_count.seq_num > msg->header.sequence_number) {
-    	    emm_security_context->ul_count.overflow += 1;
-    	}
-    	emm_security_context->ul_count.seq_num = msg->header.sequence_number;
+            if (emm_security_context->ul_count.seq_num > msg->header.sequence_number) {
+                emm_security_context->ul_count.overflow += 1;
+            }
+            emm_security_context->ul_count.seq_num = msg->header.sequence_number;
 
 #else
-    	if (emm_security_context->dl_count.seq_num > msg->header.sequence_number) {
-    		emm_security_context->dl_count.overflow += 1;
-    	}
-    	emm_security_context->dl_count.seq_num = msg->header.sequence_number;
+            if (emm_security_context->dl_count.seq_num > msg->header.sequence_number) {
+                emm_security_context->dl_count.overflow += 1;
+            }
+            emm_security_context->dl_count.seq_num = msg->header.sequence_number;
 #endif
+        }
         /* Compute offset of the sequence number field */
         int offset = size - sizeof(UInt8_t);
         /* Compute the NAS message authentication code */
