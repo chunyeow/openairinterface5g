@@ -628,24 +628,25 @@ int emm_proc_authentication(void *ctx, unsigned int ueid, int ksi,
 
 /****************************************************************************
  **                                                                        **
- ** Name:    emm_proc_authentication_complete()                        **
+ ** Name:    emm_proc_authentication_complete()                            **
  **                                                                        **
  ** Description: Performs the authentication completion procedure executed **
- **      by the network.                                           **
+ **      by the network.                                                   **
  **                                                                        **
  **              3GPP TS 24.301, section 5.4.2.4                           **
- **      Upon receiving the AUTHENTICATION RESPONSE message, the   **
- **      MME shall stop timer T3460 and check the correctness of   **
- **      the RES parameter.                                        **
+ **      Upon receiving the AUTHENTICATION RESPONSE message, the           **
+ **      MME shall stop timer T3460 and check the correctness of           **
+ **      the RES parameter.                                                **
  **                                                                        **
- ** Inputs:  ueid:      UE lower layer identifier                  **
- **      emm_cause: Authentication failure EMM cause code      **
- **      res:       Authentication response parameter          **
- **      Others:    None                                       **
+ ** Inputs:  ueid:      UE lower layer identifier                          **
+ **      emm_cause: Authentication failure EMM cause code                  **
+ **      res:       Authentication response parameter. or auts             **
+ **                 in case of sync failure                                **
+ **      Others:    None                                                   **
  **                                                                        **
  ** Outputs:     None                                                      **
- **      Return:    RETURNok, RETURNerror                      **
- **      Others:    _emm_data, T3460                           **
+ **      Return:    RETURNok, RETURNerror                                  **
+ **      Others:    _emm_data, T3460                                       **
  **                                                                        **
  ***************************************************************************/
 int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
@@ -709,6 +710,7 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
                 /* USIM has detected a mismatch in SQN.
                  * Ask for a new vector.
                  */
+                LOG_TRACE(DEBUG, "EMM-PROC  - USIM has detected a mismatch in SQN Ask for a new vector");
                 nas_itti_auth_info_req(ueid, emm_ctx->imsi, 0, res->value);
 
                 rc = RETURNok;
@@ -717,6 +719,7 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
 #endif
 
             default:
+                LOG_TRACE(DEBUG, "EMM-PROC  - The MME received an authentication failure message or the RES does not match the XRES parameter computed by the network");
                 /* The MME received an authentication failure message or the RES
                  * contained in the Authentication Response message received from
                  * the UE does not match the XRES parameter computed by the network */
@@ -733,6 +736,7 @@ int emm_proc_authentication_complete(unsigned int ueid, int emm_cause,
         /*
          * Notify EMM that the authentication procedure successfully completed
          */
+        LOG_TRACE(DEBUG, "EMM-PROC  - Notify EMM that the authentication procedure successfully completed");
         emm_sap.primitive = EMMREG_COMMON_PROC_CNF;
         emm_sap.u.emm_reg.ueid = ueid;
         emm_sap.u.emm_reg.ctx  = emm_ctx;
