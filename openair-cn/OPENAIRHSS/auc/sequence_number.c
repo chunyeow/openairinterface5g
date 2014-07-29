@@ -61,12 +61,12 @@ uint8_t *sqn_ms_derive(uint8_t *key, uint8_t *auts, uint8_t *rand_p)
         sqn_ms[i] = ak[i] ^ conc_sqn_ms[i];
     }
 
-    print_buffer("KEY    : ", key, 16);
-    print_buffer("RAND   : ", rand_p, 16);
-    print_buffer("AUTS   : ", auts, 14);
-    print_buffer("AK     : ", ak, 6);
-    print_buffer("SQN_MS : ", sqn_ms, 6);
-    print_buffer("MAC_S  : ", mac_s, 8);
+    print_buffer("sqn_ms_derive() KEY    : ", key, 16);
+    print_buffer("sqn_ms_derive() RAND   : ", rand_p, 16);
+    print_buffer("sqn_ms_derive() AUTS   : ", auts, 14);
+    print_buffer("sqn_ms_derive() AK     : ", ak, 6);
+    print_buffer("sqn_ms_derive() SQN_MS : ", sqn_ms, 6);
+    print_buffer("sqn_ms_derive() MAC_S  : ", mac_s, 8);
 
     f1star(key, rand_p, sqn_ms, amf, mac_s_computed);
 
