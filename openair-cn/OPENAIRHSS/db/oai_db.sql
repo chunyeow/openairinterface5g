@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `key` varbinary(16) NOT NULL DEFAULT '0' COMMENT 'UE security key',
   `RFSP-Index` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'An index to specific RRM configuration in the E-UTRAN. Possible values from 1 to 256',
   `urrp_mme` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'UE Reachability Request Parameter indicating that UE activity notification from MME has been requested by the HSS.',
-  `sqn` int(10) unsigned zerofill NOT NULL COMMENT '',
+  `sqn` bigint(20) unsigned zerofill NOT NULL COMMENT '',
   `rand` varbinary(16) NOT NULL COMMENT '',
   PRIMARY KEY (`imsi`,`mmeidentity_idmmeidentity`),
   KEY `fk_users_mmeidentity_idx1` (`mmeidentity_idmmeidentity`)
