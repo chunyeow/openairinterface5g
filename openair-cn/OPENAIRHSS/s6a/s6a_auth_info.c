@@ -198,7 +198,7 @@ int s6a_auth_info_cb(struct msg **msg, struct avp *paramavp,
             generate_random(vector.rand, RAND_LENGTH);
             hss_mysql_push_rand_sqn(auth_info_req.imsi, auth_info_resp.rand, sqn);
 
-//            hss_mysql_increment_sqn(auth_info_req.imsi);
+            hss_mysql_increment_sqn(auth_info_req.imsi);
 
             free(sqn);
         }
