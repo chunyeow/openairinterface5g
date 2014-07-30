@@ -4646,6 +4646,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
     rb_alloc = rballoc;
     if (rb_alloc>RIV_max) {
       LOG_E(PHY,"Format 0: rb_alloc > RIV_max\n");
+      mac_xface->macphy_exit("Format 0: rb_alloc > RIV_max\n");
       return(-1);
     }
 
