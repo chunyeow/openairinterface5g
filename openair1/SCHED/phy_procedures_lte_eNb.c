@@ -184,6 +184,7 @@ int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB, uint8_t abstraction
 	clean_eNb_ulsch(phy_vars_eNB->ulsch_eNB[i],abstraction_flag);
 	//phy_vars_eNB->eNB_UE_stats[i].crnti = 0;
 	memset(&phy_vars_eNB->eNB_UE_stats[i],0,sizeof(LTE_eNB_UE_stats));
+	//	mac_exit_wrapper("Removing UE");	
 	return(i);
       }
     }
@@ -228,16 +229,12 @@ int get_ue_active_harq_pid(uint8_t Mod_id,uint16_t rnti,uint8_t subframe,uint8_t
 
   if (ul_flag == 0)  {// this is a DL request
     DLSCH_ptr = PHY_vars_eNB_g[Mod_id]->dlsch_eNB[(uint32_t)UE_id][0];
-    /*    
-	  if (subframe<4)
-	  subframe_m4 = subframe+6;
-	  else
-	  subframe_m4 = subframe-4;
-    */
+    /*
 #ifdef DEBUG_PHY_PROC
     LOG_D(PHY,"[eNB %d] get_ue_active_harq_pid: Frame %d subframe %d, current harq_id %d\n",
 	  Mod_id,frame,subframe,DLSCH_ptr->harq_ids[subframe]);
 #endif
+    */
     // switch on TDD or FDD configuration here later
     *harq_pid = DLSCH_ptr->harq_ids[subframe];
     if ((*harq_pid<DLSCH_ptr->Mdlharq) && 
@@ -2750,10 +2747,10 @@ void phy_procedures_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
       process_Msg3(phy_vars_eNB,subframe,i,harq_pid);
 #endif
 
-    
+    /*
 #ifdef DEBUG_PHY_PROC
     if (phy_vars_eNB->ulsch_eNB[i]) {
-      
+            
       LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d, subframe %d rnti %x, alloc %d, Msg3 %d\n",phy_vars_eNB->Mod_id,
 	    harq_pid,frame,subframe,
 	    (phy_vars_eNB->ulsch_eNB[i]->rnti),
@@ -2762,7 +2759,8 @@ void phy_procedures_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 	    );
     }
 #endif
-    
+    */
+
     if ((phy_vars_eNB->ulsch_eNB[i]) &&
 	(phy_vars_eNB->ulsch_eNB[i]->rnti>0) &&
 	(phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->subframe_scheduling_flag==1)) {
@@ -2915,7 +2913,7 @@ void phy_procedures_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
     
       phy_vars_eNB->eNB_UE_stats[i].ulsch_decoding_attempts[harq_pid][phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round]++;
 #ifdef DEBUG_PHY_PROC
-      LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d harq_pid %d Clearing sched_subframeuling_flag\n",
+      LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d harq_pid %d Clearing subframe_scheduling_flag\n",
 	    phy_vars_eNB->Mod_id,harq_pid,frame,subframe,i,harq_pid);
 #endif
       phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->subframe_scheduling_flag=0;
@@ -2970,18 +2968,18 @@ void phy_procedures_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 			       frame,
 			       &phy_vars_eNB->ulsch_eNB[i]->Msg3_frame,
 			       &phy_vars_eNB->ulsch_eNB[i]->Msg3_subframe);
-	  }
+	  }/*
 	  LOG_I(PHY,"[eNB] Frame %d, Subframe %d : ULSCH SDU (RX harq_pid %d) %d bytes:",frame,subframe,
 		harq_pid,phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3);
 	  for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3;j++)
 	    printf("%x.",phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0][j]);
 	  printf("\n");
-	  dump_ulsch(phy_vars_eNB,subframe,i);
-#ifndef EXMIMO_IOT
+	  dump_ulsch(phy_vars_eNB,subframe,i);*/
+	  //#ifndef EXMIMO_IOT
 	  LOG_W(PHY,"[eNB] Frame %d, Subframe %d: Msg3 in error\n", frame,subframe);
-#else 
-	  mac_exit_wrapper("Msg3 error");
-#endif 
+	  //#else 
+	  //	  mac_exit_wrapper("Msg3 error");
+	  //#endif 
 	} // This is Msg3 error
 	else { //normal ULSCH
 	  LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d Error receiving ULSCH, round %d/%d (ACK %d,%d)\n",
@@ -3023,9 +3021,9 @@ void phy_procedures_eNB_RX(unsigned char subframe,PHY_VARS_eNB *phy_vars_eNB,uin
 		  phy_vars_eNB->Mod_id,frame,subframe, i, phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]);
 	    phy_vars_eNB->eNB_UE_stats[i].mode = PRACH;
 #ifdef OPENAIR2
-	    mac_xface->cancel_ra_proc(phy_vars_eNB->Mod_id,
+	    /*	    mac_xface->cancel_ra_proc(phy_vars_eNB->Mod_id,
 				      frame,
-				      phy_vars_eNB->eNB_UE_stats[i].crnti);
+				      phy_vars_eNB->eNB_UE_stats[i].crnti);*/
 #endif
 	    remove_ue(phy_vars_eNB->eNB_UE_stats[i].crnti,phy_vars_eNB,abstraction_flag);
 	    phy_vars_eNB->eNB_UE_stats[i].ulsch_consecutive_errors[harq_pid]=0;
