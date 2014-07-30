@@ -140,10 +140,10 @@ uint8_t find_active_UEs(module_id_t module_idP){
       if (((rnti=eNB_mac_inst[module_idP].UE_template[ue_mod_id].rnti) !=0)&&(eNB_mac_inst[module_idP].UE_template[ue_mod_id].ul_active==TRUE)){
 
           if (mac_xface->get_eNB_UE_stats(module_idP,rnti) != NULL){ // check at the phy enb_ue state for this rnti
-              nb_active_ue++;
+	    nb_active_ue++;
           }
           else { // this ue is removed at the phy => remove it at the mac as well
-              mac_remove_ue(module_idP, ue_mod_id);
+	    mac_remove_ue(module_idP, ue_mod_id);
           }
       }
   }
@@ -239,7 +239,8 @@ void SR_indication(module_id_t enb_mod_idP, frame_t frameP, rnti_t rntiP, sub_fr
       eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = TRUE;
   } else {
     //     AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
-    AssertError(0, 0, "Frame %d: find_UE_id(%u,rnti %d) not found\n", frameP, enb_mod_idP, rntiP);
+    //    AssertError(0, 0, "Frame %d: find_UE_id(%u,rnti %d) not found\n", frameP, enb_mod_idP, rntiP);
+    LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d (unknown UEid) \n",enb_mod_idP,rntiP,frameP,subframeP, ue_mod_id);
   }
 }
 

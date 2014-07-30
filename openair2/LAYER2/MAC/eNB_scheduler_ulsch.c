@@ -293,6 +293,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
   uint32_t                buffer_occupancy;
   uint32_t                tmp_bsr;
   uint32_t                cqi_req,cshift,ndi,mcs,rballoc;
+  int rvidx_tab[4] = {0,3,1,2};
 
   for (ue_mod_id=0;ue_mod_id<granted_UEs && (*nCCE_available > (1<<aggregation));ue_mod_id++) {
 
@@ -346,7 +347,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
                 if (round > 0) {
                     ndi = eNB_mac_inst[module_idP].UE_template[ue_mod_id].oldNDI_UL[harq_pid];
-                    mcs = (round&3) + 28; //not correct for round==4!
+                    mcs = (rvidx_tab[round&3]) + 29; //not correct for round==4!
                 }
                 else {
                     ndi = 1-eNB_mac_inst[module_idP].UE_template[ue_mod_id].oldNDI_UL[harq_pid];
@@ -461,14 +462,14 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
                 } // ndi==1
                 else { //we schedule a retransmission
                     LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE retransmission (mcs %d, first rb %d, nb_rb %d, TBS %d, harq_pid %d)\n",
-                        module_idP,ue_mod_id,rnti,frameP,subframeP,mcs,
+                        module_idP,harq_pid,rnti,frameP,subframeP,mcs,
                         *first_rb,eNB_mac_inst[module_idP].UE_template[ue_mod_id].nb_rb_ul[harq_pid],
                         mac_xface->get_TBS_UL(mcs,eNB_mac_inst[module_idP].UE_template[ue_mod_id].nb_rb_ul[harq_pid]),
                         harq_pid);
 
                     rballoc = mac_xface->computeRIV(mac_xface->lte_frame_parms->N_RB_UL,
-                        *first_rb,
-                        eNB_mac_inst[module_idP].UE_template[ue_mod_id].nb_rb_ul[harq_pid]);
+						    *first_rb,
+						    eNB_mac_inst[module_idP].UE_template[ue_mod_id].nb_rb_ul[harq_pid]);
 
                     *first_rb+=eNB_mac_inst[module_idP].UE_template[ue_mod_id].nb_rb_ul[harq_pid];  // increment for next UE allocation
                 }

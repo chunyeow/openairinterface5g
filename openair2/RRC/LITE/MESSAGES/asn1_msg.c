@@ -899,8 +899,8 @@ uint8_t do_SIB23(uint8_t Mod_id,
   (*sib2)->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_FreqOffset = 2;
 
   // PDSCH-Config
-#ifdef EXMIMO
-  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=-32;
+#ifdef EXMIMO  // This corresponds to raw output of ExpressMIMO2 v2
+  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=-24;
 #else
   (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=15;
 #endif
