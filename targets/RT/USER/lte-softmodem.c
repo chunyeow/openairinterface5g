@@ -1091,9 +1091,12 @@ void init_eNB_proc() {
     PHY_vars_eNB_g[0]->proc[i].frame_tx = 0;
     PHY_vars_eNB_g[0]->proc[i].frame_rx = 0;  
   }
+
+  // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 9 and 0 have to start with frame 1
   //PHY_vars_eNB_g[0]->proc[0].frame_rx = 1023;
   PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
   PHY_vars_eNB_g[0]->proc[0].frame_tx = 1;
+
  }
 
 void kill_eNB_proc() {
