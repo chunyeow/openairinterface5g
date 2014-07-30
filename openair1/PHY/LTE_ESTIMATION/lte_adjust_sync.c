@@ -4,13 +4,6 @@
 #include "MAC_INTERFACE/defs.h"
 #include "MAC_INTERFACE/extern.h"
 
-#ifdef CBMIMO1
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/cbmimo1_device.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/defs.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
-#include "ARCH/CBMIMO1/DEVICE_DRIVER/from_grlib_softregs.h"
-#endif 
-
 #define DEBUG_PHY
 
 // Adjust location synchronization point to account for drift
@@ -77,9 +70,6 @@ void lte_adjust_synch(LTE_DL_FRAME_PARMS *frame_parms,
         phy_vars_ue->frame,phy_vars_ue->rx_offset,max_pos,max_pos_fil,temp);
 #endif //DEBUG_PHY
 
-#ifdef CBMIMO1
-  pci_interface[0]->frame_offset = phy_vars_ue->rx_offset;
-#endif
 
 }
 
@@ -181,7 +171,7 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_
 
   harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[subframe_sched].frame_rx,subframe);
 
-  int sync_pos = frame_parms->ofdm_symbol_size-cyclic_shift*frame_parms->ofdm_symbol_size/12;
+  int sync_pos = (frame_parms->ofdm_symbol_size-cyclic_shift*frame_parms->ofdm_symbol_size/12)%(frame_parms->ofdm_symbol_size);
 
 
   for (i = 0; i < frame_parms->ofdm_symbol_size; i++) {
