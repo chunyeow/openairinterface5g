@@ -1091,8 +1091,9 @@ void init_eNB_proc() {
     PHY_vars_eNB_g[0]->proc[i].frame_tx = 0;
     PHY_vars_eNB_g[0]->proc[i].frame_rx = 0;  
   }
-  PHY_vars_eNB_g[0]->proc[0].frame_rx = 1023;
+  //PHY_vars_eNB_g[0]->proc[0].frame_rx = 1023;
   PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
+  PHY_vars_eNB_g[0]->proc[0].frame_tx = 1;
  }
 
 void kill_eNB_proc() {
@@ -1330,7 +1331,7 @@ static void *eNB_thread(void *arg)
      
       if (oai_exit) break;
 
-      if (frame>100)  {
+      if (frame>99)  {
 
 	timing_info.time_last = timing_info.time_now;
 	timing_info.time_now = rt_get_time_ns();
