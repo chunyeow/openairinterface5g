@@ -132,9 +132,9 @@ RTAI_OBJ += $(UTILS_OBJS)
 
 
 
-ifdef ENABLE_ITTI
+#ifdef ENABLE_ITTI
 CFLAGS += -DEXMIMO_IOT
-endif
+#endif
 
 ifdef MSG_PRINT
 CFLAGS += -DRRC_MSG_PRINT
