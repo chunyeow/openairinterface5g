@@ -2117,10 +2117,12 @@ static int _emm_as_establish_rej(const emm_as_establish_t *msg,
 #endif
         if (emm_ctx) {
             emm_security_context = emm_ctx->security;
-            nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
-            LOG_TRACE(DEBUG,
-                "Set nas_msg.header.sequence_number -> %u",
-                nas_msg.header.sequence_number);
+            if (emm_security_context) {
+                nas_msg.header.sequence_number = emm_security_context->dl_count.seq_num;
+                LOG_TRACE(DEBUG,
+                        "Set nas_msg.header.sequence_number -> %u",
+                        nas_msg.header.sequence_number);
+            }
         }
         /* Encode the initial NAS information message */
         int bytes = _emm_as_encode(
