@@ -2124,7 +2124,7 @@ uint8_t do_MBSFNAreaConfig(uint8_t Mod_id,
 }
 #endif
 
-uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_id,int rsrp_s,int rsrq_s,long rsrp_t,long rsrq_t) {
+uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_id,long rsrp_s,long rsrq_s,long rsrp_t,long rsrq_t) {
 
   asn_enc_rval_t enc_rval;
 
@@ -2145,7 +2145,7 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultPCell.rsrpResult=rsrp_s;
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultPCell.rsrqResult=rsrq_s;
 #else
-  measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultServCell.rsrpResult=rsrp_s;
+   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultServCell.rsrpResult=rsrp_s;
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultServCell.rsrqResult=rsrq_s;
 #endif
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultNeighCells=CALLOC(1,sizeof(*measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultNeighCells));
@@ -2193,14 +2193,15 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
   
 
   measresulteutra2->cgi_Info=measresult_cgi2;
-  struct MeasResultEUTRA__measResult meas2;
+  
+ struct MeasResultEUTRA__measResult meas2;
   //    int rsrp_va=10;
   meas2.rsrpResult=&rsrp_t;
   //&rsrp_va;
   meas2.rsrqResult=&rsrq_t;
 
   measresulteutra2->measResult=meas2;
-
+  
   ASN_SEQUENCE_ADD(&measResultListEUTRA2->list,measresulteutra2);
   
   measurementReport->criticalExtensions.choice.c1.choice.measurementReport_r8.measResults.measResultNeighCells->choice.measResultListEUTRA=*(measResultListEUTRA2);

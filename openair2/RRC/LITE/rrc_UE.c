@@ -2418,8 +2418,9 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
   uint8_t             target_eNB_offset;
   MeasId_t         measId;
   PhysCellId_t     cellId, targetCellId;
-  long             rsrq_s,rsrp_t,rsrq_t;
-  long             rsrp_s, nElem, nElem1;
+  long             rsrp_t,rsrq_t;
+  long             rsrp_s,rsrq_s;
+  long             nElem, nElem1;
   float            rsrp_filtered, rsrq_filtered;
   static frame_t   pframe=0;
   int              result;
@@ -2439,7 +2440,7 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
           rsrq_filtered = UE_rrc_inst[UE_id].rsrq_db_filtered[eNB_id];//nid_cell]; //RSRQ of serving cell
           rsrq_s = binary_search_float(RSRQ_meas_mapping,nElem1,rsrp_filtered);//mapped RSRQ of serving cell
 
-          LOG_D(RRC,"[UE %d] Frame %d: source eNB %d :rsrp_s: %d rsrq_s: %d tmp: %f tmp1: %f \n",
+          LOG_D(RRC,"[UE %d] Frame %d: source eNB %d :rsrp_s: %f rsrq_s: %f rsrp_filtered: %f rsrq_filtered: %f \n",
               UE_id, frameP, eNB_id, rsrp_s,rsrq_s,rsrp_filtered,rsrq_filtered);
 
           rsrp_t = binary_search_float(RSRP_meas_mapping,nElem,UE_rrc_inst[UE_id].rsrp_db_filtered[target_eNB_offset]); //RSRP of target cell
@@ -2451,9 +2452,10 @@ void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, fr
 
           if (pframe!=frameP){
               pframe=frameP;
-              size = do_MeasurementReport(UE_id, buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
-              LOG_D(RRC, "[UE %d] Frame %d: Sending MeasReport: servingCell(%d) targetCell(%d) rsrp_s(%d) rsrq_s(%d) rsrp_t(%d) rsrq_t(%d) \n",
+              LOG_D(RRC, "[UE %d] Frame %d: doing MeasReport: servingCell(%d) targetCell(%d) rsrp_s(%f) rsrq_s(%f) rsrp_t(%f) rsrq_t(%f) \n",
                   UE_id, frameP, cellId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
+	      size = do_MeasurementReport(UE_id, buffer,measId,targetCellId,rsrp_s,rsrq_s,rsrp_t,rsrq_t);
+              
               LOG_I(RRC, "[UE %d] Frame %d : Generating Measurement Report for eNB %d\n", UE_id, frameP, eNB_id);
               LOG_D(RLC, "[MSC_MSG][FRAME %05d][RRC_UE][UE %02d][][--- PDCP_DATA_REQ/%d Bytes (MeasurementReport to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
                   frameP, UE_id, size, eNB_id, rrc_mui, eNB_id, DCCH);
@@ -2523,7 +2525,7 @@ void ue_measurement_report_triggering(module_id_t ue_mod_idP, frame_t frameP,uin
                                 }
                                 UE_rrc_inst[ue_mod_idP].measReportList[i][j]->measId = UE_rrc_inst[ue_mod_idP].MeasId[i][j]->measId;
                                 UE_rrc_inst[ue_mod_idP].measReportList[i][j]->numberOfReportsSent = 0;
-                                rrc_ue_generate_MeasurementReport(ue_mod_idP,frameP,eNB_index);
+                                rrc_ue_generate_MeasurementReport(eNB_index, ue_mod_idP,frameP);
                                 UE_rrc_inst[ue_mod_idP].HandoverInfoUe.measFlag = 1;
                                 LOG_I(RRC,"[UE %d] Frame %d: A3 event detected, state: %d \n", ue_mod_idP, frameP, UE_rrc_inst[ue_mod_idP].Info[0].State);
                             }
@@ -2560,8 +2562,10 @@ uint8_t check_trigger_meas_event(module_id_t ue_mod_idP,frame_t frameP, uint8_t 
   uint8_t eNB_offset;
   uint8_t currentCellIndex = mac_xface->lte_frame_parms->Nid_cell;
 
-  LOG_I(RRC,"ofn(%d) ocn(%d) hys(%d) ofs(%d) ocs(%d) a3_offset(%d) ttt(%d) rssi %3.1f\n", \
-      ofn,ocn,hys,ofs,ocs,a3_offset,ttt,10*log10(mac_xface->get_RSSI(ue_mod_idP))-mac_xface->get_rx_total_gain_dB(ue_mod_idP));
+  LOG_I(RRC,"[UE %d] ofn(%d) ocn(%d) hys(%d) ofs(%d) ocs(%d) a3_offset(%d) ttt(%d) rssi %3.1f\n",
+	ue_mod_idP, 
+	ofn,ocn,hys,ofs,ocs,a3_offset,ttt,
+	10*log10(mac_xface->get_RSSI(ue_mod_idP))-mac_xface->get_rx_total_gain_dB(ue_mod_idP));
 
   //  for (eNB_offset = 0;(eNB_offset<1+mac_xface->get_n_adj_cells(ue_mod_idP))&& (eNB_offset!=eNB_index);eNB_offset++) {
   for (eNB_offset = 1;(eNB_offset<1+mac_xface->get_n_adj_cells(ue_mod_idP));eNB_offset++) {

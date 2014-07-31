@@ -661,6 +661,8 @@ void rrc_eNB_generate_SecurityModeCommand(module_id_t module_idP, frame_t frameP
 
 void rrc_eNB_process_MeasurementReport(uint8_t module_idP,frame_t frameP, module_id_t ue_module_idP,MeasResults_t *measResults2) ;
 
+void rrc_ue_generate_MeasurementReport(module_id_t eNB_id, module_id_t UE_id, frame_t frameP);
+
 void rrc_eNB_generate_HandoverPreparationInformation (uint8_t module_idP, frame_t frameP, module_id_t ue_module_idP, PhysCellId_t targetPhyId) ;
 
 void check_handovers(uint8_t module_idP, frame_t frameP);
