@@ -156,7 +156,7 @@ int esm_ebr_context_create(
         /* Check the total number of active EPS bearers */
         else if (esm_ctx->n_ebrs > ESM_DATA_EPS_BEARER_TOTAL) {
             LOG_TRACE(WARNING, "ESM-PROC  - The total number of active EPS"
-                      "bearers is exeeded");
+                      "bearers is exceeded");
         } else {
             /* Get the PDN connection entry */
             pdn = esm_ctx->pdn[pid].data;
