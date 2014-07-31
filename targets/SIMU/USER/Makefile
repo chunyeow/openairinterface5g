@@ -279,7 +279,7 @@ LFDS_LIB		 = $(LFDS_OBJ_DIR)/bin/liblfds611.a
 LIBS 			+= $(LFDS_LIB)
 SHARED_DEPENDENCIES 	+= $(LFDS_LIB)
 
-all: oaisim pad
+all: oaisim 
 
 pad: oaisim_pad
 
