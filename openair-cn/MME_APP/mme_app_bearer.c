@@ -475,7 +475,22 @@ mme_app_handle_create_sess_resp(
         current_bearer_p->prio_level             = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pl;
         current_bearer_p->pre_emp_vulnerability  = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pvi;
         current_bearer_p->pre_emp_capability     = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pci;
-        current_bearer_p->prio_level  = create_sess_resp_pP->bearer_context_created.bearer_level_qos->pl;
+        MME_APP_DEBUG("%s set qci %u in bearer %u\n",
+                __FUNCTION__,
+                current_bearer_p->qci,
+                ue_context_p->default_bearer_id);
+    } else {
+        // if null, it is not modified
+        //current_bearer_p->qci                    = ue_context_p->pending_pdn_connectivity_req_qos.qci;
+#warning "may force QCI here to 9"
+        current_bearer_p->qci                    = 9;
+        //current_bearer_p->prio_level             =
+        current_bearer_p->pre_emp_vulnerability  = 1;
+        current_bearer_p->pre_emp_capability     = 1;
+        MME_APP_DEBUG("%s set qci %u in bearer %u (qos not modified by S/P-GW)\n",
+                __FUNCTION__,
+                current_bearer_p->qci,
+                ue_context_p->default_bearer_id);
     }
 
     mme_app_dump_ue_contexts(&mme_app_desc.mme_ue_contexts);
