@@ -1546,7 +1546,7 @@ void oai_shutdown(void) {
 #endif 
 
   // stop OMG
-  stop_mobility_generator (oai_emulation.info.omg_model_ue); //omg_param_list.mobility_type
+  stop_mobility_generator (omg_param_list); //omg_param_list.mobility_type
 #ifdef OPENAIR2
   if (oai_emulation.info.omv_enabled == 1)
     omv_end (pfd[1], omv_data);
