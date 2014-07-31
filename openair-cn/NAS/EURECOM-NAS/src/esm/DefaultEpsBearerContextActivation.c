@@ -142,7 +142,14 @@ int esm_proc_default_eps_bearer_context(emm_data_context_t *ctx, int pid,
     LOG_FUNC_IN;
 
     LOG_TRACE(INFO, "ESM-PROC  - Default EPS bearer context activation "
-              "(ueid=%u, pid=%d)", ctx->ueid, pid);
+              "(ueid=%u, pid=%d, GBR UL %u GBR DL %u, MBR UL %u MBR DL %u QCI %u)",
+              ctx->ueid,
+              pid,
+              qos->gbrUL,
+              qos->gbrDL,
+              qos->mbrUL,
+              qos->mbrDL,
+              qos->qci);
 
     /* Assign new EPS bearer context */
     *ebi = esm_ebr_assign(ctx, ESM_EBI_UNASSIGNED);
