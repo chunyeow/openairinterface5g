@@ -484,9 +484,9 @@ mme_app_handle_create_sess_resp(
         //current_bearer_p->qci                    = ue_context_p->pending_pdn_connectivity_req_qos.qci;
 #warning "may force QCI here to 9"
         current_bearer_p->qci                    = 9;
-        //current_bearer_p->prio_level             =
-        current_bearer_p->pre_emp_vulnerability  = 1;
-        current_bearer_p->pre_emp_capability     = 1;
+        current_bearer_p->prio_level             = 1;
+        current_bearer_p->pre_emp_vulnerability  = 0;
+        current_bearer_p->pre_emp_capability     = 0;
         MME_APP_DEBUG("%s set qci %u in bearer %u (qos not modified by S/P-GW)\n",
                 __FUNCTION__,
                 current_bearer_p->qci,
