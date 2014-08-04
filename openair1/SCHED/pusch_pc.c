@@ -71,6 +71,7 @@ uint8_t alpha_lut[8] = {0,40,50,60,70,80,90,100};
 
 void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,uint8_t j, uint8_t abstraction_flag) {
 
+  
   uint8_t harq_pid = subframe2harq_pid(&phy_vars_ue->lte_frame_parms,
 				  ((subframe==0)?1:0) + phy_vars_ue->frame,
 				  subframe);

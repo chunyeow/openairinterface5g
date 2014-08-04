@@ -4482,7 +4482,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
 
 int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 				       uint16_t rnti,
-				       uint8_t subframe,
+				       uint8_t sched_subframe,
 				       DCI_format_t dci_format,
 				       uint8_t UE_id,
 				       PHY_VARS_eNB *phy_vars_eNB,
@@ -4498,7 +4498,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
   ANFBmode_t AckNackFBMode = phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode;
   LTE_eNB_ULSCH_t *ulsch=phy_vars_eNB->ulsch_eNB[UE_id];
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;
-  int subframe_sched = (subframe == 0) ? 9 : (subframe-1);
+  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_tx;
 
   uint32_t cqi_req = 0;
   uint32_t dai = 0;
@@ -4520,7 +4520,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 
     harq_pid = subframe2harq_pid(frame_parms,			      
 				 pdcch_alloc2ul_frame(frame_parms,
-						      phy_vars_eNB->proc[subframe_sched].frame_tx,
+						      phy_vars_eNB->proc[sched_subframe].frame_tx,
 						      subframe),
 				 pdcch_alloc2ul_subframe(frame_parms,subframe));
 
@@ -4786,8 +4786,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 
 
     LOG_D(PHY,"[eNB %d][PUSCH %d] Frame %d, subframe %d : Programming PUSCH with n_DMRS2 %d (cshift %d)\n",
-	  phy_vars_eNB->Mod_id,harq_pid,phy_vars_eNB->proc[subframe_sched].frame_tx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
-
+	  phy_vars_eNB->Mod_id,harq_pid,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,ulsch->harq_processes[harq_pid]->n_DMRS2,cshift);
 
 
 

@@ -151,7 +151,7 @@ int lte_est_timing_advance(LTE_DL_FRAME_PARMS *frame_parms,
 }
 
 
-int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_t subframe)
+int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_t sched_subframe)
 {
   static int first_run=1;
   static int max_pos_fil2=0;
@@ -162,14 +162,14 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_
   LTE_DL_FRAME_PARMS *frame_parms = &phy_vars_eNB->lte_frame_parms;
   LTE_eNB_PUSCH *eNB_pusch_vars = phy_vars_eNB->lte_eNB_pusch_vars[UE_id];
   int32_t **ul_ch_estimates_time=  eNB_pusch_vars->drs_ch_estimates_time[0];
-  int subframe_sched = (subframe==9) ? 0 : (subframe+1);
+  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
   uint8_t harq_pid;
   uint8_t Ns = 1; //we take the estimate from the second slot
   uint8_t cyclic_shift = 0;//(frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift +
     //phy_vars_eNB->ulsch_eNB[UE_id]->harq_processes[harq_pid]->n_DMRS2 +
     //frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.nPRS[(subframe<<1)+Ns]) % 12;
 
-  harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[subframe_sched].frame_rx,subframe);
+  harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[sched_subframe].frame_rx,subframe);
 
   int sync_pos = (frame_parms->ofdm_symbol_size-cyclic_shift*frame_parms->ofdm_symbol_size/12)%(frame_parms->ofdm_symbol_size);
 
@@ -197,7 +197,7 @@ int lte_est_timing_advance_pusch(PHY_VARS_eNB* phy_vars_eNB,uint8_t UE_id,uint8_
     max_pos_fil2 = ((max_pos_fil2 * coef) + (max_pos * ncoef)) >> 15;
   
 #ifdef DEBUG_PHY
-  LOG_I(PHY,"frame %d: max_pos = %d, max_pos_fil = %d, sync_pos=%d\n",phy_vars_eNB->proc[subframe_sched].frame_rx,max_pos,max_pos_fil2,sync_pos);
+  LOG_I(PHY,"frame %d: max_pos = %d, max_pos_fil = %d, sync_pos=%d\n",phy_vars_eNB->proc[sched_subframe].frame_rx,max_pos,max_pos_fil2,sync_pos);
 #endif //DEBUG_PHY
 
   return(max_pos_fil2-sync_pos);

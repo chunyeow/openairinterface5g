@@ -807,6 +807,9 @@ int main(int argc, char **argv) {
   PHY_vars_UE->ulsch_ue[0]   = new_ue_ulsch(8,N_RB_DL,0);
 
 
+  PHY_vars_eNB->proc[subframe].frame_tx    = 0;
+  PHY_vars_eNB->proc[subframe].subframe_tx = subframe;
+
   if (input_fd==NULL) {
     msg("No input file, so starting TX\n");
  }    
@@ -947,7 +950,7 @@ int main(int argc, char **argv) {
         if (n_frames==1) 
 	  printf("generating PHICH\n");
 
-        harq_pid = phich_subframe_to_harq_pid(&PHY_vars_eNB->lte_frame_parms, PHY_vars_eNB->proc[(subframe+9)%10].frame_tx, subframe);
+        harq_pid = phich_subframe_to_harq_pid(&PHY_vars_eNB->lte_frame_parms, PHY_vars_eNB->proc[subframe].frame_tx, subframe);
             
         phich_ACK = taus()&1;
         PHY_vars_eNB->ulsch_eNB[0]->harq_processes[harq_pid]->phich_active = 1;

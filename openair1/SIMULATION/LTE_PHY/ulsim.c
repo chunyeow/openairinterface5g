@@ -728,15 +728,21 @@ int main(int argc, char **argv) {
   PHY_vars_eNB->lte_frame_parms.pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
   PHY_vars_UE->frame=1;
 
-  for (sf=0;sf<10;sf++) PHY_vars_eNB->proc[sf].frame_tx=1;
-  for (sf=0;sf<10;sf++) PHY_vars_eNB->proc[sf].frame_rx=1;
-  PHY_vars_eNB->proc[0].frame_rx = 0;
-  PHY_vars_eNB->proc[9].frame_tx = 2;
+  for (sf=0;sf<10;sf++) { 
+    PHY_vars_eNB->proc[sf].frame_tx=1; 
+    PHY_vars_eNB->proc[sf].subframe_tx=sf;
+    PHY_vars_eNB->proc[sf].frame_rx=1;
+    PHY_vars_eNB->proc[sf].subframe_rx=sf;
+  }
 
   msg("Init UL hopping UE\n");
   init_ul_hopping(&PHY_vars_UE->lte_frame_parms);
   msg("Init UL hopping eNB\n");
   init_ul_hopping(&PHY_vars_eNB->lte_frame_parms);
+
+  PHY_vars_eNB->proc[subframe].frame_rx = PHY_vars_UE->frame;
+  if (ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe) > subframe) // allocation was in previous frame
+    PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx = (PHY_vars_UE->frame-1)&1023;
 
 
   generate_ue_ulsch_params_from_dci((void *)&UL_alloc_pdu,
@@ -805,13 +811,9 @@ int main(int argc, char **argv) {
 	
       //randominit(0);
 
-      if (subframe==0)
-	PHY_vars_eNB->proc[9].frame_rx = PHY_vars_UE->frame;
-      else
-	PHY_vars_eNB->proc[subframe-1].frame_rx = PHY_vars_UE->frame;
 
-     harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame,subframe);
-      printf("UL frame %d/subframe %d, harq_pid %d\n",PHY_vars_UE->frame,subframe,harq_pid);
+      harq_pid = subframe2harq_pid(&PHY_vars_UE->lte_frame_parms,PHY_vars_UE->frame,subframe);
+      //      printf("UL frame %d/subframe %d, harq_pid %d\n",PHY_vars_UE->frame,subframe,harq_pid);
       if (input_fdUL == NULL) {
 	input_buffer_length = PHY_vars_UE->ulsch_ue[0]->harq_processes[harq_pid]->TBS/8;
 	input_buffer = (unsigned char *)malloc(input_buffer_length+4);

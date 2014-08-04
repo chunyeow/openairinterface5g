@@ -138,18 +138,34 @@ enum transmission_access_mode{
   }ral_threshold_phy_t;
 #endif
 
+/// Context data structure for eNB subframe processing
 typedef struct {
-  int instance_cnt_tx;
-  int instance_cnt_rx;
-  pthread_t pthread_tx;
-  pthread_t pthread_rx;
-  pthread_cond_t cond_tx;
-  pthread_cond_t cond_rx;
-  pthread_mutex_t mutex_tx;
-  pthread_mutex_t mutex_rx;
+  /// subframe index
   int subframe;
-  int frame_rx;
+  /// subframe to act upon for transmission 
+  int subframe_tx;
+  /// subframe to act upon for reception 
+  int subframe_rx;
+  /// frame to act upon for transmission 
   int frame_tx;
+  /// frame to act upon for reception 
+  int frame_rx;
+  /// instance count for tx processing thread
+  int instance_cnt_tx;
+  /// instance count for rx processing thread
+  int instance_cnt_rx;
+  /// pthread structure for tx processing thread
+  pthread_t pthread_tx;
+  /// pthread structure for rx processing thread
+  pthread_t pthread_rx;
+  /// condition variable for tx processing thread
+  pthread_cond_t cond_tx;
+  /// condition variable for rx processing thread
+  pthread_cond_t cond_rx;
+  /// mutex for tx processing thread
+  pthread_mutex_t mutex_tx;
+  /// mutex for tx processing thread
+  pthread_mutex_t mutex_rx;
 } eNB_proc_t;
 
 /// Top-level PHY Data Structure for eNB 

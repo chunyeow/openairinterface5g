@@ -948,10 +948,10 @@ int32_t rx_pucch_emul(PHY_VARS_eNB *phy_vars_eNB,
 		  PUCCH_FMT_t fmt,
 		  uint8_t n1_pucch_sel,
 		  uint8_t *payload,
-		  uint8_t subframe) {
+		  uint8_t sched_subframe) {
   uint8_t UE_id;
   uint16_t rnti;
-  int subframe_sched = (subframe==0)?9:(subframe-1);
+  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
 
   rnti = phy_vars_eNB->ulsch_eNB[UE_index]->rnti;
   for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
@@ -974,7 +974,7 @@ int32_t rx_pucch_emul(PHY_VARS_eNB *phy_vars_eNB,
     payload[1] = PHY_vars_UE_g[UE_id]->pucch_payload[1];    
   }
   else 
-    LOG_E(PHY,"[eNB] Frame %d: Can't handle formats 2/2a/2b\n",phy_vars_eNB->proc[subframe_sched].frame_rx);
+    LOG_E(PHY,"[eNB] Frame %d: Can't handle formats 2/2a/2b\n",phy_vars_eNB->proc[sched_subframe].frame_rx);
 
   if (PHY_vars_UE_g[UE_id]->pucch_sel[subframe] == n1_pucch_sel)
     return(99);

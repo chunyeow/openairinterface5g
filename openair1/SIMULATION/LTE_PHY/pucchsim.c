@@ -28,7 +28,6 @@ int current_dlsch_cqi; //FIXME!
 PHY_VARS_eNB *PHY_vars_eNB;
 PHY_VARS_UE *PHY_vars_UE;
 
-DCI2_5MHz_2A_M10PRB_TDD_t DLSCH_alloc_pdu2;
 #define DLSCH_RB_ALLOC 0x1fbf // igore DC component,RB13
 
 

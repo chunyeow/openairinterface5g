@@ -34,7 +34,7 @@ static int16_t ru_90c[2*128] = {32767, 0,32766, -402,32758, -804,32746, -1206,32
 int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
 			      uint8_t eNB_id,
 			      uint8_t UE_id,
-			      uint8_t subframe,
+			      uint8_t sched_subframe,
 			      unsigned char l,
 			      unsigned char Ns,
 			      uint8_t cooperation_flag) {
@@ -46,8 +46,8 @@ int32_t lte_ul_channel_estimation(PHY_VARS_eNB *phy_vars_eNB,
   int32_t **ul_ch_estimates_0=  eNB_pusch_vars->drs_ch_estimates_0[eNB_id];
   int32_t **ul_ch_estimates_1=  eNB_pusch_vars->drs_ch_estimates_1[eNB_id];
   int32_t **rxdataF_ext=  eNB_pusch_vars->rxdataF_ext[eNB_id];
-  int subframe_sched = (subframe == 9) ? 0 : (subframe+1);
-  uint8_t harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[subframe_sched].frame_rx,subframe);
+  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
+  uint8_t harq_pid = subframe2harq_pid(frame_parms,phy_vars_eNB->proc[sched_subframe].frame_rx,subframe);
   int16_t delta_phase = 0;
   int16_t *ru1 = ru_90;
   int16_t *ru2 = ru_90;
