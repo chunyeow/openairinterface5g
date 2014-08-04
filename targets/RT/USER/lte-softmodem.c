@@ -709,9 +709,7 @@ void *l2l1_task(void *arg)
 void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 
   unsigned int aa,slot_offset, slot_offset_F;
-#ifndef USRP
   int dummy_tx_b[7680*4] __attribute__((aligned(16)));
-#endif
   int i, tx_offset;
   int slot_sizeF = (phy_vars_eNB->lte_frame_parms.ofdm_symbol_size)*
     ((phy_vars_eNB->lte_frame_parms.Ncp==1) ? 6 : 7);
@@ -724,7 +722,7 @@ void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
       ((subframe_select(&phy_vars_eNB->lte_frame_parms,subframe)==SF_S))) {
     //	  LOG_D(HW,"Frame %d: Generating slot %d\n",frame,next_slot);
 
-#ifdef EXMIMO      
+    
     for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx; aa++) {
       if (phy_vars_eNB->lte_frame_parms.Ncp == EXTENDED){ 
 	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
@@ -767,42 +765,6 @@ void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 	  ((short*)dummy_tx_b)[2*i+1]<<4;
       }
     }
-  
-#else
-
-    for (aa=0; aa<phy_vars_eNB->lte_frame_parms.nb_antennas_tx; aa++) {
-      if (phy_vars_eNB->lte_frame_parms.Ncp == EXTENDED){ 
-	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-		     &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
-		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
-		     6,
-		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
-		     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
-		     phy_vars_eNB->lte_frame_parms.rev,
-		     CYCLIC_PREFIX);
-	PHY_ofdm_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
-		     &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1)],
-		     phy_vars_eNB->lte_frame_parms.log2_symbol_size,
-		     6,
-		     phy_vars_eNB->lte_frame_parms.nb_prefix_samples,
-		     phy_vars_eNB->lte_frame_parms.twiddle_ifft,
-		     phy_vars_eNB->lte_frame_parms.rev,
-		     CYCLIC_PREFIX);
-      }
-      else {
-
-	normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F],
-			  &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset],
-			  7,
-			  &(phy_vars_eNB->lte_frame_parms));
-	normal_prefix_mod(&phy_vars_eNB->lte_eNB_common_vars.txdataF[0][aa][slot_offset_F+slot_sizeF],
-			  &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][slot_offset+(phy_vars_eNB->lte_frame_parms.samples_per_tti>>1)],
-			  7,
-			  &(phy_vars_eNB->lte_frame_parms));
-      }
-
-    }
-#endif //EXMIMO
   }
 }
 
@@ -812,7 +774,6 @@ static void * eNB_thread_tx(void *param) {
 
   //unsigned long cpuid;
   eNB_proc_t *proc = (eNB_proc_t*)param;
-  int subframe_tx;
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
@@ -854,11 +815,6 @@ static void * eNB_thread_tx(void *param) {
   rt_make_hard_real_time();
 #endif
 
-#ifndef USRP
-  subframe_tx = (proc->subframe+1)%10;
-#else
-  subframe_tx = (proc->subframe+2)%10;
-#endif
   while (!oai_exit){
     
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_TX0+(2*proc->subframe),0);
@@ -889,18 +845,19 @@ static void * eNB_thread_tx(void *param) {
     
     if (oai_exit) break;
     
-    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD)&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_tx)==SF_DL))||
+    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD)&&
+	  (subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
 	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))) {
 
-      phy_procedures_eNB_TX(subframe_tx,PHY_vars_eNB_g[0],0,no_relay,NULL);
+      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay,NULL);
 
     }
-    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_tx)==SF_S)) {
-      phy_procedures_eNB_TX(subframe_tx,PHY_vars_eNB_g[0],0,no_relay,NULL);
+    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_tx)==SF_S)) {
+      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay,NULL);
     }
     
 
-    do_OFDM_mod(subframe_tx,PHY_vars_eNB_g[0]);  
+    do_OFDM_mod(proc->subframe_tx,PHY_vars_eNB_g[0]);  
     
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       printf("[openair][SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
@@ -944,7 +901,6 @@ static void * eNB_thread_rx(void *param) {
   //unsigned long cpuid;
   eNB_proc_t *proc = (eNB_proc_t*)param;
   int i;
-  int subframe_rx;
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
@@ -983,9 +939,6 @@ static void * eNB_thread_rx(void *param) {
   rt_make_hard_real_time();
 #endif
 
-
-  subframe_rx = (proc->subframe+9)%10;
-
   while (!oai_exit){
 
     vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_eNB_PROC_RX0+(2*proc->subframe),0);
@@ -1011,12 +964,12 @@ static void * eNB_thread_rx(void *param) {
 
     if (oai_exit) break;
     
-    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_rx)==SF_UL)) ||
+    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_rx)==SF_UL)) ||
 	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))){
-      phy_procedures_eNB_RX(subframe_rx,PHY_vars_eNB_g[0],0,no_relay);
+      phy_procedures_eNB_RX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay);
     }
-    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,subframe_rx)==SF_S)){
-      phy_procedures_eNB_S_RX(subframe_rx,PHY_vars_eNB_g[0],0,no_relay);
+    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_rx)==SF_S)){
+      phy_procedures_eNB_S_RX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay);
     }
       
     if (pthread_mutex_lock(&proc->mutex_rx) != 0) {
@@ -1089,14 +1042,31 @@ void init_eNB_proc() {
     pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_tx,NULL,eNB_thread_tx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
     pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_rx,NULL,eNB_thread_rx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
     PHY_vars_eNB_g[0]->proc[i].frame_tx = 0;
-    PHY_vars_eNB_g[0]->proc[i].frame_rx = 0;  
+    PHY_vars_eNB_g[0]->proc[i].frame_rx = 0;
+#ifndef USRP
+    PHY_vars_eNB_g[0]->proc[i].subframe_rx = (i+9)%10;
+    PHY_vars_eNB_g[0]->proc[i].subframe_tx = (i+1)%10;
+#else
+    PHY_vars_eNB_g[0]->proc[i].subframe_rx = i;
+    PHY_vars_eNB_g[0]->proc[i].subframe_tx = (i+2)%10;
+#endif
   }
 
+
+#ifndef USRP
+  // TX processes subframe + 1, RX subframe -1
   // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 9 and 0 have to start with frame 1
+
   //PHY_vars_eNB_g[0]->proc[0].frame_rx = 1023;
   PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
   PHY_vars_eNB_g[0]->proc[0].frame_tx = 1;
-
+#else
+  // TX processes subframe +2, RX subframe
+  // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 8,9 and 0 have to start with frame 1
+  PHY_vars_eNB_g[0]->proc[8].frame_tx = 1;
+  PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
+  PHY_vars_eNB_g[0]->proc[0].frame_tx = 1;
+#endif
  }
 
 void kill_eNB_proc() {
@@ -1151,7 +1121,11 @@ static void *eNB_thread(void *arg)
 #ifdef RTAI
   RT_TASK *task;
 #endif
-  unsigned char slot=0;//,last_slot, next_slot;
+#ifndef USRP
+  unsigned char slot=0;
+#else
+  unsigned char slot=1;
+#endif
   int frame=0;
 
   RTIME time_in, time_diff;
@@ -1289,15 +1263,26 @@ static void *eNB_thread(void *arg)
 
 	openair0_timestamp time0,time1;
 	unsigned int rxs;
-
-	// Grab 1/4 of RX buffer and get timestamp
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
+	/*
+	// Grab 1/4 of RX buffer and get timestamp
+
 	rxs = openair0.trx_read_func(&openair0, 
 				     &timestamp, 
 				     &rxdata[rx_cnt*samples_per_packets], 
 				     (samples_per_packets>>2));
 	if (rxs != (samples_per_packets>>2))
 	  oai_exit=1;
+
+	*/
+
+	rxs = openair0.trx_read_func(&openair0, 
+				     &timestamp, 
+				     &rxdata[rx_cnt*samples_per_packets], 
+				     samples_per_packets);
+	if (rxs != samples_per_packets)
+	  oai_exit=1;
+
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
 
 	// Transmit TX buffer based on timestamp from RX
@@ -1308,7 +1293,7 @@ static void *eNB_thread(void *arg)
 				samples_per_packets, 
 				1);
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_WRITE,0);
-
+	/*
 	// Grab remaining 3/4 of RX buffer
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,1);
 	rxs = openair0.trx_read_func(&openair0, 
@@ -1318,7 +1303,7 @@ static void *eNB_thread(void *arg)
 	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_TRX_READ,0);
 	if (rxs != (3*(samples_per_packets>>2)))
 	  oai_exit=1;
-
+	*/
 
 	rx_cnt++;
 	tx_cnt++;
@@ -1329,6 +1314,7 @@ static void *eNB_thread(void *arg)
 
       if(rx_cnt == max_cnt)
 	rx_cnt = 0; 
+      
 
 #endif // USRP
      
@@ -1421,18 +1407,21 @@ static void *eNB_thread(void *arg)
 
 #ifndef USRP
       slot++;
+      if (slot == 20) {
+	frame++;
+	slot = 0;
+      }
 #else
       hw_subframe++;
       slot+=2;
       if(hw_subframe==10) {
         hw_subframe = 0;
-      }
-#endif     
-
-      if (slot==20) {
-	slot=0;
 	frame++;
+	slot = 1;
       }
+ #endif     
+
+
 #if defined(ENABLE_ITTI)
       itti_update_lte_time(frame, slot);
 #endif
