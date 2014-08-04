@@ -426,10 +426,10 @@ void phy_procedures_emos_eNB_TX(unsigned char next_slot, PHY_VARS_eNB *phy_vars_
 void phy_procedures_eNB_S_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag,relaying_type_t r_type) {
 
   //  unsigned char sect_id=0; 
-  int subframe = phy_vars_eNB->proc[subframe].subframe_rx;
+  int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
  
 #ifdef DEBUG_PHY_PROC
-  LOG_D(PHY,"[eNB %d] Frame %d: Doing phy_procedures_eNB_S_RX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->proc[subframe].frame_rx, subframe);
+  LOG_D(PHY,"[eNB %d] Frame %d: Doing phy_procedures_eNB_S_RX(%d)\n", phy_vars_eNB->Mod_id,phy_vars_eNB->proc[sched_subframe].frame_rx, subframe);
 #endif    
 
   //  for (sect_id=0;sect_id<number_of_cards;sect_id++) {
