@@ -454,6 +454,8 @@ void *l2l1_task(void *args_p) {
     for (sf=0;sf<10;sf++) {
       PHY_vars_eNB_g[eNB_inst]->proc[sf].frame_tx = 0;
       PHY_vars_eNB_g[eNB_inst]->proc[sf].frame_rx = 0;
+      PHY_vars_eNB_g[eNB_inst]->proc[sf].subframe_tx = (sf+1)%10;
+      PHY_vars_eNB_g[eNB_inst]->proc[sf].subframe_rx = (sf+9)%10;
     }
     PHY_vars_eNB_g[eNB_inst]->proc[0].frame_rx = 1023;
     PHY_vars_eNB_g[eNB_inst]->proc[9].frame_tx = 1;
