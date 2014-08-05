@@ -130,7 +130,9 @@ static inline void nas_itti_establish_cnf(
     const uint32_t         ue_idP,
     const nas_error_code_t error_codeP,
     void            *const data_pP,
-    const uint32_t         lengthP)
+    const uint32_t         lengthP,
+    const uint16_t         selected_encryption_algorithmP,
+    const uint16_t         selected_integrity_algorithmP)
 {
     MessageDef *message_p = NULL;
 
@@ -142,6 +144,8 @@ static inline void nas_itti_establish_cnf(
     NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).errCode         = error_codeP;
     NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).nasMsg.data     = data_pP;
     NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).nasMsg.length   = lengthP;
+    NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).selected_encryption_algorithm   = selected_encryption_algorithmP;
+    NAS_CONNECTION_ESTABLISHMENT_CNF(message_p).selected_integrity_algorithm    = selected_integrity_algorithmP;
 
     itti_send_msg_to_task(TASK_MME_APP, INSTANCE_DEFAULT, message_p);
 }
