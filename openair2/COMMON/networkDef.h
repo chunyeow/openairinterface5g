@@ -148,9 +148,9 @@ Description Contains network's global definitions
  * PDN connection type
  * -------------------
  */
-#define NET_PDN_TYPE_IPV4   0
-#define NET_PDN_TYPE_IPV6   1
-#define NET_PDN_TYPE_IPV4V6 2
+#define NET_PDN_TYPE_IPV4   (0 + 1)
+#define NET_PDN_TYPE_IPV6   (1 + 1)
+#define NET_PDN_TYPE_IPV4V6 (2 + 1)
 
 /****************************************************************************/
 /************************  G L O B A L    T Y P E S  ************************/

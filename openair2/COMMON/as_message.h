@@ -346,6 +346,8 @@ typedef struct nas_establish_rsp_s {
     nas_error_code_t errCode;      /* Transaction status          */
     as_nas_info_t    nasMsg;       /* NAS message to transfer     */
     UInt32_t         nas_ul_count; /* UL NAS COUNT                */
+    uint16_t         selected_encryption_algorithm;
+    uint16_t         selected_integrity_algorithm;
 } nas_establish_rsp_t;
 
 /*
@@ -357,6 +359,8 @@ typedef struct nas_establish_cnf_s {
     nas_error_code_t errCode;         /* Transaction status          */
     as_nas_info_t    nasMsg;          /* NAS message to transfer     */
     UInt32_t         ul_nas_count;
+    uint16_t         selected_encryption_algorithm;
+    uint16_t         selected_integrity_algorithm;
 } nas_establish_cnf_t;
 
 /*
