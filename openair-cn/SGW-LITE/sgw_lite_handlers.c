@@ -257,6 +257,10 @@ sgw_lite_handle_sgi_endpoint_created(
             /* Should be filled in with S-GW S1-U local address. Running everything on localhost for now */
             create_session_response_p->bearer_context_created.s1u_sgw_fteid.ipv4_address   = address;
 
+
+            create_session_response_p->ambr.br_dl = 100000000;
+            create_session_response_p->ambr.br_ul = 40000000;
+
             memcpy(&create_session_response_p->paa,
                     &resp_pP->paa,
                     sizeof(PAA_t));
