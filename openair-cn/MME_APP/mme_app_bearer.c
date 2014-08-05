@@ -293,7 +293,7 @@ mme_app_handle_conn_est_cnf(
 
     ue_context_p = mme_ue_context_exists_nas_ue_id(&mme_app_desc.mme_ue_contexts, nas_conn_est_cnf_pP->UEid);
     if (ue_context_p == NULL) {
-        MME_APP_ERROR("UE context doesn't exist for UE ox%08X/dec%u\n",
+        MME_APP_ERROR("UE context doesn't exist for UE 0x%08X/dec%u\n",
         		nas_conn_est_cnf_pP->UEid,
         		nas_conn_est_cnf_pP->UEid);
         return;
@@ -331,7 +331,15 @@ mme_app_handle_conn_est_cnf(
     establishment_cnf_p->bearer_qos_prio_level             = current_bearer_p->prio_level;
     establishment_cnf_p->bearer_qos_pre_emp_vulnerability  = current_bearer_p->pre_emp_vulnerability;
     establishment_cnf_p->bearer_qos_pre_emp_capability     = current_bearer_p->pre_emp_capability;
-    establishment_cnf_p->ambr                              = ue_context_p->used_ambr;
+#warning "Hardcoded AMBR"
+    //establishment_cnf_p->ambr                              = ue_context_p->used_ambr;
+    establishment_cnf_p->ambr.br_ul                        = 40000000;
+    establishment_cnf_p->ambr.br_dl                        = 100000000;
+
+    establishment_cnf_p->security_capabilities_encryption_algorithms = nas_conn_est_cnf_pP->selected_encryption_algorithm;
+    establishment_cnf_p->security_capabilities_integrity_algorithms  = nas_conn_est_cnf_pP->selected_integrity_algorithm;
+    MME_APP_DEBUG("security_capabilities_encryption_algorithms 0x%04X\n", establishment_cnf_p->security_capabilities_encryption_algorithms);
+    MME_APP_DEBUG("security_capabilities_integrity_algorithms  0x%04X\n", establishment_cnf_p->security_capabilities_integrity_algorithms);
 
     MME_APP_DEBUG("Derive keNB with UL NAS COUNT %x\n", nas_conn_est_cnf_pP->ul_nas_count);
     derive_keNB(ue_context_p->vector_in_use->kasme, nas_conn_est_cnf_pP->ul_nas_count, keNB); //156
@@ -596,12 +604,17 @@ mme_app_handle_create_sess_resp(
         NAS_PDN_CONNECTIVITY_RSP(message_p).pdn_type       = create_sess_resp_pP->paa.pdn_type;
         NAS_PDN_CONNECTIVITY_RSP(message_p).proc_data      = ue_context_p->pending_pdn_connectivity_req_proc_data;    // NAS internal ref
         ue_context_p->pending_pdn_connectivity_req_proc_data = NULL;
-        memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).qos,
-                &ue_context_p->pending_pdn_connectivity_req_qos,
-                sizeof(network_qos_t));
-        memset(&ue_context_p->pending_pdn_connectivity_req_qos,
-                0,
-                sizeof(network_qos_t));
+
+#warning "QOS hardcoded here"
+        //memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).qos,
+        //        &ue_context_p->pending_pdn_connectivity_req_qos,
+        //        sizeof(network_qos_t));
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrUL    = 0;
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrDL    = 0; /* Guaranteed Bit Rate for downlink */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrUL    = 50000; /* Maximum Bit Rate for uplink      */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrDL    = 100000; /* Maximum Bit Rate for downlink    */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.qci      = 9; /* QoS Class Identifier         */
+
         NAS_PDN_CONNECTIVITY_RSP(message_p).request_type   = ue_context_p->pending_pdn_connectivity_req_request_type; // NAS internal ref
         ue_context_p->pending_pdn_connectivity_req_request_type = 0;
 
