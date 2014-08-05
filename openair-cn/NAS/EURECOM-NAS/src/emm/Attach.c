@@ -286,6 +286,8 @@ int emm_proc_attach(emm_proc_attach_type_t type)
         if (_emm_data.security->type != EMM_KSI_NOT_AVAILABLE) {
             emm_as->ksi = _emm_data.security->eksi;
         }
+        LOG_TRACE(INFO, "EMM-PROC  - encryption 0x%X", _emm_data.security->capability.encryption);
+        LOG_TRACE(INFO, "EMM-PROC  - integrity  0x%X", _emm_data.security->capability.integrity);
         emm_as->encryption = _emm_data.security->capability.encryption;
         emm_as->integrity = _emm_data.security->capability.integrity;
     }
@@ -2309,6 +2311,18 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
     /* Setup EPS NAS security data */
     emm_as_set_security_data(&emm_sap.u.emm_as.u.establish.sctx,
                              emm_ctx->security, FALSE, TRUE);
+
+    LOG_TRACE(INFO,"EMM-PROC  - encryption = 0x%X ", emm_sap.u.emm_as.u.establish.encryption);
+    LOG_TRACE(INFO,"EMM-PROC  - integrity  = 0x%X ", emm_sap.u.emm_as.u.establish.integrity);
+    emm_sap.u.emm_as.u.establish.encryption = emm_ctx->security->selected_algorithms.encryption;
+    emm_sap.u.emm_as.u.establish.integrity  = emm_ctx->security->selected_algorithms.integrity;
+    LOG_TRACE(INFO,"EMM-PROC  - encryption = 0x%X (0x%X)",
+            emm_sap.u.emm_as.u.establish.encryption,
+            emm_ctx->security->selected_algorithms.encryption);
+    LOG_TRACE(INFO,"EMM-PROC  - integrity  = 0x%X (0x%X)",
+            emm_sap.u.emm_as.u.establish.integrity,
+            emm_ctx->security->selected_algorithms.integrity);
+
     /* Get the activate default EPS bearer context request message to
      * transfer within the ESM container of the attach accept message */
     emm_sap.u.emm_as.u.establish.NASmsg = data->esm_msg;
