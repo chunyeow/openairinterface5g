@@ -46,6 +46,7 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
     }
     DECODE_U8(buffer + decoded, ielen, decoded);
 
+    LOG_TRACE(INFO, "decode_ue_network_capability len = %d",ielen);
     CHECK_LENGTH_DECODER(len - decoded, ielen);
     uenetworkcapability->eea = *(buffer + decoded);
     decoded++;
@@ -62,7 +63,7 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
             uenetworkcapability->uia = *(buffer + decoded) & 0x7f;
             decoded++;
 
-            if (ielen >= 4) {
+            if (ielen > 4) {
                 uenetworkcapability->spare = (*(buffer + decoded) >> 5) & 0x7;
                 uenetworkcapability->csfb  = (*(buffer + decoded) >> 4) & 0x1;
                 uenetworkcapability->lpp   = (*(buffer + decoded) >> 3) & 0x1;
@@ -73,9 +74,11 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
             }
         }
     }
+    LOG_TRACE(INFO, "uenetworkcapability decoded=%u\n", decoded);
 
     if ((ielen + 2) != decoded) {
         decoded = ielen + 1 + (iei > 0 ? 1 : 0) /* Size of header for this IE */;
+        LOG_TRACE(INFO, "uenetworkcapability then decoded=%u\n", decoded);
     }
 
 #if defined (NAS_DEBUG)

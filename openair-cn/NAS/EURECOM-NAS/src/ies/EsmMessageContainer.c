@@ -35,6 +35,8 @@
 #include "EsmMessageContainer.h"
 #include "nas_log.h"
 
+#define NAS_DEBUG 1
+
 int decode_esm_message_container(EsmMessageContainer *esmmessagecontainer, uint8_t iei, uint8_t *buffer, uint32_t len)
 {
     int decoded = 0;
