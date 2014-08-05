@@ -549,11 +549,14 @@ int esm_send_pdn_disconnect_reject(int pti, pdn_disconnect_reject_msg *msg,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
+int esm_send_activate_default_eps_bearer_context_request(int pti,
+        int ebi,
         activate_default_eps_bearer_context_request_msg *msg,
         const OctetString *apn,
-        int pdn_type, const OctetString *pdn_addr,
-        const EpsQualityOfService *qos, int esm_cause)
+        int pdn_type,
+        const OctetString *pdn_addr,
+        const EpsQualityOfService *qos,
+        int esm_cause)
 {
     LOG_FUNC_IN;
 
@@ -565,6 +568,24 @@ int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
 
     /* Mandatory - EPS QoS */
     msg->epsqos = *qos;
+    LOG_TRACE(INFO, "ESM-SAP   - epsqos  qci:  %u", qos->qci);
+    if (qos->bitRatesPresent) {
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForUL:  %u", qos->bitRates.maxBitRateForUL);
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForDL:  %u", qos->bitRates.maxBitRateForDL);
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForUL: %u", qos->bitRates.guarBitRateForUL);
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForDL: %u", qos->bitRates.guarBitRateForDL);
+    } else {
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  no bit rates defined");
+    }
+    if (qos->bitRatesExtPresent) {
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForUL  Ext: %u", qos->bitRatesExt.maxBitRateForUL);
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  maxBitRateForDL  Ext: %u", qos->bitRatesExt.maxBitRateForDL);
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForUL Ext: %u", qos->bitRatesExt.guarBitRateForUL);
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  guarBitRateForDL Ext: %u", qos->bitRatesExt.guarBitRateForDL);
+    } else {
+        LOG_TRACE(INFO, "ESM-SAP   - epsqos  no bit rates ext defined");
+    }
+
 
     if ((apn == NULL) || ((apn  != NULL) && (apn->value == NULL))) {
         LOG_TRACE(WARNING, "ESM-SAP   - apn is NULL!");
@@ -576,7 +597,9 @@ int esm_send_activate_default_eps_bearer_context_request(int pti, int ebi,
     msg->accesspointname.accesspointnamevalue = *apn;
 
     /* Mandatory - PDN address */
+    LOG_TRACE(INFO, "ESM-SAP   - pdn_type is %u", pdn_type);
     msg->pdnaddress.pdntypevalue = pdn_type;
+    LOG_TRACE(INFO, "ESM-SAP   - pdn_addr is %u", dump_octet_string(pdn_addr));
     msg->pdnaddress.pdnaddressinformation = *pdn_addr;
 
     /* Optional - ESM cause code */
