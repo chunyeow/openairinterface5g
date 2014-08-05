@@ -201,24 +201,34 @@ static int _emm_cn_pdn_connectivity_res(const emm_cn_pdn_res_t *msg_pP)
 
     switch (msg_pP->pdn_type) {
     case IPv4:
+        LOG_TRACE(INFO, "EMM  -  esm_pdn_type = ESM_PDN_TYPE_IPV4");
         esm_pdn_type = ESM_PDN_TYPE_IPV4;
         break;
 
     case IPv6:
+        LOG_TRACE(INFO, "EMM  -  esm_pdn_type = ESM_PDN_TYPE_IPV6");
         esm_pdn_type = ESM_PDN_TYPE_IPV6;
         break;
 
     case IPv4_AND_v6:
+        LOG_TRACE(INFO, "EMM  -  esm_pdn_type = ESM_PDN_TYPE_IPV4V6");
         esm_pdn_type = ESM_PDN_TYPE_IPV4V6;
         break;
 
     default:
+        LOG_TRACE(INFO, "EMM  -  esm_pdn_type = ESM_PDN_TYPE_IPV4 (forced to default)");
         esm_pdn_type = ESM_PDN_TYPE_IPV4;
     }
 
+    LOG_TRACE(INFO, "EMM  -  qci       = %u ", msg_pP->qci);
+    LOG_TRACE(INFO, "EMM  -  qos.qci   = %u ", msg_pP->qos.qci);
+    LOG_TRACE(INFO, "EMM  -  qos.mbrUL = %u ", msg_pP->qos.mbrUL);
+    LOG_TRACE(INFO, "EMM  -  qos.mbrDL = %u ", msg_pP->qos.mbrDL);
+    LOG_TRACE(INFO, "EMM  -  qos.gbrUL = %u ", msg_pP->qos.gbrUL);
+    LOG_TRACE(INFO, "EMM  -  qos.gbrDL = %u ", msg_pP->qos.gbrDL);
     qos.bitRatesPresent           = 1;
     qos.bitRatesExtPresent        = 0;
-    qos.qci                       = msg_pP->qos.qci;
+    qos.qci                       = msg_pP->qci;
     qos.bitRates.maxBitRateForUL  = msg_pP->qos.mbrUL;
     qos.bitRates.maxBitRateForDL  = msg_pP->qos.mbrDL;
     qos.bitRates.guarBitRateForUL = msg_pP->qos.gbrUL;
