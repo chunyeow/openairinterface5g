@@ -116,13 +116,13 @@ void config_req_rlc_am (
 {
 //-----------------------------------------------------------------------------
     rlc_union_t       *rlc_union_p = NULL;
-    rlc_am_entity_t *rlc_p         = NULL;
+    rlc_am_entity_t *l_rlc_p         = NULL;
     hash_key_t       key           = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
     hashtable_rc_t   h_rc;
 
     h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
     if (h_rc == HASH_TABLE_OK) {
-        rlc_p = &rlc_union_p->rlc.am;
+        l_rlc_p = &rlc_union_p->rlc.am;
         LOG_D(RLC,
             "[FRAME %5u][%s][RRC][MOD %u/%u][][--- CONFIG_REQ (max_retx_threshold=%d poll_pdu=%d poll_byte=%d t_poll_retransmit=%d t_reord=%d t_status_prohibit=%d) --->][RLC_AM][MOD %u/%u][RB %u]\n",
             frameP,
@@ -138,9 +138,9 @@ void config_req_rlc_am (
             enb_module_idP,
             ue_module_idP,
             rb_idP);
-        rlc_am_init(rlc_p,frameP);
-        rlc_am_set_debug_infos(rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, srb_flagP);
-        rlc_am_configure(rlc_p,frameP,
+        rlc_am_init(l_rlc_p,frameP);
+        rlc_am_set_debug_infos(l_rlc_p, frameP, eNB_flagP, enb_module_idP, ue_module_idP, rb_idP, srb_flagP);
+        rlc_am_configure(l_rlc_p,frameP,
                config_am_pP->max_retx_threshold,
                config_am_pP->poll_pdu,
                config_am_pP->poll_byte,
@@ -177,13 +177,13 @@ void config_req_rlc_am_asn1 (
 {
 //-----------------------------------------------------------------------------
   rlc_union_t     *rlc_union_p   = NULL;
-  rlc_am_entity_t *rlc_p         = NULL;
+  rlc_am_entity_t *l_rlc_p         = NULL;
   hash_key_t       key           = RLC_COLL_KEY_VALUE(enb_module_idP, ue_module_idP, eNB_flagP, rb_idP, srb_flagP);
   hashtable_rc_t   h_rc;
 
   h_rc = hashtable_get(rlc_coll_p, key, (void**)&rlc_union_p);
   if (h_rc == HASH_TABLE_OK) {
-      rlc_p = &rlc_union_p->rlc.am;
+      l_rlc_p = &rlc_union_p->rlc.am;
       if ((config_am_pP->ul_AM_RLC.maxRetxThreshold <= UL_AM_RLC__maxRetxThreshold_t32) &&
           (config_am_pP->ul_AM_RLC.pollPDU<=PollPDU_pInfinity) &&
           (config_am_pP->ul_AM_RLC.pollByte<PollByte_spare1) &&
@@ -206,9 +206,9 @@ void config_req_rlc_am_asn1 (
               ue_module_idP,
               rb_idP);
 
-          rlc_am_init(rlc_p,frameP);
-          rlc_am_set_debug_infos(rlc_p, frameP, eNB_flagP, srb_flagP, enb_module_idP, ue_module_idP, rb_idP);
-          rlc_am_configure(rlc_p,
+          rlc_am_init(l_rlc_p,frameP);
+          rlc_am_set_debug_infos(l_rlc_p, frameP, eNB_flagP, srb_flagP, enb_module_idP, ue_module_idP, rb_idP);
+          rlc_am_configure(l_rlc_p,
               frameP,
               maxRetxThreshold_tab[config_am_pP->ul_AM_RLC.maxRetxThreshold],
               pollPDU_tab[config_am_pP->ul_AM_RLC.pollPDU],
@@ -662,6 +662,7 @@ rlc_am_mac_data_request (void *rlc_pP, frame_t frameP)
             (l_rlc_p->is_enb) ? "eNB" : "UE",
             l_rlc_p->enb_module_id,
             l_rlc_p->ue_module_id,
+            l_rlc_p->rb_id,
             nb_bytes_requested_by_mac,
             data_req.data.nb_elements);
   }
@@ -936,90 +937,138 @@ void
 rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
 {
 //-----------------------------------------------------------------------------
-  rlc_am_entity_t  *rlc_p = (rlc_am_entity_t *) rlc_pP;
+  rlc_am_entity_t     *l_rlc_p = (rlc_am_entity_t *) rlc_pP;
   uint32_t             mui;
   uint16_t             data_offset;
   uint16_t             data_size;
   uint8_t              conf;
+#if defined(ENABLE_ITTI)
+  char                 message_string[7000];
+  size_t               message_string_size = 0;
+  MessageDef          *msg_p;
+  int                  octet_index, index;
+#endif
+
+  if ((l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block == NULL) &&
+      (l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented == 0) &&
+      (((l_rlc_p->next_sdu_index + 1) % RLC_AM_SDU_CONTROL_BUFFER_SIZE) != l_rlc_p->current_sdu_index)) {
 
 
-  if ((rlc_p->input_sdus[rlc_p->next_sdu_index].mem_block == NULL) &&
-      (rlc_p->input_sdus[rlc_p->next_sdu_index].flags.segmented == 0) &&
-      (((rlc_p->next_sdu_index + 1) % RLC_AM_SDU_CONTROL_BUFFER_SIZE) != rlc_p->current_sdu_index)) {
-
-
-      memset(&rlc_p->input_sdus[rlc_p->next_sdu_index], 0, sizeof(rlc_am_tx_sdu_management_t));
-      rlc_p->input_sdus[rlc_p->next_sdu_index].mem_block = sdu_pP;
+      memset(&l_rlc_p->input_sdus[l_rlc_p->next_sdu_index], 0, sizeof(rlc_am_tx_sdu_management_t));
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block = sdu_pP;
 
       mui         = ((struct rlc_am_data_req *) (sdu_pP->data))->mui;
       data_offset = ((struct rlc_am_data_req *) (sdu_pP->data))->data_offset;
       data_size   = ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
       conf        = ((struct rlc_am_data_req *) (sdu_pP->data))->conf;
 
+#   if defined(ENABLE_ITTI)
+      message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
+      message_string_size += sprintf(&message_string[message_string_size], "SDU size    : %u\n", data_size);
+      message_string_size += sprintf(&message_string[message_string_size], "MUI         : %u\n", mui);
+      message_string_size += sprintf(&message_string[message_string_size], "CONF        : %u\n", conf);
 
-     rlc_p->stat_tx_pdcp_sdu   += 1;
-     rlc_p->stat_tx_pdcp_bytes += data_size;
+      message_string_size += sprintf(&message_string[message_string_size], "\nPayload  : \n");
+      message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+      message_string_size += sprintf(&message_string[message_string_size], "      |  0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f |\n");
+      message_string_size += sprintf(&message_string[message_string_size], "------+-------------------------------------------------|\n");
+      for (octet_index = 0; octet_index < data_size; octet_index++) {
+          if ((octet_index % 16) == 0){
+              if (octet_index != 0) {
+                  message_string_size += sprintf(&message_string[message_string_size], " |\n");
+              }
+              message_string_size += sprintf(&message_string[message_string_size], " %04d |", octet_index);
+          }
+          /*
+           * Print every single octet in hexadecimal form
+           */
+          message_string_size += sprintf(&message_string[message_string_size], " %02x", (uint8_t*)(&sdu_pP->data[data_offset])[octet_index]);
+          /*
+           * Align newline and pipes according to the octets in groups of 2
+           */
+      }
+      /*
+       * Append enough spaces and put final pipe
+       */
+      for (index = octet_index; index < 16; ++index) {
+          message_string_size += sprintf(&message_string[message_string_size], "   ");
+      }
+      message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
-      rlc_p->input_sdus[rlc_p->next_sdu_index].mui      = mui;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_size = data_size;
-      //rlc_p->input_sdus[rlc_p->next_sdu_index].confirm  = conf;
+      msg_p = itti_alloc_new_message_sized (l_rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_AM_SDU_REQ, message_string_size + sizeof (IttiMsgText));
+      msg_p->ittiMsg.rlc_am_sdu_req.size = message_string_size;
+      memcpy(&msg_p->ittiMsg.rlc_am_sdu_req.text, message_string, message_string_size);
 
-      rlc_p->sdu_buffer_occupancy += data_size;
-      rlc_p->nb_sdu += 1;
-      rlc_p->nb_sdu_no_segmented += 1;
+      if (l_rlc_p->is_enb) {
+          itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->enb_module_id, msg_p);
+      } else {
+          itti_send_msg_to_task(TASK_UNKNOWN, l_rlc_p->ue_module_id + NB_eNB_INST, msg_p);
+      }
+#   endif
 
-      rlc_p->input_sdus[rlc_p->next_sdu_index].first_byte = (uint8_t*)(&sdu_pP->data[data_offset]);
-      rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_remaining_size = rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_size;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_segmented_size = 0;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].sdu_creation_time = frameP;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].nb_pdus = 0;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].nb_pdus_ack = 0;
-      //rlc_p->input_sdus[rlc_p->next_sdu_index].nb_pdus_time = 0;
-      //rlc_p->input_sdus[rlc_p->next_sdu_index].nb_pdus_internal_use = 0;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].flags.discarded = 0;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].flags.segmented = 0;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].flags.segmentation_in_progress = 0;
-      rlc_p->input_sdus[rlc_p->next_sdu_index].flags.no_new_sdu_segmented_in_last_pdu = 0;
-      //rlc_p->input_sdus[rlc_p->next_sdu_index].li_index_for_discard = -1;
-      rlc_p->next_sdu_index = (rlc_p->next_sdu_index + 1) % RLC_AM_SDU_CONTROL_BUFFER_SIZE;
+     l_rlc_p->stat_tx_pdcp_sdu   += 1;
+     l_rlc_p->stat_tx_pdcp_bytes += data_size;
+
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mui      = mui;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_size = data_size;
+      //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].confirm  = conf;
+
+      l_rlc_p->sdu_buffer_occupancy += data_size;
+      l_rlc_p->nb_sdu += 1;
+      l_rlc_p->nb_sdu_no_segmented += 1;
+
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].first_byte = (uint8_t*)(&sdu_pP->data[data_offset]);
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_remaining_size = l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_size;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_segmented_size = 0;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].sdu_creation_time  = frameP;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].nb_pdus            = 0;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].nb_pdus_ack        = 0;
+      //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].nb_pdus_time = 0;
+      //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].nb_pdus_internal_use = 0;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.discarded    = 0;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented    = 0;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmentation_in_progress = 0;
+      l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.no_new_sdu_segmented_in_last_pdu = 0;
+      //l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].li_index_for_discard = -1;
+      l_rlc_p->next_sdu_index = (l_rlc_p->next_sdu_index + 1) % RLC_AM_SDU_CONTROL_BUFFER_SIZE;
       LOG_I(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_REQ size %d Bytes,  NB SDU %d current_sdu_index=%d next_sdu_index=%d conf %d mui %d\n",
             frameP,
-            (rlc_p->is_enb) ? "eNB" : "UE",
-            rlc_p->enb_module_id,
-            rlc_p->ue_module_id,
-            rlc_p->rb_id,
+            (l_rlc_p->is_enb) ? "eNB" : "UE",
+            l_rlc_p->enb_module_id,
+            l_rlc_p->ue_module_id,
+            l_rlc_p->rb_id,
             data_size,
-            rlc_p->nb_sdu,
-            rlc_p->current_sdu_index,
-            rlc_p->next_sdu_index,
+            l_rlc_p->nb_sdu,
+            l_rlc_p->current_sdu_index,
+            l_rlc_p->next_sdu_index,
             conf,
             mui);
   } else {
       LOG_W(RLC, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_REQ BUFFER FULL, NB SDU %d current_sdu_index=%d next_sdu_index=%d size_input_sdus_buffer=%d\n",
             frameP,
-            (rlc_p->is_enb) ? "eNB" : "UE",
-            rlc_p->enb_module_id,
-            rlc_p->ue_module_id,
-            rlc_p->rb_id,
-            rlc_p->nb_sdu,
-            rlc_p->current_sdu_index,
-            rlc_p->next_sdu_index,
+            (l_rlc_p->is_enb) ? "eNB" : "UE",
+            l_rlc_p->enb_module_id,
+            l_rlc_p->ue_module_id,
+            l_rlc_p->rb_id,
+            l_rlc_p->nb_sdu,
+            l_rlc_p->current_sdu_index,
+            l_rlc_p->next_sdu_index,
             RLC_AM_SDU_CONTROL_BUFFER_SIZE);
-      LOG_W(RLC, "                                        input_sdus[].mem_block=%p next input_sdus[].flags.segmented=%d\n", rlc_p->input_sdus[rlc_p->next_sdu_index].mem_block, rlc_p->input_sdus[rlc_p->next_sdu_index].flags.segmented);
-      rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
-      rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
+      LOG_W(RLC, "                                        input_sdus[].mem_block=%p next input_sdus[].flags.segmented=%d\n", l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].mem_block, l_rlc_p->input_sdus[l_rlc_p->next_sdu_index].flags.segmented);
+      l_rlc_p->stat_tx_pdcp_sdu_discarded   += 1;
+      l_rlc_p->stat_tx_pdcp_bytes_discarded += ((struct rlc_am_data_req *) (sdu_pP->data))->data_size;
       free_mem_block (sdu_pP);
 #if defined(STOP_ON_IP_TRAFFIC_OVERLOAD)
       AssertFatal(0, "[FRAME %5u][%s][RLC_AM][MOD %u/%u][RB %u] RLC_AM_DATA_REQ size %d Bytes, SDU DROPPED, INPUT BUFFER OVERFLOW NB SDU %d current_sdu_index=%d next_sdu_index=%d \n",
           frameP,
-          (rlc_p->is_enb) ? "eNB" : "UE",
-          rlc_p->enb_module_id,
-          rlc_p->ue_module_id,
-          rlc_p->rb_id,
+          (l_rlc_p->is_enb) ? "eNB" : "UE",
+          l_rlc_p->enb_module_id,
+          l_rlc_p->ue_module_id,
+          l_rlc_p->rb_id,
           data_size,
-          rlc_p->nb_sdu,
-          rlc_p->current_sdu_index,
-          rlc_p->next_sdu_index);
+          l_rlc_p->nb_sdu,
+          l_rlc_p->current_sdu_index,
+          l_rlc_p->next_sdu_index);
 #endif
   }
 }
