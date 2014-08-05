@@ -233,8 +233,11 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
     else {
         LOG_TRACE(INFO, "EMM-PROC  - Update the non-current EPS security context seea=%u seia=%u", seea, seia);
         /* Update selected cyphering and integrity algorithms */
-        _emm_data.non_current->capability.encryption = seea;
-        _emm_data.non_current->capability.integrity  = seia;
+        //LG COMENTED _emm_data.non_current->capability.encryption = seea;
+        //LG COMENTED _emm_data.non_current->capability.integrity  = seia;
+
+        _emm_data.non_current->selected_algorithms.encryption = seea;
+        _emm_data.non_current->selected_algorithms.integrity = seia;
 
         /* Derive the NAS cyphering key */
         if (_emm_data.non_current->knas_enc.value == NULL) {
