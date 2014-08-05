@@ -534,7 +534,6 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
      * At least one bearer has been established. We can now send s1ap initial context setup request
      * message to eNB.
      */
-    uint8_t                               supportedAlgorithms[] = { 0x00, 0x00 };
     uint8_t                               offset                = 0;
     uint8_t                              *buffer_p              = NULL;
     uint32_t                              length                = 0;
@@ -640,17 +639,22 @@ void s1ap_handle_conn_est_cnf(const mme_app_connection_establishment_cnf_t * con
                      &e_RABToBeSetup);
 
     initialContextSetupRequest_p->ueSecurityCapabilities.encryptionAlgorithms.buf =
-        (uint8_t *)supportedAlgorithms;
+            (uint8_t *)&conn_est_cnf_pP->security_capabilities_encryption_algorithms;
     initialContextSetupRequest_p->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
     initialContextSetupRequest_p->ueSecurityCapabilities.encryptionAlgorithms.bits_unused
         = 0;
 
-    initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms.buf
-        = (uint8_t *)supportedAlgorithms;
+    initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
+            (uint8_t *)&conn_est_cnf_pP->security_capabilities_integrity_algorithms;
     initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms.size
         = 2;
     initialContextSetupRequest_p->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused
         = 0;
+
+    S1AP_DEBUG("security_capabilities_encryption_algorithms 0x%04X\n",
+            conn_est_cnf_pP->security_capabilities_encryption_algorithms);
+    S1AP_DEBUG("security_capabilities_integrity_algorithms 0x%04X\n",
+            conn_est_cnf_pP->security_capabilities_integrity_algorithms);
 
     if (conn_est_cnf_pP->keNB) {
         initialContextSetupRequest_p->securityKey.buf = malloc(32);
