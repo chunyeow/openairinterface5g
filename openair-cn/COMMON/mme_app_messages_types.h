@@ -56,6 +56,8 @@ typedef struct mme_app_connection_establishment_cnf_s {
 
     /* Key eNB */
     uint8_t                 keNB[32];
+    uint16_t                security_capabilities_encryption_algorithms;
+    uint16_t                security_capabilities_integrity_algorithms;
 
     nas_conn_est_cnf_t       nas_conn_est_cnf;
 } mme_app_connection_establishment_cnf_t;
