@@ -100,7 +100,7 @@ VARIABLES="
            ENB_IPV4_ADDRESS_FOR_S1_MME\|\
            ENB_INTERFACE_NAME_FOR_S1U\|\
            ENB_IPV4_ADDRESS_FOR_S1U\|\
-           hard_real_time"
+           real_time"
 
 VARIABLES=$(echo $VARIABLES | sed -e 's/\\r//g')
 VARIABLES=$(echo $VARIABLES | tr -d ' ')
@@ -124,7 +124,7 @@ if [ ! -d $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME ]; then
     mkdir -m 777 -p $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME
 fi
 
-if [ x$hard_real_time != "xyes" ]; then
+if [ x$real_time != "xhard" ]; then
     ITTI_LOG_FILE=$THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/itti_enb_ue.$HOSTNAME.log
     #rotate_log_file $ITTI_LOG_FILE
     
@@ -156,42 +156,48 @@ else
 fi
 
 
-if [ x$hard_real_time != "xyes" ]; then
+if [ x$real_time == "xno" ]; then
     echo_warning "USER MODE"
     make --directory=$OPENAIR_TARGETS/SIMU/USER $MAKE_LTE_ACCESS_STRATUM_TARGET -j`grep -c ^processor /proc/cpuinfo ` || exit 1
     bash_exec "ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE"
     gdb --args $OPENAIR_TARGETS/SIMU/USER/oaisim -a  -l9 -u0 -b1 -M0 -p2  -g$EMULATION_MULTICAST_GROUP -D $EMULATION_DEV_ADDRESS -K $ITTI_LOG_FILE --enb-conf $CONFIG_FILE_ENB 2>&1 | tee $STDOUT_LOG_FILE 
 else
-    echo_warning "HARD REAL TIME MODE"
-    PATH=$PATH:/usr/realtime/bin
-    
-    #make --directory=$OPENAIR_TARGETS/RT/USER drivers  || exit 1
-    # 2 lines below replace the line above
-    cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
-    cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
-    cd $THIS_SCRIPT_PATH
-    
-    make --directory=$OPENAIR_TARGETS/RT/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
-    
-    if [ ! -f /tmp/init_rt_done.tmp ]; then
-        echo_warning "STARTING REAL TIME (RTAI)"
-        insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
-        insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
-        insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
-        insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
-        insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
-        touch /tmp/init_rt_done.tmp
-        chmod 666 /tmp/init_rt_done.tmp
+    if [ x$real_time == "xhard" ]; then
+        echo_warning "HARD REAL TIME MODE"
+        PATH=$PATH:/usr/realtime/bin
+
+        #make --directory=$OPENAIR_TARGETS/RT/USER drivers  || exit 1
+        # 2 lines below replace the line above
+        cd $OPENAIR_TARGETS/ARCH/EXMIMO/DRIVER/eurecom && make clean && make   || exit 1
+        cd $OPENAIR_TARGETS/ARCH/EXMIMO/USERSPACE/OAI_FW_INIT && make clean && make   || exit 1
+        cd $THIS_SCRIPT_PATH
+
+        make --directory=$OPENAIR_TARGETS/RT/USER $MAKE_LTE_ACCESS_STRATUM_TARGET_RT -j`grep -c ^processor /proc/cpuinfo ` || exit 1
+
+        if [ ! -f /tmp/init_rt_done.tmp ]; then
+            echo_warning "STARTING REAL TIME (RTAI)"
+            insmod /usr/realtime/modules/rtai_hal.ko     > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_sched.ko   > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_sem.ko     > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_fifos.ko   > /dev/null 2>&1
+            insmod /usr/realtime/modules/rtai_mbx.ko     > /dev/null 2>&1
+            touch /tmp/init_rt_done.tmp
+            chmod 666 /tmp/init_rt_done.tmp
+        else
+            echo_warning "REAL TIME FOUND STARTED (RTAI)"
+        fi
+
+        cd $OPENAIR_TARGETS/RT/USER
+        bash ./init_exmimo2.sh
+        echo_warning "STARTING SOFTMODEM..."
+        #cat /dev/rtf62 > $STDOUT_LOG_FILE &
+        gdb --args ./lte-softmodem -K $ITTI_LOG_FILE -V  -O $CONFIG_FILE_ENB  2>&1
+        cd $THIS_SCRIPT_PATH
     else
-        echo_warning "REAL TIME FOUND STARTED (RTAI)"
+        if [ x$real_time == "xrt-preempt" ]; then
+            echo_fatal "TODO RT-PREEMT"
+        fi
     fi
-    
-    cd $OPENAIR_TARGETS/RT/USER
-    bash ./init_exmimo2.sh
-    echo_warning "STARTING SOFTMODEM..."
-    #cat /dev/rtf62 > $STDOUT_LOG_FILE &
-    gdb --args ./lte-softmodem -K $ITTI_LOG_FILE -V  -O $CONFIG_FILE_ENB  2>&1
-    cd $THIS_SCRIPT_PATH
 fi
 
 pkill tshark

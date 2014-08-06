@@ -90,5 +90,18 @@ source /tmp/source.txt
 declare PGW_IPV4_NETMASK_FOR_SGI=$(          echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f2 -d '/')
 PGW_IPV4_ADDR_FOR_SGI=$(                     echo $PGW_IPV4_ADDR_FOR_SGI              | cut -f1 -d '/')
 
+bash_exec "iptables -P INPUT ACCEPT"
+bash_exec "iptables -F INPUT"
+bash_exec "iptables -P OUTPUT ACCEPT"
+bash_exec "iptables -F OUTPUT"
+bash_exec "iptables -P FORWARD ACCEPT"
+bash_exec "iptables -F FORWARD"
+bash_exec "iptables -t nat -F"
+bash_exec "iptables -t mangle -F"
+bash_exec "iptables -t filter -F"
+bash_exec "iptables -t raw -F"
+
+bash_exec "iptables -A OUTPUT  -o eth1                           --protocol sctp -j DROP"
+
 
 create_sgi_vlans

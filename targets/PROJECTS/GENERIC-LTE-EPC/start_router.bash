@@ -38,7 +38,7 @@
 #Setting the EXTERNAL and INTERNAL interfaces for the network
 #############################################################
 declare EXTIF="eth1"
-declare INTIF="eth2"
+declare INTIF="eth0"
 
 IPTABLES=/sbin/iptables
 DEPMOD=/sbin/depmod
@@ -187,8 +187,8 @@ echo "1" > /proc/sys/net/ipv4/conf/$EXTIF/proxy_arp
 echo "1" > /proc/sys/net/ipv4/conf/$INTIF/proxy_arp
 
 echo "   FWD: Allow all connections OUT and only existing and related ones IN"
-bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF -m state --state ESTABLISHED,RELATED -j ACCEPT"
-bash_exec "iptables -A FORWARD -i $INTIF -o $EXTIF -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
+bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF ! --protocol sctp -m state --state ESTABLISHED,RELATED -j ACCEPT"
+bash_exec "iptables -A FORWARD -i $INTIF -o $EXTIF ! --protocol sctp  -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
 
 bash_exec "modprobe 8021q"
 
@@ -208,8 +208,8 @@ do
     NET=$(( $i + 200 ))
     CIDR='10.0.'$NET'.1/8'
     bash_exec "ip -4 addr add $CIDR dev $INTIF.$i"
-    bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF.$i -m state --state ESTABLISHED,RELATED -j ACCEPT"
-    bash_exec "iptables -A FORWARD -i $INTIF.$i -o $EXTIF -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
+    bash_exec "iptables -A FORWARD -i $EXTIF -o $INTIF.$i  ! --protocol sctp -m state --state ESTABLISHED,RELATED -j ACCEPT"
+    bash_exec "iptables -A FORWARD -i $INTIF.$i -o $EXTIF  ! --protocol sctp -m state --state NEW,ESTABLISHED,RELATED,INVALID -j ACCEPT"
     bash_exec "echo 1 > /proc/sys/net/ipv4/conf/$INTIF.$i/proxy_arp"
     bash_exec "echo 0 > /proc/sys/net/ipv4/conf/$INTIF.$i/rp_filter"
 done
