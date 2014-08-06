@@ -281,7 +281,6 @@ int sgi_init(const pgw_config_t *pgw_config_p)
             return -1;
         }
 #endif
-#if 0
 #ifdef ENABLE_USE_RAW_SOCKET_FOR_SGI
         for (i=0; i < SGI_MAX_EPS_BEARERS_PER_USER; i++) {
             sgi_read_thread_args_t *args_p = malloc(sizeof(sgi_read_thread_args_t));
@@ -292,7 +291,6 @@ int sgi_init(const pgw_config_t *pgw_config_p)
                 return -1;
             }
         }
-#endif
 #endif
     }
 

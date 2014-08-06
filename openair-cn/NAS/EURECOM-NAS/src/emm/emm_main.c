@@ -301,10 +301,10 @@ void emm_main_initialize(emm_indication_callback_t cb, const char *imei)
                        _usim_data.securityctx.ulNAScount.length);
             }
             /* Ciphering algorithm */
-            _emm_data.security->capability.encryption =
+            _emm_data.security->capability.eps_encryption =
                 ((_usim_data.securityctx.algorithmID.value[0] >> 4) & 0xf);
             /* Identity protection algorithm */
-            _emm_data.security->capability.integrity =
+            _emm_data.security->capability.eps_integrity =
                 (_usim_data.securityctx.algorithmID.value[0] & 0xf);
             /* NAS integrity and cyphering keys are not available */
         } else {

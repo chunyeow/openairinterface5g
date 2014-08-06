@@ -624,7 +624,20 @@ int emm_recv_attach_request(unsigned int ueid, const attach_request_msg *msg,
                                  msg->naskeysetidentifier.tsc != NAS_KEY_SET_IDENTIFIER_MAPPED,
                                  msg->naskeysetidentifier.naskeysetidentifier,
                                  msg->oldgutitype != GUTI_MAPPED, p_guti, p_imsi, p_imei, p_tai,
-                                 msg->uenetworkcapability.eea, msg->uenetworkcapability.eia,
+                                 msg->uenetworkcapability.eea,
+                                 msg->uenetworkcapability.eia,
+                                 msg->uenetworkcapability.ucs2,
+                                 msg->uenetworkcapability.uea,
+                                 msg->uenetworkcapability.uia,
+                                 0x00 |
+                                       //((msg->uenetworkcapability.spare & 0x7) << 5) | // spare coded as zero
+                                 ((msg->uenetworkcapability.csfb  & 0x1) << 4) |
+                                 ((msg->uenetworkcapability.lpp   & 0x1) << 3) |
+                                 ((msg->uenetworkcapability.lcs   & 0x1) << 2) |
+                                 ((msg->uenetworkcapability.srvcc & 0x1) << 1) |
+                                 (msg->uenetworkcapability.nf     & 0x1),
+                                 msg->uenetworkcapability.umts_present,
+                                 msg->uenetworkcapability.gprs_present,
                                  &msg->esmmessagecontainer.esmmessagecontainercontents);
 
     LOG_FUNC_RETURN (rc);

@@ -123,6 +123,12 @@ typedef struct {
      */
     UInt8_t eea;        /* Replayed EPS encryption algorithms   */
     UInt8_t eia;        /* Replayed EPS integrity algorithms    */
+    UInt8_t uea;        /* Replayed UMTS encryption algorithms  */
+    uint8_t ucs2;
+    UInt8_t uia;        /* Replayed UMTS integrity algorithms   */
+    UInt8_t gea;        /* Replayed GPRS encryption algorithms   */
+    UInt8_t umts_present;
+    UInt8_t gprs_present;
 
     // Added by LG
     UInt8_t selected_eea; /* Selected EPS encryption algorithms   */

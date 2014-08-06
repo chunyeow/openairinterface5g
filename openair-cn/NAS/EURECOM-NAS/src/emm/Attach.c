@@ -152,11 +152,14 @@ static int _emm_attach_abort(void *);
 static int _emm_attach_have_changed(const emm_data_context_t *ctx,
                                     emm_proc_attach_type_t type, int ksi,
                                     GUTI_t *guti, imsi_t *imsi, imei_t *imei,
-                                    int eea, int eia);
+                                    int eea, int eia, int ucs2, int uea, int uia, int gea,
+                                    int umts_present, int gprs_present);
 static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                               emm_proc_attach_type_t type, int ksi,
                               GUTI_t *guti, imsi_t *imsi, imei_t *imei,
-                              int eea, int eia, const OctetString *esm_msg);
+                              int eea, int eia, int ucs2, int uea, int uia, int gea,
+                              int umts_present, int gprs_present,
+                              const OctetString *esm_msg);
 
 /*
  * Internal data used for attach procedure
@@ -286,10 +289,10 @@ int emm_proc_attach(emm_proc_attach_type_t type)
         if (_emm_data.security->type != EMM_KSI_NOT_AVAILABLE) {
             emm_as->ksi = _emm_data.security->eksi;
         }
-        LOG_TRACE(INFO, "EMM-PROC  - encryption 0x%X", _emm_data.security->capability.encryption);
-        LOG_TRACE(INFO, "EMM-PROC  - integrity  0x%X", _emm_data.security->capability.integrity);
-        emm_as->encryption = _emm_data.security->capability.encryption;
-        emm_as->integrity = _emm_data.security->capability.integrity;
+        LOG_TRACE(INFO, "EMM-PROC  - eps_encryption 0x%X", _emm_data.security->capability.eps_encryption);
+        LOG_TRACE(INFO, "EMM-PROC  - eps_integrity  0x%X", _emm_data.security->capability.eps_integrity);
+        emm_as->encryption = _emm_data.security->capability.eps_encryption;
+        emm_as->integrity = _emm_data.security->capability.eps_integrity;
     }
     /*
      * Notify ESM that initiation of a PDN connectivity procedure
@@ -1051,7 +1054,9 @@ int emm_proc_attach_set_detach(void)
 int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
                             int native_ksi, int ksi, int native_guti,
                             GUTI_t *guti, imsi_t *imsi, imei_t *imei,
-                            tai_t *tai, int eea, int eia,
+                            tai_t *tai,
+                            int eea, int eia, int ucs2, int uea, int uia, int gea,
+                            int umts_present, int gprs_present,
                             const OctetString *esm_msg)
 {
     LOG_FUNC_IN;
@@ -1061,6 +1066,8 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
 
     LOG_TRACE(INFO, "EMM-PROC  - EPS attach type = %s (%d) requested (ueid=0x%08x)",
               _emm_attach_type_str[type], type, ueid);
+    LOG_TRACE(INFO, "EMM-PROC  - umts_present = %u umts_present = %u",
+            umts_present, gprs_present);
 
     /* Initialize the temporary UE context */
     memset(&ue_ctx, 0 , sizeof(emm_data_context_t));
@@ -1105,7 +1112,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
     if (*emm_ctx != NULL) {
         /* An EMM context already exists for the UE in the network */
         if (_emm_attach_have_changed(*emm_ctx, type, ksi, guti, imsi, imei,
-                                     eea, eia)) {
+                eea, eia, ucs2, uea, uia, gea, umts_present, gprs_present)) {
             /*
              * 3GPP TS 24.301, section 5.5.1.2.7, abnormal case e
              * The attach parameters have changed from the one received within
@@ -1129,7 +1136,8 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
                 LOG_TRACE(WARNING, "EMM-PROC  - Initiate new attach procedure");
                 rc = emm_proc_attach_request(ueid, type, native_ksi, ksi,
                                              native_guti, guti, imsi, imei,
-                                             tai, eea, eia, esm_msg);
+                                             tai, eea, eia, ucs2, uea, uia, gea,
+                                             umts_present, gprs_present, esm_msg);
             }
             LOG_FUNC_RETURN(rc);
         } else {
@@ -1178,7 +1186,7 @@ int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
 
     /* Update the EMM context with the current attach procedure parameters */
     rc = _emm_attach_update(*emm_ctx, ueid, type, ksi, guti, imsi, imei,
-                            eea, eia, esm_msg);
+            eea, eia, ucs2, uea, uia, gea, umts_present, gprs_present, esm_msg);
     if (rc != RETURNok) {
         LOG_TRACE(WARNING, "EMM-PROC  - Failed to update EMM context");
         /* Do not accept the UE to attach to the network */
@@ -2104,9 +2112,11 @@ static int _emm_attach_security(void *args)
 
     /* Initialize the security mode control procedure */
     rc = emm_proc_security_mode_control(emm_ctx->ueid, 0, // TODO: eksi != 0
-                                        emm_ctx->eea, emm_ctx->eia,
-                                        _emm_attach, _emm_attach_release,
-                                        _emm_attach_release);
+            emm_ctx->eea, emm_ctx->eia,emm_ctx->ucs2,
+            emm_ctx->uea, emm_ctx->uia, emm_ctx->gea,
+            emm_ctx->umts_present, emm_ctx->gprs_present,
+            _emm_attach, _emm_attach_release,
+            _emm_attach_release);
     if (rc != RETURNok) {
         /* Failed to initiate the security mode control procedure */
         LOG_TRACE(WARNING, "EMM-PROC  - "
@@ -2373,7 +2383,8 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
 static int _emm_attach_have_changed(const emm_data_context_t *ctx,
                                     emm_proc_attach_type_t type, int ksi,
                                     GUTI_t *guti, imsi_t *imsi, imei_t *imei,
-                                    int eea, int eia)
+                                    int eea, int eia, int ucs2, int uea, int uia, int gea,
+                                    int umts_present, int gprs_present)
 {
     LOG_FUNC_IN;
     /* Emergency bearer services indicator */
@@ -2392,6 +2403,31 @@ static int _emm_attach_have_changed(const emm_data_context_t *ctx,
     if (eia != ctx->eia) {
         LOG_FUNC_RETURN (TRUE);
     }
+    if (umts_present != ctx->umts_present){
+        LOG_FUNC_RETURN (TRUE);
+    }
+    if (ctx->umts_present){
+        if (ucs2 != ctx->ucs2) {
+            LOG_FUNC_RETURN (TRUE);
+        }
+        /* Supported UMTS encryption algorithms */
+        if (uea != ctx->uea) {
+            LOG_FUNC_RETURN (TRUE);
+        }
+        /* Supported UMTS integrity algorithms */
+        if (uia != ctx->uia) {
+            LOG_FUNC_RETURN (TRUE);
+        }
+    }
+    if (gprs_present != ctx->gprs_present){
+        LOG_FUNC_RETURN (TRUE);
+    }
+    if (ctx->gprs_present){
+        if (gea != ctx->gea) {
+            LOG_FUNC_RETURN (TRUE);
+        }
+    }
+
     /* The GUTI if provided by the UE */
     if ( (guti) && (ctx->guti == NULL) ) {
         LOG_FUNC_RETURN (TRUE);
@@ -2461,7 +2497,9 @@ static int _emm_attach_have_changed(const emm_data_context_t *ctx,
 static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
                               emm_proc_attach_type_t type, int ksi,
                               GUTI_t *guti, imsi_t *imsi, imei_t *imei,
-                              int eea, int eia, const OctetString *esm_msg)
+                              int eea, int eia, int ucs2, int uea, int uia, int gea,
+                              int umts_present, int gprs_present,
+                              const OctetString *esm_msg)
 {
     LOG_FUNC_IN;
     /* UE identifier */
@@ -2469,11 +2507,20 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
     /* Emergency bearer services indicator */
     ctx->is_emergency = (type == EMM_ATTACH_TYPE_EMERGENCY);
     /* Security key set identifier */
-    ctx->ksi = ksi;
+    ctx->ksi  = ksi;
     /* Supported EPS encryption algorithms */
-    ctx->eea = eea;
+    ctx->eea  = eea;
     /* Supported EPS integrity algorithms */
-    ctx->eia = eia;
+    ctx->eia  = eia;
+    ctx->ucs2 = ucs2;
+    ctx->uea  = uea;
+    ctx->uia  = uia;
+    ctx->gea  = gea;
+    LOG_TRACE(WARNING, "EMM-PROC  - umts_present %u", umts_present);
+    LOG_TRACE(WARNING, "EMM-PROC  - gprs_present %u", gprs_present);
+    ctx->umts_present  = umts_present;
+    ctx->gprs_present  = gprs_present;
+
     /* The GUTI if provided by the UE */
     if (guti) {
         if (ctx->guti == NULL) {

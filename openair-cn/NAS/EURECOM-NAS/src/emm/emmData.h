@@ -135,8 +135,13 @@ typedef struct {
         UInt32_t seq_num:8;
     } dl_count, ul_count;   /* Downlink and uplink count parameters    */
     struct {
-        UInt8_t encryption:4;   /* algorithm used for ciphering        */
-        UInt8_t integrity:4;    /* algorithm used for integrity protection */
+        UInt8_t eps_encryption;   /* algorithm used for ciphering            */
+        UInt8_t eps_integrity;    /* algorithm used for integrity protection */
+        UInt8_t umts_encryption;  /* algorithm used for ciphering            */
+        UInt8_t umts_integrity;   /* algorithm used for integrity protection */
+        UInt8_t gprs_encryption;  /* algorithm used for ciphering            */
+        UInt8_t umts_present:1;
+        UInt8_t gprs_present:1;
     } capability;       /* UE network capability           */
     struct {
         UInt8_t encryption:4;   /* algorithm used for ciphering           */
@@ -373,6 +378,13 @@ typedef struct emm_data_context_s {
     int         ksi;          /* Security key set identifier provided by the UE  */
     int         eea;          /* EPS encryption algorithms supported by the UE   */
     int         eia;          /* EPS integrity algorithms supported by the UE    */
+    int         ucs2;         /* UCS2 Alphabet*/
+    int         uea;          /* UMTS encryption algorithms supported by the UE  */
+    int         uia;          /* UMTS integrity algorithms supported by the UE   */
+    int         gea;          /* GPRS encryption algorithms supported by the UE  */
+    int         umts_present; /* For encoding ue network capabilities (variable size)*/
+    int         gprs_present; /* For encoding ue network capabilities (variable size)*/
+
     auth_vector_t vector;/* EPS authentication vector                            */
     emm_security_context_t *security;    /* Current EPS NAS security context     */
     OctetString esm_msg;      /* ESM message contained within the initial request*/

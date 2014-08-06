@@ -99,6 +99,9 @@ typedef struct UeNetworkCapability_tag {
     /* NF notification procedure capability */
 #define UE_NETWORK_CAPABILITY_NF	1
     uint8_t  nf:1;
+
+    uint8_t  umts_present;
+    uint8_t  gprs_present;
 } UeNetworkCapability;
 
 int encode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8_t iei, uint8_t *buffer, uint32_t len);

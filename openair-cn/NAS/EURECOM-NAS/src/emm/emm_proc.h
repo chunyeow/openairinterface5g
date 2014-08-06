@@ -159,7 +159,8 @@ int emm_proc_attach_set_detach(void);
 #ifdef NAS_MME
 int emm_proc_attach_request(unsigned int ueid, emm_proc_attach_type_t type,
                             int native_ksi, int ksi, int native_guti, GUTI_t *guti, imsi_t *imsi,
-                            imei_t *imei, tai_t *tai, int eea, int eia, const OctetString *esm_msg);
+                            imei_t *imei, tai_t *tai, int eea, int eia, int ucs2, int uea, int uia, int gea,
+                            int umts_present, int gprs_present, const OctetString *esm_msg);
 int emm_proc_attach_reject(unsigned int ueid, int emm_cause);
 int emm_proc_attach_complete(unsigned int ueid, const OctetString *esm_msg);
 int emm_proc_tracking_area_update_reject(unsigned int ueid, int emm_cause);
@@ -240,7 +241,9 @@ int emm_proc_security_mode_command(int native_ksi, int ksi, int seea, int seia,
 #endif
 
 #ifdef NAS_MME
-int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
+int emm_proc_security_mode_control(unsigned int ueid, int ksi,
+                                   int eea, int eia,int ucs2, int uea, int uia, int gea,
+                                   int umts_present, int gprs_present,
                                    emm_common_success_callback_t success,
                                    emm_common_reject_callback_t reject,
                                    emm_common_failure_callback_t failure);

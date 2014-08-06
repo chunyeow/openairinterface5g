@@ -706,7 +706,7 @@ static int _nas_message_protected_decode(
 
     int bytes = TLV_DECODE_BUFFER_TOO_SHORT;
 
-    char* plain_msg = (char*)malloc(length);
+    char* plain_msg = (char*)calloc(1,length);
     if (plain_msg)
     {
         /* Decrypt the security protected NAS message */
@@ -862,7 +862,7 @@ static int _nas_message_protected_encode(
     emm_security_context_t *emm_security_context   = (emm_security_context_t*)security;
     int bytes = TLV_ENCODE_BUFFER_TOO_SHORT;
 
-    char* plain_msg = (char*)malloc(length);
+    char* plain_msg = (char*)calloc(1,length);
     if (plain_msg) {
         /* Encode the security protected NAS message as plain NAS message */
         int size = _nas_message_plain_encode(plain_msg, &msg->header,

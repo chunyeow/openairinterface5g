@@ -133,14 +133,20 @@ static int _security_select_algorithms(
  * Internal data used for security mode control procedure
  */
 typedef struct {
-    unsigned int ueid;      /* UE identifier                       */
+    unsigned int ueid;      /* UE identifier                         */
 #define SECURITY_COUNTER_MAX    5
-    unsigned int retransmission_count;  /* Retransmission counter   */
-    int ksi;                /* NAS key set identifier               */
-    int eea;                /* Replayed EPS encryption algorithms   */
-    int eia;                /* Replayed EPS integrity algorithms    */
-    int selected_eea;       /* Selected EPS encryption algorithms   */
-    int selected_eia;       /* Selected EPS integrity algorithms    */
+    unsigned int retransmission_count;  /* Retransmission counter    */
+    int ksi;                /* NAS key set identifier                */
+    int eea;                /* Replayed EPS encryption algorithms    */
+    int eia;                /* Replayed EPS integrity algorithms     */
+    int ucs2;               /* Replayed Alphabet                     */
+    int uea;                /* Replayed UMTS encryption algorithms   */
+    int uia;                /* Replayed UMTS integrity algorithms    */
+    int gea;                /* Replayed G encryption algorithms      */
+    int umts_present:1;
+    int gprs_present:1;
+    int selected_eea;       /* Selected EPS encryption algorithms    */
+    int selected_eia;       /* Selected EPS integrity algorithms     */
     int notify_failure;     /* Indicates whether the security mode control
                              * procedure failure shall be notified to the
                              * ongoing EMM procedure        */
@@ -206,8 +212,8 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
     /*
      * Check the replayed UE security capabilities
      */
-    UInt8_t eea = (0x80 >> _emm_data.security->capability.encryption);
-    UInt8_t eia = (0x80 >> _emm_data.security->capability.integrity);
+    UInt8_t eea = (0x80 >> _emm_data.security->capability.eps_encryption);
+    UInt8_t eia = (0x80 >> _emm_data.security->capability.eps_integrity);
     if ( (reea != eea) || (reia != eia) ) {
         LOG_TRACE(WARNING, "EMM-PROC  - Replayed UE security capabilities "
                   "rejected");
@@ -412,10 +418,11 @@ int emm_proc_security_mode_command(int native_ksi, int ksi,
  **      Others:    None                                       **
  **                                                                        **
  ***************************************************************************/
-int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
-                                   emm_common_success_callback_t success,
-                                   emm_common_reject_callback_t reject,
-                                   emm_common_failure_callback_t failure)
+int emm_proc_security_mode_control(unsigned int ueid, int ksi,
+        int eea, int eia,int ucs2, int uea, int uia, int gea, int umts_present, int gprs_present,
+        emm_common_success_callback_t success,
+        emm_common_reject_callback_t reject,
+        emm_common_failure_callback_t failure)
 {
     int rc = RETURNerror;
     int security_context_is_new = FALSE;
@@ -536,9 +543,18 @@ int emm_proc_security_mode_control(unsigned int ueid, int ksi, int eea, int eia,
         data->eea = eea;
         /* Set the EPS integrity algorithms to be replayed to the UE */
         data->eia = eia;
-        /* Set the EPS encryption algorithms to be replayed to the UE */
+        data->ucs2 = ucs2;
+        /* Set the UMTS encryption algorithms to be replayed to the UE */
+        data->uea = uea;
+        /* Set the UMTS integrity algorithms to be replayed to the UE */
+        data->uia = uia;
+        /* Set the GPRS integrity algorithms to be replayed to the UE */
+        data->gea = gea;
+        data->umts_present = umts_present;
+        data->gprs_present = gprs_present;
+        /* Set the EPS encryption algorithms selected to the UE */
         data->selected_eea = emm_ctx->security->selected_algorithms.encryption;
-        /* Set the EPS integrity algorithms to be replayed to the UE */
+        /* Set the EPS integrity algorithms selected to the UE */
         data->selected_eia = emm_ctx->security->selected_algorithms.integrity;
         /* Set the failure notification indicator */
         data->notify_failure = FALSE;
@@ -1017,6 +1033,12 @@ int _security_request(security_data_t *data, int is_new)
     emm_sap.u.emm_as.u.security.ksi          = data->ksi;
     emm_sap.u.emm_as.u.security.eea          = data->eea;
     emm_sap.u.emm_as.u.security.eia          = data->eia;
+    emm_sap.u.emm_as.u.security.ucs2         = data->ucs2;
+    emm_sap.u.emm_as.u.security.uea          = data->uea;
+    emm_sap.u.emm_as.u.security.uia          = data->uia;
+    emm_sap.u.emm_as.u.security.gea          = data->gea;
+    emm_sap.u.emm_as.u.security.umts_present = data->umts_present;
+    emm_sap.u.emm_as.u.security.gprs_present = data->gprs_present;
     emm_sap.u.emm_as.u.security.selected_eea = data->selected_eea;
     emm_sap.u.emm_as.u.security.selected_eia = data->selected_eia;
 

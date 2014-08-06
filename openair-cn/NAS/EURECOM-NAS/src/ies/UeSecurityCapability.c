@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 
 #include "TLVEncoder.h"
@@ -44,6 +45,7 @@ int decode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
         CHECK_IEI_DECODER(iei, *buffer);
         decoded++;
     }
+    memset(uesecuritycapability, 0, sizeof(UeSecurityCapability));
     ielen = *(buffer + decoded);
     decoded++;
     CHECK_LENGTH_DECODER(len - decoded, ielen);
@@ -51,14 +53,17 @@ int decode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
     decoded++;
     uesecuritycapability->eia = *(buffer + decoded);
     decoded++;
-    if (len == decoded + 3) {
-        uesecuritycapability->non_eps_security_present = 1;
+    if (len >= decoded + 3) {
+        uesecuritycapability->umts_present = 1;
         uesecuritycapability->uea = *(buffer + decoded);
         decoded++;
         uesecuritycapability->uia = *(buffer + decoded) & 0x7f;
         decoded++;
-        uesecuritycapability->gea = *(buffer + decoded) & 0x7f;
-        decoded++;
+        if (len == decoded + 4) {
+            uesecuritycapability->gprs_present = 1;
+            uesecuritycapability->gea = *(buffer + decoded) & 0x7f;
+            decoded++;
+        }
     }
 #if defined (NAS_DEBUG)
     dump_ue_security_capability_xml(uesecuritycapability, iei);
@@ -85,12 +90,14 @@ int encode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
     encoded++;
     *(buffer + encoded) =  uesecuritycapability->eia;
     encoded++;
-    if (uesecuritycapability->non_eps_security_present == 1) {
+    if (uesecuritycapability->umts_present) {
         *(buffer + encoded) = uesecuritycapability->uea;
         encoded++;
         *(buffer + encoded) = 0x00 |
         (uesecuritycapability->uia & 0x7f);
         encoded++;
+    }
+    if (uesecuritycapability->gprs_present) {
         *(buffer + encoded) = 0x00 |
         (uesecuritycapability->gea & 0x7f);
         encoded++;
@@ -107,9 +114,11 @@ void dump_ue_security_capability_xml(UeSecurityCapability *uesecuritycapability,
         printf("    <IEI>0x%X</IEI>\n", iei);
     printf("    <EEA>%u</EEA>\n", uesecuritycapability->eea);
     printf("    <EIA>%u</EIA>\n", uesecuritycapability->eia);
-    if (uesecuritycapability->non_eps_security_present == 1) {
+    if (uesecuritycapability->umts_present == 1) {
         printf("    <UEA>%u</UEA>\n", uesecuritycapability->uea);
         printf("    <UIA>%u</UIA>\n", uesecuritycapability->uia);
+    }
+    if (uesecuritycapability->gprs_present == 1) {
         printf("    <GEA>%u</GEA>\n", uesecuritycapability->gea);
     }
     printf("</Ue Security Capability>\n");

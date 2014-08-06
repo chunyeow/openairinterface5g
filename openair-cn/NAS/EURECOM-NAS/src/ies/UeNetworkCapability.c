@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 
 #include "TLVEncoder.h"
@@ -46,6 +47,8 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
     }
     DECODE_U8(buffer + decoded, ielen, decoded);
 
+    memset(uenetworkcapability, 0, sizeof(UeNetworkCapability));
+
     LOG_TRACE(INFO, "decode_ue_network_capability len = %d",ielen);
     CHECK_LENGTH_DECODER(len - decoded, ielen);
     uenetworkcapability->eea = *(buffer + decoded);
@@ -62,6 +65,8 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
             uenetworkcapability->ucs2 = (*(buffer + decoded) >> 7) & 0x1;
             uenetworkcapability->uia = *(buffer + decoded) & 0x7f;
             decoded++;
+            uenetworkcapability->umts_present =1;
+            LOG_TRACE(INFO, "uenetworkcapability decoded UMTS\n");
 
             if (ielen > 4) {
                 uenetworkcapability->spare = (*(buffer + decoded) >> 5) & 0x7;
@@ -71,6 +76,8 @@ int decode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
                 uenetworkcapability->srvcc = (*(buffer + decoded) >> 1) & 0x1;
                 uenetworkcapability->nf    = *(buffer + decoded) & 0x1;
                 decoded++;
+                uenetworkcapability->gprs_present =1;
+                LOG_TRACE(INFO, "uenetworkcapability decoded GPRS\n");
             }
         }
     }
@@ -106,20 +113,28 @@ int encode_ue_network_capability(UeNetworkCapability *uenetworkcapability, uint8
     encoded++;
     *(buffer + encoded) = uenetworkcapability->eia;
     encoded++;
-    *(buffer + encoded) = uenetworkcapability->uea;
-    encoded++;
-    *(buffer + encoded) = 0x00 | ((uenetworkcapability->ucs2 & 0x1) << 7) |
-    (uenetworkcapability->uia & 0x7f);
-    encoded++;
+    LOG_TRACE(INFO, "uenetworkcapability encoded EPS %u\n", encoded);
 
-    *(buffer + encoded) = 0x00 |
-	//((uenetworkcapability->spare & 0x7) << 5) | // spare coded as zero
-	((uenetworkcapability->csfb  & 0x1) << 4) |
-	((uenetworkcapability->lpp   & 0x1) << 3) |
-	((uenetworkcapability->lcs   & 0x1) << 2) |
-	((uenetworkcapability->srvcc & 0x1) << 1) |
-	(uenetworkcapability->nf     & 0x1);
-    encoded++;
+    if (uenetworkcapability->umts_present) {
+        *(buffer + encoded) = uenetworkcapability->uea;
+        encoded++;
+        *(buffer + encoded) = 0x00 | ((uenetworkcapability->ucs2 & 0x1) << 7) |
+                (uenetworkcapability->uia & 0x7f);
+        encoded++;
+        LOG_TRACE(INFO, "uenetworkcapability encoded UMTS %u\n", encoded);
+    }
+
+    if (uenetworkcapability->gprs_present) {
+        *(buffer + encoded) = 0x00 |
+                //((uenetworkcapability->spare & 0x7) << 5) | // spare coded as zero
+                ((uenetworkcapability->csfb  & 0x1) << 4) |
+                ((uenetworkcapability->lpp   & 0x1) << 3) |
+                ((uenetworkcapability->lcs   & 0x1) << 2) |
+                ((uenetworkcapability->srvcc & 0x1) << 1) |
+                (uenetworkcapability->nf     & 0x1);
+        encoded++;
+        LOG_TRACE(INFO, "uenetworkcapability encoded GPRS %u\n", encoded);
+    }
 
     *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
     return encoded;
@@ -142,6 +157,8 @@ void dump_ue_network_capability_xml(UeNetworkCapability *uenetworkcapability, ui
     printf("    <LCS>%u</LCS>\n", uenetworkcapability->lcs);
     printf("    <SR VCC>%u</SR VCC>\n", uenetworkcapability->srvcc);
     printf("    <NF>%u<NF/>\n", uenetworkcapability->nf);
+    printf("    <UMTS>%u<UMTS/>\n", uenetworkcapability->umts_present);
+    printf("    <GPRS>%u<GPRS/>\n", uenetworkcapability->gprs_present);
     printf("</Ue Network Capability>\n");
 }
 

@@ -1244,10 +1244,12 @@ int emm_send_security_mode_command(const emm_as_security_t *msg,
     size += UE_SECURITY_CAPABILITY_MAXIMUM_LENGTH;
     emm_msg->replayeduesecuritycapabilities.eea = msg->eea;
     emm_msg->replayeduesecuritycapabilities.eia = msg->eia;
-    emm_msg->replayeduesecuritycapabilities.non_eps_security_present = 0;
-    emm_msg->replayeduesecuritycapabilities.uea = 0x00;
-    emm_msg->replayeduesecuritycapabilities.uia = 0x00;
-    emm_msg->replayeduesecuritycapabilities.gea = 0x00;
+    emm_msg->replayeduesecuritycapabilities.umts_present = msg->umts_present;
+    emm_msg->replayeduesecuritycapabilities.gprs_present = msg->gprs_present;
+
+    emm_msg->replayeduesecuritycapabilities.uea = msg->uea;
+    emm_msg->replayeduesecuritycapabilities.uia = msg->uia;
+    emm_msg->replayeduesecuritycapabilities.gea = msg->gea;
 
     LOG_FUNC_RETURN (size);
 }

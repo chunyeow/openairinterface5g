@@ -43,7 +43,8 @@ int decode_attach_request(attach_request_msg *attach_request, uint8_t *buffer, u
     int decoded_result = 0;
 
     LOG_FUNC_IN;
-
+    LOG_TRACE(INFO, "EMM  - attach_request len = %d",
+            len);
     // Check if we got a NULL pointer and if buffer length is >= minimum length expected for the message.
     CHECK_PDU_POINTER_AND_LENGTH_DECODER(buffer, ATTACH_REQUEST_MINIMUM_LENGTH, len);
 

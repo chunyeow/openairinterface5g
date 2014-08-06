@@ -2037,8 +2037,6 @@ static int _emm_as_establish_cnf(const emm_as_establish_t *msg,
 
             as_msg->selected_encryption_algorithm = htons(0x8000 >> emm_security_context->selected_algorithms.encryption);
             as_msg->selected_integrity_algorithm = htons(0x8000 >> emm_security_context->selected_algorithms.integrity);
-            //as_msg->selected_encryption_algorithm = htons(0x8000 >> emm_security_context->capability.encryption);
-            //as_msg->selected_integrity_algorithm = htons(0x8000 >> emm_security_context->capability.integrity);
 
             LOG_TRACE(DEBUG,
                 "Set nas_msg.selected_encryption_algorithm -> NBO: 0x%04X (%u)",
