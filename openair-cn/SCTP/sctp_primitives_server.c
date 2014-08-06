@@ -418,6 +418,7 @@ inline int sctp_read_from_socket(int sd, int ppid)
 
         /* Client deconnection */
         if (SCTP_SHUTDOWN_EVENT == snp->sn_header.sn_type) {
+            SCTP_DEBUG("SCTP_SHUTDOWN_EVENT received\n");
             return sctp_handle_com_down(snp->sn_shutdown_event.sse_assoc_id);
         }
         /* Association has changed. */
