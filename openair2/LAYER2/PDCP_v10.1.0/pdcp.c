@@ -833,17 +833,22 @@ void pdcp_run (
 
 #if defined(USER_MODE) && defined(OAI_EMU)
   pdcp_t            *pdcp_p          = NULL;
-  int               drb_id=0 ;
-    // add other rb_ids
-    for (drb_id=0; drb_id < DTCH; drb_id++) {
-      if (enb_flagP == ENB_FLAG_NO) {
-	pdcp_p = &pdcp_array_drb_ue[ue_mod_idP][drb_id];
-      } else {
-	pdcp_p = &pdcp_array_drb_eNB[enb_mod_idP][ue_mod_idP][drb_id];
+  int               drb_id=1 ;
+  int               ue_id=0;
+  int               read_otg=1;
+    // add check for other rb_ids later
+  if (enb_flagP == ENB_FLAG_NO) {
+    if (pdcp_array_drb_ue[ue_mod_idP][drb_id-1].instanciated_instance  != TRUE )
+      read_otg=0;
+  } else {
+    for (ue_id=0; ue_id < NB_UE_INST; ue_id++)
+      if (pdcp_array_drb_eNB[enb_mod_idP][ue_id][drb_id-1].instanciated_instance  != TRUE ){
+	read_otg =0;
+	break;
       }
-      if (pdcp_p->instanciated_instance  == TRUE )
-	pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
-    }
+  }
+  if (read_otg == 1 )
+    pdcp_fifo_read_input_sdus_from_otg(frameP, enb_flagP, ue_mod_idP, enb_mod_idP);
 #endif
 
   // IP/NAS -> PDCP traffic : TX, read the pkt from the upper layer buffer

@@ -1108,8 +1108,8 @@ g_otg->application_idx[source_id_index][destination_id_index]+=1;
 	      g_otg->background[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]] =map_str_to_int(switch_names,oai_emulation.application_config.customized_traffic.background[customized_traffic_config_index]);
 	      g_otg->m2m[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]] =map_str_to_int(switch_names,oai_emulation.application_config.customized_traffic.m2m[customized_traffic_config_index]);
 
-	      LOG_I(OTG, "[src %d][dst %d][  %d]test_m2m %d \n",source_id_index, destination_id_index , g_otg->application_idx[source_id_index][destination_id_index] , g_otg->m2m[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]  );
-
+	      /* LOG_I(OTG, "[src %d][dst %d][app %d]test_m2m %d \n",source_id_index, destination_id_index , g_otg->application_idx[source_id_index][destination_id_index] , g_otg->m2m[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]  );
+	       */
 
 	      g_otg->trans_proto[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]] = map_str_to_int(otg_transport_protocol_names, oai_emulation.application_config.customized_traffic.transport_protocol[customized_traffic_config_index]);
 	      g_otg->ip_v[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]] = map_str_to_int(otg_ip_version_names, oai_emulation.application_config.customized_traffic.ip_version[customized_traffic_config_index]);
@@ -1148,7 +1148,10 @@ g_otg->application_idx[source_id_index][destination_id_index]+=1;
 	      g_otg->holding_time_pe_off[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]=oai_emulation.application_config.customized_traffic.holding_time_pe_off[customized_traffic_config_index];
 
 	      LOG_I(OTG,"OCG_config_OTG (single node config): source = %d, dest = %d\n", source_id_index, destination_id_index);
-	      LOG_I(OTG,"customized:: OCG_config_OTG:(3) FORMAT (%d:%d) source = %d, dest = %d, Application = %d\n", did_start, did_end, source_id_index, destination_id_index, g_otg->application_type[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]]);
+	      LOG_I(OTG,"customized:: OCG_config_OTG:(3) FORMAT (%d:%d) source = %d, dest = %d, Application = %d, IDT dist %d \n", 
+		    did_start, did_end, source_id_index, destination_id_index, 
+		    g_otg->application_type[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]],
+		    g_otg->idt_dist[source_id_index][destination_id_index][g_otg->application_idx[source_id_index][destination_id_index]][state]);
 	      g_otg->application_idx[source_id_index][destination_id_index]+=1;
 
 	    }

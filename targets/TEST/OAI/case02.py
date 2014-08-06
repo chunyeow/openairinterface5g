@@ -76,7 +76,7 @@ def execute(oai, user, pw, logfile,logdir):
         conf = '-a -A AWGN -n 100 -l7'
         trace = logdir + '/log_' + case + test + '_3.txt;'
         tee = ' 2>&1 | tee ' + trace
-        diag = 'Error(s) found in the execution, check the execution logs'
+        diag = '[E] Error(s) found during the execution, check the execution logs'
         oai.send_expect_false('./oaisim.rel8 ' + conf, '[E]', 30)
         
     except log.err, e:
@@ -187,3 +187,15 @@ def execute(oai, user, pw, logfile,logdir):
         log.ok(case, test, name, conf, '', logfile)
         
 
+    try:
+        test='07'
+        name = 'Run oai.rel8.abs.ocg.otg'
+        diag = 'Check the scenario if the tests 0202 and 0203 are passed.'
+        conf = '-a -c26'
+        trace = logdir + '/log_' + case + test + '.txt'
+        tee = ' 2>&1 | tee ' + trace
+        oai.send_expect('./oaisim.rel8 ' + conf + tee, ' DL and UL loss rate below 10% ', 500)
+    except log.err, e:
+        log.fail(case, test, name, conf, e.value, diag, logfile,trace)
+    else:
+        log.ok(case, test, name, conf, '', logfile)

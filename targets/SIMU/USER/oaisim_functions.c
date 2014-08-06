@@ -1096,10 +1096,10 @@ void update_otg_eNB(module_id_t enb_module_idP, unsigned int ctime) {
           for_times += 1;
           // generate traffic if the ue is rrc reconfigured state
           if (mac_get_rrc_status(enb_module_idP, ENB_FLAG_YES, dst_id) > 2 /*RRC_CONNECTED*/ ) {
-
+	    if_times += 1;
               for (app_id=0; app_id<MAX_NUM_APPLICATION; app_id++){
                   otg_pkt = malloc (sizeof(Packet_otg_elt_t));
-                  if_times += 1;
+                 
 
                   (otg_pkt->otg_pkt).sdu_buffer = (uint8_t*) packet_gen(enb_module_idP, dst_id + NB_eNB_INST, app_id, ctime, &((otg_pkt->otg_pkt).sdu_buffer_size));
 

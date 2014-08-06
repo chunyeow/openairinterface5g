@@ -53,7 +53,7 @@ import case05
 from  openair import *
 
 debug = 0
-prompt = '$'
+prompt2 = '$'
 pw =''
 i = 0
 dlsim=0
@@ -64,7 +64,7 @@ for arg in sys.argv:
     elif arg == '-dd':
         debug = 2
     elif arg == '-p' :
-        prompt = sys.argv[i+1]
+        prompt2 = sys.argv[i+1]
     elif arg == '-w' :
         pw = sys.argv[i+1]
     elif arg == '-P' :
@@ -84,6 +84,7 @@ try:
     user = getpass.getuser()
     print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
     print '******* Connecting to the localhost to perform the test *******\n'
+    print '******* Make sure that the prompt is correct *******\n'
    
     if not pw :
         print "username: " + user 
@@ -91,7 +92,9 @@ try:
     else :
         print "username: " + user 
         #print "password: " + pw 
-    print "prompt:   " + prompt
+    
+    prompt = os.getenv("PS1")[-2]
+    print "your prompt:   " + prompt
     
     oai.connect(user,pw,prompt)
     #oai.get_shell()

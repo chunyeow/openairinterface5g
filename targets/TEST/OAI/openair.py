@@ -92,11 +92,12 @@ class openair(core):
         return (stdout, stderr)
 
     def connect(self, username, password, prompt):
-        self.prompt1 = self.shell_prompt
+        self.prompt2 = self.shell_prompt
         if not prompt :
-            self.prompt2 = self.prompt1
+            self.prompt1 = self.prompt2
         else :
-            self.prompt2 = prompt 
+            self.prompt1 = prompt
+        
         while 1:
             try:
                 if  not username:

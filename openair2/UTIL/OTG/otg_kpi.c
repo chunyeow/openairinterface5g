@@ -211,6 +211,8 @@ void kpi_gen() {
 
   int num_active_source=0;
  
+  
+  int dl_ok=0,ul_ok;
 
 char traffic_type[12];
 char traffic[30];
@@ -686,7 +688,9 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_I(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_dl*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_dl - rx_total_pkts_dl );
-  if ((g_otg->background_stats==1)&&(tx_total_pkts_dl_background>0)){
+  if (tx_total_pkts_dl - rx_total_pkts_dl  <  (int) (tx_total_pkts_dl / 10) ) // below 10% of loss
+    dl_ok=1;
+ if ((g_otg->background_stats==1)&&(tx_total_pkts_dl_background>0)){
     LOG_I(OTG,"[BACKGROUND] Total packets(TX)= %d \n", tx_total_pkts_dl_background);
     LOG_I(OTG,"[BACKGROUND] Total bytes(TX)= %d \n", tx_total_bytes_dl_background);
     LOG_I(OTG,"[BACKGROUND] Total packets(RX)= %d \n", rx_total_pkts_dl_background);
@@ -747,6 +751,10 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_I(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul/(float)num_active_source);
   LOG_I(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_I(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
+  LOG_I(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_ul - rx_total_pkts_ul );
+  if ((tx_total_pkts_ul - rx_total_pkts_ul)  < (int)(tx_total_pkts_ul / 10) )
+    ul_ok=1;
+  
   if ((g_otg->background_stats==1)&&(tx_total_pkts_ul_background>0)){
     LOG_I(OTG,"[BACKGROUND] Total packets(TX)= %d \n", tx_total_pkts_ul_background);
     LOG_I(OTG,"[BACKGROUND] Total bytes(TX)= %d \n", tx_total_bytes_ul_background);
@@ -767,6 +775,7 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
   LOG_F(OTG,"[DATA] JITTER AVG ms= %lf \n",  otg_info->average_jitter_ul/(float)num_active_source);
   LOG_F(OTG,"[DATA] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
   LOG_F(OTG,"[DATA] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_ul*1000*8)/(otg_info->ctime*1024));
+  LOG_F(OTG,"[DATA] NB lost packet = %d \n", tx_total_pkts_ul - rx_total_pkts_ul );
   if ((g_otg->background_stats==1)&&(tx_total_pkts_ul_background>0)){
     LOG_F(OTG,"[BACKGROUND] Total packets(TX)= %d \n", tx_total_pkts_ul_background);
     LOG_F(OTG,"[BACKGROUND] Total bytes(TX)= %d \n", tx_total_bytes_ul_background);
@@ -777,6 +786,10 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
 
   }
 
+  if ((dl_ok == 1 ) && (ul_ok ==1))
+    LOG_I(OTG,"************ DL and UL loss rate below 10% *************\n");
+  else 
+    LOG_I(OTG,"************ DL and UL loss rate above 10% *************\n");
 #endif
 }
 
