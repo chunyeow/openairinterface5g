@@ -78,50 +78,57 @@ FD_otg *create_form_otg(void)
 
 //For more details about object parameters, refer to: http://xforms-toolkit.org/doc/xforms_25.html
 
-void show_otg_form()
-{
-int eNB_id;
-char title[255];
-char *tArgv[] = { "OTG", "OTG" };
-int tArgc = 2;
+void show_otg_form() {
+  int eNB_id;
+  char title[255];
+  char *tArgv[] = { "OTG", "OTG" };
+  int tArgc = 2;
 
-fl_initialize(&tArgc,tArgv,"OTG",0,0);
-    for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++) { //NB_eNB_INST
-      form_dl= create_form_otg ();
-      sprintf (title, "LTE eNB->UE (DL)");
-      fl_show_form (form_dl->otg, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
-      fl_set_form_position(form_dl->otg, 200, 200);
-        if (g_otg->owd_radio_access==1)
-          fl_set_xyplot_ybounds(form_dl->owd,0,200);
-        else
-          fl_set_xyplot_ybounds(form_dl->owd,0,400);
+  int major_owd = 6;
+  int minor_owd = 3; 
+  int major_thr = 5;
+  int minor_thr = 2; 
 
- 
-      fl_set_xyplot_ybounds(form_dl->throughput,0,200); 
-
-
-
-      form_ul= create_form_otg ();
-      sprintf (title, "LTE UE->eNB (UL)");
-      fl_show_form (form_ul->otg, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
-      fl_set_form_position(form_ul->otg, 850, 200);
-      if (g_otg->owd_radio_access==1)
-          fl_set_xyplot_ybounds(form_ul->owd,0,200);
-      else
-	fl_set_xyplot_ybounds(form_ul->owd,0,400);
-
-
-
-      fl_set_xyplot_ybounds(form_ul->throughput,0,200); 
-
-
-    }
+  fl_initialize(&tArgc,tArgv,"OTG",0,0);
+  for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++) { //NB_eNB_INST
+    form_dl= create_form_otg ();
+    sprintf (title, "LTE eNB->UE (DL)");
+    fl_show_form (form_dl->otg, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
+    fl_set_form_position(form_dl->otg, 200, 200);
+    fl_set_xyplot_ytics(form_dl->owd,major_owd, minor_owd);
+    if (g_otg->owd_radio_access==1)
+      fl_set_xyplot_ybounds(form_dl->owd,0,200);
+    else
+      fl_set_xyplot_ybounds(form_dl->owd,0,400);
+    
+    fl_set_xyplot_ytics(form_dl->throughput,major_thr, minor_thr);
+    fl_set_xyplot_ybounds(form_dl->throughput,0,1000); 
+    
+    
+    
+    form_ul= create_form_otg ();
+    sprintf (title, "LTE UE->eNB (UL)");
+    fl_show_form (form_ul->otg, FL_PLACE_HOTSPOT, FL_FULLBORDER, title);
+    fl_set_form_position(form_ul->otg, 850, 200);
+    fl_set_xyplot_ytics(form_ul->owd,major_owd, minor_owd);
+    if (g_otg->owd_radio_access==1)
+      fl_set_xyplot_ybounds(form_ul->owd,0,200);
+    else
+      fl_set_xyplot_ybounds(form_ul->owd,0,400);
+    
+    //fl_set_positioner_ystep (form_ul->throughput, 100);
+    //fl_set_xyplot_xgrid (form_ul->throughput, FL_GRID_MAJOR);
+    fl_set_xyplot_ytics(form_ul->throughput,major_thr, minor_thr);
+    fl_set_xyplot_ybounds(form_ul->throughput,0,1000); 
+    
+    
+  }
 
     //create_form_clock();
     //fl_show_form(fclock, FL_PLACE_CENTER,FL_TRANSIENT,"clocks");
     //fl_do_forms();
 
-   fl_check_forms();
+  fl_check_forms();
 }	
 																
 void add_tab_metric(int src, int dst, float owd, float throughput, int ctime){
