@@ -33,6 +33,9 @@
 //-----------------------------------------------------------------------------
 #include "platform_types.h"
 //-----------------------------------------------------------------------------
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
 #include "assertions.h"
 #include "list.h"
 #include "rlc_am.h"
@@ -41,6 +44,48 @@
 #define TRACE_STATUS_CREATION
 
 rlc_am_control_pdu_info_t  g_rlc_am_control_pdu_info;
+
+
+#   if defined(ENABLE_ITTI)
+//-----------------------------------------------------------------------------
+void rlc_am_itti_display_status_ind_infos(const rlc_am_entity_t const * rlc_pP, const rlc_am_control_pdu_info_t const * pdu_info_pP)
+//-----------------------------------------------------------------------------
+{
+    char                 message_string[1000];
+    size_t               message_string_size = 0;
+    MessageDef          *msg_p;
+
+    int num_nack;
+
+    if (!pdu_info_pP->d_c) {
+        message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", rlc_pP->rb_id);
+        message_string_size += sprintf(&message_string[message_string_size], "CONTROL PDU ACK SN %04d", pdu_info_pP->ack_sn);
+
+        for (num_nack = 0; num_nack < pdu_info_pP->num_nack; num_nack++) {
+            if (pdu_info_pP->nack_list[num_nack].e2) {
+                message_string_size += sprintf(&message_string[message_string_size], "\n\tNACK SN %04d SO START %05d SO END %05d",  pdu_info_pP->nack_list[num_nack].nack_sn,
+                                                      pdu_info_pP->nack_list[num_nack].so_start,
+                                                      pdu_info_pP->nack_list[num_nack].so_end);
+            } else {
+                message_string_size += sprintf(&message_string[message_string_size], "\n\tNACK SN %04d",  pdu_info_pP->nack_list[num_nack].nack_sn);
+            }
+        }
+        message_string_size += sprintf(&message_string[message_string_size], "\n");
+
+        msg_p = itti_alloc_new_message_sized (rlc_pP->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_AM_STATUS_PDU_IND, message_string_size + sizeof (IttiMsgText));
+        msg_p->ittiMsg.rlc_am_status_pdu_ind.size = message_string_size;
+        memcpy(&msg_p->ittiMsg.rlc_am_status_pdu_ind.text, message_string, message_string_size);
+
+        if (rlc_pP->is_enb) {
+            itti_send_msg_to_task(TASK_UNKNOWN, rlc_pP->enb_module_id, msg_p);
+        } else {
+            itti_send_msg_to_task(TASK_UNKNOWN, rlc_pP->ue_module_id + NB_eNB_INST, msg_p);
+        }
+    }
+}
+
+#   endif
+
 //-----------------------------------------------------------------------------
 uint16_t rlc_am_read_bit_field(uint8_t** data_ppP, unsigned int* bit_pos_pP, signed int bits_to_readP) {
 //-----------------------------------------------------------------------------

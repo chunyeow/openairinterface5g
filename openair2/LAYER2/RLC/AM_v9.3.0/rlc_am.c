@@ -896,7 +896,7 @@ rlc_am_mac_data_indication (void *rlc_pP, frame_t frameP, eNB_flag_t eNB_flagP, 
 
 #   if defined(ENABLE_ITTI)
                   message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", l_rlc_p->rb_id);
-                  message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", tb_size_in_bytes);
+                  message_string_size += sprintf(&message_string[message_string_size], "PDU size    : %u\n", ((struct mac_tb_ind *) (tb_p->data))->size);
                   message_string_size += sprintf(&message_string[message_string_size], "PDU type    : RLC AM DATA IND: STATUS PDU\n\n");
                   message_string_size += sprintf(&message_string[message_string_size], "Header      :\n");
                   message_string_size += sprintf(&message_string[message_string_size], "  D/C       : %u\n", g_rlc_am_control_pdu_info.d_c);
@@ -982,7 +982,7 @@ rlc_am_data_req (void *rlc_pP, frame_t frameP, mem_block_t * sdu_pP)
           /*
            * Print every single octet in hexadecimal form
            */
-          message_string_size += sprintf(&message_string[message_string_size], " %02x", (uint8_t*)(&sdu_pP->data[data_offset])[octet_index]);
+          message_string_size += sprintf(&message_string[message_string_size], " %02x", ((uint8_t*)(&sdu_pP->data[data_offset]))[octet_index]);
           /*
            * Align newline and pipes according to the octets in groups of 2
            */
