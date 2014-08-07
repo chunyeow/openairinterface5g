@@ -226,13 +226,14 @@ static int _emm_cn_pdn_connectivity_res(const emm_cn_pdn_res_t *msg_pP)
     LOG_TRACE(INFO, "EMM  -  qos.mbrDL = %u ", msg_pP->qos.mbrDL);
     LOG_TRACE(INFO, "EMM  -  qos.gbrUL = %u ", msg_pP->qos.gbrUL);
     LOG_TRACE(INFO, "EMM  -  qos.gbrDL = %u ", msg_pP->qos.gbrDL);
-    qos.bitRatesPresent           = 1;
+    qos.bitRatesPresent           = 0;
     qos.bitRatesExtPresent        = 0;
+#warning "Some work to do here about qos"
     qos.qci                       = msg_pP->qci;
-    qos.bitRates.maxBitRateForUL  = msg_pP->qos.mbrUL;
-    qos.bitRates.maxBitRateForDL  = msg_pP->qos.mbrDL;
-    qos.bitRates.guarBitRateForUL = msg_pP->qos.gbrUL;
-    qos.bitRates.guarBitRateForDL = msg_pP->qos.gbrDL;
+    qos.bitRates.maxBitRateForUL  = 0;//msg_pP->qos.mbrUL;
+    qos.bitRates.maxBitRateForDL  = 0;//msg_pP->qos.mbrDL;
+    qos.bitRates.guarBitRateForUL = 0;//msg_pP->qos.gbrUL;
+    qos.bitRates.guarBitRateForDL = 0;//msg_pP->qos.gbrDL;
 
     qos.bitRatesExt.maxBitRateForUL  = 0;
     qos.bitRatesExt.maxBitRateForDL  = 0;
