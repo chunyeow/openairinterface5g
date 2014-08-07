@@ -360,6 +360,7 @@ if [ "x$GNU_DEBUGGER" == "xyes" ]; then
     touch .gdbinit
     echo "file $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc" > .gdbinit
     echo "set args -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC" >> .gdbinit
+#    echo "b encode_eps_mobile_identity" >> .gdbinit
     echo "run" >> .gdbinit
     gdb 2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
 else 
