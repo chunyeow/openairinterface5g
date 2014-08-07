@@ -331,10 +331,9 @@ mme_app_handle_conn_est_cnf(
     establishment_cnf_p->bearer_qos_prio_level             = current_bearer_p->prio_level;
     establishment_cnf_p->bearer_qos_pre_emp_vulnerability  = current_bearer_p->pre_emp_vulnerability;
     establishment_cnf_p->bearer_qos_pre_emp_capability     = current_bearer_p->pre_emp_capability;
-#warning "Hardcoded AMBR"
-    //establishment_cnf_p->ambr                              = ue_context_p->used_ambr;
-    establishment_cnf_p->ambr.br_ul                        = 40000000;
-    establishment_cnf_p->ambr.br_dl                        = 100000000;
+#warning "Check ue_context_p ambr"
+    establishment_cnf_p->ambr.br_ul                        = ue_context_p->subscribed_ambr.br_ul;
+    establishment_cnf_p->ambr.br_dl                        = ue_context_p->subscribed_ambr.br_dl;
 
     establishment_cnf_p->security_capabilities_encryption_algorithms = nas_conn_est_cnf_pP->selected_encryption_algorithm;
     establishment_cnf_p->security_capabilities_integrity_algorithms  = nas_conn_est_cnf_pP->selected_integrity_algorithm;
@@ -609,11 +608,11 @@ mme_app_handle_create_sess_resp(
         //memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).qos,
         //        &ue_context_p->pending_pdn_connectivity_req_qos,
         //        sizeof(network_qos_t));
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrUL    = 0;
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrDL    = 0; /* Guaranteed Bit Rate for downlink */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrUL    = 50000; /* Maximum Bit Rate for uplink      */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrDL    = 100000; /* Maximum Bit Rate for downlink    */
-        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.qci      = 9; /* QoS Class Identifier         */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrUL    = 64;  /* 64=64kb/s   Guaranteed Bit Rate for uplink   */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.gbrDL    = 120; /* 120=512kb/s Guaranteed Bit Rate for downlink */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrUL    = 72; /* 72=128kb/s   Maximum Bit Rate for uplink      */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.mbrDL    = 135; /*135=1024kb/s Maximum Bit Rate for downlink    */
+        NAS_PDN_CONNECTIVITY_RSP(message_p).qos.qci      = 9; /* QoS Class Identifier                           */
 
         NAS_PDN_CONNECTIVITY_RSP(message_p).request_type   = ue_context_p->pending_pdn_connectivity_req_request_type; // NAS internal ref
         ue_context_p->pending_pdn_connectivity_req_request_type = 0;
@@ -634,8 +633,9 @@ mme_app_handle_create_sess_resp(
         memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).sgw_s1u_address,
                &current_bearer_p->s_gw_address, sizeof(ip_address_t));
 
-        memcpy(&NAS_PDN_CONNECTIVITY_RSP(message_p).ambr, &ue_context_p->subscribed_ambr,
-               sizeof(ambr_t));
+        NAS_PDN_CONNECTIVITY_RSP(message_p).ambr.br_ul = ue_context_p->subscribed_ambr.br_ul;
+        NAS_PDN_CONNECTIVITY_RSP(message_p).ambr.br_dl = ue_context_p->subscribed_ambr.br_dl;
+
 
         return itti_send_msg_to_task(TASK_NAS_MME, INSTANCE_DEFAULT, message_p);
     }
