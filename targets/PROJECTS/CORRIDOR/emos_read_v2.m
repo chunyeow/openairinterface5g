@@ -13,7 +13,8 @@ primary_synch; %loads the primary sync signal
 load('ofdm_pilots_sync_30MHz.mat');
 
 n_carriers = 2; % use 1 for UHF and 2 for 2.6GHz
-n_trials=2;%use 1 for trial1 and 2 for trial2
+n_trials=1;%use 1 for trial1 and 2 for trial2
+n_run=1;
 symbols_per_slot = 6;
 slots_per_frame = 20;
 
@@ -23,9 +24,9 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4);
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run1.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run1.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
         
         nframes = 100; % frames in one block
@@ -33,12 +34,12 @@ switch n_carriers
     case 2,
         p(1) = init_params(100,2,4);
         p(2) = init_params(50,2,4);
-        pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the first carrier, which is 10MHz
+        pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the second carrier, which is 10MHz
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run1.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run2.EMOS';
         %filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run2.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run2.EMOS';
         
         nframes = 50; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
@@ -84,11 +85,77 @@ end
 PDP_totala = zeros(nblocks*nframes,p(1).useful_carriers/4,p(1).nant_tx,p(1).nant_rx);
 PDD_totala = zeros(nframes*num_symbols_frame/2,nblocks,p(1).nant_tx,p(1).nant_rx);
 
+% delay doppler spectrum
+delay_doppler_profile_beforea=zeros(nframes*num_symbols_frame/2,p(1).useful_carriers/4);%contains the delay doppler spectrum for a block before the passing of the train
+delay_doppler_profile_duringa=zeros(nframes*num_symbols_frame/2,p(1).useful_carriers/4);%contains the delay doppler spectrum for a block during the passing of the train
+delay_doppler_profile_aftera=zeros(nframes*num_symbols_frame/2,p(1).useful_carriers/4);%contains the delay doppler spectrum for a block after the passing of the train
+
+if n_carriers==2
+    delay_doppler_profile_beforeb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for a block before the passing of the train
+    delay_doppler_profile_duringb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for a block during the passing of the train
+    delay_doppler_profile_afterb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for a block after the passing of the train
+end
+
+if n_trials==1
+    if n_run==1
+        block_before=50;
+        block_during=90;
+        block_after=130;
+    end
+    if n_run==2
+        if n_carriers==1% we have changed the orientation of the antennas for the UHF channel in Trial 1 Run 2
+            
+            
+            block_before=60;
+            block_during=155;
+            block_after=190;
+        end
+        
+        if n_carriers==2
+            block_before=60;
+            block_during=107;
+            block_after=140;
+            
+        end
+        
+    end
+end
+
+if n_trials==2
+    if n_run==1
+        block_before=50;
+        block_during=91;
+        block_after=140;
+    end
+    
+    if n_run==2
+        block_before=45;
+        block_during=77;
+        block_after=120;
+    end
+    
+    if n_run==3
+        block_before=45;
+        block_during=83;
+        block_after=120;
+    end
+    
+    if n_run==4
+        block_before=34;
+        block_during=43;
+        block_after=90;
+    end
+end
 
 if(n_carriers==2)
     PDP_totalb = zeros(nblocks*nframes,p(2).useful_carriers/4,p(2).nant_tx,p(2).nant_rx);
     PDD_totalb=zeros(nframes*num_symbols_frame/2,nblocks,p(2).nant_tx,p(2).nant_rx);
-    
+    interesting_delay_doppler_profileb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for the wanted block
+    if (n_trials==2)
+        
+        interesting_block=60;%contains the value of one interesting block for the delay_doppler_spectrum
+        
+    end
 end
 
 
@@ -425,7 +492,7 @@ while ~feof(fid)
                 
                 if(n_carriers==2)
                     
-                     if carrier==2
+                    if carrier==2
                         % adjust frame offset base on channel estimate to compensate for
                         % timing drift. We try to keep the peak of the impulse response at
                         % sample prefix_length/8.
@@ -455,11 +522,11 @@ while ~feof(fid)
         Ht1a=ifft(H1a,[],2);
         
         PDD1a=sum(abs(fftshift(fft(Ht1a,[],1))).^2,2);
-        delayPDD1a=abs(fftshift(fft(Ht1a,[],1))).^2;
+        delayPDD1a=mean(mean(abs(fftshift(fft(Ht1a,[],1))).^2,3),4);
         if(n_carriers==2)
             Ht1b=ifft(H1b,[],2);
             PDD1b=sum(abs(fftshift(fft(Ht1b,[],1))).^2,2);
-            delayPDD1b=abs(fftshift(fft(Ht1b,[],1))).^2;
+            delayPDD1b=mean(mean(abs(fftshift(fft(Ht1b,[],1))).^2,3),4);
         end
         
         if(enable_plots>=2)
@@ -472,10 +539,14 @@ while ~feof(fid)
                     end
                     
                     subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+                    title(sprintf('Doppler Spectrum for UHF-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
+                    if n_carriers==2
+                        title(sprintf('Doppler Spectrum for 2.6GHz Carrier 1-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
+                    end
+                    
                     plot(F,10*log10(PDD1a(:,:,itx,irx)))
                     
-                    %ylim([])
-                    %xlim([])
+                    
                     xlabel('F=f-ftx [Hz]')
                     ylabel('power [dB]')
                 end
@@ -488,10 +559,10 @@ while ~feof(fid)
                         F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
                         
                         subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+                        title(sprintf('Doppler Spectrum for 2.6GHz Carrier 2-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
                         plot(F,10*log10(PDD1b(:,:,itx,irx)))
                         
-                        %ylim([])
-                        %xlim([])
+                        
                         xlabel('F=f-ftx [Hz]')
                         ylabel('power [dB]')
                     end
@@ -499,50 +570,77 @@ while ~feof(fid)
             end
         end
         
-        
-%         figure(20)
-%             for itx=1:p(1).nant_tx
-%                 for irx=1:p(1).nant_rx
-%                     D=1:300;
-%                     F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
-%                     if(n_carriers==2)
-%                         F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
-%                     end
-%                     
-%                     subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
-% %                    plot(F,10*log10(delayPDD1a(:,180,itx,irx)),F,10*log10(delayPDD1a(:,250,itx,irx)))
-%                     waterfall(plot(10*log10(delayPDD1a(:,:,itx,irx))))
-%                     %ylim([])
-%                     %xlim([])
-% %                     xlabel('F=f-ftx [Hz]')
-% %                     ylabel('power [dB]')
-%                 end
-%             end
-%             
-%             if(n_carriers==2)
-%                 figure(21)
-%                 for itx=1:p(1).nant_tx
-%                     for irx=1:p(1).nant_rx
-%                         D=1:300;
-%                         F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
-%                         
-%                         subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
-% %                         plot(F,10*log10(delayPDD1b(:,90,itx,irx)),F,10*log10(delayPDD1b(:,120,itx,irx)))
-%                         waterfall(plot(10*log10(delayPDD1b(:,:,itx,irx))))
-%                         %ylim([])
-%                         %xlim([])
-% %                         xlabel('F=f-ftx [Hz]')
-% %                         ylabel('power [dB]')
-%                     end
-%                 end
-%             end
+        if enable_plots>=2
+            figure(20)
+            
+            
+            tau=linspace(0,p(1).useful_carriers/4/4.5E6,p(1).useful_carriers/4);
+            F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
+            if(n_carriers==2)
+                tau=linspace(0,p(1).useful_carriers/4/18E6,p(1).useful_carriers/4);
+                F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
+            end
+            title(sprintf('Delay Doppler Spectrum for UHF-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
+            if(n_carriers==2)
+                title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 1-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
+            end
+            pcolor(tau,F,10*log10(delayPDD1a(:,:)))
+            shading flat
+            bara=colorbar;
+            xlabel('delay [s]')
+            ylabel('Doppler shift [Hz]')
+            
+            
+            if(n_carriers==2)
+                figure(21)
+                tau=linspace(0,p(2).useful_carriers/4/9E6,p(2).useful_carriers/4);
+                F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
+                title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 2-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
+                pcolor(tau,F,10*log10(delayPDD1b(:,:)))
+                shading flat
+                barb=colorbar;
+                xlabel('delay [s]')
+                ylabel('Doppler shift [Hz]')
+                
+                
+            end
+            
+        end
         
         
         PDD_totala(:,block,:,:)=PDD1a;
+        if(block==block_before)
+            delay_doppler_profile_beforea=delayPDD1a;
+            
+        end
+        
+        if(block==block_during)
+            delay_doppler_profile_duringa=delayPDD1a;
+            
+        end
+        
+        if(block==block_after)
+            delay_doppler_profile_aftera=delayPDD1a;
+            
+        end
+        
         
         if(n_carriers==2)
             PDD_totalb(:,block,:,:)=PDD1b;
-           
+            if(block==block_before)
+                delay_doppler_profile_beforeb=delayPDD1b;
+                
+            end
+            
+            if(block==block_during)
+                delay_doppler_profile_duringb=delayPDD1b;
+                
+            end
+            
+            if(block==block_after)
+                delay_doppler_profile_afterb=delayPDD1b;
+                
+            end
         end
         
         
@@ -658,11 +756,15 @@ if(enable_plots>=2)
                 F=-(NFRAMES*num_symbols_frame/2-1)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120:30.72E6/(NFRAMES*num_symbols_frame/2)/5120:(NFRAMES*num_symbols_frame/2)*30.72E6/(2*NFRAMES*num_symbols_frame/2)/5120;
             end
             subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+            title(sprintf('Doppler spectrum UHF Trial %d-Run %d',n_trials,n_run));
+            if n_carriers==2
+                title(sprintf('Doppler spectrum 2.6GHz Carrier 1 Trial %d-Run %d',n_trials,n_run));
+            end
             pcolor(T,F,10*log10( PDD_totala(:,:,itx,irx)));
             shading flat
             bara=colorbar;
-            %ylim([])
-            %xlim([])
+            
+            ylabel(bara, 'dBm')
             ylabel('F=f-ftx [Hz]')
             xlabel('time [s]')
         end
@@ -675,11 +777,12 @@ if(enable_plots>=2)
                 T=1:1:block-1;
                 F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
                 subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+                title(sprintf('Doppler spectrum 2.6GHz Carrier 2 Trial %d-Run %d',n_trials,n_run));
                 pcolor(T,F,10*log10( PDD_totalb(:,:,itx,irx)));
                 shading flat
                 barb=colorbar;
-                %ylim([])
-                %xlim([])
+                
+                ylabel(barb, 'dBm')
                 ylabel('F=f-ftx [Hz]')
                 xlabel('time [s]')
             end
@@ -687,13 +790,15 @@ if(enable_plots>=2)
     end
 end
 
+%%
+
 %% Mean Delay
 
 Pma=zeros((block-1)*NFRAMES,1,p(1).nant_tx,p(1).nant_rx);% zeroth-order moment
 Pma1=zeros((block-1)*NFRAMES,1,p(1).nant_tx,p(1).nant_rx);
 atau=linspace(0,p(1).useful_carriers/4/4.5E6,p(1).useful_carriers/4);
 if(n_carriers==2)
-    atau=linspace(0,p(1).useful_carriers/4/9E6,p(1).useful_carriers/4);
+    atau=linspace(0,p(1).useful_carriers/4/18E6,p(1).useful_carriers/4);
 end
 for i=1:p(1).useful_carriers/4
     Pma(:,1,:,:)=Pma(:,1,:,:)+PDP_totala(:,i,:,:);
@@ -706,7 +811,7 @@ mean_delay_a=Pma1./Pma;% mean delay: first-order moment
 if(n_carriers==2)
     Pmb=zeros((block-1)*NFRAMES,1,p(2).nant_tx,p(2).nant_rx);
     Pmb1=zeros((block-1)*NFRAMES,1,p(2).nant_tx,p(2).nant_rx);
-    btau=linspace(0,p(2).useful_carriers/4/18E6,p(2).useful_carriers/4);
+    btau=linspace(0,p(2).useful_carriers/4/9E6,p(2).useful_carriers/4);
     for i=1:p(2).useful_carriers/4
         Pmb(:,1,:,:)=Pmb(:,1,:,:)+PDP_totalb(:,i,:,:);
         Pmb1(:,1,:,:)=Pmb1(:,1,:,:)+btau(i)*PDP_totalb(:,i,:,:);
@@ -719,6 +824,10 @@ for itx=1:p(1).nant_tx
     for irx=1:p(1).nant_rx
         
         subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+        title(sprintf('Mean Delay UHF Trial %d-Run %d',n_trials,n_run));
+        if n_carriers==2
+            title(sprintf('Mean Delay 2.6GHz Carrier 1 Trial %d-Run %d',n_trials,n_run));
+        end
         plot(mean_delay_a(:,:,itx,irx));
         ylabel('delay [s]')
         xlabel('time [s]')
@@ -732,6 +841,7 @@ if (n_carriers==2)
         for irx=1:p(2).nant_rx
             
             subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+            title(sprintf('Mean Delay 2.6GHz Carrier 2 Trial %d-Run %d',n_trials,n_run));
             plot(mean_delay_b(:,:,itx,irx));
             ylabel('delay [s]')
             xlabel('time [s]')
@@ -773,6 +883,10 @@ for itx=1:p(1).nant_tx
     for irx=1:p(1).nant_rx
         
         subplot(p(1).nant_tx,p(1).nant_rx,(itx-1)*p(1).nant_rx + irx);
+        title(sprintf('Mean Doppler shift UHF Trial %d-Run %d',n_trials,n_run));
+        if n_carriers==2
+            title(sprintf('Mean Doppler shift 2.6GHz Carrier 1 Trial %d-Run %d',n_trials,n_run));
+        end
         plot(mean_doppler_shift_a(:,:,itx,irx));
         ylabel('f-ftx [Hz]')
         xlabel('time [s]')
@@ -785,6 +899,7 @@ if (n_carriers==2)
         for irx=1:p(2).nant_rx
             
             subplot(p(2).nant_tx,p(2).nant_rx,(itx-1)*p(2).nant_rx + irx);
+            title(sprintf('Mean Doppler shift 2.6GHz Carrier 2 Trial %d-Run %d',n_trials,n_run));
             plot(mean_doppler_shift_b(:,:,itx,irx));
             ylabel('f-ftx [Hz]')
             xlabel('time [s]')
@@ -793,14 +908,17 @@ if (n_carriers==2)
 end
 %%
 figure(17)
-title('');
+title(sprintf('Main Doppler peak for UHF Trial %d-Run%d',n_trials,n_run));
+if n_carriers==2
+    title(sprintf('Main Doppler peak for 2.6GHz Carrier 1 Trial %d-Run%d',n_trials,n_run));
+end
 plot(doppler_freq_of_max_a);
 xlabel('time [s]');
 ylabel('f-ftx [Hz]');
 
 if(n_carriers==2)
     figure(18)
-    title('');
+    title(sprintf('Main Doppler peak for 2.6GHz Carrier 2 Trial %d-Run%d',n_trials,n_run));
     plot(doppler_freq_of_max_b);
     xlabel('time [s]');
     ylabel('f-ftx [Hz]');
@@ -836,8 +954,10 @@ fclose(fid);
 %% save processed data
 [path,name,ext]=fileparts(filename);
 if(n_carriers==1)
-    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a');
+    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera');
+    
 end
 if(n_carriers==2)
-    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b');
+    save([name '.mat'],'PDP_totala','PDD_totala','mean_delay_a','mean_doppler_shift_a','doppler_freq_of_max_a','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera','PDP_totalb','PDD_totalb','mean_delay_b','mean_doppler_shift_b','doppler_freq_of_max_b','delay_doppler_profile_beforeb','delay_doppler_profile_duringb','delay_doppler_profile_afterb');
+    
 end
