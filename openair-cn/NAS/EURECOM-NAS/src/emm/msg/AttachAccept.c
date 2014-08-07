@@ -192,6 +192,9 @@ int encode_attach_accept(attach_accept_msg *attach_accept, uint8_t *buffer, uint
 
     *(buffer + encoded) = (encode_u8_eps_attach_result(&attach_accept->epsattachresult) & 0x0f);
     encoded++;
+#warning "LG TEST override t3412value"
+    attach_accept->t3412value.unit = GPRS_TIMER_UNIT_360S;
+    attach_accept->t3412value.timervalue = 10;
     if ((encode_result = encode_gprs_timer(&attach_accept->t3412value, 0, buffer
          + encoded, len - encoded)) < 0) {        //Return in case of error
         LOG_TRACE(WARNING, "Failed encode_gprs_timer");

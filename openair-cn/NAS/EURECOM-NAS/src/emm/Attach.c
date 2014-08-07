@@ -2309,7 +2309,13 @@ static int _emm_attach_accept(emm_data_context_t *emm_ctx, attach_data_t *data)
     if (emm_ctx->guti_is_new && emm_ctx->old_guti) {
         /* Implicit GUTI reallocation;
          * include the new assigned GUTI in the Attach Accept message  */
+        LOG_TRACE(INFO,"EMM-PROC  - Implicit GUTI reallocation, include the new assigned GUTI in the Attach Accept message");
         emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->old_guti;
+        emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
+    } else if (emm_ctx->guti_is_new && emm_ctx->guti) {
+        /* include the new assigned GUTI in the Attach Accept message  */
+        LOG_TRACE(INFO,"EMM-PROC  - Include the new assigned GUTI in the Attach Accept message");
+        emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
         emm_sap.u.emm_as.u.establish.new_guti  = emm_ctx->guti;
     } else {
         emm_sap.u.emm_as.u.establish.UEid.guti = emm_ctx->guti;
@@ -2516,13 +2522,12 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
     ctx->uea  = uea;
     ctx->uia  = uia;
     ctx->gea  = gea;
-    LOG_TRACE(WARNING, "EMM-PROC  - umts_present %u", umts_present);
-    LOG_TRACE(WARNING, "EMM-PROC  - gprs_present %u", gprs_present);
     ctx->umts_present  = umts_present;
     ctx->gprs_present  = gprs_present;
 
     /* The GUTI if provided by the UE */
     if (guti) {
+        LOG_TRACE(INFO, "EMM-PROC  - GUTI NOT NULL");
         if (ctx->guti == NULL) {
             ctx->guti = (GUTI_t *)malloc(sizeof(GUTI_t));
         }
@@ -2537,20 +2542,20 @@ static int _emm_attach_update(emm_data_context_t *ctx, unsigned int ueid,
         }
         if (ctx->guti != NULL) {
             /* TODO: FIXME */
-            LOG_TRACE(WARNING, "EMM-PROC  - Assign hardcoded PLMN 208.92 and tac 0001 to emm_data_context");
+            LOG_TRACE(WARNING, "EMM-PROC  - Assign GUTI hardcoded PLMN 208.92 and tac 15 to emm_data_context");
             ctx->guti->gummei.plmn.MCCdigit1 = 2;
             ctx->guti->gummei.plmn.MCCdigit2 = 0;
             ctx->guti->gummei.plmn.MCCdigit3 = 8;
             ctx->guti->gummei.plmn.MNCdigit1 = 9;
             ctx->guti->gummei.plmn.MNCdigit2 = 2;
             ctx->guti->gummei.plmn.MNCdigit3 = 15;
+            ctx->tac                         = 15;
+            ctx->guti->gummei.MMEcode        = 29;
+            ctx->guti->gummei.MMEgid         = 30;
+            ctx->guti->m_tmsi                = (uint32_t) ctx;
+            LOG_TRACE(WARNING, "EMM-PROC  - Set ctx->guti_is_new to emm_data_context");
+            ctx->guti_is_new                 = TRUE;
 
-            ctx->guti->gummei.MMEcode = 0;
-            ctx->guti->gummei.MMEgid  = 0;
-
-            ctx->guti->m_tmsi = (uint32_t) ctx;
-
-            ctx->tac          = 1;
         } else {
             LOG_FUNC_RETURN (RETURNerror);
         }
