@@ -96,11 +96,12 @@ int encode_ue_security_capability(UeSecurityCapability *uesecuritycapability, ui
         *(buffer + encoded) = 0x00 |
         (uesecuritycapability->uia & 0x7f);
         encoded++;
-    }
-    if (uesecuritycapability->gprs_present) {
-        *(buffer + encoded) = 0x00 |
-        (uesecuritycapability->gea & 0x7f);
-        encoded++;
+#warning "force gea to 0x60 if umts security capability present"
+        //if (uesecuritycapability->gprs_present) {
+            *(buffer + encoded) = 0x00 | 0x60;
+            //(uesecuritycapability->gea & 0x7f);
+            encoded++;
+        //}
     }
     *lenPtr = encoded - 1 - ((iei > 0) ? 1 : 0);
     return encoded;
