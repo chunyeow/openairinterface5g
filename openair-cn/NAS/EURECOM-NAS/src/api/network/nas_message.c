@@ -278,18 +278,19 @@ int nas_message_decrypt(
         LOG_FUNC_RETURN (TLV_DECODE_BUFFER_TOO_SHORT);
     }
     else if (size > 1) {
+        if (emm_security_context) {
 #if defined(NAS_MME)
-    	if (emm_security_context->ul_count.seq_num > header->sequence_number) {
-    	    emm_security_context->ul_count.overflow += 1;
-    	}
-    	emm_security_context->ul_count.seq_num = header->sequence_number;
-
+            if (emm_security_context->ul_count.seq_num > header->sequence_number) {
+                emm_security_context->ul_count.overflow += 1;
+            }
+            emm_security_context->ul_count.seq_num = header->sequence_number;
 #else
-    	if (emm_security_context->dl_count.seq_num > header->sequence_number) {
-    		emm_security_context->dl_count.overflow += 1;
-    	}
-    	emm_security_context->dl_count.seq_num = header->sequence_number;
+            if (emm_security_context->dl_count.seq_num > header->sequence_number) {
+                emm_security_context->dl_count.overflow += 1;
+            }
+            emm_security_context->dl_count.seq_num = header->sequence_number;
 #endif
+        }
         /* Compute offset of the sequence number field */
         int offset = size - sizeof(UInt8_t);
         /* Compute the NAS message authentication code */
@@ -306,26 +307,26 @@ int nas_message_decrypt(
 
         /* Check NAS message integrity */
         if (mac != header->message_authentication_code) {
-        	LOG_TRACE(DEBUG,
-        	        "MAC Failure MSG:%08X(%u) <> INT ALGO:%08X(%u)",
-        	        header->message_authentication_code,
-        	        header->message_authentication_code,
-        	        mac,
-        	        mac);
+            LOG_TRACE(DEBUG,
+                    "MAC Failure MSG:%08X(%u) <> INT ALGO:%08X(%u)",
+                    header->message_authentication_code,
+                    header->message_authentication_code,
+                    mac,
+                    mac);
 #if defined(NAS_MME)
             LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
 #else
 #warning "added test on integrity algorithm because of SECURITY_MODE_COMMAND not correctly handled in UE (check integrity)"
             if (emm_security_context->selected_algorithms.integrity !=
-        		    NAS_SECURITY_ALGORITHMS_EIA0) {
-            	LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
+                    NAS_SECURITY_ALGORITHMS_EIA0) {
+                LOG_FUNC_RETURN (TLV_DECODE_MAC_MISMATCH);
             } else {
                 LOG_TRACE(WARNING,
-                		"MAC failure but continue due to EIA0 selected");
+                        "MAC failure but continue due to EIA0 selected");
             }
 #endif
         } else {
-        	LOG_TRACE(DEBUG, "Integrity: MAC Success");
+            LOG_TRACE(DEBUG, "Integrity: MAC Success");
         }
 
         /* Decrypt the security protected NAS message */
@@ -339,7 +340,7 @@ int nas_message_decrypt(
         bytes = length - size;
     }
     else {
-    	LOG_TRACE(DEBUG, "Plain NAS message found");
+        LOG_TRACE(DEBUG, "Plain NAS message found");
         /* The input buffer contains a plain NAS message */
         memcpy(outbuf, inbuf, length);
     }
@@ -946,8 +947,8 @@ static int _nas_message_decrypt(
     case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED:
     case SECURITY_HEADER_TYPE_INTEGRITY_PROTECTED_NEW:
         LOG_TRACE(DEBUG,
-                "No decryption of message according to security header type 0x%02x",
-                security_header_type);
+                "No decryption of message length %u according to security header type 0x%02x",
+                length, security_header_type);
         memcpy(dest, src, length);
         LOG_FUNC_RETURN (length);
         break;
