@@ -179,12 +179,12 @@ then
 else
     OBJ_DIR=`basename $OBJ_DIR`
 fi
+if [ ! -n "m4" ]
+then
+    mkdir -m 777 m4
+fi
 if [ ! -f $OBJ_DIR/Makefile ]
 then
-    if [ ! -n "m4" ]
-    then
-        mkdir -m 777 m4
-    fi
     autoreconf -i
     echo_success "Invoking autogen"
     bash_exec "./autogen.sh"
@@ -241,6 +241,7 @@ fi
 #######################################################
 rm -f /tmp/source.txt
 VARIABLES="
+           GNU_DEBUGGER\|\
            ENB_INTERFACE_NAME_FOR_S1_MME\|\
            ENB_IPV4_ADDRESS_FOR_S1_MME\|\
            ENB_INTERFACE_NAME_FOR_S1U\|\
@@ -352,6 +353,17 @@ wait_process_started tshark
 
 
 cd $OPENAIRCN_DIR/$OBJ_DIR
+echo "GNU_DEBUGGER:"$GNU_DEBUGGER
 
-gdb --args $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE 
+if [ "x$GNU_DEBUGGER" == "xyes" ]; then
+    echo_success "Running with GDB"
+    touch .gdbinit
+    echo "file $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc" > .gdbinit
+    echo "set args -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC" >> .gdbinit
+    echo "run" >> .gdbinit
+    gdb 2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
+else 
+    echo_success "Running without GDB"
+    $OPENAIRCN_DIR/$OBJ_DIR/OAI_EPC/oai_epc -K $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$ITTI_LOG_FILE -c $THIS_SCRIPT_PATH/$CONFIG_FILE_EPC  2>&1 | tee $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$STDOUT_LOG_FILE
+fi     
 
