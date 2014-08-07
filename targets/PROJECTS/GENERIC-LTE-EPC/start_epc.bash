@@ -327,6 +327,13 @@ PCAP_S6A_LOG_FILE=tshark_mme_s6a.$HOSTNAME.pcap
 #rotate_log_file $THIS_SCRIPT_PATH/OUTPUT/$HOSTNAME/$PCAP_S6A_LOG_FILE
 
 
+
+touch $THIS_SCRIPT_PATH/kill_epc.bash
+echo '#!/bin/bash' > $THIS_SCRIPT_PATH/kill_epc.bash
+echo "pkill -P $$" >> $THIS_SCRIPT_PATH/kill_epc.bash
+chmod 777 $THIS_SCRIPT_PATH/kill_epc.bash
+
+
 trap control_c SIGINT
 
 HSS_IP=$(get_ip hss.eur)
