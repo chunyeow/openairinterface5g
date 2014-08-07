@@ -52,7 +52,7 @@ typedef struct mem_block_t{
   struct mem_block_t *next;
   struct mem_block_t *previous;
   unsigned char pool_id;
-  char *data;
+  unsigned char *data;
 }mem_block_t;
 #include "UTIL/LISTS/list.h"
 
