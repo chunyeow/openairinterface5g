@@ -393,8 +393,10 @@ libnas_ies_SRCS =													\
     EURECOM-NAS/src/ies/TmsiStatus.h								\
     EURECOM-NAS/src/ies/CipheringKeySequenceNumber.h				\
     EURECOM-NAS/src/ies/ApnAggregateMaximumBitRate.h				\
-    EURECOM-NAS/src/ies/EpsNetworkFeatureSupport.h
-
+    EURECOM-NAS/src/ies/EpsNetworkFeatureSupport.h					\
+    EURECOM-NAS/src/ies/VoiceDomainPreferenceAndUeUsageSetting.c	\
+    EURECOM-NAS/src/ies/VoiceDomainPreferenceAndUeUsageSetting.h
+    
 libnas_utils_SRCS =								\
     EURECOM-NAS/src/util/nas_log.h				\
     EURECOM-NAS/src/util/nas_log.c				\

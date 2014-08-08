@@ -235,11 +235,11 @@ int decode_attach_request(attach_request_msg *attach_request, uint8_t *buffer, u
                 attach_request->presencemask |= ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT;
                 break;
 
-	    case ATTACH_REQUEST_OLD_GUTI_TYPE_IEI:
-		if ((decoded_result =
-		     decode_guti_type(&attach_request->oldgutitype,
-				      ATTACH_REQUEST_OLD_GUTI_TYPE_IEI,
-				      buffer + decoded, len - decoded)) <= 0)
+            case ATTACH_REQUEST_OLD_GUTI_TYPE_IEI:
+                if ((decoded_result =
+                        decode_guti_type(&attach_request->oldgutitype,
+                                ATTACH_REQUEST_OLD_GUTI_TYPE_IEI,
+                                buffer + decoded, len - decoded)) <= 0)
                 {
                     //         return decoded_result;
                     LOG_FUNC_RETURN(decoded_result);
@@ -247,7 +247,22 @@ int decode_attach_request(attach_request_msg *attach_request, uint8_t *buffer, u
                 decoded += decoded_result;
                 /* Set corresponding mask to 1 in presencemask */
                 attach_request->presencemask |= ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT;
-		break;
+                break;
+
+            case ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_IEI:
+                if ((decoded_result =
+                        decode_voice_domain_preference_and_ue_usage_setting(&attach_request->voicedomainpreferenceandueusagesetting,
+                                ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_IEI,
+                                buffer + decoded, len - decoded)) <= 0)
+                {
+                    //         return decoded_result;
+                    LOG_FUNC_RETURN(decoded_result);
+                }
+                decoded += decoded_result;
+                /* Set corresponding mask to 1 in presencemask */
+                attach_request->presencemask |= ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT;
+                break;
+
 
             default:
                 errorCodeDecoder = TLV_DECODE_UNEXPECTED_IEI;
@@ -437,14 +452,27 @@ int encode_attach_request(attach_request_msg *attach_request, uint8_t *buffer, u
      if ((attach_request->presencemask & ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT)
         == ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT)
      {
-	 if ((encode_result =
-	      encode_guti_type(&attach_request->oldgutitype,
-			       ATTACH_REQUEST_OLD_GUTI_TYPE_IEI,
-			       buffer + encoded, len - encoded)) < 0)
-	     // Return in case of error
-	     return encode_result;
-	 else
-	     encoded += encode_result;
+         if ((encode_result =
+                 encode_guti_type(&attach_request->oldgutitype,
+                         ATTACH_REQUEST_OLD_GUTI_TYPE_IEI,
+                         buffer + encoded, len - encoded)) < 0)
+             // Return in case of error
+             return encode_result;
+         else
+             encoded += encode_result;
+     }
+
+     if ((attach_request->presencemask & ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT)
+        == ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT)
+     {
+         if ((encode_result =
+                 encode_voice_domain_preference_and_ue_usage_setting(&attach_request->voicedomainpreferenceandueusagesetting,
+                         ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_IEI,
+                         buffer + encoded, len - encoded)) < 0)
+             // Return in case of error
+             return encode_result;
+         else
+             encoded += encode_result;
      }
 
    return encoded;

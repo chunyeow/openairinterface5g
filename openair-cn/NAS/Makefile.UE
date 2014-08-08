@@ -255,7 +255,8 @@ libnas_ies_OBJS =													\
     EURECOM-NAS/src/ies/EpsNetworkFeatureSupport.o					\
     EURECOM-NAS/src/ies/SsCode.o									\
     EURECOM-NAS/src/ies/DrxParameter.o								\
-    EURECOM-NAS/src/ies/KsiAndSequenceNumber.o
+    EURECOM-NAS/src/ies/KsiAndSequenceNumber.o						\
+    EURECOM-NAS/src/ies/VoiceDomainPreferenceAndUeUsageSetting.o
 
 libnas_utils_OBJS =								\
     EURECOM-NAS/src/util/device.o				\

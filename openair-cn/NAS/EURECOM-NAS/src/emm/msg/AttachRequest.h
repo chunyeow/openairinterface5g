@@ -49,6 +49,7 @@
 #include "SupportedCodecList.h"
 #include "AdditionalUpdateType.h"
 #include "GutiType.h"
+#include "VoiceDomainPreferenceAndUeUsageSetting.h"
 
 #ifndef ATTACH_REQUEST_H_
 #define ATTACH_REQUEST_H_
@@ -84,32 +85,34 @@
 /* If an optional value is present and should be encoded, the corresponding
  * Bit mask should be set to 1.
  */
-# define ATTACH_REQUEST_OLD_PTMSI_SIGNATURE_PRESENT              (1<<0)
-# define ATTACH_REQUEST_ADDITIONAL_GUTI_PRESENT                  (1<<1)
-# define ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT      (1<<2)
-# define ATTACH_REQUEST_DRX_PARAMETER_PRESENT                    (1<<3)
-# define ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT            (1<<4)
-# define ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_PRESENT (1<<5)
-# define ATTACH_REQUEST_TMSI_STATUS_PRESENT                      (1<<6)
-# define ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_PRESENT       (1<<7)
-# define ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_PRESENT       (1<<8)
-# define ATTACH_REQUEST_SUPPORTED_CODECS_PRESENT                 (1<<9)
-# define ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT           (1<<10)
-# define ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT                    (1<<11)
+# define ATTACH_REQUEST_OLD_PTMSI_SIGNATURE_PRESENT                           (1<<0)
+# define ATTACH_REQUEST_ADDITIONAL_GUTI_PRESENT                               (1<<1)
+# define ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT                   (1<<2)
+# define ATTACH_REQUEST_DRX_PARAMETER_PRESENT                                 (1<<3)
+# define ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT                         (1<<4)
+# define ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_PRESENT              (1<<5)
+# define ATTACH_REQUEST_TMSI_STATUS_PRESENT                                   (1<<6)
+# define ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_PRESENT                    (1<<7)
+# define ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_PRESENT                    (1<<8)
+# define ATTACH_REQUEST_SUPPORTED_CODECS_PRESENT                              (1<<9)
+# define ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_PRESENT                        (1<<10)
+# define ATTACH_REQUEST_OLD_GUTI_TYPE_PRESENT                                 (1<<11)
+# define ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_PRESENT  (1<<12)
 
 typedef enum attach_request_iei_tag {
-    ATTACH_REQUEST_OLD_PTMSI_SIGNATURE_IEI               = 0x19, /* 0x19 = 25 */
-    ATTACH_REQUEST_ADDITIONAL_GUTI_IEI                   = 0x50, /* 0x50 = 80 */
-    ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_IEI       = 0x52, /* 0x52 = 82 */
-    ATTACH_REQUEST_DRX_PARAMETER_IEI                     = 0x5C, /* 0x5C = 92 */
-    ATTACH_REQUEST_MS_NETWORK_CAPABILITY_IEI             = 0x31, /* 0x31 = 49 */
-    ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_IEI  = 0x13, /* 0x13 = 19 */
-    ATTACH_REQUEST_TMSI_STATUS_IEI                       = 0x90, /* 0x90 = 144 */
-    ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_IEI        = 0x11, /* 0x11 = 17 */
-    ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_IEI        = 0x20, /* 0x20 = 32 */
-    ATTACH_REQUEST_SUPPORTED_CODECS_IEI                  = 0x40, /* 0x40 = 64 */
-    ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_IEI            = 0xF0, /* 0xF0 = 240 */
-    ATTACH_REQUEST_OLD_GUTI_TYPE_IEI                     = 0xE0, /* 0xE0 = 224 */
+    ATTACH_REQUEST_OLD_PTMSI_SIGNATURE_IEI                          = 0x19, /* 0x19 = 25  */
+    ATTACH_REQUEST_ADDITIONAL_GUTI_IEI                              = 0x50, /* 0x50 = 80  */
+    ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_IEI                  = 0x52, /* 0x52 = 82  */
+    ATTACH_REQUEST_DRX_PARAMETER_IEI                                = 0x5C, /* 0x5C = 92  */
+    ATTACH_REQUEST_MS_NETWORK_CAPABILITY_IEI                        = 0x31, /* 0x31 = 49  */
+    ATTACH_REQUEST_OLD_LOCATION_AREA_IDENTIFICATION_IEI             = 0x13, /* 0x13 = 19  */
+    ATTACH_REQUEST_TMSI_STATUS_IEI                                  = 0x90, /* 0x90 = 144 */
+    ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_2_IEI                   = 0x11, /* 0x11 = 17  */
+    ATTACH_REQUEST_MOBILE_STATION_CLASSMARK_3_IEI                   = 0x20, /* 0x20 = 32  */
+    ATTACH_REQUEST_SUPPORTED_CODECS_IEI                             = 0x40, /* 0x40 = 64  */
+    ATTACH_REQUEST_ADDITIONAL_UPDATE_TYPE_IEI                       = 0xF0, /* 0xF0 = 240 */
+    ATTACH_REQUEST_OLD_GUTI_TYPE_IEI                                = 0xE0, /* 0xE0 = 224 */
+    ATTACH_REQUEST_VOICE_DOMAIN_PREFERENCE_AND_UE_USAGE_SETTING_IEI = 0x5D, /* 0x5D = 93  */
 } attach_request_iei;
 
 /*
@@ -121,28 +124,29 @@ typedef enum attach_request_iei_tag {
 
 typedef struct attach_request_msg_tag {
     /* Mandatory fields */
-    ProtocolDiscriminator         protocoldiscriminator:4;
-    SecurityHeaderType            securityheadertype:4;
-    MessageType                   messagetype;
-    EpsAttachType                 epsattachtype;
-    NasKeySetIdentifier           naskeysetidentifier;
-    EpsMobileIdentity             oldgutiorimsi;
-    UeNetworkCapability           uenetworkcapability;
-    EsmMessageContainer           esmmessagecontainer;
+    ProtocolDiscriminator                   protocoldiscriminator:4;
+    SecurityHeaderType                      securityheadertype:4;
+    MessageType                             messagetype;
+    EpsAttachType                           epsattachtype;
+    NasKeySetIdentifier                     naskeysetidentifier;
+    EpsMobileIdentity                       oldgutiorimsi;
+    UeNetworkCapability                     uenetworkcapability;
+    EsmMessageContainer                     esmmessagecontainer;
     /* Optional fields */
-    uint32_t                      presencemask;
-    PTmsiSignature                oldptmsisignature;
-    EpsMobileIdentity             additionalguti;
-    TrackingAreaIdentity          lastvisitedregisteredtai;
-    DrxParameter                  drxparameter;
-    MsNetworkCapability           msnetworkcapability;
-    LocationAreaIdentification    oldlocationareaidentification;
-    TmsiStatus                    tmsistatus;
-    MobileStationClassmark2       mobilestationclassmark2;
-    MobileStationClassmark3       mobilestationclassmark3;
-    SupportedCodecList            supportedcodecs;
-    AdditionalUpdateType          additionalupdatetype;
-    GutiType                      oldgutitype;
+    uint32_t                                presencemask;
+    PTmsiSignature                          oldptmsisignature;
+    EpsMobileIdentity                       additionalguti;
+    TrackingAreaIdentity                    lastvisitedregisteredtai;
+    DrxParameter                            drxparameter;
+    MsNetworkCapability                     msnetworkcapability;
+    LocationAreaIdentification              oldlocationareaidentification;
+    TmsiStatus                              tmsistatus;
+    MobileStationClassmark2                 mobilestationclassmark2;
+    MobileStationClassmark3                 mobilestationclassmark3;
+    SupportedCodecList                      supportedcodecs;
+    AdditionalUpdateType                    additionalupdatetype;
+    GutiType                                oldgutitype;
+    VoiceDomainPreferenceAndUeUsageSetting  voicedomainpreferenceandueusagesetting;
 } attach_request_msg;
 
 int decode_attach_request(attach_request_msg *attachrequest, uint8_t *buffer, uint32_t len);
