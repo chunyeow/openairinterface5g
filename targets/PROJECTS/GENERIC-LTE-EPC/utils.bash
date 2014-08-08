@@ -486,12 +486,10 @@ check_install_epc_software() {
     test_install_package libatlas-dev
     test_install_package libblas
     test_install_package libblas-dev
-    if [ x$DISTRIB_RELEASE == x12.04 ]; then
-        if [ x$UTILS_ARCH == x64 ]; then
-            test_install_package libconfig8-dev
-        else
-            test_install_package libconfig-dev
-        fi
+    if [ x$UTILS_ARCH == x64 ]; then
+        test_install_package libconfig8-dev
+    else
+        test_install_package libconfig-dev
     fi
     test_install_package libforms-bin
     test_install_package libforms-dev
