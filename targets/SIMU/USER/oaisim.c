@@ -133,8 +133,8 @@ char           smbv_ip[16];
 
 frame_t                frame = 0;
 char                   stats_buffer[16384];
-channel_desc_t        *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX];
-channel_desc_t        *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX];
+channel_desc_t        *eNB2UE[NUMBER_OF_eNB_MAX][NUMBER_OF_UE_MAX][MAX_NUM_CCs];
+channel_desc_t        *UE2eNB[NUMBER_OF_UE_MAX][NUMBER_OF_eNB_MAX][MAX_NUM_CCs];
 //Added for PHY abstraction
 node_desc_t           *enb_data[NUMBER_OF_eNB_MAX];
 node_desc_t           *ue_data[NUMBER_OF_UE_MAX];
@@ -413,6 +413,7 @@ l2l1_task_state_t     l2l1_state = L2L1_WAITTING;
 void *l2l1_task(void *args_p) {
   
   clock_t               t;
+  int CC_id;
 
   // Framing variables
   int32_t                   slot, last_slot, next_slot;
@@ -450,16 +451,17 @@ void *l2l1_task(void *args_p) {
   char                  eNB_stats_th_filename[255];
 #endif
 
-  for (eNB_inst=0;eNB_inst<NB_eNB_INST;eNB_inst++) {
-    for (sf=0;sf<10;sf++) {
-      PHY_vars_eNB_g[eNB_inst]->proc[sf].frame_tx = 0;
-      PHY_vars_eNB_g[eNB_inst]->proc[sf].frame_rx = 0;
-      PHY_vars_eNB_g[eNB_inst]->proc[sf].subframe_tx = (sf+1)%10;
-      PHY_vars_eNB_g[eNB_inst]->proc[sf].subframe_rx = (sf+9)%10;
+  for (CC_id = 0;CC_id<MAX_NUM_CCs;CC_id++)
+    for (eNB_inst=0;eNB_inst<NB_eNB_INST;eNB_inst++) {
+      for (sf=0;sf<10;sf++) {
+	PHY_vars_eNB_g[eNB_inst][CC_id]->proc[sf].frame_tx = 0;
+	PHY_vars_eNB_g[eNB_inst][CC_id]->proc[sf].frame_rx = 0;
+	PHY_vars_eNB_g[eNB_inst][CC_id]->proc[sf].subframe_tx = (sf+1)%10;
+	PHY_vars_eNB_g[eNB_inst][CC_id]->proc[sf].subframe_rx = (sf+9)%10;
+      }
+      PHY_vars_eNB_g[eNB_inst][CC_id]->proc[0].frame_rx = 1023;
+      PHY_vars_eNB_g[eNB_inst][CC_id]->proc[9].frame_tx = 1;
     }
-    PHY_vars_eNB_g[eNB_inst]->proc[0].frame_rx = 1023;
-    PHY_vars_eNB_g[eNB_inst]->proc[9].frame_tx = 1;
-  }
 #ifdef XFORMS
   xargv[0] = xname;
   fl_initialize (&xargc, xargv, NULL, 0, 0);
@@ -691,18 +693,18 @@ void *l2l1_task(void *args_p) {
                 clear_eNB_transport_info (oai_emulation.info.nb_enb_local);
 
               for (eNB_inst = oai_emulation.info.first_enb_local; (eNB_inst < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)); eNB_inst++) {
-                  if (oai_emulation.info.cli_start_enb[eNB_inst] != 0) {
-                      LOG_D(
-                          EMU,
-                          "PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n",
-                          eNB_inst,
-                          frame,
-                          slot,
-                          next_slot >> 1,
-                          last_slot>>1,
-                          PHY_vars_eNB_g[eNB_inst]->lte_frame_parms.frame_type,
-                          PHY_vars_eNB_g[eNB_inst]->lte_frame_parms.tdd_config,
-                          PHY_vars_eNB_g[eNB_inst]->lte_frame_parms.Nid_cell);
+		if (oai_emulation.info.cli_start_enb[eNB_inst] != 0) {
+		  LOG_D(
+			EMU,
+			"PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d) TDD %d/%d Nid_cell %d\n",
+			eNB_inst,
+			frame,
+			slot,
+			next_slot >> 1,
+			last_slot>>1,
+			PHY_vars_eNB_g[eNB_inst][0]->lte_frame_parms.frame_type,
+			PHY_vars_eNB_g[eNB_inst][0]->lte_frame_parms.tdd_config,
+			PHY_vars_eNB_g[eNB_inst][0]->lte_frame_parms.Nid_cell);
 
 #ifdef OPENAIR2
                       //Appliation: traffic gen
@@ -719,9 +721,9 @@ void *l2l1_task(void *args_p) {
 #ifdef PRINT_STATS
                       if(last_slot==9 && frame%10==0)
                         if(eNB_avg_thr)
-                          fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_inst]->frame,(PHY_vars_eNB_g[eNB_inst]->total_system_throughput)/((PHY_vars_eNB_g[eNB_inst]->frame+1)*10));
+                          fprintf(eNB_avg_thr,"%d %d\n",PHY_vars_eNB_g[eNB_inst][0]->frame,(PHY_vars_eNB_g[eNB_inst][0]->total_system_throughput)/((PHY_vars_eNB_g[eNB_inst][0]->frame+1)*10));
                       if (eNB_stats[eNB_inst]) {
-                          len = dump_eNB_stats(PHY_vars_eNB_g[eNB_inst], stats_buffer, 0);
+                          len = dump_eNB_stats(PHY_vars_eNB_g[eNB_inst][0], stats_buffer, 0);
                           rewind (eNB_stats[eNB_inst]);
                           fwrite (stats_buffer, 1, len, eNB_stats[eNB_inst]);
                           fflush(eNB_stats[eNB_inst]);
@@ -735,8 +737,9 @@ void *l2l1_task(void *args_p) {
                       }
 #endif
 #endif
-                  }
-              }
+		}
+	      }
+	    	    
               // Call ETHERNET emulation here
               //emu_transport (frame, last_slot, next_slot, direction, oai_emulation.info.frame_type, ethernet_flag);
 
@@ -747,8 +750,8 @@ void *l2l1_task(void *args_p) {
               if ((next_slot % 2) == 0)
                 clear_UE_transport_info (oai_emulation.info.nb_ue_local);
               for (UE_inst = oai_emulation.info.first_ue_local;
-                  (UE_inst < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local)); UE_inst++) {
-                  if (oai_emulation.info.cli_start_ue[UE_inst] != 0) {
+                  (UE_inst < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local)); UE_inst++) 
+		if (oai_emulation.info.cli_start_ue[UE_inst] != 0) {
 #if defined(ENABLE_ITTI) && defined(ENABLE_USE_MME)
 
 #else
@@ -762,9 +765,9 @@ void *l2l1_task(void *args_p) {
                               next_slot >> 1,
                               last_slot>>1);
 
-                          if (PHY_vars_UE_g[UE_inst]->UE_mode[0] != NOT_SYNCHED) {
+                          if (PHY_vars_UE_g[UE_inst][0]->UE_mode[0] != NOT_SYNCHED) {
                               if (frame > 0) {
-                                  PHY_vars_UE_g[UE_inst]->frame = frame;
+                                  PHY_vars_UE_g[UE_inst][0]->frame = frame;
 
 #ifdef OPENAIR2
                                   //Application
@@ -773,21 +776,22 @@ void *l2l1_task(void *args_p) {
                                   //Access layer
                                   pdcp_run (frame, 0, UE_inst, 0);
 #endif
-
-                                  phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst], 0, abstraction_flag, normal_txrx,
-                                      no_relay, NULL);
-                                  ue_data[UE_inst]->tx_power_dBm = PHY_vars_UE_g[UE_inst]->tx_power_dBm;
+				  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+				    phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst][CC_id], 0, abstraction_flag, normal_txrx,
+							   no_relay, NULL);
+				  }
+                                  ue_data[UE_inst]->tx_power_dBm = PHY_vars_UE_g[UE_inst][0]->tx_power_dBm;
                               }
                           }
                           else {
                               if (abstraction_flag == 1) {
                                   LOG_E(
                                       EMU,
-                                      "sync not supported in abstraction mode (UE%d,mode%d)\n", UE_inst, PHY_vars_UE_g[UE_inst]->UE_mode[0]);
+                                      "sync not supported in abstraction mode (UE%d,mode%d)\n", UE_inst, PHY_vars_UE_g[UE_inst][0]->UE_mode[0]);
                                   exit (-1);
                               }
                               if ((frame > 0) && (last_slot == (LTE_SLOTS_PER_FRAME - 2))) {
-                                  initial_sync (PHY_vars_UE_g[UE_inst], normal_txrx);
+                                  initial_sync (PHY_vars_UE_g[UE_inst][0], normal_txrx);
 
                                   /*
                    write_output("dlchan00.m","dlch00",&(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][0][0]),(6*(PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)),1,1);
@@ -807,11 +811,11 @@ void *l2l1_task(void *args_p) {
 #ifdef PRINT_STATS
                           if(last_slot==2 && frame%10==0) {
                               if (UE_stats_th[UE_inst]) {
-                                  fprintf(UE_stats_th[UE_inst],"%d %d\n",frame, PHY_vars_UE_g[UE_inst]->bitrate[0]/1000);
+                                  fprintf(UE_stats_th[UE_inst],"%d %d\n",frame, PHY_vars_UE_g[UE_inst][0]->bitrate[0]/1000);
                               }
                           }
                           if (UE_stats[UE_inst]) {
-                              len = dump_ue_stats (PHY_vars_UE_g[UE_inst], stats_buffer, 0, normal_txrx, 0);
+                              len = dump_ue_stats (PHY_vars_UE_g[UE_inst][0], stats_buffer, 0, normal_txrx, 0);
                               rewind (UE_stats[UE_inst]);
                               fwrite (stats_buffer, 1, len, UE_stats[UE_inst]);
                               fflush(UE_stats[UE_inst]);
@@ -840,21 +844,21 @@ void *l2l1_task(void *args_p) {
                   if ( oai_emulation.info.frame_type == 0) {
                       // RN == UE
                       if (frame>0) {
-                          if (PHY_vars_UE_g[UE_inst]->UE_mode[0] != NOT_SYNCHED) {
+                          if (PHY_vars_UE_g[UE_inst][0]->UE_mode[0] != NOT_SYNCHED) {
                               LOG_D(EMU,"[RN %d] PHY procedures UE %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
                                   RN_id, UE_inst, frame, slot, next_slot >> 1,last_slot>>1);
-                              PHY_vars_UE_g[UE_inst]->frame = frame;
-                              phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst], 0, abstraction_flag,normal_txrx,
+                              PHY_vars_UE_g[UE_inst][0]->frame = frame;
+                              phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[UE_inst][0], 0, abstraction_flag,normal_txrx,
                                   r_type, PHY_vars_RN_g[RN_id]);
                           }
                           else if (last_slot == (LTE_SLOTS_PER_FRAME-2)) {
-                              initial_sync(PHY_vars_UE_g[UE_inst],normal_txrx);
+                              initial_sync(PHY_vars_UE_g[UE_inst][0],normal_txrx);
                           }
                       }
                       // RN == eNB
                       LOG_D(EMU,"[RN %d] PHY procedures eNB %d for frame %d, slot %d (subframe TX %d, RX %d)\n",
                           RN_id, eNB_inst, frame, slot, next_slot >> 1,last_slot>>1);
-                      phy_procedures_eNB_lte(slot>>1, PHY_vars_eNB_g[eNB_inst], abstraction_flag,
+                      phy_procedures_eNB_lte(slot>>1, PHY_vars_eNB_g[eNB_inst][0], abstraction_flag,
                           r_type, PHY_vars_RN_g[RN_id]);
                   }
                   else {
@@ -875,14 +879,17 @@ void *l2l1_task(void *args_p) {
            }
            }*/
                   start_meas(&dl_chan_stats);
-		  for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) {
-                      do_DL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, eNB2UE, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, UE_inst);
-                  }
+		  for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) 
+		    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+		      do_DL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, eNB2UE, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, UE_inst,CC_id);
+		    }
 		  stop_meas(&dl_chan_stats);
               }
               if ((direction == SF_UL) || (frame_parms->frame_type == 0)) { //if ((subframe<2) || (subframe>4))
                    start_meas(&ul_chan_stats);
-		   do_UL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, UE2eNB, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, frame); 
+		   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+		     do_UL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, UE2eNB, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, frame,CC_id); 
+		   }
 		   stop_meas(&ul_chan_stats);
                   /*
            int ccc;
@@ -905,9 +912,10 @@ void *l2l1_task(void *args_p) {
              }
              }*/ 
 		    start_meas(&dl_chan_stats);
-		    for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) {
-		      do_DL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, eNB2UE, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, UE_inst);
-		    }
+		    for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) 
+		      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+			do_DL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, eNB2UE, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, UE_inst,CC_id);
+		      }
 		    stop_meas(&dl_chan_stats);
                       /*
              for (aarx=0;aarx<UE2eNB[1][0]->nb_rx;aarx++)
@@ -918,8 +926,10 @@ void *l2l1_task(void *args_p) {
                   }
                   else { // UL part
 		    start_meas(&ul_chan_stats);
-                      do_UL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, UE2eNB, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, frame);
-		      stop_meas(&ul_chan_stats);
+		    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+                      do_UL_sig (r_re0, r_im0, r_re, r_im, s_re, s_im, UE2eNB, enb_data, ue_data, next_slot, abstraction_flag,frame_parms, frame,CC_id);
+		    }
+		    stop_meas(&ul_chan_stats);
 
                       /*        int ccc;
              fprintf(SINRpost,"SINRdb For eNB New Subframe : \n ");
@@ -933,15 +943,15 @@ void *l2l1_task(void *args_p) {
               }
               if ((last_slot == 1) && (frame == 0) && (abstraction_flag == 0) && (oai_emulation.info.n_frames == 1)) {
 
-                  write_output ("dlchan0.m", "dlch0", &(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[0][0][0]),
-                      (6 * (PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)), 1, 1);
-                  write_output ("dlchan1.m", "dlch1", &(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[1][0][0]),
-                      (6 * (PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)), 1, 1);
-                  write_output ("dlchan2.m", "dlch2", &(PHY_vars_UE_g[0]->lte_ue_common_vars.dl_ch_estimates[2][0][0]),
-                      (6 * (PHY_vars_UE_g[0]->lte_frame_parms.ofdm_symbol_size)), 1, 1);
-                  write_output ("pbch_rxF_comp0.m", "pbch_comp0", PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->rxdataF_comp[0],
+                  write_output ("dlchan0.m", "dlch0", &(PHY_vars_UE_g[0][0]->lte_ue_common_vars.dl_ch_estimates[0][0][0]),
+                      (6 * (PHY_vars_UE_g[0][0]->lte_frame_parms.ofdm_symbol_size)), 1, 1);
+                  write_output ("dlchan1.m", "dlch1", &(PHY_vars_UE_g[0][0]->lte_ue_common_vars.dl_ch_estimates[1][0][0]),
+                      (6 * (PHY_vars_UE_g[0][0]->lte_frame_parms.ofdm_symbol_size)), 1, 1);
+                  write_output ("dlchan2.m", "dlch2", &(PHY_vars_UE_g[0][0]->lte_ue_common_vars.dl_ch_estimates[2][0][0]),
+                      (6 * (PHY_vars_UE_g[0][0]->lte_frame_parms.ofdm_symbol_size)), 1, 1);
+                  write_output ("pbch_rxF_comp0.m", "pbch_comp0", PHY_vars_UE_g[0][0]->lte_ue_pbch_vars[0]->rxdataF_comp[0],
                       6 * 12 * 4, 1, 1);
-                  write_output ("pbch_rxF_llr.m", "pbch_llr", PHY_vars_UE_g[0]->lte_ue_pbch_vars[0]->llr,
+                  write_output ("pbch_rxF_llr.m", "pbch_llr", PHY_vars_UE_g[0][0]->lte_ue_pbch_vars[0]->llr,
                       (frame_parms->Ncp == 0) ? 1920 : 1728, 1, 4);
               }
               /*
@@ -959,20 +969,20 @@ void *l2l1_task(void *args_p) {
           &&(Channel_Flag==0)
 #endif
       ) {
-          write_output ("UEtxsig0.m", "txs0", PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[0], FRAME_LENGTH_COMPLEX_SAMPLES,
+          write_output ("UEtxsig0.m", "txs0", PHY_vars_UE_g[0][0]->lte_ue_common_vars.txdata[0], FRAME_LENGTH_COMPLEX_SAMPLES,
               1, 1);
           sprintf (fname, "eNBtxsig%d.m", frame);
           sprintf (vname, "txs%d", frame);
-          write_output (fname, vname, PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][0], FRAME_LENGTH_COMPLEX_SAMPLES, 1,
+          write_output (fname, vname, PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdata[0][0], FRAME_LENGTH_COMPLEX_SAMPLES, 1,
               1);
           write_output (
-              "eNBtxsigF0.m", "txsF0", PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdataF[0][0],
-              PHY_vars_eNB_g[0]->lte_frame_parms.symbols_per_tti * PHY_vars_eNB_g[0]->lte_frame_parms.ofdm_symbol_size, 1,
+              "eNBtxsigF0.m", "txsF0", PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdataF[0][0],
+              PHY_vars_eNB_g[0][0]->lte_frame_parms.symbols_per_tti * PHY_vars_eNB_g[0][0]->lte_frame_parms.ofdm_symbol_size, 1,
               1);
 
-          write_output ("UErxsig0.m", "rxs0", PHY_vars_UE_g[0]->lte_ue_common_vars.rxdata[0], FRAME_LENGTH_COMPLEX_SAMPLES,
+          write_output ("UErxsig0.m", "rxs0", PHY_vars_UE_g[0][0]->lte_ue_common_vars.rxdata[0], FRAME_LENGTH_COMPLEX_SAMPLES,
               1, 1);
-          write_output ("eNBrxsig0.m", "rxs0", PHY_vars_eNB_g[0]->lte_eNB_common_vars.rxdata[0][0],
+          write_output ("eNBrxsig0.m", "rxs0", PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.rxdata[0][0],
               FRAME_LENGTH_COMPLEX_SAMPLES, 1, 1);
       }
 
@@ -980,13 +990,13 @@ void *l2l1_task(void *args_p) {
       eNB_inst = 0;
       for (UE_inst = 0; UE_inst < NB_UE_INST; UE_inst++) {
           phy_scope_UE(form_ue[UE_inst],
-              PHY_vars_UE_g[UE_inst],
+              PHY_vars_UE_g[UE_inst][0],
               eNB_inst,
               UE_inst,
               7);
 
           phy_scope_eNB(form_enb[UE_inst],
-              PHY_vars_eNB_g[eNB_inst],
+              PHY_vars_eNB_g[eNB_inst][0],
               UE_inst);
 
       }
@@ -998,7 +1008,7 @@ void *l2l1_task(void *args_p) {
       }
 #endif
       stop_meas(&oaisim_stats_f);
-  } //end of frame
+      //end of frame
 
   stop_meas(&oaisim_stats);
 
@@ -1126,7 +1136,7 @@ int main(int argc, char **argv) {
 
 #ifdef SMBV
   smbv_init_config(smbv_fname, smbv_nframes);
-  smbv_write_config_from_frame_parms(smbv_fname, &PHY_vars_eNB_g[0]->lte_frame_parms);
+  smbv_write_config_from_frame_parms(smbv_fname, &PHY_vars_eNB_g[0][0]->lte_frame_parms);
 #endif
   // add events to future event list: Currently not used
 	//oai_emulation.info.oeh_enabled = 1;
@@ -1182,39 +1192,39 @@ void reset_opp_meas(void){
   reset_meas(&ul_chan_stats);
   
   for (UE_id=0; UE_id<NB_UE_INST; UE_id++) {
-    reset_meas(&PHY_vars_UE_g[UE_id]->phy_proc);
-    reset_meas(&PHY_vars_UE_g[UE_id]->phy_proc_rx);
-    reset_meas(&PHY_vars_UE_g[UE_id]->phy_proc_tx);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->phy_proc);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->phy_proc_rx);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->phy_proc_tx);
     
-    reset_meas(&PHY_vars_UE_g[UE_id]->ofdm_demod_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->rx_dft_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_channel_estimation_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_freq_offset_estimation_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_decoding_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_rate_unmatching_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_turbo_decoding_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_deinterleaving_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_llr_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_unscrambling_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ofdm_demod_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->rx_dft_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_channel_estimation_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_freq_offset_estimation_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_decoding_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_rate_unmatching_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_turbo_decoding_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_deinterleaving_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_llr_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_unscrambling_stats);
     
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_init_stats);    
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_alpha_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_beta_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_gamma_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_ext_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_intl1_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_intl2_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_init_stats);    
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_alpha_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_beta_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_gamma_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_ext_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_intl1_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_intl2_stats);
     
-    reset_meas(&PHY_vars_UE_g[UE_id]->tx_prach);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->tx_prach);
     
-    reset_meas(&PHY_vars_UE_g[UE_id]->ofdm_mod_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_encoding_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_modulation_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_segmentation_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_rate_matching_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_turbo_encoding_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_interleaving_stats);
-    reset_meas(&PHY_vars_UE_g[UE_id]->ulsch_multiplexing_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ofdm_mod_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_encoding_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_modulation_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_segmentation_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_rate_matching_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_turbo_encoding_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_interleaving_stats);
+    reset_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_multiplexing_stats);
     /*
      * L2 functions
      */ 
@@ -1236,46 +1246,46 @@ void reset_opp_meas(void){
     reset_meas(&UE_pdcp_stats[UE_id].ip_pdcp);
     
     for (eNB_id=0; eNB_id<NB_eNB_INST; eNB_id++) {
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_rx);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_tx);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->rx_prach);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->phy_proc);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->phy_proc_rx);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->phy_proc_tx);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->rx_prach);
     
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_mod_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_encoding_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_modulation_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_scrambling_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_rate_matching_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_turbo_encoding_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_interleaving_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ofdm_mod_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_encoding_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_modulation_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_scrambling_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_rate_matching_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_turbo_encoding_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_interleaving_stats);
     
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_demod_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ofdm_demod_stats);
       //reset_meas(&PHY_vars_eNB_g[eNB_id]->rx_dft_stats);
       //reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_channel_estimation_stats);
       //reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_freq_offset_estimation_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_decoding_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_demodulation_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_rate_unmatching_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_turbo_decoding_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_deinterleaving_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_demultiplexing_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_llr_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_init_stats);    
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_alpha_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_beta_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_gamma_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_ext_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_intl1_stats);
-      reset_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_intl2_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_decoding_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_demodulation_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_rate_unmatching_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_turbo_decoding_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_deinterleaving_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_demultiplexing_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_llr_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_init_stats);    
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_alpha_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_beta_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_gamma_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_ext_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_intl1_stats);
+      reset_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_intl2_stats);
     
-      reset_meas(&eNB2UE[eNB_id][UE_id]->random_channel);
-      reset_meas(&eNB2UE[eNB_id][UE_id]->interp_time);
-      reset_meas(&eNB2UE[eNB_id][UE_id]->interp_freq);
-      reset_meas(&eNB2UE[eNB_id][UE_id]->convolution);
-      reset_meas(&UE2eNB[UE_id][eNB_id]->random_channel);
-      reset_meas(&UE2eNB[UE_id][eNB_id]->interp_time);
-      reset_meas(&UE2eNB[UE_id][eNB_id]->interp_freq);
-      reset_meas(&UE2eNB[UE_id][eNB_id]->convolution);
+      reset_meas(&eNB2UE[eNB_id][UE_id][0]->random_channel);
+      reset_meas(&eNB2UE[eNB_id][UE_id][0]->interp_time);
+      reset_meas(&eNB2UE[eNB_id][UE_id][0]->interp_freq);
+      reset_meas(&eNB2UE[eNB_id][UE_id][0]->convolution);
+      reset_meas(&UE2eNB[UE_id][eNB_id][0]->random_channel);
+      reset_meas(&UE2eNB[UE_id][eNB_id][0]->interp_time);
+      reset_meas(&UE2eNB[UE_id][eNB_id][0]->interp_freq);
+      reset_meas(&UE2eNB[UE_id][eNB_id][0]->convolution);
       /* 
        * L2 functions 
        */
@@ -1313,85 +1323,85 @@ void print_opp_meas(void){
   
   for (UE_id=0; UE_id<NB_UE_INST;UE_id++) {
     for (eNB_id=0; eNB_id<NB_eNB_INST; eNB_id++) {
-      print_meas(&eNB2UE[eNB_id][UE_id]->random_channel,"[DL][random_channel]",&oaisim_stats,&oaisim_stats_f);
-      print_meas(&eNB2UE[eNB_id][UE_id]->interp_time,"[DL][interp_time]",&oaisim_stats,&oaisim_stats_f);
-      print_meas(&eNB2UE[eNB_id][UE_id]->interp_freq,"[DL][interp_freq]",&oaisim_stats,&oaisim_stats_f);
-      print_meas(&eNB2UE[eNB_id][UE_id]->convolution,"[DL][convolution]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&eNB2UE[eNB_id][UE_id][0]->random_channel,"[DL][random_channel]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&eNB2UE[eNB_id][UE_id][0]->interp_time,"[DL][interp_time]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&eNB2UE[eNB_id][UE_id][0]->interp_freq,"[DL][interp_freq]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&eNB2UE[eNB_id][UE_id][0]->convolution,"[DL][convolution]",&oaisim_stats,&oaisim_stats_f);
 
-      print_meas(&UE2eNB[UE_id][eNB_id]->random_channel,"[UL][random_channel]",&oaisim_stats,&oaisim_stats_f);
-      print_meas(&UE2eNB[UE_id][eNB_id]->interp_time,"[UL][interp_time]",&oaisim_stats,&oaisim_stats_f);
-      print_meas(&UE2eNB[UE_id][eNB_id]->interp_freq,"[UL][interp_freq]",&oaisim_stats,&oaisim_stats_f);
-      print_meas(&UE2eNB[UE_id][eNB_id]->convolution,"[UL][convolution]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&UE2eNB[UE_id][eNB_id][0]->random_channel,"[UL][random_channel]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&UE2eNB[UE_id][eNB_id][0]->interp_time,"[UL][interp_time]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&UE2eNB[UE_id][eNB_id][0]->interp_freq,"[UL][interp_freq]",&oaisim_stats,&oaisim_stats_f);
+      print_meas(&UE2eNB[UE_id][eNB_id][0]->convolution,"[UL][convolution]",&oaisim_stats,&oaisim_stats_f);
     }
   }
 
   for (UE_id=0; UE_id<NB_UE_INST;UE_id++) {
-    print_meas(&PHY_vars_UE_g[UE_id]->phy_proc,"[UE][total_phy_proc]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->phy_proc,"[UE][total_phy_proc]",&oaisim_stats,&oaisim_stats_f);
     
-    print_meas(&PHY_vars_UE_g[UE_id]->phy_proc_rx,"[UE][total_phy_proc_rx]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ofdm_demod_stats,"[UE][ofdm_demod]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->rx_dft_stats,"[UE][rx_dft]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_channel_estimation_stats,"[UE][channel_est]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_freq_offset_estimation_stats,"[UE][freq_offset]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_llr_stats,"[UE][llr]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_unscrambling_stats,"[UE][unscrambling]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_decoding_stats,"[UE][decoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_rate_unmatching_stats,"[UE][rate_unmatching]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_deinterleaving_stats,"[UE][deinterleaving]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_turbo_decoding_stats,"[UE][turbo_decoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_init_stats,"[UE][ |_tc_init]",&oaisim_stats,&oaisim_stats_f);    
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_alpha_stats,"[UE][ |_tc_alpha]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_beta_stats,"[UE][ |_tc_beta]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_gamma_stats,"[UE][ |_tc_gamma]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_ext_stats,"[UE][ |_tc_ext]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_intl1_stats,"[UE][ |_tc_intl1]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->dlsch_tc_intl2_stats,"[UE][ |_tc_intl2]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->phy_proc_rx,"[UE][total_phy_proc_rx]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ofdm_demod_stats,"[UE][ofdm_demod]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->rx_dft_stats,"[UE][rx_dft]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_channel_estimation_stats,"[UE][channel_est]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_freq_offset_estimation_stats,"[UE][freq_offset]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_llr_stats,"[UE][llr]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_unscrambling_stats,"[UE][unscrambling]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_decoding_stats,"[UE][decoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_rate_unmatching_stats,"[UE][rate_unmatching]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_deinterleaving_stats,"[UE][deinterleaving]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_turbo_decoding_stats,"[UE][turbo_decoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_init_stats,"[UE][ |_tc_init]",&oaisim_stats,&oaisim_stats_f);    
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_alpha_stats,"[UE][ |_tc_alpha]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_beta_stats,"[UE][ |_tc_beta]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_gamma_stats,"[UE][ |_tc_gamma]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_ext_stats,"[UE][ |_tc_ext]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_intl1_stats,"[UE][ |_tc_intl1]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->dlsch_tc_intl2_stats,"[UE][ |_tc_intl2]",&oaisim_stats,&oaisim_stats_f);
     
-    print_meas(&PHY_vars_UE_g[UE_id]->phy_proc_tx,"[UE][total_phy_proc_tx]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ofdm_mod_stats,"[UE][ofdm_mod]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_modulation_stats,"[UE][modulation]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_encoding_stats,"[UE][encoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_segmentation_stats,"[UE][segmentation]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_rate_matching_stats,"[UE][rate_matching]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_turbo_encoding_stats,"[UE][turbo_encoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_interleaving_stats,"[UE][interleaving]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_UE_g[UE_id]->ulsch_multiplexing_stats,"[UE][multiplexing]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->phy_proc_tx,"[UE][total_phy_proc_tx]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ofdm_mod_stats,"[UE][ofdm_mod]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_modulation_stats,"[UE][modulation]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_encoding_stats,"[UE][encoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_segmentation_stats,"[UE][segmentation]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_rate_matching_stats,"[UE][rate_matching]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_turbo_encoding_stats,"[UE][turbo_encoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_interleaving_stats,"[UE][interleaving]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_UE_g[UE_id][0]->ulsch_multiplexing_stats,"[UE][multiplexing]",&oaisim_stats,&oaisim_stats_f);
 
   }
   
   for (eNB_id=0; eNB_id<NB_eNB_INST; eNB_id++) {
-    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc,"[eNB][total_phy_proc]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->phy_proc,"[eNB][total_phy_proc]",&oaisim_stats,&oaisim_stats_f);
 
-    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_tx,"[eNB][total_phy_proc_tx]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_mod_stats,"[eNB][ofdm_mod]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_modulation_stats,"[eNB][modulation]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_scrambling_stats,"[eNB][scrambling]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_encoding_stats,"[eNB][encoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_interleaving_stats,"[eNB][|_interleaving]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_rate_matching_stats,"[eNB][|_rate_matching]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->dlsch_turbo_encoding_stats,"[eNB][|_turbo_encoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->phy_proc_tx,"[eNB][total_phy_proc_tx]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ofdm_mod_stats,"[eNB][ofdm_mod]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_modulation_stats,"[eNB][modulation]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_scrambling_stats,"[eNB][scrambling]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_encoding_stats,"[eNB][encoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_interleaving_stats,"[eNB][|_interleaving]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_rate_matching_stats,"[eNB][|_rate_matching]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->dlsch_turbo_encoding_stats,"[eNB][|_turbo_encoding]",&oaisim_stats,&oaisim_stats_f);
     
     
-    print_meas(&PHY_vars_eNB_g[eNB_id]->phy_proc_rx,"[eNB][total_phy_proc_rx]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ofdm_demod_stats,"[eNB][ofdm_demod]",&oaisim_stats,&oaisim_stats_f);
-    //print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_channel_estimation_stats,"[eNB][channel_est]");
-    //print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_freq_offset_estimation_stats,"[eNB][freq_offset]");
-    //print_meas(&PHY_vars_eNB_g[eNB_id]->rx_dft_stats,"[eNB][rx_dft]");
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_demodulation_stats,"[eNB][demodulation]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_decoding_stats,"[eNB][decoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_deinterleaving_stats,"[eNB][|_deinterleaving]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_demultiplexing_stats,"[eNB][|_demultiplexing]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_rate_unmatching_stats,"[eNB][|_rate_unmatching]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_turbo_decoding_stats,"[eNB][|_turbo_decoding]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_init_stats,"[eNB][ |_tc_init]",&oaisim_stats,&oaisim_stats_f);    
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_alpha_stats,"[eNB][ |_tc_alpha]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_beta_stats,"[eNB][ |_tc_beta]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_gamma_stats,"[eNB][ |_tc_gamma]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_ext_stats,"[eNB][ |_tc_ext]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_intl1_stats,"[eNB][ |_tc_intl1]",&oaisim_stats,&oaisim_stats_f);
-    print_meas(&PHY_vars_eNB_g[eNB_id]->ulsch_tc_intl2_stats,"[eNB][ |_tc_intl2]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->phy_proc_rx,"[eNB][total_phy_proc_rx]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ofdm_demod_stats,"[eNB][ofdm_demod]",&oaisim_stats,&oaisim_stats_f);
+    //print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_channel_estimation_stats,"[eNB][channel_est]");
+    //print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_freq_offset_estimation_stats,"[eNB][freq_offset]");
+    //print_meas(&PHY_vars_eNB_g[eNB_id][0]->rx_dft_stats,"[eNB][rx_dft]");
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_demodulation_stats,"[eNB][demodulation]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_decoding_stats,"[eNB][decoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_deinterleaving_stats,"[eNB][|_deinterleaving]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_demultiplexing_stats,"[eNB][|_demultiplexing]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_rate_unmatching_stats,"[eNB][|_rate_unmatching]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_turbo_decoding_stats,"[eNB][|_turbo_decoding]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_init_stats,"[eNB][ |_tc_init]",&oaisim_stats,&oaisim_stats_f);    
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_alpha_stats,"[eNB][ |_tc_alpha]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_beta_stats,"[eNB][ |_tc_beta]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_gamma_stats,"[eNB][ |_tc_gamma]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_ext_stats,"[eNB][ |_tc_ext]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_intl1_stats,"[eNB][ |_tc_intl1]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->ulsch_tc_intl2_stats,"[eNB][ |_tc_intl2]",&oaisim_stats,&oaisim_stats_f);
     
-    print_meas(&PHY_vars_eNB_g[eNB_id]->rx_prach,"[eNB][rx_prach]",&oaisim_stats,&oaisim_stats_f);
+    print_meas(&PHY_vars_eNB_g[eNB_id][0]->rx_prach,"[eNB][rx_prach]",&oaisim_stats,&oaisim_stats_f);
 
   }
 

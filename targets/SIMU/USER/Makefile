@@ -191,6 +191,7 @@ endif
 endif
 endif
 
+CFLAGS += -DMAX_NUM_CCs=1
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
 include $(OPENAIR1_DIR)/SCHED/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc

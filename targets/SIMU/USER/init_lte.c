@@ -169,7 +169,7 @@ void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
 		   uint8_t cooperation_flag,uint8_t transmission_mode,uint8_t abstraction_flag,
 		   int nb_antennas_rx, uint8_t eMBMS_active_state) {
 
-  uint8_t eNB_id,UE_id,RN_id;
+  uint8_t eNB_id,UE_id,RN_id,CC_id;
 
   mac_xface = malloc(sizeof(MAC_xface));
 
@@ -205,17 +205,27 @@ void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
 
   phy_init_lte_top(*frame_parms);
 
-  PHY_vars_eNB_g = malloc(NB_eNB_INST*sizeof(PHY_VARS_eNB*));
+  PHY_vars_eNB_g = (PHY_VARS_eNB***)malloc(NB_eNB_INST*sizeof(PHY_VARS_eNB**));
   for (eNB_id=0; eNB_id<NB_eNB_INST;eNB_id++){ 
-    PHY_vars_eNB_g[eNB_id] = init_lte_eNB(*frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
+    PHY_vars_eNB_g[eNB_id] = (PHY_VARS_eNB**) malloc(MAX_NUM_CCs*sizeof(PHY_VARS_eNB*));
+    for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+      PHY_vars_eNB_g[eNB_id][CC_id] = init_lte_eNB(*frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
+      PHY_vars_eNB_g[eNB_id][CC_id]->Mod_id=eNB_id;
+      PHY_vars_eNB_g[eNB_id][CC_id]->CC_id=CC_id;
+    }
   }
 
   (*frame_parms)->nb_antennas_tx     = 1;
   (*frame_parms)->nb_antennas_rx     = nb_antennas_rx;
 
-  PHY_vars_UE_g = malloc(NB_UE_INST*sizeof(PHY_VARS_UE*));
+  PHY_vars_UE_g = (PHY_VARS_UE***)malloc(NB_UE_INST*sizeof(PHY_VARS_UE**));
   for (UE_id=0; UE_id<NB_UE_INST;UE_id++){
-    PHY_vars_UE_g[UE_id] = init_lte_UE(*frame_parms, UE_id,abstraction_flag,transmission_mode);
+    PHY_vars_UE_g[UE_id] = (PHY_VARS_UE**) malloc(MAX_NUM_CCs*sizeof(PHY_VARS_UE*));
+    for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+      PHY_vars_UE_g[UE_id][CC_id] = init_lte_UE(*frame_parms, UE_id,abstraction_flag,transmission_mode);
+      PHY_vars_UE_g[UE_id][CC_id]->Mod_id=UE_id;
+      PHY_vars_UE_g[UE_id][CC_id]->CC_id=CC_id;
+    }
   }
 
   if (NB_RN_INST > 0) {

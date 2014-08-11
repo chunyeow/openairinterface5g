@@ -334,7 +334,7 @@ void execute_events(frame_t frame){
 void update_mac(Event_t event) {
 	LOG_I(EMU,"A NEW MAC MODEL\n");
 	int i = 0;
-
+	UE_list_t *UE_list;
 	if(event.optype == READ)
 	{
 		
@@ -456,23 +456,24 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"update complete mac params \n");
 				if(event.ue == -1 && event.lcid == -1)
 				{
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)	
+				        UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{
 						if(&mac_config[i].DCI_aggregation_min)
 						{
 							LOG_I(EMU,"update dci aggregation min\n");
 							oai_emulation->mac_config[i].DCI_aggregation_min= mac_config[i].DCI_aggregation_min;		
 
-							eNB_mac_inst->UE_template[i].DCI_aggregation_min = oai_emulation->mac_config[i].DCI_aggregation_min;
+							UE_list->UE_template[0][i].DCI_aggregation_min = oai_emulation->mac_config[i].DCI_aggregation_min;
 							LOG_I(EMU,"DCI_aggregation_min UE %d: \n",i);
-							LOG_I(EMU,"%" PRIu8,eNB_mac_inst->UE_template[i].DCI_aggregation_min);		
+							LOG_I(EMU,"%" PRIu8,UE_list->UE_template[0][i].DCI_aggregation_min);		
 						}
 						if(&mac_config[i].DLSCH_dci_size_bits !=NULL)
 						{					
 							oai_emulation->mac_config[i].DLSCH_dci_size_bits= mac_config[i].DLSCH_dci_size_bits;
-							eNB_mac_inst->UE_template[i].DLSCH_dci_size_bits = oai_emulation->mac_config[i].DLSCH_dci_size_bits;
+							UE_list->UE_template[0][i].DLSCH_dci_size_bits = oai_emulation->mac_config[i].DLSCH_dci_size_bits;
 							LOG_I(EMU,"DLSCH_dci_size_bits UE %d: \n",i);					
-							LOG_I(EMU,"%" PRIu8,eNB_mac_inst->UE_template[i].DLSCH_dci_size_bits);
+							LOG_I(EMU,"%" PRIu8,UE_list->UE_template[0][i].DLSCH_dci_size_bits);
 						}
 						if(mac_config[i].priority !=NULL)
 						{
@@ -484,9 +485,9 @@ void update_mac(Event_t event) {
 								if(&mac_config[i].priority[j]!=NULL)
 								{								
 									oai_emulation->mac_config[i].priority[j]= mac_config[i].priority[j];
-									eNB_mac_inst->UE_sched_ctrl[i].priority[j] = oai_emulation->mac_config[i].priority[j];
+									UE_list->UE_sched_ctrl[i].priority[j] = oai_emulation->mac_config[i].priority[j];
 									LOG_I(EMU,"priority UE %d LCID %d:",i,j);					
-									LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].priority[j]);
+									LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].priority[j]);
 								}
 							}
 						}
@@ -498,9 +499,9 @@ void update_mac(Event_t event) {
 							{
 											
 								oai_emulation->mac_config[i].ul_bandwidth[j]= mac_config[i].ul_bandwidth[j];
-								eNB_mac_inst->UE_sched_ctrl[i].ul_bandwidth[j] = oai_emulation->mac_config[i].ul_bandwidth[j];
+								UE_list->UE_sched_ctrl[i].ul_bandwidth[j] = oai_emulation->mac_config[i].ul_bandwidth[j];
 								LOG_I(EMU,"ul_bandwidth UE %d LCID %d:", i, j);					
-								LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].ul_bandwidth[j]);
+								LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].ul_bandwidth[j]);
 							}
 						}
 						if(&mac_config[i].dl_bandwidth !=NULL)
@@ -510,38 +511,38 @@ void update_mac(Event_t event) {
 							{
 											
 								oai_emulation->mac_config[i].dl_bandwidth[j]= mac_config[i].dl_bandwidth[j];
-								eNB_mac_inst->UE_sched_ctrl[i].dl_bandwidth[j] = oai_emulation->mac_config[i].dl_bandwidth[j];
+								UE_list->UE_sched_ctrl[i].dl_bandwidth[j] = oai_emulation->mac_config[i].dl_bandwidth[j];
 								LOG_I(EMU,"ul_bandwidth UE %d LCID %d:", i, j);					
-								LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].dl_bandwidth[j]);
+								LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].dl_bandwidth[j]);
 							}
 						}
 						if(&mac_config[i].ue_AggregatedMaximumBitrateDL !=NULL)
 						{
 							oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL= mac_config[i].ue_AggregatedMaximumBitrateDL;
-							eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL;
+							UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL;
 							LOG_I(EMU,"ue_AggregatedMaximumBitrateDL UE %d:",i );					
-							LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL);
+							LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL);
 						}
 						if(&mac_config[i].ue_AggregatedMaximumBitrateUL !=NULL)
 						{
 							oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL= mac_config[i].ue_AggregatedMaximumBitrateUL;
-							eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL;
+							UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL;
 							LOG_I(EMU,"ue_AggregatedMaximumBitrateUL UE %d:",i);					
-							LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL);
+							LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL);
 						}
 						if(&mac_config[i].cqiSchedInterval !=NULL)
 						{
 							oai_emulation->mac_config[i].cqiSchedInterval= mac_config[i].cqiSchedInterval;
-							eNB_mac_inst->UE_sched_ctrl[i].cqiSchedInterval = oai_emulation->mac_config[i].cqiSchedInterval;
+							UE_list->UE_sched_ctrl[i].cqiSchedInterval = oai_emulation->mac_config[i].cqiSchedInterval;
 							LOG_I(EMU,"cqiSchedInterval UE %d:",i);					
-							LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].cqiSchedInterval);
+							LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].cqiSchedInterval);
 						}					
 						if(&mac_config[i].mac_ContentionResolutionTimer !=NULL)
 						{
 							oai_emulation->mac_config[i].mac_ContentionResolutionTimer= mac_config[i].mac_ContentionResolutionTimer;
-							eNB_mac_inst->UE_sched_ctrl[i].mac_ContentionResolutionTimer = oai_emulation->mac_config[i].mac_ContentionResolutionTimer;
+							UE_list->UE_sched_ctrl[i].mac_ContentionResolutionTimer = oai_emulation->mac_config[i].mac_ContentionResolutionTimer;
 							LOG_I(EMU,"mac_ContentionResolutionTimer UE %:", i);					
-							LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].mac_ContentionResolutionTimer);
+							LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].mac_ContentionResolutionTimer);
 						}										
 						if(mac_config->max_allowed_rbs !=NULL)
 						{
@@ -549,9 +550,9 @@ void update_mac(Event_t event) {
 							for(j=0;j<MAX_NUM_LCID;j++)
 							{							
 								oai_emulation->mac_config[i].max_allowed_rbs[j]= mac_config[i].max_allowed_rbs[j];
-								eNB_mac_inst->UE_sched_ctrl[i].max_allowed_rbs[j] = oai_emulation->mac_config[i].max_allowed_rbs[j];
+								UE_list->UE_sched_ctrl[i].max_allowed_rbs[j] = oai_emulation->mac_config[i].max_allowed_rbs[j];
 								LOG_I(EMU,"max_allowed_rbs UE %d LCID %d:",i,j);					
-								LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].max_allowed_rbs[j]);
+								LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].max_allowed_rbs[j]);
 							}
 						}			
 						if(mac_config[i].max_mcs !=NULL)
@@ -560,9 +561,9 @@ void update_mac(Event_t event) {
 							for(j=0;j<MAX_NUM_LCID;j++)
 							{							
 								oai_emulation->mac_config[i].max_mcs[j]= mac_config[i].max_mcs[j];
-								eNB_mac_inst->UE_sched_ctrl[i].max_mcs[j] = oai_emulation->mac_config[i].max_mcs[j];
+								UE_list->UE_sched_ctrl[i].max_mcs[j] = oai_emulation->mac_config[i].max_mcs[j];
 								LOG_I(EMU,"max_mcs UE %d LCID %d:",i,j);					
-								LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].max_mcs[j]);
+								LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].max_mcs[j]);
 							}
 					
 						}	
@@ -581,16 +582,16 @@ void update_mac(Event_t event) {
 								LOG_I(EMU,"update dci aggregation min\n");
 								oai_emulation->mac_config[i].DCI_aggregation_min= mac_config[i].DCI_aggregation_min;		
 								// duplication dans le ue template, vérifier la validité avant		
-								eNB_mac_inst->UE_template[i].DCI_aggregation_min = oai_emulation->mac_config[i].DCI_aggregation_min;
+								UE_list->UE_template[0][i].DCI_aggregation_min = oai_emulation->mac_config[i].DCI_aggregation_min;
 								LOG_I(EMU,"DCI_aggregation_min UE %d: \n",i);
-								LOG_I(EMU,"%" PRIu8,eNB_mac_inst->UE_template[i].DCI_aggregation_min);		
+								LOG_I(EMU,"%" PRIu8,UE_list->UE_template[0][i].DCI_aggregation_min);		
 							}
 							if(&mac_config[i].DLSCH_dci_size_bits !=NULL)
 							{					
 								oai_emulation->mac_config[i].DLSCH_dci_size_bits= mac_config[i].DLSCH_dci_size_bits;
-								eNB_mac_inst->UE_template[i].DLSCH_dci_size_bits = oai_emulation->mac_config[i].DLSCH_dci_size_bits;
+								UE_list->UE_template[0][i].DLSCH_dci_size_bits = oai_emulation->mac_config[i].DLSCH_dci_size_bits;
 								LOG_I(EMU,"DLSCH_dci_size_bits UE %d: \n",i);					
-								LOG_I(EMU,"%" PRIu8,eNB_mac_inst->UE_template[i].DLSCH_dci_size_bits);
+								LOG_I(EMU,"%" PRIu8,UE_list->UE_template[0][i].DLSCH_dci_size_bits);
 							}
 							if(mac_config[i].priority !=NULL)
 							{
@@ -600,9 +601,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].priority[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].priority[j]= mac_config[i].priority[j];
-										eNB_mac_inst->UE_sched_ctrl[i].priority[j] = oai_emulation->mac_config[i].priority[j];
+										UE_list->UE_sched_ctrl[i].priority[j] = oai_emulation->mac_config[i].priority[j];
 										LOG_I(EMU,"priority UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].priority[j]);
+										LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].priority[j]);
 									}
 						
 							}
@@ -613,79 +614,79 @@ void update_mac(Event_t event) {
 						
 									
 									oai_emulation->mac_config[i].ul_bandwidth[j]= mac_config[i].ul_bandwidth[j];
-									eNB_mac_inst->UE_sched_ctrl[i].ul_bandwidth[j] = oai_emulation->mac_config[i].ul_bandwidth[j];
+									UE_list->UE_sched_ctrl[i].ul_bandwidth[j] = oai_emulation->mac_config[i].ul_bandwidth[j];
 									LOG_I(EMU,"ul_bandwidth UE %d LCID %d:", i, j);					
-									LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].ul_bandwidth[j]);
+									LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].ul_bandwidth[j]);
 						
 							}
 							if(&mac_config[i].dl_bandwidth !=NULL)
 							{
 								oai_emulation->mac_config[i].dl_bandwidth[j]= mac_config[i].dl_bandwidth[j];
-									eNB_mac_inst->UE_sched_ctrl[i].dl_bandwidth[j] = oai_emulation->mac_config[i].dl_bandwidth[j];
+									UE_list->UE_sched_ctrl[i].dl_bandwidth[j] = oai_emulation->mac_config[i].dl_bandwidth[j];
 									LOG_I(EMU,"ul_bandwidth UE %d LCID %d:", i, j);					
-									LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].dl_bandwidth[j]);
+									LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].dl_bandwidth[j]);
 						
 							}
 							if(&mac_config[i].min_ul_bandwidth !=NULL)
 							{
 								// faire boucle par ue puis par lcid
 									oai_emulation->mac_config[i].min_ul_bandwidth[j]= mac_config[i].min_ul_bandwidth[j];
-									eNB_mac_inst->UE_sched_ctrl[i].min_ul_bandwidth[j] = oai_emulation->mac_config[i].min_ul_bandwidth[j];
+									UE_list->UE_sched_ctrl[i].min_ul_bandwidth[j] = oai_emulation->mac_config[i].min_ul_bandwidth[j];
 									LOG_I(EMU,"min_ul_bandwidth UE %d LCID %d:", i, j);					
-									LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].min_ul_bandwidth[j]);
+									LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].min_ul_bandwidth[j]);
 						
 							}
 							if(&mac_config[i].min_dl_bandwidth !=NULL)
 							{
 									oai_emulation->mac_config[i].min_dl_bandwidth[j]= mac_config[i].min_dl_bandwidth[j];
-									eNB_mac_inst->UE_sched_ctrl[i].min_dl_bandwidth[j] = oai_emulation->mac_config[i].min_dl_bandwidth[j];
+									UE_list->UE_sched_ctrl[i].min_dl_bandwidth[j] = oai_emulation->mac_config[i].min_dl_bandwidth[j];
 									LOG_I(EMU,"min_dl_bandwidth UE %d LCID %d:", i, j);					
-									LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].min_dl_bandwidth[j]);
+									LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].min_dl_bandwidth[j]);
 						
 							}
 							if(&mac_config[i].ue_AggregatedMaximumBitrateDL !=NULL)
 							{
 								oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL= mac_config[i].ue_AggregatedMaximumBitrateDL;
-								eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL;
+								UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL;
 								LOG_I(EMU,"ue_AggregatedMaximumBitrateDL UE %d:",i );					
-								LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL);
+								LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL);
 							}
 							if(&mac_config[i].ue_AggregatedMaximumBitrateUL !=NULL)
 							{
 								oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL= mac_config[i].ue_AggregatedMaximumBitrateUL;
-								eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL;
+								UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL;
 								LOG_I(EMU,"ue_AggregatedMaximumBitrateUL UE %d:",i);					
-								LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL);
+								LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL);
 							}
 							if(&mac_config[i].cqiSchedInterval !=NULL)
 							{
 								oai_emulation->mac_config[i].cqiSchedInterval= mac_config[i].cqiSchedInterval;
-								eNB_mac_inst->UE_sched_ctrl[i].cqiSchedInterval = oai_emulation->mac_config[i].cqiSchedInterval;
+								UE_list->UE_sched_ctrl[i].cqiSchedInterval = oai_emulation->mac_config[i].cqiSchedInterval;
 								LOG_I(EMU,"cqiSchedInterval UE %d:",i);					
-								LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].cqiSchedInterval);
+								LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].cqiSchedInterval);
 							}					
 							if(&mac_config[i].mac_ContentionResolutionTimer !=NULL)
 							{
 								oai_emulation->mac_config[i].mac_ContentionResolutionTimer= mac_config[i].mac_ContentionResolutionTimer;
-								eNB_mac_inst->UE_sched_ctrl[i].mac_ContentionResolutionTimer = oai_emulation->mac_config[i].mac_ContentionResolutionTimer;
+								UE_list->UE_sched_ctrl[i].mac_ContentionResolutionTimer = oai_emulation->mac_config[i].mac_ContentionResolutionTimer;
 								LOG_I(EMU,"mac_ContentionResolutionTimer UE %:", i);					
-								LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].mac_ContentionResolutionTimer);
+								LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].mac_ContentionResolutionTimer);
 							}										
 							if(mac_config->max_allowed_rbs !=NULL)
 							{
 											
 									oai_emulation->mac_config[i].max_allowed_rbs[j]= mac_config[i].max_allowed_rbs[j];
-									eNB_mac_inst->UE_sched_ctrl[i].max_allowed_rbs[j] = oai_emulation->mac_config[i].max_allowed_rbs[j];
+									UE_list->UE_sched_ctrl[i].max_allowed_rbs[j] = oai_emulation->mac_config[i].max_allowed_rbs[j];
 									LOG_I(EMU,"max_allowed_rbs UE %d LCID %d:",i,j);					
-									LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].max_allowed_rbs[j]);
+									LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].max_allowed_rbs[j]);
 		
 							}			
 							if(mac_config[i].max_mcs !=NULL)
 							{
 								oai_emulation->mac_config[i].max_mcs[j]= mac_config[i].max_mcs[j];
-								eNB_mac_inst->UE_sched_ctrl[i].max_mcs[j] = oai_emulation->mac_config[i].max_mcs[j];
+								UE_list->UE_sched_ctrl[i].max_mcs[j] = oai_emulation->mac_config[i].max_mcs[j];
 								LOG_I(EMU,"max_mcs UE %d LCID %d:",i,j);					
-								LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].max_mcs[j]);
+								LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].max_mcs[j]);
 
 							}					
 				}
@@ -707,9 +708,9 @@ void update_mac(Event_t event) {
 						if(&mac_config[i].priority[j]!=NULL)
 						{								
 							oai_emulation->mac_config[i].priority[j]= mac_config[i].priority[j];
-							eNB_mac_inst->UE_sched_ctrl[i].priority[j] = oai_emulation->mac_config[i].priority[j];
+							UE_list->UE_sched_ctrl[i].priority[j] = oai_emulation->mac_config[i].priority[j];
 							LOG_I(EMU,"priority UE %d LCID %d:",i,j);					
-							LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].priority[j]);
+							LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].priority[j]);
 						}
 					}
 				}
@@ -717,9 +718,9 @@ void update_mac(Event_t event) {
 			else
 			{
 				oai_emulation->mac_config[event.ue].priority[event.lcid]= mac_config[event.ue].priority[event.lcid];
-				eNB_mac_inst->UE_sched_ctrl[event.ue].priority[event.lcid] = oai_emulation->mac_config[event.ue].priority[event.lcid];
+				UE_list->UE_sched_ctrl[event.ue].priority[event.lcid] = oai_emulation->mac_config[event.ue].priority[event.lcid];
 				LOG_I(EMU,"priority UE %d LCID %d:",i,j);					
-				LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].priority[event.lcid]);
+				LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[event.ue].priority[event.lcid]);
 			}
 		}
 		else if(!strcmp((char *) event.key, "DCI_aggregation_min") && event.value!=NULL && validate_mac(event))
@@ -730,20 +731,21 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"DCI_aggregation_min update \n");	
 				if(event.ue == -1)
 				{
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)
+				        UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{			
 						oai_emulation->mac_config[i].DCI_aggregation_min=mac_config[i].DCI_aggregation_min;
-						eNB_mac_inst->UE_template[i].DCI_aggregation_min = oai_emulation->mac_config[i].DCI_aggregation_min;
+						UE_list->UE_template[0][i].DCI_aggregation_min = oai_emulation->mac_config[i].DCI_aggregation_min;
 						LOG_I(EMU,"DCI_aggregation_min UE %d : \n", i);
-						LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_template[i].DCI_aggregation_min);
+						LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_template[0][i].DCI_aggregation_min);
 					}
 				}
 				else
 				{
 					oai_emulation->mac_config[event.ue].DCI_aggregation_min=mac_config[event.ue].DCI_aggregation_min;	
-					eNB_mac_inst->UE_template[event.ue].DCI_aggregation_min = oai_emulation->mac_config[event.ue].DCI_aggregation_min;
+					UE_list->UE_template[0][event.ue].DCI_aggregation_min = oai_emulation->mac_config[event.ue].DCI_aggregation_min;
 					LOG_I(EMU,"DCI_aggregation_min UE %d : \n", event.ue);
-					LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_template[event.ue].DCI_aggregation_min);
+					LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_template[0][event.ue].DCI_aggregation_min);
 				}				
 		}
 		else if(!strcmp((char *) event.key, "DLSCH_dci_size_bits") && event.value!=NULL && validate_mac(event))
@@ -755,20 +757,21 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"DLSCH_dci_size_bits update \n");					
 				if(event.ue == -1)
 				{
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)
+				        UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{							
 						oai_emulation->mac_config[i].DLSCH_dci_size_bits=mac_config[i].DLSCH_dci_size_bits;
-						eNB_mac_inst->UE_template[i].DLSCH_dci_size_bits = oai_emulation->mac_config[i].DLSCH_dci_size_bits;
+						UE_list->UE_template[0][i].DLSCH_dci_size_bits = oai_emulation->mac_config[i].DLSCH_dci_size_bits;
 						LOG_I(EMU,"DLSCH_dci_size_bits UE %d: \n", i);				
-						LOG_I(EMU,"%" PRIu8,eNB_mac_inst->UE_template[i].DLSCH_dci_size_bits);
+						LOG_I(EMU,"%" PRIu8,UE_list->UE_template[0][i].DLSCH_dci_size_bits);
 					}
 				}
 				else
 				{
 					oai_emulation->mac_config[event.ue].DLSCH_dci_size_bits=mac_config[event.ue].DLSCH_dci_size_bits;
-					eNB_mac_inst->UE_template[event.ue].DLSCH_dci_size_bits = oai_emulation->mac_config[event.ue].DLSCH_dci_size_bits;
+					UE_list->UE_template[0][event.ue].DLSCH_dci_size_bits = oai_emulation->mac_config[event.ue].DLSCH_dci_size_bits;
 					LOG_I(EMU,"DLSCH_dci_size_bits UE %d: \n", event.ue);				
-					LOG_I(EMU,"%" PRIu8,eNB_mac_inst->UE_template[event.ue].DLSCH_dci_size_bits);
+					LOG_I(EMU,"%" PRIu8,UE_list->UE_template[0][event.ue].DLSCH_dci_size_bits);
 				}
 				
 		}
@@ -781,7 +784,8 @@ void update_mac(Event_t event) {
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
 					{
-						for(i=0;i<NUMBER_OF_UE_MAX;i++)
+					        UE_list = &eNB_mac_inst->UE_list;
+					        for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 						{
 											
 								
@@ -791,9 +795,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].ul_bandwidth[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].ul_bandwidth[j]= mac_config[i].ul_bandwidth[j];
-										eNB_mac_inst->UE_sched_ctrl[i].ul_bandwidth[j] = oai_emulation->mac_config[i].ul_bandwidth[j];
+										UE_list->UE_sched_ctrl[i].ul_bandwidth[j] = oai_emulation->mac_config[i].ul_bandwidth[j];
 										LOG_I(EMU,"ul_bandwidth UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].ul_bandwidth[j]);
+										LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].ul_bandwidth[j]);
 									}
 								}
 						
@@ -802,9 +806,9 @@ void update_mac(Event_t event) {
 					else
 					{
 						oai_emulation->mac_config[event.ue].ul_bandwidth[event.lcid]= mac_config[event.ue].ul_bandwidth[event.lcid];
-						eNB_mac_inst->UE_sched_ctrl[event.ue].ul_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].ul_bandwidth[event.lcid];
+						UE_list->UE_sched_ctrl[event.ue].ul_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].ul_bandwidth[event.lcid];
 						LOG_I(EMU,"ul_bandwidth UE %d LCID %d:",event.ue, event.lcid);					
-						LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].ul_bandwidth[event.lcid]);
+						LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[event.ue].ul_bandwidth[event.lcid]);
 					}				
 				
 		}
@@ -816,7 +820,8 @@ void update_mac(Event_t event) {
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
 					{
-						for(i=0;i<NUMBER_OF_UE_MAX;i++)
+					        UE_list = &eNB_mac_inst->UE_list;
+					        for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 						{
 							if(event.value + i !=NULL)
 							{						
@@ -827,9 +832,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].dl_bandwidth[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].dl_bandwidth[j]= mac_config[i].dl_bandwidth[j];
-										eNB_mac_inst->UE_sched_ctrl[i].dl_bandwidth[j] = oai_emulation->mac_config[i].dl_bandwidth[j];
+										UE_list->UE_sched_ctrl[i].dl_bandwidth[j] = oai_emulation->mac_config[i].dl_bandwidth[j];
 										LOG_I(EMU,"dl_bandwidth UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].dl_bandwidth[j]);
+										LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].dl_bandwidth[j]);
 									}
 								}
 							}
@@ -838,9 +843,9 @@ void update_mac(Event_t event) {
 					else
 					{
 						oai_emulation->mac_config[event.ue].dl_bandwidth[event.lcid]= mac_config[event.ue].dl_bandwidth[event.lcid];
-						eNB_mac_inst->UE_sched_ctrl[event.ue].dl_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].dl_bandwidth[event.lcid];
+						UE_list->UE_sched_ctrl[event.ue].dl_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].dl_bandwidth[event.lcid];
 						LOG_I(EMU,"dl_bandwidth UE %d LCID %d:",event.ue, event.lcid);					
-						LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].dl_bandwidth[event.lcid]);
+						LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[event.ue].dl_bandwidth[event.lcid]);
 					}	
 		}
 		else if(!strcmp((char *) event.key, "min_ul_bandwidth") && event.value!=NULL)
@@ -852,7 +857,8 @@ void update_mac(Event_t event) {
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
 					{
-						for(i=0;i<NUMBER_OF_UE_MAX;i++)
+						UE_list = &eNB_mac_inst->UE_list;
+					        for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 						{
 											
 								
@@ -862,9 +868,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].min_ul_bandwidth[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].min_ul_bandwidth[j]= mac_config[i].min_ul_bandwidth[j];
-										eNB_mac_inst->UE_sched_ctrl[i].min_ul_bandwidth[j] = oai_emulation->mac_config[i].min_ul_bandwidth[j];
+										UE_list->UE_sched_ctrl[i].min_ul_bandwidth[j] = oai_emulation->mac_config[i].min_ul_bandwidth[j];
 										LOG_I(EMU,"min_ul_bandwidth UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].min_ul_bandwidth[j]);
+										LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].min_ul_bandwidth[j]);
 									}
 								}
 						
@@ -873,9 +879,9 @@ void update_mac(Event_t event) {
 					else
 					{
 						oai_emulation->mac_config[event.ue].min_ul_bandwidth[event.lcid]= mac_config[event.ue].min_ul_bandwidth[event.lcid];
-						eNB_mac_inst->UE_sched_ctrl[event.ue].min_ul_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].min_ul_bandwidth[event.lcid];
+						UE_list->UE_sched_ctrl[event.ue].min_ul_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].min_ul_bandwidth[event.lcid];
 						LOG_I(EMU,"min_ul_bandwidth UE %d LCID %d:",event.ue, event.lcid);					
-						LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].min_ul_bandwidth[event.lcid]);
+						LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[event.ue].min_ul_bandwidth[event.lcid]);
 					}				
 				
 		}
@@ -887,7 +893,8 @@ void update_mac(Event_t event) {
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
 					{
-						for(i=0;i<NUMBER_OF_UE_MAX;i++)
+						UE_list = &eNB_mac_inst->UE_list;
+					        for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 						{
 							if(event.value + i !=NULL)
 							{						
@@ -898,9 +905,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].min_dl_bandwidth[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].min_dl_bandwidth[j]= mac_config[i].min_dl_bandwidth[j];
-										eNB_mac_inst->UE_sched_ctrl[i].min_dl_bandwidth[j] = oai_emulation->mac_config[i].min_dl_bandwidth[j];
+										UE_list->UE_sched_ctrl[i].min_dl_bandwidth[j] = oai_emulation->mac_config[i].min_dl_bandwidth[j];
 										LOG_I(EMU,"dl_bandwidth UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].min_dl_bandwidth[j]);
+										LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].min_dl_bandwidth[j]);
 									}
 								}
 							}
@@ -909,9 +916,9 @@ void update_mac(Event_t event) {
 					else
 					{
 						oai_emulation->mac_config[event.ue].min_dl_bandwidth[event.lcid]= mac_config[event.ue].min_dl_bandwidth[event.lcid];
-						eNB_mac_inst->UE_sched_ctrl[event.ue].min_dl_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].min_dl_bandwidth[event.lcid];
+						UE_list->UE_sched_ctrl[event.ue].min_dl_bandwidth[event.lcid] = oai_emulation->mac_config[event.ue].min_dl_bandwidth[event.lcid];
 						LOG_I(EMU,"min_dl_bandwidth UE %d LCID %d:",event.ue, event.lcid);					
-						LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].min_dl_bandwidth[event.lcid]);
+						LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[event.ue].min_dl_bandwidth[event.lcid]);
 					}	
 		}
 		else if(!strcmp((char *) event.key, "ue_AggregatedMaximumBitrateDL") && event.value!=NULL && validate_mac(event))
@@ -922,20 +929,21 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"ue_AggregatedMaximumBitrateDL update \n");					
 				if(event.ue == -1)
 				{				
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)
+				        UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{				
 						oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL= mac_config[i].ue_AggregatedMaximumBitrateDL;
-						eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL;
+						UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateDL;
 						LOG_I(EMU,"ue_AggregatedMaximumBitrateDL UE %d:\n",event.ue);					
-						LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL);
+						LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateDL);
 					}
 				}
 				else
 				{
 					oai_emulation->mac_config[event.ue].ue_AggregatedMaximumBitrateDL= mac_config[event.ue].ue_AggregatedMaximumBitrateDL;
-					eNB_mac_inst->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[event.ue].ue_AggregatedMaximumBitrateDL;
+					UE_list->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateDL = oai_emulation->mac_config[event.ue].ue_AggregatedMaximumBitrateDL;
 					LOG_I(EMU,"ue_AggregatedMaximumBitrateDL UE %d:\n",event.ue);					
-					LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateDL);
+					LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateDL);
 				}
 				
 		}
@@ -948,20 +956,21 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"ue_AggregatedMaximumBitrateUL update \n");					
 				if(event.ue == -1)
 				{					
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)
+					UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{				
 						oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL= mac_config[i].ue_AggregatedMaximumBitrateUL;
-						eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL;
+						UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[i].ue_AggregatedMaximumBitrateUL;
 						LOG_I(EMU,"ue_AggregatedMaximumBitrateUL UE %d:\n",i);					
-						LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL);
+						LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[i].ue_AggregatedMaximumBitrateUL);
 					}
 				}
 				else
 				{
 					oai_emulation->mac_config[event.ue].ue_AggregatedMaximumBitrateUL= mac_config[event.ue].ue_AggregatedMaximumBitrateUL;
-					eNB_mac_inst->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[event.ue].ue_AggregatedMaximumBitrateUL;
+					UE_list->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateUL = oai_emulation->mac_config[event.ue].ue_AggregatedMaximumBitrateUL;
 					LOG_I(EMU,"ue_AggregatedMaximumBitrateUL UE %d:\n",event.ue);					
-					LOG_I(EMU,"%" PRIu64 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateUL);
+					LOG_I(EMU,"%" PRIu64 "\n",UE_list->UE_sched_ctrl[event.ue].ue_AggregatedMaximumBitrateUL);
 				}
 				
 		}
@@ -973,20 +982,21 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"cqiSchedInterval update \n");					
 				if(event.ue == -1)
 				{					
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)
+					UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{							
 						oai_emulation->mac_config[i].cqiSchedInterval= mac_config[i].cqiSchedInterval;
-						eNB_mac_inst->UE_sched_ctrl[i].cqiSchedInterval = oai_emulation->mac_config[i].cqiSchedInterval;
+						UE_list->UE_sched_ctrl[i].cqiSchedInterval = oai_emulation->mac_config[i].cqiSchedInterval;
 						LOG_I(EMU,"cqiSchedInterval UE :\n", i);					
-						LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].cqiSchedInterval);
+						LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].cqiSchedInterval);
 					}
 				}
 				else
 				{
 					oai_emulation->mac_config[event.ue].cqiSchedInterval= mac_config[event.ue].cqiSchedInterval;
-					eNB_mac_inst->UE_sched_ctrl[event.ue].cqiSchedInterval = oai_emulation->mac_config[event.ue].cqiSchedInterval;
+					UE_list->UE_sched_ctrl[event.ue].cqiSchedInterval = oai_emulation->mac_config[event.ue].cqiSchedInterval;
 					LOG_I(EMU,"cqiSchedInterval UE :\n", event.ue);					
-					LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].cqiSchedInterval);
+					LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[event.ue].cqiSchedInterval);
 				}	
 		}
 		else if(!strcmp((char *) event.key, "mac_ContentionResolutionTimer") && event.value!=NULL && validate_mac(event))
@@ -996,20 +1006,21 @@ void update_mac(Event_t event) {
 				LOG_I(EMU,"mac_ContentionResolutionTimer update \n");					
 				if(event.ue == -1)
 				{
-					for(i=0;i<NUMBER_OF_UE_MAX;i++)
+					UE_list = &eNB_mac_inst->UE_list;
+					for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 					{		
 						oai_emulation->mac_config[i].mac_ContentionResolutionTimer= mac_config[i].mac_ContentionResolutionTimer;
-						eNB_mac_inst->UE_sched_ctrl[i].mac_ContentionResolutionTimer = oai_emulation->mac_config[i].mac_ContentionResolutionTimer;
+						UE_list->UE_sched_ctrl[i].mac_ContentionResolutionTimer = oai_emulation->mac_config[i].mac_ContentionResolutionTimer;
 						LOG_I(EMU,"mac_ContentionResolutionTimer UE :\n", i);					
-						LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[i].mac_ContentionResolutionTimer);
+						LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[i].mac_ContentionResolutionTimer);
 					}
 				}
 				else
 				{
 					oai_emulation->mac_config[event.ue].mac_ContentionResolutionTimer= mac_config[event.ue].mac_ContentionResolutionTimer;
-					eNB_mac_inst->UE_sched_ctrl[event.ue].mac_ContentionResolutionTimer = oai_emulation->mac_config[event.ue].mac_ContentionResolutionTimer;
+					UE_list->UE_sched_ctrl[event.ue].mac_ContentionResolutionTimer = oai_emulation->mac_config[event.ue].mac_ContentionResolutionTimer;
 					LOG_I(EMU,"mac_ContentionResolutionTimer UE :\n", event.ue);					
-					LOG_I(EMU,"%" PRIu8 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].mac_ContentionResolutionTimer);
+					LOG_I(EMU,"%" PRIu8 "\n",UE_list->UE_sched_ctrl[event.ue].mac_ContentionResolutionTimer);
 				}
 		}
 		else if(!strcmp((char *) event.key, "max_allowed_rbs") && event.value!=NULL && validate_mac(event))
@@ -1021,7 +1032,8 @@ void update_mac(Event_t event) {
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
 					{
-						for(i=0;i<NUMBER_OF_UE_MAX;i++)
+						UE_list = &eNB_mac_inst->UE_list;
+						for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 						{
 							if(event.value + i !=NULL)
 							{						
@@ -1032,9 +1044,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].max_allowed_rbs[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].max_allowed_rbs[j]= mac_config[i].max_allowed_rbs[j];
-										eNB_mac_inst->UE_sched_ctrl[i].max_allowed_rbs[j] = oai_emulation->mac_config[i].max_allowed_rbs[j];
+										UE_list->UE_sched_ctrl[i].max_allowed_rbs[j] = oai_emulation->mac_config[i].max_allowed_rbs[j];
 										LOG_I(EMU,"max_allowed_rbs UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].max_allowed_rbs[j]);
+										LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].max_allowed_rbs[j]);
 									}
 								}
 							}
@@ -1043,9 +1055,9 @@ void update_mac(Event_t event) {
 					else
 					{
 						oai_emulation->mac_config[event.ue].max_allowed_rbs[event.lcid]= mac_config[event.ue].max_allowed_rbs[event.lcid];
-						eNB_mac_inst->UE_sched_ctrl[event.ue].max_allowed_rbs[event.lcid] = oai_emulation->mac_config[event.ue].max_allowed_rbs[event.lcid];
+						UE_list->UE_sched_ctrl[event.ue].max_allowed_rbs[event.lcid] = oai_emulation->mac_config[event.ue].max_allowed_rbs[event.lcid];
 						LOG_I(EMU,"max_allowed_rbs UE %d LCID %d:",event.ue,event.lcid);					
-						LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].max_allowed_rbs[event.lcid]);
+						LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[event.ue].max_allowed_rbs[event.lcid]);
 					}	
 				
 		}
@@ -1059,7 +1071,8 @@ void update_mac(Event_t event) {
 					int j=0;
 					if(event.ue == -1 && event.lcid == -1)
 					{
-						for(i=0;i<NUMBER_OF_UE_MAX;i++)
+						UE_list = &eNB_mac_inst->UE_list;
+						for(i=UE_list->head;i>=0;i=UE_list->next[i])	
 						{
 													
 								for(j=0;j<MAX_NUM_LCID;j++)
@@ -1068,9 +1081,9 @@ void update_mac(Event_t event) {
 									if(&mac_config[i].max_mcs[j]!=NULL)
 									{								
 										oai_emulation->mac_config[i].max_mcs[j]= mac_config[i].max_mcs[j];
-										eNB_mac_inst->UE_sched_ctrl[i].max_mcs[j] = oai_emulation->mac_config[i].max_mcs[j];
+										UE_list->UE_sched_ctrl[i].max_mcs[j] = oai_emulation->mac_config[i].max_mcs[j];
 										LOG_I(EMU,"max_mcs UE %d LCID %d:",i,j);					
-										LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[i].max_mcs[j]);
+										LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[i].max_mcs[j]);
 									}
 								}
 							
@@ -1079,9 +1092,9 @@ void update_mac(Event_t event) {
 					else
 					{
 						oai_emulation->mac_config[event.ue].max_mcs[event.lcid]= mac_config[event.ue].max_mcs[event.lcid];
-						eNB_mac_inst->UE_sched_ctrl[event.ue].max_mcs[event.lcid] = oai_emulation->mac_config[event.ue].max_mcs[event.lcid];
+						UE_list->UE_sched_ctrl[event.ue].max_mcs[event.lcid] = oai_emulation->mac_config[event.ue].max_mcs[event.lcid];
 						LOG_I(EMU,"max_mcs UE %d LCID %d:",event.ue,event.lcid);					
-						LOG_I(EMU,"%" PRIu16 "\n",eNB_mac_inst->UE_sched_ctrl[event.ue].max_mcs[event.lcid]);
+						LOG_I(EMU,"%" PRIu16 "\n",UE_list->UE_sched_ctrl[event.ue].max_mcs[event.lcid]);
 					}	
 		}
 	}
