@@ -744,6 +744,8 @@ int main(int argc, char **argv) {
   if (ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe) > subframe) // allocation was in previous frame
     PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx = (PHY_vars_UE->frame-1)&1023;
 
+  //  printf("UE frame %d, eNB frame %d (eNB frame_tx %d)\n",PHY_vars_UE->frame,PHY_vars_eNB->proc[subframe].frame_rx,PHY_vars_eNB->proc[ul_subframe2pdcch_alloc_subframe(&PHY_vars_eNB->lte_frame_parms,subframe)].frame_tx);
+  PHY_vars_UE->frame = (PHY_vars_UE->frame-1)&1023;
 
   generate_ue_ulsch_params_from_dci((void *)&UL_alloc_pdu,
 				    14,
@@ -773,7 +775,7 @@ int main(int argc, char **argv) {
 
 
 
-
+  PHY_vars_UE->frame = (PHY_vars_UE->frame+1)&1023;
   
   
   for (ch_realization=0;ch_realization<n_ch_rlz;ch_realization++){
@@ -791,8 +793,8 @@ int main(int argc, char **argv) {
     }
 	
 
-    if ((subframe>5) || (subframe < 4))
-      PHY_vars_UE->frame++;
+    //    if ((subframe>5) || (subframe < 4))
+    //      PHY_vars_UE->frame++;
  
     for (SNR=snr0;SNR<snr1;SNR+=input_snr_step) {
       errs[0]=0;
