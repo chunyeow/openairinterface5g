@@ -2455,8 +2455,8 @@ void rrc_eNB_generate_RRCConnectionSetup(
     eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.payload_size =
         do_RRCConnectionSetup(enb_mod_idP,
                               (uint8_t *) eNB_rrc_inst[enb_mod_idP].Srb0.Tx_buffer.Payload,
-                              mac_xface->get_transmission_mode(enb_mod_idP,
-                                                               find_UE_RNTI
+                              mac_xface->get_transmission_mode(enb_mod_idP,0,   //CC_id 0!!!!
+                                                               UE_RNTI
                                                                (enb_mod_idP,
                                                                    ue_mod_idP)),
                                                                    ue_mod_idP,

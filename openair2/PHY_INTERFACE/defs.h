@@ -70,43 +70,43 @@ typedef struct
 
     // eNB functions
     /// Invoke dlsch/ulsch scheduling procedure for new subframe
-    void (*eNB_dlsch_ulsch_scheduler)(module_id_t Mod_id, uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframeP);//, int calibration_flag);
+    void (*eNB_dlsch_ulsch_scheduler)(module_id_t Mod_id,uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframeP);//, int calibration_flag);
 
     /// Fill random access response sdu, passing timing advance
-    uint16_t (*fill_rar)(module_id_t Mod_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t N_RB_UL, uint8_t input_buffer_length);
+    uint16_t (*fill_rar)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t N_RB_UL, uint8_t input_buffer_length);
 
     /// Terminate the RA procedure upon reception of l3msg on ulsch
-    void (*terminate_ra_proc)(module_id_t Mod_id,frame_t frameP,uint16_t UE_id, uint8_t *l3msg, uint16_t l3msg_len);
+    void (*terminate_ra_proc)(module_id_t Mod_id,int CC_id,frame_t frameP,uint16_t UE_id, uint8_t *l3msg, uint16_t l3msg_len);
 
     /// Initiate the RA procedure upon reception (hypothetical) of a valid preamble
-    void (*initiate_ra_proc)(module_id_t Mod_id,frame_t frameP,uint16_t preamble,int16_t timing_offset,uint8_t sect_id,uint8_t subframe,uint8_t f_id);
+    void (*initiate_ra_proc)(module_id_t Mod_id,int CC_id,frame_t frameP,uint16_t preamble,int16_t timing_offset,uint8_t sect_id,sub_frame_t subframe,uint8_t f_id);
 
     /// cancel an ongoing RA procedure 
-    void (*cancel_ra_proc)(module_id_t Mod_id,frame_t frameP,uint16_t preamble);
+    void (*cancel_ra_proc)(module_id_t Mod_id,int CC_id,frame_t frameP,uint16_t preamble);
 
     /// Get DCI for current subframe from MAC
-    DCI_PDU* (*get_dci_sdu)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe);
+    DCI_PDU* (*get_dci_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,sub_frame_t subframe);
 
     /// Get DLSCH sdu for particular RNTI and Transport block index
-    uint8_t* (*get_dlsch_sdu)(module_id_t Mod_id,frame_t frameP,rnti_t rnti,uint8_t TB_index);
+    uint8_t* (*get_dlsch_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti,uint8_t TB_index);
 
     /// Send ULSCH sdu to MAC for given rnti
-    void (*rx_sdu)(module_id_t Mod_id,frame_t frameP,rnti_t rnti, uint8_t *sdu,uint16_t sdu_len);
+    void (*rx_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti, uint8_t *sdu,uint16_t sdu_len);
 
     /// Indicate failure to synch to external source
     void (*mrbch_phy_sync_failure) (module_id_t Mod_id,frame_t frameP, uint8_t free_eNB_index);
 
     /// Indicate Scheduling Request from UE
-    void (*SR_indication)(module_id_t Mod_id,frame_t frameP,rnti_t rnti,sub_frame_t subframe);
+    void (*SR_indication)(module_id_t Mod_id,int CC_id,frame_t frameP,rnti_t rnti,sub_frame_t subframe);
 
     /// Configure Common PHY parameters from SIB1
-    void (*phy_config_sib1_eNB)(module_id_t Mod_id,
+    void (*phy_config_sib1_eNB)(module_id_t Mod_id,int CC_id,
 				TDD_Config_t *tdd_config,
 				uint8_t SIwindowsize,
 				uint16_t SIperiod);
     
     /// Configure Common PHY parameters from SIB2
-    void (*phy_config_sib2_eNB)(module_id_t Mod_id,
+    void (*phy_config_sib2_eNB)(module_id_t Mod_id, int CC_id,
 				RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 				ARFCN_ValueEUTRA_t *ul_CArrierFreq,
 				long *ul_Bandwidth,
@@ -115,12 +115,12 @@ typedef struct
     
 #ifdef Rel10
     /// Configure Common PHY parameters from SIB13
-    void (*phy_config_sib13_eNB)(module_id_t Mod_id,int mbsfn_Area_idx,
+    void (*phy_config_sib13_eNB)(module_id_t Mod_id,int CC_id, int mbsfn_Area_idx,
 				long mbsfn_AreaId_r9);
 #endif
     
     /// PHY-Config-Dedicated eNB
-    void (*phy_config_dedicated_eNB)(module_id_t Mod_id,rnti_t rnti,
+    void (*phy_config_dedicated_eNB)(module_id_t Mod_id,int CC_id,rnti_t rnti,
 				     struct PhysicalConfigDedicated *physicalConfigDedicated);
 
 #ifdef Rel10
@@ -139,10 +139,10 @@ typedef struct
     void (*out_of_sync_ind)(module_id_t Mod_id,frame_t frameP,uint16_t eNB_index);
 
     ///  Send a received SI sdu
-    void (*ue_decode_si)(module_id_t Mod_id,frame_t frameP, uint8_t CH_index, void *pdu, uint16_t len);
+    void (*ue_decode_si)(module_id_t Mod_id,int CC_id,frame_t frameP, uint8_t CH_index, void *pdu, uint16_t len);
 
     /// Send a received DLSCH sdu to MAC
-    void (*ue_send_sdu)(module_id_t Mod_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t CH_index);
+    void (*ue_send_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t CH_index);
 
 #ifdef Rel10
     /// Send a received MCH sdu to MAC
@@ -150,20 +150,20 @@ typedef struct
 
     /// Function to check if UE PHY needs to decode MCH for MAC
     /// get the sync area id, and teturn MCS value if need to decode, otherwise -1
-    int (*ue_query_mch)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
+    int (*ue_query_mch)(module_id_t Mod_id,int CC_id,frame_t frameP,sub_frame_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
 #endif
 
   /// Retrieve ULSCH sdu from MAC
-    void (*ue_get_sdu)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe, uint8_t CH_index,uint8_t *ulsch_buffer,uint16_t buflen,uint8_t *access_mode);
+    void (*ue_get_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,sub_frame_t subframe, uint8_t CH_index,uint8_t *ulsch_buffer,uint16_t buflen,uint8_t *access_mode);
 
     /// Retrieve RRCConnectionReq from MAC
-    PRACH_RESOURCES_t* (*ue_get_rach)(module_id_t Mod_id,frame_t frameP,uint8_t Msg3_flag,sub_frame_t subframe);
+    PRACH_RESOURCES_t* (*ue_get_rach)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t Msg3_flag,sub_frame_t subframe);
 
     /// Process Random-Access Response
-    uint16_t (*ue_process_rar)(module_id_t Mod_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t *t_crnti,uint8_t preamble_index);
+    uint16_t (*ue_process_rar)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t *dlsch_buffer,uint16_t *t_crnti,uint8_t preamble_index);
 
     /// Get SR payload (0,1) from UE MAC
-    uint32_t (*ue_get_SR)(module_id_t Mod_id,frame_t frameP,uint8_t eNB_id,rnti_t rnti,sub_frame_t subframe);
+    uint32_t (*ue_get_SR)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t eNB_id,rnti_t rnti,sub_frame_t subframe);
 
     /// Indicate synchronization with valid PBCH
     void (*dl_phy_sync_success) (module_id_t Mod_id,frame_t frameP, uint8_t CH_index,uint8_t first_sync);
@@ -172,17 +172,17 @@ typedef struct
     UE_L2_STATE_t (*ue_scheduler)(module_id_t Mod_id, frame_t frameP,sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_id);
 
     /// PHY-Config-Dedicated UE
-    void (*phy_config_dedicated_ue)(module_id_t Mod_id,uint8_t CH_index,
+    void (*phy_config_dedicated_ue)(module_id_t Mod_id,int CC_id,uint8_t CH_index,
 				    struct PhysicalConfigDedicated *physicalConfigDedicated);
 
     /// Configure Common PHY parameters from SIB1
-    void (*phy_config_sib1_ue)(module_id_t Mod_id,uint8_t CH_index,
+    void (*phy_config_sib1_ue)(module_id_t Mod_id,int CC_id,uint8_t CH_index,
 			       TDD_Config_t *tdd_config,
 			       uint8_t SIwindowsize,
 			       uint16_t SIperiod);
     
     /// Configure Common PHY parameters from SIB2
-    void (*phy_config_sib2_ue)(module_id_t Mod_id,uint8_t CH_index,
+    void (*phy_config_sib2_ue)(module_id_t Mod_id,int CC_id,uint8_t CH_index,
 			       RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 			       ARFCN_ValueEUTRA_t *ul_CArrierFreq,
 			       long *ul_Bandwidth,
@@ -200,19 +200,19 @@ typedef struct
 				  uint8_t ho_failed);
 
     /// Function to indicate failure of contention resolution or RA procedure
-    void (*ra_failed)(module_id_t Mod_id,uint8_t eNB_index);
+    void (*ra_failed)(module_id_t Mod_id,int CC_id,uint8_t eNB_index);
 
     /// Function to indicate success of contention resolution or RA procedure
-    void (*ra_succeeded)(module_id_t Mod_id,uint8_t eNB_index);
+    void (*ra_succeeded)(module_id_t Mod_id,int CC_id, uint8_t eNB_index);
 
     /// Function to indicate the transmission of msg1/rach to MAC
-    void (*Msg1_transmitted)(module_id_t Mod_id,frame_t frameP,uint8_t eNB_id);
+    void (*Msg1_transmitted)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t eNB_id);
 
     /// Function to indicate Msg3 transmission/retransmission which initiates/reset Contention Resolution Timer
-    void (*Msg3_transmitted)(module_id_t Mod_id,frame_t frameP,uint8_t eNB_id);
+    void (*Msg3_transmitted)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t eNB_id);
 
     /// Function to pass inter-cell measurement parameters to PHY (cell Ids)
-    void (*phy_config_meas_ue)(module_id_t Mod_id,uint8_t eNB_index,uint8_t n_adj_cells,uint32_t *adj_cell_id);
+    void (*phy_config_meas_ue)(module_id_t Mod_id,int CC_id,uint8_t eNB_index,uint8_t n_adj_cells,uint32_t *adj_cell_id);
 
     // PHY Helper Functions
 
@@ -226,22 +226,22 @@ typedef struct
     uint16_t (*get_TBS_UL)(uint8_t mcs, uint16_t nb_rb);
 
     /// Function to retrieve the HARQ round index for a particular UL/DLSCH and harq_pid
-    int (*get_ue_active_harq_pid)(module_id_t Mod_id, rnti_t rnti, uint8_t subframe, uint8_t *harq_pid, uint8_t *round, uint8_t ul_flag);
+    int (*get_ue_active_harq_pid)(module_id_t Mod_id, int CC_id,rnti_t rnti, uint8_t subframe, uint8_t *harq_pid, uint8_t *round, uint8_t ul_flag);
 
     /// Function to retrieve number of CCE
-    uint16_t (*get_nCCE_max)(module_id_t Mod_id);
+    uint16_t (*get_nCCE_max)(module_id_t Mod_id,int CC_id);
 
     /// Function to retrieve number of PRB in an rb_alloc
     uint32_t (*get_nb_rb)(uint8_t ra_header, uint32_t rb_alloc, int n_rb_dl);
 
     /// Function to retrieve transmission mode for UE
-    uint8_t (*get_transmission_mode)(module_id_t Mod_id,rnti_t rnti);
+    uint8_t (*get_transmission_mode)(module_id_t Mod_id,int CC_id,rnti_t rnti);
 
     /// Function to retrieve rb_alloc bitmap from dci rballoc field and VRB type
     uint32_t (*get_rballoc)(uint8_t vrb_type, uint16_t rb_alloc_dci);
 
     /// Function for UE MAC to retrieve current PHY connectivity mode (PRACH,RA_RESPONSE,PUSCH)
-    UE_MODE_t (*get_ue_mode)(module_id_t Mod_id,uint8_t eNB_index);
+    UE_MODE_t (*get_ue_mode)(module_id_t Mod_id,int CC_id,uint8_t eNB_index);
 
     /// Function for UE MAC to retrieve measured Path Loss
     int16_t (*get_PL)(module_id_t Mod_id,uint8_t eNB_index);
@@ -278,17 +278,17 @@ typedef struct
 
     // MAC Helper functions
     /// Function for UE/PHY to compute PUSCH transmit power in power-control procedure (Po_NOMINAL_PUSCH parameter)
-    int8_t (*get_Po_NOMINAL_PUSCH)(module_id_t Mod_id);
+    int8_t (*get_Po_NOMINAL_PUSCH)(module_id_t Mod_id,int CC_id);
 
     /// Function for UE/PHY to compute PUSCH transmit power in power-control procedure (deltaP_rampup parameter)
-    int8_t (*get_deltaP_rampup)(module_id_t Mod_id);
+    int8_t (*get_deltaP_rampup)(module_id_t Mod_id,int CC_id);
 
     /// Function for UE/PHY to compute PHR
-    int8_t (*get_PHR)(module_id_t Mod_id, uint8_t eNB_index);
+    int8_t (*get_PHR)(module_id_t Mod_id, int CC_id,uint8_t eNB_index);
 
     void (*process_timing_advance)(module_id_t Mod_id,int16_t timing_advance);
 
-    LTE_eNB_UE_stats* (*get_eNB_UE_stats)(module_id_t Mod_id, rnti_t rnti);
+    LTE_eNB_UE_stats* (*get_eNB_UE_stats)(module_id_t Mod_id, int CC_id, rnti_t rnti);
 
     unsigned char is_cluster_head;
     unsigned char is_primary_cluster_head;

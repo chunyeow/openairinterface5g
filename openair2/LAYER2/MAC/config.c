@@ -63,6 +63,7 @@ void ue_mac_reset(module_id_t module_idP,uint8_t eNB_index) {
   UE_mac_inst[module_idP].scheduling_info.Bj[0] = 0;
   UE_mac_inst[module_idP].scheduling_info.Bj[1] = 0;
   UE_mac_inst[module_idP].scheduling_info.Bj[2] = 0;
+  
   //Stopping all timers
 
   //timeAlignmentTimer expires
@@ -74,45 +75,50 @@ void ue_mac_reset(module_id_t module_idP,uint8_t eNB_index) {
   // cancel all pending SRs
   UE_mac_inst[module_idP].scheduling_info.SR_pending=0;
   UE_mac_inst[module_idP].scheduling_info.SR_COUNTER=0;
-
+  
   // stop ongoing RACH procedure
 
   // discard explicitly signaled ra_PreambleIndex and ra_RACH_MaskIndex, if any
   UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex  = 0; // check!
   UE_mac_inst[module_idP].RA_prach_resources.ra_RACH_MaskIndex = 0;
 
+
   ue_init_mac(module_idP); //This will hopefully do the rest of the MAC reset procedure
 
 }
 
 int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,uint8_t eNB_index,
-    RadioResourceConfigCommonSIB_t  *radioResourceConfigCommon,
-    struct PhysicalConfigDedicated  *physicalConfigDedicated,
-    MeasObjectToAddMod_t           **measObj,
-    MAC_MainConfig_t                *mac_MainConfig,
-    long                             logicalChannelIdentity,
-    LogicalChannelConfig_t          *logicalChannelConfig,
-    MeasGapConfig_t                 *measGapConfig,
-    TDD_Config_t                    *tdd_Config,
-    MobilityControlInfo_t           *mobilityControlInfo,
-    uint8_t                              *SIwindowsize,
-    uint16_t                             *SIperiod,
-    ARFCN_ValueEUTRA_t              *ul_CarrierFreq,
-    long                            *ul_Bandwidth,
-    AdditionalSpectrumEmission_t    *additionalSpectrumEmission,
-    struct MBSFN_SubframeConfigList *mbsfn_SubframeConfigList
+		       RadioResourceConfigCommonSIB_t  *radioResourceConfigCommon,
+		       struct PhysicalConfigDedicated  *physicalConfigDedicated,
 #ifdef Rel10
-    ,uint8_t                              MBMS_Flag,
-    MBSFN_AreaInfoList_r9_t         *mbsfn_AreaInfoList,
-    PMCH_InfoList_r9_t              *pmch_InfoList
+		       SCellToAddMod_r10_t *sCellToAddMod_r10,
+		       //struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10,
+#endif
+		       MeasObjectToAddMod_t           **measObj,
+		       MAC_MainConfig_t                *mac_MainConfig,
+		       long                             logicalChannelIdentity,
+		       LogicalChannelConfig_t          *logicalChannelConfig,
+		       MeasGapConfig_t                 *measGapConfig,
+		       TDD_Config_t                    *tdd_Config,
+		       MobilityControlInfo_t           *mobilityControlInfo,
+		       uint8_t                              *SIwindowsize,
+		       uint16_t                             *SIperiod,
+		       ARFCN_ValueEUTRA_t              *ul_CarrierFreq,
+		       long                            *ul_Bandwidth,
+		       AdditionalSpectrumEmission_t    *additionalSpectrumEmission,
+		       struct MBSFN_SubframeConfigList *mbsfn_SubframeConfigList
+#ifdef Rel10
+		       ,uint8_t                              MBMS_Flag,
+		       MBSFN_AreaInfoList_r9_t         *mbsfn_AreaInfoList,
+		       PMCH_InfoList_r9_t              *pmch_InfoList
 #endif 
 #ifdef CBA
-    ,uint8_t                              num_active_cba_groups,
-    uint16_t                              cba_rnti
+		       ,uint8_t                              num_active_cba_groups,
+		       uint16_t                              cba_rnti
 #endif
 ) {
 
-  int i;
+  int i,CC_id;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_RRC_MAC_CONFIG, VCD_FUNCTION_IN);
 
@@ -124,15 +130,15 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
       if (physicalConfigDedicated == NULL){
           LOG_I(MAC,"[CONFIG][eNB %d] Configuring MAC/PHY\n",Mod_id);
       } else{
-          LOG_I(MAC,"[CONFIG][eNB %d] Configuring MAC/PHY for UE %d (%x)\n",Mod_id,UE_id,find_UE_RNTI(Mod_id,UE_id));
+          LOG_I(MAC,"[CONFIG][eNB %d] Configuring MAC/PHY for UE %d (%x)\n",Mod_id,UE_id,UE_RNTI(Mod_id,UE_id));
       }
   }
 
   if ((tdd_Config!=NULL)||(SIwindowsize!=NULL)||(SIperiod!=NULL)){
       if (eNB_flagP==1)
-        mac_xface->phy_config_sib1_eNB(Mod_id,tdd_Config,*SIwindowsize,*SIperiod);
+        mac_xface->phy_config_sib1_eNB(Mod_id,0,tdd_Config,*SIwindowsize,*SIperiod);
       else
-        mac_xface->phy_config_sib1_ue(Mod_id,eNB_index,tdd_Config,*SIwindowsize,*SIperiod);
+        mac_xface->phy_config_sib1_ue(Mod_id,0,eNB_index,tdd_Config,*SIwindowsize,*SIperiod);
   } 
 
   if (radioResourceConfigCommon!=NULL) {
@@ -146,11 +152,11 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
           LOG_I(MAC,"[CONFIG]pusch_config_common.groupAssignmentPUSCH = %ld\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH);
           LOG_I(MAC,"[CONFIG]pusch_config_common.sequenceHoppingEnabled = %d\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled);
           LOG_I(MAC,"[CONFIG]pusch_config_common.cyclicShift  = %ld\n",radioResourceConfigCommon->pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift);
-          mac_xface->phy_config_sib2_eNB(Mod_id,radioResourceConfigCommon,ul_CarrierFreq,ul_Bandwidth,additionalSpectrumEmission,mbsfn_SubframeConfigList);
+          mac_xface->phy_config_sib2_eNB(Mod_id,0,radioResourceConfigCommon,ul_CarrierFreq,ul_Bandwidth,additionalSpectrumEmission,mbsfn_SubframeConfigList);
       }
       else {
           UE_mac_inst[Mod_id].radioResourceConfigCommon = radioResourceConfigCommon;
-          mac_xface->phy_config_sib2_ue(Mod_id,eNB_index,radioResourceConfigCommon,ul_CarrierFreq,ul_Bandwidth,additionalSpectrumEmission,mbsfn_SubframeConfigList);
+          mac_xface->phy_config_sib2_ue(Mod_id,0,eNB_index,radioResourceConfigCommon,ul_CarrierFreq,ul_Bandwidth,additionalSpectrumEmission,mbsfn_SubframeConfigList);
       }
   }
   // SRB2_lchan_config->choice.explicitValue.ul_SpecificParameters->logicalChannelGroup
@@ -229,12 +235,24 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 
   if (physicalConfigDedicated != NULL) {
       if (eNB_flagP==1){
-          mac_xface->phy_config_dedicated_eNB(Mod_id,find_UE_RNTI(Mod_id,UE_id),physicalConfigDedicated);
+	mac_xface->phy_config_dedicated_eNB(Mod_id,0,UE_RNTI(Mod_id,UE_id),physicalConfigDedicated);
       }else{
-          mac_xface->phy_config_dedicated_ue(Mod_id,eNB_index,physicalConfigDedicated);
-          UE_mac_inst[Mod_id].physicalConfigDedicated=physicalConfigDedicated; // for SR proc
+	mac_xface->phy_config_dedicated_ue(Mod_id,0,eNB_index,physicalConfigDedicated);
+	UE_mac_inst[Mod_id].physicalConfigDedicated=physicalConfigDedicated; // for SR proc
       }
   }
+#ifdef Rel10
+  if (sCellToAddMod_r10 != NULL) {
+    
+    if (eNB_flag==1){
+      mac_xface->phy_config_dedicated_scell_eNB(Mod_id,UE_RNTI(Mod_id,UE_id),sCellToAddMod_r10,1);
+    }
+    else {
+      mac_xface->phy_config_dedicated_scell_ue(Mod_id,eNB_index,sCellToAddMod_r10,1);
+      UE_mac_inst[Mod_id].physicalConfigDedicatedSCell_r10 = sCellToAddMod_r10->radioResourceConfigDedicatedSCell_r10->physicalConfigDedicatedSCell_r10; // using SCell index 0
+    }
+  }
+#endif
 
   if (eNB_flagP == 0) {
       if (measObj!= NULL) {
@@ -245,7 +263,7 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
                   UE_mac_inst[Mod_id].adj_cell_id[i] = measObj[0]->measObject.choice.measObjectEUTRA.cellsToAddModList->list.array[i]->physCellId;
                   LOG_I(MAC,"Cell %d : Nid_cell %d\n",i,UE_mac_inst[Mod_id].adj_cell_id[i]);
               }
-              mac_xface->phy_config_meas_ue(Mod_id,eNB_index,UE_mac_inst[Mod_id].n_adj_cells,UE_mac_inst[Mod_id].adj_cell_id);
+              mac_xface->phy_config_meas_ue(Mod_id,0,eNB_index,UE_mac_inst[Mod_id].n_adj_cells,UE_mac_inst[Mod_id].adj_cell_id);
           }
           /*
     if (quantityConfig != NULL) {
@@ -334,14 +352,14 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
   if (mbsfn_SubframeConfigList != NULL) {
       if (eNB_flagP == 1) {
           LOG_I(MAC,"[eNB %d][CONFIG] Received %d subframe allocation pattern for MBSFN\n", Mod_id, mbsfn_SubframeConfigList->list.count);
-          eNB_mac_inst[Mod_id].num_sf_allocation_pattern= mbsfn_SubframeConfigList->list.count;
+          eNB_mac_inst[Mod_id].common_channels[0].num_sf_allocation_pattern= mbsfn_SubframeConfigList->list.count;
           for (i=0; i<mbsfn_SubframeConfigList->list.count; i++) {
-              eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[i] = mbsfn_SubframeConfigList->list.array[i];
+              eNB_mac_inst[Mod_id].common_channels[0].mbsfn_SubframeConfig[i] = mbsfn_SubframeConfigList->list.array[i];
               LOG_I(MAC, "[eNB %d][CONFIG] MBSFN_SubframeConfig[%d] pattern is  %x\n", Mod_id, i,
-                  eNB_mac_inst[Mod_id].mbsfn_SubframeConfig[i]->subframeAllocation.choice.oneFrame.buf[0]);
+                  eNB_mac_inst[Mod_id].common_channels[0].mbsfn_SubframeConfig[i]->subframeAllocation.choice.oneFrame.buf[0]);
           }
 #ifdef Rel10
-          eNB_mac_inst[Mod_id].MBMS_flag = MBMS_Flag;
+          eNB_mac_inst[Mod_id].common_channels[0].MBMS_flag = MBMS_Flag;
 #endif
       }
       else { // UE
@@ -361,12 +379,12 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
       if (eNB_flagP == 1) {
           // One eNB could be part of multiple mbsfn syc area, this could change over time so reset each time
           LOG_I(MAC,"[eNB %d][CONFIG] Received %d MBSFN Area Info\n", Mod_id, mbsfn_AreaInfoList->list.count);
-          eNB_mac_inst[Mod_id].num_active_mbsfn_area = mbsfn_AreaInfoList->list.count;
+          eNB_mac_inst[Mod_id].common_channels[0].num_active_mbsfn_area = mbsfn_AreaInfoList->list.count;
           for (i =0; i< mbsfn_AreaInfoList->list.count; i++) {
-              eNB_mac_inst[Mod_id].mbsfn_AreaInfo[i] = mbsfn_AreaInfoList->list.array[i];
+              eNB_mac_inst[Mod_id].common_channels[0].mbsfn_AreaInfo[i] = mbsfn_AreaInfoList->list.array[i];
               LOG_I(MAC,"[eNB %d][CONFIG] MBSFN_AreaInfo[%d]: MCCH Repetition Period = %ld\n", Mod_id,i,
-                  eNB_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
-              mac_xface->phy_config_sib13_eNB(Mod_id,i,eNB_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mbsfn_AreaId_r9);
+                  eNB_mac_inst[Mod_id].common_channels[0].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
+              mac_xface->phy_config_sib13_eNB(Mod_id,0,i,eNB_mac_inst[Mod_id].common_channels[0].mbsfn_AreaInfo[i]->mbsfn_AreaId_r9);
           }
       }
       else {  // UE
@@ -376,7 +394,7 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
               UE_mac_inst[Mod_id].mbsfn_AreaInfo[i] = mbsfn_AreaInfoList->list.array[i];
               LOG_I(MAC,"[UE %d] MBSFN_AreaInfo[%d]: MCCH Repetition Period = %ld\n",Mod_id, i,
                   UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mcch_Config_r9.mcch_RepetitionPeriod_r9);
-              mac_xface->phy_config_sib13_ue(Mod_id,eNB_index,i,UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mbsfn_AreaId_r9);
+              mac_xface->phy_config_sib13_ue(Mod_id,0,eNB_index,i,UE_mac_inst[Mod_id].mbsfn_AreaInfo[i]->mbsfn_AreaId_r9);
           }
       }
   }
@@ -391,17 +409,17 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
           LOG_I(MAC, "[CONFIG] Number of PMCH in this MBSFN Area %d\n", pmch_InfoList->list.count);
 
           for (i =0; i< pmch_InfoList->list.count; i++) {
-              eNB_mac_inst[Mod_id].pmch_Config[i] = &pmch_InfoList->list.array[i]->pmch_Config_r9;
+              eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i] = &pmch_InfoList->list.array[i]->pmch_Config_r9;
 
               LOG_I(MAC, "[CONFIG] PMCH[%d]: This PMCH stop at subframe  %ldth\n", i,
-                  eNB_mac_inst[Mod_id].pmch_Config[i]->sf_AllocEnd_r9);
+                  eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i]->sf_AllocEnd_r9);
               LOG_I(MAC, "[CONFIG] PMCH[%d]: mch_Scheduling_Period = %ld\n", i,
-                  eNB_mac_inst[Mod_id].pmch_Config[i]->mch_SchedulingPeriod_r9);
+                  eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i]->mch_SchedulingPeriod_r9);
               LOG_I(MAC, "[CONFIG] PMCH[%d]: dataMCS = %ld\n", i,
-                  eNB_mac_inst[Mod_id].pmch_Config[i]->dataMCS_r9);
+                  eNB_mac_inst[Mod_id].common_channels[0].pmch_Config[i]->dataMCS_r9);
 
               // MBMS session info list in each MCH
-              eNB_mac_inst[Mod_id].mbms_SessionList[i] = &pmch_InfoList->list.array[i]->mbms_SessionInfoList_r9;
+              eNB_mac_inst[Mod_id].common_channels[0].mbms_SessionList[i] = &pmch_InfoList->list.array[i]->mbms_SessionInfoList_r9;
               LOG_I(MAC, "PMCH[%d] Number of session (MTCH) is: %d\n",i, eNB_mac_inst[Mod_id].mbms_SessionList[i]->list.count);
           }
       }

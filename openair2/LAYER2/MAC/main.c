@@ -115,6 +115,9 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
   RA_TEMPLATE *RA_template;
   UE_TEMPLATE *UE_template;
   int size_bytes1,size_bytes2,size_bits1,size_bits2;
+  int CC_id;
+  int list_el;
+  UE_list_t *UE_list;
 
   LOG_I(MAC,"[MAIN] Init function start:Nb_UE_INST=%d\n",NB_UE_INST);
   if (NB_UE_INST>0) {
@@ -137,19 +140,31 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
   if (NB_eNB_INST>0) {
       eNB_mac_inst = (eNB_MAC_INST*)malloc16(NB_eNB_INST*sizeof(eNB_MAC_INST));
       if (eNB_mac_inst == NULL){
-          LOG_D(MAC,"[MAIN] can't ALLOCATE %d Bytes for %d eNB_MAC_INST with size %d \n",NB_eNB_INST*sizeof(eNB_MAC_INST),NB_eNB_INST,sizeof(eNB_MAC_INST));
+          LOG_D(MAC,"[MAIN] can't ALLOCATE %d Bytes for %d eNB_MAC_INST with size %d \n",NB_eNB_INST*sizeof(eNB_MAC_INST*),NB_eNB_INST,sizeof(eNB_MAC_INST));
           mac_xface->macphy_exit("[MAC][MAIN] not enough memory for eNB \n");
       }
-      LOG_D(MAC,"[MAIN] ALLOCATE %d Bytes for %d eNB_MAC_INST @ %p\n",NB_eNB_INST*sizeof(eNB_MAC_INST),NB_eNB_INST,eNB_mac_inst);
-      bzero(eNB_mac_inst,NB_eNB_INST*sizeof(eNB_MAC_INST));
+      else{
+	LOG_D(MAC,"[MAIN] ALLOCATE %d Bytes for %d eNB_MAC_INST @ %p\n",sizeof(eNB_MAC_INST),NB_eNB_INST,eNB_mac_inst);
+	bzero(eNB_mac_inst,NB_eNB_INST*sizeof(eNB_MAC_INST));
+      }
   }
   else
     eNB_mac_inst = NULL;
 
+  // Initialize Linked-List for Active UEs
   for(Mod_id=0;Mod_id<NB_eNB_INST;Mod_id++){
+    UE_list = &eNB_mac_inst[Mod_id].UE_list;
 
+    UE_list->num_UEs=0;
+    UE_list->head=-1;
+    UE_list->avail=0;
+    for (list_el=0;list_el<NUMBER_OF_UE_MAX-1;list_el++) {
+      UE_list->next[list_el]=list_el+1;
+    }
+    UE_list->next[list_el]=-1;
+    
 #ifdef PHY_EMUL
-      Mac_rlc_xface->Is_cluster_head[Mod_id]=2;//0: MR, 1: CH, 2: not CH neither MR
+    Mac_rlc_xface->Is_cluster_head[Mod_id]=2;//0: MR, 1: CH, 2: not CH neither MR
 #endif
       /*#ifdef Rel10
     int n;
@@ -181,11 +196,12 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
 
   // Set up DCIs for TDD 5MHz Config 1..6
 
-  for (i=0;i<NB_eNB_INST;i++) {
+  for (i=0;i<NB_eNB_INST;i++) 
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
       LOG_D(MAC,"[MAIN][eNB %d] initializing RA_template\n",i);
       LOG_D(MAC, "[MSC_NEW][FRAME 00000][MAC_eNB][MOD %02d][]\n", i);
 
-      RA_template = (RA_TEMPLATE *)&eNB_mac_inst[i].RA_template[0];
+      RA_template = (RA_TEMPLATE *)&eNB_mac_inst[i].common_channels[CC_id].RA_template[0];
       for (j=0;j<NB_RA_PROC_MAX;j++) {
           if (mac_xface->lte_frame_parms->frame_type == TDD) {
               switch (mac_xface->lte_frame_parms->N_RB_DL) {
@@ -268,13 +284,13 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
       }
 
       memset (&eNB_mac_inst[i].eNB_stats,0,sizeof(eNB_STATS));
-      UE_template = (UE_TEMPLATE *)&eNB_mac_inst[i].UE_template[0];
+      UE_template = (UE_TEMPLATE *)&eNB_mac_inst[i].UE_list.UE_template[CC_id][0];
       for (j=0;j<NUMBER_OF_UE_MAX;j++) {
           UE_template[j].rnti=0;
           // initiallize the eNB to UE statistics
-          memset (&eNB_mac_inst[i].eNB_UE_stats[j],0,sizeof(eNB_UE_STATS));
+          memset (&eNB_mac_inst[i].UE_list.eNB_UE_stats[CC_id][j],0,sizeof(eNB_UE_STATS));
       }
-  }
+    }
 
 
   //ICIC init param
@@ -284,15 +300,16 @@ int mac_top_init(int eMBMS_active, uint8_t cba_group_active, uint8_t HO_active){
 
   srand (time(NULL));
 
-  for(j=0;j<NB_eNB_INST;j++){
-      eNB_mac_inst[j].sbmap_conf.first_subframe=0;
-      eNB_mac_inst[j].sbmap_conf.periodicity=10;
-      eNB_mac_inst[j].sbmap_conf.sb_size=SB_size;
-      eNB_mac_inst[j].sbmap_conf.nb_active_sb=1;
+  for(j=0;j<NB_eNB_INST;j++)
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++){
+      eNB_mac_inst[j][CC_id].sbmap_conf.first_subframe=0;
+      eNB_mac_inst[j][CC_id].sbmap_conf.periodicity=10;
+      eNB_mac_inst[j][CC_id].sbmap_conf.sb_size=SB_size;
+      eNB_mac_inst[j][CC_id].sbmap_conf.nb_active_sb=1;
       for(i=0;i<NUMBER_OF_SUBBANDS;i++)
-        eNB_mac_inst[j].sbmap_conf.sbmap[i]=1;
+        eNB_mac_inst[j][CC_id].sbmap_conf.sbmap[i]=1;
 
-      eNB_mac_inst[j].sbmap_conf.sbmap[rand()%NUMBER_OF_SUBBANDS]=0;
+      eNB_mac_inst[j][CC_id].sbmap_conf.sbmap[rand()%NUMBER_OF_SUBBANDS]=0;
 
   }
 #endif

@@ -90,46 +90,57 @@ void init_ue_sched_info(void){
 
 
 
-unsigned char get_ue_weight(module_id_t module_idP, module_id_t ue_mod_idP){
+unsigned char get_ue_weight(module_id_t module_idP, int ue_idP){
 
-  return(eNB_dlsch_info[module_idP][ue_mod_idP].weight);
-
-}
-
-DCI_PDU *get_dci_sdu(module_id_t module_idP, frame_t frameP, sub_frame_t subframeP) {
-
-  return(&eNB_mac_inst[module_idP].DCI_pdu);
+  return(eNB_dlsch_info[module_idP][ue_idP].weight);
 
 }
 
-module_id_t find_UE_id(module_id_t module_idP, rnti_t rnti) {
+DCI_PDU *get_dci_sdu(module_id_t module_idP, int CC_id,frame_t frameP, sub_frame_t subframeP) {
 
-  module_id_t ue_mod_id;
+  return(&eNB_mac_inst[module_idP].common_channels[CC_id].DCI_pdu);
 
-  for (ue_mod_id=0;ue_mod_id<NUMBER_OF_UE_MAX;ue_mod_id++) {
-    //   if (mac_get_rrc_status(module_idP,1,ue_mod_id) >= RRC_CONNECTED) {
-      if (eNB_mac_inst[module_idP].UE_template[ue_mod_id].rnti==rnti) {
-	return(ue_mod_id);
-      }
+}
+
+int find_UE_id(module_id_t mod_idP, rnti_t rntiP) {
+
+  int UE_id;
+  UE_list_t *UE_list = &eNB_mac_inst[mod_idP].UE_list;
+  
+  for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]){
+    if (UE_list->UE_template[UE_PCCID(mod_idP,UE_id)][UE_id].rnti==rntiP) {
+      return(UE_id);
+    }
   }
-  return(module_id_t)(-1);
+  return(-1);
 
 }
 
-
-
-rnti_t find_UE_RNTI(module_id_t module_idP, module_id_t ue_mod_idP) {
-
-  return (eNB_mac_inst[module_idP].UE_template[ue_mod_idP].rnti);
-
+int UE_num_active_CC(UE_list_t *listP,int ue_idP) {
+  return(listP->numactiveCCs[ue_idP]);
 }
-boolean_t is_UE_active(module_id_t module_idP, module_id_t ue_mod_idP ){
-  if (eNB_mac_inst[module_idP].UE_template[ue_mod_idP].rnti !=0 )
-    return TRUE;
-  else
-    return FALSE ;
+
+int UE_PCCID(module_id_t mod_idP,int ue_idP) {
+  return(eNB_mac_inst[mod_idP].UE_list.pCC_id[ue_idP]);
 }
-uint8_t find_active_UEs(module_id_t module_idP){
+
+rnti_t UE_RNTI(module_id_t mod_idP, int ue_idP) {
+
+  rnti_t rnti = eNB_mac_inst[mod_idP].UE_list.UE_template[UE_PCCID(mod_idP,ue_idP)][ue_idP].rnti;
+
+  if (rnti>0)
+    return (rnti);
+  LOG_E(MAC,"[eNB %d] Couldn't find RNTI for UE %d\n",mod_idP,ue_idP);
+  mac_xface->macphy_exit("");
+  return(0);
+}
+
+boolean_t is_UE_active(module_id_t mod_idP, int ue_idP){
+  return(eNB_mac_inst[mod_idP].UE_list.active[ue_idP]);
+}
+
+/*
+uint8_t find_active_UEs(module_id_t module_idP,int CC_id){
 
   module_id_t        ue_mod_id      = 0;
   rnti_t        rnti         = 0;
@@ -137,110 +148,189 @@ uint8_t find_active_UEs(module_id_t module_idP){
 
   for (ue_mod_id=0;ue_mod_id<NUMBER_OF_UE_MAX;ue_mod_id++) {
 
-      if (((rnti=eNB_mac_inst[module_idP].UE_template[ue_mod_id].rnti) !=0)&&(eNB_mac_inst[module_idP].UE_template[ue_mod_id].ul_active==TRUE)){
+      if (((rnti=eNB_mac_inst[module_idP][CC_id].UE_template[ue_mod_id].rnti) !=0)&&(eNB_mac_inst[module_idP][CC_id].UE_template[ue_mod_id].ul_active==TRUE)){
 
           if (mac_xface->get_eNB_UE_stats(module_idP,rnti) != NULL){ // check at the phy enb_ue state for this rnti
 	    nb_active_ue++;
           }
           else { // this ue is removed at the phy => remove it at the mac as well
-	    mac_remove_ue(module_idP, ue_mod_id);
+	    mac_remove_ue(module_idP, CC_id, ue_mod_id);
           }
       }
   }
   return(nb_active_ue);
 }
-
+*/
 
 
 // get aggregatiob form phy for a give UE
-unsigned char process_ue_cqi (module_id_t module_idP, module_id_t ue_mod_idP) {
+unsigned char process_ue_cqi (module_id_t module_idP, int ue_idP) {
   unsigned char aggregation=2;
   // check the MCS and SNR and set the aggregation accordingly
   return aggregation;
 }
 #ifdef CBA
-uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, unsigned char group_id){
+uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, int CC_id,unsigned char group_id){
 
   module_id_t    UE_id;
   rnti_t    rnti;
   unsigned char nb_ue_in_pusch=0;
   LTE_eNB_UE_stats* eNB_UE_stats;
 
-  for (UE_id=group_id;UE_id<NUMBER_OF_UE_MAX;UE_id+=eNB_mac_inst[module_idP].num_active_cba_groups) {
+  for (UE_id=group_id;UE_id<NUMBER_OF_UE_MAX;UE_id+=eNB_mac_inst[module_idP][CC_id].num_active_cba_groups) {
 
-      if (((rnti=eNB_mac_inst[module_idP].UE_template[UE_id].rnti) !=0) &&
-          (eNB_mac_inst[module_idP].UE_template[UE_id].ul_active==TRUE)    &&
+      if (((rnti=eNB_mac_inst[module_idP][CC_id].UE_template[UE_id].rnti) !=0) &&
+          (eNB_mac_inst[module_idP][CC_id].UE_template[UE_id].ul_active==TRUE)    &&
           (mac_get_rrc_status(module_idP,1,UE_id) > RRC_CONNECTED)){
-          //  && (UE_is_to_be_scheduled(module_idP,UE_id)))
-          // check at the phy enb_ue state for this rnti
-          if ((eNB_UE_stats= mac_xface->get_eNB_UE_stats(module_idP,rnti)) != NULL){
-              if ((eNB_UE_stats->mode == PUSCH) && (UE_is_to_be_scheduled(module_idP,UE_id) == 0)){
-                  nb_ue_in_pusch++;
-              }
-          }
+	//  && (UE_is_to_be_scheduled(module_idP,UE_id)))
+	// check at the phy enb_ue state for this rnti
+	if ((eNB_UE_stats= mac_xface->get_eNB_UE_stats(module_idP,CC_id,rnti)) != NULL){
+	  if ((eNB_UE_stats->mode == PUSCH) && (UE_is_to_be_scheduled(module_idP,UE_id) == 0)){
+	    nb_ue_in_pusch++;
+	  }
+	}
       }
   }
   return(nb_ue_in_pusch);
 }
 #endif
-int8_t add_new_ue(module_id_t enb_mod_idP, rnti_t rntiP) {
-  module_id_t ue_mod_id;
-  int         j;
+int add_new_ue(module_id_t mod_idP, int cc_idP, rnti_t rntiP) {
+  int UE_id;
+  int j;
 
-  for (ue_mod_id=0;ue_mod_id<NUMBER_OF_UE_MAX;ue_mod_id++) {
-      if (eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].rnti == 0) {
-          eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].rnti = rntiP;
-          for (j=0;j<8;j++) {
-              eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].oldNDI[j]    = 0;
-              eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].oldNDI_UL[j] = 0;
-          }
-          eNB_ulsch_info[enb_mod_idP][ue_mod_id].status = S_UL_WAITING;
-          eNB_dlsch_info[enb_mod_idP][ue_mod_id].status = S_UL_WAITING;
-          LOG_D(MAC,"[eNB] Add UE_id %d : rnti %x\n",ue_mod_id,eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].rnti);
-          return((int8_t)ue_mod_id);
-      }
+  UE_list_t *UE_list = &eNB_mac_inst[mod_idP].UE_list;
+  
+  LOG_D(MAC,"[eNB %d, CC_id %d] Adding UE with rnti %x (next avail %d, num_UEs %d)\n",mod_idP,cc_idP,rntiP,UE_list->avail,UE_list->num_UEs);
+
+  if (UE_list->avail>=0) {
+    UE_id = UE_list->avail;
+    UE_list->avail = UE_list->next[UE_list->avail];
+    UE_list->next[UE_id] = UE_list->head;
+    UE_list->head = UE_id;
+ 
+    UE_list->UE_template[cc_idP][UE_id].rnti = rntiP;
+    UE_list->numactiveCCs[UE_id]             = 1;
+    UE_list->numactiveULCCs[UE_id]           = 1;
+    UE_list->pCC_id[UE_id]                   = cc_idP;
+    UE_list->ordered_CCids[0][UE_id]         = cc_idP;
+    UE_list->ordered_ULCCids[0][UE_id]       = cc_idP;
+    UE_list->num_UEs++;
+    UE_list->active[UE_id]                   = TRUE;
+
+    for (j=0;j<8;j++) {
+      UE_list->UE_template[cc_idP][UE_id].oldNDI[j]    = 0;
+      UE_list->UE_template[cc_idP][UE_id].oldNDI_UL[j] = 0;
+    }
+    eNB_ulsch_info[mod_idP][UE_id].status = S_UL_WAITING;
+    eNB_dlsch_info[mod_idP][UE_id].status = S_UL_WAITING;
+    LOG_D(MAC,"[eNB %d] Add UE_id %d on Primary CC_id %d: rnti %x\n",mod_idP,UE_id,cc_idP,rntiP);
+    return(UE_id);
   }
   return(-1);
 }
 
-int8_t mac_remove_ue(module_id_t enb_mod_idP, module_id_t ue_mod_idP) {
+int mac_remove_ue(module_id_t mod_idP, int ue_idP) {
 
-  LOG_I(MAC,"Removing UE %d (rnti %x)\n",ue_mod_idP,eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].rnti);
+  int prev,i;
+
+  UE_list_t *UE_list = &eNB_mac_inst[mod_idP].UE_list;
+  int pCC_id = UE_PCCID(mod_idP,ue_idP);
+
+  LOG_I(MAC,"Removing UE %d from Primary CC_id %d (rnti %x)\n",ue_idP,pCC_id, UE_list->UE_template[pCC_id][ue_idP].rnti);
 
   // clear all remaining pending transmissions
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].bsr_info[LCGID0]  = 0;
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].bsr_info[LCGID1]  = 0;
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].bsr_info[LCGID2]  = 0;
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].bsr_info[LCGID3]  = 0;
+  UE_list->UE_template[pCC_id][ue_idP].bsr_info[LCGID0]  = 0;
+  UE_list->UE_template[pCC_id][ue_idP].bsr_info[LCGID1]  = 0;
+  UE_list->UE_template[pCC_id][ue_idP].bsr_info[LCGID2]  = 0;
+  UE_list->UE_template[pCC_id][ue_idP].bsr_info[LCGID3]  = 0;
 
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].ul_SR             = 0;
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].rnti              = 0;
-  eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_idP].ul_active         = FALSE;
-  eNB_ulsch_info[enb_mod_idP][ue_mod_idP].rnti                        = 0;
-  eNB_ulsch_info[enb_mod_idP][ue_mod_idP].status                      = S_UL_NONE;
-  eNB_dlsch_info[enb_mod_idP][ue_mod_idP].rnti                        = 0;
-  eNB_dlsch_info[enb_mod_idP][ue_mod_idP].status                      = S_DL_NONE;
+  UE_list->UE_template[pCC_id][ue_idP].ul_SR             = 0;
+  UE_list->UE_template[pCC_id][ue_idP].rnti              = 0;
+  UE_list->UE_template[pCC_id][ue_idP].ul_active         = FALSE;
+  eNB_ulsch_info[mod_idP][ue_idP].rnti                        = 0;
+  eNB_ulsch_info[mod_idP][ue_idP].status                      = S_UL_NONE;
+  eNB_dlsch_info[mod_idP][ue_idP].rnti                        = 0;
+  eNB_dlsch_info[mod_idP][ue_idP].status                      = S_DL_NONE;
 
-  rrc_eNB_free_UE_index(enb_mod_idP,ue_mod_idP);
+  rrc_eNB_free_UE_index(mod_idP,ue_idP);
 
-  return(1);
+  prev = UE_list->head;
+  for (i=UE_list->head;i>=0;i=UE_list->next[i]) {
+    if (i == ue_idP) {
+      // link prev to next in Active list
+      if (prev==UE_list->head)
+	UE_list->head = UE_list->next[i];
+      else
+	UE_list->next[prev] = UE_list->next[i];
+      // add UE id (i)to available 
+      UE_list->next[i] = UE_list->avail;
+      UE_list->avail = i;
+      UE_list->active[i] = FALSE;
+      return(0);
+    }
+    prev=i;
+  }
+
+  UE_list->num_UEs--;
+
+  return(-1);
+
 }
 
 
+int prev(UE_list_t *listP, int nodeP) {
+  int j;
 
+  if (nodeP==listP->head)
+    return(nodeP);
+  for (j=listP->head;j>=0;j=listP->next[j]) {
+    if (listP->next[j]==nodeP)
+      return(j);
+  }
+  LOG_E(MAC,"error in prev(), could not find previous in UE_list, should never happen\n");
+  return(-1);
+}
 
-void SR_indication(module_id_t enb_mod_idP, frame_t frameP, rnti_t rntiP, sub_frame_t subframeP) {
+void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP) {
 
-  module_id_t ue_mod_id = find_UE_id(enb_mod_idP, rntiP);
-  
-  if (ue_mod_id  != UE_INDEX_INVALID ) {
-      LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d \n",enb_mod_idP,rntiP,frameP,subframeP, ue_mod_id);
-      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_SR = 1;
-      eNB_mac_inst[enb_mod_idP].UE_template[ue_mod_id].ul_active = TRUE;
+  int prev_i,prev_j,next_i;
+
+  prev_i = prev(listP,nodeiP);
+  prev_j = prev(listP,nodejP);
+
+  next_i = listP->next[nodeiP];
+  listP->next[nodeiP] = listP->next[nodejP];
+  listP->next[nodejP] = next_i;
+
+  if (nodeiP==listP->head) {
+    listP->head=nodejP;
+  }
+  else {
+    listP->next[prev_i] = nodejP;
+  }
+
+  if (nodejP==listP->head) {
+    listP->head=nodeiP;
+  }
+  else {
+    listP->next[prev_j] = nodeiP;
+  }
+ 
+}
+
+void SR_indication(module_id_t mod_idP, int cc_idP, frame_t frameP, rnti_t rntiP, sub_frame_t subframeP) {
+
+  int UE_id = find_UE_id(mod_idP, rntiP);
+  UE_list_t *UE_list = &eNB_mac_inst[mod_idP].UE_list;
+
+  if (UE_id  != UE_INDEX_INVALID ) {
+    LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d on CC_id %d\n",mod_idP,rntiP,frameP,subframeP, UE_id,cc_idP);
+      UE_list->UE_template[cc_idP][UE_id].ul_SR = 1;
+      UE_list->UE_template[cc_idP][UE_id].ul_active = TRUE;
   } else {
     //     AssertFatal(0, "find_UE_id(%u,rnti %d) not found", enb_mod_idP, rntiP);
     //    AssertError(0, 0, "Frame %d: find_UE_id(%u,rnti %d) not found\n", frameP, enb_mod_idP, rntiP);
-    LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d (unknown UEid) \n",enb_mod_idP,rntiP,frameP,subframeP, ue_mod_id);
+    LOG_D(MAC,"[eNB %d][SR %x] Frame %d subframeP %d Signaling SR for UE %d (unknown UEid) \n",mod_idP,rntiP,frameP,subframeP, UE_id);
   }
 }
 
@@ -397,17 +487,18 @@ void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_si
 
 
 // This has to be updated to include BSR information
-uint8_t UE_is_to_be_scheduled(module_id_t module_idP,uint8_t UE_id) {
+uint8_t UE_is_to_be_scheduled(module_id_t module_idP,int CC_id,uint8_t UE_id) {
 
+  UE_TEMPLATE *UE_template = &eNB_mac_inst[module_idP].UE_list.UE_template[CC_id][UE_id];
 
   //  LOG_D(MAC,"[eNB %d][PUSCH] Frame %d subframeP %d Scheduling UE %d\n",module_idP,rnti,frameP,subframeP,
   //	UE_id);
 
-  if ((eNB_mac_inst[module_idP].UE_template[UE_id].bsr_info[LCGID0]>0) ||
-      (eNB_mac_inst[module_idP].UE_template[UE_id].bsr_info[LCGID1]>0) ||
-      (eNB_mac_inst[module_idP].UE_template[UE_id].bsr_info[LCGID2]>0) ||
-      (eNB_mac_inst[module_idP].UE_template[UE_id].bsr_info[LCGID3]>0) ||
-      (eNB_mac_inst[module_idP].UE_template[UE_id].ul_SR>0)) // uplink scheduling request
+  if ((UE_template->bsr_info[LCGID0]>0) ||
+      (UE_template->bsr_info[LCGID1]>0) ||
+      (UE_template->bsr_info[LCGID2]>0) ||
+      (UE_template->bsr_info[LCGID3]>0) ||
+      (UE_template->ul_SR>0)) // uplink scheduling request
     return(1);
   else
     return(0);
@@ -416,7 +507,7 @@ uint8_t UE_is_to_be_scheduled(module_id_t module_idP,uint8_t UE_id) {
 
 
 
-uint32_t allocate_prbs(module_id_t ue_mod_idP,unsigned char nb_rb, uint32_t *rballoc) {
+uint32_t allocate_prbs(int UE_id,unsigned char nb_rb, uint32_t *rballoc) {
 
   int i;
   uint32_t rballoc_dci=0;
@@ -487,9 +578,9 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
 
 
 
-void update_ul_dci(module_id_t module_idP,rnti_t rnti,uint8_t dai) {
+void update_ul_dci(module_id_t module_idP,int CC_id,rnti_t rnti,uint8_t dai) {
 
-  DCI_PDU             *DCI_pdu   = &eNB_mac_inst[module_idP].DCI_pdu;
+  DCI_PDU             *DCI_pdu   = &eNB_mac_inst[module_idP].common_channels[CC_id].DCI_pdu;
   int                  i;
   DCI0_5MHz_TDD_1_6_t *ULSCH_dci = NULL;;
 

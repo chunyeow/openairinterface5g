@@ -1,0 +1,538 @@
+/*******************************************************************************
+    OpenAirInterface
+    Copyright(c) 1999 - 2014 Eurecom
+
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is
+   included in this distribution in the file called "COPYING". If not,
+   see <http://www.gnu.org/licenses/>.
+
+  Contact Information
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+
+  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
+
+*******************************************************************************/
+
+/*! \file eNB_scheduler_primitives.c
+ * \brief primitives used by eNB for BCH, RACH, ULSCH, DLSCH scheduling
+ * \author  Navid Nikaein and Raymond Knopp
+ * \date 2010 - 2014
+ * \email: navid.nikaein@eurecom.fr
+ * \version 1.0
+ * @ingroup _mac
+
+ */
+
+#include "assertions.h"
+#include "PHY/defs.h"
+#include "PHY/extern.h"
+
+#include "SCHED/defs.h"
+#include "SCHED/extern.h"
+
+#include "LAYER2/MAC/defs.h"
+#include "LAYER2/MAC/extern.h"
+
+#include "LAYER2/MAC/proto.h"
+#include "UTIL/LOG/log.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
+#include "UTIL/OPT/opt.h"
+#include "OCG.h"
+#include "OCG_extern.h"
+#include "ARCH/CBMIMO1/DEVICE_DRIVER/extern.h"
+#include "ARCH/CBMIMO1/DEVICE_DRIVER/defs.h"
+#include "ARCH/CBMIMO1/DEVICE_DRIVER/from_grlib_softregs.h"
+
+#include "RRC/LITE/extern.h"
+#include "RRC/L2_INTERFACE/openair_rrc_L2_interface.h"
+
+//#include "LAYER2/MAC/pre_processor.c"
+#include "pdcp.h"
+
+#if defined(ENABLE_ITTI)
+# include "intertask_interface.h"
+#endif
+
+
+void schedule_RA(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP,unsigned char Msg3_subframe,unsigned int *nprb,unsigned int *nCCE) {
+
+  int CC_id;
+  eNB_MAC_INST *eNB = &eNB_mac_inst[module_idP];
+
+
+  RA_TEMPLATE *RA_template;
+  unsigned char i;//,harq_pid,round;
+  uint16_t rrc_sdu_length;
+  unsigned char lcid,offset;
+  module_id_t UE_id= UE_INDEX_INVALID;
+  unsigned short TBsize = -1;
+  unsigned short msg4_padding,msg4_post_padding,msg4_header;
+
+  start_meas(&eNB->schedule_ra);
+
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+
+    RA_template = (RA_TEMPLATE *)&eNB->common_channels[CC_id].RA_template[0];
+    for (i=0;i<NB_RA_PROC_MAX;i++) {
+
+      if (RA_template[i].RA_active == TRUE) {
+
+	LOG_I(MAC,"[eNB %d][RAPROC] RA %d is active (generate RAR %d, generate_Msg4 %d, wait_ack_Msg4 %d, rnti %x)\n",
+              module_idP,i,RA_template[i].generate_rar,RA_template[i].generate_Msg4,RA_template[i].wait_ack_Msg4, RA_template[i].rnti);
+
+	if (RA_template[i].generate_rar == 1) {
+	  nprb[CC_id]= nprb[CC_id] + 3;
+	  nCCE[CC_id] = nCCE[CC_id] + 4;
+	  RA_template[i].Msg3_subframe=Msg3_subframe;
+	}
+	else if (RA_template[i].generate_Msg4 == 1) {
+
+	  // check for Msg4 Message
+	  UE_id = find_UE_id(module_idP,RA_template[i].rnti);
+	  if (Is_rrc_registered == 1) {
+
+	    // Get RRCConnectionSetup for Piggyback
+	    rrc_sdu_length = mac_rrc_data_req(module_idP,
+					      frameP,
+					      CCCH,1,
+					      &eNB->common_channels[CC_id].CCCH_pdu.payload[0],
+					      1,
+					      module_idP,
+					      0); // not used in this case
+	    if (rrc_sdu_length == -1)
+	      mac_xface->macphy_exit("[MAC][eNB Scheduler] CCCH not allocated\n");
+	    else {
+	      //msg("[MAC][eNB %d] Frame %d, subframeP %d: got %d bytes from RRC\n",module_idP,frameP, subframeP,rrc_sdu_length);
+	    }
+	  }
+
+	  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: UE_id %d, Is_rrc_registered %d, rrc_sdu_length %d\n",
+		module_idP,frameP, subframeP,UE_id, Is_rrc_registered,rrc_sdu_length);
+
+	  if (rrc_sdu_length>0) {
+	    LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: Generating Msg4 with RRC Piggyback (RA proc %d, RNTI %x)\n",
+		  module_idP,frameP, subframeP,i,RA_template[i].rnti);
+
+	    //msg("[MAC][eNB %d][RAPROC] Frame %d, subframeP %d: Received %d bytes for Msg4: \n",module_idP,frameP,subframeP,rrc_sdu_length);
+	    //	  for (j=0;j<rrc_sdu_length;j++)
+	    //	    msg("%x ",(unsigned char)eNB_mac_inst[module_idP][CC_id].CCCH_pdu.payload[j]);
+	    //	  msg("\n");
+	    //	  msg("[MAC][eNB] Frame %d, subframeP %d: Generated DLSCH (Msg4) DCI, format 1A, for UE %d\n",frameP, subframeP,UE_id);
+	    // Schedule Reflection of Connection request
+
+
+
+	    // Compute MCS for 3 PRB
+	    msg4_header = 1+6+1;  // CR header, CR CE, SDU header
+
+	    if (mac_xface->lte_frame_parms->frame_type == TDD) {
+
+	      switch (mac_xface->lte_frame_parms->N_RB_DL) {
+	      case 6:
+		((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_1_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      case 25:
+
+		((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_5MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      case 50:
+
+		((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_10MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      case 100:
+
+		((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_20MHz_TDD_1_6_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      }
+	    }
+	    else { // FDD DCI
+	      switch (mac_xface->lte_frame_parms->N_RB_DL) {
+	      case 6:
+		((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_1_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      case 25:
+		((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      case 50:
+		((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_10MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_5MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      case 100:
+		((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->ndi=1;
+
+		if ((rrc_sdu_length+msg4_header) <= 22) {
+		  ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=4;
+		  TBsize = 22;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 28) {
+		  ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=5;
+		  TBsize = 28;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 32) {
+		  ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=6;
+		  TBsize = 32;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 41) {
+		  ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=7;
+		  TBsize = 41;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 49) {
+		  ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=8;
+		  TBsize = 49;
+		}
+		else if ((rrc_sdu_length+msg4_header) <= 57) {
+		  ((DCI1A_20MHz_FDD_t*)&RA_template[i].RA_alloc_pdu2[0])->mcs=9;
+		  TBsize = 57;
+		}
+		break;
+	      }
+	    }
+	    RA_template[i].generate_Msg4=0;
+	    RA_template[i].generate_Msg4_dci=1;
+	    RA_template[i].wait_ack_Msg4=1;
+	    RA_template[i].RA_active = FALSE;
+	    lcid=0;
+
+	    if ((TBsize - rrc_sdu_length - msg4_header) <= 2) {
+	      msg4_padding = TBsize - rrc_sdu_length - msg4_header;
+	      msg4_post_padding = 0;
+	    }
+	    else {
+	      msg4_padding = 0;
+	      msg4_post_padding = TBsize - rrc_sdu_length - msg4_header -1;
+	    }
+	    LOG_I(MAC,"[eNB %d][RAPROC] Frame %d subframeP %d Msg4 : TBS %d, sdu_len %d, msg4_header %d, msg4_padding %d, msg4_post_padding %d\n",
+		  module_idP,frameP,subframeP,TBsize,rrc_sdu_length,msg4_header,msg4_padding,msg4_post_padding);
+	    offset = generate_dlsch_header((unsigned char*)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
+					   1,                           //num_sdus
+					   &rrc_sdu_length,             //
+					   &lcid,                       // sdu_lcid
+					   255,                         // no drx
+					   0,                           // no timing advance
+					   RA_template[i].cont_res_id,  // contention res id
+					   msg4_padding,                // no padding
+					   msg4_post_padding);
+
+	    memcpy((void*)&eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0][(unsigned char)offset],
+		   &eNB->common_channels[CC_id].CCCH_pdu.payload[0],
+		   rrc_sdu_length);
+
+#if defined(USER_MODE) && defined(OAI_EMU)
+	    if (oai_emulation.info.opt_enabled){
+	      trace_pdu(1, (uint8_t *)eNB->UE_list.DLSCH_pdu[CC_id][0][(unsigned char)UE_id].payload[0],
+			rrc_sdu_length, UE_id, 3, UE_RNTI(module_idP, UE_id),
+			eNB->subframe,0,0);
+	      LOG_D(OPT,"[eNB %d][DLSCH] Frame %d trace pdu for rnti %x with size %d\n",
+		    module_idP, frameP, UE_RNTI(module_idP,UE_id), rrc_sdu_length);
+	    }
+#endif
+	    nprb[CC_id]= nprb[CC_id] + 3;
+	    nCCE[CC_id] = nCCE[CC_id] + 4;
+	  }
+	  //try here
+	}
+	/*
+	  else if (eNB_mac_inst[module_idP][CC_id].RA_template[i].wait_ack_Msg4==1) {
+	  // check HARQ status and retransmit if necessary
+	  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: Checking if Msg4 was acknowledged :\n",module_idP,frameP,subframeP);
+	  // Get candidate harq_pid from PHY
+	  mac_xface->get_ue_active_harq_pid(module_idP,eNB_mac_inst[module_idP][CC_id].RA_template[i].rnti,subframeP,&harq_pid,&round,0);
+	  if (round>0) {
+	  *nprb= (*nprb) + 3;
+	  *nCCE = (*nCCE) + 4;
+	  }
+	  }
+	*/
+      }
+    }
+  }
+  stop_meas(&eNB->schedule_ra);
+}
+
+void initiate_ra_proc(module_id_t module_idP, int CC_id,frame_t frameP, uint16_t preamble_index,int16_t timing_offset,uint8_t sect_id,sub_frame_t subframeP,uint8_t f_id) {
+
+  uint8_t i;
+  RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0];
+
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Initiating RA procedure for preamble index %d\n",module_idP,frameP,preamble_index);
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+    if (RA_template[i].RA_active==FALSE) {
+      RA_template[i].RA_active=TRUE;
+      RA_template[i].generate_rar=1;
+      RA_template[i].generate_Msg4=0;
+      RA_template[i].wait_ack_Msg4=0;
+      RA_template[i].timing_offset=timing_offset;
+      // Put in random rnti (to be replaced with proper procedure!!)
+      RA_template[i].rnti = taus();
+      RA_template[i].RA_rnti = 1+subframeP+(10*f_id);
+      RA_template[i].preamble_index = preamble_index;
+      LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Activating RAR generation for process %d, rnti %x, RA_active %d\n",
+	    module_idP,frameP,i,RA_template[i].rnti,
+	    RA_template[i].RA_active);
+
+      return;
+    }
+  }
+}
+
+void cancel_ra_proc(module_id_t module_idP, int CC_id, frame_t frameP, rnti_t rnti) {
+  unsigned char i;
+  RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0];
+
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Cancelling RA procedure for UE rnti %x\n",module_idP,frameP,rnti);
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+    if (rnti == RA_template[i].rnti) {
+      RA_template[i].RA_active=FALSE;
+      RA_template[i].generate_rar=0;
+      RA_template[i].generate_Msg4=0;
+      RA_template[i].wait_ack_Msg4=0;
+      RA_template[i].timing_offset=0;
+      RA_template[i].RRC_timer=20;
+      RA_template[i].rnti = 0;
+    }
+  }
+}
+
+void terminate_ra_proc(module_id_t module_idP,int CC_id,frame_t frameP,rnti_t rnti,unsigned char *msg3, uint16_t msg3_len) {
+
+  unsigned char rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
+  unsigned char rx_lcids[NB_RB_MAX];
+  uint16_t rx_lengths[NB_RB_MAX];
+  int8_t UE_id;
+  RA_TEMPLATE *RA_template = (RA_TEMPLATE *)&eNB_mac_inst[module_idP].common_channels[CC_id].RA_template[0];
+
+  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, Received msg3 %x.%x.%x.%x.%x.%x, Terminating RA procedure for UE rnti %x\n",
+	module_idP,frameP,
+	msg3[3],msg3[4],msg3[5],msg3[6],msg3[7], msg3[8], rnti);
+
+  for (i=0;i<NB_RA_PROC_MAX;i++) {
+    LOG_D(MAC,"[RAPROC] Checking proc %d : rnti (%x, %x), active %d\n",i,
+          RA_template[i].rnti, rnti,
+          RA_template[i].RA_active);
+    if ((RA_template[i].rnti==rnti) &&
+	(RA_template[i].RA_active==TRUE)) {
+
+      payload_ptr = parse_ulsch_header(msg3,&num_ce,&num_sdu,rx_ces,rx_lcids,rx_lengths,msg3_len);
+      LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
+	    module_idP,frameP,rx_lengths[0],payload_ptr-msg3);
+      if (/*(num_ce == 0) &&*/ (num_sdu==1) && (rx_lcids[0] == CCCH)) { // This is an RRCConnectionRequest/Restablishment
+	memcpy(&RA_template[i].cont_res_id[0],payload_ptr,6);
+	LOG_D(MAC,"[eNB %d][RAPROC] Frame %d Received CCCH: length %d, offset %d\n",
+	      module_idP,frameP,rx_lengths[0],payload_ptr-msg3);
+	UE_id=add_new_ue(module_idP,CC_id,RA_template[i].rnti);
+	if (UE_id==-1) {
+	  mac_xface->macphy_exit("[MAC][eNB] Max user count reached\n");
+	}
+	else {
+	  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d Added user with rnti %x => UE %d\n",
+		module_idP,frameP,RA_template[i].rnti,UE_id);
+	}
+
+	if (Is_rrc_registered == 1)
+	  mac_rrc_data_ind(module_idP,frameP,CCCH,(uint8_t *)payload_ptr,rx_lengths[0],1,module_idP,0);
+	// add_user.  This is needed to have the rnti for configuring UE (PHY). The UE is removed if RRC
+	// doesn't provide a CCCH SDU
+
+      }
+      else if (num_ce >0) {  // handle msg3 which is not RRCConnectionRequest
+	//	process_ra_message(msg3,num_ce,rx_lcids,rx_ces);
+      }
+
+      RA_template[i].generate_Msg4 = 1;
+      RA_template[i].wait_ack_Msg4 = 0;
+
+      return;
+    } // if process is active
+
+  } // loop on RA processes
+}

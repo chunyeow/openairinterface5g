@@ -89,6 +89,7 @@ MAC_OBJS += $(MAC_DIR)/eNB_scheduler_ulsch.o
 MAC_OBJS += $(MAC_DIR)/eNB_scheduler_mch.o
 MAC_OBJS += $(MAC_DIR)/eNB_scheduler_bch.o
 MAC_OBJS += $(MAC_DIR)/eNB_scheduler_primitives.o
+MAC_OBJS += $(MAC_DIR)/eNB_scheduler_RA.o
 MAC_OBJS += $(MAC_DIR)/pre_processor.o
 MAC_OBJS += $(MAC_DIR)/config.o
 

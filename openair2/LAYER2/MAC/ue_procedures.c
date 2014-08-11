@@ -95,10 +95,8 @@ extern inline unsigned int taus(void);
 
 void ue_init_mac(module_id_t module_idP){
   int i;
-
   // default values as deined in 36.331 sec 9.2.2
   LOG_I(MAC,"[UE%d] Applying default macMainConfig\n",module_idP);
-
   //UE_mac_inst[module_idP].scheduling_info.macConfig=NULL;
   UE_mac_inst[module_idP].scheduling_info.retxBSR_Timer= MAC_MainConfig__ul_SCH_Config__retxBSR_Timer_sf2560;
   UE_mac_inst[module_idP].scheduling_info.periodicBSR_Timer=MAC_MainConfig__ul_SCH_Config__periodicBSR_Timer_infinity;
@@ -118,10 +116,10 @@ void ue_init_mac(module_id_t module_idP){
   UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF =  get_sf_perioidicPHR_Timer(UE_mac_inst[module_idP].scheduling_info.periodicPHR_Timer);
   UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[module_idP].scheduling_info.prohibitPHR_Timer);
   UE_mac_inst[module_idP].scheduling_info.PathlossChange_db =  get_db_dl_PathlossChange(UE_mac_inst[module_idP].scheduling_info.PathlossChange);
-
+  
   for (i=0; i < MAX_NUM_LCID; i++){
-      LOG_D(MAC,"[UE%d] Applying default logical channel config for LCGID %d\n",module_idP,i);
-      UE_mac_inst[module_idP].scheduling_info.Bj[i]=-1;
+    LOG_D(MAC,"[UE%d] Applying default logical channel config for LCGID %d\n",module_idP,i);
+    UE_mac_inst[module_idP].scheduling_info.Bj[i]=-1;
       UE_mac_inst[module_idP].scheduling_info.bucket_size[i]=-1;
       if (i < DTCH) // initilize all control channels lcgid to 0
         UE_mac_inst[module_idP].scheduling_info.LCGID[i]=0;
@@ -131,13 +129,14 @@ void ue_init_mac(module_id_t module_idP){
   }
 }
 
+
 unsigned char *parse_header(unsigned char *mac_header,
-    unsigned char *num_ce,
-    unsigned char *num_sdu,
-    unsigned char *rx_ces,
-    unsigned char *rx_lcids,
-    unsigned short *rx_lengths,
-    unsigned short tb_length) {
+			    unsigned char *num_ce,
+			    unsigned char *num_sdu,
+			    unsigned char *rx_ces,
+			    unsigned char *rx_lcids,
+			    unsigned short *rx_lengths,
+			    unsigned short tb_length) {
 
   unsigned char not_done=1,num_ces=0,num_sdus=0,lcid, num_sdu_cnt;
   unsigned char *mac_header_ptr = mac_header;
@@ -203,7 +202,7 @@ unsigned char *parse_header(unsigned char *mac_header,
   return(mac_header_ptr);
 }
 
-uint32_t ue_get_SR(module_id_t module_idP,frame_t frameP,uint8_t eNB_id,uint16_t rnti, sub_frame_t subframe) {
+uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_id,uint16_t rnti, sub_frame_t subframe) {
 
   // no UL-SCH resources available for this tti && UE has a valid PUCCH resources for SR configuration for this tti
   //  int MGL=6;// measurement gap length in ms
@@ -212,6 +211,12 @@ uint32_t ue_get_SR(module_id_t module_idP,frame_t frameP,uint8_t eNB_id,uint16_t
   int T          = 0;
 
   DevCheck(module_idP < NB_UE_INST, module_idP, NB_UE_INST, 0);
+
+  if (CC_id>0) {
+    LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
+    mac_xface->macphy_exit("MAC FATAL  CC_id>0");
+    return;
+  }
 
   // determin the measurement gap
   LOG_D(MAC,"[UE %d][SR %x] Frame %d subframe %d PHY asks for SR (SR_COUNTER/dsr_TransMax %d/%d), SR_pending %d\n",
@@ -269,7 +274,7 @@ uint32_t ue_get_SR(module_id_t module_idP,frame_t frameP,uint8_t eNB_id,uint16_t
   }
 }
 
-void ue_send_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index) {
+void ue_send_sdu(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index) {
 
   unsigned char rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
   unsigned char rx_lcids[NB_RB_MAX];
@@ -319,14 +324,14 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu
             for (i=0;i<6;i++)
               if (tx_sdu[i] != payload_ptr[i]) {
                   LOG_E(MAC,"[UE %d][RAPROC] Contention detected, RA failed\n",module_idP);
-                  mac_xface->ra_failed(module_idP,eNB_index);
+                  mac_xface->ra_failed(module_idP,CC_id,eNB_index);
                   UE_mac_inst[module_idP].RA_contention_resolution_timer_active = 0;
                   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_SEND_SDU, VCD_FUNCTION_OUT);
                   return;
               }
             LOG_I(MAC,"[UE %d][RAPROC] Frame %d : Clearing contention resolution timer\n");
             UE_mac_inst[module_idP].RA_contention_resolution_timer_active = 0;
-            mac_xface->ra_succeeded(module_idP,eNB_index);
+            mac_xface->ra_succeeded(module_idP,CC_id,eNB_index);
         }
         payload_ptr+=6;
         break;
@@ -418,7 +423,7 @@ void ue_send_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu
   stop_meas(&UE_mac_inst[module_idP].rx_dlsch_sdu);
 }
 
-void ue_decode_si(module_id_t module_idP,frame_t frameP, uint8_t eNB_index, void *pdu,uint16_t len) {
+void ue_decode_si(module_id_t module_idP,int CC_id,frame_t frameP, uint8_t eNB_index, void *pdu,uint16_t len) {
 
   start_meas(&UE_mac_inst[module_idP].rx_si);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_SI, VCD_FUNCTION_IN);
@@ -439,14 +444,14 @@ void ue_decode_si(module_id_t module_idP,frame_t frameP, uint8_t eNB_index, void
 
 #ifdef Rel10
 unsigned char *parse_mch_header(unsigned char *mac_header,
-    unsigned char *num_sdu,
-    unsigned char *rx_lcids,
-    unsigned short *rx_lengths,
-    unsigned short tb_length) {
+				unsigned char *num_sdu,
+				unsigned char *rx_lcids,
+				unsigned short *rx_lengths,
+				unsigned short tb_length) {
   unsigned char not_done=1, num_sdus=0, lcid, i;
   unsigned char *mac_header_ptr = mac_header;
   unsigned short length;
-
+  
   while (not_done == 1) {
       if (((SCH_SUBHEADER_FIXED *)mac_header_ptr)->E == 0) {
           not_done = 0;
@@ -789,16 +794,16 @@ int ue_query_mch(module_id_t module_idP, uint32_t frameP, uint32_t subframe, uin
 #endif
 
 unsigned char generate_ulsch_header(uint8_t *mac_header,
-    uint8_t num_sdus,
-    uint8_t short_padding,
-    uint16_t *sdu_lengths,
-    uint8_t *sdu_lcids,
-    POWER_HEADROOM_CMD *power_headroom,
-    uint16_t *crnti,
-    BSR_SHORT *truncated_bsr,
-    BSR_SHORT *short_bsr,
-    BSR_LONG *long_bsr,
-    unsigned short post_padding) {
+				    uint8_t num_sdus,
+				    uint8_t short_padding,
+				    uint16_t *sdu_lengths,
+				    uint8_t *sdu_lcids,
+				    POWER_HEADROOM_CMD *power_headroom,
+				    uint16_t *crnti,
+				    BSR_SHORT *truncated_bsr,
+				    BSR_SHORT *short_bsr,
+				    BSR_LONG *long_bsr,
+				    unsigned short post_padding) {
 
   SCH_SUBHEADER_FIXED *mac_header_ptr = (SCH_SUBHEADER_FIXED *)mac_header;
   unsigned char first_element=0,last_size=0,i;
@@ -1030,7 +1035,7 @@ unsigned char generate_ulsch_header(uint8_t *mac_header,
 
 }
 
-void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint8_t *ulsch_buffer,uint16_t buflen, uint8_t *access_mode) {
+void ue_get_sdu(module_id_t module_idP,int CC_id,frame_t frameP,sub_frame_t subframe, uint8_t eNB_index,uint8_t *ulsch_buffer,uint16_t buflen, uint8_t *access_mode) {
 
   mac_rlc_status_resp_t rlc_status;
   uint8_t dcch_header_len=0,dcch1_header_len=0,dtch_header_len=0;
@@ -1052,6 +1057,12 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
   int lcgid;
   int j; // used for padding
   // Compute header length
+
+  if (CC_id>0) {
+    LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
+    mac_xface->macphy_exit("MAC FATAL  CC_id>0");
+    return;
+  }
 
   start_meas(&UE_mac_inst[module_idP].tx_ulsch_sdu);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_GET_SDU, VCD_FUNCTION_IN);
@@ -1217,11 +1228,11 @@ void ue_get_sdu(module_id_t module_idP,frame_t frameP,sub_frame_t subframe, uint
 
   // build PHR and update the timers
   if (phr_ce_len == sizeof(POWER_HEADROOM_CMD)){
-      phr_p->PH = get_phr_mapping(module_idP,eNB_index);
-      phr_p->R  = 0;
-      LOG_D(MAC,"[UE %d] Frame %d report PHR with mapping (%d->%d) for LCID %d\n",
-          module_idP,frameP, mac_xface->get_PHR(module_idP,eNB_index), phr_p->PH,POWER_HEADROOM);
-      update_phr(module_idP);
+    phr_p->PH = get_phr_mapping(module_idP,CC_id,eNB_index);
+    phr_p->R  = 0;
+    LOG_D(MAC,"[UE %d] Frame %d report PHR with mapping (%d->%d) for LCID %d\n",
+          module_idP,frameP, mac_xface->get_PHR(module_idP,CC_id,eNB_index), phr_p->PH,POWER_HEADROOM);
+    update_phr(module_idP,CC_id);
   }else
     phr_p=NULL;
 
@@ -1416,7 +1427,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
           UE_mac_inst[module_idP].RA_active = 0;
           // Signal PHY to quit RA procedure
           LOG_E(MAC,"Module id %u Contention resolution timer expired, RA failed\n", module_idP);
-          mac_xface->ra_failed(module_idP,eNB_indexP);
+          mac_xface->ra_failed(module_idP,0,eNB_indexP);
       }
   }
 
@@ -1573,6 +1584,7 @@ uint8_t get_bsr_len (module_id_t module_idP, uint16_t buflen) {
   uint8_t bsr_len=0,  num_lcgid=0;
   int pdu = 0;
 
+
   for (lcgid=0; lcgid < MAX_NUM_LCGID; lcgid++ ) {
       if (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcgid] > 0 )
         pdu += (UE_mac_inst[module_idP].scheduling_info.BSR_bytes[lcgid] +  bsr_len + 2); //2 = sizeof(SCH_SUBHEADER_SHORT)
@@ -1597,6 +1609,8 @@ boolean_t  update_bsr(module_id_t module_idP, frame_t frameP, uint8_t lcid, uint
 
   mac_rlc_status_resp_t rlc_status;
   boolean_t sr_pending = FALSE;
+
+
   if ((lcg_id < 0) || (lcg_id > MAX_NUM_LCGID) )
     return sr_pending;
   // fixme: need a better way to reset
@@ -1754,23 +1768,34 @@ int get_ms_bucketsizeduration(uint8_t bucketsizeduration){
   }
 }
 
-void update_phr(module_id_t module_idP){
+void update_phr(module_id_t module_idP,int CC_id){
+
+  if (CC_id>0) {
+    LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
+    mac_xface->macphy_exit("MAC FATAL  CC_id>0");
+    return;
+  }
 
   UE_mac_inst[module_idP].PHR_reporting_active =0;
   UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF =  get_sf_perioidicPHR_Timer(UE_mac_inst[module_idP].scheduling_info.periodicPHR_Timer);
   UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF =  get_sf_prohibitPHR_Timer(UE_mac_inst[module_idP].scheduling_info.prohibitPHR_Timer);
   // LOG_D(MAC,"phr %d %d\n ",UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF, UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF);
 }
-uint8_t get_phr_mapping (module_id_t module_idP, uint8_t eNB_index){
+uint8_t get_phr_mapping (module_id_t module_idP, int CC_id, uint8_t eNB_index){
 
+  if (CC_id>0) {
+    LOG_E(MAC,"Transmission on secondary CCs is not supported yet\n");
+    mac_xface->macphy_exit("MAC FATAL  CC_id>0");
+    return;
+  }
   //power headroom reporting range is from -23 ...+40 dB, as described in 36313
   //note: mac_xface->get_Po_NOMINAL_PUSCH(module_idP) is float
-  if (mac_xface->get_PHR(module_idP,eNB_index) < -23)
+  if (mac_xface->get_PHR(module_idP,CC_id,eNB_index) < -23)
     return 0;
-  else if (mac_xface->get_PHR(module_idP,eNB_index) >= 40)
+  else if (mac_xface->get_PHR(module_idP,CC_id,eNB_index) >= 40)
     return 63;
   else  // -23 to 40
-    return  (uint8_t) mac_xface->get_PHR(module_idP,eNB_index) + PHR_MAPPING_OFFSET;
+    return  (uint8_t) mac_xface->get_PHR(module_idP,CC_id,eNB_index) + PHR_MAPPING_OFFSET;
 
 }
 int get_sf_perioidicPHR_Timer(uint8_t perioidicPHR_Timer){

@@ -68,74 +68,81 @@ static mapping rrc_status_names[] = {
 
 int dump_eNB_l2_stats(char *buffer, int length){
   
-  uint8_t eNB_id,UE_id,number_of_cards;
+  int eNB_id,UE_id,number_of_cards;
   int len= length;
-  
+  int CC_id=0;
+  int i;
+
 #ifdef EXMIMO
   number_of_cards=1;
 #else 
   number_of_cards=NB_eNB_INST;
 #endif
- 
+  eNB_MAC_INST *eNB;
+  UE_list_t *UE_list;
 
   for (eNB_id=0;eNB_id<number_of_cards;eNB_id++) {
     /* reset the values */ 
-    eNB_mac_inst[eNB_id].eNB_stats.dlsch_bitrate= 0; 
+    eNB = &eNB_mac_inst[eNB_id];
+    UE_list = &eNB->UE_list;
+
+    eNB->eNB_stats.dlsch_bitrate= 0; 
     
     len += sprintf(&buffer[len],"eNB %d Frame %d: Active UEs %d, Available PRBs %d, nCCE %d \n",
-		   eNB_id, eNB_mac_inst[eNB_id].frame,
-		   eNB_mac_inst[eNB_id].eNB_stats.num_dlactive_UEs,
-		   eNB_mac_inst[eNB_id].eNB_stats.available_prbs,
-		   eNB_mac_inst[eNB_id].eNB_stats.available_ncces);
+		   eNB_id, eNB->frame,
+		   eNB->eNB_stats.num_dlactive_UEs,
+		   eNB->eNB_stats.available_prbs,
+		   eNB->eNB_stats.available_ncces);
     
-    eNB_mac_inst[eNB_id].eNB_stats.dlsch_bitrate=((eNB_mac_inst[eNB_id].eNB_stats.dlsch_bytes_tx*8)/((eNB_mac_inst[eNB_id].frame + 1)*10));
-    eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_pdus_tx+=eNB_mac_inst[eNB_id].eNB_stats.dlsch_pdus_tx;
-    eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_bytes_tx+=eNB_mac_inst[eNB_id].eNB_stats.dlsch_bytes_tx;
-    eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_bitrate=((eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_bytes_tx*8)/((eNB_mac_inst[eNB_id].frame + 1)*10));
+    eNB->eNB_stats.dlsch_bitrate=((eNB->eNB_stats.dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
+    eNB->eNB_stats.total_dlsch_pdus_tx+=eNB->eNB_stats.dlsch_pdus_tx;
+    eNB->eNB_stats.total_dlsch_bytes_tx+=eNB->eNB_stats.dlsch_bytes_tx;
+    eNB->eNB_stats.total_dlsch_bitrate=((eNB->eNB_stats.total_dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
        
     len += sprintf(&buffer[len],"DLSCH bitrate (TTI %u, avg %u) kbps, Transmitted bytes (TTI %u, total %u), Transmitted PDU (TTI %u, total %u) \n",
-		   eNB_mac_inst[eNB_id].eNB_stats.dlsch_bitrate,
-		   eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_bitrate,
-		   eNB_mac_inst[eNB_id].eNB_stats.dlsch_bytes_tx,
-		   eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_bytes_tx,
-		   eNB_mac_inst[eNB_id].eNB_stats.dlsch_pdus_tx,
-		   eNB_mac_inst[eNB_id].eNB_stats.total_dlsch_pdus_tx);
+		   eNB->eNB_stats.dlsch_bitrate,
+		   eNB->eNB_stats.total_dlsch_bitrate,
+		   eNB->eNB_stats.dlsch_bytes_tx,
+		   eNB->eNB_stats.total_dlsch_bytes_tx,
+		   eNB->eNB_stats.dlsch_pdus_tx,
+		   eNB->eNB_stats.total_dlsch_pdus_tx);
     
     len += sprintf(&buffer[len],"\n");
 
-    for (UE_id=0;UE_id<NUMBER_OF_UE_MAX;UE_id++) {
-      if (eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].crnti > 0 ) {
-	eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].dlsch_bitrate=((eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].TBS*8)/((eNB_mac_inst[eNB_id].frame + 1)*10));
-	eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_dlsch_bitrate= ((eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_pdu_bytes*8)/((eNB_mac_inst[eNB_id].frame + 1)*10));
-	eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_overhead_bytes+=	eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].overhead_bytes;
-	eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].avg_overhead_bytes=((eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_overhead_bytes*8)/((eNB_mac_inst[eNB_id].frame + 1)*10));
+    for (UE_id=UE_list->head;UE_id>0;UE_id=UE_list->next[UE_id]) {
+      for (i=0;i<UE_list->numactiveCCs[UE_id];i++) {
+	CC_id=UE_list->ordered_CCids[i][UE_id];
+	UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_bitrate=((UE_list->eNB_UE_stats[CC_id][UE_id].TBS*8)/((eNB->frame + 1)*10));
+	UE_list->eNB_UE_stats[CC_id][UE_id].total_dlsch_bitrate= ((UE_list->eNB_UE_stats[CC_id][UE_id].total_pdu_bytes*8)/((eNB->frame + 1)*10));
+	UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes+=	UE_list->eNB_UE_stats[CC_id][UE_id].overhead_bytes;
+	UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes=((UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes*8)/((eNB->frame + 1)*10));
 
 	len += sprintf(&buffer[len],"UE %d %s, RNTI %x : CQI %d, MCS(%d->%d), RB(tx %d, retx %d, total %d), ncce (tx %d, retx %d) \n ",
 		       UE_id,
-		       map_int_to_str(rrc_status_names, eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].rrc_status),
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].crnti,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].dl_cqi,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].dlsch_mcs1,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].dlsch_mcs2,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].rbs_used,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].rbs_used_retx,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_rbs_used,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].ncce_used,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].ncce_used_retx 
+		       map_int_to_str(rrc_status_names, UE_list->eNB_UE_stats[CC_id][UE_id].rrc_status),
+		       UE_list->eNB_UE_stats[CC_id][UE_id].crnti,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].dl_cqi,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_mcs1,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_mcs2,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].rbs_used,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].rbs_used_retx,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_rbs_used,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].ncce_used,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].ncce_used_retx 
 		       );
 	
 	len += sprintf(&buffer[len],
                        "[MAC] DLSCH bitrate (TTI %d, avg %d), Transmitted bytes "
                        "(TTI %d, total %"PRIu64"), Total Transmitted PDU %d, Overhead "
                        "(TTI %"PRIu64", total %"PRIu64", avg %"PRIu64,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].dlsch_bitrate,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_dlsch_bitrate,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].TBS,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_pdu_bytes,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_num_pdus,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].overhead_bytes,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].total_overhead_bytes,
-		       eNB_mac_inst[eNB_id].eNB_UE_stats[UE_id].avg_overhead_bytes
+		       UE_list->eNB_UE_stats[CC_id][UE_id].dlsch_bitrate,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_dlsch_bitrate,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].TBS,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_pdu_bytes,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_num_pdus,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].overhead_bytes,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].total_overhead_bytes,
+		       UE_list->eNB_UE_stats[CC_id][UE_id].avg_overhead_bytes
 		       );
 	
       }
