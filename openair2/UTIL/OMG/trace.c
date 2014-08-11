@@ -254,16 +254,18 @@ sleep_trace_node (pair_struct * pair, node_data * n_data, double cur_time)
   node->y_pos = node->mob->y_to;
 //sleep duration
 
+  /* */ 
   if (n_data->x_pos == n_data->next->x_pos &&
       n_data->y_pos == n_data->next->y_pos)
     {
       node->mob->sleep_duration = n_data->next->time - n_data->time;
-
+      LOG_D(OMG,"[TRACE] curretn and next lcoation are the same : sleep for %f\n",node->mob->sleep_duration);
     }
-  else
+  else /* early arrival*/ 
     {				//sleep case 2
-      node->mob->target_time - (journeytime + node->mob->start_journey);
-
+      //node->mob->sleep_duration = node->mob->target_time - (journeytime + node->mob->start_journey);
+      node->mob->sleep_duration = node->mob->target_time - pair->next_event_t; 
+      LOG_D(OMG,"[TRACE] Early Arrival (target time > journeytime), sleep for %f target time was %f\n",node->mob->sleep_duration,node->mob->target_time);
     }
 
   node->mob->start_journey = cur_time;
@@ -292,7 +294,12 @@ update_trace_nodes (double cur_time)
       my_node = tmp->pair->b;
       node_n = get_next_data (table[my_node->type], my_node->gid, DATA_ONLY);
 
-      if (node_n->next->next == NULL)
+      
+      //case1:time to next event equals to current time      
+      if (tmp->pair != NULL && tmp->pair->next_event_t >= cur_time - eps
+	  && tmp->pair->next_event_t <= cur_time )
+	{
+	  if (node_n->next->next == NULL)
 	{
 	  tmp->pair->b->x_pos = tmp->pair->b->mob->x_to;
 	  tmp->pair->b->mob->x_from = tmp->pair->b->x_pos;
@@ -305,12 +312,6 @@ update_trace_nodes (double cur_time)
 	  continue;
 	}
 
-
-
-      //case1:time to next event equals to current time      
-      if (tmp->pair != NULL && tmp->pair->next_event_t >= cur_time - eps
-	  && tmp->pair->next_event_t <= cur_time + eps)
-	{
 	  //LOG_D (OMG, "[TRACE] last data for all nodes\n");
 	  if (my_node->mobile == 1)
 	    {
@@ -366,8 +367,21 @@ update_trace_nodes (double cur_time)
 	}
 
       //case2: current time is greater than the time to next event
-      else if (tmp->pair != NULL && cur_time - eps > tmp->pair->next_event_t)
+      else if (tmp->pair != NULL && cur_time > tmp->pair->next_event_t)
 	{
+	  if (node_n->next->next == NULL)
+	{
+	  tmp->pair->b->x_pos = tmp->pair->b->mob->x_to;
+	  tmp->pair->b->mob->x_from = tmp->pair->b->x_pos;
+	  tmp->pair->b->y_pos = tmp->pair->b->mob->y_to;
+	  tmp->pair->b->mob->y_from = tmp->pair->b->y_pos;
+          tmp->pair->b->mobile = 0;
+          tmp->pair->b->mob->speed = 0.0;           
+	  // LOG_D (OMG, "[TRACE] last data for all nodes\n");
+	  tmp = tmp->next;
+	  continue;
+	}
+	  
 	  while (cur_time >= tmp->pair->next_event_t)
 	    {
 

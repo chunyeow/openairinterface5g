@@ -11,12 +11,17 @@ Notes:
 
   - OMG TRACE support mobility input given in the following format:
 
-       TIME(s) NODE_ID NODE_POS_X NODE_POS_Y NODE_SPEED(m/s)
+       EXPECTED_TIME(s) NODE_ID NODE_POS_X NODE_POS_Y NODE_SPEED(m/s)
    
-    Note: OMG uses the speed (NODE_SPEED) at this time (TIME) from this position (NODE_POS_X,NODE_POS_Y) for this NODE_ID 
-  - each input may be ordered (in time) or not
-
-  - The mobility described in the mobility file strictly follows the simulation time, only condition where it doesn't follow is, when a node fails to reach its next point (in time) from where it has to start next journey.
+ Notes: 
+    1) OMG uses the speed (NODE_SPEED) at this time (TIME) from this position (NODE_POS_X,NODE_POS_Y) for this NODE_ID 
+    2) each input may be ordered (in time) or not
+    3) early arrivals at each points cause a sleep for a duration of the time difference
+    4) late arrivals for each points cause nothing (no jump), the point will be reached later in time. 
+    5) all the points will be reached based on their expected times.
+    6) if the first expected time is greater than zero, then the node will be in a pause state at the initial position for the duration of the expected time
+    7)  The mobility described in the mobility file strictly follows the simulation time, only condition where it doesn't follow is, when a node fails to reach its next point (in time) from where it has to start next journey.
+    8) the speed for the last expected time is ignored
  
 ----------------------------------------------------------------------------------
 The OpenAirInterface Team 

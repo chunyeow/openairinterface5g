@@ -631,7 +631,7 @@ void *l2l1_task(void *args_p) {
 
       oai_emulation.info.frame = frame;
       //oai_emulation.info.time_ms += 1;
-      oai_emulation.info.time_s += 0.1; // emu time in s, each frame lasts for 10 ms // JNote: TODO check the coherency of the time and frame (I corrected it to 10 (instead of 0.01)
+      oai_emulation.info.time_s += 0.01; // emu time in s, each frame lasts for 10 ms // JNote: TODO check the coherency of the time and frame (I corrected it to 10 (instead of 0.01)
       // if n_frames not set by the user or is greater than max num frame then set adjust the frame counter
       if ((oai_emulation.info.n_frames_flag == 0) || (oai_emulation.info.n_frames >= 0xffff)) {
           frame %= (oai_emulation.info.n_frames - 1);

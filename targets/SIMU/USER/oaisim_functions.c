@@ -1000,8 +1000,8 @@ void update_omg (frame_t frameP) {
 
   if ((frameP % omg_period) == 0 ) { // call OMG every 10ms
       update_nodes(oai_emulation.info.time_s);
-      //display_node_list(enb_node_list);
-      //display_node_list(ue_node_list);
+      display_node_list(enb_node_list);
+      display_node_list(ue_node_list);
       if (oai_emulation.info.omg_model_ue >= MAX_NUM_MOB_TYPES){ // mix mobility model
           for(UE_id=oai_emulation.info.first_ue_local; UE_id<(oai_emulation.info.first_ue_local+oai_emulation.info.nb_ue_local);UE_id++){
               new_omg_model = randomgen(STATIC,RWALK);
@@ -1039,8 +1039,8 @@ void update_ocm() {
   /* check if the openair channel model is activated used for PHY abstraction : path loss*/
   if ((oai_emulation.info.ocm_enabled == 1)&& (ethernet_flag == 0 )) {
       //LOG_D(OMG," extracting position of eNb...\n");
-       display_node_list(enb_node_list);
-       display_node_list(ue_node_list);
+    //display_node_list(enb_node_list);
+    //  display_node_list(ue_node_list);
       extract_position(enb_node_list, enb_data, NB_eNB_INST);
       //extract_position_fixed_enb(enb_data, NB_eNB_INST,frame);
       //LOG_D(OMG," extracting position of UE...\n");
