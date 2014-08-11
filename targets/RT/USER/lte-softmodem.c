@@ -183,10 +183,10 @@ pthread_mutex_t sync_mutex;
 #endif
 #endif
 
-pthread_attr_t                  attr_eNB_proc_tx[10];
-pthread_attr_t                  attr_eNB_proc_rx[10];
-struct sched_param              sched_param_eNB_proc_tx[10];
-struct sched_param              sched_param_eNB_proc_rx[10];
+pthread_attr_t                  attr_eNB_proc_tx[MAX_NUM_CCs][10];
+pthread_attr_t                  attr_eNB_proc_rx[MAX_NUM_CCs][10];
+struct sched_param              sched_param_eNB_proc_tx[MAX_NUM_CCs][10];
+struct sched_param              sched_param_eNB_proc_rx[MAX_NUM_CCs][10];
 
 #ifdef XFORMS
 static pthread_t                thread2; //xforms
@@ -424,7 +424,7 @@ static void *scope_thread(void *arg) {
 # ifdef ENABLE_XFORMS_WRITE_STATS
       len =
 # endif
-	dump_eNB_stats (PHY_vars_eNB_g[0], stats_buffer, 0);
+	dump_eNB_stats (PHY_vars_eNB_g[0][0], stats_buffer, 0);
       fl_set_object_label(form_stats->stats_text, stats_buffer);
 # ifdef ENABLE_XFORMS_WRITE_STATS
       rewind (eNB_stats);
@@ -432,7 +432,7 @@ static void *scope_thread(void *arg) {
 # endif
       for(UE_id=0;UE_id<scope_enb_num_ue;UE_id++) {
 	phy_scope_eNB(form_enb[UE_id], 
-		      PHY_vars_eNB_g[eNB_id],
+		      PHY_vars_eNB_g[eNB_id][0],
 		      UE_id);
       }
               
@@ -844,20 +844,21 @@ static void * eNB_thread_tx(void *param) {
     vcd_signal_dumper_dump_variable_by_name(VCD_SIGNAL_DUMPER_VARIABLES_SLOT_NUMBER_ENB, proc->subframe*2);
     
     if (oai_exit) break;
+
     
-    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD)&&
-	  (subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
-	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))) {
-
-      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay,NULL);
-
+    if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD)&&
+	  (subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_DL))||
+	 (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))) {
+      
+      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
+      
     }
-    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_tx)==SF_S)) {
-      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay,NULL);
+    if ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_tx)==SF_S)) {
+      phy_procedures_eNB_TX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay,NULL);
     }
     
-
-    do_OFDM_mod(proc->subframe_tx,PHY_vars_eNB_g[0]);  
+    
+    do_OFDM_mod(proc->subframe_tx,PHY_vars_eNB_g[0][proc->CC_id]);  
     
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       printf("[openair][SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
@@ -900,7 +901,6 @@ static void * eNB_thread_rx(void *param) {
 
   //unsigned long cpuid;
   eNB_proc_t *proc = (eNB_proc_t*)param;
-  int i;
   //  RTIME time_in,time_out;
 #ifdef RTAI
   RT_TASK *task;
@@ -964,12 +964,12 @@ static void * eNB_thread_rx(void *param) {
 
     if (oai_exit) break;
     
-    if ((((PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_rx)==SF_UL)) ||
-	 (PHY_vars_eNB_g[0]->lte_frame_parms.frame_type == FDD))){
-      phy_procedures_eNB_RX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay);
+    if ((((PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == TDD )&&(subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_rx)==SF_UL)) ||
+	 (PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms.frame_type == FDD))){
+      phy_procedures_eNB_RX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay);
     }
-    if ((subframe_select(&PHY_vars_eNB_g[0]->lte_frame_parms,proc->subframe_rx)==SF_S)){
-      phy_procedures_eNB_S_RX(proc->subframe,PHY_vars_eNB_g[0],0,no_relay);
+    if ((subframe_select(&PHY_vars_eNB_g[0][proc->CC_id]->lte_frame_parms,proc->subframe_rx)==SF_S)){
+      phy_procedures_eNB_S_RX(proc->subframe,PHY_vars_eNB_g[0][proc->CC_id],0,no_relay);
     }
       
     if (pthread_mutex_lock(&proc->mutex_rx) != 0) {
@@ -1014,97 +1014,103 @@ static void * eNB_thread_rx(void *param) {
 void init_eNB_proc() {
 
   int i;
+  int CC_id;
 
-
-
-  for (i=0;i<10;i++) {
-    pthread_attr_init (&attr_eNB_proc_tx[i]);
-    pthread_attr_setstacksize(&attr_eNB_proc_tx[i],OPENAIR_THREAD_STACK_SIZE);
-    //attr_dlsch_threads.priority = 1;
-    sched_param_eNB_proc_tx[i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
-    pthread_attr_setschedparam  (&attr_eNB_proc_tx[i], &sched_param_eNB_proc_tx);
-    pthread_attr_setschedpolicy (&attr_eNB_proc_tx[i], SCHED_FIFO);
-
-    pthread_attr_init (&attr_eNB_proc_rx[i]);
-    pthread_attr_setstacksize(&attr_eNB_proc_rx[i],OPENAIR_THREAD_STACK_SIZE);
-    //attr_dlsch_threads.priority = 1;
-    sched_param_eNB_proc_rx[i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
-    pthread_attr_setschedparam  (&attr_eNB_proc_rx[i], &sched_param_eNB_proc_rx);
-    pthread_attr_setschedpolicy (&attr_eNB_proc_rx[i], SCHED_FIFO);
-
-    PHY_vars_eNB_g[0]->proc[i].instance_cnt_tx=-1;
-    PHY_vars_eNB_g[0]->proc[i].instance_cnt_rx=-1;
-    PHY_vars_eNB_g[0]->proc[i].subframe=i;
-    pthread_mutex_init(&PHY_vars_eNB_g[0]->proc[i].mutex_tx,NULL);
-    pthread_mutex_init(&PHY_vars_eNB_g[0]->proc[i].mutex_rx,NULL);
-    pthread_cond_init(&PHY_vars_eNB_g[0]->proc[i].cond_tx,NULL);
-    pthread_cond_init(&PHY_vars_eNB_g[0]->proc[i].cond_rx,NULL);
-    pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_tx,NULL,eNB_thread_tx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
-    pthread_create(&PHY_vars_eNB_g[0]->proc[i].pthread_rx,NULL,eNB_thread_rx,(void*)&PHY_vars_eNB_g[0]->proc[i]);
-    PHY_vars_eNB_g[0]->proc[i].frame_tx = 0;
-    PHY_vars_eNB_g[0]->proc[i].frame_rx = 0;
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    for (i=0;i<10;i++) {
+      pthread_attr_init (&attr_eNB_proc_tx[CC_id][i]);
+      pthread_attr_setstacksize(&attr_eNB_proc_tx[CC_id][i],OPENAIR_THREAD_STACK_SIZE);
+      //attr_dlsch_threads.priority = 1;
+      sched_param_eNB_proc_tx[CC_id][i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
+      pthread_attr_setschedparam  (&attr_eNB_proc_tx[CC_id][i], &sched_param_eNB_proc_tx[CC_id][i]);
+      pthread_attr_setschedpolicy (&attr_eNB_proc_tx[CC_id][i], SCHED_FIFO);
+      
+      pthread_attr_init (&attr_eNB_proc_rx[CC_id][i]);
+      pthread_attr_setstacksize(&attr_eNB_proc_rx[CC_id][i],OPENAIR_THREAD_STACK_SIZE);
+      //attr_dlsch_threads.priority = 1;
+      sched_param_eNB_proc_rx[CC_id][i].sched_priority = sched_get_priority_max(SCHED_FIFO)-1; //OPENAIR_THREAD_PRIORITY;
+      pthread_attr_setschedparam  (&attr_eNB_proc_rx[CC_id][i], &sched_param_eNB_proc_rx[CC_id][i]);
+      pthread_attr_setschedpolicy (&attr_eNB_proc_rx[CC_id][i], SCHED_FIFO);
+      
+      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_tx=-1;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_rx=-1;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe=i;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].CC_id = CC_id;
+	pthread_mutex_init(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_tx,NULL);
+	pthread_mutex_init(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_rx,NULL);
+	pthread_cond_init(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_tx,NULL);
+	pthread_cond_init(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_rx,NULL);
+	pthread_create(&PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx,NULL,eNB_thread_tx,(void*)&PHY_vars_eNB_g[0][CC_id]->proc[i]);
+	pthread_create(&PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx,NULL,eNB_thread_rx,(void*)&PHY_vars_eNB_g[0][CC_id]->proc[i]);
+	PHY_vars_eNB_g[0][CC_id]->proc[i].frame_tx = 0;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].frame_rx = 0;
 #ifndef USRP
-    PHY_vars_eNB_g[0]->proc[i].subframe_rx = (i+9)%10;
-    PHY_vars_eNB_g[0]->proc[i].subframe_tx = (i+1)%10;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_rx = (i+9)%10;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_tx = (i+1)%10;
 #else
-    PHY_vars_eNB_g[0]->proc[i].subframe_rx = i;
-    PHY_vars_eNB_g[0]->proc[i].subframe_tx = (i+2)%10;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_rx = i;
+	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_tx = (i+2)%10;
 #endif
-  }
-
-
+      }
+    }
+  
+  
 #ifndef USRP
   // TX processes subframe + 1, RX subframe -1
   // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 9 and 0 have to start with frame 1
-
-  //PHY_vars_eNB_g[0]->proc[0].frame_rx = 1023;
-  PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
-  PHY_vars_eNB_g[0]->proc[0].frame_tx = 1;
+    
+  //PHY_vars_eNB_g[0][CC_id]->proc[0].frame_rx = 1023;
+    PHY_vars_eNB_g[0][CC_id]->proc[9].frame_tx = 1;
+    PHY_vars_eNB_g[0][CC_id]->proc[0].frame_tx = 1;
 #else
-  // TX processes subframe +2, RX subframe
-  // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 8,9 and 0 have to start with frame 1
-  PHY_vars_eNB_g[0]->proc[8].frame_tx = 1;
-  PHY_vars_eNB_g[0]->proc[9].frame_tx = 1;
-  PHY_vars_eNB_g[0]->proc[0].frame_tx = 1;
+    // TX processes subframe +2, RX subframe
+    // Note this inialization is because the first process awoken for frame 0 is number 1 and so processes 8,9 and 0 have to start with frame 1
+    PHY_vars_eNB_g[0][CC_id]->proc[8].frame_tx = 1;
+    PHY_vars_eNB_g[0][CC_id]->proc[9].frame_tx = 1;
+    PHY_vars_eNB_g[0][CC_id]->proc[0].frame_tx = 1;
 #endif
- }
+  }
+}
 
 void kill_eNB_proc() {
 
   int i;
   int *status_tx,*status_rx;
+  int CC_id;
 
-  for (i=0;i<10;i++) {
-
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) 
+    for (i=0;i<10;i++) {
+      
 #ifdef DEBUG_THREADS
-    printf("Killing TX thread %d\n",i);
+      printf("Killing TX CC_id %d thread %d\n",CC_id,i);
 #endif
-    PHY_vars_eNB_g[0]->proc[i].instance_cnt_tx=0; 
-    pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[i].cond_tx);
+      PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_tx=0; 
+      pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_tx);
 #ifdef DEBUG_THREADS
-    printf("Joining eNB TX thread %d...",i);
+      printf("Joining eNB TX CC_id %d thread %d...",CC_id,i);
 #endif
-    pthread_join(PHY_vars_eNB_g[0]->proc[i].pthread_tx,(void**)status_tx);
+      pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx,(void**)status_tx);
 #ifdef DEBUG_THREADS
-    if (status_tx) printf("status %d...",*status_tx);
+      if (status_tx) printf("status %d...",*status_tx);
 #endif
 #ifdef DEBUG_THREADS
-    printf("Killing RX thread %d\n",i);
+      printf("Killing RX CC_id %d thread %d\n",CC_id,i);
 #endif
-    PHY_vars_eNB_g[0]->proc[i].instance_cnt_rx=0; 
-    pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[i].cond_rx);
+      PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_rx=0; 
+      pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_rx);
 #ifdef DEBUG_THREADS
-    printf("Joining eNB RX thread %d...",i);
+      printf("Joining eNB RX CC_id %d thread %d...",CC_id,i);
 #endif
-    pthread_join(PHY_vars_eNB_g[0]->proc[i].pthread_rx,(void**)status_rx);
+      pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx,(void**)status_rx);
 #ifdef DEBUG_THREADS 
-    if (status_rx) printf("status %d...",*status_rx);
+      if (status_rx) printf("status %d...",*status_rx);
 #endif
-    pthread_mutex_destroy(&PHY_vars_eNB_g[0]->proc[i].mutex_tx);
-    pthread_mutex_destroy(&PHY_vars_eNB_g[0]->proc[i].mutex_rx);
-    pthread_cond_destroy(&PHY_vars_eNB_g[0]->proc[i].cond_tx);
-    pthread_cond_destroy(&PHY_vars_eNB_g[0]->proc[i].cond_rx);
-  }
+      pthread_mutex_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_tx);
+      pthread_mutex_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_rx);
+      pthread_cond_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_tx);
+      pthread_cond_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_rx);
+    }
 }
 
 
@@ -1127,6 +1133,7 @@ static void *eNB_thread(void *arg)
   unsigned char slot=1;
 #endif
   int frame=0;
+  int CC_id;
 
   RTIME time_in, time_diff;
 
@@ -1136,13 +1143,13 @@ static void *eNB_thread(void *arg)
   int mbox_target=0,mbox_current=0;
   int hw_slot,delay_cnt;
   int diff;
-  int i;
   int ret;
 
 #else
   unsigned int rx_cnt = 0;
   unsigned int tx_cnt = tx_delay;
   //  int tx_offset;
+  int CC_id;
 
   hw_subframe = 0;
 
@@ -1349,55 +1356,57 @@ static void *eNB_thread(void *arg)
 	if (multi_thread == 0) {
 	  if ((slot&1) == 0) {
 	    LOG_I(PHY,"[eNB] Single thread slot %d\n",slot);
- 	    phy_procedures_eNB_lte ((2+(slot>>1))%10, PHY_vars_eNB_g[0], 0, no_relay,NULL);
-	    do_OFDM_mod((2+(slot>>1))%10,PHY_vars_eNB_g[0]);
+	    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	      phy_procedures_eNB_lte ((2+(slot>>1))%10, PHY_vars_eNB_g[0][CC_id], 0, no_relay,NULL);
+	      do_OFDM_mod((2+(slot>>1))%10,PHY_vars_eNB_g[0][CC_id]);
+	    }
 	  }
 	}
 	else { // multi-thread > 0
 	  if ((slot&1) == 1) {
 	    sf = ((slot>>1)+1)%10;
-	    //		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0]->proc[sf].instance_cnt);
-
-	    if (pthread_mutex_lock(&PHY_vars_eNB_g[0]->proc[sf].mutex_tx) != 0) {
-	      LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt_tx);   
-	    }
-	    else {
-	      //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt); 
-	      PHY_vars_eNB_g[0]->proc[sf].instance_cnt_tx++;
-	      pthread_mutex_unlock(&PHY_vars_eNB_g[0]->proc[sf].mutex_tx);
-	      if (PHY_vars_eNB_g[0]->proc[sf].instance_cnt_tx == 0) {
-		if (pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[sf].cond_tx) != 0) {
-		  LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n",sf);
-		}
+	    //		    LOG_I(PHY,"[eNB] Multithread slot %d (IC %d)\n",slot,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt);
+	    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	      if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx) != 0) {
+		LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB TX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx);   
 	      }
 	      else {
-		LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0]->proc[sf].frame_tx,sf);
-		oai_exit=1;
-	      }
-	    }
-	    
-	    if (pthread_mutex_lock(&PHY_vars_eNB_g[0]->proc[sf].mutex_rx) != 0) {
-	      LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB RX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt_rx);   
-	    }
-	    else {
-	      //		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0]->proc[sf].instance_cnt); 
-	      PHY_vars_eNB_g[0]->proc[sf].instance_cnt_rx++;
-	      pthread_mutex_unlock(&PHY_vars_eNB_g[0]->proc[sf].mutex_rx);
-	      if (PHY_vars_eNB_g[0]->proc[sf].instance_cnt_rx == 0) {
-		if (pthread_cond_signal(&PHY_vars_eNB_g[0]->proc[sf].cond_rx) != 0) {
-		  LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB RX thread %d\n",sf);
+		//		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt); 
+		PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx++;
+		pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_tx);
+		if (PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_tx == 0) {
+		  if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_tx) != 0) {
+		    LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB TX thread %d\n",sf);
+		  }
+		}
+		else {
+		  LOG_W(PHY,"[eNB] Frame %d, eNB TX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_tx,sf);
+		  oai_exit=1;
 		}
 	      }
-	      else {
-		LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!!\n",PHY_vars_eNB_g[0]->proc[sf].frame_rx,sf);
-		oai_exit=1;
+	      
+	      if (pthread_mutex_lock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx) != 0) {
+		LOG_E(PHY,"[eNB] ERROR pthread_mutex_lock for eNB RX thread %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx);   
 	      }
+	      else {
+		//		      LOG_I(PHY,"[eNB] Waking up eNB process %d (IC %d)\n",sf,PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt); 
+		PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx++;
+		pthread_mutex_unlock(&PHY_vars_eNB_g[0][CC_id]->proc[sf].mutex_rx);
+		if (PHY_vars_eNB_g[0][CC_id]->proc[sf].instance_cnt_rx == 0) {
+		  if (pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[sf].cond_rx) != 0) {
+		    LOG_E(PHY,"[eNB] ERROR pthread_cond_signal for eNB RX thread %d\n",sf);
+		  }
+		}
+		else {
+		  LOG_W(PHY,"[eNB] Frame %d, eNB RX thread %d busy!!\n",PHY_vars_eNB_g[0][CC_id]->proc[sf].frame_rx,sf);
+		  oai_exit=1;
+		}
+	      }
+	      
 	    }
-	    
 	  }
 	}
       }
-
 #ifndef RTAI
       //pthread_mutex_lock(&tti_mutex);
 #endif
@@ -1507,7 +1516,7 @@ static void *UE_thread(void *arg) {
       
     if (is_synchronized) {
       //this is the mbox counter that indicates the start of the frame
-      rx_offset_mbox = (PHY_vars_UE_g[0]->rx_offset * 150) / (10*PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti);
+      rx_offset_mbox = (PHY_vars_UE_g[0][0]->rx_offset * 150) / (10*PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti);
       //this is the mbox counter where we should be
       mbox_target = (((((slot+1)%20)*15+1)>>1) + rx_offset_mbox + 1)%150;
       // round up to the next multiple of two (mbox counter from express MIMO gives only even numbers)
@@ -1583,7 +1592,7 @@ static void *UE_thread(void *arg) {
     next_slot = (slot+3)%LTE_SLOTS_PER_FRAME;
       
     if (is_synchronized)  {
-      phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0], 0, 0,mode,0,NULL);
+      phy_procedures_UE_lte (last_slot, next_slot, PHY_vars_UE_g[0][0], 0, 0,mode,0,NULL);
 	
     }
     else {  // we are not yet synchronized
@@ -1595,7 +1604,7 @@ static void *UE_thread(void *arg) {
       //          rt_sleep_ns(FRAME_PERIOD);
       //          LOG_D(HW,"after sleep\n");
 	
-      if (initial_sync(PHY_vars_UE_g[0],mode)==0) {
+      if (initial_sync(PHY_vars_UE_g[0][0],mode)==0) {
 	/*
 	  lte_adjust_synch(&PHY_vars_UE_g[0]->lte_frame_parms,
 	  PHY_vars_UE_g[0],
@@ -1618,7 +1627,7 @@ static void *UE_thread(void *arg) {
 	  //LOG_D(HW,"Before openair0_start_rt_acquisition \n");
 	  openair0_start_rt_acquisition(card);
 	    
-	  hw_slot_offset = (PHY_vars_UE_g[0]->rx_offset<<1) / PHY_vars_UE_g[0]->lte_frame_parms.samples_per_tti;
+	  hw_slot_offset = (PHY_vars_UE_g[0][0]->rx_offset<<1) / PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti;
 	  LOG_D(HW,"Got synch: hw_slot_offset %d\n",hw_slot_offset);
 	}
       }
@@ -1866,7 +1875,7 @@ int main(int argc, char **argv) {
   void *status;
 #endif
   
-
+  int CC_id;
   uint16_t Nid_cell = 0;
   uint8_t  cooperation_flag=0, transmission_mode=1, abstraction_flag=0;
 #ifndef OPENAIR2
@@ -2052,29 +2061,56 @@ int main(int argc, char **argv) {
   // N_ZC = (prach_fmt <4)?839:139;
 
   if (UE_flag==1) {
-    PHY_vars_UE_g = malloc(sizeof(PHY_VARS_UE*));
-    PHY_vars_UE_g[0] = init_lte_UE(frame_parms, UE_id,abstraction_flag,transmission_mode);
-    
-#ifndef OPENAIR2
-    for (i=0;i<NUMBER_OF_eNB_MAX;i++) {
-      PHY_vars_UE_g[0]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
-      PHY_vars_UE_g[0]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
-      PHY_vars_UE_g[0]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
+    PHY_vars_UE_g = malloc(sizeof(PHY_VARS_UE**));
+    PHY_vars_UE_g[0] = malloc(sizeof(PHY_VARS_UE*)*MAX_NUM_CCs);
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      PHY_vars_UE_g[CC_id][0] = init_lte_UE(frame_parms, UE_id,abstraction_flag,transmission_mode);
       
-      PHY_vars_UE_g[0]->scheduling_request_config[i].sr_PUCCH_ResourceIndex = UE_id;
-      PHY_vars_UE_g[0]->scheduling_request_config[i].sr_ConfigIndex = 7+(UE_id%3);
-      PHY_vars_UE_g[0]->scheduling_request_config[i].dsr_TransMax = sr_n4;
-    }
-#endif
-    
-    compute_prach_seq(&PHY_vars_UE_g[0]->lte_frame_parms.prach_config_common,
-		      PHY_vars_UE_g[0]->lte_frame_parms.frame_type,
-		      PHY_vars_UE_g[0]->X_u);
-    
-    PHY_vars_UE_g[0]->lte_ue_pdcch_vars[0]->crnti = 0x1234;
 #ifndef OPENAIR2
-    PHY_vars_UE_g[0]->lte_ue_pdcch_vars[0]->crnti = 0x1235;
+      for (i=0;i<NUMBER_OF_eNB_MAX;i++) {
+	PHY_vars_UE_g[CC_id][0]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
+	PHY_vars_UE_g[CC_id][0]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
+	PHY_vars_UE_g[CC_id][0]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
+	
+	PHY_vars_UE_g[CC_id][0]->scheduling_request_config[i].sr_PUCCH_ResourceIndex = UE_id;
+	PHY_vars_UE_g[CC_id][0]->scheduling_request_config[i].sr_ConfigIndex = 7+(UE_id%3);
+	PHY_vars_UE_g[CC_id][0]->scheduling_request_config[i].dsr_TransMax = sr_n4;
+      }
 #endif
+      
+      compute_prach_seq(&PHY_vars_UE_g[CC_id][0]->lte_frame_parms.prach_config_common,
+			PHY_vars_UE_g[CC_id][0]->lte_frame_parms.frame_type,
+			PHY_vars_UE_g[CC_id][0]->X_u);
+      
+      PHY_vars_UE_g[CC_id][0]->lte_ue_pdcch_vars[0]->crnti = 0x1234;
+#ifndef OPENAIR2
+      PHY_vars_UE_g[CC_id][0]->lte_ue_pdcch_vars[0]->crnti = 0x1235;
+#endif
+
+    for (i=0;i<4;i++) {
+      PHY_vars_UE_g[CC_id][0]->rx_gain_max[i] = rxg_max[i];
+      //      PHY_vars_UE_g[CC_id][0]->rx_gain_med[i] = rxg_med[i];
+      //      PHY_vars_UE_g[CC_id][0]->rx_gain_byp[i] = rxg_byp[i];
+    }
+    
+    if ((mode == normal_txrx) || (mode == rx_calib_ue) || (mode == no_L2_connect) || (mode == debug_prach)) {
+      for (i=0;i<4;i++)
+	openair0_cfg.rxg_mode[i] =  max_gain;
+      PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_max[0] + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain
+    }
+    else if ((mode == rx_calib_ue_med)) {
+      for (i=0;i<4;i++)
+	openair0_cfg.rxg_mode[i] =  med_gain;
+      PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_med[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
+    }
+    else if ((mode == rx_calib_ue_byp)) {
+      for (i=0;i<4;i++)
+	openair0_cfg.rxg_mode[i] =  byp_gain;
+      PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_byp[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
+    }
+    
+    PHY_vars_UE_g[CC_id][0]->tx_power_max_dBm = tx_max_power;
+    }
     NB_UE_INST=1;
     NB_INST=1;
     
@@ -2084,53 +2120,37 @@ int main(int argc, char **argv) {
     openair_daq_vars.auto_freq_correction = 0;
     openair_daq_vars.use_ia_receiver = 0;
     
-    for (i=0;i<4;i++) {
-      PHY_vars_UE_g[0]->rx_gain_max[i] = rxg_max[i];
-      //      PHY_vars_UE_g[0]->rx_gain_med[i] = rxg_med[i];
-      //      PHY_vars_UE_g[0]->rx_gain_byp[i] = rxg_byp[i];
-    }
-    
-    if ((mode == normal_txrx) || (mode == rx_calib_ue) || (mode == no_L2_connect) || (mode == debug_prach)) {
-      for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  max_gain;
-      PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_max[0] + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain
-    }
-    else if ((mode == rx_calib_ue_med)) {
-      for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  med_gain;
-      PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_med[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
-    }
-    else if ((mode == rx_calib_ue_byp)) {
-      for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  byp_gain;
-      PHY_vars_UE_g[0]->rx_total_gain_dB =  PHY_vars_UE_g[0]->rx_gain_byp[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
-    }
-    
-    PHY_vars_UE_g[0]->tx_power_max_dBm = tx_max_power;
+
     
     //  printf("tx_max_power = %d -> amp %d\n",tx_max_power,get_tx_amp(tx_max_power,tx_max_power));
   }
   else
     { //this is eNB
-      PHY_vars_eNB_g = malloc(sizeof(PHY_VARS_eNB*));
-      PHY_vars_eNB_g[0] = init_lte_eNB(frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
-    
+      PHY_vars_eNB_g = malloc(sizeof(PHY_VARS_eNB**));
+      PHY_vars_eNB_g[0] = malloc(sizeof(PHY_VARS_eNB*));
+      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	PHY_vars_eNB_g[0][CC_id] = init_lte_eNB(frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
+      
+       
 #ifndef OPENAIR2
-      for (i=0;i<NUMBER_OF_UE_MAX;i++) {
-	PHY_vars_eNB_g[0]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
-	PHY_vars_eNB_g[0]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
-	PHY_vars_eNB_g[0]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
-
-	PHY_vars_eNB_g[0]->scheduling_request_config[i].sr_PUCCH_ResourceIndex = i;
-	PHY_vars_eNB_g[0]->scheduling_request_config[i].sr_ConfigIndex = 7+(i%3);
-	PHY_vars_eNB_g[0]->scheduling_request_config[i].dsr_TransMax = sr_n4;
-      }
+	for (i=0;i<NUMBER_OF_UE_MAX;i++) {
+	  PHY_vars_eNB_g[0][CC_id]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
+	  PHY_vars_eNB_g[0][CC_id]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
+	  PHY_vars_eNB_g[0][CC_id]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
+	  
+	  PHY_vars_eNB_g[0][CC_id]->scheduling_request_config[i].sr_PUCCH_ResourceIndex = i;
+	  PHY_vars_eNB_g[0][CC_id]->scheduling_request_config[i].sr_ConfigIndex = 7+(i%3);
+	  PHY_vars_eNB_g[0][CC_id]->scheduling_request_config[i].dsr_TransMax = sr_n4;
+	}
 #endif
+      
+	compute_prach_seq(&PHY_vars_eNB_g[0][CC_id]->lte_frame_parms.prach_config_common,
+			  PHY_vars_eNB_g[0][CC_id]->lte_frame_parms.frame_type,
+			  PHY_vars_eNB_g[0][CC_id]->X_u);
 
-      compute_prach_seq(&PHY_vars_eNB_g[0]->lte_frame_parms.prach_config_common,
-			PHY_vars_eNB_g[0]->lte_frame_parms.frame_type,
-			PHY_vars_eNB_g[0]->X_u);
+	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain - 30; //was measured at rxgain=30;
 
+      }
       NB_eNB_INST=1;
       NB_INST=1;
 
@@ -2140,7 +2160,6 @@ int main(int argc, char **argv) {
       openair_daq_vars.target_ue_ul_mcs=6;
 
       // set eNB to max gain
-      PHY_vars_eNB_g[0]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain - 30; //was measured at rxgain=30;
       for (i=0;i<4;i++)
 	openair0_cfg.rxg_mode[i] =  max_gain;
     }
@@ -2257,24 +2276,26 @@ int main(int argc, char **argv) {
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
-    setup_ue_buffers(PHY_vars_UE_g[0],frame_parms,ant_offset);
-    printf("Setting UE buffer to all-RX\n");
-    // Set LSBs for antenna switch (ExpressMIMO)
-    for (i=0; i<frame_parms->samples_per_tti*10; i++)
-      for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-	PHY_vars_UE_g[0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
-    
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      setup_ue_buffers(PHY_vars_UE_g[CC_id][0],frame_parms,ant_offset);
+      printf("Setting UE buffer to all-RX\n");
+      // Set LSBs for antenna switch (ExpressMIMO)
+      for (i=0; i<frame_parms->samples_per_tti*10; i++)
+	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+	  PHY_vars_UE_g[CC_id][0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
+    }
     //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;
   }
   else {
-    setup_eNB_buffers(PHY_vars_eNB_g[0],frame_parms,ant_offset);
-    printf("Setting eNB buffer to all-RX\n");
-    // Set LSBs for antenna switch (ExpressMIMO)
-    for (i=0; i<frame_parms->samples_per_tti*10; i++)
-      for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
-	PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      setup_eNB_buffers(PHY_vars_eNB_g[CC_id][0],frame_parms,ant_offset);
+      printf("Setting eNB buffer to all-RX\n");
+      // Set LSBs for antenna switch (ExpressMIMO)
+      for (i=0; i<frame_parms->samples_per_tti*10; i++)
+	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+	  PHY_vars_eNB_g[CC_id][0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
+    }
   }
-
 #ifndef USRP
   openair0_dump_config(card);
 #endif
