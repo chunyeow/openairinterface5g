@@ -48,7 +48,7 @@
 #include "gain_control.h"
 #endif
 
-//#define DEBUG_INITIAL_SYNCH
+#define DEBUG_INITIAL_SYNCH
 
 int pbch_detection(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
 

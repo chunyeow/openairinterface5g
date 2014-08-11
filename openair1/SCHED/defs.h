@@ -129,7 +129,7 @@ void cleanup_dlsch_threads(void);
   @param r_type indicates the relaying operation: 0: no_relaying, 1: unicast relaying type 1, 2: unicast relaying type 2, 3: multicast relaying
   @param *phy_vars_rn pointer to RN variables
 */
-void phy_procedures_eNB_lte(uint8_t subframe,PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag, relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn);
+void phy_procedures_eNB_lte(uint8_t subframe,PHY_VARS_eNB **phy_vars_eNB,uint8_t abstraction_flag, relaying_type_t r_type, PHY_VARS_RN *phy_vars_rn);
 /*!
   \brief Top-level entry routine for UE procedures.  Called every slot by process scheduler. In even slots, it performs RX functions from previous subframe (if required).  On odd slots, it generate TX waveform for the following subframe.
   @param last_slot Index of last slot (0-19)
@@ -250,10 +250,11 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe)
 /*!
   \brief Function to compute subframe type as a function of Frame type and TDD Configuration (implements Table 4.2.2 from 36.211, p.11 from version 8.6) and subframe index.  Same as subframe_select, except that it uses the Mod_id and is provided as a service to the MAC scheduler.
   @param Mod_id Index of eNB
+  @param CC_id Component Carrier Index
   @param subframe Subframe index
   @returns Subframe type (DL,UL,S) 
 */
-lte_subframe_t get_subframe_direction(uint8_t Mod_id, uint8_t subframe);
+lte_subframe_t get_subframe_direction(uint8_t Mod_id, uint8_t CC_id,uint8_t subframe);
 
 /*!
   \brief Function to indicate PHICH transmission subframes.  Implements Table 9.1.2-1 for TDD.
@@ -307,15 +308,17 @@ uint8_t get_Msg3_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t
 
 /** \brief Function to indicate failure of contention resolution or RA procedure.  It places the UE back in PRACH mode.
     @param Mod_id Instance index of UE
+    @param CC_id Component Carrier Index
     @param eNB_index Index of eNB
  */
-void ra_failed(uint8_t Mod_id,uint8_t eNB_index);
+void ra_failed(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
 /** \brief Function to indicate success of contention resolution or RA procedure.
     @param Mod_id Instance index of UE
+    @param CC_id Component Carrier Index
     @param eNB_index Index of eNB
  */
-void ra_succeeded(uint8_t Mod_id,uint8_t eNB_index);
+void ra_succeeded(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
 uint8_t phich_subframe_to_harq_pid(LTE_DL_FRAME_PARMS *frame_parms,uint32_t frame,uint8_t subframe);
 
@@ -399,26 +402,26 @@ int8_t find_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB);
 int32_t add_ue(int16_t rnti, PHY_VARS_eNB *phy_vars_eNB);
 int32_t remove_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB,uint8_t abstraction_flag);
 
-void process_timing_advance(uint8_t Mod_id,int16_t timing_advance);
+void process_timing_advance(uint8_t Mod_id,uint8_t CC_id,int16_t timing_advance);
 void process_timing_advance_rar(PHY_VARS_UE *phy_vars_ue,uint16_t timing_advance);
 
 unsigned int get_tx_amp(int gain_dBm, int gain_max_dBm);
 
-void phy_reset_ue(uint8_t Mod_id,uint8_t eNB_index);
+void phy_reset_ue(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
 /** \brief This function retrives the resource (n1_pucch) corresponding to a PDSCH transmission in 
 subframe n-4 which is acknowledged in subframe n (for FDD) according to n1_pucch = Ncce + N1_pucch.  For
 TDD, this routine computes the complex procedure described in Section 10.1 of 36.213 (through tables 10.1-1,10.1-2)
 @param phy_vars_ue Pointer to UE variables
 @param eNB_id Index of eNB
-@param subframe Index of subframe
+@param sched_subframe Index of subframe where procedures were scheduled
 @param b Pointer to PUCCH payload (b[0],b[1])
 @param SR 1 means there's a positive SR in parallel to ACK/NAK
 @returns n1_pucch
 */
 uint16_t get_n1_pucch(PHY_VARS_UE *phy_vars_ue,
 		 uint8_t eNB_id,
-		 uint8_t subframe,
+		 uint8_t sched_subframe,
 		 uint8_t *b,
 		 uint8_t SR);
 
@@ -464,10 +467,11 @@ void process_HARQ_feedback(uint8_t UE_id,
 /*!
   \brief This function retrieves the PHY UE mode. It is used as a helper function for the UE MAC.
   @param Mod_id Local UE index on which to act
+  @param CC_id Component Carrier Index
   @param eNB_index ID of eNB
   @returns UE mode
 */ 
-UE_MODE_t get_ue_mode(uint8_t Mod_id,uint8_t eNB_index);
+UE_MODE_t get_ue_mode(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
 /** \brief This function implements the power control mechanism for PUCCH from 36.213.
     @param phy_vars_ue PHY variables
@@ -489,8 +493,8 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
 
 int8_t get_PHR(uint8_t Mod_id, uint8_t eNB_index);
 
-LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint16_t rnti);
-int get_ue_active_harq_pid(uint8_t Mod_id,uint16_t rnti,uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag);
+LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, int CC_id,uint16_t rnti);
+int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag);
 void ulsch_decoding_procedures(unsigned char last_slot, unsigned int i, PHY_VARS_eNB *phy_vars_eNB, unsigned char abstraction_flag);
 
 

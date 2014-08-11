@@ -1677,6 +1677,7 @@ uint32_t ulsch_decoding_emul(PHY_VARS_eNB *phy_vars_eNB,
   uint16_t rnti;
   int subframe = phy_vars_eNB->proc[sched_subframe].subframe_rx;
   uint8_t harq_pid;
+  uint8_t CC_id = phy_vars_eNB->CC_id;
 
   harq_pid = subframe2harq_pid(&phy_vars_eNB->lte_frame_parms,phy_vars_eNB->proc[sched_subframe].frame_rx,subframe);
   
@@ -1685,7 +1686,7 @@ uint32_t ulsch_decoding_emul(PHY_VARS_eNB *phy_vars_eNB,
   LOG_D(PHY,"[eNB %d] ulsch_decoding_emul : subframe %d UE_index %d harq_pid %d rnti %x\n",phy_vars_eNB->Mod_id,subframe,UE_index,harq_pid,rnti);
 #endif
   for (UE_id=0;UE_id<NB_UE_INST;UE_id++) {
-    if (rnti == PHY_vars_UE_g[UE_id]->lte_ue_pdcch_vars[0]->crnti)
+    if (rnti == PHY_vars_UE_g[UE_id][CC_id]->lte_ue_pdcch_vars[0]->crnti)
       break;
     /*
     msg("[PHY] EMUL eNB %d ulsch_decoding_emul : subframe ue id %d crnti %x nb ue %d\n",
@@ -1705,9 +1706,9 @@ uint32_t ulsch_decoding_emul(PHY_VARS_eNB *phy_vars_eNB,
     LOG_D(PHY,"[eNB %d] Found UE with rnti %x => UE_id %d\n",phy_vars_eNB->Mod_id, rnti, UE_id);
   }
 
-  if (PHY_vars_UE_g[UE_id]->ulsch_ue[0]->harq_processes[harq_pid]->status == CBA_ACTIVE){
+  if (PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->harq_processes[harq_pid]->status == CBA_ACTIVE){
     *crnti = rnti;
-    PHY_vars_UE_g[UE_id]->ulsch_ue[0]->harq_processes[harq_pid]->status=IDLE;
+    PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->harq_processes[harq_pid]->status=IDLE;
   } else 
     *crnti = 0x0;
   
@@ -1750,17 +1751,17 @@ uint32_t ulsch_decoding_emul(PHY_VARS_eNB *phy_vars_eNB,
     LOG_D(PHY,"ulsch_decoding_emul abstraction successful\n");
 
     memcpy(phy_vars_eNB->ulsch_eNB[UE_index]->harq_processes[harq_pid]->b,
-	   PHY_vars_UE_g[UE_id]->ulsch_ue[0]->harq_processes[harq_pid]->b,
+	   PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->harq_processes[harq_pid]->b,
 	   phy_vars_eNB->ulsch_eNB[UE_index]->harq_processes[harq_pid]->TBS>>3);
     // get local ue's ack 	 
     if ((UE_index >= oai_emulation.info.first_ue_local) ||(UE_index <(oai_emulation.info.first_ue_local+oai_emulation.info.nb_ue_local))){
       get_ack(&phy_vars_eNB->lte_frame_parms,
-	      PHY_vars_UE_g[UE_id]->dlsch_ue[0][0]->harq_ack,
+	      PHY_vars_UE_g[UE_id][CC_id]->dlsch_ue[0][0]->harq_ack,
 	      subframe,
 	      phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK);
     }else { // get remote UEs' ack 
-      phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK[0] = PHY_vars_UE_g[UE_id]->ulsch_ue[0]->o_ACK[0];
-      phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK[1] = PHY_vars_UE_g[UE_id]->ulsch_ue[0]->o_ACK[1];
+      phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK[0] = PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->o_ACK[0];
+      phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK[1] = PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->o_ACK[1];
     }
 
     // Do abstraction of PUSCH feedback
@@ -1768,16 +1769,16 @@ uint32_t ulsch_decoding_emul(PHY_VARS_eNB *phy_vars_eNB,
     LOG_D(PHY,"[eNB %d][EMUL] ue index %d UE_id %d: subframe %d : o_ACK (%d %d), cqi (val %d, len %d)\n",
 	  phy_vars_eNB->Mod_id,UE_index, UE_id, subframe,phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK[0],
 	  phy_vars_eNB->ulsch_eNB[UE_index]->o_ACK[1],
-	  ((HLC_subband_cqi_rank1_2A_5MHz *)PHY_vars_UE_g[UE_id]->ulsch_ue[0]->o)->cqi1,
-	  PHY_vars_UE_g[UE_id]->ulsch_ue[0]->O); 
+	  ((HLC_subband_cqi_rank1_2A_5MHz *)PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->o)->cqi1,
+	  PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->O); 
 #endif 
 
-    phy_vars_eNB->ulsch_eNB[UE_index]->Or1 = PHY_vars_UE_g[UE_id]->ulsch_ue[0]->O;
-    phy_vars_eNB->ulsch_eNB[UE_index]->Or2 = PHY_vars_UE_g[UE_id]->ulsch_ue[0]->O;
+    phy_vars_eNB->ulsch_eNB[UE_index]->Or1 = PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->O;
+    phy_vars_eNB->ulsch_eNB[UE_index]->Or2 = PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->O;
    
-    phy_vars_eNB->ulsch_eNB[UE_index]->uci_format = PHY_vars_UE_g[UE_id]->ulsch_ue[0]->uci_format;    
-    memcpy(phy_vars_eNB->ulsch_eNB[UE_index]->o,PHY_vars_UE_g[UE_id]->ulsch_ue[0]->o,MAX_CQI_BYTES); 
-    memcpy(phy_vars_eNB->ulsch_eNB[UE_index]->o_RI,PHY_vars_UE_g[UE_id]->ulsch_ue[0]->o_RI,2); 
+    phy_vars_eNB->ulsch_eNB[UE_index]->uci_format = PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->uci_format;    
+    memcpy(phy_vars_eNB->ulsch_eNB[UE_index]->o,PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->o,MAX_CQI_BYTES); 
+    memcpy(phy_vars_eNB->ulsch_eNB[UE_index]->o_RI,PHY_vars_UE_g[UE_id][CC_id]->ulsch_ue[0]->o_RI,2); 
 
     phy_vars_eNB->ulsch_eNB[UE_index]->cqi_crc_status = 1;
     

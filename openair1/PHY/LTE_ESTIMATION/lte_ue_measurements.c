@@ -50,9 +50,9 @@ __m128i mmtmpPMI1 __attribute__ ((aligned(16)));
 __m128i mmtmpPMI2 __attribute__ ((aligned(16)));
 __m128i mmtmpPMI3 __attribute__ ((aligned(16)));
 
-int16_t get_PL(uint8_t Mod_id,uint8_t eNB_index) {
+int16_t get_PL(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   int RSoffset;
     
   LOG_D(PHY,"get_PL : Frame %d : rssi %d, eNB power %d\n", phy_vars_ue->frame,
@@ -69,50 +69,50 @@ int16_t get_PL(uint8_t Mod_id,uint8_t eNB_index) {
 }
 
 
-uint8_t get_n_adj_cells (uint8_t Mod_id){
+uint8_t get_n_adj_cells (uint8_t Mod_id,uint8_t CC_id){
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)  
     return phy_vars_ue->PHY_measurements.n_adj_cells;
   else 
     return 0;
 }
 
-int8_t get_rx_total_gain_dB (uint8_t Mod_id){
+int8_t get_rx_total_gain_dB (uint8_t Mod_id,uint8_t CC_id){
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)  
     return phy_vars_ue->rx_total_gain_dB;
   else 
     return -1;
 }
-int8_t get_RSSI (uint8_t Mod_id){
+int8_t get_RSSI (uint8_t Mod_id,uint8_t CC_id){
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)  
     return phy_vars_ue->PHY_measurements.rssi;
   else 
     return -1;
 }
-uint8_t get_RSRP(uint8_t Mod_id,uint8_t eNB_index) {
+uint8_t get_RSRP(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
   
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)
     return phy_vars_ue->PHY_measurements.rsrp[eNB_index];
   return 0;
 }
 
-uint8_t get_RSRQ(uint8_t Mod_id,uint8_t eNB_index) {
+uint8_t get_RSRQ(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)
     return phy_vars_ue->PHY_measurements.rsrq[eNB_index];
   return 0;
 }
 
-int8_t set_RSRP_filtered(uint8_t Mod_id,uint8_t eNB_index,float rsrp) {
+int8_t set_RSRP_filtered(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rsrp) {
   
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue){
     phy_vars_ue->PHY_measurements.rsrp_filtered[eNB_index]=rsrp;
     return 0;
@@ -121,9 +121,9 @@ int8_t set_RSRP_filtered(uint8_t Mod_id,uint8_t eNB_index,float rsrp) {
   return -1;
 }
 
-int8_t set_RSRQ_filtered(uint8_t Mod_id,uint8_t eNB_index,float rsrq) {
+int8_t set_RSRQ_filtered(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rsrq) {
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue){
     phy_vars_ue->PHY_measurements.rsrq_filtered[eNB_index]=rsrq;
     return 0;

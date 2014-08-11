@@ -1562,7 +1562,7 @@ uint16_t get_nquad(uint8_t num_pdcch_symbols,LTE_DL_FRAME_PARMS *frame_parms,uin
 
 uint8_t get_mi(LTE_DL_FRAME_PARMS *frame,uint8_t subframe);
 
-uint16_t get_nCCE_max(uint8_t Mod_id);
+uint16_t get_nCCE_max(uint8_t Mod_id,uint8_t CC_id);
 
 uint8_t get_num_pdcch_symbols(uint8_t num_dci,DCI_ALLOC_t *dci_alloc,LTE_DL_FRAME_PARMS *frame_parms,uint8_t subframe);
 

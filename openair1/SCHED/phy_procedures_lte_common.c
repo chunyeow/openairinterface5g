@@ -498,9 +498,9 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
   }
 }
 
-lte_subframe_t get_subframe_direction(uint8_t Mod_id,uint8_t subframe) {
+lte_subframe_t get_subframe_direction(uint8_t Mod_id,uint8_t CC_id,uint8_t subframe) {
 
-  return(subframe_select(&PHY_vars_eNB_g[Mod_id]->lte_frame_parms,subframe));
+  return(subframe_select(&PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms,subframe));
 
 }
 
@@ -544,18 +544,18 @@ unsigned int is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
 }
 
 
-LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint16_t rnti) {
+LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, int CC_id,uint16_t rnti) {
   int8_t UE_id;
-  if ((PHY_vars_eNB_g == NULL) || (PHY_vars_eNB_g[Mod_id] == NULL)) {
-    LOG_E(PHY,"get_eNB_UE_stats: No phy_vars_eNB found (or not allocated) for Mod_id %d\n",Mod_id);
+  if ((PHY_vars_eNB_g == NULL) || (PHY_vars_eNB_g[Mod_id] == NULL) || (PHY_vars_eNB_g[Mod_id][CC_id]==NULL)) {
+    LOG_E(PHY,"get_eNB_UE_stats: No phy_vars_eNB found (or not allocated) for Mod_id %d,CC_id %d\n",Mod_id,CC_id);
     return NULL;
   }
-  UE_id = find_ue(rnti, PHY_vars_eNB_g[Mod_id]);
+  UE_id = find_ue(rnti, PHY_vars_eNB_g[Mod_id][CC_id]);
   if (UE_id == -1) {
     LOG_E(PHY,"get_eNB_UE_stats: UE with rnti %x not found\n",rnti);
     return NULL;
   }
-  return(&PHY_vars_eNB_g[Mod_id]->eNB_UE_stats[(uint32_t)UE_id]);
+  return(&PHY_vars_eNB_g[Mod_id][CC_id]->eNB_UE_stats[(uint32_t)UE_id]);
 }
 
 int8_t find_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB) {

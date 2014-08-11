@@ -79,29 +79,33 @@ void phy_config_mib(LTE_DL_FRAME_PARMS *lte_frame_parms,
 
 /** \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB1.  From a PHY perspective this allows configuration of TDD framing parameters and SI reception.
 @param Mod_id Instance ID of eNB
+@param CC_id Component Carrier index
 @param tdd_Config TDD UL/DL and S-subframe configurations
 @param SIwindowsize Size of a SI window in frames where repetitions of a unique System Information message block is repeated 
 @param SIperiod Periodicity of System Information Messages (in multiples of a frame)*/
 void phy_config_sib1_eNB(module_id_t    Mod_id,
-                         TDD_Config_t  *tdd_Config,
+                         int CC_id,
+			 TDD_Config_t  *tdd_Config,
                          uint8_t           SIwindowsize,
                          uint16_t            SIperiod);
 
 /** \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB1.  From a PHY perspective this allows configuration of TDD framing parameters and SI reception.
 @param Mod_id Instance ID of UE
+@param CC_id Component Carrier index
 @param CH_index Index of eNB for this configuration
 @param tdd_Config TDD UL/DL and S-subframe configurations
 @param SIwindowsize Size of a SI window in frames where repetitions of a unique System Information message block is repeated 
 @param SIperiod Periodicity of System Information Messages (in multiples of a frame)*/
 void phy_config_sib1_ue(module_id_t   Mod_id,
-                        uint8_t          CH_index,
+                        int CC_id,
+			uint8_t          CH_index,
                         TDD_Config_t *tdd_Config,
                         uint8_t          SIwindowsize,
                         uint16_t           SIperiod);
 
 
 /*!
-  \fn void phy_config_sib2_ue(module_id_t Mod_id,uint8_t CH_index,
+  \fn void phy_config_sib2_ue(module_id_t Mod_id,uint8_t CC_id,uint8_t CH_index,
 			RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 			ARFCN_ValueEUTRA_t *ul_CArrierFreq,
 		        long *ul_Bandwidth,
@@ -109,15 +113,18 @@ void phy_config_sib1_ue(module_id_t   Mod_id,
 			struct MBSFN_SubframeConfigList	*mbsfn_SubframeConfigList)
   \brief Configure LTE_DL_FRAME_PARMS with components derived after reception of SIB2 (at UE).  
   @param Mod_id Instance id
+  @param CC_id
   @param CH_index Index of CH to which UE is connected
+  @param CC_id Component Carrier Index
   @param radioResourceConfigCommon Radio Configuration from SIB2
   @param ul_CarrierFreq UL carrier ARFCN, null if optional (i.e. implicit from DL)
   @param ul_Bandwidth UL bandwidth, null if optional (i.e. same as DL)
   @param additionalSpectrumEmission UL parameter (see 36.101)
   @param mbsfn_SubframeConfigList MBSFN subframe configuration
  */
-void phy_config_sib2_ue(module_id_t                      Mod_id,
-                        uint8_t                             CH_index,
+void phy_config_sib2_ue(module_id_t                     Mod_id,
+                        int                         CC_id,
+			uint8_t                         CH_index,
                         RadioResourceConfigCommonSIB_t  *radioResourceConfigCommon,
                         ARFCN_ValueEUTRA_t              *ul_CArrierFreq,
                         long                            *ul_Bandwidth,
@@ -129,12 +136,14 @@ void phy_config_sib2_ue(module_id_t                      Mod_id,
   \fn phy_config_afterHO_ue
   \brief Configure Common PHY parameters from mobilityControlInfo
   @param Mod_id 
+  @param CC_id
   @param eNB_index
   @param mobilityControlInfo pointer to the mobility control information for handover
   @param ho_failed flag to indicated whether the ho was successful or not
  */
 void phy_config_afterHO_ue(module_id_t Mod_id,
-                           uint8_t eNB_index,
+                           int CC_id,
+			   uint8_t eNB_index,
                            MobilityControlInfo_t *mobilityControlInfo,
                            uint8_t ho_failed);
 /*!
@@ -146,14 +155,16 @@ void phy_config_afterHO_ue(module_id_t Mod_id,
 			       struct MBSFN_SubframeConfigList	*mbsfn_SubframeConfigList)
   \brief Configure LTE_DL_FRAME_PARMS with components of SIB2 (at eNB).  
   @param Mod_id Instance id
+  @param Mod_id Component Carrier index
   @param radioResourceConfigCommon Radio Configuration from SIB2
   @param ul_CarrierFreq UL carrier ARFCN, null if optional (i.e. implicit from DL)
   @param ul_Bandwidth UL bandwidth, null if optional (i.e. same as DL)
   @param additionalSpectrumEmission UL parameter (see 36.101)
   @param mbsfn_SubframeConfigList MBSFN subframe configuration
  */
-void phy_config_sib2_eNB(module_id_t                             Mod_id,
-                         RadioResourceConfigCommonSIB_t         *radioResourceConfigCommon,
+void phy_config_sib2_eNB(module_id_t                            Mod_id,
+                         int                                CC_id,
+			 RadioResourceConfigCommonSIB_t         *radioResourceConfigCommon,
                          ARFCN_ValueEUTRA_t                     *ul_CArrierFreq,
                          long                                   *ul_Bandwidth,
                          AdditionalSpectrumEmission_t           *additionalSpectrumEmission,
@@ -161,59 +172,67 @@ void phy_config_sib2_eNB(module_id_t                             Mod_id,
 
 
 /*!
-\fn void phy_config_dedicated_ue(module_id_t Mod_id,uint8_t CH_index,
+\fn void phy_config_dedicated_ue(module_id_t Mod_id,uint8_t CC_id,uint8_t CH_index,
  			         struct PhysicalConfigDedicated *physicalConfigDedicated)
 \brief Configure UE dedicated parameters. Invoked upon reception of RRCConnectionSetup or RRCConnectionReconfiguration from eNB.
 @param Mod_id Instance ID for eNB
+@param CC_id Component Carrier index
 @param CH_index Index of eNB for this configuration
 @param physicalConfigDedicated PHY Configuration information
 
  */
+void phy_config_dedicated_ue(module_id_t Mod_id,
+                             int CC_id,
+			     uint8_t CH_index,
+                             struct PhysicalConfigDedicated *physicalConfigDedicated);
+
 
 /**
 \brief Configure UE MBSFN common parameters. Invoked upon reception of SIB13 from eNB.
 @param Mod_id Instance ID for UE
+@param CC_id Component Carrier Index
 @param CH_index eNB id (for multiple eNB reception)
 @param mbsfn_Area_idx Index of MBSFN-Area for which this command operates
 @param mbsfn_AreaId_r9 MBSFN-Area Id
  */
 
 void phy_config_sib13_ue(module_id_t Mod_id,
-                         uint8_t CH_index,int mbsfn_Area_idx,
+                         int CC_id,uint8_t CH_index,int mbsfn_Area_idx,
                          long mbsfn_AreaId_r9);
 
 /**
 \brief Configure eNB MBSFN common parameters. Invoked upon transmission of SIB13 from eNB.
 @param Mod_id Instance ID for eNB
+@param CC_id Component Carrier index
 @param mbsfn_Area_idx Index of MBSFN-Area for which this command operates
 @param mbsfn_AreaId_r9 MBSFN-Area Id
  */
 void phy_config_sib13_eNB(module_id_t Mod_id,
+			  int CC_id,
                           int mbsfn_Area_idx,
                           long mbsfn_AreaId_r9);
 
 /**
 \brief Configure cba rnti for .
 @param Mod_id Instance ID for eNB
+@param CC_id Component Carrier Index
 @param eNB_flag flag indicating whether the nodeis eNB (1) or UE (0)
 @param index index of the node 
 @param cba_rnti rnti for the cba transmission
 @param num_active_cba_groups num active cba group
  */
-void  phy_config_cba_rnti (module_id_t Mod_id,eNB_flag_t eNB_flag, uint8_t index, rnti_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups);
-
-void phy_config_dedicated_ue(module_id_t Mod_id,
-                             uint8_t CH_index,
-                             struct PhysicalConfigDedicated *physicalConfigDedicated);
+void  phy_config_cba_rnti (module_id_t Mod_id,int CC_id,eNB_flag_t eNB_flag, uint8_t index, rnti_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups);
 
 /** \brief Configure RRC inter-cell measurements procedures
 @param Mod_id Index of UE
+@param CC_id
 @param eNB_index Index of corresponding eNB
 @param n_adj_cells Number of adjacent cells on which to perform the measuremnts
 @param adj_cell_id Array of cell ids of adjacent cells
  */
 void phy_config_meas_ue(module_id_t Mod_id,
-                        uint8_t eNB_index,
+                        int CC_id,
+			uint8_t eNB_index,
                         uint8_t n_adj_cells,
                         uint32_t *adj_cell_id);
 
@@ -222,11 +241,13 @@ void phy_config_meas_ue(module_id_t Mod_id,
                                   struct PhysicalConfigDedicated *physicalConfigDedicated)
 \brief Prepare for configuration of PHY with dedicated parameters. Invoked just prior to transmission of RRCConnectionSetup or RRCConnectionReconfiguration at eNB.
 @param Mod_id Instance ID for eNB
+@param CC_id Component Carrier index
 @param rnti rnti for UE context
 @param physicalConfigDedicated PHY Configuration information
  */
 void phy_config_dedicated_eNB(module_id_t Mod_id,
-                              rnti_t rnti,
+                              int CC_id,
+			      rnti_t rnti,
                               struct PhysicalConfigDedicated *physicalConfigDedicated);
 
 /*!

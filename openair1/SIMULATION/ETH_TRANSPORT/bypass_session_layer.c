@@ -155,7 +155,7 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
 {
     eNB_transport_info_t *eNB_info;
     int total_header = 0, total_tbs = 0;
-    int n_dci, n_enb, enb_info_ix = 0;
+    int n_dci, n_enb, enb_info_ix = 0,CC_id;
 
     DevAssert(bytes_read >= 0);
     DevAssert(messg != NULL);
@@ -196,9 +196,10 @@ int emu_transport_handle_enb_info(bypass_msg_header_t *messg,
 
         for (n_enb = oai_emulation.info.master[messg->master_id].first_enb;
              n_enb < oai_emulation.info.master[messg->master_id].first_enb +
-             oai_emulation.info.master[messg->master_id].nb_enb; n_enb ++) {
-            fill_phy_enb_vars(n_enb, next_slot);
-        }
+             oai_emulation.info.master[messg->master_id].nb_enb; n_enb ++) 
+	  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+            fill_phy_enb_vars(n_enb, CC_id,next_slot);
+	  }
     } else {
         LOG_T(EMU,"WAIT_ENB_TRANSPORT state: no enb transport info from master %d \n",
               messg->master_id);
@@ -217,7 +218,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
                                  int bytes_read)
 {
     UE_transport_info_t *UE_info;
-    int n_ue, n_enb;
+    int n_ue, n_enb,CC_id;
     int total_tbs = 0, total_header = 0, ue_info_ix =0;
 
     DevAssert(bytes_read >= 0);
@@ -249,7 +250,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
                         n_ue, total_header+total_tbs,total_header,total_tbs);
             }
 
-            memcpy(&UE_transport_info[n_ue], UE_info, total_header + total_tbs);
+            memcpy(&UE_transport_info[n_ue][CC_id], UE_info, total_header + total_tbs);
 
             /* Go to the next UE info */
             UE_info = (UE_transport_info_t *)((uintptr_t)UE_info + total_header+
@@ -260,9 +261,10 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
         for (n_ue = oai_emulation.info.master[messg->master_id].first_ue;
 	     n_ue < oai_emulation.info.master[messg->master_id].first_ue +
 	            oai_emulation.info.master[messg->master_id].nb_ue; 
-	     n_ue ++) {
-            fill_phy_ue_vars(n_ue, last_slot);
-        }
+	     n_ue ++) 
+	  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+            fill_phy_ue_vars(n_ue, CC_id,last_slot);
+	  }
     } else {
         LOG_T(EMU,"WAIT_UE_TRANSPORT state: no UE transport info from master %d\n",
                 messg->master_id);
@@ -510,7 +512,7 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
     LOG_D(EMU, "Entering bypass_tx [%s] for frame %d next_slot %d\n",
           map_int_to_str(transport_names, Type), frame, next_slot);
 
-    int n_enb,n_ue, n_dci,total_tbs=0,total_size=0;
+    int n_enb,n_ue, CC_id,n_dci,total_tbs=0,total_size=0;
     messg = (bypass_msg_header_t *) (
                 &bypass_tx_buffer[sizeof (bypass_proto2multicast_header_t)]);
     num_flows = 0;
@@ -565,13 +567,14 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
         total_tbs=0;
         for (n_enb=oai_emulation.info.first_enb_local;
                 n_enb<(oai_emulation.info.first_enb_local+oai_emulation.info.nb_enb_local);
-                n_enb++) {
+                n_enb++) 
+	  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
             total_tbs=0;
-            for (n_dci = 0; n_dci < (eNB_transport_info[n_enb].num_pmch + 
-				     eNB_transport_info[n_enb].num_ue_spec_dci +
-                                     eNB_transport_info[n_enb].num_common_dci);
+            for (n_dci = 0; n_dci < (eNB_transport_info[n_enb][CC_id].num_pmch + 
+				     eNB_transport_info[n_enb][CC_id].num_ue_spec_dci +
+                                     eNB_transport_info[n_enb][CC_id].num_common_dci);
                  n_dci++) {
-                total_tbs +=eNB_transport_info[n_enb].tbs[n_dci];
+                total_tbs +=eNB_transport_info[n_enb][CC_id].tbs[n_dci];
             }
             if (total_tbs <= MAX_TRANSPORT_BLOCKS_BUFFER_SIZE) {
                 total_size = sizeof(eNB_transport_info_t) + total_tbs -
@@ -581,7 +584,7 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                       "[eNB]running out of memory for the eNB emulation transport buffer of size %d\n",
                       MAX_TRANSPORT_BLOCKS_BUFFER_SIZE);
             }
-            memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&eNB_transport_info[n_enb],
+            memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&eNB_transport_info[n_enb][CC_id],
                    total_size);
             byte_tx_count += total_size;
         }
@@ -593,8 +596,8 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
         for (n_ue = oai_emulation.info.first_ue_local;
                 n_ue < (oai_emulation.info.first_ue_local+oai_emulation.info.nb_ue_local);
                 n_ue++) {
-            for (n_enb=0; n_enb<UE_transport_info[n_ue].num_eNB; n_enb++) {
-                total_tbs+=UE_transport_info[n_ue].tbs[n_enb];
+            for (n_enb=0; n_enb<UE_transport_info[n_ue][CC_id].num_eNB; n_enb++) {
+                total_tbs+=UE_transport_info[n_ue][CC_id].tbs[n_enb];
             }
             if (total_tbs <= MAX_TRANSPORT_BLOCKS_BUFFER_SIZE) {
                 total_size = sizeof(UE_transport_info_t)+total_tbs-
@@ -604,7 +607,7 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                       "[UE]running out of memory for the UE emulation transport buffer of size %d\n",
                       MAX_TRANSPORT_BLOCKS_BUFFER_SIZE);
             }
-            memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&UE_transport_info[n_ue],
+            memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&UE_transport_info[n_ue][CC_id],
                    total_size);
             byte_tx_count += total_size;
         }

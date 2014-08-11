@@ -171,10 +171,11 @@ typedef struct {
 /// Top-level PHY Data Structure for eNB 
 typedef struct PHY_VARS_eNB_s{
   /// Module ID indicator for this instance
-  module_id_t               Mod_id;
-  eNB_proc_t       proc[10];
-  uint8_t                   local_flag;
-  uint32_t         rx_total_gain_eNB_dB;
+  module_id_t          Mod_id;
+  uint8_t              CC_id;
+  eNB_proc_t           proc[10];
+  uint8_t              local_flag;
+  uint32_t             rx_total_gain_eNB_dB;
   LTE_DL_FRAME_PARMS   lte_frame_parms;
   PHY_MEASUREMENTS_eNB PHY_measurements_eNB[NUMBER_OF_eNB_SECTORS_MAX]; /// Measurement variables 
   LTE_eNB_COMMON       lte_eNB_common_vars;
@@ -349,6 +350,7 @@ typedef struct
 {
   /// Module ID indicator for this instance
   uint8_t Mod_id;
+  uint8_t CC_id;
   uint8_t local_flag;
   uint32_t tx_total_gain_dB;
   uint32_t rx_total_gain_dB; ///this is a function of rx_gain_mode (and the corresponding gain) and the rx_gain of the card

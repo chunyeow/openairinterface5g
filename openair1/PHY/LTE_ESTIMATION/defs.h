@@ -155,14 +155,14 @@ void lte_ue_measurements_emul(PHY_VARS_UE *phy_vars_ue,uint8_t last_slot,uint8_t
 @param eNB_index Index of eNB on which to act
 @returns Path loss in dB
  */
-int16_t get_PL(module_id_t Mod_id,uint8_t eNB_index);
-uint8_t get_RSRP(module_id_t Mod_id,uint8_t eNB_index);
-uint8_t get_RSRQ(module_id_t Mod_id,uint8_t eNB_index);
-uint8_t get_n_adj_cells(module_id_t Mod_id);
-int8_t get_rx_total_gain_dB(module_id_t Mod_id);
-int8_t get_RSSI(module_id_t Mod_id);
-int8_t set_RSRP_filtered(module_id_t Mod_id,uint8_t eNB_index,float rsrp);
-int8_t set_RSRQ_filtered(module_id_t Mod_id,uint8_t eNB_index,float rstq);
+int16_t get_PL(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
+uint8_t get_RSRP(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
+uint8_t get_RSRQ(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
+uint8_t get_n_adj_cells(module_id_t Mod_id,uint8_t CC_id);
+int8_t get_rx_total_gain_dB(module_id_t Mod_id,uint8_t CC_id);
+int8_t get_RSSI(module_id_t Mod_id,uint8_t CC_id);
+int8_t set_RSRP_filtered(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rsrp);
+int8_t set_RSRQ_filtered(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rstq);
 
 //! Automatic gain control
 void phy_adjust_gain (PHY_VARS_UE *phy_vars_ue,

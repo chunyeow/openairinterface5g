@@ -1769,7 +1769,8 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 
 
 #ifdef DEBUG_PHY
-    write_output("rxF_comp_d.m","rxF_c_d",&lte_ue_pdcch_vars[eNB_id]->rxdataF_comp[0][s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,1);
+    if (subframe==5)
+      write_output("rxF_comp_d.m","rxF_c_d",&lte_ue_pdcch_vars[eNB_id]->rxdataF_comp[0][s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,1);
 #endif
 
 #ifdef MU_RECEIVER
@@ -1833,8 +1834,10 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 			  s);
 
 #ifdef DEBUG_PHY
+      if (subframe==5) {
 	write_output("llr8_seq.m","llr8",&lte_ue_pdcch_vars[eNB_id]->llr[s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,4);
 	write_output("llr16_seq.m","llr16",&lte_ue_pdcch_vars[eNB_id]->llr16[s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,4);
+      }
 #endif
     } 
     else {
@@ -2303,58 +2306,58 @@ uint8_t generate_dci_top_emul(PHY_VARS_eNB *phy_vars_eNB,
 					       dci_alloc,
 					       &phy_vars_eNB->lte_frame_parms,
 					       subframe);
-  eNB_transport_info[phy_vars_eNB->Mod_id].cntl.cfi=num_pdcch_symbols;
+  eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].cntl.cfi=num_pdcch_symbols;
 
   memcpy(phy_vars_eNB->dci_alloc[subframe&1],dci_alloc,sizeof(DCI_ALLOC_t)*(num_ue_spec_dci+num_common_dci));
   phy_vars_eNB->num_ue_spec_dci[subframe&1]=num_ue_spec_dci;
   phy_vars_eNB->num_common_dci[subframe&1]=num_common_dci;
-  eNB_transport_info[phy_vars_eNB->Mod_id].num_ue_spec_dci = num_ue_spec_dci;
-  eNB_transport_info[phy_vars_eNB->Mod_id].num_common_dci = num_common_dci;
+  eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_ue_spec_dci = num_ue_spec_dci;
+  eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_common_dci = num_common_dci;
 
   LOG_D(PHY,"[eNB %d][DCI][EMUL] num spec dci %d num comm dci %d num PMCH %d \n", phy_vars_eNB->Mod_id, num_ue_spec_dci,num_common_dci,
-	eNB_transport_info[phy_vars_eNB->Mod_id].num_pmch);
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_pmch);
 
-  if (eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pmch_flag == 1 )
-    n_dci_dl = eNB_transport_info[phy_vars_eNB->Mod_id].num_pmch;
+  if (eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].cntl.pmch_flag == 1 )
+    n_dci_dl = eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_pmch;
   else 
     n_dci_dl = 0;
 
   for (n_dci =0 ; 
-       n_dci < (eNB_transport_info[phy_vars_eNB->Mod_id].num_ue_spec_dci+ eNB_transport_info[phy_vars_eNB->Mod_id].num_common_dci);
+       n_dci < (eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_ue_spec_dci+ eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_common_dci);
        n_dci++) {
     
     if (dci_alloc[n_dci].format > 0){ // exclude the uplink dci 
 
       if (dci_alloc[n_dci].rnti == SI_RNTI) { 
-	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id]->dlsch_eNB_SI;
-	eNB_transport_info[phy_vars_eNB->Mod_id].dlsch_type[n_dci_dl] = 0;//SI;
-	eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[n_dci_dl] = 0;
-	eNB_transport_info[phy_vars_eNB->Mod_id].tbs[n_dci_dl] = dlsch_eNB->harq_processes[0]->TBS>>3;
-    	LOG_D(PHY,"[DCI][EMUL]SI tbs is %d and dci index %d harq pid is %d \n",eNB_transport_info[phy_vars_eNB->Mod_id].tbs[n_dci_dl],n_dci_dl, eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[n_dci_dl]);
+	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]->dlsch_eNB_SI;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].dlsch_type[n_dci_dl] = 0;//SI;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[n_dci_dl] = 0;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[n_dci_dl] = dlsch_eNB->harq_processes[0]->TBS>>3;
+    	LOG_D(PHY,"[DCI][EMUL]SI tbs is %d and dci index %d harq pid is %d \n",eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[n_dci_dl],n_dci_dl, eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[n_dci_dl]);
       }
       else if (dci_alloc[n_dci_dl].ra_flag == 1) {
-	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id]->dlsch_eNB_ra;
-	eNB_transport_info[phy_vars_eNB->Mod_id].dlsch_type[n_dci_dl] = 1;//RA;
-	eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[n_dci_dl] = 0;
-	eNB_transport_info[phy_vars_eNB->Mod_id].tbs[n_dci_dl] = dlsch_eNB->harq_processes[0]->TBS>>3;
-     	LOG_D(PHY,"[DCI][EMUL] RA  tbs is %d and dci index %d harq pid is %d \n",eNB_transport_info[phy_vars_eNB->Mod_id].tbs[n_dci_dl],n_dci_dl, eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[n_dci_dl]);
+	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]->dlsch_eNB_ra;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].dlsch_type[n_dci_dl] = 1;//RA;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[n_dci_dl] = 0;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[n_dci_dl] = dlsch_eNB->harq_processes[0]->TBS>>3;
+     	LOG_D(PHY,"[DCI][EMUL] RA  tbs is %d and dci index %d harq pid is %d \n",eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[n_dci_dl],n_dci_dl, eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[n_dci_dl]);
       }
       else {
-	ue_id = find_ue(dci_alloc[n_dci_dl].rnti,PHY_vars_eNB_g[phy_vars_eNB->Mod_id]);
-	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id]->dlsch_eNB[ue_id][0];
+	ue_id = find_ue(dci_alloc[n_dci_dl].rnti,PHY_vars_eNB_g[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]);
+	dlsch_eNB = PHY_vars_eNB_g[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]->dlsch_eNB[ue_id][0];
 	
-	eNB_transport_info[phy_vars_eNB->Mod_id].dlsch_type[n_dci_dl] = 2;//TB0;
-	eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[n_dci_dl] = dlsch_eNB->current_harq_pid;
-	eNB_transport_info[phy_vars_eNB->Mod_id].ue_id[n_dci_dl] = ue_id;
-	eNB_transport_info[phy_vars_eNB->Mod_id].tbs[n_dci_dl] = dlsch_eNB->harq_processes[dlsch_eNB->current_harq_pid]->TBS>>3;
-	LOG_D(PHY,"[DCI][EMUL] TB1 tbs is %d and dci index %d harq pid is %d \n",eNB_transport_info[phy_vars_eNB->Mod_id].tbs[n_dci_dl],n_dci_dl, eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[n_dci_dl]);
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].dlsch_type[n_dci_dl] = 2;//TB0;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[n_dci_dl] = dlsch_eNB->current_harq_pid;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].ue_id[n_dci_dl] = ue_id;
+	eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[n_dci_dl] = dlsch_eNB->harq_processes[dlsch_eNB->current_harq_pid]->TBS>>3;
+	LOG_D(PHY,"[DCI][EMUL] TB1 tbs is %d and dci index %d harq pid is %d \n",eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[n_dci_dl],n_dci_dl, eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[n_dci_dl]);
 	// check for TB1 later
 	
       }
     }
     n_dci_dl++;
   }
-  memcpy((void *)&eNB_transport_info[phy_vars_eNB->Mod_id].dci_alloc,
+  memcpy((void *)&eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].dci_alloc,
 	 (void *)dci_alloc,
 	 n_dci*sizeof(DCI_ALLOC_t));
 
@@ -2464,10 +2467,10 @@ uint16_t get_nquad(uint8_t num_pdcch_symbols,LTE_DL_FRAME_PARMS *frame_parms,uin
   return(Nreg - 4 - (3*Ngroup_PHICH));
 }
 
-uint16_t get_nCCE_max(uint8_t Mod_id) {
+ uint16_t get_nCCE_max(uint8_t Mod_id,uint8_t CC_id) {
 
   // check for eNB only !
-  return(get_nCCE(3,&PHY_vars_eNB_g[Mod_id]->lte_frame_parms,1)); // 5, 15,21
+  return(get_nCCE(3,&PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms,1)); // 5, 15,21
 }
 
 void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,uint8_t subframe,

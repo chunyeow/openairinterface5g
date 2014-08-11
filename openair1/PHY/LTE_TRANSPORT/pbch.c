@@ -325,9 +325,9 @@ int generate_pbch(LTE_eNB_PBCH *eNB_pbch,
 int32_t generate_pbch_emul(PHY_VARS_eNB *phy_vars_eNB,uint8_t *pbch_pdu) {
   
   LOG_D(PHY,"[eNB %d] generate_pbch_emul \n",phy_vars_eNB->Mod_id);
-  eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pbch_flag=1;
+  eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].cntl.pbch_flag=1;
   // Copy PBCH payload 
-  eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pbch_payload=*(uint32_t *)pbch_pdu;
+  eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].cntl.pbch_payload=*(uint32_t *)pbch_pdu;
   return(0);
 }
 
@@ -915,7 +915,8 @@ uint16_t rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
   double sinr=0.0;
   uint16_t nb_rb = phy_vars_ue->lte_frame_parms.N_RB_DL;
   int16_t f;
-  
+  uint8_t CC_id=phy_vars_ue->CC_id;
+
   // compute effective sinr
   // TODO: adapt this to varible bandwidth
   for (f=(nb_rb*6-3*12);f<(nb_rb*6+3*12);f++) {
@@ -934,8 +935,8 @@ uint16_t rx_pbch_emul(PHY_VARS_UE *phy_vars_ue,
 
   if (pbch_phase == (phy_vars_ue->frame % 4)) {
     if (uniformrandom() >= bler) {
-      memcpy(phy_vars_ue->lte_ue_pbch_vars[eNB_id]->decoded_output,PHY_vars_eNB_g[eNB_id]->pbch_pdu,PBCH_PDU_SIZE);    
-      return(PHY_vars_eNB_g[eNB_id]->lte_frame_parms.nb_antennas_tx_eNB);
+      memcpy(phy_vars_ue->lte_ue_pbch_vars[eNB_id]->decoded_output,PHY_vars_eNB_g[eNB_id][CC_id]->pbch_pdu,PBCH_PDU_SIZE);    
+      return(PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.nb_antennas_tx_eNB);
     }
     else
       return(-1);

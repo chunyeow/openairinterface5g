@@ -135,6 +135,6 @@ int generate_pss(mod_sym_t **txdataF,
 int generate_pss_emul(PHY_VARS_eNB *phy_vars_eNb,uint8_t sect_id) {
   
   msg("[PHY] EMUL eNB generate_pss_emul eNB %d, sect_id %d\n",phy_vars_eNb->Mod_id,sect_id);
-  eNB_transport_info[phy_vars_eNb->Mod_id].cntl.pss=sect_id;
+  eNB_transport_info[phy_vars_eNb->Mod_id][phy_vars_eNb->CC_id].cntl.pss=sect_id;
   return(0);
 }

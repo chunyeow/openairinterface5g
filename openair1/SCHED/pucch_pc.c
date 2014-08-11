@@ -57,7 +57,7 @@ int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id
 
   phy_vars_ue->g_pucch[eNB_id] = 0;
 
-  Po_PUCCH = get_PL(phy_vars_ue->Mod_id,eNB_id)+
+  Po_PUCCH = get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,eNB_id)+
              phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH+
              phy_vars_ue->g_pucch[eNB_id]; 
   switch (pucch_fmt) {
@@ -93,7 +93,7 @@ int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id
 	phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,phy_vars_ue->frame,subframe,
 	Po_PUCCH,
 	phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH,
-	get_PL(phy_vars_ue->Mod_id,eNB_id),
+	  get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,eNB_id),
 	phy_vars_ue->g_pucch[eNB_id]);
   }
   else {
@@ -102,7 +102,7 @@ int8_t pucch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id
 	phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,phy_vars_ue->frame,subframe,
 	Po_PUCCH,
 	phy_vars_ue->lte_frame_parms.ul_power_control_config_common.p0_NominalPUCCH,
-	get_PL(phy_vars_ue->Mod_id,eNB_id),
+	  get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,eNB_id),
 	phy_vars_ue->g_pucch[eNB_id]);
   }
   return(Po_PUCCH);

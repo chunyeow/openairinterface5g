@@ -67,7 +67,7 @@ void dump_mch(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint16_t coded_bits_per_co
 	       phy_vars_ue->lte_frame_parms.samples_per_tti,1,1);
   if (PHY_vars_eNB_g)
     write_output("txsig_mch.m","txs_mch",
-   	         &PHY_vars_eNB_g[0]->lte_eNB_common_vars.txdata[0][0][subframe*phy_vars_ue->lte_frame_parms.samples_per_tti],
+   	         &PHY_vars_eNB_g[0][0]->lte_eNB_common_vars.txdata[0][0][subframe*phy_vars_ue->lte_frame_parms.samples_per_tti],
 	         phy_vars_ue->lte_frame_parms.samples_per_tti,1,1);
 }
 
@@ -178,14 +178,14 @@ void fill_eNB_dlsch_MCH(PHY_VARS_eNB *phy_vars_eNB,int mcs,int ndi,int rvidx, in
   }
 
   if (abstraction_flag){
-    eNB_transport_info[phy_vars_eNB->Mod_id].cntl.pmch_flag=1;
-    eNB_transport_info[phy_vars_eNB->Mod_id].num_pmch=1; // assumption: there is always one pmch in each SF
-    eNB_transport_info[phy_vars_eNB->Mod_id].num_common_dci=0;
-    eNB_transport_info[phy_vars_eNB->Mod_id].num_ue_spec_dci=0;
-    eNB_transport_info[phy_vars_eNB->Mod_id].dlsch_type[0]=5;// put at the reserved position for PMCH
-    eNB_transport_info[phy_vars_eNB->Mod_id].harq_pid[0]=0;
-    eNB_transport_info[phy_vars_eNB->Mod_id].ue_id[0]=255;//broadcast
-    eNB_transport_info[phy_vars_eNB->Mod_id].tbs[0]=dlsch->harq_processes[0]->TBS>>3;
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].cntl.pmch_flag=1;
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_pmch=1; // assumption: there is always one pmch in each SF
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_common_dci=0;
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].num_ue_spec_dci=0;
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].dlsch_type[0]=5;// put at the reserved position for PMCH
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].harq_pid[0]=0;
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].ue_id[0]=255;//broadcast
+    eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].tbs[0]=dlsch->harq_processes[0]->TBS>>3;
   }
 
 }
@@ -230,8 +230,8 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
   int subframe = phy_vars_eNB->proc[sched_subframe].subframe_tx;
 
   if (abstraction_flag != 0) {
-    if (eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]!=0)
-      printf("[PHY][EMU] PMCH transport block position is different than zero %d \n", eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]);
+    if (eNB_transport_info_TB_index[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]!=0)
+      printf("[PHY][EMU] PMCH transport block position is different than zero %d \n", eNB_transport_info_TB_index[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]);
     
     memcpy(phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->b,
 	   a,
@@ -240,10 +240,10 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
 	  phy_vars_eNB->Mod_id,
 	  phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3);
 
-    memcpy(&eNB_transport_info[phy_vars_eNB->Mod_id].transport_blocks[eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]],
+    memcpy(&eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].transport_blocks[eNB_transport_info_TB_index[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]],
     	   a,
 	   phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3);
-    eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]+= phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3;//=eNB_transport_info[phy_vars_eNB->Mod_id].tbs[0];
+    eNB_transport_info_TB_index[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]+= phy_vars_eNB->dlsch_eNB_MCH->harq_processes[0]->TBS>>3;//=eNB_transport_info[phy_vars_eNB->Mod_id].tbs[0];
   }else {
     G = get_G(&phy_vars_eNB->lte_frame_parms,
 	      phy_vars_eNB->lte_frame_parms.N_RB_DL,

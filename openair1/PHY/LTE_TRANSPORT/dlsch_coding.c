@@ -398,12 +398,12 @@ void dlsch_encoding_emul(PHY_VARS_eNB *phy_vars_eNB,
       LOG_T(PHY,"%x.",DLSCH_pdu[i]);
     LOG_T(PHY,"\n");
 
-    memcpy(&eNB_transport_info[phy_vars_eNB->Mod_id].transport_blocks[eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]],
+    memcpy(&eNB_transport_info[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id].transport_blocks[eNB_transport_info_TB_index[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]],
 	   //	    memcpy(&eNB_transport_info[phy_vars_eNB->Mod_id].transport_blocks[payload_offset],
     	   DLSCH_pdu,
 	   dlsch->harq_processes[harq_pid]->TBS>>3);
   }  
-  eNB_transport_info_TB_index[phy_vars_eNB->Mod_id]+=dlsch->harq_processes[harq_pid]->TBS>>3;
+  eNB_transport_info_TB_index[phy_vars_eNB->Mod_id][phy_vars_eNB->CC_id]+=dlsch->harq_processes[harq_pid]->TBS>>3;
   //payload_offset +=dlsch->harq_processes[harq_pid]->TBS>>3;
   
 }

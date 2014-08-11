@@ -44,11 +44,12 @@ void phy_config_mib(LTE_DL_FRAME_PARMS *lte_frame_parms,
 }
 
 void phy_config_sib1_eNB(uint8_t Mod_id,
+			 int CC_id,
 			 TDD_Config_t *tdd_Config,
 			 uint8_t SIwindowsize,
 			 uint16_t SIPeriod) {
    
-  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id]->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms;
 
   if (tdd_Config) {
       lte_frame_parms->tdd_config    = tdd_Config->subframeAssignment;
@@ -58,12 +59,13 @@ void phy_config_sib1_eNB(uint8_t Mod_id,
   lte_frame_parms->SIPeriod      = SIPeriod;
 }
 
-void phy_config_sib1_ue(uint8_t Mod_id,uint8_t CH_index,
-			 TDD_Config_t *tdd_Config,
-			 uint8_t SIwindowsize,
-			 uint16_t SIperiod) {
+void phy_config_sib1_ue(uint8_t Mod_id,int CC_id,
+			uint8_t CH_index,
+			TDD_Config_t *tdd_Config,
+			uint8_t SIwindowsize,
+			uint16_t SIperiod) {
 
-  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms;
   if (tdd_Config) {
     lte_frame_parms->tdd_config    = tdd_Config->subframeAssignment;
     lte_frame_parms->tdd_config_S  = tdd_Config->specialSubframePatterns;  
@@ -73,16 +75,17 @@ void phy_config_sib1_ue(uint8_t Mod_id,uint8_t CH_index,
 }
 
 void phy_config_sib2_eNB(uint8_t Mod_id,
+			 int CC_id,
 			 RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 			 ARFCN_ValueEUTRA_t *ul_CArrierFreq,
 			 long *ul_Bandwidth,
 			 AdditionalSpectrumEmission_t *additionalSpectrumEmission,
 			 struct MBSFN_SubframeConfigList	*mbsfn_SubframeConfigList) {
 
-  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id]->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms;
   int i;
 
-  LOG_D(PHY,"[eNB%d] Frame %d: Applying radioResourceConfigCommon\n",Mod_id,PHY_vars_eNB_g[Mod_id]->proc[8].frame_tx);
+  LOG_D(PHY,"[eNB%d] Frame %d: Applying radioResourceConfigCommon\n",Mod_id,PHY_vars_eNB_g[Mod_id][CC_id]->proc[8].frame_tx);
 
   lte_frame_parms->prach_config_common.rootSequenceIndex                           =radioResourceConfigCommon->prach_Config.rootSequenceIndex;
   lte_frame_parms->prach_config_common.prach_Config_enabled=1;
@@ -92,7 +95,7 @@ void phy_config_sib2_eNB(uint8_t Mod_id,
   lte_frame_parms->prach_config_common.prach_ConfigInfo.prach_FreqOffset           =radioResourceConfigCommon->prach_Config.prach_ConfigInfo.prach_FreqOffset;
   
   compute_prach_seq(&lte_frame_parms->prach_config_common,lte_frame_parms->frame_type,
-		    PHY_vars_eNB_g[Mod_id]->X_u);
+		    PHY_vars_eNB_g[Mod_id][CC_id]->X_u);
 
   lte_frame_parms->pucch_config_common.deltaPUCCH_Shift = 1+radioResourceConfigCommon->pucch_ConfigCommon.deltaPUCCH_Shift;
   lte_frame_parms->pucch_config_common.nRB_CQI          = radioResourceConfigCommon->pucch_ConfigCommon.nRB_CQI;
@@ -163,7 +166,7 @@ void phy_config_sib2_eNB(uint8_t Mod_id,
 
   // PUCCH
 
-  init_ncs_cell(lte_frame_parms,PHY_vars_eNB_g[Mod_id]->ncs_cell);
+  init_ncs_cell(lte_frame_parms,PHY_vars_eNB_g[Mod_id][CC_id]->ncs_cell);
 
   init_ul_hopping(lte_frame_parms);
 
@@ -198,19 +201,20 @@ void phy_config_sib2_eNB(uint8_t Mod_id,
 }
 
 
-void phy_config_sib2_ue(uint8_t Mod_id,uint8_t CH_index,
+void phy_config_sib2_ue(uint8_t Mod_id,int CC_id,
+			uint8_t CH_index,
 			RadioResourceConfigCommonSIB_t *radioResourceConfigCommon,
 			ARFCN_ValueEUTRA_t *ul_CarrierFreq,
 			long *ul_Bandwidth,
 			AdditionalSpectrumEmission_t *additionalSpectrumEmission,
 			struct MBSFN_SubframeConfigList	*mbsfn_SubframeConfigList) {
 
-  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms;
   int i;
 
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_UE_CONFIG_SIB2, VCD_FUNCTION_IN);
 
-  LOG_I(PHY,"[UE%d] Frame %d: Applying radioResourceConfigCommon from eNB%d\n",Mod_id,PHY_vars_UE_g[Mod_id]->frame,CH_index);
+  LOG_I(PHY,"[UE%d] Frame %d: Applying radioResourceConfigCommon from eNB%d\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame,CH_index);
 
   lte_frame_parms->prach_config_common.rootSequenceIndex                           =radioResourceConfigCommon->prach_Config.rootSequenceIndex;
 
@@ -220,7 +224,8 @@ void phy_config_sib2_ue(uint8_t Mod_id,uint8_t CH_index,
   lte_frame_parms->prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig  =radioResourceConfigCommon->prach_Config.prach_ConfigInfo.zeroCorrelationZoneConfig;
   lte_frame_parms->prach_config_common.prach_ConfigInfo.prach_FreqOffset           =radioResourceConfigCommon->prach_Config.prach_ConfigInfo.prach_FreqOffset;
   
-  compute_prach_seq(&lte_frame_parms->prach_config_common,lte_frame_parms->frame_type,PHY_vars_UE_g[Mod_id]->X_u);
+  compute_prach_seq(&lte_frame_parms->prach_config_common,lte_frame_parms->frame_type,PHY_vars_UE_g[Mod_id][CC_id]->X_u);
+
 
 
   lte_frame_parms->pucch_config_common.deltaPUCCH_Shift = 1+radioResourceConfigCommon->pucch_ConfigCommon.deltaPUCCH_Shift;
@@ -274,7 +279,7 @@ lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format1  = radioRes
   // Now configure some of the Physical Channels
 
   // PUCCH
-  init_ncs_cell(lte_frame_parms,PHY_vars_UE_g[Mod_id]->ncs_cell);
+  init_ncs_cell(lte_frame_parms,PHY_vars_UE_g[Mod_id][CC_id]->ncs_cell);
 
   init_ul_hopping(lte_frame_parms);
 
@@ -309,38 +314,38 @@ lte_frame_parms->ul_power_control_config_common.deltaF_PUCCH_Format1  = radioRes
 
 }
 
-void phy_config_sib13_ue(uint8_t Mod_id,uint8_t CH_index,int mbsfn_Area_idx,
+void phy_config_sib13_ue(uint8_t Mod_id,int CC_id,uint8_t CH_index,int mbsfn_Area_idx,
 			 long mbsfn_AreaId_r9) {
 
-  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms;
 
 
-  LOG_I(PHY,"[UE%d] Frame %d: Applying MBSFN_Area_id %d for index %d\n",Mod_id,PHY_vars_UE_g[Mod_id]->frame,mbsfn_AreaId_r9,mbsfn_Area_idx);
+  LOG_I(PHY,"[UE%d] Frame %d: Applying MBSFN_Area_id %d for index %d\n",Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame,mbsfn_AreaId_r9,mbsfn_Area_idx);
 
   if (mbsfn_Area_idx == 0) {
     lte_frame_parms->Nid_cell_mbsfn = (uint16_t)mbsfn_AreaId_r9;
     LOG_N(PHY,"Fix me: only called when mbsfn_Area_idx == 0)\n");
   }
 
-  lte_gold_mbsfn(lte_frame_parms,PHY_vars_UE_g[Mod_id]->lte_gold_mbsfn_table,lte_frame_parms->Nid_cell_mbsfn);   
+  lte_gold_mbsfn(lte_frame_parms,PHY_vars_UE_g[Mod_id][CC_id]->lte_gold_mbsfn_table,lte_frame_parms->Nid_cell_mbsfn);   
 
 }
 
 
-void phy_config_sib13_eNB(uint8_t Mod_id,int mbsfn_Area_idx,
+void phy_config_sib13_eNB(uint8_t Mod_id,int CC_id,int mbsfn_Area_idx,
 			  long mbsfn_AreaId_r9) {
 
-  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id]->lte_frame_parms;
+  LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms;
 
 
-  LOG_I(PHY,"[eNB%d] Frame %d: Applying MBSFN_Area_id %d for index %d\n",Mod_id,PHY_vars_eNB_g[Mod_id]->proc[8].frame_tx,mbsfn_AreaId_r9,mbsfn_Area_idx);
+  LOG_I(PHY,"[eNB%d] Frame %d: Applying MBSFN_Area_id %d for index %d\n",Mod_id,PHY_vars_eNB_g[Mod_id][CC_id]->proc[8].frame_tx,mbsfn_AreaId_r9,mbsfn_Area_idx);
 
   if (mbsfn_Area_idx == 0) {
     lte_frame_parms->Nid_cell_mbsfn = (uint16_t)mbsfn_AreaId_r9;
     LOG_N(PHY,"Fix me: only called when mbsfn_Area_idx == 0)\n");
   }
 
-  lte_gold_mbsfn(lte_frame_parms,PHY_vars_eNB_g[Mod_id]->lte_gold_mbsfn_table,lte_frame_parms->Nid_cell_mbsfn);   
+  lte_gold_mbsfn(lte_frame_parms,PHY_vars_eNB_g[Mod_id][CC_id]->lte_gold_mbsfn_table,lte_frame_parms->Nid_cell_mbsfn);   
 }
 
 
@@ -439,24 +444,24 @@ void phy_config_dedicated_eNB_step2(PHY_VARS_eNB *phy_vars_eNB) {
 /*
  * Configures UE MAC and PHY with radioResourceCommon received in mobilityControlInfo IE during Handover
  */
-void phy_config_afterHO_ue(uint8_t Mod_id,uint8_t eNB_id, MobilityControlInfo_t *mobilityControlInfo, uint8_t ho_failed) {
+void phy_config_afterHO_ue(uint8_t Mod_id,int CC_id,uint8_t eNB_id, MobilityControlInfo_t *mobilityControlInfo, uint8_t ho_failed) {
 
   if(mobilityControlInfo!=NULL) {
     RadioResourceConfigCommon_t *radioResourceConfigCommon = &mobilityControlInfo->radioResourceConfigCommon;
     LOG_I(PHY,"radioResourceConfigCommon %p\n", radioResourceConfigCommon);
-    memcpy((void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms_before_ho, 
-	   (void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms, 
+    memcpy((void *)&PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms_before_ho, 
+	   (void *)&PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms, 
 	   sizeof(LTE_DL_FRAME_PARMS));
-    PHY_vars_UE_g[Mod_id]->ho_triggered = 1;
+    PHY_vars_UE_g[Mod_id][CC_id]->ho_triggered = 1;
     //PHY_vars_UE_g[UE_id]->UE_mode[0] = PRACH;
 
-    LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id]->lte_frame_parms;
+    LTE_DL_FRAME_PARMS *lte_frame_parms = &PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms;
 //     int N_ZC;
 //     uint8_t prach_fmt;
 //     int u;
 
     LOG_I(PHY,"[UE%d] Frame %d: Handover triggered: Applying radioResourceConfigCommon from eNB %d\n",
-	  Mod_id,PHY_vars_UE_g[Mod_id]->frame,eNB_id);
+	  Mod_id,PHY_vars_UE_g[Mod_id][CC_id]->frame,eNB_id);
 
     lte_frame_parms->prach_config_common.rootSequenceIndex                           =radioResourceConfigCommon->prach_Config.rootSequenceIndex;
     lte_frame_parms->prach_config_common.prach_Config_enabled=1;
@@ -471,9 +476,9 @@ void phy_config_afterHO_ue(uint8_t Mod_id,uint8_t eNB_id, MobilityControlInfo_t 
 //       prach_root_sequence_map4[lte_frame_parms->prach_config_common.rootSequenceIndex];
     
     //compute_prach_seq(u,N_ZC, PHY_vars_UE_g[Mod_id]->X_u);
-    compute_prach_seq(&PHY_vars_UE_g[Mod_id]->lte_frame_parms.prach_config_common,
+    compute_prach_seq(&PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms.prach_config_common,
 		      lte_frame_parms->frame_type, 
-		      PHY_vars_UE_g[Mod_id]->X_u);
+		      PHY_vars_UE_g[Mod_id][CC_id]->X_u);
     
 
     lte_frame_parms->pucch_config_common.deltaPUCCH_Shift = 1+radioResourceConfigCommon->pucch_ConfigCommon->deltaPUCCH_Shift;
@@ -533,41 +538,43 @@ void phy_config_afterHO_ue(uint8_t Mod_id,uint8_t eNB_id, MobilityControlInfo_t 
     lte_frame_parms->nushift  = lte_frame_parms->Nid_cell%6;
     
     // PUCCH
-    init_ncs_cell(lte_frame_parms,PHY_vars_UE_g[Mod_id]->ncs_cell);
+    init_ncs_cell(lte_frame_parms,PHY_vars_UE_g[Mod_id][CC_id]->ncs_cell);
     
     init_ul_hopping(lte_frame_parms);
 
     // RNTI
     
-    PHY_vars_UE_g[Mod_id]->lte_ue_pdcch_vars[eNB_id]->crnti = mobilityControlInfo->newUE_Identity.buf[0]|(mobilityControlInfo->newUE_Identity.buf[1]<<8);
+    PHY_vars_UE_g[Mod_id][CC_id]->lte_ue_pdcch_vars[eNB_id]->crnti = mobilityControlInfo->newUE_Identity.buf[0]|(mobilityControlInfo->newUE_Identity.buf[1]<<8);
     
   }
   if(ho_failed) {
     LOG_D(PHY,"[UE%d] Handover failed, triggering RACH procedure\n",Mod_id);
-    memcpy((void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms,(void *)&PHY_vars_UE_g[Mod_id]->lte_frame_parms_before_ho, sizeof(LTE_DL_FRAME_PARMS));
-    PHY_vars_UE_g[Mod_id]->UE_mode[eNB_id] = PRACH;
+    memcpy((void *)&PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms,(void *)&PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms_before_ho, sizeof(LTE_DL_FRAME_PARMS));
+    PHY_vars_UE_g[Mod_id][CC_id]->UE_mode[eNB_id] = PRACH;
   }
 }
 
-void phy_config_meas_ue(uint8_t Mod_id,uint8_t eNB_index,uint8_t n_adj_cells,unsigned int *adj_cell_id) {
+void phy_config_meas_ue(uint8_t Mod_id,int CC_id,uint8_t eNB_index,uint8_t n_adj_cells,unsigned int *adj_cell_id) {
   
-  PHY_MEASUREMENTS *phy_meas = &PHY_vars_UE_g[Mod_id]->PHY_measurements;
+  PHY_MEASUREMENTS *phy_meas = &PHY_vars_UE_g[Mod_id][CC_id]->PHY_measurements;
   int i;
 
   LOG_I(PHY,"Configuring inter-cell measurements for %d cells, ids: \n",n_adj_cells);
   for (i=0;i<n_adj_cells;i++) {
     LOG_I(PHY,"%d\n",adj_cell_id[i]);
-    lte_gold(&PHY_vars_UE_g[Mod_id]->lte_frame_parms,PHY_vars_UE_g[Mod_id]->lte_gold_table[i+1],adj_cell_id[i]); 
+    lte_gold(&PHY_vars_UE_g[Mod_id][CC_id]->lte_frame_parms,PHY_vars_UE_g[Mod_id][CC_id]->lte_gold_table[i+1],adj_cell_id[i]); 
   }
   phy_meas->n_adj_cells = n_adj_cells;
   memcpy((void*)phy_meas->adj_cell_id,(void *)adj_cell_id,n_adj_cells*sizeof(unsigned int));
 
 }
 
-void phy_config_dedicated_eNB(uint8_t Mod_id,uint16_t rnti,
+void phy_config_dedicated_eNB(uint8_t Mod_id,
+			      int CC_id,
+			      uint16_t rnti,
 			      struct PhysicalConfigDedicated *physicalConfigDedicated) {
 
-  PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[Mod_id];
+  PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[Mod_id][CC_id];
   uint8_t UE_id = find_ue(rnti,phy_vars_eNB);
   
 
@@ -582,11 +589,79 @@ void phy_config_dedicated_eNB(uint8_t Mod_id,uint16_t rnti,
   }
 
 }
+#ifdef Rel10
+void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
+				    uint16_t rnti,
+				    SCellToAddMod_r10_t *sCellToAddMod_r10, 
+				    int CC_id) {
 
-void phy_config_dedicated_ue(uint8_t Mod_id,uint8_t CH_index,
+  PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[Mod_id][CC_id];
+  u8 UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][0]);
+  struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10 = sCellToAddMod_r10->radioResourceConfigDedicatedSCell_r10->physicalConfigDedicatedSCell_r10;
+  //struct RadioResourceConfigCommonSCell_r10 *physicalConfigCommonSCell_r10 = sCellToAddMod_r10->radioResourceConfigCommonSCell_r10;
+  PhysCellId_t physCellId_r10 = sCellToAddMod_r10->cellIdentification_r10->physCellId_r10;
+  ARFCN_ValueEUTRA_t dl_CarrierFreq_r10 = sCellToAddMod_r10->cellIdentification_r10->dl_CarrierFreq_r10;
+  u32 carrier_freq_local;
+
+#ifdef EXMIMO
+#ifdef DRIVER2013
+  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
+#endif
+#endif
+
+  if ((dl_CarrierFreq_r10>=36000) && (dl_CarrierFreq_r10<=36199)) {
+    carrier_freq_local = 1900000000 + (dl_CarrierFreq_r10-36000)*100000; //band 33 from 3GPP 36.101 v 10.9 Table 5.7.3-1
+    LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,phy_vars_eNB->frame,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
+#ifdef EXMIMO
+#ifdef DRIVER2013
+    carrier_freq[CC_id] = carrier_freq_local;
+    openair_daq_vars.freq_offset = -6540;
+    p_exmimo_config->rf.rf_freq_rx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.rf_freq_tx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.tx_gain[CC_id][0] = 25;
+    p_exmimo_config->rf.rf_vcocal[CC_id] = 910;
+    p_exmimo_config->rf.rf_local[CC_id] = 8255063; //this should be taken form calibration file
+    p_exmimo_config->rf.rffe_band_mode[CC_id] = B19G_TDD;
+#endif
+#endif
+  }
+  else if ((dl_CarrierFreq_r10>=6150) && (dl_CarrierFreq_r10<=6449)) {
+    carrier_freq_local = 832000000 + (dl_CarrierFreq_r10-6150)*100000; //band 20 from 3GPP 36.101 v 10.9 Table 5.7.3-1
+    // this is actually for the UL only, but we use it for DL too, since there is no TDD mode for this band
+    LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,phy_vars_eNB->frame,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
+#ifdef EXMIMO
+#ifdef DRIVER2013
+    carrier_freq[CC_id] = carrier_freq_local;
+    openair_daq_vars.freq_offset = -2000;
+    p_exmimo_config->rf.rf_freq_rx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.rf_freq_tx[CC_id] = carrier_freq[CC_id]+openair_daq_vars.freq_offset2;
+    p_exmimo_config->rf.tx_gain[CC_id][0] = 10;
+    p_exmimo_config->rf.rf_vcocal[CC_id] = 2015;
+    p_exmimo_config->rf.rf_local[CC_id] =  8254992; //this should be taken form calibration file
+    p_exmimo_config->rf.rffe_band_mode[CC_id] = DD_TDD;
+#endif
+#endif
+  }
+  else {
+    LOG_E(PHY,"[eNB %d] Frame %d: ARFCN %d of SCell %d for UE %d not supported\n",Mod_id,phy_vars_eNB->frame,dl_CarrierFreq_r10,CC_id,UE_id);
+  }
+
+  if (physicalConfigDedicatedSCell_r10) {
+    phy_vars_eNB->physicalConfigDedicatedSCell_r10[UE_id] = physicalConfigDedicatedSCell_r10;
+    LOG_I(PHY,"[eNB %d] Frame %d: Configured phyConfigDedicatedSCell with CC_id %d for UE %d\n",Mod_id,phy_vars_eNB->frame,CC_id,UE_id);
+  }
+  else {
+    LOG_E(PHY,"[eNB %d] Frame %d: Received NULL radioResourceConfigDedicated (CC_id %d, UE %d)\n",Mod_id, phy_vars_eNB->frame,CC_id,UE_id);
+    return;
+  }
+
+}
+#endif
+
+void phy_config_dedicated_ue(uint8_t Mod_id,int CC_id,uint8_t CH_index,
 			     struct PhysicalConfigDedicated *physicalConfigDedicated ) {
 
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id];
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
 
   phy_vars_ue->total_TBS[CH_index]=0;
   phy_vars_ue->total_TBS_last[CH_index]=0;
@@ -692,18 +767,18 @@ void phy_config_dedicated_ue(uint8_t Mod_id,uint8_t CH_index,
     
 }
 
-void  phy_config_cba_rnti (module_id_t Mod_id,eNB_flag_t eNB_flag, uint8_t index, rnti_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups){
+void  phy_config_cba_rnti (module_id_t Mod_id,int CC_id,eNB_flag_t eNB_flag, uint8_t index, rnti_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups){
 //   uint8_t i;
   
   if (eNB_flag == 0 ) {
     //LOG_D(PHY,"[UE %d] configure cba group %d with rnti %x, num active cba grp %d\n", index, index, cba_rnti, num_active_cba_groups);
-    PHY_vars_UE_g[Mod_id]->ulsch_ue[index]->num_active_cba_groups=num_active_cba_groups;
-    PHY_vars_UE_g[Mod_id]->ulsch_ue[index]->cba_rnti[cba_group_id]=cba_rnti;
+    PHY_vars_UE_g[Mod_id][CC_id]->ulsch_ue[index]->num_active_cba_groups=num_active_cba_groups;
+    PHY_vars_UE_g[Mod_id][CC_id]->ulsch_ue[index]->cba_rnti[cba_group_id]=cba_rnti;
   }else {
     //for (i=index; i < NUMBER_OF_UE_MAX; i+=num_active_cba_groups){
       //  LOG_D(PHY,"[eNB %d] configure cba group %d with rnti %x for UE %d, num active cba grp %d\n",Mod_id, i%num_active_cba_groups, cba_rnti, i, num_active_cba_groups);
-    PHY_vars_eNB_g[Mod_id]->ulsch_eNB[index]->num_active_cba_groups=num_active_cba_groups;
-    PHY_vars_eNB_g[Mod_id]->ulsch_eNB[index]->cba_rnti[cba_group_id] = cba_rnti;
+    PHY_vars_eNB_g[Mod_id][CC_id]->ulsch_eNB[index]->num_active_cba_groups=num_active_cba_groups;
+    PHY_vars_eNB_g[Mod_id][CC_id]->ulsch_eNB[index]->cba_rnti[cba_group_id] = cba_rnti;
       //}  
   }
 }

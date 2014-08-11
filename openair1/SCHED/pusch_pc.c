@@ -85,7 +85,7 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
   // P_opusch(0) = P_oPTR + deltaP_Msg3 if PUSCH is transporting Msg3
   // else
   // P_opusch(0) = PO_NOMINAL_PUSCH(j) + P_O_UE_PUSCH(j)
-  PL = get_PL(phy_vars_ue->Mod_id,eNB_id);
+  PL = get_PL(phy_vars_ue->Mod_id,phy_vars_ue->CC_id,eNB_id);
   
   phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH = (hundred_times_log10_NPRB[nb_rb-1]+
 					     get_hundred_times_delta_IF(phy_vars_ue,eNB_id,harq_pid) +
@@ -93,11 +93,11 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
   
   if( phy_vars_ue->ulsch_ue_Msg3_active[eNB_id] == 1) {  // Msg3 PUSCH
 
-    phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += (mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id) + PL);
+    phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH += (mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0) + PL);
 
     LOG_D(PHY,"[UE  %d][RAPROC] frame %d, subframe %d: Msg3 Po_PUSCH %d dBm (%d,%d,%d,%d,%d)\n",
           phy_vars_ue->Mod_id,((subframe==0)?1:0)+phy_vars_ue->frame,subframe,phy_vars_ue->ulsch_ue[eNB_id]->Po_PUSCH,
-          100*mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id),
+          100*mac_xface->get_Po_NOMINAL_PUSCH(phy_vars_ue->Mod_id,0),
           hundred_times_log10_NPRB[nb_rb-1],
           100*PL,
           get_hundred_times_delta_IF(phy_vars_ue,eNB_id,harq_pid),
@@ -130,8 +130,8 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
   
 }
 
-int8_t get_PHR(uint8_t Mod_id, uint8_t eNB_index){
+int8_t get_PHR(uint8_t Mod_id, uint8_t CC_id,uint8_t eNB_index){
 
-  return PHY_vars_UE_g[Mod_id]->ulsch_ue[eNB_index]->PHR; 
+  return PHY_vars_UE_g[Mod_id][CC_id]->ulsch_ue[eNB_index]->PHR; 
 }
 

@@ -36,8 +36,8 @@ unsigned int emul_rx_handler(unsigned char Mode,char *rx_buffer, unsigned int Nb
 unsigned int emul_rx_data(void);
 
 void emu_transport_info(unsigned int last_slot, unsigned int next_slot);
-void fill_phy_enb_vars(unsigned int enb_id, unsigned int next_slot);
-void fill_phy_ue_vars(unsigned int ue_id, unsigned int last_slot);
+void fill_phy_enb_vars(unsigned int enb_id, uint8_t CC_id,unsigned int next_slot);
+void fill_phy_ue_vars(unsigned int ue_id, uint8_t CC_id,unsigned int last_slot);
 void emu_transport_sync(void);
 void emu_transport(unsigned int frame, unsigned int last_slot,unsigned int next_slot, lte_subframe_t direction, unsigned char frame_type, int ethernet_flag );
 void emu_transport_DL(unsigned int frame, unsigned int last_slot,unsigned int next_slot);

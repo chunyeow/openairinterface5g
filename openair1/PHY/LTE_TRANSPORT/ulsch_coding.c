@@ -912,29 +912,29 @@ int ulsch_encoding_emul(uint8_t *ulsch_buffer,
 
      
   //memcpy(&UE_transport_info[phy_vars_ue->Mod_id].transport_blocks[UE_transport_info_TB_index[phy_vars_ue->Mod_id]],
-  memcpy(&UE_transport_info[phy_vars_ue->Mod_id].transport_blocks,
+  memcpy(&UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].transport_blocks,
 	 ulsch_buffer,
 	 phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS>>3);  
   //UE_transport_info_TB_index[phy_vars_ue->Mod_id]+=phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS>>3;
   // navid: currently more than one eNB is not supported in the code 
-  UE_transport_info[phy_vars_ue->Mod_id].num_eNB = 1; 
-  UE_transport_info[phy_vars_ue->Mod_id].rnti[0] = phy_vars_ue->lte_ue_pdcch_vars[0]->crnti; 
-  UE_transport_info[phy_vars_ue->Mod_id].eNB_id[0]  = eNB_id;
-  UE_transport_info[phy_vars_ue->Mod_id].harq_pid[0] = harq_pid;
-  UE_transport_info[phy_vars_ue->Mod_id].tbs[0]     = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS>>3 ;
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].num_eNB = 1; 
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].rnti[0] = phy_vars_ue->lte_ue_pdcch_vars[0]->crnti; 
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].eNB_id[0]  = eNB_id;
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].harq_pid[0] = harq_pid;
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].tbs[0]     = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->TBS>>3 ;
   // msg("\nphy_vars_ue->Mod_id%d\n",phy_vars_ue->Mod_id);
   
-  UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_flag = 1;
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.pusch_flag = 1;
   //UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_uci = *(uint32_t *)ulsch->o;
-  memcpy(UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_uci,
+  memcpy(UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.pusch_uci,
 	 ulsch->o,
 	 MAX_CQI_BYTES); 
   // msg("[UE]cqi is %d \n", ((HLC_subband_cqi_rank1_2A_5MHz *)ulsch->o)->cqi1);
   
-  UE_transport_info[phy_vars_ue->Mod_id].cntl.length_uci = ulsch->O;
-  UE_transport_info[phy_vars_ue->Mod_id].cntl.uci_format = ulsch->uci_format;
-  UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_ri = (ulsch->o_RI[0]&1)+((ulsch->o_RI[1]&1)<<1);
-  UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_ack =   (ulsch->o_ACK[0]&1) + ((ulsch->o_ACK[1]&1)<<1);
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.length_uci = ulsch->O;
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.uci_format = ulsch->uci_format;
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.pusch_ri = (ulsch->o_RI[0]&1)+((ulsch->o_RI[1]&1)<<1);
+  UE_transport_info[phy_vars_ue->Mod_id][phy_vars_ue->CC_id].cntl.pusch_ack =   (ulsch->o_ACK[0]&1) + ((ulsch->o_ACK[1]&1)<<1);
   //msg("ack is %d %d %d\n",UE_transport_info[phy_vars_ue->Mod_id].cntl.pusch_ack, (ulsch->o_ACK[1]&1)<<1, ulsch->o_ACK[0]&1);
   return(0);
   
