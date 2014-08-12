@@ -120,7 +120,7 @@ uint32_t T304[8] = {50,100,150,200,500,1000,2000,MAX_U32};
 uint32_t timeToTrigger_ms[16] = {0,40,64,80,100,128,160,256,320,480,512,640,1024,1280,2560,5120};
 
 /* 36.133 Section 9.1.4 RSRP Measurement Report Mapping, Table: 9.1.4-1 */
-float RSRP_meas_mapping[100] = {
+float RSRP_meas_mapping[98] = {
 		-140,
 		-139,
 		-138,
@@ -217,10 +217,11 @@ float RSRP_meas_mapping[100] = {
 		-47,
 		-46,
 		-45,
-		-44
+		-44,
+		-43
 };
 
-float RSRQ_meas_mapping[33] = {
+float RSRQ_meas_mapping[35] = {
 	-19,
 	-18.5,
 	-18,
@@ -253,7 +254,9 @@ float RSRQ_meas_mapping[33] = {
 	-4.5,
 	-4,
 	-3.5,
-	-3
+	-3,
+	-2.5,
+	-2
 };
 
 #endif

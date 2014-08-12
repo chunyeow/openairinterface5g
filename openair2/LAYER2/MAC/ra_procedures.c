@@ -155,7 +155,7 @@ void get_prach_resources(module_id_t module_idP,
           UE_mac_inst[module_idP].RA_usedGroupA = 1;
       }
       else if ((Msg3_size < rach_ConfigCommon->preambleInfo.preamblesGroupAConfig->messageSizeGroupA) ||
-          (mac_xface->get_PL(module_idP,eNB_index) > UE_mac_inst[module_idP].RA_maxPL)) {
+          (mac_xface->get_PL(module_idP,0,eNB_index) > UE_mac_inst[module_idP].RA_maxPL)) {
           // use Group A procedure
           UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex  = (taus())%rach_ConfigCommon->preambleInfo.preamblesGroupAConfig->sizeOfRA_PreamblesGroupA;
           UE_mac_inst[module_idP].RA_prach_resources.ra_RACH_MaskIndex = 0;

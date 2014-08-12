@@ -495,6 +495,9 @@ static module_id_t rrc_eNB_get_next_free_UE_index(
     boolean_t      reg = FALSE;
     module_id_t    i, first_index = UE_MODULE_INVALID;
 
+    LOG_D(RRC,"ENB_ID= %d \n",enb_mod_idP);
+    LOG_D(RRC,"N_ID= %d \n",NB_eNB_INST);
+
     AssertFatal(enb_mod_idP < NB_eNB_INST, "eNB index invalid (%d/%d)!", enb_mod_idP, NB_eNB_INST);
 
     for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
@@ -1201,7 +1204,7 @@ void rrc_eNB_process_MeasurementReport(
 #endif
 
     if (eNB_rrc_inst[enb_mod_idP].handover_info[ue_mod_idP]->ho_prepare != 0xF0) {
-        rrc_eNB_generate_HandoverPreparationInformation(enb_mod_idP,
+    	rrc_eNB_generate_HandoverPreparationInformation(enb_mod_idP,
                                                         frameP,
                                                         ue_mod_idP,
                                                         measResults2->measResultNeighCells->choice.

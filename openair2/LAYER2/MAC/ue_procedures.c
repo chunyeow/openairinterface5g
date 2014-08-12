@@ -1494,7 +1494,7 @@ UE_L2_STATE_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t su
       } else {
           //LOG_D(MAC,"PHR normal operation %d active %d \n", UE_mac_inst[module_idP].scheduling_info.periodicPHR_SF, UE_mac_inst[module_idP].PHR_reporting_active);
           if ((UE_mac_inst[module_idP].scheduling_info.prohibitPHR_SF <= 0) &&
-              ((mac_xface->get_PL(module_idP,eNB_indexP) <  UE_mac_inst[module_idP].scheduling_info.PathlossChange_db) ||
+              ((mac_xface->get_PL(module_idP,0,eNB_indexP) <  UE_mac_inst[module_idP].scheduling_info.PathlossChange_db) ||
                   (UE_mac_inst[module_idP].power_backoff_db[eNB_indexP] > UE_mac_inst[module_idP].scheduling_info.PathlossChange_db)))
             // trigger PHR and reset the timer later when the PHR report is sent
             UE_mac_inst[module_idP].PHR_reporting_active = 1;

@@ -349,11 +349,11 @@ typedef struct
   //unsigned short rx_avg_power_dB[NUMBER_OF_CONNECTED_eNB_MAX];              //! estimated avg received signal power (dB)
 
   // RRC measurements
-  int rssi;
+  uint32_t rssi;
   int n_adj_cells;
   unsigned int adj_cell_id[6];
-  int rsrq[7];
-  int rsrp[7];
+  uint32_t rsrq[7];
+  uint32_t rsrp[7];
   float rsrp_filtered[7]; // after layer 3 filtering
   float rsrq_filtered[7];
   // common measurements

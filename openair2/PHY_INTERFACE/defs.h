@@ -244,28 +244,28 @@ typedef struct
     UE_MODE_t (*get_ue_mode)(module_id_t Mod_id,int CC_id,uint8_t eNB_index);
 
     /// Function for UE MAC to retrieve measured Path Loss
-    int16_t (*get_PL)(module_id_t Mod_id,uint8_t eNB_index);
+    int16_t (*get_PL)(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
     /// Function for UE MAC to retrieve the rssi
-    int8_t (*get_RSSI)(module_id_t Mod_id);
+    uint32_t (*get_RSSI)(uint8_t Mod_id,uint8_t CC_id);
 
     /// Function for UE MAC to retrieve the total gain 
-    int8_t (*get_rx_total_gain_dB)(module_id_t Mod_id);
+    uint32_t (*get_rx_total_gain_dB)(uint8_t Mod_id,uint8_t CC_id);
 
     /// Function for UE MAC to retrieve the number of adjustent cells
-    uint8_t (*get_n_adj_cells)(module_id_t Mod_id);
+    uint8_t (*get_n_adj_cells)(uint8_t Mod_id,uint8_t CC_id);
 
     /// Function for UE MAC to retrieve RSRP/RSRQ measurements
-    uint8_t (*get_RSRP)(module_id_t Mod_id,uint8_t eNB_index);
+    uint32_t (*get_RSRP)(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
     /// Function for UE MAC to retrieve RSRP/RSRQ measurements
-    uint8_t (*get_RSRQ)(module_id_t Mod_id,uint8_t eNB_index);
+    uint32_t (*get_RSRQ)(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
 
     /// Function for UE MAC to set the layer3 filtered RSRP/RSRQ measurements
-    uint8_t (*set_RSRP_filtered)(module_id_t Mod_id,uint8_t eNB_index,float rsrp);
+    uint8_t (*set_RSRP_filtered)(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rsrp);
 
     /// Function for UE MAC to set the layer3 filtered RSRP/RSRQ measurements
-    uint8_t (*set_RSRQ_filtered)(module_id_t Mod_id,uint8_t eNB_index,float rsrq);
+    uint8_t (*set_RSRQ_filtered)(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rsrp);
 
     /// Function for UE/eNB MAC to retrieve number of PRACH in TDD
     uint8_t (*get_num_prach_tdd)(LTE_DL_FRAME_PARMS *frame_parms);

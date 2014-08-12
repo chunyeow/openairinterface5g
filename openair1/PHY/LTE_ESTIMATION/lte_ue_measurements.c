@@ -4,6 +4,7 @@
 #include "PHY/extern.h"
 #include "SCHED/defs.h"
 #include "SCHED/extern.h"
+#include "log.h"
 
 #include "emmintrin.h"
 
@@ -20,7 +21,7 @@ __m128i zeroPMI;
 #define k1 ((long long int) 1000)
 #define k2 ((long long int) (1024-k1))
 
-//#define DEBUG_MEAS
+#define DEBUG_MEAS
 
 #ifdef USER_MODE
 void print_shorts(char *s,__m128i *x) {
@@ -78,36 +79,34 @@ uint8_t get_n_adj_cells (uint8_t Mod_id,uint8_t CC_id){
     return 0;
 }
 
-int8_t get_rx_total_gain_dB (uint8_t Mod_id,uint8_t CC_id){
+uint32_t get_rx_total_gain_dB (uint8_t Mod_id,uint8_t CC_id){
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)  
     return phy_vars_ue->rx_total_gain_dB;
-  else 
-    return -1;
+  return 0xFFFFFFFF;
 }
-int8_t get_RSSI (uint8_t Mod_id,uint8_t CC_id){
+uint32_t get_RSSI (uint8_t Mod_id,uint8_t CC_id){
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)  
     return phy_vars_ue->PHY_measurements.rssi;
-  else 
-    return -1;
+  return 0xFFFFFFFF;
 }
-uint8_t get_RSRP(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
+uint32_t get_RSRP(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
   
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)
     return phy_vars_ue->PHY_measurements.rsrp[eNB_index];
-  return 0;
+  return 0xFFFFFFFF;
 }
 
-uint8_t get_RSRQ(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
+uint32_t get_RSRQ(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index) {
 
   PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[Mod_id][CC_id];
   if (phy_vars_ue)
     return phy_vars_ue->PHY_measurements.rsrq[eNB_index];
-  return 0;
+  return 0xFFFFFFFF;
 }
 
 int8_t set_RSRP_filtered(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index,float rsrp) {
@@ -268,9 +267,9 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       phy_vars_ue->PHY_measurements.rsrq[eNB_offset] = 3;
 
     }
-    if (((phy_vars_ue->frame %10) == 0) && (slot == 1)) {
+    //if (((phy_vars_ue->frame %10) == 0) && (slot == 1)) {
 #ifdef DEBUG_MEAS
-    if (eNB_offset == 0)
+    //if (eNB_offset == 0)
 	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB)\n",phy_vars_ue->Mod_id,
 	      phy_vars_ue->frame,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
 	      10*log10(phy_vars_ue->PHY_measurements.rssi));
@@ -281,10 +280,13 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
 	      (dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
 	      (10*log10(phy_vars_ue->PHY_measurements.rx_power_avg[0])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12),
 	      (10*log10(phy_vars_ue->PHY_measurements.rsrq[eNB_offset]))-20);
-#endif
+	//LOG_D(PHY,"RSRP_total_dB: %3.2f \n",(dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0)-phy_vars_ue->rx_total_gain_dB-dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12));
 
-    
-    }
+    //LOG_D(PHY,"RSRP_dB: %3.2f \n",(dB_fixed_times10(phy_vars_ue->PHY_measurements.rsrp[eNB_offset])/10.0));
+    //LOG_D(PHY,"gain_loss_dB: %d \n",phy_vars_ue->rx_total_gain_dB);
+    //LOG_D(PHY,"gain_fixed_dB: %d \n",dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12));
+#endif
+    //}
   }
 }
 

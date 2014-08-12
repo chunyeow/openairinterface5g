@@ -94,7 +94,7 @@ int           nb_antennas_rx        = 2; // //
 uint8_t            target_dl_mcs         = 0; // not set
 uint8_t            rate_adaptation_flag  = 0;
 uint8_t            set_sinr              = 0;
-double        snr_dB, sinr_dB;
+double             snr_dB=0, sinr_dB=0;
 uint8_t            set_seed              = 0;
 uint8_t            cooperation_flag;          // for cooperative communication
 uint8_t            abstraction_flag      = 0;

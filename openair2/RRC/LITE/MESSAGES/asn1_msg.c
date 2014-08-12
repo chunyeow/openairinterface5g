@@ -2196,9 +2196,10 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
   
  struct MeasResultEUTRA__measResult meas2;
   //    int rsrp_va=10;
-  meas2.rsrpResult=&rsrp_t;
+
+  meas2.rsrpResult=&(rsrp_t);
   //&rsrp_va;
-  meas2.rsrqResult=&rsrq_t;
+  meas2.rsrqResult=&(rsrq_t);
 
   measresulteutra2->measResult=meas2;
   
@@ -2210,6 +2211,9 @@ uint8_t do_MeasurementReport(uint8_t Mod_id, uint8_t *buffer,int measid,int phy_
                                    (void*)&ul_dcch_msg,
                                    buffer,
                                    100);
+
+
+
   AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
                enc_rval.failed_type->name, enc_rval.encoded);
 
