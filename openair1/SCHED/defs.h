@@ -493,7 +493,12 @@ void pusch_power_cntl(PHY_VARS_UE *phy_vars_ue,uint8_t subframe,uint8_t eNB_id,u
 
 int8_t get_PHR(uint8_t Mod_id, uint8_t eNB_index);
 
-LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, int CC_id,uint16_t rnti);
+LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint8_t CC_id,uint16_t rnti);
+
+LTE_DL_FRAME_PARMS *get_lte_frame_parms(module_id_t Mod_id, uint8_t CC_id);
+
+MU_MIMO_mode* get_mu_mimo_mode (module_id_t Mod_id, uint8_t CC_id);
+
 int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag);
 void ulsch_decoding_procedures(unsigned char last_slot, unsigned int i, PHY_VARS_eNB *phy_vars_eNB, unsigned char abstraction_flag);
 

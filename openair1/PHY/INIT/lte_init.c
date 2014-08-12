@@ -590,18 +590,24 @@ void phy_config_dedicated_eNB(uint8_t Mod_id,
 
 }
 #ifdef Rel10
+void phy_config_dedicated_scell_ue(uint8_t Mod_id,
+				   uint8_t eNB_index,
+				    SCellToAddMod_r10_t *sCellToAddMod_r10, 
+				    int CC_id) {
+
+}
 void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
 				    uint16_t rnti,
 				    SCellToAddMod_r10_t *sCellToAddMod_r10, 
 				    int CC_id) {
 
   PHY_VARS_eNB *phy_vars_eNB = PHY_vars_eNB_g[Mod_id][CC_id];
-  u8 UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][0]);
+  uint8_t UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][0]);
   struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10 = sCellToAddMod_r10->radioResourceConfigDedicatedSCell_r10->physicalConfigDedicatedSCell_r10;
   //struct RadioResourceConfigCommonSCell_r10 *physicalConfigCommonSCell_r10 = sCellToAddMod_r10->radioResourceConfigCommonSCell_r10;
   PhysCellId_t physCellId_r10 = sCellToAddMod_r10->cellIdentification_r10->physCellId_r10;
   ARFCN_ValueEUTRA_t dl_CarrierFreq_r10 = sCellToAddMod_r10->cellIdentification_r10->dl_CarrierFreq_r10;
-  u32 carrier_freq_local;
+  uint32_t carrier_freq_local;
 
 #ifdef EXMIMO
 #ifdef DRIVER2013
@@ -611,7 +617,8 @@ void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
 
   if ((dl_CarrierFreq_r10>=36000) && (dl_CarrierFreq_r10<=36199)) {
     carrier_freq_local = 1900000000 + (dl_CarrierFreq_r10-36000)*100000; //band 33 from 3GPP 36.101 v 10.9 Table 5.7.3-1
-    LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,phy_vars_eNB->frame,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
+#warning "fixme: update the phy frame counter "
+    LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,/*phy_vars_eNB->frame*/0,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
 #ifdef EXMIMO
 #ifdef DRIVER2013
     carrier_freq[CC_id] = carrier_freq_local;
@@ -628,7 +635,7 @@ void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
   else if ((dl_CarrierFreq_r10>=6150) && (dl_CarrierFreq_r10<=6449)) {
     carrier_freq_local = 832000000 + (dl_CarrierFreq_r10-6150)*100000; //band 20 from 3GPP 36.101 v 10.9 Table 5.7.3-1
     // this is actually for the UL only, but we use it for DL too, since there is no TDD mode for this band
-    LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,phy_vars_eNB->frame,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
+    LOG_I(PHY,"[eNB %d] Frame %d: Configured SCell %d to frequency %d (ARFCN %d) for UE %d\n",Mod_id,/*phy_vars_eNB->frame*/0,CC_id,carrier_freq_local,dl_CarrierFreq_r10,UE_id);
 #ifdef EXMIMO
 #ifdef DRIVER2013
     carrier_freq[CC_id] = carrier_freq_local;
@@ -643,15 +650,16 @@ void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
 #endif
   }
   else {
-    LOG_E(PHY,"[eNB %d] Frame %d: ARFCN %d of SCell %d for UE %d not supported\n",Mod_id,phy_vars_eNB->frame,dl_CarrierFreq_r10,CC_id,UE_id);
+    LOG_E(PHY,"[eNB %d] Frame %d: ARFCN %d of SCell %d for UE %d not supported\n",Mod_id,/*phy_vars_eNB->frame*/0,dl_CarrierFreq_r10,CC_id,UE_id);
   }
 
   if (physicalConfigDedicatedSCell_r10) {
-    phy_vars_eNB->physicalConfigDedicatedSCell_r10[UE_id] = physicalConfigDedicatedSCell_r10;
-    LOG_I(PHY,"[eNB %d] Frame %d: Configured phyConfigDedicatedSCell with CC_id %d for UE %d\n",Mod_id,phy_vars_eNB->frame,CC_id,UE_id);
+#warning " phy_vars_eNB->physicalConfigDedicatedSCell_r10 does not exist in phy_vars_eNB"
+    //  phy_vars_eNB->physicalConfigDedicatedSCell_r10[UE_id] = physicalConfigDedicatedSCell_r10;
+    LOG_I(PHY,"[eNB %d] Frame %d: Configured phyConfigDedicatedSCell with CC_id %d for UE %d\n",Mod_id,/*phy_vars_eNB->frame*/0,CC_id,UE_id);
   }
   else {
-    LOG_E(PHY,"[eNB %d] Frame %d: Received NULL radioResourceConfigDedicated (CC_id %d, UE %d)\n",Mod_id, phy_vars_eNB->frame,CC_id,UE_id);
+    LOG_E(PHY,"[eNB %d] Frame %d: Received NULL radioResourceConfigDedicated (CC_id %d, UE %d)\n",Mod_id, /*phy_vars_eNB->frame*/0,CC_id,UE_id);
     return;
   }
 

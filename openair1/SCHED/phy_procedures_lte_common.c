@@ -544,7 +544,7 @@ unsigned int is_phich_subframe(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
 }
 
 
-LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, int CC_id,uint16_t rnti) {
+LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint8_t  CC_id,uint16_t rnti) {
   int8_t UE_id;
   if ((PHY_vars_eNB_g == NULL) || (PHY_vars_eNB_g[Mod_id] == NULL) || (PHY_vars_eNB_g[Mod_id][CC_id]==NULL)) {
     LOG_E(PHY,"get_eNB_UE_stats: No phy_vars_eNB found (or not allocated) for Mod_id %d,CC_id %d\n",Mod_id,CC_id);
@@ -580,3 +580,13 @@ int8_t find_ue(uint16_t rnti, PHY_VARS_eNB *phy_vars_eNB) {
   return(-1);
 }
 
+LTE_DL_FRAME_PARMS* get_lte_frame_parms(module_id_t Mod_id, uint8_t  CC_id){
+
+  return(&PHY_vars_eNB_g[Mod_id][CC_id]->lte_frame_parms);
+
+}
+
+MU_MIMO_mode *get_mu_mimo_mode (module_id_t Mod_id, uint8_t  CC_id){
+
+  return(&PHY_vars_eNB_g[Mod_id][CC_id]->mu_mimo_mode);
+}

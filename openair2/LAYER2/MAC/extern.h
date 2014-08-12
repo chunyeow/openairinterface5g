@@ -86,6 +86,8 @@ extern EMULATION_VARS *Emul_vars;
 #endif //PHY_EMUL
 
 
+extern int cqi_to_mcs[16];
+
 extern uint32_t RRC_CONNECTION_FLAG;
 
 

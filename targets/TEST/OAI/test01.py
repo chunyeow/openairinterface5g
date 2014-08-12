@@ -78,13 +78,14 @@ for arg in sys.argv:
     i= i + 1     
 
 # get the oai object
+host = os.uname()[1]
 oai = openair('localdomain','localhost')
 #start_time = time.time()  # datetime.datetime.now()
 try: 
     user = getpass.getuser()
     print '\n******* Note that the user <'+user+'> should be a sudoer *******\n'
     print '******* Connecting to the localhost to perform the test *******\n'
-    print '******* Make sure that the prompt is correct *******\n'
+   
    
     if not pw :
         print "username: " + user 
@@ -94,7 +95,7 @@ try:
         #print "password: " + pw 
     
     prompt = os.getenv("PS1")[-2]
-    print "your prompt:   " + prompt
+    print "your prompt is:   " + prompt
     
     oai.connect(user,pw,prompt)
     #oai.get_shell()
@@ -106,9 +107,11 @@ except :
 test = 'test01'
 ctime=datetime.datetime.utcnow().strftime("%Y-%m-%d.%Hh%M")
 logfile = user+'.'+test+'.'+ctime+'.txt'  
-logdir = os.getcwd() + '/pre-ci-logs';
-oai.send_nowait('mkdir -p -m 755' + logdir + ';')
-  
+logdir = os.getcwd() + '/pre-ci-logs-'+host;
+oai.create_dir(logdir,debug)    
+print 'log dir: ' + logdir
+#oai.send_nowait('mkdir -p -m 755' + logdir + ';')
+
 #print '=================start the ' + test + ' at ' + ctime + '=================\n'
 #print 'Results will be reported in log file : ' + logfile
 log.writefile(logfile,'====================start'+test+' at ' + ctime + '=======================\n')
@@ -118,12 +121,14 @@ oai.kill(user, pw)
 oai.rm_driver(oai,user,pw)
 
 # start te test cases 
-case01.execute(oai, user, pw, logfile,logdir)
-case02.execute(oai, user, pw, logfile,logdir)
-case03.execute(oai, user, pw, logfile,logdir)
-if dlsim != 0 :
-    case04.execute(oai, user, pw, logfile,logdir)
-    case05.execute(oai, user, pw, logfile,logdir)
+rv=case01.execute(oai, user, pw, host,logfile,logdir,debug)
+if rv != 0 :
+    case02.execute(oai, user, pw, host, logfile,logdir,debug)
+    case03.execute(oai, user, pw, host, logfile,logdir,debug)
+    case04.execute(oai, user, pw, host, logfile,logdir,debug)
+#case05.execute(oai, user, pw, host, logfile,logdir,debug)
+else :
+    print 'Compilation error: skip test case 02,03,04,05'
 
 oai.kill(user, pw) 
 oai.rm_driver(oai,user,pw)

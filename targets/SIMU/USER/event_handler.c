@@ -335,115 +335,114 @@ void update_mac(Event_t event) {
 	LOG_I(EMU,"A NEW MAC MODEL\n");
 	int i = 0;
 	UE_list_t *UE_list;
+	int enb_module_id=0;
+	int cc_id =0;	
+	eNB_MAC_INST *eNB_mac_inst = get_eNB_mac_inst(enb_module_id);
+	OAI_Emulation *oai_emulation  = get_OAI_emulation();
 	if(event.optype == READ)
 	{
-		
-		eNB_MAC_INST *eNB_mac_inst;
-		eNB_mac_inst = get_eNB_mac_inst();
-		printf("eNB_stats\n\n\n");
+	  
+	  printf("eNB_stats\n\n\n");
 		if(event.key==NULL)
 		{
 			
 			LOG_I(EMU,"num_dlactive_UEs :");			
-			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats.num_dlactive_UEs);
+			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats[cc_id].num_dlactive_UEs);
 			LOG_I(EMU,"available_prbs :");	
-			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats.available_prbs);
+			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats[cc_id].available_prbs);
 			LOG_I(EMU,"total_available_prbs :");	
-			printf("%" PRIu32 "\n", eNB_mac_inst->eNB_stats.total_available_prbs);
+			printf("%" PRIu32 "\n", eNB_mac_inst->eNB_stats[cc_id].total_available_prbs);
 			LOG_I(EMU,"available_ncces :");	
-			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats.available_ncces);
+			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats[cc_id].available_ncces);
 			LOG_I(EMU,"dlsch_bitrate :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.dlsch_bitrate);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].dlsch_bitrate);
 			LOG_I(EMU,"dlsch_bytes_tx :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.dlsch_bytes_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].dlsch_bytes_tx);
 			LOG_I(EMU,"dlsch_pdus_tx :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.dlsch_pdus_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].dlsch_pdus_tx);
 			LOG_I(EMU,"total_dlsch_bitrate :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.total_dlsch_bitrate);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].total_dlsch_bitrate);
 			LOG_I(EMU,"total_dlsch_bytes_tx :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.total_dlsch_bytes_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].total_dlsch_bytes_tx);
 			LOG_I(EMU,"total_dlsch_pdus_tx :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.total_dlsch_pdus_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].total_dlsch_pdus_tx);
 			LOG_I(EMU,"ulsch_bitrate :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.ulsch_bitrate);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].ulsch_bitrate);
 			LOG_I(EMU,"ulsch_bytes_rx :");	
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.ulsch_bytes_rx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].ulsch_bytes_rx);
 			LOG_I(EMU,"ulsch_pdus_rx :");	
-			printf("%" PRIu64 "\n",eNB_mac_inst->eNB_stats.ulsch_pdus_rx);
+			printf("%" PRIu64 "\n",eNB_mac_inst->eNB_stats[cc_id].ulsch_pdus_rx);
 		}
 		else if(!strcmp((char *) event.key, "num_dlactive_UEs"))
 		{
 			LOG_I(EMU,"num_dlactive_UEs :");			
-			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats.num_dlactive_UEs);
+			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats[cc_id].num_dlactive_UEs);
 		}
 		else if(!strcmp((char *) event.key, "available_prbs"))
 		{
 			LOG_I(EMU,"available_prbs :");			
-			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats.available_prbs);
+			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats[cc_id].available_prbs);
 		}
 		else if(!strcmp((char *) event.key, "total_available_prbs"))
 		{
 			LOG_I(EMU,"total_available_prbs :");			
-			printf("%" PRIu32 "\n", eNB_mac_inst->eNB_stats.total_available_prbs);
+			printf("%" PRIu32 "\n", eNB_mac_inst->eNB_stats[cc_id].total_available_prbs);
 		}
 		else if(!strcmp((char *) event.key, "available_ncces"))
 		{
 			LOG_I(EMU,"available_ncces :");			
-			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats.available_ncces);
+			printf("%" PRIu16 "\n",eNB_mac_inst->eNB_stats[cc_id].available_ncces);
 		}
 		else if(!strcmp((char *) event.key, "dlsch_bitrate"))
 		{
 			LOG_I(EMU,"dlsch_bitrate :");
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.dlsch_bitrate);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].dlsch_bitrate);
 		}
 		else if(!strcmp((char *) event.key, "dlsch_bytes_tx"))
 		{
 			LOG_I(EMU,"dlsch_bytes_tx :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.dlsch_bytes_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].dlsch_bytes_tx);
 		}
 		else if(!strcmp((char *) event.key, "dlsch_pdus_tx"))
 		{
 			LOG_I(EMU,"dlsch_pdus_tx :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.dlsch_pdus_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].dlsch_pdus_tx);
 		}
 		else if(!strcmp((char *) event.key, "total_dlsch_bitrate"))
 		{
 			LOG_I(EMU,"total_dlsch_bitrate :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.total_dlsch_bitrate);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].total_dlsch_bitrate);
 		}
 		else if(!strcmp((char *) event.key, "total_dlsch_bytes_tx"))
 		{
 			LOG_I(EMU,"total_dlsch_bytes_tx :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.total_dlsch_bytes_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].total_dlsch_bytes_tx);
 		}
 		else if(!strcmp((char *) event.key, "total_dlsch_pdus_tx"))
 		{
 			LOG_I(EMU,"total_dlsch_pdus_tx :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.total_dlsch_pdus_tx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].total_dlsch_pdus_tx);
 		}
 		else if(!strcmp((char *) event.key, "ulsch_bitrate"))
 		{
 			LOG_I(EMU,"ulsch_bitrate :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.ulsch_bitrate);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].ulsch_bitrate);
 		}
 		else if(!strcmp((char *) event.key, "ulsch_bytes_rx"))
 		{
 			LOG_I(EMU,"ulsch_bytes_rx :");			
-			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats.ulsch_bytes_rx);
+			printf("%" PRIu32 "\n",eNB_mac_inst->eNB_stats[cc_id].ulsch_bytes_rx);
 		}
 		else if(!strcmp((char *) event.key, "ulsch_pdus_rx"))
 		{
 			LOG_I(EMU,"ulsch_pdus_rx :");			
-			printf("%" PRIu64 "\n",eNB_mac_inst->eNB_stats.ulsch_pdus_rx);
+			printf("%" PRIu64 "\n",eNB_mac_inst->eNB_stats[cc_id].ulsch_pdus_rx);
 		}
 	}
 	else if(event.optype == WRITE)
 	{
 		LOG_I(EMU,"WRITE OPERATION \n");			
-		eNB_MAC_INST *eNB_mac_inst;
-		eNB_mac_inst = get_eNB_mac_inst();
-		OAI_Emulation *oai_emulation;
-		oai_emulation = get_OAI_emulation();
+		
 		
 		if(event.key==NULL && event.value!=NULL)
 		{

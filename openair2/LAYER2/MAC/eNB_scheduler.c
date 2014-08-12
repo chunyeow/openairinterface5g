@@ -82,7 +82,6 @@
 
 void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, frame_t frameP, sub_frame_t subframeP) {//, int calibration_flag) {
 
-  start_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
   unsigned int nprb[MAX_NUM_CCs];
   unsigned int nCCE[MAX_NUM_CCs];
   int mbsfn_status[MAX_NUM_CCs];
@@ -101,9 +100,8 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 
   LOG_D(MAC,"[eNB %d] Frame %d, Subframe %d, entering MAC scheduler\n",module_idP, frameP, subframeP);
 
-
-
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,1);
+  start_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,VCD_FUNCTION_IN);
 
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     DCI_pdu[CC_id] = &eNB_mac_inst[module_idP].common_channels[CC_id].DCI_pdu;
@@ -170,7 +168,7 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     eNB_mac_inst[module_idP].common_channels[CC_id].bcch_active = 0;
     
 #ifdef Rel10
-    eNB_mac_inst[module_idP].common_channels.mcch_active =0;
+    eNB_mac_inst[module_idP].common_channels[CC_id].mcch_active =0;
 #endif
     
     eNB_mac_inst[module_idP].frame    = frameP;
@@ -181,22 +179,19 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
 #ifdef EXMIMO
   pdcp_run(frameP, 1, 0, module_idP);
 #endif
-#ifdef CELLULAR
-  rrc_rx_tx(module_idP, frameP, 0, 0);
-#else
+
   // check HO
   rrc_rx_tx(module_idP,
-      frameP,
-      1,
-      module_idP);
-#endif
+	    frameP,
+	    1,
+	    module_idP);
 
 #ifdef Rel10
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-    if (eNB_mac_inst[module_idP].common_channels.MBMS_flag >0) {
-      start_meas(&eNB_mac_inst[module_idP].common_channels.schedule_mch);
-      mbsfn_status = schedule_MBMS(module_idP,CC_id,frameP,subframeP);
-      stop_meas(&eNB_mac_inst[module_idP][CC-id].schedule_mch);
+    if (eNB_mac_inst[module_idP].common_channels[CC_id].MBMS_flag >0) {
+      start_meas(&eNB_mac_inst[module_idP].schedule_mch);
+      mbsfn_status[CC_id] = schedule_MBMS(module_idP,CC_id,frameP,subframeP);
+      stop_meas(&eNB_mac_inst[module_idP].schedule_mch);
     }
   }
 #endif
@@ -473,9 +468,9 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     DCI_pdu[CC_id]->nCCE = nCCE[CC_id];
   LOG_D(MAC,"frameP %d, subframeP %d nCCE %d\n",frameP,subframeP,nCCE[0]);
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,0);
   stop_meas(&eNB_mac_inst[module_idP].eNB_scheduler);
-
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_ENB_DLSCH_ULSCH_SCHEDULER,VCD_FUNCTION_OUT);
+ 
 }
 
 

@@ -274,7 +274,7 @@ uint32_t ue_get_SR(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t eNB_i
   }
 }
 
-void ue_send_sdu(module_id_t module_idP,int CC_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index) {
+void ue_send_sdu(module_id_t module_idP, uint8_t CC_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index) {
 
   unsigned char rx_ces[MAX_NUM_CE],num_ce,num_sdu,i,*payload_ptr;
   unsigned char rx_lcids[NB_RB_MAX];
@@ -489,7 +489,7 @@ unsigned char *parse_mch_header(unsigned char *mac_header,
 }
 
 // this function is for sending mch_sdu from phy to mac
-void ue_send_mch_sdu(module_id_t module_idP, frame_t frameP, uint8_t *sdu, uint16_t sdu_len, uint8_t eNB_index, uint8_t sync_area) {
+void ue_send_mch_sdu(module_id_t module_idP, uint8_t CC_id, frame_t frameP, uint8_t *sdu, uint16_t sdu_len, uint8_t eNB_index, uint8_t sync_area) {
 
   unsigned char num_sdu, i, *payload_ptr;
   unsigned char rx_lcids[NB_RB_MAX];
@@ -570,7 +570,7 @@ int8_t ue_get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_are
   }
 }
 
-int ue_query_mch(module_id_t module_idP, uint32_t frameP, uint32_t subframe, uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active) {
+int ue_query_mch(module_id_t module_idP, uint8_t CC_id, uint32_t frameP, uint32_t subframe, uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active) {
 
   int i=0, j=0, ii=0, msi_pos=0, mcch_mcs = - 1;
   int mcch_flag=0, mtch_flag=0, msi_flag=0;

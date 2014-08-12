@@ -487,8 +487,14 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_
   mac_xface->phy_config_dedicated_eNB    = phy_config_dedicated_eNB;
   mac_xface->phy_config_dedicated_ue     = phy_config_dedicated_ue;
 
+  mac_xface->get_lte_frame_parms        = get_lte_frame_parms;
+  mac_xface->get_mu_mimo_mode           = get_mu_mimo_mode;
+
 #ifdef Rel10
   mac_xface->get_mch_sdu                 = get_mch_sdu;
+  mac_xface->phy_config_dedicated_scell_eNB= phy_config_dedicated_scell_eNB;
+  mac_xface->phy_config_dedicated_scell_ue= phy_config_dedicated_scell_ue;
+  
 #endif
 
   mac_xface->get_PHR = get_PHR;

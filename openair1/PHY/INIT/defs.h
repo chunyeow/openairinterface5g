@@ -10,6 +10,9 @@
 #include "TDD-Config.h"
 #include "MBSFN-SubframeConfigList.h"
 #include "MobilityControlInfo.h"
+#ifdef Rel10
+#include "SCellToAddMod-r10.h"
+#endif 
 #else
 
 /**
@@ -269,6 +272,18 @@ void phy_init_lte_top(LTE_DL_FRAME_PARMS *lte_frame_parms);
 
 //void copy_lte_parms_to_phy_framing(LTE_DL_FRAME_PARMS *frame_parm, PHY_FRAMING *phy_framing);
 
+#ifdef Rel10
+void phy_config_dedicated_scell_ue(uint8_t Mod_id,
+				   uint8_t eNB_index,
+				   SCellToAddMod_r10_t *sCellToAddMod_r10, 
+				   int CC_id);
+
+void phy_config_dedicated_scell_eNB(uint8_t Mod_id,
+				    uint16_t rnti,
+				    SCellToAddMod_r10_t *sCellToAddMod_r10, 
+				    int CC_id);
+
+#endif 
 #endif
 
 

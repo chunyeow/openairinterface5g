@@ -64,6 +64,30 @@
 // main log variables
 log_t *g_log;
 
+mapping log_level_names[] =
+{
+    {"emerg", LOG_EMERG},
+    {"alert", LOG_ALERT},
+    {"crit", LOG_CRIT},
+    {"error", LOG_ERR},
+    {"warn", LOG_WARNING},
+    {"notice", LOG_NOTICE},
+    {"info", LOG_INFO},
+    {"debug", LOG_DEBUG},
+    {"file", LOG_FILE},
+    {"trace", LOG_TRACE},
+    {NULL, -1}
+};
+mapping log_verbosity_names[] =
+{
+  {"none", 0x0},
+  {"low", 0x5},
+  {"medium", 0x15},
+  {"high", 0x35},
+  {"full", 0x75},
+  {NULL, -1}
+};
+
 // vars for the log thread
 LOG_params log_list[2000];
 int log_list_tail = 0;

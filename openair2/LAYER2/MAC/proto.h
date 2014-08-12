@@ -68,14 +68,14 @@ void schedule_SI(module_id_t module_idP,frame_t frameP,unsigned int *nprb,unsign
 @param frame Frame index
 @param subframe Subframe number on which to act
 */
-int schedule_MBMS(module_id_t module_idP,frame_t frameP, sub_frame_t subframe);
+int schedule_MBMS(module_id_t module_idP,uint8_t CC_id, frame_t frameP, sub_frame_t subframe);
 
 /** \brief check the mapping between sf allocation and sync area, Currently only supports 1:1 mapping
 @param Mod_id Instance ID of eNB
 @param mbsfn_sync_area index of mbsfn sync area
 @param[out] index of sf pattern 
 */
-int8_t get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t mbsfn_sync_area);
+int8_t get_mbsfn_sf_alloction (module_id_t module_idP, uint8_t CC_id, uint8_t mbsfn_sync_area);
 
 /** \brief check the mapping between sf allocation and sync area, Currently only supports 1:1 mapping
 @param Mod_id Instance ID of eNB
@@ -170,6 +170,16 @@ void mac_top_cleanup(void);
 
 void mac_UE_out_of_sync_ind(module_id_t module_idP,frame_t frameP, uint16_t eNB_index);
 
+void dlsch_scheduler_pre_processor_reset (int UE_id, 
+					  uint8_t  CC_id,
+					  int N_RBG,
+					  uint8_t dl_pow_off[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
+					  uint16_t nb_rbs_required[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
+					  uint16_t pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
+					  uint16_t  nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX], 
+					  unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
+					  unsigned char rballoc_sub[MAX_NUM_CCs][13],
+					  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13]);
 
 // eNB functions
 /* \brief This function assigns pre-available RBS to each UE in specified sub-bands before scheduling is done
@@ -188,9 +198,25 @@ void dlsch_scheduler_pre_processor (module_id_t module_idP,
                                     sub_frame_t subframe,
                                     uint8_t dl_pow_off[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
                                     uint16_t pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
-                                    int N_RBGS[MAX_NUM_CCs],
-                                    unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBGS_MAX],
+                                    int N_RBG[MAX_NUM_CCs],
+                                    unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
 				    int *mbsfn_flag);
+
+
+void dlsch_scheduler_pre_processor_allocate (module_id_t   Mod_id,
+					     int           UE_id, 
+					     uint8_t       CC_id,
+					     int           N_RBG,
+					     int           transmission_mode,
+					     int           min_rb_unit, 
+					     uint8_t       N_RB_DL,
+					     uint8_t       dl_pow_off[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
+					     uint16_t      nb_rbs_required[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
+					     uint16_t      pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
+					     uint16_t      nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX], 
+					     unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
+					     unsigned char rballoc_sub[MAX_NUM_CCs][13],
+					     unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13]);
 
 /* \brief Function to trigger the eNB scheduling procedure.  It is called by PHY at the beginning of each subframe, \f$n$\f 
    and generates all DLSCH allocations for subframe \f$n\f$ and ULSCH allocations for subframe \f$n+k$\f. The resultant DCI_PDU is
@@ -268,7 +294,7 @@ uint8_t *get_dlsch_sdu(module_id_t module_idP,int CC_id,frame_t frameP,rnti_t rn
 @param mcs Pointer to mcs used by PHY (to be filled by MAC) 
 @returns Pointer to MCH transport block and mcs for subframe
 */
-MCH_PDU *get_mch_sdu(uint8_t Mod_id,uint32_t frame,sub_frame_t subframe);
+MCH_PDU *get_mch_sdu(uint8_t Mod_id,uint8_t CC_id, uint32_t frame,sub_frame_t subframe);
 
 
 //added for ALU icic purpose
@@ -290,6 +316,12 @@ boolean_t   is_UE_active      (module_id_t module_idP, int UE_id);
 uint8_t     process_ue_cqi    (module_id_t module_idP, int UE_id);
 
 int8_t find_active_UEs_with_traffic(module_id_t module_idP);
+
+void set_ue_dai(sub_frame_t   subframeP,
+		uint8_t       tdd_config,
+		int           UE_id,
+		uint8_t       CC_id,
+		UE_list_t     *UE_list);
 
 uint8_t find_num_active_UEs_in_cbagroup(module_id_t module_idP, unsigned char group_id);
 uint8_t UE_is_to_be_scheduled(module_id_t module_idP,int CC_id,uint8_t UE_id);
@@ -340,7 +372,7 @@ void mac_out_of_sync_ind(module_id_t module_idP, frame_t frameP, uint16_t CH_ind
 void ue_decode_si(module_id_t module_idP, int CC_id,frame_t frame, uint8_t CH_index, void *pdu, uint16_t len);
 
 
-void ue_send_sdu(module_id_t module_idP, int CC_id,frame_t frame, uint8_t *sdu,uint16_t sdu_len,uint8_t CH_index);
+void ue_send_sdu(module_id_t module_idP, uint8_t CC_id,frame_t frame, uint8_t *sdu,uint16_t sdu_len,uint8_t CH_index);
 
 
 #ifdef Rel10
@@ -352,7 +384,7 @@ void ue_send_sdu(module_id_t module_idP, int CC_id,frame_t frame, uint8_t *sdu,u
 @param eNB_index Index of attached eNB
 @param sync_area the index of MBSFN sync area
 */
-void ue_send_mch_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index,uint8_t sync_area) ;
+void ue_send_mch_sdu(module_id_t module_idP,uint8_t CC_id, frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index,uint8_t sync_area) ;
 
 /*\brief Function to check if UE PHY needs to decode MCH for MAC.
 @param Mod_id Index of protocol instance
@@ -362,7 +394,7 @@ void ue_send_mch_sdu(module_id_t module_idP,frame_t frameP,uint8_t *sdu,uint16_t
 @param[out] sync_area return the sync area
 @param[out] mcch_active flag indicating whether this MCCH is active in this SF
 */
-int ue_query_mch(uint8_t Mod_id,uint32_t frame,sub_frame_t subframe, uint8_t eNB_index, uint8_t *sync_area, uint8_t *mcch_active);
+int ue_query_mch(uint8_t Mod_id,uint8_t CC_id, uint32_t frame,sub_frame_t subframe, uint8_t eNB_index, uint8_t *sync_area, uint8_t *mcch_active);
 
 #endif
 
@@ -446,6 +478,12 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_
 int mac_init(void);
 int add_new_ue(module_id_t Mod_id, int CC_id, rnti_t rnti);
 int mac_remove_ue(module_id_t Mod_id, int UE_id);
+
+void swap_UEs(UE_list_t *listP,int nodeiP, int nodejP);
+int prev(UE_list_t *listP, int nodeP);
+int UE_num_active_CC(UE_list_t *listP,int ue_idP);
+int UE_PCCID(module_id_t mod_idP,int ue_idP);
+rnti_t UE_RNTI(module_id_t mod_idP, int ue_idP);
 
 /*! \fn  UE_L2_state_t ue_scheduler(module_id_t module_idP,frame_t frameP, sub_frame_t subframe, lte_subframe_t direction,uint8_t eNB_index)
    \brief UE scheduler where all the ue background tasks are done.  This function performs the following:  1) Trigger PDCP every 5ms 2) Call RRC for link status return to PHY3) Perform SR/BSR procedures for scheduling feedback 4) Perform PHR procedures.  
@@ -609,5 +647,9 @@ void add_common_dci(DCI_PDU *DCI_pdu,
 
 uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc);
 
-void update_ul_dci(module_id_t module_idP,int CC_id,rnti_t rnti,uint8_t dai);
+void update_ul_dci(module_id_t module_idP,uint8_t CC_id,rnti_t rnti,uint8_t dai);
+
+int get_min_rb_unit(module_id_t module_idP, uint8_t CC_id);
+
+
 #endif

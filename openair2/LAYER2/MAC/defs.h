@@ -128,7 +128,11 @@
 // The power headroom reporting range is from -23 ...+40 dB and beyond, with step 1
 #define PHR_MAPPING_OFFSET 23  // if ( x>= -23 ) val = floor (x + 23) 
 
-#define N_RBGS_MAX 25
+#define N_RBG_MAX 25 // for 20MHz channel BW
+
+#define MIN_CQI_VALUE  0
+#define MAX_CQI_VALUE  15
+
 
 #define LCGID0 0
 #define LCGID1 1
@@ -529,6 +533,8 @@ typedef struct{
   
   uint32_t dl_buffer_head_sdu_creation_time[MAX_NUM_LCID];
 
+  uint32_t  dl_buffer_head_sdu_creation_time_max;
+  
   uint8_t    dl_buffer_head_sdu_is_segmented[MAX_NUM_LCID];
 
   uint32_t dl_buffer_head_sdu_remaining_size_to_send[MAX_NUM_LCID];
@@ -702,7 +708,7 @@ typedef struct{
   ///  active flag for Other lcid 
   //  uint8_t lcid_active[NB_RB_MAX];
   // eNB stats 
-  eNB_STATS eNB_stats;
+  eNB_STATS eNB_stats[MAX_NUM_CCs];
   // MAC function execution peformance profiler
   time_stats_t eNB_scheduler;
   time_stats_t schedule_si;

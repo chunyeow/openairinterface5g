@@ -244,10 +244,11 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 #ifdef Rel10
   if (sCellToAddMod_r10 != NULL) {
     
-    if (eNB_flag==1){
+    if (eNB_flagP==1){
       mac_xface->phy_config_dedicated_scell_eNB(Mod_id,UE_RNTI(Mod_id,UE_id),sCellToAddMod_r10,1);
     }
     else {
+#warning "phy_config_dedicated_scell_ue is empty"
       mac_xface->phy_config_dedicated_scell_ue(Mod_id,eNB_index,sCellToAddMod_r10,1);
       UE_mac_inst[Mod_id].physicalConfigDedicatedSCell_r10 = sCellToAddMod_r10->radioResourceConfigDedicatedSCell_r10->physicalConfigDedicatedSCell_r10; // using SCell index 0
     }
@@ -420,7 +421,7 @@ int rrc_mac_config_req(module_id_t Mod_id, eNB_flag_t eNB_flagP,uint8_t UE_id,ui
 
               // MBMS session info list in each MCH
               eNB_mac_inst[Mod_id].common_channels[0].mbms_SessionList[i] = &pmch_InfoList->list.array[i]->mbms_SessionInfoList_r9;
-              LOG_I(MAC, "PMCH[%d] Number of session (MTCH) is: %d\n",i, eNB_mac_inst[Mod_id].mbms_SessionList[i]->list.count);
+              LOG_I(MAC, "PMCH[%d] Number of session (MTCH) is: %d\n",i, eNB_mac_inst[Mod_id].common_channels[0].mbms_SessionList[i]->list.count);
           }
       }
       else { // UE

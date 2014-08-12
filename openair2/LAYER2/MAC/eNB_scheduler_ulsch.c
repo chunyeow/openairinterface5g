@@ -582,7 +582,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 				    (UE_template->bsr_info[LCGID1]  == 0) &&
 				    (UE_template->bsr_info[LCGID2]  == 0) &&
 				    (UE_template->bsr_info[LCGID3] == 0))?
-		  BSR_TABLE[10] :   // This is when we've received SR and buffers are fully served
+		  BSR_TABLE[11] :   // This is when we've received SR and buffers are fully served
 		  BSR_TABLE[UE_template->bsr_info[LCGID0]]+
 		  BSR_TABLE[UE_template->bsr_info[LCGID1]]+
 		  BSR_TABLE[UE_template->bsr_info[LCGID2]]+

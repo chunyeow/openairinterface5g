@@ -155,7 +155,9 @@ boolean_t pdcp_data_req(
     start_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
   else
     start_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
-
+ 
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_IN);
+   
   // PDCP transparent mode for MBMS traffic
 
   if (modeP == PDCP_TRANSMISSION_MODE_TRANSPARENT) {
@@ -230,6 +232,7 @@ boolean_t pdcp_data_req(
                     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
                   else
                     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
                   return FALSE;
               }
           } else {
@@ -243,6 +246,7 @@ boolean_t pdcp_data_req(
                     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
                   else
                     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+		  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
                   return FALSE;
               }
           }
@@ -258,6 +262,7 @@ boolean_t pdcp_data_req(
                 stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_req);
               else
                 stop_meas(&UE_pdcp_stats[ue_mod_idP].data_req);
+	      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
               return FALSE;
           }
 
@@ -317,7 +322,8 @@ boolean_t pdcp_data_req(
             ue_mod_idP,
             rb_idP);
 #endif
-          return FALSE;
+	vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
+	return FALSE;
       }
       /*
        * Ask sublayer to transmit data and check return value
@@ -376,6 +382,7 @@ boolean_t pdcp_data_req(
       Pdcp_stats_tx_bytes[module_id][(rb_id & RAB_OFFSET2 )>> RAB_SHIFT2][(rb_id & RAB_OFFSET)-DTCH] += sdu_buffer_size;
     }
     }*/
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_REQ,VCD_FUNCTION_OUT);
   return ret;
 
 }
@@ -402,10 +409,7 @@ boolean_t pdcp_data_ind(
   uint8_t      payload_offset  = 0;
   rb_id_t      rb_id           = rb_idP;
 
-  if (enb_flagP)
-    start_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-  else
-    start_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+ 
 
 #ifdef OAI_EMU
   if (enb_flagP) {
@@ -484,17 +488,19 @@ boolean_t pdcp_data_ind(
 
       }
   }
-
+  
   sdu_list_p = &pdcp_sdu_list;
 
   if (sdu_buffer_sizeP == 0) {
       LOG_W(PDCP, "SDU buffer size is zero! Ignoring this chunk!\n");
-      if (enb_flagP)
-	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
-      else
-	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
       return FALSE;
   }
+  
+  if (enb_flagP)
+    start_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
+  else
+    start_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);  
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_IN);
 
   /*
    * Parse the PDU placed at the beginning of SDU to check
@@ -531,6 +537,7 @@ boolean_t pdcp_data_ind(
             stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
           else
             stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+	  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
           return FALSE;
       }
   
@@ -591,6 +598,7 @@ boolean_t pdcp_data_ind(
 	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
       else
 	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
       return TRUE;
     }
   /*
@@ -649,7 +657,8 @@ boolean_t pdcp_data_ind(
              stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
            else
              stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
-           return TRUE;
+	   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
+	   return TRUE;
       }
   }
 #else
@@ -660,6 +669,7 @@ boolean_t pdcp_data_ind(
 	stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
       else
 	stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+      vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
       return TRUE;
   }
 #endif
@@ -739,6 +749,7 @@ boolean_t pdcp_data_ind(
     stop_meas(&eNB_pdcp_stats[enb_mod_idP].data_ind);
   else
     stop_meas(&UE_pdcp_stats[ue_mod_idP].data_ind);
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_DATA_IND,VCD_FUNCTION_OUT);
   return TRUE;
 }
 
@@ -871,11 +882,12 @@ void pdcp_run (
   else
     stop_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_ip);
 
-  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
   if (enb_flagP)
     stop_meas(&eNB_pdcp_stats[enb_mod_idP].pdcp_run);
   else
     stop_meas(&UE_pdcp_stats[ue_mod_idP].pdcp_run);
+
+  vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PDCP_RUN, VCD_FUNCTION_OUT);
 
 }
 

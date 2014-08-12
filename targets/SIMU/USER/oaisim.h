@@ -17,7 +17,7 @@
 #include "UTIL/OMV/structures.h"
 #endif
 
-eNB_MAC_INST* get_eNB_mac_inst(void);
+eNB_MAC_INST* get_eNB_mac_inst(module_id_t module_idP);
 OAI_Emulation* get_OAI_emulation(void);
 void init_channel_vars(LTE_DL_FRAME_PARMS *frame_parms, double ***s_re,double ***s_im,double ***r_re,double ***r_im,double ***r_re0,double ***r_im0);
 

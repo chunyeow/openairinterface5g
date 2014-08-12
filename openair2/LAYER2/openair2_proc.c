@@ -85,28 +85,29 @@ int dump_eNB_l2_stats(char *buffer, int length){
     /* reset the values */ 
     eNB = &eNB_mac_inst[eNB_id];
     UE_list = &eNB->UE_list;
-
-    eNB->eNB_stats.dlsch_bitrate= 0; 
     
-    len += sprintf(&buffer[len],"eNB %d Frame %d: Active UEs %d, Available PRBs %d, nCCE %d \n",
-		   eNB_id, eNB->frame,
-		   eNB->eNB_stats.num_dlactive_UEs,
-		   eNB->eNB_stats.available_prbs,
-		   eNB->eNB_stats.available_ncces);
+    for (CC_id=0 ; CC_id < MAX_NUM_CCs; CC_id++) {
+      eNB->eNB_stats[CC_id].dlsch_bitrate= 0; 
     
-    eNB->eNB_stats.dlsch_bitrate=((eNB->eNB_stats.dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
-    eNB->eNB_stats.total_dlsch_pdus_tx+=eNB->eNB_stats.dlsch_pdus_tx;
-    eNB->eNB_stats.total_dlsch_bytes_tx+=eNB->eNB_stats.dlsch_bytes_tx;
-    eNB->eNB_stats.total_dlsch_bitrate=((eNB->eNB_stats.total_dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
-       
-    len += sprintf(&buffer[len],"DLSCH bitrate (TTI %u, avg %u) kbps, Transmitted bytes (TTI %u, total %u), Transmitted PDU (TTI %u, total %u) \n",
-		   eNB->eNB_stats.dlsch_bitrate,
-		   eNB->eNB_stats.total_dlsch_bitrate,
-		   eNB->eNB_stats.dlsch_bytes_tx,
-		   eNB->eNB_stats.total_dlsch_bytes_tx,
-		   eNB->eNB_stats.dlsch_pdus_tx,
-		   eNB->eNB_stats.total_dlsch_pdus_tx);
-    
+      len += sprintf(&buffer[len],"eNB %d CC %d Frame %d: Active UEs %d, Available PRBs %d, nCCE %d \n",
+		     eNB_id, CC_id, eNB->frame,
+		     eNB->eNB_stats[CC_id].num_dlactive_UEs,
+		     eNB->eNB_stats[CC_id].available_prbs,
+		     eNB->eNB_stats[CC_id].available_ncces);
+      
+      eNB->eNB_stats[CC_id].dlsch_bitrate=((eNB->eNB_stats[CC_id].dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
+      eNB->eNB_stats[CC_id].total_dlsch_pdus_tx+=eNB->eNB_stats[CC_id].dlsch_pdus_tx;
+      eNB->eNB_stats[CC_id].total_dlsch_bytes_tx+=eNB->eNB_stats[CC_id].dlsch_bytes_tx;
+      eNB->eNB_stats[CC_id].total_dlsch_bitrate=((eNB->eNB_stats[CC_id].total_dlsch_bytes_tx*8)/((eNB->frame + 1)*10));
+      
+      len += sprintf(&buffer[len],"DLSCH bitrate (TTI %u, avg %u) kbps, Transmitted bytes (TTI %u, total %u), Transmitted PDU (TTI %u, total %u) \n",
+		     eNB->eNB_stats[CC_id].dlsch_bitrate,
+		     eNB->eNB_stats[CC_id].total_dlsch_bitrate,
+		     eNB->eNB_stats[CC_id].dlsch_bytes_tx,
+		     eNB->eNB_stats[CC_id].total_dlsch_bytes_tx,
+		     eNB->eNB_stats[CC_id].dlsch_pdus_tx,
+		     eNB->eNB_stats[CC_id].total_dlsch_pdus_tx);
+    }
     len += sprintf(&buffer[len],"\n");
 
     for (UE_id=UE_list->head;UE_id>0;UE_id=UE_list->next[UE_id]) {

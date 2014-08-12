@@ -532,6 +532,30 @@ uint32_t allocate_prbs(int UE_id,unsigned char nb_rb, uint32_t *rballoc) {
   return(rballoc_dci);
 }
 
+int get_min_rb_unit(module_id_t module_id, uint8_t CC_id){
+  
+  int min_rb_unit=0;
+  LTE_DL_FRAME_PARMS* frame_parms = mac_xface->get_lte_frame_parms(module_id,CC_id); 
+  switch (frame_parms->N_RB_DL) {
+  case 6: // 1.4 MHz
+    min_rb_unit=1;
+    break;
+  case 25: // 5HMz
+    min_rb_unit=2;
+    break;
+  case 50: // 10HMz
+    min_rb_unit=3;
+    break;
+  case 100: // 20HMz
+    min_rb_unit=4;
+    break;
+  default:
+    min_rb_unit=2;
+    LOG_W(MAC,"[eNB %d] N_DL_RB %d unknown for CC_id %d, setting min_rb_unit to 2\n", module_id, CC_id);
+    break;
+  }
+  return min_rb_unit;
+}
 
 uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
 
@@ -539,23 +563,23 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
   uint32_t rballoc_dci=0;
   //uint8_t number_of_subbands=13;
 
-  LOG_T(MAC,"*****Check1RBALLOC****: %d%d%d%d (nb_rb %d,N_RBGS %d)\n",
-      rballoc[3],rballoc[2],rballoc[1],rballoc[0],nb_rb,mac_xface->lte_frame_parms->N_RBGS);
-  while((nb_rb >0) && (check < mac_xface->lte_frame_parms->N_RBGS)){
+  LOG_T(MAC,"*****Check1RBALLOC****: %d%d%d%d (nb_rb %d,N_RBG %d)\n",
+      rballoc[3],rballoc[2],rballoc[1],rballoc[0],nb_rb,mac_xface->lte_frame_parms->N_RBG);
+  while((nb_rb >0) && (check < mac_xface->lte_frame_parms->N_RBG)){
       //printf("rballoc[%d] %d\n",check,rballoc[check]);
       if(rballoc[check] == 1){
-          rballoc_dci |= (1<<((mac_xface->lte_frame_parms->N_RBGS-1)-check));
+          rballoc_dci |= (1<<((mac_xface->lte_frame_parms->N_RBG-1)-check));
           switch (mac_xface->lte_frame_parms->N_RB_DL) {
           case 6:
             nb_rb--;
           case 25:
-            if ((check == mac_xface->lte_frame_parms->N_RBGS-1))
+            if ((check == mac_xface->lte_frame_parms->N_RBG-1))
               nb_rb--;
             else
               nb_rb-=2;
             break;
           case 50:
-            if ((check == mac_xface->lte_frame_parms->N_RBGS-1))
+            if ((check == mac_xface->lte_frame_parms->N_RBG-1))
               nb_rb-=2;
             else
               nb_rb-=3;
@@ -576,21 +600,32 @@ uint32_t allocate_prbs_sub(int nb_rb, uint8_t *rballoc) {
 }
 
 
+int get_nb_subband(void){
+ 
+  int nb_sb=0;
 
-
-void update_ul_dci(module_id_t module_idP,int CC_id,rnti_t rnti,uint8_t dai) {
-
-  DCI_PDU             *DCI_pdu   = &eNB_mac_inst[module_idP].common_channels[CC_id].DCI_pdu;
-  int                  i;
-  DCI0_5MHz_TDD_1_6_t *ULSCH_dci = NULL;;
-
-  if (mac_xface->lte_frame_parms->frame_type == TDD) {
-      for (i=0;i<DCI_pdu->Num_common_dci+DCI_pdu->Num_ue_spec_dci;i++) {
-          ULSCH_dci = (DCI0_5MHz_TDD_1_6_t *)DCI_pdu->dci_alloc[i].dci_pdu;
-          if ((DCI_pdu->dci_alloc[i].format == format0) && (DCI_pdu->dci_alloc[i].rnti == rnti))
-            ULSCH_dci->dai = (dai-1)&3;
-      }
+  switch (mac_xface->lte_frame_parms->N_RB_DL) {
+  case 6:
+    nb_sb=0; 
+    break;
+  case 15:
+    nb_sb = 4;  // sb_size =4
+  case 25: 
+    nb_sb = 7; // sb_size =4, 1 sb with 1PRB, 6 with 2 RBG, each has 2 PRBs
+    break;
+  case 50:    // sb_size =6
+    nb_sb = 9;
+    break;
+  case 75:  // sb_size =8
+    nb_sb = 10;
+    break;
+  case 100: // sb_size =8 , 1 sb with 1 RBG + 12 sb with 2RBG, each RBG has 4 PRBs
+    nb_sb = 13;
+    break;
+  default:
+    nb_sb=0;
+    break;
   }
-  //  printf("Update UL DCI: DAI %d\n",dai);
-}
+  return nb_sb;
 
+}

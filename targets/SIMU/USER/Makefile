@@ -18,7 +18,7 @@ CPUFLAGS += $(shell if grep --silent -w sse4 /proc/cpuinfo ; then echo "-msse4" 
 linux = $(shell if [ `uname` = "Linux" ] ; then echo "1" ; else echo "0" ; fi)
 
 ifdef DEBUG
-CFLAGS += -g -ggdb -DDEBUG_PHY
+CFLAGS += -g -ggdb -DDEBUG_PHY -DDEBUG_MEAS
 else 
 CFLAGE += -O2	
 endif

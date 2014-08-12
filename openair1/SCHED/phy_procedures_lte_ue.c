@@ -1890,14 +1890,16 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
   }
 #ifdef PHY_ABSTRACTION
   else {
-    for (i=0;i<NB_eNB_INST;i++) 
-      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++){
-      if (PHY_vars_eNB_g[i][CC_id]->lte_frame_parms.Nid_cell == phy_vars_ue->lte_frame_parms.Nid_cell)
+    for (i=0;i<NB_eNB_INST;i++) {
+      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++)
+	if (PHY_vars_eNB_g[i][CC_id]->lte_frame_parms.Nid_cell == phy_vars_ue->lte_frame_parms.Nid_cell)
+	  break;
+      if (CC_id < MAX_NUM_CCs)
 	break;
     }
     if (i==NB_eNB_INST) {
       LOG_E(PHY,"[UE  %d] phy_procedures_lte_ue.c: FATAL : Could not find attached eNB for DCI emulation (Nid_cell %d)!!!!\n",phy_vars_ue->Mod_id,phy_vars_ue->lte_frame_parms.Nid_cell);
-      mac_xface->macphy_exit("");
+      mac_xface->macphy_exit("Could not find attached eNB for DCI emulation");
       vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_PDCCH_PROCEDURES, VCD_FUNCTION_OUT);
       return(-1);
     }
@@ -3076,7 +3078,13 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
       LOG_D(PHY,"[UE %d] Frame %d, subframe %d: Querying for PMCH demodulation(%d)\n",
 	    phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,last_slot);
 #ifdef Rel10
-      pmch_mcs = mac_xface->ue_query_mch(phy_vars_ue->Mod_id,((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,last_slot>>1,eNB_id,&sync_area,&mcch_active);
+      pmch_mcs = mac_xface->ue_query_mch(phy_vars_ue->Mod_id,
+					 phy_vars_ue->CC_id,
+					 ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,
+					 last_slot>>1,
+					 eNB_id,
+					 &sync_area,
+					 &mcch_active);
       if (phy_vars_rn)
 	phy_vars_rn->mch_avtive[last_slot>>1]=0;
 #else
@@ -3166,6 +3174,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
 #ifdef Rel10
 	  if ((r_type == no_relay) || (mcch_active == 1)) {
 	    mac_xface->ue_send_mch_sdu(phy_vars_ue->Mod_id,
+				       phy_vars_ue->CC_id,
 				       ((last_slot>>1)==9?-1:0)+phy_vars_ue->frame,
 				       phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->b,
 				       phy_vars_ue->dlsch_ue_MCH[0]->harq_processes[0]->TBS>>3,

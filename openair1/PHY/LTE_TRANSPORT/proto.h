@@ -1222,7 +1222,7 @@ uint32_t get_rballoc(uint8_t vrb_type,uint16_t rb_alloc_dci);
 /* \brief Return bit-map of resource allocation for a given DCI rballoc (RIV format) and vrb type
    @returns Transmission mode (1-7)
 */
-uint8_t get_transmission_mode(uint16_t Mod_id, uint16_t rnti);
+uint8_t get_transmission_mode(uint16_t Mod_id, uint8_t CC_id, uint16_t rnti);
 
 /* \brief 
    @param ra_header Header of resource allocation (0,1) (See sections 7.1.6.1/7.1.6.2 of 36.213 Rel8.6)

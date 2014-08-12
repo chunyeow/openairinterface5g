@@ -21,7 +21,7 @@ __m128i zeroPMI;
 #define k1 ((long long int) 1000)
 #define k2 ((long long int) (1024-k1))
 
-#define DEBUG_MEAS
+//#define DEBUG_MEAS
 
 #ifdef USER_MODE
 void print_shorts(char *s,__m128i *x) {
@@ -243,7 +243,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       }
 
 
-
+      // 2 RE per PRB
       phy_vars_ue->PHY_measurements.rsrp[eNB_offset]/=(24*phy_vars_ue->lte_frame_parms.N_RB_DL);
       phy_vars_ue->PHY_measurements.rsrp[eNB_offset]*=rx_power_correction;
 
@@ -267,9 +267,9 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
       phy_vars_ue->PHY_measurements.rsrq[eNB_offset] = 3;
 
     }
-    //if (((phy_vars_ue->frame %10) == 0) && (slot == 1)) {
+    if (((phy_vars_ue->frame %10) == 0) && (slot == 1)) {
 #ifdef DEBUG_MEAS
-    //if (eNB_offset == 0)
+    if (eNB_offset == 0)
 	LOG_D(PHY,"[UE %d] Frame %d, slot %d RRC Measurements => rssi %3.1f dBm (digital: %3.1f dB)\n",phy_vars_ue->Mod_id,
 	      phy_vars_ue->frame,slot,10*log10(phy_vars_ue->PHY_measurements.rssi)-phy_vars_ue->rx_total_gain_dB,
 	      10*log10(phy_vars_ue->PHY_measurements.rssi));
@@ -286,7 +286,7 @@ void ue_rrc_measurements(PHY_VARS_UE *phy_vars_ue,
     //LOG_D(PHY,"gain_loss_dB: %d \n",phy_vars_ue->rx_total_gain_dB);
     //LOG_D(PHY,"gain_fixed_dB: %d \n",dB_fixed(phy_vars_ue->lte_frame_parms.N_RB_DL*12));
 #endif
-    //}
+    }
   }
 }
 

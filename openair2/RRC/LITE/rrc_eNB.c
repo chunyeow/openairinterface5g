@@ -295,6 +295,10 @@ static void init_SI(
                            (RadioResourceConfigCommonSIB_t *) &
                            eNB_rrc_inst[enb_mod_idP].sib2->radioResourceConfigCommon,
                            (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+			   (SCellToAddMod_r10_t *)NULL,
+			   //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
                            (MeasObjectToAddMod_t **) NULL,
                            (MAC_MainConfig_t *) NULL, 0,
                            (struct LogicalChannelConfig *)NULL,
@@ -378,6 +382,10 @@ static void init_MCCH(
     rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, 0, 0,
                        (RadioResourceConfigCommonSIB_t *) NULL,
                        (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
                        (MeasObjectToAddMod_t **) NULL,
                        (MAC_MainConfig_t *) NULL,
                        0,
@@ -751,7 +759,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_rlc_config = CALLOC(1, sizeof(*DRB_rlc_config));
     DRB_config->rlc_Config = DRB_rlc_config;
 
-#ifdef EXMIMO_IOT
+#ifdef RRC_RLC_AM // EXMIMO_IOT
     DRB_rlc_config->present = RLC_Config_PR_am;
     DRB_rlc_config->choice.am.ul_AM_RLC.t_PollRetransmit = T_PollRetransmit_ms50;
     DRB_rlc_config->choice.am.ul_AM_RLC.pollPDU = PollPDU_p16;
@@ -773,7 +781,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     DRB_pdcp_config->rlc_AM = NULL;
     DRB_pdcp_config->rlc_UM = NULL;
 
-#ifdef EXMIMO_IOT
+#ifdef RRC_RLC_AM // EXMIMO_IOT
     PDCP_rlc_AM = CALLOC(1, sizeof(*PDCP_rlc_AM));
     DRB_pdcp_config->rlc_AM = PDCP_rlc_AM;
     PDCP_rlc_AM->statusReportRequired = FALSE;
@@ -1633,7 +1641,12 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
           "handover_config [FRAME %05d][RRC_eNB][MOD %02d][][--- MAC_CONFIG_REQ  (SRB1 UE %d) --->][MAC_eNB][MOD %02d][]\n",
           frameP, enb_mod_idP, ue_mod_idP, enb_mod_idP);
     rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, ue_mod_idP, 0, (RadioResourceConfigCommonSIB_t *) NULL,
-                       eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP], (MeasObjectToAddMod_t **) NULL,
+                       eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP], 
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif		       
+		       (MeasObjectToAddMod_t **) NULL,
                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP], 1, SRB1_logicalChannelConfig,
                        eNB_rrc_inst[enb_mod_idP].measGapConfig[ue_mod_idP], (TDD_Config_t *) NULL,
                        (MobilityControlInfo_t *) NULL, (uint8_t *) NULL, (uint16_t *) NULL, NULL, NULL, NULL,
@@ -2161,6 +2174,10 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, ue_mod_idP, 0,
                        (RadioResourceConfigCommonSIB_t *) NULL,
                        eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
                        (MeasObjectToAddMod_t **) NULL,
                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
                        1,
@@ -2381,6 +2398,10 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         0,
                         (RadioResourceConfigCommonSIB_t *) NULL,
                         eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
                         (MeasObjectToAddMod_t **) NULL,
                         eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
                         DRB2LCHAN[i],
@@ -2419,6 +2440,10 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                                        0,
                                        (RadioResourceConfigCommonSIB_t *) NULL,
                                        eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
                                        (MeasObjectToAddMod_t **) NULL,
                                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
                                        DRB2LCHAN[i],
@@ -2498,6 +2523,10 @@ void rrc_eNB_generate_RRCConnectionSetup(
                 rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, ue_mod_idP, 0,
                                    (RadioResourceConfigCommonSIB_t *) NULL,
                                    eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
                                    (MeasObjectToAddMod_t **) NULL,
                                    eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
                                    1,

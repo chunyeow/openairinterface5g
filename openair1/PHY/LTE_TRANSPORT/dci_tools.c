@@ -525,13 +525,13 @@ uint32_t get_rballoc(uint8_t vrb_type,uint16_t rb_alloc_dci) {
 
 }
 
-uint8_t get_transmission_mode(uint16_t Mod_id, uint16_t rnti) {
+uint8_t get_transmission_mode(uint16_t Mod_id, uint8_t CC_id, uint16_t rnti) {
   unsigned char UE_id;
 
   // find the UE_index corresponding to rnti
-  UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][0]);
+  UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][CC_id]);
 
-  return(PHY_vars_eNB_g[Mod_id][0]->transmission_mode[UE_id]);
+  return(PHY_vars_eNB_g[Mod_id][CC_id]->transmission_mode[UE_id]);
 }
 
 int generate_eNB_dlsch_params_from_dci(uint8_t subframe,

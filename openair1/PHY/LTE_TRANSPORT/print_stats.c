@@ -29,11 +29,11 @@
 
 /*! \file PHY/LTE_TRANSPORT/print_stats.c
 * \brief PHY statstic logging function
-* \author R. Knopp, F. Kaltenberger
+* \author R. Knopp, F. Kaltenberger, navid nikaein
 * \date 2011
 * \version 0.1
 * \company Eurecom
-* \email: knopp@eurecom.fr,florian.kaltenberger@eurecom.fr
+* \email: knopp@eurecom.fr,florian.kaltenberger@eurecom.fr, navid.nikaein@eurecom.fr
 * \note
 * \warning
 */
@@ -347,7 +347,7 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 		     phy_vars_eNB->PHY_measurements_eNB[eNB].wideband_cqi_dB[UE_id][0],
 		     phy_vars_eNB->PHY_measurements_eNB[eNB].wideband_cqi_dB[UE_id][1]);
       
-      len += sprintf(&buffer[len],"[eNB PROC] Subband CQI: ");
+      len += sprintf(&buffer[len],"[eNB PROC] Subband CQI:    ");
       for (i=0;i<25;i++)
 	len += sprintf(&buffer[len],"%2d ",
 		       phy_vars_eNB->PHY_measurements_eNB[eNB].subband_cqi_tot_dB[UE_id][i]);
@@ -356,6 +356,12 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
       len += sprintf(&buffer[len],"[eNB PROC] DL_cqi %d, DL_pmi_single %x\n",
 		     phy_vars_eNB->eNB_UE_stats[UE_id].DL_cqi[0],
 		     pmi2hex_2Ar1(phy_vars_eNB->eNB_UE_stats[UE_id].DL_pmi_single));
+      
+      len += sprintf(&buffer[len],"[eNB PROC] DL Subband CQI: ");
+      for (i=0;i<13;i++)
+	len += sprintf(&buffer[len],"%2d ",
+		       phy_vars_eNB->eNB_UE_stats[UE_id].DL_subband_cqi[0][i]);
+      len += sprintf(&buffer[len],"\n");
       
       len += sprintf(&buffer[len],"[eNB PROC] Timing advance %d samples (%d 16Ts), update %d\n",
 		     phy_vars_eNB->eNB_UE_stats[UE_id].UE_timing_offset,

@@ -419,7 +419,9 @@ typedef struct {
   uint8_t N_RB_DL;
   /// Number of resource blocks (RB) in UL
   uint8_t N_RB_UL;
-/// Number of Resource Block Groups for P=2
+  ///  total Number of Resource Block Groups: this is ceil(N_PRB/P)
+  uint8_t N_RBG;
+  /// Total Number of Resource Block Groups SubSets: this is P
   uint8_t N_RBGS;
   /// Cell ID                 
   uint16_t Nid_cell;

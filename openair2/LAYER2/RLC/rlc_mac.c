@@ -42,6 +42,7 @@
 #include "UTIL/OCG/OCG_vars.h"
 #include "hashtable.h"
 #include "assertions.h"
+#include "UTIL/LOG/vcd_signal_dumper.h"
 
 #define DEBUG_MAC_INTERFACE 1
 
@@ -130,8 +131,7 @@ tbs_size_t mac_rlc_data_req(
     hash_key_t             key             = HASHTABLE_QUESTIONABLE_KEY_VALUE;
     hashtable_rc_t         h_rc;
     srb_flag_t             srb_flag        = (channel_idP <= 2) ? SRB_FLAG_YES : SRB_FLAG_NO;
-
-
+    tbs_size_t             ret_tb_size         = 0;
 #ifdef DEBUG_MAC_INTERFACE
     LOG_D(RLC, "\n[RLC] Inst %s enb id %d ue id %d: MAC_RLC_DATA_REQ channel %d (%d) MAX RB %d, Num_tb %d\n",
                (enb_flagP) ? "eNB" : "UE", enb_module_idP, ue_module_idP, channel_idP, RLC_MAX_LC, NB_RB_MAX);
@@ -168,6 +168,7 @@ tbs_size_t mac_rlc_data_req(
             oai_emulation.info.first_ue_local);
     }
 #endif 
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_REQ,VCD_FUNCTION_IN);
 
     if (MBMS_flagP) {
         if (enb_flagP) {
@@ -195,25 +196,27 @@ tbs_size_t mac_rlc_data_req(
 
     switch (rlc_mode) {
         case RLC_MODE_NONE:
-        break;
+	  ret_tb_size =0;
+	  break;
 
         case RLC_MODE_AM:
             data_request = rlc_am_mac_data_request(&rlc_union_p->rlc.am, frameP);
-            return mac_rlc_serialize_tb(buffer_pP, data_request.data);
-            break;
+            ret_tb_size =mac_rlc_serialize_tb(buffer_pP, data_request.data);
+	    break;
 
         case RLC_MODE_UM:
             data_request = rlc_um_mac_data_request(&rlc_union_p->rlc.um, frameP);
-            return mac_rlc_serialize_tb(buffer_pP, data_request.data);
+            ret_tb_size = mac_rlc_serialize_tb(buffer_pP, data_request.data);
             break;
 
         case RLC_MODE_TM:
             data_request = rlc_tm_mac_data_request(&rlc_union_p->rlc.tm, frameP);
-            return mac_rlc_serialize_tb(buffer_pP, data_request.data);
-            break;
+            ret_tb_size = mac_rlc_serialize_tb(buffer_pP, data_request.data);
+	    break;
         default:;
-    }
-    return (tbs_size_t)0;
+    }  
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_REQ,VCD_FUNCTION_OUT);
+    return ret_tb_size;
 }
 //-----------------------------------------------------------------------------
 void mac_rlc_data_ind     (
@@ -282,6 +285,9 @@ void mac_rlc_data_ind     (
             oai_emulation.info.first_ue_local);
     }
 #endif
+    
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_IND,VCD_FUNCTION_IN);
+    
     if (MBMS_flagP) {
         if (BOOL_NOT(enb_flagP)) {
             mbms_id_p = &rlc_mbms_lcid2service_session_id_ue[enb_module_idP][channel_idP];
@@ -332,6 +338,9 @@ void mac_rlc_data_ind     (
             rlc_tm_mac_data_indication(&rlc_union_p->rlc.tm, frameP, enb_flagP, data_ind);
             break;
     }
+    
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_DATA_IND,VCD_FUNCTION_OUT);
+   
 }
 //-----------------------------------------------------------------------------
 mac_rlc_status_resp_t mac_rlc_status_ind(
@@ -399,7 +408,9 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
             oai_emulation.info.first_ue_local);
     }
 #endif
-
+    
+ vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_STATUS_IND,VCD_FUNCTION_IN);
+ 
 
     if (MBMS_flagP) {
         if (enb_flagP) {
@@ -428,7 +439,8 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
     switch (rlc_mode) {
         case RLC_MODE_NONE:
             //handle_event(WARNING,"FILE %s FONCTION mac_rlc_data_ind() LINE %s : no radio bearer configured :%d\n", __FILE__, __LINE__, channel_idP);
-            break;
+	   mac_rlc_status_resp.bytes_in_buffer                 = 0;
+           break;
 
         case RLC_MODE_AM:
             status_resp = rlc_am_mac_status_indication(&rlc_union_p->rlc.am, frameP, tb_sizeP, tx_status);
@@ -436,7 +448,7 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
             mac_rlc_status_resp.head_sdu_creation_time          = status_resp.head_sdu_creation_time;
             mac_rlc_status_resp.head_sdu_remaining_size_to_send = status_resp.head_sdu_remaining_size_to_send;
             mac_rlc_status_resp.head_sdu_is_segmented           = status_resp.head_sdu_is_segmented;
-            return mac_rlc_status_resp;
+	    //return mac_rlc_status_resp;
             break;
 
         case RLC_MODE_UM:
@@ -446,18 +458,21 @@ mac_rlc_status_resp_t mac_rlc_status_ind(
             mac_rlc_status_resp.head_sdu_creation_time          = status_resp.head_sdu_creation_time;
             mac_rlc_status_resp.head_sdu_remaining_size_to_send = status_resp.head_sdu_remaining_size_to_send;
             mac_rlc_status_resp.head_sdu_is_segmented           = status_resp.head_sdu_is_segmented;
-            return mac_rlc_status_resp;
+	    //   return mac_rlc_status_resp;
             break;
 
         case RLC_MODE_TM:
             status_resp = rlc_tm_mac_status_indication(&rlc_union_p->rlc.tm, frameP, tb_sizeP, tx_status);
             mac_rlc_status_resp.bytes_in_buffer = status_resp.buffer_occupancy_in_bytes;
             mac_rlc_status_resp.pdus_in_buffer  = status_resp.buffer_occupancy_in_pdus;
-            return mac_rlc_status_resp;
+	    // return mac_rlc_status_resp;
             break;
 
-        default:;
+        default:
+	  mac_rlc_status_resp.bytes_in_buffer                 = 0 ;
     }
+    
+    vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_MAC_RLC_STATUS_IND,VCD_FUNCTION_OUT);
     return mac_rlc_status_resp;
 }
 

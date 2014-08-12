@@ -46,7 +46,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf) {
     frame_parms->log2_symbol_size = 11;
     frame_parms->samples_per_tti = 30720;
     frame_parms->first_carrier_offset = 2048-600;
-    frame_parms->N_RBGS = 25;
+    frame_parms->N_RBGS = 4;
+    frame_parms->N_RBG = 25;
     break;
   case 50:
     if (osf>1) {
@@ -59,7 +60,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf) {
     frame_parms->first_carrier_offset = frame_parms->ofdm_symbol_size - 300; 
     frame_parms->nb_prefix_samples>>=(1-log2_osf);
     frame_parms->nb_prefix_samples0>>=(1-log2_osf);
-    frame_parms->N_RBGS = 17;
+    frame_parms->N_RBGS = 3;
+    frame_parms->N_RBG = 17;
    break;
   case 25:
     if (osf>2) {
@@ -73,7 +75,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf) {
     frame_parms->first_carrier_offset = frame_parms->ofdm_symbol_size - 150; 
     frame_parms->nb_prefix_samples>>=(2-log2_osf);
     frame_parms->nb_prefix_samples0>>=(2-log2_osf);
-    frame_parms->N_RBGS = 13;
+    frame_parms->N_RBGS = 2;
+    frame_parms->N_RBG = 13;
     break;
   case 15:
     frame_parms->ofdm_symbol_size = 256*osf;
@@ -82,7 +85,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf) {
     frame_parms->first_carrier_offset = frame_parms->ofdm_symbol_size - 90;
     frame_parms->nb_prefix_samples>>=(3-log2_osf);
     frame_parms->nb_prefix_samples0>>=(3-log2_osf);
-    frame_parms->N_RBGS = 8;
+    frame_parms->N_RBGS = 2;
+    frame_parms->N_RBG = 8;
     break;
   case 6:
     frame_parms->ofdm_symbol_size = 128*osf;
@@ -91,7 +95,8 @@ int init_frame_parms(LTE_DL_FRAME_PARMS *frame_parms,uint8_t osf) {
     frame_parms->first_carrier_offset = frame_parms->ofdm_symbol_size - 36;
     frame_parms->nb_prefix_samples>>=(4-log2_osf);
     frame_parms->nb_prefix_samples0>>=(4-log2_osf);
-    frame_parms->N_RBGS = 6;
+    frame_parms->N_RBGS = 1;
+    frame_parms->N_RBG = 6;
     break;
 
   default:

@@ -671,6 +671,10 @@ void  rrc_ue_process_measConfig(module_id_t ue_mod_idP, frame_t frameP, uint8_t 
       rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
           (RadioResourceConfigCommonSIB_t *)NULL,
           (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+			 (SCellToAddMod_r10_t *)NULL,
+	  //struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10,
+#endif
           UE_rrc_inst[ue_mod_idP].MeasObj[eNB_index],
           (MAC_MainConfig_t *)NULL,
           0,
@@ -936,6 +940,10 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
                   rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
                       (RadioResourceConfigCommonSIB_t *)NULL,
                       UE_rrc_inst[ue_mod_idP].physicalConfigDedicated[eNB_index],
+#ifdef Rel10
+				     (SCellToAddMod_r10_t *)NULL,
+		       //struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10,
+#endif
                       (MeasObjectToAddMod_t **)NULL,
                       UE_rrc_inst[ue_mod_idP].mac_MainConfig[eNB_index],
                       1,
@@ -992,6 +1000,10 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
                   rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
                       (RadioResourceConfigCommonSIB_t *)NULL,
                       UE_rrc_inst[ue_mod_idP].physicalConfigDedicated[eNB_index],
+#ifdef Rel10
+				     (SCellToAddMod_r10_t *)NULL,
+		       //struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10,
+#endif
                       (MeasObjectToAddMod_t **)NULL,
                       UE_rrc_inst[ue_mod_idP].mac_MainConfig[eNB_index],
                       2,
@@ -1071,6 +1083,10 @@ rrc_ue_process_radioResourceConfigDedicated(module_id_t ue_mod_idP, frame_t fram
               rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
                   (RadioResourceConfigCommonSIB_t *)NULL,
                   UE_rrc_inst[ue_mod_idP].physicalConfigDedicated[eNB_index],
+#ifdef Rel10
+				 (SCellToAddMod_r10_t *)NULL,
+		       //struct PhysicalConfigDedicatedSCell_r10 *physicalConfigDedicatedSCell_r10,
+#endif
                   (MeasObjectToAddMod_t **)NULL,
                   UE_rrc_inst[ue_mod_idP].mac_MainConfig[eNB_index],
                   *UE_rrc_inst[ue_mod_idP].DRB_config[eNB_index][DRB_id]->logicalChannelIdentity,
@@ -1471,6 +1487,10 @@ void rrc_ue_process_mobilityControlInfo(uint8_t eNB_index, uint8_t UE_id, frame_
   rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
       (RadioResourceConfigCommonSIB_t *)NULL,
       (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
       (MeasObjectToAddMod_t **)NULL,
       (MAC_MainConfig_t *)NULL,
       0,
@@ -1976,6 +1996,10 @@ int decode_SIB1(module_id_t ue_mod_idP,uint8_t eNB_index, uint8_t rsrq, uint8_t 
   rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
       (RadioResourceConfigCommonSIB_t *)NULL,
       (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
       (MeasObjectToAddMod_t **)NULL,
       (MAC_MainConfig_t *)NULL,
       0,
@@ -2197,6 +2221,10 @@ int decode_SI(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index,uint8_t s
         rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
             &UE_rrc_inst[ue_mod_idP].sib2[eNB_index]->radioResourceConfigCommon,
             (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+  	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif			   
             (MeasObjectToAddMod_t **)NULL,
             (MAC_MainConfig_t *)NULL,
             0,
@@ -2316,6 +2344,10 @@ int decode_SI(module_id_t ue_mod_idP, frame_t frameP,uint8_t eNB_index,uint8_t s
         rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
             (RadioResourceConfigCommonSIB_t *)NULL,
             (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
             (MeasObjectToAddMod_t **)NULL,
             (MAC_MainConfig_t *)NULL,
             0,
@@ -2668,6 +2700,10 @@ void decode_MBSFNAreaConfiguration(module_id_t ue_mod_idP, uint8_t eNB_index, fr
   rrc_mac_config_req(ue_mod_idP,ENB_FLAG_NO,0,eNB_index,
       (RadioResourceConfigCommonSIB_t *)NULL,
       (struct PhysicalConfigDedicated *)NULL,
+#ifdef Rel10
+	(SCellToAddMod_r10_t *)NULL,
+	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif
       (MeasObjectToAddMod_t **)NULL,
       (MAC_MainConfig_t *)NULL,
       0,

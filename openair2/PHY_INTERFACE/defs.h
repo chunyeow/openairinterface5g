@@ -117,15 +117,20 @@ typedef struct
     /// Configure Common PHY parameters from SIB13
     void (*phy_config_sib13_eNB)(module_id_t Mod_id,int CC_id, int mbsfn_Area_idx,
 				long mbsfn_AreaId_r9);
+
+    void (*phy_config_dedicated_scell_eNB)(uint8_t Mod_id,
+					   uint16_t rnti,
+					   SCellToAddMod_r10_t *sCellToAddMod_r10, 
+					   int CC_id);
 #endif
     
     /// PHY-Config-Dedicated eNB
-    void (*phy_config_dedicated_eNB)(module_id_t Mod_id,int CC_id,rnti_t rnti,
+      void (*phy_config_dedicated_eNB)(module_id_t Mod_id,int CC_id,rnti_t rnti,
 				     struct PhysicalConfigDedicated *physicalConfigDedicated);
 
 #ifdef Rel10
     /// Get MCH sdu and corresponding MCS for particular MBSFN subframe
-    MCH_PDU* (*get_mch_sdu)(module_id_t Mod_id,frame_t frameP,sub_frame_t subframe);
+    MCH_PDU* (*get_mch_sdu)(module_id_t Mod_id, uint8_t CC_id, frame_t frameP,sub_frame_t subframe);
 #endif
     // configure the cba rnti at the physical layer 
     void (*phy_config_cba_rnti)(module_id_t Mod_id,eNB_flag_t eNB_flag, uint8_t index, uint16_t cba_rnti, uint8_t cba_group_id, uint8_t num_active_cba_groups);
@@ -142,15 +147,15 @@ typedef struct
     void (*ue_decode_si)(module_id_t Mod_id,int CC_id,frame_t frameP, uint8_t CH_index, void *pdu, uint16_t len);
 
     /// Send a received DLSCH sdu to MAC
-    void (*ue_send_sdu)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t CH_index);
+    void (*ue_send_sdu)(module_id_t Mod_id,uint8_t CC_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t CH_index);
 
 #ifdef Rel10
     /// Send a received MCH sdu to MAC
-    void (*ue_send_mch_sdu)(module_id_t Mod_id,frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index,uint8_t sync_area);
+    void (*ue_send_mch_sdu)(module_id_t Mod_id,uint8_t CC_id, frame_t frameP,uint8_t *sdu,uint16_t sdu_len,uint8_t eNB_index,uint8_t sync_area);
 
     /// Function to check if UE PHY needs to decode MCH for MAC
-    /// get the sync area id, and teturn MCS value if need to decode, otherwise -1
-    int (*ue_query_mch)(module_id_t Mod_id,int CC_id,frame_t frameP,sub_frame_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
+    /// get the sync area id, and return MCS value if need to decode, otherwise -1
+    int (*ue_query_mch)(module_id_t Mod_id, uint8_t CC_id,frame_t frameP,sub_frame_t subframe,uint8_t eNB_index,uint8_t *sync_area, uint8_t *mcch_active);
 #endif
 
   /// Retrieve ULSCH sdu from MAC
@@ -191,8 +196,13 @@ typedef struct
 
 #ifdef Rel10
     /// Configure Common PHY parameters from SIB13
-    void (*phy_config_sib13_ue)(uint8_t Mod_id,uint8_t CH_index,int mbsfn_Area_idx,
+    void (*phy_config_sib13_ue)(uint8_t Mod_id,int CC_id, uint8_t eNB_index,int mbsfn_Area_idx,
 				long mbsfn_AreaId_r9);
+
+    void (*phy_config_dedicated_scell_ue)(uint8_t Mod_id,
+				   uint8_t eNB_index,
+				    SCellToAddMod_r10_t *sCellToAddMod_r10, 
+				       int CC_id);
 #endif
     /// Configure Common PHY parameters from mobilityControlInfo
     void (*phy_config_afterHO_ue)(module_id_t Mod_id,uint8_t CH_index,
@@ -200,19 +210,19 @@ typedef struct
 				  uint8_t ho_failed);
 
     /// Function to indicate failure of contention resolution or RA procedure
-    void (*ra_failed)(module_id_t Mod_id,int CC_id,uint8_t eNB_index);
+    void (*ra_failed)(module_id_t Mod_id, uint8_t CC_id,uint8_t eNB_index);
 
     /// Function to indicate success of contention resolution or RA procedure
-    void (*ra_succeeded)(module_id_t Mod_id,int CC_id, uint8_t eNB_index);
+    void (*ra_succeeded)(module_id_t Mod_id,uint8_t CC_id, uint8_t eNB_index);
 
     /// Function to indicate the transmission of msg1/rach to MAC
-    void (*Msg1_transmitted)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t eNB_id);
+    void (*Msg1_transmitted)(module_id_t Mod_id,uint8_t CC_id,frame_t frameP,uint8_t eNB_id);
 
     /// Function to indicate Msg3 transmission/retransmission which initiates/reset Contention Resolution Timer
-    void (*Msg3_transmitted)(module_id_t Mod_id,int CC_id,frame_t frameP,uint8_t eNB_id);
+    void (*Msg3_transmitted)(module_id_t Mod_id,uint8_t CC_id,frame_t frameP,uint8_t eNB_id);
 
     /// Function to pass inter-cell measurement parameters to PHY (cell Ids)
-    void (*phy_config_meas_ue)(module_id_t Mod_id,int CC_id,uint8_t eNB_index,uint8_t n_adj_cells,uint32_t *adj_cell_id);
+    void (*phy_config_meas_ue)(module_id_t Mod_id,uint8_t CC_id,uint8_t eNB_index,uint8_t n_adj_cells,uint32_t *adj_cell_id);
 
     // PHY Helper Functions
 
@@ -226,22 +236,22 @@ typedef struct
     uint16_t (*get_TBS_UL)(uint8_t mcs, uint16_t nb_rb);
 
     /// Function to retrieve the HARQ round index for a particular UL/DLSCH and harq_pid
-    int (*get_ue_active_harq_pid)(module_id_t Mod_id, int CC_id,rnti_t rnti, uint8_t subframe, uint8_t *harq_pid, uint8_t *round, uint8_t ul_flag);
+    int (*get_ue_active_harq_pid)(module_id_t Mod_id, uint8_t CC_id,rnti_t rnti, uint8_t subframe, uint8_t *harq_pid, uint8_t *round, uint8_t ul_flag);
 
     /// Function to retrieve number of CCE
-    uint16_t (*get_nCCE_max)(module_id_t Mod_id,int CC_id);
+    uint16_t (*get_nCCE_max)(module_id_t Mod_id,uint8_t  CC_id);
 
     /// Function to retrieve number of PRB in an rb_alloc
     uint32_t (*get_nb_rb)(uint8_t ra_header, uint32_t rb_alloc, int n_rb_dl);
 
     /// Function to retrieve transmission mode for UE
-    uint8_t (*get_transmission_mode)(module_id_t Mod_id,int CC_id,rnti_t rnti);
+    uint8_t (*get_transmission_mode)(module_id_t Mod_id,uint8_t CC_id,rnti_t rnti);
 
     /// Function to retrieve rb_alloc bitmap from dci rballoc field and VRB type
     uint32_t (*get_rballoc)(uint8_t vrb_type, uint16_t rb_alloc_dci);
 
     /// Function for UE MAC to retrieve current PHY connectivity mode (PRACH,RA_RESPONSE,PUSCH)
-    UE_MODE_t (*get_ue_mode)(module_id_t Mod_id,int CC_id,uint8_t eNB_index);
+    UE_MODE_t (*get_ue_mode)(module_id_t Mod_id, uint8_t CC_id,uint8_t eNB_index);
 
     /// Function for UE MAC to retrieve measured Path Loss
     int16_t (*get_PL)(uint8_t Mod_id,uint8_t CC_id,uint8_t eNB_index);
@@ -274,21 +284,25 @@ typedef struct
     uint8_t (*get_fid_prach_tdd)(LTE_DL_FRAME_PARMS *frame_parms,uint8_t tdd_map_index);
 
     /// Function for eNB MAC to retrieve subframe direction
-    lte_subframe_t (*get_subframe_direction)(module_id_t Mod_id, uint8_t subframe);
+    lte_subframe_t (*get_subframe_direction)(module_id_t Mod_id, uint8_t CC_id, uint8_t subframe);
 
     // MAC Helper functions
     /// Function for UE/PHY to compute PUSCH transmit power in power-control procedure (Po_NOMINAL_PUSCH parameter)
-    int8_t (*get_Po_NOMINAL_PUSCH)(module_id_t Mod_id,int CC_id);
+    int8_t (*get_Po_NOMINAL_PUSCH)(module_id_t Mod_id,uint8_t  CC_id);
 
     /// Function for UE/PHY to compute PUSCH transmit power in power-control procedure (deltaP_rampup parameter)
-    int8_t (*get_deltaP_rampup)(module_id_t Mod_id,int CC_id);
+    int8_t (*get_deltaP_rampup)(module_id_t Mod_id,uint8_t CC_id);
 
     /// Function for UE/PHY to compute PHR
-    int8_t (*get_PHR)(module_id_t Mod_id, int CC_id,uint8_t eNB_index);
+    int8_t (*get_PHR)(module_id_t Mod_id, uint8_t CC_id,uint8_t eNB_index);
 
     void (*process_timing_advance)(module_id_t Mod_id,int16_t timing_advance);
 
-    LTE_eNB_UE_stats* (*get_eNB_UE_stats)(module_id_t Mod_id, int CC_id, rnti_t rnti);
+    LTE_eNB_UE_stats* (*get_eNB_UE_stats)(module_id_t Mod_id, uint8_t CC_id, rnti_t rnti);
+
+    LTE_DL_FRAME_PARMS* (*get_lte_frame_parms)(module_id_t Mod_id, uint8_t CC_id);
+
+    MU_MIMO_mode* (*get_mu_mimo_mode) (module_id_t Mod_id, uint8_t CC_id);
 
     unsigned char is_cluster_head;
     unsigned char is_primary_cluster_head;
