@@ -100,7 +100,12 @@ typedef struct Enb_properties_s {
     int16_t             eutra_band;
     uint32_t            downlink_frequency;
     int32_t             uplink_frequency_offset;
-
+  
+  /* Nb of component carrier for a given enb */
+  int16_t                 nb_cc;
+  int16_t                 cell_id[2];//cell_id[MAX_NUM_CCs];// for testing, change later
+  int16_t                 N_RB_DL[2];//N_RB_DL[MAX_NUM_CCs];// for testing, change later
+  
     /* Nb of MME to connect to */
     uint8_t             nb_mme;
     /* List of MME to connect to */
@@ -111,6 +116,22 @@ typedef struct Enb_properties_s {
 
     char               *enb_interface_name_for_S1_MME;
     in_addr_t           enb_ipv4_address_for_S1_MME;
+
+  // log config
+  int16_t           glog_level;
+  int16_t           glog_verbosity;
+  int16_t           hw_log_level;
+  int16_t           hw_log_verbosity;
+  int16_t           phy_log_level;
+  int16_t           phy_log_verbosity;
+  int16_t           mac_log_level;
+  int16_t           mac_log_verbosity;
+  int16_t           rlc_log_level;
+  int16_t           rlc_log_verbosity;
+  int16_t           pdcp_log_level;
+  int16_t           pdcp_log_verbosity;
+  int16_t           rrc_log_level;
+  int16_t           rrc_log_verbosity;
 
 } Enb_properties_t;
 

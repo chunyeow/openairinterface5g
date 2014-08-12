@@ -223,6 +223,7 @@ static void * dlsch_thread(void *param) {
 	
 #ifdef OPENAIR2
 	mac_xface->ue_send_sdu(phy_vars_ue->Mod_id,
+			       0, // CC_id
                            phy_vars_ue->frame,
                            phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->b,
                            phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS>>3,

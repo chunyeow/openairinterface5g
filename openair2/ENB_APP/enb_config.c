@@ -15,8 +15,8 @@
 
     You should have received a copy of the GNU General Public License
     along with OpenAirInterface.The full GNU General Public License is
-   included in this distribution in the file called "COPYING". If not,
-   see <http://www.gnu.org/licenses/>.
+    included in this distribution in the file called "COPYING". If not,
+    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
@@ -30,9 +30,9 @@
 /*
                                 enb_config.c
                              -------------------
-  AUTHOR  : Lionel GAUTHIER, Laurent Winckel
+  AUTHOR  : Lionel GAUTHIER, navid nikaein, Laurent Winckel
   COMPANY : EURECOM
-  EMAIL   : Lionel.Gauthier@eurecom.fr
+  EMAIL   : Lionel.Gauthier@eurecom.fr, navid.nikaein@eurecom.fr
 */
 
 #include <string.h>
@@ -40,6 +40,7 @@
 #include <inttypes.h>
 
 #include "log.h"
+#include "log_extern.h"
 #include "assertions.h"
 #include "enb_config.h"
 #if defined(OAI_EMU)
@@ -77,6 +78,10 @@
 #define ENB_CONFIG_STRING_DOWNLINK_FREQUENCY            "downlink_frequency"
 #define ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET       "uplink_frequency_offset"
 
+#define ENB_CONFIG_STRING_COMPONENT_CARRIERS            "component_carriers"
+#define ENB_CONFIG_STRING_CELL_ID                       "cell_id"
+#define ENB_CONFIG_STRING_N_RB_DL                       "N_RB_DL"
+
 #define ENB_CONFIG_STRING_MME_IP_ADDRESS                "mme_ip_address"
 #define ENB_CONFIG_STRING_MME_IPV4_ADDRESS              "ipv4"
 #define ENB_CONFIG_STRING_MME_IPV6_ADDRESS              "ipv6"
@@ -94,6 +99,26 @@
 #define ENB_CONFIG_STRING_ASN1_VERBOSITY_NONE                 "none"
 #define ENB_CONFIG_STRING_ASN1_VERBOSITY_ANNOYING             "annoying"
 #define ENB_CONFIG_STRING_ASN1_VERBOSITY_INFO                 "info"
+
+
+// per eNB configuration 
+#define ENB_CONFIG_STRING_LOG_CONFIG                       "log_config"
+#define ENB_CONFIG_STRING_GLOBAL_LOG_LEVEL                 "global_log_level"
+#define ENB_CONFIG_STRING_GLOBAL_LOG_VERBOSITY              "global_log_verbosity"
+#define ENB_CONFIG_STRING_HW_LOG_LEVEL                    "hw_log_level"
+#define ENB_CONFIG_STRING_HW_LOG_VERBOSITY                "hw_log_verbosity"
+#define ENB_CONFIG_STRING_PHY_LOG_LEVEL                    "phy_log_level"
+#define ENB_CONFIG_STRING_PHY_LOG_VERBOSITY                "phy_log_verbosity"
+#define ENB_CONFIG_STRING_MAC_LOG_LEVEL                    "mac_log_level"
+#define ENB_CONFIG_STRING_MAC_LOG_VERBOSITY                "mac_log_verbosity"
+#define ENB_CONFIG_STRING_RLC_LOG_LEVEL                    "rlc_log_level"
+#define ENB_CONFIG_STRING_RLC_LOG_VERBOSITY                "rlc_log_verbosity"
+#define ENB_CONFIG_STRING_PDCP_LOG_LEVEL                   "pdcp_log_level"
+#define ENB_CONFIG_STRING_PDCP_LOG_VERBOSITY               "pdcp_log_verbosity"
+#define ENB_CONFIG_STRING_RRC_LOG_LEVEL                    "rrc_log_level"
+#define ENB_CONFIG_STRING_RRC_LOG_VERBOSITY                "rrc_log_verbosity"
+
+
 
 
 #define KHz (1000UL)
@@ -141,24 +166,37 @@ static const eutra_band_t eutra_bands[] =
 static Enb_properties_array_t enb_properties;
 
 static void enb_config_display(void) {
-    int i;
+  int i,j;
 
     printf( "\n----------------------------------------------------------------------\n");
     printf( " ENB CONFIG FILE CONTENT LOADED (TBC):\n");
     printf( "----------------------------------------------------------------------\n");
     for (i = 0; i < enb_properties.number; i++) {
-        printf( "ENB CONFIG no %u:\n\n", i);
-        printf( "\teNB name:     \t%s:\n",enb_properties.properties[i]->eNB_name);
-        printf( "\teNB ID:       \t%u:\n",enb_properties.properties[i]->eNB_id);
-        printf( "\tCell type:    \t%s:\n",enb_properties.properties[i]->cell_type == CELL_MACRO_ENB ? "CELL_MACRO_ENB":"CELL_HOME_ENB");
-        printf( "\tTAC:          \t%u:\n",enb_properties.properties[i]->tac);
-        printf( "\tMCC:          \t%u:\n",enb_properties.properties[i]->mcc);
-        printf( "\tMNC:          \t%u:\n",enb_properties.properties[i]->mnc);
-	printf( "\teutra band:   \t%d:\n",enb_properties.properties[i]->eutra_band);
-        printf( "\tdownlink freq:\t%u:\n",enb_properties.properties[i]->downlink_frequency);
-        printf( "\tuplink freq:  \t%d:\n",enb_properties.properties[i]->uplink_frequency_offset);
+        printf( "ENB CONFIG for instance %u:\n\n", i);
+        printf( "\teNB name:           \t%s:\n",enb_properties.properties[i]->eNB_name);
+        printf( "\teNB ID:             \t%u:\n",enb_properties.properties[i]->eNB_id);
+        printf( "\tCell type:          \t%s:\n",enb_properties.properties[i]->cell_type == CELL_MACRO_ENB ? "CELL_MACRO_ENB":"CELL_HOME_ENB");
+        printf( "\tTAC:                \t%u:\n",enb_properties.properties[i]->tac);
+        printf( "\tMCC:                \t%u:\n",enb_properties.properties[i]->mcc);
+        printf( "\tMNC:                \t%u:\n",enb_properties.properties[i]->mnc);
+	printf( "\teutra band:         \t%d:\n",enb_properties.properties[i]->eutra_band);
+        printf( "\tdownlink freq:      \t%u:\n",enb_properties.properties[i]->downlink_frequency);
+        printf( "\tuplink freq:        \t%d:\n",enb_properties.properties[i]->uplink_frequency_offset);
 
-        printf( "\n--------------------------------------------------------\n");
+	for (j=0; j< enb_properties.properties[i]->nb_cc; j++) {
+	  printf( "\n\tCell ID for CC %d:\t%d:\n",j,enb_properties.properties[i]->cell_id[j]);
+	  printf( "\tN_RB_DL for CC %d:\t%d:\n",j,enb_properties.properties[i]->N_RB_DL[j]);
+	}
+	
+      	printf( "\n\tGlobal log level:  \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->glog_level));
+	printf( "\tHW log level:      \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->hw_log_level));
+	printf( "\tPHY log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->phy_log_level));
+	printf( "\tMAC log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->mac_log_level));
+	printf( "\tRLC log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->rlc_log_level));
+	printf( "\tPDCP log level:    \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->pdcp_log_level));
+	printf( "\tRRC log level:     \t%s\n", map_int_to_str(log_level_names,enb_properties.properties[i]->rrc_log_level));
+	 
+	printf( "\n--------------------------------------------------------\n");
     }
 }
 
@@ -214,6 +252,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   config_t          cfg;
   config_setting_t *setting                       = NULL;
   config_setting_t *subsetting                    = NULL;
+  config_setting_t *setting_component_carriers    = NULL;
+  config_setting_t *component_carrier             = NULL;
   config_setting_t *setting_mme_addresses         = NULL;
   config_setting_t *setting_mme_address           = NULL;
   config_setting_t *setting_enb                   = NULL;
@@ -221,6 +261,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   int               enb_properties_index          = 0;
   int               num_enbs;
   int               num_mme_address;
+  int               num_component_carriers        =0;
   int               i;
   int               j;
   int               parse_errors                  = 0;
@@ -238,6 +279,8 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   long int          eutra_band;
   long long int     downlink_frequency;
   long int          uplink_frequency_offset;
+  long int          cell_id[MAX_NUM_CCs];
+  long int          N_RB_DL[MAX_NUM_CCs];
   char*             ipv4                          = NULL;
   char*             ipv6                          = NULL;
   char*             active                        = NULL;
@@ -250,6 +293,20 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   char             *address                       = NULL;
   char             *cidr                          = NULL;
   char             *astring                       = NULL;
+  char*          glog_level                   = NULL;
+  char*          glog_verbosity               = NULL;
+  char*          hw_log_level                = NULL;
+  char*          hw_log_verbosity            = NULL;
+  char*          phy_log_level                = NULL;
+  char*          phy_log_verbosity            = NULL;
+  char*          mac_log_level                = NULL;
+  char*          mac_log_verbosity            = NULL;
+  char*          rlc_log_level                = NULL;
+  char*          rlc_log_verbosity            = NULL;
+  char*          pdcp_log_level               = NULL;
+  char*          pdcp_log_verbosity           = NULL;
+  char*          rrc_log_level                = NULL;
+  char*          rrc_log_verbosity            = NULL;
 
   memset((char*) (enb_properties.properties), 0 , MAX_ENB * sizeof(Enb_properties_t *));
   memset((char*)active_enb,     0 , MAX_ENB * sizeof(char*));
@@ -423,22 +480,22 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
 
                   if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_EUTRA_BAND, &eutra_band)) {
                       enb_properties.properties[enb_properties_index]->eutra_band = eutra_band;
-                      printf( "\teutra band:\t%d\n",enb_properties.properties[enb_properties_index]->eutra_band);
+		      // printf( "\teutra band:\t%d\n",enb_properties.properties[enb_properties_index]->eutra_band);
                   } else {
                       enb_properties.properties[enb_properties_index]->eutra_band = 7; // Default band
-                      printf( "\teutra band:\t%d (default)\n",enb_properties.properties[enb_properties_index]->eutra_band);
+                      //printf( "\teutra band:\t%d (default)\n",enb_properties.properties[enb_properties_index]->eutra_band);
                   }
 
                   if(config_setting_lookup_int64(setting_enb, ENB_CONFIG_STRING_DOWNLINK_FREQUENCY, &downlink_frequency)) {
                       enb_properties.properties[enb_properties_index]->downlink_frequency = (uint32_t) downlink_frequency;
-                      printf( "\tdownlink freq:\t%u\n",enb_properties.properties[enb_properties_index]->downlink_frequency);
+                      //printf( "\tdownlink freq:\t%u\n",enb_properties.properties[enb_properties_index]->downlink_frequency);
                   } else {
                       enb_properties.properties[enb_properties_index]->downlink_frequency = 2680000000UL; // Default downlink frequency
-                      printf( "\tdownlink freq:\t%u (default)\n",enb_properties.properties[enb_properties_index]->downlink_frequency);
+		      // printf( "\tdownlink freq:\t%u (default)\n",enb_properties.properties[enb_properties_index]->downlink_frequency);
                   }
                   if(config_setting_lookup_int(setting_enb, ENB_CONFIG_STRING_UPLINK_FREQUENCY_OFFSET, &uplink_frequency_offset)) {
                       enb_properties.properties[enb_properties_index]->uplink_frequency_offset = (unsigned int) uplink_frequency_offset;
-                      printf( "\tuplink freq offset:\t%ld\n",enb_properties.properties[enb_properties_index]->uplink_frequency_offset);
+                      //printf( "\tuplink freq offset:\t%ld\n",enb_properties.properties[enb_properties_index]->uplink_frequency_offset);
                   } else {
                       // Default uplink frequency offset
                       if (enb_properties.properties[enb_properties_index]->frame_type == FDD) {
@@ -446,7 +503,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                       } else {
                           enb_properties.properties[enb_properties_index]->uplink_frequency_offset = 0;
                       }
-                      printf( "\tuplink freq offset:\t%ld (default)\n",enb_properties.properties[enb_properties_index]->uplink_frequency_offset);
+                      //printf( "\tuplink freq offset:\t%ld (default)\n",enb_properties.properties[enb_properties_index]->uplink_frequency_offset);
                   }
 
                   parse_errors += enb_check_band_frequencies(lib_config_file_name_pP,
@@ -456,6 +513,36 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                                              enb_properties.properties[enb_properties_index]->uplink_frequency_offset,
                                              enb_properties.properties[enb_properties_index]->frame_type);
 
+		  setting_component_carriers = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_COMPONENT_CARRIERS);
+		  enb_properties.properties[enb_properties_index]->nb_cc = 0;
+		  if(setting_component_carriers != NULL) { 
+
+		    num_component_carriers     = config_setting_length(setting_component_carriers);  
+		    //printf("num component carrier %d \n", num_component_carriers);
+		    //enb_properties.properties[enb_properties_index]->nb_cc = num_component_carriers; 
+		    for (j = 0; j < num_component_carriers /*&& j < MAX_NUM_CCs*/; j++) {
+		      component_carrier = config_setting_get_elem(setting_component_carriers, j);
+		      if(!(config_setting_lookup_int(component_carrier, ENB_CONFIG_STRING_CELL_ID, &cell_id[j]) && 
+			   config_setting_lookup_int(component_carrier, ENB_CONFIG_STRING_N_RB_DL, &N_RB_DL[j])   )
+			 ){
+			AssertError (0, parse_errors ++,
+				     "Failed to parse eNB configuration file %s, Component Carrier!\n",
+				     lib_config_file_name_pP);
+		      }
+		      enb_properties.properties[enb_properties_index]->nb_cc++;
+		      enb_properties.properties[enb_properties_index]->cell_id[j]= cell_id[j];
+		      enb_properties.properties[enb_properties_index]->N_RB_DL[j]= N_RB_DL[j];
+		      //printf("adding component carrier %d\n", j);
+		    }
+		    
+		  } else {
+		    for (j=0; j< MAX_NUM_CCs; j++) {
+		      enb_properties.properties[enb_properties_index]->nb_cc +=1;
+		      enb_properties.properties[enb_properties_index]->cell_id[j]=j;
+		      enb_properties.properties[enb_properties_index]->N_RB_DL[j]=25;
+		    }
+		  }
+		  
                   setting_mme_addresses = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_MME_IP_ADDRESS);
                   num_mme_address     = config_setting_length(setting_mme_addresses);
                   enb_properties.properties[enb_properties_index]->nb_mme = 0;
@@ -492,6 +579,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           enb_properties.properties[enb_properties_index]->mme_ip_address[j].ipv6 = 1;
                       }
                   }
+		  // NETWORK_INTERFACES
                   subsetting = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_NETWORK_INTERFACES_CONFIG);
                   if(subsetting != NULL) {
                       if(  (
@@ -520,6 +608,131 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
                           }
                       }
                   }
+		  // log_config 
+		  subsetting = config_setting_get_member (setting_enb, ENB_CONFIG_STRING_LOG_CONFIG);
+                  if(subsetting != NULL) {
+		    // global 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_GLOBAL_LOG_LEVEL, (const char **)  &glog_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->glog_level = map_str_to_int(log_level_names, glog_level)) == -1)
+			enb_properties.properties[enb_properties_index]->glog_level = LOG_INFO; 
+		      //printf( "\tGlobal log level :\t%s->%d\n",glog_level, enb_properties.properties[enb_properties_index]->glog_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->glog_level = LOG_INFO; 
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_GLOBAL_LOG_VERBOSITY,(const char **)  &glog_verbosity)) {
+                      if ((enb_properties.properties[enb_properties_index]->glog_verbosity = map_str_to_int(log_verbosity_names, glog_verbosity)) == -1)
+			enb_properties.properties[enb_properties_index]->glog_verbosity = LOG_MED;
+		      //printf( "\tGlobal log verbosity:\t%s->%d\n",glog_verbosity, enb_properties.properties[enb_properties_index]->glog_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->glog_verbosity = LOG_MED; 
+		    } 
+		    // HW
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_HW_LOG_LEVEL, (const char **) &hw_log_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->hw_log_level = map_str_to_int(log_level_names,hw_log_level)) == -1)
+			enb_properties.properties[enb_properties_index]->hw_log_level = LOG_INFO;
+                      //printf( "\tHW log level :\t%s->%d\n",hw_log_level,enb_properties.properties[enb_properties_index]->hw_log_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->hw_log_level = LOG_INFO;
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_HW_LOG_VERBOSITY, (const char **) &hw_log_verbosity)) {
+                      if ((enb_properties.properties[enb_properties_index]->hw_log_verbosity = map_str_to_int(log_verbosity_names,hw_log_verbosity)) == -1)
+			enb_properties.properties[enb_properties_index]->hw_log_verbosity = LOG_MED;
+                      //printf( "\tHW log verbosity:\t%s->%d\n",hw_log_verbosity, enb_properties.properties[enb_properties_index]->hw_log_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->hw_log_verbosity = LOG_MED; 
+		    } 
+		    // phy 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_PHY_LOG_LEVEL,(const char **) &phy_log_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->phy_log_level = map_str_to_int(log_level_names,phy_log_level)) == -1)
+			enb_properties.properties[enb_properties_index]->phy_log_level = LOG_INFO;
+                      //printf( "\tPHY log level :\t%s->%d\n",phy_log_level,enb_properties.properties[enb_properties_index]->phy_log_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->phy_log_level = LOG_INFO;
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_PHY_LOG_VERBOSITY, (const char **)&phy_log_verbosity)) {
+                      if ((enb_properties.properties[enb_properties_index]->phy_log_verbosity = map_str_to_int(log_verbosity_names,phy_log_verbosity)) == -1)
+			enb_properties.properties[enb_properties_index]->phy_log_verbosity = LOG_MED; 
+                      //printf( "\tPHY log verbosity:\t%s->%d\n",phy_log_level,enb_properties.properties[enb_properties_index]->phy_log_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->phy_log_verbosity = LOG_MED; 
+		    } 
+		    //mac 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_MAC_LOG_LEVEL, (const char **)&mac_log_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->mac_log_level = map_str_to_int(log_level_names,mac_log_level)) == -1 )
+			enb_properties.properties[enb_properties_index]->mac_log_level = LOG_INFO; 
+                      //printf( "\tMAC log level :\t%s->%d\n",mac_log_level,enb_properties.properties[enb_properties_index]->mac_log_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->mac_log_level = LOG_INFO; 
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_MAC_LOG_VERBOSITY, (const char **)&mac_log_verbosity)) {
+                      if ((enb_properties.properties[enb_properties_index]->mac_log_verbosity = map_str_to_int(log_verbosity_names,mac_log_verbosity)) == -1)
+			enb_properties.properties[enb_properties_index]->mac_log_verbosity = LOG_MED; 
+                      //printf( "\tMAC log verbosity:\t%s->%d\n",mac_log_verbosity,enb_properties.properties[enb_properties_index]->mac_log_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->mac_log_verbosity = LOG_MED; 
+		    } 
+		    //rlc
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_RLC_LOG_LEVEL, (const char **)&rlc_log_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->rlc_log_level = map_str_to_int(log_level_names,rlc_log_level)) == -1)
+			enb_properties.properties[enb_properties_index]->rlc_log_level = LOG_INFO; 
+                      //printf( "\tRLC log level :\t%s->%d\n",rlc_log_level, enb_properties.properties[enb_properties_index]->rlc_log_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->rlc_log_level = LOG_INFO; 
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_RLC_LOG_VERBOSITY, (const char **)&rlc_log_verbosity)) {
+                      if ((enb_properties.properties[enb_properties_index]->rlc_log_verbosity = map_str_to_int(log_verbosity_names,rlc_log_verbosity)) == -1)
+			enb_properties.properties[enb_properties_index]->rlc_log_verbosity = LOG_MED; 
+                      //printf( "\tRLC log verbosity:\t%s->%d\n",rlc_log_verbosity, enb_properties.properties[enb_properties_index]->rlc_log_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->rlc_log_verbosity = LOG_MED; 
+		    } 
+		    //pdcp 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_PDCP_LOG_LEVEL, (const char **)&pdcp_log_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->pdcp_log_level = map_str_to_int(log_level_names,pdcp_log_level)) == -1)
+			enb_properties.properties[enb_properties_index]->pdcp_log_level = LOG_INFO; 
+                      //printf( "\tPDCP log level :\t%s->%d\n",pdcp_log_level, enb_properties.properties[enb_properties_index]->pdcp_log_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->pdcp_log_level = LOG_INFO; 
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_PDCP_LOG_VERBOSITY, (const char **)&pdcp_log_verbosity)) {
+                      enb_properties.properties[enb_properties_index]->pdcp_log_verbosity = map_str_to_int(log_verbosity_names,pdcp_log_verbosity);
+                      //printf( "\tPDCP log verbosity:\t%s->%d\n",pdcp_log_verbosity, enb_properties.properties[enb_properties_index]->pdcp_log_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->pdcp_log_verbosity = LOG_MED; 
+		    } 
+		    //rrc
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_RRC_LOG_LEVEL, (const char **)&rrc_log_level)) {
+                      if ((enb_properties.properties[enb_properties_index]->rrc_log_level = map_str_to_int(log_level_names,rrc_log_level)) == -1 )
+			enb_properties.properties[enb_properties_index]->rrc_log_level = LOG_INFO; 
+                      //printf( "\tRRC log level :\t%s->%d\n",rrc_log_level,enb_properties.properties[enb_properties_index]->rrc_log_level);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->rrc_log_level = LOG_INFO; 
+		    } 
+		    if(config_setting_lookup_string(subsetting, ENB_CONFIG_STRING_RRC_LOG_VERBOSITY, (const char **)&rrc_log_verbosity)) {
+                      if ((enb_properties.properties[enb_properties_index]->rrc_log_verbosity = map_str_to_int(log_verbosity_names,rrc_log_verbosity)) == -1)
+			enb_properties.properties[enb_properties_index]->rrc_log_verbosity = LOG_MED; 
+                      //printf( "\tRRC log verbosity:\t%s->%d\n",rrc_log_verbosity,enb_properties.properties[enb_properties_index]->rrc_log_verbosity);
+		    } else {
+                      enb_properties.properties[enb_properties_index]->rrc_log_verbosity = LOG_MED; 
+		    } 
+		    
+                  } else { // not configuration is given 
+		    enb_properties.properties[enb_properties_index]->glog_level = LOG_INFO; 
+		    enb_properties.properties[enb_properties_index]->glog_verbosity = LOG_MED; 
+		    enb_properties.properties[enb_properties_index]->hw_log_level = LOG_INFO;
+		    enb_properties.properties[enb_properties_index]->hw_log_verbosity = LOG_MED; 
+		    enb_properties.properties[enb_properties_index]->phy_log_level = LOG_INFO;
+		    enb_properties.properties[enb_properties_index]->phy_log_verbosity = LOG_MED; 
+		    enb_properties.properties[enb_properties_index]->mac_log_level = LOG_INFO; 
+		    enb_properties.properties[enb_properties_index]->mac_log_verbosity = LOG_MED;
+		    enb_properties.properties[enb_properties_index]->rlc_log_level = LOG_INFO; 
+		    enb_properties.properties[enb_properties_index]->rlc_log_verbosity = LOG_MED;
+		    enb_properties.properties[enb_properties_index]->pdcp_log_level = LOG_INFO; 
+		    enb_properties.properties[enb_properties_index]->pdcp_log_verbosity = LOG_MED; 
+		    enb_properties.properties[enb_properties_index]->rrc_log_level = LOG_INFO; 
+		    enb_properties.properties[enb_properties_index]->rrc_log_verbosity = LOG_MED; 
+		  }
+
                   enb_properties_index += 1;
                   break;
               }

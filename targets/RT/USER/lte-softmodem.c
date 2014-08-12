@@ -29,11 +29,11 @@
 
 /*! \file lte-softmodem.c
  * \brief main program to control HW and scheduling
- * \author R. Knopp, F. Kaltenberger
+ * \author R. Knopp, F. Kaltenberger, Navid Nikaein
  * \date 2012
  * \version 0.1
  * \company Eurecom
- * \email: knopp@eurecom.fr,florian.kaltenberger@eurecom.fr
+ * \email: knopp@eurecom.fr,florian.kaltenberger@eurecom.fr, navid.nikaein@eurecom.fr
  * \note
  * \warning
  */
@@ -305,6 +305,21 @@ static LTE_DL_FRAME_PARMS      *frame_parms;
 
 int multi_thread=1;
 int N_RB_DL=25;
+
+int16_t           glog_level=LOG_DEBUG;
+int16_t           glog_verbosity=LOG_MED;
+int16_t           hw_log_level=LOG_DEBUG;
+int16_t           hw_log_verbosity=LOG_MED;
+int16_t           phy_log_level=LOG_DEBUG;
+int16_t           phy_log_verbosity=LOG_MED;
+int16_t           mac_log_level=LOG_DEBUG;
+int16_t           mac_log_verbosity=LOG_MED;
+int16_t           rlc_log_level=LOG_DEBUG;
+int16_t           rlc_log_verbosity=LOG_MED;
+int16_t           pdcp_log_level=LOG_DEBUG;
+int16_t           pdcp_log_verbosity=LOG_MED;
+int16_t           rrc_log_level=LOG_DEBUG;
+int16_t           rrc_log_verbosity=LOG_MED;
 
 unsigned int build_rflocal(int txi, int txq, int rxi, int rxq)
 {
@@ -1695,6 +1710,7 @@ static void get_options (int argc, char **argv) {
   int                           c;
   //  char                          line[1000];
   //  int                           l;
+  int i,j,k;
 #ifdef USRP
   int clock_src;
 #endif
@@ -1722,7 +1738,7 @@ static void get_options (int argc, char **argv) {
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
   
-  while ((c = getopt_long (argc, argv, "C:dK:qO:SUVRMr:s:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:G:qO:SUVRMr:s:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -1834,6 +1850,12 @@ static void get_options (int argc, char **argv) {
       printf("Note: -s not defined for ExpressMIMO2\n");
 #endif
       break;
+    case 'g':
+      glog_level=atoi(optarg); // value between 1 - 9 
+      break;
+    case 'G':
+      glog_verbosity=atoi(optarg);// value from 0, 0x5, 0x15, 0x35, 0x75
+      break;
     default:
       break;
     }
@@ -1852,14 +1874,41 @@ static void get_options (int argc, char **argv) {
 		 conf_config_file_name, NB_eNB_INST, enb_properties->number);
     
     /* Update some simulation parameters */
-    frame_parms->frame_type =       enb_properties->properties[0]->frame_type;
-    frame_parms->tdd_config =       enb_properties->properties[0]->tdd_config;
-    frame_parms->tdd_config_S =     enb_properties->properties[0]->tdd_config_s;
-    for (i = 0 ; i < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); i++) {
-      downlink_frequency[i] =       enb_properties->properties[0]->downlink_frequency;
-      printf("Downlink frequency set to %u\n", downlink_frequency[i]);
-      uplink_frequency_offset[i] =  enb_properties->properties[0]->uplink_frequency_offset;
-    }
+    for (i=0; i < enb_properties->number; i++) {
+      
+      frame_parms->frame_type =       enb_properties->properties[i]->frame_type;
+      frame_parms->tdd_config =       enb_properties->properties[i]->tdd_config;
+      frame_parms->tdd_config_S =     enb_properties->properties[i]->tdd_config_s;
+
+      for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
+	frame_parms->Nid_cell          =  enb_properties->properties[i]->cell_id;
+	frame_parms->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL;
+      } // j
+    
+      glog_level                     = enb_properties->properties[i]->glog_level;
+      glog_verbosity                 = enb_properties->properties[i]->glog_verbosity;
+      hw_log_level                   = enb_properties->properties[i]->hw_log_level;
+      hw_log_verbosity               = enb_properties->properties[i]->hw_log_verbosity ;
+      phy_log_level                  = enb_properties->properties[i]->phy_log_level;
+      phy_log_verbosity              = enb_properties->properties[i]->phy_log_verbosity;
+      mac_log_level                  = enb_properties->properties[i]->mac_log_level;
+      mac_log_verbosity              = enb_properties->properties[i]->mac_log_verbosity;
+      rlc_log_level                  = enb_properties->properties[i]->rlc_log_level;
+      rlc_log_verbosity              = enb_properties->properties[i]->rlc_log_verbosity;
+      pdcp_log_level                 = enb_properties->properties[i]->pdcp_log_level;
+      pdcp_log_verbosity             = enb_properties->properties[i]->pdcp_log_verbosity;
+      rrc_log_level                  = enb_properties->properties[i]->rrc_log_level;
+      rrc_log_verbosity              = enb_properties->properties[i]->rrc_log_verbosity;
+    
+    
+    // adjust the log 
+
+      for (k = 0 ; k < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); k++) {
+	downlink_frequency[k] =       enb_properties->properties[i]->downlink_frequency;
+	printf("Downlink frequency set to %u\n", downlink_frequency[k]);
+	uplink_frequency_offset[k] =  enb_properties->properties[i]->uplink_frequency_offset;
+      } // k 
+    }// i
   }
 }
 
@@ -1916,7 +1965,7 @@ int main(int argc, char **argv) {
   // initialize the log (see log.h for details)
   logInit();
 
-  set_glog(LOG_DEBUG, LOG_MED);
+  set_glog(glog_level, glog_verbosity);
   if (UE_flag==1)
     {
       printf("configuring for UE\n");
@@ -1943,17 +1992,16 @@ int main(int argc, char **argv) {
     {
       printf("configuring for eNB\n");
 
-      set_comp_log(HW,      LOG_DEBUG,  LOG_HIGH, 1);
+      set_comp_log(HW,      hw_log_level, hw_log_verbosity, 1);
 #ifdef OPENAIR2
-      set_comp_log(PHY,     LOG_DEBUG,   LOG_HIGH, 1);
+      set_comp_log(PHY,     phy_log_level,   phy_log_verbosity, 1);
 #else
       set_comp_log(PHY,     LOG_INFO,   LOG_HIGH, 1);
 #endif
-      set_comp_log(MAC,     LOG_INFO,   LOG_HIGH, 1);
-      set_comp_log(RLC,     LOG_TRACE,   LOG_HIGH, 1);
-      set_comp_log(PDCP,    LOG_DEBUG,   LOG_HIGH, 1);
-      set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
-      set_comp_log(RRC,     LOG_DEBUG,   LOG_HIGH, 1);
+      set_comp_log(MAC,     mac_log_level,  mac_log_verbosity, 1);
+      set_comp_log(RLC,     rlc_log_level,   rlc_log_verbosity, 1);
+      set_comp_log(PDCP,    pdcp_log_level,  pdcp_log_verbosity, 1);
+      set_comp_log(RRC,     rrc_log_level,  rrc_log_verbosity, 1);
 #if defined(ENABLE_ITTI)
       set_comp_log(EMU,     LOG_INFO,   LOG_MED, 1);
 # if defined(ENABLE_USE_MME)
@@ -1967,6 +2015,7 @@ int main(int argc, char **argv) {
 #endif
 #endif
       set_comp_log(ENB_APP, LOG_INFO, LOG_HIGH, 1);
+      set_comp_log(OTG,     LOG_INFO,   LOG_HIGH, 1);
       if (online_log_messages == 1) { 
 	set_component_filelog(RRC);
 	set_component_filelog(PDCP);
