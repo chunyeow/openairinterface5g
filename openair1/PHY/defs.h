@@ -140,6 +140,8 @@ enum transmission_access_mode{
 
 /// Context data structure for eNB subframe processing
 typedef struct {
+  /// Component Carrier index
+  int CC_id;
   /// subframe index
   int subframe;
   /// subframe to act upon for transmission 

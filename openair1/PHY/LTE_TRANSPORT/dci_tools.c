@@ -4032,10 +4032,12 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       harq_pid = subframe2harq_pid(frame_parms,
 				   pdcch_alloc2ul_frame(frame_parms,phy_vars_ue->frame,subframe),
 				   pdcch_alloc2ul_subframe(frame_parms,subframe));
-    /*    msg("Scheduling eNB ULSCH reception for frame %d, subframe %d harq_pid = %d\n",
+    /*
+        msg("Scheduling UE transmission for frame %d, subframe %d harq_pid = %d\n",
 	  pdcch_alloc2ul_frame(frame_parms,phy_vars_ue->frame,subframe),
 	  pdcch_alloc2ul_subframe(frame_parms,subframe),harq_pid);
     */
+
     if (harq_pid == 255) {
       LOG_E(PHY, "frame %d, subframe %d, rnti %x, format %d: illegal harq_pid!\n",
 	    phy_vars_ue->frame, subframe, rnti, dci_format);
@@ -4443,7 +4445,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       // a Ndi=1 automatically acknowledges previous PUSCH transmission
       if (phy_vars_ue->ulsch_ue_Msg3_active[eNB_id] == 1) 
 	phy_vars_ue->ulsch_ue_Msg3_active[eNB_id] = 0;  
-    }
+    } 
     else {
       //      printf("Ndi = 0 : Setting RVidx from mcs %d\n",((DCI0_5MHz_TDD_1_6_t *)dci_pdu)->mcs);
       if (mcs>28) ulsch->harq_processes[harq_pid]->rvidx = mcs - 28;
@@ -4524,7 +4526,7 @@ int generate_eNB_ulsch_params_from_dci(void *dci_pdu,
 						      subframe),
 				 pdcch_alloc2ul_subframe(frame_parms,subframe));
 
-
+    //    printf("eNB: sched_subframe %d, subframe %d, frame_tx %d\n",sched_subframe,subframe,phy_vars_eNB->proc[sched_subframe].frame_tx);
 
     switch (frame_parms->N_RB_DL) {
     case 6:
