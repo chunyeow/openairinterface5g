@@ -128,32 +128,28 @@ for idx=1:length(d1)
     
     
     %% rssi(dBm) versus distance (log scale)
-    % We will plot the rssi versus the distance with the data before the passing of the train, and with the data after the passingof the train
+    % We will plot the rssi versus the distance. We separate the data
+    % before and after the passing of the train for run 3 and run 4 because
+    % all the antennas are poiting at the same direction
     
     % we heuristically determine a starting point and a ending point for the linear fitting
     if idx==1
         
-        distance_before_break1_start=0.4;%in km
-        distance_before_break1_end=7.5;
-        distance_before_break2_start=0.4;
-        distance_before_break2_end=7.5;
+        distance_break1_start=0.4;%in km
+        distance_break1_end=7.5;
+        distance_break2_start=0.4;
+        distance_break2_end=7.5;
         
-        distance_after_break1_start=0.9;%in km
-        distance_after_break1_end=4.5;
-        distance_after_break2_start=0.9;
-        distance_after_break2_end=4.5;
+        
     end
     
     if idx==2
-        distance_before_break1_start=0.8;%in km
-        distance_before_break1_end=4.5;
-        distance_before_break2_start=0.8;
-        distance_before_break2_end=4.5;
+        distance_break1_start=0.8;%in km
+        distance_break1_end=4.5;
+        distance_break2_start=0.8;
+        distance_break2_end=4.5;
         
-        distance_after_break1_start=0.5;%in km
-        distance_after_break1_end=7.5;
-        distance_after_break2_start=0.5;
-        distance_after_break2_end=7.5;
+        
     end
     
     if idx==3
@@ -180,147 +176,246 @@ for idx=1:length(d1)
         distance_after_break2_end=8;
     end
     
-    % indexes of the starting and ending points with the data before the passing of the
-    % train
-    index_break1_before_start=1;
-    index_break2_before_start=1;
-    index_break1_before_end=1;
-    index_break2_before_end=1;
     
-    % indexes of the starting and ending points with the data after the passing of the
-    % train
-    index_break1_after_start=I_RSSI_max1;
-    index_break2_after_start=I_RSSI_max2;
-    index_break1_after_end=I_RSSI_max1;
-    index_break2_after_end=I_RSSI_max2;
-    
-    %starting points
-    while (index_break1_before_start<length(new_distances1)) && (new_distances1(index_break1_before_start)>distance_before_break1_start)
-        index_break1_before_start=index_break1_before_start+1;
-    end
-    while (index_break2_before_start<length(new_distances2)) && (new_distances2(index_break2_before_start)>distance_before_break2_start)
-        index_break2_before_start=index_break2_before_start+1;
-    end
-    %ending points
-    while (index_break1_before_end<length(new_distances1)) && (new_distances1(index_break1_before_end)>distance_before_break1_end)
-        index_break1_before_end=index_break1_before_end+1;
-    end
-    while (index_break2_before_end<length(new_distances2)) && (new_distances2(index_break2_before_end)>distance_before_break2_end)
-        index_break2_before_end=index_break2_before_end+1;
+    if idx==1 || idx==2
+        
+        % indexes of the starting and ending points
+        index_break1_start=1;
+        index_break2_start=1;
+        index_break1_end=1;
+        index_break2_end=1;
+        
     end
     
-    
-    %starting points
-    while (index_break1_after_start<length(new_distances1)) && (new_distances1(index_break1_after_start)<distance_after_break1_start)
-        index_break1_after_start=index_break1_after_start+1;
-    end
-    while (index_break2_after_start<length(new_distances2)) && (new_distances2(index_break2_after_start)<distance_after_break2_start)
-        index_break2_after_start=index_break2_after_start+1;
-    end
-    
-    %ending points
-    while (index_break1_after_end<length(new_distances1)) && (new_distances1(index_break1_after_end)<distance_after_break1_end)
-        index_break1_after_end=index_break1_after_end+1;
-    end
-    while (index_break2_after_end<length(new_distances2)) && (new_distances2(index_break2_after_end)<distance_after_break2_end)
-        index_break2_after_end=index_break2_after_end+1;
+    if idx==3 || idx==4
+        % indexes of the starting and ending points with the data before the passing of the
+        % train
+        index_break1_before_start=1;
+        index_break2_before_start=1;
+        index_break1_before_end=1;
+        index_break2_before_end=1;
+        
+        % indexes of the starting and ending points with the data after the passing of the
+        % train
+        index_break1_after_start=I_RSSI_max1;
+        index_break2_after_start=I_RSSI_max2;
+        index_break1_after_end=I_RSSI_max1;
+        index_break2_after_end=I_RSSI_max2;
+        
     end
     
     
+    if idx==1 || idx==2
+        %starting points
+        while (index_break1_start<length(new_distances1)) && (new_distances1(index_break1_start)>distance_break1_start)
+            index_break1_start=index_break1_start+1;
+        end
+        while (index_break2_start<length(new_distances2)) && (new_distances2(index_break2_start)>distance_break2_start)
+            index_break2_start=index_break2_start+1;
+        end
+        %ending points
+        while (index_break1_end<length(new_distances1)) && (new_distances1(index_break1_end)>distance_break1_end)
+            index_break1_end=index_break1_end+1;
+        end
+        while (index_break2_end<length(new_distances2)) && (new_distances2(index_break2_end)>distance_break2_end)
+            index_break2_end=index_break2_end+1;
+        end
+        
+        
+    end
+    
+    if idx==3 || idx==4
+        %starting points
+        while (index_break1_before_start<length(new_distances1)) && (new_distances1(index_break1_before_start)>distance_before_break1_start)
+            index_break1_before_start=index_break1_before_start+1;
+        end
+        while (index_break2_before_start<length(new_distances2)) && (new_distances2(index_break2_before_start)>distance_before_break2_start)
+            index_break2_before_start=index_break2_before_start+1;
+        end
+        %ending points
+        while (index_break1_before_end<length(new_distances1)) && (new_distances1(index_break1_before_end)>distance_before_break1_end)
+            index_break1_before_end=index_break1_before_end+1;
+        end
+        while (index_break2_before_end<length(new_distances2)) && (new_distances2(index_break2_before_end)>distance_before_break2_end)
+            index_break2_before_end=index_break2_before_end+1;
+        end
+        
+        
+        %starting points
+        while (index_break1_after_start<length(new_distances1)) && (new_distances1(index_break1_after_start)<distance_after_break1_start)
+            index_break1_after_start=index_break1_after_start+1;
+        end
+        while (index_break2_after_start<length(new_distances2)) && (new_distances2(index_break2_after_start)<distance_after_break2_start)
+            index_break2_after_start=index_break2_after_start+1;
+        end
+        
+        %ending points
+        while (index_break1_after_end<length(new_distances1)) && (new_distances1(index_break1_after_end)<distance_after_break1_end)
+            index_break1_after_end=index_break1_after_end+1;
+        end
+        while (index_break2_after_end<length(new_distances2)) && (new_distances2(index_break2_after_end)<distance_after_break2_end)
+            index_break2_after_end=index_break2_after_end+1;
+        end
+        
+    end
     
     
     
-    figure(idx*10+3)
+    
+    if idx==1 || idx ==2
+        figure(idx*10+3)
+        
+        
+        
+        
+        hold off
+        linearCoef1 = polyfit(10*log10(new_distances1(index_break1_end:index_break1_start)),data1{idx}(index_break1_end:index_break1_start,13),1);
+        linearFit1 = polyval(linearCoef1,10*log10(new_distances1(index_break1_end:index_break1_start)));
+        semilogx(new_distances1(1:I_RSSI_max1),data1{idx}(1:I_RSSI_max1,13),'rx',new_distances1(index_break1_end:index_break1_start),linearFit1,'r-')
+        display(sprintf('Run %d :slope UHF : %f',idx,linearCoef1(1)))
+        
+        
+        hold on
+        linearCoef2 = polyfit(10*log10(new_distances2(index_break2_end:index_break2_start)),data2{idx}(index_break2_end:index_break2_start,13),1);
+        linearFit2 = polyval(linearCoef2,10*log10(new_distances2(index_break2_end:index_break2_start)));
+        semilogx(new_distances2(1:I_RSSI_max2),data2{idx}(1:I_RSSI_max2,13),'bx',new_distances2(index_break2_end:index_break2_start),linearFit2,'b-')
+        display(sprintf('Run %d :slope 2.6GHz : %f',idx,linearCoef2(1)))
+        
+        
+        title(sprintf('Run %d: With the data  the passing of the train',idx))
+        legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
+        xlabel('distance [km]')
+        ylabel('RSSI [dBm]')
+        
+        
+        
+        
+        % Zoom on the linear fitting
+        
+        figure(idx*10+4)
+        
+        
+        
+        
+        hold off
+        
+        linearCoef1 = polyfit(10*log10(new_distances1(index_break1_end:index_break1_start)),data1{idx}(index_break1_end:index_break1_start,13),1);
+        linearFit1 = polyval(linearCoef1,10*log10(new_distances1(index_break1_end:index_break1_start)));
+        semilogx(new_distances1(index_break1_end:index_break1_start),data1{idx}(index_break1_end:index_break1_start,13),'rx',new_distances1(index_break1_end:index_break1_start),linearFit1,'r-')
+        %display(sprintf('Run %d :slope UHF : %f',idx,linearCoef1(1)))
+        
+        hold on
+        
+        linearCoef2 = polyfit(10*log10(new_distances2(index_break2_end:index_break2_start)),data2{idx}(index_break2_end:index_break2_start,13),1);
+        linearFit2 = polyval(linearCoef2,10*log10(new_distances2(index_break2_end:index_break2_start)));
+        semilogx(new_distances2(index_break2_end:index_break2_start),data2{idx}(index_break2_end:index_break2_start,13),'bx',new_distances2(index_break2_end:index_break2_start),linearFit2,'b-')
+        %display(sprintf('Run %d :slope 2.6GHz : %f',idx,linearCoef2(1)))
+        
+        title(sprintf('Run %d: ',idx))
+        legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
+        xlabel('distance [km]')
+        ylabel('RSSI [dBm]')
+        
+        
+    end
     
     
-    subplot(2,1,1)
     
-    hold off
-    linearCoef1_before = polyfit(10*log10(new_distances1(index_break1_before_end:index_break1_before_start)),data1{idx}(index_break1_before_end:index_break1_before_start,13),1);
-    linearFit1_before = polyval(linearCoef1_before,10*log10(new_distances1(index_break1_before_end:index_break1_before_start)));
-    semilogx(new_distances1(1:I_RSSI_max1),data1{idx}(1:I_RSSI_max1,13),'rx',new_distances1(index_break1_before_end:index_break1_before_start),linearFit1_before,'r-')
-    display(sprintf('Run %d :slope UHF before: %f',idx,linearCoef1_before(1)))
-    
-    
-    hold on
-    linearCoef2_before = polyfit(10*log10(new_distances2(index_break2_before_end:index_break2_before_start)),data2{idx}(index_break2_before_end:index_break2_before_start,13),1);
-    linearFit2_before = polyval(linearCoef2_before,10*log10(new_distances2(index_break2_before_end:index_break2_before_start)));
-    semilogx(new_distances2(1:I_RSSI_max2),data2{idx}(1:I_RSSI_max2,13),'bx',new_distances2(index_break2_before_end:index_break2_before_start),linearFit2_before,'b-')
-    display(sprintf('Run %d :slope 2.6GHz before: %f',idx,linearCoef2_before(1)))
-    
-    
-    title(sprintf('Run %d: With the data before the passing of the train',idx))
-    legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
-    xlabel('distance [km]')
-    ylabel('RSSI [dBm]')
-    
-    subplot(2,1,2)
-    
-    hold off
-    linearCoef1_after = polyfit(10*log10(new_distances1(index_break1_after_start:index_break1_after_end)),data1{idx}(index_break1_after_start:index_break1_after_end,13),1);
-    linearFit1_after = polyval(linearCoef1_after,10*log10(new_distances1(index_break1_after_start:index_break1_after_end)));
-    semilogx(new_distances1(I_RSSI_max1:end),data1{idx}(I_RSSI_max1:end,13),'rx',new_distances1(index_break1_after_start:index_break1_after_end),linearFit1_after,'r-')
-    display(sprintf('Run %d :slope UHF after: %f',idx,linearCoef1_after(1)))
-    
-    
-    hold on
-    linearCoef2_after = polyfit(10*log10(new_distances2(index_break2_after_start:index_break2_after_end)),data2{idx}(index_break2_after_start:index_break2_after_end,13),1);
-    linearFit2_after = polyval(linearCoef2_after,10*log10(new_distances2(index_break2_after_start:index_break2_after_end)));
-    semilogx(new_distances2(I_RSSI_max2:end),data2{idx}(I_RSSI_max2:end,13),'bx',new_distances2(index_break2_after_start:index_break2_after_end),linearFit2_after,'b-')
-    display(sprintf('Run %d :slope 2.6GHz after: %f',idx,linearCoef2_after(1)))
-    
-    title(sprintf('Run %d: With the data after the passing of the train',idx))
-    legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
-    xlabel('distance [km]')
-    ylabel('RSSI [dBm]')
-    
-    
-    % Zoom on the linear fitting
-    
-    figure(idx*10+4)
-    
-    
-    subplot(2,1,1)
-    
-    hold off
-    
-    linearCoef1_before = polyfit(10*log10(new_distances1(index_break1_before_end:index_break1_before_start)),data1{idx}(index_break1_before_end:index_break1_before_start,13),1);
-    linearFit1_before = polyval(linearCoef1_before,10*log10(new_distances1(index_break1_before_end:index_break1_before_start)));
-    semilogx(new_distances1(index_break1_before_end:index_break1_before_start),data1{idx}(index_break1_before_end:index_break1_before_start,13),'rx',new_distances1(index_break1_before_end:index_break1_before_start),linearFit1_before,'r-')
-    %display(sprintf('Run %d :slope UHF before: %f',idx,linearCoef1_before(1)))
-    
-    hold on
-    
-    linearCoef2_before = polyfit(10*log10(new_distances2(index_break2_before_end:index_break2_before_start)),data2{idx}(index_break2_before_end:index_break2_before_start,13),1);
-    linearFit2_before = polyval(linearCoef2_before,10*log10(new_distances2(index_break2_before_end:index_break2_before_start)));
-    semilogx(new_distances2(index_break2_before_end:index_break2_before_start),data2{idx}(index_break2_before_end:index_break2_before_start,13),'bx',new_distances2(index_break2_before_end:index_break2_before_start),linearFit2_before,'b-')
-    %display(sprintf('Run %d :slope 2.6GHz before: %f',idx,linearCoef2_before(1)))
-    
-    title(sprintf('Run %d: With the data before the passing of the train',idx))
-    legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
-    xlabel('distance [km]')
-    ylabel('RSSI [dBm]')
-    
-    subplot(2,1,2)
-    
-    hold off
-    
-    
-    linearCoef1_after = polyfit(10*log10(new_distances1(index_break1_after_start:index_break1_after_end)),data1{idx}(index_break1_after_start:index_break1_after_end,13),1);
-    linearFit1_after = polyval(linearCoef1_after,10*log10(new_distances1(index_break1_after_start:index_break1_after_end)));
-    semilogx(new_distances1(index_break1_after_start:index_break1_after_end),data1{idx}(index_break1_after_start:index_break1_after_end,13),'rx',new_distances1(index_break1_after_start:index_break1_after_end),linearFit1_after,'r-')
-    %display(sprintf('Run %d :slope UHF after: %f',idx,linearCoef1_after(1)))
-    hold on
-    
-    linearCoef2_after = polyfit(10*log10(new_distances2(index_break2_after_start:index_break2_after_end)),data2{idx}(index_break2_after_start:index_break2_after_end,13),1);
-    linearFit2_after = polyval(linearCoef2_after,10*log10(new_distances2(index_break2_after_start:index_break2_after_end)));
-    semilogx(new_distances2(index_break2_after_start:index_break2_after_end),data2{idx}(index_break2_after_start:index_break2_after_end,13),'bx',new_distances2(index_break2_after_start:index_break2_after_end),linearFit2_after,'b-')
-    %display(sprintf('Run %d :slope 2.6GHz after: %f',idx,linearCoef2_after(1)))
-    title(sprintf('Run %d: With the data after the passing of the train',idx))
-    legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
-    xlabel('distance [km]')
-    ylabel('RSSI [dBm]')
-    
+    if idx==3 || idx==4
+        
+        
+        figure(idx*10+3)
+        
+        
+        subplot(2,1,1)
+        
+        hold off
+        linearCoef1_before = polyfit(10*log10(new_distances1(index_break1_before_end:index_break1_before_start)),data1{idx}(index_break1_before_end:index_break1_before_start,13),1);
+        linearFit1_before = polyval(linearCoef1_before,10*log10(new_distances1(index_break1_before_end:index_break1_before_start)));
+        semilogx(new_distances1(1:I_RSSI_max1),data1{idx}(1:I_RSSI_max1,13),'rx',new_distances1(index_break1_before_end:index_break1_before_start),linearFit1_before,'r-')
+        display(sprintf('Run %d :slope UHF before: %f',idx,linearCoef1_before(1)))
+        
+        
+        hold on
+        linearCoef2_before = polyfit(10*log10(new_distances2(index_break2_before_end:index_break2_before_start)),data2{idx}(index_break2_before_end:index_break2_before_start,13),1);
+        linearFit2_before = polyval(linearCoef2_before,10*log10(new_distances2(index_break2_before_end:index_break2_before_start)));
+        semilogx(new_distances2(1:I_RSSI_max2),data2{idx}(1:I_RSSI_max2,13),'bx',new_distances2(index_break2_before_end:index_break2_before_start),linearFit2_before,'b-')
+        display(sprintf('Run %d :slope 2.6GHz before: %f',idx,linearCoef2_before(1)))
+        
+        
+        title(sprintf('Run %d: With the data before the passing of the train',idx))
+        legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
+        xlabel('distance [km]')
+        ylabel('RSSI [dBm]')
+        
+        subplot(2,1,2)
+        
+        hold off
+        linearCoef1_after = polyfit(10*log10(new_distances1(index_break1_after_start:index_break1_after_end)),data1{idx}(index_break1_after_start:index_break1_after_end,13),1);
+        linearFit1_after = polyval(linearCoef1_after,10*log10(new_distances1(index_break1_after_start:index_break1_after_end)));
+        semilogx(new_distances1(I_RSSI_max1:end),data1{idx}(I_RSSI_max1:end,13),'rx',new_distances1(index_break1_after_start:index_break1_after_end),linearFit1_after,'r-')
+        display(sprintf('Run %d :slope UHF after: %f',idx,linearCoef1_after(1)))
+        
+        
+        hold on
+        linearCoef2_after = polyfit(10*log10(new_distances2(index_break2_after_start:index_break2_after_end)),data2{idx}(index_break2_after_start:index_break2_after_end,13),1);
+        linearFit2_after = polyval(linearCoef2_after,10*log10(new_distances2(index_break2_after_start:index_break2_after_end)));
+        semilogx(new_distances2(I_RSSI_max2:end),data2{idx}(I_RSSI_max2:end,13),'bx',new_distances2(index_break2_after_start:index_break2_after_end),linearFit2_after,'b-')
+        display(sprintf('Run %d :slope 2.6GHz after: %f',idx,linearCoef2_after(1)))
+        
+        title(sprintf('Run %d: With the data after the passing of the train',idx))
+        legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
+        xlabel('distance [km]')
+        ylabel('RSSI [dBm]')
+        
+        
+        % Zoom on the linear fitting
+        
+        figure(idx*10+4)
+        
+        
+        subplot(2,1,1)
+        
+        hold off
+        
+        linearCoef1_before = polyfit(10*log10(new_distances1(index_break1_before_end:index_break1_before_start)),data1{idx}(index_break1_before_end:index_break1_before_start,13),1);
+        linearFit1_before = polyval(linearCoef1_before,10*log10(new_distances1(index_break1_before_end:index_break1_before_start)));
+        semilogx(new_distances1(index_break1_before_end:index_break1_before_start),data1{idx}(index_break1_before_end:index_break1_before_start,13),'rx',new_distances1(index_break1_before_end:index_break1_before_start),linearFit1_before,'r-')
+        %display(sprintf('Run %d :slope UHF before: %f',idx,linearCoef1_before(1)))
+        
+        hold on
+        
+        linearCoef2_before = polyfit(10*log10(new_distances2(index_break2_before_end:index_break2_before_start)),data2{idx}(index_break2_before_end:index_break2_before_start,13),1);
+        linearFit2_before = polyval(linearCoef2_before,10*log10(new_distances2(index_break2_before_end:index_break2_before_start)));
+        semilogx(new_distances2(index_break2_before_end:index_break2_before_start),data2{idx}(index_break2_before_end:index_break2_before_start,13),'bx',new_distances2(index_break2_before_end:index_break2_before_start),linearFit2_before,'b-')
+        %display(sprintf('Run %d :slope 2.6GHz before: %f',idx,linearCoef2_before(1)))
+        
+        title(sprintf('Run %d: With the data before the passing of the train',idx))
+        legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
+        xlabel('distance [km]')
+        ylabel('RSSI [dBm]')
+        
+        subplot(2,1,2)
+        
+        hold off
+        
+        
+        linearCoef1_after = polyfit(10*log10(new_distances1(index_break1_after_start:index_break1_after_end)),data1{idx}(index_break1_after_start:index_break1_after_end,13),1);
+        linearFit1_after = polyval(linearCoef1_after,10*log10(new_distances1(index_break1_after_start:index_break1_after_end)));
+        semilogx(new_distances1(index_break1_after_start:index_break1_after_end),data1{idx}(index_break1_after_start:index_break1_after_end,13),'rx',new_distances1(index_break1_after_start:index_break1_after_end),linearFit1_after,'r-')
+        %display(sprintf('Run %d :slope UHF after: %f',idx,linearCoef1_after(1)))
+        hold on
+        
+        linearCoef2_after = polyfit(10*log10(new_distances2(index_break2_after_start:index_break2_after_end)),data2{idx}(index_break2_after_start:index_break2_after_end,13),1);
+        linearFit2_after = polyval(linearCoef2_after,10*log10(new_distances2(index_break2_after_start:index_break2_after_end)));
+        semilogx(new_distances2(index_break2_after_start:index_break2_after_end),data2{idx}(index_break2_after_start:index_break2_after_end,13),'bx',new_distances2(index_break2_after_start:index_break2_after_end),linearFit2_after,'b-')
+        %display(sprintf('Run %d :slope 2.6GHz after: %f',idx,linearCoef2_after(1)))
+        title(sprintf('Run %d: With the data after the passing of the train',idx))
+        legend('UHF','UHF:linear fitting','2.6GHz card 1','2.6GHz card 1:linear fitting');
+        xlabel('distance [km]')
+        ylabel('RSSI [dBm]')
+        
+    end
     
     
     
