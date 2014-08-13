@@ -156,7 +156,7 @@ void assign_rbs_required (module_id_t Mod_id,
   // clear rb allocations across all CC_ids
   for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]){
     pCCid = UE_PCCID(Mod_id,UE_id);
-
+    rnti = UE_list->UE_template[pCCid][UE_id].rnti;
     //update CQI information across component carriers
     for (n=0;n<UE_list->numactiveCCs[UE_id];n++) {
 
