@@ -84,6 +84,6 @@ int openair0_stop(int card);
 int openair0_stop_without_reset(int card);
 
 // return the DAQ block counter
-unsigned int *openair0_daq_cnt();
+unsigned int *openair0_daq_cnt(void);
 
 #endif

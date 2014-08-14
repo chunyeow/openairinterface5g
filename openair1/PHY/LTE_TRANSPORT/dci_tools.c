@@ -5110,7 +5110,7 @@ double sinr_eff_cqi_calc(PHY_VARS_UE *phy_vars_ue, uint8_t eNB_id){
   sinr_eff_qam64 = (p_qam64[0]*pow(I_qam64_avg,7) + p_qam64[1]*pow(I_qam64_avg,6) + p_qam64[2]*pow(I_qam64_avg,5) + p_qam64[3]*pow(I_qam64_avg,4) + p_qam64[4]*pow(I_qam64_avg,3) + p_qam64[5]*pow(I_qam64_avg,2) + p_qam64[6]*I_qam64_avg + p_qam64[7]);
   sinr_eff = cmax3(sinr_eff_qpsk,sinr_eff_qam16,sinr_eff_qam64);
   
-  msg("SINR_Eff = %e\n",sinr_eff);
+  //msg("SINR_Eff = %e\n",sinr_eff);
   
   return(sinr_eff);
 }

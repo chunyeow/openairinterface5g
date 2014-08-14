@@ -158,7 +158,7 @@ void phy_scope_eNB(FD_lte_phy_scope_enb *form,
     float *chest_f_abs;
     float time[FRAME_LENGTH_COMPLEX_SAMPLES];
     float freq[nsymb_ce*nb_antennas_rx*nb_antennas_tx];
-    int frame = phy_vars_enb->frame;
+    int frame = phy_vars_enb->proc[0].frame_tx;
     uint32_t total_dlsch_bitrate = phy_vars_enb->total_dlsch_bitrate;
     int coded_bits_per_codeword = 0;
     uint8_t harq_pid; // in TDD config 3 it is sf-2, i.e., can be 0,1,2
@@ -469,6 +469,7 @@ void phy_scope_UE(FD_lte_phy_scope_ue *form,
                                         phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->nb_rb,
                                         phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rb_alloc,
                                         get_Qm(mcs),
+					phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->Nl,
                                         num_pdcch_symbols,
                                         frame,
                                         subframe);

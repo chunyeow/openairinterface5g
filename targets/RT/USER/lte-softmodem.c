@@ -424,14 +424,14 @@ static void *scope_thread(void *arg) {
 # ifdef ENABLE_XFORMS_WRITE_STATS
       len =
 # endif
-	dump_ue_stats (PHY_vars_UE_g[0], stats_buffer, 0, mode,rx_input_level_dBm);
+	dump_ue_stats (PHY_vars_UE_g[0][0], stats_buffer, 0, mode,rx_input_level_dBm);
       fl_set_object_label(form_stats->stats_text, stats_buffer);
 # ifdef ENABLE_XFORMS_WRITE_STATS
       rewind (UE_stats);
       fwrite (stats_buffer, 1, len, UE_stats);
 # endif
       phy_scope_UE(form_ue[UE_id], 
-		   PHY_vars_UE_g[UE_id],
+		   PHY_vars_UE_g[UE_id][0],
 		   eNB_id,
 		   UE_id,7);
             
@@ -1047,7 +1047,6 @@ void init_eNB_proc() {
       pthread_attr_setschedparam  (&attr_eNB_proc_rx[CC_id][i], &sched_param_eNB_proc_rx[CC_id][i]);
       pthread_attr_setschedpolicy (&attr_eNB_proc_rx[CC_id][i], SCHED_FIFO);
       
-      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
 	PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_tx=-1;
 	PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_rx=-1;
 	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe=i;
@@ -1067,7 +1066,6 @@ void init_eNB_proc() {
 	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_rx = i;
 	PHY_vars_eNB_g[0][CC_id]->proc[i].subframe_tx = (i+2)%10;
 #endif
-      }
     }
   
   
@@ -1371,10 +1369,10 @@ static void *eNB_thread(void *arg)
 	if (multi_thread == 0) {
 	  if ((slot&1) == 0) {
 	    LOG_I(PHY,"[eNB] Single thread slot %d\n",slot);
-	    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-	      phy_procedures_eNB_lte ((2+(slot>>1))%10, PHY_vars_eNB_g[0][CC_id], 0, no_relay,NULL);
-	      do_OFDM_mod((2+(slot>>1))%10,PHY_vars_eNB_g[0][CC_id]);
-	    }
+	      phy_procedures_eNB_lte ((2+(slot>>1))%10, PHY_vars_eNB_g[0], 0, no_relay,NULL);
+	      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+		do_OFDM_mod((2+(slot>>1))%10,PHY_vars_eNB_g[0][CC_id]);
+	      }
 	  }
 	}
 	else { // multi-thread > 0
@@ -1881,8 +1879,8 @@ static void get_options (int argc, char **argv) {
       frame_parms->tdd_config_S =     enb_properties->properties[i]->tdd_config_s;
 
       for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
-	frame_parms->Nid_cell          =  enb_properties->properties[i]->cell_id;
-	frame_parms->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL;
+	frame_parms->Nid_cell          =  enb_properties->properties[i]->cell_id[j];
+	frame_parms->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[j];
       } // j
     
       glog_level                     = enb_properties->properties[i]->glog_level;
@@ -1941,7 +1939,9 @@ int main(int argc, char **argv) {
 
   //  int ret, ant;
   int ant_offset=0;
-
+#ifdef XFORMS
+  int ret;
+#endif
 #if defined (EMOS) || (! defined (RTAI))
   int error_code;
 #endif
@@ -2204,7 +2204,7 @@ int main(int argc, char **argv) {
       NB_INST=1;
 
       openair_daq_vars.ue_dl_rb_alloc=0x1fff;
-      openair_daq_vars.target_ue_dl_mcs=16;
+      openair_daq_vars.target_ue_dl_mcs=20;
       openair_daq_vars.ue_ul_nb_rb=6;
       openair_daq_vars.target_ue_ul_mcs=6;
 
