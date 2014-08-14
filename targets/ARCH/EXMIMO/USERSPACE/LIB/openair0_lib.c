@@ -248,7 +248,7 @@ int openair0_stop_without_reset(int card)
 static exmimo_config_t         *p_exmimo_config;
 static exmimo_id_t             *p_exmimo_id;
 #define MY_RF_MODE      (RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX)
-#define RF_MODE_BASE    (TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM)
+#define RF_MODE_BASE    (LNA1ON +LNAMax + RFBBNORM)
 
 int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cfg) {
 
@@ -256,7 +256,7 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
   int ret;
   int ant;
   int resampling_factor=2;
-
+  int rx_filter=RXLPF25, tx_filter=TXLPF25;
 
   ret = openair0_open();
 
@@ -284,7 +284,10 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
     exit(-1);
   }
 
-
+  if (!openair0_cfg) {
+    printf("Error, openair0_cfg is null!!\n");
+    return(-1);
+  }
 
   if (p_exmimo_id->board_swrev>=9)
     p_exmimo_config->framing.eNB_flag   = 0; 
@@ -293,15 +296,27 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
 
   p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
 
-  if (openair0_cfg->sample_rate==30.72e6)
+  if (openair0_cfg->sample_rate==30.72e6) {
     resampling_factor = 0;
-  else if (openair0_cfg->sample_rate==15.36e6)
+    rx_filter = RXLPF10;
+    tx_filter = TXLPF10;
+  }
+  else if (openair0_cfg->sample_rate==15.36e6) {
     resampling_factor = 1;
-  else if (openair0_cfg->sample_rate==7.68e6)
+    rx_filter = RXLPF5;
+    tx_filter = TXLPF5;
+  }
+  else if (openair0_cfg->sample_rate==7.68e6) {
     resampling_factor = 2;
+    rx_filter = RXLPF25;
+    tx_filter = TXLPF25;
+  }
   else {
     printf("Sampling rate not supported, using default 7.68MHz");
     resampling_factor = 2;
+    rx_filter = RXLPF25;
+    tx_filter = TXLPF25;
+
   }
 
 #if (BOARD_SWREV_CNTL2>=0x0A)
@@ -311,16 +326,12 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
     p_exmimo_config->framing.resampling_factor = resampling_factor;
 #endif
 
-  if (!openair0_cfg) {
-    printf("Error, openair0_cfg is null!!\n");
-    return(-1);
-  }
   for (ant=0;ant<max(openair0_cfg->tx_num_channels,openair0_cfg->rx_num_channels);ant++) 
     p_exmimo_config->rf.rf_mode[ant] = RF_MODE_BASE;
   for (ant=0;ant<openair0_cfg->tx_num_channels;ant++)
-    p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX);
+    p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX + TXLPFNORM + TXLPFEN + tx_filter);
   for (ant=0;ant<openair0_cfg->rx_num_channels;ant++) {
-    p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX);
+    p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX + RXLPFNORM + RXLPFEN + rx_filter);
     switch (openair0_cfg->rxg_mode[ant]) {
     default:
     case max_gain:

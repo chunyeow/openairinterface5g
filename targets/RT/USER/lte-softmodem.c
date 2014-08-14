@@ -304,7 +304,6 @@ static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,7
 static LTE_DL_FRAME_PARMS      *frame_parms;
 
 int multi_thread=1;
-int N_RB_DL=25;
 
 int16_t           glog_level=LOG_DEBUG;
 int16_t           glog_verbosity=LOG_MED;
@@ -1817,21 +1816,26 @@ static void get_options (int argc, char **argv) {
     case 'r':
       switch(atoi(optarg)) {
       case 6:
-	N_RB_DL=6;
+	frame_parms->N_RB_DL=6;
+	frame_parms->N_RB_UL=6;
 	break;
       case 25:
-	N_RB_DL=25;
+	frame_parms->N_RB_DL=25;
+	frame_parms->N_RB_UL=25;
 	break;
       case 50:
-	N_RB_DL=50;
+	frame_parms->N_RB_DL=50;
+	frame_parms->N_RB_UL=50;
 	break;
       case 100:
-	N_RB_DL=100;
+	frame_parms->N_RB_DL=100;
+	frame_parms->N_RB_UL=100;
 	break;
       default:
 	printf("Unknown N_RB_DL %d, switching to 25\n",atoi(optarg));
 	break;
       }
+      break;
     case 's':
 #ifdef USRP
 
@@ -1877,11 +1881,12 @@ static void get_options (int argc, char **argv) {
       frame_parms->frame_type =       enb_properties->properties[i]->frame_type;
       frame_parms->tdd_config =       enb_properties->properties[i]->tdd_config;
       frame_parms->tdd_config_S =     enb_properties->properties[i]->tdd_config_s;
+      frame_parms->Ncp =              enb_properties->properties[i]->prefix_type;
 
-      for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
-	frame_parms->Nid_cell          =  enb_properties->properties[i]->cell_id[j];
-	frame_parms->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[j];
-      } // j
+      //for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
+	frame_parms->Nid_cell          =  enb_properties->properties[i]->cell_id[0];
+	frame_parms->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[0];
+	//} // j
     
       glog_level                     = enb_properties->properties[i]->glog_level;
       glog_verbosity                 = enb_properties->properties[i]->glog_verbosity;
@@ -1956,6 +1961,11 @@ int main(int argc, char **argv) {
   frame_parms->frame_type         = TDD; /* TDD */
   frame_parms->tdd_config         = 3;
   frame_parms->tdd_config_S       = 0;
+  frame_parms->N_RB_DL            = 25;
+  frame_parms->N_RB_UL            = 25;
+  frame_parms->Ncp                = NORMAL;
+  frame_parms->Ncp_UL             = NORMAL;
+  frame_parms->Nid_cell           = Nid_cell;
 
   get_options (argc, argv); //Command-line options
 
@@ -2055,11 +2065,6 @@ int main(int argc, char **argv) {
 #endif
 
   // init the parameters
-  frame_parms->N_RB_DL            = N_RB_DL;
-  frame_parms->N_RB_UL            = N_RB_DL;
-  frame_parms->Ncp                = NORMAL;
-  frame_parms->Ncp_UL             = NORMAL;
-  frame_parms->Nid_cell           = Nid_cell;
   frame_parms->nushift            = 0;
   if (UE_flag==0)
     {
