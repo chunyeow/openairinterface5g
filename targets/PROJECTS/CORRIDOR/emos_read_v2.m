@@ -4,7 +4,7 @@ clear all
 global symbols_per_slot slots_per_frame;
 
 enable_plots=0; %enables figures
-
+record=1; %put 1 to enable the video record of the delay doppler profile
 %% preload and init data
 addpath('../../../openair1/PHY/LTE_REFSIG');
 primary_synch; %loads the primary sync signal
@@ -12,7 +12,7 @@ primary_synch; %loads the primary sync signal
 %load('E:\EMOS\corridor\ofdm_pilots_sync_2048_v7.mat');
 load('ofdm_pilots_sync_30MHz.mat');
 
-n_carriers = 2; % use 1 for UHF and 2 for 2.6GHz
+n_carriers = 1; % use 1 for UHF and 2 for 2.6GHz
 n_trials=1;%use 1 for trial1 and 2 for trial2
 n_run=1;
 symbols_per_slot = 6;
@@ -24,9 +24,9 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4);
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run1.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run1.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_UHF_run2.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
         %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_UHF_20140519_run4.EMOS';
         
         nframes = 100; % frames in one block
@@ -37,9 +37,9 @@ switch n_carriers
         pss_t = upsample(primary_synch0_time,4*4); % this assumes we are doing the sync on the second carrier, which is 10MHz
         
         %filename = 'E:\EMOS\corridor\trials1\eNB_data_20140331_UHF_run1.EMOS';
-        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run2.EMOS';
+        filename = 'E:/byiringi/emosFiles/trials1/eNB_data_20140331_2.6GHz_run1.EMOS';
         %filename = 'E:\EMOS\corridor\trials2\eNB_data_20140519_2.6GHz_run2.EMOS';
-        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run2.EMOS';
+        %filename = 'E:/byiringi/emosFiles/trials2/eNB_data_20140519_2.6GHz_run4.EMOS';
         
         nframes = 50; % frames in one block
         threshold = 3e+4 ; % maybe should change that !!!!
@@ -73,6 +73,8 @@ if(n_carriers==2)
 end
 
 
+
+
 doppler_freq_of_max_a=zeros(1,nblocks);
 doppler_freq_of_max_b=zeros(1,nblocks);
 if(n_carriers==1)
@@ -86,11 +88,18 @@ PDP_totala = zeros(nblocks*nframes,p(1).useful_carriers/4,p(1).nant_tx,p(1).nant
 PDD_totala = zeros(nframes*num_symbols_frame/2,nblocks,p(1).nant_tx,p(1).nant_rx);
 
 % delay doppler spectrum
+
+delay_doppler_profile_videoa=VideoWriter(sprintf('Trial%d_Run%d_UHF_delayDopplerProfile.avi',n_trials,n_run));%variable used to make a video of the evolution of the delay doppler profile
+if n_carriers==2
+    delay_doppler_profile_videoa=VideoWriter(sprintf('Trial%d_Run%d_2.6GHzCarrier2a_delayDopplerProfile.avi',n_trials,n_run));
+end
+
 delay_doppler_profile_beforea=zeros(nframes*num_symbols_frame/2,p(1).useful_carriers/4);%contains the delay doppler spectrum for a block before the passing of the train
 delay_doppler_profile_duringa=zeros(nframes*num_symbols_frame/2,p(1).useful_carriers/4);%contains the delay doppler spectrum for a block during the passing of the train
 delay_doppler_profile_aftera=zeros(nframes*num_symbols_frame/2,p(1).useful_carriers/4);%contains the delay doppler spectrum for a block after the passing of the train
 
 if n_carriers==2
+    delay_doppler_profile_videob=VideoWriter(sprintf('Trial%d_Run%d_2.6GHzCarrier2b_delayDopplerProfile.avi',n_trials,n_run));
     delay_doppler_profile_beforeb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for a block before the passing of the train
     delay_doppler_profile_duringb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for a block during the passing of the train
     delay_doppler_profile_afterb=zeros(nframes*num_symbols_frame/2,p(2).useful_carriers/4);%contains the delay doppler spectrum for a block after the passing of the train
@@ -184,6 +193,11 @@ if(n_carriers==2)
     NFRAMES=50;
 end
 nframes = NFRAMES;
+
+open(delay_doppler_profile_videoa);
+if n_carriers==2
+    open(delay_doppler_profile_videob);
+end
 
 while ~feof(fid)
     
@@ -570,9 +584,10 @@ while ~feof(fid)
             end
         end
         
-        if enable_plots>=2
-            figure(20)
-            
+        if record==1
+            ha=figure(20);
+            set(gca,'nextplot','replacechildren');
+            set(gcf,'Renderer','zbuffer');
             
             tau=linspace(0,p(1).useful_carriers/4/4.5E6,p(1).useful_carriers/4);
             F=-(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280:7.68E6/(NFRAMES*num_symbols_frame/2)/1280:(NFRAMES*num_symbols_frame/2-1)*7.68E6/(2*NFRAMES*num_symbols_frame/2)/1280;
@@ -590,9 +605,14 @@ while ~feof(fid)
             xlabel('delay [s]')
             ylabel('Doppler shift [Hz]')
             
+            framea = getframe(ha);
+            writeVideo(delay_doppler_profile_videoa,framea);
+            
             
             if(n_carriers==2)
-                figure(21)
+                hb=figure(21);
+                set(gca,'nextplot','replacechildren');
+                set(gcf,'Renderer','zbuffer');
                 tau=linspace(0,p(2).useful_carriers/4/9E6,p(2).useful_carriers/4);
                 F=-(NFRAMES*num_symbols_frame/2-1)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560:15.36E6/(NFRAMES*num_symbols_frame/2)/2560:(NFRAMES*num_symbols_frame/2)*15.36E6/(2*NFRAMES*num_symbols_frame/2)/2560;
                 title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 2-Trial %d-Run %d-Block %d ',n_trials,n_run,block));
@@ -602,6 +622,8 @@ while ~feof(fid)
                 xlabel('delay [s]')
                 ylabel('Doppler shift [Hz]')
                 
+                frameb = getframe(hb);
+                writeVideo(delay_doppler_profile_videob,frameb);
                 
             end
             
@@ -743,6 +765,13 @@ while ~feof(fid)
     end
     
 end
+
+close(delay_doppler_profile_videoa);
+
+if n_carriers==2
+    close(delay_doppler_profile_videob);
+end
+
 
 %%
 
@@ -908,18 +937,20 @@ if (n_carriers==2)
 end
 %%
 figure(17)
+
+plot(doppler_freq_of_max_a);
 title(sprintf('Main Doppler peak for UHF Trial %d-Run%d',n_trials,n_run));
 if n_carriers==2
     title(sprintf('Main Doppler peak for 2.6GHz Carrier 1 Trial %d-Run%d',n_trials,n_run));
 end
-plot(doppler_freq_of_max_a);
 xlabel('time [s]');
 ylabel('f-ftx [Hz]');
 
 if(n_carriers==2)
     figure(18)
-    title(sprintf('Main Doppler peak for 2.6GHz Carrier 2 Trial %d-Run%d',n_trials,n_run));
+    
     plot(doppler_freq_of_max_b);
+    title(sprintf('Main Doppler peak for 2.6GHz Carrier 2 Trial %d-Run%d',n_trials,n_run));
     xlabel('time [s]');
     ylabel('f-ftx [Hz]');
 end

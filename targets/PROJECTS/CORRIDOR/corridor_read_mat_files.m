@@ -5,12 +5,12 @@ clear all;
 %file='E:\EMOS\corridor\postprocessed data\eNB_data_UHF_20140519_run4.mat'; % mat file
 %file='E:\EMOS\corridor\postprocessed data\eNB_data_20140331_UHF_run2.mat'; % mat file
 
-n_carriers=1;
-n_trials=1;
+n_carriers=2;
+n_trials=2;
 n_runs=1;
 %file='E:\EMOS\corridor\postprocessed data\eNB_data_20140331_2.6GHz_run2.mat'; % mat file
-%file='eNB_data_UHF_20140519_run2.mat'; % mat file
-file='eNB_data_20140331_UHF_run1.mat'; % mat file
+%file='eNB_data_UHF_20140519_run4.mat'; % mat file
+file='eNB_data_20140519_2.6GHz_run1.mat'; % mat file
 
 
 post_processed_data=load(file, 'PDD_totala','PDP_totala','delay_doppler_profile_beforea','delay_doppler_profile_duringa','delay_doppler_profile_aftera');
@@ -87,7 +87,7 @@ end
 
 
 %% Doppler spectrum (choose the block you want to read)
-block = 60;
+block = 20;
 figure(1)
 for i=1:size(PDDta,3)
     for j=1:size(PDDta,4)
@@ -97,6 +97,8 @@ for i=1:size(PDDta,3)
             F=-(50*120/2-1)*30.72E6/(2*50*120/2)/5120:30.72E6/(50*120/2)/5120:(50*120/2-1)*30.72E6/(2*50*120/2)/5120;
         end
         plot(F,10*log(PDDta(:,block,i,j)));
+        ylabel('power [dB]')
+        xlabel('Doppler shift [Hz]')
     end
 end
 
@@ -113,7 +115,7 @@ if(n_carriers==2)
     
 end
 %% Power Delay Profile (choose the frame you want to read)
-frame = 6000;
+frame = 3000;
 figure(3)
 for i=1:size(PDDta,3)
     for j=1:size(PDDta,4)
@@ -149,8 +151,9 @@ if(n_carriers==2)
 end
 
 %% Total doppler spectrum in pseudocolor plot
+doppler_profile_figures_dir = 'E:\byiringi\Matlab Plots\Doppler Shift pcolor plots new sync\';
 
-figure(5)
+h=figure(5);
 hold off
 for i=1:size(PDDta,3)
     for j=1:size(PDDta,4)
@@ -158,8 +161,10 @@ for i=1:size(PDDta,3)
         
         T=1:1:size(PDDta,2);
         F=-(100*120/2-1)*7.68E6/(2*100*120/2)/1280:7.68E6/(100*120/2)/1280:(100*120/2-1)*7.68E6/(2*100*120/2)/1280;
+        filename=sprintf('Trial %d Run %d UHF.fig',n_trials,n_runs);
         if(n_carriers==2)
             F=-(50*120/2-1)*30.72E6/(2*50*120/2)/5120:30.72E6/(50*120/2)/5120:(50*120/2-1)*30.72E6/(2*50*120/2)/5120;
+            filename=sprintf('Trial %d Run %d 2.6 GHz Carrier 2a.fig',n_trials,n_runs);
         end
         
         
@@ -167,14 +172,17 @@ for i=1:size(PDDta,3)
         subplot(size(PDDta,3),size(PDDta,4),(i-1)*size(PDDta,4) + j);
         pcolor(T,F,10*log10( PDDta(:,:,i,j)));
         shading flat
-        colormap hot
+        %colormap hot
         bara=colorbar;
         %ylim([])
         %xlim([])
         xlabel('time [s]')
         ylabel('Doppler shift [Hz]')
+        ylabel(bara,'Power [dB]')
     end
 end
+saveas(h,strcat(doppler_profile_figures_dir, filename));
+
 
 % for i=1:size(PDDta,1)
 %     for j=1:size(PDDta,2)
@@ -206,49 +214,57 @@ end
  
 
 if(n_carriers==2)
-    figure(6)
+    h=figure(6);
     for i=1:size(PDDtb,3)
         for j=1:size(PDDtb,4)
             
             
             T=1:1:size(PDDtb,2);
             F=-(50*120/2-1)*15.36E6/(2*50*120/2)/2560:15.36E6/(50*120/2)/2560:(50*120/2-1)*15.36E6/(2*50*120/2)/2560;
-            
+            filename=sprintf('Trial %d Run %d 2.6 GHz Carrier 2b.fig',n_trials,n_runs);
             
             
             subplot(size(PDDtb,3),size(PDDtb,4),(i-1)*size(PDDtb,4) + j);
             pcolor(T,F,10*log10( PDDtb(:,:,i,j)));
             shading flat
             barb=colorbar;
-            colormap hot
+            %colormap hot
             %ylim([])
             %xlim([])
             xlabel('time [s]')
             ylabel('Doppler shift [Hz]')
+            ylabel(barb,'Power [dB]')
         end
     end
+    saveas(h,strcat(doppler_profile_figures_dir, filename));
 end
 
 
 
 %% Total Power Delay Profile in pseudocolor
-figure(7)
+power_delay_profile_figures_dir = 'E:\byiringi\Matlab Plots\PDP pcolor plots new sync\';
+
+h=figure(7);
 for i=1:size(PDDta,3)
     for j=1:size(PDDta,4)
         tau=linspace(0,300/4/4.5E6,300/4);
         T=1:1:(size(PDPta,1));
+        filename=sprintf('Trial %d Run %d UHF.fig',n_trials,n_runs);
         if n_carriers==2
             tau=linspace(0,1200/4/18E6,1200/4);
+            filename=sprintf('Trial %d Run %d 2.6 GHz Carrier 2a.fig',n_trials,n_runs);
         end
         subplot(size(PDDta,3),size(PDDta,4),(i-1)*size(PDDta,4)+j)
         pcolor(tau,T,10*log10(PDPta(:,:,i,j)));
         bara=colorbar;
         shading flat
-        colormap hot
+        %colormap hot
         xlabel('delay [s]')
         ylabel('time [*10 ms]')
+        ylabel(bara,'Power [dB]')
     end
 end
+saveas(h,strcat(power_delay_profile_figures_dir, filename));
 
 % for i=1:size(PDPta,1)
 %     for j=1:size(PDPta,2)
@@ -273,20 +289,23 @@ end
 %         ylabel('time [*10 ms]')
 
 if(n_carriers==2)
-    figure(8)
+    h=figure(8);
     for i=1:size(PDDtb,3)
         for j=1:size(PDDtb,4)
-            tau=linspace(0,600/4/18E6,600/4);
+            tau=linspace(0,600/4/9E6,600/4);
             T=1:1:(size(PDPtb,1));
+            filename=sprintf('Trial %d Run %d 2.6 GHz Carrier 2b.fig',n_trials,n_runs);
             subplot(size(PDDtb,3),size(PDDtb,4),(i-1)*size(PDDtb,4)+j)
             pcolor(tau,T,10*log10(PDPtb(:,:,i,j)));
             barb=colorbar;
             shading flat
-            colormap hot
+            %colormap hot
             xlabel('delay [s]')
             ylabel('time [*10 ms]')
+            ylabel(barb,'Power [dB]')
         end
     end
+    saveas(h,strcat(power_delay_profile_figures_dir, filename));
 end
 
 
@@ -310,6 +329,7 @@ colormap hot
 bar1=colorbar;
 xlabel('delay [s]')
 ylabel('Doppler shift [Hz]')
+ylabel(bar1,'Power [dB]')
 title(sprintf('Delay Doppler Spectrum for UHF-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_before));
 if(n_carriers==2)
     title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 1-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_before));
@@ -322,6 +342,7 @@ colormap hot
 bar2=colorbar;
 xlabel('delay [s]')
 ylabel('Doppler shift [Hz]')
+ylabel(bar2,'Power [dB]')
 title(sprintf('Delay Doppler Spectrum for UHF-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_during));
 if(n_carriers==2)
     title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 1-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_during));
@@ -330,9 +351,11 @@ end
 subplot(1,3,3)
 pcolor(tau,F,10*log10(delay_doppler_profile_aftera(:,:)))
 shading flat
+colormap hot
 bar3=colorbar;
 xlabel('delay [s]')
 ylabel('Doppler shift [Hz]')
+ylabel(bar3,'Power [dB]')
 title(sprintf('Delay Doppler Spectrum for UHF-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_after));
 if(n_carriers==2)
     title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 1-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_after));
@@ -348,24 +371,30 @@ if(n_carriers==2)
     subplot(1,3,1)
     pcolor(tau,F,10*log10(delay_doppler_profile_beforeb(:,:)))
     shading flat
+    colormap hot
     bar4=colorbar;
     xlabel('delay [s]')
     ylabel('Doppler shift [Hz]')
+    ylabel(bar4,'Power [dB]')
     title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 2-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_before));
     
      subplot(1,3,2)
     pcolor(tau,F,10*log10(delay_doppler_profile_duringb(:,:)))
     shading flat
     bar5=colorbar;
+    colormap hot
     xlabel('delay [s]')
     ylabel('Doppler shift [Hz]')
+    ylabel(bar5,'Power [dB]')
     title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 2-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_during));
     
      subplot(1,3,3)
     pcolor(tau,F,10*log10(delay_doppler_profile_afterb(:,:)))
     shading flat
     bar6=colorbar;
+    colormap hot
     xlabel('delay [s]')
     ylabel('Doppler shift [Hz]')
+    ylabel(bar6,'Power [dB]')
     title(sprintf('Delay Doppler Spectrum for 2.6GHz Carrier 2-Trial %d-Run %d-Block %d ',n_trials,n_runs,block_after));
 end
