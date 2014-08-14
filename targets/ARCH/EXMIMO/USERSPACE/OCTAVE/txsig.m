@@ -7,12 +7,13 @@ rxgain=0;
 txgain=20;
 eNB_flag = 0;
 card = 0;
-active_rf = [1 1 1 0];
+active_rf = [1 0 0 0];
 autocal = [1 1 1 1];
-resampling_factor = [2 2 2 2];
+resampling_factor = [0 0 0 0];
 limeparms;
 rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
 rf_mode = rf_mode + (DMAMODE_RX + DMAMODE_TX)*active_rf;
+%rf_mode = rf_mode + (DMAMODE_TX)*active_rf + DMAMODE_RX*active_rf;
 %rf_mode   = RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1;
 %rf_local= [8253704   8253704   8257340   8257340]; %eNB2tx %850MHz
 %rf_local= [8255004   8253440   8257340   8257340]; % ex2 700 MHz

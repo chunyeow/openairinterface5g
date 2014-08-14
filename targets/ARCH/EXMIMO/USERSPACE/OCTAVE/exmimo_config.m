@@ -9,7 +9,6 @@ tdd_config = TXRXSWITCH_LSB;
 %tdd_config = TXRXSWITCH_TESTTX;
 syncmode = SYNCMODE_FREE;
 
-
 %% acquisition
 %rf_mode = ( RXEN +        TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + RXOUTSW )*[1 1 0 0];
  rf_mode = ( RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM )*[ 1 0 0 0 ]; 
@@ -55,8 +54,8 @@ rf_rxdc = rf_rxdc*[1 1 1 1];
 rffe_rxg_low = 63*[1 1 1 1];
 rffe_rxg_final = 63*[1 1 1 1];
 rffe_band = TVWS_TDD*[1 1 1 1];
-
-oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band)
+autocal = [1 1 1 1];
+oarf_config_exmimo(card,freq_rx,freq_tx,tdd_config,syncmode,rx_gain,tx_gain,eNBflag,rf_mode,rf_rxdc,rf_local,rf_vcocal,rffe_rxg_low,rffe_rxg_final,rffe_band,autocal)
 %sleep(0.2)
 
 % stuff for I/Q imbalance correction on RX

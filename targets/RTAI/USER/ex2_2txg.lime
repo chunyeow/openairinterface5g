@@ -1,0 +1,6 @@
+# For the TX, we need to set the tx gain values such that the transmitted power on all antennas is the same
+# tx gain (dB)
+# 25 19 25 25 
+10 10 10 10
+# total tx power (dBm)
+17
