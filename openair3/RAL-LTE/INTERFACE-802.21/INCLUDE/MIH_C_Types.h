@@ -1,11 +1,31 @@
-/***************************************************************************
-                          MIH_C_Types.h  -  description
-                             -------------------
-    copyright            : (C) 2012 by Eurecom
-    email                : davide.brizzolara@eurecom.fr; lionel.gauthier@eurecom.fr, michelle.wetterwald@eurecom.fr
-***************************************************************************
-Type definition and structure for 802.21 interface
-***************************************************************************/
+/*******************************************************************************
+    OpenAirInterface 
+    Copyright(c) 1999 - 2014 Eurecom
+
+    OpenAirInterface is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+
+    OpenAirInterface is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenAirInterface.The full GNU General Public License is 
+   included in this distribution in the file called "COPYING". If not, 
+   see <http://www.gnu.org/licenses/>.
+
+  Contact Information
+  OpenAirInterface Admin: openair_admin@eurecom.fr
+  OpenAirInterface Tech : openair_tech@eurecom.fr
+  OpenAirInterface Dev  : openair4g-devel@eurecom.fr
+  
+  Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
+
+ *******************************************************************************/
 /*! \file MIH_C_Types.h
  * \brief This file defines the 802.21 types or constants defined in Std 802.21-2008 Table F1, F2, F3,
  *         F4, F5, F6, F7, F8, F9, F12, F13, F19, F20, F22, L2. Some tables may be not implemented at all.

@@ -217,6 +217,7 @@ typedef struct MIH_C_Link_Configure_Thresholds_confirm
 */
 typedef struct MIH_C_Link_Action_request
 {
+//     MIH_C_LINK_ACTION_REQ_T
     MIH_C_LINK_ACTION_T        LinkAction;                       /*!< \brief  Specifies the action to perform. */
     UNSIGNED_INT2(ExecutionDelay)                                /*!< \brief  Time (in ms) to elapse before the action needs to be taken. A value of 0 indicates that the action is taken immediately. Time elapsed is calculated from the instance the request arrives until the time when the execution of the action is carried out. */
     MIH_C_LINK_ADDR_T          *PoALinkAddress;                  /*!< \brief  (Optional) The PoA link address to forward data to. This parameter is used when DATA_FWD_REQ action is requested. */
