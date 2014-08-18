@@ -69,7 +69,17 @@ void eRAL_action_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Action
     MIH_C_LINK_AC_TYPE_T   link_action_type;
     MIH_C_LINK_AC_RESULT_T link_action_result;
     int link_action_done = 0;
+    
+    
+    rrc_ral_connection_reconfiguration_req_t        connection_reconfiguration_req_t;
+    MessageDef                              *message_p = NULL;
 
+    message_p = itti_alloc_new_message (TASK_RAL_ENB, RRC_RAL_CONNECTION_RECONFIGURATION_REQ);
+    memset(&connection_reconfiguration_req_t, 0, sizeof(rrc_ral_connection_reconfiguration_req_t));
+     // copy transaction id
+//     connection_reconfiguration_req_t.transaction_id      = msgP->header.transaction_id;
+    
+    
     memcpy(&g_link_action, &msgP->primitive.LinkAction, sizeof(MIH_C_LINK_ACTION_T));
 
     status                        = MIH_C_STATUS_SUCCESS;
@@ -80,46 +90,46 @@ void eRAL_action_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Action
      * Read link action attributs
      * --------------------------
      */
-    if (msgP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN)
-    {
-        /*
-         * Link scan operation request - Not supported by the network side:
-         * No measurements
-         */
-        LOG_D(RAL_ENB, " ACTION ATTRIBUTE MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN: REFUSED\n");
-        link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
-        eRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id,
-                &status,
-                NULL,
-                &link_action_result);
-    }
+//     if (msgP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN)
+//     {
+//         /*
+//          * Link scan operation request - Not supported by the network side:
+//          * No measurements
+//          */
+//         LOG_D(RAL_ENB, " ACTION ATTRIBUTE MIH_C_BIT_LINK_AC_ATTR_LINK_SCAN: REFUSED\n");
+//         link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
+//         eRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id,
+//                 &status,
+//                 NULL,
+//                 &link_action_result);
+//     }
 
-    if (msgP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_RES_RETAIN)
-    {
-        /*
-         * Link resource retain operation request - Not supported by the
-         * network side.
-         */
-        LOG_D(RAL_ENB, " ACTION ATTRIBUTE MIH_C_BIT_LINK_AC_ATTR_LINK_RES_RETAIN: REFUSED\n");
-        link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
-        eRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id,
-                &status,
-                NULL,
-                &link_action_result);
-    }
+//     if (msgP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_LINK_RES_RETAIN)
+//     {
+//         /*
+//          * Link resource retain operation request - Not supported by the
+//          * network side.
+//          */
+//         LOG_D(RAL_ENB, " ACTION ATTRIBUTE MIH_C_BIT_LINK_AC_ATTR_LINK_RES_RETAIN: REFUSED\n");
+//         link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
+//         eRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id,
+//                 &status,
+//                 NULL,
+//                 &link_action_result);
+//     }
 
-    if (msgP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_DATA_FWD_REQ)
-    {
-        /*
-         * Data forward operation request - Not supported by the network side.
-         */
-        LOG_D(RAL_ENB, " ACTION ATTRIBUTE MIH_C_BIT_LINK_AC_ATTR_DATA_FWD_REQ: REFUSED\n");
-        link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
-        eRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id,
-                &status,
-                NULL,
-                &link_action_result);
-    }
+//     if (msgP->primitive.LinkAction.link_ac_attr & MIH_C_BIT_LINK_AC_ATTR_DATA_FWD_REQ)
+//     {
+//         /*
+//          * Data forward operation request - Not supported by the network side.
+//          */
+//         LOG_D(RAL_ENB, " ACTION ATTRIBUTE MIH_C_BIT_LINK_AC_ATTR_DATA_FWD_REQ: REFUSED\n");
+//         link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
+//         eRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id,
+//                 &status,
+//                 NULL,
+//                 &link_action_result);
+//     }
 
     /*
      * Read link action request
@@ -140,7 +150,7 @@ void eRAL_action_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Action
         switch (link_action_type)
         {
             case MIH_C_LINK_AC_TYPE_NONE:
-                LOG_D(RAL_ENB, "  NO ACTION\n");
+                LOG_D(RAL_ENB, " %s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_NONE: NO ACTION\n", __FUNCTION__);
                 break;
 
 #ifdef MIH_C_MEDIEVAL_EXTENSIONS
@@ -185,13 +195,45 @@ void eRAL_action_request(ral_enb_instance_t instanceP, MIH_C_Message_Link_Action
                  * - Not supported by the network side
                  */
             case MIH_C_LINK_AC_TYPE_LINK_POWER_UP:
-                /*
-                 * Cause the link to power up and establish L2 connectivity.
-                 * For UMTS link type, power up lower layers and establish
-                 * PDP context - Not supported by the network side
-                 */
-                LOG_D(RAL_ENB, "  REFUSED\n");
-                link_action_result = MIH_C_LINK_AC_RESULT_REFUSED;
+              LOG_D(RAL_ENB, "%s ACTION REQUESTED: MIH_C_LINK_AC_TYPE_LINK_POWER_UP\n", __FUNCTION__);
+                if (g_enb_ral_obj[instanceP].mih_supported_link_action_list  & (1 << MIH_C_LINK_AC_TYPE_LINK_POWER_UP)) {
+                    // Activation requested - check it is not already active
+                    if(g_enb_ral_obj[instanceP].pending_req_action & MIH_C_LINK_AC_TYPE_LINK_POWER_UP) {
+//                         if (g_enb_ral_obj[instanceP].state == CONNECTED) {
+//                             LOG_D(RAL_ENB, "Activation requested, but interface already active ==> NO OP\n");
+//                             mRAL_send_link_action_confirm(instanceP, &messageP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
+//                         } else {
+                            g_enb_ral_obj[instanceP].pending_req_action = g_enb_ral_obj[instanceP].pending_req_action | MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
+//                             g_enb_ral_obj[instanceP].cell_id = g_enb_ral_obj[instanceP].meas_cell_id[0];  // Default cell #0 - Next, choose cell with best conditions
+                            LOG_D(RAL_ENB, "Activation requested to NAS interface on cell %d\n", g_enb_ral_obj[instanceP].cell_id);
+// RAL_process_NAS_message(IO_OBJ_CNX, IO_CMD_ADD, g_enb_ral_obj[instanceP].cell_id);
+//                         }
+                    } else {
+                        g_enb_ral_obj[instanceP].pending_req_action |= MIH_C_LINK_AC_TYPE_LINK_POWER_UP;
+                    /*    g_enb_ral_obj[instanceP].cell_id = g_enb_ral_obj[instanceP].meas_cell_id[0];*/ // Default cell #0 - Next, choose cell with best conditions
+                        message_p = itti_alloc_new_message (TASK_RAL_ENB, RRC_RAL_CONNECTION_RECONFIGURATION_REQ);
+                        memset(&connection_reconfiguration_req_t, 0, sizeof(rrc_ral_connection_reconfiguration_req_t));
+//                         copy transaction id
+                        connection_reconfiguration_req_t.transaction_id  = msgP->header.transaction_id;
+                        
+                        connection_reconfiguration_req_t.link_action.link_ac_type = msgP->primitive.LinkAction.link_ac_type;
+                        connection_reconfiguration_req_t.link_action.link_ac_attr = msgP->primitive.LinkAction.link_ac_attr;
+                        connection_reconfiguration_req_t.link_action.link_ac_param = msgP->primitive.LinkAction.link_ac_param;
+                        
+                        memcpy (&message_p->ittiMsg, (void *) &connection_reconfiguration_req_t, sizeof(rrc_ral_connection_reconfiguration_req_t));
+                        itti_send_msg_to_task (TASK_RRC_ENB, instanceP, message_p);
+                        
+         /*               LOG_D(RAL_ENB, "Total data volume0 %d\n", (g_enb_ral_obj[instanceP].totalDataVolume[0]/1000));
+                        LOG_D(RAL_ENB, "Total data volume1 %d\n", (g_enb_ral_obj[instanceP].totalDataVolume[1]/1000));
+                        LOG_D(RAL_ENB, "RLC Buffer Occupancy 0  %d\n", (g_enb_ral_obj[instanceP].rlcBufferOccupancy[0]));
+                        LOG_D(RAL_ENB, "RLC Buffer Occupancy 1 %d\n", (g_enb_ral_obj[instanceP].rlcBufferOccupancy[1]));
+                 */       
+                    }
+                } else {
+                    LOG_D(RAL_ENB, "[mRAL]: command POWER UP not available \n\n");
+//                     link_action_result = MIH_C_LINK_AC_RESULT_INCAPABLE;
+//                     mRAL_send_link_action_confirm(instanceP, &msgP->header.transaction_id, &status, &scan_response_set_list, &link_action_result);
+                }
                 break;
 
             default:
@@ -384,6 +426,7 @@ int eRAL_action_is_in_progress(ral_enb_instance_t instanceP, MIH_C_STATUS_T* sta
     /* Check whether the action link command is supported */
     if (!(g_enb_ral_obj[instanceP].mih_supported_link_command_list & MIH_C_BIT_LINK_ACTION)) {
         *status = MIH_C_STATUS_REJECTED;
+         LOG_D(RAL_ENB,"THE LINK ACTION is not in the list\n");
         return 1;
     }
     *status = MIH_C_STATUS_SUCCESS;
@@ -396,15 +439,19 @@ int eRAL_action_is_in_progress(ral_enb_instance_t instanceP, MIH_C_STATUS_T* sta
         {
             /* Another action request is in progress:
              * Do not process new request before completion of this one */
+         LOG_D(RAL_ENB,"THE LINK ACTION is pending\n");
             *ac_status = MIH_C_LINK_AC_RESULT_REFUSED;
             return 1;
         }
 
         /* The action request is supported and no other request is in progress:
          * Go ahead and process the request */
+        
+         LOG_D(RAL_ENB,"THE LINK ACTION is not pending\n");
         return 0;
     }
 
+         LOG_D(RAL_ENB,"THE LINK ACTION is not supported\n");
     /* The link action request is not supported */
     *ac_status = MIH_C_LINK_AC_RESULT_INCAPABLE;
     return 1;

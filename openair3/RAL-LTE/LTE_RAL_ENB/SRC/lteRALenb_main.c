@@ -181,7 +181,10 @@ int eRAL_initialize(void){
         // excluded MIH_C_LINK_AC_TYPE_LINK_POWER_UP
         g_enb_ral_obj[mod_id].mih_supported_link_action_list = (1 << MIH_C_LINK_AC_TYPE_LINK_FLOW_ATTR)  |
                 (1 << MIH_C_LINK_AC_TYPE_LINK_ACTIVATE_RESOURCES) |
-                (1 << MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES);
+                (1 << MIH_C_LINK_AC_TYPE_LINK_DEACTIVATE_RESOURCES)|
+                (1 << MIH_C_LINK_AC_TYPE_LINK_POWER_UP)|
+                (1 << MIH_C_LINK_AC_TYPE_LINK_DISCONNECT)|
+                (1 << MIH_C_LINK_AC_TYPE_LINK_POWER_DOWN);
         // excluded MIH_C_BIT_LINK_DETECTED
         // excluded MIH_C_BIT_LINK_GOING_DOWN
         // excluded MIH_C_BIT_LINK_HANDOVER_IMMINENT
@@ -190,7 +193,7 @@ int eRAL_initialize(void){
         g_enb_ral_obj[mod_id].mih_supported_link_event_list = MIH_C_BIT_LINK_UP | MIH_C_BIT_LINK_DOWN | MIH_C_BIT_LINK_PARAMETERS_REPORT;
         // excluded MIH_C_BIT_LINK_GET_PARAMETERS
         // excluded MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS
-        g_enb_ral_obj[mod_id].mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS |
+        g_enb_ral_obj[mod_id].mih_supported_link_command_list = MIH_C_BIT_LINK_EVENT_SUBSCRIBE  | MIH_C_BIT_LINK_CONFIGURE_THRESHOLDS | MIH_C_BIT_LINK_ACTION |
                 MIH_C_BIT_LINK_EVENT_UNSUBSCRIBE |
                 MIH_C_BIT_LINK_ACTION;
 

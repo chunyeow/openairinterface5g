@@ -1052,6 +1052,7 @@ int eRAL_mih_link_process_message(ral_enb_instance_t instanceP){
     struct sockaddr_in       udp_socket;
     socklen_t                sockaddr_len;
 
+    LOG_D(RAL_ENB,"HEEERRRE process mesage\n");
 
     total_bytes_to_decode = 0;
     nb_bytes_received     = 0;
@@ -1225,6 +1226,8 @@ int eRAL_mih_link_msg_decode(ral_enb_instance_t instanceP, Bit_Buffer_t* bb_pP, 
     int            status = MIH_MESSAGE_DECODE_FAILURE;
     MIH_C_HEADER_T header;
     MIH_C_STATUS_T mih_status;
+    
+    LOG_D(RAL_ENB,"HEEERRRE decode\n");
 
     if ((bb_pP != NULL) && (message_wrapper_pP != NULL)){
         /*
@@ -1243,6 +1246,7 @@ int eRAL_mih_link_msg_decode(ral_enb_instance_t instanceP, Bit_Buffer_t* bb_pP, 
         /*
          * Decode MIH primitives
          */
+        
         switch (message_wrapper_pP->message_id) {
 
             case MIH_C_MESSAGE_LINK_CAPABILITY_DISCOVER_REQUEST_ID:
@@ -1382,6 +1386,8 @@ int eRAL_mih_link_msg_decode(ral_enb_instance_t instanceP, Bit_Buffer_t* bb_pP, 
             default:
                 LOG_W(RAL_ENB, " UNKNOWN MESSAGE ID SID %d, OP_CODE %d, AID %d\n", header.service_identifier, header.operation_code, header.action_identifier);
                 status = MIH_MESSAGE_DECODE_FAILURE;
+                
+                return status;
         }
     }
     else {
