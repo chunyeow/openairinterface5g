@@ -1,7 +1,6 @@
-%fc  = 2660000000;
+fc  = 2680000000;
 %fc  = 1907600000;
 %fc = 859.5e6;
-fc  = [2051800000 2051800000 1551800000 2000000000];
 
 rxgain=0;
 txgain=20;
@@ -11,7 +10,7 @@ active_rf = [1 0 0 0];
 autocal = [1 1 1 1];
 resampling_factor = [0 0 0 0];
 limeparms;
-rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAMax+RFBBNORM) * active_rf;
+rf_mode   = (RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF10+RXLPFNORM+RXLPFEN+RXLPF10+LNA1ON+LNAMax+RFBBNORM) * active_rf;
 rf_mode = rf_mode + (DMAMODE_RX + DMAMODE_TX)*active_rf;
 %rf_mode = rf_mode + (DMAMODE_TX)*active_rf + DMAMODE_RX*active_rf;
 %rf_mode   = RXEN+TXEN+TXLPFNORM+TXLPFEN+TXLPF25+RXLPFNORM+RXLPFEN+RXLPF25+LNA1ON+LNAByp+RFBBLNA1;
@@ -25,11 +24,12 @@ rf_rxdc = rf_rxdc * active_rf;
 rf_vcocal = rf_vcocal_19G * active_rf;
 %rf_vcocal = rf_vcocal_26G_eNB * chan_sel;
 rxgain = rxgain*active_rf;
-txgain = txgain*[2 2 1 1];
+txgain = txgain*active_rf;
 freq_tx = fc.*active_rf;
 freq_rx = freq_tx;
 %freq_rx = freq_tx-120000000*chan_sel;
 %freq_tx = freq_rx+1920000;
+%tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
 tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_TESTTX;
 syncmode = SYNCMODE_FREE;
 rffe_rxg_low = 61*[1 1 1 1];
@@ -40,23 +40,25 @@ oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_f
 amp = pow2(14)-1;
 n_bit = 16;
 
-s = zeros(76800,4);
+length = pow2(2-resampling_factor(1));
 
-select = 0;
+s = zeros(length,4);
+
+select = 6;
 
 switch(select)
 
 case 0
-  s(:,1) = amp * ones(1,76800);
-  s(:,2) = amp * ones(1,76800);
-  s(:,3) = amp*OFDM_TX_FRAME(512,199,128,120,1).';
-  s(:,4) = amp * ones(1,76800);
+  s(:,1) = amp * ones(1,length);
+  s(:,2) = amp * ones(1,length);
+  s(:,3) = amp * ones(1,length);
+  s(:,4) = amp * ones(1,length);
 
 case 1
-  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
-  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
-  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
-  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((76800*4)-1))/4)));
+  s(:,1) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
+  s(:,2) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
+  s(:,3) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
+  s(:,4) = floor(amp * (exp(1i*2*pi*(0:((length*4)-1))/4)));
 
 case 2
   s(38400+128,1)= 80-1j*40;
@@ -85,38 +87,39 @@ case 4
   s(38400+(1:length(pss0_t_fp_re)),2) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
   s(38400+(1:length(pss0_t_fp_re)),3) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
   s(38400+(1:length(pss0_t_fp_re)),4) = 2*floor(pss0_t_fp_re) + 2*sqrt(-1)*floor(pss0_t_fp_im);
+
 case 5
-  x=1:76800;
+  x=1:length;
 
   s(:,1) = 1i*8*(mod(x-1,4096)); % + 1i*(8*(mod(x-1,4096)));
   s(:,2) = 8*(mod(x-1,4096)) + 1i*(8*(mod(x-1,4096)));
   s(:,3) = 8*(mod(x-1,4096)) + 1i*(8*(mod(x-1,4096)));
   s(:,4) = 8*(mod(x-1,4096)) + 1i*(8*(mod(x-1,4096)));
-%  s(:,4) = 8*(rem(x-1,2048))-2**15 + 1i*(8*(rem(x-1,2048))-2**15);
 
-%  s(:,4) = 8*(mod(x-1,4096)) + 1i*8*(mod(x-1,4096));
+case 6
 
-  %s(:,1) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
-  %s(:,2) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
-  %s(:,3) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
-  %s(:,4) = 8*floor(mod(x-1,76800)/75) + 1i*8*floor(mod(x-1,76800)/75);
+  nb_rb = 100; %this can be 25, 50, or 100
+  num_carriers = 2048/100*nb_rb;
+  num_zeros = num_carriers-(12*nb_rb+1);
+  prefix_length = num_carriers/4; %this is extended CP
+  num_symbols_frame = 120;
+  preamble_length = 120;
+  
+  s(:,1) = OFDM_TX_FRAME(num_carriers,num_zeros,prefix_length,num_symbols_frame,preamble_length);
+  s(:,1) = floor(amp*(s(:,1)./max([real(s(:,1)); imag(s(:,1))])));
+  
 
 otherwise 
   error('unknown case')
 endswitch
 
-%s = s*2 - 2**15 -1i*(2**15);
 s = s*2;
 
-
-%s(38400:end,1) = (1+1j);
-%s(38400:end,2) = (1+1j);
-
-sleep (1)
-%keyboard
-
 oarf_send_frame(card,s,n_bit);
+
+%sleep (1)
 %r = oarf_get_frame(card);
+
 figure(1)
 hold off
 plot(real(s(:,1)),'r')
