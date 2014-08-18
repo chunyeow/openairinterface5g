@@ -40,7 +40,7 @@ oarf_config_exmimo(card, freq_rx,freq_tx,tdd_config,syncmode,rxgain,txgain,eNB_f
 amp = pow2(14)-1;
 n_bit = 16;
 
-length = pow2(2-resampling_factor(1));
+length = 307200/pow2(resampling_factor(1));
 
 s = zeros(length,4);
 
@@ -111,7 +111,8 @@ case 6
 
 otherwise 
   error('unknown case')
-endswitch
+
+end %switch
 
 s = s*2;
 
