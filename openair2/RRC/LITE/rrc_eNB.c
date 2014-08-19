@@ -296,8 +296,8 @@ static void init_SI(
                            eNB_rrc_inst[enb_mod_idP].sib2->radioResourceConfigCommon,
                            (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
-			   (SCellToAddMod_r10_t *)NULL,
-			   //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+               (SCellToAddMod_r10_t *)NULL,
+               //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
                            (MeasObjectToAddMod_t **) NULL,
                            (MAC_MainConfig_t *) NULL, 0,
@@ -383,8 +383,8 @@ static void init_MCCH(
                        (RadioResourceConfigCommonSIB_t *) NULL,
                        (struct PhysicalConfigDedicated *)NULL,
 #ifdef Rel10
-	(SCellToAddMod_r10_t *)NULL,
-	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+    (SCellToAddMod_r10_t *)NULL,
+    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
                        (MeasObjectToAddMod_t **) NULL,
                        (MAC_MainConfig_t *) NULL,
@@ -484,9 +484,9 @@ static module_id_t rrc_eNB_get_UE_index(
 
     for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
       if (eNB_rrc_inst[enb_mod_idP].Info.UE_list[i] == UE_identity) {
-	// UE_identity already registered
-	reg = TRUE;
-	break;
+    // UE_identity already registered
+    reg = TRUE;
+    break;
       }
     }
     
@@ -510,12 +510,12 @@ static module_id_t rrc_eNB_get_next_free_UE_index(
 
     for (i = 0; i < NUMBER_OF_UE_MAX; i++) {
         if ((first_index == UE_MODULE_INVALID) && (eNB_rrc_inst[enb_mod_idP].Info.UE_list[i] == 0)) {
-	  first_index = i;    // save first free position
+      first_index = i;    // save first free position
         }
 
         if (eNB_rrc_inst[enb_mod_idP].Info.UE_list[i] == UE_identity) {
             // UE_identity already registered
-	  reg = TRUE;
+      reg = TRUE;
         }
     }
 
@@ -571,7 +571,7 @@ void rrc_eNB_generate_SecurityModeCommand(
     uint8_t                             size;
 
     size = do_SecurityModeCommand(enb_mod_idP, buffer, ue_mod_idP, rrc_eNB_get_next_transaction_identifier(enb_mod_idP),
-				  eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
+                  eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP],
                                   eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP]);
 
 #ifdef RRC_MSG_PRINT
@@ -663,6 +663,8 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     MeasIdToAddMod_t                   *MeasId0, *MeasId1, *MeasId2, *MeasId3, *MeasId4, *MeasId5;
 #if Rel10
     long                               *sr_ProhibitTimer_r9              = NULL;
+//     uint8_t sCellIndexToAdd = rrc_find_free_SCell_index(enb_mod_idP, ue_mod_idP, 1);
+    uint8_t                            sCellIndexToAdd = 0;
 #endif
 
     long                               *logicalchannelgroup, *logicalchannelgroup_drb;
@@ -1118,7 +1120,7 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     for (i = 0; i < UE_info->nb_of_e_rabs; i++) {
         if (UE_info->e_rab[i].param.nas_pdu.buffer != NULL) {
             dedicatedInfoNas = CALLOC(1, sizeof(DedicatedInfoNAS_t));
-	    memset(dedicatedInfoNas, 0, sizeof(OCTET_STRING_t));
+        memset(dedicatedInfoNas, 0, sizeof(OCTET_STRING_t));
             OCTET_STRING_fromBuf(dedicatedInfoNas, (char *)UE_info->e_rab[i].param.nas_pdu.buffer,
                                  UE_info->e_rab[i].param.nas_pdu.length);
             ASN_SEQUENCE_ADD(&dedicatedInfoNASList->list, dedicatedInfoNas);
@@ -1144,13 +1146,19 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     memset(buffer, 0, RRC_BUF_SIZE);
 
     size = do_RRCConnectionReconfiguration(enb_mod_idP, buffer, ue_mod_idP, rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
-	NULL, /// NN: do not reconfig srb1: SRB_configList2,
+    NULL, /// NN: do not reconfig srb1: SRB_configList2,
         *DRB_configList, NULL,  // DRB2_list,
         NULL,    // *sps_Config,
 #ifdef EXMIMO_IOT
         NULL, NULL, NULL, NULL,NULL,
 #else
-        physicalConfigDedicated[ue_mod_idP], MeasObj_list, ReportConfig_list, quantityConfig, MeasId_list,
+        physicalConfigDedicated[ue_mod_idP], 
+
+#ifdef Rel10
+        eNB_rrc_inst[enb_mod_idP].sCell_config[ue_mod_idP][sCellIndexToAdd],
+#endif
+        
+        MeasObj_list, ReportConfig_list, quantityConfig, MeasId_list,
 #endif
         mac_MainConfig, NULL, NULL, Sparams, rsrp, cba_RNTI, dedicatedInfoNASList);
 
@@ -1184,6 +1192,61 @@ static void rrc_eNB_generate_defaultRRCConnectionReconfiguration(
     pdcp_rrc_data_req(enb_mod_idP, ue_mod_idP, frameP, 1, DCCH, rrc_eNB_mui++, 0, size, buffer, 1);
 }
 
+
+
+int rrc_eNB_generate_RRCConnectionReconfiguration_SCell(module_id_t enb_mod_idP, module_id_t ue_mod_idP, frame_t frame, uint32_t dl_CarrierFreq_r10) {
+
+  uint8_t size;
+  uint8_t buffer[100];
+  uint8_t sCellIndexToAdd = 0; //one SCell so far
+//   uint8_t sCellIndexToAdd;
+//   sCellIndexToAdd = rrc_find_free_SCell_index(enb_mod_idP, ue_mod_idP, 1);
+
+  if (eNB_rrc_inst[enb_mod_idP].sCell_config[ue_mod_idP][sCellIndexToAdd]) {
+    eNB_rrc_inst[enb_mod_idP].sCell_config[ue_mod_idP][sCellIndexToAdd]->cellIdentification_r10->dl_CarrierFreq_r10 = dl_CarrierFreq_r10;
+  }
+  else {
+    LOG_E(RRC,"Scell not configured!\n");
+    return(-1);
+  }
+
+  size = do_RRCConnectionReconfiguration(enb_mod_idP,
+                                         buffer,
+                                         ue_mod_idP,
+                                         /*0*/rrc_eNB_get_next_transaction_identifier(enb_mod_idP),//Transaction_id,
+                                         (SRB_ToAddModList_t*)NULL,
+                                         (DRB_ToAddModList_t*)NULL,
+                                         (DRB_ToReleaseList_t*)NULL,
+                                         (struct SPS_Config*)NULL,
+                                         (struct PhysicalConfigDedicated*)NULL,
+#ifdef Rel10
+                     eNB_rrc_inst[enb_mod_idP].sCell_config[ue_mod_idP][sCellIndexToAdd],
+#endif
+                                         (MeasObjectToAddModList_t*)NULL,
+                                         (ReportConfigToAddModList_t*)NULL,
+                                         (QuantityConfig_t*)NULL, 
+                                         (MeasIdToAddModList_t*)NULL,
+                                         (MAC_MainConfig_t*)NULL,
+                                         (MeasGapConfig_t*)NULL,
+                                         (MobilityControlInfo_t*)NULL,
+                                         (struct MeasConfig__speedStatePars*)NULL,
+                                         (RSRP_Range_t*)NULL,
+                                         (C_RNTI_t*)NULL,
+                                         (struct RRCConnectionReconfiguration_r8_IEs__dedicatedInfoNASList*)NULL); 
+
+  LOG_I(RRC,"[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration (bytes %d, UE id %d)\n",
+        enb_mod_idP,frame, size, ue_mod_idP);
+
+  LOG_D(RRC, "[MSC_MSG][FRAME %05d][RRC_eNB][MOD %02d][][--- PDCP_DATA_REQ/%d Bytes (rrcConnectionReconfiguration to UE %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
+        frame, enb_mod_idP, size, ue_mod_idP, rrc_eNB_mui, enb_mod_idP, /*(ue_mod_idP*MAX_NUM_RB)+*/DCCH);
+  //rrc_rlc_data_req(Mod_id,frame, 1,(UE_index*MAX_NUM_RB)+DCCH,rrc_eNB_mui++,0,size,(char*)buffer);
+//   pdcp_data_req(enb_mod_idP, ue_mod_idP, frame, 1, /*(UE_index * MAX_NUM_RB) + */DCCH, rrc_eNB_mui++, 0, size, (char*)buffer, 1);
+    pdcp_rrc_data_req(enb_mod_idP, ue_mod_idP, frame, 1, DCCH, rrc_eNB_mui++, 0, size, buffer, 1);
+
+  return(0);
+}
+
+
 /*------------------------------------------------------------------------------*/
 void rrc_eNB_process_MeasurementReport(
     module_id_t enb_mod_idP,
@@ -1212,7 +1275,7 @@ void rrc_eNB_process_MeasurementReport(
 #endif
 
     if (eNB_rrc_inst[enb_mod_idP].handover_info[ue_mod_idP]->ho_prepare != 0xF0) {
-    	rrc_eNB_generate_HandoverPreparationInformation(enb_mod_idP,
+        rrc_eNB_generate_HandoverPreparationInformation(enb_mod_idP,
                                                         frameP,
                                                         ue_mod_idP,
                                                         measResults2->measResultNeighCells->choice.
@@ -1643,10 +1706,10 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     rrc_mac_config_req(enb_mod_idP, ENB_FLAG_YES, ue_mod_idP, 0, (RadioResourceConfigCommonSIB_t *) NULL,
                        eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP], 
 #ifdef Rel10
-	(SCellToAddMod_r10_t *)NULL,
-	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
-#endif		       
-		       (MeasObjectToAddMod_t **) NULL,
+    (SCellToAddMod_r10_t *)NULL,
+    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+#endif             
+               (MeasObjectToAddMod_t **) NULL,
                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP], 1, SRB1_logicalChannelConfig,
                        eNB_rrc_inst[enb_mod_idP].measGapConfig[ue_mod_idP], (TDD_Config_t *) NULL,
                        (MobilityControlInfo_t *) NULL, (uint8_t *) NULL, (uint16_t *) NULL, NULL, NULL, NULL,
@@ -2141,12 +2204,29 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
     //  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->reportConfigToAddModList = ReportConfig_list;
     memset(buffer, 0, RRC_BUF_SIZE);
 
-    size = do_RRCConnectionReconfiguration(enb_mod_idP, buffer, ue_mod_idP, rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
-                                           SRB_configList2, DRB_configList2, NULL,  // DRB2_list,
+    size = do_RRCConnectionReconfiguration(enb_mod_idP,
+                                           buffer,
+                                           ue_mod_idP,
+                                           rrc_eNB_get_next_transaction_identifier(enb_mod_idP),   //Transaction_id,
+                                           SRB_configList2,
+                                           DRB_configList2,
+                                           NULL,  // DRB2_list,
                                            NULL,    //*sps_Config,
-                                           physicalConfigDedicated[ue_mod_idP], MeasObj_list, ReportConfig_list, NULL,    //quantityConfig,
-                                           MeasId_list, mac_MainConfig, NULL, mobilityInfo, Sparams,
-                                           NULL, NULL, dedicatedInfoNASList);
+                                           physicalConfigDedicated[ue_mod_idP], 
+#ifdef Rel10
+                                           (SCellToAddMod_r10_t *)NULL,
+#endif
+                                           MeasObj_list,
+                                           ReportConfig_list,
+                                           NULL,    //quantityConfig,
+                                           MeasId_list,
+                                           mac_MainConfig,
+                                           NULL,
+                                           mobilityInfo,
+                                           Sparams,
+                                           NULL,
+                                           NULL,
+                                           dedicatedInfoNASList);
 
     LOG_I(RRC,
           "[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration for handover (bytes %d, UE id %d)\n",
@@ -2175,8 +2255,8 @@ void rrc_eNB_generate_RRCConnectionReconfiguration_handover(
                        (RadioResourceConfigCommonSIB_t *) NULL,
                        eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
 #ifdef Rel10
-	(SCellToAddMod_r10_t *)NULL,
-	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+    (SCellToAddMod_r10_t *)NULL,
+    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
                        (MeasObjectToAddMod_t **) NULL,
                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
@@ -2299,7 +2379,7 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
 #endif
     // Refresh SRBs/DRBs
     rrc_pdcp_config_asn1_req(enb_mod_idP, ue_mod_idP, frameP, ENB_FLAG_YES,
-			     NULL,  //LG-RK 14/05/2014 SRB_configList,
+                 NULL,  //LG-RK 14/05/2014 SRB_configList,
                              DRB_configList, (DRB_ToReleaseList_t *) NULL,
                              /*eNB_rrc_inst[enb_mod_idP].ciphering_algorithm[ue_mod_idP] |
                              (eNB_rrc_inst[enb_mod_idP].integrity_algorithm[ue_mod_idP] << 4), 
@@ -2399,8 +2479,8 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                         (RadioResourceConfigCommonSIB_t *) NULL,
                         eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
 #ifdef Rel10
-	(SCellToAddMod_r10_t *)NULL,
-	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+    (SCellToAddMod_r10_t *)NULL,
+    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
                         (MeasObjectToAddMod_t **) NULL,
                         eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
@@ -2441,8 +2521,8 @@ void rrc_eNB_process_RRCConnectionReconfigurationComplete(
                                        (RadioResourceConfigCommonSIB_t *) NULL,
                                        eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
 #ifdef Rel10
-	(SCellToAddMod_r10_t *)NULL,
-	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+    (SCellToAddMod_r10_t *)NULL,
+    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
                                        (MeasObjectToAddMod_t **) NULL,
                                        eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
@@ -2524,8 +2604,8 @@ void rrc_eNB_generate_RRCConnectionSetup(
                                    (RadioResourceConfigCommonSIB_t *) NULL,
                                    eNB_rrc_inst[enb_mod_idP].physicalConfigDedicated[ue_mod_idP],
 #ifdef Rel10
-	(SCellToAddMod_r10_t *)NULL,
-	//(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
+    (SCellToAddMod_r10_t *)NULL,
+    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
 #endif
                                    (MeasObjectToAddMod_t **) NULL,
                                    eNB_rrc_inst[enb_mod_idP].mac_MainConfig[ue_mod_idP],
@@ -2740,51 +2820,51 @@ int rrc_eNB_decode_ccch(
 
             case UL_CCCH_MessageType__c1_PR_rrcConnectionReestablishmentRequest:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Connection Reestablishement Request\n");
-	      for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Connection Reestablishement Request\n");
+          for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
+          LOG_F(RRC,"\n");
 #endif
                 LOG_D(RRC,
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND (rrcConnectionReestablishmentRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
 
-		rrcConnectionReestablishmentRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionReestablishmentRequest.criticalExtensions.choice.rrcConnectionReestablishmentRequest_r8;
+        rrcConnectionReestablishmentRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionReestablishmentRequest.criticalExtensions.choice.rrcConnectionReestablishmentRequest_r8;
 
                 LOG_I(RRC, "[eNB %d] Frame %d UE %d: RRCConnectionReestablishmentRequest cause %s\n", enb_mod_idP,
                       frameP, 
-		      ((rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_otherFailure) ?    "Other Failure" :
-		       (rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_handoverFailure) ? "Handover Failure" : 
-		                                                                                                            "reconfigurationFailure"));
-		/*
-		{
-		  uint64_t                            c_rnti = 0;
-		  
-		  memcpy(((uint8_t *) & c_rnti) + 3, rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.buf,
-			 rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.size);
-		  ue_mod_id = rrc_eNB_get_UE_index(enb_mod_idP, c_rnti);
+              ((rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_otherFailure) ?    "Other Failure" :
+               (rrcConnectionReestablishmentRequest->reestablishmentCause == ReestablishmentCause_handoverFailure) ? "Handover Failure" : 
+                                                                                                                    "reconfigurationFailure"));
+        /*
+        {
+          uint64_t                            c_rnti = 0;
+          
+          memcpy(((uint8_t *) & c_rnti) + 3, rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.buf,
+             rrcConnectionReestablishmentRequest.UE_identity.c_RNTI.size);
+          ue_mod_id = rrc_eNB_get_UE_index(enb_mod_idP, c_rnti);
                 }
-		
-		if ((eNB_rrc_inst[enb_mod_idP].phyCellId == rrcConnectionReestablishmentRequest.UE_identity.physCellId) && 
-		    (ue_mod_id != UE_INDEX_INVALID)){
-		  rrc_eNB_generate_RRCConnectionReestablishement(enb_mod_idP, frameP, ue_mod_id);
-		}else {
-		  rrc_eNB_generate_RRCConnectionReestablishementReject(enb_mod_idP, frameP, ue_mod_id);
-		}
+        
+        if ((eNB_rrc_inst[enb_mod_idP].phyCellId == rrcConnectionReestablishmentRequest.UE_identity.physCellId) && 
+            (ue_mod_id != UE_INDEX_INVALID)){
+          rrc_eNB_generate_RRCConnectionReestablishement(enb_mod_idP, frameP, ue_mod_id);
+        }else {
+          rrc_eNB_generate_RRCConnectionReestablishementReject(enb_mod_idP, frameP, ue_mod_id);
+        }
                 break;
-		*/
+        */
             case UL_CCCH_MessageType__c1_PR_rrcConnectionRequest:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Connection Request\n");
-	      for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Connection Request\n");
+          for (i = 0; i < Srb_info->Rx_buffer.payload_size; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Srb_info->Rx_buffer.Payload)[i]);
+          LOG_F(RRC,"\n");
 #endif
                 LOG_D(RRC,
                       "[FRAME %05d][MAC_eNB][MOD %02d][][--- MAC_DATA_IND  (rrcConnectionRequest on SRB0) -->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, enb_mod_idP);
 
-	      rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
+          rrcConnectionRequest = &ul_ccch_msg->message.choice.c1.choice.rrcConnectionRequest.criticalExtensions.choice.rrcConnectionRequest_r8;
                 {
                     uint64_t                            random_value = 0;
 
@@ -2988,15 +3068,15 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionReconfigurationComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Connection Reconfiguration Complete\n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Connection Reconfiguration Complete\n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
-	      LOG_D(RRC,
-		    "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
-		    "(RRCConnectionReconfigurationComplete) --->][RRC_eNB][MOD %02d][]\n",
-		    frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
+          LOG_D(RRC,
+            "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
+            "(RRCConnectionReconfigurationComplete) --->][RRC_eNB][MOD %02d][]\n",
+            frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
 
                if (ul_dcch_msg->message.choice.c1.choice.rrcConnectionReconfigurationComplete.criticalExtensions.
                     present ==
@@ -3021,12 +3101,12 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionReestablishmentComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Connection Reestablishment Complete\n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Connection Reestablishment Complete\n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
-	      LOG_I(RRC,
+          LOG_I(RRC,
                       "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
                       "(rrcConnectionReestablishmentComplete) --->][RRC_eNB][MOD %02d][]\n",
                       frameP, enb_mod_idP, DCCH, sdu_sizeP, enb_mod_idP);
@@ -3034,10 +3114,10 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_rrcConnectionSetupComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Connection SetupComplete\n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Connection SetupComplete\n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
                 LOG_D(RRC,
                       "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
@@ -3064,10 +3144,10 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_securityModeComplete:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Security Mode Complete\n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Security Mode Complete\n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
                 LOG_I(RRC,
                       "[eNB %d] Frame %d received securityModeComplete on UL-DCCH %d from UE %d\n",
@@ -3086,10 +3166,10 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_securityModeFailure:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC Security Mode Failure\n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC Security Mode Failure\n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
                 LOG_D(RRC,
                       "[FRAME %05d][RLC][MOD %02d][RB %02d][--- RLC_DATA_IND %d bytes "
@@ -3105,10 +3185,10 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_ueCapabilityInformation:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC UECapablility Information \n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC UECapablility Information \n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
                 LOG_I(RRC,
                       "[eNB %d] Frame %d received ueCapabilityInformation on UL-DCCH %d from UE %d\n",
@@ -3147,10 +3227,10 @@ int rrc_eNB_decode_dcch(
 
             case UL_DCCH_MessageType__c1_PR_ulInformationTransfer:
 #ifdef RRC_MSG_PRINT
-	      LOG_F(RRC,"[MSG] RRC UL Information Transfer \n");
-	      for (i = 0; i < sdu_sizeP; i++)
-		LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
-	      LOG_F(RRC,"\n");
+          LOG_F(RRC,"[MSG] RRC UL Information Transfer \n");
+          for (i = 0; i < sdu_sizeP; i++)
+        LOG_F(RRC,"%02x ", ((uint8_t*)Rx_sdu)[i]);
+          LOG_F(RRC,"\n");
 #endif
 
 #if defined(ENABLE_USE_MME)
@@ -3285,6 +3365,14 @@ void                               *rrc_enb_task(
 #   ifdef ENABLE_RAL
             case RRC_RAL_CONFIGURE_THRESHOLD_REQ:
                 rrc_enb_ral_handle_configure_threshold_request(instance, msg_p);
+                break;
+
+                //SPECTRA: Add the RRC connection reconfiguration with Second cell configuration
+            case RRC_RAL_CONNECTION_RECONFIGURATION_REQ:
+//                 ue_mod_id = 0; /* TODO force ue_mod_id to first UE, NAS UE not virtualized yet */
+                LOG_I(RRC, "[eNB %d] Send RRC_RAL_CONNECTION_RECONFIGURATION_REQ to UE %s\n", instance, msg_name_p);
+                //Method RRC connection reconfiguration command with Second cell configuration
+                rrc_eNB_generate_RRCConnectionReconfiguration_SCell(instance, 0/* TODO put frameP number ! */, /*ue_mod_id force ue_mod_id to first UE*/0, 36126);
                 break;
 #   endif
 
