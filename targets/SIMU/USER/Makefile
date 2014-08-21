@@ -124,6 +124,8 @@ else # default is rel 8
 CFLAGS += -DRel8
 endif
 
+CFLAGS += -DMAX_NUM_CCs=1
+
 ifeq ($(RLC_STOP_ON_LOST_PDU), 1)
 CFLAGS += -DRLC_STOP_ON_LOST_PDU
 endif
@@ -191,7 +193,6 @@ endif
 endif
 endif
 
-CFLAGS += -DMAX_NUM_CCs=1
 include $(OPENAIR1_DIR)/PHY/Makefile.inc
 include $(OPENAIR1_DIR)/SCHED/Makefile.inc
 include $(OPENAIR2_DIR)/RRC/LITE/MESSAGES/Makefile.inc

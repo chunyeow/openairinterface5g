@@ -46,7 +46,7 @@ PHY_VARS_RN* init_lte_RN(LTE_DL_FRAME_PARMS *frame_parms,
 			 uint8_t RN_id,
 			 uint8_t eMBMS_active_state);
 
-void init_lte_vars(LTE_DL_FRAME_PARMS **frame_parms,
+void init_lte_vars(LTE_DL_FRAME_PARMS *frame_parms[MAX_NUM_CCs],
  		   uint8_t frame_type,
 		   uint8_t tdd_config,
 		   uint8_t tdd_config_S,

@@ -41,6 +41,7 @@ include $(COMMON_UTILS_DIR)/Makefile.inc
 include $(OPENAIR_TARGETS)/COMMON/Makefile.inc
 include $(OPENAIR2_DIR)/NAS/Makefile.inc
 
+COMMON_CFLAGS           += -DMAX_NUM_CCs=1
 ifdef USE_MME
 COMMON_CFLAGS		+= -DENABLE_USE_MME
 ENABLE_ITTI = 1

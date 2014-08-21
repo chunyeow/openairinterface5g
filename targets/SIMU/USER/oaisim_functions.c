@@ -106,7 +106,7 @@ uint8_t            beta_ACK              = 0;
 uint8_t            beta_RI               = 0;
 uint8_t            beta_CQI              = 2;
 uint8_t            target_ul_mcs         = 4;
-LTE_DL_FRAME_PARMS *frame_parms     = NULL;
+LTE_DL_FRAME_PARMS *frame_parms[MAX_NUM_CCs];
 int           map1,map2;
 double      **ShaF                  = NULL;
 // pointers signal buffers (s = transmit, r,r0 = receive)
@@ -380,9 +380,9 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 'C':
-        oai_emulation.info.tdd_config = atoi (optarg);
-        AssertFatal (oai_emulation.info.tdd_config <= TDD_Config__subframeAssignment_sa6, "Illegal tdd_config %d (should be 0-%d)!",
-            oai_emulation.info.tdd_config, TDD_Config__subframeAssignment_sa6);
+        oai_emulation.info.tdd_config[0] = atoi (optarg);
+        AssertFatal (oai_emulation.info.tdd_config[0] <= TDD_Config__subframeAssignment_sa6, "Illegal tdd_config %d (should be 0-%d)!",
+            oai_emulation.info.tdd_config[0], TDD_Config__subframeAssignment_sa6);
         break;
 
       case 'D':
@@ -390,7 +390,7 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 'e':
-        oai_emulation.info.extended_prefix_flag = 1;
+        oai_emulation.info.extended_prefix_flag[0] = 1;
         break;
 
       case 'E':
@@ -404,7 +404,7 @@ void get_simulation_options(int argc, char *argv[]) {
 
       case 'F':                   // set FDD
         printf("Setting Frame to FDD\n");
-        oai_emulation.info.frame_type = 0;
+        oai_emulation.info.frame_type[0] = 0;
         break;
 
       case 'g':
@@ -537,10 +537,10 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 'R':
-        oai_emulation.info.N_RB_DL = atoi (optarg);
-        if ((oai_emulation.info.N_RB_DL != 6) && (oai_emulation.info.N_RB_DL != 15) && (oai_emulation.info.N_RB_DL != 25)
-            && (oai_emulation.info.N_RB_DL != 50) && (oai_emulation.info.N_RB_DL != 75) && (oai_emulation.info.N_RB_DL != 100)) {
-            printf("Illegal N_RB_DL %d (should be one of 6,15,25,50,75,100)\n", oai_emulation.info.N_RB_DL);
+        oai_emulation.info.N_RB_DL[0] = atoi (optarg);
+        if ((oai_emulation.info.N_RB_DL[0] != 6) && (oai_emulation.info.N_RB_DL[0] != 15) && (oai_emulation.info.N_RB_DL[0] != 25)
+            && (oai_emulation.info.N_RB_DL[0] != 50) && (oai_emulation.info.N_RB_DL[0] != 75) && (oai_emulation.info.N_RB_DL[0] != 100)) {
+            printf("Illegal N_RB_DL %d (should be one of 6,15,25,50,75,100)\n", oai_emulation.info.N_RB_DL[0]);
             exit (-1);
         }
         break;
@@ -597,8 +597,8 @@ void get_simulation_options(int argc, char *argv[]) {
         break;
 
       case 'x':
-        oai_emulation.info.transmission_mode = atoi (optarg);
-        if ((oai_emulation.info.transmission_mode != 1) &&  (oai_emulation.info.transmission_mode != 2) && (oai_emulation.info.transmission_mode != 5) && (oai_emulation.info.transmission_mode != 6)) {
+        oai_emulation.info.transmission_mode[0] = atoi (optarg);
+        if ((oai_emulation.info.transmission_mode[0] != 1) &&  (oai_emulation.info.transmission_mode[0] != 2) && (oai_emulation.info.transmission_mode[0] != 5) && (oai_emulation.info.transmission_mode[0] != 6)) {
             printf("Unsupported transmission mode %d\n",oai_emulation.info.transmission_mode);
             exit(-1);
         }
@@ -656,10 +656,10 @@ void get_simulation_options(int argc, char *argv[]) {
           conf_config_file_name, oai_emulation.info.nb_enb_local, enb_properties->number);
 
       /* Update some simulation parameters */
-      oai_emulation.info.frame_type =           enb_properties->properties[0]->frame_type;
-      oai_emulation.info.tdd_config =           enb_properties->properties[0]->tdd_config;
-      oai_emulation.info.tdd_config_S =         enb_properties->properties[0]->tdd_config_s;
-      oai_emulation.info.extended_prefix_flag = enb_properties->properties[0]->prefix_type;
+      oai_emulation.info.frame_type[0] =           enb_properties->properties[0]->frame_type[0];
+      oai_emulation.info.tdd_config[0] =           enb_properties->properties[0]->tdd_config[0];
+      oai_emulation.info.tdd_config_S[0] =         enb_properties->properties[0]->tdd_config_s[0];
+      oai_emulation.info.extended_prefix_flag[0] = enb_properties->properties[0]->prefix_type[0];
     }
 }
 
@@ -775,8 +775,8 @@ void init_omv(void) {
         sprintf(z_area, "%f", 200.0 );
         sprintf(frames, "%d", oai_emulation.info.n_frames);
         sprintf(nb_antenna, "%d", 4);
-        sprintf(frame_type, "%s", (oai_emulation.info.frame_type == 0) ? "FDD" : "TDD");
-        sprintf(tdd_config, "%d", oai_emulation.info.tdd_config);
+        sprintf(frame_type, "%s", (oai_emulation.info.frame_type[0] == 0) ? "FDD" : "TDD");
+        sprintf(tdd_config, "%d", oai_emulation.info.tdd_config[0]);
         // execl is used to launch the visualisor
         execl(full_name,"OMV", fdstr, frames, num_enb, num_ue, x_area, y_area, z_area, nb_antenna, frame_type, tdd_config,NULL );
         perror( "error in execl the OMV" );
@@ -808,7 +808,9 @@ void init_openair1(void) {
   int list_index;
 #endif
   // change the nb_connected_eNB
-  init_lte_vars (&frame_parms, oai_emulation.info.frame_type, oai_emulation.info.tdd_config, oai_emulation.info.tdd_config_S,oai_emulation.info.extended_prefix_flag,oai_emulation.info.N_RB_DL, Nid_cell, cooperation_flag, oai_emulation.info.transmission_mode, abstraction_flag,nb_antennas_rx, oai_emulation.info.eMBMS_active_state);
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    init_lte_vars (&frame_parms[CC_id], oai_emulation.info.frame_type[CC_id], oai_emulation.info.tdd_config[CC_id], oai_emulation.info.tdd_config_S[CC_id],oai_emulation.info.extended_prefix_flag[CC_id],oai_emulation.info.N_RB_DL[CC_id], Nid_cell, cooperation_flag, oai_emulation.info.transmission_mode[CC_id], abstraction_flag,nb_antennas_rx, oai_emulation.info.eMBMS_active_state);
+  }
 
   for (eNB_id=0; eNB_id<NB_eNB_INST;eNB_id++){
       for (UE_id=0; UE_id<NB_UE_INST;UE_id++){
@@ -816,12 +818,12 @@ void init_openair1(void) {
           PHY_vars_eNB_g[eNB_id][CC_id]->pusch_config_dedicated[UE_id].betaOffset_ACK_Index = beta_ACK;
           PHY_vars_eNB_g[eNB_id][CC_id]->pusch_config_dedicated[UE_id].betaOffset_RI_Index  = beta_RI;
           PHY_vars_eNB_g[eNB_id][CC_id]->pusch_config_dedicated[UE_id].betaOffset_CQI_Index = beta_CQI;
-          ((PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms).pdsch_config_common).p_b = (frame_parms->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
+          ((PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms).pdsch_config_common).p_b = (frame_parms[CC_id]->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
 	
 	  PHY_vars_UE_g[UE_id][CC_id]->pusch_config_dedicated[eNB_id].betaOffset_ACK_Index = beta_ACK;
 	  PHY_vars_UE_g[UE_id][CC_id]->pusch_config_dedicated[eNB_id].betaOffset_RI_Index  = beta_RI;
 	  PHY_vars_UE_g[UE_id][CC_id]->pusch_config_dedicated[eNB_id].betaOffset_CQI_Index = beta_CQI;
-	  ((PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms).pdsch_config_common).p_b = (frame_parms->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
+	  ((PHY_vars_UE_g[UE_id][CC_id]->lte_frame_parms).pdsch_config_common).p_b = (frame_parms[CC_id]->nb_antennas_tx_eNB>1) ? 1 : 0; // rho_a = rhob
 	}
       }
   }
@@ -837,7 +839,7 @@ void init_openair1(void) {
   openair_daq_vars.tdd = 1;
   openair_daq_vars.rx_gain_mode = DAQ_AGC_ON;
 
-  openair_daq_vars.dlsch_transmission_mode = oai_emulation.info.transmission_mode;
+  openair_daq_vars.dlsch_transmission_mode = oai_emulation.info.transmission_mode[0];
 
   openair_daq_vars.target_ue_dl_mcs = target_dl_mcs;
   openair_daq_vars.target_ue_ul_mcs = target_ul_mcs;
@@ -849,7 +851,7 @@ void init_openair1(void) {
   // init_ue_status();
   for (UE_id=0; UE_id<NB_UE_INST;UE_id++) 
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++){
-      PHY_vars_UE_g[UE_id][CC_id]->rx_total_gain_dB=130;
+      PHY_vars_UE_g[UE_id][CC_id]->rx_total_gain_dB=160;
       // update UE_mode for each eNB_id not just 0
       if (abstraction_flag == 0)
         PHY_vars_UE_g[UE_id][CC_id]->UE_mode[0] = NOT_SYNCHED;
@@ -903,7 +905,7 @@ void init_ocm(void) {
   module_id_t UE_id, eNB_id;
   int CC_id;
   /* Added for PHY abstraction */
-  LOG_I(OCM,"Running with frame_type %d, Nid_cell %d, N_RB_DL %d, EP %d, mode %d, target dl_mcs %d, rate adaptation %d, nframes %d, abstraction %d, channel %s\n", oai_emulation.info.frame_type, Nid_cell, oai_emulation.info.N_RB_DL, oai_emulation.info.extended_prefix_flag, oai_emulation.info.transmission_mode,target_dl_mcs,rate_adaptation_flag,oai_emulation.info.n_frames,abstraction_flag,oai_emulation.environment_system_config.fading.small_scale.selected_option);
+  LOG_I(OCM,"Running with frame_type %d, Nid_cell %d, N_RB_DL %d, EP %d, mode %d, target dl_mcs %d, rate adaptation %d, nframes %d, abstraction %d, channel %s\n", oai_emulation.info.frame_type[0], Nid_cell, oai_emulation.info.N_RB_DL[0], oai_emulation.info.extended_prefix_flag[0], oai_emulation.info.transmission_mode[0],target_dl_mcs,rate_adaptation_flag,oai_emulation.info.n_frames,abstraction_flag,oai_emulation.environment_system_config.fading.small_scale.selected_option);
 
   if (abstraction_flag) {
 
@@ -943,7 +945,7 @@ void init_ocm(void) {
   }
 
   if (abstraction_flag == 0)
-    init_channel_vars (frame_parms, &s_re, &s_im, &r_re, &r_im, &r_re0, &r_im0);
+    init_channel_vars (frame_parms[0], &s_re, &s_im, &r_re, &r_im, &r_re0, &r_im0);
 
   // initialize channel descriptors
   for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++) {
@@ -1081,14 +1083,14 @@ void update_ocm() {
       for (eNB_id = 0; eNB_id < NB_eNB_INST; eNB_id++) {
 	for (UE_id = 0; UE_id < NB_UE_INST; UE_id++) {
 	  
-	  //UE2eNB[UE_id][eNB_id]->path_loss_dB = -105 + snr_dB;
+	  //pathloss: -132.24 dBm/15kHz RE + target SNR - eNB TX power per RE
 	  if (eNB_id == (UE_id % NB_eNB_INST)) {
-	    eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB = -105 + snr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
-	    UE2eNB[UE_id][eNB_id][CC_id]->path_loss_dB = -105 + snr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower; //+20 to offset the difference in tx power of the UE wrt eNB
+	    eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB = -132.24 + snr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
+	    UE2eNB[UE_id][eNB_id][CC_id]->path_loss_dB = -132.24 + snr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower; //+20 to offset the difference in tx power of the UE wrt eNB
 	  }
 	  else {
-	    eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB = -105 + sinr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
-	    UE2eNB[UE_id][eNB_id][CC_id]->path_loss_dB = -105 + sinr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
+	    eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB = -132.24 + sinr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
+	    UE2eNB[UE_id][eNB_id][CC_id]->path_loss_dB = -132.24 + sinr_dB - PHY_vars_eNB_g[eNB_id][CC_id]->lte_frame_parms.pdsch_config_common.referenceSignalPower;
 	  }
 	  LOG_I(OCM,"Path loss from eNB %d to UE %d (CCid %d)=> %f dB (eNB TX %d)\n",eNB_id,UE_id,CC_id,
 		eNB2UE[eNB_id][UE_id][CC_id]->path_loss_dB,

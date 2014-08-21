@@ -197,158 +197,159 @@ mapping packet_gen_names[] =
 void init_oai_emulation(void) {
 
   int i;
+  int CC_id;
 
-	oai_emulation.environment_system_config.fading.large_scale.selected_option = "free_space";
-	oai_emulation.environment_system_config.fading.free_space_model_parameters.pathloss_exponent = 3.00;
-	oai_emulation.environment_system_config.fading.free_space_model_parameters.pathloss_0_dB = -100;
-	oai_emulation.environment_system_config.fading.small_scale.selected_option = "AWGN";
-	oai_emulation.environment_system_config.fading.ricean_8tap.rice_factor_dB = 0;
-	oai_emulation.environment_system_config.fading.shadowing.decorrelation_distance_m = 0;
-	oai_emulation.environment_system_config.fading.shadowing.variance_dB = 0;
-	oai_emulation.environment_system_config.fading.shadowing.inter_site_correlation = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.number_of_sectors = 1;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.beam_width_dB = 1.13;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[0] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[1] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[2] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_gain_dBi = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.tx_power_dBm = 15;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.rx_noise_level_dB = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[0] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[1] = 0;
-	oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[2] = 0;
-	oai_emulation.environment_system_config.antenna.UE_antenna.antenna_gain_dBi = 0;
-	oai_emulation.environment_system_config.antenna.UE_antenna.tx_power_dBm = 20;
-	oai_emulation.environment_system_config.antenna.UE_antenna.rx_noise_level_dB = 0; // noise figure
-	oai_emulation.environment_system_config.wall_penetration_loss_dB = 5;
-	oai_emulation.environment_system_config.system_bandwidth_MB = 7.68;
-	oai_emulation.environment_system_config.system_frequency_GHz = 1.9;
-
-	oai_emulation.topology_config.area.x_m = 1000;
-	oai_emulation.topology_config.area.y_m = 1000;
-	oai_emulation.topology_config.network_type.selected_option = "homogeneous";
-	oai_emulation.topology_config.cell_type.selected_option = "macrocell";
-	oai_emulation.topology_config.relay.number_of_relays = 0;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = "STATIC";
+  oai_emulation.environment_system_config.fading.large_scale.selected_option = "free_space";
+  oai_emulation.environment_system_config.fading.free_space_model_parameters.pathloss_exponent = 3.00;
+  oai_emulation.environment_system_config.fading.free_space_model_parameters.pathloss_0_dB = -100;
+  oai_emulation.environment_system_config.fading.small_scale.selected_option = "AWGN";
+  oai_emulation.environment_system_config.fading.ricean_8tap.rice_factor_dB = 0;
+  oai_emulation.environment_system_config.fading.shadowing.decorrelation_distance_m = 0;
+  oai_emulation.environment_system_config.fading.shadowing.variance_dB = 0;
+  oai_emulation.environment_system_config.fading.shadowing.inter_site_correlation = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.number_of_sectors = 1;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.beam_width_dB = 1.13;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[0] = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[1] = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.alpha_rad[2] = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_gain_dBi = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.tx_power_dBm = 15;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.rx_noise_level_dB = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[0] = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[1] = 0;
+  oai_emulation.environment_system_config.antenna.eNB_antenna.antenna_orientation_degree[2] = 0;
+  oai_emulation.environment_system_config.antenna.UE_antenna.antenna_gain_dBi = 0;
+  oai_emulation.environment_system_config.antenna.UE_antenna.tx_power_dBm = 20;
+  oai_emulation.environment_system_config.antenna.UE_antenna.rx_noise_level_dB = 0; // noise figure
+  oai_emulation.environment_system_config.wall_penetration_loss_dB = 5;
+  oai_emulation.environment_system_config.system_bandwidth_MB = 7.68;
+  oai_emulation.environment_system_config.system_frequency_GHz = 1.9;
+  
+  oai_emulation.topology_config.area.x_m = 1000;
+  oai_emulation.topology_config.area.y_m = 1000;
+  oai_emulation.topology_config.network_type.selected_option = "homogeneous";
+  oai_emulation.topology_config.cell_type.selected_option = "macrocell";
+  oai_emulation.topology_config.relay.number_of_relays = 0;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_mobility_type.selected_option = "STATIC";
   oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.selected_option="MAX_RWP_TYPES";
-	//oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.horizontal_grid = 1;
-	//oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.vertical_grid = 1;
-	oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_trip_type.selected_option = "random_destination";
-	oai_emulation.topology_config.mobility.UE_mobility.UE_initial_distribution.selected_option = "random";
-	oai_emulation.topology_config.mobility.UE_mobility.random_UE_distribution.number_of_nodes = 1;
-	oai_emulation.topology_config.mobility.UE_mobility.concentrated_UE_distribution.number_of_nodes = 1;
-	oai_emulation.topology_config.mobility.UE_mobility.grid_UE_distribution.random_grid.number_of_nodes = 1;
-	oai_emulation.topology_config.mobility.UE_mobility.grid_UE_distribution.border_grid.number_of_nodes = 1;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_speed_mps = 0.1;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_speed_mps = 20.0;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_sleep_ms = 0.1;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_sleep_ms = 5.0;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_journey_time_ms = 0.1;
-	oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms = 10.0;
-	oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = "STATIC";
-	oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option = "random";
+  //oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.horizontal_grid = 1;
+  //oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_map.vertical_grid = 1;
+  oai_emulation.topology_config.mobility.UE_mobility.grid_walk.grid_trip_type.selected_option = "random_destination";
+  oai_emulation.topology_config.mobility.UE_mobility.UE_initial_distribution.selected_option = "random";
+  oai_emulation.topology_config.mobility.UE_mobility.random_UE_distribution.number_of_nodes = 1;
+  oai_emulation.topology_config.mobility.UE_mobility.concentrated_UE_distribution.number_of_nodes = 1;
+  oai_emulation.topology_config.mobility.UE_mobility.grid_UE_distribution.random_grid.number_of_nodes = 1;
+  oai_emulation.topology_config.mobility.UE_mobility.grid_UE_distribution.border_grid.number_of_nodes = 1;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_speed_mps = 0.1;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_speed_mps = 20.0;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_sleep_ms = 0.1;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_sleep_ms = 5.0;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.min_journey_time_ms = 0.1;
+  oai_emulation.topology_config.mobility.UE_mobility.UE_moving_dynamics.max_journey_time_ms = 10.0;
+  oai_emulation.topology_config.mobility.eNB_mobility.eNB_mobility_type.selected_option = "STATIC";
+  oai_emulation.topology_config.mobility.eNB_mobility.eNB_initial_distribution.selected_option = "random";
   oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_x = 1;
   oai_emulation.topology_config.mobility.eNB_mobility.fixed_eNB_distribution.pos_y = 1;
-	oai_emulation.topology_config.mobility.eNB_mobility.random_eNB_distribution.number_of_cells = 1;
-	oai_emulation.topology_config.mobility.eNB_mobility.hexagonal_eNB_distribution.number_of_cells = 1;
-	oai_emulation.topology_config.mobility.eNB_mobility.hexagonal_eNB_distribution.inter_eNB_distance_km = 1;
-	oai_emulation.topology_config.mobility.eNB_mobility.grid_eNB_distribution.number_of_grid_x = 1;
-	oai_emulation.topology_config.mobility.eNB_mobility.grid_eNB_distribution.number_of_grid_y = 1;
-	oai_emulation.topology_config.mobility.eNB_mobility.trace_config.trace_mobility_file = (char*) malloc(256);
-	sprintf(oai_emulation.topology_config.mobility.eNB_mobility.trace_config.trace_mobility_file,"static_1enb.tr");
-	oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file = (char*) malloc(256);
-	sprintf(oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file,"static_2ues.tr");
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command = (char*) malloc(20);
-	sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command,"sumo");
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file = (char*) malloc(256);
-	sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file,"%s/UTIL/OMG/SUMO/SCENARIOS/scen.sumo.cfg",getenv("OPENAIR2_DIR"));
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.start=0;
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.end=0;
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.step=1; //  1000ms
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip = (char*) malloc(40);
-	sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip,"127.0.1.1");
-	oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hport = 8883;
-
-	oai_emulation.application_config.packet_gen_type = "substract_string";
-	for (i = 0; i < NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX; i++) {
-		oai_emulation.application_config.predefined_traffic.source_id[i] = "1:10";
-		oai_emulation.application_config.predefined_traffic.application_type[i] = "no_predefined_traffic";
-		oai_emulation.application_config.predefined_traffic.background[i] = "disable";
-		oai_emulation.application_config.predefined_traffic.aggregation_level[i] = 1;
-		oai_emulation.application_config.predefined_traffic.flow_start[i] = (i+1)*25;
-		oai_emulation.application_config.predefined_traffic.flow_duration[i] = 0xffff;
-
-		oai_emulation.application_config.predefined_traffic.destination_id[i] = 0;
-
-		oai_emulation.application_config.customized_traffic.source_id[i] = "1";
-		oai_emulation.application_config.customized_traffic.destination_id[i] = "2";
-		oai_emulation.application_config.customized_traffic.transport_protocol[i] = "udp";
-		oai_emulation.application_config.customized_traffic.background[i] = "disable";
-		oai_emulation.application_config.customized_traffic.m2m[i] = "disable";
-		oai_emulation.application_config.customized_traffic.ip_version[i] = "ipv4";
-		oai_emulation.application_config.customized_traffic.aggregation_level[i] = 1;
-		oai_emulation.application_config.customized_traffic.flow_start[i] = (i+1)*25;
-		oai_emulation.application_config.customized_traffic.flow_duration[i] = 100;
-		oai_emulation.application_config.customized_traffic.idt_dist[i] = "uniform";
-		oai_emulation.application_config.customized_traffic.idt_min_ms[i] = 100;
-		oai_emulation.application_config.customized_traffic.idt_max_ms[i] = 1000;
-		oai_emulation.application_config.customized_traffic.idt_standard_deviation[i] = 1;
-		oai_emulation.application_config.customized_traffic.idt_lambda[i] = 1;
-		oai_emulation.application_config.customized_traffic.size_dist[i] = "uniform";
-		oai_emulation.application_config.customized_traffic.size_min_byte[i] = 200;
-		oai_emulation.application_config.customized_traffic.size_max_byte[i] = 500;
-		oai_emulation.application_config.customized_traffic.size_standard_deviation[i] = 1;
-		oai_emulation.application_config.customized_traffic.size_lambda[i] = 1;
-		oai_emulation.application_config.customized_traffic.stream[i] = 1;
-		oai_emulation.application_config.customized_traffic.destination_port[i] = 8080;
-		oai_emulation.application_config.customized_traffic.prob_off_pu[i]= 0;
-		oai_emulation.application_config.customized_traffic.prob_off_ed[i]= 0;
-		oai_emulation.application_config.customized_traffic.prob_off_pe[i]= 0;
-		oai_emulation.application_config.customized_traffic.prob_pu_ed[i]= 0;
-		oai_emulation.application_config.customized_traffic.prob_pu_pe[i]= 0;
-		oai_emulation.application_config.customized_traffic.prob_ed_pe[i]= 0;
-		oai_emulation.application_config.customized_traffic.prob_ed_pu[i]= 0;
-		oai_emulation.application_config.customized_traffic.holding_time_off_ed[i]= 0;
-		oai_emulation.application_config.customized_traffic.holding_time_off_pu[i]= 0;
-		oai_emulation.application_config.customized_traffic.holding_time_off_pe[i]= 0;
-		oai_emulation.application_config.customized_traffic.holding_time_pe_off[i]= 0;
-		oai_emulation.application_config.customized_traffic.pu_size_pkts[i]= 0;
-		oai_emulation.application_config.customized_traffic.ed_size_pkts[i]= 0;
-	}
-
-
-
-
-	oai_emulation.emulation_config.emulation_time_ms = 0;
-	oai_emulation.emulation_config.curve = "disable";
-	oai_emulation.emulation_config.background_stats = "disable";
-	oai_emulation.emulation_config.performance_metrics.throughput = "disable";
-	oai_emulation.emulation_config.performance_metrics.latency ="disable";
-	oai_emulation.emulation_config.performance_metrics.loss_rate ="disable";
-	oai_emulation.emulation_config.performance_metrics.owd_radio_access = "disable";
-	oai_emulation.emulation_config.layer.phy = 0;
-	oai_emulation.emulation_config.layer.mac = 0;
-	oai_emulation.emulation_config.layer.rlc = 0;
-	oai_emulation.emulation_config.layer.pdcp = 0;
-	oai_emulation.emulation_config.layer.rrc = 0;
-	oai_emulation.emulation_config.layer.omg = 0;
-	oai_emulation.emulation_config.layer.otg = 0;
-	oai_emulation.emulation_config.layer.emu = 1;
-
-	oai_emulation.emulation_config.log_emu.level = "debug";
-	oai_emulation.emulation_config.log_emu.verbosity = "low";
-	oai_emulation.emulation_config.log_emu.interval = 1;
-	oai_emulation.emulation_config.packet_trace.enabled = 0;
-	oai_emulation.emulation_config.seed.value = 0; // 0 means randomly generated by OAI
-
-	oai_emulation.info.ocg_ok = 0;
-
-
-   // phy related params :
-    oai_emulation.info.n_frames=0xffff; // number of frames simulated by default
-    oai_emulation.info.n_frames_flag=0; // if set, then let the emulation goes to infinity
-
-//status
+  oai_emulation.topology_config.mobility.eNB_mobility.random_eNB_distribution.number_of_cells = 1;
+  oai_emulation.topology_config.mobility.eNB_mobility.hexagonal_eNB_distribution.number_of_cells = 1;
+  oai_emulation.topology_config.mobility.eNB_mobility.hexagonal_eNB_distribution.inter_eNB_distance_km = 1;
+  oai_emulation.topology_config.mobility.eNB_mobility.grid_eNB_distribution.number_of_grid_x = 1;
+  oai_emulation.topology_config.mobility.eNB_mobility.grid_eNB_distribution.number_of_grid_y = 1;
+  oai_emulation.topology_config.mobility.eNB_mobility.trace_config.trace_mobility_file = (char*) malloc(256);
+  sprintf(oai_emulation.topology_config.mobility.eNB_mobility.trace_config.trace_mobility_file,"static_1enb.tr");
+  oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file = (char*) malloc(256);
+  sprintf(oai_emulation.topology_config.mobility.UE_mobility.trace_config.trace_mobility_file,"static_2ues.tr");
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command = (char*) malloc(20);
+  sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.command,"sumo");
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file = (char*) malloc(256);
+  sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.file,"%s/UTIL/OMG/SUMO/SCENARIOS/scen.sumo.cfg",getenv("OPENAIR2_DIR"));
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.start=0;
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.end=0;
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.step=1; //  1000ms
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip = (char*) malloc(40);
+  sprintf(oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hip,"127.0.1.1");
+  oai_emulation.topology_config.mobility.UE_mobility.sumo_config.hport = 8883;
+  
+  oai_emulation.application_config.packet_gen_type = "substract_string";
+  for (i = 0; i < NUMBER_OF_eNB_MAX + NUMBER_OF_UE_MAX; i++) {
+    oai_emulation.application_config.predefined_traffic.source_id[i] = "1:10";
+    oai_emulation.application_config.predefined_traffic.application_type[i] = "no_predefined_traffic";
+    oai_emulation.application_config.predefined_traffic.background[i] = "disable";
+    oai_emulation.application_config.predefined_traffic.aggregation_level[i] = 1;
+    oai_emulation.application_config.predefined_traffic.flow_start[i] = (i+1)*25;
+    oai_emulation.application_config.predefined_traffic.flow_duration[i] = 0xffff;
+    
+    oai_emulation.application_config.predefined_traffic.destination_id[i] = 0;
+    
+    oai_emulation.application_config.customized_traffic.source_id[i] = "1";
+    oai_emulation.application_config.customized_traffic.destination_id[i] = "2";
+    oai_emulation.application_config.customized_traffic.transport_protocol[i] = "udp";
+    oai_emulation.application_config.customized_traffic.background[i] = "disable";
+    oai_emulation.application_config.customized_traffic.m2m[i] = "disable";
+    oai_emulation.application_config.customized_traffic.ip_version[i] = "ipv4";
+    oai_emulation.application_config.customized_traffic.aggregation_level[i] = 1;
+    oai_emulation.application_config.customized_traffic.flow_start[i] = (i+1)*25;
+    oai_emulation.application_config.customized_traffic.flow_duration[i] = 100;
+    oai_emulation.application_config.customized_traffic.idt_dist[i] = "uniform";
+    oai_emulation.application_config.customized_traffic.idt_min_ms[i] = 100;
+    oai_emulation.application_config.customized_traffic.idt_max_ms[i] = 1000;
+    oai_emulation.application_config.customized_traffic.idt_standard_deviation[i] = 1;
+    oai_emulation.application_config.customized_traffic.idt_lambda[i] = 1;
+    oai_emulation.application_config.customized_traffic.size_dist[i] = "uniform";
+    oai_emulation.application_config.customized_traffic.size_min_byte[i] = 200;
+    oai_emulation.application_config.customized_traffic.size_max_byte[i] = 500;
+    oai_emulation.application_config.customized_traffic.size_standard_deviation[i] = 1;
+    oai_emulation.application_config.customized_traffic.size_lambda[i] = 1;
+    oai_emulation.application_config.customized_traffic.stream[i] = 1;
+    oai_emulation.application_config.customized_traffic.destination_port[i] = 8080;
+    oai_emulation.application_config.customized_traffic.prob_off_pu[i]= 0;
+    oai_emulation.application_config.customized_traffic.prob_off_ed[i]= 0;
+    oai_emulation.application_config.customized_traffic.prob_off_pe[i]= 0;
+    oai_emulation.application_config.customized_traffic.prob_pu_ed[i]= 0;
+    oai_emulation.application_config.customized_traffic.prob_pu_pe[i]= 0;
+    oai_emulation.application_config.customized_traffic.prob_ed_pe[i]= 0;
+    oai_emulation.application_config.customized_traffic.prob_ed_pu[i]= 0;
+    oai_emulation.application_config.customized_traffic.holding_time_off_ed[i]= 0;
+    oai_emulation.application_config.customized_traffic.holding_time_off_pu[i]= 0;
+    oai_emulation.application_config.customized_traffic.holding_time_off_pe[i]= 0;
+    oai_emulation.application_config.customized_traffic.holding_time_pe_off[i]= 0;
+    oai_emulation.application_config.customized_traffic.pu_size_pkts[i]= 0;
+    oai_emulation.application_config.customized_traffic.ed_size_pkts[i]= 0;
+  }
+  
+  
+  
+  
+  oai_emulation.emulation_config.emulation_time_ms = 0;
+  oai_emulation.emulation_config.curve = "disable";
+  oai_emulation.emulation_config.background_stats = "disable";
+  oai_emulation.emulation_config.performance_metrics.throughput = "disable";
+  oai_emulation.emulation_config.performance_metrics.latency ="disable";
+  oai_emulation.emulation_config.performance_metrics.loss_rate ="disable";
+  oai_emulation.emulation_config.performance_metrics.owd_radio_access = "disable";
+  oai_emulation.emulation_config.layer.phy = 0;
+  oai_emulation.emulation_config.layer.mac = 0;
+  oai_emulation.emulation_config.layer.rlc = 0;
+  oai_emulation.emulation_config.layer.pdcp = 0;
+  oai_emulation.emulation_config.layer.rrc = 0;
+  oai_emulation.emulation_config.layer.omg = 0;
+  oai_emulation.emulation_config.layer.otg = 0;
+  oai_emulation.emulation_config.layer.emu = 1;
+  
+  oai_emulation.emulation_config.log_emu.level = "debug";
+  oai_emulation.emulation_config.log_emu.verbosity = "low";
+  oai_emulation.emulation_config.log_emu.interval = 1;
+  oai_emulation.emulation_config.packet_trace.enabled = 0;
+  oai_emulation.emulation_config.seed.value = 0; // 0 means randomly generated by OAI
+  
+  oai_emulation.info.ocg_ok = 0;
+  
+  
+  // phy related params :
+  oai_emulation.info.n_frames=0xffff; // number of frames simulated by default
+  oai_emulation.info.n_frames_flag=0; // if set, then let the emulation goes to infinity
+  
+  //status
   oai_emulation.info.is_primary_master=0;
   oai_emulation.info.master_list=0;
   oai_emulation.info.nb_ue_remote=0;
@@ -415,13 +416,15 @@ void init_oai_emulation(void) {
   oai_emulation.info.g_log_verbosity = 0x15;
   oai_emulation.info.g_log_verbosity_option = "medium";
 
-    oai_emulation.info.frame_type=TDD;
-    oai_emulation.info.frame_type_name="TDD";
-    oai_emulation.info.tdd_config=3;
-    oai_emulation.info.tdd_config_S=0;
-    oai_emulation.info.extended_prefix_flag=0;
-    oai_emulation.info.N_RB_DL=25;
-    oai_emulation.info.transmission_mode=2;
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    oai_emulation.info.frame_type[CC_id]=TDD;
+    oai_emulation.info.frame_type_name[CC_id]="TDD";
+    oai_emulation.info.tdd_config[CC_id]=3;
+    oai_emulation.info.tdd_config_S[CC_id]=0;
+    oai_emulation.info.extended_prefix_flag[CC_id]=0;
+    oai_emulation.info.N_RB_DL[CC_id]=25;
+    oai_emulation.info.transmission_mode[CC_id]=2;
+  }
 
   oai_emulation.profile = "EURECOM";
 }
@@ -431,6 +434,8 @@ void oaisim_config(void) {
 
   // init log gen first
  //initialize the log generator
+
+
   logInit();
 
 #if defined(ENABLE_ITTI)
@@ -558,21 +563,24 @@ int olg_config(void) {
 
 int ocg_config_env(void) {
 // int func related to channel desc from oaisim.c could be moved here
+  int CC_id;
 
   if (oai_emulation.info.ocg_enabled){
-    oai_emulation.info.frame_type = map_str_to_int(frame_type_names, oai_emulation.info.frame_type_name);
-    if (oai_emulation.info.frame_type == -1){
-      LOG_E(EMU,"frame type incorrect %s, set it to TDD \n",oai_emulation.info.frame_type_name);
-      oai_emulation.info.frame_type=TDD;
-    }
-    else
-      LOG_I(EMU,"Frame type is %s \n",oai_emulation.info.frame_type_name);
-    if (oai_emulation.info.frame_type == TDD ){
-      if ((oai_emulation.info.tdd_config > 6) || (oai_emulation.info.tdd_config < 0)) {
-	LOG_E(EMU,"TDD config %d out of range, set it to 3\n",oai_emulation.info.tdd_config);
-	oai_emulation.info.tdd_config=3;
-      } else
-	LOG_I(EMU,"TDD config is set to \n",oai_emulation.info.tdd_config);
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      oai_emulation.info.frame_type[CC_id] = map_str_to_int(frame_type_names, oai_emulation.info.frame_type_name[CC_id]);
+      if (oai_emulation.info.frame_type[CC_id] == -1){
+	LOG_E(EMU,"frame type incorrect %s, set it to TDD \n",oai_emulation.info.frame_type_name);
+	oai_emulation.info.frame_type[CC_id]=TDD;
+      }
+      else
+	LOG_I(EMU,"Frame type is %s \n",oai_emulation.info.frame_type_name);
+      if (oai_emulation.info.frame_type[CC_id] == TDD ){
+	if ((oai_emulation.info.tdd_config[CC_id] > 6) || (oai_emulation.info.tdd_config[CC_id] < 0)) {
+	  LOG_E(EMU,"TDD config %d out of range, set it to 3\n",oai_emulation.info.tdd_config[CC_id]);
+	  oai_emulation.info.tdd_config[CC_id]=3;
+	} else
+	  LOG_I(EMU,"TDD config is set to \n",oai_emulation.info.tdd_config[CC_id]);
+      }
     }
   }
   return 1;

@@ -301,7 +301,7 @@ static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,7
 //static int                      mbox_bounds[20] =   {6,14,22,28,36,44,52,58,66,74,82,88,96,104,112,118,126,134,142, 148}; ///boundaries of slots in terms ob mbox counter rounded up to even numbers
 #endif
 
-static LTE_DL_FRAME_PARMS      *frame_parms;
+static LTE_DL_FRAME_PARMS      *frame_parms[MAX_NUM_CCs];
 
 int multi_thread=1;
 
@@ -720,7 +720,7 @@ void *l2l1_task(void *arg)
 #endif
 
 
-void do_OFDM_mod(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
+void do_OFDM_mod_rt(int subframe,PHY_VARS_eNB *phy_vars_eNB) {
 
   unsigned int aa,slot_offset, slot_offset_F;
   int dummy_tx_b[7680*4] __attribute__((aligned(16)));
@@ -872,7 +872,7 @@ static void * eNB_thread_tx(void *param) {
     }
     
     
-    do_OFDM_mod(proc->subframe_tx,PHY_vars_eNB_g[0][proc->CC_id]);  
+    do_OFDM_mod_rt(proc->subframe_tx,PHY_vars_eNB_g[0][proc->CC_id]);  
     
     if (pthread_mutex_lock(&proc->mutex_tx) != 0) {
       printf("[openair][SCHED][eNB] error locking mutex for eNB TX proc %d\n",proc->subframe);
@@ -1370,7 +1370,7 @@ static void *eNB_thread(void *arg)
 	    LOG_I(PHY,"[eNB] Single thread slot %d\n",slot);
 	      phy_procedures_eNB_lte ((2+(slot>>1))%10, PHY_vars_eNB_g[0], 0, no_relay,NULL);
 	      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-		do_OFDM_mod((2+(slot>>1))%10,PHY_vars_eNB_g[0][CC_id]);
+		do_OFDM_mod_rt((2+(slot>>1))%10,PHY_vars_eNB_g[0][CC_id]);
 	      }
 	  }
 	}
@@ -1814,26 +1814,28 @@ static void get_options (int argc, char **argv) {
       online_log_messages =1;
       break;
     case 'r':
-      switch(atoi(optarg)) {
-      case 6:
-	frame_parms->N_RB_DL=6;
-	frame_parms->N_RB_UL=6;
-	break;
-      case 25:
-	frame_parms->N_RB_DL=25;
-	frame_parms->N_RB_UL=25;
-	break;
-      case 50:
-	frame_parms->N_RB_DL=50;
-	frame_parms->N_RB_UL=50;
-	break;
-      case 100:
-	frame_parms->N_RB_DL=100;
-	frame_parms->N_RB_UL=100;
-	break;
-      default:
-	printf("Unknown N_RB_DL %d, switching to 25\n",atoi(optarg));
-	break;
+      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	switch(atoi(optarg)) {
+	case 6:
+	  frame_parms[CC_id]->N_RB_DL=6;
+	  frame_parms[CC_id]->N_RB_UL=6;
+	  break;
+	case 25:
+	  frame_parms[CC_id]->N_RB_DL=25;
+	  frame_parms[CC_id]->N_RB_UL=25;
+	  break;
+	case 50:
+	  frame_parms[CC_id]->N_RB_DL=50;
+	  frame_parms[CC_id]->N_RB_UL=50;
+	  break;
+	case 100:
+	  frame_parms[CC_id]->N_RB_DL=100;
+	  frame_parms[CC_id]->N_RB_UL=100;
+	  break;
+	default:
+	  printf("Unknown N_RB_DL %d, switching to 25\n",atoi(optarg));
+	  break;
+	}
       }
       break;
     case 's':
@@ -1877,17 +1879,18 @@ static void get_options (int argc, char **argv) {
     
     /* Update some simulation parameters */
     for (i=0; i < enb_properties->number; i++) {
-      
-      frame_parms->frame_type =       enb_properties->properties[i]->frame_type;
-      frame_parms->tdd_config =       enb_properties->properties[i]->tdd_config;
-      frame_parms->tdd_config_S =     enb_properties->properties[i]->tdd_config_s;
-      frame_parms->Ncp =              enb_properties->properties[i]->prefix_type;
-
-      //for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
-	frame_parms->Nid_cell          =  enb_properties->properties[i]->cell_id[0];
-	frame_parms->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[0];
+      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	frame_parms[CC_id]->frame_type =       enb_properties->properties[i]->frame_type[CC_id];
+	frame_parms[CC_id]->tdd_config =       enb_properties->properties[i]->tdd_config[CC_id];
+	frame_parms[CC_id]->tdd_config_S =     enb_properties->properties[i]->tdd_config_s[CC_id];
+	frame_parms[CC_id]->Ncp =              enb_properties->properties[i]->prefix_type[CC_id];
+	
+	//for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
+	frame_parms[CC_id]->Nid_cell          =  enb_properties->properties[i]->cell_id[CC_id];
+	frame_parms[CC_id]->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[CC_id];
 	//} // j
-    
+      }
+
       glog_level                     = enb_properties->properties[i]->glog_level;
       glog_verbosity                 = enb_properties->properties[i]->glog_verbosity;
       hw_log_level                   = enb_properties->properties[i]->hw_log_level;
@@ -1956,16 +1959,18 @@ int main(int argc, char **argv) {
 
   mode = normal_txrx;
 
-  frame_parms = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
-  /* Set some default values that may be overwritten while reading options */
-  frame_parms->frame_type         = TDD; /* TDD */
-  frame_parms->tdd_config         = 3;
-  frame_parms->tdd_config_S       = 0;
-  frame_parms->N_RB_DL            = 25;
-  frame_parms->N_RB_UL            = 25;
-  frame_parms->Ncp                = NORMAL;
-  frame_parms->Ncp_UL             = NORMAL;
-  frame_parms->Nid_cell           = Nid_cell;
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    frame_parms[CC_id] = (LTE_DL_FRAME_PARMS*) malloc(sizeof(LTE_DL_FRAME_PARMS));
+    /* Set some default values that may be overwritten while reading options */
+    frame_parms[CC_id]->frame_type         = TDD; /* TDD */
+    frame_parms[CC_id]->tdd_config          = 3;
+    frame_parms[CC_id]->tdd_config_S        = 0;
+    frame_parms[CC_id]->N_RB_DL             = 25;
+    frame_parms[CC_id]->N_RB_UL             = 25;
+    frame_parms[CC_id]->Ncp                = NORMAL;
+    frame_parms[CC_id]->Ncp_UL              = NORMAL;
+    frame_parms[CC_id]->Nid_cell            = Nid_cell;
+  }
 
   get_options (argc, argv); //Command-line options
 
@@ -2065,60 +2070,64 @@ int main(int argc, char **argv) {
 #endif
 
   // init the parameters
-  frame_parms->nushift            = 0;
-  if (UE_flag==0)
-    {
-      switch (transmission_mode) {
-      case 1: 
-	frame_parms->nb_antennas_tx     = 1;
-	frame_parms->nb_antennas_rx     = 1;
-	break;
-      case 2:
-      case 5:
-      case 6:
-	frame_parms->nb_antennas_tx     = 2;
-	frame_parms->nb_antennas_rx     = 2;
-	break;
-      default:
-	printf("Unsupported transmission mode %d\n",transmission_mode);
-	exit(-1);
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    frame_parms[CC_id]->nushift            = 0;
+    if (UE_flag==0)
+      {
+	switch (transmission_mode) {
+	case 1: 
+	  frame_parms[CC_id]->nb_antennas_tx     = 1;
+	  frame_parms[CC_id]->nb_antennas_rx     = 1;
+	  break;
+	case 2:
+	case 5:
+	case 6:
+	  frame_parms[CC_id]->nb_antennas_tx     = 2;
+	  frame_parms[CC_id]->nb_antennas_rx     = 2;
+	  break;
+	default:
+	  printf("Unsupported transmission mode %d\n",transmission_mode);
+	  exit(-1);
+	}
       }
-    }
-  else
-    { //UE_flag==1
-      frame_parms->nb_antennas_tx     = 1;
-      frame_parms->nb_antennas_rx     = 1;
-    }
-  frame_parms->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
-  frame_parms->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
-  frame_parms->phich_config_common.phich_resource = oneSixth;
-  frame_parms->phich_config_common.phich_duration = normal;
-  // UL RS Config
-  frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift = 0;//n_DMRS1 set to 0
-  frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupHoppingEnabled = 0;
-  frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = 0;
-  frame_parms->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
-  init_ul_hopping(frame_parms);
+    else
+      { //UE_flag==1
+	frame_parms[CC_id]->nb_antennas_tx     = 1;
+	frame_parms[CC_id]->nb_antennas_rx     = 1;
+      }
+    frame_parms[CC_id]->nb_antennas_tx_eNB = (transmission_mode == 1) ? 1 : 2; //initial value overwritten by initial sync later
+    frame_parms[CC_id]->mode1_flag         = (transmission_mode == 1) ? 1 : 0;
+    frame_parms[CC_id]->phich_config_common.phich_resource = oneSixth;
+    frame_parms[CC_id]->phich_config_common.phich_duration = normal;
+    // UL RS Config
+    frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.cyclicShift = 0;//n_DMRS1 set to 0
+    frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupHoppingEnabled = 0;
+    frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = 0;
+    frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
+    init_ul_hopping(frame_parms);
 
-  init_frame_parms(frame_parms,1);
+    init_frame_parms(frame_parms,1);
+  }
 
-  phy_init_top(frame_parms);
-  phy_init_lte_top(frame_parms);
+  phy_init_top(frame_parms[0]);
+  phy_init_lte_top(frame_parms[0]);
 
-  //init prach for openair1 test
-  frame_parms->prach_config_common.rootSequenceIndex=22; 
-  frame_parms->prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig=1;
-  frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex=0; 
-  frame_parms->prach_config_common.prach_ConfigInfo.highSpeedFlag=0;
-  frame_parms->prach_config_common.prach_ConfigInfo.prach_FreqOffset=0;
-  // prach_fmt = get_prach_fmt(frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex, frame_parms->frame_type);
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    //init prach for openair1 test
+    frame_parms[CC_id]->prach_config_common.rootSequenceIndex=22; 
+    frame_parms[CC_id]->prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig=1;
+    frame_parms[CC_id]->prach_config_common.prach_ConfigInfo.prach_ConfigIndex=0; 
+    frame_parms[CC_id]->prach_config_common.prach_ConfigInfo.highSpeedFlag=0;
+    frame_parms[CC_id]->prach_config_common.prach_ConfigInfo.prach_FreqOffset=0;
+    // prach_fmt = get_prach_fmt(frame_parms->prach_config_common.prach_ConfigInfo.prach_ConfigIndex, frame_parms->frame_type);
   // N_ZC = (prach_fmt <4)?839:139;
+  }
 
   if (UE_flag==1) {
     PHY_vars_UE_g = malloc(sizeof(PHY_VARS_UE**));
     PHY_vars_UE_g[0] = malloc(sizeof(PHY_VARS_UE*)*MAX_NUM_CCs);
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      PHY_vars_UE_g[CC_id][0] = init_lte_UE(frame_parms, UE_id,abstraction_flag,transmission_mode);
+      PHY_vars_UE_g[CC_id][0] = init_lte_UE(frame_parms[CC_id], UE_id,abstraction_flag,transmission_mode);
       
 #ifndef OPENAIR2
       for (i=0;i<NUMBER_OF_eNB_MAX;i++) {
@@ -2183,7 +2192,7 @@ int main(int argc, char **argv) {
       PHY_vars_eNB_g = malloc(sizeof(PHY_VARS_eNB**));
       PHY_vars_eNB_g[0] = malloc(sizeof(PHY_VARS_eNB*));
       for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-	PHY_vars_eNB_g[0][CC_id] = init_lte_eNB(frame_parms,eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
+	PHY_vars_eNB_g[0][CC_id] = init_lte_eNB(frame_parms[CC_id],eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
       
        
 #ifndef OPENAIR2
@@ -2220,9 +2229,9 @@ int main(int argc, char **argv) {
 
 
 
-  dump_frame_parms(frame_parms);
+  dump_frame_parms(frame_parms[0]);
 
-  if(frame_parms->N_RB_DL == 100) {
+  if(frame_parms[0]->N_RB_DL == 100) {
     sample_rate = 30.72e6;
 #ifdef USRP
     samples_per_packets = 2048;
@@ -2234,8 +2243,8 @@ int main(int argc, char **argv) {
     tx_delay = 9;
 #endif
   }
-  else if(frame_parms->N_RB_DL == 50){
-    sample_rate = 15.36e6;
+  else if(frame_parms[0]->N_RB_DL == 50){
+    sample_rate = 15.36es6;
 #ifdef USRP
     samples_per_packets = 2048;
     samples_per_frame = 153600;
@@ -2245,7 +2254,7 @@ int main(int argc, char **argv) {
     tx_delay = 4;
 #endif
   }
-  else if (frame_parms->N_RB_DL == 25) {
+  else if (frame_parms[0]->N_RB_DL == 25) {
     sample_rate = 7.68e6;
 #ifdef USRP
     samples_per_packets = 1024;
@@ -2261,8 +2270,8 @@ int main(int argc, char **argv) {
 
 
   openair0_cfg.sample_rate = sample_rate;
-  openair0_cfg.tx_num_channels = frame_parms->nb_antennas_tx;
-  openair0_cfg.rx_num_channels = frame_parms->nb_antennas_rx;
+  openair0_cfg.tx_num_channels = frame_parms[0]->nb_antennas_tx;
+  openair0_cfg.rx_num_channels = frame_parms[0]->nb_antennas_rx;
   
   for (i=0;i<4;i++) {
     if (UE_flag==1) {
@@ -2334,8 +2343,8 @@ int main(int argc, char **argv) {
       setup_ue_buffers(PHY_vars_UE_g[CC_id][0],frame_parms,ant_offset);
       printf("Setting UE buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
-      for (i=0; i<frame_parms->samples_per_tti*10; i++)
-	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+      for (i=0; i<frame_parms[CC_id]->samples_per_tti*10; i++)
+	for (aa=0; aa<frame_parms[CC_id]]->nb_antennas_tx; aa++)
 	  PHY_vars_UE_g[CC_id][0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
     }
     //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;
@@ -2345,8 +2354,8 @@ int main(int argc, char **argv) {
       setup_eNB_buffers(PHY_vars_eNB_g[CC_id][0],frame_parms,ant_offset);
       printf("Setting eNB buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
-      for (i=0; i<frame_parms->samples_per_tti*10; i++)
-	for (aa=0; aa<frame_parms->nb_antennas_tx; aa++)
+      for (i=0; i<frame_parms[CC_id]->samples_per_tti*10; i++)
+	for (aa=0; aa<frame_parms[CC_id]->nb_antennas_tx; aa++)
 	  PHY_vars_eNB_g[CC_id][0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
     }
   }
@@ -2642,30 +2651,30 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
+void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS **frame_parms, int carrier) {
 
   int i;
 #ifndef USRP
   if (phy_vars_ue) {
-    if ((frame_parms->nb_antennas_rx>1) && (carrier>0)) {
+    if ((frame_parms[0]->nb_antennas_rx>1) && (carrier>0)) {
       printf("RX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
 
-    if ((frame_parms->nb_antennas_tx>1) && (carrier>0)) {
+    if ((frame_parms[0]->nb_antennas_tx>1) && (carrier>0)) {
       printf("TX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
     
     // replace RX signal buffers with mmaped HW versions
-    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+    for (i=0;i<frame_parms[0]->nb_antennas_rx;i++) {
       free(phy_vars_ue->lte_ue_common_vars.rxdata[i]);
       phy_vars_ue->lte_ue_common_vars.rxdata[i] = (int32_t*) openair0_exmimo_pci[card].adc_head[i+carrier];
 
 
       printf("rxdata[%d] @ %p\n",i,phy_vars_ue->lte_ue_common_vars.rxdata[i]);
     }
-    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+    for (i=0;i<frame_parms[0]->nb_antennas_tx;i++) {
       free(phy_vars_ue->lte_ue_common_vars.txdata[i]);
       phy_vars_ue->lte_ue_common_vars.txdata[i] = (int32_t*) openair0_exmimo_pci[card].dac_head[i+carrier];
 
@@ -2677,7 +2686,7 @@ void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms,
 #endif
 }
 
-void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
+void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS **frame_parms, int carrier) {
 
   int i;
 #ifdef USRP
@@ -2687,18 +2696,18 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
 #endif
 
   if (phy_vars_eNB) {
-    if ((frame_parms->nb_antennas_rx>1) && (carrier>0)) {
+    if ((frame_parms[0]->nb_antennas_rx>1) && (carrier>0)) {
       printf("RX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
 
-    if ((frame_parms->nb_antennas_tx>1) && (carrier>0)) {
+    if ((frame_parms[0]->nb_antennas_tx>1) && (carrier>0)) {
       printf("TX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
 
 #ifdef USRP
-    if (frame_parms->frame_type == TDD) {
+    if (frame_parms[0]->frame_type == TDD) {
       if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 100)
 	N_TA_offset = 624;
       else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 50)
@@ -2710,7 +2719,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
     
     // replace RX signal buffers with mmaped HW versions
 #ifndef USRP
-    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+    for (i=0;i<frame_parms[0]->nb_antennas_rx;i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
       phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (int32_t*) openair0_exmimo_pci[card].adc_head[i+carrier];
 
@@ -2720,7 +2729,7 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
 	phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j] = 16-j;
       }
     }
-    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+    for (i=0;i<frame_parms[0]->nb_antennas_tx;i++) {
       free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
       phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (int32_t*) openair0_exmimo_pci[card].dac_head[i+carrier];
 
@@ -2731,14 +2740,14 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_par
       }
     }
 #else // USRP
-    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+    for (i=0;i<frame_parms[0]->nb_antennas_rx;i++) {
         free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
         rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
         phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
         memset(rxdata, 0, samples_per_frame*sizeof(int32_t));
         printf("rxdata[%d] @ %p (%p)\n", i, phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i],rxdata);
     }
-    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+    for (i=0;i<frame_parms[0]->nb_antennas_tx;i++) {
         free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
         txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
         phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = txdata;
