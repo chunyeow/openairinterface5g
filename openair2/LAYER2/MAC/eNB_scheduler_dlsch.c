@@ -365,6 +365,7 @@ void schedule_ue_spec(module_id_t   module_idP,
   stop_meas(&eNB->schedule_dlsch_preprocessor);
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_PREPROCESSOR,VCD_FUNCTION_OUT);
  
+
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
     if (mbsfn_flag[CC_id]>0)
       continue;
@@ -400,7 +401,7 @@ void schedule_ue_spec(module_id_t   module_idP,
       nb_available_rb = pre_nb_available_rbs[CC_id][UE_id];
       UE_list->eNB_UE_stats[CC_id][UE_id].crnti= rnti;
       UE_list->eNB_UE_stats[CC_id][UE_id].rrc_status=mac_get_rrc_status(module_idP,1,UE_id);
-      mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,subframeP,&harq_pid,&round,0);
+      mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,frameP,subframeP,&harq_pid,&round,0);
       UE_list->eNB_UE_stats[CC_id][UE_id].harq_pid = harq_pid;
       UE_list->eNB_UE_stats[CC_id][UE_id].harq_round = round;
       
@@ -1640,7 +1641,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 	  LOG_I(MAC,"[eNB %d][RAPROC] Frame %d, subframeP %d: Checking if Msg4 was acknowledged: \n",
 		module_idP,frameP,subframeP);
 	  // Get candidate harq_pid from PHY
-	  mac_xface->get_ue_active_harq_pid(module_idP,CC_id,RA_template->rnti,subframeP,&harq_pid,&round,0);
+	  mac_xface->get_ue_active_harq_pid(module_idP,CC_id,RA_template->rnti,frameP,subframeP,&harq_pid,&round,0);
 	  if (round>0) {
 	    // we have to schedule a retransmission
 	    if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD)
@@ -1688,16 +1689,16 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
       }
     } // RA is scheduled in this subframeP
 
-    LOG_I(MAC,"Doing UE_spec DCIs\n");
+
     // UE specific DCIs
     for (UE_id=UE_list->head;UE_id>=0;UE_id=UE_list->next[UE_id]) {
-      LOG_I(MAC,"UE_id: %d => status %d\n",UE_id,eNB_dlsch_info[module_idP][UE_id].status);
+      //      printf("UE_id: %d => status %d\n",UE_id,eNB_dlsch_info[module_idP][UE_id].status);
       if (eNB_dlsch_info[module_idP][UE_id].status == S_DL_SCHEDULED) {
 
 	// clear scheduling flag
 	eNB_dlsch_info[module_idP][UE_id].status = S_DL_WAITING;
 	rnti = UE_RNTI(module_idP,UE_id);
-	mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,subframeP,&harq_pid,&round,0);
+	mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,frameP,subframeP,&harq_pid,&round,0);
 	nb_rb = UE_list->UE_template[CC_id][UE_id].nb_rb[harq_pid];
 
 	DLSCH_dci = (void *)UE_list->UE_template[CC_id][UE_id].DLSCH_DCI[harq_pid];

@@ -219,13 +219,13 @@ void assign_rbs_required (module_id_t Mod_id,
 
 // This function scans all CC_ids for a particular UE to find the maximum round index of its HARQ processes
 
-int maxround(module_id_t Mod_id,uint16_t rnti,sub_frame_t subframe) {
+int maxround(module_id_t Mod_id,uint16_t rnti,int frame,sub_frame_t subframe) {
 
   uint8_t round,round_max=0,harq_pid;
   int CC_id;
 
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++){
-    mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,subframe,&harq_pid,&round,0);
+    mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,frame,subframe,&harq_pid,&round,0);
     if (round > round_max)
       round_max = round;
   }
@@ -252,8 +252,9 @@ int maxcqi(module_id_t Mod_id,uint16_t rnti) {
 
 
 // This fuction sorts the UE in order their dlsch buffer and CQI
-void sort_UEs (module_id_t Mod_id,
-	       sub_frame_t subframe) {
+void sort_UEs (module_id_t Mod_idP,
+	       int         frameP,
+	       sub_frame_t subframeP) {
 
 
   int               UE_id1,UE_id2;
@@ -262,30 +263,30 @@ void sort_UEs (module_id_t Mod_id,
   int               i=0,ii=0,j=0;
   rnti_t            rnti1,rnti2;
 
-  UE_list_t *UE_list = &eNB_mac_inst[Mod_id].UE_list;
+  UE_list_t *UE_list = &eNB_mac_inst[Mod_idP].UE_list;
 
   for (i=UE_list->head;i>=0;i=UE_list->next[i]) {
 
-    rnti1 = UE_RNTI(Mod_id,i);
+    rnti1 = UE_RNTI(Mod_idP,i);
     if(rnti1 == 0)
       continue;
 
     UE_id1  = i;
-    pCC_id1 = UE_PCCID(Mod_id,UE_id1);
-    cqi1    = maxcqi(Mod_id,rnti1); //
-    round1  = maxround(Mod_id,rnti1,subframe);  
+    pCC_id1 = UE_PCCID(Mod_idP,UE_id1);
+    cqi1    = maxcqi(Mod_idP,rnti1); //
+    round1  = maxround(Mod_idP,rnti1,frameP,subframeP);  
 
 
     for(ii=UE_list->next[i];ii>=0;ii=UE_list->next[ii]){
 
       UE_id2 = ii;
-      rnti2 = UE_RNTI(Mod_id,UE_id2);
+      rnti2 = UE_RNTI(Mod_idP,UE_id2);
       if(rnti2 == 0)
 	continue;
 
-      cqi2    = maxcqi(Mod_id,rnti2);
-      round2  = maxround(Mod_id,rnti2,subframe);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
-      pCC_id2 = UE_PCCID(Mod_id,UE_id2);
+      cqi2    = maxcqi(Mod_idP,rnti2);
+      round2  = maxround(Mod_idP,rnti2,frameP,subframeP);  //mac_xface->get_ue_active_harq_pid(Mod_id,rnti2,subframe,&harq_pid2,&round2,0);
+      pCC_id2 = UE_PCCID(Mod_idP,UE_id2);
 
       if(round2 > round1){  // Check first if one of the UEs has an active HARQ process which needs service and swap order
 	swap_UEs(UE_list,UE_id1,UE_id2);
@@ -331,8 +332,8 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 				    unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
 				    int           *mbsfn_flag){
 
-  unsigned char rballoc_sub[MAX_NUM_CCs][13],harq_pid=0,harq_pid1=0,harq_pid2=0,round=0,round1=0,round2=0,total_ue_count;
-  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13];
+  unsigned char rballoc_sub[MAX_NUM_CCs][N_RBG_MAX],harq_pid=0,harq_pid1=0,harq_pid2=0,round=0,round1=0,round2=0,total_ue_count;
+  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][N_RBG_MAX];
   int                     UE_id, UE_id2, i;
   uint16_t                ii,j;
   uint16_t                nb_rbs_required[MAX_NUM_CCs][NUMBER_OF_UE_MAX];
@@ -357,11 +358,14 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       continue;
     
     frame_parms[CC_id] = mac_xface->get_lte_frame_parms(Mod_id,CC_id); 
+ 
+
     min_rb_unit[CC_id]=get_min_rb_unit(Mod_id,CC_id);
     
     for (i=UE_list->head;i>=0;i=UE_list->next[i]) {
       UE_id = i;
       // Initialize scheduling information for all active UEs
+ 
       dlsch_scheduler_pre_processor_reset(UE_id,
 					  CC_id,
 					  N_RBG[CC_id],
@@ -375,15 +379,23 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
  
     }
   }
-  
+
+
+
   // Store the DLSCH buffer for each logical channel
   store_dlsch_buffer (Mod_id,frameP,subframeP);
+
+
 
   // Calculate the number of RBs required by each UE on the basis of logical channel's buffer
   assign_rbs_required (Mod_id,frameP,subframeP,nb_rbs_required,min_rb_unit);
 
+
+
   // Sorts the user on the basis of dlsch logical channel buffer and CQI
-  sort_UEs (Mod_id,subframeP);
+  sort_UEs (Mod_id,frameP,subframeP);
+
+
 
   total_ue_count =0;
   // loop over all active UEs
@@ -402,7 +414,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
       average_rbs_per_user[CC_id]=0;
 
 
-      mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,subframeP,&harq_pid,&round,0);
+      mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,frameP,subframeP,&harq_pid,&round,0);
       if(round>0)
 	nb_rbs_required[CC_id][UE_id] = UE_list->UE_template[CC_id][UE_id].nb_rb[harq_pid];
       //nb_rbs_required_remaining[UE_id] = nb_rbs_required[UE_id];
@@ -480,7 +492,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 	  if(rnti == 0)
 	    continue;
 	  transmission_mode = mac_xface->get_transmission_mode(Mod_id,CC_id,rnti);
-	  mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,subframeP,&harq_pid,&round,0);
+	  mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti,frameP,subframeP,&harq_pid,&round,0);
 	  rrc_status = mac_get_rrc_status(Mod_id,1,UE_id);
 	  /* 1st allocate for the retx */ 
 	  
@@ -523,7 +535,7 @@ void dlsch_scheduler_pre_processor (module_id_t   Mod_id,
 		  continue;
 		
 		eNB_UE_stats2 = mac_xface->get_eNB_UE_stats(Mod_id,CC_id,rnti2);
-		mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti2,subframeP,&harq_pid2,&round2,0);
+		mac_xface->get_ue_active_harq_pid(Mod_id,CC_id,rnti2,frameP,subframeP,&harq_pid2,&round2,0);
 		
 		if ((mac_get_rrc_status(Mod_id,1,UE_id2) >= RRC_RECONFIGURED) && 
 		    (round2==0) && 
@@ -635,8 +647,8 @@ void dlsch_scheduler_pre_processor_reset (int UE_id,
 					  uint16_t pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
 					  uint16_t nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX], 
 					  unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
-					  unsigned char rballoc_sub[MAX_NUM_CCs][13],
-					  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13]){
+					  unsigned char rballoc_sub[MAX_NUM_CCs][N_RBG_MAX],
+					  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][N_RBG_MAX]){
   int i;
   nb_rbs_required[CC_id][UE_id]=0;
   pre_nb_available_rbs[CC_id][UE_id] = 0;
@@ -662,8 +674,8 @@ void dlsch_scheduler_pre_processor_allocate (module_id_t   Mod_id,
 					     uint16_t      pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
 					     uint16_t      nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX], 
 					     unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
-					     unsigned char rballoc_sub[MAX_NUM_CCs][13],
-					     unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13]){
+					     unsigned char rballoc_sub[MAX_NUM_CCs][N_RBG_MAX],
+					     unsigned char MIMO_mode_indicator[MAX_NUM_CCs][N_RBG_MAX]){
   
   int i;
   

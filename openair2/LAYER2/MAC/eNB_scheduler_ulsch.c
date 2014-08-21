@@ -527,8 +527,9 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
       if (eNB_UE_stats->mode == PUSCH) { // ue has a ulsch channel
 	int8_t ret;
 	// Get candidate harq_pid from PHY
-	ret = mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,subframeP,&harq_pid,&round,1);
-	LOG_I(MAC,"Got harq_pid %d, round %d, UE_id %d\n",harq_pid,round,UE_id);
+	ret = mac_xface->get_ue_active_harq_pid(module_idP,CC_id,rnti,frameP,subframeP,&harq_pid,&round,1);
+	LOG_I(MAC,"Got harq_pid %d, round %d, UE_id %d (UE_to_be_scheduled %d)\n",harq_pid,round,UE_id,
+	      UE_is_to_be_scheduled(module_idP,CC_id,UE_id));
 
 	/* [SR] 01/07/13: Don't schedule UE if we cannot get harq pid */
 #ifndef EXMIMO_IOT
@@ -538,8 +539,8 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	  if (round==0)
 #endif
 	    {
-	      LOG_D(MAC,"[eNB %d][PUSCH %x] Frame %d subframeP %d Scheduling UE %d (SR %d)\n",
-                    module_idP,rnti,frameP,subframeP,UE_id,
+	      LOG_D(MAC,"[eNB %d][PUSCH %d] Frame %d subframeP %d Scheduling UE %d round %d (SR %d)\n",
+                    module_idP,harq_pid,frameP,subframeP,UE_id,round,
                     UE_template->ul_SR);
 
 	      // reset the scheduling request
@@ -559,7 +560,10 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
 	      if (round > 0) {
 		ndi = UE_template->oldNDI_UL[harq_pid];
-		mcs = rvidx_tab[round&3] + 29; //not correct for round==4!
+		if ((round&3)==0)
+		  mcs = openair_daq_vars.target_ue_ul_mcs;
+		else
+		  mcs = rvidx_tab[round&3] + 28; //not correct for round==4!
 	      }
 	      else {
 		ndi = 1-UE_template->oldNDI_UL[harq_pid];
@@ -569,13 +573,14 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 
 	      LOG_D(MAC,"[eNB %d] ULSCH scheduler: Ndi %d, mcs %d\n",module_idP,ndi,mcs);
 
-	      if((cooperation_flag > 0) && (UE_id == 1)) { // Allocation on same set of RBs
+	      /*	      if((cooperation_flag > 0) && (UE_id == 1)) { // Allocation on same set of RBs
 		// RIV:resource indication value // function in openair1/PHY/LTE_TRANSPORT/dci_tools.c
 		rballoc = mac_xface->computeRIV(mac_xface->lte_frame_parms->N_RB_UL,
 						((UE_id-1)*4),//openair_daq_vars.ue_ul_nb_rb),
 						4);//openair_daq_vars.ue_ul_nb_rb);
-	      }
-	      else if ((round==0) && (mcs < 29)) {
+						}*/
+
+	      if (round==0) {
 		rb_table_index = 1;
 		TBS = mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);
 		buffer_occupancy = ((UE_template->bsr_info[LCGID0]  == 0) &&
@@ -618,7 +623,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		//rb_table_index = 8;
 
 		LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE (mcs %d, first rb %d, nb_rb %d, rb_table_index %d, TBS %d, harq_pid %d)\n",
-		      module_idP,UE_id,rnti,frameP,subframeP,mcs,
+		      module_idP,harq_pid,rnti,frameP,subframeP,mcs,
 		      *first_rb,rb_table[rb_table_index],
 		      rb_table_index,mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]),
 		      harq_pid);
@@ -628,6 +633,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 						rb_table[rb_table_index]);//openair_daq_vars.ue_ul_nb_rb);
 
 		*first_rb+=rb_table[rb_table_index];  // increment for next UE allocation
+		
 		UE_template->nb_rb_ul[harq_pid] = rb_table[rb_table_index]; //store for possible retransmission
 
 		buffer_occupancy -= mac_xface->get_TBS_UL(mcs,rb_table[rb_table_index]);

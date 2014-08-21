@@ -178,8 +178,8 @@ void dlsch_scheduler_pre_processor_reset (int UE_id,
 					  uint16_t pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
 					  uint16_t  nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX], 
 					  unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
-					  unsigned char rballoc_sub[MAX_NUM_CCs][13],
-					  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13]);
+					  unsigned char rballoc_sub[MAX_NUM_CCs][N_RBG_MAX],
+					  unsigned char MIMO_mode_indicator[MAX_NUM_CCs][N_RBG_MAX]);
 
 // eNB functions
 /* \brief This function assigns pre-available RBS to each UE in specified sub-bands before scheduling is done
@@ -215,8 +215,8 @@ void dlsch_scheduler_pre_processor_allocate (module_id_t   Mod_id,
 					     uint16_t      pre_nb_available_rbs[MAX_NUM_CCs][NUMBER_OF_UE_MAX],
 					     uint16_t      nb_rbs_required_remaining[MAX_NUM_CCs][NUMBER_OF_UE_MAX], 
 					     unsigned char rballoc_sub_UE[MAX_NUM_CCs][NUMBER_OF_UE_MAX][N_RBG_MAX],
-					     unsigned char rballoc_sub[MAX_NUM_CCs][13],
-					     unsigned char MIMO_mode_indicator[MAX_NUM_CCs][13]);
+					     unsigned char rballoc_sub[MAX_NUM_CCs][N_RBG_MAX],
+					     unsigned char MIMO_mode_indicator[MAX_NUM_CCs][N_RBG_MAX]);
 
 /* \brief Function to trigger the eNB scheduling procedure.  It is called by PHY at the beginning of each subframe, \f$n$\f 
    and generates all DLSCH allocations for subframe \f$n\f$ and ULSCH allocations for subframe \f$n+k$\f. The resultant DCI_PDU is

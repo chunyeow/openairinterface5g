@@ -947,19 +947,19 @@ void characters(void *user_data, const xmlChar *xmlch, int xmllen) { // called o
 			} else if (system_frequency_GHz_) {
 				oai_emulation.environment_system_config.system_frequency_GHz = atof(ch);
 			} else if (number_of_rbs_dl_) {
-				oai_emulation.info.N_RB_DL = atoi(ch);
+				oai_emulation.info.N_RB_DL[0] = atoi(ch);
 			} else if (transmission_mode_) {
-				oai_emulation.info.transmission_mode = atoi(ch);
+				oai_emulation.info.transmission_mode[0] = atoi(ch);
 			} else if (frame_config_) {
 				if (frame_type_) {
-					oai_emulation.info.frame_type = atoi(ch);
-					if (oai_emulation.info.frame_type) {
-						oai_emulation.info.frame_type_name = "TDD";
+					oai_emulation.info.frame_type[0] = atoi(ch);
+					if (oai_emulation.info.frame_type[0]) {
+						oai_emulation.info.frame_type_name[0] = "TDD";
 					} else {
-						oai_emulation.info.frame_type_name = "FDD";
+						oai_emulation.info.frame_type_name[0] = "FDD";
 					}
 				} else if (tdd_config_) {
-					oai_emulation.info.tdd_config = atoi(ch);
+					oai_emulation.info.tdd_config[0] = atoi(ch);
 				}
 			} else if (antenna_) {
 				if (eNB_antenna_) {

@@ -71,14 +71,15 @@ extern unsigned char NB_eNB_INST;
 static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_properties)
 {
     MessageDef *msg_p;
+    int CC_id;
 
     msg_p = itti_alloc_new_message (TASK_ENB_APP, PHY_CONFIGURATION_REQ);
-
-    PHY_CONFIGURATION_REQ (msg_p).frame_type =              enb_properties->properties[enb_id]->frame_type;
-    PHY_CONFIGURATION_REQ (msg_p).prefix_type =             enb_properties->properties[enb_id]->prefix_type;
-    PHY_CONFIGURATION_REQ (msg_p).downlink_frequency =      enb_properties->properties[enb_id]->downlink_frequency;
-    PHY_CONFIGURATION_REQ (msg_p).uplink_frequency_offset = enb_properties->properties[enb_id]->uplink_frequency_offset;
-
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      PHY_CONFIGURATION_REQ (msg_p).frame_type[CC_id] =              enb_properties->properties[enb_id]->frame_type[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).prefix_type[CC_id] =             enb_properties->properties[enb_id]->prefix_type[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).downlink_frequency[CC_id] =      enb_properties->properties[enb_id]->downlink_frequency[CC_id];
+      PHY_CONFIGURATION_REQ (msg_p).uplink_frequency_offset[CC_id] = enb_properties->properties[enb_id]->uplink_frequency_offset[CC_id];
+    }
     itti_send_msg_to_task (TASK_PHY_ENB, enb_id, msg_p);
 }
 
@@ -86,6 +87,7 @@ static void configure_phy(uint32_t enb_id, const Enb_properties_array_t *enb_pro
 static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_properties)
 {
     MessageDef *msg_p = NULL;
+    int CC_id;
 
     msg_p = itti_alloc_new_message (TASK_ENB_APP, RRC_CONFIGURATION_REQ);
 
@@ -94,12 +96,13 @@ static void configure_rrc(uint32_t enb_id, const Enb_properties_array_t *enb_pro
     RRC_CONFIGURATION_REQ (msg_p).mcc =             enb_properties->properties[enb_id]->mcc;
     RRC_CONFIGURATION_REQ (msg_p).mnc =             enb_properties->properties[enb_id]->mnc;
     RRC_CONFIGURATION_REQ (msg_p).mnc_digit_length = enb_properties->properties[enb_id]->mnc_digit_length;
-    RRC_CONFIGURATION_REQ (msg_p).default_drx =     enb_properties->properties[enb_id]->default_drx;
-    RRC_CONFIGURATION_REQ (msg_p).frame_type =      enb_properties->properties[enb_id]->frame_type;
-    RRC_CONFIGURATION_REQ (msg_p).tdd_config =      enb_properties->properties[enb_id]->tdd_config;
-    RRC_CONFIGURATION_REQ (msg_p).tdd_config_s =    enb_properties->properties[enb_id]->tdd_config_s;
-    RRC_CONFIGURATION_REQ (msg_p).eutra_band =      enb_properties->properties[enb_id]->eutra_band;
-
+    for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      RRC_CONFIGURATION_REQ (msg_p).pcch_defaultPagingCycle[CC_id] =     enb_properties->properties[enb_id]->pcch_defaultPagingCycle[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).frame_type[CC_id] =      enb_properties->properties[enb_id]->frame_type[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).tdd_config[CC_id] =      enb_properties->properties[enb_id]->tdd_config[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).tdd_config_s[CC_id] =    enb_properties->properties[enb_id]->tdd_config_s[CC_id];
+      RRC_CONFIGURATION_REQ (msg_p).eutra_band[CC_id] =      enb_properties->properties[enb_id]->eutra_band[CC_id];
+    }
     itti_send_msg_to_task (TASK_RRC_ENB, enb_id, msg_p);
 }
 
@@ -139,7 +142,7 @@ static uint32_t eNB_app_register(uint32_t enb_id_start, uint32_t enb_id_end, con
             s1ap_register_eNB->mcc              = enb_properties->properties[enb_id]->mcc;
             s1ap_register_eNB->mnc              = enb_properties->properties[enb_id]->mnc;
             s1ap_register_eNB->mnc_digit_length = enb_properties->properties[enb_id]->mnc_digit_length;
-            s1ap_register_eNB->default_drx      = enb_properties->properties[enb_id]->default_drx;
+            s1ap_register_eNB->default_drx      = enb_properties->properties[enb_id]->pcch_defaultPagingCycle[0];
 
             s1ap_register_eNB->nb_mme =         enb_properties->properties[enb_id]->nb_mme;
             AssertFatal (s1ap_register_eNB->nb_mme <= S1AP_MAX_NB_MME_IP_ADDRESS, "Too many MME for eNB %d (%d/%d)!", enb_id, s1ap_register_eNB->nb_mme, S1AP_MAX_NB_MME_IP_ADDRESS);

@@ -506,7 +506,7 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
   //*((*sib1)->p_Max) = 23; 
   (*sib1)->freqBandIndicator =
 #if defined(ENABLE_ITTI)
-          configuration->eutra_band;
+          configuration->eutra_band[0];
 #else
           7;
 #endif
@@ -519,23 +519,23 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
   ASN_SEQUENCE_ADD(&(*sib1)->schedulingInfoList.list,&schedulingInfo);
 
   //  ASN_SEQUENCE_ADD(&schedulingInfo.sib_MappingInfo.list,NULL);
-
+ 
 #if defined(ENABLE_ITTI)
-  if (configuration->frame_type == TDD)
+  if (configuration->frame_type[0] == TDD)
 #endif
   {
       (*sib1)->tdd_Config =                             CALLOC(1,sizeof(struct TDD_Config));
 
       (*sib1)->tdd_Config->subframeAssignment =
 #if defined(ENABLE_ITTI)
-              configuration->tdd_config;
+              configuration->tdd_config[0];
 #else
               frame_parms->tdd_config;
 #endif
 
       (*sib1)->tdd_Config->specialSubframePatterns =
 #if defined(ENABLE_ITTI)
-              configuration->tdd_config_s;
+              configuration->tdd_config_s[0];
 #else
               frame_parms->tdd_config_S;
 #endif
@@ -582,206 +582,6 @@ uint8_t do_SIB1(uint8_t Mod_id, LTE_DL_FRAME_PARMS *frame_parms, uint8_t *buffer
   if (enc_rval.encoded==-1)
     return(-1);
   return((enc_rval.encoded+7)/8);
-}
-
-uint8_t do_SIB2_AT4(uint8_t Mod_id,
-                    uint8_t *buffer,
-                    BCCH_DL_SCH_Message_t *bcch_message,
-                    SystemInformationBlockType2_t **sib2
-#if defined(ENABLE_ITTI)
-                  , RrcConfigurationReq *configuration
-#endif
-                    ) {
-
-  struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member *sib2_part;
-
-  asn_enc_rval_t enc_rval;
-
-  memset(bcch_message,0,sizeof(BCCH_DL_SCH_Message_t));
-
-
-  bcch_message->message.present = BCCH_DL_SCH_MessageType_PR_c1;
-  bcch_message->message.choice.c1.present = BCCH_DL_SCH_MessageType__c1_PR_systemInformation;
-  bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.present = SystemInformation__criticalExtensions_PR_systemInformation_r8;
-
-  bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list.count=0;
-
-  sib2_part = CALLOC(1,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-  memset(sib2_part,0,sizeof(struct SystemInformation_r8_IEs_sib_TypeAndInfo_Member));
-
-  ASN_SEQUENCE_ADD(&bcch_message->message.choice.c1.choice.systemInformation.criticalExtensions.choice.systemInformation_r8.sib_TypeAndInfo.list,
-		   sib2_part);
-
-  sib2_part->present = SystemInformation_r8_IEs_sib_TypeAndInfo_Member_PR_sib2;
-
-  *sib2 = &sib2_part->choice.sib2;
-
-  // sib2
-
-  (*sib2)->ac_BarringInfo = NULL;
-#ifdef Rel10
-  (*sib2)->ssac_BarringForMMTEL_Voice_r9 = NULL;
-  (*sib2)->ssac_BarringForMMTEL_Video_r9 = NULL;
-  (*sib2)->ac_BarringForCSFB_r10 = NULL;
-#endif
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.numberOfRA_Preambles=RACH_ConfigCommon__preambleInfo__numberOfRA_Preambles_n52;
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.preambleInfo.preamblesGroupAConfig = NULL;
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.powerRampingStep=RACH_ConfigCommon__powerRampingParameters__powerRampingStep_dB2;
-
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.powerRampingParameters.preambleInitialReceivedTargetPower=RACH_ConfigCommon__powerRampingParameters__preambleInitialReceivedTargetPower_dBm_104;
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.preambleTransMax=RACH_ConfigCommon__ra_SupervisionInfo__preambleTransMax_n6;
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.ra_ResponseWindowSize=RACH_ConfigCommon__ra_SupervisionInfo__ra_ResponseWindowSize_sf10;
-
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.ra_SupervisionInfo.mac_ContentionResolutionTimer=RACH_ConfigCommon__ra_SupervisionInfo__mac_ContentionResolutionTimer_sf48;
-
-  (*sib2)->radioResourceConfigCommon.rach_ConfigCommon.maxHARQ_Msg3Tx = 4;
-
-  // BCCH-Config
-
-  (*sib2)->radioResourceConfigCommon.bcch_Config.modificationPeriodCoeff=BCCH_Config__modificationPeriodCoeff_n4;
-
-  // PCCH-Config
-
-  (*sib2)->radioResourceConfigCommon.pcch_Config.defaultPagingCycle =
-#if defined(ENABLE_ITTI)
-          configuration->default_drx;
-#else
-          PCCH_Config__defaultPagingCycle_rf128;
-#endif
-  (*sib2)->radioResourceConfigCommon.pcch_Config.nB=PCCH_Config__nB_oneT;
-
-  // PRACH-Config
-  (*sib2)->radioResourceConfigCommon.prach_Config.rootSequenceIndex=22;//0;//384;
-  (*sib2)->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_ConfigIndex = 3;//3;
-  (*sib2)->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.highSpeedFlag = 0;
-  (*sib2)->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.zeroCorrelationZoneConfig = 0;//12;
-  (*sib2)->radioResourceConfigCommon.prach_Config.prach_ConfigInfo.prach_FreqOffset = 0;
-
-  // PDSCH-Config
-  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=-24;
-  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.p_b=0;
-
-  // PUSCH-Config
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.n_SB=1;
-
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.hoppingMode=PUSCH_ConfigCommon__pusch_ConfigBasic__hoppingMode_interSubFrame;
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.pusch_HoppingOffset=4;
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.pusch_ConfigBasic.enable64QAM=0;
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupHoppingEnabled=0;
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH=0;
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled=0;
-  (*sib2)->radioResourceConfigCommon.pusch_ConfigCommon.ul_ReferenceSignalsPUSCH.cyclicShift=1;
-
-  // PUCCH-Config
-
-
-  (*sib2)->radioResourceConfigCommon.pucch_ConfigCommon.deltaPUCCH_Shift=PUCCH_ConfigCommon__deltaPUCCH_Shift_ds2;
-  (*sib2)->radioResourceConfigCommon.pucch_ConfigCommon.nRB_CQI = 2;
-  (*sib2)->radioResourceConfigCommon.pucch_ConfigCommon.nCS_AN = 0;
-  (*sib2)->radioResourceConfigCommon.pucch_ConfigCommon.n1PUCCH_AN = 0;
-
-
-  (*sib2)->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.present=SoundingRS_UL_ConfigCommon_PR_release;
-  (*sib2)->radioResourceConfigCommon.soundingRS_UL_ConfigCommon.choice.release=0;
-
-  // uplinkPowerControlCommon
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUSCH = -95;
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.alpha=UplinkPowerControlCommon__alpha_al08;
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.p0_NominalPUCCH = -117;
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1=DeltaFList_PUCCH__deltaF_PUCCH_Format1_deltaF0;
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format1b=DeltaFList_PUCCH__deltaF_PUCCH_Format1b_deltaF3;
-
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2=DeltaFList_PUCCH__deltaF_PUCCH_Format2_deltaF0;
-
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2a=DeltaFList_PUCCH__deltaF_PUCCH_Format2a_deltaF0;
-
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.deltaFList_PUCCH.deltaF_PUCCH_Format2b=DeltaFList_PUCCH__deltaF_PUCCH_Format2b_deltaF0;
-
-  (*sib2)->radioResourceConfigCommon.uplinkPowerControlCommon.deltaPreambleMsg3 = 4;
-
-
-  (*sib2)->radioResourceConfigCommon.ul_CyclicPrefixLength=UL_CyclicPrefixLength_len1;
-
-
-  (*sib2)->ue_TimersAndConstants.t300=UE_TimersAndConstants__t300_ms1000;
-
-
-  (*sib2)->ue_TimersAndConstants.t301=UE_TimersAndConstants__t301_ms1000;
-
-
-  (*sib2)->ue_TimersAndConstants.t310=UE_TimersAndConstants__t310_ms1000;
-
-
-  (*sib2)->ue_TimersAndConstants.n310=UE_TimersAndConstants__n310_n1;
-
-
-  (*sib2)->ue_TimersAndConstants.t311=UE_TimersAndConstants__t311_ms10000;
-
-
-  (*sib2)->ue_TimersAndConstants.n311=UE_TimersAndConstants__n311_n1;
-
-  (*sib2)->freqInfo.additionalSpectrumEmission = 1;
-  (*sib2)->freqInfo.ul_Bandwidth = CALLOC(1,sizeof(long));
-  (*sib2)->freqInfo.ul_CarrierFreq = CALLOC(1,sizeof(ARFCN_ValueEUTRA_t));
-  *((*sib2)->freqInfo.ul_CarrierFreq) = 38050;
-  *((*sib2)->freqInfo.ul_Bandwidth) = SystemInformationBlockType2__freqInfo__ul_Bandwidth_n50;
-  (*sib2)->mbsfn_SubframeConfigList = NULL;
-  (*sib2)->timeAlignmentTimerCommon= TimeAlignmentTimer_infinity;//TimeAlignmentTimer_sf10240;
-
-
-#ifdef XER_PRINT
-  xer_fprint(stdout, &asn_DEF_BCCH_DL_SCH_Message, (void*)bcch_message);
-#endif
-  enc_rval = uper_encode_to_buffer(&asn_DEF_BCCH_DL_SCH_Message,
-                                   (void*)bcch_message,
-                                   buffer,
-                                   100);
-  AssertFatal (enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %d)!\n",
-               enc_rval.failed_type->name, enc_rval.encoded);
-
-#if defined(ENABLE_ITTI)
-# if !defined(DISABLE_XER_SPRINT)
-  {
-    char        message_string[10000];
-    size_t      message_string_size;
-
-    if ((message_string_size = xer_sprint(message_string, sizeof(message_string), &asn_DEF_BCCH_DL_SCH_Message, (void *)bcch_message)) > 0)
-    {
-      MessageDef *msg_p;
-
-      msg_p = itti_alloc_new_message_sized (TASK_RRC_ENB, RRC_DL_BCCH, message_string_size + sizeof (IttiMsgText));
-      msg_p->ittiMsg.rrc_dl_bcch.size = message_string_size;
-      memcpy(&msg_p->ittiMsg.rrc_dl_bcch.text, message_string, message_string_size);
-
-      itti_send_msg_to_task(TASK_UNKNOWN, Mod_id, msg_p);
-    }
-  }
-# endif
-#endif
-
-#ifdef USER_MODE
-  LOG_D(RRC,"[eNB] SystemInformation Encoded %d bits (%d bytes)\n",enc_rval.encoded,(enc_rval.encoded+7)/8);
-#endif
-
-  if (enc_rval.encoded==-1) {
-    msg("[RRC] ASN1 : SI encoding failed for SIB2\n");
-    return(-1);
-  }
-  return((enc_rval.encoded+7)/8);
-
 }
 
 uint8_t do_SIB23(uint8_t Mod_id,
@@ -883,7 +683,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
 
   (*sib2)->radioResourceConfigCommon.pcch_Config.defaultPagingCycle =
 #if defined(ENABLE_ITTI)
-          configuration->default_drx;
+          configuration->pcch_defaultPagingCycle[0];
 #else
           PCCH_Config__defaultPagingCycle_rf128;
 #endif
@@ -902,7 +702,7 @@ uint8_t do_SIB23(uint8_t Mod_id,
 #ifdef EXMIMO  // This corresponds to raw output of ExpressMIMO2 v2
   (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=-24;
 #else
-  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=15;
+  (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.referenceSignalPower=0;  // corresponds to 24.7 dBm 5 MHz/ 27.7 10 MHz/ 30.7 20 MHz
 #endif
   if (frame_parms->mode1_flag==1)
     (*sib2)->radioResourceConfigCommon.pdsch_ConfigCommon.p_b=0;
