@@ -1158,6 +1158,7 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 #endif    
 
     start_meas(&phy_vars_eNB->ulsch_rate_unmatching_stats);
+
     if (lte_rate_matching_turbo_rx(ulsch->harq_processes[harq_pid]->RTC[r],
 				   G,
 				   ulsch->harq_processes[harq_pid]->w[r],
@@ -1188,14 +1189,14 @@ unsigned int  ulsch_decoding(PHY_VARS_eNB *phy_vars_eNB,
 				   &ulsch->harq_processes[harq_pid]->d[r][96], 
 				   ulsch->harq_processes[harq_pid]->w[r]); 
     stop_meas(&phy_vars_eNB->ulsch_deinterleaving_stats);
-        
-    /*#ifdef DEBUG_ULSCH_DECODING    
+    /*        
+#ifdef DEBUG_ULSCH_DECODING    
     msg("decoder input(segment %d) :",r);
     for (i=0;i<(3*8*Kr_bytes)+12;i++)
       msg("%d : %d\n",i,ulsch->harq_processes[harq_pid]->d[r][96+i]);
     msg("\n");
-    #endif*/
-    
+#endif
+    */
   }
 
 #ifdef OMP

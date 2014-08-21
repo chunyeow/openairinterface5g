@@ -37,7 +37,7 @@ This section deals with basic functions for OFDM Modulation.
 */
 
 #include "PHY/defs.h"
-
+#include "UTIL/LOG/log.h"
  
 //static short temp2[2048*4] __attribute__((aligned(16)));
 
@@ -242,6 +242,66 @@ void PHY_ofdm_mod(int *input,                       /// pointer to complex input
   for (i=0;i<16;i++)
     printf("%d %d\n",((short *)output)[i<<1],((short *)output)[1+(i<<1)]);  
   */
+}
+
+
+void do_OFDM_mod(mod_sym_t **txdataF, int32_t **txdata, uint32_t frame,uint16_t next_slot, LTE_DL_FRAME_PARMS *frame_parms) {
+
+  int aa, slot_offset, slot_offset_F;
+
+  slot_offset_F = (next_slot)*(frame_parms->ofdm_symbol_size)*((frame_parms->Ncp==1) ? 6 : 7);
+  slot_offset = (next_slot)*(frame_parms->samples_per_tti>>1);
+  
+  for (aa=0; aa<frame_parms->nb_antennas_tx; aa++) {
+   if (is_pmch_subframe(frame,next_slot>>1,frame_parms)) {
+      if ((next_slot%2)==0) {
+	LOG_D(PHY,"Frame %d, subframe %d: Doing MBSFN modulation (slot_offset %d)\n",frame,next_slot>>1,slot_offset); 
+	PHY_ofdm_mod(&txdataF[aa][slot_offset_F],        // input
+		     &txdata[aa][slot_offset],         // output
+		     frame_parms->log2_symbol_size,                // log2_fft_size
+		     12,                 // number of symbols
+		     frame_parms->ofdm_symbol_size>>2,               // number of prefix samples
+		     frame_parms->twiddle_ifft,  // IFFT twiddle factors
+		     frame_parms->rev,           // bit-reversal permutation
+		     CYCLIC_PREFIX);
+     
+	if (frame_parms->Ncp == EXTENDED)
+	  PHY_ofdm_mod(&txdataF[aa][slot_offset_F],        // input
+		       &txdata[aa][slot_offset],         // output
+		       frame_parms->log2_symbol_size,                // log2_fft_size
+		       2,                 // number of symbols
+		       frame_parms->nb_prefix_samples,               // number of prefix samples
+		       frame_parms->twiddle_ifft,  // IFFT twiddle factors
+		       frame_parms->rev,           // bit-reversal permutation
+		       CYCLIC_PREFIX);
+	else {
+	  LOG_D(PHY,"Frame %d, subframe %d: Doing PDCCH modulation\n",frame,next_slot>>1); 
+	  normal_prefix_mod(&txdataF[aa][slot_offset_F],
+			    &txdata[aa][slot_offset],
+			    2,
+			    frame_parms);
+	}      
+      }
+    }
+    else {
+      if (frame_parms->Ncp == EXTENDED)
+	PHY_ofdm_mod(&txdataF[aa][slot_offset_F],        // input
+		     &txdata[aa][slot_offset],         // output
+		     frame_parms->log2_symbol_size,                // log2_fft_size
+		     6,                 // number of symbols
+		     frame_parms->nb_prefix_samples,               // number of prefix samples
+		     frame_parms->twiddle_ifft,  // IFFT twiddle factors
+		     frame_parms->rev,           // bit-reversal permutation
+		     CYCLIC_PREFIX);
+      else {
+	normal_prefix_mod(&txdataF[aa][slot_offset_F],
+			  &txdata[aa][slot_offset],
+			  7,
+			  frame_parms);
+      }
+    }  
+  }
+  
 }
 
 /** @} */

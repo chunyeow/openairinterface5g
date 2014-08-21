@@ -77,7 +77,6 @@
 #define NS_PER_SLOT 500000
 
 #define PUCCH 1
-
 #define PUCCH1_THRES 15
 #define PUCCH1a_THRES 15
 
@@ -211,7 +210,7 @@ int8_t find_next_ue_index(PHY_VARS_eNB *phy_vars_eNB) {
   return(-1);
 }
 
-int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,uint8_t sched_subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag) {
+int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,int frame, uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag) {
 
   LTE_eNB_DLSCH_t *DLSCH_ptr;  
   LTE_eNB_ULSCH_t *ULSCH_ptr;  
@@ -219,8 +218,8 @@ int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,uint8_t sc
   uint8_t ulsch_subframe,ulsch_frame; 
   uint8_t i;
   int8_t UE_id = find_ue(rnti,PHY_vars_eNB_g[Mod_id][CC_id]);
-  int frame    = PHY_vars_eNB_g[Mod_id][CC_id]->proc[sched_subframe].frame_tx;
-  int subframe = PHY_vars_eNB_g[Mod_id][CC_id]->proc[sched_subframe].subframe_tx;
+  //  int frame    = PHY_vars_eNB_g[Mod_id][CC_id]->proc[sched_subframe].frame_tx;
+  //  int subframe = PHY_vars_eNB_g[Mod_id][CC_id]->proc[sched_subframe].subframe_tx;
 
   if (UE_id==-1) {
     LOG_E(PHY,"Cannot find UE with rnti %x\n",rnti);
@@ -2095,6 +2094,23 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 #ifdef EMOS
   phy_procedures_emos_eNB_TX(next_slot, phy_vars_eNB);
 #endif
+
+#ifndef EXMIMO
+#ifndef USRP
+  if (abstraction_flag==0) {
+    start_meas(&phy_vars_eNB->ofdm_mod_stats);
+    do_OFDM_mod(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
+		phy_vars_eNB->lte_eNB_common_vars.txdata[0],
+		phy_vars_eNB->proc[sched_subframe].frame_tx,subframe<<1,
+		&phy_vars_eNB->lte_frame_parms);
+    do_OFDM_mod(phy_vars_eNB->lte_eNB_common_vars.txdataF[0],
+		phy_vars_eNB->lte_eNB_common_vars.txdata[0],
+		phy_vars_eNB->proc[sched_subframe].frame_tx,1+(subframe<<1),
+		&phy_vars_eNB->lte_frame_parms);
+    stop_meas(&phy_vars_eNB->ofdm_mod_stats);
+  }
+#endif
+#endif
   
   vcd_signal_dumper_dump_function_by_name(VCD_SIGNAL_DUMPER_FUNCTIONS_PHY_PROCEDURES_ENB_TX,0);
   stop_meas(&phy_vars_eNB->phy_proc_tx);
@@ -2959,7 +2975,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 		frame,subframe, i,
 		phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round-1,
 		phy_vars_eNB->lte_frame_parms.maxHARQ_Msg3Tx-1);
-
+	  
 	  if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round == 
 	      phy_vars_eNB->lte_frame_parms.maxHARQ_Msg3Tx) {
 	    LOG_D(PHY,"[eNB %d][RAPROC] maxHARQ_Msg3Tx reached, abandoning RA procedure for UE %d\n",
@@ -2991,11 +3007,12 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	  for (j=0;j<phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->TBS>>3;j++)
 	    printf("%x.",phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->c[0][j]);
 	  printf("\n");
-	  dump_ulsch(phy_vars_eNB,sched_subframe,i);*/
+	   */
+	  //	  dump_ulsch(phy_vars_eNB,sched_subframe,i);
 	  //#ifndef EXMIMO_IOT
 	  LOG_W(PHY,"[eNB] Frame %d, Subframe %d: Msg3 in error\n", frame,subframe);
 	  //#else 
-	  //	  mac_exit_wrapper("Msg3 error");
+	  //mac_exit_wrapper("Msg3 error");
 	  //#endif 
 	} // This is Msg3 error
 	else { //normal ULSCH
@@ -3017,6 +3034,7 @@ void phy_procedures_eNB_RX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
 	  
 
 	  //	  dump_ulsch(phy_vars_eNB,sched_subframe,i);
+	  //mac_exit_wrapper("ULSCH error");
 	  
 	  if (phy_vars_eNB->ulsch_eNB[i]->harq_processes[harq_pid]->round== phy_vars_eNB->ulsch_eNB[i]->Mdlharq) {
 	    LOG_I(PHY,"[eNB %d][PUSCH %d] frame %d subframe %d UE %d ULSCH Mdlharq %d reached\n",

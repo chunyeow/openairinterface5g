@@ -102,11 +102,7 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
   
 
   for (aa=0;aa<frame_parms->nb_antennas_rx;aa++) {
-#ifdef NEW_FFT
     memset(&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],0,frame_parms->ofdm_symbol_size*sizeof(int));
-#else
-    memset(&ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*symbol],0,2*frame_parms->ofdm_symbol_size*sizeof(int));
-#endif
 
     if (l==0) {
       rx_offset = sample_offset + slot_offset + nb_prefix_samples0 + subframe_offset - SOFFSET;
@@ -116,24 +112,10 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 	memcpy((short *)&ue_common_vars->rxdata[aa][frame_length_samples],
 	       (short *)&ue_common_vars->rxdata[aa][0],
 	       frame_parms->ofdm_symbol_size*sizeof(int));
-#ifndef NEW_FFT
-	fft((short *)&ue_common_vars->rxdata[aa][(sample_offset +
-						slot_offset +
-						nb_prefix_samples0 + 
-						subframe_offset -
-						SOFFSET) % frame_length_samples],
-	  (short*)&ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*symbol],
-	  frame_parms->twiddle_fft,
-	  frame_parms->rev,
-	  frame_parms->log2_symbol_size,
-	  frame_parms->log2_symbol_size>>1,
-	  0);
-#else
 	start_meas(&phy_vars_ue->rx_dft_stats);
 	dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
 	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
 	stop_meas(&phy_vars_ue->rx_dft_stats);
-#endif
       
     }
     else {
@@ -148,38 +130,11 @@ int slot_fep(PHY_VARS_UE *phy_vars_ue,
 	       (short *)&ue_common_vars->rxdata[aa][0],
 	       frame_parms->ofdm_symbol_size*sizeof(int));
  
-#ifndef NEW_FFT
-      fft((short *)&ue_common_vars->rxdata[aa][(sample_offset +
-						slot_offset +
-						(frame_parms->ofdm_symbol_size+nb_prefix_samples0+nb_prefix_samples) + 
-						(frame_parms->ofdm_symbol_size+nb_prefix_samples)*(l-1) +
-						subframe_offset-
-						SOFFSET) % frame_length_samples],
-	  (short*)&ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*symbol],
-	  frame_parms->twiddle_fft,
-	  frame_parms->rev,
-	  frame_parms->log2_symbol_size,
-	  frame_parms->log2_symbol_size>>1,
-	  0);
-#else
 	start_meas(&phy_vars_ue->rx_dft_stats);
 	dft((int16_t *)&ue_common_vars->rxdata[aa][(rx_offset) % frame_length_samples],
 	    (int16_t *)&ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],1);
 	stop_meas(&phy_vars_ue->rx_dft_stats);
-#endif
     }
-    /*
-#ifndef NEW_FFT
-    memcpy(&ue_common_vars->rxdataF2[aa][2*subframe_offset_F+2*frame_parms->ofdm_symbol_size*symbol],
-	   &ue_common_vars->rxdataF[aa][2*frame_parms->ofdm_symbol_size*symbol],
-	   2*frame_parms->ofdm_symbol_size*sizeof(int));
-    
-#else
-    memcpy(&ue_common_vars->rxdataF2[aa][subframe_offset_F+frame_parms->ofdm_symbol_size*symbol],
-	   &ue_common_vars->rxdataF[aa][frame_parms->ofdm_symbol_size*symbol],
-	   frame_parms->ofdm_symbol_size*sizeof(int));
-#endif
-    */
   }
 #ifndef PERFECT_CE    
   if ((l==0) || (l==(4-frame_parms->Ncp))) {

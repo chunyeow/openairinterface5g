@@ -183,7 +183,7 @@
 //the min and max gains have to match the calibrated gain table
 //#define MAX_RF_GAIN 160
 //#define MIN_RF_GAIN 96
-#define MAX_RF_GAIN 160
+#define MAX_RF_GAIN 200
 #define MIN_RF_GAIN 80
 
 #define PHY_SYNCH_OFFSET ((OFDM_SYMBOL_SIZE_COMPLEX_SAMPLES)-1)  // OFFSET of BEACON SYNCH

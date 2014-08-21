@@ -362,6 +362,7 @@ typedef struct
   uint32_t rx_gain_med[4];
   uint32_t rx_gain_byp[4];
   int8_t tx_power_dBm;
+  int tx_total_RE;
   int8_t tx_power_max_dBm;
   uint32_t frame;
   uint8_t n_connected_eNB;

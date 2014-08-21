@@ -1832,13 +1832,13 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 			  lte_ue_pdcch_vars[eNB_id]->llr16, //subsequent function require 16 bit llr, but output must be 8 bit (actually clipped to 4, because of the Viterbi decoder)
 			  lte_ue_pdcch_vars[eNB_id]->llr,
 			  s);
-
+      /*
 #ifdef DEBUG_PHY
       if (subframe==5) {
 	write_output("llr8_seq.m","llr8",&lte_ue_pdcch_vars[eNB_id]->llr[s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,4);
 	write_output("llr16_seq.m","llr16",&lte_ue_pdcch_vars[eNB_id]->llr16[s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,4);
       }
-#endif
+      #endif*/
     } 
     else {
 #endif //MU_RECEIVER
@@ -1846,9 +1846,9 @@ int32_t rx_pdcch(LTE_UE_COMMON *lte_ue_common_vars,
 		lte_ue_pdcch_vars[eNB_id]->rxdataF_comp,
 		(char *)lte_ue_pdcch_vars[eNB_id]->llr,
 		s);
-#ifdef DEBUG_PHY
+      /*#ifdef DEBUG_PHY
       write_output("llr8_seq.m","llr8",&lte_ue_pdcch_vars[eNB_id]->llr[s*frame_parms->N_RB_DL*12],frame_parms->N_RB_DL*12,1,4);
-#endif
+      #endif*/
 #ifdef MU_RECEIVER
     }
 #endif //MU_RECEIVER

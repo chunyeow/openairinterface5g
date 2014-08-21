@@ -837,11 +837,8 @@ void phy_init_lte_top(LTE_DL_FRAME_PARMS *lte_frame_parms) {
   init_td8();
   init_td16();
 
-#ifdef USER_MODE
+
   lte_sync_time_init(lte_frame_parms);
-#else
-  // lte_sync_time_init(lte_frame_parms) has to be called from the real-time thread, since it uses SSE instructions.
-#endif
 
   generate_ul_ref_sigs();
   generate_ul_ref_sigs_rx();

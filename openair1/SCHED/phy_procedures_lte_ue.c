@@ -367,7 +367,7 @@ void process_timing_advance(uint8_t Mod_id,uint8_t CC_id,int16_t timing_advance)
 uint8_t is_SR_TXOp(PHY_VARS_UE *phy_vars_ue,uint8_t eNB_id,uint8_t subframe) {
   
   LOG_D(PHY,"[UE %d][SR %x] Frame %d subframe %d Checking for SR TXOp (sr_ConfigIndex %d)\n",
-      phy_vars_ue->Mod_id,phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti,phy_vars_ue->frame,subframe,
+	phy_vars_ue->Mod_id,phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti,phy_vars_ue->frame+(subframe==0)?1:0,subframe,
       phy_vars_ue->scheduling_request_config[eNB_id].sr_ConfigIndex);
   
   if (phy_vars_ue->scheduling_request_config[eNB_id].sr_ConfigIndex <= 4) {        // 5 ms SR period
@@ -717,6 +717,8 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 #else
 	phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
+	phy_vars_ue->tx_total_RE = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb*12;
+
 	LOG_D(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d harq pid %d, Po_PUSCH : %d dBm\n",
 	      phy_vars_ue->Mod_id,harq_pid,(((next_slot>>1)==0)?1:0)+phy_vars_ue->frame,next_slot>>1,harq_pid, phy_vars_ue->tx_power_dBm);	
 
@@ -919,6 +921,8 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 #else
 	  phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
+	  phy_vars_ue->tx_total_RE = phy_vars_ue->ulsch_ue[eNB_id]->harq_processes[harq_pid]->nb_rb*12;
+
 	  LOG_I(PHY,"[UE  %d][PUSCH %d] Frame %d subframe %d, generating PUSCH, Po_PUSCH: %d dBm, amp %d\n",
 		phy_vars_ue->Mod_id,harq_pid,(((next_slot>>1)==0)?1:0)+phy_vars_ue->frame,next_slot>>1,phy_vars_ue->tx_power_dBm,
 #ifdef EXMIMO
@@ -1030,7 +1034,7 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 	// Check for SR and do ACK/NACK accordingly
 	if (is_SR_TXOp(phy_vars_ue,eNB_id,next_slot>>1)==1) {
 	  LOG_D(PHY,"[UE %d][SR %x] Frame %d subframe %d: got SR_TXOp, Checking for SR for PUSCH from MAC\n",
-	 	phy_vars_ue->Mod_id,phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti,phy_vars_ue->frame,next_slot>>1);
+	 	phy_vars_ue->Mod_id,phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti,phy_vars_ue->frame+(next_slot==0)?1:0,next_slot>>1);
 #ifdef OPENAIR2
 	  SR_payload = mac_xface->ue_get_SR(phy_vars_ue->Mod_id,
 					    phy_vars_ue->CC_id,
@@ -1045,7 +1049,7 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 	  if (SR_payload>0) {
 	    generate_ul_signal = 1;
 	    LOG_D(PHY,"[UE %d][SR %x] Frame %d subframe %d got the SR for PUSCH is %d\n",
-		  phy_vars_ue->Mod_id,phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti,phy_vars_ue->frame,next_slot>>1,SR_payload);
+		  phy_vars_ue->Mod_id,phy_vars_ue->lte_ue_pdcch_vars[eNB_id]->crnti,phy_vars_ue->frame+(next_slot==0)?1:0,next_slot>>1,SR_payload);
 	  }
 	  else {
 	    phy_vars_ue->sr[next_slot>>1]=0;
@@ -1073,12 +1077,13 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 #else
 	    phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
+	    phy_vars_ue->tx_total_RE = 12;
 
 	    if (SR_payload>0) {
 	      LOG_I(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1a/1b (with SR for PUSCH), n1_pucch %d, Po_PUCCH, amp %d\n",
 		    phy_vars_ue->Mod_id, 
 		    phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-		    phy_vars_ue->frame, next_slot>>1,
+		    phy_vars_ue->frame+(next_slot==0)?1:0, next_slot>>1,
 		    phy_vars_ue->scheduling_request_config[eNB_id].sr_PUCCH_ResourceIndex,
 		    Po_PUCCH,
 #ifdef EXMIMO
@@ -1142,11 +1147,12 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 #else
 	  phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
+	  phy_vars_ue->tx_total_RE = 12;
 
 	  LOG_I(PHY,"[UE  %d][SR %x] Frame %d subframe %d Generating PUCCH 1 (SR for PUSCH), n1_pucch %d, Po_PUCCH %d\n",
 		phy_vars_ue->Mod_id, 
 		phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-		phy_vars_ue->frame, next_slot>>1,
+		phy_vars_ue->frame+(next_slot==0)?1:0, next_slot>>1,
 		phy_vars_ue->scheduling_request_config[eNB_id].sr_PUCCH_ResourceIndex,
 		Po_PUCCH);
 	  
@@ -1315,6 +1321,8 @@ void phy_procedures_UE_TX(uint8_t next_slot,PHY_VARS_UE *phy_vars_ue,uint8_t eNB
 #else
 	    phy_vars_ue->tx_power_dBm = UE_TX_POWER;
 #endif
+
+	    phy_vars_ue->tx_total_RE = 96;
 
 #ifdef EXMIMO
 	    phy_vars_ue->lte_ue_prach_vars[eNB_id]->amp = get_tx_amp(phy_vars_ue->tx_power_dBm,phy_vars_ue->tx_power_max_dBm);
@@ -1491,10 +1499,15 @@ void lte_ue_measurement_procedures(uint8_t last_slot, uint16_t l, PHY_VARS_UE *p
     
     // AGC
 #ifdef EXMIMO    
+
     if ((openair_daq_vars.rx_gain_mode == DAQ_AGC_ON) &&
 	(mode != rx_calib_ue) && (mode != rx_calib_ue_med) && (mode != rx_calib_ue_byp) )
-      //phy_adjust_gain (phy_vars_ue,0);
       gain_control_all(phy_vars_ue->PHY_measurements.rx_power_avg_dB[eNB_id],0);
+
+#else
+
+    phy_adjust_gain (phy_vars_ue,0);
+
 #endif
 
     eNB_id = 0;

@@ -4031,12 +4031,7 @@ int generate_ue_ulsch_params_from_dci(void *dci_pdu,
       harq_pid = subframe2harq_pid(frame_parms,
 				   pdcch_alloc2ul_frame(frame_parms,phy_vars_ue->frame,subframe),
 				   pdcch_alloc2ul_subframe(frame_parms,subframe));
-    /*
-        msg("Scheduling UE transmission for frame %d, subframe %d harq_pid = %d\n",
-	  pdcch_alloc2ul_frame(frame_parms,phy_vars_ue->frame,subframe),
-	  pdcch_alloc2ul_subframe(frame_parms,subframe),harq_pid);
-    */
-
+    
     if (harq_pid == 255) {
       LOG_E(PHY, "frame %d, subframe %d, rnti %x, format %d: illegal harq_pid!\n",
 	    phy_vars_ue->frame, subframe, rnti, dci_format);

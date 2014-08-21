@@ -527,7 +527,7 @@ LTE_DL_FRAME_PARMS *get_lte_frame_parms(module_id_t Mod_id, uint8_t CC_id);
 
 MU_MIMO_mode* get_mu_mimo_mode (module_id_t Mod_id, uint8_t CC_id);
 
-int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag);
+int get_ue_active_harq_pid(uint8_t Mod_id,uint8_t CC_id,uint16_t rnti,int frame, uint8_t subframe,uint8_t *harq_pid,uint8_t *round,uint8_t ul_flag);
 void ulsch_decoding_procedures(unsigned char last_slot, unsigned int i, PHY_VARS_eNB *phy_vars_eNB, unsigned char abstraction_flag);
 
 

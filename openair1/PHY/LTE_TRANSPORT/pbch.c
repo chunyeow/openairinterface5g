@@ -762,7 +762,7 @@ uint16_t rx_pbch(LTE_UE_COMMON *lte_ue_common_vars,
   pbch_E  = (frame_parms->Ncp==0) ? 1920 : 1728; //RE/RB * #RB * bits/RB (QPSK)
   pbch_e_rx = &lte_ue_pbch_vars->llr[frame_mod4*(pbch_E>>2)];
 #ifdef DEBUG_PBCH
-  msg("[PBCH] starting symbol loop\n");
+  msg("[PBCH] starting symbol loop (Ncp %d, frame_mod4 %d,mimo_mode %d\n",frame_parms->Ncp,frame_mod4,mimo_mode);
 #endif
 
   // clear LLR buffer

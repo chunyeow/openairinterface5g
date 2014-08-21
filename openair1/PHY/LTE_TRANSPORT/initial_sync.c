@@ -276,6 +276,8 @@ int initial_sync(PHY_VARS_UE *phy_vars_ue, runmode_t mode) {
       (mode != rx_calib_ue) && (mode != rx_calib_ue_med) && (mode != rx_calib_ue_byp) )
     //phy_adjust_gain(phy_vars_ue,0);
     gain_control_all(phy_vars_ue->PHY_measurements.rx_power_avg_dB[0],0);
+#else
+  phy_adjust_gain(phy_vars_ue,0);
 #endif
 
   // SSS detection

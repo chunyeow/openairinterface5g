@@ -101,4 +101,5 @@ double dac_fixed_gain(double **s_re,
 		      unsigned int input_offset_meas,
 		      unsigned int length_meas,
 		      unsigned char B,
-		      double gain);
+		      double gain,
+		      int NB_RE);
