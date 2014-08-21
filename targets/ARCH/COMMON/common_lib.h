@@ -40,6 +40,10 @@ typedef struct openair0_device_t openair0_device;
 /* structrue holds the parameters to configure USRP devices
  */
 
+#ifdef USRP
+#define MAX_CARDS 1
+#endif
+
 typedef enum {
   max_gain=0,med_gain,byp_gain
 } rx_gain_t;
@@ -67,6 +71,15 @@ typedef struct {
   /* TX bandwidth in Hz */
   double tx_bw;
 } openair0_config_t;
+
+typedef struct {
+  /* card id */
+  int card;
+  /* rf chain id */
+  int chain;
+} openair0_rf_map;
+
+
 
 struct openair0_device_t {
   /* USRP RF frontend parameters set by application */

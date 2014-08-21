@@ -63,7 +63,8 @@ int openair0_close(void);
 
 // trigger config update on card
 // return 0 on success
-int openair0_dump_config(int card);
+int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag);
+//int openair0_dump_config(int card);
 
 // triggers recording of exactly 1 frame
 // in case of synchronized multiple cards, send this only to the master card

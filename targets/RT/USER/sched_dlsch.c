@@ -104,8 +104,8 @@ static void * dlsch_thread(void *param) {
   char task_name[8];
 #endif
 
-  int eNB_id = 0, UE_id = 0;
-  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[UE_id];
+  int eNB_id = 0, UE_id = 0, CC_id=0;
+  PHY_VARS_UE *phy_vars_ue = PHY_vars_UE_g[UE_id][CC_id];
 
   if ((dlsch_thread_index <0) || (dlsch_thread_index>7)) {
       LOG_E(PHY,"[SCHED][DLSCH] Illegal dlsch_thread_index %d (%p)!!!!\n",dlsch_thread_index,param);

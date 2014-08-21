@@ -146,11 +146,12 @@ void cleanup_dlsch_threads(void);
 int32_t init_rx_pdsch_thread(void);
 void cleanup_rx_pdsch_thread(void);
 
+openair0_config_t openair0_cfg[MAX_CARDS];
 
 int32_t *rxdata;
 int32_t *txdata;
-void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
-void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier);
+int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
+int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]);
 
 #ifdef XFORMS
 // current status is that every UE has a DL scope for a SINGLE eNB (eNB_id=0)
@@ -221,11 +222,11 @@ static int                      time_offset[4] = {0,0,0,0};
 
 
 static char                     UE_flag=0;
-static uint8_t                       eNB_id=0,UE_id=0;
+static uint8_t                  eNB_id=0,UE_id=0;
 
-uint32_t                             carrier_freq[4] =           {1907600000,1907600000,1907600000,1907600000}; /* For UE! */
-static uint32_t          downlink_frequency[4] =     {1907600000,1907600000,1907600000,1907600000};
-static int32_t                      uplink_frequency_offset[4]= {-120000000,-120000000,-120000000,-120000000};
+uint32_t                        carrier_freq[MAX_NUM_CCs][4] =           {{1907600000,1907600000,1907600000,1907600000}}; /* For UE! */
+static uint32_t                 downlink_frequency[MAX_NUM_CCs][4] =     {{1907600000,1907600000,1907600000,1907600000}};
+static int32_t                  uplink_frequency_offset[MAX_NUM_CCs][4]= {{-120000000,-120000000,-120000000,-120000000}};
 static char                    *conf_config_file_name = NULL;
 
 #if defined(ENABLE_ITTI)
@@ -1025,7 +1026,7 @@ static void * eNB_thread_rx(void *param) {
 
 
 
-void init_eNB_proc() {
+void init_eNB_proc(void) {
 
   int i;
   int CC_id;
@@ -1085,7 +1086,7 @@ void init_eNB_proc() {
   }
 }
 
-void kill_eNB_proc() {
+void kill_eNB_proc(void) {
 
   int i;
   int *status_tx,*status_rx;
@@ -1491,7 +1492,7 @@ static void *UE_thread(void *arg) {
   int i, ret;
   volatile unsigned int *DAQ_MBOX = openair0_daq_cnt();
 #ifndef USRP
-  exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;;
+  //exmimo_config_t *p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;;
 #endif
 
 
@@ -1657,19 +1658,19 @@ static void *UE_thread(void *arg) {
 	else {
 	  LOG_I(PHY,"[initial_sync] trying carrier off %d Hz\n",openair_daq_vars.freq_offset);
 #ifndef USRP
-	  for (i=0; i<4; i++) {
-	    if (p_exmimo_config->rf.rf_freq_rx[i])
-	      p_exmimo_config->rf.rf_freq_rx[i] = carrier_freq[i]+openair_daq_vars.freq_offset;
-	    if (p_exmimo_config->rf.rf_freq_tx[i])
-	      p_exmimo_config->rf.rf_freq_tx[i] = carrier_freq[i]+openair_daq_vars.freq_offset;
+	  for (card=0;card<MAX_CARDS;card++) {
+	    for (i=0; i<openair0_cfg[card].rx_num_channels; i++) {
+	      openair0_cfg[card].rx_freq[i] = carrier_freq[card][i]+openair_daq_vars.freq_offset;
+	      openair0_cfg[card].tx_freq[i] = carrier_freq[card][i]+openair_daq_vars.freq_offset;
+	    }
 	  }
+	  openair0_dump_config(&openair0_cfg[0],UE_flag);
 #endif
-	  openair0_dump_config(card);
 	  rt_sleep_ns(FRAME_PERIOD);
 	}
       }
     }
-      
+    
     /*
       if ((slot%2000)<10)
       LOG_D(HW,"fun0: doing very hard work\n");
@@ -1703,7 +1704,7 @@ static void *UE_thread(void *arg) {
 
 
 static void get_options (int argc, char **argv) {
-  int                           c;
+  int c;
   //  char                          line[1000];
   //  int                           l;
   int k;//i,j,k;
@@ -1772,15 +1773,17 @@ static void get_options (int argc, char **argv) {
       multi_thread=0;
       break;
     case 'C':
-      downlink_frequency[0] = atof(optarg); // Use float to avoid issue with frequency over 2^31.
-      downlink_frequency[1] = downlink_frequency[0];
-      downlink_frequency[2] = downlink_frequency[0];
-      downlink_frequency[3] = downlink_frequency[0];
-      carrier_freq[0] = downlink_frequency[0];
-      carrier_freq[1] = downlink_frequency[1];
-      carrier_freq[2] = downlink_frequency[2];
-      carrier_freq[3] = downlink_frequency[3];
-      printf("Downlink frequency set to %u\n", downlink_frequency[0]);
+      for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+      downlink_frequency[CC_id][0] = atof(optarg); // Use float to avoid issue with frequency over 2^31.
+      downlink_frequency[CC_id][1] = downlink_frequency[CC_id][0];
+      downlink_frequency[CC_id][2] = downlink_frequency[CC_id][0];
+      downlink_frequency[CC_id][3] = downlink_frequency[CC_id][0];
+      carrier_freq[CC_id][0] = downlink_frequency[CC_id][0];
+      carrier_freq[CC_id][1] = downlink_frequency[CC_id][1];
+      carrier_freq[CC_id][2] = downlink_frequency[CC_id][2];
+      carrier_freq[CC_id][3] = downlink_frequency[CC_id][3];
+      }
+      printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
       break;
       
     case 'd':
@@ -1908,13 +1911,16 @@ static void get_options (int argc, char **argv) {
       rrc_log_verbosity              = enb_properties->properties[i]->rrc_log_verbosity;
     
     
-    // adjust the log 
-
-      for (k = 0 ; k < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); k++) {
-	downlink_frequency[k] =       enb_properties->properties[i]->downlink_frequency[0];
-	printf("Downlink frequency set to %u\n", downlink_frequency[k]);
-	uplink_frequency_offset[k] =  enb_properties->properties[i]->uplink_frequency_offset[0];
-      } // k 
+      // adjust the log 
+      for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+	for (k = 0 ; k < 4; k++) {
+	  downlink_frequency[CC_id][k] =       enb_properties->properties[i]->downlink_frequency[CC_id];
+	  uplink_frequency_offset[CC_id][k] =  enb_properties->properties[i]->uplink_frequency_offset[CC_id];
+	}
+	printf("Downlink frequency/ uplink offset of CC_id %d set to %llu/%d\n", CC_id, 
+	       enb_properties->properties[i]->downlink_frequency[CC_id],
+	       enb_properties->properties[i]->uplink_frequency_offset[CC_id]);
+      } // CC_id 
     }// i
   }
 }
@@ -1954,7 +1960,8 @@ int main(int argc, char **argv) {
 #if defined (EMOS) || (! defined (RTAI))
   int error_code;
 #endif
-  openair0_config_t openair0_cfg;
+
+  memset(&openair0_cfg[0],0,sizeof(openair0_config_t)*MAX_CARDS);
 
   set_latency_target();
 
@@ -2159,17 +2166,17 @@ int main(int argc, char **argv) {
     
     if ((mode == normal_txrx) || (mode == rx_calib_ue) || (mode == no_L2_connect) || (mode == debug_prach)) {
       for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  max_gain;
+	openair0_cfg[CC_id].rxg_mode[i] =  max_gain;
       PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_max[0] + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain
     }
     else if ((mode == rx_calib_ue_med)) {
       for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  med_gain;
+	openair0_cfg[CC_id].rxg_mode[i] =  med_gain;
       PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_med[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
     }
     else if ((mode == rx_calib_ue_byp)) {
       for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  byp_gain;
+	openair0_cfg[CC_id].rxg_mode[i] =  byp_gain;
       PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_byp[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
     }
     
@@ -2214,6 +2221,9 @@ int main(int argc, char **argv) {
 
 	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain - 30; //was measured at rxgain=30;
 
+	// set eNB to max gain
+	for (i=0;i<4;i++)
+	  openair0_cfg[CC_id].rxg_mode[i] =  max_gain;
       }
       NB_eNB_INST=1;
       NB_INST=1;
@@ -2223,9 +2233,6 @@ int main(int argc, char **argv) {
       openair_daq_vars.ue_ul_nb_rb=6;
       openair_daq_vars.target_ue_ul_mcs=6;
 
-      // set eNB to max gain
-      for (i=0;i<4;i++)
-	openair0_cfg.rxg_mode[i] =  max_gain;
     }
 
 
@@ -2267,34 +2274,25 @@ int main(int argc, char **argv) {
 #endif
   }
   
-  mac_xface = malloc(sizeof(MAC_xface));
 
-
-  openair0_cfg.sample_rate = sample_rate;
-  openair0_cfg.tx_num_channels = frame_parms[0]->nb_antennas_tx;
-  openair0_cfg.rx_num_channels = frame_parms[0]->nb_antennas_rx;
-  
-  for (i=0;i<4;i++) {
-    if (UE_flag==1) {
-      openair0_cfg.tx_freq[i] = downlink_frequency[i]+uplink_frequency_offset[i];
-      openair0_cfg.rx_freq[i] = downlink_frequency[i];
-    }
-    else {
-      openair0_cfg.rx_freq[i] = downlink_frequency[i]+uplink_frequency_offset[i];
-      openair0_cfg.tx_freq[i] = downlink_frequency[i];
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    openair0_cfg[CC_id].sample_rate = sample_rate;
+    openair0_cfg[CC_id].tx_bw = bw;
+    openair0_cfg[CC_id].rx_bw = bw;
+    for (i=0;i<4;i++) {
+      openair0_cfg[CC_id].tx_gain[i] = tx_gain;
+      openair0_cfg[CC_id].rx_gain[i] = rx_gain;
     }
   }
-  openair0_cfg.tx_bw = bw;
-  openair0_cfg.rx_bw = bw;
-  for (i=0;i<4;i++) {
-    openair0_cfg.tx_gain[i] = tx_gain;
-    openair0_cfg.rx_gain[i] = rx_gain;
-  }
-  
-  if (openair0_device_init(&openair0, &openair0_cfg) <0) {
+
+  if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
     printf("Exiting, cannot initialize device\n");
     exit(-1);
   }
+
+
+  mac_xface = malloc(sizeof(MAC_xface));
+
 #ifdef OPENAIR2
   int eMBMS_active=0;
 
@@ -2338,30 +2336,37 @@ int main(int argc, char **argv) {
 
   openair_daq_vars.timing_advance = 0;
 
+  openair0_rf_map rf_map[MAX_NUM_CCs];
+  rf_map[0].card=0;
+  rf_map[0].chain=1;
+
   // connect the TX/RX buffers
   if (UE_flag==1) {
+    setup_ue_buffers(PHY_vars_UE_g[0],&openair0_cfg[0],rf_map);
+    printf("Setting UE buffer to all-RX\n");
+    // Set LSBs for antenna switch (ExpressMIMO)
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      setup_ue_buffers(PHY_vars_UE_g[CC_id][0],frame_parms[CC_id],ant_offset);
-      printf("Setting UE buffer to all-RX\n");
-      // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms[CC_id]->samples_per_tti*10; i++)
 	for (aa=0; aa<frame_parms[CC_id]->nb_antennas_tx; aa++)
-	  PHY_vars_UE_g[CC_id][0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
+	  PHY_vars_UE_g[0][CC_id]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
     }
     //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;
   }
   else {
+    if (setup_eNB_buffers(PHY_vars_eNB_g[0],&openair0_cfg[0],rf_map)!=0) {
+      printf("Error setting up eNB buffer\n");
+      exit(-1);
+    }
+    printf("Setting eNB buffer to all-RX\n");
+    // Set LSBs for antenna switch (ExpressMIMO)
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      setup_eNB_buffers(PHY_vars_eNB_g[CC_id][0],frame_parms[CC_id],ant_offset);
-      printf("Setting eNB buffer to all-RX\n");
-      // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms[CC_id]->samples_per_tti*10; i++)
 	for (aa=0; aa<frame_parms[CC_id]->nb_antennas_tx; aa++)
-	  PHY_vars_eNB_g[CC_id][0]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
+	  PHY_vars_eNB_g[0][CC_id]->lte_eNB_common_vars.txdata[0][aa][i] = 0x00010001;
     }
   }
 #ifndef USRP
-  openair0_dump_config(card);
+  openair0_dump_config(&openair0_cfg[0],UE_flag);
 #endif
 
   /*  
@@ -2652,109 +2657,158 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
-
-  int i;
+int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs])
+{
 #ifndef USRP
-  if (phy_vars_ue) {
-    if ((frame_parms[0]->nb_antennas_rx>1) && (carrier>0)) {
-      printf("RX antennas > 1 and carrier > 0 not possible\n");
-      exit(-1);
+  int i, CC_id;
+  LTE_DL_FRAME_PARMS *frame_parms;
+  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    if (phy_vars_ue[CC_id]) {
+      frame_parms = &(phy_vars_ue[CC_id]->lte_frame_parms); 
+    }
+    else {
+      printf("phy_vars_eNB[%d] not initialized\n", CC_id);
+      return(-1);
     }
 
-    if ((frame_parms[0]->nb_antennas_tx>1) && (carrier>0)) {
-      printf("TX antennas > 1 and carrier > 0 not possible\n");
-      exit(-1);
-    }
-    
+    openair0_cfg[CC_id].tx_num_channels = 0;
+    openair0_cfg[CC_id].rx_num_channels = 0;
+
     // replace RX signal buffers with mmaped HW versions
-    for (i=0;i<frame_parms[0]->nb_antennas_rx;i++) {
-      free(phy_vars_ue->lte_ue_common_vars.rxdata[i]);
-      phy_vars_ue->lte_ue_common_vars.rxdata[i] = (int32_t*) openair0_exmimo_pci[card].adc_head[i+carrier];
+    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+      printf("Mapping eNB CC_id %d, rx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
+      free(phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i]);
+      phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i] = (int32_t*) openair0_exmimo_pci[rf_map[CC_id].card].adc_head[rf_map[CC_id].chain+i];
+      if (openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i]) {
+	printf("Error with rf_map! A channel has already been allocated!\n");
+	return(-1);
+      }
+      else {
+	openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].rx_num_channels++;
+      }
 
-
-      printf("rxdata[%d] @ %p\n",i,phy_vars_ue->lte_ue_common_vars.rxdata[i]);
+      printf("rxdata[%d] @ %p\n",i,phy_vars_ue[CC_id]->lte_ue_common_vars.rxdata[i]);
     }
-    for (i=0;i<frame_parms[0]->nb_antennas_tx;i++) {
-      free(phy_vars_ue->lte_ue_common_vars.txdata[i]);
-      phy_vars_ue->lte_ue_common_vars.txdata[i] = (int32_t*) openair0_exmimo_pci[card].dac_head[i+carrier];
+    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+      printf("Mapping eNB CC_id %d, tx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
+      free(phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i]);
+      phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i] = (int32_t*) openair0_exmimo_pci[rf_map[CC_id].card].dac_head[rf_map[CC_id].chain+i];
+      if (openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i]) {
+	printf("Error with rf_map! A channel has already been allocated!\n");
+	return(-1);
+      }
+      else {
+	openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].tx_num_channels++;
+      }
 
-      printf("txdata[%d] @ %p\n",i,phy_vars_ue->lte_ue_common_vars.txdata[i]);
+      printf("txdata[%d] @ %p\n",i,phy_vars_ue[CC_id]->lte_ue_common_vars.txdata[i]);
     }
   }
+  return(0);
 #else
   printf("USRP not supported for UE yet!");
+  return(-1);
 #endif
 }
 
-void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
+/* this function maps the phy_vars_eNB tx and rx buffers to the available rf chains. 
+   Each rf chain is is addressed by the card number and the chain on the card. The 
+   rf_map specifies for each CC, on which rf chain the mapping should start. Multiple 
+   antennas are mapped to successive RF chains on the same card. */
+int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_cfg, openair0_rf_map rf_map[MAX_NUM_CCs]) {
 
-  int i;
+  int i, CC_id;
 #ifdef USRP
   uint16_t N_TA_offset = 0;
 #else
   int j;
 #endif
+  LTE_DL_FRAME_PARMS *frame_parms;
 
-  if (phy_vars_eNB) {
-    if ((frame_parms[0].nb_antennas_rx>1) && (carrier>0)) {
-      printf("RX antennas > 1 and carrier > 0 not possible\n");
-      exit(-1);
+  for (CC_id=0; CC_id<MAX_NUM_CCs; CC_id++) {
+    if (phy_vars_eNB[CC_id]) {
+      frame_parms = &(phy_vars_eNB[CC_id]->lte_frame_parms); 
     }
-
-    if ((frame_parms[0].nb_antennas_tx>1) && (carrier>0)) {
-      printf("TX antennas > 1 and carrier > 0 not possible\n");
-      exit(-1);
+    else {
+      printf("phy_vars_eNB[%d] not initialized\n", CC_id);
+      return(-1);
     }
 
 #ifdef USRP
-    if (frame_parms[0].frame_type == TDD) {
-      if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 100)
+    if (frame_parms->frame_type == TDD) {
+      if (frame_parms->N_RB_DL == 100)
 	N_TA_offset = 624;
-      else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 50)
+      else if (frame_parms->N_RB_DL == 50)
 	N_TA_offset = 624/2;
-      else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 25)
+      else if (frame_parms->N_RB_DL == 25)
 	N_TA_offset = 624/4;
     }
 #endif
-    
+   
+
+    openair0_cfg[CC_id].tx_num_channels = 0;
+    openair0_cfg[CC_id].rx_num_channels = 0;
+   
+
+  
     // replace RX signal buffers with mmaped HW versions
 #ifndef USRP
-    for (i=0;i<frame_parms[0]->nb_antennas_rx;i++) {
-      free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-      phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = (int32_t*) openair0_exmimo_pci[card].adc_head[i+carrier];
-
-      printf("rxdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
+    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+      printf("Mapping eNB CC_id %d, rx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
+      free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = (int32_t*) openair0_exmimo_pci[rf_map[CC_id].card].adc_head[rf_map[CC_id].chain+i];
+      if (openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i]) {
+	printf("Error with rf_map! A channel has already been allocated!\n");
+	return(-1);
+      }
+      else {
+	openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].rx_num_channels++;
+      }
+      printf("rxdata[%d] @ %p\n",i,phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
       for (j=0;j<16;j++) {
-	printf("rxbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j]);
-	phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i][j] = 16-j;
+	printf("rxbuffer %d: %x\n",j,phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i][j]);
+	phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i][j] = 16-j;
       }
     }
-    for (i=0;i<frame_parms[0]->nb_antennas_tx;i++) {
-      free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-      phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = (int32_t*) openair0_exmimo_pci[card].dac_head[i+carrier];
-
-      printf("txdata[%d] @ %p\n",i,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
+    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+      printf("Mapping eNB CC_id %d, tx_ant %d, freq %u on card %d, chain %d\n",CC_id,i,downlink_frequency[CC_id][i],rf_map[CC_id].card,rf_map[CC_id].chain+i);
+      free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = (int32_t*) openair0_exmimo_pci[rf_map[CC_id].card].dac_head[rf_map[CC_id].chain+i];
+      if (openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i]) {
+	printf("Error with rf_map! A channel has already been allocated!\n");
+	return(-1);
+      }
+      else {
+	openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].tx_num_channels++;
+      }
+      
+      printf("txdata[%d] @ %p\n",i,phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
       for (j=0;j<16;j++) {
-	printf("txbuffer %d: %x\n",j,phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j]);
-	phy_vars_eNB->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
+	printf("txbuffer %d: %x\n",j,phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i][j]);
+	phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i][j] = 16-j;
       }
     }
 #else // USRP
-    for (i=0;i<frame_parms[0].nb_antennas_rx;i++) {
-        free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
-        rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-        phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
-        memset(rxdata, 0, samples_per_frame*sizeof(int32_t));
-        printf("rxdata[%d] @ %p (%p)\n", i, phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i],rxdata);
+    for (i=0;i<frame_parms->nb_antennas_rx;i++) {
+      free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
+      rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
+      memset(rxdata, 0, samples_per_frame*sizeof(int32_t));
+      printf("rxdata[%d] @ %p (%p)\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i],rxdata);
     }
-    for (i=0;i<frame_parms[0].nb_antennas_tx;i++) {
-        free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
-        txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
-        phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = txdata;
-        memset(txdata, 0, samples_per_frame*sizeof(int32_t));
-        printf("txdata[%d] @ %p\n", i, phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
+    for (i=0;i<frame_parms->nb_antennas_tx;i++) {
+      free(phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
+      txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
+      phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata;
+      memset(txdata, 0, samples_per_frame*sizeof(int32_t));
+      printf("txdata[%d] @ %p\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
     }
 #endif
   }
+  return(0);
 }
+

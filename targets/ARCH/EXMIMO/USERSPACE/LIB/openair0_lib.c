@@ -80,7 +80,6 @@ int openair0_open(void)
     
     int card;
     int ant;
-    int openair0_num_antennas[4];
 
     PAGE_SHIFT = log2_int( sysconf( _SC_PAGESIZE ) );
 
@@ -220,10 +219,12 @@ int openair0_close(void)
     return 0;
 }
 
+/*
 int openair0_dump_config(int card)
 {
     return ioctl(openair0_fd, openair_DUMP_CONFIG, card);
 }
+*/
 
 int openair0_get_frame(int card)
 {
@@ -245,18 +246,15 @@ int openair0_stop_without_reset(int card)
     return ioctl(openair0_fd, openair_STOP_WITHOUT_RESET, card);
 }
 
-static exmimo_config_t         *p_exmimo_config;
-static exmimo_id_t             *p_exmimo_id;
 #define MY_RF_MODE      (RXEN + TXEN + TXLPFNORM + TXLPFEN + TXLPF25 + RXLPFNORM + RXLPFEN + RXLPF25 + LNA1ON +LNAMax + RFBBNORM + DMAMODE_RX + DMAMODE_TX)
 #define RF_MODE_BASE    (LNA1ON +LNAMax + RFBBNORM)
 
 int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cfg) {
 
   // Initialize card
+  exmimo_config_t         *p_exmimo_config;
+  exmimo_id_t             *p_exmimo_id;
   int ret;
-  int ant;
-  int resampling_factor=2;
-  int rx_filter=RXLPF25, tx_filter=TXLPF25;
 
   ret = openair0_open();
 
@@ -271,115 +269,141 @@ int openair0_device_init(openair0_device *device, openair0_config_t *openair0_cf
     return(ret);
   }
 
-  printf ("Detected %d number of cards, %d number of antennas.\n", openair0_num_detected_cards, openair0_num_antennas[0]);
-  
+  if (openair0_num_detected_cards>MAX_CARDS) {
+    printf ("Detected %d number of cards, but MAX_CARDS=%d\n", openair0_num_detected_cards, MAX_CARDS);
+  }
+  else {
+    printf ("Detected %d number of cards, %d number of antennas.\n", openair0_num_detected_cards, openair0_num_antennas[0]);
+  }
+
   p_exmimo_config = openair0_exmimo_pci[0].exmimo_config_ptr;
   p_exmimo_id     = openair0_exmimo_pci[0].exmimo_id_ptr;
-  
+
   printf("Card %d: ExpressMIMO %d, HW Rev %d, SW Rev 0x%d\n", 0, p_exmimo_id->board_exmimoversion, p_exmimo_id->board_hwrev, p_exmimo_id->board_swrev);
 
   // check if the software matches firmware
   if (p_exmimo_id->board_swrev!=BOARD_SWREV_CNTL2) {
     printf("Software revision %d and firmware revision %d do not match. Please update either the firmware or the software!\n",BOARD_SWREV_CNTL2,p_exmimo_id->board_swrev);
-    exit(-1);
+    return(-1);
   }
+
+  return(0);
+}
+
+int openair0_dump_config(openair0_config_t *openair0_cfg, int UE_flag)
+{
+  int ret;
+  int ant, card;
+  int resampling_factor=2;
+  int rx_filter=RXLPF25, tx_filter=TXLPF25;
+
+  exmimo_config_t         *p_exmimo_config;
+  exmimo_id_t             *p_exmimo_id;
 
   if (!openair0_cfg) {
     printf("Error, openair0_cfg is null!!\n");
     return(-1);
   }
 
-  if (p_exmimo_id->board_swrev>=9)
-    p_exmimo_config->framing.eNB_flag   = 0; 
-  else 
-    p_exmimo_config->framing.eNB_flag   = 1;//!UE_flag;
+  for (card=0; card<openair0_num_detected_cards; card++) {
 
-  p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
-
-  if (openair0_cfg->sample_rate==30.72e6) {
-    resampling_factor = 0;
-    rx_filter = RXLPF10;
-    tx_filter = TXLPF10;
-  }
-  else if (openair0_cfg->sample_rate==15.36e6) {
-    resampling_factor = 1;
-    rx_filter = RXLPF5;
-    tx_filter = TXLPF5;
-  }
-  else if (openair0_cfg->sample_rate==7.68e6) {
-    resampling_factor = 2;
-    rx_filter = RXLPF25;
-    tx_filter = TXLPF25;
-  }
-  else {
-    printf("Sampling rate not supported, using default 7.68MHz");
-    resampling_factor = 2;
-    rx_filter = RXLPF25;
-    tx_filter = TXLPF25;
-
-  }
-
+    p_exmimo_config = openair0_exmimo_pci[card].exmimo_config_ptr;
+    p_exmimo_id     = openair0_exmimo_pci[card].exmimo_id_ptr;
+    
+    if (p_exmimo_id->board_swrev>=9)
+      p_exmimo_config->framing.eNB_flag   = 0; 
+    else 
+      p_exmimo_config->framing.eNB_flag   = !UE_flag;
+    
+    p_exmimo_config->framing.tdd_config = DUPLEXMODE_FDD + TXRXSWITCH_LSB;
+    
+    if (openair0_cfg[card].sample_rate==30.72e6) {
+      resampling_factor = 0;
+      rx_filter = RXLPF10;
+      tx_filter = TXLPF10;
+    }
+    else if (openair0_cfg[card].sample_rate==15.36e6) {
+      resampling_factor = 1;
+      rx_filter = RXLPF5;
+      tx_filter = TXLPF5;
+    }
+    else if (openair0_cfg[card].sample_rate==7.68e6) {
+      resampling_factor = 2;
+      rx_filter = RXLPF25;
+      tx_filter = TXLPF25;
+    }
+    else {
+      printf("Sampling rate not supported, using default 7.68MHz");
+      resampling_factor = 2;
+      rx_filter = RXLPF25;
+      tx_filter = TXLPF25;
+      
+    }
+    
 #if (BOARD_SWREV_CNTL2>=0x0A)
-  for (ant=0; ant<4; ant++)
-    p_exmimo_config->framing.resampling_factor[ant] = resampling_factor;
+    for (ant=0; ant<4; ant++)
+      p_exmimo_config->framing.resampling_factor[ant] = resampling_factor;
 #else
     p_exmimo_config->framing.resampling_factor = resampling_factor;
 #endif
-
-  for (ant=0;ant<max(openair0_cfg->tx_num_channels,openair0_cfg->rx_num_channels);ant++) 
-    p_exmimo_config->rf.rf_mode[ant] = RF_MODE_BASE;
-  for (ant=0;ant<openair0_cfg->tx_num_channels;ant++)
-    p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX + TXLPFNORM + TXLPFEN + tx_filter);
-  for (ant=0;ant<openair0_cfg->rx_num_channels;ant++) {
-    p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX + RXLPFNORM + RXLPFEN + rx_filter);
-    switch (openair0_cfg->rxg_mode[ant]) {
-    default:
-    case max_gain:
-      p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
-      break;
-    case med_gain:
-      p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
-      break;
-    case byp_gain:
-      p_exmimo_config->rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
-      break;
+    
+    for (ant=0;ant<4;ant++) {
+      if (openair0_cfg[card].rx_freq[ant] || openair0_cfg[card].tx_freq[ant]) {
+	p_exmimo_config->rf.rf_mode[ant] = RF_MODE_BASE;
+	p_exmimo_config->rf.do_autocal[ant] = 1;
+      }
+      if (openair0_cfg[card].tx_freq[ant]) {
+	p_exmimo_config->rf.rf_mode[ant] += (TXEN + DMAMODE_TX + TXLPFNORM + TXLPFEN + tx_filter);
+	p_exmimo_config->rf.rf_freq_tx[ant] = (unsigned int)openair0_cfg[card].tx_freq[ant];
+	p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg[card].tx_gain[ant];
+	printf("openair0 : programming TX antenna %d (freq %u, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_tx[ant],p_exmimo_config->rf.tx_gain[ant][0]);
+      }
+      if (openair0_cfg[card].rx_freq[ant]) {
+	p_exmimo_config->rf.rf_mode[ant] += (RXEN + DMAMODE_RX + RXLPFNORM + RXLPFEN + rx_filter);
+	
+	p_exmimo_config->rf.rf_freq_rx[ant] = (unsigned int)openair0_cfg[card].rx_freq[ant];
+	p_exmimo_config->rf.rx_gain[ant][0] = (unsigned int)openair0_cfg[card].rx_gain[ant];
+	printf("openair0 : programming RX antenna %d (freq %u, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_rx[ant],p_exmimo_config->rf.rx_gain[ant][0]);
+	
+	switch (openair0_cfg[card].rxg_mode[ant]) {
+	default:
+	case max_gain:
+	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMax;
+	  break;
+	case med_gain:
+	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAMed;
+	  break;
+	case byp_gain:
+	  p_exmimo_config[card].rf.rf_mode[ant] = (p_exmimo_config->rf.rf_mode[ant]&(~LNAGAINMASK))|LNAByp;
+	  break;
+	}
+      }
+      else {
+	p_exmimo_config->rf.rf_mode[ant] = 0;
+	p_exmimo_config->rf.do_autocal[ant] = 0;
+      }
+      
+      p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
+      p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
+      
+      if (( p_exmimo_config->rf.rf_freq_tx[ant] >= 850000000) && ( p_exmimo_config->rf.rf_freq_tx[ant] <= 865000000)) {
+	p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal_850[ant];
+	p_exmimo_config->rf.rffe_band_mode[ant] = DD_TDD;	    
+      }
+      else if (( p_exmimo_config->rf.rf_freq_tx[ant] >= 1900000000) && ( p_exmimo_config->rf.rf_freq_tx[ant] <= 2000000000)) {
+	p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
+	p_exmimo_config->rf.rffe_band_mode[ant] = B19G_TDD;	    
+      }
+      else {
+	p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
+	p_exmimo_config->rf.rffe_band_mode[ant] = 0;	    
+      }
     }
-  }
-  for (ant=max(openair0_cfg->tx_num_channels,openair0_cfg->rx_num_channels);ant<4;ant++) {
-    p_exmimo_config->rf.rf_mode[ant] = 0;
-  }
-  
-  for (ant = 0; ant<openair0_cfg->rx_num_channels; ant++) { 
-    p_exmimo_config->rf.do_autocal[ant] = 1;
-    p_exmimo_config->rf.rf_freq_rx[ant] = (unsigned int)openair0_cfg->rx_freq[ant];
-    p_exmimo_config->rf.rx_gain[ant][0] = (unsigned int)openair0_cfg->rx_gain[ant];
-    printf("openair0 : programming RX antenna %d (freq %d, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_rx[ant],p_exmimo_config->rf.rx_gain[ant][0]);
-  }
-  for (ant = 0; ant<openair0_cfg->tx_num_channels; ant++) { 
-    p_exmimo_config->rf.rf_freq_tx[ant] = (unsigned int)openair0_cfg->tx_freq[ant];
-    p_exmimo_config->rf.tx_gain[ant][0] = (unsigned int)openair0_cfg->tx_gain[ant];
-    printf("openair0 : programming TX antenna %d (freq %d, gain %d)\n",ant,p_exmimo_config->rf.rf_freq_tx[ant],p_exmimo_config->rf.tx_gain[ant][0]);
-  }
-
-  p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
-  p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
-  
-  for (ant=0;ant<4;ant++) {
-    p_exmimo_config->rf.rf_local[ant]   = rf_local[ant];
-    p_exmimo_config->rf.rf_rxdc[ant]    = rf_rxdc[ant];
-
-    if (( p_exmimo_config->rf.rf_freq_tx[ant] >= 850000000) && ( p_exmimo_config->rf.rf_freq_tx[ant] <= 865000000)) {
-      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal_850[ant];
-      p_exmimo_config->rf.rffe_band_mode[ant] = DD_TDD;	    
-    }
-    else if (( p_exmimo_config->rf.rf_freq_tx[ant] >= 1900000000) && ( p_exmimo_config->rf.rf_freq_tx[ant] <= 2000000000)) {
-      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
-      p_exmimo_config->rf.rffe_band_mode[ant] = B19G_TDD;	    
-    }
-    else {
-      p_exmimo_config->rf.rf_vcocal[ant]  = rf_vcocal[ant];
-      p_exmimo_config->rf.rffe_band_mode[ant] = 0;	    
-    }
+    
+    ret = ioctl(openair0_fd, openair_DUMP_CONFIG, card);
+    if (ret!=0)
+      return(-1);
+    
   }
   
   return(0);
