@@ -1161,7 +1161,6 @@ static void *eNB_thread(void *arg)
   unsigned int rx_cnt = 0;
   unsigned int tx_cnt = tx_delay;
   //  int tx_offset;
-  int CC_id;
 
   hw_subframe = 0;
 
@@ -1707,10 +1706,12 @@ static void get_options (int argc, char **argv) {
   int                           c;
   //  char                          line[1000];
   //  int                           l;
-  int i,j,k;
+  int k;//i,j,k;
 #ifdef USRP
   int clock_src;
 #endif
+  int CC_id;
+
   const Enb_properties_array_t *enb_properties;
   
   enum long_option_e {
@@ -1843,11 +1844,11 @@ static void get_options (int argc, char **argv) {
 
       clock_src = atoi(optarg);
       if (clock_src == 0) {
-	char ref[128] = "internal";
+	//	char ref[128] = "internal";
 	//strncpy(uhd_ref, ref, strlen(ref)+1);
       }
       else if (clock_src == 1) {
-	char ref[128] = "external";
+	//char ref[128] = "external";
 	//strncpy(uhd_ref, ref, strlen(ref)+1);
       }
 #else
@@ -1886,7 +1887,7 @@ static void get_options (int argc, char **argv) {
 	frame_parms[CC_id]->Ncp =              enb_properties->properties[i]->prefix_type[CC_id];
 	
 	//for (j=0; j < enb_properties->properties[i]->nb_cc; j++ ){ 
-	frame_parms[CC_id]->Nid_cell          =  enb_properties->properties[i]->cell_id[CC_id];
+	frame_parms[CC_id]->Nid_cell          =  enb_properties->properties[i]->Nid_cell[CC_id];
 	frame_parms[CC_id]->N_RB_DL          =  enb_properties->properties[i]->N_RB_DL[CC_id];
 	//} // j
       }
@@ -1910,9 +1911,9 @@ static void get_options (int argc, char **argv) {
     // adjust the log 
 
       for (k = 0 ; k < (sizeof(downlink_frequency) / sizeof (downlink_frequency[0])); k++) {
-	downlink_frequency[k] =       enb_properties->properties[i]->downlink_frequency;
+	downlink_frequency[k] =       enb_properties->properties[i]->downlink_frequency[0];
 	printf("Downlink frequency set to %u\n", downlink_frequency[k]);
-	uplink_frequency_offset[k] =  enb_properties->properties[i]->uplink_frequency_offset;
+	uplink_frequency_offset[k] =  enb_properties->properties[i]->uplink_frequency_offset[0];
       } // k 
     }// i
   }
@@ -2104,9 +2105,9 @@ int main(int argc, char **argv) {
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupHoppingEnabled = 0;
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = 0;
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
-    init_ul_hopping(frame_parms);
+    init_ul_hopping(frame_parms[CC_id]);
 
-    init_frame_parms(frame_parms,1);
+    init_frame_parms(frame_parms[CC_id],1);
   }
 
   phy_init_top(frame_parms[0]);
@@ -2244,7 +2245,7 @@ int main(int argc, char **argv) {
 #endif
   }
   else if(frame_parms[0]->N_RB_DL == 50){
-    sample_rate = 15.36es6;
+    sample_rate = 15.36e6;
 #ifdef USRP
     samples_per_packets = 2048;
     samples_per_frame = 153600;
@@ -2297,7 +2298,7 @@ int main(int argc, char **argv) {
 #ifdef OPENAIR2
   int eMBMS_active=0;
 
-  l2_init(frame_parms,eMBMS_active,
+  l2_init(frame_parms[0],eMBMS_active,
 	  0,// cba_group_active
 	  0); // HO flag
   if (UE_flag == 1)
@@ -2340,18 +2341,18 @@ int main(int argc, char **argv) {
   // connect the TX/RX buffers
   if (UE_flag==1) {
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      setup_ue_buffers(PHY_vars_UE_g[CC_id][0],frame_parms,ant_offset);
+      setup_ue_buffers(PHY_vars_UE_g[CC_id][0],frame_parms[CC_id],ant_offset);
       printf("Setting UE buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms[CC_id]->samples_per_tti*10; i++)
-	for (aa=0; aa<frame_parms[CC_id]]->nb_antennas_tx; aa++)
+	for (aa=0; aa<frame_parms[CC_id]->nb_antennas_tx; aa++)
 	  PHY_vars_UE_g[CC_id][0]->lte_ue_common_vars.txdata[aa][i] = 0x00010001;
     }
     //p_exmimo_config->framing.tdd_config = TXRXSWITCH_TESTRX;
   }
   else {
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      setup_eNB_buffers(PHY_vars_eNB_g[CC_id][0],frame_parms,ant_offset);
+      setup_eNB_buffers(PHY_vars_eNB_g[CC_id][0],frame_parms[CC_id],ant_offset);
       printf("Setting eNB buffer to all-RX\n");
       // Set LSBs for antenna switch (ExpressMIMO)
       for (i=0; i<frame_parms[CC_id]->samples_per_tti*10; i++)
@@ -2651,7 +2652,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS **frame_parms, int carrier) {
+void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
 
   int i;
 #ifndef USRP
@@ -2686,7 +2687,7 @@ void setup_ue_buffers(PHY_VARS_UE *phy_vars_ue, LTE_DL_FRAME_PARMS **frame_parms
 #endif
 }
 
-void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS **frame_parms, int carrier) {
+void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS *frame_parms, int carrier) {
 
   int i;
 #ifdef USRP
@@ -2696,18 +2697,18 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS **frame_pa
 #endif
 
   if (phy_vars_eNB) {
-    if ((frame_parms[0]->nb_antennas_rx>1) && (carrier>0)) {
+    if ((frame_parms[0].nb_antennas_rx>1) && (carrier>0)) {
       printf("RX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
 
-    if ((frame_parms[0]->nb_antennas_tx>1) && (carrier>0)) {
+    if ((frame_parms[0].nb_antennas_tx>1) && (carrier>0)) {
       printf("TX antennas > 1 and carrier > 0 not possible\n");
       exit(-1);
     }
 
 #ifdef USRP
-    if (frame_parms[0]->frame_type == TDD) {
+    if (frame_parms[0].frame_type == TDD) {
       if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 100)
 	N_TA_offset = 624;
       else if (phy_vars_eNB->lte_frame_parms.N_RB_DL == 50)
@@ -2740,14 +2741,14 @@ void setup_eNB_buffers(PHY_VARS_eNB *phy_vars_eNB, LTE_DL_FRAME_PARMS **frame_pa
       }
     }
 #else // USRP
-    for (i=0;i<frame_parms[0]->nb_antennas_rx;i++) {
+    for (i=0;i<frame_parms[0].nb_antennas_rx;i++) {
         free(phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i]);
         rxdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
         phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i] = rxdata-N_TA_offset; // N_TA offset for TDD
         memset(rxdata, 0, samples_per_frame*sizeof(int32_t));
         printf("rxdata[%d] @ %p (%p)\n", i, phy_vars_eNB->lte_eNB_common_vars.rxdata[0][i],rxdata);
     }
-    for (i=0;i<frame_parms[0]->nb_antennas_tx;i++) {
+    for (i=0;i<frame_parms[0].nb_antennas_tx;i++) {
         free(phy_vars_eNB->lte_eNB_common_vars.txdata[0][i]);
         txdata = (int32_t*)malloc16(samples_per_frame*sizeof(int32_t));
         phy_vars_eNB->lte_eNB_common_vars.txdata[0][i] = txdata;
