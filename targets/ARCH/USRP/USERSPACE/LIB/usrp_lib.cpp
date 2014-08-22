@@ -93,7 +93,7 @@ static int trx_usrp_start(openair0_device *device)
 
   // init recv and send streaming
   uhd::stream_cmd_t cmd(uhd::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
-  cmd.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(0.001);
+  cmd.time_spec = s->usrp->get_time_now() + uhd::time_spec_t(0.01);
   cmd.stream_now = false; // start at constant delay
   s->rx_stream->issue_stream_cmd(cmd);
 
@@ -177,7 +177,7 @@ static bool is_equal(double a, double b)
  
 int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cfg)
 {
-  //  uhd::set_thread_priority_safe(1.0);
+  uhd::set_thread_priority_safe(1.0);
   usrp_state_t *s = (usrp_state_t*)malloc(sizeof(usrp_state_t));
   memset(s, 0, sizeof(usrp_state_t));
 
@@ -196,15 +196,15 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   s->usrp->set_clock_source("internal");
   // set master clock rate and sample rate for tx & rx for streaming
   s->usrp->set_master_clock_rate(30.72e6);
-  s->usrp->set_rx_rate(openair0_cfg->sample_rate);
-  s->usrp->set_tx_rate(openair0_cfg->sample_rate);
+  s->usrp->set_rx_rate(openair0_cfg[0].sample_rate);
+  s->usrp->set_tx_rate(openair0_cfg[0].sample_rate);
 
-  s->usrp->set_tx_freq(openair0_cfg->tx_freq[0]);
-  s->usrp->set_rx_freq(openair0_cfg->rx_freq[0]);
-  s->usrp->set_tx_gain(openair0_cfg->tx_gain[0]);
-  s->usrp->set_rx_gain(openair0_cfg->rx_gain[0]);
-  s->usrp->set_tx_bandwidth(openair0_cfg->tx_bw);
-  s->usrp->set_rx_bandwidth(openair0_cfg->rx_bw);
+  s->usrp->set_tx_freq(openair0_cfg[0].tx_freq[0]);
+  s->usrp->set_rx_freq(openair0_cfg[0].rx_freq[0]);
+  s->usrp->set_tx_gain(openair0_cfg[0].tx_gain[0]);
+  s->usrp->set_rx_gain(openair0_cfg[0].rx_gain[0]);
+  s->usrp->set_tx_bandwidth(openair0_cfg[0].tx_bw);
+  s->usrp->set_rx_bandwidth(openair0_cfg[0].rx_bw);
 
   // create tx & rx streamer
   uhd::stream_args_t stream_args("sc16", "sc16");
@@ -237,7 +237,7 @@ int openair0_device_init(openair0_device* device, openair0_config_t *openair0_cf
   device->trx_read_func  = trx_usrp_read;
   device->trx_write_func = trx_usrp_write;
 
-  s->sample_rate = openair0_cfg->sample_rate;
+  s->sample_rate = openair0_cfg[0].sample_rate;
   // TODO:
   // init tx_forward_nsamps based usrp_time_offset ex
   if(is_equal(s->sample_rate, (double)30.72e6))
