@@ -238,7 +238,7 @@ double tx_gain = 20;
 double rx_gain = 10;
 #else
 double tx_gain = 120;
-double rx_gain = 30;
+double rx_gain = 50;
 #endif
 
 double sample_rate=30.72e6;
@@ -2219,8 +2219,11 @@ int main(int argc, char **argv) {
 			  PHY_vars_eNB_g[0][CC_id]->lte_frame_parms.frame_type,
 			  PHY_vars_eNB_g[0][CC_id]->X_u);
 
+#ifdef USRP
+	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  (int)rx_gain; 
+#else
 	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain - 30; //was measured at rxgain=30;
-
+#endif
 	// set eNB to max gain
 	for (i=0;i<4;i++)
 	  openair0_cfg[CC_id].rxg_mode[i] =  max_gain;
@@ -2248,7 +2251,7 @@ int main(int argc, char **argv) {
     tx_forward_nsamps = 175;
     sf_bounds = sf_bounds_20;
     max_cnt = 150;
-    tx_delay = 9;
+    tx_delay = 8;
 #endif
   }
   else if(frame_parms[0]->N_RB_DL == 50){
@@ -2282,7 +2285,12 @@ int main(int argc, char **argv) {
     for (i=0;i<4;i++) {
       openair0_cfg[CC_id].tx_gain[i] = tx_gain;
       openair0_cfg[CC_id].rx_gain[i] = rx_gain;
+#ifdef USRP
+      openair0_cfg[CC_id].tx_freq[i] = (UE_flag==0) ? downlink_frequency[CC_id][i] : downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i];
+      openair0_cfg[CC_id].rx_freq[i] = (UE_flag==0) ? downlink_frequency[CC_id][i] + uplink_frequency_offset[CC_id][i] : downlink_frequency[CC_id][i];
+#endif
     }
+
   }
 
   if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
@@ -2782,6 +2790,8 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 	return(-1);
       }
       else {
+	printf("Setting TX frequency to %d for CC_id %d, card %d, chain %d\n",
+	       downlink_frequency[CC_id][i],CC_id,rf_map[CC_id].card,rf_map[CC_id].chain+i);
 	openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i];
 	openair0_cfg[rf_map[CC_id].card].tx_num_channels++;
       }
@@ -2806,6 +2816,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
       phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i] = txdata;
       memset(txdata, 0, samples_per_frame*sizeof(int32_t));
       printf("txdata[%d] @ %p\n", i, phy_vars_eNB[CC_id]->lte_eNB_common_vars.txdata[0][i]);
+
     }
 #endif
   }
