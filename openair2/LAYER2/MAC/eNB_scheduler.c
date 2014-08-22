@@ -96,7 +96,8 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
   int           result;
 #endif
   DCI_PDU *DCI_pdu[MAX_NUM_CCs];
-  int CC_id;
+  int CC_id,i;
+  UE_list_t *UE_list=&eNB_mac_inst[module_idP].UE_list;
 
   LOG_D(MAC,"[eNB %d] Frame %d, Subframe %d, entering MAC scheduler\n",module_idP, frameP, subframeP);
 
@@ -195,6 +196,11 @@ void eNB_dlsch_ulsch_scheduler(module_id_t module_idP,uint8_t cooperation_flag, 
     }
   }
 #endif
+  // refresh UE list based on UEs dropped by PHY in previous subframe
+  for (i=UE_list->head;i>0;i=UE_list->next[i])
+    if (mac_xface->get_eNB_UE_stats(module_idP,0,UE_RNTI(module_idP,i))==NULL)
+      mac_remove_ue(module_idP,i);
+
 
   switch (subframeP) {
   case 0:
