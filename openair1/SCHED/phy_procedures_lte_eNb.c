@@ -526,7 +526,10 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t sched_subframe, PHY_VARS_eNB *phy_vars_e
   switch (subframe) {
   case 5:
     DCI_pdu->Num_common_dci = 1;
-    DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1A_5MHz_TDD_1_6_t;
+    if (phy_vars_eNB->lte_frame_parms.frame_type == FDD)
+      DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1A_5MHz_FDD_t;
+    else
+      DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1A_5MHz_TDD_1_6_t;
     DCI_pdu->dci_alloc[0].L          = 2;
     DCI_pdu->dci_alloc[0].rnti       = SI_RNTI;
     DCI_pdu->dci_alloc[0].format     = format1A;
@@ -568,7 +571,11 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t sched_subframe, PHY_VARS_eNB *phy_vars_e
     
     if (transmission_mode<3) {
       //user 1
-      DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1_5MHz_TDD_t; 
+      if (phy_vars_eNB->lte_frame_parms.frame_type == FDD)
+	DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1_5MHz_FDD_t; 
+      else
+	DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI1_5MHz_TDD_t; 
+
       DCI_pdu->dci_alloc[0].L          = 2;
       DCI_pdu->dci_alloc[0].rnti       = 0x1235;
       DCI_pdu->dci_alloc[0].format     = format1;
@@ -668,10 +675,13 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t sched_subframe, PHY_VARS_eNB *phy_vars_e
       break;
     */
   case 9:
-    DCI_pdu->Num_ue_spec_dci = 2;
+    DCI_pdu->Num_ue_spec_dci = 1;
 
     //user 1
-    DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI0_5MHz_TDD_1_6_t ; 
+    if (phy_vars_eNB->lte_frame_parms.frame_type == FDD)
+      DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI0_5MHz_FDD_t ; 
+    else
+      DCI_pdu->dci_alloc[0].dci_length = sizeof_DCI0_5MHz_TDD_1_6_t ; 
     DCI_pdu->dci_alloc[0].L          = 2;
     DCI_pdu->dci_alloc[0].rnti       = 0x1235;
     DCI_pdu->dci_alloc[0].format     = format0;
@@ -688,6 +698,8 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t sched_subframe, PHY_VARS_eNB *phy_vars_e
     UL_alloc_pdu.cqi_req = 1;
     memcpy((void*)&DCI_pdu->dci_alloc[0].dci_pdu[0],(void *)&UL_alloc_pdu,sizeof(DCI0_5MHz_TDD_1_6_t));
        
+    // user 2
+    /*
     DCI_pdu->dci_alloc[1].dci_length = sizeof_DCI0_5MHz_TDD_1_6_t ; 
     DCI_pdu->dci_alloc[1].L          = 2;
     DCI_pdu->dci_alloc[1].rnti       = 0x1236;
@@ -710,7 +722,7 @@ void fill_dci(DCI_PDU *DCI_pdu, uint8_t sched_subframe, PHY_VARS_eNB *phy_vars_e
     UL_alloc_pdu.dai     = 0;
     UL_alloc_pdu.cqi_req = 1;
     memcpy((void*)&DCI_pdu->dci_alloc[1].dci_pdu[0],(void *)&UL_alloc_pdu,sizeof(DCI0_5MHz_TDD_1_6_t));
-
+    */
     break;
 
   default:
@@ -1374,9 +1386,9 @@ void phy_procedures_eNB_TX(unsigned char sched_subframe,PHY_VARS_eNB *phy_vars_e
   */     
 #endif
 #ifdef EMOS_CHANNEL
-  fill_dci_emos(DCI_pdu,subframe,phy_vars_eNB);
+  fill_dci_emos(DCI_pdu,sched_subframe,phy_vars_eNB);
 #else
-  fill_dci(DCI_pdu,subframe,phy_vars_eNB);
+  fill_dci(DCI_pdu,sched_subframe,phy_vars_eNB);
 #endif
 #endif
   

@@ -234,11 +234,11 @@ static char                    *itti_dump_file = NULL;
 #endif
 
 #ifndef USRP
-double tx_gain = 20;
-double rx_gain = 10;
+double tx_gain[4] = {20,10,0,0};
+double rx_gain[4] = {10,10,0,0};
 #else
-double tx_gain = 120;
-double rx_gain = 50;
+double tx_gain[4] = {120,0,0,0};
+double rx_gain[4] = {50,0,0,0};
 #endif
 
 double sample_rate=30.72e6;
@@ -803,7 +803,7 @@ static void * eNB_thread_tx(void *param) {
 #endif
 
 #ifdef RTAI
-  sprintf(task_name,"eNTX%d",proc->subframe);
+  sprintf(task_name,"TXC%dS%d",proc->CC_id,proc->subframe);
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
@@ -811,7 +811,8 @@ static void * eNB_thread_tx(void *param) {
     return 0;
   }
   else {
-    LOG_I(PHY,"[SCHED][eNB] eNB TX thread %d started with id %p\n",
+    LOG_I(PHY,"[SCHED][eNB] eNB TX thread CC %d SF %d started with id %p\n",
+	  proc->CC_id,
 	  proc->subframe,
 	  task);
   }
@@ -928,7 +929,7 @@ static void * eNB_thread_rx(void *param) {
 #endif
 
 #ifdef RTAI
-  sprintf(task_name,"eNRX%d",proc->subframe);
+  sprintf(task_name,"RXC%1dS%1d",proc->CC_id,proc->subframe);
   task = rt_task_init_schmod(nam2num(task_name), 0, 0, 0, SCHED_FIFO, 0xF);
 
   if (task==NULL) {
@@ -936,7 +937,8 @@ static void * eNB_thread_rx(void *param) {
     return 0;
   }
   else {
-    LOG_I(PHY,"[SCHED][eNB] eNB RX thread %d started with id %p\n", /*  on CPU %d*/
+    LOG_I(PHY,"[SCHED][eNB] eNB RX thread CC_id %d SF %d started with id %p\n", /*  on CPU %d*/
+	  proc->CC_id,
 	  proc->subframe,
 	  task); /*,rtai_cpuid()*/
   }
@@ -1101,11 +1103,11 @@ void kill_eNB_proc(void) {
       PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_tx=0; 
       pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_tx);
 #ifdef DEBUG_THREADS
-      printf("Joining eNB TX CC_id %d thread %d...",CC_id,i);
+      printf("Joining eNB TX CC_id %d thread %d...\n",CC_id,i);
 #endif
       pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_tx,(void**)status_tx);
 #ifdef DEBUG_THREADS
-      if (status_tx) printf("status %d...",*status_tx);
+      if (status_tx) printf("status %d...\n",*status_tx);
 #endif
 #ifdef DEBUG_THREADS
       printf("Killing RX CC_id %d thread %d\n",CC_id,i);
@@ -1113,11 +1115,11 @@ void kill_eNB_proc(void) {
       PHY_vars_eNB_g[0][CC_id]->proc[i].instance_cnt_rx=0; 
       pthread_cond_signal(&PHY_vars_eNB_g[0][CC_id]->proc[i].cond_rx);
 #ifdef DEBUG_THREADS
-      printf("Joining eNB RX CC_id %d thread %d...",CC_id,i);
+      printf("Joining eNB RX CC_id %d thread %d...\n",CC_id,i);
 #endif
       pthread_join(PHY_vars_eNB_g[0][CC_id]->proc[i].pthread_rx,(void**)status_rx);
 #ifdef DEBUG_THREADS 
-      if (status_rx) printf("status %d...",*status_rx);
+      if (status_rx) printf("status %d...\n",*status_rx);
 #endif
       pthread_mutex_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_tx);
       pthread_mutex_destroy(&PHY_vars_eNB_g[0][CC_id]->proc[i].mutex_rx);
@@ -1520,7 +1522,7 @@ static void *UE_thread(void *arg) {
     p_exmimo_config->rf.rf_freq_rx[i] = p_exmimo_config->rf.rf_freq_rx[i]+openair_daq_vars.freq_offset;
     p_exmimo_config->rf.rf_freq_tx[i] = p_exmimo_config->rf.rf_freq_rx[i]+openair_daq_vars.freq_offset;
     }
-    openair0_dump_config(card);
+    openair0_dump_config(0);
     }
   */
   while (!oai_exit)  {
@@ -1611,7 +1613,7 @@ static void *UE_thread(void *arg) {
       hw_slot_offset = 0;
 	
       slot = 0;
-      openair0_get_frame(card);
+      openair0_get_frame(0);
       //          LOG_D(HW,"after get_frame\n");
       //          rt_sleep_ns(FRAME_PERIOD);
       //          LOG_D(HW,"after sleep\n");
@@ -1637,7 +1639,7 @@ static void *UE_thread(void *arg) {
 	  is_synchronized = 1;
 	  //start the DMA transfers
 	  //LOG_D(HW,"Before openair0_start_rt_acquisition \n");
-	  openair0_start_rt_acquisition(card);
+	  openair0_start_rt_acquisition(0);
 	    
 	  hw_slot_offset = (PHY_vars_UE_g[0][0]->rx_offset<<1) / PHY_vars_UE_g[0][0]->lte_frame_parms.samples_per_tti;
 	  LOG_D(HW,"Got synch: hw_slot_offset %d\n",hw_slot_offset);
@@ -2113,11 +2115,10 @@ int main(int argc, char **argv) {
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.sequenceHoppingEnabled = 0;
     frame_parms[CC_id]->pusch_config_common.ul_ReferenceSignalsPUSCH.groupAssignmentPUSCH = 0;
     init_ul_hopping(frame_parms[CC_id]);
-
     init_frame_parms(frame_parms[CC_id],1);
+    phy_init_top(frame_parms[CC_id]);
   }
 
-  phy_init_top(frame_parms[0]);
   phy_init_lte_top(frame_parms[0]);
 
   for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
@@ -2201,7 +2202,7 @@ int main(int argc, char **argv) {
       PHY_vars_eNB_g[0] = malloc(sizeof(PHY_VARS_eNB*));
       for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
 	PHY_vars_eNB_g[0][CC_id] = init_lte_eNB(frame_parms[CC_id],eNB_id,Nid_cell,cooperation_flag,transmission_mode,abstraction_flag);
-      
+	PHY_vars_eNB_g[0][CC_id]->CC_id = CC_id;
        
 #ifndef OPENAIR2
 	for (i=0;i<NUMBER_OF_UE_MAX;i++) {
@@ -2278,16 +2279,16 @@ int main(int argc, char **argv) {
   }
   
 
-  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-    openair0_cfg[CC_id].sample_rate = sample_rate;
-    openair0_cfg[CC_id].tx_bw = bw;
-    openair0_cfg[CC_id].rx_bw = bw;
+  for (card=0;card<MAX_CARDS;card++) {
+    openair0_cfg[card].sample_rate = sample_rate;
+    openair0_cfg[card].tx_bw = bw;
+    openair0_cfg[card].rx_bw = bw;
     for (i=0;i<4;i++) {
-      openair0_cfg[CC_id].tx_gain[i] = tx_gain;
-      openair0_cfg[CC_id].rx_gain[i] = rx_gain;
+      openair0_cfg[card].tx_gain[i] = tx_gain[i];
+      openair0_cfg[card].rx_gain[i] = rx_gain[i];
 #ifdef USRP
-      openair0_cfg[CC_id].tx_freq[i] = (UE_flag==0) ? downlink_frequency[CC_id][i] : downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i];
-      openair0_cfg[CC_id].rx_freq[i] = (UE_flag==0) ? downlink_frequency[CC_id][i] + uplink_frequency_offset[CC_id][i] : downlink_frequency[CC_id][i];
+      openair0_cfg[card].tx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] : downlink_frequency[0][i]+uplink_frequency_offset[0][i];
+      openair0_cfg[card].rx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] + uplink_frequency_offset[0][i] : downlink_frequency[0][i];
 #endif
     }
 
@@ -2346,7 +2347,9 @@ int main(int argc, char **argv) {
 
   openair0_rf_map rf_map[MAX_NUM_CCs];
   rf_map[0].card=0;
-  rf_map[0].chain=1;
+  rf_map[0].chain=0;
+  rf_map[1].card=0;
+  rf_map[1].chain=1;
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
@@ -2435,7 +2438,7 @@ int main(int argc, char **argv) {
   // this starts the DMA transfers
 #ifndef USRP
   if (UE_flag!=1)
-    openair0_start_rt_acquisition(card);
+    openair0_start_rt_acquisition(0);
 #endif
 
 #ifdef XFORMS
@@ -2531,7 +2534,7 @@ int main(int argc, char **argv) {
     }
     printf("Creating eNB_thread \n");
 #ifdef RTAI
-    thread0 = rt_thread_create(eNB_thread, NULL, 100000000);
+    thread0 = rt_thread_create(eNB_thread, NULL, OPENAIR_THREAD_STACK_SIZE);
 #else
     error_code = pthread_create(&thread0, &attr_dlsch_threads, eNB_thread, NULL);
     if (error_code!= 0) {
@@ -2641,7 +2644,7 @@ int main(int argc, char **argv) {
 
 #ifndef USRP
   printf("stopping card\n");
-  openair0_stop(card);
+  openair0_stop(0);
   printf("closing openair0_lib\n");
   openair0_close();
 #endif
