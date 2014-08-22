@@ -234,28 +234,24 @@ static char                    *itti_dump_file = NULL;
 #endif
 
 #ifndef USRP
-double tx_gain[4] = {20,10,0,0};
-double rx_gain[4] = {10,10,0,0};
+double tx_gain[MAX_NUM_CCs][4] = {{20,10,0,0}};
+double rx_gain[MAX_NUM_CCs][4] = {{10,10,0,0}};
+// these are for EXMIMO2 target only
+static unsigned int             rxg_max[4] =    {133,133,133,133};
+static unsigned int             rxg_med[4] =    {127,127,127,127};
+static unsigned int             rxg_byp[4] =    {120,120,120,120};
+static rx_gain_t                rx_gain_mode[MAX_NUM_CCs][4] = {{max_gain,max_gain,max_gain,max_gain}};
 #else
-double tx_gain[4] = {120,0,0,0};
-double rx_gain[4] = {50,0,0,0};
+double tx_gain[MAX_NUM_CCs][4] = {{120,0,0,0}};
+double rx_gain[MAX_NUM_CCs][4] = {{50,0,0,0}};
 #endif
 
 double sample_rate=30.72e6;
 double bw = 14e6;
 
-#ifndef USRP
-static unsigned int             rxg_max[4] =    {133,133,133,133};
-static unsigned int             rxg_med[4] =    {127,127,127,127};
-static unsigned int             rxg_byp[4] =    {120,120,120,120};
-static int                      tx_max_power =  0;
+static int                      tx_max_power[MAX_NUM_CCs] =  {{0}};
 
-
-#else
-static unsigned int             rxg_max[4] =    {133,133,133,133};
-//static unsigned int            rxg_med[4] =    {127,127,127,127};
-//static unsigned int            rxg_byp[4] =    {120,120,120,120};
-static int                      tx_max_power =  0;
+#ifdef USRP
 char ref[128] = "internal";
 char channels[128] = "0";
 
@@ -1882,9 +1878,13 @@ static void get_options (int argc, char **argv) {
     AssertFatal (NB_eNB_INST <= enb_properties->number,
 		 "Number of eNB is greater than eNB defined in configuration file %s (%d/%d)!",
 		 conf_config_file_name, NB_eNB_INST, enb_properties->number);
-    
+
     /* Update some simulation parameters */
     for (i=0; i < enb_properties->number; i++) {
+      AssertFatal (MAX_NUM_CCs == enb_properties->properties[i]->nb_cc,
+		   "lte-softmodem compiled with MAX_NUM_CCs=%d, but only %d CCs configured for eNB %d!",
+		   MAX_NUM_CCs, enb_properties->properties[i]->nb_cc, i);
+      
       for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
 	frame_parms[CC_id]->frame_type =       enb_properties->properties[i]->frame_type[CC_id];
 	frame_parms[CC_id]->tdd_config =       enb_properties->properties[i]->tdd_config[CC_id];
@@ -2136,53 +2136,58 @@ int main(int argc, char **argv) {
     PHY_vars_UE_g = malloc(sizeof(PHY_VARS_UE**));
     PHY_vars_UE_g[0] = malloc(sizeof(PHY_VARS_UE*)*MAX_NUM_CCs);
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      PHY_vars_UE_g[CC_id][0] = init_lte_UE(frame_parms[CC_id], UE_id,abstraction_flag,transmission_mode);
+      PHY_vars_UE_g[0][CC_id] = init_lte_UE(frame_parms[CC_id], UE_id,abstraction_flag,transmission_mode);
       
 #ifndef OPENAIR2
       for (i=0;i<NUMBER_OF_eNB_MAX;i++) {
-	PHY_vars_UE_g[CC_id][0]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
-	PHY_vars_UE_g[CC_id][0]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
-	PHY_vars_UE_g[CC_id][0]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
+	PHY_vars_UE_g[0][CC_id]->pusch_config_dedicated[i].betaOffset_ACK_Index = beta_ACK;
+	PHY_vars_UE_g[0][CC_id]->pusch_config_dedicated[i].betaOffset_RI_Index  = beta_RI;
+	PHY_vars_UE_g[0][CC_id]->pusch_config_dedicated[i].betaOffset_CQI_Index = beta_CQI;
 	
-	PHY_vars_UE_g[CC_id][0]->scheduling_request_config[i].sr_PUCCH_ResourceIndex = UE_id;
-	PHY_vars_UE_g[CC_id][0]->scheduling_request_config[i].sr_ConfigIndex = 7+(UE_id%3);
-	PHY_vars_UE_g[CC_id][0]->scheduling_request_config[i].dsr_TransMax = sr_n4;
+	PHY_vars_UE_g[0][CC_id]->scheduling_request_config[i].sr_PUCCH_ResourceIndex = UE_id;
+	PHY_vars_UE_g[0][CC_id]->scheduling_request_config[i].sr_ConfigIndex = 7+(UE_id%3);
+	PHY_vars_UE_g[0][CC_id]->scheduling_request_config[i].dsr_TransMax = sr_n4;
       }
 #endif
       
-      compute_prach_seq(&PHY_vars_UE_g[CC_id][0]->lte_frame_parms.prach_config_common,
-			PHY_vars_UE_g[CC_id][0]->lte_frame_parms.frame_type,
-			PHY_vars_UE_g[CC_id][0]->X_u);
+      compute_prach_seq(&PHY_vars_UE_g[0][CC_id]->lte_frame_parms.prach_config_common,
+			PHY_vars_UE_g[0][CC_id]->lte_frame_parms.frame_type,
+			PHY_vars_UE_g[0][CC_id]->X_u);
       
-      PHY_vars_UE_g[CC_id][0]->lte_ue_pdcch_vars[0]->crnti = 0x1234;
+      PHY_vars_UE_g[0][CC_id]->lte_ue_pdcch_vars[0]->crnti = 0x1234;
 #ifndef OPENAIR2
-      PHY_vars_UE_g[CC_id][0]->lte_ue_pdcch_vars[0]->crnti = 0x1235;
+      PHY_vars_UE_g[0][CC_id]->lte_ue_pdcch_vars[0]->crnti = 0x1235;
 #endif
-
-    for (i=0;i<4;i++) {
-      PHY_vars_UE_g[CC_id][0]->rx_gain_max[i] = rxg_max[i];
-      //      PHY_vars_UE_g[CC_id][0]->rx_gain_med[i] = rxg_med[i];
-      //      PHY_vars_UE_g[CC_id][0]->rx_gain_byp[i] = rxg_byp[i];
-    }
     
+#ifndef USRP    
+    for (i=0;i<4;i++) {
+      PHY_vars_UE_g[0][CC_id]->rx_gain_max[i] = rxg_max[i];
+      PHY_vars_UE_g[0][CC_id]->rx_gain_med[i] = rxg_med[i];
+      PHY_vars_UE_g[0][CC_id]->rx_gain_byp[i] = rxg_byp[i];
+    }
+
     if ((mode == normal_txrx) || (mode == rx_calib_ue) || (mode == no_L2_connect) || (mode == debug_prach)) {
       for (i=0;i<4;i++)
-	openair0_cfg[CC_id].rxg_mode[i] =  max_gain;
-      PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_max[0] + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain
+	rx_gain_mode[CC_id][i] = max_gain;
+      PHY_vars_UE_g[0][CC_id]->rx_total_gain_dB =  PHY_vars_UE_g[0][CC_id]->rx_gain_max[0] + (int)rx_gain[CC_id][0] - 30; //-30 because it was calibrated with a 30dB gain
     }
     else if ((mode == rx_calib_ue_med)) {
       for (i=0;i<4;i++)
-	openair0_cfg[CC_id].rxg_mode[i] =  med_gain;
-      PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_med[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
+	rx_gain_mode[CC_id][i] =  med_gain;
+      PHY_vars_UE_g[0][CC_id]->rx_total_gain_dB =  PHY_vars_UE_g[0][CC_id]->rx_gain_med[0]  + (int)rx_gain[CC_id][0] - 30; //-30 because it was calibrated with a 30dB gain;
     }
     else if ((mode == rx_calib_ue_byp)) {
       for (i=0;i<4;i++)
-	openair0_cfg[CC_id].rxg_mode[i] =  byp_gain;
-      PHY_vars_UE_g[CC_id][0]->rx_total_gain_dB =  PHY_vars_UE_g[CC_id][0]->rx_gain_byp[0]  + (int)rx_gain - 30; //-30 because it was calibrated with a 30dB gain;
+	rx_gain_mode[CC_id][i] =  byp_gain;
+      PHY_vars_UE_g[0][CC_id]->rx_total_gain_dB =  PHY_vars_UE_g[0][CC_id]->rx_gain_byp[0]  + (int)rx_gain[CC_id][0] - 30; //-30 because it was calibrated with a 30dB gain;
     }
+#else
+    PHY_vars_UE_g[0][CC_id]->rx_total_gain_dB =  (int)rx_gain[CC_id][0]; 
+#endif
     
-    PHY_vars_UE_g[CC_id][0]->tx_power_max_dBm = tx_max_power;
+    PHY_vars_UE_g[0][CC_id]->tx_power_max_dBm = tx_max_power[CC_id];
     }
+
     NB_UE_INST=1;
     NB_INST=1;
     
@@ -2192,7 +2197,7 @@ int main(int argc, char **argv) {
     openair_daq_vars.auto_freq_correction = 0;
     openair_daq_vars.use_ia_receiver = 0;
     
-
+  
     
     //  printf("tx_max_power = %d -> amp %d\n",tx_max_power,get_tx_amp(tx_max_power,tx_max_power));
   }
@@ -2221,14 +2226,16 @@ int main(int argc, char **argv) {
 			  PHY_vars_eNB_g[0][CC_id]->X_u);
 
 #ifdef USRP
-	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  (int)rx_gain; 
+	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  (int)rx_gain[CC_id][0]; 
 #else
-	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain - 30; //was measured at rxgain=30;
-#endif
+	PHY_vars_eNB_g[0][CC_id]->rx_total_gain_eNB_dB =  rxg_max[0] + (int)rx_gain[CC_id][0] - 30; //was measured at rxgain=30;
 	// set eNB to max gain
 	for (i=0;i<4;i++)
-	  openair0_cfg[CC_id].rxg_mode[i] =  max_gain;
+	  rx_gain_mode[CC_id][i] = max_gain;
+#endif
       }
+
+
       NB_eNB_INST=1;
       NB_INST=1;
 
@@ -2283,15 +2290,17 @@ int main(int argc, char **argv) {
     openair0_cfg[card].sample_rate = sample_rate;
     openair0_cfg[card].tx_bw = bw;
     openair0_cfg[card].rx_bw = bw;
-    for (i=0;i<4;i++) {
-      openair0_cfg[card].tx_gain[i] = tx_gain[i];
-      openair0_cfg[card].rx_gain[i] = rx_gain[i];
+    // in the case of the USRP, the following variables need to be initialized before the init
+    // since the USRP only supports one CC (for the moment), we initialize all the cards with first CC. 
+    // in the case of EXMIMO2, these values are overwirtten in the function setup_eNB/UE_buffer
 #ifdef USRP
+    for (i=0;i<4;i++) {
+      openair0_cfg[card].tx_gain[i] = tx_gain[0][i];
+      openair0_cfg[card].rx_gain[i] = rx_gain[0][i];
       openair0_cfg[card].tx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] : downlink_frequency[0][i]+uplink_frequency_offset[0][i];
       openair0_cfg[card].rx_freq[i] = (UE_flag==0) ? downlink_frequency[0][i] + uplink_frequency_offset[0][i] : downlink_frequency[0][i];
-#endif
     }
-
+#endif
   }
 
   if (openair0_device_init(&openair0, &openair0_cfg[0]) <0) {
@@ -2353,7 +2362,10 @@ int main(int argc, char **argv) {
 
   // connect the TX/RX buffers
   if (UE_flag==1) {
-    setup_ue_buffers(PHY_vars_UE_g[0],&openair0_cfg[0],rf_map);
+    if (setup_ue_buffers(PHY_vars_UE_g[0],&openair0_cfg[0],rf_map)!=0) {
+      printf("Error setting up eNB buffer\n");
+      exit(-1);
+    }
     printf("Setting UE buffer to all-RX\n");
     // Set LSBs for antenna switch (ExpressMIMO)
     for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
@@ -2696,6 +2708,8 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
       }
       else {
 	openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].rx_gain[rf_map[CC_id].chain+i] = rx_gain[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].rxg_mode[rf_map[CC_id].chain+i] = rx_gain_mode[CC_id][i];
 	openair0_cfg[rf_map[CC_id].card].rx_num_channels++;
       }
 
@@ -2711,6 +2725,7 @@ int setup_ue_buffers(PHY_VARS_UE **phy_vars_ue, openair0_config_t *openair0_cfg,
       }
       else {
 	openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].tx_gain[rf_map[CC_id].chain+i] = tx_gain[CC_id][i];
 	openair0_cfg[rf_map[CC_id].card].tx_num_channels++;
       }
 
@@ -2776,6 +2791,8 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
       }
       else {
 	openair0_cfg[rf_map[CC_id].card].rx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i]+uplink_frequency_offset[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].rx_gain[rf_map[CC_id].chain+i] = rx_gain[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].rxg_mode[rf_map[CC_id].chain+i] = rx_gain_mode[CC_id][i];
 	openair0_cfg[rf_map[CC_id].card].rx_num_channels++;
       }
       printf("rxdata[%d] @ %p\n",i,phy_vars_eNB[CC_id]->lte_eNB_common_vars.rxdata[0][i]);
@@ -2796,6 +2813,7 @@ int setup_eNB_buffers(PHY_VARS_eNB **phy_vars_eNB, openair0_config_t *openair0_c
 	printf("Setting TX frequency to %d for CC_id %d, card %d, chain %d\n",
 	       downlink_frequency[CC_id][i],CC_id,rf_map[CC_id].card,rf_map[CC_id].chain+i);
 	openair0_cfg[rf_map[CC_id].card].tx_freq[rf_map[CC_id].chain+i] = downlink_frequency[CC_id][i];
+	openair0_cfg[rf_map[CC_id].card].tx_gain[rf_map[CC_id].chain+i] = tx_gain[CC_id][i];
 	openair0_cfg[rf_map[CC_id].card].tx_num_channels++;
       }
       
