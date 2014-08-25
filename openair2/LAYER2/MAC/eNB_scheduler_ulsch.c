@@ -532,12 +532,12 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 	      UE_is_to_be_scheduled(module_idP,CC_id,UE_id));
 
 	/* [SR] 01/07/13: Don't schedule UE if we cannot get harq pid */
-#ifndef EXMIMO_IOT
-	if ((((UE_is_to_be_scheduled(module_idP,CC_id,UE_id)>0)) || (round>0) || ((frameP%10)==0)) && (ret == 0))
+	//#ifndef EXMIMO_IOT
+	//	if ((((UE_is_to_be_scheduled(module_idP,CC_id,UE_id)>0)) || (round>0) || ((frameP%10)==0)) && (ret == 0))
 	  // if there is information on bsr of DCCH, DTCH or if there is UL_SR, or if there is a packet to retransmit, or we want to schedule a periodic feedback every 10 frames
-#else
+	//#else
 	  if (round==0)
-#endif
+	    //#endif
 	    {
 	      LOG_D(MAC,"[eNB %d][PUSCH %d] Frame %d subframeP %d Scheduling UE %d round %d (SR %d)\n",
                     module_idP,harq_pid,frameP,subframeP,UE_id,round,
