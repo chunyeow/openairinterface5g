@@ -3591,14 +3591,14 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
       LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, returning to PRACH\n",phy_vars_ue->Mod_id,
 	    phy_vars_ue->frame,next_slot>>1);
       phy_vars_ue->UE_mode[eNB_id] = PRACH;
-      mac_xface->macphy_exit("Connection lost");
+      //      mac_xface->macphy_exit("Connection lost");
     }
     else if (ret == PHY_RESYNCH) {
       LOG_E(PHY,"[UE %d] Frame %d, subframe %d RRC Connection lost, trying to resynch\n",
 	    phy_vars_ue->Mod_id,
 	    phy_vars_ue->frame,next_slot>>1);
       phy_vars_ue->UE_mode[eNB_id] = RESYNCH;
-      mac_xface->macphy_exit("Connection lost");
+      //     mac_xface->macphy_exit("Connection lost");
       //exit(-1);
     } else if (ret == PHY_HO_PRACH) {
       LOG_I(PHY,"[UE %d] Frame %d, subframe %d, return to PRACH and perform a contention-free access\n",

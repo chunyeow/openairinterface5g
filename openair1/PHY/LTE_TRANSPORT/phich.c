@@ -1343,12 +1343,13 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
   harq_pid = subframe2harq_pid(frame_parms,pusch_frame,pusch_subframe);
 
   for (UE_id=0;UE_id<NUMBER_OF_UE_MAX;UE_id++) {
-    if (ulsch_eNB[UE_id]) {
-      
+    if ((ulsch_eNB[UE_id])&&(ulsch_eNB[UE_id]->rnti>0)) {
+      LOG_D(PHY,"[eNB][PUSCH %d/%x] Frame %d subframe %d (pusch_subframe %d,pusch_frame %d) phich active %d\n",
+	    harq_pid,ulsch_eNB[UE_id]->rnti,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,pusch_subframe,pusch_frame,ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active);      
       if (ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active == 1) {
 
-      LOG_D(PHY,"[eNB][PUSCH %x/%d] Frame %d subframe %d (pusch_subframe %d,pusch_frame %d) phich active %d\n",
-	  ulsch_eNB[UE_id]->rnti,harq_pid,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,pusch_subframe,pusch_frame,ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active);
+      LOG_D(PHY,"[eNB][PUSCH %d/%x] Frame %d subframe %d (pusch_subframe %d,pusch_frame %d) phich active %d\n",
+	    harq_pid,ulsch_eNB[UE_id]->rnti,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe,pusch_subframe,pusch_frame,ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_active);
       
 	ngroup_PHICH = (ulsch_eNB[UE_id]->harq_processes[harq_pid]->first_rb + 
 			ulsch_eNB[UE_id]->harq_processes[harq_pid]->n_DMRS)%Ngroup_PHICH;
@@ -1398,7 +1399,7 @@ void generate_phich_top(PHY_VARS_eNB *phy_vars_eNB,
 	if ((ulsch_eNB[UE_id]->harq_processes[harq_pid]->dci_alloc == 0) &&  
 	    (ulsch_eNB[UE_id]->harq_processes[harq_pid]->rar_alloc == 0) ){
 	  if (ulsch_eNB[UE_id]->harq_processes[harq_pid]->phich_ACK==0 ){
-	    LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d, subframe %d : PHICH ACK / (no format0 DCI) Setting subframe_scheduling_flag\n",
+	    LOG_D(PHY,"[eNB %d][PUSCH %d] frame %d, subframe %d : PHICH NACK / (no format0 DCI) Setting subframe_scheduling_flag\n",
 		phy_vars_eNB->Mod_id,harq_pid,phy_vars_eNB->proc[sched_subframe].frame_tx,subframe);
 	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->subframe_scheduling_flag = 1;
 	    //	    ulsch_eNB[UE_id]->harq_processes[harq_pid]->Ndi = 0;

@@ -49,7 +49,7 @@ __m128i zeroPMI;
 #define k1 ((long long int) 1000)
 #define k2 ((long long int) (1024-k1))
 
-#define DEBUG_MEAS
+//#define DEBUG_MEAS
 
 #ifdef USER_MODE
 void print_shorts(char *s,__m128i *x) {

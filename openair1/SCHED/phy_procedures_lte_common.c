@@ -552,7 +552,7 @@ LTE_eNB_UE_stats* get_eNB_UE_stats(uint8_t Mod_id, uint8_t  CC_id,uint16_t rnti)
   }
   UE_id = find_ue(rnti, PHY_vars_eNB_g[Mod_id][CC_id]);
   if (UE_id == -1) {
-    LOG_E(PHY,"get_eNB_UE_stats: UE with rnti %x not found\n",rnti);
+    //    LOG_E(PHY,"get_eNB_UE_stats: UE with rnti %x not found\n",rnti);
     return NULL;
   }
   return(&PHY_vars_eNB_g[Mod_id][CC_id]->eNB_UE_stats[(uint32_t)UE_id]);
