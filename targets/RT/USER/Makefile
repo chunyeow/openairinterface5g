@@ -35,6 +35,10 @@ CFLAGS += -g -ggdb
 endif
 SRC = synctest.c condtest.c #lte-softmodem.c
 
+ifdef LIBCONFIG_LONG
+CFLAGS += -DLIBCONFIG_LONG
+endif
+
 
 ifndef RTAI
 RTAI=1
