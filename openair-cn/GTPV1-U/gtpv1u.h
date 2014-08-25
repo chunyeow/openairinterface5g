@@ -40,7 +40,7 @@
  * otherwise use standard fprintf as logger.
  */
 #if defined(ENB_MODE)
-# define GTPU_DEBUG(x, args...)   LOG_I(GTPU, x, ##args)
+# define GTPU_DEBUG(x, args...)   LOG_D(GTPU, x, ##args)
 # define GTPU_INFO(x, args...)    LOG_I(GTPU, x, ##args)
 # define GTPU_WARNING(x, args...) LOG_W(GTPU, x, ##args)
 # define GTPU_ERROR(x, args...)   LOG_E(GTPU, x, ##args)

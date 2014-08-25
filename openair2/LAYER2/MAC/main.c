@@ -467,6 +467,7 @@ int l2_init(LTE_DL_FRAME_PARMS *frame_parms,int eMBMS_active, uint8_t cba_group_
   mac_xface->get_TBS_DL             = get_TBS_DL;
   mac_xface->get_TBS_UL             = get_TBS_UL;
   mac_xface->get_nCCE_max           = get_nCCE_max;
+  mac_xface->get_nCCE_offset        = get_nCCE_offset;
   mac_xface->get_ue_mode            = get_ue_mode;
   mac_xface->phy_config_sib1_eNB    = phy_config_sib1_eNB;
   mac_xface->phy_config_sib1_ue     = phy_config_sib1_ue;

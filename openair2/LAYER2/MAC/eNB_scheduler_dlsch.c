@@ -325,6 +325,8 @@ void schedule_ue_spec(module_id_t   module_idP,
   eNB_MAC_INST         *eNB      = &eNB_mac_inst[module_idP];
   UE_list_t            *UE_list  = &eNB->UE_list;
   LTE_DL_FRAME_PARMS   *frame_parms[MAX_NUM_CCs];
+  int                   continue_flag=0;
+
   if (UE_list->head==-1)
     return;
   
@@ -376,20 +378,28 @@ void schedule_ue_spec(module_id_t   module_idP,
       if (rnti==0) {
 	LOG_N(MAC,"Cannot find rnti for UE_id %d (num_UEs %d)\n",UE_id,UE_list->num_UEs);
 	// mac_xface->macphy_exit("Cannot find rnti for UE_id");
-	continue;
+	continue_flag=1;
       }
       if (eNB_UE_stats==NULL) {
 	LOG_N(MAC,"[eNB] Cannot find eNB_UE_stats\n");
 	//	mac_xface->macphy_exit("[MAC][eNB] Cannot find eNB_UE_stats\n");
-	continue; 
+	continue_flag=1; 
       }
       if ((pre_nb_available_rbs[CC_id][UE_id] == 0) || (nCCE[CC_id] < (1<<aggregation))) {
 	LOG_D(MAC,"[eNB %d] Frame %d : no RB allocated for UE %d on CC_id %d: continue \n",
 	      module_idP, frameP, UE_id, CC_id, nb_rb_used0[CC_id], pre_nb_available_rbs[CC_id][UE_id], nCCE[CC_id], aggregation);
 	//if(mac_xface->get_transmission_mode(module_idP,rnti)==5)
-	continue; //to next user (there might be rbs availiable for other UEs in TM5
+	continue_flag=1; //to next user (there might be rbs availiable for other UEs in TM5
 	// else
 	//	break;
+      }
+      if (continue_flag == 1 ){
+	add_ue_dlsch_info(module_idP,
+			  CC_id,
+			  UE_id,
+			  subframeP,
+			  S_DL_NONE);
+	continue;
       }
       if (frame_parms[CC_id]->frame_type == TDD) 
 	set_ue_dai (subframeP,
@@ -430,9 +440,10 @@ void schedule_ue_spec(module_id_t   module_idP,
 	UE_list->UE_template[CC_id][UE_id].rballoc_subband[harq_pid][j] = 0;
       }
 
-      LOG_D(MAC,"[eNB %d] Frame %d: Scheduling UE %d on CC_id %d (rnti %x, harq_pid %d, round %d, available rb %d, cqi %d, mcs %d, rrc status %d)\n",
+      LOG_D(MAC,"[eNB %d] Frame %d: Scheduling UE %d on CC_id %d (rnti %x, harq_pid %d, round %d, rb %d, cqi %d, mcs %d, ncc %d, rrc %d)\n",
 	    module_idP, frameP, UE_id,CC_id,rnti,harq_pid, round,nb_available_rb,
 	    eNB_UE_stats->DL_cqi[0], eNB_UE_stats->dlsch_mcs1,
+	    nCCE[CC_id],
 	    UE_list->eNB_UE_stats[CC_id][UE_id].rrc_status);
                 
      
@@ -1718,7 +1729,7 @@ void fill_DLSCH_dci(module_id_t module_idP,frame_t frameP, sub_frame_t subframeP
 	case 1:
 
 	case 2:
-	  LOG_D(MAC,"[USER-PLANE DEFAULT DRB] Adding UE spec DCI for %d PRBS (%x) => ",nb_rb,rballoc);
+	  LOG_D(MAC,"[eNB %d] Adding UE %d spec DCI for %d PRBS (rb alloc: %x) \n",module_idP, UE_id, nb_rb,rballoc);
 	  if (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.frame_type == TDD) {
 	    switch (PHY_vars_eNB_g[module_idP][CC_id]->lte_frame_parms.N_RB_DL) {
 	    case 6:

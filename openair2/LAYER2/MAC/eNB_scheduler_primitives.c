@@ -540,6 +540,8 @@ void add_ue_spec_dci(DCI_PDU *DCI_pdu,void *pdu,rnti_t rnti,unsigned char dci_si
   DCI_pdu->dci_alloc[DCI_pdu->Num_common_dci+DCI_pdu->Num_ue_spec_dci].ra_flag    = ra_flag;
 
   DCI_pdu->Num_ue_spec_dci++;
+
+  LOG_D(MAC,"add ue specific dci format %d for rnti %d \n",dci_fmt,rnti);
 }
 
 

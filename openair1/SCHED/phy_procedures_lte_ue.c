@@ -15,8 +15,8 @@
 
     You should have received a copy of the GNU General Public License
     along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
-   see <http://www.gnu.org/licenses/>.
+    included in this distribution in the file called "COPYING". If not, 
+    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
@@ -3306,9 +3306,9 @@ void phy_UE_lte_measurement_thresholds_test_and_report(instance_t instanceP, ral
 
 void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold_phy_t* threshold_phy_pP) {
     unsigned int  mod_id;
-
+    int CC_id  = 0; // this should become the function argument, requested by the upper layers.
+ 
     mod_id = instanceP - NB_eNB_INST;
-
     switch (threshold_phy_pP->link_param.link_param_type.choice) {
 
         case RAL_LINK_PARAM_TYPE_CHOICE_GEN:
@@ -3324,23 +3324,19 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                     break;
                 case RAL_LINK_PARAM_GEN_THROUGHPUT:
                     break;
-                case RAL_LINK_PARAM_GEN_PACKET_ERROR_RATE:
-                    break;
-                default:;
-            }
             break;
 
         case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
             switch (threshold_phy_pP->link_param.link_param_type._union.link_param_gen) {
                 case RAL_LINK_PARAM_LTE_UE_RSRP:
 //                     phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rx_rssi_dBm[0]);
-                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rsrp[0]);
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id][CC_id]->PHY_measurements.rsrp[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_UE_RSRQ:
-                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.rsrq[0]);
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id][CC_id]->PHY_measurements.rsrq[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_UE_CQI:
-                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id]->PHY_measurements.wideband_cqi_avg[0]);
+                    phy_UE_lte_measurement_thresholds_test_and_report(instanceP, threshold_phy_pP, PHY_vars_UE_g[mod_id][CC_id]->PHY_measurements.wideband_cqi_avg[0]);
                     break;
                 case RAL_LINK_PARAM_LTE_AVAILABLE_BW:
                     break;
@@ -3365,6 +3361,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
             break;
 
         default:;
+	    }
     }
 }
 #   endif
@@ -3378,6 +3375,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
   instance_t    instance;
   unsigned int  Mod_id;
   int           result;
+  int           CC_id =0;
 #endif
 
 #undef DEBUG_PHY_PROC
@@ -3442,7 +3440,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
         {
             hashtable_rc_t       hashtable_rc;
 
-            hashtable_rc = hashtable_is_key_exists(PHY_vars_UE_g[Mod_id]->ral_thresholds_timed, (uint64_t)(TIMER_HAS_EXPIRED(msg_p).timer_id));
+            hashtable_rc = hashtable_is_key_exists(PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_timed, (uint64_t)(TIMER_HAS_EXPIRED(msg_p).timer_id));
             if (hashtable_rc == HASH_TABLE_OK) {
                 phy_UE_lte_check_measurement_thresholds(instance, (ral_threshold_phy_t*)TIMER_HAS_EXPIRED(msg_p).arg);
             }
@@ -3483,14 +3481,14 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                                   switch (PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type.choice) {
                                       case RAL_LINK_PARAM_TYPE_CHOICE_GEN:
                                           SLIST_INSERT_HEAD(
-                                              &PHY_vars_UE_g[Mod_id]->ral_thresholds_gen_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_gen],
+                                              &PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_gen_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_gen],
                                               threshold_phy_p,
                                               ral_thresholds);
                                           break;
 
                                       case RAL_LINK_PARAM_TYPE_CHOICE_LTE:
                                           SLIST_INSERT_HEAD(
-                                              &PHY_vars_UE_g[Mod_id]->ral_thresholds_lte_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_lte],
+                                              &PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_lte_polled[PHY_MEAS_THRESHOLD_REQ(msg_p).cfg_param.link_param_type._union.link_param_lte],
                                               threshold_phy_p,
                                               ral_thresholds);
                                           break;
@@ -3512,7 +3510,7 @@ void phy_UE_lte_check_measurement_thresholds(instance_t instanceP, ral_threshold
                                       &timer_id);
 
                                   if (res == 0) {
-                                      hashtable_rc = hashtable_insert(PHY_vars_UE_g[Mod_id]->ral_thresholds_timed, (uint64_t )timer_id, (void*)threshold_phy_p);
+                                      hashtable_rc = hashtable_insert(PHY_vars_UE_g[Mod_id][CC_id]->ral_thresholds_timed, (uint64_t )timer_id, (void*)threshold_phy_p);
                                       if (hashtable_rc == HASH_TABLE_OK) {
                                           threshold_phy_p->timer_id = timer_id;
                                       } else {

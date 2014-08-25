@@ -94,7 +94,11 @@ try:
         print "username: " + user 
         #print "password: " + pw 
     
-    prompt = os.getenv("PS1")[-2]
+    try:
+        prompt = os.getenv("PS1")[-2]
+    except : 
+        #prompt = input('set your shell prompt: ') 
+        prompt = '$'
     print "your prompt is:   " + prompt
     
     oai.connect(user,pw,prompt)

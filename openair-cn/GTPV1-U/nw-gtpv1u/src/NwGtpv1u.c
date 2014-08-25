@@ -782,7 +782,7 @@ nwGtpv1uProcessUdpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
             break;
 
         case NW_GTP_GPDU:
-            GTPU_DEBUG("NW_GTP_GPDU");
+            GTPU_DEBUG("NW_GTP_GPDU: DATA COMING FROM UDP\n");
             ret = nwGtpv1uProcessGpdu(thiz, udpData, udpDataLen, peerIp);
             break;
 

@@ -614,7 +614,7 @@ inline void sctp_eNB_read_from_socket(struct sctp_cnx_list_elm_s *sctp_cnx)
             free(sctp_cnx);
         } else {
             SCTP_DEBUG("An error occured during read\n");
-            SCTP_ERROR("sctp_recvmsg: %s:%d\n", strerror(errno), errno);
+            SCTP_ERROR("sctp_recvmsg (fd %d, len %d ): %s:%d\n", sctp_cnx->sd, n, strerror(errno), errno);
         }
         return;
     } else if (n == 0) {

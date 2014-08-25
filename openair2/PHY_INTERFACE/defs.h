@@ -241,6 +241,9 @@ typedef struct
     /// Function to retrieve number of CCE
     uint16_t (*get_nCCE_max)(module_id_t Mod_id,uint8_t  CC_id);
 
+    /// Function to get the CCE offset
+    int (*get_nCCE_offset)(unsigned char L, int nCCE, int common_dci, unsigned short rnti, unsigned char subframe);
+
     /// Function to retrieve number of PRB in an rb_alloc
     uint32_t (*get_nb_rb)(uint8_t ra_header, uint32_t rb_alloc, int n_rb_dl);
 

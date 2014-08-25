@@ -108,7 +108,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
 
         for i in range(NUM_eNB) :
             for j in range(NUM_UE) :
-                conf = '-a -A AWGN -l6 -u' + str(j+1) +' -b'+ str(i+1)
+                conf = '-a -A AWGN -l7 -u' + str(j+1) +' -b'+ str(i+1)
                 trace = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + '.txt'
                 tee = ' 2>&1 > ' + trace
 
@@ -116,7 +116,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
                     oai.send('./oaisim.rel8.nas.' + host + ' ' + conf + ' &')
                 else :    
                     oai.send('echo '+pw+ ' | sudo -S -E ./oaisim.rel8.nas.'+ host + ' ' + conf + tee + ' &')
-                time.sleep(20)
+                time.sleep(10)
                 for k in range(NUM_TRIALS) :
                     trace_ping = logdir + '/log_' + host + case + test + '_' + str(i) + str(j) + str(k) + '_ping.txt'
                     tee_ping = ' 2>&1 | tee ' + trace_ping
@@ -176,7 +176,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
                 log_name = logdir + '/log_' + host + case + test + '_' + str(i) + str(j)
                 itti_name = log_name + '.log'
                 trace_name = log_name + '.txt'
-                conf = '-a -l7 -A AWGN --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.sfr.sud.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
+                conf = '-a -l7 -A AWGN --enb-conf ../../PROJECTS/GENERIC-LTE-EPC/CONF/enb.band7.conf -n' + str((i+1+j) * 50) + ' -u' + str(i+1) +' -b'+ str(j+1) + ' -K' + itti_name
                 tee = ' 2>&1 | tee -a ' + trace_name
                 command = './oaisim.rel8.itti.' + host + ' ' + conf
                 oai.send('echo ' + command + ' > ' + trace_name + ';')
