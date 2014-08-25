@@ -308,6 +308,11 @@ extern int asn_debug;
 extern int asn1_xer_print;
 #endif
 
+#ifdef LIBCONFIG_LONG
+#define libconfig_int long
+#else
+#define libconfig_int int
+#endif
 const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   config_t          cfg;
   config_setting_t *setting                       = NULL;
@@ -325,83 +330,83 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP) {
   int               i;
   int               j;
   int               parse_errors                  = 0;
-  int               enb_id                        = 0;
+  libconfig_int     enb_id                        = 0;
   const char*       cell_type                     = NULL;
   const char*       tac                           = 0;
   const char*       enb_name                      = NULL;
   const char*       mcc                           = 0;
   const char*       mnc                           = 0;
   const char*       frame_type;
-  int          tdd_config;
-  int          tdd_config_s;
+  libconfig_int          tdd_config;
+  libconfig_int          tdd_config_s;
   const char*       prefix_type;
-  int          eutra_band;
+  libconfig_int          eutra_band;
   int64_t     downlink_frequency;
-  int          uplink_frequency_offset;
-  int          Nid_cell;
-  int          Nid_cell_mbsfn;
-  int          N_RB_DL;
-  int	    nb_antennas_tx;   
-  int          nb_antennas_rx;   
-  int          prach_root;   
-  int          prach_config_index; 
+  libconfig_int          uplink_frequency_offset;
+  libconfig_int          Nid_cell;
+  libconfig_int          Nid_cell_mbsfn;
+  libconfig_int          N_RB_DL;
+  libconfig_int	    nb_antennas_tx;   
+  libconfig_int          nb_antennas_rx;   
+  libconfig_int          prach_root;   
+  libconfig_int          prach_config_index; 
   const char*          prach_high_speed; 
-  int          prach_zero_correlation; 
-  int          prach_freq_offset; 
-  int          pucch_delta_shift; 
-  int          pucch_nRB_CQI; 
-  int          pucch_nCS_AN;
+  libconfig_int          prach_zero_correlation; 
+  libconfig_int          prach_freq_offset; 
+  libconfig_int          pucch_delta_shift; 
+  libconfig_int          pucch_nRB_CQI; 
+  libconfig_int          pucch_nCS_AN;
 #ifndef Rel10 
-  int          pucch_n1_AN; 
+  libconfig_int          pucch_n1_AN; 
 #endif
-  int          pdsch_referenceSignalPower; 
-  int          pdsch_p_b; 
-  int          pusch_n_SB;
+  libconfig_int          pdsch_referenceSignalPower; 
+  libconfig_int          pdsch_p_b; 
+  libconfig_int          pusch_n_SB;
   const char *      pusch_hoppingMode;
-  int          pusch_hoppingOffset;
+  libconfig_int          pusch_hoppingOffset;
   const char*          pusch_enable64QAM; 
   const char*          pusch_groupHoppingEnabled; 
-  int          pusch_groupAssignment; 
+  libconfig_int          pusch_groupAssignment; 
   const char*          pusch_sequenceHoppingEnabled; 
-  int          pusch_nDMRS1; 
+  libconfig_int          pusch_nDMRS1; 
   const char*       phich_duration; 
   const char*          phich_resource; 
   const char*          srs_enable; 
-  int          srs_BandwidthConfig; 
-  int          srs_SubframeConfig; 
+  libconfig_int          srs_BandwidthConfig; 
+  libconfig_int          srs_SubframeConfig; 
   const char*          srs_ackNackST; 
   const char*          srs_MaxUpPts;
-  int          pusch_p0_Nominal; 
+  libconfig_int          pusch_p0_Nominal; 
   const char*          pusch_alpha; 
-  int          pucch_p0_Nominal; 
-  int          msg3_delta_Preamble;
-  int          ul_CyclicPrefixLength;
+  libconfig_int          pucch_p0_Nominal; 
+  libconfig_int          msg3_delta_Preamble;
+  libconfig_int          ul_CyclicPrefixLength;
   const char*          pucch_deltaF_Format1; 
   const char*          pucch_deltaF_Format1a; 
   const char*          pucch_deltaF_Format1b; 
   const char*          pucch_deltaF_Format2; 
   const char*          pucch_deltaF_Format2a; 
   const char*          pucch_deltaF_Format2b; 
-  int              rach_numberOfRA_Preambles; 
+  libconfig_int              rach_numberOfRA_Preambles; 
   const char*       rach_preamblesGroupAConfig;
-  int	            rach_sizeOfRA_PreamblesGroupA;
-  int	            rach_messageSizeGroupA;
+  libconfig_int	            rach_sizeOfRA_PreamblesGroupA;
+  libconfig_int	            rach_messageSizeGroupA;
   const char*       rach_messagePowerOffsetGroupB;
-  int              rach_powerRampingStep; 
-  int              rach_preambleInitialReceivedTargetPower; 
-  int              rach_preambleTransMax; 
-  int              rach_raResponseWindowSize; 
-  int              rach_macContentionResolutionTimer;
-  int              rach_maxHARQ_Msg3Tx;
-  int              pcch_defaultPagingCycle;
+  libconfig_int              rach_powerRampingStep; 
+  libconfig_int              rach_preambleInitialReceivedTargetPower; 
+  libconfig_int              rach_preambleTransMax; 
+  libconfig_int              rach_raResponseWindowSize; 
+  libconfig_int              rach_macContentionResolutionTimer;
+  libconfig_int              rach_maxHARQ_Msg3Tx;
+  libconfig_int              pcch_defaultPagingCycle;
   const char*       pcch_nB;
-  int              bcch_modificationPeriodCoeff;
-  int              ue_TimersAndConstants_t300;
-  int              ue_TimersAndConstants_t301;
-  int              ue_TimersAndConstants_t310;
-  int              ue_TimersAndConstants_t311;
-  int              ue_TimersAndConstants_n310;
-  int              ue_TimersAndConstants_n311;
+  libconfig_int              bcch_modificationPeriodCoeff;
+  libconfig_int              ue_TimersAndConstants_t300;
+  libconfig_int              ue_TimersAndConstants_t301;
+  libconfig_int              ue_TimersAndConstants_t310;
+  libconfig_int              ue_TimersAndConstants_t311;
+  libconfig_int              ue_TimersAndConstants_n310;
+  libconfig_int              ue_TimersAndConstants_n311;
 
 
  
