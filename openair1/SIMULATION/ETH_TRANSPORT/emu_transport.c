@@ -29,7 +29,7 @@
 /*! \file phy_emulation.c
  *  \brief implements the underlying protocol for emulated data exchange over Ethernet using IP multicast
  *  \author Navid Nikaein
- *  \date 2011
+ *  \date 2011 - 2014
  *  \version 1.1
  *  \company Eurecom
  *  \email: navid.nikaein@eurecom.fr
@@ -148,7 +148,7 @@ void emu_transport(unsigned int frame, unsigned int last_slot,
         }
         // UL
         if (((frame_type == 1) && (direction == SF_UL)) || (frame_type == 0) ) {
-            emu_transport_UL(frame, last_slot, next_slot);
+	    emu_transport_UL(frame, last_slot, next_slot);
         }
     }
 #if defined(ENABLE_PGM_TRANSPORT)
@@ -206,8 +206,8 @@ void emu_transport_UL(unsigned int frame, unsigned int last_slot,
             bypass_rx_data(frame, last_slot, next_slot, 1);
             bypass_tx_data(UE_TRANSPORT, frame, next_slot);
         } else {
-            bypass_rx_data(frame,last_slot, next_slot, 0);
-            bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
+	  bypass_rx_data(frame,last_slot, next_slot, 0);
+	  bypass_tx_data(WAIT_SM_TRANSPORT, frame, next_slot);
         }
     }
 
@@ -253,7 +253,9 @@ void clear_eNB_transport_info(uint8_t nb_eNB)
         eNB_transport_info[eNB_id][CC_id].num_ue_spec_dci=0;
       }
     }
-    //  LOG_T(EMU, "EMUL clear_eNB_transport_info\n");
+#ifdef DEBUG_EMU
+    LOG_D(EMU, "EMUL clear_eNB_transport_info\n");
+#endif
 }
 
 void clear_UE_transport_info(uint8_t nb_UE)
@@ -265,7 +267,9 @@ void clear_UE_transport_info(uint8_t nb_UE)
         UE_transport_info_TB_index[UE_id][CC_id]=0;
         memset((void *)&UE_transport_info[UE_id][CC_id].cntl,0,sizeof(UE_cntl));
     }
-    //  LOG_T(EMU, "EMUL clear_UE_transport_info\n");
+#ifdef DEBUG_EMU
+    LOG_D(EMU, "EMUL clear_UE_transport_info\n");
+#endif 
 }
 
 void fill_phy_enb_vars(unsigned int enb_id, uint8_t CC_id,unsigned int next_slot)
@@ -278,10 +282,6 @@ void fill_phy_enb_vars(unsigned int enb_id, uint8_t CC_id,unsigned int next_slot
     uint8_t nb_total_dci;
     int i;
 
-#ifdef DEBUG_EMU
-    LOG_D(EMU, " pbch fill phy eNB %d vars for slot %d fault %d\n",
-          enb_id, next_slot, network_fault);
-#endif
     // eNB
     // PBCH : copy payload
 
@@ -309,7 +309,10 @@ void fill_phy_enb_vars(unsigned int enb_id, uint8_t CC_id,unsigned int next_slot
         eNB_transport_info[enb_id][CC_id].num_ue_spec_dci;
     PHY_vars_eNB_g[enb_id][CC_id]->num_common_dci[(next_slot>>1)&1]  =
         eNB_transport_info[enb_id][CC_id].num_common_dci;
-
+#ifdef DEBUG_EMU
+    LOG_D(EMU, "Fill phy vars eNB %d for slot %d, DCI found %d  \n",
+          enb_id, next_slot, nb_total_dci);
+#endif
     if (nb_total_dci >0) {
 
         memcpy(PHY_vars_eNB_g[enb_id][CC_id]->dci_alloc[(next_slot>>1)&1],
@@ -423,9 +426,9 @@ void fill_phy_ue_vars(unsigned int ue_id, uint8_t CC_id,unsigned int last_slot)
 
 #ifdef DEBUG_EMU
     LOG_D(EMU,
-          "Last slot %d subframe %d Fill phy UE %d vars PRACH is (%d,%d) preamble (%d,%d) SR (%d,%d), pucch_sel (%d, %d)\n",
+          "Last slot %d subframe %d CC_id %d: Fill phy vars UE %d : PRACH is (%d,%d) preamble (%d,%d) SR (%d,%d), pucch_sel (%d, %d)\n",
 
-          last_slot,subframe,ue_id,
+          last_slot,subframe,CC_id, ue_id,
           UE_transport_info[ue_id][CC_id].cntl.prach_flag,
           ue_cntl_delay[ue_id][CC_id][last_slot%2].prach_flag,
           UE_transport_info[ue_id][CC_id].cntl.prach_id,

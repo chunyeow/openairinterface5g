@@ -689,7 +689,8 @@ void *l2l1_task(void *args_p) {
 	  log_set_instance_type (LOG_INSTANCE_ENB);
 #endif
 
-	  if ((next_slot % 2) == 0)
+	  //	  if ((next_slot % 2) == 0)  
+	  if ((slot&1) == 0) 
 	    clear_eNB_transport_info (oai_emulation.info.nb_enb_local);
 
 	  for (eNB_inst = oai_emulation.info.first_enb_local; (eNB_inst < (oai_emulation.info.first_enb_local + oai_emulation.info.nb_enb_local)); eNB_inst++) {
@@ -750,6 +751,7 @@ void *l2l1_task(void *args_p) {
 #endif
 
 	  if ((next_slot % 2) == 0)
+	  // if ((slot&1) == 0) 
 	    clear_UE_transport_info (oai_emulation.info.nb_ue_local);
 	  for (UE_inst = oai_emulation.info.first_ue_local;
 	       (UE_inst < (oai_emulation.info.first_ue_local + oai_emulation.info.nb_ue_local)); UE_inst++) {

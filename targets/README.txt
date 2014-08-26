@@ -18,6 +18,7 @@ First, you must have all four openair SW directories, openair1, openair2, openai
         - libblas and libblas-dev
 	- libconfig++8-dev
 	- libgtk-3-dev
+	- libpgm-5.1 and libpgm-5.1-dev for distributed simulation with reliable multicast transmport
         - libxml2 and libxml2-dev and gccxml
         - libforms-bin libforms-dev
 	- nettle-dev nettle-bin openssl libssl-dev

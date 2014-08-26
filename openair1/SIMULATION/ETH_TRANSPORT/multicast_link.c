@@ -276,7 +276,7 @@ int multicast_link_read_data_from_sock(uint8_t is_master)
     multicast_link_build_select_list ();
 
     LOG_D(EMU, "Stuck on select with timeout %s\n",
-          timeout_p == NULL ? "infinite" : "1000 usecs");
+          timeout_p == NULL ? "infinite" : "15000 usecs");
 
     readsocks = select(highsock + 1, &socks, (fd_set *) 0, (fd_set *) 0, timeout_p);
     if (readsocks < 0) {

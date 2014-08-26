@@ -29,7 +29,7 @@
 /*! \file bypass_session_layer.h
  *  \brief implementation of emultor tx and rx
  *  \author Navid Nikaein and Raymond Knopp
- *  \date 2011
+ *  \date 2011 - 2014 
  *  \version 1.0
  *  \company Eurecom
  *  \email: navid.nikaein@eurecom.fr
@@ -246,7 +246,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
                                  int bytes_read)
 {
     UE_transport_info_t *UE_info;
-    int n_ue, n_enb,CC_id;
+    int n_ue, n_enb,CC_id=0;
     int total_tbs = 0, total_header = 0, ue_info_ix =0;
 
     DevAssert(bytes_read >= 0);
@@ -277,7 +277,7 @@ int emu_transport_handle_ue_info(bypass_msg_header_t *messg,
                 LOG_W(EMU,"RX [UE %d] Total size of buffer is %d (header%d,tbs %d) \n",
                         n_ue, total_header+total_tbs,total_header,total_tbs);
             }
-
+#warning "CC id should be adjusted, set to zero for the moment"
             memcpy(&UE_transport_info[n_ue][CC_id], UE_info, total_header + total_tbs);
 
             /* Go to the next UE info */
@@ -357,8 +357,9 @@ int bypass_rx_data(unsigned int frame, unsigned int last_slot,
 #if defined(ENABLE_PGM_TRANSPORT)
             if (messg->Message_type != EMU_TRANSPORT_NACK)
 #endif
-            DevCheck4((messg->frame == frame) && (messg->subframe == (next_slot>>1)),
-                      messg->frame, frame, messg->subframe, next_slot>>1);
+	      DevCheck4((messg->frame == frame) && (messg->subframe == (next_slot>>1)),
+			messg->frame, frame, messg->subframe, next_slot>>1);
+	     
 #else
             if ((messg->frame != frame) || (messg->subframe != next_slot>>1))
                 LOG_W(EMU,
@@ -589,7 +590,7 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
         sleep(oai_emulation.info.master_id+1);
         LOG_T(EMU,"[TX_DATA] SYNC TRANSPORT\n");
     } else if(Type==ENB_TRANSPORT) {
-        LOG_D(EMU,"[TX_DATA] ENB TRANSPORT\n");
+        
         messg->Message_type = EMU_TRANSPORT_INFO_ENB;
         total_size=0;
         total_tbs=0;
@@ -598,6 +599,11 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                 n_enb++) 
 	  for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
             total_tbs=0;
+	    LOG_D(EMU,"[TX_DATA] Frame %d subframe %d CC id %d : ENB TRANSPORT: num dci %d \n",
+		  frame, next_slot>>1, CC_id,
+		  eNB_transport_info[n_enb][CC_id].num_pmch + 
+		  eNB_transport_info[n_enb][CC_id].num_ue_spec_dci +
+		  eNB_transport_info[n_enb][CC_id].num_common_dci	  );
             for (n_dci = 0; n_dci < (eNB_transport_info[n_enb][CC_id].num_pmch + 
 				     eNB_transport_info[n_enb][CC_id].num_ue_spec_dci +
                                      eNB_transport_info[n_enb][CC_id].num_common_dci);
@@ -624,7 +630,8 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
         for (n_ue = oai_emulation.info.first_ue_local;
                 n_ue < (oai_emulation.info.first_ue_local+oai_emulation.info.nb_ue_local);
                 n_ue++) {
-            for (n_enb=0; n_enb<UE_transport_info[n_ue][CC_id].num_eNB; n_enb++) {
+         for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+	   for (n_enb=0; n_enb<UE_transport_info[n_ue][CC_id].num_eNB; n_enb++) {
                 total_tbs+=UE_transport_info[n_ue][CC_id].tbs[n_enb];
             }
             if (total_tbs <= MAX_TRANSPORT_BLOCKS_BUFFER_SIZE) {
@@ -635,10 +642,15 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                       "[UE]running out of memory for the UE emulation transport buffer of size %d\n",
                       MAX_TRANSPORT_BLOCKS_BUFFER_SIZE);
             }
+#ifdef DEBUG_EMU	    
+	    LOG_D(EMU,"[UE %d][eNB %d][CC %d] total size %d\n", 
+		  n_ue, n_enb, CC_id,total_size);
+#endif 
             memcpy(&bypass_tx_buffer[byte_tx_count], (char *)&UE_transport_info[n_ue][CC_id],
                    total_size);
             byte_tx_count += total_size;
-        }
+	 }
+	}
     } else if (Type == RELEASE_TRANSPORT) {
         messg->Message_type = EMU_TRANSPORT_INFO_RELEASE;
     } else {
@@ -656,8 +668,8 @@ void bypass_tx_data(emu_transport_info_t Type, unsigned int frame, unsigned int 
                                 bypass_tx_buffer, byte_tx_count);
 #endif
 
-    LOG_D(EMU, "Sent %d bytes [%s] with master_id %d and seq %"PRIuMAX"\n",
-          byte_tx_count, map_int_to_str(transport_names, Type),
+    LOG_D(EMU, "Frame %d, subframe %d (%d): Sent %d bytes [%s] with master_id %d and seq %"PRIuMAX"\n",
+          frame, next_slot>>1, next_slot,byte_tx_count, map_int_to_str(transport_names, Type),
           messg->master_id, messg->seq_num);
 }
 

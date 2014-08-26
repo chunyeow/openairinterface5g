@@ -15,8 +15,8 @@
 
     You should have received a copy of the GNU General Public License
     along with OpenAirInterface.The full GNU General Public License is 
-   included in this distribution in the file called "COPYING". If not, 
-   see <http://www.gnu.org/licenses/>.
+    included in this distribution in the file called "COPYING". If not, 
+    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
@@ -26,6 +26,15 @@
   Address      : Eurecom, Campus SophiaTech, 450 Route des Chappes, CS 50193 - 06904 Biot Sophia Antipolis cedex, FRANCE
 
  *******************************************************************************/
+/*! \file pgm_link.c
+ *  \brief implementation a warpper for openpgm for reliable multicast transmission
+ *  \author Navid Nikaein and S. Roux
+ *  \date 2013 - 2014 
+ *  \version 1.0
+ *  \company Eurecom
+ *  \email: navid.nikaein@eurecom.fr
+ */
+
 #include <pthread.h>
 #include <stdint.h>
 #include <string.h>
