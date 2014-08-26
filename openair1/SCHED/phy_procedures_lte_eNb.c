@@ -2208,7 +2208,7 @@ void process_HARQ_feedback(uint8_t UE_id,
       //    but we have to adapt the code below.  For example, if only one out of 2 are scheduled, only 1 bit o_ACK is used
 
       dlsch_ACK[0] = phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->o_ACK[0];
-      dlsch_ACK[1] = phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->o_ACK[1];
+      dlsch_ACK[1] = (phy_vars_eNB->pucch_config_dedicated[UE_id].tdd_AckNackFeedbackMode == bundling)?phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->o_ACK[0]:phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->o_ACK[1];
       //      printf("UE %d: ACK %d,%d\n",UE_id,dlsch_ACK[0],dlsch_ACK[1]);
     }
 
@@ -2315,8 +2315,8 @@ void process_HARQ_feedback(uint8_t UE_id,
 	  if ( dlsch_ACK[mp]==0) {
 	    // Received NAK 
 #ifdef DEBUG_PHY_PROC	
-	    LOG_I(PHY,"[eNB %d][PDSCH %x/%d] NAK Received in round %d, requesting retransmission\n",phy_vars_eNB->Mod_id,
-		  dlsch->rnti,dl_harq_pid[m],dlsch_harq_proc->round);
+	    LOG_I(PHY,"[eNB %d][PDSCH %x/%d] M = %d, m= %d, mp=%d NAK Received in round %d, requesting retransmission\n",phy_vars_eNB->Mod_id,
+		  dlsch->rnti,dl_harq_pid[m],M,m,mp,dlsch_harq_proc->round);
 #endif
 	    
 	    //	    if (dlsch_harq_proc->round == 0)

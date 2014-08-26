@@ -321,10 +321,11 @@ uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,
 	   unsigned char subframe,
 	   unsigned char *o_ACK) {
 
-  //printf("get_ack: SF %d\n",subframe);
+
   uint8_t status=0;
   uint8_t subframe_dl;
 
+  printf("get_ack: SF %d\n",subframe);
   if (frame_parms->frame_type == FDD) {
     if (subframe < 4)
       subframe_dl = subframe + 6;
@@ -372,6 +373,7 @@ uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,
 	else if (harq_ack[6].send_harq_status == 1)
 	  o_ACK[0] = harq_ack[6].ack;
 	status = harq_ack[5].send_harq_status + (harq_ack[6].send_harq_status<<1);
+	printf("Subframe 2, TDD config 3: harq_ack[5] = %d (%d),harq_ack[6] = %d (%d)\n",harq_ack[5].ack,harq_ack[5].send_harq_status,harq_ack[6].ack,harq_ack[6].send_harq_status);
       }
       else if (subframe == 3) {   // ACK subframes 7 and 8
 	if (harq_ack[7].send_harq_status == 1) {
@@ -383,6 +385,7 @@ uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,
 	  o_ACK[0] = harq_ack[8].ack;
 
 	status = harq_ack[7].send_harq_status + (harq_ack[8].send_harq_status<<1);
+	printf("Subframe 3, TDD config 3: harq_ack[7] = %d,harq_ack[8] = %d\n",harq_ack[7].ack,harq_ack[8].ack);
 	//printf("status %d : o_ACK (%d,%d)\n", status,o_ACK[0],o_ACK[1]);
       }
       else if (subframe == 4) {  // ACK subframes 9 and 0
@@ -395,6 +398,7 @@ uint8_t get_ack(LTE_DL_FRAME_PARMS *frame_parms,
 	  o_ACK[0] = harq_ack[8].ack;
 
 	status = harq_ack[9].send_harq_status + (harq_ack[0].send_harq_status<<1);
+	printf("Subframe 4, TDD config 3: harq_ack[9] = %d,harq_ack[0] = %d\n",harq_ack[9].ack,harq_ack[0].ack);
       }
       else {
 	LOG_E(PHY,"phy_procedures_lte.c: get_ack, illegal subframe %d for tdd_config %d\n",

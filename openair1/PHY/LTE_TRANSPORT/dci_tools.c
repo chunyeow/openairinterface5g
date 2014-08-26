@@ -2877,6 +2877,9 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch[0]->harq_processes[harq_pid]->mimo_mode = frame_parms->mode1_flag == 1 ?SISO : ALAMOUTI;
     dlsch[0]->harq_processes[harq_pid]->dl_power_off = 1; //no power offset
 
+    LOG_D(PHY,"UE (%x/%d): Subframe %d Format1A DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d\n",dlsch[0]->rnti,harq_pid,subframe,ndi,dlsch[0]->harq_processes[harq_pid]->DCINdi,
+	  dlsch[0]->harq_processes[harq_pid]->first_tx,dlsch[0]->harq_processes[harq_pid]->status);
+
     if ((ndi!=dlsch[0]->harq_processes[harq_pid]->DCINdi)||  // DCI has been toggled or this is the first transmission
 	(dlsch[0]->harq_processes[harq_pid]->first_tx==1)) {
       dlsch[0]->harq_processes[harq_pid]->round = 0;
@@ -3000,8 +3003,8 @@ int generate_ue_dlsch_params_from_dci(uint8_t subframe,
     dlsch[0]->harq_processes[harq_pid]->mimo_mode   = (frame_parms->mode1_flag == 1) ? SISO : ALAMOUTI;
     dlsch[0]->harq_processes[harq_pid]->dl_power_off = 1; //no power offset
 
-    LOG_D(PHY,"Format1 DCI: ndi %d, old_ndi %d (first tx %d)\n",ndi,dlsch[0]->harq_processes[harq_pid]->DCINdi,
-	  dlsch[0]->harq_processes[harq_pid]->first_tx);
+    LOG_D(PHY,"UE (%x/%d): Subframe %d Format1 DCI: ndi %d, old_ndi %d (first tx %d) harq_status %d\n",dlsch[0]->rnti,harq_pid,subframe,ndi,dlsch[0]->harq_processes[harq_pid]->DCINdi,
+	  dlsch[0]->harq_processes[harq_pid]->first_tx,dlsch[0]->harq_processes[harq_pid]->status);
 
     //    printf("Format1 DCI (UE, hard pid %d): ndi %d, old_ndi %d (first tx %d)\n",harq_pid,ndi,dlsch[0]->harq_processes[harq_pid]->DCINdi,
     //	  dlsch[0]->harq_processes[harq_pid]->first_tx);

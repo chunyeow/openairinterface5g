@@ -2074,6 +2074,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
 #ifdef DEBUG_PHY_PROC
 	LOG_D(PHY,"[UE  %d] Generated UE DLSCH C_RNTI format %d\n",phy_vars_ue->Mod_id,dci_alloc_rx[i].format);
 	dump_dci(&phy_vars_ue->lte_frame_parms, &dci_alloc_rx[i]);
+	LOG_D(PHY,"[UE %d] *********** dlsch->active in subframe %d (%d)=> %d\n",phy_vars_ue->Mod_id,(last_slot>>1),last_slot,phy_vars_ue->dlsch_ue[eNB_id][0]->active); 
 #endif    
 	
 	// we received a CRNTI, so we're in PUSCH
@@ -2352,6 +2353,8 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
       n_symb = phy_vars_ue->lte_frame_parms.symbols_per_tti/2;
   }
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  LOG_D(PHY,"[UE %d] *********** dlsch->active in subframe %d (%d)=> %d\n",phy_vars_ue->Mod_id,(last_slot>>1),last_slot,phy_vars_ue->dlsch_ue[eNB_id][0]->active); 
   
   // This is normal processing (i.e. not MBSFN)
   // RX processing of symbols in last_slot
@@ -2426,7 +2429,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
               }
           }
           // trigger DLSCH decoding thread
-          if (!(last_slot%2)) // odd slots
+          if ((last_slot%2)==1) // odd slots
               phy_vars_ue->dlsch_ue[eNB_id][0]->active = 0;
       }
     }
@@ -2435,18 +2438,20 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
     // process last DLSCH symbols + invoke decoding
     if (((last_slot%2)==0) && (l==0)) {
       // Regular PDSCH
+
+      LOG_D(PHY,"[UE %d] dlsch->active in subframe %d => %d\n",phy_vars_ue->Mod_id,((last_slot>>1)+9)%10,phy_vars_ue->dlsch_ue[eNB_id][0]->active); 
       if (phy_vars_ue->dlsch_ue[eNB_id][0]->active == 1) {
 #ifndef DLSCH_THREAD //USER_MODE
 	harq_pid = phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid;
-	//printf("PDSCH active in subframe %d, harq_pid %d\n",(last_slot>>1)-1,harq_pid); 
+	LOG_D(PHY,"[UE %d] PDSCH active in subframe %d, harq_pid %d\n",phy_vars_ue->Mod_id,((last_slot>>1)+1)%10,harq_pid); 
 	if ((phy_vars_ue->transmission_mode[eNB_id] == 5) && 
 	    (phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->dl_power_off==0) &&
 	    (openair_daq_vars.use_ia_receiver ==1)) {
 	  dual_stream_UE = 1;
 	  eNB_id_i = phy_vars_ue->n_connected_eNB;
 	  i_mod = get_Qm(phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs);
-      if (phy_vars_ue->frame%100==0) {
-          LOG_I(PHY,"using IA receiver\n");
+	  if (phy_vars_ue->frame%100==0) {
+	    LOG_I(PHY,"using IA receiver\n");
       }
 	}
 	else {
@@ -2541,9 +2546,9 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
 #endif
 	  }
 	  else {
-	    LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d: Received DLSCH (rv %d,mcs %d,TBS %d)\n",
+	    LOG_I(PHY,"[UE  %d][PDSCH %x/%d] Frame %d subframe %d (last_slot %d): Received DLSCH (rv %d,mcs %d,TBS %d)\n",
 		  phy_vars_ue->Mod_id,phy_vars_ue->dlsch_ue[eNB_id][0]->rnti,
-		  harq_pid,phy_vars_ue->frame,((last_slot>>1)==0)?9:(last_slot>>1)-1,
+		  harq_pid,phy_vars_ue->frame,((last_slot>>1)==0)?9:(last_slot>>1)-1,last_slot,
 		  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->rvidx,
 		  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->mcs,
 		  phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->TBS);
@@ -2943,6 +2948,7 @@ int lte_ue_pdcch_procedures(uint8_t eNB_id,uint8_t last_slot, PHY_VARS_UE *phy_v
 #ifndef DLSCH_THREAD
         if (phy_vars_ue->dlsch_ue[eNB_id][0]->active == 1)  {
             harq_pid = phy_vars_ue->dlsch_ue[eNB_id][0]->current_harq_pid;
+	    LOG_D(PHY,"[UE %d] PDSCH active in subframe %d (%d), harq_pid %d\n",phy_vars_ue->Mod_id,(last_slot>>1),last_slot,harq_pid); 
             if ((phy_vars_ue->transmission_mode[eNB_id] == 5) && 
                 (phy_vars_ue->dlsch_ue[eNB_id][0]->harq_processes[harq_pid]->dl_power_off==0) &&
                 (openair_daq_vars.use_ia_receiver ==1)) {
