@@ -77,6 +77,7 @@ LINK COMMANDS:
 #define RRC_RAL_CONNECTION_ESTABLISHMENT_CONF(mSGpTR)     (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_conf
 #define RRC_RAL_CONNECTION_ESTABLISHMENT_IND(mSGpTR)      (mSGpTR)->ittiMsg.rrc_ral_connection_establishment_ind
 #define RRC_RAL_CONNECTION_REESTABLISHMENT_IND(mSGpTR)    (mSGpTR)->ittiMsg.rrc_ral_connection_reestablishment_ind
+#define RRC_RAL_CONNECTION_RECONFIGURATION_REQ(mSGpTR)    (mSGpTR)->ittiMsg.rrc_ral_connection_reconfiguration_req
 #define RRC_RAL_CONNECTION_RECONFIGURATION_IND(mSGpTR)    (mSGpTR)->ittiMsg.rrc_ral_connection_reconfiguration_ind
 #define RRC_RAL_CONNECTION_RECONFIGURATION_HO_IND(mSGpTR) (mSGpTR)->ittiMsg.rrc_ral_connection_reconfiguration_ho_ind
 
@@ -91,6 +92,7 @@ typedef MIH_C_STATUS_T         ral_status_t;
 typedef MIH_C_CHOICE_T         ral_choice_t;
 typedef MIH_C_CONFIG_STATUS_T  ral_config_status_t;
 typedef MIH_C_TH_ACTION_T      ral_th_action_t;
+typedef MIH_C_LINK_ACTION_T      ral_link_action_t;
 
 
 #define RAL_STATUS_SUCCESS                 MIH_C_STATUS_SUCCESS
@@ -180,6 +182,15 @@ typedef struct rrc_ral_connection_reestablishment_ind_s {
     rb_id_t              drb_id[maxDRB];
     uint8_t              num_srb;
 }rrc_ral_connection_reestablishment_ind_t;
+
+typedef struct rrc_ral_connection_reconfiguration_req_s {
+    ral_transaction_id_t transaction_id;
+    uint16_t             ue_id;
+    ral_link_action_t    link_action;
+//     uint8_t              num_drb;
+//     rb_id_t              drb_id[maxDRB];
+//     uint8_t              num_srb;
+}rrc_ral_connection_reconfiguration_req_t;
 
 
 typedef struct rrc_ral_connection_reconfiguration_ind_s {
