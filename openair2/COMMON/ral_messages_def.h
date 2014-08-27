@@ -41,6 +41,7 @@ MESSAGE_DEF(RRC_RAL_CONNECTION_ESTABLISHMENT_REQ,      MESSAGE_PRIORITY_MED, rrc
 MESSAGE_DEF(RRC_RAL_CONNECTION_ESTABLISHMENT_CONF,     MESSAGE_PRIORITY_MED, rrc_ral_connection_establishment_conf_t,     rrc_ral_connection_establishment_conf)
 MESSAGE_DEF(RRC_RAL_CONNECTION_ESTABLISHMENT_IND,      MESSAGE_PRIORITY_MED, rrc_ral_connection_establishment_ind_t,      rrc_ral_connection_establishment_ind)
 MESSAGE_DEF(RRC_RAL_CONNECTION_REESTABLISHMENT_IND,    MESSAGE_PRIORITY_MED, rrc_ral_connection_reestablishment_ind_t,    rrc_ral_connection_reestablishment_ind)
+MESSAGE_DEF(RRC_RAL_CONNECTION_RECONFIGURATION_REQ,    MESSAGE_PRIORITY_MAX, rrc_ral_connection_reconfiguration_req_t,    rrc_ral_connection_reconfiguration_req)
 MESSAGE_DEF(RRC_RAL_CONNECTION_RECONFIGURATION_IND,    MESSAGE_PRIORITY_MAX, rrc_ral_connection_reconfiguration_ind_t,    rrc_ral_connection_reconfiguration_ind)
 MESSAGE_DEF(RRC_RAL_CONNECTION_RECONFIGURATION_HO_IND, MESSAGE_PRIORITY_MAX, rrc_ral_connection_reconfiguration_ho_ind_t, rrc_ral_connection_reconfiguration_ho_ind)
 
