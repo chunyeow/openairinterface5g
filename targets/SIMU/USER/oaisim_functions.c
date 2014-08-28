@@ -91,7 +91,7 @@ int           for_times             = 0;
 static char  *conf_config_file_name = NULL;
 uint16_t           Nid_cell              = 0; //needed by init_lte_vars
 int           nb_antennas_rx        = 2; // //
-uint8_t            target_dl_mcs         = 0; // not set
+uint8_t            target_dl_mcs         = 16; // max mcs used by MAC scheduler
 uint8_t            rate_adaptation_flag  = 0;
 uint8_t            set_sinr              = 0;
 double             snr_dB=0, sinr_dB=0;
@@ -468,6 +468,7 @@ void get_simulation_options(int argc, char *argv[]) {
 
       case 'm':
         target_dl_mcs = atoi (optarg);
+	printf("Max target downlink MCS used by MAC scheduler is set to %d\n", target_dl_mcs);
         break;
 
       case 'M':
@@ -559,7 +560,8 @@ void get_simulation_options(int argc, char *argv[]) {
 
       case 't':
         target_ul_mcs = atoi (optarg);
-        break;
+	printf("Max target uplink MCS used by MAC scheduler is set to %d\n", target_ul_mcs);
+	break;
 
       case 'T':
         oai_emulation.info.otg_enabled = 1;
@@ -840,8 +842,8 @@ void init_openair1(void) {
   openair_daq_vars.rx_gain_mode = DAQ_AGC_ON;
 
   openair_daq_vars.dlsch_transmission_mode = oai_emulation.info.transmission_mode[0];
-
-  openair_daq_vars.target_ue_dl_mcs = target_dl_mcs;
+#warning "NN->FK: OAI EMU channel abstraction does not work for MCS higher than"
+  openair_daq_vars.target_ue_dl_mcs = cmin(target_dl_mcs,16);
   openair_daq_vars.target_ue_ul_mcs = target_ul_mcs;
   openair_daq_vars.ue_dl_rb_alloc=0x1fff;
   openair_daq_vars.ue_ul_nb_rb=6;

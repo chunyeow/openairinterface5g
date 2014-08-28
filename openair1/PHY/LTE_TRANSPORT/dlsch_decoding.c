@@ -506,11 +506,11 @@ uint32_t  dlsch_decoding(PHY_VARS_UE *phy_vars_ue,
 
 #ifdef USER_MODE // need to be adapted for the emulation in the kernel space 
    if (uniformrandom() < bler) {
-     LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
-    return(0);
+     LOG_I(OCM,"abstraction_decoding failed (mcs=%d, sinr_eff=%f, bler=%f, TM %d)\n",mcs,sinr_eff,bler, TM);
+    return(1);
   }
   else {
-    LOG_I(OCM,"abstraction_decoding successful (mcs=%d, sinr_eff=%f, bler=%f)\n",mcs,sinr_eff,bler);
+    LOG_I(OCM,"abstraction_decoding successful (mcs=%d, sinr_eff=%f, bler=%f, TM %d)\n",mcs,sinr_eff,bler, TM);
     return(1);
   }
 #endif

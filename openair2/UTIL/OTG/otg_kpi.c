@@ -697,7 +697,7 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
     LOG_I(OTG,"[BACKGROUND] Total bytes(RX)= %d \n", rx_total_bytes_dl_background);
     LOG_I(OTG,"[BACKGROUND] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_dl_background*1000*8)/(otg_info->ctime*1024));
     LOG_I(OTG,"[BACKGROUND] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_dl_background*1000*8)/(otg_info->ctime*1024));
-	}
+ }
   if (tx_total_pkts_dl_multicast>0){
     LOG_I(OTG,"[MULTICAST] Total packets(TX)= %d \n", tx_total_pkts_dl_multicast);
     LOG_I(OTG,"[MULTICAST] Total bytes(TX)= %d \n", tx_total_bytes_dl_multicast);
@@ -706,7 +706,7 @@ if ((g_otg->background_stats==1)&&(otg_info->tx_num_bytes_background[i][j]>0)){
     LOG_I(OTG,"[MULTICAST] otg_multicast_info->ctime = %d \n", otg_multicast_info->ctime);
     LOG_I(OTG,"[MULTICAST] TX throughput = %.7f(Kbit/s) \n", ((double)tx_total_bytes_dl_multicast*1000*8)/(otg_info->ctime*1024));
     LOG_I(OTG,"[MULTICAST] RX throughput = %.7f(Kbit/s) \n", ((double)rx_total_bytes_dl_multicast*1000*8)/(otg_info->ctime*1024));
-	}
+  }
  
 
   LOG_F(OTG,"**************** TOTAL DL RESULTS ******************\n");

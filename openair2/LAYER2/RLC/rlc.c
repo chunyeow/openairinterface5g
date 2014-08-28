@@ -15,8 +15,8 @@
 
     You should have received a copy of the GNU General Public License
     along with OpenAirInterface.The full GNU General Public License is
-   included in this distribution in the file called "COPYING". If not,
-   see <http://www.gnu.org/licenses/>.
+    included in this distribution in the file called "COPYING". If not,
+    see <http://www.gnu.org/licenses/>.
 
   Contact Information
   OpenAirInterface Admin: openair_admin@eurecom.fr
@@ -510,7 +510,7 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
                   ((struct rlc_um_data_req *) (new_sdu_p->data))->data_offset = sizeof (struct rlc_um_data_req_alloc);
                   free_mem_block(sdu_pP);
 
-                  LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
+                  //LOG_D(RLC, "%s\n",RLC_FG_BRIGHT_COLOR_RED);
                   LOG_D(RLC, "[FRAME %5u][%s][%s][INST %u/%u][%s %u][--- RLC_UM_DATA_REQ/%d Bytes --->][RLC_UM][INST %u/%u][%s %u]\n",
                           frameP,
                           (enb_flagP) ? "eNB" : "UE",
@@ -524,7 +524,7 @@ rlc_op_status_t rlc_data_req     (const module_id_t  enb_module_idP,
                           ue_module_idP,
                           (srb_flagP) ? "SRB" : "DRB",
                           rb_idP);
-                  LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
+                  //LOG_D(RLC, "%s\n",RLC_FG_COLOR_DEFAULT);
                   rlc_um_data_req(&rlc_union_p->rlc.um, frameP, new_sdu_p);
 
                   //free_mem_block(new_sdu);

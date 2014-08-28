@@ -262,7 +262,7 @@ Send Packets when:
 	    otg_info->size_background[src][dst]=g_otg->aggregation_level[src][dst][application]*otg_info->size_background[src][dst];
 	  else{
 	    //otg_info->size_background[src][dst]=PAYLOAD_MAX;
-	    LOG_E(OTG,"[BACKGROUND] Aggregated packet larger than PAYLOAD_MAX, payload is limited to PAYLOAD_MAX %d\n");
+	    LOG_E(OTG,"[BACKGROUND] Aggregated packet larger than PAYLOAD_MAX, payload is limited to %d\n", PAYLOAD_MAX);
 	  }
  	 header =random_string(header_size_gen_background(src,dst),  g_otg->packet_gen_type, HEADER_ALPHABET);
  	 payload = random_string(otg_info->size_background[src][dst],  RANDOM_STRING, PAYLOAD_ALPHABET);
@@ -466,7 +466,7 @@ int check_data_transmit(int src,int dst, int app, int ctime){
 		  /* if the aggregated size is less than PAYLOAD_MAX the traffic is aggregated, otherwise size=PAYLOAD_MAX */
 		  if (size>=(PAYLOAD_MAX-(sizeof(otg_hdr_info_t) + sizeof(otg_hdr_t) + otg_info->header_size[src][dst]))) {
 			//size=PAYLOAD_MAX- (sizeof(otg_hdr_info_t) + sizeof(otg_hdr_t) + otg_info->header_size[src][dst]);
-			LOG_E(OTG,"Aggregated packet larger than PAYLOAD_MAX, payload is limited to PAYLOAD_MAX \n");
+		    LOG_E(OTG,"Aggregated packet larger than PAYLOAD_MAX, payload is limited to %d \n", PAYLOAD_MAX );
 		  }
 
 		}  //check if there is background traffic to generate

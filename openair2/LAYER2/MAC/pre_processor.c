@@ -168,6 +168,8 @@ void assign_rbs_required (module_id_t Mod_id,
 	eNB_UE_stats[CC_id]->DL_cqi[0], MIN_CQI_VALUE, MAX_CQI_VALUE);
       */
       eNB_UE_stats[CC_id]->dlsch_mcs1=cqi_to_mcs[eNB_UE_stats[CC_id]->DL_cqi[0]];
+      eNB_UE_stats[CC_id]->dlsch_mcs1 = cmin(eNB_UE_stats[CC_id]->dlsch_mcs1,openair_daq_vars.target_ue_dl_mcs);
+ 
     }
     // provide the list of CCs sorted according to MCS
     for (i=0;i<UE_list->numactiveCCs[UE_id];i++) {
@@ -194,13 +196,16 @@ void assign_rbs_required (module_id_t Mod_id,
       LOG_D(MAC,"[preprocessor] assign RB for UE %d\n",UE_id);
       for (i=0;i<UE_list->numactiveCCs[UE_id];i++) {
 	CC_id = UE_list->ordered_CCids[i][UE_id];
-	LOG_D(MAC,"[preprocessor] assign RB for UE %d\n",UE_id);
+
 	if (eNB_UE_stats[CC_id]->dlsch_mcs1==0) nb_rbs_required[CC_id][UE_id] = 4;  // don't let the TBS get too small
 	else nb_rbs_required[CC_id][UE_id] = min_rb_unit[CC_id];
-	
 	TBS = mac_xface->get_TBS_DL(eNB_UE_stats[CC_id]->dlsch_mcs1,nb_rbs_required[CC_id][UE_id]);
+	
+	LOG_D(MAC,"[preprocessor] start RB assignement for UE %d CC_id %d dl buffer %d (RB unit %d, MCS %d, TBS %d) \n",
+	      UE_id, CC_id, UE_list->UE_template[pCCid][UE_id].dl_buffer_total, 
+	      nb_rbs_required[CC_id][UE_id],eNB_UE_stats[CC_id]->dlsch_mcs1,TBS);
 	/* calculating required number of RBs for each UE */
-	while (TBS < UE_list->UE_template[UE_id]->dl_buffer_total)  {
+	while (TBS < UE_list->UE_template[pCCid][UE_id].dl_buffer_total)  {
 	  nb_rbs_required[CC_id][UE_id] += min_rb_unit[CC_id];
 	  if (nb_rbs_required[CC_id][UE_id] > frame_parms[CC_id]->N_RB_DL) {
 	    TBS = mac_xface->get_TBS_DL(eNB_UE_stats[CC_id]->dlsch_mcs1,frame_parms[CC_id]->N_RB_DL);
@@ -209,8 +214,8 @@ void assign_rbs_required (module_id_t Mod_id,
 	  }
 	  TBS = mac_xface->get_TBS_DL(eNB_UE_stats[CC_id]->dlsch_mcs1,nb_rbs_required[CC_id][UE_id]);
 	} // end of while 
-	LOG_D(MAC,"[eNB %d] Frame %d: UE %d on CC %d nb_required RB %d (TBS %d, mcs %d)\n", 
-	      Mod_id, frameP,UE_id, CC_id, nb_rbs_required[CC_id][UE_id], TBS, eNB_UE_stats[CC_id]->dlsch_mcs1);
+	LOG_D(MAC,"[eNB %d] Frame %d: UE %d on CC %d: RB unit %d,  nb_required RB %d (TBS %d, mcs %d)\n", 
+	      Mod_id, frameP,UE_id, CC_id,  min_rb_unit[CC_id], nb_rbs_required[CC_id][UE_id], TBS, eNB_UE_stats[CC_id]->dlsch_mcs1);
       }
     }
   }

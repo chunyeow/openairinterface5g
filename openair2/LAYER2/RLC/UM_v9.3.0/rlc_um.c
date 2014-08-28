@@ -48,7 +48,8 @@
 #include "rlc_um_very_simple_test.h"
 
 #define DEBUG_RLC_UM_TX_STATUS 1
-#define TRACE_RLC_UM_PDU 1
+// NN --> LG: this could become a perf bottleneck, I added this to the makefile.
+//#define TRACE_RLC_UM_PDU 1
 
 #ifdef TRACE_RLC_UM_PDU
 char  message_string[10000];
@@ -663,7 +664,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
 
     rlc_p->stat_tx_pdcp_sdu   += 1;
     rlc_p->stat_tx_pdcp_bytes += ((struct rlc_um_tx_sdu_management *) (sdu_pP->data))->sdu_size;
-#   if defined(ENABLE_ITTI)
+#   if defined(TRACE_RLC_UM_PDU)
       data_offset = sizeof (struct rlc_um_data_req_alloc);
       data_size   = ((struct rlc_um_tx_sdu_management *)(sdu_pP->data))->sdu_size;
       message_string_size += sprintf(&message_string[message_string_size], "Bearer      : %u\n", rlc_p->rb_id);
@@ -696,6 +697,7 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       }
       message_string_size += sprintf(&message_string[message_string_size], " |\n");
 
+#   if defined(ENABLE_ITTI)
       msg_p = itti_alloc_new_message_sized (rlc_p->is_enb > 0 ? TASK_RLC_ENB:TASK_RLC_UE , RLC_UM_SDU_REQ, message_string_size + sizeof (IttiMsgText));
       msg_p->ittiMsg.rlc_um_sdu_req.size = message_string_size;
       memcpy(&msg_p->ittiMsg.rlc_um_sdu_req.text, message_string, message_string_size);
@@ -705,6 +707,9 @@ rlc_um_data_req (void *rlc_pP, frame_t frameP, mem_block_t *sdu_pP)
       } else {
           itti_send_msg_to_task(TASK_UNKNOWN, rlc_p->ue_module_id + NB_eNB_INST, msg_p);
       }
+#else 
+      LOG_T(RLC, "%s", message_string);
+#endif 
 #   endif
 
   } else {

@@ -77,7 +77,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send('make cleanall;')
         oai.send('make cleanasn1;')
         oai.send('rm -f ./oaisim.rel8.'+host)
-        oai.send_expect_false('make -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make -j4 JF=1' + tee, makerr1,  1500)
         oai.send('cp ./oaisim ./oaisim.rel8.'+host)
     except log.err, e:
         log.fail(case, test, name, conf, e.value, diag, logfile,trace)
@@ -99,7 +99,7 @@ def execute(oai, user, pw, host, logfile,logdir,debug):
         oai.send_expect_false('make nasmesh_fix' + tee, makerr1,  60)
         trace = logdir + '/log_' + case + test + '_2.txt;'
         tee = ' 2>&1 | tee ' + trace
-        oai.send_expect_false('make NAS=1 -j4' + tee, makerr1,  1500)
+        oai.send_expect_false('make NAS=1 JF=1 -j4' + tee, makerr1,  1500)
         oai.send('cp ./oaisim ./oaisim.rel8.nas.'+host)
         
     except log.err, e:

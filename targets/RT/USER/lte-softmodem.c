@@ -301,6 +301,10 @@ static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,7
 static LTE_DL_FRAME_PARMS      *frame_parms[MAX_NUM_CCs];
 
 int multi_thread=1;
+// this allows 
+uint32_t target_dl_mcs = 28; 
+uint32_t target_ul_mcs = 8;
+
 
 int16_t           glog_level=LOG_DEBUG;
 int16_t           glog_verbosity=LOG_MED;
@@ -1735,7 +1739,7 @@ static void get_options (int argc, char **argv) {
     {"no-L2-connect",   no_argument,        NULL, LONG_OPTION_NO_L2_CONNECT},
     {NULL, 0, NULL, 0}};
   
-  while ((c = getopt_long (argc, argv, "C:dK:g:G:qO:SUVRMr:s:",long_options,NULL)) != -1) {
+  while ((c = getopt_long (argc, argv, "C:dK:g:G:qO:m:SUVRMr:s:t:",long_options,NULL)) != -1) {
     switch (c) {
     case LONG_OPTION_ULSCH_MAX_CONSECUTIVE_ERRORS:
       ULSCH_max_consecutive_errors = atoi(optarg);
@@ -1804,6 +1808,13 @@ static void get_options (int argc, char **argv) {
       
     case 'U':
       UE_flag = 1;
+      break;
+    
+    case 'm':
+      target_dl_mcs = atoi (optarg);
+      break;
+    case 't':
+      target_ul_mcs = atoi (optarg);
       break;
       
     case 'V':
@@ -2240,9 +2251,9 @@ int main(int argc, char **argv) {
       NB_INST=1;
 
       openair_daq_vars.ue_dl_rb_alloc=0x1fff;
-      openair_daq_vars.target_ue_dl_mcs=20;
+      openair_daq_vars.target_ue_dl_mcs=target_dl_mcs;
       openair_daq_vars.ue_ul_nb_rb=6;
-      openair_daq_vars.target_ue_ul_mcs=6;
+      openair_daq_vars.target_ue_ul_mcs=target_ul_mcs;
 
     }
 

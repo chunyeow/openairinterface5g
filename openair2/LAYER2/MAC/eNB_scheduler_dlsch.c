@@ -418,21 +418,19 @@ void schedule_ue_spec(module_id_t   module_idP,
       sdu_length_total=0;
       num_sdus=0;
       
-      if (openair_daq_vars.target_ue_dl_mcs <= 0) {
-	/*	
+      /*	
 	DevCheck(((eNB_UE_stats->DL_cqi[0] < MIN_CQI_VALUE) || (eNB_UE_stats->DL_cqi[0] > MAX_CQI_VALUE)), 
-		eNB_UE_stats->DL_cqi[0], MIN_CQI_VALUE, MAX_CQI_VALUE);
+	eNB_UE_stats->DL_cqi[0], MIN_CQI_VALUE, MAX_CQI_VALUE);
 	*/
-	eNB_UE_stats->dlsch_mcs1 = cqi_to_mcs[eNB_UE_stats->DL_cqi[0]];
-	LOG_T(MAC,"CQI %d\n",eNB_UE_stats->DL_cqi[0]);
-      }
-      else
-	eNB_UE_stats->dlsch_mcs1 = openair_daq_vars.target_ue_dl_mcs;
+      eNB_UE_stats->dlsch_mcs1 = cqi_to_mcs[eNB_UE_stats->DL_cqi[0]];
+      eNB_UE_stats->dlsch_mcs1 = cmin(eNB_UE_stats->dlsch_mcs1, openair_daq_vars.target_ue_dl_mcs);	
+
 
 #ifdef EXMIMO
       if (mac_xface->get_transmission_mode(module_idP,CC_id, rnti)==5)
 	eNB_UE_stats->dlsch_mcs1 = cmin(eNB_UE_stats->dlsch_mcs1,16);
 #endif
+
       // store stats
       UE_list->eNB_UE_stats[CC_id][UE_id].dl_cqi= eNB_UE_stats->DL_cqi[0];
       // initializing the rb allocation indicator for each UE
@@ -637,79 +635,84 @@ void schedule_ue_spec(module_id_t   module_idP,
 	
 	header_len_dcch = 2; // 2 bytes DCCH SDU subheader
 	
-	
-	rlc_status = mac_rlc_status_ind(
-					module_idP,
-					UE_id,
-					frameP,
-					ENB_FLAG_YES,
-					MBMS_FLAG_NO,
-					DCCH,
-					(TBS-ta_len-header_len_dcch)); // transport block set size
-	
-	sdu_lengths[0]=0;
-	if (rlc_status.bytes_in_buffer > 0) {  // There is DCCH to transmit
-	  LOG_D(MAC,"[eNB %d] Frame %d, DL-DCCH->DLSCH, Requesting %d bytes from RLC (RRC message)\n",module_idP,frameP,TBS-header_len_dcch);
-	  sdu_lengths[0] += mac_rlc_data_req(
-					     module_idP,
-					     UE_id,
-					     frameP,
-					     ENB_FLAG_YES,
-					     MBMS_FLAG_NO,
-					     DCCH,
-					     (char *)&dlsch_buffer[sdu_lengths[0]]);
+	if ( TBS-ta_len-header_len_dcch > 0 ) 
+	  {
+	  rlc_status = mac_rlc_status_ind(
+					  module_idP,
+					  UE_id,
+					  frameP,
+					  ENB_FLAG_YES,
+					  MBMS_FLAG_NO,
+					  DCCH,
+					  (TBS-ta_len-header_len_dcch)); // transport block set size
 	  
-	  LOG_D(MAC,"[eNB %d][DCCH] Got %d bytes from RLC\n",module_idP,sdu_lengths[0]);
-	  sdu_length_total = sdu_lengths[0];
-	  sdu_lcids[0] = DCCH;
-	  UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DCCH]+=1;
-	  UE_list->eNB_UE_stats[CC_id][UE_id].num_bytes_tx[DCCH]+=sdu_lengths[0];
-	  num_sdus = 1;
+	  sdu_lengths[0]=0;
+	  if (rlc_status.bytes_in_buffer > 0) {  // There is DCCH to transmit
+	    LOG_D(MAC,"[eNB %d] Frame %d, DL-DCCH->DLSCH, Requesting %d bytes from RLC (RRC message)\n",module_idP,frameP,TBS-header_len_dcch);
+	    sdu_lengths[0] += mac_rlc_data_req(
+					       module_idP,
+					       UE_id,
+					       frameP,
+					       ENB_FLAG_YES,
+					       MBMS_FLAG_NO,
+					       DCCH,
+					       (char *)&dlsch_buffer[sdu_lengths[0]]);
+	    
+	    LOG_D(MAC,"[eNB %d][DCCH] Got %d bytes from RLC\n",module_idP,sdu_lengths[0]);
+	    sdu_length_total = sdu_lengths[0];
+	    sdu_lcids[0] = DCCH;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DCCH]+=1;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_bytes_tx[DCCH]+=sdu_lengths[0];
+	    num_sdus = 1;
 #ifdef DEBUG_eNB_SCHEDULER
-	  LOG_T(MAC,"[eNB %d][DCCH] Got %d bytes :",module_idP,sdu_lengths[0]);
-	  for (j=0;j<sdu_lengths[0];j++)
-	    LOG_T(MAC,"%x ",dlsch_buffer[j]);
-	  LOG_T(MAC,"\n");
+	    LOG_T(MAC,"[eNB %d][DCCH] Got %d bytes :",module_idP,sdu_lengths[0]);
+	    for (j=0;j<sdu_lengths[0];j++)
+	      LOG_T(MAC,"%x ",dlsch_buffer[j]);
+	    LOG_T(MAC,"\n");
 #endif
+	  }
+	  else {
+	    header_len_dcch = 0;
+	    sdu_length_total = 0;
+	  }
 	}
-	else {
-	  header_len_dcch = 0;
-	  sdu_length_total = 0;
-	}
-	
 	// check for DCCH1 and update header information (assume 2 byte sub-header)
-	rlc_status = mac_rlc_status_ind(
-					module_idP,
-					UE_id,
-					frameP,
-					ENB_FLAG_YES,
-					MBMS_FLAG_NO,
-					DCCH+1,
-					(TBS-ta_len-header_len_dcch-sdu_length_total)); // transport block set size less allocations for timing advance and
-	// DCCH SDU
-	
-	if (rlc_status.bytes_in_buffer > 0) {
-	  LOG_D(MAC,"[eNB %d], Frame %d, DCCH1->DLSCH, Requesting %d bytes from RLC (RRC message)\n",
-		module_idP,frameP,TBS-header_len_dcch-sdu_length_total);
-	  sdu_lengths[num_sdus] += mac_rlc_data_req(
-						    module_idP,
-						    UE_id,
-						    frameP,
-						    ENB_FLAG_YES,
-						    MBMS_FLAG_NO,
-						    DCCH+1,
-						    (char *)&dlsch_buffer[sdu_lengths[0]]);
+	  if (TBS-ta_len-header_len_dcch-sdu_length_total > 0 ) 
+	  {
+	  rlc_status = mac_rlc_status_ind(
+					  module_idP,
+					  UE_id,
+					  frameP,
+					  ENB_FLAG_YES,
+					  MBMS_FLAG_NO,
+					  DCCH+1,
+					  (TBS-ta_len-header_len_dcch-sdu_length_total)); // transport block set size less allocations for timing advance and
+	  // DCCH SDU
 	  
-	  sdu_lcids[num_sdus] = DCCH1;
-	  sdu_length_total += sdu_lengths[num_sdus];
-	  header_len_dcch += 2;
-	  UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DCCH1]+=1;
-	  UE_list->eNB_UE_stats[CC_id][UE_id].num_bytes_tx[DCCH1]+=sdu_lengths[num_sdus];
-	  num_sdus++;
-	  LOG_D(MAC,"[eNB %d] Got %d bytes for DCCH from RLC\n",module_idP,sdu_lengths[0]);
+	  if (rlc_status.bytes_in_buffer > 0) 
+	    {
+	    LOG_D(MAC,"[eNB %d], Frame %d, DCCH1->DLSCH, Requesting %d bytes from RLC (RRC message)\n",
+		  module_idP,frameP,TBS-header_len_dcch-sdu_length_total);
+	    sdu_lengths[num_sdus] += mac_rlc_data_req(
+						      module_idP,
+						      UE_id,
+						      frameP,
+						      ENB_FLAG_YES,
+						      MBMS_FLAG_NO,
+						      DCCH+1,
+						      (char *)&dlsch_buffer[sdu_lengths[0]]);
+	  
+	    sdu_lcids[num_sdus] = DCCH1;
+	    sdu_length_total += sdu_lengths[num_sdus];
+	    header_len_dcch += 2;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DCCH1]+=1;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_bytes_tx[DCCH1]+=sdu_lengths[num_sdus];
+	    num_sdus++;
+	    LOG_D(MAC,"[eNB %d] Got %d bytes for DCCH from RLC\n",module_idP,sdu_lengths[0]);
+	  }
 	}
-	// check for DTCH and update header information
-	// here we should loop over all possible DTCH
+	  // check for DTCH and update header information
+	  // here we should loop over all possible DTCH
 	
 	header_len_dtch = 3; // 3 bytes DTCH SDU subheader
 	
@@ -717,40 +720,43 @@ void schedule_ue_spec(module_id_t   module_idP,
 	      module_idP,frameP,DTCH,TBS,
 	      TBS-ta_len-header_len_dcch-sdu_length_total-header_len_dtch);
 	
-	rlc_status = mac_rlc_status_ind(
-					module_idP,
-					UE_id,
-					frameP,
-					ENB_FLAG_YES,
-					MBMS_FLAG_NO,
-					DTCH,
-					TBS-ta_len-header_len_dcch-sdu_length_total-header_len_dtch);
-	
-	if (rlc_status.bytes_in_buffer > 0) {
+	if (TBS-ta_len-header_len_dcch-sdu_length_total-header_len_dtch > 0 ) 
+	  {
+	  rlc_status = mac_rlc_status_ind(
+					  module_idP,
+					  UE_id,
+					  frameP,
+					  ENB_FLAG_YES,
+					  MBMS_FLAG_NO,
+					  DTCH,
+					  TBS-ta_len-header_len_dcch-sdu_length_total-header_len_dtch);
 	  
-	  LOG_I(MAC,"[eNB %d][USER-PLANE DEFAULT DRB], Frame %d, DTCH->DLSCH, Requesting %d bytes from RLC (hdr len dtch %d)\n",
-		module_idP,frameP,TBS-header_len_dcch-sdu_length_total-header_len_dtch,header_len_dtch);
-	  sdu_lengths[num_sdus] = mac_rlc_data_req(
-						   module_idP,
-						   UE_id,
-						   frameP,
-						   ENB_FLAG_YES,
-						   MBMS_FLAG_NO,
-						   DTCH,
-						   (char*)&dlsch_buffer[sdu_length_total]);
-	  
-	  LOG_I(MAC,"[eNB %d][USER-PLANE DEFAULT DRB] Got %d bytes for DTCH %d \n",module_idP,sdu_lengths[num_sdus],DTCH);
-	  sdu_lcids[num_sdus] = DTCH;
-	  sdu_length_total += sdu_lengths[num_sdus];
-	  UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DTCH]+=1;
-	  UE_list->eNB_UE_stats[CC_id][UE_id].num_bytes_tx[DTCH]+=sdu_lengths[num_sdus];
-	  if (sdu_lengths[num_sdus] < 128) {
-	    header_len_dtch=2;
+	  if (rlc_status.bytes_in_buffer > 0) {
+	    
+	    LOG_I(MAC,"[eNB %d][USER-PLANE DEFAULT DRB], Frame %d, DTCH->DLSCH, Requesting %d bytes from RLC (hdr len dtch %d)\n",
+		  module_idP,frameP,TBS-header_len_dcch-sdu_length_total-header_len_dtch,header_len_dtch);
+	    sdu_lengths[num_sdus] = mac_rlc_data_req(
+						     module_idP,
+						     UE_id,
+						     frameP,
+						     ENB_FLAG_YES,
+						     MBMS_FLAG_NO,
+						     DTCH,
+						     (char*)&dlsch_buffer[sdu_length_total]);
+	    
+	    LOG_I(MAC,"[eNB %d][USER-PLANE DEFAULT DRB] Got %d bytes for DTCH %d \n",module_idP,sdu_lengths[num_sdus],DTCH);
+	    sdu_lcids[num_sdus] = DTCH;
+	    sdu_length_total += sdu_lengths[num_sdus];
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_pdu_tx[DTCH]+=1;
+	    UE_list->eNB_UE_stats[CC_id][UE_id].num_bytes_tx[DTCH]+=sdu_lengths[num_sdus];
+	    if (sdu_lengths[num_sdus] < 128) {
+	      header_len_dtch=2;
+	    }
+	    num_sdus++;
 	  }
-	  num_sdus++;
-	}
-	else {
-	  header_len_dtch = 0;
+	  else {
+	    header_len_dtch = 0;
+	  }
 	}
 	
 	// there is a payload

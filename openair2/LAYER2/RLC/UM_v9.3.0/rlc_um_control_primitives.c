@@ -262,8 +262,12 @@ rlc_um_init (rlc_um_entity_t * const rlc_pP)
       rlc_pP->tx_header_min_length_in_bytes = 2;
 
       // SPARE : not 3GPP
+#ifdef JUMBO_FRAME
+      rlc_pP->size_input_sdus_buffer =1024;
+#else
       rlc_pP->size_input_sdus_buffer =128;
-
+#endif
+    
       if ((rlc_pP->input_sdus == NULL) && (rlc_pP->size_input_sdus_buffer > 0)) {
           rlc_pP->input_sdus = calloc(1 , rlc_pP->size_input_sdus_buffer * sizeof (void *));
       }
