@@ -83,12 +83,7 @@ int rate_matching(unsigned int N_coded,
     // the first condition represents the case where the rate is greater than 2/3
     // the second condition represents the case where the rate is less than 1/4
     msg("[PHY][CODING] Rate matching parameter error (N_coded %d, N_input %d, N_bps %d), exiting\n",N_coded,N_input,N_bps);
-#ifdef USER_MODE
-
-    exit(-1);
-#else
     return(-1);
-#endif
   }
 
   //initialize all bits as transmitted
@@ -166,12 +161,7 @@ int rate_matching_lte(unsigned int N_coded,
     // the first condition represents the case where the rate is greater than 2/3
     // the second condition represents the case where the rate is less than 1/4
     msg("[PHY][CODING] Rate matching parameter error (N_coded %d, N_input %d), exiting\n",N_coded,N_input);
-#ifdef USER_MODE
-
-    exit(-1);
-#else
     return(-1);
-#endif
   }
 
   //initialize all bits as transmitted

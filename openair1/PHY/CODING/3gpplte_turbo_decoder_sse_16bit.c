@@ -927,7 +927,7 @@ unsigned char phy_threegpplte_turbo_decoder16(short *y,
 	break;
       default:
 	printf("FATAL: 3gpplte_turbo_decoder_sse.c: Unknown CRC\n");
-	exit(-1);
+	return(255);
 	break;
       }
       

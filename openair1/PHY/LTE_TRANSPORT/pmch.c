@@ -294,7 +294,7 @@ void fill_UE_dlsch_MCH(PHY_VARS_UE *phy_vars_ue,int mcs,int ndi,int rvidx,int eN
 		       &phy_vars_eNB->dlsch_turbo_encoding_stats,
 		       &phy_vars_eNB->dlsch_interleaving_stats
 		       )<0)
-      exit(-1);
+      mac_xface->macphy_exit("problem in dlsch_encoding");
     
     dlsch_scrambling(&phy_vars_eNB->lte_frame_parms,1,phy_vars_eNB->dlsch_eNB_MCH,G,0,subframe<<1);
     

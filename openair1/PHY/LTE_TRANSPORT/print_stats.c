@@ -265,7 +265,6 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
   uint8_t eNB,UE_id,i,j,number_of_cards_l=1;
   uint32_t ulsch_errors=0;
   uint32_t ulsch_round_attempts[4]={0,0,0,0},ulsch_round_errors[4]={0,0,0,0};
-  uint32_t harq_pid_ul, harq_pid_dl;
   uint32_t UE_id_mac, RRC_status;
   if (phy_vars_eNB==NULL)
     return 0;
@@ -306,13 +305,15 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 	phy_vars_eNB->total_transmitted_bits = phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS + phy_vars_eNB->total_transmitted_bits;
 	//phy_vars_eNB->total_system_throughput = phy_vars_eNB->eNB_UE_stats[UE_id].total_transmitted_bits + phy_vars_eNB->total_system_throughput;
 	if (phy_vars_eNB->eNB_UE_stats[UE_id].mode == PUSCH) 
-	  success = success + ((phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[0]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[1]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[2]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[3]) - (phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[0]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[1]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[2]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[3]));
+	  for (i=0;i<8;i++)
+	    success = success + (phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][0] - phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_l2_errors[i]);
       }
 #else
       phy_vars_eNB->total_dlsch_bitrate = phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_bitrate + phy_vars_eNB->total_dlsch_bitrate;
       phy_vars_eNB->total_transmitted_bits = phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS +  phy_vars_eNB->total_transmitted_bits;
       //phy_vars_eNB->total_system_throughput = phy_vars_eNB->eNB_UE_stats[UE_id].total_transmitted_bits + phy_vars_eNB->total_system_throughput;
-      success = success + ((phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[0]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[1]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[2]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[3]) - (phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[0]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[1]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[2]+phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[3]));
+      for (i=0;i<8;i++)
+	success = success + (phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][0] - phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_l2_errors[i]);
 #endif
     }
 
@@ -331,17 +332,18 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 #ifdef OPENAIR2
     if (phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->rnti>0) {
 #endif
-      harq_pid_dl = phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->current_harq_pid;
-      harq_pid_ul = 2;
-      len += sprintf(&buffer[len],"[eNB PROC] UE %d (%x) RSSI: (%d,%d) dBm, Sector %d, DLSCH Mode %d, UE_DL_mcs %d, UE_UL_MCS %d\n",
+      len += sprintf(&buffer[len],"[eNB PROC] UE %d (%x) RSSI: (%d,%d) dBm, Sector %d, DLSCH Mode %d\n", 
 		     UE_id,
 		     phy_vars_eNB->eNB_UE_stats[UE_id].crnti,
 		     phy_vars_eNB->eNB_UE_stats[UE_id].UL_rssi[0],
 		     phy_vars_eNB->eNB_UE_stats[UE_id].UL_rssi[1],
 		     phy_vars_eNB->eNB_UE_stats[UE_id].sector,
-		     phy_vars_eNB->transmission_mode[UE_id],
-		     phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[harq_pid_dl]->mcs,
-		     phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->harq_processes[harq_pid_ul]->mcs);
+		     phy_vars_eNB->transmission_mode[UE_id]);
+    for(i=0;i<8;i++)
+      len+= sprintf(&buffer[len],"   harq %d, UE_DL_mcs %d, UE_UL_MCS %d\n",
+		    i,
+		     phy_vars_eNB->dlsch_eNB[(uint8_t)UE_id][0]->harq_processes[i]->mcs,
+		     phy_vars_eNB->ulsch_eNB[(uint8_t)UE_id]->harq_processes[i]->mcs);
       
       len += sprintf(&buffer[len],"[eNB PROC] Wideband CQI: (%d,%d) dB\n",
 		     phy_vars_eNB->PHY_measurements_eNB[eNB].wideband_cqi_dB[UE_id][0],
@@ -381,84 +383,47 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 #ifdef OPENAIR2
       if (phy_vars_eNB->eNB_UE_stats[UE_id].mode == PUSCH) {
 #endif
-	for (i=0;i<3;i++) {
-	  ulsch_errors += phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_errors[i];
-	  for (j=0;j<4;j++) {
-	    ulsch_round_attempts[j] += phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][j];
-	    ulsch_round_errors[j] += phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][j];
-	  }
-	}
-
 	len += sprintf(&buffer[len],"[eNB PROC] SR received/total: %d/%d (diff %d)\n",
 		       phy_vars_eNB->eNB_UE_stats[UE_id].sr_received,
 		       phy_vars_eNB->eNB_UE_stats[UE_id].sr_total,
 		       phy_vars_eNB->eNB_UE_stats[UE_id].sr_total-phy_vars_eNB->eNB_UE_stats[UE_id].sr_received);
-	len += sprintf(&buffer[len],"[eNB PROC] ULSCH FER per round (%d, %d, %d, %d) : (%d, %d, %d, %d) : (%d, %d, %d, %d)  \n",
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[0][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[0][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[0][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[0][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[1][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[1][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[1][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[1][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[2][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[2][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[2][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_fer[2][3]);
+	len += sprintf(&buffer[len],"[eNB PROC] ULSCH errors/attempts per harq (per round): \n");
+	for (i=0;i<8;i++)
+	  len += sprintf(&buffer[len],"   harq %d: %d/%d (%d/%d, %d/%d, %d/%d, %d/%d)\n",
+			 i,
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_errors[i],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][1],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][1],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][2],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][2],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[i][3],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[i][3]);
 
-		       
-
-	len += sprintf(&buffer[len],"[eNB PROC] ULSCH errors %d/%d (%d/%d,%d/%d,%d/%d,%d/%d) : %d/%d (%d/%d,%d/%d,%d/%d,%d/%d) : %d/%d (%d/%d,%d/%d,%d/%d,%d/%d) \n",
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_errors[0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[0][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[0][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[0][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[0][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[0][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[0][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[0][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[0][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[0][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_errors[1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[1][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[1][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[1][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[1][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[1][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[1][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[1][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[1][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[1][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_errors[2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[2][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[2][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[2][0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[2][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[2][1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[2][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[2][2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_round_errors[2][3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].ulsch_decoding_attempts[2][3]);
-	len += sprintf(&buffer[len],"[eNB PROC] DLSCH errors %d/%d (%d/%d/%d,%d/%d/%d,%d/%d/%d,%d/%d/%d)\n",
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_l2_errors,
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[0],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[1],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[2],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[3],
-		       phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[3]);
+	len += sprintf(&buffer[len],"[eNB PROC] DLSCH errors/attempts per harq (per round): \n");
+	for (i=0;i<8;i++)
+	  len += sprintf(&buffer[len],"   harq %d: %d/%d (%d/%d/%d, %d/%d/%d, %d/%d/%d, %d/%d/%d)\n",
+			 i,
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_l2_errors[i],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][0],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[i][1],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[i][1],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][1],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[i][2],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[i][2],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][2],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_ACK[i][3],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_NAK[i][3],
+			 phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_trials[i][3]);
 
 	len += sprintf(&buffer[len],"[eNB PROC] DLSCH total bits from MAC: %dkbit\n",(phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS_MAC)/1000);
 	len += sprintf(&buffer[len],"[eNB PROC] DLSCH total bits ack'ed: %dkbit\n",(phy_vars_eNB->eNB_UE_stats[UE_id].total_TBS)/1000);
-	len += sprintf(&buffer[len],"[eNB PROC] DLSCH Average throughput (10 frames): %dkbps\n",(phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_bitrate/1000));
+	len += sprintf(&buffer[len],"[eNB PROC] DLSCH Average throughput (100 frames): %dkbps\n",(phy_vars_eNB->eNB_UE_stats[UE_id].dlsch_bitrate/1000));
 	len += sprintf(&buffer[len],"[eNB PROC] Transmission Mode %d\n",phy_vars_eNB->transmission_mode[UE_id]);
  
 	if(phy_vars_eNB->transmission_mode[UE_id] == 5){
@@ -477,7 +442,6 @@ int dump_eNB_stats(PHY_VARS_eNB *phy_vars_eNB, char* buffer, int length) {
 			 phy_vars_eNB->mu_mimo_mode[UE_id].rballoc_sub[j]);
 	len += sprintf(&buffer[len],"\n");
 	len += sprintf(&buffer[len],"[eNB PROC] Total Number of Allocated PRBs = %d\n",phy_vars_eNB->mu_mimo_mode[UE_id].pre_nb_available_rbs);
-	
 	
 #ifdef OPENAIR2
       }

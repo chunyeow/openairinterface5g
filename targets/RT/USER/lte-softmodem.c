@@ -301,8 +301,7 @@ static int                      mbox_bounds[20] =   {8,16,24,30,38,46,54,60,68,7
 static LTE_DL_FRAME_PARMS      *frame_parms[MAX_NUM_CCs];
 
 int multi_thread=1;
-// this allows 
-uint32_t target_dl_mcs = 28; 
+uint32_t target_dl_mcs = 28; //maximum allowed mcs
 uint32_t target_ul_mcs = 8;
 
 
@@ -453,7 +452,8 @@ static void *scope_thread(void *arg) {
               
     }
     //printf("doing forms\n");
-    usleep(100000); // 100 ms
+    //usleep(100000); // 100 ms
+    sleep(1);
   }
     
 # ifdef ENABLE_XFORMS_WRITE_STATS
@@ -1776,16 +1776,17 @@ static void get_options (int argc, char **argv) {
       break;
     case 'C':
       for (CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
-      downlink_frequency[CC_id][0] = atof(optarg); // Use float to avoid issue with frequency over 2^31.
-      downlink_frequency[CC_id][1] = downlink_frequency[CC_id][0];
-      downlink_frequency[CC_id][2] = downlink_frequency[CC_id][0];
-      downlink_frequency[CC_id][3] = downlink_frequency[CC_id][0];
-      carrier_freq[CC_id][0] = downlink_frequency[CC_id][0];
-      carrier_freq[CC_id][1] = downlink_frequency[CC_id][1];
-      carrier_freq[CC_id][2] = downlink_frequency[CC_id][2];
-      carrier_freq[CC_id][3] = downlink_frequency[CC_id][3];
+	downlink_frequency[CC_id][0] = atof(optarg); // Use float to avoid issue with frequency over 2^31.
+	downlink_frequency[CC_id][1] = downlink_frequency[CC_id][0];
+	downlink_frequency[CC_id][2] = downlink_frequency[CC_id][0];
+	downlink_frequency[CC_id][3] = downlink_frequency[CC_id][0];
+	carrier_freq[CC_id][0] = downlink_frequency[CC_id][0];
+	carrier_freq[CC_id][1] = downlink_frequency[CC_id][1];
+	carrier_freq[CC_id][2] = downlink_frequency[CC_id][2];
+	carrier_freq[CC_id][3] = downlink_frequency[CC_id][3];
+	
+	printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
       }
-      printf("Downlink for CC_id %d frequency set to %u\n", CC_id, downlink_frequency[CC_id][0]);
       break;
       
     case 'd':
@@ -2338,6 +2339,7 @@ int main(int argc, char **argv) {
 
 #if defined(ENABLE_ITTI)
   if (create_tasks(UE_flag ? 0 : 1, UE_flag ? 1 : 0) < 0) {
+    printf("cannot create ITTI tasks\n");
     exit(-1); // need a softer mode
   }
   printf("ITTI tasks created\n");
@@ -2366,10 +2368,10 @@ int main(int argc, char **argv) {
   openair_daq_vars.timing_advance = 0;
 
   openair0_rf_map rf_map[MAX_NUM_CCs];
-  rf_map[0].card=0;
-  rf_map[0].chain=0;
-  rf_map[1].card=0;
-  rf_map[1].chain=1;
+  for(CC_id=0;CC_id<MAX_NUM_CCs;CC_id++) {
+    rf_map[CC_id].card=0;
+    rf_map[CC_id].chain=CC_id+1;
+  }
 
   // connect the TX/RX buffers
   if (UE_flag==1) {

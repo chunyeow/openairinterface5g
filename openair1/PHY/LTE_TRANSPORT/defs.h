@@ -555,30 +555,33 @@ typedef struct {
   UE_MODE_t mode;
   /// Current sector where UE is attached
   uint8_t sector;
-  /// 
-  uint32_t dlsch_sliding_cnt;
-  ///
-  uint32_t dlsch_ACK[8];
-  uint32_t dlsch_NAK[8];
-  ///
-  uint32_t dlsch_l2_errors;
-  ///
-  uint32_t dlsch_trials[8];
-  ///
-  uint32_t ulsch_errors[3];
-  ///
-  uint32_t ulsch_consecutive_errors[3];
-  ///
-  uint32_t ulsch_decoding_attempts[3][8];
-  ///
-  uint32_t ulsch_round_errors[3][8];
-  uint32_t ulsch_decoding_attempts_last[3][8];
-  uint32_t ulsch_round_errors_last[3][8];
-  uint32_t ulsch_round_fer[3][8];
+
+  /// dlsch l2 errors
+  uint32_t dlsch_l2_errors[8];
+  /// dlsch trials per harq and round 
+  uint32_t dlsch_trials[8][8];
+  /// dlsch ACK/NACK per hard_pid and round
+  uint32_t dlsch_ACK[8][8];
+  uint32_t dlsch_NAK[8][8];
+
+  /// ulsch l2 errors per harq_pid
+  uint32_t ulsch_errors[8];
+  /// ulsch l2 consecutive errors per harq_pid
+  uint32_t ulsch_consecutive_errors[8];
+  /// ulsch trials/errors/fer per harq and round
+  uint32_t ulsch_decoding_attempts[8][8];
+  uint32_t ulsch_round_errors[8][8];
+  uint32_t ulsch_decoding_attempts_last[8][8];
+  uint32_t ulsch_round_errors_last[8][8];
+  uint32_t ulsch_round_fer[8][8];
   uint32_t sr_received;
   uint32_t sr_total;
 
+  /// dlsch sliding count and total errors in round 0 are used to compute the dlsch_mcs_offset
+  uint32_t dlsch_sliding_cnt;
+  uint32_t dlsch_NAK_round0;
   int8_t dlsch_mcs_offset;
+
   /// Target mcs1 after rate-adaptation (used by MAC layer scheduler)
   uint8_t dlsch_mcs1;
   /// Target mcs2 after rate-adaptation (used by MAC layer scheduler)
@@ -589,7 +592,7 @@ typedef struct {
   int total_TBS;
   /// Total bits acknowledged on PDSCH (last interval)
   int total_TBS_last;
-  /// Bitrate on the PDSCH
+  /// Bitrate on the PDSCH [bps]
   unsigned int dlsch_bitrate;
   //  unsigned int total_transmitted_bits;
 } LTE_eNB_UE_stats;

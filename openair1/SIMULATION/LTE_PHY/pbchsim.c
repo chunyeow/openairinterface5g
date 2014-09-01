@@ -610,12 +610,12 @@ int main(int argc, char **argv) {
 
 
     }
+    /*    
     memcpy(&dci_alloc[0].dci_pdu[0],&DLSCH_alloc_pdu2,sizeof(DCI2_5MHz_2A_M10PRB_TDD_t));
     dci_alloc[0].dci_length = sizeof_DCI2_5MHz_2A_M10PRB_TDD_t;
     dci_alloc[0].L          = 2;
     dci_alloc[0].rnti       = 0x1234;
     dci_alloc[0].nCCE       = 0;
-    /*    
     memcpy(&dci_alloc[1].dci_pdu[1],&DLSCH_alloc_pdu2,sizeof(DCI2_5MHz_2A_M10PRB_TDD_t));
     dci_alloc[1].dci_length = sizeof_DCI2_5MHz_2A_M10PRB_TDD_t;
     dci_alloc[1].L          = 3;
@@ -631,7 +631,7 @@ int main(int argc, char **argv) {
 		    LTE_NUMBER_OF_SUBFRAMES_PER_FRAME);
 
 
-        
+    /* 
     num_pdcch_symbols = generate_dci_top(1,
 					 0,
 					 dci_alloc,
@@ -640,7 +640,7 @@ int main(int argc, char **argv) {
 					 &PHY_vars_eNb->lte_frame_parms,
 					 PHY_vars_eNb->lte_eNB_common_vars.txdataF[0],
 					 0);
-    
+    */
 
     
     if (num_pdcch_symbols<3) {

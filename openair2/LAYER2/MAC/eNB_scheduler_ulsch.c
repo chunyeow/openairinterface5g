@@ -406,7 +406,7 @@ unsigned char *parse_ulsch_header(unsigned char *mac_header,
 	  ce_len++;
 	else {
 	  LOG_E(MAC,"unknown CE %d \n", lcid);
-	  exit(-1);
+	  mac_xface->macphy_exit("unknown CE");
 	}
       }
     }
@@ -593,7 +593,7 @@ void schedule_ulsch_rnti(module_id_t   module_idP,
 		  BSR_TABLE[UE_template->bsr_info[LCGID2]]+
 		  BSR_TABLE[UE_template->bsr_info[LCGID3]];  // This is when remaining data in UE buffers (even if SR is triggered)
 
-		LOG_D(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE, BSR for LCGID0 %d, LCGID1 %d, LCGID2 %d LCGID3 %d, BO %d\n",
+		LOG_I(MAC,"[eNB %d][PUSCH %d/%x] Frame %d subframeP %d Scheduled UE, BSR for LCGID0 %d, LCGID1 %d, LCGID2 %d LCGID3 %d, BO %d\n",
 		      module_idP,
 		      UE_id,
 		      rnti,

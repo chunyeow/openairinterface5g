@@ -600,6 +600,8 @@ int main(int argc, char **argv) {
   PHY_vars_UE->pusch_config_dedicated[eNB_id].betaOffset_ACK_Index = beta_ACK;
   PHY_vars_UE->pusch_config_dedicated[eNB_id].betaOffset_RI_Index  = beta_RI;
   PHY_vars_UE->pusch_config_dedicated[eNB_id].betaOffset_CQI_Index = beta_CQI;
+
+  PHY_vars_UE->ul_power_control_dedicated[eNB_id].deltaMCS_Enabled = 1;
   
   printf("PUSCH Beta : ACK %f, RI %f, CQI %f\n",(double)beta_ack[beta_ACK]/8,(double)beta_ri[beta_RI]/8,(double)beta_cqi[beta_CQI]/8);
 
@@ -1264,12 +1266,13 @@ int main(int argc, char **argv) {
 #endif       
       }   //trials
 
-      printf("\n**********rb: %d ***mcs : %d  *********SNR = %f dB (%f): TX %d dB (gain %f dB), N0W %f dB, I0 %d dB [ (%d,%d) dB / (%d,%d) dB ]**************************\n",
+      printf("\n**********rb: %d ***mcs : %d  *********SNR = %f dB (%f): TX %d dB (gain %f dB), N0W %f dB, I0 %d dB, delta_IF %d [ (%d,%d) dB / (%d,%d) dB ]**************************\n",
 	     nb_rb,mcs,SNR,SNR2,
 	     tx_lev_dB,
 	     20*log10(tx_gain),
 	     (double)N0,
 	     PHY_vars_eNB->PHY_measurements_eNB[0].n0_power_tot_dB,
+	     get_hundred_times_delta_IF(PHY_vars_UE,eNB_id,harq_pid) ,
 	     dB_fixed(PHY_vars_eNB->lte_eNB_pusch_vars[0]->ulsch_power[0]),
 	     dB_fixed(PHY_vars_eNB->lte_eNB_pusch_vars[0]->ulsch_power[1]),
 	     PHY_vars_eNB->PHY_measurements_eNB->n0_power_dB[0],

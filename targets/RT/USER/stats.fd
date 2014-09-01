@@ -9,13 +9,13 @@ Unit of measure: FL_COORD_PIXEL
 =============== FORM ===============
 Name: stats_form
 Width: 1115
-Height: 659
+Height: 900
 Number of Objects: 2
 
 --------------------
 class: FL_BOX
 type: UP_BOX
-box: 0 0 1115 659
+box: 0 0 1115 900
 boxtype: FL_UP_BOX
 colors: FL_COL1 FL_COL1
 alignment: FL_ALIGN_CENTER
@@ -33,7 +33,7 @@ argument:
 --------------------
 class: FL_TEXT
 type: NORMAL_TEXT
-box: 60 50 1000 580
+box: 60 50 1000 810
 boxtype: FL_FLAT_BOX
 colors: FL_COL1 FL_MCOL
 alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE

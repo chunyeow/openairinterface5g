@@ -219,7 +219,7 @@ void conv_rballoc(uint8_t ra_header,uint32_t rb_alloc,uint32_t N_RB_DL,uint32_t 
     }
     else {
       LOG_E(PHY,"resource type 1 not supported for  N_RB_DL=100\n");
-      exit(-1);
+      mac_xface->macphy_exit("resource type 1 not supported for  N_RB_DL=100\n");
       /*
 	subset = rb_alloc&1;
 	shift  = (rb_alloc>>1)&1;
@@ -248,7 +248,7 @@ void conv_rballoc(uint8_t ra_header,uint32_t rb_alloc,uint32_t N_RB_DL,uint32_t 
     }
     else {
       LOG_E(PHY,"resource type 1 not supported for  N_RB_DL=100\n");
-      exit(-1);
+      mac_xface->macphy_exit("resource type 1 not supported for  N_RB_DL=100\n");
       /*
 	subset = rb_alloc&1;
 	shift  = (rb_alloc>>1)&1;

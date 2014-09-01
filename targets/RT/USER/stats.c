@@ -16,11 +16,11 @@ create_form_stats_form( void )
     fdui->vdata = fdui->cdata = NULL;
     fdui->ldata = 0;
 
-    fdui->stats_form = fl_bgn_form( FL_NO_BOX, 1115, 659 );
+    fdui->stats_form = fl_bgn_form( FL_NO_BOX, 1115, 900 );
 
-    obj = fl_add_box( FL_UP_BOX, 0, 0, 1115, 659, "" );
+    obj = fl_add_box( FL_UP_BOX, 0, 0, 1115, 900, "" );
 
-    fdui->stats_text = obj = fl_add_text( FL_NORMAL_TEXT, 60, 50, 1000, 580, "test" );
+    fdui->stats_text = obj = fl_add_text( FL_NORMAL_TEXT, 60, 50, 1000, 810, "test" );
     fl_set_object_lsize( obj, FL_TINY_SIZE );
 
     fl_end_form( );

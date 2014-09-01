@@ -2554,7 +2554,7 @@ void dci_decoding_procedure0(LTE_UE_PDCCH **lte_ue_pdcch_vars,int do_common,uint
       CCEmap = CCEmap2;
     else {
       LOG_E(PHY,"Illegal CCEind %d (Yk %d, m %d, nCCE %d, L2 %d\n",CCEind,Yk,m,nCCE,L2);
-      exit(-1);
+      mac_xface->macphy_exit("Illegal CCEind\n");
     }
     switch (L2) {
     case 1:
