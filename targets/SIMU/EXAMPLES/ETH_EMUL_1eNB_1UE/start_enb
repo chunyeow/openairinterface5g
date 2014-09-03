@@ -1,18 +1,11 @@
 #!/bin/sh
 
-GREEN='\E[32m'
-NC='\e[0m'
-
-# check the compilation
-echo "Bringup eNB interface"
-sudo rmmod nasmesh
-make all
-sudo insmod $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko 
+sudo pkill oaisim
 
 # set params
 EMULATION_DEV_INTERFACE="eth0"
 EMULATION_MULTICAST_GROUP=1
-EMULATION_LOG_LEVEL=5 # 3 = error, 5 info, 7 debug, trace= 9 
+EMULATION_LOG_LEVEL=7 # 3 = error, 5 info, 7 debug, trace= 9 
 OAI_LOCAL_ADDRESS="10.0.1.1"
 OAI_REMOTE_ADDRESS="10.0.1.2"
 #EMULATION_DEV_ADDRESS= `hostname -I cut -f1 -d' '`
@@ -33,18 +26,7 @@ test_install_package() {
   fi
 }
 
-#avoid conflict with reserved multicast addresses (224.0.0.11,224.0.0.13, 224.0.0.16)
-#sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
-echo "Make sure that eth0 is the interface between the machines, otherwise change"
-sudo ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
-
-sudo ifconfig oai0 $OAI_LOCAL_ADDRESS netmask 255.255.255.0 broadcast 10.0.1.255
-
-echo "applying DRB classification"
-echo "$OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s $OAI_LOCAL_ADDRESS -t $OAI_REMOTE_ADDRESS -r 1"
-$OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s $OAI_LOCAL_ADDRESS -t $OAI_REMOTE_ADDRESS -r 1
 #PGM provide a reliable mutlicast data transport"
-
 test_install_package libpgm-dev 
 test_install_package libpgm-5.1-0
 
@@ -55,6 +37,23 @@ if [ $PGM_FOUND = 1 ]; then
 else 
     PGM=" "
 fi 
+
+# check the compilation
+echo "Bringup eNB interface"
+sudo rmmod nasmesh
+make all
+sudo insmod $OPENAIR2_DIR/NAS/DRIVER/MESH/nasmesh.ko 
+
+#avoid conflict with reserved multicast addresses (224.0.0.11,224.0.0.13, 224.0.0.16)
+#sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev eth0
+echo "Make sure that eth0 is the interface between the machines, otherwise change"
+sudo ip route add 239.0.0.160/28 dev $EMULATION_DEV_INTERFACE
+
+# when running as a suduoers, the following lines are not needed
+#sudo ifconfig oai0 $OAI_LOCAL_ADDRESS netmask 255.255.255.0 broadcast 10.0.1.255
+#echo "applying DRB classification"
+#echo "$OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s $OAI_LOCAL_ADDRESS -t $OAI_REMOTE_ADDRESS -r 1"
+#$OPENAIR2_DIR/NAS/DRIVER/MESH/RB_TOOL/rb_tool -a -c0 -i0 -z0 -s $OAI_LOCAL_ADDRESS -t $OAI_REMOTE_ADDRESS -r 1
 
 if   [ -z $1 ]; then 
 echo "$OPENAIR_TARGETS/SIMU/USER/oaisim  -u0 -M0 -p2   -g$EMULATION_MULTICAST_GROUP -l$EMULATION_LOG_LEVEL $PGM > /dev/null"
