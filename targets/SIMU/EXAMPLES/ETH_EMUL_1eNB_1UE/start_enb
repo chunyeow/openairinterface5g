@@ -1,5 +1,6 @@
 #!/bin/sh
 
+sudo kill -9 `ps -ef | grep oaisim | awk '{print $2}'`
 sudo pkill oaisim
 
 # set params
