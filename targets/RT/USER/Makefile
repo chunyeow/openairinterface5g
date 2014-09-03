@@ -24,6 +24,8 @@ endif
 CFLAGS += -O2 
 CFLAGS += -DDRIVER2013 -I$(OPENAIR_TARGETS)/ARCH/COMMON 
 
+CFLAGS += -DMAX_NUM_CCs=1
+
 ifeq ($(USRP),0)
   CFLAGS += -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/USERSPACE/LIB/ -I$(OPENAIR_TARGETS)/ARCH/EXMIMO/DEFS -DENABLE_VCD_FIFO
 endif
@@ -399,5 +401,15 @@ show:
 	@echo IS_REL10 is $(IS_REL10)
 	@echo openssl $(OPENSSL_FOUND) 
 	@echo nettle $(NETTLE_FOUND)
+
 beautiful:
 	astyle --style=gnu -s2 $(SRC)
+
+fifos:
+	@for i in `seq 0 64`;\
+	do \
+	have_rtfX=`ls /dev/ |grep -c rtf$$i`;\
+	if [ "$$have_rtfX" -eq 0 ] ;then \
+	mknod -m 666 /dev/rtf$$i c 150 $$i; \
+	fi;\
+	done
